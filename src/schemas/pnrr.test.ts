@@ -77,4 +77,16 @@ describe('pnrr search schema', () => {
       currency: 'EUR',
     })
   })
+
+  it('keeps national as a detailed beneficiary type filter', () => {
+    expect(parsePnrrSearchString('?beneficiaryTypes=%5B%22national%22%5D')).toEqual({
+      beneficiaryTypes: ['national'],
+    })
+  })
+
+  it('rejects national as an unsupported entity type', () => {
+    expect(() =>
+      parsePnrrSearchString('?entityTypes=%5B%22national%22%5D'),
+    ).toThrow()
+  })
 })

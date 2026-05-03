@@ -1,4 +1,7 @@
 import entityDirectoryCsv from '@/assets/data/pnrr-beneficiary-entity-directory.csv?raw'
+// Compact CUI lookup generated from the official 2023 public companies CSV:
+// https://data.gov.ro/dataset/5c4554c0-3ceb-4fa5-9c6c-a8ce78a170cb/resource/f2a75408-03f5-439d-aa1a-2c86f4386bb2
+import publicCompaniesCsv from '@/assets/data/public-companies-2023.csv?raw'
 import { COUNTY_NAME_TO_MNEMONIC, MNEMONIC_TO_COUNTY_NAME } from './county-mnemonics'
 import { UAT_CUI_TO_NATCODE, UAT_LOCALITY_TO_NATCODE } from './uat-mapping'
 
@@ -127,9 +130,31 @@ function parseEntityDirectory(csv: string): Record<string, EntityDirectoryRecord
 
 const entityDirectory = parseEntityDirectory(entityDirectoryCsv)
 
+function parseCuiLookupCsv(csv: string): Set<string> {
+  const cuis = new Set<string>()
+  const lines = csv.replace(/^\uFEFF/, '').split('\n')
+
+  for (const line of lines.slice(1)) {
+    if (!line) continue
+
+    const [cui] = splitCsvLine(line)
+    const normalizedCui = normalizeCui(cui)
+    if (normalizedCui) cuis.add(normalizedCui)
+  }
+
+  return cuis
+}
+
+const publicCompanyCuis = parseCuiLookupCsv(publicCompaniesCsv)
+
 export function getPnrrBeneficiaryDirectoryType(cui: string | null | undefined): string | null {
   const normalizedCui = normalizeCui(cui)
   return normalizedCui ? entityDirectory[normalizedCui]?.t ?? null : null
+}
+
+export function isOfficialPublicCompanyCui(cui: string | null | undefined): boolean {
+  const normalizedCui = normalizeCui(cui)
+  return normalizedCui ? publicCompanyCuis.has(normalizedCui) : false
 }
 
 const CANONICAL_COUNTY_BY_NORMALIZED = Object.fromEntries(

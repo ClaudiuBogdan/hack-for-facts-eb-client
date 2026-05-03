@@ -13,6 +13,7 @@ import type {
 import { PNRR_COMPONENTS } from '../data/component-definitions'
 import {
   getPnrrBeneficiaryDirectoryType,
+  isOfficialPublicCompanyCui,
   resolvePnrrProjectLocation,
 } from './pnrr-uat-assignment'
 
@@ -151,11 +152,6 @@ export function detectDataQualitySignals(
 const PUBLIC_KEYWORDS: readonly string[] = [
   // Ministries & central government
   'MINISTERUL',
-  // National companies (with and without diacritics, compound forms)
-  'COMPANIA NAȚIONALĂ',
-  'COMPANIA NATIONALA',
-  'SOCIETATEA NAȚIONALĂ',
-  'SOCIETATEA NATIONALA',
   // Authorities & agencies (with and without diacritics)
   'AUTORITATEA',
   'ADMINISTRAȚIA',
@@ -206,10 +202,6 @@ const PUBLIC_KEYWORDS: readonly string[] = [
   'INSTITUTUL',
   'LICEUL',
   'COLEGIUL',
-  // Religious entities
-  'PAROHIA',
-  'MANASTIREA',
-  'MĂNĂSTIREA',
   // Police & security
   'POLIȚIA',
   'POLITIA',
@@ -227,11 +219,33 @@ const PUBLIC_KEYWORDS: readonly string[] = [
   'INSPECTIA',
   'CASA NAȚIONALĂ',
   'CASA NATIONALA',
-  'ASOCIAȚIA',
+]
+
+const PRIORITY_PUBLIC_KEYWORDS: readonly string[] = [
+  'COMPANIA NAȚIONALĂ',
+  'COMPANIA NATIONALA',
+  'SOCIETATEA NAȚIONALĂ DE TRANSPORT',
+  'SOCIETATEA NATIONALA DE TRANSPORT',
+  'SECRETARIATUL GENERAL AL GUVERNULUI',
+  'SERVICIUL DE TELECOMUNICAȚII SPECIALE',
+  'SERVICIUL DE TELECOMUNICATII SPECIALE',
+  'REGIA PUBLICĂ LOCALĂ',
+  'REGIA PUBLICA LOCALA',
+]
+
+const NON_PUBLIC_KEYWORDS: readonly string[] = [
   'ASOCIATIA',
+  'ASOCIAȚIA',
   'FUNDATIA',
+  'FUNDAȚIA',
+  'FEDERATIA',
+  'FEDERAȚIA',
+  'PAROHIA',
   'BISERICA',
+  'MANASTIREA',
+  'MĂNĂSTIREA',
   'ARHIEPISCOPIA',
+  'EPISCOPIA',
 ]
 
 /**
@@ -248,31 +262,44 @@ function hasPrivateMarker(beneficiary: string): boolean {
 
   const hasSrl = normalized.includes('SRL')
   const hasSa = /\bSA\b/.test(normalized)
+  const hasLimitedLiability = normalized.includes('SOCIETATE CU RASPUNDERE LIMITATA')
   const hasPfa =
     normalized.includes('PERSOANA FIZICA AUTORIZATA') || normalized.includes('PFA')
 
-  return hasSrl || hasSa || hasPfa
+  return hasSrl || hasSa || hasLimitedLiability || hasPfa
 }
 
-export function classifyEntityType(beneficiary: string, county: string): PnrrEntityType {
+function isPublicDirectoryType(directoryType: string | null): boolean {
+  return Boolean(directoryType && directoryType !== 'uncategorized')
+}
+
+export function classifyEntityType(
+  beneficiary: string,
+  directoryType: string | null = null,
+  isOfficialPublicCompany = false,
+): PnrrEntityType {
+  const normalized = normalizeBeneficiaryName(beneficiary)
   const upper = beneficiary.toUpperCase()
+  const hasPriorityPublicKeyword = PRIORITY_PUBLIC_KEYWORDS.some((kw) =>
+    upper.includes(kw),
+  )
   const hasPublicKeyword = PUBLIC_KEYWORDS.some((kw) => upper.includes(kw))
   const hasExplicitPrivateMarker = hasPrivateMarker(beneficiary)
+  const hasNonPublicKeyword = hasAnyBeneficiaryKeyword(normalized, NON_PUBLIC_KEYWORDS)
 
-  if (county === 'Național') {
-    return hasPublicKeyword || !hasExplicitPrivateMarker ? 'national' : 'private'
-  }
-
-  if (hasPublicKeyword) {
+  if (isOfficialPublicCompany || hasPriorityPublicKeyword) {
     return 'public'
   }
-  if (hasExplicitPrivateMarker) {
+
+  if (hasExplicitPrivateMarker || hasNonPublicKeyword) {
     return 'private'
   }
-  // Fallback: entities without explicit private markers that are not public
-  // are treated as public to avoid leaking non-company beneficiaries into
-  // the private filter (e.g. individuals, cabinets without SRL).
-  return 'public'
+
+  if (isPublicDirectoryType(directoryType) || hasPublicKeyword) {
+    return 'public'
+  }
+
+  return 'private'
 }
 
 const UAT_DIRECTORY_TYPES = new Set([
@@ -319,9 +346,30 @@ export function classifyBeneficiaryType(
   beneficiary: string,
   cui: string | null,
   entityType: PnrrEntityType,
-  directoryType = getPnrrBeneficiaryDirectoryType(cui)
+  directoryType = getPnrrBeneficiaryDirectoryType(cui),
+  isNationalProject = false,
+  isOfficialPublicCompany = isOfficialPublicCompanyCui(cui),
 ): PnrrBeneficiaryType {
   const normalized = normalizeBeneficiaryName(beneficiary)
+
+  if (entityType === 'private') {
+    if (hasPrivateMarker(beneficiary)) return 'company'
+    if (hasAnyBeneficiaryKeyword(normalized, ['ASOCIATIA', 'FUNDATIA', 'FEDERATIA'])) return 'ngo'
+    if (
+      hasAnyBeneficiaryKeyword(normalized, [
+        'PAROHIA',
+        'BISERICA',
+        'MANASTIREA',
+        'ARHIEPISCOPIA',
+        'EPISCOPIA',
+      ])
+    ) {
+      return 'religious'
+    }
+    return 'other-private'
+  }
+
+  if (isOfficialPublicCompany) return 'public-company'
 
   if (directoryType) {
     if (UAT_DIRECTORY_TYPES.has(directoryType)) return 'uat'
@@ -335,7 +383,6 @@ export function classifyBeneficiaryType(
     if (CENTRAL_AGENCY_DIRECTORY_TYPES.has(directoryType)) return 'central-agency'
   }
 
-  if (hasPrivateMarker(beneficiary)) return 'company'
   if (hasAnyBeneficiaryKeyword(normalized, ['ASOCIATIA', 'FUNDATIA', 'FEDERATIA'])) return 'ngo'
   if (
     hasAnyBeneficiaryKeyword(normalized, [
@@ -395,8 +442,7 @@ export function classifyBeneficiaryType(
   if (hasAnyBeneficiaryKeyword(normalized, ['MUZEUL', 'BIBLIOTECA', 'CASA DE CULTURA'])) {
     return 'culture'
   }
-  if (entityType === 'private') return 'company'
-  if (entityType === 'national') return 'national'
+  if (isNationalProject) return 'national'
   return 'other-public'
 }
 
@@ -433,7 +479,13 @@ export function transformProject(raw: RawPnrrProject): PnrrProject {
   })
   const county = resolvedLocation.county
   const locality = resolvedLocation.locality
-  const entityType = classifyEntityType(raw['Nume Beneficiar'], county)
+  const beneficiaryDirectoryType = getPnrrBeneficiaryDirectoryType(cui)
+  const isOfficialPublicCompany = isOfficialPublicCompanyCui(cui)
+  const entityType = classifyEntityType(
+    raw['Nume Beneficiar'],
+    beneficiaryDirectoryType,
+    isOfficialPublicCompany,
+  )
 
   const projectBase = {
     id: generateHash(
@@ -457,7 +509,14 @@ export function transformProject(raw: RawPnrrProject): PnrrProject {
     dataQualitySignals: [] as readonly DataQualitySignalType[],
     isReform: measureCode.startsWith('R'),
     entityType,
-    beneficiaryType: classifyBeneficiaryType(raw['Nume Beneficiar'], cui, entityType),
+    beneficiaryType: classifyBeneficiaryType(
+      raw['Nume Beneficiar'],
+      cui,
+      entityType,
+      beneficiaryDirectoryType,
+      county === 'Național',
+      isOfficialPublicCompany,
+    ),
     sirutaCode: resolvedLocation.sirutaCode,
   }
 
@@ -1088,7 +1147,9 @@ function matchesBeneficiaryType(
   project: PnrrProject,
   beneficiaryTypes: readonly PnrrBeneficiaryType[]
 ): boolean {
-  return beneficiaryTypes.some((type) => type === project.beneficiaryType || type === project.entityType)
+  return beneficiaryTypes.some(
+    (type) => type === project.beneficiaryType || type === project.entityType,
+  )
 }
 
 export function filterProjects(

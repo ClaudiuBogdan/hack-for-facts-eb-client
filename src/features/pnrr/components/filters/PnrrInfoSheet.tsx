@@ -114,6 +114,39 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
                 </InfoAccordionItem>
 
                 <InfoAccordionItem
+                  value="beneficiary-classification"
+                  title={<Trans>Beneficiary classification</Trans>}
+                >
+                  <div className="space-y-3">
+                    <p>
+                      <Trans>
+                        The top-level sector filter is exhaustive: every project
+                        is classified as either public or private / non-public,
+                        so the two values add up to the total under the same
+                        active filters.
+                      </Trans>
+                    </p>
+                    <p>
+                      <Trans>
+                        Public includes local, county, central, and national
+                        public institutions, plus public companies identified
+                        by CUI from the official 2023 public companies list.
+                        Private / non-public includes companies, NGOs,
+                        foundations, religious organizations, and unclassified
+                        non-public beneficiaries.
+                      </Trans>
+                    </p>
+                    <p>
+                      <Trans>
+                        National is a detailed beneficiary or location category
+                        for records without a local UAT assignment; it is not a
+                        third top-level sector.
+                      </Trans>
+                    </p>
+                  </div>
+                </InfoAccordionItem>
+
+                <InfoAccordionItem
                   value="funding"
                   title={<Trans>Funding source</Trans>}
                 >

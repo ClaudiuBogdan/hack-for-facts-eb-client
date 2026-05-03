@@ -37,16 +37,18 @@ export type DataQualitySignalType =
   | 'large-missing-financial-progress'
   | 'completed-missing-financial-progress'
 
-export type PnrrEntityType = 'public' | 'private' | 'national'
+export type PnrrEntityType = 'public' | 'private'
 
 export const PNRR_BENEFICIARY_TYPE_VALUES = [
   'public',
   'private',
+  'other-private',
   'national',
   'uat',
   'county-council',
   'ministry',
   'central-agency',
+  'public-company',
   'education',
   'health',
   'military',
@@ -180,7 +182,7 @@ export const PnrrSearchSchema = z.object({
     .enum(['national', 'county', 'uat'])
     .optional()
     .default(PNRR_SEARCH_DEFAULTS.granularity),
-  entityTypes: z.array(z.enum(['public', 'private', 'national'])).optional(),
+  entityTypes: z.array(z.enum(['public', 'private'])).optional(),
   beneficiaryTypes: z.array(z.enum(PNRR_BENEFICIARY_TYPE_VALUES)).optional(),
   currency: Currency.optional(),
   includeNational: z.boolean().optional().default(PNRR_SEARCH_DEFAULTS.includeNational),

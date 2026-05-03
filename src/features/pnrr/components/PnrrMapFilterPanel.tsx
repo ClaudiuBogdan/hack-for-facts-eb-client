@@ -25,8 +25,7 @@ const ENTITY_TYPE_OPTIONS: {
   readonly label: string
 }[] = [
   { id: 'public', label: t`Public institutions` },
-  { id: 'private', label: t`Private companies` },
-  { id: 'national', label: t`National entities` },
+  { id: 'private', label: t`Private / non-public` },
 ]
 
 const SERIES_OPTIONS: {

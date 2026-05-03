@@ -19,7 +19,7 @@ msgid "{0} / inhabitant"
 msgstr "{0} / locuitor"
 
 #. placeholder {0}: formatPnrrCurrency(metricStats.deduplicatedTotalValue, currency, 'standard')
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:173
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:172
 msgid "{0} after deduplication"
 msgstr "{0} după deduplicare"
 
@@ -31,7 +31,7 @@ msgstr "{0} finalizate din {1}"
 
 #. placeholder {0}: formatNumber(metricStats.completedCount)
 #. placeholder {1}: formatNumber(metricStats.rawProjectCount)
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:179
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:178
 msgid "{0} completed projects out of {1}"
 msgstr "{0} proiecte finalizate din {1}"
 
@@ -102,7 +102,7 @@ msgid "About the PNRR data"
 msgstr "Despre datele PNRR"
 
 #: src/features/pnrr/components/PnrrStatsRibbon.tsx:33
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:177
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:176
 msgid "Absorption rate"
 msgstr "Rata de absorbție"
 
@@ -111,15 +111,15 @@ msgid "Advanced (70-99%)"
 msgstr "Avansat (70-99%)"
 
 #: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:258
-#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:86
+#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:85
 msgid "Advanced filters"
 msgstr "Filtre avansate"
 
-#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:122
+#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:121
 msgid "Aggregation"
 msgstr "Agregare"
 
-#: src/features/pnrr/lib/filter-constants.ts:96
+#: src/features/pnrr/lib/filter-constants.ts:99
 msgid "All local and central public institutions"
 msgstr "Toate instituțiile publice locale și centrale"
 
@@ -162,14 +162,18 @@ msgstr "Beneficiari"
 msgid "Beneficiary"
 msgstr "Beneficiar"
 
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:118
+msgid "Beneficiary classification"
+msgstr ""
+
 #: src/features/pnrr/components/filters/PnrrActiveFilters.tsx:70
 #: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:374
 msgid "Beneficiary CUI"
 msgstr "CUI beneficiar"
 
 #: src/features/pnrr/components/PnrrNationalSummary.tsx:149
-msgid "Beneficiary entity type"
-msgstr "Tip entitate beneficiar"
+#~ msgid "Beneficiary entity type"
+#~ msgstr "Tip entitate beneficiar"
 
 #: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:410
 msgid "Beneficiary name..."
@@ -178,6 +182,10 @@ msgstr "Nume beneficiar..."
 #: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:405
 msgid "Beneficiary search"
 msgstr "Căutare beneficiar"
+
+#: src/features/pnrr/components/PnrrNationalSummary.tsx:149
+msgid "Beneficiary sector"
+msgstr ""
 
 #: src/features/pnrr/components/filters/PnrrActiveFilters.tsx:215
 #: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:434
@@ -189,7 +197,7 @@ msgstr "Tip beneficiar"
 msgid "Blocked works"
 msgstr "Lucrări blocate"
 
-#: src/features/pnrr/lib/filter-constants.ts:76
+#: src/features/pnrr/lib/filter-constants.ts:78
 msgid "Central agencies"
 msgstr "Agenții centrale"
 
@@ -261,7 +269,7 @@ msgstr "Alege stadiu..."
 msgid "Choose UAT..."
 msgstr "Alege UAT..."
 
-#: src/features/pnrr/lib/filter-constants.ts:111
+#: src/features/pnrr/lib/filter-constants.ts:114
 msgid "City halls, municipalities, towns, and communes"
 msgstr "Primării, municipii, orașe și comune"
 
@@ -290,7 +298,7 @@ msgid "Click a beneficiary to filter exactly by CUI."
 msgstr "Apasă pe un beneficiar pentru filtrare exactă după CUI."
 
 #: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:637
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:346
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:379
 #: src/features/pnrr/components/PnrrAnomalyInfoPanel.tsx:374
 #: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:294
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:229
@@ -302,13 +310,17 @@ msgstr "Închide"
 msgid "Comp."
 msgstr "Comp."
 
-#: src/features/pnrr/lib/filter-constants.ts:80
+#: src/features/pnrr/lib/filter-constants.ts:83
 msgid "Companies"
 msgstr "Companii"
 
 #: src/features/pnrr/lib/filter-constants.ts:101
-msgid "Companies and private beneficiaries"
-msgstr "Companii și beneficiari privați"
+#~ msgid "Companies and private beneficiaries"
+#~ msgstr "Companii și beneficiari privați"
+
+#: src/features/pnrr/lib/filter-constants.ts:104
+msgid "Companies, NGOs, religious organizations, and other non-public beneficiaries"
+msgstr ""
 
 #: src/features/pnrr/lib/anomaly-definitions.ts:115
 msgid "Compare the variants and identify the current row before calculating totals, progress, or conclusions about the beneficiary."
@@ -324,7 +336,7 @@ msgstr "Finalizat"
 msgid "Completed without financial progress"
 msgstr "Finalizat fără progres financiar"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:179
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:212
 #: src/features/pnrr/lib/anomaly-definitions.ts:99
 msgid "Completed works, blocked reimbursement"
 msgstr "Lucrări finalizate, decontare blocată"
@@ -372,7 +384,7 @@ msgstr "Județe"
 msgid "County"
 msgstr "Județ"
 
-#: src/features/pnrr/lib/filter-constants.ts:74
+#: src/features/pnrr/lib/filter-constants.ts:76
 msgid "County councils"
 msgstr "Consilii județene"
 
@@ -385,7 +397,7 @@ msgstr "CRI"
 msgid "CUI"
 msgstr "CUI"
 
-#: src/features/pnrr/lib/filter-constants.ts:83
+#: src/features/pnrr/lib/filter-constants.ts:86
 msgid "Culture"
 msgstr "Cultură"
 
@@ -393,7 +405,7 @@ msgstr "Cultură"
 msgid "Currency"
 msgstr ""
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:211
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:244
 msgid "Currency conversion"
 msgstr "Conversie valutară"
 
@@ -431,7 +443,7 @@ msgstr "Calitatea datelor"
 msgid "Data quality flags rows that can distort the analysis: duplicates with different information or projects with no published financial progress."
 msgstr "Calitatea datelor marchează rânduri care pot distorsiona analiza: duplicate cu informații diferite sau proiecte fără progres financiar publicat."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:234
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:267
 #: src/features/pnrr/components/PnrrDashboard.tsx:211
 msgid "Data source"
 msgstr "Sursa datelor"
@@ -472,7 +484,7 @@ msgstr ""
 msgid "Display values in USD"
 msgstr ""
 
-#: src/features/pnrr/components/charts/PnrrFundingBar.tsx:81
+#: src/features/pnrr/components/charts/PnrrFundingBar.tsx:78
 msgid "Distribution"
 msgstr "Distribuție"
 
@@ -480,7 +492,7 @@ msgstr "Distribuție"
 msgid "Distribution by Components"
 msgstr "Distribuție pe Componente"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:188
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:221
 #: src/features/pnrr/lib/anomaly-definitions.ts:112
 msgid "Duplicates with different data"
 msgstr "Duplicate cu date diferite"
@@ -489,7 +501,7 @@ msgstr "Duplicate cu date diferite"
 msgid "Each project is associated with several dimensions: PNRR component, specific measure, county, responsible institution (CRI), funding source, and implementation status."
 msgstr "Fiecare proiect are asociate mai multe dimensiuni: componenta PNRR, măsura specifică, județul, instituția responsabilă (CRI), sursa de finanțare și stadiul de implementare."
 
-#: src/features/pnrr/lib/filter-constants.ts:77
+#: src/features/pnrr/lib/filter-constants.ts:80
 msgid "Education"
 msgstr "Educație"
 
@@ -501,7 +513,7 @@ msgstr "Proiecte Emblematice"
 msgid "Entity"
 msgstr "Entitate"
 
-#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:150
+#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:149
 msgid "Entity type"
 msgstr "Tip entitate"
 
@@ -526,13 +538,13 @@ msgid "Fin. progress"
 msgstr "Progr. Financiar"
 
 #: src/features/pnrr/components/charts/PnrrProgressHistogram.tsx:57
-#: src/features/pnrr/components/PnrrEmblematicProjects.tsx:136
+#: src/features/pnrr/components/PnrrEmblematicProjects.tsx:134
 #: src/features/pnrr/components/table/PnrrProjectTable.tsx:380
 #: src/features/pnrr/components/table/PnrrProjectTable.tsx:593
 msgid "Financial"
 msgstr "Financiar"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:151
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:184
 msgid "Financial overrun"
 msgstr "Depășire financiară"
 
@@ -554,7 +566,7 @@ msgstr "Progres Financiar"
 msgid "Financial progress > 100%"
 msgstr "Progres financiar > 100%"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:163
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:196
 msgid "Financial progress far ahead of technical progress."
 msgstr "Progres financiar mult înaintea progresului tehnic."
 
@@ -572,11 +584,11 @@ msgid "Funding"
 msgstr "Finanțare"
 
 #: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:496
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:118
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:151
 msgid "Funding source"
 msgstr "Sursă de finanțare"
 
-#: src/features/pnrr/components/charts/PnrrFundingBar.tsx:71
+#: src/features/pnrr/components/charts/PnrrFundingBar.tsx:68
 #: src/features/pnrr/components/table/PnrrExportButton.tsx:32
 msgid "Funding Source"
 msgstr "Sursă Finanțare"
@@ -589,11 +601,11 @@ msgstr "Surse de finanțare"
 msgid "Future debt"
 msgstr "Datorie viitoare"
 
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:184
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:183
 msgid "Future debt (loan)"
 msgstr "Datorie viitoare (loan)"
 
-#: src/features/pnrr/components/charts/PnrrFundingBar.tsx:45
+#: src/features/pnrr/components/charts/PnrrFundingBar.tsx:42
 #: src/features/pnrr/components/filters/PnrrFilterBar.tsx:152
 #: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:512
 #: src/features/pnrr/components/PnrrNationalSummary.tsx:121
@@ -602,11 +614,11 @@ msgstr "Datorie viitoare (loan)"
 msgid "Grant"
 msgstr "Grant"
 
-#: src/features/pnrr/components/charts/PnrrFundingBar.tsx:74
+#: src/features/pnrr/components/charts/PnrrFundingBar.tsx:71
 msgid "Grant / Loan / Mixed"
 msgstr "Grant / Împrumut / Mixt"
 
-#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:39
+#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:38
 #: src/features/pnrr/components/PnrrMapView.tsx:50
 #: src/features/pnrr/hooks/usePnrrMapSeries.ts:253
 msgid "Grant %"
@@ -619,11 +631,11 @@ msgstr "Grant %"
 msgid "Grant + loan"
 msgstr "Grant + împrumut"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:120
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:153
 msgid "Grant, loan, or mixed funding. Original values are in EUR and are automatically converted to the selected currency."
 msgstr "Grant, împrumut sau finanțare mixtă. Valorile originale sunt în EUR și sunt convertite automat în moneda selectată."
 
-#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:94
+#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:93
 msgid "Granularity"
 msgstr "Granularitate"
 
@@ -632,11 +644,11 @@ msgstr "Granularitate"
 msgid "Guide"
 msgstr "Ghid"
 
-#: src/features/pnrr/lib/filter-constants.ts:78
+#: src/features/pnrr/lib/filter-constants.ts:81
 msgid "Health"
 msgstr "Sănătate"
 
-#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:86
+#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:85
 msgid "Hide filters"
 msgstr "Ascunde filtre"
 
@@ -654,12 +666,12 @@ msgstr "Dacă selectați mai multe filtre, tabelul afișează proiectele care î
 
 #: src/features/pnrr/components/filters/PnrrFilterBar.tsx:134
 #: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:532
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:128
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:161
 #: src/features/pnrr/components/PnrrNationalSummary.tsx:182
 msgid "Implementation status"
 msgstr "Stadiu implementare"
 
-#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:40
+#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:39
 #: src/features/pnrr/components/PnrrMapView.tsx:51
 #: src/features/pnrr/hooks/usePnrrMapSeries.ts:254
 msgid "Implemented %"
@@ -688,7 +700,7 @@ msgid "in total"
 msgstr "în total"
 
 #: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:611
-#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:180
+#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:179
 msgid "Include national projects"
 msgstr "Include proiecte naționale"
 
@@ -720,11 +732,11 @@ msgstr "Centrul de Investigație"
 msgid "Investment"
 msgstr "Investiție"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:200
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:233
 msgid "Large or technically completed projects without published financial data."
 msgstr "Proiecte mari sau finalizate tehnic fără date financiare publicate."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:170
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:203
 #: src/features/pnrr/components/PnrrQuickInvestigation.tsx:16
 #: src/features/pnrr/lib/anomaly-definitions.ts:89
 msgid "Large projects with low progress"
@@ -751,7 +763,7 @@ msgstr "Se încarcă harta..."
 msgid "Loading the full PNRR dataset for maps, charts, and project lists."
 msgstr "Se încarcă setul complet de date PNRR pentru hărți, grafice și liste de proiecte."
 
-#: src/features/pnrr/components/charts/PnrrFundingBar.tsx:51
+#: src/features/pnrr/components/charts/PnrrFundingBar.tsx:48
 #: src/features/pnrr/components/filters/PnrrFilterBar.tsx:159
 #: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:518
 #: src/features/pnrr/components/PnrrNationalSummary.tsx:129
@@ -761,8 +773,12 @@ msgid "Loan"
 msgstr "Împrumut"
 
 #: src/features/pnrr/components/PnrrQuickInvestigation.tsx:62
-msgid "Loans for private sector"
-msgstr "Împrumuturi pentru privat"
+msgid "Loans for non-public sector"
+msgstr ""
+
+#: src/features/pnrr/components/PnrrQuickInvestigation.tsx:62
+#~ msgid "Loans for private sector"
+#~ msgstr "Împrumuturi pentru privat"
 
 #: src/features/pnrr/components/table/PnrrExportButton.tsx:28
 msgid "Locality"
@@ -811,15 +827,15 @@ msgstr "Cod măsură"
 msgid "Measures may be investments (I) or reforms (R), each with the official name approved in the plan."
 msgstr "Măsurile pot fi investiții (I) sau reforme (R), fiecare cu denumirea oficială aprobată în plan."
 
-#: src/features/pnrr/lib/filter-constants.ts:79
+#: src/features/pnrr/lib/filter-constants.ts:82
 msgid "Military"
 msgstr "Militare"
 
-#: src/features/pnrr/lib/filter-constants.ts:75
+#: src/features/pnrr/lib/filter-constants.ts:77
 msgid "Ministries"
 msgstr "Ministere"
 
-#: src/features/pnrr/lib/filter-constants.ts:106
+#: src/features/pnrr/lib/filter-constants.ts:109
 msgid "Ministries and central institutions without local UAT"
 msgstr "Ministere și instituții centrale fără UAT local"
 
@@ -836,7 +852,7 @@ msgstr "Date lipsă"
 msgid "Missing financial data"
 msgstr "Date financiare lipsă"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:198
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:231
 msgid "Missing financial progress"
 msgstr "Progres financiar lipsă"
 
@@ -844,7 +860,7 @@ msgstr "Progres financiar lipsă"
 msgid "Missing from dataset"
 msgstr "Lipsă în dataset"
 
-#: src/features/pnrr/components/charts/PnrrFundingBar.tsx:57
+#: src/features/pnrr/components/charts/PnrrFundingBar.tsx:54
 #: src/features/pnrr/components/filters/PnrrFilterBar.tsx:166
 msgid "Mixed"
 msgstr "Mixt"
@@ -858,22 +874,29 @@ msgstr "Banii sunt mult înaintea progresului tehnic"
 msgid "N/A"
 msgstr "N/A"
 
+#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:18
+#: src/features/pnrr/lib/filter-constants.ts:61
+#: src/features/pnrr/lib/filter-constants.ts:74
+msgid "National"
+msgstr "Național"
+
 #. js-lingui-explicit-id
 #: src/features/pnrr/components/PnrrHeader.tsx:181
 msgid "pnrr.header.title.national"
 msgstr "Național de"
 
-#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:18
-#: src/features/pnrr/components/PnrrNationalSummary.tsx:170
-#: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:357
-#: src/features/pnrr/lib/filter-constants.ts:72
-msgid "National"
-msgstr "Național"
+#: src/features/pnrr/components/PnrrNationalSummary.tsx:171
+msgid "National detailed type"
+msgstr ""
 
 #: src/features/pnrr/components/PnrrMapFilterPanel.tsx:29
 #: src/features/pnrr/lib/filter-constants.ts:60
-msgid "National entities"
-msgstr "Entități naționale"
+#~ msgid "National entities"
+#~ msgstr "Entități naționale"
+
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:140
+msgid "National is a detailed beneficiary or location category for records without a local UAT assignment; it is not a third top-level sector."
+msgstr ""
 
 #: src/features/pnrr/components/PnrrMapView.tsx:447
 msgid "national projects outside the map"
@@ -884,7 +907,7 @@ msgstr "proiecte naționale în afara hărții"
 msgid "Next"
 msgstr "Următor"
 
-#: src/features/pnrr/lib/filter-constants.ts:81
+#: src/features/pnrr/lib/filter-constants.ts:84
 msgid "NGOs / associations"
 msgstr "ONG / asociații"
 
@@ -942,7 +965,12 @@ msgstr "Doar riscuri"
 msgid "Only the largest projects are shown."
 msgstr "Sunt afișate doar cele mai mari proiecte."
 
-#: src/features/pnrr/lib/filter-constants.ts:85
+#: src/features/pnrr/lib/filter-constants.ts:60
+#: src/features/pnrr/lib/filter-constants.ts:73
+msgid "Other private / non-public"
+msgstr ""
+
+#: src/features/pnrr/lib/filter-constants.ts:88
 msgid "Other public institutions"
 msgstr "Alte instituții publice"
 
@@ -960,13 +988,13 @@ msgstr "Pachet redus de la ~€28.5B la ~€21.6B (2025)"
 msgid "page {page} of {totalPages}"
 msgstr "pagina {page} din {totalPages}"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:161
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:194
 #: src/features/pnrr/components/PnrrQuickInvestigation.tsx:26
 #: src/features/pnrr/lib/anomaly-definitions.ts:79
 msgid "Payments ahead of delivery"
 msgstr "Plăți înaintea livrării"
 
-#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:38
+#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:37
 #: src/features/pnrr/components/PnrrMapView.tsx:49
 #: src/features/pnrr/hooks/usePnrrMapSeries.ts:252
 msgid "Per capita"
@@ -1015,16 +1043,22 @@ msgstr "proiecte PNRR"
 msgid "Previous"
 msgstr "Anterior"
 
+#: src/features/pnrr/lib/filter-constants.ts:71
+#~ msgid "Private"
+#~ msgstr "Private"
+
+#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:28
 #: src/features/pnrr/components/PnrrNationalSummary.tsx:162
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:356
-#: src/features/pnrr/lib/filter-constants.ts:71
-msgid "Private"
-msgstr "Private"
+#: src/features/pnrr/lib/filter-constants.ts:59
+#: src/features/pnrr/lib/filter-constants.ts:72
+msgid "Private / non-public"
+msgstr ""
 
 #: src/features/pnrr/components/PnrrMapFilterPanel.tsx:28
 #: src/features/pnrr/lib/filter-constants.ts:59
-msgid "Private companies"
-msgstr "Companii private"
+#~ msgid "Private companies"
+#~ msgstr "Companii private"
 
 #: src/features/pnrr/components/filters/PnrrActiveFilters.tsx:153
 msgid "Progress"
@@ -1043,7 +1077,7 @@ msgstr "proiect"
 msgid "Project"
 msgstr "Proiect"
 
-#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:37
+#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:36
 #: src/features/pnrr/components/PnrrMapView.tsx:48
 #: src/features/pnrr/hooks/usePnrrMapSeries.ts:251
 msgid "Project count"
@@ -1097,17 +1131,29 @@ msgid "projects without UAT mapping"
 msgstr "proiecte fără mapare UAT"
 
 #: src/features/pnrr/components/PnrrNationalSummary.tsx:154
-#: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:358
-#: src/features/pnrr/lib/filter-constants.ts:70
+#: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:357
 msgid "Public"
 msgstr "Public"
 
+#: src/features/pnrr/lib/filter-constants.ts:79
+msgid "Public companies"
+msgstr ""
+
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:130
+msgid "Public includes local, county, central, and national public institutions, plus public companies identified by CUI from the official 2023 public companies list. Private / non-public includes companies, NGOs, foundations, religious organizations, and unclassified non-public beneficiaries."
+msgstr ""
+
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:130
+#~ msgid "Public includes local, county, central, and national public institutions. Private / non-public includes companies, NGOs, foundations, religious organizations, and unclassified non-public beneficiaries."
+#~ msgstr ""
+
 #: src/features/pnrr/components/PnrrMapFilterPanel.tsx:27
 #: src/features/pnrr/lib/filter-constants.ts:58
+#: src/features/pnrr/lib/filter-constants.ts:71
 msgid "Public institutions"
 msgstr "Instituții publice"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:225
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:258
 msgid "Rates are set on the date of the latest data update and may differ from daily NBR rates."
 msgstr "Cursurile sunt stabilite la data ultimei actualizări a datelor și pot diferi de cursurile zilnice BNR."
 
@@ -1130,7 +1176,7 @@ msgstr "Redresare"
 msgid "Reform"
 msgstr "Reformă"
 
-#: src/features/pnrr/lib/filter-constants.ts:82
+#: src/features/pnrr/lib/filter-constants.ts:85
 msgid "Religious organizations"
 msgstr "Culte"
 
@@ -1143,7 +1189,7 @@ msgstr "Elimină filtrul"
 msgid "Remove option"
 msgstr "Elimină opțiunea"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:153
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:186
 msgid "Reported financial progress over 100% of the contracted value."
 msgstr "Progres financiar raportat peste 100% din valoarea contractată."
 
@@ -1186,7 +1232,7 @@ msgstr "riscuri"
 msgid "Risks"
 msgstr "Riscuri"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:141
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:174
 msgid "Risks and data quality"
 msgstr "Riscuri și calitatea datelor"
 
@@ -1198,7 +1244,7 @@ msgstr "Riscuri și investigații"
 msgid "Risks are separated from data quality issues to avoid false alarms and keep the difference between execution and reporting clear."
 msgstr "Riscurile sunt separate de problemele de calitate a datelor pentru a evita alarmele false și pentru a păstra clară diferența dintre execuție și raportare."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:144
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:177
 msgid "Risks are separated from reporting issues so users can prioritize projects that require direct verification."
 msgstr "Riscurile sunt separate de problemele de raportare ca utilizatorii să poată prioritiza proiectele care cer verificare directă."
 
@@ -1253,9 +1299,13 @@ msgstr "Ghidul semnalelor"
 msgid "Signals"
 msgstr "Semnale"
 
-#: src/features/pnrr/lib/filter-constants.ts:84
+#: src/features/pnrr/lib/filter-constants.ts:87
 msgid "Social"
 msgstr "Social"
+
+#: src/features/pnrr/lib/filter-constants.ts:122
+msgid "State and local-owned companies from the official 2023 public companies list"
+msgstr ""
 
 #: src/features/pnrr/components/PnrrQuickInvestigation.tsx:53
 msgid "Suspected duplicates"
@@ -1266,7 +1316,7 @@ msgid "Tech. progress"
 msgstr "Progr. Tehnic"
 
 #: src/features/pnrr/components/charts/PnrrProgressHistogram.tsx:56
-#: src/features/pnrr/components/PnrrEmblematicProjects.tsx:129
+#: src/features/pnrr/components/PnrrEmblematicProjects.tsx:127
 #: src/features/pnrr/components/table/PnrrProjectTable.tsx:368
 #: src/features/pnrr/components/table/PnrrProjectTable.tsx:572
 msgid "Technical"
@@ -1276,7 +1326,7 @@ msgstr "Tehnic"
 msgid "Technical - Financial"
 msgstr "Tehnic - Financiar"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:130
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:163
 msgid "Technical and financial progress reported by beneficiaries. Percentages may exceed 100% in cases of scope changes or reporting errors."
 msgstr "Progresul tehnic și financiar raportat de beneficiari. Procentele pot depăși 100% în cazul schimbărilor de scop sau al erorilor de raportare."
 
@@ -1301,7 +1351,7 @@ msgstr "Progres tehnic = 100% ȘI progres financiar < 80%"
 msgid "Technical progress = 100%, value >= 1,000,000 EUR AND missing financial progress"
 msgstr "Progres tehnic = 100%, valoare ≥ 1.000.000 EUR ȘI progres financiar lipsă"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:181
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:214
 msgid "Technically completed, but reimbursement is under 80%."
 msgstr "Finalizat tehnic, dar decontarea este sub 80%."
 
@@ -1313,7 +1363,7 @@ msgstr "Cele 16 componente ale PNRR (C1-C16) reprezintă domeniile strategice de
 msgid "The coordinator responsible for implementation, usually a ministry or national agency."
 msgstr "Coordonatorul responsabil de implementare, de obicei un minister sau o agenție națională."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:237
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:270
 msgid "The data comes from the Ministry of Investments and European Projects (MIPE), through the official PNRR portal. Last update: April 30, 2026."
 msgstr "Datele provin de la Ministerul Investițiilor și Proiectelor Europene (MIPE), prin portalul oficial PNRR. Ultima actualizare: 30 aprilie 2026."
 
@@ -1335,7 +1385,7 @@ msgstr "Localizarea geografică a proiectului. Proiectele naționale, fără loc
 msgid "The measure code combines the component code and measure code (for example: C4.I1, C15.I9). It is unique within the component."
 msgstr "Codul măsurii combină codul componentei și codul măsurii (ex: C4.I1, C15.I9). Acesta este unic în contextul componentei."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:214
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:247
 msgid "The original data is expressed in EUR. Displayed values are automatically converted to the currency selected in account settings using fixed reference rates."
 msgstr "Datele originale sunt exprimate în EUR. Valorile afișate sunt convertite automat în moneda selectată din setările contului, folosind cursuri de referință fixe."
 
@@ -1351,9 +1401,13 @@ msgstr "Procentul reprezintă ponderea valorii proiectelor din județ în valoar
 msgid "The same project has different values or progress"
 msgstr "Același proiect are valori sau progres diferite"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:190
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:223
 msgid "The same project is reported with different values, progress, or location."
 msgstr "Același proiect este raportat cu valori, progres sau localizare diferite."
+
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:122
+msgid "The top-level sector filter is exhaustive: every project is classified as either public or private / non-public, so the two values add up to the total under the same active filters."
+msgstr ""
 
 #: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:45
 msgid "This dashboard shows all projects in Romania's National Recovery and Resilience Plan (PNRR). The data is sourced from the Ministry of Investments and European Projects."
@@ -1426,12 +1480,12 @@ msgid "total"
 msgstr "total"
 
 #: src/features/pnrr/components/PnrrAnomalyInfoPanel.tsx:316
-#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:36
+#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:35
 #: src/features/pnrr/components/PnrrMapView.tsx:47
 #: src/features/pnrr/components/PnrrNationalSummary.tsx:83
 #: src/features/pnrr/components/PnrrStatsRibbon.tsx:23
 #: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:546
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:171
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:169
 #: src/features/pnrr/hooks/usePnrrMapSeries.ts:250
 msgid "Total value"
 msgstr "Valoare totală"
@@ -1446,7 +1500,7 @@ msgstr "Încearcă să modifici filtrele sau să cauți altceva."
 #: src/features/pnrr/components/PnrrMapFilterPanel.tsx:20
 #: src/features/pnrr/components/PnrrMapView.tsx:513
 #: src/features/pnrr/components/PnrrUatDetailsPanel.tsx:37
-#: src/features/pnrr/lib/filter-constants.ts:73
+#: src/features/pnrr/lib/filter-constants.ts:75
 msgid "UAT"
 msgstr "UAT"
 
@@ -1493,7 +1547,7 @@ msgstr "Valoare peste €10M și progres sub 30%"
 msgid "Value over €10M with no reported reimbursement"
 msgstr "Valoare peste €10M fără decontare raportată"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:172
+#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:205
 msgid "Value over EUR 10M and technical progress under 30%."
 msgstr "Valoare peste 10 mil. EUR și progres tehnic sub 30%."
 

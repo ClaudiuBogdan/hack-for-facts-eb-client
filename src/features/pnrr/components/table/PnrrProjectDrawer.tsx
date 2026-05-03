@@ -353,7 +353,6 @@ function getFundingLabel(source: PnrrProject['fundingSource']): string {
 }
 
 function getEntityTypeLabel(type: PnrrEntityType): string {
-  if (type === 'private') return t`Private`
-  if (type === 'national') return t`National`
+  if (type === 'private') return t`Private / non-public`
   return t`Public`
 }

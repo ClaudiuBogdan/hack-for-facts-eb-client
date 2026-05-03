@@ -1548,7 +1548,7 @@ msgid "Clear filters ({0})"
 msgstr "Clear filters ({0})"
 
 #: src/components/classification-explorer/ClassificationSearch.tsx:39
-#: src/components/entities/EntitySearch/index.tsx:119
+#: src/components/entities/EntitySearch/index.tsx:122
 #: src/components/entities/SearchToggleInput.tsx:88
 #: src/components/filters/base-filter/SearchInput.tsx:56
 msgid "Clear search"
@@ -2318,7 +2318,7 @@ msgstr "Culture & tourism"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:735
 #: src/components/maps/HeatmapDataTable.tsx:475
 #: src/components/normalization/normalization-controls.tsx:84
-#: src/components/theme/currency-toggle.tsx:53
+#: src/components/theme/currency-toggle.tsx:57
 #: src/routes/entity-analytics.lazy.tsx:229
 msgid "Currency"
 msgstr "Currency"
@@ -3245,7 +3245,7 @@ msgstr "Entity Analytics"
 msgid "Entity Details"
 msgstr "Entity Details"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2482
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2483
 msgid "Entity not found"
 msgstr "Entity not found"
 
@@ -3372,7 +3372,7 @@ msgid "EU Projects"
 msgstr "EU Projects"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:749
-#: src/components/theme/currency-toggle.tsx:68
+#: src/components/theme/currency-toggle.tsx:72
 msgid "EUR"
 msgstr "EUR"
 
@@ -4173,7 +4173,7 @@ msgstr "Go to Chart View"
 msgid "Go to Entity Table"
 msgstr "Go to Entity Table"
 
-#: src/routes/__root.tsx:113
+#: src/routes/__root.tsx:125
 #: src/routes/unsubscribe.$token.tsx:48
 #: src/routes/unsubscribe.$token.tsx:81
 msgid "Go to homepage"
@@ -5066,7 +5066,7 @@ msgstr "Loading chart configuration..."
 msgid "Loading chart data..."
 msgstr "Loading chart data..."
 
-#: src/features/challenges/components/analysis/budget-item-analytics.tsx:782
+#: src/features/challenges/components/analysis/budget-item-analytics.tsx:781
 msgid "Loading chart data…"
 msgstr "Loading chart data…"
 
@@ -6354,7 +6354,7 @@ msgstr "No warnings."
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:425
 #: src/components/charts/components/series-config/SeriesFilter.tsx:774
-#: src/components/theme/inflation-toggle.tsx:65
+#: src/components/theme/inflation-toggle.tsx:70
 msgid "Nominal"
 msgstr "Nominal"
 
@@ -6836,7 +6836,7 @@ msgstr "Page {page}"
 msgid "error.pageRenderErrorTitle"
 msgstr "Page Failed to Load"
 
-#: src/routes/__root.tsx:104
+#: src/routes/__root.tsx:116
 msgid "Page not found"
 msgstr "Page not found"
 
@@ -7248,7 +7248,7 @@ msgstr "Previous section"
 msgid "Previous step"
 msgstr "Previous step"
 
-#: src/components/theme/inflation-toggle.tsx:54
+#: src/components/theme/inflation-toggle.tsx:59
 msgid "Prices"
 msgstr "Prices"
 
@@ -7492,7 +7492,7 @@ msgstr "Ready to learn?"
 msgid "Real (2024 prices)"
 msgstr "Real (2024 prices)"
 
-#: src/components/theme/inflation-toggle.tsx:77
+#: src/components/theme/inflation-toggle.tsx:82
 msgid "Real (2024)"
 msgstr "Real (2024)"
 
@@ -7829,7 +7829,7 @@ msgid "Romanian"
 msgstr "Romanian"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:748
-#: src/components/theme/currency-toggle.tsx:60
+#: src/components/theme/currency-toggle.tsx:64
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:235
 msgid "RON"
 msgstr "RON"
@@ -9134,7 +9134,7 @@ msgstr "The map preview uses only the persisted dataset state from the server."
 msgid "The new fiscal reality affecting your wallet."
 msgstr "The new fiscal reality affecting your wallet."
 
-#: src/routes/__root.tsx:107
+#: src/routes/__root.tsx:119
 msgid "The page you are looking for doesn't exist or has been moved."
 msgstr "The page you are looking for doesn't exist or has been moved."
 
@@ -9576,7 +9576,7 @@ msgid "Try again"
 msgstr "Try again"
 
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:493
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2510
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2511
 #: src/features/learning/components/assessment/Quiz.tsx:188
 #: src/routes/settings/notifications.tsx:198
 msgid "Try Again"
@@ -9901,7 +9901,7 @@ msgid "Usage analytics"
 msgstr "Usage analytics"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:750
-#: src/components/theme/currency-toggle.tsx:76
+#: src/components/theme/currency-toggle.tsx:80
 msgid "USD"
 msgstr "USD"
 
@@ -10196,11 +10196,11 @@ msgstr "We are still checking whether public debate request submissions are open
 msgid "We cannot confirm whether requests are still open right now. Please try again later."
 msgstr "We cannot confirm whether requests are still open right now. Please try again later."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2485
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2486
 msgid "We could not find an entity for this CUI. Check the identifier or search for another entity."
 msgstr "We could not find an entity for this CUI. Check the identifier or search for another entity."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2500
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2501
 msgid "We could not load the analysis."
 msgstr "We could not load the analysis."
 

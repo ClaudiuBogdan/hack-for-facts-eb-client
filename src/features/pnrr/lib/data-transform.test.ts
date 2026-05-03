@@ -246,7 +246,7 @@ describe('entity type classification', () => {
     expect(transformProject(raw2).entityType).toBe('public')
   })
 
-  it('classifies SOCIETATEA NATIONALA as public', () => {
+  it('classifies national companies as public institutions', () => {
     const raw = makeRaw({
       'Nume Beneficiar': 'SOCIETATEA NATIONALA DE TRANSPORT FEROVIAR CFR',
     })
@@ -280,16 +280,22 @@ describe('entity type classification', () => {
     expect(p.entityType).toBe('public')
   })
 
-  it('classifies PAROHIA as public', () => {
+  it('classifies PAROHIA as private / non-public religious beneficiary', () => {
     const raw = makeRaw({ 'Nume Beneficiar': 'PAROHIA ORTODOXĂ SF. NICOLAE' })
     const p = transformProject(raw)
-    expect(p.entityType).toBe('public')
+    expect(p.entityType).toBe('private')
+    expect(p.beneficiaryType).toBe('religious')
   })
 
-  it('classifies national county as national', () => {
-    const raw = makeRaw({ 'Județ': 'Național' })
+  it('classifies national public institutions as public sector with national detailed type', () => {
+    const raw = makeRaw({
+      'Nume Beneficiar': 'CENTRUL NATIONAL DE COORDONARE PNRR',
+      'Județ': 'Național',
+      Localitate: 'NAȚIONAL',
+    })
     const p = transformProject(raw)
-    expect(p.entityType).toBe('national')
+    expect(p.entityType).toBe('public')
+    expect(p.beneficiaryType).toBe('national')
   })
 
   it('classifies national-row companies with legal markers as private', () => {
@@ -302,20 +308,75 @@ describe('entity type classification', () => {
     expect(p.entityType).toBe('private')
   })
 
-  it('keeps national public institutions as national despite legal markers', () => {
+  it('classifies official public companies as public-company beneficiaries', () => {
     const raw = makeRaw({
       'Nume Beneficiar': 'COMPANIA NATIONALA DE CAI FERATE CFR SA',
+      CUI: '11054529',
       'Județ': 'Național',
       Localitate: 'NAȚIONAL',
     })
     const p = transformProject(raw)
-    expect(p.entityType).toBe('national')
+    expect(p.entityType).toBe('public')
+    expect(p.beneficiaryType).toBe('public-company')
+  })
+
+  it('keeps official public companies with SRL markers in the public sector', () => {
+    const p = transformProject(makeRaw({
+      'Nume Beneficiar': 'EUROBAC SRL',
+      CUI: '17670528',
+    }))
+
+    expect(p.entityType).toBe('public')
+    expect(p.beneficiaryType).toBe('public-company')
   })
 
   it('classifies genuine private companies as private', () => {
     const raw = makeRaw({ 'Nume Beneficiar': 'NXP SEMICONDUCTORS ROMANIA SRL' })
     const p = transformProject(raw)
     expect(p.entityType).toBe('private')
+  })
+
+  it('keeps generic national-row companies with legal markers private', () => {
+    const raw = makeRaw({
+      'Nume Beneficiar': 'EXEMPLU DIGITAL SOLUTIONS SRL',
+      'Județ': 'Național',
+      Localitate: 'NAȚIONAL',
+    })
+    const p = transformProject(raw)
+    expect(p.entityType).toBe('private')
+    expect(p.beneficiaryType).toBe('company')
+  })
+
+  it('classifies central government services missing from the directory as public', () => {
+    expect(
+      transformProject(makeRaw({ 'Nume Beneficiar': 'SECRETARIATUL GENERAL AL GUVERNULUI' })).entityType
+    ).toBe('public')
+
+    expect(
+      transformProject(makeRaw({ 'Nume Beneficiar': 'SERVICIUL DE TELECOMUNICATII SPECIALE' })).entityType
+    ).toBe('public')
+  })
+
+  it('classifies associations and foundations as private / non-public', () => {
+    expect(
+      transformProject(makeRaw({ 'Nume Beneficiar': 'ASOCIATIA EXEMPLU CIVIC' })).entityType
+    ).toBe('private')
+
+    expect(
+      transformProject(makeRaw({ 'Nume Beneficiar': 'FUNDATIA PENTRU EDUCATIE' })).entityType
+    ).toBe('private')
+  })
+
+  it('falls back unknown beneficiaries to private / non-public', () => {
+    const p = transformProject(makeRaw({ 'Nume Beneficiar': 'BENEFICIAR NECUNOSCUT' }))
+    expect(p.entityType).toBe('private')
+    expect(p.beneficiaryType).toBe('other-private')
+  })
+
+  it('does not assign public detailed groups to private / non-public beneficiaries', () => {
+    const p = transformProject(makeRaw({ 'Nume Beneficiar': 'CLINICA PRIVATA EXEMPLU' }))
+    expect(p.entityType).toBe('private')
+    expect(p.beneficiaryType).toBe('other-private')
   })
 
   it('classifies detailed beneficiary types from the entity directory and name', () => {
@@ -805,13 +866,96 @@ describe('filterProjects', () => {
         'Nume Beneficiar': 'ACME SRL',
         CUI: '99999999',
       })),
+      transformProject(makeRaw({
+        'Titlu Proiect': 'National',
+        'Nume Beneficiar': 'CENTRUL NATIONAL DE COORDONARE PNRR',
+        CUI: null,
+        'Județ': 'Național',
+        Localitate: 'NAȚIONAL',
+      })),
     ]
 
     expect(filterProjects(typedProjects, { beneficiaryTypes: ['uat'] })).toHaveLength(1)
     expect(filterProjects(typedProjects, { beneficiaryTypes: ['company'] })).toHaveLength(1)
-    expect(filterProjects(typedProjects, { beneficiaryTypes: ['public'] })).toHaveLength(1)
+    expect(filterProjects(typedProjects, { beneficiaryTypes: ['public'] })).toHaveLength(3)
     expect(filterProjects(typedProjects, { beneficiaryTypes: ['national'] })).toHaveLength(1)
     expect(filterProjects(typedProjects, { beneficiaryTypes: ['ministry'] })).toHaveLength(1)
+
+    const officialPublicCompany = transformProject(makeRaw({
+      'Titlu Proiect': 'Public company',
+      'Nume Beneficiar': 'COMPANIA NATIONALA DE CAI FERATE CFR SA',
+      CUI: '11054529',
+      'Județ': 'Național',
+      Localitate: 'NAȚIONAL',
+    }))
+    expect(filterProjects([officialPublicCompany], { beneficiaryTypes: ['public-company'] })).toHaveLength(1)
+  })
+
+  it('keeps public and private entity filters exhaustive', () => {
+    const mixedProjects = [
+      transformProject(makeRaw({
+        'Titlu Proiect': 'Local public',
+        'Nume Beneficiar': 'MUNICIPIUL SIBIU',
+        'Valoare (EUR)': 100,
+      })),
+      transformProject(makeRaw({
+        'Titlu Proiect': 'National public',
+        'Nume Beneficiar': 'CENTRUL NATIONAL DE COORDONARE PNRR',
+        'Județ': 'Național',
+        Localitate: 'NAȚIONAL',
+        'Valoare (EUR)': 200,
+      })),
+      transformProject(makeRaw({
+        'Titlu Proiect': 'Company',
+        'Nume Beneficiar': 'ACME SRL',
+        'Valoare (EUR)': 300,
+      })),
+      transformProject(makeRaw({
+        'Titlu Proiect': 'NGO',
+        'Nume Beneficiar': 'ASOCIATIA EXEMPLU',
+        'Valoare (EUR)': 400,
+      })),
+    ]
+
+    const allTotal = computeAggregates(mixedProjects).rawTotalValue
+    const publicTotal = computeAggregates(
+      filterProjects(mixedProjects, { entityTypes: ['public'] }),
+    ).rawTotalValue
+    const privateTotal = computeAggregates(
+      filterProjects(mixedProjects, { entityTypes: ['private'] }),
+    ).rawTotalValue
+
+    expect(publicTotal).toBe(300)
+    expect(privateTotal).toBe(700)
+    expect(publicTotal + privateTotal).toBe(allTotal)
+  })
+
+  it('filters national records through the detailed beneficiary type', () => {
+    const nationalDetailed = transformProject(makeRaw({
+      'Titlu Proiect': 'National detailed',
+      'Nume Beneficiar': 'CENTRUL NATIONAL DE COORDONARE PNRR',
+      CUI: null,
+      'Județ': 'Național',
+      Localitate: 'NAȚIONAL',
+    }))
+    const nationalPublicCompany = transformProject(makeRaw({
+      'Titlu Proiect': 'National public company',
+      'Nume Beneficiar': 'COMPANIA NATIONALA DE CAI FERATE CFR SA',
+      CUI: '11054529',
+      'Județ': 'Național',
+      Localitate: 'NAȚIONAL',
+    }))
+    const privateProject = transformProject(makeRaw({ 'Titlu Proiect': 'Private', 'Nume Beneficiar': 'ACME SRL' }))
+
+    expect(nationalDetailed.entityType).toBe('public')
+    expect(nationalDetailed.beneficiaryType).toBe('national')
+
+    const result = filterProjects(
+      [nationalDetailed, nationalPublicCompany, privateProject],
+      { beneficiaryTypes: ['national'] },
+    )
+    expect(result).toHaveLength(1)
+    expect(result[0].title).toBe('National detailed')
   })
 
   it('includes national projects by default', () => {

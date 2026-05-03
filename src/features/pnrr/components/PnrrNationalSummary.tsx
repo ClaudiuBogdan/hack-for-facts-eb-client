@@ -40,7 +40,7 @@ export function PnrrNationalSummary({ projects }: PnrrNationalSummaryProps) {
       (p) => p.entityType === 'private',
     ).length
     const nationalCount = projects.filter(
-      (p) => p.entityType === 'national',
+      (p) => p.beneficiaryType === 'national',
     ).length
 
     return {
@@ -146,9 +146,9 @@ export function PnrrNationalSummary({ projects }: PnrrNationalSummaryProps) {
       {/* Entity breakdown */}
       <div className="rounded-lg border border-border p-4">
         <h4 className="mb-3 text-sm font-semibold">
-          <Trans>Beneficiary entity type</Trans>
+          <Trans>Beneficiary sector</Trans>
         </h4>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <div>
             <p className="text-xs text-muted-foreground">
               <Trans>Public</Trans>
@@ -159,20 +159,20 @@ export function PnrrNationalSummary({ projects }: PnrrNationalSummaryProps) {
           </div>
           <div>
             <p className="text-xs text-muted-foreground">
-              <Trans>Private</Trans>
+              <Trans>Private / non-public</Trans>
             </p>
             <p className="text-lg font-bold">
               {formatNumber(stats.privateCount, 'compact')}
             </p>
           </div>
-          <div>
-            <p className="text-xs text-muted-foreground">
-              <Trans>National</Trans>
-            </p>
-            <p className="text-lg font-bold">
-              {formatNumber(stats.nationalCount, 'compact')}
-            </p>
-          </div>
+        </div>
+        <div className="mt-3 border-t border-border pt-3">
+          <p className="text-xs text-muted-foreground">
+            <Trans>National detailed type</Trans>
+          </p>
+          <p className="text-lg font-bold">
+            {formatNumber(stats.nationalCount, 'compact')}
+          </p>
         </div>
       </div>
 

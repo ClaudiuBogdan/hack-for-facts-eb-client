@@ -56,8 +56,9 @@ export const FUNDING_SOURCE_LABELS: Readonly<Record<string, string>> = {
 
 export const ENTITY_TYPE_LABELS: Readonly<Record<string, string>> = {
   public: t`Public institutions`,
-  private: t`Private companies`,
-  national: t`National entities`,
+  private: t`Private / non-public`,
+  'other-private': t`Other private / non-public`,
+  national: t`National`,
 }
 
 // ---------------------------------------------------------------------------
@@ -67,13 +68,15 @@ export const ENTITY_TYPE_LABELS: Readonly<Record<string, string>> = {
 export const BENEFICIARY_TYPE_LABELS: Readonly<
   Record<PnrrBeneficiaryType, string>
 > = {
-  public: t`Public`,
-  private: t`Private`,
+  public: t`Public institutions`,
+  private: t`Private / non-public`,
+  'other-private': t`Other private / non-public`,
   national: t`National`,
   uat: t`UAT`,
   'county-council': t`County councils`,
   ministry: t`Ministries`,
   'central-agency': t`Central agencies`,
+  'public-company': t`Public companies`,
   education: t`Education`,
   health: t`Health`,
   military: t`Military`,
@@ -98,7 +101,7 @@ export const BENEFICIARY_TYPE_OPTIONS: readonly {
   {
     value: 'private',
     label: BENEFICIARY_TYPE_LABELS.private,
-    description: t`Companies and private beneficiaries`,
+    description: t`Companies, NGOs, religious organizations, and other non-public beneficiaries`,
   },
   {
     value: 'national',
@@ -113,12 +116,18 @@ export const BENEFICIARY_TYPE_OPTIONS: readonly {
   { value: 'county-council', label: BENEFICIARY_TYPE_LABELS['county-council'] },
   { value: 'ministry', label: BENEFICIARY_TYPE_LABELS.ministry },
   { value: 'central-agency', label: BENEFICIARY_TYPE_LABELS['central-agency'] },
+  {
+    value: 'public-company',
+    label: BENEFICIARY_TYPE_LABELS['public-company'],
+    description: t`State and local-owned companies from the official 2023 public companies list`,
+  },
   { value: 'education', label: BENEFICIARY_TYPE_LABELS.education },
   { value: 'health', label: BENEFICIARY_TYPE_LABELS.health },
   { value: 'military', label: BENEFICIARY_TYPE_LABELS.military },
   { value: 'company', label: BENEFICIARY_TYPE_LABELS.company },
   { value: 'ngo', label: BENEFICIARY_TYPE_LABELS.ngo },
   { value: 'religious', label: BENEFICIARY_TYPE_LABELS.religious },
+  { value: 'other-private', label: BENEFICIARY_TYPE_LABELS['other-private'] },
   { value: 'culture', label: BENEFICIARY_TYPE_LABELS.culture },
   { value: 'social', label: BENEFICIARY_TYPE_LABELS.social },
   { value: 'other-public', label: BENEFICIARY_TYPE_LABELS['other-public'] },

@@ -1548,7 +1548,7 @@ msgid "Clear filters ({0})"
 msgstr "Șterge filtrele ({0})"
 
 #: src/components/classification-explorer/ClassificationSearch.tsx:39
-#: src/components/entities/EntitySearch/index.tsx:119
+#: src/components/entities/EntitySearch/index.tsx:122
 #: src/components/entities/SearchToggleInput.tsx:88
 #: src/components/filters/base-filter/SearchInput.tsx:56
 msgid "Clear search"
@@ -2318,7 +2318,7 @@ msgstr "Cultură și turism"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:735
 #: src/components/maps/HeatmapDataTable.tsx:475
 #: src/components/normalization/normalization-controls.tsx:84
-#: src/components/theme/currency-toggle.tsx:53
+#: src/components/theme/currency-toggle.tsx:57
 #: src/routes/entity-analytics.lazy.tsx:229
 msgid "Currency"
 msgstr "Monedă"
@@ -3245,7 +3245,7 @@ msgstr "Analiza entităților"
 msgid "Entity Details"
 msgstr "Detalii Entitate"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2482
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2483
 msgid "Entity not found"
 msgstr "Entitate negăsită"
 
@@ -3372,7 +3372,7 @@ msgid "EU Projects"
 msgstr "Proiecte UE"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:749
-#: src/components/theme/currency-toggle.tsx:68
+#: src/components/theme/currency-toggle.tsx:72
 msgid "EUR"
 msgstr "EUR"
 
@@ -4173,7 +4173,7 @@ msgstr "Vezi Grafic"
 msgid "Go to Entity Table"
 msgstr "Vezi Tabel"
 
-#: src/routes/__root.tsx:113
+#: src/routes/__root.tsx:125
 #: src/routes/unsubscribe.$token.tsx:48
 #: src/routes/unsubscribe.$token.tsx:81
 msgid "Go to homepage"
@@ -5061,7 +5061,7 @@ msgstr "Se încarcă configurația graficului..."
 msgid "Loading chart data..."
 msgstr "Se încarcă datele graficului..."
 
-#: src/features/challenges/components/analysis/budget-item-analytics.tsx:782
+#: src/features/challenges/components/analysis/budget-item-analytics.tsx:781
 msgid "Loading chart data…"
 msgstr "Se încarcă datele graficului…"
 
@@ -6349,7 +6349,7 @@ msgstr "Nu există avertismente."
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:425
 #: src/components/charts/components/series-config/SeriesFilter.tsx:774
-#: src/components/theme/inflation-toggle.tsx:65
+#: src/components/theme/inflation-toggle.tsx:70
 msgid "Nominal"
 msgstr "Nominal"
 
@@ -6831,7 +6831,7 @@ msgstr "Pagina {page}"
 msgid "error.pageRenderErrorTitle"
 msgstr "Eroare la încărcarea paginii"
 
-#: src/routes/__root.tsx:104
+#: src/routes/__root.tsx:116
 msgid "Page not found"
 msgstr "Pagina nu a fost găsită"
 
@@ -7243,7 +7243,7 @@ msgstr "Secțiunea anterioară"
 msgid "Previous step"
 msgstr "Pasul anterior"
 
-#: src/components/theme/inflation-toggle.tsx:54
+#: src/components/theme/inflation-toggle.tsx:59
 msgid "Prices"
 msgstr "Prețuri"
 
@@ -7487,7 +7487,7 @@ msgstr "Ești gata să înveți?"
 msgid "Real (2024 prices)"
 msgstr "Real (prețuri 2024)"
 
-#: src/components/theme/inflation-toggle.tsx:77
+#: src/components/theme/inflation-toggle.tsx:82
 msgid "Real (2024)"
 msgstr "Real (2024)"
 
@@ -7824,7 +7824,7 @@ msgid "Romanian"
 msgstr "Română"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:748
-#: src/components/theme/currency-toggle.tsx:60
+#: src/components/theme/currency-toggle.tsx:64
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:235
 msgid "RON"
 msgstr "RON"
@@ -9129,7 +9129,7 @@ msgstr "Previzualizarea hărții folosește doar starea persistentă a setului d
 msgid "The new fiscal reality affecting your wallet."
 msgstr "Noua realitate fiscală care îți afectează portofelul."
 
-#: src/routes/__root.tsx:107
+#: src/routes/__root.tsx:119
 msgid "The page you are looking for doesn't exist or has been moved."
 msgstr "Pagina pe care o căutați nu există sau a fost mutată."
 
@@ -9571,7 +9571,7 @@ msgid "Try again"
 msgstr "Încearcă din nou"
 
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:493
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2510
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2511
 #: src/features/learning/components/assessment/Quiz.tsx:188
 #: src/routes/settings/notifications.tsx:198
 msgid "Try Again"
@@ -9896,7 +9896,7 @@ msgid "Usage analytics"
 msgstr "Analiza utilizării"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:750
-#: src/components/theme/currency-toggle.tsx:76
+#: src/components/theme/currency-toggle.tsx:80
 msgid "USD"
 msgstr "USD"
 
@@ -10191,11 +10191,11 @@ msgstr "Verificăm încă dacă depunerea cererilor de dezbatere publică este d
 msgid "We cannot confirm whether requests are still open right now. Please try again later."
 msgstr "Nu putem confirma dacă cererile sunt încă deschise în acest moment. Vă rugăm încercați din nou mai târziu."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2485
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2486
 msgid "We could not find an entity for this CUI. Check the identifier or search for another entity."
 msgstr "Nu am putut găsi o entitate pentru acest CUI. Verifică identificatorul sau caută altă entitate."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2500
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2501
 msgid "We could not load the analysis."
 msgstr "Nu am putut încărca analiza."
 

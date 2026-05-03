@@ -59,7 +59,7 @@ const PRESETS = [
   },
   {
     id: 'private-loans',
-    label: t`Loans for private sector`,
+    label: t`Loans for non-public sector`,
     icon: Building2,
     apply: (fs: ReturnType<typeof usePnrrFilterState>) => {
       fs.clearFilters()
