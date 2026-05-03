@@ -207,8 +207,8 @@ export function PnrrHeader({
           </p>
 
           {/* Stats + Actions row */}
-          <div className="mt-6 flex flex-col items-stretch justify-between gap-4 sm:flex-row sm:items-end">
-            <div className="flex min-w-0 w-full flex-1 flex-wrap items-end gap-3">
+          <div className="mt-6 flex flex-col items-stretch justify-between gap-4 sm:flex-row sm:items-center">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
               {isLoading ? (
                 <>
                   <div
@@ -229,10 +229,6 @@ export function PnrrHeader({
                     <span className="text-sm font-bold text-current">
                       <Trans>total</Trans>
                     </span>
-                  </div>
-                  <div className="min-w-0 basis-full sm:min-w-[22rem] sm:flex-1 sm:basis-[22rem] lg:max-w-[36rem]">
-                    <Skeleton className="mb-1.5 h-3 w-28 rounded-none" />
-                    <Skeleton className="h-12 w-full rounded-none" />
                   </div>
                 </>
               ) : (
@@ -260,17 +256,22 @@ export function PnrrHeader({
                       <Trans>total</Trans>
                     </span>
                   </div>
-                  <PnrrProjectSearchInput
-                    filterState={filterState}
-                    inputId="pnrr-header-project-search"
-                    showLabel
-                    className="min-w-0 basis-full sm:min-w-[22rem] sm:flex-1 sm:basis-[22rem] lg:max-w-[36rem]"
-                  />
                 </>
               )}
             </div>
             {actions && (
               <div className="flex shrink-0 items-center gap-2">{actions}</div>
+            )}
+          </div>
+
+          <div className="mt-4 max-w-[720px]">
+            {isLoading ? (
+              <Skeleton className="h-12 w-full rounded-none" />
+            ) : (
+              <PnrrProjectSearchInput
+                filterState={filterState}
+                inputId="pnrr-header-project-search"
+              />
             )}
           </div>
         </div>
