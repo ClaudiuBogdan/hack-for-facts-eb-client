@@ -1529,7 +1529,7 @@ describe('ChallengeEntityAnalysisPage', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('shows county map UI for Bucharest municipality CUI', async () => {
+  it('shows UAT sector map UI for Bucharest municipality CUI', async () => {
     useEntityDetailsMock.mockImplementation(() => ({
       data: {
         ...entityDetails,
@@ -1553,10 +1553,10 @@ describe('ChallengeEntityAnalysisPage', () => {
     })
     expect(mapAnalyticsPublicPreviewCardMock).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        mapViewType: 'County',
+        mapViewType: 'UAT',
       }),
     )
-    expect(useGeoJsonDataMock).toHaveBeenCalledWith('County', {
+    expect(useGeoJsonDataMock).toHaveBeenCalledWith('UAT', {
       enabled: true,
     })
   })

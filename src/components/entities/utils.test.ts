@@ -43,6 +43,52 @@ describe('entity utils', () => {
     expect(featureInfo?.zoom).toBeGreaterThan(0);
   });
 
+  it('centers Bucharest municipality on sector geometries in the UAT map', () => {
+    const entity: EntityDetailsData = {
+      cui: '4267117',
+      name: 'Municipiul Bucuresti',
+      default_report_type: 'PRINCIPAL_AGGREGATED',
+      entity_type: 'admin_municipality',
+      uat: null,
+    };
+    const geoJsonData = createPolygonFeatureCollection([
+      {
+        type: 'Feature',
+        properties: {
+          countyMn: 'B',
+          name: 'București Sectorul 1',
+          natLevName: 'Sectoarele municipiului Bucuresti',
+          natcode: '179141',
+        },
+        geometry: {
+          type: 'Polygon',
+          coordinates: [[[26, 44], [27, 44], [27, 45], [26, 45], [26, 44]]],
+        },
+      },
+      {
+        type: 'Feature',
+        properties: {
+          countyMn: 'B',
+          name: 'București Sectorul 2',
+          natLevName: 'Sectoarele municipiului Bucuresti',
+          natcode: '179150',
+        },
+        geometry: {
+          type: 'Polygon',
+          coordinates: [[[27, 45], [28, 45], [28, 46], [27, 46], [27, 45]]],
+        },
+      },
+    ]);
+
+    const featureInfo = getEntityFeatureInfo(entity, geoJsonData);
+
+    expect(featureInfo).toMatchObject({
+      center: [45, 27],
+      featureId: '4267117',
+    });
+    expect(featureInfo?.zoom).toBeGreaterThan(0);
+  });
+
   it('normalizes county codes before matching county geometry', () => {
     const entity: EntityDetailsData = {
       cui: '34',

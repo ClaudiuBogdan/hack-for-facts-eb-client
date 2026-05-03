@@ -1,6 +1,6 @@
 import { EntityDetailsData } from '@/lib/api/entities';
 import type { LatLngExpression } from 'leaflet';
-import { GeoJsonObject, Feature, FeatureCollection } from 'geojson';
+import { GeoJsonObject, Feature, FeatureCollection, Geometry } from 'geojson';
 import bbox from '@turf/bbox';
 import center from '@turf/center';
 import { TMonth, TQuarter } from '@/schemas/reporting';
@@ -20,6 +20,36 @@ function isCountyLevelEntity(entity: EntityDetailsData): boolean {
     return entity.entity_type === 'admin_county_council' || entity.cui === BUCHAREST_MUNICIPALITY_CUI;
 }
 
+function isBucharestMunicipality(entity: EntityDetailsData): boolean {
+    return entity.cui === BUCHAREST_MUNICIPALITY_CUI;
+}
+
+function isBucharestSectorFeature(feature: Feature): boolean {
+    const properties = feature.properties;
+    if (!properties) {
+        return false;
+    }
+
+    const countyMnemonic = normalizeCountyCode(String(properties.countyMn ?? ''));
+    const name = String(properties.name ?? '').toLocaleLowerCase('ro-RO');
+    const levelName = String(properties.natLevName ?? '').toLocaleLowerCase('ro-RO');
+
+    return countyMnemonic === 'B' && (name.includes('sectorul') || levelName.includes('sectoarele'));
+}
+
+function getBucharestSectorFeatureCollection(
+    featureCollection: FeatureCollection,
+): FeatureCollection<Geometry> | null {
+    const features = featureCollection.features.filter(isBucharestSectorFeature) as Feature<Geometry>[];
+
+    return features.length > 0
+        ? {
+            type: 'FeatureCollection',
+            features,
+        }
+        : null;
+}
+
 function normalizeCountyCode(countyCode: string | null | undefined): string {
     return countyCode?.trim().toUpperCase() ?? '';
 }
@@ -35,10 +65,17 @@ export const getEntityFeatureInfo = (entity: EntityDetailsData, geoJsonData: Geo
 
     const featureCollection = geoJsonData as FeatureCollection;
 
-    let feature: Feature | undefined;
+    let feature: Feature | FeatureCollection<Geometry> | undefined;
     let featureId: string | number | undefined;
 
-    if (isCountyLevelEntity(entity)) {
+    const bucharestSectorFeatureCollection = isBucharestMunicipality(entity)
+        ? getBucharestSectorFeatureCollection(featureCollection)
+        : null;
+
+    if (bucharestSectorFeatureCollection) {
+        feature = bucharestSectorFeatureCollection;
+        featureId = entity.cui;
+    } else if (isCountyLevelEntity(entity)) {
         const countyCode = normalizeCountyCode(entity.uat?.county_code);
         feature = featureCollection.features.find(
             (geoJsonFeature) =>

@@ -212,12 +212,11 @@ function getEntityMapViewType(
   entity:
     | {
         readonly entity_type?: string | null
-        readonly cui?: string | null
       }
     | null
     | undefined,
 ) {
-  return entity?.entity_type === 'admin_county_council' || entity?.cui === '4267117'
+  return entity?.entity_type === 'admin_county_council'
     ? 'County'
     : 'UAT'
 }

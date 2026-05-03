@@ -1332,16 +1332,17 @@ export function ChallengeEntityAnalysisPage({
   )
   const isCountyLevelMapEntity = Boolean(
     entityDetailsQuery.data &&
-    (
-      entityDetailsQuery.data.entity_type === 'admin_county_council' ||
-      entityDetailsQuery.data.cui === '4267117'
-    ),
+    entityDetailsQuery.data.entity_type === 'admin_county_council',
+  )
+  const isBucharestMunicipality = Boolean(
+    entityDetailsQuery.data?.cui === '4267117',
   )
   const isUatEntity = Boolean(entityDetailsQuery.data?.is_uat)
   const hasResolvedEntityDetails = Boolean(entityDetailsQuery.data)
   const canUsePerCapitaNormalization = isUatEntity
   const supportsEntityMapPreview = Boolean(
-    entityDetailsQuery.data && (isUatEntity || isCountyLevelMapEntity),
+    entityDetailsQuery.data &&
+    (isUatEntity || isCountyLevelMapEntity || isBucharestMunicipality),
   )
   const entityMapViewType = useMemo<'UAT' | 'County'>(() => {
     if (isCountyLevelMapEntity) {
