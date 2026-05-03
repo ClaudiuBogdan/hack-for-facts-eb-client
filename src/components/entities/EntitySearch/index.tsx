@@ -106,7 +106,10 @@ export function EntitySearchInput({
                     aria-expanded={showDropdown}
                     aria-controls={`${searchId}-listbox`}
                     aria-activedescendant={activeDescendantId}
-                    className="w-full px-15 sm:px-20 py-7 text-base md:text-xl bg-white dark:bg-slate-800 rounded-3xl placeholder:text-slate-400 shadow-sm hover:shadow-md focus:shadow-lg transition-shadow duration-300 border-slate-300 dark:border-slate-700 focus:border-slate-400 dark:focus:border-slate-600 focus-visible:ring-slate-400 dark:focus-visible:ring-slate-600"
+                    className={cn(
+                        "w-full py-7 pl-14 pr-4 text-base bg-white dark:bg-slate-800 rounded-3xl placeholder:text-slate-400 shadow-sm hover:shadow-md focus:shadow-lg transition-shadow duration-300 border-slate-300 dark:border-slate-700 focus:border-slate-400 dark:focus:border-slate-600 focus-visible:ring-slate-400 dark:focus-visible:ring-slate-600 sm:px-20 md:text-xl",
+                        searchTerm ? "pr-16 sm:pr-20" : undefined,
+                    )}
                 />
                 {searchTerm && (
                     <button

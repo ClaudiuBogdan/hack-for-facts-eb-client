@@ -31,12 +31,12 @@ export const Route = createFileRoute("/")({
 function Index() {
   const isMobile = useIsMobile();
   return (
-    <div className="flex flex-col min-h-screen">
-      <main className="flex-grow flex items-start justify-center p-4">
-        <div className="container mx-auto flex flex-col items-center text-center space-y-10 py-16 md:py-24 relative">
+    <div className="flex min-h-screen flex-col overflow-x-clip">
+      <main className="flex-grow flex items-start justify-center px-4 py-4">
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-center text-center space-y-10 py-12 md:py-24 relative">
           <div
             className={cn(
-              "text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight",
+              "w-full max-w-full text-[clamp(2.75rem,12vw,4.5rem)] leading-none sm:text-6xl md:text-7xl font-extrabold tracking-tight",
               "bg-gradient-to-b from-slate-50 via-white to-slate-50",
               "bg-clip-text text-transparent",
               isMobile
@@ -47,14 +47,14 @@ function Index() {
             <h1>{title}</h1>
           </div>
 
-          <p className="max-w-2xl text-lg sm:text-xl text-slate-400 dark:text-slate-300">
-            <code className="mr-4">[trans.paˈren.t͡sə]</code>
+          <p className="max-w-2xl text-base sm:text-xl text-slate-400 dark:text-slate-300">
+            <code className="block sm:mr-4 sm:inline">[trans.paˈren.t͡sə]</code>
             <span>
               <Trans>See-through, clear</Trans>
             </span>
           </p>
 
-          <div className="w-full max-w-2xl -mt-10 lg:max-w-3xl space-y-6">
+          <div className="w-full max-w-2xl -mt-8 lg:max-w-3xl space-y-6">
             <EntitySearchInput
               placeholder={t`Enter entity name or CUI...`}
               selectionBehavior="navigate-to-preferred-entity"

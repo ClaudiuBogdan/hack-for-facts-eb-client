@@ -19,11 +19,12 @@ export function QuickEntityAccess() {
   ].slice(0, MAX_SUGGESTIONS);
 
   return (
-    <div className="w-full">
+    <div className="w-full max-w-full">
       <div className="flex flex-wrap justify-center gap-3 sm:gap-2">
         {suggestions.map((entity, index) => (
           <motion.div
             key={entity.cui}
+            className="max-w-full"
             initial={prefersReducedMotion ? false : { opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, delay: index * 0.05 }}
@@ -35,14 +36,15 @@ export function QuickEntityAccess() {
                 isUat: entity.is_uat,
               }) as '/'}
               preload="intent"
+              className="block max-w-full"
             >
               <Badge
                 variant="outline"
-                className="bg-white dark:bg-slate-800 px-3 py-2 sm:px-4 sm:py-2 border-1 border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition duration-200 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer group"
+                className="max-w-full bg-white dark:bg-slate-800 px-3 py-2 sm:px-4 sm:py-2 border-1 border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition duration-200 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer group"
               >
-                <div className="flex flex-row gap-2 items-center justify-between">
-                  <span className="text-sm md:text-base whitespace-nowrap text-slate-500 dark:text-slate-300 group-hover:text-black dark:group-hover:text-slate-200 transition-colors">{formatEntityName(entity.name)}</span>
-                  <span className="text-xs md:text-sm text-slate-500 dark:text-slate-300 font-mono font-normal group-hover:text-slate-500 dark:group-hover:text-slate-200 transition-colors">
+                <div className="flex min-w-0 flex-row gap-2 items-center justify-between">
+                  <span className="min-w-0 truncate text-sm md:text-base text-slate-500 dark:text-slate-300 group-hover:text-black dark:group-hover:text-slate-200 transition-colors">{formatEntityName(entity.name)}</span>
+                  <span className="shrink-0 text-xs md:text-sm text-slate-500 dark:text-slate-300 font-mono font-normal group-hover:text-slate-500 dark:group-hover:text-slate-200 transition-colors">
                     [{entity.cui}]
                   </span>
                 </div>
