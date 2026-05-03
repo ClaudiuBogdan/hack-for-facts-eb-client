@@ -35,25 +35,6 @@ export function formatPnrrCurrency(
   return formatCurrency(convertPnrrValue(valueEur, currency), notation, currency)
 }
 
-const CURRENCY_UNIT_PATTERN =
-  /^(.+?)[\s\u00A0\u202F]+((?:(?:K|mii|mil\.|mld\.)[\s\u00A0\u202F]+)?(?:RON|EUR|USD))$/i
-
-export function getPnrrCurrencyDisplayParts(value: string): {
-  readonly amount: string
-  readonly unit: string | null
-} {
-  const match = value.match(CURRENCY_UNIT_PATTERN)
-
-  if (!match) {
-    return { amount: value, unit: null }
-  }
-
-  return {
-    amount: match[1],
-    unit: match[2].replace(/[\s\u00A0\u202F]+/g, ' '),
-  }
-}
-
 /**
  * Return a human-readable exchange-rate label for the info panel.
  * Returns null when currency is EUR (no conversion needed).

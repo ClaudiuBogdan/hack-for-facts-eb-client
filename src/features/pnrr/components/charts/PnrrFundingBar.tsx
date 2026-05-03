@@ -2,10 +2,7 @@ import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import { formatNumber } from '@/lib/utils'
 import { usePnrrCurrency } from '../../lib/usePnrrCurrency'
-import {
-  formatPnrrCurrency,
-  getPnrrCurrencyDisplayParts,
-} from '../../lib/formatting'
+import { formatPnrrCompactCurrencyDisplayParts } from '../pnrr-compact-currency-display'
 import type { PnrrAggregates } from '@/schemas/pnrr'
 
 const CATEGORY_CONFIG = [
@@ -124,9 +121,7 @@ export function PnrrFundingBar({
         {/* Summary cards */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {categories.map((cat) => {
-            const formattedValue = getPnrrCurrencyDisplayParts(
-              formatPnrrCurrency(cat.value, currency),
-            )
+            const formattedValue = formatPnrrCompactCurrencyDisplayParts(cat.value, currency)
 
             return (
               <div

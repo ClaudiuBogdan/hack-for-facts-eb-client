@@ -8,10 +8,8 @@ import {
 } from '../data/emblematic-projects'
 import { PNRR_COMPONENTS } from '../data/component-definitions'
 import { usePnrrCurrency } from '../lib/usePnrrCurrency'
-import {
-  formatPnrrCurrency,
-  getPnrrCurrencyDisplayParts,
-} from '../lib/formatting'
+import { formatPnrrCurrency } from '../lib/formatting'
+import { formatPnrrCompactCurrencyDisplayParts } from './pnrr-compact-currency-display'
 
 function getAccentColor(componentCode: string): string {
   return PNRR_COMPONENTS[componentCode]?.color ?? 'var(--pnrr-fg)'
@@ -78,7 +76,7 @@ export function PnrrEmblematicProjects({
               : `${finVal}%`
 
         const formattedAmount = formatPnrrCurrency(p.valueEur, currency)
-        const { amount, unit } = getPnrrCurrencyDisplayParts(formattedAmount)
+        const { amount, unit } = formatPnrrCompactCurrencyDisplayParts(p.valueEur, currency)
 
         return (
           <button

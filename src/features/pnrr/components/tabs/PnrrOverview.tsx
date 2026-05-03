@@ -3,10 +3,8 @@ import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import { formatNumber, cn } from '@/lib/utils'
 import { usePnrrCurrency } from '../../lib/usePnrrCurrency'
-import {
-  formatPnrrCurrency,
-  getPnrrCurrencyDisplayParts,
-} from '../../lib/formatting'
+import { formatPnrrCurrency } from '../../lib/formatting'
+import { formatPnrrCompactCurrencyDisplayParts } from '../pnrr-compact-currency-display'
 import type { PnrrProject, PnrrAggregates } from '@/schemas/pnrr'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
 import { PNRR_COMPONENTS } from '../../data/component-definitions'
@@ -170,6 +168,7 @@ export function PnrrOverview({
           <InsightCard
             label={t`Total value`}
             value={formatPnrrCurrency(metricStats.rawTotalValue, currency)}
+            valueParts={formatPnrrCompactCurrencyDisplayParts(metricStats.rawTotalValue, currency)}
             sublabel={t`${formatPnrrCurrency(metricStats.deduplicatedTotalValue, currency, 'standard')} after deduplication`}
           />
 
@@ -183,6 +182,7 @@ export function PnrrOverview({
           <InsightCard
             label={t`Future debt (loan)`}
             value={formatPnrrCurrency(metricStats.loanTotal, currency)}
+            valueParts={formatPnrrCompactCurrencyDisplayParts(metricStats.loanTotal, currency)}
             sublabel={t`${formatNumber(metricStats.loanPercent)}% of the total is loans`}
           />
 
@@ -530,15 +530,20 @@ function RankedListCard({
 function InsightCard({
   label,
   value,
+  valueParts,
   sublabel,
   progress,
 }: {
   readonly label: string
   readonly value: string
+  readonly valueParts?: {
+    readonly amount: string
+    readonly unit: string | null
+  }
   readonly sublabel: string
   readonly progress?: number
 }) {
-  const formattedValue = getPnrrCurrencyDisplayParts(value)
+  const formattedValue = valueParts ?? { amount: value, unit: null }
 
   return (
     <div

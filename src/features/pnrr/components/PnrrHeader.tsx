@@ -175,20 +175,20 @@ export function PnrrHeader({
             style={{ fontSize: 'clamp(2.5rem, 7vw, 5.5rem)' }}
           >
             <span className="block">
-              <Trans>Plan</Trans>
+              <Trans id="pnrr.header.title.plan">Plan</Trans>
             </span>
             <span className="block">
-              <Trans>National</Trans>
+              <Trans id="pnrr.header.title.national">National</Trans>
             </span>
             <span
               className="block w-fit sm:max-w-[900px] lg:max-w-[1100px] bg-[var(--pnrr-fg)] px-3 py-2 sm:px-5 sm:py-3"
               style={{ color: 'var(--pnrr-bg)' }}
             >
               <span className="block">
-                <Trans>Recovery</Trans>
+                <Trans id="pnrr.header.title.recovery">Recovery</Trans>
               </span>
               <span className="block">
-                <Trans>and Resilience</Trans>
+                <Trans id="pnrr.header.title.resilience">and Resilience</Trans>
               </span>
             </span>
           </h1>
