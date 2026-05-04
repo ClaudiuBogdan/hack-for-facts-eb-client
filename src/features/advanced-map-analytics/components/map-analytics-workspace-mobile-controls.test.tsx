@@ -580,6 +580,76 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     });
   });
 
+  it('renames manual groups and removes members from the group list', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    };
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+    const initialState = createMapState({ activeView: 'map' });
+    let latestState = initialState;
+
+    function Harness() {
+      const [state, setState] = useState(initialState);
+      latestState = state;
+      return (
+        <MapAnalyticsWorkspace
+          mode="owner"
+          mapState={state}
+          setMapState={(updater) => {
+            setState((previousState) => {
+              const nextState =
+                typeof updater === 'function' ? updater(previousState) : updater;
+              latestState = nextState;
+              return nextState;
+            });
+          }}
+          capabilities={{ readOnly: false }}
+          mobileControlsDefaultCollapsed={true}
+        />
+      );
+    }
+
+    render(<Harness />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create group' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
+
+    fireEvent.change(screen.getByLabelText('Grouping name'), {
+      target: { value: 'County clusters' },
+    });
+    fireEvent.change(screen.getByLabelText('Group name'), {
+      target: { value: 'Central cluster' },
+    });
+
+    await waitFor(() => {
+      expect(latestState.groupings[0]?.label).toBe('County clusters');
+      expect(latestState.groupings[0]?.groups[0]?.label).toBe('Central cluster');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Map click second UAT' }));
+    await waitFor(() => {
+      expect(latestState.groupings[0]?.groups[0]?.label).toBe('Central cluster');
+      expect(latestState.groupings[0]?.groups[0]?.memberSirutaCodes).toEqual(['1001', '2002']);
+    });
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Remove UAT from group' })[0]);
+
+    await waitFor(() => {
+      expect(latestState.groupings[0]?.groups[0]?.memberSirutaCodes).toEqual(['2002']);
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete group' }));
+    await waitFor(() => {
+      expect(latestState.groupings[0]?.groups).toHaveLength(0);
+    });
+  });
+
   it('shows GeoJSON source link at the bottom of the sidebar', async () => {
     mockIsMobile.mockReturnValue(true);
     const setMapState = vi.fn();

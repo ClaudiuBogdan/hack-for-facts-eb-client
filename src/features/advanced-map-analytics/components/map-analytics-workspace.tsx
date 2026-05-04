@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react
 import { useNavigate } from '@tanstack/react-router';
 import { produce } from 'immer';
 import { AnimatePresence, motion } from 'framer-motion';
-import { BarChart3, Check, Loader2, MapIcon, MousePointer2, Pencil, Plus, Save, TableIcon } from 'lucide-react';
+import { BarChart3, Check, Loader2, MapIcon, MousePointer2, Pencil, Plus, Save, TableIcon, Trash2, X } from 'lucide-react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
 import type { GeoJsonObject } from 'geojson';
@@ -433,6 +433,121 @@ export function MapAnalyticsWorkspace({
     setActiveManualGroupId(undefined);
   }, []);
 
+  const updateManualGroupingLabel = useCallback(
+    (nextLabel: string) => {
+      if (isReadOnly || isPreviewLayout) {
+        return;
+      }
+
+      updateState((draft) => {
+        const grouping = ensureManualGrouping(draft);
+        grouping.label = nextLabel.trim().length > 0
+          ? nextLabel
+          : MANUAL_GROUPING_LABEL;
+        draft.activeGroupingId = grouping.id;
+      });
+    },
+    [isPreviewLayout, isReadOnly, updateState]
+  );
+
+  const selectManualGroup = useCallback(
+    (groupId: string) => {
+      if (isReadOnly || isPreviewLayout || mapViewType !== 'UAT') {
+        return;
+      }
+
+      updateState((draft) => {
+        ensureManualGrouping(draft);
+        draft.activeGroupingId = MANUAL_GROUPING_ID;
+      });
+      setSelectedMapEntity(null);
+      setActiveManualGroupId(groupId);
+      setIsManualGroupCreateMode(true);
+    },
+    [isPreviewLayout, isReadOnly, mapViewType, updateState]
+  );
+
+  const updateManualGroupLabel = useCallback(
+    (groupId: string, nextLabel: string) => {
+      if (isReadOnly || isPreviewLayout) {
+        return;
+      }
+
+      updateState((draft) => {
+        const grouping = ensureManualGrouping(draft);
+        const group = grouping.groups.find((entry) => entry.id === groupId);
+        if (!group) {
+          return;
+        }
+
+        group.label = nextLabel.trim().length > 0 ? nextLabel : group.id;
+        draft.activeGroupingId = grouping.id;
+      });
+    },
+    [isPreviewLayout, isReadOnly, updateState]
+  );
+
+  const deleteManualGroup = useCallback(
+    (groupId: string) => {
+      if (isReadOnly || isPreviewLayout) {
+        return;
+      }
+
+      updateState((draft) => {
+        const grouping = ensureManualGrouping(draft);
+        grouping.groups = grouping.groups.filter((group) => group.id !== groupId);
+        draft.activeGroupingId = grouping.id;
+      });
+      setActiveManualGroupId((currentGroupId) =>
+        currentGroupId === groupId ? undefined : currentGroupId
+      );
+    },
+    [isPreviewLayout, isReadOnly, updateState]
+  );
+
+  const removeManualGroupMember = useCallback(
+    (groupId: string, sirutaCode: string) => {
+      if (isReadOnly || isPreviewLayout) {
+        return;
+      }
+
+      let nextActiveGroupId: string | undefined;
+      updateState((draft) => {
+        const grouping = ensureManualGrouping(draft);
+        const groupIndex = grouping.groups.findIndex((group) => group.id === groupId);
+        const group = grouping.groups[groupIndex];
+        if (!group) {
+          return;
+        }
+
+        group.memberSirutaCodes = group.memberSirutaCodes.filter((code) => code !== sirutaCode);
+        group.memberOrder = group.memberOrder?.filter((code) => code !== sirutaCode);
+        if (group.primarySirutaCode === sirutaCode) {
+          group.primarySirutaCode = group.memberSirutaCodes[0];
+        }
+
+        if (group.memberSirutaCodes.length === 0) {
+          grouping.groups.splice(groupIndex, 1);
+          nextActiveGroupId = undefined;
+          draft.activeGroupingId = grouping.id;
+          return;
+        }
+
+        const previousLabel = group.label;
+        const nextGroupId = createManualGroupId(group.memberSirutaCodes);
+        group.id = nextGroupId;
+        group.label = previousLabel?.trim() || createManualGroupLabel(group.memberSirutaCodes, '');
+        nextActiveGroupId = nextGroupId;
+        draft.activeGroupingId = grouping.id;
+      });
+
+      setActiveManualGroupId((currentGroupId) =>
+        currentGroupId === groupId ? nextActiveGroupId : currentGroupId
+      );
+    },
+    [isPreviewLayout, isReadOnly, updateState]
+  );
+
   const addFeatureToManualGroup = useCallback(
     (properties: UatProperties) => {
       if (isReadOnly || isPreviewLayout || mapViewType !== 'UAT') {
@@ -453,10 +568,12 @@ export function MapAnalyticsWorkspace({
         const grouping = ensureManualGrouping(draft);
         draft.activeGroupingId = grouping.id;
 
+        let isNewGroup = false;
         let targetGroup = activeManualGroupId
           ? grouping.groups.find((group) => group.id === activeManualGroupId)
           : undefined;
         if (!targetGroup) {
+          isNewGroup = true;
           targetGroup = {
             id: createManualGroupId([sirutaCode]),
             label: uatName.length > 0 ? uatName : undefined,
@@ -493,7 +610,9 @@ export function MapAnalyticsWorkspace({
 
         const nextGroupId = createManualGroupId(targetGroup.memberSirutaCodes);
         targetGroup.id = nextGroupId;
-        targetGroup.label = createManualGroupLabel(targetGroup.memberSirutaCodes, uatName);
+        if (isNewGroup || !targetGroup.label?.trim()) {
+          targetGroup.label = createManualGroupLabel(targetGroup.memberSirutaCodes, uatName);
+        }
         nextActiveGroupId = nextGroupId;
         nextMemberCount = targetGroup.memberSirutaCodes.length;
       });
@@ -2175,11 +2294,19 @@ export function MapAnalyticsWorkspace({
       <ManualGroupingPanel
         enabled={isManualGroupCreateMode}
         canEdit={canCreateManualGroups}
-        groupCount={manualGroupCount}
+        grouping={manualGrouping}
+        activeGroupId={activeManualGroupId}
+        uatMetadataBySirutaCode={uatMetadataBySirutaCode}
         activeGroupMemberCount={activeManualGroupMemberCount}
+        groupCount={manualGroupCount}
         onStart={startManualGroupCreateMode}
         onStartNext={startNextManualGroup}
         onFinish={finishManualGroupCreateMode}
+        onGroupingLabelChange={updateManualGroupingLabel}
+        onSelectGroup={selectManualGroup}
+        onGroupLabelChange={updateManualGroupLabel}
+        onDeleteGroup={deleteManualGroup}
+        onRemoveMember={removeManualGroupMember}
       />
       <AdvancedMapAnalyticsSeriesPanel
         series={mapState.series}
@@ -2741,22 +2868,40 @@ export function MapAnalyticsWorkspace({
 interface ManualGroupingPanelProps {
   enabled: boolean;
   canEdit: boolean;
+  grouping?: MapGrouping;
+  activeGroupId?: string;
+  uatMetadataBySirutaCode: Map<string, Omit<AdvancedMapAnalyticsTableRow, 'sirutaCode' | 'valuesBySeriesId' | 'groupValuesByGroupingId'>>;
   groupCount: number;
   activeGroupMemberCount: number;
   onStart: () => void;
   onStartNext: () => void;
   onFinish: () => void;
+  onGroupingLabelChange: (nextLabel: string) => void;
+  onSelectGroup: (groupId: string) => void;
+  onGroupLabelChange: (groupId: string, nextLabel: string) => void;
+  onDeleteGroup: (groupId: string) => void;
+  onRemoveMember: (groupId: string, sirutaCode: string) => void;
 }
 
 function ManualGroupingPanel({
   enabled,
   canEdit,
+  grouping,
+  activeGroupId,
+  uatMetadataBySirutaCode,
   groupCount,
   activeGroupMemberCount,
   onStart,
   onStartNext,
   onFinish,
+  onGroupingLabelChange,
+  onSelectGroup,
+  onGroupLabelChange,
+  onDeleteGroup,
+  onRemoveMember,
 }: Readonly<ManualGroupingPanelProps>) {
+  const groupingLabel = grouping?.label ?? MANUAL_GROUPING_LABEL;
+
   return (
     <section className="border-b border-border/40 py-5" data-testid="manual-grouping-panel">
       <div className="mb-3 flex items-start justify-between gap-3">
@@ -2783,6 +2928,20 @@ function ManualGroupingPanel({
       </div>
 
       <div className="space-y-3">
+        {grouping ? (
+          <label className="block space-y-1.5">
+            <span className="text-xs font-medium text-muted-foreground">{t`Grouping name`}</span>
+            <input
+              type="text"
+              value={groupingLabel}
+              onChange={(event) => onGroupingLabelChange(event.target.value)}
+              disabled={!canEdit}
+              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              aria-label={t`Grouping name`}
+            />
+          </label>
+        ) : null}
+
         <div className="rounded-md border border-dashed border-border bg-muted/30 p-3 text-xs text-muted-foreground">
           {enabled
             ? activeGroupMemberCount > 0
@@ -2826,6 +2985,79 @@ function ManualGroupingPanel({
             </button>
           )}
         </div>
+
+        {grouping?.groups.length ? (
+          <div className="space-y-2" data-testid="manual-group-list">
+            {grouping.groups.map((group) => {
+              const isActiveGroup = group.id === activeGroupId;
+              return (
+                <div
+                  key={group.id}
+                  className={cn(
+                    'rounded-md border p-3',
+                    isActiveGroup ? 'border-primary/60 bg-primary/5' : 'border-border bg-background'
+                  )}
+                >
+                  <div className="flex items-start gap-2">
+                    <label className="min-w-0 flex-1 space-y-1">
+                      <span className="sr-only">{t`Group name`}</span>
+                      <input
+                        type="text"
+                        value={group.label ?? group.id}
+                        onChange={(event) => onGroupLabelChange(group.id, event.target.value)}
+                        disabled={!canEdit}
+                        className="h-8 w-full rounded-md border border-input bg-background px-2 text-sm font-medium shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                        aria-label={t`Group name`}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => onSelectGroup(group.id)}
+                      disabled={!canEdit}
+                      className="inline-flex h-8 shrink-0 items-center gap-1 rounded-md border border-border px-2 text-xs font-medium transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+                    >
+                      <MousePointer2 className="h-3.5 w-3.5" />
+                      {isActiveGroup && enabled ? t`Adding` : t`Add here`}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onDeleteGroup(group.id)}
+                      disabled={!canEdit}
+                      aria-label={t`Delete group`}
+                      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:pointer-events-none disabled:opacity-50"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {group.memberSirutaCodes.map((sirutaCode) => {
+                      const metadata = uatMetadataBySirutaCode.get(sirutaCode);
+                      const memberLabel = metadata?.uatName || `UAT ${sirutaCode}`;
+                      return (
+                        <span
+                          key={sirutaCode}
+                          className="inline-flex max-w-full items-center gap-1 rounded-full bg-muted px-2 py-1 text-[11px] text-muted-foreground"
+                        >
+                          <span className="truncate">{memberLabel}</span>
+                          <button
+                            type="button"
+                            onClick={() => onRemoveMember(group.id, sirutaCode)}
+                            disabled={!canEdit}
+                            aria-label={t`Remove UAT from group`}
+                            className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full hover:bg-background hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
       </div>
     </section>
   );
