@@ -21,5 +21,10 @@ export function formatAdvancedMapAnalyticsSeriesValue(
     return formatCurrency(value, 'compact', unit);
   }
 
+  if (unit === 'RON/capita' || unit === 'EUR/capita' || unit === 'USD/capita') {
+    const currency = unit.slice(0, 3) as 'RON' | 'EUR' | 'USD';
+    return `${formatCurrency(value, 'compact', currency)}/capita`;
+  }
+
   return `${formatNumber(value, 'compact')} ${unit}`;
 }

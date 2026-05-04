@@ -29,7 +29,7 @@ import { PnrrUatDetailsPanel } from './PnrrUatDetailsPanel'
 import { PnrrProjectDrawer } from './table/PnrrProjectDrawer'
 import type { usePnrrFilterState } from '../hooks/usePnrrFilterState'
 import { usePnrrCurrency } from '../lib/usePnrrCurrency'
-import { formatPnrrCurrency } from '../lib/formatting'
+import { convertPnrrValue, formatPnrrCurrency } from '../lib/formatting'
 import { getPnrrBlueHeatmapColor } from '../lib/map-colors'
 import { buildPnrrMapTooltipHtml } from '../lib/map-tooltip'
 import { MNEMONIC_TO_COUNTY_NAME } from '../lib/county-mnemonics'
@@ -108,6 +108,35 @@ function formatLegendValue(
     return `${formatNumber(value, 'compact')}%`
   if (seriesId === 'project-count') return formatNumber(value, 'compact')
   return formatPnrrCurrency(value, currency)
+}
+
+function getActiveSeriesLabelValue(
+  value: number,
+  seriesId: PnrrMapSeriesId,
+  currency: 'RON' | 'EUR' | 'USD',
+): number {
+  if (seriesId === 'total-value' || seriesId === 'per-capita') {
+    return convertPnrrValue(value, currency)
+  }
+
+  return value
+}
+
+function getActiveSeriesLabelUnit(
+  seriesId: PnrrMapSeriesId,
+  currency: 'RON' | 'EUR' | 'USD',
+): string {
+  switch (seriesId) {
+    case 'total-value':
+      return currency
+    case 'project-count':
+      return t`projects`
+    case 'per-capita':
+      return `${currency}/capita`
+    case 'grant-share':
+    case 'implementation-rate':
+      return '%'
+  }
 }
 
 function MapLegend({
@@ -227,6 +256,29 @@ export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
         | import('@/schemas/heatmap').HeatmapCountyDataPoint[]
         | import('@/schemas/heatmap').HeatmapUATDataPoint[],
     [activeSeries.data],
+  )
+  const activeSeriesValuesByFeatureId = useMemo(() => {
+    const values = new Map<string, number | undefined>()
+
+    for (const dataPoint of heatmapData) {
+      const key =
+        granularity === 'uat'
+          ? (dataPoint as import('@/schemas/heatmap').HeatmapUATDataPoint)
+              .siruta_code
+          : (dataPoint as import('@/schemas/heatmap').HeatmapCountyDataPoint)
+              .county_code
+
+      values.set(
+        key,
+        getActiveSeriesLabelValue(dataPoint.amount, activeSeriesId, currency),
+      )
+    }
+
+    return values
+  }, [activeSeriesId, currency, granularity, heatmapData])
+  const activeSeriesUnit = useMemo(
+    () => getActiveSeriesLabelUnit(activeSeriesId, currency),
+    [activeSeriesId, currency],
   )
 
   const colorDomain = useMemo(
@@ -440,6 +492,9 @@ export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
                   zoom={mapZoom}
                   mapHeight="100%"
                   showLabels
+                  labelMode="active-series"
+                  activeSeriesValuesBySirutaCode={activeSeriesValuesByFeatureId}
+                  activeSeriesUnit={activeSeriesUnit}
                   onViewChange={handleMapViewChange}
                 />
               </Suspense>

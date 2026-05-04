@@ -1,11 +1,23 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import type { PnrrProject } from '@/schemas/pnrr'
 import type { usePnrrFilterState } from '../hooks/usePnrrFilterState'
 import { PnrrMapView } from './PnrrMapView'
 
+const mockState = vi.hoisted(() => ({
+  geoJsonData: undefined as unknown,
+  interactiveMapProps: [] as unknown[],
+}))
+
 vi.mock('@/hooks/useGeoJson', () => ({
-  useGeoJsonData: () => ({ data: undefined, isPending: false }),
+  useGeoJsonData: () => ({ data: mockState.geoJsonData, isPending: false }),
+}))
+
+vi.mock('@/components/maps/InteractiveMap', () => ({
+  InteractiveMap: (props: unknown) => {
+    mockState.interactiveMapProps.push(props)
+    return <div data-testid="interactive-map" />
+  },
 }))
 
 const PROJECT: PnrrProject = {
@@ -30,6 +42,32 @@ const PROJECT: PnrrProject = {
   entityType: 'public',
   beneficiaryType: 'uat',
   sirutaCode: '123',
+}
+
+const UAT_GEOJSON = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      properties: {
+        natcode: '123',
+        name: 'Ion Roată',
+        county: 'Ialomița',
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [26.6, 44.6],
+            [26.7, 44.6],
+            [26.7, 44.7],
+            [26.6, 44.7],
+            [26.6, 44.6],
+          ],
+        ],
+      },
+    },
+  ],
 }
 
 function makeFilterState(
@@ -91,6 +129,11 @@ function makeFilterState(
 }
 
 describe('PnrrMapView', () => {
+  beforeEach(() => {
+    mockState.geoJsonData = undefined
+    mockState.interactiveMapProps = []
+  })
+
   it('opens the county panel from URL panel state', () => {
     render(
       <PnrrMapView
@@ -146,5 +189,38 @@ describe('PnrrMapView', () => {
 
     expect(screen.getByText('Ion Roată')).toBeInTheDocument()
     expect(screen.getAllByText('Test Project').length).toBeGreaterThan(1)
+  })
+
+  it('passes the selected project-count series to map labels', async () => {
+    mockState.geoJsonData = UAT_GEOJSON
+
+    render(
+      <PnrrMapView
+        projects={[PROJECT]}
+        filterState={makeFilterState({
+          search: {
+            ...makeFilterState().search,
+            granularity: 'uat',
+          },
+        })}
+      />,
+    )
+
+    await screen.findByTestId('interactive-map')
+    fireEvent.click(screen.getByRole('button', { name: 'Project count' }))
+
+    await waitFor(() => {
+      const props = mockState.interactiveMapProps[
+        mockState.interactiveMapProps.length - 1
+      ] as {
+        labelMode?: string
+        activeSeriesUnit?: string
+        activeSeriesValuesBySirutaCode?: Map<string, number | undefined>
+      }
+
+      expect(props.labelMode).toBe('active-series')
+      expect(props.activeSeriesUnit).toBe('projects')
+      expect(props.activeSeriesValuesBySirutaCode?.get('123')).toBe(1)
+    })
   })
 })
