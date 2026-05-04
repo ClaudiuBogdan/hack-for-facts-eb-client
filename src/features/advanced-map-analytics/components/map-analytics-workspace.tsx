@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight, BarChart3, Check, Loader2, MapIcon, MousePointer
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
 import type { GeoJsonObject } from 'geojson';
+import type { PathOptions } from 'leaflet';
 
 import { ClientOnly } from '@/components/ssr/ClientOnly';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -118,6 +119,24 @@ const InteractiveMap = lazy(() =>
 const MANUAL_GROUPING_ID = 'manual-map-groups';
 const MANUAL_GROUPING_KEY = 'manual';
 const MANUAL_GROUPING_LABEL = 'Manual groups';
+const MANUAL_GROUP_COLOR_PALETTE = [
+  '#2563eb',
+  '#059669',
+  '#dc2626',
+  '#7c3aed',
+  '#ea580c',
+  '#0891b2',
+  '#be123c',
+  '#4f46e5',
+] as const;
+const MANUAL_GROUP_UNASSIGNED_STYLE: PathOptions = {
+  ...DEFAULT_FEATURE_STYLE,
+  color: '#cbd5e1',
+  weight: 0.8,
+  opacity: 0.6,
+  fillColor: '#e5e7eb',
+  fillOpacity: 0.18,
+};
 
 interface EditorState {
   mode: 'add' | 'edit';
@@ -716,6 +735,7 @@ export function MapAnalyticsWorkspace({
       const uatName = String(properties?.name ?? '').trim();
       let nextActiveGroupId: string | undefined;
       let nextMemberCount = 0;
+      let didRemoveFromActiveGroup = false;
 
       updateState((draft) => {
         const grouping = ensureManualGrouping(draft);
@@ -735,6 +755,33 @@ export function MapAnalyticsWorkspace({
             primarySirutaCode: sirutaCode,
           };
           grouping.groups.push(targetGroup);
+        }
+
+        const targetGroupIndex = grouping.groups.findIndex((group) => group.id === targetGroup.id);
+        if (!isNewGroup && targetGroup.memberSirutaCodes.includes(sirutaCode)) {
+          didRemoveFromActiveGroup = true;
+          targetGroup.memberSirutaCodes = targetGroup.memberSirutaCodes.filter((code) => code !== sirutaCode);
+          targetGroup.memberOrder = targetGroup.memberOrder?.filter((code) => code !== sirutaCode);
+          if (targetGroup.primarySirutaCode === sirutaCode) {
+            targetGroup.primarySirutaCode = targetGroup.memberSirutaCodes[0];
+          }
+
+          if (targetGroup.memberSirutaCodes.length === 0) {
+            if (targetGroupIndex !== -1) {
+              grouping.groups.splice(targetGroupIndex, 1);
+            }
+            nextActiveGroupId = undefined;
+            nextMemberCount = 0;
+            return;
+          }
+
+          const previousLabel = targetGroup.label;
+          const nextGroupId = createManualGroupId(targetGroup.memberSirutaCodes);
+          targetGroup.id = nextGroupId;
+          targetGroup.label = previousLabel?.trim() || createManualGroupLabel(targetGroup.memberSirutaCodes, '');
+          nextActiveGroupId = nextGroupId;
+          nextMemberCount = targetGroup.memberSirutaCodes.length;
+          return;
         }
 
         for (let groupIndex = grouping.groups.length - 1; groupIndex >= 0; groupIndex -= 1) {
@@ -771,11 +818,19 @@ export function MapAnalyticsWorkspace({
       });
 
       setActiveManualGroupId(nextActiveGroupId);
-      toast.success(
-        nextMemberCount === 1
-          ? t`Added 1 UAT to group.`
-          : t`Added ${nextMemberCount} UATs to group.`
-      );
+      if (didRemoveFromActiveGroup) {
+        toast.success(
+          nextMemberCount === 0
+            ? t`Removed UAT and deleted the empty group.`
+            : t`Removed UAT from group.`
+        );
+      } else {
+        toast.success(
+          nextMemberCount === 1
+            ? t`Added 1 UAT to group.`
+            : t`Added ${nextMemberCount} UATs to group.`
+        );
+      }
     },
     [activeManualGroupId, isPreviewLayout, isReadOnly, mapViewType, updateState]
   );
@@ -1686,6 +1741,40 @@ export function MapAnalyticsWorkspace({
     return { min, max };
   }, [activeHeatmapData]);
 
+  const manualGroupEditStylesBySirutaCode = useMemo<Map<string, PathOptions> | undefined>(() => {
+    if (!isManualGroupCreateMode || mapViewType !== 'UAT') {
+      return undefined;
+    }
+
+    const manualGrouping = mapState.groupings.find((grouping) => grouping.id === MANUAL_GROUPING_ID);
+    if (!manualGrouping || manualGrouping.groups.length === 0) {
+      return new Map();
+    }
+
+    const hasActiveGroup = Boolean(activeManualGroupId);
+    const stylesBySirutaCode = new Map<string, PathOptions>();
+
+    manualGrouping.groups.forEach((group, groupIndex) => {
+      const groupColor = MANUAL_GROUP_COLOR_PALETTE[groupIndex % MANUAL_GROUP_COLOR_PALETTE.length];
+      const isActiveGroup = group.id === activeManualGroupId;
+      const isWashedOutGroup = hasActiveGroup && !isActiveGroup;
+      const groupStyle: PathOptions = {
+        ...DEFAULT_FEATURE_STYLE,
+        color: isActiveGroup ? '#0f172a' : groupColor,
+        weight: isActiveGroup ? 2.2 : 1.1,
+        opacity: isWashedOutGroup ? 0.45 : 0.95,
+        fillColor: groupColor,
+        fillOpacity: isWashedOutGroup ? 0.28 : 0.72,
+      };
+
+      for (const sirutaCode of group.memberSirutaCodes) {
+        stylesBySirutaCode.set(sirutaCode, groupStyle);
+      }
+    });
+
+    return stylesBySirutaCode;
+  }, [activeManualGroupId, isManualGroupCreateMode, mapState.groupings, mapViewType]);
+
   const getFeatureStyle = useCallback(
     (
       feature: UatFeature,
@@ -1694,6 +1783,10 @@ export function MapAnalyticsWorkspace({
       const featureKey = feature?.properties?.natcode;
       if (!featureKey) {
         return DEFAULT_FEATURE_STYLE;
+      }
+
+      if (manualGroupEditStylesBySirutaCode) {
+        return manualGroupEditStylesBySirutaCode.get(String(featureKey)) ?? MANUAL_GROUP_UNASSIGNED_STYLE;
       }
 
       if (binsCanApply) {
@@ -1763,6 +1856,7 @@ export function MapAnalyticsWorkspace({
       isContinuousIntervalMode,
       colorRangeMax,
       colorRangeMin,
+      manualGroupEditStylesBySirutaCode,
     ]
   );
 
@@ -2454,6 +2548,25 @@ export function MapAnalyticsWorkspace({
     : undefined;
   const activeManualGroupMemberCount = activeManualGroup?.memberSirutaCodes.length ?? 0;
   const manualGroupCount = manualGrouping?.groups.length ?? 0;
+  const selectedManualGroupBoundaryGeoJsonData = useMemo<GeoJsonObject | null>(() => {
+    if (!isManualGroupCreateMode || mapViewType !== 'UAT' || !activeManualGroup) {
+      return null;
+    }
+
+    const selectedMemberSirutaCodes = new Set(activeManualGroup.memberSirutaCodes);
+    const features = geoJsonFeatures.filter((feature) =>
+      selectedMemberSirutaCodes.has(String(feature.properties?.natcode ?? '').trim())
+    );
+
+    if (features.length === 0) {
+      return null;
+    }
+
+    return {
+      type: 'FeatureCollection',
+      features,
+    } as GeoJsonObject;
+  }, [activeManualGroup, geoJsonFeatures, isManualGroupCreateMode, mapViewType]);
   const canCreateManualGroups = !isReadOnly && !isPreviewLayout && mapViewType === 'UAT';
   const groupedSeriesDefaultGroupingId = getDefaultGroupedSeriesGroupingId(
     mapState.groupings,
@@ -2637,6 +2750,8 @@ export function MapAnalyticsWorkspace({
                   geoJsonData={geoJsonData}
                   countyBoundaryGeoJsonData={countyBoundaryGeoJsonData}
                   groupingBoundaryGeoJsonData={groupingBoundaryGeoJsonData}
+                  selectedGroupingBoundaryGeoJsonData={selectedManualGroupBoundaryGeoJsonData}
+                  alwaysResolveFeatureStyle={isManualGroupCreateMode && mapViewType === 'UAT'}
                   zoom={mapZoom}
                   center={mapCenter}
                   mapViewType={mapViewType}
@@ -2843,6 +2958,8 @@ export function MapAnalyticsWorkspace({
                       geoJsonData={geoJsonData}
                       countyBoundaryGeoJsonData={countyBoundaryGeoJsonData}
                       groupingBoundaryGeoJsonData={groupingBoundaryGeoJsonData}
+                      selectedGroupingBoundaryGeoJsonData={selectedManualGroupBoundaryGeoJsonData}
+                      alwaysResolveFeatureStyle={isManualGroupCreateMode && mapViewType === 'UAT'}
                       zoom={mapZoom}
                       center={mapCenter}
                       mapViewType={mapViewType}

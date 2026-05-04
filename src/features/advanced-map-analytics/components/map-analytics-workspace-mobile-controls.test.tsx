@@ -580,6 +580,147 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     });
   });
 
+  it('removes an active manual group UAT when clicking it again in create mode', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    };
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+    const initialState = createMapState({ activeView: 'map' });
+    let latestState = initialState;
+
+    function Harness() {
+      const [state, setState] = useState(initialState);
+      latestState = state;
+      return (
+        <MapAnalyticsWorkspace
+          mode="owner"
+          mapState={state}
+          setMapState={(updater) => {
+            setState((previousState) => {
+              const nextState =
+                typeof updater === 'function' ? updater(previousState) : updater;
+              latestState = nextState;
+              return nextState;
+            });
+          }}
+          capabilities={{ readOnly: false }}
+          mobileControlsDefaultCollapsed={true}
+        />
+      );
+    }
+
+    render(<Harness />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create group' }));
+    const mapClickButton = await screen.findByRole('button', { name: 'Map click with CUI' });
+    fireEvent.click(mapClickButton);
+
+    await waitFor(() => {
+      expect(latestState.groupings[0]?.groups[0]?.memberSirutaCodes).toEqual(['1001']);
+    });
+
+    fireEvent.click(mapClickButton);
+
+    await waitFor(() => {
+      expect(latestState.groupings[0]?.groups).toHaveLength(0);
+    });
+    expect(toastSuccessMock).toHaveBeenLastCalledWith('Removed UAT and deleted the empty group.');
+  });
+
+  it('shows manual group colors and selected group contour while create mode is active', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [
+          { type: 'Feature', properties: { natcode: '1001', name: 'Mapped UAT' }, geometry: null },
+          { type: 'Feature', properties: { natcode: '2002', name: 'Second UAT' }, geometry: null },
+          { type: 'Feature', properties: { natcode: '9999', name: 'Ungrouped UAT' }, geometry: null },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    };
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+    const initialState = createMapState({ activeView: 'map' });
+    let latestState = initialState;
+
+    function Harness() {
+      const [state, setState] = useState(initialState);
+      latestState = state;
+      return (
+        <MapAnalyticsWorkspace
+          mode="owner"
+          mapState={state}
+          setMapState={(updater) => {
+            setState((previousState) => {
+              const nextState =
+                typeof updater === 'function' ? updater(previousState) : updater;
+              latestState = nextState;
+              return nextState;
+            });
+          }}
+          capabilities={{ readOnly: false }}
+          mobileControlsDefaultCollapsed={true}
+        />
+      );
+    }
+
+    render(<Harness />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create group' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
+    fireEvent.click(screen.getByRole('button', { name: 'New group' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Map click second UAT' }));
+
+    await waitFor(() => {
+      expect(latestState.groupings[0]?.groups).toHaveLength(2);
+      expect(latestInteractiveMapProps?.alwaysResolveFeatureStyle).toBe(true);
+      expect(latestInteractiveMapProps?.selectedGroupingBoundaryGeoJsonData).toMatchObject({
+        type: 'FeatureCollection',
+        features: [
+          {
+            properties: {
+              natcode: '2002',
+            },
+          },
+        ],
+      });
+    });
+
+    const getFeatureStyle = latestInteractiveMapProps?.getFeatureStyle;
+    if (typeof getFeatureStyle !== 'function') {
+      throw new Error('InteractiveMap did not receive getFeatureStyle');
+    }
+
+    const firstGroupStyle = getFeatureStyle(
+      { type: 'Feature', properties: { natcode: '1001' }, geometry: null },
+      new Map()
+    );
+    const activeGroupStyle = getFeatureStyle(
+      { type: 'Feature', properties: { natcode: '2002' }, geometry: null },
+      new Map()
+    );
+    const ungroupedStyle = getFeatureStyle(
+      { type: 'Feature', properties: { natcode: '9999' }, geometry: null },
+      new Map()
+    );
+
+    expect(firstGroupStyle.fillColor).toBe('#2563eb');
+    expect(firstGroupStyle.fillOpacity).toBe(0.28);
+    expect(activeGroupStyle.fillColor).toBe('#059669');
+    expect(activeGroupStyle.fillOpacity).toBe(0.72);
+    expect(activeGroupStyle.weight).toBe(2.2);
+    expect(ungroupedStyle.fillColor).toBe('#e5e7eb');
+    expect(ungroupedStyle.fillOpacity).toBe(0.18);
+  });
+
   it('renames manual groups and removes members from the group list', async () => {
     mockIsMobile.mockReturnValue(false);
     mockGeoJsonData = {

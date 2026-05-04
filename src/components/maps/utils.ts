@@ -391,11 +391,12 @@ export function getStyleForFeature(
     heatmapDataMap: Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint>;
     getFeatureStyle: (feature: UatFeature, heatmapDataMap: Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint>) => PathOptions;
     highlightedFeatureId?: string | number;
+    alwaysResolveFeatureStyle?: boolean;
   }
 ): PathOptions {
   if (feature?.properties) {
     const uatProperties = feature.properties as UatProperties;
-    const baseStyle = args.heatmapDataMap.size > 0
+    const baseStyle = args.alwaysResolveFeatureStyle || args.heatmapDataMap.size > 0
       ? args.getFeatureStyle(feature as UatFeature, args.heatmapDataMap)
       : DEFAULT_FEATURE_STYLE;
 

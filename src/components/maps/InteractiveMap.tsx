@@ -124,6 +124,15 @@ const GROUP_BOUNDARY_STYLE: PathOptions = {
   interactive: false,
 };
 
+const SELECTED_GROUP_BOUNDARY_STYLE: PathOptions = {
+  color: '#0f172a',
+  weight: 4,
+  opacity: 1,
+  fillOpacity: 0,
+  dashArray: '8 4',
+  interactive: false,
+};
+
 const UAT_LOW_ZOOM_STROKE_FLOOR = 6;
 const MIN_UAT_LOW_ZOOM_STROKE_OPACITY_MULTIPLIER = 0.2;
 const MIN_UAT_LOW_ZOOM_STROKE_WEIGHT_MULTIPLIER = 0.25;
@@ -194,7 +203,9 @@ interface InteractiveMapProps {
   geoJsonData: GeoJsonObject | null;
   countyBoundaryGeoJsonData?: GeoJsonObject | null;
   groupingBoundaryGeoJsonData?: GeoJsonObject | null;
+  selectedGroupingBoundaryGeoJsonData?: GeoJsonObject | null;
   highlightedFeatureId?: string | number;
+  alwaysResolveFeatureStyle?: boolean;
   scrollWheelZoom?: boolean;
   mapHeight?: string;
   mapViewType: 'UAT' | 'County';
@@ -223,7 +234,9 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   geoJsonData,
   countyBoundaryGeoJsonData,
   groupingBoundaryGeoJsonData,
+  selectedGroupingBoundaryGeoJsonData,
   highlightedFeatureId,
+  alwaysResolveFeatureStyle = false,
   scrollWheelZoom = true,
   filters,
   showLabels = true,
@@ -266,12 +279,17 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   const resolveFeatureStyle = useCallback(
     (feature?: Feature<Geometry, unknown>): PathOptions =>
       attenuateLowZoomUatStroke(
-        getStyleForFeature(feature, { heatmapDataMap, getFeatureStyle, highlightedFeatureId }),
+        getStyleForFeature(feature, {
+          heatmapDataMap,
+          getFeatureStyle,
+          highlightedFeatureId,
+          alwaysResolveFeatureStyle,
+        }),
         mapViewType,
         currentZoomRef.current,
         labelMode,
       ),
-    [heatmapDataMap, getFeatureStyle, highlightedFeatureId, labelMode, mapViewType]
+    [alwaysResolveFeatureStyle, heatmapDataMap, getFeatureStyle, highlightedFeatureId, labelMode, mapViewType]
   );
 
   const featureHighlight = useFeatureHighlight(resolveFeatureStyle);
@@ -440,6 +458,13 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
               key="grouping-boundary-layer"
               data={groupingBoundaryGeoJsonData}
               style={GROUP_BOUNDARY_STYLE}
+            />
+          ) : null}
+          {selectedGroupingBoundaryGeoJsonData?.type === 'FeatureCollection' ? (
+            <GeoJSON
+              key="selected-grouping-boundary-layer"
+              data={selectedGroupingBoundaryGeoJsonData}
+              style={SELECTED_GROUP_BOUNDARY_STYLE}
             />
           ) : null}
           <MapLabels
