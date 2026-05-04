@@ -1647,6 +1647,74 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(nextState?.activeSeriesId).toBe(secondSeries.id);
   });
 
+  it('adds a grouped value series from the active grouping and source series', async () => {
+    const sourceSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    sourceSeries.id = 'source_series';
+    sourceSeries.label = 'Source value';
+
+    const initialState = createMapState({
+      activeView: 'map',
+      series: [sourceSeries],
+      activeSeriesId: sourceSeries.id,
+      activeGroupingId: 'manual-map-groups',
+      groupings: [
+        {
+          id: 'manual-map-groups',
+          key: 'manual',
+          label: 'Manual groups',
+          groups: [
+            {
+              id: 'grp_1',
+              memberSirutaCodes: ['1001'],
+            },
+          ],
+        },
+      ],
+    });
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="owner"
+        mapState={initialState}
+        setMapState={setMapState}
+        capabilities={{ readOnly: false }}
+      />
+    );
+
+    expect(latestSeriesPanelProps?.canAddGroupedSeries).toBe(true);
+    expect(latestSeriesPanelProps?.groupedSeriesDisabledReason).toBeUndefined();
+
+    const onAddGroupedSeries = latestSeriesPanelProps?.onAddGroupedSeries as (() => void) | undefined;
+    expect(onAddGroupedSeries).toBeTypeOf('function');
+
+    act(() => {
+      onAddGroupedSeries?.();
+    });
+
+    const updateCall = setMapState.mock.calls[0]?.[0] as
+      | ((previousState: ReturnType<typeof createMapState>) => ReturnType<typeof createMapState>)
+      | undefined;
+    expect(typeof updateCall).toBe('function');
+
+    const nextState = updateCall?.(initialState);
+    const groupedSeries = nextState?.series.find(
+      (series) => series.type === 'map-grouped-value-series'
+    );
+
+    if (groupedSeries?.type !== 'map-grouped-value-series') {
+      throw new Error('Expected grouped series to be created.');
+    }
+
+    expect(groupedSeries.sourceSeriesId).toBe(sourceSeries.id);
+    expect(groupedSeries.groupingId).toBe('manual-map-groups');
+    expect(groupedSeries.aggregation).toBe('sum');
+    expect(nextState?.activeSeriesId).toBe(groupedSeries.id);
+    expect(nextState?.activeGroupingId).toBe('manual-map-groups');
+  });
+
   it('does not run series shortcuts in read-only mode', async () => {
     const selectedSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
     selectedSeries.id = 'series_1';

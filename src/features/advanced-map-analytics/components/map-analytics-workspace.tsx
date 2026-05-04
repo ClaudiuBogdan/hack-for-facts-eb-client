@@ -201,6 +201,21 @@ function createManualGroupLabel(memberSirutaCodes: string[], fallbackUatName: st
   return `Group ${memberSirutaCodes.length}`;
 }
 
+function isGroupedValueSourceCandidate(series: MapSupportedSeries): boolean {
+  return series.type !== 'map-grouped-value-series';
+}
+
+function getDefaultGroupedSeriesGroupingId(
+  groupings: MapGrouping[],
+  activeGroupingId?: string
+): string | undefined {
+  const activeGrouping = activeGroupingId
+    ? groupings.find((grouping) => grouping.id === activeGroupingId && grouping.groups.length > 0)
+    : undefined;
+
+  return activeGrouping?.id ?? groupings.find((grouping) => grouping.groups.length > 0)?.id;
+}
+
 // NOTE: Do not use module-scope t`` — it freezes the translation at import time.
 // Use t`` at the call site instead (see mapName usage below).
 
@@ -334,6 +349,59 @@ export function MapAnalyticsWorkspace({
       }
     });
   }, [isReadOnly, mapState.series, updateState]);
+
+  const addGroupedValueSeries = useCallback(() => {
+    if (isReadOnly) {
+      return;
+    }
+
+    const groupingId = getDefaultGroupedSeriesGroupingId(
+      mapState.groupings,
+      mapState.activeGroupingId
+    );
+    if (!groupingId) {
+      toast.warning(t`Create a group before adding a grouped series.`);
+      return;
+    }
+
+    const sourceSeriesOptions = mapState.series.filter(isGroupedValueSourceCandidate);
+    const preferredSourceSeriesId = selectedSeriesId ?? mapState.activeSeriesId;
+    const sourceSeries =
+      sourceSeriesOptions.find((candidate) => candidate.id === preferredSourceSeriesId) ??
+      sourceSeriesOptions[0];
+    if (!sourceSeries) {
+      toast.warning(t`Create a source series before adding a grouped series.`);
+      return;
+    }
+
+    const nextSeries = createDefaultAdvancedMapAnalyticsSeries('map-grouped-value-series');
+    if (nextSeries.type !== 'map-grouped-value-series') {
+      return;
+    }
+
+    nextSeries.id = createUniqueAdvancedMapAnalyticsId(mapState.series.map((series) => series.id));
+    nextSeries.label = t`Grouped ${resolveSeriesDisplayLabel(sourceSeries)}`;
+    nextSeries.sourceSeriesId = sourceSeries.id;
+    nextSeries.groupingId = groupingId;
+    nextSeries.aggregation = 'sum';
+
+    setEditorState({ mode: 'add', seriesId: nextSeries.id });
+    setSelectedSeriesId(nextSeries.id);
+
+    updateState((draft) => {
+      draft.series.push(nextSeries);
+      draft.activeSeriesId = nextSeries.id;
+      draft.activeGroupingId = groupingId;
+    });
+  }, [
+    isReadOnly,
+    mapState.activeGroupingId,
+    mapState.activeSeriesId,
+    mapState.groupings,
+    mapState.series,
+    selectedSeriesId,
+    updateState,
+  ]);
 
   const editSeries = useCallback((seriesId: string) => {
     if (isReadOnly) {
@@ -2274,6 +2342,21 @@ export function MapAnalyticsWorkspace({
   const activeManualGroupMemberCount = activeManualGroup?.memberSirutaCodes.length ?? 0;
   const manualGroupCount = manualGrouping?.groups.length ?? 0;
   const canCreateManualGroups = !isReadOnly && !isPreviewLayout && mapViewType === 'UAT';
+  const groupedSeriesDefaultGroupingId = getDefaultGroupedSeriesGroupingId(
+    mapState.groupings,
+    mapState.activeGroupingId
+  );
+  const groupedSeriesSourceOptions = mapState.series.filter(isGroupedValueSourceCandidate);
+  const groupedSeriesDisabledReason =
+    groupedSeriesDefaultGroupingId
+      ? groupedSeriesSourceOptions.length > 0
+        ? undefined
+        : t`Create a source series first.`
+      : t`Create a group first.`;
+  const canAddGroupedSeries =
+    !isReadOnly &&
+    Boolean(groupedSeriesDefaultGroupingId) &&
+    groupedSeriesSourceOptions.length > 0;
 
   const controlsPanels = (
     <>
@@ -2314,8 +2397,11 @@ export function MapAnalyticsWorkspace({
         selectedSeriesId={selectedSeriesId}
         collapsed={Boolean(mapState.seriesPanelCollapsed)}
         readOnly={isReadOnly}
+        canAddGroupedSeries={canAddGroupedSeries}
+        groupedSeriesDisabledReason={groupedSeriesDisabledReason}
         onToggleCollapsed={togglePanelCollapsed}
         onAddSeries={addSeries}
+        onAddGroupedSeries={isReadOnly ? undefined : addGroupedValueSeries}
         onSelectSeries={selectSeries}
         onActivate={setSeriesActivation}
         onMakeMain={makeSeriesMain}

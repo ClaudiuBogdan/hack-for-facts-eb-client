@@ -281,6 +281,76 @@ describe('AdvancedMapAnalyticsSeriesEditorModal', () => {
     expect(chartSearch.chart.series[0].config.color).toBe(executionSeries.config.color);
   });
 
+  it('shows setup guidance for incomplete grouped value series', () => {
+    const groupedSeries = createDefaultAdvancedMapAnalyticsSeries('map-grouped-value-series');
+    if (groupedSeries.type !== 'map-grouped-value-series') {
+      throw new Error('Unexpected series type in test setup');
+    }
+
+    render(
+      <AdvancedMapAnalyticsSeriesEditorModal
+        open={true}
+        mode="edit"
+        series={groupedSeries}
+        allSeries={[groupedSeries]}
+        groupings={[]}
+        onOpenChange={vi.fn()}
+        onUpdateSeries={vi.fn()}
+        onChangeSeriesType={vi.fn()}
+        onAssignUploadedDatasetSeries={vi.fn()}
+      />
+    );
+
+    expect(
+      screen.getByText('Create a source series before configuring a grouped series.')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Create a grouping before configuring a grouped series.')
+    ).toBeInTheDocument();
+  });
+
+  it('warns when grouped value series uses a calculation source', () => {
+    const calculationSeries = createDefaultAdvancedMapAnalyticsSeries('aggregated-series-calculation');
+    calculationSeries.id = 'calc_series';
+    calculationSeries.label = 'Calculated value';
+    const groupedSeries = createDefaultAdvancedMapAnalyticsSeries('map-grouped-value-series');
+    if (groupedSeries.type !== 'map-grouped-value-series') {
+      throw new Error('Unexpected series type in test setup');
+    }
+    groupedSeries.sourceSeriesId = calculationSeries.id;
+    groupedSeries.groupingId = 'county_groups';
+
+    render(
+      <AdvancedMapAnalyticsSeriesEditorModal
+        open={true}
+        mode="edit"
+        series={groupedSeries}
+        allSeries={[groupedSeries, calculationSeries]}
+        groupings={[
+          {
+            id: 'county_groups',
+            key: 'county',
+            label: 'County groups',
+            groups: [
+              {
+                id: 'grp_1',
+                memberSirutaCodes: ['1001'],
+              },
+            ],
+          },
+        ]}
+        onOpenChange={vi.fn()}
+        onUpdateSeries={vi.fn()}
+        onChangeSeriesType={vi.fn()}
+        onAssignUploadedDatasetSeries={vi.fn()}
+      />
+    );
+
+    expect(
+      screen.getByText('Calculation sources are supported only when their result is still UAT-level.')
+    ).toBeInTheDocument();
+  });
+
   it('opens uploaded dataset browser instead of converting immediately', () => {
     const executionSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
     if (executionSeries.type !== 'line-items-aggregated-yearly') {

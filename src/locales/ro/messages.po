@@ -129,17 +129,17 @@ msgstr "{0} reguli configurate"
 #. placeholder {0}: chart.series.length
 #. placeholder {0}: series.length
 #: src/components/charts/components/chart-view/SeriesList.tsx:91
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-panel.tsx:64
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-panel.tsx:70
 msgid "{0} series configured"
 msgstr "{0} serii configurate"
 
 #. placeholder {0}: normalizedPasteResult.seriesToInsert.length
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:762
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:833
 msgid "{0} series pasted"
 msgstr "Au fost lipite {0} serii"
 
 #. placeholder {0}: normalizedPasteResult.skippedUnsupportedCount
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:767
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:838
 msgid "{0} unsupported series were skipped"
 msgstr "Au fost omise {0} serii neacceptate"
 
@@ -153,11 +153,11 @@ msgstr "{0} vizualizare activată"
 msgid "{0} views enabled"
 msgstr "{0} vizualizări activate"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2944
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3033
 msgid "{activeGroupMemberCount} UATs in current group"
 msgstr ""
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2911
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3000
 msgid "{groupCount} manual groups configured"
 msgstr ""
 
@@ -327,7 +327,7 @@ msgstr "activ"
 
 #: src/components/alerts/components/AlertEditorView.tsx:286
 #: src/components/charts/components/views/SeriesConfigView.tsx:338
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2922
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3011
 #: src/features/notifications/components/alerts/AlertCard.tsx:71
 #: src/routes/cookies.lazy.tsx:149
 msgid "Active"
@@ -343,7 +343,7 @@ msgstr "Filtre active"
 
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:201
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:669
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1435
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1506
 msgid "Active series"
 msgstr "Serii active"
 
@@ -408,7 +408,7 @@ msgstr "Adaugă condiție"
 msgid "Add Data Series"
 msgstr "Adaugă serie de date"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2550
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2639
 msgid "Add description"
 msgstr "Adaugă descriere"
 
@@ -417,7 +417,11 @@ msgstr "Adaugă descriere"
 msgid "Add entity notification"
 msgstr "Adaugă notificare entitate"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3016
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-panel.tsx:98
+msgid "Add grouped series"
+msgstr ""
+
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3105
 msgid "Add here"
 msgstr ""
 
@@ -437,7 +441,7 @@ msgstr "Adaugă serie nouă"
 msgid "Add Number"
 msgstr "Adaugă număr"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-panel.tsx:72
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-panel.tsx:78
 msgid "Add series"
 msgstr "Adaugă serie"
 
@@ -485,15 +489,15 @@ msgstr "Adaugă regulă de filtrare a valorilor"
 msgid "Add view"
 msgstr "Adaugă vizualizare"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:620
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:691
 msgid "Added {nextMemberCount} UATs to group."
 msgstr ""
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:619
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:690
 msgid "Added 1 UAT to group."
 msgstr ""
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3016
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3105
 msgid "Adding"
 msgstr ""
 
@@ -514,7 +518,7 @@ msgstr "Avansat"
 msgid "Advanced Filtering"
 msgstr "Filtrare avansată"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2529
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2618
 msgid "Advanced map analytics active view"
 msgstr "Vizualizare activă analize hărți avansate"
 
@@ -522,7 +526,7 @@ msgstr "Vizualizare activă analize hărți avansate"
 msgid "After the message opens and you send it from your email client, confirm below."
 msgstr "După ce mesajul se deschide și îl trimiți din clientul tău de email, confirmă mai jos."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:457
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:461
 msgid "Aggregate an existing UAT-level series into the selected grouping."
 msgstr ""
 
@@ -557,7 +561,7 @@ msgid "Aggregated Value Legend"
 msgstr "Legendă valoare cumulată"
 
 #: src/components/charts/components/views/SeriesConfigView.tsx:465
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:518
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:550
 msgid "Aggregation"
 msgstr "Agregare"
 
@@ -715,7 +719,7 @@ msgstr "A apărut o eroare neașteptată"
 #: src/components/entities/grouped-item-analytics.ts:63
 #: src/components/ui/FloatingQuickNav.tsx:251
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:1058
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2527
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2616
 msgid "Analytics"
 msgstr "Analiză"
 
@@ -1263,6 +1267,10 @@ msgstr "Serie calculată"
 msgid "Calculation"
 msgstr "Calcul"
 
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:474
+msgid "Calculation sources are supported only when their result is still UAT-level."
+msgstr ""
+
 #: src/features/learning/components/interactive/VATCalculator.tsx:198
 msgid "Calculations assume a basket of 40% essential goods (11% VAT) and 60% general goods (21% VAT)."
 msgstr "Calculele presupun un coș de bunuri esențiale de 40% (TVA 11%) și bunuri generale de 60% (TVA 21%)."
@@ -1601,7 +1609,7 @@ msgstr "Apasă pe o regiune pentru date detaliate."
 msgid "Click the link below to explore all {type} classifications."
 msgstr "Faceți clic pe linkul de mai jos pentru a explora toate clasificările {type}."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2910
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2999
 msgid "Click UATs on the map to add them."
 msgstr ""
 
@@ -1684,7 +1692,7 @@ msgstr "Pliază panoul intervale"
 msgid "Collapse config panel"
 msgstr "Pliază panoul de configurare"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-panel.tsx:59
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-panel.tsx:65
 msgid "Collapse panel"
 msgstr "Pliază panoul"
 
@@ -2035,7 +2043,7 @@ msgstr "Copiază datele"
 msgid "Copy error report to clipboard"
 msgstr "Copiază raportul de erori în clipboard"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:703
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:774
 msgid "Copy failed"
 msgstr "Copierea a eșuat"
 
@@ -2095,11 +2103,11 @@ msgstr "Corect!"
 msgid "Correct."
 msgstr "Corect."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:731
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:802
 msgid "Could not copy map configuration"
 msgstr "Nu s-a putut copia configurația hărții"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:711
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:782
 msgid "Could not copy series to clipboard"
 msgstr "Nu s-a putut copia seria în clipboard"
 
@@ -2204,14 +2212,14 @@ msgstr "Județe"
 #: src/components/maps/HeatmapDataTable.tsx:482
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:170
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:169
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1921
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1992
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:522
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1511
 #: src/routes/entity-analytics.lazy.tsx:236
 msgid "County"
 msgstr "Județ"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:732
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:772
 msgid "County and region filters can both be selected and are combined using AND logic."
 msgstr "Filtrele de județ și regiune pot fi ambele selectate și sunt combinate folosind logica ȘI."
 
@@ -2219,7 +2227,7 @@ msgstr "Filtrele de județ și regiune pot fi ambele selectate și sunt combinat
 msgid "County boundaries"
 msgstr "Limite județene"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:719
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:759
 msgid "County Filters"
 msgstr "Filtre județe"
 
@@ -2245,6 +2253,18 @@ msgstr "Acoperire"
 msgid "Coverage quality still depends on connection rates and settlement density, not only network length."
 msgstr "Calitatea acoperirii depinde în continuare de ratele de conectare și de densitatea așezărilor, nu doar de lungimea rețelei."
 
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:363
+msgid "Create a group before adding a grouped series."
+msgstr ""
+
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2354
+msgid "Create a group first."
+msgstr ""
+
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:480
+msgid "Create a grouping before configuring a grouped series."
+msgstr ""
+
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:345
 msgid "Create a map to visualize geographic data"
 msgstr "Creează o hartă pentru a vizualiza date geografice"
@@ -2252,6 +2272,18 @@ msgstr "Creează o hartă pentru a vizualiza date geografice"
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:395
 msgid "Create a new map using the latest saved snapshot"
 msgstr "Creează o hartă nouă folosind ultimul instantaneu salvat"
+
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:373
+msgid "Create a source series before adding a grouped series."
+msgstr ""
+
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:466
+msgid "Create a source series before configuring a grouped series."
+msgstr ""
+
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2353
+msgid "Create a source series first."
+msgstr ""
 
 #: src/features/notifications/components/NotificationList.tsx:158
 #: src/features/notifications/components/NotificationList.tsx:159
@@ -2296,7 +2328,7 @@ msgstr "Creează copie editabilă"
 msgid "Create empty map"
 msgstr "Creează hartă goală"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2980
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3069
 msgid "Create group"
 msgstr ""
 
@@ -2308,7 +2340,7 @@ msgstr "Creează hartă"
 msgid "Create map with this dataset"
 msgstr "Creează o hartă cu acest set de date"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2946
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3035
 msgid "Create mode stores clicked UATs in the active manual grouping."
 msgstr ""
 
@@ -2347,8 +2379,8 @@ msgstr "CSV exportat"
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:172
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:179
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:250
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1930
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2000
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2001
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2071
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1509
 msgid "CUI"
 msgstr "CUI"
@@ -2377,7 +2409,7 @@ msgstr "Curent"
 msgid "Current date"
 msgstr "Data curentă"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2945
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3034
 msgid "Current group is empty. Click a UAT to start it."
 msgstr ""
 
@@ -2443,7 +2475,7 @@ msgstr "Serii de date"
 
 #: src/components/charts/components/chart-config/DataSeriesCard.tsx:17
 #: src/components/charts/components/chart-view/SeriesList.tsx:86
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-panel.tsx:53
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-panel.tsx:59
 msgid "Data Series"
 msgstr "Serie de date"
 
@@ -2452,7 +2484,7 @@ msgid "Data series (analytics)"
 msgstr "Serie de date (analiză)"
 
 #. placeholder {0}: draft.series.length + 1
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:329
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:344
 msgid "Data series {0}"
 msgstr "Serie de date {0}"
 
@@ -2653,7 +2685,7 @@ msgstr "Șterge graficul"
 msgid "Delete data series?"
 msgstr "Ștergeți seria de date?"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3022
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3111
 msgid "Delete group"
 msgstr ""
 
@@ -3093,7 +3125,7 @@ msgid "Edit dataset"
 msgstr "Editează setul de date"
 
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:426
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2550
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2639
 msgid "Edit description"
 msgstr "Editează descrierea"
 
@@ -3561,7 +3593,7 @@ msgstr "Expandează panoul intervale"
 msgid "Expand config panel"
 msgstr "Expandează panoul de configurare"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-panel.tsx:59
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-panel.tsx:65
 msgid "Expand panel"
 msgstr "Expandează panoul"
 
@@ -3754,7 +3786,7 @@ msgstr "Exportul JSON a eșuat."
 msgid "Failed to import configuration file"
 msgstr "Importul fișierului de configurație a eșuat"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:825
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:896
 msgid "Failed to import map configuration"
 msgstr "Importul configurației hărții a eșuat"
 
@@ -3816,7 +3848,7 @@ msgstr "Eroare la încărcarea hărții"
 msgid "Failed to load maps"
 msgstr "Eroare la încărcarea hărților"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2085
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2156
 msgid "Failed to load UAT profile details."
 msgstr "Încărcarea detaliilor profilului UAT a eșuat."
 
@@ -3991,7 +4023,7 @@ msgstr "Găsește entitate de monitorizat"
 msgid "Find resources, report issues, or get in touch."
 msgstr "Găsește resurse, raportează probleme sau ia legătura cu noi."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2968
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3057
 #: src/features/challenges/components/player/challenge-step-article-layout.tsx:144
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:150
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:239
@@ -4174,7 +4206,7 @@ msgstr "General"
 msgid "Generate random color"
 msgstr "Generează o culoare aleatorie"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2365
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2454
 #: src/routes/map.lazy.tsx:324
 msgid "geo-spatial.org"
 msgstr "geo-spatial.org"
@@ -4185,7 +4217,7 @@ msgstr "geo-spatial.org"
 msgid "GeoJSON dataset"
 msgstr "Set de date GeoJSON"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2357
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2446
 #: src/routes/map.lazy.tsx:316
 msgid "GeoJSON source:"
 msgstr "Sursa GeoJSON:"
@@ -4308,13 +4340,18 @@ msgid "Gross"
 msgstr "Brut"
 
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:379
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1753
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1824
 msgid "Group"
 msgstr ""
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2999
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3006
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3088
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3095
 msgid "Group name"
+msgstr ""
+
+#. placeholder {0}: resolveSeriesDisplayLabel(sourceSeries)
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:383
+msgid "Grouped {0}"
 msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-utils.ts:90
@@ -4323,16 +4360,16 @@ msgstr ""
 
 #: src/components/budget-explorer/BudgetExplorerHeader.tsx:78
 #: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:113
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:489
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:521
 msgid "Grouping"
 msgstr "Grupare"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2929
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2936
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3018
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3025
 msgid "Grouping name"
 msgstr ""
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2906
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2995
 msgid "Groups"
 msgstr ""
 
@@ -4408,7 +4445,7 @@ msgstr "Ascunde setările avansate"
 msgid "Hide details"
 msgstr "Ascunde detaliile"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2565
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2654
 msgid "Hide Map Controls"
 msgstr "Ascunde controalele hărții"
 
@@ -4500,7 +4537,7 @@ msgstr "Identificatori"
 msgid "Identify the specific budget line or category. For example: \"Personnel expenses - Chapter 65 Education\""
 msgstr "Identifică linia bugetară sau categoria specifică. De exemplu: «Cheltuieli de personal - Capitolul 65 Învățământ»"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2922
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3011
 msgid "Idle"
 msgstr ""
 
@@ -5113,8 +5150,8 @@ msgstr "Încarcă instantaneul"
 msgid "Loading Academy"
 msgstr "Se încarcă Academia"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2399
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2605
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2488
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2694
 msgid "Loading advanced map analytics..."
 msgstr "Se încarcă analiza avansată a hărții..."
 
@@ -5123,7 +5160,7 @@ msgid "Loading alert…"
 msgstr "Se încarcă alerta..."
 
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:941
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2778
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2867
 msgid "Loading analytics data..."
 msgstr "Se încarcă datele analitice..."
 
@@ -5210,10 +5247,10 @@ msgstr "Se încarcă editorul de hărți..."
 
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:830
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:831
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2414
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2421
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2620
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2627
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2503
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2510
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2709
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2716
 #: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:987
 #: src/routes/map.lazy.tsx:279
 #: src/routes/map.lazy.tsx:286
@@ -5241,7 +5278,7 @@ msgid "Loading shared datasets..."
 msgstr "Se încarcă seturile de date partajate..."
 
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:906
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2743
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2832
 #: src/routes/map.lazy.tsx:381
 msgid "Loading table data..."
 msgstr "Se încarcă datele tabelului..."
@@ -5303,7 +5340,7 @@ msgstr "Instantaneul local a fost restaurat"
 msgid "Local snapshot saved"
 msgstr "Instantaneul local a fost salvat"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2381
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2470
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:91
 msgid "Local snapshots"
 msgstr "Instantanee locale"
@@ -5312,7 +5349,7 @@ msgstr "Instantanee locale"
 msgid "Local Snapshots"
 msgstr "Instantanee locale"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2380
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2469
 msgid "Local snapshots ({localSnapshotCount})"
 msgstr "Instantanee locale ({localSnapshotCount})"
 
@@ -5477,7 +5514,7 @@ msgstr "Manual"
 #: src/components/sidebar/nav-main.tsx:32
 #: src/components/ui/shortcuts.tsx:44
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:1056
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2525
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2614
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1411
 #: src/routes/index.tsx:72
 msgid "Map"
@@ -5487,16 +5524,16 @@ msgstr "Hartă"
 msgid "Map configuration actions"
 msgstr "Acțiuni configurare hartă"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:729
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:800
 msgid "Map configuration copied to clipboard"
 msgstr "Configurația hărții a fost copiată în clipboard"
 
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:195
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:822
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:893
 msgid "Map configuration imported"
 msgstr "Configurația hărții a fost importată"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:813
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:884
 msgid "Map configuration in clipboard is invalid"
 msgstr "Configurația hărții din clipboard este invalidă"
 
@@ -5524,8 +5561,8 @@ msgstr "Editor markdown pentru descrierea hărții"
 msgid "Map Filters"
 msgstr "Filtre hartă"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2407
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2613
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2496
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2702
 msgid "Map geometry is unavailable."
 msgstr "Geometria hărții nu este disponibilă."
 
@@ -5925,8 +5962,8 @@ msgstr "Harta mea interactivă de buget…"
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:172
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:179
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:250
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1930
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2000
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2001
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2071
 msgid "N/A"
 msgstr "N/A"
 
@@ -6011,7 +6048,7 @@ msgstr "Extinderea rețelei poate preceda conectările gospodăriilor, de aceea 
 msgid "New"
 msgstr "Nou"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2959
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3048
 msgid "New group"
 msgstr ""
 
@@ -6058,9 +6095,9 @@ msgstr "Nicio serie activă"
 
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:185
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:882
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1935
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2452
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2656
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2006
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2541
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2745
 msgid "No active series selected."
 msgstr "Nicio serie activă selectată."
 
@@ -6127,7 +6164,7 @@ msgstr "Nu au fost găsite clasificări"
 msgid "No commitment data available"
 msgstr "Nu există date despre angajamente"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:744
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:815
 msgid "No compatible series found in clipboard"
 msgstr "Nu s-au găsit serii compatibile în clipboard"
 
@@ -6139,7 +6176,7 @@ msgstr "Nicio condiție adăugată încă. Faceți clic pe butonul de mai jos pe
 msgid "No conditions set"
 msgstr "Nicio condiție setată"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:612
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:652
 msgid "No counties available."
 msgstr "Nu există județe disponibile."
 
@@ -6162,7 +6199,7 @@ msgid "No Data Available"
 msgstr "Nu există date disponibile"
 
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:918
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2755
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2844
 msgid "No data available for table."
 msgstr "Nu sunt date disponibile pentru tabel."
 
@@ -6254,7 +6291,7 @@ msgstr "Nu au fost găsite valori extreme distincte. Încercați să ajustați f
 
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:180
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:253
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2003
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2074
 msgid "No enabled series"
 msgstr "Nicio serie activată"
 
@@ -6265,7 +6302,7 @@ msgstr "Nu există date disponibile în seriile activate pentru a fi afișate."
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:546
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:584
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:914
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2751
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2840
 msgid "No enabled series."
 msgstr "Nicio serie activată."
 
@@ -6285,7 +6322,7 @@ msgstr "Niciun favorit încă"
 msgid "No Filters Applied"
 msgstr "Niciun filtru aplicat"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:507
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:539
 msgid "No grouping"
 msgstr ""
 
@@ -6381,7 +6418,7 @@ msgstr "Nu sunt disponibile seturi de date publice."
 msgid "No rectifications"
 msgstr "Fără rectificări"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:616
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:656
 msgid "No regions available."
 msgstr "Nu există regiuni disponibile."
 
@@ -6413,7 +6450,7 @@ msgstr "Nu s-a găsit nicio serie."
 msgid "No SIRUTA code associated."
 msgstr "Nu este asociat niciun cod SIRUTA."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:478
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:510
 msgid "No source series"
 msgstr ""
 
@@ -6456,7 +6493,7 @@ msgstr "Plăți din afara trezoreriei"
 msgid "none"
 msgstr "niciunul"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2074
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2145
 msgid "None"
 msgstr "Niciunul"
 
@@ -6545,8 +6582,8 @@ msgid "Notes"
 msgstr "Note"
 
 #: src/components/charts/components/chart-config/SeriesToolbar.tsx:18
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:746
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:858
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:817
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:929
 msgid "Nothing to paste"
 msgstr "Nimic de lipit"
 
@@ -6976,7 +7013,7 @@ msgstr "Lipește datele"
 msgid "Paste data from a spreadsheet. Each line should contain a year and a value, separated by a space or tab."
 msgstr "Lipiți date dintr-o foaie de calcul. Fiecare linie trebuie să conțină un an și o valoare, separate prin spațiu sau tab."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:860
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:931
 msgid "Paste failed"
 msgstr "Lipirea a eșuat"
 
@@ -7181,7 +7218,7 @@ msgid "Poor"
 msgstr "Slab"
 
 #: src/components/entity-analytics/EntityAnalyticsTable.tsx:93
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:679
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:719
 #: src/components/maps/charts/UatDataCharts.tsx:139
 #: src/components/maps/charts/UatPopulationSpendingScatterPlot.tsx:50
 #: src/components/maps/charts/UatPopulationSpendingScatterPlot.tsx:61
@@ -7211,7 +7248,7 @@ msgstr "Populație"
 msgid "Population (POP107D)"
 msgstr "Populație (POP107D)"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:682
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:722
 msgid "Population field"
 msgstr "Câmp populație"
 
@@ -7666,7 +7703,7 @@ msgstr "Regenerează din datele active"
 msgid "Region"
 msgstr "Regiune"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:726
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:766
 msgid "Region Filters"
 msgstr "Filtre regiuni"
 
@@ -7711,7 +7748,7 @@ msgstr "Elimină condiția"
 msgid "Remove this view?"
 msgstr "Elimini această vizualizare?"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3043
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3132
 msgid "Remove UAT from group"
 msgstr ""
 
@@ -7995,7 +8032,7 @@ msgstr "Salvează preferințele cookie"
 
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:509
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:142
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2683
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2772
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:116
 msgid "Save snapshot"
 msgstr "Salvează instantaneul"
@@ -8017,7 +8054,7 @@ msgid "Saved only in this browser. Not synced to your account."
 msgstr "Salvate doar în acest browser. Nu sunt sincronizate cu contul tău."
 
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:139
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2683
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2772
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1171
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1265
 #: src/routes/alerts/$alertId/index.lazy.tsx:124
@@ -8223,7 +8260,7 @@ msgstr "Selectați un UAT de pe hartă pentru a-i edita valoarea."
 msgid "Select a UAT from the map to load its details here."
 msgstr "Selectați un UAT de pe hartă pentru a-i încărca aici detaliile."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:531
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:563
 msgid "Select aggregation"
 msgstr ""
 
@@ -8243,7 +8280,7 @@ msgstr "Selectează câmpul"
 msgid "Select field first"
 msgstr "Selectează mai întâi câmpul"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:503
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:535
 msgid "Select grouping"
 msgstr ""
 
@@ -8263,7 +8300,7 @@ msgstr "Selectează opțiuni"
 msgid "Select Path"
 msgstr "Selectează parcursul"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:701
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:741
 msgid "Select population field"
 msgstr "Selectează câmpul de populație"
 
@@ -8283,13 +8320,21 @@ msgstr "Selectează tipul seriei"
 msgid "Select Series Type"
 msgstr "Selectați tipul de serie"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:474
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:506
 msgid "Select source series"
 msgstr ""
 
 #: src/components/charts/components/series-config/DataLabelSelector.tsx:22
 msgid "Select specific years. If none selected, all years will be shown."
 msgstr "Selectați anii specifici. Dacă nu se selectează niciunul, se vor afișa toți anii."
+
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:484
+msgid "Select the grouping that should receive the aggregated values."
+msgstr ""
+
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:470
+msgid "Select the UAT-level source series to aggregate."
+msgstr ""
 
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:314
 msgid "Select topic"
@@ -8300,7 +8345,7 @@ msgid "Select years..."
 msgstr "Selectează anii..."
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1264
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:829
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:869
 msgid "selected"
 msgstr "selectate"
 
@@ -8316,7 +8361,7 @@ msgstr "Perioada selectată:"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-uat-properties.ts:67
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:125
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:411
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2185
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2256
 msgid "Selected UAT"
 msgstr "UAT selectat"
 
@@ -8324,7 +8369,7 @@ msgstr "UAT selectat"
 msgid "Selected UAT details"
 msgstr "Detalii UAT selectat"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:559
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:626
 msgid "Selected UAT does not have a SIRUTA code."
 msgstr ""
 
@@ -8395,7 +8440,7 @@ msgstr "Series"
 msgid "Series Color"
 msgstr "Culoare serie"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:709
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:780
 msgid "Series copied to clipboard"
 msgstr "Seria a fost copiată în clipboard"
 
@@ -8595,7 +8640,7 @@ msgstr "Afișează puțin"
 msgid "Show Less"
 msgstr "Afișează puțin"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2565
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2654
 msgid "Show Map Controls"
 msgstr "Afișează controalele hărții"
 
@@ -8819,7 +8864,7 @@ msgstr "Sursă"
 msgid "Source dataset:"
 msgstr "Set de date sursă:"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:460
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:492
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:272
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:283
 msgid "Source series"
@@ -8964,7 +9009,7 @@ msgstr "Secțiunile pasului"
 msgid "Steps"
 msgstr "Pași"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2384
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2473
 msgid "Stored only in this browser on this device."
 msgstr "Stocată doar în acest browser, pe acest dispozitiv."
 
@@ -9048,7 +9093,7 @@ msgstr "Dezabonare reușită"
 msgid "Sum"
 msgstr "Sumă"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:534
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:566
 msgid "Sum group members"
 msgstr ""
 
@@ -9100,7 +9145,7 @@ msgstr "Insignă stare sistem"
 #: src/components/filters/EntityAnalyticsFilter.tsx:439
 #: src/components/filters/MapFilter.tsx:213
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:1057
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2526
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2615
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1405
 msgid "Table"
 msgstr "Tabel"
@@ -9272,6 +9317,10 @@ msgstr "Reforma a simplificat codul fiscal, dar a crescut povara asupra consumul
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:498
 msgid "The selected dataset could not be resolved from the server."
 msgstr "Setul de date selectat nu a putut fi identificat de pe server."
+
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:488
+msgid "The selected grouping does not contain any groups yet."
+msgstr ""
 
 #: src/routes/share.$code.tsx:85
 msgid "The share link you are trying to access is invalid or no longer available."
@@ -9737,7 +9786,7 @@ msgstr "Introduceți răspunsul..."
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:363
 #: src/components/maps/charts/UatDataCharts.tsx:103
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:163
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1914
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1985
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:521
 #: src/lib/chart-filter-utils.ts:39
 msgid "UAT"
@@ -9852,7 +9901,7 @@ msgstr "Necunoscut"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:902
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:1747
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:431
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1806
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1877
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:158
 msgid "Unknown county"
 msgstr "Județ necunoscut"
@@ -9941,7 +9990,7 @@ msgstr "Serie de date fără titlu"
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:132
 #: src/features/advanced-map-analytics/components/map-analytics-public-preview-card.tsx:84
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:689
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2075
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2146
 msgid "Untitled map"
 msgstr "Hartă fără titlu"
 
@@ -10032,7 +10081,7 @@ msgstr "Folosiți împreună cu sporul natural pentru a separa schimbarea demogr
 msgid "Use both sides when you want high and low extremes."
 msgstr "Folosiți ambele părți când doriți extreme maxime și minime."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:535
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:567
 msgid "Use first group member"
 msgstr ""
 
@@ -10137,7 +10186,7 @@ msgstr "Intervale de valori"
 msgid "Value Filters"
 msgstr "Filtre de valori"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:680
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:720
 msgid "Value source"
 msgstr "Sursa valorii"
 
@@ -10147,7 +10196,7 @@ msgstr "Sursa valorii"
 msgid "Values"
 msgstr "Valori"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:675
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:715
 msgid "Values are always population. County and region selections filter the included UATs."
 msgstr "Valorile sunt întotdeauna populație. Selecțiile de județ și regiune filtrează UAT-urile incluse."
 
