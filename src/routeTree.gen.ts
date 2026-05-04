@@ -41,7 +41,6 @@ import { Route as EntitiesCuiRouteImport } from './routes/entities.$cui'
 import { Route as ChartsNewRouteImport } from './routes/charts/new'
 import { Route as CertificatesIdRouteImport } from './routes/certificates.$id'
 import { Route as BugeteLocale2026TermeniSiConditiiRouteImport } from './routes/bugete-locale-2026.termeni-si-conditii'
-import { Route as ApiPnrrProjectsRouteImport } from './routes/api.pnrr-projects'
 import { Route as AlertsNewRouteImport } from './routes/alerts/new'
 import { Route as PrimarieCuiRouteRouteImport } from './routes/primarie/$cui/route'
 import { Route as ChartsChartIdRouteRouteImport } from './routes/charts/$chartId/route'
@@ -72,6 +71,9 @@ import { Route as LangLearningPathIdIndexRouteImport } from './routes/$lang/lear
 import { Route as PrimarieCuiBugetResurseRouteImport } from './routes/primarie/$cui/buget/resurse'
 import { Route as PrimarieCuiBugetCalendarRouteImport } from './routes/primarie/$cui/buget/calendar'
 import { Route as MapsDatasetsPublicPublicIdRouteImport } from './routes/maps/datasets/public/$publicId'
+import { Route as ApiPnrrRawProjectsRouteImport } from './routes/api/pnrr/raw/projects'
+import { Route as ApiPnrrRawPaymentsRouteImport } from './routes/api/pnrr/raw/payments'
+import { Route as ApiPnrrRawIndicatorsRouteImport } from './routes/api/pnrr/raw/indicators'
 import { Route as AdminCampaignsCampaignKeyUsersRouteImport } from './routes/admin/campaigns/$campaignKey/users'
 import { Route as AdminCampaignsCampaignKeyUserInteractionsRouteImport } from './routes/admin/campaigns/$campaignKey/user-interactions'
 import { Route as AdminCampaignsCampaignKeyNotificationsRouteImport } from './routes/admin/campaigns/$campaignKey/notifications'
@@ -276,11 +278,6 @@ const BugeteLocale2026TermeniSiConditiiRoute =
     path: '/termeni-si-conditii',
     getParentRoute: () => BugeteLocale2026Route,
   } as any)
-const ApiPnrrProjectsRoute = ApiPnrrProjectsRouteImport.update({
-  id: '/api/pnrr-projects',
-  path: '/api/pnrr-projects',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AlertsNewRoute = AlertsNewRouteImport.update({
   id: '/alerts/new',
   path: '/alerts/new',
@@ -507,6 +504,21 @@ const MapsDatasetsPublicPublicIdRoute =
   } as any).lazy(() =>
     import('./routes/maps/datasets/public/$publicId.lazy').then((d) => d.Route),
   )
+const ApiPnrrRawProjectsRoute = ApiPnrrRawProjectsRouteImport.update({
+  id: '/api/pnrr/raw/projects',
+  path: '/api/pnrr/raw/projects',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPnrrRawPaymentsRoute = ApiPnrrRawPaymentsRouteImport.update({
+  id: '/api/pnrr/raw/payments',
+  path: '/api/pnrr/raw/payments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPnrrRawIndicatorsRoute = ApiPnrrRawIndicatorsRouteImport.update({
+  id: '/api/pnrr/raw/indicators',
+  path: '/api/pnrr/raw/indicators',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminCampaignsCampaignKeyUsersRoute =
   AdminCampaignsCampaignKeyUsersRouteImport.update({
     id: '/users',
@@ -656,7 +668,6 @@ export interface FileRoutesByFullPath {
   '/charts/$chartId': typeof ChartsChartIdRouteRouteWithChildren
   '/primarie/$cui': typeof PrimarieCuiRouteRouteWithChildren
   '/alerts/new': typeof AlertsNewRoute
-  '/api/pnrr-projects': typeof ApiPnrrProjectsRoute
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
@@ -702,6 +713,9 @@ export interface FileRoutesByFullPath {
   '/admin/campaigns/$campaignKey/notifications': typeof AdminCampaignsCampaignKeyNotificationsRoute
   '/admin/campaigns/$campaignKey/user-interactions': typeof AdminCampaignsCampaignKeyUserInteractionsRoute
   '/admin/campaigns/$campaignKey/users': typeof AdminCampaignsCampaignKeyUsersRouteWithChildren
+  '/api/pnrr/raw/indicators': typeof ApiPnrrRawIndicatorsRoute
+  '/api/pnrr/raw/payments': typeof ApiPnrrRawPaymentsRoute
+  '/api/pnrr/raw/projects': typeof ApiPnrrRawProjectsRoute
   '/maps/datasets/public/$publicId': typeof MapsDatasetsPublicPublicIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
@@ -732,7 +746,6 @@ export interface FileRoutesByTo {
   '/test-error': typeof TestErrorRoute
   '/terms': typeof TermsLazyRoute
   '/alerts/new': typeof AlertsNewRoute
-  '/api/pnrr-projects': typeof ApiPnrrProjectsRoute
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
@@ -775,6 +788,9 @@ export interface FileRoutesByTo {
   '/admin/campaigns/$campaignKey/notifications': typeof AdminCampaignsCampaignKeyNotificationsRoute
   '/admin/campaigns/$campaignKey/user-interactions': typeof AdminCampaignsCampaignKeyUserInteractionsRoute
   '/admin/campaigns/$campaignKey/users': typeof AdminCampaignsCampaignKeyUsersRouteWithChildren
+  '/api/pnrr/raw/indicators': typeof ApiPnrrRawIndicatorsRoute
+  '/api/pnrr/raw/payments': typeof ApiPnrrRawPaymentsRoute
+  '/api/pnrr/raw/projects': typeof ApiPnrrRawProjectsRoute
   '/maps/datasets/public/$publicId': typeof MapsDatasetsPublicPublicIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
@@ -811,7 +827,6 @@ export interface FileRoutesById {
   '/charts/$chartId': typeof ChartsChartIdRouteRouteWithChildren
   '/primarie/$cui': typeof PrimarieCuiRouteRouteWithChildren
   '/alerts/new': typeof AlertsNewRoute
-  '/api/pnrr-projects': typeof ApiPnrrProjectsRoute
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
@@ -857,6 +872,9 @@ export interface FileRoutesById {
   '/admin/campaigns/$campaignKey/notifications': typeof AdminCampaignsCampaignKeyNotificationsRoute
   '/admin/campaigns/$campaignKey/user-interactions': typeof AdminCampaignsCampaignKeyUserInteractionsRoute
   '/admin/campaigns/$campaignKey/users': typeof AdminCampaignsCampaignKeyUsersRouteWithChildren
+  '/api/pnrr/raw/indicators': typeof ApiPnrrRawIndicatorsRoute
+  '/api/pnrr/raw/payments': typeof ApiPnrrRawPaymentsRoute
+  '/api/pnrr/raw/projects': typeof ApiPnrrRawProjectsRoute
   '/maps/datasets/public/$publicId': typeof MapsDatasetsPublicPublicIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
@@ -894,7 +912,6 @@ export interface FileRouteTypes {
     | '/charts/$chartId'
     | '/primarie/$cui'
     | '/alerts/new'
-    | '/api/pnrr-projects'
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
     | '/charts/new'
@@ -940,6 +957,9 @@ export interface FileRouteTypes {
     | '/admin/campaigns/$campaignKey/notifications'
     | '/admin/campaigns/$campaignKey/user-interactions'
     | '/admin/campaigns/$campaignKey/users'
+    | '/api/pnrr/raw/indicators'
+    | '/api/pnrr/raw/payments'
+    | '/api/pnrr/raw/projects'
     | '/maps/datasets/public/$publicId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
@@ -970,7 +990,6 @@ export interface FileRouteTypes {
     | '/test-error'
     | '/terms'
     | '/alerts/new'
-    | '/api/pnrr-projects'
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
     | '/charts/new'
@@ -1013,6 +1032,9 @@ export interface FileRouteTypes {
     | '/admin/campaigns/$campaignKey/notifications'
     | '/admin/campaigns/$campaignKey/user-interactions'
     | '/admin/campaigns/$campaignKey/users'
+    | '/api/pnrr/raw/indicators'
+    | '/api/pnrr/raw/payments'
+    | '/api/pnrr/raw/projects'
     | '/maps/datasets/public/$publicId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
@@ -1048,7 +1070,6 @@ export interface FileRouteTypes {
     | '/charts/$chartId'
     | '/primarie/$cui'
     | '/alerts/new'
-    | '/api/pnrr-projects'
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
     | '/charts/new'
@@ -1094,6 +1115,9 @@ export interface FileRouteTypes {
     | '/admin/campaigns/$campaignKey/notifications'
     | '/admin/campaigns/$campaignKey/user-interactions'
     | '/admin/campaigns/$campaignKey/users'
+    | '/api/pnrr/raw/indicators'
+    | '/api/pnrr/raw/payments'
+    | '/api/pnrr/raw/projects'
     | '/maps/datasets/public/$publicId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
@@ -1130,7 +1154,6 @@ export interface RootRouteChildren {
   ChartsChartIdRouteRoute: typeof ChartsChartIdRouteRouteWithChildren
   PrimarieCuiRouteRoute: typeof PrimarieCuiRouteRouteWithChildren
   AlertsNewRoute: typeof AlertsNewRoute
-  ApiPnrrProjectsRoute: typeof ApiPnrrProjectsRoute
   CertificatesIdRoute: typeof CertificatesIdRoute
   ChartsNewRoute: typeof ChartsNewRoute
   ProvocareNotificariRoute: typeof ProvocareNotificariRoute
@@ -1155,6 +1178,9 @@ export interface RootRouteChildren {
   MapsDatasetsIndexRoute: typeof MapsDatasetsIndexRoute
   MapsEditorIndexRoute: typeof MapsEditorIndexRoute
   PrimarieHartaIndexRoute: typeof PrimarieHartaIndexRoute
+  ApiPnrrRawIndicatorsRoute: typeof ApiPnrrRawIndicatorsRoute
+  ApiPnrrRawPaymentsRoute: typeof ApiPnrrRawPaymentsRoute
+  ApiPnrrRawProjectsRoute: typeof ApiPnrrRawProjectsRoute
   MapsDatasetsPublicPublicIdRoute: typeof MapsDatasetsPublicPublicIdRoute
 }
 
@@ -1391,13 +1417,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BugeteLocale2026TermeniSiConditiiRouteImport
       parentRoute: typeof BugeteLocale2026Route
     }
-    '/api/pnrr-projects': {
-      id: '/api/pnrr-projects'
-      path: '/api/pnrr-projects'
-      fullPath: '/api/pnrr-projects'
-      preLoaderRoute: typeof ApiPnrrProjectsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/alerts/new': {
       id: '/alerts/new'
       path: '/alerts/new'
@@ -1620,6 +1639,27 @@ declare module '@tanstack/react-router' {
       path: '/maps/datasets/public/$publicId'
       fullPath: '/maps/datasets/public/$publicId'
       preLoaderRoute: typeof MapsDatasetsPublicPublicIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/pnrr/raw/projects': {
+      id: '/api/pnrr/raw/projects'
+      path: '/api/pnrr/raw/projects'
+      fullPath: '/api/pnrr/raw/projects'
+      preLoaderRoute: typeof ApiPnrrRawProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/pnrr/raw/payments': {
+      id: '/api/pnrr/raw/payments'
+      path: '/api/pnrr/raw/payments'
+      fullPath: '/api/pnrr/raw/payments'
+      preLoaderRoute: typeof ApiPnrrRawPaymentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/pnrr/raw/indicators': {
+      id: '/api/pnrr/raw/indicators'
+      path: '/api/pnrr/raw/indicators'
+      fullPath: '/api/pnrr/raw/indicators'
+      preLoaderRoute: typeof ApiPnrrRawIndicatorsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/campaigns/$campaignKey/users': {
@@ -1964,7 +2004,6 @@ const rootRouteChildren: RootRouteChildren = {
   ChartsChartIdRouteRoute: ChartsChartIdRouteRouteWithChildren,
   PrimarieCuiRouteRoute: PrimarieCuiRouteRouteWithChildren,
   AlertsNewRoute: AlertsNewRoute,
-  ApiPnrrProjectsRoute: ApiPnrrProjectsRoute,
   CertificatesIdRoute: CertificatesIdRoute,
   ChartsNewRoute: ChartsNewRoute,
   ProvocareNotificariRoute: ProvocareNotificariRoute,
@@ -1990,6 +2029,9 @@ const rootRouteChildren: RootRouteChildren = {
   MapsDatasetsIndexRoute: MapsDatasetsIndexRoute,
   MapsEditorIndexRoute: MapsEditorIndexRoute,
   PrimarieHartaIndexRoute: PrimarieHartaIndexRoute,
+  ApiPnrrRawIndicatorsRoute: ApiPnrrRawIndicatorsRoute,
+  ApiPnrrRawPaymentsRoute: ApiPnrrRawPaymentsRoute,
+  ApiPnrrRawProjectsRoute: ApiPnrrRawProjectsRoute,
   MapsDatasetsPublicPublicIdRoute: MapsDatasetsPublicPublicIdRoute,
 }
 export const routeTree = rootRouteImport

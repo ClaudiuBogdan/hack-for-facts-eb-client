@@ -7,7 +7,9 @@ import {
   deduplicateProjects,
   computeAggregates,
   filterProjects,
+  processPnrrBeneficiaryPayments,
   processPnrrData,
+  processPnrrOfficialIndicators,
 } from './data-transform'
 import type { RawPnrrProject } from '@/schemas/pnrr'
 
@@ -20,7 +22,7 @@ function makeRaw(overrides: Partial<RawPnrrProject> = {}): RawPnrrProject {
     'Titlu Proiect': 'Test Project',
     'Nume Beneficiar': 'Test Beneficiar',
     'CUI': '12345678',
-    'Județ': 'București',
+    'County': 'București',
     'Sursă Finanțare': 'grant',
     'Valoare (EUR)': 100_000,
     'Progres Tehnic': '50%',
@@ -29,6 +31,30 @@ function makeRaw(overrides: Partial<RawPnrrProject> = {}): RawPnrrProject {
     'Cod Măsură': 'I3',
     'Localitate': 'București',
     'CRI': 'MTI',
+    ...overrides,
+  }
+}
+
+function makeOfficialRaw(
+  overrides: Partial<RawPnrrProject> = {},
+): RawPnrrProject {
+  return {
+    id_angajament: 3114346815,
+    cod_componenta: 'C4',
+    cod_masura: 'I3',
+    cod_submasura: null,
+    cri: 'MTI',
+    sursa_finantare: 'grant',
+    titlu_contract: 'Autostrada A7',
+    denumire_beneficiar:
+      'COMPANIA NAȚIONALĂ DE ADMINISTRARE A INFRASTRUCTURII RUTIERE S.A.',
+    cui: '16054368',
+    valoare_fe: 1_000,
+    judet_implementare: 'Bacău',
+    localitate_implementare: 'Bacău',
+    stadiu: 'ÎN IMPLEMENTARE',
+    progres_fizic: 0.8969,
+    progres_financiar: 0.6169,
     ...overrides,
   }
 }
@@ -290,7 +316,7 @@ describe('entity type classification', () => {
   it('classifies national public institutions as public sector with national detailed type', () => {
     const raw = makeRaw({
       'Nume Beneficiar': 'CENTRUL NATIONAL DE COORDONARE PNRR',
-      'Județ': 'Național',
+      'County': 'Național',
       Localitate: 'NAȚIONAL',
     })
     const p = transformProject(raw)
@@ -301,7 +327,7 @@ describe('entity type classification', () => {
   it('classifies national-row companies with legal markers as private', () => {
     const raw = makeRaw({
       'Nume Beneficiar': 'EXEMPLU DIGITAL SOLUTIONS SRL',
-      'Județ': 'Național',
+      'County': 'Național',
       Localitate: 'NAȚIONAL',
     })
     const p = transformProject(raw)
@@ -312,7 +338,7 @@ describe('entity type classification', () => {
     const raw = makeRaw({
       'Nume Beneficiar': 'COMPANIA NATIONALA DE CAI FERATE CFR SA',
       CUI: '11054529',
-      'Județ': 'Național',
+      'County': 'Național',
       Localitate: 'NAȚIONAL',
     })
     const p = transformProject(raw)
@@ -339,7 +365,7 @@ describe('entity type classification', () => {
   it('keeps generic national-row companies with legal markers private', () => {
     const raw = makeRaw({
       'Nume Beneficiar': 'EXEMPLU DIGITAL SOLUTIONS SRL',
-      'Județ': 'Național',
+      'County': 'Național',
       Localitate: 'NAȚIONAL',
     })
     const p = transformProject(raw)
@@ -377,25 +403,25 @@ describe('entity type classification', () => {
     const chamber = transformProject(makeRaw({
       'Nume Beneficiar': 'CAMERA DE COMERT SI INDUSTRIE A JUDETULUI HUNEDOARA',
       CUI: '4371311',
-      'Județ': 'Hunedoara',
+      'County': 'Hunedoara',
       Localitate: 'Hunedoara',
     }))
     const school = transformProject(makeRaw({
       'Nume Beneficiar': 'SCOALA GIMNAZIALA , Comuna TRIFESTI, Judetul NEAMT',
       CUI: '17641395',
-      'Județ': 'Neamț',
+      'County': 'Neamț',
       Localitate: 'TRIFEȘTI',
     }))
     const health = transformProject(makeRaw({
       'Nume Beneficiar': 'DIRECTIA DE SANATATE PUBLICA A JUDETULUI BIHOR',
       CUI: '4230398',
-      'Județ': 'Bihor',
+      'County': 'Bihor',
       Localitate: 'Oradea',
     }))
     const countyCouncil = transformProject(makeRaw({
       'Nume Beneficiar': 'JUDEȚUL HUNEDOARA',
       CUI: '4374474',
-      'Județ': 'Hunedoara',
+      'County': 'Hunedoara',
       Localitate: 'JUDEȚUL HUNEDOARA',
     }))
 
@@ -404,9 +430,13 @@ describe('entity type classification', () => {
     expect(school.beneficiaryType).toBe('education')
     expect(health.beneficiaryType).toBe('health')
     expect(countyCouncil.beneficiaryType).toBe('county-council')
-    expect(filterProjects([chamber, school, health, countyCouncil], {
+    const filtered = filterProjects([chamber, school, health, countyCouncil], {
       beneficiaryTypes: ['county-council'],
-    })).toEqual([countyCouncil])
+    })
+    expect(filtered).toHaveLength(1)
+    expect(filtered[0].beneficiary).toBe(countyCouncil.beneficiary)
+    expect(filtered[0].beneficiaryType).toBe(countyCouncil.beneficiaryType)
+    expect(filtered[0].county).toBe(countyCouncil.county)
   })
 
   it('does not assign public detailed groups to private / non-public beneficiaries', () => {
@@ -420,7 +450,7 @@ describe('entity type classification', () => {
       transformProject(makeRaw({
         'Nume Beneficiar': 'MUNICIPIUL SIBIU',
         CUI: '4270740',
-        'Județ': 'Sibiu',
+        'County': 'Sibiu',
         Localitate: 'Sibiu',
       })).beneficiaryType
     ).toBe('uat')
@@ -429,7 +459,7 @@ describe('entity type classification', () => {
       transformProject(makeRaw({
         'Nume Beneficiar': 'MINISTERUL APARARII NATIONALE',
         CUI: '11424532',
-        'Județ': 'Sibiu',
+        'County': 'Sibiu',
         Localitate: 'Sibiu',
       })).beneficiaryType
     ).toBe('ministry')
@@ -504,7 +534,7 @@ describe('transformProject', () => {
       makeRaw({
         'Nume Beneficiar': 'MUNICIPIUL SIBIU',
         CUI: '4270740',
-        'Județ': 'Sibiu',
+        'County': 'Sibiu',
         Localitate: 'MUNICIPIUL SIBIU',
       })
     )
@@ -518,7 +548,7 @@ describe('transformProject', () => {
         'Titlu Proiect': 'Microbuze electrice pentru elevii din județul Ilfov',
         'Nume Beneficiar': 'JUDETUL ILFOV',
         CUI: '4192545',
-        'Județ': 'Ilfov',
+        'County': 'Ilfov',
         Localitate: 'JUDEȚUL ILFOV',
       })
     )
@@ -533,7 +563,7 @@ describe('transformProject', () => {
       makeRaw({
         'Nume Beneficiar': 'UNIVERSITATEA ,, LUCIAN BLAGA  DIN SIBIU',
         CUI: '4480173',
-        'Județ': 'București',
+        'County': 'București',
         Localitate: 'București',
       })
     )
@@ -548,14 +578,14 @@ describe('transformProject', () => {
       makeRaw({
         'Nume Beneficiar': 'MINISTERUL APARARII NATIONALE',
         CUI: '11424532',
-        'Județ': 'Sibiu',
+        'County': 'Sibiu',
         Localitate: 'MUNICIPIUL SIBIU',
       })
     )
 
     expect(p.sirutaCode).toBeNull()
     expect(p.county).toBe('Național')
-    expect(p.locality).toBe('NAȚIONAL')
+    expect(p.locality).toBe('Național')
   })
 
   it('does not assign unknown private entities from locality alone', () => {
@@ -563,7 +593,7 @@ describe('transformProject', () => {
       makeRaw({
         'Nume Beneficiar': 'INTEGRATED ENGINEERING SOLUTIONS SRL',
         CUI: '31233421',
-        'Județ': 'Sibiu',
+        'County': 'Sibiu',
         Localitate: 'MUNICIPIUL SIBIU',
       })
     )
@@ -576,7 +606,7 @@ describe('transformProject', () => {
       makeRaw({
         'Nume Beneficiar': 'AGENTIA NATIONALA DE ADMINISTRARE FISCALA',
         CUI: '16031712',
-        'Județ': 'București',
+        'County': 'București',
         Localitate: 'SECTORUL 5 AL MUNICIPIULUI BUCUREȘTI',
       })
     )
@@ -589,7 +619,7 @@ describe('transformProject', () => {
       makeRaw({
         'Nume Beneficiar': 'ADMINISTRATIA SPITALELOR SI SERVICIILOR MEDICALE BUCURESTI',
         CUI: '25502860',
-        'Județ': 'București',
+        'County': 'București',
         Localitate: 'București',
       })
     )
@@ -602,7 +632,7 @@ describe('transformProject', () => {
       makeRaw({
         'Nume Beneficiar': 'MUNICIPIUL BUCURESTI',
         CUI: '4267117',
-        'Județ': 'București',
+        'County': 'București',
         Localitate: 'București',
       })
     )
@@ -647,8 +677,24 @@ describe('computeAggregates', () => {
     const agg = computeAggregates(projects)
 
     expect(agg.rawTotalValue).toBe(300)
+    expect(agg.projectCount).toBe(2)
+    expect(agg.projectRecordCount).toBe(2)
     expect(agg.rawProjectCount).toBe(2)
     expect(agg.deduplicatedProjectCount).toBe(2)
+  })
+
+  it('counts duplicate official engagement rows as one project but sums both values', () => {
+    const { projects } = processPnrrData([
+      makeOfficialRaw({ id_angajament: 123, valoare_fe: 1_000 }),
+      makeOfficialRaw({ id_angajament: 123, valoare_fe: 2_000 }),
+    ])
+    const agg = computeAggregates(projects)
+
+    expect(agg.projectCount).toBe(1)
+    expect(agg.projectRecordCount).toBe(2)
+    expect(agg.rawProjectCount).toBe(2)
+    expect(agg.rawTotalValue).toBe(600)
+    expect(agg.topBeneficiaries[0].count).toBe(1)
   })
 
   it('computes funding source totals', () => {
@@ -699,7 +745,7 @@ describe('filterProjects', () => {
       makeRaw({ 'Titlu Proiect': 'Alpha', 'Cod Componentă': 'C4', 'Nume Beneficiar': 'Alpha SRL' })
     ),
     transformProject(
-      makeRaw({ 'Titlu Proiect': 'Beta', 'Cod Componentă': 'C15', 'Județ': 'Cluj', 'Nume Beneficiar': 'Beta SA' })
+      makeRaw({ 'Titlu Proiect': 'Beta', 'Cod Componentă': 'C15', 'County': 'Cluj', 'Nume Beneficiar': 'Beta SA' })
     ),
   ]
 
@@ -718,7 +764,7 @@ describe('filterProjects', () => {
   it('filters by beneficiary search (CUI prefix)', () => {
     const withCui = [
       transformProject(makeRaw({ 'Titlu Proiect': 'Alpha', 'Cod Componentă': 'C4', 'Nume Beneficiar': 'Alpha SRL', 'CUI': '11111111' })),
-      transformProject(makeRaw({ 'Titlu Proiect': 'Beta', 'Cod Componentă': 'C15', 'Județ': 'Cluj', 'Nume Beneficiar': 'Beta SA', 'CUI': '22222222' })),
+      transformProject(makeRaw({ 'Titlu Proiect': 'Beta', 'Cod Componentă': 'C15', 'County': 'Cluj', 'Nume Beneficiar': 'Beta SA', 'CUI': '22222222' })),
       transformProject(makeRaw({ 'Titlu Proiect': 'Gamma', 'Nume Beneficiar': 'Gamma SRL', 'CUI': '98765432' })),
     ]
     const result = filterProjects(withCui, { beneficiarySearch: '98765' })
@@ -729,7 +775,7 @@ describe('filterProjects', () => {
   it('filters by beneficiary search (CUI exact)', () => {
     const withCui = [
       transformProject(makeRaw({ 'Titlu Proiect': 'Alpha', 'Cod Componentă': 'C4', 'Nume Beneficiar': 'Alpha SRL', 'CUI': '11111111' })),
-      transformProject(makeRaw({ 'Titlu Proiect': 'Beta', 'Cod Componentă': 'C15', 'Județ': 'Cluj', 'Nume Beneficiar': 'Beta SA', 'CUI': '22222222' })),
+      transformProject(makeRaw({ 'Titlu Proiect': 'Beta', 'Cod Componentă': 'C15', 'County': 'Cluj', 'Nume Beneficiar': 'Beta SA', 'CUI': '22222222' })),
       transformProject(makeRaw({ 'Titlu Proiect': 'Gamma', 'Nume Beneficiar': 'Gamma SRL', 'CUI': '98765432' })),
     ]
     const result = filterProjects(withCui, { beneficiarySearch: '98765432' })
@@ -740,7 +786,7 @@ describe('filterProjects', () => {
   it('filters by exact beneficiary CUI', () => {
     const withCui = [
       transformProject(makeRaw({ 'Titlu Proiect': 'Alpha', 'Cod Componentă': 'C4', 'Nume Beneficiar': 'Shared Name', 'CUI': '11111111' })),
-      transformProject(makeRaw({ 'Titlu Proiect': 'Beta', 'Cod Componentă': 'C15', 'Județ': 'Cluj', 'Nume Beneficiar': 'Shared Name', 'CUI': '22222222' })),
+      transformProject(makeRaw({ 'Titlu Proiect': 'Beta', 'Cod Componentă': 'C15', 'County': 'Cluj', 'Nume Beneficiar': 'Shared Name', 'CUI': '22222222' })),
       transformProject(makeRaw({ 'Titlu Proiect': 'Gamma', 'Nume Beneficiar': 'No CUI', 'CUI': null })),
     ]
     const result = filterProjects(withCui, { beneficiaryCui: '22222222' })
@@ -751,7 +797,7 @@ describe('filterProjects', () => {
   it('normalizes beneficiary CUI filter prefixes and whitespace', () => {
     const withCui = [
       transformProject(makeRaw({ 'Titlu Proiect': 'Alpha', 'Cod Componentă': 'C4', 'Nume Beneficiar': 'Alpha SRL', 'CUI': '11111111' })),
-      transformProject(makeRaw({ 'Titlu Proiect': 'Beta', 'Cod Componentă': 'C15', 'Județ': 'Cluj', 'Nume Beneficiar': 'Beta SA', 'CUI': '22222222' })),
+      transformProject(makeRaw({ 'Titlu Proiect': 'Beta', 'Cod Componentă': 'C15', 'County': 'Cluj', 'Nume Beneficiar': 'Beta SA', 'CUI': '22222222' })),
     ]
     const result = filterProjects(withCui, { beneficiaryCui: ' RO 22222222 ' })
     expect(result).toHaveLength(1)
@@ -775,7 +821,7 @@ describe('filterProjects', () => {
         'Titlu Proiect': 'NETSIM',
         'Nume Beneficiar': 'UNIVERSITATEA ,, LUCIAN BLAGA  DIN SIBIU',
         CUI: '4480173',
-        'Județ': 'București',
+        'County': 'București',
         Localitate: 'București',
       })
     )
@@ -801,7 +847,7 @@ describe('filterProjects', () => {
         'Titlu Proiect': 'Microbuze electrice pentru elevii din județul Ilfov',
         'Nume Beneficiar': 'JUDETUL ILFOV',
         CUI: '4192545',
-        'Județ': 'Ilfov',
+        'County': 'Ilfov',
         Localitate: 'JUDEȚUL ILFOV',
       })
     )
@@ -889,7 +935,7 @@ describe('filterProjects', () => {
         'Titlu Proiect': 'Sibiu',
         'Nume Beneficiar': 'MUNICIPIUL SIBIU',
         CUI: '4270740',
-        'Județ': 'Sibiu',
+        'County': 'Sibiu',
         Localitate: 'Sibiu',
       })),
       transformProject(makeRaw({
@@ -906,7 +952,7 @@ describe('filterProjects', () => {
         'Titlu Proiect': 'National',
         'Nume Beneficiar': 'CENTRUL NATIONAL DE COORDONARE PNRR',
         CUI: null,
-        'Județ': 'Național',
+        'County': 'Național',
         Localitate: 'NAȚIONAL',
       })),
     ]
@@ -921,7 +967,7 @@ describe('filterProjects', () => {
       'Titlu Proiect': 'Public company',
       'Nume Beneficiar': 'COMPANIA NATIONALA DE CAI FERATE CFR SA',
       CUI: '11054529',
-      'Județ': 'Național',
+      'County': 'Național',
       Localitate: 'NAȚIONAL',
     }))
     expect(filterProjects([officialPublicCompany], { beneficiaryTypes: ['public-company'] })).toHaveLength(1)
@@ -937,7 +983,7 @@ describe('filterProjects', () => {
       transformProject(makeRaw({
         'Titlu Proiect': 'National public',
         'Nume Beneficiar': 'CENTRUL NATIONAL DE COORDONARE PNRR',
-        'Județ': 'Național',
+        'County': 'Național',
         Localitate: 'NAȚIONAL',
         'Valoare (EUR)': 200,
       })),
@@ -971,14 +1017,14 @@ describe('filterProjects', () => {
       'Titlu Proiect': 'National detailed',
       'Nume Beneficiar': 'CENTRUL NATIONAL DE COORDONARE PNRR',
       CUI: null,
-      'Județ': 'Național',
+      'County': 'Național',
       Localitate: 'NAȚIONAL',
     }))
     const nationalPublicCompany = transformProject(makeRaw({
       'Titlu Proiect': 'National public company',
       'Nume Beneficiar': 'COMPANIA NATIONALA DE CAI FERATE CFR SA',
       CUI: '11054529',
-      'Județ': 'Național',
+      'County': 'Național',
       Localitate: 'NAȚIONAL',
     }))
     const privateProject = transformProject(makeRaw({ 'Titlu Proiect': 'Private', 'Nume Beneficiar': 'ACME SRL' }))
@@ -995,19 +1041,19 @@ describe('filterProjects', () => {
   })
 
   it('includes national projects by default', () => {
-    const national = transformProject(makeRaw({ 'Județ': 'Național' }))
+    const national = transformProject(makeRaw({ 'County': 'Național' }))
     const result = filterProjects([national, ...projects], {})
     expect(result).toHaveLength(3)
   })
 
   it('excludes national projects when flag is false', () => {
-    const national = transformProject(makeRaw({ 'Județ': 'Național' }))
+    const national = transformProject(makeRaw({ 'County': 'Național' }))
     const result = filterProjects([national, ...projects], { includeNational: false })
     expect(result).toHaveLength(2)
   })
 
   it('includes national projects when flag is set', () => {
-    const national = transformProject(makeRaw({ 'Județ': 'Național' }))
+    const national = transformProject(makeRaw({ 'County': 'Național' }))
     const result = filterProjects([national, ...projects], { includeNational: true })
     expect(result).toHaveLength(3)
   })
@@ -1033,8 +1079,87 @@ describe('processPnrrData', () => {
     const aggregates = computeAggregates(projects)
 
     expect(projects).toHaveLength(2)
+    expect(aggregates.projectCount).toBe(2)
+    expect(aggregates.projectRecordCount).toBe(2)
     expect(aggregates.rawProjectCount).toBe(2)
     expect(aggregates.rawTotalValue).toBe(300)
+  })
+
+  it('maps official raw fields and unit conversions', () => {
+    const { projects } = processPnrrData([makeOfficialRaw()])
+    const [project] = projects
+
+    expect(project.engagementId).toBe('3114346815')
+    expect(project.title).toBe('Autostrada A7')
+    expect(project.beneficiary).toBe(
+      'COMPANIA NAȚIONALĂ DE ADMINISTRARE A INFRASTRUCTURII RUTIERE S.A.',
+    )
+    expect(project.cui).toBe('16054368')
+    expect(project.componentCode).toBe('C4')
+    expect(project.measureCode).toBe('I3')
+    expect(project.valueEur).toBe(200)
+    expect(project.techProgress).toBeCloseTo(89.69)
+    expect(project.finProgress).toBeCloseTo(61.69)
+  })
+
+  it('canonicalizes national location variants before grouping and aggregates', () => {
+    const { projects } = processPnrrData([
+      makeOfficialRaw({
+        id_angajament: 1,
+        denumire_beneficiar: 'ACME SRL',
+        cui: '90000001',
+        judet_implementare: 'NAȚIONAL',
+        localitate_implementare: 'NAȚIONAL',
+      }),
+      makeOfficialRaw({
+        id_angajament: 2,
+        denumire_beneficiar: 'ACME SRL',
+        cui: '90000001',
+        judet_implementare: 'Național',
+        localitate_implementare: 'Național',
+      }),
+    ])
+    const aggregates = computeAggregates(projects)
+
+    expect(projects.map((project) => project.county)).toEqual([
+      'Național',
+      'Național',
+    ])
+    expect(projects.map((project) => project.locality)).toEqual([
+      'Național',
+      'Național',
+    ])
+    expect(Object.keys(aggregates.countyStats)).toEqual(['Național'])
+    expect(aggregates.countyStats['Național']?.count).toBe(2)
+  })
+
+  it('groups official rows by id_angajament and keeps record-level values', () => {
+    const { projects, projectRecords, meta } = processPnrrData([
+      makeOfficialRaw({
+        id_angajament: 123,
+        cod_componenta: 'C4',
+        cod_masura: 'I3',
+        valoare_fe: 1_000,
+        sursa_finantare: 'grant',
+      }),
+      makeOfficialRaw({
+        id_angajament: 123,
+        cod_componenta: 'C5',
+        cod_masura: 'I1',
+        valoare_fe: 2_000,
+        sursa_finantare: 'loan',
+      }),
+    ])
+
+    expect(projectRecords).toHaveLength(2)
+    expect(projects).toHaveLength(1)
+    expect(meta.projectCount).toBe(1)
+    expect(meta.projectRecordCount).toBe(2)
+    expect(projects[0].records).toHaveLength(2)
+    expect(projects[0].componentCode).toBe('C5')
+    expect(projects[0].totalValueEur).toBe(600)
+    expect(projects[0].variantCounts?.components).toBe(1)
+    expect(projects[0].variantCounts?.fundingSources).toBe(1)
   })
 
   it('detects duplicate-conflict data-quality signals', () => {
@@ -1042,10 +1167,13 @@ describe('processPnrrData', () => {
       makeRaw({ 'Titlu Proiect': 'Same Project', 'Progres Tehnic': '50%' }),
       makeRaw({ 'Titlu Proiect': 'Same Project', 'Progres Tehnic': '60%' }),
     ]
-    const { projects } = processPnrrData(raw)
+    const { projects, projectRecords } = processPnrrData(raw)
 
+    expect(projects).toHaveLength(1)
+    expect(projects[0].records).toHaveLength(2)
+    expect(projectRecords[0].dataQualitySignals).toContain('duplicate-conflict')
+    expect(projectRecords[1].dataQualitySignals).toContain('duplicate-conflict')
     expect(projects[0].dataQualitySignals).toContain('duplicate-conflict')
-    expect(projects[1].dataQualitySignals).toContain('duplicate-conflict')
     expect(projects[0].anomalies).not.toContain('financial-overrun')
   })
 
@@ -1054,9 +1182,11 @@ describe('processPnrrData', () => {
       makeRaw({ 'Titlu Proiect': 'Same Project' }),
       makeRaw({ 'Titlu Proiect': 'Same Project' }),
     ]
-    const { projects } = processPnrrData(raw)
+    const { projects, projectRecords } = processPnrrData(raw)
+    expect(projects).toHaveLength(1)
+    expect(projectRecords[0].dataQualitySignals).not.toContain('duplicate-conflict')
+    expect(projectRecords[1].dataQualitySignals).not.toContain('duplicate-conflict')
     expect(projects[0].dataQualitySignals).not.toContain('duplicate-conflict')
-    expect(projects[1].dataQualitySignals).not.toContain('duplicate-conflict')
   })
 
   it('includes data-quality signals in aggregate counts', () => {
@@ -1070,6 +1200,54 @@ describe('processPnrrData', () => {
     const { projects } = processPnrrData(raw)
     const aggregates = computeAggregates(projects)
     expect(aggregates.dataQualitySignalCounts['large-missing-financial-progress'].count).toBe(1)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Official dedicated payment files
+// ---------------------------------------------------------------------------
+
+describe('official dedicated payment files', () => {
+  it('normalizes official persons payment rows', () => {
+    const payments = processPnrrBeneficiaryPayments([
+      {
+        'unique identifier': 16054368,
+        'full legal name':
+          'COMPANIA NAŢIONALĂ DE ADMINISTRARE A INFRASTRUCTURII RUTIERE S.A.',
+        'tax identification number': 16054368,
+        'received amount in lei': 6_199_754_237.01,
+        'last date funding received': '2026.04.27',
+      },
+    ])
+
+    expect(payments).toEqual([
+      {
+        id: 'payment:16054368',
+        beneficiary:
+          'COMPANIA NAŢIONALĂ DE ADMINISTRARE A INFRASTRUCTURII RUTIERE S.A.',
+        cui: '16054368',
+        valueRon: 6_199_754_237.01,
+        lastPaymentDate: '2026-04-27',
+      },
+    ])
+  })
+
+  it('normalizes official total indicators', () => {
+    const indicators = processPnrrOfficialIndicators({
+      items: [
+        {
+          alocat_eur: 21_410_527_592.99,
+          platit_eur: 10_447_582_333.31,
+          nr_beneficiari_plati: 5_822,
+          nr_proiecte: 21_786,
+        },
+      ],
+    })
+
+    expect(indicators?.allocatedTotalEur).toBe(21_410_527_592.99)
+    expect(indicators?.paidTotalEur).toBe(10_447_582_333.31)
+    expect(indicators?.paidBeneficiaryCount).toBe(5_822)
+    expect(indicators?.projectCount).toBe(21_786)
   })
 })
 

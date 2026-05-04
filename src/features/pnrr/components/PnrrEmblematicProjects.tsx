@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Trans } from '@lingui/react/macro'
-import type { PnrrProject } from '@/schemas/pnrr'
+import type { PnrrWorkerProjectRow } from '../workers/pnrr-worker-types'
 import {
   EMBLEMATIC_PROJECTS,
   projectMatchesEmblematicConfig,
@@ -8,7 +8,7 @@ import {
 } from '../data/emblematic-projects'
 import { PNRR_COMPONENTS } from '../data/component-definitions'
 import { usePnrrCurrency } from '../lib/usePnrrCurrency'
-import { formatPnrrCurrency } from '../lib/formatting'
+import { formatPnrrCurrency, formatPnrrPercentage } from '../lib/formatting'
 import { formatPnrrCompactCurrencyDisplayParts } from './pnrr-compact-currency-display'
 
 function getAccentColor(componentCode: string): string {
@@ -19,18 +19,18 @@ export function PnrrEmblematicProjects({
   projects,
   onProjectClick,
 }: {
-  readonly projects: readonly PnrrProject[]
-  readonly onProjectClick: (project: PnrrProject) => void
+  readonly projects: readonly PnrrWorkerProjectRow[]
+  readonly onProjectClick: (project: PnrrWorkerProjectRow) => void
 }) {
   const currency = usePnrrCurrency()
   const emblematic = useMemo(() => {
     const matched: Array<{
       readonly config: EmblematicProjectConfig
-      readonly project: PnrrProject
+      readonly project: PnrrWorkerProjectRow
     }> = []
 
     for (const config of EMBLEMATIC_PROJECTS) {
-      let bestMatch: PnrrProject | null = null
+      let bestMatch: PnrrWorkerProjectRow | null = null
 
       for (const project of projects) {
         const isCandidate =
@@ -39,7 +39,9 @@ export function PnrrEmblematicProjects({
 
         if (
           isCandidate &&
-          (!bestMatch || project.valueEur > bestMatch.valueEur)
+          (!bestMatch ||
+            (project.totalValueEur ?? project.valueEur) >
+              (bestMatch.totalValueEur ?? bestMatch.valueEur))
         ) {
           bestMatch = project
         }
@@ -67,16 +69,19 @@ export function PnrrEmblematicProjects({
           p.finProgress === 'in-implementation' ? 15 : (p.finProgress ?? 0)
 
         const techDisplay =
-          p.techProgress === 'in-implementation' ? '<30%' : `${techVal}%`
+          p.techProgress === 'in-implementation'
+            ? '<30%'
+            : formatPnrrPercentage(techVal)
         const finDisplay =
           p.finProgress == null
             ? '—'
             : p.finProgress === 'in-implementation'
               ? '<30%'
-              : `${finVal}%`
+              : formatPnrrPercentage(finVal)
 
-        const formattedAmount = formatPnrrCurrency(p.valueEur, currency)
-        const { amount, unit } = formatPnrrCompactCurrencyDisplayParts(p.valueEur, currency)
+        const projectValue = p.totalValueEur ?? p.valueEur
+        const formattedAmount = formatPnrrCurrency(projectValue, currency)
+        const { amount, unit } = formatPnrrCompactCurrencyDisplayParts(projectValue, currency)
 
         return (
           <button

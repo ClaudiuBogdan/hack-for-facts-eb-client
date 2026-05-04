@@ -8,10 +8,13 @@ import { parsePnrrSearchString } from '@/schemas/pnrr'
 import {
   buildFallbackPnrrSeoSnapshot,
   buildPnrrSeoSnapshotSearchKey,
-  buildPnrrSeoSnapshotFromRawProjects,
+  buildPnrrSeoSnapshotFromProjects,
   type PnrrSeoSnapshot,
 } from '@/features/pnrr/seo/pnrr-seo'
-import { fetchPnrrRawProjects } from './pnrr-data-proxy'
+import {
+  fetchPnrrOfficialIndicators,
+  fetchPnrrProjects,
+} from './pnrr-data-proxy'
 
 const IMAGE_WIDTH = 1200
 const IMAGE_HEIGHT = 630
@@ -20,6 +23,7 @@ const SHARE_IMAGE_STALE_WHILE_REVALIDATE_SECONDS = 86400
 const SHARE_IMAGE_CACHE_CONTROL = `public, max-age=${SHARE_IMAGE_CACHE_SECONDS}, s-maxage=${SHARE_IMAGE_CACHE_SECONDS}, stale-while-revalidate=${SHARE_IMAGE_STALE_WHILE_REVALIDATE_SECONDS}`
 const SHARE_IMAGE_CDN_CACHE_CONTROL = `max-age=${SHARE_IMAGE_CACHE_SECONDS}, stale-while-revalidate=${SHARE_IMAGE_STALE_WHILE_REVALIDATE_SECONDS}`
 const SHARE_IMAGE_MEMORY_CACHE_MAX_ENTRIES = 128
+const SHARE_IMAGE_CACHE_VERSION = '20260430-ron5-official-total'
 
 type LoadedShareFonts = {
   readonly regular: Buffer
@@ -173,11 +177,15 @@ export function buildPnrrShareImageViewModel(
   snapshot: PnrrSeoSnapshot,
   options: PnrrShareImageViewModelOptions = {},
 ): PnrrShareImageViewModel {
+  const totalValueEur = options.showTotalScope
+    ? (snapshot.officialAllocatedTotalEur ?? snapshot.totalValueEur)
+    : snapshot.totalValueEur
+
   return {
     title: 'PNRR Romania',
     subtitle: 'Proiecte, progres, beneficiari si riscuri',
     badge: 'Transparenta.eu',
-    totalValue: formatCurrencyEur(snapshot.totalValueEur),
+    totalValue: formatCurrencyEur(totalValueEur),
     projectCount: formatCount(snapshot.projectCount),
     completedCount: formatCount(snapshot.completedCount),
     anomalyCount: formatCount(snapshot.anomalyCount),
@@ -517,13 +525,22 @@ async function resolvePnrrShareSnapshot(
   requestUrl: URL,
 ): Promise<ResolvedPnrrShareSnapshot> {
   const search = parsePnrrSearchString(requestUrl.search)
-  const { data } = await fetchPnrrRawProjects()
+  const [{ data }, officialIndicatorsResult] = await Promise.all([
+    fetchPnrrProjects(),
+    fetchPnrrOfficialIndicators().catch((error) => {
+      console.error('[pnrr-share-image] Indicators fetch failed', {
+        error: error instanceof Error ? error.message : String(error),
+      })
+      return { data: null }
+    }),
+  ])
   const snapshotSearchKey = buildPnrrSeoSnapshotSearchKey(search)
 
   return {
-    snapshot: buildPnrrSeoSnapshotFromRawProjects({
-      rawProjects: data,
+    snapshot: buildPnrrSeoSnapshotFromProjects({
+      projects: data,
       search,
+      officialIndicators: officialIndicatorsResult.data,
     }),
     hasSnapshotFilters: snapshotSearchKey !== '{}',
   }
@@ -545,7 +562,7 @@ export async function handlePnrrShareImageRequest(
     })
   }
 
-  const cacheKey = requestUrl.toString()
+  const cacheKey = `${SHARE_IMAGE_CACHE_VERSION}:${requestUrl.toString()}`
   const cachedImage = getCachedShareImage(cacheKey)
   if (cachedImage) {
     return new Response(Buffer.from(cachedImage), {

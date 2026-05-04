@@ -1,14 +1,16 @@
 import { Trans } from '@lingui/react/macro'
-import type { PnrrProject } from '@/schemas/pnrr'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
 import { PnrrProjectTable } from '../table/PnrrProjectTable'
 import { PnrrProjectSearchInput } from '../filters/PnrrProjectSearchInput'
+import type { PnrrWorkerProjectPage } from '../../workers/pnrr-worker-types'
 
 export function PnrrProjectsView({
-  projects,
+  page,
+  projectRecordCount,
   filterState,
 }: {
-  readonly projects: readonly PnrrProject[]
+  readonly page: PnrrWorkerProjectPage
+  readonly projectRecordCount: number
   readonly filterState: ReturnType<typeof usePnrrFilterState>
 }) {
   return (
@@ -22,7 +24,10 @@ export function PnrrProjectsView({
               <Trans>Projects</Trans>
             </h2>
             <span className="hidden leading-none text-sm text-[var(--pnrr-muted)] sm:inline">
-              {projects.length.toLocaleString('ro-RO')} <Trans>projects</Trans>
+              {page.totalCount.toLocaleString('ro-RO')}{' '}
+              <Trans>projects</Trans> ·{' '}
+              {projectRecordCount.toLocaleString('ro-RO')}{' '}
+              <Trans>records</Trans>
             </span>
           </div>
         </div>
@@ -34,7 +39,7 @@ export function PnrrProjectsView({
         className="max-w-md"
       />
 
-      <PnrrProjectTable projects={projects} filterState={filterState} />
+      <PnrrProjectTable page={page} filterState={filterState} />
     </div>
   )
 }

@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from 'vitest'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
 import { computeAggregates } from '../../lib/data-transform'
 import { PnrrOverview, type PnrrOverviewMetricStats } from './PnrrOverview'
+import type { PnrrProject } from '@/schemas/pnrr'
+import type { PnrrWorkerOverviewModel } from '../../workers/pnrr-worker-types'
 
 vi.mock('../PnrrMapPreview', () => ({
   PnrrMapPreview: () => <div data-testid="pnrr-map-preview" />,
@@ -42,7 +44,7 @@ function makeFilterState(): ReturnType<typeof usePnrrFilterState> {
       onlyAnomalies: false,
       excludeMicro: false,
       granularity: 'county',
-      includeNational: false,
+      includeNational: true,
     },
     setView: vi.fn(),
     showBeneficiaryProjects: vi.fn(),
@@ -87,7 +89,8 @@ function makeCachedStats(): PnrrOverviewMetricStats {
   return {
     rawTotalValue: 1_200_000,
     deduplicatedTotalValue: 1_100_000,
-    rawProjectCount: 42,
+    projectCount: 42,
+    projectRecordCount: 45,
     completedCount: 12,
     completedValue: 300_000,
     loanTotal: 250_000,
@@ -97,11 +100,97 @@ function makeCachedStats(): PnrrOverviewMetricStats {
   }
 }
 
+function makeProject(overrides: Partial<PnrrProject>): PnrrProject {
+  return {
+    id: 'project-1',
+    engagementId: 'engagement-1',
+    title: 'Test project',
+    beneficiary: 'Test beneficiary',
+    cui: '123',
+    county: 'Național',
+    locality: 'Național',
+    fundingSource: 'grant',
+    valueEur: 100,
+    techProgress: 50,
+    finProgress: 40,
+    status: 'mid-progress',
+    componentCode: 'C4',
+    measureCode: 'I1',
+    measureFullCode: 'C4-I1',
+    cri: 'test',
+    anomalies: [],
+    dataQualitySignals: [],
+    isReform: false,
+    entityType: 'public',
+    beneficiaryType: 'other-public',
+    sirutaCode: null,
+    ...overrides,
+  }
+}
+
+function makeOverview(
+  overrides: Partial<PnrrWorkerOverviewModel> = {},
+): PnrrWorkerOverviewModel {
+  return {
+    aggregates: computeAggregates([]),
+    topComponents: [],
+    topCounties: [],
+    topBeneficiaries: [],
+    projectPreviewRows: [],
+    emblematicProjectRows: [],
+    histogram: {
+      tech: {
+        data: [],
+        countCoveragePercent: 0,
+        valueCoveragePercent: 0,
+        validCount: 0,
+        validValue: 0,
+        totalRecordCount: 0,
+        totalValue: 0,
+      },
+      fin: {
+        data: [],
+        countCoveragePercent: 0,
+        valueCoveragePercent: 0,
+        validCount: 0,
+        validValue: 0,
+        totalRecordCount: 0,
+        totalValue: 0,
+      },
+      gap: {
+        data: [],
+        countCoveragePercent: 0,
+        valueCoveragePercent: 0,
+        validCount: 0,
+        validValue: 0,
+        totalRecordCount: 0,
+        totalValue: 0,
+      },
+    },
+    mapPreview: {
+      seriesId: 'total-value',
+      granularity: 'county',
+      series: {
+        id: 'total-value',
+        data: [],
+        min: 0,
+        max: 0,
+      },
+      nationalCount: 0,
+      unmappedCount: 0,
+      uatProjectCount: 0,
+      selectedUat: null,
+      selectedCountyProjects: [],
+      selectedUatProjects: [],
+    },
+    ...overrides,
+  }
+}
+
 describe('PnrrOverview', () => {
   it('renders cached metric cards and the lower skeleton while full data loads', () => {
     render(
       <PnrrOverview
-        projects={[]}
         aggregates={computeAggregates([])}
         filterState={makeFilterState()}
         cachedStats={makeCachedStats()}
@@ -109,10 +198,10 @@ describe('PnrrOverview', () => {
       />,
     )
 
-    expect(screen.getByText('Valoarea proiectelor listate')).toBeInTheDocument()
-    expect(screen.getByText('Ponderea valorii proiectelor marcate finalizate')).toBeInTheDocument()
+    expect(screen.getByText('Listed project value')).toBeInTheDocument()
+    expect(screen.getByText('Share of value of projects marked as completed')).toBeInTheDocument()
     expect(screen.getByText('25%')).toBeInTheDocument()
-    expect(screen.getByText('12 proiecte marcate finalizate din 42')).toBeInTheDocument()
+    expect(screen.getByText('12 projects marked as completed from 42')).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent(
       /Se încarcă setul complet de date PNRR|Loading the full PNRR dataset/,
     )
@@ -121,45 +210,102 @@ describe('PnrrOverview', () => {
     expect(screen.queryByTestId('pnrr-map-preview')).not.toBeInTheDocument()
   })
 
-  it('renders duplicate beneficiary names without React key warnings', () => {
+  it('uses official allocation for cached SSR headline metrics', () => {
+    render(
+      <PnrrOverview
+        aggregates={computeAggregates([])}
+        filterState={makeFilterState()}
+        cachedStats={makeCachedStats()}
+        officialAllocatedTotalEur={2_000_000}
+        isLoadingFullData
+      />,
+    )
+
+    expect(screen.getByText('Total PNRR allocation')).toBeInTheDocument()
+    expect(document.body).toHaveTextContent(/10\s*M RON/)
+    expect(screen.getByText(/listed value/)).toBeInTheDocument()
+  })
+
+  it('uses official allocated total for the unfiltered headline metric', () => {
+    const projects = [
+      makeProject({
+        valueEur: 100,
+      }),
+    ]
+
+    render(
+      <PnrrOverview
+        aggregates={computeAggregates(projects)}
+        filterState={makeFilterState()}
+        officialAllocatedTotalEur={200}
+      />,
+    )
+
+    expect(screen.getByText('Total PNRR allocation')).toBeInTheDocument()
+    expect(screen.getAllByText(/listed value/).length).toBeGreaterThan(0)
+    expect(screen.queryByText('Listed project value')).not.toBeInTheDocument()
+  })
+
+  it('renders beneficiary values from the main project dataset without React key warnings', () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
-    const aggregates = {
-      ...computeAggregates([]),
-      rawTotalValue: 300,
-      deduplicatedTotalValue: 300,
-      rawProjectCount: 2,
-      topBeneficiaries: [
-        {
-          beneficiary:
-            'DIRECTIA GENERALA DE ASISTENTA SOCIALA SI PROTECTIA COPILULUI',
-          cui: '123',
-          count: 1,
-          value: 200,
-        },
-        {
-          beneficiary:
-            'DIRECTIA GENERALA DE ASISTENTA SOCIALA SI PROTECTIA COPILULUI',
-          cui: '456',
-          count: 1,
-          value: 100,
-        },
-      ],
-    }
+    const projects = [
+      makeProject({
+        id: 'project-123',
+        engagementId: 'engagement-123',
+        beneficiary:
+          'DIRECTIA GENERALA DE ASISTENTA SOCIALA SI PROTECTIA COPILULUI',
+        cui: '123',
+        valueEur: 120,
+      }),
+      makeProject({
+        id: 'project-456',
+        engagementId: 'engagement-456',
+        beneficiary:
+          'DIRECTIA GENERALA DE ASISTENTA SOCIALA SI PROTECTIA COPILULUI',
+        cui: '456',
+        valueEur: 80,
+      }),
+    ]
 
     try {
       render(
         <PnrrOverview
-          projects={[]}
-          aggregates={aggregates}
+          aggregates={computeAggregates(projects)}
           filterState={makeFilterState()}
+          overview={makeOverview({
+            topBeneficiaries: [
+              {
+                id: '123',
+                itemKey: 'Test 123',
+                label:
+                  'DIRECTIA GENERALA DE ASISTENTA SOCIALA SI PROTECTIA COPILULUI',
+                valueEur: 120,
+                count: 1,
+                pct: 60,
+              },
+              {
+                id: '456',
+                itemKey: 'Test 456',
+                label:
+                  'DIRECTIA GENERALA DE ASISTENTA SOCIALA SI PROTECTIA COPILULUI',
+                valueEur: 80,
+                count: 1,
+                pct: 40,
+              },
+            ],
+          })}
         />,
       )
 
+      expect(
+        screen.getByText('Top beneficiaries by listed project value (Top 100)'),
+      ).toBeInTheDocument()
       expect(
         screen.getAllByText(
           'DIRECTIA GENERALA DE ASISTENTA SOCIALA SI PROTECTIA COPILULUI',
         ),
       ).toHaveLength(2)
+      expect(screen.getAllByText(/1 projects/)).toHaveLength(2)
       expect(
         consoleError.mock.calls.some((call) =>
           call.some((argument) =>
@@ -170,5 +316,47 @@ describe('PnrrOverview', () => {
     } finally {
       consoleError.mockRestore()
     }
+  })
+
+  it('uses worker payment rows for the overview beneficiary leaderboard', () => {
+    const projects = [
+      makeProject({
+        beneficiary:
+          'COMPANIA NAŢIONALĂ DE ADMINISTRARE A INFRASTRUCTURII RUTIERE S.A.',
+        cui: '16054368',
+        valueEur: 2_000,
+      }),
+    ]
+
+    render(
+      <PnrrOverview
+        aggregates={computeAggregates(projects)}
+        filterState={makeFilterState()}
+        overview={makeOverview({
+          topBeneficiaries: [
+            {
+              id: '16054368',
+              itemKey: 'payment:16054368',
+              label:
+                'COMPANIA NAŢIONALĂ DE ADMINISTRARE A INFRASTRUCTURII RUTIERE S.A.',
+              valueEur: 1_000,
+              count: 1,
+              pct: 100,
+              secondaryValueEur: 2_000,
+            },
+          ],
+        })}
+      />,
+    )
+
+    expect(
+      screen.getByText('Top beneficiaries by reported amounts received (Top 100)'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText('received:')).not.toBeInTheDocument()
+    expect(screen.getByText(/Listed budget/)).toBeInTheDocument()
+    expect(screen.queryByText('share of total paid')).not.toBeInTheDocument()
+    expect(
+      screen.queryByText(/Amounts received are read from the official file/),
+    ).not.toBeInTheDocument()
   })
 })

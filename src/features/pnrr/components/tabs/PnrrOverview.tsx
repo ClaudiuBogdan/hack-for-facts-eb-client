@@ -1,19 +1,25 @@
-import { useMemo, useState, useCallback, type ReactNode } from 'react'
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import { formatNumber, cn } from '@/lib/utils'
 import { usePnrrCurrency } from '../../lib/usePnrrCurrency'
 import { formatPnrrCurrency } from '../../lib/formatting'
 import { formatPnrrCompactCurrencyDisplayParts } from '../pnrr-compact-currency-display'
-import type { PnrrProject, PnrrAggregates } from '@/schemas/pnrr'
+import type { PnrrAggregates } from '@/schemas/pnrr'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
-import { PNRR_COMPONENTS } from '../../data/component-definitions'
 import { PnrrEmblematicProjects } from '../PnrrEmblematicProjects'
 import { PnrrProjectDrawer } from '../table/PnrrProjectDrawer'
-import { PnrrMapPreview } from '../PnrrMapPreview'
 import { PnrrProjectsPreview } from '../PnrrProjectsPreview'
 import { PnrrContentSkeleton } from '../PnrrSkeleton'
-import { PnrrProgressHistogram } from '../charts/PnrrProgressHistogram'
 import { PnrrFundingBar } from '../charts/PnrrFundingBar'
 import { ChevronDown, ChevronUp, Info } from 'lucide-react'
 import {
@@ -22,12 +28,28 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { hasPnrrDataFilters } from '../../lib/data-transform'
+import { usePnrrProjectDetail } from '../../hooks/usePnrrData'
+import type { PnrrWorkerOverviewModel } from '../../workers/pnrr-worker-types'
+
+const PnrrMapPreview = lazy(() =>
+  import('../PnrrMapPreview').then((module) => ({
+    default: module.PnrrMapPreview,
+  })),
+)
+
+const PnrrProgressHistogram = lazy(() =>
+  import('../charts/PnrrProgressHistogram').then((module) => ({
+    default: module.PnrrProgressHistogram,
+  })),
+)
 
 export type PnrrOverviewMetricStats = Pick<
   PnrrAggregates,
   | 'rawTotalValue'
   | 'deduplicatedTotalValue'
-  | 'rawProjectCount'
+  | 'projectCount'
+  | 'projectRecordCount'
   | 'completedCount'
   | 'completedValue'
   | 'loanTotal'
@@ -37,17 +59,19 @@ export type PnrrOverviewMetricStats = Pick<
 >
 
 export function PnrrOverview({
-  projects,
   aggregates,
   filterState,
   cachedStats,
   isLoadingFullData = false,
+  overview = null,
+  officialAllocatedTotalEur = null,
 }: {
-  readonly projects: readonly PnrrProject[]
   readonly aggregates: PnrrAggregates
   readonly filterState: ReturnType<typeof usePnrrFilterState>
   readonly cachedStats?: PnrrOverviewMetricStats | null
   readonly isLoadingFullData?: boolean
+  readonly overview?: PnrrWorkerOverviewModel | null
+  readonly officialAllocatedTotalEur?: number | null
 }) {
   const currency = usePnrrCurrency()
   const isShowingCachedStats = isLoadingFullData && cachedStats != null
@@ -56,86 +80,67 @@ export function PnrrOverview({
     metricStats.rawTotalValue > 0
       ? (metricStats.completedValue / metricStats.rawTotalValue) * 100
       : 0
+  const hasScopedFilters = hasPnrrDataFilters(filterState.search)
+  const isUsingOfficialAllocation =
+    !hasScopedFilters &&
+    typeof officialAllocatedTotalEur === 'number' &&
+    officialAllocatedTotalEur > 0
+  const headlineTotalValue = isUsingOfficialAllocation
+    ? officialAllocatedTotalEur
+    : metricStats.rawTotalValue
 
-  const topComponents = useMemo(
-    () =>
-      Object.entries(aggregates.componentStats)
-        .map(([code, stats]) => ({
-          code,
-          name: PNRR_COMPONENTS[code]?.nameRo ?? code,
-          prefix: PNRR_COMPONENTS[code]?.code ?? code,
-          color: PNRR_COMPONENTS[code]?.color ?? '#94a3b8',
-          value: stats.value,
-          count: stats.count,
-        }))
-        .sort((a, b) => b.value - a.value),
-    [aggregates.componentStats],
-  )
-
-  const topCounties = useMemo(
-    () =>
-      Object.entries(aggregates.countyStats)
-        .map(([county, stats]) => ({
-          county,
-          value: stats.value,
-          count: stats.count,
-        }))
-        .sort((a, b) => b.value - a.value),
-    [aggregates.countyStats],
-  )
-
-  const selectedProject = useMemo(() => {
-    if (
-      filterState.search.panel !== 'project' ||
-      !filterState.search.panelProjectId
-    ) {
-      return null
-    }
-
-    return (
-      projects.find(
-        (project) => project.id === filterState.search.panelProjectId,
-      ) ?? null
-    )
-  }, [filterState.search.panel, filterState.search.panelProjectId, projects])
+  const selectedProjectId =
+    filterState.search.panel === 'project'
+      ? filterState.search.panelProjectId
+      : null
+  const { data: selectedProjectResult } = usePnrrProjectDetail(selectedProjectId)
+  const selectedProject = selectedProjectResult?.project ?? null
 
   const componentItems = useMemo(
     () =>
-      topComponents.map((c) => ({
-        id: c.code,
-        label: c.name,
+      (overview?.topComponents ?? []).map((c) => ({
+        id: c.id,
+        label: c.label,
         prefix: c.prefix,
-        value: formatPnrrCurrency(c.value, currency),
-        pct: (c.value / aggregates.rawTotalValue) * 100,
+        value: formatPnrrCurrency(c.valueEur, currency),
+        pct: c.pct,
         count: c.count,
         color: c.color,
       })),
-    [topComponents, aggregates.rawTotalValue, currency],
+    [currency, overview?.topComponents],
   )
 
   const countyItems = useMemo(
     () =>
-      topCounties.map((c) => ({
-        id: c.county,
-        label: c.county,
-        value: formatPnrrCurrency(c.value, currency),
-        pct: (c.value / aggregates.rawTotalValue) * 100,
+      (overview?.topCounties ?? []).map((c) => ({
+        id: c.id,
+        label: c.label,
+        value: formatPnrrCurrency(c.valueEur, currency),
+        pct: c.pct,
         count: c.count,
       })),
-    [topCounties, aggregates.rawTotalValue, currency],
+    [currency, overview?.topCounties],
+  )
+
+  const hasOfficialPaymentData = (overview?.topBeneficiaries ?? []).some(
+    (item) => typeof item.secondaryValueEur === 'number',
   )
 
   const beneficiaryItems = useMemo(
     () =>
-      aggregates.topBeneficiaries.slice(0, 10).map((b) => ({
-        id: b.beneficiary,
-        itemKey: `${b.beneficiary}\u0000${b.cui ?? ''}`,
-        label: b.beneficiary,
-        value: formatPnrrCurrency(b.value, currency),
-        pct: (b.value / aggregates.rawTotalValue) * 100,
-        count: b.count,
+      (overview?.topBeneficiaries ?? []).map((beneficiary) => ({
+        id: beneficiary.id,
+        itemKey: beneficiary.itemKey ?? beneficiary.id,
+        label: beneficiary.label,
+        value: formatPnrrCurrency(beneficiary.valueEur, currency),
+        count: beneficiary.count,
+        pct: beneficiary.pct,
+        secondaryValue:
+          typeof beneficiary.secondaryValueEur === 'number'
+            ? formatPnrrCurrency(beneficiary.secondaryValueEur, currency)
+            : undefined,
       })),
-    [aggregates.topBeneficiaries, aggregates.rawTotalValue, currency],
+    [currency, overview?.topBeneficiaries],
   )
 
   const handleComponentClick = useCallback(
@@ -178,30 +183,38 @@ export function PnrrOverview({
       <section>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <InsightCard
-            label={t`Valoarea proiectelor listate`}
-            value={formatPnrrCurrency(metricStats.rawTotalValue, currency)}
-            valueParts={formatPnrrCompactCurrencyDisplayParts(metricStats.rawTotalValue, currency)}
-            sublabel={t`${formatPnrrCurrency(metricStats.deduplicatedTotalValue, currency, 'standard')} estimat după eliminarea posibilelor duplicate`}
+            label={
+              isUsingOfficialAllocation
+                ? t`Total PNRR allocation`
+                : t`Listed project value`
+            }
+            value={formatPnrrCurrency(headlineTotalValue, currency)}
+            valueParts={formatPnrrCompactCurrencyDisplayParts(headlineTotalValue, currency)}
+            sublabel={
+              isUsingOfficialAllocation
+                ? t`${formatPnrrCurrency(metricStats.rawTotalValue, currency)} listed value in ${formatNumber(metricStats.projectRecordCount)} records`
+                : t`${formatNumber(metricStats.projectRecordCount)} records in the official dataset`
+            }
           />
 
           <InsightCard
-            label={t`Ponderea valorii proiectelor marcate finalizate`}
+            label={t`Share of value of projects marked as completed`}
             value={`${formatNumber(absorptionRate)}%`}
-            sublabel={t`${formatNumber(metricStats.completedCount)} proiecte marcate finalizate din ${formatNumber(metricStats.rawProjectCount)}`}
+            sublabel={t`${formatNumber(metricStats.completedCount)} projects marked as completed from ${formatNumber(metricStats.projectCount)}`}
             progress={absorptionRate}
           />
 
           <InsightCard
-            label={t`Finanțare din componenta de împrumut`}
+            label={t`Funding from the loan component`}
             value={formatPnrrCurrency(metricStats.loanTotal, currency)}
             valueParts={formatPnrrCompactCurrencyDisplayParts(metricStats.loanTotal, currency)}
-            sublabel={t`${formatNumber(metricStats.loanPercent)}% din valoarea proiectelor listate`}
+            sublabel={t`${formatNumber(metricStats.loanPercent)}% of listed project value`}
           />
 
           <InsightCard
-            label={t`Date financiare nepublicate în set`}
+            label={t`Financial data not published in dataset`}
             value={`${formatNumber(metricStats.missingFinProgressPercent)}%`}
-            sublabel={t`${formatNumber(metricStats.missingFinProgressCount)} proiecte fără progres financiar publicat`}
+            sublabel={t`${formatNumber(metricStats.missingFinProgressCount)} projects without published financial progress`}
           />
         </div>
       </section>
@@ -224,11 +237,11 @@ export function PnrrOverview({
           limit={5}
           expandLabel={t`Show all components`}
           collapseLabel={t`Show less`}
-          infoTooltip={t`Procentul arată ponderea valorii proiectelor listate din componentă în valoarea proiectelor afișate. Nu este alocarea oficială PNRR. Click pe un rând pentru filtrare.`}
+          infoTooltip={t`The percentage shows the share of listed project value from the component in the displayed project value. It is not the official PNRR allocation. Click on a row to filter.`}
         />
 
         <RankedListCard
-          title={t`Top Counties`}
+          title={t`Top counties: listed value`}
           items={countyItems}
           onClick={handleCountyClick}
           neutral
@@ -236,35 +249,60 @@ export function PnrrOverview({
           limit={5}
           expandLabel={t`Show all counties`}
           collapseLabel={t`Show less`}
-          infoTooltip={t`Procentul arată ponderea valorii proiectelor listate din județ în valoarea proiectelor afișate. Proiectele naționale pot distorsiona comparațiile locale.`}
+          infoTooltip={t`The percentage shows the share of listed project value from the county in the displayed project value. National projects can distort local comparisons.`}
         />
       </section>
 
       {/* Map + Projects Preview */}
-      <section className="grid min-w-0 grid-cols-1 items-stretch gap-6 lg:grid-cols-5">
+      <DeferredOverviewSection
+        className="grid min-w-0 grid-cols-1 items-stretch gap-6 lg:grid-cols-5"
+        minHeight={520}
+      >
         <div className="flex min-w-0 flex-col lg:col-span-3">
-          <PnrrMapPreview projects={projects} filterState={filterState} />
+          <Suspense fallback={<PnrrDeferredCardFallback minHeight={420} />}>
+            {overview && (
+              <PnrrMapPreview model={overview.mapPreview} filterState={filterState} />
+            )}
+          </Suspense>
         </div>
         <div className="flex min-w-0 flex-col lg:col-span-2">
-          <PnrrProjectsPreview projects={projects} filterState={filterState} />
+          {overview && (
+            <PnrrProjectsPreview
+              projects={overview.projectPreviewRows}
+              projectCount={aggregates.projectCount}
+              filterState={filterState}
+            />
+          )}
         </div>
-      </section>
+      </DeferredOverviewSection>
 
       {/* Top 10 Beneficiaries */}
       <section>
-        <RankedListCard
-          title={t`Top 10 Beneficiaries`}
+        <BeneficiaryValueCard
+          title={
+            hasOfficialPaymentData
+              ? t`Top beneficiaries by reported amounts received (Top 100)`
+              : t`Top beneficiaries by listed project value (Top 100)`
+          }
           items={beneficiaryItems}
           onClick={handleBeneficiaryClick}
-          neutral
+          primaryValueLabel={hasOfficialPaymentData ? t`received` : undefined}
+          secondaryValueLabel={
+            hasOfficialPaymentData ? t`Listed budget` : undefined
+          }
         />
       </section>
 
       {/* Financing Source + Progress Difference */}
-      <section className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-2">
-        <PnrrProgressHistogram projects={projects} />
+      <DeferredOverviewSection
+        className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-2"
+        minHeight={380}
+      >
+        <Suspense fallback={<PnrrDeferredCardFallback minHeight={360} />}>
+          {overview && <PnrrProgressHistogram model={overview.histogram} />}
+        </Suspense>
         <PnrrFundingBar aggregates={aggregates} />
-      </section>
+      </DeferredOverviewSection>
 
       {/* Emblematic Projects */}
       <section className="space-y-6">
@@ -276,7 +314,7 @@ export function PnrrOverview({
         </div>
 
         <PnrrEmblematicProjects
-          projects={projects}
+          projects={overview?.emblematicProjectRows ?? []}
           onProjectClick={(project) => filterState.openProjectPanel(project.id)}
         />
 
@@ -287,7 +325,7 @@ export function PnrrOverview({
           />
 
           <CtaLink
-            label={t`Semnale de risc`}
+            label={t`Risk signals`}
             onClick={() => handleCtaNavigation('anomalies')}
           />
         </div>
@@ -300,6 +338,75 @@ export function PnrrOverview({
         </>
       )}
     </div>
+  )
+}
+
+function DeferredOverviewSection({
+  children,
+  className,
+  minHeight,
+}: {
+  readonly children: ReactNode
+  readonly className: string
+  readonly minHeight: number
+}) {
+  const containerRef = useRef<HTMLElement | null>(null)
+  const [shouldRender, setShouldRender] = useState(() => typeof window === 'undefined')
+
+  useEffect(() => {
+    if (shouldRender) return
+
+    if (!('IntersectionObserver' in window)) {
+      setShouldRender(true)
+      return
+    }
+
+    let observer: IntersectionObserver
+    try {
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((entry) => entry.isIntersecting)) {
+            setShouldRender(true)
+            observer.disconnect()
+          }
+        },
+        { rootMargin: '160px 0px' },
+      )
+    } catch {
+      setShouldRender(true)
+      return
+    }
+
+    const container = containerRef.current
+    if (container) {
+      observer.observe(container)
+    }
+
+    return () => observer.disconnect()
+  }, [shouldRender])
+
+  return (
+    <section
+      ref={containerRef}
+      className={className}
+      style={shouldRender ? undefined : { minHeight }}
+    >
+      {shouldRender ? children : null}
+    </section>
+  )
+}
+
+function PnrrDeferredCardFallback({
+  minHeight,
+}: {
+  readonly minHeight: number
+}) {
+  return (
+    <div
+      aria-hidden="true"
+      className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]"
+      style={{ minHeight }}
+    />
   )
 }
 
@@ -319,6 +426,130 @@ function PnrrFullDataLoadingStatus() {
         <div className="h-full w-2/3 animate-pulse bg-[var(--pnrr-fg)]" />
       </div>
     </section>
+  )
+}
+
+function BeneficiaryValueCard({
+  title,
+  items,
+  onClick,
+  primaryValueLabel,
+  secondaryValueLabel,
+}: {
+  readonly title: string
+  readonly items: readonly {
+    readonly id: string
+    readonly itemKey: string
+    readonly label: string
+    readonly value: string
+    readonly count: number
+    readonly pct: number
+    readonly secondaryValue?: string
+  }[]
+  readonly onClick: (id: string) => void
+  readonly primaryValueLabel?: string
+  readonly secondaryValueLabel?: string
+}) {
+  const [isExpanded, setIsExpanded] = useState(false)
+  const displayItems = isExpanded ? items : items.slice(0, 10)
+  const hasMore = items.length > 10
+
+  if (items.length === 0) return null
+
+  return (
+    <div
+      className="flex max-w-full flex-col overflow-hidden border-2 border-[var(--pnrr-border)]"
+      style={{ backgroundColor: 'var(--pnrr-card)' }}
+    >
+      <div className="flex min-h-14 items-center border-b-2 border-[var(--pnrr-border)] px-5 py-4">
+        <div className="min-w-0">
+          <h3 className="text-base font-semibold leading-none text-[var(--pnrr-fg)]">
+            {title}
+          </h3>
+        </div>
+      </div>
+
+      <div
+        className={cn(
+          'divide-y divide-[var(--pnrr-border)]/20',
+          isExpanded && 'sm:max-h-[620px] sm:overflow-y-auto sm:scrollbar-thin',
+        )}
+      >
+        {displayItems.map((item, index) => (
+          <button
+            key={item.itemKey}
+            type="button"
+            onClick={() => onClick(item.id)}
+            className="group relative grid w-full grid-cols-[40px_minmax(0,1fr)] gap-x-3 gap-y-1.5 px-5 py-3 text-left transition-colors hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-green)]/60 focus-visible:ring-inset sm:grid-cols-[40px_minmax(0,1fr)_minmax(210px,auto)] sm:items-center"
+          >
+            <div
+              className="absolute inset-y-0 left-0 bg-[rgba(111,111,111,0.06)] transition-all"
+              style={{ width: `${Math.min(item.pct * 2.5, 100)}%` }}
+              aria-hidden="true"
+            />
+
+            <span className="relative z-10 flex h-7 w-7 items-center justify-center bg-[var(--pnrr-subtle)] text-xs font-semibold tabular-nums text-[var(--pnrr-muted)]">
+              {index + 1}
+            </span>
+            <span className="relative z-10 min-w-0 truncate text-base font-semibold leading-snug text-[var(--pnrr-fg)]">
+              {item.label}
+            </span>
+            <div className="relative z-10 col-start-2 min-w-0 text-left sm:col-start-auto sm:text-right">
+              <span
+                className="block whitespace-nowrap text-base font-semibold tabular-nums text-[var(--pnrr-fg)] sm:text-lg"
+                aria-label={
+                  primaryValueLabel
+                    ? `${primaryValueLabel}: ${item.value}`
+                    : item.value
+                }
+              >
+                {item.value}
+              </span>
+              {item.secondaryValue && secondaryValueLabel ? (
+                <span className="mt-1 block text-xs font-semibold tabular-nums text-[var(--pnrr-muted)]">
+                  <span className="whitespace-nowrap">
+                    {secondaryValueLabel} {item.secondaryValue}
+                  </span>
+                  {item.count > 0 && (
+                    <>
+                      <span className="mx-1.5 text-[var(--pnrr-muted)]/70">
+                        ·
+                      </span>
+                      <span className="whitespace-nowrap">
+                        {formatNumber(item.count)} <Trans>projects</Trans>
+                      </span>
+                    </>
+                  )}
+                </span>
+              ) : item.count > 0 ? (
+                <span className="mt-1 block whitespace-nowrap text-xs font-semibold tabular-nums text-[var(--pnrr-muted)]">
+                  {formatNumber(item.count)} <Trans>projects</Trans>
+                </span>
+              ) : (
+                null
+              )}
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {hasMore && (
+        <div className="mt-auto border-t-2 border-[var(--pnrr-border)]">
+          <button
+            type="button"
+            onClick={() => setIsExpanded((value) => !value)}
+            className="flex min-h-10 w-full items-center justify-center gap-2 px-5 py-2 text-sm font-semibold text-[var(--pnrr-muted)] transition-colors hover:bg-[var(--pnrr-hover)] hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-green)]/60 focus-visible:ring-inset"
+          >
+            {isExpanded ? <Trans>Show less</Trans> : <Trans>Show all</Trans>}
+            {isExpanded ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+      )}
+    </div>
   )
 }
 

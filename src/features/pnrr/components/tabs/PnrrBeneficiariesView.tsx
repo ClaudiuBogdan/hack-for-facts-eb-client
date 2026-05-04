@@ -1,10 +1,13 @@
-import { useMemo, useState, useEffect, useCallback, memo } from 'react'
+import { useState, useEffect, useCallback, memo } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import { formatNumber } from '@/lib/utils'
 import { usePnrrCurrency } from '../../lib/usePnrrCurrency'
-import { formatPnrrCurrency } from '../../lib/formatting'
-import type { PnrrBeneficiarySortBy, PnrrProject } from '@/schemas/pnrr'
+import { formatPnrrCurrency, formatPnrrPercentage } from '../../lib/formatting'
+import {
+  usePnrrBeneficiaryDetail,
+} from '../../hooks/usePnrrData'
+import type { PnrrBeneficiarySortBy } from '@/schemas/pnrr'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
 import { PNRR_COMPONENTS } from '../../data/component-definitions'
 import {
@@ -37,23 +40,14 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { PnrrEntityShortcutLinks } from '../PnrrEntityShortcutLinks'
+import type {
+  PnrrWorkerBeneficiaryPage,
+  PnrrWorkerBeneficiaryRow,
+  PnrrWorkerProjectRow,
+} from '../../workers/pnrr-worker-types'
 
-const PAGE_SIZE = 25
 const SEARCH_DEBOUNCE_MS = 300
 const TOP_PROJECT_LIMIT = 5
-
-type BeneficiarySummary = {
-  readonly name: string
-  readonly cui: string | null
-  count: number
-  value: number
-  techProgressSum: number
-  techProgressCount: number
-  finProgressSum: number
-  finProgressCount: number
-  readonly componentValues: Map<string, number>
-  readonly projects: PnrrProject[]
-}
 
 function SortIcon({
   active,
@@ -73,40 +67,10 @@ function SortIcon({
   )
 }
 
-function getProgressValue(
-  progress: PnrrProject['techProgress'] | PnrrProject['finProgress'],
-): number | null {
-  if (typeof progress === 'number') return progress
-  if (progress === 'in-implementation') return 15
-  return null
-}
-
-function getBeneficiaryKey(project: PnrrProject): string {
-  return `${project.beneficiary}\u0000${project.cui ?? ''}`
-}
-
-function getPrimaryComponentCode(beneficiary: BeneficiarySummary): string {
-  let primaryCode = ''
-  let primaryValue = -1
-
-  for (const [code, value] of beneficiary.componentValues) {
-    if (
-      value > primaryValue ||
-      (value === primaryValue &&
-        code.localeCompare(primaryCode, 'ro', { numeric: true }) < 0)
-    ) {
-      primaryCode = code
-      primaryValue = value
-    }
-  }
-
-  return primaryCode
-}
-
 type BeneficiaryRowProps = {
-  readonly b: BeneficiarySummary
+  readonly b: PnrrWorkerBeneficiaryRow
   readonly currency: 'RON' | 'EUR' | 'USD'
-  readonly onSelect: (beneficiary: BeneficiarySummary) => void
+  readonly onSelect: (beneficiary: PnrrWorkerBeneficiaryRow) => void
 }
 
 const BeneficiaryRow = memo(function BeneficiaryRow({
@@ -114,13 +78,11 @@ const BeneficiaryRow = memo(function BeneficiaryRow({
   currency,
   onSelect,
 }: BeneficiaryRowProps) {
-  const techAvg =
-    b.techProgressCount > 0 ? b.techProgressSum / b.techProgressCount : null
-  const finAvg =
-    b.finProgressCount > 0 ? b.finProgressSum / b.finProgressCount : null
-  const primaryComponentCode = getPrimaryComponentCode(b)
+  const techAvg = b.techProgressAvg
+  const finAvg = b.finProgressAvg
+  const primaryComponentCode = b.primaryComponentCode
   const primaryComponent = PNRR_COMPONENTS[primaryComponentCode]
-  const extraComponentCount = Math.max(0, b.componentValues.size - 1)
+  const extraComponentCount = b.extraComponentCount
 
   return (
     <TableRow
@@ -173,18 +135,17 @@ const BeneficiaryRow = memo(function BeneficiaryRow({
 })
 
 export function PnrrBeneficiariesView({
-  projects,
+  page,
   filterState,
 }: {
-  readonly projects: readonly PnrrProject[]
+  readonly page: PnrrWorkerBeneficiaryPage
   readonly filterState: ReturnType<typeof usePnrrFilterState>
 }) {
   const [localSelectedBeneficiary, setLocalSelectedBeneficiary] =
-    useState<BeneficiarySummary | null>(null)
+    useState<PnrrWorkerBeneficiaryRow | null>(null)
   const currency = usePnrrCurrency()
   const sortKey = filterState.search.beneficiarySortBy ?? 'value'
   const sortOrder = filterState.search.beneficiarySortOrder ?? 'desc'
-  const requestedPage = filterState.search.beneficiaryPage ?? 1
   const { setBeneficiaryPagination, setBeneficiarySorting } = filterState
 
   const globalSearch = filterState.search.beneficiarySearch ?? ''
@@ -205,126 +166,22 @@ export function PnrrBeneficiariesView({
     return () => clearTimeout(timeout)
   }, [inputValue, globalSearch, filterState])
 
-  const beneficiaries = useMemo(() => {
-    const map = new Map<string, BeneficiarySummary>()
-
-    for (const p of projects) {
-      const beneficiaryKey = getBeneficiaryKey(p)
-      const techProgress = getProgressValue(p.techProgress)
-      const finProgress = getProgressValue(p.finProgress)
-      const existing = map.get(beneficiaryKey)
-      if (existing) {
-        existing.count++
-        existing.value += p.valueEur
-        if (techProgress !== null) {
-          existing.techProgressSum += techProgress
-          existing.techProgressCount++
-        }
-        if (finProgress !== null) {
-          existing.finProgressSum += finProgress
-          existing.finProgressCount++
-        }
-        existing.componentValues.set(
-          p.componentCode,
-          (existing.componentValues.get(p.componentCode) ?? 0) + p.valueEur,
-        )
-        existing.projects.push(p)
-      } else {
-        map.set(beneficiaryKey, {
-          name: p.beneficiary,
-          cui: p.cui,
-          count: 1,
-          value: p.valueEur,
-          techProgressSum: techProgress ?? 0,
-          techProgressCount: techProgress === null ? 0 : 1,
-          finProgressSum: finProgress ?? 0,
-          finProgressCount: finProgress === null ? 0 : 1,
-          componentValues: new Map([[p.componentCode, p.valueEur]]),
-          projects: [p],
-        })
-      }
-    }
-
-    return Array.from(map.values())
-  }, [projects])
-
-  const urlSelectedBeneficiary = useMemo(() => {
+  const urlSelectedBeneficiary = (() => {
     if (filterState.search.panel !== 'beneficiary') return null
 
     const selectedCui = filterState.search.panelBeneficiaryCui
     if (!selectedCui) return null
 
     return (
-      beneficiaries.find(
+      page.rows.find(
         (beneficiary) => beneficiary.cui === selectedCui,
-      ) ?? null
+      ) ?? makeBeneficiaryPlaceholder(selectedCui)
     )
-  }, [
-    beneficiaries,
-    filterState.search.panel,
-    filterState.search.panelBeneficiaryCui,
-  ])
+  })()
   const selectedBeneficiary =
     filterState.search.panel === 'beneficiary'
       ? urlSelectedBeneficiary
       : localSelectedBeneficiary
-
-  const sorted = useMemo(() => {
-    const arr = [...beneficiaries]
-    arr.sort((a, b) => {
-      let cmp = 0
-      switch (sortKey) {
-        case 'beneficiary':
-          cmp = a.name.localeCompare(b.name)
-          break
-        case 'count':
-          cmp = a.count - b.count
-          break
-        case 'value':
-          cmp = a.value - b.value
-          break
-        case 'component':
-          cmp = getPrimaryComponentCode(a).localeCompare(
-            getPrimaryComponentCode(b),
-            'ro',
-            { numeric: true },
-          )
-          break
-        case 'techProgress': {
-          const av =
-            a.techProgressCount > 0
-              ? a.techProgressSum / a.techProgressCount
-              : -1
-          const bv =
-            b.techProgressCount > 0
-              ? b.techProgressSum / b.techProgressCount
-              : -1
-          cmp = av - bv
-          break
-        }
-        case 'finProgress': {
-          const av =
-            a.finProgressCount > 0 ? a.finProgressSum / a.finProgressCount : -1
-          const bv =
-            b.finProgressCount > 0 ? b.finProgressSum / b.finProgressCount : -1
-          cmp = av - bv
-          break
-        }
-      }
-      return sortOrder === 'asc' ? cmp : -cmp
-    })
-    return arr
-  }, [beneficiaries, sortKey, sortOrder])
-
-  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE))
-  const page = Math.min(Math.max(1, requestedPage), totalPages)
-  const paginated = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
-
-  useEffect(() => {
-    if (requestedPage !== page) {
-      setBeneficiaryPagination(page)
-    }
-  }, [page, requestedPage, setBeneficiaryPagination])
 
   const toggleSort = useCallback(
     (key: PnrrBeneficiarySortBy) => {
@@ -345,7 +202,7 @@ export function PnrrBeneficiariesView({
     [setBeneficiaryPagination],
   )
   const handleBeneficiarySelect = useCallback(
-    (beneficiary: BeneficiarySummary) => {
+    (beneficiary: PnrrWorkerBeneficiaryRow) => {
       if (beneficiary.cui) {
         setLocalSelectedBeneficiary(null)
         filterState.openBeneficiaryPanel(beneficiary)
@@ -373,7 +230,7 @@ export function PnrrBeneficiariesView({
             <Trans>Beneficiaries</Trans>
           </h2>
           <span className="hidden text-sm text-[var(--pnrr-muted)] sm:inline">
-            {beneficiaries.length.toLocaleString('ro-RO')}{' '}
+            {page.totalCount.toLocaleString('ro-RO')}{' '}
             <Trans>beneficiaries</Trans>
           </span>
         </div>
@@ -466,7 +323,7 @@ export function PnrrBeneficiariesView({
                 onClick={() => toggleSort('techProgress')}
               >
                 <span className="inline-flex items-center justify-end">
-                  <Trans>Progres tehnic raportat</Trans>
+                  <Trans>Reported technical progress</Trans>
                   <SortIcon
                     active={sortKey === 'techProgress'}
                     order={sortOrder}
@@ -478,7 +335,7 @@ export function PnrrBeneficiariesView({
                 onClick={() => toggleSort('finProgress')}
               >
                 <span className="inline-flex items-center justify-end">
-                  <Trans>Progres financiar raportat</Trans>
+                  <Trans>Reported financial progress</Trans>
                   <SortIcon
                     active={sortKey === 'finProgress'}
                     order={sortOrder}
@@ -488,7 +345,7 @@ export function PnrrBeneficiariesView({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginated.map((b) => (
+            {page.rows.map((b) => (
               <BeneficiaryRow
                 key={`${b.name}\u0000${b.cui ?? ''}`}
                 b={b}
@@ -503,25 +360,23 @@ export function PnrrBeneficiariesView({
       {/* Pagination */}
       <div className="flex items-center justify-between gap-3">
         <div className="text-sm text-[var(--pnrr-muted)]">
-          <Trans>
-            page {page} of {totalPages}
-          </Trans>
+          {page.page} / {page.totalPages}
         </div>
         {/* Mobile compact pagination */}
         <div className="flex items-center gap-1 sm:hidden">
           <button
-            disabled={page <= 1}
-            onClick={() => goToPage(page - 1)}
+            disabled={page.page <= 1}
+            onClick={() => goToPage(page.page - 1)}
             className="inline-flex h-8 w-8 items-center justify-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] text-[var(--pnrr-fg)] disabled:opacity-40 transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
           <span className="px-2 text-xs tabular-nums text-[var(--pnrr-muted)]">
-            {page} / {totalPages}
+            {page.page} / {page.totalPages}
           </span>
           <button
-            disabled={page >= totalPages}
-            onClick={() => goToPage(page + 1)}
+            disabled={page.page >= page.totalPages}
+            onClick={() => goToPage(page.page + 1)}
             className="inline-flex h-8 w-8 items-center justify-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] text-[var(--pnrr-fg)] disabled:opacity-40 transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
           >
             <ChevronRight className="h-4 w-4" />
@@ -530,17 +385,17 @@ export function PnrrBeneficiariesView({
         {/* Desktop pagination */}
         <div className="hidden items-center gap-1 sm:flex">
           <button
-            disabled={page <= 1}
-            onClick={() => goToPage(page - 1)}
+            disabled={page.page <= 1}
+            onClick={() => goToPage(page.page - 1)}
             className="inline-flex h-8 items-center gap-1 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-xs font-bold text-[var(--pnrr-fg)] disabled:opacity-40 transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
           >
             <ChevronLeft className="h-4 w-4" />
             <Trans>Previous</Trans>
           </button>
           <div className="flex items-center gap-1">
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
+            {Array.from({ length: page.totalPages }, (_, i) => i + 1)
               .filter(
-                (p) => p === 1 || p === totalPages || Math.abs(p - page) <= 2,
+                (p) => p === 1 || p === page.totalPages || Math.abs(p - page.page) <= 2,
               )
               .map((p, idx, arr) => {
                 if (idx > 0 && arr[idx - 1] !== p - 1) {
@@ -553,7 +408,7 @@ export function PnrrBeneficiariesView({
                     </span>
                   )
                 }
-                const isActive = p === page
+                const isActive = p === page.page
                 return (
                   <button
                     key={p}
@@ -570,8 +425,8 @@ export function PnrrBeneficiariesView({
               })}
           </div>
           <button
-            disabled={page >= totalPages}
-            onClick={() => goToPage(page + 1)}
+            disabled={page.page >= page.totalPages}
+            onClick={() => goToPage(page.page + 1)}
             className="inline-flex h-8 items-center gap-1 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-xs font-bold text-[var(--pnrr-fg)] disabled:opacity-40 transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
           >
             <Trans>Next</Trans>
@@ -582,6 +437,7 @@ export function PnrrBeneficiariesView({
 
       <BeneficiaryDrawer
         beneficiary={selectedBeneficiary}
+        search={filterState.search}
         currency={currency}
         onClose={handleDrawerClose}
         onViewProjects={(beneficiary) => {
@@ -595,34 +451,54 @@ export function PnrrBeneficiariesView({
   )
 }
 
+function makeBeneficiaryPlaceholder(cui: string): PnrrWorkerBeneficiaryRow {
+  return {
+    name: cui,
+    cui,
+    count: 0,
+    value: 0,
+    techProgressAvg: null,
+    finProgressAvg: null,
+    primaryComponentCode: '',
+    extraComponentCount: 0,
+  }
+}
+
 function BeneficiaryDrawer({
   beneficiary,
+  search,
   currency,
   onClose,
   onViewProjects,
 }: {
-  readonly beneficiary: BeneficiarySummary | null
+  readonly beneficiary: PnrrWorkerBeneficiaryRow | null
+  readonly search: ReturnType<typeof usePnrrFilterState>['search']
   readonly currency: 'RON' | 'EUR' | 'USD'
   readonly onClose: () => void
-  readonly onViewProjects: (beneficiary: BeneficiarySummary) => void
+  readonly onViewProjects: (beneficiary: PnrrWorkerBeneficiaryRow) => void
 }) {
+  const beneficiaryKey = beneficiary
+    ? `${beneficiary.name}\u0000${beneficiary.cui ?? ''}`
+    : null
+  const { data: detailResult } = usePnrrBeneficiaryDetail(
+    beneficiaryKey,
+    search,
+    beneficiary?.cui ?? null,
+  )
   if (!beneficiary) return null
 
-  const topProjects = [...beneficiary.projects]
+  const detail = detailResult?.beneficiary
+  const displayBeneficiary = detail ?? beneficiary
+  const topProjects = (detail?.projects ?? [])
+    .slice()
     .sort((a, b) => b.valueEur - a.valueEur)
     .slice(0, TOP_PROJECT_LIMIT)
-  const techAvg =
-    beneficiary.techProgressCount > 0
-      ? beneficiary.techProgressSum / beneficiary.techProgressCount
-      : null
-  const finAvg =
-    beneficiary.finProgressCount > 0
-      ? beneficiary.finProgressSum / beneficiary.finProgressCount
-      : null
-  const riskCount = beneficiary.projects.filter(
+  const techAvg = displayBeneficiary.techProgressAvg
+  const finAvg = displayBeneficiary.finProgressAvg
+  const riskCount = (detail?.projects ?? []).filter(
     (project) => project.anomalies.length > 0,
   ).length
-  const dataQualityCount = beneficiary.projects.filter(
+  const dataQualityCount = (detail?.projects ?? []).filter(
     (project) => project.dataQualitySignals.length > 0,
   ).length
 
@@ -635,14 +511,14 @@ function BeneficiaryDrawer({
               <Building2 className="h-4 w-4" />
               <Trans>Beneficiary</Trans>
             </span>
-            {beneficiary.cui && (
+            {displayBeneficiary.cui && (
               <span className="inline-flex h-9 items-center gap-2 rounded-sm border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] px-3 text-sm font-black text-[var(--pnrr-fg)]">
-                CUI {beneficiary.cui}
+                CUI {displayBeneficiary.cui}
                 <button
                   type="button"
                   className="inline-flex h-5 w-5 items-center justify-center rounded-sm border border-[var(--pnrr-border)] transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)]"
                   onClick={() =>
-                    navigator.clipboard.writeText(beneficiary.cui!)
+                    navigator.clipboard.writeText(displayBeneficiary.cui!)
                   }
                   aria-label={t`Copy CUI`}
                 >
@@ -652,10 +528,10 @@ function BeneficiaryDrawer({
             )}
           </div>
           <SheetTitle className="text-left text-2xl font-black leading-tight text-[var(--pnrr-fg)]">
-            {beneficiary.name}
+            {displayBeneficiary.name}
           </SheetTitle>
           <SheetDescription className="text-left text-sm font-medium text-[var(--pnrr-muted)]">
-            {beneficiary.count.toLocaleString('ro-RO')}{' '}
+            {displayBeneficiary.count.toLocaleString('ro-RO')}{' '}
             <Trans>PNRR projects</Trans>
           </SheetDescription>
         </SheetHeader>
@@ -663,23 +539,23 @@ function BeneficiaryDrawer({
         <div className="space-y-4 p-5">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <BeneficiaryMetric
-              label={t`Valoarea proiectelor listate`}
+              label={t`Listed project value`}
               value={formatPnrrCurrency(
-                beneficiary.value,
+                displayBeneficiary.value,
                 currency,
                 'standard',
               )}
             />
             <BeneficiaryMetric
               label={t`Projects`}
-              value={beneficiary.count.toLocaleString('ro-RO')}
+              value={displayBeneficiary.count.toLocaleString('ro-RO')}
             />
             <BeneficiaryMetric
-              label={t`Media progresului tehnic raportat`}
+              label={t`Average reported technical progress`}
               value={techAvg == null ? '—' : `${formatNumber(techAvg)}%`}
             />
             <BeneficiaryMetric
-              label={t`Media progresului financiar raportat`}
+              label={t`Average reported financial progress`}
               value={finAvg == null ? '—' : `${formatNumber(finAvg)}%`}
             />
           </div>
@@ -691,7 +567,7 @@ function BeneficiaryDrawer({
                   <ShieldAlert className="h-5 w-5 shrink-0" />
                   <span className="text-sm font-black uppercase tracking-wide">
                     {riskCount.toLocaleString('ro-RO')}{' '}
-                    <Trans>cu semnale de risc</Trans>
+                    <Trans>with risk signals</Trans>
                   </span>
                 </div>
               )}
@@ -700,7 +576,7 @@ function BeneficiaryDrawer({
                   <FileWarning className="h-5 w-5 shrink-0" />
                   <span className="text-sm font-black uppercase tracking-wide">
                     {dataQualityCount.toLocaleString('ro-RO')}{' '}
-                    <Trans>cu anomalii de date</Trans>
+                    <Trans>with data anomalies</Trans>
                   </span>
                 </div>
               )}
@@ -710,13 +586,13 @@ function BeneficiaryDrawer({
           <button
             type="button"
             className="flex h-11 w-full items-center justify-center gap-2 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-fg)] px-4 text-sm font-black uppercase tracking-wide text-[var(--pnrr-bg)] transition-colors hover:bg-[var(--pnrr-card)] hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
-            onClick={() => onViewProjects(beneficiary)}
+            onClick={() => onViewProjects(displayBeneficiary)}
           >
             <ExternalLink className="h-4 w-4" />
             <Trans>View all filtered projects</Trans>
           </button>
 
-          <PnrrEntityShortcutLinks cui={beneficiary.cui} />
+          <PnrrEntityShortcutLinks cui={displayBeneficiary.cui} />
 
           <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]">
             <div className="border-b-2 border-[var(--pnrr-border)] p-4">
@@ -788,7 +664,7 @@ function TopProjectItem({
   currency,
 }: {
   readonly index: number
-  readonly project: PnrrProject
+  readonly project: PnrrWorkerProjectRow
   readonly currency: 'RON' | 'EUR' | 'USD'
 }) {
   const component = PNRR_COMPONENTS[project.componentCode]
@@ -836,10 +712,10 @@ function TopProjectItem({
                 }}
               />
             </div>
-            <span className="w-10 text-right text-xs tabular-nums text-[var(--pnrr-fg)]">
+            <span className="w-14 text-right text-xs tabular-nums text-[var(--pnrr-fg)]">
               {project.techProgress === 'in-implementation'
                 ? '<30%'
-                : `${techValue}%`}
+                : formatPnrrPercentage(techValue)}
             </span>
           </div>
         </div>

@@ -20,9 +20,9 @@ export function PnrrStatsRibbon({
 
   const stats = [
     {
-      label: t`Valoarea proiectelor listate`,
+      label: t`Listed project value`,
       value: formatPnrrCurrency(aggregates.rawTotalValue, currency),
-      sublabel: t`${formatPnrrCurrency(aggregates.deduplicatedTotalValue, currency, 'standard')} estimat după posibile duplicate`,
+      sublabel: t`${formatNumber(aggregates.projectRecordCount)} records in the official dataset`,
       icon: Wallet,
       iconBg: 'bg-blue-500/10',
       iconColor: 'text-blue-500',
@@ -30,9 +30,9 @@ export function PnrrStatsRibbon({
       variant: 'default' as const,
     },
     {
-      label: t`Ponderea valorii proiectelor marcate finalizate`,
+      label: t`Share of value of projects marked as completed`,
       value: `${formatNumber(absorptionRate)}%`,
-      sublabel: t`${formatNumber(aggregates.completedCount)} proiecte marcate finalizate din ${formatNumber(aggregates.rawProjectCount)}`,
+      sublabel: t`${formatNumber(aggregates.completedCount)} projects marked as completed from ${formatNumber(aggregates.projectCount)}`,
       icon: TrendingUp,
       iconBg: 'bg-emerald-500/10',
       iconColor: 'text-emerald-500',
@@ -40,9 +40,9 @@ export function PnrrStatsRibbon({
       variant: 'default' as const,
     },
     {
-      label: t`Finanțare din componenta de împrumut`,
+      label: t`Funding from the loan component`,
       value: formatPnrrCurrency(aggregates.loanTotal, currency),
-      sublabel: t`${formatNumber(aggregates.loanPercent)}% din valoarea proiectelor listate`,
+      sublabel: t`${formatNumber(aggregates.loanPercent)}% of listed project value`,
       icon: Landmark,
       iconBg: 'bg-red-500/10',
       iconColor: 'text-red-500',
@@ -50,9 +50,9 @@ export function PnrrStatsRibbon({
       variant: 'danger' as const,
     },
     {
-      label: t`Date financiare nepublicate în set`,
+      label: t`Financial data not published in dataset`,
       value: `${formatNumber(aggregates.missingFinProgressPercent)}%`,
-      sublabel: t`${formatNumber(aggregates.missingFinProgressCount)} proiecte fără progres financiar publicat`,
+      sublabel: t`${formatNumber(aggregates.missingFinProgressCount)} projects without published financial progress`,
       icon: AlertTriangle,
       iconBg: 'bg-amber-500/10',
       iconColor: 'text-amber-500',

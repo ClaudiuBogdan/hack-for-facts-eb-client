@@ -1,14 +1,22 @@
 import { generateHash } from '@/lib/utils'
-import type {
-  RawPnrrProject,
-  PnrrProject,
-  PnrrProjectStatus,
-  AnomalyType,
-  DataQualitySignalType,
-  PnrrAggregates,
-  PnrrEntityType,
-  PnrrBeneficiaryType,
-  PnrrSearchState,
+import {
+  RawPnrrBeneficiaryPaymentSchema,
+  RawPnrrIndicatorSchema,
+  RawPnrrProjectSchema,
+  type RawPnrrBeneficiaryPayment,
+  type RawPnrrIndicator,
+  type RawPnrrProject,
+  type PnrrBeneficiaryPayment,
+  type PnrrOfficialIndicators,
+  type PnrrProject,
+  type PnrrProjectRecord,
+  type PnrrProjectStatus,
+  type AnomalyType,
+  type DataQualitySignalType,
+  type PnrrAggregates,
+  type PnrrEntityType,
+  type PnrrBeneficiaryType,
+  type PnrrSearchState,
 } from '@/schemas/pnrr'
 import { PNRR_COMPONENTS } from '../data/component-definitions'
 import {
@@ -19,6 +27,8 @@ import {
 
 /** Date when the PNRR dataset was last updated (shown in UI and used in export filenames). */
 export const PNRR_LAST_UPDATED = '2026-04-30'
+
+const OFFICIAL_RON_TO_EUR_RATE = 5
 
 const PROGRESS_CATEGORY_TO_STATUS = {
   completed: 'completed',
@@ -50,13 +60,17 @@ export function parseProgress(
 
   if (trimmed.endsWith('%')) {
     const num = Number.parseFloat(trimmed.slice(0, -1))
-    if (!Number.isNaN(num)) return num
+    if (!Number.isNaN(num)) return roundProgressValue(num)
   }
 
   const num = Number.parseFloat(trimmed)
-  if (!Number.isNaN(num)) return num
+  if (!Number.isNaN(num)) return roundProgressValue(num)
 
   return null
+}
+
+function roundProgressValue(value: number): number {
+  return Math.round(value * 100) / 100
 }
 
 // ---------------------------------------------------------------------------
@@ -126,7 +140,7 @@ export function detectAnomalies(project: AnomalyInput): readonly AnomalyType[] {
 }
 
 export function detectDataQualitySignals(
-  project: Pick<PnrrProject, 'techProgress' | 'finProgress' | 'valueEur'>
+  project: Pick<PnrrProjectRecord, 'techProgress' | 'finProgress' | 'valueEur'>
 ): readonly DataQualitySignalType[] {
   const signals: DataQualitySignalType[] = []
 
@@ -466,54 +480,56 @@ export function normalizeTitle(title: string): string {
 // Raw → Normalized transformation
 // ---------------------------------------------------------------------------
 
-export function transformProject(raw: RawPnrrProject): PnrrProject {
-  const techRaw = parseProgress(raw['Progres Tehnic'])
-  const finRaw = parseProgress(raw['Progres Financiar'])
+export function normalizePnrrProjectRecord(raw: RawPnrrProject): PnrrProjectRecord {
+  const normalized = normalizeRawProject(raw)
+  const techRaw = parseProgress(normalized.techProgressInput)
+  const finRaw = parseProgress(normalized.finProgressInput)
 
-  const componentCode = raw['Cod Componentă']
-  const measureCode = raw['Cod Măsură']
+  const componentCode = normalized.componentCode
+  const measureCode = normalized.measureCode
   const measureFullCode = `${componentCode}-${measureCode}`
-  const cui = raw['CUI']
+  const cui = normalized.cui
   const resolvedLocation = resolvePnrrProjectLocation({
-    beneficiary: raw['Nume Beneficiar'],
+    beneficiary: normalized.beneficiary,
     cui,
-    locality: raw['Localitate'],
-    county: raw['Județ'],
+    locality: normalized.locality,
+    county: normalized.county,
   })
   const county = resolvedLocation.county
   const locality = resolvedLocation.locality
   const beneficiaryDirectoryType = getPnrrBeneficiaryDirectoryType(cui)
   const isOfficialPublicCompany = isOfficialPublicCompanyCui(cui)
   const entityType = classifyEntityType(
-    raw['Nume Beneficiar'],
+    normalized.beneficiary,
     beneficiaryDirectoryType,
     isOfficialPublicCompany,
   )
 
   const projectBase = {
     id: generateHash(
-      `${raw['Titlu Proiect']}|${cui ?? ''}|${componentCode}|${measureCode}|${raw['Valoare (EUR)']}|${raw['Progres Tehnic']}|${raw['Progres Financiar'] ?? ''}|${raw['Județ']}|${raw['Localitate']}|${raw['Sursă Finanțare']}|${raw['CRI']}|${raw['Nume Beneficiar']}`
+      `${normalized.engagementId ?? ''}|${normalized.rowSignature}`
     ),
-    title: raw['Titlu Proiect'],
-    beneficiary: raw['Nume Beneficiar'],
+    engagementId: normalized.engagementId,
+    title: normalized.title,
+    beneficiary: normalized.beneficiary,
     cui,
     county,
     locality,
-    fundingSource: raw['Sursă Finanțare'],
-    valueEur: raw['Valoare (EUR)'],
+    fundingSource: normalized.fundingSource,
+    valueEur: normalized.valueEur,
     techProgress: techRaw,
     finProgress: finRaw,
     status: classifyStatus(techRaw),
     componentCode,
     measureCode,
     measureFullCode,
-    cri: raw['CRI'],
+    cri: normalized.cri,
     anomalies: [] as readonly AnomalyType[],
     dataQualitySignals: [] as readonly DataQualitySignalType[],
     isReform: measureCode.startsWith('R'),
     entityType,
     beneficiaryType: classifyBeneficiaryType(
-      raw['Nume Beneficiar'],
+      normalized.beneficiary,
       cui,
       entityType,
       beneficiaryDirectoryType,
@@ -531,6 +547,260 @@ export function transformProject(raw: RawPnrrProject): PnrrProject {
   }
 }
 
+export function transformProject(raw: RawPnrrProject): PnrrProjectRecord {
+  return normalizePnrrProjectRecord(raw)
+}
+
+export function normalizePnrrBeneficiaryPayment(
+  raw: RawPnrrBeneficiaryPayment,
+): PnrrBeneficiaryPayment {
+  const record = raw as Record<string, unknown>
+  const beneficiary = stringValue(
+    record['full legal name'],
+    [record['first name'], record['last name']]
+      .map((value) => stringValue(value))
+      .filter(Boolean)
+      .join(' '),
+  )
+  const cui =
+    nullableStringValue(record['tax identification number']) ??
+    nullableStringValue(record['unique identifier']) ??
+    nullableStringValue(record['vat number']) ??
+    nullableStringValue(record['other unique identifier'])
+  const valueRon = toNumber(record['received amount in lei']) ?? 0
+  const lastPaymentDate = normalizeOfficialPaymentDate(
+    nullableStringValue(record['last date funding received']),
+  )
+
+  return {
+    id: `payment:${cui ?? generateHash(beneficiary)}`,
+    beneficiary,
+    cui,
+    valueRon,
+    lastPaymentDate,
+  }
+}
+
+export function processPnrrBeneficiaryPayments(
+  rawPayments: readonly unknown[],
+): readonly PnrrBeneficiaryPayment[] {
+  return rawPayments
+    .map((raw) => {
+      const parsed = RawPnrrBeneficiaryPaymentSchema.safeParse(raw)
+      return normalizePnrrBeneficiaryPayment(
+        parsed.success
+          ? parsed.data
+          : (raw as RawPnrrBeneficiaryPayment),
+      )
+    })
+    .filter((payment) => payment.beneficiary && payment.valueRon > 0)
+    .sort((a, b) => b.valueRon - a.valueRon)
+}
+
+export function normalizePnrrOfficialIndicators(
+  raw: RawPnrrIndicator,
+): PnrrOfficialIndicators {
+  const record = raw as Record<string, unknown>
+
+  return {
+    allocatedTotalEur: toNumber(record.alocat_eur),
+    paidTotalEur: toNumber(record.platit_eur),
+    receivedFromEuEur: toNumber(record.incasat_eur),
+    prefinancingEur: toNumber(record.prefinantare_eur),
+    suspendedEur: toNumber(record.suspendat_eur),
+    revokedEur: toNumber(record.revocat_eur),
+    contractedBeneficiaryCount: toNumber(record.nr_beneficiari_contracte),
+    paidBeneficiaryCount: toNumber(record.nr_beneficiari_plati),
+    projectCount: toNumber(record.nr_proiecte),
+    nationalImpactProjectCount: toNumber(record.nr_proiecte_impact_national),
+  }
+}
+
+export function processPnrrOfficialIndicators(
+  rawIndicators: unknown,
+): PnrrOfficialIndicators | null {
+  const rawItems = extractOfficialItems(rawIndicators)
+  const firstItem = rawItems[0]
+  if (!firstItem) return null
+
+  const parsed = RawPnrrIndicatorSchema.safeParse(firstItem)
+  return normalizePnrrOfficialIndicators(
+    parsed.success ? parsed.data : (firstItem as RawPnrrIndicator),
+  )
+}
+
+type NormalizedRawProject = {
+  readonly engagementId: string | null
+  readonly title: string
+  readonly beneficiary: string
+  readonly cui: string | null
+  readonly county: string
+  readonly locality: string
+  readonly fundingSource: PnrrProjectRecord['fundingSource']
+  readonly valueEur: number
+  readonly techProgressInput: string | undefined
+  readonly finProgressInput: string | undefined
+  readonly componentCode: string
+  readonly measureCode: string
+  readonly cri: string
+  readonly rowSignature: string
+}
+
+function normalizeRawProject(raw: RawPnrrProject): NormalizedRawProject {
+  const record = raw as Record<string, unknown>
+  const hasOfficialValue =
+    hasValue(record.valoare_fe) ||
+    hasValue(record.id_angajament) ||
+    hasValue(record.titlu_contract)
+  const valueRon = toNumber(record.valoare_fe)
+  const valueEur = hasValue(record.valoare_fe)
+    ? (valueRon ?? 0) / OFFICIAL_RON_TO_EUR_RATE
+    : (toNumber(record['Valoare (EUR)']) ?? 0)
+
+  const techProgressInput = hasOfficialValue
+    ? officialProgressInput(record.progres_fizic, record.stadiu)
+    : stringValue(record['Progres Tehnic'])
+  const finProgressInput = hasValue(record.progres_financiar)
+    ? officialProgressInput(record.progres_financiar)
+    : optionalStringValue(record['Progres Financiar'])
+
+  return {
+    engagementId: nullableStringValue(record.id_angajament),
+    title: stringValue(record.titlu_contract, stringValue(record['Titlu Proiect'])),
+    beneficiary: stringValue(
+      record.denumire_beneficiar,
+      stringValue(record['Nume Beneficiar']),
+    ),
+    cui: nullableStringValue(record.cui) ?? nullableStringValue(record['CUI']),
+    county: stringValue(
+      record.judet_implementare,
+      stringValue(record['County']),
+    ),
+    locality: stringValue(
+      record.localitate_implementare,
+      stringValue(record['Localitate']),
+    ),
+    fundingSource: normalizeFundingSource(
+      hasValue(record.sursa_finantare)
+        ? record.sursa_finantare
+        : record['Sursă Finanțare'],
+    ),
+    valueEur,
+    techProgressInput,
+    finProgressInput,
+    componentCode: stringValue(
+      record.cod_componenta,
+      stringValue(record['Cod Componentă']),
+    ),
+    measureCode: stringValue(record.cod_masura, stringValue(record['Cod Măsură'])),
+    cri: stringValue(record.cri, stringValue(record['CRI'])),
+    rowSignature: JSON.stringify([
+      record.id_angajament,
+      record.cod_componenta,
+      record.cod_masura,
+      record.cod_submasura,
+      record.cri,
+      record.sursa_finantare,
+      record.nr_contract,
+      record.titlu_contract,
+      record.denumire_beneficiar,
+      record.cui,
+      record.valoare_fe,
+      record.judet_implementare,
+      record.localitate_implementare,
+      record.progres_fizic,
+      record.progres_financiar,
+      record['Titlu Proiect'],
+      record['Nume Beneficiar'],
+      record['CUI'],
+      record['Valoare (EUR)'],
+    ]),
+  }
+}
+
+function hasValue(value: unknown): boolean {
+  return value !== undefined && value !== null && String(value).trim() !== ''
+}
+
+function stringValue(value: unknown, fallback = ''): string {
+  if (!hasValue(value)) return fallback
+  return String(value).trim()
+}
+
+function optionalStringValue(value: unknown): string | undefined {
+  return hasValue(value) ? String(value).trim() : undefined
+}
+
+function nullableStringValue(value: unknown): string | null {
+  const text = optionalStringValue(value)
+  return text ?? null
+}
+
+function toNumber(value: unknown): number | null {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null
+  if (typeof value !== 'string') return null
+
+  const compact = value.trim().replace(/\s+/g, '')
+  const normalized = compact.includes(',')
+    ? compact.replace(/\./g, '').replace(',', '.')
+    : compact
+  if (!normalized) return null
+
+  const parsed = Number(normalized)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
+function normalizeOfficialPaymentDate(value: string | null): string | null {
+  if (!value) return null
+  const match = value.match(/^(\d{4})[./-](\d{2})[./-](\d{2})$/)
+  if (!match) return value
+  return `${match[1]}-${match[2]}-${match[3]}`
+}
+
+function extractOfficialItems(value: unknown): readonly unknown[] {
+  if (Array.isArray(value)) return value
+  if (
+    value &&
+    typeof value === 'object' &&
+    Array.isArray((value as { readonly items?: unknown }).items)
+  ) {
+    return (value as { readonly items: readonly unknown[] }).items
+  }
+  return value ? [value] : []
+}
+
+function officialProgressInput(
+  value: unknown,
+  status?: unknown,
+): string | undefined {
+  const numeric = toNumber(value)
+  if (numeric !== null) return String(roundProgressValue(numeric * 100))
+
+  const normalizedStatus = stringValue(status).toUpperCase()
+  if (normalizedStatus.includes('FINALIZAT')) return 'FINALIZAT'
+  if (normalizedStatus.includes('IMPLEMENTARE')) return 'ÎN IMPLEMENTARE'
+  return undefined
+}
+
+function normalizeFundingSource(value: unknown): PnrrProjectRecord['fundingSource'] {
+  const normalized = stringValue(value, 'grant')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+
+  if (
+    normalized.includes('grant/loan') ||
+    normalized.includes('grant / loan') ||
+    (normalized.includes('grant') && normalized.includes('loan'))
+  ) {
+    return 'grant/loan'
+  }
+  if (normalized.includes('loan') || normalized.includes('imprumut')) {
+    return 'loan'
+  }
+  return 'grant'
+}
+
 // ---------------------------------------------------------------------------
 // Deduplication
 // ---------------------------------------------------------------------------
@@ -541,13 +811,147 @@ export function deduplicateProjects(
   const seen = new Map<string, PnrrProject>()
 
   for (const p of projects) {
-    const key = `${normalizeTitle(p.title)}|${p.cui ?? ''}|${p.componentCode}|${p.measureCode}`
+    const key = getProjectIdentity(p)
     if (!seen.has(key)) {
       seen.set(key, p)
     }
   }
 
   return Array.from(seen.values())
+}
+
+export function getProjectIdentity(
+  project: Pick<
+    PnrrProjectRecord,
+    'engagementId' | 'title' | 'cui'
+  >,
+): string {
+  if (project.engagementId) return `engagement:${project.engagementId}`
+  return `fallback:${normalizeTitle(project.title)}|${project.cui ?? ''}`
+}
+
+export function countUniqueProjects(projects: readonly PnrrProject[]): number {
+  return new Set(projects.map(getProjectIdentity)).size
+}
+
+export function getProjectRecordIdentity(
+  record: Pick<PnrrProjectRecord, 'engagementId' | 'title' | 'cui'>,
+): string {
+  return getProjectIdentity(record)
+}
+
+export function flattenPnrrProjectRecords(
+  projects: readonly PnrrProject[],
+): readonly PnrrProjectRecord[] {
+  return projects.flatMap((project) => project.records ?? [project])
+}
+
+export function groupPnrrProjects(
+  records: readonly PnrrProjectRecord[],
+): readonly PnrrProject[] {
+  const groups = new Map<string, PnrrProjectRecord[]>()
+
+  for (const record of records) {
+    const key = getProjectRecordIdentity(record)
+    const existing = groups.get(key)
+    if (existing) {
+      existing.push(record)
+    } else {
+      groups.set(key, [record])
+    }
+  }
+
+  return Array.from(groups.entries()).map(([id, group]) =>
+    buildGroupedProject(id, group),
+  )
+}
+
+function buildGroupedProject(
+  id: string,
+  records: readonly PnrrProjectRecord[],
+): PnrrProject {
+  const primaryRecord = records.reduce((best, record) =>
+    record.valueEur > best.valueEur ? record : best,
+  )
+  const totalValueEur = records.reduce((sum, record) => sum + record.valueEur, 0)
+  const statuses = new Set(records.map((record) => record.status))
+  const componentCodes = uniqueInOrder(records.map((record) => record.componentCode))
+  const measureCodes = uniqueInOrder(records.map((record) => record.measureCode))
+  const measureFullCodes = uniqueInOrder(
+    records.map((record) => record.measureFullCode),
+  )
+  const fundingSources = uniqueInOrder(
+    records.map((record) => record.fundingSource),
+  )
+  const counties = uniqueInOrder(records.map((record) => record.county))
+  const localities = uniqueInOrder(records.map((record) => record.locality))
+  const cris = uniqueInOrder(records.map((record) => record.cri))
+  const techProgressValues = uniqueInOrder(
+    records.map((record) => progressIdentity(record.techProgress)),
+  )
+  const finProgressValues = uniqueInOrder(
+    records.map((record) => progressIdentity(record.finProgress)),
+  )
+  const anomalies = uniqueInOrder(records.flatMap((record) => record.anomalies))
+  const dataQualitySignals = uniqueInOrder(
+    records.flatMap((record) => record.dataQualitySignals),
+  )
+
+  const groupedProject: PnrrProject = {
+    ...primaryRecord,
+    id,
+    totalValueEur,
+    recordCount: records.length,
+    valueEur: totalValueEur,
+    status: getGroupedProjectStatus(statuses),
+    anomalies,
+    dataQualitySignals,
+    componentCodes,
+    measureCodes,
+    measureFullCodes,
+    fundingSources,
+    counties,
+    localities,
+    cris,
+    variantCounts: {
+      components: Math.max(0, componentCodes.length - 1),
+      measures: Math.max(0, measureFullCodes.length - 1),
+      fundingSources: Math.max(0, fundingSources.length - 1),
+      counties: Math.max(0, counties.length - 1),
+      localities: Math.max(0, localities.length - 1),
+      cris: Math.max(0, cris.length - 1),
+      techProgress: Math.max(0, techProgressValues.length - 1),
+      finProgress: Math.max(0, finProgressValues.length - 1),
+    },
+  }
+
+  if (records.length > 1) {
+    return {
+      ...groupedProject,
+      records,
+    }
+  }
+
+  return groupedProject
+}
+
+function uniqueInOrder<T extends string>(values: readonly T[]): readonly T[] {
+  const seen = new Set<T>()
+  const result: T[] = []
+
+  for (const value of values) {
+    if (seen.has(value)) continue
+    seen.add(value)
+    result.push(value)
+  }
+
+  return result
+}
+
+function progressIdentity(
+  progress: PnrrProjectRecord['techProgress'],
+): string {
+  return progress === null ? 'null' : String(progress)
 }
 
 // ---------------------------------------------------------------------------
@@ -557,10 +961,10 @@ export function deduplicateProjects(
 export function computeAggregates(
   projects: readonly PnrrProject[]
 ): PnrrAggregates {
-  const deduplicated = deduplicateProjects(projects)
+  const records = flattenPnrrProjectRecords(projects)
+  const deduplicated = deduplicateProjects(records)
 
   let rawTotalValue = 0
-  let deduplicatedTotalValue = 0
   let completedCount = 0
   let completedValue = 0
   let inProgressCount = 0
@@ -570,14 +974,32 @@ export function computeAggregates(
   let loanTotal = 0
   let mixedTotal = 0
 
-  const componentStats: Record<string, { count: number; value: number; missingFinProgress: number }> =
-    {}
-  const countyStats: Record<string, { count: number; value: number }> = {}
-  const anomalyCounts: Record<AnomalyType, { count: number; value: number }> = {
-    'financial-overrun': { count: 0, value: 0 },
-    'stalled-completion': { count: 0, value: 0 },
-    'payment-ahead-delivery': { count: 0, value: 0 },
-    'large-low-progress': { count: 0, value: 0 },
+  const componentMap = new Map<
+    string,
+    {
+      projectIds: Set<string>
+      value: number
+      missingFinProgressProjectIds: Set<string>
+    }
+  >()
+  const countyMap = new Map<
+    string,
+    {
+      projectIds: Set<string>
+      value: number
+    }
+  >()
+  const anomalyProjectIds: Record<AnomalyType, Set<string>> = {
+    'financial-overrun': new Set(),
+    'stalled-completion': new Set(),
+    'payment-ahead-delivery': new Set(),
+    'large-low-progress': new Set(),
+  }
+  const anomalyValues: Record<AnomalyType, number> = {
+    'financial-overrun': 0,
+    'stalled-completion': 0,
+    'payment-ahead-delivery': 0,
+    'large-low-progress': 0,
   }
   const dataQualitySignalCounts: Record<
     DataQualitySignalType,
@@ -587,25 +1009,45 @@ export function computeAggregates(
     'large-missing-financial-progress': { count: 0, value: 0 },
     'completed-missing-financial-progress': { count: 0, value: 0 },
   }
+  const dataQualitySignalProjectIds: Record<DataQualitySignalType, Set<string>> = {
+    'duplicate-conflict': new Set(),
+    'large-missing-financial-progress': new Set(),
+    'completed-missing-financial-progress': new Set(),
+  }
+  const projectGroups = new Map<
+    string,
+    {
+      value: number
+      statuses: Set<PnrrProjectStatus>
+      missingFinProgress: boolean
+    }
+  >()
   const beneficiaryMap = new Map<
     string,
-    { beneficiary: string; cui: string | null; count: number; value: number }
+    {
+      beneficiary: string
+      cui: string | null
+      projectIds: Set<string>
+      value: number
+    }
   >()
 
-  for (const p of projects) {
+  for (const p of records) {
+    const projectId = getProjectIdentity(p)
     rawTotalValue += p.valueEur
 
-    if (p.status === 'completed') {
-      completedCount++
-      completedValue += p.valueEur
-    } else if (p.status === 'not-started') {
-      notStartedCount++
+    const projectGroup = projectGroups.get(projectId)
+    if (projectGroup) {
+      projectGroup.value += p.valueEur
+      projectGroup.statuses.add(p.status)
+      projectGroup.missingFinProgress =
+        projectGroup.missingFinProgress || isMissingFinancialProgress(p)
     } else {
-      inProgressCount++
-    }
-
-    if (p.finProgress === null || p.finProgress === 'in-implementation') {
-      missingFinProgressCount++
+      projectGroups.set(projectId, {
+        value: p.valueEur,
+        statuses: new Set([p.status]),
+        missingFinProgress: isMissingFinancialProgress(p),
+      })
     }
 
     if (p.fundingSource === 'grant') grantTotal += p.valueEur
@@ -613,71 +1055,137 @@ export function computeAggregates(
     else mixedTotal += p.valueEur
 
     // Component stats
-    if (!componentStats[p.componentCode]) {
-      componentStats[p.componentCode] = { count: 0, value: 0, missingFinProgress: 0 }
-    }
-    componentStats[p.componentCode].count++
-    componentStats[p.componentCode].value += p.valueEur
-    if (p.finProgress === null || p.finProgress === 'in-implementation') {
-      componentStats[p.componentCode].missingFinProgress++
+    const componentStat = componentMap.get(p.componentCode)
+    if (componentStat) {
+      componentStat.projectIds.add(projectId)
+      componentStat.value += p.valueEur
+      if (isMissingFinancialProgress(p)) {
+        componentStat.missingFinProgressProjectIds.add(projectId)
+      }
+    } else {
+      componentMap.set(p.componentCode, {
+        projectIds: new Set([projectId]),
+        value: p.valueEur,
+        missingFinProgressProjectIds: isMissingFinancialProgress(p)
+          ? new Set([projectId])
+          : new Set(),
+      })
     }
 
     // County stats
-    if (!countyStats[p.county]) {
-      countyStats[p.county] = { count: 0, value: 0 }
+    const countyStat = countyMap.get(p.county)
+    if (countyStat) {
+      countyStat.projectIds.add(projectId)
+      countyStat.value += p.valueEur
+    } else {
+      countyMap.set(p.county, {
+        projectIds: new Set([projectId]),
+        value: p.valueEur,
+      })
     }
-    countyStats[p.county].count++
-    countyStats[p.county].value += p.valueEur
 
     // Anomalies
     for (const a of p.anomalies) {
-      anomalyCounts[a].count++
-      anomalyCounts[a].value += p.valueEur
+      anomalyProjectIds[a].add(projectId)
+      anomalyValues[a] += p.valueEur
     }
 
     for (const signal of p.dataQualitySignals) {
-      dataQualitySignalCounts[signal].count++
+      dataQualitySignalProjectIds[signal].add(projectId)
       dataQualitySignalCounts[signal].value += p.valueEur
     }
 
-    // Beneficiaries (raw, not deduplicated, for top beneficiaries)
+    // Beneficiary values remain row-level sums, but counts use distinct projects.
     const benKey = `${p.beneficiary}|${p.cui ?? ''}`
     const existing = beneficiaryMap.get(benKey)
     if (existing) {
-      existing.count++
+      existing.projectIds.add(projectId)
       existing.value += p.valueEur
     } else {
       beneficiaryMap.set(benKey, {
         beneficiary: p.beneficiary,
         cui: p.cui,
-        count: 1,
+        projectIds: new Set([projectId]),
         value: p.valueEur,
       })
     }
   }
 
-  for (const p of deduplicated) {
-    deduplicatedTotalValue += p.valueEur
+  for (const group of projectGroups.values()) {
+    if (group.missingFinProgress) {
+      missingFinProgressCount++
+    }
+
+    const status = getGroupedProjectStatus(group.statuses)
+    if (status === 'completed') {
+      completedCount++
+      completedValue += group.value
+    } else if (status === 'not-started') {
+      notStartedCount++
+    } else {
+      inProgressCount++
+    }
   }
 
+  for (const signal of Object.keys(dataQualitySignalCounts) as DataQualitySignalType[]) {
+    dataQualitySignalCounts[signal].count = dataQualitySignalProjectIds[signal].size
+  }
+
+  const componentStats = Object.fromEntries(
+    Array.from(componentMap.entries()).map(([code, stats]) => [
+      code,
+      {
+        count: stats.projectIds.size,
+        value: stats.value,
+        missingFinProgress: stats.missingFinProgressProjectIds.size,
+      },
+    ]),
+  )
+  const countyStats = Object.fromEntries(
+    Array.from(countyMap.entries()).map(([county, stats]) => [
+      county,
+      {
+        count: stats.projectIds.size,
+        value: stats.value,
+      },
+    ]),
+  )
+  const anomalyCounts = Object.fromEntries(
+    (Object.keys(anomalyProjectIds) as AnomalyType[]).map((type) => [
+      type,
+      {
+        count: anomalyProjectIds[type].size,
+        value: anomalyValues[type],
+      },
+    ]),
+  ) as Record<AnomalyType, { count: number; value: number }>
   const topBeneficiaries = Array.from(beneficiaryMap.values())
+    .map((entry) => ({
+      beneficiary: entry.beneficiary,
+      cui: entry.cui,
+      count: entry.projectIds.size,
+      value: entry.value,
+    }))
     .sort((a, b) => b.value - a.value)
     .slice(0, 20)
 
   const totalValueForPercent = rawTotalValue || 1
+  const projectCount = projectGroups.size
 
   return {
     rawTotalValue,
-    deduplicatedTotalValue,
-    rawProjectCount: projects.length,
+    deduplicatedTotalValue: rawTotalValue,
+    projectCount,
+    projectRecordCount: records.length,
+    rawProjectCount: records.length,
     deduplicatedProjectCount: deduplicated.length,
     completedCount,
     completedValue,
     inProgressCount,
     notStartedCount,
     missingFinProgressCount,
-    missingFinProgressPercent: projects.length > 0
-      ? (missingFinProgressCount / projects.length) * 100
+    missingFinProgressPercent: projectCount > 0
+      ? (missingFinProgressCount / projectCount) * 100
       : 0,
     grantTotal,
     loanTotal,
@@ -691,7 +1199,19 @@ export function computeAggregates(
   }
 }
 
-function duplicateConflictSignature(project: PnrrProject): string {
+function isMissingFinancialProgress(project: PnrrProjectRecord): boolean {
+  return project.finProgress === null || project.finProgress === 'in-implementation'
+}
+
+function getGroupedProjectStatus(
+  statuses: ReadonlySet<PnrrProjectStatus>,
+): PnrrProjectStatus {
+  if (statuses.size === 1 && statuses.has('completed')) return 'completed'
+  if (statuses.size === 1 && statuses.has('not-started')) return 'not-started'
+  return 'mid-progress'
+}
+
+function duplicateConflictSignature(project: PnrrProjectRecord): string {
   return JSON.stringify({
     beneficiary: project.beneficiary,
     county: project.county,
@@ -710,36 +1230,32 @@ function duplicateConflictSignature(project: PnrrProject): string {
 
 export function processPnrrData(rawProjects: unknown[]): {
   readonly projects: readonly PnrrProject[]
+  readonly projectRecords: readonly PnrrProjectRecord[]
+  readonly meta: {
+    readonly projectCount: number
+    readonly projectRecordCount: number
+  }
 } {
-  const projects = rawProjects.map((r) => {
-    const raw = r as Record<string, unknown>
-    return transformProject({
-      'Titlu Proiect': String(raw['Titlu Proiect'] ?? ''),
-      'Nume Beneficiar': String(raw['Nume Beneficiar'] ?? ''),
-      'CUI': raw['CUI'] != null ? String(raw['CUI']) : null,
-      'Județ': String(raw['Județ'] ?? ''),
-      'Sursă Finanțare': (raw['Sursă Finanțare'] ?? 'grant') as RawPnrrProject['Sursă Finanțare'],
-      'Valoare (EUR)': Number(raw['Valoare (EUR)']) || 0,
-      'Progres Tehnic': String(raw['Progres Tehnic'] ?? ''),
-      'Progres Financiar': raw['Progres Financiar'] != null ? String(raw['Progres Financiar']) : undefined,
-      'Cod Componentă': String(raw['Cod Componentă'] ?? ''),
-      'Cod Măsură': String(raw['Cod Măsură'] ?? ''),
-      'Localitate': String(raw['Localitate'] ?? ''),
-      'CRI': String(raw['CRI'] ?? ''),
-    })
+  const projectRecords = rawProjects.map((r) => {
+    const parsed = RawPnrrProjectSchema.safeParse(r)
+    return normalizePnrrProjectRecord(
+      parsed.success ? parsed.data : (r as RawPnrrProject),
+    )
   })
 
   // Validate component codes
-  for (const p of projects) {
+  for (const p of projectRecords) {
     if (!PNRR_COMPONENTS[p.componentCode]) {
       console.warn(`Unknown component code: ${p.componentCode}`)
     }
   }
 
-  // Detect duplicate-conflict data-quality signals (same title + CUI + component + measure)
-  const keyMap = new Map<string, PnrrProject[]>()
-  for (const p of projects) {
-    const key = `${normalizeTitle(p.title)}|${p.cui ?? ''}|${p.componentCode}|${p.measureCode}`
+  // Legacy fallback rows do not carry id_angajament, so keep the old conflict
+  // signal for them only. Official rows may repeat an engagement ID by design.
+  const keyMap = new Map<string, PnrrProjectRecord[]>()
+  for (const p of projectRecords) {
+    if (p.engagementId) continue
+    const key = getProjectRecordIdentity(p)
     const existing = keyMap.get(key)
     if (existing) {
       existing.push(p)
@@ -748,10 +1264,13 @@ export function processPnrrData(rawProjects: unknown[]): {
     }
   }
 
-  const projectsWithDuplicates = projects.map((p) => {
-    const key = `${normalizeTitle(p.title)}|${p.cui ?? ''}|${p.componentCode}|${p.measureCode}`
-    const group = keyMap.get(key)!
+  const recordsWithDuplicates = projectRecords.map((p) => {
+    if (p.engagementId) return p
+
+    const key = getProjectRecordIdentity(p)
+    const group = keyMap.get(key)
     const hasConflict =
+      group != null &&
       group.length > 1 &&
       new Set(group.map((item) => duplicateConflictSignature(item))).size > 1
 
@@ -766,8 +1285,16 @@ export function processPnrrData(rawProjects: unknown[]): {
     }
     return p
   })
+  const projects = groupPnrrProjects(recordsWithDuplicates)
 
-  return { projects: projectsWithDuplicates }
+  return {
+    projects,
+    projectRecords: recordsWithDuplicates,
+    meta: {
+      projectCount: projects.length,
+      projectRecordCount: recordsWithDuplicates.length,
+    },
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1142,12 +1669,35 @@ export function getActiveFilterCount(filters: FilterCountInput): number {
   return count
 }
 
+export function hasPnrrDataFilters(filters: FilterCountInput): boolean {
+  return Boolean(
+    filters.search ||
+      filters.beneficiarySearch ||
+      filters.beneficiaryCui ||
+      filters.uatSiruta ||
+      filters.uatSirutas?.length ||
+      filters.components?.length ||
+      filters.counties?.length ||
+      filters.fundingSources?.length ||
+      filters.measures?.length ||
+      filters.cris?.length ||
+      filters.progressCategories?.length ||
+      filters.anomalyTypes?.length ||
+      filters.dataQualitySignalTypes?.length ||
+      filters.entityTypes?.length ||
+      filters.beneficiaryTypes?.length ||
+      filters.onlyAnomalies ||
+      filters.excludeMicro ||
+      filters.includeNational === false
+  )
+}
+
 function normalizeCui(value: string): string {
   return value.trim().replace(/^RO/i, '').replace(/\s+/g, '')
 }
 
 function matchesBeneficiaryType(
-  project: PnrrProject,
+  project: PnrrProjectRecord,
   beneficiaryTypes: readonly PnrrBeneficiaryType[]
 ): boolean {
   return beneficiaryTypes.some(
@@ -1155,10 +1705,10 @@ function matchesBeneficiaryType(
   )
 }
 
-export function filterProjects(
-  projects: readonly PnrrProject[],
+export function filterProjectRecords(
+  records: readonly PnrrProjectRecord[],
   filters: PnrrFilters
-): readonly PnrrProject[] {
+): readonly PnrrProjectRecord[] {
   const searchExpr = filters.search ? buildSearchExpr(filters.search) : null
   const beneficiarySearchExpr = filters.beneficiarySearch
     ? buildSearchExpr(filters.beneficiarySearch)
@@ -1167,10 +1717,10 @@ export function filterProjects(
   const uatSiruta = filters.uatSiruta?.trim()
   const uatSirutas = filters.uatSirutas?.filter(Boolean)
 
-  return projects.filter((p) => {
+  return records.filter((p) => {
     if (searchExpr) {
       const haystack = normalizeTitle(
-        `${p.title} ${p.beneficiary} ${p.cui ?? ''} ${p.locality}`
+        `${p.title} ${p.beneficiary} ${p.cui ?? ''} ${p.county} ${p.locality} ${p.componentCode} ${p.measureCode} ${p.measureFullCode} ${p.fundingSource} ${p.cri}`
       )
       if (!evaluateSearchExpr(searchExpr, haystack)) return false
     }
@@ -1264,4 +1814,15 @@ export function filterProjects(
 
     return true
   })
+}
+
+export function filterProjects(
+  projects: readonly PnrrProject[],
+  filters: PnrrFilters
+): readonly PnrrProject[] {
+  const matchingRecords = filterProjectRecords(
+    flattenPnrrProjectRecords(projects),
+    filters,
+  )
+  return groupPnrrProjects(matchingRecords)
 }

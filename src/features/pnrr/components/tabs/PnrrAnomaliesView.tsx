@@ -4,7 +4,6 @@ import { t } from '@lingui/core/macro'
 import { usePnrrCurrency } from '../../lib/usePnrrCurrency'
 import { formatPnrrCurrency } from '../../lib/formatting'
 import type {
-  PnrrProject,
   PnrrAggregates,
   AnomalyType,
   DataQualitySignalType,
@@ -14,6 +13,10 @@ import { PnrrAnomalyRibbon } from '../PnrrAnomalyRibbon'
 import { PnrrAnomalyInfoPanel } from '../PnrrAnomalyInfoPanel'
 import { PnrrQuickInvestigation } from '../PnrrQuickInvestigation'
 import { PnrrProjectTable } from '../table/PnrrProjectTable'
+import type {
+  PnrrWorkerAnomalyModel,
+  PnrrWorkerProjectPage,
+} from '../../workers/pnrr-worker-types'
 import {
   BookOpen,
   AlertTriangle,
@@ -30,11 +33,11 @@ type SelectedSignal =
   | { readonly kind: 'data-quality'; readonly type: DataQualitySignalType }
 
 export function PnrrAnomaliesView({
-  projects,
+  model,
   aggregates,
   filterState,
 }: {
-  readonly projects: readonly PnrrProject[]
+  readonly model: PnrrWorkerAnomalyModel
   readonly aggregates: PnrrAggregates
   readonly filterState: ReturnType<typeof usePnrrFilterState>
 }) {
@@ -68,37 +71,18 @@ export function PnrrAnomaliesView({
     return () => clearTimeout(timeout)
   }, [inputValue, globalSearch, filterState])
 
-  const riskProjects = projects.filter((p) => p.anomalies.length > 0)
-  const riskValue = riskProjects.reduce((sum, p) => sum + p.valueEur, 0)
-  const dataQualityProjects = projects.filter(
-    (p) => p.dataQualitySignals.length > 0,
-  )
-  const dataQualityValue = dataQualityProjects.reduce(
-    (sum, p) => sum + p.valueEur,
-    0,
-  )
-
-  const activeAnomalyTypes = filterState.search.anomalyTypes
-  const activeDataQualitySignalTypes = filterState.search.dataQualitySignalTypes
-  const hasRiskFilter = (activeAnomalyTypes?.length ?? 0) > 0
-  const hasDataQualityFilter = (activeDataQualitySignalTypes?.length ?? 0) > 0
-  const hasSignalFilter = hasRiskFilter || hasDataQualityFilter
-  const displayedSignalProjects = projects.filter((p) => {
-    if (!hasSignalFilter) {
-      return p.anomalies.length > 0 || p.dataQualitySignals.length > 0
-    }
-
-    const matchesRisk =
-      hasRiskFilter &&
-      activeAnomalyTypes!.some((at) => p.anomalies.includes(at as AnomalyType))
-    const matchesDataQuality =
-      hasDataQualityFilter &&
-      activeDataQualitySignalTypes!.some((type) =>
-        p.dataQualitySignals.includes(type as DataQualitySignalType),
-      )
-
-    return matchesRisk || matchesDataQuality
-  })
+  const anomalyPage = {
+    rows: model.rows,
+    totalCount: model.totalCount,
+    page: filterState.search.page ?? 1,
+    pageSize: filterState.search.pageSize ?? 25,
+    totalPages: Math.max(
+      1,
+      Math.ceil(model.totalCount / (filterState.search.pageSize ?? 25)),
+    ),
+    sortBy: filterState.search.sortBy ?? 'value',
+    sortOrder: filterState.search.sortOrder ?? 'desc',
+  } satisfies PnrrWorkerProjectPage
 
   const openInfoForType = (type: AnomalyType) => {
     filterState.openAnomalyInfoPanel({ kind: 'risk', type })
@@ -124,11 +108,11 @@ export function PnrrAnomaliesView({
                   <ShieldAlert className="h-4 w-4" />
                 </span>
                 <span>
-                  {riskProjects.length.toLocaleString('ro-RO')}{' '}
-                <Trans>proiecte cu semnale de risc</Trans>
+                  {model.riskCount.toLocaleString('ro-RO')}{' '}
+                <Trans>projects with risk signals</Trans>
                 </span>
                 <span className="tabular-nums">
-                  {formatPnrrCurrency(riskValue, currency, 'compact')}
+                  {formatPnrrCurrency(model.riskValue, currency, 'compact')}
                 </span>
               </div>
               <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
@@ -136,11 +120,11 @@ export function PnrrAnomaliesView({
                   <Database className="h-4 w-4" />
                 </span>
                 <span>
-                  {dataQualityProjects.length.toLocaleString('ro-RO')}{' '}
-                <Trans>probleme de calitate a datelor</Trans>
+                  {model.dataQualityCount.toLocaleString('ro-RO')}{' '}
+                <Trans>data quality issues</Trans>
                 </span>
                 <span className="tabular-nums">
-                  {formatPnrrCurrency(dataQualityValue, currency, 'compact')}
+                  {formatPnrrCurrency(model.dataQualityValue, currency, 'compact')}
                 </span>
               </div>
             </div>
@@ -175,9 +159,10 @@ export function PnrrAnomaliesView({
           <AlertTriangle className="h-5 w-5 shrink-0 text-[var(--pnrr-warning-fg)]" />
           <p className="text-sm font-black uppercase tracking-wide text-[var(--pnrr-warning-fg)]">
             <Trans>
-              {aggregates.missingFinProgressPercent.toFixed(0)}% dintre
-              proiecte nu au progres financiar publicat în set. Semnalele
-              bazate pe progres financiar pot fi subestimate.
+              {aggregates.missingFinProgressPercent.toFixed(0)}% of
+              projects do not have published financial progress in the
+              dataset. Signals based on financial progress may be
+              underestimated.
             </Trans>
           </p>
         </div>
@@ -210,12 +195,12 @@ export function PnrrAnomaliesView({
           </div>
 
           <span className="flex h-9 items-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-6 text-sm text-[var(--pnrr-fg)]">
-            {displayedSignalProjects.length.toLocaleString('ro-RO')}{' '}
+            {model.totalCount.toLocaleString('ro-RO')}{' '}
             <Trans>results</Trans>
           </span>
         </div>
         <PnrrProjectTable
-          projects={displayedSignalProjects}
+          page={anomalyPage}
           filterState={filterState}
         />
       </section>

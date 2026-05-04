@@ -1,12 +1,12 @@
 import { Trans } from '@lingui/react/macro'
-import type { PnrrProject } from '@/schemas/pnrr'
+import type { PnrrWorkerProjectRow } from '../workers/pnrr-worker-types'
 import { PnrrMapDetailsDrawer } from './PnrrMapDetailsDrawer'
 
 interface PnrrUatDetailsPanelProps {
   readonly uatName: string | null
   readonly countyName: string | null
   readonly natcode: string | null
-  readonly projects: readonly PnrrProject[]
+  readonly projects: readonly PnrrWorkerProjectRow[]
   readonly onClose: () => void
   readonly selectedProjectId?: string
   readonly onProjectClick?: (projectId: string) => void
@@ -29,9 +29,7 @@ export function PnrrUatDetailsPanel({
   onViewProjects,
   onViewBeneficiaries,
 }: PnrrUatDetailsPanelProps) {
-  const matchedProjects = natcode
-    ? projects.filter((project) => project.sirutaCode === natcode)
-    : []
+  const matchedProjects = natcode ? projects : []
   const activeUatProject = getActiveUatProject(matchedProjects, uatName)
 
   if (!natcode || !uatName || matchedProjects.length === 0) return null
@@ -73,9 +71,9 @@ function normalizeUatText(value: string): string {
 }
 
 function getActiveUatProject(
-  projects: readonly PnrrProject[],
+  projects: readonly PnrrWorkerProjectRow[],
   uatName: string | null
-): PnrrProject | undefined {
+): PnrrWorkerProjectRow | undefined {
   const normalizedUatName = uatName ? normalizeUatText(uatName) : null
   const uatProjects = projects.filter(
     (project) => project.cui && project.beneficiaryType === 'uat'

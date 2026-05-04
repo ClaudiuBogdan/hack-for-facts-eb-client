@@ -1,39 +1,31 @@
-import { useMemo } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { usePnrrCurrency } from '../lib/usePnrrCurrency'
 import { formatPnrrCurrency } from '../lib/formatting'
 import type { PnrrProject } from '@/schemas/pnrr'
 import type { usePnrrFilterState } from '../hooks/usePnrrFilterState'
 import { PnrrProjectDrawer } from './table/PnrrProjectDrawer'
+import { usePnrrProjectDetail } from '../hooks/usePnrrData'
+import type { PnrrWorkerProjectRow } from '../workers/pnrr-worker-types'
 
 interface PnrrProjectsPreviewProps {
-  readonly projects: readonly PnrrProject[]
+  readonly projects: readonly PnrrWorkerProjectRow[]
+  readonly projectCount: number
   readonly filterState: ReturnType<typeof usePnrrFilterState>
 }
 
 export function PnrrProjectsPreview({
   projects,
+  projectCount,
   filterState,
 }: PnrrProjectsPreviewProps) {
   const currency = usePnrrCurrency()
-
-  const topProjects = useMemo(() => {
-    return [...projects].sort((a, b) => b.valueEur - a.valueEur).slice(0, 8)
-  }, [projects])
-  const selectedProject = useMemo(() => {
-    if (
-      filterState.search.panel !== 'project' ||
-      !filterState.search.panelProjectId
-    ) {
-      return null
-    }
-
-    return (
-      projects.find(
-        (project) => project.id === filterState.search.panelProjectId,
-      ) ?? null
-    )
-  }, [filterState.search.panel, filterState.search.panelProjectId, projects])
+  const topProjects = projects
+  const selectedProjectId =
+    filterState.search.panel === 'project'
+      ? filterState.search.panelProjectId
+      : null
+  const { data: selectedProjectResult } = usePnrrProjectDetail(selectedProjectId)
+  const selectedProject = selectedProjectResult?.project ?? null
 
   if (topProjects.length === 0) return null
 
@@ -47,7 +39,7 @@ export function PnrrProjectsPreview({
             <Trans>Projects</Trans>
           </h2>
           <span className="hidden text-sm text-[var(--pnrr-muted)] sm:inline">
-            {projects.length} <Trans>in total</Trans>
+            {projectCount.toLocaleString('ro-RO')} <Trans>in total</Trans>
           </span>
         </div>
         <button
@@ -86,7 +78,7 @@ export function PnrrProjectsPreview({
               {/* Right: Value + indicator */}
               <div className="flex shrink-0 items-center gap-3">
                 <span className="text-base font-black tabular-nums text-[var(--pnrr-fg)]">
-                  {formatPnrrCurrency(project.valueEur, currency)}
+                  {formatPnrrCurrency(project.totalValueEur ?? project.valueEur, currency)}
                 </span>
                 <StatusSquare status={project.status} />
               </div>

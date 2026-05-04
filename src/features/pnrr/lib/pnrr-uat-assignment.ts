@@ -176,6 +176,7 @@ const BUCHAREST_SECTOR_TO_NATCODE: Record<string, string> = {
 
 const BUCHAREST_MUNICIPALITY_CUI = '4267117'
 const BUCHAREST_MUNICIPALITY_NATCODE = '179132'
+const NATIONAL_LOCATION_LABEL = 'Național'
 
 const ALWAYS_NATIONAL_ENTITY_TYPES = new Set([
   'admin_ministry',
@@ -220,6 +221,10 @@ function normalizeLocation(value: string): string {
     .replace(/[^a-z]/g, '')
 }
 
+function isNationalLocation(value: string | null | undefined): boolean {
+  return Boolean(value && normalizeLocation(value) === 'national')
+}
+
 function resolveBucharestSector(locality: string, county: string): string | null {
   const normalizedCounty = normalizeLocation(county)
   if (normalizedCounty !== 'bucuresti' && normalizedCounty !== 'municipiulbucuresti') {
@@ -235,7 +240,7 @@ function resolveBucharestSector(locality: string, county: string): string | null
 }
 
 function resolveSirutaFromLocality(locality: string | null, county: string | null): string | null {
-  if (!locality || !county || county === 'Național') return null
+  if (!locality || !county || isNationalLocation(county)) return null
 
   const sectorSiruta = resolveBucharestSector(locality, county)
   if (sectorSiruta) return sectorSiruta
@@ -248,6 +253,10 @@ function formatCountyDisplay(county: string | null): string | null {
   if (!county) return null
 
   const normalizedCounty = normalizeLocation(county)
+  if (normalizedCounty === 'national') {
+    return NATIONAL_LOCATION_LABEL
+  }
+
   if (normalizedCounty === 'bucuresti' || normalizedCounty === 'municipiulbucuresti') {
     return 'București'
   }
@@ -257,6 +266,7 @@ function formatCountyDisplay(county: string | null): string | null {
 
 function formatLocalityDisplay(locality: string | null): string | null {
   if (!locality) return null
+  if (isNationalLocation(locality)) return NATIONAL_LOCATION_LABEL
 
   return locality
     .trim()
@@ -340,8 +350,8 @@ export function resolvePnrrProjectLocation(input: ProjectSirutaInput): ProjectLo
   const entity = entityDirectory[normalizedCui]
   const rawAssignment = {
     sirutaCode: null,
-    locality: input.locality,
-    county: input.county,
+    locality: formatLocalityDisplay(input.locality) ?? input.locality,
+    county: formatCountyDisplay(input.county) ?? input.county,
   }
 
   if (isCountyMnemonic(directAssignment) || entity?.t === 'admin_county_council') {
@@ -375,8 +385,8 @@ export function resolvePnrrProjectLocation(input: ProjectSirutaInput): ProjectLo
     if (isNationalEntity(entity, hasLocalParent)) {
       return {
         sirutaCode: null,
-        locality: 'NAȚIONAL',
-        county: 'Național',
+        locality: NATIONAL_LOCATION_LABEL,
+        county: NATIONAL_LOCATION_LABEL,
       }
     }
 

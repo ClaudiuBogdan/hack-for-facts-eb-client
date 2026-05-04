@@ -3,10 +3,13 @@ import { describe, expect, it, vi } from 'vitest'
 import type { PnrrProject } from '@/schemas/pnrr'
 import type { usePnrrFilterState } from '../hooks/usePnrrFilterState'
 import { PnrrMapView } from './PnrrMapView'
+import type { PnrrWorkerMapModel } from '../workers/pnrr-worker-types'
 
 const mockState = vi.hoisted(() => ({
   geoJsonData: undefined as unknown,
   interactiveMapProps: [] as unknown[],
+  mapModel: undefined as PnrrWorkerMapModel | undefined,
+  projectDetail: undefined as PnrrProject | undefined,
 }))
 
 vi.mock('@/hooks/useGeoJson', () => ({
@@ -20,8 +23,22 @@ vi.mock('@/components/maps/InteractiveMap', () => ({
   },
 }))
 
+vi.mock('../hooks/usePnrrData', () => ({
+  usePnrrMapModel: () => ({
+    data: mockState.mapModel
+      ? { mapModel: mockState.mapModel }
+      : undefined,
+  }),
+  usePnrrProjectDetail: () => ({
+    data: mockState.projectDetail
+      ? { project: mockState.projectDetail }
+      : undefined,
+  }),
+}))
+
 const PROJECT: PnrrProject = {
   id: 'project-1',
+  engagementId: 'engagement-1',
   title: 'Test Project',
   beneficiary: 'COMUNA ION ROATA',
   cui: '12345678',
@@ -68,6 +85,38 @@ const UAT_GEOJSON = {
       },
     },
   ],
+}
+
+function makeMapModel(
+  overrides: Partial<PnrrWorkerMapModel> = {},
+): PnrrWorkerMapModel {
+  return {
+    seriesId: 'total-value',
+    granularity: 'county',
+    series: {
+      id: 'total-value',
+      data: [
+        {
+          county_code: 'IL',
+          county_name: 'Ialomița',
+          county_population: 250_000,
+          amount: 100_000,
+          total_amount: 100_000,
+          per_capita_amount: 0.4,
+          county_entity: { cui: '', name: 'Ialomița' },
+        },
+      ],
+      min: 100_000,
+      max: 100_000,
+    },
+    nationalCount: 0,
+    unmappedCount: 0,
+    uatProjectCount: 1,
+    selectedUat: null,
+    selectedCountyProjects: [PROJECT],
+    selectedUatProjects: [],
+    ...overrides,
+  }
 }
 
 function makeFilterState(
@@ -132,12 +181,14 @@ describe('PnrrMapView', () => {
   beforeEach(() => {
     mockState.geoJsonData = undefined
     mockState.interactiveMapProps = []
+    mockState.mapModel = undefined
+    mockState.projectDetail = undefined
   })
 
   it('opens the county panel from URL panel state', () => {
     render(
       <PnrrMapView
-        projects={[PROJECT]}
+        model={makeMapModel()}
         filterState={makeFilterState({
           search: {
             ...makeFilterState().search,
@@ -155,7 +206,35 @@ describe('PnrrMapView', () => {
   it('opens the UAT panel from URL panel state', () => {
     render(
       <PnrrMapView
-        projects={[PROJECT]}
+        model={makeMapModel({
+          granularity: 'uat',
+          series: {
+            id: 'total-value',
+            data: [
+              {
+                uat_id: '123',
+                uat_code: '123',
+                siruta_code: '123',
+                uat_name: 'Ion Roată',
+                county_code: 'IL',
+                county_name: 'Ialomița',
+                population: 1_000,
+                amount: 100_000,
+                total_amount: 100_000,
+                per_capita_amount: 100,
+              },
+            ],
+            min: 100_000,
+            max: 100_000,
+          },
+          selectedUat: {
+            name: 'Ion Roată',
+            county: 'Ialomița',
+            natcode: '123',
+          },
+          selectedCountyProjects: [],
+          selectedUatProjects: [PROJECT],
+        })}
         filterState={makeFilterState({
           search: {
             ...makeFilterState().search,
@@ -167,36 +246,92 @@ describe('PnrrMapView', () => {
       />,
     )
 
-    expect(screen.getByText('Ion Roată')).toBeInTheDocument()
+    expect(screen.getAllByText('Ion Roată').length).toBeGreaterThan(0)
     expect(screen.getByText(/Ialomița · 1 project/)).toBeInTheDocument()
   })
 
   it('keeps the map panel visible with a nested project drawer', () => {
+    mockState.projectDetail = PROJECT
     render(
       <PnrrMapView
-        projects={[PROJECT]}
+        model={makeMapModel({
+          granularity: 'uat',
+          selectedUat: {
+            name: 'Ion Roată',
+            county: 'Ialomița',
+            natcode: '123',
+          },
+          selectedCountyProjects: [],
+          selectedUatProjects: [PROJECT],
+        })}
         filterState={makeFilterState({
           search: {
             ...makeFilterState().search,
             granularity: 'uat',
             panel: 'map-uat',
             panelUatSiruta: '123',
-            panelProjectId: PROJECT.id,
+            panelProjectId: 'engagement:engagement-1',
           },
         })}
       />,
     )
 
-    expect(screen.getByText('Ion Roată')).toBeInTheDocument()
+    expect(screen.getAllByText('Ion Roată').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Test Project').length).toBeGreaterThan(1)
   })
 
   it('passes the selected project-count series to map labels', async () => {
     mockState.geoJsonData = UAT_GEOJSON
+    mockState.mapModel = makeMapModel({
+      seriesId: 'project-count',
+      granularity: 'uat',
+      series: {
+        id: 'project-count',
+        data: [
+          {
+            uat_id: '123',
+            uat_code: '123',
+            siruta_code: '123',
+            uat_name: 'Ion Roată',
+            county_code: 'IL',
+            county_name: 'Ialomița',
+            population: 1_000,
+            amount: 1,
+            total_amount: 100_000,
+            per_capita_amount: 100,
+          },
+        ],
+        min: 1,
+        max: 1,
+      },
+      selectedCountyProjects: [],
+      selectedUatProjects: [PROJECT],
+    })
 
     render(
       <PnrrMapView
-        projects={[PROJECT]}
+        model={makeMapModel({
+          granularity: 'uat',
+          series: {
+            id: 'total-value',
+            data: [
+              {
+                uat_id: '123',
+                uat_code: '123',
+                siruta_code: '123',
+                uat_name: 'Ion Roată',
+                county_code: 'IL',
+                county_name: 'Ialomița',
+                population: 1_000,
+                amount: 100_000,
+                total_amount: 100_000,
+                per_capita_amount: 100,
+              },
+            ],
+            min: 100_000,
+            max: 100_000,
+          },
+        })}
         filterState={makeFilterState({
           search: {
             ...makeFilterState().search,

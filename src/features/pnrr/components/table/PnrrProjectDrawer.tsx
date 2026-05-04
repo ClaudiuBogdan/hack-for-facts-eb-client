@@ -2,8 +2,8 @@ import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import type { ElementType, ReactNode } from 'react'
 import { usePnrrCurrency } from '../../lib/usePnrrCurrency'
-import { formatPnrrCurrency } from '../../lib/formatting'
-import type { PnrrEntityType, PnrrProject } from '@/schemas/pnrr'
+import { formatPnrrCurrency, formatPnrrPercentage } from '../../lib/formatting'
+import type { PnrrEntityType, PnrrProject, PnrrProjectRecord } from '@/schemas/pnrr'
 import { PNRR_COMPONENTS } from '../../data/component-definitions'
 import { PNRR_MEASURES } from '../../data/measure-definitions'
 import {
@@ -55,6 +55,8 @@ export function PnrrProjectDrawer({
   const componentColor = comp?.color ?? 'var(--pnrr-blue)'
   const hasSignals =
     project.anomalies.length > 0 || project.dataQualitySignals.length > 0
+  const records = project.records ?? [project]
+  const projectValue = project.totalValueEur ?? project.valueEur
 
   return (
     <Sheet open={!!project} onOpenChange={(open) => !open && onClose()}>
@@ -66,6 +68,8 @@ export function PnrrProjectDrawer({
               style={{ borderColor: componentColor, color: componentColor }}
             >
               {project.componentCode}
+              {(project.variantCounts?.components ?? 0) > 0 &&
+                ` +${project.variantCounts?.components ?? 0}`}
             </span>
             <span
               className="inline-flex h-9 items-center rounded-sm px-3 text-sm font-black text-white"
@@ -102,7 +106,7 @@ export function PnrrProjectDrawer({
             <MetricBox
               icon={Wallet}
               label={t`Value`}
-              value={formatPnrrCurrency(project.valueEur, currency, 'standard')}
+              value={formatPnrrCurrency(projectValue, currency, 'standard')}
               color={componentColor}
             />
 
@@ -116,26 +120,26 @@ export function PnrrProjectDrawer({
 
           <div className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4">
             <ProgressMeter
-              label={t`Progres tehnic raportat`}
+              label={t`Reported technical progress`}
               value={techVal}
               displayValue={
                 project.techProgress === 'in-implementation'
                   ? t`In implementation (<30%)`
-                  : `${techVal}%`
+                  : formatPnrrPercentage(techVal)
               }
               color={componentColor}
             />
 
             <div className="my-4 h-px bg-[var(--pnrr-border)]" />
             <ProgressMeter
-              label={t`Progres financiar raportat`}
+              label={t`Reported financial progress`}
               value={project.finProgress == null ? null : finVal}
               displayValue={
                 project.finProgress == null
                   ? t`No data`
                   : project.finProgress === 'in-implementation'
                     ? t`In implementation (<30%)`
-                    : `${finVal}%`
+                    : formatPnrrPercentage(finVal)
               }
               color={componentColor}
             />
@@ -160,10 +164,14 @@ export function PnrrProjectDrawer({
                 )}
               </span>
             </DetailRow>
+            <DetailRow label="id_angajament">
+              <span>{project.engagementId ?? '—'}</span>
+            </DetailRow>
+            <DetailRow label={t`Records`}>
+              <span>{records.length.toLocaleString('ro-RO')}</span>
+            </DetailRow>
             <DetailRow icon={MapPin} label={t`Location`}>
-              <span>
-                {project.locality}, {project.county}
-              </span>
+              <span>{formatProjectLocation(project.locality, project.county)}</span>
             </DetailRow>
             <DetailRow label={t`Beneficiary type`}>
               <span>{getEntityTypeLabel(project.entityType)}</span>
@@ -203,6 +211,21 @@ export function PnrrProjectDrawer({
           )}
 
           <div className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4">
+            <h3 className="mb-3 text-sm font-black uppercase tracking-wide text-[var(--pnrr-fg)]">
+              <Trans>Official records</Trans>
+            </h3>
+            <div className="space-y-3">
+              {records.map((record) => (
+                <ProjectRecordDetail
+                  key={record.id}
+                  record={record}
+                  currency={currency}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4">
             <h3 className="mb-2 text-sm font-black uppercase tracking-wide text-[var(--pnrr-fg)]">
               <Trans>Component</Trans>
             </h3>
@@ -216,6 +239,87 @@ export function PnrrProjectDrawer({
       </SheetContent>
     </Sheet>
   )
+}
+
+function formatProjectLocation(locality: string, county: string): string {
+  if (!locality) return county || '—'
+  if (!county) return locality
+  if (normalizeLocationForDisplay(locality) === normalizeLocationForDisplay(county)) {
+    return locality
+  }
+
+  return `${locality}, ${county}`
+}
+
+function normalizeLocationForDisplay(value: string): string {
+  return value
+    .toLocaleLowerCase('ro-RO')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z]/g, '')
+}
+
+function ProjectRecordDetail({
+  record,
+  currency,
+}: {
+  readonly record: PnrrProjectRecord
+  readonly currency: 'RON' | 'EUR' | 'USD'
+}) {
+  return (
+    <div className="border border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] p-3">
+      <div className="mb-2 flex flex-wrap items-center gap-2">
+        <span className="border border-[var(--pnrr-border)] px-2 py-1 text-xs font-black text-[var(--pnrr-fg)]">
+          {record.componentCode}
+        </span>
+        <span className="border border-[var(--pnrr-border)] px-2 py-1 text-xs font-black text-[var(--pnrr-fg)]">
+          {record.measureFullCode}
+        </span>
+        <span className="ml-auto text-sm font-black tabular-nums text-[var(--pnrr-fg)]">
+          {formatPnrrCurrency(record.valueEur, currency, 'standard')}
+        </span>
+      </div>
+      <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-[var(--pnrr-muted)]">
+        <RecordField label={t`Funding`} value={getFundingLabel(record.fundingSource)} />
+        <RecordField label={t`CRI`} value={record.cri || '—'} />
+        <RecordField label={t`County`} value={record.county || '—'} />
+        <RecordField label={t`Locality`} value={record.locality || '—'} />
+        <RecordField
+          label={t`Technical`}
+          value={formatProgressForRecord(record.techProgress)}
+        />
+        <RecordField
+          label={t`Financial`}
+          value={formatProgressForRecord(record.finProgress)}
+        />
+      </dl>
+    </div>
+  )
+}
+
+function RecordField({
+  label,
+  value,
+}: {
+  readonly label: string
+  readonly value: string
+}) {
+  return (
+    <div className="min-w-0">
+      <dt className="font-black uppercase tracking-wide">{label}</dt>
+      <dd className="truncate text-[var(--pnrr-fg)]" title={value}>
+        {value}
+      </dd>
+    </div>
+  )
+}
+
+function formatProgressForRecord(
+  progress: PnrrProjectRecord['techProgress'],
+): string {
+  if (progress === null) return t`No data`
+  if (progress === 'in-implementation') return t`In implementation (<30%)`
+  return formatPnrrPercentage(progress)
 }
 
 function DrawerFooterClose({ onClose }: { readonly onClose: () => void }) {
@@ -348,8 +452,8 @@ function SignalChip({
 
 function getFundingLabel(source: PnrrProject['fundingSource']): string {
   if (source === 'grant') return t`Grant`
-  if (source === 'loan') return t`Împrumut`
-  return t`Grant + împrumut`
+  if (source === 'loan') return t`Loan`
+  return t`Grant + loan`
 }
 
 function getEntityTypeLabel(type: PnrrEntityType): string {

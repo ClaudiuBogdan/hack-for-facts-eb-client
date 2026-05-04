@@ -16,12 +16,12 @@ export type ProgressCategoryKey =
 export const PROGRESS_CATEGORY_LABELS: Readonly<
   Record<ProgressCategoryKey, string>
 > = {
-  completed: t`Marcate finalizate`,
+  completed: t`Marked as completed`,
   advanced: t`Avansate (70-99%)`,
-  mid: t`În progres (30-70%)`,
+  mid: t`In progress (30-70%)`,
   under30: t`Sub 30%`,
-  'not-started': t`Neîncepute`,
-  unknown: t`Necunoscut`,
+  'not-started': t`Not started`,
+  unknown: t`Unknown`,
 }
 
 /**
@@ -46,8 +46,8 @@ export const PROGRESS_CATEGORY_TO_STATUS: Readonly<
 
 export const FUNDING_SOURCE_LABELS: Readonly<Record<string, string>> = {
   grant: t`Grant`,
-  loan: t`Împrumut`,
-  'grant/loan': t`Grant + împrumut`,
+  loan: t`Loan`,
+  'grant/loan': t`Grant + loan`,
 }
 
 // ---------------------------------------------------------------------------

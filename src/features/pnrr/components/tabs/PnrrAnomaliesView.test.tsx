@@ -4,6 +4,7 @@ import type { PnrrAggregates, PnrrProject } from '@/schemas/pnrr'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
 import { computeAggregates } from '../../lib/data-transform'
 import { PnrrAnomaliesView } from './PnrrAnomaliesView'
+import type { PnrrWorkerAnomalyModel } from '../../workers/pnrr-worker-types'
 
 vi.mock('../PnrrAnomalyRibbon', () => ({
   PnrrAnomalyRibbon: () => <div data-testid="pnrr-anomaly-ribbon" />,
@@ -34,6 +35,7 @@ vi.mock('../PnrrAnomalyInfoPanel', () => ({
 
 const PROJECT: PnrrProject = {
   id: 'project-1',
+  engagementId: 'engagement-1',
   title: 'Test Project',
   beneficiary: 'Test Beneficiar',
   cui: '12345678',
@@ -117,10 +119,18 @@ function makeFilterState(
 describe('PnrrAnomaliesView', () => {
   it('opens the anomaly info panel from URL panel state', () => {
     const aggregates: PnrrAggregates = computeAggregates([PROJECT])
+    const model: PnrrWorkerAnomalyModel = {
+      riskCount: 1,
+      riskValue: PROJECT.valueEur,
+      dataQualityCount: 0,
+      dataQualityValue: 0,
+      rows: [PROJECT],
+      totalCount: 1,
+    }
 
     render(
       <PnrrAnomaliesView
-        projects={[PROJECT]}
+        model={model}
         aggregates={aggregates}
         filterState={makeFilterState({
           search: {

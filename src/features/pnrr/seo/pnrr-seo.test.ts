@@ -21,7 +21,7 @@ function makeRaw(overrides: Partial<RawPnrrProject> = {}): RawPnrrProject {
     'Titlu Proiect': 'Modernizare infrastructura scolara',
     'Nume Beneficiar': 'MUNICIPIUL TEST',
     CUI: '12345678',
-    'Județ': 'Cluj',
+    'County': 'Cluj',
     'Sursă Finanțare': 'grant',
     'Valoare (EUR)': 1_000_000,
     'Progres Tehnic': '50%',
@@ -81,7 +81,7 @@ describe('pnrr-seo', () => {
         makeRaw(),
         makeRaw({
           'Titlu Proiect': 'Spital regional',
-          'Județ': 'Iasi',
+          'County': 'Iasi',
           'Valoare (EUR)': 5_000_000,
           'Cod Componentă': 'C12',
           'Progres Tehnic': '100%',
@@ -106,7 +106,7 @@ describe('pnrr-seo', () => {
       valueEur: 5_000_000,
     })
     expect(snapshot.topCounties[0]).toMatchObject({
-      id: 'Iasi',
+      id: 'Iași',
       count: 1,
     })
   })
@@ -126,6 +126,7 @@ describe('pnrr-seo', () => {
     expect(parsedUrl.pathname).toBe('/pnrr/share-image.png')
     expect(parsedUrl.searchParams.get('components')).toBe('["C7","C10"]')
     expect(parsedUrl.searchParams.get('onlyAnomalies')).toBe('true')
+    expect(parsedUrl.searchParams.get('v')).toBe('20260430-ron5-official-total')
     expect(parsedUrl.searchParams.has('page')).toBe(false)
     expect(parsedUrl.searchParams.has('mapLat')).toBe(false)
   })

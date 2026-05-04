@@ -17,6 +17,7 @@ import { Activity } from 'lucide-react'
 export function PnrrHeader({
   projectsCount,
   totalValue,
+  totalValueLabel,
   view,
   onViewChange,
   actions,
@@ -27,6 +28,7 @@ export function PnrrHeader({
 }: {
   readonly projectsCount: number
   readonly totalValue: number
+  readonly totalValueLabel?: React.ReactNode
   readonly view: PnrrView
   readonly onViewChange: (view: PnrrView) => void
   readonly actions?: React.ReactNode
@@ -97,6 +99,7 @@ export function PnrrHeader({
   }, [isMobile])
 
   const hasActiveFilters = getActiveFilterCount(filterState.search) > 0
+  const displayedTotalValueLabel = totalValueLabel ?? <Trans>listed value</Trans>
 
   return (
     <>
@@ -227,7 +230,7 @@ export function PnrrHeader({
                   >
                     <Skeleton className="h-4 w-24 rounded-none" />
                     <span className="text-sm font-bold text-current">
-                      <Trans>valoare listată</Trans>
+                      {displayedTotalValueLabel}
                     </span>
                   </div>
                 </>
@@ -253,7 +256,7 @@ export function PnrrHeader({
                       {formatPnrrCurrency(totalValue, currency)}
                     </span>
                     <span className="text-sm font-bold text-current">
-                      <Trans>valoare listată</Trans>
+                      {displayedTotalValueLabel}
                     </span>
                   </div>
                 </>

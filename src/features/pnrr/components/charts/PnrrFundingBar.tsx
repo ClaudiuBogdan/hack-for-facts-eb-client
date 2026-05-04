@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
-import { formatNumber } from '@/lib/utils'
+import { cn, formatNumber } from '@/lib/utils'
 import { usePnrrCurrency } from '../../lib/usePnrrCurrency'
 import { formatPnrrCompactCurrencyDisplayParts } from '../pnrr-compact-currency-display'
 import type { PnrrAggregates } from '@/schemas/pnrr'
@@ -45,17 +45,18 @@ export function PnrrFundingBar({
     },
     {
       ...CATEGORY_CONFIG[1],
-      label: t`Împrumut`,
+      label: t`Loan`,
       value: aggregates.loanTotal,
       pct: loanPct,
     },
     {
       ...CATEGORY_CONFIG[2],
-      label: t`Grant + împrumut`,
+      label: t`Grant + loan`,
       value: aggregates.mixedTotal,
       pct: mixedPct,
     },
-  ]
+  ].filter((category) => category.value > 0)
+  const hasMixedFunding = aggregates.mixedTotal > 0
 
   return (
     <div
@@ -65,10 +66,14 @@ export function PnrrFundingBar({
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3 border-b-2 border-[var(--pnrr-border)] px-5 py-4">
         <h3 className="text-lg font-black text-[var(--pnrr-fg)]">
-          <Trans>Sursa finanțării</Trans>
+          <Trans>Funding source</Trans>
         </h3>
         <span className="border-2 border-[var(--pnrr-border)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[var(--pnrr-muted)]">
-          <Trans>Grant / Împrumut / Mixt</Trans>
+          {hasMixedFunding ? (
+            <Trans>Grant / Loan / Mixt</Trans>
+          ) : (
+            <Trans>Grant / Loan</Trans>
+          )}
         </span>
       </div>
 
@@ -82,20 +87,17 @@ export function PnrrFundingBar({
         <div className="space-y-3">
           <div className="h-6 w-full border-2 border-[var(--pnrr-border)]">
             <div className="flex h-full">
-              <div
-                className="h-full border-r-2 border-[var(--pnrr-border)] transition-all duration-700"
-                style={{ width: `${grantPct}%`, backgroundColor: '#16a34a' }}
-              />
-
-              <div
-                className="h-full border-r-2 border-[var(--pnrr-border)] transition-all duration-700"
-                style={{ width: `${loanPct}%`, backgroundColor: '#ef4444' }}
-              />
-
-              <div
-                className="h-full transition-all duration-700"
-                style={{ width: `${mixedPct}%`, backgroundColor: '#f59e0b' }}
-              />
+              {categories.map((cat, index) => (
+                <div
+                  key={cat.key}
+                  className={cn(
+                    'h-full transition-all duration-700',
+                    index < categories.length - 1 &&
+                      'border-r-2 border-[var(--pnrr-border)]',
+                  )}
+                  style={{ width: `${cat.pct}%`, backgroundColor: cat.color }}
+                />
+              ))}
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm text-[var(--pnrr-fg)]">
@@ -119,7 +121,7 @@ export function PnrrFundingBar({
         <div className="border-t-2 border-[var(--pnrr-border)]" />
 
         {/* Summary cards */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {categories.map((cat) => {
             const formattedValue = formatPnrrCompactCurrencyDisplayParts(cat.value, currency)
 

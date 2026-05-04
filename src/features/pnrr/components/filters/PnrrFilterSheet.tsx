@@ -3,7 +3,6 @@ import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import type {
   PnrrBeneficiaryType,
-  PnrrProject,
   PnrrSearchState,
 } from '@/schemas/pnrr'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
@@ -46,6 +45,7 @@ import {
   setPreferenceCookie,
   USER_CURRENCY_STORAGE_KEY,
 } from '@/lib/user-preferences'
+import type { PnrrWorkerFilterFacets } from '../../workers/pnrr-worker-types'
 
 const SEARCH_DEBOUNCE_MS = 300
 const SELECTION_DEBOUNCE_MS = 300
@@ -159,7 +159,7 @@ function useDebouncedSelectionState<T extends string>(
 interface PnrrFilterSheetProps {
   readonly open: boolean
   readonly onOpenChange: (open: boolean) => void
-  readonly projects: readonly PnrrProject[]
+  readonly facets: PnrrWorkerFilterFacets | null
   readonly filterState: ReturnType<typeof usePnrrFilterState>
   readonly showTrigger?: boolean
 }
@@ -167,7 +167,7 @@ interface PnrrFilterSheetProps {
 export function PnrrFilterSheet({
   open,
   onOpenChange,
-  projects,
+  facets,
   filterState,
   showTrigger = true,
 }: PnrrFilterSheetProps) {
@@ -308,83 +308,33 @@ export function PnrrFilterSheet({
   }, [beneficiaryCuiInput, globalBeneficiaryCui, setBeneficiaryCui])
 
   const componentOptions = useMemo(() => {
-    const codes = Array.from(
-      new Set(projects.map((p) => p.componentCode)),
-    ).sort()
-    return codes.map<Option>((code) => ({
+    return (facets?.components ?? []).map<Option>((code) => ({
       value: code,
       label: `${code} — ${PNRR_COMPONENTS[code]?.nameRo ?? code}`,
     }))
-  }, [projects])
+  }, [facets?.components])
 
   const countyOptions = useMemo(() => {
-    const counties = Array.from(new Set(projects.map((p) => p.county))).sort()
-    return counties.map<Option>((c) => ({ value: c, label: c }))
-  }, [projects])
+    return (facets?.counties ?? []).map<Option>((c) => ({ value: c, label: c }))
+  }, [facets?.counties])
 
   const uatOptions = useMemo(() => {
-    const uats = new Map<
-      string,
-      { readonly name: string; readonly county: string }
-    >()
-
-    for (const project of projects) {
-      if (
-        !project.sirutaCode ||
-        !project.locality ||
-        project.county === 'Național'
-      )
-        continue
-
-      const existing = uats.get(project.sirutaCode)
-      if (
-        !existing ||
-        project.locality.localeCompare(existing.name, 'ro') < 0
-      ) {
-        uats.set(project.sirutaCode, {
-          name: project.locality,
-          county: project.county,
-        })
-      }
-    }
-
-    return Array.from(uats.entries())
-      .map<PnrrFilterOption>(([siruta, uat]) => ({
-        value: siruta,
-        label: uat.name,
-        description: uat.county,
-        searchText: `${uat.name} ${siruta}`,
-      }))
-      .sort((a, b) => {
-        const countyCompare = (a.description ?? '').localeCompare(
-          b.description ?? '',
-          'ro',
-        )
-        return countyCompare || a.label.localeCompare(b.label, 'ro')
-      })
-  }, [projects])
+    return (facets?.uats ?? []).map<PnrrFilterOption>((uat) => ({ ...uat }))
+  }, [facets?.uats])
 
   const measureOptions = useMemo(() => {
-    const allOptions = getAllMeasureOptions()
-    // Only include measures that actually exist in the project data
-    const projectMeasureKeys = new Set(
-      projects.map(
-        (p) =>
-          `${p.componentCode}.${p.measureCode}.${p.fundingSource === 'grant/loan' ? 'grant' : p.fundingSource}`,
-      ),
-    )
-    return allOptions
-      .filter((opt) => projectMeasureKeys.has(opt.value))
+    const measureValues = new Set(facets?.measures ?? [])
+    return getAllMeasureOptions()
+      .filter((opt) => measureValues.has(opt.value))
       .map<Option>((opt) => ({ value: opt.value, label: opt.label }))
-  }, [projects])
+  }, [facets?.measures])
 
   const criOptions = useMemo(() => {
-    const cris = Array.from(new Set(projects.map((p) => p.cri))).sort()
-    return cris.map<Option>((c) => ({
+    return (facets?.cris ?? []).map<Option>((c) => ({
       value: c,
       label: PNRR_CRIS[c]?.nameRo ? `${c} — ${PNRR_CRIS[c].nameRo}` : c,
     }))
-  }, [projects])
+  }, [facets?.cris])
 
   const activeCount = useMemo(() => getActiveFilterCount(search), [search])
 
@@ -666,13 +616,13 @@ export function PnrrFilterSheet({
                     value="loan"
                     className={FILTER_TOGGLE_ITEM_CLASS}
                   >
-                    <Trans>Împrumut</Trans>
+                    <Trans>Loan</Trans>
                   </ToggleGroupItem>
                   <ToggleGroupItem
                     value="grant/loan"
                     className={`${FILTER_TOGGLE_ITEM_CLASS} col-span-2`}
                   >
-                    <Trans>Grant + împrumut</Trans>
+                    <Trans>Grant + loan</Trans>
                   </ToggleGroupItem>
                 </ToggleGroup>
               </section>
@@ -698,7 +648,7 @@ export function PnrrFilterSheet({
               {/* Anomaly types */}
               <section className="space-y-2">
                 <Label className={FILTER_LABEL_CLASS}>
-                  <Trans>Tip semnal de risc</Trans>
+                  <Trans>Risk signal type</Trans>
                 </Label>
                 <PnrrStyledMultiSelect
                   options={ANOMALY_TYPE_OPTIONS}
@@ -712,13 +662,13 @@ export function PnrrFilterSheet({
               {/* Data anomaly signal types */}
               <section className="space-y-2">
                 <Label className={FILTER_LABEL_CLASS}>
-                  <Trans>Anomalii de date</Trans>
+                  <Trans>Data anomalies</Trans>
                 </Label>
                 <PnrrStyledMultiSelect
                   options={DATA_QUALITY_SIGNAL_OPTIONS}
                   selected={selectedDataQualitySignalTypes}
                   onChange={setSelectedDataQualitySignalTypes}
-                  placeholder={t`Alege anomalii de date...`}
+                  placeholder={t`Choose data anomalies...`}
                   commitDelayMs={LOCAL_SELECTION_COMMIT_DELAY_MS}
                 />
               </section>
@@ -732,7 +682,7 @@ export function PnrrFilterSheet({
                     htmlFor="sheet-only-anomalies"
                     className="cursor-pointer text-sm font-bold text-[var(--pnrr-fg)]"
                   >
-                    <Trans>Doar proiecte cu semnale de risc</Trans>
+                    <Trans>Only projects with risk signals</Trans>
                   </Label>
                   <Switch
                     id="sheet-only-anomalies"

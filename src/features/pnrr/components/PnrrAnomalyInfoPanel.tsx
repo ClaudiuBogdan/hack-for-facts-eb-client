@@ -107,12 +107,12 @@ export function PnrrAnomalyInfoPanel({
             <Trans>Guide</Trans>
           </div>
           <SheetTitle className="text-left text-4xl font-black leading-none tracking-tight text-[var(--pnrr-fg)]">
-            <Trans>Ghid pentru semnale</Trans>
+            <Trans>Signal guide</Trans>
           </SheetTitle>
           <SheetDescription className="pt-2 text-left text-base font-bold leading-relaxed text-[var(--pnrr-muted)]">
             <Trans>
-              Filtrele sunt calculate automat din date raportate. Ajută la
-              prioritizare; nu sunt concluzii oficiale.
+              Filters are automatically calculated from reported data. They help with
+              prioritization; they are not official conclusions.
             </Trans>
           </SheetDescription>
         </SheetHeader>
@@ -121,34 +121,34 @@ export function PnrrAnomalyInfoPanel({
           <div className="space-y-6 p-6">
             <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-5">
               <h3 className="text-sm font-black uppercase tracking-wide text-[var(--pnrr-fg)]">
-                <Trans>Cum interpretăm filtrele</Trans>
+                <Trans>How we interpret the filters</Trans>
               </h3>
               <div className="mt-4 space-y-4 text-sm font-medium leading-relaxed text-[var(--pnrr-muted)]">
                 <p>
                   <Trans>
-                    Semnalele de risc indică proiecte unde progresul financiar
-                    raportat, progresul tehnic raportat sau valoarea listată
-                    sugerează o verificare prioritară.
+                    Risk signals indicate projects where reported financial
+                    progress, reported technical progress, or listed value
+                    suggest priority verification.
                   </Trans>
                 </p>
                 <p>
                   <Trans>
-                    Problemele de calitate a datelor marchează rânduri care pot
-                    distorsiona analiza: posibile duplicate sau proiecte fără
-                    progres financiar publicat.
+                    Data quality issues mark rows that can distort analysis:
+                    possible duplicates or projects without published financial
+                    progress.
                   </Trans>
                 </p>
                 <p>
                   <Trans>
-                    Dacă selectezi mai multe filtre, tabelul arată proiectele
-                    care se potrivesc cu cel puțin unul dintre ele. Valorile
-                    sunt calculate în contextul filtrelor active.
+                    If you select multiple filters, the table shows projects
+                    that match at least one of them. Values are calculated in
+                    the context of active filters.
                   </Trans>
                 </p>
               </div>
             </section>
 
-            <GuideSection title={<Trans>Semnale de risc</Trans>}>
+            <GuideSection title={<Trans>Risk signals</Trans>}>
               {ANOMALY_CONFIG.map((cfg) => (
                 <SignalGuideItem
                   key={cfg.type}
@@ -162,7 +162,7 @@ export function PnrrAnomalyInfoPanel({
               ))}
             </GuideSection>
 
-            <GuideSection title={<Trans>Anomalii de date</Trans>}>
+            <GuideSection title={<Trans>Data anomalies</Trans>}>
               {DATA_QUALITY_SIGNAL_CONFIG.map((cfg) => (
                 <SignalGuideItem
                   key={cfg.type}
@@ -178,7 +178,7 @@ export function PnrrAnomalyInfoPanel({
 
             <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-5">
               <h3 className="text-sm font-black uppercase tracking-wide text-[var(--pnrr-fg)]">
-                <Trans>Notă despre date</Trans>
+                <Trans>Note about data</Trans>
               </h3>
               <div className="mt-3 space-y-3 text-sm font-medium leading-relaxed text-[var(--pnrr-muted)]">
                 <p>
@@ -191,9 +191,9 @@ export function PnrrAnomalyInfoPanel({
                 <p>
                   <Trans>
                     {aggregates.missingFinProgressPercent.toFixed(0)}% of
-                    proiecte nu au progres financiar publicat în set, ceea ce
-                    poate ascunde semnale bazate pe comparația dintre progresul
-                    tehnic și cel financiar.
+                    projects do not have published financial progress in the
+                    dataset, which may hide signals based on the comparison
+                    between technical and financial progress.
                   </Trans>
                 </p>
               </div>
@@ -290,7 +290,7 @@ function SignalGuideItem({
       {expanded && (
         <div className="border-t-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4 pl-5">
           <div className="space-y-4">
-            <SignalDetail label={<Trans>Regulă de detecție</Trans>}>
+            <SignalDetail label={<Trans>Detection rule</Trans>}>
               <span className="inline-flex items-start gap-2">
                 <span
                   className={cn('mt-1.5 h-2.5 w-2.5 shrink-0', tone.accent)}
@@ -298,10 +298,10 @@ function SignalGuideItem({
                 <span>{cfg.detectionRule}</span>
               </span>
             </SignalDetail>
-            <SignalDetail label={<Trans>Ce înseamnă</Trans>}>
+            <SignalDetail label={<Trans>What it means</Trans>}>
               {cfg.explanation}
             </SignalDetail>
-            <SignalDetail label={<Trans>Ce merită verificat</Trans>}>
+            <SignalDetail label={<Trans>What is worth checking</Trans>}>
               {cfg.investigationTip}
             </SignalDetail>
             {hasCount && (
@@ -311,7 +311,7 @@ function SignalGuideItem({
                   value={String(data.count)}
                 />
                 <SignalStat
-                  label={<Trans>Valoare listată</Trans>}
+                  label={<Trans>Listed value</Trans>}
                   value={`${(data.value / 1_000_000).toFixed(1)}M EUR`}
                 />
               </div>

@@ -13,7 +13,7 @@ import {
 const PRESETS = [
   {
     id: 'big-black-holes',
-    label: t`Valoare mare, progres scăzut`,
+    label: t`Large value, low progress`,
     icon: Search,
     apply: (fs: ReturnType<typeof usePnrrFilterState>) => {
       fs.clearFilters()
@@ -23,7 +23,7 @@ const PRESETS = [
   },
   {
     id: 'advance-payment',
-    label: t`Decalaj financiar-tehnic`,
+    label: t`Financial-technical gap`,
     icon: Banknote,
     apply: (fs: ReturnType<typeof usePnrrFilterState>) => {
       fs.clearFilters()
@@ -32,7 +32,7 @@ const PRESETS = [
   },
   {
     id: 'financial-overrun',
-    label: t`Peste 100% financiar`,
+    label: t`Over 100% financial`,
     icon: TrendingUp,
     apply: (fs: ReturnType<typeof usePnrrFilterState>) => {
       fs.clearFilters()
@@ -41,7 +41,7 @@ const PRESETS = [
   },
   {
     id: 'stalled-completion',
-    label: t`Finalizat tehnic, financiar scăzut`,
+    label: t`Technically completed, low financial progress`,
     icon: Clock,
     apply: (fs: ReturnType<typeof usePnrrFilterState>) => {
       fs.clearFilters()
@@ -59,7 +59,7 @@ const PRESETS = [
   },
   {
     id: 'private-loans',
-    label: t`Împrumuturi către non-public`,
+    label: t`Loans to non-public`,
     icon: Building2,
     apply: (fs: ReturnType<typeof usePnrrFilterState>) => {
       fs.clearFilters()

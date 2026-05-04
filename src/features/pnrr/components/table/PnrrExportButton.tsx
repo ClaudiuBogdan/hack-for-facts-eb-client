@@ -1,68 +1,18 @@
-import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import type { PnrrProject } from '@/schemas/pnrr'
+import type { PnrrSearchState } from '@/schemas/pnrr'
 import { Button } from '@/components/ui/button'
 import { Download } from 'lucide-react'
-
-function escapeCsv(value: string): string {
-  const str = String(value ?? '')
-  if (str.includes(',') || str.includes('\n') || str.includes('"')) {
-    return `"${str.replace(/"/g, '""')}"`
-  }
-  return str
-}
+import { exportPnrrCsvFromWorker } from '../../hooks/usePnrrData'
 
 export function PnrrExportButton({
-  projects,
+  search,
   lastUpdated,
 }: {
-  readonly projects: readonly PnrrProject[]
+  readonly search?: Partial<PnrrSearchState>
   readonly lastUpdated?: string
 }) {
-  const downloadCsv = () => {
-    const headers = [
-      t`Title`,
-      t`Beneficiary`,
-      'CUI',
-      t`County`,
-      t`Locality`,
-      t`Component`,
-      t`Measure`,
-      'CRI',
-      t`Sursa finanțării`,
-      t`Value (EUR)`,
-      t`Progres tehnic raportat`,
-      t`Progres financiar raportat`,
-      t`Semnale de risc`,
-      t`Anomalii de date`,
-    ]
-
-    const rows = projects.map((p) => [
-      p.title,
-      p.beneficiary,
-      p.cui ?? '',
-      p.county,
-      p.locality,
-      p.componentCode,
-      p.measureFullCode,
-      p.cri,
-      p.fundingSource,
-      p.valueEur,
-      p.techProgress === 'in-implementation'
-        ? t`IN IMPLEMENTATION`
-        : (p.techProgress ?? ''),
-      p.finProgress === 'in-implementation'
-        ? t`IN IMPLEMENTATION`
-        : (p.finProgress ?? ''),
-      p.anomalies.join(', '),
-      p.dataQualitySignals.join(', '),
-    ])
-
-    const csv = [
-      headers.join(','),
-      ...rows.map((r) => r.map((v) => escapeCsv(String(v))).join(',')),
-    ].join('\n')
-
+  const downloadCsv = async () => {
+    const csv = await exportPnrrCsvFromWorker(search)
     // BOM marker ensures Excel on Windows correctly reads UTF-8 diacritics
     const blob = new Blob(['\uFEFF' + csv], {
       type: 'text/csv;charset=utf-8;',

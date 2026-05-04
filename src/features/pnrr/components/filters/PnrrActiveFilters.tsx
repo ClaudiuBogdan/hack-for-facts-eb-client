@@ -230,7 +230,7 @@ export function PnrrActiveFilters({
     if (search.onlyAnomalies) {
       result.push({
         key: 'only-anomalies',
-        value: t`Doar semnale de risc`,
+        value: t`Only risk signals`,
         onRemove: () => filterState.setOnlyAnomalies(false),
       })
     }

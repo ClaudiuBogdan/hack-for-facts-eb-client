@@ -6,6 +6,7 @@ import { PnrrActiveFilters } from './PnrrActiveFilters'
 
 const PROJECT: PnrrProject = {
   id: 'project-1',
+  engagementId: 'engagement-1',
   title: 'Test Project',
   beneficiary: 'COMUNA CHIAJNA',
   cui: '4611538',

@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import { formatNumber, cn } from '@/lib/utils'
 import { usePnrrCurrency } from '../../lib/usePnrrCurrency'
 import { formatPnrrCurrency } from '../../lib/formatting'
-import type { PnrrProject } from '@/schemas/pnrr'
+import type { PnrrWorkerOverviewModel } from '../../workers/pnrr-worker-types'
 import {
   Tooltip as ShadcnTooltip,
   TooltipContent,
@@ -26,110 +26,44 @@ import { Info } from 'lucide-react'
 type Metric = 'tech' | 'fin' | 'gap'
 type DistributionMode = 'count' | 'value'
 
-const GAP_BUCKETS = [
-  { min: -Infinity, max: -50, label: '< -50%', color: '#991b1b' },
-  { min: -50, max: -20, label: '-50% → -20%', color: '#ef4444' },
-  { min: -20, max: 0, label: '-20% → 0%', color: '#f59e0b' },
-  { min: 0, max: 20, label: '0% → 20%', color: '#6f6f6f' },
-  { min: 20, max: 50, label: '20% → 50%', color: '#3b82f6' },
-  { min: 50, max: 100, label: '50% → 100%', color: '#1d4ed8' },
-  { min: 100, max: Infinity, label: '> 100%', color: '#16a34a' },
-]
-
-const PROGRESS_BUCKETS = [
-  { min: 0, max: 10, label: '0% → 10%', color: '#6f6f6f' },
-  { min: 10, max: 25, label: '10% → 25%', color: '#d97706' },
-  { min: 25, max: 50, label: '25% → 50%', color: '#f59e0b' },
-  { min: 50, max: 75, label: '50% → 75%', color: '#3b82f6' },
-  { min: 75, max: 90, label: '75% → 90%', color: '#1d4ed8' },
-  { min: 90, max: 100, label: '90% → 100%', color: '#b6ff00' },
-  { min: 100, max: Infinity, label: '> 100%', color: '#16a34a' },
-]
-
 const METRIC_LABELS: Record<Metric, string> = {
-  tech: t`Progres tehnic raportat`,
-  fin: t`Progres financiar raportat`,
-  gap: t`Diferență de progres raportat`,
+  tech: t`Reported technical progress`,
+  fin: t`Reported financial progress`,
+  gap: t`Reported progress difference`,
 }
 
 const METRIC_OPTIONS: { value: Metric; label: string }[] = [
-  { value: 'tech', label: t`Tehnic` },
-  { value: 'fin', label: t`Financiar` },
-  { value: 'gap', label: t`Diferență` },
+  { value: 'tech', label: t`Technical` },
+  { value: 'fin', label: t`Financial` },
+  { value: 'gap', label: t`Difference` },
 ]
 
 const MODE_OPTIONS: { value: DistributionMode; label: string }[] = [
-  { value: 'count', label: t`Projects` },
+  { value: 'count', label: t`Records` },
   { value: 'value', label: t`Value` },
 ]
 
 export function PnrrProgressHistogram({
-  projects,
+  model,
 }: {
-  readonly projects: readonly PnrrProject[]
+  readonly model: PnrrWorkerOverviewModel['histogram']
 }) {
   const [metric, setMetric] = useState<Metric>('tech')
   const [mode, setMode] = useState<DistributionMode>('count')
   const currency = usePnrrCurrency()
 
-  const { data, coveragePercent, validCount, totalValue } = useMemo(() => {
-    if (metric === 'gap') {
-      const valid = projects.filter(
-        (p) =>
-          typeof p.techProgress === 'number' &&
-          typeof p.finProgress === 'number',
-      )
-
-      const counts = GAP_BUCKETS.map((bucket) => {
-        const matches = valid.filter((p) => {
-          const gap = (p.techProgress as number) - (p.finProgress as number)
-          return gap >= bucket.min && gap < bucket.max
-        })
-        return {
-          label: bucket.label,
-          count: matches.length,
-          value: matches.reduce((sum, p) => sum + p.valueEur, 0),
-          color: bucket.color,
-        }
-      })
-
-      const coverage =
-        projects.length > 0 ? (valid.length / projects.length) * 100 : 0
-
-      return {
-        data: counts,
-        coveragePercent: coverage,
-        validCount: valid.length,
-        totalValue: valid.reduce((sum, p) => sum + p.valueEur, 0),
-      }
-    }
-
-    const key = metric === 'tech' ? 'techProgress' : 'finProgress'
-    const valid = projects.filter((p) => typeof p[key] === 'number')
-
-    const counts = PROGRESS_BUCKETS.map((bucket) => {
-      const matches = valid.filter((p) => {
-        const val = p[key] as number
-        return val >= bucket.min && val < bucket.max
-      })
-      return {
-        label: bucket.label,
-        count: matches.length,
-        value: matches.reduce((sum, p) => sum + p.valueEur, 0),
-        color: bucket.color,
-      }
-    })
-
-    const coverage =
-      projects.length > 0 ? (valid.length / projects.length) * 100 : 0
-
-    return {
-      data: counts,
-      coveragePercent: coverage,
-      validCount: valid.length,
-      totalValue: valid.reduce((sum, p) => sum + p.valueEur, 0),
-    }
-  }, [projects, metric])
+  const {
+    data,
+    countCoveragePercent,
+    valueCoveragePercent,
+    validCount,
+    validValue,
+    totalRecordCount,
+    totalValue,
+  } = model[metric]
+  const coveragePercent = mode === 'value'
+    ? valueCoveragePercent
+    : countCoveragePercent
 
   return (
     <div
@@ -162,9 +96,9 @@ export function PnrrProgressHistogram({
                 >
                   <p className="text-xs leading-relaxed">
                     <Trans>
-                      Procentele peste 100% vin din datele raportate. Ele pot
-                      apărea din schimbări ale valorii de referință, actualizări
-                      întârziate sau erori de introducere.
+                      Percentages over 100% come from reported data. They can
+                      appear from changes in reference value, delayed updates,
+                      or entry errors.
                     </Trans>
                   </p>
                 </TooltipContent>
@@ -173,7 +107,7 @@ export function PnrrProgressHistogram({
           </div>
           {metric === 'gap' && (
             <span className="mt-1 inline-block border border-[var(--pnrr-border)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--pnrr-muted)]">
-              <Trans>Tehnic - financiar</Trans>
+              <Trans>Technical - financial</Trans>
             </span>
           )}
         </div>
@@ -199,16 +133,13 @@ export function PnrrProgressHistogram({
         <div className="flex items-center justify-between gap-3 text-sm text-[var(--pnrr-fg)]">
           {mode === 'value' ? (
             <span className="break-words">
-              {formatPnrrCurrency(totalValue, currency)}{' '}
+              {formatPnrrCurrency(validValue, currency)}{' '}
               <span className="text-[var(--pnrr-muted)]">
                 <Trans>of</Trans>
               </span>{' '}
-              {formatPnrrCurrency(
-                projects.reduce((s, p) => s + p.valueEur, 0),
-                currency,
-              )}{' '}
+              {formatPnrrCurrency(totalValue, currency)}{' '}
               <span className="text-[var(--pnrr-muted)]">
-                <Trans>valoare cu date complete</Trans>
+                <Trans>value with complete data</Trans>
               </span>
             </span>
           ) : (
@@ -217,9 +148,9 @@ export function PnrrProgressHistogram({
               <span className="text-[var(--pnrr-muted)]">
                 <Trans>of</Trans>
               </span>{' '}
-              <span className="font-bold">{formatNumber(projects.length)}</span>{' '}
+              <span className="font-bold">{formatNumber(totalRecordCount)}</span>{' '}
               <span className="text-[var(--pnrr-muted)]">
-                <Trans>proiecte cu date complete</Trans>
+                <Trans>records with complete data</Trans>
               </span>
             </span>
           )}
@@ -285,7 +216,7 @@ export function PnrrProgressHistogram({
                       t`Value`,
                     ]
                   }
-                  return [formatNumber(Number(val)), t`Projects`]
+                  return [formatNumber(Number(val)), t`Records`]
                 }}
               />
 

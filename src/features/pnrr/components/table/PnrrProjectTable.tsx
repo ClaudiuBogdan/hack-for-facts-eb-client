@@ -1,7 +1,7 @@
-import { useMemo, useCallback, useEffect, memo } from 'react'
+import { useCallback, useEffect, memo } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { usePnrrCurrency } from '../../lib/usePnrrCurrency'
-import { formatPnrrCurrency } from '../../lib/formatting'
+import { formatPnrrCurrency, formatPnrrPercentage } from '../../lib/formatting'
 import type { PnrrProject, PnrrSearchState } from '@/schemas/pnrr'
 import { PNRR_COMPONENTS } from '../../data/component-definitions'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
@@ -24,6 +24,11 @@ import {
   MoreHorizontal,
 } from 'lucide-react'
 import { PnrrProjectDrawer } from './PnrrProjectDrawer'
+import { usePnrrProjectDetail } from '../../hooks/usePnrrData'
+import type {
+  PnrrWorkerProjectPage,
+  PnrrWorkerProjectRow,
+} from '../../workers/pnrr-worker-types'
 
 function SortIcon({
   active,
@@ -51,10 +56,40 @@ function getProgressValue(
   return null
 }
 
+function getProjectValue(project: Pick<PnrrProject, 'totalValueEur' | 'valueEur'>): number {
+  return project.totalValueEur ?? project.valueEur
+}
+
+function getVariantCount(
+  project: PnrrProject,
+  key: keyof NonNullable<PnrrProject['variantCounts']>,
+): number {
+  return project.variantCounts?.[key] ?? 0
+}
+
+function ValueWithVariants({
+  value,
+  variantCount,
+}: {
+  readonly value: string
+  readonly variantCount: number
+}) {
+  return (
+    <span className="inline-flex items-center gap-1">
+      <span>{value}</span>
+      {variantCount > 0 && (
+        <span className="text-xs font-black text-[var(--pnrr-muted)]">
+          +{variantCount}
+        </span>
+      )}
+    </span>
+  )
+}
+
 type ProjectRowProps = {
-  readonly project: PnrrProject
+  readonly project: PnrrWorkerProjectRow
   readonly currency: 'RON' | 'EUR' | 'USD'
-  readonly onSelect: (project: PnrrProject) => void
+  readonly onSelect: (project: PnrrWorkerProjectRow) => void
 }
 
 const ProjectRow = memo(function ProjectRow({
@@ -65,6 +100,7 @@ const ProjectRow = memo(function ProjectRow({
   const comp = PNRR_COMPONENTS[project.componentCode]
   const techVal = getProgressValue(project.techProgress) ?? 0
   const finVal = getProgressValue(project.finProgress) ?? 0
+  const projectValue = getProjectValue(project)
 
   return (
     <TableRow
@@ -114,14 +150,22 @@ const ProjectRow = memo(function ProjectRow({
             }}
           >
             {project.componentCode}
+            {getVariantCount(project, 'components') > 0 && (
+              <span className="ml-1 text-[10px] opacity-80">
+                +{getVariantCount(project, 'components')}
+              </span>
+            )}
           </span>
         )}
       </TableCell>
       <TableCell className="py-3 text-sm text-[var(--pnrr-fg)]">
-        {project.county}
+        <ValueWithVariants
+          value={project.county}
+          variantCount={getVariantCount(project, 'counties')}
+        />
       </TableCell>
       <TableCell className="py-3 text-right text-sm tabular-nums text-[var(--pnrr-fg)]">
-        {formatPnrrCurrency(project.valueEur, currency)}
+        {formatPnrrCurrency(projectValue, currency)}
       </TableCell>
       <TableCell className="py-3">
         <div className="flex w-32 items-center gap-2">
@@ -139,10 +183,12 @@ const ProjectRow = memo(function ProjectRow({
               }}
             />
           </div>
-          <span className="w-9 shrink-0 text-right text-xs tabular-nums text-[var(--pnrr-fg)]">
+          <span className="w-14 shrink-0 text-right text-xs tabular-nums text-[var(--pnrr-fg)]">
             {project.techProgress === 'in-implementation'
               ? '<30%'
-              : `${techVal}%`}
+              : formatPnrrPercentage(techVal)}
+            {getVariantCount(project, 'techProgress') > 0 &&
+              ` +${getVariantCount(project, 'techProgress')}`}
           </span>
         </div>
       </TableCell>
@@ -170,10 +216,12 @@ const ProjectRow = memo(function ProjectRow({
                   }}
                 />
               </div>
-              <span className="w-9 shrink-0 text-right text-xs tabular-nums text-[var(--pnrr-fg)]">
+              <span className="w-14 shrink-0 text-right text-xs tabular-nums text-[var(--pnrr-fg)]">
                 {project.finProgress === 'in-implementation'
                   ? '<30%'
-                  : `${finVal}%`}
+                  : formatPnrrPercentage(finVal)}
+                {getVariantCount(project, 'finProgress') > 0 &&
+                  ` +${getVariantCount(project, 'finProgress')}`}
               </span>
             </>
           )}
@@ -197,88 +245,29 @@ const ProjectRow = memo(function ProjectRow({
 })
 
 export function PnrrProjectTable({
-  projects,
+  page,
   filterState,
 }: {
-  readonly projects: readonly PnrrProject[]
+  readonly page: PnrrWorkerProjectPage
   readonly filterState: ReturnType<typeof usePnrrFilterState>
 }) {
   const currency = usePnrrCurrency()
-  const selectedProject = useMemo(() => {
-    if (
-      filterState.search.panel !== 'project' ||
-      !filterState.search.panelProjectId
-    ) {
-      return null
-    }
-
-    return (
-      projects.find(
-        (project) => project.id === filterState.search.panelProjectId,
-      ) ?? null
-    )
-  }, [filterState.search.panel, filterState.search.panelProjectId, projects])
-
-  const sorted = useMemo(() => {
-    const arr = [...projects]
-    const sortBy = filterState.search.sortBy ?? 'value'
-    const sortOrder = filterState.search.sortOrder ?? 'desc'
-
-    arr.sort((a, b) => {
-      let cmp = 0
-      switch (sortBy) {
-        case 'value':
-          cmp = a.valueEur - b.valueEur
-          break
-        case 'title':
-          cmp = a.title.localeCompare(b.title)
-          break
-        case 'techProgress': {
-          const av = getProgressValue(a.techProgress) ?? -1
-          const bv = getProgressValue(b.techProgress) ?? -1
-          cmp = av - bv
-          break
-        }
-        case 'finProgress': {
-          const av = getProgressValue(a.finProgress) ?? -1
-          const bv = getProgressValue(b.finProgress) ?? -1
-          cmp = av - bv
-          break
-        }
-        case 'county':
-          cmp = a.county.localeCompare(b.county)
-          break
-        case 'beneficiary':
-          cmp = a.beneficiary.localeCompare(b.beneficiary)
-          break
-        case 'component':
-          cmp = a.componentCode.localeCompare(b.componentCode, 'ro', {
-            numeric: true,
-          })
-          break
-      }
-      return sortOrder === 'asc' ? cmp : -cmp
-    })
-
-    return arr
-  }, [projects, filterState.search.sortBy, filterState.search.sortOrder])
+  const selectedProjectId =
+    filterState.search.panel === 'project'
+      ? filterState.search.panelProjectId
+      : null
+  const { data: selectedProjectResult } = usePnrrProjectDetail(selectedProjectId)
+  const selectedProject = selectedProjectResult?.project ?? null
 
   const { setSorting, setPagination } = filterState
-  const requestedPage = filterState.search.page ?? 1
-  const pageSize = filterState.search.pageSize ?? 25
-  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize))
-  const page = Math.min(Math.max(1, requestedPage), totalPages)
-  const start = (page - 1) * pageSize
-  const paginated = sorted.slice(start, start + pageSize)
+  const currentSortBy = page.sortBy
+  const currentSortOrder = page.sortOrder
 
   useEffect(() => {
-    if (requestedPage !== page) {
-      setPagination(page, pageSize)
+    if ((filterState.search.page ?? 1) !== page.page) {
+      setPagination(page.page, page.pageSize)
     }
-  }, [page, pageSize, requestedPage, setPagination])
-
-  const currentSortBy = filterState.search.sortBy ?? 'value'
-  const currentSortOrder = filterState.search.sortOrder ?? 'desc'
+  }, [filterState.search.page, page.page, page.pageSize, setPagination])
 
   const toggleSort = useCallback(
     (column: PnrrSearchState['sortBy']) => {
@@ -291,9 +280,9 @@ export function PnrrProjectTable({
     [currentSortBy, currentSortOrder, setSorting],
   )
 
-  const goToPage = useCallback((p: number) => setPagination(p), [setPagination])
+  const goToPage = useCallback((p: number) => setPagination(p, page.pageSize), [page.pageSize, setPagination])
 
-  if (projects.length === 0) {
+  if (page.totalCount === 0) {
     return (
       <div
         className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-8"
@@ -394,7 +383,7 @@ export function PnrrProjectTable({
                 onClick={() => toggleSort('techProgress')}
               >
                 <span className="flex items-center">
-                  <Trans>Tehnic raportat</Trans>
+                  <Trans>Technical reported</Trans>
                   <SortIcon
                     active={currentSortBy === 'techProgress'}
                     order={currentSortOrder}
@@ -406,7 +395,7 @@ export function PnrrProjectTable({
                 onClick={() => toggleSort('finProgress')}
               >
                 <span className="flex items-center">
-                  <Trans>Financiar raportat</Trans>
+                  <Trans>Financial reported</Trans>
                   <SortIcon
                     active={currentSortBy === 'finProgress'}
                     order={currentSortOrder}
@@ -417,7 +406,7 @@ export function PnrrProjectTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginated.map((project) => (
+            {page.rows.map((project) => (
               <ProjectRow
                 key={project.id}
                 project={project}
@@ -431,9 +420,9 @@ export function PnrrProjectTable({
 
       {/* Mobile cards */}
       <div className="space-y-3 md:hidden">
-        {paginated.map((project) => (
+        {page.rows.map((project) => (
           <PnrrProjectCard
-            key={project.id}
+              key={project.id}
             project={project}
             onClick={() => filterState.openProjectPanel(project.id)}
             currency={currency}
@@ -445,31 +434,29 @@ export function PnrrProjectTable({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2 text-sm text-[var(--pnrr-muted)]">
           <span>
-            <Trans>{sorted.length.toLocaleString('ro-RO')} projects</Trans>
+            <Trans>{page.totalCount.toLocaleString('ro-RO')} projects</Trans>
           </span>
           <span>·</span>
           <span>
-            <Trans>
-              page {page} of {totalPages}
-            </Trans>
+            {page.page} / {page.totalPages}
           </span>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3 sm:justify-end">
           {/* Mobile compact pagination */}
           <div className="flex items-center gap-1 sm:hidden">
             <button
-              disabled={page <= 1}
-              onClick={() => filterState.setPagination(page - 1)}
+              disabled={page.page <= 1}
+              onClick={() => filterState.setPagination(page.page - 1, page.pageSize)}
               className="inline-flex h-8 w-8 items-center justify-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] text-[var(--pnrr-fg)] disabled:opacity-40 transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
             <span className="px-2 text-xs tabular-nums text-[var(--pnrr-muted)]">
-              {page} / {totalPages}
+              {page.page} / {page.totalPages}
             </span>
             <button
-              disabled={page >= totalPages}
-              onClick={() => filterState.setPagination(page + 1)}
+              disabled={page.page >= page.totalPages}
+              onClick={() => filterState.setPagination(page.page + 1, page.pageSize)}
               className="inline-flex h-8 w-8 items-center justify-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] text-[var(--pnrr-fg)] disabled:opacity-40 transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
             >
               <ChevronRight className="h-4 w-4" />
@@ -478,15 +465,15 @@ export function PnrrProjectTable({
           {/* Desktop pagination */}
           <div className="hidden items-center gap-1 sm:flex">
             <button
-              disabled={page <= 1}
-              onClick={() => filterState.setPagination(page - 1)}
+              disabled={page.page <= 1}
+              onClick={() => filterState.setPagination(page.page - 1, page.pageSize)}
               className="inline-flex h-8 items-center gap-1 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-xs font-bold text-[var(--pnrr-fg)] disabled:opacity-40 transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
             >
               <ChevronLeft className="h-4 w-4" />
               <Trans>Previous</Trans>
             </button>
             <div className="flex items-center gap-1">
-              {getPaginationRange(page, totalPages).map((item, idx) => {
+              {getPaginationRange(page.page, page.totalPages).map((item, idx) => {
                 if (item === 'ellipsis') {
                   return (
                     <span
@@ -497,7 +484,7 @@ export function PnrrProjectTable({
                     </span>
                   )
                 }
-                const isActive = item === page
+                const isActive = item === page.page
                 return (
                   <button
                     key={item}
@@ -514,8 +501,8 @@ export function PnrrProjectTable({
               })}
             </div>
             <button
-              disabled={page >= totalPages}
-              onClick={() => filterState.setPagination(page + 1)}
+              disabled={page.page >= page.totalPages}
+              onClick={() => filterState.setPagination(page.page + 1, page.pageSize)}
               className="inline-flex h-8 items-center gap-1 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-xs font-bold text-[var(--pnrr-fg)] disabled:opacity-40 transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
             >
               <Trans>Next</Trans>
@@ -538,13 +525,14 @@ function PnrrProjectCard({
   onClick,
   currency,
 }: {
-  readonly project: PnrrProject
+  readonly project: PnrrWorkerProjectRow
   readonly onClick: () => void
   readonly currency: 'RON' | 'EUR' | 'USD'
 }) {
   const comp = PNRR_COMPONENTS[project.componentCode]
   const techVal = getProgressValue(project.techProgress) ?? 0
   const finVal = getProgressValue(project.finProgress) ?? 0
+  const projectValue = getProjectValue(project)
 
   return (
     <div
@@ -579,13 +567,21 @@ function PnrrProjectCard({
             style={{ borderColor: comp.color, color: comp.color }}
           >
             {project.componentCode}
+            {getVariantCount(project, 'components') > 0 && (
+              <span className="ml-1 opacity-80">
+                +{getVariantCount(project, 'components')}
+              </span>
+            )}
           </span>
         )}
         <span className="text-xs text-[var(--pnrr-muted)]">
-          {project.county}
+          <ValueWithVariants
+            value={project.county}
+            variantCount={getVariantCount(project, 'counties')}
+          />
         </span>
         <span className="ml-auto text-sm font-black tabular-nums text-[var(--pnrr-fg)]">
-          {formatPnrrCurrency(project.valueEur, currency)}
+          {formatPnrrCurrency(projectValue, currency)}
         </span>
       </div>
 
@@ -596,10 +592,10 @@ function PnrrProjectCard({
 
       {/* Progress */}
       <div className="mt-3 space-y-2">
-        <div className="flex items-center gap-3">
-          <span className="w-14 shrink-0 text-xs font-bold text-[var(--pnrr-fg)]">
-            <Trans>Tehnic raportat</Trans>
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="w-14 shrink-0 text-xs font-bold text-[var(--pnrr-fg)]">
+              <Trans>Technical reported</Trans>
+            </span>
           <div className="min-w-0 flex-1">
             <div className="h-2 border border-[var(--pnrr-border)] bg-transparent">
               <div
@@ -611,15 +607,15 @@ function PnrrProjectCard({
               />
             </div>
           </div>
-          <span className="w-10 shrink-0 text-right text-sm font-black tabular-nums text-[var(--pnrr-fg)]">
+          <span className="w-16 shrink-0 text-right text-sm font-black tabular-nums text-[var(--pnrr-fg)]">
             {project.techProgress === 'in-implementation'
               ? '<30%'
-              : `${techVal}%`}
+              : formatPnrrPercentage(techVal)}
           </span>
         </div>
         <div className="flex items-center gap-3">
           <span className="w-14 shrink-0 text-xs font-bold text-[var(--pnrr-fg)]">
-            <Trans>Financiar raportat</Trans>
+            <Trans>Financial reported</Trans>
           </span>
           {project.finProgress == null ? (
             <span className="inline-flex h-7 items-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] px-2 text-[10px] font-bold text-[var(--pnrr-muted)]">
@@ -638,10 +634,10 @@ function PnrrProjectCard({
                   />
                 </div>
               </div>
-              <span className="w-10 shrink-0 text-right text-sm font-black tabular-nums text-[var(--pnrr-fg)]">
+              <span className="w-16 shrink-0 text-right text-sm font-black tabular-nums text-[var(--pnrr-fg)]">
                 {project.finProgress === 'in-implementation'
                   ? '<30%'
-                  : `${finVal}%`}
+                  : formatPnrrPercentage(finVal)}
               </span>
             </>
           )}

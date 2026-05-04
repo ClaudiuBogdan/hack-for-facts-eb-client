@@ -1,10 +1,10 @@
 import { Trans } from '@lingui/react/macro'
-import type { PnrrProject } from '@/schemas/pnrr'
+import type { PnrrWorkerProjectRow } from '../workers/pnrr-worker-types'
 import { PnrrMapDetailsDrawer } from './PnrrMapDetailsDrawer'
 
 interface PnrrCountyDetailsPanelProps {
   readonly county: string | null
-  readonly projects: readonly PnrrProject[]
+  readonly projects: readonly PnrrWorkerProjectRow[]
   readonly onClose: () => void
   readonly selectedProjectId?: string
   readonly onProjectClick?: (projectId: string) => void
@@ -24,9 +24,7 @@ export function PnrrCountyDetailsPanel({
   onProjectClose,
   onBeneficiaryClick,
 }: PnrrCountyDetailsPanelProps) {
-  const countyProjects = county
-    ? projects.filter((project) => project.county === county)
-    : []
+  const countyProjects = county ? projects : []
   const countyCouncilProject = getCountyCouncilProject(countyProjects, county)
 
   if (!county || countyProjects.length === 0) return null
@@ -65,9 +63,9 @@ function normalizeCountyText(value: string): string {
 }
 
 function getCountyCouncilProject(
-  projects: readonly PnrrProject[],
+  projects: readonly PnrrWorkerProjectRow[],
   county: string | null,
-): PnrrProject | undefined {
+): PnrrWorkerProjectRow | undefined {
   const normalizedCounty = county ? normalizeCountyText(county) : null
   const countyCouncilProjects = projects.filter(
     (project) => project.cui && project.beneficiaryType === 'county-council',

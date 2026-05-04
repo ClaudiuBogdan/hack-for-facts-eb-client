@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
-import { usePnrrData } from '../hooks/usePnrrData'
+import { usePnrrWorkerModel } from '../hooks/usePnrrData'
 import { usePnrrFilterState } from '../hooks/usePnrrFilterState'
 import {
-  filterProjectsBySearch,
   computeAggregates,
   getActiveFilterCount,
+  hasPnrrDataFilters,
   PNRR_LAST_UPDATED,
 } from '../lib/data-transform'
 import { PnrrCurrencyProvider } from '../lib/PnrrCurrencyProvider'
@@ -41,60 +41,44 @@ export function PnrrDashboard({
   readonly ssrSnapshot?: PnrrSeoSnapshot | null
   readonly ssrSnapshotSearchKey?: string
 }) {
-  const { data, error, isError, isLoading, isRefetching, refetch } =
-    usePnrrData()
   const filterState = usePnrrFilterState()
+  const { data, error, isError, isLoading, isRefetching, refetch } =
+    usePnrrWorkerModel(filterState.search)
   const [filterSheetOpen, setFilterSheetOpen] = useState(false)
   const [infoSheetOpen, setInfoSheetOpen] = useState(false)
   const emptyAggregates = useMemo(() => computeAggregates([]), [])
 
-  const projects = useMemo(() => data?.projects ?? [], [data?.projects])
   const view = filterState.search.view ?? 'overview'
   const effectiveCurrency = filterState.search.currency ?? initialCurrency
   const uatLabelsBySiruta = useMemo(() => {
     const labels = new Map<string, string>()
 
-    for (const project of projects) {
-      if (!project.sirutaCode || !project.locality || project.county === 'Național') {
-        continue
-      }
-
-      const existing = labels.get(project.sirutaCode)
-      if (!existing || project.locality.localeCompare(existing, 'ro') < 0) {
-        labels.set(project.sirutaCode, project.locality)
-      }
+    for (const uat of data?.filterFacets.uats ?? []) {
+      labels.set(uat.value, uat.label)
     }
 
     return labels
-  }, [projects])
+  }, [data?.filterFacets.uats])
   const beneficiaryNamesByCui = useMemo(() => {
     const labels = new Map<string, string>()
 
-    for (const project of projects) {
-      if (!project.cui || !project.beneficiary) continue
+    for (const beneficiary of data?.beneficiaryPage.rows ?? []) {
+      if (!beneficiary.cui || !beneficiary.name) continue
 
-      const cui = project.cui.replace(/\D/g, '')
+      const cui = beneficiary.cui.replace(/\D/g, '')
       if (!cui) continue
 
       const existing = labels.get(cui)
-      if (!existing || project.beneficiary.localeCompare(existing, 'ro') < 0) {
-        labels.set(cui, project.beneficiary)
+      if (!existing || beneficiary.name.localeCompare(existing, 'ro') < 0) {
+        labels.set(cui, beneficiary.name)
       }
     }
 
     return labels
-  }, [projects])
+  }, [data?.beneficiaryPage.rows])
+  const hasScopedFilters = hasPnrrDataFilters(filterState.search)
 
-  const filteredProjects = useMemo(
-    () => filterProjectsBySearch(projects, filterState.search),
-    [projects, filterState.search],
-  )
-
-  // Compute aggregates from filtered projects so all tabs show consistent data
-  const filteredAggregates = useMemo(
-    () => computeAggregates(filteredProjects),
-    [filteredProjects],
-  )
+  const filteredAggregates = data?.overview.aggregates ?? emptyAggregates
 
   const loading = isLoading
   const loadError = isError && !data ? error : null
@@ -105,11 +89,23 @@ export function PnrrDashboard({
   const activeSsrSnapshot =
     ssrSnapshotSearchKey === currentSnapshotSearchKey ? ssrSnapshot : null
   const headerProjectCount = data
-    ? filteredProjects.length
+    ? filteredAggregates.projectCount
     : (activeSsrSnapshot?.projectCount ?? 0)
+  const officialAllocatedTotalEur =
+    data?.meta?.officialAllocatedTotalEur ??
+    activeSsrSnapshot?.officialAllocatedTotalEur ??
+    null
+  const isUsingOfficialHeaderTotal =
+    !hasScopedFilters &&
+    typeof officialAllocatedTotalEur === 'number' &&
+    officialAllocatedTotalEur > 0
   const headerTotalValue = data
-    ? filteredAggregates.rawTotalValue
-    : (activeSsrSnapshot?.totalValueEur ?? 0)
+    ? (isUsingOfficialHeaderTotal
+      ? officialAllocatedTotalEur
+      : filteredAggregates.rawTotalValue)
+    : (isUsingOfficialHeaderTotal
+      ? officialAllocatedTotalEur
+      : (activeSsrSnapshot?.totalValueEur ?? 0))
   const hasCachedHeaderStats = loading && !data && activeSsrSnapshot != null
   const cachedOverviewStats = activeSsrSnapshot
     ? buildCachedOverviewStats(activeSsrSnapshot)
@@ -129,6 +125,11 @@ export function PnrrDashboard({
         <PnrrHeader
           projectsCount={headerProjectCount}
           totalValue={headerTotalValue}
+          totalValueLabel={
+            isUsingOfficialHeaderTotal
+              ? t`total allocated`
+              : t`listed value`
+          }
           view={view}
           onViewChange={filterState.setView}
           filterState={filterState}
@@ -153,7 +154,7 @@ export function PnrrDashboard({
 
               <div className="hidden sm:block">
                 <PnrrExportButton
-                  projects={filteredProjects}
+                  search={filterState.search}
                   lastUpdated={PNRR_LAST_UPDATED}
                 />
               </div>
@@ -165,10 +166,12 @@ export function PnrrDashboard({
         <main className="mx-auto min-w-0 max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           {shouldRenderCachedOverview ? (
             <PnrrOverview
-              projects={[]}
               aggregates={emptyAggregates}
               filterState={filterState}
               cachedStats={cachedOverviewStats}
+              officialAllocatedTotalEur={
+                activeSsrSnapshot?.officialAllocatedTotalEur ?? null
+              }
               isLoadingFullData
             />
           ) : loading ? (
@@ -185,32 +188,34 @@ export function PnrrDashboard({
             <>
               {view === 'overview' && (
                 <PnrrOverview
-                  projects={filteredProjects}
                   aggregates={filteredAggregates}
                   filterState={filterState}
+                  overview={data!.overview}
+                  officialAllocatedTotalEur={officialAllocatedTotalEur}
                 />
               )}
               {view === 'projects' && (
                 <PnrrProjectsView
-                  projects={filteredProjects}
+                  page={data!.projectPage}
+                  projectRecordCount={filteredAggregates.projectRecordCount}
                   filterState={filterState}
                 />
               )}
               {view === 'map' && (
                 <PnrrMapView
-                  projects={filteredProjects}
+                  model={data!.mapModel}
                   filterState={filterState}
                 />
               )}
               {view === 'beneficiaries' && (
                 <PnrrBeneficiariesView
-                  projects={filteredProjects}
+                  page={data!.beneficiaryPage}
                   filterState={filterState}
                 />
               )}
               {view === 'anomalies' && (
                 <PnrrAnomaliesView
-                  projects={filteredProjects}
+                  model={data!.anomalyModel}
                   aggregates={filteredAggregates}
                   filterState={filterState}
                 />
@@ -240,13 +245,15 @@ export function PnrrDashboard({
         </footer>
 
         <PnrrInfoSheet open={infoSheetOpen} onOpenChange={setInfoSheetOpen} />
-        <PnrrFilterSheet
-          open={filterSheetOpen}
-          onOpenChange={setFilterSheetOpen}
-          projects={projects}
-          filterState={filterState}
-          showTrigger={false}
-        />
+        {filterSheetOpen && (
+          <PnrrFilterSheet
+            open={filterSheetOpen}
+            onOpenChange={setFilterSheetOpen}
+            facets={data?.filterFacets ?? null}
+            filterState={filterState}
+            showTrigger={false}
+          />
+        )}
       </div>
     </PnrrCurrencyProvider>
   )
@@ -258,7 +265,8 @@ function buildCachedOverviewStats(
   return {
     rawTotalValue: snapshot.totalValueEur,
     deduplicatedTotalValue: snapshot.deduplicatedTotalValueEur,
-    rawProjectCount: snapshot.projectCount,
+    projectCount: snapshot.projectCount,
+    projectRecordCount: snapshot.projectRecordCount,
     completedCount: snapshot.completedCount,
     completedValue: snapshot.completedValueEur,
     loanTotal: snapshot.loanTotalEur,

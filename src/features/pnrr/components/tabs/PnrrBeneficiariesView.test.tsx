@@ -3,9 +3,20 @@ import { describe, expect, it, vi } from 'vitest'
 import type { PnrrProject } from '@/schemas/pnrr'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
 import { PnrrBeneficiariesView } from './PnrrBeneficiariesView'
+import type {
+  PnrrWorkerBeneficiaryPage,
+  PnrrWorkerBeneficiaryRow,
+} from '../../workers/pnrr-worker-types'
+
+const usePnrrBeneficiaryDetailMock = vi.hoisted(() => vi.fn())
+
+vi.mock('../../hooks/usePnrrData', () => ({
+  usePnrrBeneficiaryDetail: usePnrrBeneficiaryDetailMock,
+}))
 
 const PROJECT: PnrrProject = {
   id: 'project-1',
+  engagementId: 'engagement-1',
   title: 'Test Project',
   beneficiary: 'Test Beneficiar',
   cui: '12345678',
@@ -28,9 +39,34 @@ const PROJECT: PnrrProject = {
   sirutaCode: null,
 }
 
-function makeProject(overrides: Partial<PnrrProject> = {}): PnrrProject {
+function makeBeneficiaryRow(
+  overrides: Partial<PnrrWorkerBeneficiaryRow> = {},
+): PnrrWorkerBeneficiaryRow {
   return {
-    ...PROJECT,
+    name: 'Test Beneficiar',
+    cui: '12345678',
+    count: 1,
+    value: 100_000,
+    techProgressAvg: 50,
+    finProgressAvg: 40,
+    primaryComponentCode: 'C4',
+    extraComponentCount: 0,
+    ...overrides,
+  }
+}
+
+function makePage(
+  rows: readonly PnrrWorkerBeneficiaryRow[],
+  overrides: Partial<PnrrWorkerBeneficiaryPage> = {},
+): PnrrWorkerBeneficiaryPage {
+  return {
+    rows,
+    totalCount: rows.length,
+    page: 1,
+    pageSize: 25,
+    totalPages: Math.max(1, Math.ceil(rows.length / 25)),
+    sortBy: 'value',
+    sortOrder: 'desc',
     ...overrides,
   }
 }
@@ -95,12 +131,13 @@ function makeFilterState(
 
 describe('PnrrBeneficiariesView', () => {
   it('keeps same-name beneficiaries with different CUIs separate', () => {
+    usePnrrBeneficiaryDetailMock.mockReturnValue({ data: undefined })
     render(
       <PnrrBeneficiariesView
-        projects={[
-          makeProject({ id: 'rediul-1', beneficiary: 'COMUNA REDIU', cui: '111' }),
-          makeProject({ id: 'rediul-2', beneficiary: 'COMUNA REDIU', cui: '222' }),
-        ]}
+        page={makePage([
+          makeBeneficiaryRow({ name: 'COMUNA REDIU', cui: '111' }),
+          makeBeneficiaryRow({ name: 'COMUNA REDIU', cui: '222' }),
+        ])}
         filterState={makeFilterState()}
       />
     )
@@ -110,15 +147,12 @@ describe('PnrrBeneficiariesView', () => {
   })
 
   it('includes in-implementation projects in technical progress averages', () => {
+    usePnrrBeneficiaryDetailMock.mockReturnValue({ data: undefined })
     render(
       <PnrrBeneficiariesView
-        projects={[
-          makeProject({
-            id: 'under-30',
-            techProgress: 'in-implementation',
-            finProgress: null,
-          }),
-        ]}
+        page={makePage([
+          makeBeneficiaryRow({ techProgressAvg: 15, finProgressAvg: null }),
+        ])}
         filterState={makeFilterState()}
       />
     )
@@ -127,9 +161,18 @@ describe('PnrrBeneficiariesView', () => {
   })
 
   it('opens the beneficiary drawer from URL panel state', () => {
+    usePnrrBeneficiaryDetailMock.mockReturnValue({
+      data: {
+        beneficiary: {
+          ...makeBeneficiaryRow(),
+          projects: [PROJECT],
+          componentValues: [{ code: 'C4', value: 100_000 }],
+        },
+      },
+    })
     render(
       <PnrrBeneficiariesView
-        projects={[PROJECT]}
+        page={makePage([makeBeneficiaryRow()])}
         filterState={makeFilterState({
           search: {
             ...makeFilterState().search,
@@ -146,23 +189,65 @@ describe('PnrrBeneficiariesView', () => {
     ).toBeInTheDocument()
   })
 
-  it('sorts beneficiaries by primary component from URL state', () => {
+  it('opens the beneficiary drawer when URL CUI is outside the current page', () => {
+    usePnrrBeneficiaryDetailMock.mockReturnValue({ data: undefined })
     render(
       <PnrrBeneficiariesView
-        projects={[
-          makeProject({
-            id: 'c10-project',
-            beneficiary: 'C10 Beneficiary',
-            cui: '10',
-            componentCode: 'C10',
-          }),
-          makeProject({
-            id: 'c2-project',
-            beneficiary: 'C2 Beneficiary',
-            cui: '2',
-            componentCode: 'C2',
-          }),
-        ]}
+        page={{
+          rows: [
+            {
+              name: 'Other Beneficiary',
+              cui: '99999999',
+              count: 1,
+              value: 10_000,
+              techProgressAvg: null,
+              finProgressAvg: null,
+              primaryComponentCode: 'C4',
+              extraComponentCount: 0,
+            },
+          ],
+          totalCount: 2,
+          page: 1,
+          pageSize: 25,
+          totalPages: 1,
+          sortBy: 'value',
+          sortOrder: 'desc',
+        }}
+        filterState={makeFilterState({
+          search: {
+            ...makeFilterState().search,
+            panel: 'beneficiary',
+            panelBeneficiaryCui: PROJECT.cui ?? undefined,
+          },
+        })}
+      />,
+    )
+
+    expect(screen.getByText(`CUI ${PROJECT.cui}`)).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /View all filtered projects/ }),
+    ).toBeInTheDocument()
+  })
+
+  it('sorts beneficiaries by primary component from URL state', () => {
+    usePnrrBeneficiaryDetailMock.mockReturnValue({ data: undefined })
+    render(
+      <PnrrBeneficiariesView
+        page={makePage(
+          [
+            makeBeneficiaryRow({
+              name: 'C2 Beneficiary',
+              cui: '2',
+              primaryComponentCode: 'C2',
+            }),
+            makeBeneficiaryRow({
+              name: 'C10 Beneficiary',
+              cui: '10',
+              primaryComponentCode: 'C10',
+            }),
+          ],
+          { sortBy: 'component', sortOrder: 'asc' },
+        )}
         filterState={makeFilterState({
           search: {
             ...makeFilterState().search,
@@ -181,10 +266,11 @@ describe('PnrrBeneficiariesView', () => {
   })
 
   it('stores beneficiary component sorting in URL state', () => {
+    usePnrrBeneficiaryDetailMock.mockReturnValue({ data: undefined })
     const setBeneficiarySorting = vi.fn()
     render(
       <PnrrBeneficiariesView
-        projects={[PROJECT]}
+        page={makePage([makeBeneficiaryRow()])}
         filterState={makeFilterState({ setBeneficiarySorting })}
       />,
     )
@@ -195,10 +281,16 @@ describe('PnrrBeneficiariesView', () => {
   })
 
   it('keeps a local drawer fallback for beneficiaries without CUI', () => {
+    usePnrrBeneficiaryDetailMock.mockReturnValue({ data: undefined })
     const openBeneficiaryPanel = vi.fn()
     render(
       <PnrrBeneficiariesView
-        projects={[makeProject({ cui: null, beneficiary: 'No CUI Beneficiary' })]}
+        page={makePage([
+          makeBeneficiaryRow({
+            cui: null,
+            name: 'No CUI Beneficiary',
+          }),
+        ])}
         filterState={makeFilterState({ openBeneficiaryPanel })}
       />,
     )

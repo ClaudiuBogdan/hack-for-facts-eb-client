@@ -16,7 +16,7 @@ describe('formatPnrrCompactCurrencyDisplayParts', () => {
     localeState.locale = 'en'
 
     expect(formatPnrrCompactCurrencyDisplayParts(126_544_000, 'RON')).toEqual({
-      amount: '650.44',
+      amount: '632.72',
       unit: 'M RON',
     })
   })
@@ -25,7 +25,7 @@ describe('formatPnrrCompactCurrencyDisplayParts', () => {
     localeState.locale = 'ro'
 
     expect(formatPnrrCompactCurrencyDisplayParts(126_544_000, 'RON')).toEqual({
-      amount: '650,44',
+      amount: '632,72',
       unit: 'mil. RON',
     })
   })

@@ -10,6 +10,7 @@ function makeSnapshot(): PnrrSeoSnapshot {
   return {
     lastUpdated: '2026-04-30',
     projectCount: 24885,
+    projectRecordCount: 24967,
     deduplicatedProjectCount: 24000,
     totalValueEur: 21_400_000_000,
     deduplicatedTotalValueEur: 21_000_000_000,
@@ -40,6 +41,9 @@ function makeSnapshot(): PnrrSeoSnapshot {
       },
     ],
     topBeneficiaries: [],
+    officialAllocatedTotalEur: null,
+    officialPaidTotalEur: null,
+    paidBeneficiaryCount: null,
   }
 }
 
@@ -79,6 +83,32 @@ describe('pnrr-share-image', () => {
     const viewModel = buildPnrrShareImageViewModel(makeSnapshot())
 
     expect(viewModel.totalValue).toBe('21,4\u00A0mld. €')
+  })
+
+  it('uses the official allocation for the unfiltered total scope', () => {
+    const viewModel = buildPnrrShareImageViewModel(
+      {
+        ...makeSnapshot(),
+        totalValueEur: 20_931_435_758.62,
+        officialAllocatedTotalEur: 21_410_527_592.99,
+      },
+      { showTotalScope: true },
+    )
+
+    expect(viewModel.totalValue).toBe('21,41\u00A0mld. €')
+  })
+
+  it('keeps filtered share images on the listed project total', () => {
+    const viewModel = buildPnrrShareImageViewModel(
+      {
+        ...makeSnapshot(),
+        totalValueEur: 20_931_435_758.62,
+        officialAllocatedTotalEur: 21_410_527_592.99,
+      },
+      { showTotalScope: false },
+    )
+
+    expect(viewModel.totalValue).toBe('20,93\u00A0mld. €')
   })
 
   it('uses Total instead of National for the unfiltered share image scope', () => {

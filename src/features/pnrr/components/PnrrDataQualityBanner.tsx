@@ -18,8 +18,10 @@ export function PnrrDataQualityBanner({
 }) {
   const [open, setOpen] = useState(false)
 
-  const duplicateCount =
-    aggregates.rawProjectCount - aggregates.deduplicatedProjectCount
+  const recordSliceCount = Math.max(
+    0,
+    aggregates.projectRecordCount - aggregates.projectCount,
+  )
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
@@ -32,8 +34,8 @@ export function PnrrDataQualityBanner({
                 <Trans>
                   Setul conține{' '}
                   {formatNumber(aggregates.missingFinProgressPercent)}% proiecte
-                  fără progres financiar publicat și {formatNumber(duplicateCount)}{' '}
-                  posibile duplicate.
+                  fără progres financiar publicat și {formatNumber(recordSliceCount)}{' '}
+                  înregistrări suplimentare față de proiectele unice.
                 </Trans>
               </span>
             </div>
@@ -50,17 +52,17 @@ export function PnrrDataQualityBanner({
             <div className="mt-3 space-y-2 text-xs text-amber-700 dark:text-amber-300">
               <p>
                 <Trans>
-                  Progresul financiar lipsește pentru multe proiecte din unele
-                  componente (de exemplu: C9 - instrumente financiare).
-                  Deduplicarea se bazează pe titlu normalizat + CUI +
-                  componentă + măsură.
+                  Financial progress is missing for many projects in some
+                  components (for example: C9 - financial instruments).
+                  Official projects are identified by id_angajament, and
+                  some appear on multiple rows for measures or distinct
+                  values.
                 </Trans>
               </p>
               <p>
                 <Trans>
-                  Valoare brută listată: {formatNumber(aggregates.rawTotalValue)} €. Valoare
-                  estimată după eliminarea posibilelor duplicate:{' '}
-                  {formatNumber(aggregates.deduplicatedTotalValue)} €.
+                  Listed value: {formatNumber(aggregates.rawTotalValue)} € from{' '}
+                  {formatNumber(aggregates.projectRecordCount)} official records.
                 </Trans>
               </p>
             </div>

@@ -1,5 +1,10 @@
 import { getSiteUrl } from '@/config/env'
-import { cleanPnrrSearch, type PnrrSearchState } from '@/schemas/pnrr'
+import {
+  cleanPnrrSearch,
+  type PnrrOfficialIndicators,
+  type PnrrProject,
+  type PnrrSearchState,
+} from '@/schemas/pnrr'
 import type { SupportedLocale } from '@/lib/i18n'
 import { PNRR_COMPONENTS } from '../data/component-definitions'
 import {
@@ -11,6 +16,7 @@ import {
 
 const PNRR_ROUTE_PATH = '/pnrr'
 const PNRR_SHARE_IMAGE_PATH = '/pnrr/share-image.png'
+const PNRR_SHARE_IMAGE_VERSION = '20260430-ron5-official-total'
 const PNRR_SOCIAL_IMAGE_WIDTH = '1200'
 const PNRR_SOCIAL_IMAGE_HEIGHT = '630'
 const PNRR_OG_LOCALE: Readonly<Record<SupportedLocale, string>> = {
@@ -123,6 +129,7 @@ export type PnrrSeoListItem = {
 export type PnrrSeoSnapshot = {
   readonly lastUpdated: string
   readonly projectCount: number
+  readonly projectRecordCount: number
   readonly deduplicatedProjectCount: number
   readonly totalValueEur: number
   readonly deduplicatedTotalValueEur: number
@@ -139,6 +146,9 @@ export type PnrrSeoSnapshot = {
   readonly topComponents: readonly PnrrSeoListItem[]
   readonly topCounties: readonly PnrrSeoListItem[]
   readonly topBeneficiaries: readonly PnrrSeoListItem[]
+  readonly officialAllocatedTotalEur: number | null
+  readonly officialPaidTotalEur: number | null
+  readonly paidBeneficiaryCount: number | null
 }
 
 type HeadMetaEntry = {
@@ -201,6 +211,7 @@ export function buildFallbackPnrrSeoSnapshot(): PnrrSeoSnapshot {
   return {
     lastUpdated: PNRR_LAST_UPDATED,
     projectCount: 0,
+    projectRecordCount: 0,
     deduplicatedProjectCount: 0,
     totalValueEur: 0,
     deduplicatedTotalValueEur: 0,
@@ -217,14 +228,31 @@ export function buildFallbackPnrrSeoSnapshot(): PnrrSeoSnapshot {
     topComponents: [],
     topCounties: [],
     topBeneficiaries: [],
+    officialAllocatedTotalEur: null,
+    officialPaidTotalEur: null,
+    paidBeneficiaryCount: null,
   }
 }
 
 export function buildPnrrSeoSnapshotFromRawProjects(params: {
   readonly rawProjects: readonly unknown[]
   readonly search?: Partial<PnrrSearchState>
+  readonly officialIndicators?: PnrrOfficialIndicators | null
 }): PnrrSeoSnapshot {
   const { projects } = processPnrrData([...params.rawProjects])
+  return buildPnrrSeoSnapshotFromProjects({
+    projects,
+    search: params.search,
+    officialIndicators: params.officialIndicators,
+  })
+}
+
+export function buildPnrrSeoSnapshotFromProjects(params: {
+  readonly projects: readonly PnrrProject[]
+  readonly search?: Partial<PnrrSearchState>
+  readonly officialIndicators?: PnrrOfficialIndicators | null
+}): PnrrSeoSnapshot {
+  const { projects } = params
   const filteredProjects = filterProjectsBySearch(projects, params.search ?? {})
   const aggregates = computeAggregates(filteredProjects)
   const anomalyCount = Object.values(aggregates.anomalyCounts).reduce(
@@ -237,7 +265,8 @@ export function buildPnrrSeoSnapshotFromRawProjects(params: {
 
   return {
     lastUpdated: PNRR_LAST_UPDATED,
-    projectCount: aggregates.rawProjectCount,
+    projectCount: aggregates.projectCount,
+    projectRecordCount: aggregates.projectRecordCount,
     deduplicatedProjectCount: aggregates.deduplicatedProjectCount,
     totalValueEur: toFiniteNumber(aggregates.rawTotalValue),
     deduplicatedTotalValueEur: toFiniteNumber(aggregates.deduplicatedTotalValue),
@@ -275,6 +304,9 @@ export function buildPnrrSeoSnapshotFromRawProjects(params: {
       count: item.count,
       valueEur: toFiniteNumber(item.value),
     })),
+    officialAllocatedTotalEur: params.officialIndicators?.allocatedTotalEur ?? null,
+    officialPaidTotalEur: params.officialIndicators?.paidTotalEur ?? null,
+    paidBeneficiaryCount: params.officialIndicators?.paidBeneficiaryCount ?? null,
   }
 }
 
@@ -328,6 +360,7 @@ export function buildPnrrShareImageUrl(params: {
   appendSearchValue(query, 'entityTypes', search.entityTypes)
   appendSearchValue(query, 'beneficiaryTypes', search.beneficiaryTypes)
   appendSearchValue(query, 'includeNational', search.includeNational)
+  query.set('v', PNRR_SHARE_IMAGE_VERSION)
 
   const suffix = query.size > 0 ? `?${query.toString()}` : ''
   return `${siteUrl}${PNRR_SHARE_IMAGE_PATH}${suffix}`

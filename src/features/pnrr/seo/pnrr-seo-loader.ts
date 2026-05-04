@@ -32,19 +32,23 @@ export const loadPnrrSeoData = createIsomorphicFn()
   .server(
     async (input: PnrrSeoLoaderInput): Promise<PnrrSeoLoaderData> => {
       const { getRequestUrl } = await import('@tanstack/react-start/server')
-      const { fetchPnrrRawProjects } = await import(
+      const { fetchPnrrOfficialIndicators, fetchPnrrRawProjects } = await import(
         '@/server/handlers/pnrr-data-proxy'
       )
       const { buildPnrrSeoSnapshotFromRawProjects } = await import('./pnrr-seo')
       const requestUrl = getRequestUrl()
-      const result = await fetchPnrrRawProjects()
+      const [rawProjectsResult, indicatorsResult] = await Promise.all([
+        fetchPnrrRawProjects(),
+        fetchPnrrOfficialIndicators(),
+      ])
       const initialCurrency = await readUserCurrencyPreference()
 
       return {
         initialCurrency,
         seoSnapshot: buildPnrrSeoSnapshotFromRawProjects({
-          rawProjects: result.data,
+          rawProjects: rawProjectsResult.data,
           search: input.search,
+          officialIndicators: indicatorsResult.data,
         }),
         seoSnapshotSearchKey: input.searchKey,
         requestSiteUrl: requestUrl.origin,

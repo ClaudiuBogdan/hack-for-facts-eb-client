@@ -4,8 +4,8 @@ import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { formatNumber } from '@/lib/utils'
 import { usePnrrCurrency } from '../lib/usePnrrCurrency'
-import { formatPnrrCurrency } from '../lib/formatting'
-import type { PnrrProject } from '@/schemas/pnrr'
+import { formatPnrrCurrency, formatPnrrPercentage } from '../lib/formatting'
+import type { PnrrWorkerProjectRow } from '../workers/pnrr-worker-types'
 import { PNRR_COMPONENTS } from '../data/component-definitions'
 import {
   Sheet,
@@ -18,6 +18,8 @@ import { AlertTriangle, MapPinned, ShieldAlert } from 'lucide-react'
 import { PnrrProjectDrawer } from './table/PnrrProjectDrawer'
 import { getAnomalyLabel } from '../lib/anomaly-definitions'
 import { PnrrEntityShortcutLinks } from './PnrrEntityShortcutLinks'
+import { getProjectIdentity } from '../lib/data-transform'
+import { usePnrrProjectDetail } from '../hooks/usePnrrData'
 
 type MapBeneficiary = {
   readonly name: string
@@ -53,7 +55,7 @@ export function PnrrMapDetailsDrawer({
   readonly title: string
   readonly eyebrow: ReactNode
   readonly description?: string
-  readonly projects: readonly PnrrProject[]
+  readonly projects: readonly PnrrWorkerProjectRow[]
   readonly onClose: () => void
   readonly onBeneficiaryClick?: (beneficiary: {
     readonly name: string
@@ -73,12 +75,8 @@ export function PnrrMapDetailsDrawer({
 
   const stats = useMemo(() => buildMapStats(projects), [projects])
   const totalValue = stats.totalValue
-  const selectedProject = useMemo(() => {
-    if (!selectedProjectId) return null
-    return (
-      projects.find((project) => project.id === selectedProjectId) ?? null
-    )
-  }, [projects, selectedProjectId])
+  const { data: selectedProjectResult } = usePnrrProjectDetail(selectedProjectId)
+  const selectedProject = selectedProjectResult?.project ?? null
 
   return (
     <>
@@ -115,12 +113,12 @@ export function PnrrMapDetailsDrawer({
                 value={formatNumber(stats.projectCount)}
               />
               <MapMetric
-                label={t`Semnale de risc`}
+                label={t`Risk signals`}
                 value={formatNumber(stats.anomalyCount)}
                 tone={stats.anomalyCount > 0 ? 'red' : 'default'}
               />
               <MapMetric
-                label={t`Date nepublicate`}
+                label={t`Unpublished data`}
                 value={formatNumber(stats.dataQualityCount)}
                 tone={stats.dataQualityCount > 0 ? 'blue' : 'default'}
               />
@@ -306,30 +304,40 @@ function MapDrawerFooterClose({ onClose }: { readonly onClose: () => void }) {
   )
 }
 
-function buildMapStats(projects: readonly PnrrProject[]) {
+function buildMapStats(projects: readonly PnrrWorkerProjectRow[]) {
   const totalValue = projects.reduce(
     (sum, project) => sum + project.valueEur,
     0,
   )
-  const projectCount = projects.length
-  const anomalyCount = projects.filter(
-    (project) => project.anomalies.length > 0,
-  ).length
-  const dataQualityCount = projects.filter(
-    (project) => project.dataQualitySignals.length > 0,
-  ).length
+  const projectCount = countUniqueMapProjects(projects)
+  const anomalyCount = countUniqueMapProjects(
+    projects.filter((project) => project.anomalies.length > 0),
+  )
+  const dataQualityCount = countUniqueMapProjects(
+    projects.filter((project) => project.dataQualitySignals.length > 0),
+  )
 
-  const beneficiaryMap = new Map<string, MapBeneficiary>()
-  const componentMap = new Map<string, ComponentStat>()
+  const beneficiaryMap = new Map<
+    string,
+    MapBeneficiary & { projectIds: Set<string> }
+  >()
+  const componentMap = new Map<
+    string,
+    ComponentStat & { projectIds: Set<string> }
+  >()
   const anomalyTypes = new Map<string, number>()
 
   for (const project of projects) {
+    const projectId = getProjectIdentity(project)
     const beneficiaryKey = `${project.beneficiary}|${project.cui ?? ''}`
     const beneficiary = beneficiaryMap.get(beneficiaryKey)
     if (beneficiary) {
+      const projectIds = new Set(beneficiary.projectIds)
+      projectIds.add(projectId)
       beneficiaryMap.set(beneficiaryKey, {
         ...beneficiary,
-        count: beneficiary.count + 1,
+        count: projectIds.size,
+        projectIds,
         value: beneficiary.value + project.valueEur,
       })
     } else {
@@ -337,6 +345,7 @@ function buildMapStats(projects: readonly PnrrProject[]) {
         name: project.beneficiary,
         cui: project.cui,
         count: 1,
+        projectIds: new Set([projectId]),
         value: project.valueEur,
       })
     }
@@ -344,9 +353,12 @@ function buildMapStats(projects: readonly PnrrProject[]) {
     const component = PNRR_COMPONENTS[project.componentCode]
     const componentStat = componentMap.get(project.componentCode)
     if (componentStat) {
+      const projectIds = new Set(componentStat.projectIds)
+      projectIds.add(projectId)
       componentMap.set(project.componentCode, {
         ...componentStat,
-        count: componentStat.count + 1,
+        count: projectIds.size,
+        projectIds,
         value: componentStat.value + project.valueEur,
       })
     } else {
@@ -355,6 +367,7 @@ function buildMapStats(projects: readonly PnrrProject[]) {
         name: component?.nameRo ?? project.componentCode,
         color: component?.color ?? '#64748b',
         count: 1,
+        projectIds: new Set([projectId]),
         value: project.valueEur,
       })
     }
@@ -370,7 +383,7 @@ function buildMapStats(projects: readonly PnrrProject[]) {
     anomalyCount,
     dataQualityCount,
     topProjects: [...projects]
-      .sort((a, b) => b.valueEur - a.valueEur)
+      .sort((a, b) => (b.totalValueEur ?? b.valueEur) - (a.totalValueEur ?? a.valueEur))
       .slice(0, 5),
     topBeneficiaries: Array.from(beneficiaryMap.values())
       .sort((a, b) => b.value - a.value)
@@ -382,6 +395,12 @@ function buildMapStats(projects: readonly PnrrProject[]) {
       (a, b) => b[1] - a[1],
     ),
   }
+}
+
+function countUniqueMapProjects(
+  projects: readonly PnrrWorkerProjectRow[],
+): number {
+  return new Set(projects.map(getProjectIdentity)).size
 }
 
 function MapMetric({
@@ -436,7 +455,7 @@ function TopProjectRow({
   onClick,
 }: {
   readonly index: number
-  readonly project: PnrrProject
+  readonly project: PnrrWorkerProjectRow
   readonly currency: 'RON' | 'EUR' | 'USD'
   readonly onClick: () => void
 }) {
@@ -446,6 +465,7 @@ function TopProjectRow({
     project.techProgress === 'in-implementation'
       ? 15
       : (project.techProgress ?? 0)
+  const projectValue = project.totalValueEur ?? project.valueEur
 
   return (
     <button
@@ -473,7 +493,7 @@ function TopProjectRow({
         </p>
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
           <span className="text-sm font-black tabular-nums text-[var(--pnrr-fg)]">
-            {formatPnrrCurrency(project.valueEur, currency)}
+            {formatPnrrCurrency(projectValue, currency)}
           </span>
           <div className="flex min-w-[160px] items-center gap-2">
             <div
@@ -488,10 +508,10 @@ function TopProjectRow({
                 }}
               />
             </div>
-            <span className="w-10 text-right text-xs tabular-nums text-[var(--pnrr-fg)]">
+            <span className="w-14 text-right text-xs tabular-nums text-[var(--pnrr-fg)]">
               {project.techProgress === 'in-implementation'
                 ? '<30%'
-                : `${techValue}%`}
+                : formatPnrrPercentage(techValue)}
             </span>
           </div>
         </div>

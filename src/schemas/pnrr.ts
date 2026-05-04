@@ -2,21 +2,67 @@ import { z } from 'zod'
 import { Currency } from './charts'
 
 export const RawPnrrProjectSchema = z.object({
-  'Titlu Proiect': z.string(),
-  'Nume Beneficiar': z.string(),
-  'CUI': z.string().nullable(),
-  'Județ': z.string(),
-  'Sursă Finanțare': z.enum(['grant', 'loan', 'grant/loan']),
-  'Valoare (EUR)': z.number(),
-  'Progres Tehnic': z.string(),
+  id_angajament: z.union([z.string(), z.number()]).nullable().optional(),
+  cod_componenta: z.string().nullable().optional(),
+  cod_masura: z.string().nullable().optional(),
+  cod_submasura: z.string().nullable().optional(),
+  cri: z.string().nullable().optional(),
+  sursa_finantare: z.string().nullable().optional(),
+  titlu_contract: z.string().nullable().optional(),
+  denumire_beneficiar: z.string().nullable().optional(),
+  cui: z.union([z.string(), z.number()]).nullable().optional(),
+  valoare_fe: z.union([z.string(), z.number()]).nullable().optional(),
+  judet_implementare: z.string().nullable().optional(),
+  localitate_implementare: z.string().nullable().optional(),
+  stadiu: z.string().nullable().optional(),
+  progres_fizic: z.union([z.string(), z.number()]).nullable().optional(),
+  progres_financiar: z.union([z.string(), z.number()]).nullable().optional(),
+  'Titlu Proiect': z.string().optional(),
+  'Nume Beneficiar': z.string().optional(),
+  'CUI': z.string().nullable().optional(),
+  'Județ': z.string().optional(),
+  'Sursă Finanțare': z.enum(['grant', 'loan', 'grant/loan']).optional(),
+  'Valoare (EUR)': z.number().optional(),
+  'Progres Tehnic': z.string().optional(),
   'Progres Financiar': z.string().optional(),
-  'Cod Componentă': z.string(),
-  'Cod Măsură': z.string(),
-  'Localitate': z.string(),
-  'CRI': z.string(),
-})
+  'Cod Componentă': z.string().optional(),
+  'Cod Măsură': z.string().optional(),
+  'Localitate': z.string().optional(),
+  'CRI': z.string().optional(),
+}).passthrough()
 
 export type RawPnrrProject = z.infer<typeof RawPnrrProjectSchema>
+
+export const RawPnrrBeneficiaryPaymentSchema = z.object({
+  'unique identifier': z.union([z.string(), z.number()]).nullable().optional(),
+  'full legal name': z.string().nullable().optional(),
+  'last name': z.string().nullable().optional(),
+  'first name': z.string().nullable().optional(),
+  'vat number': z.union([z.string(), z.number()]).nullable().optional(),
+  'tax identification number': z.union([z.string(), z.number()]).nullable().optional(),
+  'other unique identifier': z.union([z.string(), z.number()]).nullable().optional(),
+  'received amount in lei': z.union([z.string(), z.number()]).nullable().optional(),
+  'last date funding received': z.string().nullable().optional(),
+}).passthrough()
+
+export type RawPnrrBeneficiaryPayment = z.infer<
+  typeof RawPnrrBeneficiaryPaymentSchema
+>
+
+export const RawPnrrIndicatorSchema = z.object({
+  alocat_eur: z.union([z.string(), z.number()]).nullable().optional(),
+  platit_eur: z.union([z.string(), z.number()]).nullable().optional(),
+  incasat_eur: z.union([z.string(), z.number()]).nullable().optional(),
+  prefinantare_eur: z.union([z.string(), z.number()]).nullable().optional(),
+  suspendat_eur: z.union([z.string(), z.number()]).nullable().optional(),
+  revocat_eur: z.union([z.string(), z.number()]).nullable().optional(),
+  nr_beneficiari_contracte: z.union([z.string(), z.number()]).nullable().optional(),
+  nr_beneficiari_plati: z.union([z.string(), z.number()]).nullable().optional(),
+  nr_proiecte: z.union([z.string(), z.number()]).nullable().optional(),
+  nr_proiecte_impact_national: z.union([z.string(), z.number()]).nullable().optional(),
+}).passthrough()
+
+export type RawPnrrIndicator = z.infer<typeof RawPnrrIndicatorSchema>
 
 export type PnrrProjectStatus =
   | 'completed'
@@ -66,8 +112,9 @@ export type PnrrBeneficiaryType = typeof PNRR_BENEFICIARY_TYPE_VALUES[number]
 
 export type PnrrGranularity = 'national' | 'county' | 'uat'
 
-export type PnrrProject = {
+export type PnrrProjectRecord = {
   readonly id: string
+  readonly engagementId: string | null
   readonly title: string
   readonly beneficiary: string
   readonly cui: string | null
@@ -90,9 +137,58 @@ export type PnrrProject = {
   readonly sirutaCode: string | null
 }
 
+export type PnrrProjectVariantCounts = {
+  readonly components: number
+  readonly measures: number
+  readonly fundingSources: number
+  readonly counties: number
+  readonly localities: number
+  readonly cris: number
+  readonly techProgress: number
+  readonly finProgress: number
+}
+
+export type PnrrProject = PnrrProjectRecord & {
+  readonly primaryRecord?: PnrrProjectRecord
+  readonly records?: readonly PnrrProjectRecord[]
+  readonly totalValueEur?: number
+  readonly recordCount?: number
+  readonly componentCodes?: readonly string[]
+  readonly measureCodes?: readonly string[]
+  readonly measureFullCodes?: readonly string[]
+  readonly fundingSources?: readonly PnrrProjectRecord['fundingSource'][]
+  readonly counties?: readonly string[]
+  readonly localities?: readonly string[]
+  readonly cris?: readonly string[]
+  readonly variantCounts?: PnrrProjectVariantCounts
+}
+
+export type PnrrBeneficiaryPayment = {
+  readonly id: string
+  readonly beneficiary: string
+  readonly cui: string | null
+  readonly valueRon: number
+  readonly lastPaymentDate: string | null
+}
+
+export type PnrrOfficialIndicators = {
+  readonly allocatedTotalEur: number | null
+  readonly paidTotalEur: number | null
+  readonly receivedFromEuEur: number | null
+  readonly prefinancingEur: number | null
+  readonly suspendedEur: number | null
+  readonly revokedEur: number | null
+  readonly contractedBeneficiaryCount: number | null
+  readonly paidBeneficiaryCount: number | null
+  readonly projectCount: number | null
+  readonly nationalImpactProjectCount: number | null
+}
+
 export type PnrrAggregates = {
   readonly rawTotalValue: number
   readonly deduplicatedTotalValue: number
+  readonly projectCount: number
+  readonly projectRecordCount: number
   readonly rawProjectCount: number
   readonly deduplicatedProjectCount: number
   readonly completedCount: number

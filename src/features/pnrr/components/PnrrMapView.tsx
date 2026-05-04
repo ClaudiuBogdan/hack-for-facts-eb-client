@@ -9,11 +9,7 @@ import {
 } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import type { PnrrProject } from '@/schemas/pnrr'
-import {
-  usePnrrMapSeries,
-  type PnrrMapSeriesId,
-} from '../hooks/usePnrrMapSeries'
+import type { PnrrMapSeriesId } from '../hooks/usePnrrMapSeries'
 import { useGeoJsonData } from '@/hooks/useGeoJson'
 import {
   createHeatmapStyleFunction,
@@ -28,17 +24,18 @@ import { PnrrCountyDetailsPanel } from './PnrrCountyDetailsPanel'
 import { PnrrUatDetailsPanel } from './PnrrUatDetailsPanel'
 import { PnrrProjectDrawer } from './table/PnrrProjectDrawer'
 import type { usePnrrFilterState } from '../hooks/usePnrrFilterState'
+import { usePnrrMapModel, usePnrrProjectDetail } from '../hooks/usePnrrData'
 import { usePnrrCurrency } from '../lib/usePnrrCurrency'
 import { convertPnrrValue, formatPnrrCurrency } from '../lib/formatting'
 import { getPnrrBlueHeatmapColor } from '../lib/map-colors'
 import { buildPnrrMapTooltipHtml } from '../lib/map-tooltip'
 import { MNEMONIC_TO_COUNTY_NAME } from '../lib/county-mnemonics'
-import { getPnrrUatLabelsBySiruta } from '../lib/pnrr-uat-labels'
 import { formatNumber, cn } from '@/lib/utils'
 import { Info } from 'lucide-react'
 import bbox from '@turf/bbox'
 import center from '@turf/center'
 import type { FeatureCollection, Feature, Geometry } from 'geojson'
+import type { PnrrWorkerMapModel } from '../workers/pnrr-worker-types'
 
 const InteractiveMap = lazy(() =>
   import('@/components/maps/InteractiveMap').then((m) => ({
@@ -47,7 +44,7 @@ const InteractiveMap = lazy(() =>
 )
 
 const SERIES_OPTIONS = [
-  { id: 'total-value' as PnrrMapSeriesId, label: t`Valoarea proiectelor listate` },
+  { id: 'total-value' as PnrrMapSeriesId, label: t`Listed project value` },
   { id: 'project-count' as PnrrMapSeriesId, label: t`Project count` },
   { id: 'per-capita' as PnrrMapSeriesId, label: t`Per capita` },
   { id: 'grant-share' as PnrrMapSeriesId, label: t`Grant %` },
@@ -62,7 +59,7 @@ const PNRR_MAP_COLOR_MIN_PERCENTILE = 5
 const PNRR_MAP_COLOR_MAX_PERCENTILE = 95
 
 interface PnrrMapViewProps {
-  readonly projects: readonly PnrrProject[]
+  readonly model: PnrrWorkerMapModel
   readonly filterState: ReturnType<typeof usePnrrFilterState>
 }
 
@@ -190,9 +187,13 @@ function MapLegend({
   )
 }
 
-export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
+export function PnrrMapView({
+  model,
+  filterState,
+}: PnrrMapViewProps) {
   const [activeSeriesId, setActiveSeriesId] =
     useState<PnrrMapSeriesId>('total-value')
+  const { data: activeMapData } = usePnrrMapModel(filterState.search, activeSeriesId)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const currency = usePnrrCurrency()
 
@@ -202,53 +203,22 @@ export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
     search.panel === 'map-county' && search.panelCountyCode
       ? (MNEMONIC_TO_COUNTY_NAME[search.panelCountyCode] ?? null)
       : null
-  const selectedUat = useMemo(() => {
-    if (search.panel !== 'map-uat' || !search.panelUatSiruta) return null
+  const activeModel = activeMapData?.mapModel ?? model
+  const selectedUat = activeModel.selectedUat
+  const selectedProjectId =
+    search.panelProjectId ??
+    (search.panel === 'project' ? search.panelProjectId : null)
+  const { data: selectedProjectResult } = usePnrrProjectDetail(selectedProjectId)
+  const selectedProject = selectedProjectResult?.project ?? null
 
-    const matchingProject = projects.find(
-      (project) => project.sirutaCode === search.panelUatSiruta,
-    )
-    const sourceLabel = getPnrrUatLabelsBySiruta().get(search.panelUatSiruta)
-
-    return {
-      name:
-        sourceLabel?.name ??
-        matchingProject?.locality ??
-        search.panelUatSiruta,
-      county: sourceLabel?.county ?? matchingProject?.county ?? '',
-      natcode: search.panelUatSiruta,
-    }
-  }, [projects, search.panel, search.panelUatSiruta])
-  const selectedProject = useMemo(() => {
-    if (search.panel !== 'project' || !search.panelProjectId) return null
-    return (
-      projects.find((project) => project.id === search.panelProjectId) ?? null
-    )
-  }, [projects, search.panel, search.panelProjectId])
-
-  const activeSeries = usePnrrMapSeries(
-    projects,
-    activeSeriesId,
-    granularity === 'uat' ? 'uat' : 'county',
-  )
+  const activeSeries = activeModel.series
   const { data: geoJsonData, isPending: isGeoJsonLoading } = useGeoJsonData(
     granularity === 'uat' ? 'UAT' : 'County',
   )
   const { data: countyGeoJsonData } = useGeoJsonData('County')
 
-  const nationalCount = useMemo(
-    () => projects.filter((p) => p.county === 'Național').length,
-    [projects],
-  )
-  const unmappedCount = useMemo(
-    () =>
-      granularity === 'uat'
-        ? projects.filter(
-            (p) => p.sirutaCode === null && p.county !== 'Național',
-          ).length
-        : 0,
-    [projects, granularity],
-  )
+  const nationalCount = activeModel.nationalCount
+  const unmappedCount = activeModel.unmappedCount
 
   const heatmapData = useMemo(
     () =>
@@ -542,7 +512,7 @@ export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
       {granularity === 'county' && (
         <PnrrCountyDetailsPanel
           county={selectedCounty}
-          projects={projects}
+          projects={activeModel.selectedCountyProjects}
           onClose={filterState.closePanel}
           selectedProjectId={search.panelProjectId}
           onProjectClick={filterState.openProjectPanel}
@@ -555,7 +525,7 @@ export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
           uatName={selectedUat?.name ?? null}
           countyName={selectedUat?.county ?? null}
           natcode={selectedUat?.natcode ?? null}
-          projects={projects}
+          projects={activeModel.selectedUatProjects}
           onClose={filterState.closePanel}
           selectedProjectId={search.panelProjectId}
           onProjectClick={filterState.openProjectPanel}

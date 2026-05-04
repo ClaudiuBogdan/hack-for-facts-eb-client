@@ -8,8 +8,6 @@ import {
 } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import type { PnrrProject } from '@/schemas/pnrr'
-import { usePnrrMapSeries } from '../hooks/usePnrrMapSeries'
 import { useGeoJsonData } from '@/hooks/useGeoJson'
 import {
   createHeatmapStyleFunction,
@@ -26,12 +24,12 @@ import { usePnrrCurrency } from '../lib/usePnrrCurrency'
 import { formatPnrrCurrency } from '../lib/formatting'
 import { getPnrrBlueHeatmapColor } from '../lib/map-colors'
 import { buildPnrrMapTooltipHtml } from '../lib/map-tooltip'
-import { getPnrrUatLabelsBySiruta } from '../lib/pnrr-uat-labels'
 import { ArrowRight } from 'lucide-react'
 import { useIsMobile } from '@/hooks/use-mobile'
 import bbox from '@turf/bbox'
 import center from '@turf/center'
 import type { FeatureCollection, Feature, Geometry } from 'geojson'
+import type { PnrrWorkerMapModel } from '../workers/pnrr-worker-types'
 
 const InteractiveMap = lazy(() =>
   import('@/components/maps/InteractiveMap').then((m) => ({
@@ -53,7 +51,7 @@ type MapViewport = {
 }
 
 interface PnrrMapPreviewProps {
-  readonly projects: readonly PnrrProject[]
+  readonly model: PnrrWorkerMapModel
   readonly filterState: ReturnType<typeof usePnrrFilterState>
 }
 
@@ -157,30 +155,11 @@ function PreviewLegend({
   )
 }
 
-export function PnrrMapPreview({ projects, filterState }: PnrrMapPreviewProps) {
+export function PnrrMapPreview({ model, filterState }: PnrrMapPreviewProps) {
   const [userViewport, setUserViewport] = useState<MapViewport | null>(null)
   const currency = usePnrrCurrency()
   const isMobile = useIsMobile()
-  const selectedUat = useMemo(() => {
-    const search = filterState.search
-    if (search.panel !== 'map-uat' || !search.panelUatSiruta) return null
-
-    const matchingProject = projects.find(
-      (project) => project.sirutaCode === search.panelUatSiruta,
-    )
-    const sourceLabel = getPnrrUatLabelsBySiruta().get(search.panelUatSiruta)
-
-    return {
-      name:
-        sourceLabel?.name ??
-        matchingProject?.locality ??
-        search.panelUatSiruta,
-      county: sourceLabel?.county ?? matchingProject?.county ?? '',
-      natcode: search.panelUatSiruta,
-    }
-  }, [filterState.search, projects])
-
-  const activeSeries = usePnrrMapSeries(projects, 'total-value', 'uat')
+  const selectedUat = model.selectedUat
   const { data: geoJsonData, isPending: isGeoJsonLoading } =
     useGeoJsonData('UAT')
   const { data: countyGeoJsonData } = useGeoJsonData('County')
@@ -188,9 +167,9 @@ export function PnrrMapPreview({ projects, filterState }: PnrrMapPreviewProps) {
   const heatmapData = useMemo(
     () =>
       [
-        ...activeSeries.data,
+        ...model.series.data,
       ] as import('@/schemas/heatmap').HeatmapUATDataPoint[],
-    [activeSeries.data],
+    [model.series.data],
   )
 
   const colorDomain = useMemo(
@@ -341,14 +320,11 @@ export function PnrrMapPreview({ projects, filterState }: PnrrMapPreviewProps) {
     return map
   }, [heatmapData])
 
-  const uatProjectCount = useMemo(
-    () => projects.filter((p) => p.sirutaCode !== null).length,
-    [projects],
-  )
+  const uatProjectCount = model.uatProjectCount
 
   if (uatProjectCount === 0) return null
 
-  const hasData = activeSeries.data.length > 0
+  const hasData = model.series.data.length > 0
 
   return (
     <section className="flex min-w-0 flex-col h-full">
@@ -435,7 +411,7 @@ export function PnrrMapPreview({ projects, filterState }: PnrrMapPreviewProps) {
         uatName={selectedUat?.name ?? null}
         countyName={selectedUat?.county ?? null}
         natcode={selectedUat?.natcode ?? null}
-        projects={projects}
+        projects={model.selectedUatProjects}
         onClose={filterState.closePanel}
         selectedProjectId={filterState.search.panelProjectId}
         onProjectClick={filterState.openProjectPanel}

@@ -4,6 +4,13 @@ import { describe, expect, it, vi } from 'vitest'
 import type { PnrrProject, PnrrSearchState } from '@/schemas/pnrr'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
 import { PnrrProjectTable } from './PnrrProjectTable'
+import type { PnrrWorkerProjectPage } from '../../workers/pnrr-worker-types'
+
+const usePnrrProjectDetailMock = vi.hoisted(() => vi.fn())
+
+vi.mock('../../hooks/usePnrrData', () => ({
+  usePnrrProjectDetail: usePnrrProjectDetailMock,
+}))
 
 vi.mock('./PnrrProjectDrawer', () => ({
   PnrrProjectDrawer: ({
@@ -25,6 +32,7 @@ vi.mock('./PnrrProjectDrawer', () => ({
 
 const PROJECT: PnrrProject = {
   id: 'project-1',
+  engagementId: 'engagement-1',
   title: 'Test Project',
   beneficiary: 'Test Beneficiar',
   cui: '12345678',
@@ -50,6 +58,22 @@ const PROJECT: PnrrProject = {
 function makeProject(overrides: Partial<PnrrProject> = {}): PnrrProject {
   return {
     ...PROJECT,
+    ...overrides,
+  }
+}
+
+function makePage(
+  rows: readonly PnrrProject[],
+  overrides: Partial<PnrrWorkerProjectPage> = {},
+): PnrrWorkerProjectPage {
+  return {
+    rows,
+    totalCount: rows.length,
+    page: 1,
+    pageSize: 25,
+    totalPages: Math.max(1, Math.ceil(rows.length / 25)),
+    sortBy: 'value',
+    sortOrder: 'desc',
     ...overrides,
   }
 }
@@ -114,17 +138,70 @@ function makeFilterState(
 
 describe('PnrrProjectTable', () => {
   it('renders the last available page and corrects out-of-range URL pages', async () => {
+    usePnrrProjectDetailMock.mockReturnValue({ data: undefined })
     const setPagination = vi.fn()
     const filterState = makeFilterState({ setPagination })
 
-    render(<PnrrProjectTable projects={[PROJECT]} filterState={filterState} />)
+    render(<PnrrProjectTable page={makePage([PROJECT])} filterState={filterState} />)
 
     expect(screen.getAllByText('Test Project')).toHaveLength(2)
-    expect(screen.getByText('page 1 of 1')).toBeInTheDocument()
+    expect(screen.getAllByText('1 / 1').length).toBeGreaterThan(0)
     await waitFor(() => expect(setPagination).toHaveBeenCalledWith(1, 25))
   })
 
-  it('sorts in-implementation technical progress as a sub-30 value', () => {
+  it('rounds reported progress percentages to two decimals', () => {
+    usePnrrProjectDetailMock.mockReturnValue({ data: undefined })
+    const filterState = makeFilterState()
+    const project = makeProject({
+      techProgress: 60,
+      finProgress: 29.020000000000003,
+    })
+
+    render(<PnrrProjectTable page={makePage([project])} filterState={filterState} />)
+
+    expect(screen.getAllByText(/29[,.]02%/).length).toBeGreaterThan(0)
+    expect(screen.queryByText(/29[,.]020000/)).not.toBeInTheDocument()
+  })
+
+  it('renders one grouped project row with primary values and variant counts', () => {
+    usePnrrProjectDetailMock.mockReturnValue({ data: undefined })
+    const filterState = makeFilterState({ search: { ...makeFilterState().search, page: 1 } })
+    const secondaryRecord = makeProject({
+      id: 'record-2',
+      componentCode: 'C5',
+      county: 'Cluj',
+      valueEur: 40_000,
+    })
+    const groupedProject = makeProject({
+      id: 'engagement:engagement-1',
+      primaryRecord: PROJECT,
+      records: [PROJECT, secondaryRecord],
+      totalValueEur: 140_000,
+      recordCount: 2,
+      valueEur: 140_000,
+      componentCodes: ['C4', 'C5'],
+      counties: ['București', 'Cluj'],
+      variantCounts: {
+        components: 1,
+        measures: 0,
+        fundingSources: 0,
+        counties: 1,
+        localities: 0,
+        cris: 0,
+        techProgress: 0,
+        finProgress: 0,
+      },
+    })
+
+    render(<PnrrProjectTable page={makePage([groupedProject])} filterState={filterState} />)
+
+    expect(screen.getAllByText('Test Project')).toHaveLength(2)
+    expect(screen.getAllByText('+1').length).toBeGreaterThanOrEqual(2)
+    expect(screen.getByText(/1 projects/)).toBeInTheDocument()
+  })
+
+  it('renders worker-sorted technical progress rows', () => {
+    usePnrrProjectDetailMock.mockReturnValue({ data: undefined })
     const filterState = makeFilterState({
       search: {
         ...makeFilterState().search,
@@ -151,7 +228,10 @@ describe('PnrrProjectTable', () => {
 
     render(
       <PnrrProjectTable
-        projects={[under30, mid, zero]}
+        page={makePage([zero, under30, mid], {
+          sortBy: 'techProgress',
+          sortOrder: 'asc',
+        })}
         filterState={filterState}
       />,
     )
@@ -171,6 +251,7 @@ describe('PnrrProjectTable', () => {
   })
 
   it('toggles value sorting when value is the implicit default sort', async () => {
+    usePnrrProjectDetailMock.mockReturnValue({ data: undefined })
     const user = userEvent.setup()
     const setSorting = vi.fn()
     const search = {
@@ -184,14 +265,20 @@ describe('PnrrProjectTable', () => {
       search: search as PnrrSearchState,
     })
 
-    render(<PnrrProjectTable projects={[PROJECT]} filterState={filterState} />)
+    render(
+      <PnrrProjectTable
+        page={makePage([PROJECT], { sortBy: 'value', sortOrder: 'desc' })}
+        filterState={filterState}
+      />,
+    )
 
     await user.click(screen.getByText('Value'))
 
     expect(setSorting).toHaveBeenCalledWith('value', 'asc')
   })
 
-  it('sorts projects by component and stores component sort in URL state', async () => {
+  it('renders worker-sorted component rows and stores component sort in URL state', async () => {
+    usePnrrProjectDetailMock.mockReturnValue({ data: undefined })
     const user = userEvent.setup()
     const setSorting = vi.fn()
     const filterState = makeFilterState({
@@ -216,7 +303,10 @@ describe('PnrrProjectTable', () => {
 
     render(
       <PnrrProjectTable
-        projects={[componentTen, componentTwo]}
+        page={makePage([componentTwo, componentTen], {
+          sortBy: 'component',
+          sortOrder: 'asc',
+        })}
         filterState={filterState}
       />,
     )
@@ -234,6 +324,7 @@ describe('PnrrProjectTable', () => {
   })
 
   it('opens the project drawer from URL panel state and closes through URL state', () => {
+    usePnrrProjectDetailMock.mockReturnValue({ data: { project: PROJECT } })
     const closePanel = vi.fn()
     const filterState = makeFilterState({
       closePanel,
@@ -245,7 +336,7 @@ describe('PnrrProjectTable', () => {
       },
     })
 
-    render(<PnrrProjectTable projects={[PROJECT]} filterState={filterState} />)
+    render(<PnrrProjectTable page={makePage([PROJECT])} filterState={filterState} />)
 
     expect(screen.getByTestId('pnrr-project-drawer')).toHaveTextContent(
       'Test Project',
