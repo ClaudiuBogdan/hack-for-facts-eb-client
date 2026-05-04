@@ -499,6 +499,10 @@ export const PNRR_MEASURES: Record<string, PnrrMeasureDefinition> = {
     nameRo: 'Investiția 17. Asigurarea infrastructurii universitare: cămine, cantine, spații de recreere',
     type: 'investment',
   },
+  'C15-I18': {
+    nameRo: 'Investiția 18. Granturi pentru unitățile de învățământ pilot',
+    type: 'investment',
+  },
 
   // ═════════════════════════════════════════════════════════════════
   // C16 — REPowerEU

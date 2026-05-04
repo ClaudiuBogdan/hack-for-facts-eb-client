@@ -237,10 +237,13 @@
         { "masura": "I10", "finantare": "grant", "titlul_masurii": "I10. Dezvoltarea rețelei de școli verzi și achiziționarea de microbuze verzi" },
         { "masura": "I11", "finantare": "grant", "titlul_masurii": "I11. Asigurarea dotărilor pentru sălile de clasă preuniversitare și laboratoarele / atelierele școlare" },
         { "masura": "I13", "finantare": "grant", "titlul_masurii": "I13. Echiparea laboratoarelor de informatică din unitățile de învățământ profesional și tehnic" },
+        { "masura": "I13", "finantare": "loan", "titlul_masurii": "I13. Echiparea laboratoarelor de informatică din unitățile de învățământ profesional și tehnic" },
         { "masura": "I14", "finantare": "grant", "titlul_masurii": "I14. Echiparea atelierelor de practică din unitățile de învățământ profesional și tehnic" },
         { "masura": "I15", "finantare": "grant", "titlul_masurii": "I15. Școala online: dezvoltarea platformei de evaluare și realizarea de conținut" },
         { "masura": "I16", "finantare": "grant", "titlul_masurii": "I16. Digitalizarea universităților și pregătirea acestora pentru profesiile digitale ale viitorului" },
         { "masura": "I17", "finantare": "grant", "titlul_masurii": "I17. Asigurarea infrastructurii universitare: cămine, cantine, spații de recreere" },
+        { "masura": "I17", "finantare": "loan", "titlul_masurii": "I17. Asigurarea infrastructurii universitare: cămine, cantine, spații de recreere" },
+        { "masura": "I18", "finantare": "grant", "titlul_masurii": "I18. Granturi pentru unitățile de învățământ pilot" },
         { "masura": "R1", "finantare": "grant", "titlul_masurii": "R1. Reforma curriculei și a programelor de evaluare la nivel național" },
         { "masura": "R2", "finantare": "grant", "titlul_masurii": "R2. Dezvoltarea unui sistem de învățământ incluziv" },
         { "masura": "R3", "finantare": "grant", "titlul_masurii": "R3. Dezvoltarea unui sistem de formare continuă pentru personalul didactic" }
