@@ -381,27 +381,33 @@ export function PnrrBeneficiariesView({
 
       {/* Search */}
       <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--pnrr-muted)]" />
+        <Search
+          aria-hidden="true"
+          className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--pnrr-muted)]"
+        />
         <input
           type="text"
+          autoComplete="off"
+          aria-label={t`Beneficiary search`}
           placeholder={t`Search beneficiary...`}
           value={inputValue}
           onChange={(e) => {
             setInputValue(e.target.value)
           }}
-          className="h-10 w-full border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-9 py-2 text-sm text-[var(--pnrr-fg)] placeholder:text-[var(--pnrr-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+          className="h-12 w-full border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-11 py-2 text-base font-bold text-[var(--pnrr-fg)] placeholder:text-[var(--pnrr-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
         />
 
         {inputValue && (
           <button
             type="button"
             onClick={() => {
+              setInputValue('')
               filterState.setBeneficiarySearch(undefined)
             }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--pnrr-muted)] transition-colors hover:text-[var(--pnrr-fg)]"
+            className="absolute right-3 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center text-[var(--pnrr-muted)] transition-colors hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
             aria-label={t`Clear search`}
           >
-            <X className="h-4 w-4" />
+            <X aria-hidden="true" className="h-4 w-4" />
           </button>
         )}
       </div>
