@@ -728,7 +728,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
             properties: { natcode: '2002', name: 'Second UAT' },
             geometry: {
               type: 'Polygon',
-              coordinates: [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]],
+              coordinates: [[[1, 0], [2, 0], [2, 0.5], [2, 1], [1, 1], [1, 0]]],
             },
           },
           {
