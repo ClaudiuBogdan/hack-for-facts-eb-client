@@ -650,6 +650,68 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     });
   });
 
+  it('updates manual group member order and primary member', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    };
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+    const initialState = createMapState({ activeView: 'map' });
+    let latestState = initialState;
+
+    function Harness() {
+      const [state, setState] = useState(initialState);
+      latestState = state;
+      return (
+        <MapAnalyticsWorkspace
+          mode="owner"
+          mapState={state}
+          setMapState={(updater) => {
+            setState((previousState) => {
+              const nextState =
+                typeof updater === 'function' ? updater(previousState) : updater;
+              latestState = nextState;
+              return nextState;
+            });
+          }}
+          capabilities={{ readOnly: false }}
+          mobileControlsDefaultCollapsed={true}
+        />
+      );
+    }
+
+    render(<Harness />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create group' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Map click second UAT' }));
+
+    await waitFor(() => {
+      expect(latestState.groupings[0]?.groups[0]?.memberSirutaCodes).toEqual(['1001', '2002']);
+      expect(latestState.groupings[0]?.groups[0]?.memberOrder).toEqual(['1001', '2002']);
+      expect(latestState.groupings[0]?.groups[0]?.primarySirutaCode).toBe('1001');
+    });
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Move UAT earlier in group' })[1]);
+
+    await waitFor(() => {
+      expect(latestState.groupings[0]?.groups[0]?.memberSirutaCodes).toEqual(['1001', '2002']);
+      expect(latestState.groupings[0]?.groups[0]?.memberOrder).toEqual(['2002', '1001']);
+      expect(latestState.groupings[0]?.groups[0]?.primarySirutaCode).toBe('1001');
+    });
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Set primary UAT for group' })[0]);
+
+    await waitFor(() => {
+      expect(latestState.groupings[0]?.groups[0]?.primarySirutaCode).toBe('2002');
+    });
+  });
+
   it('switches the active rendered grouping from the groups panel', async () => {
     mockIsMobile.mockReturnValue(false);
     mockGeoJsonData = {

@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react
 import { useNavigate } from '@tanstack/react-router';
 import { produce } from 'immer';
 import { AnimatePresence, motion } from 'framer-motion';
-import { BarChart3, Check, Loader2, MapIcon, MousePointer2, Pencil, Plus, Save, TableIcon, Trash2, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BarChart3, Check, Loader2, MapIcon, MousePointer2, Pencil, Plus, Save, Star, TableIcon, Trash2, X } from 'lucide-react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
 import type { GeoJsonObject } from 'geojson';
@@ -199,6 +199,18 @@ function createManualGroupLabel(memberSirutaCodes: string[], fallbackUatName: st
     return fallbackUatName.trim();
   }
   return `Group ${memberSirutaCodes.length}`;
+}
+
+function getOrderedManualGroupMemberCodes(group: MapGrouping['groups'][number]): string[] {
+  if (!group.memberOrder?.length) {
+    return group.memberSirutaCodes;
+  }
+
+  const members = new Set(group.memberSirutaCodes);
+  const orderedMembers = group.memberOrder.filter((sirutaCode) => members.has(sirutaCode));
+  const orderedMemberSet = new Set(orderedMembers);
+  const remainingMembers = group.memberSirutaCodes.filter((sirutaCode) => !orderedMemberSet.has(sirutaCode));
+  return [...orderedMembers, ...remainingMembers];
 }
 
 function isGroupedValueSourceCandidate(series: MapSupportedSeries): boolean {
@@ -630,6 +642,61 @@ export function MapAnalyticsWorkspace({
       setActiveManualGroupId((currentGroupId) =>
         currentGroupId === groupId ? nextActiveGroupId : currentGroupId
       );
+    },
+    [isPreviewLayout, isReadOnly, updateState]
+  );
+
+  const moveManualGroupMember = useCallback(
+    (groupId: string, sirutaCode: string, direction: 'previous' | 'next') => {
+      if (isReadOnly || isPreviewLayout) {
+        return;
+      }
+
+      updateState((draft) => {
+        const grouping = ensureManualGrouping(draft);
+        const group = grouping.groups.find((entry) => entry.id === groupId);
+        if (!group) {
+          return;
+        }
+
+        const orderedMembers = getOrderedManualGroupMemberCodes(group);
+        const memberIndex = orderedMembers.indexOf(sirutaCode);
+        if (memberIndex === -1) {
+          return;
+        }
+
+        const nextMemberIndex = direction === 'previous' ? memberIndex - 1 : memberIndex + 1;
+        if (nextMemberIndex < 0 || nextMemberIndex >= orderedMembers.length) {
+          return;
+        }
+
+        [orderedMembers[memberIndex], orderedMembers[nextMemberIndex]] = [
+          orderedMembers[nextMemberIndex],
+          orderedMembers[memberIndex],
+        ];
+        group.memberOrder = orderedMembers;
+        draft.activeGroupingId = grouping.id;
+      });
+    },
+    [isPreviewLayout, isReadOnly, updateState]
+  );
+
+  const setManualGroupPrimaryMember = useCallback(
+    (groupId: string, sirutaCode: string) => {
+      if (isReadOnly || isPreviewLayout) {
+        return;
+      }
+
+      updateState((draft) => {
+        const grouping = ensureManualGrouping(draft);
+        const group = grouping.groups.find((entry) => entry.id === groupId);
+        if (!group || !group.memberSirutaCodes.includes(sirutaCode)) {
+          return;
+        }
+
+        group.primarySirutaCode = sirutaCode;
+        draft.activeGroupingId = grouping.id;
+      });
     },
     [isPreviewLayout, isReadOnly, updateState]
   );
@@ -2411,6 +2478,8 @@ export function MapAnalyticsWorkspace({
         onGroupLabelChange={updateManualGroupLabel}
         onDeleteGroup={deleteManualGroup}
         onRemoveMember={removeManualGroupMember}
+        onMoveMember={moveManualGroupMember}
+        onSetPrimaryMember={setManualGroupPrimaryMember}
       />
       <AdvancedMapAnalyticsSeriesPanel
         series={mapState.series}
@@ -2991,6 +3060,8 @@ interface ManualGroupingPanelProps {
   onGroupLabelChange: (groupId: string, nextLabel: string) => void;
   onDeleteGroup: (groupId: string) => void;
   onRemoveMember: (groupId: string, sirutaCode: string) => void;
+  onMoveMember: (groupId: string, sirutaCode: string, direction: 'previous' | 'next') => void;
+  onSetPrimaryMember: (groupId: string, sirutaCode: string) => void;
 }
 
 function ManualGroupingPanel({
@@ -3012,6 +3083,8 @@ function ManualGroupingPanel({
   onGroupLabelChange,
   onDeleteGroup,
   onRemoveMember,
+  onMoveMember,
+  onSetPrimaryMember,
 }: Readonly<ManualGroupingPanelProps>) {
   const groupingLabel = grouping?.label ?? MANUAL_GROUPING_LABEL;
 
@@ -3169,15 +3242,48 @@ function ManualGroupingPanel({
                   </div>
 
                   <div className="mt-2 flex flex-wrap gap-1.5">
-                    {group.memberSirutaCodes.map((sirutaCode) => {
+                    {getOrderedManualGroupMemberCodes(group).map((sirutaCode, memberIndex, orderedMembers) => {
                       const metadata = uatMetadataBySirutaCode.get(sirutaCode);
                       const memberLabel = metadata?.uatName || `UAT ${sirutaCode}`;
+                      const isPrimaryMember = group.primarySirutaCode === sirutaCode;
                       return (
                         <span
                           key={sirutaCode}
                           className="inline-flex max-w-full items-center gap-1 rounded-full bg-muted px-2 py-1 text-[11px] text-muted-foreground"
                         >
                           <span className="truncate">{memberLabel}</span>
+                          {isPrimaryMember ? (
+                            <span className="rounded-full bg-background px-1 text-[10px] font-medium text-foreground">
+                              {t`Primary`}
+                            </span>
+                          ) : null}
+                          <button
+                            type="button"
+                            onClick={() => onMoveMember(group.id, sirutaCode, 'previous')}
+                            disabled={!canEdit || memberIndex === 0}
+                            aria-label={t`Move UAT earlier in group`}
+                            className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full hover:bg-background hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+                          >
+                            <ArrowLeft className="h-3 w-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onMoveMember(group.id, sirutaCode, 'next')}
+                            disabled={!canEdit || memberIndex === orderedMembers.length - 1}
+                            aria-label={t`Move UAT later in group`}
+                            className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full hover:bg-background hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+                          >
+                            <ArrowRight className="h-3 w-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onSetPrimaryMember(group.id, sirutaCode)}
+                            disabled={!canEdit || isPrimaryMember}
+                            aria-label={t`Set primary UAT for group`}
+                            className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full hover:bg-background hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+                          >
+                            <Star className={cn('h-3 w-3', isPrimaryMember && 'fill-current')} />
+                          </button>
                           <button
                             type="button"
                             onClick={() => onRemoveMember(group.id, sirutaCode)}
