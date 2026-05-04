@@ -415,7 +415,7 @@ function RankedListCard({
             key={item.itemKey ?? item.id}
             onClick={() => onClick(item.id)}
             className={cn(
-              'group relative grid w-full gap-x-3 gap-y-1.5 px-5 py-3 text-left transition-colors hover:bg-[#f0f0ec] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-green)]/60 focus-visible:ring-inset sm:items-center',
+              'group relative grid w-full gap-x-3 gap-y-1.5 px-5 py-3 text-left transition-colors hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-green)]/60 focus-visible:ring-inset sm:items-center',
               neutral
                 ? 'grid-cols-[40px_minmax(0,1fr)] sm:grid-cols-[40px_minmax(0,1fr)_minmax(110px,auto)_minmax(140px,auto)]'
                 : 'grid-cols-[72px_minmax(0,1fr)] sm:grid-cols-[88px_minmax(0,1fr)_minmax(110px,auto)_minmax(140px,auto)]',
@@ -440,7 +440,7 @@ function RankedListCard({
                 neutral ? 'w-10' : 'w-[72px] sm:w-[88px]',
               )}
             >
-              <span className="flex h-7 w-7 items-center justify-center bg-[#e7e7e3] text-xs font-semibold tabular-nums text-[var(--pnrr-muted)]">
+              <span className="flex h-7 w-7 items-center justify-center bg-[var(--pnrr-subtle)] text-xs font-semibold tabular-nums text-[var(--pnrr-muted)]">
                 {i + 1}
               </span>
               {item.prefix && item.color && (
@@ -516,7 +516,7 @@ function RankedListCard({
           <button
             type="button"
             onClick={() => setIsExpanded((v) => !v)}
-            className="flex min-h-10 w-full items-center justify-center gap-2 px-5 py-2 text-sm font-semibold text-[var(--pnrr-muted)] transition-colors hover:bg-[#f0f0ec] hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-green)]/60 focus-visible:ring-inset"
+            className="flex min-h-10 w-full items-center justify-center gap-2 px-5 py-2 text-sm font-semibold text-[var(--pnrr-muted)] transition-colors hover:bg-[var(--pnrr-hover)] hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-green)]/60 focus-visible:ring-inset"
           >
             {isExpanded ? (
               <>
@@ -580,7 +580,7 @@ function InsightCard({
         </p>
         {progress !== undefined && (
           <div className="w-full max-w-[200px]">
-            <div className="h-2 w-full bg-[#e5e5e5]">
+            <div className="h-2 w-full bg-[var(--pnrr-track)]">
               <div
                 className="h-full bg-[var(--pnrr-fg)] transition-all"
                 style={{ width: `${Math.min(progress, 100)}%` }}

@@ -127,7 +127,9 @@ const ProjectRow = memo(function ProjectRow({
         <div className="flex w-32 items-center gap-2">
           <div
             className="h-2 flex-1 rounded-full"
-            style={{ backgroundColor: comp ? `${comp.color}26` : '#c7d3e8' }}
+            style={{
+              backgroundColor: comp ? `${comp.color}26` : 'var(--pnrr-track)',
+            }}
           >
             <div
               className="h-full rounded-full"
@@ -155,7 +157,9 @@ const ProjectRow = memo(function ProjectRow({
               <div
                 className="h-2 flex-1 rounded-full"
                 style={{
-                  backgroundColor: comp ? `${comp.color}26` : '#c7d3e8',
+                  backgroundColor: comp
+                    ? `${comp.color}26`
+                    : 'var(--pnrr-track)',
                 }}
               >
                 <div

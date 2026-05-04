@@ -117,10 +117,10 @@ function PreviewLegend({
   if (min === max) {
     const color = getPnrrBlueHeatmapColor(0.5)
     return (
-      <div className="absolute bottom-3 right-3 z-20 rounded-md border border-border bg-white/90 p-2.5 shadow-lg backdrop-blur-sm dark:bg-card/90">
+      <div className="absolute bottom-3 right-3 z-20 rounded-sm border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]/95 p-2.5 text-[var(--pnrr-fg)] shadow-lg backdrop-blur-sm">
         <div className="flex items-center gap-2">
           <div
-            className="h-4 w-4 shrink-0 border border-border"
+            className="h-4 w-4 shrink-0 border border-[var(--pnrr-border)]"
             style={{ backgroundColor: color }}
           />
           <span className="text-xs font-medium">
@@ -137,17 +137,17 @@ function PreviewLegend({
   const gradient = `linear-gradient(to right, ${gradientStops.join(', ')})`
 
   return (
-    <div className="absolute bottom-3 right-3 z-20 min-w-[160px] rounded-md border border-border bg-white/90 p-2.5 shadow-lg backdrop-blur-sm dark:bg-card/90">
+    <div className="absolute bottom-3 right-3 z-20 min-w-[160px] rounded-sm border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]/95 p-2.5 text-[var(--pnrr-fg)] shadow-lg backdrop-blur-sm">
       <div className="flex flex-col gap-1.5">
         <div
-          className="h-3 w-full overflow-hidden rounded-sm border border-border"
+          className="h-3 w-full overflow-hidden rounded-sm border border-[var(--pnrr-border)]"
           style={{ background: gradient }}
         />
         <div className="flex items-center justify-between gap-2 text-[11px]">
           <span className="font-medium whitespace-nowrap">
             {formatPnrrCurrency(min, currency)}
           </span>
-          <span className="text-muted-foreground">—</span>
+          <span className="text-[var(--pnrr-muted)]">—</span>
           <span className="font-medium whitespace-nowrap">
             {formatPnrrCurrency(max, currency)}
           </span>
@@ -273,14 +273,14 @@ export function PnrrMapPreview({ projects, filterState }: PnrrMapPreviewProps) {
       if (style.fillColor === DEFAULT_FEATURE_STYLE.fillColor) {
         return {
           ...style,
-          fillColor: '#f5f5f5',
+          fillColor: 'var(--pnrr-map-empty)',
           fillOpacity: 0.35,
           weight: 1,
-          color: '#bbb',
+          color: 'var(--pnrr-map-stroke)',
           opacity: 0.6,
         }
       }
-      return { ...style, weight: 1.2, color: '#888', opacity: 0.7 }
+      return { ...style, weight: 1.2, color: 'var(--pnrr-map-stroke)', opacity: 0.7 }
     }
   }, [heatmapData, colorDomain.min, colorDomain.max])
 

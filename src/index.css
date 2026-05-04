@@ -107,12 +107,20 @@
     --sidebar-ring: 0 0% 40%;
 
     /* PNRR Brutalist Design Tokens */
-    --pnrr-bg: #f7f7f4;
+    --pnrr-bg: #fafaf8;
     --pnrr-fg: #1f1f1f;
     --pnrr-muted: #6f6f6f;
     --pnrr-border: #1f1f1f;
     --pnrr-green: #b6ff00;
-    --pnrr-card: #fbfbf8;
+    --pnrr-card: #ffffff;
+    --pnrr-hover: #f0f0ec;
+    --pnrr-subtle: #e7e7e3;
+    --pnrr-track: #e5e5e0;
+    --pnrr-map-bg: #f3f3ee;
+    --pnrr-map-empty: #f5f5f5;
+    --pnrr-map-stroke: #8a8a84;
+    --pnrr-warning-bg: #fff4e4;
+    --pnrr-warning-fg: #a43b13;
     --pnrr-red: #ef4444;
     --pnrr-orange: #f59e0b;
     --pnrr-blue: #3b82f6;
@@ -165,6 +173,25 @@
     --chart-3: 0 0% 60%;
     --chart-4: 0 0% 42%;
     --chart-5: 0 0% 28%;
+
+    /* PNRR Brutalist Design Tokens */
+    --pnrr-bg: #111412;
+    --pnrr-fg: #f7f7f2;
+    --pnrr-muted: #a8aaa3;
+    --pnrr-border: #e7e7dc;
+    --pnrr-green: #b6ff00;
+    --pnrr-card: #1b1f1c;
+    --pnrr-hover: #262b27;
+    --pnrr-subtle: #30362f;
+    --pnrr-track: #343932;
+    --pnrr-map-bg: #171b18;
+    --pnrr-map-empty: #2a302a;
+    --pnrr-map-stroke: #767d72;
+    --pnrr-warning-bg: #3c2815;
+    --pnrr-warning-fg: #ffb36b;
+    --pnrr-red: #ff6b6b;
+    --pnrr-orange: #fbbf24;
+    --pnrr-blue: #60a5fa;
   }
 }
 

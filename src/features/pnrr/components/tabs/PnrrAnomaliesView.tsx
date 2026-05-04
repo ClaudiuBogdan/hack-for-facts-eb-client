@@ -113,14 +113,14 @@ export function PnrrAnomaliesView({
       <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-5 py-5 sm:px-6">
         <div className="grid gap-6 lg:grid-cols-[minmax(360px,0.48fr)_2px_1fr] lg:items-center">
           <div>
-            <h1 className="max-w-[520px] text-4xl font-black uppercase leading-[0.96] tracking-wide text-black sm:text-5xl">
+            <h1 className="max-w-[520px] text-4xl font-black uppercase leading-[0.96] tracking-wide text-[var(--pnrr-fg)] sm:text-5xl">
               <span className="block max-w-[500px]">
                 <Trans>Investigation Center</Trans>
               </span>
             </h1>
             <div className="mt-5 grid max-w-[460px] gap-2 text-base text-[var(--pnrr-fg)]">
               <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
-                <span className="flex h-7 w-7 items-center justify-center rounded-sm bg-black text-white">
+                <span className="flex h-7 w-7 items-center justify-center rounded-sm bg-[var(--pnrr-fg)] text-[var(--pnrr-bg)]">
                   <ShieldAlert className="h-4 w-4" />
                 </span>
                 <span>
@@ -132,7 +132,7 @@ export function PnrrAnomaliesView({
                 </span>
               </div>
               <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
-                <span className="flex h-7 w-7 items-center justify-center rounded-sm bg-black text-white">
+                <span className="flex h-7 w-7 items-center justify-center rounded-sm bg-[var(--pnrr-fg)] text-[var(--pnrr-bg)]">
                   <Database className="h-4 w-4" />
                 </span>
                 <span>
@@ -171,9 +171,9 @@ export function PnrrAnomaliesView({
       />
 
       {aggregates.missingFinProgressPercent > 0 && (
-        <div className="flex items-center gap-3 border-2 border-[var(--pnrr-border)] bg-[#fff4e4] px-4 py-2.5">
-          <AlertTriangle className="h-5 w-5 shrink-0 text-[#a43b13]" />
-          <p className="text-sm font-black uppercase tracking-wide text-[#a43b13]">
+        <div className="flex items-center gap-3 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-warning-bg)] px-4 py-2.5">
+          <AlertTriangle className="h-5 w-5 shrink-0 text-[var(--pnrr-warning-fg)]" />
+          <p className="text-sm font-black uppercase tracking-wide text-[var(--pnrr-warning-fg)]">
             <Trans>
               {aggregates.missingFinProgressPercent.toFixed(0)}% of projects
               have no financial data. Risk signals based on financial progress
@@ -188,7 +188,7 @@ export function PnrrAnomaliesView({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           {/* Search */}
           <div className="relative w-full sm:max-w-[405px]">
-            <Search className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-black" />
+            <Search className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--pnrr-muted)]" />
             <input
               type="text"
               placeholder={t`Search project...`}

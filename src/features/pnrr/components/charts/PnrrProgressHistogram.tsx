@@ -228,7 +228,7 @@ export function PnrrProgressHistogram({
             {formatNumber(coveragePercent)}%
           </span>
         </div>
-        <div className="mt-2 h-2 w-full bg-[#e5e5e5]">
+        <div className="mt-2 h-2 w-full bg-[var(--pnrr-track)]">
           <div
             className="h-full bg-[var(--pnrr-fg)] transition-all"
             style={{ width: `${Math.min(coveragePercent, 100)}%` }}
@@ -244,7 +244,7 @@ export function PnrrProgressHistogram({
               <CartesianGrid
                 strokeDasharray="4 4"
                 vertical={false}
-                stroke="#d1d1cc"
+                stroke="var(--pnrr-track)"
               />
 
               <XAxis

@@ -256,7 +256,7 @@ function AnomalyTile({
         <p
           className={cn(
             'text-5xl font-black leading-none tabular-nums',
-            isActive ? 'text-[var(--pnrr-bg)]' : 'text-black',
+            isActive ? 'text-[var(--pnrr-bg)]' : 'text-[var(--pnrr-fg)]',
           )}
         >
           {count.toLocaleString('ro-RO')}

@@ -2,16 +2,16 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export function PnrrSkeleton() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[var(--pnrr-bg)]">
       {/* Hero skeleton */}
-      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+      <div className="border-b-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <Skeleton className="h-4 w-32 rounded-full bg-white/10" />
-          <Skeleton className="mt-4 h-10 w-64 bg-white/10 sm:h-12 sm:w-80" />
-          <Skeleton className="mt-3 h-4 w-96 bg-white/10" />
+          <Skeleton className="h-4 w-32 rounded-none bg-[var(--pnrr-track)]" />
+          <Skeleton className="mt-4 h-10 w-64 rounded-none bg-[var(--pnrr-track)] sm:h-12 sm:w-80" />
+          <Skeleton className="mt-3 h-4 w-96 rounded-none bg-[var(--pnrr-track)]" />
           <div className="mt-6 flex gap-3">
-            <Skeleton className="h-16 w-24 rounded-2xl bg-white/10" />
-            <Skeleton className="h-16 w-24 rounded-2xl bg-white/10" />
+            <Skeleton className="h-16 w-24 rounded-none bg-[var(--pnrr-card)]" />
+            <Skeleton className="h-16 w-24 rounded-none bg-[var(--pnrr-card)]" />
           </div>
         </div>
       </div>

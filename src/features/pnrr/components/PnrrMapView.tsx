@@ -307,14 +307,14 @@ export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
       if (style.fillColor === DEFAULT_FEATURE_STYLE.fillColor) {
         return {
           ...style,
-          fillColor: '#f5f5f5',
+          fillColor: 'var(--pnrr-map-empty)',
           fillOpacity: 0.35,
           weight: 1,
-          color: '#bbb',
+          color: 'var(--pnrr-map-stroke)',
           opacity: 0.6,
         }
       }
-      return { ...style, weight: 1.2, color: '#888', opacity: 0.7 }
+      return { ...style, weight: 1.2, color: 'var(--pnrr-map-stroke)', opacity: 0.7 }
     }
   }, [heatmapData, colorDomain.min, colorDomain.max, granularity])
 
@@ -403,7 +403,7 @@ export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
 
       {/* Map */}
       <div className="relative border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-2">
-        <div className="pnrr-map-surface relative isolate h-[55vh] min-h-[420px] w-full overflow-hidden border-2 border-[var(--pnrr-border)] bg-[#f3f3ee] sm:h-[65vh] sm:min-h-[560px]">
+        <div className="pnrr-map-surface relative isolate h-[55vh] min-h-[420px] w-full overflow-hidden border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-map-bg)] sm:h-[65vh] sm:min-h-[560px]">
           {isGeoJsonLoading && (
             <div className="flex h-full w-full items-center justify-center bg-[var(--pnrr-bg)]">
               <LoadingSpinner size="lg" text={t`Loading map...`} />

@@ -96,11 +96,11 @@ export function PnrrComponentChart({
               <CartesianGrid
                 strokeDasharray="3 3"
                 horizontal={false}
-                stroke="#e2e8f0"
+                stroke="var(--pnrr-track)"
               />
               <XAxis
                 type="number"
-                tick={{ fontSize: 11, fill: '#64748b' }}
+                tick={{ fontSize: 11, fill: 'var(--pnrr-muted)' }}
                 tickFormatter={(v) =>
                   view === 'value'
                     ? formatPnrrCurrency(v, currency)
@@ -114,7 +114,7 @@ export function PnrrComponentChart({
                 type="category"
                 dataKey="shortName"
                 width={50}
-                tick={{ fontSize: 11, fill: '#475569', fontWeight: 600 }}
+                tick={{ fontSize: 11, fill: 'var(--pnrr-fg)', fontWeight: 600 }}
                 axisLine={false}
                 tickLine={false}
               />
@@ -123,7 +123,9 @@ export function PnrrComponentChart({
                 cursor={{ fill: 'rgba(0,0,0,0.04)' }}
                 contentStyle={{
                   borderRadius: 12,
-                  border: '1px solid #e2e8f0',
+                  border: '1px solid var(--pnrr-track)',
+                  background: 'var(--pnrr-card)',
+                  color: 'var(--pnrr-fg)',
                   boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
                   fontSize: 12,
                 }}
