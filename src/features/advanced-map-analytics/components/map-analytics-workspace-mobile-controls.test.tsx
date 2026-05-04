@@ -650,6 +650,88 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     });
   });
 
+  it('switches the active rendered grouping from the groups panel', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    };
+
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+    const initialState = createMapState({
+      activeView: 'map',
+      activeGroupingId: 'manual-map-groups',
+      groupings: [
+        {
+          id: 'manual-map-groups',
+          key: 'manual',
+          label: 'Manual groups',
+          groups: [
+            {
+              id: 'grp_manual',
+              memberSirutaCodes: ['1001'],
+            },
+          ],
+        },
+        {
+          id: 'county-groups',
+          key: 'county',
+          label: 'County groups',
+          groups: [
+            {
+              id: 'grp_county',
+              memberSirutaCodes: ['2002'],
+            },
+          ],
+        },
+      ],
+    });
+    let latestState = initialState;
+
+    function Harness() {
+      const [state, setState] = useState(initialState);
+      latestState = state;
+      return (
+        <MapAnalyticsWorkspace
+          mode="owner"
+          mapState={state}
+          setMapState={(updater) => {
+            setState((previousState) => {
+              const nextState =
+                typeof updater === 'function' ? updater(previousState) : updater;
+              latestState = nextState;
+              return nextState;
+            });
+          }}
+          capabilities={{ readOnly: false }}
+          mobileControlsDefaultCollapsed={true}
+        />
+      );
+    }
+
+    render(<Harness />);
+
+    fireEvent.change(screen.getByLabelText('Rendered grouping'), {
+      target: { value: 'county-groups' },
+    });
+
+    await waitFor(() => {
+      expect(latestState.activeGroupingId).toBe('county-groups');
+    });
+
+    fireEvent.change(screen.getByLabelText('Rendered grouping'), {
+      target: { value: '' },
+    });
+
+    await waitFor(() => {
+      expect(latestState.activeGroupingId).toBeUndefined();
+    });
+  });
+
   it('shows GeoJSON source link at the bottom of the sidebar', async () => {
     mockIsMobile.mockReturnValue(true);
     const setMapState = vi.fn();

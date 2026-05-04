@@ -518,6 +518,24 @@ export function MapAnalyticsWorkspace({
     [isPreviewLayout, isReadOnly, updateState]
   );
 
+  const setActiveGrouping = useCallback(
+    (nextGroupingId: string | undefined) => {
+      if (isReadOnly || isPreviewLayout) {
+        return;
+      }
+
+      updateState((draft) => {
+        const normalizedGroupingId = nextGroupingId?.trim();
+        draft.activeGroupingId =
+          normalizedGroupingId &&
+          draft.groupings.some((grouping) => grouping.id === normalizedGroupingId)
+            ? normalizedGroupingId
+            : undefined;
+      });
+    },
+    [isPreviewLayout, isReadOnly, updateState]
+  );
+
   const selectManualGroup = useCallback(
     (groupId: string) => {
       if (isReadOnly || isPreviewLayout || mapViewType !== 'UAT') {
@@ -2378,6 +2396,8 @@ export function MapAnalyticsWorkspace({
         enabled={isManualGroupCreateMode}
         canEdit={canCreateManualGroups}
         grouping={manualGrouping}
+        groupings={mapState.groupings}
+        activeGroupingId={mapState.activeGroupingId}
         activeGroupId={activeManualGroupId}
         uatMetadataBySirutaCode={uatMetadataBySirutaCode}
         activeGroupMemberCount={activeManualGroupMemberCount}
@@ -2385,6 +2405,7 @@ export function MapAnalyticsWorkspace({
         onStart={startManualGroupCreateMode}
         onStartNext={startNextManualGroup}
         onFinish={finishManualGroupCreateMode}
+        onActiveGroupingChange={setActiveGrouping}
         onGroupingLabelChange={updateManualGroupingLabel}
         onSelectGroup={selectManualGroup}
         onGroupLabelChange={updateManualGroupLabel}
@@ -2955,6 +2976,8 @@ interface ManualGroupingPanelProps {
   enabled: boolean;
   canEdit: boolean;
   grouping?: MapGrouping;
+  groupings: MapGrouping[];
+  activeGroupingId?: string;
   activeGroupId?: string;
   uatMetadataBySirutaCode: Map<string, Omit<AdvancedMapAnalyticsTableRow, 'sirutaCode' | 'valuesBySeriesId' | 'groupValuesByGroupingId'>>;
   groupCount: number;
@@ -2962,6 +2985,7 @@ interface ManualGroupingPanelProps {
   onStart: () => void;
   onStartNext: () => void;
   onFinish: () => void;
+  onActiveGroupingChange: (groupingId: string | undefined) => void;
   onGroupingLabelChange: (nextLabel: string) => void;
   onSelectGroup: (groupId: string) => void;
   onGroupLabelChange: (groupId: string, nextLabel: string) => void;
@@ -2973,6 +2997,8 @@ function ManualGroupingPanel({
   enabled,
   canEdit,
   grouping,
+  groupings,
+  activeGroupingId,
   activeGroupId,
   uatMetadataBySirutaCode,
   groupCount,
@@ -2980,6 +3006,7 @@ function ManualGroupingPanel({
   onStart,
   onStartNext,
   onFinish,
+  onActiveGroupingChange,
   onGroupingLabelChange,
   onSelectGroup,
   onGroupLabelChange,
@@ -3014,6 +3041,31 @@ function ManualGroupingPanel({
       </div>
 
       <div className="space-y-3">
+        {groupings.length > 0 ? (
+          <label className="block space-y-1.5">
+            <span className="text-xs font-medium text-muted-foreground">{t`Rendered grouping`}</span>
+            <select
+              value={activeGroupingId ?? ''}
+              onChange={(event) => {
+                onActiveGroupingChange(event.target.value || undefined);
+              }}
+              disabled={!canEdit}
+              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              aria-label={t`Rendered grouping`}
+            >
+              <option value="">{t`No grouping`}</option>
+              {groupings.map((entry) => (
+                <option key={entry.id} value={entry.id}>
+                  {entry.label || entry.key || entry.id}
+                </option>
+              ))}
+            </select>
+            <span className="block text-[11px] text-muted-foreground">
+              {t`Grouped active series render their own grouping.`}
+            </span>
+          </label>
+        ) : null}
+
         {grouping ? (
           <label className="block space-y-1.5">
             <span className="text-xs font-medium text-muted-foreground">{t`Grouping name`}</span>
