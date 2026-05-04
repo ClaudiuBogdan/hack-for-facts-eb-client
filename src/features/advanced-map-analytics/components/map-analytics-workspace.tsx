@@ -2074,10 +2074,31 @@ export function MapAnalyticsWorkspace({
         ? properties.county.trim()
         : '';
       const entityCui = getEntityCuiFromUatProperties(properties);
-      const tooltipTitle = natLevelName.length > 0 ? `${natLevelName} ${uatName}` : uatName;
+      const sirutaCode = String(properties.natcode ?? '').trim();
+      const activeSeriesDomain = activeSeriesId ? domainsBySeriesId.get(activeSeriesId) : undefined;
+      const activeGroupId = activeSeriesDomain?.type === 'group'
+        ? groupValuesBySirutaCode.get(sirutaCode)?.[activeSeriesDomain.groupingId]
+        : undefined;
+      const activeGroupMetadata =
+        activeSeriesDomain?.type === 'group' && activeGroupId
+          ? groupMetadataById.get(getGroupMetadataKey(activeSeriesDomain.groupingId, activeGroupId))
+          : undefined;
+      const tooltipTitle = activeGroupMetadata?.groupLabel ??
+        (natLevelName.length > 0 ? `${natLevelName} ${uatName}` : uatName);
       const countyLabel = escapeHtmlValue(t`County`);
       const countyRowHtml = countyName.length > 0
         ? `<div style="font-size:12px;color:#6b7280;margin-bottom:10px;">${countyLabel}: ${escapeHtmlValue(countyName)}</div>`
+        : '';
+      const memberCountLabel = activeGroupMetadata
+        ? activeGroupMetadata.memberSirutaCodes.length === 1
+          ? t`1 UAT`
+          : t`${activeGroupMetadata.memberSirutaCodes.length} UATs`
+        : '';
+      const groupRowsHtml = activeGroupMetadata
+        ? `
+          <div style="font-size:12px;color:#6b7280;margin-bottom:2px;">${escapeHtmlValue(t`Grouping`)}: ${escapeHtmlValue(activeGroupMetadata.groupingLabel)}</div>
+          <div style="font-size:12px;color:#6b7280;margin-bottom:10px;">${escapeHtmlValue(t`Members`)}: ${escapeHtmlValue(memberCountLabel)}</div>
+        `
         : '';
 
       if (!activeSeries) {
@@ -2094,7 +2115,6 @@ export function MapAnalyticsWorkspace({
         `;
       }
 
-      const sirutaCode = String(properties.natcode ?? '');
       const seriesRows = enabledSeries.map((series) => {
         const seriesValue = mapValuesBySeriesId.get(series.id)?.get(sirutaCode);
         const unit = resolveSeriesDisplayUnit(series, unitsBySeriesId, displayUnitOverridesBySeriesId);
@@ -2154,8 +2174,13 @@ export function MapAnalyticsWorkspace({
       return `
         <div style="font-family:Inter,sans-serif;font-size:13px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;word-break:break-word;min-width:260px;max-width:360px;padding:8px;">
           <div style="font-weight:700;font-size:14px;margin-bottom:2px;">${escapeHtmlValue(tooltipTitle)}</div>
-          <div style="font-size:12px;color:#6b7280;margin-bottom:${countyName.length > 0 ? '2px' : '10px'};">${escapeHtmlValue(t`CUI`)}: ${escapeHtmlValue(entityCui ?? t`N/A`)}</div>
-          ${countyRowHtml}
+          ${activeGroupMetadata
+            ? groupRowsHtml
+            : `
+              <div style="font-size:12px;color:#6b7280;margin-bottom:${countyName.length > 0 ? '2px' : '10px'};">${escapeHtmlValue(t`CUI`)}: ${escapeHtmlValue(entityCui ?? t`N/A`)}</div>
+              ${countyRowHtml}
+            `
+          }
           <div style="display:flex;flex-direction:column;gap:6px;">
             ${rowsHtml || `<span>${escapeHtmlValue(t`No enabled series`)}</span>`}
           </div>
@@ -2169,8 +2194,11 @@ export function MapAnalyticsWorkspace({
       activeSeriesId,
       binsCanApply,
       binsClassification.groupsBySiruta,
+      domainsBySeriesId,
       enabledSeries,
       displayUnitOverridesBySeriesId,
+      groupMetadataById,
+      groupValuesBySirutaCode,
       unitsBySeriesId,
       mapValuesBySeriesId,
     ]

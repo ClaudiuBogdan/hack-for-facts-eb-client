@@ -221,6 +221,16 @@ export function MapAnalyticsPublicView({
     ]
   );
 
+  const groupValuesBySirutaCode = useMemo(
+    () => buildGroupingValuesBySiruta({ groupings: mapState.groupings }),
+    [mapState.groupings]
+  );
+
+  const groupMetadataById = useMemo(
+    () => buildGroupMetadataById({ groupings: mapState.groupings }),
+    [mapState.groupings]
+  );
+
   const getTooltipContent = useMemo(
     () =>
       buildPublicMapTooltipContent({
@@ -232,13 +242,19 @@ export function MapAnalyticsPublicView({
         binsCanApply,
         binsClassification,
         activeNoDataConfig,
+        domainsBySeriesId,
+        groupValuesBySirutaCode,
+        groupMetadataById,
       }),
     [
       activeNoDataConfig,
       activeSeries,
       binsCanApply,
       binsClassification,
+      domainsBySeriesId,
       enabledSeries,
+      groupMetadataById,
+      groupValuesBySirutaCode,
       resolvedActiveSeriesId,
       unitsBySeriesId,
       mapValuesBySeriesId,
@@ -278,16 +294,6 @@ export function MapAnalyticsPublicView({
         id: grouping.id,
         label: grouping.label || grouping.key || grouping.id,
       })),
-    [mapState.groupings]
-  );
-
-  const groupValuesBySirutaCode = useMemo(
-    () => buildGroupingValuesBySiruta({ groupings: mapState.groupings }),
-    [mapState.groupings]
-  );
-
-  const groupMetadataById = useMemo(
-    () => buildGroupMetadataById({ groupings: mapState.groupings }),
     [mapState.groupings]
   );
 

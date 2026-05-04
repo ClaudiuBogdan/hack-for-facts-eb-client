@@ -1475,6 +1475,101 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(tooltipHtml).not.toContain('>Group<');
   });
 
+  it('uses group metadata as tooltip identity for grouped active series', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    };
+
+    const groupedSeries = createDefaultAdvancedMapAnalyticsSeries('map-grouped-value-series');
+    if (groupedSeries.type !== 'map-grouped-value-series') {
+      throw new Error('Unexpected series type in test setup');
+    }
+    groupedSeries.id = 'grouped_series';
+    groupedSeries.label = 'Grouped value';
+    groupedSeries.groupingId = 'manual-map-groups';
+    groupedSeries.sourceSeriesId = 'source_series';
+    groupedSeries.enabled = true;
+
+    const valuesBySeriesId = new Map<string, Map<string, number | undefined>>([
+      [groupedSeries.id, new Map([['grp_1', 456]])],
+    ]);
+    const mapValuesBySeriesId = new Map<string, Map<string, number | undefined>>([
+      [groupedSeries.id, new Map([['1001', 456], ['2002', 456]])],
+    ]);
+    mockSeriesDataResult = {
+      valuesBySeriesId,
+      mapValuesBySeriesId,
+      domainsBySeriesId: new Map([[groupedSeries.id, { type: 'group', groupingId: 'manual-map-groups' }]]),
+      unitsBySeriesId: new Map([[groupedSeries.id, 'RON']]),
+      warnings: [],
+      activeSeriesId: groupedSeries.id,
+      activeValues: mapValuesBySeriesId.get(groupedSeries.id),
+      isLoading: false,
+      error: null,
+    };
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="public"
+        mapState={createMapState({
+          activeView: 'map',
+          series: [groupedSeries],
+          activeSeriesId: groupedSeries.id,
+          activeGroupingId: 'manual-map-groups',
+          groupings: [
+            {
+              id: 'manual-map-groups',
+              key: 'manual',
+              label: 'Manual groups',
+              groups: [
+                {
+                  id: 'grp_1',
+                  label: 'Central cluster',
+                  memberSirutaCodes: ['1001', '2002'],
+                },
+              ],
+            },
+          ],
+        })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: true }}
+        mobileControlsDefaultCollapsed={true}
+      />
+    );
+
+    await screen.findByTestId('interactive-map');
+    expect(capturedGetTooltipContent).toBeTypeOf('function');
+
+    const tooltipHtml = capturedGetTooltipContent?.({
+      properties: {
+        natcode: '1001',
+        name: 'Comuna Test',
+        county: 'Harghita',
+        natLevName: 'Comuna',
+        cui: '12345678',
+      },
+      heatmapData: [],
+      mapViewType: 'UAT',
+      filters: {},
+    });
+
+    expect(tooltipHtml).toContain('Central cluster');
+    expect(tooltipHtml).toContain('Manual groups');
+    expect(tooltipHtml).toContain('2 UATs');
+    expect(tooltipHtml).toContain('Grouped value');
+    expect(tooltipHtml).not.toContain('CUI:');
+    expect(tooltipHtml).not.toContain('Harghita');
+  });
+
   it('shows absolute min and max values in the default range legend', async () => {
     mockIsMobile.mockReturnValue(false);
     mockGeoJsonData = {
