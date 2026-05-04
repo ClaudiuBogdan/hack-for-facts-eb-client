@@ -12,7 +12,7 @@ describe('PNRR allocation measure filters', () => {
 
   it('labels education measure filters instead of falling back to raw keys', () => {
     expect(getMeasureDisplayLabel('C15.I18.grant')).toContain(
-      'Granturi pentru unitățile de învățământ pilot',
+      'Programul de formare și îndrumare pentru managerii și inspectorii școlari',
     )
   })
 })

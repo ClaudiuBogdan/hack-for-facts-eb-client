@@ -500,7 +500,7 @@ export const PNRR_MEASURES: Record<string, PnrrMeasureDefinition> = {
     type: 'investment',
   },
   'C15-I18': {
-    nameRo: 'Investiția 18. Granturi pentru unitățile de învățământ pilot',
+    nameRo: 'Investiția 18. Programul de formare și îndrumare pentru managerii și inspectorii școlari',
     type: 'investment',
   },
 
