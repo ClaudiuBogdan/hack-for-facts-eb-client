@@ -115,12 +115,12 @@ export function PnrrMapDetailsDrawer({
                 value={formatNumber(stats.projectCount)}
               />
               <MapMetric
-                label={t`Risks`}
+                label={t`Semnale de risc`}
                 value={formatNumber(stats.anomalyCount)}
                 tone={stats.anomalyCount > 0 ? 'red' : 'default'}
               />
               <MapMetric
-                label={t`Missing data`}
+                label={t`Date nepublicate`}
                 value={formatNumber(stats.dataQualityCount)}
                 tone={stats.dataQualityCount > 0 ? 'blue' : 'default'}
               />
@@ -253,7 +253,7 @@ export function PnrrMapDetailsDrawer({
               <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4">
                 <h3 className="mb-3 flex items-center gap-2 text-sm font-black uppercase tracking-wide text-[var(--pnrr-red)]">
                   <AlertTriangle className="h-4 w-4" />
-                  <Trans>Detected risks</Trans>
+                  <Trans>Semnale de risc detectate</Trans>
                 </h3>
                 <div className="space-y-2">
                   {stats.anomalyTypes.map(([type, count]) => (

@@ -116,7 +116,7 @@ export function PnrrProjectDrawer({
 
           <div className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4">
             <ProgressMeter
-              label={t`Technical progress`}
+              label={t`Progres tehnic raportat`}
               value={techVal}
               displayValue={
                 project.techProgress === 'in-implementation'
@@ -128,7 +128,7 @@ export function PnrrProjectDrawer({
 
             <div className="my-4 h-px bg-[var(--pnrr-border)]" />
             <ProgressMeter
-              label={t`Financial progress`}
+              label={t`Progres financiar raportat`}
               value={project.finProgress == null ? null : finVal}
               displayValue={
                 project.finProgress == null
@@ -348,8 +348,8 @@ function SignalChip({
 
 function getFundingLabel(source: PnrrProject['fundingSource']): string {
   if (source === 'grant') return t`Grant`
-  if (source === 'loan') return t`Loan`
-  return t`Grant + loan`
+  if (source === 'loan') return t`Împrumut`
+  return t`Grant + împrumut`
 }
 
 function getEntityTypeLabel(type: PnrrEntityType): string {

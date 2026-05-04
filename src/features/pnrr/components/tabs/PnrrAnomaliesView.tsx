@@ -125,7 +125,7 @@ export function PnrrAnomaliesView({
                 </span>
                 <span>
                   {riskProjects.length.toLocaleString('ro-RO')}{' '}
-                  <Trans>projects with risks</Trans>
+                <Trans>proiecte cu semnale de risc</Trans>
                 </span>
                 <span className="tabular-nums">
                   {formatPnrrCurrency(riskValue, currency, 'compact')}
@@ -137,7 +137,7 @@ export function PnrrAnomaliesView({
                 </span>
                 <span>
                   {dataQualityProjects.length.toLocaleString('ro-RO')}{' '}
-                  <Trans>data issues</Trans>
+                <Trans>probleme de calitate a datelor</Trans>
                 </span>
                 <span className="tabular-nums">
                   {formatPnrrCurrency(dataQualityValue, currency, 'compact')}
@@ -175,9 +175,9 @@ export function PnrrAnomaliesView({
           <AlertTriangle className="h-5 w-5 shrink-0 text-[var(--pnrr-warning-fg)]" />
           <p className="text-sm font-black uppercase tracking-wide text-[var(--pnrr-warning-fg)]">
             <Trans>
-              {aggregates.missingFinProgressPercent.toFixed(0)}% of projects
-              have no financial data. Risk signals based on financial progress
-              may be underestimated.
+              {aggregates.missingFinProgressPercent.toFixed(0)}% dintre
+              proiecte nu au progres financiar publicat în set. Semnalele
+              bazate pe progres financiar pot fi subestimate.
             </Trans>
           </p>
         </div>

@@ -35,7 +35,7 @@ const PNRR_SEO_COPY: Readonly<
   ro: {
     title: 'PNRR - Planul National de Redresare si Rezilienta | Transparenta.eu',
     description:
-      'Dashboard interactiv cu proiectele PNRR: progres, finantare, riscuri, beneficiari si distributie geografica.',
+      'Dashboard interactiv cu proiectele PNRR: progres raportat, finantare, semnale de risc, anomalii de date, beneficiari si distributie geografica.',
     imageAlt: 'Previzualizare Transparenta.eu pentru proiectele PNRR din Romania',
     keywords: [
       'PNRR',
@@ -45,12 +45,13 @@ const PNRR_SEO_COPY: Readonly<
       'proiecte publice',
       'transparenta bugetara',
       'beneficiari PNRR',
+      'semnale de risc PNRR',
     ],
     datasetName: 'Proiecte PNRR Romania',
     variableMeasured: [
-      'valoare proiect',
-      'progres tehnic',
-      'progres financiar',
+      'valoare proiect listata',
+      'progres tehnic raportat',
+      'progres financiar raportat',
       'beneficiar',
       'judet',
       'componenta PNRR',
@@ -61,7 +62,7 @@ const PNRR_SEO_COPY: Readonly<
   en: {
     title: 'PNRR - National Recovery and Resilience Plan | Transparenta.eu',
     description:
-      'Interactive dashboard with all projects from the National Recovery and Resilience Plan (PNRR): progress, funding, anomalies, and geographic distribution.',
+      'Interactive dashboard with PNRR listed projects: reported progress, funding, risk signals, data anomalies, beneficiaries, and geographic distribution.',
     imageAlt: 'Transparenta.eu preview for Romania PNRR projects',
     keywords: [
       'PNRR',
@@ -71,12 +72,13 @@ const PNRR_SEO_COPY: Readonly<
       'public projects',
       'budget transparency',
       'PNRR beneficiaries',
+      'PNRR risk signals',
     ],
     datasetName: 'Romania PNRR projects',
     variableMeasured: [
-      'project value',
-      'technical progress',
-      'financial progress',
+      'listed project value',
+      'reported technical progress',
+      'reported financial progress',
       'beneficiary',
       'county',
       'PNRR component',

@@ -227,7 +227,7 @@ export function PnrrHeader({
                   >
                     <Skeleton className="h-4 w-24 rounded-none" />
                     <span className="text-sm font-bold text-current">
-                      <Trans>total</Trans>
+                      <Trans>valoare listată</Trans>
                     </span>
                   </div>
                 </>
@@ -253,7 +253,7 @@ export function PnrrHeader({
                       {formatPnrrCurrency(totalValue, currency)}
                     </span>
                     <span className="text-sm font-bold text-current">
-                      <Trans>total</Trans>
+                      <Trans>valoare listată</Trans>
                     </span>
                   </div>
                 </>

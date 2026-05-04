@@ -247,7 +247,7 @@ function makeSeriesMeta(
   max: number,
 ): PnrrMapSeries {
   const labels: Record<PnrrMapSeriesId, string> = {
-    'total-value': t`Total value`,
+    'total-value': t`Valoarea proiectelor listate`,
     'project-count': t`Project count`,
     'per-capita': t`Per capita`,
     'grant-share': t`Grant %`,

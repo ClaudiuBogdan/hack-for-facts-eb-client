@@ -178,30 +178,30 @@ export function PnrrOverview({
       <section>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <InsightCard
-            label={t`Total value`}
+            label={t`Valoarea proiectelor listate`}
             value={formatPnrrCurrency(metricStats.rawTotalValue, currency)}
             valueParts={formatPnrrCompactCurrencyDisplayParts(metricStats.rawTotalValue, currency)}
-            sublabel={t`${formatPnrrCurrency(metricStats.deduplicatedTotalValue, currency, 'standard')} after deduplication`}
+            sublabel={t`${formatPnrrCurrency(metricStats.deduplicatedTotalValue, currency, 'standard')} estimat după eliminarea posibilelor duplicate`}
           />
 
           <InsightCard
-            label={t`Absorption rate`}
+            label={t`Ponderea valorii proiectelor marcate finalizate`}
             value={`${formatNumber(absorptionRate)}%`}
-            sublabel={t`${formatNumber(metricStats.completedCount)} completed projects out of ${formatNumber(metricStats.rawProjectCount)}`}
+            sublabel={t`${formatNumber(metricStats.completedCount)} proiecte marcate finalizate din ${formatNumber(metricStats.rawProjectCount)}`}
             progress={absorptionRate}
           />
 
           <InsightCard
-            label={t`Future debt (loan)`}
+            label={t`Finanțare din componenta de împrumut`}
             value={formatPnrrCurrency(metricStats.loanTotal, currency)}
             valueParts={formatPnrrCompactCurrencyDisplayParts(metricStats.loanTotal, currency)}
-            sublabel={t`${formatNumber(metricStats.loanPercent)}% of the total is loans`}
+            sublabel={t`${formatNumber(metricStats.loanPercent)}% din valoarea proiectelor listate`}
           />
 
           <InsightCard
-            label={t`Missing financial data`}
+            label={t`Date financiare nepublicate în set`}
             value={`${formatNumber(metricStats.missingFinProgressPercent)}%`}
-            sublabel={t`${formatNumber(metricStats.missingFinProgressCount)} projects without financial progress`}
+            sublabel={t`${formatNumber(metricStats.missingFinProgressCount)} proiecte fără progres financiar publicat`}
           />
         </div>
       </section>
@@ -224,7 +224,7 @@ export function PnrrOverview({
           limit={5}
           expandLabel={t`Show all components`}
           collapseLabel={t`Show less`}
-          infoTooltip={t`The percentage represents the share of project value in the component out of the total PNRR value. The background bar visualizes this share. Click a row to filter projects.`}
+          infoTooltip={t`Procentul arată ponderea valorii proiectelor listate din componentă în valoarea proiectelor afișate. Nu este alocarea oficială PNRR. Click pe un rând pentru filtrare.`}
         />
 
         <RankedListCard
@@ -236,7 +236,7 @@ export function PnrrOverview({
           limit={5}
           expandLabel={t`Show all counties`}
           collapseLabel={t`Show less`}
-          infoTooltip={t`The percentage represents the share of project value in the county out of the total PNRR value. The background bar visualizes this share. Click a row to filter projects.`}
+          infoTooltip={t`Procentul arată ponderea valorii proiectelor listate din județ în valoarea proiectelor afișate. Proiectele naționale pot distorsiona comparațiile locale.`}
         />
       </section>
 
@@ -287,7 +287,7 @@ export function PnrrOverview({
           />
 
           <CtaLink
-            label={t`Risks and investigations`}
+            label={t`Semnale de risc`}
             onClick={() => handleCtaNavigation('anomalies')}
           />
         </div>

@@ -109,10 +109,10 @@ describe('PnrrOverview', () => {
       />,
     )
 
-    expect(screen.getByText('Total value')).toBeInTheDocument()
-    expect(screen.getByText('Absorption rate')).toBeInTheDocument()
+    expect(screen.getByText('Valoarea proiectelor listate')).toBeInTheDocument()
+    expect(screen.getByText('Ponderea valorii proiectelor marcate finalizate')).toBeInTheDocument()
     expect(screen.getByText('25%')).toBeInTheDocument()
-    expect(screen.getByText('12 completed projects out of 42')).toBeInTheDocument()
+    expect(screen.getByText('12 proiecte marcate finalizate din 42')).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent(
       /Se încarcă setul complet de date PNRR|Loading the full PNRR dataset/,
     )

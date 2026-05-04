@@ -18,7 +18,7 @@ const TABS: {
   { id: 'projects', label: t`Projects`, icon: List },
   { id: 'beneficiaries', label: t`Beneficiaries`, icon: Building2 },
   { id: 'map', label: t`Map`, icon: Map },
-  { id: 'anomalies', label: t`Risks`, icon: ShieldAlert },
+  { id: 'anomalies', label: t`Semnale de risc`, icon: ShieldAlert },
 ]
 
 export function PnrrTabNav({

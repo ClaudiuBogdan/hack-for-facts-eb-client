@@ -394,7 +394,7 @@ export function PnrrProjectTable({
                 onClick={() => toggleSort('techProgress')}
               >
                 <span className="flex items-center">
-                  <Trans>Technical</Trans>
+                  <Trans>Tehnic raportat</Trans>
                   <SortIcon
                     active={currentSortBy === 'techProgress'}
                     order={currentSortOrder}
@@ -406,7 +406,7 @@ export function PnrrProjectTable({
                 onClick={() => toggleSort('finProgress')}
               >
                 <span className="flex items-center">
-                  <Trans>Financial</Trans>
+                  <Trans>Financiar raportat</Trans>
                   <SortIcon
                     active={currentSortBy === 'finProgress'}
                     order={currentSortOrder}
@@ -598,7 +598,7 @@ function PnrrProjectCard({
       <div className="mt-3 space-y-2">
         <div className="flex items-center gap-3">
           <span className="w-14 shrink-0 text-xs font-bold text-[var(--pnrr-fg)]">
-            <Trans>Technical</Trans>
+            <Trans>Tehnic raportat</Trans>
           </span>
           <div className="min-w-0 flex-1">
             <div className="h-2 border border-[var(--pnrr-border)] bg-transparent">
@@ -619,7 +619,7 @@ function PnrrProjectCard({
         </div>
         <div className="flex items-center gap-3">
           <span className="w-14 shrink-0 text-xs font-bold text-[var(--pnrr-fg)]">
-            <Trans>Financial</Trans>
+            <Trans>Financiar raportat</Trans>
           </span>
           {project.finProgress == null ? (
             <span className="inline-flex h-7 items-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] px-2 text-[10px] font-bold text-[var(--pnrr-muted)]">

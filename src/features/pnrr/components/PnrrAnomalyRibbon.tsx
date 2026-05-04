@@ -71,12 +71,12 @@ export function PnrrAnomalyRibbon({
 
   return (
     <div className="space-y-4">
-      {/* Risks */}
+      {/* Risk signals */}
       {visibleAnomalies.length > 0 && (
         <div>
           <div className="mb-3 flex items-center gap-3">
             <h4 className="shrink-0 text-lg font-black uppercase tracking-wide text-[var(--pnrr-fg)]">
-              <Trans>Major risks</Trans>
+              <Trans>Semnale de risc</Trans>
             </h4>
             <span className="h-0.5 flex-1 bg-[var(--pnrr-border)]" />
           </div>
@@ -106,12 +106,12 @@ export function PnrrAnomalyRibbon({
         </div>
       )}
 
-      {/* Data Quality */}
+      {/* Data anomalies */}
       {visibleDataQualitySignals.length > 0 && (
         <div>
           <div className="mb-3 flex items-center gap-3">
             <h4 className="shrink-0 text-lg font-black uppercase tracking-wide text-[var(--pnrr-fg)]">
-              <Trans>Data quality</Trans>
+              <Trans>Anomalii de date</Trans>
             </h4>
             <span className="h-0.5 flex-1 bg-[var(--pnrr-border)]" />
           </div>

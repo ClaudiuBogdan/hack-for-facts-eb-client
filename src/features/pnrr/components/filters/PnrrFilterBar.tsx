@@ -80,7 +80,7 @@ export function PnrrFilterBar({
               htmlFor="only-anomalies"
               className="cursor-pointer text-xs font-medium"
             >
-              <Trans>Risks only</Trans>
+              <Trans>Doar semnale de risc</Trans>
             </Label>
           </div>
 
@@ -156,14 +156,14 @@ export function PnrrFilterBar({
             size="sm"
             className="rounded-lg border text-xs data-[state=on]:bg-red-500 data-[state=on]:text-white"
           >
-            <Trans>Loan</Trans>
+            <Trans>Împrumut</Trans>
           </ToggleGroupItem>
           <ToggleGroupItem
             value="grant/loan"
             size="sm"
             className="rounded-lg border text-xs data-[state=on]:bg-amber-500 data-[state=on]:text-white"
           >
-            <Trans>Mixed</Trans>
+            <Trans>Grant + împrumut</Trans>
           </ToggleGroupItem>
         </ToggleGroup>
       </div>

@@ -47,15 +47,15 @@ const PROGRESS_BUCKETS = [
 ]
 
 const METRIC_LABELS: Record<Metric, string> = {
-  tech: t`Technical Progress`,
-  fin: t`Financial Progress`,
-  gap: t`Progress difference`,
+  tech: t`Progres tehnic raportat`,
+  fin: t`Progres financiar raportat`,
+  gap: t`Diferență de progres raportat`,
 }
 
 const METRIC_OPTIONS: { value: Metric; label: string }[] = [
-  { value: 'tech', label: t`Technical` },
-  { value: 'fin', label: t`Financial` },
-  { value: 'gap', label: t`Difference` },
+  { value: 'tech', label: t`Tehnic` },
+  { value: 'fin', label: t`Financiar` },
+  { value: 'gap', label: t`Diferență` },
 ]
 
 const MODE_OPTIONS: { value: DistributionMode; label: string }[] = [
@@ -162,10 +162,9 @@ export function PnrrProgressHistogram({
                 >
                   <p className="text-xs leading-relaxed">
                     <Trans>
-                      Percentages over 100% come directly from the data reported
-                      by beneficiaries. They often appear because of scope
-                      changes after contract signing, delays in updating the
-                      reference value, or data entry errors.
+                      Procentele peste 100% vin din datele raportate. Ele pot
+                      apărea din schimbări ale valorii de referință, actualizări
+                      întârziate sau erori de introducere.
                     </Trans>
                   </p>
                 </TooltipContent>
@@ -174,7 +173,7 @@ export function PnrrProgressHistogram({
           </div>
           {metric === 'gap' && (
             <span className="mt-1 inline-block border border-[var(--pnrr-border)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--pnrr-muted)]">
-              <Trans>Technical - Financial</Trans>
+              <Trans>Tehnic - financiar</Trans>
             </span>
           )}
         </div>
@@ -209,7 +208,7 @@ export function PnrrProgressHistogram({
                 currency,
               )}{' '}
               <span className="text-[var(--pnrr-muted)]">
-                <Trans>value with complete data</Trans>
+                <Trans>valoare cu date complete</Trans>
               </span>
             </span>
           ) : (
@@ -220,7 +219,7 @@ export function PnrrProgressHistogram({
               </span>{' '}
               <span className="font-bold">{formatNumber(projects.length)}</span>{' '}
               <span className="text-[var(--pnrr-muted)]">
-                <Trans>projects with complete data</Trans>
+                <Trans>proiecte cu date complete</Trans>
               </span>
             </span>
           )}

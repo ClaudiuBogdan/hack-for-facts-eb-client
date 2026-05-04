@@ -30,7 +30,7 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
             <Trans>Info</Trans>
           </div>
           <SheetTitle className="text-left text-4xl font-black leading-none tracking-tight text-[var(--pnrr-fg)]">
-            <Trans>About the PNRR data</Trans>
+            <Trans>Cum citim cifrele PNRR</Trans>
           </SheetTitle>
         </SheetHeader>
 
@@ -38,21 +38,22 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
           <div className="space-y-6 p-6">
             <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-5">
               <SectionTitle icon={LibraryBig}>
-                <Trans>Overview</Trans>
+                <Trans>Pe scurt</Trans>
               </SectionTitle>
               <div className="mt-4 space-y-4 text-base font-medium leading-relaxed text-[var(--pnrr-fg)]">
                 <p>
                   <Trans>
-                    This dashboard shows all projects in Romania's National
-                    Recovery and Resilience Plan (PNRR). The data is sourced
-                    from the Ministry of Investments and European Projects.
+                    Dashboardul pornește de la lista publică de proiecte PNRR.
+                    Sumele din dashboard se calculează prin adunarea valorilor
+                    proiectelor din lista publică. Ele nu arată bani deja
+                    plătiți și nu sunt bugetul oficial al întregului plan.
                   </Trans>
                 </p>
                 <p className="text-[var(--pnrr-muted)]">
                   <Trans>
-                    Each project is associated with several dimensions: PNRR
-                    component, specific measure, county, responsible institution
-                    (CRI), funding source, and implementation status.
+                    PNRR are și reguli naționale și europene care nu apar direct
+                    în tabel: cereri de plată, jaloane, ținte și evaluări ale
+                    Comisiei Europene.
                   </Trans>
                 </p>
               </div>
@@ -60,110 +61,98 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
 
             <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]">
               <SectionHeader>
-                <Trans>Data dimensions</Trans>
+                <Trans>Dicționar pentru cifrele mari</Trans>
               </SectionHeader>
               <Accordion type="single" collapsible className="w-full">
                 <InfoAccordionItem
-                  value="component"
-                  title={<Trans>PNRR component</Trans>}
+                  value="listed-value"
+                  title={<Trans>Valoarea proiectelor listate</Trans>}
                 >
                   <Trans>
-                    The 16 PNRR components (C1-C16) represent strategic
-                    investment and reform areas. Each component contains one or
-                    more measures.
+                    Adunăm câmpul Valoare (EUR) pentru proiectele care apar în
+                    listă. Aceasta este valoarea proiectelor din setul de date,
+                    nu suma care a intrat deja în conturi și nici bugetul
+                    oficial al întregului PNRR.
                   </Trans>
                 </InfoAccordionItem>
 
                 <InfoAccordionItem
-                  value="measure"
-                  title={<Trans>PNRR measure</Trans>}
+                  value="deduplicated-value"
+                  title={
+                    <Trans>
+                      Valoare estimată după eliminarea posibilelor duplicate
+                    </Trans>
+                  }
                 >
-                  <div className="space-y-3">
-                    <p>
-                      <Trans>
-                        The measure code combines the component code and measure
-                        code (for example: C4.I1, C15.I9). It is unique within
-                        the component.
-                      </Trans>
-                    </p>
-                    <p>
-                      <Trans>
-                        Measures may be investments (I) or reforms (R), each
-                        with the official name approved in the plan.
-                      </Trans>
-                    </p>
-                  </div>
-                </InfoAccordionItem>
-
-                <InfoAccordionItem value="county" title={<Trans>County</Trans>}>
                   <Trans>
-                    The geographic location of the project. National projects
-                    without a specific location are marked separately and can be
-                    included or excluded from filters.
+                    Unele proiecte pot apărea de mai multe ori sau cu informații
+                    ușor diferite. Totalul deduplicat încearcă să nu le numere
+                    de două ori. Este o estimare a dashboardului, nu o corecție
+                    oficială a sursei.
                   </Trans>
                 </InfoAccordionItem>
 
                 <InfoAccordionItem
-                  value="cri"
-                  title={<Trans>Responsible institution (CRI)</Trans>}
+                  value="completed-share"
+                  title={
+                    <Trans>
+                      Ponderea valorii proiectelor marcate finalizate
+                    </Trans>
+                  }
                 >
                   <Trans>
-                    The coordinator responsible for implementation, usually a
-                    ministry or national agency.
+                    Arată cât din valoarea proiectelor listate aparține
+                    proiectelor marcate ca finalizate. Nu este „rata de
+                    absorbție” oficială: nu măsoară banii primiți de România și
+                    nici plățile către beneficiari.
                   </Trans>
                 </InfoAccordionItem>
 
                 <InfoAccordionItem
-                  value="beneficiary-classification"
-                  title={<Trans>Beneficiary classification</Trans>}
-                >
-                  <div className="space-y-3">
-                    <p>
-                      <Trans>
-                        The top-level sector filter is exhaustive: every project
-                        is classified as either public or private / non-public,
-                        so the two values add up to the total under the same
-                        active filters.
-                      </Trans>
-                    </p>
-                    <p>
-                      <Trans>
-                        Public includes local, county, central, and national
-                        public institutions, plus public companies identified
-                        by CUI from the official 2023 public companies list.
-                        Private / non-public includes companies, NGOs,
-                        foundations, religious organizations, and unclassified
-                        non-public beneficiaries.
-                      </Trans>
-                    </p>
-                    <p>
-                      <Trans>
-                        National is a detailed beneficiary or location category
-                        for records without a local UAT assignment; it is not a
-                        third top-level sector.
-                      </Trans>
-                    </p>
-                  </div>
-                </InfoAccordionItem>
-
-                <InfoAccordionItem
-                  value="funding"
-                  title={<Trans>Funding source</Trans>}
+                  value="reported-progress"
+                  title={<Trans>Progres tehnic vs progres financiar raportat</Trans>}
                 >
                   <Trans>
-                    Grant, loan, or mixed funding. Original values are in EUR
-                    and are automatically converted to the selected currency.
+                    Progresul tehnic spune cât de avansată este lucrarea sau
+                    activitatea raportată. Progresul financiar spune cât de
+                    avansată este partea financiară raportată pentru proiect.
+                    Niciunul nu este același lucru cu plata Comisiei Europene.
                   </Trans>
                 </InfoAccordionItem>
 
                 <InfoAccordionItem
-                  value="progress"
-                  title={<Trans>Implementation status</Trans>}
+                  value="grant-loan"
+                  title={<Trans>Granturi și împrumuturi</Trans>}
                 >
                   <Trans>
-                    Technical and financial progress reported by beneficiaries.
-                    Percentages may exceed 100% in cases of scope changes or
-                    reporting errors.
+                    Grantul este partea nerambursabilă. Împrumutul este partea
+                    rambursabilă a PNRR la nivelul României. Eticheta
+                    „împrumut” nu înseamnă că fiecare beneficiar a luat un
+                    credit individual.
+                  </Trans>
+                </InfoAccordionItem>
+
+                <InfoAccordionItem
+                  value="missing-duplicates"
+                  title={<Trans>Date lipsă și posibile duplicate</Trans>}
+                >
+                  <Trans>
+                    Dacă un proiect nu are progres financiar publicat în set,
+                    nu înseamnă automat că nu s-a plătit nimic. Iar când vedem
+                    rânduri foarte asemănătoare, le marcăm ca posibile duplicate
+                    ca să fie mai ușor de verificat.
+                  </Trans>
+                </InfoAccordionItem>
+
+                <InfoAccordionItem
+                  value="risk-signals"
+                  title={<Trans>Semnale de risc, nu verdict</Trans>}
+                >
+                  <Trans>
+                    Semnalele de risc sunt scurtături pentru verificare:
+                    proiecte mari cu progres scăzut, decalaje între progresul
+                    tehnic și cel financiar sau date incomplete. Ele nu sunt
+                    concluzii oficiale.
                   </Trans>
                 </InfoAccordionItem>
               </Accordion>
@@ -171,68 +160,183 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
 
             <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]">
               <SectionHeader>
-                <Trans>Risks and data quality</Trans>
+                <Trans>Dimensiuni ale datelor</Trans>
+              </SectionHeader>
+              <Accordion type="single" collapsible className="w-full">
+                <InfoAccordionItem
+                  value="component"
+                  title={<Trans>Componentă PNRR</Trans>}
+                >
+                  <Trans>
+                    Componentele PNRR grupează reforme și investiții tematice.
+                    Ele ajută la filtrare, dar nu spun singure câți bani au
+                    fost plătiți sau ce risc are proiectul.
+                  </Trans>
+                </InfoAccordionItem>
+
+                <InfoAccordionItem
+                  value="measure"
+                  title={<Trans>Măsură PNRR</Trans>}
+                >
+                  <div className="space-y-3">
+                    <p>
+                      <Trans>
+                        Măsura este nivelul de plan sub care sunt organizate
+                        proiectele. O măsură poate include mai multe proiecte,
+                        beneficiari, jaloane și ținte.
+                      </Trans>
+                    </p>
+                    <p>
+                      <Trans>
+                        Măsurile pot fi investiții (I) sau reforme (R), fiecare
+                        cu numele oficial aprobat în plan.
+                      </Trans>
+                    </p>
+                  </div>
+                </InfoAccordionItem>
+
+                <InfoAccordionItem value="county" title={<Trans>Județ</Trans>}>
+                  <Trans>
+                    Locația geografică a proiectului. Proiectele naționale sau
+                    fără localizare unică sunt marcate separat pentru a nu
+                    distorsiona comparațiile județene.
+                  </Trans>
+                </InfoAccordionItem>
+
+                <InfoAccordionItem
+                  value="cri"
+                  title={<Trans>Coordonator de reformă/investiție (CRI)</Trans>}
+                >
+                  <Trans>
+                    CRI este instituția care coordonează implementarea și
+                    raportarea. Beneficiarul proiectului poate fi o altă
+                    instituție sau entitate.
+                  </Trans>
+                </InfoAccordionItem>
+
+                <InfoAccordionItem
+                  value="beneficiary-classification"
+                  title={<Trans>Clasificarea beneficiarilor</Trans>}
+                >
+                  <div className="space-y-3">
+                    <p>
+                      <Trans>
+                        Clasificarea public / privat sau non-public este o
+                        regulă operațională a dashboardului. Ea ajută analiza,
+                        dar cazurile speciale pot necesita verificare manuală.
+                      </Trans>
+                    </p>
+                    <p>
+                      <Trans>
+                        Public include instituții locale, județene, centrale și
+                        naționale, plus companii publice identificate prin CUI.
+                        Privat / non-public include companii, ONG-uri, fundații,
+                        organizații religioase și beneficiari non-publici
+                        neclasificați.
+                      </Trans>
+                    </p>
+                    <p>
+                      <Trans>
+                        Național este o categorie de localizare sau beneficiar
+                        pentru rânduri fără o atribuire locală unică; nu este un
+                        al treilea sector de nivel principal.
+                      </Trans>
+                    </p>
+                  </div>
+                </InfoAccordionItem>
+
+                <InfoAccordionItem
+                  value="funding"
+                  title={<Trans>Sursa finanțării</Trans>}
+                >
+                  <Trans>
+                    Grant, împrumut sau grant + împrumut. Valorile originale
+                    sunt în EUR și sunt convertite automat în moneda selectată.
+                  </Trans>
+                </InfoAccordionItem>
+
+                <InfoAccordionItem
+                  value="progress"
+                  title={<Trans>Stadiu de implementare raportat</Trans>}
+                >
+                  <Trans>
+                    Progres tehnic și financiar raportat în datele publice.
+                    Procentele peste 100% sunt tratate ca anomalii de date care
+                    trebuie verificate, nu ca verdict.
+                  </Trans>
+                </InfoAccordionItem>
+              </Accordion>
+            </section>
+
+            <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]">
+              <SectionHeader>
+                <Trans>Semnale de risc și calitatea datelor</Trans>
               </SectionHeader>
               <div className="border-b border-[var(--pnrr-border)] p-5 text-sm font-medium leading-relaxed text-[var(--pnrr-muted)]">
                 <Trans>
-                  Risks are separated from reporting issues so users can
-                  prioritize projects that require direct verification.
+                  Semnalele de risc sunt separate de problemele de calitate a
+                  datelor. Ele ajută verificarea, dar nu sunt verdict juridic
+                  sau financiar.
                 </Trans>
               </div>
               <div className="divide-y divide-[var(--pnrr-border)]">
                 <DefinitionRow
-                  title={<Trans>Financial overrun</Trans>}
+                  title={<Trans>Progres financiar raportat peste 100%</Trans>}
                   description={
                     <Trans>
-                      Reported financial progress over 100% of the contracted
-                      value.
+                      Procent financiar peste pragul obișnuit; poate fi eroare,
+                      regularizare sau schimbare a valorii de referință.
                     </Trans>
                   }
                 />
 
                 <DefinitionRow
-                  title={<Trans>Payments ahead of delivery</Trans>}
+                  title={<Trans>Decalaj financiar-tehnic</Trans>}
                   description={
                     <Trans>
-                      Financial progress far ahead of technical progress.
+                      Progres financiar raportat mult peste progresul tehnic
+                      raportat; necesită verificare în documente.
                     </Trans>
                   }
                 />
 
                 <DefinitionRow
-                  title={<Trans>Large projects with low progress</Trans>}
+                  title={<Trans>Valoare mare și progres scăzut</Trans>}
                   description={
                     <Trans>
-                      Value over EUR 10M and technical progress under 30%.
+                      Valoare listată peste 10 mil. EUR și progres tehnic
+                      raportat sub 30%.
                     </Trans>
                   }
                 />
 
                 <DefinitionRow
-                  title={<Trans>Completed works, blocked reimbursement</Trans>}
+                  title={<Trans>Finalizat tehnic, progres financiar scăzut</Trans>}
                   description={
                     <Trans>
-                      Technically completed, but reimbursement is under 80%.
+                      Proiect marcat finalizat tehnic, dar cu progres financiar
+                      raportat sub 80%; indică un decalaj care trebuie
+                      verificat.
                     </Trans>
                   }
                 />
 
                 <DefinitionRow
-                  title={<Trans>Duplicates with different data</Trans>}
+                  title={<Trans>Posibile duplicate cu date diferite</Trans>}
                   description={
                     <Trans>
-                      The same project is reported with different values,
-                      progress, or location.
+                      Rânduri similare sunt raportate cu valori, progres sau
+                      localizări diferite.
                     </Trans>
                   }
                 />
 
                 <DefinitionRow
-                  title={<Trans>Missing financial progress</Trans>}
+                  title={<Trans>Date financiare nepublicate în set</Trans>}
                   description={
                     <Trans>
-                      Large or technically completed projects without published
-                      financial data.
+                      Lipsa progresului financiar publicat nu înseamnă zero
+                      plăți.
                     </Trans>
                   }
                 />
@@ -241,13 +345,13 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
 
             <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-5">
               <SectionTitle>
-                <Trans>Currency conversion</Trans>
+                <Trans>Conversie valutară</Trans>
               </SectionTitle>
               <p className="mt-3 text-sm font-medium leading-relaxed text-[var(--pnrr-muted)]">
                 <Trans>
-                  The original data is expressed in EUR. Displayed values are
-                  automatically converted to the currency selected in account
-                  settings using fixed reference rates.
+                  Datele originale sunt exprimate în EUR. Valorile afișate sunt
+                  convertite automat în moneda selectată folosind rate fixe de
+                  referință.
                 </Trans>
               </p>
               <div className="mt-4 grid grid-cols-2 gap-3">
@@ -256,21 +360,21 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
               </div>
               <p className="mt-3 text-xs font-medium leading-relaxed text-[var(--pnrr-muted)]">
                 <Trans>
-                  Rates are set on the date of the latest data update and may
-                  differ from daily NBR rates.
+                  Ratele sunt setate la data ultimei actualizări a datelor și
+                  pot diferi de cursurile zilnice BNR.
                 </Trans>
               </p>
             </section>
 
             <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-5">
               <SectionTitle>
-                <Trans>Data source</Trans>
+                <Trans>Sursa datelor</Trans>
               </SectionTitle>
               <p className="mt-3 text-sm font-medium leading-relaxed text-[var(--pnrr-muted)]">
                 <Trans>
-                  The data comes from the Ministry of Investments and European
-                  Projects (MIPE), through the official PNRR portal. Last
-                  update: April 30, 2026.
+                  Datele provin de la Ministerul Investițiilor și Proiectelor
+                  Europene (MIPE), prin portalul oficial PNRR. Ultima
+                  actualizare: 30 aprilie 2026.
                 </Trans>
               </p>
             </section>

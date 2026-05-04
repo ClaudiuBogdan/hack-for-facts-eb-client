@@ -179,7 +179,7 @@ export function PnrrActiveFilters({
     search.anomalyTypes?.forEach((c) => {
       result.push({
         key: `anom-${c}`,
-        prefix: t`Risk`,
+        prefix: t`Semnal de risc`,
         value: getAnomalyLabel(c as Parameters<typeof getAnomalyLabel>[0]) ?? c,
         onRemove: () =>
           filterState.setAnomalyTypes(
@@ -230,7 +230,7 @@ export function PnrrActiveFilters({
     if (search.onlyAnomalies) {
       result.push({
         key: 'only-anomalies',
-        value: t`Only risks`,
+        value: t`Doar semnale de risc`,
         onRemove: () => filterState.setOnlyAnomalies(false),
       })
     }

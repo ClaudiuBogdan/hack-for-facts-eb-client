@@ -107,13 +107,12 @@ export function PnrrAnomalyInfoPanel({
             <Trans>Guide</Trans>
           </div>
           <SheetTitle className="text-left text-4xl font-black leading-none tracking-tight text-[var(--pnrr-fg)]">
-            <Trans>Signal guide</Trans>
+            <Trans>Ghid pentru semnale</Trans>
           </SheetTitle>
           <SheetDescription className="pt-2 text-left text-base font-bold leading-relaxed text-[var(--pnrr-muted)]">
             <Trans>
-              The filters are calculated automatically from reported data. They
-              help with prioritization; they do not prove an irregularity on
-              their own.
+              Filtrele sunt calculate automat din date raportate. Ajută la
+              prioritizare; nu sunt concluzii oficiale.
             </Trans>
           </SheetDescription>
         </SheetHeader>
@@ -122,35 +121,34 @@ export function PnrrAnomalyInfoPanel({
           <div className="space-y-6 p-6">
             <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-5">
               <h3 className="text-sm font-black uppercase tracking-wide text-[var(--pnrr-fg)]">
-                <Trans>How to interpret filters</Trans>
+                <Trans>Cum interpretăm filtrele</Trans>
               </h3>
               <div className="mt-4 space-y-4 text-sm font-medium leading-relaxed text-[var(--pnrr-muted)]">
                 <p>
                   <Trans>
-                    Major risks indicate projects where financial progress,
-                    technical progress, or project value suggests a priority
-                    check. They are the most suitable filters for in-depth
-                    investigations.
+                    Semnalele de risc indică proiecte unde progresul financiar
+                    raportat, progresul tehnic raportat sau valoarea listată
+                    sugerează o verificare prioritară.
                   </Trans>
                 </p>
                 <p>
                   <Trans>
-                    Data quality flags rows that can distort the analysis:
-                    duplicates with different information or projects with no
-                    published financial progress.
+                    Problemele de calitate a datelor marchează rânduri care pot
+                    distorsiona analiza: posibile duplicate sau proiecte fără
+                    progres financiar publicat.
                   </Trans>
                 </p>
                 <p>
                   <Trans>
-                    If you select multiple filters, the table shows projects
-                    that match at least one of them. Values are calculated in
-                    the context of the active page filters.
+                    Dacă selectezi mai multe filtre, tabelul arată proiectele
+                    care se potrivesc cu cel puțin unul dintre ele. Valorile
+                    sunt calculate în contextul filtrelor active.
                   </Trans>
                 </p>
               </div>
             </section>
 
-            <GuideSection title={<Trans>Major risks</Trans>}>
+            <GuideSection title={<Trans>Semnale de risc</Trans>}>
               {ANOMALY_CONFIG.map((cfg) => (
                 <SignalGuideItem
                   key={cfg.type}
@@ -164,7 +162,7 @@ export function PnrrAnomalyInfoPanel({
               ))}
             </GuideSection>
 
-            <GuideSection title={<Trans>Data quality</Trans>}>
+            <GuideSection title={<Trans>Anomalii de date</Trans>}>
               {DATA_QUALITY_SIGNAL_CONFIG.map((cfg) => (
                 <SignalGuideItem
                   key={cfg.type}
@@ -180,22 +178,22 @@ export function PnrrAnomalyInfoPanel({
 
             <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-5">
               <h3 className="text-sm font-black uppercase tracking-wide text-[var(--pnrr-fg)]">
-                <Trans>Data note</Trans>
+                <Trans>Notă despre date</Trans>
               </h3>
               <div className="mt-3 space-y-3 text-sm font-medium leading-relaxed text-[var(--pnrr-muted)]">
                 <p>
                   <Trans>
-                    Risks are separated from data quality issues to avoid false
-                    alarms and keep the difference between execution and
-                    reporting clear.
+                    Semnalele de risc sunt separate de problemele de calitate a
+                    datelor pentru a păstra clară diferența dintre execuție și
+                    raportare.
                   </Trans>
                 </p>
                 <p>
                   <Trans>
                     {aggregates.missingFinProgressPercent.toFixed(0)}% of
-                    projects have no financial progress data, which may hide
-                    risks that depend on comparing technical and financial
-                    progress.
+                    proiecte nu au progres financiar publicat în set, ceea ce
+                    poate ascunde semnale bazate pe comparația dintre progresul
+                    tehnic și cel financiar.
                   </Trans>
                 </p>
               </div>
@@ -292,7 +290,7 @@ function SignalGuideItem({
       {expanded && (
         <div className="border-t-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4 pl-5">
           <div className="space-y-4">
-            <SignalDetail label={<Trans>Detection rule</Trans>}>
+            <SignalDetail label={<Trans>Regulă de detecție</Trans>}>
               <span className="inline-flex items-start gap-2">
                 <span
                   className={cn('mt-1.5 h-2.5 w-2.5 shrink-0', tone.accent)}
@@ -300,20 +298,20 @@ function SignalGuideItem({
                 <span>{cfg.detectionRule}</span>
               </span>
             </SignalDetail>
-            <SignalDetail label={<Trans>What it means</Trans>}>
+            <SignalDetail label={<Trans>Ce înseamnă</Trans>}>
               {cfg.explanation}
             </SignalDetail>
-            <SignalDetail label={<Trans>What to investigate</Trans>}>
+            <SignalDetail label={<Trans>Ce merită verificat</Trans>}>
               {cfg.investigationTip}
             </SignalDetail>
             {hasCount && (
               <div className="grid grid-cols-2 gap-3 border-t border-[var(--pnrr-border)] pt-4">
                 <SignalStat
-                  label={<Trans>Projects</Trans>}
+                  label={<Trans>Proiecte</Trans>}
                   value={String(data.count)}
                 />
                 <SignalStat
-                  label={<Trans>Total value</Trans>}
+                  label={<Trans>Valoare listată</Trans>}
                   value={`${(data.value / 1_000_000).toFixed(1)}M EUR`}
                 />
               </div>

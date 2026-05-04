@@ -666,13 +666,13 @@ export function PnrrFilterSheet({
                     value="loan"
                     className={FILTER_TOGGLE_ITEM_CLASS}
                   >
-                    <Trans>Loan</Trans>
+                    <Trans>Împrumut</Trans>
                   </ToggleGroupItem>
                   <ToggleGroupItem
                     value="grant/loan"
                     className={`${FILTER_TOGGLE_ITEM_CLASS} col-span-2`}
                   >
-                    <Trans>Grant + loan</Trans>
+                    <Trans>Grant + împrumut</Trans>
                   </ToggleGroupItem>
                 </ToggleGroup>
               </section>
@@ -698,7 +698,7 @@ export function PnrrFilterSheet({
               {/* Anomaly types */}
               <section className="space-y-2">
                 <Label className={FILTER_LABEL_CLASS}>
-                  <Trans>Risk type</Trans>
+                  <Trans>Tip semnal de risc</Trans>
                 </Label>
                 <PnrrStyledMultiSelect
                   options={ANOMALY_TYPE_OPTIONS}
@@ -709,16 +709,16 @@ export function PnrrFilterSheet({
                 />
               </section>
 
-              {/* Data quality signal types */}
+              {/* Data anomaly signal types */}
               <section className="space-y-2">
                 <Label className={FILTER_LABEL_CLASS}>
-                  <Trans>Data quality</Trans>
+                  <Trans>Anomalii de date</Trans>
                 </Label>
                 <PnrrStyledMultiSelect
                   options={DATA_QUALITY_SIGNAL_OPTIONS}
                   selected={selectedDataQualitySignalTypes}
                   onChange={setSelectedDataQualitySignalTypes}
-                  placeholder={t`Choose data signal...`}
+                  placeholder={t`Alege anomalii de date...`}
                   commitDelayMs={LOCAL_SELECTION_COMMIT_DELAY_MS}
                 />
               </section>
@@ -732,7 +732,7 @@ export function PnrrFilterSheet({
                     htmlFor="sheet-only-anomalies"
                     className="cursor-pointer text-sm font-bold text-[var(--pnrr-fg)]"
                   >
-                    <Trans>Only projects with risks</Trans>
+                    <Trans>Doar proiecte cu semnale de risc</Trans>
                   </Label>
                   <Switch
                     id="sheet-only-anomalies"

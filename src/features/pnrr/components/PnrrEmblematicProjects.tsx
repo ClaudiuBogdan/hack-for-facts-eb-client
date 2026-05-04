@@ -124,14 +124,14 @@ export function PnrrEmblematicProjects({
             {/* Progress rows */}
             <div className="mt-auto space-y-3">
               <ProgressRow
-                label={<Trans>Technical</Trans>}
+                label={<Trans>Tehnic raportat</Trans>}
                 value={techVal}
                 display={techDisplay}
                 accentColor={accentColor}
               />
 
               <ProgressRow
-                label={<Trans>Financial</Trans>}
+                label={<Trans>Financiar raportat</Trans>}
                 value={finVal}
                 display={finDisplay}
                 accentColor={accentColor}

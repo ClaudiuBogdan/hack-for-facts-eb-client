@@ -29,12 +29,12 @@ export function PnrrExportButton({
       t`Component`,
       t`Measure`,
       'CRI',
-      t`Funding Source`,
+      t`Sursa finanțării`,
       t`Value (EUR)`,
-      t`Technical Progress`,
-      t`Financial Progress`,
-      t`Risks`,
-      t`Data issues`,
+      t`Progres tehnic raportat`,
+      t`Progres financiar raportat`,
+      t`Semnale de risc`,
+      t`Anomalii de date`,
     ]
 
     const rows = projects.map((p) => [

@@ -45,13 +45,13 @@ export function PnrrFundingBar({
     },
     {
       ...CATEGORY_CONFIG[1],
-      label: t`Loan`,
+      label: t`Împrumut`,
       value: aggregates.loanTotal,
       pct: loanPct,
     },
     {
       ...CATEGORY_CONFIG[2],
-      label: t`Mixed`,
+      label: t`Grant + împrumut`,
       value: aggregates.mixedTotal,
       pct: mixedPct,
     },
@@ -65,10 +65,10 @@ export function PnrrFundingBar({
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3 border-b-2 border-[var(--pnrr-border)] px-5 py-4">
         <h3 className="text-lg font-black text-[var(--pnrr-fg)]">
-          <Trans>Funding Source</Trans>
+          <Trans>Sursa finanțării</Trans>
         </h3>
         <span className="border-2 border-[var(--pnrr-border)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[var(--pnrr-muted)]">
-          <Trans>Grant / Loan / Mixed</Trans>
+          <Trans>Grant / Împrumut / Mixt</Trans>
         </span>
       </div>
 

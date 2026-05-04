@@ -466,7 +466,7 @@ export function PnrrBeneficiariesView({
                 onClick={() => toggleSort('techProgress')}
               >
                 <span className="inline-flex items-center justify-end">
-                  <Trans>Tech. progress</Trans>
+                  <Trans>Progres tehnic raportat</Trans>
                   <SortIcon
                     active={sortKey === 'techProgress'}
                     order={sortOrder}
@@ -478,7 +478,7 @@ export function PnrrBeneficiariesView({
                 onClick={() => toggleSort('finProgress')}
               >
                 <span className="inline-flex items-center justify-end">
-                  <Trans>Fin. progress</Trans>
+                  <Trans>Progres financiar raportat</Trans>
                   <SortIcon
                     active={sortKey === 'finProgress'}
                     order={sortOrder}
@@ -663,7 +663,7 @@ function BeneficiaryDrawer({
         <div className="space-y-4 p-5">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <BeneficiaryMetric
-              label={t`Total value`}
+              label={t`Valoarea proiectelor listate`}
               value={formatPnrrCurrency(
                 beneficiary.value,
                 currency,
@@ -675,11 +675,11 @@ function BeneficiaryDrawer({
               value={beneficiary.count.toLocaleString('ro-RO')}
             />
             <BeneficiaryMetric
-              label={t`Average technical progress`}
+              label={t`Media progresului tehnic raportat`}
               value={techAvg == null ? '—' : `${formatNumber(techAvg)}%`}
             />
             <BeneficiaryMetric
-              label={t`Average financial progress`}
+              label={t`Media progresului financiar raportat`}
               value={finAvg == null ? '—' : `${formatNumber(finAvg)}%`}
             />
           </div>
@@ -691,7 +691,7 @@ function BeneficiaryDrawer({
                   <ShieldAlert className="h-5 w-5 shrink-0" />
                   <span className="text-sm font-black uppercase tracking-wide">
                     {riskCount.toLocaleString('ro-RO')}{' '}
-                    <Trans>with risks</Trans>
+                    <Trans>cu semnale de risc</Trans>
                   </span>
                 </div>
               )}
@@ -700,7 +700,7 @@ function BeneficiaryDrawer({
                   <FileWarning className="h-5 w-5 shrink-0" />
                   <span className="text-sm font-black uppercase tracking-wide">
                     {dataQualityCount.toLocaleString('ro-RO')}{' '}
-                    <Trans>with data issues</Trans>
+                    <Trans>cu anomalii de date</Trans>
                   </span>
                 </div>
               )}

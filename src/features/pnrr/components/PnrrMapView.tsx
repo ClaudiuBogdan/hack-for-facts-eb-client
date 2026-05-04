@@ -47,7 +47,7 @@ const InteractiveMap = lazy(() =>
 )
 
 const SERIES_OPTIONS = [
-  { id: 'total-value' as PnrrMapSeriesId, label: t`Total value` },
+  { id: 'total-value' as PnrrMapSeriesId, label: t`Valoarea proiectelor listate` },
   { id: 'project-count' as PnrrMapSeriesId, label: t`Project count` },
   { id: 'per-capita' as PnrrMapSeriesId, label: t`Per capita` },
   { id: 'grant-share' as PnrrMapSeriesId, label: t`Grant %` },

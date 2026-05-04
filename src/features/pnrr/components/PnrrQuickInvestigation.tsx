@@ -13,7 +13,7 @@ import {
 const PRESETS = [
   {
     id: 'big-black-holes',
-    label: t`Large projects with low progress`,
+    label: t`Valoare mare, progres scăzut`,
     icon: Search,
     apply: (fs: ReturnType<typeof usePnrrFilterState>) => {
       fs.clearFilters()
@@ -23,7 +23,7 @@ const PRESETS = [
   },
   {
     id: 'advance-payment',
-    label: t`Payments ahead of delivery`,
+    label: t`Decalaj financiar-tehnic`,
     icon: Banknote,
     apply: (fs: ReturnType<typeof usePnrrFilterState>) => {
       fs.clearFilters()
@@ -32,7 +32,7 @@ const PRESETS = [
   },
   {
     id: 'financial-overrun',
-    label: t`Financial overruns`,
+    label: t`Peste 100% financiar`,
     icon: TrendingUp,
     apply: (fs: ReturnType<typeof usePnrrFilterState>) => {
       fs.clearFilters()
@@ -41,7 +41,7 @@ const PRESETS = [
   },
   {
     id: 'stalled-completion',
-    label: t`Blocked works`,
+    label: t`Finalizat tehnic, financiar scăzut`,
     icon: Clock,
     apply: (fs: ReturnType<typeof usePnrrFilterState>) => {
       fs.clearFilters()
@@ -50,7 +50,7 @@ const PRESETS = [
   },
   {
     id: 'suspect-duplicates',
-    label: t`Suspected duplicates`,
+    label: t`Posibile duplicate`,
     icon: GitCompareArrows,
     apply: (fs: ReturnType<typeof usePnrrFilterState>) => {
       fs.clearFilters()
@@ -59,7 +59,7 @@ const PRESETS = [
   },
   {
     id: 'private-loans',
-    label: t`Loans for non-public sector`,
+    label: t`Împrumuturi către non-public`,
     icon: Building2,
     apply: (fs: ReturnType<typeof usePnrrFilterState>) => {
       fs.clearFilters()

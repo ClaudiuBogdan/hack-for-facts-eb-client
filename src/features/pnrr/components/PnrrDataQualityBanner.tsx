@@ -30,10 +30,10 @@ export function PnrrDataQualityBanner({
               <AlertCircle className="h-4 w-4 shrink-0" />
               <span>
                 <Trans>
-                  The data contains{' '}
-                  {formatNumber(aggregates.missingFinProgressPercent)}% projects
-                  without financial progress and {formatNumber(duplicateCount)}{' '}
-                  duplicates.
+                  Setul conține{' '}
+                  {formatNumber(aggregates.missingFinProgressPercent)}% proiecte
+                  fără progres financiar publicat și {formatNumber(duplicateCount)}{' '}
+                  posibile duplicate.
                 </Trans>
               </span>
             </div>
@@ -50,16 +50,16 @@ export function PnrrDataQualityBanner({
             <div className="mt-3 space-y-2 text-xs text-amber-700 dark:text-amber-300">
               <p>
                 <Trans>
-                  Financial progress is missing for most projects in certain
-                  components (for example: C9 - financial instruments).
-                  Deduplication is based on normalized title + CUI + component +
-                  measure.
+                  Progresul financiar lipsește pentru multe proiecte din unele
+                  componente (de exemplu: C9 - instrumente financiare).
+                  Deduplicarea se bazează pe titlu normalizat + CUI +
+                  componentă + măsură.
                 </Trans>
               </p>
               <p>
                 <Trans>
-                  Raw value: {formatNumber(aggregates.rawTotalValue)} €. Value
-                  after deduplication:{' '}
+                  Valoare brută listată: {formatNumber(aggregates.rawTotalValue)} €. Valoare
+                  estimată după eliminarea posibilelor duplicate:{' '}
                   {formatNumber(aggregates.deduplicatedTotalValue)} €.
                 </Trans>
               </p>

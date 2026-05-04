@@ -80,7 +80,7 @@ export function PnrrNationalSummary({ projects }: PnrrNationalSummaryProps) {
       {/* Key metrics */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         <MetricCard
-          label={t`Total value`}
+          label={t`Valoarea proiectelor listate`}
           value={formatPnrrCurrency(stats.totalValue, currency)}
         />
 
@@ -90,7 +90,7 @@ export function PnrrNationalSummary({ projects }: PnrrNationalSummaryProps) {
         />
 
         <MetricCard
-          label={t`Risks`}
+          label={t`Semnale de risc`}
           value={formatNumber(stats.riskCount, 'compact')}
           sub={
             stats.projectCount > 0
@@ -126,7 +126,7 @@ export function PnrrNationalSummary({ projects }: PnrrNationalSummaryProps) {
           </div>
           <div>
             <p className="text-xs text-muted-foreground">
-              <Trans>Loan</Trans>
+              <Trans>Împrumut</Trans>
             </p>
             <p className="text-lg font-bold">
               {formatPnrrCurrency(stats.loanValue, currency)}
