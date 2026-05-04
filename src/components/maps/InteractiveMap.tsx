@@ -125,11 +125,12 @@ const GROUP_BOUNDARY_STYLE: PathOptions = {
 };
 
 const SELECTED_GROUP_BOUNDARY_STYLE: PathOptions = {
-  color: '#0f172a',
-  weight: 4,
+  color: '#020617',
+  weight: 4.5,
   opacity: 1,
   fillOpacity: 0,
-  dashArray: '8 4',
+  lineJoin: 'round',
+  lineCap: 'round',
   interactive: false,
 };
 

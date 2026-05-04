@@ -132,11 +132,13 @@ const MANUAL_GROUP_COLOR_PALETTE = [
 const MANUAL_GROUP_UNASSIGNED_STYLE: PathOptions = {
   ...DEFAULT_FEATURE_STYLE,
   color: '#cbd5e1',
-  weight: 0.8,
-  opacity: 0.6,
+  weight: 0.45,
+  opacity: 0.45,
   fillColor: '#e5e7eb',
-  fillOpacity: 0.18,
+  fillOpacity: 0.14,
 };
+
+const GROUP_BOUNDARY_COORDINATE_PRECISION = 6;
 
 interface EditorState {
   mode: 'add' | 'edit';
@@ -245,6 +247,87 @@ function getDefaultGroupedSeriesGroupingId(
     : undefined;
 
   return activeGrouping?.id ?? groupings.find((grouping) => grouping.groups.length > 0)?.id;
+}
+
+function getBoundaryCoordinateKey(coordinate: readonly unknown[]): string {
+  const longitude = typeof coordinate[0] === 'number' ? coordinate[0] : 0;
+  const latitude = typeof coordinate[1] === 'number' ? coordinate[1] : 0;
+  return `${longitude.toFixed(GROUP_BOUNDARY_COORDINATE_PRECISION)},${latitude.toFixed(GROUP_BOUNDARY_COORDINATE_PRECISION)}`;
+}
+
+function getBoundaryEdgeKey(start: readonly unknown[], end: readonly unknown[]): string {
+  const startKey = getBoundaryCoordinateKey(start);
+  const endKey = getBoundaryCoordinateKey(end);
+  return startKey < endKey ? `${startKey}|${endKey}` : `${endKey}|${startKey}`;
+}
+
+function collectPolygonBoundaryEdges(
+  polygonCoordinates: unknown,
+  boundaryEdgesByKey: Map<string, [readonly unknown[], readonly unknown[]]>
+): void {
+  if (!Array.isArray(polygonCoordinates)) {
+    return;
+  }
+
+  for (const ring of polygonCoordinates) {
+    if (!Array.isArray(ring) || ring.length < 2) {
+      continue;
+    }
+
+    for (let index = 0; index < ring.length - 1; index += 1) {
+      const start = ring[index];
+      const end = ring[index + 1];
+      if (!Array.isArray(start) || !Array.isArray(end)) {
+        continue;
+      }
+
+      const edgeKey = getBoundaryEdgeKey(start, end);
+      if (boundaryEdgesByKey.has(edgeKey)) {
+        boundaryEdgesByKey.delete(edgeKey);
+      } else {
+        boundaryEdgesByKey.set(edgeKey, [start, end]);
+      }
+    }
+  }
+}
+
+function buildExteriorBoundaryGeoJsonData(features: readonly UatFeature[]): GeoJsonObject | null {
+  const boundaryEdgesByKey = new Map<string, [readonly unknown[], readonly unknown[]]>();
+
+  for (const feature of features) {
+    const geometry = feature.geometry;
+    if (!geometry) {
+      continue;
+    }
+
+    if (geometry.type === 'Polygon') {
+      collectPolygonBoundaryEdges(geometry.coordinates, boundaryEdgesByKey);
+    }
+
+    if (geometry.type === 'MultiPolygon') {
+      for (const polygonCoordinates of geometry.coordinates) {
+        collectPolygonBoundaryEdges(polygonCoordinates, boundaryEdgesByKey);
+      }
+    }
+  }
+
+  const boundaryFeatures = [...boundaryEdgesByKey.values()].map(([start, end], index) => ({
+    type: 'Feature' as const,
+    properties: { id: `group-boundary-${index}` },
+    geometry: {
+      type: 'LineString' as const,
+      coordinates: [start, end],
+    },
+  }));
+
+  if (boundaryFeatures.length === 0) {
+    return null;
+  }
+
+  return {
+    type: 'FeatureCollection',
+    features: boundaryFeatures,
+  } as GeoJsonObject;
 }
 
 // NOTE: Do not use module-scope t`` — it freezes the translation at import time.
@@ -1801,11 +1884,11 @@ export function MapAnalyticsWorkspace({
       const isWashedOutGroup = hasActiveGroup && !isActiveGroup;
       const groupStyle: PathOptions = {
         ...DEFAULT_FEATURE_STYLE,
-        color: isActiveGroup ? '#0f172a' : groupColor,
-        weight: isActiveGroup ? 2.2 : 1.1,
-        opacity: isWashedOutGroup ? 0.45 : 0.95,
+        color: isActiveGroup ? '#f8fafc' : groupColor,
+        weight: isActiveGroup ? 0.45 : 0.35,
+        opacity: isWashedOutGroup ? 0.16 : 0.38,
         fillColor: groupColor,
-        fillOpacity: isWashedOutGroup ? 0.28 : 0.72,
+        fillOpacity: isWashedOutGroup ? 0.22 : 0.76,
       };
 
       for (const sirutaCode of group.memberSirutaCodes) {
@@ -2614,10 +2697,7 @@ export function MapAnalyticsWorkspace({
       return null;
     }
 
-    return {
-      type: 'FeatureCollection',
-      features,
-    } as GeoJsonObject;
+    return buildExteriorBoundaryGeoJsonData(features);
   }, [activeManualGroup, geoJsonFeatures, isManualGroupCreateMode, mapViewType]);
   const canCreateManualGroups = !isReadOnly && !isPreviewLayout && mapViewType === 'UAT';
   const groupedSeriesDefaultGroupingId = getDefaultGroupedSeriesGroupingId(
@@ -2802,7 +2882,7 @@ export function MapAnalyticsWorkspace({
                   heatmapData={activeHeatmapData}
                   geoJsonData={geoJsonData}
                   countyBoundaryGeoJsonData={countyBoundaryGeoJsonData}
-                  groupingBoundaryGeoJsonData={groupingBoundaryGeoJsonData}
+                  groupingBoundaryGeoJsonData={isManualGroupCreateMode ? null : groupingBoundaryGeoJsonData}
                   selectedGroupingBoundaryGeoJsonData={selectedManualGroupBoundaryGeoJsonData}
                   alwaysResolveFeatureStyle={isManualGroupCreateMode && mapViewType === 'UAT'}
                   zoom={mapZoom}
@@ -3011,7 +3091,7 @@ export function MapAnalyticsWorkspace({
                       heatmapData={activeHeatmapData}
                       geoJsonData={geoJsonData}
                       countyBoundaryGeoJsonData={countyBoundaryGeoJsonData}
-                      groupingBoundaryGeoJsonData={groupingBoundaryGeoJsonData}
+                      groupingBoundaryGeoJsonData={isManualGroupCreateMode ? null : groupingBoundaryGeoJsonData}
                       selectedGroupingBoundaryGeoJsonData={selectedManualGroupBoundaryGeoJsonData}
                       alwaysResolveFeatureStyle={isManualGroupCreateMode && mapViewType === 'UAT'}
                       zoom={mapZoom}

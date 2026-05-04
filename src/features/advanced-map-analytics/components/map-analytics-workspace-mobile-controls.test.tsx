@@ -715,9 +715,30 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
       data: {
         type: 'FeatureCollection',
         features: [
-          { type: 'Feature', properties: { natcode: '1001', name: 'Mapped UAT' }, geometry: null },
-          { type: 'Feature', properties: { natcode: '2002', name: 'Second UAT' }, geometry: null },
-          { type: 'Feature', properties: { natcode: '9999', name: 'Ungrouped UAT' }, geometry: null },
+          {
+            type: 'Feature',
+            properties: { natcode: '1001', name: 'Mapped UAT' },
+            geometry: {
+              type: 'Polygon',
+              coordinates: [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
+            },
+          },
+          {
+            type: 'Feature',
+            properties: { natcode: '2002', name: 'Second UAT' },
+            geometry: {
+              type: 'Polygon',
+              coordinates: [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]],
+            },
+          },
+          {
+            type: 'Feature',
+            properties: { natcode: '9999', name: 'Third UAT' },
+            geometry: {
+              type: 'Polygon',
+              coordinates: [[[2, 0], [3, 0], [3, 1], [2, 1], [2, 0]]],
+            },
+          },
         ],
       },
       isLoading: false,
@@ -754,20 +775,19 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
     fireEvent.click(screen.getByRole('button', { name: 'New group' }));
     fireEvent.click(screen.getByRole('button', { name: 'Map click second UAT' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Map click without CUI' }));
 
     await waitFor(() => {
       expect(latestState.groupings[0]?.groups).toHaveLength(2);
       expect(latestInteractiveMapProps?.alwaysResolveFeatureStyle).toBe(true);
-      expect(latestInteractiveMapProps?.selectedGroupingBoundaryGeoJsonData).toMatchObject({
-        type: 'FeatureCollection',
-        features: [
-          {
-            properties: {
-              natcode: '2002',
-            },
-          },
-        ],
-      });
+      expect(latestInteractiveMapProps?.groupingBoundaryGeoJsonData).toBeNull();
+      const selectedBoundaryGeoJsonData =
+        latestInteractiveMapProps?.selectedGroupingBoundaryGeoJsonData as
+          | { type?: string; features?: Array<{ geometry?: { type?: string } }> }
+          | undefined;
+      expect(selectedBoundaryGeoJsonData?.type).toBe('FeatureCollection');
+      expect(selectedBoundaryGeoJsonData?.features).toHaveLength(6);
+      expect(selectedBoundaryGeoJsonData?.features?.every((feature) => feature.geometry?.type === 'LineString')).toBe(true);
     });
 
     const getFeatureStyle = latestInteractiveMapProps?.getFeatureStyle;
@@ -784,17 +804,19 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
       new Map()
     );
     const ungroupedStyle = getFeatureStyle(
-      { type: 'Feature', properties: { natcode: '9999' }, geometry: null },
+      { type: 'Feature', properties: { natcode: '3003' }, geometry: null },
       new Map()
     );
 
     expect(firstGroupStyle.fillColor).toBe('#2563eb');
-    expect(firstGroupStyle.fillOpacity).toBe(0.28);
+    expect(firstGroupStyle.fillOpacity).toBe(0.22);
+    expect(firstGroupStyle.weight).toBe(0.35);
     expect(activeGroupStyle.fillColor).toBe('#059669');
-    expect(activeGroupStyle.fillOpacity).toBe(0.72);
-    expect(activeGroupStyle.weight).toBe(2.2);
+    expect(activeGroupStyle.fillOpacity).toBe(0.76);
+    expect(activeGroupStyle.weight).toBe(0.45);
+    expect(activeGroupStyle.opacity).toBe(0.38);
     expect(ungroupedStyle.fillColor).toBe('#e5e7eb');
-    expect(ungroupedStyle.fillOpacity).toBe(0.18);
+    expect(ungroupedStyle.fillOpacity).toBe(0.14);
   });
 
   it('renames manual groups and removes members from the group list', async () => {
