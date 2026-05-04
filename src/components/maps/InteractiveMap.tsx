@@ -133,6 +133,18 @@ const SELECTED_GROUP_BOUNDARY_STYLE: PathOptions = {
   interactive: false,
 };
 
+const COMMAND_DRAG_SELECTION_STYLE: PathOptions = {
+  color: '#0f172a',
+  weight: 1.5,
+  opacity: 0.9,
+  fillColor: '#2563eb',
+  fillOpacity: 0.12,
+  dashArray: '4 3',
+  interactive: false,
+};
+
+const COMMAND_DRAG_MIN_DISTANCE_PX = 6;
+
 const UAT_LOW_ZOOM_STROKE_FLOOR = 6;
 const MIN_UAT_LOW_ZOOM_STROKE_OPACITY_MULTIPLIER = 0.2;
 const MIN_UAT_LOW_ZOOM_STROKE_WEIGHT_MULTIPLIER = 0.25;
@@ -193,6 +205,7 @@ function attenuateLowZoomUatStroke(
 
 interface InteractiveMapProps {
   onFeatureClick: (properties: UatProperties, event: LeafletMouseEvent) => void;
+  onFeatureBoxSelect?: (features: UatProperties[]) => void;
   getFeatureStyle: (feature: UatFeature, heatmapDataMap: Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint>) => PathOptions;
   center?: LatLngExpression;
   zoom?: number;
@@ -222,6 +235,7 @@ interface InteractiveMapProps {
 
 export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   onFeatureClick,
+  onFeatureBoxSelect,
   getFeatureStyle,
   center = DEFAULT_MAP_CENTER,
   zoom = DEFAULT_MAP_ZOOM,
@@ -250,6 +264,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
 }) => {
   const geoJsonLayerRef = useRef<L.GeoJSON | null>(null);
   const shouldSuppressTooltipRef = useRef(false);
+  const suppressNextFeatureClickRef = useRef(false);
   const currentZoomRef = useRef(zoom);
   const latestFeatureStyleRef = useRef<FeatureStyleResolver>(() => DEFAULT_FEATURE_STYLE);
   const useCanvasRenderer = useMemo(
@@ -382,6 +397,14 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
           }
         },
         click: (e) => {
+          if (suppressNextFeatureClickRef.current) {
+            suppressNextFeatureClickRef.current = false;
+            return;
+          }
+          if (onFeatureBoxSelect && isCommandDragEvent(e)) {
+            return;
+          }
+
           const { mapViewType, onFeatureClick } = latestInteractionContextRef.current;
           Analytics.capture(Analytics.EVENTS.MapFeatureClicked, {
             map_view_type: mapViewType,
@@ -391,7 +414,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
         },
       });
     },
-    [featureHighlight, sharedTooltip],
+    [featureHighlight, onFeatureBoxSelect, sharedTooltip],
   );
 
   if (!geoJsonData) {
@@ -437,6 +460,14 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
         onClearHighlight={clearActiveHighlight}
       />
       <MapViewChangeListener onViewChange={onViewChange} />
+      <MapCommandDragSelection
+        enabled={mapViewType === 'UAT' && Boolean(onFeatureBoxSelect)}
+        geoJsonLayerRef={geoJsonLayerRef}
+        suppressNextFeatureClickRef={suppressNextFeatureClickRef}
+        onFeatureBoxSelect={onFeatureBoxSelect}
+        onInteractionStart={handleMapInteractionStart}
+        onInteractionEnd={handleMapInteractionEnd}
+      />
       {geoJsonData.type === 'FeatureCollection' && (
         <>
           <GeoJSON
@@ -711,6 +742,202 @@ const MapFeatureStyleZoomListener: React.FC<{
     zoomend: updateZoomAwareStyles,
     viewreset: updateZoomAwareStyles,
   });
+
+  return null;
+};
+
+type SelectableFeatureLayer = Layer & {
+  feature?: Feature<Geometry, unknown>;
+  getBounds?: () => L.LatLngBounds;
+  getLatLng?: () => L.LatLng;
+};
+
+type CommandDragSelectionState = {
+  startLatLng: L.LatLng;
+  startPoint: L.Point;
+  rectangle: L.Rectangle;
+  didDrag: boolean;
+  wasBoxZoomEnabled: boolean;
+  wasDraggingEnabled: boolean;
+};
+
+function isCommandMouseEvent(event: MouseEvent | undefined): boolean {
+  return Boolean(event?.metaKey || event?.ctrlKey);
+}
+
+function isCommandDragEvent(event: LeafletMouseEvent): boolean {
+  return isCommandMouseEvent(event.originalEvent as MouseEvent | undefined);
+}
+
+function getSelectableLayerBounds(layer: SelectableFeatureLayer): L.LatLngBounds | null {
+  if (typeof layer.getBounds === 'function') {
+    const bounds = layer.getBounds();
+    return bounds.isValid() ? bounds : null;
+  }
+
+  if (typeof layer.getLatLng === 'function') {
+    const latLng = layer.getLatLng();
+    return L.latLngBounds(latLng, latLng);
+  }
+
+  return null;
+}
+
+const MapCommandDragSelection: React.FC<{
+  enabled: boolean;
+  geoJsonLayerRef: React.MutableRefObject<L.GeoJSON | null>;
+  suppressNextFeatureClickRef: React.MutableRefObject<boolean>;
+  onFeatureBoxSelect?: (features: UatProperties[]) => void;
+  onInteractionStart: () => void;
+  onInteractionEnd: () => void;
+}> = ({
+  enabled,
+  geoJsonLayerRef,
+  suppressNextFeatureClickRef,
+  onFeatureBoxSelect,
+  onInteractionStart,
+  onInteractionEnd,
+}) => {
+  const map = useMap();
+  const selectionRef = useRef<CommandDragSelectionState | null>(null);
+
+  const cleanupSelection = useCallback(() => {
+    const selection = selectionRef.current;
+    if (!selection) {
+      return;
+    }
+
+    selection.rectangle.remove();
+    if (selection.wasDraggingEnabled) {
+      map.dragging.enable();
+    }
+    if (selection.wasBoxZoomEnabled) {
+      map.boxZoom.enable();
+    }
+    selectionRef.current = null;
+    onInteractionEnd();
+  }, [map, onInteractionEnd]);
+
+  const finishSelection = useCallback(
+    (event: MouseEvent) => {
+      const selection = selectionRef.current;
+      if (!selection) {
+        return;
+      }
+
+      const endLatLng = map.mouseEventToLatLng(event);
+      const bounds = L.latLngBounds(selection.startLatLng, endLatLng);
+      const shouldSelect = selection.didDrag && bounds.isValid() && onFeatureBoxSelect;
+      const selectedFeatures: UatProperties[] = [];
+
+      if (shouldSelect) {
+        geoJsonLayerRef.current?.eachLayer((layer) => {
+          const selectableLayer = layer as SelectableFeatureLayer;
+          const featureProperties = selectableLayer.feature?.properties as UatProperties | undefined;
+          const layerBounds = getSelectableLayerBounds(selectableLayer);
+
+          if (featureProperties && layerBounds?.intersects(bounds)) {
+            selectedFeatures.push(featureProperties);
+          }
+        });
+      }
+
+      if (selection.didDrag) {
+        suppressNextFeatureClickRef.current = true;
+      }
+      cleanupSelection();
+
+      if (selectedFeatures.length > 0 && onFeatureBoxSelect) {
+        onFeatureBoxSelect(selectedFeatures);
+      }
+    },
+    [cleanupSelection, geoJsonLayerRef, map, onFeatureBoxSelect, suppressNextFeatureClickRef]
+  );
+
+  const startSelection = useCallback(
+    (event: MouseEvent) => {
+      const target = event.target instanceof Element ? event.target : null;
+      if (
+        event.button !== 0 ||
+        target?.closest('.leaflet-control') ||
+        !enabled ||
+        !onFeatureBoxSelect ||
+        !isCommandMouseEvent(event)
+      ) {
+        return;
+      }
+
+      L.DomEvent.stop(event);
+      const wasDraggingEnabled = map.dragging.enabled();
+      const wasBoxZoomEnabled = map.boxZoom.enabled();
+      if (wasDraggingEnabled) {
+        map.dragging.disable();
+      }
+      if (wasBoxZoomEnabled) {
+        map.boxZoom.disable();
+      }
+
+      onInteractionStart();
+      const startLatLng = map.mouseEventToLatLng(event);
+      const startPoint = map.mouseEventToContainerPoint(event);
+      selectionRef.current = {
+        startLatLng,
+        startPoint,
+        rectangle: L.rectangle(
+          L.latLngBounds(startLatLng, startLatLng),
+          COMMAND_DRAG_SELECTION_STYLE
+        ).addTo(map),
+        didDrag: false,
+        wasBoxZoomEnabled,
+        wasDraggingEnabled,
+      };
+    },
+    [enabled, map, onFeatureBoxSelect, onInteractionStart]
+  );
+
+  const updateSelection = useCallback(
+    (event: MouseEvent) => {
+      const selection = selectionRef.current;
+      if (!selection) {
+        return;
+      }
+
+      L.DomEvent.stop(event);
+      const currentPoint = map.mouseEventToContainerPoint(event);
+      const currentLatLng = map.mouseEventToLatLng(event);
+      selection.didDrag =
+        selection.didDrag ||
+        selection.startPoint.distanceTo(currentPoint) >= COMMAND_DRAG_MIN_DISTANCE_PX;
+      selection.rectangle.setBounds(L.latLngBounds(selection.startLatLng, currentLatLng));
+    },
+    [map]
+  );
+
+  const finishDomSelection = useCallback(
+    (event: MouseEvent) => {
+      if (!selectionRef.current) {
+        return;
+      }
+
+      L.DomEvent.stop(event);
+      finishSelection(event);
+    },
+    [finishSelection]
+  );
+
+  useEffect(() => {
+    const container = map.getContainer();
+    container.addEventListener('mousedown', startSelection, { capture: true });
+    document.addEventListener('mousemove', updateSelection, { capture: true });
+    document.addEventListener('mouseup', finishDomSelection, { capture: true });
+
+    return () => {
+      container.removeEventListener('mousedown', startSelection, { capture: true });
+      document.removeEventListener('mousemove', updateSelection, { capture: true });
+      document.removeEventListener('mouseup', finishDomSelection, { capture: true });
+      cleanupSelection();
+    };
+  }, [cleanupSelection, finishDomSelection, map, startSelection, updateSelection]);
 
   return null;
 };

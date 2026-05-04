@@ -720,22 +720,33 @@ export function MapAnalyticsWorkspace({
     [isPreviewLayout, isReadOnly, updateState]
   );
 
-  const addFeatureToManualGroup = useCallback(
-    (properties: UatProperties) => {
+  const addFeaturesToManualGroup = useCallback(
+    (features: readonly UatProperties[], options?: { toggleExistingActiveMember?: boolean }) => {
       if (isReadOnly || isPreviewLayout || mapViewType !== 'UAT') {
         return;
       }
 
-      const sirutaCode = String(properties?.natcode ?? '').trim();
-      if (sirutaCode.length === 0) {
+      const featuresBySirutaCode = new Map<string, UatProperties>();
+      for (const feature of features) {
+        const sirutaCode = String(feature?.natcode ?? '').trim();
+        if (sirutaCode.length > 0 && !featuresBySirutaCode.has(sirutaCode)) {
+          featuresBySirutaCode.set(sirutaCode, feature);
+        }
+      }
+
+      const selectedSirutaCodes = [...featuresBySirutaCode.keys()];
+      if (selectedSirutaCodes.length === 0) {
         toast.warning(t`Selected UAT does not have a SIRUTA code.`);
         return;
       }
 
-      const uatName = String(properties?.name ?? '').trim();
+      const firstFeature = featuresBySirutaCode.get(selectedSirutaCodes[0] ?? '');
+      const firstUatName = String(firstFeature?.name ?? '').trim();
       let nextActiveGroupId: string | undefined;
       let nextMemberCount = 0;
+      let addedMemberCount = 0;
       let didRemoveFromActiveGroup = false;
+      let didChangeGroup = false;
 
       updateState((draft) => {
         const grouping = ensureManualGrouping(draft);
@@ -748,17 +759,23 @@ export function MapAnalyticsWorkspace({
         if (!targetGroup) {
           isNewGroup = true;
           targetGroup = {
-            id: createManualGroupId([sirutaCode]),
-            label: uatName.length > 0 ? uatName : undefined,
+            id: createManualGroupId(selectedSirutaCodes),
+            label: firstUatName.length > 0 ? firstUatName : undefined,
             memberSirutaCodes: [],
             memberOrder: [],
-            primarySirutaCode: sirutaCode,
+            primarySirutaCode: selectedSirutaCodes[0],
           };
           grouping.groups.push(targetGroup);
         }
 
         const targetGroupIndex = grouping.groups.findIndex((group) => group.id === targetGroup.id);
-        if (!isNewGroup && targetGroup.memberSirutaCodes.includes(sirutaCode)) {
+        const shouldToggleExistingMember =
+          options?.toggleExistingActiveMember === true &&
+          selectedSirutaCodes.length === 1 &&
+          !isNewGroup &&
+          targetGroup.memberSirutaCodes.includes(selectedSirutaCodes[0] ?? '');
+        if (shouldToggleExistingMember) {
+          const sirutaCode = selectedSirutaCodes[0] ?? '';
           didRemoveFromActiveGroup = true;
           targetGroup.memberSirutaCodes = targetGroup.memberSirutaCodes.filter((code) => code !== sirutaCode);
           targetGroup.memberOrder = targetGroup.memberOrder?.filter((code) => code !== sirutaCode);
@@ -781,37 +798,52 @@ export function MapAnalyticsWorkspace({
           targetGroup.label = previousLabel?.trim() || createManualGroupLabel(targetGroup.memberSirutaCodes, '');
           nextActiveGroupId = nextGroupId;
           nextMemberCount = targetGroup.memberSirutaCodes.length;
+          didChangeGroup = true;
           return;
         }
 
+        const selectedSirutaCodeSet = new Set(selectedSirutaCodes);
         for (let groupIndex = grouping.groups.length - 1; groupIndex >= 0; groupIndex -= 1) {
           const group = grouping.groups[groupIndex];
           if (!group || group.id === targetGroup.id) {
             continue;
           }
 
-          group.memberSirutaCodes = group.memberSirutaCodes.filter((code) => code !== sirutaCode);
-          group.memberOrder = group.memberOrder?.filter((code) => code !== sirutaCode);
-          if (group.primarySirutaCode === sirutaCode) {
+          const previousMemberCount = group.memberSirutaCodes.length;
+          group.memberSirutaCodes = group.memberSirutaCodes.filter((code) => !selectedSirutaCodeSet.has(code));
+          group.memberOrder = group.memberOrder?.filter((code) => !selectedSirutaCodeSet.has(code));
+          if (group.primarySirutaCode && selectedSirutaCodeSet.has(group.primarySirutaCode)) {
             group.primarySirutaCode = group.memberSirutaCodes[0];
           }
           if (group.memberSirutaCodes.length === 0) {
             grouping.groups.splice(groupIndex, 1);
+            didChangeGroup = didChangeGroup || previousMemberCount > 0;
+            continue;
+          }
+          if (group.memberSirutaCodes.length !== previousMemberCount) {
+            const previousLabel = group.label;
+            group.id = createManualGroupId(group.memberSirutaCodes);
+            group.label = previousLabel?.trim() || createManualGroupLabel(group.memberSirutaCodes, '');
+            didChangeGroup = true;
           }
         }
 
-        if (!targetGroup.memberSirutaCodes.includes(sirutaCode)) {
-          targetGroup.memberSirutaCodes.push(sirutaCode);
+        for (const sirutaCode of selectedSirutaCodes) {
+          if (!targetGroup.memberSirutaCodes.includes(sirutaCode)) {
+            targetGroup.memberSirutaCodes.push(sirutaCode);
+            addedMemberCount += 1;
+            didChangeGroup = true;
+          }
         }
         targetGroup.memberOrder = [
-          ...new Set([...(targetGroup.memberOrder ?? []), sirutaCode]),
+          ...new Set([...(targetGroup.memberOrder ?? []), ...selectedSirutaCodes]),
         ].filter((code) => targetGroup.memberSirutaCodes.includes(code));
-        targetGroup.primarySirutaCode = targetGroup.primarySirutaCode ?? sirutaCode;
+        targetGroup.primarySirutaCode = targetGroup.primarySirutaCode ?? selectedSirutaCodes[0];
 
         const nextGroupId = createManualGroupId(targetGroup.memberSirutaCodes);
         targetGroup.id = nextGroupId;
         if (isNewGroup || !targetGroup.label?.trim()) {
-          targetGroup.label = createManualGroupLabel(targetGroup.memberSirutaCodes, uatName);
+          targetGroup.label = createManualGroupLabel(targetGroup.memberSirutaCodes, firstUatName);
         }
         nextActiveGroupId = nextGroupId;
         nextMemberCount = targetGroup.memberSirutaCodes.length;
@@ -824,15 +856,24 @@ export function MapAnalyticsWorkspace({
             ? t`Removed UAT and deleted the empty group.`
             : t`Removed UAT from group.`
         );
+      } else if (!didChangeGroup) {
+        toast.success(t`Selected UATs are already in group.`);
       } else {
         toast.success(
-          nextMemberCount === 1
+          addedMemberCount === 1
             ? t`Added 1 UAT to group.`
-            : t`Added ${nextMemberCount} UATs to group.`
+            : t`Added ${addedMemberCount} UATs to group.`
         );
       }
     },
     [activeManualGroupId, isPreviewLayout, isReadOnly, mapViewType, updateState]
+  );
+
+  const addFeatureToManualGroup = useCallback(
+    (properties: UatProperties) => {
+      addFeaturesToManualGroup([properties], { toggleExistingActiveMember: true });
+    },
+    [addFeaturesToManualGroup]
   );
 
   const moveSeriesUp = useCallback(
@@ -2511,6 +2552,17 @@ export function MapAnalyticsWorkspace({
     ]
   );
 
+  const handleMapFeatureBoxSelect = useCallback(
+    (features: UatProperties[]) => {
+      if (!isManualGroupCreateMode) {
+        return;
+      }
+
+      addFeaturesToManualGroup(features);
+    },
+    [addFeaturesToManualGroup, isManualGroupCreateMode]
+  );
+
   const selectedMapEntityHref = selectedMapEntity?.entityCui
     ? buildEntityDetailsPath(selectedMapEntity.entityCui)
     : undefined;
@@ -2745,6 +2797,7 @@ export function MapAnalyticsWorkspace({
               >
                 <InteractiveMap
                   onFeatureClick={handleMapFeatureClick}
+                  onFeatureBoxSelect={isManualGroupCreateMode ? handleMapFeatureBoxSelect : undefined}
                   getFeatureStyle={getFeatureStyle}
                   heatmapData={activeHeatmapData}
                   geoJsonData={geoJsonData}
@@ -2953,6 +3006,7 @@ export function MapAnalyticsWorkspace({
                   >
                     <InteractiveMap
                       onFeatureClick={handleMapFeatureClick}
+                      onFeatureBoxSelect={isManualGroupCreateMode ? handleMapFeatureBoxSelect : undefined}
                       getFeatureStyle={getFeatureStyle}
                       heatmapData={activeHeatmapData}
                       geoJsonData={geoJsonData}
@@ -3242,7 +3296,7 @@ function ManualGroupingPanel({
           </div>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {enabled
-              ? t`Click UATs on the map to add them.`
+              ? t`Click UATs on the map, or Command-drag to add many.`
               : t`${groupCount} manual groups configured`}
           </p>
         </div>

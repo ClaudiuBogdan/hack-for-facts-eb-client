@@ -159,10 +159,12 @@ vi.mock('@/components/ssr/ClientOnly', () => ({
 vi.mock('@/components/maps/InteractiveMap', () => ({
   InteractiveMap: ({
     onFeatureClick,
+    onFeatureBoxSelect,
     getTooltipContent,
     ...rest
   }: {
     onFeatureClick: (properties: Record<string, unknown>, event?: unknown) => void;
+    onFeatureBoxSelect?: (features: Record<string, unknown>[]) => void;
     getTooltipContent?: (args: {
       properties: Record<string, unknown>;
       heatmapData: unknown[];
@@ -179,6 +181,7 @@ vi.mock('@/components/maps/InteractiveMap', () => ({
         latestInteractiveMapProps = {
           getTooltipContent,
           onFeatureClick,
+          onFeatureBoxSelect,
           ...rest,
         };
       }}
@@ -220,6 +223,27 @@ vi.mock('@/components/maps/InteractiveMap', () => ({
         }
       >
         Map click second UAT
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          onFeatureBoxSelect?.([
+            {
+              natcode: '1001',
+              name: 'Mapped UAT',
+              county: 'Test county',
+              cui: '12345678',
+            },
+            {
+              natcode: '2002',
+              name: 'Second UAT',
+              county: 'Alt county',
+              cui: '87654321',
+            },
+          ])
+        }
+      >
+        Map command drag select UATs
       </button>
     </div>
   ),
@@ -631,6 +655,58 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
       expect(latestState.groupings[0]?.groups).toHaveLength(0);
     });
     expect(toastSuccessMock).toHaveBeenLastCalledWith('Removed UAT and deleted the empty group.');
+  });
+
+  it('adds UATs from command-drag selection while create group mode is active', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    };
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+    const initialState = createMapState({ activeView: 'map' });
+    let latestState = initialState;
+
+    function Harness() {
+      const [state, setState] = useState(initialState);
+      latestState = state;
+      return (
+        <MapAnalyticsWorkspace
+          mode="owner"
+          mapState={state}
+          setMapState={(updater) => {
+            setState((previousState) => {
+              const nextState =
+                typeof updater === 'function' ? updater(previousState) : updater;
+              latestState = nextState;
+              return nextState;
+            });
+          }}
+          capabilities={{ readOnly: false }}
+          mobileControlsDefaultCollapsed={true}
+        />
+      );
+    }
+
+    render(<Harness />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create group' }));
+    expect(screen.getByText('Click UATs on the map, or Command-drag to add many.')).toBeInTheDocument();
+    expect(latestInteractiveMapProps?.onFeatureBoxSelect).toBeTypeOf('function');
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Map command drag select UATs' }));
+
+    await waitFor(() => {
+      expect(latestState.activeGroupingId).toBe('manual-map-groups');
+      expect(latestState.groupings[0]?.groups).toHaveLength(1);
+      expect(latestState.groupings[0]?.groups[0]?.memberSirutaCodes).toEqual(['1001', '2002']);
+      expect(latestState.groupings[0]?.groups[0]?.memberOrder).toEqual(['1001', '2002']);
+    });
+    expect(toastSuccessMock).toHaveBeenLastCalledWith('Added 2 UATs to group.');
   });
 
   it('shows manual group colors and selected group contour while create mode is active', async () => {

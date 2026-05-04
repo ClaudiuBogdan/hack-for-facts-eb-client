@@ -134,18 +134,18 @@ msgid "{0} series configured"
 msgstr "{0} series configured"
 
 #. placeholder {0}: normalizedPasteResult.seriesToInsert.length
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:974
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1015
 msgid "{0} series pasted"
 msgstr "{0} series pasted"
 
 #. placeholder {0}: activeGroupMetadata.memberSirutaCodes.length
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:199
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2189
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2230
 msgid "{0} UATs"
 msgstr "{0} UATs"
 
 #. placeholder {0}: normalizedPasteResult.skippedUnsupportedCount
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:979
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1020
 msgid "{0} unsupported series were skipped"
 msgstr "{0} unsupported series were skipped"
 
@@ -159,11 +159,11 @@ msgstr "{0} view enabled"
 msgid "{0} views enabled"
 msgstr "{0} views enabled"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3304
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3358
 msgid "{activeGroupMemberCount} UATs in current group"
 msgstr "{activeGroupMemberCount} UATs in current group"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3246
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3300
 msgid "{groupCount} manual groups configured"
 msgstr "{groupCount} manual groups configured"
 
@@ -282,7 +282,7 @@ msgid "0 participants"
 msgstr "0 participants"
 
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:198
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2188
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2229
 msgid "1 UAT"
 msgstr "1 UAT"
 
@@ -338,7 +338,7 @@ msgstr "active"
 
 #: src/components/alerts/components/AlertEditorView.tsx:286
 #: src/components/charts/components/views/SeriesConfigView.tsx:338
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3257
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3311
 #: src/features/notifications/components/alerts/AlertCard.tsx:71
 #: src/routes/cookies.lazy.tsx:149
 msgid "Active"
@@ -354,7 +354,7 @@ msgstr "Active filters"
 
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:201
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:675
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1647
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1688
 msgid "Active series"
 msgstr "Active series"
 
@@ -419,7 +419,7 @@ msgstr "Add Condition"
 msgid "Add Data Series"
 msgstr "Add Data Series"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2873
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2926
 msgid "Add description"
 msgstr "Add description"
 
@@ -432,7 +432,7 @@ msgstr "Add entity notification"
 msgid "Add grouped series"
 msgstr "Add grouped series"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3376
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3430
 msgid "Add here"
 msgstr "Add here"
 
@@ -500,15 +500,19 @@ msgstr "Add Value Filter Rule"
 msgid "Add view"
 msgstr "Add view"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:831
-msgid "Added {nextMemberCount} UATs to group."
-msgstr "Added {nextMemberCount} UATs to group."
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:865
+msgid "Added {addedMemberCount} UATs to group."
+msgstr "Added {addedMemberCount} UATs to group."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:830
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:831
+#~ msgid "Added {nextMemberCount} UATs to group."
+#~ msgstr "Added {nextMemberCount} UATs to group."
+
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:864
 msgid "Added 1 UAT to group."
 msgstr "Added 1 UAT to group."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3376
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3430
 msgid "Adding"
 msgstr "Adding"
 
@@ -529,7 +533,7 @@ msgstr "Advanced"
 msgid "Advanced Filtering"
 msgstr "Advanced Filtering"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2852
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2905
 msgid "Advanced map analytics active view"
 msgstr "Advanced map analytics active view"
 
@@ -730,7 +734,7 @@ msgstr "An unexpected error occurred"
 #: src/components/entities/grouped-item-analytics.ts:63
 #: src/components/ui/FloatingQuickNav.tsx:251
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:1064
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2850
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2903
 msgid "Analytics"
 msgstr "Analytics"
 
@@ -1621,8 +1625,12 @@ msgid "Click the link below to explore all {type} classifications."
 msgstr "Click the link below to explore all {type} classifications."
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3245
-msgid "Click UATs on the map to add them."
-msgstr "Click UATs on the map to add them."
+#~ msgid "Click UATs on the map to add them."
+#~ msgstr "Click UATs on the map to add them."
+
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3299
+msgid "Click UATs on the map, or Command-drag to add many."
+msgstr "Click UATs on the map, or Command-drag to add many."
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:843
 msgid "Clipboard data must contain SIRUTA and numeric values."
@@ -2054,7 +2062,7 @@ msgstr "Copy Data"
 msgid "Copy error report to clipboard"
 msgstr "Copy error report to clipboard"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:915
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:956
 msgid "Copy failed"
 msgstr "Copy failed"
 
@@ -2114,11 +2122,11 @@ msgstr "Correct!"
 msgid "Correct."
 msgstr "Correct."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:943
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:984
 msgid "Could not copy map configuration"
 msgstr "Could not copy map configuration"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:923
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:964
 msgid "Could not copy series to clipboard"
 msgstr "Could not copy series to clipboard"
 
@@ -2223,7 +2231,7 @@ msgstr "Counties"
 #: src/components/maps/HeatmapDataTable.tsx:482
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:170
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:191
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2182
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2223
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:522
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1511
 #: src/routes/entity-analytics.lazy.tsx:236
@@ -2268,7 +2276,7 @@ msgstr "Coverage quality still depends on connection rates and settlement densit
 msgid "Create a group before adding a grouped series."
 msgstr "Create a group before adding a grouped series."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2581
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2633
 msgid "Create a group first."
 msgstr "Create a group first."
 
@@ -2292,7 +2300,7 @@ msgstr "Create a source series before adding a grouped series."
 msgid "Create a source series before configuring a grouped series."
 msgstr "Create a source series before configuring a grouped series."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2580
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2632
 msgid "Create a source series first."
 msgstr "Create a source series first."
 
@@ -2339,7 +2347,7 @@ msgstr "Create editable copy"
 msgid "Create empty map"
 msgstr "Create empty map"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3340
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3394
 msgid "Create group"
 msgstr "Create group"
 
@@ -2351,7 +2359,7 @@ msgstr "Create map"
 msgid "Create map with this dataset"
 msgstr "Create map with this dataset"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3306
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3360
 msgid "Create mode stores clicked UATs in the active manual grouping."
 msgstr "Create mode stores clicked UATs in the active manual grouping."
 
@@ -2390,8 +2398,8 @@ msgstr "CSV exported"
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:172
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:212
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:285
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2202
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2274
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2243
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2315
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1509
 msgid "CUI"
 msgstr "CUI"
@@ -2420,7 +2428,7 @@ msgstr "Current"
 msgid "Current date"
 msgstr "Current date"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3305
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3359
 msgid "Current group is empty. Click a UAT to start it."
 msgstr "Current group is empty. Click a UAT to start it."
 
@@ -2696,7 +2704,7 @@ msgstr "Delete Chart"
 msgid "Delete data series?"
 msgstr "Delete data series?"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3382
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3436
 msgid "Delete group"
 msgstr "Delete group"
 
@@ -3136,7 +3144,7 @@ msgid "Edit dataset"
 msgstr "Edit dataset"
 
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:426
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2873
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2926
 msgid "Edit description"
 msgstr "Edit description"
 
@@ -3797,7 +3805,7 @@ msgstr "Failed to export JSON."
 msgid "Failed to import configuration file"
 msgstr "Failed to import configuration file"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1037
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1078
 msgid "Failed to import map configuration"
 msgstr "Failed to import map configuration"
 
@@ -3859,7 +3867,7 @@ msgstr "Failed to load map"
 msgid "Failed to load maps"
 msgstr "Failed to load maps"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2364
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2405
 msgid "Failed to load UAT profile details."
 msgstr "Failed to load UAT profile details."
 
@@ -4034,7 +4042,7 @@ msgstr "Find Entity to Monitor"
 msgid "Find resources, report issues, or get in touch."
 msgstr "Find resources, report issues, or get in touch."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3328
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3382
 #: src/features/challenges/components/player/challenge-step-article-layout.tsx:144
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:150
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:239
@@ -4217,7 +4225,7 @@ msgstr "General"
 msgid "Generate random color"
 msgstr "Generate random color"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2686
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2738
 #: src/routes/map.lazy.tsx:324
 msgid "geo-spatial.org"
 msgstr "geo-spatial.org"
@@ -4228,7 +4236,7 @@ msgstr "geo-spatial.org"
 msgid "GeoJSON dataset"
 msgstr "GeoJSON dataset"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2678
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2730
 #: src/routes/map.lazy.tsx:316
 msgid "GeoJSON source:"
 msgstr "GeoJSON source:"
@@ -4351,12 +4359,12 @@ msgid "Gross"
 msgstr "Gross"
 
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:385
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2004
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2045
 msgid "Group"
 msgstr "Group"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3359
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3366
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3413
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3420
 msgid "Group name"
 msgstr "Group name"
 
@@ -4365,7 +4373,7 @@ msgstr "Group name"
 msgid "Grouped {0}"
 msgstr "Grouped {0}"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3282
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3336
 msgid "Grouped active series render their own grouping."
 msgstr "Grouped active series render their own grouping."
 
@@ -4377,16 +4385,16 @@ msgstr "Grouped value series"
 #: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:113
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:521
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:203
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2193
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2234
 msgid "Grouping"
 msgstr "Grouping"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3289
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3296
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3343
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3350
 msgid "Grouping name"
 msgstr "Grouping name"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3241
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3295
 msgid "Groups"
 msgstr "Groups"
 
@@ -4467,7 +4475,7 @@ msgstr "Hide advanced settings"
 msgid "Hide details"
 msgstr "Hide details"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2888
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2941
 msgid "Hide Map Controls"
 msgstr "Hide Map Controls"
 
@@ -4559,7 +4567,7 @@ msgstr "Identifiers"
 msgid "Identify the specific budget line or category. For example: \"Personnel expenses - Chapter 65 Education\""
 msgstr "Identify the specific budget line or category. For example: \"Personnel expenses - Chapter 65 Education\""
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3257
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3311
 msgid "Idle"
 msgstr "Idle"
 
@@ -5172,8 +5180,8 @@ msgstr "Load snapshot"
 msgid "Loading Academy"
 msgstr "Loading Academy"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2720
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2928
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2772
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2981
 msgid "Loading advanced map analytics..."
 msgstr "Loading advanced map analytics..."
 
@@ -5182,7 +5190,7 @@ msgid "Loading alert…"
 msgstr "Loading alert…"
 
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:947
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3103
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3157
 msgid "Loading analytics data..."
 msgstr "Loading analytics data..."
 
@@ -5269,10 +5277,10 @@ msgstr "Loading map editor..."
 
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:836
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:837
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2735
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2742
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2943
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2950
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2787
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2794
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2996
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3003
 #: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:987
 #: src/routes/map.lazy.tsx:279
 #: src/routes/map.lazy.tsx:286
@@ -5300,7 +5308,7 @@ msgid "Loading shared datasets..."
 msgstr "Loading shared datasets..."
 
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:912
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3068
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3122
 #: src/routes/map.lazy.tsx:381
 msgid "Loading table data..."
 msgstr "Loading table data..."
@@ -5362,7 +5370,7 @@ msgstr "Local snapshot restored"
 msgid "Local snapshot saved"
 msgstr "Local snapshot saved"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2702
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2754
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:91
 msgid "Local snapshots"
 msgstr "Local snapshots"
@@ -5371,7 +5379,7 @@ msgstr "Local snapshots"
 msgid "Local Snapshots"
 msgstr "Local Snapshots"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2701
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2753
 msgid "Local snapshots ({localSnapshotCount})"
 msgstr "Local snapshots ({localSnapshotCount})"
 
@@ -5536,7 +5544,7 @@ msgstr "Manual"
 #: src/components/sidebar/nav-main.tsx:32
 #: src/components/ui/shortcuts.tsx:44
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:1062
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2848
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2901
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1411
 #: src/routes/index.tsx:72
 msgid "Map"
@@ -5546,16 +5554,16 @@ msgstr "Map"
 msgid "Map configuration actions"
 msgstr "Map configuration actions"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:941
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:982
 msgid "Map configuration copied to clipboard"
 msgstr "Map configuration copied to clipboard"
 
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:195
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1034
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1075
 msgid "Map configuration imported"
 msgstr "Map configuration imported"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1025
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1066
 msgid "Map configuration in clipboard is invalid"
 msgstr "Map configuration in clipboard is invalid"
 
@@ -5583,12 +5591,12 @@ msgstr "Map description markdown editor"
 msgid "Map Filters"
 msgstr "Map Filters"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2728
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2936
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2780
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2989
 msgid "Map geometry is unavailable."
 msgstr "Map geometry is unavailable."
 
-#: src/components/maps/InteractiveMap.tsx:398
+#: src/components/maps/InteractiveMap.tsx:421
 msgid "Map geometry not available."
 msgstr "Map geometry not available."
 
@@ -5732,7 +5740,7 @@ msgid "Medium opportunity"
 msgstr "Medium opportunity"
 
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:204
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2194
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2235
 msgid "Members"
 msgstr "Members"
 
@@ -5932,11 +5940,11 @@ msgstr "Move left"
 msgid "Move right"
 msgstr "Move right"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3409
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3463
 msgid "Move UAT earlier in group"
 msgstr "Move UAT earlier in group"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3418
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3472
 msgid "Move UAT later in group"
 msgstr "Move UAT later in group"
 
@@ -5997,8 +6005,8 @@ msgstr "My interactive budget map…"
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:172
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:212
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:285
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2202
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2274
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2243
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2315
 msgid "N/A"
 msgstr "N/A"
 
@@ -6083,7 +6091,7 @@ msgstr "Network expansion may precede household connections, so combine with con
 msgid "New"
 msgstr "New"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3319
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3373
 msgid "New group"
 msgstr "New group"
 
@@ -6130,9 +6138,9 @@ msgstr "No active series"
 
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:218
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:888
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2207
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2775
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2981
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2248
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2828
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3035
 msgid "No active series selected."
 msgstr "No active series selected."
 
@@ -6199,7 +6207,7 @@ msgstr "No classifications found"
 msgid "No commitment data available"
 msgstr "No commitment data available"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:956
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:997
 msgid "No compatible series found in clipboard"
 msgstr "No compatible series found in clipboard"
 
@@ -6234,7 +6242,7 @@ msgid "No Data Available"
 msgstr "No Data Available"
 
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:924
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3080
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3134
 msgid "No data available for table."
 msgstr "No data available for table."
 
@@ -6326,7 +6334,7 @@ msgstr "No distinct outliers found. Try adjusting filters."
 
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:180
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:290
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2279
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2320
 msgid "No enabled series"
 msgstr "No enabled series"
 
@@ -6337,7 +6345,7 @@ msgstr "No enabled series data available to display."
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:546
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:584
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:920
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3076
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3130
 msgid "No enabled series."
 msgstr "No enabled series."
 
@@ -6358,7 +6366,7 @@ msgid "No Filters Applied"
 msgstr "No Filters Applied"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:539
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3274
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3328
 msgid "No grouping"
 msgstr "No grouping"
 
@@ -6529,7 +6537,7 @@ msgstr "Non-treasury payments"
 msgid "none"
 msgstr "none"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2353
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2394
 msgid "None"
 msgstr "None"
 
@@ -6618,8 +6626,8 @@ msgid "Notes"
 msgstr "Notes"
 
 #: src/components/charts/components/chart-config/SeriesToolbar.tsx:18
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:958
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1070
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:999
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1111
 msgid "Nothing to paste"
 msgstr "Nothing to paste"
 
@@ -7049,7 +7057,7 @@ msgstr "Paste data"
 msgid "Paste data from a spreadsheet. Each line should contain a year and a value, separated by a space or tab."
 msgstr "Paste data from a spreadsheet. Each line should contain a year and a value, separated by a space or tab."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1072
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1113
 msgid "Paste failed"
 msgstr "Paste failed"
 
@@ -7411,7 +7419,7 @@ msgstr "Previous step"
 msgid "Prices"
 msgstr "Prices"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3402
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3456
 msgid "Primary"
 msgstr "Primary"
 
@@ -7788,20 +7796,20 @@ msgstr "Remove condition"
 msgid "Remove this view?"
 msgstr "Remove this view?"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3436
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3490
 msgid "Remove UAT from group"
 msgstr "Remove UAT from group"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:824
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:856
 msgid "Removed UAT and deleted the empty group."
 msgstr "Removed UAT and deleted the empty group."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:825
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:857
 msgid "Removed UAT from group."
 msgstr "Removed UAT from group."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3264
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3272
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3318
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3326
 msgid "Rendered grouping"
 msgstr "Rendered grouping"
 
@@ -8085,7 +8093,7 @@ msgstr "Save cookie preferences"
 
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:509
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:142
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3008
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3062
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:116
 msgid "Save snapshot"
 msgstr "Save snapshot"
@@ -8107,7 +8115,7 @@ msgid "Saved only in this browser. Not synced to your account."
 msgstr "Saved only in this browser. Not synced to your account."
 
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:139
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3008
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3062
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1171
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1265
 #: src/routes/alerts/$alertId/index.lazy.tsx:124
@@ -8414,7 +8422,7 @@ msgstr "Selected period:"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-uat-properties.ts:67
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:125
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:448
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2464
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2505
 msgid "Selected UAT"
 msgstr "Selected UAT"
 
@@ -8422,9 +8430,13 @@ msgstr "Selected UAT"
 msgid "Selected UAT details"
 msgstr "Selected UAT details"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:731
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:739
 msgid "Selected UAT does not have a SIRUTA code."
 msgstr "Selected UAT does not have a SIRUTA code."
+
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:860
+msgid "Selected UATs are already in group."
+msgstr "Selected UATs are already in group."
 
 #: src/components/filters/period-filter/PeriodFilter.tsx:418
 msgid "Selection Mode"
@@ -8493,7 +8505,7 @@ msgstr "Series"
 msgid "Series Color"
 msgstr "Series Color"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:921
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:962
 msgid "Series copied to clipboard"
 msgstr "Series copied to clipboard"
 
@@ -8553,7 +8565,7 @@ msgstr "Set active bins preset"
 msgid "Set active series"
 msgstr "Set active series"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3427
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3481
 msgid "Set primary UAT for group"
 msgstr "Set primary UAT for group"
 
@@ -8697,7 +8709,7 @@ msgstr "Show less"
 msgid "Show Less"
 msgstr "Show Less"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2888
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2941
 msgid "Show Map Controls"
 msgstr "Show Map Controls"
 
@@ -9066,7 +9078,7 @@ msgstr "Step sections"
 msgid "Steps"
 msgstr "Steps"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2705
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2757
 msgid "Stored only in this browser on this device."
 msgstr "Stored only in this browser on this device."
 
@@ -9202,7 +9214,7 @@ msgstr "System status badge"
 #: src/components/filters/EntityAnalyticsFilter.tsx:439
 #: src/components/filters/MapFilter.tsx:213
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:1063
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2849
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2902
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1405
 msgid "Table"
 msgstr "Table"
@@ -9843,7 +9855,7 @@ msgstr "Type your answer..."
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:363
 #: src/components/maps/charts/UatDataCharts.tsx:103
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:175
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2165
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2206
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:521
 #: src/lib/chart-filter-utils.ts:39
 msgid "UAT"
@@ -9958,7 +9970,7 @@ msgstr "Unknown"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:902
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:1747
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:437
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2057
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2098
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:158
 msgid "Unknown county"
 msgstr "Unknown county"
@@ -10047,7 +10059,7 @@ msgstr "Untitled data series"
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:132
 #: src/features/advanced-map-analytics/components/map-analytics-public-preview-card.tsx:84
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:695
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2354
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2395
 msgid "Untitled map"
 msgstr "Untitled map"
 
