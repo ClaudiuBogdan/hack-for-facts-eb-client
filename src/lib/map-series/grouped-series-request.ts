@@ -11,7 +11,10 @@ interface RemoteGroupedSeriesBuildResult {
 
 export function buildRemoteGroupedSeriesState(series: MapSupportedSeries[]): RemoteGroupedSeriesBuildResult {
   const baseSeries = series
-    .filter((entry): entry is MapBaseSeries => entry.type !== 'aggregated-series-calculation')
+    .filter((entry): entry is MapBaseSeries =>
+      entry.type !== 'aggregated-series-calculation' &&
+      entry.type !== 'map-grouped-value-series'
+    )
     .sort((left, right) => left.id.localeCompare(right.id));
 
   const remoteBaseSeries = baseSeries

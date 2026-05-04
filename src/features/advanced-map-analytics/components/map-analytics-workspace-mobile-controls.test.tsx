@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -61,6 +61,8 @@ let mockCountyGeoJsonData: {
 };
 let mockSeriesDataResult = {
   valuesBySeriesId: new Map<string, Map<string, number | undefined>>(),
+  mapValuesBySeriesId: new Map<string, Map<string, number | undefined>>(),
+  domainsBySeriesId: new Map<string, { type: 'uat' } | { type: 'group'; groupingId: string }>(),
   unitsBySeriesId: new Map<string, string | undefined>(),
   warnings: [],
   activeSeriesId: undefined as string | undefined,
@@ -313,6 +315,8 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     };
     mockSeriesDataResult = {
       valuesBySeriesId: new Map<string, Map<string, number | undefined>>(),
+      mapValuesBySeriesId: new Map<string, Map<string, number | undefined>>(),
+      domainsBySeriesId: new Map<string, { type: 'uat' } | { type: 'group'; groupingId: string }>(),
       unitsBySeriesId: new Map<string, string | undefined>(),
       warnings: [],
       activeSeriesId: undefined,
@@ -528,6 +532,54 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(screen.getByTestId('map-analytics-quick-actions')).toBeInTheDocument();
   });
 
+  it('creates a manual group by clicking UATs while create group mode is active', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    };
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+    const initialState = createMapState({ activeView: 'map' });
+    let latestState = initialState;
+
+    function Harness() {
+      const [state, setState] = useState(initialState);
+      latestState = state;
+      return (
+        <MapAnalyticsWorkspace
+          mode="owner"
+          mapState={state}
+          setMapState={(updater) => {
+            setState((previousState) => {
+              const nextState =
+                typeof updater === 'function' ? updater(previousState) : updater;
+              latestState = nextState;
+              return nextState;
+            });
+          }}
+          capabilities={{ readOnly: false }}
+          mobileControlsDefaultCollapsed={true}
+        />
+      );
+    }
+
+    render(<Harness />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create group' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
+
+    await waitFor(() => {
+      expect(latestState.activeGroupingId).toBe('manual-map-groups');
+      expect(latestState.groupings).toHaveLength(1);
+      expect(latestState.groupings[0]?.groups).toHaveLength(1);
+      expect(latestState.groupings[0]?.groups[0]?.memberSirutaCodes).toEqual(['1001']);
+    });
+  });
+
   it('shows GeoJSON source link at the bottom of the sidebar', async () => {
     mockIsMobile.mockReturnValue(true);
     const setMapState = vi.fn();
@@ -643,6 +695,16 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
         [textSeries.id, new Map([['1001', 120]])],
         [linkSeries.id, new Map([['1001', 220]])],
         [markdownSeries.id, new Map([['1001', 320]])],
+      ]),
+      mapValuesBySeriesId: new Map<string, Map<string, number | undefined>>([
+        [textSeries.id, new Map([['1001', 120]])],
+        [linkSeries.id, new Map([['1001', 220]])],
+        [markdownSeries.id, new Map([['1001', 320]])],
+      ]),
+      domainsBySeriesId: new Map([
+        [textSeries.id, { type: 'uat' }],
+        [linkSeries.id, { type: 'uat' }],
+        [markdownSeries.id, { type: 'uat' }],
       ]),
       unitsBySeriesId: new Map<string, string | undefined>([
         [textSeries.id, 'RON'],
@@ -1142,6 +1204,8 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     ]);
     mockSeriesDataResult = {
       valuesBySeriesId,
+      mapValuesBySeriesId: valuesBySeriesId,
+      domainsBySeriesId: new Map([[activeSeries.id, { type: 'uat' }]]),
       unitsBySeriesId: new Map([[activeSeries.id, 'RON']]),
       warnings: [],
       activeSeriesId: activeSeries.id,
@@ -1221,6 +1285,8 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
 
     mockSeriesDataResult = {
       valuesBySeriesId: new Map([[activeSeries.id, activeValues]]),
+      mapValuesBySeriesId: new Map([[activeSeries.id, activeValues]]),
+      domainsBySeriesId: new Map([[activeSeries.id, { type: 'uat' }]]),
       unitsBySeriesId: new Map([[activeSeries.id, undefined]]),
       warnings: [],
       activeSeriesId: activeSeries.id,

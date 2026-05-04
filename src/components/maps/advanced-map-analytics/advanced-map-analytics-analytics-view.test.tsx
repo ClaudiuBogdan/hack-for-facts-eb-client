@@ -389,6 +389,48 @@ describe('AdvancedMapAnalyticsAnalyticsView', () => {
     expect(within(seriesARow).getAllByText(/25/)).toHaveLength(2);
   });
 
+  it('calculates coverage inside each series domain', () => {
+    const uatSeries = createSeries('series-a', 'Series A');
+    const groupedSeries = createSeries('series-b', 'Grouped Series');
+    const valuesBySeriesId = new Map<string, Map<string, number | undefined>>([
+      [uatSeries.id, new Map([
+        ['1001', 10],
+        ['1002', 20],
+      ])],
+      [groupedSeries.id, new Map([
+        ['group:1', 30],
+        ['group:2', 40],
+      ])],
+    ]);
+
+    render(
+      <AdvancedMapAnalyticsAnalyticsView
+        {...createComponentProps({
+          series: [uatSeries, groupedSeries],
+          valuesBySeriesId,
+          domainsBySeriesId: new Map([
+            [uatSeries.id, { type: 'uat' }],
+            [groupedSeries.id, { type: 'group', groupingId: 'county' }],
+          ]),
+        })}
+      />
+    );
+
+    const coverageSection = screen.getByRole('heading', { name: 'Series coverage' }).closest('section');
+    if (!coverageSection) {
+      throw new Error('Series coverage section should exist');
+    }
+
+    const uatRow = within(coverageSection).getByText('Series A').closest('tr');
+    const groupedRow = within(coverageSection).getByText('Grouped Series').closest('tr');
+    if (!uatRow || !groupedRow) {
+      throw new Error('Coverage rows should exist');
+    }
+
+    expect(within(uatRow).getByText('100.0%')).toBeInTheDocument();
+    expect(within(groupedRow).getByText('100.0%')).toBeInTheDocument();
+  });
+
   it('renders distribution table view when viewMode is table', () => {
     const widgets = createDefaultAdvancedMapAnalyticsWidgets().map((widget) =>
       widget.key === 'distribution'

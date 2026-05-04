@@ -24,8 +24,8 @@ import { fetchGroupedSeriesData } from './map-series';
 
 function createSeriesRequest() {
   const series = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
-  if (series.type === 'aggregated-series-calculation') {
-    throw new Error('Unexpected calculation series in test setup');
+  if (series.type === 'aggregated-series-calculation' || series.type === 'map-grouped-value-series') {
+    throw new Error('Unexpected derived series in test setup');
   }
 
   return {

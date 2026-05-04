@@ -3,6 +3,7 @@ import { queryOptions, useQuery } from '@tanstack/react-query';
 import type { Currency } from '@/schemas/charts';
 import type {
   AdvancedMapAnalyticsValueFilterRule,
+  MapGrouping,
   MapSupportedSeries,
 } from '@/schemas/advanced-map-analytics';
 import { fetchGroupedSeriesData } from '@/lib/api/map-series';
@@ -14,8 +15,10 @@ import {
   serializeRemoteFetchSeriesForRequest,
 } from '@/lib/map-series/grouped-series-request';
 import { applyAdvancedMapAnalyticsValueFilters } from '@/lib/map-series/value-filters';
+import { projectGroupedValuesToSiruta } from '@/lib/map-series/grouping';
 import type {
   GroupedSeriesDataResponse,
+  MapSeriesDomainCache,
   MapSeriesVectorCache,
   MapSeriesWarning,
 } from '@/lib/map-series/interfaces';
@@ -26,6 +29,7 @@ const isBrowser = typeof window !== 'undefined';
 
 interface UseAdvancedMapAnalyticsSeriesDataParams {
   series: MapSupportedSeries[];
+  groupings?: MapGrouping[];
   activeSeriesId?: string;
   defaultCurrency: Currency;
   defaultInflationAdjusted: boolean;
@@ -40,11 +44,14 @@ interface UseAdvancedMapAnalyticsSeriesDataParams {
 
 interface AdvancedMapAnalyticsSeriesDataResult {
   valuesBySeriesId: MapSeriesVectorCache;
+  mapValuesBySeriesId: MapSeriesVectorCache;
   unitsBySeriesId: Map<string, string | undefined>;
+  domainsBySeriesId: MapSeriesDomainCache;
   warnings: MapSeriesWarning[];
   matchedSirutaCodes?: Set<string>;
   activeSeriesId?: string;
   activeValues?: Map<string, number | undefined>;
+  activeCanonicalValues?: Map<string, number | undefined>;
   isLoading: boolean;
   isFetching: boolean;
   error: Error | null;
@@ -193,6 +200,7 @@ export function useAdvancedMapAnalyticsSeriesData(
 
     const calculationResult = calculateMapSeriesValues({
       series: normalizedSeries,
+      groupings: params.groupings,
       baseValuesBySeriesId: baseVectors,
       unitsBySeriesId: baseUnits,
     });
@@ -208,6 +216,7 @@ export function useAdvancedMapAnalyticsSeriesData(
     const valueFilterResult = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId: calculationResult.valuesBySeriesId,
       displayValuesBySeriesId,
+      domainsBySeriesId: calculationResult.domainsBySeriesId,
       activeSeriesId: resolvedActiveSeriesId,
       rules: params.valueFilterRules ?? [],
     });
@@ -219,6 +228,12 @@ export function useAdvancedMapAnalyticsSeriesData(
     warnings.push(...scopedCalculationWarnings);
     warnings.push(...valueFilterResult.warnings);
 
+    const mapValuesBySeriesId = projectGroupedValuesToSiruta({
+      valuesBySeriesId: valueFilterResult.valuesBySeriesId,
+      domainsBySeriesId: calculationResult.domainsBySeriesId,
+      groupings: params.groupings ?? [],
+    });
+
     if ((params.serializedDraftLength ?? 0) > DRAFT_SIZE_WARNING_THRESHOLD) {
       warnings.push({
         type: 'url_budget',
@@ -229,7 +244,9 @@ export function useAdvancedMapAnalyticsSeriesData(
 
     return {
       valuesBySeriesId: valueFilterResult.valuesBySeriesId,
+      mapValuesBySeriesId,
       unitsBySeriesId: calculationResult.unitsBySeriesId,
+      domainsBySeriesId: calculationResult.domainsBySeriesId,
       matchedSirutaCodes: valueFilterResult.matchedSirutaCodes,
       warnings,
     };
@@ -237,6 +254,7 @@ export function useAdvancedMapAnalyticsSeriesData(
     groupedDataQuery.data,
     params.localUnitsBySeriesId,
     params.localValuesBySeriesId,
+    params.groupings,
     normalizedEnabledSeries,
     normalizedSeries,
     normalizedBaseSeries,
@@ -248,11 +266,16 @@ export function useAdvancedMapAnalyticsSeriesData(
 
   return {
     valuesBySeriesId: calculated.valuesBySeriesId,
+    mapValuesBySeriesId: calculated.mapValuesBySeriesId,
     unitsBySeriesId: calculated.unitsBySeriesId,
+    domainsBySeriesId: calculated.domainsBySeriesId,
     warnings: calculated.warnings,
     matchedSirutaCodes: calculated.matchedSirutaCodes,
     activeSeriesId: resolvedActiveSeriesId,
     activeValues: resolvedActiveSeriesId
+      ? calculated.mapValuesBySeriesId.get(resolvedActiveSeriesId)
+      : undefined,
+    activeCanonicalValues: resolvedActiveSeriesId
       ? calculated.valuesBySeriesId.get(resolvedActiveSeriesId)
       : undefined,
     isLoading: groupedDataQuery.isLoading,

@@ -2,9 +2,10 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react
 import { useNavigate } from '@tanstack/react-router';
 import { produce } from 'immer';
 import { AnimatePresence, motion } from 'framer-motion';
-import { BarChart3, Loader2, MapIcon, Pencil, Save, TableIcon } from 'lucide-react';
+import { BarChart3, Check, Loader2, MapIcon, MousePointer2, Pencil, Plus, Save, TableIcon } from 'lucide-react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
+import type { GeoJsonObject } from 'geojson';
 
 import { ClientOnly } from '@/components/ssr/ClientOnly';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -21,6 +22,7 @@ import type { HeatmapCountyDataPoint, HeatmapUATDataPoint } from '@/schemas/heat
 import { defaultMapFilters } from '@/schemas/map-filters';
 import type { AnalyticsFilterType } from '@/schemas/charts';
 import type {
+  AdvancedMapAnalyticsTableGroupingColumn,
   AdvancedMapAnalyticsTableRow,
   AdvancedMapAnalyticsTableSeriesColumn,
 } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-table-types';
@@ -33,6 +35,7 @@ import type {
   AdvancedMapAnalyticsValueFilterRule,
   GeoJsonFilterOption,
   GeoJsonDatasetSeriesConfiguration,
+  MapGrouping,
   MapSupportedSeries,
 } from '@/schemas/advanced-map-analytics';
 import {
@@ -47,6 +50,12 @@ import { useEntityProfile } from '@/lib/hooks/useEntityDetails';
 import { buildEntityDetailsPath } from '@/lib/entity-navigation';
 import { DEFAULT_FEATURE_STYLE } from '@/components/maps/constants';
 import type { GroupedSeriesDataResponse, MapSeriesVectorCache } from '@/lib/map-series/interfaces';
+import {
+  areSeriesDomainsEqual,
+  buildGroupMetadataById,
+  buildGroupingValuesBySiruta,
+  getGroupMetadataKey,
+} from '@/lib/map-series/grouping';
 import { AdvancedMapAnalyticsConfigPanel } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel';
 import { ViewTypeRadioGroup } from '@/components/filters/ViewTypeRadioGroup';
 import { AdvancedMapAnalyticsBinsModal } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal';
@@ -106,6 +115,10 @@ const InteractiveMap = lazy(() =>
   loadInteractiveMapModule().then((module) => ({ default: module.InteractiveMap }))
 );
 
+const MANUAL_GROUPING_ID = 'manual-map-groups';
+const MANUAL_GROUPING_KEY = 'manual';
+const MANUAL_GROUPING_LABEL = 'Manual groups';
+
 interface EditorState {
   mode: 'add' | 'edit';
   seriesId: string;
@@ -157,6 +170,37 @@ interface MapAnalyticsWorkspaceProps {
   onMapFeatureSelect?: (properties: UatProperties) => void;
 }
 
+function ensureManualGrouping(state: AdvancedMapAnalyticsUrlState): MapGrouping {
+  let grouping = state.groupings.find((entry) => entry.id === MANUAL_GROUPING_ID);
+  if (!grouping) {
+    grouping = {
+      id: MANUAL_GROUPING_ID,
+      key: MANUAL_GROUPING_KEY,
+      label: MANUAL_GROUPING_LABEL,
+      groups: [],
+    };
+    state.groupings.push(grouping);
+  }
+  return grouping;
+}
+
+function createManualGroupId(memberSirutaCodes: string[]): string {
+  const sortedCodes = [...new Set(memberSirutaCodes)].sort();
+  let hash = 2166136261;
+  for (const character of sortedCodes.join('|')) {
+    hash ^= character.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `grp_${(hash >>> 0).toString(36)}`;
+}
+
+function createManualGroupLabel(memberSirutaCodes: string[], fallbackUatName: string): string {
+  if (memberSirutaCodes.length === 1 && fallbackUatName.trim().length > 0) {
+    return fallbackUatName.trim();
+  }
+  return `Group ${memberSirutaCodes.length}`;
+}
+
 // NOTE: Do not use module-scope t`` — it freezes the translation at import time.
 // Use t`` at the call site instead (see mapName usage below).
 
@@ -199,6 +243,8 @@ export function MapAnalyticsWorkspace({
   const [isWarningsModalOpen, setIsWarningsModalOpen] = useState(false);
   const [selectedSeriesId, setSelectedSeriesId] = useState<string | undefined>(undefined);
   const [selectedMapEntity, setSelectedMapEntity] = useState<SelectedMapEntityDetails | null>(null);
+  const [isManualGroupCreateMode, setIsManualGroupCreateMode] = useState(false);
+  const [activeManualGroupId, setActiveManualGroupId] = useState<string | undefined>(undefined);
   const [isMobileControlsCollapsed, setIsMobileControlsCollapsed] = useState(
     mobileControlsDefaultCollapsed
   );
@@ -332,6 +378,7 @@ export function MapAnalyticsWorkspace({
         const nextState = applySetActiveSeries(draft, seriesId);
         draft.series = nextState.series;
         draft.activeSeriesId = nextState.activeSeriesId;
+        draft.activeGroupingId = nextState.activeGroupingId;
       });
     },
     [isReadOnly, updateState]
@@ -351,6 +398,114 @@ export function MapAnalyticsWorkspace({
       });
     },
     [isReadOnly, updateState]
+  );
+
+  const startManualGroupCreateMode = useCallback(() => {
+    if (isReadOnly || isPreviewLayout || mapViewType !== 'UAT') {
+      return;
+    }
+
+    updateState((draft) => {
+      ensureManualGrouping(draft);
+      draft.activeGroupingId = MANUAL_GROUPING_ID;
+    });
+    setSelectedMapEntity(null);
+    setActiveManualGroupId(undefined);
+    setIsManualGroupCreateMode(true);
+  }, [isPreviewLayout, isReadOnly, mapViewType, updateState]);
+
+  const startNextManualGroup = useCallback(() => {
+    if (isReadOnly || isPreviewLayout || mapViewType !== 'UAT') {
+      return;
+    }
+
+    updateState((draft) => {
+      ensureManualGrouping(draft);
+      draft.activeGroupingId = MANUAL_GROUPING_ID;
+    });
+    setSelectedMapEntity(null);
+    setActiveManualGroupId(undefined);
+    setIsManualGroupCreateMode(true);
+  }, [isPreviewLayout, isReadOnly, mapViewType, updateState]);
+
+  const finishManualGroupCreateMode = useCallback(() => {
+    setIsManualGroupCreateMode(false);
+    setActiveManualGroupId(undefined);
+  }, []);
+
+  const addFeatureToManualGroup = useCallback(
+    (properties: UatProperties) => {
+      if (isReadOnly || isPreviewLayout || mapViewType !== 'UAT') {
+        return;
+      }
+
+      const sirutaCode = String(properties?.natcode ?? '').trim();
+      if (sirutaCode.length === 0) {
+        toast.warning(t`Selected UAT does not have a SIRUTA code.`);
+        return;
+      }
+
+      const uatName = String(properties?.name ?? '').trim();
+      let nextActiveGroupId: string | undefined;
+      let nextMemberCount = 0;
+
+      updateState((draft) => {
+        const grouping = ensureManualGrouping(draft);
+        draft.activeGroupingId = grouping.id;
+
+        let targetGroup = activeManualGroupId
+          ? grouping.groups.find((group) => group.id === activeManualGroupId)
+          : undefined;
+        if (!targetGroup) {
+          targetGroup = {
+            id: createManualGroupId([sirutaCode]),
+            label: uatName.length > 0 ? uatName : undefined,
+            memberSirutaCodes: [],
+            memberOrder: [],
+            primarySirutaCode: sirutaCode,
+          };
+          grouping.groups.push(targetGroup);
+        }
+
+        for (let groupIndex = grouping.groups.length - 1; groupIndex >= 0; groupIndex -= 1) {
+          const group = grouping.groups[groupIndex];
+          if (!group || group.id === targetGroup.id) {
+            continue;
+          }
+
+          group.memberSirutaCodes = group.memberSirutaCodes.filter((code) => code !== sirutaCode);
+          group.memberOrder = group.memberOrder?.filter((code) => code !== sirutaCode);
+          if (group.primarySirutaCode === sirutaCode) {
+            group.primarySirutaCode = group.memberSirutaCodes[0];
+          }
+          if (group.memberSirutaCodes.length === 0) {
+            grouping.groups.splice(groupIndex, 1);
+          }
+        }
+
+        if (!targetGroup.memberSirutaCodes.includes(sirutaCode)) {
+          targetGroup.memberSirutaCodes.push(sirutaCode);
+        }
+        targetGroup.memberOrder = [
+          ...new Set([...(targetGroup.memberOrder ?? []), sirutaCode]),
+        ].filter((code) => targetGroup.memberSirutaCodes.includes(code));
+        targetGroup.primarySirutaCode = targetGroup.primarySirutaCode ?? sirutaCode;
+
+        const nextGroupId = createManualGroupId(targetGroup.memberSirutaCodes);
+        targetGroup.id = nextGroupId;
+        targetGroup.label = createManualGroupLabel(targetGroup.memberSirutaCodes, uatName);
+        nextActiveGroupId = nextGroupId;
+        nextMemberCount = targetGroup.memberSirutaCodes.length;
+      });
+
+      setActiveManualGroupId(nextActiveGroupId);
+      toast.success(
+        nextMemberCount === 1
+          ? t`Added 1 UAT to group.`
+          : t`Added ${nextMemberCount} UATs to group.`
+      );
+    },
+    [activeManualGroupId, isPreviewLayout, isReadOnly, mapViewType, updateState]
   );
 
   const moveSeriesUp = useCallback(
@@ -1034,6 +1189,8 @@ export function MapAnalyticsWorkspace({
 
   const {
     valuesBySeriesId,
+    mapValuesBySeriesId,
+    domainsBySeriesId,
     unitsBySeriesId,
     warnings: seriesWarnings,
     activeSeriesId,
@@ -1042,6 +1199,7 @@ export function MapAnalyticsWorkspace({
     error,
   } = useAdvancedMapAnalyticsSeriesData({
     series: mapState.series,
+    groupings: mapState.groupings,
     activeSeriesId: mapState.activeSeriesId,
     valueFilterRules: mapState.valueFilters.rules,
     defaultCurrency: userCurrency,
@@ -1363,8 +1521,27 @@ export function MapAnalyticsWorkspace({
     }));
   }, [displayUnitOverridesBySeriesId, enabledSeries, unitsBySeriesId]);
 
+  const groupingColumns = useMemo<AdvancedMapAnalyticsTableGroupingColumn[]>(
+    () =>
+      mapState.groupings.map((grouping) => ({
+        id: grouping.id,
+        label: grouping.label || grouping.key || grouping.id,
+      })),
+    [mapState.groupings]
+  );
+
+  const groupValuesBySirutaCode = useMemo(
+    () => buildGroupingValuesBySiruta({ groupings: mapState.groupings }),
+    [mapState.groupings]
+  );
+
+  const groupMetadataById = useMemo(
+    () => buildGroupMetadataById({ groupings: mapState.groupings }),
+    [mapState.groupings]
+  );
+
   const uatMetadataBySirutaCode = useMemo(() => {
-    const metadataBySirutaCode = new Map<string, Omit<AdvancedMapAnalyticsTableRow, 'sirutaCode' | 'valuesBySeriesId'>>();
+    const metadataBySirutaCode = new Map<string, Omit<AdvancedMapAnalyticsTableRow, 'sirutaCode' | 'valuesBySeriesId' | 'groupValuesByGroupingId'>>();
 
     for (const feature of geoJsonFeatures) {
       const properties = feature?.properties;
@@ -1396,7 +1573,7 @@ export function MapAnalyticsWorkspace({
           .get(series.id)
           ?.get(selectedMapEntity.sirutaCode) ?? null,
       value: formatAdvancedMapAnalyticsSeriesValue(
-        valuesBySeriesId.get(series.id)?.get(selectedMapEntity.sirutaCode),
+        mapValuesBySeriesId.get(series.id)?.get(selectedMapEntity.sirutaCode),
         resolveSeriesDisplayUnit(series, unitsBySeriesId, displayUnitOverridesBySeriesId)
       ),
       isActive: series.id === activeSeriesId,
@@ -1408,10 +1585,74 @@ export function MapAnalyticsWorkspace({
     selectedMapEntity,
     unitsBySeriesId,
     uploadedDatasetPayloadsBySeriesId,
-    valuesBySeriesId,
+    mapValuesBySeriesId,
   ]);
 
   const tableRows = useMemo<AdvancedMapAnalyticsTableRow[]>(() => {
+    const activeDomain = activeSeriesId ? domainsBySeriesId.get(activeSeriesId) : undefined;
+    if (activeDomain?.type === 'group') {
+      const activeSeriesColumn = seriesColumns.find((seriesColumn) => seriesColumn.id === activeSeriesId);
+      const rowScopeSeriesColumns = activeSeriesColumn ? [activeSeriesColumn] : seriesColumns;
+      const uniqueGroupIds = new Set<string>();
+
+      for (const seriesColumn of rowScopeSeriesColumns) {
+        const vector = valuesBySeriesId.get(seriesColumn.id);
+        if (!vector) {
+          continue;
+        }
+
+        const seriesDomain = domainsBySeriesId.get(seriesColumn.id);
+        if (
+          !seriesDomain ||
+          seriesDomain.type !== 'group' ||
+          seriesDomain.groupingId !== activeDomain.groupingId
+        ) {
+          continue;
+        }
+
+        for (const [groupId, value] of vector.entries()) {
+          if (value === undefined) {
+            continue;
+          }
+
+          uniqueGroupIds.add(String(groupId));
+        }
+      }
+
+      return [...uniqueGroupIds]
+        .map((groupId) => {
+          const metadata = groupMetadataById.get(getGroupMetadataKey(activeDomain.groupingId, groupId));
+          const rowValuesBySeriesId: Record<string, number | undefined> = {};
+
+          for (const seriesColumn of seriesColumns) {
+            const seriesDomain = domainsBySeriesId.get(seriesColumn.id);
+            rowValuesBySeriesId[seriesColumn.id] =
+              seriesDomain && areSeriesDomainsEqual(seriesDomain, activeDomain)
+                ? valuesBySeriesId.get(seriesColumn.id)?.get(groupId)
+                : undefined;
+          }
+
+          return {
+            sirutaCode: groupId,
+            uatName: metadata?.groupLabel || groupId,
+            countyName: metadata?.groupingLabel || t`Group`,
+            groupValuesByGroupingId: {
+              [activeDomain.groupingId]: groupId,
+            },
+            valuesBySeriesId: rowValuesBySeriesId,
+          };
+        })
+        .sort((left, right) => {
+          const nameCompare = left.uatName.localeCompare(right.uatName, undefined, {
+            sensitivity: 'base',
+          });
+          if (nameCompare !== 0) {
+            return nameCompare;
+          }
+          return left.sirutaCode.localeCompare(right.sirutaCode);
+        });
+    }
+
     const activeSeriesColumn = activeSeriesId
       ? seriesColumns.find((seriesColumn) => seriesColumn.id === activeSeriesId)
       : undefined;
@@ -1419,7 +1660,7 @@ export function MapAnalyticsWorkspace({
     const uniqueSirutaCodes = new Set<string>();
 
     for (const seriesColumn of rowScopeSeriesColumns) {
-      const vector = valuesBySeriesId.get(seriesColumn.id);
+      const vector = mapValuesBySeriesId.get(seriesColumn.id);
       if (!vector) {
         continue;
       }
@@ -1439,7 +1680,7 @@ export function MapAnalyticsWorkspace({
         const rowValuesBySeriesId: Record<string, number | undefined> = {};
 
         for (const seriesColumn of seriesColumns) {
-          rowValuesBySeriesId[seriesColumn.id] = valuesBySeriesId
+          rowValuesBySeriesId[seriesColumn.id] = mapValuesBySeriesId
             .get(seriesColumn.id)
             ?.get(sirutaCode);
         }
@@ -1449,6 +1690,7 @@ export function MapAnalyticsWorkspace({
           uatName: metadata?.uatName || `UAT ${sirutaCode}`,
           countyName: metadata?.countyName || t`Unknown county`,
           entityCui: metadata?.entityCui,
+          groupValuesByGroupingId: groupValuesBySirutaCode.get(sirutaCode),
           valuesBySeriesId: rowValuesBySeriesId,
         };
       })
@@ -1461,7 +1703,16 @@ export function MapAnalyticsWorkspace({
         }
         return left.sirutaCode.localeCompare(right.sirutaCode);
       });
-  }, [activeSeriesId, seriesColumns, uatMetadataBySirutaCode, valuesBySeriesId]);
+  }, [
+    activeSeriesId,
+    domainsBySeriesId,
+    groupMetadataById,
+    groupValuesBySirutaCode,
+    mapValuesBySeriesId,
+    seriesColumns,
+    uatMetadataBySirutaCode,
+    valuesBySeriesId,
+  ]);
 
   const toggleBinFilterSelection = useCallback(
     (presetId: string, groupId: string, checked: boolean) => {
@@ -1573,7 +1824,7 @@ export function MapAnalyticsWorkspace({
 
       const sirutaCode = String(properties.natcode ?? '');
       const seriesRows = enabledSeries.map((series) => {
-        const seriesValue = valuesBySeriesId.get(series.id)?.get(sirutaCode);
+        const seriesValue = mapValuesBySeriesId.get(series.id)?.get(sirutaCode);
         const unit = resolveSeriesDisplayUnit(series, unitsBySeriesId, displayUnitOverridesBySeriesId);
         const formattedValue = formatAdvancedMapAnalyticsSeriesValue(seriesValue, unit);
         return {
@@ -1599,7 +1850,7 @@ export function MapAnalyticsWorkspace({
         .join('');
 
       const activeSeriesValue = activeSeriesId
-        ? valuesBySeriesId.get(activeSeriesId)?.get(sirutaCode)
+        ? mapValuesBySeriesId.get(activeSeriesId)?.get(sirutaCode)
         : undefined;
       const activeClassification = binsCanApply
         ? binsClassification.groupsBySiruta.get(sirutaCode) ??
@@ -1649,7 +1900,7 @@ export function MapAnalyticsWorkspace({
       enabledSeries,
       displayUnitOverridesBySeriesId,
       unitsBySeriesId,
-      valuesBySeriesId,
+      mapValuesBySeriesId,
     ]
   );
 
@@ -1737,6 +1988,48 @@ export function MapAnalyticsWorkspace({
       ? countyGeoJsonData
       : null;
 
+  const groupingBoundaryGeoJsonData = useMemo<GeoJsonObject | null>(() => {
+    if (mapViewType !== 'UAT') {
+      return null;
+    }
+
+    const activeSeriesDomain = activeSeriesId ? domainsBySeriesId.get(activeSeriesId) : undefined;
+    const activeGroupingId =
+      activeSeriesDomain?.type === 'group'
+        ? activeSeriesDomain.groupingId
+        : mapState.activeGroupingId;
+    const activeGrouping = activeGroupingId
+      ? mapState.groupings.find((grouping) => grouping.id === activeGroupingId)
+      : undefined;
+
+    if (!activeGrouping) {
+      return null;
+    }
+
+    const memberSirutaCodes = new Set(
+      activeGrouping.groups.flatMap((group) => group.memberSirutaCodes)
+    );
+    const features = geoJsonFeatures.filter((feature) =>
+      memberSirutaCodes.has(String(feature.properties?.natcode ?? '').trim())
+    );
+
+    if (features.length === 0) {
+      return null;
+    }
+
+    return {
+      type: 'FeatureCollection',
+      features,
+    } as GeoJsonObject;
+  }, [
+    activeSeriesId,
+    domainsBySeriesId,
+    geoJsonFeatures,
+    mapState.activeGroupingId,
+    mapState.groupings,
+    mapViewType,
+  ]);
+
 
   const handleTableRowClick = useCallback(
     (row: AdvancedMapAnalyticsTableRow) => {
@@ -1763,6 +2056,11 @@ export function MapAnalyticsWorkspace({
 
   const handleMapFeatureClick = useCallback(
     (properties: UatProperties) => {
+      if (isManualGroupCreateMode) {
+        addFeatureToManualGroup(properties);
+        return;
+      }
+
       const directEntityCui = getEntityCuiFromUatProperties(properties);
       const sirutaCode = String(properties?.natcode ?? '').trim();
       const metadata =
@@ -1807,7 +2105,16 @@ export function MapAnalyticsWorkspace({
         params: { cui: entityCui },
       });
     },
-    [mode, navigate, onEntityCuiSelect, onMapFeatureSelect, shouldUseEntityDetailsPanel, uatMetadataBySirutaCode]
+    [
+      addFeatureToManualGroup,
+      isManualGroupCreateMode,
+      mode,
+      navigate,
+      onEntityCuiSelect,
+      onMapFeatureSelect,
+      shouldUseEntityDetailsPanel,
+      uatMetadataBySirutaCode,
+    ]
   );
 
   const selectedMapEntityHref = selectedMapEntity?.entityCui
@@ -1841,6 +2148,14 @@ export function MapAnalyticsWorkspace({
     setIsMobileControlsCollapsed(true);
   }, [isMobileControlsCollapseEnabled]);
 
+  const manualGrouping = mapState.groupings.find((grouping) => grouping.id === MANUAL_GROUPING_ID);
+  const activeManualGroup = activeManualGroupId
+    ? manualGrouping?.groups.find((group) => group.id === activeManualGroupId)
+    : undefined;
+  const activeManualGroupMemberCount = activeManualGroup?.memberSirutaCodes.length ?? 0;
+  const manualGroupCount = manualGrouping?.groups.length ?? 0;
+  const canCreateManualGroups = !isReadOnly && !isPreviewLayout && mapViewType === 'UAT';
+
   const controlsPanels = (
     <>
       <AdvancedMapAnalyticsConfigPanel
@@ -1856,6 +2171,15 @@ export function MapAnalyticsWorkspace({
           }
         }}
         onOpenWarnings={() => setIsWarningsModalOpen(true)}
+      />
+      <ManualGroupingPanel
+        enabled={isManualGroupCreateMode}
+        canEdit={canCreateManualGroups}
+        groupCount={manualGroupCount}
+        activeGroupMemberCount={activeManualGroupMemberCount}
+        onStart={startManualGroupCreateMode}
+        onStartNext={startNextManualGroup}
+        onFinish={finishManualGroupCreateMode}
       />
       <AdvancedMapAnalyticsSeriesPanel
         series={mapState.series}
@@ -1981,6 +2305,7 @@ export function MapAnalyticsWorkspace({
                   heatmapData={activeHeatmapData}
                   geoJsonData={geoJsonData}
                   countyBoundaryGeoJsonData={countyBoundaryGeoJsonData}
+                  groupingBoundaryGeoJsonData={groupingBoundaryGeoJsonData}
                   zoom={mapZoom}
                   center={mapCenter}
                   mapViewType={mapViewType}
@@ -2186,6 +2511,7 @@ export function MapAnalyticsWorkspace({
                       heatmapData={activeHeatmapData}
                       geoJsonData={geoJsonData}
                       countyBoundaryGeoJsonData={countyBoundaryGeoJsonData}
+                      groupingBoundaryGeoJsonData={groupingBoundaryGeoJsonData}
                       zoom={mapZoom}
                       center={mapCenter}
                       mapViewType={mapViewType}
@@ -2309,6 +2635,7 @@ export function MapAnalyticsWorkspace({
                 <AdvancedMapAnalyticsDataTable
                   rows={filteredTableRows}
                   seriesColumns={seriesColumns}
+                  groupingColumns={groupingColumns}
                   mapTitle={mapState.mapName}
                   showExportCsv={mode === 'owner'}
                   activeSeriesId={activeSeriesId}
@@ -2337,6 +2664,7 @@ export function MapAnalyticsWorkspace({
                   series={mapState.series}
                   activeSeriesId={activeSeriesId}
                   valuesBySeriesId={valuesBySeriesId}
+                  domainsBySeriesId={domainsBySeriesId}
                   unitsBySeriesId={unitsBySeriesId}
                   uatMetadataBySirutaCode={uatMetadataBySirutaCode}
                   readOnly={isReadOnly}
@@ -2355,6 +2683,7 @@ export function MapAnalyticsWorkspace({
         mode={editorState?.mode ?? 'edit'}
         series={modalSeries}
         allSeries={mapState.series}
+        groupings={mapState.groupings}
         geoJsonCountyOptions={geoJsonCountyOptions}
         geoJsonRegionOptions={geoJsonRegionOptions}
         onOpenChange={(open) => {
@@ -2406,6 +2735,99 @@ export function MapAnalyticsWorkspace({
         onOpenChange={setIsWarningsModalOpen}
       />
     </div>
+  );
+}
+
+interface ManualGroupingPanelProps {
+  enabled: boolean;
+  canEdit: boolean;
+  groupCount: number;
+  activeGroupMemberCount: number;
+  onStart: () => void;
+  onStartNext: () => void;
+  onFinish: () => void;
+}
+
+function ManualGroupingPanel({
+  enabled,
+  canEdit,
+  groupCount,
+  activeGroupMemberCount,
+  onStart,
+  onStartNext,
+  onFinish,
+}: Readonly<ManualGroupingPanelProps>) {
+  return (
+    <section className="border-b border-border/40 py-5" data-testid="manual-grouping-panel">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5">
+            <h2 className="text-lg font-bold tracking-tight">{t`Groups`}</h2>
+          </div>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {enabled
+              ? t`Click UATs on the map to add them.`
+              : t`${groupCount} manual groups configured`}
+          </p>
+        </div>
+        <div
+          className={cn(
+            'rounded-full px-2 py-1 text-[11px] font-medium',
+            enabled
+              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300'
+              : 'bg-muted text-muted-foreground'
+          )}
+        >
+          {enabled ? t`Active` : t`Idle`}
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <div className="rounded-md border border-dashed border-border bg-muted/30 p-3 text-xs text-muted-foreground">
+          {enabled
+            ? activeGroupMemberCount > 0
+              ? t`${activeGroupMemberCount} UATs in current group`
+              : t`Current group is empty. Click a UAT to start it.`
+            : t`Create mode stores clicked UATs in the active manual grouping.`}
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {enabled ? (
+            <>
+              <button
+                type="button"
+                onClick={onStartNext}
+                disabled={!canEdit}
+                className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-xs font-medium transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                {t`New group`}
+              </button>
+              <button
+                type="button"
+                onClick={onFinish}
+                disabled={!canEdit}
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+              >
+                <Check className="h-3.5 w-3.5" />
+                {t`Finish`}
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={onStart}
+              disabled={!canEdit}
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+              data-testid="create-group-mode-button"
+            >
+              <MousePointer2 className="h-3.5 w-3.5" />
+              {t`Create group`}
+            </button>
+          )}
+        </div>
+      </div>
+    </section>
   );
 }
 

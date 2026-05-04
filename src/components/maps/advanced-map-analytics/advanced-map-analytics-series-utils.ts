@@ -87,6 +87,7 @@ export const SERIES_TYPE_LABELS: Record<MapSupportedSeries['type'], string> = {
   'ins-series': t`INS series`,
   'geojson-dataset-series': t`GeoJSON dataset`,
   'uploaded-map-dataset': t`Uploaded dataset`,
+  'map-grouped-value-series': t`Grouped value series`,
   'aggregated-series-calculation': t`Calculated series`,
 };
 
@@ -96,6 +97,7 @@ export const SERIES_TYPE_ICONS: Record<MapSupportedSeries['type'], LucideIcon> =
   'ins-series': Database,
   'geojson-dataset-series': Shapes,
   'uploaded-map-dataset': Database,
+  'map-grouped-value-series': Shapes,
   'aggregated-series-calculation': Sigma,
 };
 
@@ -105,6 +107,7 @@ const MAP_SUPPORTED_SERIES_TYPES = new Set<MapSupportedSeries['type']>([
   'ins-series',
   'geojson-dataset-series',
   'uploaded-map-dataset',
+  'map-grouped-value-series',
   'aggregated-series-calculation',
 ]);
 
@@ -153,11 +156,16 @@ export function applySetActiveSeries(
   const nextSeries = state.series.map((series) =>
     series.id === seriesId ? { ...series, enabled: true } : series
   );
+  const activeSeries = nextSeries.find((series) => series.id === seriesId);
+  const activeGroupingId =
+    resolveSeriesGroupingId(activeSeries, new Map(nextSeries.map((series) => [series.id, series]))) ??
+    state.activeGroupingId;
 
   return {
     ...state,
     series: nextSeries,
     activeSeriesId: seriesId,
+    activeGroupingId,
   };
 }
 
@@ -313,9 +321,7 @@ export function createCopiedMapSeriesPayload(
   const copiedSeries: MapSupportedSeries[] = [sourceSeries];
   const visitedSeriesIds = new Set<string>([sourceSeries.id]);
 
-  const dependencyQueue = sourceSeries.type === 'aggregated-series-calculation'
-    ? [...collectReferencedSeriesIds(sourceSeries.calculation)]
-    : [];
+  const dependencyQueue = getSeriesDependencyIds(sourceSeries);
 
   while (dependencyQueue.length > 0) {
     const dependencySeriesId = dependencyQueue.shift();
@@ -331,9 +337,7 @@ export function createCopiedMapSeriesPayload(
     copiedSeries.push(dependencySeries);
     visitedSeriesIds.add(dependencySeriesId);
 
-    if (dependencySeries.type === 'aggregated-series-calculation') {
-      dependencyQueue.push(...collectReferencedSeriesIds(dependencySeries.calculation));
-    }
+    dependencyQueue.push(...getSeriesDependencyIds(dependencySeries));
   }
 
   return CopiedAdvancedMapSeriesSchema.parse({
@@ -445,6 +449,11 @@ function remapSeriesForPaste(
       ) as Calculation;
     }
 
+    if (clonedSeries.type === 'map-grouped-value-series') {
+      clonedSeries.sourceSeriesId =
+        remappedSeriesIds.get(clonedSeries.sourceSeriesId) ?? clonedSeries.sourceSeriesId;
+    }
+
     return clonedSeries;
   });
 }
@@ -484,11 +493,7 @@ function normalizeCompatibleSeriesDependencies(
   while (true) {
     const keptSeriesIds = new Set(normalizedSeries.map((series) => series.id));
     const nextNormalizedSeries = normalizedSeries.filter((series) => {
-      if (series.type !== 'aggregated-series-calculation') {
-        return true;
-      }
-
-      return collectReferencedSeriesIds(series.calculation).every((dependencySeriesId) =>
+      return getSeriesDependencyIds(series).every((dependencySeriesId) =>
         keptSeriesIds.has(dependencySeriesId)
       );
     });
@@ -504,6 +509,67 @@ function normalizeCompatibleSeriesDependencies(
     skippedCount += removedCount;
     normalizedSeries = nextNormalizedSeries;
   }
+}
+
+function getSeriesDependencyIds(series: MapSupportedSeries): string[] {
+  if (series.type === 'aggregated-series-calculation') {
+    return collectReferencedSeriesIds(series.calculation);
+  }
+
+  if (series.type === 'map-grouped-value-series') {
+    return series.sourceSeriesId.trim().length > 0 ? [series.sourceSeriesId] : [];
+  }
+
+  return [];
+}
+
+function resolveSeriesGroupingId(
+  series: MapSupportedSeries | undefined,
+  seriesById: Map<string, MapSupportedSeries>,
+  visiting = new Set<string>()
+): string | undefined {
+  if (!series) {
+    return undefined;
+  }
+
+  if (series.type === 'map-grouped-value-series') {
+    return series.groupingId;
+  }
+
+  if (series.type !== 'aggregated-series-calculation') {
+    return undefined;
+  }
+
+  if (visiting.has(series.id)) {
+    return undefined;
+  }
+
+  visiting.add(series.id);
+  const dependencySeriesIds = collectReferencedSeriesIds(series.calculation);
+  if (dependencySeriesIds.length === 0) {
+    visiting.delete(series.id);
+    return undefined;
+  }
+
+  const dependencyGroupingIds = new Set<string>();
+  for (const dependencySeriesId of dependencySeriesIds) {
+    const dependencySeries = seriesById.get(dependencySeriesId);
+    const dependencyGroupingId = resolveSeriesGroupingId(
+      dependencySeries,
+      seriesById,
+      visiting
+    );
+    if (!dependencyGroupingId) {
+      visiting.delete(series.id);
+      return undefined;
+    }
+    dependencyGroupingIds.add(dependencyGroupingId);
+  }
+
+  visiting.delete(series.id);
+  return dependencyGroupingIds.size === 1
+    ? Array.from(dependencyGroupingIds)[0]
+    : undefined;
 }
 
 function collectReferencedSeriesIds(calculation: Calculation): string[] {

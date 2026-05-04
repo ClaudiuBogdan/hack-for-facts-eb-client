@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { createDefaultAdvancedMapAnalyticsSeries, AdvancedMapAnalyticsUrlStateSchema } from '@/schemas/advanced-map-analytics';
+import {
+  createDefaultAdvancedMapAnalyticsSeries,
+  AdvancedMapAnalyticsUrlStateSchema,
+  MapGroupedValueSeriesConfigurationSchema,
+} from '@/schemas/advanced-map-analytics';
 import { CustomSeriesConfigurationSchema } from '@/schemas/charts';
 import {
   applySetActiveSeries,
@@ -34,6 +38,37 @@ describe('advanced-map-analytics-series-utils', () => {
 
     expect(nextState.activeSeriesId).toBe(base.id);
     expect(nextState.series[0]?.enabled).toBe(true);
+  });
+
+  it('sets active grouping when activating a grouped calculation series', () => {
+    const base = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    base.id = 'base';
+    const grouped = MapGroupedValueSeriesConfigurationSchema.parse({
+      id: 'grouped',
+      type: 'map-grouped-value-series',
+      sourceSeriesId: base.id,
+      groupingId: 'county',
+      aggregation: 'sum',
+    });
+    const calculation = createDefaultAdvancedMapAnalyticsSeries('aggregated-series-calculation');
+    if (calculation.type !== 'aggregated-series-calculation') {
+      throw new Error('Expected calculation series');
+    }
+    calculation.id = 'calc';
+    calculation.calculation = {
+      op: 'multiply',
+      args: [grouped.id, 2],
+    };
+
+    const initialState = AdvancedMapAnalyticsUrlStateSchema.parse({
+      series: [base, grouped, calculation],
+      activeSeriesId: base.id,
+    });
+
+    const nextState = applySetActiveSeries(initialState, calculation.id);
+
+    expect(nextState.activeSeriesId).toBe(calculation.id);
+    expect(nextState.activeGroupingId).toBe('county');
   });
 
   it('promotes the first enabled series when disabling the active series', () => {

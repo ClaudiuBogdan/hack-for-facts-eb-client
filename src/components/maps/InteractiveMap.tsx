@@ -116,6 +116,14 @@ const COUNTY_BOUNDARY_STYLE: PathOptions = {
   interactive: false,
 };
 
+const GROUP_BOUNDARY_STYLE: PathOptions = {
+  color: '#111827',
+  weight: 2.5,
+  opacity: 0.9,
+  fillOpacity: 0,
+  interactive: false,
+};
+
 const UAT_LOW_ZOOM_STROKE_FLOOR = 6;
 const MIN_UAT_LOW_ZOOM_STROKE_OPACITY_MULTIPLIER = 0.2;
 const MIN_UAT_LOW_ZOOM_STROKE_WEIGHT_MULTIPLIER = 0.25;
@@ -185,6 +193,7 @@ interface InteractiveMapProps {
   heatmapData: HeatmapUATDataPoint[] | HeatmapCountyDataPoint[];
   geoJsonData: GeoJsonObject | null;
   countyBoundaryGeoJsonData?: GeoJsonObject | null;
+  groupingBoundaryGeoJsonData?: GeoJsonObject | null;
   highlightedFeatureId?: string | number;
   scrollWheelZoom?: boolean;
   mapHeight?: string;
@@ -213,6 +222,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   heatmapData,
   geoJsonData,
   countyBoundaryGeoJsonData,
+  groupingBoundaryGeoJsonData,
   highlightedFeatureId,
   scrollWheelZoom = true,
   filters,
@@ -423,6 +433,13 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
               key="county-boundary-layer"
               data={countyBoundaryGeoJsonData}
               style={COUNTY_BOUNDARY_STYLE}
+            />
+          ) : null}
+          {groupingBoundaryGeoJsonData?.type === 'FeatureCollection' ? (
+            <GeoJSON
+              key="grouping-boundary-layer"
+              data={groupingBoundaryGeoJsonData}
+              style={GROUP_BOUNDARY_STYLE}
             />
           ) : null}
           <MapLabels

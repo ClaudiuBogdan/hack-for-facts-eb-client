@@ -25,6 +25,9 @@ export type MapSeriesWarningType =
   | 'value_filter_stats_insufficient_sample'
   | 'value_filter_stats_zero_variance'
   | 'value_filter_stats_no_defined_values'
+  | 'domain_mismatch'
+  | 'missing_grouping'
+  | 'invalid_grouped_series'
   | 'url_budget'
   | 'bins_invalid_config'
   | 'bins_auto_regenerated'
@@ -88,10 +91,15 @@ export interface MapSeriesDataAdapter {
 
 export type MapSeriesVector = Map<string, number | undefined>;
 export type MapSeriesVectorCache = Map<string, MapSeriesVector>;
+export type MapSeriesDomain =
+  | { type: 'uat' }
+  | { type: 'group'; groupingId: string };
+export type MapSeriesDomainCache = Map<string, MapSeriesDomain>;
 
 export interface MapSeriesCalculationResult {
   valuesBySeriesId: MapSeriesVectorCache;
   unitsBySeriesId: Map<string, string | undefined>;
+  domainsBySeriesId: MapSeriesDomainCache;
   warnings: MapSeriesWarning[];
 }
 

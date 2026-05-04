@@ -120,12 +120,92 @@ export const UploadedMapDatasetSeriesConfigurationSchema = z.object({
 export type GeoJsonDatasetSeriesConfiguration = z.infer<typeof GeoJsonDatasetSeriesConfigurationSchema>;
 export type UploadedMapDatasetSeriesConfiguration = z.infer<typeof UploadedMapDatasetSeriesConfigurationSchema>;
 
+export const MapGroupSchema = z.object({
+  id: z.string(),
+  label: z.string().optional(),
+  memberSirutaCodes: z
+    .array(z.string())
+    .transform((codes) => [...new Set(codes.map((code) => code.trim()).filter(Boolean))])
+    .default([]),
+  primarySirutaCode: z.string().optional(),
+  memberOrder: z
+    .array(z.string())
+    .transform((codes) => [...new Set(codes.map((code) => code.trim()).filter(Boolean))])
+    .optional(),
+});
+
+export const MapGroupingSchema = z.object({
+  id: z.string(),
+  key: z.string(),
+  label: z.string().default('Grouping'),
+  groups: z.array(MapGroupSchema).default([]),
+}).superRefine((grouping, context) => {
+  const groupIds = new Set<string>();
+  const memberOwnerBySirutaCode = new Map<string, string>();
+
+  grouping.groups.forEach((group, groupIndex) => {
+    if (groupIds.has(group.id)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['groups', groupIndex, 'id'],
+        message: `Duplicate group id ${group.id}.`,
+      });
+    }
+    groupIds.add(group.id);
+
+    if (group.primarySirutaCode && !group.memberSirutaCodes.includes(group.primarySirutaCode)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['groups', groupIndex, 'primarySirutaCode'],
+        message: 'primarySirutaCode must be part of memberSirutaCodes.',
+      });
+    }
+
+    group.memberSirutaCodes.forEach((sirutaCode, memberIndex) => {
+      const ownerGroupId = memberOwnerBySirutaCode.get(sirutaCode);
+      if (ownerGroupId) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['groups', groupIndex, 'memberSirutaCodes', memberIndex],
+          message: `SIRUTA ${sirutaCode} is already assigned to group ${ownerGroupId}.`,
+        });
+        return;
+      }
+
+      memberOwnerBySirutaCode.set(sirutaCode, group.id);
+    });
+  });
+});
+
+export type MapGroup = z.infer<typeof MapGroupSchema>;
+export type MapGrouping = z.infer<typeof MapGroupingSchema>;
+
+export const MapGroupedValueSeriesAggregationSchema = z.enum(['sum', 'first']);
+export type MapGroupedValueSeriesAggregation = z.infer<typeof MapGroupedValueSeriesAggregationSchema>;
+
+export const MapGroupedValueSeriesConfigurationSchema = z.object({
+  id: z.string().default(() => createAdvancedMapAnalyticsId()),
+  type: z.literal('map-grouped-value-series'),
+  enabled: z.boolean().default(true),
+  label: z.string().default('Grouped value series'),
+  unit: z.string().optional().default(''),
+  sourceSeriesId: z.string().default(''),
+  groupingId: z.string().default(''),
+  aggregation: MapGroupedValueSeriesAggregationSchema.default('sum'),
+  config: MapSeriesDisplayConfigSchema,
+  createdAt: z.string().default(() => new Date().toISOString()),
+  updatedAt: z.string().default(() => new Date().toISOString()),
+});
+
+export type MapGroupedValueSeriesConfiguration = z.infer<typeof MapGroupedValueSeriesConfigurationSchema>;
+
 export const MapSupportedSeriesSchema = z.discriminatedUnion('type', [
   SeriesConfigurationSchema,
   CommitmentsSeriesConfigurationSchema,
   InsSeriesConfigurationSchema,
   GeoJsonDatasetSeriesConfigurationSchema,
   UploadedMapDatasetSeriesConfigurationSchema,
+  MapGroupedValueSeriesConfigurationSchema,
   SeriesGroupConfigurationSchema,
 ]);
 
@@ -141,8 +221,15 @@ export type MapCalculationSeries = Extract<
   MapSupportedSeries,
   { type: 'aggregated-series-calculation' }
 >;
+export type MapGroupedValueSeries = Extract<
+  MapSupportedSeries,
+  { type: 'map-grouped-value-series' }
+>;
 
-export type MapBaseSeries = Exclude<MapSupportedSeries, MapCalculationSeries>;
+export type MapBaseSeries = Exclude<
+  MapSupportedSeries,
+  MapCalculationSeries | MapGroupedValueSeries
+>;
 
 export const AdvancedMapAnalyticsBinSchema = z.object({
   id: z.string().default(() => createAdvancedMapAnalyticsId()),
@@ -578,6 +665,8 @@ export const AdvancedMapAnalyticsUrlStateSchema = z.object({
   version: z.literal(ADVANCED_MAP_ANALYTICS_VERSION).default(ADVANCED_MAP_ANALYTICS_VERSION),
   series: z.array(MapSupportedSeriesSchema).default([]),
   activeSeriesId: z.string().optional(),
+  groupings: z.array(MapGroupingSchema).default([]),
+  activeGroupingId: z.string().optional(),
   valueFilters: AdvancedMapAnalyticsValueFilterGroupSchema.default({ rules: [] }),
   activeView: AdvancedMapAnalyticsActiveViewSchema.default('map'),
   analyticsWidgets: AdvancedMapAnalyticsWidgetsSchema.default(createDefaultAdvancedMapAnalyticsWidgets()),
@@ -734,6 +823,16 @@ export function createDefaultAdvancedMapAnalyticsSeries(
 
   if (type === 'uploaded-map-dataset') {
     throw new Error('Uploaded map dataset series requires explicit dataset selection.');
+  }
+
+  if (type === 'map-grouped-value-series') {
+    const series = MapGroupedValueSeriesConfigurationSchema.parse({
+      id: createAdvancedMapAnalyticsId(),
+      type,
+      label: 'Grouped value series',
+      aggregation: 'sum',
+    }) as MapGroupedValueSeriesConfiguration;
+    return series;
   }
 
   const series = SeriesGroupConfigurationSchema.parse({

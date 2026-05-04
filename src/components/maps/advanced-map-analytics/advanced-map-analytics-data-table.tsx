@@ -31,6 +31,7 @@ import { formatAdvancedMapAnalyticsSeriesValue } from './advanced-map-analytics-
 import { t } from '@lingui/core/macro';
 import type {
   AdvancedMapAnalyticsBinsFilterSection,
+  AdvancedMapAnalyticsTableGroupingColumn,
   AdvancedMapAnalyticsTableRow,
   AdvancedMapAnalyticsTableSeriesColumn,
 } from './advanced-map-analytics-table-types';
@@ -44,6 +45,7 @@ export type {
 interface AdvancedMapAnalyticsDataTableProps {
   rows: AdvancedMapAnalyticsTableRow[];
   seriesColumns: AdvancedMapAnalyticsTableSeriesColumn[];
+  groupingColumns?: AdvancedMapAnalyticsTableGroupingColumn[];
   mapTitle: string;
   showExportCsv: boolean;
   activeSeriesId?: string;
@@ -59,17 +61,31 @@ function getSeriesColumnId(seriesId: string): string {
   return `series:${seriesId}`;
 }
 
+function getGroupingColumnId(groupingId: string): string {
+  return `grouping:${groupingId}`;
+}
+
 function getSeriesIdFromColumnId(columnId: string): string | undefined {
   return columnId.startsWith('series:') ? columnId.slice('series:'.length) : undefined;
 }
 
+function getGroupingIdFromColumnId(columnId: string): string | undefined {
+  return columnId.startsWith('grouping:') ? columnId.slice('grouping:'.length) : undefined;
+}
+
 function getColumnLabel(
   columnId: string,
-  seriesLabelById: Map<string, string>
+  seriesLabelById: Map<string, string>,
+  groupingLabelById: Map<string, string>
 ): string {
   const seriesId = getSeriesIdFromColumnId(columnId);
   if (seriesId) {
     return seriesLabelById.get(seriesId) ?? seriesId;
+  }
+
+  const groupingId = getGroupingIdFromColumnId(columnId);
+  if (groupingId) {
+    return groupingLabelById.get(groupingId) ?? groupingId;
   }
 
   if (columnId === 'uat_name') {
@@ -101,16 +117,21 @@ function getColumnRowValue(row: AdvancedMapAnalyticsTableRow, columnId: string):
   }
 
   const seriesId = getSeriesIdFromColumnId(columnId);
-  if (!seriesId) {
-    return '';
+  if (seriesId) {
+    const value = row.valuesBySeriesId[seriesId];
+    if (value === undefined || !Number.isFinite(value)) {
+      return '';
+    }
+
+    return value.toString();
   }
 
-  const value = row.valuesBySeriesId[seriesId];
-  if (value === undefined || !Number.isFinite(value)) {
-    return '';
+  const groupingId = getGroupingIdFromColumnId(columnId);
+  if (groupingId) {
+    return row.groupValuesByGroupingId?.[groupingId] ?? '';
   }
 
-  return value.toString();
+  return '';
 }
 
 function escapeCsvCell(value: string): string {
@@ -160,6 +181,7 @@ function compareRowsByNameAndSiruta(
 export function AdvancedMapAnalyticsDataTable({
   rows,
   seriesColumns,
+  groupingColumns = [],
   mapTitle,
   showExportCsv,
   activeSeriesId,
@@ -211,6 +233,7 @@ export function AdvancedMapAnalyticsDataTable({
       'uat_name',
       'county_name',
       'siruta_code',
+      ...groupingColumns.map((groupingColumn) => getGroupingColumnId(groupingColumn.id)),
       ...seriesColumns.map((seriesColumn) => getSeriesColumnId(seriesColumn.id)),
     ];
 
@@ -236,13 +259,17 @@ export function AdvancedMapAnalyticsDataTable({
       ensureVisibleByDefault('county_name');
       ensureVisibleByDefault('siruta_code');
 
+      for (const groupingColumn of groupingColumns) {
+        ensureVisibleByDefault(getGroupingColumnId(groupingColumn.id));
+      }
+
       for (const seriesColumn of seriesColumns) {
         ensureVisibleByDefault(getSeriesColumnId(seriesColumn.id));
       }
 
       return changed ? nextVisibility : previousVisibility;
     });
-  }, [columnVisibility, seriesColumns, setColumnVisibility]);
+  }, [columnVisibility, groupingColumns, seriesColumns, setColumnVisibility]);
 
   const seriesLabelById = useMemo(() => {
     const map = new Map<string, string>();
@@ -251,6 +278,14 @@ export function AdvancedMapAnalyticsDataTable({
     }
     return map;
   }, [seriesColumns]);
+
+  const groupingLabelById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const groupingColumn of groupingColumns) {
+      map.set(groupingColumn.id, groupingColumn.label);
+    }
+    return map;
+  }, [groupingColumns]);
 
   const rankBySirutaCode = useMemo(() => {
     const rankMap = new Map<string, number>();
@@ -387,6 +422,35 @@ export function AdvancedMapAnalyticsDataTable({
         ),
         cell: ({ row }) => <span>{row.original.sirutaCode}</span>,
       },
+      ...groupingColumns.map<ColumnDef<AdvancedMapAnalyticsTableRow>>((groupingColumn) => {
+        const columnId = getGroupingColumnId(groupingColumn.id);
+        return {
+          id: columnId,
+          accessorFn: (row) => row.groupValuesByGroupingId?.[groupingColumn.id] ?? '',
+          header: ({ column }) => (
+            <button
+              type="button"
+              className="inline-flex w-full items-center gap-1"
+              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              title={groupingColumn.label}
+            >
+              <span className="truncate max-w-[220px]">{groupingColumn.label}</span>
+              {column.getIsSorted() === 'asc' ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : column.getIsSorted() === 'desc' ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+              )}
+            </button>
+          ),
+          cell: ({ row }) => (
+            <span className="block truncate" title={row.original.groupValuesByGroupingId?.[groupingColumn.id] ?? ''}>
+              {row.original.groupValuesByGroupingId?.[groupingColumn.id] ?? ''}
+            </span>
+          ),
+        };
+      }),
       ...seriesColumns.map<ColumnDef<AdvancedMapAnalyticsTableRow>>((seriesColumn) => {
         const columnId = getSeriesColumnId(seriesColumn.id);
         const isActiveSeries = seriesColumn.id === activeSeriesId;
@@ -430,7 +494,7 @@ export function AdvancedMapAnalyticsDataTable({
         };
       }),
     ],
-    [activeSeriesId, rankBySirutaCode, seriesColumns]
+    [activeSeriesId, groupingColumns, rankBySirutaCode, seriesColumns]
   );
 
   const table = useReactTable({
@@ -465,7 +529,7 @@ export function AdvancedMapAnalyticsDataTable({
     const csvHeader = [
       'SIRUTA',
       'CUI',
-      ...visibleColumns.map((column) => getColumnLabel(column.id, seriesLabelById)),
+      ...visibleColumns.map((column) => getColumnLabel(column.id, seriesLabelById, groupingLabelById)),
     ]
       .map((value) => escapeCsvCell(value))
       .join(',');
@@ -487,7 +551,7 @@ export function AdvancedMapAnalyticsDataTable({
     anchor.download = buildCsvExportFileName(mapTitle);
     anchor.click();
     URL.revokeObjectURL(url);
-  }, [mapTitle, seriesLabelById, table]);
+  }, [groupingLabelById, mapTitle, seriesLabelById, table]);
 
   const uatNameSearchValue = (() => {
     const filterValue = table.getColumn('uat_name')?.getFilterValue();
@@ -631,7 +695,7 @@ export function AdvancedMapAnalyticsDataTable({
                     checked={column.getIsVisible()}
                     onCheckedChange={(checked) => column.toggleVisibility(Boolean(checked))}
                   >
-                    {getColumnLabel(column.id, seriesLabelById)}
+                    {getColumnLabel(column.id, seriesLabelById, groupingLabelById)}
                   </DropdownMenuCheckboxItem>
                 );
               })}

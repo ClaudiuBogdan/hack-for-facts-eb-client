@@ -1,7 +1,15 @@
 import type { Calculation, Operand } from '@/schemas/charts';
-import type { MapSupportedSeries } from '@/schemas/advanced-map-analytics';
+import type { MapGrouping, MapSupportedSeries } from '@/schemas/advanced-map-analytics';
+import {
+  areSeriesDomainsEqual,
+  evaluateGroupedValueSeries,
+  getGroupedSeriesDomain,
+  getSeriesDomainKey,
+  getUatDomain,
+} from '@/lib/map-series/grouping';
 import type {
   MapSeriesCalculationResult,
+  MapSeriesDomain,
   MapSeriesVector,
   MapSeriesVectorCache,
   MapSeriesWarning,
@@ -10,6 +18,7 @@ import type {
 interface CalculateMapSeriesValuesParams {
   series: MapSupportedSeries[];
   baseValuesBySeriesId: MapSeriesVectorCache;
+  groupings?: MapGrouping[];
   unitsBySeriesId?: Map<string, string | undefined>;
   sparseCoverageThreshold?: number;
 }
@@ -21,8 +30,11 @@ export function calculateMapSeriesValues(
   params: CalculateMapSeriesValuesParams
 ): MapSeriesCalculationResult {
   const seriesById = new Map(params.series.map((series) => [series.id, series]));
+  const groupingsById = new Map((params.groupings ?? []).map((grouping) => [grouping.id, grouping]));
   const valuesBySeriesId: MapSeriesVectorCache = new Map();
   const unitsBySeriesId = new Map(params.unitsBySeriesId ?? []);
+  const domainsBySeriesId = new Map<string, MapSeriesDomain>();
+  const keysByDomainKey = new Map<string, Set<string>>();
   const warnings: MapSeriesWarning[] = [];
   const warningDedup = new Set<string>();
   const warningCountBySeriesAndType = new Map<string, number>();
@@ -52,11 +64,19 @@ export function calculateMapSeriesValues(
     warnings.push(warning);
   };
 
-  const allSirutaCodes = new Set<string>();
+  const addDomainKey = (domain: MapSeriesDomain, key: string) => {
+    const domainKey = getSeriesDomainKey(domain);
+    const keys = keysByDomainKey.get(domainKey) ?? new Set<string>();
+    keys.add(key);
+    keysByDomainKey.set(domainKey, keys);
+  };
+
   for (const [seriesId, vector] of params.baseValuesBySeriesId.entries()) {
+    const domain = getUatDomain();
     valuesBySeriesId.set(seriesId, new Map(vector));
-    for (const sirutaCode of vector.keys()) {
-      allSirutaCodes.add(sirutaCode);
+    domainsBySeriesId.set(seriesId, domain);
+    for (const key of vector.keys()) {
+      addDomainKey(domain, key);
     }
   }
 
@@ -83,24 +103,108 @@ export function calculateMapSeriesValues(
       return undefined;
     }
 
-    if (series.type !== 'aggregated-series-calculation') {
-      const baseVector = params.baseValuesBySeriesId.get(series.id) ?? new Map<string, number | undefined>();
-      const nextVector = new Map(baseVector);
-      valuesBySeriesId.set(series.id, nextVector);
-      return nextVector;
-    }
-
-    if (visiting.has(seriesId)) {
+    const isDerivedSeries =
+      series.type === 'map-grouped-value-series' ||
+      series.type === 'aggregated-series-calculation';
+    if (isDerivedSeries && visiting.has(seriesId)) {
       pushWarning({
         type: 'missing_dependency',
         seriesId,
-        message: `Detected recursive calculation dependency while evaluating ${seriesId}`,
+        message: `Detected recursive series dependency while evaluating ${seriesId}`,
       });
       return undefined;
     }
 
+    if (series.type === 'map-grouped-value-series') {
+      visiting.add(seriesId);
+      const sourceVector = evaluateSeries(series.sourceSeriesId);
+      const sourceDomain = domainsBySeriesId.get(series.sourceSeriesId);
+      if (!sourceVector || !sourceDomain) {
+        pushWarning({
+          type: 'missing_dependency',
+          seriesId: series.id,
+          dependencySeriesId: series.sourceSeriesId,
+          message: `Grouped series depends on missing source series ${series.sourceSeriesId}`,
+        });
+        const emptyVector = new Map<string, number | undefined>();
+        valuesBySeriesId.set(series.id, emptyVector);
+        domainsBySeriesId.set(series.id, getGroupedSeriesDomain(series));
+        visiting.delete(seriesId);
+        return emptyVector;
+      }
+
+      if (sourceDomain.type !== 'uat') {
+        pushWarning({
+          type: 'domain_mismatch',
+          seriesId: series.id,
+          dependencySeriesId: series.sourceSeriesId,
+          message: `Grouped series ${series.label || series.id} can only aggregate UAT-domain source series.`,
+          details: {
+            sourceDomain,
+          },
+        });
+        const emptyVector = new Map<string, number | undefined>();
+        valuesBySeriesId.set(series.id, emptyVector);
+        domainsBySeriesId.set(series.id, getGroupedSeriesDomain(series));
+        visiting.delete(seriesId);
+        return emptyVector;
+      }
+
+      const grouping = groupingsById.get(series.groupingId);
+      if (!grouping) {
+        pushWarning({
+          type: 'missing_grouping',
+          seriesId: series.id,
+          message: `Grouped series ${series.label || series.id} references missing grouping ${series.groupingId}.`,
+          details: {
+            groupingId: series.groupingId,
+          },
+        });
+        const emptyVector = new Map<string, number | undefined>();
+        valuesBySeriesId.set(series.id, emptyVector);
+        domainsBySeriesId.set(series.id, getGroupedSeriesDomain(series));
+        visiting.delete(seriesId);
+        return emptyVector;
+      }
+
+      const vector = evaluateGroupedValueSeries({
+        series,
+        grouping,
+        sourceValues: sourceVector,
+      });
+      const domain = getGroupedSeriesDomain(series);
+      valuesBySeriesId.set(series.id, vector);
+      domainsBySeriesId.set(series.id, domain);
+      for (const key of vector.keys()) {
+        addDomainKey(domain, key);
+      }
+
+      const sourceUnit = unitsBySeriesId.get(series.sourceSeriesId);
+      const seriesUnit = typeof series.unit === 'string' && series.unit.trim().length > 0
+        ? series.unit
+        : sourceUnit;
+      unitsBySeriesId.set(series.id, seriesUnit);
+
+      visiting.delete(seriesId);
+      return vector;
+    }
+
+    if (series.type !== 'aggregated-series-calculation') {
+      const baseVector = params.baseValuesBySeriesId.get(series.id) ?? new Map<string, number | undefined>();
+      const nextVector = new Map(baseVector);
+      const domain = getUatDomain();
+      valuesBySeriesId.set(series.id, nextVector);
+      domainsBySeriesId.set(series.id, domain);
+      for (const key of nextVector.keys()) {
+        addDomainKey(domain, key);
+      }
+      return nextVector;
+    }
+
     visiting.add(seriesId);
 
+    const dependencyDomains: MapSeriesDomain[] = [];
+    const dependencyKeys = new Set<string>();
     const referencedSeriesIds = collectReferencedSeriesIds(series.calculation);
     for (const dependencySeriesId of referencedSeriesIds) {
       const dependencyVector = evaluateSeries(dependencySeriesId);
@@ -114,9 +218,26 @@ export function calculateMapSeriesValues(
         continue;
       }
 
-      for (const sirutaCode of dependencyVector.keys()) {
-        allSirutaCodes.add(sirutaCode);
+      const dependencyDomain = domainsBySeriesId.get(dependencySeriesId);
+      if (dependencyDomain) {
+        dependencyDomains.push(dependencyDomain);
       }
+
+      for (const key of dependencyVector.keys()) {
+        dependencyKeys.add(key);
+      }
+    }
+
+    const calculationDomain = inferCalculationDomain({
+      seriesId,
+      dependencyDomains,
+      pushWarning,
+    });
+    if (!calculationDomain) {
+      const emptyVector = new Map<string, number | undefined>();
+      visiting.delete(seriesId);
+      valuesBySeriesId.set(series.id, emptyVector);
+      return emptyVector;
     }
 
     const dependencyUnits = referencedSeriesIds
@@ -144,14 +265,21 @@ export function calculateMapSeriesValues(
     }
 
     const vector = new Map<string, number | undefined>();
+    const calculationKeys = dependencyKeys.size > 0
+      ? dependencyKeys
+      : (keysByDomainKey.get(getSeriesDomainKey(calculationDomain)) ?? new Set<string>());
 
-    for (const sirutaCode of allSirutaCodes) {
-      const value = evaluateOperand(series.calculation, sirutaCode, series.id, evaluateSeries, pushWarning);
-      vector.set(sirutaCode, value);
+    for (const key of calculationKeys) {
+      const value = evaluateOperand(series.calculation, key, series.id, evaluateSeries, pushWarning);
+      vector.set(key, value);
     }
 
     visiting.delete(seriesId);
     valuesBySeriesId.set(seriesId, vector);
+    domainsBySeriesId.set(seriesId, calculationDomain);
+    for (const key of vector.keys()) {
+      addDomainKey(calculationDomain, key);
+    }
 
     const sparseCoverageThreshold =
       typeof params.sparseCoverageThreshold === 'number'
@@ -169,8 +297,42 @@ export function calculateMapSeriesValues(
   return {
     valuesBySeriesId,
     unitsBySeriesId,
+    domainsBySeriesId,
     warnings,
   };
+}
+
+function inferCalculationDomain(params: {
+  seriesId: string;
+  dependencyDomains: MapSeriesDomain[];
+  pushWarning: (warning: MapSeriesWarning) => void;
+}): MapSeriesDomain | undefined {
+  if (params.dependencyDomains.length === 0) {
+    return getUatDomain();
+  }
+
+  const [firstDomain] = params.dependencyDomains;
+  if (!firstDomain) {
+    return getUatDomain();
+  }
+
+  const mismatchedDomain = params.dependencyDomains.find(
+    (domain) => !areSeriesDomainsEqual(domain, firstDomain)
+  );
+  if (!mismatchedDomain) {
+    return firstDomain;
+  }
+
+  params.pushWarning({
+    type: 'domain_mismatch',
+    seriesId: params.seriesId,
+    message: `Calculation series ${params.seriesId} references incompatible series domains.`,
+    details: {
+      domains: params.dependencyDomains.map((domain) => getSeriesDomainKey(domain)),
+    },
+  });
+
+  return undefined;
 }
 
 function evaluateOperand(

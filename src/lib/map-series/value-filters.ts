@@ -6,6 +6,8 @@ import type {
   AdvancedMapAnalyticsValueRuleJoin,
 } from '@/schemas/advanced-map-analytics';
 import type {
+  MapSeriesDomain,
+  MapSeriesDomainCache,
   MapSeriesVector,
   MapSeriesVectorCache,
   MapSeriesWarning,
@@ -19,6 +21,7 @@ const ROBUST_Z_CONSISTENCY_CONSTANT = 0.67448975;
 interface ApplyAdvancedMapAnalyticsValueFiltersInput {
   allValuesBySeriesId: MapSeriesVectorCache;
   displayValuesBySeriesId: MapSeriesVectorCache;
+  domainsBySeriesId?: MapSeriesDomainCache;
   activeSeriesId?: string;
   rules: AdvancedMapAnalyticsValueFilterRule[];
 }
@@ -41,15 +44,8 @@ export function applyAdvancedMapAnalyticsValueFilters(
     };
   }
 
-  const globalUniverse = collectSirutaUniverse(input.displayValuesBySeriesId);
-  if (globalUniverse.size === 0) {
-    return {
-      valuesBySeriesId: cloneVectorCache(input.displayValuesBySeriesId),
-      warnings,
-    };
-  }
-
   let currentBand: Set<string> | undefined;
+  let filterDomain: MapSeriesDomain | undefined;
   let hasValidRule = false;
 
   for (let index = 0; index < enabledRules.length; index += 1) {
@@ -85,6 +81,49 @@ export function applyAdvancedMapAnalyticsValueFilters(
         },
       });
       continue;
+    }
+
+    const sourceDomain = resolveSeriesDomain(sourceVectorResult.seriesId, input.domainsBySeriesId);
+    if (filterDomain && !areDomainsEqual(filterDomain, sourceDomain)) {
+      const message = 'Value filters cannot combine series from different domains.';
+      warnings.push({
+        type: 'domain_mismatch',
+        message,
+        seriesId: sourceVectorResult.seriesId,
+        details: {
+          ruleId: rule.id,
+          ruleIndex: index,
+          filterDomain,
+          sourceDomain,
+        },
+      });
+      warnings.push({
+        type: 'value_filter_invalid_rule',
+        message: `Value filter rule ${index + 1} is invalid: ${message}`,
+        seriesId: sourceVectorResult.seriesId,
+        details: {
+          ruleId: rule.id,
+          ruleIndex: index,
+          reason: 'domain_mismatch',
+        },
+      });
+      return {
+        valuesBySeriesId: cloneVectorCache(input.displayValuesBySeriesId),
+        warnings,
+      };
+    }
+    filterDomain = sourceDomain;
+
+    const globalUniverse = collectDomainUniverse(
+      input.displayValuesBySeriesId,
+      input.domainsBySeriesId,
+      sourceDomain
+    );
+    if (globalUniverse.size === 0) {
+      return {
+        valuesBySeriesId: cloneVectorCache(input.displayValuesBySeriesId),
+        warnings,
+      };
     }
 
     const evaluationUniverse =
@@ -159,7 +198,12 @@ export function applyAdvancedMapAnalyticsValueFilters(
   }
 
   return {
-    valuesBySeriesId: applyMatchedMask(input.displayValuesBySeriesId, currentBand),
+    valuesBySeriesId: applyMatchedMask(
+      input.displayValuesBySeriesId,
+      currentBand,
+      input.domainsBySeriesId,
+      filterDomain
+    ),
     matchedSirutaCodes: currentBand,
     warnings,
   };
@@ -173,35 +217,69 @@ function cloneVectorCache(valuesBySeriesId: MapSeriesVectorCache): MapSeriesVect
   return cloned;
 }
 
-function collectSirutaUniverse(valuesBySeriesId: MapSeriesVectorCache): Set<string> {
-  const sirutaUniverse = new Set<string>();
-  for (const vector of valuesBySeriesId.values()) {
-    for (const sirutaCode of vector.keys()) {
-      sirutaUniverse.add(sirutaCode);
+function collectDomainUniverse(
+  valuesBySeriesId: MapSeriesVectorCache,
+  domainsBySeriesId: MapSeriesDomainCache | undefined,
+  domain: MapSeriesDomain
+): Set<string> {
+  const universe = new Set<string>();
+  for (const [seriesId, vector] of valuesBySeriesId.entries()) {
+    if (!areDomainsEqual(resolveSeriesDomain(seriesId, domainsBySeriesId), domain)) {
+      continue;
+    }
+
+    for (const key of vector.keys()) {
+      universe.add(key);
     }
   }
-  return sirutaUniverse;
+  return universe;
 }
 
 function applyMatchedMask(
   valuesBySeriesId: MapSeriesVectorCache,
-  matchedSirutaCodes: Set<string>
+  matchedKeys: Set<string>,
+  domainsBySeriesId: MapSeriesDomainCache | undefined,
+  filterDomain: MapSeriesDomain | undefined
 ): MapSeriesVectorCache {
   const masked = new Map<string, MapSeriesVector>();
 
   for (const [seriesId, vector] of valuesBySeriesId.entries()) {
+    if (filterDomain && !areDomainsEqual(resolveSeriesDomain(seriesId, domainsBySeriesId), filterDomain)) {
+      masked.set(seriesId, new Map(vector));
+      continue;
+    }
+
     const maskedVector = new Map<string, number | undefined>();
-    for (const [sirutaCode, value] of vector.entries()) {
-      if (!matchedSirutaCodes.has(sirutaCode)) {
+    for (const [key, value] of vector.entries()) {
+      if (!matchedKeys.has(key)) {
         continue;
       }
 
-      maskedVector.set(sirutaCode, value);
+      maskedVector.set(key, value);
     }
     masked.set(seriesId, maskedVector);
   }
 
   return masked;
+}
+
+function resolveSeriesDomain(
+  seriesId: string | undefined,
+  domainsBySeriesId: MapSeriesDomainCache | undefined
+): MapSeriesDomain {
+  if (seriesId && domainsBySeriesId?.has(seriesId)) {
+    return domainsBySeriesId.get(seriesId) ?? { type: 'uat' };
+  }
+
+  return { type: 'uat' };
+}
+
+function areDomainsEqual(left: MapSeriesDomain, right: MapSeriesDomain): boolean {
+  if (left.type !== right.type) {
+    return false;
+  }
+
+  return left.type === 'uat' || left.groupingId === (right as { type: 'group'; groupingId: string }).groupingId;
 }
 
 function intersectSets(left: Set<string>, right: Set<string>): Set<string> {

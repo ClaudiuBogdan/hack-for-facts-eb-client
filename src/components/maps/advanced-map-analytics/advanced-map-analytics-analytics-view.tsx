@@ -68,6 +68,7 @@ import {
   getGeoJsonDatasetLabel,
   getGeoJsonDatasetUnit,
 } from '@/schemas/advanced-map-analytics';
+import type { MapSeriesDomain } from '@/lib/map-series/interfaces';
 import { BarChart3, GripVertical, Plus, ScatterChart as ScatterChartIcon, TableIcon, X } from 'lucide-react';
 import { t } from '@lingui/core/macro';
 
@@ -120,6 +121,7 @@ interface AdvancedMapAnalyticsAnalyticsViewProps {
   series: MapSupportedSeries[];
   activeSeriesId?: string;
   valuesBySeriesId: Map<string, Map<string, number | undefined>>;
+  domainsBySeriesId?: Map<string, MapSeriesDomain>;
   unitsBySeriesId: Map<string, string | undefined>;
   uatMetadataBySirutaCode: Map<string, UatMetadata>;
   readOnly?: boolean;
@@ -136,6 +138,7 @@ export function AdvancedMapAnalyticsAnalyticsView({
   series,
   activeSeriesId,
   valuesBySeriesId,
+  domainsBySeriesId,
   unitsBySeriesId,
   uatMetadataBySirutaCode,
   readOnly = false,
@@ -181,27 +184,32 @@ export function AdvancedMapAnalyticsAnalyticsView({
       return [];
     }
 
-    const sirutaUniverse = new Set<string>();
+    const universesByDomainKey = new Map<string, Set<string>>();
     for (const seriesEntry of enabledSeries) {
       const vector = valuesBySeriesId.get(seriesEntry.id);
       if (!vector) {
         continue;
       }
 
-      for (const sirutaCode of vector.keys()) {
-        sirutaUniverse.add(sirutaCode);
+      const domainKey = getCoverageDomainKey(domainsBySeriesId?.get(seriesEntry.id));
+      const universe = universesByDomainKey.get(domainKey) ?? new Set<string>();
+      for (const key of vector.keys()) {
+        universe.add(key);
       }
+      universesByDomainKey.set(domainKey, universe);
     }
-
-    const universeSize = sirutaUniverse.size;
 
     return enabledSeries.map((seriesEntry) => {
       const vector = valuesBySeriesId.get(seriesEntry.id);
+      const universe = universesByDomainKey.get(
+        getCoverageDomainKey(domainsBySeriesId?.get(seriesEntry.id))
+      ) ?? new Set<string>();
+      const universeSize = universe.size;
       let definedCount = 0;
 
       if (vector) {
-        for (const sirutaCode of sirutaUniverse) {
-          const value = normalizeFiniteValue(vector.get(sirutaCode));
+        for (const key of universe) {
+          const value = normalizeFiniteValue(vector.get(key));
           if (value !== undefined) {
             definedCount += 1;
           }
@@ -220,7 +228,7 @@ export function AdvancedMapAnalyticsAnalyticsView({
         unit: resolveSeriesDisplayUnit(seriesEntry, unitsBySeriesId),
       };
     });
-  }, [enabledSeries, unitsBySeriesId, valuesBySeriesId]);
+  }, [domainsBySeriesId, enabledSeries, unitsBySeriesId, valuesBySeriesId]);
 
   const totalsRows = useMemo<AdvancedMapAnalyticsTotalsRow[]>(() => {
     if (enabledSeries.length === 0) {
@@ -1770,6 +1778,13 @@ function normalizeFiniteValue(value: number | undefined): number | undefined {
     return undefined;
   }
   return Number.isFinite(value) ? value : undefined;
+}
+
+function getCoverageDomainKey(domain: MapSeriesDomain | undefined): string {
+  if (!domain || domain.type === 'uat') {
+    return 'uat';
+  }
+  return `group:${domain.groupingId}`;
 }
 
 function resolveSeriesDisplayLabel(series: MapSupportedSeries): string {

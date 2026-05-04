@@ -11,6 +11,7 @@ import {
   getGeoJsonDatasetLabel,
   type GeoJsonFilterOption,
   type GeoJsonDatasetKey,
+  type MapGrouping,
   type MapSupportedSeries,
 } from '@/schemas/advanced-map-analytics';
 import { CalculationEditor } from '@/components/charts/components/series-config/CalculationEditor';
@@ -40,7 +41,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { BarChart3, Globe, MapPinned, Table2 } from 'lucide-react';
-import { SERIES_TYPE_LABELS } from './advanced-map-analytics-series-utils';
+import { SERIES_TYPE_LABELS, resolveSeriesDisplayLabel } from './advanced-map-analytics-series-utils';
 import { i18n } from '@lingui/core';
 import { msg, t } from '@lingui/core/macro';
 import {
@@ -59,12 +60,14 @@ const GEOJSON_DATASET_DEFAULT_LABEL = msg`GeoJSON dataset`;
 const COUNTY_FILTER_PREFIX_LABEL = msg`County`;
 const REGION_FILTER_PREFIX_LABEL = msg`Region`;
 const NO_FILTER_SELECTION_LABEL = msg`none`;
+const GROUPED_SERIES_EMPTY_SELECT_VALUE = '__none__';
 
 interface AdvancedMapAnalyticsSeriesEditorModalProps {
   open: boolean;
   mode: 'add' | 'edit';
   series?: MapSupportedSeries;
   allSeries: MapSupportedSeries[];
+  groupings?: MapGrouping[];
   geoJsonCountyOptions?: GeoJsonFilterOption[];
   geoJsonRegionOptions?: GeoJsonFilterOption[];
   onOpenChange: (open: boolean) => void;
@@ -82,6 +85,7 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
   mode,
   series,
   allSeries,
+  groupings = [],
   geoJsonCountyOptions = [],
   geoJsonRegionOptions = [],
   onOpenChange,
@@ -251,6 +255,7 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
               displayedSeriesType={displayedSeriesType}
               open={open}
               allSeries={allSeries}
+              groupings={groupings}
               geoJsonCountyOptions={geoJsonCountyOptions}
               geoJsonRegionOptions={geoJsonRegionOptions}
               onUpdateSeries={onUpdateSeries}
@@ -300,6 +305,7 @@ interface SeriesConfigEditorProps {
   series: MapSupportedSeries;
   displayedSeriesType: MapSupportedSeries['type'];
   allSeries: MapSupportedSeries[];
+  groupings: MapGrouping[];
   geoJsonCountyOptions: GeoJsonFilterOption[];
   geoJsonRegionOptions: GeoJsonFilterOption[];
   onUpdateSeries: (seriesId: string, updater: (draft: MapSupportedSeries) => void) => void;
@@ -314,6 +320,7 @@ function SeriesConfigEditor({
   series,
   displayedSeriesType,
   allSeries,
+  groupings,
   geoJsonCountyOptions,
   geoJsonRegionOptions,
   onUpdateSeries,
@@ -376,6 +383,17 @@ function SeriesConfigEditor({
     );
   }
 
+  if (series.type === 'map-grouped-value-series') {
+    return (
+      <GroupedValueSeriesEditor
+        series={series}
+        allSeries={allSeries}
+        groupings={groupings}
+        onUpdateSeries={onUpdateSeries}
+      />
+    );
+  }
+
   if (series.type === 'geojson-dataset-series') {
     return (
       <GeoJsonDatasetSeriesEditor
@@ -412,6 +430,114 @@ function SeriesConfigEditor({
   };
 
   return <InsSeriesEditor adapter={adapter} />;
+}
+
+interface GroupedValueSeriesEditorProps {
+  series: Extract<MapSupportedSeries, { type: 'map-grouped-value-series' }>;
+  allSeries: MapSupportedSeries[];
+  groupings: MapGrouping[];
+  onUpdateSeries: (seriesId: string, updater: (draft: MapSupportedSeries) => void) => void;
+}
+
+function GroupedValueSeriesEditor({
+  series,
+  allSeries,
+  groupings,
+  onUpdateSeries,
+}: Readonly<GroupedValueSeriesEditorProps>) {
+  const sourceSeriesOptions = allSeries.filter(
+    (candidate) =>
+      candidate.id !== series.id &&
+      candidate.type !== 'map-grouped-value-series'
+  );
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">
+        {t`Aggregate an existing UAT-level series into the selected grouping.`}
+      </p>
+
+      <FormField label={t`Source series`} htmlFor="advanced-map-analytics-grouped-source-series">
+        <Select
+          value={series.sourceSeriesId || GROUPED_SERIES_EMPTY_SELECT_VALUE}
+          onValueChange={(nextSourceSeriesId) => {
+            onUpdateSeries(series.id, (draft) => {
+              if (draft.type !== 'map-grouped-value-series') {
+                return;
+              }
+              draft.sourceSeriesId =
+                nextSourceSeriesId === GROUPED_SERIES_EMPTY_SELECT_VALUE ? '' : nextSourceSeriesId;
+            });
+          }}
+        >
+          <SelectTrigger id="advanced-map-analytics-grouped-source-series">
+            <SelectValue placeholder={t`Select source series`} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={GROUPED_SERIES_EMPTY_SELECT_VALUE}>
+              {t`No source series`}
+            </SelectItem>
+            {sourceSeriesOptions.map((candidate) => (
+              <SelectItem key={candidate.id} value={candidate.id}>
+                {resolveSeriesDisplayLabel(candidate)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FormField>
+
+      <FormField label={t`Grouping`} htmlFor="advanced-map-analytics-grouped-grouping">
+        <Select
+          value={series.groupingId || GROUPED_SERIES_EMPTY_SELECT_VALUE}
+          onValueChange={(nextGroupingId) => {
+            onUpdateSeries(series.id, (draft) => {
+              if (draft.type !== 'map-grouped-value-series') {
+                return;
+              }
+              draft.groupingId =
+                nextGroupingId === GROUPED_SERIES_EMPTY_SELECT_VALUE ? '' : nextGroupingId;
+            });
+          }}
+        >
+          <SelectTrigger id="advanced-map-analytics-grouped-grouping">
+            <SelectValue placeholder={t`Select grouping`} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={GROUPED_SERIES_EMPTY_SELECT_VALUE}>
+              {t`No grouping`}
+            </SelectItem>
+            {groupings.map((grouping) => (
+              <SelectItem key={grouping.id} value={grouping.id}>
+                {grouping.label || grouping.key || grouping.id}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FormField>
+
+      <FormField label={t`Aggregation`} htmlFor="advanced-map-analytics-grouped-aggregation">
+        <Select
+          value={series.aggregation}
+          onValueChange={(nextAggregation) => {
+            onUpdateSeries(series.id, (draft) => {
+              if (draft.type !== 'map-grouped-value-series') {
+                return;
+              }
+              draft.aggregation = nextAggregation === 'first' ? 'first' : 'sum';
+            });
+          }}
+        >
+          <SelectTrigger id="advanced-map-analytics-grouped-aggregation">
+            <SelectValue placeholder={t`Select aggregation`} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="sum">{t`Sum group members`}</SelectItem>
+            <SelectItem value="first">{t`Use first group member`}</SelectItem>
+          </SelectContent>
+        </Select>
+      </FormField>
+    </div>
+  );
 }
 
 function UploadedDatasetSeriesEditor({

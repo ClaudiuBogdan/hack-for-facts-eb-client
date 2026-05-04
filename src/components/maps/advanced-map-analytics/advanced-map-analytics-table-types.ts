@@ -4,11 +4,17 @@ export interface AdvancedMapAnalyticsTableSeriesColumn {
   unit?: string;
 }
 
+export interface AdvancedMapAnalyticsTableGroupingColumn {
+  id: string;
+  label: string;
+}
+
 export interface AdvancedMapAnalyticsTableRow {
   sirutaCode: string;
   uatName: string;
   countyName: string;
   entityCui?: string;
+  groupValuesByGroupingId?: Record<string, string | undefined>;
   valuesBySeriesId: Record<string, number | undefined>;
 }
 

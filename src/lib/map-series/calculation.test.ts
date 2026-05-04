@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { calculateMapSeriesValues } from '@/lib/map-series/calculation';
-import { createDefaultAdvancedMapAnalyticsSeries } from '@/schemas/advanced-map-analytics';
-import type { MapSupportedSeries } from '@/schemas/advanced-map-analytics';
+import {
+  MapGroupedValueSeriesConfigurationSchema,
+  createDefaultAdvancedMapAnalyticsSeries,
+} from '@/schemas/advanced-map-analytics';
+import type { MapGrouping, MapSupportedSeries } from '@/schemas/advanced-map-analytics';
 import type { MapSeriesVectorCache } from '@/lib/map-series/interfaces';
 
 function withCalculation(
@@ -19,6 +22,230 @@ function withCalculation(
 }
 
 describe('calculateMapSeriesValues', () => {
+  it('aggregates UAT values into grouped value series', () => {
+    const baseSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    const groupedSeries = MapGroupedValueSeriesConfigurationSchema.parse({
+      id: 'grouped',
+      type: 'map-grouped-value-series',
+      sourceSeriesId: baseSeries.id,
+      groupingId: 'county',
+      aggregation: 'sum',
+    });
+    const groupings: MapGrouping[] = [
+      {
+        id: 'county',
+        key: 'county',
+        label: 'County',
+        groups: [
+          {
+            id: 'county:CJ',
+            memberSirutaCodes: ['1001', '1002'],
+          },
+          {
+            id: 'county:B',
+            memberSirutaCodes: ['2001'],
+          },
+        ],
+      },
+    ];
+
+    const result = calculateMapSeriesValues({
+      series: [baseSeries, groupedSeries],
+      groupings,
+      baseValuesBySeriesId: new Map([
+        [
+          baseSeries.id,
+          new Map([
+            ['1001', 10],
+            ['1002', 15],
+            ['2001', 40],
+          ]),
+        ],
+      ]),
+    });
+
+    expect(result.valuesBySeriesId.get(groupedSeries.id)?.get('county:CJ')).toBe(25);
+    expect(result.valuesBySeriesId.get(groupedSeries.id)?.get('county:B')).toBe(40);
+    expect(result.domainsBySeriesId.get(groupedSeries.id)).toEqual({
+      type: 'group',
+      groupingId: 'county',
+    });
+  });
+
+  it('uses memberOrder only for order and keeps full group membership', () => {
+    const baseSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    const groupedSeries = MapGroupedValueSeriesConfigurationSchema.parse({
+      id: 'grouped',
+      type: 'map-grouped-value-series',
+      sourceSeriesId: baseSeries.id,
+      groupingId: 'county',
+      aggregation: 'sum',
+    });
+
+    const result = calculateMapSeriesValues({
+      series: [baseSeries, groupedSeries],
+      groupings: [
+        {
+          id: 'county',
+          key: 'county',
+          label: 'County',
+          groups: [
+            {
+              id: 'county:CJ',
+              memberSirutaCodes: ['1001', '1002'],
+              memberOrder: ['1002'],
+            },
+          ],
+        },
+      ],
+      baseValuesBySeriesId: new Map([
+        [baseSeries.id, new Map([['1001', 10], ['1002', 15]])],
+      ]),
+    });
+
+    expect(result.valuesBySeriesId.get(groupedSeries.id)?.get('county:CJ')).toBe(25);
+  });
+
+  it('guards malformed grouped series dependency cycles', () => {
+    const groupedSeries = MapGroupedValueSeriesConfigurationSchema.parse({
+      id: 'grouped',
+      type: 'map-grouped-value-series',
+      sourceSeriesId: 'grouped',
+      groupingId: 'county',
+      aggregation: 'sum',
+    });
+
+    const result = calculateMapSeriesValues({
+      series: [groupedSeries],
+      groupings: [
+        {
+          id: 'county',
+          key: 'county',
+          label: 'County',
+          groups: [{ id: 'county:CJ', memberSirutaCodes: ['1001'] }],
+        },
+      ],
+      baseValuesBySeriesId: new Map(),
+    });
+
+    expect(result.valuesBySeriesId.get(groupedSeries.id)?.size).toBe(0);
+    expect(
+      result.warnings.some(
+        (warning) =>
+          warning.type === 'missing_dependency' &&
+          warning.seriesId === groupedSeries.id &&
+          warning.message.includes('recursive')
+      )
+    ).toBe(true);
+  });
+
+  it('allows calculations across grouped series with matching domains', () => {
+    const spendingSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    const populationSeries = createDefaultAdvancedMapAnalyticsSeries('geojson-dataset-series');
+    const spendingGrouped = MapGroupedValueSeriesConfigurationSchema.parse({
+      id: 'spending-grouped',
+      type: 'map-grouped-value-series',
+      sourceSeriesId: spendingSeries.id,
+      groupingId: 'county',
+      aggregation: 'sum',
+    });
+    const populationGrouped = MapGroupedValueSeriesConfigurationSchema.parse({
+      id: 'population-grouped',
+      type: 'map-grouped-value-series',
+      sourceSeriesId: populationSeries.id,
+      groupingId: 'county',
+      aggregation: 'sum',
+    });
+    const perCapitaSeries = withCalculation(
+      createDefaultAdvancedMapAnalyticsSeries('aggregated-series-calculation'),
+      {
+        op: 'divide',
+        args: [spendingGrouped.id, populationGrouped.id],
+      }
+    );
+    const groupings: MapGrouping[] = [
+      {
+        id: 'county',
+        key: 'county',
+        label: 'County',
+        groups: [
+          {
+            id: 'county:CJ',
+            memberSirutaCodes: ['1001', '1002'],
+          },
+        ],
+      },
+    ];
+
+    const result = calculateMapSeriesValues({
+      series: [spendingSeries, populationSeries, spendingGrouped, populationGrouped, perCapitaSeries],
+      groupings,
+      baseValuesBySeriesId: new Map([
+        [spendingSeries.id, new Map([['1001', 10], ['1002', 20]])],
+        [populationSeries.id, new Map([['1001', 2], ['1002', 4]])],
+      ]),
+    });
+
+    expect(result.valuesBySeriesId.get(perCapitaSeries.id)?.get('county:CJ')).toBe(5);
+    expect(result.domainsBySeriesId.get(perCapitaSeries.id)).toEqual({
+      type: 'group',
+      groupingId: 'county',
+    });
+  });
+
+  it('rejects calculations across incompatible domains', () => {
+    const baseSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    const countyGrouped = MapGroupedValueSeriesConfigurationSchema.parse({
+      id: 'county-grouped',
+      type: 'map-grouped-value-series',
+      sourceSeriesId: baseSeries.id,
+      groupingId: 'county',
+      aggregation: 'sum',
+    });
+    const regionGrouped = MapGroupedValueSeriesConfigurationSchema.parse({
+      id: 'region-grouped',
+      type: 'map-grouped-value-series',
+      sourceSeriesId: baseSeries.id,
+      groupingId: 'region',
+      aggregation: 'sum',
+    });
+    const calcSeries = withCalculation(
+      createDefaultAdvancedMapAnalyticsSeries('aggregated-series-calculation'),
+      {
+        op: 'divide',
+        args: [countyGrouped.id, regionGrouped.id],
+      }
+    );
+
+    const result = calculateMapSeriesValues({
+      series: [baseSeries, countyGrouped, regionGrouped, calcSeries],
+      groupings: [
+        {
+          id: 'county',
+          key: 'county',
+          label: 'County',
+          groups: [{ id: 'county:CJ', memberSirutaCodes: ['1001'] }],
+        },
+        {
+          id: 'region',
+          key: 'region',
+          label: 'Region',
+          groups: [{ id: 'region:NW', memberSirutaCodes: ['1001'] }],
+        },
+      ],
+      baseValuesBySeriesId: new Map([
+        [baseSeries.id, new Map([['1001', 10]])],
+      ]),
+    });
+
+    expect(result.valuesBySeriesId.get(calcSeries.id)?.size).toBe(0);
+    expect(
+      result.warnings.some(
+        (warning) => warning.type === 'domain_mismatch' && warning.seriesId === calcSeries.id
+      )
+    ).toBe(true);
+  });
+
   it('propagates undefined values in arithmetic merges', () => {
     const baseSeriesA = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
     const baseSeriesB = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');

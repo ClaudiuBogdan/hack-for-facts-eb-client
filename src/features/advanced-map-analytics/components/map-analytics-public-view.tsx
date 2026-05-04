@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import type { Dispatch, SetStateAction, ReactNode } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { produce } from 'immer';
+import type { GeoJsonObject } from 'geojson';
 
 import { ClientOnly } from '@/components/ssr/ClientOnly';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -12,6 +13,7 @@ import { AdvancedMapAnalyticsDataTable } from '@/components/maps/advanced-map-an
 import { AdvancedMapAnalyticsDiscreteLegend } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-discrete-legend';
 import { AdvancedMapAnalyticsLegendCard } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-legend-card';
 import type {
+  AdvancedMapAnalyticsTableGroupingColumn,
   AdvancedMapAnalyticsTableRow,
   AdvancedMapAnalyticsTableSeriesColumn,
 } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-table-types';
@@ -39,6 +41,12 @@ import type {
   MapSupportedSeries,
 } from '@/schemas/advanced-map-analytics';
 import type { GroupedSeriesDataResponse } from '@/lib/map-series/interfaces';
+import {
+  areSeriesDomainsEqual,
+  buildGroupMetadataById,
+  buildGroupingValuesBySiruta,
+  getGroupMetadataKey,
+} from '@/lib/map-series/grouping';
 import { loadInteractiveMapModule } from '@/features/advanced-map-analytics/analytics-map-warmup';
 import {
   MapAnalyticsEntityDetailsPanel,
@@ -121,6 +129,7 @@ export function MapAnalyticsPublicView({
 
   const seriesDataResult = useAdvancedMapAnalyticsSeriesData({
     series: mapState.series,
+    groupings: mapState.groupings,
     activeSeriesId: mapState.activeSeriesId,
     defaultCurrency: userCurrency,
     defaultInflationAdjusted: userInflationAdjusted,
@@ -132,6 +141,8 @@ export function MapAnalyticsPublicView({
 
   const {
     valuesBySeriesId,
+    mapValuesBySeriesId,
+    domainsBySeriesId,
     unitsBySeriesId,
     activeValues,
     activeSeriesId: resolvedActiveSeriesId,
@@ -216,7 +227,7 @@ export function MapAnalyticsPublicView({
         enabledSeries,
         activeSeries,
         activeSeriesId: resolvedActiveSeriesId,
-        valuesBySeriesId,
+        valuesBySeriesId: mapValuesBySeriesId,
         unitsBySeriesId,
         binsCanApply,
         binsClassification,
@@ -230,7 +241,7 @@ export function MapAnalyticsPublicView({
       enabledSeries,
       resolvedActiveSeriesId,
       unitsBySeriesId,
-      valuesBySeriesId,
+      mapValuesBySeriesId,
     ]
   );
 
@@ -261,7 +272,128 @@ export function MapAnalyticsPublicView({
     [enabledSeries, unitsBySeriesId]
   );
 
+  const groupingColumns = useMemo<AdvancedMapAnalyticsTableGroupingColumn[]>(
+    () =>
+      mapState.groupings.map((grouping) => ({
+        id: grouping.id,
+        label: grouping.label || grouping.key || grouping.id,
+      })),
+    [mapState.groupings]
+  );
+
+  const groupValuesBySirutaCode = useMemo(
+    () => buildGroupingValuesBySiruta({ groupings: mapState.groupings }),
+    [mapState.groupings]
+  );
+
+  const groupMetadataById = useMemo(
+    () => buildGroupMetadataById({ groupings: mapState.groupings }),
+    [mapState.groupings]
+  );
+
+  const groupingBoundaryGeoJsonData = useMemo<GeoJsonObject | null>(() => {
+    const activeSeriesDomain = resolvedActiveSeriesId
+      ? domainsBySeriesId.get(resolvedActiveSeriesId)
+      : undefined;
+    const activeGroupingId =
+      activeSeriesDomain?.type === 'group'
+        ? activeSeriesDomain.groupingId
+        : mapState.activeGroupingId;
+    const activeGrouping = activeGroupingId
+      ? mapState.groupings.find((grouping) => grouping.id === activeGroupingId)
+      : undefined;
+
+    if (!activeGrouping) {
+      return null;
+    }
+
+    const memberSirutaCodes = new Set(
+      activeGrouping.groups.flatMap((group) => group.memberSirutaCodes)
+    );
+    const features = geoJsonFeatures.filter((feature) =>
+      memberSirutaCodes.has(String(feature.properties?.natcode ?? '').trim())
+    );
+
+    if (features.length === 0) {
+      return null;
+    }
+
+    return {
+      type: 'FeatureCollection',
+      features,
+    } as GeoJsonObject;
+  }, [
+    domainsBySeriesId,
+    geoJsonFeatures,
+    mapState.activeGroupingId,
+    mapState.groupings,
+    resolvedActiveSeriesId,
+  ]);
+
   const tableRows = useMemo<AdvancedMapAnalyticsTableRow[]>(() => {
+    const activeDomain = resolvedActiveSeriesId ? domainsBySeriesId.get(resolvedActiveSeriesId) : undefined;
+    if (activeDomain?.type === 'group') {
+      const activeSeriesColumn = seriesColumns.find((seriesColumn) => seriesColumn.id === resolvedActiveSeriesId);
+      const rowScopeSeriesColumns = activeSeriesColumn ? [activeSeriesColumn] : seriesColumns;
+      const uniqueGroupIds = new Set<string>();
+
+      for (const seriesColumn of rowScopeSeriesColumns) {
+        const vector = valuesBySeriesId.get(seriesColumn.id);
+        if (!vector) {
+          continue;
+        }
+
+        const seriesDomain = domainsBySeriesId.get(seriesColumn.id);
+        if (
+          !seriesDomain ||
+          seriesDomain.type !== 'group' ||
+          seriesDomain.groupingId !== activeDomain.groupingId
+        ) {
+          continue;
+        }
+
+        for (const [groupId, value] of vector.entries()) {
+          if (value === undefined) {
+            continue;
+          }
+          uniqueGroupIds.add(String(groupId));
+        }
+      }
+
+      return [...uniqueGroupIds]
+        .map((groupId) => {
+          const metadata = groupMetadataById.get(getGroupMetadataKey(activeDomain.groupingId, groupId));
+          const rowValuesBySeriesId: Record<string, number | undefined> = {};
+
+          for (const seriesColumn of seriesColumns) {
+            const seriesDomain = domainsBySeriesId.get(seriesColumn.id);
+            rowValuesBySeriesId[seriesColumn.id] =
+              seriesDomain && areSeriesDomainsEqual(seriesDomain, activeDomain)
+                ? valuesBySeriesId.get(seriesColumn.id)?.get(groupId)
+                : undefined;
+          }
+
+          return {
+            sirutaCode: groupId,
+            uatName: metadata?.groupLabel || groupId,
+            countyName: metadata?.groupingLabel || t`Group`,
+            groupValuesByGroupingId: {
+              [activeDomain.groupingId]: groupId,
+            },
+            valuesBySeriesId: rowValuesBySeriesId,
+          };
+        })
+        .sort((left, right) => {
+          const nameCompare = left.uatName.localeCompare(right.uatName, undefined, {
+            sensitivity: 'base',
+          });
+          if (nameCompare !== 0) {
+            return nameCompare;
+          }
+          return left.sirutaCode.localeCompare(right.sirutaCode);
+        });
+    }
+
     const activeSeriesColumn = resolvedActiveSeriesId
       ? seriesColumns.find((seriesColumn) => seriesColumn.id === resolvedActiveSeriesId)
       : undefined;
@@ -269,7 +401,7 @@ export function MapAnalyticsPublicView({
     const uniqueSirutaCodes = new Set<string>();
 
     for (const seriesColumn of rowScopeSeriesColumns) {
-      const vector = valuesBySeriesId.get(seriesColumn.id);
+      const vector = mapValuesBySeriesId.get(seriesColumn.id);
       if (!vector) {
         continue;
       }
@@ -288,7 +420,7 @@ export function MapAnalyticsPublicView({
         const rowValuesBySeriesId: Record<string, number | undefined> = {};
 
         for (const seriesColumn of seriesColumns) {
-          rowValuesBySeriesId[seriesColumn.id] = valuesBySeriesId
+          rowValuesBySeriesId[seriesColumn.id] = mapValuesBySeriesId
             .get(seriesColumn.id)
             ?.get(sirutaCode);
         }
@@ -298,6 +430,7 @@ export function MapAnalyticsPublicView({
           uatName: metadata?.uatName || `UAT ${sirutaCode}`,
           countyName: metadata?.countyName || t`Unknown county`,
           entityCui: metadata?.entityCui,
+          groupValuesByGroupingId: groupValuesBySirutaCode.get(sirutaCode),
           valuesBySeriesId: rowValuesBySeriesId,
         };
       })
@@ -310,7 +443,16 @@ export function MapAnalyticsPublicView({
         }
         return left.sirutaCode.localeCompare(right.sirutaCode);
       });
-  }, [resolvedActiveSeriesId, seriesColumns, uatMetadataBySirutaCode, valuesBySeriesId]);
+  }, [
+    domainsBySeriesId,
+    groupMetadataById,
+    groupValuesBySirutaCode,
+    mapValuesBySeriesId,
+    resolvedActiveSeriesId,
+    seriesColumns,
+    uatMetadataBySirutaCode,
+    valuesBySeriesId,
+  ]);
 
   const toggleBinFilterSelection = useCallback(
     (presetId: string, groupId: string, checked: boolean) => {
@@ -418,10 +560,10 @@ export function MapAnalyticsPublicView({
       enabledSeries,
       activeSeriesId: resolvedActiveSeriesId,
       selection: selectedMapEntity,
-      valuesBySeriesId,
+      valuesBySeriesId: mapValuesBySeriesId,
       unitsBySeriesId,
     });
-  }, [enabledSeries, resolvedActiveSeriesId, selectedMapEntity, unitsBySeriesId, valuesBySeriesId]);
+  }, [enabledSeries, mapValuesBySeriesId, resolvedActiveSeriesId, selectedMapEntity, unitsBySeriesId]);
 
   const selectedEntityProfileQuery = useEntityProfile(selectedMapEntity?.entityCui);
   const selectedEntityProfileErrorMessage =
@@ -695,6 +837,7 @@ export function MapAnalyticsPublicView({
                     countyBoundaryGeoJsonData={
                       mapState.showCountyBoundaries ? (countyGeoJsonData ?? null) : null
                     }
+                    groupingBoundaryGeoJsonData={groupingBoundaryGeoJsonData}
                     zoom={mapZoom}
                     center={mapCenter}
                     mapViewType="UAT"
@@ -778,6 +921,7 @@ export function MapAnalyticsPublicView({
               <AdvancedMapAnalyticsDataTable
                 rows={filteredTableRows}
                 seriesColumns={seriesColumns}
+                groupingColumns={groupingColumns}
                 mapTitle={displayTitle}
                 showExportCsv={false}
                 activeSeriesId={resolvedActiveSeriesId}
@@ -806,6 +950,7 @@ export function MapAnalyticsPublicView({
                 series={mapState.series}
                 activeSeriesId={resolvedActiveSeriesId}
                 valuesBySeriesId={valuesBySeriesId}
+                domainsBySeriesId={domainsBySeriesId}
                 unitsBySeriesId={unitsBySeriesId}
                 uatMetadataBySirutaCode={uatMetadataBySirutaCode}
                 readOnly={true}
