@@ -497,25 +497,22 @@ function buildTopCounties(
     .sort((a, b) => b.valueEur - a.valueEur)
 }
 
-function buildTopBeneficiaries(
+export function buildTopBeneficiaries(
   model: PnrrWorkerModel,
+  projects: readonly PnrrProject[],
   aggregates: ReturnType<typeof computeAggregates>,
 ): readonly PnrrWorkerRankedItem[] {
-  const projectBeneficiariesByCui = new Map<
-    string,
-    typeof aggregates.topBeneficiaries[number]
-  >()
-  const projectBeneficiariesByName = new Map<
-    string,
-    typeof aggregates.topBeneficiaries[number]
-  >()
+  const projectBeneficiaries = [...buildBeneficiarySummaries(projects)]
+    .sort((a, b) => b.value - a.value)
+  const projectBeneficiariesByCui = new Map<string, BeneficiarySummaryInternal>()
+  const projectBeneficiariesByName = new Map<string, BeneficiarySummaryInternal>()
 
-  for (const beneficiary of aggregates.topBeneficiaries) {
+  for (const beneficiary of projectBeneficiaries) {
     const cui = normalizeBeneficiaryCui(beneficiary.cui)
     if (cui && !projectBeneficiariesByCui.has(cui)) {
       projectBeneficiariesByCui.set(cui, beneficiary)
     }
-    const nameKey = normalizeBeneficiaryName(beneficiary.beneficiary)
+    const nameKey = normalizeBeneficiaryName(beneficiary.name)
     if (!projectBeneficiariesByName.has(nameKey)) {
       projectBeneficiariesByName.set(nameKey, beneficiary)
     }
@@ -549,10 +546,10 @@ function buildTopBeneficiaries(
     })
   }
 
-  return aggregates.topBeneficiaries.slice(0, 100).map((beneficiary) => ({
-    id: beneficiary.beneficiary,
-    itemKey: `${beneficiary.beneficiary}\u0000${beneficiary.cui ?? ''}`,
-    label: beneficiary.beneficiary,
+  return projectBeneficiaries.slice(0, 100).map((beneficiary) => ({
+    id: beneficiary.name,
+    itemKey: `${beneficiary.name}\u0000${beneficiary.cui ?? ''}`,
+    label: beneficiary.name,
     valueEur: beneficiary.value,
     count: beneficiary.count,
     pct: aggregates.rawTotalValue > 0
@@ -1049,7 +1046,7 @@ function buildOverview(
     aggregates,
     topComponents: buildTopComponents(aggregates),
     topCounties: buildTopCounties(aggregates),
-    topBeneficiaries: buildTopBeneficiaries(model, aggregates),
+    topBeneficiaries: buildTopBeneficiaries(model, projects, aggregates),
     projectPreviewRows: sortProjects(projects, 'value', 'desc').slice(0, 8).map(projectToRow),
     emblematicProjectRows: buildEmblematicRows(projects),
     histogram: buildHistogram(records),
