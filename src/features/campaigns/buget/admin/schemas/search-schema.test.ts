@@ -386,6 +386,27 @@ describe("campaign admin search schema", () => {
     });
   });
 
+  it("keeps staged config sorting local while using server-safe filters", () => {
+    const search = normalizeCampaignAdminEntityConfigSearch({
+      sortBy: "stagedValues",
+      limit: "50",
+    });
+
+    expect(search).toEqual({
+      sortBy: "stagedValues",
+      sortOrder: "desc",
+      limit: 50,
+    });
+    expect(getCampaignAdminEntityConfigFilters(search)).toEqual({
+      sortBy: "updatedAt",
+      sortOrder: "desc",
+    });
+    expect(getCampaignAdminEntityConfigExportFilters(search)).toEqual({
+      sortBy: "updatedAt",
+      sortOrder: "desc",
+    });
+  });
+
   it("creates an empty entity config search while preserving display options", () => {
     expect(
       createEmptyCampaignAdminEntityConfigSearch({

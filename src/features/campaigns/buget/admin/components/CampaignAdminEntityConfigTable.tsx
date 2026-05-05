@@ -200,6 +200,10 @@ function formatNullableValue(value: string | null | undefined): string {
   return value?.trim() || t`Unavailable`;
 }
 
+function normalizeExpectedUpdatedAt(value: string | null | undefined): string | null {
+  return value ?? null;
+}
+
 function BudgetUrlLink({ url }: { readonly url: string }) {
   return (
     <a
@@ -227,7 +231,9 @@ function StagedValuesCell({
     return <span className="text-muted-foreground">{t`No staged changes`}</span>;
   }
 
-  const isStale = stagedDraft.expectedUpdatedAt !== item.updatedAt;
+  const isStale =
+    normalizeExpectedUpdatedAt(stagedDraft.expectedUpdatedAt) !==
+    normalizeExpectedUpdatedAt(item.updatedAt);
   const publicDebate = stagedDraft.values.public_debate;
 
   return (
@@ -498,7 +504,14 @@ export function CampaignAdminEntityConfigTable({
                 {t`Official budget URL`}
               </SortableTableHead>
               <TableHead>{t`Public debate`}</TableHead>
-              <TableHead>{t`Staged values`}</TableHead>
+              <SortableTableHead
+                sortKey="stagedValues"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSortChange={onSortChange}
+              >
+                {t`Staged values`}
+              </SortableTableHead>
               <SortableTableHead
                 sortKey="updatedAt"
                 sortBy={sortBy}

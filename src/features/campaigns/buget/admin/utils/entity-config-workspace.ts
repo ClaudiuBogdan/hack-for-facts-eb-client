@@ -21,6 +21,10 @@ function isValidHttpUrl(value: string): boolean {
   }
 }
 
+function normalizeExpectedUpdatedAt(value: string | null | undefined): string | null {
+  return value ?? null;
+}
+
 export type CampaignAdminEntityConfigSendValidationIssueData = {
   readonly selectionKey: string;
   readonly primaryValue: string;
@@ -66,7 +70,10 @@ export function getCampaignAdminEntityConfigSendValidationMessage(input: {
     }
   }
 
-  if (stagedDraft.expectedUpdatedAt !== item.updatedAt) {
+  if (
+    normalizeExpectedUpdatedAt(stagedDraft.expectedUpdatedAt) !==
+    normalizeExpectedUpdatedAt(item.updatedAt)
+  ) {
     return t`This row changed before your bulk update was saved. Refresh the table and paste again.`;
   }
 

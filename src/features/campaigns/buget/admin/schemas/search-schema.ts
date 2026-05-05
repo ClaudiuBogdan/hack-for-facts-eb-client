@@ -1062,6 +1062,14 @@ export function getCampaignAdminEntityConfigFilters(
   void pageIndex;
   void limit;
 
+  if (filters.sortBy === "stagedValues") {
+    return {
+      ...filters,
+      sortBy: "updatedAt",
+      sortOrder: filters.sortOrder ?? "desc",
+    };
+  }
+
   return filters;
 }
 
@@ -1190,8 +1198,8 @@ export function getCampaignAdminEntityConfigExportFilters(
     hasPublicDebate,
     updatedAtFrom,
     updatedAtTo,
-    sortBy,
-    sortOrder,
+    sortBy: sortBy === "stagedValues" ? "updatedAt" : sortBy,
+    sortOrder: sortBy === "stagedValues" ? (sortOrder ?? "desc") : sortOrder,
   });
 }
 

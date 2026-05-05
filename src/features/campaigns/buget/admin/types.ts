@@ -125,6 +125,7 @@ export const campaignAdminEntitiesSortKeyValues = [
 ] as const;
 
 export const campaignAdminEntityConfigSortKeyValues = [
+  "stagedValues",
   "updatedAt",
   "entityCui",
   "budgetPublicationDate",

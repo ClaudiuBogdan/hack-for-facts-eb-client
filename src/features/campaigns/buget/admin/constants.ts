@@ -208,6 +208,10 @@ export const CAMPAIGN_ADMIN_ENTITY_CONFIG_SORTABLE_COLUMNS: Record<
     readonly defaultOrder: CampaignAdminSortOrder;
   }
 > = {
+  stagedValues: {
+    dataType: "number",
+    defaultOrder: "desc",
+  },
   updatedAt: {
     dataType: "date",
     defaultOrder: "desc",
@@ -332,6 +336,8 @@ export function getCampaignAdminEntityConfigSortLabel(
   sortKey: CampaignAdminEntityConfigSortKey,
 ): string {
   switch (sortKey) {
+    case "stagedValues":
+      return t`Staged values`;
     case "updatedAt":
       return t`Updated`;
     case "entityCui":

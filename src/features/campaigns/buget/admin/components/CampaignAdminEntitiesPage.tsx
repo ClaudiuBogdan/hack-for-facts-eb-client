@@ -136,6 +136,32 @@ type CampaignAdminEntitiesPageProps = {
 const EMPTY_ENTITY_ITEMS: readonly CampaignAdminEntityListItem[] = [];
 const EMPTY_ENTITY_CONFIG_ITEMS: readonly CampaignAdminEntityConfigListItem[] = [];
 
+function sortEntityConfigItemsForDisplay(input: {
+  readonly items: readonly CampaignAdminEntityConfigListItem[];
+  readonly sortBy?: CampaignAdminEntitiesSearch["configSortBy"];
+  readonly sortOrder?: CampaignAdminEntitiesSearch["configSortOrder"];
+  readonly stagedDraftsByEntityCui: Readonly<
+    Record<string, CampaignAdminStagedEntityConfigDraft>
+  >;
+}): readonly CampaignAdminEntityConfigListItem[] {
+  if (input.sortBy !== "stagedValues") {
+    return input.items;
+  }
+
+  const direction = input.sortOrder === "asc" ? 1 : -1;
+  return input.items
+    .map((item, index) => ({
+      item,
+      index,
+      staged: input.stagedDraftsByEntityCui[item.entityCui] !== undefined ? 1 : 0,
+    }))
+    .sort((left, right) => {
+      const stagedCompare = (left.staged - right.staged) * direction;
+      return stagedCompare !== 0 ? stagedCompare : left.index - right.index;
+    })
+    .map(({ item }) => item);
+}
+
 function SummaryCard({
   label,
   value,
@@ -322,18 +348,35 @@ export function CampaignAdminEntitiesPage({
 
   const items = entitiesQuery.data?.items ?? EMPTY_ENTITY_ITEMS;
   const configItems = entityConfigQuery.data?.items ?? EMPTY_ENTITY_CONFIG_ITEMS;
+  const displayedConfigItems = useMemo(
+    () =>
+      sortEntityConfigItemsForDisplay({
+        items: configItems,
+        sortBy: configSearch.sortBy,
+        sortOrder: configSearch.sortOrder,
+        stagedDraftsByEntityCui: stagedEntityConfigDraftsByEntityCui,
+      }),
+    [
+      configItems,
+      configSearch.sortBy,
+      configSearch.sortOrder,
+      stagedEntityConfigDraftsByEntityCui,
+    ],
+  );
   const selectedConfigItems = useMemo(
     () =>
-      configItems.filter((item) => selectedConfigEntityCuis.has(item.entityCui)),
-    [configItems, selectedConfigEntityCuis],
+      displayedConfigItems.filter((item) =>
+        selectedConfigEntityCuis.has(item.entityCui),
+      ),
+    [displayedConfigItems, selectedConfigEntityCuis],
   );
   const visibleEntityConfigClipboardText = useMemo(
     () =>
       serializeCampaignAdminEntityConfigRowsToClipboardTsv(
-        configItems,
+        displayedConfigItems,
         stagedEntityConfigDraftsByEntityCui,
       ),
-    [configItems, stagedEntityConfigDraftsByEntityCui],
+    [displayedConfigItems, stagedEntityConfigDraftsByEntityCui],
   );
   const selectedStagedConfigDraftCount = useMemo(
     () =>
@@ -1714,7 +1757,7 @@ export function CampaignAdminEntitiesPage({
           ) : (
             <div className="space-y-4">
               <CampaignAdminEntityConfigTable
-                items={configItems}
+                items={displayedConfigItems}
                 selectedEntityCuis={selectedConfigEntityCuis}
                 header={
                   ({ actions }) => (

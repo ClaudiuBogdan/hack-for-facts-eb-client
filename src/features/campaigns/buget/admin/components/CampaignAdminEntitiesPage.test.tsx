@@ -1026,6 +1026,79 @@ describe("CampaignAdminEntitiesPage", () => {
     });
   });
 
+  it("sorts staged config rows to the top of the current page", async () => {
+    useCampaignAdminEntityConfigListQueryMock.mockReturnValue({
+      data: {
+        items: [
+          createEntityConfigListItem({
+            entityCui: "12345678",
+            entityName: "Oras Test",
+            updatedAt: "2026-04-12T10:00:00.000Z",
+          }),
+          createEntityConfigListItem({
+            entityCui: "87654321",
+            entityName: "Comuna Test",
+            usersCount: 1,
+            configured: false,
+            isConfigured: false,
+            values: {
+              budgetPublicationDate: null,
+              officialBudgetUrl: null,
+              public_debate: null,
+            },
+            updatedAt: null,
+            updatedByUserId: null,
+          }),
+        ],
+        page: {
+          limit: 50,
+          totalCount: 2,
+          hasMore: false,
+          nextCursor: null,
+          sortBy: "updatedAt",
+          sortOrder: "desc",
+        },
+      },
+      error: null,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    });
+
+    render(
+      <CampaignAdminEntitiesPage
+        campaignKey="funky"
+        search={{
+          tab: "config",
+          configSortBy: "stagedValues",
+          configSortOrder: "desc",
+          limit: 50,
+        }}
+        onSearchChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.paste(window, {
+      clipboardData: {
+        getData: () =>
+          "Entity CUI\tBudget Publication Date\tOfficial Budget URL\n"
+          + "87654321\t2026-04-20\thttps://comuna.test/final.pdf\n",
+      },
+    });
+
+    expect(await screen.findByText("Ready")).toBeInTheDocument();
+
+    const stagedRow = screen.getByText("Comuna Test").closest("tr");
+    const unstagedRow = screen.getByText("Oras Test").closest("tr");
+
+    expect(stagedRow).not.toBeNull();
+    expect(unstagedRow).not.toBeNull();
+    expect(
+      stagedRow!.compareDocumentPosition(unstagedRow!) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
   it("stages pasted config rows from the toolbar clipboard button", async () => {
     const originalClipboard = navigator.clipboard;
     Object.defineProperty(navigator, "clipboard", {
