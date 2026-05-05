@@ -724,7 +724,7 @@ export function parseCampaignAdminEntityConfigClipboardText(input: {
           ? row.values.public_debate
           : item.values.public_debate,
       },
-      expectedUpdatedAt: row.expectedUpdatedAt ?? item.updatedAt ?? null,
+      expectedUpdatedAt: item.updatedAt ?? null,
     });
   }
 

@@ -307,7 +307,7 @@ describe("entity-config-clipboard", () => {
     const parsed = parseCampaignAdminEntityConfigClipboardText({
       rawText:
         "Entity CUI\tBudget Publication Date\tOfficial Budget URL\tUpdated At\n"
-        + "12345678\t2026-04-20\thttps://oras.test/final.pdf\t2026-04-18T09:00:00.000Z\n",
+        + "12345678\t2026-04-20\thttps://oras.test/final.pdf\t2026-04-01T09:00:00.000Z\n",
       items: [createItem()],
     });
 
@@ -322,6 +322,35 @@ describe("entity-config-clipboard", () => {
           public_debate: null,
         },
         expectedUpdatedAt: "2026-04-18T09:00:00.000Z",
+      },
+    ]);
+  });
+
+  it("ignores pasted updated-at values when staging visible rows", () => {
+    const parsed = parseCampaignAdminEntityConfigClipboardText({
+      rawText:
+        "Entity CUI\tEntity Name\tUsers\tBudget Publication Date\tOfficial Budget URL\tUpdated At\n"
+        + "12345678\tDifferent Name\t999\t2026-04-20\thttps://oras.test/final.pdf\t2026-04-01T09:00:00.000Z\n",
+      items: [
+        createItem({
+          entityName: "Visible Name",
+          usersCount: 4,
+          updatedAt: null,
+        }),
+      ],
+    });
+
+    expect(parsed.issues).toEqual([]);
+    expect(parsed.drafts).toEqual([
+      {
+        entityCui: "12345678",
+        entityName: "Visible Name",
+        values: {
+          budgetPublicationDate: "2026-04-20",
+          officialBudgetUrl: "https://oras.test/final.pdf",
+          public_debate: null,
+        },
+        expectedUpdatedAt: null,
       },
     ]);
   });
