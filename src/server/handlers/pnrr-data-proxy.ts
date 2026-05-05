@@ -46,6 +46,7 @@ const PNRR_INDICATORS_URL = buildOfficialDataUrl(
 
 /** Cache the upstream response in memory for this many seconds. */
 const CACHE_TTL_SECONDS = 3600
+const STALE_CACHE_TTL_SECONDS = 7 * 24 * 3600
 const PNRR_PROCESS_PROJECTS_WORKER_KIND = 'pnrr-process-projects'
 const PNRR_PROCESS_PROJECTS_TIMEOUT_MS = 30_000
 
@@ -75,8 +76,19 @@ type PnrrRawFileResult = {
 type PnrrProjectsResult = {
   readonly data: readonly PnrrProject[]
   readonly source: PnrrDataSource
+  readonly stale: boolean
   readonly projectCount: number
   readonly projectRecordCount: number
+}
+
+type PnrrCacheReadOptions = {
+  readonly allowStale?: boolean
+}
+
+type PnrrOfficialIndicatorsResult = {
+  readonly data: PnrrOfficialIndicators | null
+  readonly source: PnrrDataSource
+  readonly stale: boolean
 }
 
 type PnrrProcessedProjectsPayload = {
@@ -112,8 +124,14 @@ let cachedIndicatorResponse: {
   expiresAt: number
 } | null = null
 let pendingProcessedProjectsRequest: Promise<PnrrProjectsResult> | null = null
+let pendingOfficialIndicatorsRequest: Promise<PnrrOfficialIndicatorsResult> | null =
+  null
 let pnrrProjectsCacheGeneration = 0
 let pnrrIndicatorsCacheGeneration = 0
+
+function isWithinStaleCacheWindow(expiresAt: number, now: number): boolean {
+  return expiresAt + STALE_CACHE_TTL_SECONDS * 1000 > now
+}
 
 async function bootstrapPnrrProcessProjectsWorkerThread(): Promise<void> {
   if (isMainThread || !parentPort) return
@@ -359,7 +377,7 @@ export async function fetchPnrrRawFile(
         error: error instanceof Error ? error.message : String(error),
       })
 
-      if (cached) {
+      if (cached && isWithinStaleCacheWindow(cached.expiresAt, Date.now())) {
         return buildRawFileResult(cached, 'stale-cache')
       }
 
@@ -402,12 +420,22 @@ export async function fetchPnrrBeneficiaryPayments(): Promise<{
 
   try {
     const rawFile = await fetchPnrrRawFile('payments')
+    if (
+      rawFile.source === 'stale-cache' &&
+      cachedPaymentResponse &&
+      isWithinStaleCacheWindow(cachedPaymentResponse.expiresAt, Date.now())
+    ) {
+      return { data: cachedPaymentResponse.data, source: 'stale-cache' }
+    }
+
     const rawPayments = assertRawProjectsArray(rawFile.json)
     const data = processPnrrBeneficiaryPayments(rawPayments)
 
-    cachedPaymentResponse = {
-      data,
-      expiresAt: now + CACHE_TTL_SECONDS * 1000,
+    if (rawFile.source !== 'stale-cache') {
+      cachedPaymentResponse = {
+        data,
+        expiresAt: now + CACHE_TTL_SECONDS * 1000,
+      }
     }
     return { data, source: rawFile.source }
   } catch (error) {
@@ -415,7 +443,10 @@ export async function fetchPnrrBeneficiaryPayments(): Promise<{
       error: error instanceof Error ? error.message : String(error),
     })
 
-    if (cachedPaymentResponse) {
+    if (
+      cachedPaymentResponse &&
+      isWithinStaleCacheWindow(cachedPaymentResponse.expiresAt, Date.now())
+    ) {
       return { data: cachedPaymentResponse.data, source: 'stale-cache' }
     }
 
@@ -433,35 +464,74 @@ export async function fetchPnrrOfficialIndicators(): Promise<{
     return { data: cachedIndicatorResponse.data, source: 'cache' }
   }
 
-  try {
-    const rawFile = await fetchPnrrRawFile('indicators')
-    const data = processPnrrOfficialIndicators(rawFile.json)
-
-    cachedIndicatorResponse = {
-      data,
-      expiresAt: now + CACHE_TTL_SECONDS * 1000,
-    }
-    pnrrIndicatorsCacheGeneration += 1
-    return { data, source: rawFile.source }
-  } catch (error) {
-    console.error('[pnrr-data-proxy] Indicators fetch failed', {
-      error: error instanceof Error ? error.message : String(error),
-    })
-
-    if (cachedIndicatorResponse) {
-      return { data: cachedIndicatorResponse.data, source: 'stale-cache' }
-    }
-
-    throw error
+  if (pendingOfficialIndicatorsRequest) {
+    return pendingOfficialIndicatorsRequest
   }
+
+  pendingOfficialIndicatorsRequest = (async (): Promise<PnrrOfficialIndicatorsResult> => {
+    try {
+      const rawFile = await fetchPnrrRawFile('indicators')
+      if (rawFile.source === 'stale-cache') {
+        const stale = readCachedPnrrOfficialIndicatorsResult({ allowStale: true })
+        if (stale) return stale
+      }
+
+      const data = processPnrrOfficialIndicators(rawFile.json)
+
+      if (rawFile.source !== 'stale-cache') {
+        cachedIndicatorResponse = {
+          data,
+          expiresAt: now + CACHE_TTL_SECONDS * 1000,
+        }
+        pnrrIndicatorsCacheGeneration += 1
+      }
+      return {
+        data,
+        source: rawFile.source,
+        stale: rawFile.source === 'stale-cache',
+      }
+    } catch (error) {
+      console.error('[pnrr-data-proxy] Indicators fetch failed', {
+        error: error instanceof Error ? error.message : String(error),
+      })
+
+      const stale = readCachedPnrrOfficialIndicatorsResult({ allowStale: true })
+      if (stale) return stale
+
+      throw error
+    }
+  })().finally(() => {
+    pendingOfficialIndicatorsRequest = null
+  })
+
+  return pendingOfficialIndicatorsRequest
 }
 
 export function readCachedPnrrOfficialIndicators(): PnrrOfficialIndicators | null {
+  return readCachedPnrrOfficialIndicatorsResult()?.data ?? null
+}
+
+export function readCachedPnrrOfficialIndicatorsResult(
+  options: PnrrCacheReadOptions = {},
+): PnrrOfficialIndicatorsResult | null {
   const now = Date.now()
-  if (cachedIndicatorResponse && cachedIndicatorResponse.expiresAt > now) {
-    return cachedIndicatorResponse.data
+  if (!cachedIndicatorResponse) return null
+
+  const stale = cachedIndicatorResponse.expiresAt <= now
+  if (stale) {
+    if (
+      !options.allowStale ||
+      !isWithinStaleCacheWindow(cachedIndicatorResponse.expiresAt, now)
+    ) {
+      return null
+    }
   }
-  return null
+
+  return {
+    data: cachedIndicatorResponse.data,
+    source: stale ? 'stale-cache' : 'cache',
+    stale,
+  }
 }
 
 export type PnrrDataCacheGeneration = {
@@ -521,15 +591,30 @@ export async function handlePnrrRawDataRequest(
 }
 
 export function readCachedPnrrProjects(): PnrrProjectsResult | null {
+  return readCachedPnrrProjectsResult()
+}
+
+export function readCachedPnrrProjectsResult(
+  options: PnrrCacheReadOptions = {},
+): PnrrProjectsResult | null {
   const now = Date.now()
 
-  if (!cachedProcessedResponse || cachedProcessedResponse.expiresAt <= now) {
-    return null
+  if (!cachedProcessedResponse) return null
+
+  const stale = cachedProcessedResponse.expiresAt <= now
+  if (stale) {
+    if (
+      !options.allowStale ||
+      !isWithinStaleCacheWindow(cachedProcessedResponse.expiresAt, now)
+    ) {
+      return null
+    }
   }
 
   return {
     data: cachedProcessedResponse.data,
-    source: 'cache',
+    source: stale ? 'stale-cache' : 'cache',
+    stale,
     projectCount: cachedProcessedResponse.projectCount,
     projectRecordCount: cachedProcessedResponse.projectRecordCount,
   }
@@ -551,6 +636,7 @@ export async function fetchPnrrProjects(): Promise<PnrrProjectsResult> {
     return {
       data: cachedProcessedResponse.data,
       source: 'cache',
+      stale: false,
       projectCount: cachedProcessedResponse.projectCount,
       projectRecordCount: cachedProcessedResponse.projectRecordCount,
     }
@@ -561,22 +647,41 @@ export async function fetchPnrrProjects(): Promise<PnrrProjectsResult> {
   }
 
   pendingProcessedProjectsRequest = (async () => {
-    const rawResult = await fetchPnrrRawFile('projects')
-    const processed = await processPnrrProjectsInWorker(rawResult.text)
+    try {
+      const rawResult = await fetchPnrrRawFile('projects')
+      if (rawResult.source === 'stale-cache') {
+        const stale = readCachedPnrrProjectsResult({ allowStale: true })
+        if (stale) return stale
+      }
 
-    cachedProcessedResponse = {
-      data: processed.data,
-      projectCount: processed.projectCount,
-      projectRecordCount: processed.projectRecordCount,
-      expiresAt: now + CACHE_TTL_SECONDS * 1000,
-    }
-    pnrrProjectsCacheGeneration += 1
+      const processed = await processPnrrProjectsInWorker(rawResult.text)
 
-    return {
-      data: processed.data,
-      source: rawResult.source,
-      projectCount: processed.projectCount,
-      projectRecordCount: processed.projectRecordCount,
+      if (rawResult.source !== 'stale-cache') {
+        cachedProcessedResponse = {
+          data: processed.data,
+          projectCount: processed.projectCount,
+          projectRecordCount: processed.projectRecordCount,
+          expiresAt: now + CACHE_TTL_SECONDS * 1000,
+        }
+        pnrrProjectsCacheGeneration += 1
+      }
+
+      return {
+        data: processed.data,
+        source: rawResult.source,
+        stale: rawResult.source === 'stale-cache',
+        projectCount: processed.projectCount,
+        projectRecordCount: processed.projectRecordCount,
+      }
+    } catch (error) {
+      console.error('[pnrr-data-proxy] Projects processing failed', {
+        error: error instanceof Error ? error.message : String(error),
+      })
+
+      const stale = readCachedPnrrProjectsResult({ allowStale: true })
+      if (stale) return stale
+
+      throw error
     }
   })().finally(() => {
     pendingProcessedProjectsRequest = null
