@@ -239,7 +239,7 @@ export function buildPnrrSeoSnapshotFromRawProjects(params: {
   readonly search?: Partial<PnrrSearchState>
   readonly officialIndicators?: PnrrOfficialIndicators | null
 }): PnrrSeoSnapshot {
-  const { projects } = processPnrrData([...params.rawProjects])
+  const { projects } = processPnrrData(params.rawProjects)
   return buildPnrrSeoSnapshotFromProjects({
     projects,
     search: params.search,

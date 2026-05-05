@@ -1238,7 +1238,7 @@ function duplicateConflictSignature(project: PnrrProjectRecord): string {
 // Full pipeline
 // ---------------------------------------------------------------------------
 
-export function processPnrrData(rawProjects: unknown[]): {
+export function processPnrrData(rawProjects: readonly unknown[]): {
   readonly projects: readonly PnrrProject[]
   readonly projectRecords: readonly PnrrProjectRecord[]
   readonly meta: {

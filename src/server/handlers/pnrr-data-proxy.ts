@@ -1,4 +1,5 @@
 import { gzipSync, gunzipSync } from 'node:zlib'
+import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads'
 import type {
   PnrrBeneficiaryPayment,
   PnrrOfficialIndicators,
@@ -45,6 +46,8 @@ const PNRR_INDICATORS_URL = buildOfficialDataUrl(
 
 /** Cache the upstream response in memory for this many seconds. */
 const CACHE_TTL_SECONDS = 3600
+const PNRR_PROCESS_PROJECTS_WORKER_KIND = 'pnrr-process-projects'
+const PNRR_PROCESS_PROJECTS_TIMEOUT_MS = 30_000
 
 type PnrrRawProjectsResult = {
   readonly data: unknown[]
@@ -56,7 +59,7 @@ type PnrrDataSource = 'cache' | 'upstream' | 'stale-cache'
 
 type PnrrRawFileCacheEntry = {
   readonly text: string
-  readonly json: unknown
+  readonly json?: unknown
   readonly gzip: ArrayBuffer
   readonly expiresAt: number
   readonly source: 'upstream'
@@ -64,7 +67,7 @@ type PnrrRawFileCacheEntry = {
 
 type PnrrRawFileResult = {
   readonly text: string
-  readonly json: unknown
+  readonly json?: unknown
   readonly gzip: ArrayBuffer
   readonly source: PnrrDataSource
 }
@@ -76,9 +79,24 @@ type PnrrProjectsResult = {
   readonly projectRecordCount: number
 }
 
-const cachedRawFiles: Partial<Record<PnrrRawFileKey, PnrrRawFileCacheEntry>> = {}
+type PnrrProcessedProjectsPayload = {
+  readonly data: readonly PnrrProject[]
+  readonly projectCount: number
+  readonly projectRecordCount: number
+}
 
-let cachedProjectsResponse: { data: unknown[]; expiresAt: number } | null = null
+type PnrrProcessProjectsWorkerData = {
+  readonly kind: typeof PNRR_PROCESS_PROJECTS_WORKER_KIND
+  readonly rawProjectsText: string
+}
+
+type PnrrProcessProjectsWorkerMessage =
+  | PnrrProcessedProjectsPayload
+  | { readonly error: string }
+
+const cachedRawFiles: Partial<Record<PnrrRawFileKey, PnrrRawFileCacheEntry>> = {}
+const pendingRawFileRequests: Partial<Record<PnrrRawFileKey, Promise<PnrrRawFileResult>>> = {}
+
 let cachedProcessedResponse: {
   data: readonly PnrrProject[]
   projectCount: number
@@ -93,6 +111,36 @@ let cachedIndicatorResponse: {
   data: PnrrOfficialIndicators | null
   expiresAt: number
 } | null = null
+let pendingProcessedProjectsRequest: Promise<PnrrProjectsResult> | null = null
+let pnrrProjectsCacheGeneration = 0
+let pnrrIndicatorsCacheGeneration = 0
+
+async function bootstrapPnrrProcessProjectsWorkerThread(): Promise<void> {
+  if (isMainThread || !parentPort) return
+
+  const data = workerData as PnrrProcessProjectsWorkerData | undefined
+  if (!data) return
+
+  try {
+    if (data.kind !== PNRR_PROCESS_PROJECTS_WORKER_KIND) {
+      throw new Error('Unknown PNRR worker task kind')
+    }
+
+    const rawProjects = assertRawProjectsArray(JSON.parse(data.rawProjectsText))
+    const processed = processPnrrData(rawProjects)
+    parentPort.postMessage({
+      data: processed.projects,
+      projectCount: processed.meta.projectCount,
+      projectRecordCount: processed.meta.projectRecordCount,
+    } satisfies PnrrProcessedProjectsPayload)
+  } catch (error) {
+    parentPort.postMessage({
+      error: error instanceof Error ? error.message : String(error),
+    } satisfies PnrrProcessProjectsWorkerMessage)
+  }
+}
+
+void bootstrapPnrrProcessProjectsWorkerThread()
 
 function buildOfficialDataUrl(baseUrl: string, filePath: string): string {
   try {
@@ -102,6 +150,67 @@ function buildOfficialDataUrl(baseUrl: string, filePath: string): string {
     const normalizedFilePath = filePath.replace(/^\/+/, '')
     return new URL(normalizedFilePath, normalizedBaseUrl).toString()
   }
+}
+
+function processPnrrProjectsInWorker(
+  rawProjectsText: string,
+): Promise<PnrrProcessedProjectsPayload> {
+  if (!isMainThread) {
+    const rawProjects = assertRawProjectsArray(JSON.parse(rawProjectsText))
+    const processed = processPnrrData(rawProjects)
+    return Promise.resolve({
+      data: processed.projects,
+      projectCount: processed.meta.projectCount,
+      projectRecordCount: processed.meta.projectRecordCount,
+    })
+  }
+
+  return new Promise((resolve, reject) => {
+    let settled = false
+    const worker = new Worker(new URL(import.meta.url), {
+      workerData: {
+        kind: PNRR_PROCESS_PROJECTS_WORKER_KIND,
+        rawProjectsText,
+      } satisfies PnrrProcessProjectsWorkerData,
+    })
+
+    const timeoutHandle = setTimeout(() => {
+      if (settled) return
+      settled = true
+      void worker.terminate()
+      reject(
+        new Error(
+          `PNRR project processing timed out after ${PNRR_PROCESS_PROJECTS_TIMEOUT_MS}ms`,
+        ),
+      )
+    }, PNRR_PROCESS_PROJECTS_TIMEOUT_MS)
+
+    const finish = (handler: () => void) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timeoutHandle)
+      handler()
+    }
+
+    worker.once('message', (payload: PnrrProcessProjectsWorkerMessage) => {
+      finish(() => {
+        if ('error' in payload) {
+          reject(new Error(payload.error))
+          return
+        }
+        resolve(payload)
+      })
+    })
+
+    worker.once('error', (error) => {
+      finish(() => reject(error))
+    })
+
+    worker.once('exit', (code) => {
+      if (code === 0) return
+      finish(() => reject(new Error(`PNRR project worker exited with code ${code}`)))
+    })
+  })
 }
 
 function assertRawProjectsArray(value: unknown): unknown[] {
@@ -138,22 +247,26 @@ async function readTextFromResponse(
 function getRawFileConfig(key: PnrrRawFileKey): {
   readonly url: string
   readonly assertJson: (value: unknown) => unknown
+  readonly cacheJson: boolean
 } {
   switch (key) {
     case 'projects':
       return {
         url: PNRR_DATA_URL,
         assertJson: assertRawProjectsArray,
+        cacheJson: false,
       }
     case 'payments':
       return {
         url: PNRR_PAYMENTS_URL,
         assertJson: assertRawProjectsArray,
+        cacheJson: true,
       }
     case 'indicators':
       return {
         url: PNRR_INDICATORS_URL,
         assertJson: (value) => value,
+        cacheJson: true,
       }
   }
 }
@@ -163,17 +276,38 @@ function buildRawFileCacheEntry(
   source: PnrrRawFileCacheEntry['source'],
   expiresAt: number,
   assertJson: (value: unknown) => unknown,
+  cacheJson: boolean,
 ): PnrrRawFileCacheEntry {
-  const json = assertJson(JSON.parse(text))
+  const parsedJson = cacheJson ? { json: assertJson(JSON.parse(text)) } : {}
   const gzip = gzipSync(text)
   return {
     text,
-    json,
+    ...parsedJson,
     gzip: gzip.buffer.slice(
       gzip.byteOffset,
       gzip.byteOffset + gzip.byteLength,
     ) as ArrayBuffer,
     expiresAt,
+    source,
+  }
+}
+
+function buildRawFileResult(
+  entry: PnrrRawFileCacheEntry,
+  source: PnrrDataSource,
+): PnrrRawFileResult {
+  if (entry.json === undefined) {
+    return {
+      text: entry.text,
+      gzip: entry.gzip,
+      source,
+    }
+  }
+
+  return {
+    text: entry.text,
+    json: entry.json,
+    gzip: entry.gzip,
     source,
   }
 }
@@ -185,85 +319,72 @@ export async function fetchPnrrRawFile(
   const cached = cachedRawFiles[key]
 
   if (cached && cached.expiresAt > now) {
-    return {
-      text: cached.text,
-      json: cached.json,
-      gzip: cached.gzip,
-      source: 'cache',
-    }
+    return buildRawFileResult(cached, 'cache')
+  }
+
+  const pending = pendingRawFileRequests[key]
+  if (pending) {
+    return pending
   }
 
   const config = getRawFileConfig(key)
 
-  try {
-    const upstream = await fetch(config.url, {
-      headers: {
-        accept: 'application/json',
-        'user-agent': 'transparenta-pnrr-client/1.0',
-      },
-      signal: AbortSignal.timeout(30_000),
-    })
+  const request: Promise<PnrrRawFileResult> = (async (): Promise<PnrrRawFileResult> => {
+    try {
+      const upstream = await fetch(config.url, {
+        headers: {
+          accept: 'application/json',
+          'user-agent': 'transparenta-pnrr-client/1.0',
+        },
+        signal: AbortSignal.timeout(30_000),
+      })
 
-    if (!upstream.ok) {
-      throw new Error(`Upstream error ${upstream.status} ${upstream.statusText}`)
-    }
-
-    const text = await readTextFromResponse(upstream, config.url.endsWith('.gz'))
-    const entry = buildRawFileCacheEntry(
-      text,
-      'upstream',
-      now + CACHE_TTL_SECONDS * 1000,
-      config.assertJson,
-    )
-    cachedRawFiles[key] = entry
-
-    return {
-      text: entry.text,
-      json: entry.json,
-      gzip: entry.gzip,
-      source: 'upstream',
-    }
-  } catch (error) {
-    console.error(`[pnrr-data-proxy] Raw ${key} fetch failed`, {
-      error: error instanceof Error ? error.message : String(error),
-    })
-
-    if (cached) {
-      return {
-        text: cached.text,
-        json: cached.json,
-        gzip: cached.gzip,
-        source: 'stale-cache',
+      if (!upstream.ok) {
+        throw new Error(`Upstream error ${upstream.status} ${upstream.statusText}`)
       }
+
+      const text = await readTextFromResponse(upstream, config.url.endsWith('.gz'))
+      const entry = buildRawFileCacheEntry(
+        text,
+        'upstream',
+        now + CACHE_TTL_SECONDS * 1000,
+        config.assertJson,
+        config.cacheJson,
+      )
+      cachedRawFiles[key] = entry
+
+      return buildRawFileResult(entry, 'upstream')
+    } catch (error) {
+      console.error(`[pnrr-data-proxy] Raw ${key} fetch failed`, {
+        error: error instanceof Error ? error.message : String(error),
+      })
+
+      if (cached) {
+        return buildRawFileResult(cached, 'stale-cache')
+      }
+
+      throw error
     }
-    throw error
-  }
+  })().finally(() => {
+    delete pendingRawFileRequests[key]
+  })
+
+  pendingRawFileRequests[key] = request
+  return request
 }
 
 export async function fetchPnrrRawProjects(): Promise<PnrrRawProjectsResult> {
-  const now = Date.now()
-
-  if (cachedProjectsResponse && cachedProjectsResponse.expiresAt > now) {
-    return { data: cachedProjectsResponse.data, source: 'cache' }
-  }
-
   try {
     const rawFile = await fetchPnrrRawFile('projects')
-    const data = assertRawProjectsArray(rawFile.json)
+    const data = assertRawProjectsArray(
+      rawFile.json ?? JSON.parse(rawFile.text),
+    )
 
-    cachedProjectsResponse = {
-      data,
-      expiresAt: now + CACHE_TTL_SECONDS * 1000,
-    }
     return { data, source: rawFile.source }
   } catch (error) {
     console.error('[pnrr-data-proxy] Fetch failed', {
       error: error instanceof Error ? error.message : String(error),
     })
-
-    if (cachedProjectsResponse) {
-      return { data: cachedProjectsResponse.data, source: 'stale-cache' }
-    }
 
     throw error
   }
@@ -320,6 +441,7 @@ export async function fetchPnrrOfficialIndicators(): Promise<{
       data,
       expiresAt: now + CACHE_TTL_SECONDS * 1000,
     }
+    pnrrIndicatorsCacheGeneration += 1
     return { data, source: rawFile.source }
   } catch (error) {
     console.error('[pnrr-data-proxy] Indicators fetch failed', {
@@ -332,6 +454,35 @@ export async function fetchPnrrOfficialIndicators(): Promise<{
 
     throw error
   }
+}
+
+export function readCachedPnrrOfficialIndicators(): PnrrOfficialIndicators | null {
+  const now = Date.now()
+  if (cachedIndicatorResponse && cachedIndicatorResponse.expiresAt > now) {
+    return cachedIndicatorResponse.data
+  }
+  return null
+}
+
+export type PnrrDataCacheGeneration = {
+  readonly projects: number
+  readonly indicators: number
+}
+
+export function readPnrrDataCacheGeneration(): PnrrDataCacheGeneration {
+  return {
+    projects: pnrrProjectsCacheGeneration,
+    indicators: pnrrIndicatorsCacheGeneration,
+  }
+}
+
+export function warmPnrrOfficialIndicatorsCache(): void {
+  if (readCachedPnrrOfficialIndicators()) return
+  void fetchPnrrOfficialIndicators().catch((error) => {
+    console.error('[pnrr-data-proxy] Indicators warmup failed', {
+      error: error instanceof Error ? error.message : String(error),
+    })
+  })
 }
 
 export async function handlePnrrRawDataRequest(
@@ -369,6 +520,30 @@ export async function handlePnrrRawDataRequest(
   }
 }
 
+export function readCachedPnrrProjects(): PnrrProjectsResult | null {
+  const now = Date.now()
+
+  if (!cachedProcessedResponse || cachedProcessedResponse.expiresAt <= now) {
+    return null
+  }
+
+  return {
+    data: cachedProcessedResponse.data,
+    source: 'cache',
+    projectCount: cachedProcessedResponse.projectCount,
+    projectRecordCount: cachedProcessedResponse.projectRecordCount,
+  }
+}
+
+export function warmPnrrProjectsCache(): void {
+  if (readCachedPnrrProjects() || pendingProcessedProjectsRequest) return
+  void fetchPnrrProjects().catch((error) => {
+    console.error('[pnrr-data-proxy] Projects warmup failed', {
+      error: error instanceof Error ? error.message : String(error),
+    })
+  })
+}
+
 export async function fetchPnrrProjects(): Promise<PnrrProjectsResult> {
   const now = Date.now()
 
@@ -381,20 +556,31 @@ export async function fetchPnrrProjects(): Promise<PnrrProjectsResult> {
     }
   }
 
-  const rawResult = await fetchPnrrRawProjects()
-  const processed = processPnrrData(rawResult.data)
-
-  cachedProcessedResponse = {
-    data: processed.projects,
-    projectCount: processed.meta.projectCount,
-    projectRecordCount: processed.meta.projectRecordCount,
-    expiresAt: now + CACHE_TTL_SECONDS * 1000,
+  if (pendingProcessedProjectsRequest) {
+    return pendingProcessedProjectsRequest
   }
 
-  return {
-    data: processed.projects,
-    source: rawResult.source,
-    projectCount: processed.meta.projectCount,
-    projectRecordCount: processed.meta.projectRecordCount,
-  }
+  pendingProcessedProjectsRequest = (async () => {
+    const rawResult = await fetchPnrrRawFile('projects')
+    const processed = await processPnrrProjectsInWorker(rawResult.text)
+
+    cachedProcessedResponse = {
+      data: processed.data,
+      projectCount: processed.projectCount,
+      projectRecordCount: processed.projectRecordCount,
+      expiresAt: now + CACHE_TTL_SECONDS * 1000,
+    }
+    pnrrProjectsCacheGeneration += 1
+
+    return {
+      data: processed.data,
+      source: rawResult.source,
+      projectCount: processed.projectCount,
+      projectRecordCount: processed.projectRecordCount,
+    }
+  })().finally(() => {
+    pendingProcessedProjectsRequest = null
+  })
+
+  return pendingProcessedProjectsRequest
 }
