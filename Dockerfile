@@ -21,9 +21,9 @@ RUN mkdir -p /tmp/sentry-artifacts
 RUN yarn build:app
 RUN yarn build:validate
 RUN if [ "${SENTRY_SOURCEMAPS}" = "true" ]; then \
-    yarn sentry:prepare-artifacts; \
-    yarn sentry:validate-debug-ids; \
-    find .output -name "*.map" -type f -delete; \
+    yarn sentry:prepare-artifacts && \
+    yarn sentry:validate-debug-ids && \
+    find .output -name "*.map" -type f -delete && \
     yarn build:validate; \
   fi
 

@@ -10,6 +10,8 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { createRequire } from "node:module";
 import { dirname, join, relative } from "node:path";
 
 const sourceAssetsDir = process.argv[2] ?? ".output/public/assets";
@@ -17,6 +19,7 @@ const targetAssetsDir = process.argv[3] ?? "/tmp/sentry-artifacts/assets";
 const jsExtensions = [".js", ".mjs", ".cjs"];
 const debugIdPattern = /\/\/# debugId=([0-9a-fA-F-]+)/;
 const sentryDebugIdPattern = /sentry-dbid-([0-9a-fA-F-]+)/;
+const require = createRequire(import.meta.url);
 
 function fail(message) {
   console.error(message);
@@ -43,6 +46,27 @@ function hasJavaScriptExtension(file) {
   return jsExtensions.some((extension) => file.endsWith(extension));
 }
 
+function writeLimitedOutput(stream, output) {
+  if (!output) return;
+  const maxLength = 4000;
+  stream.write(output.length > maxLength ? `${output.slice(0, maxLength)}\n... output truncated ...\n` : output);
+}
+
+function injectSentryDebugIds(directory) {
+  const sentryCliBin = require.resolve("@sentry/cli/bin/sentry-cli");
+  const result = spawnSync(
+    process.execPath,
+    [sentryCliBin, "sourcemaps", "inject", "--quiet", directory],
+    { encoding: "utf8" },
+  );
+
+  if (result.status !== 0) {
+    writeLimitedOutput(process.stdout, result.stdout);
+    writeLimitedOutput(process.stderr, result.stderr);
+    fail(`Sentry debug ID injection failed for ${directory}`);
+  }
+}
+
 if (!existsSync(sourceAssetsDir) || !statSync(sourceAssetsDir).isDirectory()) {
   fail(`Missing assets directory: ${sourceAssetsDir}`);
 }
@@ -50,6 +74,7 @@ if (!existsSync(sourceAssetsDir) || !statSync(sourceAssetsDir).isDirectory()) {
 rmSync(targetAssetsDir, { recursive: true, force: true });
 mkdirSync(dirname(targetAssetsDir), { recursive: true });
 cpSync(sourceAssetsDir, targetAssetsDir, { recursive: true });
+injectSentryDebugIds(targetAssetsDir);
 
 const javascriptFiles = walkFiles(targetAssetsDir).filter(hasJavaScriptExtension);
 

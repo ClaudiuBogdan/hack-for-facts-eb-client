@@ -265,8 +265,8 @@ export default defineConfig(({ mode }) => {
           deploy: false,
         },
         sourcemaps: {
-          // Keep Sentry's bundler-time Debug ID injection, but upload the
-          // image-produced private artifacts in a later workflow step.
+          // Keep production sourcemaps available for the Docker artifact step,
+          // which injects Debug IDs and uploads private artifacts later.
           disable: "disable-upload",
           // TanStack Start + Nitro outputs assets under .output.
           assets: [
