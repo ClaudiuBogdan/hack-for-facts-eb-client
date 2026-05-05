@@ -113,7 +113,13 @@ function normalizeCell(value: unknown): string {
     return "";
   }
 
-  return String(value).trim();
+  const trimmedValue = String(value).trim();
+  const markdownLinkMatch = /^\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)$/.exec(trimmedValue);
+  if (markdownLinkMatch !== null) {
+    return markdownLinkMatch[2] ?? trimmedValue;
+  }
+
+  return trimmedValue;
 }
 
 function escapeTabularCell(value: string | null): string {
@@ -171,6 +177,82 @@ function isValidHttpUrl(value: string): boolean {
   } catch {
     return false;
   }
+}
+
+function hasConfigValue(input: {
+  readonly budgetPublicationDate: string;
+  readonly officialBudgetUrl: string;
+  readonly publicDebateDate: string;
+  readonly publicDebateTime: string;
+  readonly publicDebateLocation: string;
+  readonly publicDebateOnlineParticipationLink: string;
+  readonly publicDebateAnnouncementLink: string;
+  readonly publicDebateDescription: string;
+}): boolean {
+  return (
+    input.budgetPublicationDate !== "" ||
+    input.officialBudgetUrl !== "" ||
+    input.publicDebateDate !== "" ||
+    input.publicDebateTime !== "" ||
+    input.publicDebateLocation !== "" ||
+    input.publicDebateOnlineParticipationLink !== "" ||
+    input.publicDebateAnnouncementLink !== "" ||
+    input.publicDebateDescription !== ""
+  );
+}
+
+function recoverPublicDebateFromRawLine(input: {
+  readonly rawLine: string | undefined;
+  readonly entityCui: string;
+  readonly entityName: string;
+}): {
+  readonly publicDebateDate: string;
+  readonly publicDebateTime: string;
+  readonly publicDebateLocation: string;
+  readonly publicDebateOnlineParticipationLink: string;
+  readonly publicDebateAnnouncementLink: string;
+  readonly publicDebateDescription: string;
+} | null {
+  const rawLine = input.rawLine?.trim();
+  if (!rawLine?.includes(input.entityCui)) {
+    return null;
+  }
+
+  const dateMatch = /\b20\d{2}-\d{2}-\d{2}\b/.exec(rawLine);
+  const timeMatch = /\b([01]?\d|2[0-3]):[0-5]\d\b/.exec(rawLine);
+  const urlMatches = Array.from(
+    rawLine.matchAll(/\[https?:\/\/[^\]]+\]\((https?:\/\/[^)\s]+)\)|(https?:\/\/\S+)/g),
+  )
+    .map((match) => match[1] ?? match[2] ?? "")
+    .map((value) => value.replace(/[),.;]+$/g, ""))
+    .filter((value) => isValidHttpUrl(value));
+
+  if (dateMatch === null || timeMatch === null || urlMatches.length === 0) {
+    return null;
+  }
+
+  const date = dateMatch[0];
+  const time = timeMatch[0];
+  const announcementLink = urlMatches[urlMatches.length - 1] ?? "";
+  const onlineParticipationLink =
+    urlMatches.length > 1 ? (urlMatches[0] ?? "") : "";
+  const afterTime = rawLine.slice((timeMatch.index ?? 0) + time.length);
+  const beforeAnnouncement = afterTime.split(announcementLink)[0] ?? "";
+  const location = beforeAnnouncement
+    .replace(/\[?https?:\/\/\S+/g, " ")
+    .replace(/\]\(/g, " ")
+    .replace(/^\s*[,;\t|]+\s*/, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return {
+    publicDebateDate: date,
+    publicDebateTime: time,
+    publicDebateLocation: location,
+    publicDebateOnlineParticipationLink: onlineParticipationLink,
+    publicDebateAnnouncementLink: announcementLink,
+    publicDebateDescription: "",
+  };
 }
 
 export function serializeCampaignAdminEntityConfigRowsToClipboardTsv(
@@ -236,6 +318,10 @@ export function parseCampaignAdminEntityConfigClipboard(
     skipEmptyLines: true,
   });
   const rows = parsed.data;
+  const rawLines = rawText
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
   if (rows.length === 0) {
     return {
       rows: [],
@@ -371,7 +457,34 @@ export function parseCampaignAdminEntityConfigClipboard(
       publicDebateAnnouncementLink = "";
       publicDebateDescription = "";
     }
-    const hasAnyPublicDebateValue =
+    const recoveredPublicDebate =
+      !hasConfigValue({
+        budgetPublicationDate,
+        officialBudgetUrl,
+        publicDebateDate,
+        publicDebateTime,
+        publicDebateLocation,
+        publicDebateOnlineParticipationLink,
+        publicDebateAnnouncementLink,
+        publicDebateDescription,
+      })
+        ? recoverPublicDebateFromRawLine({
+            rawLine: rawLines[rowIndex + 1],
+            entityCui,
+            entityName,
+          })
+        : null;
+    if (recoveredPublicDebate !== null) {
+      publicDebateDate = recoveredPublicDebate.publicDebateDate;
+      publicDebateTime = recoveredPublicDebate.publicDebateTime;
+      publicDebateLocation = recoveredPublicDebate.publicDebateLocation;
+      publicDebateOnlineParticipationLink =
+        recoveredPublicDebate.publicDebateOnlineParticipationLink;
+      publicDebateAnnouncementLink =
+        recoveredPublicDebate.publicDebateAnnouncementLink;
+      publicDebateDescription = recoveredPublicDebate.publicDebateDescription;
+    }
+    const hasAnyResolvedPublicDebateValue =
       publicDebateDate !== "" ||
       publicDebateTime !== "" ||
       publicDebateLocation !== "" ||
@@ -383,7 +496,7 @@ export function parseCampaignAdminEntityConfigClipboard(
       entityCui === "" &&
       budgetPublicationDate === "" &&
       officialBudgetUrl === "" &&
-      !hasAnyPublicDebateValue &&
+      !hasAnyResolvedPublicDebateValue &&
       updatedAt === ""
     ) {
       skippedCount += 1;
@@ -422,20 +535,20 @@ export function parseCampaignAdminEntityConfigClipboard(
       return;
     }
 
-    if (hasAnyPublicDebateValue && !isValidDateInput(publicDebateDate)) {
+    if (hasAnyResolvedPublicDebateValue && !isValidDateInput(publicDebateDate)) {
       issues.push({ rowNumber, entityCui, message: "Invalid public debate date." });
       skippedCount += 1;
       return;
     }
 
     const normalizedPublicDebateTime = normalizeTimeInput(publicDebateTime);
-    if (hasAnyPublicDebateValue && normalizedPublicDebateTime === null) {
+    if (hasAnyResolvedPublicDebateValue && normalizedPublicDebateTime === null) {
       issues.push({ rowNumber, entityCui, message: "Invalid public debate time." });
       skippedCount += 1;
       return;
     }
 
-    if (hasAnyPublicDebateValue && publicDebateLocation === "") {
+    if (hasAnyResolvedPublicDebateValue && publicDebateLocation === "") {
       issues.push({
         rowNumber,
         entityCui,
@@ -446,7 +559,7 @@ export function parseCampaignAdminEntityConfigClipboard(
     }
 
     if (
-      hasAnyPublicDebateValue &&
+      hasAnyResolvedPublicDebateValue &&
       !isValidHttpUrl(publicDebateAnnouncementLink)
     ) {
       issues.push({
@@ -476,7 +589,7 @@ export function parseCampaignAdminEntityConfigClipboard(
     if (
       budgetPublicationDate === "" &&
       officialBudgetUrl === "" &&
-      !hasAnyPublicDebateValue
+      !hasAnyResolvedPublicDebateValue
     ) {
       if (
         configuredCell.toLowerCase() === "false" ||
@@ -510,7 +623,7 @@ export function parseCampaignAdminEntityConfigClipboard(
       values: {
         budgetPublicationDate: budgetPublicationDate || null,
         officialBudgetUrl: officialBudgetUrl || null,
-        public_debate: hasAnyPublicDebateValue
+        public_debate: hasAnyResolvedPublicDebateValue
           ? {
               date: publicDebateDate,
               time: normalizedPublicDebateTime ?? publicDebateTime,
