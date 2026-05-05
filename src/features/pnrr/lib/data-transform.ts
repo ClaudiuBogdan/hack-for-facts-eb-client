@@ -1,4 +1,3 @@
-import { generateHash } from '@/lib/utils'
 import {
   RawPnrrBeneficiaryPaymentSchema,
   RawPnrrIndicatorSchema,
@@ -29,6 +28,17 @@ import {
 export const PNRR_LAST_UPDATED = '2026-04-30'
 
 const OFFICIAL_RON_TO_EUR_RATE = 5
+
+function generatePnrrHash(message: string): string {
+  let hash = 0x811c9dc5
+
+  for (let i = 0; i < message.length; i++) {
+    hash ^= message.charCodeAt(i)
+    hash = Math.imul(hash, 0x01000193)
+  }
+
+  return Math.abs(hash).toString(16).padStart(8, '0')
+}
 
 const PROGRESS_CATEGORY_TO_STATUS = {
   completed: 'completed',
@@ -506,7 +516,7 @@ export function normalizePnrrProjectRecord(raw: RawPnrrProject): PnrrProjectReco
   )
 
   const projectBase = {
-    id: generateHash(
+    id: generatePnrrHash(
       `${normalized.engagementId ?? ''}|${normalized.rowSignature}`
     ),
     engagementId: normalized.engagementId,
@@ -573,7 +583,7 @@ export function normalizePnrrBeneficiaryPayment(
   )
 
   return {
-    id: `payment:${cui ?? generateHash(beneficiary)}`,
+    id: `payment:${cui ?? generatePnrrHash(beneficiary)}`,
     beneficiary,
     cui,
     valueRon,
