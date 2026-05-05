@@ -206,8 +206,7 @@ export function PnrrMapView({
   const activeModel = activeMapData?.mapModel ?? model
   const selectedUat = activeModel.selectedUat
   const selectedProjectId =
-    search.panelProjectId ??
-    (search.panel === 'project' ? search.panelProjectId : null)
+    search.panel === 'project' ? search.panelProjectId : null
   const { data: selectedProjectResult } = usePnrrProjectDetail(selectedProjectId)
   const selectedProject = selectedProjectResult?.project ?? null
 
@@ -512,6 +511,7 @@ export function PnrrMapView({
       {granularity === 'county' && (
         <PnrrCountyDetailsPanel
           county={selectedCounty}
+          summary={activeModel.selectedCountySummary}
           projects={activeModel.selectedCountyProjects}
           onClose={filterState.closePanel}
           selectedProjectId={search.panelProjectId}
@@ -525,6 +525,7 @@ export function PnrrMapView({
           uatName={selectedUat?.name ?? null}
           countyName={selectedUat?.county ?? null}
           natcode={selectedUat?.natcode ?? null}
+          summary={activeModel.selectedUatSummary}
           projects={activeModel.selectedUatProjects}
           onClose={filterState.closePanel}
           selectedProjectId={search.panelProjectId}

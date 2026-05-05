@@ -5,7 +5,10 @@ import { Trans } from '@lingui/react/macro'
 import { formatNumber } from '@/lib/utils'
 import { usePnrrCurrency } from '../lib/usePnrrCurrency'
 import { formatPnrrCurrency, formatPnrrPercentage } from '../lib/formatting'
-import type { PnrrWorkerProjectRow } from '../workers/pnrr-worker-types'
+import type {
+  PnrrWorkerMapSelectionSummary,
+  PnrrWorkerProjectRow,
+} from '../workers/pnrr-worker-types'
 import { PNRR_COMPONENTS } from '../data/component-definitions'
 import {
   Sheet,
@@ -41,6 +44,7 @@ export function PnrrMapDetailsDrawer({
   title,
   eyebrow,
   description,
+  summary,
   projects,
   onClose,
   onBeneficiaryClick,
@@ -55,6 +59,7 @@ export function PnrrMapDetailsDrawer({
   readonly title: string
   readonly eyebrow: ReactNode
   readonly description?: string
+  readonly summary?: PnrrWorkerMapSelectionSummary | null | undefined
   readonly projects: readonly PnrrWorkerProjectRow[]
   readonly onClose: () => void
   readonly onBeneficiaryClick?: (beneficiary: {
@@ -73,7 +78,20 @@ export function PnrrMapDetailsDrawer({
 }) {
   const currency = usePnrrCurrency()
 
-  const stats = useMemo(() => buildMapStats(projects), [projects])
+  const rowStats = useMemo(() => buildMapStats(projects), [projects])
+  const stats = useMemo(
+    () =>
+      summary
+        ? {
+            ...rowStats,
+            projectCount: summary.projectCount,
+            totalValue: summary.totalValue,
+            anomalyCount: summary.anomalyCount,
+            dataQualityCount: summary.dataQualityCount,
+          }
+        : rowStats,
+    [rowStats, summary],
+  )
   const totalValue = stats.totalValue
   const { data: selectedProjectResult } = usePnrrProjectDetail(selectedProjectId)
   const selectedProject = selectedProjectResult?.project ?? null

@@ -41,6 +41,7 @@ import type {
   PnrrWorkerFilterFacets,
   PnrrWorkerHistogramMetric,
   PnrrWorkerMapModel,
+  PnrrWorkerMapSelectionSummary,
   PnrrWorkerMapSeries,
   PnrrWorkerModel,
   PnrrWorkerOverviewModel,
@@ -673,6 +674,49 @@ function countUniqueRecords(records: readonly PnrrProjectRecord[]): number {
   return new Set(records.map((record) => getProjectIdentity(record))).size
 }
 
+function buildMapSelectionSummary(
+  projects: readonly PnrrProject[],
+): PnrrWorkerMapSelectionSummary {
+  const projectIds = new Set<string>()
+  const anomalyProjectIds = new Set<string>()
+  const dataQualityProjectIds = new Set<string>()
+  let totalValue = 0
+
+  for (const project of projects) {
+    const projectId = getProjectIdentity(project)
+    projectIds.add(projectId)
+    totalValue += getProjectValue(project)
+
+    if (project.anomalies.length > 0) {
+      anomalyProjectIds.add(projectId)
+    }
+    if (project.dataQualitySignals.length > 0) {
+      dataQualityProjectIds.add(projectId)
+    }
+  }
+
+  return {
+    projectCount: projectIds.size,
+    totalValue,
+    anomalyCount: anomalyProjectIds.size,
+    dataQualityCount: dataQualityProjectIds.size,
+  }
+}
+
+function buildMapSelection(
+  records: readonly PnrrProjectRecord[],
+): {
+  readonly summary: PnrrWorkerMapSelectionSummary
+  readonly projects: readonly PnrrWorkerProjectRow[]
+} {
+  const groupedProjects = sortProjects(groupPnrrProjects(records), 'value', 'desc')
+
+  return {
+    summary: buildMapSelectionSummary(groupedProjects),
+    projects: groupedProjects.slice(0, MAP_DETAIL_LIMIT).map(projectToRow),
+  }
+}
+
 function buildMapSeries(
   records: readonly PnrrProjectRecord[],
   seriesId: PnrrMapSeriesId,
@@ -877,6 +921,14 @@ function buildMapModel(
           natcode: search.panelUatSiruta,
         }
       : null
+  const selectedCountySelection = selectedCounty
+    ? buildMapSelection(records.filter((record) => record.county === selectedCounty))
+    : null
+  const selectedUatSelection = selectedUat
+    ? buildMapSelection(
+        records.filter((record) => record.sirutaCode === selectedUat.natcode),
+      )
+    : null
 
   return {
     seriesId,
@@ -898,20 +950,10 @@ function buildMapModel(
         .map((record) => getProjectIdentity(record)),
     ).size,
     selectedUat,
-    selectedCountyProjects: selectedCounty
-      ? sortProjects(
-          groupPnrrProjects(records.filter((record) => record.county === selectedCounty)),
-          'value',
-          'desc',
-        ).slice(0, MAP_DETAIL_LIMIT).map(projectToRow)
-      : [],
-    selectedUatProjects: selectedUat
-      ? sortProjects(
-          groupPnrrProjects(records.filter((record) => record.sirutaCode === selectedUat.natcode)),
-          'value',
-          'desc',
-        ).slice(0, MAP_DETAIL_LIMIT).map(projectToRow)
-      : [],
+    selectedCountySummary: selectedCountySelection?.summary ?? null,
+    selectedUatSummary: selectedUatSelection?.summary ?? null,
+    selectedCountyProjects: selectedCountySelection?.projects ?? [],
+    selectedUatProjects: selectedUatSelection?.projects ?? [],
   }
 }
 

@@ -1,9 +1,13 @@
 import { Trans } from '@lingui/react/macro'
-import type { PnrrWorkerProjectRow } from '../workers/pnrr-worker-types'
+import type {
+  PnrrWorkerMapSelectionSummary,
+  PnrrWorkerProjectRow,
+} from '../workers/pnrr-worker-types'
 import { PnrrMapDetailsDrawer } from './PnrrMapDetailsDrawer'
 
 interface PnrrCountyDetailsPanelProps {
   readonly county: string | null
+  readonly summary?: PnrrWorkerMapSelectionSummary | null | undefined
   readonly projects: readonly PnrrWorkerProjectRow[]
   readonly onClose: () => void
   readonly selectedProjectId?: string
@@ -17,6 +21,7 @@ interface PnrrCountyDetailsPanelProps {
 
 export function PnrrCountyDetailsPanel({
   county,
+  summary,
   projects,
   onClose,
   selectedProjectId,
@@ -26,14 +31,16 @@ export function PnrrCountyDetailsPanel({
 }: PnrrCountyDetailsPanelProps) {
   const countyProjects = county ? projects : []
   const countyCouncilProject = getCountyCouncilProject(countyProjects, county)
+  const hasCountyProjects = (summary?.projectCount ?? countyProjects.length) > 0
 
-  if (!county || countyProjects.length === 0) return null
+  if (!county || !hasCountyProjects) return null
 
   return (
     <PnrrMapDetailsDrawer
       open={county !== null}
       title={county}
       eyebrow={<Trans>County</Trans>}
+      summary={summary}
       projects={countyProjects}
       onClose={onClose}
       selectedProjectId={selectedProjectId}

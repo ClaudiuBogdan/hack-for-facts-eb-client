@@ -411,6 +411,7 @@ export function PnrrMapPreview({ model, filterState }: PnrrMapPreviewProps) {
         uatName={selectedUat?.name ?? null}
         countyName={selectedUat?.county ?? null}
         natcode={selectedUat?.natcode ?? null}
+        summary={model.selectedUatSummary}
         projects={model.selectedUatProjects}
         onClose={filterState.closePanel}
         selectedProjectId={filterState.search.panelProjectId}

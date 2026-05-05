@@ -29,8 +29,8 @@ vi.mock('../hooks/usePnrrData', () => ({
       ? { mapModel: mockState.mapModel }
       : undefined,
   }),
-  usePnrrProjectDetail: () => ({
-    data: mockState.projectDetail
+  usePnrrProjectDetail: (projectId: string | null | undefined) => ({
+    data: mockState.projectDetail && projectId
       ? { project: mockState.projectDetail }
       : undefined,
   }),
@@ -203,6 +203,33 @@ describe('PnrrMapView', () => {
     expect(screen.getAllByText(/1 project/).length).toBeGreaterThan(0)
   })
 
+  it('uses aggregate county stats when the selected project rows are capped', () => {
+    render(
+      <PnrrMapView
+        model={makeMapModel({
+          selectedCountySummary: {
+            projectCount: 241,
+            totalValue: 5_000_000,
+            anomalyCount: 12,
+            dataQualityCount: 3,
+          },
+          selectedCountyProjects: [PROJECT],
+        })}
+        filterState={makeFilterState({
+          search: {
+            ...makeFilterState().search,
+            panel: 'map-county',
+            panelCountyCode: 'IL',
+          },
+        })}
+      />,
+    )
+
+    expect(screen.getByText(/241 projects/)).toBeInTheDocument()
+    expect(screen.getByText('241')).toBeInTheDocument()
+    expect(screen.getAllByText('12').length).toBeGreaterThan(0)
+  })
+
   it('opens the UAT panel from URL panel state', () => {
     render(
       <PnrrMapView
@@ -277,7 +304,7 @@ describe('PnrrMapView', () => {
     )
 
     expect(screen.getAllByText('Ion Roată').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('Test Project').length).toBeGreaterThan(1)
+    expect(screen.getAllByText('Test Project')).toHaveLength(2)
   })
 
   it('passes the selected project-count series to map labels', async () => {

@@ -72,6 +72,13 @@ export type PnrrWorkerMapSeries = {
   readonly max: number
 }
 
+export type PnrrWorkerMapSelectionSummary = {
+  readonly projectCount: number
+  readonly totalValue: number
+  readonly anomalyCount: number
+  readonly dataQualityCount: number
+}
+
 export type PnrrWorkerMapModel = {
   readonly seriesId: PnrrMapSeriesId
   readonly granularity: PnrrGranularity
@@ -86,6 +93,8 @@ export type PnrrWorkerMapModel = {
         readonly natcode: string
       }
     | null
+  readonly selectedCountySummary?: PnrrWorkerMapSelectionSummary | null
+  readonly selectedUatSummary?: PnrrWorkerMapSelectionSummary | null
   readonly selectedCountyProjects: readonly PnrrWorkerProjectRow[]
   readonly selectedUatProjects: readonly PnrrWorkerProjectRow[]
 }

@@ -1,11 +1,15 @@
 import { Trans } from '@lingui/react/macro'
-import type { PnrrWorkerProjectRow } from '../workers/pnrr-worker-types'
+import type {
+  PnrrWorkerMapSelectionSummary,
+  PnrrWorkerProjectRow,
+} from '../workers/pnrr-worker-types'
 import { PnrrMapDetailsDrawer } from './PnrrMapDetailsDrawer'
 
 interface PnrrUatDetailsPanelProps {
   readonly uatName: string | null
   readonly countyName: string | null
   readonly natcode: string | null
+  readonly summary?: PnrrWorkerMapSelectionSummary | null | undefined
   readonly projects: readonly PnrrWorkerProjectRow[]
   readonly onClose: () => void
   readonly selectedProjectId?: string
@@ -20,6 +24,7 @@ export function PnrrUatDetailsPanel({
   uatName,
   countyName,
   natcode,
+  summary,
   projects,
   onClose,
   selectedProjectId,
@@ -31,8 +36,9 @@ export function PnrrUatDetailsPanel({
 }: PnrrUatDetailsPanelProps) {
   const matchedProjects = natcode ? projects : []
   const activeUatProject = getActiveUatProject(matchedProjects, uatName)
+  const hasUatProjects = (summary?.projectCount ?? matchedProjects.length) > 0
 
-  if (!natcode || !uatName || matchedProjects.length === 0) return null
+  if (!natcode || !uatName || !hasUatProjects) return null
 
   return (
     <PnrrMapDetailsDrawer
@@ -40,6 +46,7 @@ export function PnrrUatDetailsPanel({
       title={uatName}
       eyebrow={<Trans>UAT</Trans>}
       description={countyName ?? undefined}
+      summary={summary}
       projects={matchedProjects}
       onClose={onClose}
       selectedProjectId={selectedProjectId}
