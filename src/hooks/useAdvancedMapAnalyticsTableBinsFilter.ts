@@ -10,11 +10,13 @@ import type {
   AdvancedMapAnalyticsBinsFilterSelectionByPresetId,
   AdvancedMapAnalyticsTableRow,
 } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-table-types';
+import { getAdvancedMapAnalyticsTableRowBinFilterKey } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-table-rows';
 import type { AdvancedMapAnalyticsBinsPreset } from '@/schemas/advanced-map-analytics';
 
 interface UseAdvancedMapAnalyticsTableBinsFilterArgs {
   rows: AdvancedMapAnalyticsTableRow[];
   binsPresets: AdvancedMapAnalyticsBinsPreset[];
+  activeSeriesId?: string;
   activeValues: Map<string, number | undefined> | undefined;
   tableBinFiltersByPresetId: AdvancedMapAnalyticsBinsFilterSelectionByPresetId;
 }
@@ -28,6 +30,7 @@ interface UseAdvancedMapAnalyticsTableBinsFilterResult {
 export function deriveAdvancedMapAnalyticsTableBinsFilter({
   rows,
   binsPresets,
+  activeSeriesId,
   activeValues,
   tableBinFiltersByPresetId,
 }: Readonly<UseAdvancedMapAnalyticsTableBinsFilterArgs>): UseAdvancedMapAnalyticsTableBinsFilterResult {
@@ -71,7 +74,10 @@ export function deriveAdvancedMapAnalyticsTableBinsFilter({
       selectedGroupIdsByPresetId.set(preset.id, selectedGroupIdsSet);
     }
 
-    const classificationResult = classifySeriesValues(activeValues, preset.config);
+    const classificationResult = classifySeriesValues(
+      buildTableBinsValues({ rows, activeSeriesId, activeValues }),
+      preset.config
+    );
     const groupIdBySirutaCode = new Map<string, string>();
     for (const [sirutaCode, classification] of classificationResult.groupsBySiruta.entries()) {
       groupIdBySirutaCode.set(sirutaCode, classification.groupId);
@@ -92,7 +98,9 @@ export function deriveAdvancedMapAnalyticsTableBinsFilter({
   const filteredRows = rows.filter((row) => {
     for (const [presetId, selectedGroupIds] of selectedGroupIdsByPresetId.entries()) {
       const groupId =
-        groupIdBySirutaCodeByPresetId.get(presetId)?.get(row.sirutaCode) ?? NO_DATA_GROUP_ID;
+        groupIdBySirutaCodeByPresetId
+          .get(presetId)
+          ?.get(getAdvancedMapAnalyticsTableRowBinFilterKey(row)) ?? NO_DATA_GROUP_ID;
       if (selectedGroupIds.has(groupId)) {
         return true;
       }
@@ -108,10 +116,36 @@ export function deriveAdvancedMapAnalyticsTableBinsFilter({
 }
 
 export function useAdvancedMapAnalyticsTableBinsFilter(
-  { rows, binsPresets, activeValues, tableBinFiltersByPresetId }: Readonly<UseAdvancedMapAnalyticsTableBinsFilterArgs>
+  { rows, binsPresets, activeSeriesId, activeValues, tableBinFiltersByPresetId }: Readonly<UseAdvancedMapAnalyticsTableBinsFilterArgs>
 ): UseAdvancedMapAnalyticsTableBinsFilterResult {
   return useMemo(
-    () => deriveAdvancedMapAnalyticsTableBinsFilter({ rows, binsPresets, activeValues, tableBinFiltersByPresetId }),
-    [rows, binsPresets, activeValues, tableBinFiltersByPresetId]
+    () => deriveAdvancedMapAnalyticsTableBinsFilter({
+      rows,
+      binsPresets,
+      activeSeriesId,
+      activeValues,
+      tableBinFiltersByPresetId,
+    }),
+    [rows, binsPresets, activeSeriesId, activeValues, tableBinFiltersByPresetId]
   );
+}
+
+function buildTableBinsValues(params: {
+  rows: AdvancedMapAnalyticsTableRow[];
+  activeSeriesId?: string;
+  activeValues: Map<string, number | undefined> | undefined;
+}): Map<string, number | undefined> | undefined {
+  if (!params.activeSeriesId) {
+    return params.activeValues;
+  }
+
+  const values = new Map<string, number | undefined>();
+  for (const row of params.rows) {
+    const key = getAdvancedMapAnalyticsTableRowBinFilterKey(row);
+    if (values.has(key)) {
+      continue;
+    }
+    values.set(key, row.valuesBySeriesId[params.activeSeriesId]);
+  }
+  return values;
 }

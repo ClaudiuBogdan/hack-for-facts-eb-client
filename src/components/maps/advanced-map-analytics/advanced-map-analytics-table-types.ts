@@ -9,11 +9,32 @@ export interface AdvancedMapAnalyticsTableGroupingColumn {
   label: string;
 }
 
+export type AdvancedMapAnalyticsTableRowMode =
+  | 'uat_rows'
+  | 'group_rows'
+  | 'group_rows_with_members';
+
+export type AdvancedMapAnalyticsTableRowKind = 'uat' | 'group' | 'group-member';
+
 export interface AdvancedMapAnalyticsTableRow {
-  sirutaCode: string;
+  rowId?: string;
+  kind?: AdvancedMapAnalyticsTableRowKind;
+  parentRowId?: string;
+  depth?: number;
+  sirutaCode?: string;
   uatName: string;
   countyName: string;
   entityCui?: string;
+  groupWorkspaceId?: string;
+  groupWorkspaceLabel?: string;
+  groupId?: string;
+  groupLabel?: string;
+  primarySirutaCode?: string;
+  primaryUatName?: string;
+  memberCount?: number;
+  memberSirutaCodes?: string[];
+  searchText?: string;
+  binFilterKey?: string;
   groupValuesByGroupingId?: Record<string, string | undefined>;
   valuesBySeriesId: Record<string, number | undefined>;
 }

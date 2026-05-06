@@ -373,7 +373,7 @@ export function buildBudgetContextTableRows(params: {
         return nameCompare
       }
 
-      return left.sirutaCode.localeCompare(right.sirutaCode)
+      return (left.sirutaCode ?? '').localeCompare(right.sirutaCode ?? '')
     })
 }
 
@@ -402,7 +402,7 @@ export function buildBudgetContextLeaderboardRows(params: {
         return nameCompare
       }
 
-      return left.sirutaCode.localeCompare(right.sirutaCode)
+      return (left.sirutaCode ?? '').localeCompare(right.sirutaCode ?? '')
     })
     .map((row, index) => ({
       ...row,

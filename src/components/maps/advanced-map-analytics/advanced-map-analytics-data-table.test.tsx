@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   AdvancedMapAnalyticsDataTable,
 } from './advanced-map-analytics-data-table';
+import { paginateAdvancedMapAnalyticsTableRows } from './advanced-map-analytics-table-pagination';
 import type {
   AdvancedMapAnalyticsBinsFilterSection,
   AdvancedMapAnalyticsTableRow,
@@ -627,5 +628,241 @@ describe('AdvancedMapAnalyticsDataTable', () => {
         delete (URL as unknown as Record<string, unknown>).revokeObjectURL;
       }
     }
+  });
+
+  it('searches member UAT rows while keeping the parent group visible', () => {
+    render(
+      <AdvancedMapAnalyticsDataTable
+        rows={[
+          {
+            rowId: 'group:manual:grp_1',
+            kind: 'group',
+            sirutaCode: 'grp_1',
+            uatName: 'Group 1',
+            countyName: 'Manual groups',
+            groupId: 'grp_1',
+            groupLabel: 'Group 1',
+            memberCount: 2,
+            valuesBySeriesId: { 'series-active': 30 },
+          },
+          {
+            rowId: 'group-member:manual:grp_1:1001',
+            kind: 'group-member',
+            parentRowId: 'group:manual:grp_1',
+            sirutaCode: '1001',
+            uatName: 'Alpha',
+            countyName: 'Alba',
+            groupId: 'grp_1',
+            groupLabel: 'Group 1',
+            valuesBySeriesId: { 'series-active': 10 },
+            searchText: 'alpha 1001',
+          },
+          {
+            rowId: 'group-member:manual:grp_1:1002',
+            kind: 'group-member',
+            parentRowId: 'group:manual:grp_1',
+            sirutaCode: '1002',
+            uatName: 'Beta',
+            countyName: 'Bihor',
+            groupId: 'grp_1',
+            groupLabel: 'Group 1',
+            valuesBySeriesId: { 'series-active': 20 },
+            searchText: 'beta 1002',
+          },
+        ]}
+        seriesColumns={seriesColumns}
+        mapTitle="Demo map"
+        showExportCsv={false}
+        activeSeriesId="series-active"
+        rowMode="group_rows_with_members"
+        groupedRowModesAvailable={true}
+        binsFilterSections={binsFilterSections}
+        onToggleBinFilter={vi.fn()}
+        onClearPresetBinFilters={vi.fn()}
+        onClearAllBinFilters={vi.fn()}
+        hasActiveBinFilters={false}
+      />
+    );
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Search group or UAT' }), {
+      target: { value: 'beta' },
+    });
+
+    expect(screen.getByText('Group 1')).toBeInTheDocument();
+    expect(screen.getByText('Beta')).toBeInTheDocument();
+    expect(screen.queryByText('Alpha')).not.toBeInTheDocument();
+  });
+
+  it('sorts grouped rows by group value while keeping members nested', () => {
+    render(
+      <AdvancedMapAnalyticsDataTable
+        rows={[
+          {
+            rowId: 'group:manual:low',
+            kind: 'group',
+            sirutaCode: 'low',
+            uatName: 'Low group',
+            countyName: 'Manual groups',
+            groupId: 'low',
+            groupLabel: 'Low group',
+            memberCount: 1,
+            valuesBySeriesId: { 'series-active': 10 },
+          },
+          {
+            rowId: 'group-member:manual:low:1001',
+            kind: 'group-member',
+            parentRowId: 'group:manual:low',
+            sirutaCode: '1001',
+            uatName: 'Low member',
+            countyName: 'Alba',
+            groupId: 'low',
+            groupLabel: 'Low group',
+            valuesBySeriesId: { 'series-active': 10 },
+          },
+          {
+            rowId: 'group:manual:high',
+            kind: 'group',
+            sirutaCode: 'high',
+            uatName: 'High group',
+            countyName: 'Manual groups',
+            groupId: 'high',
+            groupLabel: 'High group',
+            memberCount: 1,
+            valuesBySeriesId: { 'series-active': 30 },
+          },
+          {
+            rowId: 'group-member:manual:high:1002',
+            kind: 'group-member',
+            parentRowId: 'group:manual:high',
+            sirutaCode: '1002',
+            uatName: 'High member',
+            countyName: 'Bihor',
+            groupId: 'high',
+            groupLabel: 'High group',
+            valuesBySeriesId: { 'series-active': 30 },
+          },
+        ]}
+        seriesColumns={seriesColumns}
+        mapTitle="Demo map"
+        showExportCsv={false}
+        activeSeriesId="series-active"
+        rowMode="group_rows_with_members"
+        groupedRowModesAvailable={true}
+        binsFilterSections={binsFilterSections}
+        onToggleBinFilter={vi.fn()}
+        onClearPresetBinFilters={vi.fn()}
+        onClearAllBinFilters={vi.fn()}
+        hasActiveBinFilters={false}
+      />
+    );
+
+    const bodyRows = screen
+      .getAllByRole('row')
+      .filter((row) => within(row).queryAllByRole('cell').length > 0);
+    const labels = bodyRows.map((row) => within(row).getAllByRole('cell')[1]?.textContent ?? '');
+    const ranks = bodyRows.map((row) => within(row).getAllByRole('cell')[0]?.textContent?.trim() ?? '');
+
+    expect(labels[0]).toContain('High group');
+    expect(labels[1]).toContain('High member');
+    expect(labels[2]).toContain('Low group');
+    expect(labels[3]).toContain('Low member');
+    expect(ranks).toEqual(['1', '1.1', '2', '2.1']);
+  });
+
+  it('paginates grouped rows by parent group blocks', () => {
+    const groupedRows: AdvancedMapAnalyticsTableRow[] = [
+      {
+        rowId: 'group:manual:first',
+        kind: 'group',
+        sirutaCode: 'first',
+        uatName: 'First group',
+        countyName: 'Manual groups',
+        groupId: 'first',
+        groupLabel: 'First group',
+        valuesBySeriesId: { 'series-active': 20 },
+      },
+      {
+        rowId: 'group-member:manual:first:1001',
+        kind: 'group-member',
+        parentRowId: 'group:manual:first',
+        sirutaCode: '1001',
+        uatName: 'First member',
+        countyName: 'Alba',
+        groupId: 'first',
+        groupLabel: 'First group',
+        valuesBySeriesId: { 'series-active': 20 },
+      },
+      {
+        rowId: 'group:manual:second',
+        kind: 'group',
+        sirutaCode: 'second',
+        uatName: 'Second group',
+        countyName: 'Manual groups',
+        groupId: 'second',
+        groupLabel: 'Second group',
+        valuesBySeriesId: { 'series-active': 10 },
+      },
+      {
+        rowId: 'group-member:manual:second:1002',
+        kind: 'group-member',
+        parentRowId: 'group:manual:second',
+        sirutaCode: '1002',
+        uatName: 'Second member',
+        countyName: 'Bihor',
+        groupId: 'second',
+        groupLabel: 'Second group',
+        valuesBySeriesId: { 'series-active': 10 },
+      },
+    ];
+
+    expect(
+      paginateAdvancedMapAnalyticsTableRows(
+        groupedRows,
+        'group_rows_with_members',
+        0,
+        1
+      ).map((row) => row.uatName)
+    ).toEqual(['First group', 'First member']);
+    expect(
+      paginateAdvancedMapAnalyticsTableRows(
+        groupedRows,
+        'group_rows_with_members',
+        1,
+        1
+      ).map((row) => row.uatName)
+    ).toEqual(['Second group', 'Second member']);
+  });
+
+  it('exposes grouped row view controls', async () => {
+    const onRowModeChange = vi.fn();
+    const onShowMemberValuesChange = vi.fn();
+
+    render(
+      <AdvancedMapAnalyticsDataTable
+        rows={rows}
+        seriesColumns={seriesColumns}
+        mapTitle="Demo map"
+        showExportCsv={false}
+        activeSeriesId="series-active"
+        rowMode="group_rows_with_members"
+        onRowModeChange={onRowModeChange}
+        groupedRowModesAvailable={true}
+        showMemberValues={true}
+        onShowMemberValuesChange={onShowMemberValuesChange}
+        binsFilterSections={binsFilterSections}
+        onToggleBinFilter={vi.fn()}
+        onClearPresetBinFilters={vi.fn()}
+        onClearAllBinFilters={vi.fn()}
+        hasActiveBinFilters={false}
+      />
+    );
+
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'View' }));
+    fireEvent.click(await screen.findByRole('menuitemcheckbox', { name: 'Show member values' }));
+    expect(onShowMemberValuesChange).toHaveBeenCalledWith(false);
+
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'View' }));
+    fireEvent.click(await screen.findByRole('menuitemcheckbox', { name: 'Groups' }));
+    expect(onRowModeChange).toHaveBeenCalledWith('group_rows');
   });
 });

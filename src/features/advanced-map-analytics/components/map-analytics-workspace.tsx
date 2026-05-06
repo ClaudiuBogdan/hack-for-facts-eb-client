@@ -39,6 +39,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useAdvancedMapAnalyticsSeriesData } from '@/hooks/useAdvancedMapAnalyticsSeriesData';
 import { useAdvancedMapAnalyticsBins } from '@/hooks/useAdvancedMapAnalyticsBins';
 import { useAdvancedMapAnalyticsTableBinsFilter } from '@/hooks/useAdvancedMapAnalyticsTableBinsFilter';
+import { useAdvancedMapAnalyticsTableViewPreferences } from '@/hooks/useAdvancedMapAnalyticsTableViewPreferences';
 import { buildDiscretePaletteFromConfig, getContinuousGradientColor } from '@/lib/map-bins/bins';
 import { getHeatmapColor, getPercentileValues, normalizeValue } from '@/components/maps/utils';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
@@ -52,6 +53,7 @@ import type {
   AdvancedMapAnalyticsTableSeriesColumn,
 } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-table-types';
 import { AdvancedMapAnalyticsDataTable } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-data-table';
+import { buildAdvancedMapAnalyticsTableRows } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-table-rows';
 import { formatAdvancedMapAnalyticsSeriesValue } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-formatting';
 import type {
   AdvancedMapAnalyticsWidget,
@@ -76,7 +78,6 @@ import { buildEntityDetailsPath } from '@/lib/entity-navigation';
 import { DEFAULT_FEATURE_STYLE } from '@/components/maps/constants';
 import type { GroupedSeriesDataResponse, MapSeriesVectorCache } from '@/lib/map-series/interfaces';
 import {
-  areSeriesDomainsEqual,
   buildGroupMetadataById,
   buildGroupingValuesBySiruta,
   getGroupMetadataKey,
@@ -2720,6 +2721,29 @@ export function MapAnalyticsWorkspace({
     return metadataBySirutaCode;
   }, [geoJsonFeatures]);
 
+  const activeTableGroupWorkspaceId = useMemo(() => {
+    const activeDomain = activeSeriesId ? domainsBySeriesId.get(activeSeriesId) : undefined;
+    return activeDomain?.type === 'group'
+      ? activeDomain.groupWorkspaceId
+      : mapState.activeGroupWorkspaceId;
+  }, [activeSeriesId, domainsBySeriesId, mapState.activeGroupWorkspaceId]);
+
+  const activeTableGroupWorkspace = useMemo(
+    () => activeTableGroupWorkspaceId
+      ? mapState.groupWorkspaces.find((workspace) => workspace.id === activeTableGroupWorkspaceId)
+      : undefined,
+    [activeTableGroupWorkspaceId, mapState.groupWorkspaces]
+  );
+
+  const {
+    rowMode: tableRowMode,
+    setRowMode: setTableRowMode,
+    showMemberValues: showTableMemberValues,
+    setShowMemberValues: setShowTableMemberValues,
+  } = useAdvancedMapAnalyticsTableViewPreferences({
+    activeGroupWorkspace: activeTableGroupWorkspace,
+  });
+
   const selectedMapEntitySeriesRows = useMemo<MapAnalyticsEntitySeriesRow[]>(() => {
     if (!selectedMapEntity) {
       return [];
@@ -2758,138 +2782,35 @@ export function MapAnalyticsWorkspace({
     valuesBySeriesId,
   ]);
 
-  const tableRows = useMemo<AdvancedMapAnalyticsTableRow[]>(() => {
-    const activeDomain = activeSeriesId ? domainsBySeriesId.get(activeSeriesId) : undefined;
-    if (activeDomain?.type === 'group') {
-      const activeSeriesColumn = seriesColumns.find((seriesColumn) => seriesColumn.id === activeSeriesId);
-      const rowScopeSeriesColumns = activeSeriesColumn ? [activeSeriesColumn] : seriesColumns;
-      const uniqueGroupIds = new Set<string>();
-
-      for (const seriesColumn of rowScopeSeriesColumns) {
-        const vector = valuesBySeriesId.get(seriesColumn.id);
-        if (!vector) {
-          continue;
-        }
-
-        const seriesDomain = domainsBySeriesId.get(seriesColumn.id);
-        if (
-          !seriesDomain ||
-          seriesDomain.type !== 'group' ||
-          seriesDomain.groupWorkspaceId !== activeDomain.groupWorkspaceId
-        ) {
-          continue;
-        }
-
-        for (const [groupId, value] of vector.entries()) {
-          if (value === undefined) {
-            continue;
-          }
-
-          uniqueGroupIds.add(String(groupId));
-        }
-      }
-
-      return [...uniqueGroupIds]
-        .map((groupId) => {
-          const metadata = groupMetadataById.get(getGroupMetadataKey(activeDomain.groupWorkspaceId, groupId));
-          const rowValuesBySeriesId: Record<string, number | undefined> = {};
-
-          for (const seriesColumn of seriesColumns) {
-            const seriesDomain = domainsBySeriesId.get(seriesColumn.id);
-            rowValuesBySeriesId[seriesColumn.id] =
-              seriesDomain && areSeriesDomainsEqual(seriesDomain, activeDomain)
-                ? valuesBySeriesId.get(seriesColumn.id)?.get(groupId)
-                : undefined;
-          }
-
-          return {
-            sirutaCode: groupId,
-            uatName: metadata?.groupLabel || groupId,
-            countyName: metadata?.groupingLabel || t`Group`,
-            groupValuesByGroupingId: {
-              [activeDomain.groupWorkspaceId]: groupId,
-            },
-            valuesBySeriesId: rowValuesBySeriesId,
-          };
-        })
-        .sort((left, right) => {
-          const nameCompare = left.uatName.localeCompare(right.uatName, undefined, {
-            sensitivity: 'base',
-          });
-          if (nameCompare !== 0) {
-            return nameCompare;
-          }
-          return left.sirutaCode.localeCompare(right.sirutaCode);
-        });
-    }
-
-    const activeSeriesColumn = activeSeriesId
-      ? seriesColumns.find((seriesColumn) => seriesColumn.id === activeSeriesId)
-      : undefined;
-    const rowScopeSeriesColumns = activeSeriesColumn ? [activeSeriesColumn] : seriesColumns;
-    const uniqueSirutaCodes = new Set<string>();
-
-    for (const seriesColumn of rowScopeSeriesColumns) {
-      const vector = mapValuesBySeriesId.get(seriesColumn.id);
-      if (!vector) {
-        continue;
-      }
-
-      for (const [sirutaCode, value] of vector.entries()) {
-        if (value === undefined) {
-          continue;
-        }
-
-        uniqueSirutaCodes.add(String(sirutaCode));
-      }
-    }
-
-    return [...uniqueSirutaCodes]
-      .map((sirutaCode) => {
-        const metadata = uatMetadataBySirutaCode.get(sirutaCode);
-        const rowValuesBySeriesId: Record<string, number | undefined> = {};
-
-        for (const seriesColumn of seriesColumns) {
-          rowValuesBySeriesId[seriesColumn.id] =
-            manualGroupDisplayValuesBySeriesId?.get(seriesColumn.id)?.get(sirutaCode) ??
-            resolveSeriesDisplayValueForSiruta({
-              seriesId: seriesColumn.id,
-              sirutaCode,
-              valuesBySeriesId,
-              domainsBySeriesId,
-              groupValuesBySirutaCode,
-            });
-        }
-
-        return {
-          sirutaCode,
-          uatName: metadata?.uatName || `UAT ${sirutaCode}`,
-          countyName: metadata?.countyName || t`Unknown county`,
-          entityCui: metadata?.entityCui,
-          groupValuesByGroupingId: groupValuesBySirutaCode.get(sirutaCode),
-          valuesBySeriesId: rowValuesBySeriesId,
-        };
-      })
-      .sort((left, right) => {
-        const nameCompare = left.uatName.localeCompare(right.uatName, undefined, {
-          sensitivity: 'base',
-        });
-        if (nameCompare !== 0) {
-          return nameCompare;
-        }
-        return left.sirutaCode.localeCompare(right.sirutaCode);
-      });
-  }, [
-    activeSeriesId,
-    domainsBySeriesId,
-    groupMetadataById,
-    groupValuesBySirutaCode,
-    mapValuesBySeriesId,
-    manualGroupDisplayValuesBySeriesId,
+  const tableRowsResult = useMemo(() => buildAdvancedMapAnalyticsTableRows({
+    rowMode: tableRowMode,
+    activeGroupWorkspace: activeTableGroupWorkspace,
     seriesColumns,
+    enabledSeries,
+    valuesBySeriesId,
+    mapValuesBySeriesId,
+    displayValuesBySeriesId: manualGroupDisplayValuesBySeriesId,
+    domainsBySeriesId,
+    groupValuesBySirutaCode,
+    uatMetadataBySirutaCode,
+    activeSeriesId,
+    showMemberValues: showTableMemberValues,
+    unknownCountyLabel: t`Unknown county`,
+  }), [
+    activeSeriesId,
+    activeTableGroupWorkspace,
+    domainsBySeriesId,
+    enabledSeries,
+    groupValuesBySirutaCode,
+    manualGroupDisplayValuesBySeriesId,
+    mapValuesBySeriesId,
+    seriesColumns,
+    showTableMemberValues,
+    tableRowMode,
     uatMetadataBySirutaCode,
     valuesBySeriesId,
   ]);
+  const tableRows = tableRowsResult.rows;
 
   const toggleBinFilterSelection = useCallback(
     (presetId: string, groupId: string, checked: boolean) => {
@@ -2960,6 +2881,7 @@ export function MapAnalyticsWorkspace({
     useAdvancedMapAnalyticsTableBinsFilter({
       rows: tableRows,
       binsPresets: mapState.binsPresets,
+      activeSeriesId,
       activeValues: activeSeriesDisplayValues,
       tableBinFiltersByPresetId: mapState.tableBinFiltersByPresetId,
     });
@@ -3797,7 +3719,7 @@ export function MapAnalyticsWorkspace({
           shouldOverlayMobileControls ? 'min-h-screen pt-[72px]' : 'min-h-[55vh]'
         )}
       >
-        <div className="flex-1 relative isolate overflow-hidden">
+        <div className="relative isolate min-h-0 flex-1 overflow-hidden">
           {isMapViewActive ? (
             isMapLoading ? (
               <div className="h-full w-full flex items-center justify-center">
@@ -3940,7 +3862,7 @@ export function MapAnalyticsWorkspace({
               </>
             )
           ) : isTableViewActive ? (
-            <div className="h-full w-full p-4">
+            <div className="h-full min-h-0 w-full p-4">
               {isTableLoading ? (
                 <div className="flex h-full items-center justify-center">
                   <LoadingSpinner size="lg" text={t`Loading table data...`} />
@@ -3966,6 +3888,12 @@ export function MapAnalyticsWorkspace({
                   showExportCsv={mode === 'owner'}
                   activeSeriesId={activeSeriesId}
                   onRowClick={handleTableRowClick}
+                  rowMode={tableRowsResult.rowMode}
+                  onRowModeChange={setTableRowMode}
+                  groupedRowModesAvailable={Boolean(activeTableGroupWorkspace?.groups.length)}
+                  showMemberValues={showTableMemberValues}
+                  onShowMemberValuesChange={setShowTableMemberValues}
+                  hiddenUngroupedUatCount={tableRowsResult.hiddenUngroupedUatCount}
                   binsFilterSections={binsFilterSections}
                   onToggleBinFilter={toggleBinFilterSelection}
                   onClearPresetBinFilters={clearPresetBinFilters}

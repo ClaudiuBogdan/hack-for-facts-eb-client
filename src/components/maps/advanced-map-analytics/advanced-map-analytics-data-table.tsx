@@ -6,12 +6,10 @@ import {
   type SortingState,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
-  getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { ArrowUpDown, ChevronDown, ChevronUp, Filter, MoreHorizontal } from 'lucide-react';
+import { ArrowUpDown, ChevronDown, ChevronRight, ChevronUp, Filter, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -33,12 +31,24 @@ import type {
   AdvancedMapAnalyticsBinsFilterSection,
   AdvancedMapAnalyticsTableGroupingColumn,
   AdvancedMapAnalyticsTableRow,
+  AdvancedMapAnalyticsTableRowMode,
   AdvancedMapAnalyticsTableSeriesColumn,
 } from './advanced-map-analytics-table-types';
+import {
+  getAdvancedMapAnalyticsTableRowId,
+  getAdvancedMapAnalyticsTableRowKind,
+  getAdvancedMapAnalyticsTableRowSearchText,
+  isAdvancedMapAnalyticsGroupedTableRowMode,
+} from './advanced-map-analytics-table-rows';
+import {
+  countAdvancedMapAnalyticsTablePaginationRows,
+  paginateAdvancedMapAnalyticsTableRows,
+} from './advanced-map-analytics-table-pagination';
 
 export type {
   AdvancedMapAnalyticsBinsFilterSection,
   AdvancedMapAnalyticsTableRow,
+  AdvancedMapAnalyticsTableRowMode,
   AdvancedMapAnalyticsTableSeriesColumn,
 } from './advanced-map-analytics-table-types';
 
@@ -50,6 +60,12 @@ interface AdvancedMapAnalyticsDataTableProps {
   showExportCsv: boolean;
   activeSeriesId?: string;
   onRowClick?: (row: AdvancedMapAnalyticsTableRow) => void;
+  rowMode?: AdvancedMapAnalyticsTableRowMode;
+  onRowModeChange?: (rowMode: AdvancedMapAnalyticsTableRowMode) => void;
+  groupedRowModesAvailable?: boolean;
+  showMemberValues?: boolean;
+  onShowMemberValuesChange?: (showMemberValues: boolean) => void;
+  hiddenUngroupedUatCount?: number;
   binsFilterSections: AdvancedMapAnalyticsBinsFilterSection[];
   onToggleBinFilter: (presetId: string, groupId: string, checked: boolean) => void;
   onClearPresetBinFilters: (presetId: string) => void;
@@ -92,6 +108,10 @@ function getColumnLabel(
     return t`UAT`;
   }
 
+  if (columnId === 'group_identity') {
+    return t`Group / UAT`;
+  }
+
   if (columnId === 'county_name') {
     return t`County`;
   }
@@ -108,12 +128,18 @@ function getColumnRowValue(row: AdvancedMapAnalyticsTableRow, columnId: string):
     return row.uatName;
   }
 
+  if (columnId === 'group_identity') {
+    return row.kind === 'group'
+      ? row.groupLabel ?? row.uatName
+      : row.uatName;
+  }
+
   if (columnId === 'county_name') {
     return row.countyName;
   }
 
   if (columnId === 'siruta_code') {
-    return row.sirutaCode;
+    return row.sirutaCode ?? '';
   }
 
   const seriesId = getSeriesIdFromColumnId(columnId);
@@ -175,7 +201,197 @@ function compareRowsByNameAndSiruta(
     return nameCompare;
   }
 
-  return left.sirutaCode.localeCompare(right.sirutaCode);
+  return (left.sirutaCode ?? '').localeCompare(right.sirutaCode ?? '');
+}
+
+function getTableRowSortValue(row: AdvancedMapAnalyticsTableRow, columnId: string): string | number | undefined {
+  if (columnId === 'group_identity' || columnId === 'uat_name') {
+    return row.uatName;
+  }
+
+  if (columnId === 'county_name') {
+    return row.countyName;
+  }
+
+  if (columnId === 'siruta_code') {
+    return row.sirutaCode ?? '';
+  }
+
+  const seriesId = getSeriesIdFromColumnId(columnId);
+  if (seriesId) {
+    return row.valuesBySeriesId[seriesId];
+  }
+
+  const groupingId = getGroupingIdFromColumnId(columnId);
+  if (groupingId) {
+    return row.groupValuesByGroupingId?.[groupingId] ?? '';
+  }
+
+  return undefined;
+}
+
+function compareTableRowsByColumn(
+  left: AdvancedMapAnalyticsTableRow,
+  right: AdvancedMapAnalyticsTableRow,
+  columnId: string,
+  desc: boolean
+): number {
+  const leftValue = getTableRowSortValue(left, columnId);
+  const rightValue = getTableRowSortValue(right, columnId);
+  const leftMissing = leftValue === undefined || leftValue === '';
+  const rightMissing = rightValue === undefined || rightValue === '';
+
+  if (leftMissing || rightMissing) {
+    if (leftMissing && rightMissing) {
+      return compareRowsByNameAndSiruta(left, right);
+    }
+    return leftMissing ? 1 : -1;
+  }
+
+  let result: number;
+  if (typeof leftValue === 'number' && typeof rightValue === 'number') {
+    result = leftValue === rightValue ? 0 : leftValue - rightValue;
+  } else {
+    result = String(leftValue).localeCompare(String(rightValue), undefined, {
+      numeric: true,
+      sensitivity: 'base',
+    });
+  }
+
+  if (result === 0) {
+    result = compareRowsByNameAndSiruta(left, right);
+  }
+
+  return desc ? -result : result;
+}
+
+function filterTableRowsBySearch(
+  rows: AdvancedMapAnalyticsTableRow[],
+  searchValue: string,
+  rowMode: AdvancedMapAnalyticsTableRowMode
+): AdvancedMapAnalyticsTableRow[] {
+  const search = searchValue.trim().toLocaleLowerCase();
+  if (!search) {
+    return rows;
+  }
+
+  if (rowMode !== 'group_rows_with_members') {
+    return rows.filter((row) =>
+      rowMode === 'uat_rows'
+        ? row.uatName.toLocaleLowerCase().includes(search)
+        : getAdvancedMapAnalyticsTableRowSearchText(row).includes(search)
+    );
+  }
+
+  const rowsByParentId = new Map<string, AdvancedMapAnalyticsTableRow[]>();
+  const result: AdvancedMapAnalyticsTableRow[] = [];
+
+  for (const row of rows) {
+    if (getAdvancedMapAnalyticsTableRowKind(row) !== 'group-member' || !row.parentRowId) {
+      continue;
+    }
+    const children = rowsByParentId.get(row.parentRowId) ?? [];
+    children.push(row);
+    rowsByParentId.set(row.parentRowId, children);
+  }
+
+  for (const row of rows) {
+    const kind = getAdvancedMapAnalyticsTableRowKind(row);
+    if (kind === 'group-member') {
+      continue;
+    }
+
+    const rowMatches = [
+      row.uatName,
+      row.groupId,
+      row.groupLabel,
+      row.groupWorkspaceLabel,
+      row.primaryUatName,
+    ]
+      .map((value) => value?.trim())
+      .filter((value): value is string => Boolean(value))
+      .join(' ')
+      .toLocaleLowerCase()
+      .includes(search);
+    const children = rowsByParentId.get(getAdvancedMapAnalyticsTableRowId(row)) ?? [];
+    const matchingChildren = children.filter((child) =>
+      getAdvancedMapAnalyticsTableRowSearchText(child).includes(search)
+    );
+
+    if (!rowMatches && matchingChildren.length === 0) {
+      continue;
+    }
+
+    result.push(row);
+    result.push(...(rowMatches ? children : matchingChildren));
+  }
+
+  return result;
+}
+
+function applyGroupedRowExpansion(
+  rows: AdvancedMapAnalyticsTableRow[],
+  collapsedGroupRowIds: Set<string>,
+  rowMode: AdvancedMapAnalyticsTableRowMode,
+  hasSearch: boolean
+): AdvancedMapAnalyticsTableRow[] {
+  if (rowMode !== 'group_rows_with_members' || hasSearch || collapsedGroupRowIds.size === 0) {
+    return rows;
+  }
+
+  return rows.filter((row) => {
+    if (getAdvancedMapAnalyticsTableRowKind(row) !== 'group-member') {
+      return true;
+    }
+    return !row.parentRowId || !collapsedGroupRowIds.has(row.parentRowId);
+  });
+}
+
+function sortTableRows(
+  rows: AdvancedMapAnalyticsTableRow[],
+  sorting: SortingState,
+  rowMode: AdvancedMapAnalyticsTableRowMode
+): AdvancedMapAnalyticsTableRow[] {
+  const activeSort = sorting[0];
+  if (!activeSort) {
+    return rows;
+  }
+
+  if (rowMode !== 'group_rows_with_members') {
+    return [...rows].sort((left, right) =>
+      compareTableRowsByColumn(left, right, activeSort.id, activeSort.desc)
+    );
+  }
+
+  const blocks: Array<{
+    parent: AdvancedMapAnalyticsTableRow;
+    children: AdvancedMapAnalyticsTableRow[];
+  }> = [];
+  const currentBlockByParentId = new Map<string, {
+    parent: AdvancedMapAnalyticsTableRow;
+    children: AdvancedMapAnalyticsTableRow[];
+  }>();
+
+  for (const row of rows) {
+    const kind = getAdvancedMapAnalyticsTableRowKind(row);
+    if (kind === 'group-member') {
+      const block = row.parentRowId ? currentBlockByParentId.get(row.parentRowId) : undefined;
+      if (block) {
+        block.children.push(row);
+      }
+      continue;
+    }
+
+    const block = { parent: row, children: [] };
+    blocks.push(block);
+    currentBlockByParentId.set(getAdvancedMapAnalyticsTableRowId(row), block);
+  }
+
+  return blocks
+    .sort((left, right) =>
+      compareTableRowsByColumn(left.parent, right.parent, activeSort.id, activeSort.desc)
+    )
+    .flatMap((block) => [block.parent, ...block.children]);
 }
 
 export function AdvancedMapAnalyticsDataTable({
@@ -186,6 +402,12 @@ export function AdvancedMapAnalyticsDataTable({
   showExportCsv,
   activeSeriesId,
   onRowClick,
+  rowMode = 'uat_rows',
+  onRowModeChange,
+  groupedRowModesAvailable = false,
+  showMemberValues = true,
+  onShowMemberValuesChange,
+  hiddenUngroupedUatCount = 0,
   binsFilterSections,
   onToggleBinFilter,
   onClearPresetBinFilters,
@@ -194,10 +416,13 @@ export function AdvancedMapAnalyticsDataTable({
 }: Readonly<AdvancedMapAnalyticsDataTableProps>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [searchValue, setSearchValue] = useState('');
+  const [collapsedGroupRowIds, setCollapsedGroupRowIds] = useState<Set<string>>(() => new Set());
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 25,
   });
+  const isGroupedRowMode = isAdvancedMapAnalyticsGroupedTableRowMode(rowMode);
 
   useEffect(() => {
     const hasValidActiveSeries =
@@ -230,10 +455,14 @@ export function AdvancedMapAnalyticsDataTable({
 
   useEffect(() => {
     const requiredColumnIds = [
-      'uat_name',
-      'county_name',
-      'siruta_code',
-      ...groupingColumns.map((groupingColumn) => getGroupingColumnId(groupingColumn.id)),
+      ...(isGroupedRowMode
+        ? ['group_identity']
+        : [
+            'uat_name',
+            'county_name',
+            'siruta_code',
+            ...groupingColumns.map((groupingColumn) => getGroupingColumnId(groupingColumn.id)),
+          ]),
       ...seriesColumns.map((seriesColumn) => getSeriesColumnId(seriesColumn.id)),
     ];
 
@@ -255,12 +484,16 @@ export function AdvancedMapAnalyticsDataTable({
         }
       };
 
-      ensureVisibleByDefault('uat_name');
-      ensureVisibleByDefault('county_name');
-      ensureVisibleByDefault('siruta_code');
+      if (isGroupedRowMode) {
+        ensureVisibleByDefault('group_identity');
+      } else {
+        ensureVisibleByDefault('uat_name');
+        ensureVisibleByDefault('county_name');
+        ensureVisibleByDefault('siruta_code');
 
-      for (const groupingColumn of groupingColumns) {
-        ensureVisibleByDefault(getGroupingColumnId(groupingColumn.id));
+        for (const groupingColumn of groupingColumns) {
+          ensureVisibleByDefault(getGroupingColumnId(groupingColumn.id));
+        }
       }
 
       for (const seriesColumn of seriesColumns) {
@@ -269,7 +502,7 @@ export function AdvancedMapAnalyticsDataTable({
 
       return changed ? nextVisibility : previousVisibility;
     });
-  }, [columnVisibility, groupingColumns, seriesColumns, setColumnVisibility]);
+  }, [columnVisibility, groupingColumns, isGroupedRowMode, seriesColumns, setColumnVisibility]);
 
   const seriesLabelById = useMemo(() => {
     const map = new Map<string, string>();
@@ -287,22 +520,94 @@ export function AdvancedMapAnalyticsDataTable({
     return map;
   }, [groupingColumns]);
 
-  const rankBySirutaCode = useMemo(() => {
-    const rankMap = new Map<string, number>();
-    const hasValidActiveSeries =
-      typeof activeSeriesId === 'string' &&
-      seriesColumns.some((seriesColumn) => seriesColumn.id === activeSeriesId);
+  const searchedRows = useMemo(
+    () => filterTableRowsBySearch(rows, searchValue, rowMode),
+    [rowMode, rows, searchValue]
+  );
+  const expandedRows = useMemo(
+    () => applyGroupedRowExpansion(
+      searchedRows,
+      collapsedGroupRowIds,
+      rowMode,
+      searchValue.trim().length > 0
+    ),
+    [collapsedGroupRowIds, rowMode, searchedRows, searchValue]
+  );
+  const sortedRows = useMemo(
+    () => sortTableRows(expandedRows, sorting, rowMode),
+    [expandedRows, rowMode, sorting]
+  );
+  const paginationTotalCount = useMemo(
+    () => countAdvancedMapAnalyticsTablePaginationRows(sortedRows, rowMode),
+    [rowMode, sortedRows]
+  );
+  const paginatedRows = useMemo(
+    () => paginateAdvancedMapAnalyticsTableRows(
+      sortedRows,
+      rowMode,
+      pagination.pageIndex,
+      pagination.pageSize
+    ),
+    [pagination.pageIndex, pagination.pageSize, rowMode, sortedRows]
+  );
 
-    if (!hasValidActiveSeries) {
-      const sortedRows = [...rows].sort(compareRowsByNameAndSiruta);
-      for (const [index, row] of sortedRows.entries()) {
-        rankMap.set(row.sirutaCode, index + 1);
+  useEffect(() => {
+    const pageCount = Math.max(1, Math.ceil(paginationTotalCount / Math.max(1, pagination.pageSize)));
+    if (pagination.pageIndex < pageCount) {
+      return;
+    }
+
+    setPagination((current) => ({
+      ...current,
+      pageIndex: pageCount - 1,
+    }));
+  }, [pagination.pageIndex, pagination.pageSize, paginationTotalCount]);
+
+  const displayRankByRowId = useMemo(() => {
+    const rankMap = new Map<string, string>();
+
+    if (isAdvancedMapAnalyticsGroupedTableRowMode(rowMode)) {
+      let groupRank = 0;
+      let memberRank = 0;
+      let currentParentRowId: string | undefined;
+
+      for (const row of sortedRows) {
+        const rowId = getAdvancedMapAnalyticsTableRowId(row);
+        const kind = getAdvancedMapAnalyticsTableRowKind(row);
+        if (kind === 'group-member') {
+          if (row.parentRowId && row.parentRowId === currentParentRowId && groupRank > 0) {
+            memberRank += 1;
+            rankMap.set(rowId, `${groupRank}.${memberRank}`);
+          }
+          continue;
+        }
+
+        groupRank += 1;
+        memberRank = 0;
+        currentParentRowId = rowId;
+        rankMap.set(rowId, String(groupRank));
       }
 
       return rankMap;
     }
 
-    const rankedRows = rows
+    const rankableRows = rows.filter((row) =>
+      getAdvancedMapAnalyticsTableRowKind(row) !== 'group-member'
+    );
+    const hasValidActiveSeries =
+      typeof activeSeriesId === 'string' &&
+      seriesColumns.some((seriesColumn) => seriesColumn.id === activeSeriesId);
+
+    if (!hasValidActiveSeries) {
+      const sortedRows = [...rankableRows].sort(compareRowsByNameAndSiruta);
+      for (const [index, row] of sortedRows.entries()) {
+        rankMap.set(getAdvancedMapAnalyticsTableRowId(row), String(index + 1));
+      }
+
+      return rankMap;
+    }
+
+    const rankedRows = rankableRows
       .map((row) => ({
         row,
         activeValue: row.valuesBySeriesId[activeSeriesId],
@@ -320,21 +625,200 @@ export function AdvancedMapAnalyticsDataTable({
       });
 
     for (const [index, entry] of rankedRows.entries()) {
-      rankMap.set(entry.row.sirutaCode, index + 1);
+      rankMap.set(getAdvancedMapAnalyticsTableRowId(entry.row), String(index + 1));
     }
 
     return rankMap;
-  }, [activeSeriesId, rows, seriesColumns]);
+  }, [activeSeriesId, rowMode, rows, seriesColumns, sortedRows]);
 
-  const columns = useMemo<ColumnDef<AdvancedMapAnalyticsTableRow>[]>(
-    () => [
+  const columns = useMemo<ColumnDef<AdvancedMapAnalyticsTableRow>[]>(() => {
+    const renderSortIcon = (sortState: false | 'asc' | 'desc') => {
+      if (sortState === 'asc') {
+        return <ChevronUp className="h-4 w-4" />;
+      }
+      if (sortState === 'desc') {
+        return <ChevronDown className="h-4 w-4" />;
+      }
+      return <ArrowUpDown className="h-4 w-4 text-muted-foreground" />;
+    };
+
+    const staticColumns: ColumnDef<AdvancedMapAnalyticsTableRow>[] = isGroupedRowMode
+      ? [
+          {
+            id: 'group_identity',
+            accessorFn: (row) => row.uatName,
+            header: ({ column }) => (
+              <button
+                type="button"
+                className="inline-flex items-center gap-1"
+                onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              >
+                {t`Group / UAT`}
+                {renderSortIcon(column.getIsSorted())}
+              </button>
+            ),
+            cell: ({ row }) => {
+              const kind = getAdvancedMapAnalyticsTableRowKind(row.original);
+              const rowId = getAdvancedMapAnalyticsTableRowId(row.original);
+              const canExpand =
+                rowMode === 'group_rows_with_members' &&
+                kind === 'group' &&
+                (row.original.memberCount ?? 0) > 0;
+              const isCollapsed = collapsedGroupRowIds.has(rowId);
+              const extraMemberCount = Math.max(0, (row.original.memberCount ?? 0) - 1);
+
+              return (
+                <div
+                  className={cn(
+                    'flex min-w-0 items-center gap-2',
+                    kind === 'group-member' && 'pl-7 text-muted-foreground'
+                  )}
+                >
+                  {canExpand ? (
+                    <button
+                      type="button"
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                      aria-label={isCollapsed ? t`Expand group` : t`Collapse group`}
+                      aria-expanded={!isCollapsed}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setCollapsedGroupRowIds((current) => {
+                          const next = new Set(current);
+                          if (next.has(rowId)) {
+                            next.delete(rowId);
+                          } else {
+                            next.add(rowId);
+                          }
+                          return next;
+                        });
+                      }}
+                    >
+                      {isCollapsed ? (
+                        <ChevronRight className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </button>
+                  ) : (
+                    <span className="h-5 w-5 shrink-0" aria-hidden="true" />
+                  )}
+
+                  <span className="min-w-0">
+                    <span
+                      className={cn(
+                        'block truncate',
+                        kind === 'group' && 'font-semibold text-foreground'
+                      )}
+                      title={row.original.uatName}
+                    >
+                      {row.original.uatName}
+                    </span>
+                    {kind === 'group' ? (
+                      <span className="block truncate text-xs text-muted-foreground">
+                        {row.original.primaryUatName
+                          ? extraMemberCount > 0
+                            ? t`${row.original.primaryUatName} +${extraMemberCount}`
+                            : row.original.primaryUatName
+                          : t`${row.original.memberCount ?? 0} UATs`}
+                      </span>
+                    ) : (
+                      <span className="block truncate text-xs text-muted-foreground">
+                        {row.original.sirutaCode ?? ''}
+                      </span>
+                    )}
+                  </span>
+                </div>
+              );
+            },
+          },
+        ]
+      : [
+          {
+            id: 'uat_name',
+            accessorKey: 'uatName',
+            header: ({ column }) => (
+              <button
+                type="button"
+                className="inline-flex items-center gap-1"
+                onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              >
+                {t`UAT`}
+                {renderSortIcon(column.getIsSorted())}
+              </button>
+            ),
+            cell: ({ row }) => (
+              <span className="block truncate" title={row.original.uatName}>
+                {row.original.uatName}
+              </span>
+            ),
+          },
+          {
+            id: 'county_name',
+            accessorKey: 'countyName',
+            header: ({ column }) => (
+              <button
+                type="button"
+                className="inline-flex items-center gap-1"
+                onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              >
+                {t`County`}
+                {renderSortIcon(column.getIsSorted())}
+              </button>
+            ),
+            cell: ({ row }) => (
+              <span className="block truncate" title={row.original.countyName}>
+                {row.original.countyName}
+              </span>
+            ),
+          },
+          {
+            id: 'siruta_code',
+            accessorKey: 'sirutaCode',
+            header: ({ column }) => (
+              <button
+                type="button"
+                className="inline-flex items-center gap-1"
+                onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              >
+                SIRUTA
+                {renderSortIcon(column.getIsSorted())}
+              </button>
+            ),
+            cell: ({ row }) => <span>{row.original.sirutaCode}</span>,
+          },
+          ...groupingColumns.map<ColumnDef<AdvancedMapAnalyticsTableRow>>((groupingColumn) => {
+            const columnId = getGroupingColumnId(groupingColumn.id);
+            return {
+              id: columnId,
+              accessorFn: (row) => row.groupValuesByGroupingId?.[groupingColumn.id] ?? '',
+              header: ({ column }) => (
+                <button
+                  type="button"
+                  className="inline-flex w-full items-center gap-1"
+                  onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                  title={groupingColumn.label}
+                >
+                  <span className="truncate max-w-[220px]">{groupingColumn.label}</span>
+                  {renderSortIcon(column.getIsSorted())}
+                </button>
+              ),
+              cell: ({ row }) => (
+                <span className="block truncate" title={row.original.groupValuesByGroupingId?.[groupingColumn.id] ?? ''}>
+                  {row.original.groupValuesByGroupingId?.[groupingColumn.id] ?? ''}
+                </span>
+              ),
+            };
+          }),
+        ];
+
+    return [
       {
         id: 'row_number',
         header: () => <span className="text-xs text-muted-foreground">{t`#`}</span>,
         size: 40,
         enableHiding: false,
         cell: ({ row }) => {
-          const rank = rankBySirutaCode.get(row.original.sirutaCode);
+          const rank = displayRankByRowId.get(getAdvancedMapAnalyticsTableRowId(row.original));
 
           return (
             <span className="text-xs text-muted-foreground">
@@ -343,114 +827,7 @@ export function AdvancedMapAnalyticsDataTable({
           );
         },
       },
-      {
-        id: 'uat_name',
-        accessorKey: 'uatName',
-        filterFn: (row, _, filterValue) => {
-          const searchValue = typeof filterValue === 'string' ? filterValue.trim().toLocaleLowerCase() : '';
-          if (searchValue.length === 0) {
-            return true;
-          }
-
-          return row.original.uatName.toLocaleLowerCase().includes(searchValue);
-        },
-        header: ({ column }) => (
-          <button
-            type="button"
-            className="inline-flex items-center gap-1"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            {t`UAT`}
-            {column.getIsSorted() === 'asc' ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : column.getIsSorted() === 'desc' ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
-            )}
-          </button>
-        ),
-        cell: ({ row }) => (
-          <span className="block truncate" title={row.original.uatName}>
-            {row.original.uatName}
-          </span>
-        ),
-      },
-      {
-        id: 'county_name',
-        accessorKey: 'countyName',
-        header: ({ column }) => (
-          <button
-            type="button"
-            className="inline-flex items-center gap-1"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            {t`County`}
-            {column.getIsSorted() === 'asc' ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : column.getIsSorted() === 'desc' ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
-            )}
-          </button>
-        ),
-        cell: ({ row }) => (
-          <span className="block truncate" title={row.original.countyName}>
-            {row.original.countyName}
-          </span>
-        ),
-      },
-      {
-        id: 'siruta_code',
-        accessorKey: 'sirutaCode',
-        header: ({ column }) => (
-          <button
-            type="button"
-            className="inline-flex items-center gap-1"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            SIRUTA
-            {column.getIsSorted() === 'asc' ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : column.getIsSorted() === 'desc' ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
-            )}
-          </button>
-        ),
-        cell: ({ row }) => <span>{row.original.sirutaCode}</span>,
-      },
-      ...groupingColumns.map<ColumnDef<AdvancedMapAnalyticsTableRow>>((groupingColumn) => {
-        const columnId = getGroupingColumnId(groupingColumn.id);
-        return {
-          id: columnId,
-          accessorFn: (row) => row.groupValuesByGroupingId?.[groupingColumn.id] ?? '',
-          header: ({ column }) => (
-            <button
-              type="button"
-              className="inline-flex w-full items-center gap-1"
-              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-              title={groupingColumn.label}
-            >
-              <span className="truncate max-w-[220px]">{groupingColumn.label}</span>
-              {column.getIsSorted() === 'asc' ? (
-                <ChevronUp className="h-4 w-4" />
-              ) : column.getIsSorted() === 'desc' ? (
-                <ChevronDown className="h-4 w-4" />
-              ) : (
-                <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
-              )}
-            </button>
-          ),
-          cell: ({ row }) => (
-            <span className="block truncate" title={row.original.groupValuesByGroupingId?.[groupingColumn.id] ?? ''}>
-              {row.original.groupValuesByGroupingId?.[groupingColumn.id] ?? ''}
-            </span>
-          ),
-        };
-      }),
+      ...staticColumns,
       ...seriesColumns.map<ColumnDef<AdvancedMapAnalyticsTableRow>>((seriesColumn) => {
         const columnId = getSeriesColumnId(seriesColumn.id);
         const isActiveSeries = seriesColumn.id === activeSeriesId;
@@ -471,13 +848,7 @@ export function AdvancedMapAnalyticsDataTable({
                 {seriesColumn.label}
                 {isActiveSeries ? t` (active)` : ''}
               </span>
-              {column.getIsSorted() === 'asc' ? (
-                <ChevronUp className="h-4 w-4" />
-              ) : column.getIsSorted() === 'desc' ? (
-                <ChevronDown className="h-4 w-4" />
-              ) : (
-                <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
-              )}
+              {renderSortIcon(column.getIsSorted())}
             </button>
           ),
           cell: ({ row }) => (
@@ -493,12 +864,19 @@ export function AdvancedMapAnalyticsDataTable({
           },
         };
       }),
-    ],
-    [activeSeriesId, groupingColumns, rankBySirutaCode, seriesColumns]
-  );
+    ];
+  }, [
+    activeSeriesId,
+    collapsedGroupRowIds,
+    displayRankByRowId,
+    groupingColumns,
+    isGroupedRowMode,
+    rowMode,
+    seriesColumns,
+  ]);
 
   const table = useReactTable({
-    data: rows,
+    data: paginatedRows,
     columns,
     state: {
       sorting,
@@ -510,36 +888,63 @@ export function AdvancedMapAnalyticsDataTable({
     onColumnFiltersChange: setColumnFilters,
     onPaginationChange: setPagination,
     onColumnVisibilityChange: setColumnVisibility,
+    manualPagination: isGroupedRowMode,
+    manualSorting: true,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    ...(!isGroupedRowMode ? { getPaginationRowModel: getPaginationRowModel() } : {}),
   });
 
   const handleExportCsv = useCallback(() => {
+    const groupedExport = isAdvancedMapAnalyticsGroupedTableRowMode(rowMode);
     const visibleColumns = table
       .getVisibleLeafColumns()
       .filter(
-        (column) =>
-          column.id !== 'row_number' &&
-          column.id !== 'siruta_code' &&
-          column.id !== 'entity_cui'
+        (column) => {
+          if (column.id === 'row_number' || column.id === 'entity_cui') {
+            return false;
+          }
+          if (groupedExport) {
+            return column.id !== 'group_identity';
+          }
+          return column.id !== 'siruta_code';
+        }
       );
 
-    const csvHeader = [
-      'SIRUTA',
-      'CUI',
-      ...visibleColumns.map((column) => getColumnLabel(column.id, seriesLabelById, groupingLabelById)),
-    ]
+    const csvHeader = (groupedExport
+      ? [
+          'Row type',
+          'Group ID',
+          'Group',
+          'SIRUTA',
+          'UAT',
+          'Member count',
+          ...visibleColumns.map((column) => getColumnLabel(column.id, seriesLabelById, groupingLabelById)),
+        ]
+      : [
+          'SIRUTA',
+          'CUI',
+          ...visibleColumns.map((column) => getColumnLabel(column.id, seriesLabelById, groupingLabelById)),
+        ])
       .map((value) => escapeCsvCell(value))
       .join(',');
 
-    const csvRows = table.getSortedRowModel().rows.map((row) => {
-      const rowValues = [
-        row.original.sirutaCode,
-        row.original.entityCui ?? '',
-        ...visibleColumns.map((column) => getColumnRowValue(row.original, column.id)),
-      ];
+    const csvRows = sortedRows.map((row) => {
+      const kind = getAdvancedMapAnalyticsTableRowKind(row);
+      const rowValues = groupedExport
+        ? [
+            kind,
+            row.groupId ?? '',
+            row.groupLabel ?? (kind === 'group' ? row.uatName : ''),
+            kind === 'group-member' ? row.sirutaCode ?? '' : '',
+            kind === 'group-member' ? row.uatName : '',
+            kind === 'group' ? String(row.memberCount ?? '') : '',
+            ...visibleColumns.map((column) => getColumnRowValue(row, column.id)),
+          ]
+        : [
+            row.sirutaCode ?? '',
+            row.entityCui ?? '',
+            ...visibleColumns.map((column) => getColumnRowValue(row, column.id)),
+          ];
       return rowValues.map((value) => escapeCsvCell(value)).join(',');
     });
 
@@ -551,25 +956,20 @@ export function AdvancedMapAnalyticsDataTable({
     anchor.download = buildCsvExportFileName(mapTitle);
     anchor.click();
     URL.revokeObjectURL(url);
-  }, [groupingLabelById, mapTitle, seriesLabelById, table]);
-
-  const uatNameSearchValue = (() => {
-    const filterValue = table.getColumn('uat_name')?.getFilterValue();
-    return typeof filterValue === 'string' ? filterValue : '';
-  })();
+  }, [groupingLabelById, mapTitle, rowMode, seriesLabelById, sortedRows, table]);
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex flex-wrap items-center justify-between gap-2 py-2">
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="shrink-0 flex flex-wrap items-center justify-between gap-2 py-2">
         <div className="w-full sm:w-[280px]">
           <Input
-            value={uatNameSearchValue}
+            value={searchValue}
             onChange={(event) => {
-              table.getColumn('uat_name')?.setFilterValue(event.currentTarget.value);
+              setSearchValue(event.currentTarget.value);
               table.setPageIndex(0);
             }}
-            placeholder={t`Search entity name`}
-            aria-label={t`Search entity name`}
+            placeholder={isGroupedRowMode ? t`Search group or UAT` : t`Search entity name`}
+            aria-label={isGroupedRowMode ? t`Search group or UAT` : t`Search entity name`}
             className="h-8"
           />
         </div>
@@ -669,6 +1069,62 @@ export function AdvancedMapAnalyticsDataTable({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-64">
+            <DropdownMenuLabel>{t`Rows`}</DropdownMenuLabel>
+            <DropdownMenuCheckboxItem
+              checked={rowMode === 'uat_rows'}
+              onCheckedChange={(checked) => checked && onRowModeChange?.('uat_rows')}
+            >
+              {t`UATs`}
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={rowMode === 'group_rows'}
+              disabled={!groupedRowModesAvailable}
+              onCheckedChange={(checked) => checked && onRowModeChange?.('group_rows')}
+            >
+              {t`Groups`}
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={rowMode === 'group_rows_with_members'}
+              disabled={!groupedRowModesAvailable}
+              onCheckedChange={(checked) => checked && onRowModeChange?.('group_rows_with_members')}
+            >
+              {t`Groups with UATs`}
+            </DropdownMenuCheckboxItem>
+            {rowMode === 'group_rows_with_members' ? (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuCheckboxItem
+                  checked={showMemberValues}
+                  onCheckedChange={(checked) => onShowMemberValuesChange?.(checked === true)}
+                >
+                  {t`Show member values`}
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuItem
+                  onSelect={(event) => {
+                    event.preventDefault();
+                    setCollapsedGroupRowIds(new Set());
+                  }}
+                >
+                  {t`Expand all`}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={(event) => {
+                    event.preventDefault();
+                    setCollapsedGroupRowIds(
+                      new Set(
+                        rows
+                          .filter((row) => getAdvancedMapAnalyticsTableRowKind(row) === 'group')
+                          .map((row) => getAdvancedMapAnalyticsTableRowId(row))
+                      )
+                    );
+                  }}
+                >
+                  {t`Collapse all`}
+                </DropdownMenuItem>
+              </>
+            ) : null}
+
+            <DropdownMenuSeparator />
             <DropdownMenuLabel>{t`Density`}</DropdownMenuLabel>
             <DropdownMenuCheckboxItem
               checked={density === 'comfortable'}
@@ -715,7 +1171,13 @@ export function AdvancedMapAnalyticsDataTable({
         </div>
       </div>
 
-      <div className="relative flex-grow">
+      {isGroupedRowMode && hiddenUngroupedUatCount > 0 ? (
+        <div className="shrink-0 pb-2 text-xs text-muted-foreground">
+          {t`${hiddenUngroupedUatCount} ungrouped UATs hidden.`}
+        </div>
+      ) : null}
+
+      <div className="relative min-h-0 flex-1">
         <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-10 w-6 bg-gradient-to-l from-card to-transparent md:hidden" />
         <div className="h-full overflow-auto rounded-md border bg-card">
         <Table className="min-w-[920px]">
@@ -731,6 +1193,7 @@ export function AdvancedMapAnalyticsDataTable({
                     )}
                     style={{
                       textAlign: header.column.id === 'row_number' ||
+                        header.column.id === 'group_identity' ||
                         header.column.id === 'uat_name' ||
                         header.column.id === 'county_name' ||
                         header.column.id === 'siruta_code'
@@ -753,14 +1216,24 @@ export function AdvancedMapAnalyticsDataTable({
               </TableRow>
             ) : (
               table.getRowModel().rows.map((row, rowIndex) => {
-                const isClickable = Boolean(onRowClick && row.original.entityCui);
+                const rowKind = getAdvancedMapAnalyticsTableRowKind(row.original);
+                const isClickable = Boolean(
+                  rowMode === 'uat_rows' &&
+                  rowKind === 'uat' &&
+                  onRowClick &&
+                  row.original.entityCui
+                );
 
                 return (
                   <TableRow
-                    key={row.id}
+                    key={getAdvancedMapAnalyticsTableRowId(row.original)}
                     onClick={isClickable ? () => onRowClick?.(row.original) : undefined}
                     className={cn(
-                      rowIndex % 2 === 0 ? 'bg-background' : 'bg-muted/20',
+                      rowKind === 'group'
+                        ? 'bg-primary/5'
+                        : rowKind === 'group-member'
+                          ? 'bg-background'
+                          : rowIndex % 2 === 0 ? 'bg-background' : 'bg-muted/20',
                       isClickable && 'cursor-pointer hover:bg-primary/5'
                     )}
                   >
@@ -774,6 +1247,7 @@ export function AdvancedMapAnalyticsDataTable({
                         style={{
                           textAlign:
                             cell.column.id === 'row_number' ||
+                            cell.column.id === 'group_identity' ||
                             cell.column.id === 'uat_name' ||
                             cell.column.id === 'county_name' ||
                             cell.column.id === 'siruta_code'
@@ -795,13 +1269,16 @@ export function AdvancedMapAnalyticsDataTable({
         </div>
       </div>
 
-      <div className="mt-auto border-t bg-card p-3">
+      <div className="mt-auto shrink-0 border-t bg-card p-3">
         <Pagination
           currentPage={table.getState().pagination.pageIndex + 1}
           pageSize={table.getState().pagination.pageSize}
-          totalCount={table.getFilteredRowModel().rows.length}
+          totalCount={paginationTotalCount}
           onPageChange={(page) => table.setPageIndex(Math.max(0, page - 1))}
-          onPageSizeChange={(size) => table.setPageSize(size)}
+          onPageSizeChange={(size) => {
+            table.setPageSize(size);
+            table.setPageIndex(0);
+          }}
         />
       </div>
     </div>
