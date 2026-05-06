@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { produce } from 'immer';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -190,6 +190,15 @@ interface ValueFilterEditorState {
 
 type SelectedMapEntityDetails = MapAnalyticsEntityDetailsSelection;
 
+interface ManualGroupFocusTarget {
+  readonly workspaceId: string;
+  readonly groupId: string;
+}
+
+interface ManualGroupFocusRequest extends ManualGroupFocusTarget {
+  readonly requestId: number;
+}
+
 export interface MapAnalyticsWorkspaceCapabilities {
   readOnly: boolean;
 }
@@ -267,6 +276,34 @@ function findManualGroupWorkspace(
   return state.groupWorkspaces.find((workspace) => workspace.id === workspaceId);
 }
 
+function resolveManualGroupFocusTarget(params: {
+  readonly sirutaCode: string;
+  readonly workspaceId?: string;
+  readonly groupValuesBySirutaCode: Map<string, Record<string, string | undefined>>;
+  readonly groupWorkspaces: readonly MapGroupWorkspace[];
+}): ManualGroupFocusTarget | undefined {
+  const normalizedSirutaCode = params.sirutaCode.trim();
+  if (!normalizedSirutaCode || !params.workspaceId) {
+    return undefined;
+  }
+
+  const groupId = params.groupValuesBySirutaCode.get(normalizedSirutaCode)?.[params.workspaceId];
+  if (!groupId) {
+    return undefined;
+  }
+
+  const workspace = params.groupWorkspaces.find((entry) => entry.id === params.workspaceId);
+  const group = workspace?.groups.find((entry) => entry.id === groupId);
+  if (!workspace || !group) {
+    return undefined;
+  }
+
+  return {
+    workspaceId: workspace.id,
+    groupId: group.id,
+  };
+}
+
 function createManualGroupId(memberSirutaCodes: string[]): string {
   const sortedCodes = [...new Set(memberSirutaCodes)].sort();
   let hash = 2166136261;
@@ -302,21 +339,6 @@ function getOrderedManualGroupMemberCodes(group: MapGroupWorkspace['groups'][num
   const orderedMemberSet = new Set(orderedMembers);
   const remainingMembers = group.memberSirutaCodes.filter((sirutaCode) => !orderedMemberSet.has(sirutaCode));
   return [...orderedMembers, ...remainingMembers];
-}
-
-function isGroupedValueSourceCandidate(series: MapSupportedSeries): boolean {
-  return series.type !== 'map-grouped-value-series';
-}
-
-function getDefaultGroupedSeriesGroupWorkspaceId(
-  groupWorkspaces: MapGroupWorkspace[],
-  activeGroupWorkspaceId?: string
-): string | undefined {
-  const activeGrouping = activeGroupWorkspaceId
-    ? groupWorkspaces.find((grouping) => grouping.id === activeGroupWorkspaceId && grouping.groups.length > 0)
-    : undefined;
-
-  return activeGrouping?.id ?? groupWorkspaces.find((grouping) => grouping.groups.length > 0)?.id;
 }
 
 type GeoJsonCoordinate = readonly [number, number];
@@ -623,6 +645,8 @@ export function MapAnalyticsWorkspace({
   const [isManualGroupCreateMode, setIsManualGroupCreateMode] = useState(false);
   const [activeManualGroupId, setActiveManualGroupId] = useState<string | undefined>(undefined);
   const [groupConfigWorkspaceId, setGroupConfigWorkspaceId] = useState<string | undefined>(undefined);
+  const [manualGroupFocusRequest, setManualGroupFocusRequest] =
+    useState<ManualGroupFocusRequest | null>(null);
   const [isMobileControlsCollapsed, setIsMobileControlsCollapsed] = useState(
     mobileControlsDefaultCollapsed
   );
@@ -728,60 +752,6 @@ export function MapAnalyticsWorkspace({
       }
     });
   }, [isReadOnly, mapState.activeGroupWorkspaceId, mapState.series, updateState]);
-
-  const addGroupedValueSeries = useCallback(() => {
-    if (isReadOnly) {
-      return;
-    }
-
-    const groupWorkspaceId = getDefaultGroupedSeriesGroupWorkspaceId(
-      mapState.groupWorkspaces,
-      mapState.activeGroupWorkspaceId
-    );
-    if (!groupWorkspaceId) {
-      toast.warning(t`Create a group before adding a grouped series.`);
-      return;
-    }
-
-    const sourceSeriesOptions = visibleSeries.filter(isGroupedValueSourceCandidate);
-    const preferredSourceSeriesId = selectedSeriesId ?? mapState.activeSeriesId;
-    const sourceSeries =
-      sourceSeriesOptions.find((candidate) => candidate.id === preferredSourceSeriesId) ??
-      sourceSeriesOptions[0];
-    if (!sourceSeries) {
-      toast.warning(t`Create a source series before adding a grouped series.`);
-      return;
-    }
-
-    const nextSeries = createDefaultAdvancedMapAnalyticsSeries('map-grouped-value-series');
-    if (nextSeries.type !== 'map-grouped-value-series') {
-      return;
-    }
-
-    nextSeries.id = createUniqueAdvancedMapAnalyticsId(mapState.series.map((series) => series.id));
-    nextSeries.label = t`Grouped ${resolveSeriesDisplayLabel(sourceSeries)}`;
-    nextSeries.sourceSeriesId = sourceSeries.id;
-    nextSeries.groupWorkspaceId = groupWorkspaceId;
-    nextSeries.aggregation = 'sum';
-
-    setEditorState({ mode: 'add', seriesId: nextSeries.id });
-    setSelectedSeriesId(nextSeries.id);
-
-    updateState((draft) => {
-      draft.series.push(nextSeries);
-      draft.activeSeriesId = nextSeries.id;
-      draft.activeGroupWorkspaceId = groupWorkspaceId;
-    });
-  }, [
-    isReadOnly,
-    mapState.activeGroupWorkspaceId,
-    mapState.activeSeriesId,
-    mapState.groupWorkspaces,
-    mapState.series,
-    selectedSeriesId,
-    updateState,
-    visibleSeries,
-  ]);
 
   const editSeries = useCallback((seriesId: string) => {
     if (isReadOnly) {
@@ -991,7 +961,19 @@ export function MapAnalyticsWorkspace({
   );
 
   const openManualGroupWorkspaceConfig = useCallback((workspaceId: string) => {
+    setManualGroupFocusRequest(null);
     setGroupConfigWorkspaceId(workspaceId);
+  }, []);
+
+  const closeManualGroupWorkspaceConfig = useCallback(() => {
+    setManualGroupFocusRequest(null);
+    setGroupConfigWorkspaceId(undefined);
+  }, []);
+
+  const clearManualGroupFocusRequest = useCallback((requestId: number) => {
+    setManualGroupFocusRequest((currentRequest) =>
+      currentRequest?.requestId === requestId ? null : currentRequest
+    );
   }, []);
 
   const updateManualGroupWorkspaceLabel = useCallback(
@@ -1057,6 +1039,9 @@ export function MapAnalyticsWorkspace({
       setActiveManualGroupId(undefined);
       setGroupConfigWorkspaceId((currentWorkspaceId) =>
         currentWorkspaceId === workspaceId ? undefined : currentWorkspaceId
+      );
+      setManualGroupFocusRequest((currentRequest) =>
+        currentRequest?.workspaceId === workspaceId ? null : currentRequest
       );
       setEditorState((currentState) =>
         currentState && removedGroupedSeriesIds.has(currentState.seriesId) ? null : currentState
@@ -1127,6 +1112,7 @@ export function MapAnalyticsWorkspace({
 
       if (duplicatedWorkspaceId) {
         setActiveManualGroupId(undefined);
+        setManualGroupFocusRequest(null);
         setGroupConfigWorkspaceId(duplicatedWorkspaceId);
       }
     },
@@ -1558,7 +1544,11 @@ export function MapAnalyticsWorkspace({
 
   const pasteSeriesFromClipboardText = useCallback(
     (clipboardText: string): boolean => {
-      const normalizedPasteResult = normalizePastedMapSeries(clipboardText, mapState.series);
+      const normalizedPasteResult = normalizePastedMapSeries(
+        clipboardText,
+        mapState.series,
+        mapState.activeGroupWorkspaceId
+      );
       if (!normalizedPasteResult) {
         return false;
       }
@@ -1593,7 +1583,7 @@ export function MapAnalyticsWorkspace({
       }
       return true;
     },
-    [mapState.series, updateState]
+    [mapState.activeGroupWorkspaceId, mapState.series, updateState]
   );
 
   const pasteMapConfigFromClipboardText = useCallback(
@@ -3289,6 +3279,26 @@ export function MapAnalyticsWorkspace({
 
       const directEntityCui = getEntityCuiFromUatProperties(properties);
       const sirutaCode = String(properties?.natcode ?? '').trim();
+      const manualGroupFocusTarget = resolveManualGroupFocusTarget({
+        sirutaCode,
+        workspaceId: groupConfigWorkspaceId,
+        groupValuesBySirutaCode,
+        groupWorkspaces: mapState.groupWorkspaces,
+      });
+      if (manualGroupFocusTarget) {
+        updateState((draft) => {
+          draft.activeGroupWorkspaceId = manualGroupFocusTarget.workspaceId;
+        });
+        setSelectedMapEntity(null);
+        setIsManualGroupCreateMode(false);
+        setActiveManualGroupId(manualGroupFocusTarget.groupId);
+        setManualGroupFocusRequest((previousRequest) => ({
+          ...manualGroupFocusTarget,
+          requestId: (previousRequest?.requestId ?? 0) + 1,
+        }));
+        return;
+      }
+
       const metadata =
         sirutaCode.length > 0 ? uatMetadataBySirutaCode.get(sirutaCode) : undefined;
       const metadataEntityCui = metadata?.entityCui;
@@ -3333,12 +3343,16 @@ export function MapAnalyticsWorkspace({
     },
     [
       addFeatureToManualGroup,
+      groupConfigWorkspaceId,
+      groupValuesBySirutaCode,
       isManualGroupCreateMode,
+      mapState.groupWorkspaces,
       mode,
       navigate,
       onEntityCuiSelect,
       onMapFeatureSelect,
       shouldUseEntityDetailsPanel,
+      updateState,
       uatMetadataBySirutaCode,
     ]
   );
@@ -3420,22 +3434,6 @@ export function MapAnalyticsWorkspace({
     return buildExteriorBoundaryGeoJsonData(features);
   }, [activeManualGroup, geoJsonFeatures, mapViewType]);
   const canCreateManualGroups = !isReadOnly && !isPreviewLayout && mapViewType === 'UAT';
-  const groupedSeriesDefaultGroupingId = getDefaultGroupedSeriesGroupWorkspaceId(
-    mapState.groupWorkspaces,
-    mapState.activeGroupWorkspaceId
-  );
-  const groupedSeriesSourceOptions = visibleSeries.filter(isGroupedValueSourceCandidate);
-  const groupedSeriesDisabledReason =
-    groupedSeriesDefaultGroupingId
-      ? groupedSeriesSourceOptions.length > 0
-        ? undefined
-        : t`Create a source series first.`
-      : t`Create a group first.`;
-  const canAddGroupedSeries =
-    !isReadOnly &&
-    Boolean(groupedSeriesDefaultGroupingId) &&
-    groupedSeriesSourceOptions.length > 0;
-
   const controlsPanels = (
     <>
       <AdvancedMapAnalyticsConfigPanel
@@ -3475,11 +3473,8 @@ export function MapAnalyticsWorkspace({
         selectedSeriesId={selectedSeriesId}
         collapsed={Boolean(mapState.seriesPanelCollapsed)}
         readOnly={isReadOnly}
-        canAddGroupedSeries={canAddGroupedSeries}
-        groupedSeriesDisabledReason={groupedSeriesDisabledReason}
         onToggleCollapsed={togglePanelCollapsed}
         onAddSeries={addSeries}
-        onAddGroupedSeries={isReadOnly ? undefined : addGroupedValueSeries}
         onSelectSeries={selectSeries}
         onActivate={setSeriesActivation}
         onMakeMain={makeSeriesMain}
@@ -3771,19 +3766,21 @@ export function MapAnalyticsWorkspace({
             activeGroupId={
               groupConfigWorkspace.id === mapState.activeGroupWorkspaceId ? activeManualGroupId : undefined
             }
+            manualGroupFocusRequest={manualGroupFocusRequest}
             uatMetadataBySirutaCode={uatMetadataBySirutaCode}
-            onClose={() => setGroupConfigWorkspaceId(undefined)}
+            onClose={closeManualGroupWorkspaceConfig}
+            onManualGroupFocusRequestHandled={clearManualGroupFocusRequest}
             onWorkspaceLabelChange={updateManualGroupWorkspaceLabel}
             onAddGroupItem={addManualGroupItem}
             onGroupLabelChange={updateManualGroupLabel}
             onActivateGroup={activateManualGroupForDisplay}
             onAddToWorkspace={(workspaceId) => {
               startManualGroupCreateMode(workspaceId);
-              setGroupConfigWorkspaceId(undefined);
+              closeManualGroupWorkspaceConfig();
             }}
             onAddToGroup={(workspaceId, groupId) => {
               selectManualGroup(workspaceId, groupId);
-              setGroupConfigWorkspaceId(undefined);
+              closeManualGroupWorkspaceConfig();
             }}
             onDeleteWorkspace={deleteManualGroupWorkspace}
             onDeleteGroup={deleteManualGroup}
@@ -4412,8 +4409,10 @@ interface ManualGroupWorkspaceConfigPanelProps {
   workspace: MapGroupWorkspace;
   canEdit: boolean;
   activeGroupId?: string;
+  manualGroupFocusRequest?: ManualGroupFocusRequest | null;
   uatMetadataBySirutaCode: Map<string, Omit<AdvancedMapAnalyticsTableRow, 'sirutaCode' | 'valuesBySeriesId' | 'groupValuesByGroupingId'>>;
   onClose: () => void;
+  onManualGroupFocusRequestHandled: (requestId: number) => void;
   onWorkspaceLabelChange: (workspaceId: string, nextLabel: string) => void;
   onAddGroupItem: (workspaceId: string) => void;
   onGroupLabelChange: (workspaceId: string, groupId: string, nextLabel: string) => void;
@@ -4431,8 +4430,10 @@ function ManualGroupWorkspaceConfigPanel({
   workspace,
   canEdit,
   activeGroupId,
+  manualGroupFocusRequest,
   uatMetadataBySirutaCode,
   onClose,
+  onManualGroupFocusRequestHandled,
   onWorkspaceLabelChange,
   onAddGroupItem,
   onGroupLabelChange,
@@ -4448,39 +4449,82 @@ function ManualGroupWorkspaceConfigPanel({
   const [isEditingWorkspaceTitle, setIsEditingWorkspaceTitle] = useState(false);
   const [editingGroupId, setEditingGroupId] = useState<string | undefined>(undefined);
   const [groupSearchQuery, setGroupSearchQuery] = useState('');
+  const groupCardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const displayLabel = workspace.label?.trim() || workspace.id;
   const totalMemberCount = new Set(workspace.groups.flatMap((group) => group.memberSirutaCodes)).size;
   const mergedGroupCountLabel =
     workspace.groups.length === 1 ? t`1 merged group` : t`${workspace.groups.length} merged groups`;
   const totalMemberCountLabel = totalMemberCount === 1 ? t`1 UAT` : t`${totalMemberCount} UATs`;
   const normalizedGroupSearchQuery = normalizeManualGroupSearchText(groupSearchQuery);
-  const visibleGroups = workspace.groups
-    .map((group, groupIndex) => ({ group, groupIndex }))
-    .filter(({ group }) => {
-      if (!normalizedGroupSearchQuery) {
-        return true;
-      }
+  const visibleGroups = useMemo(
+    () =>
+      workspace.groups
+        .map((group, groupIndex) => ({ group, groupIndex }))
+        .filter(({ group }) => {
+          if (!normalizedGroupSearchQuery) {
+            return true;
+          }
 
-      const groupLabel = group.label?.trim() || group.id;
-      const searchableValues = [
-        groupLabel,
-        group.id,
-        ...group.memberSirutaCodes.flatMap((sirutaCode) => {
-          const metadata = uatMetadataBySirutaCode.get(sirutaCode);
-          return [
-            sirutaCode,
-            metadata?.uatName,
-            metadata?.entityCui,
-            metadata?.countyName,
+          const groupLabel = group.label?.trim() || group.id;
+          const searchableValues = [
+            groupLabel,
+            group.id,
+            ...group.memberSirutaCodes.flatMap((sirutaCode) => {
+              const metadata = uatMetadataBySirutaCode.get(sirutaCode);
+              return [
+                sirutaCode,
+                metadata?.uatName,
+                metadata?.entityCui,
+                metadata?.countyName,
+              ];
+            }),
           ];
-        }),
-      ];
 
-      return searchableValues.some((value) =>
-        normalizeManualGroupSearchText(value).includes(normalizedGroupSearchQuery)
-      );
-    });
+          return searchableValues.some((value) =>
+            normalizeManualGroupSearchText(value).includes(normalizedGroupSearchQuery)
+          );
+        }),
+    [normalizedGroupSearchQuery, uatMetadataBySirutaCode, workspace.groups]
+  );
   const hasGroupSearchQuery = normalizedGroupSearchQuery.length > 0;
+
+  useEffect(() => {
+    if (
+      !manualGroupFocusRequest ||
+      manualGroupFocusRequest.workspaceId !== workspace.id ||
+      !hasGroupSearchQuery
+    ) {
+      return;
+    }
+
+    const targetGroupIsVisible = visibleGroups.some(
+      ({ group }) => group.id === manualGroupFocusRequest.groupId
+    );
+    if (!targetGroupIsVisible) {
+      setGroupSearchQuery('');
+    }
+  }, [hasGroupSearchQuery, manualGroupFocusRequest, visibleGroups, workspace.id]);
+
+  useEffect(() => {
+    if (!manualGroupFocusRequest || manualGroupFocusRequest.workspaceId !== workspace.id) {
+      return;
+    }
+
+    const groupCard = groupCardRefs.current.get(manualGroupFocusRequest.groupId);
+    if (!groupCard) {
+      return;
+    }
+
+    groupCard.focus({ preventScroll: true });
+    groupCard.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    onManualGroupFocusRequestHandled(manualGroupFocusRequest.requestId);
+  }, [
+    groupSearchQuery,
+    manualGroupFocusRequest,
+    onManualGroupFocusRequestHandled,
+    visibleGroups.length,
+    workspace.id,
+  ]);
 
   return (
     <div className="absolute inset-0 z-20 flex flex-col bg-background text-foreground">
@@ -4618,6 +4662,13 @@ function ManualGroupWorkspaceConfigPanel({
                 return (
                   <div
                     key={group.id}
+                    ref={(node) => {
+                      if (node) {
+                        groupCardRefs.current.set(group.id, node);
+                      } else {
+                        groupCardRefs.current.delete(group.id);
+                      }
+                    }}
                     className={cn(
                       'group/group-card cursor-pointer rounded-lg border bg-background/70 px-3 py-2.5 transition-colors',
                       hasActiveGroup && !isActiveGroup && 'opacity-65'

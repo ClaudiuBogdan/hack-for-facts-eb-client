@@ -1000,6 +1000,130 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(screen.getByDisplayValue('Beta cluster')).toBeInTheDocument();
   });
 
+  it('focuses the matching group item from map UAT clicks while workspace config is open', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            properties: {
+              natcode: '1001',
+              name: 'Mapped UAT',
+              county: 'Test county',
+              cui: '12345678',
+            },
+            geometry: null,
+          },
+          {
+            type: 'Feature',
+            properties: {
+              natcode: '2002',
+              name: 'Second UAT',
+              county: 'Alt county',
+              cui: '87654321',
+            },
+            geometry: null,
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    };
+    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
+    const scrollIntoViewMock = vi.fn();
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      writable: true,
+      value: scrollIntoViewMock,
+    });
+
+    try {
+      const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+      const initialState = createMapState({
+        activeView: 'map',
+        groupWorkspaces: [
+          {
+            id: 'manual-map-groups',
+            key: 'manual',
+            label: 'Manual groups',
+            groups: [
+              {
+                id: 'grp_alpha',
+                label: 'Alpha cluster',
+                memberSirutaCodes: ['1001'],
+              },
+              {
+                id: 'grp_beta',
+                label: 'Beta cluster',
+                memberSirutaCodes: ['2002'],
+              },
+            ],
+          },
+        ],
+      });
+      let latestState = initialState;
+
+      function Harness() {
+        const [state, setState] = useState(initialState);
+        latestState = state;
+        return (
+          <MapAnalyticsWorkspace
+            mode="owner"
+            mapState={state}
+            setMapState={(updater) => {
+              setState((previousState) => {
+                const nextState =
+                  typeof updater === 'function' ? updater(previousState) : updater;
+                latestState = nextState;
+                return nextState;
+              });
+            }}
+            capabilities={{ readOnly: false }}
+            mobileControlsDefaultCollapsed={true}
+          />
+        );
+      }
+
+      render(<Harness />);
+
+      await openFirstGroupWorkspaceConfig();
+      const searchInput = screen.getByRole('searchbox', { name: 'Search groups' });
+      fireEvent.change(searchInput, { target: { value: 'alpha' } });
+      expect(screen.queryByDisplayValue('Beta cluster')).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Map click second UAT' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('searchbox', { name: 'Search groups' })).toHaveValue('');
+      });
+
+      const betaGroupInput = screen.getByDisplayValue('Beta cluster');
+      const betaGroupCard = betaGroupInput.closest('[role="button"]') as HTMLElement;
+      await waitFor(() => {
+        expect(latestState.activeGroupWorkspaceId).toBe('manual-map-groups');
+        expect(betaGroupCard).toHaveAttribute('aria-pressed', 'true');
+        expect(scrollIntoViewMock).toHaveBeenCalled();
+      });
+
+      scrollIntoViewMock.mockClear();
+      fireEvent.change(screen.getByRole('searchbox', { name: 'Search groups' }), {
+        target: { value: 'alpha' },
+      });
+
+      expect(screen.getByDisplayValue('Alpha cluster')).toBeInTheDocument();
+      expect(screen.queryByDisplayValue('Beta cluster')).not.toBeInTheDocument();
+      expect(scrollIntoViewMock).not.toHaveBeenCalled();
+    } finally {
+      Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+        configurable: true,
+        writable: true,
+        value: originalScrollIntoView,
+      });
+    }
+  });
+
   it('updates manual group member order and primary member', async () => {
     mockIsMobile.mockReturnValue(false);
     mockGeoJsonData = {
@@ -2447,6 +2571,73 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(setMapState.mock.calls.length).toBeGreaterThan(setMapStateCallsBeforePaste);
   });
 
+  it('pastes copied series into the active group workspace', async () => {
+    const existingSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    existingSeries.id = 'existing_series';
+    existingSeries.label = 'Existing series';
+    existingSeries.groupWorkspaceId = 'target_workspace';
+
+    const pastedSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    pastedSeries.id = 'clipboard-series';
+    pastedSeries.label = 'Clipboard series';
+    pastedSeries.groupWorkspaceId = 'source_workspace';
+
+    clipboardReadTextMock.mockResolvedValue(
+      JSON.stringify({
+        type: 'advanced-map-series-copy',
+        payload: [pastedSeries],
+      })
+    );
+
+    const initialState = createMapState({
+      activeView: 'map',
+      activeGroupWorkspaceId: 'target_workspace',
+      series: [existingSeries],
+      groupWorkspaces: [
+        {
+          id: 'target_workspace',
+          key: 'target',
+          label: 'Target workspace',
+          groups: [],
+        },
+      ],
+    });
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="owner"
+        mapState={initialState}
+        setMapState={setMapState}
+        capabilities={{ readOnly: false }}
+      />
+    );
+
+    const latestPasteHotkeyCall = useHotkeysMock.mock.calls.filter((call) => call[0] === 'mod+v').slice(-1)[0];
+    const pasteHandler = latestPasteHotkeyCall?.[1] as
+      | ((event: { preventDefault: () => void; target: EventTarget | null }) => void)
+      | undefined;
+
+    await act(async () => {
+      pasteHandler?.({
+        preventDefault: vi.fn(),
+        target: document.body,
+      });
+    });
+
+    const updateCall = setMapState.mock.calls[0]?.[0] as
+      | ((previousState: ReturnType<typeof createMapState>) => ReturnType<typeof createMapState>)
+      | undefined;
+    expect(typeof updateCall).toBe('function');
+
+    const nextState = updateCall?.(initialState);
+    const insertedSeries = nextState?.series.find((series) => series.label === 'Clipboard series');
+    expect(insertedSeries?.id).not.toBe('clipboard-series');
+    expect(insertedSeries?.groupWorkspaceId).toBe('target_workspace');
+  });
+
   it('copies and pastes map configuration when no series is selected', async () => {
     const baseSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
     baseSeries.id = 'series_1';
@@ -2617,75 +2808,6 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     const nextState = updateCall?.(initialState);
     expect(nextState?.series.map((series) => series.id)).toEqual([secondSeries.id]);
     expect(nextState?.activeSeriesId).toBe(secondSeries.id);
-  });
-
-  it('adds a grouped value series from the active group workspace and source series', async () => {
-    const sourceSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
-    sourceSeries.id = 'source_series';
-    sourceSeries.label = 'Source value';
-    sourceSeries.groupWorkspaceId = 'manual-map-groups';
-
-    const initialState = createMapState({
-      activeView: 'map',
-      series: [sourceSeries],
-      activeSeriesId: sourceSeries.id,
-      activeGroupWorkspaceId: 'manual-map-groups',
-      groupWorkspaces: [
-        {
-          id: 'manual-map-groups',
-          key: 'manual',
-          label: 'Manual groups',
-          groups: [
-            {
-              id: 'grp_1',
-              memberSirutaCodes: ['1001'],
-            },
-          ],
-        },
-      ],
-    });
-
-    const setMapState = vi.fn();
-    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
-
-    render(
-      <MapAnalyticsWorkspace
-        mode="owner"
-        mapState={initialState}
-        setMapState={setMapState}
-        capabilities={{ readOnly: false }}
-      />
-    );
-
-    expect(latestSeriesPanelProps?.canAddGroupedSeries).toBe(true);
-    expect(latestSeriesPanelProps?.groupedSeriesDisabledReason).toBeUndefined();
-
-    const onAddGroupedSeries = latestSeriesPanelProps?.onAddGroupedSeries as (() => void) | undefined;
-    expect(onAddGroupedSeries).toBeTypeOf('function');
-
-    act(() => {
-      onAddGroupedSeries?.();
-    });
-
-    const updateCall = setMapState.mock.calls[0]?.[0] as
-      | ((previousState: ReturnType<typeof createMapState>) => ReturnType<typeof createMapState>)
-      | undefined;
-    expect(typeof updateCall).toBe('function');
-
-    const nextState = updateCall?.(initialState);
-    const groupedSeries = nextState?.series.find(
-      (series) => series.type === 'map-grouped-value-series'
-    );
-
-    if (groupedSeries?.type !== 'map-grouped-value-series') {
-      throw new Error('Expected grouped series to be created.');
-    }
-
-    expect(groupedSeries.sourceSeriesId).toBe(sourceSeries.id);
-    expect(groupedSeries.groupWorkspaceId).toBe('manual-map-groups');
-    expect(groupedSeries.aggregation).toBe('sum');
-    expect(nextState?.activeSeriesId).toBe(groupedSeries.id);
-    expect(nextState?.activeGroupWorkspaceId).toBe('manual-map-groups');
   });
 
   it('deletes grouped value series when deleting their group workspace', async () => {

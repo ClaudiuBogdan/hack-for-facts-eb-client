@@ -253,7 +253,11 @@ describe('advanced-map-analytics-series-utils', () => {
       payload: [calculationSeries, dependencySeries],
     });
 
-    const normalizedPasteResult = normalizePastedMapSeries(clipboardText, [existingSeries]);
+    const normalizedPasteResult = normalizePastedMapSeries(
+      clipboardText,
+      [existingSeries],
+      'target_workspace'
+    );
     expect(normalizedPasteResult).not.toBeNull();
     expect(normalizedPasteResult?.seriesToInsert).toHaveLength(2);
 
@@ -276,6 +280,42 @@ describe('advanced-map-analytics-series-utils', () => {
     expect(pastedCalculationSeries.calculation.args).toContain(pastedDependencySeries.id);
     expect(pastedCalculationSeries.calculation.args).toContain('existing');
     expect(pastedCalculationSeries.calculation.args).not.toContain('dep-1');
+    expect(pastedDependencySeries.groupWorkspaceId).toBe('target_workspace');
+    expect(pastedCalculationSeries.groupWorkspaceId).toBe('target_workspace');
+  });
+
+  it('clears pasted series workspace when pasting into the default workspace', () => {
+    const copiedSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    copiedSeries.id = 'source_series';
+    copiedSeries.groupWorkspaceId = 'source_workspace';
+
+    const clipboardText = JSON.stringify({
+      type: 'advanced-map-series-copy',
+      payload: [copiedSeries],
+    });
+
+    const normalizedPasteResult = normalizePastedMapSeries(clipboardText, []);
+
+    expect(normalizedPasteResult?.seriesToInsert[0]?.groupWorkspaceId).toBeUndefined();
+  });
+
+  it('keeps pasted grouped value series workspace when pasting into the default workspace', () => {
+    const copiedSeries = createDefaultAdvancedMapAnalyticsSeries('map-grouped-value-series');
+    if (copiedSeries.type !== 'map-grouped-value-series') {
+      throw new Error('Expected grouped value series.');
+    }
+    copiedSeries.id = 'source_series';
+    copiedSeries.sourceSeriesId = 'base_series';
+    copiedSeries.groupWorkspaceId = 'source_workspace';
+
+    const clipboardText = JSON.stringify({
+      type: 'advanced-map-series-copy',
+      payload: [copiedSeries],
+    });
+
+    const normalizedPasteResult = normalizePastedMapSeries(clipboardText, []);
+
+    expect(normalizedPasteResult?.seriesToInsert[0]?.groupWorkspaceId).toBe('source_workspace');
   });
 
   it('accepts chart clipboard payload and skips unsupported series types', () => {

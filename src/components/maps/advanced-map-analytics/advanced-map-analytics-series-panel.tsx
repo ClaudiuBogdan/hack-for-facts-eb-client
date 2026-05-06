@@ -1,4 +1,4 @@
-import { ChevronDown, Plus, Shapes } from 'lucide-react';
+import { ChevronDown, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import type { MapSupportedSeries } from '@/schemas/advanced-map-analytics';
@@ -12,11 +12,8 @@ interface AdvancedMapAnalyticsSeriesPanelProps {
   selectedSeriesId?: string;
   collapsed: boolean;
   readOnly?: boolean;
-  canAddGroupedSeries?: boolean;
-  groupedSeriesDisabledReason?: string;
   onToggleCollapsed: (collapsed: boolean) => void;
   onAddSeries: () => void;
-  onAddGroupedSeries?: () => void;
   onSelectSeries: (seriesId: string) => void;
   onActivate: (seriesId: string, enabled: boolean) => void;
   onMakeMain: (seriesId: string) => void;
@@ -35,11 +32,8 @@ export function AdvancedMapAnalyticsSeriesPanel({
   selectedSeriesId,
   collapsed,
   readOnly = false,
-  canAddGroupedSeries = false,
-  groupedSeriesDisabledReason,
   onToggleCollapsed,
   onAddSeries,
-  onAddGroupedSeries,
   onSelectSeries,
   onActivate,
   onMakeMain,
@@ -84,26 +78,6 @@ export function AdvancedMapAnalyticsSeriesPanel({
 
       <Collapsible open={!collapsed} onOpenChange={(open) => onToggleCollapsed(!open)}>
         <CollapsibleContent className="space-y-2 data-[state=open]:animate-in data-[state=closed]:animate-out">
-          {onAddGroupedSeries ? (
-            <div className="space-y-1.5">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="w-full justify-start gap-2"
-                onClick={onAddGroupedSeries}
-                disabled={readOnly || !canAddGroupedSeries}
-              >
-                <Shapes className="h-4 w-4" />
-                {t`Add grouped series`}
-              </Button>
-              {groupedSeriesDisabledReason ? (
-                <p className="px-1 text-xs text-muted-foreground">
-                  {groupedSeriesDisabledReason}
-                </p>
-              ) : null}
-            </div>
-          ) : null}
           <AdvancedMapAnalyticsSeriesList
             series={series}
             activeSeriesId={activeSeriesId}

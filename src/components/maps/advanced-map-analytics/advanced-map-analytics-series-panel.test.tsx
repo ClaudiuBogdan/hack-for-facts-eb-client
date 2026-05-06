@@ -79,29 +79,6 @@ describe('AdvancedMapAnalyticsSeriesPanel', () => {
     expect(screen.getByLabelText('Add series')).toBeDisabled();
   });
 
-  it('calls onAddGroupedSeries from the grouped shortcut', () => {
-    const onAddGroupedSeries = vi.fn();
-    renderPanel({
-      canAddGroupedSeries: true,
-      onAddGroupedSeries,
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: 'Add grouped series' }));
-    expect(onAddGroupedSeries).toHaveBeenCalledTimes(1);
-  });
-
-  it('disables grouped shortcut and shows the reason', () => {
-    const onAddGroupedSeries = vi.fn();
-    renderPanel({
-      canAddGroupedSeries: false,
-      groupedSeriesDisabledReason: 'Create a group first.',
-      onAddGroupedSeries,
-    });
-
-    expect(screen.getByRole('button', { name: 'Add grouped series' })).toBeDisabled();
-    expect(screen.getByText('Create a group first.')).toBeInTheDocument();
-  });
-
   it('calls onToggleCollapsed and hides list when collapsed', () => {
     const onToggleCollapsed = vi.fn();
     const { rerender, series } = renderPanel({ onToggleCollapsed });

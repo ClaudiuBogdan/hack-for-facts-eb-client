@@ -428,14 +428,19 @@ export function createCopiedMapSeriesPayload(
 
 export function normalizePastedMapSeries(
   rawClipboardText: string,
-  existingSeries: MapSupportedSeries[]
+  existingSeries: MapSupportedSeries[],
+  targetGroupWorkspaceId?: string
 ): NormalizedPastedMapSeriesResult | null {
   const parsedClipboard = parseClipboardSeries(rawClipboardText);
   if (!parsedClipboard) {
     return null;
   }
 
-  const seriesToInsert = remapSeriesForPaste(parsedClipboard.sourceSeries, existingSeries);
+  const seriesToInsert = remapSeriesForPaste(
+    parsedClipboard.sourceSeries,
+    existingSeries,
+    targetGroupWorkspaceId
+  );
 
   return {
     sourceType: parsedClipboard.sourceType,
@@ -500,7 +505,8 @@ function parseClipboardSeries(rawClipboardText: string): ClipboardSeriesParseRes
 
 function remapSeriesForPaste(
   sourceSeriesList: MapSupportedSeries[],
-  existingSeries: MapSupportedSeries[]
+  existingSeries: MapSupportedSeries[],
+  targetGroupWorkspaceId?: string
 ): MapSupportedSeries[] {
   if (sourceSeriesList.length === 0) {
     return [];
@@ -521,6 +527,10 @@ function remapSeriesForPaste(
     clonedSeries.id = remappedSeriesId ?? sourceSeries.id;
     clonedSeries.createdAt = timestamp;
     clonedSeries.updatedAt = timestamp;
+    clonedSeries.groupWorkspaceId = resolvePastedSeriesGroupWorkspaceId(
+      sourceSeries,
+      targetGroupWorkspaceId
+    );
 
     if (clonedSeries.type === 'aggregated-series-calculation') {
       clonedSeries.calculation = remapCalculationOperandIds(
@@ -536,6 +546,17 @@ function remapSeriesForPaste(
 
     return clonedSeries;
   });
+}
+
+function resolvePastedSeriesGroupWorkspaceId(
+  sourceSeries: MapSupportedSeries,
+  targetGroupWorkspaceId?: string
+): string | undefined {
+  if (sourceSeries.type === 'map-grouped-value-series' && !targetGroupWorkspaceId) {
+    return sourceSeries.groupWorkspaceId;
+  }
+
+  return targetGroupWorkspaceId;
 }
 
 function remapCalculationOperandIds(operand: Operand, remappedSeriesIds: Map<string, string>): Operand {
