@@ -88,6 +88,8 @@ export function createUploadedMapDatasetSeries(
     enabled?: boolean;
     label?: string;
     unit?: string;
+    groupWorkspaceId?: string;
+    granularity?: UploadedMapDatasetSeriesConfiguration['granularity'];
     createdAt?: string;
     updatedAt?: string;
   } = {}
@@ -100,6 +102,8 @@ export function createUploadedMapDatasetSeries(
     enabled: options.enabled ?? true,
     label,
     unit: options.unit ?? dataset.unit ?? '',
+    groupWorkspaceId: options.groupWorkspaceId,
+    granularity: options.granularity,
     ...(reference.source === 'owner'
       ? { datasetId: reference.datasetId }
       : { datasetPublicId: reference.datasetPublicId }),

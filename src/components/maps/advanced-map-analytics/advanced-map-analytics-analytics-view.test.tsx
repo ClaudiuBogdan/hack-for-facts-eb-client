@@ -410,7 +410,7 @@ describe('AdvancedMapAnalyticsAnalyticsView', () => {
           valuesBySeriesId,
           domainsBySeriesId: new Map([
             [uatSeries.id, { type: 'uat' }],
-            [groupedSeries.id, { type: 'group', groupingId: 'county' }],
+            [groupedSeries.id, { type: 'group', groupWorkspaceId: 'county' }],
           ]),
         })}
       />

@@ -1,4 +1,4 @@
-# Future Composable Map Grouping Rules
+# Future Composable Map Group Workspace Rules
 
 **Status**: Draft
 **Date**: 2026-05-04
@@ -6,26 +6,26 @@
 
 ## Problem
 
-The initial map grouping prototype focuses on explicit grouping definitions and grouped value series. In the future, users may need to define groups through reusable rules, such as grouping UATs by county, then subdividing by population bands, or narrowing a grouping based on demographic characteristics.
+The initial map grouping prototype focuses on explicit `MapGroupWorkspace` definitions and grouped value series. In the future, users may need to define groups through reusable rules, such as grouping UATs by county, then subdividing by population bands, or narrowing a workspace based on demographic characteristics.
 
-This future capability should be explored without expanding the first prototype scope or making the core grouping model too complex.
+This future capability should be explored without expanding the first prototype scope or making the core group workspace model too complex.
 
 ## Context
 
 The main grouping specification defines the initial model:
 
-- `groupings`
-- `activeGroupingId`
+- `groupWorkspaces`
+- `activeGroupWorkspaceId`
 - `map-grouped-value-series`
 - series domains for safe calculations
 
 See [Map Grouping Domains and Grouped Value Series](./specs-202605041809-map-grouping-domains-and-series.md).
 
-This document captures a possible future extension for derived group definitions. It should not be treated as required for the first grouping prototype.
+This document captures a possible future extension for derived group workspace definitions. It should not be treated as required for the first prototype.
 
 ## Decision
 
-Explore rule-composed grouping definitions as an optional extension to explicit group definitions.
+Explore rule-composed group workspace definitions as an optional extension to explicit group definitions.
 
 ```ts
 type GroupingDefinition =
@@ -39,7 +39,7 @@ type GroupingDefinition =
     };
 ```
 
-A derived grouping would evaluate rules from left to right. Each rule narrows or partitions the current UAT candidate set, and the final result is still a normal grouping with stable group IDs.
+A derived group workspace would evaluate rules from left to right. Each rule narrows or partitions the current UAT candidate set, and the final result is still a normal workspace with stable group IDs.
 
 Example rule types:
 
@@ -65,7 +65,7 @@ type GroupingRule =
     }
   | {
       type: 'within-grouping';
-      groupingId: string;
+      groupWorkspaceId: string;
     };
 ```
 
@@ -83,13 +83,13 @@ Population bands inside each county:
 }
 ```
 
-High elderly-share groups within an existing county grouping:
+High elderly-share groups within an existing county workspace:
 
 ```ts
 {
   mode: 'derived',
   rules: [
-    { type: 'within-grouping', groupingId: 'county' },
+    { type: 'within-grouping', groupWorkspaceId: 'county' },
     {
       type: 'series-filter',
       seriesId: 'elderly_population_share',
@@ -119,9 +119,9 @@ Rules should only define final UAT membership. They should not produce map value
 
 **Negative**
 
-- Adds dependency tracking between groupings and source series.
+- Adds dependency tracking between group workspaces and source series.
 - Derived group IDs must be stable and deterministic.
-- Changes to referenced series or groupings may require recomputing derived groups.
+- Changes to referenced series or group workspaces may require recomputing derived groups.
 - UI for explaining rule order and resulting groups will need careful design.
 
 ## References

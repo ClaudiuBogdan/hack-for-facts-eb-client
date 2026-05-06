@@ -10,6 +10,8 @@ import {
   applyToggleSeriesEnabled,
   convertSeriesToType,
   duplicateSeriesAfterSource,
+  ensureActiveSeriesSelectionForGroupWorkspace,
+  filterSeriesByGroupWorkspace,
   normalizePastedMapSeries,
   reorderSeriesByIds,
 } from './advanced-map-analytics-series-utils';
@@ -40,14 +42,14 @@ describe('advanced-map-analytics-series-utils', () => {
     expect(nextState.series[0]?.enabled).toBe(true);
   });
 
-  it('sets active grouping when activating a grouped calculation series', () => {
+  it('sets active group workspace when activating a grouped calculation series', () => {
     const base = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
     base.id = 'base';
     const grouped = MapGroupedValueSeriesConfigurationSchema.parse({
       id: 'grouped',
       type: 'map-grouped-value-series',
       sourceSeriesId: base.id,
-      groupingId: 'county',
+      groupWorkspaceId: 'county',
       aggregation: 'sum',
     });
     const calculation = createDefaultAdvancedMapAnalyticsSeries('aggregated-series-calculation');
@@ -68,7 +70,7 @@ describe('advanced-map-analytics-series-utils', () => {
     const nextState = applySetActiveSeries(initialState, calculation.id);
 
     expect(nextState.activeSeriesId).toBe(calculation.id);
-    expect(nextState.activeGroupingId).toBe('county');
+    expect(nextState.activeGroupWorkspaceId).toBe('county');
   });
 
   it('promotes the first enabled series when disabling the active series', () => {
@@ -103,6 +105,29 @@ describe('advanced-map-analytics-series-utils', () => {
     expect(nextState.series[1]?.enabled).toBe(false);
   });
 
+  it('filters series by active group workspace scope', () => {
+    const defaultSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    const countySeries = createDefaultAdvancedMapAnalyticsSeries('commitments-analytics');
+    countySeries.groupWorkspaceId = 'county';
+
+    expect(filterSeriesByGroupWorkspace([defaultSeries, countySeries], undefined)).toEqual([defaultSeries]);
+    expect(filterSeriesByGroupWorkspace([defaultSeries, countySeries], 'county')).toEqual([countySeries]);
+  });
+
+  it('selects active series inside the requested group workspace scope', () => {
+    const defaultSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    const countySeries = createDefaultAdvancedMapAnalyticsSeries('commitments-analytics');
+    countySeries.groupWorkspaceId = 'county';
+
+    const result = ensureActiveSeriesSelectionForGroupWorkspace(
+      [defaultSeries, countySeries],
+      defaultSeries.id,
+      'county'
+    );
+
+    expect(result.activeSeriesId).toBe(countySeries.id);
+  });
+
   it('does not preserve geojson default units when changing series type', () => {
     const geojsonSeries = createDefaultAdvancedMapAnalyticsSeries('geojson-dataset-series');
     if (geojsonSeries.type !== 'geojson-dataset-series') {
@@ -113,6 +138,17 @@ describe('advanced-map-analytics-series-utils', () => {
     const converted = convertSeriesToType(geojsonSeries, 'line-items-aggregated-yearly');
 
     expect((converted.unit ?? '').trim()).toBe('');
+  });
+
+  it('preserves series group workspace scope when changing type', () => {
+    const sourceSeries = createDefaultAdvancedMapAnalyticsSeries('geojson-dataset-series');
+    sourceSeries.groupWorkspaceId = 'county';
+    sourceSeries.granularity = 'county';
+
+    const converted = convertSeriesToType(sourceSeries, 'line-items-aggregated-yearly');
+
+    expect(converted.groupWorkspaceId).toBe('county');
+    expect(converted.granularity).toBe('county');
   });
 
   it('duplicates a series directly after source with a fresh id', () => {
@@ -127,6 +163,41 @@ describe('advanced-map-analytics-series-utils', () => {
     expect(duplicateResult.series[1]?.label).toContain('(copy)');
     expect(duplicateResult.series[2]?.id).toBe(second.id);
     expect(duplicateResult.duplicatedSeries?.id).toBe(duplicateResult.series[1]?.id);
+  });
+
+  it('scopes duplicated series to the target group workspace instead of preserving the source scope', () => {
+    const sourceSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    sourceSeries.groupWorkspaceId = 'source_workspace';
+
+    const duplicateResult = duplicateSeriesAfterSource(
+      [sourceSeries],
+      sourceSeries.id,
+      undefined,
+      'target_workspace'
+    );
+
+    expect(duplicateResult.duplicatedSeries?.groupWorkspaceId).toBe('target_workspace');
+  });
+
+  it('clears duplicated series group workspace when duplicating into the default workspace', () => {
+    const sourceSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    sourceSeries.groupWorkspaceId = 'source_workspace';
+
+    const duplicateResult = duplicateSeriesAfterSource([sourceSeries], sourceSeries.id);
+
+    expect(duplicateResult.duplicatedSeries?.groupWorkspaceId).toBeUndefined();
+  });
+
+  it('keeps grouped value series workspace when no duplicate target workspace is provided', () => {
+    const sourceSeries = createDefaultAdvancedMapAnalyticsSeries('map-grouped-value-series');
+    if (sourceSeries.type !== 'map-grouped-value-series') {
+      throw new Error('Expected grouped value series.');
+    }
+    sourceSeries.groupWorkspaceId = 'source_workspace';
+
+    const duplicateResult = duplicateSeriesAfterSource([sourceSeries], sourceSeries.id);
+
+    expect(duplicateResult.duplicatedSeries?.groupWorkspaceId).toBe('source_workspace');
   });
 
   it('uses preferred duplicate id when available', () => {

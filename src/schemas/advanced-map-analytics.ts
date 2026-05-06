@@ -76,12 +76,88 @@ const GeoJsonFilterIdsSchema = z
   .transform((ids) => [...new Set(ids)].sort((left, right) => left - right))
   .default([]);
 
+export const TerritorialGranularitySchema = z.enum([
+  'country',
+  'macroregion',
+  'development_region',
+  'county',
+  'uat',
+  'locality',
+  'custom',
+]);
+export type TerritorialGranularity = z.infer<typeof TerritorialGranularitySchema>;
+
+const MapSeriesScopeSchema = z.object({
+  groupWorkspaceId: z.string().optional(),
+  granularity: TerritorialGranularitySchema.optional(),
+});
+
+function isPlainAdvancedMapAnalyticsRecord(input: unknown): input is Record<string, unknown> {
+  return typeof input === 'object' && input !== null && !Array.isArray(input);
+}
+
+function hasAdvancedMapAnalyticsOwnKey(input: Record<string, unknown>, key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(input, key);
+}
+
+function migrateLegacyMapSeriesInput(input: unknown): unknown {
+  if (!isPlainAdvancedMapAnalyticsRecord(input)) {
+    return input;
+  }
+
+  const migratedInput: Record<string, unknown> = { ...input };
+  if (
+    !hasAdvancedMapAnalyticsOwnKey(migratedInput, 'groupWorkspaceId') &&
+    hasAdvancedMapAnalyticsOwnKey(migratedInput, 'groupingId')
+  ) {
+    migratedInput.groupWorkspaceId = migratedInput.groupingId;
+  }
+
+  return migratedInput;
+}
+
+function migrateLegacyAdvancedMapAnalyticsStateInput(input: unknown): unknown {
+  if (!isPlainAdvancedMapAnalyticsRecord(input)) {
+    return input;
+  }
+
+  const migratedInput: Record<string, unknown> = { ...input };
+  if (
+    !hasAdvancedMapAnalyticsOwnKey(migratedInput, 'groupWorkspaces') &&
+    hasAdvancedMapAnalyticsOwnKey(migratedInput, 'groupings')
+  ) {
+    migratedInput.groupWorkspaces = migratedInput.groupings;
+  }
+
+  if (
+    !hasAdvancedMapAnalyticsOwnKey(migratedInput, 'activeGroupWorkspaceId') &&
+    hasAdvancedMapAnalyticsOwnKey(migratedInput, 'activeGroupingId')
+  ) {
+    migratedInput.activeGroupWorkspaceId = migratedInput.activeGroupingId;
+  }
+
+  if (Array.isArray(migratedInput.series)) {
+    migratedInput.series = migratedInput.series.map((series) =>
+      migrateLegacyMapSeriesInput(series)
+    );
+  }
+
+  return migratedInput;
+}
+
+const MapExecutionSeriesConfigurationSchema = SeriesConfigurationSchema.extend(MapSeriesScopeSchema.shape);
+const MapCommitmentsSeriesConfigurationSchema = CommitmentsSeriesConfigurationSchema.extend(MapSeriesScopeSchema.shape);
+const MapInsSeriesConfigurationSchema = InsSeriesConfigurationSchema.extend(MapSeriesScopeSchema.shape);
+const MapSeriesGroupConfigurationSchema = SeriesGroupConfigurationSchema.extend(MapSeriesScopeSchema.shape);
+
 export const GeoJsonDatasetSeriesConfigurationSchema = z.object({
   id: z.string().default(() => createAdvancedMapAnalyticsId()),
   type: z.literal('geojson-dataset-series'),
   enabled: z.boolean().default(true),
   label: z.string().default('GeoJSON dataset'),
   unit: z.string().optional().default(''),
+  groupWorkspaceId: z.string().optional(),
+  granularity: TerritorialGranularitySchema.optional(),
   datasetKey: GeoJsonDatasetKeySchema.default('insPop2021'),
   countyFilterIds: GeoJsonFilterIdsSchema,
   regionFilterIds: GeoJsonFilterIdsSchema,
@@ -96,6 +172,8 @@ export const UploadedMapDatasetSeriesConfigurationSchema = z.object({
   enabled: z.boolean().default(true),
   label: z.string().default('Uploaded dataset'),
   unit: z.string().optional().default(''),
+  groupWorkspaceId: z.string().optional(),
+  granularity: TerritorialGranularitySchema.optional(),
   datasetId: z.string().uuid().optional(),
   datasetPublicId: z.string().uuid().optional(),
   config: MapSeriesDisplayConfigSchema,
@@ -134,10 +212,11 @@ export const MapGroupSchema = z.object({
     .optional(),
 });
 
-export const MapGroupingSchema = z.object({
+export const MapGroupWorkspaceSchema = z.object({
   id: z.string(),
   key: z.string(),
   label: z.string().default('Grouping'),
+  granularity: TerritorialGranularitySchema.optional(),
   groups: z.array(MapGroupSchema).default([]),
 }).superRefine((grouping, context) => {
   const groupIds = new Set<string>();
@@ -178,36 +257,47 @@ export const MapGroupingSchema = z.object({
 });
 
 export type MapGroup = z.infer<typeof MapGroupSchema>;
-export type MapGrouping = z.infer<typeof MapGroupingSchema>;
+export type MapGroupWorkspace = z.infer<typeof MapGroupWorkspaceSchema>;
 
 export const MapGroupedValueSeriesAggregationSchema = z.enum(['sum', 'first']);
 export type MapGroupedValueSeriesAggregation = z.infer<typeof MapGroupedValueSeriesAggregationSchema>;
 
-export const MapGroupedValueSeriesConfigurationSchema = z.object({
+const MapGroupedValueSeriesConfigurationBaseSchema = z.object({
   id: z.string().default(() => createAdvancedMapAnalyticsId()),
   type: z.literal('map-grouped-value-series'),
   enabled: z.boolean().default(true),
   label: z.string().default('Grouped value series'),
   unit: z.string().optional().default(''),
   sourceSeriesId: z.string().default(''),
-  groupingId: z.string().default(''),
+  groupWorkspaceId: z.string().default(''),
+  granularity: TerritorialGranularitySchema.optional(),
   aggregation: MapGroupedValueSeriesAggregationSchema.default('sum'),
   config: MapSeriesDisplayConfigSchema,
   createdAt: z.string().default(() => new Date().toISOString()),
   updatedAt: z.string().default(() => new Date().toISOString()),
 });
 
+export const MapGroupedValueSeriesConfigurationSchema = z.preprocess(
+  migrateLegacyMapSeriesInput,
+  MapGroupedValueSeriesConfigurationBaseSchema
+);
+
 export type MapGroupedValueSeriesConfiguration = z.infer<typeof MapGroupedValueSeriesConfigurationSchema>;
 
-export const MapSupportedSeriesSchema = z.discriminatedUnion('type', [
-  SeriesConfigurationSchema,
-  CommitmentsSeriesConfigurationSchema,
-  InsSeriesConfigurationSchema,
+const MapSupportedSeriesBaseSchema = z.discriminatedUnion('type', [
+  MapExecutionSeriesConfigurationSchema,
+  MapCommitmentsSeriesConfigurationSchema,
+  MapInsSeriesConfigurationSchema,
   GeoJsonDatasetSeriesConfigurationSchema,
   UploadedMapDatasetSeriesConfigurationSchema,
-  MapGroupedValueSeriesConfigurationSchema,
-  SeriesGroupConfigurationSchema,
+  MapGroupedValueSeriesConfigurationBaseSchema,
+  MapSeriesGroupConfigurationSchema,
 ]);
+
+export const MapSupportedSeriesSchema = z.preprocess(
+  migrateLegacyMapSeriesInput,
+  MapSupportedSeriesBaseSchema
+);
 
 export type MapSupportedSeries = z.infer<typeof MapSupportedSeriesSchema>;
 
@@ -661,27 +751,30 @@ const AdvancedMapAnalyticsWidgetsSchema = z.preprocess(
   z.array(AdvancedMapAnalyticsWidgetSchema)
 );
 
-export const AdvancedMapAnalyticsUrlStateSchema = z.object({
-  version: z.literal(ADVANCED_MAP_ANALYTICS_VERSION).default(ADVANCED_MAP_ANALYTICS_VERSION),
-  series: z.array(MapSupportedSeriesSchema).default([]),
-  activeSeriesId: z.string().optional(),
-  groupings: z.array(MapGroupingSchema).default([]),
-  activeGroupingId: z.string().optional(),
-  valueFilters: AdvancedMapAnalyticsValueFilterGroupSchema.default({ rules: [] }),
-  activeView: AdvancedMapAnalyticsActiveViewSchema.default('map'),
-  analyticsWidgets: AdvancedMapAnalyticsWidgetsSchema.default(createDefaultAdvancedMapAnalyticsWidgets()),
-  mapName: z.string().default('Untitled map'),
-  showCountyBoundaries: z.boolean().default(true),
-  seriesPanelCollapsed: z.boolean().default(false),
-  configPanelCollapsed: z.boolean().default(false),
-  valueFiltersPanelCollapsed: z.boolean().default(false),
-  binsPanelCollapsed: z.boolean().default(false),
-  binsPresets: z.array(AdvancedMapAnalyticsBinsPresetSchema).default([]),
-  activeBinPresetId: z.string().optional(),
-  tableBinFiltersByPresetId: z.record(z.string(), z.array(z.string())).default({}),
-  mapCenter: z.tuple([z.number().min(-90).max(90), z.number().min(-180).max(180)]).optional(),
-  mapZoom: z.number().min(1).max(20).optional(),
-});
+export const AdvancedMapAnalyticsUrlStateSchema = z.preprocess(
+  migrateLegacyAdvancedMapAnalyticsStateInput,
+  z.object({
+    version: z.literal(ADVANCED_MAP_ANALYTICS_VERSION).default(ADVANCED_MAP_ANALYTICS_VERSION),
+    series: z.array(MapSupportedSeriesSchema).default([]),
+    activeSeriesId: z.string().optional(),
+    groupWorkspaces: z.array(MapGroupWorkspaceSchema).default([]),
+    activeGroupWorkspaceId: z.string().optional(),
+    valueFilters: AdvancedMapAnalyticsValueFilterGroupSchema.default({ rules: [] }),
+    activeView: AdvancedMapAnalyticsActiveViewSchema.default('map'),
+    analyticsWidgets: AdvancedMapAnalyticsWidgetsSchema.default(createDefaultAdvancedMapAnalyticsWidgets()),
+    mapName: z.string().default('Untitled map'),
+    showCountyBoundaries: z.boolean().default(true),
+    seriesPanelCollapsed: z.boolean().default(false),
+    configPanelCollapsed: z.boolean().default(false),
+    valueFiltersPanelCollapsed: z.boolean().default(false),
+    binsPanelCollapsed: z.boolean().default(false),
+    binsPresets: z.array(AdvancedMapAnalyticsBinsPresetSchema).default([]),
+    activeBinPresetId: z.string().optional(),
+    tableBinFiltersByPresetId: z.record(z.string(), z.array(z.string())).default({}),
+    mapCenter: z.tuple([z.number().min(-90).max(90), z.number().min(-180).max(180)]).optional(),
+    mapZoom: z.number().min(1).max(20).optional(),
+  })
+);
 
 export type AdvancedMapAnalyticsUrlState = z.infer<typeof AdvancedMapAnalyticsUrlStateSchema>;
 

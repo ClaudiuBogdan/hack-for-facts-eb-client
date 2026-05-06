@@ -11,7 +11,7 @@ import {
   AdvancedMapAnalyticsUrlStateSchema,
   GEOJSON_POPULATION_DATASET_KEYS,
   MapGroupedValueSeriesConfigurationSchema,
-  MapGroupingSchema,
+  MapGroupWorkspaceSchema,
   UploadedMapDatasetSeriesConfigurationSchema,
 } from '@/schemas/advanced-map-analytics';
 
@@ -22,8 +22,8 @@ describe('AdvancedMapAnalyticsUrlStateSchema', () => {
     expect(parsed.version).toBe(ADVANCED_MAP_ANALYTICS_VERSION);
     expect(parsed.series).toEqual([]);
     expect(parsed.activeSeriesId).toBeUndefined();
-    expect(parsed.groupings).toEqual([]);
-    expect(parsed.activeGroupingId).toBeUndefined();
+    expect(parsed.groupWorkspaces).toEqual([]);
+    expect(parsed.activeGroupWorkspaceId).toBeUndefined();
     expect(parsed.valueFilters.rules).toEqual([]);
     expect(parsed.activeView).toBe('map');
     expect(parsed.analyticsWidgets).toEqual(createDefaultAdvancedMapAnalyticsWidgets());
@@ -130,7 +130,7 @@ describe('AdvancedMapAnalyticsUrlStateSchema', () => {
     const state = AdvancedMapAnalyticsUrlStateSchema.parse({
       series: [baseSeries, calcSeries],
       activeSeriesId: calcSeries.id,
-      groupings: [
+      groupWorkspaces: [
         {
           id: 'county',
           key: 'county',
@@ -144,7 +144,7 @@ describe('AdvancedMapAnalyticsUrlStateSchema', () => {
           ],
         },
       ],
-      activeGroupingId: 'county',
+      activeGroupWorkspaceId: 'county',
       valueFilters: {
         rules: [firstValueRule, secondValueRule],
       },
@@ -170,8 +170,8 @@ describe('AdvancedMapAnalyticsUrlStateSchema', () => {
     const roundTripped = AdvancedMapAnalyticsUrlStateSchema.parse(JSON.parse(serialized));
 
     expect(roundTripped).toEqual(state);
-    expect(roundTripped.groupings[0]?.groups[0]?.memberSirutaCodes).toEqual(['1001', '1002']);
-    expect(roundTripped.activeGroupingId).toBe('county');
+    expect(roundTripped.groupWorkspaces[0]?.groups[0]?.memberSirutaCodes).toEqual(['1001', '1002']);
+    expect(roundTripped.activeGroupWorkspaceId).toBe('county');
     expect(roundTripped.showCountyBoundaries).toBe(false);
     expect(roundTripped.binsPresets[0]?.config.title).toBe('Revenue bands');
     expect(roundTripped.valueFilters.rules[1]?.joinWithPrevious).toBe('OR');
@@ -184,7 +184,7 @@ describe('AdvancedMapAnalyticsUrlStateSchema', () => {
       type: 'map-grouped-value-series',
       label: 'Spending by county',
       sourceSeriesId: 'spending',
-      groupingId: 'county',
+      groupWorkspaceId: 'county',
       aggregation: 'sum',
     });
 
@@ -192,14 +192,101 @@ describe('AdvancedMapAnalyticsUrlStateSchema', () => {
       id: 'grouped-series',
       type: 'map-grouped-value-series',
       sourceSeriesId: 'spending',
+      groupWorkspaceId: 'county',
+      aggregation: 'sum',
+    });
+  });
+
+  it('migrates legacy grouping field names into group workspace fields', () => {
+    const parsed = AdvancedMapAnalyticsUrlStateSchema.parse({
+      series: [
+        {
+          id: 'grouped-series',
+          type: 'map-grouped-value-series',
+          label: 'Grouped legacy series',
+          sourceSeriesId: 'source-series',
+          groupingId: 'legacy-groups',
+          aggregation: 'sum',
+        },
+        {
+          id: 'source-series',
+          type: 'line-items-aggregated-yearly',
+          label: 'Legacy scoped source',
+          groupingId: 'legacy-groups',
+        },
+      ],
+      groupings: [
+        {
+          id: 'legacy-groups',
+          key: 'manual',
+          label: 'Legacy groups',
+          groups: [
+            {
+              id: 'grp_1',
+              memberSirutaCodes: ['1001'],
+            },
+          ],
+        },
+      ],
+      activeGroupingId: 'legacy-groups',
+    });
+
+    expect(parsed.groupWorkspaces[0]?.id).toBe('legacy-groups');
+    expect(parsed.activeGroupWorkspaceId).toBe('legacy-groups');
+    expect(parsed.series[0]?.groupWorkspaceId).toBe('legacy-groups');
+    expect(parsed.series[1]?.groupWorkspaceId).toBe('legacy-groups');
+  });
+
+  it('migrates direct legacy grouped value series grouping ids', () => {
+    const parsed = MapGroupedValueSeriesConfigurationSchema.parse({
+      id: 'grouped-series',
+      type: 'map-grouped-value-series',
+      label: 'Spending by county',
+      sourceSeriesId: 'spending',
       groupingId: 'county',
       aggregation: 'sum',
+    });
+
+    expect(parsed.groupWorkspaceId).toBe('county');
+  });
+
+  it('preserves optional series grouping scope and granularity', () => {
+    const parsed = AdvancedMapAnalyticsUrlStateSchema.parse({
+      series: [
+        {
+          id: 'county-spending',
+          type: 'line-items-aggregated-yearly',
+          label: 'County spending',
+          groupWorkspaceId: 'county',
+          granularity: 'county',
+        },
+      ],
+      groupWorkspaces: [
+        {
+          id: 'county',
+          key: 'county',
+          label: 'County',
+          granularity: 'county',
+          groups: [],
+        },
+      ],
+      activeGroupWorkspaceId: 'county',
+    });
+
+    expect(parsed.series[0]).toMatchObject({
+      id: 'county-spending',
+      groupWorkspaceId: 'county',
+      granularity: 'county',
+    });
+    expect(parsed.groupWorkspaces[0]).toMatchObject({
+      id: 'county',
+      granularity: 'county',
     });
   });
 
   it('rejects duplicate or overlapping grouping members', () => {
     expect(() =>
-      MapGroupingSchema.parse({
+      MapGroupWorkspaceSchema.parse({
         id: 'county',
         key: 'county',
         groups: [
@@ -210,7 +297,7 @@ describe('AdvancedMapAnalyticsUrlStateSchema', () => {
     ).toThrow();
 
     expect(() =>
-      MapGroupingSchema.parse({
+      MapGroupWorkspaceSchema.parse({
         id: 'county',
         key: 'county',
         groups: [

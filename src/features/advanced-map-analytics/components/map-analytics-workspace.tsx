@@ -2,7 +2,23 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react
 import { useNavigate } from '@tanstack/react-router';
 import { produce } from 'immer';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, BarChart3, Check, Loader2, MapIcon, MousePointer2, Pencil, Plus, Save, Star, TableIcon, Trash2, X } from 'lucide-react';
+import {
+  DndContext,
+  PointerSensor,
+  KeyboardSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  sortableKeyboardCoordinates,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { ArrowDown, ArrowUp, BarChart3, Boxes, Check, ChevronDown, Copy, GripVertical, Loader2, MapIcon, MoreVertical, MousePointer2, Pencil, Plus, Save, Search, Star, TableIcon, Trash2, X } from 'lucide-react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
 import type { GeoJsonObject } from 'geojson';
@@ -10,6 +26,14 @@ import type { PathOptions } from 'leaflet';
 
 import { ClientOnly } from '@/components/ssr/ClientOnly';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useGeoJsonData, type MapViewType } from '@/hooks/useGeoJson';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAdvancedMapAnalyticsSeriesData } from '@/hooks/useAdvancedMapAnalyticsSeriesData';
@@ -36,7 +60,7 @@ import type {
   AdvancedMapAnalyticsValueFilterRule,
   GeoJsonFilterOption,
   GeoJsonDatasetSeriesConfiguration,
-  MapGrouping,
+  MapGroupWorkspace,
   MapSupportedSeries,
 } from '@/schemas/advanced-map-analytics';
 import {
@@ -56,6 +80,7 @@ import {
   buildGroupMetadataById,
   buildGroupingValuesBySiruta,
   getGroupMetadataKey,
+  resolveSeriesDisplayValueForSiruta,
 } from '@/lib/map-series/grouping';
 import { AdvancedMapAnalyticsConfigPanel } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel';
 import { ViewTypeRadioGroup } from '@/components/filters/ViewTypeRadioGroup';
@@ -76,13 +101,19 @@ import {
 } from './map-analytics-entity-details-panel';
 import { MapAnalyticsQuickActions } from './map-analytics-quick-actions';
 import { MapAnalyticsDescriptionInline } from './map-analytics-description-inline';
+import { buildGroupWorkspaceBoundaryGeoJsonData } from './map-analytics-group-boundaries';
+import {
+  buildActiveMapRenderUnitContext,
+  buildManualGroupDisplayValuesBySeriesId,
+} from './map-analytics-render-units';
 import {
   applySetActiveSeries,
   applyToggleSeriesEnabled,
   convertSeriesToType,
   createCopiedMapSeriesPayload,
   duplicateSeriesAfterSource,
-  ensureActiveSeriesSelection,
+  ensureActiveSeriesSelectionForGroupWorkspace,
+  filterSeriesByGroupWorkspace,
   normalizePastedMapSeries,
   reorderSeriesByIds,
   resolveSeriesDisplayLabel,
@@ -116,9 +147,8 @@ const InteractiveMap = lazy(() =>
   loadInteractiveMapModule().then((module) => ({ default: module.InteractiveMap }))
 );
 
-const MANUAL_GROUPING_ID = 'manual-map-groups';
-const MANUAL_GROUPING_KEY = 'manual';
-const MANUAL_GROUPING_LABEL = 'Manual groups';
+const MANUAL_GROUP_WORKSPACE_KEY = 'manual';
+const MANUAL_GROUP_WORKSPACE_LABEL = 'Manual groups';
 const MANUAL_GROUP_COLOR_PALETTE = [
   '#2563eb',
   '#059669',
@@ -136,6 +166,13 @@ const MANUAL_GROUP_UNASSIGNED_STYLE: PathOptions = {
   opacity: 0.45,
   fillColor: '#e5e7eb',
   fillOpacity: 0.14,
+};
+const GROUPED_RENDER_UNIT_MEMBER_STROKE: PathOptions = {
+  color: '#0f172a',
+  weight: 0.2,
+  opacity: 1,
+  lineJoin: 'round',
+  lineCap: 'round',
 };
 
 const GROUP_BOUNDARY_COORDINATE_PRECISION = 6;
@@ -192,18 +229,42 @@ interface MapAnalyticsWorkspaceProps {
   onMapFeatureSelect?: (properties: UatProperties) => void;
 }
 
-function ensureManualGrouping(state: AdvancedMapAnalyticsUrlState): MapGrouping {
-  let grouping = state.groupings.find((entry) => entry.id === MANUAL_GROUPING_ID);
-  if (!grouping) {
-    grouping = {
-      id: MANUAL_GROUPING_ID,
-      key: MANUAL_GROUPING_KEY,
-      label: MANUAL_GROUPING_LABEL,
-      groups: [],
-    };
-    state.groupings.push(grouping);
+function createManualGroupWorkspace(state: AdvancedMapAnalyticsUrlState): MapGroupWorkspace {
+  const existingIds = state.groupWorkspaces.map((workspace) => workspace.id);
+  const workspaceId = createUniqueAdvancedMapAnalyticsId(existingIds);
+  const workspace = {
+    id: workspaceId,
+    key: `${MANUAL_GROUP_WORKSPACE_KEY}-${workspaceId}`,
+    label: `${MANUAL_GROUP_WORKSPACE_LABEL} ${state.groupWorkspaces.length + 1}`,
+    granularity: 'uat' as const,
+    groups: [],
+  };
+  state.groupWorkspaces.push(workspace);
+  return workspace;
+}
+
+function getActiveManualGroupWorkspace(state: AdvancedMapAnalyticsUrlState): MapGroupWorkspace | undefined {
+  return state.activeGroupWorkspaceId
+    ? state.groupWorkspaces.find((workspace) => workspace.id === state.activeGroupWorkspaceId)
+    : undefined;
+}
+
+function ensureActiveManualGroupWorkspace(state: AdvancedMapAnalyticsUrlState): MapGroupWorkspace {
+  const activeWorkspace = getActiveManualGroupWorkspace(state);
+  if (activeWorkspace) {
+    return activeWorkspace;
   }
-  return grouping;
+
+  const workspace = createManualGroupWorkspace(state);
+  state.activeGroupWorkspaceId = workspace.id;
+  return workspace;
+}
+
+function findManualGroupWorkspace(
+  state: AdvancedMapAnalyticsUrlState,
+  workspaceId: string
+): MapGroupWorkspace | undefined {
+  return state.groupWorkspaces.find((workspace) => workspace.id === workspaceId);
 }
 
 function createManualGroupId(memberSirutaCodes: string[]): string {
@@ -223,7 +284,15 @@ function createManualGroupLabel(memberSirutaCodes: string[], fallbackUatName: st
   return `Group ${memberSirutaCodes.length}`;
 }
 
-function getOrderedManualGroupMemberCodes(group: MapGrouping['groups'][number]): string[] {
+function getManualGroupColor(groupIndex: number): string {
+  return MANUAL_GROUP_COLOR_PALETTE[groupIndex % MANUAL_GROUP_COLOR_PALETTE.length];
+}
+
+function getColorMix(color: string, percent: number): string {
+  return `color-mix(in srgb, ${color} ${percent}%, transparent)`;
+}
+
+function getOrderedManualGroupMemberCodes(group: MapGroupWorkspace['groups'][number]): string[] {
   if (!group.memberOrder?.length) {
     return group.memberSirutaCodes;
   }
@@ -239,19 +308,25 @@ function isGroupedValueSourceCandidate(series: MapSupportedSeries): boolean {
   return series.type !== 'map-grouped-value-series';
 }
 
-function getDefaultGroupedSeriesGroupingId(
-  groupings: MapGrouping[],
-  activeGroupingId?: string
+function getDefaultGroupedSeriesGroupWorkspaceId(
+  groupWorkspaces: MapGroupWorkspace[],
+  activeGroupWorkspaceId?: string
 ): string | undefined {
-  const activeGrouping = activeGroupingId
-    ? groupings.find((grouping) => grouping.id === activeGroupingId && grouping.groups.length > 0)
+  const activeGrouping = activeGroupWorkspaceId
+    ? groupWorkspaces.find((grouping) => grouping.id === activeGroupWorkspaceId && grouping.groups.length > 0)
     : undefined;
 
-  return activeGrouping?.id ?? groupings.find((grouping) => grouping.groups.length > 0)?.id;
+  return activeGrouping?.id ?? groupWorkspaces.find((grouping) => grouping.groups.length > 0)?.id;
 }
 
 type GeoJsonCoordinate = readonly [number, number];
 type BoundaryEdge = [GeoJsonCoordinate, GeoJsonCoordinate];
+interface GeoJsonCoordinateBounds {
+  minLongitude: number;
+  maxLongitude: number;
+  minLatitude: number;
+  maxLatitude: number;
+}
 
 function isGeoJsonCoordinate(coordinate: unknown): coordinate is GeoJsonCoordinate {
   return (
@@ -261,6 +336,67 @@ function isGeoJsonCoordinate(coordinate: unknown): coordinate is GeoJsonCoordina
     typeof coordinate[1] === 'number' &&
     Number.isFinite(coordinate[1])
   );
+}
+
+function extendGeoJsonCoordinateBounds(value: unknown, bounds: GeoJsonCoordinateBounds): void {
+  if (!Array.isArray(value)) {
+    return;
+  }
+
+  if (isGeoJsonCoordinate(value)) {
+    const [longitude, latitude] = value;
+    bounds.minLongitude = Math.min(bounds.minLongitude, longitude);
+    bounds.maxLongitude = Math.max(bounds.maxLongitude, longitude);
+    bounds.minLatitude = Math.min(bounds.minLatitude, latitude);
+    bounds.maxLatitude = Math.max(bounds.maxLatitude, latitude);
+    return;
+  }
+
+  for (const entry of value) {
+    extendGeoJsonCoordinateBounds(entry, bounds);
+  }
+}
+
+function getManualGroupMapCenter(
+  group: MapGroupWorkspace['groups'][number],
+  geoJsonFeatures: readonly UatFeature[]
+): [number, number] | undefined {
+  const memberSirutaCodes = new Set(group.memberSirutaCodes);
+  if (memberSirutaCodes.size === 0) {
+    return undefined;
+  }
+
+  const bounds: GeoJsonCoordinateBounds = {
+    minLongitude: Number.POSITIVE_INFINITY,
+    maxLongitude: Number.NEGATIVE_INFINITY,
+    minLatitude: Number.POSITIVE_INFINITY,
+    maxLatitude: Number.NEGATIVE_INFINITY,
+  };
+
+  for (const feature of geoJsonFeatures) {
+    const sirutaCode = String(feature.properties?.natcode ?? '').trim();
+    if (!memberSirutaCodes.has(sirutaCode)) {
+      continue;
+    }
+
+    if (feature.geometry && 'coordinates' in feature.geometry) {
+      extendGeoJsonCoordinateBounds(feature.geometry.coordinates, bounds);
+    }
+  }
+
+  if (
+    !Number.isFinite(bounds.minLongitude) ||
+    !Number.isFinite(bounds.maxLongitude) ||
+    !Number.isFinite(bounds.minLatitude) ||
+    !Number.isFinite(bounds.maxLatitude)
+  ) {
+    return undefined;
+  }
+
+  return [
+    (bounds.minLatitude + bounds.maxLatitude) / 2,
+    (bounds.minLongitude + bounds.maxLongitude) / 2,
+  ];
 }
 
 function getBoundaryCoordinateKey(coordinate: GeoJsonCoordinate): string {
@@ -486,6 +622,7 @@ export function MapAnalyticsWorkspace({
   const [selectedMapEntity, setSelectedMapEntity] = useState<SelectedMapEntityDetails | null>(null);
   const [isManualGroupCreateMode, setIsManualGroupCreateMode] = useState(false);
   const [activeManualGroupId, setActiveManualGroupId] = useState<string | undefined>(undefined);
+  const [groupConfigWorkspaceId, setGroupConfigWorkspaceId] = useState<string | undefined>(undefined);
   const [isMobileControlsCollapsed, setIsMobileControlsCollapsed] = useState(
     mobileControlsDefaultCollapsed
   );
@@ -503,6 +640,20 @@ export function MapAnalyticsWorkspace({
     mapState.activeView === 'map';
   const mobileControlsContentId = 'map-analytics-mobile-controls';
   const selectedEntityProfileQuery = useEntityProfile(selectedMapEntity?.entityCui);
+  const visibleSeries = useMemo(
+    () => filterSeriesByGroupWorkspace(mapState.series, mapState.activeGroupWorkspaceId),
+    [mapState.activeGroupWorkspaceId, mapState.series]
+  );
+  const visibleActiveSeriesId = useMemo(() => {
+    if (
+      mapState.activeSeriesId &&
+      visibleSeries.some((series) => series.id === mapState.activeSeriesId && series.enabled)
+    ) {
+      return mapState.activeSeriesId;
+    }
+
+    return visibleSeries.find((series) => series.enabled)?.id;
+  }, [mapState.activeSeriesId, visibleSeries]);
 
   const updateState = useCallback(
     (updater: (draft: AdvancedMapAnalyticsUrlState) => void) => {
@@ -561,36 +712,38 @@ export function MapAnalyticsWorkspace({
 
     const nextSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
     nextSeries.id = createUniqueAdvancedMapAnalyticsId(mapState.series.map((series) => series.id));
+    nextSeries.groupWorkspaceId = mapState.activeGroupWorkspaceId;
 
     setEditorState({ mode: 'add', seriesId: nextSeries.id });
     setSelectedSeriesId(nextSeries.id);
 
     updateState((draft) => {
-      const isFirstSeries = draft.series.length === 0;
+      const isFirstSeriesInActiveGrouping =
+        filterSeriesByGroupWorkspace(draft.series, draft.activeGroupWorkspaceId).length === 0;
       nextSeries.label = t`Data series ${draft.series.length + 1}`;
       draft.series.push(nextSeries);
 
-      if (isFirstSeries) {
+      if (isFirstSeriesInActiveGrouping) {
         draft.activeSeriesId = nextSeries.id;
       }
     });
-  }, [isReadOnly, mapState.series, updateState]);
+  }, [isReadOnly, mapState.activeGroupWorkspaceId, mapState.series, updateState]);
 
   const addGroupedValueSeries = useCallback(() => {
     if (isReadOnly) {
       return;
     }
 
-    const groupingId = getDefaultGroupedSeriesGroupingId(
-      mapState.groupings,
-      mapState.activeGroupingId
+    const groupWorkspaceId = getDefaultGroupedSeriesGroupWorkspaceId(
+      mapState.groupWorkspaces,
+      mapState.activeGroupWorkspaceId
     );
-    if (!groupingId) {
+    if (!groupWorkspaceId) {
       toast.warning(t`Create a group before adding a grouped series.`);
       return;
     }
 
-    const sourceSeriesOptions = mapState.series.filter(isGroupedValueSourceCandidate);
+    const sourceSeriesOptions = visibleSeries.filter(isGroupedValueSourceCandidate);
     const preferredSourceSeriesId = selectedSeriesId ?? mapState.activeSeriesId;
     const sourceSeries =
       sourceSeriesOptions.find((candidate) => candidate.id === preferredSourceSeriesId) ??
@@ -608,7 +761,7 @@ export function MapAnalyticsWorkspace({
     nextSeries.id = createUniqueAdvancedMapAnalyticsId(mapState.series.map((series) => series.id));
     nextSeries.label = t`Grouped ${resolveSeriesDisplayLabel(sourceSeries)}`;
     nextSeries.sourceSeriesId = sourceSeries.id;
-    nextSeries.groupingId = groupingId;
+    nextSeries.groupWorkspaceId = groupWorkspaceId;
     nextSeries.aggregation = 'sum';
 
     setEditorState({ mode: 'add', seriesId: nextSeries.id });
@@ -617,16 +770,17 @@ export function MapAnalyticsWorkspace({
     updateState((draft) => {
       draft.series.push(nextSeries);
       draft.activeSeriesId = nextSeries.id;
-      draft.activeGroupingId = groupingId;
+      draft.activeGroupWorkspaceId = groupWorkspaceId;
     });
   }, [
     isReadOnly,
-    mapState.activeGroupingId,
+    mapState.activeGroupWorkspaceId,
     mapState.activeSeriesId,
-    mapState.groupings,
+    mapState.groupWorkspaces,
     mapState.series,
     selectedSeriesId,
     updateState,
+    visibleSeries,
   ]);
 
   const editSeries = useCallback((seriesId: string) => {
@@ -646,7 +800,11 @@ export function MapAnalyticsWorkspace({
 
       updateState((draft) => {
         const nextSeries = draft.series.filter((series) => series.id !== seriesId);
-        const ensuredSelection = ensureActiveSeriesSelection(nextSeries, draft.activeSeriesId);
+        const ensuredSelection = ensureActiveSeriesSelectionForGroupWorkspace(
+          nextSeries,
+          draft.activeSeriesId,
+          draft.activeGroupWorkspaceId
+        );
         draft.series = ensuredSelection.series;
         draft.activeSeriesId = ensuredSelection.activeSeriesId;
       });
@@ -672,7 +830,7 @@ export function MapAnalyticsWorkspace({
         const nextState = applySetActiveSeries(draft, seriesId);
         draft.series = nextState.series;
         draft.activeSeriesId = nextState.activeSeriesId;
-        draft.activeGroupingId = nextState.activeGroupingId;
+        draft.activeGroupWorkspaceId = nextState.activeGroupWorkspaceId;
       });
     },
     [isReadOnly, updateState]
@@ -687,90 +845,92 @@ export function MapAnalyticsWorkspace({
       setSelectedSeriesId(seriesId);
       updateState((draft) => {
         const nextState = applyToggleSeriesEnabled(draft, seriesId, enabled);
-        draft.series = nextState.series;
-        draft.activeSeriesId = nextState.activeSeriesId;
+        const ensuredSelection = ensureActiveSeriesSelectionForGroupWorkspace(
+          nextState.series,
+          nextState.activeSeriesId,
+          draft.activeGroupWorkspaceId
+        );
+        draft.series = ensuredSelection.series;
+        draft.activeSeriesId = ensuredSelection.activeSeriesId;
       });
     },
     [isReadOnly, updateState]
   );
 
-  const startManualGroupCreateMode = useCallback(() => {
+  const addManualGroupWorkspace = useCallback(() => {
     if (isReadOnly || isPreviewLayout || mapViewType !== 'UAT') {
       return;
     }
 
     updateState((draft) => {
-      ensureManualGrouping(draft);
-      draft.activeGroupingId = MANUAL_GROUPING_ID;
+      const workspace = createManualGroupWorkspace(draft);
+      draft.activeGroupWorkspaceId = workspace.id;
     });
     setSelectedMapEntity(null);
     setActiveManualGroupId(undefined);
     setIsManualGroupCreateMode(true);
   }, [isPreviewLayout, isReadOnly, mapViewType, updateState]);
 
-  const startNextManualGroup = useCallback(() => {
-    if (isReadOnly || isPreviewLayout || mapViewType !== 'UAT') {
-      return;
-    }
+  const addManualGroupItem = useCallback(
+    (workspaceId: string) => {
+      if (isReadOnly || isPreviewLayout) {
+        return;
+      }
 
-    updateState((draft) => {
-      ensureManualGrouping(draft);
-      draft.activeGroupingId = MANUAL_GROUPING_ID;
-    });
-    setSelectedMapEntity(null);
-    setActiveManualGroupId(undefined);
-    setIsManualGroupCreateMode(true);
-  }, [isPreviewLayout, isReadOnly, mapViewType, updateState]);
+      updateState((draft) => {
+        const workspace = findManualGroupWorkspace(draft, workspaceId);
+        if (!workspace) {
+          return;
+        }
+
+        const groupId = createUniqueAdvancedMapAnalyticsId(workspace.groups.map((group) => group.id));
+        workspace.groups.push({
+          id: groupId,
+          label: t`Group ${workspace.groups.length + 1}`,
+          memberSirutaCodes: [],
+          memberOrder: [],
+        });
+      });
+    },
+    [isPreviewLayout, isReadOnly, updateState]
+  );
 
   const finishManualGroupCreateMode = useCallback(() => {
     setIsManualGroupCreateMode(false);
     setActiveManualGroupId(undefined);
   }, []);
 
-  const updateManualGroupingLabel = useCallback(
-    (nextLabel: string) => {
-      if (isReadOnly || isPreviewLayout) {
-        return;
-      }
-
-      updateState((draft) => {
-        const grouping = ensureManualGrouping(draft);
-        grouping.label = nextLabel.trim().length > 0
-          ? nextLabel
-          : MANUAL_GROUPING_LABEL;
-        draft.activeGroupingId = grouping.id;
-      });
-    },
-    [isPreviewLayout, isReadOnly, updateState]
-  );
-
-  const setActiveGrouping = useCallback(
-    (nextGroupingId: string | undefined) => {
-      if (isReadOnly || isPreviewLayout) {
-        return;
-      }
-
-      updateState((draft) => {
-        const normalizedGroupingId = nextGroupingId?.trim();
-        draft.activeGroupingId =
-          normalizedGroupingId &&
-          draft.groupings.some((grouping) => grouping.id === normalizedGroupingId)
-            ? normalizedGroupingId
-            : undefined;
-      });
-    },
-    [isPreviewLayout, isReadOnly, updateState]
-  );
-
-  const selectManualGroup = useCallback(
-    (groupId: string) => {
+  const startManualGroupCreateMode = useCallback(
+    (workspaceId: string) => {
       if (isReadOnly || isPreviewLayout || mapViewType !== 'UAT') {
         return;
       }
 
       updateState((draft) => {
-        ensureManualGrouping(draft);
-        draft.activeGroupingId = MANUAL_GROUPING_ID;
+        if (!findManualGroupWorkspace(draft, workspaceId)) {
+          return;
+        }
+        draft.activeGroupWorkspaceId = workspaceId;
+      });
+      setSelectedMapEntity(null);
+      setActiveManualGroupId(undefined);
+      setIsManualGroupCreateMode(true);
+    },
+    [isPreviewLayout, isReadOnly, mapViewType, updateState]
+  );
+
+  const selectManualGroup = useCallback(
+    (workspaceId: string, groupId: string) => {
+      if (isReadOnly || isPreviewLayout || mapViewType !== 'UAT') {
+        return;
+      }
+
+      updateState((draft) => {
+        const workspace = findManualGroupWorkspace(draft, workspaceId);
+        if (!workspace?.groups.some((group) => group.id === groupId)) {
+          return;
+        }
+        draft.activeGroupWorkspaceId = workspace.id;
       });
       setSelectedMapEntity(null);
       setActiveManualGroupId(groupId);
@@ -779,36 +939,255 @@ export function MapAnalyticsWorkspace({
     [isPreviewLayout, isReadOnly, mapViewType, updateState]
   );
 
-  const updateManualGroupLabel = useCallback(
-    (groupId: string, nextLabel: string) => {
+  const setActiveManualGroupWorkspace = useCallback(
+    (workspaceId: string) => {
       if (isReadOnly || isPreviewLayout) {
         return;
       }
 
       updateState((draft) => {
-        const grouping = ensureManualGrouping(draft);
-        const group = grouping.groups.find((entry) => entry.id === groupId);
+        if (!findManualGroupWorkspace(draft, workspaceId)) {
+          return;
+        }
+        draft.activeGroupWorkspaceId = workspaceId;
+        const ensuredSelection = ensureActiveSeriesSelectionForGroupWorkspace(
+          draft.series,
+          draft.activeSeriesId,
+          draft.activeGroupWorkspaceId
+        );
+        draft.series = ensuredSelection.series;
+        draft.activeSeriesId = ensuredSelection.activeSeriesId;
+      });
+      setActiveManualGroupId(undefined);
+      setIsManualGroupCreateMode(false);
+    },
+    [isPreviewLayout, isReadOnly, updateState]
+  );
+
+  const toggleActiveManualGroupWorkspace = useCallback(
+    (workspaceId: string) => {
+      if (isReadOnly || isPreviewLayout) {
+        return;
+      }
+
+      updateState((draft) => {
+        if (!findManualGroupWorkspace(draft, workspaceId)) {
+          return;
+        }
+        draft.activeGroupWorkspaceId =
+          draft.activeGroupWorkspaceId === workspaceId ? undefined : workspaceId;
+        const ensuredSelection = ensureActiveSeriesSelectionForGroupWorkspace(
+          draft.series,
+          draft.activeSeriesId,
+          draft.activeGroupWorkspaceId
+        );
+        draft.series = ensuredSelection.series;
+        draft.activeSeriesId = ensuredSelection.activeSeriesId;
+      });
+      setActiveManualGroupId(undefined);
+      setIsManualGroupCreateMode(false);
+    },
+    [isPreviewLayout, isReadOnly, updateState]
+  );
+
+  const openManualGroupWorkspaceConfig = useCallback((workspaceId: string) => {
+    setGroupConfigWorkspaceId(workspaceId);
+  }, []);
+
+  const updateManualGroupWorkspaceLabel = useCallback(
+    (workspaceId: string, nextLabel: string) => {
+      if (isReadOnly || isPreviewLayout) {
+        return;
+      }
+
+      updateState((draft) => {
+        const workspace = findManualGroupWorkspace(draft, workspaceId);
+        if (!workspace) {
+          return;
+        }
+
+        workspace.label = nextLabel.trim().length > 0 ? nextLabel : workspace.id;
+      });
+    },
+    [isPreviewLayout, isReadOnly, updateState]
+  );
+
+  const deleteManualGroupWorkspace = useCallback(
+    (workspaceId: string) => {
+      if (isReadOnly || isPreviewLayout) {
+        return;
+      }
+
+      const removedGroupedSeriesIds = new Set(
+        mapState.series
+          .filter(
+            (series) =>
+              series.groupWorkspaceId === workspaceId &&
+              series.type === 'map-grouped-value-series'
+          )
+          .map((series) => series.id)
+      );
+      updateState((draft) => {
+        draft.groupWorkspaces = draft.groupWorkspaces.filter((workspace) => workspace.id !== workspaceId);
+        if (draft.activeGroupWorkspaceId === workspaceId) {
+          draft.activeGroupWorkspaceId = undefined;
+        }
+
+        draft.series = draft.series.filter((series) => {
+          if (series.groupWorkspaceId !== workspaceId) {
+            return true;
+          }
+
+          if (series.type === 'map-grouped-value-series') {
+            return false;
+          }
+
+          series.groupWorkspaceId = undefined;
+          return true;
+        });
+
+        const ensuredSelection = ensureActiveSeriesSelectionForGroupWorkspace(
+          draft.series,
+          removedGroupedSeriesIds.has(draft.activeSeriesId ?? '') ? undefined : draft.activeSeriesId,
+          draft.activeGroupWorkspaceId
+        );
+        draft.series = ensuredSelection.series;
+        draft.activeSeriesId = ensuredSelection.activeSeriesId;
+      });
+      setActiveManualGroupId(undefined);
+      setGroupConfigWorkspaceId((currentWorkspaceId) =>
+        currentWorkspaceId === workspaceId ? undefined : currentWorkspaceId
+      );
+      setEditorState((currentState) =>
+        currentState && removedGroupedSeriesIds.has(currentState.seriesId) ? null : currentState
+      );
+      setSelectedSeriesId((currentSeriesId) =>
+        currentSeriesId && removedGroupedSeriesIds.has(currentSeriesId) ? undefined : currentSeriesId
+      );
+      setIsManualGroupCreateMode(false);
+    },
+    [isPreviewLayout, isReadOnly, mapState.series, updateState]
+  );
+
+  const moveManualGroupWorkspace = useCallback(
+    (workspaceId: string, direction: 'up' | 'down') => {
+      if (isReadOnly || isPreviewLayout) {
+        return;
+      }
+
+      updateState((draft) => {
+        const sourceIndex = draft.groupWorkspaces.findIndex((workspace) => workspace.id === workspaceId);
+        if (sourceIndex === -1) {
+          return;
+        }
+
+        const targetIndex = direction === 'up' ? sourceIndex - 1 : sourceIndex + 1;
+        if (targetIndex < 0 || targetIndex >= draft.groupWorkspaces.length) {
+          return;
+        }
+
+        const [movedWorkspace] = draft.groupWorkspaces.splice(sourceIndex, 1);
+        if (!movedWorkspace) {
+          return;
+        }
+        draft.groupWorkspaces.splice(targetIndex, 0, movedWorkspace);
+      });
+    },
+    [isPreviewLayout, isReadOnly, updateState]
+  );
+
+  const duplicateManualGroupWorkspace = useCallback(
+    (workspaceId: string) => {
+      if (isReadOnly || isPreviewLayout) {
+        return;
+      }
+
+      let duplicatedWorkspaceId: string | undefined;
+      updateState((draft) => {
+        const sourceIndex = draft.groupWorkspaces.findIndex((workspace) => workspace.id === workspaceId);
+        const sourceWorkspace = draft.groupWorkspaces[sourceIndex];
+        if (!sourceWorkspace) {
+          return;
+        }
+
+        duplicatedWorkspaceId = createUniqueAdvancedMapAnalyticsId(draft.groupWorkspaces.map((workspace) => workspace.id));
+        draft.groupWorkspaces.splice(sourceIndex + 1, 0, {
+          ...sourceWorkspace,
+          id: duplicatedWorkspaceId,
+          key: `${sourceWorkspace.key}-copy-${duplicatedWorkspaceId}`,
+          label: `${sourceWorkspace.label || sourceWorkspace.id} (copy)`,
+          groups: sourceWorkspace.groups.map((group) => ({
+            ...group,
+            memberSirutaCodes: [...group.memberSirutaCodes],
+            memberOrder: group.memberOrder ? [...group.memberOrder] : undefined,
+          })),
+        });
+        draft.activeGroupWorkspaceId = duplicatedWorkspaceId;
+      });
+
+      if (duplicatedWorkspaceId) {
+        setActiveManualGroupId(undefined);
+        setGroupConfigWorkspaceId(duplicatedWorkspaceId);
+      }
+    },
+    [isPreviewLayout, isReadOnly, updateState]
+  );
+
+  const reorderManualGroupWorkspaces = useCallback(
+    (activeWorkspaceId: string, overWorkspaceId: string) => {
+      if (isReadOnly || isPreviewLayout || activeWorkspaceId === overWorkspaceId) {
+        return;
+      }
+
+      updateState((draft) => {
+        const sourceIndex = draft.groupWorkspaces.findIndex((workspace) => workspace.id === activeWorkspaceId);
+        const targetIndex = draft.groupWorkspaces.findIndex((workspace) => workspace.id === overWorkspaceId);
+        if (sourceIndex === -1 || targetIndex === -1) {
+          return;
+        }
+
+        const [movedWorkspace] = draft.groupWorkspaces.splice(sourceIndex, 1);
+        if (!movedWorkspace) {
+          return;
+        }
+        draft.groupWorkspaces.splice(targetIndex, 0, movedWorkspace);
+      });
+    },
+    [isPreviewLayout, isReadOnly, updateState]
+  );
+
+  const updateManualGroupLabel = useCallback(
+    (workspaceId: string, groupId: string, nextLabel: string) => {
+      if (isReadOnly || isPreviewLayout) {
+        return;
+      }
+
+      updateState((draft) => {
+        const workspace = findManualGroupWorkspace(draft, workspaceId);
+        const group = workspace?.groups.find((entry) => entry.id === groupId);
         if (!group) {
           return;
         }
 
         group.label = nextLabel.trim().length > 0 ? nextLabel : group.id;
-        draft.activeGroupingId = grouping.id;
       });
     },
     [isPreviewLayout, isReadOnly, updateState]
   );
 
   const deleteManualGroup = useCallback(
-    (groupId: string) => {
+    (workspaceId: string, groupId: string) => {
       if (isReadOnly || isPreviewLayout) {
         return;
       }
 
       updateState((draft) => {
-        const grouping = ensureManualGrouping(draft);
-        grouping.groups = grouping.groups.filter((group) => group.id !== groupId);
-        draft.activeGroupingId = grouping.id;
+        const workspace = findManualGroupWorkspace(draft, workspaceId);
+        if (!workspace) {
+          return;
+        }
+
+        workspace.groups = workspace.groups.filter((group) => group.id !== groupId);
       });
       setActiveManualGroupId((currentGroupId) =>
         currentGroupId === groupId ? undefined : currentGroupId
@@ -818,16 +1197,16 @@ export function MapAnalyticsWorkspace({
   );
 
   const removeManualGroupMember = useCallback(
-    (groupId: string, sirutaCode: string) => {
+    (workspaceId: string, groupId: string, sirutaCode: string) => {
       if (isReadOnly || isPreviewLayout) {
         return;
       }
 
       let nextActiveGroupId: string | undefined;
       updateState((draft) => {
-        const grouping = ensureManualGrouping(draft);
-        const groupIndex = grouping.groups.findIndex((group) => group.id === groupId);
-        const group = grouping.groups[groupIndex];
+        const workspace = findManualGroupWorkspace(draft, workspaceId);
+        const groupIndex = workspace?.groups.findIndex((group) => group.id === groupId) ?? -1;
+        const group = workspace?.groups[groupIndex];
         if (!group) {
           return;
         }
@@ -839,9 +1218,8 @@ export function MapAnalyticsWorkspace({
         }
 
         if (group.memberSirutaCodes.length === 0) {
-          grouping.groups.splice(groupIndex, 1);
+          workspace.groups.splice(groupIndex, 1);
           nextActiveGroupId = undefined;
-          draft.activeGroupingId = grouping.id;
           return;
         }
 
@@ -850,7 +1228,6 @@ export function MapAnalyticsWorkspace({
         group.id = nextGroupId;
         group.label = previousLabel?.trim() || createManualGroupLabel(group.memberSirutaCodes, '');
         nextActiveGroupId = nextGroupId;
-        draft.activeGroupingId = grouping.id;
       });
 
       setActiveManualGroupId((currentGroupId) =>
@@ -861,14 +1238,14 @@ export function MapAnalyticsWorkspace({
   );
 
   const moveManualGroupMember = useCallback(
-    (groupId: string, sirutaCode: string, direction: 'previous' | 'next') => {
+    (workspaceId: string, groupId: string, sirutaCode: string, direction: 'previous' | 'next') => {
       if (isReadOnly || isPreviewLayout) {
         return;
       }
 
       updateState((draft) => {
-        const grouping = ensureManualGrouping(draft);
-        const group = grouping.groups.find((entry) => entry.id === groupId);
+        const workspace = findManualGroupWorkspace(draft, workspaceId);
+        const group = workspace?.groups.find((entry) => entry.id === groupId);
         if (!group) {
           return;
         }
@@ -889,27 +1266,25 @@ export function MapAnalyticsWorkspace({
           orderedMembers[memberIndex],
         ];
         group.memberOrder = orderedMembers;
-        draft.activeGroupingId = grouping.id;
       });
     },
     [isPreviewLayout, isReadOnly, updateState]
   );
 
   const setManualGroupPrimaryMember = useCallback(
-    (groupId: string, sirutaCode: string) => {
+    (workspaceId: string, groupId: string, sirutaCode: string) => {
       if (isReadOnly || isPreviewLayout) {
         return;
       }
 
       updateState((draft) => {
-        const grouping = ensureManualGrouping(draft);
-        const group = grouping.groups.find((entry) => entry.id === groupId);
+        const workspace = findManualGroupWorkspace(draft, workspaceId);
+        const group = workspace?.groups.find((entry) => entry.id === groupId);
         if (!group || !group.memberSirutaCodes.includes(sirutaCode)) {
           return;
         }
 
         group.primarySirutaCode = sirutaCode;
-        draft.activeGroupingId = grouping.id;
       });
     },
     [isPreviewLayout, isReadOnly, updateState]
@@ -944,8 +1319,8 @@ export function MapAnalyticsWorkspace({
       let didChangeGroup = false;
 
       updateState((draft) => {
-        const grouping = ensureManualGrouping(draft);
-        draft.activeGroupingId = grouping.id;
+        const grouping = ensureActiveManualGroupWorkspace(draft);
+        draft.activeGroupWorkspaceId = grouping.id;
 
         let isNewGroup = false;
         let targetGroup = activeManualGroupId
@@ -1078,12 +1453,12 @@ export function MapAnalyticsWorkspace({
       }
 
       updateState((draft) => {
-        const sourceIndex = draft.series.findIndex((series) => series.id === seriesId);
+        const sourceIndex = visibleSeries.findIndex((series) => series.id === seriesId);
         if (sourceIndex <= 0) {
           return;
         }
 
-        const previousSeriesId = draft.series[sourceIndex - 1]?.id;
+        const previousSeriesId = visibleSeries[sourceIndex - 1]?.id;
         if (!previousSeriesId) {
           return;
         }
@@ -1091,7 +1466,7 @@ export function MapAnalyticsWorkspace({
         draft.series = reorderSeriesByIds(draft.series, seriesId, previousSeriesId);
       });
     },
-    [isReadOnly, updateState]
+    [isReadOnly, updateState, visibleSeries]
   );
 
   const moveSeriesDown = useCallback(
@@ -1101,12 +1476,12 @@ export function MapAnalyticsWorkspace({
       }
 
       updateState((draft) => {
-        const sourceIndex = draft.series.findIndex((series) => series.id === seriesId);
-        if (sourceIndex === -1 || sourceIndex >= draft.series.length - 1) {
+        const sourceIndex = visibleSeries.findIndex((series) => series.id === seriesId);
+        if (sourceIndex === -1 || sourceIndex >= visibleSeries.length - 1) {
           return;
         }
 
-        const nextSeriesId = draft.series[sourceIndex + 1]?.id;
+        const nextSeriesId = visibleSeries[sourceIndex + 1]?.id;
         if (!nextSeriesId) {
           return;
         }
@@ -1114,7 +1489,7 @@ export function MapAnalyticsWorkspace({
         draft.series = reorderSeriesByIds(draft.series, seriesId, nextSeriesId);
       });
     },
-    [isReadOnly, updateState]
+    [isReadOnly, updateState, visibleSeries]
   );
 
   const duplicateSeries = useCallback(
@@ -1130,7 +1505,8 @@ export function MapAnalyticsWorkspace({
         const duplicateResult = duplicateSeriesAfterSource(
           draft.series,
           seriesId,
-          preferredDuplicatedSeriesId
+          preferredDuplicatedSeriesId,
+          draft.activeGroupWorkspaceId
         );
         draft.series = duplicateResult.series;
       });
@@ -1600,6 +1976,8 @@ export function MapAnalyticsWorkspace({
           enabled: currentSeries.enabled,
           label: nextLabel,
           unit: currentSeries.unit ?? '',
+          groupWorkspaceId: currentSeries.groupWorkspaceId,
+          granularity: currentSeries.granularity,
           createdAt: currentSeries.createdAt,
           updatedAt: new Date().toISOString(),
         });
@@ -1636,6 +2014,74 @@ export function MapAnalyticsWorkspace({
     }
     return geoJsonData.features as UatFeature[];
   }, [geoJsonData]);
+
+  const activateManualGroupForDisplay = useCallback(
+    (workspaceId: string, groupId: string) => {
+      if (isReadOnly || isPreviewLayout || mapViewType !== 'UAT') {
+        return;
+      }
+
+      let nextCenter: [number, number] | undefined;
+      let didActivateGroup = false;
+      let didClearActiveGroup = false;
+      const nextZoom = Math.max(mapZoom, 10);
+      const isCurrentlyActiveGroup =
+        activeManualGroupId === groupId && mapState.activeGroupWorkspaceId === workspaceId;
+
+      updateState((draft) => {
+        const workspace = findManualGroupWorkspace(draft, workspaceId);
+        const group = workspace?.groups.find((entry) => entry.id === groupId);
+        if (!workspace || !group) {
+          return;
+        }
+
+        didActivateGroup = true;
+        draft.activeGroupWorkspaceId = workspace.id;
+        if (isCurrentlyActiveGroup) {
+          didClearActiveGroup = true;
+          return;
+        }
+
+        nextCenter = getManualGroupMapCenter(group, geoJsonFeatures);
+        if (nextCenter) {
+          draft.mapCenter = [
+            Math.round(nextCenter[0] * 100000) / 100000,
+            Math.round(nextCenter[1] * 100000) / 100000,
+          ];
+          draft.mapZoom = Math.round(nextZoom * 10) / 10;
+        }
+      });
+
+      if (!didActivateGroup) {
+        return;
+      }
+
+      setSelectedMapEntity(null);
+      setActiveManualGroupId(didClearActiveGroup ? undefined : groupId);
+      setIsManualGroupCreateMode(false);
+
+      if (!didClearActiveGroup && nextCenter) {
+        onMapViewportChange?.({
+          mapCenter: [
+            Math.round(nextCenter[0] * 100000) / 100000,
+            Math.round(nextCenter[1] * 100000) / 100000,
+          ],
+          mapZoom: Math.round(nextZoom * 10) / 10,
+        });
+      }
+    },
+    [
+      geoJsonFeatures,
+      activeManualGroupId,
+      isPreviewLayout,
+      isReadOnly,
+      mapState.activeGroupWorkspaceId,
+      mapViewType,
+      mapZoom,
+      onMapViewportChange,
+      updateState,
+    ]
+  );
 
   const geoJsonCountyOptions = useMemo(
     () => buildGeoJsonIdNameOptions(geoJsonFeatures, 'countyId', 'county'),
@@ -1762,8 +2208,8 @@ export function MapAnalyticsWorkspace({
     error,
   } = useAdvancedMapAnalyticsSeriesData({
     series: mapState.series,
-    groupings: mapState.groupings,
-    activeSeriesId: mapState.activeSeriesId,
+    groupWorkspaces: mapState.groupWorkspaces,
+    activeSeriesId: visibleActiveSeriesId,
     valueFilterRules: mapState.valueFilters.rules,
     defaultCurrency: userCurrency,
     defaultInflationAdjusted: userInflationAdjusted,
@@ -1779,6 +2225,52 @@ export function MapAnalyticsWorkspace({
     () => mapState.series.find((series) => series.id === activeSeriesId && series.enabled),
     [activeSeriesId, mapState.series]
   );
+
+  const activeUnit = activeSeries
+    ? resolveSeriesDisplayUnit(activeSeries, unitsBySeriesId, displayUnitOverridesBySeriesId)
+    : undefined;
+
+  const activeMapRenderUnitContext = useMemo(
+    () =>
+      mapViewType === 'UAT'
+        ? buildActiveMapRenderUnitContext({
+            activeSeriesId,
+            activeSeries,
+            activeSeriesUnit: activeUnit,
+            activeGroupWorkspaceId: mapState.activeGroupWorkspaceId,
+            activeManualGroupId,
+            groupWorkspaces: mapState.groupWorkspaces,
+            valuesBySeriesId,
+            mapValuesBySeriesId,
+            domainsBySeriesId,
+          })
+        : undefined,
+    [
+      activeManualGroupId,
+      activeSeries,
+      activeSeriesId,
+      activeUnit,
+      domainsBySeriesId,
+      mapState.activeGroupWorkspaceId,
+      mapState.groupWorkspaces,
+      mapValuesBySeriesId,
+      mapViewType,
+      valuesBySeriesId,
+    ]
+  );
+
+  const activeBinsValues = useMemo(() => {
+    if (!activeMapRenderUnitContext) {
+      return activeValues;
+    }
+
+    return new Map(
+      [...activeMapRenderUnitContext.renderUnitsById.values()].map((renderUnit) => [
+        renderUnit.id,
+        renderUnit.value,
+      ])
+    );
+  }, [activeMapRenderUnitContext, activeValues]);
 
   const {
     binsEditorState,
@@ -1801,7 +2293,7 @@ export function MapAnalyticsWorkspace({
     updateState,
     activeSeries,
     activeSeriesId,
-    activeValues,
+    activeValues: activeBinsValues,
     seriesWarnings,
   });
 
@@ -1810,12 +2302,12 @@ export function MapAnalyticsWorkspace({
       return;
     }
 
-    if (mapState.series.some((series) => series.id === selectedSeriesId)) {
+    if (visibleSeries.some((series) => series.id === selectedSeriesId)) {
       return;
     }
 
     setSelectedSeriesId(undefined);
-  }, [mapState.series, selectedSeriesId]);
+  }, [selectedSeriesId, visibleSeries]);
 
   const areSeriesHotkeysDisabled =
     isReadOnly ||
@@ -1866,7 +2358,8 @@ export function MapAnalyticsWorkspace({
       return;
     }
 
-    const duplicateTargetSeriesId = selectedSeriesId ?? activeSeriesId ?? mapState.series[0]?.id;
+    const duplicateTargetSeriesId =
+      selectedSeriesId ?? activeSeriesId ?? visibleSeries.find((series) => series.enabled)?.id;
     if (!duplicateTargetSeriesId) {
       return;
     }
@@ -1885,21 +2378,37 @@ export function MapAnalyticsWorkspace({
   const isContinuousIntervalMode = activeBinsPreset?.config.intervalMode === 'continuous';
   const activeContinuousPercentiles = activeBinsPreset?.config.continuousPercentiles;
 
+  const activeRenderUnits = useMemo(
+    () => activeMapRenderUnitContext ? [...activeMapRenderUnitContext.renderUnitsById.values()] : undefined,
+    [activeMapRenderUnitContext]
+  );
+
   const activeHeatmapData = useMemo<HeatmapUATDataPoint[]>(() => {
-    if (!activeSeries || !activeValues) {
+    if (!activeSeries || (!activeValues && !activeMapRenderUnitContext)) {
       return [];
     }
 
     const rows: HeatmapUATDataPoint[] = [];
+    const entries = activeMapRenderUnitContext
+      ? [...activeMapRenderUnitContext.renderUnitsById.values()].map((renderUnit) => [
+          renderUnit.id,
+          renderUnit.value,
+          renderUnit.label,
+        ] as const)
+      : [...(activeValues?.entries() ?? [])].map(([sirutaCode, value]) => [
+          sirutaCode,
+          value,
+          '',
+        ] as const);
 
     if (binsCanApply) {
-      for (const [sirutaCode, value] of activeValues.entries()) {
+      for (const [renderKey, value, label] of entries) {
         const numericValue = Number.isFinite(value) ? (value as number) : 0;
         rows.push({
-          uat_id: sirutaCode,
-          uat_code: sirutaCode,
-          uat_name: '',
-          siruta_code: sirutaCode,
+          uat_id: renderKey,
+          uat_code: renderKey,
+          uat_name: label,
+          siruta_code: renderKey,
           county_code: '',
           county_name: '',
           population: 0,
@@ -1911,16 +2420,16 @@ export function MapAnalyticsWorkspace({
       return rows;
     }
 
-    for (const [sirutaCode, value] of activeValues.entries()) {
+    for (const [renderKey, value, label] of entries) {
       if (value === undefined || !Number.isFinite(value)) {
         continue;
       }
 
       rows.push({
-        uat_id: sirutaCode,
-        uat_code: sirutaCode,
-        uat_name: '',
-        siruta_code: sirutaCode,
+        uat_id: renderKey,
+        uat_code: renderKey,
+        uat_name: label,
+        siruta_code: renderKey,
         county_code: '',
         county_name: '',
         population: 0,
@@ -1931,7 +2440,7 @@ export function MapAnalyticsWorkspace({
     }
 
     return rows;
-  }, [activeSeries, activeValues, binsCanApply]);
+  }, [activeMapRenderUnitContext, activeSeries, activeValues, binsCanApply]);
 
   const { min: colorRangeMin, max: colorRangeMax } = useMemo(() => {
     if (activeHeatmapData.length === 0) {
@@ -1978,29 +2487,34 @@ export function MapAnalyticsWorkspace({
   }, [activeHeatmapData]);
 
   const manualGroupEditStylesBySirutaCode = useMemo<Map<string, PathOptions> | undefined>(() => {
-    if (!isManualGroupCreateMode || mapViewType !== 'UAT') {
+    if ((!isManualGroupCreateMode && !activeManualGroupId) || mapViewType !== 'UAT') {
       return undefined;
     }
 
-    const manualGrouping = mapState.groupings.find((grouping) => grouping.id === MANUAL_GROUPING_ID);
-    if (!manualGrouping || manualGrouping.groups.length === 0) {
+    const manualGroupWorkspace = mapState.activeGroupWorkspaceId
+      ? mapState.groupWorkspaces.find((workspace) => workspace.id === mapState.activeGroupWorkspaceId)
+      : undefined;
+    if (!manualGroupWorkspace || manualGroupWorkspace.groups.length === 0) {
       return new Map();
     }
 
     const hasActiveGroup = Boolean(activeManualGroupId);
     const stylesBySirutaCode = new Map<string, PathOptions>();
 
-    manualGrouping.groups.forEach((group, groupIndex) => {
-      const groupColor = MANUAL_GROUP_COLOR_PALETTE[groupIndex % MANUAL_GROUP_COLOR_PALETTE.length];
+    manualGroupWorkspace.groups.forEach((group, groupIndex) => {
+      const groupColor = getManualGroupColor(groupIndex);
       const isActiveGroup = group.id === activeManualGroupId;
-      const isWashedOutGroup = hasActiveGroup && !isActiveGroup;
+      if (hasActiveGroup && !isActiveGroup) {
+        return;
+      }
+
       const groupStyle: PathOptions = {
         ...DEFAULT_FEATURE_STYLE,
-        color: isActiveGroup ? '#f8fafc' : groupColor,
-        weight: isActiveGroup ? 0.45 : 0.35,
-        opacity: isWashedOutGroup ? 0.16 : 0.38,
+        color: groupColor,
+        weight: 0.25,
+        opacity: isActiveGroup ? 0.12 : 0.16,
         fillColor: groupColor,
-        fillOpacity: isWashedOutGroup ? 0.22 : 0.76,
+        fillOpacity: isActiveGroup ? 0.82 : 0.76,
       };
 
       for (const sirutaCode of group.memberSirutaCodes) {
@@ -2009,7 +2523,7 @@ export function MapAnalyticsWorkspace({
     });
 
     return stylesBySirutaCode;
-  }, [activeManualGroupId, isManualGroupCreateMode, mapState.groupings, mapViewType]);
+  }, [activeManualGroupId, isManualGroupCreateMode, mapState.activeGroupWorkspaceId, mapState.groupWorkspaces, mapViewType]);
 
   const getFeatureStyle = useCallback(
     (
@@ -2020,44 +2534,70 @@ export function MapAnalyticsWorkspace({
       if (!featureKey) {
         return DEFAULT_FEATURE_STYLE;
       }
+      const featureKeyString = String(featureKey);
+      const renderUnitId = activeMapRenderUnitContext?.renderUnitIdBySirutaCode.get(featureKeyString);
+      const renderKey = renderUnitId ?? featureKeyString;
+      const manualGroupStyle = manualGroupEditStylesBySirutaCode?.get(featureKeyString);
+      const applyRenderAffordances = (style: PathOptions): PathOptions => {
+        const groupedStyle =
+          activeMapRenderUnitContext && renderUnitId
+            ? {
+                ...style,
+                ...GROUPED_RENDER_UNIT_MEMBER_STROKE,
+              }
+            : style;
 
-      if (manualGroupEditStylesBySirutaCode) {
-        return manualGroupEditStylesBySirutaCode.get(String(featureKey)) ?? MANUAL_GROUP_UNASSIGNED_STYLE;
+        return manualGroupStyle
+          ? {
+              ...groupedStyle,
+              color: manualGroupStyle.color,
+              weight: manualGroupStyle.weight,
+              opacity: manualGroupStyle.opacity,
+            }
+          : groupedStyle;
+      };
+
+      if (activeMapRenderUnitContext && !renderUnitId) {
+        return MANUAL_GROUP_UNASSIGNED_STYLE;
+      }
+
+      if (manualGroupEditStylesBySirutaCode && !activeSeries) {
+        return manualGroupStyle ?? MANUAL_GROUP_UNASSIGNED_STYLE;
       }
 
       if (binsCanApply) {
-        const classification = binsClassification.groupsBySiruta.get(String(featureKey));
-        return {
+        const classification = binsClassification.groupsBySiruta.get(renderKey);
+        return applyRenderAffordances({
           ...DEFAULT_FEATURE_STYLE,
           fillColor: classification?.color ?? activeNoDataConfig?.color ?? '#cccccc',
           fillOpacity: 0.7,
-        };
+        });
       }
 
       const noDataColor = activeNoDataConfig?.color ?? '#cccccc';
-      const dataPoint = heatmapDataMap.get(featureKey);
+      const dataPoint = heatmapDataMap.get(renderKey);
       if (!dataPoint) {
-        return {
+        return applyRenderAffordances({
           ...DEFAULT_FEATURE_STYLE,
           fillOpacity: 0.1,
           fillColor: isContinuousIntervalMode ? noDataColor : '#cccccc',
-        };
+        });
       }
 
       const value = dataPoint.amount;
       if (!Number.isFinite(value)) {
         if (!isContinuousIntervalMode) {
-          return DEFAULT_FEATURE_STYLE;
+          return applyRenderAffordances(DEFAULT_FEATURE_STYLE);
         }
-        return {
+        return applyRenderAffordances({
           ...DEFAULT_FEATURE_STYLE,
           fillColor: noDataColor,
           fillOpacity: 0.7,
-        };
+        });
       }
 
       if (isContinuousIntervalMode) {
-        return {
+        return applyRenderAffordances({
           ...DEFAULT_FEATURE_STYLE,
           fillColor: getContinuousGradientColor(
             value,
@@ -2066,27 +2606,29 @@ export function MapAnalyticsWorkspace({
             noDataColor
           ),
           fillOpacity: 0.7,
-        };
+        });
       }
 
       if (colorRangeMin === colorRangeMax) {
-        return {
+        return applyRenderAffordances({
           ...DEFAULT_FEATURE_STYLE,
           fillColor: value !== 0 ? getHeatmapColor(0.5) : DEFAULT_FEATURE_STYLE.fillColor,
           fillOpacity: 0.7,
-        };
+        });
       }
 
       const normalized = normalizeValue(value, colorRangeMin, colorRangeMax);
-      return {
+      return applyRenderAffordances({
         ...DEFAULT_FEATURE_STYLE,
         fillColor: getHeatmapColor(normalized),
         fillOpacity: 0.7,
-      };
+      });
     },
     [
+      activeMapRenderUnitContext,
       activeBinsPreset?.config.gradient,
       activeNoDataConfig?.color,
+      activeSeries,
       binsCanApply,
       binsClassification.groupsBySiruta,
       isContinuousIntervalMode,
@@ -2097,8 +2639,8 @@ export function MapAnalyticsWorkspace({
   );
 
   const enabledSeries = useMemo(
-    () => mapState.series.filter((series) => series.enabled),
-    [mapState.series]
+    () => visibleSeries.filter((series) => series.enabled),
+    [visibleSeries]
   );
   const hasEnabledUploadedDatasetSeries = useMemo(
     () => enabledSeries.some((series) => series.type === 'uploaded-map-dataset'),
@@ -2125,22 +2667,48 @@ export function MapAnalyticsWorkspace({
 
   const groupingColumns = useMemo<AdvancedMapAnalyticsTableGroupingColumn[]>(
     () =>
-      mapState.groupings.map((grouping) => ({
+      mapState.groupWorkspaces.map((grouping) => ({
         id: grouping.id,
         label: grouping.label || grouping.key || grouping.id,
       })),
-    [mapState.groupings]
+    [mapState.groupWorkspaces]
   );
 
   const groupValuesBySirutaCode = useMemo(
-    () => buildGroupingValuesBySiruta({ groupings: mapState.groupings }),
-    [mapState.groupings]
+    () => buildGroupingValuesBySiruta({ groupWorkspaces: mapState.groupWorkspaces }),
+    [mapState.groupWorkspaces]
   );
 
   const groupMetadataById = useMemo(
-    () => buildGroupMetadataById({ groupings: mapState.groupings }),
-    [mapState.groupings]
+    () => buildGroupMetadataById({ groupWorkspaces: mapState.groupWorkspaces }),
+    [mapState.groupWorkspaces]
   );
+
+  const manualGroupDisplayValuesBySeriesId = useMemo(() => {
+    return buildManualGroupDisplayValuesBySeriesId({
+      activeGroupWorkspaceId: mapState.activeGroupWorkspaceId,
+      activeManualGroupId,
+      groupWorkspaces: mapState.groupWorkspaces,
+      enabledSeries,
+      valuesBySeriesId,
+      mapValuesBySeriesId,
+      domainsBySeriesId,
+    });
+  }, [
+    activeManualGroupId,
+    domainsBySeriesId,
+    enabledSeries,
+    mapState.activeGroupWorkspaceId,
+    mapState.groupWorkspaces,
+    mapValuesBySeriesId,
+    valuesBySeriesId,
+  ]);
+
+  const activeSeriesDisplayValues = activeSeriesId
+    ? activeMapRenderUnitContext?.valueBySirutaCode ??
+      manualGroupDisplayValuesBySeriesId?.get(activeSeriesId) ??
+      activeValues
+    : activeValues;
 
   const uatMetadataBySirutaCode = useMemo(() => {
     const metadataBySirutaCode = new Map<string, Omit<AdvancedMapAnalyticsTableRow, 'sirutaCode' | 'valuesBySeriesId' | 'groupValuesByGroupingId'>>();
@@ -2175,7 +2743,14 @@ export function MapAnalyticsWorkspace({
           .get(series.id)
           ?.get(selectedMapEntity.sirutaCode) ?? null,
       value: formatAdvancedMapAnalyticsSeriesValue(
-        mapValuesBySeriesId.get(series.id)?.get(selectedMapEntity.sirutaCode),
+        manualGroupDisplayValuesBySeriesId?.get(series.id)?.get(selectedMapEntity.sirutaCode) ??
+          resolveSeriesDisplayValueForSiruta({
+            seriesId: series.id,
+            sirutaCode: selectedMapEntity.sirutaCode,
+            valuesBySeriesId,
+            domainsBySeriesId,
+            groupValuesBySirutaCode,
+          }),
         resolveSeriesDisplayUnit(series, unitsBySeriesId, displayUnitOverridesBySeriesId)
       ),
       isActive: series.id === activeSeriesId,
@@ -2187,7 +2762,10 @@ export function MapAnalyticsWorkspace({
     selectedMapEntity,
     unitsBySeriesId,
     uploadedDatasetPayloadsBySeriesId,
-    mapValuesBySeriesId,
+    domainsBySeriesId,
+    groupValuesBySirutaCode,
+    manualGroupDisplayValuesBySeriesId,
+    valuesBySeriesId,
   ]);
 
   const tableRows = useMemo<AdvancedMapAnalyticsTableRow[]>(() => {
@@ -2207,7 +2785,7 @@ export function MapAnalyticsWorkspace({
         if (
           !seriesDomain ||
           seriesDomain.type !== 'group' ||
-          seriesDomain.groupingId !== activeDomain.groupingId
+          seriesDomain.groupWorkspaceId !== activeDomain.groupWorkspaceId
         ) {
           continue;
         }
@@ -2223,7 +2801,7 @@ export function MapAnalyticsWorkspace({
 
       return [...uniqueGroupIds]
         .map((groupId) => {
-          const metadata = groupMetadataById.get(getGroupMetadataKey(activeDomain.groupingId, groupId));
+          const metadata = groupMetadataById.get(getGroupMetadataKey(activeDomain.groupWorkspaceId, groupId));
           const rowValuesBySeriesId: Record<string, number | undefined> = {};
 
           for (const seriesColumn of seriesColumns) {
@@ -2239,7 +2817,7 @@ export function MapAnalyticsWorkspace({
             uatName: metadata?.groupLabel || groupId,
             countyName: metadata?.groupingLabel || t`Group`,
             groupValuesByGroupingId: {
-              [activeDomain.groupingId]: groupId,
+              [activeDomain.groupWorkspaceId]: groupId,
             },
             valuesBySeriesId: rowValuesBySeriesId,
           };
@@ -2282,9 +2860,15 @@ export function MapAnalyticsWorkspace({
         const rowValuesBySeriesId: Record<string, number | undefined> = {};
 
         for (const seriesColumn of seriesColumns) {
-          rowValuesBySeriesId[seriesColumn.id] = mapValuesBySeriesId
-            .get(seriesColumn.id)
-            ?.get(sirutaCode);
+          rowValuesBySeriesId[seriesColumn.id] =
+            manualGroupDisplayValuesBySeriesId?.get(seriesColumn.id)?.get(sirutaCode) ??
+            resolveSeriesDisplayValueForSiruta({
+              seriesId: seriesColumn.id,
+              sirutaCode,
+              valuesBySeriesId,
+              domainsBySeriesId,
+              groupValuesBySirutaCode,
+            });
         }
 
         return {
@@ -2311,6 +2895,7 @@ export function MapAnalyticsWorkspace({
     groupMetadataById,
     groupValuesBySirutaCode,
     mapValuesBySeriesId,
+    manualGroupDisplayValuesBySeriesId,
     seriesColumns,
     uatMetadataBySirutaCode,
     valuesBySeriesId,
@@ -2385,7 +2970,7 @@ export function MapAnalyticsWorkspace({
     useAdvancedMapAnalyticsTableBinsFilter({
       rows: tableRows,
       binsPresets: mapState.binsPresets,
-      activeValues,
+      activeValues: activeSeriesDisplayValues,
       tableBinFiltersByPresetId: mapState.tableBinFiltersByPresetId,
     });
 
@@ -2405,13 +2990,22 @@ export function MapAnalyticsWorkspace({
         : '';
       const entityCui = getEntityCuiFromUatProperties(properties);
       const sirutaCode = String(properties.natcode ?? '').trim();
+      const activeRenderUnitId = activeMapRenderUnitContext?.renderUnitIdBySirutaCode.get(sirutaCode);
+      const activeClassificationKey = activeRenderUnitId ?? sirutaCode;
       const activeSeriesDomain = activeSeriesId ? domainsBySeriesId.get(activeSeriesId) : undefined;
+      const activeGroupWorkspaceId = activeSeriesDomain?.type === 'group'
+        ? activeSeriesDomain.groupWorkspaceId
+        : mapState.activeGroupWorkspaceId;
       const activeGroupId = activeSeriesDomain?.type === 'group'
-        ? groupValuesBySirutaCode.get(sirutaCode)?.[activeSeriesDomain.groupingId]
-        : undefined;
+        ? groupValuesBySirutaCode.get(sirutaCode)?.[activeSeriesDomain.groupWorkspaceId]
+        : activeRenderUnitId ?? (
+            activeGroupWorkspaceId && (activeManualGroupId || isManualGroupCreateMode)
+              ? groupValuesBySirutaCode.get(sirutaCode)?.[activeGroupWorkspaceId]
+              : undefined
+          );
       const activeGroupMetadata =
-        activeSeriesDomain?.type === 'group' && activeGroupId
-          ? groupMetadataById.get(getGroupMetadataKey(activeSeriesDomain.groupingId, activeGroupId))
+        activeGroupWorkspaceId && activeGroupId
+          ? groupMetadataById.get(getGroupMetadataKey(activeGroupWorkspaceId, activeGroupId))
           : undefined;
       const tooltipTitle = activeGroupMetadata?.groupLabel ??
         (natLevelName.length > 0 ? `${natLevelName} ${uatName}` : uatName);
@@ -2446,7 +3040,14 @@ export function MapAnalyticsWorkspace({
       }
 
       const seriesRows = enabledSeries.map((series) => {
-        const seriesValue = mapValuesBySeriesId.get(series.id)?.get(sirutaCode);
+        const seriesValue = manualGroupDisplayValuesBySeriesId?.get(series.id)?.get(sirutaCode) ??
+          resolveSeriesDisplayValueForSiruta({
+            seriesId: series.id,
+            sirutaCode,
+            valuesBySeriesId,
+            domainsBySeriesId,
+            groupValuesBySirutaCode,
+          });
         const unit = resolveSeriesDisplayUnit(series, unitsBySeriesId, displayUnitOverridesBySeriesId);
         const formattedValue = formatAdvancedMapAnalyticsSeriesValue(seriesValue, unit);
         return {
@@ -2472,10 +3073,17 @@ export function MapAnalyticsWorkspace({
         .join('');
 
       const activeSeriesValue = activeSeriesId
-        ? mapValuesBySeriesId.get(activeSeriesId)?.get(sirutaCode)
+        ? manualGroupDisplayValuesBySeriesId?.get(activeSeriesId)?.get(sirutaCode) ??
+          resolveSeriesDisplayValueForSiruta({
+              seriesId: activeSeriesId,
+              sirutaCode,
+              valuesBySeriesId,
+              domainsBySeriesId,
+              groupValuesBySirutaCode,
+            })
         : undefined;
       const activeClassification = binsCanApply
-        ? binsClassification.groupsBySiruta.get(sirutaCode) ??
+        ? binsClassification.groupsBySiruta.get(activeClassificationKey) ??
           (activeNoDataConfig
             ? {
                 label: activeNoDataConfig.label,
@@ -2520,8 +3128,10 @@ export function MapAnalyticsWorkspace({
     },
     [
       activeNoDataConfig,
+      activeMapRenderUnitContext,
       activeSeries,
       activeSeriesId,
+      activeManualGroupId,
       binsCanApply,
       binsClassification.groupsBySiruta,
       domainsBySeriesId,
@@ -2529,8 +3139,11 @@ export function MapAnalyticsWorkspace({
       displayUnitOverridesBySeriesId,
       groupMetadataById,
       groupValuesBySirutaCode,
+      isManualGroupCreateMode,
+      manualGroupDisplayValuesBySeriesId,
+      mapState.activeGroupWorkspaceId,
       unitsBySeriesId,
-      mapValuesBySeriesId,
+      valuesBySeriesId,
     ]
   );
 
@@ -2572,9 +3185,6 @@ export function MapAnalyticsWorkspace({
   const tableError = error || (hasEnabledGeoJsonDatasetSeries ? geoJsonError : null);
   const isAnalyticsLoading = isLoading || (hasEnabledGeoJsonDatasetSeries && isGeoJsonLoading);
   const analyticsError = error || (hasEnabledGeoJsonDatasetSeries ? geoJsonError : null);
-  const activeUnit = activeSeries
-    ? resolveSeriesDisplayUnit(activeSeries, unitsBySeriesId, displayUnitOverridesBySeriesId)
-    : undefined;
   const modalSeries = editorState
     ? mapState.series.find((series) => series.id === editorState.seriesId)
     : undefined;
@@ -2624,39 +3234,25 @@ export function MapAnalyticsWorkspace({
     }
 
     const activeSeriesDomain = activeSeriesId ? domainsBySeriesId.get(activeSeriesId) : undefined;
-    const activeGroupingId =
+    const activeGroupWorkspaceId =
       activeSeriesDomain?.type === 'group'
-        ? activeSeriesDomain.groupingId
-        : mapState.activeGroupingId;
-    const activeGrouping = activeGroupingId
-      ? mapState.groupings.find((grouping) => grouping.id === activeGroupingId)
+        ? activeSeriesDomain.groupWorkspaceId
+        : mapState.activeGroupWorkspaceId;
+    const activeGrouping = activeGroupWorkspaceId
+      ? mapState.groupWorkspaces.find((grouping) => grouping.id === activeGroupWorkspaceId)
       : undefined;
 
     if (!activeGrouping) {
       return null;
     }
 
-    const memberSirutaCodes = new Set(
-      activeGrouping.groups.flatMap((group) => group.memberSirutaCodes)
-    );
-    const features = geoJsonFeatures.filter((feature) =>
-      memberSirutaCodes.has(String(feature.properties?.natcode ?? '').trim())
-    );
-
-    if (features.length === 0) {
-      return null;
-    }
-
-    return {
-      type: 'FeatureCollection',
-      features,
-    } as GeoJsonObject;
+    return buildGroupWorkspaceBoundaryGeoJsonData(activeGrouping.groups, geoJsonFeatures);
   }, [
     activeSeriesId,
     domainsBySeriesId,
     geoJsonFeatures,
-    mapState.activeGroupingId,
-    mapState.groupings,
+    mapState.activeGroupWorkspaceId,
+    mapState.groupWorkspaces,
     mapViewType,
   ]);
 
@@ -2769,6 +3365,14 @@ export function MapAnalyticsWorkspace({
   }, [editorState, modalSeries]);
 
   useEffect(() => {
+    if (!editorState || visibleSeries.some((series) => series.id === editorState.seriesId)) {
+      return;
+    }
+
+    setEditorState(null);
+  }, [editorState, visibleSeries]);
+
+  useEffect(() => {
     if (valueFilterEditorState?.mode === 'edit' && !modalValueFilterRule) {
       setValueFilterEditorState(null);
     }
@@ -2789,14 +3393,18 @@ export function MapAnalyticsWorkspace({
     setIsMobileControlsCollapsed(true);
   }, [isMobileControlsCollapseEnabled]);
 
-  const manualGrouping = mapState.groupings.find((grouping) => grouping.id === MANUAL_GROUPING_ID);
-  const activeManualGroup = activeManualGroupId
-    ? manualGrouping?.groups.find((group) => group.id === activeManualGroupId)
+  const activeGroupWorkspace = mapState.activeGroupWorkspaceId
+    ? mapState.groupWorkspaces.find((workspace) => workspace.id === mapState.activeGroupWorkspaceId)
     : undefined;
-  const activeManualGroupMemberCount = activeManualGroup?.memberSirutaCodes.length ?? 0;
-  const manualGroupCount = manualGrouping?.groups.length ?? 0;
+  const groupConfigWorkspace = groupConfigWorkspaceId
+    ? mapState.groupWorkspaces.find((workspace) => workspace.id === groupConfigWorkspaceId)
+    : undefined;
+  const activeManualGroup = activeManualGroupId
+    ? activeGroupWorkspace?.groups.find((group) => group.id === activeManualGroupId)
+    : undefined;
+  const manualGroupWorkspaceCount = mapState.groupWorkspaces.length;
   const selectedManualGroupBoundaryGeoJsonData = useMemo<GeoJsonObject | null>(() => {
-    if (!isManualGroupCreateMode || mapViewType !== 'UAT' || !activeManualGroup) {
+    if (mapViewType !== 'UAT' || !activeManualGroup) {
       return null;
     }
 
@@ -2810,13 +3418,13 @@ export function MapAnalyticsWorkspace({
     }
 
     return buildExteriorBoundaryGeoJsonData(features);
-  }, [activeManualGroup, geoJsonFeatures, isManualGroupCreateMode, mapViewType]);
+  }, [activeManualGroup, geoJsonFeatures, mapViewType]);
   const canCreateManualGroups = !isReadOnly && !isPreviewLayout && mapViewType === 'UAT';
-  const groupedSeriesDefaultGroupingId = getDefaultGroupedSeriesGroupingId(
-    mapState.groupings,
-    mapState.activeGroupingId
+  const groupedSeriesDefaultGroupingId = getDefaultGroupedSeriesGroupWorkspaceId(
+    mapState.groupWorkspaces,
+    mapState.activeGroupWorkspaceId
   );
-  const groupedSeriesSourceOptions = mapState.series.filter(isGroupedValueSourceCandidate);
+  const groupedSeriesSourceOptions = visibleSeries.filter(isGroupedValueSourceCandidate);
   const groupedSeriesDisabledReason =
     groupedSeriesDefaultGroupingId
       ? groupedSeriesSourceOptions.length > 0
@@ -2844,30 +3452,25 @@ export function MapAnalyticsWorkspace({
         }}
         onOpenWarnings={() => setIsWarningsModalOpen(true)}
       />
-      <ManualGroupingPanel
+      <ManualGroupWorkspacePanel
         enabled={isManualGroupCreateMode}
         canEdit={canCreateManualGroups}
-        grouping={manualGrouping}
-        groupings={mapState.groupings}
-        activeGroupingId={mapState.activeGroupingId}
-        activeGroupId={activeManualGroupId}
-        uatMetadataBySirutaCode={uatMetadataBySirutaCode}
-        activeGroupMemberCount={activeManualGroupMemberCount}
-        groupCount={manualGroupCount}
-        onStart={startManualGroupCreateMode}
-        onStartNext={startNextManualGroup}
+        groupWorkspaces={mapState.groupWorkspaces}
+        activeGroupWorkspaceId={mapState.activeGroupWorkspaceId}
+        groupWorkspaceCount={manualGroupWorkspaceCount}
+        onAddGroupWorkspace={addManualGroupWorkspace}
+        onStartGroupCreateMode={startManualGroupCreateMode}
         onFinish={finishManualGroupCreateMode}
-        onActiveGroupingChange={setActiveGrouping}
-        onGroupingLabelChange={updateManualGroupingLabel}
-        onSelectGroup={selectManualGroup}
-        onGroupLabelChange={updateManualGroupLabel}
-        onDeleteGroup={deleteManualGroup}
-        onRemoveMember={removeManualGroupMember}
-        onMoveMember={moveManualGroupMember}
-        onSetPrimaryMember={setManualGroupPrimaryMember}
+        onSetActiveGroupWorkspace={setActiveManualGroupWorkspace}
+        onToggleActiveGroupWorkspace={toggleActiveManualGroupWorkspace}
+        onOpenGroupWorkspaceConfig={openManualGroupWorkspaceConfig}
+        onDeleteGroupWorkspace={deleteManualGroupWorkspace}
+        onMoveGroupWorkspace={moveManualGroupWorkspace}
+        onDuplicateGroupWorkspace={duplicateManualGroupWorkspace}
+        onReorderGroupWorkspaces={reorderManualGroupWorkspaces}
       />
       <AdvancedMapAnalyticsSeriesPanel
-        series={mapState.series}
+        series={visibleSeries}
         activeSeriesId={activeSeriesId}
         selectedSeriesId={selectedSeriesId}
         collapsed={Boolean(mapState.seriesPanelCollapsed)}
@@ -2891,7 +3494,7 @@ export function MapAnalyticsWorkspace({
       <AdvancedMapAnalyticsValueFiltersPanel
         collapsed={Boolean(mapState.valueFiltersPanelCollapsed)}
         rules={mapState.valueFilters.rules}
-        series={mapState.series}
+        series={visibleSeries}
         readOnly={isReadOnly}
         onToggleCollapsed={toggleValueFiltersPanelCollapsed}
         onAddRule={addValueFilterRule}
@@ -2996,7 +3599,7 @@ export function MapAnalyticsWorkspace({
                   countyBoundaryGeoJsonData={countyBoundaryGeoJsonData}
                   groupingBoundaryGeoJsonData={isManualGroupCreateMode ? null : groupingBoundaryGeoJsonData}
                   selectedGroupingBoundaryGeoJsonData={selectedManualGroupBoundaryGeoJsonData}
-                  alwaysResolveFeatureStyle={isManualGroupCreateMode && mapViewType === 'UAT'}
+                  alwaysResolveFeatureStyle={Boolean(manualGroupEditStylesBySirutaCode)}
                   zoom={mapZoom}
                   center={mapCenter}
                   mapViewType={mapViewType}
@@ -3004,7 +3607,8 @@ export function MapAnalyticsWorkspace({
                   mapHeight="100%"
                   showLabels={Boolean(activeSeries)}
                   labelMode="active-series"
-                  activeSeriesValuesBySirutaCode={activeValues}
+                  activeSeriesValuesBySirutaCode={activeSeriesDisplayValues}
+                  activeRenderUnits={activeRenderUnits}
                   activeSeriesUnit={activeUnit}
                   onViewChange={handleMapViewChange}
                   getTooltipContent={getTooltipContent}
@@ -3079,9 +3683,10 @@ export function MapAnalyticsWorkspace({
       <aside
         className={cn(
           shouldOverlayMobileControls
-            ? 'absolute inset-x-0 top-0 z-[650] max-h-[80vh] overflow-y-auto bg-card rounded-b-2xl shadow-lg'
-            : 'border-r border-border bg-background text-foreground overflow-y-auto md:w-[430px] md:min-w-[430px]',
-          'flex flex-col'
+            ? 'absolute inset-x-0 top-0 z-[650] max-h-[80vh] bg-card rounded-b-2xl shadow-lg'
+            : 'border-r border-border bg-background text-foreground md:w-[430px] md:min-w-[430px]',
+          groupConfigWorkspace ? 'overflow-hidden' : 'overflow-y-auto',
+          'relative isolate flex flex-col'
         )}
       >
         <div className="flex-1 space-y-0 px-5 py-2">
@@ -3158,6 +3763,35 @@ export function MapAnalyticsWorkspace({
         <div className="px-5 py-3 border-t border-border/40">
           {geoJsonSourceFooter}
         </div>
+
+        {!isReadOnly && groupConfigWorkspace ? (
+          <ManualGroupWorkspaceConfigPanel
+            workspace={groupConfigWorkspace}
+            canEdit={canCreateManualGroups}
+            activeGroupId={
+              groupConfigWorkspace.id === mapState.activeGroupWorkspaceId ? activeManualGroupId : undefined
+            }
+            uatMetadataBySirutaCode={uatMetadataBySirutaCode}
+            onClose={() => setGroupConfigWorkspaceId(undefined)}
+            onWorkspaceLabelChange={updateManualGroupWorkspaceLabel}
+            onAddGroupItem={addManualGroupItem}
+            onGroupLabelChange={updateManualGroupLabel}
+            onActivateGroup={activateManualGroupForDisplay}
+            onAddToWorkspace={(workspaceId) => {
+              startManualGroupCreateMode(workspaceId);
+              setGroupConfigWorkspaceId(undefined);
+            }}
+            onAddToGroup={(workspaceId, groupId) => {
+              selectManualGroup(workspaceId, groupId);
+              setGroupConfigWorkspaceId(undefined);
+            }}
+            onDeleteWorkspace={deleteManualGroupWorkspace}
+            onDeleteGroup={deleteManualGroup}
+            onRemoveMember={removeManualGroupMember}
+            onMoveMember={moveManualGroupMember}
+            onSetPrimaryMember={setManualGroupPrimaryMember}
+          />
+        ) : null}
       </aside>
 
       <main
@@ -3205,14 +3839,15 @@ export function MapAnalyticsWorkspace({
                       countyBoundaryGeoJsonData={countyBoundaryGeoJsonData}
                       groupingBoundaryGeoJsonData={isManualGroupCreateMode ? null : groupingBoundaryGeoJsonData}
                       selectedGroupingBoundaryGeoJsonData={selectedManualGroupBoundaryGeoJsonData}
-                      alwaysResolveFeatureStyle={isManualGroupCreateMode && mapViewType === 'UAT'}
+                      alwaysResolveFeatureStyle={Boolean(manualGroupEditStylesBySirutaCode)}
                       zoom={mapZoom}
                       center={mapCenter}
                       mapViewType={mapViewType}
                       filters={defaultMapFilters}
                       showLabels={Boolean(activeSeries)}
                       labelMode="active-series"
-                      activeSeriesValuesBySirutaCode={activeValues}
+                      activeSeriesValuesBySirutaCode={activeSeriesDisplayValues}
+                      activeRenderUnits={activeRenderUnits}
                       activeSeriesUnit={activeUnit}
                       onViewChange={handleMapViewChange}
                       getTooltipContent={getTooltipContent}
@@ -3376,8 +4011,8 @@ export function MapAnalyticsWorkspace({
         open={!isReadOnly && editorState != null && modalSeries != null}
         mode={editorState?.mode ?? 'edit'}
         series={modalSeries}
-        allSeries={mapState.series}
-        groupings={mapState.groupings}
+        allSeries={visibleSeries}
+        groupWorkspaces={mapState.groupWorkspaces}
         geoJsonCountyOptions={geoJsonCountyOptions}
         geoJsonRegionOptions={geoJsonRegionOptions}
         onOpenChange={(open) => {
@@ -3395,7 +4030,7 @@ export function MapAnalyticsWorkspace({
         mode={valueFilterEditorState?.mode ?? 'edit'}
         rule={modalValueFilterRule}
         ruleIndex={modalValueFilterRuleIndex}
-        series={mapState.series}
+        series={visibleSeries}
         onOpenChange={(open) => {
           if (!open) {
             setValueFilterEditorState(null);
@@ -3428,56 +4063,70 @@ export function MapAnalyticsWorkspace({
         warnings={combinedWarnings}
         onOpenChange={setIsWarningsModalOpen}
       />
+
     </div>
   );
 }
 
-interface ManualGroupingPanelProps {
+interface ManualGroupWorkspacePanelProps {
   enabled: boolean;
   canEdit: boolean;
-  grouping?: MapGrouping;
-  groupings: MapGrouping[];
-  activeGroupingId?: string;
-  activeGroupId?: string;
-  uatMetadataBySirutaCode: Map<string, Omit<AdvancedMapAnalyticsTableRow, 'sirutaCode' | 'valuesBySeriesId' | 'groupValuesByGroupingId'>>;
-  groupCount: number;
-  activeGroupMemberCount: number;
-  onStart: () => void;
-  onStartNext: () => void;
+  groupWorkspaces: MapGroupWorkspace[];
+  activeGroupWorkspaceId?: string;
+  groupWorkspaceCount: number;
+  onAddGroupWorkspace: () => void;
+  onStartGroupCreateMode: (workspaceId: string) => void;
   onFinish: () => void;
-  onActiveGroupingChange: (groupingId: string | undefined) => void;
-  onGroupingLabelChange: (nextLabel: string) => void;
-  onSelectGroup: (groupId: string) => void;
-  onGroupLabelChange: (groupId: string, nextLabel: string) => void;
-  onDeleteGroup: (groupId: string) => void;
-  onRemoveMember: (groupId: string, sirutaCode: string) => void;
-  onMoveMember: (groupId: string, sirutaCode: string, direction: 'previous' | 'next') => void;
-  onSetPrimaryMember: (groupId: string, sirutaCode: string) => void;
+  onSetActiveGroupWorkspace: (workspaceId: string) => void;
+  onToggleActiveGroupWorkspace: (workspaceId: string) => void;
+  onOpenGroupWorkspaceConfig: (workspaceId: string) => void;
+  onDeleteGroupWorkspace: (workspaceId: string) => void;
+  onMoveGroupWorkspace: (workspaceId: string, direction: 'up' | 'down') => void;
+  onDuplicateGroupWorkspace: (workspaceId: string) => void;
+  onReorderGroupWorkspaces: (activeWorkspaceId: string, overWorkspaceId: string) => void;
 }
 
-function ManualGroupingPanel({
+function ManualGroupWorkspacePanel({
   enabled,
   canEdit,
-  grouping,
-  groupings,
-  activeGroupingId,
-  activeGroupId,
-  uatMetadataBySirutaCode,
-  groupCount,
-  activeGroupMemberCount,
-  onStart,
-  onStartNext,
+  groupWorkspaces,
+  activeGroupWorkspaceId,
+  groupWorkspaceCount,
+  onAddGroupWorkspace,
+  onStartGroupCreateMode,
   onFinish,
-  onActiveGroupingChange,
-  onGroupingLabelChange,
-  onSelectGroup,
-  onGroupLabelChange,
-  onDeleteGroup,
-  onRemoveMember,
-  onMoveMember,
-  onSetPrimaryMember,
-}: Readonly<ManualGroupingPanelProps>) {
-  const groupingLabel = grouping?.label ?? MANUAL_GROUPING_LABEL;
+  onSetActiveGroupWorkspace,
+  onToggleActiveGroupWorkspace,
+  onOpenGroupWorkspaceConfig,
+  onDeleteGroupWorkspace,
+  onMoveGroupWorkspace,
+  onDuplicateGroupWorkspace,
+  onReorderGroupWorkspaces,
+}: Readonly<ManualGroupWorkspacePanelProps>) {
+  const [collapsed, setCollapsed] = useState(false);
+  const groupsConfiguredLabel =
+    groupWorkspaceCount === 1
+      ? t`${groupWorkspaceCount} group workspace configured`
+      : t`${groupWorkspaceCount} group workspaces configured`;
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const overId = event.over?.id;
+    if (!overId) {
+      return;
+    }
+
+    const activeId = String(event.active.id);
+    const targetId = String(overId);
+    if (activeId === targetId) {
+      return;
+    }
+
+    onReorderGroupWorkspaces(activeId, targetId);
+  };
 
   return (
     <section className="border-b border-border/40 py-5" data-testid="manual-grouping-panel">
@@ -3485,217 +4134,704 @@ function ManualGroupingPanel({
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
             <h2 className="text-lg font-bold tracking-tight">{t`Groups`}</h2>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setCollapsed((previousCollapsed) => !previousCollapsed)}
+              aria-label={collapsed ? t`Expand groups panel` : t`Collapse groups panel`}
+            >
+              <ChevronDown className={cn('h-4 w-4 transition-transform', !collapsed && 'rotate-180')} />
+            </Button>
           </div>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {enabled
-              ? t`Click UATs on the map, or Command-drag to add many.`
-              : t`${groupCount} manual groups configured`}
-          </p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{groupsConfiguredLabel}</p>
         </div>
-        <div
-          className={cn(
-            'rounded-full px-2 py-1 text-[11px] font-medium',
-            enabled
-              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300'
-              : 'bg-muted text-muted-foreground'
-          )}
+
+        <Button
+          size="icon"
+          variant="ghost"
+          className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+          onClick={onAddGroupWorkspace}
+          aria-label={t`Add group`}
+          disabled={!canEdit}
         >
-          {enabled ? t`Active` : t`Idle`}
-        </div>
+          <Plus className="h-4 w-4" />
+        </Button>
       </div>
 
-      <div className="space-y-3">
-        {groupings.length > 0 ? (
-          <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-muted-foreground">{t`Rendered grouping`}</span>
-            <select
-              value={activeGroupingId ?? ''}
-              onChange={(event) => {
-                onActiveGroupingChange(event.target.value || undefined);
-              }}
+      <Collapsible open={!collapsed} onOpenChange={(open) => setCollapsed(!open)}>
+        <CollapsibleContent className="space-y-2 data-[state=open]:animate-in data-[state=closed]:animate-out">
+          {groupWorkspaces.length === 0 ? (
+            <button
+              type="button"
+              onClick={onAddGroupWorkspace}
               disabled={!canEdit}
-              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-              aria-label={t`Rendered grouping`}
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border p-3 text-sm text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
             >
-              <option value="">{t`No grouping`}</option>
-              {groupings.map((entry) => (
-                <option key={entry.id} value={entry.id}>
-                  {entry.label || entry.key || entry.id}
-                </option>
-              ))}
-            </select>
-            <span className="block text-[11px] text-muted-foreground">
-              {t`Grouped active series render their own grouping.`}
-            </span>
-          </label>
-        ) : null}
+              <Plus className="h-4 w-4" />
+              {t`Add group`}
+            </button>
+          ) : (
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={groupWorkspaces.map((workspace) => workspace.id)} strategy={verticalListSortingStrategy}>
+                <div className="space-y-2.5" data-testid="manual-group-list">
+                  {groupWorkspaces.map((workspace, index) => (
+                    <ManualGroupWorkspaceListItem
+                      key={workspace.id}
+                      workspace={workspace}
+                      isActive={workspace.id === activeGroupWorkspaceId}
+                      isSelected={workspace.id === activeGroupWorkspaceId}
+                      isAdding={enabled && workspace.id === activeGroupWorkspaceId}
+                      isMoveUpDisabled={index === 0}
+                      isMoveDownDisabled={index === groupWorkspaces.length - 1}
+                      readOnly={!canEdit}
+                      onSetActiveGroupWorkspace={onSetActiveGroupWorkspace}
+                      onToggleActiveGroupWorkspace={onToggleActiveGroupWorkspace}
+                      onAddToWorkspace={onStartGroupCreateMode}
+                      onOpenGroupWorkspaceConfig={onOpenGroupWorkspaceConfig}
+                      onDeleteGroupWorkspace={onDeleteGroupWorkspace}
+                      onMoveGroupWorkspace={onMoveGroupWorkspace}
+                      onDuplicateGroupWorkspace={onDuplicateGroupWorkspace}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          )}
 
-        {grouping ? (
-          <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-muted-foreground">{t`Grouping name`}</span>
-            <input
-              type="text"
-              value={groupingLabel}
-              onChange={(event) => onGroupingLabelChange(event.target.value)}
-              disabled={!canEdit}
-              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-              aria-label={t`Grouping name`}
-            />
-          </label>
-        ) : null}
-
-        <div className="rounded-md border border-dashed border-border bg-muted/30 p-3 text-xs text-muted-foreground">
-          {enabled
-            ? activeGroupMemberCount > 0
-              ? t`${activeGroupMemberCount} UATs in current group`
-              : t`Current group is empty. Click a UAT to start it.`
-            : t`Create mode stores clicked UATs in the active manual grouping.`}
-        </div>
-
-        <div className="flex flex-wrap gap-2">
           {enabled ? (
-            <>
-              <button
+            <div className="flex items-center justify-between gap-2 rounded-md border border-dashed border-border bg-muted/30 p-3 text-xs text-muted-foreground">
+              <span>{t`Click UATs on the map, or Command-drag to add many.`}</span>
+              <Button
                 type="button"
-                onClick={onStartNext}
-                disabled={!canEdit}
-                className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-xs font-medium transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                {t`New group`}
-              </button>
-              <button
-                type="button"
+                size="sm"
                 onClick={onFinish}
                 disabled={!canEdit}
-                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+                className="h-8 shrink-0 gap-1.5 text-xs"
               >
                 <Check className="h-3.5 w-3.5" />
                 {t`Finish`}
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              onClick={onStart}
-              disabled={!canEdit}
-              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
-              data-testid="create-group-mode-button"
-            >
-              <MousePointer2 className="h-3.5 w-3.5" />
-              {t`Create group`}
-            </button>
-          )}
-        </div>
-
-        {grouping?.groups.length ? (
-          <div className="space-y-2" data-testid="manual-group-list">
-            {grouping.groups.map((group) => {
-              const isActiveGroup = group.id === activeGroupId;
-              return (
-                <div
-                  key={group.id}
-                  className={cn(
-                    'rounded-md border p-3',
-                    isActiveGroup ? 'border-primary/60 bg-primary/5' : 'border-border bg-background'
-                  )}
-                >
-                  <div className="flex items-start gap-2">
-                    <label className="min-w-0 flex-1 space-y-1">
-                      <span className="sr-only">{t`Group name`}</span>
-                      <input
-                        type="text"
-                        value={group.label ?? group.id}
-                        onChange={(event) => onGroupLabelChange(group.id, event.target.value)}
-                        disabled={!canEdit}
-                        className="h-8 w-full rounded-md border border-input bg-background px-2 text-sm font-medium shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                        aria-label={t`Group name`}
-                      />
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => onSelectGroup(group.id)}
-                      disabled={!canEdit}
-                      className="inline-flex h-8 shrink-0 items-center gap-1 rounded-md border border-border px-2 text-xs font-medium transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
-                    >
-                      <MousePointer2 className="h-3.5 w-3.5" />
-                      {isActiveGroup && enabled ? t`Adding` : t`Add here`}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onDeleteGroup(group.id)}
-                      disabled={!canEdit}
-                      aria-label={t`Delete group`}
-                      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:pointer-events-none disabled:opacity-50"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {getOrderedManualGroupMemberCodes(group).map((sirutaCode, memberIndex, orderedMembers) => {
-                      const metadata = uatMetadataBySirutaCode.get(sirutaCode);
-                      const memberLabel = metadata?.uatName || `UAT ${sirutaCode}`;
-                      const isPrimaryMember = group.primarySirutaCode === sirutaCode;
-                      return (
-                        <span
-                          key={sirutaCode}
-                          className="inline-flex max-w-full items-center gap-1 rounded-full bg-muted px-2 py-1 text-[11px] text-muted-foreground"
-                        >
-                          <span className="truncate">{memberLabel}</span>
-                          {isPrimaryMember ? (
-                            <span className="rounded-full bg-background px-1 text-[10px] font-medium text-foreground">
-                              {t`Primary`}
-                            </span>
-                          ) : null}
-                          <button
-                            type="button"
-                            onClick={() => onMoveMember(group.id, sirutaCode, 'previous')}
-                            disabled={!canEdit || memberIndex === 0}
-                            aria-label={t`Move UAT earlier in group`}
-                            className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full hover:bg-background hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
-                          >
-                            <ArrowLeft className="h-3 w-3" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => onMoveMember(group.id, sirutaCode, 'next')}
-                            disabled={!canEdit || memberIndex === orderedMembers.length - 1}
-                            aria-label={t`Move UAT later in group`}
-                            className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full hover:bg-background hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
-                          >
-                            <ArrowRight className="h-3 w-3" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => onSetPrimaryMember(group.id, sirutaCode)}
-                            disabled={!canEdit || isPrimaryMember}
-                            aria-label={t`Set primary UAT for group`}
-                            className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full hover:bg-background hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
-                          >
-                            <Star className={cn('h-3 w-3', isPrimaryMember && 'fill-current')} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => onRemoveMember(group.id, sirutaCode)}
-                            disabled={!canEdit}
-                            aria-label={t`Remove UAT from group`}
-                            className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full hover:bg-background hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : null}
-      </div>
+              </Button>
+            </div>
+          ) : null}
+        </CollapsibleContent>
+      </Collapsible>
     </section>
   );
+}
+
+interface ManualGroupWorkspaceListItemProps {
+  workspace: MapGroupWorkspace;
+  isActive: boolean;
+  isSelected: boolean;
+  isAdding: boolean;
+  isMoveUpDisabled: boolean;
+  isMoveDownDisabled: boolean;
+  readOnly: boolean;
+  onSetActiveGroupWorkspace: (workspaceId: string) => void;
+  onToggleActiveGroupWorkspace: (workspaceId: string) => void;
+  onAddToWorkspace: (workspaceId: string) => void;
+  onOpenGroupWorkspaceConfig: (workspaceId: string) => void;
+  onDeleteGroupWorkspace: (workspaceId: string) => void;
+  onMoveGroupWorkspace: (workspaceId: string, direction: 'up' | 'down') => void;
+  onDuplicateGroupWorkspace: (workspaceId: string) => void;
+}
+
+function ManualGroupWorkspaceListItem({
+  workspace,
+  isActive,
+  isSelected,
+  isAdding,
+  isMoveUpDisabled,
+  isMoveDownDisabled,
+  readOnly,
+  onSetActiveGroupWorkspace,
+  onToggleActiveGroupWorkspace,
+  onAddToWorkspace,
+  onOpenGroupWorkspaceConfig,
+  onDeleteGroupWorkspace,
+  onMoveGroupWorkspace,
+  onDuplicateGroupWorkspace,
+}: Readonly<ManualGroupWorkspaceListItemProps>) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: workspace.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 20 : 'auto',
+  };
+  const displayLabel = workspace.label?.trim() || workspace.id;
+  const groupCountLabel =
+    workspace.groups.length === 1 ? t`1 merged group` : t`${workspace.groups.length} merged groups`;
+  const memberCount = new Set(workspace.groups.flatMap((group) => group.memberSirutaCodes)).size;
+  const memberCountLabel = memberCount === 1 ? t`1 UAT` : t`${memberCount} UATs`;
+  const workspaceSummary = workspace.groups.length === 0
+    ? t`No merged UAT groups`
+    : `${groupCountLabel} • ${memberCountLabel}`;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      role={readOnly ? undefined : 'button'}
+      tabIndex={readOnly ? undefined : 0}
+      aria-label={isActive ? t`Active group workspace` : t`Activate group workspace`}
+      className={cn(
+        'flex items-center justify-between gap-3 rounded-xl border bg-background/70 px-3 py-2.5',
+        isSelected && 'border-primary bg-primary/5',
+        isDragging && 'shadow-md'
+      )}
+      onClick={() => onToggleActiveGroupWorkspace(workspace.id)}
+      onKeyDown={(event) => {
+        if (event.target !== event.currentTarget) {
+          return;
+        }
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onToggleActiveGroupWorkspace(workspace.id);
+        }
+      }}
+    >
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        {readOnly ? (
+          <span className="text-muted-foreground">
+            <GripVertical className="h-4 w-4" />
+          </span>
+        ) : (
+          <button
+            type="button"
+            aria-label={t`Reorder group`}
+            className="cursor-grab text-muted-foreground hover:text-foreground active:cursor-grabbing"
+            onClick={(event) => event.stopPropagation()}
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="h-4 w-4" />
+          </button>
+        )}
+
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          className={cn(
+            'h-7 w-7 rounded-full border shadow-sm',
+            isActive
+              ? 'border-primary bg-primary text-primary-foreground hover:bg-primary/90'
+              : 'border-border bg-muted/40 text-muted-foreground hover:bg-muted/70'
+          )}
+          onClick={(event) => {
+            event.stopPropagation();
+            onSetActiveGroupWorkspace(workspace.id);
+            onOpenGroupWorkspaceConfig(workspace.id);
+          }}
+          aria-label={t`Edit group`}
+          disabled={readOnly}
+        >
+          <Boxes className="h-3.5 w-3.5" />
+        </Button>
+
+        <div className="min-w-0 flex-1 text-left">
+          <p className="truncate text-sm font-semibold" title={displayLabel}>
+            {displayLabel}
+          </p>
+          <p className="truncate text-xs text-muted-foreground">
+            {isAdding ? t`Adding UATs` : workspaceSummary}
+          </p>
+        </div>
+      </div>
+
+      {!readOnly ? (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7"
+              aria-label={t`Open row menu`}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
+            <DropdownMenuItem onSelect={() => onOpenGroupWorkspaceConfig(workspace.id)}>
+              <Pencil className="mr-2 h-4 w-4" />
+              {t`Edit`}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onSetActiveGroupWorkspace(workspace.id)} disabled={isActive}>
+              <Star className="mr-2 h-4 w-4" />
+              {t`Make active`}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onAddToWorkspace(workspace.id)}>
+              <MousePointer2 className="mr-2 h-4 w-4" />
+              {t`Add UATs here`}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              disabled={isMoveUpDisabled}
+              onSelect={() => onMoveGroupWorkspace(workspace.id, 'up')}
+            >
+              <ArrowUp className="mr-2 h-4 w-4" />
+              {t`Move up`}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={isMoveDownDisabled}
+              onSelect={() => onMoveGroupWorkspace(workspace.id, 'down')}
+            >
+              <ArrowDown className="mr-2 h-4 w-4" />
+              {t`Move down`}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => onDuplicateGroupWorkspace(workspace.id)}>
+              <Copy className="mr-2 h-4 w-4" />
+              {t`Duplicate`}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onSelect={() => onDeleteGroupWorkspace(workspace.id)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              {t`Delete`}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : null}
+    </div>
+  );
+}
+
+interface ManualGroupWorkspaceConfigPanelProps {
+  workspace: MapGroupWorkspace;
+  canEdit: boolean;
+  activeGroupId?: string;
+  uatMetadataBySirutaCode: Map<string, Omit<AdvancedMapAnalyticsTableRow, 'sirutaCode' | 'valuesBySeriesId' | 'groupValuesByGroupingId'>>;
+  onClose: () => void;
+  onWorkspaceLabelChange: (workspaceId: string, nextLabel: string) => void;
+  onAddGroupItem: (workspaceId: string) => void;
+  onGroupLabelChange: (workspaceId: string, groupId: string, nextLabel: string) => void;
+  onActivateGroup: (workspaceId: string, groupId: string) => void;
+  onAddToWorkspace: (workspaceId: string) => void;
+  onAddToGroup: (workspaceId: string, groupId: string) => void;
+  onDeleteWorkspace: (workspaceId: string) => void;
+  onDeleteGroup: (workspaceId: string, groupId: string) => void;
+  onRemoveMember: (workspaceId: string, groupId: string, sirutaCode: string) => void;
+  onMoveMember: (workspaceId: string, groupId: string, sirutaCode: string, direction: 'previous' | 'next') => void;
+  onSetPrimaryMember: (workspaceId: string, groupId: string, sirutaCode: string) => void;
+}
+
+function ManualGroupWorkspaceConfigPanel({
+  workspace,
+  canEdit,
+  activeGroupId,
+  uatMetadataBySirutaCode,
+  onClose,
+  onWorkspaceLabelChange,
+  onAddGroupItem,
+  onGroupLabelChange,
+  onActivateGroup,
+  onAddToWorkspace,
+  onAddToGroup,
+  onDeleteWorkspace,
+  onDeleteGroup,
+  onRemoveMember,
+  onMoveMember,
+  onSetPrimaryMember,
+}: Readonly<ManualGroupWorkspaceConfigPanelProps>) {
+  const [isEditingWorkspaceTitle, setIsEditingWorkspaceTitle] = useState(false);
+  const [editingGroupId, setEditingGroupId] = useState<string | undefined>(undefined);
+  const [groupSearchQuery, setGroupSearchQuery] = useState('');
+  const displayLabel = workspace.label?.trim() || workspace.id;
+  const totalMemberCount = new Set(workspace.groups.flatMap((group) => group.memberSirutaCodes)).size;
+  const mergedGroupCountLabel =
+    workspace.groups.length === 1 ? t`1 merged group` : t`${workspace.groups.length} merged groups`;
+  const totalMemberCountLabel = totalMemberCount === 1 ? t`1 UAT` : t`${totalMemberCount} UATs`;
+  const normalizedGroupSearchQuery = normalizeManualGroupSearchText(groupSearchQuery);
+  const visibleGroups = workspace.groups
+    .map((group, groupIndex) => ({ group, groupIndex }))
+    .filter(({ group }) => {
+      if (!normalizedGroupSearchQuery) {
+        return true;
+      }
+
+      const groupLabel = group.label?.trim() || group.id;
+      const searchableValues = [
+        groupLabel,
+        group.id,
+        ...group.memberSirutaCodes.flatMap((sirutaCode) => {
+          const metadata = uatMetadataBySirutaCode.get(sirutaCode);
+          return [
+            sirutaCode,
+            metadata?.uatName,
+            metadata?.entityCui,
+            metadata?.countyName,
+          ];
+        }),
+      ];
+
+      return searchableValues.some((value) =>
+        normalizeManualGroupSearchText(value).includes(normalizedGroupSearchQuery)
+      );
+    });
+  const hasGroupSearchQuery = normalizedGroupSearchQuery.length > 0;
+
+  return (
+    <div className="absolute inset-0 z-20 flex flex-col bg-background text-foreground">
+      <div className="flex min-h-0 flex-1 flex-col px-5 py-2">
+        <div className="flex shrink-0 items-start gap-3 pb-5 pt-6">
+          <div className="min-w-0 flex-1 space-y-1">
+            {isEditingWorkspaceTitle ? (
+              <input
+                type="text"
+                value={workspace.label ?? workspace.id}
+                onChange={(event) => onWorkspaceLabelChange(workspace.id, event.target.value)}
+                onBlur={() => setIsEditingWorkspaceTitle(false)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === 'Escape') {
+                    event.currentTarget.blur();
+                  }
+                }}
+                disabled={!canEdit}
+                autoFocus
+                className="h-9 w-full rounded-md border border-input bg-background px-2 text-xl font-bold tracking-tight shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label={t`Workspace name`}
+              />
+            ) : (
+              <h1 className="truncate text-xl font-bold tracking-tight text-foreground" title={displayLabel}>
+                {displayLabel}
+              </h1>
+            )}
+            <p className="text-sm text-muted-foreground">
+              {mergedGroupCountLabel} • {totalMemberCountLabel}
+            </p>
+          </div>
+
+          {canEdit ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8 shrink-0 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  aria-label={t`Open workspace menu`}
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => setIsEditingWorkspaceTitle(true)}
+                  onSelect={() => setIsEditingWorkspaceTitle(true)}
+                >
+                  <Pencil className="mr-2 h-4 w-4" />
+                  {t`Rename`}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => onAddToWorkspace(workspace.id)}
+                >
+                  <MousePointer2 className="mr-2 h-4 w-4" />
+                  {t`Merge UATs in this workspace`}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={() => onDeleteWorkspace(workspace.id)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  {t`Delete workspace`}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : null}
+        </div>
+
+        <section className="flex min-h-0 flex-1 flex-col border-y border-border/40 py-5">
+          <div className="mb-3 flex shrink-0 items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-lg font-bold tracking-tight">{t`Groups`}</h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {hasGroupSearchQuery
+                  ? visibleGroups.length === 1
+                    ? t`1 matching group item`
+                    : t`${visibleGroups.length} matching group items`
+                  : workspace.groups.length === 1
+                    ? t`1 group item configured`
+                    : t`${workspace.groups.length} group items configured`}
+              </p>
+            </div>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+              onClick={() => onAddGroupItem(workspace.id)}
+              aria-label={t`Add group item`}
+              disabled={!canEdit}
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <div className="relative mb-3 shrink-0">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="search"
+              value={groupSearchQuery}
+              onChange={(event) => setGroupSearchQuery(event.target.value)}
+              className="h-9 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+              placeholder={t`Search by name, CUI, or SIRUTA`}
+              aria-label={t`Search groups`}
+            />
+          </div>
+
+          <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
+            {workspace.groups.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-border p-3 text-sm text-muted-foreground">
+                {t`No merged UAT groups in this workspace.`}
+              </div>
+            ) : visibleGroups.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-border p-3 text-sm text-muted-foreground">
+                {t`No group items match this search.`}
+              </div>
+            ) : (
+              visibleGroups.map(({ group, groupIndex }) => {
+                const orderedMembers = getOrderedManualGroupMemberCodes(group);
+                const groupLabel = group.label?.trim() || group.id;
+                const isActiveGroup = group.id === activeGroupId;
+                const hasActiveGroup = Boolean(activeGroupId);
+                const isEditingGroupTitle = editingGroupId === group.id;
+                const groupColor = getManualGroupColor(groupIndex);
+                const groupCardStyle = {
+                  borderColor: isActiveGroup ? groupColor : undefined,
+                  backgroundColor: isActiveGroup
+                    ? getColorMix(groupColor, 10)
+                    : hasActiveGroup
+                      ? getColorMix(groupColor, 4)
+                      : undefined,
+                };
+                return (
+                  <div
+                    key={group.id}
+                    className={cn(
+                      'group/group-card cursor-pointer rounded-lg border bg-background/70 px-3 py-2.5 transition-colors',
+                      hasActiveGroup && !isActiveGroup && 'opacity-65'
+                    )}
+                    style={groupCardStyle}
+                    onClick={() => onActivateGroup(workspace.id, group.id)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                      if (event.target !== event.currentTarget) {
+                        return;
+                      }
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        onActivateGroup(workspace.id, group.id);
+                      }
+                    }}
+                    aria-pressed={isActiveGroup}
+                  >
+                    <div className="flex items-start gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <span
+                            className={cn(
+                              'h-2.5 w-2.5 shrink-0 rounded-full',
+                              hasActiveGroup && !isActiveGroup && 'opacity-40'
+                            )}
+                            style={{ backgroundColor: groupColor }}
+                            aria-hidden="true"
+                          />
+                          <input
+                            type="text"
+                            value={group.label ?? group.id}
+                            onChange={(event) => onGroupLabelChange(workspace.id, group.id, event.target.value)}
+                            onBlur={() => setEditingGroupId(undefined)}
+                            onKeyDown={(event) => {
+                              event.stopPropagation();
+                              if (event.key === 'Enter' || event.key === 'Escape') {
+                                event.currentTarget.blur();
+                              }
+                            }}
+                            onClick={(event) => {
+                              if (isEditingGroupTitle) {
+                                event.stopPropagation();
+                              }
+                            }}
+                            readOnly={!isEditingGroupTitle}
+                            disabled={!canEdit}
+                            autoFocus={isEditingGroupTitle}
+                            className={cn(
+                              'h-7 w-full truncate border-0 bg-transparent px-0 text-sm font-semibold shadow-none outline-none transition-colors focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50',
+                              isEditingGroupTitle && 'rounded-md border border-input bg-background px-2 shadow-sm focus-visible:ring-2 focus-visible:ring-ring',
+                              !isEditingGroupTitle && 'pointer-events-none'
+                            )}
+                            aria-label={t`Group name`}
+                            title={groupLabel}
+                          />
+                        </div>
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {orderedMembers.length === 1
+                            ? t`1 UAT`
+                            : t`${orderedMembers.length} UATs`}
+                        </span>
+                      </div>
+                      {canEdit ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7 shrink-0 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover/group-card:opacity-100 group-focus-within/group-card:opacity-100 data-[state=open]:opacity-100"
+                              aria-label={t`Open group menu`}
+                              onClick={(event) => event.stopPropagation()}
+                            >
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
+                            <DropdownMenuItem
+                              onClick={() => setEditingGroupId(group.id)}
+                              onSelect={() => setEditingGroupId(group.id)}
+                            >
+                              <Pencil className="mr-2 h-4 w-4" />
+                              {t`Rename`}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => onAddToGroup(workspace.id, group.id)}
+                            >
+                              <MousePointer2 className="mr-2 h-4 w-4" />
+                              {t`Add UATs to this group`}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => onDeleteGroup(workspace.id, group.id)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              {t`Delete group`}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : null}
+                    </div>
+                    {orderedMembers.length > 0 ? (
+                      <div className="mt-2 divide-y divide-border/40 rounded-md bg-muted/20">
+                        {orderedMembers.map((sirutaCode, memberIndex) => {
+                          const metadata = uatMetadataBySirutaCode.get(sirutaCode);
+                          const memberLabel = metadata?.uatName || `UAT ${sirutaCode}`;
+                          const isPrimaryMember = group.primarySirutaCode === sirutaCode;
+                          return (
+                            <div
+                              key={sirutaCode}
+                              className="group/member-row flex items-center gap-2 px-2 py-1.5"
+                            >
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-medium">{memberLabel}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {isPrimaryMember ? t`Primary UAT` : sirutaCode}
+                                </p>
+                              </div>
+                              {canEdit ? (
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      type="button"
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-7 w-7 shrink-0 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover/member-row:opacity-100 group-focus-within/member-row:opacity-100 data-[state=open]:opacity-100"
+                                      aria-label={t`Open UAT menu`}
+                                      onClick={(event) => event.stopPropagation()}
+                                    >
+                                      <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
+                                    <DropdownMenuItem
+                                      onClick={() => onMoveMember(workspace.id, group.id, sirutaCode, 'previous')}
+                                      disabled={memberIndex === 0}
+                                    >
+                                      <ArrowUp className="mr-2 h-4 w-4" />
+                                      {t`Move earlier`}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => onMoveMember(workspace.id, group.id, sirutaCode, 'next')}
+                                      disabled={memberIndex === orderedMembers.length - 1}
+                                    >
+                                      <ArrowDown className="mr-2 h-4 w-4" />
+                                      {t`Move later`}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => onSetPrimaryMember(workspace.id, group.id, sirutaCode)}
+                                      disabled={isPrimaryMember}
+                                    >
+                                      <Star className="mr-2 h-4 w-4" />
+                                      {t`Set primary`}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                      className="text-destructive focus:text-destructive"
+                                      onClick={() => onRemoveMember(workspace.id, group.id, sirutaCode)}
+                                    >
+                                      <X className="mr-2 h-4 w-4" />
+                                      {t`Remove from group`}
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              ) : null}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="mt-2 rounded-md bg-muted/30 px-2 py-1.5 text-xs text-muted-foreground">
+                        {t`No UATs in ${groupLabel}.`}
+                      </p>
+                    )}
+                  </div>
+                );
+              })
+            )}
+            <button
+              type="button"
+              onClick={() => onAddGroupItem(workspace.id)}
+              disabled={!canEdit}
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border p-3 text-sm text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+            >
+              <Plus className="h-4 w-4" />
+              {t`Add group item`}
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <div className="border-t border-border/40 bg-background px-5 py-3">
+        <Button
+          type="button"
+          variant="accent"
+          className="w-full"
+          onClick={onClose}
+        >
+          {t`Close`}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function normalizeManualGroupSearchText(value: unknown): string {
+  return String(value ?? '')
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase();
 }
 
 function isEditableEventTarget(eventTarget: EventTarget | null): boolean {

@@ -4,7 +4,7 @@ import { GeoJsonObject } from 'geojson';
 import { HeatmapCountyDataPoint, HeatmapUATDataPoint } from '@/schemas/heatmap';
 import { CanvasLabelLayer } from './CanvasLabelLayer';
 import type { Currency, Normalization } from '@/schemas/charts';
-import type { LabelMode } from './polygonLabels';
+import type { ActiveMapRenderUnit, LabelMode } from './polygonLabels';
 
 interface MapLabelsProps {
   geoJsonData: GeoJsonObject | null;
@@ -16,6 +16,7 @@ interface MapLabelsProps {
   currency?: Currency;
   labelMode?: LabelMode;
   activeSeriesValuesBySirutaCode?: Map<string, number | undefined>;
+  activeRenderUnits?: ActiveMapRenderUnit[];
   activeSeriesUnit?: string;
 }
 
@@ -33,6 +34,7 @@ export const MapLabels: React.FC<MapLabelsProps> = ({
   currency,
   labelMode = 'legacy-heatmap',
   activeSeriesValuesBySirutaCode,
+  activeRenderUnits,
   activeSeriesUnit,
 }) => {
   const map = useMap();
@@ -47,6 +49,7 @@ export const MapLabels: React.FC<MapLabelsProps> = ({
     showLabels,
     labelMode,
     activeSeriesValuesBySirutaCode,
+    activeRenderUnits,
     activeSeriesUnit,
   });
   initialOptionsRef.current = {
@@ -59,6 +62,7 @@ export const MapLabels: React.FC<MapLabelsProps> = ({
     showLabels,
     labelMode,
     activeSeriesValuesBySirutaCode,
+    activeRenderUnits,
     activeSeriesUnit,
   };
 
@@ -95,6 +99,7 @@ export const MapLabels: React.FC<MapLabelsProps> = ({
         showLabels,
         labelMode,
         activeSeriesValuesBySirutaCode,
+        activeRenderUnits,
         activeSeriesUnit,
       });
     }
@@ -108,6 +113,7 @@ export const MapLabels: React.FC<MapLabelsProps> = ({
     showLabels,
     labelMode,
     activeSeriesValuesBySirutaCode,
+    activeRenderUnits,
     activeSeriesUnit,
   ]);
 

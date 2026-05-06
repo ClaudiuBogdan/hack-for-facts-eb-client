@@ -1,5 +1,5 @@
 import type { Calculation, Operand } from '@/schemas/charts';
-import type { MapGrouping, MapSupportedSeries } from '@/schemas/advanced-map-analytics';
+import type { MapGroupWorkspace, MapSupportedSeries } from '@/schemas/advanced-map-analytics';
 import {
   areSeriesDomainsEqual,
   evaluateGroupedValueSeries,
@@ -18,7 +18,7 @@ import type {
 interface CalculateMapSeriesValuesParams {
   series: MapSupportedSeries[];
   baseValuesBySeriesId: MapSeriesVectorCache;
-  groupings?: MapGrouping[];
+  groupWorkspaces?: MapGroupWorkspace[];
   unitsBySeriesId?: Map<string, string | undefined>;
   sparseCoverageThreshold?: number;
 }
@@ -30,7 +30,7 @@ export function calculateMapSeriesValues(
   params: CalculateMapSeriesValuesParams
 ): MapSeriesCalculationResult {
   const seriesById = new Map(params.series.map((series) => [series.id, series]));
-  const groupingsById = new Map((params.groupings ?? []).map((grouping) => [grouping.id, grouping]));
+  const groupWorkspacesById = new Map((params.groupWorkspaces ?? []).map((grouping) => [grouping.id, grouping]));
   const valuesBySeriesId: MapSeriesVectorCache = new Map();
   const unitsBySeriesId = new Map(params.unitsBySeriesId ?? []);
   const domainsBySeriesId = new Map<string, MapSeriesDomain>();
@@ -150,14 +150,14 @@ export function calculateMapSeriesValues(
         return emptyVector;
       }
 
-      const grouping = groupingsById.get(series.groupingId);
+      const grouping = groupWorkspacesById.get(series.groupWorkspaceId);
       if (!grouping) {
         pushWarning({
           type: 'missing_grouping',
           seriesId: series.id,
-          message: `Grouped series ${series.label || series.id} references missing grouping ${series.groupingId}.`,
+          message: `Grouped series ${series.label || series.id} references missing grouping ${series.groupWorkspaceId}.`,
           details: {
-            groupingId: series.groupingId,
+            groupWorkspaceId: series.groupWorkspaceId,
           },
         });
         const emptyVector = new Map<string, number | undefined>();

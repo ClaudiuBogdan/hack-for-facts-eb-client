@@ -1784,7 +1784,7 @@ function getCoverageDomainKey(domain: MapSeriesDomain | undefined): string {
   if (!domain || domain.type === 'uat') {
     return 'uat';
   }
-  return `group:${domain.groupingId}`;
+  return `group:${domain.groupWorkspaceId}`;
 }
 
 function resolveSeriesDisplayLabel(series: MapSupportedSeries): string {

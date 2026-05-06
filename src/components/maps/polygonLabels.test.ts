@@ -5,8 +5,10 @@ import type { HeatmapCountyDataPoint, HeatmapUATDataPoint } from '@/schemas/heat
 import {
   getZoomBucket,
   normalizeUatLabelName,
+  processActiveRenderUnitLabel,
   processCountyFallbackLabel,
   processFeatureForLabel,
+  type FeatureLabelGeometry,
   type ProcessFeatureForLabelOptions,
 } from './polygonLabels';
 
@@ -91,6 +93,22 @@ function createHeatmapDataMap(): Map<string | number, HeatmapUATDataPoint | Heat
   return new Map();
 }
 
+function createLabelGeometry(
+  sirutaCode: string,
+  southWest: [number, number],
+  northEast: [number, number]
+): FeatureLabelGeometry {
+  return {
+    centroid: [
+      (southWest[0] + northEast[0]) / 2,
+      (southWest[1] + northEast[1]) / 2,
+    ],
+    bounds: L.latLngBounds(southWest, northEast),
+    featureId: sirutaCode,
+    nameNormalized: sirutaCode,
+  };
+}
+
 function runActiveSeriesLabel(
   options: Partial<ProcessFeatureForLabelOptions> = {}
 ) {
@@ -135,6 +153,20 @@ describe('processFeatureForLabel (active-series)', () => {
     expect(label?.amount).toBe(formatAdvancedMapAnalyticsSeriesValue(1200, '%'));
   });
 
+  it('can render active series member names without amount labels', () => {
+    const label = runActiveSeriesLabel({
+      activeSeriesValuesBySirutaCode: new Map([['1001', 1200]]),
+      activeSeriesUnit: 'RON',
+      suppressActiveSeriesAmount: true,
+    });
+
+    expect(label).not.toBeNull();
+    expect(label?.text).toBe('Sânmihaiu de Câmpie');
+    expect(label?.showAmount).toBe(false);
+    expect(label?.amount).toBeUndefined();
+  });
+
+
   it('skips labels when active series value is missing', () => {
     const label = runActiveSeriesLabel({
       activeSeriesValuesBySirutaCode: new Map(),
@@ -155,6 +187,69 @@ describe('processFeatureForLabel (legacy-heatmap)', () => {
       createHeatmapDataMap(),
       'total'
     );
+
+    expect(label).toBeNull();
+  });
+});
+
+describe('processActiveRenderUnitLabel', () => {
+  it('renders one group label with the aggregate value', () => {
+    const label = processActiveRenderUnitLabel(createMockMap(), 10, {
+      renderUnit: {
+        id: 'grp_1',
+        label: '  Central   cluster ',
+        memberSirutaCodes: ['1001', '2002'],
+        value: 12500,
+        unit: 'RON',
+      },
+      memberGeometries: [
+        createLabelGeometry('1001', [45, 24], [45.1, 24.1]),
+        createLabelGeometry('2002', [45.1, 24.1], [45.4, 24.4]),
+      ],
+    });
+
+    expect(label).not.toBeNull();
+    expect(label?.featureId).toBe('render-unit:grp_1');
+    expect(label?.text).toBe('Central cluster');
+    expect(label?.amount).toBe(formatAdvancedMapAnalyticsSeriesValue(12500, 'RON'));
+    expect(label?.hasValue).toBe(true);
+    expect(label?.value).toBe(12500);
+  });
+
+  it('uses the merged group geometry as the visual anchor', () => {
+    const smallGeometry = createLabelGeometry('1001', [45, 24], [45.05, 24.05]);
+    const largeGeometry = createLabelGeometry('2002', [45.1, 24.1], [45.4, 24.4]);
+    const label = processActiveRenderUnitLabel(createMockMap(), 10, {
+      renderUnit: {
+        id: 'grp_1',
+        label: 'Central cluster',
+        memberSirutaCodes: ['1001', '2002'],
+        value: 12500,
+      },
+      memberGeometries: [smallGeometry, largeGeometry],
+    });
+
+    const smallArea = 0.05 * 0.05;
+    const largeArea = 0.3 * 0.3;
+    const totalArea = smallArea + largeArea;
+    expect(label?.position[0]).toBeCloseTo(
+      (smallGeometry.centroid[0] * smallArea + largeGeometry.centroid[0] * largeArea) / totalArea
+    );
+    expect(label?.position[1]).toBeCloseTo(
+      (smallGeometry.centroid[1] * smallArea + largeGeometry.centroid[1] * largeArea) / totalArea
+    );
+  });
+
+  it('skips missing aggregate values', () => {
+    const label = processActiveRenderUnitLabel(createMockMap(), 10, {
+      renderUnit: {
+        id: 'grp_1',
+        label: 'Central cluster',
+        memberSirutaCodes: ['1001'],
+        value: undefined,
+      },
+      memberGeometries: [createLabelGeometry('1001', [45, 24], [45.1, 24.1])],
+    });
 
     expect(label).toBeNull();
   });

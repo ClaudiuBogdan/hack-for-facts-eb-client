@@ -33,6 +33,8 @@ export interface ImportedMapConfig {
 const BARE_MAP_STATE_HINT_KEYS = [
   'series',
   'activeSeriesId',
+  'groupWorkspaces',
+  'activeGroupWorkspaceId',
   'groupings',
   'activeGroupingId',
   'valueFilters',

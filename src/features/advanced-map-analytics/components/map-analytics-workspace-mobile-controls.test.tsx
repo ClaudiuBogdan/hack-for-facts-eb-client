@@ -62,7 +62,7 @@ let mockCountyGeoJsonData: {
 let mockSeriesDataResult = {
   valuesBySeriesId: new Map<string, Map<string, number | undefined>>(),
   mapValuesBySeriesId: new Map<string, Map<string, number | undefined>>(),
-  domainsBySeriesId: new Map<string, { type: 'uat' } | { type: 'group'; groupingId: string }>(),
+  domainsBySeriesId: new Map<string, { type: 'uat' } | { type: 'group'; groupWorkspaceId: string }>(),
   unitsBySeriesId: new Map<string, string | undefined>(),
   warnings: [],
   activeSeriesId: undefined as string | undefined,
@@ -94,6 +94,21 @@ let mockBinsResult = {
   closeBinsEditor: vi.fn(),
   activeNoDataConfig: undefined,
 };
+
+async function startAddingUatsToFirstGroupWorkspace() {
+  await openFirstGroupWorkspaceConfig();
+  fireEvent.pointerDown(screen.getByRole('button', { name: 'Open workspace menu' }));
+  fireEvent.click(await screen.findByRole('menuitem', { name: 'Merge UATs in this workspace' }));
+}
+
+async function openFirstGroupWorkspaceConfig() {
+  await openGroupWorkspaceConfigByIndex(0);
+}
+
+async function openGroupWorkspaceConfigByIndex(index: number) {
+  fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Open row menu' })[index]);
+  fireEvent.click(await screen.findByRole('menuitem', { name: 'Edit' }));
+}
 
 vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => navigateMock,
@@ -340,7 +355,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     mockSeriesDataResult = {
       valuesBySeriesId: new Map<string, Map<string, number | undefined>>(),
       mapValuesBySeriesId: new Map<string, Map<string, number | undefined>>(),
-      domainsBySeriesId: new Map<string, { type: 'uat' } | { type: 'group'; groupingId: string }>(),
+      domainsBySeriesId: new Map<string, { type: 'uat' } | { type: 'group'; groupWorkspaceId: string }>(),
       unitsBySeriesId: new Map<string, string | undefined>(),
       warnings: [],
       activeSeriesId: undefined,
@@ -593,14 +608,15 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
 
     render(<Harness />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Create group' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Add group' })[0]);
+    await startAddingUatsToFirstGroupWorkspace();
     fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
 
     await waitFor(() => {
-      expect(latestState.activeGroupingId).toBe('manual-map-groups');
-      expect(latestState.groupings).toHaveLength(1);
-      expect(latestState.groupings[0]?.groups).toHaveLength(1);
-      expect(latestState.groupings[0]?.groups[0]?.memberSirutaCodes).toEqual(['1001']);
+      expect(latestState.activeGroupWorkspaceId).toBe(latestState.groupWorkspaces[0]?.id);
+      expect(latestState.groupWorkspaces).toHaveLength(1);
+      expect(latestState.groupWorkspaces[0]?.groups).toHaveLength(1);
+      expect(latestState.groupWorkspaces[0]?.groups[0]?.memberSirutaCodes).toEqual(['1001']);
     });
   });
 
@@ -641,18 +657,19 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
 
     render(<Harness />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Create group' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Add group' })[0]);
+    await startAddingUatsToFirstGroupWorkspace();
     const mapClickButton = await screen.findByRole('button', { name: 'Map click with CUI' });
     fireEvent.click(mapClickButton);
 
     await waitFor(() => {
-      expect(latestState.groupings[0]?.groups[0]?.memberSirutaCodes).toEqual(['1001']);
+      expect(latestState.groupWorkspaces[0]?.groups[0]?.memberSirutaCodes).toEqual(['1001']);
     });
 
     fireEvent.click(mapClickButton);
 
     await waitFor(() => {
-      expect(latestState.groupings[0]?.groups).toHaveLength(0);
+      expect(latestState.groupWorkspaces[0]?.groups).toHaveLength(0);
     });
     expect(toastSuccessMock).toHaveBeenLastCalledWith('Removed UAT and deleted the empty group.');
   });
@@ -694,17 +711,18 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
 
     render(<Harness />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Create group' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Add group' })[0]);
+    await startAddingUatsToFirstGroupWorkspace();
     expect(screen.getByText('Click UATs on the map, or Command-drag to add many.')).toBeInTheDocument();
     expect(latestInteractiveMapProps?.onFeatureBoxSelect).toBeTypeOf('function');
 
     fireEvent.click(await screen.findByRole('button', { name: 'Map command drag select UATs' }));
 
     await waitFor(() => {
-      expect(latestState.activeGroupingId).toBe('manual-map-groups');
-      expect(latestState.groupings[0]?.groups).toHaveLength(1);
-      expect(latestState.groupings[0]?.groups[0]?.memberSirutaCodes).toEqual(['1001', '2002']);
-      expect(latestState.groupings[0]?.groups[0]?.memberOrder).toEqual(['1001', '2002']);
+      expect(latestState.activeGroupWorkspaceId).toBe(latestState.groupWorkspaces[0]?.id);
+      expect(latestState.groupWorkspaces[0]?.groups).toHaveLength(1);
+      expect(latestState.groupWorkspaces[0]?.groups[0]?.memberSirutaCodes).toEqual(['1001', '2002']);
+      expect(latestState.groupWorkspaces[0]?.groups[0]?.memberOrder).toEqual(['1001', '2002']);
     });
     expect(toastSuccessMock).toHaveBeenLastCalledWith('Added 2 UATs to group.');
   });
@@ -771,14 +789,15 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
 
     render(<Harness />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Create group' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Add group' })[0]);
+    await startAddingUatsToFirstGroupWorkspace();
     fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
-    fireEvent.click(screen.getByRole('button', { name: 'New group' }));
+    await startAddingUatsToFirstGroupWorkspace();
     fireEvent.click(screen.getByRole('button', { name: 'Map click second UAT' }));
     fireEvent.click(screen.getByRole('button', { name: 'Map click without CUI' }));
 
     await waitFor(() => {
-      expect(latestState.groupings[0]?.groups).toHaveLength(2);
+      expect(latestState.groupWorkspaces[0]?.groups).toHaveLength(2);
       expect(latestInteractiveMapProps?.alwaysResolveFeatureStyle).toBe(true);
       expect(latestInteractiveMapProps?.groupingBoundaryGeoJsonData).toBeNull();
       const selectedBoundaryGeoJsonData =
@@ -808,13 +827,12 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
       new Map()
     );
 
-    expect(firstGroupStyle.fillColor).toBe('#2563eb');
-    expect(firstGroupStyle.fillOpacity).toBe(0.22);
-    expect(firstGroupStyle.weight).toBe(0.35);
+    expect(firstGroupStyle.fillColor).toBe('#e5e7eb');
+    expect(firstGroupStyle.fillOpacity).toBe(0.14);
     expect(activeGroupStyle.fillColor).toBe('#059669');
-    expect(activeGroupStyle.fillOpacity).toBe(0.76);
-    expect(activeGroupStyle.weight).toBe(0.45);
-    expect(activeGroupStyle.opacity).toBe(0.38);
+    expect(activeGroupStyle.fillOpacity).toBe(0.82);
+    expect(activeGroupStyle.weight).toBe(0.25);
+    expect(activeGroupStyle.opacity).toBe(0.12);
     expect(ungroupedStyle.fillColor).toBe('#e5e7eb');
     expect(ungroupedStyle.fillOpacity).toBe(0.14);
   });
@@ -856,37 +874,130 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
 
     render(<Harness />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Create group' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Add group' })[0]);
+    await startAddingUatsToFirstGroupWorkspace();
     fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
 
-    fireEvent.change(screen.getByLabelText('Grouping name'), {
-      target: { value: 'County clusters' },
-    });
-    fireEvent.change(screen.getByLabelText('Group name'), {
+    await openFirstGroupWorkspaceConfig();
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Open group menu' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Rename' }));
+    fireEvent.change(await screen.findByLabelText('Group name'), {
       target: { value: 'Central cluster' },
     });
 
     await waitFor(() => {
-      expect(latestState.groupings[0]?.label).toBe('County clusters');
-      expect(latestState.groupings[0]?.groups[0]?.label).toBe('Central cluster');
+      expect(latestState.groupWorkspaces[0]?.groups[0]?.label).toBe('Central cluster');
     });
 
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Open group menu' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Add UATs to this group' }));
     fireEvent.click(screen.getByRole('button', { name: 'Map click second UAT' }));
     await waitFor(() => {
-      expect(latestState.groupings[0]?.groups[0]?.label).toBe('Central cluster');
-      expect(latestState.groupings[0]?.groups[0]?.memberSirutaCodes).toEqual(['1001', '2002']);
+      expect(latestState.groupWorkspaces[0]?.groups[0]?.label).toBe('Central cluster');
+      expect(latestState.groupWorkspaces[0]?.groups[0]?.memberSirutaCodes).toEqual(['1001', '2002']);
     });
 
-    fireEvent.click(screen.getAllByRole('button', { name: 'Remove UAT from group' })[0]);
+    await openFirstGroupWorkspaceConfig();
+    fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Open UAT menu' })[0]);
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Remove from group' }));
 
     await waitFor(() => {
-      expect(latestState.groupings[0]?.groups[0]?.memberSirutaCodes).toEqual(['2002']);
+      expect(latestState.groupWorkspaces[0]?.groups[0]?.memberSirutaCodes).toEqual(['2002']);
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Delete group' }));
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Open group menu' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Delete group' }));
     await waitFor(() => {
-      expect(latestState.groupings[0]?.groups).toHaveLength(0);
+      expect(latestState.groupWorkspaces[0]?.groups).toHaveLength(0);
     });
+  });
+
+  it('filters group items by group name, UAT name, CUI, and SIRUTA', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            properties: {
+              natcode: '1001',
+              name: 'Teiuș',
+              county: 'Test county',
+              cui: '12345678',
+            },
+            geometry: null,
+          },
+          {
+            type: 'Feature',
+            properties: {
+              natcode: '2002',
+              name: 'Second UAT',
+              county: 'Alt county',
+              cui: '87654321',
+            },
+            geometry: null,
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    };
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+    const initialState = createMapState({
+      activeView: 'map',
+      groupWorkspaces: [
+        {
+          id: 'manual-map-groups',
+          key: 'manual',
+          label: 'Manual groups',
+          groups: [
+            {
+              id: 'grp_alpha',
+              label: 'Alpha cluster',
+              memberSirutaCodes: ['1001'],
+            },
+            {
+              id: 'grp_beta',
+              label: 'Beta cluster',
+              memberSirutaCodes: ['2002'],
+            },
+          ],
+        },
+      ],
+    });
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="owner"
+        mapState={initialState}
+        setMapState={vi.fn()}
+        capabilities={{ readOnly: false }}
+        mobileControlsDefaultCollapsed={true}
+      />
+    );
+
+    await openFirstGroupWorkspaceConfig();
+    const searchInput = screen.getByRole('searchbox', { name: 'Search groups' });
+
+    fireEvent.change(searchInput, { target: { value: '87654321' } });
+    expect(screen.queryByDisplayValue('Alpha cluster')).not.toBeInTheDocument();
+    expect(screen.getByDisplayValue('Beta cluster')).toBeInTheDocument();
+    expect(screen.getByText('Second UAT')).toBeInTheDocument();
+
+    fireEvent.change(searchInput, { target: { value: '1001' } });
+    expect(screen.getByDisplayValue('Alpha cluster')).toBeInTheDocument();
+    expect(screen.queryByDisplayValue('Beta cluster')).not.toBeInTheDocument();
+    expect(screen.getByText('Teiuș')).toBeInTheDocument();
+
+    fireEvent.change(searchInput, { target: { value: 'teius' } });
+    expect(screen.getByDisplayValue('Alpha cluster')).toBeInTheDocument();
+    expect(screen.queryByDisplayValue('Beta cluster')).not.toBeInTheDocument();
+    expect(screen.getByText('Teiuș')).toBeInTheDocument();
+
+    fireEvent.change(searchInput, { target: { value: 'beta' } });
+    expect(screen.queryByDisplayValue('Alpha cluster')).not.toBeInTheDocument();
+    expect(screen.getByDisplayValue('Beta cluster')).toBeInTheDocument();
   });
 
   it('updates manual group member order and primary member', async () => {
@@ -926,32 +1037,36 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
 
     render(<Harness />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Create group' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Add group' })[0]);
+    await startAddingUatsToFirstGroupWorkspace();
     fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
     fireEvent.click(screen.getByRole('button', { name: 'Map click second UAT' }));
 
     await waitFor(() => {
-      expect(latestState.groupings[0]?.groups[0]?.memberSirutaCodes).toEqual(['1001', '2002']);
-      expect(latestState.groupings[0]?.groups[0]?.memberOrder).toEqual(['1001', '2002']);
-      expect(latestState.groupings[0]?.groups[0]?.primarySirutaCode).toBe('1001');
+      expect(latestState.groupWorkspaces[0]?.groups[0]?.memberSirutaCodes).toEqual(['1001', '2002']);
+      expect(latestState.groupWorkspaces[0]?.groups[0]?.memberOrder).toEqual(['1001', '2002']);
+      expect(latestState.groupWorkspaces[0]?.groups[0]?.primarySirutaCode).toBe('1001');
     });
 
-    fireEvent.click(screen.getAllByRole('button', { name: 'Move UAT earlier in group' })[1]);
+    await openFirstGroupWorkspaceConfig();
+    fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Open UAT menu' })[1]);
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Move earlier' }));
 
     await waitFor(() => {
-      expect(latestState.groupings[0]?.groups[0]?.memberSirutaCodes).toEqual(['1001', '2002']);
-      expect(latestState.groupings[0]?.groups[0]?.memberOrder).toEqual(['2002', '1001']);
-      expect(latestState.groupings[0]?.groups[0]?.primarySirutaCode).toBe('1001');
+      expect(latestState.groupWorkspaces[0]?.groups[0]?.memberSirutaCodes).toEqual(['1001', '2002']);
+      expect(latestState.groupWorkspaces[0]?.groups[0]?.memberOrder).toEqual(['2002', '1001']);
+      expect(latestState.groupWorkspaces[0]?.groups[0]?.primarySirutaCode).toBe('1001');
     });
 
-    fireEvent.click(screen.getAllByRole('button', { name: 'Set primary UAT for group' })[0]);
+    fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Open UAT menu' })[0]);
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Set primary' }));
 
     await waitFor(() => {
-      expect(latestState.groupings[0]?.groups[0]?.primarySirutaCode).toBe('2002');
+      expect(latestState.groupWorkspaces[0]?.groups[0]?.primarySirutaCode).toBe('2002');
     });
   });
 
-  it('switches the active rendered grouping from the groups panel', async () => {
+  it('activates group workspaces from the card and activates plus opens settings from the icon', async () => {
     mockIsMobile.mockReturnValue(false);
     mockGeoJsonData = {
       data: {
@@ -965,8 +1080,8 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
     const initialState = createMapState({
       activeView: 'map',
-      activeGroupingId: 'manual-map-groups',
-      groupings: [
+      activeGroupWorkspaceId: undefined,
+      groupWorkspaces: [
         {
           id: 'manual-map-groups',
           key: 'manual',
@@ -979,15 +1094,10 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
           ],
         },
         {
-          id: 'county-groups',
-          key: 'county',
-          label: 'County groups',
-          groups: [
-            {
-              id: 'grp_county',
-              memberSirutaCodes: ['2002'],
-            },
-          ],
+          id: 'manual-map-groups-2',
+          key: 'manual-copy',
+          label: 'Manual groups 2',
+          groups: [],
         },
       ],
     });
@@ -1016,21 +1126,45 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
 
     render(<Harness />);
 
-    fireEvent.change(screen.getByLabelText('Rendered grouping'), {
-      target: { value: 'county-groups' },
-    });
+    fireEvent.click(screen.getAllByRole('button', { name: 'Activate group workspace' })[0]);
 
     await waitFor(() => {
-      expect(latestState.activeGroupingId).toBe('county-groups');
+      expect(latestState.activeGroupWorkspaceId).toBe('manual-map-groups');
     });
+    expect(screen.queryByRole('button', { name: 'Open workspace menu' })).not.toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText('Rendered grouping'), {
-      target: { value: '' },
-    });
+    fireEvent.click(screen.getByText('Manual groups').closest('[role="button"]') as HTMLElement);
 
     await waitFor(() => {
-      expect(latestState.activeGroupingId).toBeUndefined();
+      expect(latestState.activeGroupWorkspaceId).toBeUndefined();
     });
+    expect(screen.queryByRole('button', { name: 'Open workspace menu' })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Edit group' })[0]);
+    await waitFor(() => {
+      expect(latestState.activeGroupWorkspaceId).toBe('manual-map-groups');
+    });
+    expect(screen.getByRole('button', { name: 'Open workspace menu' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+
+    fireEvent.click(screen.getByText('Manual groups 2').closest('[role="button"]') as HTMLElement);
+
+    await waitFor(() => {
+      expect(latestState.activeGroupWorkspaceId).toBe('manual-map-groups-2');
+    });
+    expect(screen.queryByRole('button', { name: 'Open workspace menu' })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Manual groups 2').closest('[role="button"]') as HTMLElement);
+
+    await waitFor(() => {
+      expect(latestState.activeGroupWorkspaceId).toBeUndefined();
+    });
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Edit group' })[1]);
+    await waitFor(() => {
+      expect(latestState.activeGroupWorkspaceId).toBe('manual-map-groups-2');
+    });
+    expect(screen.getByRole('button', { name: 'Open workspace menu' })).toBeInTheDocument();
   });
 
   it('shows GeoJSON source link at the bottom of the sidebar', async () => {
@@ -1731,7 +1865,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     }
     groupedSeries.id = 'grouped_series';
     groupedSeries.label = 'Grouped value';
-    groupedSeries.groupingId = 'manual-map-groups';
+    groupedSeries.groupWorkspaceId = 'manual-map-groups';
     groupedSeries.sourceSeriesId = 'source_series';
     groupedSeries.enabled = true;
 
@@ -1744,7 +1878,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     mockSeriesDataResult = {
       valuesBySeriesId,
       mapValuesBySeriesId,
-      domainsBySeriesId: new Map([[groupedSeries.id, { type: 'group', groupingId: 'manual-map-groups' }]]),
+      domainsBySeriesId: new Map([[groupedSeries.id, { type: 'group', groupWorkspaceId: 'manual-map-groups' }]]),
       unitsBySeriesId: new Map([[groupedSeries.id, 'RON']]),
       warnings: [],
       activeSeriesId: groupedSeries.id,
@@ -1763,8 +1897,8 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
           activeView: 'map',
           series: [groupedSeries],
           activeSeriesId: groupedSeries.id,
-          activeGroupingId: 'manual-map-groups',
-          groupings: [
+          activeGroupWorkspaceId: 'manual-map-groups',
+          groupWorkspaces: [
             {
               id: 'manual-map-groups',
               key: 'manual',
@@ -1807,6 +1941,366 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(tooltipHtml).toContain('Grouped value');
     expect(tooltipHtml).not.toContain('CUI:');
     expect(tooltipHtml).not.toContain('Harghita');
+  });
+
+  it('passes group render units and group-keyed heatmap data for an active group workspace', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            properties: { natcode: '1001', name: 'Mapped UAT' },
+            geometry: {
+              type: 'Polygon',
+              coordinates: [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
+            },
+          },
+          {
+            type: 'Feature',
+            properties: { natcode: '2002', name: 'Second UAT' },
+            geometry: {
+              type: 'Polygon',
+              coordinates: [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]],
+            },
+          },
+          {
+            type: 'Feature',
+            properties: { natcode: '9999', name: 'Outside group' },
+            geometry: {
+              type: 'Polygon',
+              coordinates: [[[2, 0], [3, 0], [3, 1], [2, 1], [2, 0]]],
+            },
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    };
+
+    const activeSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    activeSeries.id = 'series_group_render';
+    activeSeries.label = 'Source value';
+    activeSeries.enabled = true;
+    activeSeries.groupWorkspaceId = 'manual-map-groups';
+
+    const activeValues = new Map<string, number | undefined>([
+      ['1001', 10],
+      ['2002', 20],
+      ['9999', 5],
+    ]);
+    const valuesBySeriesId = new Map([[activeSeries.id, activeValues]]);
+    mockSeriesDataResult = {
+      valuesBySeriesId,
+      mapValuesBySeriesId: valuesBySeriesId,
+      domainsBySeriesId: new Map([[activeSeries.id, { type: 'uat' }]]),
+      unitsBySeriesId: new Map([[activeSeries.id, 'RON']]),
+      warnings: [],
+      activeSeriesId: activeSeries.id,
+      activeValues,
+      isLoading: false,
+      error: null,
+    };
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="owner"
+        mapState={createMapState({
+          activeView: 'map',
+          series: [activeSeries],
+          activeSeriesId: activeSeries.id,
+          activeGroupWorkspaceId: 'manual-map-groups',
+          groupWorkspaces: [
+            {
+              id: 'manual-map-groups',
+              key: 'manual',
+              label: 'Manual groups',
+              groups: [
+                {
+                  id: 'grp_1',
+                  label: 'Group 1',
+                  memberSirutaCodes: ['1001', '2002'],
+                },
+              ],
+            },
+          ],
+        })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: false }}
+        mobileControlsDefaultCollapsed={true}
+      />
+    );
+
+    await screen.findByTestId('interactive-map');
+
+    const activeRenderUnits = latestInteractiveMapProps?.activeRenderUnits as
+      | Array<{ id: string; label: string; value?: number; memberSirutaCodes: string[] }>
+      | undefined;
+    expect(activeRenderUnits).toEqual([
+      {
+        id: 'grp_1',
+        label: 'Group 1',
+        memberSirutaCodes: ['1001', '2002'],
+        value: 30,
+        unit: 'RON',
+      },
+    ]);
+
+    const heatmapData = latestInteractiveMapProps?.heatmapData as
+      | Array<{ siruta_code: string; amount: number }>
+      | undefined;
+    expect(heatmapData).toEqual([
+      expect.objectContaining({
+        siruta_code: 'grp_1',
+        amount: 30,
+      }),
+    ]);
+
+    const projectedValues = latestInteractiveMapProps?.activeSeriesValuesBySirutaCode as
+      | Map<string, number | undefined>
+      | undefined;
+    expect(projectedValues?.get('1001')).toBe(30);
+    expect(projectedValues?.get('2002')).toBe(30);
+    expect(projectedValues?.get('9999')).toBeUndefined();
+
+    const getFeatureStyle = latestInteractiveMapProps?.getFeatureStyle;
+    if (typeof getFeatureStyle !== 'function') {
+      throw new Error('InteractiveMap did not receive getFeatureStyle');
+    }
+
+    const heatmapDataMap = new Map([
+      [
+        'grp_1',
+        {
+          amount: 30,
+          total_amount: 30,
+          per_capita_amount: 30,
+        },
+      ],
+    ]);
+    const firstMemberStyle = getFeatureStyle(
+      { type: 'Feature', properties: { natcode: '1001' }, geometry: null },
+      heatmapDataMap
+    );
+    const secondMemberStyle = getFeatureStyle(
+      { type: 'Feature', properties: { natcode: '2002' }, geometry: null },
+      heatmapDataMap
+    );
+    const ungroupedStyle = getFeatureStyle(
+      { type: 'Feature', properties: { natcode: '9999' }, geometry: null },
+      heatmapDataMap
+    );
+
+    expect(firstMemberStyle.fillColor).toBe(secondMemberStyle.fillColor);
+    expect(firstMemberStyle.fillOpacity).toBe(0.7);
+    expect(firstMemberStyle.color).toBe('#0f172a');
+    expect(firstMemberStyle.weight).toBe(0.2);
+    expect(firstMemberStyle.opacity).toBe(1);
+    expect(ungroupedStyle.fillColor).toBe('#e5e7eb');
+    expect(ungroupedStyle.fillOpacity).toBe(0.14);
+
+    const tooltipHtml = capturedGetTooltipContent?.({
+      properties: {
+        natcode: '1001',
+        name: 'Mapped UAT',
+        county: 'Test county',
+        natLevName: 'Comuna',
+        cui: '12345678',
+      },
+      heatmapData: [],
+      mapViewType: 'UAT',
+      filters: {},
+    });
+
+    expect(tooltipHtml).toContain('Group 1');
+    expect(tooltipHtml).toContain('Manual groups');
+    expect(tooltipHtml).toContain('Source value');
+    expect(tooltipHtml).not.toContain('CUI:');
+  });
+
+  it('activates matching group ids in another workspace instead of toggling them off', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            properties: { natcode: '1001', name: 'Mapped UAT' },
+            geometry: {
+              type: 'Polygon',
+              coordinates: [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
+            },
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    };
+
+    const initialState = createMapState({
+      activeView: 'map',
+      activeGroupWorkspaceId: 'workspace_1',
+      groupWorkspaces: [
+        {
+          id: 'workspace_1',
+          key: 'manual',
+          label: 'Workspace 1',
+          groups: [
+            {
+              id: 'grp_same',
+              label: 'Shared group',
+              memberSirutaCodes: ['1001'],
+            },
+          ],
+        },
+        {
+          id: 'workspace_2',
+          key: 'manual-copy',
+          label: 'Workspace 2',
+          groups: [
+            {
+              id: 'grp_same',
+              label: 'Shared group',
+              memberSirutaCodes: ['1001'],
+            },
+          ],
+        },
+      ],
+    });
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="owner"
+        mapState={initialState}
+        setMapState={setMapState}
+        capabilities={{ readOnly: false }}
+      />
+    );
+
+    await openGroupWorkspaceConfigByIndex(0);
+    fireEvent.click(screen.getByDisplayValue('Shared group').closest('[role="button"]') as HTMLElement);
+    await waitFor(() => {
+      expect(setMapState).toHaveBeenCalledTimes(1);
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    await openGroupWorkspaceConfigByIndex(1);
+    fireEvent.click(screen.getByDisplayValue('Shared group').closest('[role="button"]') as HTMLElement);
+
+    const updateCall = setMapState.mock.calls[1]?.[0] as
+      | ((previousState: ReturnType<typeof createMapState>) => ReturnType<typeof createMapState>)
+      | undefined;
+    expect(typeof updateCall).toBe('function');
+
+    const nextState = updateCall?.(initialState);
+    expect(nextState?.activeGroupWorkspaceId).toBe('workspace_2');
+    expect(nextState?.mapCenter).toEqual([0.5, 0.5]);
+    expect(nextState?.mapZoom).toBe(10);
+  });
+
+  it('classifies grouped map colors by render unit id for bins', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    };
+
+    const activeSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    activeSeries.id = 'series_group_bins';
+    activeSeries.enabled = true;
+    activeSeries.groupWorkspaceId = 'manual-map-groups';
+    const activeValues = new Map<string, number | undefined>([
+      ['1001', 10],
+      ['2002', 20],
+    ]);
+    const valuesBySeriesId = new Map([[activeSeries.id, activeValues]]);
+    mockSeriesDataResult = {
+      valuesBySeriesId,
+      mapValuesBySeriesId: valuesBySeriesId,
+      domainsBySeriesId: new Map([[activeSeries.id, { type: 'uat' }]]),
+      unitsBySeriesId: new Map([[activeSeries.id, undefined]]),
+      warnings: [],
+      activeSeriesId: activeSeries.id,
+      activeValues,
+      isLoading: false,
+      error: null,
+    };
+    mockBinsResult = {
+      ...mockBinsResult,
+      binsCanApply: true,
+      binsClassification: {
+        groupsBySiruta: new Map([
+          ['grp_1', { groupId: 'bin_1', label: 'Bin 1', color: '#123456', isNoData: false }],
+        ]),
+        palette: [],
+      },
+    };
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="owner"
+        mapState={createMapState({
+          activeView: 'map',
+          series: [activeSeries],
+          activeSeriesId: activeSeries.id,
+          activeGroupWorkspaceId: 'manual-map-groups',
+          groupWorkspaces: [
+            {
+              id: 'manual-map-groups',
+              key: 'manual',
+              label: 'Manual groups',
+              groups: [
+                {
+                  id: 'grp_1',
+                  label: 'Group 1',
+                  memberSirutaCodes: ['1001', '2002'],
+                },
+              ],
+            },
+          ],
+        })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: false }}
+        mobileControlsDefaultCollapsed={true}
+      />
+    );
+
+    await screen.findByTestId('interactive-map');
+
+    const getFeatureStyle = latestInteractiveMapProps?.getFeatureStyle;
+    if (typeof getFeatureStyle !== 'function') {
+      throw new Error('InteractiveMap did not receive getFeatureStyle');
+    }
+
+    const firstMemberStyle = getFeatureStyle(
+      { type: 'Feature', properties: { natcode: '1001' }, geometry: null },
+      new Map()
+    );
+    const secondMemberStyle = getFeatureStyle(
+      { type: 'Feature', properties: { natcode: '2002' }, geometry: null },
+      new Map()
+    );
+
+    expect(firstMemberStyle.fillColor).toBe('#123456');
+    expect(secondMemberStyle.fillColor).toBe('#123456');
+    expect(firstMemberStyle.color).toBe('#0f172a');
+    expect(firstMemberStyle.weight).toBe(0.2);
+    expect(firstMemberStyle.opacity).toBe(1);
   });
 
   it('shows absolute min and max values in the default range legend', async () => {
@@ -2125,17 +2619,18 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(nextState?.activeSeriesId).toBe(secondSeries.id);
   });
 
-  it('adds a grouped value series from the active grouping and source series', async () => {
+  it('adds a grouped value series from the active group workspace and source series', async () => {
     const sourceSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
     sourceSeries.id = 'source_series';
     sourceSeries.label = 'Source value';
+    sourceSeries.groupWorkspaceId = 'manual-map-groups';
 
     const initialState = createMapState({
       activeView: 'map',
       series: [sourceSeries],
       activeSeriesId: sourceSeries.id,
-      activeGroupingId: 'manual-map-groups',
-      groupings: [
+      activeGroupWorkspaceId: 'manual-map-groups',
+      groupWorkspaces: [
         {
           id: 'manual-map-groups',
           key: 'manual',
@@ -2187,10 +2682,72 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     }
 
     expect(groupedSeries.sourceSeriesId).toBe(sourceSeries.id);
-    expect(groupedSeries.groupingId).toBe('manual-map-groups');
+    expect(groupedSeries.groupWorkspaceId).toBe('manual-map-groups');
     expect(groupedSeries.aggregation).toBe('sum');
     expect(nextState?.activeSeriesId).toBe(groupedSeries.id);
-    expect(nextState?.activeGroupingId).toBe('manual-map-groups');
+    expect(nextState?.activeGroupWorkspaceId).toBe('manual-map-groups');
+  });
+
+  it('deletes grouped value series when deleting their group workspace', async () => {
+    const sourceSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    sourceSeries.id = 'source_series';
+    sourceSeries.groupWorkspaceId = 'manual-map-groups';
+
+    const groupedSeries = createDefaultAdvancedMapAnalyticsSeries('map-grouped-value-series');
+    if (groupedSeries.type !== 'map-grouped-value-series') {
+      throw new Error('Expected grouped series in test setup.');
+    }
+    groupedSeries.id = 'grouped_series';
+    groupedSeries.sourceSeriesId = sourceSeries.id;
+    groupedSeries.groupWorkspaceId = 'manual-map-groups';
+
+    const initialState = createMapState({
+      activeView: 'map',
+      series: [sourceSeries, groupedSeries],
+      activeSeriesId: groupedSeries.id,
+      activeGroupWorkspaceId: 'manual-map-groups',
+      groupWorkspaces: [
+        {
+          id: 'manual-map-groups',
+          key: 'manual',
+          label: 'Manual groups',
+          groups: [
+            {
+              id: 'grp_1',
+              memberSirutaCodes: ['1001'],
+            },
+          ],
+        },
+      ],
+    });
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="owner"
+        mapState={initialState}
+        setMapState={setMapState}
+        capabilities={{ readOnly: false }}
+      />
+    );
+
+    await openFirstGroupWorkspaceConfig();
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Open workspace menu' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Delete workspace' }));
+
+    const updateCall = setMapState.mock.calls[0]?.[0] as
+      | ((previousState: ReturnType<typeof createMapState>) => ReturnType<typeof createMapState>)
+      | undefined;
+    expect(typeof updateCall).toBe('function');
+
+    const nextState = updateCall?.(initialState);
+    expect(nextState?.groupWorkspaces).toEqual([]);
+    expect(nextState?.series.map((series) => series.id)).toEqual([sourceSeries.id]);
+    expect(nextState?.series[0]?.groupWorkspaceId).toBeUndefined();
+    expect(nextState?.activeGroupWorkspaceId).toBeUndefined();
+    expect(nextState?.activeSeriesId).toBe(sourceSeries.id);
   });
 
   it('does not run series shortcuts in read-only mode', async () => {

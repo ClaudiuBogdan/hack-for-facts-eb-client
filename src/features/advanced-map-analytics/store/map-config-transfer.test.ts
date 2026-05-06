@@ -37,6 +37,25 @@ describe('map-config-transfer', () => {
     expect(parsed?.mapDescription).toBe('');
   });
 
+  it('accepts bare legacy grouping map state payloads', () => {
+    const parsed = parseMapConfigTransferInput({
+      mapName: 'Legacy grouping import',
+      activeGroupingId: 'legacy-groups',
+      groupings: [
+        {
+          id: 'legacy-groups',
+          key: 'manual',
+          label: 'Legacy groups',
+          groups: [],
+        },
+      ],
+    });
+
+    expect(parsed).not.toBeNull();
+    expect(parsed?.mapState.groupWorkspaces[0]?.id).toBe('legacy-groups');
+    expect(parsed?.mapState.activeGroupWorkspaceId).toBe('legacy-groups');
+  });
+
   it('rejects unrelated JSON objects', () => {
     expect(parseMapConfigTransferInput({ foo: 'bar' })).toBeNull();
   });

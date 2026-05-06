@@ -279,7 +279,7 @@ function areDomainsEqual(left: MapSeriesDomain, right: MapSeriesDomain): boolean
     return false;
   }
 
-  return left.type === 'uat' || left.groupingId === (right as { type: 'group'; groupingId: string }).groupingId;
+  return left.type === 'uat' || left.groupWorkspaceId === (right as { type: 'group'; groupWorkspaceId: string }).groupWorkspaceId;
 }
 
 function intersectSets(left: Set<string>, right: Set<string>): Set<string> {

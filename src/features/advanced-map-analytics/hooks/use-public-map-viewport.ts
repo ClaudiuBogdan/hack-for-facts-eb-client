@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
-import { AdvancedMapAnalyticsUrlStateSchema, type AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
+import { z } from 'zod';
+import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
 import { areMapCentersEqual } from '@/features/advanced-map-analytics/map-viewport-utils';
 import { parseSearchParamJson } from '@/lib/router-search';
 
@@ -9,9 +10,9 @@ export interface PublicMapViewport {
   mapCenter?: [number, number];
 }
 
-const PublicMapViewportSearchSchema = AdvancedMapAnalyticsUrlStateSchema.pick({
-  mapCenter: true,
-  mapZoom: true,
+const PublicMapViewportSearchSchema = z.object({
+  mapCenter: z.tuple([z.number().min(-90).max(90), z.number().min(-180).max(180)]).optional(),
+  mapZoom: z.number().min(1).max(20).optional(),
 });
 
 function buildViewportOverrideKey(viewportOverride: PublicMapViewport): string {

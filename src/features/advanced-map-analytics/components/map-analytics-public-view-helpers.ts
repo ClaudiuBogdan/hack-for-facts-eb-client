@@ -19,6 +19,7 @@ import {
   resolveSeriesDisplayLabel,
   resolveSeriesDisplayUnit,
 } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-series-utils';
+import { resolveSeriesDisplayValueForSiruta } from '@/lib/map-series/grouping';
 import {
   escapeHtmlValue,
   getEntityCuiFromUatProperties,
@@ -39,6 +40,14 @@ interface ColorRange {
   max: number;
 }
 
+const GROUPED_RENDER_UNIT_MEMBER_STROKE: PathOptions = {
+  color: '#0f172a',
+  weight: 0.2,
+  opacity: 1,
+  lineJoin: 'round',
+  lineCap: 'round',
+};
+
 interface BuildPublicMapFeatureStyleArgs {
   binsCanApply: boolean;
   binsClassification: BinsClassification;
@@ -46,6 +55,7 @@ interface BuildPublicMapFeatureStyleArgs {
   isContinuousIntervalMode: boolean;
   colorRange: ColorRange;
   gradient?: AdvancedMapAnalyticsBinsPresetConfig['gradient'];
+  renderUnitIdBySirutaCode?: Map<string, string>;
 }
 
 /**
@@ -59,6 +69,7 @@ export function buildPublicMapFeatureStyle({
   isContinuousIntervalMode,
   colorRange,
   gradient,
+  renderUnitIdBySirutaCode,
 }: BuildPublicMapFeatureStyleArgs): (
   feature: UatFeature,
   heatmapDataMap: Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint>
@@ -72,58 +83,69 @@ export function buildPublicMapFeatureStyle({
       return DEFAULT_FEATURE_STYLE;
     }
 
+    const featureKeyString = String(featureKey);
+    const renderUnitId = renderUnitIdBySirutaCode?.get(featureKeyString);
+    const renderKey = renderUnitId ?? featureKeyString;
+    const applyRenderAffordance = (style: PathOptions): PathOptions =>
+      renderUnitId
+        ? {
+            ...style,
+            ...GROUPED_RENDER_UNIT_MEMBER_STROKE,
+          }
+        : style;
+
     if (binsCanApply) {
-      const classification = binsClassification.groupsBySiruta.get(String(featureKey));
-      return {
+      const classification = binsClassification.groupsBySiruta.get(renderKey);
+      return applyRenderAffordance({
         ...DEFAULT_FEATURE_STYLE,
         fillColor: classification?.color ?? noDataColor,
         fillOpacity: 0.7,
-      };
+      });
     }
 
-    const dataPoint = heatmapDataMap.get(featureKey);
+    const dataPoint = heatmapDataMap.get(renderKey);
     if (!dataPoint) {
-      return {
+      return applyRenderAffordance({
         ...DEFAULT_FEATURE_STYLE,
         fillOpacity: 0.1,
         fillColor: isContinuousIntervalMode ? noDataColor : '#cccccc',
-      };
+      });
     }
 
     const value = dataPoint.amount;
     if (!Number.isFinite(value)) {
       if (!isContinuousIntervalMode) {
-        return DEFAULT_FEATURE_STYLE;
+        return applyRenderAffordance(DEFAULT_FEATURE_STYLE);
       }
-      return {
+      return applyRenderAffordance({
         ...DEFAULT_FEATURE_STYLE,
         fillColor: noDataColor,
         fillOpacity: 0.7,
-      };
+      });
     }
 
     if (isContinuousIntervalMode) {
-      return {
+      return applyRenderAffordance({
         ...DEFAULT_FEATURE_STYLE,
         fillColor: getContinuousGradientColor(value, colorRange, safeGradient, noDataColor),
         fillOpacity: 0.7,
-      };
+      });
     }
 
     if (colorRange.min === colorRange.max) {
-      return {
+      return applyRenderAffordance({
         ...DEFAULT_FEATURE_STYLE,
         fillColor: value !== 0 ? getHeatmapColor(0.5) : DEFAULT_FEATURE_STYLE.fillColor,
         fillOpacity: 0.7,
-      };
+      });
     }
 
     const normalized = normalizeValue(value, colorRange.min, colorRange.max);
-    return {
+    return applyRenderAffordance({
       ...DEFAULT_FEATURE_STYLE,
       fillColor: getHeatmapColor(normalized),
       fillOpacity: 0.7,
-    };
+    });
   };
 }
 
@@ -132,6 +154,7 @@ interface BuildPublicMapTooltipArgs {
   activeSeries: MapSupportedSeries | undefined;
   activeSeriesId: string | undefined;
   valuesBySeriesId: MapSeriesVectorCache;
+  displayValuesBySeriesId?: MapSeriesVectorCache;
   unitsBySeriesId: Map<string, string | undefined>;
   binsCanApply: boolean;
   binsClassification: BinsClassification;
@@ -139,11 +162,13 @@ interface BuildPublicMapTooltipArgs {
   domainsBySeriesId?: MapSeriesDomainCache;
   groupValuesBySirutaCode?: Map<string, Record<string, string | undefined>>;
   groupMetadataById?: Map<string, {
-    groupingId: string;
+    groupWorkspaceId: string;
     groupingLabel: string;
     groupLabel: string;
     memberSirutaCodes: string[];
   }>;
+  activeGroupWorkspaceId?: string;
+  renderUnitIdBySirutaCode?: Map<string, string>;
 }
 
 interface PublicMapTooltipContext {
@@ -163,6 +188,7 @@ export function buildPublicMapTooltipContent({
   activeSeries,
   activeSeriesId,
   valuesBySeriesId,
+  displayValuesBySeriesId,
   unitsBySeriesId,
   binsCanApply,
   binsClassification,
@@ -170,6 +196,8 @@ export function buildPublicMapTooltipContent({
   domainsBySeriesId,
   groupValuesBySirutaCode,
   groupMetadataById,
+  activeGroupWorkspaceId,
+  renderUnitIdBySirutaCode,
 }: BuildPublicMapTooltipArgs): (context: PublicMapTooltipContext) => string {
   return ({ properties }) => {
     const uatName = String(properties.name ?? t`UAT`).trim();
@@ -178,13 +206,18 @@ export function buildPublicMapTooltipContent({
       typeof properties.county === 'string' ? properties.county.trim() : '';
     const entityCui = getEntityCuiFromUatProperties(properties);
     const sirutaCode = String(properties.natcode ?? '').trim();
+    const activeRenderUnitId = renderUnitIdBySirutaCode?.get(sirutaCode);
+    const activeClassificationKey = activeRenderUnitId ?? sirutaCode;
     const activeSeriesDomain = activeSeriesId ? domainsBySeriesId?.get(activeSeriesId) : undefined;
+    const resolvedActiveGroupWorkspaceId = activeSeriesDomain?.type === 'group'
+      ? activeSeriesDomain.groupWorkspaceId
+      : activeGroupWorkspaceId;
     const activeGroupId = activeSeriesDomain?.type === 'group'
-      ? groupValuesBySirutaCode?.get(sirutaCode)?.[activeSeriesDomain.groupingId]
-      : undefined;
+      ? groupValuesBySirutaCode?.get(sirutaCode)?.[activeSeriesDomain.groupWorkspaceId]
+      : activeRenderUnitId;
     const activeGroupMetadata =
-      activeSeriesDomain?.type === 'group' && activeGroupId
-        ? groupMetadataById?.get(`${activeSeriesDomain.groupingId}::${activeGroupId}`)
+      resolvedActiveGroupWorkspaceId && activeGroupId
+        ? groupMetadataById?.get(`${resolvedActiveGroupWorkspaceId}::${activeGroupId}`)
         : undefined;
     const tooltipTitle = activeGroupMetadata?.groupLabel ??
       (natLevelName.length > 0 ? `${natLevelName} ${uatName}` : uatName);
@@ -221,7 +254,15 @@ export function buildPublicMapTooltipContent({
     }
 
     const seriesRows = enabledSeries.map((series) => {
-      const seriesValue = valuesBySeriesId.get(series.id)?.get(sirutaCode);
+      const seriesValue =
+        displayValuesBySeriesId?.get(series.id)?.get(sirutaCode) ??
+        resolveSeriesDisplayValueForSiruta({
+          seriesId: series.id,
+          sirutaCode,
+          valuesBySeriesId,
+          domainsBySeriesId: domainsBySeriesId ?? new Map(),
+          groupValuesBySirutaCode: groupValuesBySirutaCode ?? new Map(),
+        });
       const unit = resolveSeriesDisplayUnit(series, unitsBySeriesId);
       const formattedValue = formatAdvancedMapAnalyticsSeriesValue(seriesValue, unit);
       return {
@@ -247,10 +288,17 @@ export function buildPublicMapTooltipContent({
       .join('');
 
     const activeSeriesValue = activeSeriesId
-      ? valuesBySeriesId.get(activeSeriesId)?.get(sirutaCode)
+      ? displayValuesBySeriesId?.get(activeSeriesId)?.get(sirutaCode) ??
+        resolveSeriesDisplayValueForSiruta({
+          seriesId: activeSeriesId,
+          sirutaCode,
+          valuesBySeriesId,
+          domainsBySeriesId: domainsBySeriesId ?? new Map(),
+          groupValuesBySirutaCode: groupValuesBySirutaCode ?? new Map(),
+        })
       : undefined;
     const activeClassification = binsCanApply
-      ? binsClassification.groupsBySiruta.get(sirutaCode) ??
+      ? binsClassification.groupsBySiruta.get(activeClassificationKey) ??
         (activeNoDataConfig
           ? {
               label: activeNoDataConfig.label,
@@ -300,7 +348,10 @@ interface BuildPublicEntitySeriesRowsArgs {
   activeSeriesId: string | undefined;
   selection: MapAnalyticsEntityDetailsSelection;
   valuesBySeriesId: MapSeriesVectorCache;
+  displayValuesBySeriesId?: MapSeriesVectorCache;
   unitsBySeriesId: Map<string, string | undefined>;
+  domainsBySeriesId?: MapSeriesDomainCache;
+  groupValuesBySirutaCode?: Map<string, Record<string, string | undefined>>;
 }
 
 /**
@@ -312,14 +363,24 @@ export function buildPublicEntitySeriesRows({
   activeSeriesId,
   selection,
   valuesBySeriesId,
+  displayValuesBySeriesId,
   unitsBySeriesId,
+  domainsBySeriesId,
+  groupValuesBySirutaCode,
 }: BuildPublicEntitySeriesRowsArgs): MapAnalyticsEntitySeriesRow[] {
   return enabledSeries.map((series) => ({
     id: series.id,
     label: resolveSeriesDisplayLabel(series),
     payload: null,
     value: formatAdvancedMapAnalyticsSeriesValue(
-      valuesBySeriesId.get(series.id)?.get(selection.sirutaCode),
+      displayValuesBySeriesId?.get(series.id)?.get(selection.sirutaCode) ??
+        resolveSeriesDisplayValueForSiruta({
+          seriesId: series.id,
+          sirutaCode: selection.sirutaCode,
+          valuesBySeriesId,
+          domainsBySeriesId: domainsBySeriesId ?? new Map(),
+          groupValuesBySirutaCode: groupValuesBySirutaCode ?? new Map(),
+        }),
       resolveSeriesDisplayUnit(series, unitsBySeriesId)
     ),
     isActive: series.id === activeSeriesId,

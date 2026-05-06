@@ -93,7 +93,7 @@ export type MapSeriesVector = Map<string, number | undefined>;
 export type MapSeriesVectorCache = Map<string, MapSeriesVector>;
 export type MapSeriesDomain =
   | { type: 'uat' }
-  | { type: 'group'; groupingId: string };
+  | { type: 'group'; groupWorkspaceId: string };
 export type MapSeriesDomainCache = Map<string, MapSeriesDomain>;
 
 export interface MapSeriesCalculationResult {

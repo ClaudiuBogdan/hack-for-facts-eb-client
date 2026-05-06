@@ -3,7 +3,7 @@ import { queryOptions, useQuery } from '@tanstack/react-query';
 import type { Currency } from '@/schemas/charts';
 import type {
   AdvancedMapAnalyticsValueFilterRule,
-  MapGrouping,
+  MapGroupWorkspace,
   MapSupportedSeries,
 } from '@/schemas/advanced-map-analytics';
 import { fetchGroupedSeriesData } from '@/lib/api/map-series';
@@ -29,7 +29,7 @@ const isBrowser = typeof window !== 'undefined';
 
 interface UseAdvancedMapAnalyticsSeriesDataParams {
   series: MapSupportedSeries[];
-  groupings?: MapGrouping[];
+  groupWorkspaces?: MapGroupWorkspace[];
   activeSeriesId?: string;
   defaultCurrency: Currency;
   defaultInflationAdjusted: boolean;
@@ -200,7 +200,7 @@ export function useAdvancedMapAnalyticsSeriesData(
 
     const calculationResult = calculateMapSeriesValues({
       series: normalizedSeries,
-      groupings: params.groupings,
+      groupWorkspaces: params.groupWorkspaces,
       baseValuesBySeriesId: baseVectors,
       unitsBySeriesId: baseUnits,
     });
@@ -231,7 +231,7 @@ export function useAdvancedMapAnalyticsSeriesData(
     const mapValuesBySeriesId = projectGroupedValuesToSiruta({
       valuesBySeriesId: valueFilterResult.valuesBySeriesId,
       domainsBySeriesId: calculationResult.domainsBySeriesId,
-      groupings: params.groupings ?? [],
+      groupWorkspaces: params.groupWorkspaces ?? [],
     });
 
     if ((params.serializedDraftLength ?? 0) > DRAFT_SIZE_WARNING_THRESHOLD) {
@@ -254,7 +254,7 @@ export function useAdvancedMapAnalyticsSeriesData(
     groupedDataQuery.data,
     params.localUnitsBySeriesId,
     params.localValuesBySeriesId,
-    params.groupings,
+    params.groupWorkspaces,
     normalizedEnabledSeries,
     normalizedSeries,
     normalizedBaseSeries,

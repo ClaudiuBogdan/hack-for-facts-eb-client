@@ -1,6 +1,6 @@
 import type {
   MapGroupedValueSeries,
-  MapGrouping,
+  MapGroupWorkspace,
 } from '@/schemas/advanced-map-analytics';
 import type {
   MapSeriesDomain,
@@ -9,7 +9,7 @@ import type {
 } from '@/lib/map-series/interfaces';
 
 export function getSeriesDomainKey(domain: MapSeriesDomain): string {
-  return domain.type === 'uat' ? 'uat' : `group:${domain.groupingId}`;
+  return domain.type === 'uat' ? 'uat' : `group:${domain.groupWorkspaceId}`;
 }
 
 export function areSeriesDomainsEqual(
@@ -24,12 +24,12 @@ export function getUatDomain(): MapSeriesDomain {
 }
 
 export function getGroupedSeriesDomain(series: MapGroupedValueSeries): MapSeriesDomain {
-  return { type: 'group', groupingId: series.groupingId };
+  return { type: 'group', groupWorkspaceId: series.groupWorkspaceId };
 }
 
 export function evaluateGroupedValueSeries(params: {
   series: MapGroupedValueSeries;
-  grouping: MapGrouping;
+  grouping: MapGroupWorkspace;
   sourceValues: MapSeriesVector;
 }): MapSeriesVector {
   const vector: MapSeriesVector = new Map();
@@ -89,9 +89,9 @@ function getOrderedMemberCodes(
 export function projectGroupedValuesToSiruta(params: {
   valuesBySeriesId: MapSeriesVectorCache;
   domainsBySeriesId: Map<string, MapSeriesDomain>;
-  groupings: MapGrouping[];
+  groupWorkspaces: MapGroupWorkspace[];
 }): MapSeriesVectorCache {
-  const groupingsById = new Map(params.groupings.map((grouping) => [grouping.id, grouping]));
+  const groupWorkspacesById = new Map(params.groupWorkspaces.map((grouping) => [grouping.id, grouping]));
   const projected: MapSeriesVectorCache = new Map();
 
   for (const [seriesId, vector] of params.valuesBySeriesId.entries()) {
@@ -101,7 +101,7 @@ export function projectGroupedValuesToSiruta(params: {
       continue;
     }
 
-    const grouping = groupingsById.get(domain.groupingId);
+    const grouping = groupWorkspacesById.get(domain.groupWorkspaceId);
     if (!grouping) {
       projected.set(seriesId, new Map());
       continue;
@@ -120,12 +120,32 @@ export function projectGroupedValuesToSiruta(params: {
   return projected;
 }
 
+export function resolveSeriesDisplayValueForSiruta(params: {
+  seriesId: string;
+  sirutaCode: string;
+  valuesBySeriesId: MapSeriesVectorCache;
+  domainsBySeriesId: Map<string, MapSeriesDomain>;
+  groupValuesBySirutaCode: Map<string, Record<string, string | undefined>>;
+}): number | undefined {
+  const domain = params.domainsBySeriesId.get(params.seriesId);
+  if (domain?.type !== 'group') {
+    return params.valuesBySeriesId.get(params.seriesId)?.get(params.sirutaCode);
+  }
+
+  const groupId = params.groupValuesBySirutaCode.get(params.sirutaCode)?.[domain.groupWorkspaceId];
+  if (!groupId) {
+    return undefined;
+  }
+
+  return params.valuesBySeriesId.get(params.seriesId)?.get(groupId);
+}
+
 export function buildGroupingValuesBySiruta(params: {
-  groupings: MapGrouping[];
+  groupWorkspaces: MapGroupWorkspace[];
 }): Map<string, Record<string, string | undefined>> {
   const valuesBySiruta = new Map<string, Record<string, string | undefined>>();
 
-  for (const grouping of params.groupings) {
+  for (const grouping of params.groupWorkspaces) {
     for (const group of grouping.groups) {
       for (const sirutaCode of group.memberSirutaCodes) {
         const row = valuesBySiruta.get(sirutaCode) ?? {};
@@ -139,20 +159,20 @@ export function buildGroupingValuesBySiruta(params: {
 }
 
 export function buildGroupMetadataById(params: {
-  groupings: MapGrouping[];
-}): Map<string, { groupingId: string; groupingLabel: string; groupLabel: string; memberSirutaCodes: string[] }> {
+  groupWorkspaces: MapGroupWorkspace[];
+}): Map<string, { groupWorkspaceId: string; groupingLabel: string; groupLabel: string; memberSirutaCodes: string[] }> {
   const metadataByGroupId = new Map<string, {
-    groupingId: string;
+    groupWorkspaceId: string;
     groupingLabel: string;
     groupLabel: string;
     memberSirutaCodes: string[];
   }>();
 
-  for (const grouping of params.groupings) {
+  for (const grouping of params.groupWorkspaces) {
     const groupingLabel = grouping.label || grouping.key || grouping.id;
     for (const group of grouping.groups) {
       metadataByGroupId.set(getGroupMetadataKey(grouping.id, group.id), {
-        groupingId: grouping.id,
+        groupWorkspaceId: grouping.id,
         groupingLabel,
         groupLabel: group.label || group.id,
         memberSirutaCodes: group.memberSirutaCodes,
@@ -163,6 +183,6 @@ export function buildGroupMetadataById(params: {
   return metadataByGroupId;
 }
 
-export function getGroupMetadataKey(groupingId: string, groupId: string): string {
-  return `${groupingId}::${groupId}`;
+export function getGroupMetadataKey(groupWorkspaceId: string, groupId: string): string {
+  return `${groupWorkspaceId}::${groupId}`;
 }

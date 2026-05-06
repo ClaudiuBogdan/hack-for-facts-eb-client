@@ -40,18 +40,25 @@ import type {
   AdvancedMapAnalyticsWidgetKey,
   MapSupportedSeries,
 } from '@/schemas/advanced-map-analytics';
+import type { HeatmapUATDataPoint } from '@/schemas/heatmap';
 import type { GroupedSeriesDataResponse } from '@/lib/map-series/interfaces';
 import {
   areSeriesDomainsEqual,
   buildGroupMetadataById,
   buildGroupingValuesBySiruta,
   getGroupMetadataKey,
+  resolveSeriesDisplayValueForSiruta,
 } from '@/lib/map-series/grouping';
 import { loadInteractiveMapModule } from '@/features/advanced-map-analytics/analytics-map-warmup';
 import {
   MapAnalyticsEntityDetailsPanel,
   type MapAnalyticsEntityDetailsSelection,
 } from '@/features/advanced-map-analytics/components/map-analytics-entity-details-panel';
+import { buildGroupWorkspaceBoundaryGeoJsonData } from '@/features/advanced-map-analytics/components/map-analytics-group-boundaries';
+import {
+  buildActiveMapRenderUnitContext,
+  buildManualGroupDisplayValuesBySeriesId,
+} from '@/features/advanced-map-analytics/components/map-analytics-render-units';
 import { MapAnalyticsQuickActions } from '@/features/advanced-map-analytics/components/map-analytics-quick-actions';
 import { MapAnalyticsDescriptionInline } from '@/features/advanced-map-analytics/components/map-analytics-description-inline';
 import { MapAnalyticsSeriesSelector } from '@/features/advanced-map-analytics/components/map-analytics-series-selector';
@@ -126,11 +133,21 @@ export function MapAnalyticsPublicView({
     () => mapState.series.filter((series) => series.enabled),
     [mapState.series]
   );
+  const requestedActiveSeriesId = useMemo(() => {
+    if (
+      mapState.activeSeriesId &&
+      enabledSeries.some((series) => series.id === mapState.activeSeriesId)
+    ) {
+      return mapState.activeSeriesId;
+    }
+
+    return enabledSeries[0]?.id;
+  }, [enabledSeries, mapState.activeSeriesId]);
 
   const seriesDataResult = useAdvancedMapAnalyticsSeriesData({
     series: mapState.series,
-    groupings: mapState.groupings,
-    activeSeriesId: mapState.activeSeriesId,
+    groupWorkspaces: mapState.groupWorkspaces,
+    activeSeriesId: requestedActiveSeriesId,
     defaultCurrency: userCurrency,
     defaultInflationAdjusted: userInflationAdjusted,
     valueFilterRules: mapState.valueFilters.rules,
@@ -158,12 +175,53 @@ export function MapAnalyticsPublicView({
     return enabledSeries.find((series) => series.id === resolvedActiveSeriesId);
   }, [enabledSeries, resolvedActiveSeriesId]);
 
+  const activeUnit = activeSeries
+    ? resolveSeriesDisplayUnit(activeSeries, unitsBySeriesId)
+    : undefined;
+
+  const activeMapRenderUnitContext = useMemo(
+    () =>
+      buildActiveMapRenderUnitContext({
+        activeSeriesId: resolvedActiveSeriesId,
+        activeSeries,
+        activeSeriesUnit: activeUnit,
+        activeGroupWorkspaceId: mapState.activeGroupWorkspaceId,
+        groupWorkspaces: mapState.groupWorkspaces,
+        valuesBySeriesId,
+        mapValuesBySeriesId,
+        domainsBySeriesId,
+      }),
+    [
+      activeSeries,
+      activeUnit,
+      domainsBySeriesId,
+      mapState.activeGroupWorkspaceId,
+      mapState.groupWorkspaces,
+      mapValuesBySeriesId,
+      resolvedActiveSeriesId,
+      valuesBySeriesId,
+    ]
+  );
+
+  const activeBinsValues = useMemo(() => {
+    if (!activeMapRenderUnitContext) {
+      return activeValues;
+    }
+
+    return new Map(
+      [...activeMapRenderUnitContext.renderUnitsById.values()].map((renderUnit) => [
+        renderUnit.id,
+        renderUnit.value,
+      ])
+    );
+  }, [activeMapRenderUnitContext, activeValues]);
+
   const binsResult = useAdvancedMapAnalyticsBins({
     mapState,
     updateState: updateMapStateDraft,
     activeSeries,
     activeSeriesId: resolvedActiveSeriesId,
-    activeValues,
+    activeValues: activeBinsValues,
     seriesWarnings,
   });
 
@@ -176,10 +234,30 @@ export function MapAnalyticsPublicView({
 
   const isContinuousIntervalMode = activeBinsPreset?.config.intervalMode === 'continuous';
 
-  const activeHeatmapData = useMemo(
-    () => buildPublicHeatmapData({ activeSeries, activeValues, binsCanApply }),
-    [activeSeries, activeValues, binsCanApply]
+  const activeHeatmapData = useMemo<HeatmapUATDataPoint[]>(() => {
+    if (!activeMapRenderUnitContext) {
+      return buildPublicHeatmapData({ activeSeries, activeValues, binsCanApply });
+    }
+
+    return buildPublicHeatmapData({
+      activeSeries,
+      activeValues: new Map(
+        [...activeMapRenderUnitContext.renderUnitsById.values()].map((renderUnit) => [
+          renderUnit.id,
+          renderUnit.value,
+        ])
+      ),
+      binsCanApply,
+    });
+  }, [activeMapRenderUnitContext, activeSeries, activeValues, binsCanApply]);
+
+  const activeRenderUnits = useMemo(
+    () => activeMapRenderUnitContext ? [...activeMapRenderUnitContext.renderUnitsById.values()] : undefined,
+    [activeMapRenderUnitContext]
   );
+
+  const activeSeriesDisplayValues =
+    activeMapRenderUnitContext?.valueBySirutaCode ?? activeValues;
 
   const realDataRange = useMemo(
     () => computePublicHeatmapDataRange({ heatmapData: activeHeatmapData }),
@@ -210,10 +288,12 @@ export function MapAnalyticsPublicView({
         isContinuousIntervalMode,
         colorRange,
         gradient: activeBinsPreset?.config.gradient,
+        renderUnitIdBySirutaCode: activeMapRenderUnitContext?.renderUnitIdBySirutaCode,
       }),
     [
       activeBinsPreset?.config.gradient,
       activeNoDataConfig,
+      activeMapRenderUnitContext,
       binsCanApply,
       binsClassification,
       colorRange,
@@ -222,13 +302,42 @@ export function MapAnalyticsPublicView({
   );
 
   const groupValuesBySirutaCode = useMemo(
-    () => buildGroupingValuesBySiruta({ groupings: mapState.groupings }),
-    [mapState.groupings]
+    () => buildGroupingValuesBySiruta({ groupWorkspaces: mapState.groupWorkspaces }),
+    [mapState.groupWorkspaces]
   );
 
   const groupMetadataById = useMemo(
-    () => buildGroupMetadataById({ groupings: mapState.groupings }),
-    [mapState.groupings]
+    () => buildGroupMetadataById({ groupWorkspaces: mapState.groupWorkspaces }),
+    [mapState.groupWorkspaces]
+  );
+
+  const activeGroupWorkspaceIdForDisplay = useMemo(() => {
+    const activeSeriesDomain = resolvedActiveSeriesId
+      ? domainsBySeriesId.get(resolvedActiveSeriesId)
+      : undefined;
+    return activeSeriesDomain?.type === 'group'
+      ? activeSeriesDomain.groupWorkspaceId
+      : mapState.activeGroupWorkspaceId;
+  }, [domainsBySeriesId, mapState.activeGroupWorkspaceId, resolvedActiveSeriesId]);
+
+  const manualGroupDisplayValuesBySeriesId = useMemo(
+    () =>
+      buildManualGroupDisplayValuesBySeriesId({
+        activeGroupWorkspaceId: activeGroupWorkspaceIdForDisplay,
+        groupWorkspaces: mapState.groupWorkspaces,
+        enabledSeries,
+        valuesBySeriesId,
+        mapValuesBySeriesId,
+        domainsBySeriesId,
+      }),
+    [
+      activeGroupWorkspaceIdForDisplay,
+      domainsBySeriesId,
+      enabledSeries,
+      mapState.groupWorkspaces,
+      mapValuesBySeriesId,
+      valuesBySeriesId,
+    ]
   );
 
   const getTooltipContent = useMemo(
@@ -237,7 +346,8 @@ export function MapAnalyticsPublicView({
         enabledSeries,
         activeSeries,
         activeSeriesId: resolvedActiveSeriesId,
-        valuesBySeriesId: mapValuesBySeriesId,
+        valuesBySeriesId,
+        displayValuesBySeriesId: manualGroupDisplayValuesBySeriesId,
         unitsBySeriesId,
         binsCanApply,
         binsClassification,
@@ -245,9 +355,13 @@ export function MapAnalyticsPublicView({
         domainsBySeriesId,
         groupValuesBySirutaCode,
         groupMetadataById,
+        activeGroupWorkspaceId: activeGroupWorkspaceIdForDisplay,
+        renderUnitIdBySirutaCode: activeMapRenderUnitContext?.renderUnitIdBySirutaCode,
       }),
     [
       activeNoDataConfig,
+      activeGroupWorkspaceIdForDisplay,
+      activeMapRenderUnitContext,
       activeSeries,
       binsCanApply,
       binsClassification,
@@ -255,9 +369,10 @@ export function MapAnalyticsPublicView({
       enabledSeries,
       groupMetadataById,
       groupValuesBySirutaCode,
+      manualGroupDisplayValuesBySeriesId,
       resolvedActiveSeriesId,
       unitsBySeriesId,
-      mapValuesBySeriesId,
+      valuesBySeriesId,
     ]
   );
 
@@ -290,49 +405,35 @@ export function MapAnalyticsPublicView({
 
   const groupingColumns = useMemo<AdvancedMapAnalyticsTableGroupingColumn[]>(
     () =>
-      mapState.groupings.map((grouping) => ({
+      mapState.groupWorkspaces.map((grouping) => ({
         id: grouping.id,
         label: grouping.label || grouping.key || grouping.id,
       })),
-    [mapState.groupings]
+    [mapState.groupWorkspaces]
   );
 
   const groupingBoundaryGeoJsonData = useMemo<GeoJsonObject | null>(() => {
     const activeSeriesDomain = resolvedActiveSeriesId
       ? domainsBySeriesId.get(resolvedActiveSeriesId)
       : undefined;
-    const activeGroupingId =
+    const activeGroupWorkspaceId =
       activeSeriesDomain?.type === 'group'
-        ? activeSeriesDomain.groupingId
-        : mapState.activeGroupingId;
-    const activeGrouping = activeGroupingId
-      ? mapState.groupings.find((grouping) => grouping.id === activeGroupingId)
+        ? activeSeriesDomain.groupWorkspaceId
+        : mapState.activeGroupWorkspaceId;
+    const activeGrouping = activeGroupWorkspaceId
+      ? mapState.groupWorkspaces.find((grouping) => grouping.id === activeGroupWorkspaceId)
       : undefined;
 
     if (!activeGrouping) {
       return null;
     }
 
-    const memberSirutaCodes = new Set(
-      activeGrouping.groups.flatMap((group) => group.memberSirutaCodes)
-    );
-    const features = geoJsonFeatures.filter((feature) =>
-      memberSirutaCodes.has(String(feature.properties?.natcode ?? '').trim())
-    );
-
-    if (features.length === 0) {
-      return null;
-    }
-
-    return {
-      type: 'FeatureCollection',
-      features,
-    } as GeoJsonObject;
+    return buildGroupWorkspaceBoundaryGeoJsonData(activeGrouping.groups, geoJsonFeatures);
   }, [
     domainsBySeriesId,
     geoJsonFeatures,
-    mapState.activeGroupingId,
-    mapState.groupings,
+    mapState.activeGroupWorkspaceId,
+    mapState.groupWorkspaces,
     resolvedActiveSeriesId,
   ]);
 
@@ -353,7 +454,7 @@ export function MapAnalyticsPublicView({
         if (
           !seriesDomain ||
           seriesDomain.type !== 'group' ||
-          seriesDomain.groupingId !== activeDomain.groupingId
+          seriesDomain.groupWorkspaceId !== activeDomain.groupWorkspaceId
         ) {
           continue;
         }
@@ -368,7 +469,7 @@ export function MapAnalyticsPublicView({
 
       return [...uniqueGroupIds]
         .map((groupId) => {
-          const metadata = groupMetadataById.get(getGroupMetadataKey(activeDomain.groupingId, groupId));
+          const metadata = groupMetadataById.get(getGroupMetadataKey(activeDomain.groupWorkspaceId, groupId));
           const rowValuesBySeriesId: Record<string, number | undefined> = {};
 
           for (const seriesColumn of seriesColumns) {
@@ -384,7 +485,7 @@ export function MapAnalyticsPublicView({
             uatName: metadata?.groupLabel || groupId,
             countyName: metadata?.groupingLabel || t`Group`,
             groupValuesByGroupingId: {
-              [activeDomain.groupingId]: groupId,
+              [activeDomain.groupWorkspaceId]: groupId,
             },
             valuesBySeriesId: rowValuesBySeriesId,
           };
@@ -426,9 +527,15 @@ export function MapAnalyticsPublicView({
         const rowValuesBySeriesId: Record<string, number | undefined> = {};
 
         for (const seriesColumn of seriesColumns) {
-          rowValuesBySeriesId[seriesColumn.id] = mapValuesBySeriesId
-            .get(seriesColumn.id)
-            ?.get(sirutaCode);
+          rowValuesBySeriesId[seriesColumn.id] =
+            manualGroupDisplayValuesBySeriesId?.get(seriesColumn.id)?.get(sirutaCode) ??
+            resolveSeriesDisplayValueForSiruta({
+              seriesId: seriesColumn.id,
+              sirutaCode,
+              valuesBySeriesId,
+              domainsBySeriesId,
+              groupValuesBySirutaCode,
+            });
         }
 
         return {
@@ -453,6 +560,7 @@ export function MapAnalyticsPublicView({
     domainsBySeriesId,
     groupMetadataById,
     groupValuesBySirutaCode,
+    manualGroupDisplayValuesBySeriesId,
     mapValuesBySeriesId,
     resolvedActiveSeriesId,
     seriesColumns,
@@ -516,7 +624,7 @@ export function MapAnalyticsPublicView({
     useAdvancedMapAnalyticsTableBinsFilter({
       rows: tableRows,
       binsPresets: mapState.binsPresets,
-      activeValues,
+      activeValues: activeSeriesDisplayValues,
       tableBinFiltersByPresetId: mapState.tableBinFiltersByPresetId,
     });
 
@@ -566,10 +674,22 @@ export function MapAnalyticsPublicView({
       enabledSeries,
       activeSeriesId: resolvedActiveSeriesId,
       selection: selectedMapEntity,
-      valuesBySeriesId: mapValuesBySeriesId,
+      valuesBySeriesId,
+      displayValuesBySeriesId: manualGroupDisplayValuesBySeriesId,
       unitsBySeriesId,
+      domainsBySeriesId,
+      groupValuesBySirutaCode,
     });
-  }, [enabledSeries, mapValuesBySeriesId, resolvedActiveSeriesId, selectedMapEntity, unitsBySeriesId]);
+  }, [
+    domainsBySeriesId,
+    enabledSeries,
+    groupValuesBySirutaCode,
+    manualGroupDisplayValuesBySeriesId,
+    resolvedActiveSeriesId,
+    selectedMapEntity,
+    unitsBySeriesId,
+    valuesBySeriesId,
+  ]);
 
   const selectedEntityProfileQuery = useEntityProfile(selectedMapEntity?.entityCui);
   const selectedEntityProfileErrorMessage =
@@ -664,9 +784,6 @@ export function MapAnalyticsPublicView({
 
   const mapZoom = mapState.mapZoom ?? (isMobile ? 6 : 7.7);
   const mapCenter = mapState.mapCenter;
-  const activeUnit = activeSeries
-    ? resolveSeriesDisplayUnit(activeSeries, unitsBySeriesId)
-    : undefined;
   const activeBinsLegendTitle = useMemo(() => {
     const presetTitle = activeBinsPreset?.config.title?.trim();
     if (presetTitle && presetTitle.length > 0) {
@@ -851,7 +968,8 @@ export function MapAnalyticsPublicView({
                     mapHeight="100%"
                     showLabels={Boolean(activeSeries)}
                     labelMode="active-series"
-                    activeSeriesValuesBySirutaCode={activeValues}
+                    activeSeriesValuesBySirutaCode={activeSeriesDisplayValues}
+                    activeRenderUnits={activeRenderUnits}
                     activeSeriesUnit={activeUnit}
                     onViewChange={handleMapViewChange}
                     getTooltipContent={getTooltipContent}

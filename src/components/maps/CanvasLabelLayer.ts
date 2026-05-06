@@ -6,8 +6,10 @@ import {
   ADVANCED_ZOOM_THRESHOLDS,
   estimateTextWidth,
   getZoomBucket,
+  processActiveRenderUnitLabel,
   processCountyFallbackLabel,
   processFeatureForLabel,
+  type ActiveMapRenderUnit,
   type FeatureLabelGeometry,
   type LabelMode,
   type PolygonLabelData,
@@ -30,6 +32,7 @@ interface CanvasLabelLayerOptions extends L.LayerOptions {
   showLabels?: boolean;
   labelMode?: LabelMode;
   activeSeriesValuesBySirutaCode?: Map<string, number | undefined>;
+  activeRenderUnits?: ActiveMapRenderUnit[];
   activeSeriesUnit?: string;
 }
 
@@ -277,6 +280,29 @@ function computeMaxLegacyPopulation(
     }
   }
   return max;
+}
+
+function resolveFeatureSirutaCode(feature: Feature<Geometry, Record<string, unknown>>): string {
+  const properties = feature.properties ?? {};
+  const candidates = [
+    properties.natcode,
+    properties.siruta_code,
+    properties.uat_code,
+    properties.mnemonic,
+  ];
+
+  for (const candidate of candidates) {
+    if (candidate === undefined || candidate === null) {
+      continue;
+    }
+
+    const value = String(candidate).trim();
+    if (value.length > 0) {
+      return value;
+    }
+  }
+
+  return '';
 }
 
 /**
@@ -554,6 +580,7 @@ export class CanvasLabelLayer extends L.Layer {
       currency,
       labelMode = 'legacy-heatmap',
       activeSeriesValuesBySirutaCode,
+      activeRenderUnits,
       activeSeriesUnit,
       showLabels,
     } = this.layerOptions;
@@ -569,6 +596,7 @@ export class CanvasLabelLayer extends L.Layer {
       currency ?? '',
       labelMode,
       getReferenceSignature(activeSeriesValuesBySirutaCode),
+      getReferenceSignature(activeRenderUnits),
       activeSeriesUnit ?? '',
       showLabels ? '1' : '0',
     ].join('|');
@@ -626,6 +654,7 @@ export class CanvasLabelLayer extends L.Layer {
       showLabels,
       labelMode = 'legacy-heatmap',
       activeSeriesValuesBySirutaCode,
+      activeRenderUnits,
       activeSeriesUnit,
     } = this.layerOptions;
 
@@ -656,6 +685,72 @@ export class CanvasLabelLayer extends L.Layer {
         : 0;
 
     const visibleLabels: PolygonLabelData[] = [];
+
+    if (labelMode === 'active-series' && activeRenderUnits?.length) {
+      const geometriesBySirutaCode = new Map<string, FeatureLabelGeometry>();
+      const renderUnitMemberSirutaCodes = new Set<string>();
+      for (const cachedFeature of this.geometryCache) {
+        const sirutaCode = resolveFeatureSirutaCode(cachedFeature.feature);
+        if (sirutaCode.length > 0) {
+          geometriesBySirutaCode.set(sirutaCode, cachedFeature.geometry);
+        }
+      }
+
+      for (const renderUnit of activeRenderUnits) {
+        for (const sirutaCode of renderUnit.memberSirutaCodes) {
+          renderUnitMemberSirutaCodes.add(sirutaCode);
+        }
+
+        const memberGeometries = renderUnit.memberSirutaCodes
+          .map((sirutaCode) => geometriesBySirutaCode.get(sirutaCode))
+          .filter((geometry): geometry is FeatureLabelGeometry => geometry !== undefined);
+        const label = processActiveRenderUnitLabel(this._map, currentZoom, {
+          renderUnit,
+          memberGeometries,
+          activeSeriesUnit,
+        });
+
+        if (label?.bounds.intersects(viewportBounds)) {
+          visibleLabels.push(label);
+        }
+      }
+
+      for (const cachedFeature of this.geometryCache) {
+        if (!cachedFeature.geometry.bounds.intersects(viewportBounds)) {
+          continue;
+        }
+
+        const sirutaCode = resolveFeatureSirutaCode(cachedFeature.feature);
+        if (!renderUnitMemberSirutaCodes.has(sirutaCode)) {
+          continue;
+        }
+
+        const label = processFeatureForLabel(
+          cachedFeature.feature,
+          this._map,
+          currentZoom,
+          mapViewType,
+          heatmapDataMap,
+          normalization,
+          this.layerOptions.currency,
+          maxPopulation,
+          {
+            labelMode,
+            activeSeriesValuesBySirutaCode,
+            activeSeriesUnit,
+            suppressActiveSeriesAmount: true,
+            precomputedGeometry: cachedFeature.geometry,
+          },
+        );
+
+        if (label) {
+          visibleLabels.push(label);
+        }
+      }
+
+      this.labels = visibleLabels;
+      return;
+    }
 
     for (const cachedFeature of this.geometryCache) {
       // Coarse viewport cull happens against the cheap precomputed bounds, so

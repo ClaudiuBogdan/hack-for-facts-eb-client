@@ -293,7 +293,7 @@ describe('AdvancedMapAnalyticsSeriesEditorModal', () => {
         mode="edit"
         series={groupedSeries}
         allSeries={[groupedSeries]}
-        groupings={[]}
+        groupWorkspaces={[]}
         onOpenChange={vi.fn()}
         onUpdateSeries={vi.fn()}
         onChangeSeriesType={vi.fn()}
@@ -305,7 +305,7 @@ describe('AdvancedMapAnalyticsSeriesEditorModal', () => {
       screen.getByText('Create a source series before configuring a grouped series.')
     ).toBeInTheDocument();
     expect(
-      screen.getByText('Create a grouping before configuring a grouped series.')
+      screen.getByText('Create a group workspace before configuring a grouped series.')
     ).toBeInTheDocument();
   });
 
@@ -318,7 +318,7 @@ describe('AdvancedMapAnalyticsSeriesEditorModal', () => {
       throw new Error('Unexpected series type in test setup');
     }
     groupedSeries.sourceSeriesId = calculationSeries.id;
-    groupedSeries.groupingId = 'county_groups';
+    groupedSeries.groupWorkspaceId = 'county_groups';
 
     render(
       <AdvancedMapAnalyticsSeriesEditorModal
@@ -326,7 +326,7 @@ describe('AdvancedMapAnalyticsSeriesEditorModal', () => {
         mode="edit"
         series={groupedSeries}
         allSeries={[groupedSeries, calculationSeries]}
-        groupings={[
+        groupWorkspaces={[
           {
             id: 'county_groups',
             key: 'county',

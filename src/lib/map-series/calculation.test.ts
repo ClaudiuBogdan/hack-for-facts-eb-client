@@ -4,7 +4,7 @@ import {
   MapGroupedValueSeriesConfigurationSchema,
   createDefaultAdvancedMapAnalyticsSeries,
 } from '@/schemas/advanced-map-analytics';
-import type { MapGrouping, MapSupportedSeries } from '@/schemas/advanced-map-analytics';
+import type { MapGroupWorkspace, MapSupportedSeries } from '@/schemas/advanced-map-analytics';
 import type { MapSeriesVectorCache } from '@/lib/map-series/interfaces';
 
 function withCalculation(
@@ -22,16 +22,25 @@ function withCalculation(
 }
 
 describe('calculateMapSeriesValues', () => {
+  it('defaults grouped value series aggregation to sum', () => {
+    const groupedSeries = createDefaultAdvancedMapAnalyticsSeries('map-grouped-value-series');
+    if (groupedSeries.type !== 'map-grouped-value-series') {
+      throw new Error('Expected grouped value series');
+    }
+
+    expect(groupedSeries.aggregation).toBe('sum');
+  });
+
   it('aggregates UAT values into grouped value series', () => {
     const baseSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
     const groupedSeries = MapGroupedValueSeriesConfigurationSchema.parse({
       id: 'grouped',
       type: 'map-grouped-value-series',
       sourceSeriesId: baseSeries.id,
-      groupingId: 'county',
+      groupWorkspaceId: 'county',
       aggregation: 'sum',
     });
-    const groupings: MapGrouping[] = [
+    const groupWorkspaces: MapGroupWorkspace[] = [
       {
         id: 'county',
         key: 'county',
@@ -51,7 +60,7 @@ describe('calculateMapSeriesValues', () => {
 
     const result = calculateMapSeriesValues({
       series: [baseSeries, groupedSeries],
-      groupings,
+      groupWorkspaces,
       baseValuesBySeriesId: new Map([
         [
           baseSeries.id,
@@ -68,7 +77,7 @@ describe('calculateMapSeriesValues', () => {
     expect(result.valuesBySeriesId.get(groupedSeries.id)?.get('county:B')).toBe(40);
     expect(result.domainsBySeriesId.get(groupedSeries.id)).toEqual({
       type: 'group',
-      groupingId: 'county',
+      groupWorkspaceId: 'county',
     });
   });
 
@@ -78,13 +87,13 @@ describe('calculateMapSeriesValues', () => {
       id: 'grouped',
       type: 'map-grouped-value-series',
       sourceSeriesId: baseSeries.id,
-      groupingId: 'county',
+      groupWorkspaceId: 'county',
       aggregation: 'sum',
     });
 
     const result = calculateMapSeriesValues({
       series: [baseSeries, groupedSeries],
-      groupings: [
+      groupWorkspaces: [
         {
           id: 'county',
           key: 'county',
@@ -111,13 +120,13 @@ describe('calculateMapSeriesValues', () => {
       id: 'grouped',
       type: 'map-grouped-value-series',
       sourceSeriesId: 'grouped',
-      groupingId: 'county',
+      groupWorkspaceId: 'county',
       aggregation: 'sum',
     });
 
     const result = calculateMapSeriesValues({
       series: [groupedSeries],
-      groupings: [
+      groupWorkspaces: [
         {
           id: 'county',
           key: 'county',
@@ -146,14 +155,14 @@ describe('calculateMapSeriesValues', () => {
       id: 'spending-grouped',
       type: 'map-grouped-value-series',
       sourceSeriesId: spendingSeries.id,
-      groupingId: 'county',
+      groupWorkspaceId: 'county',
       aggregation: 'sum',
     });
     const populationGrouped = MapGroupedValueSeriesConfigurationSchema.parse({
       id: 'population-grouped',
       type: 'map-grouped-value-series',
       sourceSeriesId: populationSeries.id,
-      groupingId: 'county',
+      groupWorkspaceId: 'county',
       aggregation: 'sum',
     });
     const perCapitaSeries = withCalculation(
@@ -163,7 +172,7 @@ describe('calculateMapSeriesValues', () => {
         args: [spendingGrouped.id, populationGrouped.id],
       }
     );
-    const groupings: MapGrouping[] = [
+    const groupWorkspaces: MapGroupWorkspace[] = [
       {
         id: 'county',
         key: 'county',
@@ -179,7 +188,7 @@ describe('calculateMapSeriesValues', () => {
 
     const result = calculateMapSeriesValues({
       series: [spendingSeries, populationSeries, spendingGrouped, populationGrouped, perCapitaSeries],
-      groupings,
+      groupWorkspaces,
       baseValuesBySeriesId: new Map([
         [spendingSeries.id, new Map([['1001', 10], ['1002', 20]])],
         [populationSeries.id, new Map([['1001', 2], ['1002', 4]])],
@@ -189,7 +198,7 @@ describe('calculateMapSeriesValues', () => {
     expect(result.valuesBySeriesId.get(perCapitaSeries.id)?.get('county:CJ')).toBe(5);
     expect(result.domainsBySeriesId.get(perCapitaSeries.id)).toEqual({
       type: 'group',
-      groupingId: 'county',
+      groupWorkspaceId: 'county',
     });
   });
 
@@ -199,14 +208,14 @@ describe('calculateMapSeriesValues', () => {
       id: 'county-grouped',
       type: 'map-grouped-value-series',
       sourceSeriesId: baseSeries.id,
-      groupingId: 'county',
+      groupWorkspaceId: 'county',
       aggregation: 'sum',
     });
     const regionGrouped = MapGroupedValueSeriesConfigurationSchema.parse({
       id: 'region-grouped',
       type: 'map-grouped-value-series',
       sourceSeriesId: baseSeries.id,
-      groupingId: 'region',
+      groupWorkspaceId: 'region',
       aggregation: 'sum',
     });
     const calcSeries = withCalculation(
@@ -219,7 +228,7 @@ describe('calculateMapSeriesValues', () => {
 
     const result = calculateMapSeriesValues({
       series: [baseSeries, countyGrouped, regionGrouped, calcSeries],
-      groupings: [
+      groupWorkspaces: [
         {
           id: 'county',
           key: 'county',

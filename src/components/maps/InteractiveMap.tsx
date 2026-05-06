@@ -22,6 +22,7 @@ import { shouldUseCanvasRenderer } from './leaflet-renderer';
 import {
   ADVANCED_ZOOM_THRESHOLDS,
   ZOOM_THRESHOLDS,
+  type ActiveMapRenderUnit,
   type LabelMode,
 } from './polygonLabels';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -227,6 +228,7 @@ interface InteractiveMapProps {
   showLabels?: boolean;
   labelMode?: LabelMode;
   activeSeriesValuesBySirutaCode?: Map<string, number | undefined>;
+  activeRenderUnits?: ActiveMapRenderUnit[];
   activeSeriesUnit?: string;
   onViewChange?: (center: [number, number], zoom: number) => void;
   getTooltipContent?: TooltipContentBuilder;
@@ -257,6 +259,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   showLabels = true,
   labelMode = 'legacy-heatmap',
   activeSeriesValuesBySirutaCode,
+  activeRenderUnits,
   activeSeriesUnit,
   onViewChange,
   getTooltipContent,
@@ -509,6 +512,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
             currency={(filters as Record<string, unknown>).currency as 'RON' | 'EUR' | 'USD' | undefined}
             labelMode={labelMode}
             activeSeriesValuesBySirutaCode={activeSeriesValuesBySirutaCode}
+            activeRenderUnits={activeRenderUnits}
             activeSeriesUnit={activeSeriesUnit}
           />
         </>

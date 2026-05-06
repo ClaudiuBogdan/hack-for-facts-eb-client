@@ -11,7 +11,7 @@ import {
   getGeoJsonDatasetLabel,
   type GeoJsonFilterOption,
   type GeoJsonDatasetKey,
-  type MapGrouping,
+  type MapGroupWorkspace,
   type MapSupportedSeries,
 } from '@/schemas/advanced-map-analytics';
 import { CalculationEditor } from '@/components/charts/components/series-config/CalculationEditor';
@@ -67,7 +67,7 @@ interface AdvancedMapAnalyticsSeriesEditorModalProps {
   mode: 'add' | 'edit';
   series?: MapSupportedSeries;
   allSeries: MapSupportedSeries[];
-  groupings?: MapGrouping[];
+  groupWorkspaces?: MapGroupWorkspace[];
   geoJsonCountyOptions?: GeoJsonFilterOption[];
   geoJsonRegionOptions?: GeoJsonFilterOption[];
   onOpenChange: (open: boolean) => void;
@@ -85,7 +85,7 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
   mode,
   series,
   allSeries,
-  groupings = [],
+  groupWorkspaces = [],
   geoJsonCountyOptions = [],
   geoJsonRegionOptions = [],
   onOpenChange,
@@ -255,7 +255,7 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
               displayedSeriesType={displayedSeriesType}
               open={open}
               allSeries={allSeries}
-              groupings={groupings}
+              groupWorkspaces={groupWorkspaces}
               geoJsonCountyOptions={geoJsonCountyOptions}
               geoJsonRegionOptions={geoJsonRegionOptions}
               onUpdateSeries={onUpdateSeries}
@@ -305,7 +305,7 @@ interface SeriesConfigEditorProps {
   series: MapSupportedSeries;
   displayedSeriesType: MapSupportedSeries['type'];
   allSeries: MapSupportedSeries[];
-  groupings: MapGrouping[];
+  groupWorkspaces: MapGroupWorkspace[];
   geoJsonCountyOptions: GeoJsonFilterOption[];
   geoJsonRegionOptions: GeoJsonFilterOption[];
   onUpdateSeries: (seriesId: string, updater: (draft: MapSupportedSeries) => void) => void;
@@ -320,7 +320,7 @@ function SeriesConfigEditor({
   series,
   displayedSeriesType,
   allSeries,
-  groupings,
+  groupWorkspaces,
   geoJsonCountyOptions,
   geoJsonRegionOptions,
   onUpdateSeries,
@@ -388,7 +388,7 @@ function SeriesConfigEditor({
       <GroupedValueSeriesEditor
         series={series}
         allSeries={allSeries}
-        groupings={groupings}
+        groupWorkspaces={groupWorkspaces}
         onUpdateSeries={onUpdateSeries}
       />
     );
@@ -435,14 +435,14 @@ function SeriesConfigEditor({
 interface GroupedValueSeriesEditorProps {
   series: Extract<MapSupportedSeries, { type: 'map-grouped-value-series' }>;
   allSeries: MapSupportedSeries[];
-  groupings: MapGrouping[];
+  groupWorkspaces: MapGroupWorkspace[];
   onUpdateSeries: (seriesId: string, updater: (draft: MapSupportedSeries) => void) => void;
 }
 
 function GroupedValueSeriesEditor({
   series,
   allSeries,
-  groupings,
+  groupWorkspaces,
   onUpdateSeries,
 }: Readonly<GroupedValueSeriesEditorProps>) {
   const sourceSeriesOptions = allSeries.filter(
@@ -453,12 +453,12 @@ function GroupedValueSeriesEditor({
   const selectedSourceSeries = sourceSeriesOptions.find(
     (candidate) => candidate.id === series.sourceSeriesId
   );
-  const selectedGrouping = groupings.find((grouping) => grouping.id === series.groupingId);
+  const selectedGroupWorkspace = groupWorkspaces.find((workspace) => workspace.id === series.groupWorkspaceId);
 
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        {t`Aggregate an existing UAT-level series into the selected grouping.`}
+        {t`Aggregate an existing UAT-level series into the selected group workspace.`}
       </p>
 
       {sourceSeriesOptions.length === 0 ? (
@@ -475,17 +475,17 @@ function GroupedValueSeriesEditor({
         </GroupedSeriesEditorNotice>
       ) : null}
 
-      {groupings.length === 0 ? (
+      {groupWorkspaces.length === 0 ? (
         <GroupedSeriesEditorNotice>
-          {t`Create a grouping before configuring a grouped series.`}
+          {t`Create a group workspace before configuring a grouped series.`}
         </GroupedSeriesEditorNotice>
-      ) : !series.groupingId ? (
+      ) : !series.groupWorkspaceId ? (
         <GroupedSeriesEditorNotice>
-          {t`Select the grouping that should receive the aggregated values.`}
+          {t`Select the group workspace that should receive the aggregated values.`}
         </GroupedSeriesEditorNotice>
-      ) : selectedGrouping && selectedGrouping.groups.length === 0 ? (
+      ) : selectedGroupWorkspace && selectedGroupWorkspace.groups.length === 0 ? (
         <GroupedSeriesEditorNotice>
-          {t`The selected grouping does not contain any groups yet.`}
+          {t`The selected group workspace does not contain any groups yet.`}
         </GroupedSeriesEditorNotice>
       ) : null}
 
@@ -518,27 +518,27 @@ function GroupedValueSeriesEditor({
         </Select>
       </FormField>
 
-      <FormField label={t`Grouping`} htmlFor="advanced-map-analytics-grouped-grouping">
+      <FormField label={t`Group workspace`} htmlFor="advanced-map-analytics-grouped-grouping">
         <Select
-          value={series.groupingId || GROUPED_SERIES_EMPTY_SELECT_VALUE}
+          value={series.groupWorkspaceId || GROUPED_SERIES_EMPTY_SELECT_VALUE}
           onValueChange={(nextGroupingId) => {
             onUpdateSeries(series.id, (draft) => {
               if (draft.type !== 'map-grouped-value-series') {
                 return;
               }
-              draft.groupingId =
+              draft.groupWorkspaceId =
                 nextGroupingId === GROUPED_SERIES_EMPTY_SELECT_VALUE ? '' : nextGroupingId;
             });
           }}
         >
           <SelectTrigger id="advanced-map-analytics-grouped-grouping">
-            <SelectValue placeholder={t`Select grouping`} />
+            <SelectValue placeholder={t`Select group workspace`} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={GROUPED_SERIES_EMPTY_SELECT_VALUE}>
-              {t`No grouping`}
+              {t`No group workspace`}
             </SelectItem>
-            {groupings.map((grouping) => (
+            {groupWorkspaces.map((grouping) => (
               <SelectItem key={grouping.id} value={grouping.id}>
                 {grouping.label || grouping.key || grouping.id}
               </SelectItem>

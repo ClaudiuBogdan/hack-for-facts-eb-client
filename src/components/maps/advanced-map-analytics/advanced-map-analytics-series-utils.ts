@@ -157,16 +157,36 @@ export function applySetActiveSeries(
     series.id === seriesId ? { ...series, enabled: true } : series
   );
   const activeSeries = nextSeries.find((series) => series.id === seriesId);
-  const activeGroupingId =
-    resolveSeriesGroupingId(activeSeries, new Map(nextSeries.map((series) => [series.id, series]))) ??
-    state.activeGroupingId;
+  const activeGroupWorkspaceId =
+    resolveSeriesGroupWorkspaceId(activeSeries, new Map(nextSeries.map((series) => [series.id, series]))) ??
+    state.activeGroupWorkspaceId;
 
   return {
     ...state,
     series: nextSeries,
     activeSeriesId: seriesId,
-    activeGroupingId,
+    activeGroupWorkspaceId,
   };
+}
+
+export function resolveSeriesScopeGroupWorkspaceId(series: MapSupportedSeries): string | undefined {
+  const groupWorkspaceId = series.groupWorkspaceId?.trim();
+  return groupWorkspaceId && groupWorkspaceId.length > 0 ? groupWorkspaceId : undefined;
+}
+
+export function isSeriesInGroupWorkspace(
+  series: MapSupportedSeries,
+  groupWorkspaceId: string | undefined
+): boolean {
+  const normalizedGroupingId = groupWorkspaceId?.trim() || undefined;
+  return resolveSeriesScopeGroupWorkspaceId(series) === normalizedGroupingId;
+}
+
+export function filterSeriesByGroupWorkspace(
+  seriesList: MapSupportedSeries[],
+  groupWorkspaceId: string | undefined
+): MapSupportedSeries[] {
+  return seriesList.filter((series) => isSeriesInGroupWorkspace(series, groupWorkspaceId));
 }
 
 export function applyToggleSeriesEnabled(
@@ -183,6 +203,59 @@ export function applyToggleSeriesEnabled(
     ...state,
     series: ensuredSelection.series,
     activeSeriesId: ensuredSelection.activeSeriesId,
+  };
+}
+
+export function ensureActiveSeriesSelectionForGroupWorkspace(
+  seriesList: MapSupportedSeries[],
+  activeSeriesId: string | undefined,
+  groupWorkspaceId: string | undefined
+): { series: MapSupportedSeries[]; activeSeriesId: string | undefined } {
+  const scopedSeries = filterSeriesByGroupWorkspace(seriesList, groupWorkspaceId);
+  if (scopedSeries.length === 0) {
+    return {
+      series: seriesList,
+      activeSeriesId: undefined,
+    };
+  }
+
+  if (
+    typeof activeSeriesId === 'string' &&
+    scopedSeries.some((series) => series.id === activeSeriesId && series.enabled)
+  ) {
+    return {
+      series: seriesList,
+      activeSeriesId,
+    };
+  }
+
+  const firstEnabledSeries = scopedSeries.find((series) => series.enabled);
+  if (firstEnabledSeries) {
+    return {
+      series: seriesList,
+      activeSeriesId: firstEnabledSeries.id,
+    };
+  }
+
+  const firstScopedSeries = scopedSeries[0];
+  if (!firstScopedSeries) {
+    return {
+      series: seriesList,
+      activeSeriesId: undefined,
+    };
+  }
+
+  return {
+    series: seriesList.map((series) =>
+      series.id === firstScopedSeries.id
+        ? {
+            ...series,
+            enabled: true,
+            updatedAt: new Date().toISOString(),
+          }
+        : series
+    ),
+    activeSeriesId: firstScopedSeries.id,
   };
 }
 
@@ -256,6 +329,8 @@ export function convertSeriesToType(
   replacementSeries.label = currentSeries.label;
   replacementSeries.createdAt = currentSeries.createdAt;
   replacementSeries.updatedAt = new Date().toISOString();
+  replacementSeries.groupWorkspaceId = resolveSeriesScopeGroupWorkspaceId(currentSeries);
+  replacementSeries.granularity = currentSeries.granularity;
 
   const normalizedUnit = (currentSeries.unit ?? '').trim();
   const shouldPreserveGeoJsonUnit =
@@ -272,7 +347,8 @@ export function convertSeriesToType(
 export function duplicateSeriesAfterSource(
   seriesList: MapSupportedSeries[],
   sourceSeriesId: string,
-  preferredDuplicatedSeriesId?: string
+  preferredDuplicatedSeriesId?: string,
+  targetGroupWorkspaceId?: string
 ): { series: MapSupportedSeries[]; duplicatedSeries?: MapSupportedSeries } {
   const sourceIndex = seriesList.findIndex((series) => series.id === sourceSeriesId);
   if (sourceIndex === -1) {
@@ -298,6 +374,10 @@ export function duplicateSeriesAfterSource(
   duplicatedSeries.label = `${sourceLabel} (copy)`;
   duplicatedSeries.createdAt = nextTimestamp;
   duplicatedSeries.updatedAt = nextTimestamp;
+  duplicatedSeries.groupWorkspaceId =
+    duplicatedSeries.type === 'map-grouped-value-series' && !targetGroupWorkspaceId
+      ? sourceSeries.groupWorkspaceId
+      : targetGroupWorkspaceId;
 
   const nextSeriesList = [...seriesList];
   nextSeriesList.splice(sourceIndex + 1, 0, duplicatedSeries);
@@ -523,7 +603,7 @@ function getSeriesDependencyIds(series: MapSupportedSeries): string[] {
   return [];
 }
 
-function resolveSeriesGroupingId(
+function resolveSeriesGroupWorkspaceId(
   series: MapSupportedSeries | undefined,
   seriesById: Map<string, MapSupportedSeries>,
   visiting = new Set<string>()
@@ -532,8 +612,9 @@ function resolveSeriesGroupingId(
     return undefined;
   }
 
-  if (series.type === 'map-grouped-value-series') {
-    return series.groupingId;
+  const scopedGroupingId = resolveSeriesScopeGroupWorkspaceId(series);
+  if (scopedGroupingId) {
+    return scopedGroupingId;
   }
 
   if (series.type !== 'aggregated-series-calculation') {
@@ -554,7 +635,7 @@ function resolveSeriesGroupingId(
   const dependencyGroupingIds = new Set<string>();
   for (const dependencySeriesId of dependencySeriesIds) {
     const dependencySeries = seriesById.get(dependencySeriesId);
-    const dependencyGroupingId = resolveSeriesGroupingId(
+    const dependencyGroupingId = resolveSeriesGroupWorkspaceId(
       dependencySeries,
       seriesById,
       visiting

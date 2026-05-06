@@ -46,11 +46,26 @@ export interface PolygonLabelData {
   cacheKey: string;
 }
 
+export interface ActiveMapRenderUnit {
+  id: string;
+  label: string;
+  memberSirutaCodes: string[];
+  value?: number;
+  unit?: string;
+}
+
 export interface ProcessFeatureForLabelOptions {
   labelMode?: LabelMode;
   activeSeriesValuesBySirutaCode?: Map<string, number | undefined>;
   activeSeriesUnit?: string;
+  suppressActiveSeriesAmount?: boolean;
   precomputedGeometry?: FeatureLabelGeometry;
+}
+
+export interface ProcessActiveRenderUnitLabelOptions {
+  renderUnit: ActiveMapRenderUnit;
+  memberGeometries: FeatureLabelGeometry[];
+  activeSeriesUnit?: string;
 }
 
 export interface ProcessCountyFallbackLabelOptions {
@@ -158,6 +173,10 @@ export function getLabelCacheKey(
 
 function getFallbackCountyLabelCacheKey(featureId: string, zoom: number): string {
   return `county-fallback|${getZoomBucket(zoom)}|${featureId}`;
+}
+
+function getRenderUnitLabelCacheKey(renderUnitId: string, zoom: number): string {
+  return `render-unit|${getZoomBucket(zoom)}|${renderUnitId}`;
 }
 
 function resolveCountyFallbackMnemonic(properties: Record<string, unknown>): string {
@@ -426,6 +445,61 @@ function getBoundsDimensions(bounds: L.LatLngBounds, map: L.Map): { width: numbe
   };
 }
 
+function mergeGeometryBounds(geometries: FeatureLabelGeometry[]): L.LatLngBounds | null {
+  const firstGeometry = geometries[0];
+  if (!firstGeometry) {
+    return null;
+  }
+
+  const bounds = L.latLngBounds(firstGeometry.bounds.getSouthWest(), firstGeometry.bounds.getNorthEast());
+  for (const geometry of geometries.slice(1)) {
+    bounds.extend(geometry.bounds);
+  }
+  return bounds;
+}
+
+function getMergedGeometryAnchor(
+  geometries: FeatureLabelGeometry[],
+  map: L.Map,
+): { centroid: [number, number]; dimensions: { width: number; height: number }; area: number } | null {
+  const bounds = mergeGeometryBounds(geometries);
+  if (!bounds) {
+    return null;
+  }
+
+  const dimensions = getBoundsDimensions(bounds, map);
+  const mergedArea = dimensions.width * dimensions.height;
+  if (!Number.isFinite(mergedArea) || mergedArea <= 0) {
+    return null;
+  }
+
+  let weightedLat = 0;
+  let weightedLng = 0;
+  let totalWeight = 0;
+
+  for (const geometry of geometries) {
+    const memberDimensions = getBoundsDimensions(geometry.bounds, map);
+    const area = memberDimensions.width * memberDimensions.height;
+    if (!Number.isFinite(area) || area <= 0) {
+      continue;
+    }
+
+    weightedLat += geometry.centroid[0] * area;
+    weightedLng += geometry.centroid[1] * area;
+    totalWeight += area;
+  }
+
+  if (totalWeight <= 0) {
+    return null;
+  }
+
+  return {
+    centroid: [weightedLat / totalWeight, weightedLng / totalWeight],
+    dimensions,
+    area: mergedArea,
+  };
+}
+
 /**
  * Closed-form replacement for the prior iterative font-size shrink loop.
  *
@@ -548,7 +622,11 @@ export function processFeatureForLabel(
     if (value === undefined || !Number.isFinite(value)) {
       return null;
     }
-    showAmount = Boolean(value !== undefined && (isCounty || zoom >= ADVANCED_ZOOM_THRESHOLDS.UAT_AMOUNT_MIN));
+    showAmount = Boolean(
+      !options?.suppressActiveSeriesAmount &&
+      value !== undefined &&
+      (isCounty || zoom >= ADVANCED_ZOOM_THRESHOLDS.UAT_AMOUNT_MIN)
+    );
     amountText = showAmount
       ? formatAdvancedMapAnalyticsSeriesValue(value, options?.activeSeriesUnit)
       : undefined;
@@ -607,6 +685,70 @@ export function processFeatureForLabel(
     hasValue: value !== undefined && Number.isFinite(value),
     value,
     cacheKey: getLabelCacheKey(featureId, zoom, labelMode),
+  };
+}
+
+export function processActiveRenderUnitLabel(
+  map: L.Map,
+  zoom: number,
+  options: ProcessActiveRenderUnitLabelOptions,
+): PolygonLabelData | null {
+  const { renderUnit, memberGeometries, activeSeriesUnit } = options;
+  const value = renderUnit.value;
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return null;
+  }
+
+  if (memberGeometries.length === 0 || zoom < ADVANCED_ZOOM_THRESHOLDS.UAT_NAME_MIN) {
+    return null;
+  }
+
+  const anchor = getMergedGeometryAnchor(memberGeometries, map);
+  const bounds = mergeGeometryBounds(memberGeometries);
+  if (!anchor || !bounds) {
+    return null;
+  }
+
+  const showAmount = zoom >= ADVANCED_ZOOM_THRESHOLDS.UAT_AMOUNT_MIN;
+  const amountText = showAmount
+    ? formatAdvancedMapAnalyticsSeriesValue(value, renderUnit.unit ?? activeSeriesUnit)
+    : undefined;
+  const label = normalizeWhitespace(renderUnit.label || renderUnit.id);
+  if (label.length === 0) {
+    return null;
+  }
+
+  let fontSize = calculateFontSize(anchor.area, zoom, 11);
+  fontSize = Math.max(MIN_ADVANCED_LABEL_FONT_SIZE, fontSize);
+  fontSize = solveLabelFontSize(
+    fontSize,
+    label,
+    anchor.dimensions,
+    showAmount,
+    MIN_ADVANCED_LABEL_FONT_SIZE
+  );
+
+  let displayText = label;
+  if (!doesLabelFitWithinDimensions(displayText, fontSize, anchor.dimensions, showAmount)) {
+    const maxTextWidth = anchor.dimensions.width * 0.78;
+    const estimatedCharacterWidth = Math.max(1, fontSize * 0.58);
+    const maxCharacters = Math.max(4, Math.floor(maxTextWidth / estimatedCharacterWidth));
+    displayText = truncateLabelText(displayText, maxCharacters);
+  }
+
+  return {
+    text: displayText,
+    amount: amountText,
+    position: anchor.centroid,
+    bounds,
+    area: anchor.area,
+    fontSize,
+    visible: true,
+    showAmount,
+    featureId: `render-unit:${renderUnit.id}`,
+    hasValue: true,
+    value,
+    cacheKey: getRenderUnitLabelCacheKey(renderUnit.id, zoom),
   };
 }
 
