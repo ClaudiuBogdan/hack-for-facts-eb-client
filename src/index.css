@@ -486,6 +486,11 @@ details> :not(summary) {
   /* https://docs.sentry.io/platforms/javascript/guides/solid/user-feedback/configuration/ */
 }
 
+.maplibregl-popup.interactive-map-tooltip-popup,
+.maplibregl-popup.interactive-map-tooltip-popup * {
+  pointer-events: none;
+}
+
 /* 3D Flip Card Utilities */
 @utility perspective-1000 {
   perspective: 1000px;

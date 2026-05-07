@@ -96,8 +96,13 @@ const getClientManualChunk = (id: string) => {
   if (id.includes('/node_modules/recharts/')) {
     return 'recharts';
   }
-  if (id.includes('/node_modules/leaflet/') || id.includes('/node_modules/react-leaflet/')) {
-    return 'leaflet';
+  if (
+    id.includes('/node_modules/leaflet/') ||
+    id.includes('/node_modules/react-leaflet/') ||
+    id.includes('/node_modules/maplibre-gl/') ||
+    id.includes('/node_modules/pmtiles/')
+  ) {
+    return 'maps';
   }
   if (id.includes('/node_modules/@clerk/clerk-react/')) {
     return 'clerk';

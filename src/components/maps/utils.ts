@@ -2,12 +2,19 @@ import { HeatmapCountyDataPoint, HeatmapUATDataPoint } from "@/schemas/heatmap";
 import { UatFeature, UatProperties } from './interfaces';
 import { formatCurrency, formatNumber, getNormalizationUnit, getUserLocale } from '@/lib/utils';
 import { DEFAULT_FEATURE_STYLE, PERMANENT_HIGHLIGHT_STYLE } from './constants';
-import type { PathOptions, GeoJSON as LeafletGeoJSON } from 'leaflet';
 import { Feature, Geometry } from 'geojson';
 import { AnalyticsFilterType } from "@/schemas/charts";
 import { t } from "@lingui/core/macro";
+import type { InteractiveMapFeatureStyle } from './map-types';
 
-type LeafletGeoJsonWithMapRef = LeafletGeoJSON & {
+type GeoJsonLayerGroupLike = {
+  eachLayer: (callback: (layer: unknown) => void) => void;
+  _map?: {
+    getContainer?: () => HTMLElement | null;
+  };
+};
+
+type GeoJsonLayerGroupWithMapRef = GeoJsonLayerGroupLike & {
   _map?: {
     getContainer?: () => HTMLElement | null;
   };
@@ -59,7 +66,7 @@ const createFilterSummary = (filters: AnalyticsFilterType): string => {
  * Builds an O(1) lookup keyed by the feature identifier the tooltip uses
  * (`siruta_code` for UATs, `county_code` for counties).
  */
-const buildHeatmapTooltipLookup = (
+export const buildHeatmapTooltipLookup = (
   heatmapData: (HeatmapUATDataPoint | HeatmapCountyDataPoint)[] | undefined,
 ): Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint> => {
   const lookup = new Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint>();
@@ -88,7 +95,8 @@ export const createTooltipContent = (
   properties: UatProperties,
   heatmapData: (HeatmapUATDataPoint | HeatmapCountyDataPoint)[] | undefined,
   mapViewType: 'UAT' | 'County',
-  filters: AnalyticsFilterType
+  filters: AnalyticsFilterType,
+  heatmapTooltipLookup: Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint> = buildHeatmapTooltipLookup(heatmapData),
 ): string => {
   const isUAT = mapViewType === 'UAT';
   const featureIdentifier = isUAT ? properties.natcode : properties.mnemonic;
@@ -112,13 +120,11 @@ export const createTooltipContent = (
     noData: `font-style: italic; color: #666; margin-top: 4px; display: flex; flex-direction: column; `
   };
 
-  // O(1) keyed lookup avoids re-scanning heatmapData on every hover.
-  const lookup = buildHeatmapTooltipLookup(heatmapData);
   const candidateKey =
     typeof featureIdentifier === 'string' || typeof featureIdentifier === 'number'
       ? featureIdentifier
       : undefined;
-  const candidate = candidateKey !== undefined ? lookup.get(candidateKey) : undefined;
+  const candidate = candidateKey !== undefined ? heatmapTooltipLookup.get(candidateKey) : undefined;
   const dataPoint = candidate
     ? (isUAT
         ? ('siruta_code' in candidate ? candidate : undefined)
@@ -318,7 +324,7 @@ export const createHeatmapStyleFunction = (
   mapViewType: 'UAT' | 'County',
   valueKey: 'amount' | 'total_amount' | 'per_capita_amount',
   getColor: (value: number) => string = getHeatmapColor
-): ((feature: UatFeature) => PathOptions) => {
+): ((feature: UatFeature) => InteractiveMapFeatureStyle) => {
   // Build the lookup once per style-function instance. The previous
   // implementation ran an O(n) `.find()` on every feature; since this style
   // function is invoked once per feature on every restyle pass, that quickly
@@ -389,11 +395,11 @@ export function getStyleForFeature(
   feature: Feature<Geometry, unknown> | undefined,
   args: {
     heatmapDataMap: Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint>;
-    getFeatureStyle: (feature: UatFeature, heatmapDataMap: Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint>) => PathOptions;
+    getFeatureStyle: (feature: UatFeature, heatmapDataMap: Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint>) => InteractiveMapFeatureStyle;
     highlightedFeatureId?: string | number;
     alwaysResolveFeatureStyle?: boolean;
   }
-): PathOptions {
+): InteractiveMapFeatureStyle {
   if (feature?.properties) {
     const uatProperties = feature.properties as UatProperties;
     const baseStyle = args.alwaysResolveFeatureStyle || args.heatmapDataMap.size > 0
@@ -436,8 +442,8 @@ export function buildHeatmapDataMap(
   return map;
 }
 
-type StyleFunctionTracker = LeafletGeoJSON & {
-  __lastAppliedStyleFn?: (feature?: Feature<Geometry, unknown>) => PathOptions;
+type StyleFunctionTracker = GeoJsonLayerGroupLike & {
+  __lastAppliedStyleFn?: (feature?: Feature<Geometry, unknown>) => InteractiveMapFeatureStyle;
 };
 
 /**
@@ -449,12 +455,12 @@ type StyleFunctionTracker = LeafletGeoJSON & {
  * full per-feature `setStyle` pass on every render.
  */
 export function restyleAllFeatures(
-  layerGroup: LeafletGeoJSON | null,
-  styleFn: (feature?: Feature<Geometry, unknown>) => PathOptions,
+  layerGroup: GeoJsonLayerGroupLike | null,
+  styleFn: (feature?: Feature<Geometry, unknown>) => InteractiveMapFeatureStyle,
   options?: { force?: boolean },
 ) {
   if (!layerGroup) return;
-  const map = (layerGroup as LeafletGeoJsonWithMapRef)._map;
+  const map = (layerGroup as GeoJsonLayerGroupWithMapRef)._map;
   const container = map?.getContainer?.();
 
   // Skip style updates while the layer is detached during map teardown.
@@ -473,7 +479,7 @@ export function restyleAllFeatures(
       if (!feature) return;
       const nextStyle = styleFn(feature);
       // Use duck typing instead of instanceof to avoid runtime Leaflet import
-      const layerWithStyle = layer as unknown as { setStyle?: (style: PathOptions) => void };
+      const layerWithStyle = layer as unknown as { setStyle?: (style: InteractiveMapFeatureStyle) => void };
       if (typeof layerWithStyle.setStyle === 'function') {
         layerWithStyle.setStyle(nextStyle);
       }

@@ -2,13 +2,13 @@ import { HeatmapUATDataPoint, HeatmapCountyDataPoint } from "@/schemas/heatmap";
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
 import React, { useState, lazy, Suspense } from "react";
 import { getPercentileValues, createHeatmapStyleFunction } from "@/components/maps/utils";
-import type { LeafletMouseEvent } from "leaflet";
+import type { InteractiveMapFeatureEvent } from "@/components/maps/InteractiveMap";
 import { UatProperties } from "@/components/maps/interfaces";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ClientOnly } from "@/components/ssr/ClientOnly";
 import { ErrorBoundary } from "@/components/errors/ErrorBoundary";
 
-// Lazy load InteractiveMap to prevent Leaflet from being evaluated on the server
+// Lazy load InteractiveMap to keep the WebGL map renderer off the server.
 const InteractiveMap = lazy(() => import("@/components/maps/InteractiveMap").then(m => ({ default: m.InteractiveMap })));
 import { useGeoJsonData } from "@/hooks/useGeoJson";
 import { MapFilter } from "@/components/filters/MapFilter";
@@ -62,7 +62,7 @@ function MapPage() {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isLegendModalOpen, setIsLegendModalOpen] = useState(false);
 
-  const mapZoom = mapState.mapZoom ?? (isMobile ? 6 : 7.7);
+  const mapZoom = mapState.mapZoom ?? (isMobile ? 5.4 : 6);
 
   const effectiveNormalization: Normalization = React.useMemo(() => {
     const raw = mapState.filters.normalization ?? 'total';
@@ -137,7 +137,7 @@ function MapPage() {
     error: heatmapError,
   } = useHeatmapData(effectiveFilters, mapState.mapViewType);
 
-  const handleFeatureClick = async (properties: UatProperties, _event?: LeafletMouseEvent) => {
+  const handleFeatureClick = async (properties: UatProperties, _event?: InteractiveMapFeatureEvent) => {
     // The entity map support only a limited set of filters, so we need to pass them as a search param.
     // If we set all the filters, the data doesn't make sense for the entity page, as the filters are not visible.
     const { report_period: period, account_category, normalization } = effectiveFilters;
@@ -272,7 +272,7 @@ function MapPage() {
             <div className="p-4 text-center"><Trans>Map data not available.</Trans></div>
           ) : (
             <>
-              {/* Map view - kept mounted but hidden when inactive to preserve Leaflet state */}
+              {/* Map view - kept mounted but hidden when inactive to preserve map state */}
               <div className={mapState.activeView === "map" ? "sm:h-screen md:h-[calc(100vh-10rem)] w-full m-0 relative" : "hidden"}>
                 {heatmapData ? (
                   <>
@@ -280,7 +280,7 @@ function MapPage() {
                       {/* ErrorBoundary catches rendering errors from the lazy-loaded InteractiveMap
                           that bypass TanStack Router's errorComponent when thrown inside Suspense.
                           Fixes Sentry 81e7b5c2: `Error: undefined` on Mobile Safari 16.1 (iOS 16.1.2)
-                          where the Leaflet chunk failed to evaluate, causing React.lazy to throw
+                          where the map chunk failed to evaluate, causing React.lazy to throw
                           undefined during the initial render of the /map route. */}
                       <ErrorBoundary>
                         <Suspense fallback={<div className="flex items-center justify-center h-full w-full"><LoadingSpinner size="lg" text={t`Loading map...`} /></div>}>
@@ -291,6 +291,7 @@ function MapPage() {
                             geoJsonData={geoJsonData}
                             zoom={mapZoom}
                             center={mapState.mapCenter}
+                            minZoom={4}
                             mapViewType={mapState.mapViewType}
                             filters={effectiveFilters}
                             onViewChange={handleMapViewChange}

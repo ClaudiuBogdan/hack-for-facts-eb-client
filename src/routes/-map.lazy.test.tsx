@@ -5,7 +5,9 @@ import { createTestQueryClient } from '@/test/test-utils'
 
 const navigateMock = vi.fn()
 const entityRoutingSummaryQueryFnMock = vi.fn()
+const interactiveMapPropsMock = vi.fn()
 let mockedMapViewType: 'UAT' | 'County' = 'UAT'
+let mockedMapZoom: number | undefined
 let mockedHeatmapData: unknown[] = [
   {
     siruta_code: '1017',
@@ -22,23 +24,27 @@ vi.mock('@tanstack/react-router', () => ({
 }))
 
 vi.mock('@/components/maps/InteractiveMap', () => ({
-  InteractiveMap: ({
-    onFeatureClick,
-  }: {
+  InteractiveMap: (props: {
+    readonly minZoom?: number
     readonly onFeatureClick: (properties: Record<string, unknown>) => void
-  }) => (
-    <button
-      type="button"
-      onClick={() =>
-        onFeatureClick(
-          mockedMapViewType === 'UAT'
-            ? { natcode: '1017' }
-            : { mnemonic: 'CJ' },
-        )}
-    >
-      Select map feature
-    </button>
-  ),
+    readonly zoom?: number
+  }) => {
+    interactiveMapPropsMock(props)
+
+    return (
+      <button
+        type="button"
+        onClick={() =>
+          props.onFeatureClick(
+            mockedMapViewType === 'UAT'
+              ? { natcode: '1017' }
+              : { mnemonic: 'CJ' },
+          )}
+      >
+        Select map feature
+      </button>
+    )
+  },
 }))
 
 vi.mock('@/components/ssr/ClientOnly', () => ({
@@ -67,7 +73,7 @@ vi.mock('@/hooks/useMapFilter', () => ({
     mapState: {
       mapViewType: mockedMapViewType,
       activeView: 'map',
-      mapZoom: 7,
+      mapZoom: mockedMapZoom,
       filters: {
         report_period: {
           type: 'YEAR',
@@ -124,14 +130,33 @@ vi.mock('@/lib/hooks/useEntityDetails', () => ({
 describe('Map route', () => {
   beforeEach(() => {
     navigateMock.mockReset()
+    interactiveMapPropsMock.mockReset()
     entityRoutingSummaryQueryFnMock.mockReset()
     mockedMapViewType = 'UAT'
+    mockedMapZoom = undefined
     mockedHeatmapData = [
       {
         siruta_code: '1017',
         uat_code: '4305857',
       },
     ]
+  })
+
+  it('starts the map route with a wider default camera', async () => {
+    const { Route } = await import('./map.lazy')
+    const RouteComponent = Route.options.component as ComponentType
+
+    render(<RouteComponent />, { queryClient: createTestQueryClient() })
+
+    await screen.findByRole('button', { name: 'Select map feature' })
+
+    expect(interactiveMapPropsMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        minZoom: 4,
+        zoom: 6,
+      }),
+    )
+    expect(navigateMock).not.toHaveBeenCalled()
   })
 
   it('routes UAT feature clicks to the entity page and preserves map filter search', async () => {

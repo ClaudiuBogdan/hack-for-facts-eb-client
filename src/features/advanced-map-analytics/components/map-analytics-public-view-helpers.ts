@@ -1,6 +1,9 @@
-import type { LeafletMouseEvent, PathOptions } from 'leaflet';
 import type { GeoJsonObject } from 'geojson';
 import type { UatFeature, UatProperties } from '@/components/maps/interfaces';
+import type {
+  InteractiveMapFeatureEvent,
+  InteractiveMapFeatureStyle,
+} from '@/components/maps/InteractiveMap';
 import type {
   HeatmapCountyDataPoint,
   HeatmapUATDataPoint,
@@ -40,7 +43,7 @@ interface ColorRange {
   max: number;
 }
 
-const GROUPED_RENDER_UNIT_MEMBER_STROKE: PathOptions = {
+const GROUPED_RENDER_UNIT_MEMBER_STROKE: InteractiveMapFeatureStyle = {
   color: '#0f172a',
   weight: 0.2,
   opacity: 1,
@@ -59,7 +62,7 @@ interface BuildPublicMapFeatureStyleArgs {
 }
 
 /**
- * Builds the Leaflet style function used by `InteractiveMap` on the public
+ * Builds the polygon style function used by `InteractiveMap` on the public
  * map view. Mirrors the editor workspace logic so colors line up exactly.
  */
 export function buildPublicMapFeatureStyle({
@@ -73,7 +76,7 @@ export function buildPublicMapFeatureStyle({
 }: BuildPublicMapFeatureStyleArgs): (
   feature: UatFeature,
   heatmapDataMap: Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint>
-) => PathOptions {
+) => InteractiveMapFeatureStyle {
   const noDataColor = activeNoDataConfig?.color ?? '#cccccc';
   const safeGradient = gradient ?? { startColor: '#fff7bc', endColor: '#d7301f' };
 
@@ -86,7 +89,7 @@ export function buildPublicMapFeatureStyle({
     const featureKeyString = String(featureKey);
     const renderUnitId = renderUnitIdBySirutaCode?.get(featureKeyString);
     const renderKey = renderUnitId ?? featureKeyString;
-    const applyRenderAffordance = (style: PathOptions): PathOptions =>
+    const applyRenderAffordance = (style: InteractiveMapFeatureStyle): InteractiveMapFeatureStyle =>
       renderUnitId
         ? {
             ...style,
@@ -567,6 +570,6 @@ export function selectUatFeatures(
   return candidateFeatures as UatFeature[];
 }
 
-// LeafletMouseEvent re-exported here so the public view doesn't have to
-// reach into Leaflet types directly when wiring the click handler.
-export type { LeafletMouseEvent };
+// Re-exported here so the public view doesn't need to reach into map internals
+// when wiring the click handler.
+export type { InteractiveMapFeatureEvent };

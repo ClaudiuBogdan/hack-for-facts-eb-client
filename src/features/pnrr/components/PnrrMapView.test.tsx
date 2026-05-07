@@ -119,6 +119,52 @@ function makeMapModel(
   }
 }
 
+const WIDE_UAT_GEOJSON = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      properties: {
+        natcode: '123',
+        name: 'Ion Roată',
+        county: 'Ialomița',
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [20.2, 43.7],
+            [20.3, 43.7],
+            [20.3, 43.8],
+            [20.2, 43.8],
+            [20.2, 43.7],
+          ],
+        ],
+      },
+    },
+    {
+      type: 'Feature',
+      properties: {
+        natcode: '456',
+        name: 'Botoșani',
+        county: 'Botoșani',
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [29.6, 48.1],
+            [29.7, 48.1],
+            [29.7, 48.2],
+            [29.6, 48.2],
+            [29.6, 48.1],
+          ],
+        ],
+      },
+    },
+  ],
+}
+
 function makeFilterState(
   overrides: Partial<ReturnType<typeof usePnrrFilterState>> = {},
 ): ReturnType<typeof usePnrrFilterState> {
@@ -384,5 +430,73 @@ describe('PnrrMapView', () => {
       expect(props.activeSeriesUnit).toBe('projects')
       expect(props.activeSeriesValuesBySirutaCode?.get('123')).toBe(1)
     })
+  })
+
+  it('honors URL viewport and allows zooming farther out in map view', async () => {
+    mockState.geoJsonData = WIDE_UAT_GEOJSON
+
+    render(
+      <PnrrMapView
+        model={makeMapModel({
+          granularity: 'uat',
+          series: {
+            id: 'total-value',
+            data: [
+              {
+                uat_id: '123',
+                uat_code: '123',
+                siruta_code: '123',
+                uat_name: 'Ion Roată',
+                county_code: 'IL',
+                county_name: 'Ialomița',
+                population: 1_000,
+                amount: 100_000,
+                total_amount: 100_000,
+                per_capita_amount: 100,
+              },
+              {
+                uat_id: '456',
+                uat_code: '456',
+                siruta_code: '456',
+                uat_name: 'Botoșani',
+                county_code: 'BT',
+                county_name: 'Botoșani',
+                population: 2_000,
+                amount: 200_000,
+                total_amount: 200_000,
+                per_capita_amount: 100,
+              },
+            ],
+            min: 100_000,
+            max: 200_000,
+          },
+          selectedCountyProjects: [],
+          selectedUatProjects: [],
+        })}
+        filterState={makeFilterState({
+          search: {
+            ...makeFilterState().search,
+            granularity: 'uat',
+            mapLat: 45.88896487328884,
+            mapLng: 25,
+            mapZoom: 10,
+          },
+        })}
+      />,
+    )
+
+    await screen.findByTestId('interactive-map')
+
+    const props = mockState.interactiveMapProps[
+      mockState.interactiveMapProps.length - 1
+    ] as {
+      minZoom?: number
+      center?: [number, number]
+      zoom?: number
+    }
+
+    expect(props.center).toEqual([45.88896487328884, 25])
+    expect(props.zoom).toBe(10)
+    expect(props.minZoom).toBe(3.5)
   })
 })

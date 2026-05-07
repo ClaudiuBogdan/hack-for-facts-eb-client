@@ -17,7 +17,7 @@ import {
 } from '@/components/maps/utils'
 import { UatProperties, UatFeature } from '@/components/maps/interfaces'
 import { DEFAULT_FEATURE_STYLE } from '@/components/maps/constants'
-import type { LeafletMouseEvent } from 'leaflet'
+import type { InteractiveMapFeatureEvent } from '@/components/maps/InteractiveMap'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { ClientOnly } from '@/components/ssr/ClientOnly'
 import { PnrrCountyDetailsPanel } from './PnrrCountyDetailsPanel'
@@ -52,9 +52,11 @@ const SERIES_OPTIONS = [
 ]
 
 const MIN_FEATURE_BBOX_DELTA = 1e-6
+const PNRR_MAP_MIN_ZOOM = 3.5
 const MAX_AUTO_ZOOM = 11
 const DEFAULT_MAP_CENTER: [number, number] = [45.9432, 24.9668]
 const DEFAULT_MAP_ZOOM = 6.7
+const AUTO_FIT_ZOOM_ADJUSTMENT = 0.25
 const PNRR_MAP_COLOR_MIN_PERCENTILE = 5
 const PNRR_MAP_COLOR_MAX_PERCENTILE = 95
 
@@ -86,12 +88,15 @@ function computeViewportFromFeatures(
   const zoomLat = Math.log(360 / latDelta) / Math.LN2
   const zoomLng = Math.log(360 / lngDelta) / Math.LN2
   const [centerLng, centerLat] = featureCenter.geometry.coordinates
-  const fittedZoom = Math.min(zoomLat, zoomLng, MAX_AUTO_ZOOM)
+  const fittedZoom = Math.min(zoomLat, zoomLng)
 
   return {
     center: [centerLat, centerLng],
     zoom: Number.isFinite(fittedZoom)
-      ? Math.max(DEFAULT_MAP_ZOOM, fittedZoom + 1.0)
+      ? Math.min(
+          Math.max(fittedZoom + AUTO_FIT_ZOOM_ADJUSTMENT, PNRR_MAP_MIN_ZOOM),
+          MAX_AUTO_ZOOM,
+        )
       : DEFAULT_MAP_ZOOM,
   }
 }
@@ -293,7 +298,6 @@ export function PnrrMapView({
     return computeViewportFromFeatures(matchedFeatures)
   }, [geoJsonData, heatmapData, granularity])
 
-  // Use URL position if present, otherwise auto-computed viewport, otherwise default
   const mapCenter: [number, number] =
     search.mapLat != null && search.mapLng != null
       ? [search.mapLat, search.mapLng]
@@ -367,7 +371,7 @@ export function PnrrMapView({
   )
 
   const handleFeatureClick = useCallback(
-    (properties: UatProperties, _event: LeafletMouseEvent) => {
+    (properties: UatProperties, _event: InteractiveMapFeatureEvent) => {
       if (granularity === 'county') {
         const countyCode = properties.mnemonic
         if (typeof countyCode === 'string' || typeof countyCode === 'number') {
@@ -424,7 +428,7 @@ export function PnrrMapView({
 
       {/* Map */}
       <div className="relative border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-2">
-        <div className="pnrr-map-surface relative isolate h-[55vh] min-h-[420px] w-full overflow-hidden border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-map-bg)] sm:h-[65vh] sm:min-h-[560px]">
+        <div className="pnrr-map-surface relative isolate h-[68vh] min-h-[520px] w-full overflow-hidden border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-map-bg)] sm:h-[75vh] sm:min-h-[680px]">
           {isGeoJsonLoading && (
             <div className="flex h-full w-full items-center justify-center bg-[var(--pnrr-bg)]">
               <LoadingSpinner size="lg" text={t`Loading map...`} />
@@ -459,6 +463,7 @@ export function PnrrMapView({
                   onFeatureClick={handleFeatureClick}
                   center={mapCenter}
                   zoom={mapZoom}
+                  minZoom={PNRR_MAP_MIN_ZOOM}
                   mapHeight="100%"
                   showLabels
                   labelMode="active-series"

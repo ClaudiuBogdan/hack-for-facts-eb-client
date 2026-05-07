@@ -22,7 +22,7 @@ import { ArrowDown, ArrowUp, BarChart3, Boxes, Check, ChevronDown, Copy, GripVer
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
 import type { GeoJsonObject } from 'geojson';
-import type { PathOptions } from 'leaflet';
+import type { InteractiveMapFeatureStyle } from '@/components/maps/InteractiveMap';
 
 import { ClientOnly } from '@/components/ssr/ClientOnly';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -143,7 +143,7 @@ import type { PublicMapViewport } from '@/features/advanced-map-analytics/hooks/
 import { t } from '@lingui/core/macro';
 import { cn, getUserLocale } from '@/lib/utils';
 
-// Lazy load InteractiveMap to avoid Leaflet evaluation on the server.
+// Lazy load InteractiveMap to avoid evaluating the browser map renderer on the server.
 const InteractiveMap = lazy(() =>
   loadInteractiveMapModule().then((module) => ({ default: module.InteractiveMap }))
 );
@@ -160,7 +160,7 @@ const MANUAL_GROUP_COLOR_PALETTE = [
   '#be123c',
   '#4f46e5',
 ] as const;
-const MANUAL_GROUP_UNASSIGNED_STYLE: PathOptions = {
+const MANUAL_GROUP_UNASSIGNED_STYLE: InteractiveMapFeatureStyle = {
   ...DEFAULT_FEATURE_STYLE,
   color: '#cbd5e1',
   weight: 0.45,
@@ -168,7 +168,7 @@ const MANUAL_GROUP_UNASSIGNED_STYLE: PathOptions = {
   fillColor: '#e5e7eb',
   fillOpacity: 0.14,
 };
-const GROUPED_RENDER_UNIT_MEMBER_STROKE: PathOptions = {
+const GROUPED_RENDER_UNIT_MEMBER_STROKE: InteractiveMapFeatureStyle = {
   color: '#0f172a',
   weight: 0.2,
   opacity: 1,
@@ -2477,7 +2477,7 @@ export function MapAnalyticsWorkspace({
     return { min, max };
   }, [activeHeatmapData]);
 
-  const manualGroupEditStylesBySirutaCode = useMemo<Map<string, PathOptions> | undefined>(() => {
+  const manualGroupEditStylesBySirutaCode = useMemo<Map<string, InteractiveMapFeatureStyle> | undefined>(() => {
     if ((!isManualGroupCreateMode && !activeManualGroupId) || mapViewType !== 'UAT') {
       return undefined;
     }
@@ -2490,7 +2490,7 @@ export function MapAnalyticsWorkspace({
     }
 
     const hasActiveGroup = Boolean(activeManualGroupId);
-    const stylesBySirutaCode = new Map<string, PathOptions>();
+    const stylesBySirutaCode = new Map<string, InteractiveMapFeatureStyle>();
 
     manualGroupWorkspace.groups.forEach((group, groupIndex) => {
       const groupColor = getManualGroupColor(groupIndex);
@@ -2499,7 +2499,7 @@ export function MapAnalyticsWorkspace({
         return;
       }
 
-      const groupStyle: PathOptions = {
+      const groupStyle: InteractiveMapFeatureStyle = {
         ...DEFAULT_FEATURE_STYLE,
         color: groupColor,
         weight: 0.25,
@@ -2529,7 +2529,7 @@ export function MapAnalyticsWorkspace({
       const renderUnitId = activeMapRenderUnitContext?.renderUnitIdBySirutaCode.get(featureKeyString);
       const renderKey = renderUnitId ?? featureKeyString;
       const manualGroupStyle = manualGroupEditStylesBySirutaCode?.get(featureKeyString);
-      const applyRenderAffordances = (style: PathOptions): PathOptions => {
+      const applyRenderAffordances = (style: InteractiveMapFeatureStyle): InteractiveMapFeatureStyle => {
         const groupedStyle =
           activeMapRenderUnitContext && renderUnitId
             ? {

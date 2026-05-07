@@ -15,7 +15,7 @@ import {
 } from '@/components/maps/utils'
 import { UatProperties, UatFeature } from '@/components/maps/interfaces'
 import { DEFAULT_FEATURE_STYLE } from '@/components/maps/constants'
-import type { LeafletMouseEvent } from 'leaflet'
+import type { InteractiveMapFeatureEvent } from '@/components/maps/InteractiveMap'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { ClientOnly } from '@/components/ssr/ClientOnly'
 import { PnrrUatDetailsPanel } from './PnrrUatDetailsPanel'
@@ -38,10 +38,12 @@ const InteractiveMap = lazy(() =>
 )
 
 const MIN_FEATURE_BBOX_DELTA = 1e-6
+const PNRR_PREVIEW_MIN_ZOOM = 5
 const MAX_PREVIEW_ZOOM = 11
 const ROMANIA_MAP_CENTER: [number, number] = [45.9432, 24.9668]
 const DESKTOP_PREVIEW_ZOOM = 6.4
 const DEFAULT_PREVIEW_ZOOM = 6.5
+const AUTO_FIT_ZOOM_ADJUSTMENT = 0.25
 const PNRR_MAP_COLOR_MIN_PERCENTILE = 5
 const PNRR_MAP_COLOR_MAX_PERCENTILE = 95
 
@@ -86,17 +88,21 @@ function computeViewportFromFeatures(
     MIN_FEATURE_BBOX_DELTA,
   )
 
-  // Base zoom for a 256px tile; add ~1 level to account for the larger
-  // preview container (≈800px) so the fitted area fills the map.
   const zoomLatitude = Math.log(360 / latitudeDelta) / Math.LN2
   const zoomLongitude = Math.log(360 / longitudeDelta) / Math.LN2
   const [centerLongitude, centerLatitude] = featureCenter.geometry.coordinates
-  const fittedZoom = Math.min(zoomLatitude, zoomLongitude, MAX_PREVIEW_ZOOM)
+  const fittedZoom = Math.min(zoomLatitude, zoomLongitude)
 
   return {
     center: [centerLatitude, centerLongitude],
     zoom: Number.isFinite(fittedZoom)
-      ? Math.max(7, fittedZoom + 1.0)
+      ? Math.min(
+          Math.max(
+            fittedZoom + AUTO_FIT_ZOOM_ADJUSTMENT,
+            PNRR_PREVIEW_MIN_ZOOM,
+          ),
+          MAX_PREVIEW_ZOOM,
+        )
       : DEFAULT_PREVIEW_ZOOM,
   }
 }
@@ -283,7 +289,7 @@ export function PnrrMapPreview({ model, filterState }: PnrrMapPreviewProps) {
   )
 
   const handleFeatureClick = useCallback(
-    (properties: UatProperties, _event: LeafletMouseEvent) => {
+    (properties: UatProperties, _event: InteractiveMapFeatureEvent) => {
       filterState.openMapUatPanel({
         siruta: properties.natcode,
       })
@@ -383,7 +389,7 @@ export function PnrrMapPreview({ model, filterState }: PnrrMapPreviewProps) {
                 onFeatureClick={handleFeatureClick}
                 center={activeMapViewport.center}
                 zoom={activeMapViewport.zoom}
-                minZoom={DESKTOP_PREVIEW_ZOOM}
+                minZoom={PNRR_PREVIEW_MIN_ZOOM}
                 showLabels
                 scrollWheelZoom
                 mapHeight="100%"
