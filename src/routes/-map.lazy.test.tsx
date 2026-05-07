@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@/test/test-utils'
-import type { ComponentType, ReactNode } from 'react'
+import { Profiler, type ComponentType, type ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient } from '@/test/test-utils'
 
@@ -8,6 +8,7 @@ const entityRoutingSummaryQueryFnMock = vi.fn()
 const interactiveMapPropsMock = vi.fn()
 let mockedMapViewType: 'UAT' | 'County' = 'UAT'
 let mockedMapZoom: number | undefined
+let mockedMapCenter: [number, number] | undefined
 let mockedHeatmapData: unknown[] = [
   {
     siruta_code: '1017',
@@ -27,22 +28,32 @@ vi.mock('@/components/maps/InteractiveMap', () => ({
   InteractiveMap: (props: {
     readonly minZoom?: number
     readonly onFeatureClick: (properties: Record<string, unknown>) => void
+    readonly onViewChange?: (center: [number, number], zoom: number) => void
+    readonly center?: [number, number]
     readonly zoom?: number
   }) => {
     interactiveMapPropsMock(props)
 
     return (
-      <button
-        type="button"
-        onClick={() =>
-          props.onFeatureClick(
-            mockedMapViewType === 'UAT'
-              ? { natcode: '1017' }
-              : { mnemonic: 'CJ' },
-          )}
-      >
-        Select map feature
-      </button>
+      <div>
+        <button
+          type="button"
+          onClick={() =>
+            props.onFeatureClick(
+              mockedMapViewType === 'UAT'
+                ? { natcode: '1017' }
+                : { mnemonic: 'CJ' },
+            )}
+        >
+          Select map feature
+        </button>
+        <button
+          type="button"
+          onClick={() => props.onViewChange?.([46.123456, 24.987654], 7.26)}
+        >
+          Move map
+        </button>
+      </div>
     )
   },
 }))
@@ -74,6 +85,7 @@ vi.mock('@/hooks/useMapFilter', () => ({
       mapViewType: mockedMapViewType,
       activeView: 'map',
       mapZoom: mockedMapZoom,
+      mapCenter: mockedMapCenter,
       filters: {
         report_period: {
           type: 'YEAR',
@@ -134,6 +146,7 @@ describe('Map route', () => {
     entityRoutingSummaryQueryFnMock.mockReset()
     mockedMapViewType = 'UAT'
     mockedMapZoom = undefined
+    mockedMapCenter = undefined
     mockedHeatmapData = [
       {
         siruta_code: '1017',
@@ -153,10 +166,80 @@ describe('Map route', () => {
     expect(interactiveMapPropsMock).toHaveBeenLastCalledWith(
       expect.objectContaining({
         minZoom: 4,
+        center: [45.9432, 24.9668],
         zoom: 6,
       }),
     )
     expect(navigateMock).not.toHaveBeenCalled()
+  })
+
+  it('uses URL camera params only as the initial map viewport', async () => {
+    mockedMapCenter = [46.11, 24.22]
+    mockedMapZoom = 7.4
+    const { Route } = await import('./map.lazy')
+    const RouteComponent = Route.options.component as ComponentType
+    const profileCommits: string[] = []
+
+    const renderProfiledRoute = () => (
+      <Profiler
+        id="map-route-camera"
+        onRender={(_id, phase) => {
+          profileCommits.push(phase)
+        }}
+      >
+        <RouteComponent />
+      </Profiler>
+    )
+
+    const { rerender } = render(renderProfiledRoute(), { queryClient: createTestQueryClient() })
+
+    await screen.findByRole('button', { name: 'Select map feature' })
+
+    expect(interactiveMapPropsMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        center: [46.11, 24.22],
+        zoom: 7.4,
+      }),
+    )
+
+    mockedMapCenter = [47.33, 25.44]
+    mockedMapZoom = 8.6
+    rerender(renderProfiledRoute())
+
+    expect(interactiveMapPropsMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        center: [46.11, 24.22],
+        zoom: 7.4,
+      }),
+    )
+    expect(profileCommits).toContain('update')
+  })
+
+  it('writes rounded map viewport changes back to the URL once', async () => {
+    const { Route } = await import('./map.lazy')
+    const RouteComponent = Route.options.component as ComponentType
+
+    render(<RouteComponent />, { queryClient: createTestQueryClient() })
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Move map' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Move map' }))
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledTimes(1)
+    })
+
+    const navigateCall = navigateMock.mock.calls[0]?.[0]
+    expect(navigateCall).toEqual(
+      expect.objectContaining({
+        replace: true,
+        resetScroll: false,
+      }),
+    )
+    expect(navigateCall.search({ filters: {} })).toEqual({
+      filters: {},
+      mapCenter: [46.12346, 24.98765],
+      mapZoom: 7.3,
+    })
   })
 
   it('routes UAT feature clicks to the entity page and preserves map filter search', async () => {

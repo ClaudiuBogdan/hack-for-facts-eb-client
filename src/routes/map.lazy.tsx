@@ -1,6 +1,7 @@
 import { HeatmapUATDataPoint, HeatmapCountyDataPoint } from "@/schemas/heatmap";
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
 import React, { useState, lazy, Suspense } from "react";
+import { DEFAULT_MAP_CENTER } from "@/components/maps/constants";
 import { getPercentileValues, createHeatmapStyleFunction } from "@/components/maps/utils";
 import type { InteractiveMapFeatureEvent } from "@/components/maps/InteractiveMap";
 import { UatProperties } from "@/components/maps/interfaces";
@@ -47,6 +48,32 @@ export const Route = createLazyFileRoute("/map")({
   component: MapPage,
 });
 
+type MapViewport = {
+  readonly center: [number, number];
+  readonly zoom: number;
+};
+
+function roundMapViewport(center: [number, number], zoom: number): MapViewport {
+  const roundTo = (value: number, decimals: number) => {
+    const factor = Math.pow(10, decimals);
+    return Math.round(value * factor) / factor;
+  };
+
+  return {
+    center: [roundTo(center[0], 5), roundTo(center[1], 5)],
+    zoom: roundTo(zoom, 1),
+  };
+}
+
+function areMapViewportsEqual(first: MapViewport | null, second: MapViewport): boolean {
+  return Boolean(
+    first &&
+      Math.abs(first.center[0] - second.center[0]) < 1e-6 &&
+      Math.abs(first.center[1] - second.center[1]) < 1e-6 &&
+      Math.abs(first.zoom - second.zoom) < 1e-6,
+  );
+}
+
 function MapPage() {
   const navigate = useNavigate({ from: '/map' });
   const { mapState, setFilters } = useMapFilter();
@@ -62,7 +89,18 @@ function MapPage() {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isLegendModalOpen, setIsLegendModalOpen] = useState(false);
 
-  const mapZoom = mapState.mapZoom ?? (isMobile ? 5.4 : 6);
+  const defaultMapZoom = isMobile ? 5.4 : 6;
+  const initialMapViewportRef = React.useRef<MapViewport | null>(null);
+  if (initialMapViewportRef.current === null) {
+    initialMapViewportRef.current = {
+      center: mapState.mapCenter ?? DEFAULT_MAP_CENTER,
+      zoom: mapState.mapZoom ?? defaultMapZoom,
+    };
+  }
+  const initialMapViewport = initialMapViewportRef.current;
+  const lastUrlMapViewportRef = React.useRef<MapViewport | null>(
+    roundMapViewport(initialMapViewport.center, initialMapViewport.zoom),
+  );
 
   const effectiveNormalization: Normalization = React.useMemo(() => {
     const raw = mapState.filters.normalization ?? 'total';
@@ -181,33 +219,46 @@ function MapPage() {
     });
   };
 
-  const handleMapViewChange = (center: [number, number], zoom: number) => {
-    const roundTo = (value: number, decimals: number) => {
-      const factor = Math.pow(10, decimals);
-      return Math.round(value * factor) / factor;
-    };
-    const newCenter: [number, number] = [roundTo(center[0], 5), roundTo(center[1], 5)];
-    const newZoom = roundTo(zoom, 1);
-    // Avoid redundant URL updates if nothing changed after rounding
-    if (
-      mapState.mapCenter &&
-      Math.abs(mapState.mapCenter[0] - newCenter[0]) < 1e-6 &&
-      Math.abs(mapState.mapCenter[1] - newCenter[1]) < 1e-6 &&
-      typeof mapState.mapZoom === 'number' && Math.abs(mapState.mapZoom - newZoom) < 1e-6
-    ) {
+  const handleMapViewChange = React.useCallback((center: [number, number], zoom: number) => {
+    const nextViewport = roundMapViewport(center, zoom);
+    if (areMapViewportsEqual(lastUrlMapViewportRef.current, nextViewport)) {
       return;
     }
 
+    lastUrlMapViewportRef.current = nextViewport;
     navigate({
-      search: (prev) => ({
-        ...(prev as Record<string, unknown>),
-        mapCenter: newCenter,
-        mapZoom: newZoom,
-      }),
+      search: (prev) => {
+        const previousSearch = prev as Record<string, unknown>;
+        const previousViewport = {
+          center: Array.isArray(previousSearch.mapCenter)
+            ? (previousSearch.mapCenter as [number, number])
+            : undefined,
+          zoom: typeof previousSearch.mapZoom === 'number' ? previousSearch.mapZoom : undefined,
+        };
+        if (
+          previousViewport.center &&
+          previousViewport.zoom !== undefined &&
+          areMapViewportsEqual(
+            {
+              center: previousViewport.center,
+              zoom: previousViewport.zoom,
+            },
+            nextViewport,
+          )
+        ) {
+          return previousSearch;
+        }
+
+        return {
+          ...previousSearch,
+          mapCenter: nextViewport.center,
+          mapZoom: nextViewport.zoom,
+        };
+      },
       replace: true,
       resetScroll: false,
     });
-  };
+  }, [navigate]);
 
   const {
     data: geoJsonData,
@@ -289,8 +340,8 @@ function MapPage() {
                             getFeatureStyle={aDynamicGetFeatureStyle}
                             heatmapData={heatmapData}
                             geoJsonData={geoJsonData}
-                            zoom={mapZoom}
-                            center={mapState.mapCenter}
+                            zoom={initialMapViewport.zoom}
+                            center={initialMapViewport.center}
                             minZoom={4}
                             mapViewType={mapState.mapViewType}
                             filters={effectiveFilters}
