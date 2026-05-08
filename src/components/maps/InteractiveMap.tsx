@@ -208,6 +208,7 @@ interface InteractiveMapProps {
   highlightedFeatureId?: string | number;
   alwaysResolveFeatureStyle?: boolean;
   scrollWheelZoom?: boolean;
+  defaultScrollWheelZoomEnabled?: boolean;
   mapHeight?: string;
   mapViewType: 'UAT' | 'County';
   filters: AnalyticsFilterType;
@@ -1192,6 +1193,17 @@ function hasScrollZoomModifier(event: Pick<WheelEvent, 'ctrlKey' | 'metaKey'>): 
   return event.metaKey || event.ctrlKey;
 }
 
+function isScrollWheelZoomAvailable(scrollWheelZoom: InteractiveMapProps['scrollWheelZoom']): boolean {
+  return scrollWheelZoom === true;
+}
+
+function resolveInitialMapInteractionEnabled(options: {
+  isScrollWheelZoomAvailable: boolean;
+  defaultScrollWheelZoomEnabled: boolean;
+}): boolean {
+  return options.isScrollWheelZoomAvailable && options.defaultScrollWheelZoomEnabled;
+}
+
 function resolveWheelScrollZoomIntent(options: {
   isScrollWheelZoomAvailable: boolean;
   isInteractionEnabled: boolean;
@@ -1201,15 +1213,16 @@ function resolveWheelScrollZoomIntent(options: {
   if (!options.isScrollWheelZoomAvailable) {
     return {
       allowMapLibreWheelZoom: false,
-      shouldBlockWheelDefault: hasModifier,
+      shouldBlockWheelDefault: false,
       scrollZoomHandlerEnabled: false,
     };
   }
 
+  const shouldEnableScrollZoomHandler = options.isInteractionEnabled || hasModifier;
   return {
-    allowMapLibreWheelZoom: options.isInteractionEnabled || hasModifier,
-    shouldBlockWheelDefault: !options.isInteractionEnabled && !hasModifier,
-    scrollZoomHandlerEnabled: true,
+    allowMapLibreWheelZoom: shouldEnableScrollZoomHandler,
+    shouldBlockWheelDefault: false,
+    scrollZoomHandlerEnabled: shouldEnableScrollZoomHandler,
     pressedModifiers: {
       meta: options.event.metaKey,
       ctrl: options.event.ctrlKey,
@@ -1257,7 +1270,7 @@ function resolveRecoveredMapInteractionState(options: {
     !options.isInteractionEnabled;
 
   return {
-    scrollZoomEnabled: options.isScrollWheelZoomAvailable,
+    scrollZoomEnabled: options.isScrollWheelZoomAvailable && options.isInteractionEnabled,
     dragPanEnabled: !shouldLockMobilePan,
     boxZoomEnabled: true,
   };
@@ -1349,7 +1362,8 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   selectedGroupingBoundaryGeoJsonData,
   highlightedFeatureId,
   alwaysResolveFeatureStyle = false,
-  scrollWheelZoom = true,
+  scrollWheelZoom = false,
+  defaultScrollWheelZoomEnabled = false,
   filters,
   showLabels = true,
   labelMode = 'legacy-heatmap',
@@ -1383,10 +1397,15 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   const tooltipHtmlCacheRef = useRef<Map<string, string>>(new Map());
   const popupPositionFrameRef = useRef<number | null>(null);
   const pendingPopupPositionRef = useRef<[number, number] | null>(null);
-  const latestIsInteractionEnabledRef = useRef(false);
-  const latestIsScrollWheelZoomAvailableRef = useRef(scrollWheelZoom !== false);
+  const scrollZoomAvailable = isScrollWheelZoomAvailable(scrollWheelZoom);
+  const initialIsInteractionEnabled = resolveInitialMapInteractionEnabled({
+    isScrollWheelZoomAvailable: scrollZoomAvailable,
+    defaultScrollWheelZoomEnabled,
+  });
+  const latestIsInteractionEnabledRef = useRef(initialIsInteractionEnabled);
+  const latestIsScrollWheelZoomAvailableRef = useRef(scrollZoomAvailable);
   const [isMapReady, setIsMapReady] = useState(false);
-  const [isInteractionEnabled, setIsInteractionEnabled] = useState(false);
+  const [isInteractionEnabled, setIsInteractionEnabled] = useState(initialIsInteractionEnabled);
   const [showRoads, setShowRoads] = useState(false);
   const [showPopulationGrid, setShowPopulationGrid] = useState(false);
   const selectionRef = useRef<CommandDragSelectionState | null>(null);
@@ -1406,7 +1425,9 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       ? countyBoundaryGeoJsonData ?? fallbackCountyGeoJsonData ?? null
       : null;
   const shouldLockMobilePanByDefault =
-    isMobile && mobilePanMode === 'pinch-zoom-until-unlocked';
+    isMobile &&
+    mobilePanMode === 'pinch-zoom-until-unlocked' &&
+    !initialIsInteractionEnabled;
   const shouldUseMapInteractionCopy =
     isMobile && mobilePanMode === 'pinch-zoom-until-unlocked';
   const controlAriaLabel = shouldUseMapInteractionCopy
@@ -1515,7 +1536,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
     }
 
     const recoveredState = resolveRecoveredMapInteractionState({
-      isScrollWheelZoomAvailable: scrollWheelZoom !== false,
+      isScrollWheelZoomAvailable: scrollZoomAvailable,
       isInteractionEnabled,
       isMobile,
       mobilePanMode,
@@ -1540,7 +1561,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
     }
 
     map.getCanvas().style.removeProperty('cursor');
-  }, [isInteractionEnabled, isMobile, mobilePanMode, scrollWheelZoom]);
+  }, [isInteractionEnabled, isMobile, mobilePanMode, scrollZoomAvailable]);
 
   const removeSelectionOverlay = useCallback((): CommandDragSelectionState | null => {
     const selection = selectionRef.current;
@@ -1636,8 +1657,8 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   }, [isInteractionEnabled]);
 
   useEffect(() => {
-    latestIsScrollWheelZoomAvailableRef.current = scrollWheelZoom !== false;
-  }, [scrollWheelZoom]);
+    latestIsScrollWheelZoomAvailableRef.current = scrollZoomAvailable;
+  }, [scrollZoomAvailable]);
 
   useEffect(() => {
     tooltipHtmlCacheRef.current.clear();
@@ -1697,7 +1718,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       attributionControl: {
         compact: false,
       },
-      scrollZoom: false,
+      scrollZoom: initialIsInteractionEnabled,
       dragPan: !shouldLockMobilePanByDefault,
       pitchWithRotate: false,
       dragRotate: false,
@@ -2186,11 +2207,12 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
     }
 
     const syncTemporaryZoomState = () => {
-      if (isInteractionEnabled) {
+      if (!latestIsScrollWheelZoomAvailableRef.current) {
+        map.scrollZoom.disable();
         return;
       }
 
-      if (pressedModifiersRef.current.meta || pressedModifiersRef.current.ctrl) {
+      if (isInteractionEnabled || pressedModifiersRef.current.meta || pressedModifiersRef.current.ctrl) {
         map.scrollZoom.enable();
         return;
       }
@@ -2431,7 +2453,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       className="relative z-0 isolate overflow-hidden"
       style={{ height: mapHeight, width: '100%', backgroundColor: 'transparent' }}
     >
-      {scrollWheelZoom !== false ? (
+      {scrollZoomAvailable ? (
         <MapLibreOverlayControl
           top={82}
           ariaLabel={controlAriaLabel}
@@ -2442,28 +2464,24 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
           <MouseIcon />
         </MapLibreOverlayControl>
       ) : null}
-      {scrollWheelZoom !== false ? (
-        <MapLibreOverlayControl
-          top={120}
-          ariaLabel={showRoads ? t`Hide roads` : t`Show roads`}
-          title={showRoads ? t`Roads: On` : t`Roads: Off`}
-          pressed={showRoads}
-          onClick={() => setShowRoads((previous) => !previous)}
-        >
-          <RoadsIcon />
-        </MapLibreOverlayControl>
-      ) : null}
-      {scrollWheelZoom !== false ? (
-        <MapLibreOverlayControl
-          top={158}
-          ariaLabel={showPopulationGrid ? t`Hide population grid` : t`Show population grid`}
-          title={showPopulationGrid ? t`Population grid: On` : t`Population grid: Off`}
-          pressed={showPopulationGrid}
-          onClick={() => setShowPopulationGrid((previous) => !previous)}
-        >
-          <PopulationGridIcon />
-        </MapLibreOverlayControl>
-      ) : null}
+      <MapLibreOverlayControl
+        top={scrollZoomAvailable ? 120 : 82}
+        ariaLabel={showRoads ? t`Hide roads` : t`Show roads`}
+        title={showRoads ? t`Roads: On` : t`Roads: Off`}
+        pressed={showRoads}
+        onClick={() => setShowRoads((previous) => !previous)}
+      >
+        <RoadsIcon />
+      </MapLibreOverlayControl>
+      <MapLibreOverlayControl
+        top={scrollZoomAvailable ? 158 : 120}
+        ariaLabel={showPopulationGrid ? t`Hide population grid` : t`Show population grid`}
+        title={showPopulationGrid ? t`Population grid: On` : t`Population grid: Off`}
+        pressed={showPopulationGrid}
+        onClick={() => setShowPopulationGrid((previous) => !previous)}
+      >
+        <PopulationGridIcon />
+      </MapLibreOverlayControl>
     </div>
   );
 });
@@ -2606,11 +2624,13 @@ export const __interactiveMapMapLibreTestUtils = {
   buildMainLinePaint,
   getCachedTooltipHtml,
   hasScrollZoomModifier,
+  isScrollWheelZoomAvailable,
   finishCommandDragSelection,
   normalizeBounds,
   normalizeCenter,
   prepareGeoJsonData,
   prepareStyledGeoJsonData,
+  resolveInitialMapInteractionEnabled,
   resolveRecoveredMapInteractionState,
   resolveWheelScrollZoomIntent,
   setGeoJsonSourceData,

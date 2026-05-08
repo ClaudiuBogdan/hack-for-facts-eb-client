@@ -3482,6 +3482,8 @@ export function MapAnalyticsWorkspace({
                   onViewChange={handleMapViewChange}
                   getTooltipContent={getTooltipContent}
                   mobilePanMode="pinch-zoom-until-unlocked"
+                  scrollWheelZoom
+                  defaultScrollWheelZoomEnabled
                   preferCanvasRenderer={false}
                 />
               </Suspense>
@@ -3724,6 +3726,8 @@ export function MapAnalyticsWorkspace({
                       onViewChange={handleMapViewChange}
                       getTooltipContent={getTooltipContent}
                       mobilePanMode="pinch-zoom-until-unlocked"
+                      scrollWheelZoom
+                      defaultScrollWheelZoomEnabled
                     />
                   </Suspense>
                 </ClientOnly>

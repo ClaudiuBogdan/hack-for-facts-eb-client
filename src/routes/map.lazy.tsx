@@ -346,6 +346,8 @@ function MapPage() {
                             mapViewType={mapState.mapViewType}
                             filters={effectiveFilters}
                             onViewChange={handleMapViewChange}
+                            scrollWheelZoom
+                            defaultScrollWheelZoomEnabled
                           />
                         </Suspense>
                       </ErrorBoundary>

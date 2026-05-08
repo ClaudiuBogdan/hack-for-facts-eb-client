@@ -391,7 +391,6 @@ export function PnrrMapPreview({ model, filterState }: PnrrMapPreviewProps) {
                 zoom={activeMapViewport.zoom}
                 minZoom={PNRR_PREVIEW_MIN_ZOOM}
                 showLabels
-                scrollWheelZoom
                 mapHeight="100%"
                 activeSeriesValuesBySirutaCode={activeSeriesValuesBySirutaCode}
                 activeSeriesUnit={currency}

@@ -31,6 +31,8 @@ vi.mock('@/components/maps/InteractiveMap', () => ({
     readonly onViewChange?: (center: [number, number], zoom: number) => void
     readonly center?: [number, number]
     readonly zoom?: number
+    readonly scrollWheelZoom?: boolean
+    readonly defaultScrollWheelZoomEnabled?: boolean
   }) => {
     interactiveMapPropsMock(props)
 
@@ -168,6 +170,8 @@ describe('Map route', () => {
         minZoom: 4,
         center: [45.9432, 24.9668],
         zoom: 6,
+        scrollWheelZoom: true,
+        defaultScrollWheelZoomEnabled: true,
       }),
     )
     expect(navigateMock).not.toHaveBeenCalled()

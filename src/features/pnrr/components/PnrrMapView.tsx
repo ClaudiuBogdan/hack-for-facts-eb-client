@@ -494,6 +494,7 @@ export function PnrrMapView({
                   activeSeriesValuesBySirutaCode={activeSeriesValuesByFeatureId}
                   activeSeriesUnit={activeSeriesUnit}
                   onViewChange={handleMapViewChange}
+                  scrollWheelZoom
                 />
               </Suspense>
             </ClientOnly>

@@ -493,11 +493,15 @@ describe('PnrrMapView', () => {
       minZoom?: number
       center?: [number, number]
       zoom?: number
+      scrollWheelZoom?: boolean
+      defaultScrollWheelZoomEnabled?: boolean
     }
 
     expect(props.center).toEqual([45.88896487328884, 25])
     expect(props.zoom).toBe(10)
     expect(props.minZoom).toBe(3.5)
+    expect(props.scrollWheelZoom).toBe(true)
+    expect(props.defaultScrollWheelZoomEnabled).toBeUndefined()
   })
 
   it('keeps map camera changes out of URL search state', async () => {

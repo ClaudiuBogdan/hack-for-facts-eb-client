@@ -18,6 +18,7 @@ const {
   finishCommandDragSelection,
   getCachedTooltipHtml,
   hasScrollZoomModifier,
+  isScrollWheelZoomAvailable,
   isSelectionCancelKey,
   labelPaint,
   markProgrammaticViewTarget,
@@ -25,6 +26,7 @@ const {
   normalizeCenter,
   prepareGeoJsonData,
   prepareStyledGeoJsonData,
+  resolveInitialMapInteractionEnabled,
   resolveRecoveredMapInteractionState,
   resolveWheelScrollZoomIntent,
   setGeoJsonSourceData,
@@ -409,7 +411,31 @@ describe('InteractiveMap MapLibre adapters', () => {
     expect(hasScrollZoomModifier({ metaKey: false, ctrlKey: false } as WheelEvent)).toBe(false);
   });
 
-  it('resolves command-wheel scroll zoom before MapLibre handles the wheel event', () => {
+  it('defaults wheel zoom availability and active state to disabled', () => {
+    expect(isScrollWheelZoomAvailable(undefined)).toBe(false);
+    expect(isScrollWheelZoomAvailable(false)).toBe(false);
+    expect(isScrollWheelZoomAvailable(true)).toBe(true);
+    expect(
+      resolveInitialMapInteractionEnabled({
+        isScrollWheelZoomAvailable: false,
+        defaultScrollWheelZoomEnabled: true,
+      }),
+    ).toBe(false);
+    expect(
+      resolveInitialMapInteractionEnabled({
+        isScrollWheelZoomAvailable: true,
+        defaultScrollWheelZoomEnabled: false,
+      }),
+    ).toBe(false);
+    expect(
+      resolveInitialMapInteractionEnabled({
+        isScrollWheelZoomAvailable: true,
+        defaultScrollWheelZoomEnabled: true,
+      }),
+    ).toBe(true);
+  });
+
+  it('resolves wheel scroll intent without blocking page scroll when inactive', () => {
     expect(
       resolveWheelScrollZoomIntent({
         isScrollWheelZoomAvailable: true,
@@ -434,8 +460,8 @@ describe('InteractiveMap MapLibre adapters', () => {
       }),
     ).toEqual({
       allowMapLibreWheelZoom: false,
-      shouldBlockWheelDefault: true,
-      scrollZoomHandlerEnabled: true,
+      shouldBlockWheelDefault: false,
+      scrollZoomHandlerEnabled: false,
       pressedModifiers: {
         meta: false,
         ctrl: false,
@@ -466,7 +492,7 @@ describe('InteractiveMap MapLibre adapters', () => {
       }),
     ).toEqual({
       allowMapLibreWheelZoom: false,
-      shouldBlockWheelDefault: true,
+      shouldBlockWheelDefault: false,
       scrollZoomHandlerEnabled: false,
     });
   });
@@ -501,7 +527,7 @@ describe('InteractiveMap MapLibre adapters', () => {
         mobilePanMode: 'pinch-zoom-until-unlocked',
       }),
     ).toEqual({
-      scrollZoomEnabled: true,
+      scrollZoomEnabled: false,
       dragPanEnabled: false,
       boxZoomEnabled: true,
     });
