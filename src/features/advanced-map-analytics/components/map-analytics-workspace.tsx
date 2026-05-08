@@ -1,5 +1,19 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  forwardRef,
+  lazy,
+  memo,
+  Suspense,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { produce } from 'immer';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -173,6 +187,7 @@ const MANUAL_GROUP_COLOR_PALETTE = [
   '#be123c',
   '#4f46e5',
 ] as const;
+const MANUAL_GROUP_FOCUS_RETRY_FRAME_LIMIT = 30;
 const MANUAL_GROUP_UNASSIGNED_STYLE: InteractiveMapFeatureStyle = {
   ...DEFAULT_FEATURE_STYLE,
   color: '#cbd5e1',
@@ -350,6 +365,14 @@ function getOrderedManualGroupMemberCodes(group: MapGroupWorkspace['groups'][num
   const orderedMemberSet = new Set(orderedMembers);
   const remainingMembers = group.memberSirutaCodes.filter((sirutaCode) => !orderedMemberSet.has(sirutaCode));
   return [...orderedMembers, ...remainingMembers];
+}
+
+function estimateManualGroupCardHeight(group: Pick<MapGroup, 'memberSirutaCodes'> | undefined): number {
+  const memberCount = Math.max(1, group?.memberSirutaCodes.length ?? 0);
+  const cardChromeHeight = 82;
+  const memberRowHeight = 49;
+  const rowGap = 12;
+  return cardChromeHeight + memberCount * memberRowHeight + rowGap;
 }
 
 type GeoJsonCoordinate = readonly [number, number];
@@ -1847,20 +1870,41 @@ export function MapAnalyticsWorkspace({
     [isReadOnly, updateState]
   );
 
+  const mapCenterOverrideLat = mapCenterOverride?.[0];
+  const mapCenterOverrideLng = mapCenterOverride?.[1];
+  const mapStateCenterLat = mapState.mapCenter?.[0];
+  const mapStateCenterLng = mapState.mapCenter?.[1];
   const externalViewportKey = useMemo(
     () => JSON.stringify({
-      mapCenter: mapCenterOverride ?? null,
+      mapCenter:
+        mapCenterOverrideLat === undefined || mapCenterOverrideLng === undefined
+          ? null
+          : [mapCenterOverrideLat, mapCenterOverrideLng],
       mapZoom: mapZoomOverride ?? null,
     }),
-    [mapCenterOverride, mapZoomOverride]
+    [mapCenterOverrideLat, mapCenterOverrideLng, mapZoomOverride]
   );
   useEffect(() => {
+    const restoredMapCenter =
+      mapCenterOverrideLat === undefined || mapCenterOverrideLng === undefined
+        ? mapStateCenterLat === undefined || mapStateCenterLng === undefined
+          ? undefined
+          : [mapStateCenterLat, mapStateCenterLng] as [number, number]
+        : [mapCenterOverrideLat, mapCenterOverrideLng] as [number, number];
     setCameraCommandViewport(null);
     lastRuntimeViewportRef.current = {
-      mapCenter: mapCenterOverride ?? mapState.mapCenter,
+      mapCenter: restoredMapCenter,
       mapZoom: mapZoomOverride ?? mapState.mapZoom,
     };
-  }, [externalViewportKey, mapCenterOverride, mapState.mapCenter, mapState.mapZoom, mapZoomOverride]);
+  }, [
+    externalViewportKey,
+    mapCenterOverrideLat,
+    mapCenterOverrideLng,
+    mapState.mapZoom,
+    mapStateCenterLat,
+    mapStateCenterLng,
+    mapZoomOverride,
+  ]);
 
   const mapZoom = cameraCommandViewport?.mapZoom ?? mapZoomOverride ?? mapState.mapZoom ?? (isMobile ? 6 : 7.7);
   const mapCenter = cameraCommandViewport?.mapCenter ?? mapCenterOverride ?? mapState.mapCenter;
@@ -1962,20 +2006,19 @@ export function MapAnalyticsWorkspace({
       const nextZoom = Math.max(lastRuntimeViewportRef.current.mapZoom ?? mapZoom, 10);
       const isCurrentlyActiveGroup =
         activeManualGroupId === groupId && mapState.activeGroupWorkspaceId === workspaceId;
-      const nextCenter = isCurrentlyActiveGroup
-        ? undefined
-        : getManualGroupMapCenter(group, geoJsonFeatures);
+      const nextCenter = getManualGroupMapCenter(group, geoJsonFeatures);
+      const nextViewport = nextCenter ? roundMapViewport(nextCenter, nextZoom) : undefined;
+      const shouldClearActiveGroup = isCurrentlyActiveGroup && !nextViewport;
 
       updateState((draft) => {
         draft.activeGroupWorkspaceId = workspace.id;
       });
 
       setSelectedMapEntity(null);
-      setActiveManualGroupId(isCurrentlyActiveGroup ? undefined : groupId);
+      setActiveManualGroupId(shouldClearActiveGroup ? undefined : groupId);
       setIsManualGroupCreateMode(false);
 
-      if (!isCurrentlyActiveGroup && nextCenter) {
-        const nextViewport = roundMapViewport(nextCenter, nextZoom);
+      if (nextViewport) {
         lastRuntimeViewportRef.current = nextViewport;
         setCameraCommandViewport(nextViewport);
         onMapViewportChange?.(nextViewport);
@@ -4311,13 +4354,18 @@ function ManualGroupWorkspaceConfigPanel({
   const [isEditingWorkspaceTitle, setIsEditingWorkspaceTitle] = useState(false);
   const [editingGroupId, setEditingGroupId] = useState<string | undefined>(undefined);
   const [groupSearchQuery, setGroupSearchQuery] = useState('');
+  const deferredGroupSearchQuery = useDeferredValue(groupSearchQuery);
+  const groupListScrollRef = useRef<HTMLDivElement>(null);
   const groupCardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const displayLabel = workspace.label?.trim() || workspace.id;
   const totalMemberCount = new Set(workspace.groups.flatMap((group) => group.memberSirutaCodes)).size;
   const mergedGroupCountLabel =
     workspace.groups.length === 1 ? t`1 merged group` : t`${workspace.groups.length} merged groups`;
   const totalMemberCountLabel = totalMemberCount === 1 ? t`1 UAT` : t`${totalMemberCount} UATs`;
-  const normalizedGroupSearchQuery = normalizeManualGroupSearchText(groupSearchQuery);
+  const normalizedGroupSearchQuery = useMemo(
+    () => normalizeManualGroupSearchText(deferredGroupSearchQuery),
+    [deferredGroupSearchQuery],
+  );
   const visibleGroups = useMemo(
     () =>
       workspace.groups
@@ -4349,6 +4397,22 @@ function ManualGroupWorkspaceConfigPanel({
     [normalizedGroupSearchQuery, uatMetadataBySirutaCode, workspace.groups]
   );
   const hasGroupSearchQuery = normalizedGroupSearchQuery.length > 0;
+  const groupListVirtualizer = useVirtualizer({
+    count: visibleGroups.length,
+    getScrollElement: () => groupListScrollRef.current,
+    estimateSize: (index) => estimateManualGroupCardHeight(visibleGroups[index]?.group),
+    getItemKey: (index) => visibleGroups[index]?.group.id ?? index,
+    overscan: 4,
+    initialRect: {
+      width: 600,
+      height: 640,
+    },
+  });
+  const virtualGroupRows = groupListVirtualizer.getVirtualItems();
+
+  useEffect(() => {
+    groupListVirtualizer.scrollToOffset(0, { align: 'start' });
+  }, [groupListVirtualizer, normalizedGroupSearchQuery, workspace.id]);
 
   useEffect(() => {
     if (
@@ -4372,19 +4436,60 @@ function ManualGroupWorkspaceConfigPanel({
       return;
     }
 
-    const groupCard = groupCardRefs.current.get(manualGroupFocusRequest.groupId);
-    if (!groupCard) {
+    const visibleGroupIndex = visibleGroups.findIndex(
+      ({ group }) => group.id === manualGroupFocusRequest.groupId
+    );
+    if (visibleGroupIndex < 0) {
       return;
     }
 
-    groupCard.focus({ preventScroll: true });
-    groupCard.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    onManualGroupFocusRequestHandled(manualGroupFocusRequest.requestId);
+    const focusGroupCard = () => {
+      const groupCard = groupCardRefs.current.get(manualGroupFocusRequest.groupId);
+      if (!groupCard) {
+        return false;
+      }
+
+      groupCard.focus({ preventScroll: true });
+      groupCard.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      return true;
+    };
+
+    if (focusGroupCard()) {
+      onManualGroupFocusRequestHandled(manualGroupFocusRequest.requestId);
+      return;
+    }
+
+    groupListVirtualizer.scrollToIndex(visibleGroupIndex, { align: 'center' });
+    let frame: number | undefined;
+    let attemptCount = 0;
+    const retryFocusGroupCard = () => {
+      if (focusGroupCard()) {
+        onManualGroupFocusRequestHandled(manualGroupFocusRequest.requestId);
+        return;
+      }
+
+      attemptCount += 1;
+      if (attemptCount >= MANUAL_GROUP_FOCUS_RETRY_FRAME_LIMIT) {
+        return;
+      }
+
+      frame = window.requestAnimationFrame(retryFocusGroupCard);
+    };
+
+    // Virtualized rows mount asynchronously after scrollToIndex. Keep the
+    // request alive until the row ref exists so map-to-panel focus is not lost.
+    frame = window.requestAnimationFrame(retryFocusGroupCard);
+
+    return () => {
+      if (frame !== undefined) {
+        window.cancelAnimationFrame(frame);
+      }
+    };
   }, [
-    groupSearchQuery,
+    groupListVirtualizer,
     manualGroupFocusRequest,
     onManualGroupFocusRequestHandled,
-    visibleGroups.length,
+    visibleGroups,
     workspace.id,
   ]);
 
@@ -4502,7 +4607,11 @@ function ManualGroupWorkspaceConfigPanel({
             />
           </div>
 
-          <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
+          <div
+            ref={groupListScrollRef}
+            className="min-h-0 flex-1 overflow-y-auto pr-1"
+            style={{ contain: 'strict' }}
+          >
             {workspace.groups.length === 0 ? (
               <div className="rounded-lg border border-dashed border-border p-3 text-sm text-muted-foreground">
                 {t`No merged UAT groups in this workspace.`}
@@ -4512,217 +4621,58 @@ function ManualGroupWorkspaceConfigPanel({
                 {t`No group items match this search.`}
               </div>
             ) : (
-              visibleGroups.map(({ group, groupIndex }) => {
-                const orderedMembers = getOrderedManualGroupMemberCodes(group);
-                const groupLabel = group.label?.trim() || group.id;
-                const isActiveGroup = group.id === activeGroupId;
-                const hasActiveGroup = Boolean(activeGroupId);
-                const isEditingGroupTitle = editingGroupId === group.id;
-                const groupColor = getManualGroupColor(groupIndex);
-                const groupCardStyle = {
-                  borderColor: isActiveGroup ? groupColor : undefined,
-                  backgroundColor: isActiveGroup
-                    ? getColorMix(groupColor, 10)
-                    : hasActiveGroup
-                      ? getColorMix(groupColor, 4)
-                      : undefined,
-                };
-                return (
-                  <div
-                    key={group.id}
-                    ref={(node) => {
-                      if (node) {
-                        groupCardRefs.current.set(group.id, node);
-                      } else {
-                        groupCardRefs.current.delete(group.id);
-                      }
-                    }}
-                    className={cn(
-                      'group/group-card cursor-pointer rounded-lg border bg-background/70 px-3 py-2.5 transition-colors',
-                      hasActiveGroup && !isActiveGroup && 'opacity-65'
-                    )}
-                    style={groupCardStyle}
-                    onClick={() => onActivateGroup(workspace.id, group.id)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(event) => {
-                      if (event.target !== event.currentTarget) {
-                        return;
-                      }
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        onActivateGroup(workspace.id, group.id);
-                      }
-                    }}
-                    aria-pressed={isActiveGroup}
-                  >
-                    <div className="flex items-start gap-2">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex min-w-0 items-center gap-2">
-                          <span
-                            className={cn(
-                              'h-2.5 w-2.5 shrink-0 rounded-full',
-                              hasActiveGroup && !isActiveGroup && 'opacity-40'
-                            )}
-                            style={{ backgroundColor: groupColor }}
-                            aria-hidden="true"
-                          />
-                          <input
-                            type="text"
-                            value={group.label ?? group.id}
-                            onChange={(event) => onGroupLabelChange(workspace.id, group.id, event.target.value)}
-                            onBlur={() => setEditingGroupId(undefined)}
-                            onKeyDown={(event) => {
-                              event.stopPropagation();
-                              if (event.key === 'Enter' || event.key === 'Escape') {
-                                event.currentTarget.blur();
-                              }
-                            }}
-                            onClick={(event) => {
-                              if (isEditingGroupTitle) {
-                                event.stopPropagation();
-                              }
-                            }}
-                            readOnly={!isEditingGroupTitle}
-                            disabled={!canEdit}
-                            autoFocus={isEditingGroupTitle}
-                            className={cn(
-                              'h-7 w-full truncate border-0 bg-transparent px-0 text-sm font-semibold shadow-none outline-none transition-colors focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50',
-                              isEditingGroupTitle && 'rounded-md border border-input bg-background px-2 shadow-sm focus-visible:ring-2 focus-visible:ring-ring',
-                              !isEditingGroupTitle && 'pointer-events-none'
-                            )}
-                            aria-label={t`Group name`}
-                            title={groupLabel}
-                          />
-                        </div>
-                        <span className="block truncate text-xs text-muted-foreground">
-                          {orderedMembers.length === 1
-                            ? t`1 UAT`
-                            : t`${orderedMembers.length} UATs`}
-                        </span>
-                      </div>
-                      {canEdit ? (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              type="button"
-                              size="icon"
-                              variant="ghost"
-                              className="h-7 w-7 shrink-0 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover/group-card:opacity-100 group-focus-within/group-card:opacity-100 data-[state=open]:opacity-100"
-                              aria-label={t`Open group menu`}
-                              onClick={(event) => event.stopPropagation()}
-                            >
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
-                            <DropdownMenuItem
-                              onClick={() => setEditingGroupId(group.id)}
-                              onSelect={() => setEditingGroupId(group.id)}
-                            >
-                              <Pencil className="mr-2 h-4 w-4" />
-                              {t`Rename`}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => onAddToGroup(workspace.id, group.id)}
-                            >
-                              <MousePointer2 className="mr-2 h-4 w-4" />
-                              {t`Add UATs to this group`}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-destructive focus:text-destructive"
-                              onClick={() => onDeleteGroup(workspace.id, group.id)}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              {t`Delete group`}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      ) : null}
+              <div
+                className="relative w-full"
+                style={{ height: `${groupListVirtualizer.getTotalSize()}px` }}
+              >
+                {virtualGroupRows.map((virtualRow) => {
+                  const visibleGroup = visibleGroups[virtualRow.index];
+                  if (!visibleGroup) {
+                    return null;
+                  }
+                  const { group, groupIndex } = visibleGroup;
+                  return (
+                    <div
+                      key={virtualRow.key}
+                      data-index={virtualRow.index}
+                      ref={groupListVirtualizer.measureElement}
+                      className="absolute left-0 top-0 w-full pb-3"
+                      style={{ transform: `translateY(${virtualRow.start}px)` }}
+                    >
+                      <ManualGroupItemCard
+                        ref={(node) => {
+                          if (node) {
+                            groupCardRefs.current.set(group.id, node);
+                          } else {
+                            groupCardRefs.current.delete(group.id);
+                          }
+                        }}
+                        workspaceId={workspace.id}
+                        group={group}
+                        groupIndex={groupIndex}
+                        canEdit={canEdit}
+                        activeGroupId={activeGroupId}
+                        editingGroupId={editingGroupId}
+                        uatMetadataBySirutaCode={uatMetadataBySirutaCode}
+                        onGroupLabelChange={onGroupLabelChange}
+                        onActivateGroup={onActivateGroup}
+                        onAddToGroup={onAddToGroup}
+                        onDeleteGroup={onDeleteGroup}
+                        onRemoveMember={onRemoveMember}
+                        onMoveMember={onMoveMember}
+                        onSetPrimaryMember={onSetPrimaryMember}
+                        setEditingGroupId={setEditingGroupId}
+                      />
                     </div>
-                    {orderedMembers.length > 0 ? (
-                      <div className="mt-2 divide-y divide-border/40 rounded-md bg-muted/20">
-                        {orderedMembers.map((sirutaCode, memberIndex) => {
-                          const metadata = uatMetadataBySirutaCode.get(sirutaCode);
-                          const memberLabel = metadata?.uatName || `UAT ${sirutaCode}`;
-                          const isPrimaryMember = group.primarySirutaCode === sirutaCode;
-                          return (
-                            <div
-                              key={sirutaCode}
-                              className="group/member-row flex items-center gap-2 px-2 py-1.5"
-                            >
-                              <div className="min-w-0 flex-1">
-                                <p className="truncate text-sm font-medium">{memberLabel}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {isPrimaryMember ? t`Primary UAT` : sirutaCode}
-                                </p>
-                              </div>
-                              {canEdit ? (
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button
-                                      type="button"
-                                      size="icon"
-                                      variant="ghost"
-                                      className="h-7 w-7 shrink-0 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover/member-row:opacity-100 group-focus-within/member-row:opacity-100 data-[state=open]:opacity-100"
-                                      aria-label={t`Open UAT menu`}
-                                      onClick={(event) => event.stopPropagation()}
-                                    >
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
-                                    <DropdownMenuItem
-                                      onClick={() => onMoveMember(workspace.id, group.id, sirutaCode, 'previous')}
-                                      disabled={memberIndex === 0}
-                                    >
-                                      <ArrowUp className="mr-2 h-4 w-4" />
-                                      {t`Move earlier`}
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={() => onMoveMember(workspace.id, group.id, sirutaCode, 'next')}
-                                      disabled={memberIndex === orderedMembers.length - 1}
-                                    >
-                                      <ArrowDown className="mr-2 h-4 w-4" />
-                                      {t`Move later`}
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={() => onSetPrimaryMember(workspace.id, group.id, sirutaCode)}
-                                      disabled={isPrimaryMember}
-                                    >
-                                      <Star className="mr-2 h-4 w-4" />
-                                      {t`Set primary`}
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem
-                                      className="text-destructive focus:text-destructive"
-                                      onClick={() => onRemoveMember(workspace.id, group.id, sirutaCode)}
-                                    >
-                                      <X className="mr-2 h-4 w-4" />
-                                      {t`Remove from group`}
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              ) : null}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <p className="mt-2 rounded-md bg-muted/30 px-2 py-1.5 text-xs text-muted-foreground">
-                        {t`No UATs in ${groupLabel}.`}
-                      </p>
-                    )}
-                  </div>
-                );
-              })
+                  );
+                })}
+              </div>
             )}
             <button
               type="button"
               onClick={() => onAddGroupItem(workspace.id)}
               disabled={!canEdit}
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border p-3 text-sm text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border p-3 text-sm text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
             >
               <Plus className="h-4 w-4" />
               {t`Add group item`}
@@ -4744,6 +4694,242 @@ function ManualGroupWorkspaceConfigPanel({
     </div>
   );
 }
+
+interface ManualGroupItemCardProps {
+  workspaceId: string;
+  group: MapGroup;
+  groupIndex: number;
+  canEdit: boolean;
+  activeGroupId?: string;
+  editingGroupId?: string;
+  uatMetadataBySirutaCode: Map<string, Omit<AdvancedMapAnalyticsTableRow, 'sirutaCode' | 'valuesBySeriesId' | 'groupValuesByGroupingId'>>;
+  onGroupLabelChange: (workspaceId: string, groupId: string, nextLabel: string) => void;
+  onActivateGroup: (workspaceId: string, groupId: string) => void;
+  onAddToGroup: (workspaceId: string, groupId: string) => void;
+  onDeleteGroup: (workspaceId: string, groupId: string) => void;
+  onRemoveMember: (workspaceId: string, groupId: string, sirutaCode: string) => void;
+  onMoveMember: (workspaceId: string, groupId: string, sirutaCode: string, direction: 'previous' | 'next') => void;
+  onSetPrimaryMember: (workspaceId: string, groupId: string, sirutaCode: string) => void;
+  setEditingGroupId: Dispatch<SetStateAction<string | undefined>>;
+}
+
+const ManualGroupItemCard = memo(forwardRef<HTMLDivElement, Readonly<ManualGroupItemCardProps>>(
+  function ManualGroupItemCard({
+    workspaceId,
+    group,
+    groupIndex,
+    canEdit,
+    activeGroupId,
+    editingGroupId,
+    uatMetadataBySirutaCode,
+    onGroupLabelChange,
+    onActivateGroup,
+    onAddToGroup,
+    onDeleteGroup,
+    onRemoveMember,
+    onMoveMember,
+    onSetPrimaryMember,
+    setEditingGroupId,
+  }, ref) {
+    const orderedMembers = getOrderedManualGroupMemberCodes(group);
+    const groupLabel = group.label?.trim() || group.id;
+    const isActiveGroup = group.id === activeGroupId;
+    const hasActiveGroup = Boolean(activeGroupId);
+    const isEditingGroupTitle = editingGroupId === group.id;
+    const groupColor = getManualGroupColor(groupIndex);
+    const groupCardStyle = {
+      borderColor: isActiveGroup ? groupColor : undefined,
+      backgroundColor: isActiveGroup
+        ? getColorMix(groupColor, 10)
+        : hasActiveGroup
+          ? getColorMix(groupColor, 4)
+          : undefined,
+    };
+
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          'group/group-card cursor-pointer rounded-lg border bg-background/70 px-3 py-2.5 transition-colors',
+          hasActiveGroup && !isActiveGroup && 'opacity-65'
+        )}
+        style={groupCardStyle}
+        onClick={() => onActivateGroup(workspaceId, group.id)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(event) => {
+          if (event.target !== event.currentTarget) {
+            return;
+          }
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            onActivateGroup(workspaceId, group.id);
+          }
+        }}
+        aria-pressed={isActiveGroup}
+      >
+        <div className="flex items-start gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="flex min-w-0 items-center gap-2">
+              <span
+                className={cn(
+                  'h-2.5 w-2.5 shrink-0 rounded-full',
+                  hasActiveGroup && !isActiveGroup && 'opacity-40'
+                )}
+                style={{ backgroundColor: groupColor }}
+                aria-hidden="true"
+              />
+              <input
+                type="text"
+                value={group.label ?? group.id}
+                onChange={(event) => onGroupLabelChange(workspaceId, group.id, event.target.value)}
+                onBlur={() => setEditingGroupId(undefined)}
+                onKeyDown={(event) => {
+                  event.stopPropagation();
+                  if (event.key === 'Enter' || event.key === 'Escape') {
+                    event.currentTarget.blur();
+                  }
+                }}
+                onClick={(event) => {
+                  if (isEditingGroupTitle) {
+                    event.stopPropagation();
+                  }
+                }}
+                readOnly={!isEditingGroupTitle}
+                disabled={!canEdit}
+                autoFocus={isEditingGroupTitle}
+                className={cn(
+                  'h-7 w-full truncate border-0 bg-transparent px-0 text-sm font-semibold shadow-none outline-none transition-colors focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50',
+                  isEditingGroupTitle && 'rounded-md border border-input bg-background px-2 shadow-sm focus-visible:ring-2 focus-visible:ring-ring',
+                  !isEditingGroupTitle && 'pointer-events-none'
+                )}
+                aria-label={t`Group name`}
+                title={groupLabel}
+              />
+            </div>
+            <span className="block truncate text-xs text-muted-foreground">
+              {orderedMembers.length === 1
+                ? t`1 UAT`
+                : t`${orderedMembers.length} UATs`}
+            </span>
+          </div>
+          {canEdit ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className="h-7 w-7 shrink-0 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover/group-card:opacity-100 group-focus-within/group-card:opacity-100 data-[state=open]:opacity-100"
+                  aria-label={t`Open group menu`}
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
+                <DropdownMenuItem
+                  onClick={() => setEditingGroupId(group.id)}
+                  onSelect={() => setEditingGroupId(group.id)}
+                >
+                  <Pencil className="mr-2 h-4 w-4" />
+                  {t`Rename`}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => onAddToGroup(workspaceId, group.id)}
+                >
+                  <MousePointer2 className="mr-2 h-4 w-4" />
+                  {t`Add UATs to this group`}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={() => onDeleteGroup(workspaceId, group.id)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  {t`Delete group`}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : null}
+        </div>
+        {orderedMembers.length > 0 ? (
+          <div className="mt-2 divide-y divide-border/40 rounded-md bg-muted/20">
+            {orderedMembers.map((sirutaCode, memberIndex) => {
+              const metadata = uatMetadataBySirutaCode.get(sirutaCode);
+              const memberLabel = metadata?.uatName || `UAT ${sirutaCode}`;
+              const isPrimaryMember = group.primarySirutaCode === sirutaCode;
+              return (
+                <div
+                  key={sirutaCode}
+                  className="group/member-row flex items-center gap-2 px-2 py-1.5"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{memberLabel}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {isPrimaryMember ? t`Primary UAT` : sirutaCode}
+                    </p>
+                  </div>
+                  {canEdit ? (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7 shrink-0 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover/member-row:opacity-100 group-focus-within/member-row:opacity-100 data-[state=open]:opacity-100"
+                          aria-label={t`Open UAT menu`}
+                          onClick={(event) => event.stopPropagation()}
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
+                        <DropdownMenuItem
+                          onClick={() => onMoveMember(workspaceId, group.id, sirutaCode, 'previous')}
+                          disabled={memberIndex === 0}
+                        >
+                          <ArrowUp className="mr-2 h-4 w-4" />
+                          {t`Move earlier`}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => onMoveMember(workspaceId, group.id, sirutaCode, 'next')}
+                          disabled={memberIndex === orderedMembers.length - 1}
+                        >
+                          <ArrowDown className="mr-2 h-4 w-4" />
+                          {t`Move later`}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => onSetPrimaryMember(workspaceId, group.id, sirutaCode)}
+                          disabled={isPrimaryMember}
+                        >
+                          <Star className="mr-2 h-4 w-4" />
+                          {t`Set primary`}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={() => onRemoveMember(workspaceId, group.id, sirutaCode)}
+                        >
+                          <X className="mr-2 h-4 w-4" />
+                          {t`Remove from group`}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="mt-2 rounded-md bg-muted/30 px-2 py-1.5 text-xs text-muted-foreground">
+            {t`No UATs in ${groupLabel}.`}
+          </p>
+        )}
+      </div>
+    );
+  }
+));
 
 function normalizeManualGroupSearchText(value: unknown): string {
   return String(value ?? '')

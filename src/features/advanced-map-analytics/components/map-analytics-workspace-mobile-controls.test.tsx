@@ -74,6 +74,11 @@ let mockUploadedDatasetPayloadsResult = {
   payloadsBySeriesId: new Map<string, Map<string, AdvancedMapDatasetJsonItem>>(),
   isLoading: false,
 };
+const virtualizerMockState = vi.hoisted(() => ({
+  visibleIndexes: undefined as Set<number> | undefined,
+  scrollToIndex: vi.fn(),
+  scrollToOffset: vi.fn(),
+}));
 let mockBinsResult = {
   binsEditorState: null,
   activeBinsPreset: undefined,
@@ -121,6 +126,59 @@ function clickEmptyGroupWorkspaceAddButton() {
 
 vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => navigateMock,
+}));
+
+vi.mock('@tanstack/react-virtual', () => ({
+  useVirtualizer: ({
+    count,
+    estimateSize,
+    getItemKey,
+  }: {
+    count: number;
+    estimateSize?: (index: number) => number;
+    getItemKey?: (index: number) => string | number;
+  }) => {
+    const getItemSize = (index: number) => estimateSize?.(index) ?? 48;
+    const getItemStart = (targetIndex: number) => {
+      let start = 0;
+      for (let index = 0; index < targetIndex; index += 1) {
+        start += getItemSize(index);
+      }
+      return start;
+    };
+    const buildVirtualItems = () => {
+      const indexes =
+        virtualizerMockState.visibleIndexes === undefined
+          ? Array.from({ length: count }, (_, index) => index)
+          : Array.from(virtualizerMockState.visibleIndexes)
+              .filter((index) => index >= 0 && index < count)
+              .sort((left, right) => left - right);
+
+      return indexes.map((index) => {
+        const size = getItemSize(index);
+        const start = getItemStart(index);
+        return {
+          index,
+          key: getItemKey?.(index) ?? index,
+          start,
+          size,
+          end: start + size,
+        };
+      });
+    };
+
+    return {
+      getVirtualItems: buildVirtualItems,
+      getTotalSize: () =>
+        Array.from({ length: count }, (_, index) => getItemSize(index)).reduce(
+          (total, size) => total + size,
+          0
+        ),
+      measureElement: () => undefined,
+      scrollToIndex: (...args: unknown[]) => virtualizerMockState.scrollToIndex(...args),
+      scrollToOffset: (...args: unknown[]) => virtualizerMockState.scrollToOffset(...args),
+    };
+  },
 }));
 
 vi.mock('react-hotkeys-hook', () => ({
@@ -340,6 +398,9 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     toastErrorMock.mockReset();
     clipboardWriteTextMock.mockReset();
     clipboardReadTextMock.mockReset();
+    virtualizerMockState.visibleIndexes = undefined;
+    virtualizerMockState.scrollToIndex.mockClear();
+    virtualizerMockState.scrollToOffset.mockClear();
     capturedGetTooltipContent = undefined;
     latestInteractiveMapProps = undefined;
     latestSeriesPanelProps = undefined;
@@ -1132,6 +1193,258 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
         value: originalScrollIntoView,
       });
     }
+  });
+
+  it('keeps map UAT focus requests until virtualized group cards mount', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            properties: {
+              natcode: '1001',
+              name: 'Mapped UAT',
+              county: 'Test county',
+              cui: '12345678',
+            },
+            geometry: null,
+          },
+          {
+            type: 'Feature',
+            properties: {
+              natcode: '2002',
+              name: 'Second UAT',
+              county: 'Alt county',
+              cui: '87654321',
+            },
+            geometry: null,
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    };
+    virtualizerMockState.visibleIndexes = new Set([0]);
+    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
+    const scrollIntoViewMock = vi.fn();
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      writable: true,
+      value: scrollIntoViewMock,
+    });
+
+    try {
+      const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+      const initialState = createMapState({
+        activeView: 'map',
+        groupWorkspaces: [
+          {
+            id: 'manual-map-groups',
+            key: 'manual',
+            label: 'Manual groups',
+            groups: [
+              {
+                id: 'grp_alpha',
+                label: 'Alpha cluster',
+                memberSirutaCodes: ['1001'],
+              },
+              {
+                id: 'grp_beta',
+                label: 'Beta cluster',
+                memberSirutaCodes: ['2002'],
+              },
+            ],
+          },
+        ],
+      });
+      let latestState = initialState;
+
+      function Harness() {
+        const [state, setState] = useState(initialState);
+        latestState = state;
+        return (
+          <MapAnalyticsWorkspace
+            mode="owner"
+            mapState={state}
+            setMapState={(updater) => {
+              setState((previousState) => {
+                const nextState =
+                  typeof updater === 'function' ? updater(previousState) : updater;
+                latestState = nextState;
+                return nextState;
+              });
+            }}
+            capabilities={{ readOnly: false }}
+            mobileControlsDefaultCollapsed={true}
+          />
+        );
+      }
+
+      const view = render(<Harness />);
+
+      await openFirstGroupWorkspaceConfig();
+      expect(screen.getByDisplayValue('Alpha cluster')).toBeInTheDocument();
+      expect(screen.queryByDisplayValue('Beta cluster')).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Map click second UAT' }));
+
+      await waitFor(() => {
+        expect(virtualizerMockState.scrollToIndex).toHaveBeenCalledWith(1, { align: 'center' });
+        expect(latestState.activeGroupWorkspaceId).toBe('manual-map-groups');
+      });
+      expect(scrollIntoViewMock).not.toHaveBeenCalled();
+
+      await act(async () => {
+        await new Promise((resolve) => window.setTimeout(resolve, 80));
+      });
+      expect(scrollIntoViewMock).not.toHaveBeenCalled();
+
+      virtualizerMockState.visibleIndexes = new Set([1]);
+      view.rerender(<Harness />);
+
+      const betaGroupInput = await screen.findByDisplayValue('Beta cluster');
+      const betaGroupCard = betaGroupInput.closest('[role="button"]') as HTMLElement;
+      await waitFor(() => {
+        expect(betaGroupCard).toHaveAttribute('aria-pressed', 'true');
+        expect(scrollIntoViewMock).toHaveBeenCalled();
+      });
+    } finally {
+      Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+        configurable: true,
+        writable: true,
+        value: originalScrollIntoView,
+      });
+    }
+  });
+
+  it('centers the map when selecting a group item from the workspace panel', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            properties: {
+              natcode: '1001',
+              name: 'Mapped UAT',
+              county: 'Test county',
+              cui: '12345678',
+            },
+            geometry: {
+              type: 'Polygon',
+              coordinates: [
+                [
+                  [24, 46],
+                  [25, 46],
+                  [25, 47],
+                  [24, 47],
+                  [24, 46],
+                ],
+              ],
+            },
+          },
+          {
+            type: 'Feature',
+            properties: {
+              natcode: '2002',
+              name: 'Second UAT',
+              county: 'Alt county',
+              cui: '87654321',
+            },
+            geometry: {
+              type: 'Polygon',
+              coordinates: [
+                [
+                  [26, 48],
+                  [27, 48],
+                  [27, 49],
+                  [26, 49],
+                  [26, 48],
+                ],
+              ],
+            },
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    };
+    const onMapViewportChange = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+    const initialState = createMapState({
+      activeView: 'map',
+      mapZoom: 7.7,
+      groupWorkspaces: [
+        {
+          id: 'manual-map-groups',
+          key: 'manual',
+          label: 'Manual groups',
+          groups: [
+            {
+              id: 'grp_alpha',
+              label: 'Alpha cluster',
+              memberSirutaCodes: ['1001', '2002'],
+            },
+          ],
+        },
+      ],
+    });
+    let latestState = initialState;
+
+    function Harness() {
+      const [state, setState] = useState(initialState);
+      latestState = state;
+      return (
+        <MapAnalyticsWorkspace
+          mode="owner"
+          mapState={state}
+          setMapState={(updater) => {
+            setState((previousState) => {
+              const nextState =
+                typeof updater === 'function' ? updater(previousState) : updater;
+              latestState = nextState;
+              return nextState;
+            });
+          }}
+          capabilities={{ readOnly: false }}
+          mobileControlsDefaultCollapsed={true}
+          onMapViewportChange={onMapViewportChange}
+        />
+      );
+    }
+
+    render(<Harness />);
+    await openFirstGroupWorkspaceConfig();
+
+    fireEvent.click(screen.getByDisplayValue('Alpha cluster').closest('[role="button"]') as HTMLElement);
+
+    await waitFor(() => {
+      expect(onMapViewportChange).toHaveBeenCalledWith({
+        mapCenter: [47.5, 25.5],
+        mapZoom: 10,
+      });
+      expect(latestInteractiveMapProps?.center).toEqual([47.5, 25.5]);
+      expect(latestInteractiveMapProps?.zoom).toBe(10);
+    });
+
+    const handleViewChange = latestInteractiveMapProps?.onViewChange as
+      | ((center: [number, number], zoom: number) => void)
+      | undefined;
+    handleViewChange?.([40, 20], 8);
+    onMapViewportChange.mockClear();
+
+    fireEvent.click(screen.getByDisplayValue('Alpha cluster').closest('[role="button"]') as HTMLElement);
+
+    await waitFor(() => {
+      expect(onMapViewportChange).toHaveBeenCalledWith({
+        mapCenter: [47.5, 25.5],
+        mapZoom: 10,
+      });
+      expect(latestState.activeGroupWorkspaceId).toBe('manual-map-groups');
+    });
   });
 
   it('updates manual group member order and primary member', async () => {
