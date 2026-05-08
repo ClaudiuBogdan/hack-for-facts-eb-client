@@ -18,10 +18,9 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ArrowDown, ArrowUp, BarChart3, Boxes, Check, ChevronDown, Copy, GripVertical, Loader2, MapIcon, MoreVertical, MousePointer2, Pencil, Plus, Save, Search, Star, TableIcon, Trash2, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, BarChart3, Boxes, Check, ChevronDown, Copy, GripVertical, Loader2, MapIcon, MoreVertical, MousePointer2, Pencil, Plus, Save, Search, Star, TableIcon, Trash2, Upload, X } from 'lucide-react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
-import type { GeoJsonObject } from 'geojson';
 import type { InteractiveMapFeatureStyle } from '@/components/maps/InteractiveMap';
 
 import { ClientOnly } from '@/components/ssr/ClientOnly';
@@ -53,7 +52,10 @@ import type {
   AdvancedMapAnalyticsTableSeriesColumn,
 } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-table-types';
 import { AdvancedMapAnalyticsDataTable } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-data-table';
-import { buildAdvancedMapAnalyticsTableRows } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-table-rows';
+import {
+  EMPTY_ADVANCED_MAP_ANALYTICS_TABLE_ROWS_RESULT,
+  buildAdvancedMapAnalyticsTableRows,
+} from '@/components/maps/advanced-map-analytics/advanced-map-analytics-table-rows';
 import { formatAdvancedMapAnalyticsSeriesValue } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-formatting';
 import type {
   AdvancedMapAnalyticsWidget,
@@ -62,6 +64,7 @@ import type {
   AdvancedMapAnalyticsValueFilterRule,
   GeoJsonFilterOption,
   GeoJsonDatasetSeriesConfiguration,
+  MapGroup,
   MapGroupWorkspace,
   MapSupportedSeries,
 } from '@/schemas/advanced-map-analytics';
@@ -70,6 +73,7 @@ import {
   createDefaultAdvancedMapAnalyticsSeries,
   createUniqueAdvancedMapAnalyticsId,
   getGeoJsonDatasetUnit,
+  MapGroupWorkspaceSchema,
 } from '@/schemas/advanced-map-analytics';
 import { useUserCurrency } from '@/lib/hooks/useUserCurrency';
 import { useUserInflationAdjusted } from '@/lib/hooks/useUserInflationAdjusted';
@@ -102,7 +106,12 @@ import {
 } from './map-analytics-entity-details-panel';
 import { MapAnalyticsQuickActions } from './map-analytics-quick-actions';
 import { MapAnalyticsDescriptionInline } from './map-analytics-description-inline';
-import { buildGroupWorkspaceBoundaryGeoJsonData } from './map-analytics-group-boundaries';
+import { MapAnalyticsGroupWorkspaceImportDialog } from './map-analytics-group-workspace-import-dialog';
+import {
+  useGroupWorkspaceBoundaryGeoJsonData,
+  useMapGroupBoundaryGeoJsonData,
+} from './map-analytics-group-boundary-hooks';
+import { getAdvancedMapAnalyticsDraftSizeWarningLength } from './map-analytics-draft-size';
 import {
   buildActiveMapRenderUnitContext,
   buildManualGroupDisplayValuesBySeriesId,
@@ -140,6 +149,10 @@ import type { AdvancedMapDatasetDetail } from '@/features/advanced-map-datasets/
 import { loadInteractiveMapModule } from '@/features/advanced-map-analytics/analytics-map-warmup';
 import type { MapEntitySelection } from '@/features/advanced-map-analytics/types/map-entity-selection';
 import type { PublicMapViewport } from '@/features/advanced-map-analytics/hooks/use-public-map-viewport';
+import {
+  areMapViewportsEqual,
+  roundMapViewport,
+} from '@/features/advanced-map-analytics/map-viewport-utils';
 import { t } from '@lingui/core/macro';
 import { cn, getUserLocale } from '@/lib/utils';
 
@@ -175,9 +188,6 @@ const GROUPED_RENDER_UNIT_MEMBER_STROKE: InteractiveMapFeatureStyle = {
   lineJoin: 'round',
   lineCap: 'round',
 };
-
-const GROUP_BOUNDARY_COORDINATE_PRECISION = 6;
-const GROUP_BOUNDARY_OFFSET_EPSILON = 0.00001;
 
 interface EditorState {
   mode: 'add' | 'edit';
@@ -343,7 +353,6 @@ function getOrderedManualGroupMemberCodes(group: MapGroupWorkspace['groups'][num
 }
 
 type GeoJsonCoordinate = readonly [number, number];
-type BoundaryEdge = [GeoJsonCoordinate, GeoJsonCoordinate];
 interface GeoJsonCoordinateBounds {
   minLongitude: number;
   maxLongitude: number;
@@ -422,185 +431,6 @@ function getManualGroupMapCenter(
   ];
 }
 
-function getBoundaryCoordinateKey(coordinate: GeoJsonCoordinate): string {
-  const longitude = coordinate[0];
-  const latitude = coordinate[1];
-  return `${longitude.toFixed(GROUP_BOUNDARY_COORDINATE_PRECISION)},${latitude.toFixed(GROUP_BOUNDARY_COORDINATE_PRECISION)}`;
-}
-
-function getBoundaryEdgeKey(start: GeoJsonCoordinate, end: GeoJsonCoordinate): string {
-  const startKey = getBoundaryCoordinateKey(start);
-  const endKey = getBoundaryCoordinateKey(end);
-  return startKey < endKey ? `${startKey}|${endKey}` : `${endKey}|${startKey}`;
-}
-
-function isPointInRing(point: GeoJsonCoordinate, ring: readonly GeoJsonCoordinate[]): boolean {
-  let isInside = false;
-  const [pointX, pointY] = point;
-
-  for (
-    let currentIndex = 0, previousIndex = ring.length - 1;
-    currentIndex < ring.length;
-    previousIndex = currentIndex, currentIndex += 1
-  ) {
-    const [currentX, currentY] = ring[currentIndex] ?? [0, 0];
-    const [previousX, previousY] = ring[previousIndex] ?? [0, 0];
-    const crossesYAxis = currentY > pointY !== previousY > pointY;
-    if (!crossesYAxis) {
-      continue;
-    }
-
-    const intersectionX =
-      ((previousX - currentX) * (pointY - currentY)) / (previousY - currentY) + currentX;
-    if (pointX < intersectionX) {
-      isInside = !isInside;
-    }
-  }
-
-  return isInside;
-}
-
-function isPointInPolygonCoordinates(point: GeoJsonCoordinate, polygonCoordinates: unknown): boolean {
-  if (!Array.isArray(polygonCoordinates) || polygonCoordinates.length === 0) {
-    return false;
-  }
-
-  const rings = polygonCoordinates
-    .filter((ring): ring is GeoJsonCoordinate[] =>
-      Array.isArray(ring) && ring.length >= 4 && ring.every(isGeoJsonCoordinate)
-    );
-  const outerRing = rings[0];
-  if (!outerRing || !isPointInRing(point, outerRing)) {
-    return false;
-  }
-
-  return !rings.slice(1).some((holeRing) => isPointInRing(point, holeRing));
-}
-
-function isPointInFeatureGeometry(point: GeoJsonCoordinate, feature: UatFeature): boolean {
-  const geometry = feature.geometry;
-  if (!geometry) {
-    return false;
-  }
-
-  if (geometry.type === 'Polygon') {
-    return isPointInPolygonCoordinates(point, geometry.coordinates);
-  }
-
-  if (geometry.type === 'MultiPolygon') {
-    return geometry.coordinates.some((polygonCoordinates) =>
-      isPointInPolygonCoordinates(point, polygonCoordinates)
-    );
-  }
-
-  return false;
-}
-
-function isPointInAnyFeature(point: GeoJsonCoordinate, features: readonly UatFeature[]): boolean {
-  return features.some((feature) => isPointInFeatureGeometry(point, feature));
-}
-
-function isInteriorBoundaryEdge(
-  edge: BoundaryEdge,
-  features: readonly UatFeature[]
-): boolean {
-  const [start, end] = edge;
-  const deltaLongitude = end[0] - start[0];
-  const deltaLatitude = end[1] - start[1];
-  const length = Math.hypot(deltaLongitude, deltaLatitude);
-  if (length === 0) {
-    return true;
-  }
-
-  const midpoint: GeoJsonCoordinate = [
-    (start[0] + end[0]) / 2,
-    (start[1] + end[1]) / 2,
-  ];
-  const normalLongitude = (-deltaLatitude / length) * GROUP_BOUNDARY_OFFSET_EPSILON;
-  const normalLatitude = (deltaLongitude / length) * GROUP_BOUNDARY_OFFSET_EPSILON;
-  const leftPoint: GeoJsonCoordinate = [
-    midpoint[0] + normalLongitude,
-    midpoint[1] + normalLatitude,
-  ];
-  const rightPoint: GeoJsonCoordinate = [
-    midpoint[0] - normalLongitude,
-    midpoint[1] - normalLatitude,
-  ];
-
-  return isPointInAnyFeature(leftPoint, features) && isPointInAnyFeature(rightPoint, features);
-}
-
-function collectPolygonBoundaryEdges(
-  polygonCoordinates: unknown,
-  boundaryEdgesByKey: Map<string, BoundaryEdge>
-): void {
-  if (!Array.isArray(polygonCoordinates)) {
-    return;
-  }
-
-  for (const ring of polygonCoordinates) {
-    if (!Array.isArray(ring) || ring.length < 2) {
-      continue;
-    }
-
-    for (let index = 0; index < ring.length - 1; index += 1) {
-      const start = ring[index];
-      const end = ring[index + 1];
-      if (!isGeoJsonCoordinate(start) || !isGeoJsonCoordinate(end)) {
-        continue;
-      }
-
-      const edgeKey = getBoundaryEdgeKey(start, end);
-      if (boundaryEdgesByKey.has(edgeKey)) {
-        boundaryEdgesByKey.delete(edgeKey);
-      } else {
-        boundaryEdgesByKey.set(edgeKey, [start, end]);
-      }
-    }
-  }
-}
-
-function buildExteriorBoundaryGeoJsonData(features: readonly UatFeature[]): GeoJsonObject | null {
-  const boundaryEdgesByKey = new Map<string, BoundaryEdge>();
-
-  for (const feature of features) {
-    const geometry = feature.geometry;
-    if (!geometry) {
-      continue;
-    }
-
-    if (geometry.type === 'Polygon') {
-      collectPolygonBoundaryEdges(geometry.coordinates, boundaryEdgesByKey);
-    }
-
-    if (geometry.type === 'MultiPolygon') {
-      for (const polygonCoordinates of geometry.coordinates) {
-        collectPolygonBoundaryEdges(polygonCoordinates, boundaryEdgesByKey);
-      }
-    }
-  }
-
-  const boundaryFeatures = [...boundaryEdgesByKey.values()]
-    .filter((edge) => !isInteriorBoundaryEdge(edge, features))
-    .map(([start, end], index) => ({
-      type: 'Feature' as const,
-      properties: { id: `group-boundary-${index}` },
-      geometry: {
-        type: 'LineString' as const,
-        coordinates: [start, end],
-      },
-    }));
-
-  if (boundaryFeatures.length === 0) {
-    return null;
-  }
-
-  return {
-    type: 'FeatureCollection',
-    features: boundaryFeatures,
-  } as GeoJsonObject;
-}
-
 // NOTE: Do not use module-scope t`` — it freezes the translation at import time.
 // Use t`` at the call site instead (see mapName usage below).
 
@@ -646,8 +476,14 @@ export function MapAnalyticsWorkspace({
   const [isManualGroupCreateMode, setIsManualGroupCreateMode] = useState(false);
   const [activeManualGroupId, setActiveManualGroupId] = useState<string | undefined>(undefined);
   const [groupConfigWorkspaceId, setGroupConfigWorkspaceId] = useState<string | undefined>(undefined);
+  const [isGroupWorkspaceImportOpen, setIsGroupWorkspaceImportOpen] = useState(false);
   const [manualGroupFocusRequest, setManualGroupFocusRequest] =
     useState<ManualGroupFocusRequest | null>(null);
+  const [cameraCommandViewport, setCameraCommandViewport] = useState<PublicMapViewport | null>(null);
+  const lastRuntimeViewportRef = useRef<PublicMapViewport>({
+    mapCenter: mapCenterOverride ?? mapState.mapCenter,
+    mapZoom: mapZoomOverride ?? mapState.mapZoom,
+  });
   const [isMobileControlsCollapsed, setIsMobileControlsCollapsed] = useState(
     mobileControlsDefaultCollapsed
   );
@@ -841,6 +677,36 @@ export function MapAnalyticsWorkspace({
     setActiveManualGroupId(undefined);
     setIsManualGroupCreateMode(true);
   }, [isPreviewLayout, isReadOnly, mapViewType, updateState]);
+
+  const importManualGroupWorkspace = useCallback(
+    (workspaceLabel: string, groups: MapGroup[]) => {
+      if (isReadOnly || isPreviewLayout || mapViewType !== 'UAT') {
+        return;
+      }
+
+      const workspaceId = createUniqueAdvancedMapAnalyticsId(
+        mapState.groupWorkspaces.map((workspace) => workspace.id)
+      );
+      const workspace = MapGroupWorkspaceSchema.parse({
+        id: workspaceId,
+        key: `imported-group-workspace-${workspaceId}`,
+        label: workspaceLabel.trim() || t`Imported group workspace`,
+        granularity: 'uat',
+        groups,
+      });
+
+      updateState((draft) => {
+        draft.groupWorkspaces.push(workspace);
+        draft.activeGroupWorkspaceId = workspace.id;
+      });
+      setSelectedMapEntity(null);
+      setActiveManualGroupId(undefined);
+      setIsManualGroupCreateMode(false);
+      setGroupConfigWorkspaceId(workspace.id);
+      toast.success(t`Group workspace imported`);
+    },
+    [isPreviewLayout, isReadOnly, mapState.groupWorkspaces, mapViewType, updateState]
+  );
 
   const addManualGroupItem = useCallback(
     (workspaceId: string) => {
@@ -1981,12 +1847,87 @@ export function MapAnalyticsWorkspace({
     [isReadOnly, updateState]
   );
 
-  const mapZoom = mapZoomOverride ?? mapState.mapZoom ?? (isMobile ? 6 : 7.7);
-  const mapCenter = mapCenterOverride ?? mapState.mapCenter;
+  const externalViewportKey = useMemo(
+    () => JSON.stringify({
+      mapCenter: mapCenterOverride ?? null,
+      mapZoom: mapZoomOverride ?? null,
+    }),
+    [mapCenterOverride, mapZoomOverride]
+  );
+  useEffect(() => {
+    setCameraCommandViewport(null);
+    lastRuntimeViewportRef.current = {
+      mapCenter: mapCenterOverride ?? mapState.mapCenter,
+      mapZoom: mapZoomOverride ?? mapState.mapZoom,
+    };
+  }, [externalViewportKey, mapCenterOverride, mapState.mapCenter, mapState.mapZoom, mapZoomOverride]);
+
+  const mapZoom = cameraCommandViewport?.mapZoom ?? mapZoomOverride ?? mapState.mapZoom ?? (isMobile ? 6 : 7.7);
+  const mapCenter = cameraCommandViewport?.mapCenter ?? mapCenterOverride ?? mapState.mapCenter;
+  const {
+    activeBinPresetId: draftSizeActiveBinPresetId,
+    activeGroupWorkspaceId: draftSizeActiveGroupWorkspaceId,
+    activeSeriesId: draftSizeActiveSeriesId,
+    activeView: draftSizeActiveView,
+    analyticsWidgets: draftSizeAnalyticsWidgets,
+    binsPanelCollapsed: draftSizeBinsPanelCollapsed,
+    binsPresets: draftSizeBinsPresets,
+    configPanelCollapsed: draftSizeConfigPanelCollapsed,
+    groupWorkspaces: draftSizeGroupWorkspaces,
+    mapName: draftSizeMapName,
+    series: draftSizeSeries,
+    seriesPanelCollapsed: draftSizeSeriesPanelCollapsed,
+    showCountyBoundaries: draftSizeShowCountyBoundaries,
+    tableBinFiltersByPresetId: draftSizeTableBinFiltersByPresetId,
+    valueFilters: draftSizeValueFilters,
+    valueFiltersPanelCollapsed: draftSizeValueFiltersPanelCollapsed,
+    version: draftSizeVersion,
+  } = mapState;
 
   const serializedDraftLength = useMemo(
-    () => JSON.stringify({ mapState, mapDescription }).length,
-    [mapDescription, mapState]
+    () =>
+      getAdvancedMapAnalyticsDraftSizeWarningLength({
+        mapDescription,
+        mapState: {
+          activeBinPresetId: draftSizeActiveBinPresetId,
+          activeGroupWorkspaceId: draftSizeActiveGroupWorkspaceId,
+          activeSeriesId: draftSizeActiveSeriesId,
+          activeView: draftSizeActiveView,
+          analyticsWidgets: draftSizeAnalyticsWidgets,
+          binsPanelCollapsed: draftSizeBinsPanelCollapsed,
+          binsPresets: draftSizeBinsPresets,
+          configPanelCollapsed: draftSizeConfigPanelCollapsed,
+          groupWorkspaces: draftSizeGroupWorkspaces,
+          mapName: draftSizeMapName,
+          series: draftSizeSeries,
+          seriesPanelCollapsed: draftSizeSeriesPanelCollapsed,
+          showCountyBoundaries: draftSizeShowCountyBoundaries,
+          tableBinFiltersByPresetId: draftSizeTableBinFiltersByPresetId,
+          valueFilters: draftSizeValueFilters,
+          valueFiltersPanelCollapsed: draftSizeValueFiltersPanelCollapsed,
+          version: draftSizeVersion,
+        },
+      }),
+    [
+      draftSizeActiveBinPresetId,
+      draftSizeActiveGroupWorkspaceId,
+      draftSizeActiveSeriesId,
+      draftSizeActiveView,
+      draftSizeAnalyticsWidgets,
+      draftSizeBinsPanelCollapsed,
+      draftSizeBinsPresets,
+      draftSizeConfigPanelCollapsed,
+      draftSizeGroupWorkspaces,
+      draftSizeMapName,
+      draftSizeSeries,
+      draftSizeSeriesPanelCollapsed,
+      draftSizeShowCountyBoundaries,
+      draftSizeTableBinFiltersByPresetId,
+      draftSizeValueFilters,
+      draftSizeValueFiltersPanelCollapsed,
+      draftSizeVersion,
+      mapDescription,
+    ]
   );
 
   const {
@@ -2012,53 +1953,32 @@ export function MapAnalyticsWorkspace({
         return;
       }
 
-      let nextCenter: [number, number] | undefined;
-      let didActivateGroup = false;
-      let didClearActiveGroup = false;
-      const nextZoom = Math.max(mapZoom, 10);
-      const isCurrentlyActiveGroup =
-        activeManualGroupId === groupId && mapState.activeGroupWorkspaceId === workspaceId;
-
-      updateState((draft) => {
-        const workspace = findManualGroupWorkspace(draft, workspaceId);
-        const group = workspace?.groups.find((entry) => entry.id === groupId);
-        if (!workspace || !group) {
-          return;
-        }
-
-        didActivateGroup = true;
-        draft.activeGroupWorkspaceId = workspace.id;
-        if (isCurrentlyActiveGroup) {
-          didClearActiveGroup = true;
-          return;
-        }
-
-        nextCenter = getManualGroupMapCenter(group, geoJsonFeatures);
-        if (nextCenter) {
-          draft.mapCenter = [
-            Math.round(nextCenter[0] * 100000) / 100000,
-            Math.round(nextCenter[1] * 100000) / 100000,
-          ];
-          draft.mapZoom = Math.round(nextZoom * 10) / 10;
-        }
-      });
-
-      if (!didActivateGroup) {
+      const workspace = mapState.groupWorkspaces.find((entry) => entry.id === workspaceId);
+      const group = workspace?.groups.find((entry) => entry.id === groupId);
+      if (!workspace || !group) {
         return;
       }
 
+      const nextZoom = Math.max(lastRuntimeViewportRef.current.mapZoom ?? mapZoom, 10);
+      const isCurrentlyActiveGroup =
+        activeManualGroupId === groupId && mapState.activeGroupWorkspaceId === workspaceId;
+      const nextCenter = isCurrentlyActiveGroup
+        ? undefined
+        : getManualGroupMapCenter(group, geoJsonFeatures);
+
+      updateState((draft) => {
+        draft.activeGroupWorkspaceId = workspace.id;
+      });
+
       setSelectedMapEntity(null);
-      setActiveManualGroupId(didClearActiveGroup ? undefined : groupId);
+      setActiveManualGroupId(isCurrentlyActiveGroup ? undefined : groupId);
       setIsManualGroupCreateMode(false);
 
-      if (!didClearActiveGroup && nextCenter) {
-        onMapViewportChange?.({
-          mapCenter: [
-            Math.round(nextCenter[0] * 100000) / 100000,
-            Math.round(nextCenter[1] * 100000) / 100000,
-          ],
-          mapZoom: Math.round(nextZoom * 10) / 10,
-        });
+      if (!isCurrentlyActiveGroup && nextCenter) {
+        const nextViewport = roundMapViewport(nextCenter, nextZoom);
+        lastRuntimeViewportRef.current = nextViewport;
+        setCameraCommandViewport(nextViewport);
+        onMapViewportChange?.(nextViewport);
       }
     },
     [
@@ -2067,6 +1987,7 @@ export function MapAnalyticsWorkspace({
       isPreviewLayout,
       isReadOnly,
       mapState.activeGroupWorkspaceId,
+      mapState.groupWorkspaces,
       mapViewType,
       mapZoom,
       onMapViewportChange,
@@ -2720,6 +2641,14 @@ export function MapAnalyticsWorkspace({
 
     return metadataBySirutaCode;
   }, [geoJsonFeatures]);
+  const groupWorkspaceImportReferences = useMemo(
+    () =>
+      Array.from(uatMetadataBySirutaCode.entries()).map(([sirutaCode, metadata]) => ({
+        sirutaCode,
+        name: metadata.uatName,
+      })),
+    [uatMetadataBySirutaCode]
+  );
 
   const activeTableGroupWorkspaceId = useMemo(() => {
     const activeDomain = activeSeriesId ? domainsBySeriesId.get(activeSeriesId) : undefined;
@@ -2743,6 +2672,7 @@ export function MapAnalyticsWorkspace({
   } = useAdvancedMapAnalyticsTableViewPreferences({
     activeGroupWorkspace: activeTableGroupWorkspace,
   });
+  const isTableComputationEnabled = !isPreviewLayout && mapState.activeView === 'table';
 
   const selectedMapEntitySeriesRows = useMemo<MapAnalyticsEntitySeriesRow[]>(() => {
     if (!selectedMapEntity) {
@@ -2782,26 +2712,33 @@ export function MapAnalyticsWorkspace({
     valuesBySeriesId,
   ]);
 
-  const tableRowsResult = useMemo(() => buildAdvancedMapAnalyticsTableRows({
-    rowMode: tableRowMode,
-    activeGroupWorkspace: activeTableGroupWorkspace,
-    seriesColumns,
-    enabledSeries,
-    valuesBySeriesId,
-    mapValuesBySeriesId,
-    displayValuesBySeriesId: manualGroupDisplayValuesBySeriesId,
-    domainsBySeriesId,
-    groupValuesBySirutaCode,
-    uatMetadataBySirutaCode,
-    activeSeriesId,
-    showMemberValues: showTableMemberValues,
-    unknownCountyLabel: t`Unknown county`,
-  }), [
+  const tableRowsResult = useMemo(() => {
+    if (!isTableComputationEnabled) {
+      return EMPTY_ADVANCED_MAP_ANALYTICS_TABLE_ROWS_RESULT;
+    }
+
+    return buildAdvancedMapAnalyticsTableRows({
+      rowMode: tableRowMode,
+      activeGroupWorkspace: activeTableGroupWorkspace,
+      seriesColumns,
+      enabledSeries,
+      valuesBySeriesId,
+      mapValuesBySeriesId,
+      displayValuesBySeriesId: manualGroupDisplayValuesBySeriesId,
+      domainsBySeriesId,
+      groupValuesBySirutaCode,
+      uatMetadataBySirutaCode,
+      activeSeriesId,
+      showMemberValues: showTableMemberValues,
+      unknownCountyLabel: t`Unknown county`,
+    });
+  }, [
     activeSeriesId,
     activeTableGroupWorkspace,
     domainsBySeriesId,
     enabledSeries,
     groupValuesBySirutaCode,
+    isTableComputationEnabled,
     manualGroupDisplayValuesBySeriesId,
     mapValuesBySeriesId,
     seriesColumns,
@@ -2884,6 +2821,7 @@ export function MapAnalyticsWorkspace({
       activeSeriesId,
       activeValues: activeSeriesDisplayValues,
       tableBinFiltersByPresetId: mapState.tableBinFiltersByPresetId,
+      enabled: isTableComputationEnabled,
     });
 
   const getTooltipContent = useCallback(
@@ -3061,33 +2999,15 @@ export function MapAnalyticsWorkspace({
 
   const handleMapViewChange = useCallback(
     (center: [number, number], zoom: number) => {
-      const roundTo = (value: number, decimals: number) => {
-        const factor = 10 ** decimals;
-        return Math.round(value * factor) / factor;
-      };
-
-      const nextCenter: [number, number] = [roundTo(center[0], 5), roundTo(center[1], 5)];
-      const nextZoom = roundTo(zoom, 1);
-
-      const hasSameCenter =
-        mapState.mapCenter?.[0] === nextCenter[0] && mapState.mapCenter?.[1] === nextCenter[1];
-      const hasSameZoom = mapState.mapZoom === nextZoom;
-
-      if (hasSameCenter && hasSameZoom) {
+      const nextViewport = roundMapViewport(center, zoom);
+      if (areMapViewportsEqual(lastRuntimeViewportRef.current, nextViewport)) {
         return;
       }
 
-      updateState((draft) => {
-        draft.mapCenter = nextCenter;
-        draft.mapZoom = nextZoom;
-      });
-
-      onMapViewportChange?.({
-        mapCenter: nextCenter,
-        mapZoom: nextZoom,
-      });
+      lastRuntimeViewportRef.current = nextViewport;
+      onMapViewportChange?.(nextViewport);
     },
-    [mapState.mapCenter, mapState.mapZoom, onMapViewportChange, updateState]
+    [onMapViewportChange]
   );
 
   const hasEnabledGeoJsonDatasetSeries = enabledGeoJsonDatasetSeries.length > 0;
@@ -3111,7 +3031,7 @@ export function MapAnalyticsWorkspace({
     : activeSeriesId || t`None`;
   const mapName = mapState.mapName || t`Untitled map`;
   const isMapViewActive = isPreviewLayout || mapState.activeView === 'map';
-  const isTableViewActive = !isPreviewLayout && mapState.activeView === 'table';
+  const isTableViewActive = isTableComputationEnabled;
   const isAnalyticsViewActive = !isPreviewLayout && mapState.activeView === 'analytics';
   const isEntityDetailsPanelOpen =
     shouldUseEntityDetailsPanel && !isPreviewLayout && isMapViewActive && selectedMapEntity !== null;
@@ -3140,9 +3060,9 @@ export function MapAnalyticsWorkspace({
       ? countyGeoJsonData
       : null;
 
-  const groupingBoundaryGeoJsonData = useMemo<GeoJsonObject | null>(() => {
+  const activeBoundaryGroupWorkspace = useMemo(() => {
     if (mapViewType !== 'UAT') {
-      return null;
+      return undefined;
     }
 
     const activeSeriesDomain = activeSeriesId ? domainsBySeriesId.get(activeSeriesId) : undefined;
@@ -3150,23 +3070,22 @@ export function MapAnalyticsWorkspace({
       activeSeriesDomain?.type === 'group'
         ? activeSeriesDomain.groupWorkspaceId
         : mapState.activeGroupWorkspaceId;
-    const activeGrouping = activeGroupWorkspaceId
+
+    return activeGroupWorkspaceId
       ? mapState.groupWorkspaces.find((grouping) => grouping.id === activeGroupWorkspaceId)
       : undefined;
-
-    if (!activeGrouping) {
-      return null;
-    }
-
-    return buildGroupWorkspaceBoundaryGeoJsonData(activeGrouping.groups, geoJsonFeatures);
   }, [
     activeSeriesId,
     domainsBySeriesId,
-    geoJsonFeatures,
     mapState.activeGroupWorkspaceId,
     mapState.groupWorkspaces,
     mapViewType,
   ]);
+  const groupingBoundaryGeoJsonData = useGroupWorkspaceBoundaryGeoJsonData({
+    enabled: mapViewType === 'UAT',
+    workspace: activeBoundaryGroupWorkspace,
+    geoJsonFeatures,
+  });
 
 
   const handleTableRowClick = useCallback(
@@ -3339,22 +3258,11 @@ export function MapAnalyticsWorkspace({
     ? activeGroupWorkspace?.groups.find((group) => group.id === activeManualGroupId)
     : undefined;
   const manualGroupWorkspaceCount = mapState.groupWorkspaces.length;
-  const selectedManualGroupBoundaryGeoJsonData = useMemo<GeoJsonObject | null>(() => {
-    if (mapViewType !== 'UAT' || !activeManualGroup) {
-      return null;
-    }
-
-    const selectedMemberSirutaCodes = new Set(activeManualGroup.memberSirutaCodes);
-    const features = geoJsonFeatures.filter((feature) =>
-      selectedMemberSirutaCodes.has(String(feature.properties?.natcode ?? '').trim())
-    );
-
-    if (features.length === 0) {
-      return null;
-    }
-
-    return buildExteriorBoundaryGeoJsonData(features);
-  }, [activeManualGroup, geoJsonFeatures, mapViewType]);
+  const selectedManualGroupBoundaryGeoJsonData = useMapGroupBoundaryGeoJsonData({
+    enabled: mapViewType === 'UAT',
+    group: activeManualGroup,
+    geoJsonFeatures,
+  });
   const canCreateManualGroups = !isReadOnly && !isPreviewLayout && mapViewType === 'UAT';
   const controlsPanels = (
     <>
@@ -3379,6 +3287,7 @@ export function MapAnalyticsWorkspace({
         activeGroupWorkspaceId={mapState.activeGroupWorkspaceId}
         groupWorkspaceCount={manualGroupWorkspaceCount}
         onAddGroupWorkspace={addManualGroupWorkspace}
+        onImportGroupWorkspace={() => setIsGroupWorkspaceImportOpen(true)}
         onStartGroupCreateMode={startManualGroupCreateMode}
         onFinish={finishManualGroupCreateMode}
         onSetActiveGroupWorkspace={setActiveManualGroupWorkspace}
@@ -3696,6 +3605,7 @@ export function MapAnalyticsWorkspace({
             onAddGroupItem={addManualGroupItem}
             onGroupLabelChange={updateManualGroupLabel}
             onActivateGroup={activateManualGroupForDisplay}
+            onImportGroupWorkspace={() => setIsGroupWorkspaceImportOpen(true)}
             onAddToWorkspace={(workspaceId) => {
               startManualGroupCreateMode(workspaceId);
               closeManualGroupWorkspaceConfig();
@@ -3989,6 +3899,13 @@ export function MapAnalyticsWorkspace({
         onOpenChange={setIsWarningsModalOpen}
       />
 
+      <MapAnalyticsGroupWorkspaceImportDialog
+        open={isGroupWorkspaceImportOpen}
+        references={groupWorkspaceImportReferences}
+        onOpenChange={setIsGroupWorkspaceImportOpen}
+        onImport={importManualGroupWorkspace}
+      />
+
     </div>
   );
 }
@@ -4000,6 +3917,7 @@ interface ManualGroupWorkspacePanelProps {
   activeGroupWorkspaceId?: string;
   groupWorkspaceCount: number;
   onAddGroupWorkspace: () => void;
+  onImportGroupWorkspace: () => void;
   onStartGroupCreateMode: (workspaceId: string) => void;
   onFinish: () => void;
   onSetActiveGroupWorkspace: (workspaceId: string) => void;
@@ -4018,6 +3936,7 @@ function ManualGroupWorkspacePanel({
   activeGroupWorkspaceId,
   groupWorkspaceCount,
   onAddGroupWorkspace,
+  onImportGroupWorkspace,
   onStartGroupCreateMode,
   onFinish,
   onSetActiveGroupWorkspace,
@@ -4072,16 +3991,29 @@ function ManualGroupWorkspacePanel({
           <p className="mt-0.5 text-xs text-muted-foreground">{groupsConfiguredLabel}</p>
         </div>
 
-        <Button
-          size="icon"
-          variant="ghost"
-          className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-          onClick={onAddGroupWorkspace}
-          aria-label={t`Add group`}
-          disabled={!canEdit}
-        >
-          <Plus className="h-4 w-4" />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+              aria-label={t`Add group`}
+              disabled={!canEdit}
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onSelect={onAddGroupWorkspace}>
+              <Plus className="mr-2 h-4 w-4" />
+              {t`Add group`}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={onImportGroupWorkspace}>
+              <Upload className="mr-2 h-4 w-4" />
+              {t`Import workspace from CSV`}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <Collapsible open={!collapsed} onOpenChange={(open) => setCollapsed(!open)}>
@@ -4345,6 +4277,7 @@ interface ManualGroupWorkspaceConfigPanelProps {
   onAddGroupItem: (workspaceId: string) => void;
   onGroupLabelChange: (workspaceId: string, groupId: string, nextLabel: string) => void;
   onActivateGroup: (workspaceId: string, groupId: string) => void;
+  onImportGroupWorkspace: () => void;
   onAddToWorkspace: (workspaceId: string) => void;
   onAddToGroup: (workspaceId: string, groupId: string) => void;
   onDeleteWorkspace: (workspaceId: string) => void;
@@ -4366,6 +4299,7 @@ function ManualGroupWorkspaceConfigPanel({
   onAddGroupItem,
   onGroupLabelChange,
   onActivateGroup,
+  onImportGroupWorkspace,
   onAddToWorkspace,
   onAddToGroup,
   onDeleteWorkspace,
@@ -4510,6 +4444,12 @@ function ManualGroupWorkspaceConfigPanel({
                 >
                   <MousePointer2 className="mr-2 h-4 w-4" />
                   {t`Merge UATs in this workspace`}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={onImportGroupWorkspace}
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  {t`Import workspace from CSV`}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem

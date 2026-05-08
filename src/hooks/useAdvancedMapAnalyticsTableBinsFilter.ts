@@ -19,6 +19,7 @@ interface UseAdvancedMapAnalyticsTableBinsFilterArgs {
   activeSeriesId?: string;
   activeValues: Map<string, number | undefined> | undefined;
   tableBinFiltersByPresetId: AdvancedMapAnalyticsBinsFilterSelectionByPresetId;
+  enabled?: boolean;
 }
 
 interface UseAdvancedMapAnalyticsTableBinsFilterResult {
@@ -33,7 +34,16 @@ export function deriveAdvancedMapAnalyticsTableBinsFilter({
   activeSeriesId,
   activeValues,
   tableBinFiltersByPresetId,
+  enabled = true,
 }: Readonly<UseAdvancedMapAnalyticsTableBinsFilterArgs>): UseAdvancedMapAnalyticsTableBinsFilterResult {
+  if (!enabled) {
+    return {
+      filteredRows: rows,
+      binsFilterSections: [],
+      hasActiveBinFilters: false,
+    };
+  }
+
   const selectedGroupIdsByPresetId = new Map<string, Set<string>>();
   const groupIdBySirutaCodeByPresetId = new Map<string, Map<string, string>>();
   const binsFilterSections: AdvancedMapAnalyticsBinsFilterSection[] = [];
@@ -116,7 +126,14 @@ export function deriveAdvancedMapAnalyticsTableBinsFilter({
 }
 
 export function useAdvancedMapAnalyticsTableBinsFilter(
-  { rows, binsPresets, activeSeriesId, activeValues, tableBinFiltersByPresetId }: Readonly<UseAdvancedMapAnalyticsTableBinsFilterArgs>
+  {
+    rows,
+    binsPresets,
+    activeSeriesId,
+    activeValues,
+    tableBinFiltersByPresetId,
+    enabled = true,
+  }: Readonly<UseAdvancedMapAnalyticsTableBinsFilterArgs>
 ): UseAdvancedMapAnalyticsTableBinsFilterResult {
   return useMemo(
     () => deriveAdvancedMapAnalyticsTableBinsFilter({
@@ -125,8 +142,9 @@ export function useAdvancedMapAnalyticsTableBinsFilter(
       activeSeriesId,
       activeValues,
       tableBinFiltersByPresetId,
+      enabled,
     }),
-    [rows, binsPresets, activeSeriesId, activeValues, tableBinFiltersByPresetId]
+    [rows, binsPresets, activeSeriesId, activeValues, tableBinFiltersByPresetId, enabled]
   );
 }
 

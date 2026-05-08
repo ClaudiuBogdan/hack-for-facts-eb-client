@@ -110,6 +110,15 @@ async function openGroupWorkspaceConfigByIndex(index: number) {
   fireEvent.click(await screen.findByRole('menuitem', { name: 'Edit' }));
 }
 
+function clickEmptyGroupWorkspaceAddButton() {
+  const addGroupButtons = screen.getAllByRole('button', { name: 'Add group' });
+  const emptyStateButton = addGroupButtons[addGroupButtons.length - 1];
+  if (!emptyStateButton) {
+    throw new Error('Expected an Add group button');
+  }
+  fireEvent.click(emptyStateButton);
+}
+
 vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => navigateMock,
 }));
@@ -608,7 +617,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
 
     render(<Harness />);
 
-    fireEvent.click(screen.getAllByRole('button', { name: 'Add group' })[0]);
+    clickEmptyGroupWorkspaceAddButton();
     await startAddingUatsToFirstGroupWorkspace();
     fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
 
@@ -657,7 +666,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
 
     render(<Harness />);
 
-    fireEvent.click(screen.getAllByRole('button', { name: 'Add group' })[0]);
+    clickEmptyGroupWorkspaceAddButton();
     await startAddingUatsToFirstGroupWorkspace();
     const mapClickButton = await screen.findByRole('button', { name: 'Map click with CUI' });
     fireEvent.click(mapClickButton);
@@ -711,7 +720,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
 
     render(<Harness />);
 
-    fireEvent.click(screen.getAllByRole('button', { name: 'Add group' })[0]);
+    clickEmptyGroupWorkspaceAddButton();
     await startAddingUatsToFirstGroupWorkspace();
     expect(screen.getByText('Click UATs on the map, or Command-drag to add many.')).toBeInTheDocument();
     expect(latestInteractiveMapProps?.onFeatureBoxSelect).toBeTypeOf('function');
@@ -789,7 +798,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
 
     render(<Harness />);
 
-    fireEvent.click(screen.getAllByRole('button', { name: 'Add group' })[0]);
+    clickEmptyGroupWorkspaceAddButton();
     await startAddingUatsToFirstGroupWorkspace();
     fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
     await startAddingUatsToFirstGroupWorkspace();
@@ -802,11 +811,12 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
       expect(latestInteractiveMapProps?.groupingBoundaryGeoJsonData).toBeNull();
       const selectedBoundaryGeoJsonData =
         latestInteractiveMapProps?.selectedGroupingBoundaryGeoJsonData as
-          | { type?: string; features?: Array<{ geometry?: { type?: string } }> }
+          | { type?: string; features?: Array<{ geometry?: { type?: string; coordinates?: unknown[] } }> }
           | undefined;
       expect(selectedBoundaryGeoJsonData?.type).toBe('FeatureCollection');
-      expect(selectedBoundaryGeoJsonData?.features).toHaveLength(6);
-      expect(selectedBoundaryGeoJsonData?.features?.every((feature) => feature.geometry?.type === 'LineString')).toBe(true);
+      expect(selectedBoundaryGeoJsonData?.features).toHaveLength(1);
+      expect(selectedBoundaryGeoJsonData?.features?.[0]?.geometry?.type).toBe('MultiLineString');
+      expect(selectedBoundaryGeoJsonData?.features?.[0]?.geometry?.coordinates).toHaveLength(6);
     });
 
     const getFeatureStyle = latestInteractiveMapProps?.getFeatureStyle;
@@ -874,7 +884,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
 
     render(<Harness />);
 
-    fireEvent.click(screen.getAllByRole('button', { name: 'Add group' })[0]);
+    clickEmptyGroupWorkspaceAddButton();
     await startAddingUatsToFirstGroupWorkspace();
     fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
 
@@ -1161,7 +1171,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
 
     render(<Harness />);
 
-    fireEvent.click(screen.getAllByRole('button', { name: 'Add group' })[0]);
+    clickEmptyGroupWorkspaceAddButton();
     await startAddingUatsToFirstGroupWorkspace();
     fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
     fireEvent.click(screen.getByRole('button', { name: 'Map click second UAT' }));
@@ -1289,6 +1299,256 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
       expect(latestState.activeGroupWorkspaceId).toBe('manual-map-groups-2');
     });
     expect(screen.getByRole('button', { name: 'Open workspace menu' })).toBeInTheDocument();
+  });
+
+  it('imports a group workspace from CSV and makes it active', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            properties: {
+              natcode: '1001',
+              name: 'Mapped UAT',
+              county: 'Test county',
+              cui: '12345678',
+            },
+          },
+          {
+            type: 'Feature',
+            properties: {
+              natcode: '2002',
+              name: 'Second UAT',
+              county: 'Alt county',
+              cui: '87654321',
+            },
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    };
+    const sourceSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    sourceSeries.id = 'source_series';
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+    const initialState = createMapState({
+      activeView: 'map',
+      series: [sourceSeries],
+      activeSeriesId: sourceSeries.id,
+    });
+    let latestState = initialState;
+
+    function Harness() {
+      const [state, setState] = useState(initialState);
+      latestState = state;
+      return (
+        <MapAnalyticsWorkspace
+          mode="owner"
+          mapState={state}
+          setMapState={(updater) => {
+            setState((previousState) => {
+              const nextState =
+                typeof updater === 'function' ? updater(previousState) : updater;
+              latestState = nextState;
+              return nextState;
+            });
+          }}
+          capabilities={{ readOnly: false }}
+          mobileControlsDefaultCollapsed={true}
+        />
+      );
+    }
+
+    render(<Harness />);
+
+    clickEmptyGroupWorkspaceAddButton();
+    await openFirstGroupWorkspaceConfig();
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Open workspace menu' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Import workspace from CSV' }));
+    fireEvent.change(screen.getByLabelText('Workspace name'), {
+      target: { value: 'Imported workspace' },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/siruta_code,group/), {
+      target: {
+        value: ['siruta_code,group,group_label,primary,order', '1001,g1,Group 1,true,1', '2002,g1,Group 1,false,2'].join('\n'),
+      },
+    });
+
+    expect(await screen.findByText('1 group')).toBeInTheDocument();
+    expect(screen.getByText('2 UATs assigned')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Import workspace' }));
+
+    await waitFor(() => {
+      expect(latestState.groupWorkspaces).toHaveLength(2);
+      expect(latestState.activeGroupWorkspaceId).toBe(latestState.groupWorkspaces[1]?.id);
+      expect(latestState.series).toEqual([sourceSeries]);
+    });
+    expect(latestState.groupWorkspaces[1]).toMatchObject({
+      label: 'Imported workspace',
+      granularity: 'uat',
+      groups: [
+        {
+          label: 'Group 1',
+          primarySirutaCode: '1001',
+          memberSirutaCodes: ['1001', '2002'],
+          memberOrder: ['1001', '2002'],
+        },
+      ],
+    });
+    expect(screen.getByRole('button', { name: 'Open workspace menu' })).toBeInTheDocument();
+  });
+
+  it('blocks importing invalid group workspace CSV', async () => {
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            properties: {
+              natcode: '1001',
+              name: 'Mapped UAT',
+              county: 'Test county',
+            },
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    };
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+    const initialState = createMapState({
+      activeView: 'map',
+      groupWorkspaces: [
+        {
+          id: 'manual-map-groups',
+          key: 'manual',
+          label: 'Manual groups',
+          groups: [],
+        },
+      ],
+    });
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="owner"
+        mapState={initialState}
+        setMapState={setMapState}
+        capabilities={{ readOnly: false }}
+        mobileControlsDefaultCollapsed={true}
+      />
+    );
+
+    await openFirstGroupWorkspaceConfig();
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Open workspace menu' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Import workspace from CSV' }));
+    fireEvent.change(screen.getByPlaceholderText(/siruta_code,group/), {
+      target: { value: ['siruta_code,group', '9999,Missing group'].join('\n') },
+    });
+
+    expect(await screen.findByText(/Unknown SIRUTA code 9999/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Import workspace' })).toBeDisabled();
+    expect(setMapState).not.toHaveBeenCalled();
+  });
+
+  it('loads a dropped CSV file anywhere over the import dialog', async () => {
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            properties: {
+              natcode: '1001',
+              name: 'Mapped UAT',
+              county: 'Test county',
+            },
+          },
+          {
+            type: 'Feature',
+            properties: {
+              natcode: '2002',
+              name: 'Second UAT',
+              county: 'Alt county',
+            },
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    };
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="owner"
+        mapState={createMapState({
+          activeView: 'map',
+          groupWorkspaces: [
+            {
+              id: 'manual-map-groups',
+              key: 'manual',
+              label: 'Manual groups',
+              groups: [],
+            },
+          ],
+        })}
+        setMapState={vi.fn()}
+        capabilities={{ readOnly: false }}
+        mobileControlsDefaultCollapsed={true}
+      />
+    );
+
+    await openFirstGroupWorkspaceConfig();
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Open workspace menu' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Import workspace from CSV' }));
+
+    const file = new File(
+      [
+        [
+          'siruta_code,group,group_label,primary,order',
+          '1001,g1,Group 1,true,1',
+          '2002,g1,Group 1,false,2',
+        ].join('\n'),
+      ],
+      'balanced-hybrid.csv',
+      { type: 'text/csv' }
+    );
+    const dataTransfer = {
+      types: ['Files'],
+      files: [file],
+      dropEffect: 'none',
+    };
+    const dialog = screen.getByRole('dialog');
+
+    fireEvent.dragEnter(dialog, { dataTransfer });
+    expect(screen.getByText('Drop CSV file to import')).toBeInTheDocument();
+    fireEvent.drop(dialog, { dataTransfer });
+
+    expect(await screen.findByDisplayValue('Balanced Hybrid')).toBeInTheDocument();
+    expect(await screen.findByText('1 group')).toBeInTheDocument();
+    expect(screen.getByText('2 UATs assigned')).toBeInTheDocument();
+  });
+
+  it('does not expose group workspace import in read-only mode', async () => {
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="public"
+        mapState={createMapState({ activeView: 'map' })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: true }}
+        mobileControlsDefaultCollapsed={true}
+      />
+    );
+
+    expect(screen.getAllByRole('button', { name: 'Add group' })[0]).toBeDisabled();
+    expect(screen.queryByRole('menuitem', { name: 'Import workspace from CSV' })).not.toBeInTheDocument();
   });
 
   it('shows GeoJSON source link at the bottom of the sidebar', async () => {
@@ -2298,6 +2558,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     });
 
     const setMapState = vi.fn();
+    const onMapViewportChange = vi.fn();
     const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
 
     render(
@@ -2306,6 +2567,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
         mapState={initialState}
         setMapState={setMapState}
         capabilities={{ readOnly: false }}
+        onMapViewportChange={onMapViewportChange}
       />
     );
 
@@ -2326,8 +2588,12 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
 
     const nextState = updateCall?.(initialState);
     expect(nextState?.activeGroupWorkspaceId).toBe('workspace_2');
-    expect(nextState?.mapCenter).toEqual([0.5, 0.5]);
-    expect(nextState?.mapZoom).toBe(10);
+    expect(nextState?.mapCenter).toBeUndefined();
+    expect(nextState?.mapZoom).toBeUndefined();
+    expect(onMapViewportChange).toHaveBeenLastCalledWith({
+      mapCenter: [0.5, 0.5],
+      mapZoom: 10,
+    });
   });
 
   it('classifies grouped map colors by render unit id for bins', async () => {

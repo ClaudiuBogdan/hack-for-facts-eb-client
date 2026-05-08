@@ -163,6 +163,44 @@ Deleting a group workspace should keep remaining series valid:
 
 This intentionally treats grouped value series differently from plain scoped series: grouped value series are derived group-domain outputs, while plain series can still exist in the default UAT workspace.
 
+## CSV Group Workspace Import
+
+The Groups panel supports an append-only `Import workspace from CSV` action. Importing creates a new explicit `MapGroupWorkspace`; it does not replace the existing map configuration, series, filters, or view state.
+
+Primary row-per-UAT format:
+
+```csv
+siruta_code,group,group_label,primary,order
+1017,alba_iulia,Alba Iulia area,true,1
+1071,alba_iulia,Alba Iulia area,false,2
+1874,alba_iulia,Alba Iulia area,false,3
+```
+
+Rules:
+
+- `siruta_code` and `group` are required. Accepted SIRUTA aliases are `siruta_code`, `siruta`, and `natcode`; accepted group aliases are `group`, `group_id`, and `group_key`.
+- `group_label` or `label` controls the display label. If omitted, the `group` value is used.
+- `primary` or `is_primary` marks the primary UAT. If omitted, the first ordered member is primary.
+- `order` or `member_order` controls `memberOrder`. If omitted, file order is preserved.
+- Unknown SIRUTA codes and one UAT assigned to multiple groups block import.
+- Duplicate UAT rows inside the same group are deduped with a warning.
+- Missing Romania UATs are allowed; imported workspaces can be partial.
+
+The importer also supports the UAT consolidation simulation cluster format:
+
+```csv
+cluster_id,anchor_uat_id,anchor_name,merged_uat_ids
+50923,50923,BăIle Herculane,50923;52115;52721
+```
+
+Mapping:
+
+- `cluster_id` becomes a deterministic `cluster_${cluster_id}` group id.
+- `anchor_uat_id` becomes `primarySirutaCode`.
+- `merged_uat_ids` becomes `memberSirutaCodes`.
+- The primary UAT is first in `memberOrder`, followed by the remaining source order.
+- App GeoJSON UAT names are preferred for labels over imported `anchor_name` values.
+
 ## Test Coverage
 
 The implementation should keep focused coverage for the grouping behaviors that are easy to regress:
@@ -172,6 +210,7 @@ The implementation should keep focused coverage for the grouping behaviors that 
 - Gradient and bin classification use unique group values and then project the result to member polygons.
 - Clicking the same deterministic group ID in another workspace activates that workspace/group pair instead of toggling off the previous active group.
 - Deleting a group workspace removes dependent grouped value series and unscopes ordinary source series.
+- CSV group workspace import parses row-per-UAT and simulation cluster formats, validates UAT membership, and appends an active workspace without changing existing series.
 
 Relevant test files:
 
@@ -245,6 +284,16 @@ Useful territorial levels for Romania and EU data:
 - Some analytics must use canonical group values, while map coloring must use SIRUTA-projected values.
 - Derived group workspaces and custom group workspaces may need different storage strategies.
 
+## Runtime Performance Notes
+
+Map camera updates are intentionally treated as viewport state, not data state. A performance trace on May 8, 2026 showed map drag freezes caused by committing URL/map viewport state from early `dragend` / `zoomend` events while MapLibre was still animating inertia. That React update invalidated analytics dependencies and recomputed draft-size warnings during the drag settle window.
+
+The map should recover hover, tooltip, scroll, and selection affordances on `dragend`, `zoomend`, pointer release, and cancel events. Persisting the camera should happen only after final movement settlement events such as `moveend` / `idle`. User-driven viewport restore state must stay outside canonical map state: it should not mark drafts dirty, update `updatedAt`, or invalidate grouped series, table, or map calculations. Saved `mapCenter` and `mapZoom` remain valid initial defaults, but normal pan/zoom writes only lightweight runtime restore state.
+
+MapLibre source updates are split by responsibility. Main UAT/county polygons, group boundaries, selected group boundaries, and label sources are updated independently so a boundary recalculation does not force the polygon source, labels, or styles to be reprocessed. Persistent polygon style is baked into GeoJSON feature properties (`__mapFillColor`, `__mapFillOpacity`, `__mapLineColor`, `__mapLineOpacity`, `__mapLineWidth`) instead of long-lived MapLibre `feature-state`; `feature-state` is reserved for transient hover. This avoids renderer stalls where retained tiles replay feature state during pan/zoom.
+
+Label source construction is also data-driven rather than zoom-driven. County fallback labels, UAT labels, grouped render-unit labels, and grouped member labels are rebuilt only when their input data changes. Zoom thresholds, opacity fades, text offsets, and stroke attenuation are MapLibre paint/layout expressions, so crossing zoom levels should not trigger React-side label rebuilding.
+
 ## References
 
 - `src/schemas/advanced-map-analytics.ts`
@@ -256,3 +305,6 @@ Useful territorial levels for Romania and EU data:
 - `src/features/advanced-map-analytics/components/map-analytics-public-view.tsx`
 - `src/features/advanced-map-analytics/components/map-analytics-render-units.ts`
 - `src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx`
+- `src/components/maps/InteractiveMap.tsx`
+- `src/components/maps/interactive-map-data.ts`
+- `src/components/maps/interactive-map-label-sources.ts`

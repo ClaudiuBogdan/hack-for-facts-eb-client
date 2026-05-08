@@ -3,14 +3,16 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import type { Dispatch, SetStateAction, ReactNode } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { produce } from 'immer';
-import type { GeoJsonObject } from 'geojson';
 
 import { ClientOnly } from '@/components/ssr/ClientOnly';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AdvancedMapAnalyticsAnalyticsView } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view';
 import { AdvancedMapAnalyticsDataTable } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-data-table';
-import { buildAdvancedMapAnalyticsTableRows } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-table-rows';
+import {
+  EMPTY_ADVANCED_MAP_ANALYTICS_TABLE_ROWS_RESULT,
+  buildAdvancedMapAnalyticsTableRows,
+} from '@/components/maps/advanced-map-analytics/advanced-map-analytics-table-rows';
 import { AdvancedMapAnalyticsDiscreteLegend } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-discrete-legend';
 import { AdvancedMapAnalyticsLegendCard } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-legend-card';
 import type {
@@ -53,7 +55,7 @@ import {
   MapAnalyticsEntityDetailsPanel,
   type MapAnalyticsEntityDetailsSelection,
 } from '@/features/advanced-map-analytics/components/map-analytics-entity-details-panel';
-import { buildGroupWorkspaceBoundaryGeoJsonData } from '@/features/advanced-map-analytics/components/map-analytics-group-boundaries';
+import { useGroupWorkspaceBoundaryGeoJsonData } from '@/features/advanced-map-analytics/components/map-analytics-group-boundary-hooks';
 import {
   buildActiveMapRenderUnitContext,
   buildManualGroupDisplayValuesBySeriesId,
@@ -61,6 +63,11 @@ import {
 import { MapAnalyticsQuickActions } from '@/features/advanced-map-analytics/components/map-analytics-quick-actions';
 import { MapAnalyticsDescriptionInline } from '@/features/advanced-map-analytics/components/map-analytics-description-inline';
 import { MapAnalyticsSeriesSelector } from '@/features/advanced-map-analytics/components/map-analytics-series-selector';
+import type { PublicMapViewport } from '@/features/advanced-map-analytics/hooks/use-public-map-viewport';
+import {
+  areMapViewportsEqual,
+  roundMapViewport,
+} from '@/features/advanced-map-analytics/map-viewport-utils';
 import {
   buildPublicEntitySeriesRows,
   buildPublicHeatmapData,
@@ -85,6 +92,9 @@ interface MapAnalyticsPublicViewProps {
   mapDescription: string;
   bundledGroupedSeriesData?: GroupedSeriesDataResponse;
   bundledRemoteBaseSeriesHash?: string;
+  mapZoomOverride?: number;
+  mapCenterOverride?: [number, number];
+  onMapViewportChange?: (nextViewport: PublicMapViewport) => void;
   /**
    * SIRUTA code to seed the entity details panel with on first render
    * and re-sync on URL navigations. When set, the panel auto-opens for
@@ -110,6 +120,9 @@ export function MapAnalyticsPublicView({
   mapDescription,
   bundledGroupedSeriesData,
   bundledRemoteBaseSeriesHash,
+  mapZoomOverride,
+  mapCenterOverride,
+  onMapViewportChange,
   selectedSirutaOverride,
   onSelectedSirutaChange,
 }: Readonly<MapAnalyticsPublicViewProps>) {
@@ -435,37 +448,41 @@ export function MapAnalyticsPublicView({
   } = useAdvancedMapAnalyticsTableViewPreferences({
     activeGroupWorkspace: activeTableGroupWorkspace,
   });
+  const activeView = mapState.activeView ?? 'map';
+  const isTableComputationEnabled = activeView === 'table';
 
-  const groupingBoundaryGeoJsonData = useMemo<GeoJsonObject | null>(() => {
-    if (!activeTableGroupWorkspace) {
-      return null;
+  const groupingBoundaryGeoJsonData = useGroupWorkspaceBoundaryGeoJsonData({
+    enabled: Boolean(activeTableGroupWorkspace),
+    workspace: activeTableGroupWorkspace,
+    geoJsonFeatures,
+  });
+
+  const tableRowsResult = useMemo(() => {
+    if (!isTableComputationEnabled) {
+      return EMPTY_ADVANCED_MAP_ANALYTICS_TABLE_ROWS_RESULT;
     }
 
-    return buildGroupWorkspaceBoundaryGeoJsonData(activeTableGroupWorkspace.groups, geoJsonFeatures);
+    return buildAdvancedMapAnalyticsTableRows({
+      rowMode: tableRowMode,
+      activeGroupWorkspace: activeTableGroupWorkspace,
+      seriesColumns,
+      enabledSeries,
+      valuesBySeriesId,
+      mapValuesBySeriesId,
+      displayValuesBySeriesId: manualGroupDisplayValuesBySeriesId,
+      domainsBySeriesId,
+      groupValuesBySirutaCode,
+      uatMetadataBySirutaCode,
+      activeSeriesId: resolvedActiveSeriesId,
+      showMemberValues: showTableMemberValues,
+      unknownCountyLabel: t`Unknown county`,
+    });
   }, [
     activeTableGroupWorkspace,
-    geoJsonFeatures,
-  ]);
-
-  const tableRowsResult = useMemo(() => buildAdvancedMapAnalyticsTableRows({
-    rowMode: tableRowMode,
-    activeGroupWorkspace: activeTableGroupWorkspace,
-    seriesColumns,
-    enabledSeries,
-    valuesBySeriesId,
-    mapValuesBySeriesId,
-    displayValuesBySeriesId: manualGroupDisplayValuesBySeriesId,
-    domainsBySeriesId,
-    groupValuesBySirutaCode,
-    uatMetadataBySirutaCode,
-    activeSeriesId: resolvedActiveSeriesId,
-    showMemberValues: showTableMemberValues,
-    unknownCountyLabel: t`Unknown county`,
-  }), [
-    activeTableGroupWorkspace,
     domainsBySeriesId,
     enabledSeries,
     groupValuesBySirutaCode,
+    isTableComputationEnabled,
     manualGroupDisplayValuesBySeriesId,
     mapValuesBySeriesId,
     resolvedActiveSeriesId,
@@ -536,6 +553,7 @@ export function MapAnalyticsPublicView({
       activeSeriesId: resolvedActiveSeriesId,
       activeValues: activeSeriesDisplayValues,
       tableBinFiltersByPresetId: mapState.tableBinFiltersByPresetId,
+      enabled: isTableComputationEnabled,
     });
 
   // Re-sync internal selection when the URL override changes (e.g. browser
@@ -635,30 +653,28 @@ export function MapAnalyticsPublicView({
     [updateSelectedSiruta]
   );
 
+  const lastRuntimeViewportRef = useRef<PublicMapViewport>({
+    mapCenter: mapCenterOverride ?? mapState.mapCenter,
+    mapZoom: mapZoomOverride ?? mapState.mapZoom,
+  });
+  useEffect(() => {
+    lastRuntimeViewportRef.current = {
+      mapCenter: mapCenterOverride ?? mapState.mapCenter,
+      mapZoom: mapZoomOverride ?? mapState.mapZoom,
+    };
+  }, [mapCenterOverride, mapState.mapCenter, mapState.mapZoom, mapZoomOverride]);
+
   const handleMapViewChange = useCallback(
     (center: [number, number], zoom: number) => {
-      const roundTo = (value: number, decimals: number) => {
-        const factor = 10 ** decimals;
-        return Math.round(value * factor) / factor;
-      };
-
-      const nextCenter: [number, number] = [roundTo(center[0], 5), roundTo(center[1], 5)];
-      const nextZoom = roundTo(zoom, 1);
-
-      const hasSameCenter =
-        mapState.mapCenter?.[0] === nextCenter[0] && mapState.mapCenter?.[1] === nextCenter[1];
-      const hasSameZoom = mapState.mapZoom === nextZoom;
-
-      if (hasSameCenter && hasSameZoom) {
+      const nextViewport = roundMapViewport(center, zoom);
+      if (areMapViewportsEqual(lastRuntimeViewportRef.current, nextViewport)) {
         return;
       }
 
-      updateMapStateDraft((draft) => {
-        draft.mapCenter = nextCenter;
-        draft.mapZoom = nextZoom;
-      });
+      lastRuntimeViewportRef.current = nextViewport;
+      onMapViewportChange?.(nextViewport);
     },
-    [mapState.mapCenter, mapState.mapZoom, updateMapStateDraft]
+    [onMapViewportChange]
   );
 
   const handleCloseEntityPanel = useCallback(() => {
@@ -692,8 +708,8 @@ export function MapAnalyticsPublicView({
   );
   const handleUpdateWidget = useCallback((_nextWidget: AdvancedMapAnalyticsWidget) => {}, []);
 
-  const mapZoom = mapState.mapZoom ?? (isMobile ? 6 : 7.7);
-  const mapCenter = mapState.mapCenter;
+  const mapZoom = mapZoomOverride ?? mapState.mapZoom ?? (isMobile ? 6 : 7.7);
+  const mapCenter = mapCenterOverride ?? mapState.mapCenter;
   const activeBinsLegendTitle = useMemo(() => {
     const presetTitle = activeBinsPreset?.config.title?.trim();
     if (presetTitle && presetTitle.length > 0) {
@@ -705,9 +721,8 @@ export function MapAnalyticsPublicView({
   const isMapLoading = isSeriesLoading || isGeoJsonLoading;
   const mapError = seriesError ?? geoJsonError;
   const canRenderInteractiveMap = Boolean(geoJsonData);
-  const activeView = mapState.activeView ?? 'map';
   const isMapViewActive = activeView === 'map';
-  const isTableViewActive = activeView === 'table';
+  const isTableViewActive = isTableComputationEnabled;
   const isAnalyticsViewActive = activeView === 'analytics';
   const hasEnabledGeoJsonDatasetSeries = enabledSeries.some(
     (series) => series.type === 'geojson-dataset-series'

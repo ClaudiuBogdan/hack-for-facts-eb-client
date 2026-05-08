@@ -7,18 +7,11 @@ import {
 import type { ReportPeriodInputZ } from '@/schemas/charts';
 import { useAdvancedMapAnalyticsPublicMapQuery } from '@/features/advanced-map-analytics/hooks/use-advanced-map-analytics';
 import { applyMapRuntimeConfig } from '@/features/advanced-map-analytics/map-runtime-config';
-import {
-  usePublicMapViewportSync,
-  type PublicMapViewport,
-} from '@/features/advanced-map-analytics/hooks/use-public-map-viewport';
 import { getRemoteGroupedSeriesHash } from '@/lib/map-series/grouped-series-request';
 import type { GroupedSeriesDataResponse } from '@/lib/map-series/interfaces';
 
 interface UsePublicMapRuntimeStateInput {
   publicId: string;
-  mapZoomOverride?: number;
-  mapCenterOverride?: [number, number];
-  onMapViewportChange?: (nextViewport: PublicMapViewport) => void;
   reportPeriodOverride?: ReportPeriodInputZ;
   selectedYearOverride?: number;
   forceMapActiveView?: boolean;
@@ -36,9 +29,6 @@ interface UsePublicMapRuntimeStateResult {
 
 export function usePublicMapRuntimeState({
   publicId,
-  mapZoomOverride,
-  mapCenterOverride,
-  onMapViewportChange,
   reportPeriodOverride,
   selectedYearOverride,
   forceMapActiveView = false,
@@ -70,16 +60,6 @@ export function usePublicMapRuntimeState({
     setMapState(runtimeSnapshotConfig);
     setIsRuntimeStateReady(true);
   }, [runtimeSnapshotConfig]);
-
-  usePublicMapViewportSync({
-    mapKey: publicId,
-    enabled: Boolean(runtimeSnapshotConfig),
-    mapState,
-    setMapState,
-    mapZoomOverride,
-    mapCenterOverride,
-    onMapViewportChange,
-  });
 
   const bundledRemoteBaseSeriesHash = useMemo(() => {
     if (!publicMapQuery.data) {

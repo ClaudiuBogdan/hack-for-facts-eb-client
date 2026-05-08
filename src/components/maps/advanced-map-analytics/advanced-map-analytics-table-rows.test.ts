@@ -3,6 +3,7 @@ import { createDefaultAdvancedMapAnalyticsSeries, type MapGroupWorkspace } from 
 import type { MapSeriesDomainCache, MapSeriesVectorCache } from '@/lib/map-series/interfaces';
 import {
   buildAdvancedMapAnalyticsTableRows,
+  compareAdvancedMapAnalyticsRowsByNameAndKey,
   getDefaultAdvancedMapAnalyticsTableRowMode,
 } from './advanced-map-analytics-table-rows';
 import type { AdvancedMapAnalyticsTableSeriesColumn } from './advanced-map-analytics-table-types';
@@ -214,5 +215,31 @@ describe('advanced map analytics table rows', () => {
 
     expect(result.rows).toEqual([]);
     expect(result.hiddenUngroupedUatCount).toBe(1);
+  });
+
+  it('sorts UAT rows by base-sensitive names with row id fallback', () => {
+    const first = {
+      rowId: 'uat:1001',
+      kind: 'uat',
+      depth: 0,
+      sirutaCode: '1001',
+      uatName: 'Éclair',
+      countyName: 'Alba',
+      valuesBySeriesId: {},
+      binFilterKey: '1001',
+    } as const;
+    const second = {
+      rowId: 'uat:1002',
+      kind: 'uat',
+      depth: 0,
+      sirutaCode: '1002',
+      uatName: 'Eclair',
+      countyName: 'Alba',
+      valuesBySeriesId: {},
+      binFilterKey: '1002',
+    } as const;
+
+    expect(compareAdvancedMapAnalyticsRowsByNameAndKey(first, second)).toBeLessThan(0);
+    expect(compareAdvancedMapAnalyticsRowsByNameAndKey(second, first)).toBeGreaterThan(0);
   });
 });

@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   AdvancedMapAnalyticsUrlStateSchema,
@@ -193,21 +193,12 @@ describe('MapAnalyticsPublicPreviewCard', () => {
       expect(screen.getByTestId('map-analytics-workspace')).toBeInTheDocument();
     });
 
-    const workspaceProps = getLatestWorkspaceProps();
-    await act(async () => {
-      workspaceProps.setMapState((previousState) => ({
-        ...previousState,
-        mapZoom: 10.1,
-        mapCenter: [47.2, 26.3],
-      }));
-    });
-
-    await waitFor(() => {
-      expect(onMapViewportChange).toHaveBeenCalledWith({
-        mapZoom: 10.1,
-        mapCenter: [47.2, 26.3],
-      });
-    });
+    expect(getLatestWorkspaceProps()).toEqual(
+      expect.objectContaining({
+        onMapViewportChange,
+      })
+    );
+    expect(onMapViewportChange).not.toHaveBeenCalled();
   });
 
   it('forwards entity selection callbacks to the preview workspace', async () => {
@@ -234,7 +225,7 @@ describe('MapAnalyticsPublicPreviewCard', () => {
     });
   });
 
-  it('applies viewport overrides to the preview state without bundled data', async () => {
+  it('passes viewport overrides to the preview workspace without changing map state', async () => {
     const mapStateDefinition = AdvancedMapAnalyticsUrlStateSchema.parse({
       mapName: 'Public map',
       mapZoom: 7.1,
@@ -256,9 +247,11 @@ describe('MapAnalyticsPublicPreviewCard', () => {
     await waitFor(() => {
       expect(mapAnalyticsWorkspaceMock).toHaveBeenCalledWith(
         expect.objectContaining({
+          mapZoomOverride: 9.3,
+          mapCenterOverride: [46.7, 25.1],
           mapState: expect.objectContaining({
-            mapZoom: 9.3,
-            mapCenter: [46.7, 25.1],
+            mapZoom: 7.1,
+            mapCenter: [45.2, 24.1],
           }),
         }),
       );
@@ -294,9 +287,11 @@ describe('MapAnalyticsPublicPreviewCard', () => {
     await waitFor(() => {
       expect(mapAnalyticsWorkspaceMock).toHaveBeenCalledWith(
         expect.objectContaining({
+          mapZoomOverride: 9.3,
+          mapCenterOverride: [46.7, 25.1],
           mapState: expect.objectContaining({
-            mapZoom: 9.3,
-            mapCenter: [46.7, 25.1],
+            mapZoom: 7.1,
+            mapCenter: [45.2, 24.1],
           }),
         }),
       );
@@ -319,10 +314,12 @@ describe('MapAnalyticsPublicPreviewCard', () => {
     await waitFor(() => {
       expect(mapAnalyticsWorkspaceMock).toHaveBeenCalledWith(
         expect.objectContaining({
+          mapZoomOverride: 9.3,
+          mapCenterOverride: [46.7, 25.1],
           mapState: expect.objectContaining({
             mapName: 'Public map 2',
-            mapZoom: 9.3,
-            mapCenter: [46.7, 25.1],
+            mapZoom: 6.4,
+            mapCenter: [46.4, 26.4],
           }),
         }),
       );
@@ -343,6 +340,9 @@ function getLatestWorkspaceProps(): {
   };
   mapDescription?: string;
   onEntityCuiSelect?: (selection: MapEntitySelection) => void;
+  onMapViewportChange?: (nextViewport: { mapZoom?: number; mapCenter?: [number, number] }) => void;
+  mapZoomOverride?: number;
+  mapCenterOverride?: [number, number];
   mapState: AdvancedMapAnalyticsUrlState;
   setMapState: (
     updater:
@@ -360,6 +360,9 @@ function getLatestWorkspaceProps(): {
         };
         mapDescription?: string;
         onEntityCuiSelect?: (selection: MapEntitySelection) => void;
+        onMapViewportChange?: (nextViewport: { mapZoom?: number; mapCenter?: [number, number] }) => void;
+        mapZoomOverride?: number;
+        mapCenterOverride?: [number, number];
         mapState: AdvancedMapAnalyticsUrlState;
         setMapState: (
           updater:

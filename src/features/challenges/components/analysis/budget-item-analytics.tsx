@@ -884,8 +884,6 @@ function MapSection({ context }: BudgetItemAnalyticsSectionProps) {
     mapStateDefinition: context.mapStateDefinition,
     forceMapActiveView: true,
     reportPeriodOverride: activeMapReportPeriod,
-    mapCenterOverride: entityMapViewport?.mapCenter,
-    mapZoomOverride: entityMapViewport?.mapZoom,
   })
 
   function handleOpenMapPage() {
@@ -939,6 +937,8 @@ function MapSection({ context }: BudgetItemAnalyticsSectionProps) {
             capabilities={{ readOnly: true }}
             mobileControlsDefaultCollapsed={true}
             mapViewType={entityMapViewType}
+            mapCenterOverride={entityMapViewport?.mapCenter}
+            mapZoomOverride={entityMapViewport?.mapZoom}
             onEntityCuiSelect={context.analyticsProps.onEntityCuiChange}
           />
         </div>

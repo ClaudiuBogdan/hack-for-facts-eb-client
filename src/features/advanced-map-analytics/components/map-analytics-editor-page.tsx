@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useBlocker, useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { UnsavedChangesDialog } from '@/components/alerts/components/UnsavedChangesDialog';
@@ -22,6 +22,11 @@ import { useMapEditorDraftStore } from '@/features/advanced-map-analytics/store/
 import type { ImportedMapConfig } from '@/features/advanced-map-analytics/store/map-config-transfer';
 import { getRemoteGroupedSeriesHash } from '@/lib/map-series/grouped-series-request';
 import { useUploadedMapDatasetPublicGuard } from '@/features/advanced-map-analytics/hooks/use-uploaded-map-dataset-public-guard';
+import {
+  readMapEditorViewportRestore,
+  writeMapEditorViewportRestore,
+} from '@/features/advanced-map-analytics/map-editor-viewport-restore';
+import type { PublicMapViewport } from '@/features/advanced-map-analytics/hooks/use-public-map-viewport';
 import { t } from '@lingui/core/macro';
 
 interface MapAnalyticsEditorPageProps {
@@ -104,6 +109,14 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
     setIsLocalSnapshotsModalOpen(false);
   }, [mapId]);
 
+  const viewportRestore = useMemo(() => readMapEditorViewportRestore(mapId), [mapId]);
+  const handleMapViewportChange = useCallback(
+    (nextViewport: PublicMapViewport) => {
+      writeMapEditorViewportRestore(mapId, nextViewport);
+    },
+    [mapId]
+  );
+
   const forbiddenError = useMemo(() => {
     if (!mapQuery.error) {
       return null;
@@ -178,7 +191,7 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
     toast.success(t`Local snapshot restored`);
   };
 
-  const handleApplyImportedConfig = async (nextConfig: ImportedMapConfig) => {
+  const handleApplyImportedConfig = useCallback(async (nextConfig: ImportedMapConfig) => {
     if (mapQuery.data) {
       try {
         await createManualSnapshot({
@@ -193,9 +206,9 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
     setMapState(nextConfig.mapState);
     setMapDescriptionDraft(nextConfig.mapDescription);
     toast.success(t`Map configuration imported`);
-  };
+  }, [createManualSnapshot, mapQuery.data, setMapDescriptionDraft, setMapState]);
 
-  const handleBeforeExportConfig = async () => {
+  const handleBeforeExportConfig = useCallback(async () => {
     if (!mapQuery.data) {
       return;
     }
@@ -208,7 +221,36 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
     } catch {
       // Best-effort backup. Export should still continue when local snapshots fail.
     }
-  };
+  }, [createManualSnapshot, mapQuery.data]);
+
+  const workspaceCapabilities = useMemo(() => ({ readOnly: false }), []);
+  const openOwnerConfig = useCallback(() => setIsOwnerConfigModalOpen(true), []);
+  const openOwnerDescriptionConfig = useCallback(() => {
+    setIsOwnerConfigModalOpen(true);
+    setOwnerConfigDescriptionEditorOpen(true);
+  }, []);
+  const requestSaveSnapshot = useCallback(() => setIsSaveSnapshotDialogOpen(true), []);
+  const openLocalSnapshots = useCallback(() => setIsLocalSnapshotsModalOpen(true), []);
+  const handleOwnerConfigOpenChange = useCallback((nextOpen: boolean) => {
+    setIsOwnerConfigModalOpen(nextOpen);
+    if (!nextOpen) {
+      setOwnerConfigDescriptionEditorOpen(false);
+    }
+  }, []);
+  const handleMapNameChange = useCallback((nextMapName: string) => {
+    setMapState((previousState) => ({
+      ...previousState,
+      mapName: nextMapName,
+    }));
+  }, [setMapState]);
+  const handleLoadSnapshot = useCallback((nextMapState: AdvancedMapAnalyticsUrlState, nextMapDescription: string) => {
+    setMapState(nextMapState);
+    setMapDescriptionDraft(nextMapDescription);
+  }, [setMapDescriptionDraft, setMapState]);
+  const handleDeleted = useCallback(() => {
+    skipUnsavedChangesBlockerRef.current = true;
+    navigate({ to: '/maps/editor', replace: true });
+  }, [navigate]);
 
   if (!isLoaded || (mapQuery.isLoading && isSignedIn)) {
     return (
@@ -280,21 +322,21 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
         mapState={mapState}
         setMapState={setMapState}
         mapDescription={mapDescriptionDraft}
-        capabilities={{ readOnly: false }}
-        onOpenOwnerConfig={() => setIsOwnerConfigModalOpen(true)}
-        onOpenOwnerDescriptionConfig={() => {
-          setIsOwnerConfigModalOpen(true);
-          setOwnerConfigDescriptionEditorOpen(true);
-        }}
+        capabilities={workspaceCapabilities}
+        onOpenOwnerConfig={openOwnerConfig}
+        onOpenOwnerDescriptionConfig={openOwnerDescriptionConfig}
         hasPendingChanges={isInitialStateResolved && isDirty}
-        onRequestSaveSnapshot={() => setIsSaveSnapshotDialogOpen(true)}
-        onOpenLocalSnapshots={() => setIsLocalSnapshotsModalOpen(true)}
+        onRequestSaveSnapshot={requestSaveSnapshot}
+        onOpenLocalSnapshots={openLocalSnapshots}
         isSavingSnapshot={saveSnapshotMutation.isPending}
         localSnapshotCount={localSnapshots.length}
         bundledGroupedSeriesData={mapQuery.data.groupedSeriesData}
         bundledRemoteBaseSeriesHash={bundledRemoteBaseSeriesHash}
         onApplyImportedConfig={handleApplyImportedConfig}
         onBeforeExportConfig={handleBeforeExportConfig}
+        mapZoomOverride={viewportRestore.mapZoom}
+        mapCenterOverride={viewportRestore.mapCenter}
+        onMapViewportChange={handleMapViewportChange}
       />
 
       <MapAnalyticsOwnerConfigModal
@@ -308,29 +350,13 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
         openDescriptionEditor={ownerConfigDescriptionEditorOpen}
         mapDescription={mapDescriptionDraft}
         onMapDescriptionChange={setMapDescriptionDraft}
-        onOpenChange={(nextOpen) => {
-          setIsOwnerConfigModalOpen(nextOpen);
-          if (!nextOpen) {
-            setOwnerConfigDescriptionEditorOpen(false);
-          }
-        }}
-        onRequestSaveSnapshot={() => setIsSaveSnapshotDialogOpen(true)}
+        onOpenChange={handleOwnerConfigOpenChange}
+        onRequestSaveSnapshot={requestSaveSnapshot}
         onBeforeExportConfig={handleBeforeExportConfig}
-        onMapNameChange={(nextMapName) => {
-          setMapState((previousState) => ({
-            ...previousState,
-            mapName: nextMapName,
-          }));
-        }}
-        onLoadSnapshot={(nextMapState, nextMapDescription) => {
-          setMapState(nextMapState);
-          setMapDescriptionDraft(nextMapDescription);
-        }}
+        onMapNameChange={handleMapNameChange}
+        onLoadSnapshot={handleLoadSnapshot}
         onApplyImportedConfig={handleApplyImportedConfig}
-        onDeleted={() => {
-          skipUnsavedChangesBlockerRef.current = true;
-          navigate({ to: '/maps/editor', replace: true });
-        }}
+        onDeleted={handleDeleted}
       />
 
       <MapAnalyticsSaveSnapshotDialog

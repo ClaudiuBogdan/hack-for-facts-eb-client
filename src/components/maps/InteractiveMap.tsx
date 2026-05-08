@@ -11,7 +11,6 @@ import maplibregl from 'maplibre-gl';
 import type {
   ExpressionSpecification,
   FilterSpecification,
-  GeoJSONSource,
   MapLayerMouseEvent,
   Map as MapLibreMap,
   PointLike,
@@ -19,11 +18,8 @@ import type {
 import { Protocol } from 'pmtiles';
 import type {
   Feature,
-  FeatureCollection,
   GeoJsonObject,
   Geometry,
-  MultiPolygon,
-  Polygon,
 } from 'geojson';
 import { t } from '@lingui/core/macro';
 
@@ -32,8 +28,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useGeoJsonData } from '@/hooks/useGeoJson';
 import type { AnalyticsFilterType, Currency, Normalization } from '@/schemas/charts';
 import type { HeatmapCountyDataPoint, HeatmapUATDataPoint } from '@/schemas/heatmap';
-import { formatAdvancedMapAnalyticsSeriesValue } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-formatting';
-import { getNormalizationUnit } from '@/lib/utils';
 
 import {
   DEFAULT_FEATURE_STYLE,
@@ -53,9 +47,6 @@ import type {
 import {
   ADVANCED_ZOOM_THRESHOLDS,
   ZOOM_THRESHOLDS,
-  formatAmount,
-  getFeatureHeatmapData,
-  normalizeUatLabelName,
 } from './polygonLabels';
 import {
   buildHeatmapTooltipLookup,
@@ -69,16 +60,31 @@ import type {
   InteractiveMapFeatureStyle,
   LatLngLike,
 } from './map-types';
+import {
+  EMPTY_FEATURE_COLLECTION,
+  MAP_FILL_COLOR_PROPERTY,
+  MAP_FILL_OPACITY_PROPERTY,
+  MAP_LINE_COLOR_PROPERTY,
+  MAP_LINE_OPACITY_PROPERTY,
+  MAP_LINE_WIDTH_PROPERTY,
+  parseDashArray,
+  prepareBoundaryGeoJsonData,
+  prepareGeoJsonData,
+  prepareStyledGeoJsonData,
+  resolveCssColorValue,
+  setGeoJsonSourceData,
+  styleToMapFeatureProperties,
+  toNumber,
+} from './interactive-map-data';
+import {
+  buildLabelSourceData,
+} from './interactive-map-label-sources';
 
 const MAP_VIEW_EPSILON = 1e-6;
 const VIEWPORT_PROP_ECHO_CENTER_EPSILON = 1e-4;
 const VIEWPORT_PROP_ECHO_ZOOM_EPSILON = 0.06;
 const VIEWPORT_CHANGE_COMMIT_DELAY_MS = 300;
 const PROGRAMMATIC_VIEW_CHANGE_TTL_MS = VIEWPORT_CHANGE_COMMIT_DELAY_MS + 500;
-const EMPTY_FEATURE_COLLECTION: FeatureCollection<Geometry, Record<string, unknown>> = {
-  type: 'FeatureCollection',
-  features: [],
-};
 
 const MAIN_SOURCE_ID = 'interactive-map-main';
 const COUNTY_LABEL_SOURCE_ID = 'interactive-map-county-labels';
@@ -90,6 +96,7 @@ const COUNTY_BOUNDARY_SOURCE_ID = 'interactive-map-county-boundary';
 const GROUP_BOUNDARY_SOURCE_ID = 'interactive-map-group-boundary';
 const SELECTED_GROUP_BOUNDARY_SOURCE_ID = 'interactive-map-selected-group-boundary';
 const ROADS_SOURCE_ID = 'interactive-map-roads';
+const POPULATION_GRID_SOURCE_ID = 'interactive-map-population-grid';
 
 const MAIN_FILL_LAYER_ID = 'interactive-map-main-fill';
 const MAIN_LINE_LAYER_ID = 'interactive-map-main-line';
@@ -106,10 +113,15 @@ const RENDER_UNIT_NAME_LABEL_LAYER_ID = 'interactive-map-render-unit-name-label-
 const RENDER_UNIT_VALUE_LABEL_LAYER_ID = 'interactive-map-render-unit-value-label-symbols';
 const RENDER_UNIT_MEMBER_LABEL_LAYER_ID = 'interactive-map-render-unit-member-label-symbols';
 const ROADS_LAYER_ID = 'interactive-map-roads-line';
+const POPULATION_GRID_LAYER_ID = 'interactive-map-population-grid-fill';
 
 const MAPLIBRE_GLYPHS_URL = 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf';
 const ROMANIA_ROADS_PMTILES_URL =
   'https://s3.devostack.com/transparenta-eu-assets/maps/romania-main-roads.pmtiles';
+const ROMANIA_POPULATION_GRID_PMTILES_URL =
+  'https://s3.devostack.com/transparenta-eu-assets/maps/ro-pop-grid-eurostat-census-2021-v2.2-z6-z10.pmtiles';
+const POPULATION_GRID_SOURCE_LAYER = 'ro_pop_grid';
+const POPULATION_GRID_VALUE_FIELD = 'TOT_P_2021';
 const MAP_STYLE: maplibregl.StyleSpecification = {
   version: 8,
   glyphs: MAPLIBRE_GLYPHS_URL,
@@ -160,8 +172,6 @@ const COMMAND_DRAG_SELECTION_STYLE: InteractiveMapFeatureStyle = {
   dashArray: '4 3',
   interactive: false,
 };
-
-type FeatureStyleResolver = (feature?: Feature<Geometry, unknown>) => InteractiveMapFeatureStyle;
 
 interface FeatureInteractionContext {
   heatmapData: HeatmapUATDataPoint[] | HeatmapCountyDataPoint[];
@@ -215,24 +225,6 @@ interface InteractiveMapProps {
   preferCanvasRenderer?: boolean;
 }
 
-type PreparedFeature = Feature<Geometry, Record<string, unknown>> & {
-  id: string;
-  properties: Record<string, unknown> & {
-    __featureId: string;
-  };
-};
-
-type PreparedFeatureCollection = FeatureCollection<Geometry, PreparedFeature['properties']> & {
-  features: PreparedFeature[];
-};
-
-type PreparedLabelGeometry = {
-  centroid: [number, number];
-  bounds: [number, number, number, number];
-  featureId: string;
-  nameNormalized: string;
-};
-
 type LabelPaintOptions = {
   color?: string;
   haloColor?: string;
@@ -257,14 +249,6 @@ type LabelLayerZoomKey =
 
 type LabelLayerZoomRanges = Record<LabelLayerZoomKey, [number, number]>;
 
-type MapLabelSourceData = {
-  countyLabels: FeatureCollection<Geometry, Record<string, unknown>>;
-  countyFallbackLabels: FeatureCollection<Geometry, Record<string, unknown>>;
-  uatLabels: FeatureCollection<Geometry, Record<string, unknown>>;
-  renderUnitLabels: FeatureCollection<Geometry, Record<string, unknown>>;
-  renderUnitMemberLabels: FeatureCollection<Geometry, Record<string, unknown>>;
-};
-
 type ProgrammaticViewTarget = {
   center: {
     lat: number;
@@ -285,6 +269,34 @@ type CommandDragSelectionState = {
   wasBoxZoomEnabled: boolean;
 };
 
+const MAP_INTERACTION_RECOVERY_EVENTS = [
+  'dragend',
+  'zoomend',
+  'moveend',
+  'boxzoomend',
+  'idle',
+] as const;
+const MAP_VIEWPORT_COMMIT_EVENTS = ['moveend', 'idle'] as const;
+const MAP_INTERACTION_CANCEL_EVENTS = ['boxzoomcancel'] as const;
+const POINTER_INTERACTION_RECOVERY_EVENTS = ['mouseup', 'pointerup'] as const;
+const POINTER_INTERACTION_CANCEL_EVENTS = ['pointercancel'] as const;
+
+type RecoveredMapInteractionState = {
+  scrollZoomEnabled: boolean;
+  dragPanEnabled: boolean;
+  boxZoomEnabled: boolean;
+};
+
+type WheelScrollZoomIntent = {
+  allowMapLibreWheelZoom: boolean;
+  shouldBlockWheelDefault: boolean;
+  scrollZoomHandlerEnabled: boolean;
+  pressedModifiers?: {
+    meta: boolean;
+    ctrl: boolean;
+  };
+};
+
 let pmtilesProtocolRegistered = false;
 let pmtilesProtocol: Protocol | null = null;
 
@@ -296,12 +308,6 @@ function registerPmtilesProtocol(): void {
   pmtilesProtocol = new Protocol();
   maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
   pmtilesProtocolRegistered = true;
-}
-
-function isFeatureCollection(
-  geoJsonData: GeoJsonObject | null | undefined,
-): geoJsonData is FeatureCollection<Geometry, Record<string, unknown>> {
-  return Boolean(geoJsonData && geoJsonData.type === 'FeatureCollection' && 'features' in geoJsonData);
 }
 
 function normalizeLatLng(value: LatLngLike): { lat: number; lng: number } {
@@ -389,18 +395,18 @@ function buildMainLinePaint(
   labelMode: LabelMode,
 ): maplibregl.LineLayerSpecification['paint'] {
   const baseOpacity: ExpressionSpecification = [
-    'coalesce',
-    ['feature-state', 'lineOpacity'],
+    'to-number',
+    ['get', MAP_LINE_OPACITY_PROPERTY],
     DEFAULT_FEATURE_STYLE.opacity ?? 1,
   ];
   const baseWidth: ExpressionSpecification = [
-    'coalesce',
-    ['feature-state', 'lineWidth'],
+    'to-number',
+    ['get', MAP_LINE_WIDTH_PROPERTY],
     DEFAULT_FEATURE_STYLE.weight ?? 1,
   ];
 
   return {
-    'line-color': ['coalesce', ['feature-state', 'lineColor'], DEFAULT_FEATURE_STYLE.color ?? '#cccccc'],
+    'line-color': ['coalesce', ['get', MAP_LINE_COLOR_PROPERTY], DEFAULT_FEATURE_STYLE.color ?? '#cccccc'],
     'line-opacity': mapViewType === 'UAT'
       ? buildLowZoomStrokeExpression(baseOpacity, labelMode, MIN_UAT_LOW_ZOOM_STROKE_OPACITY_MULTIPLIER)
       : baseOpacity,
@@ -410,125 +416,14 @@ function buildMainLinePaint(
   };
 }
 
-function resolveFeatureIdentifier(
-  feature: Feature<Geometry, Record<string, unknown>>,
-  mapViewType: 'UAT' | 'County',
-): string | null {
-  const properties = feature.properties ?? {};
-  const candidates =
-    mapViewType === 'UAT'
-      ? [properties.natcode, properties.siruta_code, properties.uat_code, properties.id]
-      : [properties.mnemonic, properties.county_code, properties.id];
-
-  for (const candidate of candidates) {
-    if (typeof candidate === 'string' && candidate.trim().length > 0) {
-      return candidate.trim();
-    }
-
-    if (typeof candidate === 'number' && Number.isFinite(candidate)) {
-      return String(candidate);
-    }
-  }
-
-  return null;
-}
-
-function prepareGeoJsonData(
-  geoJsonData: GeoJsonObject | null,
-  mapViewType: 'UAT' | 'County',
-): PreparedFeatureCollection {
-  if (!isFeatureCollection(geoJsonData)) {
-    return EMPTY_FEATURE_COLLECTION as PreparedFeatureCollection;
-  }
-
-  const features = geoJsonData.features
-    .map((feature, index): PreparedFeature | null => {
-      if (!feature.geometry) {
-        return null;
-      }
-
-      const normalizedFeature = feature as Feature<Geometry, Record<string, unknown>>;
-      const featureId =
-        resolveFeatureIdentifier(normalizedFeature, mapViewType) ?? `${mapViewType.toLowerCase()}-${index}`;
-      const properties = {
-        ...(normalizedFeature.properties ?? {}),
-        __featureId: featureId,
-      };
-
-      return {
-        ...normalizedFeature,
-        id: featureId,
-        properties,
-      };
-    })
-    .filter((feature): feature is PreparedFeature => feature !== null);
-
+function buildMainFillPaint(): maplibregl.FillLayerSpecification['paint'] {
   return {
-    type: 'FeatureCollection',
-    features,
-  };
-}
-
-function prepareBoundaryGeoJsonData(
-  geoJsonData: GeoJsonObject | null | undefined,
-): FeatureCollection<Geometry, Record<string, unknown>> {
-  return isFeatureCollection(geoJsonData) ? geoJsonData : EMPTY_FEATURE_COLLECTION;
-}
-
-function toNumber(value: unknown, fallback: number): number {
-  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
-}
-
-function parseDashArray(value: InteractiveMapFeatureStyle['dashArray']): number[] | undefined {
-  if (Array.isArray(value)) {
-    return value.map(Number).filter((item) => Number.isFinite(item));
-  }
-
-  if (typeof value !== 'string') {
-    return undefined;
-  }
-
-  const parsed = value
-    .split(/[,\s]+/)
-    .map((item) => Number(item))
-    .filter((item) => Number.isFinite(item) && item > 0);
-
-  return parsed.length > 0 ? parsed : undefined;
-}
-
-function resolveCssColorValue(value: string | undefined, fallback: string): string {
-  if (!value?.startsWith('var(')) {
-    return value ?? fallback;
-  }
-
-  if (typeof window === 'undefined') {
-    return fallback;
-  }
-
-  const variableName = value.match(/var\(\s*(--[\w-]+)\s*(?:,.*?)?\)/)?.[1];
-  if (!variableName) {
-    return fallback;
-  }
-
-  const resolved = window
-    .getComputedStyle(document.documentElement)
-    .getPropertyValue(variableName)
-    .trim();
-
-  return resolved || fallback;
-}
-
-function styleToFeatureState(style: InteractiveMapFeatureStyle): Record<string, unknown> {
-  const dashArray = parseDashArray(style.dashArray);
-  const fallbackFillColor = DEFAULT_FEATURE_STYLE.fillColor ?? '#f0f0f0';
-  const fallbackLineColor = DEFAULT_FEATURE_STYLE.color ?? '#cccccc';
-  return {
-    fillColor: resolveCssColorValue(style.fillColor, fallbackFillColor),
-    fillOpacity: toNumber(style.fillOpacity, toNumber(DEFAULT_FEATURE_STYLE.fillOpacity, 0.5)),
-    lineColor: resolveCssColorValue(style.color, fallbackLineColor),
-    lineOpacity: toNumber(style.opacity, toNumber(DEFAULT_FEATURE_STYLE.opacity, 1)),
-    lineWidth: toNumber(style.weight, toNumber(DEFAULT_FEATURE_STYLE.weight, 1)),
-    hasDashArray: Boolean(dashArray),
+    'fill-color': ['coalesce', ['get', MAP_FILL_COLOR_PROPERTY], DEFAULT_FEATURE_STYLE.fillColor ?? '#f0f0f0'],
+    'fill-opacity': [
+      'to-number',
+      ['get', MAP_FILL_OPACITY_PROPERTY],
+      DEFAULT_FEATURE_STYLE.fillOpacity ?? 0.5,
+    ],
   };
 }
 
@@ -641,19 +536,6 @@ function featureFilter(featureId: string | number | undefined): FilterSpecificat
   return featureId === undefined || featureId === null
     ? NO_FEATURE_FILTER
     : ['==', ['get', '__featureId'], String(featureId)];
-}
-
-function getGeoJsonSource(map: MapLibreMap, sourceId: string): GeoJSONSource | null {
-  const source = map.getSource(sourceId);
-  return source && 'setData' in source ? (source as GeoJSONSource) : null;
-}
-
-function setGeoJsonSourceData(
-  map: MapLibreMap,
-  sourceId: string,
-  data: FeatureCollection<Geometry, Record<string, unknown>>,
-): void {
-  getGeoJsonSource(map, sourceId)?.setData(data);
 }
 
 function setHoverFeatureState(
@@ -791,10 +673,7 @@ function addMapSourcesAndLayers(map: MapLibreMap): void {
       id: MAIN_FILL_LAYER_ID,
       type: 'fill',
       source: MAIN_SOURCE_ID,
-      paint: {
-        'fill-color': ['coalesce', ['feature-state', 'fillColor'], DEFAULT_FEATURE_STYLE.fillColor ?? '#f0f0f0'],
-        'fill-opacity': ['coalesce', ['feature-state', 'fillOpacity'], DEFAULT_FEATURE_STYLE.fillOpacity ?? 0.5],
-      },
+      paint: buildMainFillPaint(),
     });
   }
 
@@ -990,6 +869,87 @@ function ensureRoadLayer(map: MapLibreMap): void {
     },
     MAIN_FILL_LAYER_ID,
   );
+}
+
+function buildPopulationGridFillPaint(): maplibregl.FillLayerSpecification['paint'] {
+  const populationValue: ExpressionSpecification = [
+    'coalesce',
+    ['to-number', ['get', POPULATION_GRID_VALUE_FIELD]],
+    0,
+  ];
+
+  return {
+    'fill-color': [
+      'interpolate',
+      ['linear'],
+      populationValue,
+      0,
+      'rgba(255,255,255,0)',
+      25,
+      '#fff7ed',
+      100,
+      '#fed7aa',
+      500,
+      '#fb923c',
+      1500,
+      '#ef4444',
+      5000,
+      '#991b1b',
+      15000,
+      '#450a0a',
+    ],
+    'fill-opacity': [
+      'interpolate',
+      ['linear'],
+      ['zoom'],
+      6,
+      0.2,
+      8,
+      0.36,
+      10,
+      0.52,
+    ],
+    'fill-outline-color': 'rgba(120, 53, 15, 0.16)',
+  };
+}
+
+function ensurePopulationGridLayer(map: MapLibreMap): void {
+  if (!map.getSource(POPULATION_GRID_SOURCE_ID)) {
+    registerPmtilesProtocol();
+    map.addSource(POPULATION_GRID_SOURCE_ID, {
+      type: 'vector',
+      url: `pmtiles://${ROMANIA_POPULATION_GRID_PMTILES_URL}`,
+    });
+  }
+
+  if (map.getLayer(POPULATION_GRID_LAYER_ID)) {
+    return;
+  }
+
+  map.addLayer(
+    {
+      id: POPULATION_GRID_LAYER_ID,
+      type: 'fill',
+      source: POPULATION_GRID_SOURCE_ID,
+      'source-layer': POPULATION_GRID_SOURCE_LAYER,
+      minzoom: 6,
+      maxzoom: 11,
+      paint: buildPopulationGridFillPaint(),
+    },
+    MAIN_LINE_LAYER_ID,
+  );
+}
+
+function syncPopulationGridLayer(map: MapLibreMap, showPopulationGrid: boolean): void {
+  if (showPopulationGrid) {
+    ensurePopulationGridLayer(map);
+    map.setLayoutProperty(POPULATION_GRID_LAYER_ID, 'visibility', 'visible');
+    return;
+  }
+
+  if (map.getLayer(POPULATION_GRID_LAYER_ID)) {
+    map.setLayoutProperty(POPULATION_GRID_LAYER_ID, 'visibility', 'none');
+  }
 }
 
 function syncRoadLayer(map: MapLibreMap, showRoads: boolean): void {
@@ -1232,6 +1192,77 @@ function hasScrollZoomModifier(event: Pick<WheelEvent, 'ctrlKey' | 'metaKey'>): 
   return event.metaKey || event.ctrlKey;
 }
 
+function resolveWheelScrollZoomIntent(options: {
+  isScrollWheelZoomAvailable: boolean;
+  isInteractionEnabled: boolean;
+  event: Pick<WheelEvent, 'ctrlKey' | 'metaKey'>;
+}): WheelScrollZoomIntent {
+  const hasModifier = hasScrollZoomModifier(options.event);
+  if (!options.isScrollWheelZoomAvailable) {
+    return {
+      allowMapLibreWheelZoom: false,
+      shouldBlockWheelDefault: hasModifier,
+      scrollZoomHandlerEnabled: false,
+    };
+  }
+
+  return {
+    allowMapLibreWheelZoom: options.isInteractionEnabled || hasModifier,
+    shouldBlockWheelDefault: !options.isInteractionEnabled && !hasModifier,
+    scrollZoomHandlerEnabled: true,
+    pressedModifiers: {
+      meta: options.event.metaKey,
+      ctrl: options.event.ctrlKey,
+    },
+  };
+}
+
+function shouldRecoverMapInteractionOnMapEvent(eventName: string): boolean {
+  return (
+    MAP_INTERACTION_RECOVERY_EVENTS.includes(
+      eventName as (typeof MAP_INTERACTION_RECOVERY_EVENTS)[number],
+    ) ||
+    MAP_INTERACTION_CANCEL_EVENTS.includes(
+      eventName as (typeof MAP_INTERACTION_CANCEL_EVENTS)[number],
+    )
+  );
+}
+
+function shouldCommitViewportChangeOnMapEvent(eventName: string): boolean {
+  return MAP_VIEWPORT_COMMIT_EVENTS.includes(
+    eventName as (typeof MAP_VIEWPORT_COMMIT_EVENTS)[number],
+  );
+}
+
+function shouldRecoverMapInteractionOnPointerEvent(eventName: string): boolean {
+  return (
+    POINTER_INTERACTION_RECOVERY_EVENTS.includes(
+      eventName as (typeof POINTER_INTERACTION_RECOVERY_EVENTS)[number],
+    ) ||
+    POINTER_INTERACTION_CANCEL_EVENTS.includes(
+      eventName as (typeof POINTER_INTERACTION_CANCEL_EVENTS)[number],
+    )
+  );
+}
+
+function resolveRecoveredMapInteractionState(options: {
+  isScrollWheelZoomAvailable: boolean;
+  isInteractionEnabled: boolean;
+  isMobile: boolean;
+  mobilePanMode: InteractiveMapProps['mobilePanMode'];
+}): RecoveredMapInteractionState {
+  const shouldLockMobilePan =
+    options.isMobile &&
+    options.mobilePanMode === 'pinch-zoom-until-unlocked' &&
+    !options.isInteractionEnabled;
+
+  return {
+    scrollZoomEnabled: options.isScrollWheelZoomAvailable,
+    dragPanEnabled: !shouldLockMobilePan,
+    boxZoomEnabled: true,
+  };
+}
+
 function readUatPropertiesFromMapFeature(
   feature: maplibregl.MapGeoJSONFeature | undefined,
 ): UatProperties | null {
@@ -1256,534 +1287,48 @@ function getFeatureIdFromMapFeature(
   return null;
 }
 
-function coordinatesToBounds(coordinates: number[][][]): [number, number, number, number] | null {
-  let minLng = Number.POSITIVE_INFINITY;
-  let minLat = Number.POSITIVE_INFINITY;
-  let maxLng = Number.NEGATIVE_INFINITY;
-  let maxLat = Number.NEGATIVE_INFINITY;
-
-  for (const ring of coordinates) {
-    for (const coordinate of ring) {
-      const [lng, lat] = coordinate;
-      if (!Number.isFinite(lng) || !Number.isFinite(lat)) {
-        continue;
-      }
-      minLng = Math.min(minLng, lng);
-      minLat = Math.min(minLat, lat);
-      maxLng = Math.max(maxLng, lng);
-      maxLat = Math.max(maxLat, lat);
-    }
-  }
-
-  if (!Number.isFinite(minLng) || !Number.isFinite(minLat)) {
-    return null;
-  }
-
-  return [minLng, minLat, maxLng, maxLat];
-}
-
-function polygonRingArea(ring: number[][]): number {
-  let area = 0;
-  for (let index = 0; index < ring.length; index += 1) {
-    const current = ring[index];
-    const next = ring[(index + 1) % ring.length];
-    area += current[0] * next[1] - next[0] * current[1];
-  }
-  return Math.abs(area / 2);
-}
-
-function getPrimaryPolygonCoordinates(geometry: Geometry): number[][][] | null {
-  if (geometry.type === 'Polygon') {
-    return (geometry as Polygon).coordinates;
-  }
-
-  if (geometry.type === 'MultiPolygon') {
-    const multiPolygon = geometry as MultiPolygon;
-    if (multiPolygon.coordinates.length === 0) {
-      return null;
-    }
-
-    return multiPolygon.coordinates.reduce((largest, current) => {
-      const largestArea = polygonRingArea(largest[0] ?? []);
-      const currentArea = polygonRingArea(current[0] ?? []);
-      return currentArea > largestArea ? current : largest;
-    }, multiPolygon.coordinates[0]);
-  }
-
-  return null;
-}
-
-function calculatePolygonCentroid(coordinates: number[][][]): [number, number] | null {
-  const polygon = coordinates[0];
-  if (!polygon || polygon.length === 0) {
-    return null;
-  }
-
-  let sumLat = 0;
-  let sumLng = 0;
-  let count = 0;
-  for (const coordinate of polygon) {
-    const [lng, lat] = coordinate;
-    if (!Number.isFinite(lng) || !Number.isFinite(lat)) {
-      continue;
-    }
-    sumLng += lng;
-    sumLat += lat;
-    count += 1;
-  }
-
-  if (count === 0) {
-    return null;
-  }
-
-  return [sumLat / count, sumLng / count];
-}
-
-function buildLabelGeometry(
-  feature: Feature<Geometry, Record<string, unknown>>,
-  mapViewType: 'UAT' | 'County',
-): PreparedLabelGeometry | null {
-  const geometry = feature.geometry;
-  if (!geometry) {
-    return null;
-  }
-
-  const primaryCoordinates = getPrimaryPolygonCoordinates(geometry);
-  if (!primaryCoordinates) {
-    return null;
-  }
-
-  const centroid = calculatePolygonCentroid(primaryCoordinates);
-  const bounds = coordinatesToBounds(primaryCoordinates);
-  if (!centroid || !bounds) {
-    return null;
-  }
-
-  const properties = feature.properties ?? {};
-  const featureId = resolveFeatureIdentifier(feature, mapViewType);
-  const nameNormalized = normalizeUatLabelName(properties.name ?? properties.mnemonic ?? '');
-  if (!featureId) {
-    return null;
-  }
-
-  return {
-    centroid,
-    bounds,
-    featureId,
-    nameNormalized,
+function finishCommandDragSelection(options: {
+  selection: Pick<CommandDragSelectionState, 'didDrag' | 'startPoint'>;
+  endPoint: {
+    x: number;
+    y: number;
   };
-}
+  queryRenderedFeatures: (bounds: [PointLike, PointLike]) => readonly maplibregl.MapGeoJSONFeature[];
+  cleanupSelection: (options: { suppressNextClick: boolean }) => void;
+  onFeatureBoxSelect?: (features: UatProperties[]) => void;
+}): void {
+  const { selection, endPoint, queryRenderedFeatures, cleanupSelection, onFeatureBoxSelect } = options;
+  const minX = Math.min(selection.startPoint.x, endPoint.x);
+  const minY = Math.min(selection.startPoint.y, endPoint.y);
+  const maxX = Math.max(selection.startPoint.x, endPoint.x);
+  const maxY = Math.max(selection.startPoint.y, endPoint.y);
+  const selectedFeatures: UatProperties[] = [];
+  const seenFeatureIds = new Set<string>();
 
-function resolveActiveSeriesValue(
-  properties: Record<string, unknown>,
-  valuesBySirutaCode: Map<string, number | undefined> | undefined,
-): number | undefined {
-  if (!valuesBySirutaCode) {
-    return undefined;
-  }
+  try {
+    if (selection.didDrag && onFeatureBoxSelect) {
+      const renderedFeatures = queryRenderedFeatures([
+        [minX, minY],
+        [maxX, maxY],
+      ] as [PointLike, PointLike]);
 
-  const candidates = [
-    properties.natcode,
-    properties.siruta_code,
-    properties.uat_code,
-    properties.mnemonic,
-  ];
-
-  for (const candidate of candidates) {
-    if (candidate === undefined || candidate === null) {
-      continue;
-    }
-
-    const value = valuesBySirutaCode.get(String(candidate));
-    if (typeof value === 'number' && Number.isFinite(value)) {
-      return value;
-    }
-  }
-
-  return undefined;
-}
-
-function computeMaxLegacyPopulation(
-  heatmapDataMap: Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint>,
-  mapViewType: 'UAT' | 'County',
-): number {
-  let maxPopulation = 0;
-  for (const dataPoint of heatmapDataMap.values()) {
-    const population =
-      mapViewType === 'County'
-        ? Number((dataPoint as { county_population?: number }).county_population)
-        : Number((dataPoint as { population?: number }).population);
-    if (Number.isFinite(population)) {
-      maxPopulation = Math.max(maxPopulation, population);
-    }
-  }
-  return maxPopulation;
-}
-
-function createLabelCollection(
-  features: Feature<Geometry, Record<string, unknown>>[] = [],
-): FeatureCollection<Geometry, Record<string, unknown>> {
-  return {
-    type: 'FeatureCollection',
-    features,
-  };
-}
-
-function createEmptyLabelSourceData(): MapLabelSourceData {
-  return {
-    countyLabels: createLabelCollection(),
-    countyFallbackLabels: createLabelCollection(),
-    uatLabels: createLabelCollection(),
-    renderUnitLabels: createLabelCollection(),
-    renderUnitMemberLabels: createLabelCollection(),
-  };
-}
-
-function getBoundsArea(bounds: [number, number, number, number]): number {
-  const [minLng, minLat, maxLng, maxLat] = bounds;
-  return Math.max(0, Math.abs(maxLng - minLng) * Math.abs(maxLat - minLat));
-}
-
-function calculateStaticLabelFontSize(
-  value: number | undefined,
-  maxValue: number,
-  mapViewType: 'UAT' | 'County',
-): number {
-  const minFontSize = mapViewType === 'County' ? 13 : 12;
-  const maxFontSize = mapViewType === 'County' ? 17 : 16;
-  if (value === undefined || !Number.isFinite(value) || value <= 0 || maxValue <= 0) {
-    return mapViewType === 'County' ? 14 : 13;
-  }
-
-  const normalizedValue = Math.max(0, Math.min(1, value / maxValue));
-  return minFontSize + (maxFontSize - minFontSize) * Math.sqrt(normalizedValue);
-}
-
-function resolveLegacyLabelValue(
-  feature: Feature<Geometry, Record<string, unknown>>,
-  heatmapDataMap: Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint>,
-  normalization: Normalization,
-): {
-  value: number | undefined;
-  population: number | undefined;
-} {
-  const heatmapData = getFeatureHeatmapData(feature, heatmapDataMap);
-  if (!heatmapData) {
-    return {
-      value: undefined,
-      population: undefined,
-    };
-  }
-
-  const isCounty = 'county_code' in heatmapData;
-  const isPerCapita = normalization === 'per_capita' || normalization === 'per_capita_euro';
-  const value =
-    normalization === 'percent_gdp'
-      ? heatmapData.amount
-      : isPerCapita
-        ? heatmapData.per_capita_amount
-        : heatmapData.total_amount;
-  const population = isCounty
-    ? Number((heatmapData as { county_population?: number }).county_population)
-    : Number((heatmapData as { population?: number }).population);
-
-  return {
-    value,
-    population: Number.isFinite(population) ? population : undefined,
-  };
-}
-
-function buildLabelPointFeature(
-  geometry: PreparedLabelGeometry,
-  properties: Record<string, unknown>,
-): Feature<Geometry, Record<string, unknown>> {
-  return {
-    type: 'Feature',
-    geometry: {
-      type: 'Point',
-      coordinates: [geometry.centroid[1], geometry.centroid[0]],
-    },
-    properties: {
-      featureId: geometry.featureId,
-      ...properties,
-    },
-  };
-}
-
-function buildFeatureLabel(
-  feature: Feature<Geometry, Record<string, unknown>>,
-  geometry: PreparedLabelGeometry,
-  mapViewType: 'UAT' | 'County',
-  heatmapDataMap: Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint>,
-  normalization: Normalization,
-  currency: Currency | undefined,
-  labelMode: LabelMode,
-  maxPopulation: number,
-  options?: {
-    activeSeriesValuesBySirutaCode?: Map<string, number | undefined>;
-    activeSeriesUnit?: string;
-    suppressActiveSeriesAmount?: boolean;
-  },
-): Feature<Geometry, Record<string, unknown>> | null {
-  const properties = feature.properties ?? {};
-  const name = geometry.nameNormalized || normalizeUatLabelName(properties.name ?? properties.mnemonic ?? '');
-  if (!name) {
-    return null;
-  }
-
-  const isCounty = mapViewType === 'County';
-  let value: number | undefined;
-  let amountText: string | undefined;
-  let fontSize: number;
-
-  if (labelMode === 'legacy-heatmap') {
-    const unit = getNormalizationUnit({
-      normalization: normalization as never,
-      currency: currency as never,
-    });
-    const legacyValue = resolveLegacyLabelValue(feature, heatmapDataMap, normalization);
-    value = legacyValue.value;
-
-    if (value === undefined || !Number.isFinite(value)) {
-      return null;
-    }
-
-    amountText = formatAmount(value, unit);
-    fontSize = calculateStaticLabelFontSize(legacyValue.population, maxPopulation, mapViewType);
-  } else {
-    value = resolveActiveSeriesValue(properties, options?.activeSeriesValuesBySirutaCode);
-    if (value === undefined || !Number.isFinite(value)) {
-      return null;
-    }
-
-    amountText = options?.suppressActiveSeriesAmount
-      ? undefined
-      : formatAdvancedMapAnalyticsSeriesValue(value, options?.activeSeriesUnit);
-    fontSize = isCounty ? 14 : 13;
-  }
-
-  const labelTextWithValue = amountText ? `${name}\n${amountText}` : name;
-  return buildLabelPointFeature(geometry, {
-    labelText: name,
-    labelValueText: amountText,
-    labelTextWithValue,
-    fontSize,
-    value,
-    labelMode,
-  });
-}
-
-function buildCountyFallbackLabel(geometry: PreparedLabelGeometry): Feature<Geometry, Record<string, unknown>> {
-  return buildLabelPointFeature(geometry, {
-    labelText: geometry.nameNormalized,
-    fontSize: 14,
-    labelMode: 'county-fallback',
-  });
-}
-
-function appendCountyFallbackLabels(
-  labelSourceData: MapLabelSourceData,
-  countyGeoJsonData: FeatureCollection<Geometry, Record<string, unknown>> | null,
-): void {
-  if (!countyGeoJsonData) {
-    return;
-  }
-
-  for (const feature of countyGeoJsonData.features) {
-    const geometry = buildLabelGeometry(feature, 'County');
-    if (!geometry) {
-      continue;
-    }
-    labelSourceData.countyFallbackLabels.features.push(buildCountyFallbackLabel(geometry));
-  }
-}
-
-function buildRenderUnitLabelPoint(
-  renderUnit: ActiveMapRenderUnit,
-  memberGeometries: PreparedLabelGeometry[],
-  activeSeriesUnit?: string,
-): Feature<Geometry, Record<string, unknown>> | null {
-  const value = renderUnit.value;
-  if (typeof value !== 'number' || !Number.isFinite(value) || memberGeometries.length === 0) {
-    return null;
-  }
-
-  let weightedLat = 0;
-  let weightedLng = 0;
-  let totalWeight = 0;
-  for (const geometry of memberGeometries) {
-    const area = getBoundsArea(geometry.bounds);
-    const weight = area > 0 ? area : 1;
-    weightedLat += geometry.centroid[0] * weight;
-    weightedLng += geometry.centroid[1] * weight;
-    totalWeight += weight;
-  }
-
-  if (totalWeight <= 0) {
-    return null;
-  }
-
-  const label = normalizeUatLabelName(renderUnit.label || renderUnit.id);
-  if (!label) {
-    return null;
-  }
-
-  const amountText = formatAdvancedMapAnalyticsSeriesValue(value, renderUnit.unit ?? activeSeriesUnit);
-  return {
-    type: 'Feature',
-    geometry: {
-      type: 'Point',
-      coordinates: [weightedLng / totalWeight, weightedLat / totalWeight],
-    },
-    properties: {
-      labelText: label,
-      labelValueText: amountText,
-      labelTextWithValue: `${label}\n${amountText}`,
-      fontSize: 20,
-      featureId: `render-unit:${renderUnit.id}`,
-      value,
-    },
-  };
-}
-
-function buildLabelSourceData(args: {
-  geoJsonData: PreparedFeatureCollection;
-  countyGeoJsonData: FeatureCollection<Geometry, Record<string, unknown>> | null;
-  showLabels: boolean;
-  mapViewType: 'UAT' | 'County';
-  heatmapDataMap: Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint>;
-  normalization: Normalization;
-  currency?: Currency;
-  labelMode: LabelMode;
-  activeSeriesValuesBySirutaCode?: Map<string, number | undefined>;
-  activeRenderUnits?: ActiveMapRenderUnit[];
-  activeSeriesUnit?: string;
-}): MapLabelSourceData {
-  const {
-    geoJsonData,
-    countyGeoJsonData,
-    showLabels,
-    mapViewType,
-    heatmapDataMap,
-    normalization,
-    currency,
-    labelMode,
-    activeSeriesValuesBySirutaCode,
-    activeRenderUnits,
-    activeSeriesUnit,
-  } = args;
-
-  if (!showLabels || geoJsonData.features.length === 0) {
-    return createEmptyLabelSourceData();
-  }
-
-  const maxPopulation =
-    labelMode === 'legacy-heatmap'
-      ? computeMaxLegacyPopulation(heatmapDataMap, mapViewType)
-      : 0;
-  const labelSourceData = createEmptyLabelSourceData();
-
-  if (labelMode === 'active-series' && activeRenderUnits?.length) {
-    const renderUnitMemberSirutaCodes = new Set<string>();
-    for (const renderUnit of activeRenderUnits) {
-      for (const sirutaCode of renderUnit.memberSirutaCodes) {
-        renderUnitMemberSirutaCodes.add(sirutaCode);
+      for (const feature of renderedFeatures) {
+        const featureId = getFeatureIdFromMapFeature(feature);
+        const properties = readUatPropertiesFromMapFeature(feature);
+        if (!featureId || !properties || seenFeatureIds.has(featureId)) {
+          continue;
+        }
+        seenFeatureIds.add(featureId);
+        selectedFeatures.push(properties);
       }
     }
-
-    const geometriesBySirutaCode = new Map<string, PreparedLabelGeometry>();
-    const featuresBySirutaCode = new Map<string, Feature<Geometry, Record<string, unknown>>>();
-
-    for (const feature of geoJsonData.features) {
-      const properties = feature.properties ?? {};
-      const sirutaCode = properties.natcode ?? properties.siruta_code ?? properties.uat_code;
-      if (sirutaCode === undefined || sirutaCode === null) {
-        continue;
-      }
-
-      const geometry = buildLabelGeometry(feature, mapViewType);
-      if (!geometry) {
-        continue;
-      }
-
-      const key = String(sirutaCode);
-      if (!renderUnitMemberSirutaCodes.has(key)) {
-        continue;
-      }
-
-      geometriesBySirutaCode.set(key, geometry);
-      featuresBySirutaCode.set(key, feature);
-    }
-
-    for (const renderUnit of activeRenderUnits) {
-      const memberGeometries = renderUnit.memberSirutaCodes
-        .map((sirutaCode) => geometriesBySirutaCode.get(sirutaCode))
-        .filter((geometry): geometry is PreparedLabelGeometry => geometry !== undefined);
-      const label = buildRenderUnitLabelPoint(renderUnit, memberGeometries, activeSeriesUnit);
-      if (label) {
-        labelSourceData.renderUnitLabels.features.push(label);
-      }
-    }
-
-    for (const sirutaCode of renderUnitMemberSirutaCodes) {
-      const feature = featuresBySirutaCode.get(sirutaCode);
-      const geometry = geometriesBySirutaCode.get(sirutaCode);
-      if (!feature || !geometry) {
-        continue;
-      }
-
-      labelSourceData.renderUnitMemberLabels.features.push(
-        buildLabelPointFeature(geometry, {
-          labelText: geometry.nameNormalized,
-          fontSize: 13,
-          featureId: geometry.featureId,
-          labelMode: 'render-unit-member',
-          sourceFeatureId: feature.id,
-        }),
-      );
-    }
-
-    if (mapViewType === 'UAT') {
-      appendCountyFallbackLabels(labelSourceData, countyGeoJsonData);
-    }
-
-    return labelSourceData;
+  } finally {
+    cleanupSelection({ suppressNextClick: selection.didDrag });
   }
 
-  for (const feature of geoJsonData.features) {
-    const geometry = buildLabelGeometry(feature, mapViewType);
-    if (!geometry) {
-      continue;
-    }
-
-    const label = buildFeatureLabel(
-      feature,
-      geometry,
-      mapViewType,
-      heatmapDataMap,
-      normalization,
-      currency,
-      labelMode,
-      maxPopulation,
-      {
-        activeSeriesValuesBySirutaCode,
-        activeSeriesUnit,
-      },
-    );
-    if (label) {
-      if (mapViewType === 'County') {
-        labelSourceData.countyLabels.features.push(label);
-      } else {
-        labelSourceData.uatLabels.features.push(label);
-      }
-    }
+  if (selectedFeatures.length > 0 && onFeatureBoxSelect) {
+    onFeatureBoxSelect(selectedFeatures);
   }
-
-  if (mapViewType === 'UAT') {
-    appendCountyFallbackLabels(labelSourceData, countyGeoJsonData);
-  }
-
-  return labelSourceData;
 }
 
 export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
@@ -1824,8 +1369,6 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   const viewportChangeTimeoutRef = useRef<number | null>(null);
   const shouldSuppressTooltipRef = useRef(false);
   const suppressNextFeatureClickRef = useRef(false);
-  const latestFeatureStyleRef = useRef<FeatureStyleResolver>(() => DEFAULT_FEATURE_STYLE);
-  const latestPreparedGeoJsonRef = useRef<PreparedFeatureCollection>(EMPTY_FEATURE_COLLECTION as PreparedFeatureCollection);
   const latestLabelArgsRef = useRef<Parameters<typeof buildLabelSourceData>[0] | null>(null);
   const latestOnViewChangeRef = useRef<typeof onViewChange>(onViewChange);
   const latestInteractionContextRef = useRef<FeatureInteractionContext>({
@@ -1840,9 +1383,12 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   const tooltipHtmlCacheRef = useRef<Map<string, string>>(new Map());
   const popupPositionFrameRef = useRef<number | null>(null);
   const pendingPopupPositionRef = useRef<[number, number] | null>(null);
+  const latestIsInteractionEnabledRef = useRef(false);
+  const latestIsScrollWheelZoomAvailableRef = useRef(scrollWheelZoom !== false);
   const [isMapReady, setIsMapReady] = useState(false);
   const [isInteractionEnabled, setIsInteractionEnabled] = useState(false);
   const [showRoads, setShowRoads] = useState(false);
+  const [showPopulationGrid, setShowPopulationGrid] = useState(false);
   const selectionRef = useRef<CommandDragSelectionState | null>(null);
   const pressedModifiersRef = useRef({
     meta: false,
@@ -1897,15 +1443,18 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
     [countyLabelGeoJsonData],
   );
 
-  const resolveFeatureStyle = useCallback(
+  const resolvePersistentFeatureStyle = useCallback(
     (feature?: Feature<Geometry, unknown>): InteractiveMapFeatureStyle =>
       getStyleForFeature(feature, {
         heatmapDataMap,
         getFeatureStyle,
-        highlightedFeatureId,
         alwaysResolveFeatureStyle,
       }),
-    [alwaysResolveFeatureStyle, getFeatureStyle, heatmapDataMap, highlightedFeatureId],
+    [alwaysResolveFeatureStyle, getFeatureStyle, heatmapDataMap],
+  );
+  const styledGeoJsonData = useMemo(
+    () => prepareStyledGeoJsonData(preparedGeoJsonData, resolvePersistentFeatureStyle),
+    [preparedGeoJsonData, resolvePersistentFeatureStyle],
   );
 
   const buildTooltipHtml = useCallback((properties: UatProperties): string => {
@@ -1954,6 +1503,81 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
     release();
   }, []);
 
+  const restoreMapInteractionHandlers = useCallback((options?: { resetScrollModifiers?: boolean }) => {
+    if (options?.resetScrollModifiers) {
+      pressedModifiersRef.current.meta = false;
+      pressedModifiersRef.current.ctrl = false;
+    }
+
+    const map = mapRef.current;
+    if (!map) {
+      return;
+    }
+
+    const recoveredState = resolveRecoveredMapInteractionState({
+      isScrollWheelZoomAvailable: scrollWheelZoom !== false,
+      isInteractionEnabled,
+      isMobile,
+      mobilePanMode,
+    });
+
+    if (recoveredState.scrollZoomEnabled) {
+      map.scrollZoom.enable();
+    } else {
+      map.scrollZoom.disable();
+    }
+
+    if (recoveredState.dragPanEnabled) {
+      map.dragPan.enable();
+    } else {
+      map.dragPan.disable();
+    }
+
+    if (recoveredState.boxZoomEnabled) {
+      map.boxZoom.enable();
+    } else {
+      map.boxZoom.disable();
+    }
+
+    map.getCanvas().style.removeProperty('cursor');
+  }, [isInteractionEnabled, isMobile, mobilePanMode, scrollWheelZoom]);
+
+  const removeSelectionOverlay = useCallback((): CommandDragSelectionState | null => {
+    const selection = selectionRef.current;
+    if (!selection) {
+      return null;
+    }
+
+    selection.rectangle.remove();
+    mapRef.current?.getCanvas().style.removeProperty('cursor');
+    selectionRef.current = null;
+    return selection;
+  }, []);
+
+  const recoverTransientMapInteractionState = useCallback((options?: {
+    cleanupSelection?: boolean;
+    clearNextFeatureClick?: boolean;
+    deferTooltipRelease?: boolean;
+    preserveSelectionClickSuppression?: boolean;
+    resetScrollModifiers?: boolean;
+  }) => {
+    const selection = options?.cleanupSelection ? removeSelectionOverlay() : null;
+    if (selection?.didDrag && options?.preserveSelectionClickSuppression !== false) {
+      suppressNextFeatureClickRef.current = true;
+    }
+    if (options?.clearNextFeatureClick) {
+      suppressNextFeatureClickRef.current = false;
+    }
+
+    if (!selectionRef.current) {
+      restoreMapInteractionHandlers({
+        resetScrollModifiers: options?.resetScrollModifiers,
+      });
+    }
+
+    releaseTooltipSuppression({ defer: options?.deferTooltipRelease });
+  }, [releaseTooltipSuppression, removeSelectionOverlay, restoreMapInteractionHandlers]);
+
   const schedulePopupPosition = useCallback((lngLat: maplibregl.LngLat): void => {
     pendingPopupPositionRef.current = [lngLat.lng, lngLat.lat];
     if (popupPositionFrameRef.current !== null) {
@@ -1989,32 +1613,6 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
     setGeoJsonSourceData(map, RENDER_UNIT_MEMBER_LABEL_SOURCE_ID, sourceData.renderUnitMemberLabels);
   }, []);
 
-  const applyFeatureStates = useCallback(() => {
-    const map = mapRef.current;
-    if (!map || !isMapReady || !map.getSource(MAIN_SOURCE_ID)) {
-      return;
-    }
-
-    for (const feature of latestPreparedGeoJsonRef.current.features) {
-      const style = latestFeatureStyleRef.current(feature);
-      map.setFeatureState(
-        {
-          source: MAIN_SOURCE_ID,
-          id: feature.id,
-        },
-        styleToFeatureState(style),
-      );
-    }
-  }, [isMapReady]);
-
-  useEffect(() => {
-    latestFeatureStyleRef.current = resolveFeatureStyle;
-  }, [resolveFeatureStyle]);
-
-  useEffect(() => {
-    latestPreparedGeoJsonRef.current = preparedGeoJsonData;
-  }, [preparedGeoJsonData]);
-
   useEffect(() => {
     latestInteractionContextRef.current = {
       heatmapData,
@@ -2034,6 +1632,14 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   }, [onViewChange]);
 
   useEffect(() => {
+    latestIsInteractionEnabledRef.current = isInteractionEnabled;
+  }, [isInteractionEnabled]);
+
+  useEffect(() => {
+    latestIsScrollWheelZoomAvailableRef.current = scrollWheelZoom !== false;
+  }, [scrollWheelZoom]);
+
+  useEffect(() => {
     tooltipHtmlCacheRef.current.clear();
   }, [filters, getTooltipContent, heatmapData, mapViewType]);
 
@@ -2043,6 +1649,41 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       return;
     }
     const tooltipHtmlCache = tooltipHtmlCacheRef.current;
+
+    const handlePreMapWheelCapture = (event: WheelEvent) => {
+      const map = mapRef.current;
+      if (!map) {
+        return;
+      }
+
+      const intent = resolveWheelScrollZoomIntent({
+        isScrollWheelZoomAvailable: latestIsScrollWheelZoomAvailableRef.current,
+        isInteractionEnabled: latestIsInteractionEnabledRef.current,
+        event,
+      });
+
+      if (intent.pressedModifiers) {
+        pressedModifiersRef.current.meta = intent.pressedModifiers.meta;
+        pressedModifiersRef.current.ctrl = intent.pressedModifiers.ctrl;
+      }
+
+      if (intent.scrollZoomHandlerEnabled) {
+        map.scrollZoom.enable();
+      } else {
+        map.scrollZoom.disable();
+      }
+
+      if (!intent.allowMapLibreWheelZoom) {
+        if (intent.shouldBlockWheelDefault) {
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+        }
+        return;
+      }
+    };
+
+    container.addEventListener('wheel', handlePreMapWheelCapture, { capture: true, passive: false });
 
     const initialMapCenter = normalizeCenter(center);
     const map = new maplibregl.Map({
@@ -2107,6 +1748,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       tooltipHtmlCache.clear();
       popup.remove();
       popupRef.current = null;
+      container.removeEventListener('wheel', handlePreMapWheelCapture, { capture: true });
       map.remove();
       mapRef.current = null;
     };
@@ -2188,34 +1830,48 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
     }
 
     closeTooltip();
-    setGeoJsonSourceData(map, MAIN_SOURCE_ID, preparedGeoJsonData);
+    setGeoJsonSourceData(map, MAIN_SOURCE_ID, styledGeoJsonData);
+  }, [closeTooltip, isMapReady, styledGeoJsonData]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !isMapReady) {
+      return;
+    }
+
     setGeoJsonSourceData(map, COUNTY_BOUNDARY_SOURCE_ID, preparedCountyBoundaryGeoJsonData);
+  }, [isMapReady, preparedCountyBoundaryGeoJsonData]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !isMapReady) {
+      return;
+    }
+
     setGeoJsonSourceData(map, GROUP_BOUNDARY_SOURCE_ID, preparedGroupingBoundaryGeoJsonData);
+  }, [isMapReady, preparedGroupingBoundaryGeoJsonData]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !isMapReady) {
+      return;
+    }
+
     setGeoJsonSourceData(
       map,
       SELECTED_GROUP_BOUNDARY_SOURCE_ID,
       preparedSelectedGroupingBoundaryGeoJsonData,
     );
-    map.setFilter(PERMANENT_HIGHLIGHT_LAYER_ID, featureFilter(highlightedFeatureId));
-    window.requestAnimationFrame(() => {
-      applyFeatureStates();
-      updateLabels();
-    });
-  }, [
-    applyFeatureStates,
-    highlightedFeatureId,
-    isMapReady,
-    closeTooltip,
-    preparedCountyBoundaryGeoJsonData,
-    preparedGeoJsonData,
-    preparedGroupingBoundaryGeoJsonData,
-    preparedSelectedGroupingBoundaryGeoJsonData,
-    updateLabels,
-  ]);
+  }, [isMapReady, preparedSelectedGroupingBoundaryGeoJsonData]);
 
   useEffect(() => {
-    applyFeatureStates();
-  }, [applyFeatureStates, resolveFeatureStyle]);
+    const map = mapRef.current;
+    if (!map || !isMapReady) {
+      return;
+    }
+
+    map.setFilter(PERMANENT_HIGHLIGHT_LAYER_ID, featureFilter(highlightedFeatureId));
+  }, [highlightedFeatureId, isMapReady]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -2278,6 +1934,15 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       return;
     }
 
+    syncPopulationGridLayer(map, showPopulationGrid);
+  }, [isMapReady, showPopulationGrid]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !isMapReady) {
+      return;
+    }
+
     const clearScheduledViewChange = () => {
       if (viewportChangeTimeoutRef.current === null) {
         return;
@@ -2323,8 +1988,12 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       closeTooltip();
     };
 
-    const handleInteractionEnd = () => {
-      releaseTooltipSuppression({ defer: true });
+    const handleInteractionRecovery = () => {
+      recoverTransientMapInteractionState({ deferTooltipRelease: true });
+    };
+
+    const handleViewportCommitCandidate = () => {
+      recoverTransientMapInteractionState({ deferTooltipRelease: true });
       if (!hasUserCameraInteractionRef.current) {
         return;
       }
@@ -2334,16 +2003,51 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
 
     const handleInteractionCancel = () => {
       hasUserCameraInteractionRef.current = false;
-      releaseTooltipSuppression();
+      recoverTransientMapInteractionState({
+        cleanupSelection: true,
+        clearNextFeatureClick: true,
+        preserveSelectionClickSuppression: false,
+        resetScrollModifiers: true,
+      });
+    };
+
+    const handlePointerRecovery = (event: Event) => {
+      if (!shouldRecoverMapInteractionOnPointerEvent(event.type)) {
+        return;
+      }
+      recoverTransientMapInteractionState({ deferTooltipRelease: true });
+    };
+
+    const handlePointerCancel = () => {
+      recoverTransientMapInteractionState({
+        cleanupSelection: true,
+        clearNextFeatureClick: true,
+        preserveSelectionClickSuppression: false,
+        resetScrollModifiers: true,
+      });
     };
 
     map.on('dragstart', handleInteractionStart);
     map.on('zoomstart', handleInteractionStart);
     map.on('movestart', handleInteractionStart);
     map.on('boxzoomstart', handleInteractionStart);
-    map.on('moveend', handleInteractionEnd);
-    map.on('boxzoomend', handleInteractionEnd);
-    map.on('boxzoomcancel', handleInteractionCancel);
+    MAP_INTERACTION_RECOVERY_EVENTS.forEach((eventName) => {
+      map.on(eventName, handleInteractionRecovery);
+    });
+    MAP_VIEWPORT_COMMIT_EVENTS.forEach((eventName) => {
+      map.on(eventName, handleViewportCommitCandidate);
+    });
+    MAP_INTERACTION_CANCEL_EVENTS.forEach((eventName) => {
+      map.on(eventName, handleInteractionCancel);
+    });
+    POINTER_INTERACTION_RECOVERY_EVENTS.forEach((eventName) => {
+      window.addEventListener(eventName, handlePointerRecovery);
+      document.addEventListener(eventName, handlePointerRecovery);
+    });
+    POINTER_INTERACTION_CANCEL_EVENTS.forEach((eventName) => {
+      window.addEventListener(eventName, handlePointerCancel);
+      document.addEventListener(eventName, handlePointerCancel);
+    });
     window.addEventListener('blur', handleInteractionCancel);
     document.addEventListener('visibilitychange', handleInteractionCancel);
 
@@ -2352,14 +2056,28 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       map.off('zoomstart', handleInteractionStart);
       map.off('movestart', handleInteractionStart);
       map.off('boxzoomstart', handleInteractionStart);
-      map.off('moveend', handleInteractionEnd);
-      map.off('boxzoomend', handleInteractionEnd);
-      map.off('boxzoomcancel', handleInteractionCancel);
+      MAP_INTERACTION_RECOVERY_EVENTS.forEach((eventName) => {
+        map.off(eventName, handleInteractionRecovery);
+      });
+      MAP_VIEWPORT_COMMIT_EVENTS.forEach((eventName) => {
+        map.off(eventName, handleViewportCommitCandidate);
+      });
+      MAP_INTERACTION_CANCEL_EVENTS.forEach((eventName) => {
+        map.off(eventName, handleInteractionCancel);
+      });
+      POINTER_INTERACTION_RECOVERY_EVENTS.forEach((eventName) => {
+        window.removeEventListener(eventName, handlePointerRecovery);
+        document.removeEventListener(eventName, handlePointerRecovery);
+      });
+      POINTER_INTERACTION_CANCEL_EVENTS.forEach((eventName) => {
+        window.removeEventListener(eventName, handlePointerCancel);
+        document.removeEventListener(eventName, handlePointerCancel);
+      });
       window.removeEventListener('blur', handleInteractionCancel);
       document.removeEventListener('visibilitychange', handleInteractionCancel);
       clearScheduledViewChange();
     };
-  }, [closeTooltip, isMapReady, releaseTooltipSuppression]);
+  }, [closeTooltip, isMapReady, recoverTransientMapInteractionState]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -2467,8 +2185,6 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       return;
     }
 
-    const container = map.getContainer();
-
     const syncTemporaryZoomState = () => {
       if (isInteractionEnabled) {
         return;
@@ -2508,36 +2224,18 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       syncTemporaryZoomState();
     };
 
-    const handleWheelCapture = (event: WheelEvent) => {
-      if (isInteractionEnabled) {
-        return;
-      }
-
-      pressedModifiersRef.current.meta = event.metaKey;
-      pressedModifiersRef.current.ctrl = event.ctrlKey;
-
-      if (hasScrollZoomModifier(event)) {
-        map.scrollZoom.enable();
-        return;
-      }
-
-      map.scrollZoom.disable();
-    };
-
     const handleVisibilityChange = () => {
       if (document.visibilityState !== 'visible') {
         handleWindowBlur();
       }
     };
 
-    container.addEventListener('wheel', handleWheelCapture, { capture: true, passive: true });
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     window.addEventListener('blur', handleWindowBlur);
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      container.removeEventListener('wheel', handleWheelCapture, { capture: true });
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('blur', handleWindowBlur);
@@ -2551,42 +2249,21 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       return;
     }
 
-    if (isInteractionEnabled) {
-      map.scrollZoom.enable();
-    } else {
-      pressedModifiersRef.current.meta = false;
-      pressedModifiersRef.current.ctrl = false;
-      map.scrollZoom.disable();
-    }
+    restoreMapInteractionHandlers({ resetScrollModifiers: !isInteractionEnabled });
+  }, [isInteractionEnabled, isMapReady, restoreMapInteractionHandlers]);
 
-    const shouldLockMobilePan =
-      isMobile && mobilePanMode === 'pinch-zoom-until-unlocked' && !isInteractionEnabled;
-
-    if (shouldLockMobilePan) {
-      map.dragPan.disable();
-    } else {
-      map.dragPan.enable();
-    }
-  }, [isInteractionEnabled, isMapReady, isMobile, mobilePanMode]);
-
-  const cleanupSelection = useCallback(() => {
-    const map = mapRef.current;
-    const selection = selectionRef.current;
+  const cleanupSelection = useCallback((options?: { suppressNextClick?: boolean }) => {
+    const selection = removeSelectionOverlay();
     if (!selection) {
       return;
     }
 
-    selection.rectangle.remove();
-    map?.getCanvas().style.removeProperty('cursor');
-    if (map && selection.wasDragPanEnabled) {
-      map.dragPan.enable();
+    if (options?.suppressNextClick) {
+      suppressNextFeatureClickRef.current = true;
     }
-    if (map && selection.wasBoxZoomEnabled) {
-      map.boxZoom.enable();
-    }
-    selectionRef.current = null;
+    restoreMapInteractionHandlers();
     releaseTooltipSuppression();
-  }, [releaseTooltipSuppression]);
+  }, [releaseTooltipSuppression, removeSelectionOverlay, restoreMapInteractionHandlers]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -2674,42 +2351,14 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       event.preventDefault();
       event.stopPropagation();
       const endPoint = getContainerPoint(map, event);
-      const minX = Math.min(selection.startPoint.x, endPoint.x);
-      const minY = Math.min(selection.startPoint.y, endPoint.y);
-      const maxX = Math.max(selection.startPoint.x, endPoint.x);
-      const maxY = Math.max(selection.startPoint.y, endPoint.y);
-      const selectedFeatures: UatProperties[] = [];
-      const seenFeatureIds = new Set<string>();
-
-      if (selection.didDrag && onFeatureBoxSelect) {
-        const renderedFeatures = map.queryRenderedFeatures(
-          [
-            [minX, minY],
-            [maxX, maxY],
-          ] as [PointLike, PointLike],
-          { layers: [MAIN_FILL_LAYER_ID] },
-        );
-
-        for (const feature of renderedFeatures) {
-          const featureId = getFeatureIdFromMapFeature(feature);
-          const properties = readUatPropertiesFromMapFeature(feature);
-          if (!featureId || !properties || seenFeatureIds.has(featureId)) {
-            continue;
-          }
-          seenFeatureIds.add(featureId);
-          selectedFeatures.push(properties);
-        }
-      }
-
-      if (selection.didDrag) {
-        suppressNextFeatureClickRef.current = true;
-      }
-
-      cleanupSelection();
-
-      if (selectedFeatures.length > 0 && onFeatureBoxSelect) {
-        onFeatureBoxSelect(selectedFeatures);
-      }
+      finishCommandDragSelection({
+        selection,
+        endPoint,
+        queryRenderedFeatures: (bounds) =>
+          map.queryRenderedFeatures(bounds, { layers: [MAIN_FILL_LAYER_ID] }),
+        cleanupSelection,
+        onFeatureBoxSelect,
+      });
     };
 
     const cancelSelection = (event?: Event) => {
@@ -2723,11 +2372,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       }
       event?.stopPropagation();
 
-      if (selection.didDrag) {
-        suppressNextFeatureClickRef.current = true;
-      }
-
-      cleanupSelection();
+      cleanupSelection({ suppressNextClick: selection.didDrag });
     };
 
     const handleSelectionKeyDown = (event: KeyboardEvent) => {
@@ -2752,6 +2397,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
     document.addEventListener('mousemove', updateSelection, { capture: true });
     document.addEventListener('mouseup', finishSelection, { capture: true });
     window.addEventListener('mouseup', finishSelection, { capture: true });
+    window.addEventListener('pointercancel', cancelSelection, { capture: true });
     window.addEventListener('blur', cancelSelection);
     window.addEventListener('contextmenu', cancelSelection, { capture: true });
     document.addEventListener('keydown', handleSelectionKeyDown, { capture: true });
@@ -2763,6 +2409,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       document.removeEventListener('mousemove', updateSelection, { capture: true });
       document.removeEventListener('mouseup', finishSelection, { capture: true });
       window.removeEventListener('mouseup', finishSelection, { capture: true });
+      window.removeEventListener('pointercancel', cancelSelection, { capture: true });
       window.removeEventListener('blur', cancelSelection);
       window.removeEventListener('contextmenu', cancelSelection, { capture: true });
       document.removeEventListener('keydown', handleSelectionKeyDown, { capture: true });
@@ -2804,6 +2451,17 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
           onClick={() => setShowRoads((previous) => !previous)}
         >
           <RoadsIcon />
+        </MapLibreOverlayControl>
+      ) : null}
+      {scrollWheelZoom !== false ? (
+        <MapLibreOverlayControl
+          top={158}
+          ariaLabel={showPopulationGrid ? t`Hide population grid` : t`Show population grid`}
+          title={showPopulationGrid ? t`Population grid: On` : t`Population grid: Off`}
+          pressed={showPopulationGrid}
+          onClick={() => setShowPopulationGrid((previous) => !previous)}
+        >
+          <PopulationGridIcon />
         </MapLibreOverlayControl>
       ) : null}
     </div>
@@ -2917,8 +2575,26 @@ function RoadsIcon() {
   );
 }
 
+function PopulationGridIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="4" y="4" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="2" />
+      <rect x="14" y="4" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="2" />
+      <rect x="4" y="14" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="2" />
+      <rect x="14" y="14" width="6" height="6" rx="1" fill="currentColor" opacity="0.75" />
+    </svg>
+  );
+}
+
 // eslint-disable-next-line react-refresh/only-export-components
 export const __interactiveMapMapLibreTestUtils = {
+  sourceIds: {
+    main: MAIN_SOURCE_ID,
+    countyBoundary: COUNTY_BOUNDARY_SOURCE_ID,
+    groupBoundary: GROUP_BOUNDARY_SOURCE_ID,
+    selectedGroupBoundary: SELECTED_GROUP_BOUNDARY_SOURCE_ID,
+  },
+  buildPopulationGridFillPaint,
   buildLabelLayerZoomRanges,
   buildLabelSourceData,
   buildLabelTextSizeExpression,
@@ -2926,20 +2602,29 @@ export const __interactiveMapMapLibreTestUtils = {
   buildSymbolLayout,
   buildZoomFadeExpression,
   labelPaint,
+  buildMainFillPaint,
   buildMainLinePaint,
   getCachedTooltipHtml,
   hasScrollZoomModifier,
+  finishCommandDragSelection,
   normalizeBounds,
   normalizeCenter,
   prepareGeoJsonData,
+  prepareStyledGeoJsonData,
+  resolveRecoveredMapInteractionState,
+  resolveWheelScrollZoomIntent,
+  setGeoJsonSourceData,
   isSelectionCancelKey,
   markProgrammaticViewTarget,
   shouldCancelSelectionOnModifierRelease,
+  shouldCommitViewportChangeOnMapEvent,
+  shouldRecoverMapInteractionOnMapEvent,
+  shouldRecoverMapInteractionOnPointerEvent,
   shouldIgnoreProgrammaticViewChange,
   shouldIgnoreViewportPropEcho,
   shouldTransitionHoverFeature,
+  styleToMapFeatureProperties,
   styleToHoverLinePaint,
-  styleToFeatureState,
 };
 
 export type {

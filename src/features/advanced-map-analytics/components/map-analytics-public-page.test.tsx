@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AdvancedMapAnalyticsUrlStateSchema } from '@/schemas/advanced-map-analytics';
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
@@ -94,7 +94,7 @@ describe('MapAnalyticsPublicPage', () => {
     );
   });
 
-  it('applies map viewport overrides to the public view state', async () => {
+  it('passes map viewport overrides to the public view without mutating state', async () => {
     const mapState = AdvancedMapAnalyticsUrlStateSchema.parse({
       mapName: 'Public map',
       mapZoom: 7,
@@ -126,16 +126,18 @@ describe('MapAnalyticsPublicPage', () => {
     await waitFor(() => {
       expect(mapAnalyticsPublicViewMock).toHaveBeenCalledWith(
         expect.objectContaining({
+          mapZoomOverride: 9.3,
+          mapCenterOverride: [46.7, 25.1],
           mapState: expect.objectContaining({
-            mapZoom: 9.3,
-            mapCenter: [46.7, 25.1],
+            mapZoom: 7,
+            mapCenter: [45.5, 24.2],
           }),
         })
       );
     });
   });
 
-  it('emits viewport changes from public view state through callback', async () => {
+  it('forwards viewport change callback to the public view', async () => {
     const mapState = AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Public map' });
     const groupedSeriesData = createGroupedSeriesData();
     const onMapViewportChange = vi.fn();
@@ -159,21 +161,12 @@ describe('MapAnalyticsPublicPage', () => {
       expect(screen.getByTestId('map-analytics-public-view')).toBeInTheDocument();
     });
 
-    const publicViewProps = getLatestPublicViewProps();
-    await act(async () => {
-      publicViewProps.setMapState((previousState) => ({
-        ...previousState,
-        mapZoom: 10.1,
-        mapCenter: [47.2, 26.3],
-      }));
-    });
-
-    await waitFor(() => {
-      expect(onMapViewportChange).toHaveBeenCalledWith({
-        mapZoom: 10.1,
-        mapCenter: [47.2, 26.3],
-      });
-    });
+    expect(getLatestPublicViewProps()).toEqual(
+      expect.objectContaining({
+        onMapViewportChange,
+      })
+    );
+    expect(onMapViewportChange).not.toHaveBeenCalled();
   });
 
   it('shows API error when bundled grouped-series data is missing', async () => {
@@ -193,6 +186,7 @@ describe('MapAnalyticsPublicPage', () => {
 });
 
 function getLatestPublicViewProps(): {
+  onMapViewportChange?: (nextViewport: { mapZoom?: number; mapCenter?: [number, number] }) => void;
   setMapState: (
     updater:
       | AdvancedMapAnalyticsUrlState
@@ -202,6 +196,7 @@ function getLatestPublicViewProps(): {
   const latestCallIndex = mapAnalyticsPublicViewMock.mock.calls.length - 1;
   const latestCall = mapAnalyticsPublicViewMock.mock.calls[latestCallIndex]?.[0] as
     | {
+        onMapViewportChange?: (nextViewport: { mapZoom?: number; mapCenter?: [number, number] }) => void;
         setMapState: (
           updater:
             | AdvancedMapAnalyticsUrlState

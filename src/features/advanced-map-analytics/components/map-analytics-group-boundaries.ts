@@ -1,12 +1,44 @@
-import type { GeoJsonObject } from 'geojson';
+import type { Feature, FeatureCollection, Geometry, MultiLineString } from 'geojson';
 import type { UatFeature } from '@/components/maps/interfaces';
-import type { MapGroupWorkspace } from '@/schemas/advanced-map-analytics';
+import type { MapGroup, MapGroupWorkspace } from '@/schemas/advanced-map-analytics';
 
 type GeoJsonCoordinate = readonly [number, number];
-type BoundaryEdge = [GeoJsonCoordinate, GeoJsonCoordinate];
+
+type BoundaryEdge = {
+  readonly key: string;
+  readonly start: GeoJsonCoordinate;
+  readonly end: GeoJsonCoordinate;
+};
+
+type GeoJsonCoordinateBounds = {
+  minLongitude: number;
+  maxLongitude: number;
+  minLatitude: number;
+  maxLatitude: number;
+};
+
+type IndexedBoundaryFeature = {
+  readonly sirutaCode: string;
+  readonly feature: UatFeature;
+  readonly bounds: GeoJsonCoordinateBounds;
+  readonly edges: readonly BoundaryEdge[];
+};
+
+export type GroupBoundaryGeometryIndex = {
+  readonly featuresBySirutaCode: Map<string, IndexedBoundaryFeature>;
+  readonly edgeOwnersByKey: Map<string, ReadonlySet<string>>;
+};
+
+type BoundaryFeature = Feature<MultiLineString, { id: string; groupId: string }>;
+export type GroupBoundaryGeoJsonData = FeatureCollection<MultiLineString, BoundaryFeature['properties']>;
 
 const GROUP_BOUNDARY_COORDINATE_PRECISION = 6;
 const GROUP_BOUNDARY_OFFSET_EPSILON = 0.00001;
+
+const EMPTY_FEATURE_COLLECTION: FeatureCollection<Geometry, Record<string, unknown>> = {
+  type: 'FeatureCollection',
+  features: [],
+};
 
 function isGeoJsonCoordinate(coordinate: unknown): coordinate is GeoJsonCoordinate {
   return (
@@ -28,6 +60,56 @@ function getBoundaryEdgeKey(start: GeoJsonCoordinate, end: GeoJsonCoordinate): s
   const startKey = getBoundaryCoordinateKey(start);
   const endKey = getBoundaryCoordinateKey(end);
   return startKey < endKey ? `${startKey}|${endKey}` : `${endKey}|${startKey}`;
+}
+
+function createEmptyBounds(): GeoJsonCoordinateBounds {
+  return {
+    minLongitude: Number.POSITIVE_INFINITY,
+    maxLongitude: Number.NEGATIVE_INFINITY,
+    minLatitude: Number.POSITIVE_INFINITY,
+    maxLatitude: Number.NEGATIVE_INFINITY,
+  };
+}
+
+function extendGeoJsonCoordinateBounds(value: unknown, bounds: GeoJsonCoordinateBounds): void {
+  if (!Array.isArray(value)) {
+    return;
+  }
+
+  if (isGeoJsonCoordinate(value)) {
+    const [longitude, latitude] = value;
+    bounds.minLongitude = Math.min(bounds.minLongitude, longitude);
+    bounds.maxLongitude = Math.max(bounds.maxLongitude, longitude);
+    bounds.minLatitude = Math.min(bounds.minLatitude, latitude);
+    bounds.maxLatitude = Math.max(bounds.maxLatitude, latitude);
+    return;
+  }
+
+  for (const entry of value) {
+    extendGeoJsonCoordinateBounds(entry, bounds);
+  }
+}
+
+function isFiniteBounds(bounds: GeoJsonCoordinateBounds): boolean {
+  return (
+    Number.isFinite(bounds.minLongitude) &&
+    Number.isFinite(bounds.maxLongitude) &&
+    Number.isFinite(bounds.minLatitude) &&
+    Number.isFinite(bounds.maxLatitude)
+  );
+}
+
+function doesBoundsContainPoint(
+  bounds: GeoJsonCoordinateBounds,
+  point: GeoJsonCoordinate,
+  epsilon = 0,
+): boolean {
+  return (
+    point[0] >= bounds.minLongitude - epsilon &&
+    point[0] <= bounds.maxLongitude + epsilon &&
+    point[1] >= bounds.minLatitude - epsilon &&
+    point[1] <= bounds.maxLatitude + epsilon
+  );
 }
 
 function isPointInRing(point: GeoJsonCoordinate, ring: readonly GeoJsonCoordinate[]): boolean {
@@ -92,17 +174,23 @@ function isPointInFeatureGeometry(point: GeoJsonCoordinate, feature: UatFeature)
   return false;
 }
 
-function isPointInAnyFeature(point: GeoJsonCoordinate, features: readonly UatFeature[]): boolean {
-  return features.some((feature) => isPointInFeatureGeometry(point, feature));
+function isPointInAnyIndexedFeature(
+  point: GeoJsonCoordinate,
+  features: readonly IndexedBoundaryFeature[],
+): boolean {
+  return features.some((feature) =>
+    doesBoundsContainPoint(feature.bounds, point, GROUP_BOUNDARY_OFFSET_EPSILON) &&
+    isPointInFeatureGeometry(point, feature.feature)
+  );
 }
 
-function isInteriorBoundaryEdge(edge: BoundaryEdge, features: readonly UatFeature[]): boolean {
-  const [start, end] = edge;
+function getInteriorProbePoints(edge: BoundaryEdge): readonly [GeoJsonCoordinate, GeoJsonCoordinate] | null {
+  const { start, end } = edge;
   const deltaLongitude = end[0] - start[0];
   const deltaLatitude = end[1] - start[1];
   const length = Math.hypot(deltaLongitude, deltaLatitude);
   if (length === 0) {
-    return true;
+    return null;
   }
 
   const midpoint: GeoJsonCoordinate = [
@@ -111,22 +199,33 @@ function isInteriorBoundaryEdge(edge: BoundaryEdge, features: readonly UatFeatur
   ];
   const normalLongitude = (-deltaLatitude / length) * GROUP_BOUNDARY_OFFSET_EPSILON;
   const normalLatitude = (deltaLongitude / length) * GROUP_BOUNDARY_OFFSET_EPSILON;
-  const leftPoint: GeoJsonCoordinate = [
-    midpoint[0] + normalLongitude,
-    midpoint[1] + normalLatitude,
-  ];
-  const rightPoint: GeoJsonCoordinate = [
-    midpoint[0] - normalLongitude,
-    midpoint[1] - normalLatitude,
-  ];
 
-  return isPointInAnyFeature(leftPoint, features) && isPointInAnyFeature(rightPoint, features);
+  return [
+    [midpoint[0] + normalLongitude, midpoint[1] + normalLatitude],
+    [midpoint[0] - normalLongitude, midpoint[1] - normalLatitude],
+  ];
 }
 
-function collectPolygonBoundaryEdges(
-  polygonCoordinates: unknown,
-  boundaryEdgesByKey: Map<string, BoundaryEdge>
-): void {
+function isInteriorBoundaryEdgeByGeometry(
+  edge: BoundaryEdge,
+  features: readonly IndexedBoundaryFeature[],
+): boolean {
+  if (features.length <= 1) {
+    return false;
+  }
+
+  const probePoints = getInteriorProbePoints(edge);
+  if (!probePoints) {
+    return true;
+  }
+
+  return (
+    isPointInAnyIndexedFeature(probePoints[0], features) &&
+    isPointInAnyIndexedFeature(probePoints[1], features)
+  );
+}
+
+function collectPolygonBoundaryEdges(polygonCoordinates: unknown, edges: BoundaryEdge[]): void {
   if (!Array.isArray(polygonCoordinates)) {
     return;
   }
@@ -143,74 +242,262 @@ function collectPolygonBoundaryEdges(
         continue;
       }
 
-      const edgeKey = getBoundaryEdgeKey(start, end);
-      if (boundaryEdgesByKey.has(edgeKey)) {
-        boundaryEdgesByKey.delete(edgeKey);
-      } else {
-        boundaryEdgesByKey.set(edgeKey, [start, end]);
-      }
+      edges.push({
+        key: getBoundaryEdgeKey(start, end),
+        start,
+        end,
+      });
     }
   }
 }
 
-function buildExteriorBoundaryFeatures(
-  features: readonly UatFeature[],
-  groupId: string
-) {
-  const boundaryEdgesByKey = new Map<string, BoundaryEdge>();
+function collectFeatureBoundaryEdges(feature: UatFeature): readonly BoundaryEdge[] {
+  const edges: BoundaryEdge[] = [];
+  const geometry = feature.geometry;
+  if (!geometry) {
+    return edges;
+  }
 
-  for (const feature of features) {
-    const geometry = feature.geometry;
-    if (!geometry) {
+  if (geometry.type === 'Polygon') {
+    collectPolygonBoundaryEdges(geometry.coordinates, edges);
+  }
+
+  if (geometry.type === 'MultiPolygon') {
+    for (const polygonCoordinates of geometry.coordinates) {
+      collectPolygonBoundaryEdges(polygonCoordinates, edges);
+    }
+  }
+
+  return edges;
+}
+
+function getFeatureBounds(feature: UatFeature): GeoJsonCoordinateBounds | null {
+  const geometry = feature.geometry;
+  if (!geometry || !('coordinates' in geometry)) {
+    return null;
+  }
+
+  const bounds = createEmptyBounds();
+  extendGeoJsonCoordinateBounds(geometry.coordinates, bounds);
+  return isFiniteBounds(bounds) ? bounds : null;
+}
+
+function getFeatureSirutaCode(feature: UatFeature): string {
+  return String(feature.properties?.natcode ?? '').trim();
+}
+
+function addEdgeOwner(
+  edgeOwnersByKey: Map<string, Set<string>>,
+  edgeKey: string,
+  sirutaCode: string,
+): void {
+  const owners = edgeOwnersByKey.get(edgeKey);
+  if (owners) {
+    owners.add(sirutaCode);
+    return;
+  }
+
+  edgeOwnersByKey.set(edgeKey, new Set([sirutaCode]));
+}
+
+export function buildGroupBoundaryGeometryIndex(
+  geoJsonFeatures: readonly UatFeature[],
+): GroupBoundaryGeometryIndex {
+  const featuresBySirutaCode = new Map<string, IndexedBoundaryFeature>();
+  const edgeOwnersByKey = new Map<string, Set<string>>();
+
+  for (const feature of geoJsonFeatures) {
+    const sirutaCode = getFeatureSirutaCode(feature);
+    if (!sirutaCode) {
       continue;
     }
 
-    if (geometry.type === 'Polygon') {
-      collectPolygonBoundaryEdges(geometry.coordinates, boundaryEdgesByKey);
+    const bounds = getFeatureBounds(feature);
+    if (!bounds) {
+      continue;
     }
 
-    if (geometry.type === 'MultiPolygon') {
-      for (const polygonCoordinates of geometry.coordinates) {
-        collectPolygonBoundaryEdges(polygonCoordinates, boundaryEdgesByKey);
-      }
+    const indexedFeature: IndexedBoundaryFeature = {
+      sirutaCode,
+      feature,
+      bounds,
+      edges: collectFeatureBoundaryEdges(feature),
+    };
+
+    featuresBySirutaCode.set(sirutaCode, indexedFeature);
+
+    for (const edge of indexedFeature.edges) {
+      addEdgeOwner(edgeOwnersByKey, edge.key, sirutaCode);
     }
   }
 
-  return [...boundaryEdgesByKey.values()]
-    .filter((edge) => !isInteriorBoundaryEdge(edge, features))
-    .map(([start, end], index) => ({
-      type: 'Feature' as const,
-      properties: { id: `group-boundary-${groupId}-${index}`, groupId },
-      geometry: {
-        type: 'LineString' as const,
-        coordinates: [start, end],
-      },
-    }));
+  return {
+    featuresBySirutaCode,
+    edgeOwnersByKey,
+  };
 }
 
-export function buildGroupWorkspaceBoundaryGeoJsonData(
-  groups: readonly MapGroupWorkspace['groups'][number][],
-  geoJsonFeatures: readonly UatFeature[]
-): GeoJsonObject | null {
-  const boundaryFeatures = groups.flatMap((group) => {
-    const memberSirutaCodes = new Set(group.memberSirutaCodes);
-    const features = geoJsonFeatures.filter((feature) =>
-      memberSirutaCodes.has(String(feature.properties?.natcode ?? '').trim())
-    );
+function getGroupMemberFeatures(
+  group: MapGroup,
+  index: GroupBoundaryGeometryIndex,
+): readonly IndexedBoundaryFeature[] {
+  return group.memberSirutaCodes
+    .map((sirutaCode) => index.featuresBySirutaCode.get(sirutaCode))
+    .filter((feature): feature is IndexedBoundaryFeature => Boolean(feature));
+}
 
-    if (features.length === 0) {
-      return [];
+function isEdgeInternalByOwnerSet(
+  edge: BoundaryEdge,
+  memberSirutaCodes: ReadonlySet<string>,
+  index: GroupBoundaryGeometryIndex,
+): boolean {
+  const owners = index.edgeOwnersByKey.get(edge.key);
+  if (!owners || owners.size <= 1) {
+    return false;
+  }
+
+  for (const owner of owners) {
+    if (!memberSirutaCodes.has(owner)) {
+      return false;
     }
+  }
 
-    return buildExteriorBoundaryFeatures(features, group.id);
-  });
+  return true;
+}
+
+function buildGroupBoundaryFeature(
+  group: MapGroup,
+  index: GroupBoundaryGeometryIndex,
+): BoundaryFeature | null {
+  const memberSirutaCodes = new Set(group.memberSirutaCodes);
+  const memberFeatures = getGroupMemberFeatures(group, index);
+  if (memberFeatures.length === 0) {
+    return null;
+  }
+
+  const exteriorEdges: BoundaryEdge[] = [];
+  const emittedEdgeKeys = new Set<string>();
+
+  for (const feature of memberFeatures) {
+    for (const edge of feature.edges) {
+      if (emittedEdgeKeys.has(edge.key)) {
+        continue;
+      }
+
+      if (isEdgeInternalByOwnerSet(edge, memberSirutaCodes, index)) {
+        emittedEdgeKeys.add(edge.key);
+        continue;
+      }
+
+      if (isInteriorBoundaryEdgeByGeometry(edge, memberFeatures)) {
+        emittedEdgeKeys.add(edge.key);
+        continue;
+      }
+
+      exteriorEdges.push(edge);
+      emittedEdgeKeys.add(edge.key);
+    }
+  }
+
+  if (exteriorEdges.length === 0) {
+    return null;
+  }
+
+  return {
+    type: 'Feature',
+    properties: {
+      id: `group-boundary-${group.id}`,
+      groupId: group.id,
+    },
+    geometry: {
+      type: 'MultiLineString',
+      coordinates: exteriorEdges.map((edge) => [
+        [edge.start[0], edge.start[1]],
+        [edge.end[0], edge.end[1]],
+      ]),
+    },
+  };
+}
+
+export function buildMapGroupBoundaryGeoJsonDataFromIndex(
+  group: MapGroup,
+  index: GroupBoundaryGeometryIndex,
+): GroupBoundaryGeoJsonData | null {
+  const feature = buildGroupBoundaryFeature(group, index);
+  if (!feature) {
+    return null;
+  }
+
+  const boundaryData: GroupBoundaryGeoJsonData = {
+    type: 'FeatureCollection',
+    features: [feature],
+  };
+  return boundaryData;
+}
+
+export function buildGroupWorkspaceBoundaryGeoJsonDataFromIndex(
+  groups: readonly MapGroup[],
+  index: GroupBoundaryGeometryIndex,
+): GroupBoundaryGeoJsonData | null {
+  const boundaryFeatures = groups
+    .map((group) => buildGroupBoundaryFeature(group, index))
+    .filter((feature): feature is BoundaryFeature => Boolean(feature));
 
   if (boundaryFeatures.length === 0) {
     return null;
   }
 
-  return {
+  const boundaryData: GroupBoundaryGeoJsonData = {
     type: 'FeatureCollection',
     features: boundaryFeatures,
-  } as GeoJsonObject;
+  };
+  return boundaryData;
+}
+
+export function buildMapGroupBoundaryGeoJsonData(
+  group: MapGroup,
+  geoJsonFeatures: readonly UatFeature[],
+): GroupBoundaryGeoJsonData | null {
+  return buildMapGroupBoundaryGeoJsonDataFromIndex(
+    group,
+    buildGroupBoundaryGeometryIndex(geoJsonFeatures),
+  );
+}
+
+export function buildGroupWorkspaceBoundaryGeoJsonData(
+  groups: readonly MapGroupWorkspace['groups'][number][],
+  geoJsonFeatures: readonly UatFeature[],
+): GroupBoundaryGeoJsonData | null {
+  return buildGroupWorkspaceBoundaryGeoJsonDataFromIndex(
+    groups,
+    buildGroupBoundaryGeometryIndex(geoJsonFeatures),
+  );
+}
+
+export function buildMapGroupBoundaryKey(group: MapGroup | undefined): string | null {
+  if (!group) {
+    return null;
+  }
+
+  return `${group.id}:${[...new Set(group.memberSirutaCodes)].sort().join(',')}`;
+}
+
+export function buildGroupWorkspaceBoundaryKey(
+  workspace: Pick<MapGroupWorkspace, 'id' | 'groups'> | undefined,
+): string | null {
+  if (!workspace) {
+    return null;
+  }
+
+  return [
+    workspace.id,
+    ...workspace.groups
+      .map((group) => buildMapGroupBoundaryKey(group))
+      .filter((key): key is string => Boolean(key))
+      .sort(),
+  ].join('|');
+}
+
+export function emptyGroupBoundaryFeatureCollection(): FeatureCollection<Geometry, Record<string, unknown>> {
+  return EMPTY_FEATURE_COLLECTION;
 }

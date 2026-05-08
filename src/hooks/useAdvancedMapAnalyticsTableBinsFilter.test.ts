@@ -31,6 +31,31 @@ const baseRows: AdvancedMapAnalyticsTableRow[] = [
 ];
 
 describe('deriveAdvancedMapAnalyticsTableBinsFilter', () => {
+  it('returns a cheap empty filter result when disabled', () => {
+    const preset = createDefaultAdvancedMapAnalyticsBinsPreset('Preset 1');
+    const bin = AdvancedMapAnalyticsBinSchema.parse({
+      min: 0,
+      max: 10,
+      label: '0-10',
+      color: '#ff0000',
+    });
+    preset.config.bins = [bin];
+
+    const result = deriveAdvancedMapAnalyticsTableBinsFilter({
+      rows: baseRows,
+      binsPresets: [preset],
+      activeValues: new Map([['1001', 5]]),
+      tableBinFiltersByPresetId: {
+        [preset.id]: [bin.id],
+      },
+      enabled: false,
+    });
+
+    expect(result.filteredRows).toBe(baseRows);
+    expect(result.binsFilterSections).toEqual([]);
+    expect(result.hasActiveBinFilters).toBe(false);
+  });
+
   it('returns all rows when no preset has selected filters', () => {
     const preset = createDefaultAdvancedMapAnalyticsBinsPreset('Preset 1');
     const firstBin = AdvancedMapAnalyticsBinSchema.parse({

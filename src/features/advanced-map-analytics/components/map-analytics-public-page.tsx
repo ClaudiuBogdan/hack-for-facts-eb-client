@@ -39,9 +39,6 @@ export function MapAnalyticsPublicPage({
     bundledRemoteBaseSeriesHash,
   } = usePublicMapRuntimeState({
     publicId,
-    mapZoomOverride,
-    mapCenterOverride,
-    onMapViewportChange,
   });
 
   if (publicMapQuery.isLoading || (!publicMapQuery.error && !isRuntimeStateReady)) {
@@ -68,6 +65,9 @@ export function MapAnalyticsPublicPage({
       mapDescription={mapDescription}
       bundledGroupedSeriesData={bundledGroupedSeriesData}
       bundledRemoteBaseSeriesHash={bundledRemoteBaseSeriesHash}
+      mapZoomOverride={mapZoomOverride}
+      mapCenterOverride={mapCenterOverride}
+      onMapViewportChange={onMapViewportChange}
       selectedSirutaOverride={selectedSirutaOverride}
       onSelectedSirutaChange={onSelectedSirutaChange}
     />

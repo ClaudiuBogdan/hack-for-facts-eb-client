@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { FeatureCollection, Geometry } from 'geojson';
 import type { MutableRefObject } from 'react';
 
@@ -10,9 +10,12 @@ const {
   buildLabelSourceData,
   buildLabelTextSizeExpression,
   buildLabelTransitionRanges,
+  buildMainFillPaint,
   buildMainLinePaint,
+  buildPopulationGridFillPaint,
   buildSymbolLayout,
   buildZoomFadeExpression,
+  finishCommandDragSelection,
   getCachedTooltipHtml,
   hasScrollZoomModifier,
   isSelectionCancelKey,
@@ -21,12 +24,20 @@ const {
   normalizeBounds,
   normalizeCenter,
   prepareGeoJsonData,
+  prepareStyledGeoJsonData,
+  resolveRecoveredMapInteractionState,
+  resolveWheelScrollZoomIntent,
+  setGeoJsonSourceData,
   shouldCancelSelectionOnModifierRelease,
+  shouldCommitViewportChangeOnMapEvent,
+  shouldRecoverMapInteractionOnMapEvent,
+  shouldRecoverMapInteractionOnPointerEvent,
   shouldIgnoreProgrammaticViewChange,
   shouldIgnoreViewportPropEcho,
   shouldTransitionHoverFeature,
+  styleToMapFeatureProperties,
   styleToHoverLinePaint,
-  styleToFeatureState,
+  sourceIds,
 } = __interactiveMapMapLibreTestUtils;
 
 function createUatFeature(
@@ -103,9 +114,9 @@ describe('InteractiveMap MapLibre adapters', () => {
     expect(prepareGeoJsonData(countyCollection, 'County').features[0].id).toBe('AB');
   });
 
-  it('maps existing style fields into feature-state values', () => {
+  it('maps existing style fields into source feature properties', () => {
     expect(
-      styleToFeatureState({
+      styleToMapFeatureProperties({
         fillColor: '#2563eb',
         fillOpacity: 0.7,
         color: '#0f172a',
@@ -114,31 +125,56 @@ describe('InteractiveMap MapLibre adapters', () => {
         dashArray: '4 3',
       }),
     ).toMatchObject({
-      fillColor: '#2563eb',
-      fillOpacity: 0.7,
-      lineColor: '#0f172a',
-      lineOpacity: 0.5,
-      lineWidth: 2,
-      hasDashArray: true,
+      __mapFillColor: '#2563eb',
+      __mapFillOpacity: 0.7,
+      __mapLineColor: '#0f172a',
+      __mapLineOpacity: 0.5,
+      __mapLineWidth: 2,
     });
   });
 
-  it('resolves CSS variable colors before writing MapLibre feature state', () => {
+  it('resolves CSS variable colors before writing source feature properties', () => {
     document.documentElement.style.setProperty('--test-map-fill', '#123456');
     document.documentElement.style.setProperty('--test-map-line', '#654321');
 
     expect(
-      styleToFeatureState({
+      styleToMapFeatureProperties({
         fillColor: 'var(--test-map-fill)',
         color: 'var(--test-map-line)',
       }),
     ).toMatchObject({
-      fillColor: '#123456',
-      lineColor: '#654321',
+      __mapFillColor: '#123456',
+      __mapLineColor: '#654321',
     });
 
     document.documentElement.style.removeProperty('--test-map-fill');
     document.documentElement.style.removeProperty('--test-map-line');
+  });
+
+  it('builds styled GeoJSON with stable ids and source style properties', () => {
+    const collection = {
+      type: 'FeatureCollection',
+      features: [createUatFeature('1017', 'Alba Iulia', 0)],
+    } satisfies FeatureCollection<Geometry, Record<string, unknown>>;
+    const prepared = prepareGeoJsonData(collection, 'UAT');
+    const styled = prepareStyledGeoJsonData(prepared, () => ({
+      fillColor: '#2563eb',
+      fillOpacity: 0.7,
+      color: '#0f172a',
+      opacity: 0.5,
+      weight: 2,
+    }));
+
+    expect(styled.features[0].id).toBe('1017');
+    expect(styled.features[0].geometry).toBe(prepared.features[0].geometry);
+    expect(styled.features[0].properties).toMatchObject({
+      __featureId: '1017',
+      __mapFillColor: '#2563eb',
+      __mapFillOpacity: 0.7,
+      __mapLineColor: '#0f172a',
+      __mapLineOpacity: 0.5,
+      __mapLineWidth: 2,
+    });
   });
 
   it('builds hover line paint from MapLibre feature-state instead of layer filters', () => {
@@ -160,8 +196,73 @@ describe('InteractiveMap MapLibre adapters', () => {
 
     expect(JSON.stringify(paint?.['line-opacity'])).toContain('zoom');
     expect(JSON.stringify(paint?.['line-width'])).toContain('zoom');
-    expect(JSON.stringify(paint?.['line-opacity'])).toContain('feature-state');
-    expect(JSON.stringify(paint?.['line-width'])).toContain('feature-state');
+    expect(JSON.stringify(paint?.['line-color'])).toContain('__mapLineColor');
+    expect(JSON.stringify(paint?.['line-opacity'])).toContain('__mapLineOpacity');
+    expect(JSON.stringify(paint?.['line-width'])).toContain('__mapLineWidth');
+    expect(JSON.stringify(paint)).not.toContain('feature-state');
+  });
+
+  it('builds main fill styling from source properties', () => {
+    const paint = buildMainFillPaint();
+    const serializedPaint = JSON.stringify(paint);
+
+    expect(serializedPaint).toContain('__mapFillColor');
+    expect(serializedPaint).toContain('__mapFillOpacity');
+    expect(serializedPaint).not.toContain('feature-state');
+  });
+
+  it('builds population grid styling from the census population field', () => {
+    const paint = buildPopulationGridFillPaint();
+    const serializedPaint = JSON.stringify(paint);
+
+    expect(serializedPaint).toContain('TOT_P_2021');
+    expect(serializedPaint).toContain('zoom');
+    expect(paint?.['fill-outline-color']).toBe('rgba(120, 53, 15, 0.16)');
+  });
+
+  it('updates only the requested GeoJSON source', () => {
+    const mainSetData = vi.fn();
+    const groupBoundarySetData = vi.fn();
+    const map = {
+      getSource: (sourceId: string) => {
+        if (sourceId === sourceIds.main) {
+          return { setData: mainSetData };
+        }
+        if (sourceId === sourceIds.groupBoundary) {
+          return { setData: groupBoundarySetData };
+        }
+        return null;
+      },
+    };
+    const data = {
+      type: 'FeatureCollection',
+      features: [],
+    } satisfies FeatureCollection<Geometry, Record<string, unknown>>;
+
+    setGeoJsonSourceData(map as never, sourceIds.groupBoundary, data);
+
+    expect(groupBoundarySetData).toHaveBeenCalledWith(data);
+    expect(mainSetData).not.toHaveBeenCalled();
+  });
+
+  it('skips repeated source updates for the same GeoJSON object reference', () => {
+    const setData = vi.fn();
+    const map = {
+      getSource: () => ({ setData }),
+    };
+    const firstData = {
+      type: 'FeatureCollection',
+      features: [],
+    } satisfies FeatureCollection<Geometry, Record<string, unknown>>;
+    const secondData = {
+      type: 'FeatureCollection',
+      features: [],
+    } satisfies FeatureCollection<Geometry, Record<string, unknown>>;
+
+    expect(setGeoJsonSourceData(map as never, sourceIds.main, firstData)).toBe(true);
+    expect(setGeoJsonSourceData(map as never, sourceIds.main, firstData)).toBe(false);
+    expect(setGeoJsonSourceData(map as never, sourceIds.main, secondData)).toBe(true);
+    expect(setData).toHaveBeenCalledTimes(2);
   });
 
   it('builds label text size as a MapLibre zoom expression', () => {
@@ -306,6 +407,150 @@ describe('InteractiveMap MapLibre adapters', () => {
     expect(hasScrollZoomModifier({ metaKey: true, ctrlKey: false } as WheelEvent)).toBe(true);
     expect(hasScrollZoomModifier({ metaKey: false, ctrlKey: true } as WheelEvent)).toBe(true);
     expect(hasScrollZoomModifier({ metaKey: false, ctrlKey: false } as WheelEvent)).toBe(false);
+  });
+
+  it('resolves command-wheel scroll zoom before MapLibre handles the wheel event', () => {
+    expect(
+      resolveWheelScrollZoomIntent({
+        isScrollWheelZoomAvailable: true,
+        isInteractionEnabled: false,
+        event: { metaKey: true, ctrlKey: false } as WheelEvent,
+      }),
+    ).toEqual({
+      allowMapLibreWheelZoom: true,
+      shouldBlockWheelDefault: false,
+      scrollZoomHandlerEnabled: true,
+      pressedModifiers: {
+        meta: true,
+        ctrl: false,
+      },
+    });
+
+    expect(
+      resolveWheelScrollZoomIntent({
+        isScrollWheelZoomAvailable: true,
+        isInteractionEnabled: false,
+        event: { metaKey: false, ctrlKey: false } as WheelEvent,
+      }),
+    ).toEqual({
+      allowMapLibreWheelZoom: false,
+      shouldBlockWheelDefault: true,
+      scrollZoomHandlerEnabled: true,
+      pressedModifiers: {
+        meta: false,
+        ctrl: false,
+      },
+    });
+
+    expect(
+      resolveWheelScrollZoomIntent({
+        isScrollWheelZoomAvailable: true,
+        isInteractionEnabled: true,
+        event: { metaKey: false, ctrlKey: false } as WheelEvent,
+      }),
+    ).toEqual({
+      allowMapLibreWheelZoom: true,
+      shouldBlockWheelDefault: false,
+      scrollZoomHandlerEnabled: true,
+      pressedModifiers: {
+        meta: false,
+        ctrl: false,
+      },
+    });
+
+    expect(
+      resolveWheelScrollZoomIntent({
+        isScrollWheelZoomAvailable: false,
+        isInteractionEnabled: true,
+        event: { metaKey: true, ctrlKey: false } as WheelEvent,
+      }),
+    ).toEqual({
+      allowMapLibreWheelZoom: false,
+      shouldBlockWheelDefault: true,
+      scrollZoomHandlerEnabled: false,
+    });
+  });
+
+  it('recognizes interaction recovery events that can release stale map state', () => {
+    expect(shouldRecoverMapInteractionOnMapEvent('dragend')).toBe(true);
+    expect(shouldRecoverMapInteractionOnMapEvent('zoomend')).toBe(true);
+    expect(shouldRecoverMapInteractionOnMapEvent('moveend')).toBe(true);
+    expect(shouldRecoverMapInteractionOnMapEvent('idle')).toBe(true);
+    expect(shouldRecoverMapInteractionOnMapEvent('boxzoomcancel')).toBe(true);
+    expect(shouldRecoverMapInteractionOnMapEvent('dragstart')).toBe(false);
+
+    expect(shouldRecoverMapInteractionOnPointerEvent('mouseup')).toBe(true);
+    expect(shouldRecoverMapInteractionOnPointerEvent('pointerup')).toBe(true);
+    expect(shouldRecoverMapInteractionOnPointerEvent('pointercancel')).toBe(true);
+    expect(shouldRecoverMapInteractionOnPointerEvent('mousemove')).toBe(false);
+  });
+
+  it('commits viewport changes only after final map movement settles', () => {
+    expect(shouldCommitViewportChangeOnMapEvent('moveend')).toBe(true);
+    expect(shouldCommitViewportChangeOnMapEvent('idle')).toBe(true);
+    expect(shouldCommitViewportChangeOnMapEvent('dragend')).toBe(false);
+    expect(shouldCommitViewportChangeOnMapEvent('zoomend')).toBe(false);
+  });
+
+  it('restores map handlers without unlocking mobile pan by accident', () => {
+    expect(
+      resolveRecoveredMapInteractionState({
+        isScrollWheelZoomAvailable: true,
+        isInteractionEnabled: false,
+        isMobile: true,
+        mobilePanMode: 'pinch-zoom-until-unlocked',
+      }),
+    ).toEqual({
+      scrollZoomEnabled: true,
+      dragPanEnabled: false,
+      boxZoomEnabled: true,
+    });
+
+    expect(
+      resolveRecoveredMapInteractionState({
+        isScrollWheelZoomAvailable: false,
+        isInteractionEnabled: false,
+        isMobile: true,
+        mobilePanMode: 'pinch-zoom-until-unlocked',
+      }),
+    ).toMatchObject({
+      scrollZoomEnabled: false,
+      dragPanEnabled: false,
+    });
+
+    expect(
+      resolveRecoveredMapInteractionState({
+        isScrollWheelZoomAvailable: true,
+        isInteractionEnabled: true,
+        isMobile: true,
+        mobilePanMode: 'pinch-zoom-until-unlocked',
+      }),
+    ).toMatchObject({
+      scrollZoomEnabled: true,
+      dragPanEnabled: true,
+    });
+  });
+
+  it('always cleans up command-drag selection when feature queries fail', () => {
+    const cleanupSelection = vi.fn();
+    const queryError = new Error('query failed');
+
+    expect(() =>
+      finishCommandDragSelection({
+        selection: {
+          startPoint: { x: 10, y: 20 },
+          didDrag: true,
+        },
+        endPoint: { x: 40, y: 60 },
+        queryRenderedFeatures: () => {
+          throw queryError;
+        },
+        cleanupSelection,
+        onFeatureBoxSelect: vi.fn(),
+      }),
+    ).toThrow(queryError);
+
+    expect(cleanupSelection).toHaveBeenCalledWith({ suppressNextClick: true });
   });
 
   it('caches tooltip HTML by feature id', () => {

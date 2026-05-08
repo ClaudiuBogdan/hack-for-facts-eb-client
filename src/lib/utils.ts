@@ -19,10 +19,27 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+const numberFormatterCache = new Map<string, Intl.NumberFormat>();
+
+function getCachedNumberFormatter(
+  locale: string,
+  options: Intl.NumberFormatOptions,
+): Intl.NumberFormat {
+  const cacheKey = `${locale}:${JSON.stringify(options)}`;
+  const cachedFormatter = numberFormatterCache.get(cacheKey);
+  if (cachedFormatter) {
+    return cachedFormatter;
+  }
+
+  const formatter = new Intl.NumberFormat(locale, options);
+  numberFormatterCache.set(cacheKey, formatter);
+  return formatter;
+}
+
 export function formatCurrency(amount: number, notation?: "standard" | "compact", currency: "RON" | "EUR" | "USD" = "RON"): string {
   const locale = getUserLocale();
   const numberLocale = locale === "ro" ? "ro-RO" : "en-US";
-  const formatted = new Intl.NumberFormat(numberLocale, {
+  const formatted = getCachedNumberFormatter(numberLocale, {
     style: "currency",
     currency: currency,
     notation: notation || "standard",
@@ -46,7 +63,7 @@ export const formatNumber = (value: number | null | undefined, notation?: "stand
   const locale = getUserLocale();
 
   const numberLocale = locale === "ro" ? "ro-RO" : "en-GB";
-  const formatted = new Intl.NumberFormat(numberLocale, {
+  const formatted = getCachedNumberFormatter(numberLocale, {
     style: "decimal",
     notation: notation || "standard",
     minimumFractionDigits: 0,

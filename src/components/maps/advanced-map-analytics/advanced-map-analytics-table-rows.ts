@@ -29,6 +29,17 @@ export interface AdvancedMapAnalyticsTableRowsResult {
   hiddenUngroupedUatCount: number;
 }
 
+const EMPTY_TABLE_ROWS: AdvancedMapAnalyticsTableRow[] = [];
+const TABLE_ROW_NAME_COLLATOR = new Intl.Collator(undefined, {
+  sensitivity: 'base',
+});
+
+export const EMPTY_ADVANCED_MAP_ANALYTICS_TABLE_ROWS_RESULT: AdvancedMapAnalyticsTableRowsResult = {
+  rows: EMPTY_TABLE_ROWS,
+  rowMode: 'uat_rows',
+  hiddenUngroupedUatCount: 0,
+};
+
 export function getDefaultAdvancedMapAnalyticsTableRowMode(params: {
   activeGroupWorkspace?: MapGroupWorkspace;
 }): AdvancedMapAnalyticsTableRowMode {
@@ -169,7 +180,7 @@ function buildUatRows(params: {
         binFilterKey: sirutaCode,
       } satisfies AdvancedMapAnalyticsTableRow;
     })
-    .sort(compareRowsByNameAndKey);
+    .sort(compareAdvancedMapAnalyticsRowsByNameAndKey);
 }
 
 function buildGroupRows(params: {
@@ -436,10 +447,11 @@ function countUngroupedUats(params: {
   return count;
 }
 
-function compareRowsByNameAndKey(left: AdvancedMapAnalyticsTableRow, right: AdvancedMapAnalyticsTableRow): number {
-  const nameCompare = left.uatName.localeCompare(right.uatName, undefined, {
-    sensitivity: 'base',
-  });
+export function compareAdvancedMapAnalyticsRowsByNameAndKey(
+  left: AdvancedMapAnalyticsTableRow,
+  right: AdvancedMapAnalyticsTableRow
+): number {
+  const nameCompare = TABLE_ROW_NAME_COLLATOR.compare(left.uatName, right.uatName);
   if (nameCompare !== 0) {
     return nameCompare;
   }

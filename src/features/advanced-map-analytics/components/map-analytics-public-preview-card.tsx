@@ -68,9 +68,6 @@ export function MapAnalyticsPublicPreviewCard({
     inflationAdjustedOverride,
     mapNameOverride,
     forceMapActiveView: true,
-    mapZoomOverride,
-    mapCenterOverride,
-    onMapViewportChange,
   });
 
   const hasMapDescription = mapDescription.trim().length > 0;
@@ -106,6 +103,9 @@ export function MapAnalyticsPublicPreviewCard({
             capabilities={{ readOnly: true }}
             mobileControlsDefaultCollapsed={true}
             mapViewType={mapViewType}
+            mapZoomOverride={mapZoomOverride}
+            mapCenterOverride={mapCenterOverride}
+            onMapViewportChange={onMapViewportChange}
             onEntityCuiSelect={onEntityCuiSelect}
           />
         </CardContent>
