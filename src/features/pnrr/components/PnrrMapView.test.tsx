@@ -499,4 +499,84 @@ describe('PnrrMapView', () => {
     expect(props.zoom).toBe(10)
     expect(props.minZoom).toBe(3.5)
   })
+
+  it('keeps map camera changes out of URL search state', async () => {
+    mockState.geoJsonData = UAT_GEOJSON
+    const filterState = makeFilterState({
+      search: {
+        ...makeFilterState().search,
+        granularity: 'uat',
+      },
+    })
+
+    render(
+      <PnrrMapView
+        model={makeMapModel({
+          granularity: 'uat',
+          series: {
+            id: 'total-value',
+            data: [
+              {
+                uat_id: '123',
+                uat_code: '123',
+                siruta_code: '123',
+                uat_name: 'Ion Roată',
+                county_code: 'IL',
+                county_name: 'Ialomița',
+                population: 1_000,
+                amount: 100_000,
+                total_amount: 100_000,
+                per_capita_amount: 100,
+              },
+            ],
+            min: 100_000,
+            max: 100_000,
+          },
+          selectedCountyProjects: [],
+          selectedUatProjects: [PROJECT],
+        })}
+        filterState={filterState}
+      />,
+    )
+
+    await screen.findByTestId('interactive-map')
+
+    const props = mockState.interactiveMapProps[
+      mockState.interactiveMapProps.length - 1
+    ] as {
+      onViewChange?: (center: [number, number], zoom: number) => void
+    }
+
+    props.onViewChange?.([46.123456, 24.987654], 7.26)
+
+    expect(filterState.setMapView).not.toHaveBeenCalled()
+  })
+
+  it('keeps the previous map granularity until the requested model is ready', async () => {
+    mockState.geoJsonData = UAT_GEOJSON
+
+    render(
+      <PnrrMapView
+        model={makeMapModel({
+          granularity: 'county',
+        })}
+        filterState={makeFilterState({
+          search: {
+            ...makeFilterState().search,
+            granularity: 'uat',
+          },
+        })}
+      />,
+    )
+
+    await screen.findByTestId('interactive-map')
+
+    const props = mockState.interactiveMapProps[
+      mockState.interactiveMapProps.length - 1
+    ] as {
+      mapViewType?: string
+    }
+
+    expect(props.mapViewType).toBe('County')
+  })
 })
