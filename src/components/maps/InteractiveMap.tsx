@@ -288,6 +288,7 @@ const POINTER_INTERACTION_CANCEL_EVENTS = ['pointercancel'] as const;
 type RecoveredMapInteractionState = {
   scrollZoomEnabled: boolean;
   dragPanEnabled: boolean;
+  touchZoomRotateEnabled: boolean;
   boxZoomEnabled: boolean;
 };
 
@@ -1275,6 +1276,7 @@ function resolveRecoveredMapInteractionState(options: {
   return {
     scrollZoomEnabled: options.isScrollWheelZoomAvailable && options.isInteractionEnabled,
     dragPanEnabled: !shouldLockMobilePan,
+    touchZoomRotateEnabled: !shouldLockMobilePan,
     boxZoomEnabled: true,
   };
 }
@@ -1557,6 +1559,12 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       map.dragPan.disable();
     }
 
+    if (recoveredState.touchZoomRotateEnabled) {
+      map.touchZoomRotate.enable();
+    } else {
+      map.touchZoomRotate.disable();
+    }
+
     if (recoveredState.boxZoomEnabled) {
       map.boxZoom.enable();
     } else {
@@ -1727,7 +1735,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       pitchWithRotate: false,
       dragRotate: false,
       touchPitch: false,
-      touchZoomRotate: true,
+      touchZoomRotate: !shouldLockMobilePanByDefault,
       keyboard: true,
       boxZoom: true,
     });

@@ -529,6 +529,7 @@ describe('InteractiveMap MapLibre adapters', () => {
     ).toEqual({
       scrollZoomEnabled: false,
       dragPanEnabled: false,
+      touchZoomRotateEnabled: false,
       boxZoomEnabled: true,
     });
 
@@ -542,6 +543,7 @@ describe('InteractiveMap MapLibre adapters', () => {
     ).toMatchObject({
       scrollZoomEnabled: false,
       dragPanEnabled: false,
+      touchZoomRotateEnabled: false,
     });
 
     expect(
@@ -554,6 +556,7 @@ describe('InteractiveMap MapLibre adapters', () => {
     ).toMatchObject({
       scrollZoomEnabled: true,
       dragPanEnabled: true,
+      touchZoomRotateEnabled: true,
     });
   });
 
