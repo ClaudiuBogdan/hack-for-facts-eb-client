@@ -284,6 +284,11 @@ describe('BudgetItemAnalytics', () => {
           ],
         }),
         forceMapActiveView: true,
+        reportPeriodOverride: makeSingleTimePeriod('YEAR', '2025'),
+      }),
+    )
+    expect(mapAnalyticsWorkspaceMock).toHaveBeenCalledWith(
+      expect.objectContaining({
         mapCenterOverride: [46.77, 23.59],
         mapZoomOverride: 8.1,
       }),
