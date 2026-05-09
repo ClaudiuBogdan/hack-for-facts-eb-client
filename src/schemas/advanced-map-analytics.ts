@@ -123,13 +123,18 @@ function migrateLegacyAdvancedMapAnalyticsStateInput(input: unknown): unknown {
 
   const migratedInput: Record<string, unknown> = { ...input };
   const legacyShowCountyBoundaries = migratedInput.showCountyBoundaries;
-  if (
-    !hasAdvancedMapAnalyticsOwnKey(migratedInput, 'mapLayers') &&
-    typeof legacyShowCountyBoundaries === 'boolean'
-  ) {
-    migratedInput.mapLayers = {
-      countyBoundaries: legacyShowCountyBoundaries,
-    };
+  if (typeof legacyShowCountyBoundaries === 'boolean') {
+    const rawMapLayers = migratedInput.mapLayers;
+    if (!isPlainAdvancedMapAnalyticsRecord(rawMapLayers)) {
+      migratedInput.mapLayers = {
+        countyBoundaries: legacyShowCountyBoundaries,
+      };
+    } else if (!hasAdvancedMapAnalyticsOwnKey(rawMapLayers, 'countyBoundaries')) {
+      migratedInput.mapLayers = {
+        ...rawMapLayers,
+        countyBoundaries: legacyShowCountyBoundaries,
+      };
+    }
   }
 
   if (

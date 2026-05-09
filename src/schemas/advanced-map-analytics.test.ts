@@ -66,6 +66,21 @@ describe('AdvancedMapAnalyticsUrlStateSchema', () => {
     expect('showCountyBoundaries' in parsed).toBe(false);
   });
 
+  it('uses legacy county boundary state when new map layers are partial', () => {
+    const parsed = AdvancedMapAnalyticsUrlStateSchema.parse({
+      showCountyBoundaries: false,
+      mapLayers: {
+        roads: true,
+      },
+    });
+
+    expect(parsed.mapLayers).toEqual({
+      countyBoundaries: false,
+      roads: true,
+      populationGrid: false,
+    });
+  });
+
   it('supports serialize/parse round-trip with multiple series and bins presets', () => {
     const baseSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
     const calcSeries = createDefaultAdvancedMapAnalyticsSeries('aggregated-series-calculation');
