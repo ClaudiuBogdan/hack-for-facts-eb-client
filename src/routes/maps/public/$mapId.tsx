@@ -15,7 +15,7 @@ export const Route = createFileRoute('/maps/public/$mapId')({
       advancedMapAnalyticsPublicMapQueryOptions(publicId)
     );
 
-    if (publicMap.lastSnapshot.config.showCountyBoundaries) {
+    if (publicMap.lastSnapshot.config.mapLayers.countyBoundaries) {
       void warmAdvancedAnalyticsMapResources({
         queryClient,
         includeCountyGeoJson: true,

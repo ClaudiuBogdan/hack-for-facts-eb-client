@@ -6,6 +6,7 @@ export const MAP_EDITOR_SEARCH_KEYS = [
   'activeView',
   'analyticsWidgets',
   'mapName',
+  'mapLayers',
   'showCountyBoundaries',
   'seriesPanelCollapsed',
   'configPanelCollapsed',

@@ -15,6 +15,8 @@ const {
   buildPopulationGridFillPaint,
   buildSymbolLayout,
   buildZoomFadeExpression,
+  ensurePopulationGridLayer,
+  ensureRoadLayer,
   finishCommandDragSelection,
   getCachedTooltipHtml,
   hasScrollZoomModifier,
@@ -40,6 +42,7 @@ const {
   styleToMapFeatureProperties,
   styleToHoverLinePaint,
   sourceIds,
+  layerIds,
 } = __interactiveMapMapLibreTestUtils;
 
 function createUatFeature(
@@ -220,6 +223,52 @@ describe('InteractiveMap MapLibre adapters', () => {
     expect(serializedPaint).toContain('TOT_P_2021');
     expect(serializedPaint).toContain('zoom');
     expect(paint?.['fill-outline-color']).toBe('rgba(120, 53, 15, 0.16)');
+  });
+
+  it('places road and population overlays above UAT fill colors', () => {
+    const addSource = vi.fn();
+    const addLayer = vi.fn();
+    const existingLayers = new Set<string>();
+    const map = {
+      addSource,
+      addLayer: (layer: { id: string }, beforeId?: string) => {
+        existingLayers.add(layer.id);
+        addLayer(layer, beforeId);
+      },
+      getLayer: (layerId: string) => existingLayers.has(layerId),
+      getSource: () => undefined,
+    };
+
+    ensurePopulationGridLayer(map as never);
+    ensureRoadLayer(map as never);
+
+    expect(addLayer).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ id: layerIds.populationGrid }),
+      layerIds.mainLine,
+    );
+    expect(addLayer).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ id: layerIds.roads }),
+      layerIds.mainLine,
+    );
+  });
+
+  it('keeps population overlay below roads when roads are already present', () => {
+    const addLayer = vi.fn();
+    const map = {
+      addSource: vi.fn(),
+      addLayer,
+      getLayer: (layerId: string) => layerId === layerIds.roads,
+      getSource: () => undefined,
+    };
+
+    ensurePopulationGridLayer(map as never);
+
+    expect(addLayer).toHaveBeenCalledWith(
+      expect.objectContaining({ id: layerIds.populationGrid }),
+      layerIds.roads,
+    );
   });
 
   it('updates only the requested GeoJSON source', () => {

@@ -33,7 +33,9 @@ describe('maps public route loader', () => {
       ensureQueryData: vi.fn().mockResolvedValue({
         lastSnapshot: {
           config: {
-            showCountyBoundaries: false,
+            mapLayers: {
+              countyBoundaries: false,
+            },
           },
         },
       }),
@@ -66,7 +68,9 @@ describe('maps public route loader', () => {
       ensureQueryData: vi.fn().mockResolvedValue({
         lastSnapshot: {
           config: {
-            showCountyBoundaries: true,
+            mapLayers: {
+              countyBoundaries: true,
+            },
           },
         },
       }),

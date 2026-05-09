@@ -220,6 +220,10 @@ interface InteractiveMapProps {
   activeSeriesValuesBySirutaCode?: Map<string, number | undefined>;
   activeRenderUnits?: ActiveMapRenderUnit[];
   activeSeriesUnit?: string;
+  showRoads?: boolean;
+  showPopulationGrid?: boolean;
+  onShowRoadsChange?: (enabled: boolean) => void;
+  onShowPopulationGridChange?: (enabled: boolean) => void;
   onViewChange?: (center: [number, number], zoom: number) => void;
   getTooltipContent?: TooltipContentBuilder;
   mobilePanMode?: 'default' | 'pinch-zoom-until-unlocked';
@@ -872,7 +876,7 @@ function ensureRoadLayer(map: MapLibreMap): void {
         ],
       },
     },
-    MAIN_FILL_LAYER_ID,
+    MAIN_LINE_LAYER_ID,
   );
 }
 
@@ -941,7 +945,7 @@ function ensurePopulationGridLayer(map: MapLibreMap): void {
       maxzoom: 11,
       paint: buildPopulationGridFillPaint(),
     },
-    MAIN_LINE_LAYER_ID,
+    map.getLayer(ROADS_LAYER_ID) ? ROADS_LAYER_ID : MAIN_LINE_LAYER_ID,
   );
 }
 
@@ -1375,6 +1379,10 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   activeSeriesValuesBySirutaCode,
   activeRenderUnits,
   activeSeriesUnit,
+  showRoads: controlledShowRoads,
+  showPopulationGrid: controlledShowPopulationGrid,
+  onShowRoadsChange,
+  onShowPopulationGridChange,
   onViewChange,
   getTooltipContent,
   mobilePanMode = 'default',
@@ -1411,8 +1419,24 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   const latestIsScrollWheelZoomAvailableRef = useRef(scrollZoomAvailable);
   const [isMapReady, setIsMapReady] = useState(false);
   const [isInteractionEnabled, setIsInteractionEnabled] = useState(initialIsInteractionEnabled);
-  const [showRoads, setShowRoads] = useState(false);
-  const [showPopulationGrid, setShowPopulationGrid] = useState(false);
+  const [localShowRoads, setLocalShowRoads] = useState(false);
+  const [localShowPopulationGrid, setLocalShowPopulationGrid] = useState(false);
+  const showRoads = controlledShowRoads ?? localShowRoads;
+  const showPopulationGrid = controlledShowPopulationGrid ?? localShowPopulationGrid;
+  const toggleRoads = useCallback(() => {
+    const nextShowRoads = !showRoads;
+    if (controlledShowRoads === undefined) {
+      setLocalShowRoads(nextShowRoads);
+    }
+    onShowRoadsChange?.(nextShowRoads);
+  }, [controlledShowRoads, onShowRoadsChange, showRoads]);
+  const togglePopulationGrid = useCallback(() => {
+    const nextShowPopulationGrid = !showPopulationGrid;
+    if (controlledShowPopulationGrid === undefined) {
+      setLocalShowPopulationGrid(nextShowPopulationGrid);
+    }
+    onShowPopulationGridChange?.(nextShowPopulationGrid);
+  }, [controlledShowPopulationGrid, onShowPopulationGridChange, showPopulationGrid]);
   const selectionRef = useRef<CommandDragSelectionState | null>(null);
   const pressedModifiersRef = useRef({
     meta: false,
@@ -2481,7 +2505,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
         ariaLabel={showRoads ? t`Hide roads` : t`Show roads`}
         title={showRoads ? t`Roads: On` : t`Roads: Off`}
         pressed={showRoads}
-        onClick={() => setShowRoads((previous) => !previous)}
+        onClick={toggleRoads}
       >
         <RoadsIcon />
       </MapLibreOverlayControl>
@@ -2490,7 +2514,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
         ariaLabel={showPopulationGrid ? t`Hide population grid` : t`Show population grid`}
         title={showPopulationGrid ? t`Population grid: On` : t`Population grid: Off`}
         pressed={showPopulationGrid}
-        onClick={() => setShowPopulationGrid((previous) => !previous)}
+        onClick={togglePopulationGrid}
       >
         <PopulationGridIcon />
       </MapLibreOverlayControl>
@@ -2624,6 +2648,14 @@ export const __interactiveMapMapLibreTestUtils = {
     groupBoundary: GROUP_BOUNDARY_SOURCE_ID,
     selectedGroupBoundary: SELECTED_GROUP_BOUNDARY_SOURCE_ID,
   },
+  layerIds: {
+    mainFill: MAIN_FILL_LAYER_ID,
+    mainLine: MAIN_LINE_LAYER_ID,
+    roads: ROADS_LAYER_ID,
+    populationGrid: POPULATION_GRID_LAYER_ID,
+  },
+  ensurePopulationGridLayer,
+  ensureRoadLayer,
   buildPopulationGridFillPaint,
   buildLabelLayerZoomRanges,
   buildLabelSourceData,

@@ -16,7 +16,7 @@ function getMapStateForDraftSizeWarning(mapState: AdvancedMapAnalyticsUrlState) 
     activeView: mapState.activeView,
     analyticsWidgets: mapState.analyticsWidgets,
     mapName: mapState.mapName,
-    showCountyBoundaries: mapState.showCountyBoundaries,
+    mapLayers: mapState.mapLayers,
     seriesPanelCollapsed: mapState.seriesPanelCollapsed,
     configPanelCollapsed: mapState.configPanelCollapsed,
     valueFiltersPanelCollapsed: mapState.valueFiltersPanelCollapsed,

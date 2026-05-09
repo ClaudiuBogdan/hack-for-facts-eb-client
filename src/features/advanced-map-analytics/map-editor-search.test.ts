@@ -19,6 +19,7 @@ describe('map-editor-search', () => {
       currency: 'EUR',
       inflation_adjusted: true,
       mapName: 'Snapshot A',
+      mapLayers: { countyBoundaries: false, roads: true, populationGrid: true },
       showCountyBoundaries: false,
       activeView: 'table',
       analyticsWidgets: [{ key: 'series_totals', enabled: true }],

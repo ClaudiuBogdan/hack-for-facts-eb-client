@@ -50,4 +50,30 @@ describe('advanced map analytics draft size warning', () => {
       }),
     );
   });
+
+  it('tracks map layer option changes', () => {
+    const baseState = AdvancedMapAnalyticsUrlStateSchema.parse({
+      mapName: 'Layer options',
+    });
+    const layeredState = AdvancedMapAnalyticsUrlStateSchema.parse({
+      ...baseState,
+      mapLayers: {
+        ...baseState.mapLayers,
+        roads: true,
+        populationGrid: true,
+      },
+    });
+
+    expect(
+      getAdvancedMapAnalyticsDraftSizeWarningLength({
+        mapState: layeredState,
+        mapDescription: 'Same content',
+      }),
+    ).not.toBe(
+      getAdvancedMapAnalyticsDraftSizeWarningLength({
+        mapState: baseState,
+        mapDescription: 'Same content',
+      }),
+    );
+  });
 });

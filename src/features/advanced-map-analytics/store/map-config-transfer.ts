@@ -41,6 +41,7 @@ const BARE_MAP_STATE_HINT_KEYS = [
   'activeView',
   'analyticsWidgets',
   'mapName',
+  'mapLayers',
   'showCountyBoundaries',
   'seriesPanelCollapsed',
   'configPanelCollapsed',

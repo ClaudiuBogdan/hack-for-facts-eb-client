@@ -2347,7 +2347,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     render(
       <MapAnalyticsWorkspace
         mode="public"
-        mapState={createMapState({ activeView: 'map', showCountyBoundaries: true })}
+        mapState={createMapState({ activeView: 'map', mapLayers: { countyBoundaries: true } })}
         setMapState={setMapState}
         capabilities={{ readOnly: true }}
         mobileControlsDefaultCollapsed={true}
@@ -2383,7 +2383,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     render(
       <MapAnalyticsWorkspace
         mode="public"
-        mapState={createMapState({ activeView: 'map', showCountyBoundaries: true })}
+        mapState={createMapState({ activeView: 'map', mapLayers: { countyBoundaries: true } })}
         setMapState={setMapState}
         capabilities={{ readOnly: true }}
         mobileControlsDefaultCollapsed={true}
@@ -2422,7 +2422,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     render(
       <MapAnalyticsWorkspace
         mode="public"
-        mapState={createMapState({ activeView: 'map', showCountyBoundaries: false })}
+        mapState={createMapState({ activeView: 'map', mapLayers: { countyBoundaries: false } })}
         setMapState={setMapState}
         capabilities={{ readOnly: true }}
         mobileControlsDefaultCollapsed={true}
@@ -2455,7 +2455,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     render(
       <MapAnalyticsWorkspace
         mode="public"
-        mapState={createMapState({ activeView: 'map', showCountyBoundaries: true })}
+        mapState={createMapState({ activeView: 'map', mapLayers: { countyBoundaries: true } })}
         setMapState={setMapState}
         capabilities={{ readOnly: true }}
         mobileControlsDefaultCollapsed={true}
@@ -3296,6 +3296,55 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
       })
     );
     expect(setMapState).not.toHaveBeenCalled();
+  });
+
+  it('pastes bare map layer configuration when no series is selected', async () => {
+    const onApplyImportedConfig = vi.fn().mockResolvedValue(undefined);
+    clipboardReadTextMock.mockResolvedValue(
+      JSON.stringify({
+        mapLayers: {
+          countyBoundaries: false,
+          roads: true,
+          populationGrid: true,
+        },
+      })
+    );
+
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="owner"
+        mapState={createMapState({ activeView: 'map' })}
+        setMapState={vi.fn()}
+        capabilities={{ readOnly: false }}
+        onApplyImportedConfig={onApplyImportedConfig}
+      />
+    );
+
+    const latestPasteHotkeyCall = useHotkeysMock.mock.calls.filter((call) => call[0] === 'mod+v').slice(-1)[0];
+    const pasteHandler = latestPasteHotkeyCall?.[1] as
+      | ((event: { preventDefault: () => void; target: EventTarget | null }) => void)
+      | undefined;
+
+    await act(async () => {
+      pasteHandler?.({
+        preventDefault: vi.fn(),
+        target: document.body,
+      });
+    });
+
+    expect(onApplyImportedConfig).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mapState: expect.objectContaining({
+          mapLayers: {
+            countyBoundaries: false,
+            roads: true,
+            populationGrid: true,
+          },
+        }),
+      })
+    );
   });
 
   it('duplicates first available series on mod+d when no series is selected', async () => {

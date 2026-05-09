@@ -143,6 +143,24 @@ export function MapAnalyticsPublicView({
     [setMapState]
   );
 
+  const setRoadsEnabled = useCallback(
+    (enabled: boolean) => {
+      updateMapStateDraft((draft) => {
+        draft.mapLayers.roads = enabled;
+      });
+    },
+    [updateMapStateDraft]
+  );
+
+  const setPopulationGridEnabled = useCallback(
+    (enabled: boolean) => {
+      updateMapStateDraft((draft) => {
+        draft.mapLayers.populationGrid = enabled;
+      });
+    },
+    [updateMapStateDraft]
+  );
+
   const enabledSeries = useMemo<MapSupportedSeries[]>(
     () => mapState.series.filter((series) => series.enabled),
     [mapState.series]
@@ -397,7 +415,7 @@ export function MapAnalyticsPublicView({
   } = useGeoJsonData('UAT');
 
   const { data: countyGeoJsonData } = useGeoJsonData('County', {
-    enabled: mapState.showCountyBoundaries,
+    enabled: mapState.mapLayers.countyBoundaries,
   });
 
   const geoJsonFeatures = useMemo(() => selectUatFeatures(geoJsonData), [geoJsonData]);
@@ -946,7 +964,7 @@ export function MapAnalyticsPublicView({
                     heatmapData={activeHeatmapData}
                     geoJsonData={geoJsonData ?? null}
                     countyBoundaryGeoJsonData={
-                      mapState.showCountyBoundaries ? (countyGeoJsonData ?? null) : null
+                      mapState.mapLayers.countyBoundaries ? (countyGeoJsonData ?? null) : null
                     }
                     groupingBoundaryGeoJsonData={groupingBoundaryGeoJsonData}
                     zoom={mapZoom}
@@ -959,6 +977,10 @@ export function MapAnalyticsPublicView({
                     activeSeriesValuesBySirutaCode={activeSeriesDisplayValues}
                     activeRenderUnits={activeRenderUnits}
                     activeSeriesUnit={activeUnit}
+                    showRoads={mapState.mapLayers.roads}
+                    showPopulationGrid={mapState.mapLayers.populationGrid}
+                    onShowRoadsChange={setRoadsEnabled}
+                    onShowPopulationGridChange={setPopulationGridEnabled}
                     onViewChange={handleMapViewChange}
                     getTooltipContent={getTooltipContent}
                     mobilePanMode="pinch-zoom-until-unlocked"

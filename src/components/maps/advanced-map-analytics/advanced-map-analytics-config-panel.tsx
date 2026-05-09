@@ -7,22 +7,22 @@ import { t } from '@lingui/core/macro';
 
 interface AdvancedMapAnalyticsConfigPanelProps {
   collapsed: boolean;
-  showCountyBoundaries: boolean;
+  countyBoundariesEnabled: boolean;
   warningCount: number;
   readOnly?: boolean;
   onToggleCollapsed: (collapsed: boolean) => void;
-  onShowCountyBoundariesChange: (enabled: boolean) => void;
+  onCountyBoundariesEnabledChange: (enabled: boolean) => void;
   onOpenConfig: () => void;
   onOpenWarnings: () => void;
 }
 
 export function AdvancedMapAnalyticsConfigPanel({
   collapsed,
-  showCountyBoundaries,
+  countyBoundariesEnabled,
   warningCount,
   readOnly = false,
   onToggleCollapsed,
-  onShowCountyBoundariesChange,
+  onCountyBoundariesEnabledChange,
   onOpenConfig,
   onOpenWarnings,
 }: Readonly<AdvancedMapAnalyticsConfigPanelProps>) {
@@ -84,8 +84,8 @@ export function AdvancedMapAnalyticsConfigPanel({
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm font-medium">{t`County boundaries`}</span>
             <Switch
-              checked={showCountyBoundaries}
-              onCheckedChange={onShowCountyBoundariesChange}
+              checked={countyBoundariesEnabled}
+              onCheckedChange={onCountyBoundariesEnabledChange}
               disabled={readOnly}
               aria-label={t`Toggle county boundaries`}
             />

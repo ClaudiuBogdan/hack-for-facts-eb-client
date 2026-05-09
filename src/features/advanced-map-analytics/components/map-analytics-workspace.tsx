@@ -1505,6 +1505,8 @@ export function MapAnalyticsWorkspace({
         'series',
         'activeView',
         'mapName',
+        'mapLayers',
+        'showCountyBoundaries',
         'valueFilters',
         'binsPresets',
       ].some((key) => Object.prototype.hasOwnProperty.call(clipboardRecord, key));
@@ -1800,10 +1802,28 @@ export function MapAnalyticsWorkspace({
     [isReadOnly, updateState]
   );
 
-  const setShowCountyBoundaries = useCallback(
+  const setCountyBoundariesEnabled = useCallback(
     (enabled: boolean) => {
       updateState((draft) => {
-        draft.showCountyBoundaries = enabled;
+        draft.mapLayers.countyBoundaries = enabled;
+      });
+    },
+    [updateState]
+  );
+
+  const setRoadsEnabled = useCallback(
+    (enabled: boolean) => {
+      updateState((draft) => {
+        draft.mapLayers.roads = enabled;
+      });
+    },
+    [updateState]
+  );
+
+  const setPopulationGridEnabled = useCallback(
+    (enabled: boolean) => {
+      updateState((draft) => {
+        draft.mapLayers.populationGrid = enabled;
       });
     },
     [updateState]
@@ -1919,10 +1939,10 @@ export function MapAnalyticsWorkspace({
     binsPresets: draftSizeBinsPresets,
     configPanelCollapsed: draftSizeConfigPanelCollapsed,
     groupWorkspaces: draftSizeGroupWorkspaces,
+    mapLayers: draftSizeMapLayers,
     mapName: draftSizeMapName,
     series: draftSizeSeries,
     seriesPanelCollapsed: draftSizeSeriesPanelCollapsed,
-    showCountyBoundaries: draftSizeShowCountyBoundaries,
     tableBinFiltersByPresetId: draftSizeTableBinFiltersByPresetId,
     valueFilters: draftSizeValueFilters,
     valueFiltersPanelCollapsed: draftSizeValueFiltersPanelCollapsed,
@@ -1943,10 +1963,10 @@ export function MapAnalyticsWorkspace({
           binsPresets: draftSizeBinsPresets,
           configPanelCollapsed: draftSizeConfigPanelCollapsed,
           groupWorkspaces: draftSizeGroupWorkspaces,
+          mapLayers: draftSizeMapLayers,
           mapName: draftSizeMapName,
           series: draftSizeSeries,
           seriesPanelCollapsed: draftSizeSeriesPanelCollapsed,
-          showCountyBoundaries: draftSizeShowCountyBoundaries,
           tableBinFiltersByPresetId: draftSizeTableBinFiltersByPresetId,
           valueFilters: draftSizeValueFilters,
           valueFiltersPanelCollapsed: draftSizeValueFiltersPanelCollapsed,
@@ -1963,10 +1983,10 @@ export function MapAnalyticsWorkspace({
       draftSizeBinsPresets,
       draftSizeConfigPanelCollapsed,
       draftSizeGroupWorkspaces,
+      draftSizeMapLayers,
       draftSizeMapName,
       draftSizeSeries,
       draftSizeSeriesPanelCollapsed,
-      draftSizeShowCountyBoundaries,
       draftSizeTableBinFiltersByPresetId,
       draftSizeValueFilters,
       draftSizeValueFiltersPanelCollapsed,
@@ -1982,7 +2002,7 @@ export function MapAnalyticsWorkspace({
   } = useGeoJsonData(mapViewType);
 
   const { data: countyGeoJsonData } = useGeoJsonData('County', {
-    enabled: mapViewType === 'UAT' && mapState.showCountyBoundaries,
+    enabled: mapViewType === 'UAT' && mapState.mapLayers.countyBoundaries,
   });
 
   const geoJsonFeatures = useMemo<UatFeature[]>(() => {
@@ -3186,7 +3206,7 @@ export function MapAnalyticsWorkspace({
     hasPendingChanges &&
     typeof onRequestSaveSnapshot === 'function';
   const countyBoundaryGeoJsonData =
-    mapViewType === 'UAT' && mapState.showCountyBoundaries
+    mapViewType === 'UAT' && mapState.mapLayers.countyBoundaries
       ? countyGeoJsonData
       : null;
 
@@ -3398,11 +3418,11 @@ export function MapAnalyticsWorkspace({
     <>
       <AdvancedMapAnalyticsConfigPanel
         collapsed={Boolean(mapState.configPanelCollapsed)}
-        showCountyBoundaries={mapState.showCountyBoundaries}
+        countyBoundariesEnabled={mapState.mapLayers.countyBoundaries}
         warningCount={combinedWarnings.length}
         readOnly={isReadOnly}
         onToggleCollapsed={toggleConfigPanelCollapsed}
-        onShowCountyBoundariesChange={setShowCountyBoundaries}
+        onCountyBoundariesEnabledChange={setCountyBoundariesEnabled}
         onOpenConfig={() => {
           if (!isReadOnly && onOpenOwnerConfig) {
             onOpenOwnerConfig();
@@ -3566,6 +3586,10 @@ export function MapAnalyticsWorkspace({
                   activeSeriesValuesBySirutaCode={activeSeriesDisplayValues}
                   activeRenderUnits={activeRenderUnits}
                   activeSeriesUnit={activeUnit}
+                  showRoads={mapState.mapLayers.roads}
+                  showPopulationGrid={mapState.mapLayers.populationGrid}
+                  onShowRoadsChange={setRoadsEnabled}
+                  onShowPopulationGridChange={setPopulationGridEnabled}
                   onViewChange={handleMapViewChange}
                   getTooltipContent={getTooltipContent}
                   mobilePanMode="pinch-zoom-until-unlocked"
@@ -3810,6 +3834,10 @@ export function MapAnalyticsWorkspace({
                       activeSeriesValuesBySirutaCode={activeSeriesDisplayValues}
                       activeRenderUnits={activeRenderUnits}
                       activeSeriesUnit={activeUnit}
+                      showRoads={mapState.mapLayers.roads}
+                      showPopulationGrid={mapState.mapLayers.populationGrid}
+                      onShowRoadsChange={setRoadsEnabled}
+                      onShowPopulationGridChange={setPopulationGridEnabled}
                       onViewChange={handleMapViewChange}
                       getTooltipContent={getTooltipContent}
                       mobilePanMode="pinch-zoom-until-unlocked"

@@ -122,6 +122,16 @@ function migrateLegacyAdvancedMapAnalyticsStateInput(input: unknown): unknown {
   }
 
   const migratedInput: Record<string, unknown> = { ...input };
+  const legacyShowCountyBoundaries = migratedInput.showCountyBoundaries;
+  if (
+    !hasAdvancedMapAnalyticsOwnKey(migratedInput, 'mapLayers') &&
+    typeof legacyShowCountyBoundaries === 'boolean'
+  ) {
+    migratedInput.mapLayers = {
+      countyBoundaries: legacyShowCountyBoundaries,
+    };
+  }
+
   if (
     !hasAdvancedMapAnalyticsOwnKey(migratedInput, 'groupWorkspaces') &&
     hasAdvancedMapAnalyticsOwnKey(migratedInput, 'groupings')
@@ -751,6 +761,12 @@ const AdvancedMapAnalyticsWidgetsSchema = z.preprocess(
   z.array(AdvancedMapAnalyticsWidgetSchema)
 );
 
+export const AdvancedMapAnalyticsMapLayersSchema = z.object({
+  countyBoundaries: z.boolean().default(true),
+  roads: z.boolean().default(false),
+  populationGrid: z.boolean().default(false),
+});
+
 export const AdvancedMapAnalyticsUrlStateSchema = z.preprocess(
   migrateLegacyAdvancedMapAnalyticsStateInput,
   z.object({
@@ -763,7 +779,11 @@ export const AdvancedMapAnalyticsUrlStateSchema = z.preprocess(
     activeView: AdvancedMapAnalyticsActiveViewSchema.default('map'),
     analyticsWidgets: AdvancedMapAnalyticsWidgetsSchema.default(createDefaultAdvancedMapAnalyticsWidgets()),
     mapName: z.string().default('Untitled map'),
-    showCountyBoundaries: z.boolean().default(true),
+    mapLayers: AdvancedMapAnalyticsMapLayersSchema.default({
+      countyBoundaries: true,
+      roads: false,
+      populationGrid: false,
+    }),
     seriesPanelCollapsed: z.boolean().default(false),
     configPanelCollapsed: z.boolean().default(false),
     valueFiltersPanelCollapsed: z.boolean().default(false),

@@ -7,10 +7,10 @@ function renderConfigPanel(overrides: Partial<ComponentProps<typeof AdvancedMapA
   return render(
     <AdvancedMapAnalyticsConfigPanel
       collapsed={false}
-      showCountyBoundaries={true}
+      countyBoundariesEnabled={true}
       warningCount={0}
       onToggleCollapsed={vi.fn()}
-      onShowCountyBoundariesChange={vi.fn()}
+      onCountyBoundariesEnabledChange={vi.fn()}
       onOpenConfig={vi.fn()}
       onOpenWarnings={vi.fn()}
       {...overrides}
@@ -40,10 +40,10 @@ describe('AdvancedMapAnalyticsConfigPanel', () => {
     rerender(
       <AdvancedMapAnalyticsConfigPanel
         collapsed={true}
-        showCountyBoundaries={true}
+        countyBoundariesEnabled={true}
         warningCount={0}
         onToggleCollapsed={onToggleCollapsed}
-        onShowCountyBoundariesChange={vi.fn()}
+        onCountyBoundariesEnabledChange={vi.fn()}
         onOpenConfig={vi.fn()}
         onOpenWarnings={vi.fn()}
       />
@@ -62,16 +62,16 @@ describe('AdvancedMapAnalyticsConfigPanel', () => {
     expect(onOpenWarnings).toHaveBeenCalledTimes(1);
   });
 
-  it('calls onShowCountyBoundariesChange when county boundaries switch changes', () => {
-    const onShowCountyBoundariesChange = vi.fn();
+  it('calls onCountyBoundariesEnabledChange when county boundaries switch changes', () => {
+    const onCountyBoundariesEnabledChange = vi.fn();
 
     renderConfigPanel({
-      showCountyBoundaries: true,
-      onShowCountyBoundariesChange,
+      countyBoundariesEnabled: true,
+      onCountyBoundariesEnabledChange,
     });
 
     fireEvent.click(screen.getByRole('switch', { name: 'Toggle county boundaries' }));
-    expect(onShowCountyBoundariesChange).toHaveBeenCalledWith(false);
+    expect(onCountyBoundariesEnabledChange).toHaveBeenCalledWith(false);
   });
 
   it('does not render warnings section when warning count is zero', () => {

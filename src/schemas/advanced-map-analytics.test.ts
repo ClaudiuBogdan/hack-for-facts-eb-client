@@ -28,7 +28,11 @@ describe('AdvancedMapAnalyticsUrlStateSchema', () => {
     expect(parsed.activeView).toBe('map');
     expect(parsed.analyticsWidgets).toEqual(createDefaultAdvancedMapAnalyticsWidgets());
     expect(parsed.mapName).toBe('Untitled map');
-    expect(parsed.showCountyBoundaries).toBe(true);
+    expect(parsed.mapLayers).toEqual({
+      countyBoundaries: true,
+      roads: false,
+      populationGrid: false,
+    });
     expect(parsed.seriesPanelCollapsed).toBe(false);
     expect(parsed.configPanelCollapsed).toBe(false);
     expect(parsed.valueFiltersPanelCollapsed).toBe(false);
@@ -47,6 +51,19 @@ describe('AdvancedMapAnalyticsUrlStateSchema', () => {
     expect(id).toBe('def456');
 
     randomUuidSpy.mockRestore();
+  });
+
+  it('migrates legacy county boundary state into map layer options', () => {
+    const parsed = AdvancedMapAnalyticsUrlStateSchema.parse({
+      showCountyBoundaries: false,
+    });
+
+    expect(parsed.mapLayers).toEqual({
+      countyBoundaries: false,
+      roads: false,
+      populationGrid: false,
+    });
+    expect('showCountyBoundaries' in parsed).toBe(false);
   });
 
   it('supports serialize/parse round-trip with multiple series and bins presets', () => {
@@ -151,7 +168,11 @@ describe('AdvancedMapAnalyticsUrlStateSchema', () => {
       activeView: 'table',
       analyticsWidgets,
       mapName: 'Custom map',
-      showCountyBoundaries: false,
+      mapLayers: {
+        countyBoundaries: false,
+        roads: true,
+        populationGrid: true,
+      },
       seriesPanelCollapsed: true,
       configPanelCollapsed: true,
       valueFiltersPanelCollapsed: true,
@@ -172,7 +193,11 @@ describe('AdvancedMapAnalyticsUrlStateSchema', () => {
     expect(roundTripped).toEqual(state);
     expect(roundTripped.groupWorkspaces[0]?.groups[0]?.memberSirutaCodes).toEqual(['1001', '1002']);
     expect(roundTripped.activeGroupWorkspaceId).toBe('county');
-    expect(roundTripped.showCountyBoundaries).toBe(false);
+    expect(roundTripped.mapLayers).toEqual({
+      countyBoundaries: false,
+      roads: true,
+      populationGrid: true,
+    });
     expect(roundTripped.binsPresets[0]?.config.title).toBe('Revenue bands');
     expect(roundTripped.valueFilters.rules[1]?.joinWithPrevious).toBe('OR');
     expect(roundTripped.analyticsWidgets).toEqual(analyticsWidgets);

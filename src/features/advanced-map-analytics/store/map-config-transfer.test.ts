@@ -37,6 +37,30 @@ describe('map-config-transfer', () => {
     expect(parsed?.mapDescription).toBe('');
   });
 
+  it('parses bare map layer options', () => {
+    const parsed = parseMapConfigTransferInput({
+      mapLayers: {
+        countyBoundaries: false,
+        roads: true,
+        populationGrid: true,
+      },
+    });
+
+    expect(parsed?.mapState.mapLayers).toEqual({
+      countyBoundaries: false,
+      roads: true,
+      populationGrid: true,
+    });
+  });
+
+  it('migrates bare legacy county boundary options', () => {
+    const parsed = parseMapConfigTransferInput({
+      showCountyBoundaries: false,
+    });
+
+    expect(parsed?.mapState.mapLayers.countyBoundaries).toBe(false);
+  });
+
   it('accepts bare legacy grouping map state payloads', () => {
     const parsed = parseMapConfigTransferInput({
       mapName: 'Legacy grouping import',

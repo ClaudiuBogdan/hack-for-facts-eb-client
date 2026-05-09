@@ -43,10 +43,10 @@ describe('map-editor-dirty-state', () => {
     const firstMapState = AdvancedMapAnalyticsUrlStateSchema.parse({
       mapName: 'Stable hash map',
       valueFilters: { rules: [] },
-      showCountyBoundaries: true,
+      mapLayers: { countyBoundaries: true },
     });
     const secondMapState = AdvancedMapAnalyticsUrlStateSchema.parse({
-      showCountyBoundaries: true,
+      mapLayers: { countyBoundaries: true },
       valueFilters: { rules: [] },
       mapName: 'Stable hash map',
     });

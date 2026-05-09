@@ -36,7 +36,9 @@ function createDatasetPreviewMapState(
     mapName: resolvedTitle,
     activeSeriesId: DATASET_PREVIEW_SERIES_ID,
     activeView: 'map',
-    showCountyBoundaries: true,
+    mapLayers: {
+      countyBoundaries: true,
+    },
     series: [
       {
         id: DATASET_PREVIEW_SERIES_ID,
