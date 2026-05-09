@@ -13,7 +13,13 @@ interface FeatureInfo {
 
 const MIN_FEATURE_BBOX_DELTA = 1e-6;
 const DEFAULT_ENTITY_FEATURE_ZOOM = 7;
-const MAX_ENTITY_FEATURE_ZOOM = 15;
+const MIN_ENTITY_FEATURE_ZOOM = 5;
+const MAX_ENTITY_FEATURE_ZOOM = 10;
+const MAPLIBRE_TILE_SIZE = 512;
+const WEB_MERCATOR_MAX_LATITUDE = 85.05112878;
+const DEFAULT_ENTITY_FEATURE_VIEWPORT_WIDTH = 768;
+const DEFAULT_ENTITY_FEATURE_VIEWPORT_HEIGHT = 420;
+const DEFAULT_ENTITY_FEATURE_VIEWPORT_PADDING = 72;
 const BUCHAREST_MUNICIPALITY_CUI = '4267117';
 
 function isCountyLevelEntity(entity: EntityDetailsData): boolean {
@@ -58,6 +64,64 @@ function normalizeSirutaCode(sirutaCode: string | number | null | undefined): st
     return sirutaCode == null ? '' : String(sirutaCode).trim();
 }
 
+function clamp(value: number, min: number, max: number): number {
+    return Math.min(Math.max(value, min), max);
+}
+
+function longitudeToMercatorX(longitude: number): number {
+    return (longitude + 180) / 360;
+}
+
+function latitudeToMercatorY(latitude: number): number {
+    const clampedLatitude = clamp(
+        latitude,
+        -WEB_MERCATOR_MAX_LATITUDE,
+        WEB_MERCATOR_MAX_LATITUDE,
+    );
+    const latitudeRadians = clampedLatitude * Math.PI / 180;
+
+    return (
+        1 -
+        Math.log(Math.tan(Math.PI / 4 + latitudeRadians / 2)) / Math.PI
+    ) / 2;
+}
+
+function calculateEntityFeatureZoom(featureBbox: readonly number[]): number {
+    const [minLon, minLat, maxLon, maxLat] = featureBbox;
+    if (
+        !Number.isFinite(minLon) ||
+        !Number.isFinite(minLat) ||
+        !Number.isFinite(maxLon) ||
+        !Number.isFinite(maxLat)
+    ) {
+        return DEFAULT_ENTITY_FEATURE_ZOOM;
+    }
+
+    const availableWidth = Math.max(
+        1,
+        DEFAULT_ENTITY_FEATURE_VIEWPORT_WIDTH - DEFAULT_ENTITY_FEATURE_VIEWPORT_PADDING * 2,
+    );
+    const availableHeight = Math.max(
+        1,
+        DEFAULT_ENTITY_FEATURE_VIEWPORT_HEIGHT - DEFAULT_ENTITY_FEATURE_VIEWPORT_PADDING * 2,
+    );
+    const xDiff = Math.max(
+        Math.abs(longitudeToMercatorX(maxLon) - longitudeToMercatorX(minLon)),
+        MIN_FEATURE_BBOX_DELTA,
+    );
+    const yDiff = Math.max(
+        Math.abs(latitudeToMercatorY(maxLat) - latitudeToMercatorY(minLat)),
+        MIN_FEATURE_BBOX_DELTA,
+    );
+    const zoomLon = Math.log2(availableWidth / (MAPLIBRE_TILE_SIZE * xDiff));
+    const zoomLat = Math.log2(availableHeight / (MAPLIBRE_TILE_SIZE * yDiff));
+    const zoom = Math.min(zoomLat, zoomLon);
+
+    return Number.isFinite(zoom)
+        ? clamp(zoom, MIN_ENTITY_FEATURE_ZOOM, MAX_ENTITY_FEATURE_ZOOM)
+        : DEFAULT_ENTITY_FEATURE_ZOOM;
+}
+
 export const getEntityFeatureInfo = (entity: EntityDetailsData, geoJsonData: GeoJsonObject): FeatureInfo | null => {
     if (geoJsonData.type !== 'FeatureCollection') {
         return null;
@@ -97,20 +161,13 @@ export const getEntityFeatureInfo = (entity: EntityDetailsData, geoJsonData: Geo
     const featureBbox = bbox(feature);
     const featureCenter = center(feature);
 
-    const [minLon, minLat, maxLon, maxLat] = featureBbox;
-
-    const lonDiff = Math.max(maxLon - minLon, MIN_FEATURE_BBOX_DELTA);
-    const latDiff = Math.max(maxLat - minLat, MIN_FEATURE_BBOX_DELTA);
-
-    const zoomLat = Math.log(360 / latDiff) / Math.LN2;
-    const zoomLon = Math.log(360 / lonDiff) / Math.LN2;
-    const zoom = Math.min(zoomLat, zoomLon, MAX_ENTITY_FEATURE_ZOOM);
+    const zoom = calculateEntityFeatureZoom(featureBbox);
     const [centerLongitude, centerLatitude] = featureCenter.geometry.coordinates;
 
 
     return {
         center: [centerLatitude, centerLongitude] as LatLngExpression,
-        zoom: Number.isFinite(zoom) ? zoom : DEFAULT_ENTITY_FEATURE_ZOOM,
+        zoom,
         featureId: featureId || entity.cui,
     };
 };

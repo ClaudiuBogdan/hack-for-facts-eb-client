@@ -3646,8 +3646,8 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(latestInteractiveMapProps?.mobilePanMode).toBe(
       'pinch-zoom-until-unlocked'
     );
-    expect(latestInteractiveMapProps?.scrollWheelZoom).toBe(true);
-    expect(latestInteractiveMapProps?.defaultScrollWheelZoomEnabled).toBe(true);
+    expect(latestInteractiveMapProps?.scrollWheelZoom).toBe(false);
+    expect(latestInteractiveMapProps?.defaultScrollWheelZoomEnabled).toBe(false);
     expect(latestInteractiveMapProps?.preferCanvasRenderer).toBe(false);
   });
 

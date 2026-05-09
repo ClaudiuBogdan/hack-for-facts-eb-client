@@ -23,6 +23,16 @@ describe('challenge-entity-public-maps', () => {
     }
   })
 
+  it('shows roads by default on embedded entity page maps', () => {
+    for (const definition of CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS) {
+      expect(definition.mapState.mapLayers).toEqual({
+        countyBoundaries: true,
+        roads: true,
+        populationGrid: false,
+      })
+    }
+  })
+
   it('keeps income broad, but applies the treemap transfer exclusion to expense series', () => {
     const expensesDefinition = getChallengeEntityMapPreviewDefinition('expenses')
     const incomeDefinition = getChallengeEntityMapPreviewDefinition('income')

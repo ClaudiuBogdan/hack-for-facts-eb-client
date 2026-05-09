@@ -145,6 +145,38 @@ describe('entity utils', () => {
       center: [46.5, 23.5],
       featureId: '123456',
     });
-    expect(featureInfo?.zoom).toBeGreaterThan(0);
+    expect(featureInfo?.zoom).toBeCloseTo(7.1, 1);
+  });
+
+  it('caps tiny UAT feature zoom so the embedded map keeps surrounding context', () => {
+    const entity: EntityDetailsData = {
+      cui: '12345678',
+      name: 'Primaria Test',
+      default_report_type: 'PRINCIPAL_AGGREGATED',
+      entity_type: 'admin_municipality',
+      uat: {
+        siruta_code: 123456,
+      },
+    };
+    const geoJsonData = createPolygonFeatureCollection([
+      {
+        type: 'Feature',
+        properties: { natcode: '123456' },
+        geometry: {
+          type: 'Polygon',
+          coordinates: [[
+            [23, 46],
+            [23.01, 46],
+            [23.01, 46.01],
+            [23, 46.01],
+            [23, 46],
+          ]],
+        },
+      },
+    ]);
+
+    const featureInfo = getEntityFeatureInfo(entity, geoJsonData);
+
+    expect(featureInfo?.zoom).toBe(10);
   });
 });

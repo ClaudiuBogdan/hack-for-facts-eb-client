@@ -205,6 +205,11 @@ function createMapPreviewState({
     mapName,
     mapCenter: fallbackViewport.mapCenter,
     mapZoom: fallbackViewport.mapZoom,
+    mapLayers: {
+      countyBoundaries: true,
+      roads: true,
+      populationGrid: false,
+    },
     activeView: 'map',
     activeSeriesId,
     activeBinPresetId,
