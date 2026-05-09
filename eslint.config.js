@@ -13,7 +13,6 @@ export default tseslint.config(
       '.vercel',
       'Library',
       'dist',
-      'docs-site/build',
       'playwright-report',
       'test-results',
       'tmp',

@@ -25,7 +25,7 @@ Transparenta.eu is a platform for analyzing public budget data, targeting public
 ### Core Commands
 ```bash
 yarn dev                  # Start development server
-yarn build                # Build for production (includes i18n compile and docs)
+yarn build                # Build for production (includes i18n compile)
 yarn typecheck            # Type-check without emitting (always run before finishing)
 yarn test                 # Run Vitest unit tests
 yarn test:watch           # Run tests in watch mode
@@ -56,12 +56,6 @@ Don't modify the .po files manually.
 yarn test:e2e             # Run Playwright E2E tests
 yarn test:e2e:ui          # Open Playwright UI mode
 yarn test:e2e:debug       # Debug E2E tests
-```
-
-### Documentation
-```bash
-yarn docs:start           # Start Docusaurus dev server
-yarn docs:build           # Build documentation site
 ```
 
 ## Architecture

@@ -8,7 +8,6 @@ WORKDIR /app
 RUN corepack enable
 
 COPY package.json yarn.lock ./
-COPY docs-site/package.json docs-site/yarn.lock ./docs-site/
 RUN yarn install --frozen-lockfile
 
 COPY . .

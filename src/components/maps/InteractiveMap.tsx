@@ -116,6 +116,9 @@ const ROADS_LAYER_ID = 'interactive-map-roads-line';
 const POPULATION_GRID_LAYER_ID = 'interactive-map-population-grid-fill';
 
 const MAPLIBRE_GLYPHS_URL = 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf';
+const MAPLIBRE_ATTRIBUTION_LABEL = 'MapLibre';
+const MAPLIBRE_ATTRIBUTION_HTML =
+  `<a href="https://maplibre.org/" target="_blank" rel="noopener noreferrer">${MAPLIBRE_ATTRIBUTION_LABEL}</a>`;
 const ROMANIA_ROADS_PMTILES_URL =
   'https://s3.devostack.com/transparenta-eu-assets/maps/romania-main-roads.pmtiles';
 const ROMANIA_POPULATION_GRID_PMTILES_URL =
@@ -1717,6 +1720,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       maxBounds: normalizeBounds(maxBounds),
       attributionControl: {
         compact: false,
+        customAttribution: MAPLIBRE_ATTRIBUTION_HTML,
       },
       scrollZoom: initialIsInteractionEnabled,
       dragPan: !shouldLockMobilePanByDefault,

@@ -36,13 +36,6 @@ playwright-report
 # Vite cache
 .vite
 
-# Docusaurus build output
-docs-site/build
-
-# Docusaurus cache
-.docusaurus
-docs-site/.docusaurus
-
 # OS cruft
 Thumbs.db
 .Trash-

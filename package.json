@@ -11,10 +11,9 @@
   ],
   "scripts": {
     "prepare": "husky",
-    "postinstall": "HOME=$PWD yarn --cwd docs-site install --frozen-lockfile",
     "dev": "vite",
     "dev:lint": "concurrently \"vite\" \"tsgo -w\" \"eslint ./src\"",
-    "build": "tsgo -b && vite build && yarn i18n:compile && yarn docs:build && node scripts/postbuild-docs.js",
+    "build": "tsgo -b && vite build && yarn i18n:compile",
     "build:app": "tsgo -b && vite build && yarn i18n:compile",
     "build:validate": "node scripts/validate-build-output.mjs",
     "sentry:prepare-artifacts": "node scripts/prepare-sentry-artifacts.mjs",
@@ -43,11 +42,6 @@
     "test:e2e:snapshot:update": "E2E_MODE=record playwright test --project=e2e",
     "test:all": "playwright test",
     "router:generate": "node scripts/router-generate.mjs",
-    "docs:start": "HOME=$PWD yarn --cwd docs-site start",
-    "docs:build": "HOME=$PWD yarn --cwd docs-site install --frozen-lockfile && HOME=$PWD yarn --cwd docs-site build",
-    "docs:serve": "HOME=$PWD yarn --cwd docs-site serve",
-    "docs:clear": "HOME=$PWD yarn --cwd docs-site clear",
-    "docs:swizzle": "HOME=$PWD yarn --cwd docs-site swizzle",
     "i18n:extract": "lingui extract",
     "i18n:compile": "lingui compile",
     "i18n:clean": "lingui extract --clean"

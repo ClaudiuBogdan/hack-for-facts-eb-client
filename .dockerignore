@@ -24,12 +24,3 @@ tmp
 
 .env
 .env.*
-
-# Docs build artifacts
-docs-site/build
-docs-site/.docusaurus
-docs-site/node_modules
-
-# Keep docs-site manifests needed by root postinstall
-!docs-site/package.json
-!docs-site/yarn.lock
