@@ -118,6 +118,7 @@ import {
   type MapAnalyticsEntityDetailsSelection,
   type MapAnalyticsEntitySeriesRow,
 } from './map-analytics-entity-details-panel';
+import { buildPublicEntityGroupContext } from './map-analytics-public-view-helpers';
 import { MapAnalyticsQuickActions } from './map-analytics-quick-actions';
 import { MapAnalyticsDescriptionInline } from './map-analytics-description-inline';
 import { MapAnalyticsGroupWorkspaceImportDialog } from './map-analytics-group-workspace-import-dialog';
@@ -2620,6 +2621,11 @@ export function MapAnalyticsWorkspace({
     }));
   }, [displayUnitOverridesBySeriesId, enabledSeries, unitsBySeriesId]);
 
+  const seriesColumnsById = useMemo(
+    () => new Map(seriesColumns.map((seriesColumn) => [seriesColumn.id, seriesColumn.unit])),
+    [seriesColumns]
+  );
+
   const groupingColumns = useMemo<AdvancedMapAnalyticsTableGroupingColumn[]>(
     () =>
       mapState.groupWorkspaces.map((grouping) => ({
@@ -2639,9 +2645,16 @@ export function MapAnalyticsWorkspace({
     [mapState.groupWorkspaces]
   );
 
+  const activePanelGroupWorkspaceId = useMemo(() => {
+    const activeDomain = activeSeriesId ? domainsBySeriesId.get(activeSeriesId) : undefined;
+    return activeDomain?.type === 'group'
+      ? activeDomain.groupWorkspaceId
+      : mapState.activeGroupWorkspaceId;
+  }, [activeSeriesId, domainsBySeriesId, mapState.activeGroupWorkspaceId]);
+
   const manualGroupDisplayValuesBySeriesId = useMemo(() => {
     return buildManualGroupDisplayValuesBySeriesId({
-      activeGroupWorkspaceId: mapState.activeGroupWorkspaceId,
+      activeGroupWorkspaceId: activePanelGroupWorkspaceId,
       activeManualGroupId,
       groupWorkspaces: mapState.groupWorkspaces,
       enabledSeries,
@@ -2651,9 +2664,9 @@ export function MapAnalyticsWorkspace({
     });
   }, [
     activeManualGroupId,
+    activePanelGroupWorkspaceId,
     domainsBySeriesId,
     enabledSeries,
-    mapState.activeGroupWorkspaceId,
     mapState.groupWorkspaces,
     mapValuesBySeriesId,
     valuesBySeriesId,
@@ -2694,11 +2707,8 @@ export function MapAnalyticsWorkspace({
   );
 
   const activeTableGroupWorkspaceId = useMemo(() => {
-    const activeDomain = activeSeriesId ? domainsBySeriesId.get(activeSeriesId) : undefined;
-    return activeDomain?.type === 'group'
-      ? activeDomain.groupWorkspaceId
-      : mapState.activeGroupWorkspaceId;
-  }, [activeSeriesId, domainsBySeriesId, mapState.activeGroupWorkspaceId]);
+    return activePanelGroupWorkspaceId;
+  }, [activePanelGroupWorkspaceId]);
 
   const activeTableGroupWorkspace = useMemo(
     () => activeTableGroupWorkspaceId
@@ -2752,6 +2762,83 @@ export function MapAnalyticsWorkspace({
     domainsBySeriesId,
     groupValuesBySirutaCode,
     manualGroupDisplayValuesBySeriesId,
+    valuesBySeriesId,
+  ]);
+
+  const selectedMapEntityUatSeriesRows = useMemo<MapAnalyticsEntitySeriesRow[]>(() => {
+    if (!selectedMapEntity) {
+      return [];
+    }
+
+    return enabledSeries.map((series) => {
+      const domain = domainsBySeriesId.get(series.id);
+      const value =
+        series.type === 'map-grouped-value-series'
+          ? valuesBySeriesId.get(series.sourceSeriesId)?.get(selectedMapEntity.sirutaCode)
+          : domain?.type === 'group'
+            ? undefined
+            : valuesBySeriesId.get(series.id)?.get(selectedMapEntity.sirutaCode);
+
+      return {
+        id: series.id,
+        label: resolveSeriesDisplayLabel(series),
+        payload:
+          uploadedDatasetPayloadsBySeriesId
+            .get(series.id)
+            ?.get(selectedMapEntity.sirutaCode) ?? null,
+        value: formatAdvancedMapAnalyticsSeriesValue(
+          value,
+          resolveSeriesDisplayUnit(series, unitsBySeriesId, displayUnitOverridesBySeriesId)
+        ),
+        isActive: series.id === activeSeriesId,
+      };
+    });
+  }, [
+    activeSeriesId,
+    displayUnitOverridesBySeriesId,
+    domainsBySeriesId,
+    enabledSeries,
+    selectedMapEntity,
+    unitsBySeriesId,
+    uploadedDatasetPayloadsBySeriesId,
+    valuesBySeriesId,
+  ]);
+
+  const selectedMapEntityGroupContext = useMemo(() => {
+    if (!selectedMapEntity) {
+      return undefined;
+    }
+
+    const sourceSeriesIdBySeriesId = new Map(
+      enabledSeries
+        .filter((series) => series.type === 'map-grouped-value-series')
+        .map((series) => [series.id, series.sourceSeriesId])
+    );
+
+    return buildPublicEntityGroupContext({
+      activeGroupWorkspaceId: activePanelGroupWorkspaceId,
+      activeSeriesId,
+      groupMetadataById,
+      groupSeriesRows: selectedMapEntitySeriesRows,
+      groupValuesBySirutaCode,
+      selection: selectedMapEntity,
+      sourceSeriesIdBySeriesId,
+      uatMetadataBySirutaCode,
+      uatSeriesRows: selectedMapEntityUatSeriesRows,
+      valuesBySeriesId,
+      unitsBySeriesId: seriesColumnsById,
+    });
+  }, [
+    activeSeriesId,
+    activePanelGroupWorkspaceId,
+    groupMetadataById,
+    groupValuesBySirutaCode,
+    enabledSeries,
+    selectedMapEntity,
+    selectedMapEntitySeriesRows,
+    selectedMapEntityUatSeriesRows,
+    seriesColumnsById,
+    uatMetadataBySirutaCode,
     valuesBySeriesId,
   ]);
 
@@ -3806,6 +3893,7 @@ export function MapAnalyticsWorkspace({
                     <MapAnalyticsEntityDetailsPanel
                       selection={selectedMapEntity}
                       seriesRows={selectedMapEntitySeriesRows}
+                      groupContext={selectedMapEntityGroupContext}
                       isMobile={isMobile}
                       isProfileLoading={selectedEntityProfileQuery.isLoading}
                       profile={selectedEntityProfileQuery.data}

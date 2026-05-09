@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { createDefaultAdvancedMapAnalyticsSeries } from '@/schemas/advanced-map-analytics';
 import {
+  buildPublicEntityGroupContext,
   buildPublicEntitySeriesRows,
+  buildPublicEntityUatSeriesRows,
   buildPublicMapFeatureStyle,
   buildPublicMapTooltipContent,
 } from './map-analytics-public-view-helpers';
@@ -72,12 +74,17 @@ describe('map analytics public view helpers', () => {
   });
 
   it('uses group-domain values in public entity details rows', () => {
+    const sourceSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    sourceSeries.id = 'source_series';
+    sourceSeries.label = 'Source value';
+
     const groupedSeries = createDefaultAdvancedMapAnalyticsSeries('map-grouped-value-series');
     if (groupedSeries.type !== 'map-grouped-value-series') {
       throw new Error('Unexpected series type in test setup');
     }
     groupedSeries.id = 'grouped_series';
     groupedSeries.label = 'Grouped value';
+    groupedSeries.sourceSeriesId = sourceSeries.id;
 
     const rows = buildPublicEntitySeriesRows({
       enabledSeries: [groupedSeries],
@@ -89,6 +96,7 @@ describe('map analytics public view helpers', () => {
       },
       valuesBySeriesId: new Map([
         [groupedSeries.id, new Map([['grp_1', 456], ['1001', 999]])],
+        [sourceSeries.id, new Map([['1001', 123]])],
       ]),
       unitsBySeriesId: new Map([[groupedSeries.id, 'RON']]),
       domainsBySeriesId: new Map([
@@ -101,6 +109,119 @@ describe('map analytics public view helpers', () => {
 
     expect(rows[0]?.value).toContain('456');
     expect(rows[0]?.value).not.toContain('999');
+
+    const uatRows = buildPublicEntityUatSeriesRows({
+      enabledSeries: [groupedSeries],
+      activeSeriesId: groupedSeries.id,
+      selection: {
+        sirutaCode: '1001',
+        title: 'Central cluster',
+        uatName: 'Comuna Test',
+      },
+      valuesBySeriesId: new Map([
+        [groupedSeries.id, new Map([['grp_1', 456], ['1001', 999]])],
+        [sourceSeries.id, new Map([['1001', 123]])],
+      ]),
+      unitsBySeriesId: new Map([[groupedSeries.id, 'RON']]),
+      domainsBySeriesId: new Map([
+        [groupedSeries.id, { type: 'group', groupWorkspaceId: 'manual-map-groups' }],
+      ]),
+      groupValuesBySirutaCode: new Map([
+        ['1001', { 'manual-map-groups': 'grp_1' }],
+      ]),
+    });
+
+    expect(uatRows[0]?.value).toContain('123');
+    expect(uatRows[0]?.value).not.toContain('456');
+    expect(uatRows[0]?.value).not.toContain('999');
+  });
+
+  it('builds group context for public entity details', () => {
+    const context = buildPublicEntityGroupContext({
+      activeGroupWorkspaceId: 'manual-map-groups',
+      groupMetadataById: new Map([
+        [
+          'manual-map-groups::grp_1',
+          {
+            groupWorkspaceId: 'manual-map-groups',
+            groupingLabel: 'Manual groups',
+            groupLabel: 'Central cluster',
+            memberSirutaCodes: ['1001', '2002', '3003', '4004', '5005', '6006'],
+          },
+        ],
+      ]),
+      groupSeriesRows: [
+        {
+          id: 'series_1',
+          isActive: true,
+          label: 'Group value',
+          value: '600',
+        },
+      ],
+      groupValuesBySirutaCode: new Map([
+        ['1001', { 'manual-map-groups': 'grp_1' }],
+      ]),
+      selection: {
+        sirutaCode: '1001',
+        title: 'Comuna Test',
+        uatName: 'Comuna Test',
+      },
+      uatMetadataBySirutaCode: new Map([
+        ['1001', { uatName: 'Comuna Test', countyName: 'Alba' }],
+        ['2002', { uatName: 'Second UAT', countyName: 'Alba' }],
+        ['3003', { uatName: 'Third UAT', countyName: 'Alba' }],
+        ['4004', { uatName: 'Fourth UAT', countyName: 'Alba' }],
+        ['5005', { uatName: 'Fifth UAT', countyName: 'Alba' }],
+        ['6006', { uatName: 'Sixth UAT', countyName: 'Alba' }],
+      ]),
+      uatSeriesRows: [
+        {
+          id: 'series_1',
+          isActive: true,
+          label: 'UAT value',
+          value: '100',
+        },
+      ],
+      valuesBySeriesId: new Map([
+        [
+          'series_1',
+          new Map([
+            ['1001', 10],
+            ['2002', 60],
+            ['3003', 30],
+            ['4004', undefined],
+            ['5005', 50],
+            ['6006', 20],
+          ]),
+        ],
+      ]),
+      unitsBySeriesId: new Map([['series_1', 'loc.']]),
+    });
+
+    expect(context).toMatchObject({
+      groupLabel: 'Central cluster',
+      memberCount: 6,
+      selectedUatName: 'Comuna Test',
+      workspaceLabel: 'Manual groups',
+    });
+    expect(context?.memberPreviewLabels).toEqual([
+      'Comuna Test',
+      'Second UAT',
+      'Third UAT',
+      'Fourth UAT',
+      'Fifth UAT',
+      '+1 more',
+    ]);
+    expect(context?.memberRows?.map((row) => row.sirutaCode)).toEqual([
+      '1001',
+      '2002',
+      '3003',
+      '4004',
+      '5005',
+      '6006',
+    ]);
+    expect(context?.memberRows?.find((row) => row.sirutaCode === '2002')?.formattedValue)
+      .toContain('60');
   });
 
   it('uses render-unit display values for UAT-domain public tooltips and details', () => {

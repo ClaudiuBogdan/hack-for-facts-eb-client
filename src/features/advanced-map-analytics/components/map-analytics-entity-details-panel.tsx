@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { t } from '@lingui/core/macro';
 import {
@@ -42,11 +42,32 @@ export interface MapAnalyticsEntitySeriesRow {
   readonly value: string;
 }
 
+export interface MapAnalyticsEntityGroupContext {
+  readonly groupLabel: string;
+  readonly groupSeriesRows: readonly MapAnalyticsEntitySeriesRow[];
+  readonly memberCount: number;
+  readonly memberPreviewLabels?: readonly string[];
+  readonly memberRows?: readonly MapAnalyticsEntityGroupMemberRow[];
+  readonly primaryUatName?: string;
+  readonly selectedUatName: string;
+  readonly uatSeriesRows: readonly MapAnalyticsEntitySeriesRow[];
+  readonly workspaceLabel: string;
+}
+
+export interface MapAnalyticsEntityGroupMemberRow {
+  readonly label: string;
+  readonly sirutaCode: string;
+  readonly value?: number;
+  readonly formattedValue: string;
+  readonly isSelected: boolean;
+}
+
 interface MapAnalyticsEntityDetailsPanelProps {
   readonly isMobile: boolean;
   readonly isProfileLoading: boolean;
   readonly onClose: () => void;
   readonly entityHref?: string;
+  readonly groupContext?: MapAnalyticsEntityGroupContext;
   readonly profile: EntityProfileData | null | undefined;
   readonly profileErrorMessage?: string;
   readonly selection: MapAnalyticsEntityDetailsSelection;
@@ -58,6 +79,7 @@ export function MapAnalyticsEntityDetailsPanel({
   isProfileLoading,
   onClose,
   entityHref,
+  groupContext,
   profile,
   profileErrorMessage,
   selection,
@@ -65,6 +87,7 @@ export function MapAnalyticsEntityDetailsPanel({
 }: Readonly<MapAnalyticsEntityDetailsPanelProps>) {
   const canOpenEntityPage = typeof entityHref === 'string' && entityHref.length > 0;
   const desktopPanelRef = useRef<HTMLDivElement | null>(null);
+  const [isGroupContextExpanded, setIsGroupContextExpanded] = useState(false);
   const hasProfileDetails = Boolean(
     profile?.leader_name ||
       profile?.leader_title ||
@@ -74,6 +97,7 @@ export function MapAnalyticsEntityDetailsPanel({
       profile?.phone_primary ||
       profile?.website_url
   );
+  const displayedSeriesRows = groupContext?.uatSeriesRows ?? seriesRows;
 
   useEffect(() => {
     if (isMobile) {
@@ -105,6 +129,10 @@ export function MapAnalyticsEntityDetailsPanel({
       document.removeEventListener('pointerdown', handlePointerDown);
     };
   }, [isMobile, onClose]);
+
+  useEffect(() => {
+    setIsGroupContextExpanded(false);
+  }, [groupContext?.groupLabel, groupContext?.workspaceLabel, selection.sirutaCode]);
 
   const panelContent = (
     <div
@@ -166,60 +194,86 @@ export function MapAnalyticsEntityDetailsPanel({
           <section className="space-y-2.5">
             <SectionLabel icon={<MapPinned className="h-3.5 w-3.5" />} title={t`Identifiers`} />
             <dl className="divide-y divide-border/40">
-              <DetailRow label={t`UAT name`} value={selection.uatName} />
-              <DetailRow label={t`County`} value={selection.countyName ?? t`N/A`} />
               <DetailRow label={t`SIRUTA`} value={selection.sirutaCode} />
               <DetailRow label={t`CUI`} value={selection.entityCui ?? t`N/A`} />
             </dl>
           </section>
 
+          {groupContext ? (
+            <section className="space-y-2.5">
+              <SectionLabel title={t`Group context`} />
+              <div className="rounded-2xl border border-border/70 bg-muted/[0.12] px-3 py-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold leading-tight text-foreground">
+                      {groupContext.groupLabel}
+                    </div>
+                    <div className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
+                      {groupContext.workspaceLabel}
+                    </div>
+                  </div>
+                  <Badge variant="secondary" className="shrink-0 rounded-full px-2.5 py-0.5">
+                    {groupContext.memberCount === 1
+                      ? t`1 UAT`
+                      : t`${groupContext.memberCount} UATs`}
+                  </Badge>
+                </div>
+                {!isGroupContextExpanded &&
+                groupContext.memberPreviewLabels &&
+                groupContext.memberPreviewLabels.length > 0 ? (
+                  <div className="mt-2.5 flex flex-wrap gap-1.5">
+                    {groupContext.memberPreviewLabels.map((label, index) => (
+                      <Badge
+                        key={`${label}-${index}`}
+                        variant="outline"
+                        className="max-w-full rounded-full px-2 py-0.5 text-[11px]"
+                      >
+                        <span className="truncate">{label}</span>
+                      </Badge>
+                    ))}
+                  </div>
+                ) : null}
+                {groupContext.memberRows && groupContext.memberRows.length > 0 ? (
+                  <div className="mt-3 border-t border-border/50 pt-3">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="-mx-2 h-8 px-2 text-xs font-medium text-primary"
+                      onClick={() => setIsGroupContextExpanded((current) => !current)}
+                    >
+                      {isGroupContextExpanded ? t`Show less` : t`Show more`}
+                    </Button>
+                    {isGroupContextExpanded ? (
+                      <GroupMemberValuesList groupContext={groupContext} />
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+
+              <GroupSeriesComparisonList
+                groupRows={groupContext.groupSeriesRows}
+                uatRows={groupContext.uatSeriesRows}
+              />
+            </section>
+          ) : (
           <section className="space-y-2.5">
             <div className="flex items-center justify-between gap-3">
               <SectionLabel title={t`Map values`} />
               <div className="text-xs text-muted-foreground">
-                {seriesRows.length > 0 ? t`${seriesRows.length} enabled series` : t`No enabled series`}
+                {displayedSeriesRows.length > 0 ? t`${displayedSeriesRows.length} enabled series` : t`No enabled series`}
               </div>
             </div>
 
-            {seriesRows.length > 0 ? (
-              <ul className="-mx-1 divide-y divide-border/40">
-                {seriesRows.map((seriesRow) => (
-                  <li
-                    key={seriesRow.id}
-                    className={cn(
-                      'rounded-2xl px-3 py-2.5 transition-colors',
-                      seriesRow.isActive && 'bg-primary/[0.06]'
-                    )}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="truncate text-sm font-medium text-foreground">
-                          {seriesRow.label}
-                        </div>
-                        {seriesRow.isActive ? (
-                          <span className="mt-1 inline-block text-[10px] font-medium uppercase tracking-wide text-primary">
-                            {t`Active series`}
-                          </span>
-                        ) : null}
-                      </div>
-                      <div className="shrink-0 text-right text-sm font-semibold tabular-nums text-foreground">
-                        {seriesRow.value}
-                      </div>
-                    </div>
-                    {seriesRow.payload ? (
-                      <div className="mt-3">
-                        <MapAnalyticsPayloadRenderer payload={seriesRow.payload} />
-                      </div>
-                    ) : null}
-                  </li>
-                ))}
-              </ul>
+            {displayedSeriesRows.length > 0 ? (
+              <SeriesRowsList rows={displayedSeriesRows} />
             ) : (
               <p className="text-sm text-muted-foreground">
                 {t`Enable at least one series to inspect values for the selected UAT here.`}
               </p>
             )}
           </section>
+          )}
 
           <Separator className="bg-border/50" />
 
@@ -352,6 +406,205 @@ export function MapAnalyticsEntityDetailsPanel({
         {panelContent}
       </motion.aside>
     </div>
+  );
+}
+
+function GroupMemberValuesList({
+  groupContext,
+}: Readonly<{
+  groupContext: MapAnalyticsEntityGroupContext;
+}>) {
+  const activeGroupRow =
+    groupContext.groupSeriesRows.find((row) => row.isActive) ?? groupContext.groupSeriesRows[0];
+  const sortedMemberRows = useMemo(() => {
+    return [...(groupContext.memberRows ?? [])].sort((left, right) => {
+      if (left.value === undefined && right.value === undefined) {
+        return left.label.localeCompare(right.label);
+      }
+      if (left.value === undefined) {
+        return 1;
+      }
+      if (right.value === undefined) {
+        return -1;
+      }
+      return right.value - left.value;
+    });
+  }, [groupContext.memberRows]);
+
+  return (
+    <div className="mt-2 overflow-hidden rounded-xl border border-border/60 bg-background/60">
+      <dl className="divide-y divide-border/40">
+        {activeGroupRow ? (
+          <GroupMemberValueRow
+            label={groupContext.groupLabel}
+            sublabel={t`Group value`}
+            value={activeGroupRow.value}
+            emphasized
+          />
+        ) : null}
+        {sortedMemberRows.map((row) => (
+          <GroupMemberValueRow
+            key={row.sirutaCode}
+            label={row.label}
+            sublabel={row.isSelected ? t`Selected UAT` : undefined}
+            value={row.formattedValue}
+            emphasized={row.isSelected}
+          />
+        ))}
+      </dl>
+    </div>
+  );
+}
+
+function GroupMemberValueRow({
+  emphasized = false,
+  label,
+  sublabel,
+  value,
+}: Readonly<{
+  emphasized?: boolean;
+  label: string;
+  sublabel?: string;
+  value: string;
+}>) {
+  return (
+    <div className={cn('flex items-baseline justify-between gap-3 px-3 py-2', emphasized && 'bg-primary/[0.04]')}>
+      <dt className="min-w-0">
+        <span className="block truncate text-sm font-medium text-foreground">{label}</span>
+        {sublabel ? (
+          <span className="mt-0.5 block text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+            {sublabel}
+          </span>
+        ) : null}
+      </dt>
+      <dd className="shrink-0 text-right text-sm font-semibold tabular-nums text-foreground">
+        {value}
+      </dd>
+    </div>
+  );
+}
+
+function GroupSeriesComparisonList({
+  groupRows,
+  uatRows,
+}: Readonly<{
+  groupRows: readonly MapAnalyticsEntitySeriesRow[];
+  uatRows: readonly MapAnalyticsEntitySeriesRow[];
+}>) {
+  const uatRowsById = new Map(uatRows.map((row) => [row.id, row]));
+  const rows = groupRows.map((groupRow) => ({
+    groupRow,
+    uatRow: uatRowsById.get(groupRow.id),
+  }));
+
+  return (
+    <div className="space-y-2.5">
+      <div className="flex items-center justify-between gap-3">
+        <SectionLabel title={t`Values`} />
+        <div className="text-xs text-muted-foreground">
+          {rows.length > 0 ? t`${rows.length} enabled series` : t`No enabled series`}
+        </div>
+      </div>
+      {rows.length > 0 ? (
+        <ul className="-mx-1 divide-y divide-border/40">
+          {rows.map(({ groupRow, uatRow }) => (
+            <li
+              key={groupRow.id}
+              className={cn(
+                'px-1 py-3 transition-colors',
+                groupRow.isActive && 'bg-primary/[0.03]'
+              )}
+            >
+              <div className="min-w-0">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 truncate text-sm font-medium text-foreground">
+                    {groupRow.label}
+                  </div>
+                  {groupRow.isActive ? (
+                    <span className="shrink-0 text-[10px] font-medium uppercase tracking-wide text-primary">
+                      {t`Active series`}
+                    </span>
+                  ) : null}
+                </div>
+                <dl className="mt-2 divide-y divide-border/40 rounded-xl border border-border/60 bg-muted/[0.08] px-3">
+                  <CompactValue label={t`Group`} value={groupRow.value} />
+                  <CompactValue label={t`Selected UAT`} value={uatRow?.value ?? t`N/A`} />
+                </dl>
+              </div>
+              {uatRow?.payload ? (
+                <div className="mt-3">
+                  <MapAnalyticsPayloadRenderer payload={uatRow.payload} />
+                </div>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          {t`No group values are available for this selection.`}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function CompactValue({
+  label,
+  value,
+}: Readonly<{
+  label: string;
+  value: string;
+}>) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 py-2.5">
+      <dt className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+        {label}
+      </dt>
+      <dd className="text-right text-sm font-semibold tabular-nums text-foreground">
+        {value}
+      </dd>
+    </div>
+  );
+}
+
+function SeriesRowsList({
+  rows,
+}: Readonly<{
+  rows: readonly MapAnalyticsEntitySeriesRow[];
+}>) {
+  return (
+    <ul className="-mx-1 divide-y divide-border/40">
+      {rows.map((seriesRow) => (
+        <li
+          key={seriesRow.id}
+          className={cn(
+            'rounded-2xl px-3 py-2.5 transition-colors',
+            seriesRow.isActive && 'bg-primary/[0.06]'
+          )}
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="truncate text-sm font-medium text-foreground">
+                {seriesRow.label}
+              </div>
+              {seriesRow.isActive ? (
+                <span className="mt-1 inline-block text-[10px] font-medium uppercase tracking-wide text-primary">
+                  {t`Active series`}
+                </span>
+              ) : null}
+            </div>
+            <div className="shrink-0 text-right text-sm font-semibold tabular-nums text-foreground">
+              {seriesRow.value}
+            </div>
+          </div>
+          {seriesRow.payload ? (
+            <div className="mt-3">
+              <MapAnalyticsPayloadRenderer payload={seriesRow.payload} />
+            </div>
+          ) : null}
+        </li>
+      ))}
+    </ul>
   );
 }
 

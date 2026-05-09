@@ -31,6 +31,8 @@ import {
 } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-uat-properties';
 import { formatAdvancedMapAnalyticsSeriesValue } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-formatting';
 import type {
+  MapAnalyticsEntityGroupContext,
+  MapAnalyticsEntityGroupMemberRow,
   MapAnalyticsEntityDetailsSelection,
   MapAnalyticsEntitySeriesRow,
 } from '@/features/advanced-map-analytics/components/map-analytics-entity-details-panel';
@@ -357,6 +359,13 @@ interface BuildPublicEntitySeriesRowsArgs {
   groupValuesBySirutaCode?: Map<string, Record<string, string | undefined>>;
 }
 
+type GroupMetadataById = Map<string, {
+  groupWorkspaceId: string;
+  groupingLabel: string;
+  groupLabel: string;
+  memberSirutaCodes: string[];
+}>;
+
 /**
  * Produces the entity-detail rows shown inside `MapAnalyticsEntityDetailsPanel`
  * after the user clicks a UAT.
@@ -388,6 +397,110 @@ export function buildPublicEntitySeriesRows({
     ),
     isActive: series.id === activeSeriesId,
   }));
+}
+
+/**
+ * Produces raw UAT-level rows for a selected UAT. Grouped value series fall
+ * back to their source series so the panel can distinguish group aggregate
+ * values from the clicked UAT's own value.
+ */
+export function buildPublicEntityUatSeriesRows({
+  enabledSeries,
+  activeSeriesId,
+  selection,
+  valuesBySeriesId,
+  unitsBySeriesId,
+  domainsBySeriesId,
+}: BuildPublicEntitySeriesRowsArgs): MapAnalyticsEntitySeriesRow[] {
+  return enabledSeries.map((series) => {
+    const domain = domainsBySeriesId?.get(series.id);
+    const value =
+      series.type === 'map-grouped-value-series'
+        ? valuesBySeriesId.get(series.sourceSeriesId)?.get(selection.sirutaCode)
+        : domain?.type === 'group'
+          ? undefined
+          : valuesBySeriesId.get(series.id)?.get(selection.sirutaCode);
+
+    return {
+      id: series.id,
+      label: resolveSeriesDisplayLabel(series),
+      payload: null,
+      value: formatAdvancedMapAnalyticsSeriesValue(
+        value,
+        resolveSeriesDisplayUnit(series, unitsBySeriesId)
+      ),
+      isActive: series.id === activeSeriesId,
+    };
+  });
+}
+
+export function buildPublicEntityGroupContext(params: {
+  activeGroupWorkspaceId?: string;
+  activeSeriesId?: string;
+  groupMetadataById: GroupMetadataById;
+  groupSeriesRows: readonly MapAnalyticsEntitySeriesRow[];
+  groupValuesBySirutaCode: Map<string, Record<string, string | undefined>>;
+  selection: MapAnalyticsEntityDetailsSelection;
+  sourceSeriesIdBySeriesId?: ReadonlyMap<string, string>;
+  uatMetadataBySirutaCode: ReadonlyMap<string, { uatName: string; countyName: string; entityCui?: string }>;
+  uatSeriesRows: readonly MapAnalyticsEntitySeriesRow[];
+  valuesBySeriesId?: MapSeriesVectorCache;
+  unitsBySeriesId?: Map<string, string | undefined>;
+}): MapAnalyticsEntityGroupContext | undefined {
+  if (!params.activeGroupWorkspaceId) {
+    return undefined;
+  }
+
+  const groupId =
+    params.groupValuesBySirutaCode.get(params.selection.sirutaCode)?.[params.activeGroupWorkspaceId];
+  if (!groupId) {
+    return undefined;
+  }
+
+  const metadata = params.groupMetadataById.get(`${params.activeGroupWorkspaceId}::${groupId}`);
+  if (!metadata) {
+    return undefined;
+  }
+
+  const memberNames = metadata.memberSirutaCodes
+    .map((sirutaCode) => params.uatMetadataBySirutaCode.get(sirutaCode)?.uatName?.trim())
+    .filter((name): name is string => Boolean(name));
+  const memberPreviewLabels =
+    memberNames.length > 5
+      ? [...memberNames.slice(0, 5), t`+${memberNames.length - 5} more`]
+      : memberNames;
+  const activeSeriesId =
+    params.activeSeriesId ?? params.groupSeriesRows.find((row) => row.isActive)?.id;
+  const memberValueSeriesId = activeSeriesId
+    ? params.sourceSeriesIdBySeriesId?.get(activeSeriesId) ?? activeSeriesId
+    : undefined;
+  const activeUnit = activeSeriesId ? params.unitsBySeriesId?.get(activeSeriesId) : undefined;
+  const memberRows: MapAnalyticsEntityGroupMemberRow[] =
+    memberValueSeriesId && params.valuesBySeriesId
+      ? metadata.memberSirutaCodes.map((sirutaCode) => {
+          const metadataEntry = params.uatMetadataBySirutaCode.get(sirutaCode);
+          const value = params.valuesBySeriesId?.get(memberValueSeriesId)?.get(sirutaCode);
+
+          return {
+            label: metadataEntry?.uatName?.trim() || `UAT ${sirutaCode}`,
+            sirutaCode,
+            value,
+            formattedValue: formatAdvancedMapAnalyticsSeriesValue(value, activeUnit),
+            isSelected: sirutaCode === params.selection.sirutaCode,
+          };
+        })
+      : [];
+
+  return {
+    groupLabel: metadata.groupLabel,
+    groupSeriesRows: params.groupSeriesRows,
+    memberCount: metadata.memberSirutaCodes.length,
+    memberPreviewLabels,
+    memberRows,
+    selectedUatName: params.selection.uatName,
+    uatSeriesRows: params.uatSeriesRows,
+    workspaceLabel: metadata.groupingLabel,
+  };
 }
 
 interface BuildPublicHeatmapDataArgs {

@@ -70,6 +70,8 @@ import {
 } from '@/features/advanced-map-analytics/map-viewport-utils';
 import {
   buildPublicEntitySeriesRows,
+  buildPublicEntityGroupContext,
+  buildPublicEntityUatSeriesRows,
   buildPublicHeatmapData,
   buildPublicMapFeatureStyle,
   buildPublicMapTooltipContent,
@@ -619,6 +621,67 @@ export function MapAnalyticsPublicView({
     valuesBySeriesId,
   ]);
 
+  const selectedMapEntityUatSeriesRows = useMemo(() => {
+    if (!selectedMapEntity) {
+      return [];
+    }
+    return buildPublicEntityUatSeriesRows({
+      enabledSeries,
+      activeSeriesId: resolvedActiveSeriesId,
+      selection: selectedMapEntity,
+      valuesBySeriesId,
+      unitsBySeriesId,
+      domainsBySeriesId,
+      groupValuesBySirutaCode,
+    });
+  }, [
+    domainsBySeriesId,
+    enabledSeries,
+    groupValuesBySirutaCode,
+    resolvedActiveSeriesId,
+    selectedMapEntity,
+    unitsBySeriesId,
+    valuesBySeriesId,
+  ]);
+
+  const selectedMapEntityGroupContext = useMemo(() => {
+    if (!selectedMapEntity) {
+      return undefined;
+    }
+
+    const sourceSeriesIdBySeriesId = new Map(
+      enabledSeries
+        .filter((series) => series.type === 'map-grouped-value-series')
+        .map((series) => [series.id, series.sourceSeriesId])
+    );
+
+    return buildPublicEntityGroupContext({
+      activeGroupWorkspaceId: activeGroupWorkspaceIdForDisplay,
+      activeSeriesId: resolvedActiveSeriesId,
+      groupMetadataById,
+      groupSeriesRows: selectedMapEntitySeriesRows,
+      groupValuesBySirutaCode,
+      selection: selectedMapEntity,
+      sourceSeriesIdBySeriesId,
+      uatMetadataBySirutaCode,
+      uatSeriesRows: selectedMapEntityUatSeriesRows,
+      valuesBySeriesId,
+      unitsBySeriesId,
+    });
+  }, [
+    activeGroupWorkspaceIdForDisplay,
+    groupMetadataById,
+    groupValuesBySirutaCode,
+    enabledSeries,
+    resolvedActiveSeriesId,
+    selectedMapEntity,
+    selectedMapEntitySeriesRows,
+    selectedMapEntityUatSeriesRows,
+    unitsBySeriesId,
+    uatMetadataBySirutaCode,
+    valuesBySeriesId,
+  ]);
+
   const selectedEntityProfileQuery = useEntityProfile(selectedMapEntity?.entityCui);
   const selectedEntityProfileErrorMessage =
     selectedEntityProfileQuery.error instanceof Error
@@ -938,6 +1001,7 @@ export function MapAnalyticsPublicView({
                 <MapAnalyticsEntityDetailsPanel
                   selection={selectedMapEntity}
                   seriesRows={selectedMapEntitySeriesRows}
+                  groupContext={selectedMapEntityGroupContext}
                   isMobile={isMobile}
                   isProfileLoading={selectedEntityProfileQuery.isLoading}
                   profile={selectedEntityProfileQuery.data}
