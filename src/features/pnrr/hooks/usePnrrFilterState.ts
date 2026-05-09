@@ -100,6 +100,7 @@ export function usePnrrFilterState() {
   const location = useLocation()
 
   useEffect(() => {
+    if (location.pathname !== '/pnrr') return
     if (!location.searchStr) return
 
     const canonicalSearch = parsePnrrSearchString(location.searchStr)
@@ -110,7 +111,7 @@ export function usePnrrFilterState() {
       replace: true,
       resetScroll: false,
     })
-  }, [location.searchStr, navigate])
+  }, [location.pathname, location.searchStr, navigate])
 
   const updateSearch = useCallback(
     (partial: Partial<PnrrSearchState>) => {

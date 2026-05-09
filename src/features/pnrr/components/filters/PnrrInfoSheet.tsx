@@ -12,7 +12,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import { Info, LibraryBig } from 'lucide-react'
+import { FileWarning, Info, LibraryBig } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 interface PnrrInfoSheetProps {
@@ -56,6 +56,41 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
                     beneficiaries.
                   </Trans>
                 </p>
+              </div>
+            </section>
+
+            <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]">
+              <SectionHeader>
+                <Trans>Project table icon legend</Trans>
+              </SectionHeader>
+              <div className="divide-y divide-[var(--pnrr-border)]">
+                <LegendRow
+                  icon={
+                    <span className="h-3 w-3 rounded-full bg-[var(--pnrr-green)]" />
+                  }
+                  title={<Trans>Risk signal on this project</Trans>}
+                  description={
+                    <Trans>
+                      The project matches at least one risk rule, such as high
+                      value with low progress, a financial-technical gap, or
+                      reported financial progress over 100%. It is a signal for
+                      verification, not a verdict.
+                    </Trans>
+                  }
+                />
+                <LegendRow
+                  icon={
+                    <FileWarning className="h-4 w-4 text-[var(--pnrr-blue)]" />
+                  }
+                  title={<Trans>Data quality signal</Trans>}
+                  description={
+                    <Trans>
+                      The project has a published-data issue, such as possible
+                      duplicate rows or missing financial progress. It does not
+                      automatically indicate wrongdoing or zero payments.
+                    </Trans>
+                  }
+                />
               </div>
             </section>
 
@@ -488,6 +523,32 @@ function DefinitionRow({
       <p className="text-sm font-medium leading-relaxed text-[var(--pnrr-muted)]">
         {description}
       </p>
+    </div>
+  )
+}
+
+function LegendRow({
+  icon,
+  title,
+  description,
+}: {
+  readonly icon: ReactNode
+  readonly title: ReactNode
+  readonly description: ReactNode
+}) {
+  return (
+    <div className="grid gap-3 p-5 sm:grid-cols-[36px_1fr]">
+      <div className="flex h-8 w-8 items-center justify-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)]">
+        {icon}
+      </div>
+      <div>
+        <p className="text-sm font-black leading-snug text-[var(--pnrr-fg)]">
+          {title}
+        </p>
+        <p className="mt-1 text-sm font-medium leading-relaxed text-[var(--pnrr-muted)]">
+          {description}
+        </p>
+      </div>
     </div>
   )
 }
