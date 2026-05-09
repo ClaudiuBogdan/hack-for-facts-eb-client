@@ -190,6 +190,7 @@ export function MapAnalyticsPublicView({
 
   const {
     valuesBySeriesId,
+    unfilteredValuesBySeriesId: rawUnfilteredValuesBySeriesId,
     mapValuesBySeriesId,
     domainsBySeriesId,
     unitsBySeriesId,
@@ -199,6 +200,7 @@ export function MapAnalyticsPublicView({
     isLoading: isSeriesLoading,
     error: seriesError,
   } = seriesDataResult;
+  const unfilteredValuesBySeriesId = rawUnfilteredValuesBySeriesId ?? valuesBySeriesId;
 
   const activeSeries = useMemo<MapSupportedSeries | undefined>(() => {
     if (!resolvedActiveSeriesId) {
@@ -623,6 +625,7 @@ export function MapAnalyticsPublicView({
       activeSeriesId: resolvedActiveSeriesId,
       selection: selectedMapEntity,
       valuesBySeriesId,
+      unfilteredValuesBySeriesId,
       displayValuesBySeriesId: manualGroupDisplayValuesBySeriesId,
       unitsBySeriesId,
       domainsBySeriesId,
@@ -636,6 +639,7 @@ export function MapAnalyticsPublicView({
     resolvedActiveSeriesId,
     selectedMapEntity,
     unitsBySeriesId,
+    unfilteredValuesBySeriesId,
     valuesBySeriesId,
   ]);
 
@@ -648,6 +652,7 @@ export function MapAnalyticsPublicView({
       activeSeriesId: resolvedActiveSeriesId,
       selection: selectedMapEntity,
       valuesBySeriesId,
+      unfilteredValuesBySeriesId,
       unitsBySeriesId,
       domainsBySeriesId,
       groupValuesBySirutaCode,
@@ -659,6 +664,7 @@ export function MapAnalyticsPublicView({
     resolvedActiveSeriesId,
     selectedMapEntity,
     unitsBySeriesId,
+    unfilteredValuesBySeriesId,
     valuesBySeriesId,
   ]);
 
@@ -684,6 +690,7 @@ export function MapAnalyticsPublicView({
       uatMetadataBySirutaCode,
       uatSeriesRows: selectedMapEntityUatSeriesRows,
       valuesBySeriesId,
+      unfilteredValuesBySeriesId,
       unitsBySeriesId,
     });
   }, [
@@ -697,6 +704,7 @@ export function MapAnalyticsPublicView({
     selectedMapEntityUatSeriesRows,
     unitsBySeriesId,
     uatMetadataBySirutaCode,
+    unfilteredValuesBySeriesId,
     valuesBySeriesId,
   ]);
 

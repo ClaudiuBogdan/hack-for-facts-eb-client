@@ -18,7 +18,7 @@ msgid "\"Project count\" is the distinct number of id_angajament. The main file 
 msgstr "\"Project count\" is the distinct number of id_angajament. The main file has more records than projects, because the same project can have multiple rows on measures, components or funding sources. Project tables group these rows, and charts that distribute values sum the official rows."
 
 #. placeholder {0}: formatPnrrCurrency(amount, currency)
-#: src/features/pnrr/components/PnrrMapView.tsx:634
+#: src/features/pnrr/components/PnrrMapView.tsx:665
 msgid "{0} / inhabitant"
 msgstr "{0} / inhabitant"
 
@@ -30,7 +30,7 @@ msgstr "{0} listed value in {1} records"
 
 #. placeholder {0}: formatNumber(amount, 'compact')
 #. placeholder {0}: page.totalCount.toLocaleString('ro-RO')
-#: src/features/pnrr/components/PnrrMapView.tsx:632
+#: src/features/pnrr/components/PnrrMapView.tsx:663
 #: src/features/pnrr/components/table/PnrrProjectTable.tsx:437
 msgid "{0} projects"
 msgstr "{0} projects"
@@ -59,7 +59,7 @@ msgid "{0} records in the official dataset"
 msgstr "{0} records in the official dataset"
 
 #. placeholder {0}: formatNumber(amount, 'compact')
-#: src/features/pnrr/components/PnrrMapView.tsx:636
+#: src/features/pnrr/components/PnrrMapView.tsx:667
 msgid "{0}% grant"
 msgstr "{0}% grant"
 
@@ -81,7 +81,7 @@ msgid "{0}% of projects do not have published financial progress in the dataset.
 msgstr "{0}% of projects do not have published financial progress in the dataset. Signals based on financial progress may be underestimated."
 
 #. placeholder {0}: formatNumber(amount, 'compact')
-#: src/features/pnrr/components/PnrrMapView.tsx:638
+#: src/features/pnrr/components/PnrrMapView.tsx:669
 msgid "{0}% technically implemented"
 msgstr "{0}% technically implemented"
 
@@ -280,14 +280,14 @@ msgstr "Clear all filters"
 msgid "Clear search"
 msgstr "Clear search"
 
-#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:173
+#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:191
 msgid "Click a beneficiary to filter exactly by CUI."
 msgstr "Click a beneficiary to filter exactly by CUI."
 
 #: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:739
 #: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:520
 #: src/features/pnrr/components/PnrrAnomalyInfoPanel.tsx:372
-#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:301
+#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:319
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:333
 #: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:636
 msgid "Close"
@@ -319,7 +319,7 @@ msgstr "Component"
 msgid "components"
 msgstr "components"
 
-#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:215
+#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:233
 msgid "Components"
 msgstr "Components"
 
@@ -343,9 +343,9 @@ msgstr "Counties"
 
 #: src/features/pnrr/components/filters/PnrrActiveFilters.tsx:123
 #: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:236
-#: src/features/pnrr/components/PnrrCountyDetailsPanel.tsx:36
+#: src/features/pnrr/components/PnrrCountyDetailsPanel.tsx:42
 #: src/features/pnrr/components/PnrrMapFilterPanel.tsx:19
-#: src/features/pnrr/components/PnrrMapView.tsx:574
+#: src/features/pnrr/components/PnrrMapView.tsx:605
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:285
 #: src/features/pnrr/components/table/PnrrProjectTable.tsx:362
 msgid "County"
@@ -578,7 +578,7 @@ msgid "Grant / Loan / Mixt"
 msgstr "Grant / Loan / Mixt"
 
 #: src/features/pnrr/components/PnrrMapFilterPanel.tsx:38
-#: src/features/pnrr/components/PnrrMapView.tsx:50
+#: src/features/pnrr/components/PnrrMapView.tsx:49
 #: src/features/pnrr/hooks/usePnrrMapSeries.ts:256
 msgid "Grant %"
 msgstr "Grant %"
@@ -640,7 +640,7 @@ msgid "Implementation status"
 msgstr "Implementation status"
 
 #: src/features/pnrr/components/PnrrMapFilterPanel.tsx:39
-#: src/features/pnrr/components/PnrrMapView.tsx:51
+#: src/features/pnrr/components/PnrrMapView.tsx:50
 #: src/features/pnrr/hooks/usePnrrMapSeries.ts:257
 msgid "Implemented %"
 msgstr "Implemented %"
@@ -722,7 +722,7 @@ msgid "Listed budget"
 msgstr "Listed budget"
 
 #: src/features/pnrr/components/PnrrMapFilterPanel.tsx:35
-#: src/features/pnrr/components/PnrrMapView.tsx:47
+#: src/features/pnrr/components/PnrrMapView.tsx:46
 #: src/features/pnrr/components/PnrrStatsRibbon.tsx:23
 #: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:542
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:189
@@ -757,12 +757,12 @@ msgstr "Listed value over 10 mil. EUR and reported technical progress under 30%.
 msgid "Listed value: {0} € from {1} official records."
 msgstr "Listed value: {0} € from {1} official records."
 
-#: src/features/pnrr/components/PnrrMapPreview.tsx:356
-#: src/features/pnrr/components/PnrrMapPreview.tsx:364
-#: src/features/pnrr/components/PnrrMapPreview.tsx:371
-#: src/features/pnrr/components/PnrrMapView.tsx:431
-#: src/features/pnrr/components/PnrrMapView.tsx:439
-#: src/features/pnrr/components/PnrrMapView.tsx:446
+#: src/features/pnrr/components/PnrrMapPreview.tsx:362
+#: src/features/pnrr/components/PnrrMapPreview.tsx:370
+#: src/features/pnrr/components/PnrrMapPreview.tsx:377
+#: src/features/pnrr/components/PnrrMapView.tsx:458
+#: src/features/pnrr/components/PnrrMapView.tsx:466
+#: src/features/pnrr/components/PnrrMapView.tsx:473
 msgid "Loading map..."
 msgstr "Loading map..."
 
@@ -793,16 +793,16 @@ msgstr "Location"
 msgid "Map"
 msgstr "Map"
 
-#: src/features/pnrr/components/PnrrMapPreview.tsx:401
-#: src/features/pnrr/components/PnrrMapView.tsx:476
+#: src/features/pnrr/components/PnrrMapPreview.tsx:406
+#: src/features/pnrr/components/PnrrMapView.tsx:505
 msgid "Map geometry not available."
 msgstr "Map geometry not available."
 
-#: src/features/pnrr/components/PnrrMapView.tsx:600
+#: src/features/pnrr/components/PnrrMapView.tsx:631
 msgid "Map indicator"
 msgstr "Map indicator"
 
-#: src/features/pnrr/components/PnrrMapView.tsx:571
+#: src/features/pnrr/components/PnrrMapView.tsx:602
 msgid "Map level"
 msgstr "Map level"
 
@@ -870,7 +870,7 @@ msgstr "National"
 msgid "National is a location or beneficiary category for rows without a unique local assignment; it is not a third main-level sector."
 msgstr "National is a location or beneficiary category for rows without a unique local assignment; it is not a third main-level sector."
 
-#: src/features/pnrr/components/PnrrMapView.tsx:499
+#: src/features/pnrr/components/PnrrMapView.tsx:528
 msgid "national projects outside the map"
 msgstr "national projects outside the map"
 
@@ -883,9 +883,9 @@ msgstr "Next"
 msgid "NGOs / associations"
 msgstr "NGOs / associations"
 
-#: src/features/pnrr/components/PnrrMapPreview.tsx:279
-#: src/features/pnrr/components/PnrrMapView.tsx:354
-#: src/features/pnrr/components/PnrrMapView.tsx:364
+#: src/features/pnrr/components/PnrrMapPreview.tsx:285
+#: src/features/pnrr/components/PnrrMapView.tsx:392
+#: src/features/pnrr/components/PnrrMapView.tsx:402
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:139
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:320
 msgid "No data"
@@ -940,7 +940,7 @@ msgstr "Only projects with risk signals"
 msgid "Only risk signals"
 msgstr "Only risk signals"
 
-#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:153
+#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:171
 #: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:603
 msgid "Only the largest projects are shown."
 msgstr "Only the largest projects are shown."
@@ -971,7 +971,7 @@ msgid "Package reduced from ~€28.5B to ~€21.6B (2025)"
 msgstr "Package reduced from ~€28.5B to ~€21.6B (2025)"
 
 #: src/features/pnrr/components/PnrrMapFilterPanel.tsx:37
-#: src/features/pnrr/components/PnrrMapView.tsx:49
+#: src/features/pnrr/components/PnrrMapView.tsx:48
 #: src/features/pnrr/hooks/usePnrrMapSeries.ts:255
 msgid "Per capita"
 msgstr "Per capita"
@@ -1042,8 +1042,8 @@ msgstr "Progress"
 msgid "Proiecte"
 msgstr "Projects"
 
-#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:104
-#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:198
+#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:122
+#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:216
 msgid "project"
 msgstr "project"
 
@@ -1052,7 +1052,7 @@ msgid "Project"
 msgstr "Project"
 
 #: src/features/pnrr/components/PnrrMapFilterPanel.tsx:36
-#: src/features/pnrr/components/PnrrMapView.tsx:48
+#: src/features/pnrr/components/PnrrMapView.tsx:47
 #: src/features/pnrr/hooks/usePnrrMapSeries.ts:254
 msgid "Project count"
 msgstr "Project count"
@@ -1073,9 +1073,9 @@ msgstr "Project Title"
 
 #: src/features/pnrr/components/PnrrHeader.tsx:224
 #: src/features/pnrr/components/PnrrHeader.tsx:248
-#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:104
-#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:198
-#: src/features/pnrr/components/PnrrMapView.tsx:130
+#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:122
+#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:216
+#: src/features/pnrr/components/PnrrMapView.tsx:156
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:519
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:526
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:719
@@ -1084,7 +1084,7 @@ msgid "projects"
 msgstr "projects"
 
 #: src/features/pnrr/components/charts/PnrrComponentChart.tsx:136
-#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:112
+#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:130
 #: src/features/pnrr/components/PnrrProjectsPreview.tsx:39
 #: src/features/pnrr/components/PnrrTabNav.tsx:18
 #: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:296
@@ -1097,7 +1097,7 @@ msgstr "Projects"
 msgid "Projects vs official records"
 msgstr "Projects vs official records"
 
-#: src/features/pnrr/components/PnrrMapPreview.tsx:338
+#: src/features/pnrr/components/PnrrMapPreview.tsx:344
 msgid "projects with location"
 msgstr "projects with location"
 
@@ -1105,7 +1105,7 @@ msgstr "projects with location"
 msgid "projects with risk signals"
 msgstr "projects with risk signals"
 
-#: src/features/pnrr/components/PnrrMapView.tsx:506
+#: src/features/pnrr/components/PnrrMapView.tsx:535
 msgid "projects without UAT mapping"
 msgstr "projects without UAT mapping"
 
@@ -1229,7 +1229,7 @@ msgid "Risk signal type"
 msgstr "Risk signal type"
 
 #: src/features/pnrr/components/PnrrAnomalyInfoPanel.tsx:151
-#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:116
+#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:134
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:328
 msgid "Risk signals"
 msgstr "Risk signals"
@@ -1250,7 +1250,7 @@ msgstr "Risk signals indicate projects where reported financial progress, report
 msgid "Risk signals, not verdict"
 msgstr "Risk signals, not verdict"
 
-#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:94
+#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:112
 msgid "risks"
 msgstr "risks"
 
@@ -1279,7 +1279,7 @@ msgstr "Semnal de risc"
 msgid "Semnale de risc"
 msgstr "Semnale de risc"
 
-#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:254
+#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:272
 msgid "Semnale de risc detectate"
 msgstr "Risk signals detected"
 
@@ -1468,7 +1468,7 @@ msgstr "This is the fixed rate used by the PNRR dashboard model, not a daily BNR
 msgid "Title, beneficiary, CUI, or locality..."
 msgstr "Title, beneficiary, CUI, or locality..."
 
-#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:172
+#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:190
 msgid "Top beneficiaries"
 msgstr "Top beneficiaries"
 
@@ -1492,7 +1492,7 @@ msgstr "Top Counties"
 msgid "Top counties: listed value"
 msgstr "Top counties: listed value"
 
-#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:152
+#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:170
 msgid "Top projects"
 msgstr "Top projects"
 
@@ -1521,13 +1521,13 @@ msgstr "Try changing the filters or searching for something else."
 #: src/features/pnrr/components/filters/PnrrActiveFilters.tsx:98
 #: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:413
 #: src/features/pnrr/components/PnrrMapFilterPanel.tsx:20
-#: src/features/pnrr/components/PnrrMapView.tsx:575
-#: src/features/pnrr/components/PnrrUatDetailsPanel.tsx:41
+#: src/features/pnrr/components/PnrrMapView.tsx:606
+#: src/features/pnrr/components/PnrrUatDetailsPanel.tsx:47
 #: src/features/pnrr/lib/filter-constants.ts:75
 msgid "UAT"
 msgstr "UAT"
 
-#: src/features/pnrr/components/PnrrMapPreview.tsx:335
+#: src/features/pnrr/components/PnrrMapPreview.tsx:341
 msgid "UAT map"
 msgstr "UAT map"
 
@@ -1535,7 +1535,7 @@ msgstr "UAT map"
 msgid "Unknown"
 msgstr "Unknown"
 
-#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:121
+#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:139
 msgid "Unpublished data"
 msgstr "Unpublished data"
 
@@ -1570,15 +1570,15 @@ msgstr "View all filtered projects"
 msgid "View all projects"
 msgstr "View all projects"
 
-#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:144
+#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:162
 msgid "View beneficiaries in UAT"
 msgstr "View beneficiaries in UAT"
 
-#: src/features/pnrr/components/PnrrMapPreview.tsx:348
+#: src/features/pnrr/components/PnrrMapPreview.tsx:354
 msgid "View full map"
 msgstr "View full map"
 
-#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:135
+#: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:153
 msgid "View projects in UAT"
 msgstr "View projects in UAT"
 

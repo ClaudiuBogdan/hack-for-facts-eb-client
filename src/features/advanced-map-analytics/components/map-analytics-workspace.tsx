@@ -2174,6 +2174,7 @@ export function MapAnalyticsWorkspace({
 
   const {
     valuesBySeriesId,
+    unfilteredValuesBySeriesId: rawUnfilteredValuesBySeriesId,
     mapValuesBySeriesId,
     domainsBySeriesId,
     unitsBySeriesId,
@@ -2196,6 +2197,7 @@ export function MapAnalyticsWorkspace({
     bundledGroupedSeriesData,
     bundledRemoteBaseSeriesHash,
   });
+  const unfilteredValuesBySeriesId = rawUnfilteredValuesBySeriesId ?? valuesBySeriesId;
 
   const activeSeries = useMemo(
     () => mapState.series.find((series) => series.id === activeSeriesId && series.enabled),
@@ -2752,26 +2754,43 @@ export function MapAnalyticsWorkspace({
       return [];
     }
 
-    return enabledSeries.map((series) => ({
-      id: series.id,
-      label: resolveSeriesDisplayLabel(series),
-      payload:
-        uploadedDatasetPayloadsBySeriesId
-          .get(series.id)
-          ?.get(selectedMapEntity.sirutaCode) ?? null,
-      value: formatAdvancedMapAnalyticsSeriesValue(
+    return enabledSeries.map((series) => {
+      const unit = resolveSeriesDisplayUnit(series, unitsBySeriesId, displayUnitOverridesBySeriesId);
+      const filteredValue =
         manualGroupDisplayValuesBySeriesId?.get(series.id)?.get(selectedMapEntity.sirutaCode) ??
-          resolveSeriesDisplayValueForSiruta({
-            seriesId: series.id,
-            sirutaCode: selectedMapEntity.sirutaCode,
-            valuesBySeriesId,
-            domainsBySeriesId,
-            groupValuesBySirutaCode,
-          }),
-        resolveSeriesDisplayUnit(series, unitsBySeriesId, displayUnitOverridesBySeriesId)
-      ),
-      isActive: series.id === activeSeriesId,
-    }));
+        resolveSeriesDisplayValueForSiruta({
+          seriesId: series.id,
+          sirutaCode: selectedMapEntity.sirutaCode,
+          valuesBySeriesId,
+          domainsBySeriesId,
+          groupValuesBySirutaCode,
+        });
+      const unfilteredValue = resolveSeriesDisplayValueForSiruta({
+        seriesId: series.id,
+        sirutaCode: selectedMapEntity.sirutaCode,
+        valuesBySeriesId: unfilteredValuesBySeriesId,
+        domainsBySeriesId,
+        groupValuesBySirutaCode,
+      });
+      const isFilteredOut = filteredValue === undefined && unfilteredValue !== undefined;
+
+      return {
+        id: series.id,
+        label: resolveSeriesDisplayLabel(series),
+        payload:
+          uploadedDatasetPayloadsBySeriesId
+            .get(series.id)
+            ?.get(selectedMapEntity.sirutaCode) ?? null,
+        value: isFilteredOut
+          ? t`Filtered out`
+          : formatAdvancedMapAnalyticsSeriesValue(filteredValue, unit),
+        unfilteredValue: isFilteredOut
+          ? formatAdvancedMapAnalyticsSeriesValue(unfilteredValue, unit)
+          : undefined,
+        isFilteredOut,
+        isActive: series.id === activeSeriesId,
+      };
+    });
   }, [
     activeSeriesId,
     displayUnitOverridesBySeriesId,
@@ -2779,6 +2798,7 @@ export function MapAnalyticsWorkspace({
     selectedMapEntity,
     unitsBySeriesId,
     uploadedDatasetPayloadsBySeriesId,
+    unfilteredValuesBySeriesId,
     domainsBySeriesId,
     groupValuesBySirutaCode,
     manualGroupDisplayValuesBySeriesId,
@@ -2794,10 +2814,10 @@ export function MapAnalyticsWorkspace({
       const domain = domainsBySeriesId.get(series.id);
       const value =
         series.type === 'map-grouped-value-series'
-          ? valuesBySeriesId.get(series.sourceSeriesId)?.get(selectedMapEntity.sirutaCode)
+          ? unfilteredValuesBySeriesId.get(series.sourceSeriesId)?.get(selectedMapEntity.sirutaCode)
           : domain?.type === 'group'
             ? undefined
-            : valuesBySeriesId.get(series.id)?.get(selectedMapEntity.sirutaCode);
+            : unfilteredValuesBySeriesId.get(series.id)?.get(selectedMapEntity.sirutaCode);
 
       return {
         id: series.id,
@@ -2821,7 +2841,7 @@ export function MapAnalyticsWorkspace({
     selectedMapEntity,
     unitsBySeriesId,
     uploadedDatasetPayloadsBySeriesId,
-    valuesBySeriesId,
+    unfilteredValuesBySeriesId,
   ]);
 
   const selectedMapEntityGroupContext = useMemo(() => {
@@ -2846,6 +2866,7 @@ export function MapAnalyticsWorkspace({
       uatMetadataBySirutaCode,
       uatSeriesRows: selectedMapEntityUatSeriesRows,
       valuesBySeriesId,
+      unfilteredValuesBySeriesId,
       unitsBySeriesId: seriesColumnsById,
     });
   }, [
@@ -2859,6 +2880,7 @@ export function MapAnalyticsWorkspace({
     selectedMapEntityUatSeriesRows,
     seriesColumnsById,
     uatMetadataBySirutaCode,
+    unfilteredValuesBySeriesId,
     valuesBySeriesId,
   ]);
 

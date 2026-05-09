@@ -353,6 +353,7 @@ interface BuildPublicEntitySeriesRowsArgs {
   activeSeriesId: string | undefined;
   selection: MapAnalyticsEntityDetailsSelection;
   valuesBySeriesId: MapSeriesVectorCache;
+  unfilteredValuesBySeriesId?: MapSeriesVectorCache;
   displayValuesBySeriesId?: MapSeriesVectorCache;
   unitsBySeriesId: Map<string, string | undefined>;
   domainsBySeriesId?: MapSeriesDomainCache;
@@ -375,28 +376,48 @@ export function buildPublicEntitySeriesRows({
   activeSeriesId,
   selection,
   valuesBySeriesId,
+  unfilteredValuesBySeriesId,
   displayValuesBySeriesId,
   unitsBySeriesId,
   domainsBySeriesId,
   groupValuesBySirutaCode,
 }: BuildPublicEntitySeriesRowsArgs): MapAnalyticsEntitySeriesRow[] {
-  return enabledSeries.map((series) => ({
-    id: series.id,
-    label: resolveSeriesDisplayLabel(series),
-    payload: null,
-    value: formatAdvancedMapAnalyticsSeriesValue(
+  return enabledSeries.map((series) => {
+    const unit = resolveSeriesDisplayUnit(series, unitsBySeriesId);
+    const filteredValue =
       displayValuesBySeriesId?.get(series.id)?.get(selection.sirutaCode) ??
-        resolveSeriesDisplayValueForSiruta({
+      resolveSeriesDisplayValueForSiruta({
+        seriesId: series.id,
+        sirutaCode: selection.sirutaCode,
+        valuesBySeriesId,
+        domainsBySeriesId: domainsBySeriesId ?? new Map(),
+        groupValuesBySirutaCode: groupValuesBySirutaCode ?? new Map(),
+      });
+    const unfilteredValue = unfilteredValuesBySeriesId
+      ? resolveSeriesDisplayValueForSiruta({
           seriesId: series.id,
           sirutaCode: selection.sirutaCode,
-          valuesBySeriesId,
+          valuesBySeriesId: unfilteredValuesBySeriesId,
           domainsBySeriesId: domainsBySeriesId ?? new Map(),
           groupValuesBySirutaCode: groupValuesBySirutaCode ?? new Map(),
-        }),
-      resolveSeriesDisplayUnit(series, unitsBySeriesId)
-    ),
-    isActive: series.id === activeSeriesId,
-  }));
+        })
+      : filteredValue;
+    const isFilteredOut = filteredValue === undefined && unfilteredValue !== undefined;
+
+    return {
+      id: series.id,
+      label: resolveSeriesDisplayLabel(series),
+      payload: null,
+      value: isFilteredOut
+        ? t`Filtered out`
+        : formatAdvancedMapAnalyticsSeriesValue(filteredValue, unit),
+      unfilteredValue: isFilteredOut
+        ? formatAdvancedMapAnalyticsSeriesValue(unfilteredValue, unit)
+        : undefined,
+      isFilteredOut,
+      isActive: series.id === activeSeriesId,
+    };
+  });
 }
 
 /**
@@ -409,17 +430,19 @@ export function buildPublicEntityUatSeriesRows({
   activeSeriesId,
   selection,
   valuesBySeriesId,
+  unfilteredValuesBySeriesId,
   unitsBySeriesId,
   domainsBySeriesId,
 }: BuildPublicEntitySeriesRowsArgs): MapAnalyticsEntitySeriesRow[] {
+  const memberValuesBySeriesId = unfilteredValuesBySeriesId ?? valuesBySeriesId;
   return enabledSeries.map((series) => {
     const domain = domainsBySeriesId?.get(series.id);
     const value =
       series.type === 'map-grouped-value-series'
-        ? valuesBySeriesId.get(series.sourceSeriesId)?.get(selection.sirutaCode)
+        ? memberValuesBySeriesId.get(series.sourceSeriesId)?.get(selection.sirutaCode)
         : domain?.type === 'group'
           ? undefined
-          : valuesBySeriesId.get(series.id)?.get(selection.sirutaCode);
+          : memberValuesBySeriesId.get(series.id)?.get(selection.sirutaCode);
 
     return {
       id: series.id,
@@ -445,6 +468,7 @@ export function buildPublicEntityGroupContext(params: {
   uatMetadataBySirutaCode: ReadonlyMap<string, { uatName: string; countyName: string; entityCui?: string }>;
   uatSeriesRows: readonly MapAnalyticsEntitySeriesRow[];
   valuesBySeriesId?: MapSeriesVectorCache;
+  unfilteredValuesBySeriesId?: MapSeriesVectorCache;
   unitsBySeriesId?: Map<string, string | undefined>;
 }): MapAnalyticsEntityGroupContext | undefined {
   if (!params.activeGroupWorkspaceId) {
@@ -475,11 +499,12 @@ export function buildPublicEntityGroupContext(params: {
     ? params.sourceSeriesIdBySeriesId?.get(activeSeriesId) ?? activeSeriesId
     : undefined;
   const activeUnit = activeSeriesId ? params.unitsBySeriesId?.get(activeSeriesId) : undefined;
+  const memberValuesBySeriesId = params.unfilteredValuesBySeriesId ?? params.valuesBySeriesId;
   const memberRows: MapAnalyticsEntityGroupMemberRow[] =
-    memberValueSeriesId && params.valuesBySeriesId
+    memberValueSeriesId && memberValuesBySeriesId
       ? metadata.memberSirutaCodes.map((sirutaCode) => {
           const metadataEntry = params.uatMetadataBySirutaCode.get(sirutaCode);
-          const value = params.valuesBySeriesId?.get(memberValueSeriesId)?.get(sirutaCode);
+          const value = memberValuesBySeriesId.get(memberValueSeriesId)?.get(sirutaCode);
 
           return {
             label: metadataEntry?.uatName?.trim() || `UAT ${sirutaCode}`,

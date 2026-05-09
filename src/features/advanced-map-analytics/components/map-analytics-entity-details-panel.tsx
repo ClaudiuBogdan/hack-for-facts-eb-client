@@ -36,9 +36,11 @@ export interface MapAnalyticsEntityDetailsSelection {
 
 export interface MapAnalyticsEntitySeriesRow {
   readonly id: string;
+  readonly isFilteredOut?: boolean;
   readonly isActive: boolean;
   readonly label: string;
   readonly payload?: AdvancedMapDatasetJsonItem | null;
+  readonly unfilteredValue?: string;
   readonly value: string;
 }
 
@@ -437,8 +439,12 @@ function GroupMemberValuesList({
         {activeGroupRow ? (
           <GroupMemberValueRow
             label={groupContext.groupLabel}
-            sublabel={t`Group value`}
-            value={activeGroupRow.value}
+            sublabel={
+              activeGroupRow.isFilteredOut
+                ? t`Group value · Filtered out`
+                : t`Group value`
+            }
+            value={activeGroupRow.unfilteredValue ?? activeGroupRow.value}
             emphasized
           />
         ) : null}
@@ -527,7 +533,17 @@ function GroupSeriesComparisonList({
                   ) : null}
                 </div>
                 <dl className="mt-2 divide-y divide-border/40 rounded-xl border border-border/60 bg-muted/[0.08] px-3">
-                  <CompactValue label={t`Group`} value={groupRow.value} />
+                  <CompactValue
+                    label={t`Group`}
+                    value={groupRow.isFilteredOut ? t`Filtered out` : groupRow.value}
+                  />
+                  {groupRow.isFilteredOut && groupRow.unfilteredValue ? (
+                    <CompactValue
+                      label={t`Group value`}
+                      value={groupRow.unfilteredValue}
+                      note={t`Filtered out`}
+                    />
+                  ) : null}
                   <CompactValue label={t`Selected UAT`} value={uatRow?.value ?? t`N/A`} />
                 </dl>
               </div>
@@ -550,15 +566,22 @@ function GroupSeriesComparisonList({
 
 function CompactValue({
   label,
+  note,
   value,
 }: Readonly<{
   label: string;
+  note?: string;
   value: string;
 }>) {
   return (
     <div className="flex items-baseline justify-between gap-3 py-2.5">
       <dt className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-        {label}
+        <span>{label}</span>
+        {note ? (
+          <span className="ml-1 rounded-full bg-primary/[0.08] px-1.5 py-0.5 text-[9px] tracking-wide text-primary">
+            {note}
+          </span>
+        ) : null}
       </dt>
       <dd className="text-right text-sm font-semibold tabular-nums text-foreground">
         {value}

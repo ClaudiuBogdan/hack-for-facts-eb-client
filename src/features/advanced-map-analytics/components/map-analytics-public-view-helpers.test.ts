@@ -136,6 +136,90 @@ describe('map analytics public view helpers', () => {
     expect(uatRows[0]?.value).not.toContain('999');
   });
 
+  it('marks filtered group rows while keeping raw UAT member values available', () => {
+    const sourceSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    sourceSeries.id = 'source_series';
+    sourceSeries.label = 'Population';
+
+    const groupedSeries = createDefaultAdvancedMapAnalyticsSeries('map-grouped-value-series');
+    if (groupedSeries.type !== 'map-grouped-value-series') {
+      throw new Error('Unexpected series type in test setup');
+    }
+    groupedSeries.id = 'grouped_series';
+    groupedSeries.sourceSeriesId = sourceSeries.id;
+    groupedSeries.label = 'Population';
+
+    const filteredValuesBySeriesId = new Map([
+      [groupedSeries.id, new Map<string, number | undefined>()],
+      [sourceSeries.id, new Map<string, number | undefined>()],
+    ]);
+    const unfilteredValuesBySeriesId = new Map([
+      [groupedSeries.id, new Map([['grp_1', 4_500]])],
+      [sourceSeries.id, new Map([['1001', 2_000], ['2002', 2_500]])],
+    ]);
+
+    const groupRows = buildPublicEntitySeriesRows({
+      enabledSeries: [groupedSeries],
+      activeSeriesId: groupedSeries.id,
+      selection: {
+        sirutaCode: '1001',
+        title: 'Comuna Test',
+        uatName: 'Comuna Test',
+      },
+      valuesBySeriesId: filteredValuesBySeriesId,
+      unfilteredValuesBySeriesId,
+      unitsBySeriesId: new Map([[groupedSeries.id, 'loc.']]),
+      domainsBySeriesId: new Map([
+        [groupedSeries.id, { type: 'group', groupWorkspaceId: 'manual-map-groups' }],
+      ]),
+      groupValuesBySirutaCode: new Map([
+        ['1001', { 'manual-map-groups': 'grp_1' }],
+      ]),
+    });
+
+    expect(groupRows[0]).toMatchObject({
+      value: 'Filtered out',
+      isFilteredOut: true,
+    });
+    expect(groupRows[0]?.unfilteredValue).toContain('4.5');
+
+    const context = buildPublicEntityGroupContext({
+      activeGroupWorkspaceId: 'manual-map-groups',
+      activeSeriesId: groupedSeries.id,
+      groupMetadataById: new Map([
+        [
+          'manual-map-groups::grp_1',
+          {
+            groupWorkspaceId: 'manual-map-groups',
+            groupingLabel: 'Manual groups',
+            groupLabel: 'Central cluster',
+            memberSirutaCodes: ['1001', '2002'],
+          },
+        ],
+      ]),
+      groupSeriesRows: groupRows,
+      groupValuesBySirutaCode: new Map([
+        ['1001', { 'manual-map-groups': 'grp_1' }],
+      ]),
+      selection: {
+        sirutaCode: '1001',
+        title: 'Comuna Test',
+        uatName: 'Comuna Test',
+      },
+      sourceSeriesIdBySeriesId: new Map([[groupedSeries.id, sourceSeries.id]]),
+      uatMetadataBySirutaCode: new Map([
+        ['1001', { uatName: 'Comuna Test', countyName: 'Alba' }],
+        ['2002', { uatName: 'Second UAT', countyName: 'Alba' }],
+      ]),
+      uatSeriesRows: [],
+      valuesBySeriesId: filteredValuesBySeriesId,
+      unfilteredValuesBySeriesId,
+      unitsBySeriesId: new Map([[groupedSeries.id, 'loc.']]),
+    });
+
+    expect(context?.memberRows?.map((row) => row.value)).toEqual([2_000, 2_500]);
+  });
+
   it('builds group context for public entity details', () => {
     const context = buildPublicEntityGroupContext({
       activeGroupWorkspaceId: 'manual-map-groups',

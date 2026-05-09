@@ -44,6 +44,7 @@ interface UseAdvancedMapAnalyticsSeriesDataParams {
 
 interface AdvancedMapAnalyticsSeriesDataResult {
   valuesBySeriesId: MapSeriesVectorCache;
+  unfilteredValuesBySeriesId: MapSeriesVectorCache;
   mapValuesBySeriesId: MapSeriesVectorCache;
   unitsBySeriesId: Map<string, string | undefined>;
   domainsBySeriesId: MapSeriesDomainCache;
@@ -244,6 +245,7 @@ export function useAdvancedMapAnalyticsSeriesData(
 
     return {
       valuesBySeriesId: valueFilterResult.valuesBySeriesId,
+      unfilteredValuesBySeriesId: calculationResult.valuesBySeriesId,
       mapValuesBySeriesId,
       unitsBySeriesId: calculationResult.unitsBySeriesId,
       domainsBySeriesId: calculationResult.domainsBySeriesId,
@@ -266,6 +268,7 @@ export function useAdvancedMapAnalyticsSeriesData(
 
   return {
     valuesBySeriesId: calculated.valuesBySeriesId,
+    unfilteredValuesBySeriesId: calculated.unfilteredValuesBySeriesId,
     mapValuesBySeriesId: calculated.mapValuesBySeriesId,
     unitsBySeriesId: calculated.unitsBySeriesId,
     domainsBySeriesId: calculated.domainsBySeriesId,
