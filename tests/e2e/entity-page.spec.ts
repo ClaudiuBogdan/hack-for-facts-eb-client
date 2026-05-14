@@ -195,8 +195,8 @@ test.describe('Map Page', () => {
   test('loads map visualization', async ({ page }) => {
     await page.goto('/map')
 
-    // Verify the page heading and map container both load.
-    const mapContainer = page.locator('.leaflet-container').first()
+    // Verify the page heading and rendered map surface both load.
+    const mapContainer = page.getByRole('region', { name: /^map$/i }).first()
     const mapHeading = page.getByRole('heading', { name: /map|hartă/i }).first()
 
     await expect(mapHeading).toBeVisible({ timeout: 15000 })
