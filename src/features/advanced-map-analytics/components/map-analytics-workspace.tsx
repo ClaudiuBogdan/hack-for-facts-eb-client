@@ -2186,6 +2186,7 @@ export function MapAnalyticsWorkspace({
   } = useAdvancedMapAnalyticsSeriesData({
     series: mapState.series,
     groupWorkspaces: mapState.groupWorkspaces,
+    activeGroupWorkspaceId: mapState.activeGroupWorkspaceId,
     activeSeriesId: visibleActiveSeriesId,
     valueFilterRules: mapState.valueFilters.rules,
     defaultCurrency: userCurrency,
@@ -2694,6 +2695,26 @@ export function MapAnalyticsWorkspace({
     valuesBySeriesId,
   ]);
 
+  const unfilteredManualGroupDisplayValuesBySeriesId = useMemo(() => {
+    return buildManualGroupDisplayValuesBySeriesId({
+      activeGroupWorkspaceId: activePanelGroupWorkspaceId,
+      activeManualGroupId,
+      groupWorkspaces: mapState.groupWorkspaces,
+      enabledSeries,
+      valuesBySeriesId: unfilteredValuesBySeriesId,
+      mapValuesBySeriesId,
+      domainsBySeriesId,
+    });
+  }, [
+    activeManualGroupId,
+    activePanelGroupWorkspaceId,
+    domainsBySeriesId,
+    enabledSeries,
+    mapState.groupWorkspaces,
+    mapValuesBySeriesId,
+    unfilteredValuesBySeriesId,
+  ]);
+
   const activeSeriesDisplayValues = activeSeriesId
     ? activeMapRenderUnitContext?.valueBySirutaCode ??
       manualGroupDisplayValuesBySeriesId?.get(activeSeriesId) ??
@@ -2765,13 +2786,15 @@ export function MapAnalyticsWorkspace({
           domainsBySeriesId,
           groupValuesBySirutaCode,
         });
-      const unfilteredValue = resolveSeriesDisplayValueForSiruta({
-        seriesId: series.id,
-        sirutaCode: selectedMapEntity.sirutaCode,
-        valuesBySeriesId: unfilteredValuesBySeriesId,
-        domainsBySeriesId,
-        groupValuesBySirutaCode,
-      });
+      const unfilteredValue =
+        unfilteredManualGroupDisplayValuesBySeriesId?.get(series.id)?.get(selectedMapEntity.sirutaCode) ??
+        resolveSeriesDisplayValueForSiruta({
+          seriesId: series.id,
+          sirutaCode: selectedMapEntity.sirutaCode,
+          valuesBySeriesId: unfilteredValuesBySeriesId,
+          domainsBySeriesId,
+          groupValuesBySirutaCode,
+        });
       const isFilteredOut = filteredValue === undefined && unfilteredValue !== undefined;
 
       return {
@@ -2802,6 +2825,7 @@ export function MapAnalyticsWorkspace({
     domainsBySeriesId,
     groupValuesBySirutaCode,
     manualGroupDisplayValuesBySeriesId,
+    unfilteredManualGroupDisplayValuesBySeriesId,
     valuesBySeriesId,
   ]);
 

@@ -179,6 +179,7 @@ export function MapAnalyticsPublicView({
   const seriesDataResult = useAdvancedMapAnalyticsSeriesData({
     series: mapState.series,
     groupWorkspaces: mapState.groupWorkspaces,
+    activeGroupWorkspaceId: mapState.activeGroupWorkspaceId,
     activeSeriesId: requestedActiveSeriesId,
     defaultCurrency: userCurrency,
     defaultInflationAdjusted: userInflationAdjusted,
@@ -371,6 +372,26 @@ export function MapAnalyticsPublicView({
       mapState.groupWorkspaces,
       mapValuesBySeriesId,
       valuesBySeriesId,
+    ]
+  );
+
+  const unfilteredManualGroupDisplayValuesBySeriesId = useMemo(
+    () =>
+      buildManualGroupDisplayValuesBySeriesId({
+        activeGroupWorkspaceId: activeGroupWorkspaceIdForDisplay,
+        groupWorkspaces: mapState.groupWorkspaces,
+        enabledSeries,
+        valuesBySeriesId: unfilteredValuesBySeriesId,
+        mapValuesBySeriesId,
+        domainsBySeriesId,
+      }),
+    [
+      activeGroupWorkspaceIdForDisplay,
+      domainsBySeriesId,
+      enabledSeries,
+      mapState.groupWorkspaces,
+      mapValuesBySeriesId,
+      unfilteredValuesBySeriesId,
     ]
   );
 
@@ -627,6 +648,7 @@ export function MapAnalyticsPublicView({
       valuesBySeriesId,
       unfilteredValuesBySeriesId,
       displayValuesBySeriesId: manualGroupDisplayValuesBySeriesId,
+      unfilteredDisplayValuesBySeriesId: unfilteredManualGroupDisplayValuesBySeriesId,
       unitsBySeriesId,
       domainsBySeriesId,
       groupValuesBySirutaCode,
@@ -636,6 +658,7 @@ export function MapAnalyticsPublicView({
     enabledSeries,
     groupValuesBySirutaCode,
     manualGroupDisplayValuesBySeriesId,
+    unfilteredManualGroupDisplayValuesBySeriesId,
     resolvedActiveSeriesId,
     selectedMapEntity,
     unitsBySeriesId,

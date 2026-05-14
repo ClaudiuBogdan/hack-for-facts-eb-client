@@ -192,6 +192,55 @@ describe('advanced map analytics table rows', () => {
     expect(result.rows.map((row) => row.groupId)).toEqual(['grp_1', 'grp_1', 'grp_1']);
   });
 
+  it('does not show partial group rows after group-aware filtering', () => {
+    const workspaceWithTwoGroups: MapGroupWorkspace = {
+      ...workspace,
+      groups: [
+        ...workspace.groups,
+        {
+          id: 'grp_2',
+          label: 'Group 2',
+          primarySirutaCode: '2001',
+          memberSirutaCodes: ['2001'],
+          memberOrder: ['2001'],
+        },
+      ],
+    };
+    const filteredValuesBySeriesId: MapSeriesVectorCache = new Map([
+      [sourceSeries.id, new Map([['2001', 489]])],
+    ]);
+
+    const result = buildAdvancedMapAnalyticsTableRows({
+      rowMode: 'group_rows_with_members',
+      activeGroupWorkspace: workspaceWithTwoGroups,
+      seriesColumns: [{ id: sourceSeries.id, label: 'Source' }],
+      enabledSeries: [sourceSeries],
+      valuesBySeriesId: filteredValuesBySeriesId,
+      mapValuesBySeriesId: filteredValuesBySeriesId,
+      domainsBySeriesId,
+      groupValuesBySirutaCode: new Map([
+        ...groupValuesBySirutaCode,
+        ['2001', { manual: 'grp_2' }],
+      ]),
+      uatMetadataBySirutaCode: new Map([
+        ...uatMetadataBySirutaCode,
+        ['2001', { uatName: 'Gamma', countyName: 'Galați' }],
+      ]),
+      activeSeriesId: sourceSeries.id,
+      showMemberValues: true,
+      unknownCountyLabel: 'Unknown county',
+    });
+
+    expect(result.rows.map((row) => row.groupId)).toEqual(['grp_2', 'grp_2']);
+    expect(result.rows[0]).toMatchObject({
+      kind: 'group',
+      groupId: 'grp_2',
+      valuesBySeriesId: {
+        source: 489,
+      },
+    });
+  });
+
   it('counts only active ungrouped UAT rows as hidden in grouped modes', () => {
     const sparseSourceValues: MapSeriesVectorCache = new Map([
       [sourceSeries.id, new Map([['9999', 99]])],

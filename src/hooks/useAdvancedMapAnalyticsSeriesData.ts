@@ -30,6 +30,7 @@ const isBrowser = typeof window !== 'undefined';
 interface UseAdvancedMapAnalyticsSeriesDataParams {
   series: MapSupportedSeries[];
   groupWorkspaces?: MapGroupWorkspace[];
+  activeGroupWorkspaceId?: string;
   activeSeriesId?: string;
   defaultCurrency: Currency;
   defaultInflationAdjusted: boolean;
@@ -218,6 +219,8 @@ export function useAdvancedMapAnalyticsSeriesData(
       allValuesBySeriesId: calculationResult.valuesBySeriesId,
       displayValuesBySeriesId,
       domainsBySeriesId: calculationResult.domainsBySeriesId,
+      groupWorkspaces: params.groupWorkspaces,
+      activeGroupWorkspaceId: params.activeGroupWorkspaceId,
       activeSeriesId: resolvedActiveSeriesId,
       rules: params.valueFilterRules ?? [],
     });
@@ -257,6 +260,7 @@ export function useAdvancedMapAnalyticsSeriesData(
     params.localUnitsBySeriesId,
     params.localValuesBySeriesId,
     params.groupWorkspaces,
+    params.activeGroupWorkspaceId,
     normalizedEnabledSeries,
     normalizedSeries,
     normalizedBaseSeries,

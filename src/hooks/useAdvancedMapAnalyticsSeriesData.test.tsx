@@ -7,6 +7,7 @@ import {
   createDefaultAdvancedMapAnalyticsSeries,
   createDefaultAdvancedMapAnalyticsStatsValueFilterRule,
   createDefaultAdvancedMapAnalyticsValueFilterRule,
+  type MapGroupWorkspace,
 } from '@/schemas/advanced-map-analytics';
 import { getRemoteGroupedSeriesHash } from '@/lib/map-series/grouped-series-request';
 import { serializeGroupedSeriesWideMatrixCsv } from '@/lib/map-series/csv';
@@ -652,6 +653,75 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
 
     expect(result.current.valuesBySeriesId.get(calcSeries.id)?.has('1001')).toBe(true);
     expect(result.current.valuesBySeriesId.get(calcSeries.id)?.has('1002')).toBe(false);
+  });
+
+  it('applies active group workspace value filters to whole group values', async () => {
+    const populationSeries = createDefaultAdvancedMapAnalyticsSeries('geojson-dataset-series');
+    if (populationSeries.type !== 'geojson-dataset-series') {
+      throw new Error('Unexpected geojson series type in test setup');
+    }
+    populationSeries.id = 'population';
+
+    const groupWorkspace: MapGroupWorkspace = {
+      id: 'manual-map-groups',
+      key: 'manual-map-groups',
+      label: 'Manual groups',
+      groups: [
+        {
+          id: 'g1',
+          label: 'Group 1',
+          primarySirutaCode: '1001',
+          memberSirutaCodes: ['1001', '1002'],
+          memberOrder: ['1001', '1002'],
+        },
+        {
+          id: 'g2',
+          label: 'Group 2',
+          primarySirutaCode: '2001',
+          memberSirutaCodes: ['2001'],
+          memberOrder: ['2001'],
+        },
+      ],
+    };
+
+    const rule = createDefaultAdvancedMapAnalyticsValueFilterRule();
+    rule.operator = 'lt';
+    rule.value = 500;
+
+    const wrapper = createWrapper();
+    const { result } = renderHook(
+      () =>
+        useAdvancedMapAnalyticsSeriesData({
+          series: [populationSeries],
+          groupWorkspaces: [groupWorkspace],
+          activeGroupWorkspaceId: groupWorkspace.id,
+          activeSeriesId: populationSeries.id,
+          valueFilterRules: [rule],
+          defaultCurrency: 'RON',
+          defaultInflationAdjusted: false,
+          localValuesBySeriesId: new Map([
+            [
+              populationSeries.id,
+              new Map<string, number | undefined>([
+                ['1001', 483],
+                ['1002', 497],
+                ['2001', 489],
+              ]),
+            ],
+          ]),
+        }),
+      { wrapper }
+    );
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    const filteredValues = result.current.valuesBySeriesId.get(populationSeries.id);
+    expect(filteredValues?.has('1001')).toBe(false);
+    expect(filteredValues?.has('1002')).toBe(false);
+    expect(filteredValues?.get('2001')).toBe(489);
+    expect([...(result.current.matchedSirutaCodes ?? [])]).toEqual(['2001']);
   });
 
   it('does not include calculation warnings from disabled series outside current scope', async () => {

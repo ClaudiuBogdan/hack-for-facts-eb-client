@@ -355,6 +355,7 @@ interface BuildPublicEntitySeriesRowsArgs {
   valuesBySeriesId: MapSeriesVectorCache;
   unfilteredValuesBySeriesId?: MapSeriesVectorCache;
   displayValuesBySeriesId?: MapSeriesVectorCache;
+  unfilteredDisplayValuesBySeriesId?: MapSeriesVectorCache;
   unitsBySeriesId: Map<string, string | undefined>;
   domainsBySeriesId?: MapSeriesDomainCache;
   groupValuesBySirutaCode?: Map<string, Record<string, string | undefined>>;
@@ -378,6 +379,7 @@ export function buildPublicEntitySeriesRows({
   valuesBySeriesId,
   unfilteredValuesBySeriesId,
   displayValuesBySeriesId,
+  unfilteredDisplayValuesBySeriesId,
   unitsBySeriesId,
   domainsBySeriesId,
   groupValuesBySirutaCode,
@@ -393,15 +395,17 @@ export function buildPublicEntitySeriesRows({
         domainsBySeriesId: domainsBySeriesId ?? new Map(),
         groupValuesBySirutaCode: groupValuesBySirutaCode ?? new Map(),
       });
-    const unfilteredValue = unfilteredValuesBySeriesId
-      ? resolveSeriesDisplayValueForSiruta({
-          seriesId: series.id,
-          sirutaCode: selection.sirutaCode,
-          valuesBySeriesId: unfilteredValuesBySeriesId,
-          domainsBySeriesId: domainsBySeriesId ?? new Map(),
-          groupValuesBySirutaCode: groupValuesBySirutaCode ?? new Map(),
-        })
-      : filteredValue;
+    const unfilteredValue =
+      unfilteredDisplayValuesBySeriesId?.get(series.id)?.get(selection.sirutaCode) ??
+      (unfilteredValuesBySeriesId
+        ? resolveSeriesDisplayValueForSiruta({
+            seriesId: series.id,
+            sirutaCode: selection.sirutaCode,
+            valuesBySeriesId: unfilteredValuesBySeriesId,
+            domainsBySeriesId: domainsBySeriesId ?? new Map(),
+            groupValuesBySirutaCode: groupValuesBySirutaCode ?? new Map(),
+          })
+        : filteredValue);
     const isFilteredOut = filteredValue === undefined && unfilteredValue !== undefined;
 
     return {

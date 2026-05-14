@@ -4,6 +4,7 @@ import type {
   AdvancedMapAnalyticsValueFilterOperator,
   AdvancedMapAnalyticsValueFilterRule,
   AdvancedMapAnalyticsValueRuleJoin,
+  MapGroupWorkspace,
 } from '@/schemas/advanced-map-analytics';
 import type {
   MapSeriesDomain,
@@ -22,6 +23,8 @@ interface ApplyAdvancedMapAnalyticsValueFiltersInput {
   allValuesBySeriesId: MapSeriesVectorCache;
   displayValuesBySeriesId: MapSeriesVectorCache;
   domainsBySeriesId?: MapSeriesDomainCache;
+  groupWorkspaces?: readonly MapGroupWorkspace[];
+  activeGroupWorkspaceId?: string;
   activeSeriesId?: string;
   rules: AdvancedMapAnalyticsValueFilterRule[];
 }
@@ -29,10 +32,27 @@ interface ApplyAdvancedMapAnalyticsValueFiltersInput {
 export interface ApplyAdvancedMapAnalyticsValueFiltersResult {
   valuesBySeriesId: MapSeriesVectorCache;
   matchedSirutaCodes?: Set<string>;
+  matchedDomain?: MapSeriesDomain;
   warnings: MapSeriesWarning[];
 }
 
 export function applyAdvancedMapAnalyticsValueFilters(
+  input: ApplyAdvancedMapAnalyticsValueFiltersInput
+): ApplyAdvancedMapAnalyticsValueFiltersResult {
+  const activeGroupWorkspace = resolveActiveGroupWorkspace({
+    groupWorkspaces: input.groupWorkspaces,
+    activeGroupWorkspaceId: input.activeGroupWorkspaceId,
+  });
+  const hasEnabledRules = input.rules.some((rule) => rule.enabled);
+
+  if (activeGroupWorkspace && hasEnabledRules) {
+    return applyGroupAwareValueFilters(input, activeGroupWorkspace);
+  }
+
+  return applyDomainValueFilters(input);
+}
+
+function applyDomainValueFilters(
   input: ApplyAdvancedMapAnalyticsValueFiltersInput
 ): ApplyAdvancedMapAnalyticsValueFiltersResult {
   const warnings: MapSeriesWarning[] = [];
@@ -205,8 +225,258 @@ export function applyAdvancedMapAnalyticsValueFilters(
       filterDomain
     ),
     matchedSirutaCodes: currentBand,
+    matchedDomain: filterDomain,
     warnings,
   };
+}
+
+function applyGroupAwareValueFilters(
+  input: ApplyAdvancedMapAnalyticsValueFiltersInput,
+  activeGroupWorkspace: MapGroupWorkspace
+): ApplyAdvancedMapAnalyticsValueFiltersResult {
+  const groupAwareInput = buildGroupAwareValueFilterInput(input, activeGroupWorkspace);
+  const groupResult = applyDomainValueFilters(groupAwareInput);
+  const valuesBySeriesId = projectGroupAwareFilterResult({
+    originalDisplayValuesBySeriesId: input.displayValuesBySeriesId,
+    originalDomainsBySeriesId: input.domainsBySeriesId,
+    filterDomainsBySeriesId: groupAwareInput.domainsBySeriesId,
+    filteredValuesBySeriesId: groupResult.valuesBySeriesId,
+    matchedKeys: groupResult.matchedSirutaCodes,
+    matchedDomain: groupResult.matchedDomain,
+    activeGroupWorkspace,
+  });
+
+  return {
+    ...groupResult,
+    valuesBySeriesId,
+    matchedSirutaCodes: expandMatchedGroupKeys({
+      matchedKeys: groupResult.matchedSirutaCodes,
+      matchedDomain: groupResult.matchedDomain,
+      activeGroupWorkspace,
+    }),
+  };
+}
+
+function resolveActiveGroupWorkspace(params: {
+  groupWorkspaces?: readonly MapGroupWorkspace[];
+  activeGroupWorkspaceId?: string;
+}): MapGroupWorkspace | undefined {
+  if (!params.activeGroupWorkspaceId) {
+    return undefined;
+  }
+
+  const workspace = params.groupWorkspaces?.find(
+    (entry) => entry.id === params.activeGroupWorkspaceId
+  );
+  return workspace && workspace.groups.length > 0 ? workspace : undefined;
+}
+
+function buildGroupAwareValueFilterInput(
+  input: ApplyAdvancedMapAnalyticsValueFiltersInput,
+  activeGroupWorkspace: MapGroupWorkspace
+): ApplyAdvancedMapAnalyticsValueFiltersInput {
+  const domainsBySeriesId = buildGroupAwareDomainsBySeriesId({
+    allValuesBySeriesId: input.allValuesBySeriesId,
+    displayValuesBySeriesId: input.displayValuesBySeriesId,
+    domainsBySeriesId: input.domainsBySeriesId,
+    activeGroupWorkspaceId: activeGroupWorkspace.id,
+  });
+
+  return {
+    ...input,
+    allValuesBySeriesId: buildGroupAwareVectorCache({
+      valuesBySeriesId: input.allValuesBySeriesId,
+      domainsBySeriesId: input.domainsBySeriesId,
+      activeGroupWorkspace,
+    }),
+    displayValuesBySeriesId: buildGroupAwareVectorCache({
+      valuesBySeriesId: input.displayValuesBySeriesId,
+      domainsBySeriesId: input.domainsBySeriesId,
+      activeGroupWorkspace,
+    }),
+    domainsBySeriesId,
+    groupWorkspaces: undefined,
+    activeGroupWorkspaceId: undefined,
+  };
+}
+
+function buildGroupAwareDomainsBySeriesId(params: {
+  allValuesBySeriesId: MapSeriesVectorCache;
+  displayValuesBySeriesId: MapSeriesVectorCache;
+  domainsBySeriesId?: MapSeriesDomainCache;
+  activeGroupWorkspaceId: string;
+}): MapSeriesDomainCache {
+  const domainsBySeriesId = new Map(params.domainsBySeriesId ?? []);
+  const seriesIds = new Set([
+    ...params.allValuesBySeriesId.keys(),
+    ...params.displayValuesBySeriesId.keys(),
+  ]);
+
+  for (const seriesId of seriesIds) {
+    const domain = resolveSeriesDomain(seriesId, params.domainsBySeriesId);
+    domainsBySeriesId.set(
+      seriesId,
+      domain.type === 'uat'
+        ? { type: 'group', groupWorkspaceId: params.activeGroupWorkspaceId }
+        : domain
+    );
+  }
+
+  return domainsBySeriesId;
+}
+
+function buildGroupAwareVectorCache(params: {
+  valuesBySeriesId: MapSeriesVectorCache;
+  domainsBySeriesId?: MapSeriesDomainCache;
+  activeGroupWorkspace: MapGroupWorkspace;
+}): MapSeriesVectorCache {
+  const groupedValuesBySeriesId: MapSeriesVectorCache = new Map();
+
+  for (const [seriesId, vector] of params.valuesBySeriesId.entries()) {
+    const domain = resolveSeriesDomain(seriesId, params.domainsBySeriesId);
+    groupedValuesBySeriesId.set(
+      seriesId,
+      domain.type === 'uat'
+        ? buildActiveGroupVector(vector, params.activeGroupWorkspace)
+        : new Map(vector)
+    );
+  }
+
+  return groupedValuesBySeriesId;
+}
+
+function buildActiveGroupVector(
+  sourceVector: MapSeriesVector,
+  activeGroupWorkspace: MapGroupWorkspace
+): MapSeriesVector {
+  const vector: MapSeriesVector = new Map();
+
+  for (const group of activeGroupWorkspace.groups) {
+    let sum = 0;
+    let hasFiniteValue = false;
+
+    for (const sirutaCode of group.memberSirutaCodes) {
+      const value = sourceVector.get(sirutaCode);
+      if (typeof value !== 'number' || !Number.isFinite(value)) {
+        continue;
+      }
+
+      sum += value;
+      hasFiniteValue = true;
+    }
+
+    vector.set(group.id, hasFiniteValue ? sum : undefined);
+  }
+
+  return vector;
+}
+
+function projectGroupAwareFilterResult(params: {
+  originalDisplayValuesBySeriesId: MapSeriesVectorCache;
+  originalDomainsBySeriesId?: MapSeriesDomainCache;
+  filterDomainsBySeriesId?: MapSeriesDomainCache;
+  filteredValuesBySeriesId: MapSeriesVectorCache;
+  matchedKeys?: Set<string>;
+  matchedDomain?: MapSeriesDomain;
+  activeGroupWorkspace: MapGroupWorkspace;
+}): MapSeriesVectorCache {
+  if (!params.matchedKeys || !params.matchedDomain) {
+    return cloneVectorCache(params.originalDisplayValuesBySeriesId);
+  }
+
+  const valuesBySeriesId: MapSeriesVectorCache = new Map();
+  for (const [seriesId, originalVector] of params.originalDisplayValuesBySeriesId.entries()) {
+    const filterDomain = resolveSeriesDomain(seriesId, params.filterDomainsBySeriesId);
+    if (!areDomainsEqual(filterDomain, params.matchedDomain)) {
+      valuesBySeriesId.set(seriesId, new Map(originalVector));
+      continue;
+    }
+
+    const originalDomain = resolveSeriesDomain(seriesId, params.originalDomainsBySeriesId);
+    if (
+      originalDomain.type === 'uat' &&
+      isActiveGroupDomain(filterDomain, params.activeGroupWorkspace.id)
+    ) {
+      valuesBySeriesId.set(
+        seriesId,
+        maskUatVectorByMatchedGroups({
+          vector: originalVector,
+          matchedGroupIds: params.matchedKeys,
+          activeGroupWorkspace: params.activeGroupWorkspace,
+        })
+      );
+      continue;
+    }
+
+    valuesBySeriesId.set(
+      seriesId,
+      new Map(params.filteredValuesBySeriesId.get(seriesId) ?? [])
+    );
+  }
+
+  return valuesBySeriesId;
+}
+
+function maskUatVectorByMatchedGroups(params: {
+  vector: MapSeriesVector;
+  matchedGroupIds: Set<string>;
+  activeGroupWorkspace: MapGroupWorkspace;
+}): MapSeriesVector {
+  const matchedSirutaCodes = expandGroupIdsToSirutaCodes(
+    params.matchedGroupIds,
+    params.activeGroupWorkspace
+  );
+  const maskedVector: MapSeriesVector = new Map();
+
+  for (const [sirutaCode, value] of params.vector.entries()) {
+    if (matchedSirutaCodes.has(sirutaCode)) {
+      maskedVector.set(sirutaCode, value);
+    }
+  }
+
+  return maskedVector;
+}
+
+function expandMatchedGroupKeys(params: {
+  matchedKeys?: Set<string>;
+  matchedDomain?: MapSeriesDomain;
+  activeGroupWorkspace: MapGroupWorkspace;
+}): Set<string> | undefined {
+  if (!params.matchedKeys) {
+    return undefined;
+  }
+
+  if (!isActiveGroupDomain(params.matchedDomain, params.activeGroupWorkspace.id)) {
+    return params.matchedKeys;
+  }
+
+  return expandGroupIdsToSirutaCodes(params.matchedKeys, params.activeGroupWorkspace);
+}
+
+function expandGroupIdsToSirutaCodes(
+  groupIds: Set<string>,
+  activeGroupWorkspace: MapGroupWorkspace
+): Set<string> {
+  const sirutaCodes = new Set<string>();
+
+  for (const group of activeGroupWorkspace.groups) {
+    if (!groupIds.has(group.id)) {
+      continue;
+    }
+
+    for (const sirutaCode of group.memberSirutaCodes) {
+      sirutaCodes.add(sirutaCode);
+    }
+  }
+
+  return sirutaCodes;
+}
+
+function isActiveGroupDomain(
+  domain: MapSeriesDomain | undefined,
+  activeGroupWorkspaceId: string
+): boolean {
+  return domain?.type === 'group' && domain.groupWorkspaceId === activeGroupWorkspaceId;
 }
 
 function cloneVectorCache(valuesBySeriesId: MapSeriesVectorCache): MapSeriesVectorCache {
