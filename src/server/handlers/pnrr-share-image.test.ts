@@ -8,7 +8,7 @@ import type { PnrrSeoSnapshot } from '@/features/pnrr/seo/pnrr-seo'
 
 function makeSnapshot(): PnrrSeoSnapshot {
   return {
-    lastUpdated: '2026-04-30',
+    lastUpdated: '2026-05-18',
     projectCount: 24885,
     projectRecordCount: 24967,
     deduplicatedProjectCount: 24000,

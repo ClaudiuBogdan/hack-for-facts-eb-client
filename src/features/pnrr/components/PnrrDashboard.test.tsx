@@ -167,7 +167,7 @@ function makeFilterState(
 
 function makeSnapshot(): PnrrSeoSnapshot {
   return {
-    lastUpdated: '2026-04-30',
+    lastUpdated: '2026-05-18',
     projectCount: 42,
     projectRecordCount: 45,
     deduplicatedProjectCount: 40,

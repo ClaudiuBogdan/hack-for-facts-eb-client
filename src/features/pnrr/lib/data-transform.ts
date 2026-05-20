@@ -25,7 +25,7 @@ import {
 } from './pnrr-uat-assignment'
 
 /** Date when the PNRR dataset was last updated (shown in UI and used in export filenames). */
-export const PNRR_LAST_UPDATED = '2026-04-30'
+export const PNRR_LAST_UPDATED = '2026-05-18'
 
 const OFFICIAL_RON_TO_EUR_RATE = 5
 
