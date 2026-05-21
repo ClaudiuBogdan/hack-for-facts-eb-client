@@ -19,6 +19,7 @@ From the main checkout on `feat/new-datasets`:
 
 ```bash
 yarn worktree:create political feat/new-datasets-political
+yarn worktree:create private-companies feat/new-datasets-private-companies
 yarn worktree:create soe feat/new-datasets-soe
 yarn worktree:create ngo feat/new-datasets-ngo
 yarn worktree:create procurement feat/new-datasets-procurement
@@ -75,6 +76,7 @@ OpenCode has no built-in worktree manager. Always pass the worktree path:
 | Slug | Branch | Focus |
 | --- | --- | --- |
 | `political` | `feat/new-datasets-political` | political map / mandates mock UI |
+| `private-companies` | `feat/new-datasets-private-companies` | ONRC/ANAF company profile mock UI |
 | `soe` | `feat/new-datasets-soe` | SOE profile mock UI |
 | `ngo` | `feat/new-datasets-ngo` | NGO profile mock UI |
 | `procurement` | `feat/new-datasets-procurement` | SEAP/contracts mock UI |
