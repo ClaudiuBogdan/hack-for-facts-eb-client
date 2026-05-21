@@ -38,6 +38,7 @@ import { Route as ProvocareTermeniSiConditiiRouteImport } from './routes/provoca
 import { Route as ProvocareNotificariRouteImport } from './routes/provocare_.notificari'
 import { Route as PnrrShareImageDotpngRouteImport } from './routes/pnrr.share-image[.]png'
 import { Route as EntitiesCuiRouteImport } from './routes/entities.$cui'
+import { Route as CompaniesCuiRouteImport } from './routes/companies.$cui'
 import { Route as ChartsNewRouteImport } from './routes/charts/new'
 import { Route as CertificatesIdRouteImport } from './routes/certificates.$id'
 import { Route as BugeteLocale2026TermeniSiConditiiRouteImport } from './routes/bugete-locale-2026.termeni-si-conditii'
@@ -262,6 +263,13 @@ const EntitiesCuiRoute = EntitiesCuiRouteImport.update({
   path: '/$cui',
   getParentRoute: () => EntitiesRouteRoute,
 } as any).lazy(() => import('./routes/entities.$cui.lazy').then((d) => d.Route))
+const CompaniesCuiRoute = CompaniesCuiRouteImport.update({
+  id: '/companies/$cui',
+  path: '/companies/$cui',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/companies.$cui.lazy').then((d) => d.Route),
+)
 const ChartsNewRoute = ChartsNewRouteImport.update({
   id: '/charts/new',
   path: '/charts/new',
@@ -671,6 +679,7 @@ export interface FileRoutesByFullPath {
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
+  '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
@@ -749,6 +758,7 @@ export interface FileRoutesByTo {
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
+  '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
@@ -830,6 +840,7 @@ export interface FileRoutesById {
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
+  '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare_/notificari': typeof ProvocareNotificariRoute
@@ -915,6 +926,7 @@ export interface FileRouteTypes {
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
     | '/charts/new'
+    | '/companies/$cui'
     | '/entities/$cui'
     | '/pnrr/share-image.png'
     | '/provocare/notificari'
@@ -993,6 +1005,7 @@ export interface FileRouteTypes {
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
     | '/charts/new'
+    | '/companies/$cui'
     | '/entities/$cui'
     | '/pnrr/share-image.png'
     | '/provocare/notificari'
@@ -1073,6 +1086,7 @@ export interface FileRouteTypes {
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
     | '/charts/new'
+    | '/companies/$cui'
     | '/entities/$cui'
     | '/pnrr/share-image.png'
     | '/provocare_/notificari'
@@ -1156,6 +1170,7 @@ export interface RootRouteChildren {
   AlertsNewRoute: typeof AlertsNewRoute
   CertificatesIdRoute: typeof CertificatesIdRoute
   ChartsNewRoute: typeof ChartsNewRoute
+  CompaniesCuiRoute: typeof CompaniesCuiRoute
   ProvocareNotificariRoute: typeof ProvocareNotificariRoute
   ProvocareTermeniSiConditiiRoute: typeof ProvocareTermeniSiConditiiRoute
   SettingsNotificationsRoute: typeof SettingsNotificationsRoute
@@ -1395,6 +1410,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/entities/$cui'
       preLoaderRoute: typeof EntitiesCuiRouteImport
       parentRoute: typeof EntitiesRouteRoute
+    }
+    '/companies/$cui': {
+      id: '/companies/$cui'
+      path: '/companies/$cui'
+      fullPath: '/companies/$cui'
+      preLoaderRoute: typeof CompaniesCuiRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/charts/new': {
       id: '/charts/new'
@@ -2006,6 +2028,7 @@ const rootRouteChildren: RootRouteChildren = {
   AlertsNewRoute: AlertsNewRoute,
   CertificatesIdRoute: CertificatesIdRoute,
   ChartsNewRoute: ChartsNewRoute,
+  CompaniesCuiRoute: CompaniesCuiRoute,
   ProvocareNotificariRoute: ProvocareNotificariRoute,
   ProvocareTermeniSiConditiiRoute: ProvocareTermeniSiConditiiRoute,
   SettingsNotificationsRoute: SettingsNotificationsRoute,

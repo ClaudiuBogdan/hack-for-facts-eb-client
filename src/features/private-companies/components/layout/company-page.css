@@ -1,0 +1,228 @@
+.company-page-v2 {
+  --company-bg: var(--background);
+  --company-fg: var(--foreground);
+  --company-muted: var(--muted-foreground);
+  --company-border: var(--border);
+  --company-accent: hsl(214 79% 35%);
+  --company-tag-bg: var(--muted);
+}
+
+.dark .company-page-v2 {
+  --company-accent: hsl(214 65% 58%);
+}
+
+/* GOV.UK-inspired summary list — stacked on mobile, two columns from sm */
+.company-summary-list {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--company-border);
+  font-size: 0.875rem;
+  line-height: 1.35;
+}
+
+.company-summary-list--header .company-summary-list__row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0.25rem;
+}
+
+.company-summary-list__row {
+  display: grid;
+  gap: 0.125rem;
+  margin: 0;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--company-border);
+}
+
+@media (min-width: 40rem) {
+  .company-summary-list__row {
+    grid-template-columns: minmax(7.5rem, 11rem) 1fr;
+    gap: 0.125rem 1rem;
+    align-items: baseline;
+    padding: 0.375rem 0;
+  }
+}
+
+.company-summary-list__row--address {
+  padding-bottom: 0.625rem;
+}
+
+@media (min-width: 40rem) {
+  .company-summary-list__row--address {
+    align-items: start;
+  }
+}
+
+/* Header badges — inline row under title */
+.company-page-header__badges {
+  gap: 0.5rem;
+}
+
+.company-profile-sections > section + section {
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--company-border);
+}
+
+.company-summary-list dt {
+  margin: 0;
+  font-weight: 600;
+  color: var(--company-fg);
+}
+
+@media (max-width: 39.99rem) {
+  .company-summary-list dt {
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.25;
+    color: var(--company-muted);
+  }
+
+  .company-summary-list dd {
+    font-size: 0.9375rem;
+    line-height: 1.4;
+  }
+}
+
+.company-summary-list dd {
+  margin: 0;
+  color: var(--company-fg);
+}
+
+/* Page title — PNRR black display, scaled for narrow company column */
+.company-page-header__title {
+  margin: 0;
+  font-size: clamp(1.75rem, 4.5vw, 2.75rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--pnrr-fg);
+  text-wrap: balance;
+}
+
+/* GOV.UK-inspired phase banner / metadata line */
+.company-meta-line {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--company-muted);
+}
+
+@media (min-width: 40rem) {
+  .company-meta-line {
+    font-size: 0.8125rem;
+  }
+}
+
+/* Status badges — PNRR stat pills under title */
+.company-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 0;
+  line-height: 1.2;
+}
+
+.company-tag--pnrr {
+  padding: 0.5rem 0.75rem;
+  border: 2px solid var(--pnrr-border);
+  background: var(--pnrr-card);
+  color: var(--pnrr-fg);
+}
+
+.company-tag__prefix {
+  font-size: 0.6875rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pnrr-muted);
+}
+
+.company-tag__prefix::after {
+  content: ':';
+}
+
+.company-tag__value {
+  font-size: 0.8125rem;
+  font-weight: 900;
+  color: var(--pnrr-fg);
+}
+
+.company-tag--neutral {
+  border-color: var(--pnrr-border);
+  background: var(--pnrr-card);
+}
+
+.company-tag--outline {
+  border-color: var(--pnrr-border);
+  background: var(--pnrr-bg);
+}
+
+.dark .company-tag--outline {
+  background: var(--pnrr-bg);
+}
+
+.company-tag--positive .company-tag__prefix,
+.company-tag--warning .company-tag__prefix,
+.company-tag--negative .company-tag__prefix {
+  color: inherit;
+  opacity: 0.88;
+}
+
+.company-tag--positive {
+  border-color: hsl(134 40% 45% / 0.55);
+  background: hsl(134 40% 92%);
+}
+
+.company-tag--positive .company-tag__value,
+.company-tag--positive .company-tag__prefix {
+  color: hsl(134 50% 22%);
+}
+
+.dark .company-tag--positive {
+  background: hsl(134 30% 18%);
+}
+
+.dark .company-tag--positive .company-tag__value,
+.dark .company-tag--positive .company-tag__prefix {
+  color: hsl(134 40% 85%);
+}
+
+.company-tag--warning {
+  border-color: hsl(38 90% 50% / 0.55);
+  background: hsl(38 90% 94%);
+}
+
+.company-tag--warning .company-tag__value,
+.company-tag--warning .company-tag__prefix {
+  color: hsl(38 80% 22%);
+}
+
+.dark .company-tag--warning {
+  background: hsl(38 50% 16%);
+}
+
+.dark .company-tag--warning .company-tag__value,
+.dark .company-tag--warning .company-tag__prefix {
+  color: hsl(38 90% 88%);
+}
+
+.company-tag--negative {
+  border-color: hsl(0 70% 50% / 0.5);
+  background: hsl(0 70% 96%);
+}
+
+.company-tag--negative .company-tag__value,
+.company-tag--negative .company-tag__prefix {
+  color: hsl(0 65% 32%);
+}
+
+.dark .company-tag--negative {
+  background: hsl(0 40% 18%);
+}
+
+.dark .company-tag--negative .company-tag__value,
+.dark .company-tag--negative .company-tag__prefix {
+  color: hsl(0 70% 88%);
+}
+
+.company-tab-nav {
+  border-bottom: 2px solid var(--pnrr-border);
+}
