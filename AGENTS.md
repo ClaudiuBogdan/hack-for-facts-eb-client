@@ -1,3 +1,43 @@
+# AGENTS - `hack-for-facts-eb-client`
+
+## Mock-First UI Development (Active Scope)
+
+Much of the product roadmap depends on new Romanian public datasets that are still
+experimental or loading in the sibling scrapper repo. **Primary work happens
+here in the client**: routes, UX, user stories, hooks, and components. Data
+formats, join rules, probe evidence, and worker status live in scrapper.
+
+Goal: build the best possible UI with **mock data shaped like the real sources**,
+so connecting the API later is an adapter swap in the feature API layer, not a
+UI rewrite.
+
+Read first:
+
+- [`docs/mock-first-ui-development.md`](docs/mock-first-ui-development.md) —
+  workflow, file layout, mock-mode env vars, quality gates (**local only,
+  gitignored**)
+- [`docs/scraper-data-catalog.md`](docs/scraper-data-catalog.md) — dataset index
+  with scrapper doc paths and client feature targets (**local only, gitignored**)
+- [`src/lib/scraper-references/`](src/lib/scraper-references/) — typed registry
+  imported by feature code (`getScraperDatasetById`, `isMockDataEnabled`)
+
+Create the gitignored docs locally when needed. Set `VITE_SCRAPPER_REPO_ROOT`
+if the scrapper checkout is not a sibling of this repo.
+
+Scrapper repos and layers:
+
+| Path | Purpose |
+| --- | --- |
+| `../hack-for-facts-eb-scrapper/experimental/` | Source discovery, schema notes, tiny samples |
+| `../hack-for-facts-eb-scrapper/new_latest/` | Promoted workers and Griffin PostgreSQL loaders |
+| `../hack-for-facts-eb-scrapper/experimental/docs/source-inventory.md` | Consolidated dataset status |
+
+When starting a new surface: register the dataset in `catalog.ts`, add Zod schemas
+under `src/schemas/`, place mocks under `src/features/{feature}/mocks/`, and
+document user stories/specs before polishing visuals.
+
+---
+
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
