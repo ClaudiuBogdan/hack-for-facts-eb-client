@@ -36,6 +36,16 @@ When starting a new surface: register the dataset in `catalog.ts`, add Zod schem
 under `src/schemas/`, place mocks under `src/features/{feature}/mocks/`, and
 document user stories/specs before polishing visuals.
 
+## Parallel Worktrees
+
+Use separate git worktrees for concurrent mock-first lanes.
+
+- Read [`docs/parallel-worktrees.md`](docs/parallel-worktrees.md)
+- Foundation branch: `feat/new-datasets`
+- Create a lane: `yarn worktree:create <slug> [branch-name]`
+- Cursor Agents Window uses [`.cursor/worktrees.json`](.cursor/worktrees.json)
+  to copy `.env` and run `yarn install` automatically
+
 ---
 
 # CLAUDE.md
