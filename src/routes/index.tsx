@@ -5,6 +5,7 @@ import { EntitySearchInput } from "@/components/entities/EntitySearch";
 import { PageCard } from "@/components/landing/PageCard";
 import { QuickEntityAccess } from "@/components/entities/QuickEntityAccess";
 import { CampaignLandingShareCard } from "@/features/campaigns/buget/components/CampaignAccessShareCard";
+import { ParliamentPromoCard } from "@/features/parliament/components/parliament-promo-card";
 import mapPreview from "@/assets/images/map.png";
 import chartPreview from "@/assets/images/chart.png";
 import entityAnalyticsPreview from "@/assets/images/entity-analytics.png";
@@ -66,6 +67,7 @@ function Index() {
 
           {/* Quick navigation cards */}
           <CampaignLandingShareCard className="w-full max-w-5xl" />
+          <ParliamentPromoCard className="w-full max-w-5xl" />
 
           <div className="lg:mt-8 grid w-full max-w-5xl grid-cols-1 gap-8 md:grid-cols-2">
             <PageCard

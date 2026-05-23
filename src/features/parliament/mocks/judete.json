@@ -1,0 +1,12 @@
+[
+  {"slug":"bucuresti","name":"București"},
+  {"slug":"cluj","name":"Cluj"},
+  {"slug":"timis","name":"Timiș"},
+  {"slug":"iasi","name":"Iași"},
+  {"slug":"bihor","name":"Bihor"},
+  {"slug":"buzau","name":"Buzău"},
+  {"slug":"harghita","name":"Harghita"},
+  {"slug":"olt","name":"Olt"},
+  {"slug":"brasov","name":"Brașov"},
+  {"slug":"constanta","name":"Constanța"}
+]

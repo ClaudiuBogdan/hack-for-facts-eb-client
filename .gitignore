@@ -62,6 +62,10 @@ sentry-issues/
 
 .agents/
 
+# Local scrapper cross-reference docs (temporary, machine-specific paths)
+docs/mock-first-ui-development.md
+docs/scraper-data-catalog.md
+
 # Kubernetes plain secrets
 *.secret.yaml
 **/*.secret.yaml

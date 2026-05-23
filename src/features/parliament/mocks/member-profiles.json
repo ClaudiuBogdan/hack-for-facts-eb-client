@@ -1,0 +1,109 @@
+{
+  "dep-001": {
+    "memberId": "dep-001",
+    "spokenContributions": [
+      {
+        "contributionId": "sc-001",
+        "heldAt": "2026-05-15T11:20:00+03:00",
+        "title": "Dezbaterea bugetului pe 2026",
+        "summary": "Intervenție privind alocările pentru sănătate și educație în județul Buzău."
+      },
+      {
+        "contributionId": "sc-002",
+        "heldAt": "2026-04-28T15:45:00+03:00",
+        "title": "Proiect de lege privind protecția consumatorilor",
+        "summary": "Solicitare de clarificări privind termenele de implementare."
+      },
+      {
+        "contributionId": "sc-003",
+        "heldAt": "2026-03-12T10:05:00+03:00",
+        "title": "Moțiune simplă privind politica energetică",
+        "summary": "Argumente privind costurile energiei pentru gospodării."
+      }
+    ],
+    "writtenQuestions": [
+      {
+        "questionId": "wq-001",
+        "submittedAt": "2026-05-10T09:00:00+03:00",
+        "title": "Situația spitalului județean din Buzău",
+        "status": "raspuns",
+        "answerSummary": "Guvernul a transmis un plan de investiții pe 24 luni."
+      },
+      {
+        "questionId": "wq-002",
+        "submittedAt": "2026-04-02T09:00:00+03:00",
+        "title": "Accesul la servicii digitale în zone rurale",
+        "status": "raspuns",
+        "answerSummary": "Program național de extindere a rețelelor de broadband."
+      },
+      {
+        "questionId": "wq-003",
+        "submittedAt": "2026-05-18T09:00:00+03:00",
+        "title": "Termenele de implementare a PNRR în educație",
+        "status": "in_asteptare"
+      }
+    ],
+    "interestDeclarations": [
+      {
+        "declarationId": "id-001",
+        "category": "Funcții publice anterioare",
+        "description": "Consilier local în mandatul 2020–2024, fără remunerare curentă.",
+        "registeredAt": "2024-12-15T00:00:00+03:00"
+      },
+      {
+        "declarationId": "id-002",
+        "category": "Activitate profesională",
+        "description": "Colaborări ocazionale ca formator în domeniul administrației publice.",
+        "registeredAt": "2025-01-10T00:00:00+03:00"
+      }
+    ],
+    "electionResult": {
+      "electionDate": "2024-12-01T00:00:00+03:00",
+      "electionName": "Alegerile parlamentare din 2024",
+      "votesReceived": 42180,
+      "votesSharePercent": 34.2,
+      "elected": true,
+      "constituency": "Buzău"
+    },
+    "officialPortraitUrl": "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
+    "officialPortraitCaption": "Portret oficial — Camera Deputaților, legislatura 2024–2028."
+  },
+  "sen-001": {
+    "memberId": "sen-001",
+    "spokenContributions": [
+      {
+        "contributionId": "sc-sen-001",
+        "heldAt": "2026-05-16T14:10:00+03:00",
+        "title": "Raport privind reforma administrației publice",
+        "summary": "Propuneri pentru simplificarea procedurilor pentru cetățeni."
+      }
+    ],
+    "writtenQuestions": [
+      {
+        "questionId": "wq-sen-001",
+        "submittedAt": "2026-03-20T09:00:00+03:00",
+        "title": "Digitalizarea serviciilor consulare",
+        "status": "raspuns",
+        "answerSummary": "Ministerul de Externe a raportat extinderea platformei consulare online."
+      }
+    ],
+    "interestDeclarations": [
+      {
+        "declarationId": "id-sen-001",
+        "category": "Membru în asociații profesionale",
+        "description": "Membru al unei asociații profesionale din domeniul juridic, fără venituri din activitatea parlamentară.",
+        "registeredAt": "2024-12-20T00:00:00+03:00"
+      }
+    ],
+    "electionResult": {
+      "electionDate": "2024-12-01T00:00:00+03:00",
+      "electionName": "Alegerile parlamentare din 2024",
+      "votesReceived": 98240,
+      "votesSharePercent": 28.7,
+      "elected": true,
+      "constituency": "București"
+    },
+    "officialPortraitUrl": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80",
+    "officialPortraitCaption": "Portret oficial — Senatul României, legislatura 2024–2028."
+  }
+}

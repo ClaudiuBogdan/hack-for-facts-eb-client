@@ -1,0 +1,210 @@
+{
+  "pl-x-2026-buget": {
+    "billId": "pl-x-2026-buget",
+    "number": "PLX 1/2026",
+    "title": "Proiect de Lege privind bugetul de stat pe anul 2026",
+    "billType": "guvern",
+    "originatingChamber": "camera",
+    "currentLocation": "senat",
+    "currentStageLabel": "Dezbatere în plen",
+    "nextStageLabel": "Vot final",
+    "lastUpdatedAt": "2026-05-21T21:07:00+03:00",
+    "legislatureId": "2024-2028",
+    "longTitle": "Proiect de Lege privind aprobarea bugetului de stat pe anul 2026, precum și a rectificărilor bugetare aferente politicilor publice prioritare.",
+    "summary": "Proiectul stabileșe veniturile și cheltuielile bugetului general consolidat pentru anul 2026, alocările pe ministere și instituții, precum și măsurile de susținere a investițiilor publice.",
+    "initiator": {
+      "type": "guvern",
+      "departmentName": "Ministerul Finanțelor"
+    },
+    "documents": [
+      {
+        "documentId": "pl-x-2026-buget-doc-1",
+        "label": "PLX 1/2026 (forma depusă)",
+        "url": "https://www.cdep.ro/pls/legis/legis_pck.htp_act?ida=1",
+        "publishedAt": "2026-04-01T10:00:00+03:00",
+        "chamber": "camera",
+        "versionLabel": "Forma depusă"
+      },
+      {
+        "documentId": "pl-x-2026-buget-doc-2",
+        "label": "Raportul Comisiei pentru buget, finanțe și bănci",
+        "url": "https://www.cdep.ro/pls/legis/legis_pck.htp_act?ida=2",
+        "publishedAt": "2026-05-10T14:00:00+03:00",
+        "chamber": "camera",
+        "versionLabel": "Raport comisie"
+      },
+      {
+        "documentId": "pl-x-2026-buget-doc-3",
+        "label": "PLX 1/2026 (forma adoptată de Camera Deputaților)",
+        "url": "https://www.cdep.ro/pls/legis/legis_pck.htp_act?ida=3",
+        "publishedAt": "2026-05-15T14:30:00+03:00",
+        "chamber": "camera",
+        "versionLabel": "Forma adoptată"
+      }
+    ],
+    "passage": {
+      "camera": [
+        { "stageId": "depunere", "label": "Depunere și înregistrare", "status": "complete", "completedAt": "2026-04-01T10:00:00+03:00" },
+        { "stageId": "comisii", "label": "Trimitere la comisii", "status": "complete", "completedAt": "2026-04-05T09:00:00+03:00" },
+        { "stageId": "raport", "label": "Raportul comisiei", "status": "complete", "completedAt": "2026-05-10T14:00:00+03:00" },
+        { "stageId": "dezbatere", "label": "Dezbatere în plen", "status": "complete", "completedAt": "2026-05-14T16:00:00+03:00" },
+        { "stageId": "vot", "label": "Vot final", "status": "complete", "completedAt": "2026-05-15T14:30:00+03:00" }
+      ],
+      "senat": [
+        { "stageId": "primire", "label": "Primire de la Camera Deputaților", "status": "complete", "completedAt": "2026-05-16T09:00:00+03:00" },
+        { "stageId": "comisii", "label": "Trimitere la comisii", "status": "complete", "completedAt": "2026-05-17T10:00:00+03:00" },
+        { "stageId": "raport", "label": "Raportul comisiei", "status": "complete", "completedAt": "2026-05-20T11:00:00+03:00" },
+        { "stageId": "dezbatere", "label": "Dezbatere în plen", "status": "in_progress" },
+        { "stageId": "vot", "label": "Vot final", "status": "not_reached" }
+      ],
+      "final": [
+        { "stageId": "mediere", "label": "Comisie de mediere", "status": "not_applicable" },
+        { "stageId": "promulgare", "label": "Promulgare", "status": "not_reached" },
+        { "stageId": "publicare", "label": "Publicare în Monitorul Oficial", "status": "not_reached" }
+      ]
+    },
+    "relatedVotes": [
+      {
+        "voteId": "cam-v-001",
+        "chamber": "camera",
+        "title": "Proiect de Lege privind bugetul de stat pe anul 2026",
+        "heldAt": "2026-05-15T14:30:00+03:00"
+      },
+      {
+        "voteId": "sen-v-001",
+        "chamber": "senat",
+        "title": "Proiect de Lege privind bugetul de stat pe anul 2026",
+        "heldAt": "2026-05-18T15:00:00+03:00"
+      }
+    ]
+  },
+  "pl-127-2026-consumatori": {
+    "billId": "pl-127-2026-consumatori",
+    "number": "PL 127/2026",
+    "title": "Proiect de Lege privind protecția consumatorilor",
+    "billType": "parlamentar",
+    "originatingChamber": "camera",
+    "currentLocation": "camera",
+    "currentStageLabel": "Raportul comisiei",
+    "nextStageLabel": "Dezbatere în plen",
+    "lastUpdatedAt": "2026-05-21T17:00:00+03:00",
+    "legislatureId": "2024-2028",
+    "longTitle": "Proiect de Lege pentru completarea și modificarea unor acte normative privind protecția consumatorilor și consolidarea drepturilor acestora în relația cu furnizorii de servicii.",
+    "summary": "Inițiativă parlamentară care introduce măsuri de transparență în contractele de consum, consolidarea mecanismelor de soluționare alternativă a litigiilor și sancțiuni pentru practici comerciale înșelătoare.",
+    "initiator": {
+      "type": "parlamentar",
+      "memberId": "dep-001",
+      "memberName": "Maria Popescu"
+    },
+    "documents": [
+      {
+        "documentId": "pl-127-doc-1",
+        "label": "PL 127/2026 (forma depusă)",
+        "url": "https://www.cdep.ro/pls/legis/legis_pck.htp_act?ida=127",
+        "publishedAt": "2026-03-15T09:00:00+03:00",
+        "chamber": "camera",
+        "versionLabel": "Forma depusă"
+      },
+      {
+        "documentId": "pl-127-doc-2",
+        "label": "Avizul Consiliului Legislativ",
+        "url": "https://www.cdep.ro/pls/legis/legis_pck.htp_act?ida=128",
+        "publishedAt": "2026-04-02T10:00:00+03:00",
+        "versionLabel": "Aviz CL"
+      }
+    ],
+    "passage": {
+      "camera": [
+        { "stageId": "depunere", "label": "Depunere și înregistrare", "status": "complete", "completedAt": "2026-03-15T09:00:00+03:00" },
+        { "stageId": "comisii", "label": "Trimitere la comisii", "status": "complete", "completedAt": "2026-03-20T09:00:00+03:00" },
+        { "stageId": "raport", "label": "Raportul comisiei", "status": "in_progress" },
+        { "stageId": "dezbatere", "label": "Dezbatere în plen", "status": "not_reached" },
+        { "stageId": "vot", "label": "Vot final", "status": "not_reached" }
+      ],
+      "senat": [
+        { "stageId": "primire", "label": "Primire de la Camera Deputaților", "status": "not_reached" },
+        { "stageId": "comisii", "label": "Trimitere la comisii", "status": "not_reached" },
+        { "stageId": "raport", "label": "Raportul comisiei", "status": "not_reached" },
+        { "stageId": "dezbatere", "label": "Dezbatere în plen", "status": "not_reached" },
+        { "stageId": "vot", "label": "Vot final", "status": "not_reached" }
+      ],
+      "final": [
+        { "stageId": "mediere", "label": "Comisie de mediere", "status": "not_reached" },
+        { "stageId": "promulgare", "label": "Promulgare", "status": "not_reached" },
+        { "stageId": "publicare", "label": "Publicare în Monitorul Oficial", "status": "not_reached" }
+      ]
+    },
+    "relatedVotes": [
+      {
+        "voteId": "cam-v-004",
+        "chamber": "camera",
+        "title": "Proiect de Lege privind protecția consumatorilor",
+        "heldAt": "2026-05-21T17:00:00+03:00"
+      }
+    ]
+  },
+  "pl-089-2026-admin": {
+    "billId": "pl-089-2026-admin",
+    "number": "PL 89/2026",
+    "title": "Proiect de Lege privind reforma administrației publice",
+    "billType": "guvern",
+    "originatingChamber": "senat",
+    "currentLocation": "respins",
+    "currentStageLabel": "Respins în Senat",
+    "lastUpdatedAt": "2026-05-12T11:30:00+03:00",
+    "legislatureId": "2024-2028",
+    "longTitle": "Proiect de Lege privind reorganizarea structurilor administrației publice centrale, digitalizarea procedurilor administrative și reducerea birocrației pentru cetățeni și mediul de afaceri.",
+    "summary": "Proiect al Guvernului respins în Senat după dezbaterea în plen. Propunea reorganizarea unor ministere și instituții subordonate, cu termene de implementare pe 24 de luni.",
+    "initiator": {
+      "type": "guvern",
+      "departmentName": "Secretariatul General al Guvernului"
+    },
+    "documents": [
+      {
+        "documentId": "pl-089-doc-1",
+        "label": "PL 89/2026 (forma depusă)",
+        "url": "https://www.senat.ro/legis/lista.aspx?pl=89",
+        "publishedAt": "2026-02-10T10:00:00+03:00",
+        "chamber": "senat",
+        "versionLabel": "Forma depusă"
+      },
+      {
+        "documentId": "pl-089-doc-2",
+        "label": "Raportul Comisiei pentru administrație publică",
+        "url": "https://www.senat.ro/legis/lista.aspx?pl=89r",
+        "publishedAt": "2026-04-20T14:00:00+03:00",
+        "chamber": "senat",
+        "versionLabel": "Raport comisie"
+      }
+    ],
+    "passage": {
+      "camera": [
+        { "stageId": "depunere", "label": "Depunere și înregistrare", "status": "not_applicable" },
+        { "stageId": "comisii", "label": "Trimitere la comisii", "status": "not_applicable" },
+        { "stageId": "raport", "label": "Raportul comisiei", "status": "not_applicable" },
+        { "stageId": "dezbatere", "label": "Dezbatere în plen", "status": "not_applicable" },
+        { "stageId": "vot", "label": "Vot final", "status": "not_applicable" }
+      ],
+      "senat": [
+        { "stageId": "primire", "label": "Depunere și înregistrare", "status": "complete", "completedAt": "2026-02-10T10:00:00+03:00" },
+        { "stageId": "comisii", "label": "Trimitere la comisii", "status": "complete", "completedAt": "2026-02-15T09:00:00+03:00" },
+        { "stageId": "raport", "label": "Raportul comisiei", "status": "complete", "completedAt": "2026-04-20T14:00:00+03:00" },
+        { "stageId": "dezbatere", "label": "Dezbatere în plen", "status": "complete", "completedAt": "2026-05-11T16:00:00+03:00" },
+        { "stageId": "vot", "label": "Vot final", "status": "complete", "completedAt": "2026-05-12T11:30:00+03:00" }
+      ],
+      "final": [
+        { "stageId": "mediere", "label": "Comisie de mediere", "status": "not_applicable" },
+        { "stageId": "promulgare", "label": "Promulgare", "status": "not_applicable" },
+        { "stageId": "publicare", "label": "Publicare în Monitorul Oficial", "status": "not_applicable" }
+      ]
+    },
+    "relatedVotes": [
+      {
+        "voteId": "sen-v-002",
+        "chamber": "senat",
+        "title": "Proiect de Lege privind reforma administrației publice",
+        "heldAt": "2026-05-12T11:30:00+03:00"
+      }
+    ]
+  }
+}

@@ -27,6 +27,7 @@ import { Route as BudgetExplorerRouteImport } from './routes/budget-explorer'
 import { Route as EntitiesRouteRouteImport } from './routes/entities/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PrimarieIndexRouteImport } from './routes/primarie/index'
+import { Route as ParlamentIndexRouteImport } from './routes/parlament/index'
 import { Route as EntitiesIndexRouteImport } from './routes/entities/index'
 import { Route as UnsubscribeTokenRouteImport } from './routes/unsubscribe.$token'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
@@ -38,6 +39,7 @@ import { Route as ProvocareTermeniSiConditiiRouteImport } from './routes/provoca
 import { Route as ProvocareNotificariRouteImport } from './routes/provocare_.notificari'
 import { Route as PnrrShareImageDotpngRouteImport } from './routes/pnrr.share-image[.]png'
 import { Route as EntitiesCuiRouteImport } from './routes/entities.$cui'
+import { Route as CompaniesCuiRouteImport } from './routes/companies.$cui'
 import { Route as ChartsNewRouteImport } from './routes/charts/new'
 import { Route as CertificatesIdRouteImport } from './routes/certificates.$id'
 import { Route as BugeteLocale2026TermeniSiConditiiRouteImport } from './routes/bugete-locale-2026.termeni-si-conditii'
@@ -48,12 +50,17 @@ import { Route as AlertsAlertIdRouteRouteImport } from './routes/alerts/$alertId
 import { Route as LangLearningRouteRouteImport } from './routes/$lang/learning/route'
 import { Route as PrimarieHartaIndexRouteImport } from './routes/primarie/harta/index'
 import { Route as PrimarieCuiIndexRouteImport } from './routes/primarie/$cui/index'
+import { Route as ParlamentVoturiIndexRouteImport } from './routes/parlament/voturi/index'
+import { Route as ParlamentProiecteIndexRouteImport } from './routes/parlament/proiecte/index'
+import { Route as ParlamentMembriIndexRouteImport } from './routes/parlament/membri/index'
+import { Route as ParlamentGrupuriIndexRouteImport } from './routes/parlament/grupuri/index'
 import { Route as MapsEditorIndexRouteImport } from './routes/maps/editor/index'
 import { Route as MapsDatasetsIndexRouteImport } from './routes/maps/datasets/index'
 import { Route as ClassificationsFunctionalIndexRouteImport } from './routes/classifications/functional/index'
 import { Route as ClassificationsEconomicIndexRouteImport } from './routes/classifications/economic/index'
 import { Route as LangLearningIndexRouteImport } from './routes/$lang/learning/index'
 import { Route as PrimarieCuiShareImageDotpngRouteImport } from './routes/primarie/$cui/share-image[.]png'
+import { Route as ParlamentGrupuriGroupIdRouteImport } from './routes/parlament/grupuri/$groupId'
 import { Route as MapsPublicMapIdRouteImport } from './routes/maps/public/$mapId'
 import { Route as MapsEditorNewRouteImport } from './routes/maps/editor/new'
 import { Route as MapsEditorMapIdRouteImport } from './routes/maps/editor/$mapId'
@@ -64,12 +71,27 @@ import { Route as ClassificationsFunctionalCodeRouteImport } from './routes/clas
 import { Route as ClassificationsEconomicCodeRouteImport } from './routes/classifications/economic/$code'
 import { Route as LangLearningOnboardingRouteImport } from './routes/$lang/learning/onboarding'
 import { Route as PrimarieCuiBugetRouteRouteImport } from './routes/primarie/$cui/buget/route'
+import { Route as ParlamentProiecteBillIdRouteRouteImport } from './routes/parlament/proiecte/$billId/route'
+import { Route as ParlamentMembriMemberIdRouteRouteImport } from './routes/parlament/membri/$memberId/route'
 import { Route as AdminCampaignsCampaignKeyRouteRouteImport } from './routes/admin/campaigns/$campaignKey/route'
 import { Route as PrimarieCuiBugetIndexRouteImport } from './routes/primarie/$cui/buget/index'
+import { Route as ParlamentProiecteBillIdIndexRouteImport } from './routes/parlament/proiecte/$billId/index'
+import { Route as ParlamentMembriMemberIdIndexRouteImport } from './routes/parlament/membri/$memberId/index'
 import { Route as AdminCampaignsCampaignKeyIndexRouteImport } from './routes/admin/campaigns/$campaignKey/index'
 import { Route as LangLearningPathIdIndexRouteImport } from './routes/$lang/learning/$pathId/index'
 import { Route as PrimarieCuiBugetResurseRouteImport } from './routes/primarie/$cui/buget/resurse'
 import { Route as PrimarieCuiBugetCalendarRouteImport } from './routes/primarie/$cui/buget/calendar'
+import { Route as ParlamentVoturiChamberVoteIdRouteImport } from './routes/parlament/voturi/$chamber/$voteId'
+import { Route as ParlamentProiecteBillIdVoturiRouteImport } from './routes/parlament/proiecte/$billId/voturi'
+import { Route as ParlamentProiecteBillIdEtapeRouteImport } from './routes/parlament/proiecte/$billId/etape'
+import { Route as ParlamentProiecteBillIdDocumenteRouteImport } from './routes/parlament/proiecte/$billId/documente'
+import { Route as ParlamentMembriMemberIdVoturiRouteImport } from './routes/parlament/membri/$memberId/voturi'
+import { Route as ParlamentMembriMemberIdPortretRouteImport } from './routes/parlament/membri/$memberId/portret'
+import { Route as ParlamentMembriMemberIdIntrebariRouteImport } from './routes/parlament/membri/$memberId/intrebari'
+import { Route as ParlamentMembriMemberIdInterventiiRouteImport } from './routes/parlament/membri/$memberId/interventii'
+import { Route as ParlamentMembriMemberIdIntereseRouteImport } from './routes/parlament/membri/$memberId/interese'
+import { Route as ParlamentMembriMemberIdContactRouteImport } from './routes/parlament/membri/$memberId/contact'
+import { Route as ParlamentMembriMemberIdAlegeriRouteImport } from './routes/parlament/membri/$memberId/alegeri'
 import { Route as MapsDatasetsPublicPublicIdRouteImport } from './routes/maps/datasets/public/$publicId'
 import { Route as ApiPnrrRawProjectsRouteImport } from './routes/api/pnrr/raw/projects'
 import { Route as ApiPnrrRawPaymentsRouteImport } from './routes/api/pnrr/raw/payments'
@@ -194,6 +216,13 @@ const PrimarieIndexRoute = PrimarieIndexRouteImport.update({
 } as any).lazy(() =>
   import('./routes/primarie/index.lazy').then((d) => d.Route),
 )
+const ParlamentIndexRoute = ParlamentIndexRouteImport.update({
+  id: '/parlament/',
+  path: '/parlament/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/parlament/index.lazy').then((d) => d.Route),
+)
 const EntitiesIndexRoute = EntitiesIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -262,6 +291,13 @@ const EntitiesCuiRoute = EntitiesCuiRouteImport.update({
   path: '/$cui',
   getParentRoute: () => EntitiesRouteRoute,
 } as any).lazy(() => import('./routes/entities.$cui.lazy').then((d) => d.Route))
+const CompaniesCuiRoute = CompaniesCuiRouteImport.update({
+  id: '/companies/$cui',
+  path: '/companies/$cui',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/companies.$cui.lazy').then((d) => d.Route),
+)
 const ChartsNewRoute = ChartsNewRouteImport.update({
   id: '/charts/new',
   path: '/charts/new',
@@ -335,6 +371,26 @@ const PrimarieCuiIndexRoute = PrimarieCuiIndexRouteImport.update({
 } as any).lazy(() =>
   import('./routes/primarie/$cui/index.lazy').then((d) => d.Route),
 )
+const ParlamentVoturiIndexRoute = ParlamentVoturiIndexRouteImport.update({
+  id: '/parlament/voturi/',
+  path: '/parlament/voturi/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ParlamentProiecteIndexRoute = ParlamentProiecteIndexRouteImport.update({
+  id: '/parlament/proiecte/',
+  path: '/parlament/proiecte/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ParlamentMembriIndexRoute = ParlamentMembriIndexRouteImport.update({
+  id: '/parlament/membri/',
+  path: '/parlament/membri/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ParlamentGrupuriIndexRoute = ParlamentGrupuriIndexRouteImport.update({
+  id: '/parlament/grupuri/',
+  path: '/parlament/grupuri/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MapsEditorIndexRoute = MapsEditorIndexRouteImport.update({
   id: '/maps/editor/',
   path: '/maps/editor/',
@@ -380,6 +436,13 @@ const PrimarieCuiShareImageDotpngRoute =
     path: '/share-image.png',
     getParentRoute: () => PrimarieCuiRouteRoute,
   } as any)
+const ParlamentGrupuriGroupIdRoute = ParlamentGrupuriGroupIdRouteImport.update({
+  id: '/parlament/grupuri/$groupId',
+  path: '/parlament/grupuri/$groupId',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/parlament/grupuri/$groupId.lazy').then((d) => d.Route),
+)
 const MapsPublicMapIdRoute = MapsPublicMapIdRouteImport.update({
   id: '/maps/public/$mapId',
   path: '/maps/public/$mapId',
@@ -451,6 +514,26 @@ const PrimarieCuiBugetRouteRoute = PrimarieCuiBugetRouteRouteImport.update({
   path: '/buget',
   getParentRoute: () => PrimarieCuiRouteRoute,
 } as any)
+const ParlamentProiecteBillIdRouteRoute =
+  ParlamentProiecteBillIdRouteRouteImport.update({
+    id: '/parlament/proiecte/$billId',
+    path: '/parlament/proiecte/$billId',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/parlament/proiecte/$billId/route.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentMembriMemberIdRouteRoute =
+  ParlamentMembriMemberIdRouteRouteImport.update({
+    id: '/parlament/membri/$memberId',
+    path: '/parlament/membri/$memberId',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/parlament/membri/$memberId/route.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const AdminCampaignsCampaignKeyRouteRoute =
   AdminCampaignsCampaignKeyRouteRouteImport.update({
     id: '/admin/campaigns/$campaignKey',
@@ -464,6 +547,26 @@ const PrimarieCuiBugetIndexRoute = PrimarieCuiBugetIndexRouteImport.update({
 } as any).lazy(() =>
   import('./routes/primarie/$cui/buget/index.lazy').then((d) => d.Route),
 )
+const ParlamentProiecteBillIdIndexRoute =
+  ParlamentProiecteBillIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => ParlamentProiecteBillIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/proiecte/$billId/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentMembriMemberIdIndexRoute =
+  ParlamentMembriMemberIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/membri/$memberId/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const AdminCampaignsCampaignKeyIndexRoute =
   AdminCampaignsCampaignKeyIndexRouteImport.update({
     id: '/',
@@ -495,6 +598,116 @@ const PrimarieCuiBugetCalendarRoute =
     getParentRoute: () => PrimarieCuiBugetRouteRoute,
   } as any).lazy(() =>
     import('./routes/primarie/$cui/buget/calendar.lazy').then((d) => d.Route),
+  )
+const ParlamentVoturiChamberVoteIdRoute =
+  ParlamentVoturiChamberVoteIdRouteImport.update({
+    id: '/parlament/voturi/$chamber/$voteId',
+    path: '/parlament/voturi/$chamber/$voteId',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/parlament/voturi/$chamber/$voteId.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentProiecteBillIdVoturiRoute =
+  ParlamentProiecteBillIdVoturiRouteImport.update({
+    id: '/voturi',
+    path: '/voturi',
+    getParentRoute: () => ParlamentProiecteBillIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/proiecte/$billId/voturi.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentProiecteBillIdEtapeRoute =
+  ParlamentProiecteBillIdEtapeRouteImport.update({
+    id: '/etape',
+    path: '/etape',
+    getParentRoute: () => ParlamentProiecteBillIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/proiecte/$billId/etape.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentProiecteBillIdDocumenteRoute =
+  ParlamentProiecteBillIdDocumenteRouteImport.update({
+    id: '/documente',
+    path: '/documente',
+    getParentRoute: () => ParlamentProiecteBillIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/proiecte/$billId/documente.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentMembriMemberIdVoturiRoute =
+  ParlamentMembriMemberIdVoturiRouteImport.update({
+    id: '/voturi',
+    path: '/voturi',
+    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/membri/$memberId/voturi.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentMembriMemberIdPortretRoute =
+  ParlamentMembriMemberIdPortretRouteImport.update({
+    id: '/portret',
+    path: '/portret',
+    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/membri/$memberId/portret.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentMembriMemberIdIntrebariRoute =
+  ParlamentMembriMemberIdIntrebariRouteImport.update({
+    id: '/intrebari',
+    path: '/intrebari',
+    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/membri/$memberId/intrebari.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentMembriMemberIdInterventiiRoute =
+  ParlamentMembriMemberIdInterventiiRouteImport.update({
+    id: '/interventii',
+    path: '/interventii',
+    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/membri/$memberId/interventii.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentMembriMemberIdIntereseRoute =
+  ParlamentMembriMemberIdIntereseRouteImport.update({
+    id: '/interese',
+    path: '/interese',
+    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/membri/$memberId/interese.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentMembriMemberIdContactRoute =
+  ParlamentMembriMemberIdContactRouteImport.update({
+    id: '/contact',
+    path: '/contact',
+    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/membri/$memberId/contact.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentMembriMemberIdAlegeriRoute =
+  ParlamentMembriMemberIdAlegeriRouteImport.update({
+    id: '/alegeri',
+    path: '/alegeri',
+    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/membri/$memberId/alegeri.lazy').then(
+      (d) => d.Route,
+    ),
   )
 const MapsDatasetsPublicPublicIdRoute =
   MapsDatasetsPublicPublicIdRouteImport.update({
@@ -671,6 +884,7 @@ export interface FileRoutesByFullPath {
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
+  '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
@@ -683,9 +897,12 @@ export interface FileRoutesByFullPath {
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/entities/': typeof EntitiesIndexRoute
+  '/parlament/': typeof ParlamentIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
+  '/parlament/membri/$memberId': typeof ParlamentMembriMemberIdRouteRouteWithChildren
+  '/parlament/proiecte/$billId': typeof ParlamentProiecteBillIdRouteRouteWithChildren
   '/primarie/$cui/buget': typeof PrimarieCuiBugetRouteRouteWithChildren
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
@@ -696,12 +913,17 @@ export interface FileRoutesByFullPath {
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
+  '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
   '/maps/datasets/': typeof MapsDatasetsIndexRoute
   '/maps/editor/': typeof MapsEditorIndexRoute
+  '/parlament/grupuri/': typeof ParlamentGrupuriIndexRoute
+  '/parlament/membri/': typeof ParlamentMembriIndexRoute
+  '/parlament/proiecte/': typeof ParlamentProiecteIndexRoute
+  '/parlament/voturi/': typeof ParlamentVoturiIndexRoute
   '/primarie/$cui/': typeof PrimarieCuiIndexRoute
   '/primarie/harta/': typeof PrimarieHartaIndexRoute
   '/alerts/$alertId/': typeof AlertsAlertIdIndexLazyRoute
@@ -717,10 +939,23 @@ export interface FileRoutesByFullPath {
   '/api/pnrr/raw/payments': typeof ApiPnrrRawPaymentsRoute
   '/api/pnrr/raw/projects': typeof ApiPnrrRawProjectsRoute
   '/maps/datasets/public/$publicId': typeof MapsDatasetsPublicPublicIdRoute
+  '/parlament/membri/$memberId/alegeri': typeof ParlamentMembriMemberIdAlegeriRoute
+  '/parlament/membri/$memberId/contact': typeof ParlamentMembriMemberIdContactRoute
+  '/parlament/membri/$memberId/interese': typeof ParlamentMembriMemberIdIntereseRoute
+  '/parlament/membri/$memberId/interventii': typeof ParlamentMembriMemberIdInterventiiRoute
+  '/parlament/membri/$memberId/intrebari': typeof ParlamentMembriMemberIdIntrebariRoute
+  '/parlament/membri/$memberId/portret': typeof ParlamentMembriMemberIdPortretRoute
+  '/parlament/membri/$memberId/voturi': typeof ParlamentMembriMemberIdVoturiRoute
+  '/parlament/proiecte/$billId/documente': typeof ParlamentProiecteBillIdDocumenteRoute
+  '/parlament/proiecte/$billId/etape': typeof ParlamentProiecteBillIdEtapeRoute
+  '/parlament/proiecte/$billId/voturi': typeof ParlamentProiecteBillIdVoturiRoute
+  '/parlament/voturi/$chamber/$voteId': typeof ParlamentVoturiChamberVoteIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
   '/$lang/learning/$pathId/': typeof LangLearningPathIdIndexRoute
   '/admin/campaigns/$campaignKey/': typeof AdminCampaignsCampaignKeyIndexRoute
+  '/parlament/membri/$memberId/': typeof ParlamentMembriMemberIdIndexRoute
+  '/parlament/proiecte/$billId/': typeof ParlamentProiecteBillIdIndexRoute
   '/primarie/$cui/buget/': typeof PrimarieCuiBugetIndexRoute
   '/$lang/learning/$pathId/$moduleId/$lessonId': typeof LangLearningPathIdModuleIdLessonIdRoute
   '/admin/campaigns/$campaignKey/entities/$entityCui': typeof AdminCampaignsCampaignKeyEntitiesEntityCuiRoute
@@ -749,6 +984,7 @@ export interface FileRoutesByTo {
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
+  '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
@@ -761,6 +997,7 @@ export interface FileRoutesByTo {
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/entities': typeof EntitiesIndexRoute
+  '/parlament': typeof ParlamentIndexRoute
   '/primarie': typeof PrimarieIndexRoute
   '/charts': typeof ChartsIndexLazyRoute
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
@@ -772,12 +1009,17 @@ export interface FileRoutesByTo {
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
+  '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/$lang/learning': typeof LangLearningIndexRoute
   '/classifications/economic': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional': typeof ClassificationsFunctionalIndexRoute
   '/maps/datasets': typeof MapsDatasetsIndexRoute
   '/maps/editor': typeof MapsEditorIndexRoute
+  '/parlament/grupuri': typeof ParlamentGrupuriIndexRoute
+  '/parlament/membri': typeof ParlamentMembriIndexRoute
+  '/parlament/proiecte': typeof ParlamentProiecteIndexRoute
+  '/parlament/voturi': typeof ParlamentVoturiIndexRoute
   '/primarie/$cui': typeof PrimarieCuiIndexRoute
   '/primarie/harta': typeof PrimarieHartaIndexRoute
   '/alerts/$alertId': typeof AlertsAlertIdIndexLazyRoute
@@ -792,10 +1034,23 @@ export interface FileRoutesByTo {
   '/api/pnrr/raw/payments': typeof ApiPnrrRawPaymentsRoute
   '/api/pnrr/raw/projects': typeof ApiPnrrRawProjectsRoute
   '/maps/datasets/public/$publicId': typeof MapsDatasetsPublicPublicIdRoute
+  '/parlament/membri/$memberId/alegeri': typeof ParlamentMembriMemberIdAlegeriRoute
+  '/parlament/membri/$memberId/contact': typeof ParlamentMembriMemberIdContactRoute
+  '/parlament/membri/$memberId/interese': typeof ParlamentMembriMemberIdIntereseRoute
+  '/parlament/membri/$memberId/interventii': typeof ParlamentMembriMemberIdInterventiiRoute
+  '/parlament/membri/$memberId/intrebari': typeof ParlamentMembriMemberIdIntrebariRoute
+  '/parlament/membri/$memberId/portret': typeof ParlamentMembriMemberIdPortretRoute
+  '/parlament/membri/$memberId/voturi': typeof ParlamentMembriMemberIdVoturiRoute
+  '/parlament/proiecte/$billId/documente': typeof ParlamentProiecteBillIdDocumenteRoute
+  '/parlament/proiecte/$billId/etape': typeof ParlamentProiecteBillIdEtapeRoute
+  '/parlament/proiecte/$billId/voturi': typeof ParlamentProiecteBillIdVoturiRoute
+  '/parlament/voturi/$chamber/$voteId': typeof ParlamentVoturiChamberVoteIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
   '/$lang/learning/$pathId': typeof LangLearningPathIdIndexRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyIndexRoute
+  '/parlament/membri/$memberId': typeof ParlamentMembriMemberIdIndexRoute
+  '/parlament/proiecte/$billId': typeof ParlamentProiecteBillIdIndexRoute
   '/primarie/$cui/buget': typeof PrimarieCuiBugetIndexRoute
   '/$lang/learning/$pathId/$moduleId/$lessonId': typeof LangLearningPathIdModuleIdLessonIdRoute
   '/admin/campaigns/$campaignKey/entities/$entityCui': typeof AdminCampaignsCampaignKeyEntitiesEntityCuiRoute
@@ -830,6 +1085,7 @@ export interface FileRoutesById {
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
+  '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare_/notificari': typeof ProvocareNotificariRoute
@@ -842,9 +1098,12 @@ export interface FileRoutesById {
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/entities/': typeof EntitiesIndexRoute
+  '/parlament/': typeof ParlamentIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
+  '/parlament/membri/$memberId': typeof ParlamentMembriMemberIdRouteRouteWithChildren
+  '/parlament/proiecte/$billId': typeof ParlamentProiecteBillIdRouteRouteWithChildren
   '/primarie/$cui/buget': typeof PrimarieCuiBugetRouteRouteWithChildren
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
@@ -855,12 +1114,17 @@ export interface FileRoutesById {
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
+  '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
   '/maps/datasets/': typeof MapsDatasetsIndexRoute
   '/maps/editor/': typeof MapsEditorIndexRoute
+  '/parlament/grupuri/': typeof ParlamentGrupuriIndexRoute
+  '/parlament/membri/': typeof ParlamentMembriIndexRoute
+  '/parlament/proiecte/': typeof ParlamentProiecteIndexRoute
+  '/parlament/voturi/': typeof ParlamentVoturiIndexRoute
   '/primarie/$cui/': typeof PrimarieCuiIndexRoute
   '/primarie/harta/': typeof PrimarieHartaIndexRoute
   '/alerts/$alertId/': typeof AlertsAlertIdIndexLazyRoute
@@ -876,10 +1140,23 @@ export interface FileRoutesById {
   '/api/pnrr/raw/payments': typeof ApiPnrrRawPaymentsRoute
   '/api/pnrr/raw/projects': typeof ApiPnrrRawProjectsRoute
   '/maps/datasets/public/$publicId': typeof MapsDatasetsPublicPublicIdRoute
+  '/parlament/membri/$memberId/alegeri': typeof ParlamentMembriMemberIdAlegeriRoute
+  '/parlament/membri/$memberId/contact': typeof ParlamentMembriMemberIdContactRoute
+  '/parlament/membri/$memberId/interese': typeof ParlamentMembriMemberIdIntereseRoute
+  '/parlament/membri/$memberId/interventii': typeof ParlamentMembriMemberIdInterventiiRoute
+  '/parlament/membri/$memberId/intrebari': typeof ParlamentMembriMemberIdIntrebariRoute
+  '/parlament/membri/$memberId/portret': typeof ParlamentMembriMemberIdPortretRoute
+  '/parlament/membri/$memberId/voturi': typeof ParlamentMembriMemberIdVoturiRoute
+  '/parlament/proiecte/$billId/documente': typeof ParlamentProiecteBillIdDocumenteRoute
+  '/parlament/proiecte/$billId/etape': typeof ParlamentProiecteBillIdEtapeRoute
+  '/parlament/proiecte/$billId/voturi': typeof ParlamentProiecteBillIdVoturiRoute
+  '/parlament/voturi/$chamber/$voteId': typeof ParlamentVoturiChamberVoteIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
   '/$lang/learning/$pathId/': typeof LangLearningPathIdIndexRoute
   '/admin/campaigns/$campaignKey/': typeof AdminCampaignsCampaignKeyIndexRoute
+  '/parlament/membri/$memberId/': typeof ParlamentMembriMemberIdIndexRoute
+  '/parlament/proiecte/$billId/': typeof ParlamentProiecteBillIdIndexRoute
   '/primarie/$cui/buget/': typeof PrimarieCuiBugetIndexRoute
   '/$lang/learning/$pathId/$moduleId/$lessonId': typeof LangLearningPathIdModuleIdLessonIdRoute
   '/admin/campaigns/$campaignKey/entities/$entityCui': typeof AdminCampaignsCampaignKeyEntitiesEntityCuiRoute
@@ -915,6 +1192,7 @@ export interface FileRouteTypes {
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
     | '/charts/new'
+    | '/companies/$cui'
     | '/entities/$cui'
     | '/pnrr/share-image.png'
     | '/provocare/notificari'
@@ -927,9 +1205,12 @@ export interface FileRouteTypes {
     | '/unsubscribe/$token'
     | '/research/employees-data'
     | '/entities/'
+    | '/parlament/'
     | '/primarie/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
+    | '/parlament/membri/$memberId'
+    | '/parlament/proiecte/$billId'
     | '/primarie/$cui/buget'
     | '/$lang/learning/onboarding'
     | '/classifications/economic/$code'
@@ -940,12 +1221,17 @@ export interface FileRouteTypes {
     | '/maps/editor/$mapId'
     | '/maps/editor/new'
     | '/maps/public/$mapId'
+    | '/parlament/grupuri/$groupId'
     | '/primarie/$cui/share-image.png'
     | '/$lang/learning/'
     | '/classifications/economic/'
     | '/classifications/functional/'
     | '/maps/datasets/'
     | '/maps/editor/'
+    | '/parlament/grupuri/'
+    | '/parlament/membri/'
+    | '/parlament/proiecte/'
+    | '/parlament/voturi/'
     | '/primarie/$cui/'
     | '/primarie/harta/'
     | '/alerts/$alertId/'
@@ -961,10 +1247,23 @@ export interface FileRouteTypes {
     | '/api/pnrr/raw/payments'
     | '/api/pnrr/raw/projects'
     | '/maps/datasets/public/$publicId'
+    | '/parlament/membri/$memberId/alegeri'
+    | '/parlament/membri/$memberId/contact'
+    | '/parlament/membri/$memberId/interese'
+    | '/parlament/membri/$memberId/interventii'
+    | '/parlament/membri/$memberId/intrebari'
+    | '/parlament/membri/$memberId/portret'
+    | '/parlament/membri/$memberId/voturi'
+    | '/parlament/proiecte/$billId/documente'
+    | '/parlament/proiecte/$billId/etape'
+    | '/parlament/proiecte/$billId/voturi'
+    | '/parlament/voturi/$chamber/$voteId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
     | '/$lang/learning/$pathId/'
     | '/admin/campaigns/$campaignKey/'
+    | '/parlament/membri/$memberId/'
+    | '/parlament/proiecte/$billId/'
     | '/primarie/$cui/buget/'
     | '/$lang/learning/$pathId/$moduleId/$lessonId'
     | '/admin/campaigns/$campaignKey/entities/$entityCui'
@@ -993,6 +1292,7 @@ export interface FileRouteTypes {
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
     | '/charts/new'
+    | '/companies/$cui'
     | '/entities/$cui'
     | '/pnrr/share-image.png'
     | '/provocare/notificari'
@@ -1005,6 +1305,7 @@ export interface FileRouteTypes {
     | '/unsubscribe/$token'
     | '/research/employees-data'
     | '/entities'
+    | '/parlament'
     | '/primarie'
     | '/charts'
     | '/$lang/learning/onboarding'
@@ -1016,12 +1317,17 @@ export interface FileRouteTypes {
     | '/maps/editor/$mapId'
     | '/maps/editor/new'
     | '/maps/public/$mapId'
+    | '/parlament/grupuri/$groupId'
     | '/primarie/$cui/share-image.png'
     | '/$lang/learning'
     | '/classifications/economic'
     | '/classifications/functional'
     | '/maps/datasets'
     | '/maps/editor'
+    | '/parlament/grupuri'
+    | '/parlament/membri'
+    | '/parlament/proiecte'
+    | '/parlament/voturi'
     | '/primarie/$cui'
     | '/primarie/harta'
     | '/alerts/$alertId'
@@ -1036,10 +1342,23 @@ export interface FileRouteTypes {
     | '/api/pnrr/raw/payments'
     | '/api/pnrr/raw/projects'
     | '/maps/datasets/public/$publicId'
+    | '/parlament/membri/$memberId/alegeri'
+    | '/parlament/membri/$memberId/contact'
+    | '/parlament/membri/$memberId/interese'
+    | '/parlament/membri/$memberId/interventii'
+    | '/parlament/membri/$memberId/intrebari'
+    | '/parlament/membri/$memberId/portret'
+    | '/parlament/membri/$memberId/voturi'
+    | '/parlament/proiecte/$billId/documente'
+    | '/parlament/proiecte/$billId/etape'
+    | '/parlament/proiecte/$billId/voturi'
+    | '/parlament/voturi/$chamber/$voteId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
     | '/$lang/learning/$pathId'
     | '/admin/campaigns/$campaignKey'
+    | '/parlament/membri/$memberId'
+    | '/parlament/proiecte/$billId'
     | '/primarie/$cui/buget'
     | '/$lang/learning/$pathId/$moduleId/$lessonId'
     | '/admin/campaigns/$campaignKey/entities/$entityCui'
@@ -1073,6 +1392,7 @@ export interface FileRouteTypes {
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
     | '/charts/new'
+    | '/companies/$cui'
     | '/entities/$cui'
     | '/pnrr/share-image.png'
     | '/provocare_/notificari'
@@ -1085,9 +1405,12 @@ export interface FileRouteTypes {
     | '/unsubscribe/$token'
     | '/research/employees-data'
     | '/entities/'
+    | '/parlament/'
     | '/primarie/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
+    | '/parlament/membri/$memberId'
+    | '/parlament/proiecte/$billId'
     | '/primarie/$cui/buget'
     | '/$lang/learning/onboarding'
     | '/classifications/economic/$code'
@@ -1098,12 +1421,17 @@ export interface FileRouteTypes {
     | '/maps/editor/$mapId'
     | '/maps/editor/new'
     | '/maps/public/$mapId'
+    | '/parlament/grupuri/$groupId'
     | '/primarie/$cui/share-image.png'
     | '/$lang/learning/'
     | '/classifications/economic/'
     | '/classifications/functional/'
     | '/maps/datasets/'
     | '/maps/editor/'
+    | '/parlament/grupuri/'
+    | '/parlament/membri/'
+    | '/parlament/proiecte/'
+    | '/parlament/voturi/'
     | '/primarie/$cui/'
     | '/primarie/harta/'
     | '/alerts/$alertId/'
@@ -1119,10 +1447,23 @@ export interface FileRouteTypes {
     | '/api/pnrr/raw/payments'
     | '/api/pnrr/raw/projects'
     | '/maps/datasets/public/$publicId'
+    | '/parlament/membri/$memberId/alegeri'
+    | '/parlament/membri/$memberId/contact'
+    | '/parlament/membri/$memberId/interese'
+    | '/parlament/membri/$memberId/interventii'
+    | '/parlament/membri/$memberId/intrebari'
+    | '/parlament/membri/$memberId/portret'
+    | '/parlament/membri/$memberId/voturi'
+    | '/parlament/proiecte/$billId/documente'
+    | '/parlament/proiecte/$billId/etape'
+    | '/parlament/proiecte/$billId/voturi'
+    | '/parlament/voturi/$chamber/$voteId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
     | '/$lang/learning/$pathId/'
     | '/admin/campaigns/$campaignKey/'
+    | '/parlament/membri/$memberId/'
+    | '/parlament/proiecte/$billId/'
     | '/primarie/$cui/buget/'
     | '/$lang/learning/$pathId/$moduleId/$lessonId'
     | '/admin/campaigns/$campaignKey/entities/$entityCui'
@@ -1156,6 +1497,7 @@ export interface RootRouteChildren {
   AlertsNewRoute: typeof AlertsNewRoute
   CertificatesIdRoute: typeof CertificatesIdRoute
   ChartsNewRoute: typeof ChartsNewRoute
+  CompaniesCuiRoute: typeof CompaniesCuiRoute
   ProvocareNotificariRoute: typeof ProvocareNotificariRoute
   ProvocareTermeniSiConditiiRoute: typeof ProvocareTermeniSiConditiiRoute
   SettingsNotificationsRoute: typeof SettingsNotificationsRoute
@@ -1163,9 +1505,12 @@ export interface RootRouteChildren {
   ShareCodeRoute: typeof ShareCodeRoute
   UnsubscribeTokenRoute: typeof UnsubscribeTokenRoute
   ResearchEmployeesDataLazyRoute: typeof ResearchEmployeesDataLazyRoute
+  ParlamentIndexRoute: typeof ParlamentIndexRoute
   PrimarieIndexRoute: typeof PrimarieIndexRoute
   ChartsIndexLazyRoute: typeof ChartsIndexLazyRoute
   AdminCampaignsCampaignKeyRouteRoute: typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
+  ParlamentMembriMemberIdRouteRoute: typeof ParlamentMembriMemberIdRouteRouteWithChildren
+  ParlamentProiecteBillIdRouteRoute: typeof ParlamentProiecteBillIdRouteRouteWithChildren
   ClassificationsEconomicCodeRoute: typeof ClassificationsEconomicCodeRoute
   ClassificationsFunctionalCodeRoute: typeof ClassificationsFunctionalCodeRoute
   MapsDatasetsDatasetIdRoute: typeof MapsDatasetsDatasetIdRoute
@@ -1173,15 +1518,21 @@ export interface RootRouteChildren {
   MapsEditorMapIdRoute: typeof MapsEditorMapIdRoute
   MapsEditorNewRoute: typeof MapsEditorNewRoute
   MapsPublicMapIdRoute: typeof MapsPublicMapIdRoute
+  ParlamentGrupuriGroupIdRoute: typeof ParlamentGrupuriGroupIdRoute
   ClassificationsEconomicIndexRoute: typeof ClassificationsEconomicIndexRoute
   ClassificationsFunctionalIndexRoute: typeof ClassificationsFunctionalIndexRoute
   MapsDatasetsIndexRoute: typeof MapsDatasetsIndexRoute
   MapsEditorIndexRoute: typeof MapsEditorIndexRoute
+  ParlamentGrupuriIndexRoute: typeof ParlamentGrupuriIndexRoute
+  ParlamentMembriIndexRoute: typeof ParlamentMembriIndexRoute
+  ParlamentProiecteIndexRoute: typeof ParlamentProiecteIndexRoute
+  ParlamentVoturiIndexRoute: typeof ParlamentVoturiIndexRoute
   PrimarieHartaIndexRoute: typeof PrimarieHartaIndexRoute
   ApiPnrrRawIndicatorsRoute: typeof ApiPnrrRawIndicatorsRoute
   ApiPnrrRawPaymentsRoute: typeof ApiPnrrRawPaymentsRoute
   ApiPnrrRawProjectsRoute: typeof ApiPnrrRawProjectsRoute
   MapsDatasetsPublicPublicIdRoute: typeof MapsDatasetsPublicPublicIdRoute
+  ParlamentVoturiChamberVoteIdRoute: typeof ParlamentVoturiChamberVoteIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1312,6 +1663,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrimarieIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/parlament/': {
+      id: '/parlament/'
+      path: '/parlament'
+      fullPath: '/parlament/'
+      preLoaderRoute: typeof ParlamentIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/entities/': {
       id: '/entities/'
       path: '/'
@@ -1395,6 +1753,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/entities/$cui'
       preLoaderRoute: typeof EntitiesCuiRouteImport
       parentRoute: typeof EntitiesRouteRoute
+    }
+    '/companies/$cui': {
+      id: '/companies/$cui'
+      path: '/companies/$cui'
+      fullPath: '/companies/$cui'
+      preLoaderRoute: typeof CompaniesCuiRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/charts/new': {
       id: '/charts/new'
@@ -1480,6 +1845,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrimarieCuiIndexRouteImport
       parentRoute: typeof PrimarieCuiRouteRoute
     }
+    '/parlament/voturi/': {
+      id: '/parlament/voturi/'
+      path: '/parlament/voturi'
+      fullPath: '/parlament/voturi/'
+      preLoaderRoute: typeof ParlamentVoturiIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parlament/proiecte/': {
+      id: '/parlament/proiecte/'
+      path: '/parlament/proiecte'
+      fullPath: '/parlament/proiecte/'
+      preLoaderRoute: typeof ParlamentProiecteIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parlament/membri/': {
+      id: '/parlament/membri/'
+      path: '/parlament/membri'
+      fullPath: '/parlament/membri/'
+      preLoaderRoute: typeof ParlamentMembriIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parlament/grupuri/': {
+      id: '/parlament/grupuri/'
+      path: '/parlament/grupuri'
+      fullPath: '/parlament/grupuri/'
+      preLoaderRoute: typeof ParlamentGrupuriIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/maps/editor/': {
       id: '/maps/editor/'
       path: '/maps/editor'
@@ -1521,6 +1914,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/primarie/$cui/share-image.png'
       preLoaderRoute: typeof PrimarieCuiShareImageDotpngRouteImport
       parentRoute: typeof PrimarieCuiRouteRoute
+    }
+    '/parlament/grupuri/$groupId': {
+      id: '/parlament/grupuri/$groupId'
+      path: '/parlament/grupuri/$groupId'
+      fullPath: '/parlament/grupuri/$groupId'
+      preLoaderRoute: typeof ParlamentGrupuriGroupIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/maps/public/$mapId': {
       id: '/maps/public/$mapId'
@@ -1592,6 +1992,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrimarieCuiBugetRouteRouteImport
       parentRoute: typeof PrimarieCuiRouteRoute
     }
+    '/parlament/proiecte/$billId': {
+      id: '/parlament/proiecte/$billId'
+      path: '/parlament/proiecte/$billId'
+      fullPath: '/parlament/proiecte/$billId'
+      preLoaderRoute: typeof ParlamentProiecteBillIdRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parlament/membri/$memberId': {
+      id: '/parlament/membri/$memberId'
+      path: '/parlament/membri/$memberId'
+      fullPath: '/parlament/membri/$memberId'
+      preLoaderRoute: typeof ParlamentMembriMemberIdRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/campaigns/$campaignKey': {
       id: '/admin/campaigns/$campaignKey'
       path: '/admin/campaigns/$campaignKey'
@@ -1605,6 +2019,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/primarie/$cui/buget/'
       preLoaderRoute: typeof PrimarieCuiBugetIndexRouteImport
       parentRoute: typeof PrimarieCuiBugetRouteRoute
+    }
+    '/parlament/proiecte/$billId/': {
+      id: '/parlament/proiecte/$billId/'
+      path: '/'
+      fullPath: '/parlament/proiecte/$billId/'
+      preLoaderRoute: typeof ParlamentProiecteBillIdIndexRouteImport
+      parentRoute: typeof ParlamentProiecteBillIdRouteRoute
+    }
+    '/parlament/membri/$memberId/': {
+      id: '/parlament/membri/$memberId/'
+      path: '/'
+      fullPath: '/parlament/membri/$memberId/'
+      preLoaderRoute: typeof ParlamentMembriMemberIdIndexRouteImport
+      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
     }
     '/admin/campaigns/$campaignKey/': {
       id: '/admin/campaigns/$campaignKey/'
@@ -1633,6 +2061,83 @@ declare module '@tanstack/react-router' {
       fullPath: '/primarie/$cui/buget/calendar'
       preLoaderRoute: typeof PrimarieCuiBugetCalendarRouteImport
       parentRoute: typeof PrimarieCuiBugetRouteRoute
+    }
+    '/parlament/voturi/$chamber/$voteId': {
+      id: '/parlament/voturi/$chamber/$voteId'
+      path: '/parlament/voturi/$chamber/$voteId'
+      fullPath: '/parlament/voturi/$chamber/$voteId'
+      preLoaderRoute: typeof ParlamentVoturiChamberVoteIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parlament/proiecte/$billId/voturi': {
+      id: '/parlament/proiecte/$billId/voturi'
+      path: '/voturi'
+      fullPath: '/parlament/proiecte/$billId/voturi'
+      preLoaderRoute: typeof ParlamentProiecteBillIdVoturiRouteImport
+      parentRoute: typeof ParlamentProiecteBillIdRouteRoute
+    }
+    '/parlament/proiecte/$billId/etape': {
+      id: '/parlament/proiecte/$billId/etape'
+      path: '/etape'
+      fullPath: '/parlament/proiecte/$billId/etape'
+      preLoaderRoute: typeof ParlamentProiecteBillIdEtapeRouteImport
+      parentRoute: typeof ParlamentProiecteBillIdRouteRoute
+    }
+    '/parlament/proiecte/$billId/documente': {
+      id: '/parlament/proiecte/$billId/documente'
+      path: '/documente'
+      fullPath: '/parlament/proiecte/$billId/documente'
+      preLoaderRoute: typeof ParlamentProiecteBillIdDocumenteRouteImport
+      parentRoute: typeof ParlamentProiecteBillIdRouteRoute
+    }
+    '/parlament/membri/$memberId/voturi': {
+      id: '/parlament/membri/$memberId/voturi'
+      path: '/voturi'
+      fullPath: '/parlament/membri/$memberId/voturi'
+      preLoaderRoute: typeof ParlamentMembriMemberIdVoturiRouteImport
+      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
+    }
+    '/parlament/membri/$memberId/portret': {
+      id: '/parlament/membri/$memberId/portret'
+      path: '/portret'
+      fullPath: '/parlament/membri/$memberId/portret'
+      preLoaderRoute: typeof ParlamentMembriMemberIdPortretRouteImport
+      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
+    }
+    '/parlament/membri/$memberId/intrebari': {
+      id: '/parlament/membri/$memberId/intrebari'
+      path: '/intrebari'
+      fullPath: '/parlament/membri/$memberId/intrebari'
+      preLoaderRoute: typeof ParlamentMembriMemberIdIntrebariRouteImport
+      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
+    }
+    '/parlament/membri/$memberId/interventii': {
+      id: '/parlament/membri/$memberId/interventii'
+      path: '/interventii'
+      fullPath: '/parlament/membri/$memberId/interventii'
+      preLoaderRoute: typeof ParlamentMembriMemberIdInterventiiRouteImport
+      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
+    }
+    '/parlament/membri/$memberId/interese': {
+      id: '/parlament/membri/$memberId/interese'
+      path: '/interese'
+      fullPath: '/parlament/membri/$memberId/interese'
+      preLoaderRoute: typeof ParlamentMembriMemberIdIntereseRouteImport
+      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
+    }
+    '/parlament/membri/$memberId/contact': {
+      id: '/parlament/membri/$memberId/contact'
+      path: '/contact'
+      fullPath: '/parlament/membri/$memberId/contact'
+      preLoaderRoute: typeof ParlamentMembriMemberIdContactRouteImport
+      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
+    }
+    '/parlament/membri/$memberId/alegeri': {
+      id: '/parlament/membri/$memberId/alegeri'
+      path: '/alegeri'
+      fullPath: '/parlament/membri/$memberId/alegeri'
+      preLoaderRoute: typeof ParlamentMembriMemberIdAlegeriRouteImport
+      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
     }
     '/maps/datasets/public/$publicId': {
       id: '/maps/datasets/public/$publicId'
@@ -1982,6 +2487,57 @@ const AdminCampaignsCampaignKeyRouteRouteWithChildren =
     AdminCampaignsCampaignKeyRouteRouteChildren,
   )
 
+interface ParlamentMembriMemberIdRouteRouteChildren {
+  ParlamentMembriMemberIdAlegeriRoute: typeof ParlamentMembriMemberIdAlegeriRoute
+  ParlamentMembriMemberIdContactRoute: typeof ParlamentMembriMemberIdContactRoute
+  ParlamentMembriMemberIdIntereseRoute: typeof ParlamentMembriMemberIdIntereseRoute
+  ParlamentMembriMemberIdInterventiiRoute: typeof ParlamentMembriMemberIdInterventiiRoute
+  ParlamentMembriMemberIdIntrebariRoute: typeof ParlamentMembriMemberIdIntrebariRoute
+  ParlamentMembriMemberIdPortretRoute: typeof ParlamentMembriMemberIdPortretRoute
+  ParlamentMembriMemberIdVoturiRoute: typeof ParlamentMembriMemberIdVoturiRoute
+  ParlamentMembriMemberIdIndexRoute: typeof ParlamentMembriMemberIdIndexRoute
+}
+
+const ParlamentMembriMemberIdRouteRouteChildren: ParlamentMembriMemberIdRouteRouteChildren =
+  {
+    ParlamentMembriMemberIdAlegeriRoute: ParlamentMembriMemberIdAlegeriRoute,
+    ParlamentMembriMemberIdContactRoute: ParlamentMembriMemberIdContactRoute,
+    ParlamentMembriMemberIdIntereseRoute: ParlamentMembriMemberIdIntereseRoute,
+    ParlamentMembriMemberIdInterventiiRoute:
+      ParlamentMembriMemberIdInterventiiRoute,
+    ParlamentMembriMemberIdIntrebariRoute:
+      ParlamentMembriMemberIdIntrebariRoute,
+    ParlamentMembriMemberIdPortretRoute: ParlamentMembriMemberIdPortretRoute,
+    ParlamentMembriMemberIdVoturiRoute: ParlamentMembriMemberIdVoturiRoute,
+    ParlamentMembriMemberIdIndexRoute: ParlamentMembriMemberIdIndexRoute,
+  }
+
+const ParlamentMembriMemberIdRouteRouteWithChildren =
+  ParlamentMembriMemberIdRouteRoute._addFileChildren(
+    ParlamentMembriMemberIdRouteRouteChildren,
+  )
+
+interface ParlamentProiecteBillIdRouteRouteChildren {
+  ParlamentProiecteBillIdDocumenteRoute: typeof ParlamentProiecteBillIdDocumenteRoute
+  ParlamentProiecteBillIdEtapeRoute: typeof ParlamentProiecteBillIdEtapeRoute
+  ParlamentProiecteBillIdVoturiRoute: typeof ParlamentProiecteBillIdVoturiRoute
+  ParlamentProiecteBillIdIndexRoute: typeof ParlamentProiecteBillIdIndexRoute
+}
+
+const ParlamentProiecteBillIdRouteRouteChildren: ParlamentProiecteBillIdRouteRouteChildren =
+  {
+    ParlamentProiecteBillIdDocumenteRoute:
+      ParlamentProiecteBillIdDocumenteRoute,
+    ParlamentProiecteBillIdEtapeRoute: ParlamentProiecteBillIdEtapeRoute,
+    ParlamentProiecteBillIdVoturiRoute: ParlamentProiecteBillIdVoturiRoute,
+    ParlamentProiecteBillIdIndexRoute: ParlamentProiecteBillIdIndexRoute,
+  }
+
+const ParlamentProiecteBillIdRouteRouteWithChildren =
+  ParlamentProiecteBillIdRouteRoute._addFileChildren(
+    ParlamentProiecteBillIdRouteRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   EntitiesRouteRoute: EntitiesRouteRouteWithChildren,
@@ -2006,6 +2562,7 @@ const rootRouteChildren: RootRouteChildren = {
   AlertsNewRoute: AlertsNewRoute,
   CertificatesIdRoute: CertificatesIdRoute,
   ChartsNewRoute: ChartsNewRoute,
+  CompaniesCuiRoute: CompaniesCuiRoute,
   ProvocareNotificariRoute: ProvocareNotificariRoute,
   ProvocareTermeniSiConditiiRoute: ProvocareTermeniSiConditiiRoute,
   SettingsNotificationsRoute: SettingsNotificationsRoute,
@@ -2013,10 +2570,15 @@ const rootRouteChildren: RootRouteChildren = {
   ShareCodeRoute: ShareCodeRoute,
   UnsubscribeTokenRoute: UnsubscribeTokenRoute,
   ResearchEmployeesDataLazyRoute: ResearchEmployeesDataLazyRoute,
+  ParlamentIndexRoute: ParlamentIndexRoute,
   PrimarieIndexRoute: PrimarieIndexRoute,
   ChartsIndexLazyRoute: ChartsIndexLazyRoute,
   AdminCampaignsCampaignKeyRouteRoute:
     AdminCampaignsCampaignKeyRouteRouteWithChildren,
+  ParlamentMembriMemberIdRouteRoute:
+    ParlamentMembriMemberIdRouteRouteWithChildren,
+  ParlamentProiecteBillIdRouteRoute:
+    ParlamentProiecteBillIdRouteRouteWithChildren,
   ClassificationsEconomicCodeRoute: ClassificationsEconomicCodeRoute,
   ClassificationsFunctionalCodeRoute: ClassificationsFunctionalCodeRoute,
   MapsDatasetsDatasetIdRoute: MapsDatasetsDatasetIdRoute,
@@ -2024,15 +2586,21 @@ const rootRouteChildren: RootRouteChildren = {
   MapsEditorMapIdRoute: MapsEditorMapIdRoute,
   MapsEditorNewRoute: MapsEditorNewRoute,
   MapsPublicMapIdRoute: MapsPublicMapIdRoute,
+  ParlamentGrupuriGroupIdRoute: ParlamentGrupuriGroupIdRoute,
   ClassificationsEconomicIndexRoute: ClassificationsEconomicIndexRoute,
   ClassificationsFunctionalIndexRoute: ClassificationsFunctionalIndexRoute,
   MapsDatasetsIndexRoute: MapsDatasetsIndexRoute,
   MapsEditorIndexRoute: MapsEditorIndexRoute,
+  ParlamentGrupuriIndexRoute: ParlamentGrupuriIndexRoute,
+  ParlamentMembriIndexRoute: ParlamentMembriIndexRoute,
+  ParlamentProiecteIndexRoute: ParlamentProiecteIndexRoute,
+  ParlamentVoturiIndexRoute: ParlamentVoturiIndexRoute,
   PrimarieHartaIndexRoute: PrimarieHartaIndexRoute,
   ApiPnrrRawIndicatorsRoute: ApiPnrrRawIndicatorsRoute,
   ApiPnrrRawPaymentsRoute: ApiPnrrRawPaymentsRoute,
   ApiPnrrRawProjectsRoute: ApiPnrrRawProjectsRoute,
   MapsDatasetsPublicPublicIdRoute: MapsDatasetsPublicPublicIdRoute,
+  ParlamentVoturiChamberVoteIdRoute: ParlamentVoturiChamberVoteIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

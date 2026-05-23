@@ -44,7 +44,8 @@
     "router:generate": "node scripts/router-generate.mjs",
     "i18n:extract": "lingui extract",
     "i18n:compile": "lingui compile",
-    "i18n:clean": "lingui extract --clean"
+    "i18n:clean": "lingui extract --clean",
+    "worktree:create": "bash scripts/create-worktree.sh"
   },
   "scripts-info": {
     "i18n:extract": "Scan source files for Lingui message IDs and update locale catalogs (adds new keys, keeps obsolete ones).",

@@ -157,6 +157,7 @@ Pro tips
 - [Charts: Create](./charts-create.md)
 - [Charts: Detail](./charts-detail.md)
 - [Entity Details](./entity-details.md)
+- [Private Company Details](./private-company-details.md)
 - [Entity Analytics](./entity-analytics.md)
 - [Map](./map.md)
 - [Cookies and Policies](./cookies-and-policies.md)

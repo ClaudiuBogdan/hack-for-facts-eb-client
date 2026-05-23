@@ -1,0 +1,371 @@
+import { z } from 'zod'
+
+export const ParliamentChamberSchema = z.enum(['camera', 'senat'])
+export type ParliamentChamber = z.infer<typeof ParliamentChamberSchema>
+
+export const VoteTypeSchema = z.enum(['deschis', 'secret'])
+export type VoteType = z.infer<typeof VoteTypeSchema>
+
+export const MemberVoteChoiceSchema = z.enum([
+  'pentru',
+  'impotriva',
+  'abtinere',
+  'nu_a_votat',
+])
+export type MemberVoteChoice = z.infer<typeof MemberVoteChoiceSchema>
+
+export const VoteOutcomeSchema = z.enum(['adoptat', 'respins', 'amânat'])
+export type VoteOutcome = z.infer<typeof VoteOutcomeSchema>
+
+export const ParliamentLegislatureSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  startYear: z.number().int(),
+  endYear: z.number().int(),
+})
+export type ParliamentLegislature = z.infer<typeof ParliamentLegislatureSchema>
+
+export const ParliamentGroupSchema = z.object({
+  groupId: z.string(),
+  name: z.string(),
+  shortName: z.string().optional(),
+  chamber: ParliamentChamberSchema,
+  memberCount: z.number().int().nonnegative(),
+  color: z.string().optional(),
+})
+export type ParliamentGroup = z.infer<typeof ParliamentGroupSchema>
+
+export const ParliamentMemberContactSchema = z.object({
+  email: z.string().email().optional(),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  website: z.string().url().optional(),
+})
+export type ParliamentMemberContact = z.infer<typeof ParliamentMemberContactSchema>
+
+export const ParliamentMemberSchema = z.object({
+  memberId: z.string(),
+  firstName: z.string(),
+  lastName: z.string(),
+  chamber: z.enum(['camera', 'senat']),
+  groupId: z.string(),
+  groupName: z.string(),
+  judetSlug: z.string(),
+  judetName: z.string(),
+  mandateStart: z.string().optional(),
+  mandateEnd: z.string().optional(),
+  role: z.string().optional(),
+  photoUrl: z.string().url().optional(),
+  contact: ParliamentMemberContactSchema.optional(),
+})
+export type ParliamentMember = z.infer<typeof ParliamentMemberSchema>
+
+export const ParliamentVoteTallySchema = z.object({
+  pentru: z.number().int().nonnegative(),
+  impotriva: z.number().int().nonnegative(),
+  abtinere: z.number().int().nonnegative().optional(),
+  nuAVotat: z.number().int().nonnegative().optional(),
+})
+export type ParliamentVoteTally = z.infer<typeof ParliamentVoteTallySchema>
+
+export const ParliamentGroupVoteBreakdownSchema = z.object({
+  groupId: z.string(),
+  groupName: z.string(),
+  pentru: z.number().int().nonnegative(),
+  impotriva: z.number().int().nonnegative(),
+  abtinere: z.number().int().nonnegative().optional(),
+  nuAVotat: z.number().int().nonnegative().optional(),
+})
+export type ParliamentGroupVoteBreakdown = z.infer<
+  typeof ParliamentGroupVoteBreakdownSchema
+>
+
+export const ParliamentMemberVoteRecordSchema = z.object({
+  memberId: z.string(),
+  memberName: z.string(),
+  groupId: z.string(),
+  groupName: z.string(),
+  choice: MemberVoteChoiceSchema,
+})
+export type ParliamentMemberVoteRecord = z.infer<
+  typeof ParliamentMemberVoteRecordSchema
+>
+
+export const ParliamentVoteSummarySchema = z.object({
+  voteId: z.string(),
+  chamber: z.enum(['camera', 'senat']),
+  title: z.string(),
+  heldAt: z.string(),
+  voteType: VoteTypeSchema,
+  outcome: VoteOutcomeSchema,
+  outcomeLabel: z.string(),
+  tally: ParliamentVoteTallySchema,
+  relatedBillId: z.string().optional(),
+})
+export type ParliamentVoteSummary = z.infer<typeof ParliamentVoteSummarySchema>
+
+export const ParliamentVoteListItemSchema = ParliamentVoteSummarySchema.extend({
+  divisionNumber: z.number().int().positive(),
+})
+export type ParliamentVoteListItem = z.infer<typeof ParliamentVoteListItemSchema>
+
+export const ParliamentVotesListSchema = z.object({
+  votes: z.array(ParliamentVoteListItemSchema),
+  total: z.number().int().nonnegative(),
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive(),
+  totalPages: z.number().int().positive(),
+})
+export type ParliamentVotesList = z.infer<typeof ParliamentVotesListSchema>
+
+export const ParliamentVoteDetailSchema = ParliamentVoteSummarySchema.extend({
+  description: z.string().optional(),
+  groupBreakdown: z.array(ParliamentGroupVoteBreakdownSchema),
+  memberVotes: z.array(ParliamentMemberVoteRecordSchema),
+})
+export type ParliamentVoteDetail = z.infer<typeof ParliamentVoteDetailSchema>
+
+export const ParliamentHubDataSchema = z.object({
+  legislature: ParliamentLegislatureSchema,
+  lastSyncedAt: z.string(),
+  sources: z.array(z.string()),
+  groups: z.array(ParliamentGroupSchema),
+  recentVotes: z.array(ParliamentVoteSummarySchema),
+  memberCountByChamber: z.object({
+    camera: z.number().int().nonnegative(),
+    senat: z.number().int().nonnegative(),
+  }),
+  budgetInstitutionSlugs: z.object({
+    camera: z.string(),
+    senat: z.string(),
+  }),
+})
+export type ParliamentHubData = z.infer<typeof ParliamentHubDataSchema>
+
+export const ParliamentMembersListSchema = z.object({
+  members: z.array(ParliamentMemberSchema),
+  total: z.number().int().nonnegative(),
+})
+export type ParliamentMembersList = z.infer<typeof ParliamentMembersListSchema>
+
+export const ParliamentMemberVotingHistorySchema = z.object({
+  memberId: z.string(),
+  votes: z.array(
+    z.object({
+      voteId: z.string(),
+      chamber: z.enum(['camera', 'senat']),
+      title: z.string(),
+      heldAt: z.string(),
+      choice: MemberVoteChoiceSchema,
+      outcome: VoteOutcomeSchema,
+      divisionNumber: z.number().int().positive().optional(),
+      tally: ParliamentVoteTallySchema.optional(),
+    }),
+  ),
+  total: z.number().int().nonnegative(),
+})
+export type ParliamentMemberVotingHistory = z.infer<
+  typeof ParliamentMemberVotingHistorySchema
+>
+
+export const MemberSpokenContributionSchema = z.object({
+  contributionId: z.string(),
+  heldAt: z.string(),
+  title: z.string(),
+  summary: z.string().optional(),
+})
+export type MemberSpokenContribution = z.infer<typeof MemberSpokenContributionSchema>
+
+export const MemberWrittenQuestionSchema = z.object({
+  questionId: z.string(),
+  submittedAt: z.string(),
+  title: z.string(),
+  status: z.enum(['raspuns', 'in_asteptare']),
+  answerSummary: z.string().optional(),
+})
+export type MemberWrittenQuestion = z.infer<typeof MemberWrittenQuestionSchema>
+
+export const MemberInterestDeclarationSchema = z.object({
+  declarationId: z.string(),
+  category: z.string(),
+  description: z.string(),
+  registeredAt: z.string(),
+})
+export type MemberInterestDeclaration = z.infer<typeof MemberInterestDeclarationSchema>
+
+export const MemberElectionResultSchema = z.object({
+  electionDate: z.string(),
+  electionName: z.string(),
+  votesReceived: z.number().int().nonnegative(),
+  votesSharePercent: z.number().nonnegative(),
+  elected: z.boolean(),
+  constituency: z.string(),
+})
+export type MemberElectionResult = z.infer<typeof MemberElectionResultSchema>
+
+export const ParliamentMemberProfileSchema = z.object({
+  memberId: z.string(),
+  spokenContributions: z.array(MemberSpokenContributionSchema),
+  writtenQuestions: z.array(MemberWrittenQuestionSchema),
+  interestDeclarations: z.array(MemberInterestDeclarationSchema),
+  electionResult: MemberElectionResultSchema.optional(),
+  officialPortraitUrl: z.string().url().optional(),
+  officialPortraitCaption: z.string().optional(),
+})
+export type ParliamentMemberProfile = z.infer<typeof ParliamentMemberProfileSchema>
+
+export const BillTypeSchema = z.enum([
+  'guvern',
+  'parlamentar',
+  'cetateni',
+  'ordonanta',
+])
+export type BillType = z.infer<typeof BillTypeSchema>
+
+export const BillCurrentLocationSchema = z.enum([
+  'camera',
+  'senat',
+  'mediere',
+  'presedinte',
+  'promulgat',
+  'respins',
+  'retras',
+])
+export type BillCurrentLocation = z.infer<typeof BillCurrentLocationSchema>
+
+export const BillStageStatusSchema = z.enum([
+  'complete',
+  'in_progress',
+  'not_reached',
+  'not_applicable',
+])
+export type BillStageStatus = z.infer<typeof BillStageStatusSchema>
+
+export const BillSortBySchema = z.enum([
+  'title_asc',
+  'title_desc',
+  'updated_desc',
+  'updated_asc',
+])
+export type BillSortBy = z.infer<typeof BillSortBySchema>
+
+export const ParliamentBillSummarySchema = z.object({
+  billId: z.string(),
+  number: z.string(),
+  title: z.string(),
+  billType: BillTypeSchema,
+  originatingChamber: ParliamentChamberSchema,
+  currentLocation: BillCurrentLocationSchema,
+  currentStageLabel: z.string(),
+  nextStageLabel: z.string().optional(),
+  lastUpdatedAt: z.string(),
+  legislatureId: z.string(),
+})
+export type ParliamentBillSummary = z.infer<typeof ParliamentBillSummarySchema>
+
+export const ParliamentBillListSchema = z.object({
+  bills: z.array(ParliamentBillSummarySchema),
+  total: z.number().int().nonnegative(),
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive(),
+  totalPages: z.number().int().positive(),
+})
+export type ParliamentBillList = z.infer<typeof ParliamentBillListSchema>
+
+export const ParliamentBillDocumentSchema = z.object({
+  documentId: z.string(),
+  label: z.string(),
+  url: z.string().url(),
+  publishedAt: z.string(),
+  chamber: ParliamentChamberSchema.optional(),
+  versionLabel: z.string().optional(),
+})
+export type ParliamentBillDocument = z.infer<typeof ParliamentBillDocumentSchema>
+
+export const ParliamentBillPassageStageSchema = z.object({
+  stageId: z.string(),
+  label: z.string(),
+  status: BillStageStatusSchema,
+  completedAt: z.string().optional(),
+})
+export type ParliamentBillPassageStage = z.infer<
+  typeof ParliamentBillPassageStageSchema
+>
+
+export const ParliamentBillPassageSchema = z.object({
+  camera: z.array(ParliamentBillPassageStageSchema),
+  senat: z.array(ParliamentBillPassageStageSchema),
+  final: z.array(ParliamentBillPassageStageSchema),
+})
+export type ParliamentBillPassage = z.infer<typeof ParliamentBillPassageSchema>
+
+export const ParliamentBillInitiatorSchema = z.object({
+  type: z.enum(['guvern', 'parlamentar', 'cetateni']),
+  departmentName: z.string().optional(),
+  memberId: z.string().optional(),
+  memberName: z.string().optional(),
+})
+export type ParliamentBillInitiator = z.infer<typeof ParliamentBillInitiatorSchema>
+
+export const ParliamentBillRelatedVoteSchema = z.object({
+  voteId: z.string(),
+  chamber: ParliamentChamberSchema,
+  title: z.string(),
+  heldAt: z.string(),
+})
+export type ParliamentBillRelatedVote = z.infer<
+  typeof ParliamentBillRelatedVoteSchema
+>
+
+export const ParliamentBillDetailSchema = ParliamentBillSummarySchema.extend({
+  longTitle: z.string(),
+  summary: z.string().optional(),
+  initiator: ParliamentBillInitiatorSchema,
+  documents: z.array(ParliamentBillDocumentSchema),
+  passage: ParliamentBillPassageSchema,
+  relatedVotes: z.array(ParliamentBillRelatedVoteSchema),
+})
+export type ParliamentBillDetail = z.infer<typeof ParliamentBillDetailSchema>
+
+export const ParliamentTabSchema = z.enum([
+  'prezentare',
+  'membri',
+  'voturi',
+  'grupuri',
+  'proiecte',
+])
+export type ParliamentTabId = z.infer<typeof ParliamentTabSchema>
+
+/** Unified search params for /parlament — tab drives the active section */
+export const ParliamentSearchSchema = z.object({
+  tab: ParliamentTabSchema.optional().catch(undefined),
+  chamber: z.enum(['camera', 'senat', 'all']).optional().catch(undefined),
+  judet: z.string().optional().catch(undefined),
+  grup: z.string().optional().catch(undefined),
+  q: z.string().optional().catch(undefined),
+  find: z.union([z.literal('1'), z.literal(1)]).optional().catch(undefined),
+  from: z.string().optional().catch(undefined),
+  to: z.string().optional().catch(undefined),
+  outcome: VoteOutcomeSchema.optional().catch(undefined),
+  billType: BillTypeSchema.optional().catch(undefined),
+  billLocation: BillCurrentLocationSchema.optional().catch(undefined),
+  sortBy: BillSortBySchema.optional().catch(undefined),
+  page: z.coerce.number().int().min(1).optional().catch(undefined),
+  pageSize: z.coerce.number().int().min(1).max(100).optional().catch(undefined),
+})
+export type ParliamentSearch = z.infer<typeof ParliamentSearchSchema>
+
+export const ParliamentHubSearchSchema = ParliamentSearchSchema
+export type ParliamentHubSearch = ParliamentSearch
+
+export const ParliamentGroupsSearchSchema = ParliamentSearchSchema
+export type ParliamentGroupsSearch = ParliamentSearch
+
+export const ParliamentMembersSearchSchema = ParliamentSearchSchema
+export type ParliamentMembersSearch = ParliamentSearch
+
+export const ParliamentVotesSearchSchema = ParliamentSearchSchema
+export type ParliamentVotesSearch = ParliamentSearch
+
+export const ParliamentBillsSearchSchema = ParliamentSearchSchema
+export type ParliamentBillsSearch = ParliamentSearch
