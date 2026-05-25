@@ -17,7 +17,12 @@ export const scraperDatasetCatalog: readonly ScraperDatasetReference[] = [
       experimental('join-key-matrix.md'),
       experimental('geo-reference.md'),
     ],
-    newLatestPaths: [],
+    newLatestPaths: [
+      newLatest('docs/PRODUCTION_DATASET_SYSTEM_SPEC.md'),
+      newLatest('docs/PRODUCTION_DATASET_VALIDATION.md'),
+      newLatest('docs/production-dataset-serving-schema.sql'),
+      newLatest('docs/production-dataset-validation-import.sql'),
+    ],
     clientFeaturePaths: ['src/lib/api/map-series.ts', 'src/components/maps/'],
     clientSchemaPaths: ['src/schemas/entities.ts', 'src/schemas/map-filters.ts'],
     clientSpecPaths: [],
