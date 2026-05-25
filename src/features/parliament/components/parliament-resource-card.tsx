@@ -2,11 +2,16 @@ import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { type LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { PARLIAMENT_ICON_BG, PARLIAMENT_RESOURCE_PURPLE, parliamentResourceDescriptionClassName, parliamentResourceTitleClassName } from '../lib/hub-theme'
+import {
+  PARLIAMENT_ICON_BG,
+  PARLIAMENT_RESOURCE_PURPLE,
+  parliamentResourceDescriptionClassName,
+  parliamentResourceTitleClassName,
+} from '../lib/hub-theme'
 import { ParliamentCardChevron } from './parliament-card-chevron'
 
 type LinkTarget = {
-  readonly to: '/parlament' | '/buget-national-2026'
+  readonly to: '/parlament'
   readonly search?: Record<string, string | undefined>
 }
 
@@ -15,26 +20,24 @@ type Props = {
   readonly description: string
   readonly icon: LucideIcon
   readonly link: LinkTarget
-  readonly external?: boolean
-  readonly href?: string
 }
 
-/** UK Parliament “Other Parliamentary resources” horizontal card */
+/** Horizontal resource card for the Parlament hub navigation grid */
 export function ParliamentResourceCard({
   title,
   description,
   icon: Icon,
   link,
-  external,
-  href,
 }: Props) {
-  const className = cn(
-    'group relative flex min-h-[7.5rem] overflow-hidden bg-[var(--pnrr-card)] transition-colors',
-    'hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] focus-visible:ring-inset',
-  )
-
-  const content = (
-    <>
+  return (
+    <Link
+      to={link.to}
+      search={link.search}
+      className={cn(
+        'group relative flex min-h-[7.5rem] overflow-hidden bg-[var(--pnrr-card)] transition-colors',
+        'hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] focus-visible:ring-inset',
+      )}
+    >
       <span
         className="w-[5px] shrink-0 self-stretch"
         style={{ backgroundColor: PARLIAMENT_RESOURCE_PURPLE }}
@@ -57,25 +60,6 @@ export function ParliamentResourceCard({
         </div>
       </div>
       <ParliamentCardChevron className="absolute right-4 top-4" />
-    </>
-  )
-
-  if (external && href) {
-    return (
-      <a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={className}
-      >
-        {content}
-      </a>
-    )
-  }
-
-  return (
-    <Link to={link.to} search={link.search} className={className}>
-      {content}
     </Link>
   )
 }

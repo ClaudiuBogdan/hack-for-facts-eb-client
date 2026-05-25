@@ -13,7 +13,7 @@ export function ParliamentRecentVotesSection({ votes }: Props) {
   return (
     <ParliamentHubSection
       id="parliament-recent-votes-heading"
-      title="Voturi recente"
+      title="Voturi"
       description="Ultimele rezultate din Camera Deputaților și Senat."
       bodyClassName="px-0 pb-0 pt-0"
       action={
