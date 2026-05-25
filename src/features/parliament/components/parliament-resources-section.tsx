@@ -27,7 +27,7 @@ export function ParliamentResourcesSection() {
             title="Deputați și senatori"
             description="Găsește parlamentarii aleși, grupurile politice și circumscripțiile electorale."
             icon={Users}
-            link={{ to: '/parlament', search: { tab: 'membri' } }}
+            link={{ to: '/parlament', search: { tab: 'grupuri' } }}
           />
         </ParliamentResourceGridItem>
         <ParliamentResourceGridItem>

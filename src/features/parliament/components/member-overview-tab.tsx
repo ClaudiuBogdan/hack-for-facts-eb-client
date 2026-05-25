@@ -48,7 +48,7 @@ export function MemberOverviewTab({ member }: Props) {
           modifica între legislaturi. Pentru context legislativ, consultați{' '}
           <Link
             to="/parlament"
-            search={{ tab: 'membri', judet: member.judetSlug }}
+            search={{ tab: 'grupuri', judet: member.judetSlug }}
             className="font-semibold underline underline-offset-4"
           >
             lista membrilor din {member.judetName}
@@ -74,7 +74,7 @@ export function MemberOverviewTab({ member }: Props) {
             footerLeft={mandatePeriod}
             footerRight={<MemberProfileChamberBadge chamber={member.chamber} />}
             to="/parlament"
-            search={{ tab: 'membri', judet: member.judetSlug }}
+            search={{ tab: 'grupuri', judet: member.judetSlug }}
           />
 
           <MemberProfileCareerCard

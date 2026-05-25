@@ -38,7 +38,7 @@ export function ParliamentFindRepPanels() {
     if (!cameraJudet) return
     void navigate({
       to: '/parlament',
-      search: { tab: 'membri', chamber: 'camera', judet: cameraJudet },
+      search: { tab: 'grupuri', chamber: 'camera', judet: cameraJudet },
     })
   }
 
@@ -46,7 +46,7 @@ export function ParliamentFindRepPanels() {
     void navigate({
       to: '/parlament',
       search: {
-        tab: 'membri',
+        tab: 'grupuri',
         chamber: 'senat',
         q: senatQuery.trim() || undefined,
       },
@@ -73,7 +73,7 @@ export function ParliamentFindRepPanels() {
           intro="Selectează județul pentru a vedea numele și detaliile deputaților aleși în circumscripția respectivă."
           footerLink={{
             to: '/parlament',
-            search: { tab: 'membri', chamber: 'camera' },
+            search: { tab: 'grupuri', chamber: 'camera' },
             label: 'Vezi toți deputații',
           }}
         >
@@ -121,7 +121,7 @@ export function ParliamentFindRepPanels() {
           intro="Introdu numele senatorului pentru a găsi detalii despre un membru al Senatului."
           footerLink={{
             to: '/parlament',
-            search: { tab: 'membri', chamber: 'senat' },
+            search: { tab: 'grupuri', chamber: 'senat' },
             label: 'Vezi toți senatorii',
           }}
         >

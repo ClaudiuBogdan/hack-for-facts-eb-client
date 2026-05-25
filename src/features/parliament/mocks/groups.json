@@ -1,12 +1,12 @@
 [
-  {"groupId":"psd-camera","name":"Grupul parlamentar al Partidului Social Democrat","shortName":"PSD","chamber":"camera","memberCount":94,"color":"#E30613"},
-  {"groupId":"aur-camera","name":"Grupul parlamentar al Alianței pentru Unirea Românilor","shortName":"AUR","chamber":"camera","memberCount":62,"color":"#FFD700"},
-  {"groupId":"pnl-camera","name":"Grupul parlamentar al Partidului Național Liberal","shortName":"PNL","chamber":"camera","memberCount":51,"color":"#0066CC"},
-  {"groupId":"usr-camera","name":"Grupul parlamentar al Uniunii Salvați România","shortName":"USR","chamber":"camera","memberCount":40,"color":"#00A651"},
-  {"groupId":"udmr-camera","name":"Grupul parlamentar al Uniunii Democrate Maghiare din România","shortName":"UDMR","chamber":"camera","memberCount":22,"color":"#008000"},
-  {"groupId":"psd-senat","name":"Grupul parlamentar al Partidului Social Democrat","shortName":"PSD","chamber":"senat","memberCount":38,"color":"#E30613"},
-  {"groupId":"aur-senat","name":"Grupul parlamentar al Alianței pentru Unirea Românilor","shortName":"AUR","chamber":"senat","memberCount":28,"color":"#FFD700"},
-  {"groupId":"pnl-senat","name":"Grupul parlamentar al Partidului Național Liberal","shortName":"PNL","chamber":"senat","memberCount":22,"color":"#0066CC"},
-  {"groupId":"usr-senat","name":"Grupul parlamentar al Uniunii Salvați România","shortName":"USR","chamber":"senat","memberCount":19,"color":"#00A651"},
-  {"groupId":"udmr-senat","name":"Grupul parlamentar al Uniunii Democrate Maghiare din România","shortName":"UDMR","chamber":"senat","memberCount":10,"color":"#008000"}
+  {"groupId":"psd-camera","name":"Grupul parlamentar al Partidului Social Democrat","shortName":"PSD","chamber":"camera","memberCount":115,"color":"#E30613"},
+  {"groupId":"aur-camera","name":"Grupul parlamentar al Alianței pentru Unirea Românilor","shortName":"AUR","chamber":"camera","memberCount":76,"color":"#FFD700"},
+  {"groupId":"pnl-camera","name":"Grupul parlamentar al Partidului Național Liberal","shortName":"PNL","chamber":"camera","memberCount":63,"color":"#0066CC"},
+  {"groupId":"usr-camera","name":"Grupul parlamentar al Uniunii Salvați România","shortName":"USR","chamber":"camera","memberCount":49,"color":"#00A651"},
+  {"groupId":"udmr-camera","name":"Grupul parlamentar al Uniunii Democrate Maghiare din România","shortName":"UDMR","chamber":"camera","memberCount":27,"color":"#008000"},
+  {"groupId":"psd-senat","name":"Grupul parlamentar al Partidului Social Democrat","shortName":"PSD","chamber":"senat","memberCount":44,"color":"#E30613"},
+  {"groupId":"aur-senat","name":"Grupul parlamentar al Alianței pentru Unirea Românilor","shortName":"AUR","chamber":"senat","memberCount":32,"color":"#FFD700"},
+  {"groupId":"pnl-senat","name":"Grupul parlamentar al Partidului Național Liberal","shortName":"PNL","chamber":"senat","memberCount":25,"color":"#0066CC"},
+  {"groupId":"usr-senat","name":"Grupul parlamentar al Uniunii Salvați România","shortName":"USR","chamber":"senat","memberCount":22,"color":"#00A651"},
+  {"groupId":"udmr-senat","name":"Grupul parlamentar al Uniunii Democrate Maghiare din România","shortName":"UDMR","chamber":"senat","memberCount":12,"color":"#008000"}
 ]

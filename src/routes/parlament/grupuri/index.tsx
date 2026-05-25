@@ -13,6 +13,8 @@ export const Route = createFileRoute('/parlament/grupuri/')({
         judet: search.judet,
         grup: search.grup,
         q: search.q,
+        page: search.page,
+        pageSize: search.pageSize,
       },
       replace: true,
     })

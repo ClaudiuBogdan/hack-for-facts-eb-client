@@ -8,6 +8,7 @@ import type {
 import {
   fetchParliamentBillDetail,
   fetchParliamentBills,
+  fetchParliamentChamberComposition,
   fetchParliamentGroup,
   fetchParliamentGroupMembers,
   fetchParliamentGroups,
@@ -34,6 +35,27 @@ export function useParliamentMembers(search: ParliamentMembersSearch) {
   return useQuery({
     queryKey: [...PARLIAMENT_QUERY_KEY, 'members', search],
     queryFn: () => fetchParliamentMembers(search),
+  })
+}
+
+function getCompositionFilterKey(search: ParliamentMembersSearch) {
+  return {
+    q: search.q,
+    chamber: search.chamber,
+    grup: search.grup,
+    judet: search.judet,
+  }
+}
+
+export function useParliamentChamberComposition(
+  chamber: ParliamentChamber,
+  search: ParliamentMembersSearch = {},
+) {
+  const filterKey = getCompositionFilterKey(search)
+
+  return useQuery({
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'composition', chamber, filterKey],
+    queryFn: () => fetchParliamentChamberComposition(chamber, search),
   })
 }
 

@@ -50,7 +50,7 @@ export function MemberDetailHero({ member }: Props) {
             {memberName} este {roleLabel} pentru circumscripția{' '}
             <Link
               to="/parlament"
-              search={{ tab: 'membri', judet: member.judetSlug }}
+              search={{ tab: 'grupuri', judet: member.judetSlug }}
               className="font-semibold underline underline-offset-4 hover:text-white"
             >
               {member.judetName}

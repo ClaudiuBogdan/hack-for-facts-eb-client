@@ -1,36 +1,153 @@
+import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useParliamentGroups } from '../hooks/use-parliament-data'
-import { GroupListRow } from './group-list-row'
+import type { ParliamentGroupsSearch } from '@/schemas/parliament'
+import { useParliamentMembers } from '../hooks/use-parliament-data'
+import { ChamberCompositionSection } from './chamber-composition-section'
+import { MembersFilters } from './members-filters'
+import { MembersTable } from './members-table'
+import { ParliamentGroupsFloatingBar } from './parliament-groups-floating-bar'
 
-/** Groups tab content */
-export function ParliamentGroupsContent() {
-  const { data: groups = [], isLoading } = useParliamentGroups()
+type Props = {
+  readonly search: ParliamentGroupsSearch
+}
 
-  const cameraGroups = groups.filter((g) => g.chamber === 'camera')
-  const senatGroups = groups.filter((g) => g.chamber === 'senat')
+/** Groups tab — members directory and hemicycle composition charts */
+export function ParliamentGroupsContent({ search }: Props) {
+  const navigate = useNavigate({ from: '/parlament/' })
+  const { data, isLoading } = useParliamentMembers(search)
+  const filtersAnchorRef = useRef<HTMLDivElement>(null)
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false)
+  const [findRepOpen, setFindRepOpen] = useState(false)
 
-  if (isLoading) {
-    return <Skeleton className="h-48 w-full rounded-none" />
+  const searchRef = useRef(search)
+  searchRef.current = search
+
+  useEffect(() => {
+    if (search.find !== '1' && search.find !== 1) return
+
+    setFindRepOpen(true)
+    const { find: _find, ...restSearch } = searchRef.current
+    void navigate({
+      search: {
+        ...restSearch,
+        tab: 'grupuri',
+      },
+      replace: true,
+      resetScroll: false,
+    })
+  }, [navigate, search.find])
+
+  const handleSearchChange = (next: ParliamentGroupsSearch) => {
+    void navigate({
+      search: {
+        ...next,
+        tab: 'grupuri',
+        find: undefined,
+      },
+      replace: true,
+      resetScroll: false,
+    })
+  }
+
+  const handlePageChange = (page: number) => {
+    void navigate({
+      search: {
+        ...search,
+        tab: 'grupuri',
+        page,
+      },
+      replace: true,
+      resetScroll: false,
+    })
+  }
+
+  const handleClearFilters = () => {
+    void navigate({
+      search: {
+        tab: 'grupuri',
+        page: 1,
+      },
+      replace: true,
+      resetScroll: false,
+    })
   }
 
   return (
-    <div className="space-y-10">
-      <section>
-        <h2 className="mb-4 border-b border-border pb-2 text-sm font-bold uppercase tracking-widest text-muted-foreground">
-          Camera Deputaților
-        </h2>
-        {cameraGroups.map((g) => (
-          <GroupListRow key={g.groupId} group={g} />
-        ))}
-      </section>
-      <section>
-        <h2 className="mb-4 border-b border-border pb-2 text-sm font-bold uppercase tracking-widest text-muted-foreground">
-          Senat
-        </h2>
-        {senatGroups.map((g) => (
-          <GroupListRow key={g.groupId} group={g} />
-        ))}
-      </section>
-    </div>
+    <>
+      <ParliamentGroupsFloatingBar
+        anchorRef={filtersAnchorRef}
+        search={search}
+        onSearchChange={handleSearchChange}
+        onClearAll={handleClearFilters}
+        onOpenFilters={() => setFilterSheetOpen(true)}
+        onFindRep={() => setFindRepOpen(true)}
+      />
+
+      <div className="space-y-8">
+        <section id="membri" className="scroll-mt-8 space-y-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <span className="h-10 w-1.5 bg-[var(--pnrr-blue)]" aria-hidden />
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                <h2 className="text-2xl font-black leading-none tracking-tight text-[var(--pnrr-fg)]">
+                  Membri
+                </h2>
+                {data ? (
+                  <span className="text-sm text-[var(--pnrr-muted)]">
+                    {data.total.toLocaleString('ro-RO')} membri
+                    {data.totalPages > 1
+                      ? ` · pagina ${data.page} din ${data.totalPages}`
+                      : ''}
+                  </span>
+                ) : null}
+              </div>
+            </div>
+          </div>
+
+          <div ref={filtersAnchorRef}>
+            <MembersFilters
+              search={search}
+              onSearchChange={handleSearchChange}
+              filterSheetOpen={filterSheetOpen}
+              onFilterSheetOpenChange={setFilterSheetOpen}
+              findRepOpen={findRepOpen}
+              onFindRepOpenChange={setFindRepOpen}
+            />
+          </div>
+
+          {isLoading ? (
+            <div className="space-y-3 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4">
+              {Array.from({ length: 8 }).map((_, index) => (
+                <Skeleton key={index} className="h-12 w-full rounded-none" />
+              ))}
+            </div>
+          ) : data ? (
+            <MembersTable
+              page={data}
+              search={search}
+              onPageChange={handlePageChange}
+              onClearFilters={handleClearFilters}
+            />
+          ) : (
+            <MembersTable
+              page={{
+                members: [],
+                total: 0,
+                page: 1,
+                pageSize: 20,
+                totalPages: 1,
+              }}
+              search={search}
+              onPageChange={handlePageChange}
+              onClearFilters={handleClearFilters}
+            />
+          )}
+        </section>
+
+        <ChamberCompositionSection chamber="camera" search={search} />
+        <ChamberCompositionSection chamber="senat" search={search} />
+      </div>
+    </>
   )
 }

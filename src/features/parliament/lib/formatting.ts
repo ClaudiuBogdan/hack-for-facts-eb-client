@@ -138,6 +138,25 @@ export function formatSyncDate(isoDate: string): string {
   }).format(new Date(isoDate))
 }
 
+/** Share of chamber seats highlighted by the current filters. */
+export function formatSeatSharePercent(
+  activeCount: number,
+  totalSeats: number,
+): string {
+  if (totalSeats <= 0) {
+    return '—'
+  }
+
+  const ratio = activeCount / totalSeats
+  const percent = ratio * 100
+  const maximumFractionDigits = ratio > 0 && ratio < 0.01 ? 1 : 0
+
+  return `${new Intl.NumberFormat('ro-RO', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits,
+  }).format(percent)}%`
+}
+
 export function formatVoteDivisionMeta(
   vote: { readonly heldAt: string },
   divisionNumber: number,

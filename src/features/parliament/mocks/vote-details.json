@@ -60,7 +60,7 @@
     "voteType": "deschis",
     "outcome": "adoptat",
     "outcomeLabel": "Proiectul a fost adoptat",
-    "tally": {"pentru": 98, "impotriva": 32, "abtinere": 4, "nuAVotat": 2},
+    "tally": {"pentru": 98, "impotriva": 32, "abtinere": 4, "nuAVotat": 1},
     "relatedBillId": "pl-x-2026-buget",
     "description": "Vot final în Senat asupra bugetului de stat 2026.",
     "groupBreakdown": [

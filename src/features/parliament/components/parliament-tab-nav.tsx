@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { cn } from '@/lib/utils'
 import type { ParliamentTabId } from '@/schemas/parliament'
 
-export type ParliamentTab = 'hub' | 'membri' | 'voturi' | 'grupuri' | 'proiecte'
+export type ParliamentTab = 'hub' | 'voturi' | 'grupuri' | 'proiecte'
 
 const TABS: ReadonlyArray<{
   readonly id: ParliamentTab
@@ -10,7 +10,6 @@ const TABS: ReadonlyArray<{
   readonly label: string
 }> = [
   { id: 'hub', tab: 'prezentare', label: 'Prezentare' },
-  { id: 'membri', tab: 'membri', label: 'Membri' },
   { id: 'voturi', tab: 'voturi', label: 'Voturi' },
   { id: 'proiecte', tab: 'proiecte', label: 'Proiecte' },
   { id: 'grupuri', tab: 'grupuri', label: 'Grupuri' },

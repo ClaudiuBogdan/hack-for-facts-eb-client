@@ -29,14 +29,14 @@ export function ParliamentQuickLinksSection() {
           description="Camera aleasă direct care adoptă legi și controlează activitatea Guvernului."
           icon={Landmark}
           illustrationColor={PARLIAMENT_CAMERA_GREEN}
-          link={{ to: '/parlament', search: { tab: 'membri', chamber: 'camera' } }}
+          link={{ to: '/parlament', search: { tab: 'grupuri', chamber: 'camera' } }}
         />
         <ParliamentQuickLinkCard
           title="Senatul României"
           description="Camera care verifică și completează proiectele de lege adoptate de Camera Deputaților."
           icon={Landmark}
           illustrationColor={PARLIAMENT_SENAT_RED}
-          link={{ to: '/parlament', search: { tab: 'membri', chamber: 'senat' } }}
+          link={{ to: '/parlament', search: { tab: 'grupuri', chamber: 'senat' } }}
         />
         <ParliamentQuickLinkCard
           title="Deputați și senatori"
@@ -44,7 +44,7 @@ export function ParliamentQuickLinksSection() {
           icon={Users}
           illustrationColor={PARLIAMENT_QUICK_LINK_ILLUSTRATION}
           iconColor={PARLIAMENT_ICON_BG}
-          link={{ to: '/parlament', search: { tab: 'membri' } }}
+          link={{ to: '/parlament', search: { tab: 'grupuri' } }}
         />
         <ParliamentQuickLinkCard
           title="Voturi în Parlament"

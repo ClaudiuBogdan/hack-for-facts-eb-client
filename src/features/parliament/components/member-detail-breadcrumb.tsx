@@ -33,7 +33,7 @@ export function MemberDetailBreadcrumb({ member, activeTab }: Props) {
             ›
           </li>
           <li>
-            <Link to="/parlament" search={{ tab: 'membri' }} className="hover:underline">
+            <Link to="/parlament" search={{ tab: 'grupuri' }} className="hover:underline">
               Membri
             </Link>
           </li>

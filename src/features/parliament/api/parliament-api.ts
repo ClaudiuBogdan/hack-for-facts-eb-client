@@ -5,6 +5,7 @@ import type {
   ParliamentBillSummary,
   ParliamentBillsSearch,
   ParliamentChamber,
+  ParliamentChamberComposition,
   ParliamentGroup,
   ParliamentHubData,
   ParliamentMember,
@@ -21,6 +22,7 @@ import {
   ParliamentBillDetailSchema,
   ParliamentBillListSchema,
   ParliamentBillSummarySchema,
+  ParliamentChamberCompositionSchema,
   ParliamentGroupSchema,
   ParliamentHubDataSchema,
   ParliamentMemberSchema,
@@ -41,6 +43,11 @@ import membersData from '../mocks/members.json'
 import voteDetailsData from '../mocks/vote-details.json'
 import voteSummariesData from '../mocks/vote-summaries.json'
 import {
+  buildChamberComposition,
+  ensureFullChamberRoster,
+} from '../lib/chamber-composition'
+import { filterMembersBySearch } from '../lib/member-search'
+import {
   extendParliamentMembers,
   synthesizeVoteDetail,
 } from '../lib/vote-detail-synthesis'
@@ -50,6 +57,7 @@ import { resolveParliamentBillDetail } from '../lib/bill-profile-data'
 const MOCK_LAST_SYNCED = '2026-05-20T08:00:00+03:00'
 const DEFAULT_VOTES_PAGE_SIZE = 10
 const DEFAULT_BILLS_PAGE_SIZE = 10
+const DEFAULT_MEMBERS_PAGE_SIZE = 20
 const PARLIAMENT_DATASET_ID = 'political-parliament'
 
 function assertParliamentMockDataEnabled(): void {
@@ -60,10 +68,23 @@ function assertParliamentMockDataEnabled(): void {
 }
 
 const groups = groupsData.map((g) => ParliamentGroupSchema.parse(g))
-const members = extendParliamentMembers(
-  membersData.map((m) => ParliamentMemberSchema.parse(m)),
+
+function buildGroupColorMap(
+  groupList: ReadonlyArray<ParliamentGroup>,
+): Record<string, string> {
+  return Object.fromEntries(
+    groupList.map((group) => [group.groupId, group.color ?? '#505a5f']),
+  )
+}
+
+const members = ensureFullChamberRoster(
+  extendParliamentMembers(
+    membersData.map((m) => ParliamentMemberSchema.parse(m)),
+    groups,
+  ),
   groups,
 )
+const groupColorMap = buildGroupColorMap(groups)
 
 const EXTRA_VOTE_TITLES = [
   'Proiect de Lege privind sănătatea publică',
@@ -155,7 +176,7 @@ function buildHubData(): ParliamentHubData {
     sources: ['cdep.ro', 'senat.ro'],
     groups,
     recentVotes: voteSummaries,
-    memberCountByChamber: { camera: 330, senat: 136 },
+    memberCountByChamber: { camera: 330, senat: 135 },
     budgetInstitutionSlugs: {
       camera: 'camera-deputatilor',
       senat: 'senatul-romaniei',
@@ -164,23 +185,29 @@ function buildHubData(): ParliamentHubData {
 }
 
 function filterMembers(search: ParliamentMembersSearch): ParliamentMember[] {
-  let result = [...members]
-  if (search.chamber && search.chamber !== 'all') {
-    result = result.filter((m) => m.chamber === search.chamber)
-  }
-  if (search.judet) {
-    result = result.filter((m) => m.judetSlug === search.judet)
-  }
-  if (search.grup) {
-    result = result.filter((m) => m.groupId === search.grup)
-  }
-  if (search.q?.trim()) {
-    const query = search.q.trim().toLowerCase()
-    result = result.filter((m) =>
-      `${m.firstName} ${m.lastName}`.toLowerCase().includes(query),
-    )
-  }
-  return result.sort((a, b) => a.lastName.localeCompare(b.lastName, 'ro'))
+  return filterMembersBySearch(members, search, groups).sort((a, b) =>
+    a.lastName.localeCompare(b.lastName, 'ro'),
+  )
+}
+
+function paginateMembers(
+  search: ParliamentMembersSearch,
+  filtered: ParliamentMember[],
+): ParliamentMembersList {
+  const pageSize = search.pageSize ?? DEFAULT_MEMBERS_PAGE_SIZE
+  const total = filtered.length
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  const page = Math.min(Math.max(1, search.page ?? 1), totalPages)
+  const start = (page - 1) * pageSize
+  const slice = filtered.slice(start, start + pageSize)
+
+  return ParliamentMembersListSchema.parse({
+    members: slice,
+    total,
+    page,
+    pageSize,
+    totalPages,
+  })
 }
 
 function getDivisionNumbersByChamber(): Map<string, number> {
@@ -241,12 +268,17 @@ function filterVotes(search: ParliamentVotesSearch): ParliamentVoteSummary[] {
       return false
     })
   }
-  if (search.grup) {
+  const grupFilterValues = search.grup
+    ? Array.isArray(search.grup)
+      ? search.grup
+      : [search.grup]
+    : []
+  if (grupFilterValues.length > 0) {
     result = result.filter((v) => {
       const detail = voteDetailsMap[v.voteId] as
         | { groupBreakdown?: Array<{ groupId: string }> }
         | undefined
-      return detail?.groupBreakdown?.some((g) => g.groupId === search.grup)
+      return detail?.groupBreakdown?.some((g) => grupFilterValues.includes(g.groupId))
     })
   }
   return result.sort(
@@ -317,10 +349,17 @@ export async function fetchParliamentMembers(
 ): Promise<ParliamentMembersList> {
   assertParliamentMockDataEnabled()
   const filtered = filterMembers(search)
-  return ParliamentMembersListSchema.parse({
-    members: filtered,
-    total: filtered.length,
-  })
+  return paginateMembers(search, filtered)
+}
+
+export async function fetchParliamentChamberComposition(
+  chamber: ParliamentChamber,
+  search: ParliamentMembersSearch = {},
+): Promise<ParliamentChamberComposition> {
+  assertParliamentMockDataEnabled()
+  return ParliamentChamberCompositionSchema.parse(
+    buildChamberComposition(chamber, groups, members, groupColorMap, search),
+  )
 }
 
 export async function fetchParliamentMember(
@@ -502,9 +541,7 @@ export function getParliamentVoteSummary(
 }
 
 export function getParliamentGroupColorMap(): Readonly<Record<string, string>> {
-  return Object.fromEntries(
-    groups.map((group) => [group.groupId, group.color ?? '#505a5f']),
-  )
+  return groupColorMap
 }
 
 export function getMemberJudetMap(): Readonly<Record<string, string>> {

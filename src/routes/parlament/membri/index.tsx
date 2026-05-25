@@ -8,12 +8,14 @@ export const Route = createFileRoute('/parlament/membri/')({
     throw redirect({
       to: '/parlament',
       search: {
-        tab: 'membri',
+        tab: 'grupuri',
         chamber: search.chamber,
         judet: search.judet,
         grup: search.grup,
         q: search.q,
         find: search.find,
+        page: search.page,
+        pageSize: search.pageSize,
       },
       replace: true,
     })

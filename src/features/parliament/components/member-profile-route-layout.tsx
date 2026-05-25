@@ -36,7 +36,7 @@ export function MemberProfileRouteLayout({ memberId }: Props) {
           {
             label: 'Lista membrilor',
             to: '/parlament',
-            search: { tab: 'membri' },
+            search: { tab: 'grupuri' },
             variant: 'primary',
           },
           {

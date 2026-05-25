@@ -145,8 +145,39 @@ export type ParliamentHubData = z.infer<typeof ParliamentHubDataSchema>
 export const ParliamentMembersListSchema = z.object({
   members: z.array(ParliamentMemberSchema),
   total: z.number().int().nonnegative(),
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive(),
+  totalPages: z.number().int().positive(),
 })
 export type ParliamentMembersList = z.infer<typeof ParliamentMembersListSchema>
+
+export const ParliamentSeatSchema = z.object({
+  seatIndex: z.number().int().nonnegative(),
+  memberId: z.string(),
+  memberName: z.string(),
+  groupId: z.string(),
+  groupName: z.string(),
+  color: z.string(),
+  x: z.number(),
+  y: z.number(),
+  isActive: z.boolean(),
+})
+export type ParliamentSeat = z.infer<typeof ParliamentSeatSchema>
+
+export const ParliamentChamberCompositionSchema = z.object({
+  chamber: ParliamentChamberSchema,
+  totalSeats: z.number().int().nonnegative(),
+  majoritySeats: z.number().int().nonnegative(),
+  activeSeatCount: z.number().int().nonnegative(),
+  hasActiveFilters: z.boolean(),
+  groups: z.array(ParliamentGroupSchema),
+  seats: z.array(ParliamentSeatSchema),
+  viewBox: z.string(),
+  seatRadius: z.number().positive(),
+})
+export type ParliamentChamberComposition = z.infer<
+  typeof ParliamentChamberCompositionSchema
+>
 
 export const ParliamentMemberVotingHistorySchema = z.object({
   memberId: z.string(),
@@ -340,8 +371,14 @@ export type ParliamentTabId = z.infer<typeof ParliamentTabSchema>
 export const ParliamentSearchSchema = z.object({
   tab: ParliamentTabSchema.optional().catch(undefined),
   chamber: z.enum(['camera', 'senat', 'all']).optional().catch(undefined),
-  judet: z.string().optional().catch(undefined),
-  grup: z.string().optional().catch(undefined),
+  judet: z
+    .union([z.string(), z.array(z.string())])
+    .optional()
+    .catch(undefined),
+  grup: z
+    .union([z.string(), z.array(z.string())])
+    .optional()
+    .catch(undefined),
   q: z.string().optional().catch(undefined),
   find: z.union([z.literal('1'), z.literal(1)]).optional().catch(undefined),
   from: z.string().optional().catch(undefined),
