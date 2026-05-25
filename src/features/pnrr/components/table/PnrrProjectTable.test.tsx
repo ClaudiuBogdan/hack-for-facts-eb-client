@@ -149,6 +149,56 @@ describe('PnrrProjectTable', () => {
     await waitFor(() => expect(setPagination).toHaveBeenCalledWith(1, 25))
   })
 
+  it('does not revert a valid requested page while worker rows are stale', async () => {
+    usePnrrProjectDetailMock.mockReturnValue({ data: undefined })
+    const setPagination = vi.fn()
+    const filterState = makeFilterState({
+      setPagination,
+      search: {
+        ...makeFilterState().search,
+        page: 2,
+      },
+    })
+
+    render(
+      <PnrrProjectTable
+        page={makePage([PROJECT], {
+          totalCount: 75,
+          page: 1,
+          pageSize: 25,
+          totalPages: 3,
+        })}
+        filterState={filterState}
+      />,
+    )
+
+    await waitFor(() => expect(screen.getAllByText('1 / 3').length).toBeGreaterThan(0))
+    expect(setPagination).not.toHaveBeenCalled()
+  })
+
+  it('does not correct out-of-range pages while worker data is placeholder state', async () => {
+    usePnrrProjectDetailMock.mockReturnValue({ data: undefined })
+    const setPagination = vi.fn()
+    const filterState = makeFilterState({
+      setPagination,
+      search: {
+        ...makeFilterState().search,
+        page: 8,
+      },
+    })
+
+    render(
+      <PnrrProjectTable
+        page={makePage([PROJECT])}
+        filterState={filterState}
+        isPageStatePending
+      />,
+    )
+
+    await waitFor(() => expect(screen.getAllByText('1 / 1').length).toBeGreaterThan(0))
+    expect(setPagination).not.toHaveBeenCalled()
+  })
+
   it('rounds reported progress percentages to two decimals', () => {
     usePnrrProjectDetailMock.mockReturnValue({ data: undefined })
     const filterState = makeFilterState()

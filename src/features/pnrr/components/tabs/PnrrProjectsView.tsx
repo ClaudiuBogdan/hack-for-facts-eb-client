@@ -8,10 +8,12 @@ export function PnrrProjectsView({
   page,
   projectRecordCount,
   filterState,
+  isPageStatePending = false,
 }: {
   readonly page: PnrrWorkerProjectPage
   readonly projectRecordCount: number
   readonly filterState: ReturnType<typeof usePnrrFilterState>
+  readonly isPageStatePending?: boolean
 }) {
   return (
     <div className="space-y-6">
@@ -39,7 +41,11 @@ export function PnrrProjectsView({
         className="max-w-md"
       />
 
-      <PnrrProjectTable page={page} filterState={filterState} />
+      <PnrrProjectTable
+        page={page}
+        filterState={filterState}
+        isPageStatePending={isPageStatePending}
+      />
     </div>
   )
 }

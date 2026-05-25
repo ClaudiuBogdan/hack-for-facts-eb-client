@@ -247,9 +247,11 @@ const ProjectRow = memo(function ProjectRow({
 export function PnrrProjectTable({
   page,
   filterState,
+  isPageStatePending = false,
 }: {
   readonly page: PnrrWorkerProjectPage
   readonly filterState: ReturnType<typeof usePnrrFilterState>
+  readonly isPageStatePending?: boolean
 }) {
   const currency = usePnrrCurrency()
   const selectedProjectId =
@@ -262,12 +264,24 @@ export function PnrrProjectTable({
   const { setSorting, setPagination } = filterState
   const currentSortBy = page.sortBy
   const currentSortOrder = page.sortOrder
+  const requestedPage = filterState.search.page ?? 1
 
   useEffect(() => {
-    if ((filterState.search.page ?? 1) !== page.page) {
+    if (
+      !isPageStatePending &&
+      requestedPage > page.totalPages &&
+      requestedPage !== page.page
+    ) {
       setPagination(page.page, page.pageSize)
     }
-  }, [filterState.search.page, page.page, page.pageSize, setPagination])
+  }, [
+    isPageStatePending,
+    page.page,
+    page.pageSize,
+    page.totalPages,
+    requestedPage,
+    setPagination,
+  ])
 
   const toggleSort = useCallback(
     (column: PnrrSearchState['sortBy']) => {

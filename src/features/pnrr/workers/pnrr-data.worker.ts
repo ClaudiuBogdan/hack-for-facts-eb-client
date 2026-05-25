@@ -990,7 +990,7 @@ function buildFilterFacets(records: readonly PnrrProjectRecord[]): PnrrWorkerFil
   }
 }
 
-function buildAnomalyModel(
+export function buildAnomalyModel(
   projects: readonly PnrrProject[],
   search: Partial<PnrrSearchState>,
 ): PnrrWorkerAnomalyModel {
@@ -1020,6 +1020,14 @@ function buildAnomalyModel(
     return matchesRisk || matchesDataQuality
   })
 
+  const sortBy = search.sortBy ?? 'value'
+  const sortOrder = search.sortOrder ?? 'desc'
+  const pageSize = search.pageSize ?? PROJECT_PAGE_SIZE_DEFAULT
+  const sorted = sortProjects(displayed, sortBy, sortOrder)
+  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize))
+  const page = Math.min(Math.max(1, search.page ?? 1), totalPages)
+  const start = (page - 1) * pageSize
+
   return {
     riskCount: riskProjects.length,
     riskValue: riskProjects.reduce((sum, project) => sum + getProjectValue(project), 0),
@@ -1028,9 +1036,7 @@ function buildAnomalyModel(
       (sum, project) => sum + getProjectValue(project),
       0,
     ),
-    rows: sortProjects(displayed, search.sortBy ?? 'value', search.sortOrder ?? 'desc')
-      .slice(0, search.pageSize ?? PROJECT_PAGE_SIZE_DEFAULT)
-      .map(projectToRow),
+    rows: sorted.slice(start, start + pageSize).map(projectToRow),
     totalCount: displayed.length,
   }
 }

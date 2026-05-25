@@ -151,7 +151,12 @@ export function usePnrrFilterState() {
     (view: PnrrView) => {
       navigate({
         search: (prev) =>
-          cleanPnrrSearch({ ...(prev as Partial<PnrrSearchState>), view, page: 1 }),
+          cleanPnrrSearch({
+            ...(prev as Partial<PnrrSearchState>),
+            view,
+            page: 1,
+            beneficiaryPage: 1,
+          }),
         replace: true,
         resetScroll: false,
       })

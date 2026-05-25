@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import type { PnrrProject } from '@/schemas/pnrr'
 import { computeAggregates } from '../lib/data-transform'
-import { buildTopBeneficiaries } from './pnrr-data.worker'
+import { buildAnomalyModel, buildTopBeneficiaries } from './pnrr-data.worker'
 import type { PnrrWorkerModel } from './pnrr-worker-types'
 
-function makeProject(index: number): PnrrProject {
+function makeProject(
+  index: number,
+  overrides: Partial<PnrrProject> = {},
+): PnrrProject {
   const id = String(index).padStart(2, '0')
 
   return {
@@ -30,8 +33,31 @@ function makeProject(index: number): PnrrProject {
     entityType: 'public',
     beneficiaryType: 'uat',
     sirutaCode: null,
+    ...overrides,
   }
 }
+
+describe('buildAnomalyModel', () => {
+  it('returns rows for the requested anomaly page', () => {
+    const projects = Array.from({ length: 3 }, (_, index) =>
+      makeProject(index + 1, {
+        anomalies: ['payment-ahead-delivery'] as const,
+        techProgress: 10,
+        finProgress: 80,
+      }),
+    )
+
+    const model = buildAnomalyModel(projects, {
+      view: 'anomalies',
+      anomalyTypes: ['payment-ahead-delivery'],
+      page: 2,
+      pageSize: 2,
+    })
+
+    expect(model.totalCount).toBe(3)
+    expect(model.rows.map((row) => row.id)).toEqual(['engagement:03'])
+  })
+})
 
 describe('buildTopBeneficiaries', () => {
   it('enriches payment beneficiaries outside the aggregate top 20', () => {

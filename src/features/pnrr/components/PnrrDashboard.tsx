@@ -42,8 +42,15 @@ export function PnrrDashboard({
   readonly ssrSnapshotSearchKey?: string
 }) {
   const filterState = usePnrrFilterState()
-  const { data, error, isError, isLoading, isRefetching, refetch } =
-    usePnrrWorkerModel(filterState.search)
+  const {
+    data,
+    error,
+    isError,
+    isLoading,
+    isRefetching,
+    refetch,
+    isPlaceholderData,
+  } = usePnrrWorkerModel(filterState.search)
   const [filterSheetOpen, setFilterSheetOpen] = useState(false)
   const [infoSheetOpen, setInfoSheetOpen] = useState(false)
   const emptyAggregates = useMemo(() => computeAggregates([]), [])
@@ -199,6 +206,7 @@ export function PnrrDashboard({
                   page={data!.projectPage}
                   projectRecordCount={filteredAggregates.projectRecordCount}
                   filterState={filterState}
+                  isPageStatePending={isPlaceholderData}
                 />
               )}
               {view === 'map' && (
@@ -218,6 +226,7 @@ export function PnrrDashboard({
                   model={data!.anomalyModel}
                   aggregates={filteredAggregates}
                   filterState={filterState}
+                  isPageStatePending={isPlaceholderData}
                 />
               )}
             </>

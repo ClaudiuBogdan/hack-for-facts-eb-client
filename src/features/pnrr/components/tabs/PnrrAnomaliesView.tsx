@@ -36,10 +36,12 @@ export function PnrrAnomaliesView({
   model,
   aggregates,
   filterState,
+  isPageStatePending = false,
 }: {
   readonly model: PnrrWorkerAnomalyModel
   readonly aggregates: PnrrAggregates
   readonly filterState: ReturnType<typeof usePnrrFilterState>
+  readonly isPageStatePending?: boolean
 }) {
   const currency = usePnrrCurrency()
   const infoPanelOpen = filterState.search.panel === 'anomaly-info'
@@ -71,15 +73,21 @@ export function PnrrAnomaliesView({
     return () => clearTimeout(timeout)
   }, [inputValue, globalSearch, filterState])
 
+  const anomalyPageSize = filterState.search.pageSize ?? 25
+  const anomalyTotalPages = Math.max(
+    1,
+    Math.ceil(model.totalCount / anomalyPageSize),
+  )
+  const anomalyPageNumber = Math.min(
+    Math.max(1, filterState.search.page ?? 1),
+    anomalyTotalPages,
+  )
   const anomalyPage = {
     rows: model.rows,
     totalCount: model.totalCount,
-    page: filterState.search.page ?? 1,
-    pageSize: filterState.search.pageSize ?? 25,
-    totalPages: Math.max(
-      1,
-      Math.ceil(model.totalCount / (filterState.search.pageSize ?? 25)),
-    ),
+    page: anomalyPageNumber,
+    pageSize: anomalyPageSize,
+    totalPages: anomalyTotalPages,
     sortBy: filterState.search.sortBy ?? 'value',
     sortOrder: filterState.search.sortOrder ?? 'desc',
   } satisfies PnrrWorkerProjectPage
@@ -202,6 +210,7 @@ export function PnrrAnomaliesView({
         <PnrrProjectTable
           page={anomalyPage}
           filterState={filterState}
+          isPageStatePending={isPageStatePending}
         />
       </section>
 

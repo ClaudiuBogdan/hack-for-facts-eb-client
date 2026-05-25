@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { usePnrrFilterState } from './usePnrrFilterState'
 
@@ -60,5 +60,23 @@ describe('usePnrrFilterState', () => {
         resetScroll: false,
       })
     })
+  })
+
+  it('resets project and beneficiary pagination when changing tabs', () => {
+    const { result } = renderHook(() => usePnrrFilterState())
+
+    act(() => {
+      result.current.setView('projects')
+    })
+
+    const navigation = routerMocks.navigate.mock.calls[0]?.[0]
+    expect(navigation).toBeDefined()
+    expect(
+      navigation.search({
+        view: 'beneficiaries',
+        page: 4,
+        beneficiaryPage: 3,
+      }),
+    ).toEqual({ view: 'projects' })
   })
 })
