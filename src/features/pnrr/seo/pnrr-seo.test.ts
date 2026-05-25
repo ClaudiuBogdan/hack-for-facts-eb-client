@@ -126,7 +126,7 @@ describe('pnrr-seo', () => {
     expect(parsedUrl.pathname).toBe('/pnrr/share-image.png')
     expect(parsedUrl.searchParams.get('components')).toBe('["C7","C10"]')
     expect(parsedUrl.searchParams.get('onlyAnomalies')).toBe('true')
-    expect(parsedUrl.searchParams.get('v')).toBe('20260518-ron5-official-total')
+    expect(parsedUrl.searchParams.get('v')).toBe('20260523-ron5-official-total')
     expect(parsedUrl.searchParams.has('page')).toBe(false)
     expect(parsedUrl.searchParams.has('mapLat')).toBe(false)
   })
