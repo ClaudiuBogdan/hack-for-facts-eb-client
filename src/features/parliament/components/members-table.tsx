@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { Users } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 import type {
   ParliamentMember,
   ParliamentMembersList,
@@ -24,6 +25,7 @@ import {
   parliamentTableHeadClassName,
   parliamentTableHeaderRowClassName,
   parliamentTableRowClassName,
+  DEFAULT_MEMBERS_PAGE_SIZE,
 } from '../lib/table-theme'
 import { MembersPagination } from './members-pagination'
 
@@ -35,6 +37,79 @@ type Props = {
 }
 
 const groupColors = getParliamentGroupColorMap()
+
+type SkeletonProps = {
+  readonly rowCount?: number
+}
+
+/** Loading placeholder matching the members table layout and row count. */
+export function MembersTableSkeleton({
+  rowCount = DEFAULT_MEMBERS_PAGE_SIZE,
+}: SkeletonProps) {
+  return (
+    <div
+      className="space-y-4"
+      aria-busy="true"
+      aria-label="Se încarcă lista de membri"
+    >
+      <div className={parliamentTableContainerClassName}>
+        <Table>
+          <TableHeader>
+            <TableRow className={parliamentTableHeaderRowClassName}>
+              <TableHead scope="col" className={cn(parliamentTableHeadClassName, 'w-[240px]')}>
+                Nume
+              </TableHead>
+              <TableHead scope="col" className={parliamentTableHeadClassName}>
+                Grup
+              </TableHead>
+              <TableHead scope="col" className={parliamentTableHeadClassName}>
+                Județ
+              </TableHead>
+              <TableHead scope="col" className={parliamentTableHeadClassName}>
+                Cameră
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: rowCount }).map((_, index) => (
+              <TableRow key={index} className={parliamentTableRowClassName}>
+                <TableCell className="px-4 py-3">
+                  <Skeleton className="h-5 w-40 rounded-none" />
+                </TableCell>
+                <TableCell className="px-4 py-3">
+                  <Skeleton className="h-5 w-28 rounded-none" />
+                </TableCell>
+                <TableCell className="px-4 py-3">
+                  <Skeleton className="h-5 w-24 rounded-none" />
+                </TableCell>
+                <TableCell className="px-4 py-3">
+                  <Skeleton className="h-5 w-16 rounded-none" />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <div className="space-y-3 md:hidden">
+        {Array.from({ length: rowCount }).map((_, index) => (
+          <div
+            key={index}
+            className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4"
+          >
+            <Skeleton className="h-5 w-48 rounded-none" />
+            <Skeleton className="mt-2 h-4 w-full max-w-xs rounded-none" />
+          </div>
+        ))}
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <Skeleton className="h-5 w-32 rounded-none" />
+        <Skeleton className="hidden h-8 w-72 rounded-none sm:block" />
+      </div>
+    </div>
+  )
+}
 
 function MemberMobileCard({ member }: { readonly member: ParliamentMember }) {
   const name = formatMemberName(member.firstName, member.lastName)

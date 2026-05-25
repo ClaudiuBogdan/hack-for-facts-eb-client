@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { DEFAULT_MEMBERS_PAGE_SIZE } from '../lib/table-theme'
 import { MembersFilters } from './members-filters'
 
 vi.mock('../hooks/use-parliament-data', () => ({
@@ -18,7 +19,7 @@ describe('MembersFilters', () => {
 
     render(
       <MembersFilters
-        search={{ tab: 'grupuri', page: 3, pageSize: 20 }}
+        search={{ tab: 'grupuri', page: 3, pageSize: DEFAULT_MEMBERS_PAGE_SIZE }}
         onSearchChange={onSearchChange}
       />,
     )
@@ -36,7 +37,7 @@ describe('MembersFilters', () => {
 
     render(
       <MembersFilters
-        search={{ tab: 'grupuri', page: 3, pageSize: 20 }}
+        search={{ tab: 'grupuri', page: 3, pageSize: DEFAULT_MEMBERS_PAGE_SIZE }}
         onSearchChange={onSearchChange}
       />,
     )
@@ -54,7 +55,7 @@ describe('MembersFilters', () => {
     expect(onSearchChange).toHaveBeenCalledWith({
       tab: 'grupuri',
       page: 1,
-      pageSize: 20,
+      pageSize: DEFAULT_MEMBERS_PAGE_SIZE,
       q: 'Ana',
     })
   })

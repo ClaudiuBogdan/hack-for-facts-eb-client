@@ -26,3 +26,5 @@ export const parliamentPaginationButtonClassName =
 
 export const parliamentActiveFilterChipClassName =
   'inline-flex items-center gap-2 bg-[var(--pnrr-green)] px-3 py-2 text-sm text-[var(--pnrr-fg)]'
+
+export const DEFAULT_MEMBERS_PAGE_SIZE = 20

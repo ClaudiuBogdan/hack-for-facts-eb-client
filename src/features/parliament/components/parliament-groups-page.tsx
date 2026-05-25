@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { Skeleton } from '@/components/ui/skeleton'
 import type { ParliamentGroupsSearch } from '@/schemas/parliament'
 import { useParliamentMembers } from '../hooks/use-parliament-data'
 import { ChamberCompositionSection } from './chamber-composition-section'
 import { MembersFilters } from './members-filters'
-import { MembersTable } from './members-table'
+import { MembersTable, MembersTableSkeleton } from './members-table'
 import { ParliamentGroupsFloatingBar } from './parliament-groups-floating-bar'
+import { DEFAULT_MEMBERS_PAGE_SIZE } from '../lib/table-theme'
 
 type Props = {
   readonly search: ParliamentGroupsSearch
@@ -117,11 +117,9 @@ export function ParliamentGroupsContent({ search }: Props) {
           </div>
 
           {isLoading ? (
-            <div className="space-y-3 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4">
-              {Array.from({ length: 8 }).map((_, index) => (
-                <Skeleton key={index} className="h-12 w-full rounded-none" />
-              ))}
-            </div>
+            <MembersTableSkeleton
+              rowCount={search.pageSize ?? DEFAULT_MEMBERS_PAGE_SIZE}
+            />
           ) : data ? (
             <MembersTable
               page={data}
@@ -135,7 +133,7 @@ export function ParliamentGroupsContent({ search }: Props) {
                 members: [],
                 total: 0,
                 page: 1,
-                pageSize: 20,
+                pageSize: DEFAULT_MEMBERS_PAGE_SIZE,
                 totalPages: 1,
               }}
               search={search}

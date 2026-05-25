@@ -47,6 +47,7 @@ import {
   ensureFullChamberRoster,
 } from '../lib/chamber-composition'
 import { filterMembersBySearch } from '../lib/member-search'
+import { DEFAULT_MEMBERS_PAGE_SIZE } from '../lib/table-theme'
 import {
   extendParliamentMembers,
   synthesizeVoteDetail,
@@ -57,7 +58,6 @@ import { resolveParliamentBillDetail } from '../lib/bill-profile-data'
 const MOCK_LAST_SYNCED = '2026-05-20T08:00:00+03:00'
 const DEFAULT_VOTES_PAGE_SIZE = 10
 const DEFAULT_BILLS_PAGE_SIZE = 10
-const DEFAULT_MEMBERS_PAGE_SIZE = 20
 const PARLIAMENT_DATASET_ID = 'political-parliament'
 
 function assertParliamentMockDataEnabled(): void {
