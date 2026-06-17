@@ -121,8 +121,8 @@ test.describe('Live-data guard (parliament)', () => {
 
     // Wait until the Parlamentari group swatches have painted the PNL brand
     // colour (centralized resolver) before reading them — cold-start safe.
-    const PNL = 'rgb(242, 200, 17)' // #f2c811 yellow
-    const AUR = 'rgb(10, 27, 61)' //  #0a1b3d navy
+    const PNL = 'rgb(255, 210, 0)' // #FFD200 yellow
+    const AUR = 'rgb(17, 17, 17)' //  #111111 black
     const sawPnl = await page
       .waitForFunction(
         (pnl) =>

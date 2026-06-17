@@ -53,7 +53,7 @@ describe('deriveGroupId', () => {
 
 describe('colorForGroupName (delegates to the centralized resolver)', () => {
   it('resolves known parties diacritic-insensitively', () => {
-    expect(colorForGroupName('PSD')).toBe('#e4002b')
+    expect(colorForGroupName('PSD')).toBe('#E4002B')
     expect(colorForGroupName('Neafiliaţi')).toBe(colorForGroupName('neafiliati'))
   })
 
