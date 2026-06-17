@@ -11,6 +11,22 @@ type Props = {
   readonly bill: ParliamentBillDetail
 }
 
+/**
+ * Source chamberCode → phase label. CD = Camera Deputaților, SE = Senat,
+ * PA = the joint/promulgation stage (Parlament — president/promulgation/"devine
+ * Legea"). Driven by the REAL chamberCode only; an unknown/absent code yields no
+ * header (graceful flat render — never a fabricated bucket).
+ */
+const CHAMBER_PHASE_LABEL: Readonly<Record<string, string>> = {
+  CD: 'Camera Deputaților',
+  SE: 'Senat',
+  PA: 'Parlament / Promulgare',
+}
+
+function phaseLabel(chamberCode: string | undefined): string | null {
+  return chamberCode ? (CHAMBER_PHASE_LABEL[chamberCode] ?? null) : null
+}
+
 function formatStepDate(step: ParliamentBillTimelineStep): string | null {
   if (step.date) {
     return new Intl.DateTimeFormat('ro-RO', {
@@ -172,9 +188,28 @@ export function BillTimeline({ bill }: Props) {
             </button>
           ) : null}
           <ol className="mt-2">
-            {visible.map((step) => (
-              <StepRow key={step.stepId} step={step} />
-            ))}
+            {visible.map((step, i) => {
+              // Soft phase header on each chamber change (position order), driven
+              // by the real chamberCode — same chamber recurring (reexaminare) is
+              // re-headed, which mirrors the procedural reality. No header when the
+              // code is unknown/absent.
+              const label = phaseLabel(step.chamberCode)
+              const prevLabel =
+                i > 0 ? phaseLabel(visible[i - 1]!.chamberCode) : null
+              const showHeader = label !== null && label !== prevLabel
+              return (
+                <div key={step.stepId}>
+                  {showHeader ? (
+                    <li className="mb-3 mt-2 list-none border-l-2 border-[#1d70b8] pl-4 first:mt-0">
+                      <span className="text-xs font-black uppercase tracking-widest text-[#1d70b8]">
+                        {label}
+                      </span>
+                    </li>
+                  ) : null}
+                  <StepRow step={step} />
+                </div>
+              )
+            })}
           </ol>
         </>
       ) : (
