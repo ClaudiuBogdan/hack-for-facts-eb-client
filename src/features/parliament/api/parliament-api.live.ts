@@ -277,8 +277,11 @@ export async function fetchParliamentHubLive(): Promise<ParliamentHubData> {
 
   const memberCountByChamber = groups.reduce(
     (acc, g) => {
+      // Explicit per-chamber sum (no `else` catch-all): groups carry a real
+      // chamber from the two-chamber fetch, so a stray group with an unexpected
+      // chamber is ignored rather than silently inflating senat.
       if (g.chamber === 'camera') acc.camera += g.memberCount
-      else acc.senat += g.memberCount
+      else if (g.chamber === 'senat') acc.senat += g.memberCount
       return acc
     },
     { camera: 0, senat: 0 },

@@ -80,6 +80,31 @@ test.describe('Live-data guard (parliament)', () => {
     }
   })
 
+  test('hub Parlamentari shows the real chamber split (335 / 137), not 472 / 0', async ({
+    page,
+  }) => {
+    const response = await page.goto('/parlament').catch(() => null)
+    test.skip(!response, 'Parliament hub route unavailable')
+
+    const ready = await page
+      .getByRole('heading', { level: 1 })
+      .first()
+      .waitFor({ state: 'visible', timeout: 20000 })
+      .then(() => true)
+      .catch(() => false)
+    test.skip(!ready, 'Live parliament hub unavailable (API/tunnel down)')
+
+    // The Parlamentari section renders the per-chamber totals. Before the
+    // two-chamber group fetch, the no-chamber endpoint bucketed all 472 members
+    // into Camera (472 / 0). Wait for the live group data, then assert both real
+    // chamber totals are present and the broken "472 members" count is gone.
+    await page.waitForTimeout(2500)
+    const bodyText = (await page.locator('body').textContent()) ?? ''
+    expect(bodyText).toContain('335') // Camera Deputaților
+    expect(bodyText).toContain('137') // Senat
+    expect(bodyText).not.toContain('472membri')
+  })
+
   test('golden bill 12760 renders the live Legea 423/2023 reference', async ({
     page,
   }) => {
