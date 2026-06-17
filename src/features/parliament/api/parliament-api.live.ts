@@ -119,10 +119,18 @@ export async function fetchParliamentGroupLive(
   return groups.find((g) => g.groupId === groupId) ?? null
 }
 
-/** Build the synchronous group-id → name lookup used to resolve grup filters. */
-async function groupNameById(groupId: string): Promise<string | null> {
+/**
+ * Resolve a chamber-scoped groupId (`psd-senat`) to its display name + chamber.
+ * The server `group` filter matches `group_name` (chamber-agnostic), so the
+ * chamber must be carried separately to avoid leaking the other chamber's
+ * members of the same party.
+ */
+async function groupById(
+  groupId: string,
+): Promise<{ name: string; chamber: 'camera' | 'senat' } | null> {
   const groups = await loadAllGroups()
-  return groups.find((g) => g.groupId === groupId)?.name ?? null
+  const group = groups.find((g) => g.groupId === groupId)
+  return group ? { name: group.name, chamber: group.chamber } : null
 }
 
 // ── resolve helpers (slug → DB value) ───────────────────────────────────────
@@ -147,26 +155,41 @@ function toArray(value: string | string[] | undefined): string[] {
 async function resolveMemberFilterValues(search: ParliamentMembersSearch): Promise<{
   groupNames: string[]
   constituencyNames: string[]
+  /** Chamber implied by the selected group(s) when they all share one. */
+  groupChamber?: 'camera' | 'senat'
 }> {
   const groupIds = toArray(search.grup)
   const judetSlugs = toArray(search.judet)
 
-  const groupNames = (
-    await Promise.all(groupIds.map((id) => groupNameById(id)))
-  ).filter((n): n is string => Boolean(n))
+  const groupHits = (
+    await Promise.all(groupIds.map((id) => groupById(id)))
+  ).filter((g): g is { name: string; chamber: 'camera' | 'senat' } => Boolean(g))
+  const groupNames = groupHits.map((g) => g.name)
+
+  // If every selected group is in the same chamber, that chamber bounds the
+  // result — otherwise the party name alone leaks the other chamber's members.
+  const chambers = new Set(groupHits.map((g) => g.chamber))
+  const groupChamber = chambers.size === 1 ? [...chambers][0] : undefined
 
   const constituencyNames = (
     await Promise.all(judetSlugs.map((slug) => resolveConstituency(slug)))
   ).filter((n): n is string => Boolean(n))
 
-  return { groupNames, constituencyNames }
+  return { groupNames, constituencyNames, groupChamber }
 }
 
 export async function fetchParliamentMembersLive(
   search: ParliamentMembersSearch = {},
 ): Promise<ParliamentMembersList> {
   const resolved = await resolveMemberFilterValues(search)
-  const filter = buildMembersFilter(search, {
+  // An explicit chamber toggle wins; otherwise fall back to the group's chamber.
+  const effectiveSearch =
+    search.chamber && search.chamber !== 'all'
+      ? search
+      : resolved.groupChamber
+        ? { ...search, chamber: resolved.groupChamber }
+        : search
+  const filter = buildMembersFilter(effectiveSearch, {
     legislature: LATEST_LEGISLATURE,
     groupNames: resolved.groupNames,
     constituencyNames: resolved.constituencyNames,
@@ -377,12 +400,28 @@ export async function fetchParliamentBillsLive(
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
 
   let mapped = bills.map((b) => mapBillSummary(b))
-  // The bill-type filter has no live column; apply it client-side over the page.
+  // billType / non-promulgat billLocation have no live column; apply them
+  // client-side OVER THE PAGE. When such a facet is active the server `total`
+  // no longer describes the rows we return, so collapse pagination to a single
+  // page of the filtered slice rather than report a misleading "page 1 of N".
+  const hasClientFacet =
+    Boolean(search.billType) ||
+    Boolean(search.billLocation && search.billLocation !== 'promulgat')
   if (search.billType) {
     mapped = mapped.filter((b) => b.billType === search.billType)
   }
   if (search.billLocation && search.billLocation !== 'promulgat') {
     mapped = mapped.filter((b) => b.currentLocation === search.billLocation)
+  }
+
+  if (hasClientFacet) {
+    return {
+      bills: mapped,
+      total: mapped.length,
+      page: 1,
+      pageSize,
+      totalPages: 1,
+    }
   }
 
   return {

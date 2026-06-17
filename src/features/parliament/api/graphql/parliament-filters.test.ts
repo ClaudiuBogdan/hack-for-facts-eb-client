@@ -58,6 +58,21 @@ describe('buildMembersFilter', () => {
     )
     expect(filter).toEqual({ legislature: { eq: '2024' } })
   })
+
+  it('scopes a group by chamber when one is supplied (no cross-chamber leak)', () => {
+    // The live module infers the chamber from a chamber-scoped groupId
+    // (`psd-senat`) and passes it here so `group:{in:['PSD']}` does not also
+    // match the Camera PSD members.
+    const filter = buildMembersFilter(
+      { chamber: 'senat' },
+      { legislature: '2024', groupNames: ['PSD'] },
+    )
+    expect(filter).toEqual({
+      legislature: { eq: '2024' },
+      chamber: { eq: 'senat' },
+      group: { in: ['PSD'] },
+    })
+  })
 })
 
 describe('buildBillsFilter / buildBillsSort', () => {
