@@ -166,4 +166,28 @@ test.describe('Live-data guard (parliament)', () => {
     // The live bill became Legea 423/2023; mock bills never carry this number.
     expect(bodyText).toContain('423/2023')
   })
+
+  test('member Inițiative tab renders live initiatives, newest-first', async ({
+    page,
+  }) => {
+    // 2:2024:235 has 116 initiatives; the server orders them registration-date
+    // DESC, so page 1 carries recent 2026 dates (not the old legacy block).
+    const response = await page
+      .goto('/parlament/membri/2:2024:235/initiative')
+      .catch(() => null)
+    test.skip(!response, 'Member initiative route unavailable')
+
+    const ready = await page
+      .getByRole('heading', { level: 1 })
+      .first()
+      .waitFor({ state: 'visible', timeout: 20000 })
+      .then(() => true)
+      .catch(() => false)
+    test.skip(!ready, 'Live member initiatives unavailable (API/tunnel down)')
+
+    await page.waitForTimeout(2000)
+    const bodyText = (await page.locator('body').textContent()) ?? ''
+    expect(bodyText).toContain('Inițiative legislative')
+    expect(bodyText).toMatch(/mai 2026/) // real recent registration dates
+  })
 })

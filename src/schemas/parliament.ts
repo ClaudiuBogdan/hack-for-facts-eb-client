@@ -255,6 +255,33 @@ export const ParliamentMemberProfileSchema = z.object({
 })
 export type ParliamentMemberProfile = z.infer<typeof ParliamentMemberProfileSchema>
 
+/** A legislative initiative the member authored/initiated. */
+export const MemberInitiativeSchema = z.object({
+  initiativeId: z.string(),
+  title: z.string(),
+  /** Registration date (ISO); server orders these registration-date DESC. */
+  registeredAt: z.string().optional(),
+  status: z.string().optional(),
+  /** The bill this initiative tracks (links to /parlament/proiecte/$billId). */
+  billId: z.string().optional(),
+  /** Promulgated-law reference, when the initiative became law. */
+  promulgatedLawNumber: z.string().optional(),
+  promulgatedLawYear: z.number().int().optional(),
+})
+export type MemberInitiative = z.infer<typeof MemberInitiativeSchema>
+
+export const ParliamentMemberInitiativesListSchema = z.object({
+  memberId: z.string(),
+  initiatives: z.array(MemberInitiativeSchema),
+  total: z.number().int().nonnegative(),
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive(),
+  totalPages: z.number().int().positive(),
+})
+export type ParliamentMemberInitiativesList = z.infer<
+  typeof ParliamentMemberInitiativesListSchema
+>
+
 export const BillTypeSchema = z.enum([
   'guvern',
   'parlamentar',

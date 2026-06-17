@@ -15,6 +15,7 @@ import {
   ParliamentGroupSchema,
   ParliamentMemberSchema,
   ParliamentMemberProfileSchema,
+  ParliamentMemberInitiativesListSchema,
   ParliamentMemberVotingHistorySchema,
   ParliamentVoteDetailSchema,
   ParliamentVoteSummarySchema,
@@ -28,6 +29,7 @@ import {
   type ParliamentGroup,
   type ParliamentMember,
   type ParliamentMemberProfile,
+  type ParliamentMemberInitiativesList,
   type ParliamentMemberVotingHistory,
   type ParliamentVoteDetail,
   type ParliamentVoteSummary,
@@ -46,6 +48,7 @@ import type {
   RawParliamentBillEvent,
   RawParliamentBillSummary,
   RawParliamentGroup,
+  RawParliamentInitiative,
   RawParliamentMember,
   RawParliamentMemberVote,
   RawParliamentTally,
@@ -607,6 +610,40 @@ export function mapMemberProfile(raw: {
     writtenQuestions,
     interestDeclarations,
     // electionResult / portrait are not on the live surface (server gap).
+  })
+}
+
+// ── member initiatives (paginated; server-ordered registration-date DESC) ────
+
+/**
+ * Map a paginated member-initiatives page. Preserves the SERVER order (no
+ * client sort — the server returns these registration-date DESC, latest-first).
+ */
+export function mapMemberInitiatives(
+  memberId: string,
+  raw: { total: number; initiatives: readonly RawParliamentInitiative[] },
+  page: number,
+  pageSize: number,
+): ParliamentMemberInitiativesList {
+  const total = raw.total
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  return ParliamentMemberInitiativesListSchema.parse({
+    memberId,
+    initiatives: raw.initiatives.map((i) => ({
+      initiativeId: i.initiativeKey,
+      title: i.title ?? '(fără titlu)',
+      registeredAt: i.registrationDate
+        ? toIsoDate(i.registrationDate, '')
+        : undefined,
+      status: i.status ?? undefined,
+      billId: i.billKey ?? undefined,
+      promulgatedLawNumber: i.promulgatedLawNumber ?? undefined,
+      promulgatedLawYear: i.promulgatedLawYear ?? undefined,
+    })),
+    total,
+    page: Math.min(Math.max(1, page), totalPages),
+    pageSize,
+    totalPages,
   })
 }
 

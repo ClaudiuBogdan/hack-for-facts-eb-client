@@ -3,6 +3,7 @@ export type MemberDetailTab =
   | 'contact'
   | 'overview'
   | 'voturi'
+  | 'initiative'
   | 'interventii'
   | 'intrebari'
   | 'interese'
@@ -16,6 +17,7 @@ type NavItem = {
     | '/parlament/membri/$memberId'
     | '/parlament/membri/$memberId/contact'
     | '/parlament/membri/$memberId/voturi'
+    | '/parlament/membri/$memberId/initiative'
     | '/parlament/membri/$memberId/interventii'
     | '/parlament/membri/$memberId/intrebari'
     | '/parlament/membri/$memberId/interese'
@@ -39,6 +41,11 @@ export const MEMBER_DETAIL_NAV_ITEMS: readonly NavItem[] = [
     id: 'voturi',
     label: 'Istoric voturi',
     to: '/parlament/membri/$memberId/voturi',
+  },
+  {
+    id: 'initiative',
+    label: 'Inițiative legislative',
+    to: '/parlament/membri/$memberId/initiative',
   },
   {
     id: 'interventii',
@@ -71,6 +78,7 @@ export const MEMBER_DETAIL_TAB_LABELS: Record<MemberDetailTab, string> = {
   contact: 'Informații de contact',
   overview: 'Carieră parlamentară',
   voturi: 'Istoric voturi',
+  initiative: 'Inițiative legislative',
   interventii: 'Intervenții în plen',
   intrebari: 'Întrebări și interpelări',
   interese: 'Declarații de interese',

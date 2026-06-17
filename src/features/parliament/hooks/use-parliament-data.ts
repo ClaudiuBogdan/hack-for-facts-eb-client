@@ -15,6 +15,7 @@ import {
   fetchParliamentHub,
   fetchParliamentJudete,
   fetchParliamentMember,
+  fetchParliamentMemberInitiatives,
   fetchParliamentMemberProfile,
   fetchParliamentMemberVotingHistory,
   fetchParliamentMembers,
@@ -121,6 +122,20 @@ export function useParliamentMemberProfile(memberId: string) {
     queryKey: [...PARLIAMENT_QUERY_KEY, 'member-profile', memberId],
     queryFn: () => fetchParliamentMemberProfile(memberId),
     enabled: Boolean(memberId),
+  })
+}
+
+export function useParliamentMemberInitiatives(
+  memberId: string,
+  page: number,
+  pageSize: number,
+) {
+  return useQuery({
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'member-initiatives', memberId, page, pageSize],
+    queryFn: () => fetchParliamentMemberInitiatives(memberId, page, pageSize),
+    enabled: Boolean(memberId),
+    // Keep the previous page visible while the next loads (smoother paging).
+    placeholderData: (prev) => prev,
   })
 }
 
