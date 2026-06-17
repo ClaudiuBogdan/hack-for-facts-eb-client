@@ -91,6 +91,10 @@ export const privateCompanyProfileSchema = z.object({
 })
 
 export type PrivateCompanyProfile = z.infer<typeof privateCompanyProfileSchema>
+export type PrivateCompanyCaenActivity = z.infer<
+  typeof privateCompanyCaenActivitySchema
+>
+export type PrivateCompanySource = z.infer<typeof privateCompanySourceSchema>
 export type PrivateCompanyGeography = z.infer<
   typeof privateCompanyGeographySchema
 >
