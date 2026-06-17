@@ -9,7 +9,7 @@ import {
 
 describe('resolveGroupColor — per-party identity', () => {
   it('resolves a party regardless of chamber suffix or name vs id', () => {
-    const aur = '#0a1b3d'
+    const aur = '#111111'
     expect(resolveGroupColor({ name: 'AUR' })).toBe(aur)
     expect(resolveGroupColor({ groupId: 'aur-camera_deputatilor' })).toBe(aur)
     expect(resolveGroupColor({ groupId: 'aur-senat' })).toBe(aur)
@@ -24,6 +24,16 @@ describe('resolveGroupColor — per-party identity', () => {
 
   it('PNL and AUR are DIFFERENT colours (the reported duplicate)', () => {
     expect(resolveGroupColor({ name: 'PNL' })).not.toBe(resolveGroupColor({ name: 'AUR' }))
+  })
+
+  it('uses the user-authoritative FIXED hexes (do not auto-adjust)', () => {
+    expect(resolveGroupColor({ name: 'PSD' })).toBe('#E4002B')
+    expect(resolveGroupColor({ name: 'AUR' })).toBe('#111111') // black, not navy
+    expect(resolveGroupColor({ name: 'PNL' })).toBe('#FFD200')
+    expect(resolveGroupColor({ name: 'USR' })).toBe('#002A59') // dark blue, not cyan
+    expect(resolveGroupColor({ name: 'PACE' })).toBe('#F05A28') // orange, not purple
+    expect(resolveGroupColor({ name: 'UDMR' })).toBe('#00843D')
+    expect(resolveGroupColor({ name: 'Neafiliaţi' })).toBe('#6B7280')
   })
 
   it('falls back deterministically + distinctly for an unknown group', () => {

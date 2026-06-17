@@ -52,20 +52,24 @@ function partyKey(input: GroupColorInput): string {
  * distinctness test). Aliases (e.g. `sos-ro` / `sos-romania`) map to the same key.
  */
 export const GROUP_BRAND_COLORS: Readonly<Record<string, string>> = {
-  psd: '#e4002b', // PSD — red (infobox: red)
-  pnl: '#f2c811', // PNL — yellow (infobox: yellow + blue)
-  usr: '#0095da', // USR — blue/cyan (infobox: blue)
-  aur: '#0a1b3d', // AUR — dark navy/black (infobox: gold + black; navy keeps it distinct from PNL yellow)
-  udmr: '#0a8a3f', // UDMR/RMDSZ — green (Romanian political convention)
-  rmdsz: '#0a8a3f',
-  'sos-ro': '#5b8def', // SOS România — light/medium blue (infobox: navy + light blue; light blue keeps it distinct from AUR navy)
+  // ── USER-AUTHORITATIVE, FIXED (never auto-adjust these 7) ──────────────────
+  psd: '#E4002B', // PSD — red
+  aur: '#111111', // AUR — black (AUR is black/yellow)
+  pnl: '#FFD200', // PNL — yellow
+  usr: '#002A59', // USR — official dark blue (NOT cyan)
+  pace: '#F05A28', // PACE — orange (logo is orange + dark blue)
+  udmr: '#00843D', // UDMR/RMDSZ — green
+  rmdsz: '#00843D',
+  neafiliati: '#6B7280', // Neafiliați / independent — grey
+  neafiliat: '#6B7280',
+  // ── other parties (adjustable to preserve distinctness vs the fixed 7) ─────
+  'sos-ro': '#5b8def', // SOS România — light/medium blue (kept clear of USR dark-navy)
   'sos-romania': '#5b8def',
-  pace: '#7a3cc0', // PACE - Întâi România — purple (distinct slot; no official infobox colour found)
-  pot: '#d6448c', // POT — pink/indigo (infobox: indigo + pastel pink; pink keeps it distinct from USR/AUR blues)
+  pot: '#d6448c', // POT — pink (infobox: indigo + pastel pink; clear of PACE orange)
   upr: '#13b5b1', // UPR — teal
-  pmp: '#702283', // PMP — violet
-  'pro-romania': '#1d4ed8',
-  minoritati: '#8a6d3b', // Grupul minorităților — bronze/brown
+  pmp: '#7a2f9e', // PMP — violet (clear of USR dark-navy)
+  'pro-romania': '#1d4ed8', // Pro România — medium blue
+  minoritati: '#8a6d3b', // Grupul minorităților — bronze/brown (has members → distinct, not grey)
   pumr: '#0f766e',
 }
 
@@ -85,7 +89,7 @@ const FALLBACK_PALETTE: readonly string[] = [
   '#4682b4', // steel blue
   '#9acd32', // yellow-green
   '#cd5c5c', // indian red
-  '#708090', // slate grey
+  '#2f4f4f', // dark slate (clear of the Neafiliați brand grey)
 ]
 
 function hashKey(key: string): number {

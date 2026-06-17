@@ -56,7 +56,7 @@ describe('mapGroup', () => {
       name: 'UDMR',
       chamber: 'senat',
       memberCount: 10,
-      color: '#0a8a3f', // UDMR brand green (from the centralized resolver)
+      color: '#00843D', // UDMR brand green (user-authoritative, from the resolver)
     })
   })
 })
