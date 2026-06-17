@@ -1,0 +1,271 @@
+import { beforeEach, describe, expect, it } from 'vitest'
+import {
+  ParliamentBillDetailSchema,
+  ParliamentGroupSchema,
+  ParliamentMemberSchema,
+  ParliamentVoteDetailSchema,
+} from '@/schemas/parliament'
+import {
+  mapBillDetail,
+  mapGroup,
+  mapMember,
+  mapMemberProfile,
+  mapMemberVotingHistory,
+  mapVoteDetail,
+  mapVoteListItem,
+} from './parliament-mappers'
+import type {
+  RawParliamentBillDetail,
+  RawParliamentGroup,
+  RawParliamentMember,
+  RawParliamentVoteDetail,
+  RawParliamentVoteListNode,
+} from './parliament-queries'
+import {
+  __resetVoteSummaryCache,
+  lookupDivisionNumber,
+  lookupVoteSummary,
+} from './vote-summary-cache'
+
+beforeEach(() => __resetVoteSummaryCache())
+
+const udmrSenat: RawParliamentGroup = {
+  groupId: 'udmr-senat',
+  chamber: 'senat',
+  name: 'UDMR',
+  memberCount: 10,
+}
+
+const abrudean: RawParliamentMember = {
+  mandateKey: '1:2024:1',
+  chamber: 'senat',
+  legislature: '2024',
+  fullName: 'Abrudean Mircea',
+  groupName: 'PNL',
+  constituencyName: 'CLUJ',
+  birthDate: '1984-07-23',
+}
+
+describe('mapGroup', () => {
+  it('maps a UDMR Senate group with derived colour (golden: 10 members)', () => {
+    const group = mapGroup(udmrSenat)
+    expect(() => ParliamentGroupSchema.parse(group)).not.toThrow()
+    expect(group).toMatchObject({
+      groupId: 'udmr-senat',
+      name: 'UDMR',
+      chamber: 'senat',
+      memberCount: 10,
+      color: '#008542',
+    })
+  })
+})
+
+describe('mapMember', () => {
+  it('splits the name, folds the county, and derives groupId', () => {
+    const member = mapMember(abrudean)
+    expect(() => ParliamentMemberSchema.parse(member)).not.toThrow()
+    expect(member).toMatchObject({
+      memberId: '1:2024:1',
+      lastName: 'Abrudean',
+      firstName: 'Mircea',
+      chamber: 'senat',
+      groupId: 'pnl-senat',
+      groupName: 'PNL',
+      judetSlug: 'cluj',
+      judetName: 'CLUJ',
+    })
+  })
+})
+
+// ── golden anchor: Legea 423/2023 ↔ vote cdep:29892, 275/277 ────────────────
+
+const goldenVoteDetail: RawParliamentVoteDetail = {
+  voteKey: 'cdep:29892',
+  chamber: 'camera_deputatilor',
+  voteDate: '2022-05-04',
+  title:
+    'Proiect de Lege pentru aprobarea Ordonanţei de urgenţă a Guvernului nr.21/2012',
+  outcome: 'adoptat',
+  divisionNumber: 3629,
+  billKey: '12760',
+  tally: { pentru: 275, impotriva: 0, abtinere: 1, nuAVotat: 1, present: 277 },
+  groupBreakdown: [
+    { groupName: 'PNL', pentru: 100, impotriva: 0, abtinere: 0, nuAVotat: 0 },
+    { groupName: 'UDMR', pentru: 20, impotriva: 0, abtinere: 1, nuAVotat: 0 },
+  ],
+  ballots: {
+    edges: [
+      {
+        node: {
+          rowIndex: 0,
+          memberName: 'Gabriel Andronache',
+          groupName: 'PNL',
+          choice: 'pentru',
+          mandateKey: '2:2020:12',
+          matchMethod: 'exact_token_set',
+        },
+      },
+    ],
+    pageInfo: { hasNextPage: true, endCursor: 'x' },
+  },
+}
+
+describe('mapVoteDetail (golden anchor)', () => {
+  it('maps tally 275/277 and the ballot/breakdown shape', () => {
+    const detail = mapVoteDetail(goldenVoteDetail)
+    expect(() => ParliamentVoteDetailSchema.parse(detail)).not.toThrow()
+    expect(detail.voteId).toBe('cdep:29892')
+    expect(detail.chamber).toBe('camera')
+    expect(detail.outcome).toBe('adoptat')
+    expect(detail.tally).toEqual({ pentru: 275, impotriva: 0, abtinere: 1, nuAVotat: 1 })
+    expect(detail.groupBreakdown[0]).toMatchObject({ groupId: 'pnl-camera_deputatilor', pentru: 100 })
+    expect(detail.memberVotes[0]).toMatchObject({
+      memberId: '2:2020:12',
+      memberName: 'Gabriel Andronache',
+      choice: 'pentru',
+    })
+  })
+
+  it('primes the vote-summary cache so sync getters resolve', () => {
+    mapVoteDetail(goldenVoteDetail)
+    expect(lookupVoteSummary('camera', 'cdep:29892')?.tally.pentru).toBe(275)
+    expect(lookupDivisionNumber('cdep:29892')).toBe(3629)
+  })
+})
+
+describe('mapVoteListItem', () => {
+  it('adds a positive divisionNumber and falls back to 1', () => {
+    const node: RawParliamentVoteListNode = {
+      voteKey: 'cdep:1',
+      chamber: 'camera_deputatilor',
+      voteDate: '2026-06-10',
+      title: 'X',
+      outcome: 'respins',
+      divisionNumber: null,
+      billKey: null,
+      tally: { pentru: 1, impotriva: 2, abtinere: 0, nuAVotat: 0, present: 3 },
+    }
+    expect(mapVoteListItem(node).divisionNumber).toBe(1)
+    expect(mapVoteListItem({ ...node, divisionNumber: 7 }).divisionNumber).toBe(7)
+  })
+})
+
+// ── golden bill: 12760 → Legea 423/2023 → vote cdep:29892 ──────────────────
+
+const goldenBill: RawParliamentBillDetail = {
+  billKey: '12760',
+  plxNumber: '237',
+  plxYear: 2012,
+  senateNumber: null,
+  senateYear: null,
+  title: 'Proiect de Lege pentru aprobarea OUG nr.21/2012',
+  finalLawNumber: '423',
+  finalLawYear: 2023,
+  events: [
+    {
+      position: 1,
+      eventDate: '2012-06-12',
+      eventDateText: '12.06.2012',
+      description: '- Camera Deputaţilor: | 237/12.06.2012',
+      chamberCode: null,
+      committee: null,
+    },
+    {
+      position: 31,
+      eventDate: '2023-12-29',
+      eventDateText: '29.12.2023',
+      description: '29.12.2023 | promulgata prin Decret nr.1721/2023',
+      chamberCode: null,
+      committee: null,
+    },
+  ],
+  documents: [
+    { url: 'https://www.cdep.ro/em.pdf', label: 'Expunerea de motive', kind: 'pdf', position: 1 },
+  ],
+  initiators: [],
+  relatedVotes: [
+    {
+      voteKey: 'cdep:29892',
+      chamber: 'camera_deputatilor',
+      voteDate: '2022-05-04',
+      title: 'Proiect de Lege pentru aprobarea OUG nr.21/2012',
+      outcome: 'adoptat',
+      divisionNumber: 3629,
+      tally: { pentru: 275, impotriva: 0, abtinere: 1, nuAVotat: 1, present: 277 },
+    },
+  ],
+  actLinks: [
+    {
+      relationshipKind: 'becomes_law',
+      resolutionStatus: 'linked',
+      confidenceLabel: 'high',
+      legalAct: { actId: '145905', title: 'Legea nr. 423/2023', actType: 'lege' },
+    },
+  ],
+}
+
+describe('mapBillDetail (golden anchor)', () => {
+  it('derives promulgat location, summary from the law link, and real docs/votes', () => {
+    const detail = mapBillDetail(goldenBill)
+    expect(() => ParliamentBillDetailSchema.parse(detail)).not.toThrow()
+    expect(detail.billId).toBe('12760')
+    expect(detail.currentLocation).toBe('promulgat')
+    expect(detail.summary).toContain('Legea nr. 423/2023')
+    expect(detail.documents).toHaveLength(1)
+    expect(detail.relatedVotes[0]?.voteId).toBe('cdep:29892')
+    // events split into the procedural buckets
+    expect(detail.passage.final.length).toBeGreaterThan(0)
+  })
+
+  it('primes related-vote summaries (tally 275) for the bill tabs', () => {
+    mapBillDetail(goldenBill)
+    expect(lookupVoteSummary('camera', 'cdep:29892')?.tally.pentru).toBe(275)
+    expect(lookupDivisionNumber('cdep:29892')).toBe(3629)
+  })
+})
+
+describe('mapMemberVotingHistory', () => {
+  it('maps choices and outcomes', () => {
+    const history = mapMemberVotingHistory(
+      '1:2024:1',
+      [
+        {
+          voteKey: 'senat:abc',
+          chamber: 'senat',
+          voteDate: '2026-05-20',
+          title: 'X',
+          outcome: 'respins',
+          choice: 'impotriva',
+          billKey: null,
+        },
+      ],
+      1084,
+    )
+    expect(history.total).toBe(1084)
+    expect(history.votes[0]).toMatchObject({ choice: 'impotriva', outcome: 'respins', chamber: 'senat' })
+  })
+})
+
+describe('mapMemberProfile', () => {
+  it('maps speeches → contributions and control items → questions', () => {
+    const profile = mapMemberProfile({
+      mandateKey: '1:2024:1',
+      fullName: 'Abrudean Mircea',
+      constituencyName: 'CLUJ',
+      legislature: '2024',
+      speeches: {
+        total: 6252,
+        speeches: [{ speechKey: 's1', spokenAt: '2026-05-13', title: 'T', summary: 'S' }],
+      },
+      controlItems: {
+        total: 1,
+        items: [{ itemKey: 'c1', title: 'Q', itemDate: '2026-04-22', responseStatus: 'answered' }],
+      },
+      initiatives: { total: 0, initiatives: [] },
+      declarations: [],
+    })
+    expect(profile.spokenContributions[0]).toMatchObject({ contributionId: 's1', title: 'T' })
+    expect(profile.writtenQuestions[0]).toMatchObject({ questionId: 'c1', status: 'raspuns' })
+    expect(profile.interestDeclarations).toHaveLength(0)
+  })
+})
