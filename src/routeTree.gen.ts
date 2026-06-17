@@ -29,6 +29,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PrimarieIndexRouteImport } from './routes/primarie/index'
 import { Route as ParlamentIndexRouteImport } from './routes/parlament/index'
 import { Route as EntitiesIndexRouteImport } from './routes/entities/index'
+import { Route as CompaniesIndexRouteImport } from './routes/companies.index'
 import { Route as UnsubscribeTokenRouteImport } from './routes/unsubscribe.$token'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
@@ -228,6 +229,13 @@ const EntitiesIndexRoute = EntitiesIndexRouteImport.update({
   path: '/',
   getParentRoute: () => EntitiesRouteRoute,
 } as any)
+const CompaniesIndexRoute = CompaniesIndexRouteImport.update({
+  id: '/companies/',
+  path: '/companies/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/companies.index.lazy').then((d) => d.Route),
+)
 const ResearchEmployeesDataLazyRoute =
   ResearchEmployeesDataLazyRouteImport.update({
     id: '/research/employees-data',
@@ -896,6 +904,7 @@ export interface FileRoutesByFullPath {
   '/sign-up/$': typeof SignUpSplatRoute
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
+  '/companies/': typeof CompaniesIndexRoute
   '/entities/': typeof EntitiesIndexRoute
   '/parlament/': typeof ParlamentIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
@@ -996,6 +1005,7 @@ export interface FileRoutesByTo {
   '/sign-up/$': typeof SignUpSplatRoute
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
+  '/companies': typeof CompaniesIndexRoute
   '/entities': typeof EntitiesIndexRoute
   '/parlament': typeof ParlamentIndexRoute
   '/primarie': typeof PrimarieIndexRoute
@@ -1097,6 +1107,7 @@ export interface FileRoutesById {
   '/sign-up/$': typeof SignUpSplatRoute
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
+  '/companies/': typeof CompaniesIndexRoute
   '/entities/': typeof EntitiesIndexRoute
   '/parlament/': typeof ParlamentIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
@@ -1204,6 +1215,7 @@ export interface FileRouteTypes {
     | '/sign-up/$'
     | '/unsubscribe/$token'
     | '/research/employees-data'
+    | '/companies/'
     | '/entities/'
     | '/parlament/'
     | '/primarie/'
@@ -1304,6 +1316,7 @@ export interface FileRouteTypes {
     | '/sign-up/$'
     | '/unsubscribe/$token'
     | '/research/employees-data'
+    | '/companies'
     | '/entities'
     | '/parlament'
     | '/primarie'
@@ -1404,6 +1417,7 @@ export interface FileRouteTypes {
     | '/sign-up/$'
     | '/unsubscribe/$token'
     | '/research/employees-data'
+    | '/companies/'
     | '/entities/'
     | '/parlament/'
     | '/primarie/'
@@ -1505,6 +1519,7 @@ export interface RootRouteChildren {
   ShareCodeRoute: typeof ShareCodeRoute
   UnsubscribeTokenRoute: typeof UnsubscribeTokenRoute
   ResearchEmployeesDataLazyRoute: typeof ResearchEmployeesDataLazyRoute
+  CompaniesIndexRoute: typeof CompaniesIndexRoute
   ParlamentIndexRoute: typeof ParlamentIndexRoute
   PrimarieIndexRoute: typeof PrimarieIndexRoute
   ChartsIndexLazyRoute: typeof ChartsIndexLazyRoute
@@ -1676,6 +1691,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/entities/'
       preLoaderRoute: typeof EntitiesIndexRouteImport
       parentRoute: typeof EntitiesRouteRoute
+    }
+    '/companies/': {
+      id: '/companies/'
+      path: '/companies'
+      fullPath: '/companies/'
+      preLoaderRoute: typeof CompaniesIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/research/employees-data': {
       id: '/research/employees-data'
@@ -2570,6 +2592,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShareCodeRoute: ShareCodeRoute,
   UnsubscribeTokenRoute: UnsubscribeTokenRoute,
   ResearchEmployeesDataLazyRoute: ResearchEmployeesDataLazyRoute,
+  CompaniesIndexRoute: CompaniesIndexRoute,
   ParlamentIndexRoute: ParlamentIndexRoute,
   PrimarieIndexRoute: PrimarieIndexRoute,
   ChartsIndexLazyRoute: ChartsIndexLazyRoute,
