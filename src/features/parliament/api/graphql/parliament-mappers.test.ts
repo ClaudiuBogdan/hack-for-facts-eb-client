@@ -131,6 +131,25 @@ describe('mapVoteDetail (golden anchor)', () => {
     expect(lookupVoteSummary('camera', 'cdep:29892')?.tally.pentru).toBe(275)
     expect(lookupDivisionNumber('cdep:29892')).toBe(3629)
   })
+
+  // D2: the live module pages the ballots connection (server caps at 200/page)
+  // and hands mapVoteDetail the FULL assembled edge set — verify the mapper
+  // emits one memberVote per ballot (no truncation in the mapping itself).
+  it('maps every assembled ballot to a memberVote (>200, no truncation)', () => {
+    const edges = Array.from({ length: 277 }, (_, i) => ({
+      node: {
+        rowIndex: i,
+        memberName: `Member ${i}`,
+        groupName: 'PNL',
+        choice: 'pentru' as const,
+        mandateKey: `2:2024:${i}`,
+        matchMethod: 'exact_token_set',
+      },
+    }))
+    const detail = mapVoteDetail({ ...goldenVoteDetail, ballots: { edges, pageInfo: { hasNextPage: false, endCursor: null } } })
+    expect(detail.memberVotes).toHaveLength(277)
+    expect(detail.memberVotes[276]).toMatchObject({ memberId: '2:2024:276' })
+  })
 })
 
 describe('mapVoteListItem', () => {

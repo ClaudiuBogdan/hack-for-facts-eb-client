@@ -266,6 +266,38 @@ export const parliamentVoteResponseSchema = z.object({
   parliamentVote: rawVoteDetailSchema.nullable(),
 })
 
+/**
+ * Ballots-only follow-up page. The server caps the ballots connection at 200
+ * per page, so votes with >200 ballots need cursor pagination to assemble the
+ * full member-level list; this query fetches subsequent pages.
+ */
+export const PARLIAMENT_VOTE_BALLOTS_QUERY = /* GraphQL */ `
+  query ParliamentVoteBallots($voteKey: ID!, $first: Int, $after: String) {
+    parliamentVote(voteKey: $voteKey) {
+      ballots(first: $first, after: $after) {
+        edges {
+          node { rowIndex memberName groupName choice mandateKey matchMethod }
+        }
+        pageInfo { hasNextPage endCursor }
+      }
+    }
+  }
+`
+
+export const parliamentVoteBallotsResponseSchema = z.object({
+  parliamentVote: z
+    .object({
+      ballots: z.object({
+        edges: z.array(z.object({ node: rawBallotSchema })),
+        pageInfo: z.object({
+          hasNextPage: z.boolean(),
+          endCursor: z.string().nullable(),
+        }),
+      }),
+    })
+    .nullable(),
+})
+
 // ---------------------------------------------------------------------------
 // Member voting history — parliamentMember(mandateKey).votes(first)
 // ---------------------------------------------------------------------------

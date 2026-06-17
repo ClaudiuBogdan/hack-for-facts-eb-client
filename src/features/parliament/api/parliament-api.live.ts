@@ -41,6 +41,7 @@ import {
   PARLIAMENT_MEMBER_VOTES_QUERY,
   PARLIAMENT_MEMBERS_QUERY,
   PARLIAMENT_RESOLVE_QUERY,
+  PARLIAMENT_VOTE_BALLOTS_QUERY,
   PARLIAMENT_VOTE_QUERY,
   PARLIAMENT_VOTES_QUERY,
   parliamentBillResponseSchema,
@@ -52,6 +53,7 @@ import {
   parliamentMemberVotesResponseSchema,
   parliamentMembersResponseSchema,
   parliamentResolveResponseSchema,
+  parliamentVoteBallotsResponseSchema,
   parliamentVoteResponseSchema,
   parliamentVotesResponseSchema,
 } from './graphql/parliament-queries'
@@ -81,22 +83,43 @@ import {
 const DEFAULT_MEMBERS_PAGE_SIZE = 20
 const DEFAULT_VOTES_PAGE_SIZE = 10
 const DEFAULT_BILLS_PAGE_SIZE = 10
-const MAX_BALLOTS = 700
+/** Ballot connection cap to assemble a vote's full member-level ballot list. */
+const MAX_BALLOTS = 500
+/** Server caps the ballots connection at 200/page (parliament-repo.ts). */
+const BALLOTS_PAGE_SIZE = 200
 
 // ── groups ──────────────────────────────────────────────────────────────────
 
 let groupsCache: Promise<ParliamentGroup[]> | null = null
 
+async function loadGroupsForChamber(
+  chamber: 'camera_deputatilor' | 'senat',
+): Promise<ParliamentGroup[]> {
+  const data = await graphqlQuery<unknown>(
+    PARLIAMENT_GROUPS_QUERY,
+    { legislature: LATEST_LEGISLATURE, chamber },
+    { operationName: 'parliamentGroups' },
+  )
+  return parliamentGroupsResponseSchema.parse(data).parliamentGroups.map(mapGroup)
+}
+
+/**
+ * Load all groups for the latest legislature, fetching BOTH chambers explicitly
+ * and merging. The no-chamber `parliamentGroups` endpoint returns a
+ * chamber-AGNOSTIC party aggregate (groupId = bare name, chamber = '',
+ * memberCount = both chambers combined) — feeding that to the UI yields wrong
+ * per-chamber groupIds, an all-`camera` chamber label, and a broken hub split
+ * (camera:472, senat:0). The chamber-scoped call returns the correct
+ * `<slug>-<chamber>` ids + per-chamber counts, so we always use it.
+ */
 async function loadAllGroups(): Promise<ParliamentGroup[]> {
   if (!groupsCache) {
     groupsCache = (async () => {
-      const data = await graphqlQuery<unknown>(
-        PARLIAMENT_GROUPS_QUERY,
-        { legislature: LATEST_LEGISLATURE },
-        { operationName: 'parliamentGroups' },
-      )
-      const parsed = parliamentGroupsResponseSchema.parse(data)
-      return parsed.parliamentGroups.map(mapGroup)
+      const [camera, senat] = await Promise.all([
+        loadGroupsForChamber('camera_deputatilor'),
+        loadGroupsForChamber('senat'),
+      ])
+      return [...camera, ...senat]
     })().catch((error) => {
       groupsCache = null // allow retry on next call
       throw error
@@ -335,16 +358,38 @@ export async function fetchParliamentVoteDetailLive(
 ): Promise<ParliamentVoteDetail | null> {
   const data = await graphqlQuery<unknown>(
     PARLIAMENT_VOTE_QUERY,
-    { voteKey: voteId, ballotsFirst: MAX_BALLOTS },
+    { voteKey: voteId, ballotsFirst: BALLOTS_PAGE_SIZE },
     { operationName: 'parliamentVote' },
   )
   const parsed = parliamentVoteResponseSchema.parse(data)
   if (!parsed.parliamentVote) return null
+
+  // The server caps ballots at 200/page; votes with >200 ballots (≈half of all
+  // divisions) would otherwise truncate the per-member list. Page through the
+  // ballots cursor (bounded by MAX_BALLOTS) and append before mapping.
+  const vote = parsed.parliamentVote
+  const allBallotEdges = [...vote.ballots.edges]
+  let pageInfo = vote.ballots.pageInfo
+  while (pageInfo.hasNextPage && pageInfo.endCursor && allBallotEdges.length < MAX_BALLOTS) {
+    const moreData = await graphqlQuery<unknown>(
+      PARLIAMENT_VOTE_BALLOTS_QUERY,
+      { voteKey: voteId, first: BALLOTS_PAGE_SIZE, after: pageInfo.endCursor },
+      { operationName: 'parliamentVoteBallots' },
+    )
+    const moreParsed = parliamentVoteBallotsResponseSchema.parse(moreData)
+    if (!moreParsed.parliamentVote) break
+    allBallotEdges.push(...moreParsed.parliamentVote.ballots.edges)
+    pageInfo = moreParsed.parliamentVote.ballots.pageInfo
+  }
+
   // The route addresses votes by chamber, but a voteKey is globally unique and
   // `comun` (joint) votes collapse to `camera` in the UI — so the mapped
   // detail's chamber is authoritative; the route param is for routing only.
   void chamber
-  return mapVoteDetail(parsed.parliamentVote)
+  return mapVoteDetail({
+    ...vote,
+    ballots: { edges: allBallotEdges, pageInfo },
+  })
 }
 
 export async function fetchParliamentMemberVotingHistoryLive(
