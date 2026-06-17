@@ -385,7 +385,7 @@ export const PARLIAMENT_MEMBER_PROFILE_QUERY = /* GraphQL */ `
       }
       initiatives(page: 1, pageSize: 10) {
         total
-        initiatives { initiativeKey billKey title status promulgatedLawNumber promulgatedLawYear }
+        initiatives { initiativeKey billKey title status registrationDate promulgatedLawNumber promulgatedLawYear }
       }
       declarations { declarationType declarationDate label fileUrl }
     }
@@ -412,6 +412,8 @@ const rawInitiativeSchema = z.object({
   billKey: z.string().nullable(),
   title: z.string().nullable(),
   status: z.string().nullable(),
+  // Registration date; the server returns initiatives registration-date DESC.
+  registrationDate: z.string().nullable(),
   promulgatedLawNumber: z.string().nullable(),
   promulgatedLawYear: z.number().nullable(),
 })
@@ -469,6 +471,7 @@ export const PARLIAMENT_BILLS_QUERY = /* GraphQL */ `
         finalLawYear
         statusText
         billType
+        lastEventDate
       }
     }
   }
@@ -487,6 +490,9 @@ const rawBillSummarySchema = z.object({
   // type, surfaced flat by the server. null when the source carries neither.
   statusText: z.string().nullable(),
   billType: z.string().nullable(),
+  // Date of the bill's most recent procedural event; drives the card's
+  // "Actualizat" line + the server's default last_event_date-desc sort.
+  lastEventDate: z.string().nullable(),
 })
 export type RawParliamentBillSummary = z.infer<typeof rawBillSummarySchema>
 
@@ -515,6 +521,7 @@ export const PARLIAMENT_BILL_QUERY = /* GraphQL */ `
       finalLawYear
       statusText
       billType
+      lastEventDate
       events { position eventDate eventDateText description chamberCode committee }
       documents { url label kind position }
       initiators { mandateKey fullName groupName }

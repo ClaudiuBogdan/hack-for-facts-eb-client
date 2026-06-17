@@ -7,6 +7,7 @@ import {
 } from '@/schemas/parliament'
 import {
   mapBillDetail,
+  mapBillSummary,
   mapGroup,
   mapMember,
   mapMemberProfile,
@@ -16,6 +17,7 @@ import {
 } from './parliament-mappers'
 import type {
   RawParliamentBillDetail,
+  RawParliamentBillSummary,
   RawParliamentGroup,
   RawParliamentMember,
   RawParliamentVoteDetail,
@@ -205,6 +207,7 @@ const goldenBill: RawParliamentBillDetail = {
   finalLawYear: 2023,
   statusText: 'Lege 423/2023 29.12.2023',
   billType: 'Proiect de Lege pentru aprobarea O.U.G. nr. 21/2012',
+  lastEventDate: '2023-12-29',
   events: [
     {
       position: 1,
@@ -247,6 +250,33 @@ const goldenBill: RawParliamentBillDetail = {
     },
   ],
 }
+
+describe('mapBillSummary lastUpdatedAt (list path = lastEventDate)', () => {
+  const base: RawParliamentBillSummary = {
+    billKey: 'senat:286-2026',
+    plxNumber: null,
+    plxYear: null,
+    senateNumber: '286',
+    senateYear: 2026,
+    title: 'Propunere legislativă X',
+    finalLawNumber: null,
+    finalLawYear: null,
+    statusText: null,
+    billType: null,
+    lastEventDate: '2026-06-15',
+  }
+
+  it('uses the server lastEventDate for lastUpdatedAt (no Jan-1 fallback)', () => {
+    // The bills LIST carries no events array; lastUpdatedAt must come from
+    // lastEventDate so cards show the real (descending) date, not "1 ian.".
+    expect(mapBillSummary(base).lastUpdatedAt).toBe('2026-06-15T00:00:00+03:00')
+  })
+
+  it('falls back to Jan-1 only when no date is available at all', () => {
+    const dateless = mapBillSummary({ ...base, lastEventDate: null })
+    expect(dateless.lastUpdatedAt).toBe('2026-01-01T00:00:00+03:00')
+  })
+})
 
 describe('mapBillDetail (golden anchor)', () => {
   it('derives promulgat location, summary from the law link, and real docs/votes', () => {
