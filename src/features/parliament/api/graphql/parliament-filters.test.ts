@@ -76,15 +76,34 @@ describe('buildMembersFilter', () => {
 })
 
 describe('buildBillsFilter / buildBillsSort', () => {
-  it('only forwards q + the promulgat → finalized facet', () => {
+  it('forwards a trimmed q search', () => {
     expect(buildBillsFilter({ q: 'educație' })).toEqual({ q: { contains: 'educație' } })
-    expect(buildBillsFilter({ billLocation: 'promulgat' })).toEqual({
-      finalized: { isNull: false },
-    })
   })
 
-  it('does not translate billType (no live column)', () => {
-    expect(buildBillsFilter({ billType: 'guvern' })).toEqual({})
+  it('maps the UI billType enum to the server token (now server-backed)', () => {
+    expect(buildBillsFilter({ billType: 'guvern' })).toEqual({ billType: { eq: 'government' } })
+    expect(buildBillsFilter({ billType: 'ordonanta' })).toEqual({ billType: { eq: 'government' } })
+    expect(buildBillsFilter({ billType: 'parlamentar' })).toEqual({ billType: { eq: 'parliamentary' } })
+    expect(buildBillsFilter({ billType: 'cetateni' })).toEqual({ billType: { eq: 'parliamentary' } })
+  })
+
+  it('maps the UI billLocation enum to the server status token', () => {
+    expect(buildBillsFilter({ billLocation: 'promulgat' })).toEqual({ status: { eq: 'promulgated' } })
+    expect(buildBillsFilter({ billLocation: 'respins' })).toEqual({ status: { eq: 'rejected' } })
+    expect(buildBillsFilter({ billLocation: 'camera' })).toEqual({ status: { eq: 'in_progress' } })
+    expect(buildBillsFilter({ billLocation: 'senat' })).toEqual({ status: { eq: 'in_progress' } })
+    // `retras` has no server token → not forwarded (never a raw/unknown token).
+    expect(buildBillsFilter({ billLocation: 'retras' })).toEqual({})
+  })
+
+  it('AND-composes billType + status + q', () => {
+    expect(
+      buildBillsFilter({ billType: 'guvern', billLocation: 'promulgat', q: 'cod' }),
+    ).toEqual({
+      q: { contains: 'cod' },
+      billType: { eq: 'government' },
+      status: { eq: 'promulgated' },
+    })
   })
 
   it('defaults the sort to updated_desc', () => {

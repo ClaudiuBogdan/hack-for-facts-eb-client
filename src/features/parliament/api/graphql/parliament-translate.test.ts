@@ -51,14 +51,21 @@ describe('deriveGroupId', () => {
   })
 })
 
-describe('colorForGroupName', () => {
+describe('colorForGroupName (delegates to the centralized resolver)', () => {
   it('resolves known parties diacritic-insensitively', () => {
     expect(colorForGroupName('PSD')).toBe('#e4002b')
     expect(colorForGroupName('Neafiliaţi')).toBe(colorForGroupName('neafiliati'))
   })
 
-  it('falls back to neutral grey for unknown groups', () => {
-    expect(colorForGroupName('XYZ')).toBe(PARLIAMENT_GROUP_FALLBACK_COLOR)
+  it('gives an unknown group a deterministic distinct fallback (not neutral grey)', () => {
+    // The resolver assigns unknown groups a stable fallback SLOT (never colliding
+    // with a brand), so they are visually separable — not the neutral grey.
+    expect(colorForGroupName('XYZ')).toBe(colorForGroupName('XYZ'))
+    expect(colorForGroupName('XYZ')).not.toBe(PARLIAMENT_GROUP_FALLBACK_COLOR)
+  })
+
+  it('returns neutral grey only for empty/missing input', () => {
     expect(colorForGroupName(null)).toBe(PARLIAMENT_GROUP_FALLBACK_COLOR)
+    expect(colorForGroupName('')).toBe(PARLIAMENT_GROUP_FALLBACK_COLOR)
   })
 })

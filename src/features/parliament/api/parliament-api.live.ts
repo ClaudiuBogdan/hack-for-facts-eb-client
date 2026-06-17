@@ -76,9 +76,9 @@ import {
 } from './graphql/parliament-filters'
 import {
   LATEST_LEGISLATURE,
-  colorForGroupName,
   toGraphqlChamber,
 } from './graphql/parliament-translate'
+import { resolveGroupColor } from '../lib/group-colors'
 
 const DEFAULT_MEMBERS_PAGE_SIZE = 20
 const DEFAULT_VOTES_PAGE_SIZE = 10
@@ -321,7 +321,7 @@ export async function fetchParliamentChamberCompositionLive(
     fetchParliamentMembersLive({ page: 1, pageSize: 500 }),
   ])
   const colorMap = Object.fromEntries(
-    groups.map((g) => [g.groupId, g.color ?? colorForGroupName(g.name)]),
+    groups.map((g) => [g.groupId, g.color ?? resolveGroupColor({ groupId: g.groupId, name: g.name })]),
   )
   return ParliamentChamberCompositionSchema.parse(
     buildChamberComposition(chamber, groups, membersPage.members, colorMap, search),
@@ -447,33 +447,12 @@ export async function fetchParliamentBillsLive(
   const { total, bills } = parsed.parliamentBills
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
 
-  let mapped = bills.map((b) => mapBillSummary(b))
-  // billType / non-promulgat billLocation have no live column; apply them
-  // client-side OVER THE PAGE. When such a facet is active the server `total`
-  // no longer describes the rows we return, so collapse pagination to a single
-  // page of the filtered slice rather than report a misleading "page 1 of N".
-  const hasClientFacet =
-    Boolean(search.billType) ||
-    Boolean(search.billLocation && search.billLocation !== 'promulgat')
-  if (search.billType) {
-    mapped = mapped.filter((b) => b.billType === search.billType)
-  }
-  if (search.billLocation && search.billLocation !== 'promulgat') {
-    mapped = mapped.filter((b) => b.currentLocation === search.billLocation)
-  }
-
-  if (hasClientFacet) {
-    return {
-      bills: mapped,
-      total: mapped.length,
-      page: 1,
-      pageSize,
-      totalPages: 1,
-    }
-  }
-
+  // billType + billLocation are now SERVER-backed (buildBillsFilter maps them to
+  // the billType/status tokens), so filtering spans the full result set and the
+  // server `total` is exact — pagination is honest, no client-side over-page
+  // facet or page-collapse.
   return {
-    bills: mapped,
+    bills: bills.map((b) => mapBillSummary(b)),
     total,
     page: Math.min(page, totalPages),
     pageSize,

@@ -34,12 +34,12 @@ import {
   type VoteOutcome,
 } from '@/schemas/parliament'
 import {
-  colorForGroupName,
   deriveGroupId,
   foldSlug,
   fromGraphqlChamber,
   type GraphqlChamber,
 } from './parliament-translate'
+import { resolveGroupColor } from '../../lib/group-colors'
 import type {
   RawParliamentBallot,
   RawParliamentBillDetail,
@@ -101,7 +101,7 @@ export function mapGroup(raw: RawParliamentGroup): ParliamentGroup {
     shortName: raw.name,
     chamber,
     memberCount: num(raw.memberCount),
-    color: colorForGroupName(raw.name),
+    color: resolveGroupColor({ groupId: raw.groupId, name: raw.name }),
   })
 }
 
