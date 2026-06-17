@@ -128,3 +128,40 @@ the truncation is only the member-level `memberVotes` list.)
 - L12 unresolved/not_applicable act-links never surface as real legal-act links.
 - Quarantined speeches (0 today) are server-filtered; no leak.
 - Outcome/rejected votes map correctly; `amânat` is UI-only and never sent.
+
+## Web cross-check (DB/API vs cdep.ro / senat.ro, the authoritative source)
+
+Per the "don't trust the DB alone" methodology — checked representative entities
+against the official public sources to catch internally-consistent-but-wrong data.
+
+| Entity | DB/API | Official (cdep.ro / senat.ro) | Verdict |
+|---|---|---|---|
+| Abrudean `1:2024:1` group/chamber/county | PNL / senat / CLUJ | PNL, Senat, Cluj (Senate President) | ✅ match |
+| Mitrea `2:2024:200` group/county | AUR / NEAMŢ | AUR, circ. 29 NEAMŢ | ✅ match |
+| AUR Senate group size | 28 | 28 (senat.ro group page) | ✅ match |
+| Senate group "PACE" (12) | PACE | "PACE - Întâi România" — REAL group formed Sept 2025 (Onea: SOS→neafiliat→PACE) | ✅ match (DB is CURRENT, beats stale post-election snapshots) |
+| **Camera chamber size** | **335 mandate rows** | **331 seats** (331 distinct persons) | ⚠️ SC-1 |
+| **Senate chamber size** | **137 mandate rows / 136 persons** | **134 seats** | ⚠️ SC-1 (+realignment) |
+
+### SC-1 — {DB / scrapper} replacement mandates inflate the chamber-size count
+`parliament.members` keeps a row per MANDATE, including superseded ones (a member
+resigns/is replaced → both the original and the substitute mandate_key are kept),
+with **no active/superseded flag** on the row (`attrs.status` / `mandate_end` /
+`end_reason` all empty; the only signal is a later mandate for the same
+`person_id`). So counting member rows over-reports the chamber:
+- Camera: **335 rows vs 331 current seats** — 4 replacement pairs (e.g.
+  Ciolacu Ion-Marcel `2:2024:59` → Matache Oana `2:2024:334`; Afloarei → Năcuţă).
+  `count(distinct person_id)` = 331 (matches the official 331).
+- Senate: 137 rows / 136 persons vs official 134 (1 replacement: Jianu → Oprea;
+  the residual 136-vs-134 is the Sept-2025 group realignment / source snapshot
+  date, not a row defect).
+The client hub and `parliamentMembers.total` surface the **mandate-row count**
+(335/137), so the UI shows "335 deputați / 137 senatori" where the real current
+chamber is 331/134. **Layer = DB/scrapper (extractor keeps replacement mandates
+without an active flag); NOT fixed in this slice.** Proposed fix (future): add an
+`is_current` / `mandate_end` signal on `members`, and have the server count/`total`
+over current mandates (or distinct persons) for "chamber size", while keeping the
+historical rows for vote attribution. Flagged with both numbers per methodology.
+
+(All member/group/constituency LINKS themselves verified correct against the web;
+this is a count-semantics defect, not a wrong-link defect.)
