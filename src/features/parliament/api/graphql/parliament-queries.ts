@@ -97,6 +97,9 @@ const rawMemberSchema = z.object({
   groupName: z.string().nullable(),
   constituencyName: z.string().nullable(),
   birthDate: z.string().nullable(),
+  // profileUrl is only requested by the single-member query (contact tab); the
+  // list query omits it, so it defaults to null/undefined there.
+  profileUrl: z.string().nullable().optional(),
 })
 export type RawParliamentMember = z.infer<typeof rawMemberSchema>
 
@@ -122,6 +125,7 @@ export const PARLIAMENT_MEMBER_QUERY = /* GraphQL */ `
       groupName
       constituencyName
       birthDate
+      profileUrl
       activityCounts { votes controlItems speeches initiatives declarations }
     }
   }
@@ -231,7 +235,7 @@ export const PARLIAMENT_VOTE_QUERY = /* GraphQL */ `
       groupBreakdown { groupName pentru impotriva abtinere nuAVotat }
       ballots(first: $ballotsFirst, after: $after) {
         edges {
-          node { rowIndex memberName groupName choice mandateKey matchMethod }
+          node { rowIndex memberName groupName choice mandateKey matchMethod constituencyName }
         }
         pageInfo { hasNextPage endCursor }
       }
@@ -246,6 +250,9 @@ const rawBallotSchema = z.object({
   choice: z.string().nullable(),
   mandateKey: z.string().nullable(),
   matchMethod: z.string().nullable(),
+  // Constituency (județ) of the resolved member, JOINed server-side; null when
+  // the ballot is unresolved or the member has no recorded constituency.
+  constituencyName: z.string().nullable(),
 })
 export type RawParliamentBallot = z.infer<typeof rawBallotSchema>
 
@@ -264,6 +271,38 @@ export type RawParliamentVoteDetail = z.infer<typeof rawVoteDetailSchema>
 
 export const parliamentVoteResponseSchema = z.object({
   parliamentVote: rawVoteDetailSchema.nullable(),
+})
+
+/**
+ * Ballots-only follow-up page. The server caps the ballots connection at 200
+ * per page, so votes with >200 ballots need cursor pagination to assemble the
+ * full member-level list; this query fetches subsequent pages.
+ */
+export const PARLIAMENT_VOTE_BALLOTS_QUERY = /* GraphQL */ `
+  query ParliamentVoteBallots($voteKey: ID!, $first: Int, $after: String) {
+    parliamentVote(voteKey: $voteKey) {
+      ballots(first: $first, after: $after) {
+        edges {
+          node { rowIndex memberName groupName choice mandateKey matchMethod constituencyName }
+        }
+        pageInfo { hasNextPage endCursor }
+      }
+    }
+  }
+`
+
+export const parliamentVoteBallotsResponseSchema = z.object({
+  parliamentVote: z
+    .object({
+      ballots: z.object({
+        edges: z.array(z.object({ node: rawBallotSchema })),
+        pageInfo: z.object({
+          hasNextPage: z.boolean(),
+          endCursor: z.string().nullable(),
+        }),
+      }),
+    })
+    .nullable(),
 })
 
 // ---------------------------------------------------------------------------
@@ -423,6 +462,8 @@ export const PARLIAMENT_BILLS_QUERY = /* GraphQL */ `
         title
         finalLawNumber
         finalLawYear
+        statusText
+        billType
       }
     }
   }
@@ -437,6 +478,10 @@ const rawBillSummarySchema = z.object({
   title: z.string().nullable(),
   finalLawNumber: z.string().nullable(),
   finalLawYear: z.number().nullable(),
+  // Source-stored classification (Gap 2): the real status string + initiative
+  // type, surfaced flat by the server. null when the source carries neither.
+  statusText: z.string().nullable(),
+  billType: z.string().nullable(),
 })
 export type RawParliamentBillSummary = z.infer<typeof rawBillSummarySchema>
 
@@ -463,6 +508,8 @@ export const PARLIAMENT_BILL_QUERY = /* GraphQL */ `
       title
       finalLawNumber
       finalLawYear
+      statusText
+      billType
       events { position eventDate eventDateText description chamberCode committee }
       documents { url label kind position }
       initiators { mandateKey fullName groupName }

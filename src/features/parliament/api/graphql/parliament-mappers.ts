@@ -52,7 +52,7 @@ import type {
   RawParliamentVoteDetail,
   RawParliamentVoteListNode,
 } from './parliament-queries'
-import { primeVoteSummary } from './vote-summary-cache'
+import { primeMemberJudet, primeVoteSummary } from './vote-summary-cache'
 
 // ── primitives ────────────────────────────────────────────────────────────
 
@@ -130,6 +130,15 @@ export function mapMember(raw: RawParliamentMember): ParliamentMember {
   const { firstName, lastName } = splitFullName(raw.fullName)
   const constituency = raw.constituencyName?.trim() ?? ''
 
+  // The official cdep/senat profile page (server `profileUrl`) is surfaced as
+  // the member's `contact.website` so the contact tab's "Website" card renders
+  // it. Only a valid http(s) URL is accepted (the schema requires `.url()`).
+  const profileUrl = raw.profileUrl?.trim()
+  const contact =
+    profileUrl && /^https?:\/\//i.test(profileUrl)
+      ? { website: profileUrl }
+      : undefined
+
   return ParliamentMemberSchema.parse({
     memberId: raw.mandateKey,
     firstName,
@@ -139,7 +148,8 @@ export function mapMember(raw: RawParliamentMember): ParliamentMember {
     groupName: raw.groupName ?? '',
     judetSlug: constituency ? foldSlug(constituency) : '',
     judetName: constituency,
-    // mandate dates / role / photo / contact are not on the live surface.
+    ...(contact ? { contact } : {}),
+    // mandate dates / role / photo are not on the live surface.
   })
 }
 
@@ -202,8 +212,12 @@ export function mapVoteDetail(raw: RawParliamentVoteDetail): ParliamentVoteDetai
 }
 
 function mapBallot(raw: RawParliamentBallot, chamber: GraphqlChamber) {
+  const memberId = raw.mandateKey ?? `row-${raw.rowIndex}`
+  // Prime the member→județ cache from the resolved member's constituency so the
+  // vote-detail județ column (sync `getMemberJudetMap()`) is populated.
+  if (raw.mandateKey) primeMemberJudet(raw.mandateKey, raw.constituencyName)
   return {
-    memberId: raw.mandateKey ?? `row-${raw.rowIndex}`,
+    memberId,
     memberName: raw.memberName ?? 'Necunoscut',
     groupId: deriveGroupId(raw.groupName, chamber),
     groupName: raw.groupName ?? 'Necunoscut',
@@ -235,17 +249,27 @@ export function mapMemberVotingHistory(
 // ── bills ─────────────────────────────────────────────────────────────────
 
 /**
- * Derive the UI `billType` from the bill title. The live schema has no bill-type
- * column; titles are reliably prefixed ("Proiect de Lege" = government/ordinary,
- * "Propunere legislativă" = MP initiative, OUG/OG references = ordinance). This
- * is a display classification, surfaced as derived — not authoritative.
+ * Classify the UI `billType` from the source `billType` string (the server's
+ * `procedure.tip_initiativa`, e.g. "Proiect de Lege pentru aprobarea O.U.G…"),
+ * falling back to the title. The INITIATIVE-TYPE PREFIX is what classifies:
+ *  - "Propunere legislativă" → MP/citizen initiative (`parlamentar`);
+ *  - "Proiect de Lege"       → government project (`guvern`) — even when its
+ *    SUBJECT is approving an OUG ("…pentru aprobarea O.U.G…"), the initiative is
+ *    still a government project, so the OUG check must NOT win over the prefix;
+ *  - a bare "Ordonanţă"/"OUG" initiative → `ordonanta`.
  */
-function deriveBillType(title: string | null | undefined): BillType {
-  const t = (title ?? '').toLowerCase()
+function classifyBillType(
+  serverBillType: string | null | undefined,
+  title: string | null | undefined,
+): BillType {
+  const t = (serverBillType?.trim() || title || '').toLowerCase()
+  if (t.startsWith('propunere legislativ') || t.includes('cetăţeni') || t.includes('cetateni')) {
+    return 'parlamentar'
+  }
+  if (t.startsWith('proiect de lege')) return 'guvern'
   if (t.includes('ordonanţ') || t.includes('ordonant') || t.includes('o.u.g') || t.includes('oug')) {
     return 'ordonanta'
   }
-  if (t.startsWith('propunere legislativ')) return 'parlamentar'
   return 'guvern'
 }
 
@@ -325,14 +349,20 @@ export function mapBillSummary(
   const currentLocation = deriveCurrentLocation(raw, events, originatingChamber)
   const lastEvent = events && events.length > 0 ? latestEventDate(events) : null
 
+  // Prefer the server's source-stored status string for the current-stage label;
+  // fall back to the derived-location label when the source carries none.
+  const stageLabel = raw.statusText?.trim()
+    ? raw.statusText.trim()
+    : LOCATION_LABEL[currentLocation]
+
   return ParliamentBillSummarySchema.parse({
     billId: raw.billKey,
     number: billNumber(raw),
     title: raw.title ?? '(fără titlu)',
-    billType: deriveBillType(raw.title),
+    billType: classifyBillType(raw.billType, raw.title),
     originatingChamber,
     currentLocation,
-    currentStageLabel: LOCATION_LABEL[currentLocation],
+    currentStageLabel: stageLabel,
     lastUpdatedAt: lastEvent ?? `${billYear(raw)}-01-01T00:00:00+03:00`,
     legislatureId: String(billYear(raw)),
   })

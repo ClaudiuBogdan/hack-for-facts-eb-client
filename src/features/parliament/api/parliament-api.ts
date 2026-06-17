@@ -37,6 +37,7 @@ import {
   PARLIAMENT_GROUP_FALLBACK_COLOR,
 } from './graphql/parliament-translate'
 import {
+  getMemberJudetCache,
   lookupDivisionNumber,
   lookupVoteSummary,
 } from './graphql/vote-summary-cache'
@@ -241,13 +242,14 @@ export function getParliamentGroupColorMap(): Readonly<Record<string, string>> {
 }
 
 /**
- * Member → county map, used only to label ballot rows on the vote-detail page.
- * The live ballot surface carries no constituency, so this is empty in live mode
- * (the county column simply renders blank) — a known server gap. Mock mode
- * returns the fixture map.
+ * Member → county map, used to label ballot rows on the vote-detail page. In
+ * live mode it's primed from the vote's ballots (each resolved ballot now
+ * carries the member's `constituencyName`) when the vote detail is fetched, so
+ * the județ column is populated for the votes the user opens. Mock mode returns
+ * the fixture map.
  */
 export function getMemberJudetMap(): Readonly<Record<string, string>> {
-  return isParliamentMockEnabled() ? getMemberJudetMapMock() : {}
+  return isParliamentMockEnabled() ? getMemberJudetMapMock() : getMemberJudetCache()
 }
 
 /** Pure CSV serialiser — identical in both modes. */

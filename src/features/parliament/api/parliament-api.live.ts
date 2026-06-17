@@ -41,6 +41,7 @@ import {
   PARLIAMENT_MEMBER_VOTES_QUERY,
   PARLIAMENT_MEMBERS_QUERY,
   PARLIAMENT_RESOLVE_QUERY,
+  PARLIAMENT_VOTE_BALLOTS_QUERY,
   PARLIAMENT_VOTE_QUERY,
   PARLIAMENT_VOTES_QUERY,
   parliamentBillResponseSchema,
@@ -52,6 +53,7 @@ import {
   parliamentMemberVotesResponseSchema,
   parliamentMembersResponseSchema,
   parliamentResolveResponseSchema,
+  parliamentVoteBallotsResponseSchema,
   parliamentVoteResponseSchema,
   parliamentVotesResponseSchema,
 } from './graphql/parliament-queries'
@@ -81,22 +83,43 @@ import {
 const DEFAULT_MEMBERS_PAGE_SIZE = 20
 const DEFAULT_VOTES_PAGE_SIZE = 10
 const DEFAULT_BILLS_PAGE_SIZE = 10
-const MAX_BALLOTS = 700
+/** Ballot connection cap to assemble a vote's full member-level ballot list. */
+const MAX_BALLOTS = 500
+/** Server caps the ballots connection at 200/page (parliament-repo.ts). */
+const BALLOTS_PAGE_SIZE = 200
 
 // ── groups ──────────────────────────────────────────────────────────────────
 
 let groupsCache: Promise<ParliamentGroup[]> | null = null
 
+async function loadGroupsForChamber(
+  chamber: 'camera_deputatilor' | 'senat',
+): Promise<ParliamentGroup[]> {
+  const data = await graphqlQuery<unknown>(
+    PARLIAMENT_GROUPS_QUERY,
+    { legislature: LATEST_LEGISLATURE, chamber },
+    { operationName: 'parliamentGroups' },
+  )
+  return parliamentGroupsResponseSchema.parse(data).parliamentGroups.map(mapGroup)
+}
+
+/**
+ * Load all groups for the latest legislature, fetching BOTH chambers explicitly
+ * and merging. The no-chamber `parliamentGroups` endpoint returns a
+ * chamber-AGNOSTIC party aggregate (groupId = bare name, chamber = '',
+ * memberCount = both chambers combined) — feeding that to the UI yields wrong
+ * per-chamber groupIds, an all-`camera` chamber label, and a broken hub split
+ * (camera:472, senat:0). The chamber-scoped call returns the correct
+ * `<slug>-<chamber>` ids + per-chamber counts, so we always use it.
+ */
 async function loadAllGroups(): Promise<ParliamentGroup[]> {
   if (!groupsCache) {
     groupsCache = (async () => {
-      const data = await graphqlQuery<unknown>(
-        PARLIAMENT_GROUPS_QUERY,
-        { legislature: LATEST_LEGISLATURE },
-        { operationName: 'parliamentGroups' },
-      )
-      const parsed = parliamentGroupsResponseSchema.parse(data)
-      return parsed.parliamentGroups.map(mapGroup)
+      const [camera, senat] = await Promise.all([
+        loadGroupsForChamber('camera_deputatilor'),
+        loadGroupsForChamber('senat'),
+      ])
+      return [...camera, ...senat]
     })().catch((error) => {
       groupsCache = null // allow retry on next call
       throw error
@@ -119,10 +142,18 @@ export async function fetchParliamentGroupLive(
   return groups.find((g) => g.groupId === groupId) ?? null
 }
 
-/** Build the synchronous group-id → name lookup used to resolve grup filters. */
-async function groupNameById(groupId: string): Promise<string | null> {
+/**
+ * Resolve a chamber-scoped groupId (`psd-senat`) to its display name + chamber.
+ * The server `group` filter matches `group_name` (chamber-agnostic), so the
+ * chamber must be carried separately to avoid leaking the other chamber's
+ * members of the same party.
+ */
+async function groupById(
+  groupId: string,
+): Promise<{ name: string; chamber: 'camera' | 'senat' } | null> {
   const groups = await loadAllGroups()
-  return groups.find((g) => g.groupId === groupId)?.name ?? null
+  const group = groups.find((g) => g.groupId === groupId)
+  return group ? { name: group.name, chamber: group.chamber } : null
 }
 
 // ── resolve helpers (slug → DB value) ───────────────────────────────────────
@@ -147,26 +178,41 @@ function toArray(value: string | string[] | undefined): string[] {
 async function resolveMemberFilterValues(search: ParliamentMembersSearch): Promise<{
   groupNames: string[]
   constituencyNames: string[]
+  /** Chamber implied by the selected group(s) when they all share one. */
+  groupChamber?: 'camera' | 'senat'
 }> {
   const groupIds = toArray(search.grup)
   const judetSlugs = toArray(search.judet)
 
-  const groupNames = (
-    await Promise.all(groupIds.map((id) => groupNameById(id)))
-  ).filter((n): n is string => Boolean(n))
+  const groupHits = (
+    await Promise.all(groupIds.map((id) => groupById(id)))
+  ).filter((g): g is { name: string; chamber: 'camera' | 'senat' } => Boolean(g))
+  const groupNames = groupHits.map((g) => g.name)
+
+  // If every selected group is in the same chamber, that chamber bounds the
+  // result — otherwise the party name alone leaks the other chamber's members.
+  const chambers = new Set(groupHits.map((g) => g.chamber))
+  const groupChamber = chambers.size === 1 ? [...chambers][0] : undefined
 
   const constituencyNames = (
     await Promise.all(judetSlugs.map((slug) => resolveConstituency(slug)))
   ).filter((n): n is string => Boolean(n))
 
-  return { groupNames, constituencyNames }
+  return { groupNames, constituencyNames, groupChamber }
 }
 
 export async function fetchParliamentMembersLive(
   search: ParliamentMembersSearch = {},
 ): Promise<ParliamentMembersList> {
   const resolved = await resolveMemberFilterValues(search)
-  const filter = buildMembersFilter(search, {
+  // An explicit chamber toggle wins; otherwise fall back to the group's chamber.
+  const effectiveSearch =
+    search.chamber && search.chamber !== 'all'
+      ? search
+      : resolved.groupChamber
+        ? { ...search, chamber: resolved.groupChamber }
+        : search
+  const filter = buildMembersFilter(effectiveSearch, {
     legislature: LATEST_LEGISLATURE,
     groupNames: resolved.groupNames,
     constituencyNames: resolved.constituencyNames,
@@ -231,8 +277,11 @@ export async function fetchParliamentHubLive(): Promise<ParliamentHubData> {
 
   const memberCountByChamber = groups.reduce(
     (acc, g) => {
+      // Explicit per-chamber sum (no `else` catch-all): groups carry a real
+      // chamber from the two-chamber fetch, so a stray group with an unexpected
+      // chamber is ignored rather than silently inflating senat.
       if (g.chamber === 'camera') acc.camera += g.memberCount
-      else acc.senat += g.memberCount
+      else if (g.chamber === 'senat') acc.senat += g.memberCount
       return acc
     },
     { camera: 0, senat: 0 },
@@ -312,16 +361,38 @@ export async function fetchParliamentVoteDetailLive(
 ): Promise<ParliamentVoteDetail | null> {
   const data = await graphqlQuery<unknown>(
     PARLIAMENT_VOTE_QUERY,
-    { voteKey: voteId, ballotsFirst: MAX_BALLOTS },
+    { voteKey: voteId, ballotsFirst: BALLOTS_PAGE_SIZE },
     { operationName: 'parliamentVote' },
   )
   const parsed = parliamentVoteResponseSchema.parse(data)
   if (!parsed.parliamentVote) return null
+
+  // The server caps ballots at 200/page; votes with >200 ballots (≈half of all
+  // divisions) would otherwise truncate the per-member list. Page through the
+  // ballots cursor (bounded by MAX_BALLOTS) and append before mapping.
+  const vote = parsed.parliamentVote
+  const allBallotEdges = [...vote.ballots.edges]
+  let pageInfo = vote.ballots.pageInfo
+  while (pageInfo.hasNextPage && pageInfo.endCursor && allBallotEdges.length < MAX_BALLOTS) {
+    const moreData = await graphqlQuery<unknown>(
+      PARLIAMENT_VOTE_BALLOTS_QUERY,
+      { voteKey: voteId, first: BALLOTS_PAGE_SIZE, after: pageInfo.endCursor },
+      { operationName: 'parliamentVoteBallots' },
+    )
+    const moreParsed = parliamentVoteBallotsResponseSchema.parse(moreData)
+    if (!moreParsed.parliamentVote) break
+    allBallotEdges.push(...moreParsed.parliamentVote.ballots.edges)
+    pageInfo = moreParsed.parliamentVote.ballots.pageInfo
+  }
+
   // The route addresses votes by chamber, but a voteKey is globally unique and
   // `comun` (joint) votes collapse to `camera` in the UI — so the mapped
   // detail's chamber is authoritative; the route param is for routing only.
   void chamber
-  return mapVoteDetail(parsed.parliamentVote)
+  return mapVoteDetail({
+    ...vote,
+    ballots: { edges: allBallotEdges, pageInfo },
+  })
 }
 
 export async function fetchParliamentMemberVotingHistoryLive(
@@ -377,12 +448,28 @@ export async function fetchParliamentBillsLive(
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
 
   let mapped = bills.map((b) => mapBillSummary(b))
-  // The bill-type filter has no live column; apply it client-side over the page.
+  // billType / non-promulgat billLocation have no live column; apply them
+  // client-side OVER THE PAGE. When such a facet is active the server `total`
+  // no longer describes the rows we return, so collapse pagination to a single
+  // page of the filtered slice rather than report a misleading "page 1 of N".
+  const hasClientFacet =
+    Boolean(search.billType) ||
+    Boolean(search.billLocation && search.billLocation !== 'promulgat')
   if (search.billType) {
     mapped = mapped.filter((b) => b.billType === search.billType)
   }
   if (search.billLocation && search.billLocation !== 'promulgat') {
     mapped = mapped.filter((b) => b.currentLocation === search.billLocation)
+  }
+
+  if (hasClientFacet) {
+    return {
+      bills: mapped,
+      total: mapped.length,
+      page: 1,
+      pageSize,
+      totalPages: 1,
+    }
   }
 
   return {
