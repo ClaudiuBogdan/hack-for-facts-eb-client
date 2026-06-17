@@ -13,14 +13,16 @@ export type CompaniesFilterInput = {
 }
 
 /**
- * CAEN codes are 4 digits (e.g. 4752). A 1-2 digit input is treated as a
- * division prefix (47 → 47xx); a full 3-4 digit code is matched exactly.
+ * CAEN codes are 4 digits at the class level (e.g. 4752). Any partial input —
+ * division (47), group (475), etc. — is a prefix; only a full 4-digit code is
+ * matched exactly. A 3-digit `eq` matches nothing (no code is exactly 3 digits),
+ * so partials MUST go through `prefix`.
  */
 function buildCaenFilter(caen: string): CompaniesFilterInput['caenCode'] | undefined {
   const trimmed = caen.trim()
   if (trimmed.length === 0) return undefined
   if (!/^\d{1,4}$/.test(trimmed)) return undefined
-  return trimmed.length <= 2 ? { prefix: trimmed } : { eq: trimmed }
+  return trimmed.length < 4 ? { prefix: trimmed } : { eq: trimmed }
 }
 
 export function buildCompaniesFilter(
