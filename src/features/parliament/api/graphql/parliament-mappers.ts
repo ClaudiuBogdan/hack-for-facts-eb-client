@@ -347,13 +347,23 @@ export function mapBillSummary(
 ): ParliamentBillSummary {
   const originatingChamber = deriveOriginatingChamber(raw)
   const currentLocation = deriveCurrentLocation(raw, events, originatingChamber)
-  const lastEvent = events && events.length > 0 ? latestEventDate(events) : null
 
   // Prefer the server's source-stored status string for the current-stage label;
   // fall back to the derived-location label when the source carries none.
   const stageLabel = raw.statusText?.trim()
     ? raw.statusText.trim()
     : LOCATION_LABEL[currentLocation]
+
+  // "Actualizat" = the real last-event date. The bills LIST carries no events, so
+  // we use the server-exposed `lastEventDate` (which also drives the default
+  // last_event_date-desc sort — without it the list LOOKED arbitrary because
+  // every card fell back to "1 ian. <year>"). Detail pages also have the events
+  // array; either source works. Only a genuinely date-less bill falls back to
+  // Jan-1 of its year.
+  const lastUpdatedAt =
+    toIsoDate(raw.lastEventDate, '') ||
+    (events && events.length > 0 ? latestEventDate(events) : null) ||
+    `${billYear(raw)}-01-01T00:00:00+03:00`
 
   return ParliamentBillSummarySchema.parse({
     billId: raw.billKey,
@@ -363,7 +373,7 @@ export function mapBillSummary(
     originatingChamber,
     currentLocation,
     currentStageLabel: stageLabel,
-    lastUpdatedAt: lastEvent ?? `${billYear(raw)}-01-01T00:00:00+03:00`,
+    lastUpdatedAt,
     legislatureId: String(billYear(raw)),
   })
 }
