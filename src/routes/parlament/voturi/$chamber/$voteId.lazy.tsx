@@ -13,8 +13,8 @@ export const Route = createLazyFileRoute('/parlament/voturi/$chamber/$voteId')({
   component: ParliamentVoteDetailRoutePage,
 })
 
+// Group colours are a derive-on-access Proxy (safe to read at module scope).
 const groupColors = getParliamentGroupColorMap()
-const memberJudete = getMemberJudetMap()
 
 function ParliamentVoteDetailRoutePage() {
   const { chamber, voteId } = Route.useParams()
@@ -33,6 +33,11 @@ function ParliamentVoteDetailRoutePage() {
   if (!detail) {
     return <ParliamentVoteNotFoundPage chamber={chamber} voteId={voteId} />
   }
+
+  // Read AFTER the vote detail resolves — the member→județ map is primed from
+  // this vote's ballots during the fetch, so a module-scope snapshot would be
+  // empty. (Group colours are a Proxy and don't need this.)
+  const memberJudete = getMemberJudetMap()
 
   return (
     <VoteDetailContent

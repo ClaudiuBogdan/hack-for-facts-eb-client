@@ -23,6 +23,7 @@ import type {
 } from './parliament-queries'
 import {
   __resetVoteSummaryCache,
+  getMemberJudetCache,
   lookupDivisionNumber,
   lookupVoteSummary,
 } from './vote-summary-cache'
@@ -75,6 +76,21 @@ describe('mapMember', () => {
       judetName: 'CLUJ',
     })
   })
+
+  it('surfaces the server profileUrl as contact.website (Gap 4)', () => {
+    const member = mapMember({
+      ...abrudean,
+      profileUrl: 'https://www.cdep.ro/ords/pls/parlam/structura2015.mp?idm=1&cam=1&leg=2024',
+    })
+    expect(member.contact?.website).toBe(
+      'https://www.cdep.ro/ords/pls/parlam/structura2015.mp?idm=1&cam=1&leg=2024',
+    )
+  })
+
+  it('omits contact when profileUrl is absent or not an http(s) URL', () => {
+    expect(mapMember(abrudean).contact).toBeUndefined()
+    expect(mapMember({ ...abrudean, profileUrl: 'not-a-url' }).contact).toBeUndefined()
+  })
 })
 
 // ── golden anchor: Legea 423/2023 ↔ vote cdep:29892, 275/277 ────────────────
@@ -103,6 +119,7 @@ const goldenVoteDetail: RawParliamentVoteDetail = {
           choice: 'pentru',
           mandateKey: '2:2020:12',
           matchMethod: 'exact_token_set',
+          constituencyName: 'BRAŞOV',
         },
       },
     ],
@@ -132,6 +149,11 @@ describe('mapVoteDetail (golden anchor)', () => {
     expect(lookupDivisionNumber('cdep:29892')).toBe(3629)
   })
 
+  it('primes the member→județ cache from ballot constituencyName (vote-detail județ column)', () => {
+    mapVoteDetail(goldenVoteDetail)
+    expect(getMemberJudetCache()['2:2020:12']).toBe('BRAŞOV')
+  })
+
   // D2: the live module pages the ballots connection (server caps at 200/page)
   // and hands mapVoteDetail the FULL assembled edge set — verify the mapper
   // emits one memberVote per ballot (no truncation in the mapping itself).
@@ -144,6 +166,7 @@ describe('mapVoteDetail (golden anchor)', () => {
         choice: 'pentru' as const,
         mandateKey: `2:2024:${i}`,
         matchMethod: 'exact_token_set',
+        constituencyName: 'CLUJ',
       },
     }))
     const detail = mapVoteDetail({ ...goldenVoteDetail, ballots: { edges, pageInfo: { hasNextPage: false, endCursor: null } } })
@@ -180,6 +203,8 @@ const goldenBill: RawParliamentBillDetail = {
   title: 'Proiect de Lege pentru aprobarea OUG nr.21/2012',
   finalLawNumber: '423',
   finalLawYear: 2023,
+  statusText: 'Lege 423/2023 29.12.2023',
+  billType: 'Proiect de Lege pentru aprobarea O.U.G. nr. 21/2012',
   events: [
     {
       position: 1,
@@ -234,6 +259,13 @@ describe('mapBillDetail (golden anchor)', () => {
     expect(detail.relatedVotes[0]?.voteId).toBe('cdep:29892')
     // events split into the procedural buckets
     expect(detail.passage.final.length).toBeGreaterThan(0)
+  })
+
+  it('uses the server statusText for the stage label + classifies billType (Gap 2)', () => {
+    const detail = mapBillDetail(goldenBill)
+    expect(detail.currentStageLabel).toBe('Lege 423/2023 29.12.2023')
+    // billType derived from the server tip_initiativa string → guvern (Proiect de Lege).
+    expect(detail.billType).toBe('guvern')
   })
 
   it('primes related-vote summaries (tally 275) for the bill tabs', () => {

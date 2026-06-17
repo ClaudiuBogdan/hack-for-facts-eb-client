@@ -18,6 +18,12 @@ import type {
 
 const summaryByVoteId = new Map<string, ParliamentVoteSummary>()
 const divisionByVoteId = new Map<string, number>()
+/**
+ * memberId (mandateKey) → constituency (județ), primed from a vote's ballots —
+ * the only place the resolved member's constituency is surfaced flat next to its
+ * mandate_key. The vote-detail județ column reads it via `getMemberJudetMap()`.
+ */
+const judetByMemberId = new Map<string, string>()
 
 export function primeVoteSummary(
   summary: ParliamentVoteSummary,
@@ -27,6 +33,18 @@ export function primeVoteSummary(
   if (typeof divisionNumber === 'number' && divisionNumber > 0) {
     divisionByVoteId.set(summary.voteId, divisionNumber)
   }
+}
+
+export function primeMemberJudet(
+  memberId: string,
+  constituency: string | null | undefined,
+): void {
+  const c = constituency?.trim()
+  if (memberId && c) judetByMemberId.set(memberId, c)
+}
+
+export function getMemberJudetCache(): Readonly<Record<string, string>> {
+  return Object.fromEntries(judetByMemberId)
 }
 
 export function lookupVoteSummary(
@@ -46,4 +64,5 @@ export function lookupDivisionNumber(voteId: string): number | undefined {
 export function __resetVoteSummaryCache(): void {
   summaryByVoteId.clear()
   divisionByVoteId.clear()
+  judetByMemberId.clear()
 }
