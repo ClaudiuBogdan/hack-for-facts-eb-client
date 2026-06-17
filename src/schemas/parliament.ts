@@ -385,12 +385,53 @@ export type ParliamentBillRelatedVote = z.infer<
   typeof ParliamentBillRelatedVoteSchema
 >
 
+/** A single procedural step on the bill's chronological timeline (etape). */
+export const ParliamentBillTimelineStepSchema = z.object({
+  /** Stable key (source `position`); steps render in ascending position order. */
+  stepId: z.string(),
+  position: z.number().int().nonnegative(),
+  /** Cleaned event description (rendered as-is; source fix handles glued tokens). */
+  description: z.string(),
+  /** ISO date when known; `dateText` is the source's display string. */
+  date: z.string().optional(),
+  dateText: z.string().optional(),
+  /** Real chamber code from the source (null today → no fabricated phase). */
+  chamberCode: z.string().optional(),
+  committee: z.string().optional(),
+  /** Resolved vote key (`cdep:${voteIdv}`) when the step records a vote. */
+  voteId: z.string().optional(),
+  /** Per-step document links (usually empty → fall back to the Documente tab). */
+  docUrls: z.array(z.string()).default([]),
+  /** Highlighted milestone steps (adoptare/promulgare/lege/reexaminare/înaintat). */
+  isMilestone: z.boolean(),
+})
+export type ParliamentBillTimelineStep = z.infer<
+  typeof ParliamentBillTimelineStepSchema
+>
+
+/** The bill's becomes-law milestone (resolved legal act), when present. */
+export const ParliamentBillLawMilestoneSchema = z.object({
+  lawNumber: z.string(),
+  lawYear: z.number().int().optional(),
+  actId: z.string().optional(),
+  actTitle: z.string().optional(),
+})
+export type ParliamentBillLawMilestone = z.infer<
+  typeof ParliamentBillLawMilestoneSchema
+>
+
 export const ParliamentBillDetailSchema = ParliamentBillSummarySchema.extend({
   longTitle: z.string(),
   summary: z.string().optional(),
   initiator: ParliamentBillInitiatorSchema,
   documents: z.array(ParliamentBillDocumentSchema),
-  passage: ParliamentBillPassageSchema,
+  // `passage` (the legacy 3-column tracker) is deprecated + optional; the etape
+  // tab now renders `timeline`. Kept optional so the mock detail path still parses.
+  passage: ParliamentBillPassageSchema.optional(),
+  /** Chronological procedural timeline (position order) — the etape surface. */
+  timeline: z.array(ParliamentBillTimelineStepSchema).default([]),
+  /** Becomes-law milestone for the hero card (null when the bill isn't a law). */
+  lawMilestone: ParliamentBillLawMilestoneSchema.optional(),
   relatedVotes: z.array(ParliamentBillRelatedVoteSchema),
 })
 export type ParliamentBillDetail = z.infer<typeof ParliamentBillDetailSchema>

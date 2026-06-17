@@ -217,6 +217,18 @@ const goldenBill: RawParliamentBillDetail = {
       description: '- Camera Deputaţilor: | 237/12.06.2012',
       chamberCode: null,
       committee: null,
+      voteIdv: null,
+      docs: null,
+    },
+    {
+      position: 16,
+      eventDate: '2022-05-04',
+      eventDateText: '04.05.2022',
+      description: 'adoptata de Camera Deputatilor',
+      chamberCode: null,
+      committee: null,
+      voteIdv: '29892',
+      docs: null,
     },
     {
       position: 31,
@@ -225,6 +237,8 @@ const goldenBill: RawParliamentBillDetail = {
       description: '29.12.2023 | promulgata prin Decret nr.1721/2023',
       chamberCode: null,
       committee: null,
+      voteIdv: null,
+      docs: null,
     },
   ],
   documents: [
@@ -288,8 +302,25 @@ describe('mapBillDetail (golden anchor)', () => {
     expect(detail.summary).toContain('Legea nr. 423/2023')
     expect(detail.documents).toHaveLength(1)
     expect(detail.relatedVotes[0]?.voteId).toBe('cdep:29892')
-    // events split into the procedural buckets
-    expect(detail.passage.final.length).toBeGreaterThan(0)
+  })
+
+  it('builds a chronological timeline in position order with milestones + vote link', () => {
+    const detail = mapBillDetail(goldenBill)
+    // Steps render in raw position order (NOT date-sorted): 1 → 16 → 31.
+    expect(detail.timeline.map((s) => s.position)).toEqual([1, 16, 31])
+    // The "adoptata de Camera" step links to its vote (cdep:${voteIdv}).
+    const voteStep = detail.timeline.find((s) => s.position === 16)
+    expect(voteStep?.voteId).toBe('cdep:29892')
+    expect(voteStep?.isMilestone).toBe(true)
+    // The promulgare step is a milestone too.
+    expect(detail.timeline.find((s) => s.position === 31)?.isMilestone).toBe(true)
+    // becomes-law milestone resolved to the legal act.
+    expect(detail.lawMilestone).toMatchObject({
+      lawNumber: '423',
+      lawYear: 2023,
+      actId: '145905',
+      actTitle: 'Legea nr. 423/2023',
+    })
   })
 
   it('uses the server statusText for the stage label + classifies billType (Gap 2)', () => {

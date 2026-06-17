@@ -190,4 +190,35 @@ test.describe('Live-data guard (parliament)', () => {
     expect(bodyText).toContain('Inițiative legislative')
     expect(bodyText).toMatch(/mai 2026/) // real recent registration dates
   })
+
+  test('bill etape renders a chronological timeline (vote link, milestone, no fabricated buckets)', async ({
+    page,
+  }) => {
+    // Bill 17605 (PLx 751/2018) became Legea 78/2020; its adoptare event records
+    // vote cdep:22196. The etape page is a position-ordered timeline — milestone
+    // hero + clickable vote step — NOT the old fabricated 3-column tracker.
+    const response = await page
+      .goto('/parlament/proiecte/17605/etape')
+      .catch(() => null)
+    test.skip(!response, 'Bill etape route unavailable')
+
+    const ready = await page
+      .getByRole('heading', { level: 1 })
+      .first()
+      .waitFor({ state: 'visible', timeout: 20000 })
+      .then(() => true)
+      .catch(() => false)
+    test.skip(!ready, 'Live bill etape unavailable (API/tunnel down)')
+
+    await page.waitForTimeout(2000)
+    const bodyText = (await page.locator('body').textContent()) ?? ''
+    expect(bodyText).toContain('78/2020') // becomes-law milestone
+    // adoptare step → its vote (colon URL-encoded).
+    const voteLink = await page
+      .locator('a[href*="/parlament/voturi/camera/cdep%3A22196"]')
+      .count()
+    expect(voteLink).toBeGreaterThan(0)
+    // The fabricated 3-column "Etape finale" progress bucket is gone.
+    expect(bodyText).not.toContain('Etape finale')
+  })
 })

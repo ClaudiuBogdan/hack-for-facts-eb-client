@@ -25,6 +25,7 @@ import {
   type ParliamentBillDetail,
   type ParliamentBillRelatedVote,
   type ParliamentBillSummary,
+  type ParliamentBillTimelineStep,
   type ParliamentChamber,
   type ParliamentGroup,
   type ParliamentMember,
@@ -447,7 +448,7 @@ function primeRelatedVoteSummary(v: {
  */
 export function mapBillDetail(raw: RawParliamentBillDetail): ParliamentBillDetail {
   const summary = mapBillSummary(raw, raw.events)
-  const passage = buildPassageFromEvents(raw.events)
+  const timeline = buildBillTimeline(raw.events)
 
   const initiator = raw.initiators[0]
   const billInitiator =
@@ -467,9 +468,19 @@ export function mapBillDetail(raw: RawParliamentBillDetail): ParliamentBillDetai
             departmentName: 'Guvernul României',
           }
 
-  const lawLink = raw.actLinks.find((l) => l.legalAct?.title)
-  const summaryText = raw.finalLawNumber
-    ? `Devenit ${lawLink?.legalAct?.title ?? `Legea nr. ${raw.finalLawNumber}/${raw.finalLawYear ?? ''}`}.`
+  const lawLink = raw.actLinks.find(
+    (l) => l.relationshipKind === 'becomes_law' && l.resolutionStatus === 'linked',
+  )
+  const lawMilestone = raw.finalLawNumber
+    ? {
+        lawNumber: raw.finalLawNumber,
+        ...(raw.finalLawYear != null ? { lawYear: raw.finalLawYear } : {}),
+        ...(lawLink?.legalAct?.actId ? { actId: lawLink.legalAct.actId } : {}),
+        ...(lawLink?.legalAct?.title ? { actTitle: lawLink.legalAct.title } : {}),
+      }
+    : undefined
+  const summaryText = lawMilestone
+    ? `Devenit ${lawMilestone.actTitle ?? `Legea nr. ${lawMilestone.lawNumber}/${lawMilestone.lawYear ?? ''}`}.`
     : undefined
 
   return ParliamentBillDetailSchema.parse({
@@ -487,57 +498,91 @@ export function mapBillDetail(raw: RawParliamentBillDetail): ParliamentBillDetai
         url: d.url,
         publishedAt: summary.lastUpdatedAt,
       })),
-    passage,
+    timeline,
+    ...(lawMilestone ? { lawMilestone } : {}),
     relatedVotes: mapBillRelatedVotes(raw),
   })
 }
 
-/**
- * Group real bill events into the three passage buckets the UI renders. Each
- * event becomes a `complete` stage (events are historical facts); the labels are
- * the trimmed event descriptions. This replaces the mock's synthetic five-stage
- * scaffold with the actual procedural timeline.
- */
-function buildPassageFromEvents(events: readonly RawParliamentBillEvent[]) {
-  const sorted = [...events].sort((a, b) => {
-    const da = a.eventDate ?? ''
-    const db = b.eventDate ?? ''
-    if (da !== db) return da < db ? -1 : 1
-    return a.position - b.position
-  })
+/** Milestone keywords (RO, diacritic-insensitive) — highlighted timeline rows. */
+const MILESTONE_PATTERNS = [
+  'adoptat',
+  'adoptata',
+  'respins',
+  'promulg',
+  'lege ',
+  'reexaminare',
+  'inaintat la senat',
+  'trimitere la pre', // trimitere la Preşedinte
+  'monitorul oficial',
+]
 
-  const camera: ParliamentBillDetail['passage']['camera'] = []
-  const senat: ParliamentBillDetail['passage']['senat'] = []
-  const final: ParliamentBillDetail['passage']['final'] = []
-
-  sorted.forEach((e, idx) => {
-    const text = (e.description ?? '').toLowerCase()
-    const stage = {
-      stageId: `ev-${e.position}-${idx}`,
-      label: cleanEventLabel(e.description) || 'Etapă procedurală',
-      status: 'complete' as const,
-      completedAt: e.eventDate
-        ? toIsoDate(e.eventDate, `${new Date().getFullYear()}-01-01T00:00:00+03:00`)
-        : undefined,
-    }
-    if (text.includes('promulg') || text.includes('monitorul') || text.includes('preşedinte') || text.includes('presedinte') || text.includes('mediere')) {
-      final.push(stage)
-    } else if (text.includes('senat')) {
-      senat.push(stage)
-    } else {
-      camera.push(stage)
-    }
-  })
-
-  return { camera, senat, final }
+function isMilestoneDescription(description: string): boolean {
+  const folded = foldSlug(description).replace(/-/g, ' ')
+  return MILESTONE_PATTERNS.some((p) => folded.includes(foldSlug(p).replace(/-/g, ' ')))
 }
 
-function cleanEventLabel(description: string | null | undefined): string {
-  if (!description) return ''
-  // Event descriptions embed a leading date + pipe-delimited duplicates; keep the
-  // human-readable head segment.
-  const head = description.split('|')[0]?.trim() ?? description
-  return head.replace(/^\d{1,2}\.\d{1,2}\.\d{4}\s*/, '').trim().slice(0, 160)
+/** Extract absolute doc URLs from the per-event `docs` JSON blob (often empty). */
+function extractEventDocUrls(docs: unknown): string[] {
+  const urls: string[] = []
+  const visit = (v: unknown): void => {
+    if (typeof v === 'string') {
+      if (/^https?:\/\//i.test(v)) urls.push(v)
+    } else if (Array.isArray(v)) {
+      v.forEach(visit)
+    } else if (v && typeof v === 'object') {
+      Object.values(v as Record<string, unknown>).forEach(visit)
+    }
+  }
+  visit(docs)
+  return Array.from(new Set(urls))
+}
+
+/**
+ * Light defensive cleanup of an event description. The scrapper reparse cleans
+ * descriptions at SOURCE (glued tokens + a redundant leading date), so this only
+ * strips a leading `dd.mm.yyyy |` / `dd.mm.yyyy` prefix + a leading bare `- ` and
+ * collapses whitespace — no heavy client regex, and it NEVER drops post-content
+ * (it must not split on `|` and discard the meaningful tail, e.g. the promulgare
+ * text that follows a leading date).
+ */
+function cleanEventDescription(description: string | null | undefined): string {
+  if (!description) return 'Etapă procedurală'
+  const cleaned = description
+    .replace(/^\s*\d{1,2}\.\d{1,2}\.\d{4}\s*\|?\s*/, '') // leading "dd.mm.yyyy |"
+    .replace(/^\s*-\s*/, '') // leading bullet
+    .replace(/\s+/g, ' ')
+    .trim()
+  return cleaned || 'Etapă procedurală'
+}
+
+/**
+ * Build the chronological timeline in raw `position` order (NOT date-sorted — a
+ * "Termen adoptare" deadline date would otherwise jumble the procedural order).
+ * Each event becomes a step with its resolved vote (cdep:${voteIdv}), per-event
+ * doc URLs, the real chamberCode (null today → no fabricated phase), and a
+ * milestone flag. No `passage`-style chamber invention.
+ */
+function buildBillTimeline(
+  events: readonly RawParliamentBillEvent[],
+): ParliamentBillTimelineStep[] {
+  return [...events]
+    .sort((a, b) => a.position - b.position)
+    .map((e) => {
+      const description = cleanEventDescription(e.description)
+      return {
+        stepId: `ev-${e.position}`,
+        position: e.position,
+        description,
+        ...(e.eventDate ? { date: toIsoDate(e.eventDate, '') || undefined } : {}),
+        ...(e.eventDateText ? { dateText: e.eventDateText } : {}),
+        ...(e.chamberCode ? { chamberCode: e.chamberCode } : {}),
+        ...(e.committee ? { committee: e.committee } : {}),
+        ...(e.voteIdv ? { voteId: `cdep:${e.voteIdv}` } : {}),
+        docUrls: extractEventDocUrls(e.docs),
+        isMilestone: isMilestoneDescription(description),
+      }
+    })
 }
 
 // ── member profile (speeches / questions / initiatives → UI shape) ──────────
