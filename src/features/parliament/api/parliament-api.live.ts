@@ -23,6 +23,7 @@ import {
   type ParliamentHubData,
   type ParliamentMember,
   type ParliamentMemberProfile,
+  type ParliamentMemberInitiativesList,
   type ParliamentMemberVotingHistory,
   type ParliamentMembersList,
   type ParliamentMembersSearch,
@@ -36,6 +37,7 @@ import {
   PARLIAMENT_BILLS_QUERY,
   PARLIAMENT_GROUP_MEMBERS_QUERY,
   PARLIAMENT_GROUPS_QUERY,
+  PARLIAMENT_MEMBER_INITIATIVES_QUERY,
   PARLIAMENT_MEMBER_PROFILE_QUERY,
   PARLIAMENT_MEMBER_QUERY,
   PARLIAMENT_MEMBER_VOTES_QUERY,
@@ -48,6 +50,7 @@ import {
   parliamentBillsResponseSchema,
   parliamentGroupMembersResponseSchema,
   parliamentGroupsResponseSchema,
+  parliamentMemberInitiativesResponseSchema,
   parliamentMemberProfileResponseSchema,
   parliamentMemberResponseSchema,
   parliamentMemberVotesResponseSchema,
@@ -63,6 +66,7 @@ import {
   mapBillSummary,
   mapGroup,
   mapMember,
+  mapMemberInitiatives,
   mapMemberProfile,
   mapMemberVotingHistory,
   mapVoteDetail,
@@ -472,6 +476,25 @@ export async function fetchParliamentMemberProfileLive(
   const parsed = parliamentMemberProfileResponseSchema.parse(data)
   if (!parsed.parliamentMember) return null
   return mapMemberProfile(parsed.parliamentMember)
+}
+
+const DEFAULT_INITIATIVES_PAGE_SIZE = 10
+
+export async function fetchParliamentMemberInitiativesLive(
+  memberId: string,
+  page = 1,
+  pageSize = DEFAULT_INITIATIVES_PAGE_SIZE,
+): Promise<ParliamentMemberInitiativesList | null> {
+  const safePage = Math.max(1, page)
+  const data = await graphqlQuery<unknown>(
+    PARLIAMENT_MEMBER_INITIATIVES_QUERY,
+    { mandateKey: memberId, page: safePage, pageSize },
+    { operationName: 'parliamentMemberInitiatives' },
+  )
+  const parsed = parliamentMemberInitiativesResponseSchema.parse(data)
+  if (!parsed.parliamentMember) return null
+  // Server orders registration-date DESC (latest-first) — preserve that order.
+  return mapMemberInitiatives(memberId, parsed.parliamentMember.initiatives, safePage, pageSize)
 }
 
 // ── bills ─────────────────────────────────────────────────────────────────

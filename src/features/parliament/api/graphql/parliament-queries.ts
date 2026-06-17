@@ -447,6 +447,43 @@ export const parliamentMemberProfileResponseSchema = z.object({
 })
 
 // ---------------------------------------------------------------------------
+// Member initiatives (paginated) — parliamentMember(mandateKey).initiatives(page, pageSize)
+// Server orders these registration-date DESC (latest-first); do NOT client-sort.
+// ---------------------------------------------------------------------------
+
+export const PARLIAMENT_MEMBER_INITIATIVES_QUERY = /* GraphQL */ `
+  query ParliamentMemberInitiatives($mandateKey: ID!, $page: Int, $pageSize: Int) {
+    parliamentMember(mandateKey: $mandateKey) {
+      mandateKey
+      initiatives(page: $page, pageSize: $pageSize) {
+        total
+        initiatives {
+          initiativeKey
+          billKey
+          title
+          status
+          registrationDate
+          promulgatedLawNumber
+          promulgatedLawYear
+        }
+      }
+    }
+  }
+`
+
+export const parliamentMemberInitiativesResponseSchema = z.object({
+  parliamentMember: z
+    .object({
+      mandateKey: z.string(),
+      initiatives: z.object({
+        total: z.number(),
+        initiatives: z.array(rawInitiativeSchema),
+      }),
+    })
+    .nullable(),
+})
+
+// ---------------------------------------------------------------------------
 // Bills list — parliamentBills(filter, sort, page, pageSize)
 // ---------------------------------------------------------------------------
 

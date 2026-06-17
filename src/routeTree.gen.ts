@@ -91,6 +91,7 @@ import { Route as ParlamentMembriMemberIdPortretRouteImport } from './routes/par
 import { Route as ParlamentMembriMemberIdIntrebariRouteImport } from './routes/parlament/membri/$memberId/intrebari'
 import { Route as ParlamentMembriMemberIdInterventiiRouteImport } from './routes/parlament/membri/$memberId/interventii'
 import { Route as ParlamentMembriMemberIdIntereseRouteImport } from './routes/parlament/membri/$memberId/interese'
+import { Route as ParlamentMembriMemberIdInitiativeRouteImport } from './routes/parlament/membri/$memberId/initiative'
 import { Route as ParlamentMembriMemberIdContactRouteImport } from './routes/parlament/membri/$memberId/contact'
 import { Route as ParlamentMembriMemberIdAlegeriRouteImport } from './routes/parlament/membri/$memberId/alegeri'
 import { Route as MapsDatasetsPublicPublicIdRouteImport } from './routes/maps/datasets/public/$publicId'
@@ -697,6 +698,16 @@ const ParlamentMembriMemberIdIntereseRoute =
       (d) => d.Route,
     ),
   )
+const ParlamentMembriMemberIdInitiativeRoute =
+  ParlamentMembriMemberIdInitiativeRouteImport.update({
+    id: '/initiative',
+    path: '/initiative',
+    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/membri/$memberId/initiative.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const ParlamentMembriMemberIdContactRoute =
   ParlamentMembriMemberIdContactRouteImport.update({
     id: '/contact',
@@ -950,6 +961,7 @@ export interface FileRoutesByFullPath {
   '/maps/datasets/public/$publicId': typeof MapsDatasetsPublicPublicIdRoute
   '/parlament/membri/$memberId/alegeri': typeof ParlamentMembriMemberIdAlegeriRoute
   '/parlament/membri/$memberId/contact': typeof ParlamentMembriMemberIdContactRoute
+  '/parlament/membri/$memberId/initiative': typeof ParlamentMembriMemberIdInitiativeRoute
   '/parlament/membri/$memberId/interese': typeof ParlamentMembriMemberIdIntereseRoute
   '/parlament/membri/$memberId/interventii': typeof ParlamentMembriMemberIdInterventiiRoute
   '/parlament/membri/$memberId/intrebari': typeof ParlamentMembriMemberIdIntrebariRoute
@@ -1046,6 +1058,7 @@ export interface FileRoutesByTo {
   '/maps/datasets/public/$publicId': typeof MapsDatasetsPublicPublicIdRoute
   '/parlament/membri/$memberId/alegeri': typeof ParlamentMembriMemberIdAlegeriRoute
   '/parlament/membri/$memberId/contact': typeof ParlamentMembriMemberIdContactRoute
+  '/parlament/membri/$memberId/initiative': typeof ParlamentMembriMemberIdInitiativeRoute
   '/parlament/membri/$memberId/interese': typeof ParlamentMembriMemberIdIntereseRoute
   '/parlament/membri/$memberId/interventii': typeof ParlamentMembriMemberIdInterventiiRoute
   '/parlament/membri/$memberId/intrebari': typeof ParlamentMembriMemberIdIntrebariRoute
@@ -1153,6 +1166,7 @@ export interface FileRoutesById {
   '/maps/datasets/public/$publicId': typeof MapsDatasetsPublicPublicIdRoute
   '/parlament/membri/$memberId/alegeri': typeof ParlamentMembriMemberIdAlegeriRoute
   '/parlament/membri/$memberId/contact': typeof ParlamentMembriMemberIdContactRoute
+  '/parlament/membri/$memberId/initiative': typeof ParlamentMembriMemberIdInitiativeRoute
   '/parlament/membri/$memberId/interese': typeof ParlamentMembriMemberIdIntereseRoute
   '/parlament/membri/$memberId/interventii': typeof ParlamentMembriMemberIdInterventiiRoute
   '/parlament/membri/$memberId/intrebari': typeof ParlamentMembriMemberIdIntrebariRoute
@@ -1261,6 +1275,7 @@ export interface FileRouteTypes {
     | '/maps/datasets/public/$publicId'
     | '/parlament/membri/$memberId/alegeri'
     | '/parlament/membri/$memberId/contact'
+    | '/parlament/membri/$memberId/initiative'
     | '/parlament/membri/$memberId/interese'
     | '/parlament/membri/$memberId/interventii'
     | '/parlament/membri/$memberId/intrebari'
@@ -1357,6 +1372,7 @@ export interface FileRouteTypes {
     | '/maps/datasets/public/$publicId'
     | '/parlament/membri/$memberId/alegeri'
     | '/parlament/membri/$memberId/contact'
+    | '/parlament/membri/$memberId/initiative'
     | '/parlament/membri/$memberId/interese'
     | '/parlament/membri/$memberId/interventii'
     | '/parlament/membri/$memberId/intrebari'
@@ -1463,6 +1479,7 @@ export interface FileRouteTypes {
     | '/maps/datasets/public/$publicId'
     | '/parlament/membri/$memberId/alegeri'
     | '/parlament/membri/$memberId/contact'
+    | '/parlament/membri/$memberId/initiative'
     | '/parlament/membri/$memberId/interese'
     | '/parlament/membri/$memberId/interventii'
     | '/parlament/membri/$memberId/intrebari'
@@ -2147,6 +2164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ParlamentMembriMemberIdIntereseRouteImport
       parentRoute: typeof ParlamentMembriMemberIdRouteRoute
     }
+    '/parlament/membri/$memberId/initiative': {
+      id: '/parlament/membri/$memberId/initiative'
+      path: '/initiative'
+      fullPath: '/parlament/membri/$memberId/initiative'
+      preLoaderRoute: typeof ParlamentMembriMemberIdInitiativeRouteImport
+      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
+    }
     '/parlament/membri/$memberId/contact': {
       id: '/parlament/membri/$memberId/contact'
       path: '/contact'
@@ -2512,6 +2536,7 @@ const AdminCampaignsCampaignKeyRouteRouteWithChildren =
 interface ParlamentMembriMemberIdRouteRouteChildren {
   ParlamentMembriMemberIdAlegeriRoute: typeof ParlamentMembriMemberIdAlegeriRoute
   ParlamentMembriMemberIdContactRoute: typeof ParlamentMembriMemberIdContactRoute
+  ParlamentMembriMemberIdInitiativeRoute: typeof ParlamentMembriMemberIdInitiativeRoute
   ParlamentMembriMemberIdIntereseRoute: typeof ParlamentMembriMemberIdIntereseRoute
   ParlamentMembriMemberIdInterventiiRoute: typeof ParlamentMembriMemberIdInterventiiRoute
   ParlamentMembriMemberIdIntrebariRoute: typeof ParlamentMembriMemberIdIntrebariRoute
@@ -2524,6 +2549,8 @@ const ParlamentMembriMemberIdRouteRouteChildren: ParlamentMembriMemberIdRouteRou
   {
     ParlamentMembriMemberIdAlegeriRoute: ParlamentMembriMemberIdAlegeriRoute,
     ParlamentMembriMemberIdContactRoute: ParlamentMembriMemberIdContactRoute,
+    ParlamentMembriMemberIdInitiativeRoute:
+      ParlamentMembriMemberIdInitiativeRoute,
     ParlamentMembriMemberIdIntereseRoute: ParlamentMembriMemberIdIntereseRoute,
     ParlamentMembriMemberIdInterventiiRoute:
       ParlamentMembriMemberIdInterventiiRoute,

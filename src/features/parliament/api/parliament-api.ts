@@ -23,6 +23,7 @@ import type {
   ParliamentHubData,
   ParliamentMember,
   ParliamentMemberProfile,
+  ParliamentMemberInitiativesList,
   ParliamentMemberVotingHistory,
   ParliamentMembersList,
   ParliamentMembersSearch,
@@ -51,6 +52,7 @@ import {
   fetchParliamentGroupsMock,
   fetchParliamentHubMock,
   fetchParliamentJudeteMock,
+  fetchParliamentMemberInitiativesMock,
   fetchParliamentMemberMock,
   fetchParliamentMemberProfileMock,
   fetchParliamentMemberVotingHistoryMock,
@@ -72,6 +74,7 @@ import {
   fetchParliamentGroupsLive,
   fetchParliamentHubLive,
   fetchParliamentJudeteLive,
+  fetchParliamentMemberInitiativesLive,
   fetchParliamentMemberLive,
   fetchParliamentMemberProfileLive,
   fetchParliamentMemberVotingHistoryLive,
@@ -190,6 +193,16 @@ export async function fetchParliamentMemberProfile(
   return isParliamentMockEnabled()
     ? fetchParliamentMemberProfileMock(memberId)
     : fetchParliamentMemberProfileLive(memberId)
+}
+
+export async function fetchParliamentMemberInitiatives(
+  memberId: string,
+  page?: number,
+  pageSize?: number,
+): Promise<ParliamentMemberInitiativesList | null> {
+  return isParliamentMockEnabled()
+    ? fetchParliamentMemberInitiativesMock(memberId, page, pageSize)
+    : fetchParliamentMemberInitiativesLive(memberId, page, pageSize)
 }
 
 export async function fetchParliamentJudete(): Promise<

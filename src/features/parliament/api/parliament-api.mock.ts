@@ -17,6 +17,7 @@ import type {
   ParliamentHubData,
   ParliamentMember,
   ParliamentMemberProfile,
+  ParliamentMemberInitiativesList,
   ParliamentMemberVotingHistory,
   ParliamentMembersList,
   ParliamentMembersSearch,
@@ -33,6 +34,7 @@ import {
   ParliamentGroupSchema,
   ParliamentHubDataSchema,
   ParliamentMemberSchema,
+  ParliamentMemberInitiativesListSchema,
   ParliamentMemberVotingHistorySchema,
   ParliamentMembersListSchema,
   ParliamentVoteDetailSchema,
@@ -557,6 +559,42 @@ export async function fetchParliamentMemberProfileMock(
   const member = members.find((entry) => entry.memberId === memberId)
   if (!member) return null
   return resolveParliamentMemberProfile(member)
+}
+
+const MOCK_INITIATIVES_TOTAL = 14
+const MOCK_INITIATIVES_PAGE_SIZE = 10
+
+export async function fetchParliamentMemberInitiativesMock(
+  memberId: string,
+  page = 1,
+  pageSize = MOCK_INITIATIVES_PAGE_SIZE,
+): Promise<ParliamentMemberInitiativesList | null> {
+  if (!members.some((m) => m.memberId === memberId)) return null
+  const total = MOCK_INITIATIVES_TOTAL
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  const safePage = Math.min(Math.max(1, page), totalPages)
+  const start = (safePage - 1) * pageSize
+  // Deterministic, latest-first synthetic list (mirrors the live DESC order).
+  const initiatives = Array.from({ length: total }, (_, i) => {
+    const day = String(Math.max(1, 28 - i)).padStart(2, '0')
+    return {
+      initiativeId: `${memberId}-init-${i + 1}`,
+      title: `Propunere legislativă privind tema ${i + 1}`,
+      registeredAt: `2026-05-${day}T00:00:00+03:00`,
+      status: i % 3 === 0 ? 'Lege 100/2025' : 'în dezbatere',
+      promulgatedLawNumber: i % 3 === 0 ? '100' : undefined,
+      promulgatedLawYear: i % 3 === 0 ? 2025 : undefined,
+    }
+  }).slice(start, start + pageSize)
+
+  return ParliamentMemberInitiativesListSchema.parse({
+    memberId,
+    initiatives,
+    total,
+    page: safePage,
+    pageSize,
+    totalPages,
+  })
 }
 
 export async function fetchParliamentJudeteMock(): Promise<

@@ -10,6 +10,7 @@ import {
   mapBillSummary,
   mapGroup,
   mapMember,
+  mapMemberInitiatives,
   mapMemberProfile,
   mapMemberVotingHistory,
   mapVoteDetail,
@@ -348,5 +349,55 @@ describe('mapMemberProfile', () => {
     expect(profile.spokenContributions[0]).toMatchObject({ contributionId: 's1', title: 'T' })
     expect(profile.writtenQuestions[0]).toMatchObject({ questionId: 'c1', status: 'raspuns' })
     expect(profile.interestDeclarations).toHaveLength(0)
+  })
+})
+
+describe('mapMemberInitiatives', () => {
+  it('maps a paginated page, preserves server order, and computes pagination', () => {
+    const list = mapMemberInitiatives(
+      '2:2024:235',
+      {
+        total: 116,
+        initiatives: [
+          {
+            initiativeKey: '2:2024:235:initiative:23301',
+            billKey: '23301',
+            title: 'Propunere legislativă A',
+            status: 'în dezbatere',
+            registrationDate: '2026-05-27',
+            promulgatedLawNumber: null,
+            promulgatedLawYear: null,
+          },
+          {
+            initiativeKey: '2:2024:235:initiative:23292',
+            billKey: null,
+            title: 'Propunere legislativă B',
+            status: 'Lege 100/2025',
+            registrationDate: '2026-05-26',
+            promulgatedLawNumber: '100',
+            promulgatedLawYear: 2025,
+          },
+        ],
+      },
+      1,
+      10,
+    )
+    expect(list.total).toBe(116)
+    expect(list.totalPages).toBe(12) // ceil(116/10)
+    expect(list.page).toBe(1)
+    // Server order preserved (2026-05-27 before 2026-05-26 — no client re-sort).
+    expect(list.initiatives.map((i) => i.initiativeId)).toEqual([
+      '2:2024:235:initiative:23301',
+      '2:2024:235:initiative:23292',
+    ])
+    expect(list.initiatives[0]).toMatchObject({
+      title: 'Propunere legislativă A',
+      registeredAt: '2026-05-27T00:00:00+03:00',
+      billId: '23301',
+    })
+    expect(list.initiatives[1]).toMatchObject({
+      promulgatedLawNumber: '100',
+      promulgatedLawYear: 2025,
+    })
   })
 })
