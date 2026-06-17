@@ -90,14 +90,18 @@ const BALLOTS_PAGE_SIZE = 200
 
 // ── groups ──────────────────────────────────────────────────────────────────
 
+// Two caches: all-mandates (default, for the directory/filters) and current-only
+// (for the hub composition + roster — SC-1 current-seat counts).
 let groupsCache: Promise<ParliamentGroup[]> | null = null
+let currentGroupsCache: Promise<ParliamentGroup[]> | null = null
 
 async function loadGroupsForChamber(
   chamber: 'camera_deputatilor' | 'senat',
+  current?: boolean,
 ): Promise<ParliamentGroup[]> {
   const data = await graphqlQuery<unknown>(
     PARLIAMENT_GROUPS_QUERY,
-    { legislature: LATEST_LEGISLATURE, chamber },
+    { legislature: LATEST_LEGISLATURE, chamber, ...(current ? { current: true } : {}) },
     { operationName: 'parliamentGroups' },
   )
   return parliamentGroupsResponseSchema.parse(data).parliamentGroups.map(mapGroup)
@@ -111,21 +115,30 @@ async function loadGroupsForChamber(
  * per-chamber groupIds, an all-`camera` chamber label, and a broken hub split
  * (camera:472, senat:0). The chamber-scoped call returns the correct
  * `<slug>-<chamber>` ids + per-chamber counts, so we always use it.
+ *
+ * `current` = true filters to CURRENT seats (SC-1): AUR shows 90 not 91, and the
+ * per-chamber counts are 330/134 not 335/137. Use it ONLY for composition/roster
+ * surfaces — never for attribution/voting-history (those keep all mandate rows).
  */
-async function loadAllGroups(): Promise<ParliamentGroup[]> {
-  if (!groupsCache) {
-    groupsCache = (async () => {
+async function loadAllGroups(current?: boolean): Promise<ParliamentGroup[]> {
+  const cacheRef = current ? currentGroupsCache : groupsCache
+  if (!cacheRef) {
+    const built = (async () => {
       const [camera, senat] = await Promise.all([
-        loadGroupsForChamber('camera_deputatilor'),
-        loadGroupsForChamber('senat'),
+        loadGroupsForChamber('camera_deputatilor', current),
+        loadGroupsForChamber('senat', current),
       ])
       return [...camera, ...senat]
     })().catch((error) => {
-      groupsCache = null // allow retry on next call
+      if (current) currentGroupsCache = null
+      else groupsCache = null
       throw error
     })
+    if (current) currentGroupsCache = built
+    else groupsCache = built
+    return built
   }
-  return groupsCache
+  return cacheRef
 }
 
 export async function fetchParliamentGroupsLive(
@@ -256,9 +269,13 @@ export async function fetchParliamentMemberLive(
 export async function fetchParliamentGroupMembersLive(
   groupId: string,
 ): Promise<ParliamentMember[]> {
+  // Group-detail roster is a CURRENT-seat surface (SC-1: current:true) — it shows
+  // the party's CURRENT members (AUR → 90, superseded/deceased excluded), so the
+  // roster count matches the composition swatch. Their votes/career are unaffected
+  // (those live on member-detail/voting-history, which never pass current).
   const data = await graphqlQuery<unknown>(
     PARLIAMENT_GROUP_MEMBERS_QUERY,
-    { groupId, legislature: LATEST_LEGISLATURE },
+    { groupId, legislature: LATEST_LEGISLATURE, current: true },
     { operationName: 'parliamentGroupMembers' },
   )
   const parsed = parliamentGroupMembersResponseSchema.parse(data)
@@ -269,23 +286,27 @@ export async function fetchParliamentGroupMembersLive(
 
 // ── hub ─────────────────────────────────────────────────────────────────────
 
-export async function fetchParliamentHubLive(): Promise<ParliamentHubData> {
-  const [groups, recent] = await Promise.all([
-    loadAllGroups(),
-    fetchParliamentVotesLive({ pageSize: 6 }),
-  ])
-
-  const memberCountByChamber = groups.reduce(
+/** Sum a group list into per-chamber counts (explicit, no else catch-all). */
+function sumByChamber(
+  groups: readonly ParliamentGroup[],
+): { camera: number; senat: number } {
+  return groups.reduce(
     (acc, g) => {
-      // Explicit per-chamber sum (no `else` catch-all): groups carry a real
-      // chamber from the two-chamber fetch, so a stray group with an unexpected
-      // chamber is ignored rather than silently inflating senat.
       if (g.chamber === 'camera') acc.camera += g.memberCount
       else if (g.chamber === 'senat') acc.senat += g.memberCount
       return acc
     },
     { camera: 0, senat: 0 },
   )
+}
+
+export async function fetchParliamentHubLive(): Promise<ParliamentHubData> {
+  // Composition + headline = CURRENT seats (SC-1). Secondary = all mandates.
+  const [currentGroups, allGroups, recent] = await Promise.all([
+    loadAllGroups(true),
+    loadAllGroups(),
+    fetchParliamentVotesLive({ pageSize: 6 }),
+  ])
 
   return ParliamentHubDataSchema.parse({
     legislature: {
@@ -296,9 +317,11 @@ export async function fetchParliamentHubLive(): Promise<ParliamentHubData> {
     },
     lastSyncedAt: new Date().toISOString(),
     sources: ['cdep.ro', 'senat.ro'],
-    groups,
+    // Composition swatches reflect CURRENT seats (AUR 90, not 91).
+    groups: currentGroups,
     recentVotes: recent.votes,
-    memberCountByChamber,
+    memberCountByChamber: sumByChamber(currentGroups), // 330 / 134 (current)
+    memberCountByChamberAllMandates: sumByChamber(allGroups), // 335 / 137 (all)
     budgetInstitutionSlugs: {
       camera: 'camera-deputatilor',
       senat: 'senatul-romaniei',
@@ -313,19 +336,42 @@ export async function fetchParliamentChamberCompositionLive(
   search: ParliamentMembersSearch = {},
 ): Promise<ParliamentChamberComposition> {
   const { buildChamberComposition } = await import('../lib/chamber-composition')
-  // The hemicycle needs the FULL roster so non-matching seats render greyed —
-  // `buildChamberComposition` applies the search itself (via `isActive`). Fetch
-  // every member (no grup/judet/q server filter), bounded only by legislature.
-  const [groups, membersPage] = await Promise.all([
-    loadAllGroups(),
-    fetchParliamentMembersLive({ page: 1, pageSize: 500 }),
+  // Composition is a CURRENT-seat surface (SC-1): current groups give the right
+  // seat totals (330/134, not 335/137) and the current roster fills the seats
+  // (superseded members don't occupy a seat). The hemicycle needs the full
+  // CURRENT roster so non-matching seats render greyed — `buildChamberComposition`
+  // applies the search itself (via `isActive`).
+  const [groups, currentMembers] = await Promise.all([
+    loadAllGroups(true),
+    fetchCurrentMembersForComposition(),
   ])
   const colorMap = Object.fromEntries(
     groups.map((g) => [g.groupId, g.color ?? resolveGroupColor({ groupId: g.groupId, name: g.name })]),
   )
   return ParliamentChamberCompositionSchema.parse(
-    buildChamberComposition(chamber, groups, membersPage.members, colorMap, search),
+    buildChamberComposition(chamber, groups, currentMembers, colorMap, search),
   )
+}
+
+/**
+ * Current-only member roster for the hemicycle composition (SC-1: current:true).
+ * Separate from `fetchParliamentMembersLive` (the directory, which shows ALL
+ * mandate rows) so the hard rule holds — current:true is composition-only.
+ */
+async function fetchCurrentMembersForComposition(): Promise<ParliamentMember[]> {
+  const data = await graphqlQuery<unknown>(
+    PARLIAMENT_MEMBERS_QUERY,
+    {
+      filter: { legislature: { eq: LATEST_LEGISLATURE }, current: { eq: true } },
+      page: 1,
+      pageSize: 500,
+    },
+    { operationName: 'parliamentMembersCurrent' },
+  )
+  const parsed = parliamentMembersResponseSchema.parse(data)
+  return parsed.parliamentMembers.members
+    .map(mapMember)
+    .sort((a, b) => a.lastName.localeCompare(b.lastName, 'ro'))
 }
 
 // ── votes ─────────────────────────────────────────────────────────────────
