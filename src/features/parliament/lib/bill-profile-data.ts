@@ -209,14 +209,38 @@ function synthesizeDocuments(bill: ParliamentBillSummary) {
   ]
 }
 
+/**
+ * Flatten passage stages into a chronological timeline for mock mode (the live
+ * path builds the timeline from real events). Camera → Senat → final order;
+ * milestone flag on vote/promulgation/law-becoming stages.
+ */
+function synthesizeTimeline(passage: ParliamentBillPassage) {
+  const stages = [...passage.camera, ...passage.senat, ...passage.final]
+  return stages.map((s, i) => {
+    const folded = s.label.toLowerCase()
+    return {
+      stepId: `mock-step-${i}`,
+      position: i,
+      description: s.label,
+      ...(s.completedAt ? { date: s.completedAt } : {}),
+      isMilestone:
+        folded.includes('vot') ||
+        folded.includes('promulg') ||
+        folded.includes('adopt'),
+      docUrls: [] as string[],
+    }
+  })
+}
+
 function synthesizeBillDetail(bill: ParliamentBillSummary): ParliamentBillDetail {
+  const passage = synthesizePassage(bill)
   return ParliamentBillDetailSchema.parse({
     ...bill,
     longTitle: `${bill.title}. Proiect în curs de examinare parlamentară în cadrul ${bill.legislatureId}.`,
     summary: `Proiect legislativ aflat în faza „${bill.currentStageLabel}”.`,
     initiator: synthesizeInitiator(bill),
     documents: synthesizeDocuments(bill),
-    passage: synthesizePassage(bill),
+    timeline: synthesizeTimeline(passage),
     relatedVotes: [],
   })
 }
@@ -228,7 +252,12 @@ export function resolveParliamentBillDetail(
 ): ParliamentBillDetail {
   const raw = billDetailsMap[bill.billId]
   if (raw) {
-    const detail = ParliamentBillDetailSchema.parse(raw)
+    const parsed = ParliamentBillDetailSchema.parse(raw)
+    // Fixtures predate `timeline`; derive it from their `passage` when absent.
+    const detail =
+      parsed.timeline.length === 0 && parsed.passage
+        ? { ...parsed, timeline: synthesizeTimeline(parsed.passage) }
+        : parsed
     if (relatedVotes.length > 0 && detail.relatedVotes.length === 0) {
       return { ...detail, relatedVotes: [...relatedVotes] }
     }

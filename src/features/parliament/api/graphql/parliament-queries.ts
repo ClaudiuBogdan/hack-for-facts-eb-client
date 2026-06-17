@@ -559,7 +559,7 @@ export const PARLIAMENT_BILL_QUERY = /* GraphQL */ `
       statusText
       billType
       lastEventDate
-      events { position eventDate eventDateText description chamberCode committee }
+      events { position eventDate eventDateText description chamberCode committee voteIdv docs }
       documents { url label kind position }
       initiators { mandateKey fullName groupName }
       relatedVotes {
@@ -588,6 +588,10 @@ const rawBillEventSchema = z.object({
   description: z.string().nullable(),
   chamberCode: z.string().nullable(),
   committee: z.string().nullable(),
+  // voteIdv → a cdep vote (cdep:${voteIdv}); docs is a JSON blob of per-event
+  // document links (often empty — bills carry bill-level documents instead).
+  voteIdv: z.string().nullable(),
+  docs: z.unknown().nullable(),
 })
 const rawBillDocumentSchema = z.object({
   url: z.string(),

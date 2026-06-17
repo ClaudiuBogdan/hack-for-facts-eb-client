@@ -14,7 +14,6 @@ import {
   getBillTypeLabel,
 } from '../lib/bill-profile-data'
 import { billDetailCardClassName, billDetailSectionTitleClassName } from '../lib/bill-detail-theme'
-import { BillPassageTracker } from './bill-passage-tracker'
 import { ParliamentChamberMark } from './parliament-hub-panel'
 import { VoteChamberVoteCard } from './vote-chamber-vote-card'
 import {
@@ -176,10 +175,6 @@ export function BillDetailsTab({ bill }: Props) {
           </div>
         </section>
       ) : null}
-
-      <section>
-        <BillPassageTracker passage={bill.passage} />
-      </section>
 
       {relatedVoteSummaries.length > 0 ? (
         <section>

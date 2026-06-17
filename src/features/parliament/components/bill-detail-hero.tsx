@@ -1,5 +1,4 @@
 import { Link } from '@tanstack/react-router'
-import { Hourglass } from 'lucide-react'
 import type { ParliamentBillDetail } from '@/schemas/parliament'
 import { cn } from '@/lib/utils'
 import { formatBillUpdatedAt, getChamberLabel } from '../lib/formatting'
@@ -13,45 +12,16 @@ type Props = {
   readonly bill: ParliamentBillDetail
 }
 
-type StepProps = {
-  readonly label: string
-  readonly active: boolean
-  readonly completed: boolean
-}
-
-function BillProgressStep({ label, active, completed }: StepProps) {
-  return (
-    <div className="flex min-w-[5.5rem] flex-col items-center gap-2 text-center">
-      <span className="max-w-[7rem] text-xs font-semibold leading-tight text-white sm:text-sm">
-        {label}
-      </span>
-      <div
-        className={cn(
-          'flex h-10 w-10 items-center justify-center rounded-full border-2 border-white',
-          completed && !active ? 'bg-white' : 'bg-transparent',
-        )}
-        aria-hidden
-      >
-        {active ? <Hourglass className="h-5 w-5 text-white" /> : null}
-      </div>
-    </div>
-  )
-}
-
 /** Full-width bill summary band — inner content aligned to main panel */
 export function BillDetailHero({ bill }: Props) {
   const heroColor = getBillDetailHeroColor(bill.originatingChamber)
-  const cameraActive = bill.currentLocation === 'camera'
-  const senatActive = bill.currentLocation === 'senat'
-  const finalActive = ['mediere', 'presedinte', 'promulgat'].includes(bill.currentLocation)
-  const cameraComplete =
-    bill.currentLocation !== 'camera' &&
-    !['retras'].includes(bill.currentLocation) &&
-    bill.originatingChamber === 'camera'
-  const senatComplete =
-    bill.currentLocation === 'mediere' ||
-    bill.currentLocation === 'presedinte' ||
-    bill.currentLocation === 'promulgat'
+  // Honest current-status chip from the SOURCE status string (currentStageLabel
+  // = server statusText) — no fabricated Camera→Senat→final progression (the
+  // real chamber position isn't known until the source exposes chamberCode).
+  const statusLabel = bill.lawMilestone
+    ? bill.lawMilestone.actTitle ??
+      `Legea nr. ${bill.lawMilestone.lawNumber}/${bill.lawMilestone.lawYear ?? ''}`
+    : bill.currentStageLabel
 
   return (
     <section className="py-8 text-white" style={{ backgroundColor: heroColor }}>
@@ -75,25 +45,12 @@ export function BillDetailHero({ bill }: Props) {
         </div>
 
         <div className="min-w-[16rem]">
-          <div className="flex items-end justify-between gap-1">
-            <BillProgressStep
-              label="Camera"
-              active={cameraActive}
-              completed={cameraComplete || senatComplete || finalActive}
-            />
-            <div className="mb-5 h-0.5 flex-1 bg-white/40" aria-hidden />
-            <BillProgressStep
-              label="Senat"
-              active={senatActive}
-              completed={senatComplete || finalActive}
-            />
-            <div className="mb-5 h-0.5 flex-1 bg-white/40" aria-hidden />
-            <BillProgressStep
-              label="Etape finale"
-              active={finalActive}
-              completed={bill.currentLocation === 'promulgat'}
-            />
-          </div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-white/80">
+            Stadiu curent
+          </p>
+          <p className="mt-1 text-lg font-bold leading-snug text-white">
+            {statusLabel}
+          </p>
           <Link
             to="/parlament/proiecte/$billId/etape"
             params={{ billId: bill.billId }}
