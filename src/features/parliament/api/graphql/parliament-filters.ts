@@ -8,7 +8,6 @@
  * `buildCompaniesFilter` convention.
  */
 import type {
-  BillType,
   ParliamentBillsSearch,
   ParliamentMembersSearch,
   ParliamentVotesSearch,
@@ -106,10 +105,17 @@ export function buildMembersFilter(
   return filter
 }
 
+/** Server bill-type tokens (ParliamentBillsFilter.billType). */
+export type ServerBillType = 'government' | 'parliamentary'
+/** Server bill-status tokens (ParliamentBillsFilter.status). */
+export type ServerBillStatus = 'promulgated' | 'rejected' | 'in_progress'
+
 export interface ParliamentBillsFilterInput {
   year?: { eq: number }
   finalized?: { isNull: boolean }
   q?: { contains: string }
+  billType?: { eq: ServerBillType }
+  status?: { eq: ServerBillStatus }
 }
 
 export type ParliamentBillSortInput =
@@ -119,12 +125,39 @@ export type ParliamentBillSortInput =
   | 'title_desc'
 
 /**
- * Bills filter. The UI bill `billType` / `billLocation` filters have NO live
- * backing column (they are derived client-side from title + events — see the
- * mapper), so they are intentionally NOT translated to filter args here and are
- * reported as a server gap. Only `q` (title/number) and the implicit "became
- * law" facet have live columns. `billLocation: 'promulgat'` is mapped to the
- * `finalized` facet (final_law_number IS NOT NULL) as a best-effort.
+ * UI billType enum → server token. The server has only government/parliamentary
+ * (initiative source); citizen initiatives are non-government → parliamentary,
+ * and ordinance-approval projects are government acts → government. Returns
+ * undefined for anything unmapped so we never send a raw/unknown token.
+ */
+const BILL_TYPE_TO_SERVER: Readonly<Record<string, ServerBillType>> = {
+  guvern: 'government',
+  ordonanta: 'government',
+  parlamentar: 'parliamentary',
+  cetateni: 'parliamentary',
+}
+
+/**
+ * UI billLocation enum → server status token. promulgat→promulgated,
+ * respins→rejected; the in-pipeline locations (camera/senat/mediere/presedinte)
+ * → in_progress. `retras` (withdrawn) has no server token → no filter (better
+ * than mislabelling it rejected).
+ */
+const BILL_LOCATION_TO_STATUS: Readonly<Record<string, ServerBillStatus>> = {
+  promulgat: 'promulgated',
+  respins: 'rejected',
+  camera: 'in_progress',
+  senat: 'in_progress',
+  mediere: 'in_progress',
+  presedinte: 'in_progress',
+}
+
+/**
+ * Bills filter — now fully SERVER-backed (billType + status columns landed on
+ * :3001). billType/billLocation are mapped to the server's quoted tokens and
+ * AND-composed with q/year/finalized; filtering spans the FULL result set, so
+ * pagination is honest (no client-side over-page facet). Only the allowed tokens
+ * are ever sent (unmapped UI values are dropped, never forwarded raw).
  */
 export function buildBillsFilter(
   search: ParliamentBillsSearch,
@@ -132,8 +165,14 @@ export function buildBillsFilter(
   const filter: ParliamentBillsFilterInput = {}
   const q = search.q?.trim()
   if (q) filter.q = { contains: q }
-  if (search.billLocation === 'promulgat') {
-    filter.finalized = { isNull: false }
+
+  if (search.billType) {
+    const token = BILL_TYPE_TO_SERVER[search.billType]
+    if (token) filter.billType = { eq: token }
+  }
+  if (search.billLocation) {
+    const token = BILL_LOCATION_TO_STATUS[search.billLocation]
+    if (token) filter.status = { eq: token }
   }
   return filter
 }
@@ -152,10 +191,3 @@ export function buildBillsSort(
   }
 }
 
-/** UI bill types that have a live filter column. None do today (gap). */
-export const BILL_TYPES_WITHOUT_LIVE_FILTER: readonly BillType[] = [
-  'guvern',
-  'parlamentar',
-  'cetateni',
-  'ordonanta',
-]
