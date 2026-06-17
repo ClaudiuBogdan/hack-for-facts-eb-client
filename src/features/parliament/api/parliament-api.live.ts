@@ -76,9 +76,9 @@ import {
 } from './graphql/parliament-filters'
 import {
   LATEST_LEGISLATURE,
-  colorForGroupName,
   toGraphqlChamber,
 } from './graphql/parliament-translate'
+import { resolveGroupColor } from '../lib/group-colors'
 
 const DEFAULT_MEMBERS_PAGE_SIZE = 20
 const DEFAULT_VOTES_PAGE_SIZE = 10
@@ -321,7 +321,7 @@ export async function fetchParliamentChamberCompositionLive(
     fetchParliamentMembersLive({ page: 1, pageSize: 500 }),
   ])
   const colorMap = Object.fromEntries(
-    groups.map((g) => [g.groupId, g.color ?? colorForGroupName(g.name)]),
+    groups.map((g) => [g.groupId, g.color ?? resolveGroupColor({ groupId: g.groupId, name: g.name })]),
   )
   return ParliamentChamberCompositionSchema.parse(
     buildChamberComposition(chamber, groups, membersPage.members, colorMap, search),

@@ -15,6 +15,7 @@
  * behaves identically in mock and live mode.
  */
 import type { ParliamentChamber } from '@/schemas/parliament'
+import { resolveGroupColor } from '@/features/parliament/lib/group-colors'
 
 /** GraphQL chamber enum (DB-native). The UI never sees `comun`. */
 export type GraphqlChamber = 'camera_deputatilor' | 'senat' | 'comun'
@@ -74,37 +75,16 @@ export function deriveGroupId(
 }
 
 /**
- * Static, diacritic-insensitive group → colour map. Group colour is UI
- * decoration derived from party identity, NOT data the API stores; keeping it
- * client-side lets `getParliamentGroupColorMap()` stay synchronous (the vote
- * detail route reads it at module scope). Keyed by the folded short name so
- * `PSD`, `psd`, `P.S.D.` all resolve. Unknown groups fall back to neutral grey.
+ * Group colour resolution lives in ONE place — `lib/group-colors.ts`
+ * (`resolveGroupColor` + `GROUP_BRAND_COLORS`). These thin re-exports keep the
+ * existing import sites working while delegating to that single source of truth;
+ * do NOT reintroduce a palette here.
  */
-const GROUP_COLOR_BY_FOLDED_NAME: Readonly<Record<string, string>> = {
-  psd: '#e4002b',
-  pnl: '#f7d417',
-  usr: '#0095da',
-  aur: '#ffcc00',
-  udmr: '#008542',
-  pmp: '#702283',
-  'pro-romania': '#1d4ed8',
-  pace: '#2563eb',
-  'sos-ro': '#7c3a06',
-  upr: '#0ea5e9',
-  minoritati: '#64748b',
-  neafiliati: '#94a3b8',
-  neafiliat: '#94a3b8',
-  pumr: '#0f766e',
-  'pumr-udmr': '#008542',
-}
+export { PARLIAMENT_GROUP_FALLBACK_COLOR } from '@/features/parliament/lib/group-colors'
 
-export const PARLIAMENT_GROUP_FALLBACK_COLOR = '#505a5f'
-
-/** Colour for a group name (diacritic-insensitive); neutral grey if unknown. */
+/** Colour for a group name (diacritic-insensitive). Delegates to the resolver. */
 export function colorForGroupName(groupName: string | null | undefined): string {
-  if (!groupName) return PARLIAMENT_GROUP_FALLBACK_COLOR
-  const folded = foldSlug(groupName)
-  return GROUP_COLOR_BY_FOLDED_NAME[folded] ?? PARLIAMENT_GROUP_FALLBACK_COLOR
+  return resolveGroupColor({ name: groupName })
 }
 
 /**

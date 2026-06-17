@@ -33,9 +33,9 @@ import type {
 } from '@/schemas/parliament'
 import { isParliamentMockEnabled } from '../lib/mock-mode'
 import {
-  colorForGroupName,
   PARLIAMENT_GROUP_FALLBACK_COLOR,
-} from './graphql/parliament-translate'
+  resolveGroupColor,
+} from '../lib/group-colors'
 import {
   getMemberJudetCache,
   lookupDivisionNumber,
@@ -218,10 +218,11 @@ export function getParliamentVoteSummary(
 }
 
 /**
- * Group → colour map. In live mode group colour is not a stored field, so we
- * return a derive-on-access object: any `groupId` (`<slug>-<chamber>`) or bare
- * group name resolves to its party colour via the static palette. Mock mode
- * returns the fixture map unchanged.
+ * Group → colour map. Group colour is not a stored field, so this returns a
+ * derive-on-access object: any `groupId` (`<slug>-<chamber>`) resolves to its
+ * party brand colour via the single `resolveGroupColor` resolver (the chamber
+ * suffix is folded there — colour is per party). Mock mode returns the fixture
+ * map unchanged.
  */
 export function getParliamentGroupColorMap(): Readonly<Record<string, string>> {
   if (isParliamentMockEnabled()) {
@@ -230,13 +231,10 @@ export function getParliamentGroupColorMap(): Readonly<Record<string, string>> {
   return new Proxy<Record<string, string>>(
     {},
     {
-      get: (_target, prop) => {
-        if (typeof prop !== 'string') return PARLIAMENT_GROUP_FALLBACK_COLOR
-        // groupId is `<foldedname>-<chamber>`; strip the chamber suffix so the
-        // colour palette (keyed by name) resolves.
-        const name = prop.replace(/-(camera_deputatilor|senat|comun)$/, '')
-        return colorForGroupName(name)
-      },
+      get: (_target, prop) =>
+        typeof prop === 'string'
+          ? resolveGroupColor({ groupId: prop })
+          : PARLIAMENT_GROUP_FALLBACK_COLOR,
     },
   )
 }

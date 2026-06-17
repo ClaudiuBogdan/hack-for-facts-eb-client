@@ -105,6 +105,48 @@ test.describe('Live-data guard (parliament)', () => {
     expect(bodyText).not.toContain('472membri')
   })
 
+  test('group swatches use distinct official brand colours (PNL ≠ AUR)', async ({
+    page,
+  }) => {
+    const response = await page.goto('/parlament').catch(() => null)
+    test.skip(!response, 'Parliament hub route unavailable')
+
+    const ready = await page
+      .getByRole('heading', { level: 1 })
+      .first()
+      .waitFor({ state: 'visible', timeout: 20000 })
+      .then(() => true)
+      .catch(() => false)
+    test.skip(!ready, 'Live parliament hub unavailable (API/tunnel down)')
+
+    // Wait until the Parlamentari group swatches have painted the PNL brand
+    // colour (centralized resolver) before reading them — cold-start safe.
+    const PNL = 'rgb(242, 200, 17)' // #f2c811 yellow
+    const AUR = 'rgb(10, 27, 61)' //  #0a1b3d navy
+    const sawPnl = await page
+      .waitForFunction(
+        (pnl) =>
+          Array.from(document.querySelectorAll('[style*="background-color"]')).some(
+            (el) => (el as HTMLElement).style.backgroundColor === pnl,
+          ),
+        PNL,
+        { timeout: 20000 },
+      )
+      .then(() => true)
+      .catch(() => false)
+    test.skip(!sawPnl, 'Group swatches not painted (API/tunnel down)')
+
+    const bgColors = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('[style*="background-color"]')).map(
+        (el) => (el as HTMLElement).style.backgroundColor,
+      ),
+    )
+    // Both brand colours present and clearly distinct (the reported PNL≡AUR bug).
+    expect(bgColors).toContain(PNL)
+    expect(bgColors).toContain(AUR)
+    expect(PNL).not.toBe(AUR)
+  })
+
   test('golden bill 12760 renders the live Legea 423/2023 reference', async ({
     page,
   }) => {

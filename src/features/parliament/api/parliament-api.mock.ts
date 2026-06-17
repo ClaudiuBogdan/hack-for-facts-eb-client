@@ -60,18 +60,27 @@ import {
 } from '../lib/vote-detail-synthesis'
 import { resolveParliamentMemberProfile } from '../lib/member-profile-data'
 import { resolveParliamentBillDetail } from '../lib/bill-profile-data'
+import { resolveGroupColor } from '../lib/group-colors'
 
 const MOCK_LAST_SYNCED = '2026-05-20T08:00:00+03:00'
 const DEFAULT_VOTES_PAGE_SIZE = 10
 const DEFAULT_BILLS_PAGE_SIZE = 10
 
-const groups = groupsData.map((g) => ParliamentGroupSchema.parse(g))
+// Resolve group colour through the single brand resolver (not the fixture's
+// `color` field), so mock and live share one source of truth for colours.
+const groups = groupsData.map((g) => {
+  const parsed = ParliamentGroupSchema.parse(g)
+  return { ...parsed, color: resolveGroupColor({ groupId: parsed.groupId, name: parsed.name }) }
+})
 
 function buildGroupColorMap(
   groupList: ReadonlyArray<ParliamentGroup>,
 ): Record<string, string> {
   return Object.fromEntries(
-    groupList.map((group) => [group.groupId, group.color ?? '#505a5f']),
+    groupList.map((group) => [
+      group.groupId,
+      resolveGroupColor({ groupId: group.groupId, name: group.name }),
+    ]),
   )
 }
 
