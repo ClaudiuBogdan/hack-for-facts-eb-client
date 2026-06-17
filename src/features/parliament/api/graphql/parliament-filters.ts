@@ -69,6 +69,14 @@ export interface ParliamentMembersFilterInput {
   group?: { in: string[] }
   judet?: { in: string[] }
   q?: { contains: string }
+  /**
+   * Current-seat filter (SC-1). Set ONLY for composition/roster/seat-count
+   * surfaces — NEVER for attribution/career/voting-history/member-detail/
+   * bill-initiators (those keep all mandate rows). Not added by
+   * `buildMembersFilter` (the directory shows all mandates); the hub/roster
+   * paths add it explicitly.
+   */
+  current?: { eq: boolean }
 }
 
 /**

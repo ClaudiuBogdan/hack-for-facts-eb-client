@@ -131,10 +131,20 @@ export const ParliamentHubDataSchema = z.object({
   sources: z.array(z.string()),
   groups: z.array(ParliamentGroupSchema),
   recentVotes: z.array(ParliamentVoteSummarySchema),
+  // Headline = CURRENT seats (SC-1: superseded/deceased members excluded; e.g.
+  // camera 330 / senat 134).
   memberCountByChamber: z.object({
     camera: z.number().int().nonnegative(),
     senat: z.number().int().nonnegative(),
   }),
+  // Secondary (optional) = ALL mandate rows incl. superseded (e.g. 335 / 137),
+  // for a tooltip/detail next to the current headline.
+  memberCountByChamberAllMandates: z
+    .object({
+      camera: z.number().int().nonnegative(),
+      senat: z.number().int().nonnegative(),
+    })
+    .optional(),
   budgetInstitutionSlugs: z.object({
     camera: z.string(),
     senat: z.string(),

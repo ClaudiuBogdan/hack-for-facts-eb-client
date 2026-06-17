@@ -80,7 +80,7 @@ test.describe('Live-data guard (parliament)', () => {
     }
   })
 
-  test('hub Parlamentari shows the real chamber split (335 / 137), not 472 / 0', async ({
+  test('hub Parlamentari shows CURRENT seats (330 / 134), not 472 / 0', async ({
     page,
   }) => {
     const response = await page.goto('/parlament').catch(() => null)
@@ -94,14 +94,13 @@ test.describe('Live-data guard (parliament)', () => {
       .catch(() => false)
     test.skip(!ready, 'Live parliament hub unavailable (API/tunnel down)')
 
-    // The Parlamentari section renders the per-chamber totals. Before the
-    // two-chamber group fetch, the no-chamber endpoint bucketed all 472 members
-    // into Camera (472 / 0). Wait for the live group data, then assert both real
-    // chamber totals are present and the broken "472 members" count is gone.
+    // SC-1: the headline is CURRENT seats (camera 330 / senat 134), with the
+    // all-mandates total (335 / 137) as a secondary "mandate în total" note.
+    // Never the old broken "472 / 0" (no-chamber aggregate bucketed into Camera).
     await page.waitForTimeout(2500)
     const bodyText = (await page.locator('body').textContent()) ?? ''
-    expect(bodyText).toContain('335') // Camera Deputaților
-    expect(bodyText).toContain('137') // Senat
+    expect(bodyText).toContain('330') // Camera Deputaților, current
+    expect(bodyText).toContain('134') // Senat, current
     expect(bodyText).not.toContain('472membri')
   })
 

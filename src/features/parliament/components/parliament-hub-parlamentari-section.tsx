@@ -9,23 +9,35 @@ import {
 import { ParliamentHubSection } from './parliament-hub-section'
 import { PartyLegendCard } from './party-legend-card'
 
+type ChamberCounts = {
+  readonly camera: number
+  readonly senat: number
+}
+
 type Props = {
   readonly groups: ReadonlyArray<ParliamentGroup>
-  readonly memberCountByChamber: {
-    readonly camera: number
-    readonly senat: number
-  }
+  /** CURRENT seats (headline). */
+  readonly memberCountByChamber: ChamberCounts
+  /** ALL mandate rows incl. superseded (secondary, optional). */
+  readonly memberCountByChamberAllMandates?: ChamberCounts
 }
 
 function ChamberSummary({
   chamber,
   count,
+  totalMandates,
   accentColor,
 }: {
   readonly chamber: 'camera' | 'senat'
   readonly count: number
+  readonly totalMandates?: number
   readonly accentColor: string
 }) {
+  // Surface the superseded delta when current < all-mandates (SC-1).
+  const superseded =
+    typeof totalMandates === 'number' && totalMandates > count
+      ? totalMandates - count
+      : 0
   return (
     <div className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] p-4">
       <p
@@ -37,7 +49,15 @@ function ChamberSummary({
       <p className="mt-2 text-3xl font-black tabular-nums leading-none text-[var(--pnrr-fg)]">
         {count.toLocaleString('ro-RO')}
       </p>
-      <p className="mt-1 text-sm text-[var(--pnrr-muted)]">membri aleși</p>
+      <p className="mt-1 text-sm text-[var(--pnrr-muted)]">locuri ocupate</p>
+      {superseded > 0 ? (
+        <p
+          className="mt-1 text-xs text-[var(--pnrr-muted)]"
+          title={`${totalMandates!.toLocaleString('ro-RO')} mandate în total în legislatură, incluzând ${superseded} încheiate (deces/demisie)`}
+        >
+          {totalMandates!.toLocaleString('ro-RO')} mandate în total
+        </p>
+      ) : null}
     </div>
   )
 }
@@ -46,6 +66,7 @@ function ChamberSummary({
 export function ParliamentHubParlamentariSection({
   groups,
   memberCountByChamber,
+  memberCountByChamberAllMandates,
 }: Props) {
   const cameraGroups = groups.filter((group) => group.chamber === 'camera')
   const senatGroups = groups.filter((group) => group.chamber === 'senat')
@@ -70,11 +91,13 @@ export function ParliamentHubParlamentariSection({
         <ChamberSummary
           chamber="camera"
           count={memberCountByChamber.camera}
+          totalMandates={memberCountByChamberAllMandates?.camera}
           accentColor={PARLIAMENT_CAMERA_GREEN}
         />
         <ChamberSummary
           chamber="senat"
           count={memberCountByChamber.senat}
+          totalMandates={memberCountByChamberAllMandates?.senat}
           accentColor={PARLIAMENT_SENAT_RED}
         />
       </div>

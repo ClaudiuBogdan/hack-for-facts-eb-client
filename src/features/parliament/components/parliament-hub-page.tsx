@@ -30,6 +30,7 @@ export function ParliamentHubContent() {
           <ParliamentHubParlamentariSection
             groups={data.groups}
             memberCountByChamber={data.memberCountByChamber}
+            memberCountByChamberAllMandates={data.memberCountByChamberAllMandates}
           />
         </>
       )}

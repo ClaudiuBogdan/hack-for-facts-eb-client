@@ -45,8 +45,8 @@ const rawVoteCoreSchema = z.object({
 // ---------------------------------------------------------------------------
 
 export const PARLIAMENT_GROUPS_QUERY = /* GraphQL */ `
-  query ParliamentGroups($legislature: String, $chamber: String) {
-    parliamentGroups(legislature: $legislature, chamber: $chamber) {
+  query ParliamentGroups($legislature: String, $chamber: String, $current: Boolean) {
+    parliamentGroups(legislature: $legislature, chamber: $chamber, current: $current) {
       groupId
       chamber
       name
@@ -100,6 +100,11 @@ const rawMemberSchema = z.object({
   // profileUrl is only requested by the single-member query (contact tab); the
   // list query omits it, so it defaults to null/undefined there.
   profileUrl: z.string().nullable().optional(),
+  // SC-1 current-seat fields (optional — requested only where the UI needs the
+  // active/superseded distinction; absent → undefined elsewhere).
+  isCurrent: z.boolean().optional(),
+  mandateEndDate: z.string().nullable().optional(),
+  mandateEndReason: z.string().nullable().optional(),
 })
 export type RawParliamentMember = z.infer<typeof rawMemberSchema>
 
@@ -153,8 +158,8 @@ export const parliamentMemberResponseSchema = z.object({
 // ---------------------------------------------------------------------------
 
 export const PARLIAMENT_GROUP_MEMBERS_QUERY = /* GraphQL */ `
-  query ParliamentGroupMembers($groupId: ID!, $legislature: String) {
-    parliamentGroupMembers(groupId: $groupId, legislature: $legislature) {
+  query ParliamentGroupMembers($groupId: ID!, $legislature: String, $current: Boolean) {
+    parliamentGroupMembers(groupId: $groupId, legislature: $legislature, current: $current) {
       mandateKey
       chamber
       legislature
