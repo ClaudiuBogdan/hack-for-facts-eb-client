@@ -35,17 +35,20 @@ export function PartyLegendGrid({ composition }: Props) {
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {composition.groups.map((group: ParliamentGroup) => {
-        const counts = countsByGroup.get(group.groupId) ?? {
-          active: 0,
-          total: group.memberCount,
-        }
-
+        const counts = countsByGroup.get(group.groupId)
+        // `total` is ALWAYS the authoritative group.memberCount (sums to the
+        // chamber total) — never the seat tally, which can lag a partial roster.
+        // `active` (filter highlight) is the seat-based matched count.
         return (
           <PartyLegendCard
             key={group.groupId}
             group={group}
-            activeCount={counts.active}
-            totalCount={counts.total}
+            activeCount={
+              composition.hasActiveFilters
+                ? (counts?.active ?? 0)
+                : group.memberCount
+            }
+            totalCount={group.memberCount}
             hasActiveFilters={composition.hasActiveFilters}
           />
         )

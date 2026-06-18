@@ -10,6 +10,7 @@ import { ParliamentChamberCompositionSchema } from '@/schemas/parliament'
 import { formatMemberName } from './formatting'
 import {
   hasMemberSearchFilters,
+  getChamberFilteredGroupIds,
   getChamberFilteredMemberIds,
 } from './member-search'
 import {
@@ -161,17 +162,34 @@ function buildSeatAssignments(
   >[] = []
 
   for (const group of chamberGroups) {
+    // The AUTHORITATIVE seat count is `group.memberCount` (sums to the chamber
+    // total). Fill seats with the real members we have (their server roster page
+    // may be capped/partial), then top up with anonymous placeholder seats so the
+    // hemicycle + the seat-derived per-party bars match the authoritative count —
+    // never undercount to the size of a paginated member page.
     const groupMembers = members
       .filter((member) => member.groupId === group.groupId)
       .slice(0, group.memberCount)
+    const color = getGroupColor(group, colorMap)
+    const groupName = group.shortName ?? group.name
 
     for (const member of groupMembers) {
       assignments.push({
         memberId: member.memberId,
         memberName: formatMemberName(member.firstName, member.lastName),
         groupId: group.groupId,
-        groupName: group.shortName ?? group.name,
-        color: getGroupColor(group, colorMap),
+        groupName,
+        color,
+      })
+    }
+    // Anonymous remainder seats (no resolved member for this seat in the roster).
+    for (let i = groupMembers.length; i < group.memberCount; i += 1) {
+      assignments.push({
+        memberId: `${group.groupId}-seat-${i}`,
+        memberName: '',
+        groupId: group.groupId,
+        groupName,
+        color,
       })
     }
   }
@@ -197,6 +215,11 @@ export function buildChamberComposition(
   const filteredMemberIds = hasActiveFilters
     ? getChamberFilteredMemberIds(members, search, chamber, groups)
     : null
+  // For a GROUP-ONLY filter, highlight by groupId so anonymous placeholder seats
+  // (real groupId, no member id) also light up. null when judet/q is also active.
+  const filteredGroupIds = hasActiveFilters
+    ? getChamberFilteredGroupIds(search, chamber, groups)
+    : null
 
   const assignments = buildSeatAssignments(chamber, groups, members, colorMap)
   const layout = computeHemicycleLayout(assignments.length)
@@ -206,7 +229,9 @@ export function buildChamberComposition(
     const positionIndex = slotOrder[index] ?? index
     const position = layout.positions[positionIndex]
     const isActive =
-      !hasActiveFilters || filteredMemberIds?.has(assignment.memberId) === true
+      !hasActiveFilters ||
+      filteredMemberIds?.has(assignment.memberId) === true ||
+      filteredGroupIds?.has(assignment.groupId) === true
 
     return {
       ...assignment,
