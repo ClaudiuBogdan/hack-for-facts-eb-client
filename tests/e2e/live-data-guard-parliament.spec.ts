@@ -230,4 +230,44 @@ test.describe('Live-data guard (parliament)', () => {
       .count()
     expect(voteLink).toBeGreaterThan(0)
   })
+
+  test('grupuri composition: per-party bars use authoritative counts (Camera sums to 330)', async ({
+    page,
+  }) => {
+    // Regression: the per-party bars used to group a PAGINATED member page
+    // (server-capped at 100) → PSD showed ~22 not 92. They now use the
+    // authoritative parliamentGroups(current).memberCount, which sums to 330.
+    const response = await page.goto('/parlament?tab=grupuri').catch(() => null)
+    test.skip(!response, 'Parliament groups route unavailable')
+
+    const ready = await page
+      .getByRole('heading', { level: 1 })
+      .first()
+      .waitFor({ state: 'visible', timeout: 20000 })
+      .then(() => true)
+      .catch(() => false)
+    test.skip(!ready, 'Live parliament groups unavailable (API/tunnel down)')
+
+    // Wait for the hemicycle seats to paint (one dot per authoritative seat).
+    const painted = await page
+      .waitForFunction(() => document.querySelectorAll('circle').length > 50, undefined, {
+        timeout: 20000,
+      })
+      .then(() => true)
+      .catch(() => false)
+    test.skip(!painted, 'Composition not painted (API/tunnel down)')
+
+    // Per-party legend cards show the real current counts ("<n> Camera Deputaților").
+    const cameraCards = await page.evaluate(() => {
+      const out: number[] = []
+      document.querySelectorAll('p').forEach((p) => {
+        const m = /^(\d+)\s*Camera Deputaților$/.exec((p.textContent || '').trim())
+        if (m) out.push(Number(m[1]))
+      })
+      return out
+    })
+    // PSD 92 present (the undercount bug showed ~22), and the Camera bars sum to 330.
+    expect(cameraCards).toContain(92)
+    expect(cameraCards.reduce((a, b) => a + b, 0)).toBe(330)
+  })
 })

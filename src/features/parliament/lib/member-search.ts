@@ -227,3 +227,29 @@ export function getChamberFilteredMemberIds(
     ).map((member) => member.memberId),
   )
 }
+
+/**
+ * Group IDs highlighted in one chamber chart for a GROUP-ONLY filter — used so
+ * anonymous placeholder seats (which carry a real groupId but no member id) still
+ * highlight under a `grup` filter. Returns null when a judet/q filter is also
+ * active (those genuinely need a resolved member, so placeholder seats can't be
+ * judged active by group alone), or when no group filter is set.
+ */
+export function getChamberFilteredGroupIds(
+  search: ParliamentMembersSearch,
+  chamber: ParliamentChamber,
+  groups: ReadonlyArray<ParliamentGroup>,
+): Set<string> | null {
+  const hasGroup = getGrupFilterValues(search).length > 0
+  const hasJudetOrQ =
+    getJudetFilterValues(search).length > 0 || Boolean(search.q?.trim())
+  if (!hasGroup || hasJudetOrQ) return null
+
+  const { search: chamberSearch, chamberExcluded } = resolveChamberScopedSearch(
+    search,
+    chamber,
+    groups,
+  )
+  if (chamberExcluded) return new Set()
+  return new Set(getGrupFilterValues(chamberSearch))
+}
