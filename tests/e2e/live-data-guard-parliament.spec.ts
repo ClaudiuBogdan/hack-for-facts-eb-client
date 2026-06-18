@@ -191,13 +191,14 @@ test.describe('Live-data guard (parliament)', () => {
     expect(bodyText).toMatch(/mai 2026/) // real recent registration dates
   })
 
-  test('bill etape: position-ordered timeline, chamber phases, vote link, no fabricated buckets', async ({
+  test('bill etape: 3-column tracker from real chamberCode, grouping, vote link, no fabricated buckets', async ({
     page,
   }) => {
     // Bill 17605 (PLx 751/2018) became Legea 78/2020; 56 events with real
-    // chamberCode (CD/SE/PA), one adoptare event recording vote cdep:22196. The
-    // etape page is a position-ordered timeline segmented by chamber phase —
-    // milestone hero + clickable vote step — NOT the old fabricated 3-column tracker.
+    // chamberCode (CD 46 / SE 4 / PA 6) + one adoptare event recording vote
+    // cdep:22196. The etape page is a 3-COLUMN passage tracker — Camera/Senat/
+    // Parlament columns driven by the REAL chamberCode (NOT a string heuristic),
+    // with routine steps grouped + an outcome summary.
     const response = await page
       .goto('/parlament/proiecte/17605/etape')
       .catch(() => null)
@@ -213,18 +214,20 @@ test.describe('Live-data guard (parliament)', () => {
 
     await page.waitForTimeout(2000)
     const bodyText = (await page.locator('body').textContent()) ?? ''
-    expect(bodyText).toContain('78/2020') // becomes-law milestone
-    // Chamber-phase section headers from the real chamberCode.
+    expect(bodyText).toContain('Parcurs legislativ') // tracker header
+    expect(bodyText).toContain('78/2020') // becomes-law outcome
+    // The 3 chamber columns from the real chamberCode.
     expect(bodyText).toContain('Camera Deputaților')
+    expect(bodyText).toContain('Senat')
     expect(bodyText).toContain('Parlament / Promulgare')
+    // Routine steps grouped under a disclosure.
+    expect(bodyText).toMatch(/Avize & termene \(\d+\)/)
     // Clean (de-glued-at-source) description renders as words.
     expect(bodyText).toContain('înaintat la Senat')
-    // adoptare step → its vote (colon URL-encoded).
+    // adoptare step → its vote (colon URL-encoded), and it is NOT collapsed.
     const voteLink = await page
       .locator('a[href*="/parlament/voturi/camera/cdep%3A22196"]')
       .count()
     expect(voteLink).toBeGreaterThan(0)
-    // The fabricated 3-column "Etape finale" progress bucket is gone.
-    expect(bodyText).not.toContain('Etape finale')
   })
 })

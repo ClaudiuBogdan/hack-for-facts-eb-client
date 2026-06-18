@@ -1,11 +1,11 @@
 import type { ParliamentBillDetail } from '@/schemas/parliament'
-import { BillTimeline } from './bill-timeline'
+import { BillPassageTracker } from './bill-passage-tracker'
 
 type Props = {
   readonly bill: ParliamentBillDetail
 }
 
-/** Etape tab — chronological procedural timeline (position order). */
+/** Etape tab — 3-column passage tracker (chamber columns from real chamberCode). */
 export function BillStagesTab({ bill }: Props) {
-  return <BillTimeline bill={bill} />
+  return <BillPassageTracker bill={bill} />
 }
