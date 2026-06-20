@@ -577,7 +577,9 @@ function buildBillTimeline(
         ...(e.eventDate ? { date: toIsoDate(e.eventDate, '') || undefined } : {}),
         ...(e.eventDateText ? { dateText: e.eventDateText } : {}),
         ...(e.chamberCode ? { chamberCode: e.chamberCode } : {}),
-        ...(e.committee ? { committee: e.committee } : {}),
+        ...(e.committee && e.committee.length > 0
+          ? { committee: e.committee }
+          : {}),
         ...(e.voteIdv ? { voteId: `cdep:${e.voteIdv}` } : {}),
         docUrls: extractEventDocUrls(e.docs),
         isMilestone: isMilestoneDescription(description),

@@ -397,7 +397,8 @@ export const ParliamentBillTimelineStepSchema = z.object({
   dateText: z.string().optional(),
   /** Real chamber code from the source (null today → no fabricated phase). */
   chamberCode: z.string().optional(),
-  committee: z.string().optional(),
+  /** Referral committee(s) for the step, extracted from the description (M5). */
+  committee: z.array(z.string()).optional(),
   /** Resolved vote key (`cdep:${voteIdv}`) when the step records a vote. */
   voteId: z.string().optional(),
   /** Per-step document links (usually empty → fall back to the Documente tab). */

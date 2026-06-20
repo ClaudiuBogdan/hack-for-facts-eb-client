@@ -587,7 +587,9 @@ const rawBillEventSchema = z.object({
   eventDateText: z.string().nullable(),
   description: z.string().nullable(),
   chamberCode: z.string().nullable(),
-  committee: z.string().nullable(),
+  // Referral committee(s), extracted from the description (M5); an event can
+  // reference more than one (report + opinion). null when none.
+  committee: z.array(z.string()).nullable(),
   // voteIdv → a cdep vote (cdep:${voteIdv}); docs is a JSON blob of per-event
   // document links (often empty — bills carry bill-level documents instead).
   voteIdv: z.string().nullable(),
