@@ -39,6 +39,7 @@ import { Route as SettingsNotificationsRouteImport } from './routes/settings/not
 import { Route as ProvocareTermeniSiConditiiRouteImport } from './routes/provocare_.termeni-si-conditii'
 import { Route as ProvocareNotificariRouteImport } from './routes/provocare_.notificari'
 import { Route as PnrrShareImageDotpngRouteImport } from './routes/pnrr.share-image[.]png'
+import { Route as ExperimentalSearchRouteImport } from './routes/experimental.search'
 import { Route as EntitiesCuiRouteImport } from './routes/entities.$cui'
 import { Route as CompaniesCuiRouteImport } from './routes/companies.$cui'
 import { Route as ChartsNewRouteImport } from './routes/charts/new'
@@ -295,6 +296,13 @@ const PnrrShareImageDotpngRoute = PnrrShareImageDotpngRouteImport.update({
   path: '/share-image.png',
   getParentRoute: () => PnrrRoute,
 } as any)
+const ExperimentalSearchRoute = ExperimentalSearchRouteImport.update({
+  id: '/experimental/search',
+  path: '/experimental/search',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/experimental.search.lazy').then((d) => d.Route),
+)
 const EntitiesCuiRoute = EntitiesCuiRouteImport.update({
   id: '/$cui',
   path: '/$cui',
@@ -905,6 +913,7 @@ export interface FileRoutesByFullPath {
   '/charts/new': typeof ChartsNewRoute
   '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
+  '/experimental/search': typeof ExperimentalSearchRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
   '/provocare/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
@@ -1007,6 +1016,7 @@ export interface FileRoutesByTo {
   '/charts/new': typeof ChartsNewRoute
   '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
+  '/experimental/search': typeof ExperimentalSearchRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
   '/provocare/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
@@ -1110,6 +1120,7 @@ export interface FileRoutesById {
   '/charts/new': typeof ChartsNewRoute
   '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
+  '/experimental/search': typeof ExperimentalSearchRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare_/notificari': typeof ProvocareNotificariRoute
   '/provocare_/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
@@ -1219,6 +1230,7 @@ export interface FileRouteTypes {
     | '/charts/new'
     | '/companies/$cui'
     | '/entities/$cui'
+    | '/experimental/search'
     | '/pnrr/share-image.png'
     | '/provocare/notificari'
     | '/provocare/termeni-si-conditii'
@@ -1321,6 +1333,7 @@ export interface FileRouteTypes {
     | '/charts/new'
     | '/companies/$cui'
     | '/entities/$cui'
+    | '/experimental/search'
     | '/pnrr/share-image.png'
     | '/provocare/notificari'
     | '/provocare/termeni-si-conditii'
@@ -1423,6 +1436,7 @@ export interface FileRouteTypes {
     | '/charts/new'
     | '/companies/$cui'
     | '/entities/$cui'
+    | '/experimental/search'
     | '/pnrr/share-image.png'
     | '/provocare_/notificari'
     | '/provocare_/termeni-si-conditii'
@@ -1529,6 +1543,7 @@ export interface RootRouteChildren {
   CertificatesIdRoute: typeof CertificatesIdRoute
   ChartsNewRoute: typeof ChartsNewRoute
   CompaniesCuiRoute: typeof CompaniesCuiRoute
+  ExperimentalSearchRoute: typeof ExperimentalSearchRoute
   ProvocareNotificariRoute: typeof ProvocareNotificariRoute
   ProvocareTermeniSiConditiiRoute: typeof ProvocareTermeniSiConditiiRoute
   SettingsNotificationsRoute: typeof SettingsNotificationsRoute
@@ -1785,6 +1800,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/pnrr/share-image.png'
       preLoaderRoute: typeof PnrrShareImageDotpngRouteImport
       parentRoute: typeof PnrrRoute
+    }
+    '/experimental/search': {
+      id: '/experimental/search'
+      path: '/experimental/search'
+      fullPath: '/experimental/search'
+      preLoaderRoute: typeof ExperimentalSearchRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/entities/$cui': {
       id: '/entities/$cui'
@@ -2612,6 +2634,7 @@ const rootRouteChildren: RootRouteChildren = {
   CertificatesIdRoute: CertificatesIdRoute,
   ChartsNewRoute: ChartsNewRoute,
   CompaniesCuiRoute: CompaniesCuiRoute,
+  ExperimentalSearchRoute: ExperimentalSearchRoute,
   ProvocareNotificariRoute: ProvocareNotificariRoute,
   ProvocareTermeniSiConditiiRoute: ProvocareTermeniSiConditiiRoute,
   SettingsNotificationsRoute: SettingsNotificationsRoute,

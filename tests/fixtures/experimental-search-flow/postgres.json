@@ -1,0 +1,28 @@
+{
+  "data": {
+    "searchEntities": {
+      "query": "fallback",
+      "engine": "postgres",
+      "estimatedTotalHits": 1,
+      "facets": [],
+      "hits": [
+        {
+          "id": "company_999_x",
+          "docType": "company",
+          "title": "FALLBACK EXEMPLU SRL",
+          "snippet": null,
+          "score": null,
+          "source": "postgres",
+          "docId": "company:999",
+          "docKey": "999",
+          "subtitle": null,
+          "countyName": null,
+          "url": null,
+          "rankBoost": null,
+          "cuis": ["999"],
+          "year": null
+        }
+      ]
+    }
+  }
+}

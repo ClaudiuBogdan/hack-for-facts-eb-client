@@ -1,0 +1,11 @@
+{
+  "data": {
+    "searchEntities": {
+      "query": "zzzqqq",
+      "engine": "meili",
+      "estimatedTotalHits": 0,
+      "facets": [],
+      "hits": []
+    }
+  }
+}

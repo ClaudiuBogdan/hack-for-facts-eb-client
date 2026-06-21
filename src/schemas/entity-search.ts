@@ -1,0 +1,123 @@
+import { z } from 'zod'
+
+/**
+ * Seam types for the global entity-search page (`/experimental/search`).
+ *
+ * These mirror the redesign server's `searchEntities` GraphQL query and are the
+ * contract the page components consume. The raw GraphQL response shapes +
+ * response Zod schema live in `features/entity-search/api/graphql`; this module
+ * is the UI-facing surface plus the URL search-param schema.
+ */
+
+/**
+ * The 12 doc_type values the server allows in `docTypes`. Populated in prod
+ * today: company, legal_act, procurement_contract, procurement_procedure,
+ * pnrr_entity, public_enterprise. The rest return 0 rows for now but remain
+ * valid filter values (and may surface as empty facets).
+ */
+export const ENTITY_SEARCH_DOC_TYPES = [
+  'organization',
+  'company',
+  'public_enterprise',
+  'ngo',
+  'member',
+  'bill',
+  'legal_act',
+  'mo_act',
+  'pnrr_project',
+  'pnrr_entity',
+  'procurement_contract',
+  'procurement_procedure',
+] as const
+
+export type EntitySearchDocType = (typeof ENTITY_SEARCH_DOC_TYPES)[number]
+
+/** The two search engines the server can answer with. */
+export type EntitySearchEngine = 'meili' | 'postgres'
+
+/**
+ * A single search result row. `docType` is typed as `string` (not the enum) on
+ * purpose: the server may grow new doc types and the UI must not crash on an
+ * unknown one — the badge/routing layers degrade gracefully instead.
+ */
+export interface EntitySearchHit {
+  readonly id: string
+  readonly docType: string
+  readonly title: string
+  readonly subtitle: string | null
+  readonly snippet: string | null
+  readonly countyName: string | null
+  readonly year: number | null
+  readonly cuis: readonly string[]
+  readonly docId: string | null
+  readonly docKey: string | null
+  readonly url: string | null
+  readonly score: number | null
+  /** Computed deep-link: an internal route path or an external url. */
+  readonly href: string
+  /** True when `href` is an external url (open in a new tab). */
+  readonly isExternal: boolean
+}
+
+export interface EntitySearchFacet {
+  readonly field: string
+  readonly value: string
+  readonly count: number
+}
+
+export interface EntitySearchResult {
+  readonly query: string
+  readonly engine: EntitySearchEngine
+  readonly estimatedTotalHits: number
+  readonly facets: readonly EntitySearchFacet[]
+  readonly hits: readonly EntitySearchHit[]
+}
+
+/** Input passed to `searchEntitiesLive` / `useEntitySearch`. */
+export interface EntitySearchInput {
+  readonly q: string
+  readonly docTypes?: readonly string[]
+  readonly county?: string
+  readonly year?: number
+  readonly limit?: number
+  readonly offset?: number
+}
+
+/**
+ * URL state for the `/experimental/search` route. TanStack Router JSON-parses
+ * search params, so a numeric-looking `q` (`?q=2816464`) can arrive as a number
+ * — coerce to string. `types` is a repeatable param; a single value arrives as
+ * a string, so accept both and normalize to an array. `.catch(undefined)` keeps
+ * a malformed param from throwing in `validateSearch`.
+ */
+/**
+ * A free-text URL param: coerce numeric-looking values to string (so
+ * `?q=2816464` works) but treat `null`/booleans as absent — otherwise
+ * `z.coerce.string()` would turn `?q=null` into the literal text `"null"` and
+ * search for it.
+ */
+const optionalSearchString = z
+  .preprocess(
+    (value) => (value === null || typeof value === 'boolean' ? undefined : value),
+    z.coerce.string().optional(),
+  )
+  .catch(undefined)
+
+export const entitySearchParamsSchema = z.object({
+  q: optionalSearchString,
+  types: z
+    .union([z.array(z.string()), z.string()])
+    .transform((value) => (Array.isArray(value) ? value : [value]))
+    .optional()
+    .catch(undefined),
+  county: optionalSearchString,
+  year: z.coerce.number().int().optional().catch(undefined),
+})
+
+export type EntitySearchParams = z.infer<typeof entitySearchParamsSchema>
+
+export function parseEntitySearchParams(
+  search: Record<string, unknown>,
+): EntitySearchParams {
+  return entitySearchParamsSchema.parse(search)
+}
