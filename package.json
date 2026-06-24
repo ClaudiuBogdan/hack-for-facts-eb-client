@@ -147,7 +147,7 @@
     "@lingui/vite-plugin": "^6.0.0",
     "@mdx-js/react": "^3.1.1",
     "@mdx-js/rollup": "^3.1.1",
-    "@playwright/test": "^1.59.1",
+    "@playwright/test": "1.61.1",
     "@rolldown/plugin-babel": "^0.2.3",
     "@sentry/cli": "^2.58.5",
     "@tanstack/router-plugin": "^1.167.32",
