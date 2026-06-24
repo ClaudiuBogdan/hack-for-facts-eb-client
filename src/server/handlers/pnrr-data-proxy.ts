@@ -21,9 +21,9 @@ import {
 const DEFAULT_PNRR_OFFICIAL_DATA_BASE_URL =
   'https://s3.devostack.com/transparenta-eu-assets/pnrr/'
 const DEFAULT_PNRR_OFFICIAL_PROJECTS_PATH =
-  '20260523-progres_tehnic_proiecte.json.gz'
-const DEFAULT_PNRR_OFFICIAL_PAYMENTS_PATH = '20260523-persons.json.gz'
-const DEFAULT_PNRR_OFFICIAL_INDICATORS_PATH = '20260523-indicatori_total.json.gz'
+  '20260619-progres_tehnic_proiecte.json.gz'
+const DEFAULT_PNRR_OFFICIAL_PAYMENTS_PATH = '20260619-persons.json.gz'
+const DEFAULT_PNRR_OFFICIAL_INDICATORS_PATH = '20260619-indicatori_total.json.gz'
 
 const PNRR_DATA_URL = buildOfficialDataUrl(
   process.env.PNRR_OFFICIAL_DATA_BASE_URL ??

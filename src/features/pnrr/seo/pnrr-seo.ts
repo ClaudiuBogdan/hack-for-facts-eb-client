@@ -16,7 +16,7 @@ import {
 
 const PNRR_ROUTE_PATH = '/pnrr'
 const PNRR_SHARE_IMAGE_PATH = '/pnrr/share-image.png'
-const PNRR_SHARE_IMAGE_VERSION = '20260523-ron5-official-total'
+const PNRR_SHARE_IMAGE_VERSION = '20260619-ron5-official-total'
 const PNRR_SOCIAL_IMAGE_WIDTH = '1200'
 const PNRR_SOCIAL_IMAGE_HEIGHT = '630'
 const PNRR_OG_LOCALE: Readonly<Record<SupportedLocale, string>> = {
