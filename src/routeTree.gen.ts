@@ -25,11 +25,13 @@ import { Route as BugeteLocale2026RouteImport } from './routes/bugete-locale-202
 import { Route as BugetNational2026RouteImport } from './routes/buget-national-2026'
 import { Route as BudgetExplorerRouteImport } from './routes/budget-explorer'
 import { Route as EntitiesRouteRouteImport } from './routes/entities/route'
+import { Route as AchizitiiRouteRouteImport } from './routes/achizitii/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PrimarieIndexRouteImport } from './routes/primarie/index'
 import { Route as ParlamentIndexRouteImport } from './routes/parlament/index'
 import { Route as EntitiesIndexRouteImport } from './routes/entities/index'
 import { Route as CompaniesIndexRouteImport } from './routes/companies.index'
+import { Route as AchizitiiIndexRouteImport } from './routes/achizitii/index'
 import { Route as UnsubscribeTokenRouteImport } from './routes/unsubscribe.$token'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
@@ -46,6 +48,7 @@ import { Route as ChartsNewRouteImport } from './routes/charts/new'
 import { Route as CertificatesIdRouteImport } from './routes/certificates.$id'
 import { Route as BugeteLocale2026TermeniSiConditiiRouteImport } from './routes/bugete-locale-2026.termeni-si-conditii'
 import { Route as AlertsNewRouteImport } from './routes/alerts/new'
+import { Route as AchizitiiCautareRouteImport } from './routes/achizitii/cautare'
 import { Route as PrimarieCuiRouteRouteImport } from './routes/primarie/$cui/route'
 import { Route as ChartsChartIdRouteRouteImport } from './routes/charts/$chartId/route'
 import { Route as AlertsAlertIdRouteRouteImport } from './routes/alerts/$alertId/route'
@@ -71,6 +74,10 @@ import { Route as MapsDatasetsDatasetIdRouteImport } from './routes/maps/dataset
 import { Route as EntitiesCuiShareImageDotpngRouteImport } from './routes/entities.$cui.share-image[.]png'
 import { Route as ClassificationsFunctionalCodeRouteImport } from './routes/classifications/functional/$code'
 import { Route as ClassificationsEconomicCodeRouteImport } from './routes/classifications/economic/$code'
+import { Route as AchizitiiProceduriIdRouteImport } from './routes/achizitii/proceduri/$id'
+import { Route as AchizitiiCpvCodeRouteImport } from './routes/achizitii/cpv/$code'
+import { Route as AchizitiiContracteIdRouteImport } from './routes/achizitii/contracte/$id'
+import { Route as AchizitiiAchizitiiDirecteIdRouteImport } from './routes/achizitii/achizitii-directe/$id'
 import { Route as LangLearningOnboardingRouteImport } from './routes/$lang/learning/onboarding'
 import { Route as PrimarieCuiBugetRouteRouteImport } from './routes/primarie/$cui/buget/route'
 import { Route as ParlamentProiecteBillIdRouteRouteImport } from './routes/parlament/proiecte/$billId/route'
@@ -202,6 +209,11 @@ const EntitiesRouteRoute = EntitiesRouteRouteImport.update({
   path: '/entities',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AchizitiiRouteRoute = AchizitiiRouteRouteImport.update({
+  id: '/achizitii',
+  path: '/achizitii',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -237,6 +249,13 @@ const CompaniesIndexRoute = CompaniesIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
   import('./routes/companies.index.lazy').then((d) => d.Route),
+)
+const AchizitiiIndexRoute = AchizitiiIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AchizitiiRouteRoute,
+} as any).lazy(() =>
+  import('./routes/achizitii/index.lazy').then((d) => d.Route),
 )
 const ResearchEmployeesDataLazyRoute =
   ResearchEmployeesDataLazyRouteImport.update({
@@ -336,6 +355,13 @@ const AlertsNewRoute = AlertsNewRouteImport.update({
   path: '/alerts/new',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/alerts/new.lazy').then((d) => d.Route))
+const AchizitiiCautareRoute = AchizitiiCautareRouteImport.update({
+  id: '/cautare',
+  path: '/cautare',
+  getParentRoute: () => AchizitiiRouteRoute,
+} as any).lazy(() =>
+  import('./routes/achizitii/cautare.lazy').then((d) => d.Route),
+)
 const PrimarieCuiRouteRoute = PrimarieCuiRouteRouteImport.update({
   id: '/primarie/$cui',
   path: '/primarie/$cui',
@@ -518,6 +544,37 @@ const ClassificationsEconomicCodeRoute =
     getParentRoute: () => rootRouteImport,
   } as any).lazy(() =>
     import('./routes/classifications/economic/$code.lazy').then((d) => d.Route),
+  )
+const AchizitiiProceduriIdRoute = AchizitiiProceduriIdRouteImport.update({
+  id: '/proceduri/$id',
+  path: '/proceduri/$id',
+  getParentRoute: () => AchizitiiRouteRoute,
+} as any).lazy(() =>
+  import('./routes/achizitii/proceduri/$id.lazy').then((d) => d.Route),
+)
+const AchizitiiCpvCodeRoute = AchizitiiCpvCodeRouteImport.update({
+  id: '/cpv/$code',
+  path: '/cpv/$code',
+  getParentRoute: () => AchizitiiRouteRoute,
+} as any).lazy(() =>
+  import('./routes/achizitii/cpv/$code.lazy').then((d) => d.Route),
+)
+const AchizitiiContracteIdRoute = AchizitiiContracteIdRouteImport.update({
+  id: '/contracte/$id',
+  path: '/contracte/$id',
+  getParentRoute: () => AchizitiiRouteRoute,
+} as any).lazy(() =>
+  import('./routes/achizitii/contracte/$id.lazy').then((d) => d.Route),
+)
+const AchizitiiAchizitiiDirecteIdRoute =
+  AchizitiiAchizitiiDirecteIdRouteImport.update({
+    id: '/achizitii-directe/$id',
+    path: '/achizitii-directe/$id',
+    getParentRoute: () => AchizitiiRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/achizitii/achizitii-directe/$id.lazy').then(
+      (d) => d.Route,
+    ),
   )
 const LangLearningOnboardingRoute = LangLearningOnboardingRouteImport.update({
   id: '/onboarding',
@@ -888,6 +945,7 @@ const PrimarieCuiBugetProvocariModuleSlugChallengeSlugStepSlugRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/achizitii': typeof AchizitiiRouteRouteWithChildren
   '/entities': typeof EntitiesRouteRouteWithChildren
   '/budget-explorer': typeof BudgetExplorerRoute
   '/buget-national-2026': typeof BugetNational2026Route
@@ -907,6 +965,7 @@ export interface FileRoutesByFullPath {
   '/alerts/$alertId': typeof AlertsAlertIdRouteRouteWithChildren
   '/charts/$chartId': typeof ChartsChartIdRouteRouteWithChildren
   '/primarie/$cui': typeof PrimarieCuiRouteRouteWithChildren
+  '/achizitii/cautare': typeof AchizitiiCautareRoute
   '/alerts/new': typeof AlertsNewRoute
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
@@ -924,6 +983,7 @@ export interface FileRoutesByFullPath {
   '/sign-up/$': typeof SignUpSplatRoute
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
+  '/achizitii/': typeof AchizitiiIndexRoute
   '/companies/': typeof CompaniesIndexRoute
   '/entities/': typeof EntitiesIndexRoute
   '/parlament/': typeof ParlamentIndexRoute
@@ -934,6 +994,10 @@ export interface FileRoutesByFullPath {
   '/parlament/proiecte/$billId': typeof ParlamentProiecteBillIdRouteRouteWithChildren
   '/primarie/$cui/buget': typeof PrimarieCuiBugetRouteRouteWithChildren
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
+  '/achizitii/achizitii-directe/$id': typeof AchizitiiAchizitiiDirecteIdRoute
+  '/achizitii/contracte/$id': typeof AchizitiiContracteIdRoute
+  '/achizitii/cpv/$code': typeof AchizitiiCpvCodeRoute
+  '/achizitii/proceduri/$id': typeof AchizitiiProceduriIdRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
@@ -1010,6 +1074,7 @@ export interface FileRoutesByTo {
   '/sign-up': typeof SignUpRouteWithChildren
   '/test-error': typeof TestErrorRoute
   '/terms': typeof TermsLazyRoute
+  '/achizitii/cautare': typeof AchizitiiCautareRoute
   '/alerts/new': typeof AlertsNewRoute
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
@@ -1027,12 +1092,17 @@ export interface FileRoutesByTo {
   '/sign-up/$': typeof SignUpSplatRoute
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
+  '/achizitii': typeof AchizitiiIndexRoute
   '/companies': typeof CompaniesIndexRoute
   '/entities': typeof EntitiesIndexRoute
   '/parlament': typeof ParlamentIndexRoute
   '/primarie': typeof PrimarieIndexRoute
   '/charts': typeof ChartsIndexLazyRoute
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
+  '/achizitii/achizitii-directe/$id': typeof AchizitiiAchizitiiDirecteIdRoute
+  '/achizitii/contracte/$id': typeof AchizitiiContracteIdRoute
+  '/achizitii/cpv/$code': typeof AchizitiiCpvCodeRoute
+  '/achizitii/proceduri/$id': typeof AchizitiiProceduriIdRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
@@ -1095,6 +1165,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/achizitii': typeof AchizitiiRouteRouteWithChildren
   '/entities': typeof EntitiesRouteRouteWithChildren
   '/budget-explorer': typeof BudgetExplorerRoute
   '/buget-national-2026': typeof BugetNational2026Route
@@ -1114,6 +1185,7 @@ export interface FileRoutesById {
   '/alerts/$alertId': typeof AlertsAlertIdRouteRouteWithChildren
   '/charts/$chartId': typeof ChartsChartIdRouteRouteWithChildren
   '/primarie/$cui': typeof PrimarieCuiRouteRouteWithChildren
+  '/achizitii/cautare': typeof AchizitiiCautareRoute
   '/alerts/new': typeof AlertsNewRoute
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
@@ -1131,6 +1203,7 @@ export interface FileRoutesById {
   '/sign-up/$': typeof SignUpSplatRoute
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
+  '/achizitii/': typeof AchizitiiIndexRoute
   '/companies/': typeof CompaniesIndexRoute
   '/entities/': typeof EntitiesIndexRoute
   '/parlament/': typeof ParlamentIndexRoute
@@ -1141,6 +1214,10 @@ export interface FileRoutesById {
   '/parlament/proiecte/$billId': typeof ParlamentProiecteBillIdRouteRouteWithChildren
   '/primarie/$cui/buget': typeof PrimarieCuiBugetRouteRouteWithChildren
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
+  '/achizitii/achizitii-directe/$id': typeof AchizitiiAchizitiiDirecteIdRoute
+  '/achizitii/contracte/$id': typeof AchizitiiContracteIdRoute
+  '/achizitii/cpv/$code': typeof AchizitiiCpvCodeRoute
+  '/achizitii/proceduri/$id': typeof AchizitiiProceduriIdRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
@@ -1205,6 +1282,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/achizitii'
     | '/entities'
     | '/budget-explorer'
     | '/buget-national-2026'
@@ -1224,6 +1302,7 @@ export interface FileRouteTypes {
     | '/alerts/$alertId'
     | '/charts/$chartId'
     | '/primarie/$cui'
+    | '/achizitii/cautare'
     | '/alerts/new'
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
@@ -1241,6 +1320,7 @@ export interface FileRouteTypes {
     | '/sign-up/$'
     | '/unsubscribe/$token'
     | '/research/employees-data'
+    | '/achizitii/'
     | '/companies/'
     | '/entities/'
     | '/parlament/'
@@ -1251,6 +1331,10 @@ export interface FileRouteTypes {
     | '/parlament/proiecte/$billId'
     | '/primarie/$cui/buget'
     | '/$lang/learning/onboarding'
+    | '/achizitii/achizitii-directe/$id'
+    | '/achizitii/contracte/$id'
+    | '/achizitii/cpv/$code'
+    | '/achizitii/proceduri/$id'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
@@ -1327,6 +1411,7 @@ export interface FileRouteTypes {
     | '/sign-up'
     | '/test-error'
     | '/terms'
+    | '/achizitii/cautare'
     | '/alerts/new'
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
@@ -1344,12 +1429,17 @@ export interface FileRouteTypes {
     | '/sign-up/$'
     | '/unsubscribe/$token'
     | '/research/employees-data'
+    | '/achizitii'
     | '/companies'
     | '/entities'
     | '/parlament'
     | '/primarie'
     | '/charts'
     | '/$lang/learning/onboarding'
+    | '/achizitii/achizitii-directe/$id'
+    | '/achizitii/contracte/$id'
+    | '/achizitii/cpv/$code'
+    | '/achizitii/proceduri/$id'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
@@ -1411,6 +1501,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/achizitii'
     | '/entities'
     | '/budget-explorer'
     | '/buget-national-2026'
@@ -1430,6 +1521,7 @@ export interface FileRouteTypes {
     | '/alerts/$alertId'
     | '/charts/$chartId'
     | '/primarie/$cui'
+    | '/achizitii/cautare'
     | '/alerts/new'
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
@@ -1447,6 +1539,7 @@ export interface FileRouteTypes {
     | '/sign-up/$'
     | '/unsubscribe/$token'
     | '/research/employees-data'
+    | '/achizitii/'
     | '/companies/'
     | '/entities/'
     | '/parlament/'
@@ -1457,6 +1550,10 @@ export interface FileRouteTypes {
     | '/parlament/proiecte/$billId'
     | '/primarie/$cui/buget'
     | '/$lang/learning/onboarding'
+    | '/achizitii/achizitii-directe/$id'
+    | '/achizitii/contracte/$id'
+    | '/achizitii/cpv/$code'
+    | '/achizitii/proceduri/$id'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
@@ -1520,6 +1617,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AchizitiiRouteRoute: typeof AchizitiiRouteRouteWithChildren
   EntitiesRouteRoute: typeof EntitiesRouteRouteWithChildren
   BudgetExplorerRoute: typeof BudgetExplorerRoute
   BugetNational2026Route: typeof BugetNational2026Route
@@ -1689,6 +1787,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EntitiesRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/achizitii': {
+      id: '/achizitii'
+      path: '/achizitii'
+      fullPath: '/achizitii'
+      preLoaderRoute: typeof AchizitiiRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -1730,6 +1835,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/companies/'
       preLoaderRoute: typeof CompaniesIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/achizitii/': {
+      id: '/achizitii/'
+      path: '/'
+      fullPath: '/achizitii/'
+      preLoaderRoute: typeof AchizitiiIndexRouteImport
+      parentRoute: typeof AchizitiiRouteRoute
     }
     '/research/employees-data': {
       id: '/research/employees-data'
@@ -1849,6 +1961,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/alerts/new'
       preLoaderRoute: typeof AlertsNewRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/achizitii/cautare': {
+      id: '/achizitii/cautare'
+      path: '/cautare'
+      fullPath: '/achizitii/cautare'
+      preLoaderRoute: typeof AchizitiiCautareRouteImport
+      parentRoute: typeof AchizitiiRouteRoute
     }
     '/primarie/$cui': {
       id: '/primarie/$cui'
@@ -2038,6 +2157,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/classifications/economic/$code'
       preLoaderRoute: typeof ClassificationsEconomicCodeRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/achizitii/proceduri/$id': {
+      id: '/achizitii/proceduri/$id'
+      path: '/proceduri/$id'
+      fullPath: '/achizitii/proceduri/$id'
+      preLoaderRoute: typeof AchizitiiProceduriIdRouteImport
+      parentRoute: typeof AchizitiiRouteRoute
+    }
+    '/achizitii/cpv/$code': {
+      id: '/achizitii/cpv/$code'
+      path: '/cpv/$code'
+      fullPath: '/achizitii/cpv/$code'
+      preLoaderRoute: typeof AchizitiiCpvCodeRouteImport
+      parentRoute: typeof AchizitiiRouteRoute
+    }
+    '/achizitii/contracte/$id': {
+      id: '/achizitii/contracte/$id'
+      path: '/contracte/$id'
+      fullPath: '/achizitii/contracte/$id'
+      preLoaderRoute: typeof AchizitiiContracteIdRouteImport
+      parentRoute: typeof AchizitiiRouteRoute
+    }
+    '/achizitii/achizitii-directe/$id': {
+      id: '/achizitii/achizitii-directe/$id'
+      path: '/achizitii-directe/$id'
+      fullPath: '/achizitii/achizitii-directe/$id'
+      preLoaderRoute: typeof AchizitiiAchizitiiDirecteIdRouteImport
+      parentRoute: typeof AchizitiiRouteRoute
     }
     '/$lang/learning/onboarding': {
       id: '/$lang/learning/onboarding'
@@ -2329,6 +2476,28 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AchizitiiRouteRouteChildren {
+  AchizitiiCautareRoute: typeof AchizitiiCautareRoute
+  AchizitiiIndexRoute: typeof AchizitiiIndexRoute
+  AchizitiiAchizitiiDirecteIdRoute: typeof AchizitiiAchizitiiDirecteIdRoute
+  AchizitiiContracteIdRoute: typeof AchizitiiContracteIdRoute
+  AchizitiiCpvCodeRoute: typeof AchizitiiCpvCodeRoute
+  AchizitiiProceduriIdRoute: typeof AchizitiiProceduriIdRoute
+}
+
+const AchizitiiRouteRouteChildren: AchizitiiRouteRouteChildren = {
+  AchizitiiCautareRoute: AchizitiiCautareRoute,
+  AchizitiiIndexRoute: AchizitiiIndexRoute,
+  AchizitiiAchizitiiDirecteIdRoute: AchizitiiAchizitiiDirecteIdRoute,
+  AchizitiiContracteIdRoute: AchizitiiContracteIdRoute,
+  AchizitiiCpvCodeRoute: AchizitiiCpvCodeRoute,
+  AchizitiiProceduriIdRoute: AchizitiiProceduriIdRoute,
+}
+
+const AchizitiiRouteRouteWithChildren = AchizitiiRouteRoute._addFileChildren(
+  AchizitiiRouteRouteChildren,
+)
+
 interface EntitiesCuiRouteChildren {
   EntitiesCuiShareImageDotpngRoute: typeof EntitiesCuiShareImageDotpngRoute
 }
@@ -2611,6 +2780,7 @@ const ParlamentProiecteBillIdRouteRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AchizitiiRouteRoute: AchizitiiRouteRouteWithChildren,
   EntitiesRouteRoute: EntitiesRouteRouteWithChildren,
   BudgetExplorerRoute: BudgetExplorerRoute,
   BugetNational2026Route: BugetNational2026Route,

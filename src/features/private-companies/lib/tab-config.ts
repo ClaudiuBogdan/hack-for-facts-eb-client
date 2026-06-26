@@ -1,6 +1,7 @@
 import { t } from '@lingui/core/macro'
 import {
   Briefcase,
+  Landmark,
   LayoutDashboard,
   LineChart,
   MapPin,
@@ -18,6 +19,7 @@ export type PrivateCompanyTabConfig = {
 export const PRIVATE_COMPANY_TAB_IDS: readonly PrivateCompanyViewTab[] = [
   'summary',
   'activity',
+  'achizitii',
   'governance',
   'financials',
   'location',
@@ -26,6 +28,7 @@ export const PRIVATE_COMPANY_TAB_IDS: readonly PrivateCompanyViewTab[] = [
 const PRIVATE_COMPANY_TAB_ICONS: Record<PrivateCompanyViewTab, LucideIcon> = {
   summary: LayoutDashboard,
   activity: Briefcase,
+  achizitii: Landmark,
   governance: Users,
   financials: LineChart,
   location: MapPin,
@@ -45,6 +48,8 @@ export function getPrivateCompanyTabLabel(tab: PrivateCompanyViewTab): string {
       return t`Summary`
     case 'activity':
       return t`Activity`
+    case 'achizitii':
+      return t`Achiziții publice`
     case 'governance':
       return t`Governance`
     case 'financials':
