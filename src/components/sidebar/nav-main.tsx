@@ -1,4 +1,4 @@
-import { LayoutDashboard, BarChart2, Map, ListOrdered, Boxes, Landmark, Scale, Building2, Vote } from "lucide-react";
+import { LayoutDashboard, BarChart2, Map, ListOrdered, Boxes, Landmark, Scale, Building2, Vote, HeartHandshake } from "lucide-react";
 import { Link, useMatches } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button-variants";
@@ -21,7 +21,8 @@ type MainItemUrl =
   | "/achizitii"
   | "/legislatie"
   | "/intreprinderi-publice"
-  | "/alegeri";
+  | "/alegeri"
+  | "/ong-uri";
 
 const mainItems: ReadonlyArray<{
   title: React.ReactNode;
@@ -52,6 +53,11 @@ const mainItems: ReadonlyArray<{
     title: <Trans>National Budget</Trans>,
     url: "/budget-explorer",
     icon: Boxes,
+  },
+  {
+    title: <Trans>ONG-uri</Trans>,
+    url: "/ong-uri",
+    icon: HeartHandshake,
   },
   {
     title: <Trans>Entity Analytics</Trans>,
