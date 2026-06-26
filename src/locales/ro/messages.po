@@ -97,6 +97,13 @@ msgstr "{0} serii activate"
 msgid "{0} group items configured"
 msgstr "{0} elemente de grup configurate"
 
+#. placeholder {0}: data.kpis.mappedObjectiveCount
+#. placeholder {0}: mapped.length
+#: src/features/public-investments/components/PublicInvestmentsMapPanel.tsx:32
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:100
+msgid "{0} localizate"
+msgstr ""
+
 #. placeholder {0}: visibleGroups.length
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4746
 msgid "{0} matching group items"
@@ -114,6 +121,11 @@ msgstr "{0} grupuri unite"
 #: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:121
 msgid "{0} more issues"
 msgstr "Încă {0} probleme"
+
+#. placeholder {0}: query.data.excludedSuspectCount
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:171
+msgid "{0} obiective cu valori în verificare au fost excluse din filtrele pe sumă."
+msgstr ""
 
 #. placeholder {0}: currentPage + 1
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:194
@@ -136,10 +148,20 @@ msgstr "{0} preset configurat"
 msgid "{0} presets configured"
 msgstr "{0} preseturi configurate"
 
+#. placeholder {0}: status.moneyPrecisionWarningRows
+#: src/features/public-investments/components/DataStatusBadge.tsx:30
+msgid "{0} rânduri cu atenționări"
+msgstr ""
+
 #. placeholder {0}: data.rectificationCount
 #: src/features/learning/components/interactive/RectificationHistory.tsx:127
 msgid "{0} rectifications"
 msgstr "{0} rectificări"
+
+#. placeholder {0}: query.data.total
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:165
+msgid "{0} rezultate"
+msgstr ""
 
 #. placeholder {0}: rules.length
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:61
@@ -401,6 +423,13 @@ msgstr "Platformă de explorare a datelor financiare publice pentru cetățeni, 
 msgid "About this map"
 msgstr "Despre această hartă"
 
+#: src/features/public-investments/components/AbsorptionBar.tsx:17
+#: src/features/public-investments/components/HowToReadData.tsx:66
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:112
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:139
+msgid "Absorbție"
+msgstr ""
+
 #: src/components/privacy/CookieConsentBanner.tsx:124
 msgid "Accept All"
 msgstr "Acceptă tot"
@@ -421,6 +450,18 @@ msgstr "Acces interzis"
 #: src/lib/chart-filter-utils.ts:44
 msgid "Account category"
 msgstr "Categorie cont"
+
+#: src/features/public-investments/components/BlockedDataState.tsx:17
+msgid "Această suprafață este mock-first. Activează VITE_USE_MOCK_DATA=true sau VITE_MOCK_DATASETS=all, investments-anghel-saligny ori investments-pndl pentru a vedea fixture-urile locale."
+msgstr ""
+
+#: src/features/public-investments/components/BlockedDataState.tsx:18
+#~ msgid "Această suprafață este mock-first. Activează VITE_USE_MOCK_DATA=true sau VITE_MOCK_DATASETS=public-investments pentru a vedea fixture-urile locale."
+#~ msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:122
+msgid "Acoperire programe"
+msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-list-item.tsx:195
 msgid "Activate"
@@ -484,6 +525,10 @@ msgstr "Activitate"
 #: src/components/budget-explorer/FilteredSpendingInfo.tsx:117
 msgid "Actual impact on budget"
 msgstr "Impact real asupra bugetului"
+
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:166
+msgid "actualizare în fundal"
+msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:376
 msgid "Add"
@@ -820,6 +865,10 @@ msgstr "Permite doar cookie-urile esențiale"
 msgid "Allow essential only"
 msgstr "Permite doar esențiale"
 
+#: src/features/public-investments/components/HowToReadData.tsx:54
+msgid "Alocat"
+msgstr ""
+
 #: src/routes/cookies.lazy.tsx:170
 msgid "Always enabled"
 msgstr "Activat permanent"
@@ -929,6 +978,10 @@ msgstr "și"
 msgid "AND"
 msgstr "ȘI"
 
+#: src/features/public-investments/lib/display.ts:18
+msgid "Anghel Saligny"
+msgstr ""
+
 #. placeholder {0}: index + 1
 #: src/components/charts/components/chart-annotations/AnnotationItem.tsx:51
 msgid "Annotation {0}"
@@ -974,6 +1027,10 @@ msgstr "Raport anual"
 msgid "Anonymous usage patterns, page views, interactions, and feature usage events."
 msgstr "Modele anonime de utilizare, vizualizări de pagină, interacțiuni și evenimente de utilizare a funcționalităților."
 
+#: src/features/public-investments/components/HowToReadData.tsx:100
+msgid "Anumite sume pot fi stocate înmulțite cu 1.000. Acele valori sunt afișate ca „valoare în verificare”, nu ca sumă, până la reparcurgere."
+msgstr ""
+
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:457
 msgid "Anyone with the public link can view this map."
 msgstr "Oricine cu linkul public poate vizualiza această hartă."
@@ -981,6 +1038,18 @@ msgstr "Oricine cu linkul public poate vizualiza această hartă."
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:77
 msgid "Anyone with the public link will see this saved version."
 msgstr "Oricine are linkul public va vedea această versiune salvată."
+
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:84
+msgid "apă, drum, Cluj"
+msgstr ""
+
+#: src/features/public-investments/lib/display.ts:89
+msgid "API live neconectat"
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:92
+msgid "Aplică"
+msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:462
 msgid "Apply"
@@ -1015,6 +1084,10 @@ msgstr "Număr aproximativ de participanți"
 #: src/components/entities/EntityFinancialTrends.tsx:171
 msgid "April"
 msgstr "Aprilie"
+
+#: src/features/public-investments/lib/display.ts:106
+msgid "ArcGIS API"
+msgstr ""
 
 #: src/features/notifications/components/alerts/AlertCard.tsx:115
 #: src/routes/alerts/$alertId/index.lazy.tsx:310
@@ -1075,6 +1148,10 @@ msgstr "Pe scurt"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:107
 msgid "At least one bin is required."
 msgstr "Este necesar cel puțin un interval."
+
+#: src/features/public-investments/lib/display.ts:52
+msgid "Atenționare de precizie"
+msgstr ""
 
 #: src/features/learning/components/interactive/VATReformCard.tsx:26
 msgid "Aug 1, 2025"
@@ -1233,6 +1310,10 @@ msgstr "Date de bază despre populație, ocupare și locuințe."
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:432
 msgid "Before confirming, make sure you:"
 msgstr "Înainte de a confirma, asigură-te că:"
+
+#: src/features/public-investments/lib/display.ts:80
+msgid "Beneficiar"
+msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:101
 msgid "Best for cross-county comparisons where scales are very different."
@@ -1536,6 +1617,22 @@ msgstr "Nu se pot regenera intervalele deoarece datele active nu au valori numer
 msgid "Category name"
 msgstr "Nume categorie"
 
+#: src/features/public-investments/components/HowToReadData.tsx:106
+msgid "Câteva rânduri au decontat > contractat în sursă (avertizare de precizie). Bara de absorbție se limitează vizual la 100%, textul păstrează valoarea reală."
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:64
+msgid "Caută obiective"
+msgstr ""
+
+#: src/routes/investitii-publice/route.tsx:61
+msgid "Căutare"
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:66
+msgid "Căutare investiții publice"
+msgstr ""
+
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:368
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:394
 msgid "CC"
@@ -1646,6 +1743,10 @@ msgstr "Se verifică răspunsul tău..."
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:273
 msgid "Checking..."
 msgstr "Se verifică..."
+
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:89
+msgid "Cheie"
+msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:356
 msgid "Choose a disabled view to enable it in this map."
@@ -2172,6 +2273,7 @@ msgid "Contested item"
 msgstr "Element contestat"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1141
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:135
 msgid "Context"
 msgstr "Context"
 
@@ -2202,6 +2304,27 @@ msgstr "continuu"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:469
 msgid "Continuous range"
 msgstr "Interval continuu"
+
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:106
+msgid "Contract"
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:259
+msgid "Contract fără număr"
+msgstr ""
+
+#: src/features/public-investments/components/HowToReadData.tsx:58
+#: src/features/public-investments/components/ObjectiveListRow.tsx:52
+#: src/features/public-investments/lib/display.ts:33
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:115
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:137
+#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:107
+msgid "Contractat"
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:104
+msgid "Contractat total verificat"
+msgstr ""
 
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:157
 msgid "Contributions recorded"
@@ -2593,9 +2716,22 @@ msgstr "Eroare la parsarea CSV: {0}"
 msgid "CUI"
 msgstr "CUI"
 
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:309
+msgid "CUI reținut"
+msgstr ""
+
 #: src/lib/ins/ins-dashboard-config.ts:156
 msgid "Culture & tourism"
 msgstr "Cultură și turism"
+
+#: src/features/public-investments/components/HowToReadData.tsx:29
+#: src/features/public-investments/components/HowToReadData.tsx:36
+msgid "Cum citesc aceste date"
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:238
+msgid "Cumulat"
+msgstr ""
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:735
 #: src/components/maps/HeatmapDataTable.tsx:475
@@ -2653,6 +2789,10 @@ msgstr "Întunecat"
 msgid "Dashboard"
 msgstr "Tablou de bord"
 
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:230
+msgid "Data"
+msgstr ""
+
 #: src/features/private-companies/components/private-company-source-footer.tsx:40
 msgid "Data is shown from loaded public snapshots and may differ from live registries."
 msgstr "Datele provin din instantanee publice încărcate și pot diferi de registrele live."
@@ -2670,6 +2810,10 @@ msgstr "Decalaj etichetă de date"
 #: src/components/charts/components/series-config/SeriesItemMenu.tsx:43
 msgid "Data Labels"
 msgstr "Etichete de date"
+
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:260
+msgid "Dată lipsă"
+msgstr ""
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:493
 msgid "Data period shown:"
@@ -2760,6 +2904,10 @@ msgstr "Previzualizare pe hartă a setului de date"
 msgid "Dataset metadata is loading or unavailable, but historical data can still be viewed below."
 msgstr "Metadatele setului de date se încarcă sau nu sunt disponibile, dar datele istorice pot fi vizualizate mai jos."
 
+#: src/features/public-investments/lib/display.ts:93
+msgid "Dataset neconfigurat"
+msgstr ""
+
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:113
 msgid "Dataset not found."
 msgstr "Setul de date nu a fost găsit."
@@ -2779,6 +2927,18 @@ msgstr "Dată"
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:149
 msgid "Date and time"
 msgstr "Data și ora"
+
+#: src/features/public-investments/components/BlockedDataState.tsx:13
+msgid "Date indisponibile"
+msgstr ""
+
+#: src/features/public-investments/lib/display.ts:91
+msgid "Date mock dezactivate"
+msgstr ""
+
+#: src/features/public-investments/components/DataStatusBadge.tsx:22
+msgid "Date validate"
+msgstr ""
 
 #: src/components/filters/period-filter/PeriodFilter.tsx:422
 msgid "Dates"
@@ -2830,6 +2990,17 @@ msgstr "Dezbaterea a avut loc"
 #: src/components/entities/EntityFinancialTrends.tsx:172
 msgid "December"
 msgstr "Decembrie"
+
+#: src/features/public-investments/components/HowToReadData.tsx:62
+#: src/features/public-investments/components/ObjectiveListRow.tsx:58
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:123
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:138
+msgid "Decontat"
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:114
+msgid "Decontat / contractat verificat"
+msgstr ""
 
 #: src/features/learning/components/interactive/RectificationFlow.tsx:181
 msgid "decrease"
@@ -2971,6 +3142,15 @@ msgstr "Dependență"
 msgid "Derived indicators"
 msgstr "Indicatori derivați"
 
+#: src/features/public-investments/components/EvidenceButton.tsx:20
+#: src/features/public-investments/components/EvidenceButton.tsx:21
+msgid "Deschide dovada sursei"
+msgstr ""
+
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:103
+msgid "Deschide sursa"
+msgstr ""
+
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1318
 msgid "Describe the dataset and control how it’s shared."
 msgstr "Descrie setul de date și controlează cum este partajat."
@@ -3030,6 +3210,10 @@ msgstr "Detalii"
 #: src/components/budget-explorer/FilteredSpendingInfo.tsx:252
 msgid "Details about excluded items and amount filters used in this view."
 msgstr "Detalii despre elementele excluse și filtrele de sumă utilizate în această vizualizare."
+
+#: src/features/public-investments/components/ObjectiveListRow.tsx:44
+msgid "Detalii"
+msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:143
 msgid "Detects outliers using quartile fences: Q1 - m*IQR and Q3 + m*IQR. Works well for heavy-tailed financial data."
@@ -3121,6 +3305,10 @@ msgstr "Opțiuni de afișare"
 msgid "Dissolved"
 msgstr "Dizolvată"
 
+#: src/features/public-investments/components/PublicInvestmentsMapPanel.tsx:28
+msgid "Distribuție mock-first pe obiective localizate."
+msgstr ""
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:1499
 msgid "Distribution"
 msgstr "Distribuție"
@@ -3147,6 +3335,14 @@ msgstr "Tip document"
 msgid "Document your participation in the local budget debate."
 msgstr "Documentează participarea ta la dezbaterea bugetului local."
 
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:138
+msgid "Domeniu"
+msgstr ""
+
+#: src/features/public-investments/components/ObjectiveListRow.tsx:39
+msgid "Domeniu necunoscut"
+msgstr ""
+
 #: src/features/private-companies/components/private-company-summary-highlights.tsx:119
 msgid "Domestic branches and shareholders are not in the open dump"
 msgstr "Sucursalele interne și acționarii nu sunt în exportul deschis"
@@ -3159,6 +3355,20 @@ msgstr "Sucursalele interne și acționarii nu sunt în exportul deschis"
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:91
 msgid "Done"
 msgstr "Finalizat"
+
+#: src/features/public-investments/components/EvidenceButton.tsx:24
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:200
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:264
+msgid "Dovadă"
+msgstr ""
+
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:39
+msgid "Dovada sursei"
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:108
+msgid "Dovezi"
+msgstr ""
 
 #: src/components/entities/EntityReportCard.tsx:64
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:600
@@ -3823,6 +4033,11 @@ msgstr "Elemente excluse"
 msgid "Excluding"
 msgstr "Excluzând"
 
+#: src/features/public-investments/lib/display.ts:76
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:268
+msgid "Executant"
+msgstr ""
+
 #: src/features/learning/components/interactive/PromiseTracker.tsx:380
 msgid "Executed"
 msgstr "Executat"
@@ -3969,6 +4184,10 @@ msgstr "Link extern"
 #: src/components/entities/views/entity-profile-view.presentation.tsx:262
 msgid "Extraction confidence"
 msgstr "Nivel de încredere al extragerii"
+
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:111
+msgid "Extras raw"
+msgstr ""
 
 #: src/features/campaigns/buget/components/CampaignAccessShareCard.tsx:47
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:295
@@ -4201,6 +4420,14 @@ msgstr "Feedback / Raportați o problemă"
 msgid "Feedback is currently unavailable."
 msgstr "Feedback-ul este indisponibil momentan."
 
+#: src/features/public-investments/components/HowToReadData.tsx:119
+msgid "Fiecare cifră are o dovadă: butonul „Vezi dovada” deschide registrul sursă, snapshot-ul și extrasul brut."
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:89
+msgid "Fiecare sumă critică are dovadă de sursă."
+msgstr ""
+
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:812
 msgid "File imported"
 msgstr "Fișier importat"
@@ -4265,6 +4492,10 @@ msgstr "Filtrele marcate ca excludere vor elimina din rezultate datele care core
 msgid "Filters out missing or non-numeric points before chart mapping."
 msgstr "Filtrează punctele lipsă sau non-numerice înainte de maparea graficului."
 
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:69
+msgid "Filtrează obiectivele mock-first fără a pierde dovada sursei."
+msgstr ""
+
 #: src/lib/commitments-metrics.ts:51
 msgid "Final budget credits"
 msgstr "Credite bugetare definitive"
@@ -4280,6 +4511,10 @@ msgstr "Credite de angajament definitive"
 #: src/features/learning/components/interactive/RectificationFlow.tsx:172
 msgid "Final:"
 msgstr "Final:"
+
+#: src/features/public-investments/lib/display.ts:37
+msgid "Finalizat"
+msgstr ""
 
 #: src/lib/ins/ins-metric-registry.ts:109
 msgid "Finance"
@@ -4362,6 +4597,14 @@ msgstr "Statut fiscal"
 #: src/features/private-companies/components/sections/private-company-at-a-glance-section.tsx:94
 msgid "Fiscally inactive"
 msgstr "Inactiv fiscal"
+
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:79
+msgid "Fișier"
+msgstr ""
+
+#: src/features/public-investments/lib/display.ts:104
+msgid "Fișier tabelar"
+msgstr ""
 
 #: src/features/learning/components/interactive/RectificationFlow.tsx:147
 msgid "Flow"
@@ -4567,6 +4810,14 @@ msgstr "Primiți actualizări despre"
 msgid "Global Chart Settings"
 msgstr "Setări globale pentru grafic"
 
+#: src/features/public-investments/components/HowToReadData.tsx:78
+msgid "Glosar"
+msgstr ""
+
+#: src/features/public-investments/components/HowToReadData.tsx:39
+msgid "Glosar și note de onestitate a datelor."
+msgstr ""
+
 #: src/features/learning/components/onboarding/LearningOnboarding.tsx:241
 msgid "Go back"
 msgstr "Mergi înapoi"
@@ -4745,6 +4996,10 @@ msgstr "Activitate practică"
 msgid "Hang tight while we resolve and redirect you to the destination."
 msgstr "Te rugăm să aștepți cât timp te redirecționăm către destinație."
 
+#: src/features/public-investments/components/PublicInvestmentsMapPanel.tsx:25
+msgid "Hartă investiții"
+msgstr ""
+
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:163
 msgid "Has the 2026 budget been published?"
 msgstr "A fost publicat bugetul pe 2026?"
@@ -4900,6 +5155,10 @@ msgstr "Am trimis emailul"
 msgid "I spend monthly"
 msgstr "Cheltui lunar"
 
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:117
+msgid "Identificatorii cu risc personal sunt reținuți în extras."
+msgstr ""
+
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:197
 msgid "Identifiers"
 msgstr "Identificatori"
@@ -4907,6 +5166,18 @@ msgstr "Identificatori"
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:339
 msgid "Identify the specific budget line or category. For example: \"Personnel expenses - Chapter 65 Education\""
 msgstr "Identifică linia bugetară sau categoria specifică. De exemplu: «Cheltuieli de personal - Capitolul 65 Învățământ»"
+
+#: src/features/public-investments/lib/display.ts:65
+msgid "Identitate medie"
+msgstr ""
+
+#: src/features/public-investments/lib/display.ts:67
+msgid "Identitate redusă"
+msgstr ""
+
+#: src/features/public-investments/lib/display.ts:63
+msgid "Identitate ridicată"
+msgstr ""
 
 #. placeholder {0}: formatCurrency(gross)
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:278
@@ -5007,6 +5278,14 @@ msgstr "Se importă…"
 msgid "in \"invisible\" consumption taxes."
 msgstr "în taxe de consum „invizibile”."
 
+#: src/features/public-investments/lib/display.ts:35
+msgid "În execuție"
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:129
+msgid "În lucru"
+msgstr ""
+
 #: src/features/learning/components/interactive/VATCalculator.tsx:180
 msgid "In one year, you will pay"
 msgstr "Într-un an, vei plăti"
@@ -5014,6 +5293,18 @@ msgstr "Într-un an, vei plăti"
 #: src/features/private-companies/components/layout/private-company-status-tags.tsx:79
 msgid "Inactive"
 msgstr "Inactivă"
+
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:209
+msgid "Înainte"
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:201
+msgid "Înapoi"
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:129
+msgid "Încărcat"
+msgstr ""
 
 #: src/routes/cookies.lazy.tsx:227
 msgid "Includes additional error context and, if you use feedback tools, may include your message text or screenshots."
@@ -5053,6 +5344,10 @@ msgstr "Venituri/Cheltuieli"
 #: src/features/learning/components/interactive/RectificationFlow.tsx:186
 msgid "increase"
 msgstr "creștere"
+
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:141
+msgid "Încredere identitate"
+msgstr ""
 
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:161
 msgid "Indicate when your city hall's budget draft was published."
@@ -5098,6 +5393,10 @@ msgstr "Credite de angajament inițiale"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:447
 msgid "Inputs used"
 msgstr "Intrări utilizate"
+
+#: src/features/public-investments/lib/display.ts:95
+msgid "Înregistrare negăsită"
+msgstr ""
 
 #: src/components/charts/components/series-config/InsSeriesEditor.tsx:559
 msgid "INS Dataset Configuration"
@@ -5210,6 +5509,14 @@ msgstr "Număr invalid"
 msgid "Invalid or expired link"
 msgstr "Link invalid sau expirat"
 
+#: src/routes/investitii-publice/route.tsx:52
+msgid "Investiții publice"
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:52
+msgid "Investiții publice locale"
+msgstr ""
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:408
 msgid "iqr"
 msgstr "iqr"
@@ -5285,6 +5592,20 @@ msgstr "Se înregistrează…"
 msgid "JSON exported"
 msgstr "JSON exportat"
 
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:87
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:141
+msgid "Județ"
+msgstr ""
+
+#: src/routes/investitii-publice/route.tsx:67
+msgid "Județ exemplu"
+msgstr ""
+
+#. placeholder {0}: territory.countyName
+#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:87
+msgid "Județul {0}"
+msgstr ""
+
 #: src/components/commitments/commitments-trends.tsx:193
 #: src/components/entities/EntityFinancialTrends.tsx:172
 msgid "July"
@@ -5356,6 +5677,10 @@ msgstr "Indicatori ai pieței muncii și ai presiunii pe locuire."
 #: src/components/theme/language-toggle.tsx:39
 msgid "Language"
 msgstr "Limbă"
+
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:42
+msgid "Lanțul de custodie pentru rândul din sursa publică."
+msgstr ""
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:255
 #: src/components/entities/views/ins-stats-view.presentation.tsx:325
@@ -5534,6 +5859,14 @@ msgstr "Link"
 msgid "Link copied to clipboard"
 msgstr "Link copiat în clipboard"
 
+#: src/features/public-investments/lib/display.ts:121
+msgid "Link indisponibil"
+msgstr ""
+
+#: src/features/public-investments/lib/display.ts:108
+msgid "Link istoric indisponibil"
+msgstr ""
+
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:373
 msgid "Link label (optional)"
 msgstr "Etichetă link (opțional)"
@@ -5545,6 +5878,14 @@ msgstr "Link către documentul de buget"
 #: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:130
 msgid "Link to the official city hall website"
 msgstr "Link către site-ul oficial al primăriei"
+
+#: src/features/public-investments/lib/display.ts:119
+msgid "Link verificat"
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:139
+msgid "Lipsă"
+msgstr ""
 
 #: src/components/entities/views/ins-stats-view.derived.ts:97
 #: src/components/entities/views/ins-stats-view.derived.ts:109
@@ -5801,6 +6142,15 @@ msgstr "Instantaneele locale vor apărea aici după salvarea automată sau salva
 #: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:300
 msgid "Local update"
 msgstr "Actualizare locală"
+
+#. placeholder {0}: territory.siruta ?? code
+#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:88
+msgid "Localitate {0}"
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:165
+msgid "Localități"
+msgstr ""
 
 #: src/components/charts/components/series-config/ins-dimension-values-list.tsx:59
 msgid "Locality options"
@@ -6489,6 +6839,20 @@ msgstr "Navighează la vizualizarea hartă"
 msgid "Navigation"
 msgstr "Navigare"
 
+#: src/features/public-investments/lib/display.ts:41
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:138
+msgid "Necunoscut"
+msgstr ""
+
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:80
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:85
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:95
+#: src/features/public-investments/lib/display.ts:131
+#: src/features/public-investments/lib/display.ts:143
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:230
+msgid "Nedisponibil"
+msgstr ""
+
 #: src/components/footer/support-menu.tsx:70
 msgid "Need help?"
 msgstr "Ai nevoie de ajutor?"
@@ -6552,6 +6916,10 @@ msgstr "Rezultat net ({0})"
 #: src/components/entities/views/ins-stats-view.derived.ts:170
 msgid "Network expansion may precede household connections, so combine with consumption indicators."
 msgstr "Extinderea rețelei poate preceda conectările gospodăriilor, de aceea combinați acest indicator cu indicatorii de consum."
+
+#: src/features/public-investments/lib/display.ts:123
+msgid "Neverificat"
+msgstr ""
 
 #: src/features/learning/components/interactive/VATReformCard.tsx:30
 msgid "New"
@@ -7158,6 +7526,10 @@ msgstr "Nu chiar"
 msgid "Not quite!"
 msgstr "Nu chiar!"
 
+#: src/features/public-investments/components/HowToReadData.tsx:96
+msgid "Note de onestitate"
+msgstr ""
+
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:302
 msgid "Note your observations about the debate…"
 msgstr "Notează observațiile tale despre dezbatere…"
@@ -7206,10 +7578,85 @@ msgstr "Noiembrie"
 msgid "Now"
 msgstr "Acum"
 
+#. placeholder {0}: messageParams?.code ? ` (${messageParams.code})` : ''
+#: src/features/public-investments/components/BlockedDataState.tsx:16
+msgid "Nu am găsit în fixture înregistrarea cerută{0}."
+msgstr ""
+
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:56
+msgid "Nu am putut încărca dovada."
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:36
+msgid "Nu am putut încărca investițiile publice"
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:77
+msgid "Nu am putut încărca obiectivul."
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:156
+msgid "Nu am putut încărca rezultatele."
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:78
+msgid "Nu am putut încărca teritoriul."
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:167
+msgid "Nu există contracte normalizate în fixture."
+msgstr ""
+
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:126
+msgid "Nu există extras raw disponibil pentru acest rând."
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:152
+msgid "Nu există plăți încărcate pentru acest obiectiv."
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:181
+msgid "Nu există rezultate pentru filtrele selectate."
+msgstr ""
+
 #: src/components/maps/charts/UatDistributionChart.tsx:39
 #: src/components/maps/charts/UatDistributionChart.tsx:105
 msgid "Number of UATs"
 msgstr "Număr de UAT-uri"
+
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:31
+msgid "nume reținut - verificare în curs"
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:292
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:305
+msgid "Nume reținut - verificare în curs"
+msgstr ""
+
+#: src/features/public-investments/components/HowToReadData.tsx:113
+msgid "Numele părților reținute (PFA / în curs de verificare) nu sunt afișate. În locul lor apare un aviz de confidențialitate."
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:98
+#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:104
+msgid "Obiective"
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:55
+msgid "Obiective Anghel Saligny, PNDL, PNCCRS și PNMC modelate mock-first cu dovezi, acoperire și limite explicite."
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:144
+msgid "Obiective cu absorbție redusă"
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:134
+msgid "obiective în catalog"
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:98
+msgid "Obiective, acoperire și absorbție pe teritoriul selectat."
+msgstr ""
 
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:163
 msgid "Observations"
@@ -7601,6 +8048,10 @@ msgstr "Părinte"
 msgid "Parent Categories"
 msgstr "Categorii părinte"
 
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:107
+msgid "Părți"
+msgstr ""
+
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1522
 msgid "Partial history"
 msgstr "Istoric parțial"
@@ -7622,6 +8073,10 @@ msgstr "Participare"
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:179
 msgid "Participation report"
 msgstr "Raport de participare"
+
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:86
+msgid "Părțile cu risc personal sunt reținute până la revizuire."
+msgstr ""
 
 #: src/components/charts/components/chart-config/SeriesToolbar.tsx:37
 msgid "Paste"
@@ -7841,6 +8296,10 @@ msgstr "Text simplu"
 msgid "Planned"
 msgstr "Planificat"
 
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:232
+msgid "Plată"
+msgstr ""
+
 #: src/features/learning/components/interactive/PlatformMission.tsx:29
 msgid "Platform Mission"
 msgstr "Misiunea platformei"
@@ -7849,9 +8308,25 @@ msgstr "Misiunea platformei"
 msgid "Platform notifications are subject to the <0>Transparenta.eu Terms of Use</0> and <1>Privacy Policy</1>."
 msgstr "Notificările platformei sunt supuse <0>Termenilor de utilizare Transparenta.eu</0> și <1>Politicii de confidențialitate</1>."
 
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:105
+msgid "Plăți"
+msgstr ""
+
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:486
 msgid "Please try again to load your campaign notification preferences."
 msgstr "Vă rugăm să încercați din nou să încărcați preferințele de notificare pentru campanie."
+
+#: src/features/public-investments/lib/display.ts:22
+msgid "PNCCRS"
+msgstr ""
+
+#: src/features/public-investments/lib/display.ts:20
+msgid "PNDL"
+msgstr ""
+
+#: src/features/public-investments/lib/display.ts:24
+msgid "PNMC"
+msgstr ""
 
 #: src/features/learning/components/interactive/ExecutionRateChart.tsx:251
 msgid "Poor"
@@ -8019,6 +8494,10 @@ msgstr "Secțiunea anterioară"
 msgid "Previous step"
 msgstr "Pasul anterior"
 
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:104
+msgid "Prezentare"
+msgstr ""
+
 #: src/components/theme/inflation-toggle.tsx:59
 msgid "Prices"
 msgstr "Prețuri"
@@ -8042,9 +8521,17 @@ msgstr "Politica de confidențialitate"
 msgid "Private"
 msgstr "Privată"
 
+#: src/routes/investitii-publice/route.tsx:57
+msgid "Privire generală"
+msgstr ""
+
 #: src/components/ui/shortcuts.tsx:126
 msgid "Pro Tip"
 msgstr "Sfat Pro"
+
+#: src/features/public-investments/components/HowToReadData.tsx:67
+msgid "Procentul decontat din contractat (decontat / contractat)."
+msgstr ""
 
 #: src/routes/unsubscribe.$token.tsx:125
 msgid "Processing..."
@@ -8066,11 +8553,30 @@ msgstr "Detaliile profilului necesită un CUI de entitate mapat pentru acest UAT
 msgid "Profile information for this entity has not been collected yet."
 msgstr "Informatiile de profil pentru aceasta institutie nu au fost colectate inca."
 
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:97
+#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:121
+msgid "Program"
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:145
+msgid "Programe"
+msgstr ""
+
+#. placeholder {0}: formatPct(value)
+#: src/features/public-investments/components/AbsorptionBar.tsx:26
+msgid "Progres absorbție {0}"
+msgstr ""
+
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:209
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:262
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:205
 msgid "Progress"
 msgstr "Progres"
+
+#: src/features/public-investments/lib/display.ts:78
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:269
+msgid "Proiectant"
+msgstr ""
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:447
 msgid "Propose a specific and realistic change. For example: \"Redistribute 500,000 lei from personnel expenses to school infrastructure investments.\""
@@ -8317,6 +8823,10 @@ msgstr "Primește un raport anual privind execuția bugetară"
 msgid "Receive updates about this entity in the local budget campaign"
 msgstr "Primește actualizări despre această entitate în campania pentru bugetul local"
 
+#: src/features/public-investments/lib/display.ts:39
+msgid "Recepționat"
+msgstr ""
+
 #: src/routes/$lang/learning/certificates.$id.lazy.tsx:52
 msgid "Recipient"
 msgstr "Destinatar"
@@ -8397,6 +8907,10 @@ msgstr "Ponderea șomajului înregistrat"
 #: src/features/private-companies/components/layout/private-company-header.tsx:29
 msgid "Registration number"
 msgstr "Număr de înregistrare"
+
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:79
+msgid "Reguli de încredere"
+msgstr ""
 
 #: src/components/classification-explorer/ClassificationSiblings.tsx:32
 msgid "Related Categories"
@@ -8682,6 +9196,10 @@ msgstr "Rând"
 #: src/components/maps/HeatmapDataTable.tsx:96
 msgid "Row {0}"
 msgstr "Rândul {0}"
+
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:94
+msgid "Row hash"
+msgstr ""
 
 #: src/features/advanced-map-analytics/components/map-analytics-group-workspace-import-dialog.tsx:49
 msgid "Row-per-UAT CSV"
@@ -9543,6 +10061,7 @@ msgstr "CSV cluster simulare"
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1508
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:229
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:191
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:139
 msgid "SIRUTA"
 msgstr "SIRUTA"
 
@@ -9574,6 +10093,11 @@ msgstr "Rând omis cu SIRUTA sau grup lipsă."
 #: src/features/private-companies/components/private-company-source-footer.tsx:33
 msgid "snapshot"
 msgstr "instantaneu"
+
+#. placeholder {0}: status.snapshotDate
+#: src/features/public-investments/lib/display.ts:153
+msgid "Snapshot {0}"
+msgstr ""
 
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:108
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:100
@@ -9638,6 +10162,10 @@ msgstr "Ceva nu a funcționat corect."
 msgid "Sort by"
 msgstr "Sortează după"
 
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:129
+msgid "Sortare"
+msgstr ""
+
 #: src/components/charts/components/filters-details/StaticSeriesFilter.tsx:31
 #: src/components/charts/components/series-config/StaticSeriesEditor.tsx:50
 #: src/components/commitments/CommitmentsTable.tsx:231
@@ -9679,6 +10207,26 @@ msgstr "Calculul cheltuielilor"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:119
 msgid "Splits UATs relative to the median value. More robust than mean-based filters when outliers exist."
 msgstr "Împarte UAT-urile relativ la valoarea mediană. Mai robust decât filtrele bazate pe medie când există valori extreme."
+
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:113
+msgid "Stadiu"
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:191
+msgid "Stadiu necunoscut"
+msgstr ""
+
+#: src/features/public-investments/components/HowToReadData.tsx:70
+msgid "Stadiu obiectiv"
+msgstr ""
+
+#: src/features/public-investments/components/HowToReadData.tsx:71
+msgid "Stadiul normalizat (Contractat / În execuție / Finalizat / Recepționat / Necunoscut). Textul brut din sursă apare la fiecare cifră."
+msgstr ""
+
+#: src/features/public-investments/components/HowToReadData.tsx:71
+#~ msgid "Stadiul normalizez (Contractat / În execuție / Finalizat / Recepționat / Necunoscut). Textul brut din sursă apare la fiecare cifră."
+#~ msgstr ""
 
 #: src/components/maps/HeatmapDataTable.tsx:476
 #: src/features/learning/components/interactive/VATReformCard.tsx:29
@@ -9884,6 +10432,14 @@ msgstr "Sumă"
 msgid "Sum group members"
 msgstr "Sumă membrii grupului"
 
+#: src/features/public-investments/components/HowToReadData.tsx:55
+msgid "Suma alocată din program pentru obiectiv (valoare planificată)."
+msgstr ""
+
+#: src/features/public-investments/components/HowToReadData.tsx:63
+msgid "Suma rambursată/decontată din valoarea contractată, plătită efectiv."
+msgstr ""
+
 #: src/features/private-companies/lib/tab-config.ts:45
 msgid "Summary"
 msgstr "Rezumat"
@@ -9891,6 +10447,10 @@ msgstr "Rezumat"
 #: src/features/advanced-map-analytics/components/map-analytics-group-workspace-import-dialog.tsx:241
 msgid "Supports row-per-UAT CSV and simulation cluster CSV. You can also drag a file anywhere in this dialog."
 msgstr "Acceptă CSV câte un rând per UAT și CSV cluster simulare. Puteți trage un fișier oriunde în acest dialog."
+
+#: src/features/public-investments/lib/display.ts:110
+msgid "Sursă necunoscută"
+msgstr ""
 
 #: src/features/challenges/components/hub/UatSwitchBadge.tsx:48
 msgid "Switch city hall"
@@ -9936,6 +10496,10 @@ msgstr "Stare sistem"
 #: src/components/footer/AppFooter.tsx:199
 msgid "System status badge"
 msgstr "Insignă stare sistem"
+
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:84
+msgid "Tabel"
+msgstr ""
 
 #: src/components/filters/EntityAnalyticsFilter.tsx:439
 #: src/components/filters/MapFilter.tsx:213
@@ -9986,6 +10550,10 @@ msgstr "Opțiuni teritoriu"
 #: src/routes/test-error.tsx:9
 msgid "Test error"
 msgstr "Eroare de test"
+
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:83
+msgid "Text"
+msgstr ""
 
 #. placeholder {0}: formatCurrency((result.employerTotal - result.net) * 12)
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:416
@@ -10362,6 +10930,10 @@ msgstr "Titlu A–Z"
 msgid "Title Z–A"
 msgstr "Titlu Z–A"
 
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:140
+msgid "Titlu"
+msgstr ""
+
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:367
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:389
 msgid "To"
@@ -10370,6 +10942,12 @@ msgstr "Catre"
 #: src/components/commitments/DetailTable.tsx:588
 msgid "To Pay"
 msgstr "De Plată"
+
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:105
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:121
+#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:134
+msgid "Toate"
+msgstr ""
 
 #: src/routes/cookies.lazy.tsx:200
 msgid "Toggle analytics cookies"
@@ -11017,6 +11595,10 @@ msgstr "Utilități și administrarea teritoriului"
 msgid "Utilization"
 msgstr "Utilizare"
 
+#: src/features/public-investments/lib/display.ts:50
+msgid "Validat"
+msgstr ""
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:587
 msgid "Validation errors"
 msgstr "Erori de validare"
@@ -11024,6 +11606,31 @@ msgstr "Erori de validare"
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1305
 msgid "Validation issues"
 msgstr "Probleme de validare"
+
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:271
+msgid "Valoare"
+msgstr ""
+
+#: src/features/public-investments/components/AmountWithEvidence.tsx:26
+#: src/features/public-investments/lib/display.ts:54
+msgid "Valoare în verificare"
+msgstr ""
+
+#: src/features/public-investments/components/HowToReadData.tsx:59
+msgid "Valoarea contractată efectiv pentru execuția lucrării."
+msgstr ""
+
+#: src/features/public-investments/components/AbsorptionBar.tsx:30
+msgid "Valoarea sursei depășește contractatul; bara este plafonată vizual."
+msgstr ""
+
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:83
+msgid "Valorile suspecte ×1000 nu intră în totaluri."
+msgstr ""
+
+#: src/features/public-investments/components/PublicInvestmentsMapPanel.tsx:60
+msgid "Valorile suspecte ×1000 sunt păstrate ca puncte de acoperire, dar nu intră în mărimea punctului sau totaluri."
+msgstr ""
 
 #: src/components/charts/components/series-config/CustomSeriesDataEditor.tsx:95
 #: src/components/charts/components/series-config/CustomSeriesValueEditor.tsx:38
@@ -11093,6 +11700,14 @@ msgstr "Statut TVA necunoscut"
 msgid "VAT, Income, Profit"
 msgstr "TVA, Venit, Profit"
 
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:37
+msgid "Verifică serverul local sau încearcă din nou."
+msgstr ""
+
+#: src/features/public-investments/components/DataStatusBadge.tsx:22
+msgid "Verificări active"
+msgstr ""
+
 #: src/routes/$lang/learning/certificates.$id.lazy.tsx:93
 msgid "Verify a learning certificate (proof of concept)."
 msgstr "Verifică un certificat de învățare (proof of concept)."
@@ -11104,6 +11719,10 @@ msgstr "Istoricul versiunilor"
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:221
 msgid "Version restored"
 msgstr "Versiune restaurată"
+
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:70
+msgid "Vezi Cluj"
+msgstr ""
 
 #: src/components/filters/EntityAnalyticsFilter.tsx:436
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:1068

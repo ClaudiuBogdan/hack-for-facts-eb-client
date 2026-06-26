@@ -24,9 +24,11 @@ import { Route as CookiePolicyRouteImport } from './routes/cookie-policy'
 import { Route as BugeteLocale2026RouteImport } from './routes/bugete-locale-2026'
 import { Route as BugetNational2026RouteImport } from './routes/buget-national-2026'
 import { Route as BudgetExplorerRouteImport } from './routes/budget-explorer'
+import { Route as InvestitiiPubliceRouteRouteImport } from './routes/investitii-publice/route'
 import { Route as EntitiesRouteRouteImport } from './routes/entities/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PrimarieIndexRouteImport } from './routes/primarie/index'
+import { Route as InvestitiiPubliceIndexRouteImport } from './routes/investitii-publice/index'
 import { Route as EntitiesIndexRouteImport } from './routes/entities/index'
 import { Route as UnsubscribeTokenRouteImport } from './routes/unsubscribe.$token'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
@@ -37,6 +39,7 @@ import { Route as SettingsNotificationsRouteImport } from './routes/settings/not
 import { Route as ProvocareTermeniSiConditiiRouteImport } from './routes/provocare_.termeni-si-conditii'
 import { Route as ProvocareNotificariRouteImport } from './routes/provocare_.notificari'
 import { Route as PnrrShareImageDotpngRouteImport } from './routes/pnrr.share-image[.]png'
+import { Route as InvestitiiPubliceCautareRouteImport } from './routes/investitii-publice/cautare'
 import { Route as EntitiesCuiRouteImport } from './routes/entities.$cui'
 import { Route as CompaniesCuiRouteImport } from './routes/companies.$cui'
 import { Route as ChartsNewRouteImport } from './routes/charts/new'
@@ -60,6 +63,9 @@ import { Route as MapsEditorNewRouteImport } from './routes/maps/editor/new'
 import { Route as MapsEditorMapIdRouteImport } from './routes/maps/editor/$mapId'
 import { Route as MapsDatasetsNewRouteImport } from './routes/maps/datasets/new'
 import { Route as MapsDatasetsDatasetIdRouteImport } from './routes/maps/datasets/$datasetId'
+import { Route as InvestitiiPubliceObiectiveIdRouteImport } from './routes/investitii-publice/obiective.$id'
+import { Route as InvestitiiPubliceLocalitatiSirutaRouteImport } from './routes/investitii-publice/localitati.$siruta'
+import { Route as InvestitiiPubliceJudeteCountyCodeRouteImport } from './routes/investitii-publice/judete.$countyCode'
 import { Route as EntitiesCuiShareImageDotpngRouteImport } from './routes/entities.$cui.share-image[.]png'
 import { Route as ClassificationsFunctionalCodeRouteImport } from './routes/classifications/functional/$code'
 import { Route as ClassificationsEconomicCodeRouteImport } from './routes/classifications/economic/$code'
@@ -173,6 +179,11 @@ const BudgetExplorerRoute = BudgetExplorerRouteImport.update({
 } as any).lazy(() =>
   import('./routes/budget-explorer.lazy').then((d) => d.Route),
 )
+const InvestitiiPubliceRouteRoute = InvestitiiPubliceRouteRouteImport.update({
+  id: '/investitii-publice',
+  path: '/investitii-publice',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EntitiesRouteRoute = EntitiesRouteRouteImport.update({
   id: '/entities',
   path: '/entities',
@@ -195,6 +206,11 @@ const PrimarieIndexRoute = PrimarieIndexRouteImport.update({
 } as any).lazy(() =>
   import('./routes/primarie/index.lazy').then((d) => d.Route),
 )
+const InvestitiiPubliceIndexRoute = InvestitiiPubliceIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => InvestitiiPubliceRouteRoute,
+} as any)
 const EntitiesIndexRoute = EntitiesIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -258,6 +274,12 @@ const PnrrShareImageDotpngRoute = PnrrShareImageDotpngRouteImport.update({
   path: '/share-image.png',
   getParentRoute: () => PnrrRoute,
 } as any)
+const InvestitiiPubliceCautareRoute =
+  InvestitiiPubliceCautareRouteImport.update({
+    id: '/cautare',
+    path: '/cautare',
+    getParentRoute: () => InvestitiiPubliceRouteRoute,
+  } as any)
 const EntitiesCuiRoute = EntitiesCuiRouteImport.update({
   id: '/$cui',
   path: '/$cui',
@@ -423,6 +445,24 @@ const MapsDatasetsDatasetIdRoute = MapsDatasetsDatasetIdRouteImport.update({
 } as any).lazy(() =>
   import('./routes/maps/datasets/$datasetId.lazy').then((d) => d.Route),
 )
+const InvestitiiPubliceObiectiveIdRoute =
+  InvestitiiPubliceObiectiveIdRouteImport.update({
+    id: '/obiective/$id',
+    path: '/obiective/$id',
+    getParentRoute: () => InvestitiiPubliceRouteRoute,
+  } as any)
+const InvestitiiPubliceLocalitatiSirutaRoute =
+  InvestitiiPubliceLocalitatiSirutaRouteImport.update({
+    id: '/localitati/$siruta',
+    path: '/localitati/$siruta',
+    getParentRoute: () => InvestitiiPubliceRouteRoute,
+  } as any)
+const InvestitiiPubliceJudeteCountyCodeRoute =
+  InvestitiiPubliceJudeteCountyCodeRouteImport.update({
+    id: '/judete/$countyCode',
+    path: '/judete/$countyCode',
+    getParentRoute: () => InvestitiiPubliceRouteRoute,
+  } as any)
 const EntitiesCuiShareImageDotpngRoute =
   EntitiesCuiShareImageDotpngRouteImport.update({
     id: '/share-image.png',
@@ -657,6 +697,7 @@ const PrimarieCuiBugetProvocariModuleSlugChallengeSlugStepSlugRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/entities': typeof EntitiesRouteRouteWithChildren
+  '/investitii-publice': typeof InvestitiiPubliceRouteRouteWithChildren
   '/budget-explorer': typeof BudgetExplorerRoute
   '/buget-national-2026': typeof BugetNational2026Route
   '/bugete-locale-2026': typeof BugeteLocale2026RouteWithChildren
@@ -681,6 +722,7 @@ export interface FileRoutesByFullPath {
   '/charts/new': typeof ChartsNewRoute
   '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
+  '/investitii-publice/cautare': typeof InvestitiiPubliceCautareRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
   '/provocare/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
@@ -692,6 +734,7 @@ export interface FileRoutesByFullPath {
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/entities/': typeof EntitiesIndexRoute
+  '/investitii-publice/': typeof InvestitiiPubliceIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
@@ -700,6 +743,9 @@ export interface FileRoutesByFullPath {
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
+  '/investitii-publice/judete/$countyCode': typeof InvestitiiPubliceJudeteCountyCodeRoute
+  '/investitii-publice/localitati/$siruta': typeof InvestitiiPubliceLocalitatiSirutaRoute
+  '/investitii-publice/obiective/$id': typeof InvestitiiPubliceObiectiveIdRoute
   '/maps/datasets/$datasetId': typeof MapsDatasetsDatasetIdRoute
   '/maps/datasets/new': typeof MapsDatasetsNewRoute
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
@@ -760,6 +806,7 @@ export interface FileRoutesByTo {
   '/charts/new': typeof ChartsNewRoute
   '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
+  '/investitii-publice/cautare': typeof InvestitiiPubliceCautareRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
   '/provocare/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
@@ -771,12 +818,16 @@ export interface FileRoutesByTo {
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/entities': typeof EntitiesIndexRoute
+  '/investitii-publice': typeof InvestitiiPubliceIndexRoute
   '/primarie': typeof PrimarieIndexRoute
   '/charts': typeof ChartsIndexLazyRoute
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
+  '/investitii-publice/judete/$countyCode': typeof InvestitiiPubliceJudeteCountyCodeRoute
+  '/investitii-publice/localitati/$siruta': typeof InvestitiiPubliceLocalitatiSirutaRoute
+  '/investitii-publice/obiective/$id': typeof InvestitiiPubliceObiectiveIdRoute
   '/maps/datasets/$datasetId': typeof MapsDatasetsDatasetIdRoute
   '/maps/datasets/new': typeof MapsDatasetsNewRoute
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
@@ -818,6 +869,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/entities': typeof EntitiesRouteRouteWithChildren
+  '/investitii-publice': typeof InvestitiiPubliceRouteRouteWithChildren
   '/budget-explorer': typeof BudgetExplorerRoute
   '/buget-national-2026': typeof BugetNational2026Route
   '/bugete-locale-2026': typeof BugeteLocale2026RouteWithChildren
@@ -842,6 +894,7 @@ export interface FileRoutesById {
   '/charts/new': typeof ChartsNewRoute
   '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
+  '/investitii-publice/cautare': typeof InvestitiiPubliceCautareRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare_/notificari': typeof ProvocareNotificariRoute
   '/provocare_/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
@@ -853,6 +906,7 @@ export interface FileRoutesById {
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/entities/': typeof EntitiesIndexRoute
+  '/investitii-publice/': typeof InvestitiiPubliceIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
@@ -861,6 +915,9 @@ export interface FileRoutesById {
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
+  '/investitii-publice/judete/$countyCode': typeof InvestitiiPubliceJudeteCountyCodeRoute
+  '/investitii-publice/localitati/$siruta': typeof InvestitiiPubliceLocalitatiSirutaRoute
+  '/investitii-publice/obiective/$id': typeof InvestitiiPubliceObiectiveIdRoute
   '/maps/datasets/$datasetId': typeof MapsDatasetsDatasetIdRoute
   '/maps/datasets/new': typeof MapsDatasetsNewRoute
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
@@ -904,6 +961,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/entities'
+    | '/investitii-publice'
     | '/budget-explorer'
     | '/buget-national-2026'
     | '/bugete-locale-2026'
@@ -928,6 +986,7 @@ export interface FileRouteTypes {
     | '/charts/new'
     | '/companies/$cui'
     | '/entities/$cui'
+    | '/investitii-publice/cautare'
     | '/pnrr/share-image.png'
     | '/provocare/notificari'
     | '/provocare/termeni-si-conditii'
@@ -939,6 +998,7 @@ export interface FileRouteTypes {
     | '/unsubscribe/$token'
     | '/research/employees-data'
     | '/entities/'
+    | '/investitii-publice/'
     | '/primarie/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
@@ -947,6 +1007,9 @@ export interface FileRouteTypes {
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
+    | '/investitii-publice/judete/$countyCode'
+    | '/investitii-publice/localitati/$siruta'
+    | '/investitii-publice/obiective/$id'
     | '/maps/datasets/$datasetId'
     | '/maps/datasets/new'
     | '/maps/editor/$mapId'
@@ -1007,6 +1070,7 @@ export interface FileRouteTypes {
     | '/charts/new'
     | '/companies/$cui'
     | '/entities/$cui'
+    | '/investitii-publice/cautare'
     | '/pnrr/share-image.png'
     | '/provocare/notificari'
     | '/provocare/termeni-si-conditii'
@@ -1018,12 +1082,16 @@ export interface FileRouteTypes {
     | '/unsubscribe/$token'
     | '/research/employees-data'
     | '/entities'
+    | '/investitii-publice'
     | '/primarie'
     | '/charts'
     | '/$lang/learning/onboarding'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
+    | '/investitii-publice/judete/$countyCode'
+    | '/investitii-publice/localitati/$siruta'
+    | '/investitii-publice/obiective/$id'
     | '/maps/datasets/$datasetId'
     | '/maps/datasets/new'
     | '/maps/editor/$mapId'
@@ -1064,6 +1132,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/entities'
+    | '/investitii-publice'
     | '/budget-explorer'
     | '/buget-national-2026'
     | '/bugete-locale-2026'
@@ -1088,6 +1157,7 @@ export interface FileRouteTypes {
     | '/charts/new'
     | '/companies/$cui'
     | '/entities/$cui'
+    | '/investitii-publice/cautare'
     | '/pnrr/share-image.png'
     | '/provocare_/notificari'
     | '/provocare_/termeni-si-conditii'
@@ -1099,6 +1169,7 @@ export interface FileRouteTypes {
     | '/unsubscribe/$token'
     | '/research/employees-data'
     | '/entities/'
+    | '/investitii-publice/'
     | '/primarie/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
@@ -1107,6 +1178,9 @@ export interface FileRouteTypes {
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
+    | '/investitii-publice/judete/$countyCode'
+    | '/investitii-publice/localitati/$siruta'
+    | '/investitii-publice/obiective/$id'
     | '/maps/datasets/$datasetId'
     | '/maps/datasets/new'
     | '/maps/editor/$mapId'
@@ -1149,6 +1223,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   EntitiesRouteRoute: typeof EntitiesRouteRouteWithChildren
+  InvestitiiPubliceRouteRoute: typeof InvestitiiPubliceRouteRouteWithChildren
   BudgetExplorerRoute: typeof BudgetExplorerRoute
   BugetNational2026Route: typeof BugetNational2026Route
   BugeteLocale2026Route: typeof BugeteLocale2026RouteWithChildren
@@ -1299,6 +1374,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BudgetExplorerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/investitii-publice': {
+      id: '/investitii-publice'
+      path: '/investitii-publice'
+      fullPath: '/investitii-publice'
+      preLoaderRoute: typeof InvestitiiPubliceRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/entities': {
       id: '/entities'
       path: '/entities'
@@ -1326,6 +1408,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/primarie/'
       preLoaderRoute: typeof PrimarieIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/investitii-publice/': {
+      id: '/investitii-publice/'
+      path: '/'
+      fullPath: '/investitii-publice/'
+      preLoaderRoute: typeof InvestitiiPubliceIndexRouteImport
+      parentRoute: typeof InvestitiiPubliceRouteRoute
     }
     '/entities/': {
       id: '/entities/'
@@ -1403,6 +1492,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/pnrr/share-image.png'
       preLoaderRoute: typeof PnrrShareImageDotpngRouteImport
       parentRoute: typeof PnrrRoute
+    }
+    '/investitii-publice/cautare': {
+      id: '/investitii-publice/cautare'
+      path: '/cautare'
+      fullPath: '/investitii-publice/cautare'
+      preLoaderRoute: typeof InvestitiiPubliceCautareRouteImport
+      parentRoute: typeof InvestitiiPubliceRouteRoute
     }
     '/entities/$cui': {
       id: '/entities/$cui'
@@ -1578,6 +1674,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/maps/datasets/$datasetId'
       preLoaderRoute: typeof MapsDatasetsDatasetIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/investitii-publice/obiective/$id': {
+      id: '/investitii-publice/obiective/$id'
+      path: '/obiective/$id'
+      fullPath: '/investitii-publice/obiective/$id'
+      preLoaderRoute: typeof InvestitiiPubliceObiectiveIdRouteImport
+      parentRoute: typeof InvestitiiPubliceRouteRoute
+    }
+    '/investitii-publice/localitati/$siruta': {
+      id: '/investitii-publice/localitati/$siruta'
+      path: '/localitati/$siruta'
+      fullPath: '/investitii-publice/localitati/$siruta'
+      preLoaderRoute: typeof InvestitiiPubliceLocalitatiSirutaRouteImport
+      parentRoute: typeof InvestitiiPubliceRouteRoute
+    }
+    '/investitii-publice/judete/$countyCode': {
+      id: '/investitii-publice/judete/$countyCode'
+      path: '/judete/$countyCode'
+      fullPath: '/investitii-publice/judete/$countyCode'
+      preLoaderRoute: typeof InvestitiiPubliceJudeteCountyCodeRouteImport
+      parentRoute: typeof InvestitiiPubliceRouteRoute
     }
     '/entities/$cui/share-image.png': {
       id: '/entities/$cui/share-image.png'
@@ -1804,6 +1921,30 @@ const EntitiesRouteRouteWithChildren = EntitiesRouteRoute._addFileChildren(
   EntitiesRouteRouteChildren,
 )
 
+interface InvestitiiPubliceRouteRouteChildren {
+  InvestitiiPubliceCautareRoute: typeof InvestitiiPubliceCautareRoute
+  InvestitiiPubliceIndexRoute: typeof InvestitiiPubliceIndexRoute
+  InvestitiiPubliceJudeteCountyCodeRoute: typeof InvestitiiPubliceJudeteCountyCodeRoute
+  InvestitiiPubliceLocalitatiSirutaRoute: typeof InvestitiiPubliceLocalitatiSirutaRoute
+  InvestitiiPubliceObiectiveIdRoute: typeof InvestitiiPubliceObiectiveIdRoute
+}
+
+const InvestitiiPubliceRouteRouteChildren: InvestitiiPubliceRouteRouteChildren =
+  {
+    InvestitiiPubliceCautareRoute: InvestitiiPubliceCautareRoute,
+    InvestitiiPubliceIndexRoute: InvestitiiPubliceIndexRoute,
+    InvestitiiPubliceJudeteCountyCodeRoute:
+      InvestitiiPubliceJudeteCountyCodeRoute,
+    InvestitiiPubliceLocalitatiSirutaRoute:
+      InvestitiiPubliceLocalitatiSirutaRoute,
+    InvestitiiPubliceObiectiveIdRoute: InvestitiiPubliceObiectiveIdRoute,
+  }
+
+const InvestitiiPubliceRouteRouteWithChildren =
+  InvestitiiPubliceRouteRoute._addFileChildren(
+    InvestitiiPubliceRouteRouteChildren,
+  )
+
 interface BugeteLocale2026RouteChildren {
   BugeteLocale2026TermeniSiConditiiRoute: typeof BugeteLocale2026TermeniSiConditiiRoute
 }
@@ -2007,6 +2148,7 @@ const AdminCampaignsCampaignKeyRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   EntitiesRouteRoute: EntitiesRouteRouteWithChildren,
+  InvestitiiPubliceRouteRoute: InvestitiiPubliceRouteRouteWithChildren,
   BudgetExplorerRoute: BudgetExplorerRoute,
   BugetNational2026Route: BugetNational2026Route,
   BugeteLocale2026Route: BugeteLocale2026RouteWithChildren,

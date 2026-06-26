@@ -21,6 +21,8 @@ interface ImportMetaEnv {
   readonly VITE_BETTER_STACK_STATUS_WIDGET_ID?: string;
   readonly VITE_DISCOURSE_BASE_URL?: string;
   readonly VITE_CAMPAIGN_SELF_SEND_CC_EMAILS?: string;
+  readonly VITE_USE_MOCK_DATA?: string;
+  readonly VITE_MOCK_DATASETS?: string;
 }
 
 interface ImportMeta {
@@ -55,6 +57,8 @@ declare namespace NodeJS {
     readonly VITE_BETTER_STACK_STATUS_WIDGET_ID?: string;
     readonly VITE_DISCOURSE_BASE_URL?: string;
     readonly VITE_CAMPAIGN_SELF_SEND_CC_EMAILS?: string;
+    readonly VITE_USE_MOCK_DATA?: string;
+    readonly VITE_MOCK_DATASETS?: string;
   }
 }
 
