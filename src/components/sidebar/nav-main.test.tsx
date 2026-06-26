@@ -36,6 +36,7 @@ vi.mock('lucide-react', () => ({
   Map: () => <span data-testid="icon-map" />,
   ListOrdered: () => <span data-testid="icon-entity-analytics" />,
   Boxes: () => <span data-testid="icon-budget-explorer" />,
+  Activity: () => <span data-testid="icon-statistics" />,
 }))
 
 // Mock router
@@ -130,11 +131,18 @@ describe('NavMain', () => {
       expect(screen.getByText('Entity Analytics')).toBeInTheDocument()
     })
 
+    it('renders Statistics link', () => {
+      render(<NavMain />)
+
+      expect(screen.getByTestId('link-/statistici')).toBeInTheDocument()
+      expect(screen.getByText('Statistici')).toBeInTheDocument()
+    })
+
     it('renders all menu items', () => {
       render(<NavMain />)
 
       const menuItems = screen.getAllByTestId('sidebar-menu-item')
-      expect(menuItems).toHaveLength(5)
+      expect(menuItems).toHaveLength(6)
     })
   })
 
@@ -155,6 +163,12 @@ describe('NavMain', () => {
       render(<NavMain />)
 
       expect(screen.getByTestId('icon-charts')).toBeInTheDocument()
+    })
+
+    it('renders statistics icon', () => {
+      render(<NavMain />)
+
+      expect(screen.getByTestId('icon-statistics')).toBeInTheDocument()
     })
   })
 
@@ -181,6 +195,14 @@ describe('NavMain', () => {
 
       const chartsLink = screen.getByTestId('link-/charts')
       expect(chartsLink).toHaveClass('bg-muted')
+    })
+
+    it('marks Statistics as active when on /statistici subpath', () => {
+      mockMatches.mockReturnValue([{ pathname: '/statistici/teritorii/54975' }])
+      render(<NavMain />)
+
+      const statisticsLink = screen.getByTestId('link-/statistici')
+      expect(statisticsLink).toHaveClass('bg-muted')
     })
 
     it('does not mark Dashboard as active on other pages', () => {

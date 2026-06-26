@@ -62,9 +62,17 @@ msgstr "(Existing dwellings / Population) × 1,000"
 msgid "(Gas network length / Population) × 1,000"
 msgstr "(Gas network length / Population) × 1,000"
 
+#: src/features/statistics/lib/coverage.ts:82
+msgid "(listă parțială)"
+msgstr "(listă parțială)"
+
 #: src/components/entities/views/ins-stats-view.derived.ts:96
 msgid "(Live births / Population) × 1,000"
 msgstr "(Live births / Population) × 1,000"
+
+#: src/features/statistics/components/source-provenance-drawer.tsx:118
+msgid "(se deschide într-un tab nou)"
+msgstr "(se deschide într-un tab nou)"
 
 #: src/components/entities/views/ins-stats-view.derived.ts:162
 msgid "(Sewer network length / Population) × 1,000"
@@ -190,6 +198,10 @@ msgstr "{0} view enabled"
 msgid "{0} views enabled"
 msgstr "{0} views enabled"
 
+#: src/features/statistics/lib/coverage.ts:79
+msgid "{available} din {total} seturi cu date disponibile"
+msgstr "{available} din {total} seturi cu date disponibile"
+
 #: src/features/advanced-map-analytics/components/map-analytics-group-workspace-import-dialog.tsx:56
 msgid "{count} groups"
 msgstr "{count} groups"
@@ -237,6 +249,10 @@ msgstr "{hours}h {mins}m remaining"
 #: src/features/learning/components/cards/LearningPathCard.tsx:192
 msgid "{hours}h remaining"
 msgstr "{hours}h remaining"
+
+#: src/features/statistics/components/freshness-badge.tsx:17
+msgid "{label} · posibil neactualizat"
+msgstr "{label} · posibil neactualizat"
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4339
 msgid "{memberCount} UATs"
@@ -421,6 +437,18 @@ msgstr "Access denied"
 #: src/lib/chart-filter-utils.ts:44
 msgid "Account category"
 msgstr "Account category"
+
+#: src/features/statistics/pages/statistics-territory-hub-page.tsx:194
+msgid "Acoperire indicatori"
+msgstr "Acoperire indicatori"
+
+#: src/features/statistics/components/source-provenance-drawer.tsx:82
+msgid "Acoperire temporală"
+msgstr "Acoperire temporală"
+
+#: src/features/statistics/components/coverage-ribbon.tsx:24
+msgid "Acoperirea nu este complet confirmată de catalogul live."
+msgstr "Acoperirea nu este complet confirmată de catalogul live."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-list-item.tsx:195
 msgid "Activate"
@@ -647,6 +675,10 @@ msgstr "Adjust for inflation (constant 2024 prices)"
 msgid "Administrative location (API)"
 msgstr "Administrative location (API)"
 
+#: src/features/statistics/pages/statistics-territory-hub-page.tsx:93
+msgid "Adresa rămâne neschimbată. Poți încerca din nou."
+msgstr "Adresa rămâne neschimbată. Poți încerca din nou."
+
 #: src/components/privacy/CookieConsentBanner.tsx:118
 msgid "Advanced"
 msgstr "Advanced"
@@ -721,6 +753,10 @@ msgstr "Agriculture"
 #: src/lib/ins/ins-dashboard-config.ts:196
 msgid "Agriculture & land"
 msgstr "Agriculture & land"
+
+#: src/features/statistics/pages/statistics-landing-page.tsx:92
+msgid "Alege un teritoriu"
+msgstr "Alege un teritoriu"
 
 #: src/features/notifications/components/alerts/AlertCard.tsx:55
 msgid "Alert"
@@ -974,6 +1010,10 @@ msgstr "Annual Report"
 msgid "Anonymous usage patterns, page views, interactions, and feature usage events."
 msgstr "Anonymous usage patterns, page views, interactions, and feature usage events."
 
+#: src/features/statistics/components/source-provenance-drawer.tsx:17
+msgid "anual"
+msgstr "anual"
+
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:457
 msgid "Anyone with the public link can view this map."
 msgstr "Anyone with the public link can view this map."
@@ -1015,6 +1055,10 @@ msgstr "Approximate number of attendees"
 #: src/components/entities/EntityFinancialTrends.tsx:171
 msgid "April"
 msgstr "April"
+
+#: src/features/statistics/lib/period.ts:103
+msgid "aprilie"
+msgstr "aprilie"
 
 #: src/features/notifications/components/alerts/AlertCard.tsx:115
 #: src/routes/alerts/$alertId/index.lazy.tsx:310
@@ -1079,6 +1123,10 @@ msgstr "At least one bin is required."
 #: src/features/learning/components/interactive/VATReformCard.tsx:26
 msgid "Aug 1, 2025"
 msgstr "Aug 1, 2025"
+
+#: src/features/statistics/lib/period.ts:107
+msgid "august"
+msgstr "august"
 
 #: src/components/commitments/commitments-trends.tsx:194
 #: src/components/entities/EntityFinancialTrends.tsx:172
@@ -1531,6 +1579,10 @@ msgstr "Cannot load INS indicators without the locality SIRUTA code."
 msgid "Cannot regenerate bins because active data has no numeric values."
 msgstr "Cannot regenerate bins because active data has no numeric values."
 
+#: src/features/statistics/pages/statistics-landing-page.tsx:84
+msgid "Catalogul INS nu a returnat seturi pentru această suprafață."
+msgstr "Catalogul INS nu a returnat seturi pentru această suprafață."
+
 #: src/components/charts/components/chart-categories/ChartCategories.tsx:131
 #: src/components/charts/components/chart-categories/ChartCategories.tsx:156
 msgid "Category name"
@@ -1540,6 +1592,22 @@ msgstr "Category name"
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:394
 msgid "CC"
 msgstr "CC"
+
+#: src/features/statistics/components/request-dataset-action.tsx:62
+msgid "Cere acest set de date"
+msgstr "Cere acest set de date"
+
+#: src/features/statistics/components/request-dataset-action.tsx:56
+msgid "Cere set"
+msgstr "Cere set"
+
+#: src/features/statistics/api/statistics-api.mock.ts:47
+msgid "Cererea a fost pregătită local (mock)."
+msgstr "Cererea a fost pregătită local (mock)."
+
+#: src/features/statistics/components/request-dataset-action.tsx:114
+msgid "Cererea nu a putut fi pregătită. Verifică emailul și încearcă din nou."
+msgstr "Cererea nu a putut fi pregătită. Verifică emailul și încearcă din nou."
 
 #: src/routes/$lang/learning/certificates.$id.lazy.tsx:48
 #: src/routes/certificates.$id.tsx:48
@@ -1887,6 +1955,10 @@ msgstr "Code"
 msgid "Code copied to clipboard"
 msgstr "Code copied to clipboard"
 
+#: src/features/statistics/pages/statistics-landing-page.tsx:123
+msgid "Codul matricei este afișat ca proveniență, nu ca etichetă principală."
+msgstr "Codul matricei este afișat ca proveniență, nu ca etichetă principală."
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:1122
 msgid "Collapse all"
 msgstr "Collapse all"
@@ -2001,6 +2073,10 @@ msgstr "Commitments Evolution - {entityName}"
 msgid "Compact"
 msgstr "Compact"
 
+#: src/features/statistics/lib/territory.ts:182
+msgid "Companie"
+msgstr "Companie"
+
 #: src/features/private-companies/components/private-company-not-found-panel.tsx:7
 msgid "Company not found"
 msgstr "Company not found"
@@ -2059,6 +2135,11 @@ msgstr "Confidence"
 #: src/components/entities/views/ins-stats-view.formatters.ts:16
 msgid "Confidential"
 msgstr "Confidential"
+
+#: src/features/statistics/components/indicator-tile.tsx:35
+#: src/features/statistics/components/indicator-tile.tsx:36
+msgid "Confidențial"
+msgstr "Confidențial"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:37
 msgid "Config"
@@ -2175,6 +2256,10 @@ msgstr "Contested item"
 msgid "Context"
 msgstr "Context"
 
+#: src/features/statistics/components/request-dataset-action.tsx:97
+msgid "Context opțional pentru prioritizare"
+msgstr "Context opțional pentru prioritizare"
+
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:362
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:406
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:477
@@ -2217,6 +2302,10 @@ msgstr "Cookie consent required"
 msgid "Cookie Settings"
 msgstr "Cookie Settings"
 
+#: src/features/statistics/components/share-filtered-view.tsx:31
+msgid "Copiază link"
+msgstr "Copiază link"
+
 #: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:102
 msgid "Copied"
 msgstr "Copied"
@@ -2233,6 +2322,10 @@ msgstr "Copied to clipboard"
 #: src/components/charts/components/ChartDataError.tsx:286
 msgid "Copied!"
 msgstr "Copied!"
+
+#: src/features/statistics/components/share-filtered-view.tsx:29
+msgid "Copiere indisponibilă"
+msgstr "Copiere indisponibilă"
 
 #: src/components/charts/components/ChartDataError.tsx:286
 #: src/components/charts/components/views/AnnotationConfigView.tsx:220
@@ -2780,6 +2873,43 @@ msgstr "Date"
 msgid "Date and time"
 msgstr "Date and time"
 
+#: src/features/statistics/components/data-status-badge.tsx:20
+msgid "Date disponibile"
+msgstr "Date disponibile"
+
+#: src/features/statistics/pages/statistics-territory-hub-page.tsx:185
+msgid "Date indisponibile încă"
+msgstr "Date indisponibile încă"
+
+#: src/features/statistics/pages/statistics-landing-page.tsx:49
+msgid "Date oficiale INS Tempo, ancorate în teritorii SIRUTA."
+msgstr "Date oficiale INS Tempo, ancorate în teritorii SIRUTA."
+
+#: src/features/statistics/components/coverage-ribbon.tsx:42
+msgid "Date până în"
+msgstr "Date până în"
+
+#. placeholder {0}: yearMatch[1]
+#: src/features/statistics/lib/period.ts:89
+msgid "Date până în {0}"
+msgstr "Date până în {0}"
+
+#. placeholder {0}: monthNames[monthIndex]
+#. placeholder {1}: monthMatch[1]
+#: src/features/statistics/lib/period.ts:114
+msgid "Date până în {0} {1}"
+msgstr "Date până în {0} {1}"
+
+#: src/features/statistics/lib/period.ts:117
+msgid "Date până în {trimmed}"
+msgstr "Date până în {trimmed}"
+
+#. placeholder {0}: quarterMatch[2]
+#. placeholder {1}: quarterMatch[1]
+#: src/features/statistics/lib/period.ts:94
+msgid "Date până în T{0} {1}"
+msgstr "Date până în T{0} {1}"
+
 #: src/components/filters/period-filter/PeriodFilter.tsx:422
 msgid "Dates"
 msgstr "Dates"
@@ -2793,6 +2923,10 @@ msgstr "day"
 #: src/features/learning/utils/streak.ts:124
 msgid "days"
 msgstr "days"
+
+#: src/features/statistics/components/request-dataset-action.tsx:90
+msgid "De ce ai nevoie de acest set?"
+msgstr "De ce ai nevoie de acest set?"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-list-item.tsx:195
 msgid "Deactivate"
@@ -2830,6 +2964,10 @@ msgstr "Debate took place"
 #: src/components/entities/EntityFinancialTrends.tsx:172
 msgid "December"
 msgstr "December"
+
+#: src/features/statistics/lib/period.ts:111
+msgid "decembrie"
+msgstr "decembrie"
 
 #: src/features/learning/components/interactive/RectificationFlow.tsx:181
 msgid "decrease"
@@ -2971,6 +3109,10 @@ msgstr "Dependency"
 msgid "Derived indicators"
 msgstr "Derived indicators"
 
+#: src/features/statistics/components/source-provenance-drawer.tsx:116
+msgid "Deschide matricea în INS Tempo"
+msgstr "Deschide matricea în INS Tempo"
+
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1318
 msgid "Describe the dataset and control how it’s shared."
 msgstr "Describe the dataset and control how it’s shared."
@@ -3030,6 +3172,10 @@ msgstr "Details"
 #: src/components/budget-explorer/FilteredSpendingInfo.tsx:252
 msgid "Details about excluded items and amount filters used in this view."
 msgstr "Details about excluded items and amount filters used in this view."
+
+#: src/features/statistics/components/source-provenance-drawer.tsx:59
+msgid "Detalii despre setul de date și limita de acoperire."
+msgstr "Detalii despre setul de date și limita de acoperire."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:143
 msgid "Detects outliers using quartile fences: Q1 - m*IQR and Q3 + m*IQR. Works well for heavy-tailed financial data."
@@ -3133,6 +3279,10 @@ msgstr "Distribution series"
 msgid "Do you represent a legally established association?"
 msgstr "Do you represent a legally established association?"
 
+#: src/features/statistics/components/data-status-badge.tsx:20
+msgid "Doar catalog"
+msgstr "Doar catalog"
+
 #: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:74
 msgid "Document link"
 msgstr "Document link"
@@ -3202,6 +3352,18 @@ msgstr "Drag the sliders to guess how much each source contributes."
 #: src/features/advanced-map-analytics/components/map-analytics-group-workspace-import-dialog.tsx:188
 msgid "Drop CSV file to import"
 msgstr "Drop CSV file to import"
+
+#: src/features/statistics/components/related-links-rail.tsx:108
+msgid "după CUI"
+msgstr "după CUI"
+
+#: src/features/statistics/components/related-links-rail.tsx:110
+msgid "după județ"
+msgstr "după județ"
+
+#: src/features/statistics/components/related-links-rail.tsx:106
+msgid "după SIRUTA"
+msgstr "după SIRUTA"
 
 #: src/components/charts/components/chart-quick-config/components/ChartQuickConfigMenu.tsx:40
 #: src/components/charts/components/views/AnnotationConfigView.tsx:224
@@ -3406,6 +3568,10 @@ msgstr "Email"
 #: src/components/footer/support-menu.tsx:45
 msgid "Email address copied to clipboard!"
 msgstr "Email address copied to clipboard!"
+
+#: src/features/statistics/components/request-dataset-action.tsx:102
+msgid "Email pentru notificare (opțional)"
+msgstr "Email pentru notificare (opțional)"
 
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:326
 msgid "Email updates for all entities in this campaign"
@@ -3690,6 +3856,10 @@ msgstr "Essential only"
 msgid "Essentials"
 msgstr "Essentials"
 
+#: src/features/statistics/components/indicator-tile.tsx:37
+msgid "Estimat"
+msgstr "Estimat"
+
 #: src/features/learning/components/cards/LearningPathCard.tsx:159
 msgid "Estimate"
 msgstr "Estimate"
@@ -3722,6 +3892,11 @@ msgstr "EUR"
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:228
 msgid "Ever wondered where your money actually goes?"
 msgstr "Ever wondered where your money actually goes?"
+
+#. placeholder {0}: points[points.length - 1]?.[0].iso_period ?? ''
+#: src/features/statistics/components/indicator-tile.tsx:130
+msgid "Evoluție până în {0}"
+msgstr "Evoluție până în {0}"
 
 #: src/lib/chart-links.ts:433
 msgid "Evolution of Top 15 Counties"
@@ -3924,6 +4099,10 @@ msgstr "Explore national budget."
 #: src/features/learning/components/interactive/FlashCardDeck.tsx:266
 msgid "explored"
 msgstr "explored"
+
+#: src/features/statistics/lib/territory.ts:134
+msgid "Explorer bugetar"
+msgstr "Explorer bugetar"
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1227
 msgid "Export"
@@ -4184,6 +4363,10 @@ msgstr "Favorites"
 msgid "Favorites first"
 msgstr "Favorites first"
 
+#: src/features/statistics/lib/period.ts:101
+msgid "februarie"
+msgstr "februarie"
+
 #: src/components/commitments/commitments-trends.tsx:188
 #: src/components/entities/EntityFinancialTrends.tsx:171
 msgid "February"
@@ -4200,6 +4383,10 @@ msgstr "Feedback / Report an issue"
 #: src/hooks/useSendFeedback.ts:32
 msgid "Feedback is currently unavailable."
 msgstr "Feedback is currently unavailable."
+
+#: src/features/statistics/pages/statistics-territory-hub-page.tsx:197
+msgid "Fiecare indicator păstrează perioada, unitatea și starea disponibilității la nivel de set."
+msgstr "Fiecare indicator păstrează perioada, unitatea și starea disponibilității la nivel de set."
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:812
 msgid "File imported"
@@ -4264,6 +4451,14 @@ msgstr "Filters marked as exclude will remove data matching these criteria from 
 #: src/components/charts/components/views/SeriesConfigView.tsx:524
 msgid "Filters out missing or non-numeric points before chart mapping."
 msgstr "Filters out missing or non-numeric points before chart mapping."
+
+#: src/features/statistics/pages/statistics-territory-hub-page.tsx:115
+msgid "Filtrat"
+msgstr "Filtrat"
+
+#: src/features/statistics/pages/statistics-territory-hub-page.tsx:119
+msgid "Filtru perioadă"
+msgstr "Filtru perioadă"
 
 #: src/lib/commitments-metrics.ts:51
 msgid "Final budget credits"
@@ -4477,6 +4672,10 @@ msgstr "Functional prefix"
 #: src/components/filters/EntityAnalyticsFilter.tsx:715
 msgid "Functional Prefixes"
 msgstr "Functional Prefixes"
+
+#: src/features/statistics/api/statistics-api.live.ts:555
+msgid "Funcționalitatea de trimitere este în pregătire. Cererea nu a fost trimisă."
+msgstr "Funcționalitatea de trimitere este în pregătire. Cererea nu a fost trimisă."
 
 #: src/lib/chart-filter-utils.ts:43
 msgid "Funding source"
@@ -4745,6 +4944,10 @@ msgstr "Hands-On Activity"
 msgid "Hang tight while we resolve and redirect you to the destination."
 msgstr "Hang tight while we resolve and redirect you to the destination."
 
+#: src/features/statistics/lib/territory.ts:143
+msgid "Hartă teritorială"
+msgstr "Hartă teritorială"
+
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:163
 msgid "Has the 2026 budget been published?"
 msgstr "Has the 2026 budget been published?"
@@ -4905,6 +5108,10 @@ msgstr "I sent the email"
 msgid "I spend monthly"
 msgstr "I spend monthly"
 
+#: src/features/statistics/lib/period.ts:100
+msgid "ianuarie"
+msgstr "ianuarie"
+
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:197
 msgid "Identifiers"
 msgstr "Identifiers"
@@ -4912,6 +5119,10 @@ msgstr "Identifiers"
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:339
 msgid "Identify the specific budget line or category. For example: \"Personnel expenses - Chapter 65 Education\""
 msgstr "Identify the specific budget line or category. For example: \"Personnel expenses - Chapter 65 Education\""
+
+#: src/features/statistics/components/territory-header.tsx:45
+msgid "Identitate completată parțial din datele disponibile"
+msgstr "Identitate completată parțial din datele disponibile"
 
 #. placeholder {0}: formatCurrency(gross)
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:278
@@ -5020,6 +5231,18 @@ msgstr "In one year, you will pay"
 msgid "Inactive"
 msgstr "Inactive"
 
+#: src/features/statistics/pages/statistics-territory-hub-page.tsx:77
+msgid "Înapoi la statistici"
+msgstr "Înapoi la statistici"
+
+#: src/features/statistics/pages/statistics-landing-page.tsx:72
+msgid "Încearcă din nou fără să pierzi adresa curentă."
+msgstr "Încearcă din nou fără să pierzi adresa curentă."
+
+#: src/features/statistics/components/request-dataset-action.tsx:121
+msgid "Închide"
+msgstr "Închide"
+
 #: src/routes/cookies.lazy.tsx:227
 msgid "Includes additional error context and, if you use feedback tools, may include your message text or screenshots."
 msgstr "Includes additional error context and, if you use feedback tools, may include your message text or screenshots."
@@ -5062,6 +5285,14 @@ msgstr "increase"
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:161
 msgid "Indicate when your city hall's budget draft was published."
 msgstr "Indicate when your city hall's budget draft was published."
+
+#: src/features/statistics/pages/statistics-territory-hub-page.tsx:170
+msgid "Indicatorii afișează valorile disponibile pentru teritoriu, fără interpolarea perioadelor lipsă."
+msgstr "Indicatorii afișează valorile disponibile pentru teritoriu, fără interpolarea perioadelor lipsă."
+
+#: src/features/statistics/components/indicator-tile.tsx:42
+msgid "Indisponibil"
+msgstr "Indisponibil"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:761
 msgid "Inflation Adjustment"
@@ -5130,6 +5361,8 @@ msgstr "INS Settings"
 
 #: src/components/charts/components/series-config/InsSeriesEditor.tsx:570
 #: src/components/entities/views/ins-stats-view.tsx:816
+#: src/features/statistics/components/coverage-ribbon.tsx:38
+#: src/features/statistics/components/source-provenance-drawer.tsx:39
 msgid "INS Tempo"
 msgstr "INS Tempo"
 
@@ -5153,6 +5386,10 @@ msgstr "Insolvency (Law 85/2014)"
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:167
 msgid "Inspect the live values for this UAT."
 msgstr "Inspect the live values for this UAT."
+
+#: src/features/statistics/lib/territory.ts:169
+msgid "Instituție publică"
+msgstr "Instituție publică"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:1074
 msgid "Insufficient data"
@@ -5264,6 +5501,14 @@ msgstr "It's budget season! November-December is the best time for citizen engag
 msgid "Item Amount"
 msgstr "Item Amount"
 
+#: src/features/statistics/lib/period.ts:106
+msgid "iulie"
+msgstr "iulie"
+
+#: src/features/statistics/lib/period.ts:105
+msgid "iunie"
+msgstr "iunie"
+
 #: src/components/commitments/commitments-trends.tsx:187
 #: src/components/entities/EntityFinancialTrends.tsx:171
 msgid "January"
@@ -5289,6 +5534,10 @@ msgstr "Joining…"
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:909
 msgid "JSON exported"
 msgstr "JSON exported"
+
+#: src/features/statistics/components/territory-header.tsx:16
+msgid "Județ"
+msgstr "Județ"
 
 #: src/components/commitments/commitments-trends.tsx:193
 #: src/components/entities/EntityFinancialTrends.tsx:172
@@ -5458,6 +5707,14 @@ msgstr "Legal representatives"
 msgid "Legal representatives from ONRC and EU branches from the open data export. Domestic branches and shareholders are not published in this dataset."
 msgstr "Legal representatives from ONRC and EU branches from the open data export. Domestic branches and shareholders are not published in this dataset."
 
+#: src/features/statistics/lib/territory.ts:130
+msgid "Legătura are nevoie de un cod de județ din sursa teritorială."
+msgstr "Legătura are nevoie de un cod de județ din sursa teritorială."
+
+#: src/features/statistics/components/related-links-rail.tsx:83
+msgid "Legături indisponibile pentru acest nivel."
+msgstr "Legături indisponibile pentru acest nivel."
+
 #: src/components/charts/components/chart-quick-config/ChartQuickConfig.tsx:160
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:966
 #: src/routes/map.lazy.tsx:394
@@ -5534,6 +5791,10 @@ msgstr "Line Items Aggregated Yearly"
 msgid "Link"
 msgstr "Link"
 
+#: src/features/statistics/components/share-filtered-view.tsx:27
+msgid "Link copiat"
+msgstr "Link copiat"
+
 #: src/components/ui/FloatingQuickNav.tsx:78
 #: src/features/advanced-map-analytics/components/map-analytics-quick-actions.tsx:86
 msgid "Link copied to clipboard"
@@ -5550,6 +5811,10 @@ msgstr "Link to the budget document"
 #: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:130
 msgid "Link to the official city hall website"
 msgstr "Link to the official city hall website"
+
+#: src/features/statistics/components/indicator-tile.tsx:34
+msgid "Lipsă"
+msgstr "Lipsă"
 
 #: src/components/entities/views/ins-stats-view.derived.ts:97
 #: src/components/entities/views/ins-stats-view.derived.ts:109
@@ -5847,10 +6112,22 @@ msgstr "Low opportunity"
 msgid "Lower fence"
 msgstr "Lower fence"
 
+#: src/features/statistics/components/source-provenance-drawer.tsx:19
+msgid "lunar"
+msgstr "lunar"
+
+#: src/features/statistics/components/territory-header.tsx:20
+msgid "Macroregiune"
+msgstr "Macroregiune"
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:78
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:153
 msgid "MAD robust z-score"
 msgstr "MAD robust z-score"
+
+#: src/features/statistics/lib/period.ts:104
+msgid "mai"
+msgstr "mai"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:103
 msgid "Main aggregated"
@@ -6113,6 +6390,10 @@ msgstr "Markdown"
 msgid "Markdown notes"
 msgstr "Markdown notes"
 
+#: src/features/statistics/lib/period.ts:102
+msgid "martie"
+msgstr "martie"
+
 #: src/features/notifications/types.ts:53
 msgid "Master preference for public debate campaign notifications"
 msgstr "Master preference for public debate campaign notifications"
@@ -6120,6 +6401,10 @@ msgstr "Master preference for public debate campaign notifications"
 #: src/components/ui/shortcuts.tsx:68
 msgid "Master the app with these powerful keyboard shortcuts"
 msgstr "Master the app with these powerful keyboard shortcuts"
+
+#: src/features/statistics/components/request-dataset-action.tsx:80
+msgid "Matrice"
+msgstr "Matrice"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:467
 msgid "Max"
@@ -6414,6 +6699,14 @@ msgstr "Multiplier"
 msgid "Multiplier 1.5 is standard; use 3.0 for stricter outlier detection."
 msgstr "Multiplier 1.5 is standard; use 3.0 for stricter outlier detection."
 
+#: src/features/statistics/pages/statistics-landing-page.tsx:18
+msgid "Municipiul București"
+msgstr "Municipiul București"
+
+#: src/features/statistics/pages/statistics-landing-page.tsx:17
+msgid "Municipiul Cluj-Napoca"
+msgstr "Municipiul Cluj-Napoca"
+
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:412
 msgid "My Budget Analysis Map…"
 msgstr "My Budget Analysis Map…"
@@ -6459,6 +6752,10 @@ msgstr "N/A"
 #: src/routes/certificates.$id.tsx:52
 msgid "Name"
 msgstr "Name"
+
+#: src/features/statistics/components/territory-header.tsx:22
+msgid "Național"
+msgstr "Național"
 
 #: src/components/sidebar/nav-main.tsx:42
 #: src/routes/budget-explorer.lazy.tsx:579
@@ -6582,6 +6879,10 @@ msgstr "Newest"
 #: src/features/learning/components/player/LessonPlayer.tsx:576
 msgid "Next"
 msgstr "Next"
+
+#: src/features/statistics/components/territory-header.tsx:24
+msgid "Nivel necunoscut"
+msgstr "Nivel necunoscut"
 
 #: src/components/filters/flags-filter/index.tsx:24
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:24
@@ -7060,6 +7361,10 @@ msgstr "No values to replace"
 msgid "No warnings."
 msgstr "No warnings."
 
+#: src/features/statistics/lib/period.ts:110
+msgid "noiembrie"
+msgstr "noiembrie"
+
 #: src/components/charts/components/series-config/SeriesFilter.tsx:425
 #: src/components/charts/components/series-config/SeriesFilter.tsx:774
 #: src/components/theme/inflation-toggle.tsx:70
@@ -7211,10 +7516,38 @@ msgstr "November"
 msgid "Now"
 msgstr "Now"
 
+#: src/features/statistics/pages/statistics-territory-hub-page.tsx:105
+msgid "Nu am găsit un teritoriu INS pentru acest SIRUTA."
+msgstr "Nu am găsit un teritoriu INS pentru acest SIRUTA."
+
+#: src/features/statistics/pages/statistics-landing-page.tsx:68
+msgid "Nu am putut încărca statistica"
+msgstr "Nu am putut încărca statistica"
+
+#: src/features/statistics/pages/statistics-territory-hub-page.tsx:89
+msgid "Nu am putut încărca teritoriul"
+msgstr "Nu am putut încărca teritoriul"
+
+#: src/features/statistics/components/request-dataset-action.tsx:66
+msgid "nu are încă observații încărcate în această interfață."
+msgstr "nu are încă observații încărcate în această interfață."
+
+#: src/features/statistics/components/indicator-tile.tsx:188
+msgid "Nu există observații pentru acest teritoriu în setul curent."
+msgstr "Nu există observații pentru acest teritoriu în setul curent."
+
+#: src/features/statistics/pages/statistics-landing-page.tsx:83
+msgid "Nu există seturi de afișat"
+msgstr "Nu există seturi de afișat"
+
 #: src/components/maps/charts/UatDistributionChart.tsx:39
 #: src/components/maps/charts/UatDistributionChart.tsx:105
 msgid "Number of UATs"
 msgstr "Number of UATs"
+
+#: src/features/statistics/components/request-dataset-action.tsx:109
+msgid "nume@example.ro"
+msgstr "nume@example.ro"
 
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:163
 msgid "Observations"
@@ -7228,6 +7561,10 @@ msgstr "Observations (optional)"
 #: src/components/entities/EntityFinancialTrends.tsx:172
 msgid "October"
 msgstr "October"
+
+#: src/features/statistics/lib/period.ts:109
+msgid "octombrie"
+msgstr "octombrie"
 
 #: src/components/entities/views/Commitments.tsx:349
 msgid "of annual budget paid"
@@ -7768,6 +8105,10 @@ msgstr "Percentile band"
 msgid "Percentiles are inclusive and min/max are normalized if swapped."
 msgstr "Percentiles are inclusive and min/max are normalized if swapped."
 
+#: src/features/statistics/components/freshness-badge.tsx:11
+msgid "Perioadă necunoscută"
+msgstr "Perioadă necunoscută"
+
 #: src/components/budget-explorer/BudgetExplorerHeader.tsx:117
 #: src/components/charts/components/series-config/InsSeriesEditor.tsx:599
 #: src/components/charts/components/series-config/SeriesFilter.tsx:804
@@ -7793,6 +8134,10 @@ msgstr "Period Type"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:359
 msgid "Period:"
 msgstr "Period:"
+
+#: src/features/statistics/components/source-provenance-drawer.tsx:90
+msgid "Periodicitate"
+msgstr "Periodicitate"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1110
 msgid "Periodicity"
@@ -7932,6 +8277,10 @@ msgstr "Pre-filled from the debate request challenge."
 msgid "Prefer median over mean when one or two UATs dominate values."
 msgstr "Prefer median over mean when one or two UATs dominate values."
 
+#: src/features/statistics/components/indicator-tile.tsx:38
+msgid "Preliminar"
+msgstr "Preliminar"
+
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1046
 msgid "Prepare email"
 msgstr "Prepare email"
@@ -8024,9 +8373,21 @@ msgstr "Previous section"
 msgid "Previous step"
 msgstr "Previous step"
 
+#: src/features/statistics/pages/statistics-territory-hub-page.tsx:167
+msgid "Prezentare generală"
+msgstr "Prezentare generală"
+
 #: src/components/theme/inflation-toggle.tsx:59
 msgid "Prices"
 msgstr "Prices"
+
+#: src/features/statistics/pages/statistics-landing-page.tsx:95
+msgid "Prima versiune livrează hub-ul teritorial pentru exemple SIRUTA, cu aceleași contracte de date ca API-ul live."
+msgstr "Prima versiune livrează hub-ul teritorial pentru exemple SIRUTA, cu aceleași contracte de date ca API-ul live."
+
+#: src/features/statistics/lib/territory.ts:156
+msgid "Primăria localității"
+msgstr "Primăria localității"
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:5036
 msgid "Primary UAT"
@@ -8080,6 +8441,10 @@ msgstr "Progress"
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:447
 msgid "Propose a specific and realistic change. For example: \"Redistribute 500,000 lei from personnel expenses to school infrastructure investments.\""
 msgstr "Propose a specific and realistic change. For example: \"Redistribute 500,000 lei from personnel expenses to school infrastructure investments.\""
+
+#: src/features/statistics/components/source-provenance-drawer.tsx:56
+msgid "Proveniență INS"
+msgstr "Proveniență INS"
 
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:56
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:142
@@ -8403,6 +8768,15 @@ msgstr "Registered unemployment share"
 msgid "Registration number"
 msgstr "Registration number"
 
+#: src/features/statistics/components/territory-header.tsx:18
+msgid "Regiune"
+msgstr "Regiune"
+
+#: src/features/statistics/pages/statistics-landing-page.tsx:75
+#: src/features/statistics/pages/statistics-territory-hub-page.tsx:96
+msgid "Reîncearcă"
+msgstr "Reîncearcă"
+
 #: src/components/classification-explorer/ClassificationSiblings.tsx:32
 msgid "Related Categories"
 msgstr "Related Categories"
@@ -8652,6 +9026,14 @@ msgstr "Review and manage alerts created from your custom data series."
 msgid "Review Path"
 msgstr "Review Path"
 
+#: src/features/statistics/components/indicator-tile.tsx:39
+msgid "Revizuit"
+msgstr "Revizuit"
+
+#: src/features/statistics/pages/statistics-territory-hub-page.tsx:158
+msgid "Rezultate parțiale — unele serii pot lipsi."
+msgstr "Rezultate parțiale — unele serii pot lipsi."
+
 #: src/components/maps/InteractiveMap.tsx:2506
 msgid "Roads: Off"
 msgstr "Roads: Off"
@@ -8808,6 +9190,10 @@ msgstr "SDG 2020"
 #: src/lib/ins/ins-metric-registry.ts:114
 msgid "SDG 2030"
 msgstr "SDG 2030"
+
+#: src/features/statistics/components/request-dataset-action.tsx:128
+msgid "Se trimite…"
+msgstr "Se trimite…"
 
 #: src/components/mobile/mobile-bottom-dock.tsx:219
 #: src/components/mobile/mobile-bottom-dock.tsx:227
@@ -9175,6 +9561,15 @@ msgstr "Sent via email"
 msgid "September"
 msgstr "September"
 
+#: src/features/statistics/lib/period.ts:108
+msgid "septembrie"
+msgstr "septembrie"
+
+#: src/features/statistics/components/indicator-tile.tsx:116
+#: src/features/statistics/components/indicator-tile.tsx:118
+msgid "Serie prea scurtă pentru grafic"
+msgstr "Serie prea scurtă pentru grafic"
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:554
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:592
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:641
@@ -9247,6 +9642,10 @@ msgstr "Set active bins preset"
 msgid "Set active series"
 msgstr "Set active series"
 
+#: src/features/statistics/components/source-provenance-drawer.tsx:65
+msgid "Set de date"
+msgstr "Set de date"
+
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:5073
 msgid "Set primary"
 msgstr "Set primary"
@@ -9254,6 +9653,14 @@ msgstr "Set primary"
 #: src/components/charts/components/chart-config/ChartInfoCard.tsx:29
 msgid "Set the basic properties for your chart"
 msgstr "Set the basic properties for your chart"
+
+#: src/features/statistics/components/indicator-tile.tsx:186
+msgid "Setul există în catalog, dar observațiile nu sunt încă încărcate."
+msgstr "Setul există în catalog, dar observațiile nu sunt încă încărcate."
+
+#: src/features/statistics/pages/statistics-landing-page.tsx:120
+msgid "Seturi INS prioritare"
+msgstr "Seturi INS prioritare"
 
 #: src/components/entities/views/ins-stats-view.derived.ts:337
 msgid "Sewer network"
@@ -9548,6 +9955,9 @@ msgstr "Simulation cluster CSV"
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1508
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:229
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:191
+#: src/features/statistics/components/request-dataset-action.tsx:84
+#: src/features/statistics/components/territory-header.tsx:40
+#: src/features/statistics/pages/statistics-landing-page.tsx:108
 msgid "SIRUTA"
 msgstr "SIRUTA"
 
@@ -9761,6 +10171,11 @@ msgstr "Static Dataset Alert"
 msgid "Static Series"
 msgstr "Static Series"
 
+#: src/components/sidebar/nav-main.tsx:52
+#: src/features/statistics/pages/statistics-landing-page.tsx:46
+msgid "Statistici"
+msgstr "Statistici"
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:50
 msgid "Stats"
 msgstr "Stats"
@@ -9779,6 +10194,10 @@ msgstr "Status"
 #: src/components/commitments/CategoryChart.tsx:114
 msgid "Status by Budget Chapters"
 msgstr "Status by Budget Chapters"
+
+#: src/features/statistics/components/indicator-tile.tsx:175
+msgid "Status valoare"
+msgstr "Status valoare"
 
 #: src/components/alerts/components/UnsavedChangesDialog.tsx:40
 #: src/features/advanced-map-datasets/components/dataset-unsaved-changes-dialog.tsx:45
@@ -9897,6 +10316,15 @@ msgstr "Summary"
 msgid "Supports row-per-UAT CSV and simulation cluster CSV. You can also drag a file anywhere in this dialog."
 msgstr "Supports row-per-UAT CSV and simulation cluster CSV. You can also drag a file anywhere in this dialog."
 
+#: src/features/statistics/components/source-provenance-drawer.tsx:50
+#: src/features/statistics/components/source-provenance-drawer.tsx:73
+msgid "Sursă"
+msgstr "Sursă"
+
+#: src/features/statistics/components/source-provenance-drawer.tsx:107
+msgid "Sursă publică"
+msgstr "Sursă publică"
+
 #: src/features/challenges/components/hub/UatSwitchBadge.tsx:48
 msgid "Switch city hall"
 msgstr "Switch city hall"
@@ -9975,6 +10403,14 @@ msgstr "Taxes"
 #: src/components/ui/shortcuts.tsx:46
 msgid "Temporarily enable scroll wheel zoom"
 msgstr "Temporarily enable scroll wheel zoom"
+
+#: src/features/statistics/pages/statistics-territory-hub-page.tsx:104
+msgid "Teritoriu negăsit"
+msgstr "Teritoriu negăsit"
+
+#: src/features/statistics/pages/statistics-territory-hub-page.tsx:186
+msgid "Teritoriul există, dar nu avem observații INS încărcate pentru indicatorii prioritari."
+msgstr "Teritoriul există, dar nu avem observații INS încărcate pentru indicatorii prioritari."
 
 #: src/components/footer/AppFooter.tsx:117
 msgid "Terms of Service"
@@ -10537,6 +10973,14 @@ msgstr "Tree view"
 msgid "Treemap Chart (Aggregated)"
 msgstr "Treemap Chart (Aggregated)"
 
+#: src/features/statistics/components/source-provenance-drawer.tsx:18
+msgid "trimestrial"
+msgstr "trimestrial"
+
+#: src/features/statistics/components/request-dataset-action.tsx:128
+msgid "Trimite cererea"
+msgstr "Trimite cererea"
+
 #: src/routes/charts/index.lazy.tsx:262
 msgid "Try a different search term or sorting."
 msgstr "Try a different search term or sorting."
@@ -10627,6 +11071,7 @@ msgstr "Type your answer..."
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:208
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3032
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:521
+#: src/features/statistics/components/territory-header.tsx:14
 #: src/lib/chart-filter-utils.ts:39
 msgid "UAT"
 msgstr "UAT"
@@ -10674,6 +11119,10 @@ msgstr "UATs"
 #: src/features/private-companies/components/layout/private-company-header.tsx:60
 msgid "Ultima actualizare:"
 msgstr "Ultima actualizare:"
+
+#: src/features/statistics/pages/statistics-territory-hub-page.tsx:131
+msgid "Ultima perioadă"
+msgstr "Ultima perioadă"
 
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:483
 msgid "Unable to load notifications"
@@ -10733,6 +11182,10 @@ msgstr "Unit options"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:205
 msgid "Unit override"
 msgstr "Unit override"
+
+#: src/features/statistics/components/source-provenance-drawer.tsx:100
+msgid "Unitate"
+msgstr "Unitate"
 
 #: src/components/entities/views/entity-profile-view.presentation.tsx:227
 #: src/components/entities/views/ins-stats-view.formatters.ts:37
@@ -11109,6 +11562,10 @@ msgstr "Version history"
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:221
 msgid "Version restored"
 msgstr "Version restored"
+
+#: src/features/statistics/components/related-links-rail.tsx:92
+msgid "Vezi și în alte domenii"
+msgstr "Vezi și în alte domenii"
 
 #: src/components/filters/EntityAnalyticsFilter.tsx:436
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:1068

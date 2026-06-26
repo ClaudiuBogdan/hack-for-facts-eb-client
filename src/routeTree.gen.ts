@@ -26,6 +26,7 @@ import { Route as BugetNational2026RouteImport } from './routes/buget-national-2
 import { Route as BudgetExplorerRouteImport } from './routes/budget-explorer'
 import { Route as EntitiesRouteRouteImport } from './routes/entities/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as StatisticiIndexRouteImport } from './routes/statistici/index'
 import { Route as PrimarieIndexRouteImport } from './routes/primarie/index'
 import { Route as EntitiesIndexRouteImport } from './routes/entities/index'
 import { Route as UnsubscribeTokenRouteImport } from './routes/unsubscribe.$token'
@@ -54,6 +55,7 @@ import { Route as MapsDatasetsIndexRouteImport } from './routes/maps/datasets/in
 import { Route as ClassificationsFunctionalIndexRouteImport } from './routes/classifications/functional/index'
 import { Route as ClassificationsEconomicIndexRouteImport } from './routes/classifications/economic/index'
 import { Route as LangLearningIndexRouteImport } from './routes/$lang/learning/index'
+import { Route as StatisticiTeritoriiSirutaRouteImport } from './routes/statistici/teritorii/$siruta'
 import { Route as PrimarieCuiShareImageDotpngRouteImport } from './routes/primarie/$cui/share-image[.]png'
 import { Route as MapsPublicMapIdRouteImport } from './routes/maps/public/$mapId'
 import { Route as MapsEditorNewRouteImport } from './routes/maps/editor/new'
@@ -188,6 +190,13 @@ const ChartsIndexLazyRoute = ChartsIndexLazyRouteImport.update({
   path: '/charts/',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/charts/index.lazy').then((d) => d.Route))
+const StatisticiIndexRoute = StatisticiIndexRouteImport.update({
+  id: '/statistici/',
+  path: '/statistici/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/statistici/index.lazy').then((d) => d.Route),
+)
 const PrimarieIndexRoute = PrimarieIndexRouteImport.update({
   id: '/primarie/',
   path: '/primarie/',
@@ -382,6 +391,14 @@ const LangLearningIndexRoute = LangLearningIndexRouteImport.update({
 } as any).lazy(() =>
   import('./routes/$lang/learning/index.lazy').then((d) => d.Route),
 )
+const StatisticiTeritoriiSirutaRoute =
+  StatisticiTeritoriiSirutaRouteImport.update({
+    id: '/statistici/teritorii/$siruta',
+    path: '/statistici/teritorii/$siruta',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/statistici/teritorii/$siruta.lazy').then((d) => d.Route),
+  )
 const PrimarieCuiShareImageDotpngRoute =
   PrimarieCuiShareImageDotpngRouteImport.update({
     id: '/share-image.png',
@@ -693,6 +710,7 @@ export interface FileRoutesByFullPath {
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/entities/': typeof EntitiesIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
+  '/statistici/': typeof StatisticiIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   '/primarie/$cui/buget': typeof PrimarieCuiBugetRouteRouteWithChildren
@@ -706,6 +724,7 @@ export interface FileRoutesByFullPath {
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
+  '/statistici/teritorii/$siruta': typeof StatisticiTeritoriiSirutaRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
@@ -772,6 +791,7 @@ export interface FileRoutesByTo {
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/entities': typeof EntitiesIndexRoute
   '/primarie': typeof PrimarieIndexRoute
+  '/statistici': typeof StatisticiIndexRoute
   '/charts': typeof ChartsIndexLazyRoute
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
@@ -783,6 +803,7 @@ export interface FileRoutesByTo {
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
+  '/statistici/teritorii/$siruta': typeof StatisticiTeritoriiSirutaRoute
   '/$lang/learning': typeof LangLearningIndexRoute
   '/classifications/economic': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional': typeof ClassificationsFunctionalIndexRoute
@@ -854,6 +875,7 @@ export interface FileRoutesById {
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/entities/': typeof EntitiesIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
+  '/statistici/': typeof StatisticiIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   '/primarie/$cui/buget': typeof PrimarieCuiBugetRouteRouteWithChildren
@@ -867,6 +889,7 @@ export interface FileRoutesById {
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
+  '/statistici/teritorii/$siruta': typeof StatisticiTeritoriiSirutaRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
@@ -940,6 +963,7 @@ export interface FileRouteTypes {
     | '/research/employees-data'
     | '/entities/'
     | '/primarie/'
+    | '/statistici/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
     | '/primarie/$cui/buget'
@@ -953,6 +977,7 @@ export interface FileRouteTypes {
     | '/maps/editor/new'
     | '/maps/public/$mapId'
     | '/primarie/$cui/share-image.png'
+    | '/statistici/teritorii/$siruta'
     | '/$lang/learning/'
     | '/classifications/economic/'
     | '/classifications/functional/'
@@ -1019,6 +1044,7 @@ export interface FileRouteTypes {
     | '/research/employees-data'
     | '/entities'
     | '/primarie'
+    | '/statistici'
     | '/charts'
     | '/$lang/learning/onboarding'
     | '/classifications/economic/$code'
@@ -1030,6 +1056,7 @@ export interface FileRouteTypes {
     | '/maps/editor/new'
     | '/maps/public/$mapId'
     | '/primarie/$cui/share-image.png'
+    | '/statistici/teritorii/$siruta'
     | '/$lang/learning'
     | '/classifications/economic'
     | '/classifications/functional'
@@ -1100,6 +1127,7 @@ export interface FileRouteTypes {
     | '/research/employees-data'
     | '/entities/'
     | '/primarie/'
+    | '/statistici/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
     | '/primarie/$cui/buget'
@@ -1113,6 +1141,7 @@ export interface FileRouteTypes {
     | '/maps/editor/new'
     | '/maps/public/$mapId'
     | '/primarie/$cui/share-image.png'
+    | '/statistici/teritorii/$siruta'
     | '/$lang/learning/'
     | '/classifications/economic/'
     | '/classifications/functional/'
@@ -1179,6 +1208,7 @@ export interface RootRouteChildren {
   UnsubscribeTokenRoute: typeof UnsubscribeTokenRoute
   ResearchEmployeesDataLazyRoute: typeof ResearchEmployeesDataLazyRoute
   PrimarieIndexRoute: typeof PrimarieIndexRoute
+  StatisticiIndexRoute: typeof StatisticiIndexRoute
   ChartsIndexLazyRoute: typeof ChartsIndexLazyRoute
   AdminCampaignsCampaignKeyRouteRoute: typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   ClassificationsEconomicCodeRoute: typeof ClassificationsEconomicCodeRoute
@@ -1188,6 +1218,7 @@ export interface RootRouteChildren {
   MapsEditorMapIdRoute: typeof MapsEditorMapIdRoute
   MapsEditorNewRoute: typeof MapsEditorNewRoute
   MapsPublicMapIdRoute: typeof MapsPublicMapIdRoute
+  StatisticiTeritoriiSirutaRoute: typeof StatisticiTeritoriiSirutaRoute
   ClassificationsEconomicIndexRoute: typeof ClassificationsEconomicIndexRoute
   ClassificationsFunctionalIndexRoute: typeof ClassificationsFunctionalIndexRoute
   MapsDatasetsIndexRoute: typeof MapsDatasetsIndexRoute
@@ -1318,6 +1349,13 @@ declare module '@tanstack/react-router' {
       path: '/charts'
       fullPath: '/charts/'
       preLoaderRoute: typeof ChartsIndexLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/statistici/': {
+      id: '/statistici/'
+      path: '/statistici'
+      fullPath: '/statistici/'
+      preLoaderRoute: typeof StatisticiIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/primarie/': {
@@ -1536,6 +1574,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/$lang/learning/'
       preLoaderRoute: typeof LangLearningIndexRouteImport
       parentRoute: typeof LangLearningRouteRoute
+    }
+    '/statistici/teritorii/$siruta': {
+      id: '/statistici/teritorii/$siruta'
+      path: '/statistici/teritorii/$siruta'
+      fullPath: '/statistici/teritorii/$siruta'
+      preLoaderRoute: typeof StatisticiTeritoriiSirutaRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/primarie/$cui/share-image.png': {
       id: '/primarie/$cui/share-image.png'
@@ -2037,6 +2082,7 @@ const rootRouteChildren: RootRouteChildren = {
   UnsubscribeTokenRoute: UnsubscribeTokenRoute,
   ResearchEmployeesDataLazyRoute: ResearchEmployeesDataLazyRoute,
   PrimarieIndexRoute: PrimarieIndexRoute,
+  StatisticiIndexRoute: StatisticiIndexRoute,
   ChartsIndexLazyRoute: ChartsIndexLazyRoute,
   AdminCampaignsCampaignKeyRouteRoute:
     AdminCampaignsCampaignKeyRouteRouteWithChildren,
@@ -2047,6 +2093,7 @@ const rootRouteChildren: RootRouteChildren = {
   MapsEditorMapIdRoute: MapsEditorMapIdRoute,
   MapsEditorNewRoute: MapsEditorNewRoute,
   MapsPublicMapIdRoute: MapsPublicMapIdRoute,
+  StatisticiTeritoriiSirutaRoute: StatisticiTeritoriiSirutaRoute,
   ClassificationsEconomicIndexRoute: ClassificationsEconomicIndexRoute,
   ClassificationsFunctionalIndexRoute: ClassificationsFunctionalIndexRoute,
   MapsDatasetsIndexRoute: MapsDatasetsIndexRoute,
