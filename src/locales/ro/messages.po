@@ -66,6 +66,10 @@ msgstr "(Lungimea rețelei de gaze / Populație) × 1.000"
 msgid "(Live births / Population) × 1,000"
 msgstr "(Născuți-vii / Populație) × 1.000"
 
+#: src/components/shared/procurement-data/evidence-link.tsx:47
+msgid "(se deschide într-o filă nouă)"
+msgstr ""
+
 #: src/components/entities/views/ins-stats-view.derived.ts:162
 msgid "(Sewer network length / Population) × 1,000"
 msgstr "(Lungimea rețelei de canalizare / Populație) × 1.000"
@@ -254,6 +258,14 @@ msgstr "{minutes}m"
 msgid "{minutes}m remaining"
 msgstr "{minutes}m rămase"
 
+#: src/features/procurement/components/procurement-search-page.tsx:232
+msgid "{recordCount} din {totalCount} rezultate"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:234
+msgid "{recordCount} rezultate (total necunoscut)"
+msgstr ""
+
 #: src/features/private-companies/components/private-company-summary-highlights.tsx:99
 msgid "{representativeCount} legal representatives"
 msgstr "{representativeCount} reprezentanți legali"
@@ -345,6 +357,14 @@ msgstr "|rz| >= {0}"
 msgid "|z| >= threshold"
 msgstr "|z| >= prag"
 
+#: src/features/procurement/components/procurement-record-detail.tsx:49
+msgid "~310k proceduri e-licitatie pot lipsi publication_date până la o reîncărcare."
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:489
+msgid "0"
+msgstr ""
+
 #: src/features/campaigns/buget/components/hub/campaign-subscription-map-legend.tsx:68
 msgid "0 participants"
 msgstr "0 participanți"
@@ -384,6 +404,18 @@ msgstr "1 UAT alocat"
 msgid "1,000 inhabitants"
 msgstr "1.000 locuitori"
 
+#: src/features/procurement/components/procurement-search-page.tsx:438
+msgid "2025"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:427
+msgid "45 sau 45233140"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:500
+msgid "500000"
+msgstr ""
+
 #: src/components/entities/views/ins-stats-view.derived.ts:116
 msgid "A negative rate means deaths exceed births even if total population may still grow via migration."
 msgstr "O rată negativă înseamnă că decesele depășesc nașterile, chiar dacă populația totală poate continua să crească prin migrație."
@@ -421,6 +453,67 @@ msgstr "Acces interzis"
 #: src/lib/chart-filter-utils.ts:44
 msgid "Account category"
 msgstr "Categorie cont"
+
+#: src/components/shared/procurement-data/request-dataset-action.tsx:43
+msgid "Această acțiune deschide un canal pentru a semnala date lipsă sau blocate către echipa de date."
+msgstr ""
+
+#: src/features/procurement/components/procurement-supplier-slice.tsx:144
+msgid "Această companie nu apare ca furnizor în achizițiile publice acoperite."
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-detail.tsx:452
+msgid "Această înregistrare apare în mai multe surse. Deduplicarea este un strat de legături reversibil (dup_group_id + is_canonical)."
+msgstr ""
+
+#: src/features/procurement/components/modification-trail.tsx:53
+msgid "Aceste modificări nu sunt legate de un contract părinte în sursa de date (~12-20% din cazuri)."
+msgstr ""
+
+#: src/features/procurement/components/procurement-landing-page.tsx:183
+#: src/features/procurement/components/procurement-record-card.tsx:62
+#: src/features/procurement/lib/grain-labels.ts:22
+msgid "Achiziție directă"
+msgstr ""
+
+#: src/features/procurement/components/procurement-landing-page.tsx:183
+msgid "Achiziție sub prag, fără procedură competitivă."
+msgstr ""
+
+#: src/features/procurement/components/cpv-category-page.tsx:98
+#: src/features/procurement/components/procurement-supplier-slice.tsx:77
+#: src/features/procurement/lib/grain-labels.ts:7
+msgid "Achiziții directe"
+msgstr ""
+
+#: src/components/sidebar/nav-main.tsx:52
+#: src/features/private-companies/lib/tab-config.ts:52
+#: src/features/procurement/components/cpv-category-page.tsx:65
+#: src/features/procurement/components/procurement-record-detail.tsx:157
+msgid "Achiziții publice"
+msgstr ""
+
+#: src/features/procurement/components/procurement-supplier-slice.tsx:131
+msgid "Achiziții recente"
+msgstr ""
+
+#: src/components/shared/procurement-data/coverage-ribbon.tsx:88
+msgid "Acoperire completă pentru toate metricile."
+msgstr ""
+
+#: src/components/shared/procurement-data/data-status-badge.tsx:87
+msgid "Acoperire parțială — unele valori lipsesc."
+msgstr ""
+
+#. placeholder {0}: formatNumber(missingCoverage.length)
+#: src/components/shared/procurement-data/coverage-ribbon.tsx:82
+msgid "Acoperire parțială pentru {0} metrici. Răspunsurile pe valoare sunt retrogradate la clasament pe număr."
+msgstr ""
+
+#: src/features/procurement/components/cpv-category-page.tsx:95
+#: src/features/procurement/components/cpv-category-page.tsx:126
+msgid "Acoperire valoare sub prag."
+msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-list-item.tsx:195
 msgid "Activate"
@@ -477,13 +570,17 @@ msgstr "Criterii active pentru serii:"
 #: src/features/private-companies/components/private-company-summary-highlights.tsx:78
 #: src/features/private-companies/components/private-company-summary-highlights.tsx:89
 #: src/features/private-companies/components/sections/private-company-activity-section.tsx:32
-#: src/features/private-companies/lib/tab-config.ts:47
+#: src/features/private-companies/lib/tab-config.ts:50
 msgid "Activity"
 msgstr "Activitate"
 
 #: src/components/budget-explorer/FilteredSpendingInfo.tsx:117
 msgid "Actual impact on budget"
 msgstr "Impact real asupra bugetului"
+
+#: src/components/shared/procurement-data/freshness-badge.tsx:27
+msgid "Actualizat la"
+msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:376
 msgid "Add"
@@ -722,6 +819,10 @@ msgstr "Agricultură"
 msgid "Agriculture & land"
 msgstr "Agricultură și terenuri"
 
+#: src/features/procurement/components/procurement-search-page.tsx:561
+msgid "Ajustează filtrele sau schimbă tipul de înregistrări."
+msgstr ""
+
 #: src/features/notifications/components/alerts/AlertCard.tsx:55
 msgid "Alert"
 msgstr "Alertă"
@@ -847,6 +948,10 @@ msgstr "Sumă pe cap de locuitor"
 #: src/components/filters/MapFilter.tsx:393
 msgid "Amount Range"
 msgstr "Interval sumă"
+
+#: src/features/procurement/components/procurement-search-page.tsx:432
+msgid "An"
+msgstr ""
 
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:123
 msgid "An unexpected error occurred"
@@ -974,6 +1079,19 @@ msgstr "Raport anual"
 msgid "Anonymous usage patterns, page views, interactions, and feature usage events."
 msgstr "Modele anonime de utilizare, vizualizări de pagină, interacțiuni și evenimente de utilizare a funcționalităților."
 
+#: src/features/procurement/components/procurement-search-page.tsx:294
+msgid "Anterior"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:66
+#: src/features/procurement/components/procurement-status-badge.tsx:45
+msgid "Anulat"
+msgstr ""
+
+#: src/features/procurement/components/procurement-landing-page.tsx:184
+msgid "Anunț de licitație sau negociere."
+msgstr ""
+
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:457
 msgid "Anyone with the public link can view this map."
 msgstr "Oricine cu linkul public poate vizualiza această hartă."
@@ -981,6 +1099,14 @@ msgstr "Oricine cu linkul public poate vizualiza această hartă."
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:77
 msgid "Anyone with the public link will see this saved version."
 msgstr "Oricine are linkul public va vedea această versiune salvată."
+
+#: src/features/procurement/components/procurement-search-page.tsx:505
+msgid "Aplică filtrele"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:204
+msgid "Aplică textul căutat"
+msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:462
 msgid "Apply"
@@ -1076,6 +1202,15 @@ msgstr "Pe scurt"
 msgid "At least one bin is required."
 msgstr "Este necesar cel puțin un interval."
 
+#: src/features/procurement/components/value-with-currency.tsx:60
+msgid "atipică"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:65
+#: src/features/procurement/components/procurement-status-badge.tsx:39
+msgid "Atribuit"
+msgstr ""
+
 #: src/features/learning/components/interactive/VATReformCard.tsx:26
 msgid "Aug 1, 2025"
 msgstr "1 august 2025"
@@ -1096,6 +1231,21 @@ msgstr "Coduri de activitate autorizate și fiscale de la ONRC și ANAF."
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:139
 msgid "Auto"
 msgstr "Automat"
+
+#: src/features/procurement/components/party-ranking-chart.tsx:128
+#: src/features/procurement/components/procurement-record-card.tsx:181
+#: src/features/procurement/lib/export.ts:32
+msgid "Autoritate"
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-detail.tsx:226
+msgid "Autoritate contractantă"
+msgstr ""
+
+#: src/features/procurement/components/cpv-category-page.tsx:136
+#: src/features/procurement/components/procurement-landing-page.tsx:124
+msgid "Autorități principale"
+msgstr ""
 
 #: src/lib/commitments-metrics.ts:55
 msgid "Available budget credits"
@@ -1218,6 +1368,10 @@ msgstr "Grafic bare"
 msgid "Bar Chart (Aggregated)"
 msgstr "Grafic bare (agregat)"
 
+#: src/features/procurement/components/party-ranking-chart.tsx:97
+msgid "Barele de valoare folosesc doar RON; valorile non-RON rămân afișate separat, fără agregare numerică."
+msgstr ""
+
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:346
 msgid "Base Amount (100%)"
 msgstr "Suma de bază (100%)"
@@ -1317,6 +1471,11 @@ msgstr "Ambele limite"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:515
 msgid "Bottom"
 msgstr "Jos"
+
+#: src/features/procurement/components/cpv-category-page.tsx:63
+#: src/features/procurement/components/procurement-record-detail.tsx:155
+msgid "Breadcrumb"
+msgstr ""
 
 #: src/components/budget-explorer/BudgetDetailsDrawer.tsx:98
 msgid "Breakdown of the selected classification, including grouped chapters and totals."
@@ -1458,6 +1617,10 @@ msgstr "Editare date în masă"
 msgid "Bulk edit filters"
 msgstr "Editare în masă a filtrelor"
 
+#: src/components/shared/procurement-data/freshness-badge.tsx:57
+msgid "cadență"
+msgstr ""
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-utils.ts:91
 msgid "Calculated series"
 msgstr "Serie calculată"
@@ -1531,15 +1694,84 @@ msgstr "Nu se pot încărca indicatorii INS fără codul SIRUTA al localității
 msgid "Cannot regenerate bins because active data has no numeric values."
 msgstr "Nu se pot regenera intervalele deoarece datele active nu au valori numerice."
 
+#: src/features/procurement/components/procurement-status-badge.tsx:42
+msgid "Câștigător atribuit."
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-detail.tsx:362
+msgid "Câștigători pe loți"
+msgstr ""
+
+#: src/features/procurement/components/cpv-category-page.tsx:41
+msgid "Categoria CPV {code} nu a putut fi încărcată."
+msgstr ""
+
+#: src/features/procurement/components/category-breakdown.tsx:130
+msgid "Categorie"
+msgstr ""
+
+#: src/features/procurement/components/cpv-label.tsx:31
+#: src/features/procurement/lib/cpv-labels.ts:34
+msgid "Categorie CPV"
+msgstr ""
+
+#: src/features/procurement/components/cpv-category-page.tsx:81
+msgid "Categorie CPV (Vocabularul comun privind achizițiile). Agregatele sunt la nivel de diviziune."
+msgstr ""
+
+#: src/features/procurement/components/procurement-landing-page.tsx:107
+msgid "Categorii de achiziții (CPV)"
+msgstr ""
+
+#: src/features/procurement/components/cpv-category-page.tsx:158
+msgid "Categorii înrudite"
+msgstr ""
+
+#: src/features/procurement/components/procurement-landing-page.tsx:132
+msgid "Categorii principale"
+msgstr ""
+
 #: src/components/charts/components/chart-categories/ChartCategories.tsx:131
 #: src/components/charts/components/chart-categories/ChartCategories.tsx:156
 msgid "Category name"
 msgstr "Nume categorie"
 
+#: src/features/procurement/components/cpv-category-page.tsx:69
+msgid "Caută"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:188
+msgid "Caută după text"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:195
+msgid "Caută după text (descoperire)"
+msgstr ""
+
+#: src/features/procurement/components/procurement-landing-page.tsx:114
+msgid "Caută în achiziții"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:169
+msgid "Caută în achiziții publice"
+msgstr ""
+
+#: src/features/procurement/components/procurement-landing-page.tsx:115
+msgid "Caută proceduri, contracte, achiziții directe."
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:208
+msgid "Căutare după text pentru descoperire, nu un filtru autoritativ."
+msgstr ""
+
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:368
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:394
 msgid "CC"
 msgstr "CC"
+
+#: src/features/procurement/components/procurement-landing-page.tsx:178
+msgid "Ce înseamnă termenii?"
+msgstr ""
 
 #: src/routes/$lang/learning/certificates.$id.lazy.tsx:48
 #: src/routes/certificates.$id.tsx:48
@@ -1647,6 +1879,10 @@ msgstr "Se verifică răspunsul tău..."
 msgid "Checking..."
 msgstr "Se verifică..."
 
+#: src/features/procurement/components/cpv-category-page.tsx:92
+msgid "Cheltuieli totale"
+msgstr ""
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:356
 msgid "Choose a disabled view to enable it in this map."
 msgstr "Alege o vizualizare dezactivată pentru a o activa pe această hartă."
@@ -1675,6 +1911,14 @@ msgstr "Alege cum dorești să fie trimisă cererea de dezbatere publică."
 #: src/components/alerts/components/ConditionsList.tsx:87
 msgid "Choose operator"
 msgstr "Alegeți operatorul"
+
+#: src/features/procurement/components/procurement-record-detail.tsx:295
+msgid "Ciclu de viață"
+msgstr ""
+
+#: src/features/procurement/components/procurement-landing-page.tsx:56
+msgid "Cine cumpără, ce cumpără (CPV), de la cine și pentru cât — cu acoperire și prospețime dezvăluite lângă fiecare număr și tipare afișate ca semnale de verificare, nu concluzii."
+msgstr ""
 
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:151
 msgid "Citizens allowed to speak"
@@ -1715,6 +1959,14 @@ msgstr "Telefon primărie (opțional)"
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:42
 msgid "City hall website"
 msgstr "Site-ul primăriei"
+
+#: src/features/procurement/components/procurement-landing-page.tsx:126
+msgid "Clasament pe număr (valoarea este sub prag)."
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-detail.tsx:262
+msgid "Clasificare"
+msgstr ""
 
 #: src/components/common/classification-info-link.tsx:128
 #: src/components/common/classification-info-link.tsx:173
@@ -1877,6 +2129,14 @@ msgstr "Închide Căutarea"
 #: src/features/learning/components/interactive/PromiseTracker.tsx:315
 msgid "Close!"
 msgstr "Aproape!"
+
+#: src/features/procurement/components/cpv-label.tsx:41
+msgid "Cod CPV"
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-detail.tsx:188
+msgid "Cod unic"
+msgstr ""
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1101
 #: src/features/learning/components/interactive/ExecutionRateChart.tsx:145
@@ -2042,6 +2302,10 @@ msgstr "Finalizat."
 msgid "Completion"
 msgstr "Finalizare"
 
+#: src/features/procurement/components/procurement-supplier-slice.tsx:220
+msgid "Concentrare a veniturilor dintr-un singur cumpărător — semnal de verificare, nu o concluzie."
+msgstr ""
+
 #: src/features/learning/components/interactive/ExecutionRateChart.tsx:245
 msgid "Concerning"
 msgstr "Îngrijorător"
@@ -2203,6 +2467,28 @@ msgstr "continuu"
 msgid "Continuous range"
 msgstr "Interval continuu"
 
+#: src/features/procurement/components/procurement-landing-page.tsx:185
+#: src/features/procurement/components/procurement-record-card.tsx:60
+#: src/features/procurement/lib/grain-labels.ts:20
+msgid "Contract"
+msgstr ""
+
+#: src/features/procurement/components/procurement-landing-page.tsx:185
+msgid "Contract atribuit în urma unei proceduri."
+msgstr ""
+
+#: src/features/procurement/components/procurement-status-badge.tsx:60
+msgid "Contract finalizat."
+msgstr ""
+
+#: src/features/procurement/components/cpv-category-page.tsx:97
+#: src/features/procurement/components/procurement-record-detail.tsx:317
+#: src/features/procurement/components/procurement-record-detail.tsx:328
+#: src/features/procurement/components/procurement-supplier-slice.tsx:76
+#: src/features/procurement/lib/grain-labels.ts:6
+msgid "Contracte"
+msgstr ""
+
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:157
 msgid "Contributions recorded"
 msgstr "Contribuții înregistrate"
@@ -2216,6 +2502,14 @@ msgstr "Este necesar consimțământul pentru cookie-uri"
 #: src/routes/cookies.lazy.tsx:130
 msgid "Cookie Settings"
 msgstr "Setări cookie-uri"
+
+#: src/components/shared/procurement-data/share-filtered-view.tsx:37
+msgid "Copiază linkul către vizualizarea curentă"
+msgstr ""
+
+#: src/components/shared/procurement-data/share-filtered-view.tsx:40
+msgid "Copiază vizualizarea"
+msgstr ""
 
 #: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:102
 msgid "Copied"
@@ -2325,6 +2619,14 @@ msgstr "Corect!"
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:293
 msgid "Correct."
 msgstr "Corect."
+
+#: src/features/procurement/components/party-ranking-chart.tsx:137
+msgid "Cota"
+msgstr ""
+
+#: src/features/procurement/components/procurement-supplier-slice.tsx:94
+msgid "Cota este sub prag; afișat pe număr."
+msgstr ""
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1432
 msgid "Could not copy map configuration"
@@ -2475,6 +2777,25 @@ msgstr "Acoperire"
 msgid "Coverage quality still depends on connection rates and settlement density, not only network length."
 msgstr "Calitatea acoperirii depinde în continuare de ratele de conectare și de densitatea așezărilor, nu doar de lungimea rețelei."
 
+#: src/components/shared/procurement-data/coverage-ribbon.tsx:49
+#: src/features/procurement/components/procurement-landing-page.tsx:186
+#: src/features/procurement/components/procurement-record-card.tsx:208
+#: src/features/procurement/lib/export.ts:122
+msgid "CPV"
+msgstr ""
+
+#: src/features/procurement/components/cpv-label.tsx:65
+msgid "CPV — Vocabularul comun privind achizițiile. Cod: {code}, diviziune: {division}."
+msgstr ""
+
+#: src/features/procurement/components/cpv-label.tsx:25
+msgid "CPV indisponibil"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:422
+msgid "CPV sau diviziune"
+msgstr ""
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:480
 msgid "Create a group workspace before configuring a grouped series."
 msgstr "Creați un spațiu de lucru de grup înainte de a configura o serie grupată."
@@ -2593,9 +2914,38 @@ msgstr "Eroare la parsarea CSV: {0}"
 msgid "CUI"
 msgstr "CUI"
 
+#: src/components/shared/procurement-data/coverage-ribbon.tsx:46
+#: src/features/procurement/components/procurement-search-page.tsx:402
+#: src/features/procurement/lib/export.ts:40
+msgid "CUI autoritate"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:394
+msgid "CUI autoritate, CUI furnizor, CPV, sursă, stadiu, an și interval de valoare RON."
+msgstr ""
+
+#: src/components/shared/procurement-data/coverage-ribbon.tsx:47
+#: src/features/procurement/components/procurement-search-page.tsx:412
+#: src/features/procurement/lib/export.ts:53
+msgid "CUI furnizor"
+msgstr ""
+
+#: src/features/private-companies/components/private-company-achizitii-tab.tsx:20
+msgid "CUI indisponibil — achizițiile publice nu pot fi rezolvate."
+msgstr ""
+
 #: src/lib/ins/ins-dashboard-config.ts:156
 msgid "Culture & tourism"
 msgstr "Cultură și turism"
+
+#: src/features/procurement/components/procurement-landing-page.tsx:74
+#: src/features/procurement/components/procurement-supplier-slice.tsx:75
+msgid "Cumpărători"
+msgstr ""
+
+#: src/features/procurement/components/procurement-supplier-slice.tsx:90
+msgid "Cumpărători principali"
+msgstr ""
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:735
 #: src/components/maps/HeatmapDataTable.tsx:475
@@ -2653,6 +3003,38 @@ msgstr "Întunecat"
 msgid "Dashboard"
 msgstr "Tablou de bord"
 
+#: src/features/procurement/components/modification-trail.tsx:106
+#: src/features/procurement/components/procurement-record-card.tsx:215
+#: src/features/procurement/lib/export.ts:121
+msgid "Dată"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:48
+msgid "Dată (recente)"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:49
+msgid "Dată (vechi)"
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-detail.tsx:284
+msgid "Dată contract"
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-detail.tsx:288
+msgid "Dată finalizare"
+msgstr ""
+
+#: src/components/shared/procurement-data/coverage-ribbon.tsx:50
+msgid "Dată flux"
+msgstr ""
+
+#: src/features/procurement/components/modification-trail.tsx:80
+#: src/features/procurement/components/procurement-record-card.tsx:217
+#: src/features/procurement/components/procurement-record-detail.tsx:301
+msgid "dată indisponibilă"
+msgstr ""
+
 #: src/features/private-companies/components/private-company-source-footer.tsx:40
 msgid "Data is shown from loaded public snapshots and may differ from live registries."
 msgstr "Datele provin din instantanee publice încărcate și pot diferi de registrele live."
@@ -2674,6 +3056,11 @@ msgstr "Etichete de date"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:493
 msgid "Data period shown:"
 msgstr "Perioada datelor afișate:"
+
+#: src/features/procurement/components/procurement-record-detail.tsx:280
+#: src/features/procurement/components/procurement-record-detail.tsx:287
+msgid "Dată publicare"
+msgstr ""
 
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:956
 #: src/features/advanced-map-analytics/components/map-analytics-series-selector.tsx:95
@@ -2728,6 +3115,10 @@ msgstr "Sursa datelor: portalul „Transparența Bugetară\" administrat de ANAF
 msgid "Data sources"
 msgstr "Surse de date"
 
+#: src/features/procurement/components/procurement-record-detail.tsx:281
+msgid "Dată stare"
+msgstr ""
+
 #: src/routes/map.lazy.tsx:421
 msgid "Data Table View"
 msgstr "Vizualizare tabelară"
@@ -2772,6 +3163,7 @@ msgstr "Setul de date nu este disponibil"
 msgid "Dataset values"
 msgstr "Valorile setului de date"
 
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:77
 #: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:213
 msgid "Date"
 msgstr "Dată"
@@ -2779,6 +3171,30 @@ msgstr "Dată"
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:149
 msgid "Date and time"
 msgstr "Data și ora"
+
+#: src/components/shared/procurement-data/data-status-badge.tsx:83
+msgid "Date complete și verificate."
+msgstr ""
+
+#: src/components/shared/procurement-data/data-status-badge.tsx:89
+msgid "Date învechite — sincronizarea este suspendată."
+msgstr ""
+
+#: src/components/shared/procurement-data/data-status-badge.tsx:93
+msgid "Date neverificate."
+msgstr ""
+
+#: src/components/shared/procurement-data/freshness-badge.tsx:29
+msgid "Date până la"
+msgstr ""
+
+#: src/components/shared/procurement-data/data-status-badge.tsx:75
+msgid "Date simulative — API-ul live nu este conectat."
+msgstr ""
+
+#: src/components/shared/procurement-data/data-status-badge.tsx:85
+msgid "Date simulative pentru dezvoltare."
+msgstr ""
 
 #: src/components/filters/period-filter/PeriodFilter.tsx:422
 msgid "Dates"
@@ -2953,6 +3369,14 @@ msgstr "Se șterge..."
 msgid "Delivery path"
 msgstr "Modalitate de trimitere"
 
+#: src/features/procurement/components/modification-trail.tsx:86
+msgid "delta"
+msgstr ""
+
+#: src/features/procurement/components/modification-trail.tsx:115
+msgid "Delta"
+msgstr ""
+
 #: src/components/entities/views/ins-stats-view.derived.ts:74
 msgid "Demography"
 msgstr "Demografie"
@@ -2970,6 +3394,10 @@ msgstr "Dependență"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:356
 msgid "Derived indicators"
 msgstr "Indicatori derivați"
+
+#: src/components/shared/procurement-data/evidence-link.tsx:22
+msgid "Deschide pe e-licitatie.ro"
+msgstr ""
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1318
 msgid "Describe the dataset and control how it’s shared."
@@ -3030,6 +3458,10 @@ msgstr "Detalii"
 #: src/components/budget-explorer/FilteredSpendingInfo.tsx:252
 msgid "Details about excluded items and amount filters used in this view."
 msgstr "Detalii despre elementele excluse și filtrele de sumă utilizate în această vizualizare."
+
+#: src/components/shared/procurement-data/coverage-ribbon.tsx:127
+msgid "Detalii"
+msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:143
 msgid "Detects outliers using quartile fences: Q1 - m*IQR and Q3 + m*IQR. Works well for heavy-tailed financial data."
@@ -3129,6 +3561,14 @@ msgstr "Distribuție"
 msgid "Distribution series"
 msgstr "Serie de distribuție"
 
+#: src/features/procurement/components/cpv-label.tsx:41
+msgid "diviziune"
+msgstr ""
+
+#: src/features/procurement/components/category-breakdown.tsx:127
+msgid "Diviziune CPV"
+msgstr ""
+
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:833
 msgid "Do you represent a legally established association?"
 msgstr "Reprezinți o asociație legal constituită?"
@@ -3203,6 +3643,10 @@ msgstr "Trage de glisoare pentru a ghici cât contribuie fiecare sursă."
 msgid "Drop CSV file to import"
 msgstr "Trageți fișierul CSV pentru import"
 
+#: src/features/procurement/components/modification-trail.tsx:112
+msgid "După"
+msgstr ""
+
 #: src/components/charts/components/chart-quick-config/components/ChartQuickConfigMenu.tsx:40
 #: src/components/charts/components/views/AnnotationConfigView.tsx:224
 #: src/components/charts/components/views/SeriesConfigView.tsx:380
@@ -3239,6 +3683,10 @@ msgstr "Locuințe"
 #: src/components/entities/views/ins-stats-view.derived.ts:137
 msgid "Dwellings per 1,000 inhabitants signals housing capacity relative to resident population."
 msgstr "Locuințele la 1.000 de locuitori indică capacitatea de locuire raportată la populația rezidentă."
+
+#: src/features/procurement/components/procurement-search-page.tsx:56
+msgid "e-licitatie"
+msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:392
 msgid "e.g. 0"
@@ -3698,6 +4146,10 @@ msgstr "Estimare"
 msgid "Estimate the <0>Shares</0>"
 msgstr "Estimează <0>Proporțiile</0>"
 
+#: src/features/procurement/components/cpv-label.tsx:48
+msgid "etichetă oficială RO indisponibilă"
+msgstr ""
+
 #: src/features/learning/components/interactive/EUComparisonChart.tsx:100
 msgid "EU Average"
 msgstr "Media UE"
@@ -3730,6 +4182,14 @@ msgstr "Evoluția primelor 15 județe"
 #: src/lib/chart-links.ts:433
 msgid "Evolution of Top 15 UATs"
 msgstr "Evoluția primelor 15 UAT-uri"
+
+#: src/features/procurement/components/procurement-search-page.tsx:417
+msgid "ex. 12345678"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:407
+msgid "ex. 2939237"
+msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:692
 #: src/features/learning/components/interactive/RedFlagCards.tsx:116
@@ -3921,6 +4381,14 @@ msgstr "Explorează mai multe parcursuri"
 msgid "Explore national budget."
 msgstr "Explorați bugetul național."
 
+#: src/features/procurement/components/procurement-landing-page.tsx:93
+msgid "Explorează o instituție"
+msgstr ""
+
+#: src/features/procurement/components/procurement-landing-page.tsx:100
+msgid "Explorează un furnizor"
+msgstr ""
+
 #: src/features/learning/components/interactive/FlashCardDeck.tsx:266
 msgid "explored"
 msgstr "explorat"
@@ -3950,6 +4418,7 @@ msgid "Export config"
 msgstr "Exportă configurația"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:1168
+#: src/features/procurement/components/procurement-search-page.tsx:270
 #: src/routes/entity-analytics.lazy.tsx:242
 msgid "Export CSV"
 msgstr "Exportă CSV"
@@ -4172,6 +4641,10 @@ msgstr "Eroare la actualizarea notificarii"
 msgid "Fallback:"
 msgstr "Alternativ:"
 
+#: src/features/procurement/components/procurement-record-card.tsx:163
+msgid "fără status"
+msgstr ""
+
 #: src/routes/charts/index.lazy.tsx:178
 msgid "favorites"
 msgstr "favorite"
@@ -4265,6 +4738,27 @@ msgstr "Filtrele marcate ca excludere vor elimina din rezultate datele care core
 msgid "Filters out missing or non-numeric points before chart mapping."
 msgstr "Filtrează punctele lipsă sau non-numerice înainte de maparea graficului."
 
+#: src/features/procurement/components/procurement-search-page.tsx:385
+#: src/features/procurement/components/procurement-search-page.tsx:390
+msgid "Filtre"
+msgstr ""
+
+#: src/components/shared/procurement-data/coverage-ribbon.tsx:199
+msgid "Filtre indisponibile în v1:"
+msgstr ""
+
+#: src/components/shared/procurement-data/coverage-ribbon.tsx:56
+msgid "Filtru generat LLM"
+msgstr ""
+
+#: src/components/shared/procurement-data/coverage-ribbon.tsx:55
+msgid "Filtru regiune furnizor"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:515
+msgid "Filtrul de regiune furnizor este indisponibil în v1."
+msgstr ""
+
 #: src/lib/commitments-metrics.ts:51
 msgid "Final budget credits"
 msgstr "Credite bugetare definitive"
@@ -4280,6 +4774,11 @@ msgstr "Credite de angajament definitive"
 #: src/features/learning/components/interactive/RectificationFlow.tsx:172
 msgid "Final:"
 msgstr "Final:"
+
+#: src/features/procurement/components/procurement-search-page.tsx:68
+#: src/features/procurement/components/procurement-status-badge.tsx:57
+msgid "Finalizat"
+msgstr ""
 
 #: src/lib/ins/ins-metric-registry.ts:109
 msgid "Finance"
@@ -4307,7 +4806,7 @@ msgstr "Situațiile financiare sunt disponibile doar când compania apare în da
 msgid "Financial Trends"
 msgstr "Evoluție Financiară"
 
-#: src/features/private-companies/lib/tab-config.ts:51
+#: src/features/private-companies/lib/tab-config.ts:56
 msgid "Financials"
 msgstr "Financiar"
 
@@ -4366,6 +4865,21 @@ msgstr "Inactiv fiscal"
 #: src/features/learning/components/interactive/RectificationFlow.tsx:147
 msgid "Flow"
 msgstr "Flux"
+
+#: src/features/procurement/components/party-ranking-chart.tsx:80
+#: src/features/procurement/components/spend-over-time.tsx:62
+msgid "fluxuri"
+msgstr ""
+
+#: src/features/procurement/components/category-breakdown.tsx:133
+#: src/features/procurement/components/party-ranking-chart.tsx:131
+#: src/features/procurement/components/spend-over-time.tsx:101
+msgid "Fluxuri"
+msgstr ""
+
+#: src/features/procurement/components/procurement-supplier-slice.tsx:162
+msgid "Fluxuri de bani"
+msgstr ""
 
 #: src/components/maps/utils.ts:42
 msgid "Fn"
@@ -4494,6 +5008,25 @@ msgstr "Sursă de Finanțare"
 #: src/features/learning/components/interactive/RevenueDistributionGame.tsx:73
 msgid "Funds the pension checks and hospital bills directly. It's a huge mandatory system."
 msgstr "Finanțează direct pensiile și facturile spitalelor. Este un sistem obligatoriu uriaș."
+
+#: src/features/procurement/components/party-ranking-chart.tsx:128
+#: src/features/procurement/components/procurement-record-card.tsx:197
+#: src/features/procurement/components/procurement-record-detail.tsx:239
+#: src/features/procurement/lib/export.ts:45
+msgid "Furnizor"
+msgstr ""
+
+#: src/features/procurement/components/procurement-supplier-slice.tsx:225
+msgid "Furnizor nou (prima apariție recentă) — semnal de verificare, nu o concluzie."
+msgstr ""
+
+#: src/features/procurement/components/procurement-landing-page.tsx:79
+msgid "Furnizori"
+msgstr ""
+
+#: src/features/procurement/components/cpv-category-page.tsx:146
+msgid "Furnizori principali"
+msgstr ""
 
 #: src/features/learning/components/interactive/EUComparisonChart.tsx:71
 msgid "Gap"
@@ -4624,7 +5157,7 @@ msgstr "Bun pentru liste scurte folosite în audituri, rapoarte sau revizii manu
 msgid "Goods & Services"
 msgstr "Bunuri și servicii"
 
-#: src/features/private-companies/lib/tab-config.ts:49
+#: src/features/private-companies/lib/tab-config.ts:54
 msgid "Governance"
 msgstr "Guvernanță"
 
@@ -4636,6 +5169,10 @@ msgstr "gradient"
 #: src/features/advanced-map-datasets/components/dataset-editor-map-preview.tsx:61
 msgid "Gradient"
 msgstr "Gradient"
+
+#: src/features/procurement/lib/export.ts:117
+msgid "Grain"
+msgstr ""
 
 #: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:36
 #: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:100
@@ -4900,6 +5437,14 @@ msgstr "Am trimis emailul"
 msgid "I spend monthly"
 msgstr "Cheltui lunar"
 
+#: src/features/procurement/lib/export.ts:118
+msgid "ID"
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-detail.tsx:189
+msgid "ID stare"
+msgstr ""
+
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:197
 msgid "Identifiers"
 msgstr "Identificatori"
@@ -5007,6 +5552,11 @@ msgstr "Se importă…"
 msgid "in \"invisible\" consumption taxes."
 msgstr "în taxe de consum „invizibile”."
 
+#: src/features/procurement/components/procurement-search-page.tsx:64
+#: src/features/procurement/components/procurement-status-badge.tsx:33
+msgid "În evaluare"
+msgstr ""
+
 #: src/features/learning/components/interactive/VATCalculator.tsx:180
 msgid "In one year, you will pay"
 msgstr "Într-un an, vei plăti"
@@ -5014,6 +5564,10 @@ msgstr "Într-un an, vei plăti"
 #: src/features/private-companies/components/layout/private-company-status-tags.tsx:79
 msgid "Inactive"
 msgstr "Inactivă"
+
+#: src/features/procurement/components/modification-trail.tsx:109
+msgid "Înainte"
+msgstr ""
 
 #: src/routes/cookies.lazy.tsx:227
 msgid "Includes additional error context and, if you use feedback tools, may include your message text or screenshots."
@@ -5058,6 +5612,28 @@ msgstr "creștere"
 msgid "Indicate when your city hall's budget draft was published."
 msgstr "Indică când a fost publicat proiectul de buget al primăriei tale."
 
+#: src/components/shared/procurement-data/freshness-badge.tsx:50
+#: src/components/shared/procurement-data/freshness-badge.tsx:54
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:73
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:124
+#: src/features/procurement/components/modification-trail.tsx:125
+#: src/features/procurement/components/modification-trail.tsx:135
+#: src/features/procurement/components/party-ranking-chart.tsx:164
+#: src/features/procurement/components/procurement-record-card.tsx:189
+#: src/features/procurement/components/procurement-record-detail.tsx:233
+#: src/features/procurement/components/procurement-record-detail.tsx:246
+#: src/features/procurement/components/procurement-record-header.tsx:63
+#: src/features/procurement/components/procurement-supplier-slice.tsx:82
+#: src/features/procurement/components/procurement-supplier-slice.tsx:83
+#: src/features/procurement/components/value-with-currency.tsx:31
+#: src/features/procurement/lib/formatting.ts:34
+msgid "indisponibil"
+msgstr ""
+
+#: src/components/shared/procurement-data/data-status-badge.tsx:91
+msgid "Indisponibil în versiunea curentă."
+msgstr ""
+
 #: src/components/charts/components/series-config/SeriesFilter.tsx:761
 msgid "Inflation Adjustment"
 msgstr "Ajustare la inflație"
@@ -5098,6 +5674,10 @@ msgstr "Credite de angajament inițiale"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:447
 msgid "Inputs used"
 msgstr "Intrări utilizate"
+
+#: src/features/procurement/components/procurement-landing-page.tsx:84
+msgid "Înregistrări"
+msgstr ""
 
 #: src/components/charts/components/series-config/InsSeriesEditor.tsx:559
 msgid "INS Dataset Configuration"
@@ -5209,6 +5789,10 @@ msgstr "Număr invalid"
 #: src/routes/share.$code.tsx:81
 msgid "Invalid or expired link"
 msgstr "Link invalid sau expirat"
+
+#: src/features/procurement/components/procurement-supplier-slice.tsx:160
+msgid "Investiții publice"
+msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:408
 msgid "iqr"
@@ -5353,6 +5937,14 @@ msgstr "Sumar costuri forță de muncă"
 msgid "Labor market and housing pressure indicators."
 msgstr "Indicatori ai pieței muncii și ai presiunii pe locuire."
 
+#: src/features/procurement/components/procurement-record-detail.tsx:363
+msgid "Lane-ul de câștigători pe loți nu este încă servit."
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-detail.tsx:369
+msgid "Lane-ul TED RO nu este încă servit."
+msgstr ""
+
 #: src/components/theme/language-toggle.tsx:39
 msgid "Language"
 msgstr "Limbă"
@@ -5453,6 +6045,18 @@ msgstr "Reprezentanți legali"
 msgid "Legal representatives from ONRC and EU branches from the open data export. Domestic branches and shareholders are not published in this dataset."
 msgstr "Reprezentanți legali de la ONRC și sucursale UE din exportul de date deschise. Sucursalele interne și acționarii nu sunt publicați în acest set de date."
 
+#: src/features/procurement/components/procurement-supplier-slice.tsx:170
+msgid "Legături cross-domain"
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-detail.tsx:395
+msgid "Legături înrudite"
+msgstr ""
+
+#: src/features/procurement/components/procurement-supplier-slice.tsx:193
+msgid "Legăturile se bazează pe CUI; afișăm doar chipurile care rezolvă o sursă."
+msgstr ""
+
 #: src/components/charts/components/chart-quick-config/ChartQuickConfig.tsx:160
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:966
 #: src/routes/map.lazy.tsx:394
@@ -5545,6 +6149,14 @@ msgstr "Link către documentul de buget"
 #: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:130
 msgid "Link to the official city hall website"
 msgstr "Link către site-ul oficial al primăriei"
+
+#: src/components/shared/procurement-data/share-filtered-view.tsx:25
+msgid "Linkul către această vizualizare a fost copiat."
+msgstr ""
+
+#: src/features/procurement/components/procurement-supplier-slice.tsx:161
+msgid "Litigii"
+msgstr ""
 
 #: src/components/entities/views/ins-stats-view.derived.ts:97
 #: src/components/entities/views/ins-stats-view.derived.ts:109
@@ -5810,7 +6422,7 @@ msgstr "Opțiuni localitate"
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:160
 #: src/features/private-companies/components/private-company-summary-highlights.tsx:141
 #: src/features/private-companies/components/sections/private-company-location-section.tsx:43
-#: src/features/private-companies/lib/tab-config.ts:53
+#: src/features/private-companies/lib/tab-config.ts:58
 msgid "Location"
 msgstr "Locație"
 
@@ -5841,6 +6453,10 @@ msgstr "Oportunitate scăzută"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:632
 msgid "Lower fence"
 msgstr "Limita inferioară"
+
+#: src/features/procurement/components/spend-over-time.tsx:98
+msgid "Lună"
+msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:78
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:153
@@ -6276,6 +6892,29 @@ msgstr "Acțiuni rapide mobile"
 msgid "Mode"
 msgstr "Mod"
 
+#: src/features/procurement/components/procurement-record-card.tsx:64
+#: src/features/procurement/lib/grain-labels.ts:24
+msgid "Modificare"
+msgstr ""
+
+#. placeholder {0}: record.modificationType ?? ''
+#: src/features/procurement/components/procurement-record-card.tsx:131
+msgid "Modificare {0}"
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-card.tsx:243
+msgid "Modificare neasociată — fără contract părinte"
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-detail.tsx:118
+#: src/features/procurement/lib/grain-labels.ts:8
+msgid "Modificări"
+msgstr ""
+
+#: src/features/procurement/components/modification-trail.tsx:50
+msgid "Modificări neasociate"
+msgstr ""
+
 #: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:82
 msgid "Module link"
 msgstr "Linkul modulului"
@@ -6290,6 +6929,10 @@ msgstr "Progresul modulului"
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:153
 msgid "Modules"
 msgstr "Module"
+
+#: src/features/procurement/lib/export.ts:126
+msgid "Monedă"
+msgstr ""
 
 #: src/features/learning/components/interactive/PromiseTracker.tsx:403
 msgid "Money gets redirected: salaries and social transfers often exceed initial plans (100%+), while infrastructure lags at 55-60% and EU projects at just 30-35%."
@@ -6489,6 +7132,18 @@ msgstr "Navighează la vizualizarea hartă"
 msgid "Navigation"
 msgstr "Navigare"
 
+#: src/features/procurement/components/party-ranking-chart.tsx:71
+#: src/features/procurement/components/party-ranking-chart.tsx:143
+#: src/features/procurement/components/procurement-record-card.tsx:24
+#: src/features/procurement/components/procurement-record-detail.tsx:55
+msgid "Necunoscut"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:70
+#: src/features/procurement/components/procurement-status-badge.tsx:70
+msgid "Nedeterminat"
+msgstr ""
+
 #: src/components/footer/support-menu.tsx:70
 msgid "Need help?"
 msgstr "Ai nevoie de ajutor?"
@@ -6504,6 +7159,10 @@ msgstr "Necesită o acoperire suficientă a eșantionului; altfel regula este om
 #: src/features/private-companies/components/sections/private-company-location-section.tsx:24
 msgid "Needs review"
 msgstr "Necesită verificare"
+
+#: src/features/procurement/components/category-breakdown.tsx:103
+msgid "neînsumat"
+msgstr ""
 
 #: src/features/private-companies/components/sections/private-company-financials-section.tsx:106
 msgid "Net loss (I20)"
@@ -6577,6 +7236,38 @@ msgstr "Cele mai noi"
 #: src/features/learning/components/player/LessonPlayer.tsx:576
 msgid "Next"
 msgstr "Următorul"
+
+#: src/features/procurement/components/procurement-supplier-slice.tsx:143
+msgid "Nicio achiziție recentă"
+msgstr ""
+
+#: src/features/procurement/components/category-breakdown.tsx:50
+msgid "Nicio categorie."
+msgstr ""
+
+#: src/features/procurement/components/spend-over-time.tsx:44
+msgid "Nicio dată lunară."
+msgstr ""
+
+#: src/features/procurement/components/party-ranking-chart.tsx:56
+msgid "Nicio înregistrare."
+msgstr ""
+
+#: src/features/procurement/components/modification-trail.tsx:31
+msgid "Nicio modificare înregistrată."
+msgstr ""
+
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:93
+msgid "Nicio notă de parsare"
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-detail.tsx:320
+msgid "Niciun contract legat."
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:560
+msgid "Niciun rezultat"
+msgstr ""
 
 #: src/components/filters/flags-filter/index.tsx:24
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:24
@@ -7158,6 +7849,10 @@ msgstr "Nu chiar"
 msgid "Not quite!"
 msgstr "Nu chiar!"
 
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:84
+msgid "Note de parsare"
+msgstr ""
+
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:302
 msgid "Note your observations about the debate…"
 msgstr "Notează observațiile tale despre dezbatere…"
@@ -7206,10 +7901,43 @@ msgstr "Noiembrie"
 msgid "Now"
 msgstr "Acum"
 
+#: src/components/shared/procurement-data/share-filtered-view.tsx:27
+msgid "Nu am putut copia linkul. Copiază-l manual din bara adresei."
+msgstr ""
+
+#: src/features/procurement/components/procurement-supplier-slice.tsx:40
+msgid "Nu am putut încărca achizițiile publice pentru această companie."
+msgstr ""
+
+#: src/features/procurement/components/procurement-landing-page.tsx:228
+msgid "Nu am putut încărca pagina de achiziții."
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:551
+msgid "Nu am putut încărca rezultatele."
+msgstr ""
+
+#: src/features/procurement/lib/export.ts:120
+msgid "Număr"
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-detail.tsx:176
+#: src/features/procurement/components/procurement-record-detail.tsx:183
+msgid "Număr anunț"
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-detail.tsx:182
+msgid "Număr contract"
+msgstr ""
+
 #: src/components/maps/charts/UatDistributionChart.tsx:39
 #: src/components/maps/charts/UatDistributionChart.tsx:105
 msgid "Number of UATs"
 msgstr "Număr de UAT-uri"
+
+#: src/features/procurement/components/procurement-record-detail.tsx:48
+msgid "Numele pot conține prefixe proprii de CUI și separatori |...| (afișați curățiți)."
+msgstr ""
 
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:163
 msgid "Observations"
@@ -7232,6 +7960,19 @@ msgstr "din bugetul anual plătit"
 msgid "of commitment authority"
 msgstr "din autorizarea de angajament"
 
+#: src/features/procurement/components/procurement-status-badge.tsx:66
+msgid "Ofertă depusă."
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:69
+#: src/features/procurement/components/procurement-status-badge.tsx:63
+msgid "Ofertat"
+msgstr ""
+
+#: src/features/procurement/components/procurement-status-badge.tsx:36
+msgid "Ofertele sunt în evaluare."
+msgstr ""
+
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:170
 msgid "Official announcement"
 msgstr "Anunț oficial"
@@ -7248,6 +7989,10 @@ msgstr "Email oficial"
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:336
 msgid "Official website"
 msgstr "Website oficial"
+
+#: src/components/shared/procurement-data/coverage-ribbon.tsx:174
+msgid "OK"
+msgstr ""
 
 #: src/features/learning/components/interactive/VATReformCard.tsx:27
 msgid "Old Rates"
@@ -7589,6 +8334,18 @@ msgstr "Eroare la încărcarea paginii"
 msgid "Page not found"
 msgstr "Pagina nu a fost găsită"
 
+#: src/features/procurement/components/procurement-search-page.tsx:284
+msgid "Pagină"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:292
+msgid "Pagina anterioară"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:301
+msgid "Pagina următoare"
+msgstr ""
+
 #: src/routes/budget-explorer.lazy.tsx:607
 msgid "Paragraph"
 msgstr "Paragraf"
@@ -7600,6 +8357,10 @@ msgstr "Părinte"
 #: src/components/classification-explorer/ClassificationParents.tsx:26
 msgid "Parent Categories"
 msgstr "Categorii părinte"
+
+#: src/features/procurement/components/procurement-record-detail.tsx:221
+msgid "Părți"
+msgstr ""
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1522
 msgid "Partial history"
@@ -7679,6 +8440,10 @@ msgstr "Parcursul nu a fost găsit"
 msgid "Path Progress"
 msgstr "Progresul parcursului"
 
+#: src/features/procurement/components/procurement-search-page.tsx:172
+msgid "Patru tipuri de înregistrări: proceduri, contracte, achiziții directe și modificări. Filtrele deterministe sunt autoritare; căutarea după text este doar pentru descoperire."
+msgstr ""
+
 #: src/components/alerts/components/AlertEditorView.tsx:286
 #: src/features/notifications/components/alerts/AlertCard.tsx:71
 msgid "Paused"
@@ -7704,6 +8469,22 @@ msgstr "Plăți"
 #: src/components/entities/views/Commitments.tsx:375
 msgid "Payments Made"
 msgstr "Plăți Efectuate"
+
+#: src/features/procurement/components/procurement-supplier-slice.tsx:117
+msgid "Pe categorii (CPV)"
+msgstr ""
+
+#: src/features/procurement/components/cpv-category-page.tsx:114
+msgid "Pe număr"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:284
+msgid "pe pagină"
+msgstr ""
+
+#: src/features/procurement/components/cpv-category-page.tsx:123
+msgid "Pe valoare"
+msgstr ""
 
 #: src/features/campaigns/buget/components/interactive/campaign-challenge-review-state.tsx:142
 msgid "Pending review"
@@ -7853,6 +8634,10 @@ msgstr "Notificările platformei sunt supuse <0>Termenilor de utilizare Transpar
 msgid "Please try again to load your campaign notification preferences."
 msgstr "Vă rugăm să încercați din nou să încărcați preferințele de notificare pentru campanie."
 
+#: src/features/procurement/components/procurement-supplier-slice.tsx:159
+msgid "PNRR"
+msgstr ""
+
 #: src/features/learning/components/interactive/ExecutionRateChart.tsx:251
 msgid "Poor"
 msgstr "Slab"
@@ -7926,6 +8711,10 @@ msgstr "Preluat din provocarea de cerere dezbatere."
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:125
 msgid "Prefer median over mean when one or two UATs dominate values."
 msgstr "Preferă mediana în fața mediei când unul sau două UAT-uri domină valorile."
+
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:79
+msgid "Preluat la"
+msgstr ""
 
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1046
 msgid "Prepare email"
@@ -8023,6 +8812,12 @@ msgstr "Pasul anterior"
 msgid "Prices"
 msgstr "Prețuri"
 
+#. placeholder {0}: data.summary.firstSeen ?? t`indisponibil`
+#. placeholder {1}: data.summary.lastSeen ?? t`indisponibil`
+#: src/features/procurement/components/procurement-supplier-slice.tsx:81
+msgid "Prima apariție: {0} · ultima apariție: {1}"
+msgstr ""
+
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:5036
 msgid "Primary UAT"
 msgstr "UAT primar"
@@ -8046,13 +8841,53 @@ msgstr "Privată"
 msgid "Pro Tip"
 msgstr "Sfat Pro"
 
+#: src/features/procurement/components/procurement-landing-page.tsx:184
+#: src/features/procurement/components/procurement-record-card.tsx:58
+#: src/features/procurement/components/procurement-record-detail.tsx:184
+#: src/features/procurement/lib/grain-labels.ts:18
+msgid "Procedură"
+msgstr ""
+
+#: src/features/procurement/components/procurement-status-badge.tsx:48
+msgid "Procedură anulată."
+msgstr ""
+
+#: src/features/procurement/components/procurement-status-badge.tsx:30
+msgid "Procedură publicată în SEAP."
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-detail.tsx:427
+msgid "Procedura sursă"
+msgstr ""
+
+#: src/features/procurement/components/procurement-status-badge.tsx:54
+msgid "Procedură suspendată."
+msgstr ""
+
+#: src/features/procurement/components/cpv-category-page.tsx:99
+#: src/features/procurement/lib/grain-labels.ts:5
+msgid "Proceduri"
+msgstr ""
+
 #: src/routes/unsubscribe.$token.tsx:125
 msgid "Processing..."
 msgstr "Se procesează..."
 
+#: src/features/procurement/components/procurement-supplier-slice.tsx:72
+msgid "Procurement-sourced, nu cifra de afaceri"
+msgstr ""
+
 #: src/components/footer/AppFooter.tsx:84
 msgid "Product"
 msgstr "Produs"
+
+#: src/features/procurement/components/procurement-record-detail.tsx:405
+msgid "Profil autoritate"
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-detail.tsx:416
+msgid "Profil furnizor"
+msgstr ""
 
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:283
 msgid "Profile details"
@@ -8075,6 +8910,14 @@ msgstr "Progres"
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:447
 msgid "Propose a specific and realistic change. For example: \"Redistribute 500,000 lei from personnel expenses to school infrastructure investments.\""
 msgstr "Propune o modificare specifică și realistă. De exemplu: «Redistribuirea a 500.000 lei de la cheltuieli de personal către investiții în infrastructură școlară.»"
+
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:35
+msgid "Proveniență"
+msgstr ""
+
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:42
+msgid "Proveniența datelor"
+msgstr ""
 
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:56
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:142
@@ -8182,6 +9025,16 @@ msgstr "Hărțile publice pot folosi doar seturi de date nelistate sau publice. 
 msgid "Public procurement data is provided by SICAP.ai, an independent platform that aggregates and analyzes public contracts from Romania's Electronic Public Procurement System (SEAP)."
 msgstr "Datele privind achizițiile publice sunt furnizate de SICAP.ai, o platformă independentă care agregă și analizează contractele publice din Sistemul Electronic de Achiziții Publice (SEAP) din România."
 
+#: src/features/procurement/components/procurement-search-page.tsx:63
+#: src/features/procurement/components/procurement-status-badge.tsx:27
+msgid "Publicat"
+msgstr ""
+
+#: src/components/shared/procurement-data/freshness-badge.tsx:28
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:80
+msgid "Publicat la"
+msgstr ""
+
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:121
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:159
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:290
@@ -8240,6 +9093,14 @@ msgstr "Clasament (top/sus N)"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:105
 msgid "Rank (Top/Bottom N)"
 msgstr "Clasament (Top/Sus N)"
+
+#: src/components/shared/procurement-data/request-dataset-action.tsx:39
+msgid "Raportează o problemă de date"
+msgstr ""
+
+#: src/features/procurement/components/procurement-landing-page.tsx:108
+msgid "Răsfoiește pe categorii CPV."
+msgstr ""
 
 #: src/components/national-budget/national-budget-disclaimer-card.tsx:86
 #: src/features/advanced-map-analytics/components/map-analytics-description-inline.tsx:97
@@ -8347,6 +9208,10 @@ msgstr "Refacere reușită"
 msgid "Reference"
 msgstr "Referință"
 
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:71
+msgid "Referință scraper"
+msgstr ""
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:567
 msgid "Regenerate from active data"
 msgstr "Regenerează din datele active"
@@ -8397,6 +9262,18 @@ msgstr "Ponderea șomajului înregistrat"
 #: src/features/private-companies/components/layout/private-company-header.tsx:29
 msgid "Registration number"
 msgstr "Număr de înregistrare"
+
+#: src/features/procurement/components/procurement-landing-page.tsx:232
+msgid "Reîncearcă"
+msgstr ""
+
+#: src/features/procurement/components/procurement-supplier-slice.tsx:41
+msgid "Reîncearcă mai târziu."
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:552
+msgid "Reîncearcă sau ajustează filtrele."
+msgstr ""
 
 #: src/components/classification-explorer/ClassificationSiblings.tsx:32
 msgid "Related Categories"
@@ -8468,6 +9345,10 @@ msgstr "Reordonează regula {0}"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-list-item.tsx:95
 msgid "Reorder series"
 msgstr "Reordonează serii"
+
+#: src/features/procurement/components/category-breakdown.tsx:83
+msgid "Repartizarea pe categorii CPV"
+msgstr ""
 
 #: src/components/charts/components/chart-config/FilterBulkEdit.tsx:124
 msgid "Replace"
@@ -8574,6 +9455,10 @@ msgstr "Resetează la perioada disponibilă"
 msgid "Reset to default"
 msgstr "Resetează la valoarea implicită"
 
+#: src/features/procurement/components/procurement-search-page.tsx:508
+msgid "Resetează"
+msgstr ""
+
 #: src/features/challenges/components/hub/QuickResourcesPreview.tsx:80
 msgid "Resources"
 msgstr "Resurse"
@@ -8672,6 +9557,10 @@ msgstr "Română"
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:235
 msgid "RON"
 msgstr "RON"
+
+#: src/features/procurement/components/procurement-landing-page.tsx:70
+msgid "RON; înregistrările non-RON sunt afișate separat"
+msgstr ""
 
 #: src/features/advanced-map-analytics/components/map-analytics-group-workspace-import-dialog.tsx:308
 #: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:116
@@ -8803,6 +9692,32 @@ msgstr "SDG 2020"
 #: src/lib/ins/ins-metric-registry.ts:114
 msgid "SDG 2030"
 msgstr "SDG 2030"
+
+#: src/features/procurement/components/procurement-supplier-slice.tsx:248
+msgid "Se încarcă achizițiile publice ale furnizorului…"
+msgstr ""
+
+#: src/features/procurement/components/procurement-landing-page.tsx:217
+msgid "Se încarcă achizițiile publice…"
+msgstr ""
+
+#: src/features/procurement/components/cpv-category-page.tsx:203
+msgid "Se încarcă categoria CPV…"
+msgstr ""
+
+#. placeholder {0}: grainLabel(grain)
+#: src/features/procurement/components/procurement-search-page.tsx:541
+msgid "Se încarcă rezultatele pentru {0}…"
+msgstr ""
+
+#: src/features/procurement/components/metric-card.tsx:52
+#: src/features/procurement/components/procurement-search-page.tsx:230
+msgid "Se încarcă…"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:57
+msgid "SEAP"
+msgstr ""
 
 #: src/components/mobile/mobile-bottom-dock.tsx:219
 #: src/components/mobile/mobile-bottom-dock.tsx:227
@@ -9130,6 +10045,11 @@ msgstr "Selectează UAT-uri după distanța standardizată față de medie în d
 #: src/features/learning/components/interactive/VATCalculator.tsx:135
 msgid "Seller Keeps"
 msgstr "Vânzătorul păstrează"
+
+#: src/features/procurement/components/procurement-landing-page.tsx:187
+#: src/features/procurement/components/procurement-supplier-slice.tsx:215
+msgid "Semnal de verificare"
+msgstr ""
 
 #: src/features/challenges/components/hub/QuickResourcesPreview.tsx:137
 msgid "Send debate request"
@@ -9536,6 +10456,10 @@ msgstr "Autentifică-te pentru a-ți urmări progresul de învățare."
 msgid "Simulation cluster CSV"
 msgstr "CSV cluster simulare"
 
+#: src/components/shared/procurement-data/freshness-badge.tsx:61
+msgid "sincronizare suspendată"
+msgstr ""
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:1088
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:48
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:199
@@ -9570,6 +10494,10 @@ msgstr "Cluster gol {0} omis."
 #: src/features/advanced-map-analytics/group-workspace-import.ts:223
 msgid "Skipped row with missing SIRUTA or group."
 msgstr "Rând omis cu SIRUTA sau grup lipsă."
+
+#: src/features/procurement/components/procurement-record-detail.tsx:358
+msgid "Sloturi sub prag"
+msgstr ""
 
 #: src/features/private-companies/components/private-company-source-footer.tsx:33
 msgid "snapshot"
@@ -9609,6 +10537,14 @@ msgstr "Contrib. sociale"
 msgid "Social media"
 msgstr "Rețele sociale"
 
+#: src/components/shared/procurement-data/request-dataset-action.tsx:26
+msgid "Solicită datele lipsă pentru {dataset}"
+msgstr ""
+
+#: src/components/shared/procurement-data/request-dataset-action.tsx:27
+msgid "Solicită datele lipsă sau blocate"
+msgstr ""
+
 #: src/components/charts/components/ChartDataError.tsx:232
 msgid "Some data issues were automatically resolved"
 msgstr "Unele probleme cu datele au fost rezolvate automat"
@@ -9637,6 +10573,10 @@ msgstr "Ceva nu a funcționat corect."
 #: src/routes/charts/index.lazy.tsx:211
 msgid "Sort by"
 msgstr "Sortează după"
+
+#: src/features/procurement/components/procurement-search-page.tsx:240
+msgid "Sortează"
+msgstr ""
 
 #: src/components/charts/components/filters-details/StaticSeriesFilter.tsx:31
 #: src/components/charts/components/series-config/StaticSeriesEditor.tsx:50
@@ -9679,6 +10619,20 @@ msgstr "Calculul cheltuielilor"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:119
 msgid "Splits UATs relative to the median value. More robust than mean-based filters when outliers exist."
 msgstr "Împarte UAT-urile relativ la valoarea mediană. Mai robust decât filtrele bazate pe medie când există valori extreme."
+
+#: src/features/procurement/components/procurement-search-page.tsx:463
+#: src/features/procurement/lib/export.ts:123
+msgid "Stadiu"
+msgstr ""
+
+#: src/features/procurement/components/procurement-status-badge.tsx:73
+msgid "Stadiu necunoscut în sursa de date."
+msgstr ""
+
+#. placeholder {0}: meta.label
+#: src/features/procurement/components/procurement-status-badge.tsx:89
+msgid "Stadiu: {0}"
+msgstr ""
 
 #: src/components/maps/HeatmapDataTable.tsx:476
 #: src/features/learning/components/interactive/VATReformCard.tsx:29
@@ -9775,6 +10729,10 @@ msgstr "Stare"
 msgid "Status by Budget Chapters"
 msgstr "Situația pe Capitole Bugetare"
 
+#: src/components/shared/procurement-data/data-status-badge.tsx:48
+msgid "Status: {text}"
+msgstr ""
+
 #: src/components/alerts/components/UnsavedChangesDialog.tsx:40
 #: src/features/advanced-map-datasets/components/dataset-unsaved-changes-dialog.tsx:45
 msgid "Stay here"
@@ -9803,6 +10761,11 @@ msgstr "Stocată doar în acest browser, pe acest dispozitiv."
 #: src/components/charts/components/views/SeriesConfigView.tsx:448
 msgid "Strip this prefix from x-axis labels for this series (e.g., 2024-). Helps align yearly and monthly data on a common axis."
 msgstr "Eliminați acest prefix din etichetele axei X pentru această serie (de exemplu, 2024-). Ajută la alinierea datelor anuale și lunare pe o axă comună."
+
+#: src/components/shared/procurement-data/coverage-ribbon.tsx:179
+#: src/features/procurement/components/procurement-search-page.tsx:261
+msgid "sub prag"
+msgstr ""
 
 #: src/components/classification-explorer/ClassificationChildren.tsx:20
 msgid "Subcategories"
@@ -9884,13 +10847,32 @@ msgstr "Sumă"
 msgid "Sum group members"
 msgstr "Sumă membrii grupului"
 
-#: src/features/private-companies/lib/tab-config.ts:45
+#: src/features/private-companies/lib/tab-config.ts:48
 msgid "Summary"
 msgstr "Rezumat"
 
 #: src/features/advanced-map-analytics/components/map-analytics-group-workspace-import-dialog.tsx:241
 msgid "Supports row-per-UAT CSV and simulation cluster CSV. You can also drag a file anywhere in this dialog."
 msgstr "Acceptă CSV câte un rând per UAT și CSV cluster simulare. Puteți trage un fișier oriunde în acest dialog."
+
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:53
+#: src/features/procurement/components/procurement-search-page.tsx:443
+#: src/features/procurement/lib/export.ts:124
+msgid "Sursă"
+msgstr ""
+
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:45
+msgid "Sursa, referința colectorului, datele de preluare și notele de parsare pentru această înregistrare."
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-detail.tsx:449
+msgid "Surse"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:67
+#: src/features/procurement/components/procurement-status-badge.tsx:51
+msgid "Suspendat"
+msgstr ""
 
 #: src/features/challenges/components/hub/UatSwitchBadge.tsx:48
 msgid "Switch city hall"
@@ -9967,9 +10949,17 @@ msgstr "Apasă pe un răspuns pentru a continua."
 msgid "Taxes"
 msgstr "Taxe"
 
+#: src/features/procurement/components/procurement-search-page.tsx:58
+msgid "TED"
+msgstr ""
+
 #: src/components/ui/shortcuts.tsx:46
 msgid "Temporarily enable scroll wheel zoom"
 msgstr "Activează temporar zoom-ul cu rotița mouse-ului"
+
+#: src/components/shared/procurement-data/coverage-ribbon.tsx:51
+msgid "Teritoriu autoritate"
+msgstr ""
 
 #: src/components/footer/AppFooter.tsx:117
 msgid "Terms of Service"
@@ -10336,6 +11326,18 @@ msgstr "Nivel"
 msgid "Time"
 msgstr "Ora"
 
+#: src/features/procurement/components/modification-trail.tsx:118
+msgid "Tip"
+msgstr ""
+
+#: src/features/procurement/components/grain-selector.tsx:34
+msgid "Tip înregistrări (grain)"
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-detail.tsx:177
+msgid "Tip procedură"
+msgstr ""
+
 #: src/components/charts/components/chart-config/SeriesToolbar.tsx:39
 msgid "Tip: Copy/Cut/Paste with ⌘/Ctrl+C, X, V. Duplicate with ⌘/Ctrl+D."
 msgstr "Sfat: Copiere/Tăiere/Lipire cu ⌘/Ctrl+C, X, V. Duplicare cu ⌘/Ctrl+D."
@@ -10343,6 +11345,10 @@ msgstr "Sfat: Copiere/Tăiere/Lipire cu ⌘/Ctrl+C, X, V. Duplicare cu ⌘/Ctrl+
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1593
 msgid "Tip: paste tabular SIRUTA + value to update many rows at once."
 msgstr "Sfat: lipește un tabel cu SIRUTA + valoare pentru a actualiza mai multe rânduri deodată."
+
+#: src/features/procurement/components/procurement-landing-page.tsx:187
+msgid "Tipar determinist care merită o a doua privire, nu o concluzie."
+msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:696
 msgid "Tips and tricks"
@@ -10362,6 +11368,14 @@ msgstr "Titlu A–Z"
 msgid "Title Z–A"
 msgstr "Titlu Z–A"
 
+#: src/features/procurement/lib/export.ts:119
+msgid "Titlu"
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-card.tsx:171
+msgid "Titlu indisponibil"
+msgstr ""
+
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:367
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:389
 msgid "To"
@@ -10370,6 +11384,18 @@ msgstr "Catre"
 #: src/components/commitments/DetailTable.tsx:588
 msgid "To Pay"
 msgstr "De Plată"
+
+#: src/features/procurement/components/procurement-record-detail.tsx:437
+msgid "Toate achizițiile autorității"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:62
+msgid "Toate stadiile"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:55
+msgid "Toate sursele"
+msgstr ""
 
 #: src/routes/cookies.lazy.tsx:200
 msgid "Toggle analytics cookies"
@@ -10506,6 +11532,10 @@ msgstr "Total: adăugați toate valorile care corespund (cel mai potrivit pentru
 #: src/features/learning/components/interactive/GuidedPlatformTour.tsx:232
 msgid "Tour Complete!"
 msgstr "Tur Complet!"
+
+#: src/features/procurement/components/modification-trail.tsx:41
+msgid "Trail de modificări"
+msgstr ""
 
 #: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:155
 #: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:173
@@ -10695,6 +11725,10 @@ msgstr "Anulează"
 #: src/routes/charts/$chartId/index.lazy.tsx:34
 msgid "Undo successful"
 msgstr "Anulare reușită"
+
+#: src/features/procurement/components/spend-over-time.tsx:83
+msgid "Unele luni conțin înregistrări cu valoare lipsă (afișate separat, neînsumate)."
+msgstr ""
 
 #: src/lib/ins/ins-dashboard-config.ts:31
 #: src/lib/ins/ins-metric-registry.ts:31
@@ -10916,6 +11950,22 @@ msgstr "Seturi de date încărcate"
 msgid "Upper fence"
 msgstr "Limita superioară"
 
+#: src/features/procurement/lib/export.ts:128
+msgid "URL sursă"
+msgstr ""
+
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:66
+msgid "URL sursă indisponibil"
+msgstr ""
+
+#: src/features/procurement/components/procurement-landing-page.tsx:53
+msgid "Urmărim banii din achiziții publice"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:303
+msgid "Următor"
+msgstr ""
+
 #: src/routes/cookies.lazy.tsx:194
 msgid "Usage analytics"
 msgstr "Analiza utilizării"
@@ -11025,6 +12075,75 @@ msgstr "Erori de validare"
 msgid "Validation issues"
 msgstr "Probleme de validare"
 
+#: src/components/shared/procurement-data/coverage-ribbon.tsx:48
+#: src/features/procurement/components/category-breakdown.tsx:136
+#: src/features/procurement/components/party-ranking-chart.tsx:134
+#: src/features/procurement/components/procurement-record-detail.tsx:196
+msgid "Valoare"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:50
+msgid "Valoare (mare)"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:51
+msgid "Valoare (mică)"
+msgstr ""
+
+#: src/features/procurement/lib/export.ts:125
+msgid "Valoare (RON)"
+msgstr ""
+
+#: src/features/procurement/components/value-with-currency.tsx:57
+msgid "Valoare atipică"
+msgstr ""
+
+#: src/features/procurement/components/value-with-currency.tsx:64
+msgid "Valoare atipică — verifică sursa."
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-detail.tsx:209
+msgid "Valoare atribuită"
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-detail.tsx:195
+msgid "Valoare contract"
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-detail.tsx:194
+#: src/features/procurement/components/procurement-record-detail.tsx:212
+#: src/features/procurement/components/procurement-record-detail.tsx:214
+msgid "Valoare estimată"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:494
+msgid "Valoare maximă RON"
+msgstr ""
+
+#: src/features/procurement/components/procurement-search-page.tsx:483
+msgid "Valoare minimă RON"
+msgstr ""
+
+#: src/features/procurement/lib/export.ts:127
+msgid "Valoare nativă"
+msgstr ""
+
+#: src/features/procurement/components/spend-over-time.tsx:104
+msgid "Valoare prezentă"
+msgstr ""
+
+#: src/features/procurement/components/spend-over-time.tsx:107
+msgid "Valori lipsă"
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-detail.tsx:47
+msgid "Valorile non-RON păstrează valoarea nativă; nu se însumează între monede."
+msgstr ""
+
+#: src/features/procurement/components/category-breakdown.tsx:112
+msgid "Valorile non-RON sunt afișate în moneda nativă și nu intră în procentele agregate."
+msgstr ""
+
 #: src/components/charts/components/series-config/CustomSeriesDataEditor.tsx:95
 #: src/components/charts/components/series-config/CustomSeriesValueEditor.tsx:38
 #: src/components/entities/views/ins-stats-view.presentation.tsx:985
@@ -11093,6 +12212,18 @@ msgstr "Statut TVA necunoscut"
 msgid "VAT, Income, Profit"
 msgstr "TVA, Venit, Profit"
 
+#: src/features/procurement/components/procurement-supplier-slice.tsx:70
+msgid "Venituri din achiziții"
+msgstr ""
+
+#: src/features/procurement/components/procurement-supplier-slice.tsx:124
+msgid "Venituri în timp"
+msgstr ""
+
+#: src/features/procurement/components/cpv-category-page.tsx:42
+msgid "Verifică codul sau încearcă altă categorie."
+msgstr ""
+
 #: src/routes/$lang/learning/certificates.$id.lazy.tsx:93
 msgid "Verify a learning certificate (proof of concept)."
 msgstr "Verifică un certificat de învățare (proof of concept)."
@@ -11104,6 +12235,49 @@ msgstr "Istoricul versiunilor"
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:221
 msgid "Version restored"
 msgstr "Versiune restaurată"
+
+#: src/features/procurement/components/category-breakdown.tsx:121
+#: src/features/procurement/components/modification-trail.tsx:100
+#: src/features/procurement/components/party-ranking-chart.tsx:107
+#: src/features/procurement/components/spend-over-time.tsx:92
+msgid "Versiune tabelară"
+msgstr ""
+
+#: src/features/procurement/components/procurement-landing-page.tsx:94
+msgid "Vezi ce cumpără o autoritate și de la cine."
+msgstr ""
+
+#: src/features/procurement/components/procurement-landing-page.tsx:101
+msgid "Vezi cine primește bani publici."
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-card.tsx:239
+msgid "Vezi detalii"
+msgstr ""
+
+#: src/components/shared/procurement-data/evidence-link.tsx:23
+msgid "Vezi documentul"
+msgstr ""
+
+#: src/components/shared/procurement-data/evidence-link.tsx:24
+msgid "Vezi înregistrarea"
+msgstr ""
+
+#: src/features/procurement/components/procurement-record-detail.tsx:368
+msgid "Vezi și pe TED"
+msgstr ""
+
+#: src/features/procurement/components/procurement-supplier-slice.tsx:231
+msgid "Vezi surse pe e-licitatie.ro"
+msgstr ""
+
+#: src/features/procurement/components/procurement-supplier-slice.tsx:111
+msgid "Vezi toate achizițiile furnizorului"
+msgstr ""
+
+#: src/features/procurement/components/cpv-category-page.tsx:180
+msgid "Vezi toate înregistrările din această categorie"
+msgstr ""
 
 #: src/components/filters/EntityAnalyticsFilter.tsx:436
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:1068
@@ -11183,6 +12357,18 @@ msgstr "Vizibilitate"
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:74
 msgid "Visibility at save"
 msgstr "Vizibilitate la salvare"
+
+#: src/features/procurement/components/procurement-landing-page.tsx:186
+msgid "Vocabularul comun privind achizițiile — cod de categorie."
+msgstr ""
+
+#: src/features/procurement/components/cpv-category-page.tsx:105
+msgid "Volum în timp"
+msgstr ""
+
+#: src/features/procurement/components/procurement-landing-page.tsx:68
+msgid "Volum total"
+msgstr ""
 
 #: src/features/learning/components/interactive/lesson-discussion.tsx:118
 msgid "Want to add a comment?"

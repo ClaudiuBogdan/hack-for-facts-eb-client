@@ -36,6 +36,7 @@ vi.mock('lucide-react', () => ({
   Map: () => <span data-testid="icon-map" />,
   ListOrdered: () => <span data-testid="icon-entity-analytics" />,
   Boxes: () => <span data-testid="icon-budget-explorer" />,
+  Landmark: () => <span data-testid="icon-achizitii" />,
 }))
 
 // Mock router
@@ -130,11 +131,18 @@ describe('NavMain', () => {
       expect(screen.getByText('Entity Analytics')).toBeInTheDocument()
     })
 
+    it('renders Achizitii publice link', () => {
+      render(<NavMain />)
+
+      expect(screen.getByTestId('link-/achizitii')).toBeInTheDocument()
+      expect(screen.getByText('Achiziții publice')).toBeInTheDocument()
+    })
+
     it('renders all menu items', () => {
       render(<NavMain />)
 
       const menuItems = screen.getAllByTestId('sidebar-menu-item')
-      expect(menuItems).toHaveLength(5)
+      expect(menuItems).toHaveLength(6)
     })
   })
 
@@ -155,6 +163,12 @@ describe('NavMain', () => {
       render(<NavMain />)
 
       expect(screen.getByTestId('icon-charts')).toBeInTheDocument()
+    })
+
+    it('renders achizitii icon', () => {
+      render(<NavMain />)
+
+      expect(screen.getByTestId('icon-achizitii')).toBeInTheDocument()
     })
   })
 
@@ -189,6 +203,14 @@ describe('NavMain', () => {
 
       const dashboardLink = screen.getByTestId('link-/')
       expect(dashboardLink).not.toHaveClass('bg-muted')
+    })
+
+    it('marks Achizitii as active when on /achizitii subpath', () => {
+      mockMatches.mockReturnValue([{ pathname: '/achizitii/cautare' }])
+      render(<NavMain />)
+
+      const achizitiiLink = screen.getByTestId('link-/achizitii')
+      expect(achizitiiLink).toHaveClass('bg-muted')
     })
   })
 

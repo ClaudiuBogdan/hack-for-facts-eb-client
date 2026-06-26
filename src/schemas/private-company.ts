@@ -101,6 +101,7 @@ export type PrivateCompanyFinancialYear = z.infer<
 export const privateCompanyViewTabSchema = z.enum([
   'summary',
   'activity',
+  'achizitii',
   'governance',
   'financials',
   'location',

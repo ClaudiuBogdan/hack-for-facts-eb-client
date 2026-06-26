@@ -2,6 +2,7 @@ import type {
   PrivateCompanyProfile,
   PrivateCompanyViewTab,
 } from '@/schemas/private-company'
+import { PrivateCompanyAchizitiiTab } from './private-company-achizitii-tab'
 import { PrivateCompanyActivityTab } from './private-company-activity-tab'
 import { PrivateCompanyFinancialsTab } from './private-company-financials-tab'
 import { PrivateCompanyGovernanceTab } from './private-company-governance-tab'
@@ -29,6 +30,8 @@ export function PrivateCompanyTabContent({
       )
     case 'activity':
       return <PrivateCompanyActivityTab profile={profile} />
+    case 'achizitii':
+      return <PrivateCompanyAchizitiiTab profile={profile} />
     case 'governance':
       return <PrivateCompanyGovernanceTab profile={profile} />
     case 'financials':
