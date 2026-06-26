@@ -13,7 +13,6 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@/test/test-utils'
-import { NavMain } from './nav-main'
 
 // ============================================================================
 // MOCKS
@@ -29,6 +28,12 @@ vi.mock('@lingui/core/macro', () => ({
   msg: (strings: TemplateStringsArray) => strings[0],
 }))
 
+const publicEnterpriseMockEnabled = vi.fn()
+
+vi.mock('@/features/public-enterprises/lib/mock-mode', () => ({
+  isPublicEnterpriseMockEnabled: () => publicEnterpriseMockEnabled(),
+}))
+
 // Mock lucide-react icons
 vi.mock('lucide-react', () => ({
   LayoutDashboard: () => <span data-testid="icon-dashboard" />,
@@ -36,6 +41,7 @@ vi.mock('lucide-react', () => ({
   Map: () => <span data-testid="icon-map" />,
   ListOrdered: () => <span data-testid="icon-entity-analytics" />,
   Boxes: () => <span data-testid="icon-budget-explorer" />,
+  Building2: () => <span data-testid="icon-public-enterprises" />,
 }))
 
 // Mock router
@@ -83,9 +89,20 @@ vi.mock('@/components/ui/sidebar', () => ({
 // TESTS
 // ============================================================================
 
+async function renderNavMain(options?: { readonly mockPublicEnterprises?: boolean }) {
+  if (options?.mockPublicEnterprises !== undefined) {
+    publicEnterpriseMockEnabled.mockReturnValue(options.mockPublicEnterprises)
+    vi.resetModules()
+  }
+
+  const { NavMain } = await import('./nav-main')
+  return render(<NavMain />)
+}
+
 describe('NavMain', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    publicEnterpriseMockEnabled.mockReturnValue(false)
     mockMatches.mockReturnValue([{ pathname: '/' }])
     mockSidebarState.mockReturnValue({
       state: 'expanded',
@@ -95,97 +112,112 @@ describe('NavMain', () => {
   })
 
   describe('menu items', () => {
-    it('renders Dashboard link', () => {
-      render(<NavMain />)
+    it('renders Dashboard link', async () => {
+      await renderNavMain()
 
       expect(screen.getByTestId('link-/')).toBeInTheDocument()
       expect(screen.getByText('Dashboard')).toBeInTheDocument()
     })
 
-    it('renders Map link', () => {
-      render(<NavMain />)
+    it('renders Map link', async () => {
+      await renderNavMain()
 
       expect(screen.getByTestId('link-/map')).toBeInTheDocument()
       expect(screen.getByText('Map')).toBeInTheDocument()
     })
 
-    it('renders Charts link', () => {
-      render(<NavMain />)
+    it('renders Charts link', async () => {
+      await renderNavMain()
 
       expect(screen.getByTestId('link-/charts')).toBeInTheDocument()
       expect(screen.getByText('Charts')).toBeInTheDocument()
     })
 
-    it('renders Budget Explorer link', () => {
-      render(<NavMain />)
+    it('renders Budget Explorer link', async () => {
+      await renderNavMain()
 
       expect(screen.getByTestId('link-/budget-explorer')).toBeInTheDocument()
       expect(screen.getByText('National Budget')).toBeInTheDocument()
     })
 
-    it('renders Entity Analytics link', () => {
-      render(<NavMain />)
+    it('renders Entity Analytics link', async () => {
+      await renderNavMain()
 
       expect(screen.getByTestId('link-/entity-analytics')).toBeInTheDocument()
       expect(screen.getByText('Entity Analytics')).toBeInTheDocument()
     })
 
-    it('renders all menu items', () => {
-      render(<NavMain />)
+    it('renders all menu items', async () => {
+      await renderNavMain()
 
       const menuItems = screen.getAllByTestId('sidebar-menu-item')
       expect(menuItems).toHaveLength(5)
     })
+
+    it('shows public enterprises navigation only while mock mode is enabled', async () => {
+      await renderNavMain({ mockPublicEnterprises: true })
+
+      expect(screen.getByTestId('link-/intreprinderi-publice')).toBeInTheDocument()
+      expect(screen.getByText('Întreprinderi publice')).toBeInTheDocument()
+      expect(screen.getAllByTestId('sidebar-menu-item')).toHaveLength(6)
+    })
   })
 
   describe('icons', () => {
-    it('renders dashboard icon', () => {
-      render(<NavMain />)
+    it('renders dashboard icon', async () => {
+      await renderNavMain()
 
       expect(screen.getByTestId('icon-dashboard')).toBeInTheDocument()
     })
 
-    it('renders map icon', () => {
-      render(<NavMain />)
+    it('renders map icon', async () => {
+      await renderNavMain()
 
       expect(screen.getByTestId('icon-map')).toBeInTheDocument()
     })
 
-    it('renders charts icon', () => {
-      render(<NavMain />)
+    it('renders charts icon', async () => {
+      await renderNavMain()
 
       expect(screen.getByTestId('icon-charts')).toBeInTheDocument()
     })
   })
 
   describe('active state', () => {
-    it('marks Dashboard as active when on root', () => {
+    it('marks Dashboard as active when on root', async () => {
       mockMatches.mockReturnValue([{ pathname: '/' }])
-      render(<NavMain />)
+      await renderNavMain()
 
       const dashboardLink = screen.getByTestId('link-/')
       expect(dashboardLink).toHaveClass('bg-muted')
     })
 
-    it('marks Map as active when on /map', () => {
+    it('marks Map as active when on /map', async () => {
       mockMatches.mockReturnValue([{ pathname: '/map' }])
-      render(<NavMain />)
+      await renderNavMain()
 
       const mapLink = screen.getByTestId('link-/map')
       expect(mapLink).toHaveClass('bg-muted')
     })
 
-    it('marks Charts as active when on /charts subpath', () => {
+    it('marks Charts as active when on /charts subpath', async () => {
       mockMatches.mockReturnValue([{ pathname: '/charts/123' }])
-      render(<NavMain />)
+      await renderNavMain()
 
       const chartsLink = screen.getByTestId('link-/charts')
       expect(chartsLink).toHaveClass('bg-muted')
     })
 
-    it('does not mark Dashboard as active on other pages', () => {
+    it('marks public enterprises as active on profile routes when mock mode is enabled', async () => {
+      mockMatches.mockReturnValue([{ pathname: '/intreprinderi-publice/10020943' }])
+      await renderNavMain({ mockPublicEnterprises: true })
+
+      expect(screen.getByTestId('link-/intreprinderi-publice')).toHaveClass('bg-muted')
+    })
+
+    it('does not mark Dashboard as active on other pages', async () => {
       mockMatches.mockReturnValue([{ pathname: '/map' }])
-      render(<NavMain />)
+      await renderNavMain()
 
       const dashboardLink = screen.getByTestId('link-/')
       expect(dashboardLink).not.toHaveClass('bg-muted')
@@ -193,25 +225,25 @@ describe('NavMain', () => {
   })
 
   describe('collapsed state', () => {
-    it('shows labels when expanded', () => {
+    it('shows labels when expanded', async () => {
       mockSidebarState.mockReturnValue({
         state: 'expanded',
         isMobile: false,
         setOpenMobile: mockSetOpenMobile,
       })
-      render(<NavMain />)
+      await renderNavMain()
 
       expect(screen.getByText('Dashboard')).toBeInTheDocument()
       expect(screen.getByText('Map')).toBeInTheDocument()
     })
 
-    it('hides labels when collapsed', () => {
+    it('hides labels when collapsed', async () => {
       mockSidebarState.mockReturnValue({
         state: 'collapsed',
         isMobile: false,
         setOpenMobile: mockSetOpenMobile,
       })
-      render(<NavMain />)
+      await renderNavMain()
 
       expect(screen.queryByText('Dashboard')).not.toBeInTheDocument()
       expect(screen.queryByText('Map')).not.toBeInTheDocument()
@@ -219,26 +251,26 @@ describe('NavMain', () => {
   })
 
   describe('mobile behavior', () => {
-    it('closes sidebar on mobile when link clicked', () => {
+    it('closes sidebar on mobile when link clicked', async () => {
       mockSidebarState.mockReturnValue({
         state: 'expanded',
         isMobile: true,
         setOpenMobile: mockSetOpenMobile,
       })
-      render(<NavMain />)
+      await renderNavMain()
 
       fireEvent.click(screen.getByTestId('link-/map'))
 
       expect(mockSetOpenMobile).toHaveBeenCalledWith(false)
     })
 
-    it('does not close sidebar on desktop when link clicked', () => {
+    it('does not close sidebar on desktop when link clicked', async () => {
       mockSidebarState.mockReturnValue({
         state: 'expanded',
         isMobile: false,
         setOpenMobile: mockSetOpenMobile,
       })
-      render(<NavMain />)
+      await renderNavMain()
 
       fireEvent.click(screen.getByTestId('link-/map'))
 
@@ -247,14 +279,14 @@ describe('NavMain', () => {
   })
 
   describe('structure', () => {
-    it('renders sidebar group', () => {
-      render(<NavMain />)
+    it('renders sidebar group', async () => {
+      await renderNavMain()
 
       expect(screen.getByTestId('sidebar-group')).toBeInTheDocument()
     })
 
-    it('renders sidebar menu', () => {
-      render(<NavMain />)
+    it('renders sidebar menu', async () => {
+      await renderNavMain()
 
       expect(screen.getByTestId('sidebar-menu')).toBeInTheDocument()
     })
