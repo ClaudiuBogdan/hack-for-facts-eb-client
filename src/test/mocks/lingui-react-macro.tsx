@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import type { ReactNode } from "react";
 
 type TransProps = {
@@ -73,3 +74,30 @@ export const SelectOrdinal = ({
   }
   return <>{other ?? few ?? ""}</>;
 };
+
+export const useLingui = () => ({
+  i18n: {
+    locale: "en",
+    _: (
+      message: string | { id: string; message?: string },
+      values?: Record<string, ReactNode> | ReactNode[]
+    ) => {
+      const messageString =
+        typeof message === "string" ? message : message.message ?? message.id;
+      if (!values || Object.keys(values).length === 0) {
+        return messageString;
+      }
+      let output = messageString;
+      const normalized = Array.isArray(values)
+        ? values.reduce<Record<string, ReactNode>>((acc, value, index) => {
+            acc[String(index)] = value;
+            return acc;
+          }, {})
+        : values;
+      for (const [key, value] of Object.entries(normalized)) {
+        output = output.split(`{${key}}`).join(String(value));
+      }
+      return output;
+    },
+  },
+});

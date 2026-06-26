@@ -41,6 +41,7 @@ export const I18nProvider = ({ children }: { children?: ReactNode }) => (
 
 export const useLingui = () => ({
   i18n: {
+    locale: "en",
     _: (
       message: string | { id: string; message?: string },
       values?: Record<string, ReactNode> | ReactNode[]

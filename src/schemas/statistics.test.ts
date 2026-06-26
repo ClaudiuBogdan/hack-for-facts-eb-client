@@ -19,6 +19,22 @@ describe('statistics route search schemas', () => {
       expect(parsed.period).toBe('2024-Q1')
     })
 
+    it('preserves valid annual, quarterly, and monthly period filters', () => {
+      expect(parseStatisticsTerritoryHubSearch({ period: '2024' })).toEqual({
+        period: '2024',
+      })
+      expect(parseStatisticsTerritoryHubSearch({ period: '2024-Q2' })).toEqual({
+        period: '2024-Q2',
+      })
+      expect(parseStatisticsTerritoryHubSearch({ period: '2024-03' })).toEqual({
+        period: '2024-03',
+      })
+    })
+
+    it('degrades latest to an empty search state', () => {
+      expect(parseStatisticsTerritoryHubSearch({ period: 'latest' })).toEqual({})
+    })
+
     it('degrades a non-string period to no filter via .catch', () => {
       const parsed = parseStatisticsTerritoryHubSearch({
         period: { year: 2024 },
