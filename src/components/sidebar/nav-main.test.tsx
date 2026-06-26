@@ -46,6 +46,7 @@ vi.mock('lucide-react', () => ({
   Building2: () => <span data-testid="icon-public-enterprises" />,
   Vote: () => <span data-testid="icon-elections" />,
   HeartHandshake: () => <span data-testid="icon-ngos" />,
+  Activity: () => <span data-testid="icon-statistics" />,
 }))
 
 // Mock router
@@ -179,11 +180,18 @@ describe('NavMain', () => {
       expect(screen.getByText('ONG-uri')).toBeInTheDocument()
     })
 
+    it('renders Statistics link', async () => {
+      await renderNavMain()
+
+      expect(screen.getByTestId('link-/statistici')).toBeInTheDocument()
+      expect(screen.getByText('Statistici')).toBeInTheDocument()
+    })
+
     it('renders all menu items', async () => {
       await renderNavMain()
 
       const menuItems = screen.getAllByTestId('sidebar-menu-item')
-      expect(menuItems).toHaveLength(9)
+      expect(menuItems).toHaveLength(10)
     })
 
     it('shows public enterprises navigation only while mock mode is enabled', async () => {
@@ -191,7 +199,7 @@ describe('NavMain', () => {
 
       expect(screen.getByTestId('link-/intreprinderi-publice')).toBeInTheDocument()
       expect(screen.getByText('Întreprinderi publice')).toBeInTheDocument()
-      expect(screen.getAllByTestId('sidebar-menu-item')).toHaveLength(10)
+      expect(screen.getAllByTestId('sidebar-menu-item')).toHaveLength(11)
     })
   })
 
@@ -243,6 +251,12 @@ describe('NavMain', () => {
 
       expect(screen.getByTestId('icon-ngos')).toBeInTheDocument()
     })
+
+    it('renders statistics icon', async () => {
+      await renderNavMain()
+
+      expect(screen.getByTestId('icon-statistics')).toBeInTheDocument()
+    })
   })
 
   describe('active state', () => {
@@ -283,6 +297,14 @@ describe('NavMain', () => {
 
       const ngosLink = screen.getByTestId('link-/ong-uri')
       expect(ngosLink).toHaveClass('bg-muted')
+    })
+
+    it('marks Statistics as active when on /statistici subpath', async () => {
+      mockMatches.mockReturnValue([{ pathname: '/statistici/teritorii/54975' }])
+      await renderNavMain()
+
+      const statisticsLink = screen.getByTestId('link-/statistici')
+      expect(statisticsLink).toHaveClass('bg-muted')
     })
 
     it('does not mark Dashboard as active on other pages', async () => {

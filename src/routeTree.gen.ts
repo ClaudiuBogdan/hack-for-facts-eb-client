@@ -31,6 +31,7 @@ import { Route as InvestitiiPubliceRouteRouteImport } from './routes/investitii-
 import { Route as EntitiesRouteRouteImport } from './routes/entities/route'
 import { Route as AchizitiiRouteRouteImport } from './routes/achizitii/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as StatisticiIndexRouteImport } from './routes/statistici/index'
 import { Route as PrimarieIndexRouteImport } from './routes/primarie/index'
 import { Route as ParlamentIndexRouteImport } from './routes/parlament/index'
 import { Route as OngUriIndexRouteImport } from './routes/ong-uri/index'
@@ -80,6 +81,7 @@ import { Route as MapsDatasetsIndexRouteImport } from './routes/maps/datasets/in
 import { Route as ClassificationsFunctionalIndexRouteImport } from './routes/classifications/functional/index'
 import { Route as ClassificationsEconomicIndexRouteImport } from './routes/classifications/economic/index'
 import { Route as LangLearningIndexRouteImport } from './routes/$lang/learning/index'
+import { Route as StatisticiTeritoriiSirutaRouteImport } from './routes/statistici/teritorii/$siruta'
 import { Route as PrimarieCuiShareImageDotpngRouteImport } from './routes/primarie/$cui/share-image[.]png'
 import { Route as ParlamentGrupuriGroupIdRouteImport } from './routes/parlament/grupuri/$groupId'
 import { Route as OngUriSursaSnapshotIdRouteImport } from './routes/ong-uri.sursa.$snapshotId'
@@ -268,6 +270,13 @@ const ChartsIndexLazyRoute = ChartsIndexLazyRouteImport.update({
   path: '/charts/',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/charts/index.lazy').then((d) => d.Route))
+const StatisticiIndexRoute = StatisticiIndexRouteImport.update({
+  id: '/statistici/',
+  path: '/statistici/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/statistici/index.lazy').then((d) => d.Route),
+)
 const PrimarieIndexRoute = PrimarieIndexRouteImport.update({
   id: '/primarie/',
   path: '/primarie/',
@@ -589,6 +598,14 @@ const LangLearningIndexRoute = LangLearningIndexRouteImport.update({
 } as any).lazy(() =>
   import('./routes/$lang/learning/index.lazy').then((d) => d.Route),
 )
+const StatisticiTeritoriiSirutaRoute =
+  StatisticiTeritoriiSirutaRouteImport.update({
+    id: '/statistici/teritorii/$siruta',
+    path: '/statistici/teritorii/$siruta',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/statistici/teritorii/$siruta.lazy').then((d) => d.Route),
+  )
 const PrimarieCuiShareImageDotpngRoute =
   PrimarieCuiShareImageDotpngRouteImport.update({
     id: '/share-image.png',
@@ -1170,6 +1187,7 @@ export interface FileRoutesByFullPath {
   '/ong-uri/': typeof OngUriIndexRoute
   '/parlament/': typeof ParlamentIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
+  '/statistici/': typeof StatisticiIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   '/parlament/membri/$memberId': typeof ParlamentMembriMemberIdRouteRouteWithChildren
@@ -1198,6 +1216,7 @@ export interface FileRoutesByFullPath {
   '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
   '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
+  '/statistici/teritorii/$siruta': typeof StatisticiTeritoriiSirutaRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
@@ -1299,6 +1318,7 @@ export interface FileRoutesByTo {
   '/ong-uri': typeof OngUriIndexRoute
   '/parlament': typeof ParlamentIndexRoute
   '/primarie': typeof PrimarieIndexRoute
+  '/statistici': typeof StatisticiIndexRoute
   '/charts': typeof ChartsIndexLazyRoute
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
   '/achizitii/achizitii-directe/$id': typeof AchizitiiAchizitiiDirecteIdRoute
@@ -1323,6 +1343,7 @@ export interface FileRoutesByTo {
   '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
   '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
+  '/statistici/teritorii/$siruta': typeof StatisticiTeritoriiSirutaRoute
   '/$lang/learning': typeof LangLearningIndexRoute
   '/classifications/economic': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional': typeof ClassificationsFunctionalIndexRoute
@@ -1434,6 +1455,7 @@ export interface FileRoutesById {
   '/ong-uri/': typeof OngUriIndexRoute
   '/parlament/': typeof ParlamentIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
+  '/statistici/': typeof StatisticiIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   '/parlament/membri/$memberId': typeof ParlamentMembriMemberIdRouteRouteWithChildren
@@ -1462,6 +1484,7 @@ export interface FileRoutesById {
   '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
   '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
+  '/statistici/teritorii/$siruta': typeof StatisticiTeritoriiSirutaRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
@@ -1575,6 +1598,7 @@ export interface FileRouteTypes {
     | '/ong-uri/'
     | '/parlament/'
     | '/primarie/'
+    | '/statistici/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
     | '/parlament/membri/$memberId'
@@ -1603,6 +1627,7 @@ export interface FileRouteTypes {
     | '/ong-uri/sursa/$snapshotId'
     | '/parlament/grupuri/$groupId'
     | '/primarie/$cui/share-image.png'
+    | '/statistici/teritorii/$siruta'
     | '/$lang/learning/'
     | '/classifications/economic/'
     | '/classifications/functional/'
@@ -1704,6 +1729,7 @@ export interface FileRouteTypes {
     | '/ong-uri'
     | '/parlament'
     | '/primarie'
+    | '/statistici'
     | '/charts'
     | '/$lang/learning/onboarding'
     | '/achizitii/achizitii-directe/$id'
@@ -1728,6 +1754,7 @@ export interface FileRouteTypes {
     | '/ong-uri/sursa/$snapshotId'
     | '/parlament/grupuri/$groupId'
     | '/primarie/$cui/share-image.png'
+    | '/statistici/teritorii/$siruta'
     | '/$lang/learning'
     | '/classifications/economic'
     | '/classifications/functional'
@@ -1838,6 +1865,7 @@ export interface FileRouteTypes {
     | '/ong-uri/'
     | '/parlament/'
     | '/primarie/'
+    | '/statistici/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
     | '/parlament/membri/$memberId'
@@ -1866,6 +1894,7 @@ export interface FileRouteTypes {
     | '/ong-uri/sursa/$snapshotId'
     | '/parlament/grupuri/$groupId'
     | '/primarie/$cui/share-image.png'
+    | '/statistici/teritorii/$siruta'
     | '/$lang/learning/'
     | '/classifications/economic/'
     | '/classifications/functional/'
@@ -1962,6 +1991,7 @@ export interface RootRouteChildren {
   IntreprinderiPubliceIndexRoute: typeof IntreprinderiPubliceIndexRoute
   ParlamentIndexRoute: typeof ParlamentIndexRoute
   PrimarieIndexRoute: typeof PrimarieIndexRoute
+  StatisticiIndexRoute: typeof StatisticiIndexRoute
   ChartsIndexLazyRoute: typeof ChartsIndexLazyRoute
   AdminCampaignsCampaignKeyRouteRoute: typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   ParlamentMembriMemberIdRouteRoute: typeof ParlamentMembriMemberIdRouteRouteWithChildren
@@ -1975,6 +2005,7 @@ export interface RootRouteChildren {
   MapsEditorNewRoute: typeof MapsEditorNewRoute
   MapsPublicMapIdRoute: typeof MapsPublicMapIdRoute
   ParlamentGrupuriGroupIdRoute: typeof ParlamentGrupuriGroupIdRoute
+  StatisticiTeritoriiSirutaRoute: typeof StatisticiTeritoriiSirutaRoute
   ClassificationsEconomicIndexRoute: typeof ClassificationsEconomicIndexRoute
   ClassificationsFunctionalIndexRoute: typeof ClassificationsFunctionalIndexRoute
   MapsDatasetsIndexRoute: typeof MapsDatasetsIndexRoute
@@ -2145,6 +2176,13 @@ declare module '@tanstack/react-router' {
       path: '/charts'
       fullPath: '/charts/'
       preLoaderRoute: typeof ChartsIndexLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/statistici/': {
+      id: '/statistici/'
+      path: '/statistici'
+      fullPath: '/statistici/'
+      preLoaderRoute: typeof StatisticiIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/primarie/': {
@@ -2510,6 +2548,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/$lang/learning/'
       preLoaderRoute: typeof LangLearningIndexRouteImport
       parentRoute: typeof LangLearningRouteRoute
+    }
+    '/statistici/teritorii/$siruta': {
+      id: '/statistici/teritorii/$siruta'
+      path: '/statistici/teritorii/$siruta'
+      fullPath: '/statistici/teritorii/$siruta'
+      preLoaderRoute: typeof StatisticiTeritoriiSirutaRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/primarie/$cui/share-image.png': {
       id: '/primarie/$cui/share-image.png'
@@ -3375,6 +3420,7 @@ const rootRouteChildren: RootRouteChildren = {
   IntreprinderiPubliceIndexRoute: IntreprinderiPubliceIndexRoute,
   ParlamentIndexRoute: ParlamentIndexRoute,
   PrimarieIndexRoute: PrimarieIndexRoute,
+  StatisticiIndexRoute: StatisticiIndexRoute,
   ChartsIndexLazyRoute: ChartsIndexLazyRoute,
   AdminCampaignsCampaignKeyRouteRoute:
     AdminCampaignsCampaignKeyRouteRouteWithChildren,
@@ -3391,6 +3437,7 @@ const rootRouteChildren: RootRouteChildren = {
   MapsEditorNewRoute: MapsEditorNewRoute,
   MapsPublicMapIdRoute: MapsPublicMapIdRoute,
   ParlamentGrupuriGroupIdRoute: ParlamentGrupuriGroupIdRoute,
+  StatisticiTeritoriiSirutaRoute: StatisticiTeritoriiSirutaRoute,
   ClassificationsEconomicIndexRoute: ClassificationsEconomicIndexRoute,
   ClassificationsFunctionalIndexRoute: ClassificationsFunctionalIndexRoute,
   MapsDatasetsIndexRoute: MapsDatasetsIndexRoute,
