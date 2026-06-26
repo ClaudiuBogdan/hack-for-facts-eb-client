@@ -104,12 +104,14 @@ export const privateCompanyViewTabSchema = z.enum([
   'governance',
   'financials',
   'location',
+  'litigii',
 ])
 
 export type PrivateCompanyViewTab = z.infer<typeof privateCompanyViewTabSchema>
 
 export const privateCompanySearchSchema = z.object({
   tab: privateCompanyViewTabSchema.optional().catch('summary'),
+  litPage: z.coerce.number().int().min(1).optional().catch(1),
 })
 
 export type PrivateCompanySearchState = z.infer<

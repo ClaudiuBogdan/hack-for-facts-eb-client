@@ -27,10 +27,11 @@ company-public litigant name. Results render in a sortable, paginated table. The
 - **Fact:** Full-text over `object`/`solution`/`solution_summary` is **reserved**
   (incidental person names → re-identification risk); not offered in v1. Person-name
   search is **not offered** by policy.
-- **Decision — `q` is constrained.** The text box matches court names, case numbers
-  (`NNNN/CC/YYYY` + `case_number_old`), and publishable litigant name keys only. The
-  adapter routes `q` to these indexes, never to case text or persons. Helper text
-  states this.
+- **Decision — no generic persisted `q`.** The search control may accept a local
+  typed value, but submit classifies it into a closed URL contract: exact
+  `caseNumber`, selected `court`, or selected publishable `partyKey`. The adapter
+  never receives free text, never searches case text, and never searches persons.
+  Helper text states this.
 - **Decision — facets use the base-filter pattern** (`FilterContainer` +
   `FilterListContainer`/`FilterRadioContainer`) and sync to URL search params via
   `useNavigate`, exactly like `EntityAnalyticsFilter`.
@@ -57,7 +58,8 @@ export const Route = createFileRoute('/justitie/cautare')({
 
 ```ts
 const caseSearchSchema = z.object({
-  q: z.string().optional().catch(undefined),                 // court/number/litigant ONLY
+  caseNumber: z.string().optional().catch(undefined),        // exact NNNN/CC/YYYY-style lookup
+  partyKey: z.string().optional().catch(undefined),          // publishable company/public-entity key
   court: z.string().optional().catch(undefined),             // institution_code
   tier: z.enum(['judecatorie','tribunal','tribunal_militar',
                 'curte_de_apel','curte_militara_apel']).optional().catch(undefined),
@@ -69,7 +71,7 @@ const caseSearchSchema = z.object({
   hasAppeal: z.enum(['true','false']).optional().catch(undefined),
   sort: z.enum(['recent','oldest','court','category']).optional().catch('recent'),
   page: z.coerce.number().int().min(1).optional().catch(1),
-  pageSize: z.coerce.number().int().optional().catch(25),
+  pageSize: z.coerce.number().int().min(1).max(100).optional().catch(25),
   from: z.string().optional().catch(undefined),
 })
 ```
@@ -84,11 +86,16 @@ Adapter `fetchCaseSearch(params)`:
 ```ts
 type CaseSearchResult = {
   rows: {
-    caseId: string; institutionCode: string; courtName: string | null;
-    caseNumber: string; stageName: string | null; categoryName: string | null;
+    caseId: string; institutionCode: string; courtLevel: JusticeCourt['courtLevel'];
+    courtName: string | null; caseNumber: string;
+    stage: string | null; stageName: string | null;
+    category: string | null; categoryName: string | null;
     sourceOpenedAt: string | null; latestHearingAt: string | null;
     hasAppeal: boolean;
-    namedPartiesPreview: { displayName: string; role: string }[];  // publishable only, max ~2
+    namedPartiesPreview: {
+      displayName: string; role: string;
+      partyKind: 'company' | 'public_entity'; nameKey: string;
+    }[];                                                           // publishable only, max ~2
     personPartyCount: number;                                       // aggregate, for context
   }[]
   facets: {                                  // counts for available facet values
@@ -104,16 +111,19 @@ type CaseSearchResult = {
 ```
 
 **Mock states:** (a) broad result set (default sort `recent`), (b) heavily filtered
-(few rows), (c) zero results (coverage-aware empty), (d) case-number exact match
-(single row), (e) loading/error. `facets` drive counts in the filter UI.
+(few rows), (c) zero results (coverage-aware empty), (d) exact `caseNumber` match
+(single row), (e) `partial` and `stale` provenance variants, (f) loading/error.
+`facets` drive counts in the filter UI.
 
 ## UI structure
 
-1. **Sticky filter bar (≥`md`):** `CourtPicker` + `SearchInput` (`q`) with helper
-   text, then `FilterContainer` accordions: Tier (radio), Categorie (multi), Stadiu
-   (multi), An (select/range), Tip parte (radio: companie / instituție publică), Rol
-   (multi), Apel (radio: cu apel / fără apel). Below `md`, filters move into a
-   `Sheet` opened by a "Filtre (N)" button; applied-filter tags scroll horizontally.
+1. **Sticky filter bar (≥`md`):** `CourtPicker` + safe lookup input with helper
+   text. The input classifies values into `caseNumber` or publishable `partyKey`
+   before navigation; free text is kept local only. Then `FilterContainer`
+   accordions: Tier (radio), Categorie (multi), Stadiu (multi), An (select/range),
+   Tip parte (radio: companie / instituție publică), Rol (multi), Apel (radio: cu
+   apel / fără apel). Below `md`, filters move into a `Sheet` opened by a
+   "Filtre (N)" button; applied-filter tags scroll horizontally.
 2. **Applied filters row:** `SelectedOptionsDisplay` tags with per-tag clear + "Șterge
    tot".
 3. **Results header:** result count (locale-formatted) + `sort` `Select` + `DataStatusBadge`.
@@ -137,7 +147,8 @@ type CaseSearchResult = {
 
 - Any facet change updates the URL search params (immutable spread) and refetches;
   `page` resets to 1 on filter change (not on sort).
-- `q` submit updates `q`; `CourtPicker` updates `court`.
+- Safe lookup submit updates `caseNumber` or `partyKey`; `CourtPicker` updates
+  `court`.
 - Tag clear removes one param; "Șterge tot" resets to default view (no params).
 - Row click → case detail with `from=cautare`.
 - `ShareFilteredView` (optional, post-MVP): copy current URL.
@@ -169,10 +180,10 @@ type CaseSearchResult = {
 ## Privacy, provenance, source citation
 
 - **No person-name field; `partyKind` cannot select `person`/`unknown`.**
-- **No full-text search** over case object/solution text; `q` is restricted to
-  court/number/publishable-litigant. Helper text states this; a small
-  `PrivacyBoundaryNotice` near the search box explains why person/full-text search is
-  not offered.
+- **No full-text search** over case object/solution text; durable params are
+  restricted to `caseNumber`, `partyKey`, and aggregate metadata facets. Helper text
+  states this; a small `PrivacyBoundaryNotice` near the search box explains why
+  person/full-text search is not offered.
 - Person parties appear only as an aggregate "+N persoane fizice" hint per row,
   never named.
 - `CoverageRibbon` + `SourceProvenanceDrawer` present; coverage caveats applied to
@@ -182,8 +193,9 @@ type CaseSearchResult = {
 
 - [ ] Faceted filters (court, tier, category, stage, year, party kind, role, appeal)
       sync to URL via the base-filter pattern; default view renders with no params.
-- [ ] `q` matches only court/number/publishable-litigant; no person field; no
-      full-text over case text; helper text + privacy notice present.
+- [ ] Safe lookup classifies only exact case number / publishable party key /
+      selected court; no generic `q`, no person field, no full-text over case text;
+      helper text + privacy notice present.
 - [ ] `partyKind` cannot select person/unknown.
 - [ ] Results table sortable + paginated; rows link to case detail with `from`.
 - [ ] Person parties shown only as aggregate counts per row.

@@ -3,6 +3,7 @@ import posthog from "posthog-js";
 import { useLocation } from "@tanstack/react-router";
 import { env } from "@/config/env";
 import { hasAnalyticsConsent } from "@/lib/consent";
+import { sanitizeJusticeUrlFragment } from "@/lib/privacy/sensitive-route-sanitizer";
 import type { AnalyticsFilterType } from "@/schemas/charts";
 
 /** Centralized, consent-aware analytics helpers (PostHog). */
@@ -219,9 +220,19 @@ export function capturePageview(payload?: {
     if (!isAnalyticsEnabled()) return;
     ensurePostHogInitialized();
 
-    const pathname = payload?.pathname ?? window.location.pathname;
+    const rawPathname = payload?.pathname ?? window.location.pathname;
     const searchRaw = payload?.search ?? window.location.search ?? "";
-    const search = searchRaw && !searchRaw.startsWith("?") ? `?${searchRaw}` : searchRaw;
+    const rawSearch = searchRaw && !searchRaw.startsWith("?") ? `?${searchRaw}` : searchRaw;
+
+    // Sanitize sensitive justice route params (partyKey, caseNumber, from,
+    // unknown params) before they reach PostHog. Only the safe aggregate
+    // allowlist is preserved on /justitie* URLs.
+    const sanitizedFragment = sanitizeJusticeUrlFragment(
+      `${rawPathname}${rawSearch}`,
+    );
+    const queryIndex = sanitizedFragment.indexOf("?");
+    const pathname = queryIndex === -1 ? sanitizedFragment : sanitizedFragment.slice(0, queryIndex);
+    const search = queryIndex === -1 ? "" : sanitizedFragment.slice(queryIndex);
 
     const url = `${window.location.origin}${pathname}${search}`;
     posthog.capture("$pageview", {

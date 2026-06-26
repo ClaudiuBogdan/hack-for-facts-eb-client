@@ -62,12 +62,16 @@ const courtAnalyticsSearchSchema = z.object({
   tab: z.enum(['prezentare','volum','categorii','litiganti']).optional().catch('prezentare'),
   year: z.coerce.number().int().optional().catch(undefined),       // focus year for breakdowns
   category: z.string().optional().catch(undefined),                // drill into one category
+  page: z.coerce.number().int().min(1).optional().catch(1),        // litigant/search side panels
+  pageSize: z.coerce.number().int().min(1).max(100).optional().catch(25),
+  sort: z.enum(['recent','oldest','court','category']).optional().catch('recent'),
+  from: z.string().optional().catch(undefined),
 })
 ```
 
 - Cross-links: a category bar → `/justitie/cautare?court=$courtId&category=…`; a
-  litigant → `/justitie/cautare?court=$courtId&q=…` (litigant name key, never a
-  person). Preserve `from=instante:$courtId`.
+  litigant → `/justitie/cautare?court=$courtId&partyKey=…` (publishable litigant
+  name key, never a person). Preserve `from=instante:$courtId`.
 
 ## Data contract and mock states
 

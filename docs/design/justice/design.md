@@ -86,18 +86,20 @@ Canonical routes (orchestrator decision; honored exactly):
 
 ### Shared URL state (follow foundation names)
 
-- `/justitie/cautare`: `q` (court/case-number/litigant text — **never** person
-  text), `court` (institution_code), `tier`, `category`, `stage`, `year`,
-  `partyKind`, `role`, `hasAppeal`, `sort`, `page`, `pageSize`.
+- `/justitie/cautare`: `caseNumber` (exact case-number lookup), `partyKey`
+  (publishable company/public-entity name key selected by UI), `court`
+  (institution_code), `tier`, `category`, `stage`, `year`, `partyKind`, `role`,
+  `hasAppeal`, `sort`, `page`, `pageSize`. There is no generic persisted `q`
+  param and no person-name param.
 - `/justitie/instante/$courtId`: `tab` (`prezentare` | `volum` | `categorii` |
   `litiganti`), `year`, `category`.
 - `/justitie/dosare/$caseId`: `tab` optional (`cronologie` | `parti` | `acte`).
 - `/companies/$cui`, `/entities/$cui`: `tab=litigii` (+ `litPage` for the slice
   list page to avoid colliding with other section pagination).
-- **Decision:** validate all search params with Zod parsers in `src/schemas/
-  justice.ts` using the established `z…optional().catch(default)` idiom (see
-  `parsePrivateCompanySearch`); default views render with no params; invalid params
-  normalize via route validation, not effects.
+- **Decision:** validate all search params with closed Zod parsers in
+  `src/schemas/justice.ts` using the established `z…optional().catch(default)`
+  idiom (see `parsePrivateCompanySearch`); default views render with no params;
+  invalid and unknown params normalize at the route boundary, not effects.
 
 ---
 

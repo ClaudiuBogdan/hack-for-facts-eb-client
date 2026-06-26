@@ -51,8 +51,8 @@ No dedicated route. State is owned by the host:
 - Court analytics: `tab=litiganti` (+ optional `category` to scope within the court).
 - Search: rendered as a side/secondary panel reflecting the current `court`/`tier`/
   `category` facets; no extra params.
-- Row "vezi cauzele" → `/justitie/cautare?court=…&q={nameKey}` (or `category=…`),
-  preserving scope and `from`.
+- Row "vezi cauzele" → `/justitie/cautare?court=…&partyKey={nameKey}` (or
+  `category=…`), preserving scope and `from`.
 
 ## Data contract and mock states
 

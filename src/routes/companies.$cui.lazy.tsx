@@ -14,7 +14,7 @@ export const Route = createLazyFileRoute('/companies/$cui')({
 
 function PrivateCompanyRoutePage() {
   const { cui } = Route.useParams()
-  const { tab = 'summary' } = Route.useSearch()
+  const { tab = 'summary', litPage = 1 } = Route.useSearch()
   const loaderData = Route.useLoaderData() as
     | PrivateCompanyRouteLoaderData
     | undefined
@@ -37,6 +37,7 @@ function PrivateCompanyRoutePage() {
     <PrivateCompanyPage
       profile={profile}
       tab={tab as PrivateCompanyViewTab}
+      litPage={litPage}
       cui={loaderData?.cui ?? cui}
     />
   )
