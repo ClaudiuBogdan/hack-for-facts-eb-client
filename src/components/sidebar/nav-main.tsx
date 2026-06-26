@@ -1,4 +1,4 @@
-import { LayoutDashboard, BarChart2, Map, ListOrdered, Boxes } from "lucide-react";
+import { LayoutDashboard, BarChart2, Map, ListOrdered, Boxes, Vote } from "lucide-react";
 import { Link, useMatches } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button-variants";
@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Trans } from "@lingui/react/macro";
 
-type MainItemUrl = "/" | "/map" | "/charts" | "/budget-explorer" | "/entity-analytics";
+type MainItemUrl = "/" | "/map" | "/charts" | "/budget-explorer" | "/entity-analytics" | "/alegeri";
 
 const mainItems: ReadonlyArray<{
   title: React.ReactNode;
@@ -47,6 +47,11 @@ const mainItems: ReadonlyArray<{
     title: <Trans>Entity Analytics</Trans>,
     url: "/entity-analytics",
     icon: ListOrdered,
+  },
+  {
+    title: <Trans>Alegeri</Trans>,
+    url: "/alegeri",
+    icon: Vote,
   },
 ];
 

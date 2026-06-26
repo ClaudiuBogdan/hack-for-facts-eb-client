@@ -36,6 +36,7 @@ vi.mock('lucide-react', () => ({
   Map: () => <span data-testid="icon-map" />,
   ListOrdered: () => <span data-testid="icon-entity-analytics" />,
   Boxes: () => <span data-testid="icon-budget-explorer" />,
+  Vote: () => <span data-testid="icon-elections" />,
 }))
 
 // Mock router
@@ -130,11 +131,18 @@ describe('NavMain', () => {
       expect(screen.getByText('Entity Analytics')).toBeInTheDocument()
     })
 
+    it('renders Elections link', () => {
+      render(<NavMain />)
+
+      expect(screen.getByTestId('link-/alegeri')).toBeInTheDocument()
+      expect(screen.getByText('Alegeri')).toBeInTheDocument()
+    })
+
     it('renders all menu items', () => {
       render(<NavMain />)
 
       const menuItems = screen.getAllByTestId('sidebar-menu-item')
-      expect(menuItems).toHaveLength(5)
+      expect(menuItems).toHaveLength(6)
     })
   })
 
@@ -155,6 +163,12 @@ describe('NavMain', () => {
       render(<NavMain />)
 
       expect(screen.getByTestId('icon-charts')).toBeInTheDocument()
+    })
+
+    it('renders elections icon', () => {
+      render(<NavMain />)
+
+      expect(screen.getByTestId('icon-elections')).toBeInTheDocument()
     })
   })
 
@@ -189,6 +203,14 @@ describe('NavMain', () => {
 
       const dashboardLink = screen.getByTestId('link-/')
       expect(dashboardLink).not.toHaveClass('bg-muted')
+    })
+
+    it('marks Elections as active when on /alegeri subpath', () => {
+      mockMatches.mockReturnValue([{ pathname: '/alegeri/contest/local-2024-cluj-napoca-primar' }])
+      render(<NavMain />)
+
+      const electionsLink = screen.getByTestId('link-/alegeri')
+      expect(electionsLink).toHaveClass('bg-muted')
     })
   })
 

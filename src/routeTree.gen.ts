@@ -28,6 +28,7 @@ import { Route as EntitiesRouteRouteImport } from './routes/entities/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PrimarieIndexRouteImport } from './routes/primarie/index'
 import { Route as EntitiesIndexRouteImport } from './routes/entities/index'
+import { Route as AlegeriIndexRouteImport } from './routes/alegeri/index'
 import { Route as UnsubscribeTokenRouteImport } from './routes/unsubscribe.$token'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
@@ -43,6 +44,7 @@ import { Route as ChartsNewRouteImport } from './routes/charts/new'
 import { Route as CertificatesIdRouteImport } from './routes/certificates.$id'
 import { Route as BugeteLocale2026TermeniSiConditiiRouteImport } from './routes/bugete-locale-2026.termeni-si-conditii'
 import { Route as AlertsNewRouteImport } from './routes/alerts/new'
+import { Route as AlegeriElectionKeyRouteImport } from './routes/alegeri/$electionKey'
 import { Route as PrimarieCuiRouteRouteImport } from './routes/primarie/$cui/route'
 import { Route as ChartsChartIdRouteRouteImport } from './routes/charts/$chartId/route'
 import { Route as AlertsAlertIdRouteRouteImport } from './routes/alerts/$alertId/route'
@@ -63,6 +65,7 @@ import { Route as MapsDatasetsDatasetIdRouteImport } from './routes/maps/dataset
 import { Route as EntitiesCuiShareImageDotpngRouteImport } from './routes/entities.$cui.share-image[.]png'
 import { Route as ClassificationsFunctionalCodeRouteImport } from './routes/classifications/functional/$code'
 import { Route as ClassificationsEconomicCodeRouteImport } from './routes/classifications/economic/$code'
+import { Route as AlegeriContestContestKeyRouteImport } from './routes/alegeri/contest/$contestKey'
 import { Route as LangLearningOnboardingRouteImport } from './routes/$lang/learning/onboarding'
 import { Route as PrimarieCuiBugetRouteRouteImport } from './routes/primarie/$cui/buget/route'
 import { Route as AdminCampaignsCampaignKeyRouteRouteImport } from './routes/admin/campaigns/$campaignKey/route'
@@ -200,6 +203,11 @@ const EntitiesIndexRoute = EntitiesIndexRouteImport.update({
   path: '/',
   getParentRoute: () => EntitiesRouteRoute,
 } as any)
+const AlegeriIndexRoute = AlegeriIndexRouteImport.update({
+  id: '/alegeri/',
+  path: '/alegeri/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/alegeri/index.lazy').then((d) => d.Route))
 const ResearchEmployeesDataLazyRoute =
   ResearchEmployeesDataLazyRouteImport.update({
     id: '/research/employees-data',
@@ -291,6 +299,13 @@ const AlertsNewRoute = AlertsNewRouteImport.update({
   path: '/alerts/new',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/alerts/new.lazy').then((d) => d.Route))
+const AlegeriElectionKeyRoute = AlegeriElectionKeyRouteImport.update({
+  id: '/alegeri/$electionKey',
+  path: '/alegeri/$electionKey',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/alegeri/$electionKey.lazy').then((d) => d.Route),
+)
 const PrimarieCuiRouteRoute = PrimarieCuiRouteRouteImport.update({
   id: '/primarie/$cui',
   path: '/primarie/$cui',
@@ -446,6 +461,14 @@ const ClassificationsEconomicCodeRoute =
     getParentRoute: () => rootRouteImport,
   } as any).lazy(() =>
     import('./routes/classifications/economic/$code.lazy').then((d) => d.Route),
+  )
+const AlegeriContestContestKeyRoute =
+  AlegeriContestContestKeyRouteImport.update({
+    id: '/alegeri/contest/$contestKey',
+    path: '/alegeri/contest/$contestKey',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/alegeri/contest/$contestKey.lazy').then((d) => d.Route),
   )
 const LangLearningOnboardingRoute = LangLearningOnboardingRouteImport.update({
   id: '/onboarding',
@@ -675,6 +698,7 @@ export interface FileRoutesByFullPath {
   '/alerts/$alertId': typeof AlertsAlertIdRouteRouteWithChildren
   '/charts/$chartId': typeof ChartsChartIdRouteRouteWithChildren
   '/primarie/$cui': typeof PrimarieCuiRouteRouteWithChildren
+  '/alegeri/$electionKey': typeof AlegeriElectionKeyRoute
   '/alerts/new': typeof AlertsNewRoute
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
@@ -691,12 +715,14 @@ export interface FileRoutesByFullPath {
   '/sign-up/$': typeof SignUpSplatRoute
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
+  '/alegeri/': typeof AlegeriIndexRoute
   '/entities/': typeof EntitiesIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   '/primarie/$cui/buget': typeof PrimarieCuiBugetRouteRouteWithChildren
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
+  '/alegeri/contest/$contestKey': typeof AlegeriContestContestKeyRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
@@ -754,6 +780,7 @@ export interface FileRoutesByTo {
   '/sign-up': typeof SignUpRouteWithChildren
   '/test-error': typeof TestErrorRoute
   '/terms': typeof TermsLazyRoute
+  '/alegeri/$electionKey': typeof AlegeriElectionKeyRoute
   '/alerts/new': typeof AlertsNewRoute
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
@@ -770,10 +797,12 @@ export interface FileRoutesByTo {
   '/sign-up/$': typeof SignUpSplatRoute
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
+  '/alegeri': typeof AlegeriIndexRoute
   '/entities': typeof EntitiesIndexRoute
   '/primarie': typeof PrimarieIndexRoute
   '/charts': typeof ChartsIndexLazyRoute
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
+  '/alegeri/contest/$contestKey': typeof AlegeriContestContestKeyRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
@@ -836,6 +865,7 @@ export interface FileRoutesById {
   '/alerts/$alertId': typeof AlertsAlertIdRouteRouteWithChildren
   '/charts/$chartId': typeof ChartsChartIdRouteRouteWithChildren
   '/primarie/$cui': typeof PrimarieCuiRouteRouteWithChildren
+  '/alegeri/$electionKey': typeof AlegeriElectionKeyRoute
   '/alerts/new': typeof AlertsNewRoute
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
@@ -852,12 +882,14 @@ export interface FileRoutesById {
   '/sign-up/$': typeof SignUpSplatRoute
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
+  '/alegeri/': typeof AlegeriIndexRoute
   '/entities/': typeof EntitiesIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   '/primarie/$cui/buget': typeof PrimarieCuiBugetRouteRouteWithChildren
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
+  '/alegeri/contest/$contestKey': typeof AlegeriContestContestKeyRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
@@ -922,6 +954,7 @@ export interface FileRouteTypes {
     | '/alerts/$alertId'
     | '/charts/$chartId'
     | '/primarie/$cui'
+    | '/alegeri/$electionKey'
     | '/alerts/new'
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
@@ -938,12 +971,14 @@ export interface FileRouteTypes {
     | '/sign-up/$'
     | '/unsubscribe/$token'
     | '/research/employees-data'
+    | '/alegeri/'
     | '/entities/'
     | '/primarie/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
     | '/primarie/$cui/buget'
     | '/$lang/learning/onboarding'
+    | '/alegeri/contest/$contestKey'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
@@ -1001,6 +1036,7 @@ export interface FileRouteTypes {
     | '/sign-up'
     | '/test-error'
     | '/terms'
+    | '/alegeri/$electionKey'
     | '/alerts/new'
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
@@ -1017,10 +1053,12 @@ export interface FileRouteTypes {
     | '/sign-up/$'
     | '/unsubscribe/$token'
     | '/research/employees-data'
+    | '/alegeri'
     | '/entities'
     | '/primarie'
     | '/charts'
     | '/$lang/learning/onboarding'
+    | '/alegeri/contest/$contestKey'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
@@ -1082,6 +1120,7 @@ export interface FileRouteTypes {
     | '/alerts/$alertId'
     | '/charts/$chartId'
     | '/primarie/$cui'
+    | '/alegeri/$electionKey'
     | '/alerts/new'
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
@@ -1098,12 +1137,14 @@ export interface FileRouteTypes {
     | '/sign-up/$'
     | '/unsubscribe/$token'
     | '/research/employees-data'
+    | '/alegeri/'
     | '/entities/'
     | '/primarie/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
     | '/primarie/$cui/buget'
     | '/$lang/learning/onboarding'
+    | '/alegeri/contest/$contestKey'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
@@ -1167,6 +1208,7 @@ export interface RootRouteChildren {
   AlertsAlertIdRouteRoute: typeof AlertsAlertIdRouteRouteWithChildren
   ChartsChartIdRouteRoute: typeof ChartsChartIdRouteRouteWithChildren
   PrimarieCuiRouteRoute: typeof PrimarieCuiRouteRouteWithChildren
+  AlegeriElectionKeyRoute: typeof AlegeriElectionKeyRoute
   AlertsNewRoute: typeof AlertsNewRoute
   CertificatesIdRoute: typeof CertificatesIdRoute
   ChartsNewRoute: typeof ChartsNewRoute
@@ -1178,9 +1220,11 @@ export interface RootRouteChildren {
   ShareCodeRoute: typeof ShareCodeRoute
   UnsubscribeTokenRoute: typeof UnsubscribeTokenRoute
   ResearchEmployeesDataLazyRoute: typeof ResearchEmployeesDataLazyRoute
+  AlegeriIndexRoute: typeof AlegeriIndexRoute
   PrimarieIndexRoute: typeof PrimarieIndexRoute
   ChartsIndexLazyRoute: typeof ChartsIndexLazyRoute
   AdminCampaignsCampaignKeyRouteRoute: typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
+  AlegeriContestContestKeyRoute: typeof AlegeriContestContestKeyRoute
   ClassificationsEconomicCodeRoute: typeof ClassificationsEconomicCodeRoute
   ClassificationsFunctionalCodeRoute: typeof ClassificationsFunctionalCodeRoute
   MapsDatasetsDatasetIdRoute: typeof MapsDatasetsDatasetIdRoute
@@ -1334,6 +1378,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EntitiesIndexRouteImport
       parentRoute: typeof EntitiesRouteRoute
     }
+    '/alegeri/': {
+      id: '/alegeri/'
+      path: '/alegeri'
+      fullPath: '/alegeri/'
+      preLoaderRoute: typeof AlegeriIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/research/employees-data': {
       id: '/research/employees-data'
       path: '/research/employees-data'
@@ -1444,6 +1495,13 @@ declare module '@tanstack/react-router' {
       path: '/alerts/new'
       fullPath: '/alerts/new'
       preLoaderRoute: typeof AlertsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alegeri/$electionKey': {
+      id: '/alegeri/$electionKey'
+      path: '/alegeri/$electionKey'
+      fullPath: '/alegeri/$electionKey'
+      preLoaderRoute: typeof AlegeriElectionKeyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/primarie/$cui': {
@@ -1598,6 +1656,13 @@ declare module '@tanstack/react-router' {
       path: '/classifications/economic/$code'
       fullPath: '/classifications/economic/$code'
       preLoaderRoute: typeof ClassificationsEconomicCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alegeri/contest/$contestKey': {
+      id: '/alegeri/contest/$contestKey'
+      path: '/alegeri/contest/$contestKey'
+      fullPath: '/alegeri/contest/$contestKey'
+      preLoaderRoute: typeof AlegeriContestContestKeyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/$lang/learning/onboarding': {
@@ -2025,6 +2090,7 @@ const rootRouteChildren: RootRouteChildren = {
   AlertsAlertIdRouteRoute: AlertsAlertIdRouteRouteWithChildren,
   ChartsChartIdRouteRoute: ChartsChartIdRouteRouteWithChildren,
   PrimarieCuiRouteRoute: PrimarieCuiRouteRouteWithChildren,
+  AlegeriElectionKeyRoute: AlegeriElectionKeyRoute,
   AlertsNewRoute: AlertsNewRoute,
   CertificatesIdRoute: CertificatesIdRoute,
   ChartsNewRoute: ChartsNewRoute,
@@ -2036,10 +2102,12 @@ const rootRouteChildren: RootRouteChildren = {
   ShareCodeRoute: ShareCodeRoute,
   UnsubscribeTokenRoute: UnsubscribeTokenRoute,
   ResearchEmployeesDataLazyRoute: ResearchEmployeesDataLazyRoute,
+  AlegeriIndexRoute: AlegeriIndexRoute,
   PrimarieIndexRoute: PrimarieIndexRoute,
   ChartsIndexLazyRoute: ChartsIndexLazyRoute,
   AdminCampaignsCampaignKeyRouteRoute:
     AdminCampaignsCampaignKeyRouteRouteWithChildren,
+  AlegeriContestContestKeyRoute: AlegeriContestContestKeyRoute,
   ClassificationsEconomicCodeRoute: ClassificationsEconomicCodeRoute,
   ClassificationsFunctionalCodeRoute: ClassificationsFunctionalCodeRoute,
   MapsDatasetsDatasetIdRoute: MapsDatasetsDatasetIdRoute,
