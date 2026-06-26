@@ -1,4 +1,11 @@
-import { LayoutDashboard, BarChart2, Map, ListOrdered, Boxes } from "lucide-react";
+import {
+  LayoutDashboard,
+  BarChart2,
+  Map,
+  ListOrdered,
+  Boxes,
+  HeartHandshake,
+} from "lucide-react";
 import { Link, useMatches } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button-variants";
@@ -11,7 +18,13 @@ import {
 } from "@/components/ui/sidebar";
 import { Trans } from "@lingui/react/macro";
 
-type MainItemUrl = "/" | "/map" | "/charts" | "/budget-explorer" | "/entity-analytics";
+type MainItemUrl =
+  | "/"
+  | "/map"
+  | "/charts"
+  | "/budget-explorer"
+  | "/entity-analytics"
+  | "/ong-uri";
 
 const mainItems: ReadonlyArray<{
   title: React.ReactNode;
@@ -42,6 +55,11 @@ const mainItems: ReadonlyArray<{
     title: <Trans>National Budget</Trans>,
     url: "/budget-explorer",
     icon: Boxes,
+  },
+  {
+    title: <Trans>ONG-uri</Trans>,
+    url: "/ong-uri",
+    icon: HeartHandshake,
   },
   {
     title: <Trans>Entity Analytics</Trans>,

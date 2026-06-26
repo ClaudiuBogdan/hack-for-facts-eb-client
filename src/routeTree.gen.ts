@@ -17,6 +17,7 @@ import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as ProvocareRouteImport } from './routes/provocare'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PnrrRouteImport } from './routes/pnrr'
+import { Route as OngUriRouteImport } from './routes/ong-uri'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as EntityAnalyticsRouteImport } from './routes/entity-analytics'
 import { Route as CookiesRouteImport } from './routes/cookies'
@@ -27,6 +28,7 @@ import { Route as BudgetExplorerRouteImport } from './routes/budget-explorer'
 import { Route as EntitiesRouteRouteImport } from './routes/entities/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PrimarieIndexRouteImport } from './routes/primarie/index'
+import { Route as OngUriIndexRouteImport } from './routes/ong-uri/index'
 import { Route as EntitiesIndexRouteImport } from './routes/entities/index'
 import { Route as UnsubscribeTokenRouteImport } from './routes/unsubscribe.$token'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
@@ -37,6 +39,8 @@ import { Route as SettingsNotificationsRouteImport } from './routes/settings/not
 import { Route as ProvocareTermeniSiConditiiRouteImport } from './routes/provocare_.termeni-si-conditii'
 import { Route as ProvocareNotificariRouteImport } from './routes/provocare_.notificari'
 import { Route as PnrrShareImageDotpngRouteImport } from './routes/pnrr.share-image[.]png'
+import { Route as OngUriServiciiRouteImport } from './routes/ong-uri.servicii'
+import { Route as OngUriCuiRouteImport } from './routes/ong-uri.$cui'
 import { Route as EntitiesCuiRouteImport } from './routes/entities.$cui'
 import { Route as CompaniesCuiRouteImport } from './routes/companies.$cui'
 import { Route as ChartsNewRouteImport } from './routes/charts/new'
@@ -55,6 +59,7 @@ import { Route as ClassificationsFunctionalIndexRouteImport } from './routes/cla
 import { Route as ClassificationsEconomicIndexRouteImport } from './routes/classifications/economic/index'
 import { Route as LangLearningIndexRouteImport } from './routes/$lang/learning/index'
 import { Route as PrimarieCuiShareImageDotpngRouteImport } from './routes/primarie/$cui/share-image[.]png'
+import { Route as OngUriSursaSnapshotIdRouteImport } from './routes/ong-uri.sursa.$snapshotId'
 import { Route as MapsPublicMapIdRouteImport } from './routes/maps/public/$mapId'
 import { Route as MapsEditorNewRouteImport } from './routes/maps/editor/new'
 import { Route as MapsEditorMapIdRouteImport } from './routes/maps/editor/$mapId'
@@ -132,6 +137,11 @@ const PnrrRoute = PnrrRouteImport.update({
   path: '/pnrr',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/pnrr.lazy').then((d) => d.Route))
+const OngUriRoute = OngUriRouteImport.update({
+  id: '/ong-uri',
+  path: '/ong-uri',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MapRoute = MapRouteImport.update({
   id: '/map',
   path: '/map',
@@ -195,6 +205,11 @@ const PrimarieIndexRoute = PrimarieIndexRouteImport.update({
 } as any).lazy(() =>
   import('./routes/primarie/index.lazy').then((d) => d.Route),
 )
+const OngUriIndexRoute = OngUriIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => OngUriRoute,
+} as any).lazy(() => import('./routes/ong-uri/index.lazy').then((d) => d.Route))
 const EntitiesIndexRoute = EntitiesIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -258,6 +273,18 @@ const PnrrShareImageDotpngRoute = PnrrShareImageDotpngRouteImport.update({
   path: '/share-image.png',
   getParentRoute: () => PnrrRoute,
 } as any)
+const OngUriServiciiRoute = OngUriServiciiRouteImport.update({
+  id: '/servicii',
+  path: '/servicii',
+  getParentRoute: () => OngUriRoute,
+} as any).lazy(() =>
+  import('./routes/ong-uri.servicii.lazy').then((d) => d.Route),
+)
+const OngUriCuiRoute = OngUriCuiRouteImport.update({
+  id: '/$cui',
+  path: '/$cui',
+  getParentRoute: () => OngUriRoute,
+} as any).lazy(() => import('./routes/ong-uri.$cui.lazy').then((d) => d.Route))
 const EntitiesCuiRoute = EntitiesCuiRouteImport.update({
   id: '/$cui',
   path: '/$cui',
@@ -388,6 +415,13 @@ const PrimarieCuiShareImageDotpngRoute =
     path: '/share-image.png',
     getParentRoute: () => PrimarieCuiRouteRoute,
   } as any)
+const OngUriSursaSnapshotIdRoute = OngUriSursaSnapshotIdRouteImport.update({
+  id: '/sursa/$snapshotId',
+  path: '/sursa/$snapshotId',
+  getParentRoute: () => OngUriRoute,
+} as any).lazy(() =>
+  import('./routes/ong-uri.sursa.$snapshotId.lazy').then((d) => d.Route),
+)
 const MapsPublicMapIdRoute = MapsPublicMapIdRouteImport.update({
   id: '/maps/public/$mapId',
   path: '/maps/public/$mapId',
@@ -664,6 +698,7 @@ export interface FileRoutesByFullPath {
   '/cookies': typeof CookiesRoute
   '/entity-analytics': typeof EntityAnalyticsRoute
   '/map': typeof MapRoute
+  '/ong-uri': typeof OngUriRouteWithChildren
   '/pnrr': typeof PnrrRouteWithChildren
   '/privacy': typeof PrivacyRoute
   '/provocare': typeof ProvocareRoute
@@ -681,6 +716,8 @@ export interface FileRoutesByFullPath {
   '/charts/new': typeof ChartsNewRoute
   '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
+  '/ong-uri/$cui': typeof OngUriCuiRoute
+  '/ong-uri/servicii': typeof OngUriServiciiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
   '/provocare/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
@@ -692,6 +729,7 @@ export interface FileRoutesByFullPath {
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/entities/': typeof EntitiesIndexRoute
+  '/ong-uri/': typeof OngUriIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
@@ -705,6 +743,7 @@ export interface FileRoutesByFullPath {
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
+  '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
@@ -760,6 +799,8 @@ export interface FileRoutesByTo {
   '/charts/new': typeof ChartsNewRoute
   '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
+  '/ong-uri/$cui': typeof OngUriCuiRoute
+  '/ong-uri/servicii': typeof OngUriServiciiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
   '/provocare/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
@@ -771,6 +812,7 @@ export interface FileRoutesByTo {
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/entities': typeof EntitiesIndexRoute
+  '/ong-uri': typeof OngUriIndexRoute
   '/primarie': typeof PrimarieIndexRoute
   '/charts': typeof ChartsIndexLazyRoute
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
@@ -782,6 +824,7 @@ export interface FileRoutesByTo {
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
+  '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/$lang/learning': typeof LangLearningIndexRoute
   '/classifications/economic': typeof ClassificationsEconomicIndexRoute
@@ -825,6 +868,7 @@ export interface FileRoutesById {
   '/cookies': typeof CookiesRoute
   '/entity-analytics': typeof EntityAnalyticsRoute
   '/map': typeof MapRoute
+  '/ong-uri': typeof OngUriRouteWithChildren
   '/pnrr': typeof PnrrRouteWithChildren
   '/privacy': typeof PrivacyRoute
   '/provocare': typeof ProvocareRoute
@@ -842,6 +886,8 @@ export interface FileRoutesById {
   '/charts/new': typeof ChartsNewRoute
   '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
+  '/ong-uri/$cui': typeof OngUriCuiRoute
+  '/ong-uri/servicii': typeof OngUriServiciiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare_/notificari': typeof ProvocareNotificariRoute
   '/provocare_/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
@@ -853,6 +899,7 @@ export interface FileRoutesById {
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/entities/': typeof EntitiesIndexRoute
+  '/ong-uri/': typeof OngUriIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
@@ -866,6 +913,7 @@ export interface FileRoutesById {
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
+  '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
@@ -911,6 +959,7 @@ export interface FileRouteTypes {
     | '/cookies'
     | '/entity-analytics'
     | '/map'
+    | '/ong-uri'
     | '/pnrr'
     | '/privacy'
     | '/provocare'
@@ -928,6 +977,8 @@ export interface FileRouteTypes {
     | '/charts/new'
     | '/companies/$cui'
     | '/entities/$cui'
+    | '/ong-uri/$cui'
+    | '/ong-uri/servicii'
     | '/pnrr/share-image.png'
     | '/provocare/notificari'
     | '/provocare/termeni-si-conditii'
@@ -939,6 +990,7 @@ export interface FileRouteTypes {
     | '/unsubscribe/$token'
     | '/research/employees-data'
     | '/entities/'
+    | '/ong-uri/'
     | '/primarie/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
@@ -952,6 +1004,7 @@ export interface FileRouteTypes {
     | '/maps/editor/$mapId'
     | '/maps/editor/new'
     | '/maps/public/$mapId'
+    | '/ong-uri/sursa/$snapshotId'
     | '/primarie/$cui/share-image.png'
     | '/$lang/learning/'
     | '/classifications/economic/'
@@ -1007,6 +1060,8 @@ export interface FileRouteTypes {
     | '/charts/new'
     | '/companies/$cui'
     | '/entities/$cui'
+    | '/ong-uri/$cui'
+    | '/ong-uri/servicii'
     | '/pnrr/share-image.png'
     | '/provocare/notificari'
     | '/provocare/termeni-si-conditii'
@@ -1018,6 +1073,7 @@ export interface FileRouteTypes {
     | '/unsubscribe/$token'
     | '/research/employees-data'
     | '/entities'
+    | '/ong-uri'
     | '/primarie'
     | '/charts'
     | '/$lang/learning/onboarding'
@@ -1029,6 +1085,7 @@ export interface FileRouteTypes {
     | '/maps/editor/$mapId'
     | '/maps/editor/new'
     | '/maps/public/$mapId'
+    | '/ong-uri/sursa/$snapshotId'
     | '/primarie/$cui/share-image.png'
     | '/$lang/learning'
     | '/classifications/economic'
@@ -1071,6 +1128,7 @@ export interface FileRouteTypes {
     | '/cookies'
     | '/entity-analytics'
     | '/map'
+    | '/ong-uri'
     | '/pnrr'
     | '/privacy'
     | '/provocare'
@@ -1088,6 +1146,8 @@ export interface FileRouteTypes {
     | '/charts/new'
     | '/companies/$cui'
     | '/entities/$cui'
+    | '/ong-uri/$cui'
+    | '/ong-uri/servicii'
     | '/pnrr/share-image.png'
     | '/provocare_/notificari'
     | '/provocare_/termeni-si-conditii'
@@ -1099,6 +1159,7 @@ export interface FileRouteTypes {
     | '/unsubscribe/$token'
     | '/research/employees-data'
     | '/entities/'
+    | '/ong-uri/'
     | '/primarie/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
@@ -1112,6 +1173,7 @@ export interface FileRouteTypes {
     | '/maps/editor/$mapId'
     | '/maps/editor/new'
     | '/maps/public/$mapId'
+    | '/ong-uri/sursa/$snapshotId'
     | '/primarie/$cui/share-image.png'
     | '/$lang/learning/'
     | '/classifications/economic/'
@@ -1156,6 +1218,7 @@ export interface RootRouteChildren {
   CookiesRoute: typeof CookiesRoute
   EntityAnalyticsRoute: typeof EntityAnalyticsRoute
   MapRoute: typeof MapRoute
+  OngUriRoute: typeof OngUriRouteWithChildren
   PnrrRoute: typeof PnrrRouteWithChildren
   PrivacyRoute: typeof PrivacyRoute
   ProvocareRoute: typeof ProvocareRoute
@@ -1250,6 +1313,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PnrrRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ong-uri': {
+      id: '/ong-uri'
+      path: '/ong-uri'
+      fullPath: '/ong-uri'
+      preLoaderRoute: typeof OngUriRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/map': {
       id: '/map'
       path: '/map'
@@ -1327,6 +1397,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrimarieIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ong-uri/': {
+      id: '/ong-uri/'
+      path: '/'
+      fullPath: '/ong-uri/'
+      preLoaderRoute: typeof OngUriIndexRouteImport
+      parentRoute: typeof OngUriRoute
+    }
     '/entities/': {
       id: '/entities/'
       path: '/'
@@ -1403,6 +1480,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/pnrr/share-image.png'
       preLoaderRoute: typeof PnrrShareImageDotpngRouteImport
       parentRoute: typeof PnrrRoute
+    }
+    '/ong-uri/servicii': {
+      id: '/ong-uri/servicii'
+      path: '/servicii'
+      fullPath: '/ong-uri/servicii'
+      preLoaderRoute: typeof OngUriServiciiRouteImport
+      parentRoute: typeof OngUriRoute
+    }
+    '/ong-uri/$cui': {
+      id: '/ong-uri/$cui'
+      path: '/$cui'
+      fullPath: '/ong-uri/$cui'
+      preLoaderRoute: typeof OngUriCuiRouteImport
+      parentRoute: typeof OngUriRoute
     }
     '/entities/$cui': {
       id: '/entities/$cui'
@@ -1543,6 +1634,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/primarie/$cui/share-image.png'
       preLoaderRoute: typeof PrimarieCuiShareImageDotpngRouteImport
       parentRoute: typeof PrimarieCuiRouteRoute
+    }
+    '/ong-uri/sursa/$snapshotId': {
+      id: '/ong-uri/sursa/$snapshotId'
+      path: '/sursa/$snapshotId'
+      fullPath: '/ong-uri/sursa/$snapshotId'
+      preLoaderRoute: typeof OngUriSursaSnapshotIdRouteImport
+      parentRoute: typeof OngUriRoute
     }
     '/maps/public/$mapId': {
       id: '/maps/public/$mapId'
@@ -1816,6 +1914,23 @@ const BugeteLocale2026RouteChildren: BugeteLocale2026RouteChildren = {
 const BugeteLocale2026RouteWithChildren =
   BugeteLocale2026Route._addFileChildren(BugeteLocale2026RouteChildren)
 
+interface OngUriRouteChildren {
+  OngUriCuiRoute: typeof OngUriCuiRoute
+  OngUriServiciiRoute: typeof OngUriServiciiRoute
+  OngUriIndexRoute: typeof OngUriIndexRoute
+  OngUriSursaSnapshotIdRoute: typeof OngUriSursaSnapshotIdRoute
+}
+
+const OngUriRouteChildren: OngUriRouteChildren = {
+  OngUriCuiRoute: OngUriCuiRoute,
+  OngUriServiciiRoute: OngUriServiciiRoute,
+  OngUriIndexRoute: OngUriIndexRoute,
+  OngUriSursaSnapshotIdRoute: OngUriSursaSnapshotIdRoute,
+}
+
+const OngUriRouteWithChildren =
+  OngUriRoute._addFileChildren(OngUriRouteChildren)
+
 interface PnrrRouteChildren {
   PnrrShareImageDotpngRoute: typeof PnrrShareImageDotpngRoute
 }
@@ -2014,6 +2129,7 @@ const rootRouteChildren: RootRouteChildren = {
   CookiesRoute: CookiesRoute,
   EntityAnalyticsRoute: EntityAnalyticsRoute,
   MapRoute: MapRoute,
+  OngUriRoute: OngUriRouteWithChildren,
   PnrrRoute: PnrrRouteWithChildren,
   PrivacyRoute: PrivacyRoute,
   ProvocareRoute: ProvocareRoute,

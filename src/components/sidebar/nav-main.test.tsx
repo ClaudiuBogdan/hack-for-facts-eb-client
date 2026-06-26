@@ -36,6 +36,7 @@ vi.mock('lucide-react', () => ({
   Map: () => <span data-testid="icon-map" />,
   ListOrdered: () => <span data-testid="icon-entity-analytics" />,
   Boxes: () => <span data-testid="icon-budget-explorer" />,
+  HeartHandshake: () => <span data-testid="icon-ngos" />,
 }))
 
 // Mock router
@@ -130,11 +131,18 @@ describe('NavMain', () => {
       expect(screen.getByText('Entity Analytics')).toBeInTheDocument()
     })
 
+    it('renders ONG-uri link', () => {
+      render(<NavMain />)
+
+      expect(screen.getByTestId('link-/ong-uri')).toBeInTheDocument()
+      expect(screen.getByText('ONG-uri')).toBeInTheDocument()
+    })
+
     it('renders all menu items', () => {
       render(<NavMain />)
 
       const menuItems = screen.getAllByTestId('sidebar-menu-item')
-      expect(menuItems).toHaveLength(5)
+      expect(menuItems).toHaveLength(6)
     })
   })
 
@@ -155,6 +163,12 @@ describe('NavMain', () => {
       render(<NavMain />)
 
       expect(screen.getByTestId('icon-charts')).toBeInTheDocument()
+    })
+
+    it('renders ONG-uri icon', () => {
+      render(<NavMain />)
+
+      expect(screen.getByTestId('icon-ngos')).toBeInTheDocument()
     })
   })
 
@@ -181,6 +195,14 @@ describe('NavMain', () => {
 
       const chartsLink = screen.getByTestId('link-/charts')
       expect(chartsLink).toHaveClass('bg-muted')
+    })
+
+    it('marks ONG-uri as active when on /ong-uri subpath', () => {
+      mockMatches.mockReturnValue([{ pathname: '/ong-uri/12345678' }])
+      render(<NavMain />)
+
+      const ngosLink = screen.getByTestId('link-/ong-uri')
+      expect(ngosLink).toHaveClass('bg-muted')
     })
 
     it('does not mark Dashboard as active on other pages', () => {
