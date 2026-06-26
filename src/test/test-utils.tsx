@@ -2,6 +2,7 @@
 import { ReactElement, ReactNode } from 'react'
 import { render, RenderOptions, RenderResult } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { TooltipProvider } from '@/components/ui/tooltip'
 
 /**
  * Creates a fresh QueryClient for testing with retry disabled.
@@ -46,7 +47,9 @@ function AllTheProviders({
   readonly queryClient: QueryClient
 }) {
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>{children}</TooltipProvider>
+    </QueryClientProvider>
   )
 }
 
