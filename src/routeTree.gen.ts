@@ -26,6 +26,7 @@ import { Route as BugeteLocale2026RouteImport } from './routes/bugete-locale-202
 import { Route as BugetNational2026RouteImport } from './routes/buget-national-2026'
 import { Route as BudgetExplorerRouteImport } from './routes/budget-explorer'
 import { Route as LegislatieRouteRouteImport } from './routes/legislatie/route'
+import { Route as InvestitiiPubliceRouteRouteImport } from './routes/investitii-publice/route'
 import { Route as EntitiesRouteRouteImport } from './routes/entities/route'
 import { Route as AchizitiiRouteRouteImport } from './routes/achizitii/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -33,6 +34,7 @@ import { Route as PrimarieIndexRouteImport } from './routes/primarie/index'
 import { Route as ParlamentIndexRouteImport } from './routes/parlament/index'
 import { Route as LegislatieIndexRouteImport } from './routes/legislatie/index'
 import { Route as JustitieIndexRouteImport } from './routes/justitie.index'
+import { Route as InvestitiiPubliceIndexRouteImport } from './routes/investitii-publice/index'
 import { Route as IntreprinderiPubliceIndexRouteImport } from './routes/intreprinderi-publice/index'
 import { Route as EntitiesIndexRouteImport } from './routes/entities/index'
 import { Route as CompaniesIndexRouteImport } from './routes/companies.index'
@@ -48,6 +50,7 @@ import { Route as ProvocareTermeniSiConditiiRouteImport } from './routes/provoca
 import { Route as ProvocareNotificariRouteImport } from './routes/provocare_.notificari'
 import { Route as PnrrShareImageDotpngRouteImport } from './routes/pnrr.share-image[.]png'
 import { Route as JustitieCautareRouteImport } from './routes/justitie.cautare'
+import { Route as InvestitiiPubliceCautareRouteImport } from './routes/investitii-publice/cautare'
 import { Route as IntreprinderiPubliceCuiRouteImport } from './routes/intreprinderi-publice/$cui'
 import { Route as ExperimentalSearchRouteImport } from './routes/experimental.search'
 import { Route as EntitiesCuiRouteImport } from './routes/entities.$cui'
@@ -83,6 +86,9 @@ import { Route as MapsDatasetsDatasetIdRouteImport } from './routes/maps/dataset
 import { Route as LegislatieActeIdRouteImport } from './routes/legislatie/acte/$id'
 import { Route as JustitieInstanteCourtIdRouteImport } from './routes/justitie.instante.$courtId'
 import { Route as JustitieDosareCaseIdRouteImport } from './routes/justitie.dosare.$caseId'
+import { Route as InvestitiiPubliceObiectiveIdRouteImport } from './routes/investitii-publice/obiective.$id'
+import { Route as InvestitiiPubliceLocalitatiSirutaRouteImport } from './routes/investitii-publice/localitati.$siruta'
+import { Route as InvestitiiPubliceJudeteCountyCodeRouteImport } from './routes/investitii-publice/judete.$countyCode'
 import { Route as EntitiesCuiShareImageDotpngRouteImport } from './routes/entities.$cui.share-image[.]png'
 import { Route as ClassificationsFunctionalCodeRouteImport } from './routes/classifications/functional/$code'
 import { Route as ClassificationsEconomicCodeRouteImport } from './routes/classifications/economic/$code'
@@ -227,6 +233,11 @@ const LegislatieRouteRoute = LegislatieRouteRouteImport.update({
   path: '/legislatie',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InvestitiiPubliceRouteRoute = InvestitiiPubliceRouteRouteImport.update({
+  id: '/investitii-publice',
+  path: '/investitii-publice',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EntitiesRouteRoute = EntitiesRouteRouteImport.update({
   id: '/entities',
   path: '/entities',
@@ -272,6 +283,11 @@ const JustitieIndexRoute = JustitieIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => JustitieRoute,
+} as any)
+const InvestitiiPubliceIndexRoute = InvestitiiPubliceIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => InvestitiiPubliceRouteRoute,
 } as any)
 const IntreprinderiPubliceIndexRoute =
   IntreprinderiPubliceIndexRouteImport.update({
@@ -368,6 +384,12 @@ const JustitieCautareRoute = JustitieCautareRouteImport.update({
   path: '/cautare',
   getParentRoute: () => JustitieRoute,
 } as any)
+const InvestitiiPubliceCautareRoute =
+  InvestitiiPubliceCautareRouteImport.update({
+    id: '/cautare',
+    path: '/cautare',
+    getParentRoute: () => InvestitiiPubliceRouteRoute,
+  } as any)
 const IntreprinderiPubliceCuiRoute = IntreprinderiPubliceCuiRouteImport.update({
   id: '/intreprinderi-publice/$cui',
   path: '/intreprinderi-publice/$cui',
@@ -605,6 +627,24 @@ const JustitieDosareCaseIdRoute = JustitieDosareCaseIdRouteImport.update({
   path: '/dosare/$caseId',
   getParentRoute: () => JustitieRoute,
 } as any)
+const InvestitiiPubliceObiectiveIdRoute =
+  InvestitiiPubliceObiectiveIdRouteImport.update({
+    id: '/obiective/$id',
+    path: '/obiective/$id',
+    getParentRoute: () => InvestitiiPubliceRouteRoute,
+  } as any)
+const InvestitiiPubliceLocalitatiSirutaRoute =
+  InvestitiiPubliceLocalitatiSirutaRouteImport.update({
+    id: '/localitati/$siruta',
+    path: '/localitati/$siruta',
+    getParentRoute: () => InvestitiiPubliceRouteRoute,
+  } as any)
+const InvestitiiPubliceJudeteCountyCodeRoute =
+  InvestitiiPubliceJudeteCountyCodeRouteImport.update({
+    id: '/judete/$countyCode',
+    path: '/judete/$countyCode',
+    getParentRoute: () => InvestitiiPubliceRouteRoute,
+  } as any)
 const EntitiesCuiShareImageDotpngRoute =
   EntitiesCuiShareImageDotpngRouteImport.update({
     id: '/share-image.png',
@@ -1039,6 +1079,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/achizitii': typeof AchizitiiRouteRouteWithChildren
   '/entities': typeof EntitiesRouteRouteWithChildren
+  '/investitii-publice': typeof InvestitiiPubliceRouteRouteWithChildren
   '/legislatie': typeof LegislatieRouteRouteWithChildren
   '/budget-explorer': typeof BudgetExplorerRoute
   '/buget-national-2026': typeof BugetNational2026Route
@@ -1069,6 +1110,7 @@ export interface FileRoutesByFullPath {
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/experimental/search': typeof ExperimentalSearchRoute
   '/intreprinderi-publice/$cui': typeof IntreprinderiPubliceCuiRoute
+  '/investitii-publice/cautare': typeof InvestitiiPubliceCautareRoute
   '/justitie/cautare': typeof JustitieCautareRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
@@ -1085,6 +1127,7 @@ export interface FileRoutesByFullPath {
   '/companies/': typeof CompaniesIndexRoute
   '/entities/': typeof EntitiesIndexRoute
   '/intreprinderi-publice/': typeof IntreprinderiPubliceIndexRoute
+  '/investitii-publice/': typeof InvestitiiPubliceIndexRoute
   '/justitie/': typeof JustitieIndexRoute
   '/legislatie/': typeof LegislatieIndexRoute
   '/parlament/': typeof ParlamentIndexRoute
@@ -1103,6 +1146,9 @@ export interface FileRoutesByFullPath {
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
+  '/investitii-publice/judete/$countyCode': typeof InvestitiiPubliceJudeteCountyCodeRoute
+  '/investitii-publice/localitati/$siruta': typeof InvestitiiPubliceLocalitatiSirutaRoute
+  '/investitii-publice/obiective/$id': typeof InvestitiiPubliceObiectiveIdRoute
   '/justitie/dosare/$caseId': typeof JustitieDosareCaseIdRoute
   '/justitie/instante/$courtId': typeof JustitieInstanteCourtIdRoute
   '/legislatie/acte/$id': typeof LegislatieActeIdRoute
@@ -1189,6 +1235,7 @@ export interface FileRoutesByTo {
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/experimental/search': typeof ExperimentalSearchRoute
   '/intreprinderi-publice/$cui': typeof IntreprinderiPubliceCuiRoute
+  '/investitii-publice/cautare': typeof InvestitiiPubliceCautareRoute
   '/justitie/cautare': typeof JustitieCautareRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
@@ -1205,6 +1252,7 @@ export interface FileRoutesByTo {
   '/companies': typeof CompaniesIndexRoute
   '/entities': typeof EntitiesIndexRoute
   '/intreprinderi-publice': typeof IntreprinderiPubliceIndexRoute
+  '/investitii-publice': typeof InvestitiiPubliceIndexRoute
   '/justitie': typeof JustitieIndexRoute
   '/legislatie': typeof LegislatieIndexRoute
   '/parlament': typeof ParlamentIndexRoute
@@ -1219,6 +1267,9 @@ export interface FileRoutesByTo {
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
+  '/investitii-publice/judete/$countyCode': typeof InvestitiiPubliceJudeteCountyCodeRoute
+  '/investitii-publice/localitati/$siruta': typeof InvestitiiPubliceLocalitatiSirutaRoute
+  '/investitii-publice/obiective/$id': typeof InvestitiiPubliceObiectiveIdRoute
   '/justitie/dosare/$caseId': typeof JustitieDosareCaseIdRoute
   '/justitie/instante/$courtId': typeof JustitieInstanteCourtIdRoute
   '/legislatie/acte/$id': typeof LegislatieActeIdRoute
@@ -1283,6 +1334,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/achizitii': typeof AchizitiiRouteRouteWithChildren
   '/entities': typeof EntitiesRouteRouteWithChildren
+  '/investitii-publice': typeof InvestitiiPubliceRouteRouteWithChildren
   '/legislatie': typeof LegislatieRouteRouteWithChildren
   '/budget-explorer': typeof BudgetExplorerRoute
   '/buget-national-2026': typeof BugetNational2026Route
@@ -1313,6 +1365,7 @@ export interface FileRoutesById {
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/experimental/search': typeof ExperimentalSearchRoute
   '/intreprinderi-publice/$cui': typeof IntreprinderiPubliceCuiRoute
+  '/investitii-publice/cautare': typeof InvestitiiPubliceCautareRoute
   '/justitie/cautare': typeof JustitieCautareRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare_/notificari': typeof ProvocareNotificariRoute
@@ -1329,6 +1382,7 @@ export interface FileRoutesById {
   '/companies/': typeof CompaniesIndexRoute
   '/entities/': typeof EntitiesIndexRoute
   '/intreprinderi-publice/': typeof IntreprinderiPubliceIndexRoute
+  '/investitii-publice/': typeof InvestitiiPubliceIndexRoute
   '/justitie/': typeof JustitieIndexRoute
   '/legislatie/': typeof LegislatieIndexRoute
   '/parlament/': typeof ParlamentIndexRoute
@@ -1347,6 +1401,9 @@ export interface FileRoutesById {
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
+  '/investitii-publice/judete/$countyCode': typeof InvestitiiPubliceJudeteCountyCodeRoute
+  '/investitii-publice/localitati/$siruta': typeof InvestitiiPubliceLocalitatiSirutaRoute
+  '/investitii-publice/obiective/$id': typeof InvestitiiPubliceObiectiveIdRoute
   '/justitie/dosare/$caseId': typeof JustitieDosareCaseIdRoute
   '/justitie/instante/$courtId': typeof JustitieInstanteCourtIdRoute
   '/legislatie/acte/$id': typeof LegislatieActeIdRoute
@@ -1413,6 +1470,7 @@ export interface FileRouteTypes {
     | '/'
     | '/achizitii'
     | '/entities'
+    | '/investitii-publice'
     | '/legislatie'
     | '/budget-explorer'
     | '/buget-national-2026'
@@ -1443,6 +1501,7 @@ export interface FileRouteTypes {
     | '/entities/$cui'
     | '/experimental/search'
     | '/intreprinderi-publice/$cui'
+    | '/investitii-publice/cautare'
     | '/justitie/cautare'
     | '/pnrr/share-image.png'
     | '/provocare/notificari'
@@ -1459,6 +1518,7 @@ export interface FileRouteTypes {
     | '/companies/'
     | '/entities/'
     | '/intreprinderi-publice/'
+    | '/investitii-publice/'
     | '/justitie/'
     | '/legislatie/'
     | '/parlament/'
@@ -1477,6 +1537,9 @@ export interface FileRouteTypes {
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
+    | '/investitii-publice/judete/$countyCode'
+    | '/investitii-publice/localitati/$siruta'
+    | '/investitii-publice/obiective/$id'
     | '/justitie/dosare/$caseId'
     | '/justitie/instante/$courtId'
     | '/legislatie/acte/$id'
@@ -1563,6 +1626,7 @@ export interface FileRouteTypes {
     | '/entities/$cui'
     | '/experimental/search'
     | '/intreprinderi-publice/$cui'
+    | '/investitii-publice/cautare'
     | '/justitie/cautare'
     | '/pnrr/share-image.png'
     | '/provocare/notificari'
@@ -1579,6 +1643,7 @@ export interface FileRouteTypes {
     | '/companies'
     | '/entities'
     | '/intreprinderi-publice'
+    | '/investitii-publice'
     | '/justitie'
     | '/legislatie'
     | '/parlament'
@@ -1593,6 +1658,9 @@ export interface FileRouteTypes {
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
+    | '/investitii-publice/judete/$countyCode'
+    | '/investitii-publice/localitati/$siruta'
+    | '/investitii-publice/obiective/$id'
     | '/justitie/dosare/$caseId'
     | '/justitie/instante/$courtId'
     | '/legislatie/acte/$id'
@@ -1656,6 +1724,7 @@ export interface FileRouteTypes {
     | '/'
     | '/achizitii'
     | '/entities'
+    | '/investitii-publice'
     | '/legislatie'
     | '/budget-explorer'
     | '/buget-national-2026'
@@ -1686,6 +1755,7 @@ export interface FileRouteTypes {
     | '/entities/$cui'
     | '/experimental/search'
     | '/intreprinderi-publice/$cui'
+    | '/investitii-publice/cautare'
     | '/justitie/cautare'
     | '/pnrr/share-image.png'
     | '/provocare_/notificari'
@@ -1702,6 +1772,7 @@ export interface FileRouteTypes {
     | '/companies/'
     | '/entities/'
     | '/intreprinderi-publice/'
+    | '/investitii-publice/'
     | '/justitie/'
     | '/legislatie/'
     | '/parlament/'
@@ -1720,6 +1791,9 @@ export interface FileRouteTypes {
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
+    | '/investitii-publice/judete/$countyCode'
+    | '/investitii-publice/localitati/$siruta'
+    | '/investitii-publice/obiective/$id'
     | '/justitie/dosare/$caseId'
     | '/justitie/instante/$courtId'
     | '/legislatie/acte/$id'
@@ -1785,6 +1859,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AchizitiiRouteRoute: typeof AchizitiiRouteRouteWithChildren
   EntitiesRouteRoute: typeof EntitiesRouteRouteWithChildren
+  InvestitiiPubliceRouteRoute: typeof InvestitiiPubliceRouteRouteWithChildren
   LegislatieRouteRoute: typeof LegislatieRouteRouteWithChildren
   BudgetExplorerRoute: typeof BudgetExplorerRoute
   BugetNational2026Route: typeof BugetNational2026Route
@@ -1967,6 +2042,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegislatieRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/investitii-publice': {
+      id: '/investitii-publice'
+      path: '/investitii-publice'
+      fullPath: '/investitii-publice'
+      preLoaderRoute: typeof InvestitiiPubliceRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/entities': {
       id: '/entities'
       path: '/entities'
@@ -2022,6 +2104,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/justitie/'
       preLoaderRoute: typeof JustitieIndexRouteImport
       parentRoute: typeof JustitieRoute
+    }
+    '/investitii-publice/': {
+      id: '/investitii-publice/'
+      path: '/'
+      fullPath: '/investitii-publice/'
+      preLoaderRoute: typeof InvestitiiPubliceIndexRouteImport
+      parentRoute: typeof InvestitiiPubliceRouteRoute
     }
     '/intreprinderi-publice/': {
       id: '/intreprinderi-publice/'
@@ -2134,6 +2223,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/justitie/cautare'
       preLoaderRoute: typeof JustitieCautareRouteImport
       parentRoute: typeof JustitieRoute
+    }
+    '/investitii-publice/cautare': {
+      id: '/investitii-publice/cautare'
+      path: '/cautare'
+      fullPath: '/investitii-publice/cautare'
+      preLoaderRoute: typeof InvestitiiPubliceCautareRouteImport
+      parentRoute: typeof InvestitiiPubliceRouteRoute
     }
     '/intreprinderi-publice/$cui': {
       id: '/intreprinderi-publice/$cui'
@@ -2393,6 +2489,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/justitie/dosare/$caseId'
       preLoaderRoute: typeof JustitieDosareCaseIdRouteImport
       parentRoute: typeof JustitieRoute
+    }
+    '/investitii-publice/obiective/$id': {
+      id: '/investitii-publice/obiective/$id'
+      path: '/obiective/$id'
+      fullPath: '/investitii-publice/obiective/$id'
+      preLoaderRoute: typeof InvestitiiPubliceObiectiveIdRouteImport
+      parentRoute: typeof InvestitiiPubliceRouteRoute
+    }
+    '/investitii-publice/localitati/$siruta': {
+      id: '/investitii-publice/localitati/$siruta'
+      path: '/localitati/$siruta'
+      fullPath: '/investitii-publice/localitati/$siruta'
+      preLoaderRoute: typeof InvestitiiPubliceLocalitatiSirutaRouteImport
+      parentRoute: typeof InvestitiiPubliceRouteRoute
+    }
+    '/investitii-publice/judete/$countyCode': {
+      id: '/investitii-publice/judete/$countyCode'
+      path: '/judete/$countyCode'
+      fullPath: '/investitii-publice/judete/$countyCode'
+      preLoaderRoute: typeof InvestitiiPubliceJudeteCountyCodeRouteImport
+      parentRoute: typeof InvestitiiPubliceRouteRoute
     }
     '/entities/$cui/share-image.png': {
       id: '/entities/$cui/share-image.png'
@@ -2788,6 +2905,30 @@ const EntitiesRouteRouteWithChildren = EntitiesRouteRoute._addFileChildren(
   EntitiesRouteRouteChildren,
 )
 
+interface InvestitiiPubliceRouteRouteChildren {
+  InvestitiiPubliceCautareRoute: typeof InvestitiiPubliceCautareRoute
+  InvestitiiPubliceIndexRoute: typeof InvestitiiPubliceIndexRoute
+  InvestitiiPubliceJudeteCountyCodeRoute: typeof InvestitiiPubliceJudeteCountyCodeRoute
+  InvestitiiPubliceLocalitatiSirutaRoute: typeof InvestitiiPubliceLocalitatiSirutaRoute
+  InvestitiiPubliceObiectiveIdRoute: typeof InvestitiiPubliceObiectiveIdRoute
+}
+
+const InvestitiiPubliceRouteRouteChildren: InvestitiiPubliceRouteRouteChildren =
+  {
+    InvestitiiPubliceCautareRoute: InvestitiiPubliceCautareRoute,
+    InvestitiiPubliceIndexRoute: InvestitiiPubliceIndexRoute,
+    InvestitiiPubliceJudeteCountyCodeRoute:
+      InvestitiiPubliceJudeteCountyCodeRoute,
+    InvestitiiPubliceLocalitatiSirutaRoute:
+      InvestitiiPubliceLocalitatiSirutaRoute,
+    InvestitiiPubliceObiectiveIdRoute: InvestitiiPubliceObiectiveIdRoute,
+  }
+
+const InvestitiiPubliceRouteRouteWithChildren =
+  InvestitiiPubliceRouteRoute._addFileChildren(
+    InvestitiiPubliceRouteRouteChildren,
+  )
+
 interface LegislatieRouteRouteChildren {
   LegislatieIndexRoute: typeof LegislatieIndexRoute
   LegislatieActeIdRoute: typeof LegislatieActeIdRoute
@@ -3078,6 +3219,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AchizitiiRouteRoute: AchizitiiRouteRouteWithChildren,
   EntitiesRouteRoute: EntitiesRouteRouteWithChildren,
+  InvestitiiPubliceRouteRoute: InvestitiiPubliceRouteRouteWithChildren,
   LegislatieRouteRoute: LegislatieRouteRouteWithChildren,
   BudgetExplorerRoute: BudgetExplorerRoute,
   BugetNational2026Route: BugetNational2026Route,

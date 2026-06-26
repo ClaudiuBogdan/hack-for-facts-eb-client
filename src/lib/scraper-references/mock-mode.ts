@@ -18,10 +18,10 @@ export function isMockDataEnabled(datasetId: string): boolean {
 
   const allowed = scoped
     .split(',')
-    .map((value) => value.trim())
+    .map((value) => value.trim().toLowerCase())
     .filter(Boolean)
 
-  return allowed.includes(datasetId)
+  return allowed.includes('all') || allowed.includes(datasetId.toLowerCase())
 }
 
 export function assertLiveApiAvailable(
