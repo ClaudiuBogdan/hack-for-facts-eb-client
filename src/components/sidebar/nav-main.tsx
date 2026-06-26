@@ -1,4 +1,4 @@
-import { LayoutDashboard, BarChart2, Map, ListOrdered, Boxes, Landmark } from "lucide-react";
+import { LayoutDashboard, BarChart2, Map, ListOrdered, Boxes, Landmark, Scale } from "lucide-react";
 import { Link, useMatches } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button-variants";
@@ -11,7 +11,14 @@ import {
 } from "@/components/ui/sidebar";
 import { Trans } from "@lingui/react/macro";
 
-type MainItemUrl = "/" | "/map" | "/charts" | "/budget-explorer" | "/entity-analytics" | "/achizitii";
+type MainItemUrl =
+  | "/"
+  | "/map"
+  | "/charts"
+  | "/budget-explorer"
+  | "/entity-analytics"
+  | "/achizitii"
+  | "/legislatie";
 
 const mainItems: ReadonlyArray<{
   title: React.ReactNode;
@@ -52,6 +59,11 @@ const mainItems: ReadonlyArray<{
     title: <Trans>Achiziții publice</Trans>,
     url: "/achizitii",
     icon: Landmark,
+  },
+  {
+    title: <Trans>Legislație</Trans>,
+    url: "/legislatie",
+    icon: Scale,
   },
 ];
 

@@ -24,11 +24,13 @@ import { Route as CookiePolicyRouteImport } from './routes/cookie-policy'
 import { Route as BugeteLocale2026RouteImport } from './routes/bugete-locale-2026'
 import { Route as BugetNational2026RouteImport } from './routes/buget-national-2026'
 import { Route as BudgetExplorerRouteImport } from './routes/budget-explorer'
+import { Route as LegislatieRouteRouteImport } from './routes/legislatie/route'
 import { Route as EntitiesRouteRouteImport } from './routes/entities/route'
 import { Route as AchizitiiRouteRouteImport } from './routes/achizitii/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PrimarieIndexRouteImport } from './routes/primarie/index'
 import { Route as ParlamentIndexRouteImport } from './routes/parlament/index'
+import { Route as LegislatieIndexRouteImport } from './routes/legislatie/index'
 import { Route as EntitiesIndexRouteImport } from './routes/entities/index'
 import { Route as CompaniesIndexRouteImport } from './routes/companies.index'
 import { Route as AchizitiiIndexRouteImport } from './routes/achizitii/index'
@@ -71,6 +73,7 @@ import { Route as MapsEditorNewRouteImport } from './routes/maps/editor/new'
 import { Route as MapsEditorMapIdRouteImport } from './routes/maps/editor/$mapId'
 import { Route as MapsDatasetsNewRouteImport } from './routes/maps/datasets/new'
 import { Route as MapsDatasetsDatasetIdRouteImport } from './routes/maps/datasets/$datasetId'
+import { Route as LegislatieActeIdRouteImport } from './routes/legislatie/acte/$id'
 import { Route as EntitiesCuiShareImageDotpngRouteImport } from './routes/entities.$cui.share-image[.]png'
 import { Route as ClassificationsFunctionalCodeRouteImport } from './routes/classifications/functional/$code'
 import { Route as ClassificationsEconomicCodeRouteImport } from './routes/classifications/economic/$code'
@@ -204,6 +207,11 @@ const BudgetExplorerRoute = BudgetExplorerRouteImport.update({
 } as any).lazy(() =>
   import('./routes/budget-explorer.lazy').then((d) => d.Route),
 )
+const LegislatieRouteRoute = LegislatieRouteRouteImport.update({
+  id: '/legislatie',
+  path: '/legislatie',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EntitiesRouteRoute = EntitiesRouteRouteImport.update({
   id: '/entities',
   path: '/entities',
@@ -237,6 +245,13 @@ const ParlamentIndexRoute = ParlamentIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
   import('./routes/parlament/index.lazy').then((d) => d.Route),
+)
+const LegislatieIndexRoute = LegislatieIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LegislatieRouteRoute,
+} as any).lazy(() =>
+  import('./routes/legislatie/index.lazy').then((d) => d.Route),
 )
 const EntitiesIndexRoute = EntitiesIndexRouteImport.update({
   id: '/',
@@ -520,6 +535,13 @@ const MapsDatasetsDatasetIdRoute = MapsDatasetsDatasetIdRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
   import('./routes/maps/datasets/$datasetId.lazy').then((d) => d.Route),
+)
+const LegislatieActeIdRoute = LegislatieActeIdRouteImport.update({
+  id: '/acte/$id',
+  path: '/acte/$id',
+  getParentRoute: () => LegislatieRouteRoute,
+} as any).lazy(() =>
+  import('./routes/legislatie/acte/$id.lazy').then((d) => d.Route),
 )
 const EntitiesCuiShareImageDotpngRoute =
   EntitiesCuiShareImageDotpngRouteImport.update({
@@ -947,6 +969,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/achizitii': typeof AchizitiiRouteRouteWithChildren
   '/entities': typeof EntitiesRouteRouteWithChildren
+  '/legislatie': typeof LegislatieRouteRouteWithChildren
   '/budget-explorer': typeof BudgetExplorerRoute
   '/buget-national-2026': typeof BugetNational2026Route
   '/bugete-locale-2026': typeof BugeteLocale2026RouteWithChildren
@@ -986,6 +1009,7 @@ export interface FileRoutesByFullPath {
   '/achizitii/': typeof AchizitiiIndexRoute
   '/companies/': typeof CompaniesIndexRoute
   '/entities/': typeof EntitiesIndexRoute
+  '/legislatie/': typeof LegislatieIndexRoute
   '/parlament/': typeof ParlamentIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
@@ -1001,6 +1025,7 @@ export interface FileRoutesByFullPath {
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
+  '/legislatie/acte/$id': typeof LegislatieActeIdRoute
   '/maps/datasets/$datasetId': typeof MapsDatasetsDatasetIdRoute
   '/maps/datasets/new': typeof MapsDatasetsNewRoute
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
@@ -1095,6 +1120,7 @@ export interface FileRoutesByTo {
   '/achizitii': typeof AchizitiiIndexRoute
   '/companies': typeof CompaniesIndexRoute
   '/entities': typeof EntitiesIndexRoute
+  '/legislatie': typeof LegislatieIndexRoute
   '/parlament': typeof ParlamentIndexRoute
   '/primarie': typeof PrimarieIndexRoute
   '/charts': typeof ChartsIndexLazyRoute
@@ -1106,6 +1132,7 @@ export interface FileRoutesByTo {
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
+  '/legislatie/acte/$id': typeof LegislatieActeIdRoute
   '/maps/datasets/$datasetId': typeof MapsDatasetsDatasetIdRoute
   '/maps/datasets/new': typeof MapsDatasetsNewRoute
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
@@ -1167,6 +1194,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/achizitii': typeof AchizitiiRouteRouteWithChildren
   '/entities': typeof EntitiesRouteRouteWithChildren
+  '/legislatie': typeof LegislatieRouteRouteWithChildren
   '/budget-explorer': typeof BudgetExplorerRoute
   '/buget-national-2026': typeof BugetNational2026Route
   '/bugete-locale-2026': typeof BugeteLocale2026RouteWithChildren
@@ -1206,6 +1234,7 @@ export interface FileRoutesById {
   '/achizitii/': typeof AchizitiiIndexRoute
   '/companies/': typeof CompaniesIndexRoute
   '/entities/': typeof EntitiesIndexRoute
+  '/legislatie/': typeof LegislatieIndexRoute
   '/parlament/': typeof ParlamentIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
@@ -1221,6 +1250,7 @@ export interface FileRoutesById {
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
+  '/legislatie/acte/$id': typeof LegislatieActeIdRoute
   '/maps/datasets/$datasetId': typeof MapsDatasetsDatasetIdRoute
   '/maps/datasets/new': typeof MapsDatasetsNewRoute
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
@@ -1284,6 +1314,7 @@ export interface FileRouteTypes {
     | '/'
     | '/achizitii'
     | '/entities'
+    | '/legislatie'
     | '/budget-explorer'
     | '/buget-national-2026'
     | '/bugete-locale-2026'
@@ -1323,6 +1354,7 @@ export interface FileRouteTypes {
     | '/achizitii/'
     | '/companies/'
     | '/entities/'
+    | '/legislatie/'
     | '/parlament/'
     | '/primarie/'
     | '/charts/'
@@ -1338,6 +1370,7 @@ export interface FileRouteTypes {
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
+    | '/legislatie/acte/$id'
     | '/maps/datasets/$datasetId'
     | '/maps/datasets/new'
     | '/maps/editor/$mapId'
@@ -1432,6 +1465,7 @@ export interface FileRouteTypes {
     | '/achizitii'
     | '/companies'
     | '/entities'
+    | '/legislatie'
     | '/parlament'
     | '/primarie'
     | '/charts'
@@ -1443,6 +1477,7 @@ export interface FileRouteTypes {
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
+    | '/legislatie/acte/$id'
     | '/maps/datasets/$datasetId'
     | '/maps/datasets/new'
     | '/maps/editor/$mapId'
@@ -1503,6 +1538,7 @@ export interface FileRouteTypes {
     | '/'
     | '/achizitii'
     | '/entities'
+    | '/legislatie'
     | '/budget-explorer'
     | '/buget-national-2026'
     | '/bugete-locale-2026'
@@ -1542,6 +1578,7 @@ export interface FileRouteTypes {
     | '/achizitii/'
     | '/companies/'
     | '/entities/'
+    | '/legislatie/'
     | '/parlament/'
     | '/primarie/'
     | '/charts/'
@@ -1557,6 +1594,7 @@ export interface FileRouteTypes {
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
+    | '/legislatie/acte/$id'
     | '/maps/datasets/$datasetId'
     | '/maps/datasets/new'
     | '/maps/editor/$mapId'
@@ -1619,6 +1657,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AchizitiiRouteRoute: typeof AchizitiiRouteRouteWithChildren
   EntitiesRouteRoute: typeof EntitiesRouteRouteWithChildren
+  LegislatieRouteRoute: typeof LegislatieRouteRouteWithChildren
   BudgetExplorerRoute: typeof BudgetExplorerRoute
   BugetNational2026Route: typeof BugetNational2026Route
   BugeteLocale2026Route: typeof BugeteLocale2026RouteWithChildren
@@ -1780,6 +1819,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BudgetExplorerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legislatie': {
+      id: '/legislatie'
+      path: '/legislatie'
+      fullPath: '/legislatie'
+      preLoaderRoute: typeof LegislatieRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/entities': {
       id: '/entities'
       path: '/entities'
@@ -1821,6 +1867,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/parlament/'
       preLoaderRoute: typeof ParlamentIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/legislatie/': {
+      id: '/legislatie/'
+      path: '/'
+      fullPath: '/legislatie/'
+      preLoaderRoute: typeof LegislatieIndexRouteImport
+      parentRoute: typeof LegislatieRouteRoute
     }
     '/entities/': {
       id: '/entities/'
@@ -2136,6 +2189,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/maps/datasets/$datasetId'
       preLoaderRoute: typeof MapsDatasetsDatasetIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/legislatie/acte/$id': {
+      id: '/legislatie/acte/$id'
+      path: '/acte/$id'
+      fullPath: '/legislatie/acte/$id'
+      preLoaderRoute: typeof LegislatieActeIdRouteImport
+      parentRoute: typeof LegislatieRouteRoute
     }
     '/entities/$cui/share-image.png': {
       id: '/entities/$cui/share-image.png'
@@ -2524,6 +2584,20 @@ const EntitiesRouteRouteWithChildren = EntitiesRouteRoute._addFileChildren(
   EntitiesRouteRouteChildren,
 )
 
+interface LegislatieRouteRouteChildren {
+  LegislatieIndexRoute: typeof LegislatieIndexRoute
+  LegislatieActeIdRoute: typeof LegislatieActeIdRoute
+}
+
+const LegislatieRouteRouteChildren: LegislatieRouteRouteChildren = {
+  LegislatieIndexRoute: LegislatieIndexRoute,
+  LegislatieActeIdRoute: LegislatieActeIdRoute,
+}
+
+const LegislatieRouteRouteWithChildren = LegislatieRouteRoute._addFileChildren(
+  LegislatieRouteRouteChildren,
+)
+
 interface BugeteLocale2026RouteChildren {
   BugeteLocale2026TermeniSiConditiiRoute: typeof BugeteLocale2026TermeniSiConditiiRoute
 }
@@ -2782,6 +2856,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AchizitiiRouteRoute: AchizitiiRouteRouteWithChildren,
   EntitiesRouteRoute: EntitiesRouteRouteWithChildren,
+  LegislatieRouteRoute: LegislatieRouteRouteWithChildren,
   BudgetExplorerRoute: BudgetExplorerRoute,
   BugetNational2026Route: BugetNational2026Route,
   BugeteLocale2026Route: BugeteLocale2026RouteWithChildren,

@@ -37,6 +37,7 @@ vi.mock('lucide-react', () => ({
   ListOrdered: () => <span data-testid="icon-entity-analytics" />,
   Boxes: () => <span data-testid="icon-budget-explorer" />,
   Landmark: () => <span data-testid="icon-achizitii" />,
+  Scale: () => <span data-testid="icon-legislatie" />,
 }))
 
 // Mock router
@@ -138,11 +139,18 @@ describe('NavMain', () => {
       expect(screen.getByText('Achiziții publice')).toBeInTheDocument()
     })
 
+    it('renders Legislație link', () => {
+      render(<NavMain />)
+
+      expect(screen.getByTestId('link-/legislatie')).toBeInTheDocument()
+      expect(screen.getByText('Legislație')).toBeInTheDocument()
+    })
+
     it('renders all menu items', () => {
       render(<NavMain />)
 
       const menuItems = screen.getAllByTestId('sidebar-menu-item')
-      expect(menuItems).toHaveLength(6)
+      expect(menuItems).toHaveLength(7)
     })
   })
 
@@ -169,6 +177,12 @@ describe('NavMain', () => {
       render(<NavMain />)
 
       expect(screen.getByTestId('icon-achizitii')).toBeInTheDocument()
+    })
+
+    it('renders legislatie icon', () => {
+      render(<NavMain />)
+
+      expect(screen.getByTestId('icon-legislatie')).toBeInTheDocument()
     })
   })
 
