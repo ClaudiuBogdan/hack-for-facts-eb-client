@@ -2,6 +2,7 @@ import type { ScraperDatasetReference } from './types'
 
 const experimental = (path: string) => `experimental/docs/${path}`
 const newLatest = (path: string) => `new_latest/${path}`
+const prodDb = (path: string) => `prod-db/${path}`
 
 export const scraperDatasetCatalog: readonly ScraperDatasetReference[] = [
   {
@@ -504,6 +505,40 @@ export const scraperDatasetCatalog: readonly ScraperDatasetReference[] = [
     apiReady: false,
     mockDataAvailable: false,
     privacySensitive: true,
+  },
+  {
+    id: 'elections',
+    title: 'Election results (AEP/BEC/ROAEP)',
+    description:
+      'Romanian public election results 1992–2025 (local, parliamentary, presidential, European Parliament, referendum): contests, reporting units, competitors, candidacies, mandates, and per-row source pointers.',
+    lifecycle: 'loading',
+    joinKeys: [
+      'electionKey',
+      'contestKey',
+      'reportingUnitKey',
+      'competitorKey',
+      'candidateKey',
+      'sourceResourceId',
+      'sirutaCode',
+    ],
+    scrapperRepoRelativePath: prodDb('ELECTIONS_NOTES.md'),
+    experimentalDocs: [
+      experimental('political/elections-candidates.md'),
+      experimental('political/political-administration-schema-proposal.md'),
+    ],
+    newLatestPaths: [],
+    clientFeaturePaths: ['src/features/elections/'],
+    clientSchemaPaths: ['src/schemas/elections.ts'],
+    clientSpecPaths: [
+      'docs/design/elections/ux.md',
+      'docs/design/elections/design.md',
+      'docs/design/elections/features/contest-result-explorer.md',
+      'docs/design/elections/features/elections-landing-browse.md',
+      'docs/design/elections/features/source-provenance-drawer.md',
+    ],
+    apiReady: false,
+    mockDataAvailable: true,
+    privacySensitive: false,
   },
 ] as const
 

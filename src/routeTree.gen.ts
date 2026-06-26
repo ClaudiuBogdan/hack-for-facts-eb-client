@@ -36,6 +36,7 @@ import { Route as JustitieIndexRouteImport } from './routes/justitie.index'
 import { Route as IntreprinderiPubliceIndexRouteImport } from './routes/intreprinderi-publice/index'
 import { Route as EntitiesIndexRouteImport } from './routes/entities/index'
 import { Route as CompaniesIndexRouteImport } from './routes/companies.index'
+import { Route as AlegeriIndexRouteImport } from './routes/alegeri/index'
 import { Route as AchizitiiIndexRouteImport } from './routes/achizitii/index'
 import { Route as UnsubscribeTokenRouteImport } from './routes/unsubscribe.$token'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
@@ -55,6 +56,7 @@ import { Route as ChartsNewRouteImport } from './routes/charts/new'
 import { Route as CertificatesIdRouteImport } from './routes/certificates.$id'
 import { Route as BugeteLocale2026TermeniSiConditiiRouteImport } from './routes/bugete-locale-2026.termeni-si-conditii'
 import { Route as AlertsNewRouteImport } from './routes/alerts/new'
+import { Route as AlegeriElectionKeyRouteImport } from './routes/alegeri/$electionKey'
 import { Route as AchizitiiCautareRouteImport } from './routes/achizitii/cautare'
 import { Route as PrimarieCuiRouteRouteImport } from './routes/primarie/$cui/route'
 import { Route as ChartsChartIdRouteRouteImport } from './routes/charts/$chartId/route'
@@ -84,6 +86,7 @@ import { Route as JustitieDosareCaseIdRouteImport } from './routes/justitie.dosa
 import { Route as EntitiesCuiShareImageDotpngRouteImport } from './routes/entities.$cui.share-image[.]png'
 import { Route as ClassificationsFunctionalCodeRouteImport } from './routes/classifications/functional/$code'
 import { Route as ClassificationsEconomicCodeRouteImport } from './routes/classifications/economic/$code'
+import { Route as AlegeriContestContestKeyRouteImport } from './routes/alegeri/contest/$contestKey'
 import { Route as AchizitiiProceduriIdRouteImport } from './routes/achizitii/proceduri/$id'
 import { Route as AchizitiiCpvCodeRouteImport } from './routes/achizitii/cpv/$code'
 import { Route as AchizitiiContracteIdRouteImport } from './routes/achizitii/contracte/$id'
@@ -290,6 +293,11 @@ const CompaniesIndexRoute = CompaniesIndexRouteImport.update({
 } as any).lazy(() =>
   import('./routes/companies.index.lazy').then((d) => d.Route),
 )
+const AlegeriIndexRoute = AlegeriIndexRouteImport.update({
+  id: '/alegeri/',
+  path: '/alegeri/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/alegeri/index.lazy').then((d) => d.Route))
 const AchizitiiIndexRoute = AchizitiiIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -407,6 +415,13 @@ const AlertsNewRoute = AlertsNewRouteImport.update({
   path: '/alerts/new',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/alerts/new.lazy').then((d) => d.Route))
+const AlegeriElectionKeyRoute = AlegeriElectionKeyRouteImport.update({
+  id: '/alegeri/$electionKey',
+  path: '/alegeri/$electionKey',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/alegeri/$electionKey.lazy').then((d) => d.Route),
+)
 const AchizitiiCautareRoute = AchizitiiCautareRouteImport.update({
   id: '/cautare',
   path: '/cautare',
@@ -613,6 +628,14 @@ const ClassificationsEconomicCodeRoute =
     getParentRoute: () => rootRouteImport,
   } as any).lazy(() =>
     import('./routes/classifications/economic/$code.lazy').then((d) => d.Route),
+  )
+const AlegeriContestContestKeyRoute =
+  AlegeriContestContestKeyRouteImport.update({
+    id: '/alegeri/contest/$contestKey',
+    path: '/alegeri/contest/$contestKey',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/alegeri/contest/$contestKey.lazy').then((d) => d.Route),
   )
 const AchizitiiProceduriIdRoute = AchizitiiProceduriIdRouteImport.update({
   id: '/proceduri/$id',
@@ -1037,6 +1060,7 @@ export interface FileRoutesByFullPath {
   '/charts/$chartId': typeof ChartsChartIdRouteRouteWithChildren
   '/primarie/$cui': typeof PrimarieCuiRouteRouteWithChildren
   '/achizitii/cautare': typeof AchizitiiCautareRoute
+  '/alegeri/$electionKey': typeof AlegeriElectionKeyRoute
   '/alerts/new': typeof AlertsNewRoute
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
@@ -1057,6 +1081,7 @@ export interface FileRoutesByFullPath {
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/achizitii/': typeof AchizitiiIndexRoute
+  '/alegeri/': typeof AlegeriIndexRoute
   '/companies/': typeof CompaniesIndexRoute
   '/entities/': typeof EntitiesIndexRoute
   '/intreprinderi-publice/': typeof IntreprinderiPubliceIndexRoute
@@ -1074,6 +1099,7 @@ export interface FileRoutesByFullPath {
   '/achizitii/contracte/$id': typeof AchizitiiContracteIdRoute
   '/achizitii/cpv/$code': typeof AchizitiiCpvCodeRoute
   '/achizitii/proceduri/$id': typeof AchizitiiProceduriIdRoute
+  '/alegeri/contest/$contestKey': typeof AlegeriContestContestKeyRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
@@ -1154,6 +1180,7 @@ export interface FileRoutesByTo {
   '/test-error': typeof TestErrorRoute
   '/terms': typeof TermsLazyRoute
   '/achizitii/cautare': typeof AchizitiiCautareRoute
+  '/alegeri/$electionKey': typeof AlegeriElectionKeyRoute
   '/alerts/new': typeof AlertsNewRoute
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
@@ -1174,6 +1201,7 @@ export interface FileRoutesByTo {
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/achizitii': typeof AchizitiiIndexRoute
+  '/alegeri': typeof AlegeriIndexRoute
   '/companies': typeof CompaniesIndexRoute
   '/entities': typeof EntitiesIndexRoute
   '/intreprinderi-publice': typeof IntreprinderiPubliceIndexRoute
@@ -1187,6 +1215,7 @@ export interface FileRoutesByTo {
   '/achizitii/contracte/$id': typeof AchizitiiContracteIdRoute
   '/achizitii/cpv/$code': typeof AchizitiiCpvCodeRoute
   '/achizitii/proceduri/$id': typeof AchizitiiProceduriIdRoute
+  '/alegeri/contest/$contestKey': typeof AlegeriContestContestKeyRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
@@ -1275,6 +1304,7 @@ export interface FileRoutesById {
   '/charts/$chartId': typeof ChartsChartIdRouteRouteWithChildren
   '/primarie/$cui': typeof PrimarieCuiRouteRouteWithChildren
   '/achizitii/cautare': typeof AchizitiiCautareRoute
+  '/alegeri/$electionKey': typeof AlegeriElectionKeyRoute
   '/alerts/new': typeof AlertsNewRoute
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
@@ -1295,6 +1325,7 @@ export interface FileRoutesById {
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/achizitii/': typeof AchizitiiIndexRoute
+  '/alegeri/': typeof AlegeriIndexRoute
   '/companies/': typeof CompaniesIndexRoute
   '/entities/': typeof EntitiesIndexRoute
   '/intreprinderi-publice/': typeof IntreprinderiPubliceIndexRoute
@@ -1312,6 +1343,7 @@ export interface FileRoutesById {
   '/achizitii/contracte/$id': typeof AchizitiiContracteIdRoute
   '/achizitii/cpv/$code': typeof AchizitiiCpvCodeRoute
   '/achizitii/proceduri/$id': typeof AchizitiiProceduriIdRoute
+  '/alegeri/contest/$contestKey': typeof AlegeriContestContestKeyRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
@@ -1402,6 +1434,7 @@ export interface FileRouteTypes {
     | '/charts/$chartId'
     | '/primarie/$cui'
     | '/achizitii/cautare'
+    | '/alegeri/$electionKey'
     | '/alerts/new'
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
@@ -1422,6 +1455,7 @@ export interface FileRouteTypes {
     | '/unsubscribe/$token'
     | '/research/employees-data'
     | '/achizitii/'
+    | '/alegeri/'
     | '/companies/'
     | '/entities/'
     | '/intreprinderi-publice/'
@@ -1439,6 +1473,7 @@ export interface FileRouteTypes {
     | '/achizitii/contracte/$id'
     | '/achizitii/cpv/$code'
     | '/achizitii/proceduri/$id'
+    | '/alegeri/contest/$contestKey'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
@@ -1519,6 +1554,7 @@ export interface FileRouteTypes {
     | '/test-error'
     | '/terms'
     | '/achizitii/cautare'
+    | '/alegeri/$electionKey'
     | '/alerts/new'
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
@@ -1539,6 +1575,7 @@ export interface FileRouteTypes {
     | '/unsubscribe/$token'
     | '/research/employees-data'
     | '/achizitii'
+    | '/alegeri'
     | '/companies'
     | '/entities'
     | '/intreprinderi-publice'
@@ -1552,6 +1589,7 @@ export interface FileRouteTypes {
     | '/achizitii/contracte/$id'
     | '/achizitii/cpv/$code'
     | '/achizitii/proceduri/$id'
+    | '/alegeri/contest/$contestKey'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
@@ -1639,6 +1677,7 @@ export interface FileRouteTypes {
     | '/charts/$chartId'
     | '/primarie/$cui'
     | '/achizitii/cautare'
+    | '/alegeri/$electionKey'
     | '/alerts/new'
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
@@ -1659,6 +1698,7 @@ export interface FileRouteTypes {
     | '/unsubscribe/$token'
     | '/research/employees-data'
     | '/achizitii/'
+    | '/alegeri/'
     | '/companies/'
     | '/entities/'
     | '/intreprinderi-publice/'
@@ -1676,6 +1716,7 @@ export interface FileRouteTypes {
     | '/achizitii/contracte/$id'
     | '/achizitii/cpv/$code'
     | '/achizitii/proceduri/$id'
+    | '/alegeri/contest/$contestKey'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
@@ -1764,6 +1805,7 @@ export interface RootRouteChildren {
   AlertsAlertIdRouteRoute: typeof AlertsAlertIdRouteRouteWithChildren
   ChartsChartIdRouteRoute: typeof ChartsChartIdRouteRouteWithChildren
   PrimarieCuiRouteRoute: typeof PrimarieCuiRouteRouteWithChildren
+  AlegeriElectionKeyRoute: typeof AlegeriElectionKeyRoute
   AlertsNewRoute: typeof AlertsNewRoute
   CertificatesIdRoute: typeof CertificatesIdRoute
   ChartsNewRoute: typeof ChartsNewRoute
@@ -1777,6 +1819,7 @@ export interface RootRouteChildren {
   ShareCodeRoute: typeof ShareCodeRoute
   UnsubscribeTokenRoute: typeof UnsubscribeTokenRoute
   ResearchEmployeesDataLazyRoute: typeof ResearchEmployeesDataLazyRoute
+  AlegeriIndexRoute: typeof AlegeriIndexRoute
   CompaniesIndexRoute: typeof CompaniesIndexRoute
   IntreprinderiPubliceIndexRoute: typeof IntreprinderiPubliceIndexRoute
   ParlamentIndexRoute: typeof ParlamentIndexRoute
@@ -1785,6 +1828,7 @@ export interface RootRouteChildren {
   AdminCampaignsCampaignKeyRouteRoute: typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   ParlamentMembriMemberIdRouteRoute: typeof ParlamentMembriMemberIdRouteRouteWithChildren
   ParlamentProiecteBillIdRouteRoute: typeof ParlamentProiecteBillIdRouteRouteWithChildren
+  AlegeriContestContestKeyRoute: typeof AlegeriContestContestKeyRoute
   ClassificationsEconomicCodeRoute: typeof ClassificationsEconomicCodeRoute
   ClassificationsFunctionalCodeRoute: typeof ClassificationsFunctionalCodeRoute
   MapsDatasetsDatasetIdRoute: typeof MapsDatasetsDatasetIdRoute
@@ -2000,6 +2044,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompaniesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/alegeri/': {
+      id: '/alegeri/'
+      path: '/alegeri'
+      fullPath: '/alegeri/'
+      preLoaderRoute: typeof AlegeriIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/achizitii/': {
       id: '/achizitii/'
       path: '/'
@@ -2138,6 +2189,13 @@ declare module '@tanstack/react-router' {
       path: '/alerts/new'
       fullPath: '/alerts/new'
       preLoaderRoute: typeof AlertsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alegeri/$electionKey': {
+      id: '/alegeri/$electionKey'
+      path: '/alegeri/$electionKey'
+      fullPath: '/alegeri/$electionKey'
+      preLoaderRoute: typeof AlegeriElectionKeyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/achizitii/cautare': {
@@ -2355,6 +2413,13 @@ declare module '@tanstack/react-router' {
       path: '/classifications/economic/$code'
       fullPath: '/classifications/economic/$code'
       preLoaderRoute: typeof ClassificationsEconomicCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alegeri/contest/$contestKey': {
+      id: '/alegeri/contest/$contestKey'
+      path: '/alegeri/contest/$contestKey'
+      fullPath: '/alegeri/contest/$contestKey'
+      preLoaderRoute: typeof AlegeriContestContestKeyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/achizitii/proceduri/$id': {
@@ -3033,6 +3098,7 @@ const rootRouteChildren: RootRouteChildren = {
   AlertsAlertIdRouteRoute: AlertsAlertIdRouteRouteWithChildren,
   ChartsChartIdRouteRoute: ChartsChartIdRouteRouteWithChildren,
   PrimarieCuiRouteRoute: PrimarieCuiRouteRouteWithChildren,
+  AlegeriElectionKeyRoute: AlegeriElectionKeyRoute,
   AlertsNewRoute: AlertsNewRoute,
   CertificatesIdRoute: CertificatesIdRoute,
   ChartsNewRoute: ChartsNewRoute,
@@ -3046,6 +3112,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShareCodeRoute: ShareCodeRoute,
   UnsubscribeTokenRoute: UnsubscribeTokenRoute,
   ResearchEmployeesDataLazyRoute: ResearchEmployeesDataLazyRoute,
+  AlegeriIndexRoute: AlegeriIndexRoute,
   CompaniesIndexRoute: CompaniesIndexRoute,
   IntreprinderiPubliceIndexRoute: IntreprinderiPubliceIndexRoute,
   ParlamentIndexRoute: ParlamentIndexRoute,
@@ -3057,6 +3124,7 @@ const rootRouteChildren: RootRouteChildren = {
     ParlamentMembriMemberIdRouteRouteWithChildren,
   ParlamentProiecteBillIdRouteRoute:
     ParlamentProiecteBillIdRouteRouteWithChildren,
+  AlegeriContestContestKeyRoute: AlegeriContestContestKeyRoute,
   ClassificationsEconomicCodeRoute: ClassificationsEconomicCodeRoute,
   ClassificationsFunctionalCodeRoute: ClassificationsFunctionalCodeRoute,
   MapsDatasetsDatasetIdRoute: MapsDatasetsDatasetIdRoute,

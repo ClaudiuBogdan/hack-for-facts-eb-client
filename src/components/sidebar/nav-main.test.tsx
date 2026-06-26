@@ -44,6 +44,7 @@ vi.mock('lucide-react', () => ({
   Landmark: () => <span data-testid="icon-achizitii" />,
   Scale: () => <span data-testid="icon-legislatie" />,
   Building2: () => <span data-testid="icon-public-enterprises" />,
+  Vote: () => <span data-testid="icon-elections" />,
 }))
 
 // Mock router
@@ -163,11 +164,18 @@ describe('NavMain', () => {
       expect(screen.getByText('Legislație')).toBeInTheDocument()
     })
 
+    it('renders Elections link', async () => {
+      await renderNavMain()
+
+      expect(screen.getByTestId('link-/alegeri')).toBeInTheDocument()
+      expect(screen.getByText('Alegeri')).toBeInTheDocument()
+    })
+
     it('renders all menu items', async () => {
       await renderNavMain()
 
       const menuItems = screen.getAllByTestId('sidebar-menu-item')
-      expect(menuItems).toHaveLength(7)
+      expect(menuItems).toHaveLength(8)
     })
 
     it('shows public enterprises navigation only while mock mode is enabled', async () => {
@@ -175,7 +183,7 @@ describe('NavMain', () => {
 
       expect(screen.getByTestId('link-/intreprinderi-publice')).toBeInTheDocument()
       expect(screen.getByText('Întreprinderi publice')).toBeInTheDocument()
-      expect(screen.getAllByTestId('sidebar-menu-item')).toHaveLength(8)
+      expect(screen.getAllByTestId('sidebar-menu-item')).toHaveLength(9)
     })
   })
 
@@ -214,6 +222,12 @@ describe('NavMain', () => {
       await renderNavMain({ mockPublicEnterprises: true })
 
       expect(screen.getByTestId('icon-public-enterprises')).toBeInTheDocument()
+    })
+
+    it('renders elections icon', async () => {
+      await renderNavMain()
+
+      expect(screen.getByTestId('icon-elections')).toBeInTheDocument()
     })
   })
 
@@ -263,6 +277,14 @@ describe('NavMain', () => {
 
       const achizitiiLink = screen.getByTestId('link-/achizitii')
       expect(achizitiiLink).toHaveClass('bg-muted')
+    })
+
+    it('marks Elections as active when on /alegeri subpath', async () => {
+      mockMatches.mockReturnValue([{ pathname: '/alegeri/contest/local-2024-cluj-napoca-primar' }])
+      await renderNavMain()
+
+      const electionsLink = screen.getByTestId('link-/alegeri')
+      expect(electionsLink).toHaveClass('bg-muted')
     })
   })
 

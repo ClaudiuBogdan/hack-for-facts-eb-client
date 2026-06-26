@@ -1,4 +1,4 @@
-import { LayoutDashboard, BarChart2, Map, ListOrdered, Boxes, Landmark, Scale, Building2 } from "lucide-react";
+import { LayoutDashboard, BarChart2, Map, ListOrdered, Boxes, Landmark, Scale, Building2, Vote } from "lucide-react";
 import { Link, useMatches } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button-variants";
@@ -20,7 +20,8 @@ type MainItemUrl =
   | "/entity-analytics"
   | "/achizitii"
   | "/legislatie"
-  | "/intreprinderi-publice";
+  | "/intreprinderi-publice"
+  | "/alegeri";
 
 const mainItems: ReadonlyArray<{
   title: React.ReactNode;
@@ -76,6 +77,11 @@ const mainItems: ReadonlyArray<{
         },
       ]
     : []),
+  {
+    title: <Trans>Alegeri</Trans>,
+    url: "/alegeri",
+    icon: Vote,
+  },
 ];
 
 export function NavMain() {
