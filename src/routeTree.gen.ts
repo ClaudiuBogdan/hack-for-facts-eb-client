@@ -33,6 +33,7 @@ import { Route as PrimarieIndexRouteImport } from './routes/primarie/index'
 import { Route as ParlamentIndexRouteImport } from './routes/parlament/index'
 import { Route as LegislatieIndexRouteImport } from './routes/legislatie/index'
 import { Route as JustitieIndexRouteImport } from './routes/justitie.index'
+import { Route as IntreprinderiPubliceIndexRouteImport } from './routes/intreprinderi-publice/index'
 import { Route as EntitiesIndexRouteImport } from './routes/entities/index'
 import { Route as CompaniesIndexRouteImport } from './routes/companies.index'
 import { Route as AchizitiiIndexRouteImport } from './routes/achizitii/index'
@@ -46,6 +47,7 @@ import { Route as ProvocareTermeniSiConditiiRouteImport } from './routes/provoca
 import { Route as ProvocareNotificariRouteImport } from './routes/provocare_.notificari'
 import { Route as PnrrShareImageDotpngRouteImport } from './routes/pnrr.share-image[.]png'
 import { Route as JustitieCautareRouteImport } from './routes/justitie.cautare'
+import { Route as IntreprinderiPubliceCuiRouteImport } from './routes/intreprinderi-publice/$cui'
 import { Route as ExperimentalSearchRouteImport } from './routes/experimental.search'
 import { Route as EntitiesCuiRouteImport } from './routes/entities.$cui'
 import { Route as CompaniesCuiRouteImport } from './routes/companies.$cui'
@@ -268,6 +270,14 @@ const JustitieIndexRoute = JustitieIndexRouteImport.update({
   path: '/',
   getParentRoute: () => JustitieRoute,
 } as any)
+const IntreprinderiPubliceIndexRoute =
+  IntreprinderiPubliceIndexRouteImport.update({
+    id: '/intreprinderi-publice/',
+    path: '/intreprinderi-publice/',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/intreprinderi-publice/index.lazy').then((d) => d.Route),
+  )
 const EntitiesIndexRoute = EntitiesIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -350,6 +360,13 @@ const JustitieCautareRoute = JustitieCautareRouteImport.update({
   path: '/cautare',
   getParentRoute: () => JustitieRoute,
 } as any)
+const IntreprinderiPubliceCuiRoute = IntreprinderiPubliceCuiRouteImport.update({
+  id: '/intreprinderi-publice/$cui',
+  path: '/intreprinderi-publice/$cui',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/intreprinderi-publice/$cui.lazy').then((d) => d.Route),
+)
 const ExperimentalSearchRoute = ExperimentalSearchRouteImport.update({
   id: '/experimental/search',
   path: '/experimental/search',
@@ -1027,6 +1044,7 @@ export interface FileRoutesByFullPath {
   '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/experimental/search': typeof ExperimentalSearchRoute
+  '/intreprinderi-publice/$cui': typeof IntreprinderiPubliceCuiRoute
   '/justitie/cautare': typeof JustitieCautareRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
@@ -1041,6 +1059,7 @@ export interface FileRoutesByFullPath {
   '/achizitii/': typeof AchizitiiIndexRoute
   '/companies/': typeof CompaniesIndexRoute
   '/entities/': typeof EntitiesIndexRoute
+  '/intreprinderi-publice/': typeof IntreprinderiPubliceIndexRoute
   '/justitie/': typeof JustitieIndexRoute
   '/legislatie/': typeof LegislatieIndexRoute
   '/parlament/': typeof ParlamentIndexRoute
@@ -1142,6 +1161,7 @@ export interface FileRoutesByTo {
   '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/experimental/search': typeof ExperimentalSearchRoute
+  '/intreprinderi-publice/$cui': typeof IntreprinderiPubliceCuiRoute
   '/justitie/cautare': typeof JustitieCautareRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
@@ -1156,6 +1176,7 @@ export interface FileRoutesByTo {
   '/achizitii': typeof AchizitiiIndexRoute
   '/companies': typeof CompaniesIndexRoute
   '/entities': typeof EntitiesIndexRoute
+  '/intreprinderi-publice': typeof IntreprinderiPubliceIndexRoute
   '/justitie': typeof JustitieIndexRoute
   '/legislatie': typeof LegislatieIndexRoute
   '/parlament': typeof ParlamentIndexRoute
@@ -1261,6 +1282,7 @@ export interface FileRoutesById {
   '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/experimental/search': typeof ExperimentalSearchRoute
+  '/intreprinderi-publice/$cui': typeof IntreprinderiPubliceCuiRoute
   '/justitie/cautare': typeof JustitieCautareRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare_/notificari': typeof ProvocareNotificariRoute
@@ -1275,6 +1297,7 @@ export interface FileRoutesById {
   '/achizitii/': typeof AchizitiiIndexRoute
   '/companies/': typeof CompaniesIndexRoute
   '/entities/': typeof EntitiesIndexRoute
+  '/intreprinderi-publice/': typeof IntreprinderiPubliceIndexRoute
   '/justitie/': typeof JustitieIndexRoute
   '/legislatie/': typeof LegislatieIndexRoute
   '/parlament/': typeof ParlamentIndexRoute
@@ -1386,6 +1409,7 @@ export interface FileRouteTypes {
     | '/companies/$cui'
     | '/entities/$cui'
     | '/experimental/search'
+    | '/intreprinderi-publice/$cui'
     | '/justitie/cautare'
     | '/pnrr/share-image.png'
     | '/provocare/notificari'
@@ -1400,6 +1424,7 @@ export interface FileRouteTypes {
     | '/achizitii/'
     | '/companies/'
     | '/entities/'
+    | '/intreprinderi-publice/'
     | '/justitie/'
     | '/legislatie/'
     | '/parlament/'
@@ -1501,6 +1526,7 @@ export interface FileRouteTypes {
     | '/companies/$cui'
     | '/entities/$cui'
     | '/experimental/search'
+    | '/intreprinderi-publice/$cui'
     | '/justitie/cautare'
     | '/pnrr/share-image.png'
     | '/provocare/notificari'
@@ -1515,6 +1541,7 @@ export interface FileRouteTypes {
     | '/achizitii'
     | '/companies'
     | '/entities'
+    | '/intreprinderi-publice'
     | '/justitie'
     | '/legislatie'
     | '/parlament'
@@ -1619,6 +1646,7 @@ export interface FileRouteTypes {
     | '/companies/$cui'
     | '/entities/$cui'
     | '/experimental/search'
+    | '/intreprinderi-publice/$cui'
     | '/justitie/cautare'
     | '/pnrr/share-image.png'
     | '/provocare_/notificari'
@@ -1633,6 +1661,7 @@ export interface FileRouteTypes {
     | '/achizitii/'
     | '/companies/'
     | '/entities/'
+    | '/intreprinderi-publice/'
     | '/justitie/'
     | '/legislatie/'
     | '/parlament/'
@@ -1740,6 +1769,7 @@ export interface RootRouteChildren {
   ChartsNewRoute: typeof ChartsNewRoute
   CompaniesCuiRoute: typeof CompaniesCuiRoute
   ExperimentalSearchRoute: typeof ExperimentalSearchRoute
+  IntreprinderiPubliceCuiRoute: typeof IntreprinderiPubliceCuiRoute
   ProvocareNotificariRoute: typeof ProvocareNotificariRoute
   ProvocareTermeniSiConditiiRoute: typeof ProvocareTermeniSiConditiiRoute
   SettingsNotificationsRoute: typeof SettingsNotificationsRoute
@@ -1748,6 +1778,7 @@ export interface RootRouteChildren {
   UnsubscribeTokenRoute: typeof UnsubscribeTokenRoute
   ResearchEmployeesDataLazyRoute: typeof ResearchEmployeesDataLazyRoute
   CompaniesIndexRoute: typeof CompaniesIndexRoute
+  IntreprinderiPubliceIndexRoute: typeof IntreprinderiPubliceIndexRoute
   ParlamentIndexRoute: typeof ParlamentIndexRoute
   PrimarieIndexRoute: typeof PrimarieIndexRoute
   ChartsIndexLazyRoute: typeof ChartsIndexLazyRoute
@@ -1948,6 +1979,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JustitieIndexRouteImport
       parentRoute: typeof JustitieRoute
     }
+    '/intreprinderi-publice/': {
+      id: '/intreprinderi-publice/'
+      path: '/intreprinderi-publice'
+      fullPath: '/intreprinderi-publice/'
+      preLoaderRoute: typeof IntreprinderiPubliceIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/entities/': {
       id: '/entities/'
       path: '/'
@@ -2045,6 +2083,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/justitie/cautare'
       preLoaderRoute: typeof JustitieCautareRouteImport
       parentRoute: typeof JustitieRoute
+    }
+    '/intreprinderi-publice/$cui': {
+      id: '/intreprinderi-publice/$cui'
+      path: '/intreprinderi-publice/$cui'
+      fullPath: '/intreprinderi-publice/$cui'
+      preLoaderRoute: typeof IntreprinderiPubliceCuiRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/experimental/search': {
       id: '/experimental/search'
@@ -2993,6 +3038,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChartsNewRoute: ChartsNewRoute,
   CompaniesCuiRoute: CompaniesCuiRoute,
   ExperimentalSearchRoute: ExperimentalSearchRoute,
+  IntreprinderiPubliceCuiRoute: IntreprinderiPubliceCuiRoute,
   ProvocareNotificariRoute: ProvocareNotificariRoute,
   ProvocareTermeniSiConditiiRoute: ProvocareTermeniSiConditiiRoute,
   SettingsNotificationsRoute: SettingsNotificationsRoute,
@@ -3001,6 +3047,7 @@ const rootRouteChildren: RootRouteChildren = {
   UnsubscribeTokenRoute: UnsubscribeTokenRoute,
   ResearchEmployeesDataLazyRoute: ResearchEmployeesDataLazyRoute,
   CompaniesIndexRoute: CompaniesIndexRoute,
+  IntreprinderiPubliceIndexRoute: IntreprinderiPubliceIndexRoute,
   ParlamentIndexRoute: ParlamentIndexRoute,
   PrimarieIndexRoute: PrimarieIndexRoute,
   ChartsIndexLazyRoute: ChartsIndexLazyRoute,

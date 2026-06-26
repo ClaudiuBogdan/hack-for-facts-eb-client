@@ -1,4 +1,5 @@
 const COUNTY_ENTITY_TYPE = 'admin_county_council'
+const PUBLIC_ENTERPRISE_ENTITY_TYPE = 'public_enterprise'
 
 export type EntitySelectionBehavior =
   | 'navigate-to-entity'
@@ -15,6 +16,10 @@ export function buildEntityDetailsPath(cui: string): string {
   return `/entities/${encodeURIComponent(cui.trim())}`
 }
 
+export function buildPublicEnterprisePath(cui: string): string {
+  return `/intreprinderi-publice/${encodeURIComponent(cui.trim())}`
+}
+
 export function isNonCountyUatEntity(
   input: EntityNavigationTargetInput,
 ): boolean {
@@ -24,6 +29,10 @@ export function isNonCountyUatEntity(
 export function buildPreferredEntityPath(
   input: EntityNavigationTargetInput,
 ): string {
+  if (input.entityType === PUBLIC_ENTERPRISE_ENTITY_TYPE) {
+    return buildPublicEnterprisePath(input.cui)
+  }
+
   return buildEntityDetailsPath(input.cui)
 }
 

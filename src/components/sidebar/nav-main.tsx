@@ -1,7 +1,8 @@
-import { LayoutDashboard, BarChart2, Map, ListOrdered, Boxes, Landmark, Scale } from "lucide-react";
+import { LayoutDashboard, BarChart2, Map, ListOrdered, Boxes, Landmark, Scale, Building2 } from "lucide-react";
 import { Link, useMatches } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button-variants";
+import { isPublicEnterpriseMockEnabled } from "@/features/public-enterprises/lib/mock-mode";
 import {
   SidebarGroup,
   SidebarMenu,
@@ -18,7 +19,8 @@ type MainItemUrl =
   | "/budget-explorer"
   | "/entity-analytics"
   | "/achizitii"
-  | "/legislatie";
+  | "/legislatie"
+  | "/intreprinderi-publice";
 
 const mainItems: ReadonlyArray<{
   title: React.ReactNode;
@@ -65,6 +67,15 @@ const mainItems: ReadonlyArray<{
     url: "/legislatie",
     icon: Scale,
   },
+  ...(isPublicEnterpriseMockEnabled()
+    ? [
+        {
+          title: <Trans>Întreprinderi publice</Trans>,
+          url: "/intreprinderi-publice" as const,
+          icon: Building2,
+        },
+      ]
+    : []),
 ];
 
 export function NavMain() {
