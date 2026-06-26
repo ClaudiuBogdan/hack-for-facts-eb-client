@@ -73,6 +73,9 @@ describe('PrivateCompanyAchizitiiTab', () => {
       <PrivateCompanyTabContent
         tab="achizitii"
         profile={makeProfile('12345678')}
+        cui="12345678"
+        litPage={1}
+        onLitPageChange={vi.fn()}
         onTabChange={vi.fn()}
       />,
     )

@@ -115,7 +115,7 @@ mix unique/ambiguous/unresolved), (e) error/notFound.
      exist and lineage is gated, a single muted "Lanțul de apel: în pregătire" note.
    - **parti:** `PartyRolesList` — named publishable parties (each row: role badge,
      display name → link to `/companies/$cui` slice or `/entities/$cui` if a CUI
-     candidate exists, else to `/justitie/cautare?q={nameKey}`), then aggregated
+     candidate exists, else to `/justitie/cautare?partyKey={nameKey}`), then aggregated
      "Persoane fizice" and "Părți neidentificate" role-count rows
      (non-interactive). Prominent `PrivacyBoundaryNotice(variant=
      'persons-suppressed')`.

@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   LineChart,
   MapPin,
+  Scale,
   Users,
   type LucideIcon,
 } from 'lucide-react'
@@ -23,6 +24,7 @@ export const PRIVATE_COMPANY_TAB_IDS: readonly PrivateCompanyViewTab[] = [
   'governance',
   'financials',
   'location',
+  'litigii',
 ] as const
 
 const PRIVATE_COMPANY_TAB_ICONS: Record<PrivateCompanyViewTab, LucideIcon> = {
@@ -32,6 +34,7 @@ const PRIVATE_COMPANY_TAB_ICONS: Record<PrivateCompanyViewTab, LucideIcon> = {
   governance: Users,
   financials: LineChart,
   location: MapPin,
+  litigii: Scale,
 }
 
 export function getPrivateCompanyTabs(): readonly PrivateCompanyTabConfig[] {
@@ -56,6 +59,8 @@ export function getPrivateCompanyTabLabel(tab: PrivateCompanyViewTab): string {
       return t`Financials`
     case 'location':
       return t`Location`
+    case 'litigii':
+      return t`Litigii`
     default: {
       const exhaustive: never = tab
       return exhaustive

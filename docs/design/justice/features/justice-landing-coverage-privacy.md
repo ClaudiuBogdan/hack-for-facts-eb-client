@@ -30,9 +30,11 @@ is and isn't available, and why.
   curți de apel, 1 Curtea Militară de Apel.
 - **Decision — `/justitie/route.tsx` layout** wraps all domain pages: breadcrumb,
   slim sub-nav (Prezentare / Caută cauze / Instanțe), and a `CoverageRibbon` slot.
-- **Decision — entry search routes to `/justitie/cautare`** with the typed query in
-  `q`; the box never accepts/encourages person-name search (placeholder + helper text
-  make this explicit).
+- **Decision — entry search routes to `/justitie/cautare`** using the closed search
+  contract: exact `caseNumber`, selected `court`, or selected publishable
+  `partyKey`. The typed value is local only; the box never persists free text and
+  never accepts/encourages person-name search (placeholder + helper text make this
+  explicit).
 - **Decision — privacy notice is prominent, not a footnote** — a dedicated band, not
   hidden in docs (foundation: expose data limits near primary content).
 - **Assumption:** landing counts are served as a single small aggregate payload
@@ -52,7 +54,9 @@ export const Route = createFileRoute('/justitie/')({
 ```
 
 - No required search params; default renders fully. The entry search composes a
-  navigation to `/justitie/cautare?q=…` (and `court=…` when chosen via picker).
+  navigation to `/justitie/cautare?caseNumber=…` for exact case numbers, selected
+  `/justitie/cautare?partyKey=…` for publishable company/public-entity keys, and
+  `court=…` when chosen via picker.
 
 ## Data contract and mock states
 
@@ -93,7 +97,8 @@ note), (d) error (retry block).
    Nume publicabile) — locale-formatted; not nested cards; each with a short caption.
 4. **Entry search:** a prominent `SearchInput` + `CourtPicker` with helper text:
    "Caută după instanță, număr de dosar (NNNN/CC/YYYY) sau companie/instituție. Nu
-   se caută persoane fizice." Submitting → `/justitie/cautare`.
+   se caută persoane fizice." Submitting → `/justitie/cautare` with only
+   `caseNumber`, `partyKey`, or `court`.
 5. **Court-tier breakdown:** small horizontal bar list (tier → court count / case
    count) with the explicit "ICCJ neinclus din această sursă" note.
 6. **Top courts by volume:** ranked list → each links to
@@ -116,7 +121,9 @@ note), (d) error (retry block).
 
 ## Interactions
 
-- Search submit / Enter → navigate to `/justitie/cautare?q=…`.
+- Search submit / Enter → classify the local value and navigate to
+  `/justitie/cautare?caseNumber=…` or a selected `/justitie/cautare?partyKey=…`;
+  invalid/free text stays local with helper copy.
 - `CourtPicker` select → `/justitie/instante/$courtId` (or
   `/justitie/cautare?court=…` if the user is searching cases).
 - Top-court click → court analytics.

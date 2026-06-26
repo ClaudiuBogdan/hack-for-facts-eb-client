@@ -18,6 +18,7 @@ import { Route as ProvocareRouteImport } from './routes/provocare'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PnrrRouteImport } from './routes/pnrr'
 import { Route as MapRouteImport } from './routes/map'
+import { Route as JustitieRouteImport } from './routes/justitie'
 import { Route as EntityAnalyticsRouteImport } from './routes/entity-analytics'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as CookiePolicyRouteImport } from './routes/cookie-policy'
@@ -31,6 +32,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PrimarieIndexRouteImport } from './routes/primarie/index'
 import { Route as ParlamentIndexRouteImport } from './routes/parlament/index'
 import { Route as LegislatieIndexRouteImport } from './routes/legislatie/index'
+import { Route as JustitieIndexRouteImport } from './routes/justitie.index'
 import { Route as EntitiesIndexRouteImport } from './routes/entities/index'
 import { Route as CompaniesIndexRouteImport } from './routes/companies.index'
 import { Route as AchizitiiIndexRouteImport } from './routes/achizitii/index'
@@ -43,6 +45,7 @@ import { Route as SettingsNotificationsRouteImport } from './routes/settings/not
 import { Route as ProvocareTermeniSiConditiiRouteImport } from './routes/provocare_.termeni-si-conditii'
 import { Route as ProvocareNotificariRouteImport } from './routes/provocare_.notificari'
 import { Route as PnrrShareImageDotpngRouteImport } from './routes/pnrr.share-image[.]png'
+import { Route as JustitieCautareRouteImport } from './routes/justitie.cautare'
 import { Route as ExperimentalSearchRouteImport } from './routes/experimental.search'
 import { Route as EntitiesCuiRouteImport } from './routes/entities.$cui'
 import { Route as CompaniesCuiRouteImport } from './routes/companies.$cui'
@@ -74,6 +77,8 @@ import { Route as MapsEditorMapIdRouteImport } from './routes/maps/editor/$mapId
 import { Route as MapsDatasetsNewRouteImport } from './routes/maps/datasets/new'
 import { Route as MapsDatasetsDatasetIdRouteImport } from './routes/maps/datasets/$datasetId'
 import { Route as LegislatieActeIdRouteImport } from './routes/legislatie/acte/$id'
+import { Route as JustitieInstanteCourtIdRouteImport } from './routes/justitie.instante.$courtId'
+import { Route as JustitieDosareCaseIdRouteImport } from './routes/justitie.dosare.$caseId'
 import { Route as EntitiesCuiShareImageDotpngRouteImport } from './routes/entities.$cui.share-image[.]png'
 import { Route as ClassificationsFunctionalCodeRouteImport } from './routes/classifications/functional/$code'
 import { Route as ClassificationsEconomicCodeRouteImport } from './routes/classifications/economic/$code'
@@ -171,6 +176,11 @@ const MapRoute = MapRouteImport.update({
   path: '/map',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/map.lazy').then((d) => d.Route))
+const JustitieRoute = JustitieRouteImport.update({
+  id: '/justitie',
+  path: '/justitie',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EntityAnalyticsRoute = EntityAnalyticsRouteImport.update({
   id: '/entity-analytics',
   path: '/entity-analytics',
@@ -253,6 +263,11 @@ const LegislatieIndexRoute = LegislatieIndexRouteImport.update({
 } as any).lazy(() =>
   import('./routes/legislatie/index.lazy').then((d) => d.Route),
 )
+const JustitieIndexRoute = JustitieIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => JustitieRoute,
+} as any)
 const EntitiesIndexRoute = EntitiesIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -329,6 +344,11 @@ const PnrrShareImageDotpngRoute = PnrrShareImageDotpngRouteImport.update({
   id: '/share-image.png',
   path: '/share-image.png',
   getParentRoute: () => PnrrRoute,
+} as any)
+const JustitieCautareRoute = JustitieCautareRouteImport.update({
+  id: '/cautare',
+  path: '/cautare',
+  getParentRoute: () => JustitieRoute,
 } as any)
 const ExperimentalSearchRoute = ExperimentalSearchRouteImport.update({
   id: '/experimental/search',
@@ -543,6 +563,16 @@ const LegislatieActeIdRoute = LegislatieActeIdRouteImport.update({
 } as any).lazy(() =>
   import('./routes/legislatie/acte/$id.lazy').then((d) => d.Route),
 )
+const JustitieInstanteCourtIdRoute = JustitieInstanteCourtIdRouteImport.update({
+  id: '/instante/$courtId',
+  path: '/instante/$courtId',
+  getParentRoute: () => JustitieRoute,
+} as any)
+const JustitieDosareCaseIdRoute = JustitieDosareCaseIdRouteImport.update({
+  id: '/dosare/$caseId',
+  path: '/dosare/$caseId',
+  getParentRoute: () => JustitieRoute,
+} as any)
 const EntitiesCuiShareImageDotpngRoute =
   EntitiesCuiShareImageDotpngRouteImport.update({
     id: '/share-image.png',
@@ -976,6 +1006,7 @@ export interface FileRoutesByFullPath {
   '/cookie-policy': typeof CookiePolicyRoute
   '/cookies': typeof CookiesRoute
   '/entity-analytics': typeof EntityAnalyticsRoute
+  '/justitie': typeof JustitieRouteWithChildren
   '/map': typeof MapRoute
   '/pnrr': typeof PnrrRouteWithChildren
   '/privacy': typeof PrivacyRoute
@@ -996,6 +1027,7 @@ export interface FileRoutesByFullPath {
   '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/experimental/search': typeof ExperimentalSearchRoute
+  '/justitie/cautare': typeof JustitieCautareRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
   '/provocare/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
@@ -1009,6 +1041,7 @@ export interface FileRoutesByFullPath {
   '/achizitii/': typeof AchizitiiIndexRoute
   '/companies/': typeof CompaniesIndexRoute
   '/entities/': typeof EntitiesIndexRoute
+  '/justitie/': typeof JustitieIndexRoute
   '/legislatie/': typeof LegislatieIndexRoute
   '/parlament/': typeof ParlamentIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
@@ -1025,6 +1058,8 @@ export interface FileRoutesByFullPath {
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
+  '/justitie/dosare/$caseId': typeof JustitieDosareCaseIdRoute
+  '/justitie/instante/$courtId': typeof JustitieInstanteCourtIdRoute
   '/legislatie/acte/$id': typeof LegislatieActeIdRoute
   '/maps/datasets/$datasetId': typeof MapsDatasetsDatasetIdRoute
   '/maps/datasets/new': typeof MapsDatasetsNewRoute
@@ -1107,6 +1142,7 @@ export interface FileRoutesByTo {
   '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/experimental/search': typeof ExperimentalSearchRoute
+  '/justitie/cautare': typeof JustitieCautareRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
   '/provocare/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
@@ -1120,6 +1156,7 @@ export interface FileRoutesByTo {
   '/achizitii': typeof AchizitiiIndexRoute
   '/companies': typeof CompaniesIndexRoute
   '/entities': typeof EntitiesIndexRoute
+  '/justitie': typeof JustitieIndexRoute
   '/legislatie': typeof LegislatieIndexRoute
   '/parlament': typeof ParlamentIndexRoute
   '/primarie': typeof PrimarieIndexRoute
@@ -1132,6 +1169,8 @@ export interface FileRoutesByTo {
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
+  '/justitie/dosare/$caseId': typeof JustitieDosareCaseIdRoute
+  '/justitie/instante/$courtId': typeof JustitieInstanteCourtIdRoute
   '/legislatie/acte/$id': typeof LegislatieActeIdRoute
   '/maps/datasets/$datasetId': typeof MapsDatasetsDatasetIdRoute
   '/maps/datasets/new': typeof MapsDatasetsNewRoute
@@ -1201,6 +1240,7 @@ export interface FileRoutesById {
   '/cookie-policy': typeof CookiePolicyRoute
   '/cookies': typeof CookiesRoute
   '/entity-analytics': typeof EntityAnalyticsRoute
+  '/justitie': typeof JustitieRouteWithChildren
   '/map': typeof MapRoute
   '/pnrr': typeof PnrrRouteWithChildren
   '/privacy': typeof PrivacyRoute
@@ -1221,6 +1261,7 @@ export interface FileRoutesById {
   '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/experimental/search': typeof ExperimentalSearchRoute
+  '/justitie/cautare': typeof JustitieCautareRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare_/notificari': typeof ProvocareNotificariRoute
   '/provocare_/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
@@ -1234,6 +1275,7 @@ export interface FileRoutesById {
   '/achizitii/': typeof AchizitiiIndexRoute
   '/companies/': typeof CompaniesIndexRoute
   '/entities/': typeof EntitiesIndexRoute
+  '/justitie/': typeof JustitieIndexRoute
   '/legislatie/': typeof LegislatieIndexRoute
   '/parlament/': typeof ParlamentIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
@@ -1250,6 +1292,8 @@ export interface FileRoutesById {
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
+  '/justitie/dosare/$caseId': typeof JustitieDosareCaseIdRoute
+  '/justitie/instante/$courtId': typeof JustitieInstanteCourtIdRoute
   '/legislatie/acte/$id': typeof LegislatieActeIdRoute
   '/maps/datasets/$datasetId': typeof MapsDatasetsDatasetIdRoute
   '/maps/datasets/new': typeof MapsDatasetsNewRoute
@@ -1321,6 +1365,7 @@ export interface FileRouteTypes {
     | '/cookie-policy'
     | '/cookies'
     | '/entity-analytics'
+    | '/justitie'
     | '/map'
     | '/pnrr'
     | '/privacy'
@@ -1341,6 +1386,7 @@ export interface FileRouteTypes {
     | '/companies/$cui'
     | '/entities/$cui'
     | '/experimental/search'
+    | '/justitie/cautare'
     | '/pnrr/share-image.png'
     | '/provocare/notificari'
     | '/provocare/termeni-si-conditii'
@@ -1354,6 +1400,7 @@ export interface FileRouteTypes {
     | '/achizitii/'
     | '/companies/'
     | '/entities/'
+    | '/justitie/'
     | '/legislatie/'
     | '/parlament/'
     | '/primarie/'
@@ -1370,6 +1417,8 @@ export interface FileRouteTypes {
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
+    | '/justitie/dosare/$caseId'
+    | '/justitie/instante/$courtId'
     | '/legislatie/acte/$id'
     | '/maps/datasets/$datasetId'
     | '/maps/datasets/new'
@@ -1452,6 +1501,7 @@ export interface FileRouteTypes {
     | '/companies/$cui'
     | '/entities/$cui'
     | '/experimental/search'
+    | '/justitie/cautare'
     | '/pnrr/share-image.png'
     | '/provocare/notificari'
     | '/provocare/termeni-si-conditii'
@@ -1465,6 +1515,7 @@ export interface FileRouteTypes {
     | '/achizitii'
     | '/companies'
     | '/entities'
+    | '/justitie'
     | '/legislatie'
     | '/parlament'
     | '/primarie'
@@ -1477,6 +1528,8 @@ export interface FileRouteTypes {
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
+    | '/justitie/dosare/$caseId'
+    | '/justitie/instante/$courtId'
     | '/legislatie/acte/$id'
     | '/maps/datasets/$datasetId'
     | '/maps/datasets/new'
@@ -1545,6 +1598,7 @@ export interface FileRouteTypes {
     | '/cookie-policy'
     | '/cookies'
     | '/entity-analytics'
+    | '/justitie'
     | '/map'
     | '/pnrr'
     | '/privacy'
@@ -1565,6 +1619,7 @@ export interface FileRouteTypes {
     | '/companies/$cui'
     | '/entities/$cui'
     | '/experimental/search'
+    | '/justitie/cautare'
     | '/pnrr/share-image.png'
     | '/provocare_/notificari'
     | '/provocare_/termeni-si-conditii'
@@ -1578,6 +1633,7 @@ export interface FileRouteTypes {
     | '/achizitii/'
     | '/companies/'
     | '/entities/'
+    | '/justitie/'
     | '/legislatie/'
     | '/parlament/'
     | '/primarie/'
@@ -1594,6 +1650,8 @@ export interface FileRouteTypes {
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
+    | '/justitie/dosare/$caseId'
+    | '/justitie/instante/$courtId'
     | '/legislatie/acte/$id'
     | '/maps/datasets/$datasetId'
     | '/maps/datasets/new'
@@ -1664,6 +1722,7 @@ export interface RootRouteChildren {
   CookiePolicyRoute: typeof CookiePolicyRoute
   CookiesRoute: typeof CookiesRoute
   EntityAnalyticsRoute: typeof EntityAnalyticsRoute
+  JustitieRoute: typeof JustitieRouteWithChildren
   MapRoute: typeof MapRoute
   PnrrRoute: typeof PnrrRouteWithChildren
   PrivacyRoute: typeof PrivacyRoute
@@ -1777,6 +1836,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MapRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/justitie': {
+      id: '/justitie'
+      path: '/justitie'
+      fullPath: '/justitie'
+      preLoaderRoute: typeof JustitieRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/entity-analytics': {
       id: '/entity-analytics'
       path: '/entity-analytics'
@@ -1875,6 +1941,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegislatieIndexRouteImport
       parentRoute: typeof LegislatieRouteRoute
     }
+    '/justitie/': {
+      id: '/justitie/'
+      path: '/'
+      fullPath: '/justitie/'
+      preLoaderRoute: typeof JustitieIndexRouteImport
+      parentRoute: typeof JustitieRoute
+    }
     '/entities/': {
       id: '/entities/'
       path: '/'
@@ -1965,6 +2038,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/pnrr/share-image.png'
       preLoaderRoute: typeof PnrrShareImageDotpngRouteImport
       parentRoute: typeof PnrrRoute
+    }
+    '/justitie/cautare': {
+      id: '/justitie/cautare'
+      path: '/cautare'
+      fullPath: '/justitie/cautare'
+      preLoaderRoute: typeof JustitieCautareRouteImport
+      parentRoute: typeof JustitieRoute
     }
     '/experimental/search': {
       id: '/experimental/search'
@@ -2196,6 +2276,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/legislatie/acte/$id'
       preLoaderRoute: typeof LegislatieActeIdRouteImport
       parentRoute: typeof LegislatieRouteRoute
+    }
+    '/justitie/instante/$courtId': {
+      id: '/justitie/instante/$courtId'
+      path: '/instante/$courtId'
+      fullPath: '/justitie/instante/$courtId'
+      preLoaderRoute: typeof JustitieInstanteCourtIdRouteImport
+      parentRoute: typeof JustitieRoute
+    }
+    '/justitie/dosare/$caseId': {
+      id: '/justitie/dosare/$caseId'
+      path: '/dosare/$caseId'
+      fullPath: '/justitie/dosare/$caseId'
+      preLoaderRoute: typeof JustitieDosareCaseIdRouteImport
+      parentRoute: typeof JustitieRoute
     }
     '/entities/$cui/share-image.png': {
       id: '/entities/$cui/share-image.png'
@@ -2610,6 +2704,24 @@ const BugeteLocale2026RouteChildren: BugeteLocale2026RouteChildren = {
 const BugeteLocale2026RouteWithChildren =
   BugeteLocale2026Route._addFileChildren(BugeteLocale2026RouteChildren)
 
+interface JustitieRouteChildren {
+  JustitieCautareRoute: typeof JustitieCautareRoute
+  JustitieIndexRoute: typeof JustitieIndexRoute
+  JustitieDosareCaseIdRoute: typeof JustitieDosareCaseIdRoute
+  JustitieInstanteCourtIdRoute: typeof JustitieInstanteCourtIdRoute
+}
+
+const JustitieRouteChildren: JustitieRouteChildren = {
+  JustitieCautareRoute: JustitieCautareRoute,
+  JustitieIndexRoute: JustitieIndexRoute,
+  JustitieDosareCaseIdRoute: JustitieDosareCaseIdRoute,
+  JustitieInstanteCourtIdRoute: JustitieInstanteCourtIdRoute,
+}
+
+const JustitieRouteWithChildren = JustitieRoute._addFileChildren(
+  JustitieRouteChildren,
+)
+
 interface PnrrRouteChildren {
   PnrrShareImageDotpngRoute: typeof PnrrShareImageDotpngRoute
 }
@@ -2863,6 +2975,7 @@ const rootRouteChildren: RootRouteChildren = {
   CookiePolicyRoute: CookiePolicyRoute,
   CookiesRoute: CookiesRoute,
   EntityAnalyticsRoute: EntityAnalyticsRoute,
+  JustitieRoute: JustitieRouteWithChildren,
   MapRoute: MapRoute,
   PnrrRoute: PnrrRouteWithChildren,
   PrivacyRoute: PrivacyRoute,
