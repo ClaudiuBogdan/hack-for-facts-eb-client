@@ -6,6 +6,14 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { EmptyState } from '@/components/ui/empty-state'
 import {
+  MAP_VIEW_VALUES,
+  PROGRAM_CODE_VALUES,
+  cleanLandingSearch,
+  type MapView,
+  type ProgramCode,
+  type PublicInvestmentsLandingSearchState,
+} from '@/schemas/public-investments'
+import {
   AmountWithEvidence,
   BlockedDataState,
   DataStatusBadge,
@@ -17,7 +25,11 @@ import {
 import { useLandingData } from '../hooks/use-public-investments-data'
 import { formatPct, programLabel } from '../lib/display'
 
-export function PublicInvestmentsLandingPage() {
+type Props = {
+  readonly search?: Partial<PublicInvestmentsLandingSearchState>
+}
+
+export function PublicInvestmentsLandingPage({ search = {} }: Props) {
   const query = useLandingData()
   const { openEvidence } = usePublicInvestmentsEvidence()
 
@@ -26,6 +38,7 @@ export function PublicInvestmentsLandingPage() {
     return (
       <BlockedDataState
         reason={query.blockedReason}
+        messageKey={query.blockedMessageKey}
         messageParams={query.blockedMessageParams}
       />
     )
@@ -41,6 +54,14 @@ export function PublicInvestmentsLandingPage() {
   if (!query.data) return null
 
   const { data } = query
+  const selectedProgram = search.program
+  const mapView = search.view ?? 'program'
+  const mapPoints = selectedProgram
+    ? data.mapPoints.filter((point) => point.program === selectedProgram)
+    : data.mapPoints
+  const topStalled = selectedProgram
+    ? data.topStalled.filter((objective) => objective.program === selectedProgram)
+    : data.topStalled
 
   return (
     <div className="space-y-8">
@@ -60,7 +81,10 @@ export function PublicInvestmentsLandingPage() {
           </div>
           <div className="flex flex-wrap gap-2">
             <Button asChild className="gap-2">
-              <Link to="/investitii-publice/cautare">
+              <Link
+                to="/investitii-publice/cautare"
+                search={selectedProgram ? { programs: [selectedProgram] } : {}}
+              >
                 <Trans>Caută obiective</Trans>
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
@@ -116,7 +140,13 @@ export function PublicInvestmentsLandingPage() {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <PublicInvestmentsMapPanel points={data.mapPoints} />
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <ProgramFilterLinks search={search} selectedProgram={selectedProgram} />
+            <MapModeLinks search={search} mapView={mapView} />
+          </div>
+          <PublicInvestmentsMapPanel points={mapPoints} colorBy={mapView} />
+        </div>
         <div className="space-y-3">
           <h2 className="text-sm font-semibold">
             <Trans>Acoperire programe</Trans>
@@ -143,16 +173,80 @@ export function PublicInvestmentsLandingPage() {
         <h2 className="text-sm font-semibold">
           <Trans>Obiective cu absorbție redusă</Trans>
         </h2>
-        <div className="space-y-3">
-          {data.topStalled.map((objective) => (
-            <ObjectiveListRow
-              key={objective.objectiveId}
-              objective={objective}
-              onEvidenceOpen={openEvidence}
-            />
-          ))}
-        </div>
+        {topStalled.length === 0 ? (
+          <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
+            <Trans>Nu există obiective cu absorbție redusă pentru programul selectat.</Trans>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {topStalled.map((objective) => (
+              <ObjectiveListRow
+                key={objective.objectiveId}
+                objective={objective}
+                onEvidenceOpen={openEvidence}
+              />
+            ))}
+          </div>
+        )}
       </section>
+    </div>
+  )
+}
+
+function ProgramFilterLinks({
+  search,
+  selectedProgram,
+}: {
+  readonly search: Partial<PublicInvestmentsLandingSearchState>
+  readonly selectedProgram?: ProgramCode
+}) {
+  return (
+    <div className="flex flex-wrap gap-2" role="group" aria-label={t`Filtru program`}>
+      <Button asChild size="sm" variant={selectedProgram ? 'outline' : 'secondary'}>
+        <Link
+          to="/investitii-publice"
+          search={cleanLandingSearch({ ...search, program: undefined })}
+        >
+          <Trans>Toate</Trans>
+        </Link>
+      </Button>
+      {PROGRAM_CODE_VALUES.map((program) => (
+        <Button
+          key={program}
+          asChild
+          size="sm"
+          variant={selectedProgram === program ? 'secondary' : 'outline'}
+        >
+          <Link to="/investitii-publice" search={cleanLandingSearch({ ...search, program })}>
+            {programLabel(program)}
+          </Link>
+        </Button>
+      ))}
+    </div>
+  )
+}
+
+function MapModeLinks({
+  search,
+  mapView,
+}: {
+  readonly search: Partial<PublicInvestmentsLandingSearchState>
+  readonly mapView: MapView
+}) {
+  return (
+    <div className="flex flex-wrap gap-2" role="group" aria-label={t`Colorare hartă`}>
+      {MAP_VIEW_VALUES.map((view) => (
+        <Button
+          key={view}
+          asChild
+          size="sm"
+          variant={mapView === view ? 'secondary' : 'outline'}
+        >
+          <Link to="/investitii-publice" search={cleanLandingSearch({ ...search, view })}>
+            {view === 'program' ? t`Program` : t`Stadiu`}
+          </Link>
+        </Button>
+      ))}
     </div>
   )
 }

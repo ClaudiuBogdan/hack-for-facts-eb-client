@@ -67,6 +67,7 @@ export function PublicInvestmentsObjectivePage({ objectiveId, search }: Props) {
     return (
       <BlockedDataState
         reason={bundleQuery.blockedReason}
+        messageKey={bundleQuery.blockedMessageKey}
         messageParams={bundleQuery.blockedMessageParams}
       />
     )
@@ -115,6 +116,7 @@ export function PublicInvestmentsObjectivePage({ objectiveId, search }: Props) {
                 label={t`Contractat`}
                 value={objective.contracted}
                 evidenceRef={objective.evidenceRef}
+                objectiveId={objective.objectiveId}
                 onEvidenceOpen={openEvidence}
               />
             </div>
@@ -123,6 +125,7 @@ export function PublicInvestmentsObjectivePage({ objectiveId, search }: Props) {
                 label={t`Decontat`}
                 value={objective.reimbursed}
                 evidenceRef={objective.evidenceRef}
+                objectiveId={objective.objectiveId}
                 onEvidenceOpen={openEvidence}
               />
             </div>
@@ -156,6 +159,7 @@ export function PublicInvestmentsObjectivePage({ objectiveId, search }: Props) {
             <PaymentRow
               key={payment.paymentId}
               payment={payment}
+              objectiveId={objective.objectiveId}
               onEvidenceOpen={openEvidence}
             />
           ))}
@@ -171,6 +175,7 @@ export function PublicInvestmentsObjectivePage({ objectiveId, search }: Props) {
               <ContractRow
                 key={contract.contractId}
                 contract={contract}
+                objectiveId={objective.objectiveId}
                 onEvidenceOpen={openEvidence}
               />
             ))
@@ -194,7 +199,7 @@ export function PublicInvestmentsObjectivePage({ objectiveId, search }: Props) {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => openEvidence(stage.evidenceRef)}
+                  onClick={() => openEvidence(stage.evidenceRef, objective.objectiveId)}
                 >
                   <FileText className="mr-2 h-4 w-4" aria-hidden="true" />
                   <Trans>Dovadă</Trans>
@@ -219,10 +224,12 @@ function InfoItem({ label, value }: { readonly label: string; readonly value: st
 
 function PaymentRow({
   payment,
+  objectiveId,
   onEvidenceOpen,
 }: {
   readonly payment: PaymentFact
-  readonly onEvidenceOpen: (evidenceRef: EvidenceRef) => void
+  readonly objectiveId: string
+  readonly onEvidenceOpen: (evidenceRef: EvidenceRef, objectiveId?: string) => void
 }) {
   return (
     <div className="rounded-md border p-4">
@@ -232,12 +239,14 @@ function PaymentRow({
           label={t`Plată`}
           value={payment.reimbursed ?? payment.amount}
           evidenceRef={payment.evidenceRef}
+          objectiveId={objectiveId}
           onEvidenceOpen={onEvidenceOpen}
         />
         <AmountWithEvidence
           label={t`Cumulat`}
           value={payment.cumulative}
           evidenceRef={payment.evidenceRef}
+          objectiveId={objectiveId}
           onEvidenceOpen={onEvidenceOpen}
         />
       </div>
@@ -247,10 +256,12 @@ function PaymentRow({
 
 function ContractRow({
   contract,
+  objectiveId,
   onEvidenceOpen,
 }: {
   readonly contract: ContractFact
-  readonly onEvidenceOpen: (evidenceRef: EvidenceRef) => void
+  readonly objectiveId: string
+  readonly onEvidenceOpen: (evidenceRef: EvidenceRef, objectiveId?: string) => void
 }) {
   return (
     <div className="rounded-md border p-4">
@@ -259,7 +270,11 @@ function ContractRow({
           <p className="font-medium">{contract.contractNumber ?? t`Contract fără număr`}</p>
           <p className="text-sm text-muted-foreground">{contract.contractDate ?? t`Dată lipsă`}</p>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => onEvidenceOpen(contract.evidenceRef)}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onEvidenceOpen(contract.evidenceRef, objectiveId)}
+        >
           <FileText className="mr-2 h-4 w-4" aria-hidden="true" />
           <Trans>Dovadă</Trans>
         </Button>
@@ -271,6 +286,7 @@ function ContractRow({
           label={t`Valoare`}
           value={contract.value}
           evidenceRef={contract.evidenceRef}
+          objectiveId={objectiveId}
           onEvidenceOpen={onEvidenceOpen}
         />
       </div>

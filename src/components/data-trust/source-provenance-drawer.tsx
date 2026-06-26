@@ -1,7 +1,9 @@
 import { Trans } from '@lingui/react/macro'
-import { Copy, ExternalLink, FileWarning } from 'lucide-react'
+import { t } from '@lingui/core/macro'
+import { ExternalLink, FileWarning } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { CopyButton } from '@/components/ui/copy-button'
 import {
   Sheet,
   SheetContent,
@@ -19,9 +21,11 @@ function truncateHash(hash: string | null): string {
   return `${hash.slice(0, 10)}...${hash.slice(-6)}`
 }
 
-function copyText(value: string | null): void {
-  if (value === null || typeof navigator === 'undefined') return
-  void navigator.clipboard?.writeText(value)
+async function copyText(value: string): Promise<void> {
+  if (typeof navigator === 'undefined' || navigator.clipboard?.writeText === undefined) {
+    throw new Error('Clipboard unavailable')
+  }
+  await navigator.clipboard.writeText(value)
 }
 
 function accessLabel(pointer: SourcePointer) {
@@ -39,6 +43,7 @@ function PointerRow({
   readonly pointer: SourcePointer
   readonly index: number
 }) {
+  const rowHash = pointer.sourceRowHash
   const rowNumber =
     pointer.sourceRowNumber === null
       ? '-'
@@ -70,18 +75,14 @@ function PointerRow({
           <Trans>Hash rand</Trans>
         </dt>
         <dd className="flex min-w-0 items-center gap-1">
-          <span className="break-all font-mono">{truncateHash(pointer.sourceRowHash)}</span>
-          {pointer.sourceRowHash !== null && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
+          <span className="break-all font-mono">{truncateHash(rowHash)}</span>
+          {rowHash !== null && (
+            <CopyButton
               className="h-6 w-6"
-              onClick={() => copyText(pointer.sourceRowHash)}
-              aria-label="Copiaza hash-ul randului"
-            >
-              <Copy className="h-3 w-3" aria-hidden />
-            </Button>
+              onCopy={() => copyText(rowHash)}
+              ariaLabel={t`Copiază hash-ul rândului`}
+              copiedLabel={t`Hash copiat`}
+            />
           )}
         </dd>
         <dt className="text-muted-foreground">

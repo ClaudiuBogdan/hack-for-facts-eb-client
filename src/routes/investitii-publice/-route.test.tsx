@@ -33,7 +33,9 @@ vi.mock('@tanstack/react-router', () => ({
     return (
       <button
         type="button"
-        onClick={() => openEvidence(MOCK_LANDING_DATA.kpis.evidenceRef)}
+        onClick={() =>
+          openEvidence(MOCK_LANDING_DATA.kpis.evidenceRef, 'pi-anghel-cj-apahida')
+        }
       >
         Deschide dovada din pagină
       </button>
@@ -89,6 +91,7 @@ describe('investitii-publice layout route', () => {
     expect(navigateArg.search?.({})).toEqual(
       expect.objectContaining({
         dovada: MOCK_LANDING_DATA.kpis.evidenceRef.sourceRowKey,
+        objectiveId: 'pi-anghel-cj-apahida',
       }),
     )
   })

@@ -4,5 +4,9 @@ import { PublicInvestmentsLandingPage } from '@/features/public-investments/page
 
 export const Route = createFileRoute('/investitii-publice/')({
   validateSearch: parseLandingSearch,
-  component: PublicInvestmentsLandingPage,
+  component: LandingRoute,
 })
+
+function LandingRoute() {
+  return <PublicInvestmentsLandingPage search={Route.useSearch()} />
+}

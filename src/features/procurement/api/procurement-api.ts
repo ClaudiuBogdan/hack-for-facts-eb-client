@@ -36,7 +36,9 @@ import {
  * `DataStatusBadge(status="mock")` while in mock mode.
  */
 export const procurementApi = {
-  isMock: isProcurementMockEnabled(),
+  get isMock(): boolean {
+    return isProcurementMockEnabled()
+  },
 
   fetchLanding(): Promise<ProcurementLanding> {
     return this.isMock
@@ -52,7 +54,7 @@ export const procurementApi = {
 
   fetchProcedureDetail(
     id: string,
-  ): Promise<ProcurementRecordDetail<ProcedureRecord>> {
+  ): Promise<ProcurementRecordDetail<ProcedureRecord> | null> {
     return this.isMock
       ? fetchProcedureDetailMock(id)
       : fetchProcedureDetailLive(id)
@@ -60,7 +62,7 @@ export const procurementApi = {
 
   fetchContractDetail(
     id: string,
-  ): Promise<ProcurementRecordDetail<ContractRecord>> {
+  ): Promise<ProcurementRecordDetail<ContractRecord> | null> {
     return this.isMock
       ? fetchContractDetailMock(id)
       : fetchContractDetailLive(id)
@@ -68,7 +70,7 @@ export const procurementApi = {
 
   fetchDirectAcquisitionDetail(
     id: string,
-  ): Promise<ProcurementRecordDetail<DirectAcquisitionRecord>> {
+  ): Promise<ProcurementRecordDetail<DirectAcquisitionRecord> | null> {
     return this.isMock
       ? fetchDirectAcquisitionDetailMock(id)
       : fetchDirectAcquisitionDetailLive(id)

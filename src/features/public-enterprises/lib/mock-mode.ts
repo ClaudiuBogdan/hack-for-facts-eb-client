@@ -1,19 +1,12 @@
 import { isMockDataEnabled } from '@/lib/scraper-references/mock-mode'
 
 /**
- * Dataset ids backing the public enterprise lanes. Mock-first only for now —
- * the AMEPIP core scraper is live but the client API is not connected yet, and
- * the supplemental lanes are deploy-gated.
+ * The public-enterprise facade serves the complete profile fixture only when
+ * the AMEPIP core catalog id is mocked. Supplemental lanes are represented in
+ * profile lane metadata; they do not enable the whole surface by themselves.
  */
-const PUBLIC_ENTERPRISE_DATASET_IDS = [
-  'soe-amepip',
-  'soe-regas-state-aid',
-  'soe-controlling-authority',
-  'soe-bvb-market',
-  'soe-sanctions',
-  'soe-governance-docs',
-] as const
+const PUBLIC_ENTERPRISE_CORE_DATASET_ID = 'soe-amepip'
 
 export function isPublicEnterpriseMockEnabled(): boolean {
-  return PUBLIC_ENTERPRISE_DATASET_IDS.some((id) => isMockDataEnabled(id))
+  return isMockDataEnabled(PUBLIC_ENTERPRISE_CORE_DATASET_ID)
 }

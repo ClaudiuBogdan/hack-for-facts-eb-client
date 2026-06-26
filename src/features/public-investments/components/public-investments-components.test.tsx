@@ -1,5 +1,6 @@
 import { render, screen } from '@/test/test-utils'
 import { describe, expect, it, vi } from 'vitest'
+import type { AnchorHTMLAttributes, ReactNode } from 'react'
 import { AmountWithEvidence } from './AmountWithEvidence'
 import { PublicInvestmentsMapPanel } from './PublicInvestmentsMapPanel'
 import { SourceProvenanceDrawer } from './SourceProvenanceDrawer'
@@ -15,9 +16,29 @@ const mocks = vi.hoisted(() => ({
   useEvidenceDetail: vi.fn(),
 }))
 
+type RouterLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
+  readonly children?: ReactNode
+  readonly to?: string
+  readonly params?: Readonly<Record<string, string>>
+}
+
+vi.mock('@tanstack/react-router', () => ({
+  Link: ({ children, to = '#', params, ...props }: RouterLinkProps) => {
+    const href = Object.entries(params ?? {}).reduce(
+      (current, [key, value]) => current.replace(`$${key}`, value),
+      to,
+    )
+    return (
+      <a href={href} {...props}>
+        {children}
+      </a>
+    )
+  },
+}))
+
 vi.mock('../hooks/use-public-investments-data', () => ({
-  useEvidenceDetail: (sourceRowKey: string | null | undefined) =>
-    mocks.useEvidenceDetail(sourceRowKey),
+  useEvidenceDetail: (sourceRowKey: string | null | undefined, objectiveId?: string) =>
+    mocks.useEvidenceDetail(sourceRowKey, objectiveId),
 }))
 
 function queryResult<TData>(
@@ -81,6 +102,7 @@ describe('SourceProvenanceDrawer', () => {
     render(
       <SourceProvenanceDrawer
         sourceRowKey="evidence-anghel-cl-napoca-gated-contract"
+        objectiveId="pi-anghel-cl-napoca-gated"
         onClose={vi.fn()}
       />,
     )
@@ -94,6 +116,10 @@ describe('SourceProvenanceDrawer', () => {
     expect(screen.getAllByText(/nume reținut - verificare în curs/).length).toBeGreaterThan(0)
     expect(screen.queryByText(/Popescu Ion Aurel/)).not.toBeInTheDocument()
     expect(screen.queryByText(/99887766/)).not.toBeInTheDocument()
+    expect(mocks.useEvidenceDetail).toHaveBeenCalledWith(
+      'evidence-anghel-cl-napoca-gated-contract',
+      'pi-anghel-cl-napoca-gated',
+    )
   })
 
   it('shows the missing-evidence honesty state for not-found rows', () => {
@@ -101,7 +127,8 @@ describe('SourceProvenanceDrawer', () => {
       queryResult(undefined, {
         isBlocked: true,
         blockedReason: 'not-found',
-        blockedMessageParams: { code: 'evidence-missing' },
+        blockedMessageKey: 'publicInvestments.blocked.evidenceNotFound',
+        blockedMessageParams: { sourceRowKey: 'evidence-missing' },
       }),
     )
 
@@ -124,6 +151,7 @@ describe('PublicInvestmentsMapPanel', () => {
     expect(screen.getByRole('heading', { name: 'Hartă investiții' })).toBeInTheDocument()
     expect(screen.getByText('2 localizate')).toBeInTheDocument()
     expect(screen.getByLabelText(/Reabilitare rețea de apă și canalizare/)).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: /Deschide obiectivul/ })).toHaveLength(2)
     expect(screen.getByText(/Valorile suspecte ×1000 sunt păstrate ca puncte/)).toBeInTheDocument()
   })
 })

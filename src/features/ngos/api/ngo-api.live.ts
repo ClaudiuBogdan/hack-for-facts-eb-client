@@ -27,7 +27,7 @@ export async function fetchNgoDomainCoverageLive(): Promise<DomainCoverage | nul
 }
 
 export async function fetchNgoServiceDiscoveryLive(): Promise<ServiceDiscoveryResult | null> {
-  assertLiveApiAvailable('ngos-social-services', 'NGO live API is not connected yet.')
+  assertLiveApiAvailable('ngo-core', 'NGO live API is not connected yet.')
   return null
 }
 

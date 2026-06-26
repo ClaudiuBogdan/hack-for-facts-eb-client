@@ -1,8 +1,15 @@
 export { CoverageRibbon } from './coverage-ribbon'
 export { DataStatusBadge } from './data-status-badge'
-export { EvidenceLink, SourceEvidenceLink } from './evidence-link'
+export {
+  EvidenceLink,
+  EvidenceLink as ProvenanceEvidenceChip,
+  SourceEvidenceLink,
+} from './evidence-link'
 export { FreshnessBadge } from './freshness-badge'
-export { IdentityConfidenceBadge } from './identity-confidence-badge'
+export {
+  IdentityConfidenceBadge,
+  IdentityConfidenceBadge as DataTrustIdentityConfidenceBadge,
+} from './identity-confidence-badge'
 export { PrivacyBoundaryNotice } from './privacy-boundary-notice'
 export {
   ProvenanceProvider,
@@ -11,4 +18,7 @@ export {
   type ProvenanceRequest,
 } from './provenance-context'
 export { RelatedLinksRail, type RelatedLinkItem } from './related-links-rail'
-export { SourceProvenanceDrawer } from './source-provenance-drawer'
+export {
+  SourceProvenanceDrawer,
+  SourceProvenanceDrawer as DataTrustSourceProvenanceDrawer,
+} from './source-provenance-drawer'

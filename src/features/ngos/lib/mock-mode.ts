@@ -1,12 +1,6 @@
 import { isMockDataEnabled } from '@/lib/scraper-references/mock-mode'
 
-const NGO_DATASET_IDS = [
-  'ngo-core',
-  'ngos',
-  'ngos-social-services',
-  'ngos-mj-registry',
-  'ngos-public-utility',
-] as const
+const NGO_DATASET_ID = 'ngo-core'
 
 /**
  * NGOs render from typed mocks by default for the first commit. Live data is
@@ -21,10 +15,11 @@ export function isNgoMockEnabled(): boolean {
     return false
   }
 
-  const scoped = import.meta.env.VITE_MOCK_DATASETS
-  if (import.meta.env.VITE_USE_MOCK_DATA === 'true' || typeof scoped === 'string') {
-    return NGO_DATASET_IDS.some((id) => isMockDataEnabled(id))
+  if (isMockDataEnabled(NGO_DATASET_ID)) {
+    return true
   }
 
+  // NGO has no connected live client API yet, so it remains mock-first unless
+  // explicitly forced to the live stub via VITE_NGO_USE_LIVE_API.
   return true
 }

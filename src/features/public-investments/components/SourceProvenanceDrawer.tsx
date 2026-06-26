@@ -22,11 +22,12 @@ import {
 
 type Props = {
   readonly sourceRowKey: string | null
+  readonly objectiveId?: string | null
   readonly onClose: () => void
 }
 
-export function SourceProvenanceDrawer({ sourceRowKey, onClose }: Props) {
-  const query = useEvidenceDetail(sourceRowKey)
+export function SourceProvenanceDrawer({ sourceRowKey, objectiveId, onClose }: Props) {
+  const query = useEvidenceDetail(sourceRowKey, objectiveId ?? undefined)
   const data = query.data
   const redactedLabel = t`nume reținut - verificare în curs`
   const excerpt = renderRedactedExcerpt(data?.rawPayloadExcerpt, redactedLabel)
@@ -48,6 +49,7 @@ export function SourceProvenanceDrawer({ sourceRowKey, onClose }: Props) {
         {query.isBlocked && (
           <BlockedDataState
             reason={query.blockedReason}
+            messageKey={query.blockedMessageKey}
             messageParams={query.blockedMessageParams}
           />
         )}

@@ -31,21 +31,21 @@ export async function fetchProcurementSearchMock(
 
 export async function fetchProcedureDetailMock(
   id: string,
-): Promise<ProcurementRecordDetail<ProcedureRecord>> {
+): Promise<ProcurementRecordDetail<ProcedureRecord> | null> {
   await delay()
   return procurementMockFixtures.procedureDetail(id)
 }
 
 export async function fetchContractDetailMock(
   id: string,
-): Promise<ProcurementRecordDetail<ContractRecord>> {
+): Promise<ProcurementRecordDetail<ContractRecord> | null> {
   await delay()
   return procurementMockFixtures.contractDetail(id)
 }
 
 export async function fetchDirectAcquisitionDetailMock(
   id: string,
-): Promise<ProcurementRecordDetail<DirectAcquisitionRecord>> {
+): Promise<ProcurementRecordDetail<DirectAcquisitionRecord> | null> {
   await delay()
   return procurementMockFixtures.directAcquisitionDetail(id)
 }

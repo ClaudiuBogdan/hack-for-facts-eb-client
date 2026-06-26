@@ -3,7 +3,10 @@ import posthog from "posthog-js";
 import { useLocation } from "@tanstack/react-router";
 import { env } from "@/config/env";
 import { hasAnalyticsConsent } from "@/lib/consent";
-import { sanitizeJusticeUrlFragment } from "@/lib/privacy/sensitive-route-sanitizer";
+import {
+  sanitizeJusticeTelemetryValue,
+  sanitizeJusticeUrlFragment,
+} from "@/lib/privacy/sensitive-route-sanitizer";
 import type { AnalyticsFilterType } from "@/schemas/charts";
 
 /** Centralized, consent-aware analytics helpers (PostHog). */
@@ -172,13 +175,14 @@ function sanitizeProps(
       clean[key] = null;
       continue;
     }
+    const sanitizedValue = sanitizeJusticeTelemetryValue(value, key);
     const t = typeof value;
     if (t === "string" || t === "number" || t === "boolean") {
-      clean[key] = value;
-    } else if (Array.isArray(value)) {
-      clean[key] = value.slice(0, 20);
+      clean[key] = sanitizedValue;
+    } else if (Array.isArray(sanitizedValue)) {
+      clean[key] = sanitizedValue.slice(0, 20);
     } else if (t === "object") {
-      clean[key] = JSON.parse(JSON.stringify(value));
+      clean[key] = JSON.parse(JSON.stringify(sanitizedValue));
     }
   }
   return clean;

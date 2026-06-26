@@ -10,7 +10,7 @@ import type { EvidenceRef, ObjectiveSummary } from '../lib/types'
 
 type Props = {
   readonly objective: ObjectiveSummary
-  readonly onEvidenceOpen: (evidenceRef: EvidenceRef) => void
+  readonly onEvidenceOpen: (evidenceRef: EvidenceRef, objectiveId?: string) => void
 }
 
 export function ObjectiveListRow({ objective, onEvidenceOpen }: Props) {
@@ -52,12 +52,14 @@ export function ObjectiveListRow({ objective, onEvidenceOpen }: Props) {
           label={t`Contractat`}
           value={objective.contracted}
           evidenceRef={objective.evidenceRef}
+          objectiveId={objective.objectiveId}
           onEvidenceOpen={onEvidenceOpen}
         />
         <AmountWithEvidence
           label={t`Decontat`}
           value={objective.reimbursed}
           evidenceRef={objective.evidenceRef}
+          objectiveId={objective.objectiveId}
           onEvidenceOpen={onEvidenceOpen}
         />
         <AbsorptionBar value={objective.absorptionPct} />

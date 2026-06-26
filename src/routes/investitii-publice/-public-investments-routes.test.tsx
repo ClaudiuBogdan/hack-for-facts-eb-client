@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const mocks = vi.hoisted(() => ({
   routeSearch: vi.fn(() => ({})),
   routeParams: vi.fn(() => ({})),
+  landingPageProps: vi.fn(),
   searchPageProps: vi.fn(),
   objectivePageProps: vi.fn(),
   territoryPageProps: vi.fn(),
@@ -20,7 +21,10 @@ vi.mock('@tanstack/react-router', () => ({
 }))
 
 vi.mock('@/features/public-investments/pages/PublicInvestmentsLandingPage', () => ({
-  PublicInvestmentsLandingPage: () => <div>Landing route page</div>,
+  PublicInvestmentsLandingPage: (props: unknown) => {
+    mocks.landingPageProps(props)
+    return <div>Landing route page</div>
+  },
 }))
 
 vi.mock('@/features/public-investments/pages/PublicInvestmentsSearchPage', () => ({
@@ -52,12 +56,16 @@ describe('public investments file routes', () => {
   })
 
   it('renders the landing page component on the index route', async () => {
+    mocks.routeSearch.mockReturnValue({ program: 'PNDL', view: 'stage' })
     const { Route } = await import('./index')
     const RouteComponent = Route.options.component as ComponentType
 
     render(<RouteComponent />)
 
     expect(screen.getByText('Landing route page')).toBeInTheDocument()
+    expect(mocks.landingPageProps).toHaveBeenCalledWith({
+      search: { program: 'PNDL', view: 'stage' },
+    })
   })
 
   it('passes validated search state into the search page', async () => {

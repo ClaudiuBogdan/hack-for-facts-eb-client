@@ -9,7 +9,8 @@ import { EvidenceButton } from './EvidenceButton'
 type Props = {
   readonly value: MoneyValue | null
   readonly evidenceRef?: EvidenceRef | null
-  readonly onEvidenceOpen?: (evidenceRef: EvidenceRef) => void
+  readonly objectiveId?: string
+  readonly onEvidenceOpen?: (evidenceRef: EvidenceRef, objectiveId?: string) => void
   readonly label?: string
   readonly className?: string
 }
@@ -17,6 +18,7 @@ type Props = {
 export function AmountWithEvidence({
   value,
   evidenceRef,
+  objectiveId,
   onEvidenceOpen,
   label,
   className,
@@ -50,7 +52,12 @@ export function AmountWithEvidence({
         </div>
       </div>
       {evidenceRef && onEvidenceOpen && (
-        <EvidenceButton evidenceRef={evidenceRef} onOpen={onEvidenceOpen} compact />
+        <EvidenceButton
+          evidenceRef={evidenceRef}
+          objectiveId={objectiveId}
+          onOpen={onEvidenceOpen}
+          compact
+        />
       )}
     </div>
   )

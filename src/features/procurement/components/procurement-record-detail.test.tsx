@@ -43,11 +43,12 @@ vi.mock('@tanstack/react-router', () => ({
 
 describe('ProcurementRecordDetail', () => {
   it('renders contract details with partial coverage, gated slots, duplicates, and provenance drawer evidence', async () => {
+    const detail = procurementMockFixtures.contractDetail('contract-key-001')
+    if (!detail) throw new Error('Missing contract detail fixture')
+
     render(
       <TooltipProvider>
-        <ProcurementRecordDetail
-          detail={procurementMockFixtures.contractDetail('contract-key-001')}
-        />
+        <ProcurementRecordDetail detail={detail} />
       </TooltipProvider>,
     )
 

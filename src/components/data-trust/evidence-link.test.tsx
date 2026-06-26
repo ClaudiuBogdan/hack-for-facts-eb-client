@@ -56,7 +56,11 @@ describe('EvidenceLink and SourceProvenanceDrawer', () => {
     const user = userEvent.setup()
     renderProvenanceExample([accessiblePointer])
 
-    await user.click(screen.getByRole('button', { name: 'sursa' }))
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Deschide proveniența pentru Voturi (Primar - Cluj-Napoca)',
+      }),
+    )
 
     expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(screen.getByText('Primar - Cluj-Napoca')).toBeInTheDocument()
@@ -67,13 +71,18 @@ describe('EvidenceLink and SourceProvenanceDrawer', () => {
     expect(screen.getAllByText('AEP').length).toBeGreaterThan(0)
     expect(screen.getAllByText('aep_ckan_csv_2024_local').length).toBeGreaterThan(0)
     expect(screen.getAllByText(/2024/i).length).toBeGreaterThan(0)
+    expect(screen.getByRole('button', { name: 'Copiază hash-ul rândului' })).toBeInTheDocument()
   })
 
   it('shows inaccessible source evidence gap state without inventing a public link', async () => {
     const user = userEvent.setup()
     renderProvenanceExample([inaccessiblePointer])
 
-    await user.click(screen.getByRole('button', { name: 'sursa' }))
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Deschide proveniența pentru Voturi (Primar - Cluj-Napoca)',
+      }),
+    )
 
     expect(screen.getByText('Sursa inaccesibila (cu dovada)')).toBeInTheDocument()
     expect(

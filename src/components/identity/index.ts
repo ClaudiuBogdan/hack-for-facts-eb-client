@@ -1,5 +1,6 @@
 export {
   IdentityConfidenceBadge,
+  IdentityConfidenceBadge as CanonicalIdentityConfidenceBadge,
   UnconfirmedReferencesZone,
   IdentityRowMeta,
 } from './identity-confidence-badge'

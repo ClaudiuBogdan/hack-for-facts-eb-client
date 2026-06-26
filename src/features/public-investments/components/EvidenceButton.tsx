@@ -5,18 +5,30 @@ import type { EvidenceRef } from '../lib/types'
 
 type Props = {
   readonly evidenceRef: EvidenceRef
-  readonly onOpen: (evidenceRef: EvidenceRef) => void
+  readonly objectiveId?: string
+  readonly onOpen: (evidenceRef: EvidenceRef, objectiveId?: string) => void
   readonly compact?: boolean
 }
 
-export function EvidenceButton({ evidenceRef, onOpen, compact = false }: Props) {
+export function EvidenceButton({
+  evidenceRef,
+  objectiveId,
+  onOpen,
+  compact = false,
+}: Props) {
   return (
     <Button
       type="button"
       variant="ghost"
       size={compact ? 'icon' : 'sm'}
       className={compact ? 'h-8 w-8' : 'h-8 gap-1.5 px-2 text-xs'}
-      onClick={() => onOpen(evidenceRef)}
+      onClick={() => {
+        if (objectiveId) {
+          onOpen(evidenceRef, objectiveId)
+          return
+        }
+        onOpen(evidenceRef)
+      }}
       aria-label={t`Deschide dovada sursei`}
       title={t`Deschide dovada sursei`}
     >

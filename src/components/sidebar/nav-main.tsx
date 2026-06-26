@@ -107,7 +107,7 @@ export function NavMain() {
     if (url === "/") {
       return currentPath === "/";
     }
-    return currentPath.startsWith(url);
+    return currentPath === url || currentPath.startsWith(`${url}/`);
   };
 
   const handleLinkClick = () => {

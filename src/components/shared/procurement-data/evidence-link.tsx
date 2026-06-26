@@ -27,6 +27,9 @@ const DEFAULT_LABEL: Record<Kind, string> = {
 /**
  * Inline link to a document, monitor/publication entry, source row, or
  * scraper reference. Opens in a new tab with `rel="noopener noreferrer"`.
+ *
+ * Exported as `ExternalEvidenceLink` from the procurement barrel to make this
+ * anchor contract distinct from the data-trust drawer-opening EvidenceLink.
  */
 export function EvidenceLink({ href, label, kind = 'source', className }: Props) {
   const Icon = KIND_ICON[kind]

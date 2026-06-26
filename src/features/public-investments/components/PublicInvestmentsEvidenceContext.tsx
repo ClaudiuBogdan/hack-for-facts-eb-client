@@ -2,7 +2,7 @@ import { createContext, useContext } from 'react'
 import type { EvidenceRef } from '../lib/types'
 
 type EvidenceContextValue = {
-  readonly openEvidence: (evidenceRef: EvidenceRef) => void
+  readonly openEvidence: (evidenceRef: EvidenceRef, objectiveId?: string) => void
 }
 
 const PublicInvestmentsEvidenceContext = createContext<EvidenceContextValue | null>(

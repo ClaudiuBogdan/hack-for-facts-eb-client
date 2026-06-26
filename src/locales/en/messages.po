@@ -70,7 +70,7 @@ msgstr "(listă parțială)"
 msgid "(Live births / Population) × 1,000"
 msgstr "(Live births / Population) × 1,000"
 
-#: src/components/shared/procurement-data/evidence-link.tsx:47
+#: src/components/shared/procurement-data/evidence-link.tsx:50
 msgid "(se deschide într-o filă nouă)"
 msgstr "(se deschide într-o filă nouă)"
 
@@ -122,8 +122,8 @@ msgstr "{0} group items configured"
 
 #. placeholder {0}: data.kpis.mappedObjectiveCount
 #. placeholder {0}: mapped.length
-#: src/features/public-investments/components/PublicInvestmentsMapPanel.tsx:32
-#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:100
+#: src/features/public-investments/components/PublicInvestmentsMapPanel.tsx:53
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:124
 msgid "{0} localizate"
 msgstr "{0} localizate"
 
@@ -146,7 +146,7 @@ msgid "{0} more issues"
 msgstr "{0} more issues"
 
 #. placeholder {0}: query.data.excludedSuspectCount
-#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:171
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:194
 msgid "{0} obiective cu valori în verificare au fost excluse din filtrele pe sumă."
 msgstr "{0} obiective cu valori în verificare au fost excluse din filtrele pe sumă."
 
@@ -197,7 +197,7 @@ msgid "{0} rectifications"
 msgstr "{0} rectifications"
 
 #. placeholder {0}: query.data.total
-#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:165
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:188
 msgid "{0} rezultate"
 msgstr "{0} rezultate"
 
@@ -259,6 +259,14 @@ msgstr "{0} view enabled"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:303
 msgid "{0} views enabled"
 msgstr "{0} views enabled"
+
+#. placeholder {0}: point.title
+#. placeholder {1}: programLabel(point.program)
+#. placeholder {2}: stageLabel(point.stage.bucket)
+#. placeholder {3}: formatRon(point.contracted?.amount)
+#: src/features/public-investments/components/PublicInvestmentsMapPanel.tsx:66
+msgid "{0}, {1}, {2}, {3}"
+msgstr "{0}, {1}, {2}, {3}"
 
 #: src/features/statistics/lib/coverage.ts:79
 msgid "{available} din {total} seturi cu date disponibile"
@@ -549,8 +557,8 @@ msgstr "Abrogat parțial"
 
 #: src/features/public-investments/components/AbsorptionBar.tsx:17
 #: src/features/public-investments/components/HowToReadData.tsx:66
-#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:112
-#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:139
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:136
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:161
 msgid "Absorbție"
 msgstr "Absorbție"
 
@@ -563,6 +571,7 @@ msgid "Accept the terms and conditions for an entity in the campaign to automati
 msgstr "Accept the terms and conditions for an entity in the campaign to automatically receive update notifications."
 
 #: src/components/identity/identity-confidence-badge.tsx:177
+#: src/components/provenance/source-provenance.tsx:444
 msgid "acceptat"
 msgstr "acceptat"
 
@@ -601,7 +610,8 @@ msgstr "Această înregistrare apare în mai multe surse. Deduplicarea este un s
 msgid "Această secțiune va folosi sursa {sourceName}, dar nu este încă live în API. Nu afișăm date simulate ca rezultate reale."
 msgstr "Această secțiune va folosi sursa {sourceName}, dar nu este încă live în API. Nu afișăm date simulate ca rezultate reale."
 
-#: src/features/public-investments/components/BlockedDataState.tsx:17
+#: src/features/public-investments/components/BlockedDataState.tsx:51
+#: src/features/public-investments/components/BlockedDataState.tsx:58
 msgid "Această suprafață este mock-first. Activează VITE_USE_MOCK_DATA=true sau VITE_MOCK_DATASETS=all, investments-anghel-saligny ori investments-pndl pentru a vedea fixture-urile locale."
 msgstr "Această suprafață este mock-first. Activează VITE_USE_MOCK_DATA=true sau VITE_MOCK_DATASETS=all, investments-anghel-saligny ori investments-pndl pentru a vedea fixture-urile locale."
 
@@ -699,7 +709,7 @@ msgstr "Acoperire parțială pentru {0} metrici. Răspunsurile pe valoare sunt r
 msgid "Acoperire pe nivel de instanță"
 msgstr "Acoperire pe nivel de instanță"
 
-#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:122
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:152
 msgid "Acoperire programe"
 msgstr "Acoperire programe"
 
@@ -732,7 +742,7 @@ msgstr "Acoperirea se incarca din mockurile locale."
 msgid "Acoperirea surselor"
 msgstr "Acoperirea surselor"
 
-#: src/components/provenance/source-provenance.tsx:431
+#: src/components/provenance/source-provenance.tsx:433
 msgid "Acreditare (ANOFM)"
 msgstr "Acreditare (ANOFM)"
 
@@ -826,7 +836,7 @@ msgstr "Actual impact on budget"
 msgid "Actualizare"
 msgstr "Actualizare"
 
-#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:166
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:189
 msgid "actualizare în fundal"
 msgstr "actualizare în fundal"
 
@@ -1474,7 +1484,7 @@ msgstr "Anyone with the public link can view this map."
 msgid "Anyone with the public link will see this saved version."
 msgstr "Anyone with the public link will see this saved version."
 
-#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:84
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:104
 msgid "apă, drum, Cluj"
 msgstr "apă, drum, Cluj"
 
@@ -1482,7 +1492,7 @@ msgstr "apă, drum, Cluj"
 msgid "apare si ca firma"
 msgstr "apare si ca firma"
 
-#: src/components/provenance/source-provenance.tsx:430
+#: src/components/provenance/source-provenance.tsx:432
 msgid "Apartenență sectorială (RUEIS)"
 msgstr "Apartenență sectorială (RUEIS)"
 
@@ -1516,7 +1526,7 @@ msgstr "Apeluri"
 msgid "API live neconectat"
 msgstr "API live neconectat"
 
-#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:92
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:118
 msgid "Aplică"
 msgstr "Aplică"
 
@@ -1570,7 +1580,7 @@ msgstr "April"
 msgid "aprilie"
 msgstr "aprilie"
 
-#: src/components/provenance/source-provenance.tsx:480
+#: src/components/provenance/source-provenance.tsx:489
 msgid "Arată dovada"
 msgstr "Arată dovada"
 
@@ -1611,7 +1621,7 @@ msgstr "Arhivat"
 msgid "Arrears"
 msgstr "Arrears"
 
-#: src/components/provenance/source-provenance.tsx:480
+#: src/components/provenance/source-provenance.tsx:489
 msgid "Ascunde dovada"
 msgstr "Ascunde dovada"
 
@@ -1688,7 +1698,7 @@ msgstr "Authorized and fiscal activity codes from ONRC and ANAF."
 msgid "Auto"
 msgstr "Auto"
 
-#: src/components/data-trust/source-provenance-drawer.tsx:88
+#: src/components/data-trust/source-provenance-drawer.tsx:89
 #: src/components/provenance/source-provenance.tsx:277
 #: src/features/ngos/components/ngo-profile-page.tsx:488
 #: src/features/ngos/components/ngo-profile-page.tsx:740
@@ -1862,7 +1872,7 @@ msgstr "Based on 2024 budgetary data"
 msgid "Basic data on population, employment and housing."
 msgstr "Basic data on population, employment and housing."
 
-#: src/components/provenance/source-provenance.tsx:495
+#: src/components/provenance/source-provenance.tsx:504
 msgid "Bază identitate"
 msgstr "Bază identitate"
 
@@ -2400,7 +2410,7 @@ msgstr "Caută întreprindere publică"
 msgid "Caută o citare sau o mostră de act"
 msgstr "Caută o citare sau o mostră de act"
 
-#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:64
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:88
 msgid "Caută obiective"
 msgstr "Caută obiective"
 
@@ -2420,7 +2430,7 @@ msgstr "Caută și analizează întreprinderile publice din România: indicatori
 msgid "Cauta zona ta"
 msgstr "Cauta zona ta"
 
-#: src/routes/investitii-publice/route.tsx:61
+#: src/routes/investitii-publice/route.tsx:63
 msgid "Căutare"
 msgstr "Căutare"
 
@@ -2436,7 +2446,7 @@ msgstr "Căutare după text pentru descoperire, nu un filtru autoritativ."
 msgid "Căutare entități"
 msgstr "Căutare entități"
 
-#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:66
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:82
 msgid "Căutare investiții publice"
 msgstr "Căutare investiții publice"
 
@@ -2640,7 +2650,7 @@ msgstr "Cheia ceruta nu exista in fixture-ul MVP."
 msgid "Cheia publicabilă există, dar fixture-ul mock nu are dosare pentru intervalul acoperit."
 msgstr "Cheia publicabilă există, dar fixture-ul mock nu are dosare pentru intervalul acoperit."
 
-#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:89
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:91
 msgid "Cheie"
 msgstr "Cheie"
 
@@ -2912,7 +2922,7 @@ msgstr "Cluj-Napoca - primar 2024"
 msgid "Cod CPV"
 msgstr "Cod CPV"
 
-#: src/components/data-trust/source-provenance-drawer.tsx:154
+#: src/components/data-trust/source-provenance-drawer.tsx:155
 msgid "Cod sursa"
 msgstr "Cod sursa"
 
@@ -2977,6 +2987,10 @@ msgstr "Color gradient for the map legend"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:359
 msgid "Color mode"
 msgstr "Color mode"
+
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:237
+msgid "Colorare hartă"
+msgstr "Colorare hartă"
 
 #: src/components/entity-analytics/EntityAnalyticsTable.tsx:281
 #: src/components/maps/HeatmapDataTable.tsx:142
@@ -3281,7 +3295,7 @@ msgid "Contested item"
 msgstr "Contested item"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1141
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:135
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:138
 msgid "Context"
 msgstr "Context"
 
@@ -3321,7 +3335,7 @@ msgstr "Continuous range"
 #: src/features/procurement/components/procurement-landing-page.tsx:185
 #: src/features/procurement/components/procurement-record-card.tsx:60
 #: src/features/procurement/lib/grain-labels.ts:20
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:106
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:107
 msgid "Contract"
 msgstr "Contract"
 
@@ -3329,7 +3343,7 @@ msgstr "Contract"
 msgid "Contract atribuit în urma unei proceduri."
 msgstr "Contract atribuit în urma unei proceduri."
 
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:259
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:270
 msgid "Contract fără număr"
 msgstr "Contract fără număr"
 
@@ -3340,13 +3354,13 @@ msgstr "Contract finalizat."
 #: src/features/public-investments/components/HowToReadData.tsx:58
 #: src/features/public-investments/components/ObjectiveListRow.tsx:52
 #: src/features/public-investments/lib/display.ts:33
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:115
-#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:137
-#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:107
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:116
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:159
+#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:108
 msgid "Contractat"
 msgstr "Contractat"
 
-#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:104
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:128
 msgid "Contractat total verificat"
 msgstr "Contractat total verificat"
 
@@ -3386,15 +3400,31 @@ msgstr "coordonate de publicare"
 msgid "Coordonatele de publicare nu sunt disponibile"
 msgstr "Coordonatele de publicare nu sunt disponibile"
 
+#: src/components/ui/copy-button.tsx:22
+msgid "Copiat"
+msgstr "Copiat"
+
+#: src/components/ui/copy-button.tsx:21
+msgid "Copiază"
+msgstr "Copiază"
+
+#: src/components/data-trust/source-provenance-drawer.tsx:83
+msgid "Copiază hash-ul rândului"
+msgstr "Copiază hash-ul rândului"
+
 #: src/features/statistics/components/share-filtered-view.tsx:31
 msgid "Copiază link"
 msgstr "Copiază link"
 
-#: src/components/shared/procurement-data/share-filtered-view.tsx:37
+#: src/components/shared/procurement-data/share-filtered-view.tsx:51
 msgid "Copiază linkul către vizualizarea curentă"
 msgstr "Copiază linkul către vizualizarea curentă"
 
-#: src/components/shared/procurement-data/share-filtered-view.tsx:40
+#: src/components/provenance/source-provenance.tsx:355
+msgid "Copiază SHA-256 conținut"
+msgstr "Copiază SHA-256 conținut"
+
+#: src/components/shared/procurement-data/share-filtered-view.tsx:54
 msgid "Copiază vizualizarea"
 msgstr "Copiază vizualizarea"
 
@@ -3415,6 +3445,8 @@ msgstr "Copied to clipboard"
 msgid "Copied!"
 msgstr "Copied!"
 
+#: src/components/shared/procurement-data/share-filtered-view.tsx:41
+#: src/components/ui/copy-button.tsx:23
 #: src/features/statistics/components/share-filtered-view.tsx:29
 msgid "Copiere indisponibilă"
 msgstr "Copiere indisponibilă"
@@ -3873,7 +3905,7 @@ msgstr "CUI furnizor"
 msgid "CUI indisponibil — achizițiile publice nu pot fi rezolvate."
 msgstr "CUI indisponibil — achizițiile publice nu pot fi rezolvate."
 
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:309
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:325
 msgid "CUI reținut"
 msgstr "CUI reținut"
 
@@ -3895,7 +3927,7 @@ msgstr "Cumpărători"
 msgid "Cumpărători principali"
 msgstr "Cumpărători principali"
 
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:238
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:246
 msgid "Cumulat"
 msgstr "Cumulat"
 
@@ -3973,7 +4005,7 @@ msgstr "Dark"
 msgid "Dashboard"
 msgstr "Dashboard"
 
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:230
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:237
 msgid "Data"
 msgstr "Data"
 
@@ -4011,7 +4043,7 @@ msgstr "dată indisponibilă"
 
 #: src/components/provenance/source-provenance.tsx:128
 #: src/components/provenance/source-provenance.tsx:299
-#: src/components/provenance/source-provenance.tsx:504
+#: src/components/provenance/source-provenance.tsx:513
 msgid "Data instantaneu"
 msgstr "Data instantaneu"
 
@@ -4037,7 +4069,7 @@ msgstr "Data Label Offset"
 msgid "Data Labels"
 msgstr "Data Labels"
 
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:260
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:271
 msgid "Dată lipsă"
 msgstr "Dată lipsă"
 
@@ -4159,7 +4191,7 @@ msgstr "Dataset unavailable"
 msgid "Dataset values"
 msgstr "Dataset values"
 
-#: src/components/shared/procurement-data/source-provenance-drawer.tsx:77
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:96
 #: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:213
 #: src/features/elections/components/contest-result-explorer-page.tsx:175
 msgid "Date"
@@ -4190,7 +4222,7 @@ msgstr "date dense din 2021"
 msgid "Date disponibile"
 msgstr "Date disponibile"
 
-#: src/features/public-investments/components/BlockedDataState.tsx:13
+#: src/features/public-investments/components/BlockedDataState.tsx:14
 msgid "Date indisponibile"
 msgstr "Date indisponibile"
 
@@ -4295,7 +4327,7 @@ msgstr "Datele ANOFM si MMuncii au CUI direct. MJ si SGG nu au CUI fiabil in sur
 msgid "Datele live nu sunt conectate încă"
 msgstr "Datele live nu sunt conectate încă"
 
-#: src/components/provenance/source-provenance.tsx:593
+#: src/components/provenance/source-provenance.tsx:604
 msgid "Datele pot fi depășite"
 msgstr "Datele pot fi depășite"
 
@@ -4304,7 +4336,7 @@ msgid "Datele profilului nu s-au putut reîmprospăta"
 msgstr "Datele profilului nu s-au putut reîmprospăta"
 
 #. placeholder {0}: dateText ? ` (${dateText})` : ''
-#: src/components/provenance/source-provenance.tsx:596
+#: src/components/provenance/source-provenance.tsx:607
 msgid "Datele provin dintr-un instantaneu oficial{0} și pot fi depășite; așteptăm o sursă oficială mai nouă."
 msgstr "Datele provin dintr-un instantaneu oficial{0} și pot fi depășite; așteptăm o sursă oficială mai nouă."
 
@@ -4380,13 +4412,13 @@ msgid "decembrie"
 msgstr "decembrie"
 
 #: src/features/public-investments/components/HowToReadData.tsx:62
-#: src/features/public-investments/components/ObjectiveListRow.tsx:58
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:123
-#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:138
+#: src/features/public-investments/components/ObjectiveListRow.tsx:59
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:125
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:160
 msgid "Decontat"
 msgstr "Decontat"
 
-#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:114
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:138
 msgid "Decontat / contractat verificat"
 msgstr "Decontat / contractat verificat"
 
@@ -4556,14 +4588,18 @@ msgstr "Deschide dosarul"
 msgid "Deschide dovada publicării"
 msgstr "Deschide dovada publicării"
 
-#: src/features/public-investments/components/EvidenceButton.tsx:20
-#: src/features/public-investments/components/EvidenceButton.tsx:21
+#: src/features/public-investments/components/EvidenceButton.tsx:32
+#: src/features/public-investments/components/EvidenceButton.tsx:33
 msgid "Deschide dovada sursei"
 msgstr "Deschide dovada sursei"
 
 #: src/features/statistics/components/source-provenance-drawer.tsx:116
 msgid "Deschide matricea în INS Tempo"
 msgstr "Deschide matricea în INS Tempo"
+
+#: src/features/public-investments/components/PublicInvestmentsMapPanel.tsx:102
+msgid "Deschide obiectivul {label}"
+msgstr "Deschide obiectivul {label}"
 
 #: src/features/legal/components/monitorul-publication-card.tsx:111
 msgid "Deschide PDF"
@@ -4577,7 +4613,12 @@ msgstr "Deschide PDF-ul Monitorul Oficial într-o filă nouă"
 msgid "Deschide pe e-licitatie.ro"
 msgstr "Deschide pe e-licitatie.ro"
 
-#: src/components/data-trust/source-provenance-drawer.tsx:111
+#. placeholder {0}: context.entityTitle
+#: src/components/data-trust/evidence-link.tsx:31
+msgid "Deschide proveniența pentru {metricLabel} ({0})"
+msgstr "Deschide proveniența pentru {metricLabel} ({0})"
+
+#: src/components/data-trust/source-provenance-drawer.tsx:112
 msgid "Deschide resursa oficiala"
 msgstr "Deschide resursa oficiala"
 
@@ -4586,7 +4627,7 @@ msgid "Deschide serviciile"
 msgstr "Deschide serviciile"
 
 #: src/features/legal/components/legal-trust.tsx:235
-#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:103
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:105
 msgid "Deschide sursa"
 msgstr "Deschide sursa"
 
@@ -4784,7 +4825,7 @@ msgstr "Disponibil după deblocarea sursei."
 msgid "Dissolved"
 msgstr "Dissolved"
 
-#: src/features/public-investments/components/PublicInvestmentsMapPanel.tsx:28
+#: src/features/public-investments/components/PublicInvestmentsMapPanel.tsx:49
 msgid "Distribuție mock-first pe obiective localizate."
 msgstr "Distribuție mock-first pe obiective localizate."
 
@@ -4860,7 +4901,7 @@ msgstr "Document your participation in the local budget debate."
 msgid "Documente de guvernanță"
 msgstr "Documente de guvernanță"
 
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:138
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:141
 msgid "Domeniu"
 msgstr "Domeniu"
 
@@ -4898,19 +4939,19 @@ msgstr "Dosarul nu este în acoperirea curentă"
 msgid "Dosarul rămâne util prin metadata publică și cronologie."
 msgstr "Dosarul rămâne util prin metadata publică și cronologie."
 
-#: src/features/public-investments/components/EvidenceButton.tsx:24
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:200
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:264
+#: src/features/public-investments/components/EvidenceButton.tsx:36
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:205
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:279
 msgid "Dovadă"
 msgstr "Dovadă"
 
-#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:39
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:40
 msgid "Dovada sursei"
 msgstr "Dovada sursei"
 
 #: src/features/ngos/components/ngo-profile-page.tsx:92
 #: src/features/ngos/components/ngo-profile-page.tsx:221
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:108
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:109
 msgid "Dovezi"
 msgstr "Dovezi"
 
@@ -5656,7 +5697,7 @@ msgid "Excluding"
 msgstr "Excluding"
 
 #: src/features/public-investments/lib/display.ts:76
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:268
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:283
 msgid "Executant"
 msgstr "Executant"
 
@@ -5865,7 +5906,7 @@ msgstr "External link"
 msgid "Extraction confidence"
 msgstr "Extraction confidence"
 
-#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:111
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:113
 msgid "Extras raw"
 msgstr "Extras raw"
 
@@ -6071,7 +6112,7 @@ msgstr "Failed to update notification"
 msgid "Fallback:"
 msgstr "Fallback:"
 
-#: src/components/data-trust/source-provenance-drawer.tsx:92
+#: src/components/data-trust/source-provenance-drawer.tsx:93
 msgid "Familie sursa"
 msgstr "Familie sursa"
 
@@ -6120,6 +6161,7 @@ msgid "Fără părți publicabile în previzualizare"
 msgstr "Fără părți publicabile în previzualizare"
 
 #: src/components/identity/identity-confidence-badge.tsx:180
+#: src/components/provenance/source-provenance.tsx:447
 #: src/features/legal/components/monitorul-publication-card.tsx:52
 msgid "fără potrivire"
 msgstr "fără potrivire"
@@ -6128,7 +6170,7 @@ msgstr "fără potrivire"
 msgid "Fara probleme de validare pentru acest instantaneu."
 msgstr "Fara probleme de validare pentru acest instantaneu."
 
-#: src/components/provenance/source-provenance.tsx:395
+#: src/components/provenance/source-provenance.tsx:397
 msgid "Fără probleme de validare pentru acest instantaneu."
 msgstr "Fără probleme de validare pentru acest instantaneu."
 
@@ -6209,7 +6251,7 @@ msgstr "Fiecare cifră are o dovadă: butonul „Vezi dovada” deschide registr
 msgid "Fiecare indicator păstrează perioada, unitatea și starea disponibilității la nivel de set."
 msgstr "Fiecare indicator păstrează perioada, unitatea și starea disponibilității la nivel de set."
 
-#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:89
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:113
 msgid "Fiecare sumă critică are dovadă de sursă."
 msgstr "Fiecare sumă critică are dovadă de sursă."
 
@@ -6320,7 +6362,7 @@ msgstr "Filtrează după tip"
 msgid "Filtrează metadata publică după instanță, categorie, stadiu și chei publicabile. Nu există căutare full-text sau după persoane."
 msgstr "Filtrează metadata publică după instanță, categorie, stadiu și chei publicabile. Nu există căutare full-text sau după persoane."
 
-#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:69
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:85
 msgid "Filtrează obiectivele mock-first fără a pierde dovada sursei."
 msgstr "Filtrează obiectivele mock-first fără a pierde dovada sursei."
 
@@ -6339,6 +6381,10 @@ msgstr "Filtru generat LLM"
 #: src/features/statistics/pages/statistics-territory-hub-page.tsx:119
 msgid "Filtru perioadă"
 msgstr "Filtru perioadă"
+
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:204
+msgid "Filtru program"
+msgstr "Filtru program"
 
 #: src/components/shared/procurement-data/coverage-ribbon.tsx:55
 msgid "Filtru regiune furnizor"
@@ -6470,11 +6516,11 @@ msgstr "Fiscal status"
 msgid "Fiscally inactive"
 msgstr "Fiscally inactive"
 
-#: src/components/data-trust/source-provenance-drawer.tsx:62
+#: src/components/data-trust/source-provenance-drawer.tsx:67
 msgid "Fisier"
 msgstr "Fisier"
 
-#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:79
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:81
 msgid "Fișier"
 msgstr "Fișier"
 
@@ -6665,7 +6711,7 @@ msgstr "Furnizor"
 msgid "Furnizor nou (prima apariție recentă) — semnal de verificare, nu o concluzie."
 msgstr "Furnizor nou (prima apariție recentă) — semnal de verificare, nu o concluzie."
 
-#: src/components/provenance/source-provenance.tsx:432
+#: src/components/provenance/source-provenance.tsx:434
 msgid "Furnizor servicii sociale"
 msgstr "Furnizor servicii sociale"
 
@@ -6981,11 +7027,15 @@ msgstr "Hang tight while we resolve and redirect you to the destination."
 msgid "Harta"
 msgstr "Harta"
 
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:292
+msgid "Hartă"
+msgstr "Hartă"
+
 #: src/features/elections/components/contest-result-explorer-page.tsx:142
 msgid "Harta este pregatita pentru integrarea API"
 msgstr "Harta este pregatita pentru integrarea API"
 
-#: src/features/public-investments/components/PublicInvestmentsMapPanel.tsx:25
+#: src/features/public-investments/components/PublicInvestmentsMapPanel.tsx:46
 msgid "Hartă investiții"
 msgstr "Hartă investiții"
 
@@ -6997,7 +7047,11 @@ msgstr "Hartă teritorială"
 msgid "Has the 2026 budget been published?"
 msgstr "Has the 2026 budget been published?"
 
-#: src/components/data-trust/source-provenance-drawer.tsx:70
+#: src/components/data-trust/source-provenance-drawer.tsx:84
+msgid "Hash copiat"
+msgstr "Hash copiat"
+
+#: src/components/data-trust/source-provenance-drawer.tsx:75
 msgid "Hash rand"
 msgstr "Hash rand"
 
@@ -7181,7 +7235,7 @@ msgstr "ID"
 msgid "ID stare"
 msgstr "ID stare"
 
-#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:117
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:119
 msgid "Identificatorii cu risc personal sunt reținuți în extras."
 msgstr "Identificatorii cu risc personal sunt reținuți în extras."
 
@@ -7383,7 +7437,7 @@ msgstr "În execuție"
 msgid "în exemplu"
 msgstr "în exemplu"
 
-#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:129
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:159
 msgid "În lucru"
 msgstr "În lucru"
 
@@ -7404,6 +7458,7 @@ msgid "În pregătire"
 msgstr "În pregătire"
 
 #: src/components/identity/identity-confidence-badge.tsx:178
+#: src/components/provenance/source-provenance.tsx:445
 msgid "în revizuire"
 msgstr "în revizuire"
 
@@ -7416,11 +7471,11 @@ msgid "Inactive"
 msgstr "Inactive"
 
 #: src/features/procurement/components/modification-trail.tsx:109
-#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:209
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:268
 msgid "Înainte"
 msgstr "Înainte"
 
-#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:201
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:260
 msgid "Înapoi"
 msgstr "Înapoi"
 
@@ -7444,6 +7499,10 @@ msgstr "Înapoi la Legislație"
 #: src/features/ngos/components/ngo-snapshot-page.tsx:72
 msgid "Inapoi la ONG-uri"
 msgstr "Inapoi la ONG-uri"
+
+#: src/routes/ong-uri.sursa.$snapshotId.lazy.tsx:50
+msgid "Înapoi la ONG-uri"
+msgstr "Înapoi la ONG-uri"
 
 #: src/routes/justitie.dosare.$caseId.tsx:200
 msgid "Înapoi la părțile dosarului"
@@ -7469,7 +7528,7 @@ msgstr "Încarcă mai mult"
 msgid "Incarcare prod"
 msgstr "Incarcare prod"
 
-#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:129
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:159
 msgid "Încărcat"
 msgstr "Încărcat"
 
@@ -7502,6 +7561,7 @@ msgstr "Încearcă un termen mai scurt sau elimină un filtru."
 msgid "Începe să cauți pentru a explora firme, instituții, legi, contracte și proiecte PNRR."
 msgstr "Începe să cauți pentru a explora firme, instituții, legi, contracte și proiecte PNRR."
 
+#: src/components/ui/sheet.tsx:61
 #: src/features/statistics/components/request-dataset-action.tsx:121
 msgid "Închide"
 msgstr "Închide"
@@ -7554,11 +7614,11 @@ msgid "încredere"
 msgstr "încredere"
 
 #: src/components/identity/identity-confidence-badge.tsx:243
-#: src/components/provenance/source-provenance.tsx:501
+#: src/components/provenance/source-provenance.tsx:510
 msgid "Încredere"
 msgstr "Încredere"
 
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:141
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:144
 msgid "Încredere identitate"
 msgstr "Încredere identitate"
 
@@ -7586,7 +7646,7 @@ msgstr "Independent"
 msgid "Indicate when your city hall's budget draft was published."
 msgstr "Indicate when your city hall's budget draft was published."
 
-#: src/components/provenance/source-provenance.tsx:436
+#: src/components/provenance/source-provenance.tsx:438
 msgid "Indicator financiar"
 msgstr "Indicator financiar"
 
@@ -7620,8 +7680,8 @@ msgstr "Indicatorii ne-numerici rămân disponibili în tabel."
 
 #: src/components/shared/procurement-data/freshness-badge.tsx:50
 #: src/components/shared/procurement-data/freshness-badge.tsx:54
-#: src/components/shared/procurement-data/source-provenance-drawer.tsx:73
-#: src/components/shared/procurement-data/source-provenance-drawer.tsx:124
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:92
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:143
 #: src/features/procurement/components/modification-trail.tsx:125
 #: src/features/procurement/components/modification-trail.tsx:135
 #: src/features/procurement/components/party-ranking-chart.tsx:164
@@ -7922,11 +7982,11 @@ msgid "Invalid or expired link"
 msgstr "Invalid or expired link"
 
 #: src/features/procurement/components/procurement-supplier-slice.tsx:160
-#: src/routes/investitii-publice/route.tsx:52
+#: src/routes/investitii-publice/route.tsx:54
 msgid "Investiții publice"
 msgstr "Investiții publice"
 
-#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:52
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:73
 msgid "Investiții publice locale"
 msgstr "Investiții publice locale"
 
@@ -8026,13 +8086,13 @@ msgstr "Judet"
 
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:582
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1097
-#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:87
-#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:141
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:108
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:163
 #: src/features/statistics/components/territory-header.tsx:16
 msgid "Județ"
 msgstr "Județ"
 
-#: src/routes/investitii-publice/route.tsx:67
+#: src/routes/investitii-publice/route.tsx:69
 msgid "Județ exemplu"
 msgstr "Județ exemplu"
 
@@ -8049,7 +8109,7 @@ msgid "Judete filtrate"
 msgstr "Judete filtrate"
 
 #. placeholder {0}: territory.countyName
-#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:87
+#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:88
 msgid "Județul {0}"
 msgstr "Județul {0}"
 
@@ -8154,7 +8214,7 @@ msgstr "Lane-uri viitoare"
 msgid "Language"
 msgstr "Language"
 
-#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:42
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:43
 msgid "Lanțul de custodie pentru rândul din sursa publică."
 msgstr "Lanțul de custodie pentru rândul din sursa publică."
 
@@ -8316,6 +8376,10 @@ msgstr "Legea nr. 227/2015"
 msgid "Legend"
 msgstr "Legend"
 
+#: src/features/public-investments/components/PublicInvestmentsMapPanel.tsx:117
+msgid "Legendă hartă"
+msgstr "Legendă hartă"
+
 #: src/components/sidebar/nav-main.tsx:74
 #: src/features/entity-search/lib/doc-type-meta.ts:66
 #: src/features/legal/components/legal-act-page.tsx:102
@@ -8417,6 +8481,7 @@ msgstr "Line Items Aggregated Yearly"
 msgid "Link"
 msgstr "Link"
 
+#: src/components/shared/procurement-data/share-filtered-view.tsx:39
 #: src/features/statistics/components/share-filtered-view.tsx:27
 msgid "Link copiat"
 msgstr "Link copiat"
@@ -8450,11 +8515,11 @@ msgstr "Link to the official city hall website"
 msgid "Link verificat"
 msgstr "Link verificat"
 
-#: src/components/shared/procurement-data/share-filtered-view.tsx:25
+#: src/components/shared/procurement-data/share-filtered-view.tsx:29
 msgid "Linkul către această vizualizare a fost copiat."
 msgstr "Linkul către această vizualizare a fost copiat."
 
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:139
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:142
 #: src/features/statistics/components/indicator-tile.tsx:34
 msgid "Lipsă"
 msgstr "Lipsă"
@@ -8464,6 +8529,10 @@ msgstr "Lipsă"
 #: src/features/ngos/components/ngo-services-page.tsx:613
 msgid "Lista"
 msgstr "Lista"
+
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:291
+msgid "Listă"
+msgstr "Listă"
 
 #: src/features/elections/components/election-shared.tsx:413
 msgid "Lista finala"
@@ -8803,7 +8872,7 @@ msgid "Localitate"
 msgstr "Localitate"
 
 #. placeholder {0}: territory.siruta ?? code
-#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:88
+#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:89
 msgid "Localitate {0}"
 msgstr "Localitate {0}"
 
@@ -8811,7 +8880,7 @@ msgstr "Localitate {0}"
 msgid "localitate necunoscută"
 msgstr "localitate necunoscută"
 
-#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:165
+#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:166
 msgid "Localități"
 msgstr "Localități"
 
@@ -9115,7 +9184,7 @@ msgstr "Map values"
 msgid "Map View"
 msgstr "Map View"
 
-#: src/components/data-trust/source-provenance-drawer.tsx:158
+#: src/components/data-trust/source-provenance-drawer.tsx:159
 msgid "Mapare"
 msgstr "Mapare"
 
@@ -9279,9 +9348,13 @@ msgstr "Metric"
 msgid "metric indisponibil"
 msgstr "metric indisponibil"
 
-#: src/components/data-trust/source-provenance-drawer.tsx:150
+#: src/components/data-trust/source-provenance-drawer.tsx:151
 msgid "Metrica"
 msgstr "Metrica"
+
+#: src/components/data-trust/evidence-link.tsx:30
+msgid "metrică"
+msgstr "metrică"
 
 #: src/routes/maps/editor/$mapId.lazy.tsx:84
 msgid "Migrating map editor link..."
@@ -9391,6 +9464,10 @@ msgstr "Mockul nu contine randuri RUEIS pentru acest CUI."
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1609
 msgid "Mod"
 msgstr "Mod"
+
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:297
+msgid "Mod afișare"
+msgstr "Mod afișare"
 
 #: src/features/elections/components/contest-result-explorer-page.tsx:136
 msgid "Mod expert"
@@ -9731,7 +9808,7 @@ msgstr "necunoscut"
 #: src/features/procurement/components/procurement-record-card.tsx:24
 #: src/features/procurement/components/procurement-record-detail.tsx:55
 #: src/features/public-investments/lib/display.ts:41
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:138
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:141
 msgid "Necunoscut"
 msgstr "Necunoscut"
 
@@ -9754,12 +9831,12 @@ msgstr "nedeterminat"
 msgid "Nedeterminat"
 msgstr "Nedeterminat"
 
-#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:80
-#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:85
-#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:95
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:82
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:87
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:97
 #: src/features/public-investments/lib/display.ts:131
 #: src/features/public-investments/lib/display.ts:143
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:230
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:237
 msgid "Nedisponibil"
 msgstr "Nedisponibil"
 
@@ -9896,7 +9973,7 @@ msgstr "Nicio categorie."
 msgid "Nicio dată lunară."
 msgstr "Nicio dată lunară."
 
-#: src/components/provenance/source-provenance.tsx:465
+#: src/components/provenance/source-provenance.tsx:474
 msgid "Nicio dovadă înregistrată pentru această organizație."
 msgstr "Nicio dovadă înregistrată pentru această organizație."
 
@@ -9916,7 +9993,7 @@ msgstr "Nicio modificare înregistrată."
 msgid "Nicio modificare recentă înregistrată"
 msgstr "Nicio modificare recentă înregistrată"
 
-#: src/components/shared/procurement-data/source-provenance-drawer.tsx:93
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:112
 msgid "Nicio notă de parsare"
 msgstr "Nicio notă de parsare"
 
@@ -10554,7 +10631,7 @@ msgstr "Notă de confidențialitate"
 msgid "Note de onestitate"
 msgstr "Note de onestitate"
 
-#: src/components/shared/procurement-data/source-provenance-drawer.tsx:84
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:103
 msgid "Note de parsare"
 msgstr "Note de parsare"
 
@@ -10622,16 +10699,59 @@ msgstr "Nu am găsit cauze în intervalul acoperit pentru această instanță"
 msgid "Nu am găsit cauze publicabile pentru aceste filtre"
 msgstr "Nu am găsit cauze publicabile pentru aceste filtre"
 
-#. placeholder {0}: messageParams?.code ? ` (${messageParams.code})` : ''
+#: src/features/public-investments/components/BlockedDataState.tsx:40
+msgid "Nu am găsit în fixture dovada cerută ({code})."
+msgstr "Nu am găsit în fixture dovada cerută ({code})."
+
+#: src/features/public-investments/components/BlockedDataState.tsx:41
+msgid "Nu am găsit în fixture dovada cerută."
+msgstr "Nu am găsit în fixture dovada cerută."
+
+#: src/features/public-investments/components/BlockedDataState.tsx:55
+msgid "Nu am găsit în fixture înregistrarea cerută ({code})."
+msgstr "Nu am găsit în fixture înregistrarea cerută ({code})."
+
+#: src/features/public-investments/components/BlockedDataState.tsx:56
+msgid "Nu am găsit în fixture înregistrarea cerută."
+msgstr "Nu am găsit în fixture înregistrarea cerută."
+
 #: src/features/public-investments/components/BlockedDataState.tsx:16
-msgid "Nu am găsit în fixture înregistrarea cerută{0}."
-msgstr "Nu am găsit în fixture înregistrarea cerută{0}."
+#~ msgid "Nu am găsit în fixture înregistrarea cerută{0}."
+#~ msgstr "Nu am găsit în fixture înregistrarea cerută{0}."
+
+#: src/features/public-investments/components/BlockedDataState.tsx:48
+msgid "Nu am găsit în fixture județul cerut ({code})."
+msgstr "Nu am găsit în fixture județul cerut ({code})."
+
+#: src/features/public-investments/components/BlockedDataState.tsx:49
+msgid "Nu am găsit în fixture județul cerut."
+msgstr "Nu am găsit în fixture județul cerut."
+
+#: src/features/public-investments/components/BlockedDataState.tsx:44
+msgid "Nu am găsit în fixture localitatea cerută ({code})."
+msgstr "Nu am găsit în fixture localitatea cerută ({code})."
+
+#: src/features/public-investments/components/BlockedDataState.tsx:45
+msgid "Nu am găsit în fixture localitatea cerută."
+msgstr "Nu am găsit în fixture localitatea cerută."
+
+#: src/features/public-investments/components/BlockedDataState.tsx:36
+msgid "Nu am găsit în fixture obiectivul cerut ({code})."
+msgstr "Nu am găsit în fixture obiectivul cerut ({code})."
+
+#: src/features/public-investments/components/BlockedDataState.tsx:37
+msgid "Nu am găsit în fixture obiectivul cerut."
+msgstr "Nu am găsit în fixture obiectivul cerut."
+
+#: src/routes/ong-uri.sursa.$snapshotId.lazy.tsx:41
+msgid "Nu am găsit instantaneul de proveniență cerut pentru această sursă ONG."
+msgstr "Nu am găsit instantaneul de proveniență cerut pentru această sursă ONG."
 
 #: src/features/statistics/pages/statistics-territory-hub-page.tsx:105
 msgid "Nu am găsit un teritoriu INS pentru acest SIRUTA."
 msgstr "Nu am găsit un teritoriu INS pentru acest SIRUTA."
 
-#: src/components/shared/procurement-data/share-filtered-view.tsx:27
+#: src/components/shared/procurement-data/share-filtered-view.tsx:32
 msgid "Nu am putut copia linkul. Copiază-l manual din bara adresei."
 msgstr "Nu am putut copia linkul. Copiază-l manual din bara adresei."
 
@@ -10663,7 +10783,7 @@ msgstr "Nu am putut încărca detaliile sursei."
 msgid "Nu am putut încărca dosarul"
 msgstr "Nu am putut încărca dosarul"
 
-#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:56
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:58
 msgid "Nu am putut încărca dovada."
 msgstr "Nu am putut încărca dovada."
 
@@ -10671,7 +10791,7 @@ msgstr "Nu am putut încărca dovada."
 msgid "Nu am putut încărca instanța"
 msgstr "Nu am putut încărca instanța"
 
-#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:36
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:49
 msgid "Nu am putut încărca investițiile publice"
 msgstr "Nu am putut încărca investițiile publice"
 
@@ -10683,7 +10803,7 @@ msgstr "Nu am putut încărca lista"
 msgid "Nu am putut încărca litigiile"
 msgstr "Nu am putut încărca litigiile"
 
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:77
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:78
 msgid "Nu am putut încărca obiectivul."
 msgstr "Nu am putut încărca obiectivul."
 
@@ -10704,7 +10824,7 @@ msgid "Nu am putut încărca rezultatele"
 msgstr "Nu am putut încărca rezultatele"
 
 #: src/features/procurement/components/procurement-search-page.tsx:551
-#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:156
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:179
 msgid "Nu am putut încărca rezultatele."
 msgstr "Nu am putut încărca rezultatele."
 
@@ -10720,7 +10840,7 @@ msgstr "Nu am putut încărca sumarul"
 msgid "Nu am putut încărca teritoriul"
 msgstr "Nu am putut încărca teritoriul"
 
-#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:78
+#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:79
 msgid "Nu am putut încărca teritoriul."
 msgstr "Nu am putut încărca teritoriul."
 
@@ -10732,7 +10852,7 @@ msgstr "Nu am putut revalida serviciile"
 msgid "nu are încă observații încărcate în această interfață."
 msgstr "nu are încă observații încărcate în această interfață."
 
-#: src/components/data-trust/source-provenance-drawer.tsx:101
+#: src/components/data-trust/source-provenance-drawer.tsx:102
 msgid "Nu avem un link public functional pentru aceasta resursa; lacuna este pastrata ca dovada, nu completata cu zero."
 msgstr "Nu avem un link public functional pentru aceasta resursa; lacuna este pastrata ca dovada, nu completata cu zero."
 
@@ -10748,7 +10868,7 @@ msgstr "Nu există agregate de justiție"
 msgid "Nu există companii sau instituții publice în fixture."
 msgstr "Nu există companii sau instituții publice în fixture."
 
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:167
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:171
 msgid "Nu există contracte normalizate în fixture."
 msgstr "Nu există contracte normalizate în fixture."
 
@@ -10760,7 +10880,7 @@ msgstr "Nu există date de litigii pentru acest profil"
 msgid "Nu exista date pentru servicii"
 msgstr "Nu exista date pentru servicii"
 
-#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:126
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:128
 msgid "Nu există extras raw disponibil pentru acest rând."
 msgstr "Nu există extras raw disponibil pentru acest rând."
 
@@ -10784,11 +10904,15 @@ msgstr "Nu există numere Monitorul Oficial pentru azi în mostre"
 msgid "Nu există o mostră mock sau un răspuns live pentru identificatorul {actId}."
 msgstr "Nu există o mostră mock sau un răspuns live pentru identificatorul {actId}."
 
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:178
+msgid "Nu există obiective cu absorbție redusă pentru programul selectat."
+msgstr "Nu există obiective cu absorbție redusă pentru programul selectat."
+
 #: src/features/statistics/components/indicator-tile.tsx:188
 msgid "Nu există observații pentru acest teritoriu în setul curent."
 msgstr "Nu există observații pentru acest teritoriu în setul curent."
 
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:152
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:155
 msgid "Nu există plăți încărcate pentru acest obiectiv."
 msgstr "Nu există plăți încărcate pentru acest obiectiv."
 
@@ -10800,7 +10924,7 @@ msgstr "Nu există potrivire în mostrele mock. Căutarea completă și rezolvar
 msgid "Nu există rezultate pentru acest set de filtre"
 msgstr "Nu există rezultate pentru acest set de filtre"
 
-#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:181
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:207
 msgid "Nu există rezultate pentru filtrele selectate."
 msgstr "Nu există rezultate pentru filtrele selectate."
 
@@ -10878,12 +11002,12 @@ msgstr "Nume din sursa - identitate nerezolvata"
 msgid "Nume furnizor, serviciu, CUI sau licenta"
 msgstr "Nume furnizor, serviciu, CUI sau licenta"
 
-#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:31
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:32
 msgid "nume reținut - verificare în curs"
 msgstr "nume reținut - verificare în curs"
 
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:292
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:305
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:308
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:321
 msgid "Nume reținut - verificare în curs"
 msgstr "Nume reținut - verificare în curs"
 
@@ -10903,24 +11027,24 @@ msgstr "Numele părților reținute (PFA / în curs de verificare) nu sunt afiș
 msgid "Numele pot conține prefixe proprii de CUI și separatori |...| (afișați curățiți)."
 msgstr "Numele pot conține prefixe proprii de CUI și separatori |...| (afișați curățiți)."
 
-#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:98
-#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:104
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:122
+#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:105
 msgid "Obiective"
 msgstr "Obiective"
 
-#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:55
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:76
 msgid "Obiective Anghel Saligny, PNDL, PNCCRS și PNMC modelate mock-first cu dovezi, acoperire și limite explicite."
 msgstr "Obiective Anghel Saligny, PNDL, PNCCRS și PNMC modelate mock-first cu dovezi, acoperire și limite explicite."
 
-#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:144
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:174
 msgid "Obiective cu absorbție redusă"
 msgstr "Obiective cu absorbție redusă"
 
-#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:134
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:164
 msgid "obiective în catalog"
 msgstr "obiective în catalog"
 
-#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:98
+#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:99
 msgid "Obiective, acoperire și absorbție pe teritoriul selectat."
 msgstr "Obiective, acoperire și absorbție pe teritoriul selectat."
 
@@ -11434,7 +11558,7 @@ msgstr "Partea {0} nr. {1}"
 
 #: src/features/justice/components/case-results-table.tsx:133
 #: src/features/procurement/components/procurement-record-detail.tsx:221
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:107
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:108
 #: src/routes/justitie.dosare.$caseId.tsx:136
 msgid "Părți"
 msgstr "Părți"
@@ -11476,7 +11600,7 @@ msgstr "Participation"
 msgid "Participation report"
 msgstr "Participation report"
 
-#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:86
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:110
 msgid "Părțile cu risc personal sunt reținute până la revizuire."
 msgstr "Părțile cu risc personal sunt reținute până la revizuire."
 
@@ -11758,7 +11882,7 @@ msgstr "Plain text"
 msgid "Planned"
 msgstr "Planned"
 
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:232
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:239
 msgid "Plată"
 msgstr "Plată"
 
@@ -11770,7 +11894,7 @@ msgstr "Platform Mission"
 msgid "Platform notifications are subject to the <0>Transparenta.eu Terms of Use</0> and <1>Privacy Policy</1>."
 msgstr "Platform notifications are subject to the <0>Transparenta.eu Terms of Use</0> and <1>Privacy Policy</1>."
 
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:105
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:106
 msgid "Plăți"
 msgstr "Plăți"
 
@@ -11796,11 +11920,11 @@ msgstr "PNMC"
 msgid "PNRR"
 msgstr "PNRR"
 
-#: src/components/data-trust/source-provenance-drawer.tsx:52
+#: src/components/data-trust/source-provenance-drawer.tsx:57
 msgid "Pointer sursa {index}"
 msgstr "Pointer sursa {index}"
 
-#: src/components/data-trust/source-provenance-drawer.tsx:188
+#: src/components/data-trust/source-provenance-drawer.tsx:189
 msgid "Pointere"
 msgstr "Pointere"
 
@@ -11946,7 +12070,7 @@ msgstr "Preliminar"
 msgid "Preluat"
 msgstr "Preluat"
 
-#: src/components/shared/procurement-data/source-provenance-drawer.tsx:79
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:98
 msgid "Preluat la"
 msgstr "Preluat la"
 
@@ -12046,7 +12170,7 @@ msgstr "Previous step"
 msgid "Prezenta"
 msgstr "Prezenta"
 
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:104
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:105
 #: src/routes/justitie.index.tsx:291
 #: src/routes/justitie.instante.$courtId.tsx:131
 msgid "Prezentare"
@@ -12101,7 +12225,7 @@ msgstr "Privacy Policy"
 msgid "Private"
 msgstr "Private"
 
-#: src/routes/investitii-publice/route.tsx:57
+#: src/routes/investitii-publice/route.tsx:59
 msgid "Privire generală"
 msgstr "Privire generală"
 
@@ -12109,7 +12233,7 @@ msgstr "Privire generală"
 msgid "Pro Tip"
 msgstr "Pro Tip"
 
-#: src/components/provenance/source-provenance.tsx:365
+#: src/components/provenance/source-provenance.tsx:367
 msgid "Probleme de validare"
 msgstr "Probleme de validare"
 
@@ -12209,12 +12333,13 @@ msgstr "Profilul este ancorat in CUI. Referintele doar dupa nume sunt separate m
 msgid "Profiluri exemplu"
 msgstr "Profiluri exemplu"
 
-#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:97
-#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:121
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:246
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:123
+#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:122
 msgid "Program"
 msgstr "Program"
 
-#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:145
+#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:146
 msgid "Programe"
 msgstr "Programe"
 
@@ -12234,11 +12359,11 @@ msgid "Proiect de lege"
 msgstr "Proiect de lege"
 
 #: src/features/public-investments/lib/display.ts:78
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:269
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:284
 msgid "Proiectant"
 msgstr "Proiectant"
 
-#: src/components/provenance/source-provenance.tsx:437
+#: src/components/provenance/source-provenance.tsx:439
 msgid "Proiecție fonduri"
 msgstr "Proiecție fonduri"
 
@@ -12254,7 +12379,7 @@ msgstr "Pronunțare"
 msgid "Propose a specific and realistic change. For example: \"Redistribute 500,000 lei from personnel expenses to school infrastructure investments.\""
 msgstr "Propose a specific and realistic change. For example: \"Redistribute 500,000 lei from personnel expenses to school infrastructure investments.\""
 
-#: src/components/shared/procurement-data/source-provenance-drawer.tsx:35
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:47
 #: src/features/legal/components/legal-trust.tsx:186
 #: src/features/legal/components/legal-trust.tsx:198
 msgid "Proveniență"
@@ -12268,7 +12393,7 @@ msgstr "Proveniența actului"
 msgid "Proveniență date"
 msgstr "Proveniență date"
 
-#: src/components/shared/procurement-data/source-provenance-drawer.tsx:42
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:61
 msgid "Proveniența datelor"
 msgstr "Proveniența datelor"
 
@@ -12276,7 +12401,7 @@ msgstr "Proveniența datelor"
 msgid "provenienta indisponibila"
 msgstr "provenienta indisponibila"
 
-#: src/components/data-trust/source-provenance-drawer.tsx:192
+#: src/components/data-trust/source-provenance-drawer.tsx:193
 msgid "Provenienta indisponibila pentru aceasta valoare."
 msgstr "Provenienta indisponibila pentru aceasta valoare."
 
@@ -12284,7 +12409,7 @@ msgstr "Provenienta indisponibila pentru aceasta valoare."
 msgid "Proveniență INS"
 msgstr "Proveniență INS"
 
-#: src/components/data-trust/source-provenance-drawer.tsx:136
+#: src/components/data-trust/source-provenance-drawer.tsx:137
 msgid "Provenienta sursa"
 msgstr "Provenienta sursa"
 
@@ -12418,7 +12543,7 @@ msgid "Publicat în Monitorul Oficial"
 msgstr "Publicat în Monitorul Oficial"
 
 #: src/components/shared/procurement-data/freshness-badge.tsx:28
-#: src/components/shared/procurement-data/source-provenance-drawer.tsx:80
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:99
 msgid "Publicat la"
 msgstr "Publicat la"
 
@@ -12472,7 +12597,7 @@ msgstr "Quickly adjust chart settings"
 msgid "Quiz configuration error"
 msgstr "Quiz configuration error"
 
-#: src/components/data-trust/source-provenance-drawer.tsx:66
+#: src/components/data-trust/source-provenance-drawer.tsx:71
 msgid "Rand"
 msgstr "Rand"
 
@@ -12655,11 +12780,11 @@ msgstr "Redo successful"
 msgid "Reference"
 msgstr "Reference"
 
-#: src/components/provenance/source-provenance.tsx:438
+#: src/components/provenance/source-provenance.tsx:440
 msgid "Referință din registru"
 msgstr "Referință din registru"
 
-#: src/components/shared/procurement-data/source-provenance-drawer.tsx:71
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:90
 msgid "Referință scraper"
 msgstr "Referință scraper"
 
@@ -12743,7 +12868,7 @@ msgstr "Registration number"
 msgid "Registru"
 msgstr "Registru"
 
-#: src/components/provenance/source-provenance.tsx:429
+#: src/components/provenance/source-provenance.tsx:431
 msgid "Registru legal (MJ)"
 msgstr "Registru legal (MJ)"
 
@@ -12763,7 +12888,7 @@ msgstr "Regiune"
 msgid "Reguli de incredere"
 msgstr "Reguli de incredere"
 
-#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:79
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:103
 msgid "Reguli de încredere"
 msgstr "Reguli de încredere"
 
@@ -12991,7 +13116,7 @@ msgstr "Resetează filtrele"
 msgid "Reseteaza filtrele sau include arhiva istorica."
 msgstr "Reseteaza filtrele sau include arhiva istorica."
 
-#: src/components/data-trust/source-provenance-drawer.tsx:162
+#: src/components/data-trust/source-provenance-drawer.tsx:163
 msgid "Resolver"
 msgstr "Resolver"
 
@@ -13000,6 +13125,7 @@ msgid "Resources"
 msgstr "Resources"
 
 #: src/components/identity/identity-confidence-badge.tsx:179
+#: src/components/provenance/source-provenance.tsx:446
 #: src/features/justice/lib/justice-format.ts:162
 msgid "respins"
 msgstr "respins"
@@ -13034,7 +13160,7 @@ msgstr "Result limit"
 msgid "Results"
 msgstr "Results"
 
-#: src/components/data-trust/source-provenance-drawer.tsx:32
+#: src/components/data-trust/source-provenance-drawer.tsx:36
 msgid "Resursa de revizuit"
 msgstr "Resursa de revizuit"
 
@@ -13200,7 +13326,7 @@ msgstr "Row"
 msgid "Row {0}"
 msgstr "Row {0}"
 
-#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:94
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:96
 msgid "Row hash"
 msgstr "Row hash"
 
@@ -13738,6 +13864,10 @@ msgstr "Select topic"
 msgid "Select years..."
 msgstr "Select years..."
 
+#: src/features/public-investments/components/PublicInvestmentsMapPanel.tsx:87
+msgid "Selectează {label}"
+msgstr "Selectează {label}"
+
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1264
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:869
 msgid "selected"
@@ -13928,7 +14058,7 @@ msgstr "Serviciile pot aparea doar in descoperirea nationala."
 msgid "Serviciu"
 msgstr "Serviciu"
 
-#: src/components/provenance/source-provenance.tsx:433
+#: src/components/provenance/source-provenance.tsx:435
 msgid "Serviciu social licențiat"
 msgstr "Serviciu social licențiat"
 
@@ -13983,6 +14113,10 @@ msgstr "Sewer network length per 1,000 inhabitants approximates sanitation infra
 #: src/components/provenance/source-provenance.tsx:346
 msgid "SHA-256 conținut"
 msgstr "SHA-256 conținut"
+
+#: src/components/provenance/source-provenance.tsx:356
+msgid "SHA-256 copiat"
+msgstr "SHA-256 copiat"
 
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1611
 msgid "SHA-256 workbook"
@@ -14273,7 +14407,7 @@ msgstr "sincronizare suspendată"
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1508
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:229
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:191
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:139
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:142
 #: src/features/statistics/components/request-dataset-action.tsx:84
 #: src/features/statistics/components/territory-header.tsx:40
 #: src/features/statistics/pages/statistics-landing-page.tsx:108
@@ -14402,7 +14536,7 @@ msgid "Sort by"
 msgstr "Sort by"
 
 #: src/features/ngos/components/ngo-services-page.tsx:304
-#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:129
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:151
 #: src/routes/justitie.cautare.tsx:335
 msgid "Sortare"
 msgstr "Sortare"
@@ -14457,6 +14591,10 @@ msgstr "Spending"
 msgid "Spending Calculation"
 msgstr "Spending Calculation"
 
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:293
+msgid "Split"
+msgstr "Split"
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:119
 msgid "Splits UATs relative to the median value. More robust than mean-based filters when outliers exist."
 msgstr "Splits UATs relative to the median value. More robust than mean-based filters when outliers exist."
@@ -14470,7 +14608,8 @@ msgstr "Stadii"
 #: src/features/justice/components/litigation-slice-section.tsx:269
 #: src/features/procurement/components/procurement-search-page.tsx:463
 #: src/features/procurement/lib/export.ts:123
-#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:113
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:246
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:137
 #: src/routes/justitie.cautare.tsx:263
 msgid "Stadiu"
 msgstr "Stadiu"
@@ -14479,7 +14618,7 @@ msgstr "Stadiu"
 msgid "stadiu necunoscut"
 msgstr "stadiu necunoscut"
 
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:191
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:196
 msgid "Stadiu necunoscut"
 msgstr "Stadiu necunoscut"
 
@@ -14507,7 +14646,7 @@ msgid "Standard"
 msgstr "Standard"
 
 #: src/components/provenance/source-provenance.tsx:307
-#: src/components/provenance/source-provenance.tsx:498
+#: src/components/provenance/source-provenance.tsx:507
 #: src/features/ngos/components/ngo-profile-page.tsx:417
 #: src/features/ngos/components/ngo-profile-page.tsx:746
 msgid "Stare"
@@ -14518,7 +14657,7 @@ msgstr "Stare"
 msgid "Stare date"
 msgstr "Stare date"
 
-#: src/components/provenance/source-provenance.tsx:435
+#: src/components/provenance/source-provenance.tsx:437
 msgid "Stare fiscală"
 msgstr "Stare fiscală"
 
@@ -14787,7 +14926,7 @@ msgstr "Suma rambursată/decontată din valoarea contractată, plătită efectiv
 msgid "Sumar"
 msgstr "Sumar"
 
-#: src/components/data-trust/source-provenance-drawer.tsx:146
+#: src/components/data-trust/source-provenance-drawer.tsx:147
 msgid "Sumar metrica"
 msgstr "Sumar metrica"
 
@@ -14808,20 +14947,20 @@ msgstr "Supports row-per-UAT CSV and simulation cluster CSV. You can also drag a
 msgid "sursa"
 msgstr "sursa"
 
-#: src/components/data-trust/source-provenance-drawer.tsx:177
+#: src/components/data-trust/source-provenance-drawer.tsx:178
 #: src/features/ngos/components/ngo-profile-page.tsx:420
 #: src/features/ngos/components/ngo-profile-page.tsx:500
 #: src/features/ngos/components/ngo-profile-page.tsx:606
 msgid "Sursa"
 msgstr "Sursa"
 
-#: src/components/data-trust/evidence-link.tsx:65
+#: src/components/data-trust/evidence-link.tsx:69
 msgid "sursă"
 msgstr "sursă"
 
 #: src/components/provenance/source-provenance.tsx:207
-#: src/components/provenance/source-provenance.tsx:507
-#: src/components/shared/procurement-data/source-provenance-drawer.tsx:53
+#: src/components/provenance/source-provenance.tsx:516
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:72
 #: src/features/justice/components/data-trust.tsx:200
 #: src/features/legal/components/legal-trust.tsx:202
 #: src/features/procurement/components/procurement-search-page.tsx:443
@@ -14833,7 +14972,7 @@ msgstr "sursă"
 msgid "Sursă"
 msgstr "Sursă"
 
-#: src/components/data-trust/source-provenance-drawer.tsx:28
+#: src/components/data-trust/source-provenance-drawer.tsx:32
 msgid "Sursa accesibila"
 msgstr "Sursa accesibila"
 
@@ -14853,7 +14992,7 @@ msgstr "Sursă blocată"
 msgid "Sursa datelor"
 msgstr "Sursa datelor"
 
-#: src/components/data-trust/source-provenance-drawer.tsx:30
+#: src/components/data-trust/source-provenance-drawer.tsx:34
 msgid "Sursa inaccesibila (cu dovada)"
 msgstr "Sursa inaccesibila (cu dovada)"
 
@@ -14865,11 +15004,15 @@ msgstr "Sursă necunoscută"
 msgid "Sursa oficiala"
 msgstr "Sursa oficiala"
 
+#: src/routes/ong-uri.sursa.$snapshotId.lazy.tsx:38
+msgid "Sursa ONG negăsită"
+msgstr "Sursa ONG negăsită"
+
 #: src/features/statistics/components/source-provenance-drawer.tsx:107
 msgid "Sursă publică"
 msgstr "Sursă publică"
 
-#: src/components/shared/procurement-data/source-provenance-drawer.tsx:45
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:64
 msgid "Sursa, referința colectorului, datele de preluare și notele de parsare pentru această înregistrare."
 msgstr "Sursa, referința colectorului, datele de preluare și notele de parsare pentru această înregistrare."
 
@@ -14950,7 +15093,7 @@ msgid "System status badge"
 msgstr "System status badge"
 
 #: src/features/elections/components/contest-result-explorer-page.tsx:127
-#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:84
+#: src/features/public-investments/components/SourceProvenanceDrawer.tsx:86
 msgid "Tabel"
 msgstr "Tabel"
 
@@ -15040,7 +15183,7 @@ msgstr "Test error"
 msgid "text"
 msgstr "text"
 
-#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:83
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:99
 msgid "Text"
 msgstr "Text"
 
@@ -15472,7 +15615,7 @@ msgid "Title Z–A"
 msgstr "Title Z–A"
 
 #: src/features/procurement/lib/export.ts:119
-#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:140
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:162
 msgid "Titlu"
 msgstr "Titlu"
 
@@ -15492,9 +15635,10 @@ msgstr "To Pay"
 #: src/features/entity-search/components/entity-facet-chips.tsx:73
 #: src/features/ngos/components/ngo-services-page.tsx:298
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1225
-#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:105
-#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:121
-#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:134
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:210
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:124
+#: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:138
+#: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:135
 #: src/routes/justitie.cautare.tsx:407
 msgid "Toate"
 msgstr "Toate"
@@ -16153,7 +16297,7 @@ msgstr "Upper fence"
 msgid "URL sursă"
 msgstr "URL sursă"
 
-#: src/components/shared/procurement-data/source-provenance-drawer.tsx:66
+#: src/components/shared/procurement-data/source-provenance-drawer.tsx:85
 msgid "URL sursă indisponibil"
 msgstr "URL sursă indisponibil"
 
@@ -16275,7 +16419,7 @@ msgstr "User ID"
 msgid "Utilitate"
 msgstr "Utilitate"
 
-#: src/components/provenance/source-provenance.tsx:434
+#: src/components/provenance/source-provenance.tsx:436
 msgid "Utilitate publică (SGG)"
 msgstr "Utilitate publică (SGG)"
 
@@ -16332,7 +16476,7 @@ msgstr "Validation issues"
 #: src/features/procurement/components/category-breakdown.tsx:136
 #: src/features/procurement/components/party-ranking-chart.tsx:134
 #: src/features/procurement/components/procurement-record-detail.tsx:196
-#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:271
+#: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:286
 msgid "Valoare"
 msgstr "Valoare"
 
@@ -16348,7 +16492,7 @@ msgstr "Valoare (mică)"
 msgid "Valoare (RON)"
 msgstr "Valoare (RON)"
 
-#: src/components/data-trust/source-provenance-drawer.tsx:139
+#: src/components/data-trust/source-provenance-drawer.tsx:140
 msgid "Valoare afisata cu pointer sursa."
 msgstr "Valoare afisata cu pointer sursa."
 
@@ -16374,7 +16518,7 @@ msgstr "Valoare contract"
 msgid "Valoare estimată"
 msgstr "Valoare estimată"
 
-#: src/features/public-investments/components/AmountWithEvidence.tsx:26
+#: src/features/public-investments/components/AmountWithEvidence.tsx:28
 #: src/features/public-investments/lib/display.ts:54
 msgid "Valoare în verificare"
 msgstr "Valoare în verificare"
@@ -16395,7 +16539,7 @@ msgstr "Valoare nativă"
 msgid "Valoare prezentă"
 msgstr "Valoare prezentă"
 
-#: src/components/data-trust/source-provenance-drawer.tsx:168
+#: src/components/data-trust/source-provenance-drawer.tsx:169
 msgid "Valoarea afisata este o agregare a mai multor randuri de sursa."
 msgstr "Valoarea afisata este o agregare a mai multor randuri de sursa."
 
@@ -16419,11 +16563,11 @@ msgstr "Valorile non-RON păstrează valoarea nativă; nu se însumează între 
 msgid "Valorile non-RON sunt afișate în moneda nativă și nu intră în procentele agregate."
 msgstr "Valorile non-RON sunt afișate în moneda nativă și nu intră în procentele agregate."
 
-#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:83
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:107
 msgid "Valorile suspecte ×1000 nu intră în totaluri."
 msgstr "Valorile suspecte ×1000 nu intră în totaluri."
 
-#: src/features/public-investments/components/PublicInvestmentsMapPanel.tsx:60
+#: src/features/public-investments/components/PublicInvestmentsMapPanel.tsx:110
 msgid "Valorile suspecte ×1000 sunt păstrate ca puncte de acoperire, dar nu intră în mărimea punctului sau totaluri."
 msgstr "Valorile suspecte ×1000 sunt păstrate ca puncte de acoperire, dar nu intră în mărimea punctului sau totaluri."
 
@@ -16539,7 +16683,7 @@ msgstr "Verifică la sursă"
 msgid "Verifica modul mock sau conexiunea API live."
 msgstr "Verifica modul mock sau conexiunea API live."
 
-#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:37
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:50
 msgid "Verifică serverul local sau încearcă din nou."
 msgstr "Verifică serverul local sau încearcă din nou."
 
@@ -16598,7 +16742,7 @@ msgstr "Vezi ce cumpără o autoritate și de la cine."
 msgid "Vezi cine primește bani publici."
 msgstr "Vezi cine primește bani publici."
 
-#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:70
+#: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:94
 msgid "Vezi Cluj"
 msgstr "Vezi Cluj"
 
@@ -16646,7 +16790,7 @@ msgstr "Vezi și în alte domenii"
 msgid "Vezi și pe TED"
 msgstr "Vezi și pe TED"
 
-#: src/components/provenance/source-provenance.tsx:405
+#: src/components/provenance/source-provenance.tsx:407
 msgid "Vezi sursa completă"
 msgstr "Vezi sursa completă"
 

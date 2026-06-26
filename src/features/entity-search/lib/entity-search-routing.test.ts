@@ -26,16 +26,19 @@ describe('entityHref', () => {
       expect(result).toEqual({ href: '/entities/4305857', isExternal: false })
     })
 
-    it('routes public_enterprise to /entities/$cui', () => {
+    it('routes public_enterprise to the dedicated public-enterprise profile', () => {
       const result = entityHref(
-        input({ docType: 'public_enterprise', cuis: ['12345'] }),
+        input({ docType: 'public_enterprise', cuis: ['RO-12345'] }),
       )
-      expect(result).toEqual({ href: '/entities/12345', isExternal: false })
+      expect(result).toEqual({
+        href: '/intreprinderi-publice/12345',
+        isExternal: false,
+      })
     })
 
-    it('routes ngo to /entities/$cui', () => {
-      const result = entityHref(input({ docType: 'ngo', cuis: ['99999'] }))
-      expect(result).toEqual({ href: '/entities/99999', isExternal: false })
+    it('routes ngo to the dedicated NGO profile', () => {
+      const result = entityHref(input({ docType: 'ngo', cuis: ['RO99999'] }))
+      expect(result).toEqual({ href: '/ong-uri/99999', isExternal: false })
     })
 
     it('uses the first CUI when several are present', () => {
@@ -67,7 +70,7 @@ describe('entityHref', () => {
     })
   })
 
-  describe('parliament doc types', () => {
+  describe('doc-id internal route types', () => {
     it('routes member to /parlament/membri/$docId', () => {
       const result = entityHref(input({ docType: 'member', docId: '4205' }))
       expect(result).toEqual({
@@ -94,16 +97,88 @@ describe('entityHref', () => {
     it('returns null when bill has neither docId nor url', () => {
       expect(entityHref(input({ docType: 'bill', docId: null }))).toBeNull()
     })
+
+    it('routes legal_act to /legislatie/acte/$docId', () => {
+      const result = entityHref(
+        input({ docType: 'legal_act', docId: 'lege-227-2015' }),
+      )
+      expect(result).toEqual({
+        href: '/legislatie/acte/lege-227-2015',
+        isExternal: false,
+      })
+    })
+
+    it('routes legal_act by docKey when docId is unavailable', () => {
+      const result = entityHref(
+        input({
+          docType: 'legal_act',
+          docId: null,
+          docKey: 'lege-100-2024',
+        }),
+      )
+      expect(result).toEqual({
+        href: '/legislatie/acte/lege-100-2024',
+        isExternal: false,
+      })
+    })
+
+    it('routes procurement contracts and procedures to internal detail pages', () => {
+      expect(
+        entityHref(
+          input({
+            docType: 'procurement_contract',
+            docId: 'contract-key-001',
+          }),
+        ),
+      ).toEqual({
+        href: '/achizitii/contracte/contract-key-001',
+        isExternal: false,
+      })
+      expect(
+        entityHref(
+          input({
+            docType: 'procurement_procedure',
+            docId: 'proc-2025-cluj-48000',
+          }),
+        ),
+      ).toEqual({
+        href: '/achizitii/proceduri/proc-2025-cluj-48000',
+        isExternal: false,
+      })
+    })
+
+    it('routes procurement direct acquisitions when that doc type is emitted', () => {
+      const result = entityHref(
+        input({
+          docType: 'procurement_direct_acquisition',
+          docId: 'da-key-001',
+        }),
+      )
+      expect(result).toEqual({
+        href: '/achizitii/achizitii-directe/da-key-001',
+        isExternal: false,
+      })
+    })
+
+    it('encodes doc ids for internal detail routes', () => {
+      const result = entityHref(
+        input({
+          docType: 'legal_act',
+          docId: 'legal_act:doc:205009',
+        }),
+      )
+      expect(result).toEqual({
+        href: '/legislatie/acte/legal_act%3Adoc%3A205009',
+        isExternal: false,
+      })
+    })
   })
 
   describe('interim doc types open the external url', () => {
     const interim = [
-      'legal_act',
       'mo_act',
       'pnrr_project',
       'pnrr_entity',
-      'procurement_contract',
-      'procurement_procedure',
     ]
     for (const docType of interim) {
       it(`routes ${docType} to its url (external)`, () => {
@@ -117,6 +192,38 @@ describe('entityHref', () => {
         expect(entityHref(input({ docType, url: null }))).toBeNull()
       })
     }
+  })
+
+  describe('internal route fallback behavior', () => {
+    it('falls back to url when an internal doc-id route has no id', () => {
+      const result = entityHref(
+        input({
+          docType: 'legal_act',
+          docId: null,
+          docKey: null,
+          url: 'https://gov.test/lege',
+        }),
+      )
+      expect(result).toEqual({ href: 'https://gov.test/lege', isExternal: true })
+    })
+
+    it('returns null when an internal doc-id route has neither id nor url', () => {
+      expect(entityHref(input({ docType: 'legal_act', url: null }))).toBeNull()
+    })
+
+    it('falls back to url when a dedicated CUI route cannot normalize the CUI', () => {
+      const result = entityHref(
+        input({
+          docType: 'public_enterprise',
+          cuis: ['RO'],
+          url: 'https://example.test/public-enterprise',
+        }),
+      )
+      expect(result).toEqual({
+        href: 'https://example.test/public-enterprise',
+        isExternal: true,
+      })
+    })
   })
 
   describe('unknown doc types', () => {
@@ -133,13 +240,13 @@ describe('entityHref', () => {
 
     it('trims a url before treating it as a target', () => {
       const result = entityHref(
-        input({ docType: 'legal_act', url: '   https://x.test/z   ' }),
+        input({ docType: 'mo_act', url: '   https://x.test/z   ' }),
       )
       expect(result).toEqual({ href: 'https://x.test/z', isExternal: true })
     })
 
     it('treats a whitespace-only url as no target', () => {
-      expect(entityHref(input({ docType: 'legal_act', url: '   ' }))).toBeNull()
+      expect(entityHref(input({ docType: 'mo_act', url: '   ' }))).toBeNull()
     })
   })
 })

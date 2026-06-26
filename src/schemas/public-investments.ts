@@ -369,6 +369,7 @@ const positiveIntParam = (defaultValue: number) =>
 
 export const PublicInvestmentsLayoutSearchSchema = z.object({
   dovada: optionalIdentifierSearchParam,
+  objectiveId: optionalIdentifierSearchParam,
   from: optionalTextSearchParam,
   county: optionalIdentifierSearchParam,
   siruta: optionalIdentifierSearchParam,
@@ -383,7 +384,7 @@ export function cleanLayoutSearch(
 ): Partial<PublicInvestmentsLayoutSearchState> {
   const cleaned: Partial<PublicInvestmentsLayoutSearchState> = { ...search }
 
-  for (const key of ['dovada', 'from', 'county', 'siruta'] as const) {
+  for (const key of ['dovada', 'objectiveId', 'from', 'county', 'siruta'] as const) {
     const value = cleaned[key]
     if (typeof value === 'string') {
       const trimmed = value.trim()

@@ -105,6 +105,11 @@ describe('Justice privacy guardrails', () => {
       '/companies/9000002?tab=litigii&litPage=2&partyKey=secret&caseNumber=1234/3/2024&from=companies:9000002',
     )
     expect(companyTelemetry).toBe('/companies/9000002?tab=litigii&litPage=2')
+
+    const caseTelemetry = sanitizeJusticeUrlFragment(
+      '/justitie/dosare/portal-just-bucuresti-2024-001?caseNumber=1234/3/2024&court=TB-BUCURESTI',
+    )
+    expect(caseTelemetry).toBe('/justitie/dosare/:caseId?court=TB-BUCURESTI')
   })
 
   it('does not persist person-name free text in justice search navigation', async () => {

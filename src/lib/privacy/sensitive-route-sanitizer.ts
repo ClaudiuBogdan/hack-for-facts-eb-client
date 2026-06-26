@@ -39,6 +39,21 @@ export const STRIPPED_JUSTICE_QUERY_PARAMS = [
 ] as const
 
 const SAFE_PARAM_SET = new Set<string>(SAFE_JUSTICE_QUERY_PARAMS)
+const STRIPPED_PARAM_SET = new Set<string>(STRIPPED_JUSTICE_QUERY_PARAMS)
+const JUSTICE_CASE_DETAIL_PREFIX = '/justitie/dosare/'
+const REDACTED_JUSTICE_CASE_ID_SEGMENT = ':caseId'
+const REDACTED_JUSTICE_VALUE = '[scrubbed]'
+const SENSITIVE_JUSTICE_PAYLOAD_KEYS = new Set([
+  'caseid',
+  'casenumber',
+  'partykey',
+])
+const JUSTICE_SOURCE_HINT_PATTERN =
+  /^(?:cautare|justitie|dosare|companies:\d+|entities:\d+)$/i
+const ABSOLUTE_URL_PATTERN = /\bhttps?:\/\/[^\s"'<>]+/gi
+const RELATIVE_ROUTE_PATTERN = /\/(?:justitie|companies|entities)\/[^\s"'<>]*/g
+const SENSITIVE_FIELD_ASSIGNMENT_PATTERN =
+  /\b(caseNumber|case_number|case-id|caseId|partyKey|party_key|party-key)\s*[:=]\s*["']?[^"',\s&})]+["']?/gi
 
 /**
  * Returns true when a path belongs to the justice domain and must be
@@ -48,6 +63,18 @@ const SAFE_PARAM_SET = new Set<string>(SAFE_JUSTICE_QUERY_PARAMS)
 export function isJusticePath(pathname: string): boolean {
   if (!pathname) return false
   return pathname === '/justitie' || pathname.startsWith('/justitie/')
+}
+
+function normalizePayloadKey(key: string): string {
+  return key.toLowerCase().replace(/[^a-z0-9]/g, '')
+}
+
+function hasJusticeSensitiveProfileParams(queryString: string): boolean {
+  const raw = queryString.startsWith('?') ? queryString.slice(1) : queryString
+  if (raw.length === 0) return false
+  const params = new URLSearchParams(raw)
+  if (params.get('tab') === 'litigii') return true
+  return STRIPPED_JUSTICE_QUERY_PARAMS.some((key) => params.has(key))
 }
 
 export function isJusticeLitigationProfilePath(
@@ -62,8 +89,89 @@ export function isJusticeLitigationProfilePath(
   ) {
     return false
   }
-  const raw = queryString.startsWith('?') ? queryString.slice(1) : queryString
-  return new URLSearchParams(raw).get('tab') === 'litigii'
+  return hasJusticeSensitiveProfileParams(queryString)
+}
+
+export function sanitizeJusticePathname(pathname: string): string {
+  if (!pathname.startsWith(JUSTICE_CASE_DETAIL_PREFIX)) return pathname
+  const suffix = pathname.slice(JUSTICE_CASE_DETAIL_PREFIX.length)
+  if (suffix.length === 0) return pathname
+  const slashIndex = suffix.indexOf('/')
+  const trailingPath = slashIndex === -1 ? '' : suffix.slice(slashIndex)
+  return `${JUSTICE_CASE_DETAIL_PREFIX}${REDACTED_JUSTICE_CASE_ID_SEGMENT}${trailingPath}`
+}
+
+function shouldRedactJusticePayloadValue(
+  key: string | undefined,
+  value: unknown,
+): boolean {
+  if (!key || value === null || value === undefined) return false
+  const normalized = normalizePayloadKey(key)
+  if (SENSITIVE_JUSTICE_PAYLOAD_KEYS.has(normalized)) return true
+  return (
+    normalized === 'from' &&
+    typeof value === 'string' &&
+    JUSTICE_SOURCE_HINT_PATTERN.test(value)
+  )
+}
+
+export function sanitizeJusticeTelemetryString(value: string): string {
+  if (value.length === 0) return value
+  let sanitized = sanitizeJusticeUrlFragment(value)
+  sanitized = sanitized.replace(ABSOLUTE_URL_PATTERN, (match) =>
+    sanitizeJusticeUrl(match),
+  )
+  sanitized = sanitized.replace(RELATIVE_ROUTE_PATTERN, (match) =>
+    sanitizeJusticeUrlFragment(match),
+  )
+  sanitized = sanitized.replace(
+    SENSITIVE_FIELD_ASSIGNMENT_PATTERN,
+    (_match, key: string) => `${key}=${REDACTED_JUSTICE_VALUE}`,
+  )
+  return sanitized
+}
+
+export function sanitizeJusticeTelemetryValue<T>(
+  value: T,
+  key?: string,
+  depth = 0,
+): T {
+  if (depth > 8) return value
+  if (shouldRedactJusticePayloadValue(key, value)) {
+    return REDACTED_JUSTICE_VALUE as T
+  }
+  if (typeof value === 'string') {
+    return sanitizeJusticeTelemetryString(value) as T
+  }
+  if (Array.isArray(value)) {
+    let changed = false
+    const next = value.map((item) => {
+      const sanitized = sanitizeJusticeTelemetryValue(item, undefined, depth + 1)
+      if (sanitized !== item) changed = true
+      return sanitized
+    })
+    return (changed ? next : value) as T
+  }
+  if (!value || typeof value !== 'object') {
+    return value
+  }
+  if (value instanceof Date || value instanceof RegExp || value instanceof URL) {
+    return value
+  }
+
+  const entries = Object.entries(value as Record<string, unknown>)
+  let changed = false
+  const next: Record<string, unknown> = {}
+  for (const [entryKey, entryValue] of entries) {
+    const sanitized = sanitizeJusticeTelemetryValue(
+      entryValue,
+      entryKey,
+      depth + 1,
+    )
+    if (sanitized !== entryValue) changed = true
+    next[entryKey] = sanitized
+  }
+  return (changed ? next : value) as T
 }
 
 /**
@@ -89,7 +197,7 @@ export function sanitizeJusticeQueryString(
   const params = new URLSearchParams(raw)
   const kept = new URLSearchParams()
   for (const key of params.keys()) {
-    if (SAFE_PARAM_SET.has(key)) {
+    if (SAFE_PARAM_SET.has(key) && !STRIPPED_PARAM_SET.has(key)) {
       const values = params.getAll(key)
       for (const value of values) {
         kept.append(key, value)
@@ -123,6 +231,7 @@ export function sanitizeJusticeUrl(url: string): string {
     return url
   }
   const sanitizedSearch = sanitizeJusticeQueryString(parsed.pathname, parsed.search)
+  parsed.pathname = sanitizeJusticePathname(parsed.pathname)
   parsed.search = sanitizedSearch.length > 0 ? `?${sanitizedSearch}` : ''
   return parsed.toString()
 }
@@ -151,6 +260,7 @@ export function sanitizeJusticeUrlFragment(fragment: string): string {
     return fragment
   }
   const sanitized = sanitizeJusticeQueryString(pathname, queryString)
+  const sanitizedPathname = sanitizeJusticePathname(pathname)
   const searchPart = sanitized.length > 0 ? `?${sanitized}` : ''
-  return `${pathname}${searchPart}${hash}`
+  return `${sanitizedPathname}${searchPart}${hash}`
 }

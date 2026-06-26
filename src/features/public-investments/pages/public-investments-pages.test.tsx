@@ -32,10 +32,11 @@ type RouterLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
   readonly children?: ReactNode
   readonly to?: string
   readonly params?: Readonly<Record<string, string>>
+  readonly search?: unknown
 }
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to = '#', params, ...props }: RouterLinkProps) => {
+  Link: ({ children, to = '#', params, search: _search, ...props }: RouterLinkProps) => {
     const href = Object.entries(params ?? {}).reduce(
       (current, [key, value]) => current.replace(`$${key}`, value),
       to,

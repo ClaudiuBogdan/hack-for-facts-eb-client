@@ -276,6 +276,14 @@ describe('NavMain', () => {
       expect(mapLink).toHaveClass('bg-muted')
     })
 
+    it('does not mark Map as active for /maps sibling routes', async () => {
+      mockMatches.mockReturnValue([{ pathname: '/maps/editor' }])
+      await renderNavMain()
+
+      const mapLink = screen.getByTestId('link-/map')
+      expect(mapLink).not.toHaveClass('bg-muted')
+    })
+
     it('marks Charts as active when on /charts subpath', async () => {
       mockMatches.mockReturnValue([{ pathname: '/charts/123' }])
       await renderNavMain()

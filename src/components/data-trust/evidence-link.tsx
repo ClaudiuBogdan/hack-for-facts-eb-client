@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react'
 import { Trans } from '@lingui/react/macro'
+import { t } from '@lingui/core/macro'
 import { FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
@@ -26,12 +27,15 @@ export function EvidenceLink({ children, pointers, context, className, hint }: P
     pointers,
     context: { ...context, isAggregate: context.isAggregate ?? pointers.length > 1 },
   }
+  const metricLabel = context.metricLabel ?? t`metrică`
+  const triggerLabel = t`Deschide proveniența pentru ${metricLabel} (${context.entityTitle})`
 
   const trigger = (
     <button
       type="button"
       onClick={() => openProvenance(request)}
       aria-haspopup="dialog"
+      aria-label={triggerLabel}
       className={cn(
         'inline-flex items-center gap-1 rounded-sm px-1 text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         className,

@@ -17,7 +17,6 @@ describe('SourceProvenanceDrawer', () => {
             'Numele pot conține prefixe proprii de CUI.',
           ],
         }}
-        trigger={null}
       />,
     )
 
@@ -31,5 +30,23 @@ describe('SourceProvenanceDrawer', () => {
     expect(
       within(drawer).getByText(/Numele pot conține prefixe proprii de CUI/i),
     ).toBeInTheDocument()
+  })
+
+  it('treats trigger null as an explicit no-trigger state', () => {
+    render(
+      <SourceProvenanceDrawer
+        provenance={{
+          sourceLabel: 'e-licitatie / SEAP (elicitatie)',
+          sourceUrl: null,
+          scraperRef: null,
+          retrievedAt: null,
+          publishedAt: null,
+          parserNotes: [],
+        }}
+        trigger={null}
+      />,
+    )
+
+    expect(screen.queryByRole('button', { name: /Proveniență/i })).not.toBeInTheDocument()
   })
 })

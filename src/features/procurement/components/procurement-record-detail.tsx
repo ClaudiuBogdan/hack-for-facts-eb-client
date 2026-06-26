@@ -137,7 +137,7 @@ export function ProcurementRecordDetail({ detail, className }: Props) {
       </div>
 
       <footer className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4">
-        <SourceProvenanceDrawer provenance={info} trigger={null} />
+        <SourceProvenanceDrawer provenance={info} />
         <RequestDatasetAction dataset="public-contracts-seap" />
       </footer>
     </div>

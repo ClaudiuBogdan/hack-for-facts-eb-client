@@ -68,6 +68,7 @@ export function PublicInvestmentsTerritoryPage({ scope, code, search }: Props) {
     return (
       <BlockedDataState
         reason={query.blockedReason}
+        messageKey={query.blockedMessageKey}
         messageParams={query.blockedMessageParams}
       />
     )

@@ -284,7 +284,7 @@ export function SourceProvenanceDrawer({
                     <a
                       href={snapshot.sourceUrl}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-foreground underline-offset-2 hover:underline"
                     >
                       {snapshot.sourceUrl}
@@ -352,6 +352,8 @@ export function SourceProvenanceDrawer({
                         onCopy={() =>
                           navigator.clipboard.writeText(snapshot.contentSha256 ?? '')
                         }
+                        ariaLabel={t`Copiază SHA-256 conținut`}
+                        copiedLabel={t`SHA-256 copiat`}
                       />
                     ) : null}
                   </span>
@@ -436,6 +438,13 @@ const evidenceKindLabels: Readonly<Record<string, ReactNode>> = {
   financial_indicator: <Trans>Indicator financiar</Trans>,
   funding_projection: <Trans>Proiecție fonduri</Trans>,
   name_only_reference: <Trans>Referință din registru</Trans>,
+}
+
+const reviewStatusLabels: Readonly<Record<NgoReviewStatus, ReactNode>> = {
+  accepted: <Trans>acceptat</Trans>,
+  review_pending: <Trans>în revizuire</Trans>,
+  rejected: <Trans>respins</Trans>,
+  unmatched: <Trans>fără potrivire</Trans>,
 }
 
 function groupEvidence(evidence: readonly EvidenceRecord[]) {
@@ -530,7 +539,9 @@ export function EvidenceTrail({
                             showConfidence
                           />
                         </TableCell>
-                        <TableCell className="text-xs">{row.reviewStatus}</TableCell>
+                        <TableCell className="text-xs">
+                          {reviewStatusLabels[row.reviewStatus] ?? row.reviewStatus}
+                        </TableCell>
                         <TableCell className="text-xs">
                           {row.confidence != null
                             ? new Intl.NumberFormat('ro-RO', {

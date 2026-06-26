@@ -15,7 +15,14 @@ import type { ProvenanceInfo } from '@/schemas/procurement'
 
 type Props = {
   readonly provenance: ProvenanceInfo
-  readonly trigger: React.ReactNode
+  /**
+   * Omit for the default trigger. Pass `null` or `hideTrigger` only when an
+   * external controlled opener owns the trigger.
+   */
+  readonly trigger?: React.ReactNode
+  readonly hideTrigger?: boolean
+  readonly open?: boolean
+  readonly onOpenChange?: (open: boolean) => void
 }
 
 /**
@@ -23,19 +30,31 @@ type Props = {
  * publication dates, and a bulleted parser-caveats list. Focus-managed via
  * Radix Dialog primitives (the underlying `Sheet`).
  */
-export function SourceProvenanceDrawer({ provenance, trigger }: Props) {
-  const [open, setOpen] = useState(false)
+export function SourceProvenanceDrawer({
+  provenance,
+  trigger,
+  hideTrigger = false,
+  open,
+  onOpenChange,
+}: Props) {
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false)
+  const currentOpen = open ?? uncontrolledOpen
+  const setCurrentOpen = onOpenChange ?? setUncontrolledOpen
+  const triggerNode =
+    trigger === undefined ? (
+      <Button variant="ghost" size="sm" className="gap-1">
+        <Info className="h-4 w-4" aria-hidden />
+        <Trans>Proveniență</Trans>
+      </Button>
+    ) : (
+      trigger
+    )
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        {trigger ?? (
-          <Button variant="ghost" size="sm" className="gap-1">
-            <Info className="h-4 w-4" aria-hidden />
-            <Trans>Proveniență</Trans>
-          </Button>
-        )}
-      </SheetTrigger>
+    <Sheet open={currentOpen} onOpenChange={setCurrentOpen}>
+      {hideTrigger || triggerNode === null ? null : (
+        <SheetTrigger asChild>{triggerNode}</SheetTrigger>
+      )}
       <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
         <SheetHeader>
           <SheetTitle>

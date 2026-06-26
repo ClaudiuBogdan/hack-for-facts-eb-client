@@ -4,7 +4,7 @@ import { hasAnalyticsConsent, hasSentryConsent } from "@/lib/consent";
 import {
   isJusticeLitigationProfilePath,
   isJusticePath,
-  sanitizeJusticeUrl,
+  sanitizeJusticeTelemetryValue,
 } from "@/lib/privacy/sensitive-route-sanitizer";
 import {
   captureConsoleIntegration,
@@ -76,6 +76,23 @@ type SentryBeforeSendEventLike = {
   };
   contexts?: Record<string, unknown>;
 };
+
+type SentryTelemetryEventLike = {
+  readonly [key: string]: unknown;
+  user?: unknown;
+  request?: unknown;
+  breadcrumbs?: unknown;
+  extra?: unknown;
+  contexts?: unknown;
+  tags?: unknown;
+  server_name?: unknown;
+};
+
+export function sanitizeSentryEventPayload<T extends SentryTelemetryEventLike>(
+  event: T
+): T {
+  return sanitizeJusticeTelemetryValue(event);
+}
 
 function isFacebookInAppBrowserUserAgent(): boolean {
   if (!isBrowser) return false;
@@ -200,9 +217,7 @@ function isCurrentJusticeSensitiveLocation(): boolean {
 
 function sanitizeReplayRecordingValue<T>(value: T, depth = 0): T {
   if (depth > 8) return value;
-  if (typeof value === "string") {
-    return sanitizeJusticeUrl(value) as T;
-  }
+  if (typeof value === "string") return sanitizeJusticeTelemetryValue(value);
   if (Array.isArray(value)) {
     let changed = false;
     const next = value.map((item) => {
@@ -267,7 +282,7 @@ export function initSentry(router: unknown): void {
         blockAllMedia: true,
         networkDetailDenyUrls: [
           /\/justitie(?:\/|$)/,
-          /\/(?:companies|entities)\/[^?#]+(?:\?[^#]*)?\btab=litigii\b/,
+          /\/(?:companies|entities)\/[^?#]+(?:\?[^#]*(?:\btab=litigii\b|\b(?:partyKey|caseNumber|from)=))/,
         ],
         beforeAddRecordingEvent: sanitizeReplayRecordingEvent,
         beforeErrorSampling: () => !isCurrentJusticeSensitiveLocation(),
@@ -323,19 +338,9 @@ export function initSentry(router: unknown): void {
     }),
   );
 
-  // Helper to aggressively sanitize events when consent is not granted
-  type SentryEventLike = {
-    readonly [key: string]: unknown;
-    user?: unknown;
-    request?: unknown;
-    breadcrumbs?: unknown;
-    extra?: unknown;
-    contexts?: unknown;
-    tags?: unknown;
-    server_name?: unknown;
-  };
-
-  function sanitizeEventForNoConsent(event: SentryEventLike): SentryEventLike {
+  function sanitizeEventForNoConsent(
+    event: SentryTelemetryEventLike
+  ): SentryTelemetryEventLike {
     return {
       ...event,
       user: undefined,
@@ -345,136 +350,6 @@ export function initSentry(router: unknown): void {
       contexts: undefined,
       tags: undefined,
       server_name: undefined,
-    };
-  }
-
-  /**
-   * Scrubs sensitive justice route params from request URLs and
-   * breadcrumb-like URL fields, EVEN when Sentry consent exists. Justice
-   * routes (`/justitie*`) can carry `partyKey`, `caseNumber`, `from`, and
-   * unknown params that must never leak into error telemetry. Only the safe
-   * aggregate allowlist is preserved on `/justitie*` URLs.
-   *
-   * Operates on a shallow clone and known URL-bearing fields. Breadcrumbs are
-   * handled defensively because their shape varies by category (nav, http,
-   * ui, etc.) and any of them may carry a `data`/`from`/`to`/`url` string.
-   */
-  type SentryRequestLike = {
-    url?: unknown;
-    headers?: Record<string, unknown>;
-    [key: string]: unknown;
-  };
-  type SentryBreadcrumbLike = {
-    category?: string;
-    type?: string;
-    data?: Record<string, unknown> | undefined;
-    [key: string]: unknown;
-  };
-  type SentryEventWithUrls = SentryEventLike & {
-    request?: SentryRequestLike;
-    breadcrumbs?: SentryBreadcrumbLike[];
-  };
-
-  function sanitizeStringUrl(value: unknown): unknown {
-    return typeof value === "string" ? sanitizeJusticeUrl(value) : value;
-  }
-
-  function sanitizeRequestHeaders(
-    headers: Record<string, unknown> | undefined,
-  ): Record<string, unknown> | undefined {
-    if (!headers) return headers;
-    let changed = false;
-    const nextHeaders: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(headers)) {
-      if (
-        typeof value === "string" &&
-        ["referer", "referrer", "x-forwarded-uri", "x-original-url"].includes(
-          key.toLowerCase(),
-        )
-      ) {
-        const sanitized = sanitizeJusticeUrl(value);
-        if (sanitized !== value) changed = true;
-        nextHeaders[key] = sanitized;
-        continue;
-      }
-      nextHeaders[key] = value;
-    }
-    return changed ? nextHeaders : headers;
-  }
-
-  function sanitizeBreadcrumb(breadcrumb: SentryBreadcrumbLike): SentryBreadcrumbLike {
-    if (!breadcrumb.data) return breadcrumb;
-    let changed = false;
-    const nextData: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(breadcrumb.data)) {
-      if (typeof value === "string") {
-        const sanitized = sanitizeJusticeUrl(value);
-        if (sanitized !== value) changed = true;
-        nextData[key] = sanitized;
-      } else {
-        nextData[key] = value;
-      }
-    }
-    // Also scrub top-level `from`/`to`/`url` if present on the breadcrumb.
-    const overrides: Partial<SentryBreadcrumbLike> = {};
-    for (const field of ["from", "to", "url"] as const) {
-      const value = breadcrumb[field];
-      if (typeof value === "string") {
-        const sanitized = sanitizeJusticeUrl(value);
-        if (sanitized !== value) {
-          changed = true;
-          (overrides as Record<string, unknown>)[field] = sanitized;
-        }
-      }
-    }
-    if (!changed) return breadcrumb;
-    return { ...breadcrumb, data: nextData, ...overrides };
-  }
-
-  function sanitizeEventUrls(event: SentryEventWithUrls): SentryEventWithUrls {
-    const request = event.request;
-    const sanitizedRequestUrl =
-      request && typeof request === "object"
-        ? sanitizeStringUrl(request.url)
-        : undefined;
-    const sanitizedRequestHeaders =
-      request && typeof request === "object"
-        ? sanitizeRequestHeaders(request.headers)
-        : undefined;
-    const breadcrumbs = event.breadcrumbs;
-    let sanitizedBreadcrumbs: SentryBreadcrumbLike[] | undefined;
-    if (Array.isArray(breadcrumbs)) {
-      let changed = false;
-      const next = breadcrumbs.map((crumb) => {
-        const sanitized = sanitizeBreadcrumb(crumb);
-        if (sanitized !== crumb) changed = true;
-        return sanitized;
-      });
-      if (changed) sanitizedBreadcrumbs = next;
-    }
-
-    if (
-      sanitizedRequestUrl === undefined &&
-      sanitizedRequestHeaders === request?.headers &&
-      sanitizedBreadcrumbs === undefined
-    ) {
-      return event;
-    }
-    return {
-      ...event,
-      request:
-        request && typeof request === "object"
-          ? {
-              ...request,
-              ...(sanitizedRequestUrl !== undefined
-                ? { url: sanitizedRequestUrl }
-                : {}),
-              ...(sanitizedRequestHeaders !== undefined
-                ? { headers: sanitizedRequestHeaders }
-                : {}),
-            }
-          : request,
-      breadcrumbs: sanitizedBreadcrumbs ?? breadcrumbs,
     };
   }
 
@@ -553,17 +428,19 @@ export function initSentry(router: unknown): void {
 
         if (!hasSentryConsent()) {
           // Send a minimal, anonymous error payload (no breadcrumbs/contexts/user/request)
-          const sanitized = sanitizeEventForNoConsent(event as unknown as SentryEventLike);
+          const sanitized = sanitizeEventForNoConsent(
+            event as unknown as SentryTelemetryEventLike
+          );
           return sanitized as unknown as typeof event;
         }
 
-        // Consent granted: still scrub sensitive justice route params from
-        // request URLs and breadcrumb URL fields. Privacy is structural, not
-        // consent-gated, for `/justitie*` URLs.
-        const urlSanitized = sanitizeEventUrls(
-          event as unknown as SentryEventWithUrls,
+        // Consent granted: still scrub sensitive justice route data from URLs,
+        // breadcrumbs, extra/context payloads, messages, and exception strings.
+        // Privacy is structural, not consent-gated, for `/justitie*` URLs.
+        const telemetrySanitized = sanitizeSentryEventPayload(
+          event as unknown as SentryTelemetryEventLike,
         );
-        return urlSanitized as unknown as typeof event;
+        return telemetrySanitized as unknown as typeof event;
       },
     });
   } catch {

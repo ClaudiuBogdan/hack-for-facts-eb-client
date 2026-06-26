@@ -697,11 +697,8 @@ const procedureDetail: ProcurementRecordDetail<ReturnType<typeof procedureRecord
   gate: gateForGrain('procedures'),
 }
 
-function requireMockDetail<T>(detail: T | undefined, id: string, grain: string): T {
-  if (!detail) {
-    throw new Error(`Mock procurement ${grain} detail not found: ${id}`)
-  }
-  return detail
+function optionalMockDetail<T>(detail: T | undefined): T | null {
+  return detail ?? null
 }
 
 const cpvPage = (code: string): CpvCategoryPage => {
@@ -782,20 +779,13 @@ export const procurementMockFixtures = {
   gate: MOCK_GATE_PARTIAL,
   searchForParams,
   procedureDetail(id: string) {
-    if (id !== procedureSummary.id) {
-      throw new Error(`Mock procurement procedure detail not found: ${id}`)
-    }
-    return procedureDetail
+    return id === procedureSummary.id ? procedureDetail : null
   },
   contractDetail(id: string) {
-    return requireMockDetail(contractDetailsById.get(id), id, 'contract')
+    return optionalMockDetail(contractDetailsById.get(id))
   },
   directAcquisitionDetail(id: string) {
-    return requireMockDetail(
-      directAcquisitionDetailsById.get(id),
-      id,
-      'direct acquisition',
-    )
+    return optionalMockDetail(directAcquisitionDetailsById.get(id))
   },
   cpvPage,
   supplierSlice,

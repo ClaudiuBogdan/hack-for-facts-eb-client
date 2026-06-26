@@ -18,11 +18,12 @@ function PublicInvestmentsLayout() {
   const search = Route.useSearch()
   const navigate = useNavigate({ from: '/investitii-publice' })
 
-  const openEvidence = (evidenceRef: EvidenceRef) => {
+  const openEvidence = (evidenceRef: EvidenceRef, objectiveId?: string) => {
     void navigate({
       search: (previous) => ({
         ...previous,
         dovada: evidenceRef.sourceRowKey,
+        objectiveId,
       }),
       replace: false,
     })
@@ -33,6 +34,7 @@ function PublicInvestmentsLayout() {
       search: (previous) => ({
         ...previous,
         dovada: undefined,
+        objectiveId: undefined,
       }),
       replace: true,
     })
@@ -70,11 +72,12 @@ function PublicInvestmentsLayout() {
             </nav>
           </div>
         </header>
-        <main className="mx-auto max-w-7xl px-4 py-6 md:px-6">
+        <div className="mx-auto max-w-7xl px-4 py-6 md:px-6">
           <Outlet />
-        </main>
+        </div>
         <SourceProvenanceDrawer
           sourceRowKey={search.dovada ?? null}
+          objectiveId={search.objectiveId ?? null}
           onClose={closeEvidence}
         />
       </div>
