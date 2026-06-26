@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildEntityDetailsPath,
   buildEntitySelectionPath,
+  buildPublicEnterprisePath,
   buildPreferredEntityPath,
   isNonCountyUatEntity,
 } from './entity-navigation'
@@ -33,7 +34,7 @@ describe('entity-navigation', () => {
     ).toBe(false)
   })
 
-  it('builds the entity path for all preferred entity navigation', () => {
+  it('builds preferred entity paths and routes public enterprises to their surface', () => {
     expect(
       buildPreferredEntityPath({
         cui: '4305857',
@@ -49,6 +50,14 @@ describe('entity-navigation', () => {
         isUat: true,
       }),
     ).toBe('/entities/4321122')
+
+    expect(
+      buildPreferredEntityPath({
+        cui: ' 10020943 ',
+        entityType: 'public_enterprise',
+        isUat: false,
+      }),
+    ).toBe('/intreprinderi-publice/10020943')
   })
 
   it('allows explicit selection behavior to override the preferred path', () => {
@@ -64,5 +73,8 @@ describe('entity-navigation', () => {
     ).toBe('/entities/4305857')
 
     expect(buildEntityDetailsPath(' 4305857 ')).toBe('/entities/4305857')
+    expect(buildPublicEnterprisePath(' 10020943 ')).toBe(
+      '/intreprinderi-publice/10020943',
+    )
   })
 })

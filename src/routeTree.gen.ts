@@ -27,6 +27,7 @@ import { Route as BudgetExplorerRouteImport } from './routes/budget-explorer'
 import { Route as EntitiesRouteRouteImport } from './routes/entities/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PrimarieIndexRouteImport } from './routes/primarie/index'
+import { Route as IntreprinderiPubliceIndexRouteImport } from './routes/intreprinderi-publice/index'
 import { Route as EntitiesIndexRouteImport } from './routes/entities/index'
 import { Route as UnsubscribeTokenRouteImport } from './routes/unsubscribe.$token'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
@@ -37,6 +38,7 @@ import { Route as SettingsNotificationsRouteImport } from './routes/settings/not
 import { Route as ProvocareTermeniSiConditiiRouteImport } from './routes/provocare_.termeni-si-conditii'
 import { Route as ProvocareNotificariRouteImport } from './routes/provocare_.notificari'
 import { Route as PnrrShareImageDotpngRouteImport } from './routes/pnrr.share-image[.]png'
+import { Route as IntreprinderiPubliceCuiRouteImport } from './routes/intreprinderi-publice/$cui'
 import { Route as EntitiesCuiRouteImport } from './routes/entities.$cui'
 import { Route as CompaniesCuiRouteImport } from './routes/companies.$cui'
 import { Route as ChartsNewRouteImport } from './routes/charts/new'
@@ -195,6 +197,14 @@ const PrimarieIndexRoute = PrimarieIndexRouteImport.update({
 } as any).lazy(() =>
   import('./routes/primarie/index.lazy').then((d) => d.Route),
 )
+const IntreprinderiPubliceIndexRoute =
+  IntreprinderiPubliceIndexRouteImport.update({
+    id: '/intreprinderi-publice/',
+    path: '/intreprinderi-publice/',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/intreprinderi-publice/index.lazy').then((d) => d.Route),
+  )
 const EntitiesIndexRoute = EntitiesIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -258,6 +268,13 @@ const PnrrShareImageDotpngRoute = PnrrShareImageDotpngRouteImport.update({
   path: '/share-image.png',
   getParentRoute: () => PnrrRoute,
 } as any)
+const IntreprinderiPubliceCuiRoute = IntreprinderiPubliceCuiRouteImport.update({
+  id: '/intreprinderi-publice/$cui',
+  path: '/intreprinderi-publice/$cui',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/intreprinderi-publice/$cui.lazy').then((d) => d.Route),
+)
 const EntitiesCuiRoute = EntitiesCuiRouteImport.update({
   id: '/$cui',
   path: '/$cui',
@@ -681,6 +698,7 @@ export interface FileRoutesByFullPath {
   '/charts/new': typeof ChartsNewRoute
   '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
+  '/intreprinderi-publice/$cui': typeof IntreprinderiPubliceCuiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
   '/provocare/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
@@ -692,6 +710,7 @@ export interface FileRoutesByFullPath {
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/entities/': typeof EntitiesIndexRoute
+  '/intreprinderi-publice/': typeof IntreprinderiPubliceIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
@@ -760,6 +779,7 @@ export interface FileRoutesByTo {
   '/charts/new': typeof ChartsNewRoute
   '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
+  '/intreprinderi-publice/$cui': typeof IntreprinderiPubliceCuiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
   '/provocare/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
@@ -771,6 +791,7 @@ export interface FileRoutesByTo {
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/entities': typeof EntitiesIndexRoute
+  '/intreprinderi-publice': typeof IntreprinderiPubliceIndexRoute
   '/primarie': typeof PrimarieIndexRoute
   '/charts': typeof ChartsIndexLazyRoute
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
@@ -842,6 +863,7 @@ export interface FileRoutesById {
   '/charts/new': typeof ChartsNewRoute
   '/companies/$cui': typeof CompaniesCuiRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
+  '/intreprinderi-publice/$cui': typeof IntreprinderiPubliceCuiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare_/notificari': typeof ProvocareNotificariRoute
   '/provocare_/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
@@ -853,6 +875,7 @@ export interface FileRoutesById {
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/entities/': typeof EntitiesIndexRoute
+  '/intreprinderi-publice/': typeof IntreprinderiPubliceIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
@@ -928,6 +951,7 @@ export interface FileRouteTypes {
     | '/charts/new'
     | '/companies/$cui'
     | '/entities/$cui'
+    | '/intreprinderi-publice/$cui'
     | '/pnrr/share-image.png'
     | '/provocare/notificari'
     | '/provocare/termeni-si-conditii'
@@ -939,6 +963,7 @@ export interface FileRouteTypes {
     | '/unsubscribe/$token'
     | '/research/employees-data'
     | '/entities/'
+    | '/intreprinderi-publice/'
     | '/primarie/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
@@ -1007,6 +1032,7 @@ export interface FileRouteTypes {
     | '/charts/new'
     | '/companies/$cui'
     | '/entities/$cui'
+    | '/intreprinderi-publice/$cui'
     | '/pnrr/share-image.png'
     | '/provocare/notificari'
     | '/provocare/termeni-si-conditii'
@@ -1018,6 +1044,7 @@ export interface FileRouteTypes {
     | '/unsubscribe/$token'
     | '/research/employees-data'
     | '/entities'
+    | '/intreprinderi-publice'
     | '/primarie'
     | '/charts'
     | '/$lang/learning/onboarding'
@@ -1088,6 +1115,7 @@ export interface FileRouteTypes {
     | '/charts/new'
     | '/companies/$cui'
     | '/entities/$cui'
+    | '/intreprinderi-publice/$cui'
     | '/pnrr/share-image.png'
     | '/provocare_/notificari'
     | '/provocare_/termeni-si-conditii'
@@ -1099,6 +1127,7 @@ export interface FileRouteTypes {
     | '/unsubscribe/$token'
     | '/research/employees-data'
     | '/entities/'
+    | '/intreprinderi-publice/'
     | '/primarie/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
@@ -1171,6 +1200,7 @@ export interface RootRouteChildren {
   CertificatesIdRoute: typeof CertificatesIdRoute
   ChartsNewRoute: typeof ChartsNewRoute
   CompaniesCuiRoute: typeof CompaniesCuiRoute
+  IntreprinderiPubliceCuiRoute: typeof IntreprinderiPubliceCuiRoute
   ProvocareNotificariRoute: typeof ProvocareNotificariRoute
   ProvocareTermeniSiConditiiRoute: typeof ProvocareTermeniSiConditiiRoute
   SettingsNotificationsRoute: typeof SettingsNotificationsRoute
@@ -1178,6 +1208,7 @@ export interface RootRouteChildren {
   ShareCodeRoute: typeof ShareCodeRoute
   UnsubscribeTokenRoute: typeof UnsubscribeTokenRoute
   ResearchEmployeesDataLazyRoute: typeof ResearchEmployeesDataLazyRoute
+  IntreprinderiPubliceIndexRoute: typeof IntreprinderiPubliceIndexRoute
   PrimarieIndexRoute: typeof PrimarieIndexRoute
   ChartsIndexLazyRoute: typeof ChartsIndexLazyRoute
   AdminCampaignsCampaignKeyRouteRoute: typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
@@ -1327,6 +1358,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrimarieIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/intreprinderi-publice/': {
+      id: '/intreprinderi-publice/'
+      path: '/intreprinderi-publice'
+      fullPath: '/intreprinderi-publice/'
+      preLoaderRoute: typeof IntreprinderiPubliceIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/entities/': {
       id: '/entities/'
       path: '/'
@@ -1403,6 +1441,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/pnrr/share-image.png'
       preLoaderRoute: typeof PnrrShareImageDotpngRouteImport
       parentRoute: typeof PnrrRoute
+    }
+    '/intreprinderi-publice/$cui': {
+      id: '/intreprinderi-publice/$cui'
+      path: '/intreprinderi-publice/$cui'
+      fullPath: '/intreprinderi-publice/$cui'
+      preLoaderRoute: typeof IntreprinderiPubliceCuiRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/entities/$cui': {
       id: '/entities/$cui'
@@ -2029,6 +2074,7 @@ const rootRouteChildren: RootRouteChildren = {
   CertificatesIdRoute: CertificatesIdRoute,
   ChartsNewRoute: ChartsNewRoute,
   CompaniesCuiRoute: CompaniesCuiRoute,
+  IntreprinderiPubliceCuiRoute: IntreprinderiPubliceCuiRoute,
   ProvocareNotificariRoute: ProvocareNotificariRoute,
   ProvocareTermeniSiConditiiRoute: ProvocareTermeniSiConditiiRoute,
   SettingsNotificationsRoute: SettingsNotificationsRoute,
@@ -2036,6 +2082,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShareCodeRoute: ShareCodeRoute,
   UnsubscribeTokenRoute: UnsubscribeTokenRoute,
   ResearchEmployeesDataLazyRoute: ResearchEmployeesDataLazyRoute,
+  IntreprinderiPubliceIndexRoute: IntreprinderiPubliceIndexRoute,
   PrimarieIndexRoute: PrimarieIndexRoute,
   ChartsIndexLazyRoute: ChartsIndexLazyRoute,
   AdminCampaignsCampaignKeyRouteRoute:

@@ -1,7 +1,8 @@
-import { LayoutDashboard, BarChart2, Map, ListOrdered, Boxes } from "lucide-react";
+import { LayoutDashboard, BarChart2, Map, ListOrdered, Boxes, Building2 } from "lucide-react";
 import { Link, useMatches } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button-variants";
+import { isPublicEnterpriseMockEnabled } from "@/features/public-enterprises/lib/mock-mode";
 import {
   SidebarGroup,
   SidebarMenu,
@@ -11,7 +12,13 @@ import {
 } from "@/components/ui/sidebar";
 import { Trans } from "@lingui/react/macro";
 
-type MainItemUrl = "/" | "/map" | "/charts" | "/budget-explorer" | "/entity-analytics";
+type MainItemUrl =
+  | "/"
+  | "/map"
+  | "/charts"
+  | "/budget-explorer"
+  | "/entity-analytics"
+  | "/intreprinderi-publice";
 
 const mainItems: ReadonlyArray<{
   title: React.ReactNode;
@@ -48,6 +55,15 @@ const mainItems: ReadonlyArray<{
     url: "/entity-analytics",
     icon: ListOrdered,
   },
+  ...(isPublicEnterpriseMockEnabled()
+    ? [
+        {
+          title: <Trans>Întreprinderi publice</Trans>,
+          url: "/intreprinderi-publice" as const,
+          icon: Building2,
+        },
+      ]
+    : []),
 ];
 
 export function NavMain() {
