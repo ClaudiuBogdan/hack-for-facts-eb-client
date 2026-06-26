@@ -1,0 +1,138 @@
+{
+  "generatedAt": "2026-06-26T11:14:16.157Z",
+  "commitReports": [
+    {
+      "file": "/tmp/codex-orchestrator/transparenta-ui-dev-reviews/reports/docs.json",
+      "parsed": true,
+      "error": null
+    },
+    {
+      "file": "/tmp/codex-orchestrator/transparenta-ui-dev-reviews/reports/elections.json",
+      "parsed": false,
+      "error": "inner JSON parse failed: Bad escaped character in JSON at position 6833 (line 83 column 43)"
+    },
+    {
+      "file": "/tmp/codex-orchestrator/transparenta-ui-dev-reviews/reports/integration-cleanup-narrow.json",
+      "parsed": true,
+      "error": null
+    },
+    {
+      "file": "/tmp/codex-orchestrator/transparenta-ui-dev-reviews/reports/integration-cleanup.json",
+      "parsed": true,
+      "error": null
+    },
+    {
+      "file": "/tmp/codex-orchestrator/transparenta-ui-dev-reviews/reports/justice.json",
+      "parsed": true,
+      "error": null
+    },
+    {
+      "file": "/tmp/codex-orchestrator/transparenta-ui-dev-reviews/reports/legal.json",
+      "parsed": true,
+      "error": null
+    },
+    {
+      "file": "/tmp/codex-orchestrator/transparenta-ui-dev-reviews/reports/ngos.json",
+      "parsed": true,
+      "error": null
+    },
+    {
+      "file": "/tmp/codex-orchestrator/transparenta-ui-dev-reviews/reports/procurement.json",
+      "parsed": true,
+      "error": null
+    },
+    {
+      "file": "/tmp/codex-orchestrator/transparenta-ui-dev-reviews/reports/public-companies.json",
+      "parsed": true,
+      "error": null
+    },
+    {
+      "file": "/tmp/codex-orchestrator/transparenta-ui-dev-reviews/reports/public-investments.json",
+      "parsed": true,
+      "error": null
+    },
+    {
+      "file": "/tmp/codex-orchestrator/transparenta-ui-dev-reviews/reports/statistics.json",
+      "parsed": true,
+      "error": null
+    }
+  ],
+  "moduleReports": [
+    {
+      "file": "/tmp/codex-orchestrator/transparenta-ui-module-reviews/reports/elections.json",
+      "parsed": true,
+      "error": null
+    },
+    {
+      "file": "/tmp/codex-orchestrator/transparenta-ui-module-reviews/reports/justice.json",
+      "parsed": true,
+      "error": null
+    },
+    {
+      "file": "/tmp/codex-orchestrator/transparenta-ui-module-reviews/reports/legal.json",
+      "parsed": true,
+      "error": null
+    },
+    {
+      "file": "/tmp/codex-orchestrator/transparenta-ui-module-reviews/reports/ngos.json",
+      "parsed": true,
+      "error": null
+    },
+    {
+      "file": "/tmp/codex-orchestrator/transparenta-ui-module-reviews/reports/procurement-shared.json",
+      "parsed": true,
+      "error": null
+    },
+    {
+      "file": "/tmp/codex-orchestrator/transparenta-ui-module-reviews/reports/procurement.json",
+      "parsed": true,
+      "error": null
+    },
+    {
+      "file": "/tmp/codex-orchestrator/transparenta-ui-module-reviews/reports/public-enterprises.json",
+      "parsed": true,
+      "error": null
+    },
+    {
+      "file": "/tmp/codex-orchestrator/transparenta-ui-module-reviews/reports/public-investments.json",
+      "parsed": true,
+      "error": null
+    },
+    {
+      "file": "/tmp/codex-orchestrator/transparenta-ui-module-reviews/reports/routing-sidebar-i18n.json",
+      "parsed": true,
+      "error": null
+    },
+    {
+      "file": "/tmp/codex-orchestrator/transparenta-ui-module-reviews/reports/schemas-catalog-mock-mode.json",
+      "parsed": true,
+      "error": null
+    },
+    {
+      "file": "/tmp/codex-orchestrator/transparenta-ui-module-reviews/reports/shared-trust-identity-provenance.json",
+      "parsed": true,
+      "error": null
+    },
+    {
+      "file": "/tmp/codex-orchestrator/transparenta-ui-module-reviews/reports/statistics.json",
+      "parsed": true,
+      "error": null
+    }
+  ],
+  "counts": {
+    "blocker": 3,
+    "high": 47,
+    "info": 53,
+    "low": 117,
+    "medium": 161,
+    "critical": 2
+  },
+  "dedupCounts": {
+    "blocker": 3,
+    "critical": 2,
+    "high": 47,
+    "medium": 161,
+    "low": 117,
+    "info": 53
+  }
+}
