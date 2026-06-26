@@ -36,6 +36,7 @@ vi.mock('lucide-react', () => ({
   Map: () => <span data-testid="icon-map" />,
   ListOrdered: () => <span data-testid="icon-entity-analytics" />,
   Boxes: () => <span data-testid="icon-budget-explorer" />,
+  Scale: () => <span data-testid="icon-legislatie" />,
 }))
 
 // Mock router
@@ -130,11 +131,18 @@ describe('NavMain', () => {
       expect(screen.getByText('Entity Analytics')).toBeInTheDocument()
     })
 
+    it('renders Legislație link', () => {
+      render(<NavMain />)
+
+      expect(screen.getByTestId('link-/legislatie')).toBeInTheDocument()
+      expect(screen.getByText('Legislație')).toBeInTheDocument()
+    })
+
     it('renders all menu items', () => {
       render(<NavMain />)
 
       const menuItems = screen.getAllByTestId('sidebar-menu-item')
-      expect(menuItems).toHaveLength(5)
+      expect(menuItems).toHaveLength(6)
     })
   })
 
