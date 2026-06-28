@@ -15,7 +15,7 @@ describe('ShareFilteredView', () => {
 
   beforeEach(() => {
     writeTextMock.mockReset()
-    window.history.pushState({}, '', '/achizitii/cautare?grain=contracts')
+    window.history.pushState({}, '', '/procurement/search?grain=contracts')
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
       value: {

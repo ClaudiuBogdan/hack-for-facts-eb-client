@@ -61,11 +61,11 @@ function CpvContent({ data, className }: { readonly data: CpvCategoryPageData; r
             <MockDataStatusBadge />
           </div>
           <nav aria-label={t`Breadcrumb`} className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Link to="/achizitii" className="underline underline-offset-2 hover:text-foreground">
+            <Link to="/procurement" className="underline underline-offset-2 hover:text-foreground">
               <Trans>Achiziții publice</Trans>
             </Link>
             <ChevronRight className="h-3 w-3" aria-hidden />
-            <Link to="/achizitii/cautare" className="underline underline-offset-2 hover:text-foreground">
+            <Link to="/procurement/search" className="underline underline-offset-2 hover:text-foreground">
               <Trans>Caută</Trans>
             </Link>
             <ChevronRight className="h-3 w-3" aria-hidden />
@@ -161,7 +161,7 @@ function CpvContent({ data, className }: { readonly data: CpvCategoryPageData; r
             {data.relatedCategories.map((cat) => (
               <li key={cat.code}>
                 <Link
-                  to="/achizitii/cpv/$code"
+                  to="/procurement/categories/$code"
                   params={{ code: cat.code }}
                   className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-xs font-medium text-foreground underline underline-offset-2 hover:text-primary"
                 >
@@ -174,7 +174,7 @@ function CpvContent({ data, className }: { readonly data: CpvCategoryPageData; r
 
         <Button asChild variant="outline" size="sm">
           <Link
-            to="/achizitii/cautare"
+            to="/procurement/search"
             search={{ cpv_division: data.divisionCode }}
           >
             <Trans>Vezi toate înregistrările din această categorie</Trans>

@@ -6,16 +6,16 @@ import {
   type ProcurementSearchState,
 } from '@/schemas/procurement-search'
 
-function validateAchizitiiCautareSearch(
+function validateProcurementSearch(
   search: Record<string, unknown>,
 ): Partial<ProcurementSearchState> {
   const parsed = parseProcurementSearch(search)
   return cleanProcurementSearch(parsed)
 }
 
-describe('/achizitii/cautare route search validation', () => {
+describe('/procurement/search route search validation', () => {
   it('normalizes and cleans search params through validateSearch', () => {
-    const validated = validateAchizitiiCautareSearch({
+    const validated = validateProcurementSearch({
       grain: 'contracts',
       q: '  spital  ',
       sort: 'date_desc',
@@ -29,7 +29,7 @@ describe('/achizitii/cautare route search validation', () => {
   })
 
   it('preserves non-default grains and reserved buyer-territory params', () => {
-    const validated = validateAchizitiiCautareSearch({
+    const validated = validateProcurementSearch({
       grain: 'procedures',
       region: 'cluj',
       county: ' Cluj ',

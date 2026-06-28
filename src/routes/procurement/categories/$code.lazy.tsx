@@ -1,7 +1,7 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { CpvCategoryPage } from '@/features/procurement/components/cpv-category-page'
 
-export const Route = createLazyFileRoute('/achizitii/cpv/$code')({
+export const Route = createLazyFileRoute('/procurement/categories/$code')({
   component: CpvCategoryRoutePage,
 })
 

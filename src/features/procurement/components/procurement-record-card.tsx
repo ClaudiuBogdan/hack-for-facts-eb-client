@@ -41,15 +41,15 @@ function partyLink(
 function detailRoute(grain: ProcurementRecordSummary['grain']): string {
   switch (grain) {
     case 'procedure':
-      return '/achizitii/proceduri/$id'
+      return '/procurement/procedures/$id'
     case 'contract':
-      return '/achizitii/contracte/$id'
+      return '/procurement/contracts/$id'
     case 'direct_acquisition':
-      return '/achizitii/achizitii-directe/$id'
+      return '/procurement/direct-acquisitions/$id'
     case 'modification':
       // Modifications link to the parent contract detail with a section/hash
       // (design review change #6). When unlinked, the card is non-navigable.
-      return '/achizitii/contracte/$id'
+      return '/procurement/contracts/$id'
   }
 }
 

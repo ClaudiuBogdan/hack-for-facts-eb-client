@@ -16,7 +16,7 @@
  *   mo_act              url                      (external, new tab)
  *   pnrr_project        url                      (external, new tab)
  *   pnrr_entity         url                      (external, new tab)
- *   procurement_*       /achizitii/.../$id       (internal, best-effort docId)
+ *   procurement_*       /procurement/.../$id       (internal, best-effort docId)
  *
  * When no usable target can be built (e.g. a CUI-spine hit with no `cuis`, or an
  * interim hit with no `url`), `entityHref` returns `null` so the component can
@@ -64,10 +64,10 @@ const DOC_ID_ROUTES: Readonly<Record<string, RouteBuilder>> = {
   member: (id) => `/parlament/membri/${encodeURIComponent(id)}`,
   bill: (id) => `/parlament/proiecte/${encodeURIComponent(id)}`,
   legal_act: (id) => `/legislatie/acte/${encodeURIComponent(id)}`,
-  procurement_contract: (id) => `/achizitii/contracte/${encodeURIComponent(id)}`,
-  procurement_procedure: (id) => `/achizitii/proceduri/${encodeURIComponent(id)}`,
+  procurement_contract: (id) => `/procurement/contracts/${encodeURIComponent(id)}`,
+  procurement_procedure: (id) => `/procurement/procedures/${encodeURIComponent(id)}`,
   procurement_direct_acquisition: (id) =>
-    `/achizitii/achizitii-directe/${encodeURIComponent(id)}`,
+    `/procurement/direct-acquisitions/${encodeURIComponent(id)}`,
 }
 
 function firstNonEmpty(values: readonly string[]): string | null {

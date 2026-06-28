@@ -9,8 +9,8 @@ import {
 } from './procurement'
 
 /**
- * Route search parser for `/achizitii/cautare` (and reused as a subset by
- * `/achizitii/cpv/$code` and the deferred `/achizitii/semnale`).
+ * Route search parser for `/procurement/search` (and reused as a subset by
+ * `/procurement/categories/$code` and the deferred `/procurement/semnale`).
  *
  * Reserved/ignored params: `county`, `region` (buyer-territory dimensions
  * that the v1 capability gate does not allow as authoritative filters;

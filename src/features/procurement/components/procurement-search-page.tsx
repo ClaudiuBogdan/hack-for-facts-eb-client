@@ -108,7 +108,7 @@ function optionalNumber(value: string): number | undefined {
 }
 
 export function ProcurementSearchPage({ params, className }: Props) {
-  const navigate = useNavigate({ from: '/achizitii/cautare' })
+  const navigate = useNavigate({ from: '/procurement/search' })
   const { data, isLoading, error, isFetching } = useProcurementSearch(params)
   const [queryDraft, setQueryDraft] = useState(params.q ?? '')
 
@@ -140,7 +140,7 @@ export function ProcurementSearchPage({ params, className }: Props) {
 
   const updateSearch = (patch: Partial<ProcurementSearchState>) => {
     void navigate({
-      to: '/achizitii/cautare',
+      to: '/procurement/search',
       search: (prev) => ({ ...(prev as ProcurementSearchState), ...patch }),
     })
   }

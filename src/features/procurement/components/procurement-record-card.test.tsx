@@ -24,7 +24,7 @@ describe('ProcurementRecordCard', () => {
     const detailsLink = screen.getByRole('link', { name: /Vezi detalii/i })
     expect(detailsLink).toHaveAttribute(
       'href',
-      '/achizitii/contracte/contract-key-001#modificari',
+      '/procurement/contracts/contract-key-001#modificari',
     )
     expect(
       screen.queryByText(/Modificare neasociată/i),

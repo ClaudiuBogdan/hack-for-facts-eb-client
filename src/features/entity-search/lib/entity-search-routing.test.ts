@@ -131,7 +131,7 @@ describe('entityHref', () => {
           }),
         ),
       ).toEqual({
-        href: '/achizitii/contracte/contract-key-001',
+        href: '/procurement/contracts/contract-key-001',
         isExternal: false,
       })
       expect(
@@ -142,7 +142,7 @@ describe('entityHref', () => {
           }),
         ),
       ).toEqual({
-        href: '/achizitii/proceduri/proc-2025-cluj-48000',
+        href: '/procurement/procedures/proc-2025-cluj-48000',
         isExternal: false,
       })
     })
@@ -155,7 +155,7 @@ describe('entityHref', () => {
         }),
       )
       expect(result).toEqual({
-        href: '/achizitii/achizitii-directe/da-key-001',
+        href: '/procurement/direct-acquisitions/da-key-001',
         isExternal: false,
       })
     })

@@ -72,7 +72,7 @@ export function PartyRankingChart({
   return (
     <div className={className}>
       {/* Visual bar-list */}
-      <ul className="space-y-2" aria-hidden>
+      <ul className="space-y-2">
         {rows.slice(0, MAX_BARS).map((row, index) => {
           const raw = rowMetric(row, metric)
           const widthPct =
@@ -82,6 +82,8 @@ export function PartyRankingChart({
           const party = rowParty(row, partyKind)
           const partyLabel =
             party?.displayName ?? party?.name ?? party?.cui ?? t`Necunoscut`
+          const partyTo =
+            partyKind === 'authority' ? '/entities/$cui' : '/companies/$cui'
           const share =
             total > 0 && (metric === 'count' || rowAmount(row) !== null)
               ? Math.round((raw / total) * 100)
@@ -89,7 +91,17 @@ export function PartyRankingChart({
           return (
             <li key={`${party?.cui ?? index}-${index}`} className="space-y-1">
               <div className="flex items-center justify-between gap-2 text-sm">
-                <span className="truncate font-medium">{partyLabel}</span>
+                {party?.cui ? (
+                  <Link
+                    to={partyTo}
+                    params={{ cui: party.cui }}
+                    className="truncate font-medium text-foreground underline underline-offset-2 hover:text-primary"
+                  >
+                    {partyLabel}
+                  </Link>
+                ) : (
+                  <span className="truncate font-medium">{partyLabel}</span>
+                )}
                 <span className="shrink-0 text-muted-foreground">
                   {metric === 'value' ? (
                     <ValueWithCurrency

@@ -100,7 +100,7 @@ function SupplierSliceContent({
             metric={canSpend ? 'value' : 'count'}
           />
           <Link
-            to="/achizitii/cautare"
+            to="/procurement/search"
             search={{
               supplier_cui: data.supplierCui,
               grain: 'contracts',

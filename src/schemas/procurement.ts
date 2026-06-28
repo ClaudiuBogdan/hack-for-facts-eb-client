@@ -377,6 +377,8 @@ export const procurementLandingSchema = z.object({
   headline: z.object({
     /** RON sum decimal string, or null when not summable. */
     totalValueRon: decimalStringSchema.nullable(),
+    directAcquisitionsCount: z.number(),
+    contractsCount: z.number(),
     buyersCount: z.number(),
     suppliersCount: z.number(),
     recordsCount: z.number(),
@@ -384,6 +386,7 @@ export const procurementLandingSchema = z.object({
   topAuthorities: z.array(topPartyRowSchema),
   topSuppliers: z.array(topPartyRowSchema),
   topCategories: z.array(categoryRowSchema),
+  spendOverTime: z.array(monthlyPointSchema).default([]),
   gate: capabilityGateSchema,
 })
 

@@ -40,10 +40,19 @@ vi.mock('@tanstack/react-router', () => ({
       {children}
     </a>
   ),
+  useNavigate: () => vi.fn(),
 }))
 
 vi.mock('../hooks/use-procurement-data', () => ({
   useProcurementLanding: vi.fn(),
+}))
+
+vi.mock('@/features/entity-search/hooks/use-entity-search', () => ({
+  useEntitySearch: vi.fn(() => ({
+    data: { hits: [] },
+    isFetching: false,
+    isError: false,
+  })),
 }))
 
 const useProcurementLandingMock = vi.mocked(useProcurementLanding)
@@ -66,20 +75,29 @@ describe('ProcurementLandingPage', () => {
     } as ReturnType<typeof useProcurementLanding>)
   })
 
-  it('renders the mock-first procurement landing route with trust context and entry navigation', () => {
+  it('renders the count-led procurement landing route with search, rankings, and entry navigation', () => {
     renderLandingPage()
 
     expect(
       screen.getByRole('heading', {
-        name: 'Urmărim banii din achiziții publice',
+        name: 'Achiziții publice',
       }),
     ).toBeInTheDocument()
     expect(screen.getAllByText('Mock')[0]).toBeInTheDocument()
     expect(screen.getByText(/Date până la:/)).toHaveTextContent('25.06.2026')
-    expect(screen.getByText('Volum total')).toBeInTheDocument()
-    expect(screen.getByText('Explorează un furnizor')).toBeInTheDocument()
-    expect(screen.getByText('Categorii de achiziții (CPV)')).toBeInTheDocument()
-    expect(screen.getByText('Autorități principale')).toBeInTheDocument()
+    expect(screen.getByText('Achiziții directe')).toBeInTheDocument()
+    expect(screen.getByText('Contracte')).toBeInTheDocument()
+    expect(screen.getAllByText('Instituții').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Firme').length).toBeGreaterThan(0)
+    expect(
+      screen.getByRole('heading', {
+        name: 'Caută o instituție, o firmă sau un contract',
+      }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Traseul banilor')).toBeInTheDocument()
+    expect(screen.getByText('Categorii CPV principale')).toBeInTheDocument()
+    expect(screen.getByText('Intrări rapide')).toBeInTheDocument()
+    expect(screen.getByText('Despre acoperire')).toBeInTheDocument()
   })
 
   it('renders the route-level error state without hiding the retry affordance', () => {
@@ -96,7 +114,7 @@ describe('ProcurementLandingPage', () => {
     ).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Reîncearcă' })).toHaveAttribute(
       'href',
-      '/achizitii',
+      '/procurement',
     )
   })
 })

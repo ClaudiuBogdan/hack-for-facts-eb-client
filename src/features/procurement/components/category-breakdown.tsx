@@ -38,7 +38,7 @@ function rowAmount(row: CategoryRow): number | null {
 
 /**
  * CPV division breakdown. Visual donut (pure CSS conic-gradient) + semantic
- * table fallback (a11y). Slice labels link to `/achizitii/cpv/$code`.
+ * table fallback (a11y). Slice labels link to `/procurement/categories/$code`.
  */
 export function CategoryBreakdown({ rows, className, emptyLabel }: Props) {
   const totalRon = useMemo(() => {
@@ -84,7 +84,7 @@ export function CategoryBreakdown({ rows, className, emptyLabel }: Props) {
           aria-label={t`Repartizarea pe categorii CPV`}
           style={{ background: `conic-gradient(${conicGradient})` }}
         />
-        <ul className="flex-1 space-y-1.5 text-sm" aria-hidden>
+        <ul className="flex-1 space-y-1.5 text-sm">
           {segments.map((seg, index) => (
             <li
               key={`${seg.row.cpvDivisionCode ?? 'na'}-${index}`}
@@ -96,7 +96,7 @@ export function CategoryBreakdown({ rows, className, emptyLabel }: Props) {
                   style={{ backgroundColor: seg.color }}
                 />
                 <Link
-                  to="/achizitii/cpv/$code"
+                  to="/procurement/categories/$code"
                   params={{ code: seg.row.cpvDivisionCode ?? '' }}
                   className="font-medium text-foreground underline underline-offset-2 hover:text-primary"
                 >
@@ -148,7 +148,7 @@ export function CategoryBreakdown({ rows, className, emptyLabel }: Props) {
               <TableRow key={row.cpvDivisionCode ?? row.cpvDivisionLabelEn}>
                 <TableCell>
                   <Link
-                    to="/achizitii/cpv/$code"
+                    to="/procurement/categories/$code"
                     params={{ code: row.cpvDivisionCode ?? '' }}
                     className="font-medium text-foreground underline underline-offset-2 hover:text-primary"
                   >

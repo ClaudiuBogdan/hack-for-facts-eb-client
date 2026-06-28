@@ -19,7 +19,7 @@ vi.mock('@/features/procurement/api/procurement-api', () => ({
 }))
 
 async function importProcedureRoute() {
-  const { Route } = await import('./proceduri/$id')
+  const { Route } = await import('./procedures/$id')
   return Route as unknown as {
     loader: (input: { readonly params: { readonly id: string } }) => Promise<{
       readonly detail: unknown
@@ -28,7 +28,7 @@ async function importProcedureRoute() {
 }
 
 async function importContractRoute() {
-  const { Route } = await import('./contracte/$id')
+  const { Route } = await import('./contracts/$id')
   return Route as unknown as {
     loader: (input: { readonly params: { readonly id: string } }) => Promise<{
       readonly detail: unknown
@@ -37,7 +37,7 @@ async function importContractRoute() {
 }
 
 async function importDirectAcquisitionRoute() {
-  const { Route } = await import('./achizitii-directe/$id')
+  const { Route } = await import('./direct-acquisitions/$id')
   return Route as unknown as {
     loader: (input: { readonly params: { readonly id: string } }) => Promise<{
       readonly detail: unknown

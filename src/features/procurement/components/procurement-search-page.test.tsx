@@ -111,7 +111,7 @@ describe('ProcurementSearchPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Aplică textul căutat' }))
 
     expect(navigateMock).toHaveBeenCalledWith({
-      to: '/achizitii/cautare',
+      to: '/procurement/search',
       search: expect.any(Function),
     })
 

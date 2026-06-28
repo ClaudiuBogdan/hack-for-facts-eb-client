@@ -517,6 +517,8 @@ const monthlyPoints: MonthlyPoint[] = [
 const landing: ProcurementLanding = procurementLandingSchema.parse({
   headline: {
     totalValueRon: ronStr(475_000_000),
+    directAcquisitionsCount: 15_822_708,
+    contractsCount: 895_584,
     buyersCount: 4_120,
     suppliersCount: 11_860,
     recordsCount: 21_566_426,
@@ -524,6 +526,7 @@ const landing: ProcurementLanding = procurementLandingSchema.parse({
   topAuthorities,
   topSuppliers,
   topCategories,
+  spendOverTime: monthlyPoints,
   gate: DA_GATE,
 })
 

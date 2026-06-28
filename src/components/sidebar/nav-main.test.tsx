@@ -155,7 +155,7 @@ describe('NavMain', () => {
     it('renders Achizitii publice link', async () => {
       await renderNavMain()
 
-      expect(screen.getByTestId('link-/achizitii')).toBeInTheDocument()
+      expect(screen.getByTestId('link-/procurement')).toBeInTheDocument()
       expect(screen.getByText('Achiziții publice')).toBeInTheDocument()
     })
 
@@ -323,11 +323,11 @@ describe('NavMain', () => {
       expect(dashboardLink).not.toHaveClass('bg-muted')
     })
 
-    it('marks Achizitii as active when on /achizitii subpath', async () => {
-      mockMatches.mockReturnValue([{ pathname: '/achizitii/cautare' }])
+    it('marks Achizitii as active when on /procurement subpath', async () => {
+      mockMatches.mockReturnValue([{ pathname: '/procurement/search' }])
       await renderNavMain()
 
-      const achizitiiLink = screen.getByTestId('link-/achizitii')
+      const achizitiiLink = screen.getByTestId('link-/procurement')
       expect(achizitiiLink).toHaveClass('bg-muted')
     })
 

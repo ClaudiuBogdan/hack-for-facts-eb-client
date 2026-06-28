@@ -133,7 +133,7 @@ export const scraperDatasetCatalog: readonly ScraperDatasetReference[] = [
     newLatestPaths: [newLatest('src/sources/public-contracts/')],
     clientFeaturePaths: [
       'src/features/procurement/',
-      'src/routes/achizitii/',
+      'src/routes/procurement/',
     ],
     clientSchemaPaths: [
       'src/schemas/procurement.ts',

@@ -26,12 +26,14 @@ import { Route as CookiePolicyRouteImport } from './routes/cookie-policy'
 import { Route as BugeteLocale2026RouteImport } from './routes/bugete-locale-2026'
 import { Route as BugetNational2026RouteImport } from './routes/buget-national-2026'
 import { Route as BudgetExplorerRouteImport } from './routes/budget-explorer'
+import { Route as ProcurementRouteRouteImport } from './routes/procurement/route'
 import { Route as LegislatieRouteRouteImport } from './routes/legislatie/route'
 import { Route as InvestitiiPubliceRouteRouteImport } from './routes/investitii-publice/route'
 import { Route as EntitiesRouteRouteImport } from './routes/entities/route'
 import { Route as AchizitiiRouteRouteImport } from './routes/achizitii/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StatisticiIndexRouteImport } from './routes/statistici/index'
+import { Route as ProcurementIndexRouteImport } from './routes/procurement/index'
 import { Route as PrimarieIndexRouteImport } from './routes/primarie/index'
 import { Route as ParlamentIndexRouteImport } from './routes/parlament/index'
 import { Route as OngUriIndexRouteImport } from './routes/ong-uri/index'
@@ -51,6 +53,7 @@ import { Route as SettingsProfileRouteImport } from './routes/settings/profile'
 import { Route as SettingsNotificationsRouteImport } from './routes/settings/notifications'
 import { Route as ProvocareTermeniSiConditiiRouteImport } from './routes/provocare_.termeni-si-conditii'
 import { Route as ProvocareNotificariRouteImport } from './routes/provocare_.notificari'
+import { Route as ProcurementSearchRouteImport } from './routes/procurement/search'
 import { Route as PnrrShareImageDotpngRouteImport } from './routes/pnrr.share-image[.]png'
 import { Route as OngUriServiciiRouteImport } from './routes/ong-uri.servicii'
 import { Route as OngUriCuiRouteImport } from './routes/ong-uri.$cui'
@@ -82,6 +85,10 @@ import { Route as ClassificationsFunctionalIndexRouteImport } from './routes/cla
 import { Route as ClassificationsEconomicIndexRouteImport } from './routes/classifications/economic/index'
 import { Route as LangLearningIndexRouteImport } from './routes/$lang/learning/index'
 import { Route as StatisticiTeritoriiSirutaRouteImport } from './routes/statistici/teritorii/$siruta'
+import { Route as ProcurementProceduresIdRouteImport } from './routes/procurement/procedures/$id'
+import { Route as ProcurementDirectAcquisitionsIdRouteImport } from './routes/procurement/direct-acquisitions/$id'
+import { Route as ProcurementContractsIdRouteImport } from './routes/procurement/contracts/$id'
+import { Route as ProcurementCategoriesCodeRouteImport } from './routes/procurement/categories/$code'
 import { Route as PrimarieCuiShareImageDotpngRouteImport } from './routes/primarie/$cui/share-image[.]png'
 import { Route as ParlamentGrupuriGroupIdRouteImport } from './routes/parlament/grupuri/$groupId'
 import { Route as OngUriSursaSnapshotIdRouteImport } from './routes/ong-uri.sursa.$snapshotId'
@@ -240,6 +247,11 @@ const BudgetExplorerRoute = BudgetExplorerRouteImport.update({
 } as any).lazy(() =>
   import('./routes/budget-explorer.lazy').then((d) => d.Route),
 )
+const ProcurementRouteRoute = ProcurementRouteRouteImport.update({
+  id: '/procurement',
+  path: '/procurement',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LegislatieRouteRoute = LegislatieRouteRouteImport.update({
   id: '/legislatie',
   path: '/legislatie',
@@ -276,6 +288,13 @@ const StatisticiIndexRoute = StatisticiIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
   import('./routes/statistici/index.lazy').then((d) => d.Route),
+)
+const ProcurementIndexRoute = ProcurementIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProcurementRouteRoute,
+} as any).lazy(() =>
+  import('./routes/procurement/index.lazy').then((d) => d.Route),
 )
 const PrimarieIndexRoute = PrimarieIndexRouteImport.update({
   id: '/primarie/',
@@ -342,9 +361,7 @@ const AchizitiiIndexRoute = AchizitiiIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AchizitiiRouteRoute,
-} as any).lazy(() =>
-  import('./routes/achizitii/index.lazy').then((d) => d.Route),
-)
+} as any)
 const ResearchEmployeesDataLazyRoute =
   ResearchEmployeesDataLazyRouteImport.update({
     id: '/research/employees-data',
@@ -397,6 +414,13 @@ const ProvocareNotificariRoute = ProvocareNotificariRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
   import('./routes/provocare_.notificari.lazy').then((d) => d.Route),
+)
+const ProcurementSearchRoute = ProcurementSearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => ProcurementRouteRoute,
+} as any).lazy(() =>
+  import('./routes/procurement/search.lazy').then((d) => d.Route),
 )
 const PnrrShareImageDotpngRoute = PnrrShareImageDotpngRouteImport.update({
   id: '/share-image.png',
@@ -484,9 +508,7 @@ const AchizitiiCautareRoute = AchizitiiCautareRouteImport.update({
   id: '/cautare',
   path: '/cautare',
   getParentRoute: () => AchizitiiRouteRoute,
-} as any).lazy(() =>
-  import('./routes/achizitii/cautare.lazy').then((d) => d.Route),
-)
+} as any)
 const PrimarieCuiRouteRoute = PrimarieCuiRouteRouteImport.update({
   id: '/primarie/$cui',
   path: '/primarie/$cui',
@@ -605,6 +627,38 @@ const StatisticiTeritoriiSirutaRoute =
     getParentRoute: () => rootRouteImport,
   } as any).lazy(() =>
     import('./routes/statistici/teritorii/$siruta.lazy').then((d) => d.Route),
+  )
+const ProcurementProceduresIdRoute = ProcurementProceduresIdRouteImport.update({
+  id: '/procedures/$id',
+  path: '/procedures/$id',
+  getParentRoute: () => ProcurementRouteRoute,
+} as any).lazy(() =>
+  import('./routes/procurement/procedures/$id.lazy').then((d) => d.Route),
+)
+const ProcurementDirectAcquisitionsIdRoute =
+  ProcurementDirectAcquisitionsIdRouteImport.update({
+    id: '/direct-acquisitions/$id',
+    path: '/direct-acquisitions/$id',
+    getParentRoute: () => ProcurementRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/procurement/direct-acquisitions/$id.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ProcurementContractsIdRoute = ProcurementContractsIdRouteImport.update({
+  id: '/contracts/$id',
+  path: '/contracts/$id',
+  getParentRoute: () => ProcurementRouteRoute,
+} as any).lazy(() =>
+  import('./routes/procurement/contracts/$id.lazy').then((d) => d.Route),
+)
+const ProcurementCategoriesCodeRoute =
+  ProcurementCategoriesCodeRouteImport.update({
+    id: '/categories/$code',
+    path: '/categories/$code',
+    getParentRoute: () => ProcurementRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/procurement/categories/$code.lazy').then((d) => d.Route),
   )
 const PrimarieCuiShareImageDotpngRoute =
   PrimarieCuiShareImageDotpngRouteImport.update({
@@ -732,33 +786,23 @@ const AchizitiiProceduriIdRoute = AchizitiiProceduriIdRouteImport.update({
   id: '/proceduri/$id',
   path: '/proceduri/$id',
   getParentRoute: () => AchizitiiRouteRoute,
-} as any).lazy(() =>
-  import('./routes/achizitii/proceduri/$id.lazy').then((d) => d.Route),
-)
+} as any)
 const AchizitiiCpvCodeRoute = AchizitiiCpvCodeRouteImport.update({
   id: '/cpv/$code',
   path: '/cpv/$code',
   getParentRoute: () => AchizitiiRouteRoute,
-} as any).lazy(() =>
-  import('./routes/achizitii/cpv/$code.lazy').then((d) => d.Route),
-)
+} as any)
 const AchizitiiContracteIdRoute = AchizitiiContracteIdRouteImport.update({
   id: '/contracte/$id',
   path: '/contracte/$id',
   getParentRoute: () => AchizitiiRouteRoute,
-} as any).lazy(() =>
-  import('./routes/achizitii/contracte/$id.lazy').then((d) => d.Route),
-)
+} as any)
 const AchizitiiAchizitiiDirecteIdRoute =
   AchizitiiAchizitiiDirecteIdRouteImport.update({
     id: '/achizitii-directe/$id',
     path: '/achizitii-directe/$id',
     getParentRoute: () => AchizitiiRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/achizitii/achizitii-directe/$id.lazy').then(
-      (d) => d.Route,
-    ),
-  )
+  } as any)
 const LangLearningOnboardingRoute = LangLearningOnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -1132,6 +1176,7 @@ export interface FileRoutesByFullPath {
   '/entities': typeof EntitiesRouteRouteWithChildren
   '/investitii-publice': typeof InvestitiiPubliceRouteRouteWithChildren
   '/legislatie': typeof LegislatieRouteRouteWithChildren
+  '/procurement': typeof ProcurementRouteRouteWithChildren
   '/budget-explorer': typeof BudgetExplorerRoute
   '/buget-national-2026': typeof BugetNational2026Route
   '/bugete-locale-2026': typeof BugeteLocale2026RouteWithChildren
@@ -1167,6 +1212,7 @@ export interface FileRoutesByFullPath {
   '/ong-uri/$cui': typeof OngUriCuiRoute
   '/ong-uri/servicii': typeof OngUriServiciiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
+  '/procurement/search': typeof ProcurementSearchRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
   '/provocare/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
@@ -1187,6 +1233,7 @@ export interface FileRoutesByFullPath {
   '/ong-uri/': typeof OngUriIndexRoute
   '/parlament/': typeof ParlamentIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
+  '/procurement/': typeof ProcurementIndexRoute
   '/statistici/': typeof StatisticiIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
@@ -1216,6 +1263,10 @@ export interface FileRoutesByFullPath {
   '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
   '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
+  '/procurement/categories/$code': typeof ProcurementCategoriesCodeRoute
+  '/procurement/contracts/$id': typeof ProcurementContractsIdRoute
+  '/procurement/direct-acquisitions/$id': typeof ProcurementDirectAcquisitionsIdRoute
+  '/procurement/procedures/$id': typeof ProcurementProceduresIdRoute
   '/statistici/teritorii/$siruta': typeof StatisticiTeritoriiSirutaRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
@@ -1298,6 +1349,7 @@ export interface FileRoutesByTo {
   '/ong-uri/$cui': typeof OngUriCuiRoute
   '/ong-uri/servicii': typeof OngUriServiciiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
+  '/procurement/search': typeof ProcurementSearchRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
   '/provocare/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
@@ -1318,6 +1370,7 @@ export interface FileRoutesByTo {
   '/ong-uri': typeof OngUriIndexRoute
   '/parlament': typeof ParlamentIndexRoute
   '/primarie': typeof PrimarieIndexRoute
+  '/procurement': typeof ProcurementIndexRoute
   '/statistici': typeof StatisticiIndexRoute
   '/charts': typeof ChartsIndexLazyRoute
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
@@ -1343,6 +1396,10 @@ export interface FileRoutesByTo {
   '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
   '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
+  '/procurement/categories/$code': typeof ProcurementCategoriesCodeRoute
+  '/procurement/contracts/$id': typeof ProcurementContractsIdRoute
+  '/procurement/direct-acquisitions/$id': typeof ProcurementDirectAcquisitionsIdRoute
+  '/procurement/procedures/$id': typeof ProcurementProceduresIdRoute
   '/statistici/teritorii/$siruta': typeof StatisticiTeritoriiSirutaRoute
   '/$lang/learning': typeof LangLearningIndexRoute
   '/classifications/economic': typeof ClassificationsEconomicIndexRoute
@@ -1400,6 +1457,7 @@ export interface FileRoutesById {
   '/entities': typeof EntitiesRouteRouteWithChildren
   '/investitii-publice': typeof InvestitiiPubliceRouteRouteWithChildren
   '/legislatie': typeof LegislatieRouteRouteWithChildren
+  '/procurement': typeof ProcurementRouteRouteWithChildren
   '/budget-explorer': typeof BudgetExplorerRoute
   '/buget-national-2026': typeof BugetNational2026Route
   '/bugete-locale-2026': typeof BugeteLocale2026RouteWithChildren
@@ -1435,6 +1493,7 @@ export interface FileRoutesById {
   '/ong-uri/$cui': typeof OngUriCuiRoute
   '/ong-uri/servicii': typeof OngUriServiciiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
+  '/procurement/search': typeof ProcurementSearchRoute
   '/provocare_/notificari': typeof ProvocareNotificariRoute
   '/provocare_/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
@@ -1455,6 +1514,7 @@ export interface FileRoutesById {
   '/ong-uri/': typeof OngUriIndexRoute
   '/parlament/': typeof ParlamentIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
+  '/procurement/': typeof ProcurementIndexRoute
   '/statistici/': typeof StatisticiIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
@@ -1484,6 +1544,10 @@ export interface FileRoutesById {
   '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
   '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
+  '/procurement/categories/$code': typeof ProcurementCategoriesCodeRoute
+  '/procurement/contracts/$id': typeof ProcurementContractsIdRoute
+  '/procurement/direct-acquisitions/$id': typeof ProcurementDirectAcquisitionsIdRoute
+  '/procurement/procedures/$id': typeof ProcurementProceduresIdRoute
   '/statistici/teritorii/$siruta': typeof StatisticiTeritoriiSirutaRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
@@ -1543,6 +1607,7 @@ export interface FileRouteTypes {
     | '/entities'
     | '/investitii-publice'
     | '/legislatie'
+    | '/procurement'
     | '/budget-explorer'
     | '/buget-national-2026'
     | '/bugete-locale-2026'
@@ -1578,6 +1643,7 @@ export interface FileRouteTypes {
     | '/ong-uri/$cui'
     | '/ong-uri/servicii'
     | '/pnrr/share-image.png'
+    | '/procurement/search'
     | '/provocare/notificari'
     | '/provocare/termeni-si-conditii'
     | '/settings/notifications'
@@ -1598,6 +1664,7 @@ export interface FileRouteTypes {
     | '/ong-uri/'
     | '/parlament/'
     | '/primarie/'
+    | '/procurement/'
     | '/statistici/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
@@ -1627,6 +1694,10 @@ export interface FileRouteTypes {
     | '/ong-uri/sursa/$snapshotId'
     | '/parlament/grupuri/$groupId'
     | '/primarie/$cui/share-image.png'
+    | '/procurement/categories/$code'
+    | '/procurement/contracts/$id'
+    | '/procurement/direct-acquisitions/$id'
+    | '/procurement/procedures/$id'
     | '/statistici/teritorii/$siruta'
     | '/$lang/learning/'
     | '/classifications/economic/'
@@ -1709,6 +1780,7 @@ export interface FileRouteTypes {
     | '/ong-uri/$cui'
     | '/ong-uri/servicii'
     | '/pnrr/share-image.png'
+    | '/procurement/search'
     | '/provocare/notificari'
     | '/provocare/termeni-si-conditii'
     | '/settings/notifications'
@@ -1729,6 +1801,7 @@ export interface FileRouteTypes {
     | '/ong-uri'
     | '/parlament'
     | '/primarie'
+    | '/procurement'
     | '/statistici'
     | '/charts'
     | '/$lang/learning/onboarding'
@@ -1754,6 +1827,10 @@ export interface FileRouteTypes {
     | '/ong-uri/sursa/$snapshotId'
     | '/parlament/grupuri/$groupId'
     | '/primarie/$cui/share-image.png'
+    | '/procurement/categories/$code'
+    | '/procurement/contracts/$id'
+    | '/procurement/direct-acquisitions/$id'
+    | '/procurement/procedures/$id'
     | '/statistici/teritorii/$siruta'
     | '/$lang/learning'
     | '/classifications/economic'
@@ -1810,6 +1887,7 @@ export interface FileRouteTypes {
     | '/entities'
     | '/investitii-publice'
     | '/legislatie'
+    | '/procurement'
     | '/budget-explorer'
     | '/buget-national-2026'
     | '/bugete-locale-2026'
@@ -1845,6 +1923,7 @@ export interface FileRouteTypes {
     | '/ong-uri/$cui'
     | '/ong-uri/servicii'
     | '/pnrr/share-image.png'
+    | '/procurement/search'
     | '/provocare_/notificari'
     | '/provocare_/termeni-si-conditii'
     | '/settings/notifications'
@@ -1865,6 +1944,7 @@ export interface FileRouteTypes {
     | '/ong-uri/'
     | '/parlament/'
     | '/primarie/'
+    | '/procurement/'
     | '/statistici/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
@@ -1894,6 +1974,10 @@ export interface FileRouteTypes {
     | '/ong-uri/sursa/$snapshotId'
     | '/parlament/grupuri/$groupId'
     | '/primarie/$cui/share-image.png'
+    | '/procurement/categories/$code'
+    | '/procurement/contracts/$id'
+    | '/procurement/direct-acquisitions/$id'
+    | '/procurement/procedures/$id'
     | '/statistici/teritorii/$siruta'
     | '/$lang/learning/'
     | '/classifications/economic/'
@@ -1952,6 +2036,7 @@ export interface RootRouteChildren {
   EntitiesRouteRoute: typeof EntitiesRouteRouteWithChildren
   InvestitiiPubliceRouteRoute: typeof InvestitiiPubliceRouteRouteWithChildren
   LegislatieRouteRoute: typeof LegislatieRouteRouteWithChildren
+  ProcurementRouteRoute: typeof ProcurementRouteRouteWithChildren
   BudgetExplorerRoute: typeof BudgetExplorerRoute
   BugetNational2026Route: typeof BugetNational2026Route
   BugeteLocale2026Route: typeof BugeteLocale2026RouteWithChildren
@@ -2136,6 +2221,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BudgetExplorerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/procurement': {
+      id: '/procurement'
+      path: '/procurement'
+      fullPath: '/procurement'
+      preLoaderRoute: typeof ProcurementRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/legislatie': {
       id: '/legislatie'
       path: '/legislatie'
@@ -2184,6 +2276,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/statistici/'
       preLoaderRoute: typeof StatisticiIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/procurement/': {
+      id: '/procurement/'
+      path: '/'
+      fullPath: '/procurement/'
+      preLoaderRoute: typeof ProcurementIndexRouteImport
+      parentRoute: typeof ProcurementRouteRoute
     }
     '/primarie/': {
       id: '/primarie/'
@@ -2324,6 +2423,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/provocare/notificari'
       preLoaderRoute: typeof ProvocareNotificariRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/procurement/search': {
+      id: '/procurement/search'
+      path: '/search'
+      fullPath: '/procurement/search'
+      preLoaderRoute: typeof ProcurementSearchRouteImport
+      parentRoute: typeof ProcurementRouteRoute
     }
     '/pnrr/share-image.png': {
       id: '/pnrr/share-image.png'
@@ -2555,6 +2661,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/statistici/teritorii/$siruta'
       preLoaderRoute: typeof StatisticiTeritoriiSirutaRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/procurement/procedures/$id': {
+      id: '/procurement/procedures/$id'
+      path: '/procedures/$id'
+      fullPath: '/procurement/procedures/$id'
+      preLoaderRoute: typeof ProcurementProceduresIdRouteImport
+      parentRoute: typeof ProcurementRouteRoute
+    }
+    '/procurement/direct-acquisitions/$id': {
+      id: '/procurement/direct-acquisitions/$id'
+      path: '/direct-acquisitions/$id'
+      fullPath: '/procurement/direct-acquisitions/$id'
+      preLoaderRoute: typeof ProcurementDirectAcquisitionsIdRouteImport
+      parentRoute: typeof ProcurementRouteRoute
+    }
+    '/procurement/contracts/$id': {
+      id: '/procurement/contracts/$id'
+      path: '/contracts/$id'
+      fullPath: '/procurement/contracts/$id'
+      preLoaderRoute: typeof ProcurementContractsIdRouteImport
+      parentRoute: typeof ProcurementRouteRoute
+    }
+    '/procurement/categories/$code': {
+      id: '/procurement/categories/$code'
+      path: '/categories/$code'
+      fullPath: '/procurement/categories/$code'
+      preLoaderRoute: typeof ProcurementCategoriesCodeRouteImport
+      parentRoute: typeof ProcurementRouteRoute
     }
     '/primarie/$cui/share-image.png': {
       id: '/primarie/$cui/share-image.png'
@@ -3086,6 +3220,27 @@ const LegislatieRouteRouteWithChildren = LegislatieRouteRoute._addFileChildren(
   LegislatieRouteRouteChildren,
 )
 
+interface ProcurementRouteRouteChildren {
+  ProcurementSearchRoute: typeof ProcurementSearchRoute
+  ProcurementIndexRoute: typeof ProcurementIndexRoute
+  ProcurementCategoriesCodeRoute: typeof ProcurementCategoriesCodeRoute
+  ProcurementContractsIdRoute: typeof ProcurementContractsIdRoute
+  ProcurementDirectAcquisitionsIdRoute: typeof ProcurementDirectAcquisitionsIdRoute
+  ProcurementProceduresIdRoute: typeof ProcurementProceduresIdRoute
+}
+
+const ProcurementRouteRouteChildren: ProcurementRouteRouteChildren = {
+  ProcurementSearchRoute: ProcurementSearchRoute,
+  ProcurementIndexRoute: ProcurementIndexRoute,
+  ProcurementCategoriesCodeRoute: ProcurementCategoriesCodeRoute,
+  ProcurementContractsIdRoute: ProcurementContractsIdRoute,
+  ProcurementDirectAcquisitionsIdRoute: ProcurementDirectAcquisitionsIdRoute,
+  ProcurementProceduresIdRoute: ProcurementProceduresIdRoute,
+}
+
+const ProcurementRouteRouteWithChildren =
+  ProcurementRouteRoute._addFileChildren(ProcurementRouteRouteChildren)
+
 interface BugeteLocale2026RouteChildren {
   BugeteLocale2026TermeniSiConditiiRoute: typeof BugeteLocale2026TermeniSiConditiiRoute
 }
@@ -3381,6 +3536,7 @@ const rootRouteChildren: RootRouteChildren = {
   EntitiesRouteRoute: EntitiesRouteRouteWithChildren,
   InvestitiiPubliceRouteRoute: InvestitiiPubliceRouteRouteWithChildren,
   LegislatieRouteRoute: LegislatieRouteRouteWithChildren,
+  ProcurementRouteRoute: ProcurementRouteRouteWithChildren,
   BudgetExplorerRoute: BudgetExplorerRoute,
   BugetNational2026Route: BugetNational2026Route,
   BugeteLocale2026Route: BugeteLocale2026RouteWithChildren,
@@ -3456,13 +3612,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

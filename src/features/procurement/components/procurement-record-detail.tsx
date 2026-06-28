@@ -164,12 +164,12 @@ function Breadcrumb({
 }) {
   return (
     <nav aria-label={t`Breadcrumb`} className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
-      <Link to="/achizitii" className="underline underline-offset-2 hover:text-foreground">
+      <Link to="/procurement" className="underline underline-offset-2 hover:text-foreground">
         <Trans>Achiziții publice</Trans>
       </Link>
       <span aria-hidden>/</span>
       <Link
-        to="/achizitii/cautare"
+        to="/procurement/search"
         search={{ grain: grain as 'procedures' | 'contracts' | 'direct_acquisitions' }}
         className="underline underline-offset-2 hover:text-foreground"
       >
@@ -351,7 +351,7 @@ function RelatedContractsSection({ detail }: { readonly detail: AnyDetail }) {
         {contracts.map((c) => (
           <li key={c.id}>
             <Link
-              to="/achizitii/contracte/$id"
+              to="/procurement/contracts/$id"
               params={{ id: c.id }}
               className="font-medium text-foreground underline underline-offset-2 hover:text-primary"
             >
@@ -451,7 +451,7 @@ function RelatedLinksSection({ record }: { readonly record: AnyRecord }) {
         {record.grain === 'contract' && record.procedureId ? (
           <li>
             <Link
-              to="/achizitii/proceduri/$id"
+              to="/procurement/procedures/$id"
               params={{ id: record.procedureId }}
               className="font-medium text-foreground underline underline-offset-2 hover:text-primary"
             >
@@ -461,7 +461,7 @@ function RelatedLinksSection({ record }: { readonly record: AnyRecord }) {
         ) : null}
         <li>
           <Link
-            to="/achizitii/cautare"
+            to="/procurement/search"
             search={{ authority_cui: authorityCui ?? undefined }}
             className="font-medium text-foreground underline underline-offset-2 hover:text-primary"
           >

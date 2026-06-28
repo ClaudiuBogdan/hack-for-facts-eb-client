@@ -1,40 +1,13 @@
-import { createFileRoute, notFound } from '@tanstack/react-router'
-import { getSiteUrl } from '@/config/env'
-import { createPublicPageCacheHeaders } from '@/lib/http-cache'
-import { procurementApi } from '@/features/procurement/api/procurement-api'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/achizitii/achizitii-directe/$id')({
-  ssr: true,
-  headers: () =>
-    createPublicPageCacheHeaders({
-      sharedMaxAgeSeconds: 300,
-      staleWhileRevalidateSeconds: 3600,
-    }),
-  loader: async ({ params }) => {
-    const detail = await procurementApi.fetchDirectAcquisitionDetail(params.id)
-    if (!detail) {
-      throw notFound()
-    }
-    return { detail }
+  beforeLoad: ({ params, search }) => {
+    throw redirect({
+      to: '/procurement/direct-acquisitions/$id',
+      params: { id: params.id },
+      search,
+      replace: true,
+      statusCode: 301,
+    })
   },
-  head: buildDirectAcquisitionDetailHead,
 })
-
-function buildDirectAcquisitionDetailHead({
-  params,
-}: {
-  readonly params: { readonly id: string }
-}) {
-  const site = getSiteUrl()
-  const canonical = `${site}/achizitii/achizitii-directe/${params.id}`
-  const title = `Achiziție directă ${params.id} — Achiziții publice — Transparenta.eu`
-  return {
-    meta: [
-      { title },
-      { name: 'description', content: 'Detalii achiziție directă.' },
-      { property: 'og:title', content: title },
-      { property: 'og:url', content: canonical },
-    ],
-    links: [{ rel: 'canonical', href: canonical }],
-  }
-}
