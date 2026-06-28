@@ -9,6 +9,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { ValueWithCurrency } from './value-with-currency'
+import { ronAmountSlice } from '../lib/formatting'
 import type { ContractModification } from '@/schemas/procurement'
 
 type Props = {
@@ -79,11 +80,11 @@ function TrailTable({
             <span className="text-xs text-muted-foreground">
               {m.modificationDate ?? t`dată indisponibilă`}
             </span>
-            <ValueWithCurrency value={m.valueBefore} notation="compact" />
+            <ValueWithCurrency value={ronAmountSlice(m.valueBeforeRon)} notation="compact" />
             <span aria-hidden>→</span>
-            <ValueWithCurrency value={m.valueAfter} notation="compact" />
+            <ValueWithCurrency value={ronAmountSlice(m.valueAfterRon)} notation="compact" />
             <span className="text-xs text-muted-foreground">
-              (<Trans>delta</Trans>: <ValueWithCurrency value={m.valueDelta} notation="compact" />)
+              (<Trans>delta</Trans>: <ValueWithCurrency value={ronAmountSlice(m.valueDeltaRon)} notation="compact" />)
             </span>
             {m.modificationType ? (
               <span className="rounded border border-border px-1.5 py-0.5 text-xs">
@@ -124,13 +125,13 @@ function TrailTable({
               <TableRow key={m.id}>
                 <TableCell>{m.modificationDate ?? t`indisponibil`}</TableCell>
                 <TableCell>
-                  <ValueWithCurrency value={m.valueBefore} notation="compact" />
+                  <ValueWithCurrency value={ronAmountSlice(m.valueBeforeRon)} notation="compact" />
                 </TableCell>
                 <TableCell>
-                  <ValueWithCurrency value={m.valueAfter} notation="compact" />
+                  <ValueWithCurrency value={ronAmountSlice(m.valueAfterRon)} notation="compact" />
                 </TableCell>
                 <TableCell>
-                  <ValueWithCurrency value={m.valueDelta} notation="compact" />
+                  <ValueWithCurrency value={ronAmountSlice(m.valueDeltaRon)} notation="compact" />
                 </TableCell>
                 <TableCell>{m.modificationType ?? t`indisponibil`}</TableCell>
               </TableRow>

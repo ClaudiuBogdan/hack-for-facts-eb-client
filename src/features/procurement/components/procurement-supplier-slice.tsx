@@ -17,7 +17,7 @@ import { CategoryBreakdown } from './category-breakdown'
 import { ProcurementRecordCard } from './procurement-record-card'
 import { SpendOverTime } from './spend-over-time'
 import { ValueWithCurrency } from './value-with-currency'
-import { formatFlowCount } from '../lib/formatting'
+import { formatFlowCount, ronAmountSlice } from '../lib/formatting'
 import { useProcurementSupplierSlice } from '../hooks/use-procurement-data'
 import { useCapabilityGate } from '@/components/shared/procurement-data'
 import type { SupplierProcurementSlice } from '@/schemas/procurement'
@@ -68,7 +68,7 @@ function SupplierSliceContent({
         <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <MetricCard
             label={t`Venituri din achiziții`}
-            value={<ValueWithCurrency value={data.summary.totalPublicRevenue} notation="compact" />}
+            value={<ValueWithCurrency value={ronAmountSlice(data.summary.totalPublicRevenueRon)} notation="compact" />}
             hint={t`Procurement-sourced, nu cifra de afaceri`}
             status={canSpend ? 'mock' : 'partial'}
           />
@@ -200,7 +200,10 @@ function CrossDomainChips({ slice }: { readonly slice: SupplierProcurementSlice 
 }
 
 function ConcentrationTeaser({ slice }: { readonly slice: SupplierProcurementSlice }) {
-  const singleBuyer = slice.topBuyers.length > 0 && slice.topBuyers[0]?.flowCount >= slice.summary.contractsCount * 0.9
+  const singleBuyer =
+    slice.topBuyers.length > 0 &&
+    Number(slice.topBuyers[0]?.flowCount ?? '0') >=
+      slice.summary.contractsCount * 0.9
   const isYoung =
     slice.summary.firstSeen !== null &&
     new Date(slice.summary.firstSeen).getFullYear() >= new Date().getFullYear() - 1

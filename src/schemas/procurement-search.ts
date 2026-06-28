@@ -38,11 +38,12 @@ export const procurementSortSchema = z.enum([
 
 export type ProcurementSort = z.infer<typeof procurementSortSchema>
 
-export const procurementSourceSchema = z.enum([
-  'elicitatie',
-  'seap',
-  'ted',
-])
+/**
+ * Coarse source filter (UI grouping). Maps to the prod source-system sets:
+ * `elicitatie` → e-licitatie lanes, `seap` → SEAP/SICAP bulk lanes. TED is
+ * raw-only (not projected into the procurement grains), so it is not a filter.
+ */
+export const procurementSourceSchema = z.enum(['elicitatie', 'seap'])
 
 export type ProcurementSource = z.infer<typeof procurementSourceSchema>
 
@@ -169,6 +170,4 @@ export type ReviewSignalKindValue = ReviewSignalKind
 export const REVIEW_SIGNAL_KIND_VALUES: readonly ReviewSignalKind[] = [
   'same_day',
   'repeated_pairs',
-  'modification_inflation',
-  'young_suppliers',
 ]

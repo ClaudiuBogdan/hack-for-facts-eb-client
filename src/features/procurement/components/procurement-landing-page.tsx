@@ -24,7 +24,7 @@ import { MetricCard, MetricCardSkeleton } from './metric-card'
 import { PartyRankingChart } from './party-ranking-chart'
 import { CategoryBreakdown } from './category-breakdown'
 import { ValueWithCurrency } from './value-with-currency'
-import { formatFlowCount } from '../lib/formatting'
+import { formatFlowCount, ronAmountSlice } from '../lib/formatting'
 import { useProcurementLanding } from '../hooks/use-procurement-data'
 import type { ProcurementLanding } from '@/schemas/procurement'
 
@@ -66,7 +66,7 @@ function ProcurementLandingContent({ data }: { readonly data: ProcurementLanding
       <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <MetricCard
           label={t`Volum total`}
-          value={<ValueWithCurrency value={data.headline.totalVolume} notation="compact" />}
+          value={<ValueWithCurrency value={ronAmountSlice(data.headline.totalValueRon)} notation="compact" />}
           hint={t`RON; înregistrările non-RON sunt afișate separat`}
           status="mock"
         />
@@ -128,11 +128,21 @@ function ProcurementLandingContent({ data }: { readonly data: ProcurementLanding
           <PartyRankingChart rows={data.topAuthorities} partyKind="authority" metric="count" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-base font-semibold">
-            <Trans>Categorii principale</Trans>
-          </h2>
-          <CategoryBreakdown rows={data.topCategories} />
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-base font-semibold">
+              <Trans>Furnizori principali</Trans>
+            </h2>
+            <DataStatusBadge status="partial" tooltip={t`Clasament pe număr (valoarea este sub prag).`} />
+          </div>
+          <PartyRankingChart rows={data.topSuppliers} partyKind="supplier" metric="count" />
         </div>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="text-base font-semibold">
+          <Trans>Categorii principale</Trans>
+        </h2>
+        <CategoryBreakdown rows={data.topCategories} />
       </section>
 
       <ExplainerAccordion />

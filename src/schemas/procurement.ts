@@ -3,74 +3,98 @@ import { z } from 'zod'
 /**
  * Procurement domain UI-boundary schemas.
  *
- * Shapes mirror the server `procurement` GraphQL module and the analytic
- * rollups (see docs/design/procurement/design.md §6). The adapter maps live
- * responses to these types; mocks use them directly. Every aggregate
- * response carries its `CapabilityGate` + `CoverageGrade[]` so the UI can
- * gate/annotate without a second request.
+ * Shapes mirror the server `procurement` GraphQL DTOs (see
+ * docs/procurement-prod-schema-reference.md). The live adapter maps GraphQL
+ * responses to these types; mocks use them directly. Going live is a near
+ * pass-through swap.
+ *
+ * Conventions:
+ * - **Money is flat** on each record (no nested money object): `valueRon` /
+ *   `estimatedValueRon` are RON **decimal strings** ('1171228.00') or null; the
+ *   honesty flags are `isRon` + `valueSuspect`. There is no native value — prod
+ *   does not expose it. Parse strings to numbers only at display time.
+ * - **Rollup-row aggregates** (`TopPartyRow` / `CategoryRow` / `MonthlyPoint` /
+ *   `SameDayCandidate`) carry counts as **bigint decimal strings** to mirror the
+ *   DTO. Client-composed summary counts (landing headline, slice summary) stay
+ *   numbers.
+ * - Every aggregate response carries its `CapabilityGate` so the UI can
+ *   gate/annotate without a second request.
  */
 
 // ---------------------------------------------------------------------------
-// Identity, money, provenance
+// Identity, money, source vocabulary
 // ---------------------------------------------------------------------------
 
-export const procurementMatchConfidenceSchema = z.enum([
-  'high',
-  'medium',
-  'low',
-])
-
-export type ProcurementMatchConfidence = z.infer<
-  typeof procurementMatchConfidenceSchema
->
+/**
+ * Reusable string-shape schemas mirroring the DTO's decimal/bigint string
+ * fields, so malformed live data fails at the Zod boundary instead of becoming
+ * NaN / 0 downstream. RON amounts allow a leading sign (modification deltas can
+ * be negative); counts are non-negative integers; rates are 0..1.
+ */
+const decimalStringSchema = z
+  .string()
+  .regex(/^-?\d+(\.\d+)?$/, 'expected a decimal string')
+const bigintStringSchema = z
+  .string()
+  .regex(/^\d+$/, 'expected a non-negative integer string')
+const rateStringSchema = z
+  .string()
+  .regex(/^\d+(\.\d+)?$/, 'expected a 0..1 rate string')
 
 export const partySchema = z.object({
   cui: z.string().nullable(),
   name: z.string().nullable(),
   displayName: z.string().nullable(),
-  matchConfidence: procurementMatchConfidenceSchema.nullable(),
 })
 
 export type Party = z.infer<typeof partySchema>
 
-export const moneyValueSchema = z.object({
-  /** RON amount, or null when the row is non-RON or garbage-flagged. */
-  ron: z.number().nullable(),
-  /** Native amount as published (e.g. EUR/USD). */
-  nativeValue: z.number().nullable(),
-  /** ISO currency code, 'RON' when RON is the native currency. */
+/**
+ * Flat money fields, merged into each record. Mirrors the server DTO:
+ * `valueRon` is a RON decimal string (or null for non-RON / suspect-nulled),
+ * `isRon` says whether a RON amount is available, `valueSuspect` flags an
+ * outlier the loader could not trust.
+ */
+export const moneyFieldsSchema = z.object({
+  valueRon: decimalStringSchema.nullable(),
   currency: z.string().nullable(),
-  /** Flagged garbage / out-of-band value (UX §6.3 ~74 canonical DA values). */
-  isOutlier: z.boolean(),
+  isRon: z.boolean(),
+  valueSuspect: z.boolean(),
 })
 
-export type MoneyValue = z.infer<typeof moneyValueSchema>
+export type MoneyFields = z.infer<typeof moneyFieldsSchema>
 
-export const procurementProvenanceSchema = z.object({
-  sourceSystem: z.enum([
-    'elicitatie',
-    'seap_notice',
-    'seap',
-    'elicitatie_da',
-    'seap_da',
-    'seap_dan',
-    'ted',
-  ]),
-  sourceUrl: z.string().nullable(),
-  retrievedAt: z.string().nullable(),
-  publishedAt: z.string().nullable(),
-  isCanonical: z.boolean(),
-  dupGroupId: z.string().nullable(),
-})
+/** Prod source-system vocabulary (per record). */
+export const procurementSourceSystemSchema = z.enum([
+  'seap_notice',
+  'seap_contracts',
+  'seap_da',
+  'seap_dan',
+  'elicitatie',
+  'elicitatie_da',
+  'elicitatie_ca_award',
+])
 
-export type ProcurementProvenance = z.infer<
-  typeof procurementProvenanceSchema
+export type ProcurementSourceSystem = z.infer<
+  typeof procurementSourceSystemSchema
+>
+
+/** Aggregate / gate grain (the flow grains; procedures + modifications are not flows). */
+export const procurementSourceGrainSchema = z.enum([
+  'procurement_contract',
+  'direct_acquisition',
+])
+
+export type ProcurementSourceGrain = z.infer<
+  typeof procurementSourceGrainSchema
 >
 
 export const procurementStatusSchema = z.enum([
   'published',
   'in_evaluation',
   'awarded',
+  'in_progress',
+  'closed',
   'cancelled',
   'suspended',
   'finalized',
@@ -85,7 +109,7 @@ export const contractKindSchema = z.enum(['works', 'services', 'supplies'])
 export type ContractKind = z.infer<typeof contractKindSchema>
 
 // ---------------------------------------------------------------------------
-// Grain records
+// Grain records (flat money + flat provenance)
 // ---------------------------------------------------------------------------
 
 export const procedureRecordSchema = z.object({
@@ -99,13 +123,20 @@ export const procedureRecordSchema = z.object({
   authority: partySchema,
   cpvCode: z.string().nullable(),
   cpvDivisionCode: z.string().nullable(),
-  estimatedValue: moneyValueSchema,
-  awardedValue: moneyValueSchema,
+  // Procedures carry estimated + awarded; `isRon`/`valueSuspect` qualify the awarded value.
+  estimatedValueRon: decimalStringSchema.nullable(),
+  awardedValueRon: decimalStringSchema.nullable(),
+  currency: z.string().nullable(),
+  isRon: z.boolean(),
+  valueSuspect: z.boolean(),
   status: procurementStatusSchema,
   countyName: z.string().nullable(),
   publicationDate: z.string().nullable(),
   stateDate: z.string().nullable(),
-  provenance: procurementProvenanceSchema,
+  sourceSystem: procurementSourceSystemSchema,
+  sourceUrl: z.string().nullable(),
+  isCanonical: z.boolean(),
+  dupGroupId: z.string().nullable(),
 })
 
 export type ProcedureRecord = z.infer<typeof procedureRecordSchema>
@@ -113,19 +144,21 @@ export type ProcedureRecord = z.infer<typeof procedureRecordSchema>
 export const contractModificationSchema = z.object({
   id: z.string(),
   contractId: z.string().nullable(),
-  linkMethod: z.string().nullable(),
+  linkMethod: z
+    .enum(['notice_no', 'authority_cui+contract_no'])
+    .nullable(),
+  linkConfidence: z.number().nullable(),
   modificationDate: z.string().nullable(),
-  valueBefore: moneyValueSchema,
-  valueAfter: moneyValueSchema,
-  valueDelta: moneyValueSchema,
+  // Modification values are RON-only decimal strings; delta may be negative.
+  valueBeforeRon: decimalStringSchema.nullable(),
+  valueAfterRon: decimalStringSchema.nullable(),
+  valueDeltaRon: decimalStringSchema.nullable(),
   modificationType: z.string().nullable(),
 })
 
-export type ContractModification = z.infer<
-  typeof contractModificationSchema
->
+export type ContractModification = z.infer<typeof contractModificationSchema>
 
-export const contractRecordSchema = z.object({
+export const contractRecordSchema = moneyFieldsSchema.extend({
   id: z.string(),
   grain: z.literal('contract'),
   contractNo: z.string().nullable(),
@@ -136,30 +169,37 @@ export const contractRecordSchema = z.object({
   authority: partySchema,
   supplier: partySchema,
   cpvCode: z.string().nullable(),
-  value: moneyValueSchema,
-  estimatedValue: moneyValueSchema,
+  cpvDivisionCode: z.string().nullable(),
+  estimatedValueRon: decimalStringSchema.nullable(),
   status: procurementStatusSchema,
-  provenance: procurementProvenanceSchema,
+  sourceSystem: procurementSourceSystemSchema,
+  sourceUrl: z.string().nullable(),
+  isCanonical: z.boolean(),
+  dupGroupId: z.string().nullable(),
   modifications: z.array(contractModificationSchema),
 })
 
 export type ContractRecord = z.infer<typeof contractRecordSchema>
 
-export const directAcquisitionRecordSchema = z.object({
+export const directAcquisitionRecordSchema = moneyFieldsSchema.extend({
   id: z.string(),
   grain: z.literal('direct_acquisition'),
   uniqueCode: z.string().nullable(),
+  title: z.string().nullable(),
   authority: partySchema,
   supplier: partySchema,
   cpvCode: z.string().nullable(),
-  value: moneyValueSchema,
-  estimatedValue: moneyValueSchema,
+  cpvDivisionCode: z.string().nullable(),
+  estimatedValueRon: decimalStringSchema.nullable(),
   status: procurementStatusSchema,
   stateId: z.string().nullable(),
   countyName: z.string().nullable(),
   publicationDate: z.string().nullable(),
   finalizationDate: z.string().nullable(),
-  provenance: procurementProvenanceSchema,
+  sourceSystem: procurementSourceSystemSchema,
+  sourceUrl: z.string().nullable(),
+  isCanonical: z.boolean(),
+  dupGroupId: z.string().nullable(),
 })
 
 export type DirectAcquisitionRecord = z.infer<
@@ -170,14 +210,22 @@ export const contractModificationRecordSchema = z.object({
   id: z.string(),
   grain: z.literal('modification'),
   contractId: z.string().nullable(),
-  linkMethod: z.string().nullable(),
+  linkMethod: z
+    .enum(['notice_no', 'authority_cui+contract_no'])
+    .nullable(),
+  linkConfidence: z.number().nullable(),
   modificationDate: z.string().nullable(),
-  valueBefore: moneyValueSchema,
-  valueAfter: moneyValueSchema,
-  valueDelta: moneyValueSchema,
+  valueBeforeRon: decimalStringSchema.nullable(),
+  valueAfterRon: decimalStringSchema.nullable(),
+  valueDeltaRon: decimalStringSchema.nullable(),
   modificationType: z.string().nullable(),
+  authority: partySchema,
+  supplier: partySchema,
+  contractNo: z.string().nullable(),
+  noticeNo: z.string().nullable(),
+  sourceUrl: z.string().nullable(),
   // Carried so the modifications grain search row can link to the parent
-  // contract detail with a section/hash (design review change #6).
+  // contract detail when the modification is linked.
   parentContract: z
     .object({
       contractNo: z.string().nullable(),
@@ -185,13 +233,13 @@ export const contractModificationRecordSchema = z.object({
       supplier: partySchema,
     })
     .nullable(),
-  provenance: procurementProvenanceSchema,
 })
 
 export type ContractModificationRecord = z.infer<
   typeof contractModificationRecordSchema
 >
 
+/** UI search-grain selector (which record type to list). */
 export const procurementGrainSchema = z.enum([
   'procedures',
   'contracts',
@@ -211,9 +259,7 @@ export const contractRecordSummarySchema = contractRecordSchema.extend({
   modifications: z.array(contractModificationSchema).default([]),
 })
 
-export type ContractRecordSummary = z.infer<
-  typeof contractRecordSummarySchema
->
+export type ContractRecordSummary = z.infer<typeof contractRecordSummarySchema>
 
 export const directAcquisitionRecordSummarySchema =
   directAcquisitionRecordSchema
@@ -234,55 +280,22 @@ export type ProcurementRecordSummary = z.infer<
 >
 
 // ---------------------------------------------------------------------------
-// Aggregates / coverage / capability gate
+// Capability gate (prod shape: coverage rates + boolean flags + blockers)
 // ---------------------------------------------------------------------------
 
-export const coverageMetricSchema = z.enum([
-  'authority_cui',
-  'supplier_cui',
-  'amount',
-  'cpv',
-  'flow_date',
-  'authority_territory',
-])
-
-export type CoverageMetric = z.infer<typeof coverageMetricSchema>
-
-export const coverageGradeSchema = z.object({
-  metric: coverageMetricSchema,
-  /** 0..1 presence rate. */
-  rate: z.number(),
-  /** Gate threshold for this metric. */
-  threshold: z.number(),
-  meetsThreshold: z.boolean(),
-})
-
-export type CoverageGrade = z.infer<typeof coverageGradeSchema>
-
-export const allowedAnswerClassSchema = z.enum([
-  'filter_count',
-  'count_ranked_top_n',
-  'spend_ranked_top_n',
-  'buyer_region_filter',
-  'cpv_category_filter',
-  'same_day_direct_acquisition_signal',
-])
-
-export type AllowedAnswerClass = z.infer<typeof allowedAnswerClassSchema>
-
-export const blockedDimensionSchema = z.enum([
-  'supplier_region_filter',
-  'llm_generated_filter',
-])
-
-export type BlockedDimension = z.infer<typeof blockedDimensionSchema>
-
 export const capabilityGateSchema = z.object({
-  grain: z.string(),
-  allowed: z.array(allowedAnswerClassSchema),
-  blocked: z.array(blockedDimensionSchema),
-  coverage: z.array(coverageGradeSchema),
-  /** Watermark ISO date; null when not served. */
+  sourceGrain: procurementSourceGrainSchema,
+  rowsCount: bigintStringSchema,
+  authorityCuiCoverageRate: rateStringSchema,
+  supplierCuiCoverageRate: rateStringSchema,
+  amountCoverageRate: rateStringSchema,
+  cpvCoverageRate: rateStringSchema,
+  dateCoverageRate: rateStringSchema,
+  filterAnswersAllowed: z.boolean(),
+  spendRankingsAllowed: z.boolean(),
+  supplierRegionFiltersAllowed: z.boolean(),
+  blockers: z.array(z.string()),
+  /** Load watermark ISO date; null when not served. */
   dataAsOf: z.string().nullable(),
   /** Human-readable cadence, e.g. 'zilnic (suspendat)'. */
   cadence: z.string().nullable(),
@@ -290,24 +303,36 @@ export const capabilityGateSchema = z.object({
 
 export type CapabilityGate = z.infer<typeof capabilityGateSchema>
 
+// ---------------------------------------------------------------------------
+// Aggregate rollup rows (counts are bigint decimal strings)
+// ---------------------------------------------------------------------------
+
+/** A ranked org-edge row (top authorities / top suppliers). */
 export const topPartyRowSchema = z.object({
-  party: partySchema,
-  flowCount: z.number(),
-  amount: moneyValueSchema,
-  amountMissingCount: z.number(),
-  /** Null when the total has missing amounts (no mixed-currency sum). */
-  shareOfTotal: z.number().nullable(),
-  evidenceRefs: z.array(z.string()),
+  authority: partySchema.nullable(),
+  supplier: partySchema.nullable(),
+  sourceGrain: procurementSourceGrainSchema,
+  flowCount: bigintStringSchema,
+  amountRonSum: decimalStringSchema.nullable(),
+  amountPresentCount: bigintStringSchema,
+  amountMissingCount: bigintStringSchema,
+  firstFlowDate: z.string().nullable(),
+  lastFlowDate: z.string().nullable(),
+  evidenceRefsSample: z.array(z.string()),
 })
 
 export type TopPartyRow = z.infer<typeof topPartyRowSchema>
 
+/** A CPV-division breakdown row. */
 export const categoryRowSchema = z.object({
-  divisionCode: z.string(),
-  labelRo: z.string().nullable(),
-  labelEn: z.string(),
-  flowCount: z.number(),
-  amount: moneyValueSchema,
+  cpvDivisionCode: z.string().nullable(),
+  cpvDivisionLabelEn: z.string().nullable(),
+  cpvDivisionLabelRo: z.string().nullable(),
+  sourceGrain: procurementSourceGrainSchema,
+  flowCount: bigintStringSchema,
+  amountRonSum: decimalStringSchema.nullable(),
+  amountPresentCount: bigintStringSchema,
+  amountMissingCount: bigintStringSchema,
 })
 
 export type CategoryRow = z.infer<typeof categoryRowSchema>
@@ -315,32 +340,32 @@ export type CategoryRow = z.infer<typeof categoryRowSchema>
 export const monthlyPointSchema = z.object({
   /** 'YYYY-MM'. */
   month: z.string(),
-  amountPresent: z.number(),
-  amountMissingCount: z.number(),
-  flowCount: z.number(),
+  flowCount: bigintStringSchema,
+  amountRonSum: decimalStringSchema.nullable(),
+  amountPresentCount: bigintStringSchema,
+  amountMissingCount: bigintStringSchema,
 })
 
 export type MonthlyPoint = z.infer<typeof monthlyPointSchema>
 
 export const sameDayCandidateSchema = z.object({
+  candidateDate: z.string(),
   authority: partySchema,
   supplier: partySchema,
-  cpvDivisionCode: z.string(),
-  day: z.string(),
-  sameDayCount: z.number(),
-  sameDayTotal: moneyValueSchema,
-  maxSingleAmount: moneyValueSchema,
-  evidenceRefs: z.array(z.string()),
+  cpvCode: z.string().nullable(),
+  cpvDivisionCode: z.string().nullable(),
+  sameDayCount: bigintStringSchema,
+  sameDayTotalRon: decimalStringSchema.nullable(),
+  maxSingleAmountRon: decimalStringSchema.nullable(),
+  amountPresentCount: bigintStringSchema,
+  amountMissingCount: bigintStringSchema,
+  evidenceRefsSample: z.array(z.string()),
 })
 
 export type SameDayCandidate = z.infer<typeof sameDayCandidateSchema>
 
-export const reviewSignalKindSchema = z.enum([
-  'same_day',
-  'repeated_pairs',
-  'modification_inflation',
-  'young_suppliers',
-])
+/** Review-signal kinds backed by prod projections (others are UI-derived only). */
+export const reviewSignalKindSchema = z.enum(['same_day', 'repeated_pairs'])
 
 export type ReviewSignalKind = z.infer<typeof reviewSignalKindSchema>
 
@@ -350,12 +375,14 @@ export type ReviewSignalKind = z.infer<typeof reviewSignalKindSchema>
 
 export const procurementLandingSchema = z.object({
   headline: z.object({
-    totalVolume: moneyValueSchema,
+    /** RON sum decimal string, or null when not summable. */
+    totalValueRon: decimalStringSchema.nullable(),
     buyersCount: z.number(),
     suppliersCount: z.number(),
     recordsCount: z.number(),
   }),
   topAuthorities: z.array(topPartyRowSchema),
+  topSuppliers: z.array(topPartyRowSchema),
   topCategories: z.array(categoryRowSchema),
   gate: capabilityGateSchema,
 })
@@ -374,9 +401,7 @@ export const procurementSearchPageSchema = z.object({
   gate: capabilityGateSchema,
 })
 
-export type ProcurementSearchPage = z.infer<
-  typeof procurementSearchPageSchema
->
+export type ProcurementSearchPage = z.infer<typeof procurementSearchPageSchema>
 
 export const procurementRecordDetailSchema = <T extends z.ZodTypeAny>(
   recordSchema: T,
@@ -390,7 +415,7 @@ export const procurementRecordDetailSchema = <T extends z.ZodTypeAny>(
       moneyFlowId: z.string().nullable(),
       duplicates: z.array(
         z.object({
-          sourceSystem: z.string(),
+          sourceSystem: procurementSourceSystemSchema,
           id: z.string(),
         }),
       ),
@@ -399,7 +424,10 @@ export const procurementRecordDetailSchema = <T extends z.ZodTypeAny>(
           z.object({
             lotLabel: z.string(),
             winner: partySchema,
-            awardedValue: moneyValueSchema,
+            valueRon: decimalStringSchema.nullable(),
+            currency: z.string().nullable(),
+            isRon: z.boolean(),
+            valueSuspect: z.boolean(),
           }),
         )
         .nullable(),
@@ -421,13 +449,16 @@ export type ProcurementRecordDetail<T> = {
     readonly modifications: readonly ContractModification[]
     readonly moneyFlowId: string | null
     readonly duplicates: ReadonlyArray<{
-      readonly sourceSystem: string
+      readonly sourceSystem: ProcurementSourceSystem
       readonly id: string
     }>
     readonly perLotWinners: ReadonlyArray<{
       readonly lotLabel: string
       readonly winner: Party
-      readonly awardedValue: MoneyValue
+      readonly valueRon: string | null
+      readonly currency: string | null
+      readonly isRon: boolean
+      readonly valueSuspect: boolean
     }> | null
     readonly ted: {
       readonly tedNoticeNo: string
@@ -445,7 +476,8 @@ export const cpvCategoryPageSchema = z.object({
   divisionCode: z.string(),
   parentCode: z.string().nullable(),
   summary: z.object({
-    totalSpend: moneyValueSchema,
+    /** RON sum decimal string, or null when not summable. */
+    totalValueRon: decimalStringSchema.nullable(),
     recordCounts: z.object({
       contracts: z.number(),
       directAcquisitions: z.number(),
@@ -471,7 +503,8 @@ export const supplierProcurementSliceSchema = z.object({
   supplierCui: z.string(),
   summary: z.object({
     window: z.object({ from: z.string(), to: z.string() }),
-    totalPublicRevenue: moneyValueSchema,
+    /** RON sum decimal string, or null when not summable. */
+    totalPublicRevenueRon: decimalStringSchema.nullable(),
     buyersCount: z.number(),
     contractsCount: z.number(),
     directAcquisitionsCount: z.number(),
@@ -531,20 +564,16 @@ export type IdentityConfidence = z.infer<typeof identityConfidenceSchema>
 // ---------------------------------------------------------------------------
 
 /**
- * Mark the dataset status for a procurement bundle. The procurement facade
- * defaults to mock for `public-contracts-seap` until the live API is wired
- * (catalog entry `apiReady: false`), so every visible surface carries a
- * `DataStatusBadge(status="mock")` plus the gate's coverage data.
+ * Derive a dataset status from the capability gate. The procurement facade is
+ * mock-first for `public-contracts-seap` until the live API is wired, so pages
+ * still pass `status="mock"` explicitly; this drives partial/unverified
+ * downgrades from the gate's coverage.
  */
 export function procurementDataStatus(gate: CapabilityGate): DataStatus {
-  // Mock-first: when the live adapter is not wired the facade returns mock
-  // bundles and the page asserts mock via the adapter. The gate's coverage
-  // still drives partial/stale downgrades inside the page.
   if (gate.dataAsOf === null) {
     return 'unverified'
   }
-  const amountCoverage = gate.coverage.find((c) => c.metric === 'amount')
-  if (amountCoverage && !amountCoverage.meetsThreshold) {
+  if (Number(gate.amountCoverageRate) < 0.95) {
     return 'partial'
   }
   return 'live'

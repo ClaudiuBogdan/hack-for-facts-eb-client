@@ -55,7 +55,6 @@ const SOURCE_VALUES: ReadonlyArray<{ readonly value: ProcurementSource | 'all'; 
   { value: 'all', label: t`Toate sursele` },
   { value: 'elicitatie', label: t`e-licitatie` },
   { value: 'seap', label: t`SEAP` },
-  { value: 'ted', label: t`TED` },
 ]
 
 const STATUS_VALUES: ReadonlyArray<{ readonly value: ProcurementStatus | 'all'; readonly label: string }> = [
@@ -63,6 +62,8 @@ const STATUS_VALUES: ReadonlyArray<{ readonly value: ProcurementStatus | 'all'; 
   { value: 'published', label: t`Publicat` },
   { value: 'in_evaluation', label: t`În evaluare` },
   { value: 'awarded', label: t`Atribuit` },
+  { value: 'in_progress', label: t`În derulare` },
+  { value: 'closed', label: t`Închis` },
   { value: 'cancelled', label: t`Anulat` },
   { value: 'suspended', label: t`Suspendat` },
   { value: 'finalized', label: t`Finalizat` },
@@ -118,10 +119,20 @@ export function ProcurementSearchPage({ params, className }: Props) {
   const gate = data?.gate
   const capability = useCapabilityGate(
     gate ?? {
-      grain: params.grain,
-      allowed: [],
-      blocked: ['supplier_region_filter', 'llm_generated_filter'],
-      coverage: [],
+      sourceGrain:
+        params.grain === 'direct_acquisitions'
+          ? 'direct_acquisition'
+          : 'procurement_contract',
+      rowsCount: '0',
+      authorityCuiCoverageRate: '0',
+      supplierCuiCoverageRate: '0',
+      amountCoverageRate: '0',
+      cpvCoverageRate: '0',
+      dateCoverageRate: '0',
+      filterAnswersAllowed: false,
+      spendRankingsAllowed: false,
+      supplierRegionFiltersAllowed: false,
+      blockers: [],
       dataAsOf: null,
       cadence: null,
     },
@@ -509,7 +520,7 @@ function FilterRail({
           </Button>
         </div>
       </form>
-      {capability.isBlocked('supplier_region_filter') ? (
+      {capability.isSupplierRegionBlocked() ? (
         <p className="mt-2 flex items-center gap-1 text-xs text-amber-800">
           <TriangleAlert className="h-3 w-3" aria-hidden />
           <Trans>Filtrul de regiune furnizor este indisponibil în v1.</Trans>{' '}

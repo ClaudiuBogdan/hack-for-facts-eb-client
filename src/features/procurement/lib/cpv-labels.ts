@@ -46,5 +46,11 @@ export function resolveCpvLabel(
 }
 
 export function categoryRowLabel(row: CategoryRow): string {
-  return row.labelRo ?? row.labelEn
+  return (
+    row.cpvDivisionLabelRo ??
+    row.cpvDivisionLabelEn ??
+    (row.cpvDivisionCode
+      ? cpvDivisionLabelEn(row.cpvDivisionCode)
+      : t`Categorie CPV`)
+  )
 }

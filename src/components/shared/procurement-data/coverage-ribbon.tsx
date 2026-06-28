@@ -1,12 +1,7 @@
 import { useState } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
-import {
-  AlertCircle,
-  ChevronDown,
-  Info,
-  Lock,
-} from 'lucide-react'
+import { AlertCircle, ChevronDown, Info, Lock } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -20,26 +15,40 @@ import { cn } from '@/lib/utils'
 import { formatNumber } from '@/lib/utils'
 import { DataStatusBadge } from './data-status-badge'
 import { FreshnessBadge } from './freshness-badge'
-import type {
-  BlockedDimension,
-  CapabilityGate,
-  CoverageMetric,
-  DataStatus,
-} from '@/schemas/procurement'
+import type { CapabilityGate, DataStatus } from '@/schemas/procurement'
+
+/** Coverage metrics the gate reports per grain (local display vocabulary). */
+type CoverageMetric =
+  | 'authority_cui'
+  | 'supplier_cui'
+  | 'amount'
+  | 'cpv'
+  | 'flow_date'
+
+type CoverageEntry = {
+  readonly metric: CoverageMetric
+  readonly rate: number
+  readonly threshold: number
+  readonly meetsThreshold: boolean
+}
 
 type Props = {
   readonly status: DataStatus
-  readonly coverage: readonly {
-    readonly metric: CoverageMetric
-    readonly rate: number
-    readonly threshold: number
-    readonly meetsThreshold: boolean
-  }[]
+  readonly coverage: readonly CoverageEntry[]
   readonly dataAsOf: string | null
   readonly cadence: string | null
-  readonly blocked?: readonly BlockedDimension[]
+  /** Pre-resolved labels of filters that are unavailable in v1. */
+  readonly blocked?: readonly string[]
   readonly collapsible?: boolean
   readonly className?: string
+}
+
+const COVERAGE_THRESHOLDS: Record<CoverageMetric, number> = {
+  authority_cui: 0.95,
+  supplier_cui: 0.95,
+  amount: 0.95,
+  cpv: 0.85,
+  flow_date: 0.85,
 }
 
 const METRIC_LABEL: Record<CoverageMetric, string> = {
@@ -48,12 +57,6 @@ const METRIC_LABEL: Record<CoverageMetric, string> = {
   amount: t`Valoare`,
   cpv: t`CPV`,
   flow_date: t`Dată flux`,
-  authority_territory: t`Teritoriu autoritate`,
-}
-
-const BLOCKED_LABEL: Record<BlockedDimension, string> = {
-  supplier_region_filter: t`Filtru regiune furnizor`,
-  llm_generated_filter: t`Filtru generat LLM`,
 }
 
 /**
@@ -81,8 +84,8 @@ export function CoverageRibbon({
         {missingCoverage.length > 0 ? (
           <Trans>
             Acoperire parțială pentru {formatNumber(missingCoverage.length)}{' '}
-            metrici. Răspunsurile pe valoare sunt retrogradate la clasament
-            pe număr.
+            metrici. Răspunsurile pe valoare sunt retrogradate la clasament pe
+            număr.
           </Trans>
         ) : (
           <Trans>Acoperire completă pentru toate metricile.</Trans>
@@ -147,13 +150,8 @@ function CoverageDetails({
   coverage,
   blocked,
 }: {
-  readonly coverage: readonly {
-    readonly metric: CoverageMetric
-    readonly rate: number
-    readonly threshold: number
-    readonly meetsThreshold: boolean
-  }[]
-  readonly blocked: readonly BlockedDimension[]
+  readonly coverage: readonly CoverageEntry[]
+  readonly blocked: readonly string[]
 }) {
   return (
     <div className="mt-3 space-y-3 text-xs text-amber-700 dark:text-amber-300">
@@ -166,15 +164,22 @@ function CoverageDetails({
                 <span>{METRIC_LABEL[c.metric]}</span>
                 <span className="flex items-center gap-1">
                   <span>
-                    {formatNumber(pct)}% / {formatNumber(Math.round(c.threshold * 100))}%
+                    {formatNumber(pct)}% /{' '}
+                    {formatNumber(Math.round(c.threshold * 100))}%
                   </span>
                   {c.meetsThreshold ? (
-                    <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-emerald-900">
+                    <Badge
+                      variant="outline"
+                      className="border-emerald-300 bg-emerald-50 text-emerald-900"
+                    >
                       <Info className="h-3 w-3" aria-hidden />
                       <Trans>OK</Trans>
                     </Badge>
                   ) : (
-                    <Badge variant="outline" className="border-amber-300 bg-amber-50 text-amber-900">
+                    <Badge
+                      variant="outline"
+                      className="border-amber-300 bg-amber-50 text-amber-900"
+                    >
                       <AlertCircle className="h-3 w-3" aria-hidden />
                       <Trans>sub prag</Trans>
                     </Badge>
@@ -183,7 +188,9 @@ function CoverageDetails({
               </div>
               <Progress
                 value={pct}
-                indicatorClassName={c.meetsThreshold ? 'bg-emerald-500' : 'bg-amber-500'}
+                indicatorClassName={
+                  c.meetsThreshold ? 'bg-emerald-500' : 'bg-amber-500'
+                }
                 aria-label={`${METRIC_LABEL[c.metric]}: ${pct}%`}
               />
             </div>
@@ -199,10 +206,10 @@ function CoverageDetails({
               <Trans>Filtre indisponibile în v1:</Trans>
             </p>
             <ul className="list-disc space-y-1 pl-4">
-              {blocked.map((dim) => (
-                <li key={dim} className="flex items-center gap-1">
+              {blocked.map((label) => (
+                <li key={label} className="flex items-center gap-1">
                   <Lock className="h-3 w-3" aria-hidden />
-                  <span>{BLOCKED_LABEL[dim]}</span>
+                  <span>{label}</span>
                 </li>
               ))}
             </ul>
@@ -211,6 +218,30 @@ function CoverageDetails({
       ) : null}
     </div>
   )
+}
+
+function gateCoverage(gate: CapabilityGate): CoverageEntry[] {
+  const entries: ReadonlyArray<readonly [CoverageMetric, string]> = [
+    ['authority_cui', gate.authorityCuiCoverageRate],
+    ['supplier_cui', gate.supplierCuiCoverageRate],
+    ['amount', gate.amountCoverageRate],
+    ['cpv', gate.cpvCoverageRate],
+    ['flow_date', gate.dateCoverageRate],
+  ]
+  return entries.map(([metric, rateStr]) => {
+    const rate = Number(rateStr)
+    const threshold = COVERAGE_THRESHOLDS[metric]
+    return { metric, rate, threshold, meetsThreshold: rate >= threshold }
+  })
+}
+
+function gateBlockedLabels(gate: CapabilityGate): string[] {
+  const labels: string[] = []
+  if (!gate.supplierRegionFiltersAllowed) {
+    labels.push(t`Filtru regiune furnizor`)
+  }
+  labels.push(t`Filtru generat LLM`)
+  return labels
 }
 
 /**
@@ -230,10 +261,10 @@ export function CoverageRibbonFromGate({
   return (
     <CoverageRibbon
       status={status}
-      coverage={gate.coverage}
+      coverage={gateCoverage(gate)}
       dataAsOf={gate.dataAsOf}
       cadence={gate.cadence}
-      blocked={[...gate.blocked]}
+      blocked={gateBlockedLabels(gate)}
       className={className}
       collapsible={collapsible}
     />

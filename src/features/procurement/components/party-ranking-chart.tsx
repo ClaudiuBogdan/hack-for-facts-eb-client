@@ -11,8 +11,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { ValueWithCurrency } from './value-with-currency'
-import { formatFlowCount } from '../lib/formatting'
-import type { TopPartyRow } from '@/schemas/procurement'
+import { formatFlowCount, ronAmountSlice } from '../lib/formatting'
+import type { Party, TopPartyRow } from '@/schemas/procurement'
 
 type PartyKind = 'authority' | 'supplier'
 
@@ -27,11 +27,22 @@ type Props = {
 const MAX_BARS = 8
 const MAX_BAR_WIDTH_PCT = 100
 
+function rowParty(row: TopPartyRow, partyKind: PartyKind): Party | null {
+  return partyKind === 'authority' ? row.authority : row.supplier
+}
+
+function rowAmount(row: TopPartyRow): number | null {
+  return row.amountRonSum === null ? null : Number(row.amountRonSum)
+}
+
+function rowMetric(row: TopPartyRow, metric: 'count' | 'value'): number {
+  return metric === 'value' ? rowAmount(row) ?? 0 : Number(row.flowCount)
+}
+
 /**
  * Horizontal bar-list ranking of top parties (authorities or suppliers).
  * Always paired with a semantic `<table>` fallback (a11y) and text summaries.
- * Spend share is shown only when the capability gate allows it
- * (`shareOfTotal` is null otherwise — no mixed-currency totals).
+ * Share is computed within the list; value rows with no RON sum show no share.
  */
 export function PartyRankingChart({
   rows,
@@ -42,13 +53,13 @@ export function PartyRankingChart({
 }: Props) {
   const max = useMemo(() => {
     if (rows.length === 0) return 0
-    return Math.max(
-      ...rows.map((r) => (metric === 'value' ? r.amount.ron ?? 0 : r.flowCount)),
-    )
+    return Math.max(...rows.map((r) => rowMetric(r, metric)))
   }, [rows, metric])
-  const hasNativeOnlyRows = rows.some(
-    (row) => row.amount.ron === null && row.amount.nativeValue !== null,
+  const total = useMemo(
+    () => rows.reduce((acc, r) => acc + rowMetric(r, metric), 0),
+    [rows, metric],
   )
+  const hasMissingAmountRows = rows.some((row) => row.amountRonSum === null)
 
   if (rows.length === 0) {
     return (
@@ -63,23 +74,32 @@ export function PartyRankingChart({
       {/* Visual bar-list */}
       <ul className="space-y-2" aria-hidden>
         {rows.slice(0, MAX_BARS).map((row, index) => {
-          const raw = metric === 'value' ? row.amount.ron ?? 0 : row.flowCount
+          const raw = rowMetric(row, metric)
           const widthPct =
             max > 0 && raw > 0
               ? Math.max(4, Math.round((raw / max) * MAX_BAR_WIDTH_PCT))
               : 0
-          const partyLabel = row.party.displayName ?? row.party.name ?? row.party.cui ?? t`Necunoscut`
+          const party = rowParty(row, partyKind)
+          const partyLabel =
+            party?.displayName ?? party?.name ?? party?.cui ?? t`Necunoscut`
+          const share =
+            total > 0 && (metric === 'count' || rowAmount(row) !== null)
+              ? Math.round((raw / total) * 100)
+              : null
           return (
-            <li key={`${row.party.cui ?? index}-${index}`} className="space-y-1">
+            <li key={`${party?.cui ?? index}-${index}`} className="space-y-1">
               <div className="flex items-center justify-between gap-2 text-sm">
                 <span className="truncate font-medium">{partyLabel}</span>
                 <span className="shrink-0 text-muted-foreground">
                   {metric === 'value' ? (
-                    <ValueWithCurrency value={row.amount} notation="compact" />
+                    <ValueWithCurrency
+                      value={ronAmountSlice(row.amountRonSum)}
+                      notation="compact"
+                    />
                   ) : (
                     `${formatFlowCount(row.flowCount)} ${t`fluxuri`}`
                   )}
-                  {row.shareOfTotal !== null ? ` · ${Math.round(row.shareOfTotal * 100)}%` : ''}
+                  {share !== null ? ` · ${share}%` : ''}
                 </span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-primary/10">
@@ -92,11 +112,11 @@ export function PartyRankingChart({
           )
         })}
       </ul>
-      {metric === 'value' && hasNativeOnlyRows ? (
+      {metric === 'value' && hasMissingAmountRows ? (
         <p className="mt-2 text-xs text-muted-foreground">
           <Trans>
-            Barele de valoare folosesc doar RON; valorile non-RON rămân
-            afișate separat, fără agregare numerică.
+            Barele de valoare folosesc doar sumele în RON; rândurile fără sumă
+            RON rămân afișate, fără agregare numerică.
           </Trans>
         </p>
       ) : null}
@@ -106,7 +126,12 @@ export function PartyRankingChart({
         <summary className="cursor-pointer text-xs text-muted-foreground">
           <Trans>Versiune tabelară</Trans>
         </summary>
-        <PartyRankingTable rows={rows.slice(0, MAX_BARS)} partyKind={partyKind} />
+        <PartyRankingTable
+          rows={rows.slice(0, MAX_BARS)}
+          partyKind={partyKind}
+          metric={metric}
+          total={total}
+        />
       </details>
     </div>
   )
@@ -115,9 +140,13 @@ export function PartyRankingChart({
 function PartyRankingTable({
   rows,
   partyKind,
+  metric,
+  total,
 }: {
   readonly rows: readonly TopPartyRow[]
   readonly partyKind: PartyKind
+  readonly metric: 'count' | 'value'
+  readonly total: number
 }) {
   const to = partyKind === 'authority' ? '/entities/$cui' : '/companies/$cui'
   return (
@@ -125,7 +154,11 @@ function PartyRankingTable({
       <TableHeader>
         <TableRow>
           <TableHead>
-            {partyKind === 'authority' ? <Trans>Autoritate</Trans> : <Trans>Furnizor</Trans>}
+            {partyKind === 'authority' ? (
+              <Trans>Autoritate</Trans>
+            ) : (
+              <Trans>Furnizor</Trans>
+            )}
           </TableHead>
           <TableHead>
             <Trans>Fluxuri</Trans>
@@ -140,14 +173,21 @@ function PartyRankingTable({
       </TableHeader>
       <TableBody>
         {rows.map((row, index) => {
-          const partyLabel = row.party.displayName ?? row.party.name ?? row.party.cui ?? t`Necunoscut`
+          const party = rowParty(row, partyKind)
+          const partyLabel =
+            party?.displayName ?? party?.name ?? party?.cui ?? t`Necunoscut`
+          const raw = rowMetric(row, metric)
+          const share =
+            total > 0 && (metric === 'count' || rowAmount(row) !== null)
+              ? `${Math.round((raw / total) * 100)}%`
+              : t`indisponibil`
           return (
-            <TableRow key={`${row.party.cui ?? index}-${index}`}>
+            <TableRow key={`${party?.cui ?? index}-${index}`}>
               <TableCell>
-                {row.party.cui ? (
+                {party?.cui ? (
                   <Link
                     to={to}
-                    params={{ cui: row.party.cui }}
+                    params={{ cui: party.cui }}
                     className="font-medium text-foreground underline underline-offset-2 hover:text-primary"
                   >
                     {partyLabel}
@@ -158,11 +198,12 @@ function PartyRankingTable({
               </TableCell>
               <TableCell>{formatFlowCount(row.flowCount)}</TableCell>
               <TableCell>
-                <ValueWithCurrency value={row.amount} notation="compact" />
+                <ValueWithCurrency
+                  value={ronAmountSlice(row.amountRonSum)}
+                  notation="compact"
+                />
               </TableCell>
-              <TableCell>
-                {row.shareOfTotal !== null ? `${Math.round(row.shareOfTotal * 100)}%` : t`indisponibil`}
-              </TableCell>
+              <TableCell>{share}</TableCell>
             </TableRow>
           )
         })}

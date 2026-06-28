@@ -9,7 +9,8 @@ import { EvidenceLink } from '@/components/shared/procurement-data'
 import { CpvLabel } from './cpv-label'
 import { ProcurementStatusBadge } from './procurement-status-badge'
 import { ValueWithCurrency } from './value-with-currency'
-import type { ProcurementRecordSummary } from '@/schemas/procurement'
+import { ronAmountSlice } from '../lib/formatting'
+import type { MoneyFields, ProcurementRecordSummary } from '@/schemas/procurement'
 
 type Props = {
   readonly record: ProcurementRecordSummary
@@ -70,9 +71,8 @@ function recordAuthority(record: ProcurementRecordSummary) {
     case 'procedure':
     case 'contract':
     case 'direct_acquisition':
-      return record.authority
     case 'modification':
-      return record.parentContract?.authority ?? null
+      return record.authority
   }
 }
 
@@ -80,9 +80,8 @@ function recordSupplier(record: ProcurementRecordSummary) {
   switch (record.grain) {
     case 'contract':
     case 'direct_acquisition':
-      return record.supplier
     case 'modification':
-      return record.parentContract?.supplier ?? null
+      return record.supplier
     case 'procedure':
       return null
   }
@@ -106,14 +105,22 @@ export function ProcurementRecordCard({ record, className }: Props) {
     : { id: record.id }
   const detailHash = isModification ? 'modificari' : undefined
 
-  const value =
-    'value' in record
-      ? record.value
-      : 'awardedValue' in record
-        ? record.awardedValue
-        : 'valueDelta' in record
-          ? record.valueDelta
-          : null
+  const value: MoneyFields | null =
+    record.grain === 'contract' || record.grain === 'direct_acquisition'
+      ? {
+          valueRon: record.valueRon,
+          currency: record.currency,
+          isRon: record.isRon,
+          valueSuspect: record.valueSuspect,
+        }
+      : record.grain === 'procedure'
+        ? {
+            valueRon: record.awardedValueRon,
+            currency: record.currency,
+            isRon: record.isRon,
+            valueSuspect: record.valueSuspect,
+          }
+        : ronAmountSlice(record.valueDeltaRon)
 
   const date =
     record.grain === 'procedure'
@@ -140,8 +147,8 @@ export function ProcurementRecordCard({ record, className }: Props) {
           ? record.uniqueCode
           : null
 
-  const sourceSystem = 'provenance' in record ? record.provenance.sourceSystem : null
-  const sourceUrl = 'provenance' in record ? record.provenance.sourceUrl : null
+  const sourceSystem = 'sourceSystem' in record ? record.sourceSystem : null
+  const sourceUrl = 'sourceUrl' in record ? record.sourceUrl : null
   const authority = recordAuthority(record)
   const supplier = recordSupplier(record)
 

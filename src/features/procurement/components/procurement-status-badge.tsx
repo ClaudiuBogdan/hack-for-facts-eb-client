@@ -41,6 +41,18 @@ const STATUS_META: Record<
     className: 'border-emerald-300 bg-emerald-50 text-emerald-900',
     tooltip: t`Câștigător atribuit.`,
   },
+  in_progress: {
+    label: t`În derulare`,
+    icon: Clock,
+    className: 'border-sky-300 bg-sky-50 text-sky-900',
+    tooltip: t`Contract în derulare.`,
+  },
+  closed: {
+    label: t`Închis`,
+    icon: CheckCircle2,
+    className: 'border-emerald-300 bg-emerald-50 text-emerald-900',
+    tooltip: t`Contract închis.`,
+  },
   cancelled: {
     label: t`Anulat`,
     icon: CircleSlash,

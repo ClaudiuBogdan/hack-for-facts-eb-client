@@ -16,9 +16,11 @@ import { ModificationTrail } from './modification-trail'
 import { ProcurementRecordHeader } from './procurement-record-header'
 import { ValueWithCurrency } from './value-with-currency'
 import { grainLabel } from '../lib/grain-labels'
+import { ronAmountSlice } from '../lib/formatting'
 import type {
   ContractRecord,
   DirectAcquisitionRecord,
+  MoneyFields,
   Party,
   ProcedureRecord,
   ProcurementGrain,
@@ -34,17 +36,26 @@ type Props = {
   readonly className?: string
 }
 
+function recordPublishedAt(r: AnyRecord): string | null {
+  if (r.grain === 'procedure') return r.publicationDate
+  if (r.grain === 'contract') return r.contractDate
+  return r.publicationDate ?? r.finalizationDate
+}
+
 function provenanceInfo(detail: AnyDetail): ProvenanceInfo {
   const r = detail.record
-  const provenance = 'provenance' in r ? r.provenance : null
+  const sourceSystem = 'sourceSystem' in r ? r.sourceSystem : null
+  const sourceUrl = 'sourceUrl' in r ? r.sourceUrl : null
   return {
-    sourceLabel: provenance?.sourceSystem ? `e-licitatie / SEAP (${provenance.sourceSystem})` : 'e-licitatie / SEAP',
-    sourceUrl: provenance?.sourceUrl ?? null,
+    sourceLabel: sourceSystem
+      ? `e-licitatie / SEAP (${sourceSystem})`
+      : 'e-licitatie / SEAP',
+    sourceUrl,
     scraperRef: 'public-contracts-seap',
-    retrievedAt: provenance?.retrievedAt ?? null,
-    publishedAt: provenance?.publishedAt ?? null,
+    retrievedAt: null,
+    publishedAt: recordPublishedAt(r),
     parserNotes: [
-      t`Valorile non-RON păstrează valoarea nativă; nu se însumează între monede.`,
+      t`Valorile non-RON nu au sumă în RON; se afișează codul monedei.`,
       t`Numele pot conține prefixe proprii de CUI și separatori |...| (afișați curățiți).`,
       t`~310k proceduri e-licitatie pot lipsi publication_date până la o reîncărcare.`,
     ],
@@ -196,22 +207,31 @@ function valueLabelFor(r: AnyRecord): string {
   return t`Valoare`
 }
 
-function primaryValue(r: AnyRecord): import('@/schemas/procurement').MoneyValue {
-  if (r.grain === 'procedure') return r.estimatedValue
-  if (r.grain === 'contract') return r.value
-  return r.value
+function primaryValue(r: AnyRecord): MoneyFields {
+  if (r.grain === 'procedure') return ronAmountSlice(r.estimatedValueRon)
+  return {
+    valueRon: r.valueRon,
+    currency: r.currency,
+    isRon: r.isRon,
+    valueSuspect: r.valueSuspect,
+  }
 }
 
 function secondaryValue(
   r: AnyRecord,
-): { readonly label: string; readonly value: import('@/schemas/procurement').MoneyValue } | null {
+): { readonly label: string; readonly value: MoneyFields } | null {
   if (r.grain === 'procedure') {
-    return { label: t`Valoare atribuită`, value: r.awardedValue }
+    return {
+      label: t`Valoare atribuită`,
+      value: {
+        valueRon: r.awardedValueRon,
+        currency: r.currency,
+        isRon: r.isRon,
+        valueSuspect: r.valueSuspect,
+      },
+    }
   }
-  if (r.grain === 'contract') {
-    return { label: t`Valoare estimată`, value: r.estimatedValue }
-  }
-  return { label: t`Valoare estimată`, value: r.estimatedValue }
+  return { label: t`Valoare estimată`, value: ronAmountSlice(r.estimatedValueRon) }
 }
 
 function PartiesSection({ record }: { readonly record: AnyRecord }) {
@@ -337,7 +357,18 @@ function RelatedContractsSection({ detail }: { readonly detail: AnyDetail }) {
             >
               {c.contractNo ?? c.id}
             </Link>
-            <span className="text-muted-foreground"> · <ValueWithCurrency value={c.value} notation="compact" /></span>
+            <span className="text-muted-foreground">
+              {' · '}
+              <ValueWithCurrency
+                value={{
+                  valueRon: c.valueRon,
+                  currency: c.currency,
+                  isRon: c.isRon,
+                  valueSuspect: c.valueSuspect,
+                }}
+                notation="compact"
+              />
+            </span>
           </li>
         ))}
       </ul>

@@ -43,7 +43,7 @@ describe('ProcurementRecordCard', () => {
     expect(screen.queryByRole('link', { name: /Vezi detalii/i })).not.toBeInTheDocument()
   })
 
-  it('discloses native non-RON values on contract cards', () => {
+  it('shows the currency code and no native amount for non-RON contract cards', () => {
     const contract = procurementMockFixtures.searchForParams(
       parseProcurementSearch({ grain: 'contracts' }),
     ).records.find((record) => record.id === 'contract-key-002')
@@ -52,6 +52,9 @@ describe('ProcurementRecordCard', () => {
     render(<ProcurementRecordCard record={contract!} />)
 
     expect(screen.getByText('EUR')).toBeInTheDocument()
+    expect(
+      screen.getByText(/valoare RON indisponibilă/i),
+    ).toBeInTheDocument()
     expect(screen.getByText(/Achiziție echipamente IT/i)).toBeInTheDocument()
   })
 })

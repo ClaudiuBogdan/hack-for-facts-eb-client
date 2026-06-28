@@ -16,7 +16,7 @@ import { MetricCard, MetricCardSkeleton } from './metric-card'
 import { PartyRankingChart } from './party-ranking-chart'
 import { SpendOverTime } from './spend-over-time'
 import { ValueWithCurrency } from './value-with-currency'
-import { formatFlowCount } from '../lib/formatting'
+import { formatFlowCount, ronAmountSlice } from '../lib/formatting'
 import { useProcurementCpvCategory } from '../hooks/use-procurement-data'
 import { useCapabilityGate } from '@/components/shared/procurement-data'
 import type { CpvCategoryPage as CpvCategoryPageData } from '@/schemas/procurement'
@@ -90,7 +90,7 @@ function CpvContent({ data, className }: { readonly data: CpvCategoryPageData; r
         <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <MetricCard
             label={t`Cheltuieli totale`}
-            value={<ValueWithCurrency value={data.summary.totalSpend} notation="compact" />}
+            value={<ValueWithCurrency value={ronAmountSlice(data.summary.totalValueRon)} notation="compact" />}
             status={canSpend ? 'mock' : 'partial'}
             statusTooltip={canSpend ? undefined : t`Acoperire valoare sub prag.`}
           />

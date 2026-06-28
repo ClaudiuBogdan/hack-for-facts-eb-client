@@ -79,7 +79,7 @@ describe('ProcurementRecordDetail', () => {
     ).toBeInTheDocument()
     expect(
       screen.getByText(
-        'Valorile non-RON păstrează valoarea nativă; nu se însumează între monede.',
+        'Valorile non-RON nu au sumă în RON; se afișează codul monedei.',
       ),
     ).toBeInTheDocument()
     expect(

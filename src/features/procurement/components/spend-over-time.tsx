@@ -9,7 +9,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { formatCurrency, formatNumber } from '@/lib/utils'
+import { formatNumber } from '@/lib/utils'
+import { formatRon } from '../lib/formatting'
 import type { MonthlyPoint } from '@/schemas/procurement'
 
 type Props = {
@@ -33,9 +34,9 @@ export function SpendOverTime({
   const max = useMemo(() => {
     if (points.length === 0) return 0
     if (metric === 'amount') {
-      return Math.max(...points.map((p) => p.amountPresent))
+      return Math.max(...points.map((p) => Number(p.amountRonSum ?? '0')))
     }
-    return Math.max(...points.map((p) => p.flowCount))
+    return Math.max(...points.map((p) => Number(p.flowCount)))
   }, [points, metric])
 
   if (points.length === 0) {
@@ -50,7 +51,10 @@ export function SpendOverTime({
     <div className={className}>
       <ul className="flex items-end gap-1.5" aria-hidden style={{ height: 160 }}>
         {points.map((p) => {
-          const value = metric === 'amount' ? p.amountPresent : p.flowCount
+          const value =
+            metric === 'amount'
+              ? Number(p.amountRonSum ?? '0')
+              : Number(p.flowCount)
           const heightPct = max > 0 ? Math.max(4, Math.round((value / max) * 100)) : 0
           return (
             <li
@@ -58,7 +62,7 @@ export function SpendOverTime({
               className="flex h-full flex-1 flex-col items-center gap-1"
               title={
                 metric === 'amount'
-                  ? `${p.month}: ${formatCurrency(value, 'standard', 'RON')}`
+                  ? `${p.month}: ${p.amountRonSum === null ? t`indisponibil` : formatRon(p.amountRonSum)}`
                   : `${p.month}: ${formatNumber(value)} ${t`fluxuri`}`
               }
             >
@@ -78,7 +82,7 @@ export function SpendOverTime({
           )
         })}
       </ul>
-      {points.some((p) => p.amountMissingCount > 0) ? (
+      {points.some((p) => Number(p.amountMissingCount) > 0) ? (
         <p className="mt-2 text-xs text-muted-foreground">
           <Trans>
             Unele luni conțin înregistrări cu valoare lipsă (afișate separat,
@@ -112,9 +116,9 @@ export function SpendOverTime({
             {points.map((p) => (
               <TableRow key={p.month}>
                 <TableCell>{p.month}</TableCell>
-                <TableCell>{formatNumber(p.flowCount)}</TableCell>
-                <TableCell>{formatCurrency(p.amountPresent, 'standard', 'RON')}</TableCell>
-                <TableCell>{formatNumber(p.amountMissingCount)}</TableCell>
+                <TableCell>{formatNumber(Number(p.flowCount))}</TableCell>
+                <TableCell>{formatRon(p.amountRonSum)}</TableCell>
+                <TableCell>{formatNumber(Number(p.amountMissingCount))}</TableCell>
               </TableRow>
             ))}
           </TableBody>

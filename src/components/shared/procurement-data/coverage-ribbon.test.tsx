@@ -1,19 +1,25 @@
 import { fireEvent, render, screen } from '@/test/test-utils'
 import { describe, expect, it } from 'vitest'
 import { CoverageRibbon } from './coverage-ribbon'
-import { procurementMockFixtures } from '@/features/procurement/mocks/fixtures'
 
 describe('CoverageRibbon', () => {
-  const gate = procurementMockFixtures.gate
-
   it('expands to show blocked filters and sub-threshold metrics', () => {
     render(
       <CoverageRibbon
         status="mock"
-        coverage={gate.coverage}
-        dataAsOf={gate.dataAsOf}
-        cadence={gate.cadence}
-        blocked={gate.blocked}
+        coverage={[
+          {
+            metric: 'authority_cui',
+            rate: 0.94,
+            threshold: 0.95,
+            meetsThreshold: false,
+          },
+          { metric: 'amount', rate: 0.8, threshold: 0.95, meetsThreshold: false },
+          { metric: 'cpv', rate: 0.88, threshold: 0.85, meetsThreshold: true },
+        ]}
+        dataAsOf="2026-06-25"
+        cadence="zilnic (suspendat)"
+        blocked={['Filtru regiune furnizor', 'Filtru generat LLM']}
       />,
     )
 

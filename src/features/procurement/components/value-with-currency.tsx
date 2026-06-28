@@ -4,20 +4,20 @@ import { TriangleAlert } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import { formatMoneyValue, isMoneyMissing, moneyValueCurrency } from '../lib/formatting'
-import type { MoneyValue } from '@/schemas/procurement'
+import { formatRon, moneyValueCurrency } from '../lib/formatting'
+import type { MoneyFields } from '@/schemas/procurement'
 
 type Props = {
-  readonly value: MoneyValue
+  readonly value: MoneyFields
   readonly notation?: 'standard' | 'compact'
   readonly className?: string
   readonly showCurrencyBadge?: boolean
 }
 
 /**
- * Renders RON or native value+currency, handles null / negative / outlier
- * flagging. Never implies a mixed-currency total — the caller shows a
- * separate "X înregistrări în altă monedă" note for those.
+ * Renders a RON amount, or — for non-RON rows — the currency code with an
+ * explicit "valoare RON indisponibilă" (prod does not expose a native amount).
+ * Suspect RON values are flagged. Never implies a mixed-currency total.
  */
 export function ValueWithCurrency({
   value,
@@ -25,7 +25,11 @@ export function ValueWithCurrency({
   className,
   showCurrencyBadge = false,
 }: Props) {
-  if (isMoneyMissing(value)) {
+  const hasRon = value.isRon && value.valueRon !== null
+  const isNonRon = !value.isRon && value.currency !== null
+
+  // Plain "indisponibil" only when there is nothing to show AND nothing flagged.
+  if (!hasRon && !isNonRon && !value.valueSuspect) {
     return (
       <span className={cn('text-muted-foreground', className)}>
         <Trans>indisponibil</Trans>
@@ -34,21 +38,32 @@ export function ValueWithCurrency({
   }
 
   const currency = moneyValueCurrency(value)
-  const isNativeOnly = value.ron === null && value.nativeValue !== null
-  const formatted = formatMoneyValue(value, notation)
 
   return (
     <span className={cn('inline-flex items-center gap-1', className)}>
-      <span>{formatted}</span>
-      {isNativeOnly && currency !== 'RON' ? (
-        <Badge variant="outline" className="border-slate-300 bg-slate-100 text-slate-900">
+      {hasRon ? (
+        <span>{formatRon(value.valueRon, notation)}</span>
+      ) : isNonRon ? (
+        <span className="text-muted-foreground">
+          <Trans>valoare RON indisponibilă</Trans>
+        </span>
+      ) : (
+        <span className="text-muted-foreground">
+          <Trans>valoare indisponibilă</Trans>
+        </span>
+      )}
+      {isNonRon ? (
+        <Badge
+          variant="outline"
+          className="border-slate-300 bg-slate-100 text-slate-900"
+        >
           {currency}
         </Badge>
       ) : null}
-      {showCurrencyBadge && currency === 'RON' ? (
+      {showCurrencyBadge && hasRon ? (
         <span className="text-xs text-muted-foreground">RON</span>
       ) : null}
-      {value.isOutlier ? (
+      {value.valueSuspect ? (
         <Tooltip>
           <TooltipTrigger asChild>
             <Badge

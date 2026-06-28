@@ -13,7 +13,7 @@ describe('SourceProvenanceDrawer', () => {
           retrievedAt: '2026-06-25T08:00:00Z',
           publishedAt: '2025-11-04T00:00:00Z',
           parserNotes: [
-            'Valorile non-RON păstrează valoarea nativă; nu se însumează între monede.',
+            'Valorile non-RON nu au sumă în RON; se afișează codul monedei.',
             'Numele pot conține prefixe proprii de CUI.',
           ],
         }}
@@ -25,7 +25,7 @@ describe('SourceProvenanceDrawer', () => {
     const drawer = screen.getByRole('dialog')
     expect(within(drawer).getByText(/public-contracts-seap/i)).toBeInTheDocument()
     expect(
-      within(drawer).getByText(/Valorile non-RON păstrează valoarea nativă/i),
+      within(drawer).getByText(/Valorile non-RON nu au sumă în RON/i),
     ).toBeInTheDocument()
     expect(
       within(drawer).getByText(/Numele pot conține prefixe proprii de CUI/i),

@@ -1,44 +1,29 @@
 import { useMemo } from 'react'
-import type {
-  AllowedAnswerClass,
-  BlockedDimension,
-  CapabilityGate,
-  CoverageGrade,
-  CoverageMetric,
-} from '@/schemas/procurement'
+import type { CapabilityGate } from '@/schemas/procurement'
 
 /**
- * Pure hook over a `CapabilityGate` payload (no fetching). Features call it
- * to decide whether to render a value, hide a filter, or downgrade
- * spend→count. See `docs/design/procurement/features/coverage-data-as-of-layer.md`.
+ * Pure hook over a `CapabilityGate` payload (no fetching). Features call it to
+ * decide whether to render a value, hide a filter, or downgrade spend→count.
+ * Mirrors the prod gate: per-grain coverage rates + boolean `*Allowed` flags +
+ * a `blockers` list (see docs/procurement-prod-schema-reference.md §6).
  */
 export function useCapabilityGate(gate: CapabilityGate) {
   return useMemo(
     () => ({
       gate,
-      isAllowed(answerClass: AllowedAnswerClass): boolean {
-        return gate.allowed.includes(answerClass)
+      /** Whether deterministic filter answers are allowed for this grain. */
+      canFilter(): boolean {
+        return gate.filterAnswersAllowed
       },
-      isBlocked(dimension: BlockedDimension): boolean {
-        return gate.blocked.includes(dimension)
-      },
-      coverageOf(metric: CoverageMetric): CoverageGrade | undefined {
-        return gate.coverage.find((c) => c.metric === metric)
-      },
-      meets(metric: CoverageMetric): boolean {
-        return gate.coverage.find((c) => c.metric === metric)?.meetsThreshold ?? false
-      },
-      /**
-       * Spend answers downgrade to count-ranked when amount coverage is
-       * below threshold OR `spend_ranked_top_n` is not allowed.
-       */
+      /** Spend/top-N-by-value is only authoritative when the gate allows it. */
       canShowSpendRanked(): boolean {
-        return (
-          gate.allowed.includes('spend_ranked_top_n') &&
-          (gate.coverage.find((c) => c.metric === 'amount')?.meetsThreshold ??
-            false)
-        )
+        return gate.spendRankingsAllowed
       },
+      /** Supplier-region filtering is blocked in v1. */
+      isSupplierRegionBlocked(): boolean {
+        return !gate.supplierRegionFiltersAllowed
+      },
+      blockers: gate.blockers,
     }),
     [gate],
   )

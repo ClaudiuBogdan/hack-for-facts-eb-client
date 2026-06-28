@@ -9,20 +9,24 @@ import {
 import { ProcurementStatusBadge } from './procurement-status-badge'
 import { ValueWithCurrency } from './value-with-currency'
 import { grainSingularLabel } from '../lib/grain-labels'
-import type { ProcurementStatus } from '@/schemas/procurement'
+import type {
+  DataStatus,
+  MoneyFields,
+  ProcurementStatus,
+} from '@/schemas/procurement'
 
 type Props = {
   readonly grain: 'procedure' | 'contract' | 'direct_acquisition'
   readonly identifiers: ReadonlyArray<{ readonly label: string; readonly value: string | null }>
   readonly status: ProcurementStatus
   readonly valueLabel: string
-  readonly value: import('@/schemas/procurement').MoneyValue
-  readonly secondaryValue?: { readonly label: string; readonly value: import('@/schemas/procurement').MoneyValue } | null
+  readonly value: MoneyFields
+  readonly secondaryValue?: { readonly label: string; readonly value: MoneyFields } | null
   readonly sourceSystem: string
   readonly sourceUrl: string | null
   readonly publishedAt: string | null
   readonly retrievedAt: string | null
-  readonly dataStatus: import('@/schemas/procurement').DataStatus
+  readonly dataStatus: DataStatus
   readonly className?: string
 }
 
