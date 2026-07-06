@@ -26,6 +26,7 @@ import { Route as CookiePolicyRouteImport } from './routes/cookie-policy'
 import { Route as BugeteLocale2026RouteImport } from './routes/bugete-locale-2026'
 import { Route as BugetNational2026RouteImport } from './routes/buget-national-2026'
 import { Route as BudgetExplorerRouteImport } from './routes/budget-explorer'
+import { Route as AgentRouteImport } from './routes/agent'
 import { Route as ProcurementRouteRouteImport } from './routes/procurement/route'
 import { Route as LegislatieRouteRouteImport } from './routes/legislatie/route'
 import { Route as InvestitiiPubliceRouteRouteImport } from './routes/investitii-publice/route'
@@ -249,6 +250,11 @@ const BudgetExplorerRoute = BudgetExplorerRouteImport.update({
 } as any).lazy(() =>
   import('./routes/budget-explorer.lazy').then((d) => d.Route),
 )
+const AgentRoute = AgentRouteImport.update({
+  id: '/agent',
+  path: '/agent',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/agent.lazy').then((d) => d.Route))
 const ProcurementRouteRoute = ProcurementRouteRouteImport.update({
   id: '/procurement',
   path: '/procurement',
@@ -1196,6 +1202,7 @@ export interface FileRoutesByFullPath {
   '/investitii-publice': typeof InvestitiiPubliceRouteRouteWithChildren
   '/legislatie': typeof LegislatieRouteRouteWithChildren
   '/procurement': typeof ProcurementRouteRouteWithChildren
+  '/agent': typeof AgentRoute
   '/budget-explorer': typeof BudgetExplorerRoute
   '/buget-national-2026': typeof BugetNational2026Route
   '/bugete-locale-2026': typeof BugeteLocale2026RouteWithChildren
@@ -1341,6 +1348,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agent': typeof AgentRoute
   '/budget-explorer': typeof BudgetExplorerRoute
   '/buget-national-2026': typeof BugetNational2026Route
   '/bugete-locale-2026': typeof BugeteLocale2026RouteWithChildren
@@ -1481,6 +1489,7 @@ export interface FileRoutesById {
   '/investitii-publice': typeof InvestitiiPubliceRouteRouteWithChildren
   '/legislatie': typeof LegislatieRouteRouteWithChildren
   '/procurement': typeof ProcurementRouteRouteWithChildren
+  '/agent': typeof AgentRoute
   '/budget-explorer': typeof BudgetExplorerRoute
   '/buget-national-2026': typeof BugetNational2026Route
   '/bugete-locale-2026': typeof BugeteLocale2026RouteWithChildren
@@ -1633,6 +1642,7 @@ export interface FileRouteTypes {
     | '/investitii-publice'
     | '/legislatie'
     | '/procurement'
+    | '/agent'
     | '/budget-explorer'
     | '/buget-national-2026'
     | '/bugete-locale-2026'
@@ -1778,6 +1788,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/agent'
     | '/budget-explorer'
     | '/buget-national-2026'
     | '/bugete-locale-2026'
@@ -1917,6 +1928,7 @@ export interface FileRouteTypes {
     | '/investitii-publice'
     | '/legislatie'
     | '/procurement'
+    | '/agent'
     | '/budget-explorer'
     | '/buget-national-2026'
     | '/bugete-locale-2026'
@@ -2068,6 +2080,7 @@ export interface RootRouteChildren {
   InvestitiiPubliceRouteRoute: typeof InvestitiiPubliceRouteRouteWithChildren
   LegislatieRouteRoute: typeof LegislatieRouteRouteWithChildren
   ProcurementRouteRoute: typeof ProcurementRouteRouteWithChildren
+  AgentRoute: typeof AgentRoute
   BudgetExplorerRoute: typeof BudgetExplorerRoute
   BugetNational2026Route: typeof BugetNational2026Route
   BugeteLocale2026Route: typeof BugeteLocale2026RouteWithChildren
@@ -2252,6 +2265,13 @@ declare module '@tanstack/react-router' {
       path: '/budget-explorer'
       fullPath: '/budget-explorer'
       preLoaderRoute: typeof BudgetExplorerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agent': {
+      id: '/agent'
+      path: '/agent'
+      fullPath: '/agent'
+      preLoaderRoute: typeof AgentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/procurement': {
@@ -3584,6 +3604,7 @@ const rootRouteChildren: RootRouteChildren = {
   InvestitiiPubliceRouteRoute: InvestitiiPubliceRouteRouteWithChildren,
   LegislatieRouteRoute: LegislatieRouteRouteWithChildren,
   ProcurementRouteRoute: ProcurementRouteRouteWithChildren,
+  AgentRoute: AgentRoute,
   BudgetExplorerRoute: BudgetExplorerRoute,
   BugetNational2026Route: BugetNational2026Route,
   BugeteLocale2026Route: BugeteLocale2026RouteWithChildren,
