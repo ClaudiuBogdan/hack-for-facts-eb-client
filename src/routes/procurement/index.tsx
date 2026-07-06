@@ -1,9 +1,30 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { z } from 'zod'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { getSiteUrl } from '@/config/env'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 
+// Lenient `?tab=` handling: tabs are path-driven (Overview → /procurement,
+// Search → /procurement/search), but a stray tab param redirects instead of
+// 404ing or lingering in the URL.
+const indexSearchSchema = z
+  .object({
+    tab: z.enum(['overview', 'search']).optional().catch(undefined),
+  })
+  .passthrough()
+
 export const Route = createFileRoute('/procurement/')({
   ssr: true,
+  validateSearch: indexSearchSchema,
+  beforeLoad: ({ search }) => {
+    if (search.tab === 'search') {
+      const { tab: _tab, ...rest } = search
+      throw redirect({ to: '/procurement/search', search: rest, replace: true })
+    }
+    if (search.tab === 'overview') {
+      const { tab: _tab, ...rest } = search
+      throw redirect({ to: '/procurement', search: rest, replace: true })
+    }
+  },
   headers: () =>
     createPublicPageCacheHeaders({
       sharedMaxAgeSeconds: 300,

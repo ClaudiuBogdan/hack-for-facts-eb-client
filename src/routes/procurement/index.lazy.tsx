@@ -1,6 +1,6 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { ProcurementLandingPage } from '@/features/procurement/components/procurement-landing-page'
+import { ProcurementOverviewPage } from '@/features/procurement/components/procurement-overview-page'
 
 export const Route = createLazyFileRoute('/procurement/')({
-  component: ProcurementLandingPage,
+  component: ProcurementOverviewPage,
 })

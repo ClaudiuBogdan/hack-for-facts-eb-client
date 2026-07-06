@@ -1,0 +1,100 @@
+/**
+ * Procurement visual theme — GOV.UK-style class constants shared across the
+ * feature (mirrors parliament's `hub-theme.ts` / `header-theme.ts`). Square
+ * corners, 2px borders, uppercase bold section labels; light+dark from the
+ * shared `--pnrr-*` tokens plus the GOV.UK grays used by parliament.
+ */
+
+// ── header / hero (parliament-shell rhythm) ─────────────────────────────────
+
+export const procurementHeaderHeroClassName = 'pt-10 pb-8 sm:pt-14 sm:pb-10'
+
+export const procurementHeaderTitleClassName =
+  'max-w-5xl text-balance font-black leading-[0.85] tracking-tight text-[var(--pnrr-fg)]'
+
+export const procurementHeaderTitleStyle = {
+  fontSize: 'clamp(2.5rem, 7vw, 5.5rem)',
+} as const
+
+export const procurementHeaderDescriptionClassName =
+  'max-w-[40rem] text-[1.125rem] font-normal leading-8 text-[var(--pnrr-fg)]'
+
+export const procurementHeaderMetaClassName =
+  'text-base font-normal leading-6 text-[var(--pnrr-muted)]'
+
+export const procurementHeaderStatClassName =
+  'inline-flex items-center gap-2 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 py-2 text-base'
+
+export const procurementHeaderStatValueClassName =
+  'font-bold tabular-nums text-[var(--pnrr-fg)]'
+
+export const procurementHeaderStatLabelClassName =
+  'font-normal text-[var(--pnrr-muted)]'
+
+// ── section surfaces ────────────────────────────────────────────────────────
+
+export const procurementSectionClassName =
+  'overflow-hidden rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]'
+
+export const procurementSectionHeaderClassName =
+  'border-b-2 border-[var(--pnrr-border)] px-5 py-4 sm:px-6'
+
+export const procurementSectionBodyClassName = 'p-5 sm:p-6'
+
+export const procurementSectionTitleClassName =
+  'text-xl font-bold tracking-tight text-[var(--pnrr-fg)] sm:text-2xl'
+
+export const procurementSectionDescriptionClassName =
+  'mt-1 text-sm text-[var(--pnrr-muted)]'
+
+export const procurementSectionLabelClassName =
+  'text-xs font-bold uppercase tracking-wide text-[#0b0c0c] dark:text-[var(--pnrr-fg)]'
+
+// ── controls ────────────────────────────────────────────────────────────────
+
+export const procurementFieldClassName =
+  'h-10 min-w-0 flex-1 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-base shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]'
+
+export const procurementDateInputClassName =
+  'h-10 w-full rounded-none border-2 border-[#b1b4b6] bg-white px-3 text-sm text-[#0b0c0c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)]'
+
+export const procurementToggleItemClassName =
+  'h-10 min-w-0 justify-start gap-2 rounded-none border-2 border-[#b1b4b6] bg-white px-3 text-sm font-semibold text-[#0b0c0c] transition-colors hover:bg-[#f3f2f1] data-[state=on]:border-[#1d70b8] data-[state=on]:bg-[#1d70b8] data-[state=on]:text-white dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)] dark:hover:bg-[var(--pnrr-subtle)]'
+
+export const procurementPrimaryButtonClassName =
+  'h-11 rounded-none border-2 border-[#1d70b8] bg-[#1d70b8] px-2 text-xs font-black uppercase tracking-wide text-white hover:opacity-90 sm:text-sm'
+
+export const procurementOutlineButtonClassName =
+  'h-11 rounded-none border-2 border-[#b1b4b6] bg-white px-2 text-xs font-black uppercase tracking-wide text-[#0b0c0c] hover:bg-[#f3f2f1] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)] sm:text-sm'
+
+export const procurementPaginationButtonClassName =
+  'inline-flex h-10 min-w-10 items-center justify-center rounded-none border-2 border-[#b1b4b6] bg-white px-3 text-sm font-semibold text-[#0b0c0c] transition-colors hover:bg-[#f3f2f1] disabled:cursor-not-allowed disabled:opacity-40 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)] dark:hover:bg-[var(--pnrr-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]'
+
+export const procurementChipClassName =
+  'inline-flex max-w-full items-center gap-1.5 border-2 border-[#b1b4b6] bg-[#f3f2f1] px-2.5 py-1 text-sm font-semibold text-[#0b0c0c] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-fg)]'
+
+export const procurementUnderlineLinkClassName =
+  'text-sm font-semibold text-[var(--pnrr-fg)] underline underline-offset-2 transition-colors hover:text-[var(--pnrr-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]'
+
+// ── cards ───────────────────────────────────────────────────────────────────
+
+export const procurementRecordCardClassName =
+  'group block overflow-hidden rounded-none border-2 border-[#b1b4b6] bg-white transition-colors hover:bg-[#f8f8f8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:hover:bg-[var(--pnrr-hover)]'
+
+export const procurementCardChevronClassName =
+  'h-6 w-6 shrink-0 text-[#0b0c0c] dark:text-[var(--pnrr-fg)]'
+
+// ── chart marks ─────────────────────────────────────────────────────────────
+
+/**
+ * The single data-mark hue (all procurement charts are single-series nominal
+ * bars — one hue, never per-row colors). Validated with the dataviz palette
+ * validator: #1d70b8 passes on the light surface (#ffffff), #3b82f6 on the
+ * dark card surface (#1b1f1c) — lightness band, chroma floor and ≥3:1
+ * contrast all PASS.
+ */
+export const procurementMarkClassName = 'bg-[#1d70b8] dark:bg-[#3b82f6]'
+
+/** Unfilled bar track — a lighter step of the surface, not a border. */
+export const procurementMarkTrackClassName =
+  'bg-[#f3f2f1] dark:bg-[var(--pnrr-track)]'

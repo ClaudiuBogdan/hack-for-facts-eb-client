@@ -1,25 +1,28 @@
 import { Link } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
-import { useState } from 'react'
-import { ChevronRight, TriangleAlert } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
-import { EmptyState } from '@/components/ui/empty-state'
+import { ChevronRight } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { CoverageRibbonFromGate } from '@/components/shared/procurement-data/coverage-ribbon'
+import { MockDataStatusBadge } from '@/components/shared/procurement-data/data-status-badge'
 import {
-  CoverageRibbonFromGate,
-  DataStatusBadge,
-  MockDataStatusBadge,
-} from '@/components/shared/procurement-data'
-import { CpvLabel } from './cpv-label'
-import { MetricCard, MetricCardSkeleton } from './metric-card'
-import { PartyRankingChart } from './party-ranking-chart'
-import { SpendOverTime } from './spend-over-time'
-import { ValueWithCurrency } from './value-with-currency'
-import { formatFlowCount, ronAmountSlice } from '../lib/formatting'
+  procurementDataStatus,
+  type CpvCategoryPage as CpvCategoryPageData,
+} from '@/schemas/procurement'
 import { useProcurementCpvCategory } from '../hooks/use-procurement-data'
-import { useCapabilityGate } from '@/components/shared/procurement-data'
-import type { CpvCategoryPage as CpvCategoryPageData } from '@/schemas/procurement'
+import { isProcurementMock } from '../api/procurement-api'
+import { formatFlowCount, formatRon } from '../lib/formatting'
+import {
+  procurementChipClassName,
+  procurementSectionLabelClassName,
+  procurementUnderlineLinkClassName,
+} from '../lib/procurement-theme'
+import { CpvLabel } from './cpv-label'
+import { ProcurementStatTile } from './procurement-stat-tile'
+import { ProcurementPartyRanking } from './procurement-party-ranking'
+import { ProcurementMonthlyChart } from './procurement-monthly-chart'
+import { ProcurementErrorState } from './procurement-error-state'
+import { ProcurementDetailSkeleton } from './procurement-skeletons'
 
 type Props = {
   readonly code: string
@@ -27,181 +30,165 @@ type Props = {
   readonly className?: string
 }
 
+/** CPV category page — overview building blocks scoped to one division/code. */
 export function CpvCategoryPage({ code, initialPage, className }: Props) {
-  const { data, isLoading, error } = useProcurementCpvCategory(code, initialPage)
+  const query = useProcurementCpvCategory(code, initialPage)
+  const page = query.data
+  const mock = isProcurementMock()
 
-  if (isLoading) {
-    return <CpvSkeleton />
-  }
-  if (error || !data) {
-    return (
-      <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-        <EmptyState
-          icon={<TriangleAlert className="h-6 w-6" />}
-          title={t`Categoria CPV ${code} nu a putut fi încărcată.`}
-          description={t`Verifică codul sau încearcă altă categorie.`}
+  return (
+    <div
+      className={cn(
+        'mx-auto w-full max-w-6xl space-y-6 px-4 py-6 sm:px-6 lg:px-8',
+        className,
+      )}
+    >
+      <nav
+        aria-label={t`Breadcrumb`}
+        className="flex flex-wrap items-center gap-1 text-sm text-[var(--pnrr-muted)]"
+      >
+        <Link
+          to="/procurement"
+          className="underline underline-offset-2 hover:text-[var(--pnrr-fg)]"
+        >
+          <Trans>Public procurement</Trans>
+        </Link>
+        <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+        <span className="text-[var(--pnrr-fg)]">
+          <Trans>CPV category {code}</Trans>
+        </span>
+      </nav>
+
+      {query.isPending ? (
+        <ProcurementDetailSkeleton />
+      ) : query.isError && !page ? (
+        <ProcurementErrorState
+          error={query.error}
+          onRetry={() => void query.refetch()}
+          isRetrying={query.isRefetching}
         />
-      </div>
-    )
-  }
-
-  return <CpvContent data={data} className={className} />
-}
-
-function CpvContent({ data, className }: { readonly data: CpvCategoryPageData; readonly className?: string }) {
-  const capability = useCapabilityGate(data.gate)
-  const canSpend = capability.canShowSpendRanked()
-  const [metric, setMetric] = useState<'count' | 'value'>(canSpend ? 'value' : 'count')
-
-  return (
-    <div className={className}>
-      <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
-        <header className="space-y-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <MockDataStatusBadge />
-          </div>
-          <nav aria-label={t`Breadcrumb`} className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Link to="/procurement" className="underline underline-offset-2 hover:text-foreground">
-              <Trans>Achiziții publice</Trans>
-            </Link>
-            <ChevronRight className="h-3 w-3" aria-hidden />
-            <Link to="/procurement/search" className="underline underline-offset-2 hover:text-foreground">
-              <Trans>Caută</Trans>
-            </Link>
-            <ChevronRight className="h-3 w-3" aria-hidden />
-            <span className="font-medium text-foreground">{data.code}</span>
-          </nav>
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            <CpvLabel
-              code={data.code}
-              fallback={{ labelRo: data.labelRo, labelEn: data.labelEn }}
-            />
-          </h1>
-          <p className="max-w-3xl text-sm text-muted-foreground">
-            <Trans>
-              Categorie CPV (Vocabularul comun privind achizițiile). Agregatele
-              sunt la nivel de diviziune.
-            </Trans>
-          </p>
-        </header>
-
-        <CoverageRibbonFromGate gate={data.gate} status="mock" />
-
-        <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <MetricCard
-            label={t`Cheltuieli totale`}
-            value={<ValueWithCurrency value={ronAmountSlice(data.summary.totalValueRon)} notation="compact" />}
-            status={canSpend ? 'mock' : 'partial'}
-            statusTooltip={canSpend ? undefined : t`Acoperire valoare sub prag.`}
-          />
-          <MetricCard label={t`Contracte`} value={formatFlowCount(data.summary.recordCounts.contracts)} status="mock" />
-          <MetricCard label={t`Achiziții directe`} value={formatFlowCount(data.summary.recordCounts.directAcquisitions)} status="mock" />
-          <MetricCard label={t`Proceduri`} value={formatFlowCount(data.summary.recordCounts.procedures)} status="mock" />
-        </section>
-
-        <section className="space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="text-base font-semibold">
-              <Trans>Volum în timp</Trans>
-            </h2>
-            <div className="flex items-center gap-1">
-              <Button
-                variant={metric === 'count' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setMetric('count')}
-                aria-pressed={metric === 'count'}
-              >
-                <Trans>Pe număr</Trans>
-              </Button>
-              <Button
-                variant={metric === 'value' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setMetric('value')}
-                disabled={!canSpend}
-                aria-pressed={metric === 'value'}
-              >
-                <Trans>Pe valoare</Trans>
-              </Button>
-              {!canSpend ? (
-                <DataStatusBadge status="partial" tooltip={t`Acoperire valoare sub prag.`} />
+      ) : page ? (
+        <>
+          <header>
+            <p className={procurementSectionLabelClassName}>
+              {page.level === 'division' ? (
+                <Trans>CPV division</Trans>
+              ) : (
+                <Trans>CPV code</Trans>
+              )}
+              {mock ? (
+                <span className="ml-2 inline-flex align-middle">
+                  <MockDataStatusBadge />
+                </span>
               ) : null}
+            </p>
+            <h1 className="mt-2 text-3xl font-black tracking-tight text-[var(--pnrr-fg)] sm:text-4xl">
+              {page.labelRo ?? page.labelEn}
+            </h1>
+            <div className="mt-2">
+              <CpvLabel
+                code={page.code}
+                fallback={{ labelRo: page.labelRo, labelEn: page.labelEn }}
+              />
             </div>
-          </div>
-          <SpendOverTime points={data.spendOverTime} metric={metric === 'value' ? 'amount' : 'count'} />
-        </section>
+          </header>
 
-        <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="space-y-2">
-            <h2 className="text-base font-semibold">
-              <Trans>Autorități principale</Trans>
-            </h2>
-            <PartyRankingChart
-              rows={data.topAuthorities}
-              partyKind="authority"
-              metric={canSpend ? 'value' : 'count'}
-            />
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-base font-semibold">
-              <Trans>Furnizori principali</Trans>
-            </h2>
-            <PartyRankingChart
-              rows={data.topSuppliers}
-              partyKind="supplier"
-              metric={canSpend ? 'value' : 'count'}
-            />
-          </div>
-        </section>
-
-        <section className="space-y-2">
-          <h2 className="text-base font-semibold">
-            <Trans>Categorii înrudite</Trans>
-          </h2>
-          <ul className="flex flex-wrap gap-2 text-sm">
-            {data.relatedCategories.map((cat) => (
-              <li key={cat.code}>
-                <Link
-                  to="/procurement/categories/$code"
-                  params={{ code: cat.code }}
-                  className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-xs font-medium text-foreground underline underline-offset-2 hover:text-primary"
-                >
-                  <CpvLabel code={cat.code} variant="compact" fallback={{ labelRo: cat.labelRo, labelEn: cat.labelEn }} />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <Button asChild variant="outline" size="sm">
-          <Link
-            to="/procurement/search"
-            search={{ cpv_division: data.divisionCode }}
+          <section
+            className="grid grid-cols-2 gap-3 md:grid-cols-4"
+            aria-label={t`Category indicators`}
           >
-            <Trans>Vezi toate înregistrările din această categorie</Trans>
-          </Link>
-        </Button>
-      </div>
-    </div>
-  )
-}
+            <ProcurementStatTile
+              label={t`Direct acquisitions`}
+              value={formatFlowCount(page.summary.recordCounts.directAcquisitions)}
+            />
+            <ProcurementStatTile
+              label={t`Contracts`}
+              value={formatFlowCount(page.summary.recordCounts.contracts)}
+            />
+            <ProcurementStatTile
+              label={t`Procedures`}
+              value={formatFlowCount(page.summary.recordCounts.procedures)}
+            />
+            <ProcurementStatTile
+              label={t`RON total (partial)`}
+              value={
+                page.summary.totalValueRon !== null
+                  ? formatRon(page.summary.totalValueRon, 'compact')
+                  : '—'
+              }
+              hint={
+                page.summary.totalValueRon === null
+                  ? t`below the coverage threshold`
+                  : undefined
+              }
+            />
+          </section>
 
-function CpvSkeleton() {
-  return (
-    <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
-      <div className="space-y-2">
-        <div className="h-8 w-1/2 animate-pulse rounded bg-primary/10" aria-hidden />
-        <div className="h-4 w-1/3 animate-pulse rounded bg-primary/10" aria-hidden />
-      </div>
-      <div className="h-16 w-full animate-pulse rounded-lg bg-primary/10" aria-hidden />
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <MetricCardSkeleton key={i} />
-        ))}
-      </div>
-      <Skeleton className="h-40 w-full" aria-hidden />
-      <span className="sr-only">
-        <Trans>Se încarcă categoria CPV…</Trans>
-      </span>
+          <CoverageRibbonFromGate
+            gate={page.gate}
+            status={mock ? 'mock' : procurementDataStatus(page.gate)}
+            collapsible
+          />
+
+          <ProcurementMonthlyChart
+            points={page.spendOverTime}
+            showAmounts={page.gate.spendRankingsAllowed}
+            title={t`Monthly volume in this category`}
+          />
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            <ProcurementPartyRanking
+              title={t`Top public buyers`}
+              rows={page.topAuthorities}
+              kind="authority"
+              seeAllParam="authority_cui"
+            />
+            <ProcurementPartyRanking
+              title={t`Top suppliers`}
+              rows={page.topSuppliers}
+              kind="supplier"
+              seeAllParam="supplier_cui"
+            />
+          </div>
+
+          {page.relatedCategories.length > 0 ? (
+            <section className="space-y-2">
+              <h2 className={procurementSectionLabelClassName}>
+                <Trans>Related categories</Trans>
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {page.relatedCategories.map((related) => (
+                  <Link
+                    key={related.code}
+                    to="/procurement/categories/$code"
+                    params={{ code: related.code }}
+                    className={cn(
+                      procurementChipClassName,
+                      'hover:bg-white dark:hover:bg-[var(--pnrr-hover)]',
+                    )}
+                  >
+                    {related.code} · {related.labelRo ?? related.labelEn}
+                  </Link>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          <div>
+            <Link
+              to="/procurement/search"
+              search={
+                page.level === 'division'
+                  ? { cpv_division: page.code }
+                  : { cpv: page.code }
+              }
+              className={procurementUnderlineLinkClassName}
+            >
+              <Trans>Search all records in this category</Trans>
+            </Link>
+          </div>
+        </>
+      ) : null}
     </div>
   )
 }

@@ -1,0 +1,55 @@
+import { Trans } from '@lingui/react/macro'
+import { t } from '@lingui/core/macro'
+import { Label } from '@/components/ui/label'
+import {
+  procurementSortSchema,
+  type ProcurementSort,
+} from '@/schemas/procurement-search'
+import { sortLabel } from '../lib/enum-labels'
+
+type Props = {
+  readonly sort: ProcurementSort
+  readonly onSortChange: (sort: ProcurementSort) => void
+  /** Value sorts are disabled when the grain's gate blocks spend answers. */
+  readonly valueSortAllowed: boolean
+}
+
+const SELECT_CLASS =
+  'h-10 rounded-none border-2 border-[#b1b4b6] bg-white px-2 text-sm font-semibold text-[#0b0c0c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)]'
+
+export function ProcurementSortSelect({
+  sort,
+  onSortChange,
+  valueSortAllowed,
+}: Props) {
+  return (
+    <div className="flex items-center gap-2">
+      <Label
+        htmlFor="procurement-sort"
+        className="text-sm font-semibold text-[var(--pnrr-muted)]"
+      >
+        <Trans>Sort</Trans>
+      </Label>
+      <select
+        id="procurement-sort"
+        className={SELECT_CLASS}
+        value={sort}
+        onChange={(event) => {
+          const parsed = procurementSortSchema.safeParse(event.target.value)
+          if (parsed.success) onSortChange(parsed.data)
+        }}
+      >
+        {procurementSortSchema.options.map((option) => {
+          const isValueSort = option === 'value_desc' || option === 'value_asc'
+          const disabled = isValueSort && !valueSortAllowed
+          return (
+            <option key={option} value={option} disabled={disabled}>
+              {sortLabel(option)}
+              {disabled ? ` — ${t`below data threshold`}` : ''}
+            </option>
+          )
+        })}
+      </select>
+    </div>
+  )
+}

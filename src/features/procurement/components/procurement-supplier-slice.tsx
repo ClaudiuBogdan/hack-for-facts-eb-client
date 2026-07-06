@@ -1,259 +1,265 @@
 import { Link } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
-import { CircleAlert, TriangleAlert } from 'lucide-react'
-import { Skeleton } from '@/components/ui/skeleton'
-import { EmptyState } from '@/components/ui/empty-state'
+import { TriangleAlert } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import { CoverageRibbonFromGate } from '@/components/shared/procurement-data/coverage-ribbon'
 import {
-  CoverageRibbonFromGate,
-  DataStatusBadge,
-  EvidenceLink,
-  MockDataStatusBadge,
-} from '@/components/shared/procurement-data'
+  procurementDataStatus,
+  type SupplierProcurementSlice as SupplierSliceData,
+} from '@/schemas/procurement'
+import {
+  useProcurementSupplierRecords,
+  useProcurementSupplierSlice,
+} from '../hooks/use-procurement-data'
+import { isProcurementMock } from '../api/procurement-api'
+import { formatFlowCount, formatRon } from '../lib/formatting'
+import {
+  procurementChipClassName,
+  procurementOutlineButtonClassName,
+  procurementSectionLabelClassName,
+  procurementUnderlineLinkClassName,
+} from '../lib/procurement-theme'
+import { ProcurementStatTile } from './procurement-stat-tile'
+import { ProcurementPartyRanking } from './procurement-party-ranking'
+import { ProcurementCategoryBars } from './procurement-category-bars'
+import { ProcurementMonthlyChart } from './procurement-monthly-chart'
+import { ProcurementRecordList } from './procurement-record-card'
+import { ProcurementErrorState } from './procurement-error-state'
+import { SupplierSliceSkeleton } from './procurement-skeletons'
 import { CpvLabel } from './cpv-label'
-import { MetricCard, MetricCardSkeleton } from './metric-card'
-import { PartyRankingChart } from './party-ranking-chart'
-import { CategoryBreakdown } from './category-breakdown'
-import { ProcurementRecordCard } from './procurement-record-card'
-import { SpendOverTime } from './spend-over-time'
-import { ValueWithCurrency } from './value-with-currency'
-import { formatFlowCount, ronAmountSlice } from '../lib/formatting'
-import { useProcurementSupplierSlice } from '../hooks/use-procurement-data'
-import { useCapabilityGate } from '@/components/shared/procurement-data'
-import type { SupplierProcurementSlice } from '@/schemas/procurement'
 
 type Props = {
   readonly supplierCui: string
   readonly className?: string
 }
 
+/**
+ * Procurement slice embedded in company profiles (`private-company-achizitii-tab`).
+ * Import path and export name are stable — the company feature needs no edits.
+ */
 export function ProcurementSupplierSlice({ supplierCui, className }: Props) {
-  const { data, isLoading, error } = useProcurementSupplierSlice(supplierCui)
+  const query = useProcurementSupplierSlice(supplierCui)
+  const slice = query.data
 
-  if (isLoading) {
+  if (query.isPending) {
     return <SupplierSliceSkeleton />
   }
-  if (error || !data) {
+  if (query.isError && !slice) {
     return (
-      <EmptyState
-        icon={<CircleAlert className="h-6 w-6" />}
-        title={t`Nu am putut încărca achizițiile publice pentru această companie.`}
-        description={t`Reîncearcă mai târziu.`}
+      <ProcurementErrorState
+        compact
+        error={query.error}
+        onRetry={() => void query.refetch()}
+        isRetrying={query.isRefetching}
+        className={className}
       />
     )
   }
+  if (!slice) return null
 
-  return <SupplierSliceContent data={data} className={className} />
+  const isEmpty =
+    slice.summary.contractsCount === 0 &&
+    slice.summary.directAcquisitionsCount === 0
+
+  if (isEmpty) {
+    return (
+      <p className={cn('text-sm text-[var(--pnrr-muted)]', className)}>
+        <Trans>
+          This company does not appear as a supplier in the procurement data.
+        </Trans>
+      </p>
+    )
+  }
+
+  return <SliceContent slice={slice} className={className} />
 }
 
-function SupplierSliceContent({
-  data,
+function SliceContent({
+  slice,
   className,
 }: {
-  readonly data: SupplierProcurementSlice
+  readonly slice: SupplierSliceData
   readonly className?: string
 }) {
-  const capability = useCapabilityGate(data.gate)
-  const canSpend = capability.canShowSpendRanked()
+  const status = isProcurementMock()
+    ? 'mock'
+    : procurementDataStatus(slice.gate)
 
   return (
-    <div className={className}>
-      <div className="space-y-5">
-        <div className="flex flex-wrap items-center gap-2">
-          <MockDataStatusBadge />
-        </div>
+    <div className={cn('space-y-5', className)}>
+      <section
+        className="grid grid-cols-2 gap-3 md:grid-cols-4"
+        aria-label={t`Supplier procurement indicators`}
+      >
+        <ProcurementStatTile
+          label={t`Public revenue (RON)`}
+          value={
+            slice.summary.totalPublicRevenueRon !== null
+              ? formatRon(slice.summary.totalPublicRevenueRon, 'compact')
+              : '—'
+          }
+          hint={t`partial sum, values are not payments`}
+        />
+        <ProcurementStatTile
+          label={t`Public buyers`}
+          value={formatFlowCount(slice.summary.buyersCount)}
+        />
+        <ProcurementStatTile
+          label={t`Contracts`}
+          value={formatFlowCount(slice.summary.contractsCount)}
+        />
+        <ProcurementStatTile
+          label={t`Direct acquisitions`}
+          value={formatFlowCount(slice.summary.directAcquisitionsCount)}
+        />
+      </section>
 
-        <CoverageRibbonFromGate gate={data.gate} status="mock" />
+      <CoverageRibbonFromGate gate={slice.gate} status={status} collapsible />
 
-        <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <MetricCard
-            label={t`Venituri din achiziții`}
-            value={<ValueWithCurrency value={ronAmountSlice(data.summary.totalPublicRevenueRon)} notation="compact" />}
-            hint={t`Procurement-sourced, nu cifra de afaceri`}
-            status={canSpend ? 'mock' : 'partial'}
-          />
-          <MetricCard label={t`Cumpărători`} value={formatFlowCount(data.summary.buyersCount)} status="mock" />
-          <MetricCard label={t`Contracte`} value={formatFlowCount(data.summary.contractsCount)} status="mock" />
-          <MetricCard label={t`Achiziții directe`} value={formatFlowCount(data.summary.directAcquisitionsCount)} status="mock" />
-        </section>
+      <ConcentrationTeaser slice={slice} />
 
-        <p className="text-xs text-muted-foreground">
-          <Trans>
-            Prima apariție: {data.summary.firstSeen ?? t`indisponibil`} ·
-            ultima apariție: {data.summary.lastSeen ?? t`indisponibil`}
-          </Trans>
-        </p>
+      <div className="grid gap-5 lg:grid-cols-2">
+        <ProcurementPartyRanking
+          title={t`Top public buyers`}
+          rows={slice.topBuyers}
+          kind="authority"
+          seeAllParam="authority_cui"
+        />
+        <ProcurementCategoryBars
+          rows={slice.categoryBreakdown}
+          title={t`Categories supplied`}
+          description={t`CPV divisions ranked by number of records.`}
+        />
+      </div>
 
-        <section className="space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="text-base font-semibold">
-              <Trans>Cumpărători principali</Trans>
-            </h2>
-            <DataStatusBadge
-              status={canSpend ? 'mock' : 'partial'}
-              tooltip={canSpend ? undefined : t`Cota este sub prag; afișat pe număr.`}
-            />
-          </div>
-          <PartyRankingChart
-            rows={data.topBuyers}
-            partyKind="authority"
-            metric={canSpend ? 'value' : 'count'}
-          />
-          <Link
-            to="/procurement/search"
-            search={{
-              supplier_cui: data.supplierCui,
-              grain: 'contracts',
-              sort: canSpend ? 'value_desc' : 'date_desc',
-            }}
-            className="inline-flex items-center gap-1 text-sm font-medium text-foreground underline underline-offset-2 hover:text-primary"
-          >
-            <Trans>Vezi toate achizițiile furnizorului</Trans>
-          </Link>
-        </section>
+      <ProcurementMonthlyChart
+        points={slice.revenueOverTime}
+        showAmounts={slice.gate.spendRankingsAllowed}
+        title={t`Public revenue over time`}
+        description={t`Records per month for this supplier.`}
+      />
 
-        <section className="space-y-2">
-          <h2 className="text-base font-semibold">
-            <Trans>Pe categorii (CPV)</Trans>
-          </h2>
-          <CategoryBreakdown rows={data.categoryBreakdown} />
-        </section>
+      <SupplierRecords supplierCui={slice.supplierCui} />
 
-        <section className="space-y-2">
-          <h2 className="text-base font-semibold">
-            <Trans>Venituri în timp</Trans>
-          </h2>
-          <SpendOverTime points={data.revenueOverTime} metric={canSpend ? 'amount' : 'count'} />
-        </section>
+      <CrossDomainChips slice={slice} />
 
-        <section className="space-y-2">
-          <h2 className="text-base font-semibold">
-            <Trans>Achiziții recente</Trans>
-          </h2>
-          {data.recentRecords.length > 0 ? (
-            <ul className="space-y-2">
-              {data.recentRecords.map((record) => (
-                <li key={record.id}>
-                  <ProcurementRecordCard record={record} />
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <EmptyState
-              title={t`Nicio achiziție recentă`}
-              description={t`Această companie nu apare ca furnizor în achizițiile publice acoperite.`}
-            />
-          )}
-        </section>
-
-        <CrossDomainChips slice={data} />
-
-        <ConcentrationTeaser slice={data} />
+      <div>
+        <Link
+          to="/procurement/search"
+          search={{ supplier_cui: slice.supplierCui }}
+          className={procurementUnderlineLinkClassName}
+        >
+          <Trans>Search all records for this supplier</Trans>
+        </Link>
       </div>
     </div>
   )
 }
 
-function CrossDomainChips({ slice }: { readonly slice: SupplierProcurementSlice }) {
-  const crossDomain = slice.crossDomain
-  // Null = unknown (live API has no backing) — hide the chips, never fabricate.
-  if (crossDomain === null) return null
-  const chips: ReadonlyArray<{ readonly label: string; readonly available: boolean; readonly to?: string; readonly cui?: string | null }> = [
-    { label: t`PNRR`, available: crossDomain.pnrr, to: '/pnrr', cui: slice.supplierCui },
-    { label: t`Investiții publice`, available: crossDomain.publicInvestments },
-    { label: t`Litigii`, available: crossDomain.litigation },
-    { label: t`Fluxuri de bani`, available: crossDomain.moneyFlows },
-  ]
-  const available = chips.filter((c) => c.available)
-  if (available.length === 0) return null
+/** Cursor-paged recent records with a "load more" button. */
+function SupplierRecords({ supplierCui }: { readonly supplierCui: string }) {
+  const query = useProcurementSupplierRecords(supplierCui)
+  const records = query.data?.pages.flatMap((page) => page.records) ?? []
+
+  if (query.isPending || records.length === 0) return null
 
   return (
     <section className="space-y-2">
-      <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        <Trans>Legături cross-domain</Trans>
+      <h2 className={procurementSectionLabelClassName}>
+        <Trans>Recent records</Trans>
       </h2>
-      <ul className="flex flex-wrap gap-2 text-sm">
-        {available.map((chip) => (
-          <li
-            key={chip.label}
-            className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-xs"
-          >
-            {chip.to && chip.cui ? (
-              <Link
-                to={chip.to as '/pnrr'}
-                className="font-medium text-foreground underline underline-offset-2 hover:text-primary"
-              >
-                {chip.label}
-              </Link>
-            ) : (
-              <span className="font-medium">{chip.label}</span>
-            )}
-            <span className="text-muted-foreground">· CUI {slice.supplierCui}</span>
-          </li>
-        ))}
-      </ul>
-      <p className="text-xs text-muted-foreground">
-        <Trans>
-          Legăturile se bazează pe CUI; afișăm doar chipurile care rezolvă o
-          sursă.
-        </Trans>
-      </p>
+      <ProcurementRecordList records={records} />
+      {query.hasNextPage ? (
+        <Button
+          type="button"
+          variant="outline"
+          className={cn(procurementOutlineButtonClassName, 'w-full sm:w-auto px-6')}
+          onClick={() => void query.fetchNextPage()}
+          disabled={query.isFetchingNextPage}
+        >
+          {query.isFetchingNextPage ? (
+            <Trans>Loading…</Trans>
+          ) : (
+            <Trans>Load more records</Trans>
+          )}
+        </Button>
+      ) : null}
     </section>
   )
 }
 
-function ConcentrationTeaser({ slice }: { readonly slice: SupplierProcurementSlice }) {
+function ConcentrationTeaser({
+  slice,
+}: {
+  readonly slice: SupplierSliceData
+}) {
   const singleBuyer =
     slice.topBuyers.length > 0 &&
     Number(slice.topBuyers[0]?.flowCount ?? '0') >=
       slice.summary.contractsCount * 0.9
   const isYoung =
     slice.summary.firstSeen !== null &&
-    new Date(slice.summary.firstSeen).getFullYear() >= new Date().getFullYear() - 1
+    new Date(slice.summary.firstSeen).getFullYear() >=
+      new Date().getFullYear() - 1
 
   if (!singleBuyer && !isYoung) return null
 
   return (
-    <section className="space-y-1 rounded-lg border border-amber-200 bg-amber-50/40 p-3 text-sm dark:border-amber-900 dark:bg-amber-950/10">
-      <div className="flex items-center gap-1 text-amber-800 dark:text-amber-200">
+    <section className="space-y-1 border-2 border-amber-300 bg-amber-50 p-3 text-sm dark:border-amber-700 dark:bg-amber-950">
+      <div className="flex items-center gap-1 font-semibold text-amber-900 dark:text-amber-200">
         <TriangleAlert className="h-4 w-4" aria-hidden />
-        <span className="font-medium">
-          <Trans>Semnal de verificare</Trans>
-        </span>
+        <Trans>Review signal</Trans>
       </div>
-      <p className="text-amber-700 dark:text-amber-300">
+      <p className="text-amber-800 dark:text-amber-300">
         {singleBuyer ? (
           <Trans>
-            Concentrare a veniturilor dintr-un singur cumpărător — semnal de
-            verificare, nu o concluzie.
+            Revenue concentrated in a single buyer — a starting point for
+            review, not a conclusion.
           </Trans>
         ) : (
           <Trans>
-            Furnizor nou (prima apariție recentă) — semnal de verificare, nu o
-            concluzie.
+            Recently first-seen supplier — a starting point for review, not a
+            conclusion.
           </Trans>
         )}
       </p>
-      <EvidenceLink href={`https://www.e-licitatie.ro`} label={t`Vezi surse pe e-licitatie.ro`} />
     </section>
   )
 }
 
-function SupplierSliceSkeleton() {
+/** Hidden entirely when `crossDomain` is null (unknown — never fabricated). */
+function CrossDomainChips({ slice }: { readonly slice: SupplierSliceData }) {
+  const crossDomain = slice.crossDomain
+  if (crossDomain === null) return null
+
+  const chips = [
+    { key: 'pnrr', label: t`PNRR`, available: crossDomain.pnrr },
+    {
+      key: 'investments',
+      label: t`Public investments`,
+      available: crossDomain.publicInvestments,
+    },
+    { key: 'litigation', label: t`Litigation`, available: crossDomain.litigation },
+    { key: 'flows', label: t`Money flows`, available: crossDomain.moneyFlows },
+  ].filter((chip) => chip.available)
+
+  if (chips.length === 0) return null
+
   return (
-    <div className="space-y-5">
-      <div className="h-6 w-24 animate-pulse rounded bg-primary/10" aria-hidden />
-      <div className="h-16 w-full animate-pulse rounded-lg bg-primary/10" aria-hidden />
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <MetricCardSkeleton key={i} />
+    <section className="space-y-2">
+      <h2 className={procurementSectionLabelClassName}>
+        <Trans>Also appears in</Trans>
+      </h2>
+      <ul className="flex flex-wrap gap-2">
+        {chips.map((chip) => (
+          <li key={chip.key} className={procurementChipClassName}>
+            {chip.label}
+          </li>
         ))}
-      </div>
-      <Skeleton className="h-40 w-full" aria-hidden />
-      <span className="sr-only">
-        <Trans>Se încarcă achizițiile publice ale furnizorului…</Trans>
-      </span>
-    </div>
+      </ul>
+    </section>
   )
 }
 

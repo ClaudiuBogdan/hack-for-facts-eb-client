@@ -1,5 +1,6 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { ProcurementSearchPage } from '@/features/procurement/components/procurement-search-page'
+import { ProcurementShell } from '@/features/procurement/components/procurement-shell'
+import { ProcurementSearchContent } from '@/features/procurement/components/procurement-search-content'
 import { parseProcurementSearch } from '@/schemas/procurement-search'
 
 export const Route = createLazyFileRoute('/procurement/search')({
@@ -8,5 +9,9 @@ export const Route = createLazyFileRoute('/procurement/search')({
 
 function ProcurementSearchRoutePage() {
   const search = parseProcurementSearch(Route.useSearch())
-  return <ProcurementSearchPage params={search} />
+  return (
+    <ProcurementShell activeTab="search">
+      <ProcurementSearchContent search={search} />
+    </ProcurementShell>
+  )
 }

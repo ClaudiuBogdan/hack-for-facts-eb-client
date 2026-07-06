@@ -1,17 +1,9 @@
 import { t } from '@lingui/core/macro'
-import {
-  CheckCircle2,
-  Clock,
-  CircleAlert,
-  CircleSlash,
-  PauseCircle,
-  FileText,
-  Trophy,
-} from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import type { ProcurementStatus } from '@/schemas/procurement'
+import { statusBadgeClassName, statusMeta } from '../lib/status-meta'
 
 type Props = {
   readonly status: ProcurementStatus
@@ -19,89 +11,28 @@ type Props = {
   readonly withTooltip?: boolean
 }
 
-const STATUS_META: Record<
-  ProcurementStatus,
-  { label: string; icon: typeof CheckCircle2; className: string; tooltip: string }
-> = {
-  published: {
-    label: t`Publicat`,
-    icon: FileText,
-    className: 'border-slate-300 bg-slate-100 text-slate-900',
-    tooltip: t`Procedură publicată în SEAP.`,
-  },
-  in_evaluation: {
-    label: t`În evaluare`,
-    icon: Clock,
-    className: 'border-amber-300 bg-amber-50 text-amber-900',
-    tooltip: t`Ofertele sunt în evaluare.`,
-  },
-  awarded: {
-    label: t`Atribuit`,
-    icon: Trophy,
-    className: 'border-emerald-300 bg-emerald-50 text-emerald-900',
-    tooltip: t`Câștigător atribuit.`,
-  },
-  in_progress: {
-    label: t`În derulare`,
-    icon: Clock,
-    className: 'border-sky-300 bg-sky-50 text-sky-900',
-    tooltip: t`Contract în derulare.`,
-  },
-  closed: {
-    label: t`Închis`,
-    icon: CheckCircle2,
-    className: 'border-emerald-300 bg-emerald-50 text-emerald-900',
-    tooltip: t`Contract închis.`,
-  },
-  cancelled: {
-    label: t`Anulat`,
-    icon: CircleSlash,
-    className: 'border-slate-300 bg-slate-100 text-slate-900',
-    tooltip: t`Procedură anulată.`,
-  },
-  suspended: {
-    label: t`Suspendat`,
-    icon: PauseCircle,
-    className: 'border-amber-300 bg-amber-50 text-amber-900',
-    tooltip: t`Procedură suspendată.`,
-  },
-  finalized: {
-    label: t`Finalizat`,
-    icon: CheckCircle2,
-    className: 'border-emerald-300 bg-emerald-50 text-emerald-900',
-    tooltip: t`Contract finalizat.`,
-  },
-  offered: {
-    label: t`Ofertat`,
-    icon: FileText,
-    className: 'border-slate-300 bg-slate-100 text-slate-900',
-    tooltip: t`Ofertă depusă.`,
-  },
-  // 'unknown' is first-class — never fold it away.
-  unknown: {
-    label: t`Nedeterminat`,
-    icon: CircleAlert,
-    className: 'border-slate-300 bg-slate-100 text-slate-900',
-    tooltip: t`Stadiu necunoscut în sursa de date.`,
-  },
-}
-
 /**
- * Procurement status badge — text + icon + color (never color alone).
- * `unknown` is rendered explicitly with a tooltip, per UX §6.3.
+ * Procurement status badge — text + icon + tone color (never color alone).
+ * Labels/tones come from `lib/status-meta.ts`; `unknown` is rendered
+ * explicitly with a tooltip, never folded away.
  */
-export function ProcurementStatusBadge({ status, className, withTooltip = true }: Props) {
-  const meta = STATUS_META[status]
+export function ProcurementStatusBadge({
+  status,
+  className,
+  withTooltip = true,
+}: Props) {
+  const meta = statusMeta(status)
   const Icon = meta.icon
+  const label = meta.label()
 
   const badge = (
     <Badge
       variant="outline"
-      className={cn('gap-1 font-medium', meta.className, className)}
-      aria-label={t`Stadiu: ${meta.label}`}
+      className={cn('gap-1 font-medium', statusBadgeClassName(status), className)}
+      aria-label={t`Status: ${label}`}
     >
       <Icon className="h-3 w-3" aria-hidden />
-      <span>{meta.label}</span>
+      <span>{label}</span>
     </Badge>
   )
 
@@ -113,7 +44,7 @@ export function ProcurementStatusBadge({ status, className, withTooltip = true }
             {badge}
           </span>
         </TooltipTrigger>
-        <TooltipContent>{meta.tooltip}</TooltipContent>
+        <TooltipContent>{meta.tooltip()}</TooltipContent>
       </Tooltip>
     )
   }

@@ -1,260 +1,167 @@
+import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
-import { t } from '@lingui/core/macro'
-import { Building2, ExternalLink, FileText, Stamp } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent } from '@/components/ui/card'
+import { ChevronRight, FileDiff, FileSignature, FileText, ShoppingCart, type LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { EvidenceLink } from '@/components/shared/procurement-data'
-import { CpvLabel } from './cpv-label'
-import { ProcurementStatusBadge } from './procurement-status-badge'
+import type { ProcurementRecordSummary } from '@/schemas/procurement'
+import {
+  recordCpv,
+  recordDate,
+  recordDetailLink,
+  recordNumberLabel,
+  recordPrimaryMoney,
+  recordStatus,
+  recordSupplier,
+  recordTitle,
+  uiGrainOf,
+} from '../lib/record-accessors'
+import { partyLabel } from '../lib/party-links'
+import { grainSingularLabelEn } from '../lib/enum-labels'
+import { statusAccentBorderClassName, statusLabel } from '../lib/status-meta'
+import {
+  procurementCardChevronClassName,
+  procurementRecordCardClassName,
+} from '../lib/procurement-theme'
 import { ValueWithCurrency } from './value-with-currency'
-import { ronAmountSlice } from '../lib/formatting'
-import type { MoneyFields, ProcurementRecordSummary } from '@/schemas/procurement'
 
 type Props = {
   readonly record: ProcurementRecordSummary
   readonly className?: string
 }
 
-function partyLink(
-  party: { readonly cui: string | null; readonly displayName: string | null; readonly name: string | null } | null | undefined,
-  kind: 'authority' | 'supplier',
-): React.ReactNode {
-  if (!party) return null
-  const label = party.displayName ?? party.name ?? party.cui ?? t`Necunoscut`
-  if (!party.cui) {
-    return <span className="font-medium">{label}</span>
+const GRAIN_ICONS: Record<ReturnType<typeof uiGrainOf>, LucideIcon> = {
+  procedures: FileText,
+  contracts: FileSignature,
+  direct_acquisitions: ShoppingCart,
+  modifications: FileDiff,
+}
+
+function formatCardDate(iso: string): string {
+  return new Intl.DateTimeFormat('ro-RO', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(`${iso.slice(0, 10)}T00:00:00Z`))
+}
+
+/**
+ * One search result row — the whole card is a single link to the record
+ * detail (party profile links live on the detail page; no nested anchors).
+ * Left border carries the status tone; the icon rail names the grain.
+ */
+export function ProcurementRecordCard({ record, className }: Props) {
+  const grain = uiGrainOf(record)
+  const link = recordDetailLink(record)
+  const status = recordStatus(record)
+  const money = recordPrimaryMoney(record)
+  const date = recordDate(record)
+  const number = recordNumberLabel(record)
+  const cpv = recordCpv(record)
+  const supplier = recordSupplier(record)
+  const Icon = GRAIN_ICONS[grain]
+
+  const meta = [
+    number,
+    date ? formatCardDate(date) : null,
+    cpv ? `CPV ${cpv}` : null,
+    status ? statusLabel(status) : null,
+  ]
+    .filter(Boolean)
+    .join(' · ')
+
+  const body = (
+    <div
+      className={cn(
+        'flex border-l-[5px]',
+        status
+          ? statusAccentBorderClassName(status)
+          : 'border-l-slate-400 dark:border-l-slate-500',
+      )}
+    >
+      <div className="flex w-24 shrink-0 flex-col items-center justify-center gap-1 border-r border-[#b1b4b6] px-2 py-5 text-center dark:border-[var(--pnrr-border)]">
+        <Icon className="h-5 w-5 text-[#505a5f] dark:text-[var(--pnrr-muted)]" strokeWidth={2} aria-hidden />
+        <span className="text-xs font-bold leading-tight text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+          {grainSingularLabelEn(grain)}
+        </span>
+      </div>
+
+      <div className="flex min-w-0 flex-1 items-start justify-between gap-4 px-5 py-4 sm:px-6">
+        <div className="min-w-0">
+          <p className="text-base font-bold leading-snug text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+            {recordTitle(record) ?? <Trans>Untitled record</Trans>}
+          </p>
+          {meta ? (
+            <p className="mt-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              {meta}
+            </p>
+          ) : null}
+          <p className="mt-1 truncate text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            {partyLabel(record.authority)}
+            {supplier ? <> → {partyLabel(supplier)}</> : null}
+          </p>
+          {record.grain === 'modification' && link === null ? (
+            <p className="mt-1 text-xs text-[var(--pnrr-muted)]">
+              <Trans>
+                Not linked to a contract in the source data — no detail page.
+              </Trans>
+            </p>
+          ) : null}
+        </div>
+
+        <div className="flex shrink-0 items-start gap-3">
+          {money ? (
+            <ValueWithCurrency
+              value={money}
+              notation="compact"
+              className="hidden text-lg font-bold tabular-nums text-[#0b0c0c] dark:text-[var(--pnrr-fg)] sm:inline-flex"
+            />
+          ) : null}
+          {link ? (
+            <ChevronRight
+              className={cn(procurementCardChevronClassName, 'mt-0.5')}
+              aria-hidden
+            />
+          ) : null}
+        </div>
+      </div>
+    </div>
+  )
+
+  if (!link) {
+    return (
+      <div className={cn(procurementRecordCardClassName, 'cursor-default hover:bg-white dark:hover:bg-[var(--pnrr-card)]', className)}>
+        {body}
+      </div>
+    )
   }
-  const to = kind === 'authority' ? '/entities/$cui' : '/companies/$cui'
+
   return (
     <Link
-      to={to}
-      params={{ cui: party.cui }}
-      className="font-medium text-foreground underline underline-offset-2 hover:text-primary"
+      to={link.to}
+      params={link.params}
+      hash={link.hash}
+      className={cn(procurementRecordCardClassName, className)}
     >
-      {label}
+      {body}
     </Link>
   )
 }
 
-function detailRoute(grain: ProcurementRecordSummary['grain']): string {
-  switch (grain) {
-    case 'procedure':
-      return '/procurement/procedures/$id'
-    case 'contract':
-      return '/procurement/contracts/$id'
-    case 'direct_acquisition':
-      return '/procurement/direct-acquisitions/$id'
-    case 'modification':
-      // Modifications link to the parent contract detail with a section/hash
-      // (design review change #6). When unlinked, the card is non-navigable.
-      return '/procurement/contracts/$id'
-  }
-}
-
-function recordGrainLabel(grain: ProcurementRecordSummary['grain']): string {
-  switch (grain) {
-    case 'procedure':
-      return t`Procedură`
-    case 'contract':
-      return t`Contract`
-    case 'direct_acquisition':
-      return t`Achiziție directă`
-    case 'modification':
-      return t`Modificare`
-  }
-}
-
-function recordAuthority(record: ProcurementRecordSummary) {
-  switch (record.grain) {
-    case 'procedure':
-    case 'contract':
-    case 'direct_acquisition':
-    case 'modification':
-      return record.authority
-  }
-}
-
-function recordSupplier(record: ProcurementRecordSummary) {
-  switch (record.grain) {
-    case 'contract':
-    case 'direct_acquisition':
-    case 'modification':
-      return record.supplier
-    case 'procedure':
-      return null
-  }
-}
-
-/**
- * One result row across grains. Per-grain field slots: authority (→
- * /entities/$cui), supplier (→ /companies/$cui, contracts/DAs only),
- * ValueWithCurrency, date, CpvLabel, StatusBadge, source-system badge,
- * EvidenceLink to e-licitatie, link to the detail page. Modifications link
- * to the parent contract detail (with hash); unlinked modifications are
- * non-navigable.
- */
-export function ProcurementRecordCard({ record, className }: Props) {
-  const isModification = record.grain === 'modification'
-  const parentContractId = isModification ? record.contractId : null
-  const isUnlinkedModification = isModification && parentContractId === null
-  const detailTo = isUnlinkedModification ? null : detailRoute(record.grain)
-  const detailParams = isModification
-    ? { id: parentContractId ?? '' }
-    : { id: record.id }
-  const detailHash = isModification ? 'modificari' : undefined
-
-  const value: MoneyFields | null =
-    record.grain === 'contract' || record.grain === 'direct_acquisition'
-      ? {
-          valueRon: record.valueRon,
-          currency: record.currency,
-          isRon: record.isRon,
-          valueSuspect: record.valueSuspect,
-        }
-      : record.grain === 'procedure'
-        ? {
-            valueRon: record.awardedValueRon,
-            currency: record.currency,
-            isRon: record.isRon,
-            valueSuspect: record.valueSuspect,
-          }
-        : ronAmountSlice(record.valueDeltaRon)
-
-  const date =
-    record.grain === 'procedure'
-      ? record.publicationDate ?? record.stateDate
-      : record.grain === 'contract'
-        ? record.contractDate
-        : record.grain === 'direct_acquisition'
-          ? record.publicationDate ?? record.finalizationDate
-          : record.modificationDate
-
-  const title =
-    'title' in record
-      ? record.title
-      : isModification
-        ? t`Modificare ${record.modificationType ?? ''}`
-        : null
-
-  const numberLabel =
-    record.grain === 'procedure'
-      ? record.noticeNo
-      : record.grain === 'contract'
-        ? record.contractNo
-        : record.grain === 'direct_acquisition'
-          ? record.uniqueCode
-          : null
-
-  const sourceSystem = 'sourceSystem' in record ? record.sourceSystem : null
-  const sourceUrl = 'sourceUrl' in record ? record.sourceUrl : null
-  const authority = recordAuthority(record)
-  const supplier = recordSupplier(record)
-
-  const cardInner = (
-    <CardContent className="space-y-3 p-4">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="border-slate-300 bg-slate-100 text-slate-900">
-              {recordGrainLabel(record.grain)}
-            </Badge>
-            {numberLabel ? (
-              <span className="text-xs text-muted-foreground">{numberLabel}</span>
-            ) : null}
-            {'status' in record ? (
-              <ProcurementStatusBadge status={record.status} />
-            ) : (
-              <Badge variant="outline" className="border-slate-300 bg-slate-100 text-slate-900">
-                <Trans>fără status</Trans>
-              </Badge>
-            )}
-          </div>
-          {title ? (
-            <p className="text-sm font-medium leading-snug">{title}</p>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              <Trans>Titlu indisponibil</Trans>
-            </p>
-          )}
-        </div>
-        {value ? <ValueWithCurrency value={value} notation="compact" /> : null}
-      </div>
-
-      <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
-        <div className="space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            <Trans>Autoritate</Trans>
-          </p>
-          <div className="flex items-center gap-1">
-            <Building2 className="h-3 w-3 text-muted-foreground" aria-hidden />
-            {authority ? (
-              partyLink(authority, 'authority')
-            ) : (
-              <span className="text-muted-foreground">
-                <Trans>indisponibil</Trans>
-              </span>
-            )}
-          </div>
-        </div>
-        {supplier ? (
-          <div className="space-y-1">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              <Trans>Furnizor</Trans>
-            </p>
-            <div className="flex items-center gap-1">
-              <Building2 className="h-3 w-3 text-muted-foreground" aria-hidden />
-              {partyLink(supplier, 'supplier')}
-            </div>
-          </div>
-        ) : null}
-        {'cpvCode' in record ? (
-          <div className="space-y-1">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              <Trans>CPV</Trans>
-            </p>
-            <CpvLabel code={record.cpvCode} variant="compact" />
-          </div>
-        ) : null}
-        <div className="space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            <Trans>Dată</Trans>
-          </p>
-          <p>{date ?? t`dată indisponibilă`}</p>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-2">
-        <div className="flex items-center gap-2">
-          {sourceSystem ? (
-            <Badge variant="outline" className="border-slate-300 bg-slate-100 text-slate-900">
-              <Stamp className="h-3 w-3" aria-hidden />
-              {sourceSystem}
-            </Badge>
-          ) : null}
-          {sourceUrl ? <EvidenceLink href={sourceUrl} kind="source" /> : null}
-        </div>
-        {detailTo && !isUnlinkedModification ? (
-          <Link
-            to={detailTo}
-            params={detailParams}
-            hash={detailHash}
-            className="inline-flex items-center gap-1 text-sm font-medium text-foreground underline underline-offset-2 hover:text-primary"
-          >
-            <FileText className="h-3.5 w-3.5" aria-hidden />
-            <Trans>Vezi detalii</Trans>
-          </Link>
-        ) : isUnlinkedModification ? (
-          <span className="text-xs text-muted-foreground">
-            <Trans>Modificare neasociată — fără contract părinte</Trans>
-          </span>
-        ) : null}
-      </div>
-    </CardContent>
+export function ProcurementRecordList({
+  records,
+  className,
+}: {
+  readonly records: readonly ProcurementRecordSummary[]
+  readonly className?: string
+}): ReactNode {
+  return (
+    <ul className={cn('space-y-3', className)}>
+      {records.map((record) => (
+        <li key={`${record.grain}-${record.id}`}>
+          <ProcurementRecordCard record={record} />
+        </li>
+      ))}
+    </ul>
   )
-
-  return <Card className={cn('transition-colors hover:bg-muted/40', className)}>{cardInner}</Card>
 }
-
-export { ExternalLink }
