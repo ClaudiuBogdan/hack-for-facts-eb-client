@@ -57,12 +57,10 @@ export function ProcurementShell({ activeTab, children, actions }: Props) {
                   className={procurementHeaderTitleClassName}
                   style={procurementHeaderTitleStyle}
                 >
-                  <span className="block">
-                    <Trans>Public</Trans>
-                  </span>
-                  <span className="block">
-                    <Trans>procurement</Trans>
-                  </span>
+                  {/* One Trans for the whole phrase — splitting it per line
+                      produced mixed-language fragments ("Publică procurement");
+                      text-balance handles the two-line wrap. */}
+                  <Trans>Public procurement</Trans>
                 </h1>
                 <p
                   className={cn(
@@ -76,7 +74,9 @@ export function ProcurementShell({ activeTab, children, actions }: Props) {
                     limits disclosed for every figure.
                   </Trans>
                 </p>
-                <p className={cn(procurementHeaderMetaClassName, 'mt-4')}>
+                {/* div, not p: the mock Badge renders a <div> and a <p>
+                    ancestor is invalid HTML (hydration error). */}
+                <div className={cn(procurementHeaderMetaClassName, 'mt-4')}>
                   {gate?.dataAsOf ? (
                     <Trans>Data as of {formatAsOf(gate.dataAsOf)}</Trans>
                   ) : (
@@ -88,7 +88,7 @@ export function ProcurementShell({ activeTab, children, actions }: Props) {
                       <MockDataStatusBadge />
                     </span>
                   ) : null}
-                </p>
+                </div>
               </div>
 
               <div className="flex shrink-0 items-center gap-2 sm:pt-1">

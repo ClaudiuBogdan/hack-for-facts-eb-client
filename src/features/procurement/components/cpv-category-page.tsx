@@ -70,7 +70,8 @@ export function CpvCategoryPage({ code, initialPage, className }: Props) {
       ) : page ? (
         <>
           <header>
-            <p className={procurementSectionLabelClassName}>
+            {/* div, not p: the mock Badge renders a <div> (hydration error). */}
+            <div className={procurementSectionLabelClassName}>
               {page.level === 'division' ? (
                 <Trans>CPV division</Trans>
               ) : (
@@ -81,7 +82,7 @@ export function CpvCategoryPage({ code, initialPage, className }: Props) {
                   <MockDataStatusBadge />
                 </span>
               ) : null}
-            </p>
+            </div>
             <h1 className="mt-2 text-3xl font-black tracking-tight text-[var(--pnrr-fg)] sm:text-4xl">
               {page.labelRo ?? page.labelEn}
             </h1>
