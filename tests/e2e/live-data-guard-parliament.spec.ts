@@ -445,4 +445,99 @@ test.describe('Live-data guard (parliament)', () => {
       .toBe(true)
     await expect(page.getByText(/din\s+280\s+voturi/)).toBeVisible({ timeout: 20000 })
   })
+
+  // ── interventii (member speeches) ──────────────────────────────────────────
+
+  /** Read the interventii list count line, or null when it never renders. */
+  async function readSpeechTotal(page: import('@playwright/test').Page) {
+    const heading = await page
+      .getByRole('heading', { level: 1 })
+      .first()
+      .waitFor({ state: 'visible', timeout: 20000 })
+      .then(() => true)
+      .catch(() => false)
+    if (!heading) return null
+    const countLine = page.getByText(/din\s+[\d.]+\s+intervenții/)
+    const shown = await countLine
+      .first()
+      .waitFor({ state: 'visible', timeout: 20000 })
+      .then(() => true)
+      .catch(() => false)
+    if (!shown) return null
+    const text = (await countLine.first().textContent()) ?? ''
+    const raw = text.match(/din\s+([\d.]+)\s+intervenții/)?.[1] ?? ''
+    return Number(raw.replace(/\./g, ''))
+  }
+
+  test('member 1:2024:79 /interventii renders the speech-activity heatmap + year buttons (2025 & 2026)', async ({
+    page,
+  }) => {
+    const response = await page
+      .goto('/parlament/membri/1:2024:79/interventii?an=2026')
+      .catch(() => null)
+    test.skip(!response, 'Member interventii route unavailable')
+
+    const total = await readSpeechTotal(page)
+    test.skip(total === null, 'Live member interventii unavailable (API/tunnel down)')
+
+    // The corpus is being backfilled — a FLOOR, not an exact count (≥83 at
+    // 2026-07-06). See prod-db notes for the live number.
+    expect(total).toBeGreaterThanOrEqual(83)
+
+    // Active-day cells are buttons labelled "… — N intervenții"; year buttons are
+    // labelled with the bare year, so this selector counts only day cells.
+    const cells = page.locator('button[aria-label*="intervenți"]')
+    const painted = await cells
+      .first()
+      .waitFor({ state: 'visible', timeout: 20000 })
+      .then(() => true)
+      .catch(() => false)
+    test.skip(!painted, 'Heatmap not painted (API/tunnel down)')
+    expect(await cells.count()).toBeGreaterThanOrEqual(1)
+
+    // availableYears carries 2025 and 2026 (the member spoke in both).
+    expect(await page.getByRole('button', { name: '2025' }).count()).toBeGreaterThan(0)
+    expect(await page.getByRole('button', { name: '2026' }).count()).toBeGreaterThan(0)
+  })
+
+  test('member 1:2024:79 /interventii ?from=2025-01-01&to=2025-12-31 filters to the 2025 total (61 exact)', async ({
+    page,
+  }) => {
+    const response = await page
+      .goto(
+        '/parlament/membri/1:2024:79/interventii?from=2025-01-01&to=2025-12-31',
+      )
+      .catch(() => null)
+    test.skip(!response, 'Member interventii route unavailable')
+
+    const total = await readSpeechTotal(page)
+    test.skip(total === null, 'Live member interventii unavailable (API/tunnel down)')
+
+    // 2025 is a complete past year: exactly 61 turns for this senator.
+    expect(total).toBe(61)
+  })
+
+  test('member 1:2024:79 /interventii a free-text query filters the list (≤ the unfiltered total)', async ({
+    page,
+  }) => {
+    const first = await page
+      .goto('/parlament/membri/1:2024:79/interventii')
+      .catch(() => null)
+    test.skip(!first, 'Member interventii route unavailable')
+    const unfiltered = await readSpeechTotal(page)
+    test.skip(unfiltered === null, 'Live member interventii unavailable (API/tunnel down)')
+
+    await page
+      .goto('/parlament/membri/1:2024:79/interventii?q=lege')
+      .catch(() => null)
+    const filtered = await readSpeechTotal(page)
+    test.skip(filtered === null, 'Filtered interventii count not rendered (API/tunnel down)')
+
+    // A term drawn from the corpus never widens the set; the search arg is
+    // applied server-side. (The exact filtered count drifts as the backfill
+    // lands, so this is a monotonicity check, not an equality.)
+    expect(filtered).toBeLessThanOrEqual(unfiltered as number)
+    // The query survives in the URL and drives an active-filter chip.
+    await expect(page.getByText('Conține: lege')).toBeVisible({ timeout: 20000 })
+  })
 })

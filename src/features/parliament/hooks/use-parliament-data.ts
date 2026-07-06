@@ -22,11 +22,14 @@ import {
   fetchParliamentMemberProfile,
   fetchParliamentMemberVoteActivity,
   fetchParliamentMemberVotingHistory,
+  fetchParliamentMemberSpeeches,
+  fetchParliamentMemberSpeechActivity,
   fetchParliamentMembers,
   fetchParliamentVoteDetail,
   fetchParliamentVotes,
 } from '../api/parliament-api'
 import type { MemberVotesFilterInput } from '../lib/member-votes-filter'
+import type { MemberSpeechesFilterInput } from '../lib/member-speeches-filter'
 
 const PARLIAMENT_QUERY_KEY = ['parliament'] as const
 
@@ -148,6 +151,50 @@ export function useParliamentMemberVoteActivity(
     // and the grid shows per-filter intensities — stale carry-over would show
     // the wrong year/filter as if current. The aggregate is ~10ms; a brief
     // skeleton beats silently-wrong cells.
+  })
+}
+
+export function useParliamentMemberSpeeches(
+  memberId: string,
+  filter?: MemberSpeechesFilterInput,
+  q?: string,
+) {
+  return useInfiniteQuery({
+    queryKey: [
+      ...PARLIAMENT_QUERY_KEY,
+      'member-speeches',
+      memberId,
+      filter ?? null,
+      q ?? null,
+    ],
+    queryFn: ({ pageParam }) =>
+      fetchParliamentMemberSpeeches(memberId, pageParam, filter, q),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage?.hasNextPage && lastPage.endCursor ? lastPage.endCursor : undefined,
+    enabled: Boolean(memberId),
+  })
+}
+
+export function useParliamentMemberSpeechActivity(
+  memberId: string,
+  year: number,
+  filter?: MemberSpeechesFilterInput,
+  q?: string,
+) {
+  return useQuery({
+    queryKey: [
+      ...PARLIAMENT_QUERY_KEY,
+      'member-speech-activity',
+      memberId,
+      year,
+      filter ?? null,
+      q ?? null,
+    ],
+    queryFn: () => fetchParliamentMemberSpeechActivity(memberId, year, filter, q),
+    enabled: Boolean(memberId && year),
+    // NO placeholderData: same lesson as the vote-activity query — stale
+    // carry-over would show the wrong year/filter cells as if current.
   })
 }
 

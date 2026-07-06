@@ -21,6 +21,8 @@ import {
   ParliamentMemberInitiativesListSchema,
   ParliamentMemberVoteActivitySchema,
   ParliamentMemberVotingHistorySchema,
+  ParliamentMemberSpeechesHistorySchema,
+  ParliamentMemberSpeechActivitySchema,
   ParliamentVoteDetailSchema,
   ParliamentVoteSummarySchema,
   type BillCurrentLocation,
@@ -43,6 +45,8 @@ import {
   type ParliamentMemberInitiativesList,
   type ParliamentMemberVoteActivity,
   type ParliamentMemberVotingHistory,
+  type ParliamentMemberSpeechesHistory,
+  type ParliamentMemberSpeechActivity,
   type ParliamentVoteDetail,
   type ParliamentVoteSummary,
   type VoteOutcome,
@@ -69,6 +73,8 @@ import type {
   RawParliamentMember,
   RawParliamentMemberVote,
   RawParliamentMemberVoteActivity,
+  RawParliamentMemberSpeech,
+  RawParliamentMemberSpeechActivity,
   RawParliamentTally,
   RawParliamentVoteDetail,
   RawParliamentVoteListNode,
@@ -418,6 +424,57 @@ export function mapMemberVoteActivity(
       impotriva: num(d.impotriva),
       abtinere: num(d.abtinere),
       nuAVotat: num(d.nuAVotat),
+    })),
+  })
+}
+
+// ── member speeches (interventii) ───────────────────────────────────────────
+
+/** Null → undefined; also collapses whitespace-only strings so `.optional()`
+ * fields drop cleanly (a Senate summary is sometimes just a stray space). */
+function optText(value: string | null | undefined): string | undefined {
+  const trimmed = value?.trim()
+  return trimmed ? trimmed : undefined
+}
+
+export function mapMemberSpeeches(
+  memberId: string,
+  edges: { cursor: string; node: RawParliamentMemberSpeech }[],
+  total: number,
+  pageInfo: { hasNextPage: boolean; endCursor: string | null },
+): ParliamentMemberSpeechesHistory {
+  return ParliamentMemberSpeechesHistorySchema.parse({
+    memberId,
+    total: num(total),
+    hasNextPage: pageInfo.hasNextPage,
+    endCursor: pageInfo.endCursor,
+    speeches: edges.map(({ node }) => ({
+      speechKey: node.speechKey,
+      // A date-only source value; keep as `YYYY-MM-DD`. Empty when the source
+      // row has no date (rare — the mandate index carries spoken_at).
+      spokenAt: node.spokenAt ? node.spokenAt.slice(0, 10) : '',
+      title: optText(node.title),
+      summary: optText(node.summary),
+      chamber: optText(node.chamber),
+      sourceUrl: optText(node.sourceUrl),
+      sourceUrlKind: optText(node.sourceUrlKind),
+      // Keep the transcript's internal whitespace; only null → undefined.
+      fullText: node.fullText ?? undefined,
+    })),
+  })
+}
+
+export function mapMemberSpeechActivity(
+  raw: RawParliamentMemberSpeechActivity,
+): ParliamentMemberSpeechActivity {
+  return ParliamentMemberSpeechActivitySchema.parse({
+    year: raw.year,
+    availableYears: raw.availableYears,
+    days: raw.days.map((d) => ({
+      date: d.date,
+      total: num(d.total),
+      proprie: num(d.proprie),
+      comun: num(d.comun),
     })),
   })
 }

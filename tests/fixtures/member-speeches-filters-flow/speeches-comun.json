@@ -1,0 +1,26 @@
+{
+  "data": {
+    "parliamentMember": {
+      "mandateKey": "1:2024:79",
+      "speechesConnection": {
+        "total": 20,
+        "edges": [
+          {
+            "cursor": "c0",
+            "node": {
+              "speechKey": "cdep:sp:2",
+              "spokenAt": "2026-03-20",
+              "title": null,
+              "summary": "Susțin amendamentul colegilor mei privind investițiile locale.",
+              "chamber": "comun",
+              "sourceUrl": "https://www.cdep.ro/pls/steno/steno2015.stenograma?ids=9002",
+              "sourceUrlKind": "exact",
+              "fullText": null
+            }
+          }
+        ],
+        "pageInfo": { "hasNextPage": true, "endCursor": "c50" }
+      }
+    }
+  }
+}

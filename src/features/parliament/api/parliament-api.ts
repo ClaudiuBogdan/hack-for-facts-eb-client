@@ -29,6 +29,8 @@ import type {
   ParliamentMemberInitiativesList,
   ParliamentMemberVoteActivity,
   ParliamentMemberVotingHistory,
+  ParliamentMemberSpeechesHistory,
+  ParliamentMemberSpeechActivity,
   ParliamentMembersList,
   ParliamentMembersSearch,
   ParliamentVoteDetail,
@@ -38,6 +40,7 @@ import type {
 } from '@/schemas/parliament'
 import { isParliamentMockEnabled } from '../lib/mock-mode'
 import type { MemberVotesFilterInput } from '../lib/member-votes-filter'
+import type { MemberSpeechesFilterInput } from '../lib/member-speeches-filter'
 import {
   PARLIAMENT_GROUP_FALLBACK_COLOR,
   resolveGroupColor,
@@ -62,6 +65,8 @@ import {
   fetchParliamentMemberProfileMock,
   fetchParliamentMemberVoteActivityMock,
   fetchParliamentMemberVotingHistoryMock,
+  fetchParliamentMemberSpeechesMock,
+  fetchParliamentMemberSpeechActivityMock,
   fetchParliamentMembersMock,
   fetchParliamentCommitteeMock,
   fetchParliamentCommitteesMock,
@@ -88,6 +93,8 @@ import {
   fetchParliamentMemberProfileLive,
   fetchParliamentMemberVoteActivityLive,
   fetchParliamentMemberVotingHistoryLive,
+  fetchParliamentMemberSpeechesLive,
+  fetchParliamentMemberSpeechActivityLive,
   fetchParliamentMembersLive,
   fetchParliamentCommitteeLive,
   fetchParliamentCommitteesLive,
@@ -210,6 +217,28 @@ export async function fetchParliamentMemberVoteActivity(
   return isParliamentMockEnabled()
     ? fetchParliamentMemberVoteActivityMock(memberId, year, filter)
     : fetchParliamentMemberVoteActivityLive(memberId, year, filter)
+}
+
+export async function fetchParliamentMemberSpeeches(
+  memberId: string,
+  after?: string,
+  filter?: MemberSpeechesFilterInput,
+  q?: string,
+): Promise<ParliamentMemberSpeechesHistory | null> {
+  return isParliamentMockEnabled()
+    ? fetchParliamentMemberSpeechesMock(memberId, after, filter, q)
+    : fetchParliamentMemberSpeechesLive(memberId, after, filter, q)
+}
+
+export async function fetchParliamentMemberSpeechActivity(
+  memberId: string,
+  year: number,
+  filter?: MemberSpeechesFilterInput,
+  q?: string,
+): Promise<ParliamentMemberSpeechActivity | null> {
+  return isParliamentMockEnabled()
+    ? fetchParliamentMemberSpeechActivityMock(memberId, year, filter, q)
+    : fetchParliamentMemberSpeechActivityLive(memberId, year, filter, q)
 }
 
 export async function fetchParliamentMemberProfile(

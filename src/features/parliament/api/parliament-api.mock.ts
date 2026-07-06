@@ -23,6 +23,8 @@ import type {
   ParliamentMemberInitiativesList,
   ParliamentMemberVoteActivity,
   ParliamentMemberVotingHistory,
+  ParliamentMemberSpeechesHistory,
+  ParliamentMemberSpeechActivity,
   ParliamentMembersList,
   ParliamentMembersSearch,
   ParliamentVoteDetail,
@@ -44,6 +46,8 @@ import {
   ParliamentMemberInitiativesListSchema,
   ParliamentMemberVoteActivitySchema,
   ParliamentMemberVotingHistorySchema,
+  ParliamentMemberSpeechesHistorySchema,
+  ParliamentMemberSpeechActivitySchema,
   ParliamentMembersListSchema,
   ParliamentVoteDetailSchema,
   ParliamentVoteSummarySchema,
@@ -73,6 +77,7 @@ import { resolveParliamentMemberProfile } from '../lib/member-profile-data'
 import { resolveParliamentBillDetail } from '../lib/bill-profile-data'
 import { resolveGroupColor } from '../lib/group-colors'
 import type { MemberVotesFilterInput } from '../lib/member-votes-filter'
+import type { MemberSpeechesFilterInput } from '../lib/member-speeches-filter'
 
 const MOCK_LAST_SYNCED = '2026-05-20T08:00:00+03:00'
 const DEFAULT_VOTES_PAGE_SIZE = 10
@@ -656,6 +661,219 @@ export async function fetchParliamentMemberVoteActivityMock(
   }
 
   return ParliamentMemberVoteActivitySchema.parse({
+    year,
+    availableYears,
+    days: Array.from(dayMap.values()).sort((a, b) => a.date.localeCompare(b.date)),
+  })
+}
+
+// ── member speeches (interventii) ────────────────────────────────────────────
+
+const MOCK_MEMBER_SPEECHES_PAGE_SIZE = 50
+
+/** One deterministic mock speech template (chamber resolved per member). */
+type MockSpeechTemplate = {
+  readonly date: string
+  /** 'own' → the member's own chamber; 'comun' → a joint sitting. */
+  readonly sitting: 'own' | 'comun'
+  readonly title: string | undefined
+  readonly summary: string
+  readonly fullText: string | undefined
+}
+
+/**
+ * Fixed set of mock speech turns, spread across 2026 + 2025, with own-chamber
+ * and joint-sitting rows, some with a title, some with a transcript. Same shape
+ * for every member so `VITE_USE_MOCK_DATA=true` and the unit tests are stable.
+ * Note: two 2026-05-13 and two 2025-06-15 rows exercise the multi-turn day.
+ */
+const MOCK_SPEECH_TEMPLATES: readonly MockSpeechTemplate[] = [
+  {
+    date: '2026-05-13',
+    sitting: 'own',
+    title: 'Dezbatere privind bugetul educației',
+    summary: 'Mulțumesc, domnule președinte. Voi adresa o întrebare despre bugetul educației.',
+    fullText:
+      'Domnul deputat:\nMulțumesc, domnule președinte de ședință.\nVoi adresa o întrebare domnului ministru al educației despre alocările bugetare pentru anul în curs.',
+  },
+  {
+    date: '2026-05-13',
+    sitting: 'own',
+    title: undefined,
+    summary: 'Domnul vorbitor:',
+    fullText: undefined,
+  },
+  {
+    date: '2026-05-11',
+    sitting: 'comun',
+    title: 'Ședință comună privind sănătatea publică',
+    summary: 'Este vorba despre proiectul de lege privind sănătatea publică și rețeaua de spitale.',
+    fullText:
+      'Foarte scurt, domnule președinte.\nEste vorba despre proiectul de lege privind sănătatea publică.',
+  },
+  {
+    date: '2026-03-20',
+    sitting: 'comun',
+    title: undefined,
+    summary: 'Susțin amendamentul colegilor mei privind investițiile locale.',
+    fullText:
+      'Domnul senator:\nSusțin amendamentul depus de colegii mei privind investițiile în infrastructura locală.',
+  },
+  {
+    date: '2026-02-10',
+    sitting: 'own',
+    title: 'Intervenție privind transparența administrației',
+    summary: 'O intervenție scurtă despre transparența administrației publice locale.',
+    fullText: undefined,
+  },
+  {
+    date: '2025-11-05',
+    sitting: 'own',
+    title: undefined,
+    summary: 'Vă mulțumesc pentru cuvânt. Câteva precizări despre transporturi.',
+    fullText:
+      'Vă mulțumesc pentru cuvânt.\nAm câteva precizări de făcut pe marginea proiectului privind transporturile.',
+  },
+  {
+    date: '2025-10-01',
+    sitting: 'comun',
+    title: 'Moțiune simplă privind agricultura',
+    summary: 'Poziția grupului privind moțiunea simplă pe agricultură.',
+    fullText: undefined,
+  },
+  {
+    date: '2025-06-15',
+    sitting: 'own',
+    title: undefined,
+    summary: 'Domnul vorbitor:',
+    fullText:
+      'Domnul deputat:\nContinuăm dezbaterea privind fondurile europene alocate dezvoltării regionale.',
+  },
+  {
+    date: '2025-06-15',
+    sitting: 'own',
+    title: 'Continuarea dezbaterii privind fondurile europene',
+    summary: 'Continuare a dezbaterii despre fondurile europene și absorbția lor.',
+    fullText:
+      'Continuăm dezbaterea privind fondurile europene și gradul de absorbție la nivel regional.',
+  },
+]
+
+/** The member's own-chamber GraphQL token. */
+function mockOwnChamberToken(chamber: ParliamentChamber): string {
+  return chamber === 'camera' ? 'camera_deputatilor' : 'senat'
+}
+
+function buildMemberSpeeches(
+  memberId: string,
+): ParliamentMemberSpeechesHistory['speeches'] | null {
+  const member = members.find((m) => m.memberId === memberId)
+  if (!member) return null
+  const own = mockOwnChamberToken(member.chamber)
+  return MOCK_SPEECH_TEMPLATES.map((tpl, index) => {
+    const chamber = tpl.sitting === 'own' ? own : 'comun'
+    // Senate stenograms carry no per-turn anchor → lossy_root; CDEP/joint → exact.
+    const lossy = chamber === 'senat'
+    return {
+      speechKey: `${memberId}:sp:${index}`,
+      spokenAt: tpl.date,
+      title: tpl.title,
+      summary: tpl.summary,
+      chamber,
+      sourceUrl: lossy
+        ? 'https://www.senat.ro/Legis/lista.aspx'
+        : `https://www.cdep.ro/pls/steno/steno2015.stenograma?ids=${9000 + index}`,
+      sourceUrlKind: lossy ? 'lossy_root' : 'exact',
+      fullText: tpl.fullText,
+    }
+  })
+}
+
+/** Map a session GraphQL chamber token to the mock speech chamber it matches. */
+function applyMemberSpeechesFilter(
+  speeches: ParliamentMemberSpeechesHistory['speeches'],
+  filter: MemberSpeechesFilterInput | undefined,
+  q: string | undefined,
+): ParliamentMemberSpeechesHistory['speeches'] {
+  const from = filter?.spokenAt?.gte
+  const to = filter?.spokenAt?.lte
+  const chamber = filter?.chamber?.eq
+  const needle = q?.trim().toLowerCase()
+  return speeches.filter((speech) => {
+    if (chamber && speech.chamber !== chamber) return false
+    // Compare DATE PARTS lexically (YYYY-MM-DD), like the server — timestamp
+    // comparison would be timezone-dependent (the votes-slice lesson).
+    const day = speech.spokenAt.slice(0, 10)
+    if (from && day < from) return false
+    if (to && day > to) return false
+    if (needle) {
+      const haystack = [speech.title, speech.summary, speech.fullText]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+      if (!haystack.includes(needle)) return false
+    }
+    return true
+  })
+}
+
+export async function fetchParliamentMemberSpeechesMock(
+  memberId: string,
+  after?: string,
+  filter?: MemberSpeechesFilterInput,
+  q?: string,
+): Promise<ParliamentMemberSpeechesHistory | null> {
+  const all = buildMemberSpeeches(memberId)
+  if (!all) return null
+  // Keyset order = spokenAt desc (then insertion order for same-day turns).
+  const ordered = [...all].sort((a, b) => b.spokenAt.localeCompare(a.spokenAt))
+  const filtered = applyMemberSpeechesFilter(ordered, filter, q)
+  const start = after ? Math.max(0, Number.parseInt(after, 10) || 0) : 0
+  const speeches = filtered.slice(start, start + MOCK_MEMBER_SPEECHES_PAGE_SIZE)
+  const end = start + speeches.length
+  const hasNextPage = end < filtered.length
+  return ParliamentMemberSpeechesHistorySchema.parse({
+    memberId,
+    speeches,
+    total: filtered.length,
+    hasNextPage,
+    endCursor: hasNextPage ? String(end) : null,
+  })
+}
+
+export async function fetchParliamentMemberSpeechActivityMock(
+  memberId: string,
+  year: number,
+  filter?: MemberSpeechesFilterInput,
+  q?: string,
+): Promise<ParliamentMemberSpeechActivity | null> {
+  const all = buildMemberSpeeches(memberId)
+  if (!all) return null
+  // The activity aggregate is bounded by `year`; a date filter is never sent
+  // here, so strip it before applying (parity with the server contract).
+  const dateStripped: MemberSpeechesFilterInput | undefined = filter
+    ? { ...filter, spokenAt: undefined }
+    : undefined
+  const filtered = applyMemberSpeechesFilter(all, dateStripped, q)
+
+  const availableYears = Array.from(
+    new Set(filtered.map((s) => Number(s.spokenAt.slice(0, 4)))),
+  )
+    .filter((y) => Number.isFinite(y))
+    .sort((a, b) => b - a)
+
+  const dayMap = new Map<string, ParliamentMemberSpeechActivity['days'][number]>()
+  for (const speech of filtered) {
+    if (Number(speech.spokenAt.slice(0, 4)) !== year) continue
+    const date = speech.spokenAt.slice(0, 10)
+    const day = dayMap.get(date) ?? { date, total: 0, proprie: 0, comun: 0 }
+    day.total += 1
+    if (speech.chamber === 'comun') day.comun += 1
+    else day.proprie += 1
+    dayMap.set(date, day)
+  }
+
+  return ParliamentMemberSpeechActivitySchema.parse({
     year,
     availableYears,
     days: Array.from(dayMap.values()).sort((a, b) => a.date.localeCompare(b.date)),

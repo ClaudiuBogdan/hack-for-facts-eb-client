@@ -526,6 +526,131 @@ export const parliamentMemberVoteActivityResponseSchema = z.object({
 })
 
 // ---------------------------------------------------------------------------
+// Member interventii — parliamentMember(mandateKey).speechesConnection(...)
+// Keyset (spokenAt desc). `fullText` is selected inline: measured avg 591 chars
+// / p90 ~1.5KB, so 50 nodes ≈ 30–75KB — cheaper than a per-turn round-trip, and
+// the card expands it locally with zero extra network. `q` is the free-text arg.
+// ---------------------------------------------------------------------------
+
+export const PARLIAMENT_MEMBER_SPEECHES_QUERY = /* GraphQL */ `
+  query ParliamentMemberSpeeches(
+    $mandateKey: ID!
+    $first: Int
+    $after: String
+    $filter: ParliamentMemberSpeechesFilter
+    $q: String
+  ) {
+    parliamentMember(mandateKey: $mandateKey) {
+      mandateKey
+      speechesConnection(first: $first, after: $after, filter: $filter, q: $q) {
+        total
+        edges {
+          cursor
+          node {
+            speechKey
+            spokenAt
+            title
+            summary
+            chamber
+            sourceUrl
+            sourceUrlKind
+            fullText
+          }
+        }
+        pageInfo { hasNextPage endCursor }
+      }
+    }
+  }
+`
+
+const rawMemberSpeechSchema = z.object({
+  speechKey: z.string(),
+  spokenAt: z.string().nullable(),
+  title: z.string().nullable(),
+  summary: z.string().nullable(),
+  chamber: z.string().nullable(),
+  sourceUrl: z.string().nullable(),
+  sourceUrlKind: z.string().nullable(),
+  fullText: z.string().nullable(),
+})
+export type RawParliamentMemberSpeech = z.infer<typeof rawMemberSpeechSchema>
+
+export const parliamentMemberSpeechesResponseSchema = z.object({
+  parliamentMember: z
+    .object({
+      mandateKey: z.string(),
+      speechesConnection: z.object({
+        total: z.number(),
+        edges: z.array(
+          z.object({ cursor: z.string(), node: rawMemberSpeechSchema }),
+        ),
+        pageInfo: z.object({
+          hasNextPage: z.boolean(),
+          endCursor: z.string().nullable(),
+        }),
+      }),
+    })
+    .nullable(),
+})
+
+// ---------------------------------------------------------------------------
+// Member speech-activity heatmap — parliamentMember(mandateKey).speechActivity
+// The server bounds the range by `year` and REJECTS `spokenAt` in the filter.
+// Reflects the SAME filter + q as speechesConnection.
+// ---------------------------------------------------------------------------
+
+export const PARLIAMENT_MEMBER_SPEECH_ACTIVITY_QUERY = /* GraphQL */ `
+  query ParliamentMemberSpeechActivity(
+    $mandateKey: ID!
+    $year: Int!
+    $filter: ParliamentMemberSpeechesFilter
+    $q: String
+  ) {
+    parliamentMember(mandateKey: $mandateKey) {
+      mandateKey
+      speechActivity(year: $year, filter: $filter, q: $q) {
+        year
+        availableYears
+        days {
+          date
+          total
+          proprie
+          comun
+        }
+      }
+    }
+  }
+`
+
+const rawSpeechActivityDaySchema = z.object({
+  date: z.string(),
+  total: z.number(),
+  proprie: z.number(),
+  comun: z.number(),
+})
+export type RawParliamentMemberSpeechActivityDay = z.infer<
+  typeof rawSpeechActivityDaySchema
+>
+
+const rawSpeechActivitySchema = z.object({
+  year: z.number(),
+  availableYears: z.array(z.number()),
+  days: z.array(rawSpeechActivityDaySchema),
+})
+export type RawParliamentMemberSpeechActivity = z.infer<
+  typeof rawSpeechActivitySchema
+>
+
+export const parliamentMemberSpeechActivityResponseSchema = z.object({
+  parliamentMember: z
+    .object({
+      mandateKey: z.string(),
+      speechActivity: rawSpeechActivitySchema,
+    })
+    .nullable(),
+})
+
+// ---------------------------------------------------------------------------
 // Member profile activity — speeches / control items / initiatives / declarations
 // ---------------------------------------------------------------------------
 

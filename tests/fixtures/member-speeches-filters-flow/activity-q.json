@@ -1,0 +1,14 @@
+{
+  "data": {
+    "parliamentMember": {
+      "mandateKey": "1:2024:79",
+      "speechActivity": {
+        "year": 2026,
+        "availableYears": [2026],
+        "days": [
+          { "date": "2026-03-20", "total": 3, "proprie": 1, "comun": 2 }
+        ]
+      }
+    }
+  }
+}

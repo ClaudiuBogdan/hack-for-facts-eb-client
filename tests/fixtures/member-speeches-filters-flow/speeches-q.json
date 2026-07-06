@@ -1,0 +1,26 @@
+{
+  "data": {
+    "parliamentMember": {
+      "mandateKey": "1:2024:79",
+      "speechesConnection": {
+        "total": 4,
+        "edges": [
+          {
+            "cursor": "c0",
+            "node": {
+              "speechKey": "senat:sp:1",
+              "spokenAt": "2026-05-13",
+              "title": null,
+              "summary": "Voi adresa o întrebare despre bugetul educației.",
+              "chamber": "senat",
+              "sourceUrl": "https://www.senat.ro/Legis/lista.aspx",
+              "sourceUrlKind": "lossy_root",
+              "fullText": "Doamna senator:\nCâteva precizări despre bugetul educației."
+            }
+          }
+        ],
+        "pageInfo": { "hasNextPage": true, "endCursor": "c50" }
+      }
+    }
+  }
+}

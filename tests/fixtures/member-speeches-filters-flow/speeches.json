@@ -1,0 +1,39 @@
+{
+  "data": {
+    "parliamentMember": {
+      "mandateKey": "1:2024:79",
+      "speechesConnection": {
+        "total": 83,
+        "edges": [
+          {
+            "cursor": "c0",
+            "node": {
+              "speechKey": "senat:sp:1",
+              "spokenAt": "2026-05-13",
+              "title": "S T E N O G R A M A ședinței Senatului din 13 mai 2026",
+              "summary": "Mulțumesc, domnule președinte de ședință. Voi adresa o întrebare despre bugetul educației.",
+              "chamber": "senat",
+              "sourceUrl": "https://www.senat.ro/Legis/lista.aspx",
+              "sourceUrlKind": "lossy_root",
+              "fullText": "Doamna senator:\nMulțumesc, domnule președinte de ședință.\nVoi adresa o întrebare despre bugetul educației."
+            }
+          },
+          {
+            "cursor": "c1",
+            "node": {
+              "speechKey": "cdep:sp:2",
+              "spokenAt": "2026-03-20",
+              "title": null,
+              "summary": "Susțin amendamentul colegilor mei privind investițiile locale.",
+              "chamber": "comun",
+              "sourceUrl": "https://www.cdep.ro/pls/steno/steno2015.stenograma?ids=9002",
+              "sourceUrlKind": "exact",
+              "fullText": null
+            }
+          }
+        ],
+        "pageInfo": { "hasNextPage": true, "endCursor": "c50" }
+      }
+    }
+  }
+}

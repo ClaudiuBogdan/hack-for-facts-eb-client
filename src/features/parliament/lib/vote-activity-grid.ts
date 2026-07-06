@@ -122,3 +122,17 @@ export function bucketFor(count: number): 0 | 1 | 2 | 3 | 4 {
   if (count < 100) return 3
   return 4
 }
+
+/**
+ * Bucket a day's speech-turn count into an intensity level 0–4. Thresholds are
+ * measured on the speech grain (per-day p50=3, p90=12 — far denser-tailed than
+ * votes), so the ramp is 0 / 1–2 / 3–5 / 6–12 / 13+:
+ *   0 = none · 1 = 1–2 · 2 = 3–5 · 3 = 6–12 · 4 = 13+.
+ */
+export function speechBucketFor(count: number): 0 | 1 | 2 | 3 | 4 {
+  if (count <= 0) return 0
+  if (count <= 2) return 1
+  if (count <= 5) return 2
+  if (count <= 12) return 3
+  return 4
+}

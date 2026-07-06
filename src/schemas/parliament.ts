@@ -370,6 +370,72 @@ export type ParliamentMemberVoteActivity = z.infer<
   typeof ParliamentMemberVoteActivitySchema
 >
 
+// ── member speeches (interventii tab: heatmap + filterable list) ─────────────
+
+/**
+ * One speech TURN in the member-interventii list. Grain is a single
+ * intervention (a chair can have hundreds of turns in one marathon sitting).
+ * `title` is NULL for ~80% of rows (CDEP has none; Senate titles are ugly
+ * sitting headers), so the card LEADS WITH `summary`, not the title.
+ * `sourceUrlKind` gates how the source link is presented: 'exact' → a real
+ * deep-link to this turn; 'lossy_root' → only the sitting/list root (Senate).
+ * `fullText` is the verbatim transcript, NULL while the backfill is in flight.
+ */
+export const ParliamentMemberSpeechSchema = z.object({
+  speechKey: z.string(),
+  /** ISO date (YYYY-MM-DD); may be empty when the source row carries no date. */
+  spokenAt: z.string(),
+  title: z.string().optional(),
+  summary: z.string().optional(),
+  /** GraphQL chamber token: 'camera_deputatilor' | 'senat' | 'comun'. */
+  chamber: z.string().optional(),
+  sourceUrl: z.string().optional(),
+  /** 'exact' → deep-link this turn; 'lossy_root' → sitting-list root only. */
+  sourceUrlKind: z.string().optional(),
+  /** Verbatim transcript; undefined when not yet loaded ("indisponibil"). */
+  fullText: z.string().optional(),
+})
+export type ParliamentMemberSpeech = z.infer<typeof ParliamentMemberSpeechSchema>
+
+export const ParliamentMemberSpeechesHistorySchema = z.object({
+  memberId: z.string(),
+  speeches: z.array(ParliamentMemberSpeechSchema),
+  /** EXACT filtered/searched count (the connection `total`). */
+  total: z.number().int().nonnegative(),
+  hasNextPage: z.boolean(),
+  endCursor: z.string().nullable(),
+})
+export type ParliamentMemberSpeechesHistory = z.infer<
+  typeof ParliamentMemberSpeechesHistorySchema
+>
+
+/** One day cell of the member speech-activity heatmap (proprie + comun = total). */
+export const ParliamentMemberSpeechActivityDaySchema = z.object({
+  date: z.string(),
+  total: z.number().int().nonnegative(),
+  /** Turns in the member's own chamber (total - comun). */
+  proprie: z.number().int().nonnegative(),
+  /** Turns in a joint sitting (chamber = comun). */
+  comun: z.number().int().nonnegative(),
+})
+export type ParliamentMemberSpeechActivityDay = z.infer<
+  typeof ParliamentMemberSpeechActivityDaySchema
+>
+
+/**
+ * Per-year speech-activity aggregate (heatmap source). `days` carries only days
+ * with recorded turns; `availableYears` reflects the NON-date filter + q (the
+ * server bounds the range by `year`, so a date filter is never sent here).
+ */
+export const ParliamentMemberSpeechActivitySchema = z.object({
+  year: z.number().int(),
+  days: z.array(ParliamentMemberSpeechActivityDaySchema),
+  availableYears: z.array(z.number().int()),
+})
+export type ParliamentMemberSpeechActivity = z.infer<
+  typeof ParliamentMemberSpeechActivitySchema
+>
+
 export const MemberSpokenContributionSchema = z.object({
   contributionId: z.string(),
   heldAt: z.string(),
@@ -657,6 +723,27 @@ export const ParliamentBillsSearchSchema = ParliamentSearchSchema
 export type ParliamentBillsSearch = ParliamentSearch
 
 /**
+ * A calendar-REAL `YYYY-MM-DD` day, or `undefined`. The regex alone admits
+ * impossible values (`2026-99-99`, `2026-02-30`) that then throw RangeError in
+ * the Intl date/chip formatters — so we also round-trip through UTC and require
+ * the parsed date to re-serialise to the same string. `.catch(undefined)` keeps
+ * the lenient contract: any junk (bad shape OR impossible date) falls to
+ * undefined, it never throws.
+ */
+const strictIsoDateParam = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .refine((day) => {
+    const parsed = new Date(`${day}T00:00:00Z`)
+    return (
+      !Number.isNaN(parsed.getTime()) &&
+      parsed.toISOString().slice(0, 10) === day
+    )
+  })
+  .optional()
+  .catch(undefined)
+
+/**
  * Search params for the member voting-history tab (heatmap + advanced filters).
  * Lenient like `ParliamentSearchSchema` — every field `.optional().catch(undefined)`
  * so a hand-edited/junk URL never throws, it just drops the bad facet.
@@ -667,18 +754,11 @@ export type ParliamentBillsSearch = ParliamentSearch
  *   - `an`         — heatmap year (drives the vote-activity aggregate).
  */
 export const MemberVotesSearchSchema = z.object({
-  // Strict YYYY-MM-DD: a junk date (`?from=abc`) must fall to undefined here,
-  // not reach the chip/date formatters (RangeError: Invalid time value).
-  from: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/)
-    .optional()
-    .catch(undefined),
-  to: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/)
-    .optional()
-    .catch(undefined),
+  // Strict, calendar-REAL YYYY-MM-DD: a junk or impossible date (`?from=abc`,
+  // `?from=2026-99-99`) must fall to undefined here, not reach the chip/date
+  // formatters (RangeError: Invalid time value).
+  from: strictIsoDateParam,
+  to: strictIsoDateParam,
   choice: z
     .union([z.string(), z.array(z.string())])
     .optional()
@@ -688,3 +768,23 @@ export const MemberVotesSearchSchema = z.object({
   an: z.coerce.number().int().optional().catch(undefined),
 })
 export type MemberVotesSearch = z.infer<typeof MemberVotesSearchSchema>
+
+/**
+ * Search params for the member interventii tab (speech heatmap + filters +
+ * free-text). Lenient like `MemberVotesSearchSchema` — every field
+ * `.optional().catch(undefined)` so a junk/hand-edited URL never throws.
+ *   - `from`/`to`  — inclusive spoken-date range (YYYY-MM-DD).
+ *   - `session`    — proprie (member's own chamber) | comun (joint sitting).
+ *   - `q`          — free-text over title + summary + verbatim transcript.
+ *   - `an`         — heatmap year (drives the speech-activity aggregate).
+ */
+export const MemberSpeechesSearchSchema = z.object({
+  from: strictIsoDateParam,
+  to: strictIsoDateParam,
+  session: z.enum(['proprie', 'comun']).optional().catch(undefined),
+  // Trimmed free-text; empty/oversized junk collapses to undefined so it never
+  // reaches the query arg or the chip formatter.
+  q: z.string().trim().min(1).max(200).optional().catch(undefined),
+  an: z.coerce.number().int().optional().catch(undefined),
+})
+export type MemberSpeechesSearch = z.infer<typeof MemberSpeechesSearchSchema>

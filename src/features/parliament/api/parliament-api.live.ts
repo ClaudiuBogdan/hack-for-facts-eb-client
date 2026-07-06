@@ -29,6 +29,8 @@ import {
   type ParliamentMemberInitiativesList,
   type ParliamentMemberVoteActivity,
   type ParliamentMemberVotingHistory,
+  type ParliamentMemberSpeechesHistory,
+  type ParliamentMemberSpeechActivity,
   type ParliamentMembersList,
   type ParliamentMembersSearch,
   type ParliamentVoteDetail,
@@ -49,6 +51,8 @@ import {
   PARLIAMENT_MEMBER_QUERY,
   PARLIAMENT_MEMBER_VOTE_ACTIVITY_QUERY,
   PARLIAMENT_MEMBER_VOTES_QUERY,
+  PARLIAMENT_MEMBER_SPEECHES_QUERY,
+  PARLIAMENT_MEMBER_SPEECH_ACTIVITY_QUERY,
   PARLIAMENT_MEMBERS_QUERY,
   PARLIAMENT_RESOLVE_QUERY,
   PARLIAMENT_VOTE_BALLOTS_QUERY,
@@ -66,6 +70,8 @@ import {
   parliamentMemberResponseSchema,
   parliamentMemberVoteActivityResponseSchema,
   parliamentMemberVotesResponseSchema,
+  parliamentMemberSpeechesResponseSchema,
+  parliamentMemberSpeechActivityResponseSchema,
   parliamentMembersResponseSchema,
   parliamentResolveResponseSchema,
   parliamentVoteBallotsResponseSchema,
@@ -85,10 +91,13 @@ import {
   mapMemberProfile,
   mapMemberVoteActivity,
   mapMemberVotingHistory,
+  mapMemberSpeeches,
+  mapMemberSpeechActivity,
   mapVoteDetail,
   mapVoteListItem,
 } from './graphql/parliament-mappers'
 import type { MemberVotesFilterInput } from '../lib/member-votes-filter'
+import type { MemberSpeechesFilterInput } from '../lib/member-speeches-filter'
 import {
   buildBillsFilter,
   buildBillsSort,
@@ -505,6 +514,51 @@ export async function fetchParliamentMemberVoteActivityLive(
   const parsed = parliamentMemberVoteActivityResponseSchema.parse(data)
   if (!parsed.parliamentMember) return null
   return mapMemberVoteActivity(parsed.parliamentMember.voteActivity)
+}
+
+// ── member speeches (interventii) ─────────────────────────────────────────────
+
+const MEMBER_SPEECHES_PAGE_SIZE = 50
+
+export async function fetchParliamentMemberSpeechesLive(
+  memberId: string,
+  after?: string,
+  filter?: MemberSpeechesFilterInput,
+  q?: string,
+): Promise<ParliamentMemberSpeechesHistory | null> {
+  const data = await graphqlQuery<unknown>(
+    PARLIAMENT_MEMBER_SPEECHES_QUERY,
+    // Omit `after` on page 1 (a null cursor is malformed); omit `filter`/`q`
+    // when unset so the server sees a clean query.
+    {
+      mandateKey: memberId,
+      first: MEMBER_SPEECHES_PAGE_SIZE,
+      ...(after !== undefined && { after }),
+      ...(filter ? { filter } : {}),
+      ...(q ? { q } : {}),
+    },
+    { operationName: 'parliamentMemberSpeeches' },
+  )
+  const parsed = parliamentMemberSpeechesResponseSchema.parse(data)
+  if (!parsed.parliamentMember) return null
+  const { edges, total, pageInfo } = parsed.parliamentMember.speechesConnection
+  return mapMemberSpeeches(memberId, edges, total, pageInfo)
+}
+
+export async function fetchParliamentMemberSpeechActivityLive(
+  memberId: string,
+  year: number,
+  filter?: MemberSpeechesFilterInput,
+  q?: string,
+): Promise<ParliamentMemberSpeechActivity | null> {
+  const data = await graphqlQuery<unknown>(
+    PARLIAMENT_MEMBER_SPEECH_ACTIVITY_QUERY,
+    { mandateKey: memberId, year, ...(filter ? { filter } : {}), ...(q ? { q } : {}) },
+    { operationName: 'parliamentMemberSpeechActivity' },
+  )
+  const parsed = parliamentMemberSpeechActivityResponseSchema.parse(data)
+  if (!parsed.parliamentMember) return null
+  return mapMemberSpeechActivity(parsed.parliamentMember.speechActivity)
 }
 
 // ── member profile ──────────────────────────────────────────────────────────

@@ -8,11 +8,12 @@ export const Route = createLazyFileRoute('/parlament/membri/$memberId/interventi
 
 function ParliamentMemberInterventiiRoutePage() {
   const { memberId } = Route.useParams()
+  const search = Route.useSearch()
 
   return (
     <MemberProfileTabPage
       memberId={memberId}
-      render={(member) => <MemberInterventiiTab member={member} />}
+      render={(member) => <MemberInterventiiTab member={member} search={search} />}
     />
   )
 }

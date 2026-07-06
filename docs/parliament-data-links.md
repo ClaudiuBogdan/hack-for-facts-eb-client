@@ -38,7 +38,7 @@ correlates. ✅ verified correct, ⚠️ defect (see Defects).
 | L3 | members → persons (cross-mandate identity) | `members.person_id` (FK) | N:1 | DB FK; API `person` | ✅ (5 persons hold 2 mandates) |
 | L4 | members → constituency/territory | `members.constituency_name` (TEXT, NOT siruta) | — | DB column; API filter | ✅ name-only; NO core.territory link (gap) |
 | L5 | member → votes (ballots) | `vote_records.mandate_key` (FK, name-resolved `exact_token_set`) | 1:N | DB FK; API `member.votes` / `vote.ballots` | ✅ key-correct, 99.9% resolved |
-| L6 | member → speeches | `speeches.mandate_key` (FK) | 1:N | DB FK; API `member.speeches` (quarantined excluded) | ✅ |
+| L6 | member → speeches | `speeches.mandate_key` (FK) | 1:N | DB FK; API `member.speechesConnection` (keyset, filter+q) / `speechActivity` (heatmap); CLIENT interventii tab | ✅ filterable (date/session) + free-text `q` (title+summary+transcript); transcript `fullText` selected INLINE in the list query (avg ~591 chars / p90 ~1.5KB → ~30–75KB per 50-row page; no cheap per-speech lazy path server-side), rendered in an expandable card section, null while backfilling → null-tolerant; Senate `sourceUrlKind='lossy_root'` labelled honestly |
 | L7 | member → control_items | `control_items.mandate_key` (FK) | 1:N | DB FK; API `member.controlItems` | ✅ |
 | L8 | member → member_initiatives | `member_initiatives.mandate_key` (FK) | 1:N | DB FK; API `member.initiatives` | ✅ |
 | L9 | member → member_declarations | `member_declarations.mandate_key` (FK) | 1:N | DB FK; API `member.declarations` | ✅ |
@@ -230,9 +230,12 @@ what is missing, the layer that owns it, and the concrete first step.
   vocabulary, and add a classified column to the raw/prod votes tables
   additively.*
 
-- **Speech search (`PARLIAMENT_SPEECH_SEARCH_MODE=off`).** Full-text search over
-  plenary speeches is disabled server-side; the intervenții tab lists a member's
-  speeches but there is no cross-member speech search. *Owner: server + search
+- **Speech search — per-member done, GLOBAL still deferred.** The intervenții tab
+  now filters a member's own speeches by date + session and free-text `q`
+  (`speechesConnection(q:)` over title + summary + verbatim transcript), plus a
+  per-day activity heatmap. What remains deferred is CROSS-member speech search
+  (find a phrase across every member/sitting). *Owner: server + search
   (OpenSearch/pgvector projection).* *First step: build the speech search-doc
-  projection, flip `PARLIAMENT_SPEECH_SEARCH_MODE=on`, and add a search surface
-  (deferred until the speech corpus is enrichment-complete).*
+  projection and add a global search surface (deferred until the speech corpus is
+  enrichment-complete; the per-mandate `q` above is a SQL scan, not a global
+  index).*

@@ -4,6 +4,7 @@ import {
   buildYearGrid,
   RO_MONTHS_SHORT,
   RO_WEEKDAY_LABELS,
+  speechBucketFor,
 } from './vote-activity-grid'
 
 /** UTC weekday (0 = Sun … 6 = Sat) for a `YYYY-MM-DD` cell. */
@@ -90,5 +91,23 @@ describe('bucketFor', () => {
 
   it('treats negative/zero as empty', () => {
     expect(bucketFor(-5)).toBe(0)
+  })
+})
+
+describe('speechBucketFor', () => {
+  it('maps speech-turn counts to the 0 / 1–2 / 3–5 / 6–12 / 13+ buckets', () => {
+    expect(speechBucketFor(0)).toBe(0)
+    expect(speechBucketFor(1)).toBe(1)
+    expect(speechBucketFor(2)).toBe(1)
+    expect(speechBucketFor(3)).toBe(2)
+    expect(speechBucketFor(5)).toBe(2)
+    expect(speechBucketFor(6)).toBe(3)
+    expect(speechBucketFor(12)).toBe(3)
+    expect(speechBucketFor(13)).toBe(4)
+    expect(speechBucketFor(200)).toBe(4)
+  })
+
+  it('treats negative/zero as empty', () => {
+    expect(speechBucketFor(-2)).toBe(0)
   })
 })

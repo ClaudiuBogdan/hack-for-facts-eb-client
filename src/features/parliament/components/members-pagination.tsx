@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { getPaginationRange } from '../lib/pagination-range'
+import { getPaginationRange } from '@/lib/pagination-range'
 import { parliamentPaginationButtonClassName } from '../lib/table-theme'
 
 type Props = {
