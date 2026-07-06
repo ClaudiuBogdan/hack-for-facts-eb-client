@@ -4,6 +4,7 @@ import type { MemberVoteChoice } from '@/schemas/parliament'
 import { cn } from '@/lib/utils'
 import {
   getMemberVoteChoiceLabel,
+  formatVoteDayLong,
   formatVoteDivisionMeta,
   getVoteChoiceAccentColor,
 } from '../lib/formatting'
@@ -61,11 +62,7 @@ export function MemberVoteRecordCard({
             <p className="mt-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
               {divisionNumber
                 ? formatVoteDivisionMeta({ heldAt }, divisionNumber)
-                : new Intl.DateTimeFormat('ro-RO', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  }).format(new Date(heldAt))}
+                : formatVoteDayLong(heldAt)}
             </p>
           </div>
 

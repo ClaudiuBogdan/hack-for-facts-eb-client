@@ -21,6 +21,7 @@ import type {
   ParliamentMember,
   ParliamentMemberProfile,
   ParliamentMemberInitiativesList,
+  ParliamentMemberVoteActivity,
   ParliamentMemberVotingHistory,
   ParliamentMembersList,
   ParliamentMembersSearch,
@@ -41,6 +42,7 @@ import {
   ParliamentHubDataSchema,
   ParliamentMemberSchema,
   ParliamentMemberInitiativesListSchema,
+  ParliamentMemberVoteActivitySchema,
   ParliamentMemberVotingHistorySchema,
   ParliamentMembersListSchema,
   ParliamentVoteDetailSchema,
@@ -70,6 +72,7 @@ import {
 import { resolveParliamentMemberProfile } from '../lib/member-profile-data'
 import { resolveParliamentBillDetail } from '../lib/bill-profile-data'
 import { resolveGroupColor } from '../lib/group-colors'
+import type { MemberVotesFilterInput } from '../lib/member-votes-filter'
 
 const MOCK_LAST_SYNCED = '2026-05-20T08:00:00+03:00'
 const DEFAULT_VOTES_PAGE_SIZE = 10
@@ -558,24 +561,105 @@ export function getMemberJudetMapMock(): Readonly<Record<string, string>> {
 
 const MOCK_MEMBER_VOTES_PAGE_SIZE = 50
 
+/** Map a GraphQL chamber token to the UI chamber a mock vote carries, or null
+ * (`comun` — the mock has no joint votes, so a joint-session filter matches none). */
+function mockChamberForToken(token: string): ParliamentChamber | null {
+  if (token === 'senat') return 'senat'
+  if (token === 'camera_deputatilor') return 'camera'
+  return null // comun (or anything unexpected)
+}
+
+/**
+ * Apply the GraphQL-shape member-votes filter to the mock voting-history rows.
+ * Mirrors the server semantics: choice `in`, outcome `eq`, chamber `eq` (session),
+ * and the inclusive vote-date range on `heldAt`.
+ */
+function applyMemberVotesFilter(
+  votes: ParliamentMemberVotingHistory['votes'],
+  filter: MemberVotesFilterInput | undefined,
+): ParliamentMemberVotingHistory['votes'] {
+  if (!filter) return votes
+  // Compare DATE PARTS lexically (YYYY-MM-DD), like the server does on
+  // vote_date. Timestamp comparison is timezone-dependent: under TZ=UTC a vote
+  // held at 2026-05-15T00:00:00+03:00 sits before 2026-05-15T00:00:00Z and
+  // would drop out of its own day.
+  const from = filter.voteDate?.gte
+  const to = filter.voteDate?.lte
+  const chamber = filter.chamber ? mockChamberForToken(filter.chamber.eq) : undefined
+  return votes.filter((vote) => {
+    if (filter.choice && !filter.choice.in.includes(vote.choice)) return false
+    if (filter.outcome && vote.outcome !== filter.outcome.eq) return false
+    if (filter.chamber && vote.chamber !== chamber) return false
+    const day = vote.heldAt.slice(0, 10)
+    if (from && day < from) return false
+    if (to && day > to) return false
+    return true
+  })
+}
+
 export async function fetchParliamentMemberVotingHistoryMock(
   memberId: string,
   after?: string,
+  filter?: MemberVotesFilterInput,
 ): Promise<ParliamentMemberVotingHistory | null> {
   const history = buildMemberVotingHistory(memberId)
   if (!history) return null
+  const filtered = applyMemberVotesFilter(history.votes, filter)
   // Emulate the live cursor connection: the cursor is the numeric offset of
   // the next page (opaque to the UI, which only passes endCursor back).
   const start = after ? Math.max(0, Number.parseInt(after, 10) || 0) : 0
-  const votes = history.votes.slice(start, start + MOCK_MEMBER_VOTES_PAGE_SIZE)
+  const votes = filtered.slice(start, start + MOCK_MEMBER_VOTES_PAGE_SIZE)
   const end = start + votes.length
-  const hasNextPage = end < history.total
+  const hasNextPage = end < filtered.length
   return {
     ...history,
     votes,
+    total: filtered.length,
     hasNextPage,
     endCursor: hasNextPage ? String(end) : null,
   }
+}
+
+export async function fetchParliamentMemberVoteActivityMock(
+  memberId: string,
+  year: number,
+  filter?: MemberVotesFilterInput,
+): Promise<ParliamentMemberVoteActivity | null> {
+  const history = buildMemberVotingHistory(memberId)
+  if (!history) return null
+  // The activity aggregate is bounded by `year`; a date filter is never sent
+  // here, so strip it before applying (parity with the server contract).
+  const dateStripped: MemberVotesFilterInput | undefined = filter
+    ? { ...filter, voteDate: undefined }
+    : undefined
+  const filtered = applyMemberVotesFilter(history.votes, dateStripped)
+
+  const availableYears = Array.from(
+    new Set(filtered.map((v) => Number(v.heldAt.slice(0, 4)))),
+  )
+    .filter((y) => Number.isFinite(y))
+    .sort((a, b) => b - a)
+
+  const dayMap = new Map<string, ParliamentMemberVoteActivity['days'][number]>()
+  for (const vote of filtered) {
+    if (Number(vote.heldAt.slice(0, 4)) !== year) continue
+    const date = vote.heldAt.slice(0, 10)
+    const day =
+      dayMap.get(date) ??
+      { date, total: 0, pentru: 0, impotriva: 0, abtinere: 0, nuAVotat: 0 }
+    day.total += 1
+    if (vote.choice === 'pentru') day.pentru += 1
+    else if (vote.choice === 'impotriva') day.impotriva += 1
+    else if (vote.choice === 'abtinere') day.abtinere += 1
+    else if (vote.choice === 'nu_a_votat') day.nuAVotat += 1
+    dayMap.set(date, day)
+  }
+
+  return ParliamentMemberVoteActivitySchema.parse({
+    year,
+    availableYears,
+    days: Array.from(dayMap.values()).sort((a, b) => a.date.localeCompare(b.date)),
+  })
 }
 
 export async function fetchParliamentMemberProfileMock(

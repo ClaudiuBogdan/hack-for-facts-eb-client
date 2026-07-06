@@ -219,6 +219,17 @@ what is missing, the layer that owns it, and the concrete first step.
   additive-only contract (is_current=true only for the active legislature) and
   wire a client sub-route.*
 
+- **Vote-type facet (procedural vs final) on the member votes filters
+  (deferred 2026-07-06, member-votes heatmap slice).** The votes filter panel
+  offers date/choice/outcome/session but no "vote type": the only source signal
+  is `votes.attrs.vote_action`, free-text with ~36% coverage, CDEP-only, and
+  absent for all Senate votes — measured live before deciding *(user decision:
+  defer)*. *Owner: data layer (scrapper) — needs a bucketing/classification lane
+  over `vote_action` + a Senate-side signal before serving.* *First step:
+  sample-audit `vote_action` values (≥30 stratified rows), define a controlled
+  vocabulary, and add a classified column to the raw/prod votes tables
+  additively.*
+
 - **Speech search (`PARLIAMENT_SPEECH_SEARCH_MODE=off`).** Full-text search over
   plenary speeches is disabled server-side; the intervenții tab lists a member's
   speeches but there is no cross-member speech search. *Owner: server + search

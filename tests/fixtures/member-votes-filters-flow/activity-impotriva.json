@@ -1,0 +1,15 @@
+{
+  "data": {
+    "parliamentMember": {
+      "mandateKey": "1:2024:1",
+      "voteActivity": {
+        "year": 2026,
+        "availableYears": [2025, 2026],
+        "days": [
+          { "date": "2026-03-20", "total": 280, "pentru": 0, "impotriva": 280, "abtinere": 0, "nuAVotat": 0 },
+          { "date": "2026-03-19", "total": 5, "pentru": 0, "impotriva": 5, "abtinere": 0, "nuAVotat": 0 }
+        ]
+      }
+    }
+  }
+}

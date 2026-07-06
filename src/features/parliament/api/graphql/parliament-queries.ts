@@ -412,10 +412,15 @@ export const parliamentVoteBallotsResponseSchema = z.object({
 // ---------------------------------------------------------------------------
 
 export const PARLIAMENT_MEMBER_VOTES_QUERY = /* GraphQL */ `
-  query ParliamentMemberVotes($mandateKey: ID!, $first: Int, $after: String) {
+  query ParliamentMemberVotes(
+    $mandateKey: ID!
+    $first: Int
+    $after: String
+    $filter: ParliamentMemberVotesFilter
+  ) {
     parliamentMember(mandateKey: $mandateKey) {
       mandateKey
-      votes(first: $first, after: $after) {
+      votes(first: $first, after: $after, filter: $filter) {
         total
         edges {
           node {
@@ -457,6 +462,65 @@ export const parliamentMemberVotesResponseSchema = z.object({
           endCursor: z.string().nullable(),
         }),
       }),
+    })
+    .nullable(),
+})
+
+// ---------------------------------------------------------------------------
+// Member vote-activity heatmap — parliamentMember(mandateKey).voteActivity(year, filter)
+// The server bounds the range by `year` and REJECTS `voteDate` in the filter.
+// ---------------------------------------------------------------------------
+
+export const PARLIAMENT_MEMBER_VOTE_ACTIVITY_QUERY = /* GraphQL */ `
+  query ParliamentMemberVoteActivity(
+    $mandateKey: ID!
+    $year: Int!
+    $filter: ParliamentMemberVotesFilter
+  ) {
+    parliamentMember(mandateKey: $mandateKey) {
+      mandateKey
+      voteActivity(year: $year, filter: $filter) {
+        year
+        availableYears
+        days {
+          date
+          total
+          pentru
+          impotriva
+          abtinere
+          nuAVotat
+        }
+      }
+    }
+  }
+`
+
+const rawVoteActivityDaySchema = z.object({
+  date: z.string(),
+  total: z.number(),
+  pentru: z.number(),
+  impotriva: z.number(),
+  abtinere: z.number(),
+  nuAVotat: z.number(),
+})
+export type RawParliamentMemberVoteActivityDay = z.infer<
+  typeof rawVoteActivityDaySchema
+>
+
+const rawVoteActivitySchema = z.object({
+  year: z.number(),
+  availableYears: z.array(z.number()),
+  days: z.array(rawVoteActivityDaySchema),
+})
+export type RawParliamentMemberVoteActivity = z.infer<
+  typeof rawVoteActivitySchema
+>
+
+export const parliamentMemberVoteActivityResponseSchema = z.object({
+  parliamentMember: z
+    .object({
+      mandateKey: z.string(),
+      voteActivity: rawVoteActivitySchema,
     })
     .nullable(),
 })

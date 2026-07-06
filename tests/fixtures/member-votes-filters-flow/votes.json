@@ -1,0 +1,15 @@
+{
+  "data": {
+    "parliamentMember": {
+      "mandateKey": "1:2024:1",
+      "votes": {
+        "total": 1110,
+        "edges": [
+          { "node": { "voteKey": "cdep:99001", "chamber": "senat", "voteDate": "2026-03-20", "title": "Lege privind bugetul de stat", "outcome": "adoptat", "choice": "pentru", "billKey": null } },
+          { "node": { "voteKey": "cdep:99002", "chamber": "senat", "voteDate": "2026-03-19", "title": "Moțiune simplă privind sănătatea", "outcome": "respins", "choice": "impotriva", "billKey": null } }
+        ],
+        "pageInfo": { "hasNextPage": true, "endCursor": "c50" }
+      }
+    }
+  }
+}

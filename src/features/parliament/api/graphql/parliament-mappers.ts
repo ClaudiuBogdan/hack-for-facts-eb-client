@@ -19,6 +19,7 @@ import {
   ParliamentMemberSchema,
   ParliamentMemberProfileSchema,
   ParliamentMemberInitiativesListSchema,
+  ParliamentMemberVoteActivitySchema,
   ParliamentMemberVotingHistorySchema,
   ParliamentVoteDetailSchema,
   ParliamentVoteSummarySchema,
@@ -40,6 +41,7 @@ import {
   type ParliamentMember,
   type ParliamentMemberProfile,
   type ParliamentMemberInitiativesList,
+  type ParliamentMemberVoteActivity,
   type ParliamentMemberVotingHistory,
   type ParliamentVoteDetail,
   type ParliamentVoteSummary,
@@ -66,6 +68,7 @@ import type {
   RawParliamentInitiative,
   RawParliamentMember,
   RawParliamentMemberVote,
+  RawParliamentMemberVoteActivity,
   RawParliamentTally,
   RawParliamentVoteDetail,
   RawParliamentVoteListNode,
@@ -396,6 +399,25 @@ export function mapMemberVotingHistory(
       heldAt: toIsoDate(v.voteDate, new Date(0).toISOString()),
       choice: toVoteChoice(v.choice),
       outcome: toOutcome(v.outcome),
+    })),
+  })
+}
+
+// ── member vote activity (heatmap) ──────────────────────────────────────────
+
+export function mapMemberVoteActivity(
+  raw: RawParliamentMemberVoteActivity,
+): ParliamentMemberVoteActivity {
+  return ParliamentMemberVoteActivitySchema.parse({
+    year: raw.year,
+    availableYears: raw.availableYears,
+    days: raw.days.map((d) => ({
+      date: d.date,
+      total: num(d.total),
+      pentru: num(d.pentru),
+      impotriva: num(d.impotriva),
+      abtinere: num(d.abtinere),
+      nuAVotat: num(d.nuAVotat),
     })),
   })
 }

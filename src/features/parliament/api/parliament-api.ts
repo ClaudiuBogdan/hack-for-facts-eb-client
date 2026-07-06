@@ -27,6 +27,7 @@ import type {
   ParliamentMember,
   ParliamentMemberProfile,
   ParliamentMemberInitiativesList,
+  ParliamentMemberVoteActivity,
   ParliamentMemberVotingHistory,
   ParliamentMembersList,
   ParliamentMembersSearch,
@@ -36,6 +37,7 @@ import type {
   ParliamentVotesSearch,
 } from '@/schemas/parliament'
 import { isParliamentMockEnabled } from '../lib/mock-mode'
+import type { MemberVotesFilterInput } from '../lib/member-votes-filter'
 import {
   PARLIAMENT_GROUP_FALLBACK_COLOR,
   resolveGroupColor,
@@ -58,6 +60,7 @@ import {
   fetchParliamentMemberInitiativesMock,
   fetchParliamentMemberMock,
   fetchParliamentMemberProfileMock,
+  fetchParliamentMemberVoteActivityMock,
   fetchParliamentMemberVotingHistoryMock,
   fetchParliamentMembersMock,
   fetchParliamentCommitteeMock,
@@ -83,6 +86,7 @@ import {
   fetchParliamentMemberInitiativesLive,
   fetchParliamentMemberLive,
   fetchParliamentMemberProfileLive,
+  fetchParliamentMemberVoteActivityLive,
   fetchParliamentMemberVotingHistoryLive,
   fetchParliamentMembersLive,
   fetchParliamentCommitteeLive,
@@ -191,10 +195,21 @@ export async function fetchParliamentVoteDetail(
 export async function fetchParliamentMemberVotingHistory(
   memberId: string,
   after?: string,
+  filter?: MemberVotesFilterInput,
 ): Promise<ParliamentMemberVotingHistory | null> {
   return isParliamentMockEnabled()
-    ? fetchParliamentMemberVotingHistoryMock(memberId, after)
-    : fetchParliamentMemberVotingHistoryLive(memberId, after)
+    ? fetchParliamentMemberVotingHistoryMock(memberId, after, filter)
+    : fetchParliamentMemberVotingHistoryLive(memberId, after, filter)
+}
+
+export async function fetchParliamentMemberVoteActivity(
+  memberId: string,
+  year: number,
+  filter?: MemberVotesFilterInput,
+): Promise<ParliamentMemberVoteActivity | null> {
+  return isParliamentMockEnabled()
+    ? fetchParliamentMemberVoteActivityMock(memberId, year, filter)
+    : fetchParliamentMemberVoteActivityLive(memberId, year, filter)
 }
 
 export async function fetchParliamentMemberProfile(

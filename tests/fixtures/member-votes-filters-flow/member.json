@@ -1,0 +1,23 @@
+{
+  "data": {
+    "parliamentMember": {
+      "mandateKey": "1:2024:1",
+      "chamber": "senat",
+      "legislature": "2024",
+      "fullName": "Abrudean Mircea",
+      "groupName": "PNL",
+      "constituencyName": "CLUJ",
+      "birthDate": null,
+      "profileUrl": null,
+      "cvPdfUrl": null,
+      "committeeMemberships": [],
+      "activityCounts": {
+        "votes": 1110,
+        "controlItems": 0,
+        "speeches": 0,
+        "initiatives": 0,
+        "declarations": 0
+      }
+    }
+  }
+}

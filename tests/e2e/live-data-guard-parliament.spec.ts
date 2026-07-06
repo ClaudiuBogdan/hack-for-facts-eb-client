@@ -347,4 +347,102 @@ test.describe('Live-data guard (parliament)', () => {
     test.skip(rowCount === 0, 'No committees returned (API/tunnel down or empty)')
     expect(rowCount).toBeGreaterThan(0)
   })
+
+  test('member 1:2024:1 /voturi renders the live vote-activity heatmap (≥20 active days in 2026)', async ({
+    page,
+  }) => {
+    const response = await page
+      .goto('/parlament/membri/1:2024:1/voturi?an=2026')
+      .catch(() => null)
+    test.skip(!response, 'Member votes route unavailable')
+
+    const ready = await page
+      .getByRole('heading', { level: 1 })
+      .first()
+      .waitFor({ state: 'visible', timeout: 20000 })
+      .then(() => true)
+      .catch(() => false)
+    test.skip(!ready, 'Live member votes unavailable (API/tunnel down)')
+
+    // Active-day cells are buttons labelled "… — N voturi"; the year buttons are
+    // labelled with the bare year, so this selector counts only day cells.
+    const cells = page.locator('button[aria-label*="voturi"]')
+    const painted = await cells
+      .first()
+      .waitFor({ state: 'visible', timeout: 20000 })
+      .then(() => true)
+      .catch(() => false)
+    test.skip(!painted, 'Heatmap not painted (API/tunnel down)')
+
+    // 2026 has ≥20 sitting days with recorded votes for Abrudean (25 as of
+    // 2026-07-06; a floor since the year is still accruing).
+    expect(await cells.count()).toBeGreaterThanOrEqual(20)
+  })
+
+  test('member 1:2024:1 /voturi ?choice=impotriva filters the list to the career "împotrivă" total (≥240)', async ({
+    page,
+  }) => {
+    const response = await page
+      .goto('/parlament/membri/1:2024:1/voturi?choice=impotriva&an=2026')
+      .catch(() => null)
+    test.skip(!response, 'Member votes route unavailable')
+
+    const ready = await page
+      .getByRole('heading', { level: 1 })
+      .first()
+      .waitFor({ state: 'visible', timeout: 20000 })
+      .then(() => true)
+      .catch(() => false)
+    test.skip(!ready, 'Live member votes unavailable (API/tunnel down)')
+
+    // The count line "Afișate X din Y voturi" reports the FILTERED total (Y).
+    const countLine = page.getByText(/din\s+[\d.]+\s+voturi/)
+    const shown = await countLine
+      .first()
+      .waitFor({ state: 'visible', timeout: 20000 })
+      .then(() => true)
+      .catch(() => false)
+    test.skip(!shown, 'Votes count line not rendered (API/tunnel down)')
+
+    const text = (await countLine.first().textContent()) ?? ''
+    const total = Number((text.match(/din\s+([\d.]+)\s+voturi/)?.[1] ?? '').replace(/\./g, ''))
+    // Career "împotrivă" total was 240 (2026-07-06); a floor since it can grow.
+    expect(total).toBeGreaterThanOrEqual(240)
+  })
+
+  test('member 1:2024:1 /voturi clicking 2026-03-20 (280 votes) filters the list to that day', async ({
+    page,
+  }) => {
+    const response = await page
+      .goto('/parlament/membri/1:2024:1/voturi?an=2026')
+      .catch(() => null)
+    test.skip(!response, 'Member votes route unavailable')
+
+    const ready = await page
+      .getByRole('heading', { level: 1 })
+      .first()
+      .waitFor({ state: 'visible', timeout: 20000 })
+      .then(() => true)
+      .catch(() => false)
+    test.skip(!ready, 'Live member votes unavailable (API/tunnel down)')
+
+    const day = page.locator('button[aria-label*="20 martie 2026"]').first()
+    const painted = await day
+      .waitFor({ state: 'visible', timeout: 20000 })
+      .then(() => true)
+      .catch(() => false)
+    test.skip(!painted, 'Heatmap day cell not painted (API/tunnel down)')
+
+    // 2026-03-20 is a complete past day with exactly 280 votes recorded.
+    expect(await day.getAttribute('aria-label')).toContain('280 voturi')
+
+    await day.click()
+    await expect
+      .poll(() => {
+        const params = new URL(page.url()).searchParams
+        return params.get('from') === '2026-03-20' && params.get('to') === '2026-03-20'
+      })
+      .toBe(true)
+    await expect(page.getByText(/din\s+280\s+voturi/)).toBeVisible({ timeout: 20000 })
+  })
 })

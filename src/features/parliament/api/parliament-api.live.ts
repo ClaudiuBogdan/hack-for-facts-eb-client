@@ -27,6 +27,7 @@ import {
   type ParliamentMember,
   type ParliamentMemberProfile,
   type ParliamentMemberInitiativesList,
+  type ParliamentMemberVoteActivity,
   type ParliamentMemberVotingHistory,
   type ParliamentMembersList,
   type ParliamentMembersSearch,
@@ -46,6 +47,7 @@ import {
   PARLIAMENT_MEMBER_INITIATIVES_QUERY,
   PARLIAMENT_MEMBER_PROFILE_QUERY,
   PARLIAMENT_MEMBER_QUERY,
+  PARLIAMENT_MEMBER_VOTE_ACTIVITY_QUERY,
   PARLIAMENT_MEMBER_VOTES_QUERY,
   PARLIAMENT_MEMBERS_QUERY,
   PARLIAMENT_RESOLVE_QUERY,
@@ -62,6 +64,7 @@ import {
   parliamentMemberInitiativesResponseSchema,
   parliamentMemberProfileResponseSchema,
   parliamentMemberResponseSchema,
+  parliamentMemberVoteActivityResponseSchema,
   parliamentMemberVotesResponseSchema,
   parliamentMembersResponseSchema,
   parliamentResolveResponseSchema,
@@ -80,10 +83,12 @@ import {
   mapMember,
   mapMemberInitiatives,
   mapMemberProfile,
+  mapMemberVoteActivity,
   mapMemberVotingHistory,
   mapVoteDetail,
   mapVoteListItem,
 } from './graphql/parliament-mappers'
+import type { MemberVotesFilterInput } from '../lib/member-votes-filter'
 import {
   buildBillsFilter,
   buildBillsSort,
@@ -462,12 +467,18 @@ const MEMBER_VOTES_PAGE_SIZE = 50
 export async function fetchParliamentMemberVotingHistoryLive(
   memberId: string,
   after?: string,
+  filter?: MemberVotesFilterInput,
 ): Promise<ParliamentMemberVotingHistory | null> {
   const data = await graphqlQuery<unknown>(
     PARLIAMENT_MEMBER_VOTES_QUERY,
     // NOTE: omit `after` entirely on the first page — the server treats an
-    // explicit null cursor as malformed.
-    { mandateKey: memberId, first: MEMBER_VOTES_PAGE_SIZE, ...(after !== undefined && { after }) },
+    // explicit null cursor as malformed. Omit `filter` when there is none.
+    {
+      mandateKey: memberId,
+      first: MEMBER_VOTES_PAGE_SIZE,
+      ...(after !== undefined && { after }),
+      ...(filter ? { filter } : {}),
+    },
     { operationName: 'parliamentMemberVotes' },
   )
   const parsed = parliamentMemberVotesResponseSchema.parse(data)
@@ -479,6 +490,21 @@ export async function fetchParliamentMemberVotingHistoryLive(
     total,
     pageInfo,
   )
+}
+
+export async function fetchParliamentMemberVoteActivityLive(
+  memberId: string,
+  year: number,
+  filter?: MemberVotesFilterInput,
+): Promise<ParliamentMemberVoteActivity | null> {
+  const data = await graphqlQuery<unknown>(
+    PARLIAMENT_MEMBER_VOTE_ACTIVITY_QUERY,
+    { mandateKey: memberId, year, ...(filter ? { filter } : {}) },
+    { operationName: 'parliamentMemberVoteActivity' },
+  )
+  const parsed = parliamentMemberVoteActivityResponseSchema.parse(data)
+  if (!parsed.parliamentMember) return null
+  return mapMemberVoteActivity(parsed.parliamentMember.voteActivity)
 }
 
 // ── member profile ──────────────────────────────────────────────────────────

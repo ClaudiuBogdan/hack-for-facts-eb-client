@@ -342,6 +342,34 @@ export type ParliamentMemberVotingHistory = z.infer<
   typeof ParliamentMemberVotingHistorySchema
 >
 
+/** One day cell of the member vote-activity heatmap (server aggregate). */
+export const ParliamentMemberVoteActivityDaySchema = z.object({
+  /** ISO date (YYYY-MM-DD) of the sitting day. */
+  date: z.string(),
+  total: z.number().int().nonnegative(),
+  pentru: z.number().int().nonnegative(),
+  impotriva: z.number().int().nonnegative(),
+  abtinere: z.number().int().nonnegative(),
+  nuAVotat: z.number().int().nonnegative(),
+})
+export type ParliamentMemberVoteActivityDay = z.infer<
+  typeof ParliamentMemberVoteActivityDaySchema
+>
+
+/**
+ * Per-year vote-activity aggregate for a member (heatmap source). `days` carries
+ * only days with recorded votes; `availableYears` reflects the NON-date filters
+ * (the server bounds the range by `year`, so a date filter is never sent here).
+ */
+export const ParliamentMemberVoteActivitySchema = z.object({
+  year: z.number().int(),
+  days: z.array(ParliamentMemberVoteActivityDaySchema),
+  availableYears: z.array(z.number().int()),
+})
+export type ParliamentMemberVoteActivity = z.infer<
+  typeof ParliamentMemberVoteActivitySchema
+>
+
 export const MemberSpokenContributionSchema = z.object({
   contributionId: z.string(),
   heldAt: z.string(),
@@ -627,3 +655,36 @@ export type ParliamentVotesSearch = ParliamentSearch
 
 export const ParliamentBillsSearchSchema = ParliamentSearchSchema
 export type ParliamentBillsSearch = ParliamentSearch
+
+/**
+ * Search params for the member voting-history tab (heatmap + advanced filters).
+ * Lenient like `ParliamentSearchSchema` — every field `.optional().catch(undefined)`
+ * so a hand-edited/junk URL never throws, it just drops the bad facet.
+ *   - `from`/`to`  — inclusive vote-date range (YYYY-MM-DD).
+ *   - `choice`     — one or more of pentru|impotriva|abtinere|nu_a_votat.
+ *   - `outcome`    — division outcome (adoptat|respins).
+ *   - `session`    — proprie (member's own chamber) | comun (joint sitting).
+ *   - `an`         — heatmap year (drives the vote-activity aggregate).
+ */
+export const MemberVotesSearchSchema = z.object({
+  // Strict YYYY-MM-DD: a junk date (`?from=abc`) must fall to undefined here,
+  // not reach the chip/date formatters (RangeError: Invalid time value).
+  from: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional()
+    .catch(undefined),
+  to: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional()
+    .catch(undefined),
+  choice: z
+    .union([z.string(), z.array(z.string())])
+    .optional()
+    .catch(undefined),
+  outcome: z.enum(['adoptat', 'respins']).optional().catch(undefined),
+  session: z.enum(['proprie', 'comun']).optional().catch(undefined),
+  an: z.coerce.number().int().optional().catch(undefined),
+})
+export type MemberVotesSearch = z.infer<typeof MemberVotesSearchSchema>

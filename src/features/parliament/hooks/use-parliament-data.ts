@@ -20,11 +20,13 @@ import {
   fetchParliamentMember,
   fetchParliamentMemberInitiatives,
   fetchParliamentMemberProfile,
+  fetchParliamentMemberVoteActivity,
   fetchParliamentMemberVotingHistory,
   fetchParliamentMembers,
   fetchParliamentVoteDetail,
   fetchParliamentVotes,
 } from '../api/parliament-api'
+import type { MemberVotesFilterInput } from '../lib/member-votes-filter'
 
 const PARLIAMENT_QUERY_KEY = ['parliament'] as const
 
@@ -112,15 +114,40 @@ export function useParliamentVoteDetail(
   })
 }
 
-export function useParliamentMemberVotingHistory(memberId: string) {
+export function useParliamentMemberVotingHistory(
+  memberId: string,
+  filter?: MemberVotesFilterInput,
+) {
   return useInfiniteQuery({
-    queryKey: [...PARLIAMENT_QUERY_KEY, 'member-votes', memberId],
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'member-votes', memberId, filter ?? null],
     queryFn: ({ pageParam }) =>
-      fetchParliamentMemberVotingHistory(memberId, pageParam),
+      fetchParliamentMemberVotingHistory(memberId, pageParam, filter),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) =>
       lastPage?.hasNextPage && lastPage.endCursor ? lastPage.endCursor : undefined,
     enabled: Boolean(memberId),
+  })
+}
+
+export function useParliamentMemberVoteActivity(
+  memberId: string,
+  year: number,
+  filter?: MemberVotesFilterInput,
+) {
+  return useQuery({
+    queryKey: [
+      ...PARLIAMENT_QUERY_KEY,
+      'member-vote-activity',
+      memberId,
+      year,
+      filter ?? null,
+    ],
+    queryFn: () => fetchParliamentMemberVoteActivity(memberId, year, filter),
+    enabled: Boolean(memberId && year),
+    // NO placeholderData: the tab derives the default year from availableYears
+    // and the grid shows per-filter intensities — stale carry-over would show
+    // the wrong year/filter as if current. The aggregate is ~10ms; a brief
+    // skeleton beats silently-wrong cells.
   })
 }
 

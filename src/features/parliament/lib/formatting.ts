@@ -131,6 +131,21 @@ export function formatVoteDate(isoDate: string): string {
   }).format(new Date(isoDate))
 }
 
+/**
+ * Format ONLY the calendar date of an ISO value ("20 martie 2026"), pinned to
+ * UTC on the date part. Vote `heldAt` values are date-only timestamps stamped
+ * `T00:00:00+03:00` — formatting them in browser-local time shifts the day for
+ * users west of Bucharest (a UTC browser shows 19 March for a 20 March vote).
+ */
+export function formatVoteDayLong(isoDate: string): string {
+  return new Intl.DateTimeFormat('ro-RO', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(`${isoDate.slice(0, 10)}T00:00:00Z`))
+}
+
 export function formatSyncDate(isoDate: string): string {
   return new Intl.DateTimeFormat('ro-RO', {
     dateStyle: 'long',
