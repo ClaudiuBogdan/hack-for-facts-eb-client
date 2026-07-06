@@ -1,0 +1,99 @@
+{
+  "committees": [
+    {
+      "committeeKey": "camera_deputatilor:buget-finante|2024",
+      "chamber": "camera_deputatilor",
+      "name": "Comisia pentru buget, finanțe și bănci",
+      "legislature": "2024",
+      "committeeType": "permanenta",
+      "sourceUrl": "https://www.cdep.ro/co/comisii.dc?comi=1"
+    },
+    {
+      "committeeKey": "camera_deputatilor:aparare|2024",
+      "chamber": "camera_deputatilor",
+      "name": "Comisia pentru apărare, ordine publică și siguranță națională",
+      "legislature": "2024",
+      "committeeType": "permanenta",
+      "sourceUrl": "https://www.cdep.ro/co/comisii.dc?comi=2"
+    },
+    {
+      "committeeKey": "senat:sanatate|2024",
+      "chamber": "senat",
+      "name": "Comisia pentru sănătate publică",
+      "legislature": "2024",
+      "committeeType": "permanenta",
+      "sourceUrl": "https://www.senat.ro/ComisiiDetalii.aspx?Zi&ComisieID=3"
+    },
+    {
+      "committeeKey": "camera_deputatilor:buget|1990",
+      "chamber": "camera_deputatilor",
+      "name": "Comisia pentru buget și finanțe (1990)",
+      "legislature": "1990",
+      "committeeType": "permanenta",
+      "sourceUrl": "https://www.cdep.ro/co/comisii.dc?comi=90"
+    }
+  ],
+  "details": {
+    "camera_deputatilor:buget-finante|2024": {
+      "members": [
+        {
+          "membershipKey": "camera_deputatilor:buget-finante|2024#dep-001",
+          "member": {
+            "mandateKey": "dep-001",
+            "fullName": "Ana Nord",
+            "chamber": "camera_deputatilor",
+            "groupName": "PSD"
+          },
+          "role": "presedinte",
+          "joinedDate": "2024-12-20",
+          "isBureau": true,
+          "sourceUrl": "https://www.cdep.ro/co/comisii.dc?comi=1"
+        },
+        {
+          "membershipKey": "camera_deputatilor:buget-finante|2024#dep-002",
+          "member": {
+            "mandateKey": "dep-002",
+            "fullName": "Mihai Est",
+            "chamber": "camera_deputatilor",
+            "groupName": "PNL"
+          },
+          "role": "membru",
+          "joinedDate": "2024-12-20",
+          "sourceUrl": "https://www.cdep.ro/co/comisii.dc?comi=1"
+        },
+        {
+          "membershipKey": "camera_deputatilor:buget-finante|2024#hist-1",
+          "role": "membru",
+          "joinedDate": "2020-01-15",
+          "leftDate": "2024-12-01",
+          "sourceUrl": "https://www.cdep.ro/co/comisii.dc?comi=1"
+        }
+      ],
+      "linkedBillIds": [
+        "pl-x-2026-buget"
+      ],
+      "linkedBillsTotal": 8,
+      "meetingsCount": 42
+    },
+    "senat:sanatate|2024": {
+      "members": [
+        {
+          "membershipKey": "senat:sanatate|2024#sen-001",
+          "member": {
+            "mandateKey": "sen-001",
+            "fullName": "Irina Vest",
+            "chamber": "senat",
+            "groupName": "USR"
+          },
+          "role": "vicepresedinte",
+          "joinedDate": "2024-12-22",
+          "isBureau": true,
+          "sourceUrl": "https://www.senat.ro/ComisiiDetalii.aspx?Zi&ComisieID=3"
+        }
+      ],
+      "linkedBillIds": [],
+      "linkedBillsTotal": 0,
+      "meetingsCount": 11
+    }
+  }
+}

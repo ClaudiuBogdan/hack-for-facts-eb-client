@@ -1,4 +1,4 @@
-import { ScrollText, UsersRound, Vote } from 'lucide-react'
+import { Landmark, ScrollText, UsersRound, Vote } from 'lucide-react'
 import { ParliamentHubSection } from './parliament-hub-section'
 import {
   ParliamentResourceCard,
@@ -37,6 +37,14 @@ export function ParliamentHubResourcesSection() {
             description="Componența politică a celor două camere, grupurile parlamentare și membrii aleși."
             icon={UsersRound}
             link={{ to: '/parlament', search: { tab: 'grupuri' } }}
+          />
+        </ParliamentResourceGridItem>
+        <ParliamentResourceGridItem>
+          <ParliamentResourceCard
+            title="Comisii"
+            description="Comisiile permanente și speciale ale Camerei Deputaților și Senatului, cu componență și proiecte asociate."
+            icon={Landmark}
+            link={{ to: '/parlament/comisii' }}
           />
         </ParliamentResourceGridItem>
       </ParliamentResourceGrid>

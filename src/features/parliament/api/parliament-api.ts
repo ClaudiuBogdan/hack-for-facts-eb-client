@@ -19,6 +19,9 @@ import type {
   ParliamentBillsSearch,
   ParliamentChamber,
   ParliamentChamberComposition,
+  ParliamentCommittee,
+  ParliamentCommitteeDetail,
+  ParliamentDataFreshness,
   ParliamentGroup,
   ParliamentHubData,
   ParliamentMember,
@@ -57,6 +60,9 @@ import {
   fetchParliamentMemberProfileMock,
   fetchParliamentMemberVotingHistoryMock,
   fetchParliamentMembersMock,
+  fetchParliamentCommitteeMock,
+  fetchParliamentCommitteesMock,
+  fetchParliamentFreshnessMock,
   fetchParliamentVoteDetailMock,
   fetchParliamentVotesMock,
   getMemberJudetMapMock,
@@ -79,6 +85,9 @@ import {
   fetchParliamentMemberProfileLive,
   fetchParliamentMemberVotingHistoryLive,
   fetchParliamentMembersLive,
+  fetchParliamentCommitteeLive,
+  fetchParliamentCommitteesLive,
+  fetchParliamentFreshnessLive,
   fetchParliamentVoteDetailLive,
   fetchParliamentVotesLive,
 } from './parliament-api.live'
@@ -211,6 +220,35 @@ export async function fetchParliamentJudete(): Promise<
   return isParliamentMockEnabled()
     ? fetchParliamentJudeteMock()
     : fetchParliamentJudeteLive()
+}
+
+export async function fetchParliamentFreshness(): Promise<ParliamentDataFreshness> {
+  return isParliamentMockEnabled()
+    ? fetchParliamentFreshnessMock()
+    : fetchParliamentFreshnessLive()
+}
+
+export async function fetchParliamentCommittees(params: {
+  chamber?: string
+  legislature?: string
+  first?: number
+  after?: string
+} = {}): Promise<{
+  committees: ParliamentCommittee[]
+  hasNextPage: boolean
+  endCursor?: string
+}> {
+  return isParliamentMockEnabled()
+    ? fetchParliamentCommitteesMock(params)
+    : fetchParliamentCommitteesLive(params)
+}
+
+export async function fetchParliamentCommittee(
+  committeeKey: string,
+): Promise<ParliamentCommitteeDetail | null> {
+  return isParliamentMockEnabled()
+    ? fetchParliamentCommitteeMock(committeeKey)
+    : fetchParliamentCommitteeLive(committeeKey)
 }
 
 // ── synchronous getters (render-time) ───────────────────────────────────────

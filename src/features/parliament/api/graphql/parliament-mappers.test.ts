@@ -94,6 +94,46 @@ describe('mapMember', () => {
     expect(mapMember(abrudean).contact).toBeUndefined()
     expect(mapMember({ ...abrudean, profileUrl: 'not-a-url' }).contact).toBeUndefined()
   })
+
+  it('surfaces cvPdfUrl as contact.cvUrl (C3)', () => {
+    const member = mapMember({
+      ...abrudean,
+      cvPdfUrl: 'https://www.cdep.ro/cv/1.pdf',
+    })
+    expect(member.contact?.cvUrl).toBe('https://www.cdep.ro/cv/1.pdf')
+  })
+
+  it('maps committeeMemberships → committees (C2), keeping opaque keys', () => {
+    const member = mapMember({
+      ...abrudean,
+      committeeMemberships: [
+        {
+          membershipKey: 'senat:buget|2024#1:2024:1',
+          committee: {
+            committeeKey: 'senat:buget|2024',
+            chamber: 'senat',
+            name: 'Comisia pentru buget',
+            sourceUrl: 'https://www.senat.ro/c1',
+          },
+          member: null,
+          role: 'presedinte',
+          joinedDate: '2024-12-20',
+          leftDate: null,
+          isBureau: true,
+          sourceUrl: 'https://www.senat.ro/c1',
+        },
+      ],
+    })
+    expect(member.committees).toHaveLength(1)
+    expect(member.committees?.[0]).toMatchObject({
+      membershipKey: 'senat:buget|2024#1:2024:1',
+      role: 'presedinte',
+      isBureau: true,
+      committee: { committeeKey: 'senat:buget|2024', name: 'Comisia pentru buget' },
+    })
+    // No `member` ref on the member-side mapping.
+    expect(member.committees?.[0]?.member).toBeUndefined()
+  })
 })
 
 // ── golden anchor: Legea 423/2023 ↔ vote cdep:29892, 275/277 ────────────────
@@ -337,6 +377,70 @@ describe('mapBillDetail (golden anchor)', () => {
   })
 })
 
+// ── AI metadata (C1) ─────────────────────────────────────────────────────────
+
+const aiBillMetaBase = {
+  configKey: 'parliament_bill_metadata',
+  promptVersion: 'v3',
+  schemaVersion: 1,
+  model: 'glm-5.2',
+  validationStatus: 'valid',
+  confidence: 'high',
+  sourceUpdatedAt: null,
+  loadedAt: '2026-05-22T09:00:00+03:00',
+  privacyClass: 'public',
+  trustClass: 'ai_generated',
+  disclaimer: 'Rezumat generat automat; poate conține erori.',
+}
+
+describe('mapBillDetail aiMetadata (C1)', () => {
+  it('maps a standard bill aiMetadata and lifts valueClass to the model', () => {
+    const detail = mapBillDetail({
+      ...goldenBill,
+      aiMetadata: {
+        ...aiBillMetaBase,
+        summary: 'Aprobă OUG 21/2012.',
+        topic: 'Finanțe',
+        domains: ['Finanțe publice'],
+        keywords: ['oug', 'aprobare'],
+        valueClass: 'standard',
+      },
+    })
+    expect(detail.valueClass).toBe('standard')
+    expect(detail.aiMetadata).toMatchObject({
+      summary: 'Aprobă OUG 21/2012.',
+      topic: 'Finanțe',
+      domains: ['Finanțe publice'],
+      keywords: ['oug', 'aprobare'],
+      valueClass: 'standard',
+      disclaimer: 'Rezumat generat automat; poate conține erori.',
+      model: 'glm-5.2',
+    })
+  })
+
+  it('passes low_value through unchanged (render gate hides it)', () => {
+    const detail = mapBillDetail({
+      ...goldenBill,
+      aiMetadata: {
+        ...aiBillMetaBase,
+        summary: null,
+        topic: null,
+        domains: [],
+        keywords: [],
+        valueClass: 'low_value',
+      },
+    })
+    expect(detail.valueClass).toBe('low_value')
+    expect(detail.aiMetadata?.valueClass).toBe('low_value')
+  })
+
+  it('leaves aiMetadata/valueClass undefined when the bill has no enrichment', () => {
+    const detail = mapBillDetail(goldenBill)
+    expect(detail.aiMetadata).toBeUndefined()
+    expect(detail.valueClass).toBeUndefined()
+  })
+})
+
 describe('mapMemberVotingHistory', () => {
   it('maps choices and outcomes', () => {
     const history = mapMemberVotingHistory(
@@ -380,6 +484,55 @@ describe('mapMemberProfile', () => {
     expect(profile.spokenContributions[0]).toMatchObject({ contributionId: 's1', title: 'T' })
     expect(profile.writtenQuestions[0]).toMatchObject({ questionId: 'c1', status: 'raspuns' })
     expect(profile.interestDeclarations).toHaveLength(0)
+  })
+
+  it('maps control-item aiMetadata onto the written question (C1)', () => {
+    const profile = mapMemberProfile({
+      mandateKey: '1:2024:1',
+      fullName: 'Abrudean Mircea',
+      constituencyName: 'CLUJ',
+      legislature: '2024',
+      speeches: { total: 0, speeches: [] },
+      controlItems: {
+        total: 1,
+        items: [
+          {
+            itemKey: 'c1',
+            title: 'Q',
+            itemDate: '2026-04-22',
+            responseStatus: null,
+            aiMetadata: {
+              summary: 'Rezumat AI.',
+              policyDomains: ['Sănătate'],
+              issueTypes: ['solicitare'],
+              urgency: 'medie',
+              keywords: ['spital'],
+              configKey: 'parliament_control_item_metadata',
+              promptVersion: 'v2',
+              schemaVersion: 1,
+              model: 'glm-5.2',
+              validationStatus: 'valid',
+              confidence: 'medium',
+              sourceUpdatedAt: null,
+              loadedAt: '2026-04-23T09:00:00+03:00',
+              privacyClass: 'public',
+              trustClass: 'ai_generated',
+              disclaimer: 'Rezumat generat automat.',
+            },
+          },
+        ],
+      },
+      initiatives: { total: 0, initiatives: [] },
+      declarations: [],
+    })
+    expect(profile.writtenQuestions[0]?.aiMetadata).toMatchObject({
+      summary: 'Rezumat AI.',
+      policyDomains: ['Sănătate'],
+      issueTypes: ['solicitare'],
+      urgency: 'medie',
+      keywords: ['spital'],
+      disclaimer: 'Rezumat generat automat.',
+    })
   })
 })
 

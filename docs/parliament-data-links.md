@@ -33,7 +33,7 @@ correlates. ✅ verified correct, ⚠️ defect (see Defects).
 
 | # | Source → Target | Join key (real) | Card. | Layer(s) | Status |
 |---|---|---|---|---|---|
-| L1 | members → parliamentary_groups (roster) | `members.group_id` (FK) | N:1 | DB FK; API list; CLIENT groupId | ⚠️ D1 (client uses no-chamber group list) |
+| L1 | members → parliamentary_groups (roster) | `members.group_id` (FK) | N:1 | DB FK; API list; CLIENT groupId | ✅ D1 CLOSED (client fetches both chambers) |
 | L2 | members → group_membership_intervals (dated roster) | `mandate_key`+`group_id` (FK) | 1:N | DB FK; API `groupIntervals` | ✅ |
 | L3 | members → persons (cross-mandate identity) | `members.person_id` (FK) | N:1 | DB FK; API `person` | ✅ (5 persons hold 2 mandates) |
 | L4 | members → constituency/territory | `members.constituency_name` (TEXT, NOT siruta) | — | DB column; API filter | ✅ name-only; NO core.territory link (gap) |
@@ -47,7 +47,7 @@ correlates. ✅ verified correct, ⚠️ defect (see Defects).
 | L12 | bill → legal act (lineage) | `bill_act_links.target_act_id` → `legal.acts` (kernel loader) | N:1 | DB; API `actLinks`/`actLineage` (gated `resolution_status='linked'`) | ✅ status-gated; null-safe |
 | L13 | bill → bill_events / bill_documents | `bill_key` (FK) | 1:N | DB FK; API `events`/`documents` | ✅ |
 | L14 | vote → group breakdown / tally | aggregated from `vote_records.group_name` + `votes.{pentru..}` | — | API derives; CLIENT sums | ✅ breakdown sums to tally (verified 275/277) |
-| L15 | ballot → member | `vote_records.mandate_key` (FK) | N:1 | DB FK; API `ballot.member` | ✅ but CLIENT truncates list — ⚠️ D2 |
+| L15 | ballot → member | `vote_records.mandate_key` (FK) | N:1 | DB FK; API `ballot.member` | ✅ D2 CLOSED (client pages ballots past 200) |
 | L16 | act → related votes (marquee) | `bill_act_links` ⋈ `bill_vote_links` on `bill_key`, gated `linked` | N:M | API `parliamentActLineage` | ✅ |
 
 ### Key correctness notes
@@ -94,6 +94,11 @@ correlates. ✅ verified correct, ⚠️ defect (see Defects).
 ## Defects (ranked)
 
 ### D1 — {CLIENT} group list uses chamber-agnostic endpoint → wrong groupIds + hub counts
+**Status: CLOSED (2026-07-06).** `loadAllGroups()` now fetches BOTH chambers
+explicitly (`camera_deputatilor` + `senat`) and merges — the no-chamber aggregate
+is never used, so groupIds, per-chamber labels, hub counts (335/137), and the
+members group filter are all correct regardless of the server shape.
+
 `loadAllGroups()` calls `parliamentGroups(legislature:"2024")` with **no
 chamber**. The server intentionally returns that as a party aggregate ACROSS
 chambers: `groupId = name` ("PSD"), `chamber = ""`, `memberCount` = 133 (both
@@ -113,6 +118,11 @@ per-chamber ids, hub 335/137. Robust regardless of the concurrent server fix
 (#118), since it never relies on the no-chamber shape.
 
 ### D2 — {CLIENT} vote-detail ballot list truncated at 200
+**Status: CLOSED (2026-07-06).** `fetchParliamentVoteDetailLive` now pages the
+ballots connection on `pageInfo.endCursor` (200/page, capped at `MAX_BALLOTS`=500)
+and assembles the full `memberVotes` list before mapping — votes with >200 ballots
+(golden cdep:29892 = 277) render every member ballot.
+
 `fetchParliamentVoteDetailLive` requests `ballots(first: 700)`, but the server
 caps the ballots connection at **200/page** (`parliament-repo.ts:893`). **10,617
 votes have >200 ballots** (max 447; golden cdep:29892 has 277), so the
@@ -144,6 +154,15 @@ against the official public sources to catch internally-consistent-but-wrong dat
 | **Senate chamber size** | **137 mandate rows / 136 persons** | **134 seats** | ⚠️ SC-1 (+realignment) |
 
 ### SC-1 — {DB / scrapper} replacement mandates inflate the chamber-size count
+**Status: FIXED server-side (2026-07-06).** `parliament.members` now carries an
+`is_current` flag + `mandate_end_date` / `mandate_end_reason`, and the server
+exposes a `current: Boolean` argument on `parliamentGroups` / `parliamentMembers`
+(+ `isCurrent` on the member type). The client uses `current: true` for all
+composition/roster/headline surfaces (hub shows 330/134 current seats, AUR 90),
+while attribution/voting-history keep every mandate row. Historical replacement
+mandates are retained for vote attribution but no longer inflate the chamber size.
+The original analysis is kept below for context.
+
 `parliament.members` keeps a row per MANDATE, including superseded ones (a member
 resigns/is replaced → both the original and the substitute mandate_key are kept),
 with **no active/superseded flag** on the row (`attrs.status` / `mandate_end` /
@@ -165,3 +184,44 @@ historical rows for vote attribution. Flagged with both numbers per methodology.
 
 (All member/group/constituency LINKS themselves verified correct against the web;
 this is a count-semantics defect, not a wrong-link defect.)
+
+## Deferred follow-ups (2026-07-06 serving sweep)
+
+The serving-sweep pass (AI summaries, committees, contact CV, freshness) closed
+D1/D2/SC-1. The items below were consciously left for a later slice — each notes
+what is missing, the layer that owns it, and the concrete first step.
+
+- **L4 constituency → SIRUTA join.** Member constituency is a free-text județ
+  name (`constituencyName`), not linked to the `core.territory` SIRUTA hub, so
+  members can't be correlated to territory-keyed data (budgets, procurement by
+  county). *Owner: scrapper data-layer (+ a server resolver once keyed).* *First
+  step: add a `siruta` column on `parliament.members` populated via the existing
+  county-name → SIRUTA fold used elsewhere, then expose it on the member type.*
+
+- **Alegeri tab content (elections domain).** `/parlament/membri/$memberId/alegeri`
+  has no live backing — the electoral result (votes received, share, list
+  position) lives in the elections domain, which is not yet loaded/served.
+  *Owner: scrapper data-layer (elections) → server.* *First step: finish the
+  elections raw→prod slice, then add a `member.electionResult` field keyed on the
+  person spine + constituency + election date.*
+
+- **Member portraits + email/phone.** No official portrait image or direct
+  contact (email/phone) is captured; the contact tab shows only the profile URL
+  and now the CV PDF. *Owner: scrapper extraction lane.* *First step: add a
+  cdep/senat member-profile extraction lane that stores the portrait object
+  (MinIO, content-addressed) + any published contact fields, honoring the
+  privacy_class policy (personal contact = restricted, still stored).*
+
+- **Agendas / sittings API.** Committee meeting *agendas* and plenary *sittings*
+  are not exposed — `meetingsCount` is a scalar, with no drill-down to dates or
+  documents. *Owner: server (additive contract binding), reading current data.*
+  *First step: bind a `committee.meetings` / `sittings` connection behind the
+  additive-only contract (is_current=true only for the active legislature) and
+  wire a client sub-route.*
+
+- **Speech search (`PARLIAMENT_SPEECH_SEARCH_MODE=off`).** Full-text search over
+  plenary speeches is disabled server-side; the intervenții tab lists a member's
+  speeches but there is no cross-member speech search. *Owner: server + search
+  (OpenSearch/pgvector projection).* *First step: build the speech search-doc
+  projection, flip `PARLIAMENT_SPEECH_SEARCH_MODE=on`, and add a search surface
+  (deferred until the speech corpus is enrichment-complete).*

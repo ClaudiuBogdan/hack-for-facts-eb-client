@@ -13,6 +13,9 @@ import type {
   ParliamentBillsSearch,
   ParliamentChamber,
   ParliamentChamberComposition,
+  ParliamentCommittee,
+  ParliamentCommitteeDetail,
+  ParliamentDataFreshness,
   ParliamentGroup,
   ParliamentHubData,
   ParliamentMember,
@@ -31,6 +34,9 @@ import {
   ParliamentBillListSchema,
   ParliamentBillSummarySchema,
   ParliamentChamberCompositionSchema,
+  ParliamentCommitteeSchema,
+  ParliamentCommitteeDetailSchema,
+  ParliamentDataFreshnessSchema,
   ParliamentGroupSchema,
   ParliamentHubDataSchema,
   ParliamentMemberSchema,
@@ -42,6 +48,7 @@ import {
   ParliamentVotesListSchema,
 } from '@/schemas/parliament'
 
+import committeesData from '../mocks/committees.json'
 import groupsData from '../mocks/groups.json'
 import billDetailsData from '../mocks/bill-details.json'
 import billsData from '../mocks/bills.json'
@@ -601,4 +608,67 @@ export async function fetchParliamentJudeteMock(): Promise<
   ReadonlyArray<{ slug: string; name: string }>
 > {
   return judeteData as ReadonlyArray<{ slug: string; name: string }>
+}
+
+// ── data freshness ──────────────────────────────────────────────────────────
+
+export async function fetchParliamentFreshnessMock(): Promise<ParliamentDataFreshness> {
+  const latest = voteSummaries.reduce<string | null>((max, v) => {
+    return !max || v.heldAt > max ? v.heldAt : max
+  }, null)
+  return ParliamentDataFreshnessSchema.parse({
+    ...(latest ? { latestVoteDate: latest.slice(0, 10) } : {}),
+    lastLoadedAt: MOCK_LAST_SYNCED,
+  })
+}
+
+// ── committees ────────────────────────────────────────────────────────────
+
+type MockCommitteeDetailRaw = {
+  members: unknown[]
+  linkedBillIds: string[]
+  linkedBillsTotal: number
+  meetingsCount: number
+}
+
+const committeeList = committeesData.committees.map((c) =>
+  ParliamentCommitteeSchema.parse(c),
+)
+const committeeDetailsRaw = committeesData.details as Record<
+  string,
+  MockCommitteeDetailRaw
+>
+
+export async function fetchParliamentCommitteesMock(params: {
+  chamber?: string
+  legislature?: string
+  first?: number
+  after?: string
+}): Promise<{ committees: ParliamentCommittee[]; hasNextPage: boolean; endCursor?: string }> {
+  // Mirror the live filters: chamber + legislature (absent legislature → all
+  // legislatures, so the mock reflects the browse default vs "toate" behaviour).
+  const filtered = committeeList.filter(
+    (c) =>
+      (!params.chamber || c.chamber === params.chamber) &&
+      (!params.legislature || c.legislature === params.legislature),
+  )
+  return { committees: filtered, hasNextPage: false }
+}
+
+export async function fetchParliamentCommitteeMock(
+  committeeKey: string,
+): Promise<ParliamentCommitteeDetail | null> {
+  const base = committeeList.find((c) => c.committeeKey === committeeKey)
+  const detail = committeeDetailsRaw[committeeKey]
+  if (!base || !detail) return null
+  const linkedBills = detail.linkedBillIds
+    .map((id) => bills.find((b) => b.billId === id))
+    .filter((b): b is ParliamentBillSummary => Boolean(b))
+  return ParliamentCommitteeDetailSchema.parse({
+    ...base,
+    members: detail.members,
+    linkedBills,
+    linkedBillsTotal: detail.linkedBillsTotal,
+    meetingsCount: detail.meetingsCount,
+  })
 }

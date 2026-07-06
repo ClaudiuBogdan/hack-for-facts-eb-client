@@ -14,6 +14,7 @@ import {
   getBillTypeLabel,
 } from '../lib/bill-profile-data'
 import { billDetailCardClassName, billDetailSectionTitleClassName } from '../lib/bill-detail-theme'
+import { AiSummaryCard } from './ai-summary-card'
 import { ParliamentChamberMark } from './parliament-hub-panel'
 import { VoteChamberVoteCard } from './vote-chamber-vote-card'
 import {
@@ -36,8 +37,25 @@ export function BillDetailsTab({ bill }: Props) {
     .map((vote) => getParliamentVoteSummary(vote.chamber, vote.voteId))
     .filter((vote): vote is NonNullable<typeof vote> => vote !== undefined)
 
+  // AI summary shown only for meaningful bills (valueClass 'standard'); low_value
+  // bills (minor/technical) hide the card to avoid noise.
+  const ai = bill.aiMetadata
+  const showAiSummary = bill.valueClass === 'standard' && ai
+
   return (
     <div className="space-y-10">
+      {showAiSummary ? (
+        <AiSummaryCard
+          disclaimer={ai.disclaimer}
+          model={ai.model}
+          summary={ai.summary}
+          loadedAt={ai.loadedAt}
+          topic={ai.topic}
+          domains={ai.domains}
+          keywords={ai.keywords}
+        />
+      ) : null}
+
       <section>
         <h2 className={billDetailSectionTitleClassName}>Titlu lung</h2>
         <p className="mt-4 max-w-4xl text-base leading-7 text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">

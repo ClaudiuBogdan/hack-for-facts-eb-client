@@ -22,7 +22,11 @@ export function ParliamentPageFrame({ children, className }: Props) {
 }
 
 type BackLinkProps = {
-  readonly to: '/parlament' | '/parlament/membri/$memberId' | '/parlament/grupuri/$groupId'
+  readonly to:
+    | '/parlament'
+    | '/parlament/membri/$memberId'
+    | '/parlament/grupuri/$groupId'
+    | '/parlament/comisii'
   readonly label: string
   readonly search?: Record<string, string | undefined>
 }

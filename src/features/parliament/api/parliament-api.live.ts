@@ -19,6 +19,9 @@ import {
   type ParliamentBillsSearch,
   type ParliamentChamber,
   type ParliamentChamberComposition,
+  type ParliamentCommittee,
+  type ParliamentCommitteeDetail,
+  type ParliamentDataFreshness,
   type ParliamentGroup,
   type ParliamentHubData,
   type ParliamentMember,
@@ -35,6 +38,9 @@ import { GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
 import {
   PARLIAMENT_BILL_QUERY,
   PARLIAMENT_BILLS_QUERY,
+  PARLIAMENT_COMMITTEE_QUERY,
+  PARLIAMENT_COMMITTEES_QUERY,
+  PARLIAMENT_FRESHNESS_QUERY,
   PARLIAMENT_GROUP_MEMBERS_QUERY,
   PARLIAMENT_GROUPS_QUERY,
   PARLIAMENT_MEMBER_INITIATIVES_QUERY,
@@ -48,6 +54,9 @@ import {
   PARLIAMENT_VOTES_QUERY,
   parliamentBillResponseSchema,
   parliamentBillsResponseSchema,
+  parliamentCommitteeResponseSchema,
+  parliamentCommitteesResponseSchema,
+  parliamentFreshnessResponseSchema,
   parliamentGroupMembersResponseSchema,
   parliamentGroupsResponseSchema,
   parliamentMemberInitiativesResponseSchema,
@@ -64,6 +73,9 @@ import {
   mapBillDetail,
   mapBillRelatedVotes,
   mapBillSummary,
+  mapCommittee,
+  mapCommitteeDetail,
+  mapDataFreshness,
   mapGroup,
   mapMember,
   mapMemberInitiatives,
@@ -603,6 +615,73 @@ export async function resolveParliamentFilterLive(
     if (error instanceof GraphQLRequestError) return []
     throw error
   }
+}
+
+// ── data freshness ──────────────────────────────────────────────────────────
+
+export async function fetchParliamentFreshnessLive(): Promise<ParliamentDataFreshness> {
+  try {
+    const data = await graphqlQuery<unknown>(
+      PARLIAMENT_FRESHNESS_QUERY,
+      {},
+      { operationName: 'parliamentDataFreshness' },
+    )
+    const parsed = parliamentFreshnessResponseSchema.parse(data)
+    return mapDataFreshness(
+      parsed.parliamentDataFreshness ?? { latestVoteDate: null, lastLoadedAt: null },
+    )
+  } catch (error) {
+    // Freshness is a decorative header line — never fail the hub over it.
+    if (error instanceof GraphQLRequestError) return {}
+    throw error
+  }
+}
+
+// ── committees ────────────────────────────────────────────────────────────
+
+const DEFAULT_COMMITTEES_PAGE_SIZE = 60
+
+export async function fetchParliamentCommitteesLive(params: {
+  chamber?: string
+  legislature?: string
+  first?: number
+  after?: string
+}): Promise<{ committees: ParliamentCommittee[]; hasNextPage: boolean; endCursor?: string }> {
+  const data = await graphqlQuery<unknown>(
+    PARLIAMENT_COMMITTEES_QUERY,
+    {
+      ...(params.chamber ? { chamber: params.chamber } : {}),
+      ...(params.legislature ? { legislature: params.legislature } : {}),
+      first: params.first ?? DEFAULT_COMMITTEES_PAGE_SIZE,
+      ...(params.after ? { after: params.after } : {}),
+    },
+    { operationName: 'parliamentCommittees' },
+  )
+  const parsed = parliamentCommitteesResponseSchema.parse(data)
+  // Null root = server internal error (H2); degrade to an empty, non-paginating
+  // list rather than crashing the browse page.
+  const connection = parsed.parliamentCommittees
+  if (!connection) return { committees: [], hasNextPage: false }
+  const { edges, pageInfo } = connection
+  return {
+    committees: edges.map((e) => mapCommittee(e.node)),
+    hasNextPage: pageInfo.hasNextPage,
+    ...(pageInfo.endCursor ? { endCursor: pageInfo.endCursor } : {}),
+  }
+}
+
+export async function fetchParliamentCommitteeLive(
+  committeeKey: string,
+): Promise<ParliamentCommitteeDetail | null> {
+  const data = await graphqlQuery<unknown>(
+    PARLIAMENT_COMMITTEE_QUERY,
+    { committeeKey },
+    { operationName: 'parliamentCommittee' },
+  )
+  const parsed = parliamentCommitteeResponseSchema.parse(data)
+  return parsed.parliamentCommittee
+    ? mapCommitteeDetail(parsed.parliamentCommittee)
+    : null
 }
 
 // Re-export for the facade's chamber translation needs.

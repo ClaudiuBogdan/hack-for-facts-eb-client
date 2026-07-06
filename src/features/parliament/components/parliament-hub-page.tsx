@@ -1,5 +1,9 @@
 import { Skeleton } from '@/components/ui/skeleton'
-import { useParliamentHub } from '../hooks/use-parliament-data'
+import {
+  useParliamentFreshness,
+  useParliamentHub,
+} from '../hooks/use-parliament-data'
+import { ParliamentDataFreshnessLine } from './parliament-data-freshness-line'
 import { ParliamentHubBillsSection } from './parliament-hub-bills-section'
 import { ParliamentHubParlamentariSection } from './parliament-hub-parlamentari-section'
 import { ParliamentHubResourcesSection } from './parliament-hub-resources-section'
@@ -8,9 +12,11 @@ import { ParliamentRecentVotesSection } from './parliament-recent-votes-section'
 /** Hub overview — resource links, recent votes, bills, and parliamentary composition */
 export function ParliamentHubContent() {
   const { data, isLoading, isError } = useParliamentHub()
+  const { data: freshness } = useParliamentFreshness()
 
   return (
     <div className="flex flex-col gap-10">
+      <ParliamentDataFreshnessLine freshness={freshness} />
       <ParliamentHubResourcesSection />
 
       {isLoading ? (

@@ -45,6 +45,19 @@ function synthesizeProfile(member: ParliamentMember): ParliamentMemberProfile {
       title: `Situația investițiilor publice în ${member.judetName}`,
       status: 'raspuns',
       answerSummary: 'Instituțiile responsabile au transmis un calendar de implementare.',
+      aiMetadata: {
+        summary: `Întrebarea vizează stadiul investițiilor publice din ${member.judetName} și solicită un calendar de implementare.`,
+        policyDomains: ['Investiții publice'],
+        issueTypes: ['solicitare de informații'],
+        urgency: 'medie',
+        keywords: ['investiții', 'infrastructură', member.judetName],
+        model: 'glm-5.2',
+        loadedAt: '2026-04-23T09:00:00+03:00',
+        disclaimer:
+          'Acest rezumat a fost generat automat de un model AI și poate conține erori. Verificați textul oficial al întrebării.',
+        trustClass: 'ai_generated',
+        privacyClass: 'public',
+      },
     },
     {
       questionId: `${member.memberId}-wq-2`,

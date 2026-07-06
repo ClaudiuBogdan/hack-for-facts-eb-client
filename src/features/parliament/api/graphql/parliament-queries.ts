@@ -13,6 +13,98 @@ import { z } from 'zod'
 // Shared raw fragments
 // ---------------------------------------------------------------------------
 
+// Raw committee fragments (member.committeeMemberships + committee browse/detail).
+const rawCommitteeRefSchema = z.object({
+  committeeKey: z.string(),
+  chamber: z.string().nullable(),
+  name: z.string(),
+  sourceUrl: z.string().nullable(),
+})
+const rawCommitteeMemberRefSchema = z.object({
+  mandateKey: z.string().nullable(),
+  fullName: z.string().nullable(),
+  chamber: z.string().nullable(),
+  groupName: z.string().nullable(),
+})
+const rawCommitteeMembershipSchema = z.object({
+  membershipKey: z.string(),
+  committee: rawCommitteeRefSchema.nullable().optional(),
+  member: rawCommitteeMemberRefSchema.nullable().optional(),
+  role: z.string().nullable(),
+  joinedDate: z.string().nullable(),
+  leftDate: z.string().nullable(),
+  isBureau: z.boolean().nullable(),
+  sourceUrl: z.string(),
+})
+export type RawParliamentCommitteeMembership = z.infer<
+  typeof rawCommitteeMembershipSchema
+>
+
+// Raw AI-metadata fragments (bill + control item).
+const rawAiBillMetadataSchema = z.object({
+  summary: z.string().nullable(),
+  topic: z.string().nullable(),
+  domains: z.array(z.string()),
+  keywords: z.array(z.string()),
+  valueClass: z.string(),
+  configKey: z.string(),
+  promptVersion: z.string(),
+  schemaVersion: z.number(),
+  model: z.string(),
+  validationStatus: z.string(),
+  confidence: z.string().nullable(),
+  sourceUpdatedAt: z.string().nullable(),
+  loadedAt: z.string().nullable(),
+  privacyClass: z.string(),
+  trustClass: z.string(),
+  disclaimer: z.string(),
+})
+export type RawParliamentAiBillMetadata = z.infer<typeof rawAiBillMetadataSchema>
+
+const rawAiControlItemMetadataSchema = z.object({
+  summary: z.string().nullable(),
+  policyDomains: z.array(z.string()),
+  issueTypes: z.array(z.string()),
+  urgency: z.string().nullable(),
+  keywords: z.array(z.string()),
+  configKey: z.string(),
+  promptVersion: z.string(),
+  schemaVersion: z.number(),
+  model: z.string(),
+  validationStatus: z.string(),
+  confidence: z.string().nullable(),
+  sourceUpdatedAt: z.string().nullable(),
+  loadedAt: z.string().nullable(),
+  privacyClass: z.string(),
+  trustClass: z.string(),
+  disclaimer: z.string(),
+})
+export type RawParliamentAiControlItemMetadata = z.infer<
+  typeof rawAiControlItemMetadataSchema
+>
+
+/** GraphQL selection for the AI-bill-metadata block (reused across queries). */
+const AI_BILL_METADATA_FIELDS = /* GraphQL */ `
+  summary topic domains keywords valueClass
+  configKey promptVersion schemaVersion model
+  validationStatus confidence sourceUpdatedAt loadedAt
+  privacyClass trustClass disclaimer
+`
+
+/** GraphQL selection for the AI-control-item-metadata block. */
+const AI_CONTROL_ITEM_METADATA_FIELDS = /* GraphQL */ `
+  summary policyDomains issueTypes urgency keywords
+  configKey promptVersion schemaVersion model
+  validationStatus confidence sourceUpdatedAt loadedAt
+  privacyClass trustClass disclaimer
+`
+
+/** GraphQL selection for a committee membership row (member-side). */
+const COMMITTEE_MEMBERSHIP_FIELDS = /* GraphQL */ `
+  membershipKey role joinedDate leftDate isBureau sourceUrl
+  committee { committeeKey chamber name sourceUrl }
+`
+
 const rawTallySchema = z.object({
   pentru: z.number().nullable(),
   impotriva: z.number().nullable(),
@@ -100,6 +192,9 @@ const rawMemberSchema = z.object({
   // profileUrl is only requested by the single-member query (contact tab); the
   // list query omits it, so it defaults to null/undefined there.
   profileUrl: z.string().nullable().optional(),
+  // cvPdfUrl + committeeMemberships: single-member query only (like profileUrl).
+  cvPdfUrl: z.string().nullable().optional(),
+  committeeMemberships: z.array(rawCommitteeMembershipSchema).optional(),
   // SC-1 current-seat fields (optional — requested only where the UI needs the
   // active/superseded distinction; absent → undefined elsewhere).
   isCurrent: z.boolean().optional(),
@@ -131,6 +226,8 @@ export const PARLIAMENT_MEMBER_QUERY = /* GraphQL */ `
       constituencyName
       birthDate
       profileUrl
+      cvPdfUrl
+      committeeMemberships { ${COMMITTEE_MEMBERSHIP_FIELDS} }
       activityCounts { votes controlItems speeches initiatives declarations }
     }
   }
@@ -381,7 +478,10 @@ export const PARLIAMENT_MEMBER_PROFILE_QUERY = /* GraphQL */ `
       }
       controlItems(page: 1, pageSize: 10) {
         total
-        items { itemKey controlType title recipient itemDate responseStatus }
+        items {
+          itemKey controlType title recipient itemDate responseStatus
+          aiMetadata { ${AI_CONTROL_ITEM_METADATA_FIELDS} }
+        }
       }
       initiatives(page: 1, pageSize: 10) {
         total
@@ -406,6 +506,7 @@ const rawControlItemSchema = z.object({
   recipient: z.string().nullable(),
   itemDate: z.string().nullable(),
   responseStatus: z.string().nullable(),
+  aiMetadata: rawAiControlItemMetadataSchema.nullable().optional(),
 })
 const rawInitiativeSchema = z.object({
   initiativeKey: z.string(),
@@ -577,6 +678,7 @@ export const PARLIAMENT_BILL_QUERY = /* GraphQL */ `
         confidenceLabel
         legalAct { actId title actType }
       }
+      aiMetadata { ${AI_BILL_METADATA_FIELDS} }
     }
   }
 `
@@ -637,6 +739,7 @@ const rawBillDetailSchema = rawBillSummarySchema.extend({
   initiators: z.array(rawBillInitiatorSchema),
   relatedVotes: z.array(rawBillRelatedVoteSchema),
   actLinks: z.array(rawBillActLinkSchema),
+  aiMetadata: rawAiBillMetadataSchema.nullable().optional(),
 })
 export type RawParliamentBillDetail = z.infer<typeof rawBillDetailSchema>
 
@@ -671,4 +774,125 @@ export type RawParliamentResolveHit = z.infer<typeof rawResolveHitSchema>
 
 export const parliamentResolveResponseSchema = z.object({
   parliamentResolveFilter: z.array(rawResolveHitSchema),
+})
+
+// ---------------------------------------------------------------------------
+// Data freshness — parliamentDataFreshness
+// ---------------------------------------------------------------------------
+
+export const PARLIAMENT_FRESHNESS_QUERY = /* GraphQL */ `
+  query ParliamentDataFreshness {
+    parliamentDataFreshness { latestVoteDate lastLoadedAt }
+  }
+`
+
+export const parliamentFreshnessResponseSchema = z.object({
+  parliamentDataFreshness: z
+    .object({
+      latestVoteDate: z.string().nullable(),
+      lastLoadedAt: z.string().nullable(),
+    })
+    .nullable(),
+})
+
+// ---------------------------------------------------------------------------
+// Committees — parliamentCommittees(chamber, legislature, first, after)
+// ---------------------------------------------------------------------------
+
+export const PARLIAMENT_COMMITTEES_QUERY = /* GraphQL */ `
+  query ParliamentCommittees(
+    $chamber: String
+    $legislature: String
+    $first: Int
+    $after: String
+  ) {
+    parliamentCommittees(
+      chamber: $chamber
+      legislature: $legislature
+      first: $first
+      after: $after
+    ) {
+      edges {
+        cursor
+        node { committeeKey chamber name legislature committeeType sourceUrl }
+      }
+      pageInfo { hasNextPage endCursor }
+    }
+  }
+`
+
+const rawCommitteeNodeSchema = z.object({
+  committeeKey: z.string(),
+  chamber: z.string(),
+  name: z.string(),
+  legislature: z.string().nullable(),
+  committeeType: z.string().nullable(),
+  sourceUrl: z.string(),
+})
+export type RawParliamentCommittee = z.infer<typeof rawCommitteeNodeSchema>
+
+export const parliamentCommitteesResponseSchema = z.object({
+  // Root is NULLABLE per the SDL (H2: the server returns null on internal error
+  // rather than throwing); the live mapper maps null → a controlled empty list.
+  parliamentCommittees: z
+    .object({
+      edges: z.array(
+        z.object({ cursor: z.string(), node: rawCommitteeNodeSchema }),
+      ),
+      pageInfo: z.object({
+        hasNextPage: z.boolean(),
+        endCursor: z.string().nullable(),
+      }),
+    })
+    .nullable(),
+})
+
+// ---------------------------------------------------------------------------
+// Committee detail — parliamentCommittee(committeeKey)
+// ---------------------------------------------------------------------------
+
+export const PARLIAMENT_COMMITTEE_QUERY = /* GraphQL */ `
+  query ParliamentCommittee($committeeKey: ID!) {
+    parliamentCommittee(committeeKey: $committeeKey) {
+      committeeKey
+      chamber
+      name
+      legislature
+      committeeType
+      sourceUrl
+      members {
+        membershipKey role joinedDate leftDate isBureau sourceUrl
+        member { mandateKey fullName chamber groupName }
+      }
+      linkedBills {
+        billKey
+        plxNumber
+        plxYear
+        senateNumber
+        senateYear
+        title
+        finalLawNumber
+        finalLawYear
+        statusText
+        billType
+        lastEventDate
+      }
+      linkedBillsTotal
+      meetingsCount
+    }
+  }
+`
+
+const rawCommitteeDetailSchema = rawCommitteeNodeSchema.extend({
+  members: z.array(rawCommitteeMembershipSchema),
+  linkedBills: z.array(rawBillSummarySchema),
+  linkedBillsTotal: z.number(),
+  meetingsCount: z.number(),
+})
+export type RawParliamentCommitteeDetail = z.infer<
+  typeof rawCommitteeDetailSchema
+>
+
+export const parliamentCommitteeResponseSchema = z.object({
+  parliamentCommittee: rawCommitteeDetailSchema.nullable(),
 })

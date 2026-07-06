@@ -1,4 +1,4 @@
-import { Globe, IdCard, Mail, Phone } from 'lucide-react'
+import { FileText, Globe, IdCard, Mail, Phone } from 'lucide-react'
 import type { ParliamentMember } from '@/schemas/parliament'
 import { Button } from '@/components/ui/button'
 import {
@@ -29,7 +29,13 @@ function getOfficialChamberSite(member: ParliamentMember): {
 
 function hasContactDetails(member: ParliamentMember): boolean {
   const contact = member.contact
-  return Boolean(contact?.address || contact?.phone || contact?.email || contact?.website)
+  return Boolean(
+    contact?.address ||
+      contact?.phone ||
+      contact?.email ||
+      contact?.website ||
+      contact?.cvUrl,
+  )
 }
 
 /** Contact tab with UK Parliament-style notices and contact cards. */
@@ -135,6 +141,28 @@ export function MemberContactTab({ member }: Props) {
                   </span>
                   <span className="min-w-0 text-base leading-7 text-[#0b0c0c] underline underline-offset-4 dark:text-[var(--pnrr-fg)]">
                     {contact.website}
+                  </span>
+                </span>
+                <ParliamentCardChevron className="shrink-0" />
+              </a>
+            </div>
+          ) : null}
+
+          {contact?.cvUrl ? (
+            <div className="space-y-2">
+              <h3 className={memberDetailCardLabelClassName}>CV oficial (PDF)</h3>
+              <a
+                href={contact.cvUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${memberDetailContactCardClassName} flex items-center justify-between gap-4 p-5 transition-colors hover:bg-[#f8f8f8] sm:p-6 dark:hover:bg-[var(--pnrr-hover)]`}
+              >
+                <span className="flex min-w-0 items-center gap-4">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#f3f0ff] text-[#512178]">
+                    <FileText className="h-5 w-5" aria-hidden />
+                  </span>
+                  <span className="min-w-0 text-base leading-7 text-[#0b0c0c] underline underline-offset-4 dark:text-[var(--pnrr-fg)]">
+                    Descarcă CV-ul oficial (PDF)
                   </span>
                 </span>
                 <ParliamentCardChevron className="shrink-0" />

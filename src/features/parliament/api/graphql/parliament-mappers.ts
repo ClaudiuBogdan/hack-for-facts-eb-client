@@ -12,6 +12,9 @@ import {
   ParliamentBillDetailSchema,
   ParliamentBillSummarySchema,
   ParliamentChamberSchema,
+  ParliamentCommitteeDetailSchema,
+  ParliamentCommitteeSchema,
+  ParliamentDataFreshnessSchema,
   ParliamentGroupSchema,
   ParliamentMemberSchema,
   ParliamentMemberProfileSchema,
@@ -22,11 +25,17 @@ import {
   type BillCurrentLocation,
   type BillType,
   type MemberVoteChoice,
+  type ParliamentAiBillMetadata,
+  type ParliamentAiControlItemMetadata,
   type ParliamentBillDetail,
   type ParliamentBillRelatedVote,
   type ParliamentBillSummary,
   type ParliamentBillTimelineStep,
   type ParliamentChamber,
+  type ParliamentCommittee,
+  type ParliamentCommitteeDetail,
+  type ParliamentCommitteeMembership,
+  type ParliamentDataFreshness,
   type ParliamentGroup,
   type ParliamentMember,
   type ParliamentMemberProfile,
@@ -44,10 +53,15 @@ import {
 } from './parliament-translate'
 import { resolveGroupColor } from '../../lib/group-colors'
 import type {
+  RawParliamentAiBillMetadata,
+  RawParliamentAiControlItemMetadata,
   RawParliamentBallot,
   RawParliamentBillDetail,
   RawParliamentBillEvent,
   RawParliamentBillSummary,
+  RawParliamentCommittee,
+  RawParliamentCommitteeDetail,
+  RawParliamentCommitteeMembership,
   RawParliamentGroup,
   RawParliamentInitiative,
   RawParliamentMember,
@@ -134,14 +148,14 @@ export function mapMember(raw: RawParliamentMember): ParliamentMember {
   const { firstName, lastName } = splitFullName(raw.fullName)
   const constituency = raw.constituencyName?.trim() ?? ''
 
-  // The official cdep/senat profile page (server `profileUrl`) is surfaced as
-  // the member's `contact.website` so the contact tab's "Website" card renders
-  // it. Only a valid http(s) URL is accepted (the schema requires `.url()`).
-  const profileUrl = raw.profileUrl?.trim()
-  const contact =
-    profileUrl && /^https?:\/\//i.test(profileUrl)
-      ? { website: profileUrl }
-      : undefined
+  // The official cdep/senat profile page (`profileUrl`) → `contact.website`, and
+  // the official CV PDF (`cvPdfUrl`) → `contact.cvUrl`, so the contact tab
+  // renders them. Only valid http(s) URLs are kept (the schema requires `.url()`).
+  const contact = buildMemberContact(raw)
+
+  // Committee memberships are requested only by the single-member query; the
+  // list/roster shapes leave them undefined → an empty (omitted) committees list.
+  const committees = raw.committeeMemberships?.map(mapCommitteeMembership)
 
   return ParliamentMemberSchema.parse({
     memberId: raw.mandateKey,
@@ -153,8 +167,141 @@ export function mapMember(raw: RawParliamentMember): ParliamentMember {
     judetSlug: constituency ? foldSlug(constituency) : '',
     judetName: constituency,
     ...(contact ? { contact } : {}),
+    ...(committees && committees.length > 0 ? { committees } : {}),
     // mandate dates / role / photo are not on the live surface.
   })
+}
+
+function httpUrl(value: string | null | undefined): string | undefined {
+  const trimmed = value?.trim()
+  return trimmed && /^https?:\/\//i.test(trimmed) ? trimmed : undefined
+}
+
+function buildMemberContact(
+  raw: RawParliamentMember,
+): { website?: string; cvUrl?: string } | undefined {
+  const website = httpUrl(raw.profileUrl)
+  const cvUrl = httpUrl(raw.cvPdfUrl)
+  if (!website && !cvUrl) return undefined
+  return {
+    ...(website ? { website } : {}),
+    ...(cvUrl ? { cvUrl } : {}),
+  }
+}
+
+// ── committees ────────────────────────────────────────────────────────────
+
+/** Map one committee↔member link (populated from either the member or the
+ * committee side; keys are opaque and pass through untouched). */
+export function mapCommitteeMembership(
+  raw: RawParliamentCommitteeMembership,
+): ParliamentCommitteeMembership {
+  return {
+    membershipKey: raw.membershipKey,
+    ...(raw.committee
+      ? {
+          committee: {
+            committeeKey: raw.committee.committeeKey,
+            name: raw.committee.name,
+            ...(raw.committee.chamber ? { chamber: raw.committee.chamber } : {}),
+            ...(raw.committee.sourceUrl
+              ? { sourceUrl: raw.committee.sourceUrl }
+              : {}),
+          },
+        }
+      : {}),
+    ...(raw.member
+      ? {
+          member: {
+            ...(raw.member.mandateKey ? { mandateKey: raw.member.mandateKey } : {}),
+            ...(raw.member.fullName ? { fullName: raw.member.fullName } : {}),
+            ...(raw.member.chamber ? { chamber: raw.member.chamber } : {}),
+            ...(raw.member.groupName ? { groupName: raw.member.groupName } : {}),
+          },
+        }
+      : {}),
+    ...(raw.role ? { role: raw.role } : {}),
+    ...(raw.joinedDate ? { joinedDate: raw.joinedDate } : {}),
+    ...(raw.leftDate ? { leftDate: raw.leftDate } : {}),
+    ...(raw.isBureau != null ? { isBureau: raw.isBureau } : {}),
+    sourceUrl: raw.sourceUrl,
+  }
+}
+
+export function mapCommittee(raw: RawParliamentCommittee): ParliamentCommittee {
+  return ParliamentCommitteeSchema.parse({
+    committeeKey: raw.committeeKey,
+    chamber: raw.chamber,
+    name: raw.name,
+    ...(raw.legislature ? { legislature: raw.legislature } : {}),
+    ...(raw.committeeType ? { committeeType: raw.committeeType } : {}),
+    sourceUrl: raw.sourceUrl,
+  })
+}
+
+export function mapCommitteeDetail(
+  raw: RawParliamentCommitteeDetail,
+): ParliamentCommitteeDetail {
+  return ParliamentCommitteeDetailSchema.parse({
+    committeeKey: raw.committeeKey,
+    chamber: raw.chamber,
+    name: raw.name,
+    ...(raw.legislature ? { legislature: raw.legislature } : {}),
+    ...(raw.committeeType ? { committeeType: raw.committeeType } : {}),
+    sourceUrl: raw.sourceUrl,
+    members: raw.members.map(mapCommitteeMembership),
+    linkedBills: raw.linkedBills.map((b) => mapBillSummary(b)),
+    linkedBillsTotal: num(raw.linkedBillsTotal),
+    meetingsCount: num(raw.meetingsCount),
+  })
+}
+
+// ── data freshness ──────────────────────────────────────────────────────────
+
+export function mapDataFreshness(raw: {
+  latestVoteDate: string | null
+  lastLoadedAt: string | null
+}): ParliamentDataFreshness {
+  return ParliamentDataFreshnessSchema.parse({
+    ...(raw.latestVoteDate ? { latestVoteDate: raw.latestVoteDate } : {}),
+    ...(raw.lastLoadedAt ? { lastLoadedAt: raw.lastLoadedAt } : {}),
+  })
+}
+
+// ── AI metadata ─────────────────────────────────────────────────────────────
+
+export function mapBillAiMetadata(
+  raw: RawParliamentAiBillMetadata,
+): ParliamentAiBillMetadata {
+  return {
+    ...(raw.summary ? { summary: raw.summary } : {}),
+    ...(raw.topic ? { topic: raw.topic } : {}),
+    domains: raw.domains,
+    keywords: raw.keywords,
+    valueClass: raw.valueClass,
+    model: raw.model,
+    ...(raw.loadedAt ? { loadedAt: raw.loadedAt } : {}),
+    disclaimer: raw.disclaimer,
+    trustClass: raw.trustClass,
+    privacyClass: raw.privacyClass,
+  }
+}
+
+export function mapControlItemAiMetadata(
+  raw: RawParliamentAiControlItemMetadata,
+): ParliamentAiControlItemMetadata {
+  return {
+    ...(raw.summary ? { summary: raw.summary } : {}),
+    policyDomains: raw.policyDomains,
+    issueTypes: raw.issueTypes,
+    ...(raw.urgency ? { urgency: raw.urgency } : {}),
+    keywords: raw.keywords,
+    model: raw.model,
+    ...(raw.loadedAt ? { loadedAt: raw.loadedAt } : {}),
+    disclaimer: raw.disclaimer,
+    trustClass: raw.trustClass,
+    privacyClass: raw.privacyClass,
+  }
 }
 
 // ── votes ───────────────────────────────────────────────────────────────────
@@ -483,11 +630,17 @@ export function mapBillDetail(raw: RawParliamentBillDetail): ParliamentBillDetai
     ? `Devenit ${lawMilestone.actTitle ?? `Legea nr. ${lawMilestone.lawNumber}/${lawMilestone.lawYear ?? ''}`}.`
     : undefined
 
+  // AI-generated metadata; `valueClass` is lifted out for the summary-card gate.
+  const aiMetadata = raw.aiMetadata ? mapBillAiMetadata(raw.aiMetadata) : undefined
+
   return ParliamentBillDetailSchema.parse({
     ...summary,
     longTitle: raw.title ?? summary.title,
     summary: summaryText,
     initiator: billInitiator,
+    ...(aiMetadata
+      ? { aiMetadata, valueClass: aiMetadata.valueClass }
+      : {}),
     // Drop any document without an absolute URL — the UI schema requires
     // `.url()`, and one malformed link must not fail the whole bill page.
     documents: raw.documents
@@ -610,6 +763,7 @@ export function mapMemberProfile(raw: {
       title: string | null
       itemDate: string | null
       responseStatus: string | null
+      aiMetadata?: RawParliamentAiControlItemMetadata | null
     }>
   }
   initiatives: {
@@ -636,12 +790,16 @@ export function mapMemberProfile(raw: {
   }))
 
   // Control items (questions/interpellations) map to the "written questions"
-  // surface — responseStatus drives the answered/pending state.
+  // surface — responseStatus drives the answered/pending state; aiMetadata (when
+  // present) carries the AI summary shown in a collapsed <details> per item.
   const writtenQuestions = raw.controlItems.items.map((c) => ({
     questionId: c.itemKey,
     submittedAt: toIsoDate(c.itemDate, fallbackDate),
     title: c.title ?? '(fără titlu)',
     status: c.responseStatus ? ('raspuns' as const) : ('in_asteptare' as const),
+    ...(c.aiMetadata
+      ? { aiMetadata: mapControlItemAiMetadata(c.aiMetadata) }
+      : {}),
   }))
 
   const interestDeclarations = raw.declarations.map((d, i) => ({

@@ -40,8 +40,65 @@ export const ParliamentMemberContactSchema = z.object({
   phone: z.string().optional(),
   address: z.string().optional(),
   website: z.string().url().optional(),
+  /** Official CV document (PDF) published on cdep.ro / senat.ro, when present. */
+  cvUrl: z.string().url().optional(),
 })
 export type ParliamentMemberContact = z.infer<typeof ParliamentMemberContactSchema>
+
+// ── committees ───────────────────────────────────────────────────────────────
+
+/** A parliamentary committee (comisie) the member belongs to, or a browse row. */
+export const ParliamentCommitteeSchema = z.object({
+  committeeKey: z.string(),
+  /** GraphQL chamber token: 'camera_deputatilor' | 'senat'. */
+  chamber: z.string(),
+  name: z.string(),
+  legislature: z.string().optional(),
+  committeeType: z.string().optional(),
+  /** cdep.ro / senat.ro committee page — the source-traceability terminator. */
+  sourceUrl: z.string(),
+})
+export type ParliamentCommittee = z.infer<typeof ParliamentCommitteeSchema>
+
+/** A slim member reference on a committee roster row (committee-detail view). */
+export const ParliamentCommitteeMemberRefSchema = z.object({
+  /** mandateKey — deep-links to /parlament/membri/$memberId when present. */
+  mandateKey: z.string().optional(),
+  fullName: z.string().optional(),
+  chamber: z.string().optional(),
+  groupName: z.string().optional(),
+})
+export type ParliamentCommitteeMemberRef = z.infer<
+  typeof ParliamentCommitteeMemberRefSchema
+>
+
+/** A slim committee reference on a membership row (member-overview view). */
+export const ParliamentCommitteeRefSchema = z.object({
+  committeeKey: z.string(),
+  name: z.string(),
+  chamber: z.string().optional(),
+  sourceUrl: z.string().optional(),
+})
+export type ParliamentCommitteeRef = z.infer<typeof ParliamentCommitteeRefSchema>
+
+/**
+ * One committee↔member link. Populated from EITHER side: the member overview
+ * carries `committee`; the committee detail roster carries `member`. Keys are
+ * OPAQUE (contain ':' / '|') — never parse them, only URL-encode in route params.
+ */
+export const ParliamentCommitteeMembershipSchema = z.object({
+  membershipKey: z.string(),
+  committee: ParliamentCommitteeRefSchema.optional(),
+  member: ParliamentCommitteeMemberRefSchema.optional(),
+  role: z.string().optional(),
+  joinedDate: z.string().optional(),
+  leftDate: z.string().optional(),
+  isBureau: z.boolean().optional(),
+  sourceUrl: z.string(),
+})
+export type ParliamentCommitteeMembership = z.infer<
+  typeof ParliamentCommitteeMembershipSchema
+>
 
 export const ParliamentMemberSchema = z.object({
   memberId: z.string(),
@@ -57,8 +114,81 @@ export const ParliamentMemberSchema = z.object({
   role: z.string().optional(),
   photoUrl: z.string().url().optional(),
   contact: ParliamentMemberContactSchema.optional(),
+  /**
+   * Committee memberships (each carries the `committee` ref). Only the single
+   * member query requests these; the list/roster shapes leave it undefined.
+   */
+  committees: z.array(ParliamentCommitteeMembershipSchema).optional(),
 })
 export type ParliamentMember = z.infer<typeof ParliamentMemberSchema>
+
+// ── committee browse / detail ────────────────────────────────────────────────
+
+export const ParliamentCommitteeDetailSchema = ParliamentCommitteeSchema.extend({
+  /** Roster rows (each carries the `member` ref). */
+  members: z.array(ParliamentCommitteeMembershipSchema),
+  linkedBills: z.array(z.lazy(() => ParliamentBillSummarySchema)),
+  linkedBillsTotal: z.number().int().nonnegative(),
+  meetingsCount: z.number().int().nonnegative(),
+})
+export type ParliamentCommitteeDetail = z.infer<
+  typeof ParliamentCommitteeDetailSchema
+>
+
+export const ParliamentCommitteeListSchema = z.object({
+  committees: z.array(ParliamentCommitteeSchema),
+  hasNextPage: z.boolean(),
+  endCursor: z.string().optional(),
+})
+export type ParliamentCommitteeList = z.infer<typeof ParliamentCommitteeListSchema>
+
+// ── data freshness ───────────────────────────────────────────────────────────
+
+export const ParliamentDataFreshnessSchema = z.object({
+  latestVoteDate: z.string().optional(),
+  lastLoadedAt: z.string().optional(),
+})
+export type ParliamentDataFreshness = z.infer<typeof ParliamentDataFreshnessSchema>
+
+// ── AI-generated metadata (summaries + classification) ───────────────────────
+
+/**
+ * AI-derived metadata for a bill. Rendered as clearly-labelled generated content
+ * (never as authoritative fact); `disclaimer` is shown verbatim. `valueClass`
+ * gates whether the summary card is shown ('standard' vs 'low_value').
+ */
+export const ParliamentAiBillMetadataSchema = z.object({
+  summary: z.string().optional(),
+  topic: z.string().optional(),
+  domains: z.array(z.string()),
+  keywords: z.array(z.string()),
+  valueClass: z.string(),
+  model: z.string(),
+  loadedAt: z.string().optional(),
+  disclaimer: z.string(),
+  trustClass: z.string(),
+  privacyClass: z.string(),
+})
+export type ParliamentAiBillMetadata = z.infer<
+  typeof ParliamentAiBillMetadataSchema
+>
+
+/** AI-derived metadata for a control item (question/interpellation). */
+export const ParliamentAiControlItemMetadataSchema = z.object({
+  summary: z.string().optional(),
+  policyDomains: z.array(z.string()),
+  issueTypes: z.array(z.string()),
+  urgency: z.string().optional(),
+  keywords: z.array(z.string()),
+  model: z.string(),
+  loadedAt: z.string().optional(),
+  disclaimer: z.string(),
+  trustClass: z.string(),
+  privacyClass: z.string(),
+})
+export type ParliamentAiControlItemMetadata = z.infer<
+  typeof ParliamentAiControlItemMetadataSchema
+>
 
 export const ParliamentVoteTallySchema = z.object({
   pentru: z.number().int().nonnegative(),
@@ -223,6 +353,8 @@ export const MemberWrittenQuestionSchema = z.object({
   title: z.string(),
   status: z.enum(['raspuns', 'in_asteptare']),
   answerSummary: z.string().optional(),
+  /** AI-generated metadata (summary + classification), when the item has it. */
+  aiMetadata: ParliamentAiControlItemMetadataSchema.optional(),
 })
 export type MemberWrittenQuestion = z.infer<typeof MemberWrittenQuestionSchema>
 
@@ -434,6 +566,13 @@ export const ParliamentBillDetailSchema = ParliamentBillSummarySchema.extend({
   /** Becomes-law milestone for the hero card (null when the bill isn't a law). */
   lawMilestone: ParliamentBillLawMilestoneSchema.optional(),
   relatedVotes: z.array(ParliamentBillRelatedVoteSchema),
+  /**
+   * AI-generated bill metadata. `valueClass` is lifted out for the render gate
+   * ('standard' → show the AI summary card; 'low_value' → hide it). Both default
+   * absent when the bill has no enrichment.
+   */
+  aiMetadata: ParliamentAiBillMetadataSchema.optional(),
+  valueClass: z.string().optional(),
 })
 export type ParliamentBillDetail = z.infer<typeof ParliamentBillDetailSchema>
 

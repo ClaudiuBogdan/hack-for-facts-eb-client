@@ -18,6 +18,7 @@ import {
   MemberProfileChamberBadge,
   MemberProfilePartyBadge,
 } from './member-profile-card'
+import { MemberCommitteesSection } from './member-committees-section'
 
 type Props = {
   readonly member: ParliamentMember
@@ -94,6 +95,8 @@ export function MemberOverviewTab({ member }: Props) {
           />
         </div>
       </section>
+
+      <MemberCommitteesSection member={member} />
     </div>
   )
 }

@@ -9,6 +9,9 @@ import {
   fetchParliamentBillDetail,
   fetchParliamentBills,
   fetchParliamentChamberComposition,
+  fetchParliamentCommittee,
+  fetchParliamentCommittees,
+  fetchParliamentFreshness,
   fetchParliamentGroup,
   fetchParliamentGroupMembers,
   fetchParliamentGroups,
@@ -158,5 +161,30 @@ export function useParliamentBillDetail(billId: string) {
     queryKey: [...PARLIAMENT_QUERY_KEY, 'bill', billId],
     queryFn: () => fetchParliamentBillDetail(billId),
     enabled: Boolean(billId),
+  })
+}
+
+export function useParliamentFreshness() {
+  return useQuery({
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'freshness'],
+    queryFn: fetchParliamentFreshness,
+  })
+}
+
+export function useParliamentCommittees(params: {
+  chamber?: string
+  legislature?: string
+} = {}) {
+  return useQuery({
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'committees', params],
+    queryFn: () => fetchParliamentCommittees(params),
+  })
+}
+
+export function useParliamentCommittee(committeeKey: string) {
+  return useQuery({
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'committee', committeeKey],
+    queryFn: () => fetchParliamentCommittee(committeeKey),
+    enabled: Boolean(committeeKey),
   })
 }

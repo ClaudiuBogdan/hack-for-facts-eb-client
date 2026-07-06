@@ -27,7 +27,27 @@
         "submittedAt": "2026-05-10T09:00:00+03:00",
         "title": "Situația spitalului județean din Buzău",
         "status": "raspuns",
-        "answerSummary": "Guvernul a transmis un plan de investiții pe 24 luni."
+        "answerSummary": "Guvernul a transmis un plan de investiții pe 24 luni.",
+        "aiMetadata": {
+          "summary": "Întrebarea vizează stadiul investițiilor la spitalul județean din Buzău și solicită un calendar de finalizare.",
+          "policyDomains": [
+            "Sănătate publică"
+          ],
+          "issueTypes": [
+            "solicitare de informații"
+          ],
+          "urgency": "ridicată",
+          "keywords": [
+            "spital",
+            "investiții",
+            "Buzău"
+          ],
+          "model": "glm-5.2",
+          "loadedAt": "2026-05-11T09:00:00+03:00",
+          "disclaimer": "Acest rezumat a fost generat automat de un model AI și poate conține erori. Verificați textul oficial al întrebării.",
+          "trustClass": "ai_generated",
+          "privacyClass": "public"
+        }
       },
       {
         "questionId": "wq-002",

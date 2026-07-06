@@ -1,14 +1,209 @@
 [
-  {"memberId":"dep-001","firstName":"Ana","lastName":"Nord","chamber":"camera","groupId":"psd-camera","groupName":"PSD","judetSlug":"buzau","judetName":"Buzău","mandateStart":"2024-12-01","photoUrl":"https://images.unsplash.com/photo-1494790108377-be9c29b29330","contact":{"email":"ana.nord@example.com","phone":"+40 210 000 001","address":"Strada Parlamentului nr. 1, București","website":"https://www.cdep.ro/pls/parlam/structura2015.mp?idm=1&cam=2&leg=2024"}},
-  {"memberId":"dep-002","firstName":"Mihai","lastName":"Est","chamber":"camera","groupId":"aur-camera","groupName":"AUR","judetSlug":"bucuresti","judetName":"București","mandateStart":"2024-12-01","contact":{"email":"mihai.est@example.com"}},
-  {"memberId":"dep-003","firstName":"Irina","lastName":"Vest","chamber":"camera","groupId":"pnl-camera","groupName":"PNL","judetSlug":"bihor","judetName":"Bihor","mandateStart":"2024-12-01","contact":{"email":"irina.vest@example.com"}},
-  {"memberId":"dep-004","firstName":"Vlad","lastName":"Sud","chamber":"camera","groupId":"usr-camera","groupName":"USR","judetSlug":"bucuresti","judetName":"București","mandateStart":"2024-12-01","contact":{"email":"vlad.sud@example.com"}},
-  {"memberId":"dep-005","firstName":"Elena","lastName":"Munte","chamber":"camera","groupId":"udmr-camera","groupName":"UDMR","judetSlug":"harghita","judetName":"Harghita","mandateStart":"2024-12-01","contact":{"email":"elena.munte@example.com"}},
-  {"memberId":"dep-006","firstName":"Sorin","lastName":"Râu","chamber":"camera","groupId":"psd-camera","groupName":"PSD","judetSlug":"bucuresti","judetName":"București","mandateStart":"2024-12-01"},
-  {"memberId":"dep-009","firstName":"Clara","lastName":"Deal","chamber":"camera","groupId":"usr-camera","groupName":"USR","judetSlug":"cluj","judetName":"Cluj","mandateStart":"2024-12-01","contact":{"email":"clara.deal@example.com"}},
-  {"memberId":"dep-012","firstName":"Dorin","lastName":"Câmp","chamber":"camera","groupId":"pnl-camera","groupName":"PNL","judetSlug":"cluj","judetName":"Cluj","mandateStart":"2024-12-01","contact":{"email":"dorin.camp@example.com"}},
-  {"memberId":"sen-001","firstName":"Nadia","lastName":"Arin","chamber":"senat","groupId":"pnl-senat","groupName":"PNL","judetSlug":"bucuresti","judetName":"București","mandateStart":"2024-12-01","photoUrl":"https://images.unsplash.com/photo-1438761681033-6461ffad8d80","contact":{"email":"nadia.arin@example.com","website":"https://www.senat.ro/FisaSenator.aspx?ParlamentarID=1"}},
-  {"memberId":"sen-002","firstName":"Paul","lastName":"Frasin","chamber":"senat","groupId":"psd-senat","groupName":"PSD","judetSlug":"olt","judetName":"Olt","mandateStart":"2024-12-01"},
-  {"memberId":"sen-003","firstName":"Codrin","lastName":"Stejar","chamber":"senat","groupId":"aur-senat","groupName":"AUR","judetSlug":"bucuresti","judetName":"București","mandateStart":"2024-12-01"},
-  {"memberId":"sen-004","firstName":"Ioana","lastName":"Brad","chamber":"senat","groupId":"usr-senat","groupName":"USR","judetSlug":"timis","judetName":"Timiș","mandateStart":"2024-12-01","contact":{"email":"ioana.brad@example.com"}}
+  {
+    "memberId": "dep-001",
+    "firstName": "Ana",
+    "lastName": "Nord",
+    "chamber": "camera",
+    "groupId": "psd-camera",
+    "groupName": "PSD",
+    "judetSlug": "buzau",
+    "judetName": "Buzău",
+    "mandateStart": "2024-12-01",
+    "photoUrl": "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
+    "contact": {
+      "email": "ana.nord@example.com",
+      "phone": "+40 210 000 001",
+      "address": "Strada Parlamentului nr. 1, București",
+      "website": "https://www.cdep.ro/pls/parlam/structura2015.mp?idm=1&cam=2&leg=2024",
+      "cvUrl": "https://www.cdep.ro/cv/dep-001.pdf"
+    },
+    "committees": [
+      {
+        "membershipKey": "camera_deputatilor:buget-finante|2024#dep-001",
+        "committee": {
+          "committeeKey": "camera_deputatilor:buget-finante|2024",
+          "name": "Comisia pentru buget, finanțe și bănci",
+          "chamber": "camera_deputatilor",
+          "sourceUrl": "https://www.cdep.ro/co/comisii.dc?comi=1"
+        },
+        "role": "presedinte",
+        "joinedDate": "2024-12-20",
+        "isBureau": true,
+        "sourceUrl": "https://www.cdep.ro/co/comisii.dc?comi=1"
+      },
+      {
+        "membershipKey": "camera_deputatilor:aparare|2024#dep-001",
+        "committee": {
+          "committeeKey": "camera_deputatilor:aparare|2024",
+          "name": "Comisia pentru apărare, ordine publică și siguranță națională",
+          "chamber": "camera_deputatilor",
+          "sourceUrl": "https://www.cdep.ro/co/comisii.dc?comi=2"
+        },
+        "role": "membru",
+        "joinedDate": "2024-12-20",
+        "sourceUrl": "https://www.cdep.ro/co/comisii.dc?comi=2"
+      }
+    ]
+  },
+  {
+    "memberId": "dep-002",
+    "firstName": "Mihai",
+    "lastName": "Est",
+    "chamber": "camera",
+    "groupId": "aur-camera",
+    "groupName": "AUR",
+    "judetSlug": "bucuresti",
+    "judetName": "București",
+    "mandateStart": "2024-12-01",
+    "contact": {
+      "email": "mihai.est@example.com"
+    },
+    "committees": [
+      {
+        "membershipKey": "camera_deputatilor:buget-finante|2024#dep-002",
+        "committee": {
+          "committeeKey": "camera_deputatilor:buget-finante|2024",
+          "name": "Comisia pentru buget, finanțe și bănci",
+          "chamber": "camera_deputatilor",
+          "sourceUrl": "https://www.cdep.ro/co/comisii.dc?comi=1"
+        },
+        "role": "membru",
+        "joinedDate": "2024-12-20",
+        "sourceUrl": "https://www.cdep.ro/co/comisii.dc?comi=1"
+      }
+    ]
+  },
+  {
+    "memberId": "dep-003",
+    "firstName": "Irina",
+    "lastName": "Vest",
+    "chamber": "camera",
+    "groupId": "pnl-camera",
+    "groupName": "PNL",
+    "judetSlug": "bihor",
+    "judetName": "Bihor",
+    "mandateStart": "2024-12-01",
+    "contact": {
+      "email": "irina.vest@example.com"
+    }
+  },
+  {
+    "memberId": "dep-004",
+    "firstName": "Vlad",
+    "lastName": "Sud",
+    "chamber": "camera",
+    "groupId": "usr-camera",
+    "groupName": "USR",
+    "judetSlug": "bucuresti",
+    "judetName": "București",
+    "mandateStart": "2024-12-01",
+    "contact": {
+      "email": "vlad.sud@example.com"
+    }
+  },
+  {
+    "memberId": "dep-005",
+    "firstName": "Elena",
+    "lastName": "Munte",
+    "chamber": "camera",
+    "groupId": "udmr-camera",
+    "groupName": "UDMR",
+    "judetSlug": "harghita",
+    "judetName": "Harghita",
+    "mandateStart": "2024-12-01",
+    "contact": {
+      "email": "elena.munte@example.com"
+    }
+  },
+  {
+    "memberId": "dep-006",
+    "firstName": "Sorin",
+    "lastName": "Râu",
+    "chamber": "camera",
+    "groupId": "psd-camera",
+    "groupName": "PSD",
+    "judetSlug": "bucuresti",
+    "judetName": "București",
+    "mandateStart": "2024-12-01"
+  },
+  {
+    "memberId": "dep-009",
+    "firstName": "Clara",
+    "lastName": "Deal",
+    "chamber": "camera",
+    "groupId": "usr-camera",
+    "groupName": "USR",
+    "judetSlug": "cluj",
+    "judetName": "Cluj",
+    "mandateStart": "2024-12-01",
+    "contact": {
+      "email": "clara.deal@example.com"
+    }
+  },
+  {
+    "memberId": "dep-012",
+    "firstName": "Dorin",
+    "lastName": "Câmp",
+    "chamber": "camera",
+    "groupId": "pnl-camera",
+    "groupName": "PNL",
+    "judetSlug": "cluj",
+    "judetName": "Cluj",
+    "mandateStart": "2024-12-01",
+    "contact": {
+      "email": "dorin.camp@example.com"
+    }
+  },
+  {
+    "memberId": "sen-001",
+    "firstName": "Nadia",
+    "lastName": "Arin",
+    "chamber": "senat",
+    "groupId": "pnl-senat",
+    "groupName": "PNL",
+    "judetSlug": "bucuresti",
+    "judetName": "București",
+    "mandateStart": "2024-12-01",
+    "photoUrl": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80",
+    "contact": {
+      "email": "nadia.arin@example.com",
+      "website": "https://www.senat.ro/FisaSenator.aspx?ParlamentarID=1"
+    }
+  },
+  {
+    "memberId": "sen-002",
+    "firstName": "Paul",
+    "lastName": "Frasin",
+    "chamber": "senat",
+    "groupId": "psd-senat",
+    "groupName": "PSD",
+    "judetSlug": "olt",
+    "judetName": "Olt",
+    "mandateStart": "2024-12-01"
+  },
+  {
+    "memberId": "sen-003",
+    "firstName": "Codrin",
+    "lastName": "Stejar",
+    "chamber": "senat",
+    "groupId": "aur-senat",
+    "groupName": "AUR",
+    "judetSlug": "bucuresti",
+    "judetName": "București",
+    "mandateStart": "2024-12-01"
+  },
+  {
+    "memberId": "sen-004",
+    "firstName": "Ioana",
+    "lastName": "Brad",
+    "chamber": "senat",
+    "groupId": "usr-senat",
+    "groupName": "USR",
+    "judetSlug": "timis",
+    "judetName": "Timiș",
+    "mandateStart": "2024-12-01",
+    "contact": {
+      "email": "ioana.brad@example.com"
+    }
+  }
 ]

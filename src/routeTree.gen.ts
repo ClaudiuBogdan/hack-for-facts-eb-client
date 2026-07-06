@@ -79,6 +79,7 @@ import { Route as ParlamentVoturiIndexRouteImport } from './routes/parlament/vot
 import { Route as ParlamentProiecteIndexRouteImport } from './routes/parlament/proiecte/index'
 import { Route as ParlamentMembriIndexRouteImport } from './routes/parlament/membri/index'
 import { Route as ParlamentGrupuriIndexRouteImport } from './routes/parlament/grupuri/index'
+import { Route as ParlamentComisiiIndexRouteImport } from './routes/parlament/comisii/index'
 import { Route as MapsEditorIndexRouteImport } from './routes/maps/editor/index'
 import { Route as MapsDatasetsIndexRouteImport } from './routes/maps/datasets/index'
 import { Route as ClassificationsFunctionalIndexRouteImport } from './routes/classifications/functional/index'
@@ -91,6 +92,7 @@ import { Route as ProcurementContractsIdRouteImport } from './routes/procurement
 import { Route as ProcurementCategoriesCodeRouteImport } from './routes/procurement/categories/$code'
 import { Route as PrimarieCuiShareImageDotpngRouteImport } from './routes/primarie/$cui/share-image[.]png'
 import { Route as ParlamentGrupuriGroupIdRouteImport } from './routes/parlament/grupuri/$groupId'
+import { Route as ParlamentComisiiCommitteeKeyRouteImport } from './routes/parlament/comisii/$committeeKey'
 import { Route as OngUriSursaSnapshotIdRouteImport } from './routes/ong-uri.sursa.$snapshotId'
 import { Route as MapsPublicMapIdRouteImport } from './routes/maps/public/$mapId'
 import { Route as MapsEditorNewRouteImport } from './routes/maps/editor/new'
@@ -581,6 +583,13 @@ const ParlamentGrupuriIndexRoute = ParlamentGrupuriIndexRouteImport.update({
   path: '/parlament/grupuri/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ParlamentComisiiIndexRoute = ParlamentComisiiIndexRouteImport.update({
+  id: '/parlament/comisii/',
+  path: '/parlament/comisii/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/parlament/comisii/index.lazy').then((d) => d.Route),
+)
 const MapsEditorIndexRoute = MapsEditorIndexRouteImport.update({
   id: '/maps/editor/',
   path: '/maps/editor/',
@@ -673,6 +682,16 @@ const ParlamentGrupuriGroupIdRoute = ParlamentGrupuriGroupIdRouteImport.update({
 } as any).lazy(() =>
   import('./routes/parlament/grupuri/$groupId.lazy').then((d) => d.Route),
 )
+const ParlamentComisiiCommitteeKeyRoute =
+  ParlamentComisiiCommitteeKeyRouteImport.update({
+    id: '/parlament/comisii/$committeeKey',
+    path: '/parlament/comisii/$committeeKey',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/parlament/comisii/$committeeKey.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const OngUriSursaSnapshotIdRoute = OngUriSursaSnapshotIdRouteImport.update({
   id: '/sursa/$snapshotId',
   path: '/sursa/$snapshotId',
@@ -1261,6 +1280,7 @@ export interface FileRoutesByFullPath {
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
   '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
+  '/parlament/comisii/$committeeKey': typeof ParlamentComisiiCommitteeKeyRoute
   '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/procurement/categories/$code': typeof ProcurementCategoriesCodeRoute
@@ -1273,6 +1293,7 @@ export interface FileRoutesByFullPath {
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
   '/maps/datasets/': typeof MapsDatasetsIndexRoute
   '/maps/editor/': typeof MapsEditorIndexRoute
+  '/parlament/comisii/': typeof ParlamentComisiiIndexRoute
   '/parlament/grupuri/': typeof ParlamentGrupuriIndexRoute
   '/parlament/membri/': typeof ParlamentMembriIndexRoute
   '/parlament/proiecte/': typeof ParlamentProiecteIndexRoute
@@ -1394,6 +1415,7 @@ export interface FileRoutesByTo {
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
   '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
+  '/parlament/comisii/$committeeKey': typeof ParlamentComisiiCommitteeKeyRoute
   '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/procurement/categories/$code': typeof ProcurementCategoriesCodeRoute
@@ -1406,6 +1428,7 @@ export interface FileRoutesByTo {
   '/classifications/functional': typeof ClassificationsFunctionalIndexRoute
   '/maps/datasets': typeof MapsDatasetsIndexRoute
   '/maps/editor': typeof MapsEditorIndexRoute
+  '/parlament/comisii': typeof ParlamentComisiiIndexRoute
   '/parlament/grupuri': typeof ParlamentGrupuriIndexRoute
   '/parlament/membri': typeof ParlamentMembriIndexRoute
   '/parlament/proiecte': typeof ParlamentProiecteIndexRoute
@@ -1542,6 +1565,7 @@ export interface FileRoutesById {
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
   '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
+  '/parlament/comisii/$committeeKey': typeof ParlamentComisiiCommitteeKeyRoute
   '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/procurement/categories/$code': typeof ProcurementCategoriesCodeRoute
@@ -1554,6 +1578,7 @@ export interface FileRoutesById {
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
   '/maps/datasets/': typeof MapsDatasetsIndexRoute
   '/maps/editor/': typeof MapsEditorIndexRoute
+  '/parlament/comisii/': typeof ParlamentComisiiIndexRoute
   '/parlament/grupuri/': typeof ParlamentGrupuriIndexRoute
   '/parlament/membri/': typeof ParlamentMembriIndexRoute
   '/parlament/proiecte/': typeof ParlamentProiecteIndexRoute
@@ -1692,6 +1717,7 @@ export interface FileRouteTypes {
     | '/maps/editor/new'
     | '/maps/public/$mapId'
     | '/ong-uri/sursa/$snapshotId'
+    | '/parlament/comisii/$committeeKey'
     | '/parlament/grupuri/$groupId'
     | '/primarie/$cui/share-image.png'
     | '/procurement/categories/$code'
@@ -1704,6 +1730,7 @@ export interface FileRouteTypes {
     | '/classifications/functional/'
     | '/maps/datasets/'
     | '/maps/editor/'
+    | '/parlament/comisii/'
     | '/parlament/grupuri/'
     | '/parlament/membri/'
     | '/parlament/proiecte/'
@@ -1825,6 +1852,7 @@ export interface FileRouteTypes {
     | '/maps/editor/new'
     | '/maps/public/$mapId'
     | '/ong-uri/sursa/$snapshotId'
+    | '/parlament/comisii/$committeeKey'
     | '/parlament/grupuri/$groupId'
     | '/primarie/$cui/share-image.png'
     | '/procurement/categories/$code'
@@ -1837,6 +1865,7 @@ export interface FileRouteTypes {
     | '/classifications/functional'
     | '/maps/datasets'
     | '/maps/editor'
+    | '/parlament/comisii'
     | '/parlament/grupuri'
     | '/parlament/membri'
     | '/parlament/proiecte'
@@ -1972,6 +2001,7 @@ export interface FileRouteTypes {
     | '/maps/editor/new'
     | '/maps/public/$mapId'
     | '/ong-uri/sursa/$snapshotId'
+    | '/parlament/comisii/$committeeKey'
     | '/parlament/grupuri/$groupId'
     | '/primarie/$cui/share-image.png'
     | '/procurement/categories/$code'
@@ -1984,6 +2014,7 @@ export interface FileRouteTypes {
     | '/classifications/functional/'
     | '/maps/datasets/'
     | '/maps/editor/'
+    | '/parlament/comisii/'
     | '/parlament/grupuri/'
     | '/parlament/membri/'
     | '/parlament/proiecte/'
@@ -2089,12 +2120,14 @@ export interface RootRouteChildren {
   MapsEditorMapIdRoute: typeof MapsEditorMapIdRoute
   MapsEditorNewRoute: typeof MapsEditorNewRoute
   MapsPublicMapIdRoute: typeof MapsPublicMapIdRoute
+  ParlamentComisiiCommitteeKeyRoute: typeof ParlamentComisiiCommitteeKeyRoute
   ParlamentGrupuriGroupIdRoute: typeof ParlamentGrupuriGroupIdRoute
   StatisticiTeritoriiSirutaRoute: typeof StatisticiTeritoriiSirutaRoute
   ClassificationsEconomicIndexRoute: typeof ClassificationsEconomicIndexRoute
   ClassificationsFunctionalIndexRoute: typeof ClassificationsFunctionalIndexRoute
   MapsDatasetsIndexRoute: typeof MapsDatasetsIndexRoute
   MapsEditorIndexRoute: typeof MapsEditorIndexRoute
+  ParlamentComisiiIndexRoute: typeof ParlamentComisiiIndexRoute
   ParlamentGrupuriIndexRoute: typeof ParlamentGrupuriIndexRoute
   ParlamentMembriIndexRoute: typeof ParlamentMembriIndexRoute
   ParlamentProiecteIndexRoute: typeof ParlamentProiecteIndexRoute
@@ -2620,6 +2653,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ParlamentGrupuriIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/parlament/comisii/': {
+      id: '/parlament/comisii/'
+      path: '/parlament/comisii'
+      fullPath: '/parlament/comisii/'
+      preLoaderRoute: typeof ParlamentComisiiIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/maps/editor/': {
       id: '/maps/editor/'
       path: '/maps/editor'
@@ -2702,6 +2742,13 @@ declare module '@tanstack/react-router' {
       path: '/parlament/grupuri/$groupId'
       fullPath: '/parlament/grupuri/$groupId'
       preLoaderRoute: typeof ParlamentGrupuriGroupIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parlament/comisii/$committeeKey': {
+      id: '/parlament/comisii/$committeeKey'
+      path: '/parlament/comisii/$committeeKey'
+      fullPath: '/parlament/comisii/$committeeKey'
+      preLoaderRoute: typeof ParlamentComisiiCommitteeKeyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ong-uri/sursa/$snapshotId': {
@@ -3592,12 +3639,14 @@ const rootRouteChildren: RootRouteChildren = {
   MapsEditorMapIdRoute: MapsEditorMapIdRoute,
   MapsEditorNewRoute: MapsEditorNewRoute,
   MapsPublicMapIdRoute: MapsPublicMapIdRoute,
+  ParlamentComisiiCommitteeKeyRoute: ParlamentComisiiCommitteeKeyRoute,
   ParlamentGrupuriGroupIdRoute: ParlamentGrupuriGroupIdRoute,
   StatisticiTeritoriiSirutaRoute: StatisticiTeritoriiSirutaRoute,
   ClassificationsEconomicIndexRoute: ClassificationsEconomicIndexRoute,
   ClassificationsFunctionalIndexRoute: ClassificationsFunctionalIndexRoute,
   MapsDatasetsIndexRoute: MapsDatasetsIndexRoute,
   MapsEditorIndexRoute: MapsEditorIndexRoute,
+  ParlamentComisiiIndexRoute: ParlamentComisiiIndexRoute,
   ParlamentGrupuriIndexRoute: ParlamentGrupuriIndexRoute,
   ParlamentMembriIndexRoute: ParlamentMembriIndexRoute,
   ParlamentProiecteIndexRoute: ParlamentProiecteIndexRoute,
@@ -3612,3 +3661,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
