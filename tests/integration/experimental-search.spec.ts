@@ -48,13 +48,14 @@ test.describe('Experimental entity search — desktop', () => {
 
     // company → internal /companies/$cui (by cuis[0])
     await expect(page.locator('a[href="/companies/2816464"]')).toBeVisible()
-    // public_enterprise → internal /entities/$cui (by cuis[0])
-    await expect(page.locator('a[href="/entities/10020943"]')).toBeVisible()
-    // legal_act + procurement_contract → external (new tab)
-    await expect(listbox.locator('a[target="_blank"]')).toHaveCount(2)
-    await expect(
-      listbox.locator('a[target="_blank"][rel*="noopener"]').first(),
-    ).toBeVisible()
+    // public_enterprise → internal /intreprinderi-publice/$cui (by cuis[0])
+    await expect(page.locator('a[href="/intreprinderi-publice/10020943"]')).toBeVisible()
+    // legal_act + procurement_contract → internal doc-id routes (95a6c334 /
+    // f2632f6d moved them off external URLs); nothing in this fixture opens a
+    // new tab.
+    await expect(listbox.locator('a[href^="/legislatie/acte/"]')).toHaveCount(1)
+    await expect(listbox.locator('a[href^="/procurement/contracts/"]')).toHaveCount(1)
+    await expect(listbox.locator('a[target="_blank"]')).toHaveCount(0)
 
     // titles render as plain text
     await expect(page.getByText('DEDEMAN SRL')).toBeVisible()

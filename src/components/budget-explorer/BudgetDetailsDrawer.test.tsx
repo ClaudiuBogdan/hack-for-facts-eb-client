@@ -206,8 +206,8 @@ describe('BudgetDetailsDrawer', () => {
         <BudgetDetailsDrawer {...defaultProps} onOpenChange={onOpenChange} />
       )
 
-      // The Sheet component has a close button
-      const closeButton = screen.getByRole('button', { name: /close/i })
+      // The Sheet close button's accessible name is the i18n default (ro: "Închide").
+      const closeButton = screen.getByRole('button', { name: /închide|close/i })
       closeButton.click()
 
       expect(onOpenChange).toHaveBeenCalled()
