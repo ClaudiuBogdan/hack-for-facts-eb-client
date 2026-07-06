@@ -29,9 +29,19 @@ vi.mock('@lingui/react/macro', () => ({
   Trans: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }))
 
-vi.mock('@lingui/core/macro', () => ({
-  t: (strings: TemplateStringsArray) => strings[0],
-}))
+vi.mock('@lingui/core/macro', () => {
+  const macroText = (strings: TemplateStringsArray, ...values: unknown[]) =>
+    strings.reduce(
+      (text, part, index) =>
+        `${text}${part}${index < values.length ? String(values[index]) : ''}`,
+      ''
+    )
+
+  return {
+    t: macroText,
+    msg: macroText,
+  }
+})
 
 // Mock all chart type implementations
 // We mock these to isolate the ChartRenderer's routing logic

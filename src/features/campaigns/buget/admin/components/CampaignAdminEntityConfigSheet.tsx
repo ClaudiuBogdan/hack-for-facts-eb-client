@@ -579,7 +579,10 @@ export function CampaignAdminEntityConfigSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
+      <SheetContent
+        closeLabel={t`Close`}
+        className="w-full overflow-y-auto sm:max-w-xl"
+      >
         <SheetHeader className="space-y-2 border-b border-border/60 pb-4">
           <SheetTitle>{entityTitle}</SheetTitle>
           <SheetDescription>

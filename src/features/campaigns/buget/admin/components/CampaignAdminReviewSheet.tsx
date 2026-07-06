@@ -570,6 +570,7 @@ export function CampaignAdminReviewSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
+        closeLabel={t`Close`}
         className="w-full overflow-y-auto border-l border-border/70 bg-background px-0 sm:max-w-3xl"
       >
         {item === null ? null : (

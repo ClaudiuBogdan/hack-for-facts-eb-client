@@ -46,7 +46,10 @@ export function CampaignAdminInstitutionThreadSheet({
 }: CampaignAdminInstitutionThreadSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full overflow-y-auto sm:max-w-4xl">
+      <SheetContent
+        closeLabel={t`Close`}
+        className="w-full overflow-y-auto sm:max-w-4xl"
+      >
         <SheetHeader className="space-y-2 border-b border-border/60 pb-4">
           <SheetTitle>{thread?.institutionEmail ?? t`Institution thread`}</SheetTitle>
           <SheetDescription>
