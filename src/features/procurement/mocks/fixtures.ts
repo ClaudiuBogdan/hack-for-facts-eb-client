@@ -766,7 +766,6 @@ function buildContractDetail(
         summary.procedureId === procedureSummary.id ? procedureSummary : null,
       contracts: [],
       modifications,
-      moneyFlowId: summary.id === 'contract-key-001' ? 'flow-001' : null,
       duplicates:
         summary.id === 'contract-key-001'
           ? [{ sourceSystem: 'seap_contracts', id: 'contract-key-001-seap-mirror' }]
@@ -789,7 +788,6 @@ function buildDirectAcquisitionDetail(
       procedure: null,
       contracts: [],
       modifications: [],
-      moneyFlowId: null,
       duplicates: [],
       perLotWinners: null,
       ted: null,
@@ -819,7 +817,6 @@ const procedureDetail: ProcurementRecordDetail<
       (c) => c.procedureId === procedureSummary.id,
     ),
     modifications: [],
-    moneyFlowId: 'flow-001',
     duplicates: [],
     perLotWinners: null, // gated (lane not served)
     ted: null, // gated (lane not served)

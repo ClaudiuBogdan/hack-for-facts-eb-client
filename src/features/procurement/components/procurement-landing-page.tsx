@@ -43,6 +43,10 @@ const PROCUREMENT_SEARCH_DOC_TYPES = [
   'procurement_procedure',
 ] as const
 
+function countOrDash(count: number | null): string {
+  return count === null ? '—' : formatFlowCount(count)
+}
+
 export function ProcurementLandingPage() {
   const { data, isLoading, error } = useProcurementLanding()
 
@@ -98,25 +102,25 @@ function ProcurementLandingContent({
       >
         <MetricCard
           label={t`Achiziții directe`}
-          value={formatFlowCount(data.headline.directAcquisitionsCount)}
+          value={countOrDash(data.headline.directAcquisitionsCount)}
           hint={t`număr de înregistrări canonice`}
           status="mock"
         />
         <MetricCard
           label={t`Contracte`}
-          value={formatFlowCount(data.headline.contractsCount)}
+          value={countOrDash(data.headline.contractsCount)}
           hint={t`contracte și atribuiri servite`}
           status="mock"
         />
         <MetricCard
           label={t`Instituții`}
-          value={formatFlowCount(data.headline.buyersCount)}
+          value={countOrDash(data.headline.buyersCount)}
           hint={t`autorități cumpărătoare`}
           status="mock"
         />
         <MetricCard
           label={t`Firme`}
-          value={formatFlowCount(data.headline.suppliersCount)}
+          value={countOrDash(data.headline.suppliersCount)}
           hint={t`furnizori identificați`}
           status="mock"
         />

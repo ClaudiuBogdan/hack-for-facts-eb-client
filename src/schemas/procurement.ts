@@ -3,10 +3,11 @@ import { z } from 'zod'
 /**
  * Procurement domain UI-boundary schemas.
  *
- * Shapes mirror the server `procurement` GraphQL DTOs (see
- * docs/procurement-prod-schema-reference.md). The live adapter maps GraphQL
- * responses to these types; mocks use them directly. Going live is a near
- * pass-through swap.
+ * Shapes mirror the procurement GraphQL contract the client is built against
+ * (docs/design/procurement/graphql-api-spec.md; prod ground truth in
+ * docs/procurement-prod-schema-reference.md). The live adapter
+ * (features/procurement/api/procurement-api.live.ts) Zod-parses raw GraphQL
+ * responses and maps them onto these types; mocks use them directly.
  *
  * Conventions:
  * - **Money is flat** on each record (no nested money object): `valueRon` /
@@ -377,11 +378,13 @@ export const procurementLandingSchema = z.object({
   headline: z.object({
     /** RON sum decimal string, or null when not summable. */
     totalValueRon: decimalStringSchema.nullable(),
-    directAcquisitionsCount: z.number(),
-    contractsCount: z.number(),
-    buyersCount: z.number(),
-    suppliersCount: z.number(),
-    recordsCount: z.number(),
+    // Counts are nullable so an unknown count stays representable ("—"),
+    // never fabricated as 0.
+    directAcquisitionsCount: z.number().nullable(),
+    contractsCount: z.number().nullable(),
+    buyersCount: z.number().nullable(),
+    suppliersCount: z.number().nullable(),
+    recordsCount: z.number().nullable(),
   }),
   topAuthorities: z.array(topPartyRowSchema),
   topSuppliers: z.array(topPartyRowSchema),
@@ -415,7 +418,6 @@ export const procurementRecordDetailSchema = <T extends z.ZodTypeAny>(
       procedure: procedureRecordSummarySchema.nullable(),
       contracts: z.array(contractRecordSummarySchema),
       modifications: z.array(contractModificationSchema),
-      moneyFlowId: z.string().nullable(),
       duplicates: z.array(
         z.object({
           sourceSystem: procurementSourceSystemSchema,
@@ -450,7 +452,6 @@ export type ProcurementRecordDetail<T> = {
     readonly procedure: ProcedureRecordSummary | null
     readonly contracts: readonly ContractRecordSummary[]
     readonly modifications: readonly ContractModification[]
-    readonly moneyFlowId: string | null
     readonly duplicates: ReadonlyArray<{
       readonly sourceSystem: ProcurementSourceSystem
       readonly id: string
@@ -518,18 +519,40 @@ export const supplierProcurementSliceSchema = z.object({
   categoryBreakdown: z.array(categoryRowSchema),
   revenueOverTime: z.array(monthlyPointSchema),
   recentRecords: z.array(procurementRecordSummarySchema),
-  crossDomain: z.object({
-    pnrr: z.boolean(),
-    publicInvestments: z.boolean(),
-    litigation: z.boolean(),
-    moneyFlows: z.boolean(),
-  }),
+  /**
+   * Presence flags for other transparency domains. The procurement API has no
+   * backing for these — live serves `null` ("unknown", chips hidden) rather
+   * than fabricated booleans; mocks may populate them.
+   */
+  crossDomain: z
+    .object({
+      pnrr: z.boolean(),
+      publicInvestments: z.boolean(),
+      litigation: z.boolean(),
+      moneyFlows: z.boolean(),
+    })
+    .nullable(),
   gate: capabilityGateSchema,
 })
 
 export type SupplierProcurementSlice = z.infer<
   typeof supplierProcurementSliceSchema
 >
+
+/**
+ * One cursor page of a supplier's canonical flow records (contracts + direct
+ * acquisitions, date desc) — backs the "load more" list embedded in company
+ * profiles.
+ */
+export const supplierRecordsPageSchema = z.object({
+  records: z.array(procurementRecordSummarySchema),
+  /** Null = unknown / too-large; UI shows '1000+'. */
+  total: z.number().nullable(),
+  hasNextPage: z.boolean(),
+  endCursor: z.string().nullable(),
+})
+
+export type SupplierRecordsPage = z.infer<typeof supplierRecordsPageSchema>
 
 // ---------------------------------------------------------------------------
 // Generic data-status / provenance (shared layer, defined here so adapters

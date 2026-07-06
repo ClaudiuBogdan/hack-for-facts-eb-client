@@ -155,11 +155,14 @@ function SupplierSliceContent({
 }
 
 function CrossDomainChips({ slice }: { readonly slice: SupplierProcurementSlice }) {
+  const crossDomain = slice.crossDomain
+  // Null = unknown (live API has no backing) — hide the chips, never fabricate.
+  if (crossDomain === null) return null
   const chips: ReadonlyArray<{ readonly label: string; readonly available: boolean; readonly to?: string; readonly cui?: string | null }> = [
-    { label: t`PNRR`, available: slice.crossDomain.pnrr, to: '/pnrr', cui: slice.supplierCui },
-    { label: t`Investiții publice`, available: slice.crossDomain.publicInvestments },
-    { label: t`Litigii`, available: slice.crossDomain.litigation },
-    { label: t`Fluxuri de bani`, available: slice.crossDomain.moneyFlows },
+    { label: t`PNRR`, available: crossDomain.pnrr, to: '/pnrr', cui: slice.supplierCui },
+    { label: t`Investiții publice`, available: crossDomain.publicInvestments },
+    { label: t`Litigii`, available: crossDomain.litigation },
+    { label: t`Fluxuri de bani`, available: crossDomain.moneyFlows },
   ]
   const available = chips.filter((c) => c.available)
   if (available.length === 0) return null

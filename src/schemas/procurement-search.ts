@@ -12,6 +12,12 @@ import {
  * Route search parser for `/procurement/search` (and reused as a subset by
  * `/procurement/categories/$code` and the deferred `/procurement/semnale`).
  *
+ * Follows the parliament search-schema idiom: every field is
+ * `.optional().catch(undefined)` so a hand-edited or junk URL never throws —
+ * the bad facet silently drops. Defaults live outside the schema
+ * (`PROCUREMENT_SEARCH_DEFAULTS` + `withProcurementSearchDefaults`) so clean
+ * URLs stay minimal.
+ *
  * Reserved/ignored params: `county`, `region` (buyer-territory dimensions
  * that the v1 capability gate does not allow as authoritative filters;
  * parsed and ignored so deep links do not error — the UI surfaces the
@@ -23,11 +29,32 @@ const DEFAULT_SORT = 'date_desc' as const
 const DEFAULT_PAGE = 1
 const DEFAULT_PAGE_SIZE = 25
 
-const optionalStringParam = z.preprocess((value) => {
+const toOptionalString = (value: unknown): unknown => {
   if (value === undefined || value === null) return undefined
   if (Array.isArray(value)) return value.join(',')
   return String(value)
-}, z.string().optional())
+}
+
+const optionalStringParam = z
+  .preprocess(toOptionalString, z.string().optional())
+  .catch(undefined)
+
+/**
+ * Strict `YYYY-MM-DD` so a junk `?dateFrom=abc` falls to `undefined` before
+ * it can reach date formatters (prevents `RangeError: Invalid time value`).
+ */
+const optionalIsoDateParam = z
+  .preprocess(
+    (value) => {
+      const str = toOptionalString(value)
+      return typeof str === 'string' ? str.trim() : str
+    },
+    z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional(),
+  )
+  .catch(undefined)
 
 export const procurementSortSchema = z.enum([
   'date_desc',
@@ -47,60 +74,62 @@ export const procurementSourceSchema = z.enum(['elicitatie', 'seap'])
 
 export type ProcurementSource = z.infer<typeof procurementSourceSchema>
 
-const commaListStatus = optionalStringParam
+const commaListStatus = z
+  .preprocess(toOptionalString, z.string().optional())
   .transform((value) => {
     if (typeof value !== 'string') return undefined
     const parts = value
       .split(',')
       .map((part) => part.trim())
-      .filter(Boolean) as ProcurementStatus[]
+      .filter(Boolean)
     if (parts.length === 0) return undefined
     // Validate against the enum so an invalid value normalizes away.
-    const valid = parts.filter((part) =>
+    const valid = parts.filter((part): part is ProcurementStatus =>
       (procurementStatusSchema.options as readonly string[]).includes(part),
     )
-    return valid.length > 0 ? (valid as ProcurementStatus[]) : undefined
+    return valid.length > 0 ? valid : undefined
   })
+  .catch(undefined)
 
 export const procurementSearchSchema = z
   .object({
-    grain: procurementGrainSchema.catch(DEFAULT_GRAIN).default(DEFAULT_GRAIN),
+    grain: procurementGrainSchema.optional().catch(undefined),
     q: optionalStringParam,
     authority_cui: optionalStringParam,
     supplier_cui: optionalStringParam,
     cpv: optionalStringParam,
     cpv_division: optionalStringParam,
-    source: z.preprocess((value) => {
-      if (value === undefined || value === null) return undefined
-      return String(value)
-    }, procurementSourceSchema.optional()),
+    source: procurementSourceSchema.optional().catch(undefined),
     status: commaListStatus,
     // Reserved/ignored buyer-territory dimensions (parsed, not authoritative).
     county: optionalStringParam,
     region: optionalStringParam,
-    year: z.coerce.number().int().min(2000).max(2100).optional(),
-    dateFrom: optionalStringParam,
-    dateTo: optionalStringParam,
-    valueMin: z.coerce.number().optional(),
-    valueMax: z.coerce.number().optional(),
-    signal: reviewSignalKindSchema.optional(),
-    sort: procurementSortSchema.catch(DEFAULT_SORT).default(DEFAULT_SORT),
-    page: z.coerce.number().int().min(1).catch(DEFAULT_PAGE).default(DEFAULT_PAGE),
-    pageSize: z.coerce
-      .number()
-      .int()
-      .min(1)
-      .max(100)
-      .catch(DEFAULT_PAGE_SIZE)
-      .default(DEFAULT_PAGE_SIZE),
-    // Detail-only context param (preserved when deep-linked into search).
+    year: z.coerce.number().int().min(2000).max(2100).optional().catch(undefined),
+    dateFrom: optionalIsoDateParam,
+    dateTo: optionalIsoDateParam,
+    valueMin: z.coerce.number().nonnegative().optional().catch(undefined),
+    valueMax: z.coerce.number().nonnegative().optional().catch(undefined),
+    signal: reviewSignalKindSchema.optional().catch(undefined),
+    sort: procurementSortSchema.optional().catch(undefined),
+    page: z.coerce.number().int().min(1).optional().catch(undefined),
+    pageSize: z.coerce.number().int().min(1).max(100).optional().catch(undefined),
+    // Detail-only context params (preserved when deep-linked into search).
     from: optionalStringParam,
     highlight: optionalStringParam,
   })
   .passthrough()
 
+/** Parsed URL search — every facet optional (junk drops to `undefined`). */
+export type ProcurementSearch = z.output<typeof procurementSearchSchema>
 export type ProcurementSearchParams = z.input<typeof procurementSearchSchema>
-export type ProcurementSearchState = z.output<typeof procurementSearchSchema>
+
+/** Defaults-applied search state consumed by the API layer and the UI. */
+export type ProcurementSearchState = ProcurementSearch & {
+  grain: ProcurementGrain
+  sort: ProcurementSort
+  page: number
+  pageSize: number
+}
 
 export const PROCUREMENT_SEARCH_DEFAULTS = {
   grain: DEFAULT_GRAIN,
@@ -112,10 +141,22 @@ export const PROCUREMENT_SEARCH_DEFAULTS = {
   'grain' | 'sort' | 'page' | 'pageSize'
 >
 
+export function withProcurementSearchDefaults(
+  search: ProcurementSearch,
+): ProcurementSearchState {
+  return {
+    ...search,
+    grain: search.grain ?? PROCUREMENT_SEARCH_DEFAULTS.grain,
+    sort: search.sort ?? PROCUREMENT_SEARCH_DEFAULTS.sort,
+    page: search.page ?? PROCUREMENT_SEARCH_DEFAULTS.page,
+    pageSize: search.pageSize ?? PROCUREMENT_SEARCH_DEFAULTS.pageSize,
+  }
+}
+
 export function parseProcurementSearch(
   search: Record<string, unknown>,
 ): ProcurementSearchState {
-  return procurementSearchSchema.parse(search)
+  return withProcurementSearchDefaults(procurementSearchSchema.parse(search))
 }
 
 export function cleanProcurementSearch(
