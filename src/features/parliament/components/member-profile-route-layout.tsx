@@ -13,7 +13,7 @@ type Props = {
 /** Shared shell for member profile nested routes — renders child tab content via Outlet. */
 export function MemberProfileRouteLayout({ memberId }: Props) {
   const { pathname } = useLocation()
-  const activeTab = resolveMemberDetailActiveTab(pathname, memberId)
+  const activeTab = resolveMemberDetailActiveTab(pathname)
   const { data: member, isLoading } = useParliamentMember(memberId)
 
   if (isLoading) {

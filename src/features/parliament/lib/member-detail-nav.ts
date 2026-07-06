@@ -98,21 +98,27 @@ const MEMBER_DETAIL_TAB_IDS = new Set<MemberDetailTab>(
   MEMBER_DETAIL_NAV_ITEMS.map((item) => item.id),
 )
 
-/** Resolve the active sidebar tab from the current member profile URL. */
-export function resolveMemberDetailActiveTab(
-  pathname: string,
-  memberId: string,
-): MemberDetailTab {
-  const basePath = `/parlament/membri/${memberId}`
-
-  if (pathname === basePath || pathname === `${basePath}/`) {
-    return 'overview'
+/**
+ * Resolve the active sidebar tab from the current member profile URL.
+ *
+ * Matches on the DECODED last path segment: mandate keys contain colons, so
+ * the router pathname carries them percent-encoded (`1%3A2024%3A1`) — any
+ * comparison against the decoded `$memberId` param prefix silently fails and
+ * pins the highlight on the overview tab. Mandate keys (`<chamber>:<year>:<n>`)
+ * can never collide with a tab id, so the overview route (memberId last) falls
+ * through correctly.
+ */
+export function resolveMemberDetailActiveTab(pathname: string): MemberDetailTab {
+  const segments = pathname.split('/').filter(Boolean)
+  const last = segments[segments.length - 1] ?? ''
+  let decoded = last
+  try {
+    decoded = decodeURIComponent(last)
+  } catch {
+    // malformed escape sequence — fall back to the raw segment
   }
-
-  const suffix = pathname.slice(basePath.length + 1).split('/')[0]
-  if (MEMBER_DETAIL_TAB_IDS.has(suffix as MemberDetailTab) && suffix !== 'overview') {
-    return suffix as MemberDetailTab
+  if (MEMBER_DETAIL_TAB_IDS.has(decoded as MemberDetailTab)) {
+    return decoded as MemberDetailTab
   }
-
   return 'overview'
 }

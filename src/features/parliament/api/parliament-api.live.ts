@@ -457,21 +457,27 @@ export async function fetchParliamentVoteDetailLive(
   })
 }
 
+const MEMBER_VOTES_PAGE_SIZE = 50
+
 export async function fetchParliamentMemberVotingHistoryLive(
   memberId: string,
+  after?: string,
 ): Promise<ParliamentMemberVotingHistory | null> {
   const data = await graphqlQuery<unknown>(
     PARLIAMENT_MEMBER_VOTES_QUERY,
-    { mandateKey: memberId, first: 100 },
+    // NOTE: omit `after` entirely on the first page — the server treats an
+    // explicit null cursor as malformed.
+    { mandateKey: memberId, first: MEMBER_VOTES_PAGE_SIZE, ...(after !== undefined && { after }) },
     { operationName: 'parliamentMemberVotes' },
   )
   const parsed = parliamentMemberVotesResponseSchema.parse(data)
   if (!parsed.parliamentMember) return null
-  const { edges, total } = parsed.parliamentMember.votes
+  const { edges, total, pageInfo } = parsed.parliamentMember.votes
   return mapMemberVotingHistory(
     memberId,
     edges.map((e) => e.node),
     total,
+    pageInfo,
   )
 }
 

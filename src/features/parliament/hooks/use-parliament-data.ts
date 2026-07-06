@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import type {
   ParliamentBillsSearch,
   ParliamentChamber,
@@ -113,9 +113,13 @@ export function useParliamentVoteDetail(
 }
 
 export function useParliamentMemberVotingHistory(memberId: string) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: [...PARLIAMENT_QUERY_KEY, 'member-votes', memberId],
-    queryFn: () => fetchParliamentMemberVotingHistory(memberId),
+    queryFn: ({ pageParam }) =>
+      fetchParliamentMemberVotingHistory(memberId, pageParam),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage?.hasNextPage && lastPage.endCursor ? lastPage.endCursor : undefined,
     enabled: Boolean(memberId),
   })
 }

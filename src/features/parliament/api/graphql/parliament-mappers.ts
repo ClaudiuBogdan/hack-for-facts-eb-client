@@ -382,10 +382,13 @@ export function mapMemberVotingHistory(
   memberId: string,
   votes: RawParliamentMemberVote[],
   total: number,
+  pageInfo: { hasNextPage: boolean; endCursor: string | null },
 ): ParliamentMemberVotingHistory {
   return ParliamentMemberVotingHistorySchema.parse({
     memberId,
     total,
+    hasNextPage: pageInfo.hasNextPage,
+    endCursor: pageInfo.endCursor,
     votes: votes.map((v) => ({
       voteId: v.voteKey,
       chamber: fromGraphqlChamber(v.chamber) ?? 'camera',

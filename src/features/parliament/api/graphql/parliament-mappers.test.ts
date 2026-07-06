@@ -457,8 +457,11 @@ describe('mapMemberVotingHistory', () => {
         },
       ],
       1084,
+      { hasNextPage: true, endCursor: 'cursor-1' },
     )
     expect(history.total).toBe(1084)
+    expect(history.hasNextPage).toBe(true)
+    expect(history.endCursor).toBe('cursor-1')
     expect(history.votes[0]).toMatchObject({ choice: 'impotriva', outcome: 'respins', chamber: 'senat' })
   })
 })

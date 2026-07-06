@@ -190,10 +190,11 @@ export async function fetchParliamentVoteDetail(
 
 export async function fetchParliamentMemberVotingHistory(
   memberId: string,
+  after?: string,
 ): Promise<ParliamentMemberVotingHistory | null> {
   return isParliamentMockEnabled()
-    ? fetchParliamentMemberVotingHistoryMock(memberId)
-    : fetchParliamentMemberVotingHistoryLive(memberId)
+    ? fetchParliamentMemberVotingHistoryMock(memberId, after)
+    : fetchParliamentMemberVotingHistoryLive(memberId, after)
 }
 
 export async function fetchParliamentMemberProfile(

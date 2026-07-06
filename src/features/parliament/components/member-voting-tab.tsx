@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { ParliamentMember } from '@/schemas/parliament'
 import { useParliamentMemberVotingHistory } from '../hooks/use-parliament-data'
@@ -14,16 +15,19 @@ type Props = {
   readonly member: ParliamentMember
 }
 
-/** Voting history tab inside the member shell. */
+/** Voting history tab inside the member shell — cursor-paged (load more). */
 export function MemberVotingTab({ member }: Props) {
-  const { data, isLoading } = useParliamentMemberVotingHistory(member.memberId)
+  const { data, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
+    useParliamentMemberVotingHistory(member.memberId)
   const memberName = formatMemberName(member.firstName, member.lastName)
 
   if (isLoading) {
     return <Skeleton className="h-48 w-full rounded-none" />
   }
 
-  const votes = data?.votes ?? []
+  const pages = data?.pages ?? []
+  const votes = pages.flatMap((page) => page?.votes ?? [])
+  const total = pages[0]?.total ?? votes.length
 
   return (
     <div className="space-y-8">
@@ -54,7 +58,8 @@ export function MemberVotingTab({ member }: Props) {
       {votes.length > 0 ? (
         <div className="space-y-4">
           <p className="border border-[#b1b4b6] bg-[#f3f2f1] px-5 py-3 text-sm text-[#0b0c0c] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-subtle)]">
-            <span className="font-bold">{data?.total ?? votes.length}</span> rezultate
+            Afișate <span className="font-bold">{votes.length}</span> din{' '}
+            <span className="font-bold">{total}</span> voturi
           </p>
           {votes.map((vote) => (
             <MemberVoteRecordCard
@@ -68,6 +73,19 @@ export function MemberVotingTab({ member }: Props) {
               tally={vote.tally}
             />
           ))}
+          {hasNextPage ? (
+            <div className="pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-none border-2 px-6"
+                disabled={isFetchingNextPage}
+                onClick={() => void fetchNextPage()}
+              >
+                {isFetchingNextPage ? 'Se încarcă…' : 'Încarcă mai multe voturi'}
+              </Button>
+            </div>
+          ) : null}
         </div>
       ) : (
         <p className="text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">

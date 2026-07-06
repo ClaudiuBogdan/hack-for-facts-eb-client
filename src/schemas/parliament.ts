@@ -334,6 +334,9 @@ export const ParliamentMemberVotingHistorySchema = z.object({
     }),
   ),
   total: z.number().int().nonnegative(),
+  // Cursor paging over the server votes connection (load-more in the UI).
+  hasNextPage: z.boolean(),
+  endCursor: z.string().nullable(),
 })
 export type ParliamentMemberVotingHistory = z.infer<
   typeof ParliamentMemberVotingHistorySchema

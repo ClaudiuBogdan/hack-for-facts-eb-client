@@ -352,6 +352,8 @@ function buildMemberVotingHistory(
     memberId,
     votes,
     total: votes.length,
+    hasNextPage: false,
+    endCursor: null,
   })
 }
 
@@ -554,10 +556,26 @@ export function getMemberJudetMapMock(): Readonly<Record<string, string>> {
   )
 }
 
+const MOCK_MEMBER_VOTES_PAGE_SIZE = 50
+
 export async function fetchParliamentMemberVotingHistoryMock(
   memberId: string,
+  after?: string,
 ): Promise<ParliamentMemberVotingHistory | null> {
-  return buildMemberVotingHistory(memberId)
+  const history = buildMemberVotingHistory(memberId)
+  if (!history) return null
+  // Emulate the live cursor connection: the cursor is the numeric offset of
+  // the next page (opaque to the UI, which only passes endCursor back).
+  const start = after ? Math.max(0, Number.parseInt(after, 10) || 0) : 0
+  const votes = history.votes.slice(start, start + MOCK_MEMBER_VOTES_PAGE_SIZE)
+  const end = start + votes.length
+  const hasNextPage = end < history.total
+  return {
+    ...history,
+    votes,
+    hasNextPage,
+    endCursor: hasNextPage ? String(end) : null,
+  }
 }
 
 export async function fetchParliamentMemberProfileMock(
