@@ -14,6 +14,7 @@ import {
   procurementLandingSchema,
   procurementSearchPageSchema,
   supplierProcurementSliceSchema,
+  supplierRecordsPageSchema,
   topPartyRowSchema,
   type CapabilityGate,
   type CategoryRow,
@@ -29,6 +30,7 @@ import {
   type ProcurementRecordSummary,
   type ProcurementSearchPage,
   type SupplierProcurementSlice,
+  type SupplierRecordsPage,
   type TopPartyRow,
 } from '@/schemas/procurement'
 import type { ProcurementSearchState } from '@/schemas/procurement-search'
@@ -902,6 +904,82 @@ const supplierSlice = (cui: string): SupplierProcurementSlice => {
 }
 
 // ---------------------------------------------------------------------------
+// Supplier flow records (cursor "load more" list embedded in company pages).
+// 30 canonical DA records per supplier — enough to exercise three cursor
+// pages — generated deterministically and schema-parsed like every fixture.
+// ---------------------------------------------------------------------------
+
+const SUPPLIER_RECORDS_MOCK_PAGE_SIZE = 12
+const SUPPLIER_RECORDS_MOCK_COUNT = 30
+
+const supplierFlowRecordsByCui = new Map<string, ProcurementRecordSummary[]>()
+
+function buildSupplierFlowRecords(cui: string): ProcurementRecordSummary[] {
+  const supplier = {
+    cui,
+    name: `Furnizor ${cui}`,
+    displayName: `Furnizor ${cui}`,
+  }
+  const authorities = [primariaCluj, spitalulCluj, emptyParty]
+  const statuses = ['finalized', 'awarded', 'offered'] as const
+  const cpvs = ['33100000', '45453000', '30213100', null] as const
+  const records: ProcurementRecordSummary[] = []
+  for (let index = 0; index < SUPPLIER_RECORDS_MOCK_COUNT; index += 1) {
+    // Newest first (the connection is date desc).
+    const month = 12 - (index % 12)
+    const day = 27 - (index % 27)
+    const date = `2025-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+    const hasValue = index % 5 !== 4 // every 5th record has no usable amount
+    records.push(
+      directAcquisitionRecordSummarySchema.parse({
+        id: `da-supplier-${cui}-${index + 1}`,
+        grain: 'direct_acquisition',
+        uniqueCode: `DA${1000 + index}`,
+        title: `Achiziție directă ${index + 1} — livrare bunuri și servicii`,
+        authority: authorities[index % authorities.length],
+        supplier,
+        cpvCode: cpvs[index % cpvs.length],
+        cpvDivisionCode: cpvs[index % cpvs.length]?.slice(0, 2) ?? null,
+        valueRon: hasValue ? ronStr(18_000 + index * 3_250) : null,
+        estimatedValueRon: null,
+        currency: hasValue ? null : 'EUR',
+        isRon: hasValue,
+        valueSuspect: false,
+        status: statuses[index % statuses.length],
+        stateId: null,
+        countyName: index % 3 === 0 ? 'Cluj' : null,
+        publicationDate: date,
+        finalizationDate: index % statuses.length === 0 ? date : null,
+        sourceSystem: index % 4 === 3 ? 'seap_dan' : 'seap_da',
+        sourceUrl: `https://e-licitatie.ro/da/DA${1000 + index}`,
+        isCanonical: true,
+        dupGroupId: null,
+      }),
+    )
+  }
+  return records
+}
+
+function supplierRecords(cui: string, after?: string): SupplierRecordsPage {
+  let all = supplierFlowRecordsByCui.get(cui)
+  if (!all) {
+    all = buildSupplierFlowRecords(cui)
+    supplierFlowRecordsByCui.set(cui, all)
+  }
+  const parsedAfter = after === undefined ? 0 : Number(after)
+  const start =
+    Number.isSafeInteger(parsedAfter) && parsedAfter >= 0 ? parsedAfter : 0
+  const slice = all.slice(start, start + SUPPLIER_RECORDS_MOCK_PAGE_SIZE)
+  const end = start + slice.length
+  return supplierRecordsPageSchema.parse({
+    records: slice,
+    total: all.length,
+    hasNextPage: end < all.length,
+    endCursor: slice.length > 0 ? String(end) : null,
+  })
+}
+
+// ---------------------------------------------------------------------------
 // Public mock fixture API
 // ---------------------------------------------------------------------------
 
@@ -920,4 +998,5 @@ export const procurementMockFixtures = {
   },
   cpvPage,
   supplierSlice,
+  supplierRecords,
 } as const

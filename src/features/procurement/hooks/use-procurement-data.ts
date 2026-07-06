@@ -1,44 +1,61 @@
-import { useQuery } from '@tanstack/react-query'
-import { procurementApi, procurementQueryKeys } from '../api/procurement-api'
+/**
+ * TanStack Query hooks for the procurement feature. Key convention (mirrors
+ * parliament): `[namespace, resource, ...discriminators]` — filters flow in
+ * as the last key segment so any change refetches.
+ */
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import {
+  fetchProcurementCpvCategoryPage,
+  fetchProcurementContractDetail,
+  fetchProcurementDirectAcquisitionDetail,
+  fetchProcurementLanding,
+  fetchProcurementProcedureDetail,
+  fetchProcurementSearch,
+  fetchProcurementSupplierRecords,
+  fetchProcurementSupplierSlice,
+} from '../api/procurement-api'
 import type { CpvCategoryPage } from '@/schemas/procurement'
 import type { ProcurementSearchState } from '@/schemas/procurement-search'
 
+const PROCUREMENT_QUERY_KEY = ['procurement'] as const
+
 export function useProcurementLanding() {
   return useQuery({
-    queryKey: procurementQueryKeys.landing(),
-    queryFn: () => procurementApi.fetchLanding(),
+    queryKey: [...PROCUREMENT_QUERY_KEY, 'landing'],
+    queryFn: () => fetchProcurementLanding(),
   })
 }
 
 export function useProcurementSearch(params: ProcurementSearchState) {
   return useQuery({
-    queryKey: procurementQueryKeys.search(params),
-    queryFn: () => procurementApi.fetchSearch(params),
+    queryKey: [...PROCUREMENT_QUERY_KEY, 'search', params],
+    queryFn: () => fetchProcurementSearch(params),
+    // Keep the previous page visible while the next one loads (list paging).
     placeholderData: (prev) => prev,
   })
 }
 
 export function useProcurementProcedureDetail(id: string) {
   return useQuery({
-    queryKey: procurementQueryKeys.procedureDetail(id),
-    queryFn: () => procurementApi.fetchProcedureDetail(id),
-    enabled: id.length > 0,
+    queryKey: [...PROCUREMENT_QUERY_KEY, 'procedure', id],
+    queryFn: () => fetchProcurementProcedureDetail(id),
+    enabled: Boolean(id),
   })
 }
 
 export function useProcurementContractDetail(id: string) {
   return useQuery({
-    queryKey: procurementQueryKeys.contractDetail(id),
-    queryFn: () => procurementApi.fetchContractDetail(id),
-    enabled: id.length > 0,
+    queryKey: [...PROCUREMENT_QUERY_KEY, 'contract', id],
+    queryFn: () => fetchProcurementContractDetail(id),
+    enabled: Boolean(id),
   })
 }
 
 export function useProcurementDirectAcquisitionDetail(id: string) {
   return useQuery({
-    queryKey: procurementQueryKeys.directAcquisitionDetail(id),
-    queryFn: () => procurementApi.fetchDirectAcquisitionDetail(id),
-    enabled: id.length > 0,
+    queryKey: [...PROCUREMENT_QUERY_KEY, 'direct-acquisition', id],
+    queryFn: () => fetchProcurementDirectAcquisitionDetail(id),
+    enabled: Boolean(id),
   })
 }
 
@@ -47,17 +64,29 @@ export function useProcurementCpvCategory(
   initialData?: CpvCategoryPage,
 ) {
   return useQuery({
-    queryKey: procurementQueryKeys.cpvCategory(code),
-    queryFn: () => procurementApi.fetchCpvCategoryPage(code),
+    queryKey: [...PROCUREMENT_QUERY_KEY, 'cpv', code],
+    queryFn: () => fetchProcurementCpvCategoryPage(code),
     initialData,
-    enabled: code.length > 0,
+    enabled: Boolean(code),
   })
 }
 
 export function useProcurementSupplierSlice(cui: string) {
   return useQuery({
-    queryKey: procurementQueryKeys.supplierSlice(cui),
-    queryFn: () => procurementApi.fetchSupplierSlice(cui),
-    enabled: cui.length > 0,
+    queryKey: [...PROCUREMENT_QUERY_KEY, 'supplier-slice', cui],
+    queryFn: () => fetchProcurementSupplierSlice(cui),
+    enabled: Boolean(cui),
+  })
+}
+
+/** Cursor-paged supplier flow records ("load more" list on company pages). */
+export function useProcurementSupplierRecords(cui: string) {
+  return useInfiniteQuery({
+    queryKey: [...PROCUREMENT_QUERY_KEY, 'supplier-records', cui],
+    queryFn: ({ pageParam }) => fetchProcurementSupplierRecords(cui, pageParam),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last) =>
+      last?.hasNextPage && last.endCursor ? last.endCursor : undefined,
+    enabled: Boolean(cui),
   })
 }

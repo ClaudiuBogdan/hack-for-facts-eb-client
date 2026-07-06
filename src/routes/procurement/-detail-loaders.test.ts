@@ -3,11 +3,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const routeStub = vi.fn((options: Record<string, unknown>) => options)
 const notFoundError = new Error('not-found')
 const notFoundMock = vi.fn(() => notFoundError)
-const procurementApiMock = {
-  fetchProcedureDetail: vi.fn(),
-  fetchContractDetail: vi.fn(),
-  fetchDirectAcquisitionDetail: vi.fn(),
-}
+const fetchProcedureDetailMock = vi.fn()
+const fetchContractDetailMock = vi.fn()
+const fetchDirectAcquisitionDetailMock = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: () => routeStub,
@@ -15,7 +13,9 @@ vi.mock('@tanstack/react-router', () => ({
 }))
 
 vi.mock('@/features/procurement/api/procurement-api', () => ({
-  procurementApi: procurementApiMock,
+  fetchProcurementProcedureDetail: fetchProcedureDetailMock,
+  fetchProcurementContractDetail: fetchContractDetailMock,
+  fetchProcurementDirectAcquisitionDetail: fetchDirectAcquisitionDetailMock,
 }))
 
 async function importProcedureRoute() {
@@ -50,47 +50,43 @@ describe('procurement detail route loaders', () => {
     vi.resetModules()
     routeStub.mockClear()
     notFoundMock.mockClear()
-    procurementApiMock.fetchProcedureDetail.mockReset()
-    procurementApiMock.fetchContractDetail.mockReset()
-    procurementApiMock.fetchDirectAcquisitionDetail.mockReset()
+    fetchProcedureDetailMock.mockReset()
+    fetchContractDetailMock.mockReset()
+    fetchDirectAcquisitionDetailMock.mockReset()
   })
 
   it('throws notFound for unknown procedure ids', async () => {
-    procurementApiMock.fetchProcedureDetail.mockResolvedValue(null)
+    fetchProcedureDetailMock.mockResolvedValue(null)
     const route = await importProcedureRoute()
 
     await expect(
       route.loader({ params: { id: 'missing-procedure' } }),
     ).rejects.toBe(notFoundError)
-    expect(procurementApiMock.fetchProcedureDetail).toHaveBeenCalledWith(
-      'missing-procedure',
-    )
+    expect(fetchProcedureDetailMock).toHaveBeenCalledWith('missing-procedure')
     expect(notFoundMock).toHaveBeenCalledTimes(1)
   })
 
   it('throws notFound for unknown contract ids', async () => {
-    procurementApiMock.fetchContractDetail.mockResolvedValue(null)
+    fetchContractDetailMock.mockResolvedValue(null)
     const route = await importContractRoute()
 
     await expect(
       route.loader({ params: { id: 'missing-contract' } }),
     ).rejects.toBe(notFoundError)
-    expect(procurementApiMock.fetchContractDetail).toHaveBeenCalledWith(
-      'missing-contract',
-    )
+    expect(fetchContractDetailMock).toHaveBeenCalledWith('missing-contract')
     expect(notFoundMock).toHaveBeenCalledTimes(1)
   })
 
   it('throws notFound for unknown direct-acquisition ids', async () => {
-    procurementApiMock.fetchDirectAcquisitionDetail.mockResolvedValue(null)
+    fetchDirectAcquisitionDetailMock.mockResolvedValue(null)
     const route = await importDirectAcquisitionRoute()
 
     await expect(
       route.loader({ params: { id: 'missing-direct-acquisition' } }),
     ).rejects.toBe(notFoundError)
-    expect(
-      procurementApiMock.fetchDirectAcquisitionDetail,
-    ).toHaveBeenCalledWith('missing-direct-acquisition')
+    expect(fetchDirectAcquisitionDetailMock).toHaveBeenCalledWith(
+      'missing-direct-acquisition',
+    )
     expect(notFoundMock).toHaveBeenCalledTimes(1)
   })
 })

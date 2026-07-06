@@ -100,7 +100,9 @@ export const procurementSearchSchema = z
     cpv: optionalStringParam,
     cpv_division: optionalStringParam,
     source: procurementSourceSchema.optional().catch(undefined),
-    status: commaListStatus,
+    // `.optional()` on the outside keeps the key optional in the inferred
+    // type (the transform chain would otherwise mark it required).
+    status: commaListStatus.optional(),
     // Reserved/ignored buyer-territory dimensions (parsed, not authoritative).
     county: optionalStringParam,
     region: optionalStringParam,

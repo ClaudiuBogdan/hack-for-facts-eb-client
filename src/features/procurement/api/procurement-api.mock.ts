@@ -1,3 +1,8 @@
+/**
+ * Mock procurement adapters — thin wrappers over `procurementMockFixtures`
+ * (self-validating, schema-parsed at module init) with a small simulated
+ * network delay. Shapes are identical to the live adapter's.
+ */
 import { procurementMockFixtures } from '../mocks/fixtures'
 import type {
   CpvCategoryPage,
@@ -8,6 +13,7 @@ import type {
   ProcurementSearchPage,
   ProcedureRecord,
   SupplierProcurementSlice,
+  SupplierRecordsPage,
 } from '@/schemas/procurement'
 import type { ProcurementSearchState } from '@/schemas/procurement-search'
 
@@ -52,7 +58,7 @@ export async function fetchDirectAcquisitionDetailMock(
 
 export async function fetchCpvCategoryPageMock(
   code: string,
-): Promise<CpvCategoryPage> {
+): Promise<CpvCategoryPage | null> {
   await delay()
   return procurementMockFixtures.cpvPage(code)
 }
@@ -62,4 +68,12 @@ export async function fetchSupplierProcurementSliceMock(
 ): Promise<SupplierProcurementSlice> {
   await delay()
   return procurementMockFixtures.supplierSlice(cui)
+}
+
+export async function fetchSupplierRecordsMock(
+  cui: string,
+  after?: string,
+): Promise<SupplierRecordsPage> {
+  await delay()
+  return procurementMockFixtures.supplierRecords(cui, after)
 }

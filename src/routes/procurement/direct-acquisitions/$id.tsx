@@ -1,7 +1,7 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { getSiteUrl } from '@/config/env'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
-import { procurementApi } from '@/features/procurement/api/procurement-api'
+import { fetchProcurementDirectAcquisitionDetail } from '@/features/procurement/api/procurement-api'
 
 export const Route = createFileRoute('/procurement/direct-acquisitions/$id')({
   ssr: true,
@@ -11,7 +11,7 @@ export const Route = createFileRoute('/procurement/direct-acquisitions/$id')({
       staleWhileRevalidateSeconds: 3600,
     }),
   loader: async ({ params }) => {
-    const detail = await procurementApi.fetchDirectAcquisitionDetail(params.id)
+    const detail = await fetchProcurementDirectAcquisitionDetail(params.id)
     if (!detail) {
       throw notFound()
     }

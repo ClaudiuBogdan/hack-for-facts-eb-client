@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { getSiteUrl } from '@/config/env'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
-import { procurementApi } from '@/features/procurement/api/procurement-api'
+import { fetchProcurementCpvCategoryPage } from '@/features/procurement/api/procurement-api'
 
 const cpvCodeSchema = z
   .string()
@@ -25,7 +25,7 @@ export const Route = createFileRoute('/procurement/categories/$code')({
       staleWhileRevalidateSeconds: 3600,
     }),
   loader: async ({ params }) => {
-    const page = await procurementApi.fetchCpvCategoryPage(params.code)
+    const page = await fetchProcurementCpvCategoryPage(params.code)
     if (!page) {
       throw notFound()
     }
