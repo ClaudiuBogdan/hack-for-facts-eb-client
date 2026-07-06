@@ -266,8 +266,10 @@ test.describe('Live-data guard (parliament)', () => {
       })
       return out
     })
-    // PSD 92 present (the undercount bug showed ~22), and the Camera bars sum to 330.
-    expect(cameraCards).toContain(92)
+    // The largest Camera group (PSD, 91 as of 2026-07-06 — exact count follows
+    // live seat transfers, so assert a floor: the undercount bug showed ~22)
+    // and the Camera bars must sum to the full 330 seats.
+    expect(Math.max(...cameraCards)).toBeGreaterThanOrEqual(80)
     expect(cameraCards.reduce((a, b) => a + b, 0)).toBe(330)
   })
 
