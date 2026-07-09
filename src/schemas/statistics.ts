@@ -114,6 +114,76 @@ export type StatisticsDatasetExplorerSearch = z.infer<
   typeof statisticsDatasetExplorerSearchSchema
 >
 
+/**
+ * A pinned classification, encoded as `"TYPE:VALUE"` — domain codes, which are
+ * what `InsObservationFilterInput` speaks. Never `nom_item_id`s: those are
+ * dimension-value surrogate keys and are meaningless in a shared URL.
+ */
+const classificationPinSchema = z.string().regex(/^[^:]+:[^:]+$/)
+
+/**
+ * A pinned territory, encoded as `"siruta:54975"` (LAU) or `"cod:CJ"` (NUTS3).
+ * The two forms map to different `InsObservationFilterInput` fields.
+ */
+const territoryPinSchema = z.string().regex(/^(siruta|cod):[A-Za-z0-9]+$/)
+
+/**
+ * Search state for the dataset detail route (`/statistici/seturi/$cod`).
+ *
+ * Flat and bounded: at most 8 classification pins, one per classification type
+ * (replacing a pin is a keyed upsert, not an append).
+ */
+export const statisticsDatasetDetailSearchSchema = z
+  .object({
+    teritoriu: territoryPinSchema.optional().catch(undefined),
+    clasificari: z
+      .array(classificationPinSchema)
+      .max(8)
+      .nonempty()
+      .optional()
+      .catch(undefined),
+    unitate: z.string().trim().min(1).optional().catch(undefined),
+    frecventa: z.enum(['ANNUAL', 'QUARTERLY', 'MONTHLY']).optional().catch(undefined),
+    din: z.number().int().min(1900).max(2100).optional().catch(undefined),
+    pana: z.number().int().min(1900).max(2100).optional().catch(undefined),
+    pagina: z.number().int().min(1).optional().catch(undefined),
+  })
+  .catch({})
+
+export type StatisticsDatasetDetailSearch = z.infer<
+  typeof statisticsDatasetDetailSearchSchema
+>
+
+/**
+ * Search state for the local comparisons route (`/statistici/comparatii`).
+ *
+ * `teritorii` holds 2–6 SIRUTA codes. Below two the page shows a guided empty
+ * state rather than a chart of one line.
+ */
+export const statisticsComparisonsSearchSchema = z
+  .object({
+    cod: z.string().trim().min(1).optional().catch(undefined),
+    teritorii: z
+      .array(z.string().trim().min(1))
+      .min(1)
+      .max(6)
+      .optional()
+      .catch(undefined),
+    perioada: z.string().trim().min(1).optional().catch(undefined),
+    clasificari: z
+      .array(classificationPinSchema)
+      .max(8)
+      .nonempty()
+      .optional()
+      .catch(undefined),
+    unitate: z.string().trim().min(1).optional().catch(undefined),
+  })
+  .catch({})
+
+export type StatisticsComparisonsSearch = z.infer<
+  typeof statisticsComparisonsSearchSchema
+>
+
 /** Parse function for TanStack Router `validateSearch` on the landing route. */
 export function parseStatisticsLandingSearch(
   search: Record<string, unknown>,
@@ -126,6 +196,20 @@ export function parseStatisticsDatasetExplorerSearch(
   search: Record<string, unknown>,
 ): StatisticsDatasetExplorerSearch {
   return statisticsDatasetExplorerSearchSchema.parse(search)
+}
+
+/** Parse function for TanStack Router `validateSearch` on the dataset detail. */
+export function parseStatisticsDatasetDetailSearch(
+  search: Record<string, unknown>,
+): StatisticsDatasetDetailSearch {
+  return statisticsDatasetDetailSearchSchema.parse(search)
+}
+
+/** Parse function for TanStack Router `validateSearch` on the comparisons page. */
+export function parseStatisticsComparisonsSearch(
+  search: Record<string, unknown>,
+): StatisticsComparisonsSearch {
+  return statisticsComparisonsSearchSchema.parse(search)
 }
 
 /** Parse function for TanStack Router `validateSearch` on the territory hub. */
