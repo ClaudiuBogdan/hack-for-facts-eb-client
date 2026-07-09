@@ -902,10 +902,6 @@ msgstr "Nu există descriere pentru această componentă."
 msgid "No national projects"
 msgstr "Fără proiecte naționale"
 
-#: src/features/pnrr/components/filters/PnrrStyledMultiSelect.tsx:306
-#~ msgid "No options found."
-#~ msgstr "Nu s-au găsit opțiuni."
-
 #: src/features/pnrr/components/table/PnrrProjectTable.tsx:310
 msgid "No projects found"
 msgstr "Niciun proiect găsit"
@@ -1174,10 +1170,6 @@ msgstr "Culte"
 msgid "Remove filter"
 msgstr "Elimină filtrul"
 
-#: src/features/pnrr/components/filters/PnrrStyledMultiSelect.tsx:351
-#~ msgid "Remove option"
-#~ msgstr "Elimină opțiunea"
-
 #: src/features/pnrr/components/charts/PnrrProgressHistogram.tsx:31
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:135
 #: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:338
@@ -1272,10 +1264,6 @@ msgstr "România: ~20% absorbție estimată"
 #: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:249
 msgid "Search beneficiary..."
 msgstr "Caută beneficiar..."
-
-#: src/features/pnrr/components/filters/PnrrStyledMultiSelect.tsx:230
-#~ msgid "Search options..."
-#~ msgstr "Caută opțiuni..."
 
 #: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:187
 msgid "Search project..."

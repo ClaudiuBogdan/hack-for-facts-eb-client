@@ -9,8 +9,6 @@ import type {
   InsDatasetDimensionsResult,
   InsDatasetFilterInput,
   InsDimensionValueConnection,
-  InsEntitySelectorInput,
-  InsLatestDatasetValue,
   InsObservation,
   InsObservationConnection,
   InsObservationFilterInput,
@@ -162,26 +160,6 @@ const INS_OBSERVATIONS_QUERY = `
     insObservations(datasetCode: $datasetCode, filter: $filter, limit: $limit, offset: $offset) {
       nodes { ${INS_OBSERVATION_FIELDS} }
       pageInfo { totalCount hasNextPage hasPreviousPage }
-    }
-  }
-`;
-
-const INS_LATEST_DATASET_VALUES_QUERY = `
-  query InsLatestDatasetValues(
-    $entity: InsEntitySelectorInput!
-    $datasetCodes: [String!]!
-    $preferredClassificationCodes: [String!]
-  ) {
-    insLatestDatasetValues(
-      entity: $entity
-      datasetCodes: $datasetCodes
-      preferredClassificationCodes: $preferredClassificationCodes
-    ) {
-      latestPeriod
-      matchStrategy
-      hasData
-      dataset { ${INS_DATASET_FIELDS} }
-      observation { ${INS_OBSERVATION_FIELDS} }
     }
   }
 `;
@@ -410,25 +388,6 @@ export async function getAllInsObservations(params: {
   }
 
   return allNodes;
-}
-
-export async function getInsLatestDatasetValues(params: {
-  entity: InsEntitySelectorInput;
-  datasetCodes: string[];
-  preferredClassificationCodes?: string[];
-}): Promise<InsLatestDatasetValue[]> {
-  if (params.datasetCodes.length === 0) return [];
-
-  const response = await graphqlRequest<{ insLatestDatasetValues: InsLatestDatasetValue[] }>(
-    INS_LATEST_DATASET_VALUES_QUERY,
-    {
-      entity: params.entity,
-      datasetCodes: params.datasetCodes,
-      preferredClassificationCodes: params.preferredClassificationCodes,
-    }
-  );
-
-  return response.insLatestDatasetValues ?? [];
 }
 
 export interface InsDatasetHistoryResult {

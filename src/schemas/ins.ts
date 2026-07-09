@@ -199,20 +199,6 @@ export interface InsEntitySelectorInput {
   territoryLevel?: InsTerritoryLevel;
 }
 
-export type InsLatestMatchStrategy =
-  | 'PREFERRED_CLASSIFICATION'
-  | 'TOTAL_FALLBACK'
-  | 'REPRESENTATIVE_FALLBACK'
-  | 'NO_DATA';
-
-export interface InsLatestDatasetValue {
-  dataset: InsDataset;
-  observation?: InsObservation | null;
-  latestPeriod?: string | null;
-  matchStrategy: InsLatestMatchStrategy;
-  hasData: boolean;
-}
-
 export interface InsObservationFilterInput {
   territoryCodes?: string[];
   sirutaCodes?: string[];

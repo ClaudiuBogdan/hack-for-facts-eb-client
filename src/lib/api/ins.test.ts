@@ -17,23 +17,12 @@ import {
   getInsDatasetDimensions,
   getInsDatasetHistory,
   getInsDatasetsCatalog,
-  getInsLatestDatasetValues,
 } from './ins'
 import { graphqlRequest } from './graphql'
 
 describe('ins api', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-  })
-
-  it('returns empty latest values when no dataset codes are provided', async () => {
-    const result = await getInsLatestDatasetValues({
-      entity: { sirutaCode: '143450' },
-      datasetCodes: [],
-    })
-
-    expect(result).toEqual([])
-    expect(graphqlRequest).not.toHaveBeenCalled()
   })
 
   it('paginates historical observations until completion', async () => {

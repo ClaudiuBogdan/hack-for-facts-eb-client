@@ -9,6 +9,16 @@ describe('dataset-status sync_status mapping', () => {
     expect(getDatasetDataStatus({ sync_status: 'LOADED' })).toBe('available')
   })
 
+  it('maps every InsSyncStatus member except PENDING to available', () => {
+    // `matrices` emits PENDING only for metadata-only datasets; SYNCED /
+    // SYNCING / STALE / FAILED all describe the sync pipeline of a dataset
+    // whose facts are already loaded.
+    expect(getDatasetDataStatus({ sync_status: 'SYNCED' })).toBe('available')
+    expect(getDatasetDataStatus({ sync_status: 'SYNCING' })).toBe('available')
+    expect(getDatasetDataStatus({ sync_status: 'STALE' })).toBe('available')
+    expect(getDatasetDataStatus({ sync_status: 'FAILED' })).toBe('available')
+  })
+
   it('maps metadata_only / PENDING to catalog-only', () => {
     expect(getDatasetDataStatus({ sync_status: 'metadata_only' })).toBe(
       'catalog-only',

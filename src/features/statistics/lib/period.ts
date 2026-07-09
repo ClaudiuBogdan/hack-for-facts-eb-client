@@ -45,9 +45,9 @@ export function getLatestTimePeriod(
 /**
  * Resolves the latest data-through period for a dataset group.
  *
- * Prefers an explicit `latestPeriod` (from `InsUatDatasetGroup.latestPeriod`
- * or `InsLatestDatasetValue.latestPeriod`); falls back to scanning the
- * observations. Returns `null` when no period is available.
+ * Prefers an explicit `latestPeriod` (from `InsUatDatasetGroup.latestPeriod`);
+ * falls back to scanning the observations. Returns `null` when no period is
+ * available.
  */
 export function resolveLatestPeriod(params: {
   readonly latestPeriod?: string | null

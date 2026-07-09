@@ -2,67 +2,49 @@ import type { InsDataset } from '@/schemas/ins'
 import type { StatisticsDatasetDataStatus } from '@/schemas/statistics'
 
 /**
- * Maps an INS dataset's `sync_status` / fact-load status to the product
- * "available" vs. "catalog only" distinction.
+ * Maps an INS dataset's `sync_status` to the product "available" vs.
+ * "catalog only" distinction.
  *
- * Grounded in `docs/ux-research/statistics.md`:
- * - `v_matrices` exposes only datasets with `fact_load_status in
- *   ('partial','full')` → "available".
- * - `matrices` exposes all 1,898; metadata-only rows appear as `PENDING` →
- *   "catalog only".
+ * The serving layer exposes two relations over the same datasets:
+ * - `v_matrices` (list queries) — only `fact_load_status in ('partial','full')`,
+ *   emitting `coalesce(source_sync_status, 'SYNCED')`.
+ * - `matrices` (single-dataset lookup) — all 1,898 datasets, emitting
+ *   `'PENDING'` for the metadata-only ones and the same coalesce otherwise.
  *
- * The serving `InsDataset.sync_status` carries the same vocabulary
- * (`full`, `partial`, `metadata_only`, `PENDING`, or null).
+ * So a dataset is catalog-only exactly when its status is `PENDING` (or the
+ * legacy `metadata_only` spelling). Every other `InsSyncStatus` member —
+ * `SYNCED`, `SYNCING`, `STALE`, `FAILED` — describes the *sync pipeline* of a
+ * dataset whose facts are already loaded, and must not be read as "no data".
  */
+const CATALOG_ONLY_SYNC_STATUSES = new Set(['pending', 'metadata_only'])
+
 const AVAILABLE_SYNC_STATUSES = new Set([
+  'synced',
+  'syncing',
+  'stale',
+  'failed',
   'full',
   'partial',
   'loaded',
-  'LOADED',
 ])
-
-const CATALOG_ONLY_SYNC_STATUSES = new Set([
-  'metadata_only',
-  'PENDING',
-  'pending',
-  'METADATA_ONLY',
-])
-
-function normalizeSyncStatus(status: string | null | undefined): string {
-  return (status ?? '').trim()
-}
 
 /**
- * Returns `'available'` when the dataset has loaded facts
- * (sync_status full/partial/loaded-style), otherwise `'catalog-only'`
- * (metadata_only / PENDING / null / unknown).
+ * Returns `'available'` when the dataset has loaded observations, otherwise
+ * `'catalog-only'`.
  *
- * Unknown statuses degrade to `catalog-only` so the UI never claims data
- * exists when it doesn't — the safer side of the 27-vs-1,871 coverage gap.
+ * Missing and unrecognized statuses degrade to `catalog-only` so the UI never
+ * claims data exists when it doesn't — the safer side of the coverage gap.
  */
 export function getDatasetDataStatus(
   dataset: Pick<InsDataset, 'sync_status'>,
 ): StatisticsDatasetDataStatus {
-  const status = normalizeSyncStatus(dataset.sync_status)
-
-  if (status.length === 0) {
-    return 'catalog-only'
-  }
-
-  if (AVAILABLE_SYNC_STATUSES.has(status)) {
-    return 'available'
-  }
+  const status = (dataset.sync_status ?? '').trim().toLowerCase()
 
   if (CATALOG_ONLY_SYNC_STATUSES.has(status)) {
     return 'catalog-only'
   }
 
-  const lowered = status.toLowerCase()
-  if (
-    lowered === 'full' ||
-    lowered === 'partial' ||
-    lowered === 'loaded'
-  ) {
+  if (AVAILABLE_SYNC_STATUSES.has(status)) {
     return 'available'
   }
 
