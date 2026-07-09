@@ -9,7 +9,7 @@ vi.mock('@/lib/logger', () => ({
   })),
 }))
 
-vi.mock('./graphql', () => ({
+vi.mock('@/lib/api/graphql', () => ({
   graphqlRequest: vi.fn(),
 }))
 
@@ -17,10 +17,10 @@ import {
   getInsDatasetDimensions,
   getInsDatasetHistory,
   getInsDatasetsCatalog,
-} from './ins'
-import { graphqlRequest } from './graphql'
+} from './ins-fetchers'
+import { graphqlRequest } from '@/lib/api/graphql'
 
-describe('ins api', () => {
+describe('ins fetchers', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })

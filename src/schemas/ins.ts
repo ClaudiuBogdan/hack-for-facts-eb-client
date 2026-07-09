@@ -183,6 +183,12 @@ export interface InsContextConnection {
   pageInfo: PageInfo;
 }
 
+/**
+ * Whether a dataset has loaded facts. Distinct from `sync_status`, which
+ * describes the sync pipeline of an already-loaded dataset.
+ */
+export type InsDataStatus = 'AVAILABLE' | 'CATALOG_ONLY';
+
 export interface InsDatasetFilterInput {
   search?: string;
   codes?: string[];
@@ -191,6 +197,14 @@ export interface InsDatasetFilterInput {
   periodicity?: InsPeriodicity[];
   hasUatData?: boolean;
   hasCountyData?: boolean;
+  dataStatus?: InsDataStatus[];
+}
+
+export interface InsTerritoryFilterInput {
+  search?: string;
+  levels?: InsTerritoryLevel[];
+  parentCode?: string;
+  sirutaCodes?: string[];
 }
 
 export interface InsEntitySelectorInput {
