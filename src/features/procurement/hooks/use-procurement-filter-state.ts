@@ -48,7 +48,7 @@ export function useProcurementFilterState(search: ProcurementSearchState) {
   )
 
   const setQuery = useCallback(
-    (q: string) => updateFilters({ q: q.trim() || undefined }),
+    (q: string | undefined) => updateFilters({ q: q?.trim() || undefined }),
     [updateFilters],
   )
 
