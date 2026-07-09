@@ -55,14 +55,14 @@ export function HubBlockError({ onRetry }: { readonly onRetry: () => void }) {
   return (
     <div role="alert" className="space-y-3 text-sm text-[var(--pnrr-muted)]">
       <p>
-        <Trans>Nu am putut încărca acest bloc.</Trans>
+        <Trans>Could not load this section.</Trans>
       </p>
       <button
         type="button"
         onClick={onRetry}
         className="border-2 border-[var(--pnrr-border)] px-3 py-1.5 text-xs font-bold text-[var(--pnrr-fg)] transition-colors hover:bg-[var(--pnrr-hover)]"
       >
-        <Trans>Reîncearcă</Trans>
+        <Trans>Retry</Trans>
       </button>
     </div>
   )
@@ -85,7 +85,7 @@ export function HubGroupBars({
   if (groups.length === 0) {
     return (
       <p className="text-sm text-[var(--pnrr-muted)]">
-        <Trans>Nu există date de afișat.</Trans>
+        <Trans>No data to display.</Trans>
       </p>
     )
   }

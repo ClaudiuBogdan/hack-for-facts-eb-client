@@ -28,8 +28,7 @@ function HighlightLink({
     <button
       type="button"
       onClick={() => onTabChange(row.tab)}
-      className="group flex w-full items-center gap-4 border-2 border-[var(--pnrr-border)] px-4 py-4 text-left transition-colors hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-green)]/60 sm:px-5"
-      style={{ backgroundColor: 'var(--pnrr-card)' }}
+      className="group flex w-full items-center gap-4 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-4 py-4 text-left transition-colors hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-green)]/60 sm:px-5"
     >
       <div className="min-w-0 flex-1 space-y-2">
         <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--pnrr-muted)]">

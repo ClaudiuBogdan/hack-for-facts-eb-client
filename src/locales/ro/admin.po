@@ -342,7 +342,7 @@ msgstr "Un rezumat compact al dimensiunii campaniei, al încărcării de revizui
 msgid "A config already exists for this entity. Saving will update the existing record."
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:693
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:694
 msgid "A review note is optional for approved rows."
 msgstr "Nota de revizuire este opțională pentru rândurile aprobate."
 
@@ -371,7 +371,7 @@ msgstr "Adaugă"
 msgid "Add condition"
 msgstr "Adaugă condiție"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:768
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:769
 msgid "Add operator context for this review…"
 msgstr "Adaugă context pentru această revizuire…"
 
@@ -647,14 +647,14 @@ msgstr ""
 msgid "Applying…"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:821
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:822
 msgid "Approval requires explicit confirmation"
 msgstr "Aprobarea necesită confirmare explicită"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:348
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsRunTab.tsx:142
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:191
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:683
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:684
 #: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:343
 #: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:649
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1201
@@ -664,7 +664,7 @@ msgstr "Aprobarea necesită confirmare explicită"
 msgid "Approved"
 msgstr "Aprobat"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:751
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:752
 msgid "Approved rows can be saved with or without a review note."
 msgstr "Rândurile aprobate pot fi salvate cu sau fără notă de revizuire."
 
@@ -1242,15 +1242,15 @@ msgstr "Alege un tip de notificare, adaugă condiții, previzualizează potrivir
 msgid "Choose a value"
 msgstr "Alege o valoare"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:767
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:768
 msgid "Choose approved or rejected to start a staged review…"
 msgstr "Alege Aprobat sau Respins pentru a începe o revizuire pregătită…"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:748
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:749
 msgid "Choose approved or rejected to start editing the staged review note."
 msgstr "Alege Aprobat sau Respins pentru a începe editarea notei de revizuire pregătite."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:640
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:641
 msgid "Choose approved or rejected."
 msgstr "Alege Aprobat sau Respins."
 
@@ -1293,7 +1293,7 @@ msgstr "Golește selecția"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1251
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1973
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:872
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:873
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:740
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1402
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1429
@@ -1363,11 +1363,14 @@ msgstr ""
 #: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:324
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:829
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSendValidationDialog.tsx:84
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet.tsx:583
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:794
+#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:50
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsToolbar.tsx:711
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:765
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationTriggerDialog.tsx:769
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:863
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:573
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:864
 #: src/features/campaigns/buget/admin/components/CampaignAdminSendValidationDialog.tsx:84
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:1051
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:839
@@ -1445,7 +1448,7 @@ msgstr ""
 msgid "Configured"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:836
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:837
 msgid "Confirm approval warning"
 msgstr "Confirmă avertismentul de aprobare"
 
@@ -1709,7 +1712,7 @@ msgstr "Rând de revizuire duplicat: {0}"
 msgid "Edit selected interactions"
 msgstr "Editați interacțiunile selectate"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet.tsx:586
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet.tsx:589
 msgid "Edit the campaign entity config for this municipality."
 msgstr ""
 
@@ -1981,7 +1984,7 @@ msgstr ""
 msgid "Failed to load entity detail"
 msgstr "Nu s-au putut încărca detaliile entității"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:68
+#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:71
 msgid "Failed to load institution thread"
 msgstr ""
 
@@ -2163,7 +2166,7 @@ msgstr ""
 msgid "I don't know"
 msgstr "Nu știu"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:839
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:840
 msgid "I understand the risk and want to continue with approval."
 msgstr "Înțeleg riscul și doresc să continui cu aprobarea."
 
@@ -2265,7 +2268,7 @@ msgstr ""
 msgid "Inspect submitted records, filter the workspace, and stage review decisions for this user."
 msgstr "Inspectați înregistrările trimise, filtrați spațiul de lucru și pregătiți deciziile de revizuire pentru acest utilizator."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:54
+#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:57
 msgid "Inspect the full correspondence history and record a manual institution response from the same entity workflow."
 msgstr ""
 
@@ -2288,7 +2291,7 @@ msgstr "Email instituție"
 msgid "Institution email mismatch"
 msgstr "Neconcordanță email instituție"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:51
+#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:54
 msgid "Institution thread"
 msgstr ""
 
@@ -2519,7 +2522,7 @@ msgstr "Limita nu poate depăși {0}."
 msgid "Link"
 msgstr "Link"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:55
+#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:58
 msgid "Load a thread to inspect full correspondence history."
 msgstr ""
 
@@ -2869,7 +2872,7 @@ msgstr "Nu există șabloane disponibile"
 msgid "No thread"
 msgstr "Fără conversație"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:73
+#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:76
 msgid "No thread selected"
 msgstr ""
 
@@ -2948,7 +2951,7 @@ msgid "Not staged"
 msgstr "Fără date pregătite"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:226
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:779
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:780
 msgid "Notification"
 msgstr "Notificare"
 
@@ -3150,7 +3153,7 @@ msgstr "Deschide pagina entității pentru {0}"
 msgid "Open interactions queue"
 msgstr "Deschide coada interacțiunilor"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:811
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:812
 msgid "Open notifications admin for this review"
 msgstr "Deschide administrarea notificărilor pentru această revizuire"
 
@@ -3198,7 +3201,7 @@ msgstr "Distribuții operaționale"
 msgid "Operator"
 msgstr "Operator"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:614
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:615
 msgid "Operator warnings"
 msgstr "Avertismente operator"
 
@@ -3543,7 +3546,7 @@ msgstr "Puse în coadă {0}, deja trimise {1}, deja în așteptare {2}, neeligib
 msgid "Rank entities by interactions, users, or pending reviews without reusing the operational entity endpoints."
 msgstr "Clasează entitățile după interacțiuni, utilizatori sau revizuiri în așteptare, fără a reutiliza endpointurile operaționale pentru entități."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:848
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:849
 msgid "Read-only review"
 msgstr "Revizuire doar pentru citire"
 
@@ -3691,7 +3694,7 @@ msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:354
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsRunTab.tsx:143
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:723
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:724
 #: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:344
 #: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:660
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1203
@@ -3701,12 +3704,12 @@ msgstr ""
 msgid "Rejected"
 msgstr "Respins"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:750
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:751
 #: src/features/campaigns/buget/admin/utils/review-workspace.ts:87
 msgid "Rejected rows need a review note before saving."
 msgstr "Rândurile respinse au nevoie de o notă de revizuire înainte de salvare."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:733
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:734
 msgid "Rejected rows require a review note before saving."
 msgstr "Rândurile respinse necesită o notă de revizuire înainte de salvare."
 
@@ -3879,7 +3882,7 @@ msgstr "Reutilizat"
 msgid "Review"
 msgstr "Recapitulare"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:631
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:632
 msgid "Review and thread state"
 msgstr "Stare revizuire și fir"
 
@@ -3905,7 +3908,7 @@ msgstr "Revizuiește interacțiunile campaniei cu fluxul operator existent și a
 msgid "Review entity-level campaign state across users, interaction review pressure, and notification delivery activity."
 msgstr "Revizuiește starea campaniei la nivel de entitate, pe utilizatori, presiunea revizuirilor de interacțiune și activitatea de livrare a notificărilor."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:743
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:744
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:551
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:972
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:1332
@@ -3966,7 +3969,7 @@ msgstr "Stare revizuire"
 msgid "Review status"
 msgstr "Status revizuire"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:781
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:782
 msgid "Review submission always saves the decision. Notification side effects only run when you opt in."
 msgstr "Trimiterea revizuirii salvează întotdeauna decizia. Efectele secundare de notificare rulează doar când optați explicit."
 
@@ -4083,11 +4086,11 @@ msgstr ""
 msgid "Save only"
 msgstr "Doar salvează"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:900
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:901
 msgid "Save review"
 msgstr "Salvează revizuirea"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:899
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:900
 msgid "Save review & notify"
 msgstr "Salvează revizuirea și notifică"
 
@@ -4107,7 +4110,7 @@ msgstr "A fost salvată 1 revizuire înainte ca lotul rămas să eșueze."
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet.tsx:531
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadResponseForm.tsx:237
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:897
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:898
 msgid "Saving…"
 msgstr "Se salvează..."
 
@@ -4148,7 +4151,7 @@ msgstr ""
 msgid "Search users"
 msgstr "Caută utilizatori"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:75
+#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:78
 msgid "Select a thread from the list to inspect the full detail drawer."
 msgstr ""
 
@@ -4219,11 +4222,11 @@ msgstr "Mod de trimitere"
 msgid "Send notification"
 msgstr "Trimite notificare"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:799
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:800
 msgid "Send notification after saving"
 msgstr "Trimite notificare după salvare"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:794
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:795
 msgid "Send notification after saving review"
 msgstr "Trimite notificare după salvarea revizuirii"
 
@@ -4469,7 +4472,7 @@ msgstr "Pregătiți mai întâi revizuirea"
 msgid "Staged"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:638
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:639
 msgid "Staged decision"
 msgstr "Decizie pregătită"
 
@@ -4533,7 +4536,7 @@ msgstr "Trimitere"
 msgid "Submission path"
 msgstr "Cale de trimitere"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:626
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:627
 msgid "Submission summary"
 msgstr "Rezumat trimitere"
 
@@ -4913,15 +4916,15 @@ msgstr ""
 msgid "This interaction changed before your review was saved."
 msgstr "Această interacțiune s-a modificat înainte ca revizuirea dumneavoastră să fie salvată."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:746
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:747
 msgid "This interaction is no longer pending. The saved review note is shown below."
 msgstr "Această interacțiune nu mai este în așteptare. Nota de revizuire salvată este afișată mai jos."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:850
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:851
 msgid "This interaction is no longer pending. You can inspect the saved review state, but you cannot submit another decision from this screen."
 msgstr "Această interacțiune nu mai este în așteptare. Poți inspecta starea de revizuire salvată, dar nu poți trimite o altă decizie din acest ecran."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:824
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:825
 msgid "This item carries an institution-email risk flag. Approving it may trigger additional server follow-up when notification side effects are enabled."
 msgstr "Acest element are un marcaj de risc pentru emailul instituției. Aprobarea lui poate declanșa acțiuni suplimentare pe server atunci când efectele secundare de notificare sunt activate."
 
@@ -4958,11 +4961,11 @@ msgstr ""
 msgid "This removes the staged review decision and note for the currently selected rows."
 msgstr "Aceasta elimină decizia de revizuire pregătită și nota pentru rândurile selectate în prezent."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:803
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:804
 msgid "This review will save and then allow notification-capable side effects."
 msgstr "Această revizuire va fi salvată și apoi va permite efecte secundare care pot trimite notificări."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:804
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:805
 msgid "This review will save without notification side effects."
 msgstr "Această revizuire va fi salvată fără efecte secundare de notificare."
 
@@ -5240,10 +5243,10 @@ msgstr ""
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:295
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:308
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:353
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:595
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:603
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:596
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:604
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:605
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:606
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:144
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:149
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:379

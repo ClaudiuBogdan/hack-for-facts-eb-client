@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
+import { t } from '@lingui/core/macro'
 import { Search, X } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
 import { cn } from '@/lib/utils'
@@ -182,7 +183,7 @@ export function CompanySearchAutocomplete({
         <button
           type="button"
           onClick={handleClear}
-          aria-label="Șterge căutarea"
+          aria-label={t`Clear search`}
           className="absolute right-3 top-[22px] inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center text-[#505a5f] transition-colors hover:text-[#0b0c0c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:text-[var(--pnrr-muted)] dark:hover:text-[var(--pnrr-fg)]"
         >
           <X aria-hidden className="h-4 w-4" />

@@ -31,18 +31,18 @@ export function PrivateCompanyHubPage() {
     <main className="mx-auto w-full max-w-5xl space-y-8 px-4 py-8 sm:px-6">
       <header className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight text-[var(--pnrr-fg)]">
-          <Trans>Firme</Trans>
+          <Trans>Companies</Trans>
         </h1>
         <p className="max-w-2xl text-base leading-relaxed text-[var(--pnrr-muted)]">
           <Trans>
-            Toate firmele înregistrate la ONRC, cu starea din registru, datele
-            fiscale de la ANAF și situațiile financiare anuale. Caută o firmă
-            anume sau pornește de la o întrebare.
+            Every company in the ONRC register, with its registry status, ANAF
+            fiscal data and annual financial statements. Look up a company, or
+            start from a question.
           </Trans>
         </p>
       </header>
 
-      <section aria-label={t`Cifre generale`}>
+      <section aria-label={t`Key figures`}>
         {hub.isPending ? (
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {Array.from({ length: 4 }, (_, index) => (
@@ -60,25 +60,25 @@ export function PrivateCompanyHubPage() {
         ) : (
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <StatTile
-              label={<Trans>Total firme</Trans>}
+              label={<Trans>Total companies</Trans>}
               value={stats.totalCompanies}
               search={{}}
               testId="company-hub-tile-total"
             />
             <StatTile
-              label={<Trans>În funcțiune</Trans>}
+              label={<Trans>Active</Trans>}
               value={stats.activeCompanies}
               search={{ status: [ACTIVE] }}
               testId="company-hub-tile-active"
             />
             <StatTile
-              label={<Trans>Radiate</Trans>}
+              label={<Trans>Struck off</Trans>}
               value={countFor(stats, STRUCK_OFF)}
               search={{ status: [STRUCK_OFF] }}
               testId="company-hub-tile-struck-off"
             />
             <StatTile
-              label={<Trans>Insolvență și faliment</Trans>}
+              label={<Trans>Insolvency and bankruptcy</Trans>}
               value={countFor(stats, INSOLVENCY) + countFor(stats, BANKRUPTCY)}
               search={{ status: [INSOLVENCY, BANKRUPTCY] }}
               testId="company-hub-tile-distress"
@@ -88,14 +88,14 @@ export function PrivateCompanyHubPage() {
       </section>
 
       <section
-        aria-label={t`Caută o firmă`}
+        aria-label={t`Search a company`}
         className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-5"
       >
         <label
           htmlFor="company-hub-search"
           className="mb-2 block text-sm font-bold uppercase tracking-widest text-[var(--pnrr-fg)]"
         >
-          <Trans>Caută o firmă</Trans>
+          <Trans>Search a company</Trans>
         </label>
         <CompanySearchAutocomplete
           value={undefined}
@@ -103,20 +103,20 @@ export function PrivateCompanyHubPage() {
           onCommit={(q) =>
             void navigate({ to: '/companies/search', search: q ? { q } : {} })
           }
-          placeholder={t`ex. Dedeman sau 2816464`}
+          placeholder={t`e.g. Dedeman or 2816464`}
           inputId="company-hub-search"
-          ariaLabel={t`Nume firmă sau CUI`}
+          ariaLabel={t`Company name or CUI`}
         />
         <p className="mt-2 text-xs text-[var(--pnrr-muted)]">
           <Trans>
-            Apasă Enter ca să cauți, sau alege o sugestie ca să mergi direct la
-            profilul firmei.
+            Press Enter to search, or pick a suggestion to jump straight to that
+            company's profile.
           </Trans>
         </p>
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <HubBlock title={<Trans>Județe cu cele mai multe firme</Trans>}>
+        <HubBlock title={<Trans>Counties with the most companies</Trans>}>
           {hub.isPending ? (
             <HubBlockSkeleton rows={6} />
           ) : hub.isError || !stats ? (
@@ -132,7 +132,7 @@ export function PrivateCompanyHubPage() {
 
         {/* The CAEN roll-up is the slowest server leg: it fails on its own terms
             and never keeps the rest of the hub from rendering. */}
-        <HubBlock title={<Trans>Domenii de activitate (CAEN)</Trans>}>
+        <HubBlock title={<Trans>Activity sectors (CAEN)</Trans>}>
           {hub.isPending ? (
             <HubBlockSkeleton rows={6} />
           ) : !stats || stats.caenDivisions === null ? (
@@ -147,46 +147,46 @@ export function PrivateCompanyHubPage() {
         </HubBlock>
       </div>
 
-      <section aria-label={t`Investigații rapide`} className="space-y-3">
+      <section aria-label={t`Quick investigations`} className="space-y-3">
         <h2 className="text-sm font-bold uppercase tracking-widest text-[var(--pnrr-fg)]">
-          <Trans>Pornește o investigație</Trans>
+          <Trans>Start an investigation</Trans>
         </h2>
         <div className="grid gap-3 sm:grid-cols-2">
           <InvestigationCard
-            title={<Trans>Firme în insolvență sau faliment</Trans>}
+            title={<Trans>Companies in insolvency or bankruptcy</Trans>}
             description={
               <Trans>
-                Firmele aflate în procedură, utile pentru a verifica furnizorii
-                unei instituții publice.
+                Companies under proceedings — useful when checking the suppliers
+                of a public institution.
               </Trans>
             }
             search={{ status: [INSOLVENCY, BANKRUPTCY] }}
           />
           <InvestigationCard
-            title={<Trans>Firme declarate inactive fiscal</Trans>}
+            title={<Trans>Companies declared fiscally inactive</Trans>}
             description={
               <Trans>
-                Companii marcate inactiv de ANAF, dar încă în funcțiune la ONRC.
+                Marked inactive by ANAF, yet still active in the ONRC register.
               </Trans>
             }
             search={{ inactive: true, status: [ACTIVE] }}
           />
           <InvestigationCard
-            title={<Trans>Firme înregistrate din 2024</Trans>}
+            title={<Trans>Companies registered since 2024</Trans>}
             description={
               <Trans>
-                Firme tinere — verifică cine a câștigat contracte la scurt timp
-                după înființare.
+                Young companies — check who won contracts shortly after being
+                founded.
               </Trans>
             }
             search={{ regFrom: '2024-01-01', status: [ACTIVE] }}
           />
           <InvestigationCard
-            title={<Trans>Construcții active</Trans>}
+            title={<Trans>Active construction companies</Trans>}
             description={
               <Trans>
-                Diviziunea CAEN 41 — construcții de clădiri, domeniul cu cele mai
-                multe contracte publice.
+                CAEN division 41 — building construction, the sector with the most
+                public contracts.
               </Trans>
             }
             search={{ caen: '41', status: [ACTIVE] }}
@@ -196,18 +196,18 @@ export function PrivateCompanyHubPage() {
 
       <footer className="border-t-2 border-[var(--pnrr-border)] pt-4 text-xs leading-relaxed text-[var(--pnrr-muted)]">
         <p className="font-bold uppercase tracking-widest text-[var(--pnrr-fg)]">
-          <Trans>Surse</Trans>
+          <Trans>Sources</Trans>
         </p>
         <p className="mt-2">
           <Trans>
-            ONRC — Registrul Comerțului (stare, formă juridică, CAEN). ANAF —
-            date fiscale (TVA, inactivitate) și situații financiare.
+            ONRC — the trade register (status, legal form, CAEN). ANAF — fiscal
+            data (VAT, inactivity) and financial statements.
           </Trans>
         </p>
         {stats ? (
           <p className="mt-1">
             <Trans>
-              Snapshot ONRC {stats.coverage.onrcAsOf ?? '—'} · snapshot ANAF{' '}
+              ONRC snapshot {stats.coverage.onrcAsOf ?? '—'} · ANAF snapshot{' '}
               {stats.coverage.anafAsOf ?? '—'}
             </Trans>
           </p>

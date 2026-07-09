@@ -1,10 +1,15 @@
 /**
  * Pure helpers for the /companies/search filter UI: how many facets are active
  * (for the "Filtre" badge) and one removable chip per selected value. Params in,
- * plain data out — no React, no network — so both are unit-testable.
+ * plain data out — no React, no i18n — so both are unit-testable.
+ *
+ * A chip carries the raw `field`/`value` rather than a rendered label: county,
+ * status and legal-form values are ONRC vocabulary and display as-is, while the
+ * date range and the two fiscal switches need translated copy that only the
+ * component can produce.
  *
  * `q` and `sort` are not filters: they have their own controls and survive
- * "Șterge tot".
+ * "clear all".
  */
 import {
   PRIVATE_COMPANY_STATUS_OPTIONS,
@@ -14,9 +19,21 @@ import {
 /** A patch merged into the search state and committed to the URL. */
 export type CompanyDirectoryFilterPatch = Partial<PrivateCompanyDirectorySearchState>
 
+export type CompanyDirectoryChipField =
+  | 'county'
+  | 'status'
+  | 'legalForm'
+  | 'caen'
+  | 'registrationDate'
+  | 'vat'
+  | 'inactive'
+
 export type CompanyDirectoryChip = {
   readonly key: string
-  readonly label: string
+  readonly field: CompanyDirectoryChipField
+  /** ONRC display label where the value has one; `null` for synthetic facets. */
+  readonly label: string | null
+  readonly value: string | boolean | null
   readonly patch: CompanyDirectoryFilterPatch
 }
 
@@ -69,7 +86,9 @@ export function buildCompanyDirectoryChips(
   for (const county of nonEmpty(state.county)) {
     chips.push({
       key: `county:${county}`,
+      field: 'county',
       label: county,
+      value: county,
       patch: { county: withoutValue(state.county, county) },
     })
   }
@@ -77,7 +96,9 @@ export function buildCompanyDirectoryChips(
   for (const code of nonEmpty(state.status)) {
     chips.push({
       key: `status:${code}`,
+      field: 'status',
       label: STATUS_LABEL_BY_CODE.get(code) ?? code,
+      value: code,
       patch: { status: withoutValue(state.status, code) },
     })
   }
@@ -85,15 +106,20 @@ export function buildCompanyDirectoryChips(
   for (const form of nonEmpty(state.legalForm)) {
     chips.push({
       key: `legalForm:${form}`,
+      field: 'legalForm',
       label: form,
+      value: form,
       patch: { legalForm: withoutValue(state.legalForm, form) },
     })
   }
 
   if (state.caen && state.caen.trim().length > 0) {
+    const caen = state.caen.trim()
     chips.push({
-      key: `caen:${state.caen}`,
-      label: `CAEN ${state.caen.trim()}`,
+      key: `caen:${caen}`,
+      field: 'caen',
+      label: `CAEN ${caen}`,
+      value: caen,
       patch: { caen: undefined },
     })
   }
@@ -101,7 +127,9 @@ export function buildCompanyDirectoryChips(
   if (state.regFrom || state.regTo) {
     chips.push({
       key: 'registrationDate',
-      label: registrationDateChipLabel(state.regFrom, state.regTo),
+      field: 'registrationDate',
+      label: null,
+      value: null,
       patch: { regFrom: undefined, regTo: undefined },
     })
   }
@@ -109,7 +137,9 @@ export function buildCompanyDirectoryChips(
   if (typeof state.vat === 'boolean') {
     chips.push({
       key: 'vat',
-      label: state.vat ? 'Plătitor TVA' : 'Neplătitor TVA',
+      field: 'vat',
+      label: null,
+      value: state.vat,
       patch: { vat: undefined },
     })
   }
@@ -117,7 +147,9 @@ export function buildCompanyDirectoryChips(
   if (typeof state.inactive === 'boolean') {
     chips.push({
       key: 'inactive',
-      label: state.inactive ? 'Declarat inactiv fiscal' : 'Activ fiscal',
+      field: 'inactive',
+      label: null,
+      value: state.inactive,
       patch: { inactive: undefined },
     })
   }
@@ -125,16 +157,7 @@ export function buildCompanyDirectoryChips(
   return chips
 }
 
-function registrationDateChipLabel(
-  from: string | undefined,
-  to: string | undefined,
-): string {
-  if (from && to) return `Înregistrare ${from} – ${to}`
-  if (from) return `Înregistrare după ${from}`
-  return `Înregistrare până la ${to}`
-}
-
-/** "Șterge tot": drop every facet, keep the free-text query and the sort. */
+/** "Clear all": drop every facet, keep the free-text query and the sort. */
 export function clearCompanyDirectoryFilters(
   state: PrivateCompanyDirectorySearchState,
 ): PrivateCompanyDirectorySearchState {

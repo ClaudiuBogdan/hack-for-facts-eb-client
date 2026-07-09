@@ -54,22 +54,34 @@ describe('buildCompanyDirectoryChips', () => {
     expect(chip.label).toBe('9999')
   })
 
+  it('prefixes a CAEN chip so a bare code is not mistaken for a county', () => {
+    const [chip] = buildCompanyDirectoryChips({ caen: ' 47 ' })
+    expect(chip).toMatchObject({ field: 'caen', label: 'CAEN 47', value: '47' })
+  })
+
   it('renders the date range as a single chip that clears both bounds', () => {
     const chips = buildCompanyDirectoryChips({
       regFrom: '2020-01-01',
       regTo: '2024-12-31',
     })
     expect(chips).toHaveLength(1)
-    expect(chips[0].label).toBe('Înregistrare 2020-01-01 – 2024-12-31')
+    expect(chips[0].field).toBe('registrationDate')
+    // Synthetic facet: the component owns the (translated) wording.
+    expect(chips[0].label).toBeNull()
     expect(chips[0].patch).toEqual({ regFrom: undefined, regTo: undefined })
   })
 
-  it('distinguishes the true and false forms of each fiscal switch', () => {
-    expect(buildCompanyDirectoryChips({ vat: true })[0].label).toBe('Plătitor TVA')
-    expect(buildCompanyDirectoryChips({ vat: false })[0].label).toBe('Neplătitor TVA')
-    expect(buildCompanyDirectoryChips({ inactive: true })[0].label).toBe(
-      'Declarat inactiv fiscal',
-    )
+  it('carries the boolean through so the switch chips can distinguish true/false', () => {
+    expect(buildCompanyDirectoryChips({ vat: true })[0]).toMatchObject({
+      field: 'vat',
+      value: true,
+      patch: { vat: undefined },
+    })
+    expect(buildCompanyDirectoryChips({ vat: false })[0].value).toBe(false)
+    expect(buildCompanyDirectoryChips({ inactive: true })[0]).toMatchObject({
+      field: 'inactive',
+      value: true,
+    })
   })
 
   it('emits nothing for q and sort', () => {

@@ -16,15 +16,15 @@ function isSortValue(value: string): value is PrivateCompanySortValue {
 /** Drives the `sort` search param, which the server maps onto `CompanySort`. */
 export function CompanySortSelect({ value, onChange }: Props) {
   const labels: Record<PrivateCompanySortValue, string> = {
-    name: t`Nume (A-Z)`,
-    'registration-date': t`Data înregistrării`,
+    name: t`Name (A-Z)`,
+    'registration-date': t`Registration date`,
     cui: t`CUI`,
   }
 
   return (
     <select
       id="company-sort"
-      aria-label={t`Sortează firmele`}
+      aria-label={t`Sort companies`}
       data-testid="company-sort-select"
       value={value ?? ''}
       onChange={(event) =>
@@ -32,7 +32,7 @@ export function CompanySortSelect({ value, onChange }: Props) {
       }
       className="h-11 rounded-none border-2 border-[#b1b4b6] bg-white px-3 text-sm font-semibold text-[#0b0c0c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)]"
     >
-      <option value="">{t`Relevanță`}</option>
+      <option value="">{t`Relevance`}</option>
       {PRIVATE_COMPANY_SORT_VALUES.map((option) => (
         <option key={option} value={option}>
           {labels[option]}

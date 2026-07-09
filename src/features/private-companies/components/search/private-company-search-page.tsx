@@ -43,13 +43,13 @@ export function PrivateCompanySearchPage() {
           id="company-search-title"
           className="text-3xl font-bold tracking-tight text-[var(--pnrr-fg)]"
         >
-          <Trans>Căutare firme</Trans>
+          <Trans>Company search</Trans>
         </h1>
         <p className="text-base leading-relaxed text-[var(--pnrr-muted)]">
           <Trans>
-            Caută firme românești după nume sau CUI, cu filtre pe județ, stare
-            ONRC, cod CAEN, formă juridică și dată de înregistrare. Date din ONRC
-            și ANAF.
+            Search Romanian companies by name or CUI, with filters for county,
+            registry status, CAEN activity, legal form and registration date.
+            Data from ONRC and ANAF open data.
           </Trans>
         </p>
       </header>
@@ -59,9 +59,9 @@ export function PrivateCompanySearchPage() {
           <CompanySearchAutocomplete
             value={search.q}
             onCommit={setQ}
-            placeholder={t`ex. Dedeman sau 2816464`}
+            placeholder={t`e.g. Dedeman or 2816464`}
             inputId="company-search-q"
-            ariaLabel={t`Nume firmă sau CUI`}
+            ariaLabel={t`Company name or CUI`}
             className="min-w-[16rem] flex-1"
           />
           <FilterTriggerButton
@@ -96,14 +96,14 @@ export function PrivateCompanySearchPage() {
           className="text-sm font-bold uppercase tracking-widest text-[var(--pnrr-muted)]"
         >
           {total == null ? (
-            <Trans>Rezultate</Trans>
+            <Trans>Results</Trans>
           ) : totalEstimated || total >= SEARCH_TOTAL_CAP ? (
             <Trans>
-              Peste {formatInteger(SEARCH_TOTAL_CAP)} de firme — rafinează
-              căutarea
+              Over {formatInteger(SEARCH_TOTAL_CAP)} companies — refine your
+              search
             </Trans>
           ) : (
-            <Trans>{formatInteger(total)} firme găsite</Trans>
+            <Trans>{formatInteger(total)} companies found</Trans>
           )}
         </h2>
 
@@ -113,22 +113,22 @@ export function PrivateCompanySearchPage() {
             role="alert"
           >
             <Trans>
-              Nu am putut încărca firmele acum. Încearcă din nou într-un moment.
+              Could not load companies right now. Please try again in a moment.
             </Trans>
           </p>
         ) : results.isPending ? (
           <p className="border-2 border-[var(--pnrr-border)] px-4 py-8 text-center text-base text-[var(--pnrr-muted)]">
-            <Trans>Se încarcă firmele…</Trans>
+            <Trans>Loading companies…</Trans>
           </p>
         ) : items.length === 0 ? (
           <p className="border-2 border-[var(--pnrr-border)] px-4 py-8 text-center text-base text-[var(--pnrr-muted)]">
             {hasFilters ? (
               <Trans>
-                Nicio firmă nu se potrivește cu aceste filtre. Încearcă un nume
-                mai scurt sau elimină un filtru.
+                No companies match these filters. Try a shorter name or remove a
+                filter.
               </Trans>
             ) : (
-              <Trans>Scrie un nume de firmă sau un CUI ca să începi.</Trans>
+              <Trans>Type a company name or CUI to start searching.</Trans>
             )}
           </p>
         ) : (
@@ -155,9 +155,9 @@ export function PrivateCompanySearchPage() {
               data-testid="company-search-load-more"
             >
               {results.isFetchingNextPage ? (
-                <Trans>Se încarcă…</Trans>
+                <Trans>Loading…</Trans>
               ) : (
-                <Trans>Încarcă mai multe</Trans>
+                <Trans>Load more</Trans>
               )}
             </button>
           </div>

@@ -82,24 +82,24 @@ export function CompanyFilterSheet({
       >
         <SheetHeader className="border-b-2 border-[#b1b4b6] p-6 pr-14 text-left dark:border-[var(--pnrr-border)]">
           <SheetTitle className="text-left text-2xl font-black tracking-tight text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
-            <Trans>Filtre firme</Trans>
+            <Trans>Company filters</Trans>
           </SheetTitle>
           <SheetDescription className="pt-1 text-left text-sm font-semibold text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-            <Trans>{activeCount} filtre active</Trans>
+            <Trans>{activeCount} active filters</Trans>
           </SheetDescription>
         </SheetHeader>
 
         <div className="flex-1 space-y-6 overflow-y-auto p-6">
           <section className="space-y-2">
             <Label className={SECTION_LABEL_CLASS}>
-              <Trans>Județ</Trans>
+              <Trans>County</Trans>
             </Label>
             <input
               type="search"
               className={INPUT_CLASS}
               value={countyFilter}
-              aria-label={t`Filtrează lista de județe`}
-              placeholder={t`Caută un județ`}
+              aria-label={t`Filter the county list`}
+              placeholder={t`Search a county`}
               onChange={(event) => setCountyFilter(event.target.value)}
             />
             <ul className="max-h-56 space-y-1 overflow-y-auto">
@@ -126,7 +126,7 @@ export function CompanyFilterSheet({
               })}
               {visibleCounties.length === 0 ? (
                 <li className="px-2 py-1.5 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-                  <Trans>Niciun județ nu se potrivește.</Trans>
+                  <Trans>No county matches.</Trans>
                 </li>
               ) : null}
             </ul>
@@ -134,7 +134,7 @@ export function CompanyFilterSheet({
 
           <section className="space-y-2">
             <Label className={SECTION_LABEL_CLASS}>
-              <Trans>Stare ONRC</Trans>
+              <Trans>Registry status</Trans>
             </Label>
             <ToggleGroup
               type="multiple"
@@ -156,7 +156,7 @@ export function CompanyFilterSheet({
 
           <section className="space-y-2">
             <Label htmlFor="company-filter-caen" className={SECTION_LABEL_CLASS}>
-              <Trans>Cod CAEN</Trans>
+              <Trans>CAEN code</Trans>
             </Label>
             <input
               id="company-filter-caen"
@@ -164,20 +164,20 @@ export function CompanyFilterSheet({
               inputMode="numeric"
               className={INPUT_CLASS}
               value={search.caen ?? ''}
-              placeholder={t`ex. 47 sau 4752`}
+              placeholder={t`e.g. 47 or 4752`}
               onChange={(event) => onChange({ caen: event.target.value || undefined })}
             />
             <p className="text-xs text-[#505a5f] dark:text-[var(--pnrr-muted)]">
               <Trans>
-                1–3 cifre caută toate codurile care încep așa; 4 cifre caută exact
-                acel cod.
+                1–3 digits match every code starting with them; 4 digits match
+                that exact code.
               </Trans>
             </p>
           </section>
 
           <section className="space-y-2">
             <Label className={SECTION_LABEL_CLASS}>
-              <Trans>Formă juridică</Trans>
+              <Trans>Legal form</Trans>
             </Label>
             <ToggleGroup
               type="multiple"
@@ -201,7 +201,7 @@ export function CompanyFilterSheet({
 
           <section className="space-y-2">
             <Label className={SECTION_LABEL_CLASS}>
-              <Trans>Data înregistrării</Trans>
+              <Trans>Registration date</Trans>
             </Label>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
@@ -209,7 +209,7 @@ export function CompanyFilterSheet({
                   htmlFor="company-filter-reg-from"
                   className="text-xs font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]"
                 >
-                  <Trans>De la</Trans>
+                  <Trans>From</Trans>
                 </Label>
                 <input
                   id="company-filter-reg-from"
@@ -227,7 +227,7 @@ export function CompanyFilterSheet({
                   htmlFor="company-filter-reg-to"
                   className="text-xs font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]"
                 >
-                  <Trans>Până la</Trans>
+                  <Trans>To</Trans>
                 </Label>
                 <input
                   id="company-filter-reg-to"
@@ -249,7 +249,7 @@ export function CompanyFilterSheet({
                 htmlFor="company-filter-vat"
                 className="text-sm font-semibold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]"
               >
-                <Trans>Doar plătitori de TVA</Trans>
+                <Trans>VAT payers only</Trans>
               </Label>
               <Switch
                 id="company-filter-vat"
@@ -264,7 +264,7 @@ export function CompanyFilterSheet({
                 htmlFor="company-filter-inactive"
                 className="text-sm font-semibold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]"
               >
-                <Trans>Doar declarați inactivi fiscal</Trans>
+                <Trans>Fiscally inactive only</Trans>
               </Label>
               <Switch
                 id="company-filter-inactive"
@@ -285,7 +285,7 @@ export function CompanyFilterSheet({
             onClick={onClearAll}
             data-testid="company-filter-clear-all"
           >
-            <Trans>Șterge tot</Trans>
+            <Trans>Clear all</Trans>
           </Button>
           <Button
             type="button"
@@ -293,7 +293,7 @@ export function CompanyFilterSheet({
             onClick={() => onOpenChange(false)}
             data-testid="company-filter-apply"
           >
-            <Trans>Vezi rezultatele</Trans>
+            <Trans>See results</Trans>
           </Button>
         </div>
       </SheetContent>

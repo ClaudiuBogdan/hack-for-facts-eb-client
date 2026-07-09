@@ -8,8 +8,7 @@ type Props = {
 export function PrivateCompanyTabEmpty({ title, description }: Props) {
   return (
     <div
-      className="border-2 border-[var(--pnrr-border)] px-4 py-8 sm:px-5"
-      style={{ backgroundColor: 'var(--pnrr-card)' }}
+      className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-4 py-8 sm:px-5"
     >
       <EmptyState
         title={title}

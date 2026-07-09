@@ -14,8 +14,7 @@ export function PrivateCompanyResultCard({ company }: Props) {
       <Link
         to="/companies/$cui"
         params={{ cui: company.cui }}
-        className="group block border-2 border-[var(--pnrr-border)] px-4 py-4 transition-colors hover:bg-[var(--pnrr-hover)] sm:px-5"
-        style={{ backgroundColor: 'var(--pnrr-card)' }}
+        className="group block border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-4 py-4 transition-colors hover:bg-[var(--pnrr-hover)] sm:px-5"
         data-testid="company-result-card"
       >
         <div className="flex items-start justify-between gap-4">
