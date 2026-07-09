@@ -19,6 +19,7 @@ type MainItemUrl =
   | "/budget-explorer"
   | "/entity-analytics"
   | "/procurement"
+  | "/companies"
   | "/legislatie"
   | "/intreprinderi-publice"
   | "/alegeri"
@@ -69,6 +70,11 @@ const mainItems: ReadonlyArray<{
     title: <Trans>Achiziții publice</Trans>,
     url: "/procurement",
     icon: Landmark,
+  },
+  {
+    title: <Trans>Firme</Trans>,
+    url: "/companies",
+    icon: Building2,
   },
   {
     title: <Trans>Legislație</Trans>,

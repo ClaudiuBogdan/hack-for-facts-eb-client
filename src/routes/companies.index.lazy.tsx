@@ -1,11 +1,6 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { PrivateCompanySearchPage } from '@/features/private-companies/components/search/private-company-search-page'
+import { PrivateCompanyHubPage } from '@/features/private-companies/components/hub/private-company-hub-page'
 
 export const Route = createLazyFileRoute('/companies/')({
-  component: PrivateCompanyDirectoryRoutePage,
+  component: PrivateCompanyHubPage,
 })
-
-function PrivateCompanyDirectoryRoutePage() {
-  const searchState = Route.useSearch()
-  return <PrivateCompanySearchPage searchState={searchState} />
-}

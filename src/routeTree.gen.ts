@@ -63,6 +63,7 @@ import { Route as InvestitiiPubliceCautareRouteImport } from './routes/investiti
 import { Route as IntreprinderiPubliceCuiRouteImport } from './routes/intreprinderi-publice/$cui'
 import { Route as ExperimentalSearchRouteImport } from './routes/experimental.search'
 import { Route as EntitiesCuiRouteImport } from './routes/entities.$cui'
+import { Route as CompaniesSearchRouteImport } from './routes/companies.search'
 import { Route as CompaniesCuiRouteImport } from './routes/companies.$cui'
 import { Route as ChartsNewRouteImport } from './routes/charts/new'
 import { Route as CertificatesIdRouteImport } from './routes/certificates.$id'
@@ -479,6 +480,13 @@ const EntitiesCuiRoute = EntitiesCuiRouteImport.update({
   path: '/$cui',
   getParentRoute: () => EntitiesRouteRoute,
 } as any).lazy(() => import('./routes/entities.$cui.lazy').then((d) => d.Route))
+const CompaniesSearchRoute = CompaniesSearchRouteImport.update({
+  id: '/companies/search',
+  path: '/companies/search',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/companies.search.lazy').then((d) => d.Route),
+)
 const CompaniesCuiRoute = CompaniesCuiRouteImport.update({
   id: '/companies/$cui',
   path: '/companies/$cui',
@@ -1250,6 +1258,7 @@ export interface FileRoutesByFullPath {
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
   '/companies/$cui': typeof CompaniesCuiRoute
+  '/companies/search': typeof CompaniesSearchRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/experimental/search': typeof ExperimentalSearchRoute
   '/intreprinderi-publice/$cui': typeof IntreprinderiPubliceCuiRoute
@@ -1392,6 +1401,7 @@ export interface FileRoutesByTo {
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
   '/companies/$cui': typeof CompaniesCuiRoute
+  '/companies/search': typeof CompaniesSearchRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/experimental/search': typeof ExperimentalSearchRoute
   '/intreprinderi-publice/$cui': typeof IntreprinderiPubliceCuiRoute
@@ -1541,6 +1551,7 @@ export interface FileRoutesById {
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
   '/companies/$cui': typeof CompaniesCuiRoute
+  '/companies/search': typeof CompaniesSearchRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/experimental/search': typeof ExperimentalSearchRoute
   '/intreprinderi-publice/$cui': typeof IntreprinderiPubliceCuiRoute
@@ -1696,6 +1707,7 @@ export interface FileRouteTypes {
     | '/certificates/$id'
     | '/charts/new'
     | '/companies/$cui'
+    | '/companies/search'
     | '/entities/$cui'
     | '/experimental/search'
     | '/intreprinderi-publice/$cui'
@@ -1838,6 +1850,7 @@ export interface FileRouteTypes {
     | '/certificates/$id'
     | '/charts/new'
     | '/companies/$cui'
+    | '/companies/search'
     | '/entities/$cui'
     | '/experimental/search'
     | '/intreprinderi-publice/$cui'
@@ -1986,6 +1999,7 @@ export interface FileRouteTypes {
     | '/certificates/$id'
     | '/charts/new'
     | '/companies/$cui'
+    | '/companies/search'
     | '/entities/$cui'
     | '/experimental/search'
     | '/intreprinderi-publice/$cui'
@@ -2138,6 +2152,7 @@ export interface RootRouteChildren {
   CertificatesIdRoute: typeof CertificatesIdRoute
   ChartsNewRoute: typeof ChartsNewRoute
   CompaniesCuiRoute: typeof CompaniesCuiRoute
+  CompaniesSearchRoute: typeof CompaniesSearchRoute
   ExperimentalSearchRoute: typeof ExperimentalSearchRoute
   IntreprinderiPubliceCuiRoute: typeof IntreprinderiPubliceCuiRoute
   ProvocareNotificariRoute: typeof ProvocareNotificariRoute
@@ -2573,6 +2588,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/entities/$cui'
       preLoaderRoute: typeof EntitiesCuiRouteImport
       parentRoute: typeof EntitiesRouteRoute
+    }
+    '/companies/search': {
+      id: '/companies/search'
+      path: '/companies/search'
+      fullPath: '/companies/search'
+      preLoaderRoute: typeof CompaniesSearchRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/companies/$cui': {
       id: '/companies/$cui'
@@ -3678,6 +3700,7 @@ const rootRouteChildren: RootRouteChildren = {
   CertificatesIdRoute: CertificatesIdRoute,
   ChartsNewRoute: ChartsNewRoute,
   CompaniesCuiRoute: CompaniesCuiRoute,
+  CompaniesSearchRoute: CompaniesSearchRoute,
   ExperimentalSearchRoute: ExperimentalSearchRoute,
   IntreprinderiPubliceCuiRoute: IntreprinderiPubliceCuiRoute,
   ProvocareNotificariRoute: ProvocareNotificariRoute,
