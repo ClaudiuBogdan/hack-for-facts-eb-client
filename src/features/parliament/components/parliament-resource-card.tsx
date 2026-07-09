@@ -11,7 +11,7 @@ import {
 import { ParliamentCardChevron } from './parliament-card-chevron'
 
 type LinkTarget = {
-  readonly to: '/parlament' | '/parlament/comisii'
+  readonly to: '/parlament' | '/parlament/comisii' | '/parlament/stenograme'
   readonly search?: Record<string, string | undefined>
 }
 

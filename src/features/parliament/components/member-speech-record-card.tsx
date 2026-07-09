@@ -1,9 +1,21 @@
 import { ExternalLink } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
 import type { ParliamentMemberSpeech } from '@/schemas/parliament'
 import { formatVoteDayLong } from '../lib/formatting'
 
 type Props = {
   readonly speech: ParliamentMemberSpeech
+  /**
+   * Speaker line (global stenograme list) — links to the member's interventii
+   * tab. Omitted on the member tab, where the speaker is the page subject.
+   */
+  readonly speaker?: {
+    readonly name: string
+    readonly memberId?: string
+    readonly groupName?: string
+  }
+  /** When set, the card links to the speech's own page (`$speechKey`). */
+  readonly detailTo?: string
 }
 
 /** Longest summary snippet shown on the card before the transcript expander. */
@@ -66,24 +78,56 @@ function snippet(text: string): string {
 
 /** One speech TURN in the interventii list: date + sitting badge + summary +
  * an expandable verbatim transcript + a source-honest stenogram link. */
-export function MemberSpeechRecordCard({ speech }: Props) {
+export function MemberSpeechRecordCard({ speech, speaker, detailTo }: Props) {
   const badge = sittingBadge(speech.chamber)
   const lead = snippet(leadText(speech))
   const hasSource = Boolean(speech.sourceUrl)
   const isExact = speech.sourceUrlKind === 'exact'
+  const dateLabel = speech.spokenAt
+    ? formatVoteDayLong(speech.spokenAt)
+    : 'Dată indisponibilă'
 
   return (
     <article className="border-2 border-[#b1b4b6] bg-white p-5 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <span className="text-sm font-semibold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
-          {speech.spokenAt ? formatVoteDayLong(speech.spokenAt) : 'Dată indisponibilă'}
-        </span>
+        {detailTo ? (
+          <Link
+            to="/parlament/stenograme/$speechKey"
+            params={{ speechKey: detailTo }}
+            className="text-sm font-semibold text-[#1d70b8] underline underline-offset-4 hover:text-[#0b0c0c] dark:hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+          >
+            {dateLabel}
+          </Link>
+        ) : (
+          <span className="text-sm font-semibold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+            {dateLabel}
+          </span>
+        )}
         <span
           className="inline-flex items-center border border-[#b1b4b6] px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-[#505a5f] dark:border-[var(--pnrr-border)] dark:text-[var(--pnrr-muted)]"
         >
           {badge.label}
         </span>
       </div>
+
+      {speaker ? (
+        <p className="mt-1.5 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          {speaker.memberId ? (
+            <Link
+              to="/parlament/membri/$memberId/interventii"
+              params={{ memberId: speaker.memberId }}
+              className="font-semibold text-[#0b0c0c] underline underline-offset-4 hover:text-[#1d70b8] dark:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+            >
+              {speaker.name}
+            </Link>
+          ) : (
+            <span className="font-semibold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+              {speaker.name}
+            </span>
+          )}
+          {speaker.groupName ? ` · ${speaker.groupName}` : null}
+        </p>
+      ) : null}
 
       <p className="mt-2 whitespace-pre-line text-base leading-7 text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
         {lead}

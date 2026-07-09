@@ -1,0 +1,50 @@
+{
+  "data": {
+    "parliamentSpeeches": {
+      "total": 120,
+      "totalEstimated": false,
+      "searchDepth": null,
+      "edges": [
+        {
+          "cursor": "c0",
+          "node": {
+            "speechKey": "cdep:seg:1",
+            "spokenAt": "2026-05-13",
+            "title": null,
+            "summary": "Dezbatere despre bugetul educației naționale.",
+            "chamber": "camera_deputatilor",
+            "sourceUrl": "https://www.cdep.ro/pls/steno/steno2015.stenograma?ids=9001",
+            "sourceUrlKind": "exact",
+            "fullText": "Domnul deputat:\nDezbatere despre bugetul educației naționale, pe larg.",
+            "speakerName": "Luminiţa Păucean-Fernandes",
+            "member": {
+              "mandateKey": "1:2024:79",
+              "fullName": "Luminiţa Păucean-Fernandes",
+              "chamber": "senat",
+              "groupName": "PNL"
+            }
+          }
+        },
+        {
+          "cursor": "c1",
+          "node": {
+            "speechKey": "senat:sp:1",
+            "spokenAt": "2026-05-11",
+            "title": null,
+            "summary": "Declarație a premierului în plenul reunit.",
+            "chamber": "comun",
+            "sourceUrl": "https://www.senat.ro/Legis/lista.aspx",
+            "sourceUrlKind": "lossy_root",
+            "fullText": "Domnul Prim-Ministru:\nDeclarație privind programul de guvernare.",
+            "speakerName": "Domnul Prim-Ministru",
+            "member": null
+          }
+        }
+      ],
+      "pageInfo": {
+        "hasNextPage": true,
+        "endCursor": "c2"
+      }
+    }
+  }
+}

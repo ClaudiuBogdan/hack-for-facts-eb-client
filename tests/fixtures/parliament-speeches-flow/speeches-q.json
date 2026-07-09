@@ -1,0 +1,35 @@
+{
+  "data": {
+    "parliamentSpeeches": {
+      "total": 7,
+      "totalEstimated": false,
+      "searchDepth": "TITLE_SUMMARY",
+      "edges": [
+        {
+          "cursor": "c0",
+          "node": {
+            "speechKey": "cdep:seg:1",
+            "spokenAt": "2026-05-13",
+            "title": null,
+            "summary": "Dezbatere despre bugetul educației naționale.",
+            "chamber": "camera_deputatilor",
+            "sourceUrl": "https://www.cdep.ro/pls/steno/steno2015.stenograma?ids=9001",
+            "sourceUrlKind": "exact",
+            "fullText": "Domnul deputat:\nDezbatere despre bugetul educației naționale, pe larg.",
+            "speakerName": "Luminiţa Păucean-Fernandes",
+            "member": {
+              "mandateKey": "1:2024:79",
+              "fullName": "Luminiţa Păucean-Fernandes",
+              "chamber": "senat",
+              "groupName": "PNL"
+            }
+          }
+        }
+      ],
+      "pageInfo": {
+        "hasNextPage": false,
+        "endCursor": "c1"
+      }
+    }
+  }
+}

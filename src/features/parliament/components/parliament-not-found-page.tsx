@@ -12,7 +12,7 @@ import { VoteDetailBreadcrumb } from './vote-detail-breadcrumb'
 
 type ActionLink = {
   readonly label: string
-  readonly to: '/parlament'
+  readonly to: '/parlament' | '/parlament/stenograme'
   readonly search?: Record<string, string | undefined>
   readonly variant?: 'primary' | 'secondary'
 }

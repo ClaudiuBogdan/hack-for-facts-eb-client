@@ -1,0 +1,19 @@
+{
+  "data": {
+    "parliamentMembers": {
+      "total": 1,
+      "totalEstimated": false,
+      "members": [
+        {
+          "mandateKey": "1:2024:79",
+          "chamber": "senat",
+          "legislature": "2024",
+          "fullName": "Păucean-Fernandes Luminiţa",
+          "groupName": "PNL",
+          "constituencyName": "MUREȘ",
+          "birthDate": null
+        }
+      ]
+    }
+  }
+}

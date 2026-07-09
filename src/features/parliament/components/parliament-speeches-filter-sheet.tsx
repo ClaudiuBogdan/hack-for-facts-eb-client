@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -10,14 +10,17 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import type { MemberSpeechesSearch } from '@/schemas/parliament'
+import type { ParliamentSpeechesSearch } from '@/schemas/parliament'
 import {
-  countActiveMemberSpeechFilters,
-  getMemberSpeechQ,
-} from '../lib/member-speeches-filter'
+  countActiveParliamentSpeechFilters,
+  getParliamentSpeechQ,
+} from '../lib/parliament-speeches-filter'
+import { useParliamentMember } from '../hooks/use-parliament-data'
+import { formatMemberName } from '../lib/formatting'
+import { ParliamentSpeakerCombobox } from './parliament-speaker-combobox'
 
-/** Patch merged into the search + committed to the URL by the tab. */
-export type MemberSpeechesFilterPatch = Partial<MemberSpeechesSearch>
+/** Patch merged into the search + committed to the URL by the page. */
+export type ParliamentSpeechesFilterPatch = Partial<ParliamentSpeechesSearch>
 
 const SECTION_LABEL_CLASS =
   'text-xs font-bold uppercase tracking-wide text-[#0b0c0c] dark:text-[var(--pnrr-fg)]'
@@ -28,50 +31,23 @@ const TOGGLE_ITEM_CLASS =
 const INPUT_CLASS =
   'h-10 w-full rounded-none border-2 border-[#b1b4b6] bg-white px-3 text-sm text-[#0b0c0c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)]'
 
-/** Debounce before a keystroke reaches the URL/query (avoids a fetch per key). */
-const Q_DEBOUNCE_MS = 400
-
 type SheetProps = {
   readonly open: boolean
   readonly onOpenChange: (open: boolean) => void
-  readonly search: MemberSpeechesSearch
-  readonly onChange: (patch: MemberSpeechesFilterPatch) => void
+  readonly search: ParliamentSpeechesSearch
+  readonly onChange: (patch: ParliamentSpeechesFilterPatch) => void
   readonly onClearAll: () => void
 }
 
-/** GOV.UK-light side panel for the member interventii filters. */
-export function MemberSpeechesFilterSheet({
+/** GOV.UK-light side panel for the global stenograme filters. */
+export function ParliamentSpeechesFilterSheet({
   open,
   onOpenChange,
   search,
   onChange,
   onClearAll,
 }: SheetProps) {
-  const activeCount = countActiveMemberSpeechFilters(search)
-
-  // Local draft for the free-text query, debounced before it hits the URL. Keep
-  // it in sync when the committed value changes from elsewhere (chip removal,
-  // clear-all, deep-link) but only when it actually differs, so typing is not
-  // clobbered mid-keystroke.
-  const committedQ = getMemberSpeechQ(search) ?? ''
-  const [qDraft, setQDraft] = useState(committedQ)
-  const lastCommitted = useRef(committedQ)
-  useEffect(() => {
-    if (committedQ !== lastCommitted.current) {
-      lastCommitted.current = committedQ
-      setQDraft(committedQ)
-    }
-  }, [committedQ])
-
-  useEffect(() => {
-    const next = qDraft.trim()
-    if (next === committedQ) return
-    const handle = window.setTimeout(() => {
-      lastCommitted.current = next
-      onChange({ q: next.length > 0 ? next : undefined })
-    }, Q_DEBOUNCE_MS)
-    return () => window.clearTimeout(handle)
-  }, [qDraft, committedQ, onChange])
+  const activeCount = countActiveParliamentSpeechFilters(search)
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -81,7 +57,7 @@ export function MemberSpeechesFilterSheet({
       >
         <SheetHeader className="border-b-2 border-[#b1b4b6] p-6 pr-14 text-left dark:border-[var(--pnrr-border)]">
           <SheetTitle className="text-left text-2xl font-black tracking-tight text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
-            Filtre intervenții
+            Filtre stenograme
           </SheetTitle>
           <SheetDescription className="pt-1 text-left text-sm font-semibold text-[#505a5f] dark:text-[var(--pnrr-muted)]">
             {activeCount} {activeCount === 1 ? 'filtru activ' : 'filtre active'}
@@ -90,17 +66,55 @@ export function MemberSpeechesFilterSheet({
 
         <div className="flex-1 space-y-6 overflow-y-auto p-6">
           <section className="space-y-2">
+            <Label htmlFor="speeches-speaker" className={SECTION_LABEL_CLASS}>
+              Vorbitor
+            </Label>
+            <ParliamentSpeakerCombobox
+              inputId="speeches-speaker"
+              value={search.vorbitor}
+              onChange={(vorbitor) => onChange({ vorbitor })}
+            />
+          </section>
+
+          <section className="space-y-2">
+            <Label className={SECTION_LABEL_CLASS}>Camera</Label>
+            <ToggleGroup
+              type="single"
+              value={search.camera ?? ''}
+              onValueChange={(value) =>
+                onChange({
+                  camera:
+                    value === 'camera' || value === 'senat' || value === 'comun'
+                      ? value
+                      : undefined,
+                })
+              }
+              className="grid grid-cols-1 gap-2"
+            >
+              <ToggleGroupItem value="camera" className={TOGGLE_ITEM_CLASS}>
+                Camera Deputaților
+              </ToggleGroupItem>
+              <ToggleGroupItem value="senat" className={TOGGLE_ITEM_CLASS}>
+                Senat
+              </ToggleGroupItem>
+              <ToggleGroupItem value="comun" className={TOGGLE_ITEM_CLASS}>
+                Ședință comună
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </section>
+
+          <section className="space-y-2">
             <Label className={SECTION_LABEL_CLASS}>Interval de timp</Label>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <Label
-                  htmlFor="member-speeches-from"
+                  htmlFor="speeches-from"
                   className="text-xs font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]"
                 >
                   De la
                 </Label>
                 <input
-                  id="member-speeches-from"
+                  id="speeches-from"
                   type="date"
                   className={INPUT_CLASS}
                   value={search.from ?? ''}
@@ -112,13 +126,13 @@ export function MemberSpeechesFilterSheet({
               </div>
               <div className="space-y-1">
                 <Label
-                  htmlFor="member-speeches-to"
+                  htmlFor="speeches-to"
                   className="text-xs font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]"
                 >
                   Până la
                 </Label>
                 <input
-                  id="member-speeches-to"
+                  id="speeches-to"
                   type="date"
                   className={INPUT_CLASS}
                   value={search.to ?? ''}
@@ -129,49 +143,10 @@ export function MemberSpeechesFilterSheet({
                 />
               </div>
             </div>
-          </section>
-
-          <section className="space-y-2">
-            <Label className={SECTION_LABEL_CLASS}>Tipul ședinței</Label>
-            <ToggleGroup
-              type="single"
-              value={search.session ?? ''}
-              onValueChange={(value) =>
-                onChange({
-                  session:
-                    value === 'proprie' || value === 'comun' ? value : undefined,
-                })
-              }
-              className="grid grid-cols-2 gap-2"
-            >
-              <ToggleGroupItem value="proprie" className={TOGGLE_ITEM_CLASS}>
-                Camera proprie
-              </ToggleGroupItem>
-              <ToggleGroupItem value="comun" className={TOGGLE_ITEM_CLASS}>
-                Ședință comună
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </section>
-
-          <section className="space-y-2">
-            <Label
-              htmlFor="member-speeches-q"
-              className={SECTION_LABEL_CLASS}
-            >
-              Căutare în intervenții
-            </Label>
-            <input
-              id="member-speeches-q"
-              type="search"
-              inputMode="search"
-              placeholder="Caută în titlu, rezumat și transcriere…"
-              className={INPUT_CLASS}
-              value={qDraft}
-              onChange={(event) => setQDraft(event.target.value)}
-            />
             <p className="text-xs font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-              Caută textul integral al intervenției, unde transcrierea este
-              disponibilă.
+              Fără vorbitor sau interval, lista arată anul selectat în calendar.
+              Căutarea în transcrierea completă cere un vorbitor sau un interval
+              de cel mult 3 luni.
             </p>
           </section>
         </div>
@@ -200,12 +175,9 @@ export function MemberSpeechesFilterSheet({
   )
 }
 
-/** Kept name for existing callers — the shared trigger button, re-exported. */
-export { FilterTriggerButton as MemberSpeechesFilterTriggerButton } from './parliament-filter-trigger-button'
-
 type ChipsProps = {
-  readonly search: MemberSpeechesSearch
-  readonly onChange: (patch: MemberSpeechesFilterPatch) => void
+  readonly search: ParliamentSpeechesSearch
+  readonly onChange: (patch: ParliamentSpeechesFilterPatch) => void
   readonly onClearAll: () => void
 }
 
@@ -218,13 +190,53 @@ function formatChipDate(iso: string): string {
   }).format(new Date(`${iso.slice(0, 10)}T00:00:00Z`))
 }
 
+const CAMERA_CHIP_LABEL: Record<'camera' | 'senat' | 'comun', string> = {
+  camera: 'Camera Deputaților',
+  senat: 'Senat',
+  comun: 'Ședință comună',
+}
+
+/** Chip label for the speaker facet — resolves the member name when cached. */
+function SpeakerChipLabel({ mandateKey }: { readonly mandateKey: string }) {
+  const { data: member } = useParliamentMember(mandateKey)
+  return (
+    <>
+      Vorbitor:{' '}
+      {member ? formatMemberName(member.firstName, member.lastName) : mandateKey}
+    </>
+  )
+}
+
 /** One chip per active facet, each with an X to remove it. */
-export function MemberSpeechesActiveFilters({
+export function ParliamentSpeechesActiveFilters({
   search,
   onChange,
   onClearAll,
 }: ChipsProps) {
-  const chips: Array<{ key: string; label: string; onRemove: () => void }> = []
+  const chips: Array<{
+    key: string
+    label: ReactNode
+    ariaLabel: string
+    onRemove: () => void
+  }> = []
+
+  if (search.vorbitor) {
+    chips.push({
+      key: 'vorbitor',
+      label: <SpeakerChipLabel mandateKey={search.vorbitor} />,
+      ariaLabel: 'Elimină filtrul de vorbitor',
+      onRemove: () => onChange({ vorbitor: undefined }),
+    })
+  }
+
+  if (search.camera) {
+    chips.push({
+      key: 'camera',
+      label: `Camera: ${CAMERA_CHIP_LABEL[search.camera]}`,
+      ariaLabel: 'Elimină filtrul de cameră',
+      onRemove: () => onChange({ camera: undefined }),
+    })
+  }
 
   if (search.from || search.to) {
     const clearDate = () => onChange({ from: undefined, to: undefined })
@@ -232,6 +244,7 @@ export function MemberSpeechesActiveFilters({
       chips.push({
         key: 'day',
         label: `Ziua: ${formatChipDate(search.from)}`,
+        ariaLabel: 'Elimină filtrul de zi',
         onRemove: clearDate,
       })
     } else {
@@ -242,24 +255,18 @@ export function MemberSpeechesActiveFilters({
       chips.push({
         key: 'period',
         label: `Perioadă: ${parts[0]} – ${parts[1]}`,
+        ariaLabel: 'Elimină filtrul de perioadă',
         onRemove: clearDate,
       })
     }
   }
 
-  if (search.session) {
-    chips.push({
-      key: 'session',
-      label: `Ședință: ${search.session === 'proprie' ? 'Camera proprie' : 'Ședință comună'}`,
-      onRemove: () => onChange({ session: undefined }),
-    })
-  }
-
-  const q = getMemberSpeechQ(search)
+  const q = getParliamentSpeechQ(search)
   if (q) {
     chips.push({
       key: 'q',
       label: `Conține: ${q}`,
+      ariaLabel: 'Elimină filtrul de căutare',
       onRemove: () => onChange({ q: undefined }),
     })
   }
@@ -277,7 +284,7 @@ export function MemberSpeechesActiveFilters({
           <button
             type="button"
             onClick={chip.onRemove}
-            aria-label={`Elimină filtrul ${chip.label}`}
+            aria-label={chip.ariaLabel}
             className="inline-flex h-4 w-4 shrink-0 items-center justify-center hover:text-[#1d70b8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
           >
             <X className="h-3.5 w-3.5" aria-hidden />

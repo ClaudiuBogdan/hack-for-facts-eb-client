@@ -1,0 +1,35 @@
+{
+  "data": {
+    "parliamentSpeeches": {
+      "total": 5,
+      "totalEstimated": false,
+      "searchDepth": null,
+      "edges": [
+        {
+          "cursor": "c0",
+          "node": {
+            "speechKey": "cdep:seg:2",
+            "spokenAt": "2026-03-20",
+            "title": null,
+            "summary": "Susțin amendamentul privind investițiile locale.",
+            "chamber": "camera_deputatilor",
+            "sourceUrl": "https://www.cdep.ro/pls/steno/steno2015.stenograma?ids=9001",
+            "sourceUrlKind": "exact",
+            "fullText": null,
+            "speakerName": "Luminiţa Păucean-Fernandes",
+            "member": {
+              "mandateKey": "1:2024:79",
+              "fullName": "Luminiţa Păucean-Fernandes",
+              "chamber": "senat",
+              "groupName": "PNL"
+            }
+          }
+        }
+      ],
+      "pageInfo": {
+        "hasNextPage": false,
+        "endCursor": "c1"
+      }
+    }
+  }
+}

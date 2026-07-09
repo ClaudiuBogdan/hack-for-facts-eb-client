@@ -1,0 +1,32 @@
+{
+  "data": {
+    "parliamentSpeechActivity": {
+      "year": 2026,
+      "availableYears": [
+        2026,
+        2025
+      ],
+      "searchDepth": null,
+      "days": [
+        {
+          "date": "2026-03-20",
+          "total": 12,
+          "proprie": 9,
+          "comun": 3
+        },
+        {
+          "date": "2026-05-11",
+          "total": 4,
+          "proprie": 0,
+          "comun": 4
+        },
+        {
+          "date": "2026-05-13",
+          "total": 21,
+          "proprie": 21,
+          "comun": 0
+        }
+      ]
+    }
+  }
+}

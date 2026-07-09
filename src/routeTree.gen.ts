@@ -77,6 +77,7 @@ import { Route as LangLearningRouteRouteImport } from './routes/$lang/learning/r
 import { Route as PrimarieHartaIndexRouteImport } from './routes/primarie/harta/index'
 import { Route as PrimarieCuiIndexRouteImport } from './routes/primarie/$cui/index'
 import { Route as ParlamentVoturiIndexRouteImport } from './routes/parlament/voturi/index'
+import { Route as ParlamentStenogrameIndexRouteImport } from './routes/parlament/stenograme/index'
 import { Route as ParlamentProiecteIndexRouteImport } from './routes/parlament/proiecte/index'
 import { Route as ParlamentMembriIndexRouteImport } from './routes/parlament/membri/index'
 import { Route as ParlamentGrupuriIndexRouteImport } from './routes/parlament/grupuri/index'
@@ -92,6 +93,7 @@ import { Route as ProcurementDirectAcquisitionsIdRouteImport } from './routes/pr
 import { Route as ProcurementContractsIdRouteImport } from './routes/procurement/contracts/$id'
 import { Route as ProcurementCategoriesCodeRouteImport } from './routes/procurement/categories/$code'
 import { Route as PrimarieCuiShareImageDotpngRouteImport } from './routes/primarie/$cui/share-image[.]png'
+import { Route as ParlamentStenogrameSpeechKeyRouteImport } from './routes/parlament/stenograme/$speechKey'
 import { Route as ParlamentGrupuriGroupIdRouteImport } from './routes/parlament/grupuri/$groupId'
 import { Route as ParlamentComisiiCommitteeKeyRouteImport } from './routes/parlament/comisii/$committeeKey'
 import { Route as OngUriSursaSnapshotIdRouteImport } from './routes/ong-uri.sursa.$snapshotId'
@@ -574,6 +576,14 @@ const ParlamentVoturiIndexRoute = ParlamentVoturiIndexRouteImport.update({
   path: '/parlament/voturi/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ParlamentStenogrameIndexRoute =
+  ParlamentStenogrameIndexRouteImport.update({
+    id: '/parlament/stenograme/',
+    path: '/parlament/stenograme/',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/parlament/stenograme/index.lazy').then((d) => d.Route),
+  )
 const ParlamentProiecteIndexRoute = ParlamentProiecteIndexRouteImport.update({
   id: '/parlament/proiecte/',
   path: '/parlament/proiecte/',
@@ -681,6 +691,16 @@ const PrimarieCuiShareImageDotpngRoute =
     path: '/share-image.png',
     getParentRoute: () => PrimarieCuiRouteRoute,
   } as any)
+const ParlamentStenogrameSpeechKeyRoute =
+  ParlamentStenogrameSpeechKeyRouteImport.update({
+    id: '/parlament/stenograme/$speechKey',
+    path: '/parlament/stenograme/$speechKey',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/parlament/stenograme/$speechKey.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const ParlamentGrupuriGroupIdRoute = ParlamentGrupuriGroupIdRouteImport.update({
   id: '/parlament/grupuri/$groupId',
   path: '/parlament/grupuri/$groupId',
@@ -1289,6 +1309,7 @@ export interface FileRoutesByFullPath {
   '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
   '/parlament/comisii/$committeeKey': typeof ParlamentComisiiCommitteeKeyRoute
   '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
+  '/parlament/stenograme/$speechKey': typeof ParlamentStenogrameSpeechKeyRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/procurement/categories/$code': typeof ProcurementCategoriesCodeRoute
   '/procurement/contracts/$id': typeof ProcurementContractsIdRoute
@@ -1304,6 +1325,7 @@ export interface FileRoutesByFullPath {
   '/parlament/grupuri/': typeof ParlamentGrupuriIndexRoute
   '/parlament/membri/': typeof ParlamentMembriIndexRoute
   '/parlament/proiecte/': typeof ParlamentProiecteIndexRoute
+  '/parlament/stenograme/': typeof ParlamentStenogrameIndexRoute
   '/parlament/voturi/': typeof ParlamentVoturiIndexRoute
   '/primarie/$cui/': typeof PrimarieCuiIndexRoute
   '/primarie/harta/': typeof PrimarieHartaIndexRoute
@@ -1425,6 +1447,7 @@ export interface FileRoutesByTo {
   '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
   '/parlament/comisii/$committeeKey': typeof ParlamentComisiiCommitteeKeyRoute
   '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
+  '/parlament/stenograme/$speechKey': typeof ParlamentStenogrameSpeechKeyRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/procurement/categories/$code': typeof ProcurementCategoriesCodeRoute
   '/procurement/contracts/$id': typeof ProcurementContractsIdRoute
@@ -1440,6 +1463,7 @@ export interface FileRoutesByTo {
   '/parlament/grupuri': typeof ParlamentGrupuriIndexRoute
   '/parlament/membri': typeof ParlamentMembriIndexRoute
   '/parlament/proiecte': typeof ParlamentProiecteIndexRoute
+  '/parlament/stenograme': typeof ParlamentStenogrameIndexRoute
   '/parlament/voturi': typeof ParlamentVoturiIndexRoute
   '/primarie/$cui': typeof PrimarieCuiIndexRoute
   '/primarie/harta': typeof PrimarieHartaIndexRoute
@@ -1576,6 +1600,7 @@ export interface FileRoutesById {
   '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
   '/parlament/comisii/$committeeKey': typeof ParlamentComisiiCommitteeKeyRoute
   '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
+  '/parlament/stenograme/$speechKey': typeof ParlamentStenogrameSpeechKeyRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/procurement/categories/$code': typeof ProcurementCategoriesCodeRoute
   '/procurement/contracts/$id': typeof ProcurementContractsIdRoute
@@ -1591,6 +1616,7 @@ export interface FileRoutesById {
   '/parlament/grupuri/': typeof ParlamentGrupuriIndexRoute
   '/parlament/membri/': typeof ParlamentMembriIndexRoute
   '/parlament/proiecte/': typeof ParlamentProiecteIndexRoute
+  '/parlament/stenograme/': typeof ParlamentStenogrameIndexRoute
   '/parlament/voturi/': typeof ParlamentVoturiIndexRoute
   '/primarie/$cui/': typeof PrimarieCuiIndexRoute
   '/primarie/harta/': typeof PrimarieHartaIndexRoute
@@ -1729,6 +1755,7 @@ export interface FileRouteTypes {
     | '/ong-uri/sursa/$snapshotId'
     | '/parlament/comisii/$committeeKey'
     | '/parlament/grupuri/$groupId'
+    | '/parlament/stenograme/$speechKey'
     | '/primarie/$cui/share-image.png'
     | '/procurement/categories/$code'
     | '/procurement/contracts/$id'
@@ -1744,6 +1771,7 @@ export interface FileRouteTypes {
     | '/parlament/grupuri/'
     | '/parlament/membri/'
     | '/parlament/proiecte/'
+    | '/parlament/stenograme/'
     | '/parlament/voturi/'
     | '/primarie/$cui/'
     | '/primarie/harta/'
@@ -1865,6 +1893,7 @@ export interface FileRouteTypes {
     | '/ong-uri/sursa/$snapshotId'
     | '/parlament/comisii/$committeeKey'
     | '/parlament/grupuri/$groupId'
+    | '/parlament/stenograme/$speechKey'
     | '/primarie/$cui/share-image.png'
     | '/procurement/categories/$code'
     | '/procurement/contracts/$id'
@@ -1880,6 +1909,7 @@ export interface FileRouteTypes {
     | '/parlament/grupuri'
     | '/parlament/membri'
     | '/parlament/proiecte'
+    | '/parlament/stenograme'
     | '/parlament/voturi'
     | '/primarie/$cui'
     | '/primarie/harta'
@@ -2015,6 +2045,7 @@ export interface FileRouteTypes {
     | '/ong-uri/sursa/$snapshotId'
     | '/parlament/comisii/$committeeKey'
     | '/parlament/grupuri/$groupId'
+    | '/parlament/stenograme/$speechKey'
     | '/primarie/$cui/share-image.png'
     | '/procurement/categories/$code'
     | '/procurement/contracts/$id'
@@ -2030,6 +2061,7 @@ export interface FileRouteTypes {
     | '/parlament/grupuri/'
     | '/parlament/membri/'
     | '/parlament/proiecte/'
+    | '/parlament/stenograme/'
     | '/parlament/voturi/'
     | '/primarie/$cui/'
     | '/primarie/harta/'
@@ -2135,6 +2167,7 @@ export interface RootRouteChildren {
   MapsPublicMapIdRoute: typeof MapsPublicMapIdRoute
   ParlamentComisiiCommitteeKeyRoute: typeof ParlamentComisiiCommitteeKeyRoute
   ParlamentGrupuriGroupIdRoute: typeof ParlamentGrupuriGroupIdRoute
+  ParlamentStenogrameSpeechKeyRoute: typeof ParlamentStenogrameSpeechKeyRoute
   StatisticiTeritoriiSirutaRoute: typeof StatisticiTeritoriiSirutaRoute
   ClassificationsEconomicIndexRoute: typeof ClassificationsEconomicIndexRoute
   ClassificationsFunctionalIndexRoute: typeof ClassificationsFunctionalIndexRoute
@@ -2144,6 +2177,7 @@ export interface RootRouteChildren {
   ParlamentGrupuriIndexRoute: typeof ParlamentGrupuriIndexRoute
   ParlamentMembriIndexRoute: typeof ParlamentMembriIndexRoute
   ParlamentProiecteIndexRoute: typeof ParlamentProiecteIndexRoute
+  ParlamentStenogrameIndexRoute: typeof ParlamentStenogrameIndexRoute
   ParlamentVoturiIndexRoute: typeof ParlamentVoturiIndexRoute
   PrimarieHartaIndexRoute: typeof PrimarieHartaIndexRoute
   ApiPnrrRawIndicatorsRoute: typeof ApiPnrrRawIndicatorsRoute
@@ -2652,6 +2686,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ParlamentVoturiIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/parlament/stenograme/': {
+      id: '/parlament/stenograme/'
+      path: '/parlament/stenograme'
+      fullPath: '/parlament/stenograme/'
+      preLoaderRoute: typeof ParlamentStenogrameIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/parlament/proiecte/': {
       id: '/parlament/proiecte/'
       path: '/parlament/proiecte'
@@ -2756,6 +2797,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/primarie/$cui/share-image.png'
       preLoaderRoute: typeof PrimarieCuiShareImageDotpngRouteImport
       parentRoute: typeof PrimarieCuiRouteRoute
+    }
+    '/parlament/stenograme/$speechKey': {
+      id: '/parlament/stenograme/$speechKey'
+      path: '/parlament/stenograme/$speechKey'
+      fullPath: '/parlament/stenograme/$speechKey'
+      preLoaderRoute: typeof ParlamentStenogrameSpeechKeyRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/parlament/grupuri/$groupId': {
       id: '/parlament/grupuri/$groupId'
@@ -3662,6 +3710,7 @@ const rootRouteChildren: RootRouteChildren = {
   MapsPublicMapIdRoute: MapsPublicMapIdRoute,
   ParlamentComisiiCommitteeKeyRoute: ParlamentComisiiCommitteeKeyRoute,
   ParlamentGrupuriGroupIdRoute: ParlamentGrupuriGroupIdRoute,
+  ParlamentStenogrameSpeechKeyRoute: ParlamentStenogrameSpeechKeyRoute,
   StatisticiTeritoriiSirutaRoute: StatisticiTeritoriiSirutaRoute,
   ClassificationsEconomicIndexRoute: ClassificationsEconomicIndexRoute,
   ClassificationsFunctionalIndexRoute: ClassificationsFunctionalIndexRoute,
@@ -3671,6 +3720,7 @@ const rootRouteChildren: RootRouteChildren = {
   ParlamentGrupuriIndexRoute: ParlamentGrupuriIndexRoute,
   ParlamentMembriIndexRoute: ParlamentMembriIndexRoute,
   ParlamentProiecteIndexRoute: ParlamentProiecteIndexRoute,
+  ParlamentStenogrameIndexRoute: ParlamentStenogrameIndexRoute,
   ParlamentVoturiIndexRoute: ParlamentVoturiIndexRoute,
   PrimarieHartaIndexRoute: PrimarieHartaIndexRoute,
   ApiPnrrRawIndicatorsRoute: ApiPnrrRawIndicatorsRoute,

@@ -1,7 +1,31 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import type { ReactNode } from 'react'
 import type { ParliamentMemberSpeech } from '@/schemas/parliament'
 import { MemberSpeechRecordCard } from './member-speech-record-card'
+
+// The card renders router Links only for the OPTIONAL global-page props
+// (speaker / detailTo); a plain anchor stub keeps the tests router-free.
+vi.mock('@tanstack/react-router', () => ({
+  Link: ({
+    children,
+    to,
+    params,
+  }: {
+    children: ReactNode
+    to: string
+    params?: Record<string, string>
+  }) => (
+    <a
+      href={Object.entries(params ?? {}).reduce(
+        (path, [key, value]) => path.replace(`$${key}`, value),
+        to,
+      )}
+    >
+      {children}
+    </a>
+  ),
+}))
 
 const base: ParliamentMemberSpeech = {
   speechKey: 'm:sp:0',
@@ -113,5 +137,43 @@ describe('MemberSpeechRecordCard', () => {
     ).not.toBeInTheDocument()
     // The "Cameră proprie · Senat" badge marks it as own-chamber.
     expect(screen.getByText('Cameră proprie · Senat')).toBeInTheDocument()
+  })
+
+  it('renders no speaker line or detail link without the optional props', () => {
+    renderCard()
+    // Only the source anchor exists — no member link, no date link.
+    expect(screen.getAllByRole('link')).toHaveLength(1)
+    expect(screen.getByText('20 martie 2026').closest('a')).toBeNull()
+  })
+
+  it('renders a linked speaker line (global list) with the group name', () => {
+    render(
+      <MemberSpeechRecordCard
+        speech={base}
+        speaker={{ name: 'Ion Popescu', memberId: 'dep-001', groupName: 'Grupul X' }}
+      />,
+    )
+    const link = screen.getByRole('link', { name: 'Ion Popescu' })
+    expect(link).toHaveAttribute('href', '/parlament/membri/dep-001/interventii')
+    expect(screen.getByText(/· Grupul X/)).toBeInTheDocument()
+  })
+
+  it('renders an unmatched speaker as plain text (real data, no link)', () => {
+    render(
+      <MemberSpeechRecordCard
+        speech={base}
+        speaker={{ name: 'Domnul Prim-Ministru' }}
+      />,
+    )
+    expect(screen.getByText('Domnul Prim-Ministru')).toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', { name: 'Domnul Prim-Ministru' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('links the date to the speech detail page when detailTo is set', () => {
+    render(<MemberSpeechRecordCard speech={base} detailTo="m:sp:0" />)
+    const link = screen.getByRole('link', { name: '20 martie 2026' })
+    expect(link).toHaveAttribute('href', '/parlament/stenograme/m:sp:0')
   })
 })

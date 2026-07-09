@@ -133,6 +133,14 @@ export function MemberInterventiiTab({ member, search }: Props) {
             className="font-semibold text-[#0b0c0c] underline underline-offset-4 hover:text-[#1d70b8] dark:text-[var(--pnrr-fg)]"
           >
             {getChamberLabel(member.chamber)}
+          </Link>{' '}
+          sau puteți{' '}
+          <Link
+            to="/parlament/stenograme"
+            search={{ vorbitor: member.memberId }}
+            className="font-semibold text-[#0b0c0c] underline underline-offset-4 hover:text-[#1d70b8] dark:text-[var(--pnrr-fg)]"
+          >
+            căuta în toate stenogramele Parlamentului
           </Link>
           .
         </p>

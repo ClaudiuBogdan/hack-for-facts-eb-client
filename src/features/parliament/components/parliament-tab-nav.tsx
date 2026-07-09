@@ -2,17 +2,31 @@ import { Link } from '@tanstack/react-router'
 import { cn } from '@/lib/utils'
 import type { ParliamentTabId } from '@/schemas/parliament'
 
-export type ParliamentTab = 'hub' | 'voturi' | 'grupuri' | 'proiecte'
+export type ParliamentTab =
+  | 'hub'
+  | 'voturi'
+  | 'stenograme'
+  | 'grupuri'
+  | 'proiecte'
 
-const TABS: ReadonlyArray<{
+/**
+ * Each entry carries its own link target: the hub sections stay `?tab=` search
+ * params on /parlament, while stenograme is a dedicated route.
+ */
+type TabEntry = {
   readonly id: ParliamentTab
-  readonly tab: ParliamentTabId
   readonly label: string
-}> = [
-  { id: 'hub', tab: 'prezentare', label: 'Prezentare' },
-  { id: 'voturi', tab: 'voturi', label: 'Voturi' },
-  { id: 'proiecte', tab: 'proiecte', label: 'Proiecte' },
-  { id: 'grupuri', tab: 'grupuri', label: 'Grupuri' },
+} & (
+  | { readonly to: '/parlament'; readonly tab: ParliamentTabId }
+  | { readonly to: '/parlament/stenograme' }
+)
+
+const TABS: ReadonlyArray<TabEntry> = [
+  { id: 'hub', to: '/parlament', tab: 'prezentare', label: 'Prezentare' },
+  { id: 'voturi', to: '/parlament', tab: 'voturi', label: 'Voturi' },
+  { id: 'stenograme', to: '/parlament/stenograme', label: 'Stenograme' },
+  { id: 'proiecte', to: '/parlament', tab: 'proiecte', label: 'Proiecte' },
+  { id: 'grupuri', to: '/parlament', tab: 'grupuri', label: 'Grupuri' },
 ]
 
 type Props = {
@@ -31,8 +45,8 @@ export function ParliamentTabNav({ activeTab }: Props) {
         return (
           <Link
             key={tab.id}
-            to="/parlament"
-            search={{ tab: tab.tab }}
+            to={tab.to}
+            search={'tab' in tab ? { tab: tab.tab } : undefined}
             className={cn(
               'relative whitespace-nowrap px-4 py-3 text-base transition-colors sm:px-5',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]',
