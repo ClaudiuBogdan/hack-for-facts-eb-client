@@ -69,8 +69,9 @@ export function ProcurementSearchContent({ search }: Props) {
     <div className="space-y-5">
       <ProcurementGrainTabs grain={search.grain} onGrainChange={filters.setGrain} />
 
-      {/* Auto-applies after a 300 ms debounce; the form only preserves the
-          `search` role and Enter-to-commit-now, it never submits. */}
+      {/* The query auto-applies 300 ms after the last keystroke — there is no
+          submit button. The form survives only to carry the `search` landmark
+          role; Enter must not trigger a native submit/reload. */}
       <form role="search" onSubmit={(event) => event.preventDefault()}>
         <ProcurementDebouncedSearchInput
           value={search.q}
