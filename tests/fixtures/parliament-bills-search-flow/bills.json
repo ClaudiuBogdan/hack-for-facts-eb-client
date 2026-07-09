@@ -1,0 +1,36 @@
+{
+  "data": {
+    "parliamentBills": {
+      "total": 42,
+      "totalEstimated": false,
+      "bills": [
+        {
+          "billKey": "plx:127/2026",
+          "plxNumber": "127",
+          "plxYear": 2026,
+          "senateNumber": "L45",
+          "senateYear": 2026,
+          "title": "Proiect de Lege privind educația națională",
+          "finalLawNumber": null,
+          "finalLawYear": null,
+          "statusText": "la Camera Deputaţilor",
+          "billType": "Proiect de Lege",
+          "lastEventDate": "2026-06-01"
+        },
+        {
+          "billKey": "plx:128/2026",
+          "plxNumber": "127",
+          "plxYear": 2026,
+          "senateNumber": "L45",
+          "senateYear": 2026,
+          "title": "Propunere legislativă privind transportul public",
+          "finalLawNumber": null,
+          "finalLawYear": null,
+          "statusText": "la Camera Deputaţilor",
+          "billType": "Propunere legislativă",
+          "lastEventDate": "2026-06-01"
+        }
+      ]
+    }
+  }
+}

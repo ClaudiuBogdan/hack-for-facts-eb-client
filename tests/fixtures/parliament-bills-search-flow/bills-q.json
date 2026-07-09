@@ -1,0 +1,23 @@
+{
+  "data": {
+    "parliamentBills": {
+      "total": 3,
+      "totalEstimated": false,
+      "bills": [
+        {
+          "billKey": "plx:200/2026",
+          "plxNumber": "127",
+          "plxYear": 2026,
+          "senateNumber": "L45",
+          "senateYear": 2026,
+          "title": "Proiect de Lege privind bugetul de stat pe anul 2027",
+          "finalLawNumber": null,
+          "finalLawYear": null,
+          "statusText": "la Camera Deputaţilor",
+          "billType": "Proiect de Lege",
+          "lastEventDate": "2026-06-01"
+        }
+      ]
+    }
+  }
+}
