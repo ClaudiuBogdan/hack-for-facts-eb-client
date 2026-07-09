@@ -18,8 +18,12 @@ import type {
   PrivateCompanyProfile,
   PrivateCompanySource,
 } from '@/schemas/private-company'
-import type { PrivateCompanySearchResultPage } from '@/schemas/private-company-search'
 import type {
+  CompanyHubStats,
+  PrivateCompanySearchResultPage,
+} from '@/schemas/private-company-search'
+import type {
+  CompanyHubStatsResponse,
   CompanyProfileResponse,
   RawCompany,
   RawCompanyFinancialYear,
@@ -192,5 +196,27 @@ export function mapCompanyListItem(
     vatPayer: node.vatPayer,
     declaredFiscallyInactive: node.declaredFiscallyInactive,
     registrationDate: node.registrationDatePresent ? node.registrationDate : null,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Hub stats
+// ---------------------------------------------------------------------------
+
+export function mapCompanyHubStats(
+  response: CompanyHubStatsResponse,
+): CompanyHubStats {
+  const stats = response.companyHubStats
+  return {
+    totalCompanies: stats.totalCompanies,
+    activeCompanies: stats.activeCompanies,
+    statusMix: stats.statusMix,
+    topCounties: stats.topCounties,
+    caenDivisions: stats.caenDivisions ?? null,
+    coverage: {
+      onrcAsOf: stats.coverage?.onrcAsOf ?? null,
+      anafAsOf: stats.coverage?.anafAsOf ?? null,
+    },
+    computedAt: stats.computedAt,
   }
 }

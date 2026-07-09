@@ -14,15 +14,25 @@ import type {
 
 const PAGE_SIZE = 25
 
+/** Stable key for a multi-value facet — selection order must not split the cache. */
+function facetKey(values: readonly string[] | undefined): string {
+  return values && values.length > 0 ? [...values].sort().join(',') : ''
+}
+
 export function privateCompanySearchQueryKey(
   state: PrivateCompanyDirectorySearchState,
 ) {
   return [
     'private-company-search',
     state.q ?? '',
-    state.county ?? '',
-    state.status ?? '',
+    facetKey(state.county),
+    facetKey(state.status),
     state.caen ?? '',
+    facetKey(state.legalForm),
+    state.regFrom ?? '',
+    state.regTo ?? '',
+    state.vat ?? '',
+    state.inactive ?? '',
     state.sort ?? '',
   ] as const
 }
@@ -39,6 +49,11 @@ export function usePrivateCompanySearch(
         county: state.county,
         status: state.status,
         caen: state.caen,
+        legalForm: state.legalForm,
+        regFrom: state.regFrom,
+        regTo: state.regTo,
+        vat: state.vat,
+        inactive: state.inactive,
         sort: state.sort,
         pageSize: PAGE_SIZE,
         cursor: pageParam,

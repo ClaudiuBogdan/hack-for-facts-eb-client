@@ -1,5 +1,6 @@
 import type { PrivateCompanyProfile } from '@/schemas/private-company'
 import type {
+  CompanyHubStats,
   PrivateCompanyCountyFacet,
   PrivateCompanySearchQuery,
   PrivateCompanySearchResultPage,
@@ -7,6 +8,7 @@ import type {
 import { isPrivateCompanyMockEnabled } from '../lib/mock-mode'
 import { fetchPrivateCompanyProfileMock } from './private-company-api.mock'
 import {
+  fetchCompanyHubStatsLive,
   fetchPrivateCompanyCountiesLive,
   fetchPrivateCompanyProfileLive,
   fetchPrivateCompanySearchLive,
@@ -14,6 +16,7 @@ import {
   type CompanyResolveHit,
 } from './private-company-api.live'
 import {
+  fetchCompanyHubStatsMock,
   fetchPrivateCompanyCountiesMock,
   fetchPrivateCompanySearchMock,
   resolveCompanyByNameMock,
@@ -46,6 +49,21 @@ export async function fetchPrivateCompanyCounties(): Promise<
     return fetchPrivateCompanyCountiesMock()
   }
   return fetchPrivateCompanyCountiesLive()
+}
+
+/**
+ * One cached server aggregate — never assembled client-side from three
+ * `companyCountyProfile` calls (the CAEN_DIVISION leg alone is ~10-13s cold).
+ * The live `companyHubStats` field is being added server-side; until it ships,
+ * only the mock path returns data and the hub renders its error/retry state.
+ */
+export async function fetchCompanyHubStats(
+  signal?: AbortSignal,
+): Promise<CompanyHubStats> {
+  if (isPrivateCompanyMockEnabled()) {
+    return fetchCompanyHubStatsMock()
+  }
+  return fetchCompanyHubStatsLive(signal)
 }
 
 export async function resolveCompanyByName(

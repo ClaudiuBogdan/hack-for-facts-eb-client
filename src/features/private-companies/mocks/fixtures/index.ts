@@ -176,11 +176,187 @@ export const sparseBilantProfile: PrivateCompanyProfile = {
   ],
 }
 
+/**
+ * The four fixtures below exist so the directory filters visibly change the
+ * result set under `VITE_MOCK_DATASETS=private-companies`: between them they
+ * cover four counties, four registry statuses, four legal forms, four CAEN
+ * divisions and both fiscal switches.
+ */
+
+/** Radiată SRL, declared fiscally inactive, no VAT — Timiş, retail (47). */
+export const struckOffProfile: PrivateCompanyProfile = {
+  organizationId: 'cui:6553492',
+  cui: '6553492',
+  codInmatriculare: 'J35/210/1994',
+  legalName: 'MAGAZINUL VECHI SRL',
+  legalForm: 'SRL',
+  registrationDate: '1994-11-02',
+  status: { code: '1084', label: 'radiată' },
+  address: {
+    display: 'Str. Piața Unirii nr. 4, Timișoara, Timiș',
+    county: 'TIMIŞ',
+    locality: 'Timișoara',
+  },
+  geography: null,
+  caenActivities: [
+    {
+      code: '4711',
+      rev: 'rev2',
+      label: 'Comerț cu amănuntul în magazine nespecializate',
+      source: 'onrc',
+    },
+  ],
+  representatives: [],
+  euBranches: [],
+  fiscal: {
+    vatPayer: false,
+    inactive: true,
+    anafFound: true,
+    asOfDate: '2026-05-16',
+    fiscalCaen: { code: '4711', rev: 'rev2' },
+  },
+  financials: [],
+  sources: [
+    { id: 'onrc', snapshotDate: '2026-05-06' },
+    { id: 'anaf', snapshotDate: '2026-05-16' },
+  ],
+}
+
+/** Insolvență SA — Braşov, construction (41). */
+export const insolventProfile: PrivateCompanyProfile = {
+  organizationId: 'cui:11223344',
+  cui: '11223344',
+  codInmatriculare: 'J08/77/2005',
+  legalName: 'CONSTRUCT BRASOV SA',
+  legalForm: 'SA',
+  registrationDate: '2005-07-19',
+  status: { code: '1107', label: 'insolvență' },
+  address: {
+    display: 'Bd. Griviței nr. 12, Brașov',
+    county: 'BRAŞOV',
+    locality: 'Brașov',
+  },
+  geography: null,
+  caenActivities: [
+    {
+      code: '4120',
+      rev: 'rev2',
+      label: 'Lucrări de construcții a clădirilor rezidențiale și nerezidențiale',
+      source: 'onrc',
+    },
+  ],
+  representatives: [{ name: 'Marin Vasile', role: 'administrator judiciar' }],
+  euBranches: [],
+  fiscal: {
+    vatPayer: true,
+    inactive: false,
+    anafFound: true,
+    asOfDate: '2026-05-16',
+    fiscalCaen: { code: '4120', rev: 'rev2' },
+  },
+  financials: [
+    {
+      fiscalYear: 2023,
+      turnover: 18_400_000,
+      netProfit: null,
+      netLoss: 3_100_000,
+      employees: 96,
+      currency: 'RON',
+    },
+  ],
+  sources: [
+    { id: 'onrc', snapshotDate: '2026-05-06' },
+    { id: 'anaf', snapshotDate: '2026-05-16' },
+  ],
+}
+
+/** Active PFA — Cluj, software (62). Recent registration, not a VAT payer. */
+export const pfaProfile: PrivateCompanyProfile = {
+  organizationId: 'cui:44556677',
+  cui: '44556677',
+  codInmatriculare: 'F12/501/2021',
+  legalName: 'POPA IOANA PFA',
+  legalForm: 'PFA',
+  registrationDate: '2021-04-05',
+  status: { code: '1048', label: 'funcțiune' },
+  address: {
+    display: 'Str. Memorandumului nr. 9, Cluj-Napoca, Cluj',
+    county: 'CLUJ',
+    locality: 'Cluj-Napoca',
+  },
+  geography: null,
+  caenActivities: [
+    {
+      code: '6201',
+      rev: 'rev2',
+      label: 'Activități de realizare a soft-ului la comandă',
+      source: 'onrc',
+    },
+  ],
+  representatives: [],
+  euBranches: [],
+  fiscal: {
+    vatPayer: false,
+    inactive: false,
+    anafFound: true,
+    asOfDate: '2026-05-16',
+    fiscalCaen: { code: '6201', rev: 'rev2' },
+  },
+  financials: [],
+  sources: [
+    { id: 'onrc', snapshotDate: '2026-05-06' },
+    { id: 'anaf', snapshotDate: '2026-05-16' },
+  ],
+}
+
+/** Faliment SNC — Dolj, freight transport (49). */
+export const bankruptProfile: PrivateCompanyProfile = {
+  organizationId: 'cui:8877665',
+  cui: '8877665',
+  codInmatriculare: 'J16/44/1996',
+  legalName: 'TRANSPORT OLTENIA SNC',
+  legalForm: 'SNC',
+  registrationDate: '1996-02-28',
+  status: { code: '1070', label: 'faliment' },
+  address: {
+    display: 'Calea București nr. 121, Craiova, Dolj',
+    county: 'DOLJ',
+    locality: 'Craiova',
+  },
+  geography: null,
+  caenActivities: [
+    {
+      code: '4941',
+      rev: 'rev2',
+      label: 'Transporturi rutiere de mărfuri',
+      source: 'onrc',
+    },
+  ],
+  representatives: [],
+  euBranches: [],
+  fiscal: {
+    vatPayer: true,
+    inactive: true,
+    anafFound: true,
+    asOfDate: '2026-05-16',
+    fiscalCaen: { code: '4941', rev: 'rev2' },
+  },
+  financials: [],
+  sources: [
+    { id: 'onrc', snapshotDate: '2026-05-06' },
+    { id: 'anaf', snapshotDate: '2026-05-16' },
+  ],
+}
+
 const mockProfilesByCui: Readonly<Record<string, PrivateCompanyProfile | null>> =
   {
     '14399840': danteInternationalProfile,
     '9718383': anafNotFoundProfile,
     '1973096': sparseBilantProfile,
+    '6553492': struckOffProfile,
+    '11223344': insolventProfile,
+    '44556677': pfaProfile,
+    '8877665': bankruptProfile,
     '12345678': invalidCuiProfile,
   }
 

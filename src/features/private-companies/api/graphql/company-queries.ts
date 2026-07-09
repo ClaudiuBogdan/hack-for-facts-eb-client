@@ -223,35 +223,86 @@ export type RawCompanyResolveHit = z.infer<typeof rawCompanyResolveHitSchema>
 export type CompanyResolveResponse = z.infer<typeof companyResolveResponseSchema>
 
 // ---------------------------------------------------------------------------
-// County facet list — companyCountyProfile(groupBy: COUNTY)
+// Group profile — companyCountyProfile(filter, groupBy)
 //
-// `companyCountyProfile` requires at least one filter, so we pass a broad
-// status filter (active companies) to enumerate the canonical display-form
-// county names used by the `county.eq` filter.
+// `companyCountyProfile` requires at least one filter. Callers pass the grouping
+// dimension explicitly (COUNTY | STATUS | CAEN_DIVISION); the county facet list
+// groups by COUNTY over active companies to enumerate the canonical display-form
+// names used by the `county.eq` filter.
+//
+// The CAEN_DIVISION leg is slow (~10-13s cold) — never fan three of these out
+// from the hub; read `companyHubStats` instead.
 // ---------------------------------------------------------------------------
 
-export const COMPANY_COUNTY_LIST_QUERY = /* GraphQL */ `
-  query CompanyCountyList($filter: CompaniesFilter) {
-    companyCountyProfile(filter: $filter, groupBy: COUNTY) {
+export const COMPANY_GROUP_PROFILE_QUERY = /* GraphQL */ `
+  query CompanyGroupProfile($filter: CompaniesFilter, $groupBy: CompanyGroupBy!) {
+    companyCountyProfile(filter: $filter, groupBy: $groupBy) {
       denominator
+      coverage { onrcAsOf anafAsOf }
       groups { key label count }
     }
   }
 `
 
-export const companyCountyListResponseSchema = z.object({
+const rawCompanyGroupSchema = z.object({
+  key: z.string(),
+  label: z.string().nullable(),
+  count: z.number(),
+})
+
+/** `coverage` is a recent server addition; tolerate its absence. */
+const rawCoverageSchema = z
+  .object({
+    onrcAsOf: z.string().nullable(),
+    anafAsOf: z.string().nullable(),
+  })
+  .nullish()
+
+export const companyGroupProfileResponseSchema = z.object({
   companyCountyProfile: z.object({
     denominator: z.number(),
-    groups: z.array(
-      z.object({
-        key: z.string(),
-        label: z.string().nullable(),
-        count: z.number(),
-      }),
-    ),
+    coverage: rawCoverageSchema,
+    groups: z.array(rawCompanyGroupSchema),
   }),
 })
 
-export type CompanyCountyListResponse = z.infer<
-  typeof companyCountyListResponseSchema
+export type CompanyGroupProfileResponse = z.infer<
+  typeof companyGroupProfileResponseSchema
 >
+
+// ---------------------------------------------------------------------------
+// Hub stats — companyHubStats
+//
+// A single cached aggregate for the /companies hub. Shape assumed here and
+// mirrored by the mock adapter until the server field ships.
+// ---------------------------------------------------------------------------
+
+export const COMPANY_HUB_STATS_QUERY = /* GraphQL */ `
+  query CompanyHubStats {
+    companyHubStats {
+      totalCompanies
+      activeCompanies
+      statusMix { key label count }
+      topCounties { key label count }
+      caenDivisions { key label count }
+      coverage { onrcAsOf anafAsOf }
+      computedAt
+    }
+  }
+`
+
+export const companyHubStatsResponseSchema = z.object({
+  companyHubStats: z.object({
+    totalCompanies: z.number(),
+    activeCompanies: z.number(),
+    statusMix: z.array(rawCompanyGroupSchema),
+    topCounties: z.array(rawCompanyGroupSchema),
+    // The CAEN roll-up is the expensive leg; the server may null it out under
+    // load, so the hub treats `null` as "unavailable, retry" rather than "none".
+    caenDivisions: z.array(rawCompanyGroupSchema).nullish(),
+    coverage: rawCoverageSchema,
+    computedAt: z.string().nullable(),
+  }),
+})
+
+export type CompanyHubStatsResponse = z.infer<typeof companyHubStatsResponseSchema>
