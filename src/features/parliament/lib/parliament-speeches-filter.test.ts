@@ -134,11 +134,13 @@ describe('isSpeechSearchBounded / expectedSearchDepth (pre-fetch hint)', () => {
 })
 
 describe('getParliamentSpeechQ / countActiveParliamentSpeechFilters', () => {
-  it('normalizes q and counts facets (an never counts)', () => {
+  it('normalizes q and counts only the sheet facets (an and q never count)', () => {
     expect(getParliamentSpeechQ({ q: '  buget  ' })).toBe('buget')
     expect(getParliamentSpeechQ({})).toBeUndefined()
     expect(countActiveParliamentSpeechFilters({})).toBe(0)
     expect(countActiveParliamentSpeechFilters({ an: 2026 })).toBe(0)
+    // q lives in the visible search input, not the sheet — it must not badge.
+    expect(countActiveParliamentSpeechFilters({ q: 'buget' })).toBe(0)
     expect(
       countActiveParliamentSpeechFilters({
         vorbitor: 'x',
@@ -146,6 +148,6 @@ describe('getParliamentSpeechQ / countActiveParliamentSpeechFilters', () => {
         from: '2026-01-01',
         q: 'buget',
       }),
-    ).toBe(4)
+    ).toBe(3)
   })
 })

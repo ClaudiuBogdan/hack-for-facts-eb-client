@@ -119,6 +119,10 @@ test.describe('Global stenograme — heatmap + filters + honest search', () => {
     await expect(page.getByText(/din 7 intervenții/)).toBeVisible({
       timeout: 15000,
     })
+    await page.screenshot({
+      path: 'tmp/shots/parliament-stenograme-list.png',
+      fullPage: true,
+    })
   })
 
   test('a speaker-bounded search flips the notice to FULL_TEXT and resolves the chip', async ({

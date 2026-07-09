@@ -138,9 +138,12 @@ export function expectedSearchDepth(
 }
 
 /**
- * Count the active FILTER facets (speaker, chamber, date range, free-text q).
- * The year (`an`) is navigation, not a filter, so it never counts — mirroring
- * `countActiveMemberSpeechFilters`.
+ * Count the facets the FILTER SHEET owns (speaker, chamber, date range) — it
+ * drives the trigger badge and the sheet's "N filtre active" line. Unlike
+ * `countActiveMemberSpeechFilters`, `q` does NOT count: on this page the
+ * free-text query lives in the always-visible search input (with its own
+ * chip), not inside the sheet, so counting it would badge a filter the user
+ * cannot find there. The year (`an`) is navigation, so it never counts.
  */
 export function countActiveParliamentSpeechFilters(
   search: ParliamentSpeechesSearch,
@@ -149,6 +152,5 @@ export function countActiveParliamentSpeechFilters(
   if (search.vorbitor) count += 1
   if (search.camera) count += 1
   if (search.from || search.to) count += 1
-  if (getParliamentSpeechQ(search)) count += 1
   return count
 }

@@ -264,8 +264,10 @@ export function ParliamentSpeechesPage({ search }: Props) {
           </div>
         ) : (
           <p className="text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-            {activeCount > 0
-              ? 'Nicio intervenție nu corespunde filtrelor selectate.'
+            {/* `q` is not a sheet facet (activeCount ignores it) but it does
+                narrow the list — both must flip the empty-state copy. */}
+            {activeCount > 0 || q
+              ? 'Nicio intervenție nu corespunde criteriilor selectate.'
               : `Nu există intervenții consemnate pentru anul ${year}.`}
           </p>
         )}
