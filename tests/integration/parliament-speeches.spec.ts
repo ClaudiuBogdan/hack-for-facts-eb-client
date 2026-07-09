@@ -187,4 +187,20 @@ test.describe('Global stenograme — heatmap + filters + honest search', () => {
       fullPage: true,
     })
   })
+
+  test('a direct deep-link to a colon-bearing speechKey resolves', async ({
+    page,
+  }) => {
+    // Real keys are `cdep:<segment_key>` / `senat:<speech_key>` — the param must
+    // survive URL encoding when the page is opened cold, not just via a Link.
+    await page.goto(`/parlament/stenograme/${encodeURIComponent('cdep:seg:1')}`)
+    await waitForPageReady(page)
+
+    await expect(page.getByText('Transcrierea completă')).toBeVisible({
+      timeout: 15000,
+    })
+    await expect(
+      page.getByText(/Dezbatere despre bugetul educației naționale, pe larg\./),
+    ).toBeVisible()
+  })
 })
