@@ -672,7 +672,7 @@ export async function fetchParliamentMemberVoteActivityMock(
 const MOCK_MEMBER_SPEECHES_PAGE_SIZE = 50
 
 /** One deterministic mock speech template (chamber resolved per member). */
-type MockSpeechTemplate = {
+export type MockSpeechTemplate = {
   readonly date: string
   /** 'own' → the member's own chamber; 'comun' → a joint sitting. */
   readonly sitting: 'own' | 'comun'
@@ -687,7 +687,7 @@ type MockSpeechTemplate = {
  * for every member so `VITE_USE_MOCK_DATA=true` and the unit tests are stable.
  * Note: two 2026-05-13 and two 2025-06-15 rows exercise the multi-turn day.
  */
-const MOCK_SPEECH_TEMPLATES: readonly MockSpeechTemplate[] = [
+export const MOCK_SPEECH_TEMPLATES: readonly MockSpeechTemplate[] = [
   {
     date: '2026-05-13',
     sitting: 'own',
@@ -760,9 +760,16 @@ const MOCK_SPEECH_TEMPLATES: readonly MockSpeechTemplate[] = [
 ]
 
 /** The member's own-chamber GraphQL token. */
-function mockOwnChamberToken(chamber: ParliamentChamber): string {
+export function mockOwnChamberToken(chamber: ParliamentChamber): string {
   return chamber === 'camera' ? 'camera_deputatilor' : 'senat'
 }
+
+/**
+ * The extended mock roster (fixture members + synthesized fill), shared with
+ * the global-stenograme mock module so global speech turns reuse the SAME
+ * speech keys and speaker identities as the member interventii tab.
+ */
+export const MOCK_PARLIAMENT_MEMBERS: readonly ParliamentMember[] = members
 
 function buildMemberSpeeches(
   memberId: string,

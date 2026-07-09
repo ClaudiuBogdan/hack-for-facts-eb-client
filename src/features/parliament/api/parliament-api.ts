@@ -39,6 +39,22 @@ import type {
   ParliamentVotesSearch,
 } from '@/schemas/parliament'
 import { isParliamentMockEnabled } from '../lib/mock-mode'
+import type { ParliamentSpeechesFilterInput } from '../lib/parliament-speeches-filter'
+import type {
+  ParliamentSpeech,
+  ParliamentSpeechActivity,
+  ParliamentSpeechesList,
+} from '@/schemas/parliament'
+import {
+  fetchParliamentSpeechesMock,
+  fetchParliamentSpeechActivityMock,
+  fetchParliamentSpeechDetailMock,
+} from './parliament-speeches-api.mock'
+import {
+  fetchParliamentSpeechesLive,
+  fetchParliamentSpeechActivityLive,
+  fetchParliamentSpeechDetailLive,
+} from './parliament-speeches-api.live'
 import type { MemberVotesFilterInput } from '../lib/member-votes-filter'
 import type { MemberSpeechesFilterInput } from '../lib/member-speeches-filter'
 import {
@@ -239,6 +255,36 @@ export async function fetchParliamentMemberSpeechActivity(
   return isParliamentMockEnabled()
     ? fetchParliamentMemberSpeechActivityMock(memberId, year, filter, q)
     : fetchParliamentMemberSpeechActivityLive(memberId, year, filter, q)
+}
+
+// ── global stenograme (all-parliament speeches page) ─────────────────────────
+
+export async function fetchParliamentSpeeches(
+  after?: string,
+  filter?: ParliamentSpeechesFilterInput,
+  q?: string,
+): Promise<ParliamentSpeechesList> {
+  return isParliamentMockEnabled()
+    ? fetchParliamentSpeechesMock(after, filter, q)
+    : fetchParliamentSpeechesLive(after, filter, q)
+}
+
+export async function fetchParliamentSpeechActivity(
+  year: number,
+  filter?: ParliamentSpeechesFilterInput,
+  q?: string,
+): Promise<ParliamentSpeechActivity | null> {
+  return isParliamentMockEnabled()
+    ? fetchParliamentSpeechActivityMock(year, filter, q)
+    : fetchParliamentSpeechActivityLive(year, filter, q)
+}
+
+export async function fetchParliamentSpeechDetail(
+  speechKey: string,
+): Promise<ParliamentSpeech | null> {
+  return isParliamentMockEnabled()
+    ? fetchParliamentSpeechDetailMock(speechKey)
+    : fetchParliamentSpeechDetailLive(speechKey)
 }
 
 export async function fetchParliamentMemberProfile(

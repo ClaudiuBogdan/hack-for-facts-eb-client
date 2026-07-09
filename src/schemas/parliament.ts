@@ -436,6 +436,73 @@ export type ParliamentMemberSpeechActivity = z.infer<
   typeof ParliamentMemberSpeechActivitySchema
 >
 
+// ── global stenograme (all-parliament speeches page) ──────────────────────────
+
+/**
+ * The speaker of a global-list speech turn. NULL on the wire for turns whose
+ * speaker was never matched to a mandate (PM, guests, officials) — those turns
+ * are REAL data and stay in the list, rendered without a member link.
+ */
+export const ParliamentSpeechSpeakerSchema = z.object({
+  mandateKey: z.string(),
+  fullName: z.string(),
+  /** GraphQL chamber token; optional — mirrors the member surface. */
+  chamber: z.string().optional(),
+  groupName: z.string().optional(),
+})
+export type ParliamentSpeechSpeaker = z.infer<typeof ParliamentSpeechSpeakerSchema>
+
+/**
+ * How deep the server actually searched when `q` was set (the connection's
+ * `searchDepth`): titles+summaries only, or the verbatim transcripts too.
+ * `null`/absent when no `q` was sent. The depth notice renders from THIS value
+ * (the server is the source of truth), never from a client-side guess.
+ */
+export const ParliamentSpeechSearchDepthSchema = z.enum([
+  'TITLE_SUMMARY',
+  'FULL_TEXT',
+])
+export type ParliamentSpeechSearchDepth = z.infer<
+  typeof ParliamentSpeechSearchDepthSchema
+>
+
+/** A global-list speech turn: the member-speech shape + speaker identity. */
+export const ParliamentSpeechSchema = ParliamentMemberSpeechSchema.extend({
+  /** Speaker as printed in the stenogram — present even when unmatched. */
+  speakerName: z.string().optional(),
+  speaker: ParliamentSpeechSpeakerSchema.nullable().optional(),
+})
+export type ParliamentSpeech = z.infer<typeof ParliamentSpeechSchema>
+
+/**
+ * One page of the global speeches connection. `total` is CAPPED server-side at
+ * 10 000 (`totalEstimated: true` → render "peste 10.000"), unlike the member
+ * connection whose total is exact.
+ */
+export const ParliamentSpeechesListSchema = z.object({
+  speeches: z.array(ParliamentSpeechSchema),
+  total: z.number().int().nonnegative(),
+  totalEstimated: z.boolean(),
+  searchDepth: ParliamentSpeechSearchDepthSchema.nullable(),
+  hasNextPage: z.boolean(),
+  endCursor: z.string().nullable(),
+})
+export type ParliamentSpeechesList = z.infer<typeof ParliamentSpeechesListSchema>
+
+/**
+ * Institution-wide per-year speech activity (the stenograme heatmap). Same day
+ * shape as the member aggregate, plus the applied `searchDepth` for honesty.
+ */
+export const ParliamentSpeechActivitySchema = z.object({
+  year: z.number().int(),
+  days: z.array(ParliamentMemberSpeechActivityDaySchema),
+  availableYears: z.array(z.number().int()),
+  searchDepth: ParliamentSpeechSearchDepthSchema.nullable(),
+})
+export type ParliamentSpeechActivity = z.infer<
+  typeof ParliamentSpeechActivitySchema
+>
+
 export const MemberSpokenContributionSchema = z.object({
   contributionId: z.string(),
   heldAt: z.string(),
@@ -788,3 +855,28 @@ export const MemberSpeechesSearchSchema = z.object({
   an: z.coerce.number().int().optional().catch(undefined),
 })
 export type MemberSpeechesSearch = z.infer<typeof MemberSpeechesSearchSchema>
+
+/**
+ * Search params for the global stenograme page (/parlament/stenograme).
+ * Lenient like the other parliament search schemas — junk never throws.
+ *   - `an`       — selected year. Load-bearing for the LIST too, not just the
+ *                  heatmap: the server refuses an unbounded speeches query, so
+ *                  when neither `vorbitor` nor from/to is set the client sends
+ *                  the year window (defaults to the current year).
+ *   - `camera`   — camera | senat | comun (joint sittings) — one 3-way facet.
+ *   - `vorbitor` — the speaker's mandateKey (picked via the roster combobox).
+ *   - `from`/`to`— inclusive spoken-date range (YYYY-MM-DD).
+ *   - `q`        — free-text; depth (titles+summaries vs full transcripts) is
+ *                  decided server-side and reported back via `searchDepth`.
+ */
+export const ParliamentSpeechesSearchSchema = z.object({
+  an: z.coerce.number().int().optional().catch(undefined),
+  camera: z.enum(['camera', 'senat', 'comun']).optional().catch(undefined),
+  vorbitor: z.string().trim().min(1).optional().catch(undefined),
+  from: strictIsoDateParam,
+  to: strictIsoDateParam,
+  q: z.string().trim().min(1).max(200).optional().catch(undefined),
+})
+export type ParliamentSpeechesSearch = z.infer<
+  typeof ParliamentSpeechesSearchSchema
+>

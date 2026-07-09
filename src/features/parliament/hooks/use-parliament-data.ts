@@ -25,11 +25,15 @@ import {
   fetchParliamentMemberSpeeches,
   fetchParliamentMemberSpeechActivity,
   fetchParliamentMembers,
+  fetchParliamentSpeechActivity,
+  fetchParliamentSpeechDetail,
+  fetchParliamentSpeeches,
   fetchParliamentVoteDetail,
   fetchParliamentVotes,
 } from '../api/parliament-api'
 import type { MemberVotesFilterInput } from '../lib/member-votes-filter'
 import type { MemberSpeechesFilterInput } from '../lib/member-speeches-filter'
+import type { ParliamentSpeechesFilterInput } from '../lib/parliament-speeches-filter'
 
 const PARLIAMENT_QUERY_KEY = ['parliament'] as const
 
@@ -195,6 +199,49 @@ export function useParliamentMemberSpeechActivity(
     enabled: Boolean(memberId && year),
     // NO placeholderData: same lesson as the vote-activity query — stale
     // carry-over would show the wrong year/filter cells as if current.
+  })
+}
+
+// ── global stenograme (all-parliament speeches page) ─────────────────────────
+
+export function useParliamentSpeeches(
+  filter?: ParliamentSpeechesFilterInput,
+  q?: string,
+) {
+  return useInfiniteQuery({
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'speeches', filter ?? null, q ?? null],
+    queryFn: ({ pageParam }) => fetchParliamentSpeeches(pageParam, filter, q),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNextPage && lastPage.endCursor ? lastPage.endCursor : undefined,
+  })
+}
+
+export function useParliamentSpeechActivity(
+  year: number,
+  filter?: ParliamentSpeechesFilterInput,
+  q?: string,
+) {
+  return useQuery({
+    queryKey: [
+      ...PARLIAMENT_QUERY_KEY,
+      'speech-activity',
+      year,
+      filter ?? null,
+      q ?? null,
+    ],
+    queryFn: () => fetchParliamentSpeechActivity(year, filter, q),
+    enabled: Boolean(year),
+    // NO placeholderData: same lesson as the member activity queries — stale
+    // carry-over would show the wrong year/filter cells as if current.
+  })
+}
+
+export function useParliamentSpeechDetail(speechKey: string) {
+  return useQuery({
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'speech', speechKey],
+    queryFn: () => fetchParliamentSpeechDetail(speechKey),
+    enabled: Boolean(speechKey),
   })
 }
 
