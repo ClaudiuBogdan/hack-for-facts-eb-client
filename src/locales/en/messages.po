@@ -223,7 +223,7 @@ msgstr "{0} results · page {page} of {totalPages}"
 
 #. placeholder {0}: formatFlowCount(page.page.total)
 #. placeholder {1}: grainLabelEn(search.grain)
-#: src/features/procurement/components/procurement-search-content.tsx:122
+#: src/features/procurement/components/procurement-search-content.tsx:123
 msgid "{0} results in {1}"
 msgstr "{0} results in {1}"
 
@@ -558,7 +558,7 @@ msgid "1000+ results · page {page}"
 msgstr "1000+ results · page {page}"
 
 #. placeholder {0}: grainLabelEn(search.grain)
-#: src/features/procurement/components/procurement-search-content.tsx:127
+#: src/features/procurement/components/procurement-search-content.tsx:128
 msgid "1000+ results in {0}"
 msgstr "1000+ results in {0}"
 
@@ -3009,7 +3009,7 @@ msgstr "Clear all snapshots"
 #: src/features/entity-search/components/entity-empty-state.tsx:129
 #: src/features/private-companies/components/search/private-company-search-form.tsx:151
 #: src/features/procurement/components/procurement-filter-sheet.tsx:346
-#: src/features/procurement/components/procurement-search-content.tsx:156
+#: src/features/procurement/components/procurement-search-content.tsx:157
 #: src/routes/entity-analytics.lazy.tsx:216
 msgid "Clear filters"
 msgstr "Clear filters"
@@ -3026,7 +3026,7 @@ msgstr "Clear filters ({0})"
 #: src/components/ui/styled-multi-select.tsx:239
 #: src/components/ui/styled-single-select.tsx:162
 #: src/features/entity-search/components/entity-search-input.tsx:115
-#: src/features/procurement/components/procurement-debounced-search-input.tsx:88
+#: src/features/procurement/components/procurement-debounced-search-input.tsx:105
 msgid "Clear search"
 msgstr "Clear search"
 
@@ -6279,7 +6279,7 @@ msgid "Export config"
 msgstr "Export config"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:1168
-#: src/features/procurement/components/procurement-search-content.tsx:106
+#: src/features/procurement/components/procurement-search-content.tsx:107
 #: src/routes/entity-analytics.lazy.tsx:242
 msgid "Export CSV"
 msgstr "Export CSV"
@@ -9402,7 +9402,7 @@ msgstr "Locked"
 msgid "Log scale"
 msgstr "Log scale"
 
-#: src/features/procurement/components/procurement-search-content.tsx:148
+#: src/features/procurement/components/procurement-search-content.tsx:149
 msgid "Loosen or clear a filter and try again."
 msgstr "Loosen or clear a filter and try again."
 
@@ -10579,7 +10579,7 @@ msgid "No"
 msgstr "No"
 
 #. placeholder {0}: grainLabelEn(search.grain)
-#: src/features/procurement/components/procurement-search-content.tsx:162
+#: src/features/procurement/components/procurement-search-content.tsx:163
 msgid "No {0} records available"
 msgstr "No {0} records available"
 
@@ -10993,7 +10993,7 @@ msgstr "No public datasets available."
 msgid "No ranking data available."
 msgstr "No ranking data available."
 
-#: src/features/procurement/components/procurement-search-content.tsx:145
+#: src/features/procurement/components/procurement-search-content.tsx:146
 msgid "No records match these filters"
 msgstr "No records match these filters"
 
@@ -14409,7 +14409,7 @@ msgstr "Search by name, CUI, or SIRUTA"
 msgid "Search by supplier"
 msgstr "Search by supplier"
 
-#: src/features/procurement/components/procurement-search-content.tsx:79
+#: src/features/procurement/components/procurement-search-content.tsx:80
 msgid "Search by title, number, CUI or party name"
 msgstr "Search by title, number, CUI or party name"
 
@@ -14517,7 +14517,7 @@ msgstr "Search options in {0}"
 msgid "Search options..."
 msgstr "Search options..."
 
-#: src/features/procurement/components/procurement-search-content.tsx:80
+#: src/features/procurement/components/procurement-search-content.tsx:81
 #: src/features/procurement/components/procurement-search-dock.tsx:62
 msgid "Search procurement records"
 msgstr "Search procurement records"
@@ -16979,6 +16979,10 @@ msgstr "Type"
 #: src/features/private-companies/components/search/private-company-search-page.tsx:105
 msgid "Type a company name or CUI to start searching."
 msgstr "Type a company name or CUI to start searching."
+
+#: src/features/procurement/components/procurement-debounced-search-input.tsx:118
+msgid "Type at least {PROCUREMENT_Q_MIN_LENGTH} characters to search"
+msgstr "Type at least {PROCUREMENT_Q_MIN_LENGTH} characters to search"
 
 #: src/features/learning/components/interactive/HandsOnExplorer.tsx:157
 msgid "Type your answer..."

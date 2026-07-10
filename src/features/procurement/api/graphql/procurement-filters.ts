@@ -14,6 +14,7 @@ import type {
   ProcurementSearchState,
   ProcurementSort,
 } from '@/schemas/procurement-search'
+import { procurementQOrUndefined } from '../../lib/search-query'
 
 // ---------------------------------------------------------------------------
 // Operator-input shapes (mirror the SDL)
@@ -222,7 +223,7 @@ export function buildProceduresFilter(
   search: ProcurementSearchState,
 ): ProcurementProceduresFilterInput {
   const filter: ProcurementProceduresFilterInput = {}
-  const q = trimmedOrUndefined(search.q)
+  const q = procurementQOrUndefined(search.q)
   if (q) filter.q = { contains: q }
   const authorityCui = trimmedOrUndefined(search.authority_cui)
   if (authorityCui) filter.authorityCui = { eq: authorityCui }
@@ -242,7 +243,7 @@ export function buildContractsFilter(
   search: ProcurementSearchState,
 ): ProcurementContractsFilterInput {
   const filter: ProcurementContractsFilterInput = {}
-  const q = trimmedOrUndefined(search.q)
+  const q = procurementQOrUndefined(search.q)
   if (q) filter.q = { contains: q }
   const authorityCui = trimmedOrUndefined(search.authority_cui)
   if (authorityCui) filter.authorityCui = { eq: authorityCui }
@@ -264,7 +265,7 @@ export function buildDirectAcquisitionsFilter(
   search: ProcurementSearchState,
 ): ProcurementDirectAcquisitionsFilterInput {
   const filter: ProcurementDirectAcquisitionsFilterInput = {}
-  const q = trimmedOrUndefined(search.q)
+  const q = procurementQOrUndefined(search.q)
   if (q) filter.q = { contains: q }
   const authorityCui = trimmedOrUndefined(search.authority_cui)
   if (authorityCui) filter.authorityCui = { eq: authorityCui }
@@ -291,7 +292,7 @@ export function buildModificationsFilter(
   search: ProcurementSearchState,
 ): ProcurementModificationsFilterInput {
   const filter: ProcurementModificationsFilterInput = {}
-  const q = trimmedOrUndefined(search.q)
+  const q = procurementQOrUndefined(search.q)
   if (q) filter.q = { contains: q }
   const authorityCui = trimmedOrUndefined(search.authority_cui)
   if (authorityCui) filter.authorityCui = { eq: authorityCui }
