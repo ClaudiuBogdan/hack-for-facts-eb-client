@@ -390,8 +390,9 @@ type Query {
 4. **Nullable `total`** — the server may return `total: null` whenever counting would be
    too expensive (DA grain); clients render "1000+". `totalEstimated: true` marks sampled
    or planner-estimate counts.
-5. **Gates** come from `public_contracts_filter_capabilities_v1` and include `dataAsOf`
-   (load watermark) + `cadence` so the client can show freshness without another query.
+5. **Gates** come from `procurement.aggregate_quality_by_grain` (row-per-grain) and include
+   `dataAsOf` (the matview's `refreshed_at`) so the client can show freshness without
+   another query. `cadence` is always `null` — see the v1 deviations below.
 6. **CPV taxonomy** is authoritative at **division level only** (`cpv_divisions`);
    8-digit `cpvCode` filters scope by exact code but labels are best-effort observed data
    (`cpv_codes` is polluted — see prod reference §3).
@@ -408,13 +409,51 @@ type Query {
   `moneyFlows` presence): not part of this module; the client hides those chips when the
   data is absent (`crossDomain: null` in the client schema).
 
-## Open questions for the server team
+## Answered by the server (2026-07-10, branch `feat/procurement-graphql-contract`)
 
-1. Existing aggregate queries use flat args (`procurementTopSuppliers(authorityCui, grain,
-   monthFrom, monthTo, topN)`). Preferred: migrate to the `scope:` object above for one
-   consistent shape. If the flat args must stay, tell us — the client only needs
-   `procurement-filters.ts`/`procurement-queries.ts` adjusted.
-2. Count-timeout strategy for `total` on the DA grain (planner estimate vs. capped count
-   vs. always-null beyond a bound).
-3. Whether `procurementStats` can be served from rollups in v1 (all counts are already in
-   the flow view; `firstFlowDate`/`lastFlowDate` from min/max month buckets is acceptable).
+1. **Aggregates migrated to the `scope:` object.** The flat-arg queries remain only for
+   the MCP tools and the `Entity` extension; the client contract uses `scope:` everywhere.
+2. **Count strategy: capped exact count.** `select count(*) from (select 1 … limit 10001) t`
+   runs alongside the page query. `≤ 10000` ⇒ exact `total`, `totalEstimated: false`;
+   `10001` ⇒ `total: null`, `totalEstimated: true`. A count timeout degrades to
+   `total: null` rather than failing the page. On the DA grain with no selective filter,
+   counting is skipped entirely. Measured on prod: 2.4 s (contracts), 1.8 s (DA, hits cap).
+3. **`procurementStats` is served from the rollups**, except `proceduresCount`, which is a
+   `count(*)` on `procurement.procedures` (621k rows, ~200 ms) because the rollups are
+   flow-derived and contain no procedure grain.
+
+## v1 deviations from this spec (all verified against prod)
+
+These are the places where the server cannot honestly serve what the spec asks for. Each
+serves `null`/`[]` rather than a fabricated value.
+
+1. **`perLotWinners` is always `null`.** `procurement.procedure_lots` (migration
+   `20260704T090000`) carries lot titles, statuses, *estimated* values, CPV and dates — but
+   no winner identity and no awarded value. Populating this needs a loader change, not a
+   server change.
+2. **`scope.cpvCode` returns `InvalidInput`.** Every rollup is keyed on the 2-digit
+   `cpv_division_code`; an 8-digit answer would have to scan the fact tables. The 8-digit
+   code still works as a *search* filter — just not as an aggregate scope.
+3. **`ProcurementProcedure.duplicates` is always `[]`**, `isCanonical: true`,
+   `dupGroupId: null`. `procurement.procedures` has no `dup_group_id` column; there is no
+   dedup layer on that grain. Contracts and direct acquisitions do have one.
+4. **`StringQInput.contains` is bounded to 3..100 characters** (trimmed); outside that
+   range the server returns `InvalidInput`. There are no trigram or GIN indexes on any
+   `procurement` table and `direct_acquisitions` holds ~19M rows, so an unbounded ILIKE is
+   not servable. Because the client's search auto-applies on a 300 ms debounce rather than
+   on a submit button, it enforces the same bound client-side (`PROCUREMENT_Q_MIN_LENGTH`)
+   and never sends a shorter term — including via a deep link.
+5. **The direct-acquisitions date filter binds `finalization_date`**, not
+   `publication_date`, despite the input field being named `publicationDate` (kept for
+   symmetry with the other grains).
+6. **`cadence` is always `null`.** Nothing in prod declares a refresh schedule, and the
+   matviews demonstrably drift from the nominally-daily loader (the gate's `refreshed_at`
+   was 10 days stale when this was written). `dataAsOf` carries the honest signal and comes
+   from `aggregate_quality_by_grain.refreshed_at` — `etl.lane_watermarks` has no
+   procurement row.
+
+Note also that the per-grain gate is read from `procurement.aggregate_quality_by_grain`,
+not `public_contracts_filter_capabilities_v1`: the latter is row-per-answer-class, not
+row-per-grain. Contract-grain spend is gate-blocked today
+(`spend_rankings_allowed = false`), so `amountRonSum` / `totalValueRon` are `null` on that
+grain even though a raw sum exists.

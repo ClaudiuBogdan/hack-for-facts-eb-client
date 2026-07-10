@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
-import { Download, Search } from 'lucide-react'
+import { Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { CoverageRibbonFromGate } from '@/components/shared/procurement-data/coverage-ribbon'
@@ -20,11 +20,11 @@ import {
 import { grainLabelEn } from '../lib/enum-labels'
 import { formatFlowCount } from '../lib/formatting'
 import {
-  procurementFieldClassName,
   procurementOutlineButtonClassName,
   procurementSectionClassName,
 } from '../lib/procurement-theme'
 import { PROCUREMENT_DATASET_ID } from '../lib/mock-mode'
+import { ProcurementDebouncedSearchInput } from './procurement-debounced-search-input'
 import {
   ProcurementActiveFilters,
   ProcurementFilterSheet,
@@ -46,13 +46,6 @@ export function ProcurementSearchContent({ search }: Props) {
   const filters = useProcurementFilterState(search)
   const query = useProcurementSearch(search)
   const [sheetOpen, setSheetOpen] = useState(false)
-  const [queryDraft, setQueryDraft] = useState(search.q ?? '')
-
-  // Keep the uncommitted text box in sync when the URL changes externally
-  // (chip removal, deep link, back navigation).
-  useEffect(() => {
-    setQueryDraft(search.q ?? '')
-  }, [search.q])
 
   const page = query.data
   const gate = page?.gate
@@ -76,29 +69,17 @@ export function ProcurementSearchContent({ search }: Props) {
     <div className="space-y-5">
       <ProcurementGrainTabs grain={search.grain} onGrainChange={filters.setGrain} />
 
-      <form
-        role="search"
-        className="flex flex-col gap-2 sm:flex-row"
-        onSubmit={(event) => {
-          event.preventDefault()
-          filters.setQuery(queryDraft)
-        }}
-      >
-        <input
-          type="search"
-          className={procurementFieldClassName}
+      {/* The query auto-applies 300 ms after the last keystroke — there is no
+          submit button. The form survives only to carry the `search` landmark
+          role; Enter must not trigger a native submit/reload. */}
+      <form role="search" onSubmit={(event) => event.preventDefault()}>
+        <ProcurementDebouncedSearchInput
+          value={search.q}
+          onCommit={filters.setQuery}
+          inputId="procurement-search-query"
           placeholder={t`Search by title, number, CUI or party name`}
-          aria-label={t`Search procurement records`}
-          value={queryDraft}
-          onChange={(event) => setQueryDraft(event.target.value)}
+          ariaLabel={t`Search procurement records`}
         />
-        <Button
-          type="submit"
-          className="h-10 shrink-0 rounded-none bg-[#0b0c0c] px-5 text-base font-semibold text-white hover:opacity-90 dark:bg-[var(--pnrr-fg)] dark:text-[var(--pnrr-bg)]"
-        >
-          <Search className="mr-2 h-4 w-4" aria-hidden />
-          <Trans>Search</Trans>
-        </Button>
       </form>
 
       <div className="flex flex-wrap items-center justify-between gap-3">

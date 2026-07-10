@@ -148,3 +148,26 @@ describe('buildScopeFilter', () => {
     )
   })
 })
+
+describe('free-text q is bounded before it reaches the wire', () => {
+  const builders = [
+    ['procedures', buildProceduresFilter],
+    ['contracts', buildContractsFilter],
+    ['direct acquisitions', buildDirectAcquisitionsFilter],
+    ['modifications', buildModificationsFilter],
+  ] as const
+
+  // The server rejects a short `q` as InvalidInput (no trigram indexes; the DA
+  // grain is ~19M rows). A deep link can carry one straight past the input
+  // component, so the builders are the last line of defence.
+  it.each(builders)('%s: omits a term below the minimum length', (_name, build) => {
+    expect(build(state({ q: 's' })).q).toBeUndefined()
+    expect(build(state({ q: 'sp' })).q).toBeUndefined()
+    expect(build(state({ q: '  ab  ' })).q).toBeUndefined()
+  })
+
+  it.each(builders)('%s: forwards a term at or above the minimum, trimmed', (_name, build) => {
+    expect(build(state({ q: 'spi' })).q).toEqual({ contains: 'spi' })
+    expect(build(state({ q: '  spital  ' })).q).toEqual({ contains: 'spital' })
+  })
+})
