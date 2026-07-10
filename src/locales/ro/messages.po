@@ -1206,22 +1206,6 @@ msgstr "Ajutor pentru agregare"
 msgid "Agregate nepublicabile"
 msgstr ""
 
-#: src/lib/ins/ins-dashboard-config.ts:166
-#~ msgid "Agricultural land and production."
-#~ msgstr "Terenuri agricole și producție."
-
-#: src/lib/ins/ins-dashboard-config.ts:197
-#~ msgid "Agricultural prices and developed areas."
-#~ msgstr "Prețuri agricole și suprafețe dezvoltate."
-
-#: src/lib/ins/ins-dashboard-config.ts:165
-#~ msgid "Agriculture"
-#~ msgstr "Agricultură"
-
-#: src/lib/ins/ins-dashboard-config.ts:196
-#~ msgid "Agriculture & land"
-#~ msgstr "Agricultură și terenuri"
-
 #: src/features/statistics/components/comparison-territory-picker.tsx:69
 msgid "Ai atins maximul de {MAX_COMPARISON_TERRITORIES} teritorii. Elimină unul pentru a adăuga altul."
 msgstr ""
@@ -1600,14 +1584,6 @@ msgstr ""
 #: src/features/public-investments/components/HowToReadData.tsx:100
 msgid "Anumite sume pot fi stocate înmulțite cu 1.000. Acele valori sunt afișate ca „valoare în verificare”, nu ca sumă, până la reparcurgere."
 msgstr ""
-
-#: src/features/private-companies/components/search/private-company-search-form.tsx:94
-#~ msgid "Any county"
-#~ msgstr ""
-
-#: src/features/private-companies/components/search/private-company-search-form.tsx:113
-#~ msgid "Any status"
-#~ msgstr ""
 
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:457
 msgid "Anyone with the public link can view this map."
@@ -2000,10 +1976,6 @@ msgstr "Suma de bază (100%)"
 #: src/features/learning/components/interactive/RevenueDistributionGame.tsx:249
 msgid "Based on 2024 budgetary data"
 msgstr "Bazat pe datele bugetare din 2024"
-
-#: src/lib/ins/ins-dashboard-config.ts:130
-#~ msgid "Basic data on population, employment and housing."
-#~ msgstr "Date de bază despre populație, ocupare și locuințe."
 
 #: src/components/provenance/source-provenance.tsx:504
 msgid "Bază identitate"
@@ -2673,12 +2645,16 @@ msgstr ""
 msgid "Cele mai vechi"
 msgstr ""
 
-#: src/features/statistics/components/request-dataset-action.tsx:62
+#: src/features/statistics/components/request-dataset-action.tsx:67
 msgid "Cere acest set de date"
 msgstr ""
 
-#: src/features/statistics/components/request-dataset-action.tsx:56
+#: src/features/statistics/components/request-dataset-action.tsx:61
 msgid "Cere set"
+msgstr ""
+
+#: src/features/statistics/api/statistics-api.live.ts:556
+msgid "Cererea a fost înregistrată. Îți mulțumim!"
 msgstr ""
 
 #: src/features/statistics/api/statistics-api.mock.ts:45
@@ -2689,7 +2665,11 @@ msgstr ""
 msgid "Cererea către INS Tempo a eșuat. Datele nu lipsesc — nu am reușit să le citim."
 msgstr ""
 
-#: src/features/statistics/components/request-dataset-action.tsx:114
+#: src/features/statistics/api/statistics-api.live.ts:548
+msgid "Cererea nu a fost acceptată. Verifică setul de date selectat."
+msgstr ""
+
+#: src/features/statistics/components/request-dataset-action.tsx:131
 msgid "Cererea nu a putut fi pregătită. Verifică emailul și încearcă din nou."
 msgstr ""
 
@@ -3498,7 +3478,7 @@ msgstr "Element contestat"
 msgid "Context"
 msgstr "Context"
 
-#: src/features/statistics/components/request-dataset-action.tsx:97
+#: src/features/statistics/components/request-dataset-action.tsx:104
 msgid "Context opțional pentru prioritizare"
 msgstr ""
 
@@ -4195,10 +4175,6 @@ msgstr ""
 msgid "CUI unavailable in the source data"
 msgstr ""
 
-#: src/lib/ins/ins-dashboard-config.ts:156
-#~ msgid "Culture & tourism"
-#~ msgstr "Cultură și turism"
-
 #: src/features/public-investments/components/HowToReadData.tsx:29
 #: src/features/public-investments/components/HowToReadData.tsx:36
 msgid "Cum citesc aceste date"
@@ -4649,7 +4625,7 @@ msgstr "zi"
 msgid "days"
 msgstr "zile"
 
-#: src/features/statistics/components/request-dataset-action.tsx:90
+#: src/features/statistics/components/request-dataset-action.tsx:97
 msgid "De ce ai nevoie de acest set?"
 msgstr ""
 
@@ -5547,10 +5523,6 @@ msgstr "Editează regula de filtrare a valorilor {0}"
 msgid "Edited only"
 msgstr "Doar editate"
 
-#: src/lib/ins/ins-dashboard-config.ts:141
-#~ msgid "Education"
-#~ msgstr "Educație"
-
 #: src/features/learning/components/interactive/VATReformCard.tsx:25
 msgid "Effective Date"
 msgstr "Data intrării în vigoare"
@@ -5577,7 +5549,7 @@ msgstr "Email"
 msgid "Email address copied to clipboard!"
 msgstr "Adresa de email a fost copiată în clipboard!"
 
-#: src/features/statistics/components/request-dataset-action.tsx:102
+#: src/features/statistics/components/request-dataset-action.tsx:109
 msgid "Email pentru notificare (opțional)"
 msgstr ""
 
@@ -5788,10 +5760,6 @@ msgstr "Tip entitate"
 #: src/lib/ins/ins-metric-registry.ts:111
 msgid "Environment"
 msgstr "Mediu"
-
-#: src/lib/ins/ins-dashboard-config.ts:184
-#~ msgid "Environment & interventions"
-#~ msgstr "Mediu și intervenții"
 
 #: src/components/alerts/components/ConditionsList.tsx:94
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:40
@@ -6243,10 +6211,6 @@ msgstr ""
 #: src/routes/entity-analytics.lazy.tsx:242
 msgid "Exporting…"
 msgstr "Se exportă…"
-
-#: src/lib/ins/ins-dashboard-config.ts:179
-#~ msgid "Exports, imports and trade balance."
-#~ msgstr "Exporturi, importuri și balanța comercială."
 
 #: src/features/statistics/components/detail-export-button.tsx:76
 msgid "Exportul a eșuat. Încearcă din nou."
@@ -6995,10 +6959,6 @@ msgstr "Pentru date puternic asimetrice, compară cu IQR sau scor z robust MAD."
 msgid "for the selected filters."
 msgstr "pentru filtrele selectate."
 
-#: src/lib/ins/ins-dashboard-config.ts:178
-#~ msgid "Foreign trade"
-#~ msgstr "Comerț exterior"
-
 #: src/features/private-companies/components/layout/private-company-status-tags.tsx:62
 msgid "Form"
 msgstr "Formă"
@@ -7082,10 +7042,6 @@ msgstr "Prefix Funcțional"
 #: src/components/filters/EntityAnalyticsFilter.tsx:715
 msgid "Functional Prefixes"
 msgstr "Prefix Funcțional"
-
-#: src/features/statistics/api/statistics-api.live.ts:529
-msgid "Funcționalitatea de trimitere este în pregătire. Cererea nu a fost trimisă."
-msgstr ""
 
 #: src/lib/chart-filter-utils.ts:43
 msgid "Funding source"
@@ -7340,10 +7296,6 @@ msgstr "mai mare decât"
 msgid "Greater than"
 msgstr "Mai mare decât"
 
-#: src/lib/ins/ins-dashboard-config.ts:185
-#~ msgid "Green spaces, IGSU interventions and protection measures."
-#~ msgstr "Spații verzi, intervenții IGSU și măsuri de protecție."
-
 #: src/components/classification-explorer/ClassificationExplorer.tsx:217
 msgid "Grid view"
 msgstr "Vizualizare grilă"
@@ -7469,11 +7421,6 @@ msgstr ""
 msgid "Health (CASS)"
 msgstr "Sănătate (CASS)"
 
-#: src/lib/ins/ins-dashboard-config.ts:147
-#: src/lib/ins/ins-dashboard-config.ts:190
-#~ msgid "Health & social"
-#~ msgstr "Sănătate și social"
-
 #. placeholder {0}: typeof window !== "undefined" ? window.location.href : "N/A"
 #: src/components/footer/support-menu.tsx:36
 msgid ""
@@ -7569,10 +7516,6 @@ msgstr "Ține apăsat Ctrl/Cmd sau Shift în timp ce faci clic pentru selecție 
 #: src/components/footer/AppFooter.tsx:88
 msgid "Home"
 msgstr "Acasă"
-
-#: src/lib/ins/ins-dashboard-config.ts:148
-#~ msgid "Hospitals, beds and medical staff."
-#~ msgstr "Spitale, paturi și personal medical."
 
 #: src/features/learning/components/interactive/RectificationFlow.tsx:144
 msgid "How Budgets Change"
@@ -7989,7 +7932,7 @@ msgid "Începe să cauți pentru a explora firme, instituții, legi, contracte �
 msgstr ""
 
 #: src/components/ui/sheet.tsx:61
-#: src/features/statistics/components/request-dataset-action.tsx:121
+#: src/features/statistics/components/request-dataset-action.tsx:138
 msgid "Închide"
 msgstr ""
 
@@ -8160,10 +8103,6 @@ msgstr ""
 msgid "Infrastructure"
 msgstr "Infrastructură"
 
-#: src/lib/ins/ins-dashboard-config.ts:135
-#~ msgid "Infrastructure & utilities"
-#~ msgstr "Infrastructură și utilități"
-
 #: src/components/entities/views/ins-stats-view.derived.ts:259
 msgid "inhabitant"
 msgstr "locuitor"
@@ -8183,6 +8122,10 @@ msgstr "Credite de angajament inițiale"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:447
 msgid "Inputs used"
 msgstr "Intrări utilizate"
+
+#: src/features/statistics/components/request-dataset-action.tsx:122
+msgid "Înregistrăm doar cererea, fără date de contact. Autentifică-te dacă vrei să lași un mesaj sau să fii anunțat când setul devine disponibil."
+msgstr ""
 
 #: src/components/identity/identity-confidence-badge.tsx:70
 msgid "Înregistrare din registru public, neasociată unui CUI confirmat."
@@ -8598,10 +8541,6 @@ msgstr "Termene cheie"
 msgid "Key figures"
 msgstr "Cifre generale"
 
-#: src/lib/ins/ins-dashboard-config.ts:129
-#~ msgid "Key indicators"
-#~ msgstr "Indicatori cheie"
-
 #: src/features/learning/components/interactive/EconomicCodeReference.tsx:372
 msgid "Key Lesson Insight"
 msgstr "Idee esențială"
@@ -8857,10 +8796,6 @@ msgstr "Lecții finalizate"
 #: src/features/learning/components/interactive/RevenueDistributionGame.tsx:152
 msgid "Let's find out"
 msgstr "Hai să aflăm"
-
-#: src/lib/ins/ins-dashboard-config.ts:157
-#~ msgid "Libraries, museums and tourist activity."
-#~ msgstr "Biblioteci, muzee și activitate turistică."
 
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1614
 msgid "Licență"
@@ -9717,7 +9652,7 @@ msgstr "Preferința principală pentru notificările campaniei de dezbatere publ
 msgid "Master the app with these powerful keyboard shortcuts"
 msgstr "Stăpânește aplicația cu aceste comenzi rapide puternice de la tastatură"
 
-#: src/features/statistics/components/request-dataset-action.tsx:80
+#: src/features/statistics/components/request-dataset-action.tsx:85
 msgid "Matrice"
 msgstr ""
 
@@ -10169,14 +10104,6 @@ msgstr "Multiplicator"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:147
 msgid "Multiplier 1.5 is standard; use 3.0 for stricter outlier detection."
 msgstr "Multiplicatorul 1.5 este standard; folosește 3.0 pentru detectarea mai strictă a valorilor extreme."
-
-#: src/features/statistics/pages/statistics-landing-page.tsx:18
-#~ msgid "Municipiul București"
-#~ msgstr ""
-
-#: src/features/statistics/pages/statistics-landing-page.tsx:17
-#~ msgid "Municipiul Cluj-Napoca"
-#~ msgstr ""
 
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:412
 msgid "My Budget Analysis Map…"
@@ -11414,11 +11341,15 @@ msgstr ""
 msgid "Nu am putut revalida serviciile"
 msgstr ""
 
+#: src/features/statistics/api/statistics-api.live.ts:549
+msgid "Nu am putut trimite cererea. Încearcă din nou mai târziu."
+msgstr ""
+
 #: src/features/statistics/components/territory-search.tsx:116
 msgid "Nu are cod SIRUTA — hub-ul teritorial nu este disponibil."
 msgstr ""
 
-#: src/features/statistics/components/request-dataset-action.tsx:66
+#: src/features/statistics/components/request-dataset-action.tsx:71
 msgid "nu are încă observații încărcate în această interfață."
 msgstr ""
 
@@ -11584,7 +11515,7 @@ msgstr ""
 msgid "Nume reținut - verificare în curs"
 msgstr ""
 
-#: src/features/statistics/components/request-dataset-action.tsx:109
+#: src/features/statistics/components/request-dataset-action.tsx:116
 msgid "nume@example.ro"
 msgstr ""
 
@@ -11750,10 +11681,6 @@ msgstr "Date deschise ONRC"
 #: src/features/private-companies/components/sections/private-company-governance-section.tsx:40
 msgid "ONRC open data for this company does not list representatives or foreign branches."
 msgstr "Datele deschise ONRC pentru această companie nu listează reprezentanți sau sucursale străine."
-
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:209
-#~ msgid "ONRC snapshot {0} · ANAF snapshot {1}"
-#~ msgstr "Snapshot ONRC {0} · snapshot ANAF {1}"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:451
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:120
@@ -12820,10 +12747,6 @@ msgstr ""
 #: src/components/theme/inflation-toggle.tsx:59
 msgid "Prices"
 msgstr "Prețuri"
-
-#: src/features/statistics/pages/statistics-landing-page.tsx:95
-#~ msgid "Prima versiune livrează hub-ul teritorial pentru exemple SIRUTA, cu aceleași contracte de date ca API-ul live."
-#~ msgstr ""
 
 #: src/features/statistics/lib/territory.ts:156
 msgid "Primăria localității"
@@ -14228,10 +14151,6 @@ msgstr "Salvate doar în acest browser. Nu sunt sincronizate cu contul tău."
 msgid "Saving…"
 msgstr "Se salvează..."
 
-#: src/lib/ins/ins-dashboard-config.ts:142
-#~ msgid "Schools, students and teachers."
-#~ msgstr "Școli, elevi și profesori."
-
 #: src/features/statistics/components/territory-search.tsx:56
 msgid "Scrie cel puțin două caractere pentru a căuta."
 msgstr ""
@@ -14298,7 +14217,7 @@ msgstr ""
 msgid "Se revalideaza"
 msgstr ""
 
-#: src/features/statistics/components/request-dataset-action.tsx:128
+#: src/features/statistics/components/request-dataset-action.tsx:145
 msgid "Se trimite…"
 msgstr ""
 
@@ -14399,10 +14318,6 @@ msgstr "Caută grafice…"
 msgid "Search classification values"
 msgstr "Caută valori de clasificare"
 
-#: src/features/private-companies/components/search/private-company-search-form.tsx:144
-#~ msgid "Search companies"
-#~ msgstr ""
-
 #: src/components/filters/county-filter/CountyList.tsx:62
 msgid "Search counties..."
 msgstr "Caută județe..."
@@ -14495,10 +14410,6 @@ msgstr ""
 #: src/features/procurement/components/procurement-search-dock.tsx:27
 msgid "Search public procurement"
 msgstr ""
-
-#: src/features/private-companies/components/search/private-company-search-page.tsx:50
-#~ msgid "Search Romanian companies by name or CUI, filtered by county, registry status and CAEN activity. Data from ONRC and ANAF open data."
-#~ msgstr ""
 
 #: src/features/private-companies/components/search/private-company-search-page.tsx:49
 msgid "Search Romanian companies by name or CUI, with filters for county, registry status, CAEN activity, legal form and registration date. Data from ONRC and ANAF open data."
@@ -15296,7 +15207,7 @@ msgstr ""
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:229
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:191
 #: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:142
-#: src/features/statistics/components/request-dataset-action.tsx:84
+#: src/features/statistics/components/request-dataset-action.tsx:89
 #: src/features/statistics/components/territory-header.tsx:40
 msgid "SIRUTA"
 msgstr "SIRUTA"
@@ -15363,10 +15274,6 @@ msgstr "Instantaneele vor apărea aici după salvarea automată sau manuală."
 #: src/lib/ins/ins-metric-registry.ts:107
 msgid "Social"
 msgstr "Social"
-
-#: src/lib/ins/ins-dashboard-config.ts:191
-#~ msgid "Social and health indicators."
-#~ msgstr "Indicatori sociali și de sănătate."
 
 #: src/features/learning/components/interactive/RevenueDistributionGame.tsx:68
 msgid "Social Contrib."
@@ -16883,10 +16790,6 @@ msgstr ""
 msgid "Transparenta.eu – Support"
 msgstr "Transparenta.eu – Suport"
 
-#: src/lib/ins/ins-dashboard-config.ts:136
-#~ msgid "Transport, roads and local networks."
-#~ msgstr "Transport, drumuri și rețele locale."
-
 #: src/lib/commitments-metrics.ts:33
 msgid "Treasury payments"
 msgstr "Plăți prin trezorerie"
@@ -16930,7 +16833,7 @@ msgstr ""
 msgid "Trimestrial"
 msgstr ""
 
-#: src/features/statistics/components/request-dataset-action.tsx:128
+#: src/features/statistics/components/request-dataset-action.tsx:145
 msgid "Trimite cererea"
 msgstr ""
 

@@ -223,6 +223,21 @@ export function useUser() {
   return ctx.user
 }
 
+/**
+ * The signed-in user, or `null` when auth is not configured or no
+ * `<AuthProvider>` is mounted.
+ *
+ * Unlike {@link useUser}, this never throws. Use it where the user is optional
+ * context for the UI (e.g. deciding whether to offer contact fields) rather
+ * than a precondition for rendering at all — a component that merely adapts to
+ * sign-in state should not force every test and every embed to mount a
+ * provider.
+ */
+export function useOptionalUser(): AuthUser | null {
+  const ctx = useContext(AuthContext)
+  return ctx?.user ?? null
+}
+
 // UI wrappers to avoid leaking Clerk primitives
 type LegacyRedirectPropKeys = 'redirectUrl' | 'afterSignInUrl' | 'afterSignUpUrl'
 type LegacyRedirectPropKeysWithSnakeCase =

@@ -15,6 +15,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { useOptionalUser } from '@/lib/auth'
 import { useDatasetRequest } from '../hooks/use-statistics'
 
 type RequestDatasetActionProps = {
@@ -29,6 +30,7 @@ export function RequestDatasetAction({
   siruta,
 }: RequestDatasetActionProps) {
   const [open, setOpen] = useState(false)
+  const isSignedIn = Boolean(useOptionalUser())
   const [contactEmail, setContactEmail] = useState('')
   const [note, setNote] = useState('')
   const requestMutation = useDatasetRequest()
@@ -43,8 +45,11 @@ export function RequestDatasetAction({
     requestMutation.mutate({
       datasetCode,
       siruta: siruta ?? undefined,
-      contactEmail: contactEmail.trim() || undefined,
-      note: note.trim() || undefined,
+      // The server discards both for signed-out callers — without a Clerk user
+      // id no `user.deleted` event could ever anonymize them — so don't send
+      // what we've just told the user we won't store.
+      contactEmail: isSignedIn ? contactEmail.trim() || undefined : undefined,
+      note: isSignedIn ? note.trim() || undefined : undefined,
     })
   }
 
@@ -85,30 +90,42 @@ export function RequestDatasetAction({
                 </>
               ) : null}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor={`dataset-request-note-${datasetCode}`}>
-                <Trans>De ce ai nevoie de acest set?</Trans>
-              </Label>
-              <Textarea
-                id={`dataset-request-note-${datasetCode}`}
-                value={note}
-                onChange={(event) => setNote(event.target.value)}
-                maxLength={1000}
-                placeholder={t`Context opțional pentru prioritizare`}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor={`dataset-request-email-${datasetCode}`}>
-                <Trans>Email pentru notificare (opțional)</Trans>
-              </Label>
-              <Input
-                id={`dataset-request-email-${datasetCode}`}
-                type="email"
-                value={contactEmail}
-                onChange={(event) => setContactEmail(event.target.value)}
-                placeholder={t`nume@example.ro`}
-              />
-            </div>
+            {isSignedIn ? (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor={`dataset-request-note-${datasetCode}`}>
+                    <Trans>De ce ai nevoie de acest set?</Trans>
+                  </Label>
+                  <Textarea
+                    id={`dataset-request-note-${datasetCode}`}
+                    value={note}
+                    onChange={(event) => setNote(event.target.value)}
+                    maxLength={1000}
+                    placeholder={t`Context opțional pentru prioritizare`}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor={`dataset-request-email-${datasetCode}`}>
+                    <Trans>Email pentru notificare (opțional)</Trans>
+                  </Label>
+                  <Input
+                    id={`dataset-request-email-${datasetCode}`}
+                    type="email"
+                    value={contactEmail}
+                    onChange={(event) => setContactEmail(event.target.value)}
+                    placeholder={t`nume@example.ro`}
+                  />
+                </div>
+              </>
+            ) : (
+              <p className="rounded-lg border border-dashed border-border/70 px-3 py-2 text-sm text-muted-foreground">
+                <Trans>
+                  Înregistrăm doar cererea, fără date de contact. Autentifică-te
+                  dacă vrei să lași un mesaj sau să fii anunțat când setul devine
+                  disponibil.
+                </Trans>
+              </p>
+            )}
             {requestMutation.isError ? (
               <p className="text-sm text-destructive">
                 <Trans>Cererea nu a putut fi pregătită. Verifică emailul și încearcă din nou.</Trans>

@@ -200,8 +200,10 @@ function serializeForInlineScript(value: unknown): string {
     .replace(/\u2029/g, "\\u2029");
 }
 
+const browserCryptoBootstrapScript = `(function(){if(typeof globalThis==="undefined"||!globalThis.crypto||typeof globalThis.crypto.randomUUID==="function")return;var fallback=function(){var bytes=new Uint8Array(16);if(typeof globalThis.crypto.getRandomValues==="function"){globalThis.crypto.getRandomValues(bytes);}else{for(var i=0;i<bytes.length;i+=1){bytes[i]=Math.floor(Math.random()*256);}}bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;var hex=[];for(var j=0;j<256;j+=1){hex[j]=(j+256).toString(16).slice(1);}return hex[bytes[0]]+hex[bytes[1]]+hex[bytes[2]]+hex[bytes[3]]+"-"+hex[bytes[4]]+hex[bytes[5]]+"-"+hex[bytes[6]]+hex[bytes[7]]+"-"+hex[bytes[8]]+hex[bytes[9]]+"-"+hex[bytes[10]]+hex[bytes[11]]+hex[bytes[12]]+hex[bytes[13]]+hex[bytes[14]]+hex[bytes[15]];};try{Object.defineProperty(globalThis.crypto,"randomUUID",{value:fallback,configurable:true});}catch(_){try{globalThis.crypto.randomUUID=fallback;}catch(__){}}})();`;
+
 export function getRuntimeConfigBootstrapScript(): string {
-  return `window.__APP_RUNTIME_CONFIG__ = ${serializeForInlineScript(
+  return `${browserCryptoBootstrapScript}\nwindow.__APP_RUNTIME_CONFIG__ = ${serializeForInlineScript(
     getPublicRuntimeConfig(),
   )};`;
 }

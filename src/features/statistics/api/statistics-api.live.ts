@@ -6,6 +6,9 @@ import {
   getInsUatDashboard,
 } from '@/features/statistics/api/graphql/ins-fetchers'
 import { getUatLabels } from '@/lib/api/labels'
+import { API_FETCH_REFERRER_POLICY } from '@/lib/api/fetch-options'
+import { getAuthToken } from '@/lib/auth'
+import { getApiBaseUrl } from '@/config/env'
 import { createLogger } from '@/lib/logger'
 import type {
   InsDashboardData,
@@ -509,23 +512,47 @@ function resolveHubLatestPeriod(dashboard: InsDashboardData): string | null {
 /**
  * Live "request this dataset" action for catalog-only entries.
  *
- * The backend ingestion/feedback endpoint is not wired yet, so this records
- * the request locally via the logger and returns an optimistic accepted
- * result. No invented sync state is emitted.
+ * Posts to the server's REST endpoint — there is no GraphQL mutation surface
+ * for the INS module. Authentication is optional: a signed-out request still
+ * records the demand signal, but the server deliberately discards the contact
+ * email and the note for it, because without a Clerk user id there is no
+ * `user.deleted` event that could ever anonymize them. The UI says so before
+ * the user types.
  */
 export async function submitDatasetRequestLive(
   payload: DatasetRequestPayload,
 ): Promise<DatasetRequestResult> {
-  logger.info('Dataset request cannot be submitted yet', {
-    datasetCode: payload.datasetCode,
-    hasSiruta: Boolean(payload.siruta),
-    hasContactEmail: Boolean(payload.contactEmail),
-    hasNote: Boolean(payload.note),
+  const token = await getAuthToken()
+
+  const response = await fetch(`${getApiBaseUrl()}/api/ins/dataset-requests`, {
+    method: 'POST',
+    referrerPolicy: API_FETCH_REFERRER_POLICY,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(payload),
   })
 
+  if (!response.ok) {
+    logger.warn('Dataset request rejected', {
+      datasetCode: payload.datasetCode,
+      status: response.status,
+    })
+
+    return {
+      accepted: false,
+      datasetCode: payload.datasetCode,
+      message:
+        response.status === 400
+          ? t`Cererea nu a fost acceptată. Verifică setul de date selectat.`
+          : t`Nu am putut trimite cererea. Încearcă din nou mai târziu.`,
+    }
+  }
+
   return {
-    accepted: false,
+    accepted: true,
     datasetCode: payload.datasetCode,
-    message: t`Funcționalitatea de trimitere este în pregătire. Cererea nu a fost trimisă.`,
+    message: t`Cererea a fost înregistrată. Îți mulțumim!`,
   }
 }
