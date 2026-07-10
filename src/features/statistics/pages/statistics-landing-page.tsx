@@ -1,22 +1,23 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, ArrowRight } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Skeleton } from '@/components/ui/skeleton'
+import type { StatisticsLandingSearch } from '@/schemas/statistics'
 import { useStatisticsLanding } from '../hooks/use-statistics'
 import { CoverageRibbon } from '../components/coverage-ribbon'
 import { DataStatusBadge } from '../components/data-status-badge'
 import { FreshnessBadge } from '../components/freshness-badge'
 import { RequestDatasetAction } from '../components/request-dataset-action'
 import { ShareFilteredView } from '../components/share-filtered-view'
+import { TerritorySearch } from '../components/territory-search'
 
-const TERRITORY_ENTRIES = [
-  { siruta: '54975', label: t`Municipiul Cluj-Napoca` },
-  { siruta: '179132', label: t`Municipiul București` },
-] as const
+type StatisticsLandingPageProps = {
+  readonly search: StatisticsLandingSearch
+}
 
 function LandingSkeleton() {
   return (
@@ -31,10 +32,15 @@ function LandingSkeleton() {
   )
 }
 
-export function StatisticsLandingPage() {
+export function StatisticsLandingPage({ search }: StatisticsLandingPageProps) {
+  const navigate = useNavigate()
   const landingQuery = useStatisticsLanding()
   const landing = landingQuery.data
   const shouldShowLanding = Boolean(landing) && !landingQuery.isError
+
+  const handleTermChange = (q: string | undefined) => {
+    void navigate({ to: '/statistici', search: q ? { q } : {} })
+  }
 
   return (
     <main className="min-h-screen bg-background">
@@ -85,33 +91,25 @@ export function StatisticsLandingPage() {
           />
         ) : null}
 
-        {shouldShowLanding ? (
-          <section className="space-y-4">
-            <div>
-              <h2 className="text-base font-semibold">
-                <Trans>Alege un teritoriu</Trans>
-              </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                <Trans>Prima versiune livrează hub-ul teritorial pentru exemple SIRUTA, cu aceleași contracte de date ca API-ul live.</Trans>
-              </p>
-            </div>
-            <div className="grid gap-3 md:grid-cols-2">
-              {TERRITORY_ENTRIES.map((entry) => (
-                <Link
-                  key={entry.siruta}
-                  to="/statistici/teritorii/$siruta"
-                  params={{ siruta: entry.siruta }}
-                  className="rounded-lg border border-border/70 p-4 text-sm transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                >
-                  <span className="block font-medium text-foreground">{entry.label}</span>
-                  <span className="mt-1 block text-muted-foreground">
-                    <Trans>SIRUTA</Trans> {entry.siruta}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </section>
-        ) : null}
+        <TerritorySearch term={search.q} onTermChange={handleTermChange} />
+
+        <section className="space-y-3">
+          <h2 className="text-base font-semibold">
+            <Trans>Explorează</Trans>
+          </h2>
+          <div className="grid gap-3 md:grid-cols-2">
+            <ExploreCard
+              to="/statistici/seturi"
+              title={t`Toate seturile de date`}
+              description={t`Caută în catalogul INS și vezi ce are date încărcate.`}
+            />
+            <ExploreCard
+              to="/statistici/comparatii"
+              title={t`Compară teritorii`}
+              description={t`Pune până la șase localități față în față pe același indicator.`}
+            />
+          </div>
+        </section>
 
         {shouldShowLanding && landing ? (
           <section className="space-y-4">
@@ -159,5 +157,31 @@ export function StatisticsLandingPage() {
         ) : null}
       </div>
     </main>
+  )
+}
+
+function ExploreCard({
+  to,
+  title,
+  description,
+}: {
+  readonly to: '/statistici/seturi' | '/statistici/comparatii'
+  readonly title: string
+  readonly description: string
+}) {
+  return (
+    <Link
+      to={to}
+      className="group flex items-start justify-between gap-3 rounded-lg border border-border/70 p-4 text-sm transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    >
+      <div>
+        <span className="block font-medium text-foreground">{title}</span>
+        <span className="mt-1 block text-muted-foreground">{description}</span>
+      </div>
+      <ArrowRight
+        aria-hidden
+        className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+      />
+    </Link>
   )
 }

@@ -3,7 +3,6 @@ import type { UseQueryResult } from '@tanstack/react-query'
 import type {
   StatisticsLanding,
   StatisticsTerritoryHubResult,
-  StatisticsTerritoryHubSearch,
 } from '@/schemas/statistics'
 import { buildDocsFallbackCoverage } from '../lib/coverage'
 import { getMockStatisticsLanding, getMockStatisticsTerritoryHub } from '../mocks/statistics-fixtures'
@@ -49,9 +48,8 @@ export function createEmptyLandingData(): StatisticsLanding {
 
 export function createPartialTerritoryHub(
   siruta = '54975',
-  search?: Partial<StatisticsTerritoryHubSearch>,
 ): StatisticsTerritoryHubResult {
-  const hub = getMockStatisticsTerritoryHub(siruta, search)
+  const hub = getMockStatisticsTerritoryHub(siruta)
   if (!hub) {
     throw new Error(`Missing mock hub fixture for SIRUTA ${siruta}`)
   }

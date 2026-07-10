@@ -1,5 +1,5 @@
 import type { DataValidationError } from '@/lib/chart-data-validation';
-import { getAllInsObservations } from '@/lib/api/ins';
+import { getAllInsObservations } from '@/features/statistics/api/graphql/ins-fetchers';
 import type { InsObservation, InsObservationFilterInput, InsPeriodicity } from '@/schemas/ins';
 import type { AnalyticsSeries, InsSeriesConfiguration } from '@/schemas/charts';
 import type { PeriodDate, ReportPeriodInput, ReportPeriodType } from '@/schemas/reporting';

@@ -902,10 +902,6 @@ msgstr "No description exists for this component."
 msgid "No national projects"
 msgstr "No national projects"
 
-#: src/features/pnrr/components/filters/PnrrStyledMultiSelect.tsx:306
-#~ msgid "No options found."
-#~ msgstr "No options found."
-
 #: src/features/pnrr/components/table/PnrrProjectTable.tsx:310
 msgid "No projects found"
 msgstr "No projects found"
@@ -1174,10 +1170,6 @@ msgstr "Religious organizations"
 msgid "Remove filter"
 msgstr "Remove filter"
 
-#: src/features/pnrr/components/filters/PnrrStyledMultiSelect.tsx:351
-#~ msgid "Remove option"
-#~ msgstr "Remove option"
-
 #: src/features/pnrr/components/charts/PnrrProgressHistogram.tsx:31
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:135
 #: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:338
@@ -1272,10 +1264,6 @@ msgstr "Romania: ~20% estimated absorption"
 #: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:249
 msgid "Search beneficiary..."
 msgstr "Search beneficiary..."
-
-#: src/features/pnrr/components/filters/PnrrStyledMultiSelect.tsx:230
-#~ msgid "Search options..."
-#~ msgstr "Search options..."
 
 #: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:187
 msgid "Search project..."

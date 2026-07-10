@@ -2,7 +2,6 @@ import type {
   DatasetRequestPayload,
   DatasetRequestResult,
   StatisticsLanding,
-  StatisticsTerritoryHubSearch,
   StatisticsTerritoryHubResult,
 } from '@/schemas/statistics'
 import { isStatisticsMockEnabled } from '../lib/mock-mode'
@@ -34,12 +33,11 @@ export async function fetchStatisticsLanding(): Promise<StatisticsLanding> {
 
 export async function fetchStatisticsTerritoryHub(
   siruta: string,
-  search?: Partial<StatisticsTerritoryHubSearch>,
 ): Promise<StatisticsTerritoryHubResult | null> {
   if (isStatisticsMockEnabled()) {
-    return fetchStatisticsTerritoryHubMock(siruta, search)
+    return fetchStatisticsTerritoryHubMock(siruta)
   }
-  return fetchStatisticsTerritoryHubLive(siruta, search)
+  return fetchStatisticsTerritoryHubLive(siruta)
 }
 
 export async function submitDatasetRequest(

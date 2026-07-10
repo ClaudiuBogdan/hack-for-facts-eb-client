@@ -9,7 +9,7 @@ vi.mock('@/lib/logger', () => ({
   })),
 }))
 
-vi.mock('./graphql', () => ({
+vi.mock('@/lib/api/graphql', () => ({
   graphqlRequest: vi.fn(),
 }))
 
@@ -17,23 +17,12 @@ import {
   getInsDatasetDimensions,
   getInsDatasetHistory,
   getInsDatasetsCatalog,
-  getInsLatestDatasetValues,
-} from './ins'
-import { graphqlRequest } from './graphql'
+} from './ins-fetchers'
+import { graphqlRequest } from '@/lib/api/graphql'
 
-describe('ins api', () => {
+describe('ins fetchers', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-  })
-
-  it('returns empty latest values when no dataset codes are provided', async () => {
-    const result = await getInsLatestDatasetValues({
-      entity: { sirutaCode: '143450' },
-      datasetCodes: [],
-    })
-
-    expect(result).toEqual([])
-    expect(graphqlRequest).not.toHaveBeenCalled()
   })
 
   it('paginates historical observations until completion', async () => {

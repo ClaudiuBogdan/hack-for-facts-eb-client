@@ -1,0 +1,21 @@
+{
+  "data": {
+    "insTerritories": {
+      "nodes": [
+        {
+          "code": "38357",
+          "siruta_code": "38357",
+          "level": "LAU",
+          "name_ro": "Municipiul Timișoara",
+          "county_code": "TM",
+          "county_name_ro": "Timiș"
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 1,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}

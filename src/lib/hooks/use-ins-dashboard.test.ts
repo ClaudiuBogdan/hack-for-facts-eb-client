@@ -1,51 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('@/lib/api/ins', () => ({
+vi.mock('@/features/statistics/api/graphql/ins-fetchers', () => ({
   getInsContexts: vi.fn(),
-  getInsCountyDashboard: vi.fn(),
   getInsDatasetDimensions: vi.fn(),
   getInsDatasetHistory: vi.fn(),
   getInsDatasetsCatalog: vi.fn(),
-  getInsLatestDatasetValues: vi.fn(),
-  getInsUatDashboard: vi.fn(),
+  getInsObservationsSnapshotByDatasets: vi.fn(),
 }))
 
 import {
   insDatasetDimensionsQueryOptions,
   insDatasetHistoryQueryOptions,
-  insLatestDatasetValuesQueryOptions,
 } from './use-ins-dashboard'
-import { getInsDatasetDimensions, getInsDatasetHistory, getInsLatestDatasetValues } from '@/lib/api/ins'
+import { getInsDatasetDimensions, getInsDatasetHistory } from '@/features/statistics/api/graphql/ins-fetchers'
 
 describe('use-ins-dashboard query options', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-  })
-
-  it('disables latest-values query when dataset list is empty', () => {
-    const options = insLatestDatasetValuesQueryOptions({
-      entity: { sirutaCode: '143450' },
-      datasetCodes: [],
-    })
-
-    expect(options.enabled).toBe(false)
-  })
-
-  it('calls latest-values API query function', async () => {
-    vi.mocked(getInsLatestDatasetValues).mockResolvedValue([])
-
-    const options = insLatestDatasetValuesQueryOptions({
-      entity: { sirutaCode: '143450' },
-      datasetCodes: ['POP107D'],
-      preferredClassificationCodes: ['TOTAL'],
-    })
-
-    await (options.queryFn as () => Promise<unknown>)()
-    expect(getInsLatestDatasetValues).toHaveBeenCalledWith({
-      entity: { sirutaCode: '143450' },
-      datasetCodes: ['POP107D'],
-      preferredClassificationCodes: ['TOTAL'],
-    })
   })
 
   it('disables history query when dataset code is empty', () => {

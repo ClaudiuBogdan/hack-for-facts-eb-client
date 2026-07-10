@@ -32,7 +32,10 @@ vi.mock('@lingui/react/macro', () => ({
   }),
 }))
 
+const { navigateMock } = vi.hoisted(() => ({ navigateMock: vi.fn() }))
+
 vi.mock('@tanstack/react-router', () => ({
+  useNavigate: () => navigateMock,
   Link: ({
     children,
     to,
@@ -65,11 +68,10 @@ vi.mock('@tanstack/react-router', () => ({
 
 describe('StatisticsTerritoryHubPage', () => {
   beforeEach(() => {
-    useStatisticsTerritoryHubMock.mockImplementation(
-      ({ siruta, search }: { siruta: string; search?: { period?: string } }) =>
-        createTerritoryHubQueryStub({
-          data: getMockStatisticsTerritoryHub(siruta, search),
-        }),
+    useStatisticsTerritoryHubMock.mockImplementation(({ siruta }: { siruta: string }) =>
+      createTerritoryHubQueryStub({
+        data: getMockStatisticsTerritoryHub(siruta),
+      }),
     )
   })
 
@@ -111,34 +113,42 @@ describe('StatisticsTerritoryHubPage', () => {
     )
   })
 
-  it('renders period filter links with default selection and preserved search hrefs', () => {
+  it('defaults the period select to the latest period', () => {
     render(<StatisticsTerritoryHubPage siruta="54975" search={{}} />)
 
-    const latestLink = screen.getByRole('link', { name: 'Ultima perioadă' })
-    expect(latestLink).toHaveAttribute('aria-current', 'true')
-    expect(latestLink).toHaveAttribute('href', '/statistici/teritorii/54975')
-
-    const period2023Link = screen.getByRole('link', { name: '2023' })
-    expect(period2023Link).not.toHaveAttribute('aria-current')
-    expect(period2023Link).toHaveAttribute(
-      'href',
-      '/statistici/teritorii/54975?period=2023',
+    expect(screen.getByLabelText('Filtru perioadă')).toHaveTextContent(
+      'Ultima perioadă',
     )
+    expect(screen.queryByText(/^Filtrat:/)).not.toBeInTheDocument()
   })
 
-  it('marks the active period filter when search.period is set', () => {
+  it('reflects the active period from the URL without a second fetch', () => {
     render(
       <StatisticsTerritoryHubPage siruta="54975" search={{ period: '2023' }} />,
     )
 
+    expect(screen.getByLabelText('Filtru perioadă')).toHaveTextContent('2023')
     expect(screen.getByText('Filtrat: 2023')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: '2023' })).toHaveAttribute(
-      'aria-current',
-      'true',
+
+    // The hub is keyed on SIRUTA only: the period is applied as a client-side
+    // transform, so switching periods must never refetch. If `period` ever
+    // leaks back into the hook params it re-enters the query key.
+    const distinctParams = new Set(
+      useStatisticsTerritoryHubMock.mock.calls.map((call: unknown[]) =>
+        JSON.stringify(call[0]),
+      ),
     )
-    expect(screen.getByRole('link', { name: 'Ultima perioadă' })).not.toHaveAttribute(
-      'aria-current',
+    expect([...distinctParams]).toEqual([JSON.stringify({ siruta: '54975' })])
+  })
+
+  it('re-anchors indicator tiles to the selected period', () => {
+    render(
+      <StatisticsTerritoryHubPage siruta="54975" search={{ period: '2021' }} />,
     )
+
+    // POP107D has no 2022 observation in the fixture, so a 2021 selection must
+    // show 2021 data rather than the latest value.
+    expect(screen.getAllByText(/2021/).length).toBeGreaterThan(0)
   })
 
   it('shows a not-found state when the hub query succeeds with null data', () => {

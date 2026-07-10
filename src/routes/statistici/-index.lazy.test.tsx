@@ -6,6 +6,7 @@ vi.mock('@tanstack/react-router', () => ({
   createLazyFileRoute: () => (options: Record<string, unknown>) => ({
     ...options,
     options,
+    useSearch: () => ({}),
   }),
 }))
 

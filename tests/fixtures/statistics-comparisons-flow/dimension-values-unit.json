@@ -1,0 +1,29 @@
+{
+  "data": {
+    "insDatasetDimensionValues": {
+      "nodes": [
+        {
+          "nom_item_id": 20,
+          "dimension_type": "UNIT_OF_MEASURE",
+          "label_ro": "Număr persoane",
+          "label_en": null,
+          "parent_nom_item_id": null,
+          "offset_order": 1,
+          "territory": null,
+          "time_period": null,
+          "classification_value": null,
+          "unit": {
+            "code": "NR_PERS",
+            "symbol": "Nr",
+            "name_ro": "Număr persoane"
+          }
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 1,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}

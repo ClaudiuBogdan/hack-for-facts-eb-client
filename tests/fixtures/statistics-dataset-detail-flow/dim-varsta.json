@@ -1,0 +1,45 @@
+{
+  "data": {
+    "insDatasetDimensionValues": {
+      "nodes": [
+        {
+          "nom_item_id": 210,
+          "dimension_type": "CLASSIFICATION",
+          "label_ro": "0-14 ani",
+          "label_en": null,
+          "parent_nom_item_id": null,
+          "offset_order": 0,
+          "territory": null,
+          "time_period": null,
+          "classification_value": { "type_code": "VARSTA", "code": "0-14", "name_ro": "0-14 ani" },
+          "unit": null
+        },
+        {
+          "nom_item_id": 211,
+          "dimension_type": "CLASSIFICATION",
+          "label_ro": "15-64 ani",
+          "label_en": null,
+          "parent_nom_item_id": null,
+          "offset_order": 1,
+          "territory": null,
+          "time_period": null,
+          "classification_value": { "type_code": "VARSTA", "code": "15-64", "name_ro": "15-64 ani" },
+          "unit": null
+        },
+        {
+          "nom_item_id": 212,
+          "dimension_type": "CLASSIFICATION",
+          "label_ro": "65 ani și peste",
+          "label_en": null,
+          "parent_nom_item_id": null,
+          "offset_order": 2,
+          "territory": null,
+          "time_period": null,
+          "classification_value": { "type_code": "VARSTA", "code": "65+", "name_ro": "65 ani și peste" },
+          "unit": null
+        }
+      ],
+      "pageInfo": { "totalCount": 3, "hasNextPage": false, "hasPreviousPage": false }
+    }
+  }
+}

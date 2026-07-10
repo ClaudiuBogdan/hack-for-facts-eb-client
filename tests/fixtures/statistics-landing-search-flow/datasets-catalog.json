@@ -1,0 +1,51 @@
+{
+  "data": {
+    "insDatasets": {
+      "nodes": [
+        {
+          "id": "1",
+          "code": "POP107D",
+          "name_ro": "Populația după domiciliu",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": ["ANNUAL"],
+          "year_range": [1992, 2024],
+          "dimension_count": 4,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "last_sync_at": null,
+          "context_code": "2",
+          "context_name_ro": "Populație",
+          "context_name_en": null,
+          "context_path": "2",
+          "metadata": null
+        },
+        {
+          "id": "2",
+          "code": "TUR101C",
+          "name_ro": "Structuri de primire turistică",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": ["ANNUAL"],
+          "year_range": [1990, 2023],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "9",
+          "context_name_ro": "Turism",
+          "context_name_en": null,
+          "context_path": "9",
+          "metadata": null
+        }
+      ],
+      "pageInfo": { "totalCount": 1898, "hasNextPage": true, "hasPreviousPage": false }
+    }
+  }
+}

@@ -1,16 +1,21 @@
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { AlertTriangle, ArrowLeft } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import type {
-  StatisticsTerritoryHubResult,
-  StatisticsTerritoryHubSearch,
-} from '@/schemas/statistics'
+import type { StatisticsTerritoryHubSearch } from '@/schemas/statistics'
+import { applyHubPeriod, collectHubPeriodOptions } from '../lib/hub-period'
 import { CoverageRibbon } from '../components/coverage-ribbon'
 import { IndicatorTile } from '../components/indicator-tile'
 import { RelatedLinksRail } from '../components/related-links-rail'
@@ -36,36 +41,27 @@ function TerritorySkeleton() {
   )
 }
 
-function getPeriodOptions(
-  hub: StatisticsTerritoryHubResult | null | undefined,
-): readonly string[] {
-  const periods = new Set<string>()
-
-  for (const tile of hub?.tiles ?? []) {
-    for (const [period] of tile.sparkline) {
-      periods.add(period.iso_period)
-    }
-  }
-
-  return [...periods].sort((left, right) => right.localeCompare(left)).slice(0, 5)
-}
+const LATEST_PERIOD_VALUE = 'latest'
 
 export function StatisticsTerritoryHubPage({
   siruta,
   search,
 }: StatisticsTerritoryHubPageProps) {
-  const hubQuery = useStatisticsTerritoryHub({ siruta, search })
-  const hub = hubQuery.data
-  const shouldShowHub = Boolean(hub) && !hubQuery.isError
+  const navigate = useNavigate()
+  const hubQuery = useStatisticsTerritoryHub({ siruta })
+  const unfilteredHub = hubQuery.data
   const activePeriod = search.period && search.period !== 'latest' ? search.period : null
-  const periodSourceQuery = useStatisticsTerritoryHub({
-    siruta,
-    search: {},
-    enabled: Boolean(activePeriod),
-  })
-  const periodOptions = getPeriodOptions(
-    activePeriod ? periodSourceQuery.data : hub,
-  )
+  const periodOptions = collectHubPeriodOptions(unfilteredHub)
+  const hub = unfilteredHub ? applyHubPeriod(unfilteredHub, activePeriod) : unfilteredHub
+  const shouldShowHub = Boolean(hub) && !hubQuery.isError
+
+  const handlePeriodChange = (value: string) => {
+    void navigate({
+      to: '/statistici/teritorii/$siruta',
+      params: { siruta },
+      search: value === LATEST_PERIOD_VALUE ? {} : { period: value },
+    })
+  }
 
   return (
     <main className="min-h-screen bg-background">
@@ -110,44 +106,44 @@ export function StatisticsTerritoryHubPage({
           <>
             <header className="space-y-4">
               <TerritoryHeader identity={hub.identity} />
-              {activePeriod ? (
-                <Badge variant="outline">
-                  <Trans>Filtrat</Trans>: {activePeriod}
-                </Badge>
-              ) : null}
               {periodOptions.length > 0 ? (
-                <div className="flex flex-wrap gap-2" aria-label={t`Filtru perioadă`}>
-                  <Button
-                    variant={activePeriod ? 'outline' : 'default'}
-                    size="sm"
-                    asChild
+                <div className="flex flex-wrap items-center gap-2">
+                  <label
+                    htmlFor="statistics-hub-period"
+                    className="text-sm font-medium"
                   >
-                    <Link
-                      to="/statistici/teritorii/$siruta"
-                      params={{ siruta }}
-                      search={{}}
-                      aria-current={!activePeriod ? 'true' : undefined}
+                    <Trans>Perioadă</Trans>
+                  </label>
+                  <Select
+                    value={activePeriod ?? LATEST_PERIOD_VALUE}
+                    onValueChange={handlePeriodChange}
+                  >
+                    <SelectTrigger
+                      id="statistics-hub-period"
+                      className="w-48"
+                      aria-label={t`Filtru perioadă`}
                     >
-                      <Trans>Ultima perioadă</Trans>
-                    </Link>
-                  </Button>
-                  {periodOptions.map((period) => (
-                    <Button
-                      key={period}
-                      variant={activePeriod === period ? 'default' : 'outline'}
-                      size="sm"
-                      asChild
-                    >
-                      <Link
-                        to="/statistici/teritorii/$siruta"
-                        params={{ siruta }}
-                        search={{ period }}
-                        aria-current={activePeriod === period ? 'true' : undefined}
-                      >
-                        {period}
-                      </Link>
-                    </Button>
-                  ))}
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={LATEST_PERIOD_VALUE}>
+                        {t`Ultima perioadă`}
+                      </SelectItem>
+                      {periodOptions.map((period) => (
+                        <SelectItem
+                          key={period.iso_period}
+                          value={period.iso_period}
+                        >
+                          {period.iso_period}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {activePeriod ? (
+                    <Badge variant="outline">
+                      <Trans>Filtrat</Trans>: {activePeriod}
+                    </Badge>
+                  ) : null}
                 </div>
               ) : null}
               <CoverageRibbon

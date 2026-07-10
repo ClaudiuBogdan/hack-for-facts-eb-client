@@ -47,11 +47,14 @@ export type StatisticsPeriodSearch = z.infer<
 
 /**
  * Search state for the statistics landing route (`/statistici`).
- * The first shipped landing surface has no shareable filters yet; keep the
- * route parser permissive but do not expose inert query params.
+ *
+ * `q` is the debounced territory search term, shareable so a colleague can be
+ * sent straight to "the Cluj-Napoca result".
  */
 export const statisticsLandingSearchSchema = z
-  .object({})
+  .object({
+    q: z.string().trim().min(1).optional().catch(undefined),
+  })
   .catch({})
 
 export type StatisticsLandingSearch = z.infer<
@@ -77,11 +80,136 @@ export type StatisticsTerritoryHubSearch = z.infer<
   typeof statisticsTerritoryHubSearchSchema
 >
 
+/**
+ * Search state for the dataset explorer (`/statistici/seturi`).
+ *
+ * Param names are Romanian to match the route segments. Every field is
+ * `.optional().catch(undefined)` so a malformed value in a shared URL degrades
+ * to "filter not applied" rather than throwing during route validation.
+ *
+ * - `q`: free-text dataset search (debounced, never a submit button).
+ * - `context`: INS context (theme) code.
+ * - `frecventa`: periodicity multi-select.
+ * - `stare`: the honesty control — datasets with loaded facts vs. catalog-only.
+ * - `uat` / `judet`: coverage flags.
+ * - `pagina`: 1-based page index.
+ */
+export const statisticsDatasetExplorerSearchSchema = z
+  .object({
+    q: z.string().trim().min(1).optional().catch(undefined),
+    context: z.string().trim().min(1).optional().catch(undefined),
+    frecventa: z
+      .array(z.enum(['ANNUAL', 'QUARTERLY', 'MONTHLY']))
+      .nonempty()
+      .optional()
+      .catch(undefined),
+    stare: z.enum(['available', 'catalog-only']).optional().catch(undefined),
+    uat: z.boolean().optional().catch(undefined),
+    judet: z.boolean().optional().catch(undefined),
+    pagina: z.number().int().min(1).optional().catch(undefined),
+  })
+  .catch({})
+
+export type StatisticsDatasetExplorerSearch = z.infer<
+  typeof statisticsDatasetExplorerSearchSchema
+>
+
+/**
+ * A pinned classification, encoded as `"TYPE:VALUE"` — domain codes, which are
+ * what `InsObservationFilterInput` speaks. Never `nom_item_id`s: those are
+ * dimension-value surrogate keys and are meaningless in a shared URL.
+ */
+const classificationPinSchema = z.string().regex(/^[^:]+:[^:]+$/)
+
+/**
+ * A pinned territory, encoded as `"siruta:54975"` (LAU) or `"cod:CJ"` (NUTS3).
+ * The two forms map to different `InsObservationFilterInput` fields.
+ */
+const territoryPinSchema = z.string().regex(/^(siruta|cod):[A-Za-z0-9]+$/)
+
+/**
+ * Search state for the dataset detail route (`/statistici/seturi/$cod`).
+ *
+ * Flat and bounded: at most 8 classification pins, one per classification type
+ * (replacing a pin is a keyed upsert, not an append).
+ */
+export const statisticsDatasetDetailSearchSchema = z
+  .object({
+    teritoriu: territoryPinSchema.optional().catch(undefined),
+    clasificari: z
+      .array(classificationPinSchema)
+      .max(8)
+      .nonempty()
+      .optional()
+      .catch(undefined),
+    unitate: z.string().trim().min(1).optional().catch(undefined),
+    frecventa: z.enum(['ANNUAL', 'QUARTERLY', 'MONTHLY']).optional().catch(undefined),
+    din: z.number().int().min(1900).max(2100).optional().catch(undefined),
+    pana: z.number().int().min(1900).max(2100).optional().catch(undefined),
+    pagina: z.number().int().min(1).optional().catch(undefined),
+  })
+  .catch({})
+
+export type StatisticsDatasetDetailSearch = z.infer<
+  typeof statisticsDatasetDetailSearchSchema
+>
+
+/**
+ * Search state for the local comparisons route (`/statistici/comparatii`).
+ *
+ * `teritorii` holds 2–6 SIRUTA codes. Below two the page shows a guided empty
+ * state rather than a chart of one line.
+ */
+export const statisticsComparisonsSearchSchema = z
+  .object({
+    cod: z.string().trim().min(1).optional().catch(undefined),
+    teritorii: z
+      .array(z.string().trim().min(1))
+      .min(1)
+      .max(6)
+      .optional()
+      .catch(undefined),
+    perioada: z.string().trim().min(1).optional().catch(undefined),
+    clasificari: z
+      .array(classificationPinSchema)
+      .max(8)
+      .nonempty()
+      .optional()
+      .catch(undefined),
+    unitate: z.string().trim().min(1).optional().catch(undefined),
+  })
+  .catch({})
+
+export type StatisticsComparisonsSearch = z.infer<
+  typeof statisticsComparisonsSearchSchema
+>
+
 /** Parse function for TanStack Router `validateSearch` on the landing route. */
 export function parseStatisticsLandingSearch(
   search: Record<string, unknown>,
 ): StatisticsLandingSearch {
   return statisticsLandingSearchSchema.parse(search)
+}
+
+/** Parse function for TanStack Router `validateSearch` on the dataset explorer. */
+export function parseStatisticsDatasetExplorerSearch(
+  search: Record<string, unknown>,
+): StatisticsDatasetExplorerSearch {
+  return statisticsDatasetExplorerSearchSchema.parse(search)
+}
+
+/** Parse function for TanStack Router `validateSearch` on the dataset detail. */
+export function parseStatisticsDatasetDetailSearch(
+  search: Record<string, unknown>,
+): StatisticsDatasetDetailSearch {
+  return statisticsDatasetDetailSearchSchema.parse(search)
+}
+
+/** Parse function for TanStack Router `validateSearch` on the comparisons page. */
+export function parseStatisticsComparisonsSearch(
+  search: Record<string, unknown>,
+): StatisticsComparisonsSearch {
+  return statisticsComparisonsSearchSchema.parse(search)
 }
 
 /** Parse function for TanStack Router `validateSearch` on the territory hub. */
@@ -130,6 +258,30 @@ export interface StatisticsCoverageSummary {
   readonly totalDatasetCount: number
   readonly catalogOnlyDatasetCount: number
   readonly partial: boolean
+}
+
+/** One row of the landing territory search. */
+export interface StatisticsTerritorySearchRow {
+  readonly code: string
+  readonly siruta: string | null
+  readonly name: string | null
+  readonly level: InsTerritoryLevel | null
+  readonly countyCode: string | null
+  readonly countyName: string | null
+}
+
+/** A page of territory search results. */
+export interface StatisticsTerritorySearchResult {
+  readonly rows: readonly StatisticsTerritorySearchRow[]
+  readonly totalCount: number
+  readonly hasNextPage: boolean
+}
+
+/** A page of dataset catalog rows for the explorer. */
+export interface StatisticsDatasetPage {
+  readonly datasets: readonly StatisticsDatasetSummary[]
+  readonly totalCount: number
+  readonly hasNextPage: boolean
 }
 
 /** Territory identity resolved for a SIRUTA code. */

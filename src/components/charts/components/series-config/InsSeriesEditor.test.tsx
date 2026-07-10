@@ -153,7 +153,7 @@ vi.mock('../../hooks/useChartStore', () => ({
 const mockGetInsDatasetDetails = vi.fn();
 const mockGetInsDimensionValuesPage = vi.fn();
 
-vi.mock('@/lib/api/ins', () => ({
+vi.mock('@/features/statistics/api/graphql/ins-fetchers', () => ({
   getInsDatasetDetails: (code: string) => mockGetInsDatasetDetails(code),
   getInsDimensionValuesPage: (params: unknown) => mockGetInsDimensionValuesPage(params),
 }));

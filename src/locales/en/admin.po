@@ -342,7 +342,7 @@ msgstr "A compact snapshot of campaign scale, review load, and notification reac
 msgid "A config already exists for this entity. Saving will update the existing record."
 msgstr "A config already exists for this entity. Saving will update the existing record."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:693
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:694
 msgid "A review note is optional for approved rows."
 msgstr "A review note is optional for approved rows."
 
@@ -371,7 +371,7 @@ msgstr "Add"
 msgid "Add condition"
 msgstr "Add condition"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:768
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:769
 msgid "Add operator context for this review…"
 msgstr "Add operator context for this review…"
 
@@ -647,14 +647,14 @@ msgstr "Apply selected"
 msgid "Applying…"
 msgstr "Applying…"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:821
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:822
 msgid "Approval requires explicit confirmation"
 msgstr "Approval requires explicit confirmation"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:348
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsRunTab.tsx:142
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:191
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:683
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:684
 #: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:343
 #: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:649
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1201
@@ -664,7 +664,7 @@ msgstr "Approval requires explicit confirmation"
 msgid "Approved"
 msgstr "Approved"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:751
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:752
 msgid "Approved rows can be saved with or without a review note."
 msgstr "Approved rows can be saved with or without a review note."
 
@@ -1242,15 +1242,15 @@ msgstr "Choose a notification type, add conditions, preview matches, then send n
 msgid "Choose a value"
 msgstr "Choose a value"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:767
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:768
 msgid "Choose approved or rejected to start a staged review…"
 msgstr "Choose approved or rejected to start a staged review…"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:748
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:749
 msgid "Choose approved or rejected to start editing the staged review note."
 msgstr "Choose approved or rejected to start editing the staged review note."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:640
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:641
 msgid "Choose approved or rejected."
 msgstr "Choose approved or rejected."
 
@@ -1293,7 +1293,7 @@ msgstr "Clear selection"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1251
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1973
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:872
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:873
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:740
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1402
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1429
@@ -1363,11 +1363,14 @@ msgstr "Clipboard paste is not available in this browser."
 #: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:324
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:829
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSendValidationDialog.tsx:84
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet.tsx:583
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:794
+#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:50
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsToolbar.tsx:711
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:765
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationTriggerDialog.tsx:769
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:863
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:573
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:864
 #: src/features/campaigns/buget/admin/components/CampaignAdminSendValidationDialog.tsx:84
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:1051
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:839
@@ -1445,7 +1448,7 @@ msgstr "Config already exists"
 msgid "Configured"
 msgstr "Configured"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:836
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:837
 msgid "Confirm approval warning"
 msgstr "Confirm approval warning"
 
@@ -1709,7 +1712,7 @@ msgstr "Duplicate review row: {0}"
 msgid "Edit selected interactions"
 msgstr "Edit selected interactions"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet.tsx:586
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet.tsx:589
 msgid "Edit the campaign entity config for this municipality."
 msgstr "Edit the campaign entity config for this municipality."
 
@@ -1981,7 +1984,7 @@ msgstr "Failed to load entity config"
 msgid "Failed to load entity detail"
 msgstr "Failed to load entity detail"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:68
+#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:71
 msgid "Failed to load institution thread"
 msgstr "Failed to load institution thread"
 
@@ -2163,7 +2166,7 @@ msgstr "HTML"
 msgid "I don't know"
 msgstr "I don't know"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:839
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:840
 msgid "I understand the risk and want to continue with approval."
 msgstr "I understand the risk and want to continue with approval."
 
@@ -2265,7 +2268,7 @@ msgstr "Inspect institution email threads, filter the operational queue, and rec
 msgid "Inspect submitted records, filter the workspace, and stage review decisions for this user."
 msgstr "Inspect submitted records, filter the workspace, and stage review decisions for this user."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:54
+#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:57
 msgid "Inspect the full correspondence history and record a manual institution response from the same entity workflow."
 msgstr "Inspect the full correspondence history and record a manual institution response from the same entity workflow."
 
@@ -2288,7 +2291,7 @@ msgstr "Institution email"
 msgid "Institution email mismatch"
 msgstr "Institution email mismatch"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:51
+#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:54
 msgid "Institution thread"
 msgstr "Institution thread"
 
@@ -2519,7 +2522,7 @@ msgstr "Limit cannot exceed {0}."
 msgid "Link"
 msgstr "Link"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:55
+#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:58
 msgid "Load a thread to inspect full correspondence history."
 msgstr "Load a thread to inspect full correspondence history."
 
@@ -2869,7 +2872,7 @@ msgstr "No templates available"
 msgid "No thread"
 msgstr "No thread"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:73
+#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:76
 msgid "No thread selected"
 msgstr "No thread selected"
 
@@ -2948,7 +2951,7 @@ msgid "Not staged"
 msgstr "Not staged"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:226
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:779
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:780
 msgid "Notification"
 msgstr "Notification"
 
@@ -3150,7 +3153,7 @@ msgstr "Open entity page for {0}"
 msgid "Open interactions queue"
 msgstr "Open interactions queue"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:811
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:812
 msgid "Open notifications admin for this review"
 msgstr "Open notifications admin for this review"
 
@@ -3198,7 +3201,7 @@ msgstr "Operational distributions"
 msgid "Operator"
 msgstr "Operator"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:614
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:615
 msgid "Operator warnings"
 msgstr "Operator warnings"
 
@@ -3543,7 +3546,7 @@ msgstr "Queued {0}, already sent {1}, already pending {2}, not eligible {3}, mis
 msgid "Rank entities by interactions, users, or pending reviews without reusing the operational entity endpoints."
 msgstr "Rank entities by interactions, users, or pending reviews without reusing the operational entity endpoints."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:848
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:849
 msgid "Read-only review"
 msgstr "Read-only review"
 
@@ -3691,7 +3694,7 @@ msgstr "Registration number received"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:354
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsRunTab.tsx:143
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:723
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:724
 #: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:344
 #: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:660
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1203
@@ -3701,12 +3704,12 @@ msgstr "Registration number received"
 msgid "Rejected"
 msgstr "Rejected"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:750
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:751
 #: src/features/campaigns/buget/admin/utils/review-workspace.ts:87
 msgid "Rejected rows need a review note before saving."
 msgstr "Rejected rows need a review note before saving."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:733
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:734
 msgid "Rejected rows require a review note before saving."
 msgstr "Rejected rows require a review note before saving."
 
@@ -3879,7 +3882,7 @@ msgstr "Reused"
 msgid "Review"
 msgstr "Review"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:631
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:632
 msgid "Review and thread state"
 msgstr "Review and thread state"
 
@@ -3905,7 +3908,7 @@ msgstr "Review campaign interactions with the existing operator workflow and dur
 msgid "Review entity-level campaign state across users, interaction review pressure, and notification delivery activity."
 msgstr "Review entity-level campaign state across users, interaction review pressure, and notification delivery activity."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:743
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:744
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:551
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:972
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:1332
@@ -3966,7 +3969,7 @@ msgstr "Review state"
 msgid "Review status"
 msgstr "Review status"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:781
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:782
 msgid "Review submission always saves the decision. Notification side effects only run when you opt in."
 msgstr "Review submission always saves the decision. Notification side effects only run when you opt in."
 
@@ -4083,11 +4086,11 @@ msgstr "Save config"
 msgid "Save only"
 msgstr "Save only"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:900
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:901
 msgid "Save review"
 msgstr "Save review"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:899
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:900
 msgid "Save review & notify"
 msgstr "Save review & notify"
 
@@ -4107,7 +4110,7 @@ msgstr "Saved 1 review before the remaining batch failed."
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet.tsx:531
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadResponseForm.tsx:237
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:897
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:898
 msgid "Saving…"
 msgstr "Saving…"
 
@@ -4148,7 +4151,7 @@ msgstr "Search UAT by name or CUI..."
 msgid "Search users"
 msgstr "Search users"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:75
+#: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:78
 msgid "Select a thread from the list to inspect the full detail drawer."
 msgstr "Select a thread from the list to inspect the full detail drawer."
 
@@ -4219,11 +4222,11 @@ msgstr "Send mode"
 msgid "Send notification"
 msgstr "Send notification"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:799
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:800
 msgid "Send notification after saving"
 msgstr "Send notification after saving"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:794
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:795
 msgid "Send notification after saving review"
 msgstr "Send notification after saving review"
 
@@ -4469,7 +4472,7 @@ msgstr "Stage review first"
 msgid "Staged"
 msgstr "Staged"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:638
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:639
 msgid "Staged decision"
 msgstr "Staged decision"
 
@@ -4533,7 +4536,7 @@ msgstr "Submission"
 msgid "Submission path"
 msgstr "Submission path"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:626
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:627
 msgid "Submission summary"
 msgstr "Submission summary"
 
@@ -4913,15 +4916,15 @@ msgstr "This institution thread changed before your response was saved."
 msgid "This interaction changed before your review was saved."
 msgstr "This interaction changed before your review was saved."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:746
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:747
 msgid "This interaction is no longer pending. The saved review note is shown below."
 msgstr "This interaction is no longer pending. The saved review note is shown below."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:850
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:851
 msgid "This interaction is no longer pending. You can inspect the saved review state, but you cannot submit another decision from this screen."
 msgstr "This interaction is no longer pending. You can inspect the saved review state, but you cannot submit another decision from this screen."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:824
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:825
 msgid "This item carries an institution-email risk flag. Approving it may trigger additional server follow-up when notification side effects are enabled."
 msgstr "This item carries an institution-email risk flag. Approving it may trigger additional server follow-up when notification side effects are enabled."
 
@@ -4958,11 +4961,11 @@ msgstr "This removes the staged config values for the currently selected rows."
 msgid "This removes the staged review decision and note for the currently selected rows."
 msgstr "This removes the staged review decision and note for the currently selected rows."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:803
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:804
 msgid "This review will save and then allow notification-capable side effects."
 msgstr "This review will save and then allow notification-capable side effects."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:804
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:805
 msgid "This review will save without notification side effects."
 msgstr "This review will save without notification side effects."
 
@@ -5240,10 +5243,10 @@ msgstr "Unable to save entity config"
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:295
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:308
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:353
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:595
-#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:603
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:596
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:604
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:605
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:606
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:144
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:149
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:379

@@ -3,7 +3,6 @@ import { generateHash } from '@/lib/utils'
 import type {
   DatasetRequestPayload,
   StatisticsLanding,
-  StatisticsTerritoryHubSearch,
   StatisticsTerritoryHubResult,
 } from '@/schemas/statistics'
 import {
@@ -74,9 +73,13 @@ export function useStatisticsLanding(params: { enabled?: boolean } = {}) {
 // Statistics territory hub
 // ---------------------------------------------------------------------------
 
+/**
+ * The hub is keyed on SIRUTA alone. The `period` URL param is applied as a
+ * client-side transform (`lib/hub-period.ts`), so it must not enter the query
+ * key — otherwise every period switch would refetch the whole dashboard.
+ */
 export const statisticsTerritoryHubQueryOptions = (params: {
   siruta: string
-  search?: Partial<StatisticsTerritoryHubSearch>
   enabled?: boolean
 }) => {
   const { enabled, queryParams } = splitEnabled(params)
@@ -84,12 +87,8 @@ export const statisticsTerritoryHubQueryOptions = (params: {
 
   return createQueryOptions<StatisticsTerritoryHubResult | null>({
     key: 'statisticsTerritoryHub',
-    hashSource: {
-      siruta: normalizedSiruta,
-      search: queryParams.search ?? {},
-    },
-    queryFn: () =>
-      fetchStatisticsTerritoryHub(normalizedSiruta, queryParams.search),
+    hashSource: { siruta: normalizedSiruta },
+    queryFn: () => fetchStatisticsTerritoryHub(normalizedSiruta),
     enabled: enabled && normalizedSiruta.length > 0,
     staleTime: DEFAULT_STALE_TIME,
   })
@@ -97,7 +96,6 @@ export const statisticsTerritoryHubQueryOptions = (params: {
 
 export function useStatisticsTerritoryHub(params: {
   siruta: string
-  search?: Partial<StatisticsTerritoryHubSearch>
   enabled?: boolean
 }) {
   return useQuery(statisticsTerritoryHubQueryOptions(params))

@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import type { StatisticsIndicatorTile } from '@/schemas/statistics'
+import { applyHubPeriod } from '../lib/hub-period'
 import {
   getMockStatisticsLanding,
   getMockStatisticsTerritoryHub,
@@ -55,21 +57,20 @@ describe('statistics mock fixtures', () => {
     expect(years).toContain(2024)
   })
 
-  it('filters mock territory observations by requested period', () => {
-    const hub = getMockStatisticsTerritoryHub('54975', { period: '2023' })
-    const popTile = hub?.tiles.find((tile) => tile.datasetCode === 'POP107D')
+  it('re-anchors the mock hub to a requested period', () => {
+    const hub = applyHubPeriod(getMockStatisticsTerritoryHub('54975')!, '2023')
+    const popTile = hub.tiles.find((tile: StatisticsIndicatorTile) => tile.datasetCode === 'POP107D')
 
     expect(popTile?.latestPeriod).toBe('2023')
-    expect(popTile?.sparkline.map(([period]) => period.iso_period)).toEqual(['2023'])
+    expect(popTile?.tileState).toBe('available')
   })
 
   it('does not invent freshness for a requested period with no observations', () => {
-    const hub = getMockStatisticsTerritoryHub('54975', { period: '2020' })
-    const popTile = hub?.tiles.find((tile) => tile.datasetCode === 'POP107D')
+    const hub = applyHubPeriod(getMockStatisticsTerritoryHub('54975')!, '2020')
+    const popTile = hub.tiles.find((tile: StatisticsIndicatorTile) => tile.datasetCode === 'POP107D')
 
     expect(popTile?.tileState).toBe('no-data')
-    expect(popTile?.latestPeriod).toBeNull()
-    expect(popTile?.sparkline).toEqual([])
+    expect(popTile?.value).toBeNull()
   })
 
   it('carries value_status on the FOM104D latest observation', () => {
