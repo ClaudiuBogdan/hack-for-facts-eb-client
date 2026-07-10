@@ -19,7 +19,10 @@ vi.mock('../hooks/use-statistics', async (importOriginal) => {
   }
 })
 
+const { navigateMock } = vi.hoisted(() => ({ navigateMock: vi.fn() }))
+
 vi.mock('@tanstack/react-router', () => ({
+  useNavigate: () => navigateMock,
   Link: ({
     children,
     to,
@@ -48,25 +51,42 @@ describe('StatisticsLandingPage', () => {
     useStatisticsLandingMock.mockReturnValue(createLandingQueryStub())
   })
 
-  it('renders title, coverage ribbon, territory links, dataset status, and catalog-only request action', () => {
-    render(<StatisticsLandingPage />)
+  it('renders title, coverage ribbon, dataset status, and catalog-only request action', () => {
+    render(<StatisticsLandingPage search={{}} />)
 
     expect(
       screen.getByRole('heading', { level: 1, name: 'Statistici' }),
     ).toBeInTheDocument()
     expect(screen.getByText(/27 din 1\.898 seturi cu date disponibile/)).toBeInTheDocument()
 
-    expect(
-      screen.getByRole('link', { name: /Municipiul Cluj-Napoca/i }),
-    ).toHaveAttribute('href', '/statistici/teritorii/54975')
-    expect(
-      screen.getByRole('link', { name: /Municipiul București/i }),
-    ).toHaveAttribute('href', '/statistici/teritorii/179132')
-
     expect(screen.getAllByText('Date disponibile').length).toBeGreaterThan(0)
     expect(screen.getByText('Doar catalog')).toBeInTheDocument()
     expect(screen.getByText(/TUR101C/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Cere set' })).toBeInTheDocument()
+  })
+
+  it('offers territory search instead of a hardcoded territory list', () => {
+    render(<StatisticsLandingPage search={{}} />)
+
+    expect(screen.getByLabelText('Caută un teritoriu')).toBeInTheDocument()
+    expect(
+      screen.getByText('Scrie cel puțin două caractere pentru a căuta.'),
+    ).toBeInTheDocument()
+
+    // The two SIRUTA codes that used to be hardcoded entry points.
+    expect(screen.queryByRole('link', { name: /Municipiul Cluj-Napoca/i })).toBeNull()
+    expect(screen.queryByRole('link', { name: /Municipiul București/i })).toBeNull()
+  })
+
+  it('links onward to the dataset explorer and comparisons', () => {
+    render(<StatisticsLandingPage search={{}} />)
+
+    expect(
+      screen.getByRole('link', { name: /Toate seturile de date/i }),
+    ).toHaveAttribute('href', '/statistici/seturi')
+    expect(
+      screen.getByRole('link', { name: /Compară teritorii/i }),
+    ).toHaveAttribute('href', '/statistici/comparatii')
   })
 
   it('shows an empty landing state when topDatasets is empty', () => {
@@ -76,7 +96,7 @@ describe('StatisticsLandingPage', () => {
       }),
     )
 
-    render(<StatisticsLandingPage />)
+    render(<StatisticsLandingPage search={{}} />)
 
     expect(screen.getByText('Nu există seturi de afișat')).toBeInTheDocument()
     expect(
@@ -99,7 +119,7 @@ describe('StatisticsLandingPage', () => {
       }),
     )
 
-    render(<StatisticsLandingPage />)
+    render(<StatisticsLandingPage search={{}} />)
 
     expect(screen.getByText('Nu am putut încărca statistica')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Reîncearcă' }))

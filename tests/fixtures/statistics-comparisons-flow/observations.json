@@ -1,0 +1,293 @@
+{
+  "data": {
+    "insObservations": {
+      "nodes": [
+        {
+          "dataset_code": "POP107D",
+          "value": "286598",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2022",
+            "year": 2022,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "Municipiul Cluj-Napoca"
+          },
+          "unit": {
+            "code": "NR_PERS",
+            "symbol": "Nr",
+            "name_ro": "Număr persoane"
+          },
+          "classifications": [
+            {
+              "id": "1",
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "type_name_en": null,
+              "code": "SEX_T",
+              "name_ro": "Total",
+              "name_en": null,
+              "sort_order": 1
+            }
+          ]
+        },
+        {
+          "dataset_code": "POP107D",
+          "value": "287744",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2023",
+            "year": 2023,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "Municipiul Cluj-Napoca"
+          },
+          "unit": {
+            "code": "NR_PERS",
+            "symbol": "Nr",
+            "name_ro": "Număr persoane"
+          },
+          "classifications": [
+            {
+              "id": "1",
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "type_name_en": null,
+              "code": "SEX_T",
+              "name_ro": "Total",
+              "name_en": null,
+              "sort_order": 1
+            }
+          ]
+        },
+        {
+          "dataset_code": "POP107D",
+          "value": "288891",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "Municipiul Cluj-Napoca"
+          },
+          "unit": {
+            "code": "NR_PERS",
+            "symbol": "Nr",
+            "name_ro": "Număr persoane"
+          },
+          "classifications": [
+            {
+              "id": "1",
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "type_name_en": null,
+              "code": "SEX_T",
+              "name_ro": "Total",
+              "name_en": null,
+              "sort_order": 1
+            }
+          ]
+        },
+        {
+          "dataset_code": "POP107D",
+          "value": "43302",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2022",
+            "year": 2022,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54984",
+            "siruta_code": "54984",
+            "level": "LAU",
+            "name_ro": "Municipiul Turda"
+          },
+          "unit": {
+            "code": "NR_PERS",
+            "symbol": "Nr",
+            "name_ro": "Număr persoane"
+          },
+          "classifications": [
+            {
+              "id": "1",
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "type_name_en": null,
+              "code": "SEX_T",
+              "name_ro": "Total",
+              "name_en": null,
+              "sort_order": 1
+            }
+          ]
+        },
+        {
+          "dataset_code": "POP107D",
+          "value": "43129",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2023",
+            "year": 2023,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54984",
+            "siruta_code": "54984",
+            "level": "LAU",
+            "name_ro": "Municipiul Turda"
+          },
+          "unit": {
+            "code": "NR_PERS",
+            "symbol": "Nr",
+            "name_ro": "Număr persoane"
+          },
+          "classifications": [
+            {
+              "id": "1",
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "type_name_en": null,
+              "code": "SEX_T",
+              "name_ro": "Total",
+              "name_en": null,
+              "sort_order": 1
+            }
+          ]
+        },
+        {
+          "dataset_code": "POP107D",
+          "value": "42956",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54984",
+            "siruta_code": "54984",
+            "level": "LAU",
+            "name_ro": "Municipiul Turda"
+          },
+          "unit": {
+            "code": "NR_PERS",
+            "symbol": "Nr",
+            "name_ro": "Număr persoane"
+          },
+          "classifications": [
+            {
+              "id": "1",
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "type_name_en": null,
+              "code": "SEX_T",
+              "name_ro": "Total",
+              "name_en": null,
+              "sort_order": 1
+            }
+          ]
+        },
+        {
+          "dataset_code": "POP107D",
+          "value": "32118",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2022",
+            "year": 2022,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54993",
+            "siruta_code": "54993",
+            "level": "LAU",
+            "name_ro": "Municipiul Dej"
+          },
+          "unit": {
+            "code": "NR_PERS",
+            "symbol": "Nr",
+            "name_ro": "Număr persoane"
+          },
+          "classifications": [
+            {
+              "id": "1",
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "type_name_en": null,
+              "code": "SEX_T",
+              "name_ro": "Total",
+              "name_en": null,
+              "sort_order": 1
+            }
+          ]
+        },
+        {
+          "dataset_code": "POP107D",
+          "value": "32246",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2023",
+            "year": 2023,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54993",
+            "siruta_code": "54993",
+            "level": "LAU",
+            "name_ro": "Municipiul Dej"
+          },
+          "unit": {
+            "code": "NR_PERS",
+            "symbol": "Nr",
+            "name_ro": "Număr persoane"
+          },
+          "classifications": [
+            {
+              "id": "1",
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "type_name_en": null,
+              "code": "SEX_T",
+              "name_ro": "Total",
+              "name_en": null,
+              "sort_order": 1
+            }
+          ]
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 8,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}

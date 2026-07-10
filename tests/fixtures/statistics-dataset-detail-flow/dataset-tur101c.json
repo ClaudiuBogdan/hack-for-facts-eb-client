@@ -1,0 +1,45 @@
+{
+  "data": {
+    "insDataset": {
+      "id": "4",
+      "code": "TUR101C",
+      "name_ro": "Structuri de primire turistică cu funcțiuni de cazare",
+      "name_en": null,
+      "definition_ro": null,
+      "definition_en": null,
+      "periodicity": ["ANNUAL"],
+      "year_range": [1990, 2023],
+      "dimension_count": 2,
+      "has_uat_data": true,
+      "has_county_data": true,
+      "has_siruta": true,
+      "sync_status": "PENDING",
+      "last_sync_at": null,
+      "context_code": "9",
+      "context_name_ro": "Turism",
+      "context_name_en": null,
+      "context_path": "9",
+      "metadata": null,
+      "dimensions": [
+        {
+          "index": 0,
+          "type": "TEMPORAL",
+          "label_ro": "Ani",
+          "label_en": "Years",
+          "is_hierarchical": false,
+          "option_count": 34,
+          "classification_type": null
+        },
+        {
+          "index": 1,
+          "type": "TERRITORIAL",
+          "label_ro": "Localități",
+          "label_en": "Localities",
+          "is_hierarchical": false,
+          "option_count": 3,
+          "classification_type": null
+        }
+      ]
+    }
+  }
+}

@@ -3,7 +3,6 @@ import type {
   DatasetRequestPayload,
   DatasetRequestResult,
   StatisticsLanding,
-  StatisticsTerritoryHubSearch,
   StatisticsTerritoryHubResult,
 } from '@/schemas/statistics'
 import {
@@ -31,10 +30,9 @@ export async function fetchStatisticsLandingMock(): Promise<StatisticsLanding> {
 
 export async function fetchStatisticsTerritoryHubMock(
   siruta: string,
-  search?: Partial<StatisticsTerritoryHubSearch>,
 ): Promise<StatisticsTerritoryHubResult | null> {
   await delay()
-  return getMockStatisticsTerritoryHub(siruta, search)
+  return getMockStatisticsTerritoryHub(siruta)
 }
 
 export async function submitDatasetRequestMock(

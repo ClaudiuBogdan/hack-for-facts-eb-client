@@ -1,0 +1,12 @@
+{
+  "data": {
+    "insObservations": {
+      "nodes": [],
+      "pageInfo": {
+        "totalCount": 0,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}

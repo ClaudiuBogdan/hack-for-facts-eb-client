@@ -8,7 +8,6 @@ import type {
 } from '@/schemas/ins'
 import type {
   StatisticsLanding,
-  StatisticsTerritoryHubSearch,
   StatisticsTerritoryHubResult,
 } from '@/schemas/statistics'
 import { buildDocsFallbackCoverage } from '../lib/coverage'
@@ -650,53 +649,15 @@ function buildMockTerritoryHub(params: {
   }
 }
 
+/**
+ * The hub is always returned unfiltered. Period selection is a client-side
+ * transform (`lib/hub-period.ts`), so the mock has nothing to filter — which
+ * is exactly the property the live adapter now has too.
+ */
 export function getMockStatisticsTerritoryHub(
   siruta: string,
-  search?: Partial<StatisticsTerritoryHubSearch>,
 ): StatisticsTerritoryHubResult | null {
-  const normalizedSiruta = siruta.trim()
-  const period = search?.period
-  if (!period || period === 'latest') {
-    return mockTerritoryHubBySiruta.get(normalizedSiruta) ?? null
-  }
-
-  if (normalizedSiruta === '54975') {
-    return buildMockTerritoryHub({
-      siruta: normalizedSiruta,
-      dashboard: filterMockDashboardByPeriod(mockUatDashboardData, period),
-      territory: clujNapocaTerritory,
-    })
-  }
-
-  if (normalizedSiruta === '179132') {
-    return buildMockTerritoryHub({
-      siruta: normalizedSiruta,
-      dashboard: filterMockDashboardByPeriod(mockCountyDashboardData, period),
-      territory: bucharestCountyTerritory,
-    })
-  }
-
-  return null
-}
-
-function filterMockDashboardByPeriod(
-  dashboard: InsDashboardData,
-  period: string,
-): InsDashboardData {
-  return {
-    partial: dashboard.partial,
-    groups: dashboard.groups.map((group) => {
-      const observations = group.observations.filter(
-        (observation) => observation.time_period.iso_period === period,
-      )
-
-      return {
-        ...group,
-        observations,
-        latestPeriod: observations.length > 0 ? period : null,
-      }
-    }),
-  }
+  return mockTerritoryHubBySiruta.get(siruta.trim()) ?? null
 }
 
 export function getMockStatisticsLanding(): StatisticsLanding {

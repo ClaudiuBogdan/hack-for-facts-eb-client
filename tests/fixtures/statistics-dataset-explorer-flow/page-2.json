@@ -1,0 +1,688 @@
+{
+  "data": {
+    "insDatasets": {
+      "nodes": [
+        {
+          "id": "126",
+          "code": "CTB026X",
+          "name_ro": "Set de date în catalog 026",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "127",
+          "code": "CTB027X",
+          "name_ro": "Set de date în catalog 027",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "128",
+          "code": "CTB028X",
+          "name_ro": "Set de date în catalog 028",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "129",
+          "code": "CTB029X",
+          "name_ro": "Set de date în catalog 029",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "130",
+          "code": "CTB030X",
+          "name_ro": "Set de date în catalog 030",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "131",
+          "code": "CTB031X",
+          "name_ro": "Set de date în catalog 031",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "132",
+          "code": "CTB032X",
+          "name_ro": "Set de date în catalog 032",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "133",
+          "code": "CTB033X",
+          "name_ro": "Set de date în catalog 033",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "134",
+          "code": "CTB034X",
+          "name_ro": "Set de date în catalog 034",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "135",
+          "code": "CTB035X",
+          "name_ro": "Set de date în catalog 035",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "136",
+          "code": "CTB036X",
+          "name_ro": "Set de date în catalog 036",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "137",
+          "code": "CTB037X",
+          "name_ro": "Set de date în catalog 037",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "138",
+          "code": "CTB038X",
+          "name_ro": "Set de date în catalog 038",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "139",
+          "code": "CTB039X",
+          "name_ro": "Set de date în catalog 039",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "140",
+          "code": "CTB040X",
+          "name_ro": "Set de date în catalog 040",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "141",
+          "code": "CTB041X",
+          "name_ro": "Set de date în catalog 041",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "142",
+          "code": "CTB042X",
+          "name_ro": "Set de date în catalog 042",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "143",
+          "code": "CTB043X",
+          "name_ro": "Set de date în catalog 043",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "144",
+          "code": "CTB044X",
+          "name_ro": "Set de date în catalog 044",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "145",
+          "code": "CTB045X",
+          "name_ro": "Set de date în catalog 045",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "146",
+          "code": "CTB046X",
+          "name_ro": "Set de date în catalog 046",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "147",
+          "code": "CTB047X",
+          "name_ro": "Set de date în catalog 047",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "148",
+          "code": "CTB048X",
+          "name_ro": "Set de date în catalog 048",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "149",
+          "code": "CTB049X",
+          "name_ro": "Set de date în catalog 049",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "150",
+          "code": "CTB050X",
+          "name_ro": "Set de date în catalog 050",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 1898,
+        "hasNextPage": true,
+        "hasPreviousPage": true
+      }
+    }
+  }
+}

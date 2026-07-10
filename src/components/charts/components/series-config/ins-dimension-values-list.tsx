@@ -8,7 +8,7 @@ import type { BaseListProps, OptionItem, PageData } from '@/components/filters/b
 import { ListContainer } from '@/components/filters/base-filter/ListContainer';
 import { ListOption } from '@/components/filters/base-filter/ListOption';
 import { SearchInput } from '@/components/filters/base-filter/SearchInput';
-import { getInsDimensionValuesPage } from '@/lib/api/ins';
+import { getInsDimensionValuesPage } from '@/features/statistics/api/graphql/ins-fetchers';
 import { cn, getUserLocale } from '@/lib/utils';
 import type { InsDimensionValue, InsTerritoryLevel } from '@/schemas/ins';
 import {

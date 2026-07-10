@@ -1,0 +1,634 @@
+{
+  "data": {
+    "insDatasets": {
+      "nodes": [
+        {
+          "id": "1",
+          "code": "POP107D",
+          "name_ro": "Populația după domiciliu pe sexe și grupe de vârstă",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            1992,
+            2024
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "last_sync_at": null,
+          "context_code": "201",
+          "context_name_ro": "Populație și structură demografică",
+          "context_name_en": null,
+          "context_path": "2",
+          "metadata": null,
+          "data_status": "AVAILABLE"
+        },
+        {
+          "id": "2",
+          "code": "POP108D",
+          "name_ro": "Populația rezidentă pe medii de rezidență",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2012,
+            2024
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "last_sync_at": null,
+          "context_code": "201",
+          "context_name_ro": "Populație și structură demografică",
+          "context_name_en": null,
+          "context_path": "2",
+          "metadata": null,
+          "data_status": "AVAILABLE"
+        },
+        {
+          "id": "3",
+          "code": "FOM104D",
+          "name_ro": "Numărul mediu al salariaților pe activități economice",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2000,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "last_sync_at": null,
+          "context_code": "301",
+          "context_name_ro": "Piața forței de muncă",
+          "context_name_en": null,
+          "context_path": "3",
+          "metadata": null,
+          "data_status": "AVAILABLE"
+        },
+        {
+          "id": "6",
+          "code": "LOC101B",
+          "name_ro": "Locuințe terminate pe surse de finanțare",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            1990,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "last_sync_at": null,
+          "context_code": "401",
+          "context_name_ro": "Construcții și locuințe",
+          "context_name_en": null,
+          "context_path": "4",
+          "metadata": null,
+          "data_status": "AVAILABLE"
+        },
+        {
+          "id": "7",
+          "code": "SAN104B",
+          "name_ro": "Personalul medico-sanitar pe categorii",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            1995,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "last_sync_at": null,
+          "context_code": "501",
+          "context_name_ro": "Sănătate",
+          "context_name_en": null,
+          "context_path": "5",
+          "metadata": null,
+          "data_status": "AVAILABLE"
+        },
+        {
+          "id": "8",
+          "code": "SCL103D",
+          "name_ro": "Populația școlară pe niveluri de educație",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            1998,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "last_sync_at": null,
+          "context_code": "601",
+          "context_name_ro": "Educație",
+          "context_name_en": null,
+          "context_path": "6",
+          "metadata": null,
+          "data_status": "AVAILABLE"
+        },
+        {
+          "id": "9",
+          "code": "GOS107A",
+          "name_ro": "Cantitatea de apă potabilă distribuită consumatorilor",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2000,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": false,
+          "has_county_data": true,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "last_sync_at": null,
+          "context_code": "601",
+          "context_name_ro": "Utilități publice",
+          "context_name_en": null,
+          "context_path": "6",
+          "metadata": null,
+          "data_status": "AVAILABLE"
+        },
+        {
+          "id": "10",
+          "code": "AGR101A",
+          "name_ro": "Suprafața agricolă după modul de folosință",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2000,
+            2022
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "last_sync_at": null,
+          "context_code": "201",
+          "context_name_ro": "Agricultură",
+          "context_name_en": null,
+          "context_path": "2",
+          "metadata": null,
+          "data_status": "AVAILABLE"
+        },
+        {
+          "id": "101",
+          "code": "CAT001X",
+          "name_ro": "Set de date în catalog 001",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "102",
+          "code": "CAT002X",
+          "name_ro": "Set de date în catalog 002",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "103",
+          "code": "CAT003X",
+          "name_ro": "Set de date în catalog 003",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "104",
+          "code": "CAT004X",
+          "name_ro": "Set de date în catalog 004",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "105",
+          "code": "CAT005X",
+          "name_ro": "Set de date în catalog 005",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "106",
+          "code": "CAT006X",
+          "name_ro": "Set de date în catalog 006",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "107",
+          "code": "CAT007X",
+          "name_ro": "Set de date în catalog 007",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "108",
+          "code": "CAT008X",
+          "name_ro": "Set de date în catalog 008",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "109",
+          "code": "CAT009X",
+          "name_ro": "Set de date în catalog 009",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "110",
+          "code": "CAT010X",
+          "name_ro": "Set de date în catalog 010",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "111",
+          "code": "CAT011X",
+          "name_ro": "Set de date în catalog 011",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "112",
+          "code": "CAT012X",
+          "name_ro": "Set de date în catalog 012",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "113",
+          "code": "CAT013X",
+          "name_ro": "Set de date în catalog 013",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "114",
+          "code": "CAT014X",
+          "name_ro": "Set de date în catalog 014",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        },
+        {
+          "id": "115",
+          "code": "CAT015X",
+          "name_ro": "Set de date în catalog 015",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2010,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "PENDING",
+          "last_sync_at": null,
+          "context_code": "701",
+          "context_name_ro": "Alte domenii",
+          "context_name_en": null,
+          "context_path": "7",
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 1412,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}

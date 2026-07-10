@@ -38,6 +38,13 @@ export function StatisticsDebouncedSearchInput({
   const [draft, setDraft] = useState(committed)
   const lastCommitted = useRef(committed)
 
+  // Callers pass an inline arrow (`onTermChange`), so `onCommit` has a new
+  // identity every render. Holding it in a ref keeps it out of the debounce
+  // effect's deps — otherwise each re-render restarts the timer and, while the
+  // user keeps typing, it never fires.
+  const onCommitRef = useRef(onCommit)
+  onCommitRef.current = onCommit
+
   useEffect(() => {
     if (committed !== lastCommitted.current) {
       lastCommitted.current = committed
@@ -50,10 +57,10 @@ export function StatisticsDebouncedSearchInput({
     if (next === committed) return
     const handle = window.setTimeout(() => {
       lastCommitted.current = next
-      onCommit(next.length > 0 ? next : undefined)
+      onCommitRef.current(next.length > 0 ? next : undefined)
     }, SEARCH_DEBOUNCE_MS)
     return () => window.clearTimeout(handle)
-  }, [draft, committed, onCommit])
+  }, [draft, committed])
 
   const handleClear = () => {
     lastCommitted.current = ''

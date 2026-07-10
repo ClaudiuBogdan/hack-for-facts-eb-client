@@ -1,0 +1,33 @@
+{
+  "data": {
+    "insTerritories": {
+      "nodes": [
+        {
+          "code": "54975",
+          "siruta_code": "54975",
+          "level": "LAU",
+          "name_ro": "Municipiul Cluj-Napoca",
+          "county_code": "CJ",
+          "county_name_ro": "Cluj"
+        },
+        {
+          "code": "54984",
+          "siruta_code": "54984",
+          "level": "LAU",
+          "name_ro": "Municipiul Turda",
+          "county_code": "CJ",
+          "county_name_ro": "Cluj"
+        },
+        {
+          "code": "CJ",
+          "siruta_code": null,
+          "level": "NUTS3",
+          "name_ro": "Cluj",
+          "county_code": null,
+          "county_name_ro": null
+        }
+      ],
+      "pageInfo": { "totalCount": 3, "hasNextPage": false, "hasPreviousPage": false }
+    }
+  }
+}

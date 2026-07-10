@@ -7,7 +7,7 @@ import {
   getInsObservationsSnapshotByDatasets,
   type InsDatasetHistoryResult,
   type InsObservationsSnapshotByDatasetResult,
-} from '@/lib/api/ins';
+} from '@/features/statistics/api/graphql/ins-fetchers';
 import { generateHash } from '@/lib/utils';
 import type {
   InsContextConnection,

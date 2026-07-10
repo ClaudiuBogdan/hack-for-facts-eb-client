@@ -4,7 +4,7 @@ import {
   getInsDatasetsByCodes,
   getInsDatasetsCatalog,
   getInsUatDashboard,
-} from '@/lib/api/ins'
+} from '@/features/statistics/api/graphql/ins-fetchers'
 import { getUatLabels } from '@/lib/api/labels'
 import { createLogger } from '@/lib/logger'
 import type {
@@ -22,7 +22,6 @@ import type {
   StatisticsDatasetSummary,
   StatisticsIndicatorTile,
   StatisticsLanding,
-  StatisticsTerritoryHubSearch,
   StatisticsTerritoryHubResult,
   StatisticsTerritoryIdentity,
 } from '@/schemas/statistics'
@@ -166,7 +165,6 @@ function toDatasetSummary(dataset: InsDataset): StatisticsDatasetSummary {
  */
 export async function fetchStatisticsTerritoryHubLive(
   siruta: string,
-  search?: Partial<StatisticsTerritoryHubSearch>,
 ): Promise<StatisticsTerritoryHubResult | null> {
   const normalizedSiruta = siruta.trim()
   if (normalizedSiruta.length === 0) {
@@ -177,9 +175,10 @@ export async function fetchStatisticsTerritoryHubLive(
     siruta: normalizedSiruta,
   })
 
+  // Fetched unfiltered on purpose: the hub is filtered by period client-side
+  // (see `lib/hub-period.ts`), so switching periods never costs a round-trip.
   const dashboard = await getInsUatDashboard({
     sirutaCode: normalizedSiruta,
-    period: search?.period === 'latest' ? undefined : search?.period,
   })
   let countyDashboard: InsDashboardData | null = null
 
@@ -199,12 +198,6 @@ export async function fetchStatisticsTerritoryHubLive(
 
   if (!countyDashboard) {
     countyDashboard = await fetchCountyDashboardForIdentity(dashboard)
-  }
-
-  const requestedPeriod =
-    search?.period && search.period !== 'latest' ? search.period : null
-  if (countyDashboard && requestedPeriod) {
-    countyDashboard = filterDashboardByPeriod(countyDashboard, requestedPeriod)
   }
 
   if (
@@ -446,25 +439,6 @@ function buildSparkline(
     )
 }
 
-function filterDashboardByPeriod(
-  dashboard: InsDashboardData,
-  period: string,
-): InsDashboardData {
-  return {
-    partial: dashboard.partial,
-    groups: dashboard.groups.map((group) => {
-      const observations = group.observations.filter(
-        (observation) => observation.time_period.iso_period === period,
-      )
-
-      return {
-        ...group,
-        observations,
-        latestPeriod: observations.length > 0 ? period : null,
-      }
-    }),
-  }
-}
 
 async function buildHubCoverage(): Promise<StatisticsCoverageSummary> {
   try {

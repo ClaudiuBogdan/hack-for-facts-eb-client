@@ -1,0 +1,95 @@
+{
+  "data": {
+    "insDatasets": {
+      "nodes": [
+        {
+          "id": "3",
+          "code": "FOM104D",
+          "name_ro": "Numărul mediu al salariaților pe activități economice",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2000,
+            2023
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "last_sync_at": null,
+          "context_code": "301",
+          "context_name_ro": "Piața forței de muncă",
+          "context_name_en": null,
+          "context_path": "3",
+          "metadata": null,
+          "data_status": "AVAILABLE"
+        },
+        {
+          "id": "4",
+          "code": "FOM105F",
+          "name_ro": "Efectivul salariaților la sfârșitul lunii",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "MONTHLY"
+          ],
+          "year_range": [
+            2010,
+            2024
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "last_sync_at": null,
+          "context_code": "301",
+          "context_name_ro": "Piața forței de muncă",
+          "context_name_en": null,
+          "context_path": "3",
+          "metadata": null,
+          "data_status": "AVAILABLE"
+        },
+        {
+          "id": "5",
+          "code": "SOM101F",
+          "name_ro": "Șomerii înregistrați pe sexe",
+          "name_en": null,
+          "definition_ro": null,
+          "definition_en": null,
+          "periodicity": [
+            "QUARTERLY",
+            "MONTHLY"
+          ],
+          "year_range": [
+            2005,
+            2024
+          ],
+          "dimension_count": 3,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "last_sync_at": null,
+          "context_code": "301",
+          "context_name_ro": "Piața forței de muncă",
+          "context_name_en": null,
+          "context_path": "3",
+          "metadata": null,
+          "data_status": "AVAILABLE"
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 3,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}

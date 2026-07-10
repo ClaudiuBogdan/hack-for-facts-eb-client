@@ -74,6 +74,8 @@ import { Route as PrimarieCuiRouteRouteImport } from './routes/primarie/$cui/rou
 import { Route as ChartsChartIdRouteRouteImport } from './routes/charts/$chartId/route'
 import { Route as AlertsAlertIdRouteRouteImport } from './routes/alerts/$alertId/route'
 import { Route as LangLearningRouteRouteImport } from './routes/$lang/learning/route'
+import { Route as StatisticiSeturiIndexRouteImport } from './routes/statistici/seturi/index'
+import { Route as StatisticiComparatiiIndexRouteImport } from './routes/statistici/comparatii/index'
 import { Route as PrimarieHartaIndexRouteImport } from './routes/primarie/harta/index'
 import { Route as PrimarieCuiIndexRouteImport } from './routes/primarie/$cui/index'
 import { Route as ParlamentVoturiIndexRouteImport } from './routes/parlament/voturi/index'
@@ -88,6 +90,7 @@ import { Route as ClassificationsFunctionalIndexRouteImport } from './routes/cla
 import { Route as ClassificationsEconomicIndexRouteImport } from './routes/classifications/economic/index'
 import { Route as LangLearningIndexRouteImport } from './routes/$lang/learning/index'
 import { Route as StatisticiTeritoriiSirutaRouteImport } from './routes/statistici/teritorii/$siruta'
+import { Route as StatisticiSeturiCodRouteImport } from './routes/statistici/seturi/$cod'
 import { Route as ProcurementProceduresIdRouteImport } from './routes/procurement/procedures/$id'
 import { Route as ProcurementDirectAcquisitionsIdRouteImport } from './routes/procurement/direct-acquisitions/$id'
 import { Route as ProcurementContractsIdRouteImport } from './routes/procurement/contracts/$id'
@@ -557,6 +560,21 @@ const AlertsAlertIdIndexLazyRoute = AlertsAlertIdIndexLazyRouteImport.update({
 } as any).lazy(() =>
   import('./routes/alerts/$alertId/index.lazy').then((d) => d.Route),
 )
+const StatisticiSeturiIndexRoute = StatisticiSeturiIndexRouteImport.update({
+  id: '/statistici/seturi/',
+  path: '/statistici/seturi/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/statistici/seturi/index.lazy').then((d) => d.Route),
+)
+const StatisticiComparatiiIndexRoute =
+  StatisticiComparatiiIndexRouteImport.update({
+    id: '/statistici/comparatii/',
+    path: '/statistici/comparatii/',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/statistici/comparatii/index.lazy').then((d) => d.Route),
+  )
 const PrimarieHartaIndexRoute = PrimarieHartaIndexRouteImport.update({
   id: '/primarie/harta/',
   path: '/primarie/harta/',
@@ -653,6 +671,13 @@ const StatisticiTeritoriiSirutaRoute =
   } as any).lazy(() =>
     import('./routes/statistici/teritorii/$siruta.lazy').then((d) => d.Route),
   )
+const StatisticiSeturiCodRoute = StatisticiSeturiCodRouteImport.update({
+  id: '/statistici/seturi/$cod',
+  path: '/statistici/seturi/$cod',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/statistici/seturi/$cod.lazy').then((d) => d.Route),
+)
 const ProcurementProceduresIdRoute = ProcurementProceduresIdRouteImport.update({
   id: '/procedures/$id',
   path: '/procedures/$id',
@@ -1315,6 +1340,7 @@ export interface FileRoutesByFullPath {
   '/procurement/contracts/$id': typeof ProcurementContractsIdRoute
   '/procurement/direct-acquisitions/$id': typeof ProcurementDirectAcquisitionsIdRoute
   '/procurement/procedures/$id': typeof ProcurementProceduresIdRoute
+  '/statistici/seturi/$cod': typeof StatisticiSeturiCodRoute
   '/statistici/teritorii/$siruta': typeof StatisticiTeritoriiSirutaRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
@@ -1329,6 +1355,8 @@ export interface FileRoutesByFullPath {
   '/parlament/voturi/': typeof ParlamentVoturiIndexRoute
   '/primarie/$cui/': typeof PrimarieCuiIndexRoute
   '/primarie/harta/': typeof PrimarieHartaIndexRoute
+  '/statistici/comparatii/': typeof StatisticiComparatiiIndexRoute
+  '/statistici/seturi/': typeof StatisticiSeturiIndexRoute
   '/alerts/$alertId/': typeof AlertsAlertIdIndexLazyRoute
   '/charts/$chartId/': typeof ChartsChartIdIndexLazyRoute
   '/primarie/$cui/buget/provocari': typeof PrimarieCuiBugetProvocariRouteRouteWithChildren
@@ -1453,6 +1481,7 @@ export interface FileRoutesByTo {
   '/procurement/contracts/$id': typeof ProcurementContractsIdRoute
   '/procurement/direct-acquisitions/$id': typeof ProcurementDirectAcquisitionsIdRoute
   '/procurement/procedures/$id': typeof ProcurementProceduresIdRoute
+  '/statistici/seturi/$cod': typeof StatisticiSeturiCodRoute
   '/statistici/teritorii/$siruta': typeof StatisticiTeritoriiSirutaRoute
   '/$lang/learning': typeof LangLearningIndexRoute
   '/classifications/economic': typeof ClassificationsEconomicIndexRoute
@@ -1467,6 +1496,8 @@ export interface FileRoutesByTo {
   '/parlament/voturi': typeof ParlamentVoturiIndexRoute
   '/primarie/$cui': typeof PrimarieCuiIndexRoute
   '/primarie/harta': typeof PrimarieHartaIndexRoute
+  '/statistici/comparatii': typeof StatisticiComparatiiIndexRoute
+  '/statistici/seturi': typeof StatisticiSeturiIndexRoute
   '/alerts/$alertId': typeof AlertsAlertIdIndexLazyRoute
   '/charts/$chartId': typeof ChartsChartIdIndexLazyRoute
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
@@ -1606,6 +1637,7 @@ export interface FileRoutesById {
   '/procurement/contracts/$id': typeof ProcurementContractsIdRoute
   '/procurement/direct-acquisitions/$id': typeof ProcurementDirectAcquisitionsIdRoute
   '/procurement/procedures/$id': typeof ProcurementProceduresIdRoute
+  '/statistici/seturi/$cod': typeof StatisticiSeturiCodRoute
   '/statistici/teritorii/$siruta': typeof StatisticiTeritoriiSirutaRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
@@ -1620,6 +1652,8 @@ export interface FileRoutesById {
   '/parlament/voturi/': typeof ParlamentVoturiIndexRoute
   '/primarie/$cui/': typeof PrimarieCuiIndexRoute
   '/primarie/harta/': typeof PrimarieHartaIndexRoute
+  '/statistici/comparatii/': typeof StatisticiComparatiiIndexRoute
+  '/statistici/seturi/': typeof StatisticiSeturiIndexRoute
   '/alerts/$alertId/': typeof AlertsAlertIdIndexLazyRoute
   '/charts/$chartId/': typeof ChartsChartIdIndexLazyRoute
   '/primarie/$cui/buget/provocari': typeof PrimarieCuiBugetProvocariRouteRouteWithChildren
@@ -1761,6 +1795,7 @@ export interface FileRouteTypes {
     | '/procurement/contracts/$id'
     | '/procurement/direct-acquisitions/$id'
     | '/procurement/procedures/$id'
+    | '/statistici/seturi/$cod'
     | '/statistici/teritorii/$siruta'
     | '/$lang/learning/'
     | '/classifications/economic/'
@@ -1775,6 +1810,8 @@ export interface FileRouteTypes {
     | '/parlament/voturi/'
     | '/primarie/$cui/'
     | '/primarie/harta/'
+    | '/statistici/comparatii/'
+    | '/statistici/seturi/'
     | '/alerts/$alertId/'
     | '/charts/$chartId/'
     | '/primarie/$cui/buget/provocari'
@@ -1899,6 +1936,7 @@ export interface FileRouteTypes {
     | '/procurement/contracts/$id'
     | '/procurement/direct-acquisitions/$id'
     | '/procurement/procedures/$id'
+    | '/statistici/seturi/$cod'
     | '/statistici/teritorii/$siruta'
     | '/$lang/learning'
     | '/classifications/economic'
@@ -1913,6 +1951,8 @@ export interface FileRouteTypes {
     | '/parlament/voturi'
     | '/primarie/$cui'
     | '/primarie/harta'
+    | '/statistici/comparatii'
+    | '/statistici/seturi'
     | '/alerts/$alertId'
     | '/charts/$chartId'
     | '/$lang/learning/certificates/$id'
@@ -2051,6 +2091,7 @@ export interface FileRouteTypes {
     | '/procurement/contracts/$id'
     | '/procurement/direct-acquisitions/$id'
     | '/procurement/procedures/$id'
+    | '/statistici/seturi/$cod'
     | '/statistici/teritorii/$siruta'
     | '/$lang/learning/'
     | '/classifications/economic/'
@@ -2065,6 +2106,8 @@ export interface FileRouteTypes {
     | '/parlament/voturi/'
     | '/primarie/$cui/'
     | '/primarie/harta/'
+    | '/statistici/comparatii/'
+    | '/statistici/seturi/'
     | '/alerts/$alertId/'
     | '/charts/$chartId/'
     | '/primarie/$cui/buget/provocari'
@@ -2168,6 +2211,7 @@ export interface RootRouteChildren {
   ParlamentComisiiCommitteeKeyRoute: typeof ParlamentComisiiCommitteeKeyRoute
   ParlamentGrupuriGroupIdRoute: typeof ParlamentGrupuriGroupIdRoute
   ParlamentStenogrameSpeechKeyRoute: typeof ParlamentStenogrameSpeechKeyRoute
+  StatisticiSeturiCodRoute: typeof StatisticiSeturiCodRoute
   StatisticiTeritoriiSirutaRoute: typeof StatisticiTeritoriiSirutaRoute
   ClassificationsEconomicIndexRoute: typeof ClassificationsEconomicIndexRoute
   ClassificationsFunctionalIndexRoute: typeof ClassificationsFunctionalIndexRoute
@@ -2180,6 +2224,8 @@ export interface RootRouteChildren {
   ParlamentStenogrameIndexRoute: typeof ParlamentStenogrameIndexRoute
   ParlamentVoturiIndexRoute: typeof ParlamentVoturiIndexRoute
   PrimarieHartaIndexRoute: typeof PrimarieHartaIndexRoute
+  StatisticiComparatiiIndexRoute: typeof StatisticiComparatiiIndexRoute
+  StatisticiSeturiIndexRoute: typeof StatisticiSeturiIndexRoute
   ApiPnrrRawIndicatorsRoute: typeof ApiPnrrRawIndicatorsRoute
   ApiPnrrRawPaymentsRoute: typeof ApiPnrrRawPaymentsRoute
   ApiPnrrRawProjectsRoute: typeof ApiPnrrRawProjectsRoute
@@ -2665,6 +2711,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AlertsAlertIdIndexLazyRouteImport
       parentRoute: typeof AlertsAlertIdRouteRoute
     }
+    '/statistici/seturi/': {
+      id: '/statistici/seturi/'
+      path: '/statistici/seturi'
+      fullPath: '/statistici/seturi/'
+      preLoaderRoute: typeof StatisticiSeturiIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/statistici/comparatii/': {
+      id: '/statistici/comparatii/'
+      path: '/statistici/comparatii'
+      fullPath: '/statistici/comparatii/'
+      preLoaderRoute: typeof StatisticiComparatiiIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/primarie/harta/': {
       id: '/primarie/harta/'
       path: '/primarie/harta'
@@ -2761,6 +2821,13 @@ declare module '@tanstack/react-router' {
       path: '/statistici/teritorii/$siruta'
       fullPath: '/statistici/teritorii/$siruta'
       preLoaderRoute: typeof StatisticiTeritoriiSirutaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/statistici/seturi/$cod': {
+      id: '/statistici/seturi/$cod'
+      path: '/statistici/seturi/$cod'
+      fullPath: '/statistici/seturi/$cod'
+      preLoaderRoute: typeof StatisticiSeturiCodRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/procurement/procedures/$id': {
@@ -3711,6 +3778,7 @@ const rootRouteChildren: RootRouteChildren = {
   ParlamentComisiiCommitteeKeyRoute: ParlamentComisiiCommitteeKeyRoute,
   ParlamentGrupuriGroupIdRoute: ParlamentGrupuriGroupIdRoute,
   ParlamentStenogrameSpeechKeyRoute: ParlamentStenogrameSpeechKeyRoute,
+  StatisticiSeturiCodRoute: StatisticiSeturiCodRoute,
   StatisticiTeritoriiSirutaRoute: StatisticiTeritoriiSirutaRoute,
   ClassificationsEconomicIndexRoute: ClassificationsEconomicIndexRoute,
   ClassificationsFunctionalIndexRoute: ClassificationsFunctionalIndexRoute,
@@ -3723,6 +3791,8 @@ const rootRouteChildren: RootRouteChildren = {
   ParlamentStenogrameIndexRoute: ParlamentStenogrameIndexRoute,
   ParlamentVoturiIndexRoute: ParlamentVoturiIndexRoute,
   PrimarieHartaIndexRoute: PrimarieHartaIndexRoute,
+  StatisticiComparatiiIndexRoute: StatisticiComparatiiIndexRoute,
+  StatisticiSeturiIndexRoute: StatisticiSeturiIndexRoute,
   ApiPnrrRawIndicatorsRoute: ApiPnrrRawIndicatorsRoute,
   ApiPnrrRawPaymentsRoute: ApiPnrrRawPaymentsRoute,
   ApiPnrrRawProjectsRoute: ApiPnrrRawProjectsRoute,

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('@/lib/api/ins', () => ({
+vi.mock('@/features/statistics/api/graphql/ins-fetchers', () => ({
   getInsContexts: vi.fn(),
   getInsDatasetDimensions: vi.fn(),
   getInsDatasetHistory: vi.fn(),
@@ -12,7 +12,7 @@ import {
   insDatasetDimensionsQueryOptions,
   insDatasetHistoryQueryOptions,
 } from './use-ins-dashboard'
-import { getInsDatasetDimensions, getInsDatasetHistory } from '@/lib/api/ins'
+import { getInsDatasetDimensions, getInsDatasetHistory } from '@/features/statistics/api/graphql/ins-fetchers'
 
 describe('use-ins-dashboard query options', () => {
   beforeEach(() => {

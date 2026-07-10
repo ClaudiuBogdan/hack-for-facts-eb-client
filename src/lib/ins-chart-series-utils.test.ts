@@ -3,9 +3,9 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { InsObservation } from '@/schemas/ins';
 import type { InsSeriesConfiguration } from '@/schemas/charts';
 import { mapInsSeriesToAnalyticsSeries } from './ins-chart-series-utils';
-import { getAllInsObservations } from '@/lib/api/ins';
+import { getAllInsObservations } from '@/features/statistics/api/graphql/ins-fetchers';
 
-vi.mock('@/lib/api/ins', () => ({
+vi.mock('@/features/statistics/api/graphql/ins-fetchers', () => ({
   getAllInsObservations: vi.fn(),
 }));
 
