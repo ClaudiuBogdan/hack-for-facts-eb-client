@@ -7,8 +7,13 @@
       "name_en": null,
       "definition_ro": null,
       "definition_en": null,
-      "periodicity": ["ANNUAL"],
-      "year_range": [1990, 2023],
+      "periodicity": [
+        "ANNUAL"
+      ],
+      "year_range": [
+        1990,
+        2023
+      ],
       "dimension_count": 2,
       "has_uat_data": true,
       "has_county_data": true,
@@ -39,7 +44,8 @@
           "option_count": 3,
           "classification_type": null
         }
-      ]
+      ],
+      "data_status": "CATALOG_ONLY"
     }
   }
 }

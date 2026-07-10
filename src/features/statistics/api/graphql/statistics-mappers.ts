@@ -12,12 +12,10 @@ import type { InsDatasetNodeRaw, InsTerritoryNodeRaw } from './statistics-raw-sc
  */
 
 function mapDataStatus(node: InsDatasetNodeRaw): StatisticsDatasetDataStatus {
-  if (node.data_status) {
-    return node.data_status === 'AVAILABLE' ? 'available' : 'catalog-only'
-  }
-  // Server predates the explicit `data_status` field: fall back to inferring
-  // it from the sync vocabulary.
-  return getDatasetDataStatus({ sync_status: node.sync_status })
+  return getDatasetDataStatus({
+    sync_status: node.sync_status,
+    data_status: node.data_status,
+  })
 }
 
 export function mapDatasetSummary(node: InsDatasetNodeRaw): StatisticsDatasetSummary {

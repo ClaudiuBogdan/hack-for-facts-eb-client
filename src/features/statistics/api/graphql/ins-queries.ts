@@ -19,6 +19,7 @@ export const INS_DATASET_FIELDS = `
   has_county_data
   has_siruta
   sync_status
+  data_status
   last_sync_at
   context_code
   context_name_ro
@@ -95,18 +96,14 @@ export const INS_DATASETS_QUERY = `
 `
 
 /**
- * Explorer catalog query. Distinct from `INS_DATASETS_QUERY` because it selects
- * the server's `data_status` field, which only the explorer surfaces reads —
- * keeping it off the legacy document avoids breaking older server deployments
- * for the entity tab and chart builder.
+ * Explorer catalog query. Same selection as `INS_DATASETS_QUERY`, but a
+ * distinct operation name so the explorer's requests are separable in traces
+ * and in the integration fixtures.
  */
 export const INS_DATASETS_EXPLORER_QUERY = `
   query InsDatasetsExplorer($filter: InsDatasetFilterInput, $limit: Int, $offset: Int) {
     insDatasets(filter: $filter, limit: $limit, offset: $offset) {
-      nodes {
-        ${INS_DATASET_FIELDS}
-        data_status
-      }
+      nodes { ${INS_DATASET_FIELDS} }
       pageInfo { totalCount hasNextPage hasPreviousPage }
     }
   }

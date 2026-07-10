@@ -1,7 +1,22 @@
 import { describe, expect, it } from 'vitest'
 import { getDatasetDataStatus, isDatasetAvailable } from './dataset-status'
 
-describe('dataset-status sync_status mapping', () => {
+describe('dataset-status mapping', () => {
+  it('prefers the server data_status over any sync_status', () => {
+    // `matrices` emits sync_status='PENDING' both for a metadata-only dataset
+    // and for a fact-loaded one whose upstream sync is pending, so the field
+    // cannot answer the question and `data_status` wins whenever present.
+    expect(
+      getDatasetDataStatus({ sync_status: 'PENDING', data_status: 'AVAILABLE' }),
+    ).toBe('available')
+    expect(
+      getDatasetDataStatus({ sync_status: 'SYNCED', data_status: 'CATALOG_ONLY' }),
+    ).toBe('catalog-only')
+    expect(
+      isDatasetAvailable({ sync_status: 'PENDING', data_status: 'AVAILABLE' }),
+    ).toBe(true)
+  })
+
   it('maps full / partial / loaded-style statuses to available', () => {
     expect(getDatasetDataStatus({ sync_status: 'full' })).toBe('available')
     expect(getDatasetDataStatus({ sync_status: 'partial' })).toBe('available')

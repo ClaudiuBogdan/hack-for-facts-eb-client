@@ -7,8 +7,13 @@
       "name_en": "Population by domicile, sex and age group",
       "definition_ro": null,
       "definition_en": null,
-      "periodicity": ["ANNUAL"],
-      "year_range": [2015, 2024],
+      "periodicity": [
+        "ANNUAL"
+      ],
+      "year_range": [
+        2015,
+        2024
+      ],
       "dimension_count": 4,
       "has_uat_data": true,
       "has_county_data": true,
@@ -67,7 +72,8 @@
             "is_hierarchical": false
           }
         }
-      ]
+      ],
+      "data_status": "AVAILABLE"
     }
   }
 }

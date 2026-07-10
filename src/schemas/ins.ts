@@ -112,6 +112,8 @@ export interface InsDataset {
   has_county_data: boolean;
   has_siruta: boolean;
   sync_status?: string | null;
+  /** Authoritative fact-load status. Absent on payloads predating the field. */
+  data_status?: InsDataStatus | null;
   last_sync_at?: string | null;
   context_code?: string | null;
   context_name_ro?: string | null;

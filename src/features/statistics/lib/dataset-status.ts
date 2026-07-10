@@ -2,19 +2,19 @@ import type { InsDataset } from '@/schemas/ins'
 import type { StatisticsDatasetDataStatus } from '@/schemas/statistics'
 
 /**
- * Maps an INS dataset's `sync_status` to the product "available" vs.
- * "catalog only" distinction.
+ * Resolves the product "has data" vs. "catalog only" distinction for a dataset.
  *
- * The serving layer exposes two relations over the same datasets:
- * - `v_matrices` (list queries) — only `fact_load_status in ('partial','full')`,
- *   emitting `coalesce(source_sync_status, 'SYNCED')`.
- * - `matrices` (single-dataset lookup) — all 1,898 datasets, emitting
- *   `'PENDING'` for the metadata-only ones and the same coalesce otherwise.
+ * The authority is the server's `data_status` field, which is derived from
+ * membership in `ins_compat.v_matrices` — the view defined
+ * `where fact_load_status in ('partial','full')`, i.e. exactly the datasets
+ * whose observations are loaded.
  *
- * So a dataset is catalog-only exactly when its status is `PENDING` (or the
- * legacy `metadata_only` spelling). Every other `InsSyncStatus` member —
- * `SYNCED`, `SYNCING`, `STALE`, `FAILED` — describes the *sync pipeline* of a
- * dataset whose facts are already loaded, and must not be read as "no data".
+ * `sync_status` cannot answer this question. `ins_compat.matrices` emits
+ * `'PENDING'` both for a metadata-only dataset *and* for a fact-loaded dataset
+ * whose upstream sync is itself pending, so reading `'PENDING'` as "no data"
+ * hides real observations. We keep the inference only as a fallback for
+ * payloads that predate the `data_status` field, and it is lossy in exactly
+ * that corner.
  */
 const CATALOG_ONLY_SYNC_STATUSES = new Set(['pending', 'metadata_only'])
 
@@ -28,6 +28,10 @@ const AVAILABLE_SYNC_STATUSES = new Set([
   'loaded',
 ])
 
+type DatasetStatusSource = Pick<InsDataset, 'sync_status'> & {
+  readonly data_status?: InsDataset['data_status']
+}
+
 /**
  * Returns `'available'` when the dataset has loaded observations, otherwise
  * `'catalog-only'`.
@@ -36,8 +40,12 @@ const AVAILABLE_SYNC_STATUSES = new Set([
  * claims data exists when it doesn't — the safer side of the coverage gap.
  */
 export function getDatasetDataStatus(
-  dataset: Pick<InsDataset, 'sync_status'>,
+  dataset: DatasetStatusSource,
 ): StatisticsDatasetDataStatus {
+  if (dataset.data_status) {
+    return dataset.data_status === 'AVAILABLE' ? 'available' : 'catalog-only'
+  }
+
   const status = (dataset.sync_status ?? '').trim().toLowerCase()
 
   if (CATALOG_ONLY_SYNC_STATUSES.has(status)) {
@@ -52,8 +60,6 @@ export function getDatasetDataStatus(
 }
 
 /** True when the dataset is considered to have loaded observations. */
-export function isDatasetAvailable(
-  dataset: Pick<InsDataset, 'sync_status'>,
-): boolean {
+export function isDatasetAvailable(dataset: DatasetStatusSource): boolean {
   return getDatasetDataStatus(dataset) === 'available'
 }

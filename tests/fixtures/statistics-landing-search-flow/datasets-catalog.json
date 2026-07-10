@@ -9,8 +9,13 @@
           "name_en": null,
           "definition_ro": null,
           "definition_en": null,
-          "periodicity": ["ANNUAL"],
-          "year_range": [1992, 2024],
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            1992,
+            2024
+          ],
           "dimension_count": 4,
           "has_uat_data": true,
           "has_county_data": true,
@@ -21,7 +26,8 @@
           "context_name_ro": "Populație",
           "context_name_en": null,
           "context_path": "2",
-          "metadata": null
+          "metadata": null,
+          "data_status": "AVAILABLE"
         },
         {
           "id": "2",
@@ -30,8 +36,13 @@
           "name_en": null,
           "definition_ro": null,
           "definition_en": null,
-          "periodicity": ["ANNUAL"],
-          "year_range": [1990, 2023],
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            1990,
+            2023
+          ],
           "dimension_count": 3,
           "has_uat_data": true,
           "has_county_data": true,
@@ -42,10 +53,15 @@
           "context_name_ro": "Turism",
           "context_name_en": null,
           "context_path": "9",
-          "metadata": null
+          "metadata": null,
+          "data_status": "CATALOG_ONLY"
         }
       ],
-      "pageInfo": { "totalCount": 1898, "hasNextPage": true, "hasPreviousPage": false }
+      "pageInfo": {
+        "totalCount": 1898,
+        "hasNextPage": true,
+        "hasPreviousPage": false
+      }
     }
   }
 }
