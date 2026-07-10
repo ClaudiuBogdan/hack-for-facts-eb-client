@@ -26,6 +26,9 @@ import type { Page } from '@playwright/test'
 
 const ROUTE = '/procurement/search'
 
+/** Mirrors SEARCH_DEBOUNCE_MS in procurement-debounced-search-input.tsx. */
+const SEARCH_DEBOUNCE_MS = 300
+
 /**
  * The app defaults to Romanian. Pin `en` so the role names below match the
  * English Lingui *source* strings rather than whichever msgids happen to have a
@@ -64,6 +67,27 @@ test.describe('Procurement search — debounced query, filters, grain', () => {
 
     // Auto-waits through the 300 ms debounce.
     await expect.poll(() => queryParam(page)).toBe('spital')
+  })
+
+  test('a term below the minimum length never reaches the URL, and says why', async ({
+    page,
+  }) => {
+    await page.goto(ROUTE)
+    await waitForPageReady(page)
+
+    const hint = page.getByText('Type at least 3 characters to search')
+
+    await searchBox(page).fill('sp')
+    await expect(hint).toBeVisible()
+    // Asserting a non-event: `q` must still be absent *after* the debounce
+    // window has passed. There is no state change to await here, so this is the
+    // one place a fixed wait is the honest instrument rather than a flake.
+    await page.waitForTimeout(SEARCH_DEBOUNCE_MS * 3)
+    expect(queryParam(page)).toBeNull()
+
+    await searchBox(page).fill('spi')
+    await expect.poll(() => queryParam(page)).toBe('spi')
+    await expect(hint).toBeHidden()
   })
 
   test('the search form has no submit button', async ({ page }) => {
