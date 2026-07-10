@@ -1,15 +1,29 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { parsePrivateCompanyDirectorySearch } from '@/schemas/private-company-search'
+import { createFileRoute, redirect } from '@tanstack/react-router'
+import {
+  cleanPrivateCompanyDirectorySearch,
+  parsePrivateCompanyDirectorySearch,
+} from '@/schemas/private-company-search'
 
+/**
+ * `/companies` is the hub; the directory moved to `/companies/search`. Parse
+ * leniently and redirect any old deep link that still carries a filter — the
+ * `/procurement` → `/procurement/search` idiom.
+ */
 export const Route = createFileRoute('/companies/')({
   validateSearch: parsePrivateCompanyDirectorySearch,
+  beforeLoad: ({ search }) => {
+    const cleaned = cleanPrivateCompanyDirectorySearch(search)
+    if (Object.keys(cleaned).length > 0) {
+      throw redirect({ to: '/companies/search', search: cleaned, replace: true })
+    }
+  },
   head: () => ({
     meta: [
-      { title: 'Căutare firme — Transparenta.eu' },
+      { title: 'Firme — Transparenta.eu' },
       {
         name: 'description',
         content:
-          'Caută firme românești după nume sau CUI, cu filtre pe județ, stare ONRC și cod CAEN. Date din ONRC și ANAF.',
+          'Explorează firmele românești: distribuția pe județe, stări ONRC și domenii CAEN, cu acces direct la profilul fiecărei firme. Date din ONRC și ANAF.',
       },
     ],
   }),

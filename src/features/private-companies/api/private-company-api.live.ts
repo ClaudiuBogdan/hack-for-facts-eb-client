@@ -7,21 +7,30 @@
 import type { PrivateCompanyProfile } from '@/schemas/private-company'
 import { GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
 import type {
+  CompanyGroupByDim,
+  CompanyGroupSlice,
+  CompanyHubStats,
   PrivateCompanyCountyFacet,
   PrivateCompanySearchQuery,
   PrivateCompanySearchResultPage,
 } from '@/schemas/private-company-search'
 import {
   COMPANIES_SEARCH_QUERY,
-  COMPANY_COUNTY_LIST_QUERY,
+  COMPANY_GROUP_PROFILE_QUERY,
+  COMPANY_HUB_STATS_QUERY,
   COMPANY_PROFILE_QUERY,
   COMPANY_RESOLVE_QUERY,
   companiesSearchResponseSchema,
-  companyCountyListResponseSchema,
+  companyGroupProfileResponseSchema,
+  companyHubStatsResponseSchema,
   companyProfileResponseSchema,
   companyResolveResponseSchema,
 } from './graphql/company-queries'
-import { mapCompanyListItem, mapCompanyProfile } from './graphql/company-mappers'
+import {
+  mapCompanyHubStats,
+  mapCompanyListItem,
+  mapCompanyProfile,
+} from './graphql/company-mappers'
 import { buildCompaniesFilter } from './graphql/company-filters'
 
 export async function fetchPrivateCompanyProfileLive(
@@ -75,21 +84,48 @@ export async function fetchPrivateCompanySearchLive(
   }
 }
 
+/** Active companies (status 1048 = funcțiune) — the default group-profile scope. */
+const ACTIVE_COMPANY_FILTER = { status: { eq: '1048' } } as const
+
+export async function fetchCompanyGroupProfileLive(
+  groupBy: CompanyGroupByDim,
+  filter: Record<string, unknown> = ACTIVE_COMPANY_FILTER,
+  signal?: AbortSignal,
+): Promise<CompanyGroupSlice[]> {
+  const data = await graphqlQuery<unknown>(
+    COMPANY_GROUP_PROFILE_QUERY,
+    { filter, groupBy },
+    { operationName: 'CompanyGroupProfile', signal },
+  )
+  const parsed = companyGroupProfileResponseSchema.parse(data)
+  return parsed.companyCountyProfile.groups.filter((group) => group.key !== '(none)')
+}
+
 export async function fetchPrivateCompanyCountiesLive(): Promise<
   PrivateCompanyCountyFacet[]
 > {
-  // Enumerate counties over active companies (status 1048 = funcțiune); the
-  // profile requires at least one filter and active counties cover all 41+Bucureşti.
-  const data = await graphqlQuery<unknown>(
-    COMPANY_COUNTY_LIST_QUERY,
-    { filter: { status: { eq: '1048' } } },
-    { operationName: 'companyCountyProfile' },
-  )
-  const parsed = companyCountyListResponseSchema.parse(data)
-  return parsed.companyCountyProfile.groups
-    .filter((group) => group.key !== '(none)')
+  // Enumerate counties over active companies; the profile requires at least one
+  // filter and active counties cover all 41 + Bucureşti.
+  const groups = await fetchCompanyGroupProfileLive('COUNTY')
+  return groups
     .map((group) => ({ name: group.key, count: group.count }))
     .sort((a, b) => a.name.localeCompare(b.name, 'ro'))
+}
+
+/**
+ * Cold compute is ~30s server-side and the root field is nullable, so this can
+ * legitimately be slow and can legitimately resolve to `null`. Do NOT wrap it in
+ * a short client timeout.
+ */
+export async function fetchCompanyHubStatsLive(
+  signal?: AbortSignal,
+): Promise<CompanyHubStats | null> {
+  const data = await graphqlQuery<unknown>(
+    COMPANY_HUB_STATS_QUERY,
+    {},
+    { operationName: 'CompanyHubStats', signal },
+  )
+  return mapCompanyHubStats(companyHubStatsResponseSchema.parse(data))
 }
 
 export type CompanyResolveHit = {

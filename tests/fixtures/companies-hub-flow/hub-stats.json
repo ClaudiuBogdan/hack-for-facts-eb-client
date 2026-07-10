@@ -1,0 +1,80 @@
+{
+  "data": {
+    "companyHubStats": {
+      "totalCompanies": 3985167,
+      "activeCompanies": 1724391,
+      "statusMix": [
+        {
+          "key": "1084",
+          "label": "radiată",
+          "count": 2017899
+        },
+        {
+          "key": "1048",
+          "label": "funcțiune",
+          "count": 1724391
+        },
+        {
+          "key": "1074",
+          "label": "întrerupere temporară de activitate",
+          "count": 138763
+        },
+        {
+          "key": "1070",
+          "label": "faliment",
+          "count": 41219
+        },
+        {
+          "key": "1107",
+          "label": "insolvență",
+          "count": 30000
+        }
+      ],
+      "topCounties": [
+        {
+          "key": "BUCUREŞTI",
+          "label": null,
+          "count": 340299
+        },
+        {
+          "key": "CLUJ",
+          "label": null,
+          "count": 63301
+        },
+        {
+          "key": "TIMIŞ",
+          "label": null,
+          "count": 50111
+        },
+        {
+          "key": "IAŞI",
+          "label": null,
+          "count": 40456
+        }
+      ],
+      "caenDivisions": [
+        {
+          "key": "47",
+          "label": "Comerț cu amănuntul",
+          "count": 320111
+        },
+        {
+          "key": "41",
+          "label": "Construcții de clădiri",
+          "count": 210000
+        },
+        {
+          "key": "62",
+          "label": "Activități de servicii IT",
+          "count": 150000
+        }
+      ],
+      "coverage": {
+        "territoryMatched": 1046512,
+        "territoryUnmatched": 677879,
+        "note": "Județul provine din registrul ONRC; firmele fără județ în registru nu apar în clasament."
+      },
+      "computedAt": "2026-05-17T03:00:00.000Z"
+    }
+  }
+}

@@ -1,15 +1,36 @@
 /**
- * Maps the /companies directory URL state onto the GraphQL `CompaniesFilter`
- * input. Each filter is a small object with `eq` / `in` / `prefix` operators
- * (see the server SDL). Returns `undefined` when no filters are active so the
- * query omits the `filter` argument entirely.
+ * Maps the /companies/search directory URL state onto the GraphQL
+ * `CompaniesFilter` input. Each filter is a small object with `eq` / `in` /
+ * `prefix` / `between` operators (see the server SDL). Returns `undefined` when
+ * no filters are active so the query omits the `filter` argument entirely.
  */
 import type { PrivateCompanySearchQuery } from '@/schemas/private-company-search'
 
+/** `between` serializes as `{ from, to }` in the server's filter kernel. */
+export type DateRangeFilter = { between: { from?: string; to?: string } }
+
 export type CompaniesFilterInput = {
-  county?: { eq: string }
-  status?: { eq: string }
+  county?: { eq?: string; in?: string[] }
+  status?: { eq?: string; in?: string[] }
   caenCode?: { prefix?: string; eq?: string }
+  legalForm?: { eq?: string; in?: string[] }
+  registrationDate?: DateRangeFilter
+  vatPayer?: { eq: boolean }
+  declaredFiscallyInactive?: { eq: boolean }
+}
+
+/**
+ * A single selected value uses `eq`; two or more use `in`. Both are supported by
+ * the server, but `eq` keeps the common single-select case's query plan — and
+ * its cache key — narrow.
+ */
+function buildSetFilter(
+  values: readonly string[] | undefined,
+): { eq?: string; in?: string[] } | undefined {
+  if (!values) return undefined
+  const cleaned = [...new Set(values.map((value) => value.trim()).filter(Boolean))]
+  if (cleaned.length === 0) return undefined
+  return cleaned.length === 1 ? { eq: cleaned[0] } : { in: cleaned }
 }
 
 /**
@@ -25,20 +46,41 @@ function buildCaenFilter(caen: string): CompaniesFilterInput['caenCode'] | undef
   return trimmed.length < 4 ? { prefix: trimmed } : { eq: trimmed }
 }
 
+function buildRegistrationDateFilter(
+  from: string | undefined,
+  to: string | undefined,
+): DateRangeFilter | undefined {
+  const between: { from?: string; to?: string } = {}
+  if (from && from.trim().length > 0) between.from = from.trim()
+  if (to && to.trim().length > 0) between.to = to.trim()
+  return Object.keys(between).length > 0 ? { between } : undefined
+}
+
 export function buildCompaniesFilter(
   query: PrivateCompanySearchQuery,
 ): CompaniesFilterInput | undefined {
   const filter: CompaniesFilterInput = {}
 
-  if (query.county && query.county.trim().length > 0) {
-    filter.county = { eq: query.county.trim() }
-  }
-  if (query.status && query.status.trim().length > 0) {
-    filter.status = { eq: query.status.trim() }
-  }
+  const county = buildSetFilter(query.county)
+  if (county) filter.county = county
+
+  const status = buildSetFilter(query.status)
+  if (status) filter.status = status
+
+  const legalForm = buildSetFilter(query.legalForm)
+  if (legalForm) filter.legalForm = legalForm
+
   if (query.caen) {
     const caen = buildCaenFilter(query.caen)
     if (caen) filter.caenCode = caen
+  }
+
+  const registrationDate = buildRegistrationDateFilter(query.regFrom, query.regTo)
+  if (registrationDate) filter.registrationDate = registrationDate
+
+  if (typeof query.vat === 'boolean') filter.vatPayer = { eq: query.vat }
+  if (typeof query.inactive === 'boolean') {
+    filter.declaredFiscallyInactive = { eq: query.inactive }
   }
 
   return Object.keys(filter).length > 0 ? filter : undefined

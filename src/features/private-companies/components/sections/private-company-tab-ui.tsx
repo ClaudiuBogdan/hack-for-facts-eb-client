@@ -19,10 +19,9 @@ export function PrivateCompanyTabPanel({
   return (
     <div
       className={cn(
-        'overflow-hidden border-2 border-[var(--pnrr-border)]',
+        'overflow-hidden border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]',
         className,
       )}
-      style={{ backgroundColor: 'var(--pnrr-card)' }}
     >
       <div className="border-b-2 border-[var(--pnrr-border)] px-4 py-3 sm:px-5">
         <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--pnrr-muted)]">

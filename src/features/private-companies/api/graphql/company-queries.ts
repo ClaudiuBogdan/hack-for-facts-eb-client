@@ -223,35 +223,91 @@ export type RawCompanyResolveHit = z.infer<typeof rawCompanyResolveHitSchema>
 export type CompanyResolveResponse = z.infer<typeof companyResolveResponseSchema>
 
 // ---------------------------------------------------------------------------
-// County facet list — companyCountyProfile(groupBy: COUNTY)
+// Group profile — companyCountyProfile(filter, groupBy)
 //
-// `companyCountyProfile` requires at least one filter, so we pass a broad
-// status filter (active companies) to enumerate the canonical display-form
-// county names used by the `county.eq` filter.
+// `companyCountyProfile` requires at least one filter. Callers pass the grouping
+// dimension explicitly (COUNTY | STATUS | CAEN_DIVISION); the county facet list
+// groups by COUNTY over active companies to enumerate the canonical display-form
+// names used by the `county.eq` filter.
+//
+// The CAEN_DIVISION leg is slow (~24s cold) — never fan three of these out from
+// the hub; read `companyHubStats` instead.
 // ---------------------------------------------------------------------------
 
-export const COMPANY_COUNTY_LIST_QUERY = /* GraphQL */ `
-  query CompanyCountyList($filter: CompaniesFilter) {
-    companyCountyProfile(filter: $filter, groupBy: COUNTY) {
+export const COMPANY_GROUP_PROFILE_QUERY = /* GraphQL */ `
+  query CompanyGroupProfile($filter: CompaniesFilter, $groupBy: CompanyGroupBy!) {
+    companyCountyProfile(filter: $filter, groupBy: $groupBy) {
       denominator
+      coverage { territoryMatched territoryUnmatched note }
       groups { key label count }
     }
   }
 `
 
-export const companyCountyListResponseSchema = z.object({
+const rawCompanyGroupSchema = z.object({
+  key: z.string(),
+  label: z.string().nullable(),
+  count: z.number(),
+})
+
+/**
+ * `CompanyCoverage` describes the population the groups were computed over —
+ * how many companies matched a territory and how many did not. Non-null on both
+ * `CompanyCountyProfile` and `CompanyHubStats`; only `note` is non-null inside.
+ */
+const rawCoverageSchema = z.object({
+  territoryMatched: z.number().nullable(),
+  territoryUnmatched: z.number().nullable(),
+  note: z.string(),
+})
+
+export const companyGroupProfileResponseSchema = z.object({
   companyCountyProfile: z.object({
     denominator: z.number(),
-    groups: z.array(
-      z.object({
-        key: z.string(),
-        label: z.string().nullable(),
-        count: z.number(),
-      }),
-    ),
+    coverage: rawCoverageSchema,
+    groups: z.array(rawCompanyGroupSchema),
   }),
 })
 
-export type CompanyCountyListResponse = z.infer<
-  typeof companyCountyListResponseSchema
+export type CompanyGroupProfileResponse = z.infer<
+  typeof companyGroupProfileResponseSchema
 >
+
+// ---------------------------------------------------------------------------
+// Hub stats — companyHubStats
+//
+// One cached aggregate for the /companies hub (6h TTL, stale-while-revalidate).
+// Every field inside is non-null, but the ROOT field is nullable: cold compute
+// is ~30s of sequential scans, so the first read after a server restart is slow
+// and may come back null. The hub treats null as "retry", never as zeroes.
+// ---------------------------------------------------------------------------
+
+export const COMPANY_HUB_STATS_QUERY = /* GraphQL */ `
+  query CompanyHubStats {
+    companyHubStats {
+      totalCompanies
+      activeCompanies
+      statusMix { key label count }
+      topCounties { key label count }
+      caenDivisions { key label count }
+      coverage { territoryMatched territoryUnmatched note }
+      computedAt
+    }
+  }
+`
+
+export const companyHubStatsResponseSchema = z.object({
+  companyHubStats: z
+    .object({
+      totalCompanies: z.number(),
+      activeCompanies: z.number(),
+      statusMix: z.array(rawCompanyGroupSchema),
+      topCounties: z.array(rawCompanyGroupSchema),
+      caenDivisions: z.array(rawCompanyGroupSchema),
+      coverage: rawCoverageSchema,
+      computedAt: z.string(),
+    })
+    .nullable(),
+})
+
+export type CompanyHubStatsResponse = z.infer<typeof companyHubStatsResponseSchema>

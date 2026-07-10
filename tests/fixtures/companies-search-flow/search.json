@@ -1,0 +1,86 @@
+{
+  "data": {
+    "companies": {
+      "edges": [
+        {
+          "cursor": "c-14399840",
+          "node": {
+            "cui": "14399840",
+            "orgId": "14399840",
+            "name": "DANTE INTERNATIONAL SA",
+            "legalForm": "SA",
+            "headlineStatus": {
+              "code": "1048",
+              "label": "funcțiune"
+            },
+            "county": "MUNICIPIUL BUCUREŞTI",
+            "vatPayer": true,
+            "declaredFiscallyInactive": false,
+            "registrationDate": "2002-06-15",
+            "registrationDatePresent": true
+          }
+        },
+        {
+          "cursor": "c-1973096",
+          "node": {
+            "cui": "1973096",
+            "orgId": "1973096",
+            "name": "ANTIBIOTICE SA",
+            "legalForm": "SA",
+            "headlineStatus": {
+              "code": "1048",
+              "label": "funcțiune"
+            },
+            "county": "IAŞI",
+            "vatPayer": true,
+            "declaredFiscallyInactive": false,
+            "registrationDate": "2002-06-15",
+            "registrationDatePresent": true
+          }
+        },
+        {
+          "cursor": "c-9718383",
+          "node": {
+            "cui": "9718383",
+            "orgId": "9718383",
+            "name": "EXEMPLU REGISTRU CULTURAL",
+            "legalForm": "SRL",
+            "headlineStatus": {
+              "code": "1048",
+              "label": "funcțiune"
+            },
+            "county": "CLUJ",
+            "vatPayer": true,
+            "declaredFiscallyInactive": false,
+            "registrationDate": "2002-06-15",
+            "registrationDatePresent": true
+          }
+        },
+        {
+          "cursor": "c-44556677",
+          "node": {
+            "cui": "44556677",
+            "orgId": "44556677",
+            "name": "POPA IOANA PFA",
+            "legalForm": "PFA",
+            "headlineStatus": {
+              "code": "1048",
+              "label": "funcțiune"
+            },
+            "county": "CLUJ",
+            "vatPayer": true,
+            "declaredFiscallyInactive": false,
+            "registrationDate": "2002-06-15",
+            "registrationDatePresent": true
+          }
+        }
+      ],
+      "pageInfo": {
+        "hasNextPage": false,
+        "endCursor": null
+      },
+      "totalCount": 4,
+      "totalEstimated": false
+    }
+  }
+}

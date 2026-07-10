@@ -1,0 +1,34 @@
+{
+  "data": {
+    "companyCountyProfile": {
+      "denominator": 1724391,
+      "coverage": {
+        "territoryMatched": 1046512,
+        "territoryUnmatched": 677879,
+        "note": "Județul provine din registrul ONRC; firmele fără județ în registru nu apar în clasament."
+      },
+      "groups": [
+        {
+          "key": "BUCUREŞTI",
+          "label": null,
+          "count": 340299
+        },
+        {
+          "key": "CLUJ",
+          "label": null,
+          "count": 63301
+        },
+        {
+          "key": "TIMIŞ",
+          "label": null,
+          "count": 50111
+        },
+        {
+          "key": "IAŞI",
+          "label": null,
+          "count": 40456
+        }
+      ]
+    }
+  }
+}
