@@ -92,6 +92,11 @@ msgstr "{0} +{extraMemberCount}"
 msgid "{0} active"
 msgstr ""
 
+#. placeholder {0}: formatInteger(unmatched)
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:239
+msgid "{0} active companies have no county in the register and are not ranked here, so the bars do not sum to the total."
+msgstr "{0} de firme în funcțiune nu au județ în registru și nu apar în clasament, deci barele nu însumează totalul."
+
 #. placeholder {0}: chart.annotations.length
 #: src/components/charts/components/chart-annotations/AnnotationsList.tsx:61
 msgid "{0} annotations"
@@ -875,14 +880,14 @@ msgstr "activ"
 #: src/components/charts/components/views/SeriesConfigView.tsx:338
 #: src/features/ngos/components/ngo-services-page.tsx:296
 #: src/features/notifications/components/alerts/AlertCard.tsx:71
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:69
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:72
 #: src/features/private-companies/lib/company-status-display.ts:15
 #: src/features/private-companies/lib/company-status-display.ts:89
 #: src/routes/cookies.lazy.tsx:149
 msgid "Active"
 msgstr "Activ"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:185
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:189
 msgid "Active construction companies"
 msgstr "Firme active de construcții"
 
@@ -924,7 +929,7 @@ msgstr "Criterii active pentru serii:"
 msgid "Activity"
 msgstr "Activitate"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:135
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:139
 msgid "Activity sectors (CAEN)"
 msgstr "Domenii de activitate (CAEN)"
 
@@ -2315,7 +2320,7 @@ msgstr ""
 msgid "CAEN code"
 msgstr "Cod CAEN"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:187
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:191
 msgid "CAEN division 41 — building construction, the sector with the most public contracts."
 msgstr "Diviziunea CAEN 41 — construcții de clădiri, domeniul cu cele mai multe contracte publice."
 
@@ -3345,24 +3350,24 @@ msgstr ""
 msgid "Companie de stat"
 msgstr ""
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:34
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:37
 #: src/features/procurement/components/procurement-quick-links.tsx:24
 msgid "Companies"
 msgstr "Firme"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:166
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:170
 msgid "Companies declared fiscally inactive"
 msgstr "Firme declarate inactive fiscal"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:156
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:160
 msgid "Companies in insolvency or bankruptcy"
 msgstr "Firme în insolvență sau faliment"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:175
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:179
 msgid "Companies registered since 2024"
 msgstr "Firme înregistrate din 2024"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:158
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:162
 msgid "Companies under proceedings — useful when checking the suppliers of a public institution."
 msgstr "Firmele aflate în procedură, utile pentru a verifica furnizorii unei instituții publice."
 
@@ -3374,7 +3379,7 @@ msgstr "Firmele aflate în procedură, utile pentru a verifica furnizorii unei i
 msgid "Company filters"
 msgstr "Filtre firme"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:108
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:111
 #: src/features/private-companies/components/search/private-company-search-page.tsx:64
 msgid "Company name or CUI"
 msgstr "Nume firmă sau CUI"
@@ -4024,7 +4029,7 @@ msgstr "Numără"
 msgid "Counties"
 msgstr "Județe"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:119
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:122
 msgid "Counties with the most companies"
 msgstr "Județe cu cele mai multe firme"
 
@@ -5577,7 +5582,7 @@ msgstr ""
 msgid "e.g. 47 or 4752"
 msgstr "ex. 47 sau 4752"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:106
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:109
 #: src/features/private-companies/components/search/private-company-search-page.tsx:62
 msgid "e.g. Dedeman or 2816464"
 msgstr "ex. Dedeman sau 2816464"
@@ -6100,7 +6105,7 @@ msgstr "EUR"
 msgid "Ever wondered where your money actually goes?"
 msgstr "Te-ai întrebat vreodată unde se duc banii tăi?"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:37
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:40
 msgid "Every company in the ONRC register, with its registry status, ANAF fiscal data and annual financial statements. Look up a company, or start from a question."
 msgstr "Toate firmele înregistrate la ONRC, cu starea din registru, datele fiscale de la ANAF și situațiile financiare anuale. Caută o firmă anume sau pornește de la o întrebare."
 
@@ -6792,6 +6797,11 @@ msgstr ""
 #: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:113
 msgid "Fiecare sumă critică are dovadă de sursă."
 msgstr ""
+
+#. placeholder {0}: formatDay(stats.computedAt)
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:213
+msgid "Figures computed on {0}"
+msgstr "Cifre calculate la {0}"
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:812
 msgid "File imported"
@@ -8462,7 +8472,7 @@ msgstr "Insolvență"
 msgid "Insolvency (Law 85/2014)"
 msgstr "Insolvență (Legea 85/2014)"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:81
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:84
 msgid "Insolvency and bankruptcy"
 msgstr "Insolvență și faliment"
 
@@ -8828,7 +8838,7 @@ msgstr "Activități cheie"
 msgid "Key Deadlines"
 msgstr "Termene cheie"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:45
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:48
 msgid "Key figures"
 msgstr "Cifre generale"
 
@@ -9941,7 +9951,7 @@ msgstr "Markdown"
 msgid "Markdown notes"
 msgstr "Note Markdown"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:168
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:172
 msgid "Marked inactive by ANAF, yet still active in the ONRC register."
 msgstr "Companii marcate inactiv de ANAF, dar încă în funcțiune la ONRC."
 
@@ -12019,7 +12029,7 @@ msgstr "ONRC"
 #~ msgid "ONRC — Registrul Comerțului (stare, formă juridică, CAEN). ANAF — date fiscale (TVA, inactivitate) și situații financiare."
 #~ msgstr ""
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:202
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:206
 msgid "ONRC — the trade register (status, legal form, CAEN). ANAF — fiscal data (VAT, inactivity) and financial statements."
 msgstr "ONRC — Registrul Comerțului (stare, formă juridică, CAEN). ANAF — date fiscale (TVA, inactivitate) și situații financiare."
 
@@ -12035,11 +12045,9 @@ msgstr "Date deschise ONRC"
 msgid "ONRC open data for this company does not list representatives or foreign branches."
 msgstr "Datele deschise ONRC pentru această companie nu listează reprezentanți sau sucursale străine."
 
-#. placeholder {0}: stats.coverage.onrcAsOf ?? '—'
-#. placeholder {1}: stats.coverage.anafAsOf ?? '—'
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:209
-msgid "ONRC snapshot {0} · ANAF snapshot {1}"
-msgstr "Snapshot ONRC {0} · snapshot ANAF {1}"
+#~ msgid "ONRC snapshot {0} · ANAF snapshot {1}"
+#~ msgstr "Snapshot ONRC {0} · snapshot ANAF {1}"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:451
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:120
@@ -13043,7 +13051,7 @@ msgstr "Etichetă preset"
 msgid "Press Enter to save & close"
 msgstr "Apasă Enter pentru a salva și închide"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:111
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:114
 msgid "Press Enter to search, or pick a suggestion to jump straight to that company's profile."
 msgstr "Apasă Enter ca să cauți, sau alege o sugestie ca să mergi direct la profilul firmei."
 
@@ -13575,7 +13583,7 @@ msgstr "Acțiuni rapide"
 msgid "Quick Configuration"
 msgstr "Configurare rapidă"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:150
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:154
 msgid "Quick investigations"
 msgstr "Investigații rapide"
 
@@ -14705,8 +14713,8 @@ msgstr ""
 msgid "Search"
 msgstr "Căutare"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:91
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:98
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:94
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:101
 msgid "Search a company"
 msgstr "Caută o firmă"
 
@@ -15845,7 +15853,7 @@ msgid "Source: {0}"
 msgstr ""
 
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:127
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:199
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:203
 #: src/features/private-companies/components/private-company-source-footer.tsx:23
 #: src/features/procurement/components/procurement-info-sheet.tsx:104
 msgid "Sources"
@@ -15959,7 +15967,7 @@ msgstr ""
 msgid "Start"
 msgstr "Începe"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:152
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:156
 msgid "Start an investigation"
 msgstr "Pornește o investigație"
 
@@ -16129,7 +16137,7 @@ msgstr "Stocată doar în acest browser, pe acest dispozitiv."
 msgid "Strip this prefix from x-axis labels for this series (e.g., 2024-). Helps align yearly and monthly data on a common axis."
 msgstr "Eliminați acest prefix din etichetele axei X pentru această serie (de exemplu, 2024-). Ajută la alinierea datelor anuale și lunare pe o axă comună."
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:75
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:78
 msgid "Struck off"
 msgstr "Radiate"
 
@@ -17163,7 +17171,7 @@ msgstr "Sumă totală"
 msgid "Total Amount"
 msgstr "Sumă totală"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:63
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:66
 msgid "Total companies"
 msgstr "Total firme"
 
@@ -18825,7 +18833,7 @@ msgstr "Ai explorat toate cele 6 faze ale ciclului bugetar!"
 msgid "You've mastered the basics of the Budget Explorer. You're ready to investigate public spending on your own."
 msgstr "Ai stăpânit elementele de bază ale Exploratorului de Bugete. Ești pregătit să investighezi cheltuielile publice pe cont propriu."
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:177
+#: src/features/private-companies/components/hub/private-company-hub-page.tsx:181
 msgid "Young companies — check who won contracts shortly after being founded."
 msgstr "Firme tinere — verifică cine a câștigat contracte la scurt timp după înființare."
 

@@ -1,31 +1,32 @@
 {
   "data": {
     "companyCountyProfile": {
-      "denominator": 1402887,
+      "denominator": 1724391,
       "coverage": {
-        "onrcAsOf": "2026-05-06",
-        "anafAsOf": "2026-05-16"
+        "territoryMatched": 1046512,
+        "territoryUnmatched": 677879,
+        "note": "Județul provine din registrul ONRC; firmele fără județ în registru nu apar în clasament."
       },
       "groups": [
         {
-          "key": "MUNICIPIUL BUCUREŞTI",
+          "key": "BUCUREŞTI",
           "label": null,
-          "count": 812345
+          "count": 340299
         },
         {
           "key": "CLUJ",
           "label": null,
-          "count": 190123
+          "count": 63301
         },
         {
           "key": "TIMIŞ",
           "label": null,
-          "count": 150111
+          "count": 50111
         },
         {
           "key": "IAŞI",
           "label": null,
-          "count": 120456
+          "count": 40456
         }
       ]
     }

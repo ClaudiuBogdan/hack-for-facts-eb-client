@@ -112,9 +112,14 @@ export async function fetchPrivateCompanyCountiesLive(): Promise<
     .sort((a, b) => a.name.localeCompare(b.name, 'ro'))
 }
 
+/**
+ * Cold compute is ~30s server-side and the root field is nullable, so this can
+ * legitimately be slow and can legitimately resolve to `null`. Do NOT wrap it in
+ * a short client timeout.
+ */
 export async function fetchCompanyHubStatsLive(
   signal?: AbortSignal,
-): Promise<CompanyHubStats> {
+): Promise<CompanyHubStats | null> {
   const data = await graphqlQuery<unknown>(
     COMPANY_HUB_STATS_QUERY,
     {},

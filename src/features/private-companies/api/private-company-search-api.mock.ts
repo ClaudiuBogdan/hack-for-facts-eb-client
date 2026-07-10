@@ -174,19 +174,32 @@ export async function fetchCompanyGroupProfileMock(
 
 const ACTIVE_STATUS_CODE = '1048'
 
+/**
+ * `topCounties` / `caenDivisions` are computed over ACTIVE companies only, and
+ * the server drops the `(none)` county bucket and the empty-CAEN bucket before
+ * ranking — so neither list sums to `activeCompanies`. Mirror that here, and
+ * report the dropped county mass through `coverage.territoryUnmatched`, so the
+ * mock hub renders the same "bars don't add up" footnote as the live one.
+ */
 export async function fetchCompanyHubStatsMock(): Promise<CompanyHubStats> {
   const profiles = mockProfiles()
-  const [statusMix, topCounties, caenDivisions] = await Promise.all([
+  const active = profiles.filter(
+    (profile) => profile.status?.code === ACTIVE_STATUS_CODE,
+  )
+
+  const [statusMix, activeCounties, activeCaen] = await Promise.all([
     fetchCompanyGroupProfileMock('STATUS', profiles),
-    fetchCompanyGroupProfileMock('COUNTY', profiles),
-    fetchCompanyGroupProfileMock('CAEN_DIVISION', profiles),
+    fetchCompanyGroupProfileMock('COUNTY', active),
+    fetchCompanyGroupProfileMock('CAEN_DIVISION', active),
   ])
+
+  const territoryMatched = active.filter(
+    (profile) => profile.address.county !== null,
+  ).length
 
   return {
     totalCompanies: profiles.length,
-    activeCompanies: profiles.filter(
-      (profile) => profile.status?.code === ACTIVE_STATUS_CODE,
-    ).length,
+    activeCompanies: active.length,
     statusMix: statusMix.map((slice) => ({
       ...slice,
       label:
@@ -195,9 +208,13 @@ export async function fetchCompanyHubStatsMock(): Promise<CompanyHubStats> {
           ?.label ??
         null,
     })),
-    topCounties: topCounties.slice(0, 10),
-    caenDivisions: caenDivisions.slice(0, 10),
-    coverage: { onrcAsOf: '2026-05-06', anafAsOf: '2026-05-16' },
+    topCounties: activeCounties.slice(0, 10),
+    caenDivisions: activeCaen,
+    coverage: {
+      territoryMatched,
+      territoryUnmatched: active.length - territoryMatched,
+      note: 'Județul provine din registrul ONRC; firmele fără județ în registru nu apar în clasament.',
+    },
     computedAt: '2026-05-17T03:00:00.000Z',
   }
 }

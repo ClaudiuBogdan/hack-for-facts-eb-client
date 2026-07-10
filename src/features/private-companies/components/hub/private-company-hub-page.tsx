@@ -2,7 +2,10 @@ import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { Link, useNavigate } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
-import type { CompanyHubStats } from '@/schemas/private-company-search'
+import type {
+  CompanyCoverage,
+  CompanyHubStats,
+} from '@/schemas/private-company-search'
 import { usePrivateCompanyHub } from '../../hooks/use-private-company-hub'
 import { formatInteger } from '../../lib/formatting'
 import { CompanySearchAutocomplete } from '../search/company-search-autocomplete'
@@ -122,20 +125,21 @@ export function PrivateCompanyHubPage() {
           ) : hub.isError || !stats ? (
             <HubBlockError onRetry={() => void hub.refetch()} />
           ) : (
-            <HubGroupBars
-              groups={stats.topCounties}
-              testId="company-hub-counties"
-              buildSearch={(group) => ({ county: [group.key], status: [ACTIVE] })}
-            />
+            <>
+              <HubGroupBars
+                groups={stats.topCounties}
+                testId="company-hub-counties"
+                buildSearch={(group) => ({ county: [group.key], status: [ACTIVE] })}
+              />
+              <CountyCoverageNote coverage={stats.coverage} />
+            </>
           )}
         </HubBlock>
 
-        {/* The CAEN roll-up is the slowest server leg: it fails on its own terms
-            and never keeps the rest of the hub from rendering. */}
         <HubBlock title={<Trans>Activity sectors (CAEN)</Trans>}>
           {hub.isPending ? (
             <HubBlockSkeleton rows={6} />
-          ) : !stats || stats.caenDivisions === null ? (
+          ) : hub.isError || !stats ? (
             <HubBlockError onRetry={() => void hub.refetch()} />
           ) : (
             <HubGroupBars
@@ -205,15 +209,38 @@ export function PrivateCompanyHubPage() {
           </Trans>
         </p>
         {stats ? (
-          <p className="mt-1">
-            <Trans>
-              ONRC snapshot {stats.coverage.onrcAsOf ?? '—'} · ANAF snapshot{' '}
-              {stats.coverage.anafAsOf ?? '—'}
-            </Trans>
+          <p className="mt-1" data-testid="company-hub-computed-at">
+            <Trans>Figures computed on {formatDay(stats.computedAt)}</Trans>
           </p>
         ) : null}
       </footer>
     </main>
+  )
+}
+
+/** ISO-8601 → `YYYY-MM-DD`; the time of day is noise for a 6-hourly aggregate. */
+function formatDay(iso: string): string {
+  return iso.slice(0, 10)
+}
+
+/**
+ * 39% of active companies carry no county in the ONRC register and are excluded
+ * from the ranking, so the bars do not add up to "Active". Saying nothing would
+ * leave the reader to assume they do.
+ */
+function CountyCoverageNote({ coverage }: { readonly coverage: CompanyCoverage }) {
+  const unmatched = coverage.territoryUnmatched
+  if (unmatched === null || unmatched <= 0) return null
+  return (
+    <p
+      className="mt-3 border-t border-[var(--pnrr-border)] pt-2 text-xs leading-relaxed text-[var(--pnrr-muted)]"
+      data-testid="company-hub-county-coverage"
+    >
+      <Trans>
+        {formatInteger(unmatched)} active companies have no county in the
+        register and are not ranked here, so the bars do not sum to the total.
+      </Trans>
+    </p>
   )
 }
 

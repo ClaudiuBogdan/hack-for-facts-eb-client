@@ -95,8 +95,20 @@ describe('fetchCompanyHubStatsMock', () => {
     expect(stats.statusMix.find((slice) => slice.key === '1107')?.label).toBe(
       'insolvență',
     )
-    expect(stats.caenDivisions?.map((slice) => slice.key)).toContain('47')
-    expect(stats.coverage.onrcAsOf).toBe('2026-05-06')
+    expect(stats.coverage.note.length).toBeGreaterThan(0)
+    expect(stats.computedAt).toBe('2026-05-17T03:00:00.000Z')
+  })
+
+  it('ranks counties and CAEN divisions over ACTIVE companies only', async () => {
+    const stats = await fetchCompanyHubStatsMock()
+    // 47 (retail) belongs to a radiată company; only Dante's 4791 is active.
+    expect(stats.caenDivisions.map((slice) => slice.key)).toEqual(
+      expect.arrayContaining(['47', '62', '21']),
+    )
+    // TIMIŞ is radiată-only, so it must not appear among the active counties.
+    expect(stats.topCounties.map((slice) => slice.key)).not.toContain('TIMIŞ')
+    const ranked = stats.topCounties.reduce((sum, slice) => sum + slice.count, 0)
+    expect(ranked).toBeLessThanOrEqual(stats.activeCompanies)
   })
 
   it('ranks counties by descending count', async () => {

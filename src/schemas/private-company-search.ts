@@ -179,23 +179,33 @@ export type CompanyGroupSlice = {
 }
 
 /**
- * Aggregate powering the /companies hub. Served by the (cached) server-side
- * `companyHubStats` query; until that lands it comes from the mock adapter.
- * Assembling it client-side from three cold `companyCountyProfile` calls is not
- * an option — the CAEN leg alone takes ~10-13s.
+ * How much of the ranked population could be placed on a territory. `topCounties`
+ * ranks only the matched share, so the bars do not sum to `activeCompanies` —
+ * `territoryUnmatched` is the mass that is missing, and the UI must say so.
+ */
+export type CompanyCoverage = {
+  readonly territoryMatched: number | null
+  readonly territoryUnmatched: number | null
+  readonly note: string
+}
+
+/**
+ * Aggregate powering the /companies hub, from the cached server-side
+ * `companyHubStats` query (6h TTL). Assembling it client-side from three cold
+ * `companyCountyProfile` calls is not an option — that is ~30s of scans.
+ *
+ * `topCounties` is the top 10 ACTIVE counties with the `(none)` bucket removed;
+ * `caenDivisions` is ACTIVE only, keyed by 2-digit division, with the empty-CAEN
+ * bucket removed. Both therefore under-count on purpose.
  */
 export type CompanyHubStats = {
   readonly totalCompanies: number
   readonly activeCompanies: number
   readonly statusMix: ReadonlyArray<CompanyGroupSlice>
   readonly topCounties: ReadonlyArray<CompanyGroupSlice>
-  /** `null` = the expensive CAEN roll-up was unavailable, not "no divisions". */
-  readonly caenDivisions: ReadonlyArray<CompanyGroupSlice> | null
-  readonly coverage: {
-    readonly onrcAsOf: string | null
-    readonly anafAsOf: string | null
-  }
-  readonly computedAt: string | null
+  readonly caenDivisions: ReadonlyArray<CompanyGroupSlice>
+  readonly coverage: CompanyCoverage
+  readonly computedAt: string
 }
 
 /** `companyCountyProfile(groupBy:)` dimensions exposed by the server SDL. */

@@ -203,20 +203,22 @@ export function mapCompanyListItem(
 // Hub stats
 // ---------------------------------------------------------------------------
 
+/**
+ * The root `companyHubStats` field is nullable — cold compute is ~30s, so a
+ * request can come back empty. `null` means "not ready, retry", never zeroes.
+ */
 export function mapCompanyHubStats(
   response: CompanyHubStatsResponse,
-): CompanyHubStats {
+): CompanyHubStats | null {
   const stats = response.companyHubStats
+  if (!stats) return null
   return {
     totalCompanies: stats.totalCompanies,
     activeCompanies: stats.activeCompanies,
     statusMix: stats.statusMix,
     topCounties: stats.topCounties,
-    caenDivisions: stats.caenDivisions ?? null,
-    coverage: {
-      onrcAsOf: stats.coverage?.onrcAsOf ?? null,
-      anafAsOf: stats.coverage?.anafAsOf ?? null,
-    },
+    caenDivisions: stats.caenDivisions,
+    coverage: stats.coverage,
     computedAt: stats.computedAt,
   }
 }

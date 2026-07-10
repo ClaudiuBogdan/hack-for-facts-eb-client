@@ -230,15 +230,15 @@ export type CompanyResolveResponse = z.infer<typeof companyResolveResponseSchema
 // groups by COUNTY over active companies to enumerate the canonical display-form
 // names used by the `county.eq` filter.
 //
-// The CAEN_DIVISION leg is slow (~10-13s cold) — never fan three of these out
-// from the hub; read `companyHubStats` instead.
+// The CAEN_DIVISION leg is slow (~24s cold) — never fan three of these out from
+// the hub; read `companyHubStats` instead.
 // ---------------------------------------------------------------------------
 
 export const COMPANY_GROUP_PROFILE_QUERY = /* GraphQL */ `
   query CompanyGroupProfile($filter: CompaniesFilter, $groupBy: CompanyGroupBy!) {
     companyCountyProfile(filter: $filter, groupBy: $groupBy) {
       denominator
-      coverage { onrcAsOf anafAsOf }
+      coverage { territoryMatched territoryUnmatched note }
       groups { key label count }
     }
   }
@@ -250,13 +250,16 @@ const rawCompanyGroupSchema = z.object({
   count: z.number(),
 })
 
-/** `coverage` is a recent server addition; tolerate its absence. */
-const rawCoverageSchema = z
-  .object({
-    onrcAsOf: z.string().nullable(),
-    anafAsOf: z.string().nullable(),
-  })
-  .nullish()
+/**
+ * `CompanyCoverage` describes the population the groups were computed over —
+ * how many companies matched a territory and how many did not. Non-null on both
+ * `CompanyCountyProfile` and `CompanyHubStats`; only `note` is non-null inside.
+ */
+const rawCoverageSchema = z.object({
+  territoryMatched: z.number().nullable(),
+  territoryUnmatched: z.number().nullable(),
+  note: z.string(),
+})
 
 export const companyGroupProfileResponseSchema = z.object({
   companyCountyProfile: z.object({
@@ -273,8 +276,10 @@ export type CompanyGroupProfileResponse = z.infer<
 // ---------------------------------------------------------------------------
 // Hub stats — companyHubStats
 //
-// A single cached aggregate for the /companies hub. Shape assumed here and
-// mirrored by the mock adapter until the server field ships.
+// One cached aggregate for the /companies hub (6h TTL, stale-while-revalidate).
+// Every field inside is non-null, but the ROOT field is nullable: cold compute
+// is ~30s of sequential scans, so the first read after a server restart is slow
+// and may come back null. The hub treats null as "retry", never as zeroes.
 // ---------------------------------------------------------------------------
 
 export const COMPANY_HUB_STATS_QUERY = /* GraphQL */ `
@@ -285,24 +290,24 @@ export const COMPANY_HUB_STATS_QUERY = /* GraphQL */ `
       statusMix { key label count }
       topCounties { key label count }
       caenDivisions { key label count }
-      coverage { onrcAsOf anafAsOf }
+      coverage { territoryMatched territoryUnmatched note }
       computedAt
     }
   }
 `
 
 export const companyHubStatsResponseSchema = z.object({
-  companyHubStats: z.object({
-    totalCompanies: z.number(),
-    activeCompanies: z.number(),
-    statusMix: z.array(rawCompanyGroupSchema),
-    topCounties: z.array(rawCompanyGroupSchema),
-    // The CAEN roll-up is the expensive leg; the server may null it out under
-    // load, so the hub treats `null` as "unavailable, retry" rather than "none".
-    caenDivisions: z.array(rawCompanyGroupSchema).nullish(),
-    coverage: rawCoverageSchema,
-    computedAt: z.string().nullable(),
-  }),
+  companyHubStats: z
+    .object({
+      totalCompanies: z.number(),
+      activeCompanies: z.number(),
+      statusMix: z.array(rawCompanyGroupSchema),
+      topCounties: z.array(rawCompanyGroupSchema),
+      caenDivisions: z.array(rawCompanyGroupSchema),
+      coverage: rawCoverageSchema,
+      computedAt: z.string(),
+    })
+    .nullable(),
 })
 
 export type CompanyHubStatsResponse = z.infer<typeof companyHubStatsResponseSchema>

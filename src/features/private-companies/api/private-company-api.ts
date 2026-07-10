@@ -53,13 +53,13 @@ export async function fetchPrivateCompanyCounties(): Promise<
 
 /**
  * One cached server aggregate — never assembled client-side from three
- * `companyCountyProfile` calls (the CAEN_DIVISION leg alone is ~10-13s cold).
- * The live `companyHubStats` field is being added server-side; until it ships,
- * only the mock path returns data and the hub renders its error/retry state.
+ * `companyCountyProfile` calls (that is ~30s of scans). Resolves to `null` while
+ * the server-side cache is still warming; callers must offer a retry rather than
+ * render zeroes.
  */
 export async function fetchCompanyHubStats(
   signal?: AbortSignal,
-): Promise<CompanyHubStats> {
+): Promise<CompanyHubStats | null> {
   if (isPrivateCompanyMockEnabled()) {
     return fetchCompanyHubStatsMock()
   }

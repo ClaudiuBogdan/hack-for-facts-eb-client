@@ -47,12 +47,12 @@ test.describe('Companies hub', () => {
     await waitForPageReady(page)
 
     await expect(page.getByTestId('company-hub-tile-total')).toContainText(
-      '3.994.112',
+      '3.985.167',
       { timeout: 30000 },
     )
-    await expect(page.getByTestId('company-hub-tile-active')).toContainText('1.402.887')
+    await expect(page.getByTestId('company-hub-tile-active')).toContainText('1.724.391')
     await expect(page.getByTestId('company-hub-tile-struck-off')).toContainText(
-      '2.100.004',
+      '2.017.899',
     )
     // Insolvency (30.000) + bankruptcy (41.219) are summed into one tile.
     await expect(page.getByTestId('company-hub-tile-distress')).toContainText('71.219')
@@ -68,6 +68,23 @@ test.describe('Companies hub', () => {
     await expect(page.getByTestId('company-hub-counties')).toContainText('CLUJ')
     await expect(page.getByTestId('company-hub-caen')).toContainText(
       'Comerț cu amănuntul',
+    )
+  })
+
+  test('discloses the active companies missing from the county ranking', async ({
+    page,
+  }) => {
+    await page.goto('/companies')
+    await waitForPageReady(page)
+
+    // 677.879 of 1.724.391 active companies have no county in the register, so
+    // the bars deliberately do not sum to the "Active" tile.
+    await expect(page.getByTestId('company-hub-county-coverage')).toContainText(
+      '677.879',
+      { timeout: 30000 },
+    )
+    await expect(page.getByTestId('company-hub-computed-at')).toContainText(
+      '2026-05-17',
     )
   })
 
@@ -152,5 +169,43 @@ test.describe('Companies hub', () => {
     await expect(page.getByTestId('company-search-results')).toContainText(
       'DANTE INTERNATIONAL SA',
     )
+  })
+})
+
+/**
+ * `companyHubStats` is a nullable root field: cold compute is ~30s, so a request
+ * that lands while the server cache is warming resolves to null. That must read
+ * as "not ready, retry", never as a hub full of zeroes.
+ */
+test.describe('Companies hub — stats not ready', () => {
+  test.beforeEach(async ({ mockApi }) => {
+    await mockApi.mockGraphQL('CompanyHubStats', 'hub-stats-null')
+    await mockApi.mockGraphQL('CompanyGroupProfile', 'counties')
+    await mockApi.mockGraphQL('CompaniesSearch', 'search')
+    await mockApi.mockGraphQL('CompanyResolve', 'resolve')
+  })
+
+  test('offers a retry and never renders zeroed tiles', async ({ page }) => {
+    await page.goto('/companies')
+    await waitForPageReady(page)
+
+    await expect(page.getByRole('alert').first()).toBeVisible({ timeout: 30000 })
+    await expect(page.getByTestId('company-hub-tile-total')).toHaveCount(0)
+    await expect(page.getByTestId('company-hub-counties')).toHaveCount(0)
+  })
+
+  test('still renders the shell, the search dock and the investigation cards', async ({
+    page,
+  }) => {
+    await page.goto('/companies')
+    await waitForPageReady(page)
+
+    await expect(page.getByRole('heading', { name: 'Firme', level: 1 })).toBeVisible({
+      timeout: 30000,
+    })
+    await expect(page.getByTestId('company-search-input')).toBeVisible()
+    await expect(
+      page.getByRole('link', { name: /insolvență sau faliment/ }),
+    ).toBeVisible()
   })
 })

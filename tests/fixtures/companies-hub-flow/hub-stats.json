@@ -1,33 +1,23 @@
 {
   "data": {
     "companyHubStats": {
-      "totalCompanies": 3994112,
-      "activeCompanies": 1402887,
+      "totalCompanies": 3985167,
+      "activeCompanies": 1724391,
       "statusMix": [
         {
           "key": "1084",
           "label": "radiată",
-          "count": 2100004
+          "count": 2017899
         },
         {
           "key": "1048",
           "label": "funcțiune",
-          "count": 1402887
+          "count": 1724391
         },
         {
           "key": "1074",
           "label": "întrerupere temporară de activitate",
-          "count": 210002
-        },
-        {
-          "key": "1049",
-          "label": "dizolvare",
-          "count": 120000
-        },
-        {
-          "key": "1052",
-          "label": "lichidare",
-          "count": 90000
+          "count": 138763
         },
         {
           "key": "1070",
@@ -42,24 +32,24 @@
       ],
       "topCounties": [
         {
-          "key": "MUNICIPIUL BUCUREŞTI",
+          "key": "BUCUREŞTI",
           "label": null,
-          "count": 812345
+          "count": 340299
         },
         {
           "key": "CLUJ",
           "label": null,
-          "count": 190123
+          "count": 63301
         },
         {
           "key": "TIMIŞ",
           "label": null,
-          "count": 150111
+          "count": 50111
         },
         {
           "key": "IAŞI",
           "label": null,
-          "count": 120456
+          "count": 40456
         }
       ],
       "caenDivisions": [
@@ -80,8 +70,9 @@
         }
       ],
       "coverage": {
-        "onrcAsOf": "2026-05-06",
-        "anafAsOf": "2026-05-16"
+        "territoryMatched": 1046512,
+        "territoryUnmatched": 677879,
+        "note": "Județul provine din registrul ONRC; firmele fără județ în registru nu apar în clasament."
       },
       "computedAt": "2026-05-17T03:00:00.000Z"
     }
