@@ -1,0 +1,13 @@
+{
+  "data": {
+    "companyResolve": [
+      {
+        "dim": "NAME",
+        "value": "14399840",
+        "label": "DANTE INTERNATIONAL SA",
+        "cui": "14399840",
+        "confidence": 0.99
+      }
+    ]
+  }
+}

@@ -52,7 +52,8 @@ export function CompanySearchAutocomplete({
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
   const lastCommitted = useRef(committed)
-  const listboxId = useId()
+  // useId() yields delimiters that are awkward inside id/aria-activedescendant.
+  const listboxId = `company-suggestions-${useId().replace(/[^a-zA-Z0-9]/g, '')}`
 
   const suggestionsQuery = useCompanyNameSuggestions(draft)
   const suggestions = suggestionsQuery.data ?? []
@@ -124,6 +125,10 @@ export function CompanySearchAutocomplete({
       return
     }
     if (event.key === 'Escape') {
+      // A `type="search"` input clears itself on Escape, and that clear fires
+      // onChange — which would reopen the list we are trying to close. While the
+      // list is open, Escape only dismisses it.
+      if (showList) event.preventDefault()
       setOpen(false)
       setActiveIndex(-1)
       return

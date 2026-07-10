@@ -44,6 +44,7 @@ vi.mock('lucide-react', () => ({
   Landmark: () => <span data-testid="icon-achizitii" />,
   Scale: () => <span data-testid="icon-legislatie" />,
   Building2: () => <span data-testid="icon-public-enterprises" />,
+  Briefcase: () => <span data-testid="icon-companies" />,
   Vote: () => <span data-testid="icon-elections" />,
   HeartHandshake: () => <span data-testid="icon-ngos" />,
   Activity: () => <span data-testid="icon-statistics" />,
@@ -191,7 +192,7 @@ describe('NavMain', () => {
       await renderNavMain()
 
       const menuItems = screen.getAllByTestId('sidebar-menu-item')
-      expect(menuItems).toHaveLength(10)
+      expect(menuItems).toHaveLength(11)
     })
 
     it('shows public enterprises navigation only while mock mode is enabled', async () => {
@@ -199,7 +200,7 @@ describe('NavMain', () => {
 
       expect(screen.getByTestId('link-/intreprinderi-publice')).toBeInTheDocument()
       expect(screen.getByText('Întreprinderi publice')).toBeInTheDocument()
-      expect(screen.getAllByTestId('sidebar-menu-item')).toHaveLength(11)
+      expect(screen.getAllByTestId('sidebar-menu-item')).toHaveLength(12)
     })
   })
 
@@ -238,6 +239,12 @@ describe('NavMain', () => {
       await renderNavMain({ mockPublicEnterprises: true })
 
       expect(screen.getByTestId('icon-public-enterprises')).toBeInTheDocument()
+    })
+
+    it('renders companies icon', async () => {
+      await renderNavMain()
+
+      expect(screen.getByTestId('icon-companies')).toBeInTheDocument()
     })
 
     it('renders elections icon', async () => {

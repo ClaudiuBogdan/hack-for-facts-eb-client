@@ -1,0 +1,33 @@
+{
+  "data": {
+    "companyCountyProfile": {
+      "denominator": 1402887,
+      "coverage": {
+        "onrcAsOf": "2026-05-06",
+        "anafAsOf": "2026-05-16"
+      },
+      "groups": [
+        {
+          "key": "MUNICIPIUL BUCUREŞTI",
+          "label": null,
+          "count": 812345
+        },
+        {
+          "key": "CLUJ",
+          "label": null,
+          "count": 190123
+        },
+        {
+          "key": "TIMIŞ",
+          "label": null,
+          "count": 150111
+        },
+        {
+          "key": "IAŞI",
+          "label": null,
+          "count": 120456
+        }
+      ]
+    }
+  }
+}

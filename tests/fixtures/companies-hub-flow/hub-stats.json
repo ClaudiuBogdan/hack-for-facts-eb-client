@@ -1,0 +1,89 @@
+{
+  "data": {
+    "companyHubStats": {
+      "totalCompanies": 3994112,
+      "activeCompanies": 1402887,
+      "statusMix": [
+        {
+          "key": "1084",
+          "label": "radiată",
+          "count": 2100004
+        },
+        {
+          "key": "1048",
+          "label": "funcțiune",
+          "count": 1402887
+        },
+        {
+          "key": "1074",
+          "label": "întrerupere temporară de activitate",
+          "count": 210002
+        },
+        {
+          "key": "1049",
+          "label": "dizolvare",
+          "count": 120000
+        },
+        {
+          "key": "1052",
+          "label": "lichidare",
+          "count": 90000
+        },
+        {
+          "key": "1070",
+          "label": "faliment",
+          "count": 41219
+        },
+        {
+          "key": "1107",
+          "label": "insolvență",
+          "count": 30000
+        }
+      ],
+      "topCounties": [
+        {
+          "key": "MUNICIPIUL BUCUREŞTI",
+          "label": null,
+          "count": 812345
+        },
+        {
+          "key": "CLUJ",
+          "label": null,
+          "count": 190123
+        },
+        {
+          "key": "TIMIŞ",
+          "label": null,
+          "count": 150111
+        },
+        {
+          "key": "IAŞI",
+          "label": null,
+          "count": 120456
+        }
+      ],
+      "caenDivisions": [
+        {
+          "key": "47",
+          "label": "Comerț cu amănuntul",
+          "count": 320111
+        },
+        {
+          "key": "41",
+          "label": "Construcții de clădiri",
+          "count": 210000
+        },
+        {
+          "key": "62",
+          "label": "Activități de servicii IT",
+          "count": 150000
+        }
+      ],
+      "coverage": {
+        "onrcAsOf": "2026-05-06",
+        "anafAsOf": "2026-05-16"
+      },
+      "computedAt": "2026-05-17T03:00:00.000Z"
+    }
+  }
+}

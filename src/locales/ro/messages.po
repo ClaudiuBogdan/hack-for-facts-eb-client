@@ -1265,7 +1265,7 @@ msgstr ""
 msgid "Alege un teritoriu"
 msgstr ""
 
-#: src/components/sidebar/nav-main.tsx:94
+#: src/components/sidebar/nav-main.tsx:96
 #: src/features/elections/components/election-hub-page.tsx:31
 #: src/features/elections/components/elections-page-layout.tsx:56
 msgid "Alegeri"
@@ -3085,7 +3085,7 @@ msgstr "Șterge filtrele ({0})"
 #: src/components/ui/styled-multi-select.tsx:239
 #: src/components/ui/styled-single-select.tsx:162
 #: src/features/entity-search/components/entity-search-input.tsx:115
-#: src/features/private-companies/components/search/company-search-autocomplete.tsx:186
+#: src/features/private-companies/components/search/company-search-autocomplete.tsx:191
 msgid "Clear search"
 msgstr "Șterge căutarea"
 
@@ -7036,7 +7036,7 @@ msgstr "Finalizează"
 msgid "Firmă"
 msgstr ""
 
-#: src/components/sidebar/nav-main.tsx:75
+#: src/components/sidebar/nav-main.tsx:77
 msgid "Firme"
 msgstr ""
 
@@ -8593,7 +8593,7 @@ msgstr ""
 msgid "Întreprinderi în fixture"
 msgstr ""
 
-#: src/components/sidebar/nav-main.tsx:87
+#: src/components/sidebar/nav-main.tsx:89
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:289
 msgid "Întreprinderi publice"
 msgstr ""
@@ -9065,7 +9065,7 @@ msgstr "Legendă"
 msgid "Legendă hartă"
 msgstr ""
 
-#: src/components/sidebar/nav-main.tsx:80
+#: src/components/sidebar/nav-main.tsx:82
 #: src/features/entity-search/lib/doc-type-meta.ts:66
 #: src/features/legal/components/legal-act-page.tsx:102
 #: src/features/legal/components/legal-landing-page.tsx:236
@@ -16028,7 +16028,7 @@ msgstr "Alertă pentru set de date static"
 msgid "Static Series"
 msgstr "Serie statică"
 
-#: src/components/sidebar/nav-main.tsx:99
+#: src/components/sidebar/nav-main.tsx:101
 #: src/features/statistics/pages/statistics-landing-page.tsx:46
 msgid "Statistici"
 msgstr ""

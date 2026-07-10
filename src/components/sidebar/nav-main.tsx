@@ -1,4 +1,4 @@
-import { Activity, LayoutDashboard, BarChart2, Map, ListOrdered, Boxes, Landmark, Scale, Building2, Vote, HeartHandshake } from "lucide-react";
+import { Activity, LayoutDashboard, BarChart2, Map, ListOrdered, Boxes, Landmark, Scale, Building2, Briefcase, Vote, HeartHandshake } from "lucide-react";
 import { Link, useMatches } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button-variants";
@@ -72,9 +72,11 @@ const mainItems: ReadonlyArray<{
     icon: Landmark,
   },
   {
+    // Building2 already stands for "Întreprinderi publice"; private companies
+    // need their own mark.
     title: <Trans>Firme</Trans>,
     url: "/companies",
-    icon: Building2,
+    icon: Briefcase,
   },
   {
     title: <Trans>Legislație</Trans>,
