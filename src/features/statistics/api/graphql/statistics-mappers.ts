@@ -39,8 +39,11 @@ export function mapDatasetSummary(node: InsDatasetNodeRaw): StatisticsDatasetSum
 
 /**
  * Territory rows are keyed by SIRUTA in the product (it is the join to the
- * budget world). NUTS3 rows have no SIRUTA of their own, so they fall back to
- * the INS territory `code`, which is the county code.
+ * budget world). NUTS3 rows have no SIRUTA of their own.
+ *
+ * The wire's `parent_*` fields carry the containing territory. For the LAU rows
+ * the search surfaces, that parent is the county, which is what the UI labels
+ * it — but only LAU rows are read that way.
  */
 export function mapTerritorySearchRow(
   node: InsTerritoryNodeRaw,
@@ -50,7 +53,7 @@ export function mapTerritorySearchRow(
     siruta: node.siruta_code ?? null,
     name: node.name_ro ?? null,
     level: node.level ?? null,
-    countyCode: node.county_code ?? null,
-    countyName: node.county_name_ro ?? null,
+    countyCode: node.level === 'LAU' ? (node.parent_code ?? null) : null,
+    countyName: node.level === 'LAU' ? (node.parent_name_ro ?? null) : null,
   }
 }

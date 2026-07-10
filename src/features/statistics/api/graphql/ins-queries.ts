@@ -2,8 +2,7 @@
  * INS Tempo GraphQL documents.
  *
  * Single home for every INS operation the client sends. Field selections are
- * shared through the `*_FIELDS` constants so a schema change lands in one
- * place; `src/lib/api/ins.ts` re-exports the fetchers for legacy import paths.
+ * shared through the `*_FIELDS` constants so a schema change lands in one place.
  */
 
 export const INS_DATASET_FIELDS = `
@@ -43,8 +42,8 @@ export const INS_TERRITORY_FIELDS = `
   siruta_code
   level
   name_ro
-  county_code
-  county_name_ro
+  parent_code
+  parent_name_ro
 `
 
 export const INS_UAT_DASHBOARD_QUERY = `

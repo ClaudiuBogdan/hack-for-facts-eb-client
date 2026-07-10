@@ -29,13 +29,18 @@ export const insTerritoryLevelRawSchema = z.enum([
   'LAU',
 ])
 
+/**
+ * `parent_*` is the containing territory — the county, for the LAU rows the
+ * product cares about. The server names it `parent_`, not `county_`, because a
+ * NUTS2 row's parent is a macroregion, not a county.
+ */
 export const insTerritoryNodeRawSchema = z.object({
   code: z.string(),
   siruta_code: z.string().nullish(),
   level: insTerritoryLevelRawSchema.nullish(),
   name_ro: z.string().nullish(),
-  county_code: z.string().nullish(),
-  county_name_ro: z.string().nullish(),
+  parent_code: z.string().nullish(),
+  parent_name_ro: z.string().nullish(),
 })
 
 export const insTerritoriesResponseRawSchema = z.object({
