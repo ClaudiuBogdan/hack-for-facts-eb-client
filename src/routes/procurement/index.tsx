@@ -1,20 +1,14 @@
-import { z } from 'zod'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { getSiteUrl } from '@/config/env'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
+import { parseProcurementOverviewSearch } from '@/schemas/procurement-overview'
 
 // Lenient `?tab=` handling: tabs are path-driven (Overview → /procurement,
 // Search → /procurement/search), but a stray tab param redirects instead of
 // 404ing or lingering in the URL.
-const indexSearchSchema = z
-  .object({
-    tab: z.enum(['overview', 'search']).optional().catch(undefined),
-  })
-  .passthrough()
-
 export const Route = createFileRoute('/procurement/')({
   ssr: true,
-  validateSearch: indexSearchSchema,
+  validateSearch: parseProcurementOverviewSearch,
   beforeLoad: ({ search }) => {
     if (search.tab === 'search') {
       const { tab: _tab, ...rest } = search

@@ -7,25 +7,19 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { CoverageRibbonFromGate } from '@/components/shared/procurement-data/coverage-ribbon'
 import { RequestDatasetAction } from '@/components/shared/procurement-data/request-dataset-action'
-import type { CapabilityGate, DataStatus } from '@/schemas/procurement'
 import { procurementSectionLabelClassName } from '../lib/procurement-theme'
-import { PROCUREMENT_DATASET_ID } from '../lib/mock-mode'
+import { PROCUREMENT_DATASET_ID } from '../lib/dataset'
 
 type Props = {
   readonly open: boolean
   readonly onOpenChange: (open: boolean) => void
-  readonly gate?: CapabilityGate
-  readonly status: DataStatus
 }
 
 /** "About this data" side panel: coverage, glossary, provenance, request CTA. */
 export function ProcurementInfoSheet({
   open,
   onOpenChange,
-  gate,
-  status,
 }: Props) {
   const glossary = [
     {
@@ -49,8 +43,8 @@ export function ProcurementInfoSheet({
       description: t`The EU common procurement vocabulary. Categories are reliable at division level (first two digits).`,
     },
     {
-      term: t`Coverage gate`,
-      description: t`Per-grain data-quality thresholds that decide which filters and rankings are served as authoritative.`,
+      term: t`Answerability`,
+      description: t`Every analysis answer states whether it is served, degraded, or unavailable, with machine-readable reasons and caveats.`,
     },
   ]
 
@@ -72,15 +66,6 @@ export function ProcurementInfoSheet({
         </SheetHeader>
 
         <div className="flex-1 space-y-6 overflow-y-auto p-6">
-          {gate ? (
-            <section className="space-y-2">
-              <p className={procurementSectionLabelClassName}>
-                <Trans>Coverage</Trans>
-              </p>
-              <CoverageRibbonFromGate gate={gate} status={status} collapsible />
-            </section>
-          ) : null}
-
           <section className="space-y-3">
             <p className={procurementSectionLabelClassName}>
               <Trans>Glossary</Trans>

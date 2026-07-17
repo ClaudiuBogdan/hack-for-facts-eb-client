@@ -77,8 +77,16 @@ export interface ProcurementScopeFilterInput {
   supplierCui?: string
   cpvDivision?: string
   cpvCode?: string
-  monthFrom?: string
-  monthTo?: string
+  buyerCounty?: string
+  buyerRegion?: string
+  supplierCounty?: string
+  supplierRegion?: string
+  status?: string
+  procedureType?: string
+  grain?: 'procedure' | 'contract' | 'direct_acquisition'
+  from?: string
+  to?: string
+  year?: number
 }
 
 // ---------------------------------------------------------------------------
@@ -325,6 +333,7 @@ export function buildScopeFilter(scope: {
   cpvCode?: string
   monthFrom?: string
   monthTo?: string
+  grain?: ProcurementScopeFilterInput['grain']
 }): ProcurementScopeFilterInput {
   const filter: ProcurementScopeFilterInput = {}
   const authorityCui = trimmedOrUndefined(scope.authorityCui)
@@ -339,8 +348,9 @@ export function buildScopeFilter(scope: {
     filter.cpvDivision = cpvDivision
   }
   const monthFrom = trimmedOrUndefined(scope.monthFrom)
-  if (monthFrom) filter.monthFrom = monthFrom
+  if (monthFrom) filter.from = monthFrom
   const monthTo = trimmedOrUndefined(scope.monthTo)
-  if (monthTo) filter.monthTo = monthTo
+  if (monthTo) filter.to = monthTo
+  if (scope.grain) filter.grain = scope.grain
   return filter
 }

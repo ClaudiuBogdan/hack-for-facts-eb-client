@@ -3,19 +3,16 @@ import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import { ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { CoverageRibbonFromGate } from '@/components/shared/procurement-data/coverage-ribbon'
 import { RequestDatasetAction } from '@/components/shared/procurement-data/request-dataset-action'
 import { SourceProvenanceDrawer } from '@/components/shared/procurement-data/source-provenance-drawer'
 import {
-  procurementDataStatus,
   type ProcurementRecordDetail,
   type ProvenanceInfo,
 } from '@/schemas/procurement'
-import { isProcurementMock } from '../api/procurement-api'
 import { DETAIL_CONFIG, type DetailGrainKey, type DetailRecord } from '../lib/detail-config'
 import { recordDate, recordSupplier } from '../lib/record-accessors'
 import { sourceSystemLabel } from '../lib/enum-labels'
-import { PROCUREMENT_DATASET_ID } from '../lib/mock-mode'
+import { PROCUREMENT_DATASET_ID } from '../lib/dataset'
 import {
   ProcurementDetailHero,
   ProcurementKeyFactsSection,
@@ -52,7 +49,6 @@ function buildProvenance(record: DetailRecord): ProvenanceInfo {
 export function ProcurementDetailPage({ grain, detail, className }: Props) {
   const config = DETAIL_CONFIG[grain]
   const record = detail.record
-  const status = isProcurementMock() ? 'mock' : procurementDataStatus(detail.gate)
 
   return (
     <div className={cn('mx-auto w-full max-w-5xl space-y-6 px-4 py-6 sm:px-6 lg:px-8', className)}>
@@ -76,8 +72,6 @@ export function ProcurementDetailPage({ grain, detail, className }: Props) {
       </nav>
 
       <ProcurementDetailHero record={record} config={config} />
-
-      <CoverageRibbonFromGate gate={detail.gate} status={status} collapsible />
 
       <ProcurementPartiesSection
         authority={record.authority}

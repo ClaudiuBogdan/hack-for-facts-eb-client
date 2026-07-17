@@ -27,9 +27,6 @@ const PARTY_FIELDS = /* GraphQL */ `cui name displayName`
 /** GraphQL selection for the flat money block on flow records. */
 const MONEY_FIELDS = /* GraphQL */ `valueRon estimatedValueRon currency isRon valueSuspect`
 
-/** GraphQL selection for rollup count columns. */
-const ROLLUP_COUNT_FIELDS = /* GraphQL */ `flowCount amountRonSum amountPresentCount amountMissingCount`
-
 const rawMoneyFields = {
   valueRon: z.string().nullable(),
   estimatedValueRon: z.string().nullable(),
@@ -188,96 +185,98 @@ const MODIFICATION_FIELDS = /* GraphQL */ `
   }
 `
 
-export const rawGateSchema = z.object({
-  sourceGrain: z.string(),
-  rowsCount: z.string(),
-  authorityCuiCoverageRate: z.string(),
-  supplierCuiCoverageRate: z.string(),
-  amountCoverageRate: z.string(),
-  cpvCoverageRate: z.string(),
-  dateCoverageRate: z.string(),
-  filterAnswersAllowed: z.boolean(),
-  spendRankingsAllowed: z.boolean(),
-  supplierRegionFiltersAllowed: z.boolean(),
-  blockers: z.array(z.string()),
-  dataAsOf: z.string().nullable(),
-  cadence: z.string().nullable(),
+export const rawAnswerMetaSchema = z.object({
+  answerability: z.string().nullable(),
+  reason: z.string().nullable(),
+  policyKey: z.string().nullable(),
+  grain: z.string(),
+  valueBasis: z.string().nullable(),
+  dateBasis: z.string().nullable(),
+  population: z.string().nullable(),
+  buildId: z.string().nullable(),
+  counts: z
+    .object({ rows: z.string().nullable(), withValue: z.string().nullable() })
+    .nullable(),
+  undatedInScope: z
+    .object({ count: z.string().nullable(), valueRon: z.string().nullable() })
+    .nullable(),
+  provisional: z.boolean().nullable(),
+  caveats: z.array(z.string()).nullable(),
+  canonicalScope: z.string().nullable(),
 })
-export type RawProcurementGate = z.infer<typeof rawGateSchema>
+export type RawProcurementAnswerMeta = z.infer<typeof rawAnswerMetaSchema>
 
-const GATE_FIELDS = /* GraphQL */ `
-  sourceGrain rowsCount
-  authorityCuiCoverageRate supplierCuiCoverageRate
-  amountCoverageRate cpvCoverageRate dateCoverageRate
-  filterAnswersAllowed spendRankingsAllowed supplierRegionFiltersAllowed
-  blockers dataAsOf cadence
+const ANSWER_META_FIELDS = /* GraphQL */ `
+  answerability reason policyKey grain valueBasis dateBasis population buildId
+  counts { rows withValue }
+  undatedInScope { count valueRon }
+  provisional caveats canonicalScope
 `
 
-export const rawStatsSchema = z.object({
-  totalValueRon: z.string().nullable(),
-  contractsCount: z.string(),
-  directAcquisitionsCount: z.string(),
-  proceduresCount: z.string(),
-  buyersCount: z.string(),
-  suppliersCount: z.string(),
-  firstFlowDate: z.string().nullable(),
-  lastFlowDate: z.string().nullable(),
+export const rawStatsBlockSchema = z.object({
+  grain: z.string(),
+  recordCount: z.string().nullable(),
+  withValueCount: z.string().nullable(),
+  withEstimatedCount: z.string().nullable(),
+  valueAwardedSum: z.string().nullable(),
+  valueEstimatedSum: z.string().nullable(),
+  avgValueAwarded: z.string().nullable(),
+  minMonth: z.string().nullable(),
+  maxMonth: z.string().nullable(),
+  meta: rawAnswerMetaSchema,
 })
-export type RawProcurementStats = z.infer<typeof rawStatsSchema>
+export type RawProcurementStatsBlock = z.infer<typeof rawStatsBlockSchema>
 
-const STATS_FIELDS = /* GraphQL */ `
-  totalValueRon contractsCount directAcquisitionsCount proceduresCount
-  buyersCount suppliersCount firstFlowDate lastFlowDate
+const STATS_BLOCK_FIELDS = /* GraphQL */ `
+  grain recordCount withValueCount withEstimatedCount
+  valueAwardedSum valueEstimatedSum avgValueAwarded minMonth maxMonth
+  meta { ${ANSWER_META_FIELDS} }
 `
 
-export const rawTopPartyRowSchema = z.object({
-  authority: rawPartySchema.nullable(),
-  supplier: rawPartySchema.nullable(),
-  sourceGrain: z.string(),
-  flowCount: z.string(),
-  amountRonSum: z.string().nullable(),
-  amountPresentCount: z.string(),
-  amountMissingCount: z.string(),
-  firstFlowDate: z.string().nullable(),
-  lastFlowDate: z.string().nullable(),
-  evidenceRefsSample: z.array(z.string()),
+export const rawBreakdownBucketSchema = z.object({
+  key: z.string().nullable(),
+  kind: z.string(),
+  recordCount: z.string().nullable(),
+  withValueCount: z.string().nullable(),
+  valueAwardedSum: z.string().nullable(),
+  shareOfScope: z.string().nullable(),
 })
-export type RawProcurementTopPartyRow = z.infer<typeof rawTopPartyRowSchema>
+export type RawProcurementBreakdownBucket = z.infer<
+  typeof rawBreakdownBucketSchema
+>
 
-const TOP_PARTY_ROW_FIELDS = /* GraphQL */ `
-  authority { ${PARTY_FIELDS} }
-  supplier { ${PARTY_FIELDS} }
-  sourceGrain ${ROLLUP_COUNT_FIELDS}
-  firstFlowDate lastFlowDate evidenceRefsSample
+export const rawBreakdownBlockSchema = z.object({
+  grain: z.string(),
+  dimension: z.string(),
+  rankedBy: z.string().nullable(),
+  buckets: z.array(rawBreakdownBucketSchema).nullable(),
+  meta: rawAnswerMetaSchema,
+})
+export type RawProcurementBreakdownBlock = z.infer<
+  typeof rawBreakdownBlockSchema
+>
+
+const BREAKDOWN_BLOCK_FIELDS = /* GraphQL */ `
+  grain dimension rankedBy
+  buckets { key kind recordCount withValueCount valueAwardedSum shareOfScope }
+  meta { ${ANSWER_META_FIELDS} }
 `
 
-export const rawCategoryRowSchema = z.object({
-  cpvDivisionCode: z.string().nullable(),
-  cpvDivisionLabelEn: z.string().nullable(),
-  cpvDivisionLabelRo: z.string().nullable(),
-  sourceGrain: z.string(),
-  flowCount: z.string(),
-  amountRonSum: z.string().nullable(),
-  amountPresentCount: z.string(),
-  amountMissingCount: z.string(),
+export const rawSeriesBlockSchema = z.object({
+  grain: z.string(),
+  measure: z.string(),
+  bucket: z.string(),
+  points: z
+    .array(z.object({ bucket: z.string(), value: z.string().nullable() }))
+    .nullable(),
+  meta: rawAnswerMetaSchema,
 })
-export type RawProcurementCategoryRow = z.infer<typeof rawCategoryRowSchema>
+export type RawProcurementSeriesBlock = z.infer<typeof rawSeriesBlockSchema>
 
-const CATEGORY_ROW_FIELDS = /* GraphQL */ `
-  cpvDivisionCode cpvDivisionLabelEn cpvDivisionLabelRo
-  sourceGrain ${ROLLUP_COUNT_FIELDS}
+const SERIES_BLOCK_FIELDS = /* GraphQL */ `
+  grain measure bucket points { bucket value }
+  meta { ${ANSWER_META_FIELDS} }
 `
-
-export const rawMonthlyPointSchema = z.object({
-  month: z.string(),
-  flowCount: z.string(),
-  amountRonSum: z.string().nullable(),
-  amountPresentCount: z.string(),
-  amountMissingCount: z.string(),
-})
-export type RawProcurementMonthlyPoint = z.infer<typeof rawMonthlyPointSchema>
-
-const MONTHLY_POINT_FIELDS = /* GraphQL */ `month ${ROLLUP_COUNT_FIELDS}`
 
 // ---------------------------------------------------------------------------
 // Search pages (offset)
@@ -371,10 +370,7 @@ const rawTedRefSchema = z.object({
   sourceUrl: z.string(),
 })
 
-const DETAIL_SHARED_FIELDS = /* GraphQL */ `
-  duplicates { sourceSystem id }
-  gate { ${GATE_FIELDS} }
-`
+const DETAIL_SHARED_FIELDS = /* GraphQL */ `duplicates { sourceSystem id }`
 
 export const PROCUREMENT_PROCEDURE_DETAIL_QUERY = /* GraphQL */ `
   query ProcurementProcedureDetail($id: ID!) {
@@ -399,7 +395,6 @@ export const procurementProcedureDetailResponseSchema = z.object({
       perLotWinners: z.array(rawLotWinnerSchema).nullable(),
       ted: rawTedRefSchema.nullable(),
       duplicates: z.array(rawDuplicateRefSchema),
-      gate: rawGateSchema,
     })
     .nullable(),
 })
@@ -424,7 +419,6 @@ export const procurementContractDetailResponseSchema = z.object({
       procedure: rawProcedureSchema.nullable(),
       ted: rawTedRefSchema.nullable(),
       duplicates: z.array(rawDuplicateRefSchema),
-      gate: rawGateSchema,
     })
     .nullable(),
 })
@@ -445,7 +439,6 @@ export const procurementDaDetailResponseSchema = z.object({
     .object({
       directAcquisition: rawDirectAcquisitionSchema,
       duplicates: z.array(rawDuplicateRefSchema),
-      gate: rawGateSchema,
     })
     .nullable(),
 })
@@ -459,23 +452,119 @@ export type RawProcurementDaDetail = NonNullable<
 // ---------------------------------------------------------------------------
 
 export const PROCUREMENT_AGGREGATES_QUERY = /* GraphQL */ `
-  query ProcurementAggregates($scope: ProcurementScopeFilter, $grain: String, $topN: Int) {
-    procurementStats(scope: $scope, grain: $grain) { ${STATS_FIELDS} }
-    procurementTopAuthorities(scope: $scope, grain: $grain, topN: $topN) { ${TOP_PARTY_ROW_FIELDS} }
-    procurementTopSuppliers(scope: $scope, grain: $grain, topN: $topN) { ${TOP_PARTY_ROW_FIELDS} }
-    procurementCategoryBreakdown(scope: $scope, grain: $grain) { ${CATEGORY_ROW_FIELDS} }
-    procurementSpendOverTime(scope: $scope, grain: $grain) { ${MONTHLY_POINT_FIELDS} }
+  query ProcurementAggregates(
+    $scope: ProcurementAnalysisScopeInput
+    $topN: Int
+    $includeSuppliers: Boolean!
+    $includeCategories: Boolean!
+  ) {
+    procurementStats(scope: $scope) { blocks { ${STATS_BLOCK_FIELDS} } }
+    authorities: procurementBreakdown(scope: $scope, dimension: authority, topN: $topN) { ${BREAKDOWN_BLOCK_FIELDS} }
+    suppliers: procurementBreakdown(scope: $scope, dimension: supplier, topN: $topN) @include(if: $includeSuppliers) { ${BREAKDOWN_BLOCK_FIELDS} }
+    categories: procurementBreakdown(scope: $scope, dimension: cpvDivision, topN: $topN) @include(if: $includeCategories) { ${BREAKDOWN_BLOCK_FIELDS} }
+    recordSeries: procurementSeries(scope: $scope, bucket: month, measure: recordCount) { ${SERIES_BLOCK_FIELDS} }
+    valueSeries: procurementSeries(scope: $scope, bucket: month, measure: valueAwardedSum) { ${SERIES_BLOCK_FIELDS} }
   }
 `
 export const procurementAggregatesResponseSchema = z.object({
-  procurementStats: rawStatsSchema,
-  procurementTopAuthorities: z.array(rawTopPartyRowSchema),
-  procurementTopSuppliers: z.array(rawTopPartyRowSchema),
-  procurementCategoryBreakdown: z.array(rawCategoryRowSchema),
-  procurementSpendOverTime: z.array(rawMonthlyPointSchema),
+  procurementStats: z.object({ blocks: z.array(rawStatsBlockSchema) }),
+  authorities: z.array(rawBreakdownBlockSchema),
+  suppliers: z.array(rawBreakdownBlockSchema).optional().default([]),
+  categories: z.array(rawBreakdownBlockSchema).optional().default([]),
+  recordSeries: z.array(rawSeriesBlockSchema),
+  valueSeries: z.array(rawSeriesBlockSchema),
 })
 export type RawProcurementAggregates = z.infer<
   typeof procurementAggregatesResponseSchema
+>
+
+// ---------------------------------------------------------------------------
+// Party identity enrichment
+// ---------------------------------------------------------------------------
+
+const rawPartyNameNodeSchema = z.object({
+  cui: z.string(),
+  name: z.string(),
+})
+
+const rawPartyNameConnectionSchema = z.object({
+  edges: z.array(z.object({ node: rawPartyNameNodeSchema })),
+})
+
+export const PROCUREMENT_PARTY_NAMES_QUERY = /* GraphQL */ `
+  query ProcurementPartyNames(
+    $authorityCuis: [String!]!
+    $supplierCuis: [String!]!
+    $includeAuthorities: Boolean!
+    $includeSuppliers: Boolean!
+  ) {
+    authorities: referencePublicEntities(
+      filter: { cui: { in: $authorityCuis } }
+      first: 50
+    ) @include(if: $includeAuthorities) {
+      edges { node { cui name } }
+    }
+    suppliers: companies(
+      filter: { cui: { in: $supplierCuis } }
+      first: 50
+    ) @include(if: $includeSuppliers) {
+      edges { node { cui name } }
+    }
+  }
+`
+
+export const procurementPartyNamesResponseSchema = z.object({
+  authorities: rawPartyNameConnectionSchema.optional(),
+  suppliers: rawPartyNameConnectionSchema.optional(),
+})
+
+
+// ---------------------------------------------------------------------------
+// Matrix-v2 analysis workspace
+// ---------------------------------------------------------------------------
+
+export const PROCUREMENT_ANALYSIS_QUERY = /* GraphQL */ `
+  query ProcurementAnalysis(
+    $scope: ProcurementAnalysisScopeInput!
+    $dimensions: [ProcurementBreakdownDimension!]!
+    $topN: Int
+    $bucket: ProcurementSeriesBucket!
+    $measure: ProcurementAnalysisMeasure!
+    $basis: ProcurementConcentrationBasis
+  ) {
+    stats: procurementStats(scope: $scope) { blocks { ${STATS_BLOCK_FIELDS} } }
+    facets: procurementFacets(scope: $scope, dimensions: $dimensions, topN: $topN) {
+      blocks { ${BREAKDOWN_BLOCK_FIELDS} }
+    }
+    series: procurementSeries(scope: $scope, bucket: $bucket, measure: $measure) {
+      ${SERIES_BLOCK_FIELDS}
+    }
+    concentration: procurementConcentration(scope: $scope, basis: $basis) {
+      grain basis supplierCount top1Share top5Share hhi totalRon
+      meta { ${ANSWER_META_FIELDS} }
+    }
+  }
+`
+
+export const rawConcentrationBlockSchema = z.object({
+  grain: z.string(),
+  basis: z.string(),
+  supplierCount: z.number().nullable(),
+  top1Share: z.string().nullable(),
+  top5Share: z.string().nullable(),
+  hhi: z.string().nullable(),
+  totalRon: z.string().nullable(),
+  meta: rawAnswerMetaSchema,
+})
+
+export const procurementAnalysisResponseSchema = z.object({
+  stats: z.object({ blocks: z.array(rawStatsBlockSchema) }),
+  facets: z.object({ blocks: z.array(rawBreakdownBlockSchema) }),
+  series: z.array(rawSeriesBlockSchema),
+  concentration: z.array(rawConcentrationBlockSchema),
+})
+export type RawProcurementAnalysis = z.infer<
+  typeof procurementAnalysisResponseSchema
 >
 
 // ---------------------------------------------------------------------------
@@ -524,19 +613,6 @@ export const procurementSupplierRecordsResponseSchema = z.object({
 export type RawProcurementSupplierRecordsConnection = z.infer<
   typeof procurementSupplierRecordsResponseSchema
 >['procurementSupplierRecords']
-
-// ---------------------------------------------------------------------------
-// Meta
-// ---------------------------------------------------------------------------
-
-export const PROCUREMENT_GRAIN_QUALITY_QUERY = /* GraphQL */ `
-  query ProcurementGrainQuality {
-    procurementGrainQuality { ${GATE_FIELDS} }
-  }
-`
-export const procurementGrainQualityResponseSchema = z.object({
-  procurementGrainQuality: z.array(rawGateSchema),
-})
 
 export const PROCUREMENT_CPV_DIVISIONS_QUERY = /* GraphQL */ `
   query ProcurementCpvDivisions {

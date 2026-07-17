@@ -1,5 +1,4 @@
 import { Trans } from '@lingui/react/macro'
-import { t } from '@lingui/core/macro'
 import { Label } from '@/components/ui/label'
 import {
   procurementSortSchema,
@@ -10,8 +9,6 @@ import { sortLabel } from '../lib/enum-labels'
 type Props = {
   readonly sort: ProcurementSort
   readonly onSortChange: (sort: ProcurementSort) => void
-  /** Value sorts are disabled when the grain's gate blocks spend answers. */
-  readonly valueSortAllowed: boolean
 }
 
 const SELECT_CLASS =
@@ -20,7 +17,6 @@ const SELECT_CLASS =
 export function ProcurementSortSelect({
   sort,
   onSortChange,
-  valueSortAllowed,
 }: Props) {
   return (
     <div className="flex items-center gap-2">
@@ -39,16 +35,11 @@ export function ProcurementSortSelect({
           if (parsed.success) onSortChange(parsed.data)
         }}
       >
-        {procurementSortSchema.options.map((option) => {
-          const isValueSort = option === 'value_desc' || option === 'value_asc'
-          const disabled = isValueSort && !valueSortAllowed
-          return (
-            <option key={option} value={option} disabled={disabled}>
-              {sortLabel(option)}
-              {disabled ? ` — ${t`below data threshold`}` : ''}
-            </option>
-          )
-        })}
+        {procurementSortSchema.options.map((option) => (
+          <option key={option} value={option}>
+            {sortLabel(option)}
+          </option>
+        ))}
       </select>
     </div>
   )

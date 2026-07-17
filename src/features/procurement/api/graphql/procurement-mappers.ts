@@ -11,11 +11,14 @@
  * record.
  */
 import {
+  categoryRowSchema,
   procurementSourceSystemSchema,
-  procurementSourceGrainSchema,
+  procurementAnalysisGrainSchema,
+  procurementAnswerMetaSchema,
+  procurementStatsBlockSchema,
   procurementStatusSchema,
   contractKindSchema,
-  type CapabilityGate,
+  topPartyRowSchema,
   type CategoryRow,
   type ContractModification,
   type ContractModificationRecord,
@@ -26,6 +29,7 @@ import {
   type Party,
   type ProcedureRecord,
   type ProcurementGrain,
+  type ProcurementGrainAnalytics,
   type ProcurementLanding,
   type ProcurementRecordSummary,
   type ProcurementSearchPage,
@@ -35,19 +39,17 @@ import {
 } from '@/schemas/procurement'
 import type {
   RawProcurementAggregates,
-  RawProcurementCategoryRow,
+  RawProcurementAnswerMeta,
+  RawProcurementBreakdownBucket,
   RawProcurementContract,
   RawProcurementCpvDivision,
   RawProcurementDirectAcquisition,
   RawProcurementFlowRecord,
-  RawProcurementGate,
   RawProcurementModification,
   RawProcurementModificationTrailEntry,
-  RawProcurementMonthlyPoint,
   RawProcurementParty,
   RawProcurementProcedure,
   RawProcurementSupplierRecordsConnection,
-  RawProcurementTopPartyRow,
 } from './procurement-queries'
 
 // ---------------------------------------------------------------------------
@@ -76,26 +78,6 @@ function mapLinkMethod(
 function mapContractKind(raw: string | null): ProcedureRecord['contractKind'] {
   const parsed = contractKindSchema.safeParse(raw)
   return parsed.success ? parsed.data : null
-}
-
-/**
- * Bigint count string → JS number. Rollup counts fit a double today (max
- * ~15.8M rows); an unsafe value means a contract violation, so fail loud
- * rather than render a rounded figure.
- */
-function toCount(raw: string): number {
-  const value = Number(raw)
-  if (!Number.isSafeInteger(value)) {
-    throw new Error(`procurement count overflows a safe integer: ${raw}`)
-  }
-  return value
-}
-
-/** Nullable variant for headline tiles ("unknown" stays representable). */
-function toNullableCount(raw: string | null | undefined): number | null {
-  if (raw === null || raw === undefined) return null
-  const value = Number(raw)
-  return Number.isSafeInteger(value) ? value : null
 }
 
 export function mapParty(raw: RawProcurementParty | null): Party {
@@ -242,86 +224,190 @@ export function mapFlowRecord(
 }
 
 // ---------------------------------------------------------------------------
-// Gate + rollups
+// Unified analysis
 // ---------------------------------------------------------------------------
 
-export function mapGate(raw: RawProcurementGate): CapabilityGate {
-  return {
-    sourceGrain: procurementSourceGrainSchema.parse(raw.sourceGrain),
-    rowsCount: raw.rowsCount,
-    authorityCuiCoverageRate: raw.authorityCuiCoverageRate,
-    supplierCuiCoverageRate: raw.supplierCuiCoverageRate,
-    amountCoverageRate: raw.amountCoverageRate,
-    cpvCoverageRate: raw.cpvCoverageRate,
-    dateCoverageRate: raw.dateCoverageRate,
-    filterAnswersAllowed: raw.filterAnswersAllowed,
-    spendRankingsAllowed: raw.spendRankingsAllowed,
-    supplierRegionFiltersAllowed: raw.supplierRegionFiltersAllowed,
-    blockers: raw.blockers,
-    dataAsOf: raw.dataAsOf,
-    cadence: raw.cadence,
-  }
+export function mapAnswerMeta(raw: RawProcurementAnswerMeta) {
+  return procurementAnswerMetaSchema.parse(raw)
 }
 
-export function mapTopPartyRow(raw: RawProcurementTopPartyRow): TopPartyRow {
-  return {
-    authority: raw.authority ? mapParty(raw.authority) : null,
-    supplier: raw.supplier ? mapParty(raw.supplier) : null,
-    sourceGrain: procurementSourceGrainSchema.parse(raw.sourceGrain),
-    flowCount: raw.flowCount,
-    amountRonSum: raw.amountRonSum,
-    amountPresentCount: raw.amountPresentCount,
-    amountMissingCount: raw.amountMissingCount,
-    firstFlowDate: raw.firstFlowDate,
-    lastFlowDate: raw.lastFlowDate,
-    evidenceRefsSample: raw.evidenceRefsSample,
-  }
+function requiredCount(value: string | null, context: string): string {
+  if (value === null) throw new Error(`${context} is unexpectedly null`)
+  return value
 }
 
-export function mapCategoryRow(raw: RawProcurementCategoryRow): CategoryRow {
-  return {
-    cpvDivisionCode: raw.cpvDivisionCode,
-    cpvDivisionLabelEn: raw.cpvDivisionLabelEn,
-    cpvDivisionLabelRo: raw.cpvDivisionLabelRo,
-    sourceGrain: procurementSourceGrainSchema.parse(raw.sourceGrain),
-    flowCount: raw.flowCount,
-    amountRonSum: raw.amountRonSum,
-    amountPresentCount: raw.amountPresentCount,
-    amountMissingCount: raw.amountMissingCount,
-  }
+function addIntegerStrings(left: string | null, right: string | null) {
+  if (left === null || right === null) return null
+  return (BigInt(left) + BigInt(right)).toString()
 }
 
-export function mapMonthlyPoint(raw: RawProcurementMonthlyPoint): MonthlyPoint {
-  return {
-    month: raw.month,
-    flowCount: raw.flowCount,
-    amountRonSum: raw.amountRonSum,
-    amountPresentCount: raw.amountPresentCount,
-    amountMissingCount: raw.amountMissingCount,
-  }
+function subtractIntegerStrings(total: string, present: string): string {
+  const result = BigInt(total) - BigInt(present)
+  if (result < 0n) throw new Error('procurement withValueCount exceeds recordCount')
+  return result.toString()
 }
 
-/** The DA gate anchors flow aggregates (contracts are gate-blocked for spend). */
-export function gateForSourceGrain(
-  gates: readonly CapabilityGate[],
-  sourceGrain: CapabilityGate['sourceGrain'],
-): CapabilityGate {
-  const gate = gates.find((entry) => entry.sourceGrain === sourceGrain)
-  if (!gate) {
-    throw new Error(`procurementGrainQuality is missing the ${sourceGrain} gate`)
+/** Exact decimal addition without converting money to IEEE-754 numbers. */
+export function addDecimalStrings(
+  left: string | null,
+  right: string | null,
+): string | null {
+  if (left === null || right === null) return null
+  const split = (value: string) => {
+    const [integer = '0', fraction = ''] = value.split('.')
+    return { integer, fraction }
   }
-  return gate
+  const a = split(left)
+  const b = split(right)
+  const scale = Math.max(a.fraction.length, b.fraction.length)
+  const scaled = (value: ReturnType<typeof split>) =>
+    BigInt(`${value.integer}${value.fraction.padEnd(scale, '0')}`)
+  const sum = (scaled(a) + scaled(b)).toString().padStart(scale + 1, '0')
+  if (scale === 0) return sum
+  return `${sum.slice(0, -scale)}.${sum.slice(-scale)}`
 }
 
-/** Which capability gate annotates a UI search grain. */
-export function gateForUiGrain(
-  gates: readonly CapabilityGate[],
-  grain: ProcurementGrain,
-): CapabilityGate {
-  return gateForSourceGrain(
-    gates,
-    grain === 'direct_acquisitions' ? 'direct_acquisition' : 'procurement_contract',
+function blockForGrain<T extends { grain: string }>(
+  blocks: readonly T[],
+  grain: ProcurementGrainAnalytics['grain'],
+  label: string,
+): T {
+  const block = blocks.find((entry) => entry.grain === grain)
+  if (!block) throw new Error(`${label} is missing the ${grain} block`)
+  return block
+}
+
+function optionalBlockForGrain<T extends { grain: string }>(
+  blocks: readonly T[],
+  grain: ProcurementGrainAnalytics['grain'],
+): T | undefined {
+  return blocks.find((entry) => entry.grain === grain)
+}
+
+function mapStats(raw: RawProcurementAggregates['procurementStats']['blocks'][number]) {
+  return procurementStatsBlockSchema.parse({ ...raw, meta: mapAnswerMeta(raw.meta) })
+}
+
+function mapPartyBucket(
+  bucket: RawProcurementBreakdownBucket,
+  grain: ProcurementGrainAnalytics['grain'],
+  dimension: 'authority' | 'supplier',
+  partyNames?: ReadonlyMap<string, string>,
+): TopPartyRow {
+  const flowCount = requiredCount(bucket.recordCount, `${dimension}.recordCount`)
+  const amountPresentCount = requiredCount(
+    bucket.withValueCount,
+    `${dimension}.withValueCount`,
   )
+  const party = bucket.key
+    ? {
+        cui: bucket.key,
+        name: partyNames?.get(`${dimension}:${bucket.key}`) ?? null,
+        displayName: null,
+      }
+    : null
+  return topPartyRowSchema.parse({
+    authority: dimension === 'authority' ? party : null,
+    supplier: dimension === 'supplier' ? party : null,
+    grain,
+    bucketKind: bucket.kind,
+    flowCount,
+    amountRonSum: bucket.valueAwardedSum,
+    amountPresentCount,
+    amountMissingCount: subtractIntegerStrings(flowCount, amountPresentCount),
+    firstFlowDate: null,
+    lastFlowDate: null,
+    evidenceRefsSample: [],
+    shareOfScope: bucket.shareOfScope,
+  })
+}
+
+function mapCategoryBucket(
+  bucket: RawProcurementBreakdownBucket,
+  grain: ProcurementGrainAnalytics['grain'],
+  divisions: readonly RawProcurementCpvDivision[],
+): CategoryRow {
+  const flowCount = requiredCount(bucket.recordCount, 'category.recordCount')
+  const amountPresentCount = requiredCount(
+    bucket.withValueCount,
+    'category.withValueCount',
+  )
+  const division = bucket.key
+    ? divisions.find((entry) => entry.divisionCode === bucket.key)
+    : undefined
+  return categoryRowSchema.parse({
+    cpvDivisionCode: bucket.key,
+    cpvDivisionLabelEn: division?.labelEn ?? null,
+    cpvDivisionLabelRo: division?.labelRo ?? null,
+    grain,
+    bucketKind: bucket.kind,
+    flowCount,
+    amountRonSum: bucket.valueAwardedSum,
+    amountPresentCount,
+    amountMissingCount: subtractIntegerStrings(flowCount, amountPresentCount),
+    shareOfScope: bucket.shareOfScope,
+  })
+}
+
+function mapMonthly(
+  countBlock: RawProcurementAggregates['recordSeries'][number],
+  valueBlock: RawProcurementAggregates['valueSeries'][number],
+): MonthlyPoint[] {
+  const values = new Map(
+    (valueBlock.points ?? []).map((point) => [point.bucket, point.value]),
+  )
+  return (countBlock.points ?? []).map((point) => ({
+    month: point.bucket,
+    flowCount: requiredCount(point.value, 'record series point'),
+    amountRonSum: values.get(point.bucket) ?? null,
+    amountPresentCount: null,
+    amountMissingCount: null,
+  }))
+}
+
+function mapGrainAnalytics(
+  aggregates: RawProcurementAggregates,
+  divisions: readonly RawProcurementCpvDivision[],
+  grain: ProcurementGrainAnalytics['grain'],
+  partyNames?: ReadonlyMap<string, string>,
+): ProcurementGrainAnalytics {
+  const stats = mapStats(
+    blockForGrain(aggregates.procurementStats.blocks, grain, 'procurementStats'),
+  )
+  const authorities = optionalBlockForGrain(aggregates.authorities, grain)
+  const suppliers = optionalBlockForGrain(aggregates.suppliers, grain)
+  const categories = optionalBlockForGrain(aggregates.categories, grain)
+  const recordSeries = blockForGrain(
+    aggregates.recordSeries,
+    grain,
+    'recordSeries',
+  )
+  const valueSeries = blockForGrain(
+    aggregates.valueSeries,
+    grain,
+    'valueSeries',
+  )
+  return {
+    grain: procurementAnalysisGrainSchema.parse(grain),
+    stats,
+    topAuthorities: (authorities?.buckets ?? []).map((bucket) =>
+      mapPartyBucket(bucket, grain, 'authority', partyNames),
+    ),
+    topSuppliers: (suppliers?.buckets ?? []).map((bucket) =>
+      mapPartyBucket(bucket, grain, 'supplier', partyNames),
+    ),
+    topCategories: (categories?.buckets ?? []).map((bucket) =>
+      mapCategoryBucket(bucket, grain, divisions),
+    ),
+    monthly: mapMonthly(recordSeries, valueSeries),
+    meta: {
+      authorities: authorities ? mapAnswerMeta(authorities.meta) : null,
+      suppliers: suppliers ? mapAnswerMeta(suppliers.meta) : null,
+      categories: categories ? mapAnswerMeta(categories.meta) : null,
+      recordSeries: mapAnswerMeta(recordSeries.meta),
+      valueSeries: mapAnswerMeta(valueSeries.meta),
+    },
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -334,7 +420,6 @@ export function mapSearchPage(options: {
   total: number | null
   page: number
   pageSize: number
-  gate: CapabilityGate
 }): ProcurementSearchPage {
   return {
     grain: options.grain,
@@ -344,49 +429,49 @@ export function mapSearchPage(options: {
       pageSize: options.pageSize,
       total: options.total,
     },
-    gate: options.gate,
   }
-}
-
-/**
- * `totalValueRon` is only surfaced when the anchoring gate allows spend
- * rankings — a blocked grain's sum is never shown, even if the server sent
- * one by mistake.
- */
-function gatedTotal(
-  totalValueRon: string | null,
-  gate: CapabilityGate,
-): string | null {
-  return gate.spendRankingsAllowed ? totalValueRon : null
 }
 
 export function mapLanding(parts: {
   aggregates: RawProcurementAggregates
-  gates: readonly CapabilityGate[]
+  divisions: readonly RawProcurementCpvDivision[]
+  partyNames?: ReadonlyMap<string, string>
 }): ProcurementLanding {
-  const gate = gateForSourceGrain(parts.gates, 'direct_acquisition')
-  const stats = parts.aggregates.procurementStats
-  const contractsCount = toNullableCount(stats.contractsCount)
-  const directAcquisitionsCount = toNullableCount(
-    stats.directAcquisitionsCount,
+  const procedure = mapGrainAnalytics(
+    parts.aggregates,
+    parts.divisions,
+    'procedure',
+    parts.partyNames,
+  )
+  const contract = mapGrainAnalytics(
+    parts.aggregates,
+    parts.divisions,
+    'contract',
+    parts.partyNames,
+  )
+  const directAcquisition = mapGrainAnalytics(
+    parts.aggregates,
+    parts.divisions,
+    'direct_acquisition',
+    parts.partyNames,
   )
   return {
     headline: {
-      totalValueRon: gatedTotal(stats.totalValueRon, gate),
-      directAcquisitionsCount,
-      contractsCount,
-      buyersCount: toNullableCount(stats.buyersCount),
-      suppliersCount: toNullableCount(stats.suppliersCount),
-      recordsCount:
-        contractsCount !== null && directAcquisitionsCount !== null
-          ? contractsCount + directAcquisitionsCount
-          : null,
+      totalValueRon: addDecimalStrings(
+        contract.stats.valueAwardedSum,
+        directAcquisition.stats.valueAwardedSum,
+      ),
+      proceduresCount: procedure.stats.recordCount,
+      directAcquisitionsCount: directAcquisition.stats.recordCount,
+      contractsCount: contract.stats.recordCount,
+      buyersCount: null,
+      suppliersCount: null,
+      recordsCount: addIntegerStrings(
+        contract.stats.recordCount,
+        directAcquisition.stats.recordCount,
+      ),
     },
-    topAuthorities: parts.aggregates.procurementTopAuthorities.map(mapTopPartyRow),
-    topSuppliers: parts.aggregates.procurementTopSuppliers.map(mapTopPartyRow),
-    topCategories: parts.aggregates.procurementCategoryBreakdown.map(mapCategoryRow),
-    spendOverTime: parts.aggregates.procurementSpendOverTime.map(mapMonthlyPoint),
-    gate,
+    analysisByGrain: { procedure, contract, directAcquisition },
   }
 }
 
@@ -400,7 +485,7 @@ export function mapCpvCategoryPage(parts: {
   code: string
   divisions: readonly RawProcurementCpvDivision[]
   aggregates: RawProcurementAggregates
-  gates: readonly CapabilityGate[]
+  partyNames?: ReadonlyMap<string, string>
 }): CpvCategoryPage | null {
   const { code, divisions } = parts
   const level = code.length === 2 ? 'division' : 'code'
@@ -408,8 +493,24 @@ export function mapCpvCategoryPage(parts: {
   const division = divisions.find((d) => d.divisionCode === divisionCode)
   if (!division) return null
 
-  const gate = gateForSourceGrain(parts.gates, 'direct_acquisition')
-  const stats = parts.aggregates.procurementStats
+  const procedure = mapGrainAnalytics(
+    parts.aggregates,
+    divisions,
+    'procedure',
+    parts.partyNames,
+  )
+  const contract = mapGrainAnalytics(
+    parts.aggregates,
+    divisions,
+    'contract',
+    parts.partyNames,
+  )
+  const directAcquisition = mapGrainAnalytics(
+    parts.aggregates,
+    divisions,
+    'direct_acquisition',
+    parts.partyNames,
+  )
   const relatedCategories = divisions
     .filter(
       (d) =>
@@ -431,18 +532,18 @@ export function mapCpvCategoryPage(parts: {
     divisionCode,
     parentCode: level === 'code' ? divisionCode : null,
     summary: {
-      totalValueRon: gatedTotal(stats.totalValueRon, gate),
+      totalValueRon: addDecimalStrings(
+        contract.stats.valueAwardedSum,
+        directAcquisition.stats.valueAwardedSum,
+      ),
       recordCounts: {
-        contracts: toCount(stats.contractsCount),
-        directAcquisitions: toCount(stats.directAcquisitionsCount),
-        procedures: toCount(stats.proceduresCount),
+        contracts: contract.stats.recordCount,
+        directAcquisitions: directAcquisition.stats.recordCount,
+        procedures: procedure.stats.recordCount,
       },
     },
-    spendOverTime: parts.aggregates.procurementSpendOverTime.map(mapMonthlyPoint),
-    topAuthorities: parts.aggregates.procurementTopAuthorities.map(mapTopPartyRow),
-    topSuppliers: parts.aggregates.procurementTopSuppliers.map(mapTopPartyRow),
+    analysisByGrain: { procedure, contract, directAcquisition },
     relatedCategories,
-    gate,
   }
 }
 
@@ -460,36 +561,50 @@ export function mapSupplierRecords(
 export function mapSupplierSlice(parts: {
   supplierCui: string
   aggregates: RawProcurementAggregates
-  gates: readonly CapabilityGate[]
+  divisions: readonly RawProcurementCpvDivision[]
   recentRecords: SupplierRecordsPage
+  partyNames?: ReadonlyMap<string, string>
 }): SupplierProcurementSlice {
-  const gate = gateForSourceGrain(parts.gates, 'direct_acquisition')
-  const stats = parts.aggregates.procurementStats
-  const months = parts.aggregates.procurementSpendOverTime.map((p) => p.month)
-  const firstMonth = months.length > 0 ? `${months[0]}-01` : ''
-  const lastMonth = months.length > 0 ? `${months[months.length - 1]}-01` : ''
+  const contract = mapGrainAnalytics(
+    parts.aggregates,
+    parts.divisions,
+    'contract',
+    parts.partyNames,
+  )
+  const directAcquisition = mapGrainAnalytics(
+    parts.aggregates,
+    parts.divisions,
+    'direct_acquisition',
+    parts.partyNames,
+  )
+  const minMonths = [contract.stats.minMonth, directAcquisition.stats.minMonth]
+    .filter((value): value is string => value !== null)
+    .sort()
+  const maxMonths = [contract.stats.maxMonth, directAcquisition.stats.maxMonth]
+    .filter((value): value is string => value !== null)
+    .sort()
   return {
     supplierCui: parts.supplierCui,
     summary: {
       // Window falls back to the rollup month bounds when the stats dates are
       // absent (the schema requires strings; empty = nothing observed).
       window: {
-        from: stats.firstFlowDate ?? firstMonth,
-        to: stats.lastFlowDate ?? lastMonth,
+        from: minMonths[0] ?? null,
+        to: maxMonths[maxMonths.length - 1] ?? null,
       },
-      totalPublicRevenueRon: gatedTotal(stats.totalValueRon, gate),
-      buyersCount: toCount(stats.buyersCount),
-      contractsCount: toCount(stats.contractsCount),
-      directAcquisitionsCount: toCount(stats.directAcquisitionsCount),
-      firstSeen: stats.firstFlowDate,
-      lastSeen: stats.lastFlowDate,
+      totalPublicRevenueRon: addDecimalStrings(
+        contract.stats.valueAwardedSum,
+        directAcquisition.stats.valueAwardedSum,
+      ),
+      buyersCount: null,
+      contractsCount: contract.stats.recordCount,
+      directAcquisitionsCount: directAcquisition.stats.recordCount,
+      firstSeen: minMonths[0] ?? null,
+      lastSeen: maxMonths[maxMonths.length - 1] ?? null,
     },
-    topBuyers: parts.aggregates.procurementTopAuthorities.map(mapTopPartyRow),
-    categoryBreakdown: parts.aggregates.procurementCategoryBreakdown.map(mapCategoryRow),
-    revenueOverTime: parts.aggregates.procurementSpendOverTime.map(mapMonthlyPoint),
+    analysisByGrain: { contract, directAcquisition },
     recentRecords: parts.recentRecords.records,
     // No procurement-API backing for cross-domain presence — unknown, not false.
     crossDomain: null,
-    gate,
   }
 }

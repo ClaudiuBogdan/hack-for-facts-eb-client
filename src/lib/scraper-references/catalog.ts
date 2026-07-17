@@ -148,8 +148,8 @@ export const scraperDatasetCatalog: readonly ScraperDatasetReference[] = [
       'docs/design/procurement/features/supplier-procurement-slice.md',
       'docs/design/procurement/features/coverage-data-as-of-layer.md',
     ],
-    apiReady: false,
-    mockDataAvailable: true,
+    apiReady: true,
+    mockDataAvailable: false,
     privacySensitive: false,
   },
   {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   contractModificationSchema,
-  capabilityGateSchema,
+  procurementAnswerMetaSchema,
   procurementRecordSummarySchema,
   supplierRecordsPageSchema,
   topPartyRowSchema,
@@ -30,7 +30,9 @@ describe('procurement money/count string guards', () => {
       topPartyRowSchema.parse({
         authority: baseParty,
         supplier: null,
-        sourceGrain: 'direct_acquisition',
+        grain: 'direct_acquisition',
+        bucketKind: 'top',
+        shareOfScope: null,
         flowCount: 'twelve',
         amountRonSum: null,
         amountPresentCount: '0',
@@ -42,24 +44,23 @@ describe('procurement money/count string guards', () => {
     ).toThrow()
   })
 
-  it('rejects negative rate strings on the capability gate', () => {
-    expect(() =>
-      capabilityGateSchema.parse({
-        sourceGrain: 'procurement_contract',
-        rowsCount: '10',
-        authorityCuiCoverageRate: '-0.5',
-        supplierCuiCoverageRate: '0.9',
-        amountCoverageRate: '0.9',
-        cpvCoverageRate: '0.9',
-        dateCoverageRate: '0.9',
-        filterAnswersAllowed: false,
-        spendRankingsAllowed: false,
-        supplierRegionFiltersAllowed: false,
-        blockers: [],
-        dataAsOf: null,
-        cadence: null,
-      }),
-    ).toThrow()
+  it('accepts the server answerability contract without inventing coverage rates', () => {
+    const meta = procurementAnswerMetaSchema.parse({
+      answerability: 'abstained',
+      reason: 'SPEND_COVERAGE_BELOW_GATE',
+      policyKey: 'procurement.value',
+      grain: 'contract',
+      valueBasis: null,
+      dateBasis: 'contract_date',
+      population: 'canonical',
+      buildId: '2',
+      counts: { rows: '10', withValue: '4' },
+      undatedInScope: null,
+      provisional: false,
+      caveats: [],
+      canonicalScope: 'grain=contract',
+    })
+    expect(meta.answerability).toBe('abstained')
   })
 })
 

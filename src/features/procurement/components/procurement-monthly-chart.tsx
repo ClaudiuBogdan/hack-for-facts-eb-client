@@ -17,8 +17,6 @@ type Props = {
   readonly points: readonly MonthlyPoint[]
   readonly title?: string
   readonly description?: string
-  /** Whether the gate allows amounts to be surfaced next to the counts. */
-  readonly showAmounts?: boolean
   readonly className?: string
 }
 
@@ -33,14 +31,13 @@ function formatMonth(month: string): string {
 
 /**
  * Monthly volume as single-series CSS columns — count is the primary metric
- * (amounts follow in the tooltip/table where the gate allows). One mark hue,
+ * (available amounts follow in the tooltip/table). One mark hue,
  * columns grow from the baseline, per-mark tooltip, `<details>` table.
  */
 export function ProcurementMonthlyChart({
   points,
   title,
   description,
-  showAmounts = false,
   className,
 }: Props) {
   const maxCount = points.reduce(
@@ -51,6 +48,7 @@ export function ProcurementMonthlyChart({
     (sum, point) => sum + (Number(point.amountMissingCount) || 0),
     0,
   )
+  const showAmounts = points.some((point) => point.amountRonSum !== null)
 
   return (
     <section className={cn(procurementSectionClassName, className)}>

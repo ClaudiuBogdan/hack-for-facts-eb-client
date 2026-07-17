@@ -16,13 +16,30 @@ import {
 } from '../api/procurement-api'
 import type { CpvCategoryPage } from '@/schemas/procurement'
 import type { ProcurementSearchState } from '@/schemas/procurement-search'
+import type { ProcurementLandingFilters } from '@/schemas/procurement-overview'
+import {
+  fetchProcurementAnalysis,
+  type ProcurementAnalysisRequest,
+} from '../api/procurement-analysis-api'
 
 const PROCUREMENT_QUERY_KEY = ['procurement'] as const
 
-export function useProcurementLanding() {
+export function useProcurementLanding(filters: ProcurementLandingFilters = {}) {
   return useQuery({
-    queryKey: [...PROCUREMENT_QUERY_KEY, 'landing'],
-    queryFn: () => fetchProcurementLanding(),
+    queryKey: [
+      ...PROCUREMENT_QUERY_KEY,
+      'landing',
+      filters.dateFrom ?? null,
+      filters.dateTo ?? null,
+    ],
+    queryFn: () => fetchProcurementLanding(filters),
+  })
+}
+
+export function useProcurementAnalysis(request: ProcurementAnalysisRequest) {
+  return useQuery({
+    queryKey: [...PROCUREMENT_QUERY_KEY, 'analysis', request],
+    queryFn: () => fetchProcurementAnalysis(request),
   })
 }
 

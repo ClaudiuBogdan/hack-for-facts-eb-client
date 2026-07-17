@@ -4,10 +4,8 @@ import { t } from '@lingui/core/macro'
 import { Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { MockDataStatusBadge } from '@/components/shared/procurement-data/data-status-badge'
-import { procurementDataStatus } from '@/schemas/procurement'
+import type { ProcurementLandingFilters } from '@/schemas/procurement-overview'
 import { useProcurementLanding } from '../hooks/use-procurement-data'
-import { isProcurementMock } from '../api/procurement-api'
 import { formatFlowCount } from '../lib/formatting'
 import {
   procurementHeaderDescriptionClassName,
@@ -26,25 +24,20 @@ type Props = {
   readonly activeTab: ProcurementTab
   readonly children: ReactNode
   readonly actions?: ReactNode
-}
-
-function formatAsOf(iso: string): string {
-  return new Intl.DateTimeFormat('ro-RO', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    timeZone: 'UTC',
-  }).format(new Date(`${iso.slice(0, 10)}T00:00:00Z`))
+  readonly landingFilters?: ProcurementLandingFilters
 }
 
 /** Shared page frame for the procurement hub — parliament-shell rhythm. */
-export function ProcurementShell({ activeTab, children, actions }: Props) {
+export function ProcurementShell({
+  activeTab,
+  children,
+  actions,
+  landingFilters = {},
+}: Props) {
   const [infoOpen, setInfoOpen] = useState(false)
-  const { data } = useProcurementLanding()
+  const { data } = useProcurementLanding(landingFilters)
 
-  const gate = data?.gate
-  const mock = isProcurementMock()
-  const status = mock ? 'mock' : gate ? procurementDataStatus(gate) : 'unverified'
+  const buildId = data?.analysisByGrain.directAcquisition.stats.meta.buildId
 
   return (
     <div className="min-h-screen min-w-0 bg-background">
@@ -74,20 +67,9 @@ export function ProcurementShell({ activeTab, children, actions }: Props) {
                     limits disclosed for every figure.
                   </Trans>
                 </p>
-                {/* div, not p: the mock Badge renders a <div> and a <p>
-                    ancestor is invalid HTML (hydration error). */}
                 <div className={cn(procurementHeaderMetaClassName, 'mt-4')}>
-                  {gate?.dataAsOf ? (
-                    <Trans>Data as of {formatAsOf(gate.dataAsOf)}</Trans>
-                  ) : (
-                    <Trans>Data freshness unverified</Trans>
-                  )}
-                  {gate?.cadence ? ` · ${gate.cadence}` : null}
-                  {mock ? (
-                    <span className="ml-2 inline-flex align-middle">
-                      <MockDataStatusBadge />
-                    </span>
-                  ) : null}
+                  <Trans>Live procurement API</Trans>
+                  {buildId ? ` · build ${buildId}` : null}
                 </div>
               </div>
 
@@ -154,8 +136,6 @@ export function ProcurementShell({ activeTab, children, actions }: Props) {
       <ProcurementInfoSheet
         open={infoOpen}
         onOpenChange={setInfoOpen}
-        gate={gate}
-        status={status}
       />
     </div>
   )

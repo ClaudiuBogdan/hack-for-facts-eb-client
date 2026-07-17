@@ -92,6 +92,11 @@ export function formatFlowCount(count: string | number): string {
   return formatNumber(Number.isFinite(n) ? n : 0)
 }
 
+/** Format a server ratio (`0.5000`) as a locale-aware percentage (`50%`). */
+export function formatScopeShare(share: string): string {
+  return `${formatNumber(Number(share) * 100)}%`
+}
+
 /**
  * Build a money slice for an aggregate RON sum (`amountRonSum`). The sum is RON
  * or null (not summable); never suspect at the aggregate level.

@@ -3,14 +3,10 @@ import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import { ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { CoverageRibbonFromGate } from '@/components/shared/procurement-data/coverage-ribbon'
-import { MockDataStatusBadge } from '@/components/shared/procurement-data/data-status-badge'
 import {
-  procurementDataStatus,
   type CpvCategoryPage as CpvCategoryPageData,
 } from '@/schemas/procurement'
 import { useProcurementCpvCategory } from '../hooks/use-procurement-data'
-import { isProcurementMock } from '../api/procurement-api'
 import { formatFlowCount, formatRon } from '../lib/formatting'
 import {
   procurementChipClassName,
@@ -23,6 +19,11 @@ import { ProcurementPartyRanking } from './procurement-party-ranking'
 import { ProcurementMonthlyChart } from './procurement-monthly-chart'
 import { ProcurementErrorState } from './procurement-error-state'
 import { ProcurementDetailSkeleton } from './procurement-skeletons'
+import { ProcurementAnswerabilityNotice } from './procurement-answerability-notice'
+import {
+  ProcurementAnalysisGrainToggle,
+  type FlowAnalysisGrain,
+} from './procurement-analysis-grain-toggle'
 
 type Props = {
   readonly code: string
@@ -34,7 +35,12 @@ type Props = {
 export function CpvCategoryPage({ code, initialPage, className }: Props) {
   const query = useProcurementCpvCategory(code, initialPage)
   const page = query.data
-  const mock = isProcurementMock()
+  const [grain, setGrain] = useState<FlowAnalysisGrain>('direct_acquisition')
+  const analytics = page
+    ? grain === 'contract'
+      ? page.analysisByGrain.contract
+      : page.analysisByGrain.directAcquisition
+    : undefined
 
   return (
     <div
@@ -70,18 +76,12 @@ export function CpvCategoryPage({ code, initialPage, className }: Props) {
       ) : page ? (
         <>
           <header>
-            {/* div, not p: the mock Badge renders a <div> (hydration error). */}
             <div className={procurementSectionLabelClassName}>
               {page.level === 'division' ? (
                 <Trans>CPV division</Trans>
               ) : (
                 <Trans>CPV code</Trans>
               )}
-              {mock ? (
-                <span className="ml-2 inline-flex align-middle">
-                  <MockDataStatusBadge />
-                </span>
-              ) : null}
             </div>
             <h1 className="mt-2 text-3xl font-black tracking-tight text-[var(--pnrr-fg)] sm:text-4xl">
               {page.labelRo ?? page.labelEn}
@@ -100,15 +100,15 @@ export function CpvCategoryPage({ code, initialPage, className }: Props) {
           >
             <ProcurementStatTile
               label={t`Direct acquisitions`}
-              value={formatFlowCount(page.summary.recordCounts.directAcquisitions)}
+              value={page.summary.recordCounts.directAcquisitions === null ? '—' : formatFlowCount(page.summary.recordCounts.directAcquisitions)}
             />
             <ProcurementStatTile
               label={t`Contracts`}
-              value={formatFlowCount(page.summary.recordCounts.contracts)}
+              value={page.summary.recordCounts.contracts === null ? '—' : formatFlowCount(page.summary.recordCounts.contracts)}
             />
             <ProcurementStatTile
               label={t`Procedures`}
-              value={formatFlowCount(page.summary.recordCounts.procedures)}
+              value={page.summary.recordCounts.procedures === null ? '—' : formatFlowCount(page.summary.recordCounts.procedures)}
             />
             <ProcurementStatTile
               label={t`RON total (partial)`}
@@ -119,34 +119,33 @@ export function CpvCategoryPage({ code, initialPage, className }: Props) {
               }
               hint={
                 page.summary.totalValueRon === null
-                  ? t`below the coverage threshold`
+                  ? t`unavailable under the current answerability policy`
                   : undefined
               }
             />
           </section>
 
-          <CoverageRibbonFromGate
-            gate={page.gate}
-            status={mock ? 'mock' : procurementDataStatus(page.gate)}
-            collapsible
-          />
+          <div className="flex justify-end">
+            <ProcurementAnalysisGrainToggle value={grain} onChange={setGrain} />
+          </div>
+
+          {analytics ? <ProcurementAnswerabilityNotice meta={analytics.stats.meta} /> : null}
 
           <ProcurementMonthlyChart
-            points={page.spendOverTime}
-            showAmounts={page.gate.spendRankingsAllowed}
+            points={analytics?.monthly ?? []}
             title={t`Monthly volume in this category`}
           />
 
           <div className="grid gap-6 lg:grid-cols-2">
             <ProcurementPartyRanking
               title={t`Top public buyers`}
-              rows={page.topAuthorities}
+              rows={analytics?.topAuthorities ?? []}
               kind="authority"
               seeAllParam="authority_cui"
             />
             <ProcurementPartyRanking
               title={t`Top suppliers`}
-              rows={page.topSuppliers}
+              rows={analytics?.topSuppliers ?? []}
               kind="supplier"
               seeAllParam="supplier_cui"
             />
@@ -193,3 +192,4 @@ export function CpvCategoryPage({ code, initialPage, className }: Props) {
     </div>
   )
 }
+import { useState } from 'react'

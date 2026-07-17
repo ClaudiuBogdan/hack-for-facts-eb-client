@@ -64,10 +64,14 @@ export function ProcurementCategoryBars({
               const width = maxCount > 0 ? Math.max((count / maxCount) * 100, 2) : 0
               const share =
                 totalCount > 0 ? Math.round((count / totalCount) * 100) : 0
-              const label =
-                row.cpvDivisionLabelRo ??
-                row.cpvDivisionLabelEn ??
-                t`Uncategorized`
+              const label = row.bucketKind === 'other'
+                ? t`Other CPV divisions`
+                : row.bucketKind === 'unknown'
+                  ? t`Unknown CPV division`
+                  : row.cpvDivisionLabelRo ??
+                    row.cpvDivisionLabelEn ??
+                    row.cpvDivisionCode ??
+                    t`Unknown CPV division`
               const code = row.cpvDivisionCode
 
               return (
@@ -133,9 +137,14 @@ export function ProcurementCategoryBars({
                   >
                     <td className="py-1 pr-2">
                       {row.cpvDivisionCode ? `${row.cpvDivisionCode} · ` : ''}
-                      {row.cpvDivisionLabelRo ??
-                        row.cpvDivisionLabelEn ??
-                        t`Uncategorized`}
+                      {row.bucketKind === 'other'
+                        ? t`Other CPV divisions`
+                        : row.bucketKind === 'unknown'
+                          ? t`Unknown CPV division`
+                          : row.cpvDivisionLabelRo ??
+                            row.cpvDivisionLabelEn ??
+                            row.cpvDivisionCode ??
+                            t`Unknown CPV division`}
                     </td>
                     <td className="py-1 pr-2 text-right tabular-nums">
                       {formatFlowCount(row.flowCount)}

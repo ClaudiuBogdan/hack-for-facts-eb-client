@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils'
 import { formatNumber } from '@/lib/utils'
 import { DataStatusBadge } from './data-status-badge'
 import { FreshnessBadge } from './freshness-badge'
-import type { CapabilityGate, DataStatus } from '@/schemas/procurement'
+import type { DataStatus } from '@/schemas/procurement'
 
 /** Coverage metrics the gate reports per grain (local display vocabulary). */
 type CoverageMetric =
@@ -41,14 +41,6 @@ type Props = {
   readonly blocked?: readonly string[]
   readonly collapsible?: boolean
   readonly className?: string
-}
-
-const COVERAGE_THRESHOLDS: Record<CoverageMetric, number> = {
-  authority_cui: 0.95,
-  supplier_cui: 0.95,
-  amount: 0.95,
-  cpv: 0.85,
-  flow_date: 0.85,
 }
 
 const METRIC_LABEL: Record<CoverageMetric, string> = {
@@ -217,56 +209,5 @@ function CoverageDetails({
         </>
       ) : null}
     </div>
-  )
-}
-
-function gateCoverage(gate: CapabilityGate): CoverageEntry[] {
-  const entries: ReadonlyArray<readonly [CoverageMetric, string]> = [
-    ['authority_cui', gate.authorityCuiCoverageRate],
-    ['supplier_cui', gate.supplierCuiCoverageRate],
-    ['amount', gate.amountCoverageRate],
-    ['cpv', gate.cpvCoverageRate],
-    ['flow_date', gate.dateCoverageRate],
-  ]
-  return entries.map(([metric, rateStr]) => {
-    const rate = Number(rateStr)
-    const threshold = COVERAGE_THRESHOLDS[metric]
-    return { metric, rate, threshold, meetsThreshold: rate >= threshold }
-  })
-}
-
-function gateBlockedLabels(gate: CapabilityGate): string[] {
-  const labels: string[] = []
-  if (!gate.supplierRegionFiltersAllowed) {
-    labels.push(t`Filtru regiune furnizor`)
-  }
-  labels.push(t`Filtru generat LLM`)
-  return labels
-}
-
-/**
- * Convenience: build a `CoverageRibbon` from a `CapabilityGate` payload.
- */
-export function CoverageRibbonFromGate({
-  gate,
-  status,
-  className,
-  collapsible,
-}: {
-  readonly gate: CapabilityGate
-  readonly status: DataStatus
-  readonly className?: string
-  readonly collapsible?: boolean
-}) {
-  return (
-    <CoverageRibbon
-      status={status}
-      coverage={gateCoverage(gate)}
-      dataAsOf={gate.dataAsOf}
-      cadence={gate.cadence}
-      blocked={gateBlockedLabels(gate)}
-      className={className}
-      collapsible={collapsible}
-    />
   )
 }

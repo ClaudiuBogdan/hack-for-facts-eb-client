@@ -4,14 +4,11 @@ import { t } from '@lingui/core/macro'
 import { Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { CoverageRibbonFromGate } from '@/components/shared/procurement-data/coverage-ribbon'
 import { RequestDatasetAction } from '@/components/shared/procurement-data/request-dataset-action'
 import { ShareFilteredView } from '@/components/shared/procurement-data/share-filtered-view'
-import { procurementDataStatus } from '@/schemas/procurement'
 import type { ProcurementSearchState } from '@/schemas/procurement-search'
 import { useProcurementSearch } from '../hooks/use-procurement-data'
 import { useProcurementFilterState } from '../hooks/use-procurement-filter-state'
-import { isProcurementMock } from '../api/procurement-api'
 import {
   buildProcurementSearchCsv,
   buildProcurementSearchFilename,
@@ -23,7 +20,7 @@ import {
   procurementOutlineButtonClassName,
   procurementSectionClassName,
 } from '../lib/procurement-theme'
-import { PROCUREMENT_DATASET_ID } from '../lib/mock-mode'
+import { PROCUREMENT_DATASET_ID } from '../lib/dataset'
 import { ProcurementDebouncedSearchInput } from './procurement-debounced-search-input'
 import {
   ProcurementActiveFilters,
@@ -48,20 +45,12 @@ export function ProcurementSearchContent({ search }: Props) {
   const [sheetOpen, setSheetOpen] = useState(false)
 
   const page = query.data
-  const gate = page?.gate
-  const status = isProcurementMock()
-    ? 'mock'
-    : gate
-      ? procurementDataStatus(gate)
-      : 'unverified'
-  const valueSortAllowed = gate?.spendRankingsAllowed ?? false
-
   const onExport = () => {
     if (!page) return
     const csv = buildProcurementSearchCsv(page.records, search)
     downloadProcurementCsv(
       csv,
-      buildProcurementSearchFilename(search.grain, gate?.dataAsOf ?? null),
+      buildProcurementSearchFilename(search.grain, null),
     )
   }
 
@@ -91,7 +80,6 @@ export function ProcurementSearchContent({ search }: Props) {
           <ProcurementSortSelect
             sort={search.sort}
             onSortChange={filters.setSort}
-            valueSortAllowed={valueSortAllowed}
           />
         </div>
         <div className="flex items-center gap-2">
@@ -112,10 +100,6 @@ export function ProcurementSearchContent({ search }: Props) {
       </div>
 
       <ProcurementActiveFilters filters={filters} />
-
-      {gate ? (
-        <CoverageRibbonFromGate gate={gate} status={status} collapsible />
-      ) : null}
 
       <p aria-live="polite" className="text-sm text-[var(--pnrr-muted)]">
         {page ? (

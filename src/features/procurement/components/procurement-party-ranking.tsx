@@ -3,7 +3,7 @@ import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import { cn } from '@/lib/utils'
 import type { TopPartyRow } from '@/schemas/procurement'
-import { formatFlowCount, formatRon } from '../lib/formatting'
+import { formatFlowCount, formatRon, formatScopeShare } from '../lib/formatting'
 import { partyLabel, partyProfileLink, type PartyKind } from '../lib/party-links'
 import {
   procurementMarkClassName,
@@ -14,6 +14,16 @@ import {
   procurementSectionTitleClassName,
   procurementUnderlineLinkClassName,
 } from '../lib/procurement-theme'
+
+function rankingLabel(row: TopPartyRow, kind: PartyKind): string {
+  if (row.bucketKind === 'other') {
+    return kind === 'authority' ? t`Other authorities` : t`Other suppliers`
+  }
+  if (row.bucketKind === 'unknown') {
+    return kind === 'authority' ? t`Unknown authority` : t`Unknown supplier`
+  }
+  return partyLabel(kind === 'authority' ? row.authority : row.supplier)
+}
 
 type Props = {
   readonly title: string
@@ -64,7 +74,9 @@ export function ProcurementPartyRanking({
               const count = Number(row.flowCount) || 0
               const width = maxCount > 0 ? Math.max((count / maxCount) * 100, 2) : 0
               const profile = partyProfileLink(party, kind)
-              const label = partyLabel(party)
+              const label = rankingLabel(row, kind)
+              const cui = party?.cui?.trim() || null
+              const showCui = cui !== null && label !== cui
               const amount =
                 row.amountRonSum !== null
                   ? formatRon(row.amountRonSum, 'compact')
@@ -72,22 +84,36 @@ export function ProcurementPartyRanking({
 
               return (
                 <li key={party?.cui ?? `${label}-${index}`} className="min-w-0">
-                  <div className="flex items-baseline justify-between gap-3">
+                  <div className="flex items-start justify-between gap-3">
                     {profile ? (
                       <Link
                         to={profile.to}
                         params={profile.params}
-                        className="min-w-0 truncate text-sm font-semibold text-[var(--pnrr-fg)] underline-offset-2 hover:underline"
+                        className="min-w-0 text-[var(--pnrr-fg)] underline-offset-2 hover:underline"
                       >
-                        {label}
+                        <span className="block truncate text-sm font-semibold">
+                          {label}
+                        </span>
+                        {showCui ? (
+                          <span className="mt-0.5 block truncate text-xs font-normal text-[var(--pnrr-muted)]">
+                            <Trans>CUI: {cui}</Trans>
+                          </span>
+                        ) : null}
                       </Link>
                     ) : (
-                      <span className="min-w-0 truncate text-sm font-semibold text-[var(--pnrr-fg)]">
-                        {label}
+                      <span className="min-w-0 text-[var(--pnrr-fg)]">
+                        <span className="block truncate text-sm font-semibold">
+                          {label}
+                        </span>
+                        {showCui ? (
+                          <span className="mt-0.5 block truncate text-xs font-normal text-[var(--pnrr-muted)]">
+                            <Trans>CUI: {cui}</Trans>
+                          </span>
+                        ) : null}
                       </span>
                     )}
                     <span className="shrink-0 text-sm font-bold tabular-nums text-[var(--pnrr-fg)]">
-                      {formatFlowCount(row.flowCount)}
+                      <Trans>{formatFlowCount(row.flowCount)} records</Trans>
                     </span>
                   </div>
                   <div
@@ -112,6 +138,13 @@ export function ProcurementPartyRanking({
                           </Trans>
                         </>
                       ) : null}
+                    </p>
+                  ) : null}
+                  {row.shareOfScope !== null ? (
+                    <p className="mt-1 text-xs text-[var(--pnrr-muted)]">
+                      <Trans>
+                        Share of scope: {formatScopeShare(row.shareOfScope)}
+                      </Trans>
                     </p>
                   ) : null}
                 </li>
@@ -142,7 +175,14 @@ export function ProcurementPartyRanking({
                   const party = kind === 'authority' ? row.authority : row.supplier
                   return (
                     <tr key={party?.cui ?? index} className="border-b border-[var(--pnrr-border)]/30">
-                      <td className="py-1 pr-2">{partyLabel(party)}</td>
+                      <td className="py-1 pr-2">
+                        <span className="block">{rankingLabel(row, kind)}</span>
+                        {party?.cui && rankingLabel(row, kind) !== party.cui ? (
+                          <span className="block text-xs text-[var(--pnrr-muted)]">
+                            <Trans>CUI: {party.cui}</Trans>
+                          </span>
+                        ) : null}
+                      </td>
                       <td className="py-1 pr-2 text-right tabular-nums">
                         {formatFlowCount(row.flowCount)}
                       </td>

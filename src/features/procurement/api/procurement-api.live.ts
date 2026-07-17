@@ -3,18 +3,14 @@
  * module: every request goes through the shared `graphqlQuery` transport, raw
  * responses are Zod-parsed, then mapped onto the UI's procurement types.
  *
- * Contract: docs/design/procurement/graphql-api-spec.md. The server module is
- * not deployed yet — this adapter is exercised by unit tests (mocked
- * transport) and by `VITE_PROCUREMENT_FORCE_LIVE=true` against a server
- * branch; production stays mock-forced until `PROCUREMENT_LIVE_API_READY`
- * flips in `../lib/mock-mode`.
+ * Contract: the running redesign endpoint at `/api/v1/graphql`. Procurement is
+ * live-only: failures surface to the caller and are never replaced by fixtures.
  *
  * Fields with no live backing are served as clearly-empty values by the
  * mappers (`crossDomain: null`, `perLotWinners`/`ted` only when the server
  * sends them) — documented gaps, never fabrication.
  */
 import type {
-  CapabilityGate,
   ContractRecord,
   CpvCategoryPage,
   DirectAcquisitionRecord,
@@ -28,6 +24,10 @@ import type {
 } from '@/schemas/procurement'
 import { procurementSourceSystemSchema } from '@/schemas/procurement'
 import type { ProcurementSearchState } from '@/schemas/procurement-search'
+import {
+  buildProcurementOverviewMonthScope,
+  type ProcurementLandingFilters,
+} from '@/schemas/procurement-overview'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import {
   PROCUREMENT_AGGREGATES_QUERY,
@@ -36,8 +36,8 @@ import {
   PROCUREMENT_CPV_DIVISIONS_QUERY,
   PROCUREMENT_DA_DETAIL_QUERY,
   PROCUREMENT_DIRECT_ACQUISITIONS_QUERY,
-  PROCUREMENT_GRAIN_QUALITY_QUERY,
   PROCUREMENT_MODIFICATIONS_QUERY,
+  PROCUREMENT_PARTY_NAMES_QUERY,
   PROCUREMENT_PROCEDURE_DETAIL_QUERY,
   PROCUREMENT_PROCEDURES_QUERY,
   PROCUREMENT_SUPPLIER_RECORDS_QUERY,
@@ -47,20 +47,18 @@ import {
   procurementCpvDivisionsResponseSchema,
   procurementDaDetailResponseSchema,
   procurementDirectAcquisitionsResponseSchema,
-  procurementGrainQualityResponseSchema,
   procurementModificationsResponseSchema,
+  procurementPartyNamesResponseSchema,
   procurementProcedureDetailResponseSchema,
   procurementProceduresResponseSchema,
   procurementSupplierRecordsResponseSchema,
   type RawProcurementCpvDivision,
+  type RawProcurementAggregates,
 } from './graphql/procurement-queries'
 import {
-  gateForUiGrain,
-  gateForSourceGrain,
   mapContract,
   mapCpvCategoryPage,
   mapDirectAcquisition,
-  mapGate,
   mapLanding,
   mapModification,
   mapModificationTrailEntry,
@@ -84,30 +82,10 @@ const TOP_N = 10
 /** Supplier "load more" connection page size. */
 const SUPPLIER_RECORDS_PAGE_SIZE = 20
 
-// ── shared meta (module-level caches: gates + CPV taxonomy are stable) ──────
+// ── shared CPV taxonomy cache ───────────────────────────────────────────────
 
-let gatesCache: Promise<CapabilityGate[]> | null = null
 let cpvDivisionsCache: Promise<RawProcurementCpvDivision[]> | null = null
-
-async function loadGates(): Promise<CapabilityGate[]> {
-  if (!gatesCache) {
-    gatesCache = graphqlQuery<unknown>(
-      PROCUREMENT_GRAIN_QUALITY_QUERY,
-      {},
-      { operationName: 'ProcurementGrainQuality' },
-    )
-      .then((data) =>
-        procurementGrainQualityResponseSchema
-          .parse(data)
-          .procurementGrainQuality.map(mapGate),
-      )
-      .catch((error: unknown) => {
-        gatesCache = null
-        throw error
-      })
-  }
-  return gatesCache
-}
+const partyNameCache = new Map<string, string | null>()
 
 async function loadCpvDivisions(): Promise<RawProcurementCpvDivision[]> {
   if (!cpvDivisionsCache) {
@@ -129,23 +107,102 @@ async function loadCpvDivisions(): Promise<RawProcurementCpvDivision[]> {
   return cpvDivisionsCache
 }
 
-async function loadAggregates(scope: ProcurementScopeFilterInput) {
+async function loadAggregates(
+  scope: ProcurementScopeFilterInput,
+  options: {
+    readonly includeSuppliers?: boolean
+    readonly includeCategories?: boolean
+  } = {},
+) {
   const data = await graphqlQuery<unknown>(
     PROCUREMENT_AGGREGATES_QUERY,
-    { scope, grain: null, topN: TOP_N },
+    {
+      scope,
+      topN: TOP_N,
+      includeSuppliers: options.includeSuppliers ?? true,
+      includeCategories: options.includeCategories ?? true,
+    },
     { operationName: 'ProcurementAggregates' },
   )
   return procurementAggregatesResponseSchema.parse(data)
 }
 
+type PartyDimension = 'authority' | 'supplier'
+
+/**
+ * Breakdown buckets intentionally carry stable dimension keys only. Resolve
+ * those keys through procurement's own bounded resolver in one GraphQL
+ * operation. This keeps the procurement page independent of the unrelated
+ * reference/company profile databases and avoids an N+1 request pattern.
+ */
+async function loadPartyNames(
+  aggregates: RawProcurementAggregates,
+): Promise<ReadonlyMap<string, string>> {
+  const requested = new Map<string, { readonly dimension: PartyDimension; readonly cui: string }>()
+
+  for (const [dimension, blocks] of [
+    ['authority', aggregates.authorities],
+    ['supplier', aggregates.suppliers],
+  ] as const) {
+    for (const block of blocks) {
+      for (const bucket of block.buckets ?? []) {
+        if (bucket.key === null) continue
+        const cacheKey = `${dimension}:${bucket.key}`
+        if (!partyNameCache.has(cacheKey)) {
+          requested.set(cacheKey, { dimension, cui: bucket.key })
+        }
+      }
+    }
+  }
+
+  if (requested.size > 0) {
+    const authorityCuis = [...requested.values()]
+      .filter((request) => request.dimension === 'authority')
+      .map((request) => request.cui)
+    const supplierCuis = [...requested.values()]
+      .filter((request) => request.dimension === 'supplier')
+      .map((request) => request.cui)
+    const raw = await graphqlQuery<unknown>(
+      PROCUREMENT_PARTY_NAMES_QUERY,
+      {
+        authorityCuis,
+        supplierCuis,
+        includeAuthorities: authorityCuis.length > 0,
+        includeSuppliers: supplierCuis.length > 0,
+      },
+      {
+      operationName: 'ProcurementPartyNames',
+      },
+    )
+    const parsed = procurementPartyNamesResponseSchema.parse(raw)
+    for (const cacheKey of requested.keys()) partyNameCache.set(cacheKey, null)
+    for (const edge of parsed.authorities?.edges ?? []) {
+      partyNameCache.set(`authority:${edge.node.cui}`, edge.node.name)
+    }
+    for (const edge of parsed.suppliers?.edges ?? []) {
+      partyNameCache.set(`supplier:${edge.node.cui}`, edge.node.name)
+    }
+  }
+
+  return new Map(
+    [...partyNameCache].filter(
+      (entry): entry is [string, string] => entry[1] !== null,
+    ),
+  )
+}
+
 // ── landing ─────────────────────────────────────────────────────────────────
 
-export async function fetchProcurementLandingLive(): Promise<ProcurementLanding> {
-  const [aggregates, gates] = await Promise.all([
-    loadAggregates(buildScopeFilter({})),
-    loadGates(),
+export async function fetchProcurementLandingLive(
+  filters: ProcurementLandingFilters = {},
+): Promise<ProcurementLanding> {
+  const scope = buildScopeFilter(buildProcurementOverviewMonthScope(filters))
+  const [aggregates, divisions] = await Promise.all([
+    loadAggregates(scope),
+    loadCpvDivisions(),
   ])
-  return mapLanding({ aggregates, gates })
+  const partyNames = await loadPartyNames(aggregates)
+  return mapLanding({ aggregates, divisions, partyNames })
 }
 
 // ── search ──────────────────────────────────────────────────────────────────
@@ -209,17 +266,13 @@ async function fetchSearchRecords(
 export async function fetchProcurementSearchLive(
   params: ProcurementSearchState,
 ): Promise<ProcurementSearchPage> {
-  const [{ records, total }, gates] = await Promise.all([
-    fetchSearchRecords(params),
-    loadGates(),
-  ])
+  const { records, total } = await fetchSearchRecords(params)
   return mapSearchPage({
     grain: params.grain,
     records,
     total,
     page: params.page,
     pageSize: params.pageSize,
-    gate: gateForUiGrain(gates, params.grain),
   })
 }
 
@@ -255,7 +308,6 @@ export async function fetchProcedureDetailLive(
       perLotWinners: detail.perLotWinners,
       ted: detail.ted,
     },
-    gate: mapGate(detail.gate),
   }
 }
 
@@ -282,7 +334,6 @@ export async function fetchContractDetailLive(
       perLotWinners: null,
       ted: detail.ted,
     },
-    gate: mapGate(detail.gate),
   }
 }
 
@@ -307,7 +358,6 @@ export async function fetchDirectAcquisitionDetailLive(
       perLotWinners: null,
       ted: null,
     },
-    gate: mapGate(detail.gate),
   }
 }
 
@@ -319,12 +369,12 @@ export async function fetchCpvCategoryPageLive(
   const scope = buildScopeFilter(
     code.length === 2 ? { cpvDivision: code } : { cpvCode: code },
   )
-  const [aggregates, divisions, gates] = await Promise.all([
-    loadAggregates(scope),
+  const [aggregates, divisions] = await Promise.all([
+    loadAggregates(scope, { includeCategories: false }),
     loadCpvDivisions(),
-    loadGates(),
   ])
-  return mapCpvCategoryPage({ code, divisions, aggregates, gates })
+  const partyNames = await loadPartyNames(aggregates)
+  return mapCpvCategoryPage({ code, divisions, aggregates, partyNames })
 }
 
 // ── supplier slice + records ────────────────────────────────────────────────
@@ -351,16 +401,20 @@ export async function fetchSupplierRecordsLive(
 export async function fetchSupplierProcurementSliceLive(
   cui: string,
 ): Promise<SupplierProcurementSlice> {
-  const [aggregates, gates, recentRecords] = await Promise.all([
-    loadAggregates(buildScopeFilter({ supplierCui: cui })),
-    loadGates(),
+  const [aggregates, divisions, recentRecords] = await Promise.all([
+    loadAggregates(buildScopeFilter({ supplierCui: cui }), {
+      includeSuppliers: false,
+    }),
+    loadCpvDivisions(),
     fetchSupplierRecordsLive(cui),
   ])
+  const partyNames = await loadPartyNames(aggregates)
   return mapSupplierSlice({
     supplierCui: cui,
     aggregates,
-    gates,
+    divisions,
     recentRecords,
+    partyNames,
   })
 }
 
@@ -368,9 +422,6 @@ export async function fetchSupplierProcurementSliceLive(
 
 /** Reset the module-level caches (unit tests only). */
 export function resetProcurementLiveCachesForTests(): void {
-  gatesCache = null
   cpvDivisionsCache = null
+  partyNameCache.clear()
 }
-
-// Re-exported so gate selection stays in one place for facade consumers.
-export { gateForSourceGrain }

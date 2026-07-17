@@ -147,6 +147,12 @@ describe('buildScopeFilter', () => {
       { supplierCui: '123' },
     )
   })
+
+  it('passes calendar-month bounds to the analysis scope', () => {
+    expect(
+      buildScopeFilter({ monthFrom: '2024-05', monthTo: '2024-06' }),
+    ).toEqual({ from: '2024-05', to: '2024-06' })
+  })
 })
 
 describe('free-text q is bounded before it reaches the wire', () => {
