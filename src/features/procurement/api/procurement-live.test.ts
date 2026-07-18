@@ -21,9 +21,15 @@ const contract = {
   id: 'c1', contractNo: '1', contractDate: '2025-01-01', procedureId: null,
   noticeNo: null, title: 'Live contract', authority: party, supplier: party,
   cpvCode: null, cpvDivisionCode: null, valueRon: '10.00', estimatedValueRon: null,
-  currency: 'RON', isRon: true, valueSuspect: false, status: 'awarded',
+  currency: 'RON', status: 'awarded',
+  value: {
+    valueState: 'official_exact', valueStateRule: 'own_value', valueAccepted: true,
+    valueRonComparable: '10.00', valueComparableBasis: 'official',
+    valueRulesVersion: 2, valueResolvedAt: null,
+  },
   sourceSystem: 'seap_contracts', sourceUrl: null, isCanonical: true,
-  dupGroupId: null, modifications: [],
+  dupGroupId: null, canonicalValueSource: 'seap_own', valueDisagreement: false,
+  modifications: [],
 }
 
 const grains = ['procedure', 'contract', 'direct_acquisition'] as const
@@ -155,5 +161,61 @@ describe('live procurement adapter', () => {
     expect(graphqlQueryMock.mock.calls[2]?.[0]).toContain('suppliers: companies')
     expect(graphqlQueryMock.mock.calls[2]?.[0]).not.toContain('entity(cui:')
     expect(graphqlQueryMock.mock.calls[2]?.[0]).not.toContain('company(cui:')
+  })
+
+  it('scopes landing analytics by buyer region without unsupported rankings', async () => {
+    graphqlQueryMock
+      .mockResolvedValueOnce({
+        ...aggregateResponse(),
+        authorities: undefined,
+        suppliers: undefined,
+      })
+      .mockResolvedValueOnce({ procurementCpvDivisions: [] })
+
+    const landing = await fetchProcurementLandingLive({
+      buyerRegion: 'Nord-Vest',
+    })
+
+    expect(landing.analysisByGrain.contract.topAuthorities).toEqual([])
+    expect(landing.analysisByGrain.contract.topSuppliers).toEqual([])
+    expect(graphqlQueryMock).toHaveBeenCalledTimes(2)
+    expect(graphqlQueryMock.mock.calls[0]?.[1]).toMatchObject({
+      scope: { buyerRegion: 'Nord-Vest' },
+      includeAuthorities: false,
+      includeSuppliers: false,
+      includeCategories: true,
+    })
+  })
+
+  it('labels a county as a regional approximation before querying analytics', async () => {
+    graphqlQueryMock
+      .mockResolvedValueOnce({
+        referenceRegions: [
+          { region: 'Nord-Vest', countyCount: 6, uatCount: 452 },
+        ],
+        referenceCounties: [
+          {
+            countyCode: 'CJ',
+            countyName: 'CLUJ',
+            region: 'Nord-Vest',
+            uatCount: 82,
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
+        ...aggregateResponse(),
+        authorities: undefined,
+        suppliers: undefined,
+      })
+      .mockResolvedValueOnce({ procurementCpvDivisions: [] })
+
+    await fetchProcurementLandingLive({ buyerCounty: 'CJ' })
+
+    expect(graphqlQueryMock.mock.calls[0]?.[0]).toContain(
+      'query ProcurementGeographyOptions',
+    )
+    expect(graphqlQueryMock.mock.calls[1]?.[1]).toMatchObject({
+      scope: { buyerRegion: 'Nord-Vest' },
+    })
   })
 })

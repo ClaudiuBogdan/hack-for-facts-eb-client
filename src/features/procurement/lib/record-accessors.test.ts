@@ -4,6 +4,7 @@ import type {
   ContractRecordSummary,
   DirectAcquisitionRecord,
   ProcedureRecord,
+  ValueResolution,
 } from '@/schemas/procurement'
 import {
   recordDate,
@@ -16,6 +17,26 @@ import {
 } from './record-accessors'
 
 const party = { cui: '1', name: 'X', displayName: 'X' }
+
+const resolution = (over: Partial<ValueResolution> = {}): ValueResolution => ({
+  valueState: 'source_missing',
+  valueStateRule: null,
+  valueAccepted: false,
+  valueRonComparable: null,
+  valueComparableBasis: null,
+  valueRulesVersion: 2,
+  valueResolvedAt: null,
+  ...over,
+})
+
+const accepted = (ron: string): ValueResolution =>
+  resolution({
+    valueState: 'official_exact',
+    valueStateRule: 'own_value',
+    valueAccepted: true,
+    valueRonComparable: ron,
+    valueComparableBasis: 'official',
+  })
 
 const procedure: ProcedureRecord = {
   id: 'p1',
@@ -31,8 +52,7 @@ const procedure: ProcedureRecord = {
   estimatedValueRon: '50.00',
   awardedValueRon: '40.00',
   currency: null,
-  isRon: true,
-  valueSuspect: false,
+  value: accepted('40.00'),
   status: 'awarded',
   countyName: null,
   publicationDate: null,
@@ -58,13 +78,14 @@ const contract: ContractRecordSummary = {
   valueRon: '10.00',
   estimatedValueRon: null,
   currency: null,
-  isRon: true,
-  valueSuspect: false,
+  value: accepted('10.00'),
   status: 'awarded',
   sourceSystem: 'seap_contracts',
   sourceUrl: null,
   isCanonical: true,
   dupGroupId: null,
+  canonicalValueSource: 'seap_own',
+  valueDisagreement: false,
   modifications: [],
 }
 
@@ -80,8 +101,7 @@ const da: DirectAcquisitionRecord = {
   valueRon: null,
   estimatedValueRon: null,
   currency: 'EUR',
-  isRon: false,
-  valueSuspect: true,
+  value: resolution({ valueState: 'foreign_currency_only' }),
   status: 'unknown',
   stateId: null,
   countyName: null,

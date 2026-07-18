@@ -292,8 +292,7 @@ export function ProcurementModificationTrail({
                     value={{
                       valueRon: modification.valueBeforeRon,
                       currency: null,
-                      isRon: true,
-                      valueSuspect: false,
+                      value: null,
                     }}
                     notation="compact"
                   />
@@ -304,8 +303,7 @@ export function ProcurementModificationTrail({
                     value={{
                       valueRon: modification.valueAfterRon,
                       currency: null,
-                      isRon: true,
-                      valueSuspect: false,
+                      value: null,
                     }}
                     notation="compact"
                   />
@@ -324,8 +322,7 @@ export function ProcurementModificationTrail({
                       value={{
                         valueRon: delta,
                         currency: null,
-                        isRon: true,
-                        valueSuspect: false,
+                        value: null,
                       }}
                       notation="compact"
                       className="text-inherit"
@@ -372,8 +369,6 @@ export function ProcurementRelatedRecords({
     readonly winner: Party
     readonly valueRon: string | null
     readonly currency: string | null
-    readonly isRon: boolean
-    readonly valueSuspect: boolean
   }> | null
   readonly ted: { readonly tedNoticeNo: string; readonly sourceUrl: string } | null
 }) {
@@ -434,8 +429,7 @@ export function ProcurementRelatedRecords({
                   value={{
                     valueRon: lot.valueRon,
                     currency: lot.currency,
-                    isRon: lot.isRon,
-                    valueSuspect: lot.valueSuspect,
+                    value: null,
                   }}
                   notation="compact"
                   className="text-sm font-semibold tabular-nums"

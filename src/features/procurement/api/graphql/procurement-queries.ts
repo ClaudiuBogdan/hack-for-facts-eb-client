@@ -24,15 +24,30 @@ export type RawProcurementParty = z.infer<typeof rawPartySchema>
 /** GraphQL selection for a party block (reused across queries). */
 const PARTY_FIELDS = /* GraphQL */ `cui name displayName`
 
+/** GraphQL selection for the data-layer value resolution block. */
+const VALUE_RESOLUTION = /* GraphQL */ `value {
+  valueState valueStateRule valueAccepted valueRonComparable
+  valueComparableBasis valueRulesVersion valueResolvedAt
+}`
+
+const rawValueResolutionSchema = z.object({
+  valueState: z.string().nullable(),
+  valueStateRule: z.string().nullable(),
+  valueAccepted: z.boolean(),
+  valueRonComparable: z.string().nullable(),
+  valueComparableBasis: z.string().nullable(),
+  valueRulesVersion: z.number().nullable(),
+  valueResolvedAt: z.string().nullable(),
+})
+
 /** GraphQL selection for the flat money block on flow records. */
-const MONEY_FIELDS = /* GraphQL */ `valueRon estimatedValueRon currency isRon valueSuspect`
+const MONEY_FIELDS = /* GraphQL */ `valueRon estimatedValueRon currency ${VALUE_RESOLUTION}`
 
 const rawMoneyFields = {
   valueRon: z.string().nullable(),
   estimatedValueRon: z.string().nullable(),
   currency: z.string().nullable(),
-  isRon: z.boolean(),
-  valueSuspect: z.boolean(),
+  value: rawValueResolutionSchema,
 }
 
 export const rawProcedureSchema = z.object({
@@ -48,8 +63,7 @@ export const rawProcedureSchema = z.object({
   estimatedValueRon: z.string().nullable(),
   awardedValueRon: z.string().nullable(),
   currency: z.string().nullable(),
-  isRon: z.boolean(),
-  valueSuspect: z.boolean(),
+  value: rawValueResolutionSchema,
   status: z.string(),
   countyName: z.string().nullable(),
   publicationDate: z.string().nullable(),
@@ -65,7 +79,7 @@ const PROCEDURE_FIELDS = /* GraphQL */ `
   id noticeNo noticeKind procedureType contractKind title
   authority { ${PARTY_FIELDS} }
   cpvCode cpvDivisionCode
-  estimatedValueRon awardedValueRon currency isRon valueSuspect
+  estimatedValueRon awardedValueRon currency ${VALUE_RESOLUTION}
   status countyName publicationDate stateDate
   sourceSystem sourceUrl isCanonical dupGroupId
 `
@@ -107,6 +121,8 @@ export const rawContractSchema = z.object({
   sourceUrl: z.string().nullable(),
   isCanonical: z.boolean(),
   dupGroupId: z.string().nullable(),
+  canonicalValueSource: z.string().nullable(),
+  valueDisagreement: z.boolean(),
   modifications: z.array(rawModificationTrailEntrySchema).nullable(),
 })
 export type RawProcurementContract = z.infer<typeof rawContractSchema>
@@ -118,6 +134,7 @@ const CONTRACT_CORE_FIELDS = /* GraphQL */ `
   cpvCode cpvDivisionCode
   ${MONEY_FIELDS}
   status sourceSystem sourceUrl isCanonical dupGroupId
+  canonicalValueSource valueDisagreement
 `
 
 const CONTRACT_FIELDS = /* GraphQL */ `
@@ -361,8 +378,6 @@ const rawLotWinnerSchema = z.object({
   winner: rawPartySchema,
   valueRon: z.string().nullable(),
   currency: z.string().nullable(),
-  isRon: z.boolean(),
-  valueSuspect: z.boolean(),
 })
 
 const rawTedRefSchema = z.object({
@@ -380,7 +395,7 @@ export const PROCUREMENT_PROCEDURE_DETAIL_QUERY = /* GraphQL */ `
       perLotWinners {
         lotLabel
         winner { ${PARTY_FIELDS} }
-        valueRon currency isRon valueSuspect
+        valueRon currency
       }
       ted { tedNoticeNo sourceUrl }
       ${DETAIL_SHARED_FIELDS}
@@ -455,11 +470,12 @@ export const PROCUREMENT_AGGREGATES_QUERY = /* GraphQL */ `
   query ProcurementAggregates(
     $scope: ProcurementAnalysisScopeInput
     $topN: Int
+    $includeAuthorities: Boolean!
     $includeSuppliers: Boolean!
     $includeCategories: Boolean!
   ) {
     procurementStats(scope: $scope) { blocks { ${STATS_BLOCK_FIELDS} } }
-    authorities: procurementBreakdown(scope: $scope, dimension: authority, topN: $topN) { ${BREAKDOWN_BLOCK_FIELDS} }
+    authorities: procurementBreakdown(scope: $scope, dimension: authority, topN: $topN) @include(if: $includeAuthorities) { ${BREAKDOWN_BLOCK_FIELDS} }
     suppliers: procurementBreakdown(scope: $scope, dimension: supplier, topN: $topN) @include(if: $includeSuppliers) { ${BREAKDOWN_BLOCK_FIELDS} }
     categories: procurementBreakdown(scope: $scope, dimension: cpvDivision, topN: $topN) @include(if: $includeCategories) { ${BREAKDOWN_BLOCK_FIELDS} }
     recordSeries: procurementSeries(scope: $scope, bucket: month, measure: recordCount) { ${SERIES_BLOCK_FIELDS} }
@@ -468,7 +484,7 @@ export const PROCUREMENT_AGGREGATES_QUERY = /* GraphQL */ `
 `
 export const procurementAggregatesResponseSchema = z.object({
   procurementStats: z.object({ blocks: z.array(rawStatsBlockSchema) }),
-  authorities: z.array(rawBreakdownBlockSchema),
+  authorities: z.array(rawBreakdownBlockSchema).optional().default([]),
   suppliers: z.array(rawBreakdownBlockSchema).optional().default([]),
   categories: z.array(rawBreakdownBlockSchema).optional().default([]),
   recordSeries: z.array(rawSeriesBlockSchema),

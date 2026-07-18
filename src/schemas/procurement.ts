@@ -10,10 +10,12 @@ import { z } from 'zod'
  * responses and maps them onto these types.
  *
  * Conventions:
- * - **Money is flat** on each record (no nested money object): `valueRon` /
- *   `estimatedValueRon` are RON **decimal strings** ('1171228.00') or null; the
- *   honesty flags are `isRon` + `valueSuspect`. There is no native value — prod
- *   does not expose it. Parse strings to numbers only at display time.
+ * - **Money is flat** on each record: `valueRon` / `estimatedValueRon` /
+ *   `awardedValueRon` are the row's OWN parsed RON **decimal strings**
+ *   ('1171228.00') or null, and a `value` block carries the data-layer
+ *   resolution (rules v2). Display keys on `value.valueRonComparable` +
+ *   `value.valueState`, never the raw own value. Parse strings to numbers only
+ *   at display time.
  * - Aggregate counts remain **bigint decimal strings** end-to-end. Unknown and
  *   abstained answers remain null; they are never converted to zero.
  * - Every analysis block carries the server's answerability envelope. Metadata
@@ -46,16 +48,36 @@ export const partySchema = z.object({
 export type Party = z.infer<typeof partySchema>
 
 /**
- * Flat money fields, merged into each record. Mirrors the server DTO:
- * `valueRon` is a RON decimal string (or null for non-RON / suspect-nulled),
- * `isRon` says whether a RON amount is available, `valueSuspect` flags an
- * outlier the loader could not trust.
+ * The data-layer value resolution (rules v2), mirroring the server
+ * `ProcurementValueResolution`. `valueRonComparable` is the ONLY
+ * cross-row-comparable money; `valueState` explains its presence/absence and
+ * `valueAccepted` is true iff the state is accepted (the money is servable).
+ * `valueComparableBasis` is 'official' (a source RON amount) or 'derived_bnr'
+ * (a BNR-converted foreign amount).
+ */
+export const valueResolutionSchema = z.object({
+  valueState: z.string().nullable(),
+  valueStateRule: z.string().nullable(),
+  valueAccepted: z.boolean(),
+  valueRonComparable: decimalStringSchema.nullable(),
+  valueComparableBasis: z.string().nullable(),
+  valueRulesVersion: z.number().nullable(),
+  valueResolvedAt: z.string().nullable(),
+})
+
+export type ValueResolution = z.infer<typeof valueResolutionSchema>
+
+/**
+ * Flat money slice for display. `valueRon` is the row's OWN parsed RON evidence
+ * (a decimal string, or null); `value` is the data-layer resolution — null for
+ * unresolved slices (an estimated value, a modification delta, a lot winner).
+ * Display keys on `value.valueRonComparable` + `value.valueState`, NEVER the raw
+ * own `valueRon` (which is a garbage number for `invalid_source_value` rows).
  */
 export const moneyFieldsSchema = z.object({
   valueRon: decimalStringSchema.nullable(),
   currency: z.string().nullable(),
-  isRon: z.boolean(),
-  valueSuspect: z.boolean(),
+  value: valueResolutionSchema.nullable(),
 })
 
 export type MoneyFields = z.infer<typeof moneyFieldsSchema>
@@ -120,12 +142,11 @@ export const procedureRecordSchema = z.object({
   authority: partySchema,
   cpvCode: z.string().nullable(),
   cpvDivisionCode: z.string().nullable(),
-  // Procedures carry estimated + awarded; `isRon`/`valueSuspect` qualify the awarded value.
+  // Procedures carry estimated + awarded; `value` resolves the awarded value.
   estimatedValueRon: decimalStringSchema.nullable(),
   awardedValueRon: decimalStringSchema.nullable(),
   currency: z.string().nullable(),
-  isRon: z.boolean(),
-  valueSuspect: z.boolean(),
+  value: valueResolutionSchema,
   status: procurementStatusSchema,
   countyName: z.string().nullable(),
   publicationDate: z.string().nullable(),
@@ -173,6 +194,11 @@ export const contractRecordSchema = moneyFieldsSchema.extend({
   sourceUrl: z.string().nullable(),
   isCanonical: z.boolean(),
   dupGroupId: z.string().nullable(),
+  // Contract-only value provenance: which evidence family won ('seap_own' |
+  // 'elicitatie_ca_award' | 'dup_group'), and whether own/cross evidence
+  // disagreed (state 'conflicting_sources').
+  canonicalValueSource: z.string().nullable(),
+  valueDisagreement: z.boolean(),
   modifications: z.array(contractModificationSchema),
 })
 
@@ -498,8 +524,6 @@ export const procurementRecordDetailSchema = <T extends z.ZodTypeAny>(
             winner: partySchema,
             valueRon: decimalStringSchema.nullable(),
             currency: z.string().nullable(),
-            isRon: z.boolean(),
-            valueSuspect: z.boolean(),
           }),
         )
         .nullable(),
@@ -527,8 +551,6 @@ export type ProcurementRecordDetail<T> = {
       readonly winner: Party
       readonly valueRon: string | null
       readonly currency: string | null
-      readonly isRon: boolean
-      readonly valueSuspect: boolean
     }> | null
     readonly ted: {
       readonly tedNoticeNo: string

@@ -79,27 +79,26 @@ export function recordPrimaryMoney(
 ): MoneyFields | null {
   switch (record.grain) {
     case 'procedure':
+      // The awarded value carries the row's resolution.
       return {
         valueRon: record.awardedValueRon,
         currency: record.currency,
-        isRon: record.isRon,
-        valueSuspect: record.valueSuspect,
+        value: record.value,
       }
     case 'contract':
     case 'direct_acquisition':
       return {
         valueRon: record.valueRon,
         currency: record.currency,
-        isRon: record.isRon,
-        valueSuspect: record.valueSuspect,
+        value: record.value,
       }
     case 'modification':
+      // A modification delta is a plain RON figure — no resolution.
       return record.valueDeltaRon !== null
         ? {
             valueRon: record.valueDeltaRon,
             currency: null,
-            isRon: true,
-            valueSuspect: false,
+            value: null,
           }
         : null
   }
@@ -109,14 +108,15 @@ export function recordPrimaryMoney(
 export function recordSecondaryMoney(
   record: ProcurementRecordSummary,
 ): MoneyFields | null {
+  // The estimated value is a raw figure with no per-value resolution (`value:
+  // null` → shown plainly, never with a state badge).
   switch (record.grain) {
     case 'procedure':
       return record.estimatedValueRon !== null
         ? {
             valueRon: record.estimatedValueRon,
             currency: record.currency,
-            isRon: record.isRon,
-            valueSuspect: record.valueSuspect,
+            value: null,
           }
         : null
     case 'contract':
@@ -125,8 +125,7 @@ export function recordSecondaryMoney(
         ? {
             valueRon: record.estimatedValueRon,
             currency: record.currency,
-            isRon: record.isRon,
-            valueSuspect: record.valueSuspect,
+            value: null,
           }
         : null
     case 'modification':
