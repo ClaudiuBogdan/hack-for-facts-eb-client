@@ -12,6 +12,7 @@ import {
   type ProcurementSearchState,
   type ProcurementSort,
   type ProcurementSource,
+  type ProcurementValueCategory,
 } from '@/schemas/procurement-search'
 import type {
   ProcurementGrain,
@@ -60,6 +61,14 @@ export function useProcurementFilterState(search: ProcurementSearchState) {
   const setStatuses = useCallback(
     (statuses: readonly ProcurementStatus[]) =>
       updateFilters({ status: statuses.length > 0 ? [...statuses] : undefined }),
+    [updateFilters],
+  )
+
+  const setValueCategories = useCallback(
+    (categories: readonly ProcurementValueCategory[]) =>
+      updateFilters({
+        value_state: categories.length > 0 ? [...categories] : undefined,
+      }),
     [updateFilters],
   )
 
@@ -163,6 +172,7 @@ export function useProcurementFilterState(search: ProcurementSearchState) {
     setQuery,
     setSource,
     setStatuses,
+    setValueCategories,
     setSignal,
     setDates,
     setYear,

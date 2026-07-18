@@ -15,6 +15,7 @@ import type {
   ProcurementSort,
   ProcurementSource,
 } from '@/schemas/procurement-search'
+import type { ProcurementValueCategory } from './value-category'
 
 export function contractKindLabel(kind: ContractKind): string {
   switch (kind) {
@@ -65,6 +66,28 @@ export function sortLabel(sort: ProcurementSort): string {
       return t`Highest value`
     case 'value_asc':
       return t`Lowest value`
+  }
+}
+
+/**
+ * The value-quality facet labels — kept in step with the record display
+ * vocabulary (`ValueWithCurrency` / `describeMoney`) so the same word names a
+ * value on a record and in the filter.
+ */
+export function valueCategoryLabel(category: ProcurementValueCategory): string {
+  switch (category) {
+    case 'accepted':
+      return t`Valoare confirmată`
+    case 'foreign':
+      return t`Valută străină`
+    case 'invalid':
+      return t`Valoare atipică`
+    case 'framework':
+      return t`Valoare-cadru`
+    case 'conflict':
+      return t`Surse divergente`
+    case 'missing':
+      return t`Fără valoare`
   }
 }
 

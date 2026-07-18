@@ -26,6 +26,17 @@ describe('procurement search route state', () => {
     })
   })
 
+  it('parses value_state as a category comma-list and drops unknown tokens', () => {
+    expect(
+      parseProcurementSearch({
+        value_state: 'accepted,not-a-category,invalid',
+      }).value_state,
+    ).toEqual(['accepted', 'invalid'])
+    expect(
+      parseProcurementSearch({ value_state: 'garbage' }).value_state,
+    ).toBeUndefined()
+  })
+
   it('cleans defaults and empty strings before the search state is written back to the URL', () => {
     expect(
       cleanProcurementSearch(

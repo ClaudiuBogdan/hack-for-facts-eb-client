@@ -74,6 +74,27 @@ export const procurementSourceSchema = z.enum(['elicitatie', 'seap'])
 
 export type ProcurementSource = z.infer<typeof procurementSourceSchema>
 
+/**
+ * "Value quality" facet — user-facing categories over the data-layer value
+ * resolution states (rules v2), aligned with the record display. The mapping to
+ * raw `value_state` tokens lives in features/procurement/lib/value-category.ts.
+ */
+export const procurementValueCategorySchema = z.enum([
+  'accepted',
+  'foreign',
+  'invalid',
+  'framework',
+  'conflict',
+  'missing',
+])
+
+export type ProcurementValueCategory = z.infer<
+  typeof procurementValueCategorySchema
+>
+
+export const PROCUREMENT_VALUE_CATEGORIES: readonly ProcurementValueCategory[] =
+  procurementValueCategorySchema.options
+
 const commaListStatus = z
   .preprocess(toOptionalString, z.string().optional())
   .transform((value) => {
@@ -91,6 +112,25 @@ const commaListStatus = z
   })
   .catch(undefined)
 
+/** Comma-list of value-quality categories (unknown tokens normalize away). */
+const commaListValueCategory = z
+  .preprocess(toOptionalString, z.string().optional())
+  .transform((value) => {
+    if (typeof value !== 'string') return undefined
+    const parts = value
+      .split(',')
+      .map((part) => part.trim())
+      .filter(Boolean)
+    if (parts.length === 0) return undefined
+    const valid = parts.filter((part): part is ProcurementValueCategory =>
+      (procurementValueCategorySchema.options as readonly string[]).includes(
+        part,
+      ),
+    )
+    return valid.length > 0 ? valid : undefined
+  })
+  .catch(undefined)
+
 export const procurementSearchSchema = z
   .object({
     grain: procurementGrainSchema.optional().catch(undefined),
@@ -103,6 +143,7 @@ export const procurementSearchSchema = z
     // `.optional()` on the outside keeps the key optional in the inferred
     // type (the transform chain would otherwise mark it required).
     status: commaListStatus.optional(),
+    value_state: commaListValueCategory.optional(),
     // Reserved/ignored buyer-territory dimensions (parsed, not authoritative).
     county: optionalStringParam,
     region: optionalStringParam,
@@ -204,6 +245,7 @@ export function cleanProcurementSearch(
     delete cleaned.pageSize
   }
   if (!cleaned.status?.length) delete cleaned.status
+  if (!cleaned.value_state?.length) delete cleaned.value_state
 
   return cleaned
 }

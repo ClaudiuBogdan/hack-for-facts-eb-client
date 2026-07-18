@@ -8,7 +8,7 @@
  */
 import { t } from '@lingui/core/macro'
 import type { ProcurementSearchState } from '@/schemas/procurement-search'
-import { reviewSignalLabel, sourceLabel } from './enum-labels'
+import { reviewSignalLabel, sourceLabel, valueCategoryLabel } from './enum-labels'
 import { statusLabel } from './status-meta'
 
 /** Patch merged into the search state + committed to the URL. */
@@ -78,6 +78,14 @@ export function buildActiveFilterChips(
       clear: { status: undefined },
     })
   }
+  if (search.value_state && search.value_state.length > 0) {
+    const categories = search.value_state.map(valueCategoryLabel).join(', ')
+    chips.push({
+      key: 'value-state',
+      label: t`Value quality: ${categories}`,
+      clear: { value_state: undefined },
+    })
+  }
   if (search.dateFrom || search.dateTo) {
     const from = search.dateFrom ? formatChipDate(search.dateFrom) : '…'
     const to = search.dateTo ? formatChipDate(search.dateTo) : '…'
@@ -129,6 +137,7 @@ export const CLEAR_ALL_FILTERS_PATCH: ProcurementFilterPatch = {
   cpv_division: undefined,
   source: undefined,
   status: undefined,
+  value_state: undefined,
   year: undefined,
   dateFrom: undefined,
   dateTo: undefined,

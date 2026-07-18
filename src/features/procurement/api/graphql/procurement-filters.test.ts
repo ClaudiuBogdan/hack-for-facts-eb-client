@@ -109,6 +109,45 @@ describe('buildDirectAcquisitionsFilter', () => {
   })
 })
 
+describe('value-quality (valueState) facet', () => {
+  it('expands the accepted category to the four accepted states on every grain', () => {
+    const accepted = {
+      in: [
+        'official_exact',
+        'official_ron_equivalent',
+        'cross_source_exact',
+        'official_document_recovered',
+      ],
+    }
+    expect(
+      buildContractsFilter(state({ value_state: ['accepted'] })).valueState,
+    ).toEqual(accepted)
+    expect(
+      buildProceduresFilter(state({ value_state: ['accepted'] })).valueState,
+    ).toEqual(accepted)
+    expect(
+      buildDirectAcquisitionsFilter(state({ value_state: ['accepted'] }))
+        .valueState,
+    ).toEqual(accepted)
+  })
+
+  it('unions multiple categories and de-duplicates', () => {
+    expect(
+      buildContractsFilter(state({ value_state: ['invalid', 'missing'] }))
+        .valueState,
+    ).toEqual({
+      in: ['invalid_source_value', 'source_missing', 'not_applicable'],
+    })
+  })
+
+  it('omits valueState entirely when nothing is selected', () => {
+    expect(buildContractsFilter(state({})).valueState).toBeUndefined()
+    expect(
+      buildDirectAcquisitionsFilter(state({ value_state: [] })).valueState,
+    ).toBeUndefined()
+  })
+})
+
 describe('buildModificationsFilter', () => {
   it('supports only party, text and date facets', () => {
     const filter = buildModificationsFilter(

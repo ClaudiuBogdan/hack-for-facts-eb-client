@@ -30,6 +30,16 @@ describe('procurement filter meta', () => {
     expect(statusChip?.clear).toEqual({ status: undefined })
   })
 
+  it('builds a value-quality chip listing the selected categories', () => {
+    const chips = buildActiveFilterChips(
+      withProcurementSearchDefaults({ value_state: ['accepted', 'invalid'] }),
+    )
+    const valueChip = chips.find((chip) => chip.key === 'value-state')
+    expect(valueChip?.clear).toEqual({ value_state: undefined })
+    expect(valueChip?.label).toContain('Valoare confirmată')
+    expect(valueChip?.label).toContain('Valoare atipică')
+  })
+
   it('merges dateFrom/dateTo into a single period chip that wins over year', () => {
     const chips = buildActiveFilterChips(
       withProcurementSearchDefaults({
@@ -48,6 +58,7 @@ describe('procurement filter meta', () => {
       cpv: '45453000',
       source: 'seap',
       status: ['awarded'],
+      value_state: ['accepted', 'invalid'],
       year: 2024,
       valueMin: 1,
       valueMax: 2,

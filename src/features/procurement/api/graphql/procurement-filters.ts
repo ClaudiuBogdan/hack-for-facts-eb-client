@@ -15,6 +15,7 @@ import type {
   ProcurementSort,
 } from '@/schemas/procurement-search'
 import { procurementQOrUndefined } from '../../lib/search-query'
+import { expandValueCategories } from '../../lib/value-category'
 
 // ---------------------------------------------------------------------------
 // Operator-input shapes (mirror the SDL)
@@ -39,6 +40,7 @@ export interface ProcurementProceduresFilterInput {
   status?: { in: string[] }
   publicationDate?: DateRangeInput
   valueRon?: DecimalRangeInput
+  valueState?: { in: string[] }
 }
 
 export interface ProcurementContractsFilterInput {
@@ -51,6 +53,7 @@ export interface ProcurementContractsFilterInput {
   status?: { in: string[] }
   contractDate?: DateRangeInput
   valueRon?: DecimalRangeInput
+  valueState?: { in: string[] }
 }
 
 export interface ProcurementDirectAcquisitionsFilterInput {
@@ -63,6 +66,7 @@ export interface ProcurementDirectAcquisitionsFilterInput {
   status?: { in: string[] }
   publicationDate?: DateRangeInput
   valueRon?: DecimalRangeInput
+  valueState?: { in: string[] }
 }
 
 export interface ProcurementModificationsFilterInput {
@@ -244,6 +248,8 @@ export function buildProceduresFilter(
   if (dates) filter.publicationDate = dates
   const value = buildValueRange(search)
   if (value) filter.valueRon = value
+  const valueState = expandValueCategories(search.value_state ?? [])
+  if (valueState) filter.valueState = { in: valueState }
   return filter
 }
 
@@ -266,6 +272,8 @@ export function buildContractsFilter(
   if (dates) filter.contractDate = dates
   const value = buildValueRange(search)
   if (value) filter.valueRon = value
+  const valueState = expandValueCategories(search.value_state ?? [])
+  if (valueState) filter.valueState = { in: valueState }
   return filter
 }
 
@@ -288,6 +296,8 @@ export function buildDirectAcquisitionsFilter(
   if (dates) filter.publicationDate = dates
   const value = buildValueRange(search)
   if (value) filter.valueRon = value
+  const valueState = expandValueCategories(search.value_state ?? [])
+  if (valueState) filter.valueState = { in: valueState }
   return filter
 }
 

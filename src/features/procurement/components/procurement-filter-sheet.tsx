@@ -15,9 +15,17 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { cn } from '@/lib/utils'
 import type { ProcurementGrain, ProcurementStatus } from '@/schemas/procurement'
 import { REVIEW_SIGNAL_KIND_VALUES } from '@/schemas/procurement-search'
-import { procurementSourceSchema } from '@/schemas/procurement-search'
+import {
+  PROCUREMENT_VALUE_CATEGORIES,
+  procurementSourceSchema,
+  type ProcurementValueCategory,
+} from '@/schemas/procurement-search'
 import type { ProcurementFilterState } from '../hooks/use-procurement-filter-state'
-import { reviewSignalLabel, sourceLabel } from '../lib/enum-labels'
+import {
+  reviewSignalLabel,
+  sourceLabel,
+  valueCategoryLabel,
+} from '../lib/enum-labels'
 import { statusLabel, statusMeta } from '../lib/status-meta'
 import {
   procurementDateInputClassName,
@@ -173,6 +181,34 @@ export function ProcurementFilterSheet({ open, onOpenChange, filters }: SheetPro
                       )}
                     />
                     <span className="truncate">{statusLabel(status)}</span>
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </section>
+          ) : null}
+
+          {search.grain !== 'modifications' ? (
+            <section className="space-y-2">
+              <Label className={procurementSectionLabelClassName}>
+                <Trans>Value quality</Trans>
+              </Label>
+              <ToggleGroup
+                type="multiple"
+                value={search.value_state ?? []}
+                onValueChange={(values) =>
+                  filters.setValueCategories(values as ProcurementValueCategory[])
+                }
+                className="grid grid-cols-2 gap-2"
+              >
+                {PROCUREMENT_VALUE_CATEGORIES.map((category) => (
+                  <ToggleGroupItem
+                    key={category}
+                    value={category}
+                    className={procurementToggleItemClassName}
+                  >
+                    <span className="truncate">
+                      {valueCategoryLabel(category)}
+                    </span>
                   </ToggleGroupItem>
                 ))}
               </ToggleGroup>
