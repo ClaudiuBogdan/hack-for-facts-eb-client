@@ -325,24 +325,27 @@ export function ProcurementFilterSheet({ open, onOpenChange, filters }: SheetPro
             </Label>
             <ToggleGroup
               type="single"
-              value={search.signal ?? ''}
-              onValueChange={(value) =>
-                filters.setSignal(
-                  REVIEW_SIGNAL_KIND_VALUES.find((kind) => kind === value),
-                )
-              }
-              className="grid grid-cols-1 gap-2"
+              value=""
+              disabled
+              className="grid grid-cols-1 gap-2 opacity-60"
             >
               {REVIEW_SIGNAL_KIND_VALUES.map((signal) => (
-                <ToggleGroupItem key={signal} value={signal} className={procurementToggleItemClassName}>
+                <ToggleGroupItem
+                  key={signal}
+                  value={signal}
+                  disabled
+                  className={procurementToggleItemClassName}
+                >
                   {reviewSignalLabel(signal)}
                 </ToggleGroupItem>
               ))}
             </ToggleGroup>
-            <p className="text-xs text-[var(--pnrr-muted)]">
+            <p className="border-l-4 border-amber-500 pl-3 text-xs leading-5 text-[var(--pnrr-muted)]">
               <Trans>
-                Signals are review starting points, not conclusions — results
-                stay gated until the signal data is served.
+                Review signals are not wired to search yet. They will filter
+                results when the API republishes same-day and repeated-pair
+                candidates — until then this control stays disabled so it
+                cannot pretend to narrow the list.
               </Trans>
             </p>
           </section>

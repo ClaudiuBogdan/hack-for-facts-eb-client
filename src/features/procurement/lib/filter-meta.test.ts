@@ -25,7 +25,8 @@ describe('procurement filter meta', () => {
         valueMin: 1000,
       }),
     )
-    expect(chips).toHaveLength(5)
+    expect(chips).toHaveLength(4)
+    expect(chips.map((chip) => chip.key)).not.toContain('signal')
     const statusChip = chips.find((chip) => chip.key === 'status')
     expect(statusChip?.clear).toEqual({ status: undefined })
   })

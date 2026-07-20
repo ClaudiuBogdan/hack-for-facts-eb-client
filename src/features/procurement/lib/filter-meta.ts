@@ -8,7 +8,7 @@
  */
 import { t } from '@lingui/core/macro'
 import type { ProcurementSearchState } from '@/schemas/procurement-search'
-import { reviewSignalLabel, sourceLabel, valueCategoryLabel } from './enum-labels'
+import { sourceLabel, valueCategoryLabel } from './enum-labels'
 import { statusLabel } from './status-meta'
 
 /** Patch merged into the search state + committed to the URL. */
@@ -112,13 +112,8 @@ export function buildActiveFilterChips(
       clear: { valueMin: undefined, valueMax: undefined },
     })
   }
-  if (search.signal) {
-    chips.push({
-      key: 'signal',
-      label: t`Signal: ${reviewSignalLabel(search.signal)}`,
-      clear: { signal: undefined },
-    })
-  }
+  // `signal` is URL-reserved for Phase B wiring — never shown as an active
+  // filter chip because it does not narrow search results yet.
 
   return chips
 }

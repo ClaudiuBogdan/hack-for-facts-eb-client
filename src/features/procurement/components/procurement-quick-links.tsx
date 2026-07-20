@@ -1,20 +1,28 @@
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { Building2, ChevronRight, Factory, Flag, Tag } from 'lucide-react'
+import { Building2, ChevronRight, Factory, Search, Tag } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   procurementCardChevronClassName,
   procurementSectionClassName,
 } from '../lib/procurement-theme'
 
-/** Entry cards into the adjacent investigation surfaces. */
+/** Entry cards into the investigation spine (lookup-first, no unwired facets). */
 export function ProcurementQuickLinks() {
   const cards = [
+    {
+      key: 'search',
+      icon: Search,
+      title: t`Search records`,
+      description: t`Find procedures, contracts, and direct acquisitions.`,
+      to: '/procurement/search' as const,
+      search: undefined,
+    },
     {
       key: 'institutions',
       icon: Building2,
       title: t`Institutions`,
-      description: t`Every public buyer's spending profile.`,
+      description: t`Look up a public buyer, then open its procurement profile.`,
       to: '/entities' as const,
       search: undefined,
     },
@@ -22,7 +30,7 @@ export function ProcurementQuickLinks() {
       key: 'companies',
       icon: Factory,
       title: t`Companies`,
-      description: t`Suppliers and their public revenue.`,
+      description: t`Look up a supplier and its public-sector revenue.`,
       to: '/companies' as const,
       search: undefined,
     },
@@ -30,17 +38,9 @@ export function ProcurementQuickLinks() {
       key: 'categories',
       icon: Tag,
       title: t`Categories`,
-      description: t`Spending by CPV division.`,
+      description: t`Browse spending by CPV from the overview rankings above.`,
       to: '/procurement/search' as const,
-      search: { grain: 'direct_acquisitions' } as const,
-    },
-    {
-      key: 'signals',
-      icon: Flag,
-      title: t`Review signals`,
-      description: t`Same-day purchases and repeated pairs — starting points, not conclusions.`,
-      to: '/procurement/search' as const,
-      search: { signal: 'same_day' } as const,
+      search: { grain: 'direct_acquisitions' as const },
     },
   ]
 
