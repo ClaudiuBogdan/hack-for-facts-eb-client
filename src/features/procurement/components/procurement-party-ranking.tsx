@@ -4,7 +4,7 @@ import { t } from '@lingui/core/macro'
 import { cn } from '@/lib/utils'
 import type { TopPartyRow } from '@/schemas/procurement'
 import { formatFlowCount, formatRon, formatScopeShare } from '../lib/formatting'
-import { partyLabel, partyProfileLink, type PartyKind } from '../lib/party-links'
+import { partyLabel, partyProcurementLink, type PartyKind } from '../lib/party-links'
 import {
   procurementMarkClassName,
   procurementMarkTrackClassName,
@@ -33,6 +33,8 @@ type Props = {
   /** Deep link into search prefiltered on the party facet. */
   readonly seeAllParam: 'authority_cui' | 'supplier_cui'
   readonly className?: string
+  /** Explicit matrix limitation for a scoped request; distinct from no rows. */
+  readonly unavailableReason?: string
 }
 
 /**
@@ -48,6 +50,7 @@ export function ProcurementPartyRanking({
   kind,
   seeAllParam,
   className,
+  unavailableReason,
 }: Props) {
   const maxCount = rows.reduce(
     (max, row) => Math.max(max, Number(row.flowCount) || 0),
@@ -63,7 +66,11 @@ export function ProcurementPartyRanking({
         ) : null}
       </div>
       <div className="p-5 sm:p-6">
-        {rows.length === 0 ? (
+        {unavailableReason ? (
+          <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
+            {unavailableReason}
+          </p>
+        ) : rows.length === 0 ? (
           <p className="text-sm text-[var(--pnrr-muted)]">
             <Trans>No ranking data available.</Trans>
           </p>
@@ -73,7 +80,7 @@ export function ProcurementPartyRanking({
               const party = kind === 'authority' ? row.authority : row.supplier
               const count = Number(row.flowCount) || 0
               const width = maxCount > 0 ? Math.max((count / maxCount) * 100, 2) : 0
-              const profile = partyProfileLink(party, kind)
+              const profile = partyProcurementLink(party, kind)
               const label = rankingLabel(row, kind)
               const cui = party?.cui?.trim() || null
               const showCui = cui !== null && label !== cui
@@ -153,7 +160,7 @@ export function ProcurementPartyRanking({
           </ol>
         )}
 
-        {rows.length > 0 ? (
+        {rows.length > 0 && !unavailableReason ? (
           <details className="mt-4">
             <summary className="cursor-pointer text-sm font-semibold text-[var(--pnrr-muted)]">
               <Trans>View as table</Trans>
@@ -199,19 +206,21 @@ export function ProcurementPartyRanking({
           </details>
         ) : null}
 
-        <div className="mt-4">
-          <Link
-            to="/procurement/search"
-            search={{}}
-            className={procurementUnderlineLinkClassName}
-          >
-            {seeAllParam === 'authority_cui' ? (
-              <Trans>Search by authority</Trans>
-            ) : (
-              <Trans>Search by supplier</Trans>
-            )}
-          </Link>
-        </div>
+        {!unavailableReason ? (
+          <div className="mt-4">
+            <Link
+              to="/procurement/search"
+              search={{}}
+              className={procurementUnderlineLinkClassName}
+            >
+              {seeAllParam === 'authority_cui' ? (
+                <Trans>Search by authority</Trans>
+              ) : (
+                <Trans>Search by supplier</Trans>
+              )}
+            </Link>
+          </div>
+        ) : null}
       </div>
     </section>
   )

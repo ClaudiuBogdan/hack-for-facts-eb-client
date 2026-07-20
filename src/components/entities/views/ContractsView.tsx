@@ -1,57 +1,63 @@
-import { EntityDetailsData } from '@/lib/api/entities';
-import { ExternalLink, Info } from 'lucide-react';
-import { Trans } from '@lingui/react/macro';
-import { Button } from '@/components/ui/button';
+import { Link } from '@tanstack/react-router'
+import { Trans } from '@lingui/react/macro'
+import { Button } from '@/components/ui/button'
+import type { EntityDetailsData } from '@/lib/api/entities'
+import { ProcurementAuthoritySlice } from '@/features/procurement/components/procurement-authority-slice'
+import {
+  procurementOutlineButtonClassName,
+  procurementUnderlineLinkClassName,
+} from '@/features/procurement/lib/procurement-theme'
+import { cn } from '@/lib/utils'
 
 type Props = {
-    entity: EntityDetailsData | null | undefined;
-};
+  readonly entity: EntityDetailsData | null | undefined
+}
 
+/**
+ * Entity-page procurement view. Replaces the legacy SICAP.ai iframe with the
+ * live authority slice and a deep link to the dedicated institution page.
+ */
 export function ContractsView({ entity }: Readonly<Props>) {
+  if (!entity?.cui) {
+    return null
+  }
 
-    if (!entity) {
-        return null;
-    }
+  const cui = String(entity.cui).trim()
+  if (!cui) return null
 
-    const sicapUrl = `https://sicap.ai/autoritate/${entity.cui}?utm_source=transparenta.eu`;
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-3 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-subtle)] p-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-[var(--pnrr-muted)]">
+          <Trans>
+            Live public procurement for this institution — contracts, direct
+            acquisitions, suppliers, and CPV categories from SEAP and
+            e-licitatie.
+          </Trans>
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          className={cn(procurementOutlineButtonClassName, 'shrink-0')}
+          asChild
+        >
+          <Link to="/procurement/institutions/$cui" params={{ cui }}>
+            <Trans>Open full procurement profile</Trans>
+          </Link>
+        </Button>
+      </div>
 
-    return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg border bg-muted/50 p-4">
-                <div className="flex items-start gap-3">
-                    <Info className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
-                    <p className="text-sm text-muted-foreground">
-                        <Trans>
-                            Public procurement data is provided by SICAP.ai, an independent platform that aggregates and analyzes public contracts from Romania's Electronic Public Procurement System (SEAP).
-                        </Trans>
-                    </p>
-                </div>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className="shrink-0"
-                    asChild
-                >
-                    <a href={sicapUrl} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        <Trans>Open in SICAP.ai</Trans>
-                    </a>
-                </Button>
-            </div>
+      <ProcurementAuthoritySlice authorityCui={cui} embedded />
 
-            <div className="space-y-3">
-                <div className="relative w-full overflow-hidden rounded-lg border bg-background shadow-sm">
-                <div className="relative w-full h-[620px] md:h-[740px] lg:h-[900px]">
-                        <iframe
-                            src={sicapUrl}
-                            title="SICAP.ai Public Contracts Portal"
-                            className="absolute inset-0 h-full w-full"
-                            loading="lazy"
-                            referrerPolicy="no-referrer"
-                        />
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
+      <p className="text-sm">
+        <Link
+          to="/procurement/search"
+          search={{ authority_cui: cui }}
+          className={procurementUnderlineLinkClassName}
+        >
+          <Trans>Search all records for this institution</Trans>
+        </Link>
+      </p>
+    </div>
+  )
 }

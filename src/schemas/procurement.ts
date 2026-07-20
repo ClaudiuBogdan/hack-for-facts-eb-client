@@ -624,6 +624,37 @@ export type SupplierProcurementSlice = z.infer<
 >
 
 /**
+ * Buyer-side procurement slice — dedicated institution page and the entity
+ * `contracts` / achiziții view. Mirrors the supplier slice on the authority
+ * axis (top suppliers instead of top buyers).
+ */
+export const authorityProcurementSliceSchema = z.object({
+  authorityCui: z.string(),
+  /** Resolved display name when the party-name lookup finds one. */
+  authorityName: z.string().nullable(),
+  summary: z.object({
+    window: z.object({
+      from: z.string().nullable(),
+      to: z.string().nullable(),
+    }),
+    /** RON sum decimal string, or null when not summable. */
+    totalSpendRon: decimalStringSchema.nullable(),
+    suppliersCount: bigintStringSchema.nullable(),
+    contractsCount: bigintStringSchema.nullable(),
+    directAcquisitionsCount: bigintStringSchema.nullable(),
+    proceduresCount: bigintStringSchema.nullable(),
+    firstSeen: z.string().nullable(),
+    lastSeen: z.string().nullable(),
+  }),
+  analysisByGrain: procurementFlowAnalysisByGrainSchema,
+  recentRecords: z.array(procurementRecordSummarySchema),
+})
+
+export type AuthorityProcurementSlice = z.infer<
+  typeof authorityProcurementSliceSchema
+>
+
+/**
  * One cursor page of a supplier's canonical flow records (contracts + direct
  * acquisitions, date desc) — backs the "load more" list embedded in company
  * profiles.

@@ -19,6 +19,7 @@ import {
   procurementStatusSchema,
   contractKindSchema,
   topPartyRowSchema,
+  type AuthorityProcurementSlice,
   type CategoryRow,
   type ContractModification,
   type ContractModificationRecord,
@@ -554,6 +555,71 @@ export function mapSupplierRecords(
     total: raw.total,
     hasNextPage: raw.pageInfo.hasNextPage,
     endCursor: raw.pageInfo.endCursor,
+  }
+}
+
+export function mapAuthoritySlice(parts: {
+  authorityCui: string
+  aggregates: RawProcurementAggregates
+  divisions: readonly RawProcurementCpvDivision[]
+  recentRecords: readonly ProcurementRecordSummary[]
+  partyNames?: ReadonlyMap<string, string>
+}): AuthorityProcurementSlice {
+  const procedure = mapGrainAnalytics(
+    parts.aggregates,
+    parts.divisions,
+    'procedure',
+    parts.partyNames,
+  )
+  const contract = mapGrainAnalytics(
+    parts.aggregates,
+    parts.divisions,
+    'contract',
+    parts.partyNames,
+  )
+  const directAcquisition = mapGrainAnalytics(
+    parts.aggregates,
+    parts.divisions,
+    'direct_acquisition',
+    parts.partyNames,
+  )
+  const minMonths = [
+    contract.stats.minMonth,
+    directAcquisition.stats.minMonth,
+    procedure.stats.minMonth,
+  ]
+    .filter((value): value is string => value !== null)
+    .sort()
+  const maxMonths = [
+    contract.stats.maxMonth,
+    directAcquisition.stats.maxMonth,
+    procedure.stats.maxMonth,
+  ]
+    .filter((value): value is string => value !== null)
+    .sort()
+  const authorityName =
+    parts.partyNames?.get(`authority:${parts.authorityCui}`) ?? null
+  return {
+    authorityCui: parts.authorityCui,
+    authorityName,
+    summary: {
+      window: {
+        from: minMonths[0] ?? null,
+        to: maxMonths[maxMonths.length - 1] ?? null,
+      },
+      totalSpendRon: addDecimalStrings(
+        contract.stats.valueAwardedSum,
+        directAcquisition.stats.valueAwardedSum,
+      ),
+      suppliersCount: null,
+      contractsCount: contract.stats.recordCount,
+      directAcquisitionsCount: directAcquisition.stats.recordCount,
+      proceduresCount: procedure.stats.recordCount,
+      firstSeen: minMonths[0] ?? null,
+      lastSeen: maxMonths[maxMonths.length - 1] ?? null,
+    },
+    analysisByGrain: { contract, directAcquisition },
+    recentRecords: [...parts.recentRecords],
   }
 }
 

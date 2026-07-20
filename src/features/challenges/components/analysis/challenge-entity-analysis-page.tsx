@@ -311,14 +311,14 @@ const DeferredEntityProfileView = lazy(() =>
 const CHALLENGE_ENTITY_VIEW_LABELS = {
   ro: {
     'main-info': 'Execuții Bugetare',
-    contracts: 'Contracte',
+    contracts: 'Achiziții publice',
     commitments: 'Angajamente',
     ins: 'INS',
     profile: 'Contact',
   },
   en: {
     'main-info': 'Budget Execution',
-    contracts: 'Contracts',
+    contracts: 'Public procurement',
     commitments: 'Commitments',
     ins: 'INS',
     profile: 'Contact',

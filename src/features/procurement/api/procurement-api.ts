@@ -1,5 +1,6 @@
 /** Live-only procurement facade. There is intentionally no fixture fallback. */
 export {
+  fetchAuthorityProcurementSliceLive as fetchProcurementAuthoritySlice,
   fetchContractDetailLive as fetchProcurementContractDetail,
   fetchCpvCategoryPageLive as fetchProcurementCpvCategoryPage,
   fetchDirectAcquisitionDetailLive as fetchProcurementDirectAcquisitionDetail,

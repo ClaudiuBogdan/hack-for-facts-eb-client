@@ -158,6 +158,14 @@ function SliceContent({
         >
           <Trans>Search all records for this supplier</Trans>
         </Link>
+        {' · '}
+        <Link
+          to="/procurement/suppliers/$cui"
+          params={{ cui: slice.supplierCui }}
+          className={procurementUnderlineLinkClassName}
+        >
+          <Trans>Open full procurement profile</Trans>
+        </Link>
       </div>
     </div>
   )

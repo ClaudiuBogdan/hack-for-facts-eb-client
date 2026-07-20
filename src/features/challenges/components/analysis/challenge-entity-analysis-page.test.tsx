@@ -1128,7 +1128,7 @@ describe('ChallengeEntityAnalysisPage', () => {
     })
 
     const header = screen.getByTestId('analysis-header')
-    fireEvent.click(within(header).getByRole('button', { name: 'Contracte' }))
+    fireEvent.click(within(header).getByRole('button', { name: 'Achiziții publice' }))
     expect(await screen.findByTestId('contracts-view')).toBeInTheDocument()
 
     fireEvent.click(within(header).getByRole('button', { name: 'Execuții Bugetare' }))

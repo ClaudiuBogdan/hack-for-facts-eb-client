@@ -11,6 +11,7 @@
  * sends them) — documented gaps, never fabrication.
  */
 import type {
+  AuthorityProcurementSlice,
   ContractRecord,
   CpvCategoryPage,
   DirectAcquisitionRecord,
@@ -23,7 +24,10 @@ import type {
   SupplierRecordsPage,
 } from '@/schemas/procurement'
 import { procurementSourceSystemSchema } from '@/schemas/procurement'
-import type { ProcurementSearchState } from '@/schemas/procurement-search'
+import {
+  withProcurementSearchDefaults,
+  type ProcurementSearchState,
+} from '@/schemas/procurement-search'
 import {
   buildProcurementOverviewMonthScope,
   type ProcurementLandingFilters,
@@ -56,6 +60,7 @@ import {
   type RawProcurementAggregates,
 } from './graphql/procurement-queries'
 import {
+  mapAuthoritySlice,
   mapContract,
   mapCpvCategoryPage,
   mapDirectAcquisition,
@@ -451,6 +456,63 @@ export async function fetchSupplierProcurementSliceLive(
     recentRecords,
     partyNames,
   })
+}
+
+/** Recent contracts for an authority (first page) — used on institution pages. */
+const AUTHORITY_RECENT_PAGE_SIZE = 10
+
+export async function fetchAuthorityProcurementSliceLive(
+  cui: string,
+): Promise<AuthorityProcurementSlice> {
+  const authorityCui = cui.trim()
+  const [aggregates, divisions, recentPage, authorityName] = await Promise.all([
+    loadAggregates(buildScopeFilter({ authorityCui }), {
+      includeAuthorities: false,
+    }),
+    loadCpvDivisions(),
+    fetchProcurementSearchLive(
+      withProcurementSearchDefaults({
+        grain: 'contracts',
+        authority_cui: authorityCui,
+        sort: 'date_desc',
+        page: 1,
+        pageSize: AUTHORITY_RECENT_PAGE_SIZE,
+      }),
+    ),
+    resolveAuthorityName(authorityCui),
+  ])
+  const partyNames = new Map(await loadPartyNames(aggregates))
+  if (authorityName) {
+    partyNames.set(`authority:${authorityCui}`, authorityName)
+  }
+  return mapAuthoritySlice({
+    authorityCui,
+    aggregates,
+    divisions,
+    recentRecords: recentPage.records,
+    partyNames,
+  })
+}
+
+async function resolveAuthorityName(cui: string): Promise<string | null> {
+  const cacheKey = `authority:${cui}`
+  if (partyNameCache.has(cacheKey)) {
+    return partyNameCache.get(cacheKey) ?? null
+  }
+  const raw = await graphqlQuery<unknown>(
+    PROCUREMENT_PARTY_NAMES_QUERY,
+    {
+      authorityCuis: [cui],
+      supplierCuis: [],
+      includeAuthorities: true,
+      includeSuppliers: false,
+    },
+    { operationName: 'ProcurementPartyNames' },
+  )
+  const parsed = procurementPartyNamesResponseSchema.parse(raw)
+  const name = parsed.authorities?.edges?.[0]?.node.name ?? null
+  partyNameCache.set(cacheKey, name)
+  return name
 }
 
 // ── test hooks ──────────────────────────────────────────────────────────────

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { partyLabel, partyProfileLink, partyRoute } from './party-links'
+import {
+  partyLabel,
+  partyProcurementLink,
+  partyProcurementRoute,
+  partyProfileLink,
+  partyRoute,
+} from './party-links'
 
 describe('party links', () => {
   it('labels fall back displayName → name → cui → unknown', () => {
@@ -20,6 +26,15 @@ describe('party links', () => {
     expect(partyRoute('supplier')).toBe('/companies/$cui')
   })
 
+  it('routes procurement spine to institutions and suppliers pages', () => {
+    expect(partyProcurementRoute('authority')).toBe(
+      '/procurement/institutions/$cui',
+    )
+    expect(partyProcurementRoute('supplier')).toBe(
+      '/procurement/suppliers/$cui',
+    )
+  })
+
   it('profile link is null without a CUI', () => {
     expect(
       partyProfileLink({ cui: null, name: 'X', displayName: null }, 'supplier'),
@@ -27,5 +42,23 @@ describe('party links', () => {
     expect(
       partyProfileLink({ cui: ' 12 ', name: null, displayName: null }, 'supplier'),
     ).toEqual({ to: '/companies/$cui', params: { cui: '12' } })
+  })
+
+  it('procurement link is null without a CUI', () => {
+    expect(
+      partyProcurementLink(
+        { cui: null, name: 'X', displayName: null },
+        'authority',
+      ),
+    ).toBeNull()
+    expect(
+      partyProcurementLink(
+        { cui: ' 4267117 ', name: null, displayName: null },
+        'authority',
+      ),
+    ).toEqual({
+      to: '/procurement/institutions/$cui',
+      params: { cui: '4267117' },
+    })
   })
 })

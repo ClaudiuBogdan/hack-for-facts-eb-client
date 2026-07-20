@@ -5,6 +5,7 @@
  */
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import {
+  fetchProcurementAuthoritySlice,
   fetchProcurementCpvCategoryPage,
   fetchProcurementContractDetail,
   fetchProcurementDirectAcquisitionDetail,
@@ -14,7 +15,10 @@ import {
   fetchProcurementSupplierRecords,
   fetchProcurementSupplierSlice,
 } from '../api/procurement-api'
-import type { CpvCategoryPage } from '@/schemas/procurement'
+import type {
+  AuthorityProcurementSlice,
+  CpvCategoryPage,
+} from '@/schemas/procurement'
 import type { ProcurementSearchState } from '@/schemas/procurement-search'
 import type { ProcurementLandingFilters } from '@/schemas/procurement-overview'
 import {
@@ -106,6 +110,18 @@ export function useProcurementSupplierSlice(cui: string) {
   return useQuery({
     queryKey: [...PROCUREMENT_QUERY_KEY, 'supplier-slice', cui],
     queryFn: () => fetchProcurementSupplierSlice(cui),
+    enabled: Boolean(cui),
+  })
+}
+
+export function useProcurementAuthoritySlice(
+  cui: string,
+  initialData?: AuthorityProcurementSlice,
+) {
+  return useQuery({
+    queryKey: [...PROCUREMENT_QUERY_KEY, 'authority-slice', cui],
+    queryFn: () => fetchProcurementAuthoritySlice(cui),
+    initialData,
     enabled: Boolean(cui),
   })
 }

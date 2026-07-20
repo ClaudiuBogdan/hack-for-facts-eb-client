@@ -92,7 +92,9 @@ import { Route as ClassificationsEconomicIndexRouteImport } from './routes/class
 import { Route as LangLearningIndexRouteImport } from './routes/$lang/learning/index'
 import { Route as StatisticiTeritoriiSirutaRouteImport } from './routes/statistici/teritorii/$siruta'
 import { Route as StatisticiSeturiCodRouteImport } from './routes/statistici/seturi/$cod'
+import { Route as ProcurementSuppliersCuiRouteImport } from './routes/procurement/suppliers/$cui'
 import { Route as ProcurementProceduresIdRouteImport } from './routes/procurement/procedures/$id'
+import { Route as ProcurementInstitutionsCuiRouteImport } from './routes/procurement/institutions/$cui'
 import { Route as ProcurementDirectAcquisitionsIdRouteImport } from './routes/procurement/direct-acquisitions/$id'
 import { Route as ProcurementContractsIdRouteImport } from './routes/procurement/contracts/$id'
 import { Route as ProcurementCategoriesCodeRouteImport } from './routes/procurement/categories/$code'
@@ -686,6 +688,13 @@ const StatisticiSeturiCodRoute = StatisticiSeturiCodRouteImport.update({
 } as any).lazy(() =>
   import('./routes/statistici/seturi/$cod.lazy').then((d) => d.Route),
 )
+const ProcurementSuppliersCuiRoute = ProcurementSuppliersCuiRouteImport.update({
+  id: '/suppliers/$cui',
+  path: '/suppliers/$cui',
+  getParentRoute: () => ProcurementRouteRoute,
+} as any).lazy(() =>
+  import('./routes/procurement/suppliers/$cui.lazy').then((d) => d.Route),
+)
 const ProcurementProceduresIdRoute = ProcurementProceduresIdRouteImport.update({
   id: '/procedures/$id',
   path: '/procedures/$id',
@@ -693,6 +702,14 @@ const ProcurementProceduresIdRoute = ProcurementProceduresIdRouteImport.update({
 } as any).lazy(() =>
   import('./routes/procurement/procedures/$id.lazy').then((d) => d.Route),
 )
+const ProcurementInstitutionsCuiRoute =
+  ProcurementInstitutionsCuiRouteImport.update({
+    id: '/institutions/$cui',
+    path: '/institutions/$cui',
+    getParentRoute: () => ProcurementRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/procurement/institutions/$cui.lazy').then((d) => d.Route),
+  )
 const ProcurementDirectAcquisitionsIdRoute =
   ProcurementDirectAcquisitionsIdRouteImport.update({
     id: '/direct-acquisitions/$id',
@@ -1348,7 +1365,9 @@ export interface FileRoutesByFullPath {
   '/procurement/categories/$code': typeof ProcurementCategoriesCodeRoute
   '/procurement/contracts/$id': typeof ProcurementContractsIdRoute
   '/procurement/direct-acquisitions/$id': typeof ProcurementDirectAcquisitionsIdRoute
+  '/procurement/institutions/$cui': typeof ProcurementInstitutionsCuiRoute
   '/procurement/procedures/$id': typeof ProcurementProceduresIdRoute
+  '/procurement/suppliers/$cui': typeof ProcurementSuppliersCuiRoute
   '/statistici/seturi/$cod': typeof StatisticiSeturiCodRoute
   '/statistici/teritorii/$siruta': typeof StatisticiTeritoriiSirutaRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
@@ -1490,7 +1509,9 @@ export interface FileRoutesByTo {
   '/procurement/categories/$code': typeof ProcurementCategoriesCodeRoute
   '/procurement/contracts/$id': typeof ProcurementContractsIdRoute
   '/procurement/direct-acquisitions/$id': typeof ProcurementDirectAcquisitionsIdRoute
+  '/procurement/institutions/$cui': typeof ProcurementInstitutionsCuiRoute
   '/procurement/procedures/$id': typeof ProcurementProceduresIdRoute
+  '/procurement/suppliers/$cui': typeof ProcurementSuppliersCuiRoute
   '/statistici/seturi/$cod': typeof StatisticiSeturiCodRoute
   '/statistici/teritorii/$siruta': typeof StatisticiTeritoriiSirutaRoute
   '/$lang/learning': typeof LangLearningIndexRoute
@@ -1647,7 +1668,9 @@ export interface FileRoutesById {
   '/procurement/categories/$code': typeof ProcurementCategoriesCodeRoute
   '/procurement/contracts/$id': typeof ProcurementContractsIdRoute
   '/procurement/direct-acquisitions/$id': typeof ProcurementDirectAcquisitionsIdRoute
+  '/procurement/institutions/$cui': typeof ProcurementInstitutionsCuiRoute
   '/procurement/procedures/$id': typeof ProcurementProceduresIdRoute
+  '/procurement/suppliers/$cui': typeof ProcurementSuppliersCuiRoute
   '/statistici/seturi/$cod': typeof StatisticiSeturiCodRoute
   '/statistici/teritorii/$siruta': typeof StatisticiTeritoriiSirutaRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
@@ -1806,7 +1829,9 @@ export interface FileRouteTypes {
     | '/procurement/categories/$code'
     | '/procurement/contracts/$id'
     | '/procurement/direct-acquisitions/$id'
+    | '/procurement/institutions/$cui'
     | '/procurement/procedures/$id'
+    | '/procurement/suppliers/$cui'
     | '/statistici/seturi/$cod'
     | '/statistici/teritorii/$siruta'
     | '/$lang/learning/'
@@ -1948,7 +1973,9 @@ export interface FileRouteTypes {
     | '/procurement/categories/$code'
     | '/procurement/contracts/$id'
     | '/procurement/direct-acquisitions/$id'
+    | '/procurement/institutions/$cui'
     | '/procurement/procedures/$id'
+    | '/procurement/suppliers/$cui'
     | '/statistici/seturi/$cod'
     | '/statistici/teritorii/$siruta'
     | '/$lang/learning'
@@ -2104,7 +2131,9 @@ export interface FileRouteTypes {
     | '/procurement/categories/$code'
     | '/procurement/contracts/$id'
     | '/procurement/direct-acquisitions/$id'
+    | '/procurement/institutions/$cui'
     | '/procurement/procedures/$id'
+    | '/procurement/suppliers/$cui'
     | '/statistici/seturi/$cod'
     | '/statistici/teritorii/$siruta'
     | '/$lang/learning/'
@@ -2852,11 +2881,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StatisticiSeturiCodRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/procurement/suppliers/$cui': {
+      id: '/procurement/suppliers/$cui'
+      path: '/suppliers/$cui'
+      fullPath: '/procurement/suppliers/$cui'
+      preLoaderRoute: typeof ProcurementSuppliersCuiRouteImport
+      parentRoute: typeof ProcurementRouteRoute
+    }
     '/procurement/procedures/$id': {
       id: '/procurement/procedures/$id'
       path: '/procedures/$id'
       fullPath: '/procurement/procedures/$id'
       preLoaderRoute: typeof ProcurementProceduresIdRouteImport
+      parentRoute: typeof ProcurementRouteRoute
+    }
+    '/procurement/institutions/$cui': {
+      id: '/procurement/institutions/$cui'
+      path: '/institutions/$cui'
+      fullPath: '/procurement/institutions/$cui'
+      preLoaderRoute: typeof ProcurementInstitutionsCuiRouteImport
       parentRoute: typeof ProcurementRouteRoute
     }
     '/procurement/direct-acquisitions/$id': {
@@ -3430,7 +3473,9 @@ interface ProcurementRouteRouteChildren {
   ProcurementCategoriesCodeRoute: typeof ProcurementCategoriesCodeRoute
   ProcurementContractsIdRoute: typeof ProcurementContractsIdRoute
   ProcurementDirectAcquisitionsIdRoute: typeof ProcurementDirectAcquisitionsIdRoute
+  ProcurementInstitutionsCuiRoute: typeof ProcurementInstitutionsCuiRoute
   ProcurementProceduresIdRoute: typeof ProcurementProceduresIdRoute
+  ProcurementSuppliersCuiRoute: typeof ProcurementSuppliersCuiRoute
 }
 
 const ProcurementRouteRouteChildren: ProcurementRouteRouteChildren = {
@@ -3439,7 +3484,9 @@ const ProcurementRouteRouteChildren: ProcurementRouteRouteChildren = {
   ProcurementCategoriesCodeRoute: ProcurementCategoriesCodeRoute,
   ProcurementContractsIdRoute: ProcurementContractsIdRoute,
   ProcurementDirectAcquisitionsIdRoute: ProcurementDirectAcquisitionsIdRoute,
+  ProcurementInstitutionsCuiRoute: ProcurementInstitutionsCuiRoute,
   ProcurementProceduresIdRoute: ProcurementProceduresIdRoute,
+  ProcurementSuppliersCuiRoute: ProcurementSuppliersCuiRoute,
 }
 
 const ProcurementRouteRouteWithChildren =
