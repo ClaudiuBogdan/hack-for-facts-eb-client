@@ -76,6 +76,10 @@ import {
   buildScopeFilter,
   type ProcurementScopeFilterInput,
 } from './graphql/procurement-filters'
+import {
+  fetchProcurementGeographyOptions,
+  resetProcurementReferenceCacheForTests,
+} from './procurement-reference-api'
 
 /** Rows per aggregate ranking (server default 10, capped at 50). */
 const TOP_N = 10
@@ -110,6 +114,7 @@ async function loadCpvDivisions(): Promise<RawProcurementCpvDivision[]> {
 async function loadAggregates(
   scope: ProcurementScopeFilterInput,
   options: {
+    readonly includeAuthorities?: boolean
     readonly includeSuppliers?: boolean
     readonly includeCategories?: boolean
   } = {},
@@ -119,6 +124,7 @@ async function loadAggregates(
     {
       scope,
       topN: TOP_N,
+      includeAuthorities: options.includeAuthorities ?? true,
       includeSuppliers: options.includeSuppliers ?? true,
       includeCategories: options.includeCategories ?? true,
     },
@@ -196,9 +202,38 @@ async function loadPartyNames(
 export async function fetchProcurementLandingLive(
   filters: ProcurementLandingFilters = {},
 ): Promise<ProcurementLanding> {
-  const scope = buildScopeFilter(buildProcurementOverviewMonthScope(filters))
+  let buyerRegion = filters.buyerRegion
+  if (filters.buyerCounty) {
+    const geography = await fetchProcurementGeographyOptions()
+    const county = geography.counties.find(
+      (option) => option.countyCode === filters.buyerCounty,
+    )
+    if (!county?.region) {
+      throw new Error(
+        `County ${filters.buyerCounty} has no live procurement region mapping`,
+      )
+    }
+    buyerRegion = county.region
+  }
+
+  if (filters.supplierRegion || filters.supplierCounty) {
+    throw new Error(
+      'Supplier geography is not available in the live procurement matrix yet',
+    )
+  }
+
+  const scope = buildScopeFilter({
+    ...buildProcurementOverviewMonthScope(filters),
+    buyerRegion,
+  })
+  const hasBuyerGeography = Boolean(buyerRegion)
   const [aggregates, divisions] = await Promise.all([
-    loadAggregates(scope),
+    loadAggregates(scope, {
+      // Party-key rollups are not retained under buyer-region scope. Omitting
+      // these fields keeps the rest of the scoped landing response serviceable.
+      includeAuthorities: !hasBuyerGeography,
+      includeSuppliers: !hasBuyerGeography,
+    }),
     loadCpvDivisions(),
   ])
   const partyNames = await loadPartyNames(aggregates)
@@ -424,4 +459,5 @@ export async function fetchSupplierProcurementSliceLive(
 export function resetProcurementLiveCachesForTests(): void {
   cpvDivisionsCache = null
   partyNameCache.clear()
+  resetProcurementReferenceCacheForTests()
 }

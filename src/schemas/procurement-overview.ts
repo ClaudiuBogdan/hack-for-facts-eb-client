@@ -27,6 +27,13 @@ const optionalOverviewDate = z
   )
   .catch(undefined)
 
+const optionalGeographyKey = z
+  .preprocess(
+    (value) => (typeof value === 'string' ? value.trim() : value),
+    z.string().min(1).max(64).optional(),
+  )
+  .catch(undefined)
+
 export function normalizeProcurementMonthStart(
   value: string | undefined,
 ): string | undefined {
@@ -49,6 +56,10 @@ export const procurementOverviewSearchSchema = z
     tab: z.enum(['overview', 'search']).optional().catch(undefined),
     dateFrom: optionalOverviewDate,
     dateTo: optionalOverviewDate,
+    buyerRegion: optionalGeographyKey,
+    buyerCounty: optionalGeographyKey,
+    supplierRegion: optionalGeographyKey,
+    supplierCounty: optionalGeographyKey,
   })
   .passthrough()
 
@@ -56,19 +67,35 @@ export type ProcurementOverviewSearch = {
   readonly tab?: 'overview' | 'search'
   readonly dateFrom?: string
   readonly dateTo?: string
+  readonly buyerRegion?: string
+  readonly buyerCounty?: string
+  readonly supplierRegion?: string
+  readonly supplierCounty?: string
   readonly [key: string]: unknown
 }
 
 export type ProcurementLandingFilters = {
   readonly dateFrom?: string
   readonly dateTo?: string
+  readonly buyerRegion?: string
+  readonly buyerCounty?: string
+  readonly supplierRegion?: string
+  readonly supplierCounty?: string
 }
 
 export function parseProcurementOverviewSearch(
   input: unknown,
 ): ProcurementOverviewSearch {
   const parsed = procurementOverviewSearchSchema.parse(input ?? {})
-  const { dateFrom, dateTo, ...rest } = parsed
+  const {
+    dateFrom,
+    dateTo,
+    buyerRegion,
+    buyerCounty,
+    supplierRegion,
+    supplierCounty,
+    ...rest
+  } = parsed
   const normalizedFrom = normalizeProcurementMonthStart(dateFrom)
   const normalizedTo = normalizeProcurementMonthEnd(dateTo)
 
@@ -76,6 +103,19 @@ export function parseProcurementOverviewSearch(
     ...rest,
     ...(normalizedFrom ? { dateFrom: normalizedFrom } : {}),
     ...(normalizedTo ? { dateTo: normalizedTo } : {}),
+    // County is the more specific deep-link when stale URLs contain both.
+    // The live client still applies it as an explicitly-labelled regional
+    // approximation until Matrix v2 exposes the buyer-county rollup.
+    ...(buyerCounty
+      ? { buyerCounty }
+      : buyerRegion
+        ? { buyerRegion }
+        : {}),
+    ...(supplierCounty
+      ? { supplierCounty }
+      : supplierRegion
+        ? { supplierRegion }
+        : {}),
   }
 }
 

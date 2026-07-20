@@ -39,4 +39,23 @@ describe('procurement overview period', () => {
       buildProcurementOverviewMonthScope({ dateTo: '2024-06-30' }),
     ).toEqual({ monthTo: '2024-06' })
   })
+
+  it('keeps one stable geography key per party side', () => {
+    expect(
+      parseProcurementOverviewSearch({
+        buyerRegion: ' Nord-Vest ',
+        buyerCounty: 'CJ',
+        supplierRegion: 'Centru',
+      }),
+    ).toMatchObject({
+      buyerCounty: 'CJ',
+      supplierRegion: 'Centru',
+    })
+    expect(
+      parseProcurementOverviewSearch({
+        buyerRegion: 'Nord-Vest',
+        supplierCounty: '  ',
+      }),
+    ).toEqual({ buyerRegion: 'Nord-Vest' })
+  })
 })

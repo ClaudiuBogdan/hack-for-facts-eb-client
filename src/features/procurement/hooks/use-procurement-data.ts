@@ -21,6 +21,7 @@ import {
   fetchProcurementAnalysis,
   type ProcurementAnalysisRequest,
 } from '../api/procurement-analysis-api'
+import { fetchProcurementGeographyOptions } from '../api/procurement-reference-api'
 
 const PROCUREMENT_QUERY_KEY = ['procurement'] as const
 
@@ -31,6 +32,10 @@ export function useProcurementLanding(filters: ProcurementLandingFilters = {}) {
       'landing',
       filters.dateFrom ?? null,
       filters.dateTo ?? null,
+      filters.buyerRegion ?? null,
+      filters.buyerCounty ?? null,
+      filters.supplierRegion ?? null,
+      filters.supplierCounty ?? null,
     ],
     queryFn: () => fetchProcurementLanding(filters),
   })
@@ -40,6 +45,15 @@ export function useProcurementAnalysis(request: ProcurementAnalysisRequest) {
   return useQuery({
     queryKey: [...PROCUREMENT_QUERY_KEY, 'analysis', request],
     queryFn: () => fetchProcurementAnalysis(request),
+  })
+}
+
+export function useProcurementGeographyOptions() {
+  return useQuery({
+    queryKey: [...PROCUREMENT_QUERY_KEY, 'geography-options'],
+    queryFn: fetchProcurementGeographyOptions,
+    staleTime: 24 * 60 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
   })
 }
 

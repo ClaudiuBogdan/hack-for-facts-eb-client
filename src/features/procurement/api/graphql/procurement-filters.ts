@@ -343,6 +343,7 @@ export function buildScopeFilter(scope: {
   cpvCode?: string
   monthFrom?: string
   monthTo?: string
+  buyerRegion?: string
   grain?: ProcurementScopeFilterInput['grain']
 }): ProcurementScopeFilterInput {
   const filter: ProcurementScopeFilterInput = {}
@@ -361,6 +362,8 @@ export function buildScopeFilter(scope: {
   if (monthFrom) filter.from = monthFrom
   const monthTo = trimmedOrUndefined(scope.monthTo)
   if (monthTo) filter.to = monthTo
+  const buyerRegion = trimmedOrUndefined(scope.buyerRegion)
+  if (buyerRegion) filter.buyerRegion = buyerRegion
   if (scope.grain) filter.grain = scope.grain
   return filter
 }

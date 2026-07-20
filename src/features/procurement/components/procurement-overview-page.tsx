@@ -3,10 +3,20 @@ import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react'
 import { useNavigate } from '@tanstack/react-router'
+import { X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import type { ProcurementLandingFilters } from '@/schemas/procurement-overview'
 import { buildProcurementOverviewMonthScope } from '@/schemas/procurement-overview'
-import { useProcurementLanding } from '../hooks/use-procurement-data'
+import {
+  useProcurementGeographyOptions,
+  useProcurementLanding,
+} from '../hooks/use-procurement-data'
 import { formatFlowCount, formatRon } from '../lib/formatting'
+import {
+  effectiveBuyerRegion,
+  findProcurementCounty,
+  formatProcurementCountyName,
+} from '../lib/procurement-geography'
 import { ProcurementShell } from './procurement-shell'
 import { ProcurementStatTile } from './procurement-stat-tile'
 import { ProcurementSearchDock } from './procurement-search-dock'
@@ -48,10 +58,21 @@ export function ProcurementOverviewPage({
   const { i18n } = useLingui()
   const navigate = useNavigate({ from: '/procurement/' })
   const query = useProcurementLanding(filters)
+  const geographyQuery = useProcurementGeographyOptions()
   const data = query.data
   const [grain, setGrain] = useState<FlowAnalysisGrain>('direct_acquisition')
   const [filterSheetOpen, setFilterSheetOpen] = useState(false)
   const hasActivePeriod = Boolean(filters.dateFrom || filters.dateTo)
+  const hasBuyerGeography = Boolean(filters.buyerRegion || filters.buyerCounty)
+  const activeFilterCount =
+    (hasActivePeriod ? 1 : 0) +
+    (hasBuyerGeography ? 1 : 0) +
+    (filters.supplierRegion || filters.supplierCounty ? 1 : 0)
+  const selectedCounty = findProcurementCounty(
+    geographyQuery.data,
+    filters.buyerCounty,
+  )
+  const appliedBuyerRegion = effectiveBuyerRegion(geographyQuery.data, filters)
   const monthScope = buildProcurementOverviewMonthScope(filters)
   const analysisScope = {
     ...(monthScope.monthFrom ? { from: monthScope.monthFrom } : {}),
@@ -64,6 +85,10 @@ export function ProcurementOverviewPage({
           ...previous,
           dateFrom: next.dateFrom,
           dateTo: next.dateTo,
+          buyerRegion: next.buyerRegion,
+          buyerCounty: next.buyerCounty,
+          supplierRegion: next.supplierRegion,
+          supplierCounty: next.supplierCounty,
         }),
         replace: true,
         resetScroll: false,
@@ -71,6 +96,13 @@ export function ProcurementOverviewPage({
     },
     [navigate],
   )
+  const clearBuyerGeography = useCallback(() => {
+    updateFilters({
+      ...filters,
+      buyerRegion: undefined,
+      buyerCounty: undefined,
+    })
+  }, [filters, updateFilters])
   const analytics = data
     ? grain === 'contract'
       ? data.analysisByGrain.contract
@@ -83,7 +115,7 @@ export function ProcurementOverviewPage({
       landingFilters={filters}
       actions={
         <ProcurementOverviewFilterTrigger
-          active={hasActivePeriod}
+          activeCount={activeFilterCount}
           onClick={() => setFilterSheetOpen(true)}
         />
       }
@@ -98,23 +130,61 @@ export function ProcurementOverviewPage({
         />
       ) : data ? (
         <div className="space-y-6">
-          {hasActivePeriod ? (
+          {hasActivePeriod || hasBuyerGeography ? (
             <section
-              className="flex flex-col gap-1 border-l-4 border-[#1d70b8] bg-[var(--pnrr-subtle)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
-              aria-label={t`Active period filter`}
+              className="space-y-3 border-l-4 border-[#1d70b8] bg-[var(--pnrr-subtle)] px-4 py-3"
+              aria-label={t`Active procurement filters`}
             >
               <p className="text-sm font-bold text-[var(--pnrr-fg)]">
-                <Trans>Filtered period</Trans>
+                <Trans>Active Filters</Trans>
               </p>
-              <p className="text-sm tabular-nums text-[var(--pnrr-muted)]">
-                {filters.dateFrom
-                  ? formatMonth(filters.dateFrom, i18n.locale)
-                  : t`First available month`}{' '}
-                –{' '}
-                {filters.dateTo
-                  ? formatMonth(filters.dateTo, i18n.locale)
-                  : t`Latest available month`}
-              </p>
+              <div className="flex flex-wrap gap-2">
+                {hasActivePeriod ? (
+                  <span className="inline-flex min-w-0 items-center border-2 border-[var(--pnrr-border)] bg-background px-3 py-1.5 text-sm text-[var(--pnrr-fg)]">
+                    <span className="mr-1 font-bold"><Trans>Period:</Trans></span>
+                    <span className="truncate tabular-nums">
+                      {filters.dateFrom
+                        ? formatMonth(filters.dateFrom, i18n.locale)
+                        : t`First available month`}{' '}
+                      –{' '}
+                      {filters.dateTo
+                        ? formatMonth(filters.dateTo, i18n.locale)
+                        : t`Latest available month`}
+                    </span>
+                  </span>
+                ) : null}
+                {hasBuyerGeography ? (
+                  <span className="inline-flex min-w-0 items-center gap-2 border-2 border-[var(--pnrr-border)] bg-background py-1 pl-3 pr-1 text-sm text-[var(--pnrr-fg)]">
+                    <span className="min-w-0 truncate">
+                      <strong><Trans>Public institution:</Trans></strong>{' '}
+                      {filters.buyerCounty
+                        ? selectedCounty
+                          ? t`${formatProcurementCountyName(selectedCounty.countyName)} County → ${selectedCounty.region ?? t`unknown region`} approximation`
+                          : t`County ${filters.buyerCounty}`
+                        : filters.buyerRegion}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 shrink-0 rounded-none"
+                      aria-label={t`Clear public institution location`}
+                      onClick={clearBuyerGeography}
+                    >
+                      <X className="h-4 w-4" aria-hidden="true" />
+                    </Button>
+                  </span>
+                ) : null}
+              </div>
+              {filters.buyerCounty && appliedBuyerRegion ? (
+                <p className="text-sm leading-6 text-[var(--pnrr-muted)]">
+                  <Trans>
+                    County precision is not available yet. Every result below
+                    is currently scoped to the wider region:{' '}
+                    {appliedBuyerRegion}.
+                  </Trans>
+                </p>
+              ) : null}
             </section>
           ) : null}
 
@@ -167,6 +237,15 @@ export function ProcurementOverviewPage({
 
           <ProcurementSearchDock />
 
+          {hasBuyerGeography ? (
+            <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
+              <Trans>
+                The overview analytics are filtered. Record search does not
+                support geography yet and opens without this location filter.
+              </Trans>
+            </p>
+          ) : null}
+
           <div className="flex justify-end">
             <ProcurementAnalysisGrainToggle value={grain} onChange={setGrain} />
           </div>
@@ -182,6 +261,11 @@ export function ProcurementOverviewPage({
               rows={analytics?.topAuthorities ?? []}
               kind="authority"
               seeAllParam="authority_cui"
+              unavailableReason={
+                hasBuyerGeography
+                  ? t`Authority rankings are unavailable under the current regional rollup.`
+                  : undefined
+              }
             />
             <ProcurementPartyRanking
               title={t`Top suppliers`}
@@ -189,6 +273,11 @@ export function ProcurementOverviewPage({
               rows={analytics?.topSuppliers ?? []}
               kind="supplier"
               seeAllParam="supplier_cui"
+              unavailableReason={
+                hasBuyerGeography
+                  ? t`Supplier rankings are unavailable under the current regional rollup.`
+                  : undefined
+              }
             />
           </div>
 
@@ -198,9 +287,24 @@ export function ProcurementOverviewPage({
             points={analytics?.monthly ?? []}
           />
 
-          <ProcurementAnalysisWorkspace scope={analysisScope} />
-
           <ProcurementQuickLinks />
+
+          {hasBuyerGeography ? (
+            <section className="border-2 border-[var(--pnrr-border)] bg-background p-5 sm:p-6">
+              <h2 className="text-lg font-black text-[var(--pnrr-fg)]">
+                <Trans>Analysis Workspace</Trans>
+              </h2>
+              <p className="mt-2 border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
+                <Trans>
+                  The interactive workspace contains combinations that the
+                  regional rollup cannot answer yet. It is paused for this
+                  filter instead of showing unfiltered or partial results.
+                </Trans>
+              </p>
+            </section>
+          ) : (
+            <ProcurementAnalysisWorkspace scope={analysisScope} />
+          )}
         </div>
       ) : null}
       <ProcurementOverviewFilterSheet

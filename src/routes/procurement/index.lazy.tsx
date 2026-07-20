@@ -10,7 +10,14 @@ function ProcurementOverviewRoutePage() {
   const search = parseProcurementOverviewSearch(Route.useSearch())
   return (
     <ProcurementOverviewPage
-      filters={{ dateFrom: search.dateFrom, dateTo: search.dateTo }}
+      filters={{
+        dateFrom: search.dateFrom,
+        dateTo: search.dateTo,
+        buyerRegion: search.buyerRegion,
+        buyerCounty: search.buyerCounty,
+        supplierRegion: search.supplierRegion,
+        supplierCounty: search.supplierCounty,
+      }}
     />
   )
 }
