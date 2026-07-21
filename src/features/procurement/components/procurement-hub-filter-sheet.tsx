@@ -23,6 +23,7 @@ import {
   getPreviousCalendarYearBounds,
   normalizeProcurementMonthEnd,
   normalizeProcurementMonthStart,
+  type ProcurementHubMeasure,
 } from '@/schemas/procurement-hub'
 import { useProcurementGeographyOptions } from '../hooks/use-procurement-data'
 import type { ProcurementHubFilterState } from '../hooks/use-procurement-hub-state'
@@ -98,6 +99,7 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
     hub.setBuyerGeography({
       buyerRegion: undefined,
       buyerCounty: undefined,
+      buyerSiruta: undefined,
     })
   }
 
@@ -105,6 +107,7 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
     hub.setBuyerGeography({
       buyerRegion: buyerLevel === 'region' ? value : undefined,
       buyerCounty: buyerLevel === 'county' ? value : undefined,
+      buyerSiruta: undefined,
     })
   }
 
@@ -120,8 +123,8 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
           </SheetTitle>
           <SheetDescription className="pt-1 text-left text-sm font-semibold text-[#505a5f] dark:text-[var(--pnrr-muted)]">
             <Trans>
-              Shared filters for Overview and List. Unsupported controls stay
-              visible and are marked when they are not applied yet.
+              Shared filters for Overview, Map, and List. Unsupported controls
+              stay visible and are marked when they are not applied yet.
             </Trans>
           </SheetDescription>
         </SheetHeader>
@@ -212,6 +215,52 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
                   }
                 />
               </div>
+            </div>
+          </section>
+
+          <section
+            className="space-y-4 border-t-2 border-[#b1b4b6] pt-6 dark:border-[var(--pnrr-border)]"
+            aria-labelledby="hub-measure-label"
+          >
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+                <p id="hub-measure-label" className={procurementSectionLabelClassName}>
+                  <Trans>Metric</Trans>
+                </p>
+              </div>
+              <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                <Trans>
+                  Shared across Overview, Map, and List. Count is the default;
+                  awarded value stays secondary where amounts are answerable.
+                </Trans>
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {(
+                [
+                  { id: 'record_count' as const, label: t`Record count` },
+                  { id: 'value_awarded' as const, label: t`Awarded value` },
+                ] satisfies ReadonlyArray<{
+                  id: ProcurementHubMeasure
+                  label: string
+                }>
+              ).map((option) => (
+                <Button
+                  key={option.id}
+                  type="button"
+                  variant="outline"
+                  aria-pressed={state.measure === option.id}
+                  className={cn(
+                    procurementOutlineButtonClassName,
+                    'h-9 px-3 text-xs',
+                    state.measure === option.id && 'border-[var(--pnrr-fg)]',
+                  )}
+                  onClick={() => hub.updateFilters({ measure: option.id })}
+                >
+                  {option.label}
+                </Button>
+              ))}
             </div>
           </section>
 

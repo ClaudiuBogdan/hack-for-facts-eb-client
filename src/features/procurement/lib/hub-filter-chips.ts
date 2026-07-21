@@ -2,9 +2,10 @@
  * Hub active-filter chips — period always, geo with B1 suffixes, list-only (C1).
  */
 import { t } from '@lingui/core/macro'
-import type {
-  ProcurementHubState,
-  ResolvedProcurementOverviewPeriod,
+import {
+  PROCUREMENT_HUB_DEFAULTS,
+  type ProcurementHubState,
+  type ResolvedProcurementOverviewPeriod,
 } from '@/schemas/procurement-hub'
 import { sourceLabel, valueCategoryLabel } from './enum-labels'
 import { statusLabel } from './status-meta'
@@ -29,13 +30,20 @@ function formatMonth(value: string, locale = 'en'): string {
 
 const RON_FORMAT = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 })
 
+function measureLabel(measure: ProcurementHubState['measure']): string {
+  return measure === 'value_awarded' ? t`Awarded value` : t`Record count`
+}
+
 export function buildHubActiveFilterChips(
   state: ProcurementHubState,
   period: ResolvedProcurementOverviewPeriod,
   locale = 'en',
 ): readonly HubFilterChip[] {
   const chips: HubFilterChip[] = []
-  const onOverview = state.view === 'overview'
+  const onList = state.view === 'list'
+  const geoAppliedOnView =
+    state.view === 'overview' || state.view === 'map'
+  const listFacetKind: HubFilterChipKind = onList ? 'applied' : 'list-only'
 
   if (period.isAllTime) {
     chips.push({
@@ -69,21 +77,51 @@ export function buildHubActiveFilterChips(
     })
   }
 
-  if (state.buyerCounty) {
+  chips.push({
+    key: 'measure',
+    prefix: t`Metric`,
+    value: measureLabel(state.measure),
+    kind: 'applied',
+    clear: { measure: PROCUREMENT_HUB_DEFAULTS.measure },
+  })
+
+  // mapGrain is map-tab chrome only — never a global active-filter chip.
+
+  if (state.buyerSiruta) {
+    chips.push({
+      key: 'buyer-siruta',
+      prefix: t`Public institution`,
+      value: t`UAT ${state.buyerSiruta}`,
+      kind: geoAppliedOnView ? 'applied' : 'not-on-list',
+      clear: {
+        buyerSiruta: undefined,
+        buyerCounty: undefined,
+        buyerRegion: undefined,
+      },
+    })
+  } else if (state.buyerCounty) {
     chips.push({
       key: 'buyer-county',
       prefix: t`Public institution`,
       value: t`County ${state.buyerCounty}`,
-      kind: onOverview ? 'applied' : 'not-on-list',
-      clear: { buyerCounty: undefined, buyerRegion: undefined },
+      kind: geoAppliedOnView ? 'applied' : 'not-on-list',
+      clear: {
+        buyerCounty: undefined,
+        buyerRegion: undefined,
+        buyerSiruta: undefined,
+      },
     })
   } else if (state.buyerRegion) {
     chips.push({
       key: 'buyer-region',
       prefix: t`Public institution`,
       value: state.buyerRegion,
-      kind: onOverview ? 'applied' : 'not-on-list',
-      clear: { buyerRegion: undefined, buyerCounty: undefined },
+      kind: geoAppliedOnView ? 'applied' : 'not-on-list',
+      clear: {
+        buyerRegion: undefined,
+        buyerCounty: undefined,
+        buyerSiruta: undefined,
+      },
     })
   }
 
@@ -102,7 +140,7 @@ export function buildHubActiveFilterChips(
       key: 'q',
       prefix: t`Query`,
       value: state.q,
-      kind: onOverview ? 'list-only' : 'applied',
+      kind: listFacetKind,
       clear: { q: undefined },
     })
   }
@@ -111,7 +149,7 @@ export function buildHubActiveFilterChips(
       key: 'authority',
       prefix: t`Authority`,
       value: state.authority_cui,
-      kind: onOverview ? 'list-only' : 'applied',
+      kind: listFacetKind,
       clear: { authority_cui: undefined },
     })
   }
@@ -120,7 +158,7 @@ export function buildHubActiveFilterChips(
       key: 'supplier',
       prefix: t`Supplier`,
       value: state.supplier_cui,
-      kind: onOverview ? 'list-only' : 'applied',
+      kind: listFacetKind,
       clear: { supplier_cui: undefined },
     })
   }
@@ -129,7 +167,7 @@ export function buildHubActiveFilterChips(
       key: 'cpv',
       prefix: t`CPV`,
       value: state.cpv,
-      kind: onOverview ? 'list-only' : 'applied',
+      kind: listFacetKind,
       clear: { cpv: undefined },
     })
   } else if (state.cpv_division) {
@@ -137,7 +175,7 @@ export function buildHubActiveFilterChips(
       key: 'cpv-division',
       prefix: t`CPV division`,
       value: state.cpv_division,
-      kind: onOverview ? 'list-only' : 'applied',
+      kind: listFacetKind,
       clear: { cpv_division: undefined },
     })
   }
@@ -146,7 +184,7 @@ export function buildHubActiveFilterChips(
       key: 'source',
       prefix: t`Source`,
       value: sourceLabel(state.source),
-      kind: onOverview ? 'list-only' : 'applied',
+      kind: listFacetKind,
       clear: { source: undefined },
     })
   }
@@ -155,7 +193,7 @@ export function buildHubActiveFilterChips(
       key: 'status',
       prefix: t`Status`,
       value: state.status.map(statusLabel).join(', '),
-      kind: onOverview ? 'list-only' : 'applied',
+      kind: listFacetKind,
       clear: { status: undefined },
     })
   }
@@ -164,7 +202,7 @@ export function buildHubActiveFilterChips(
       key: 'value-state',
       prefix: t`Value quality`,
       value: state.value_state.map(valueCategoryLabel).join(', '),
-      kind: onOverview ? 'list-only' : 'applied',
+      kind: listFacetKind,
       clear: { value_state: undefined },
     })
   }
@@ -177,7 +215,7 @@ export function buildHubActiveFilterChips(
       key: 'value',
       prefix: t`Value (RON)`,
       value: `${min} – ${max}`,
-      kind: onOverview ? 'list-only' : 'applied',
+      kind: listFacetKind,
       clear: { valueMin: undefined, valueMax: undefined },
     })
   }

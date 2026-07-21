@@ -92,6 +92,7 @@ export type ProcurementLandingFilters = {
   readonly period?: 'all'
   readonly buyerRegion?: string
   readonly buyerCounty?: string
+  readonly buyerSiruta?: string
   readonly supplierRegion?: string
   readonly supplierCounty?: string
 }

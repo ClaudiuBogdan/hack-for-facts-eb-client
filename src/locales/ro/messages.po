@@ -120,13 +120,13 @@ msgstr "{0} firme găsite"
 
 #. placeholder {0}: region.countyCount
 #. placeholder {1}: region.uatCount
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:67
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:68
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:75
 msgid "{0} counties · {1} localities"
 msgstr ""
 
 #. placeholder {0}: formatProcurementCountyName(county.countyName)
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:72
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:73
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:80
 msgid "{0} County"
 msgstr ""
@@ -245,7 +245,7 @@ msgstr "{0} rectificări"
 
 #. placeholder {0}: county.region
 #. placeholder {1}: county.countyCode
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:74
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:75
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:82
 msgid "{0} region · code {1}"
 msgstr ""
@@ -1182,7 +1182,7 @@ msgstr "Ajustare la inflație (prețuri constante 2024)"
 msgid "Administrative location (API)"
 msgstr "Locație administrativă (API)"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:238
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:287
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:276
 msgid "Administrative territory linked to the contracting institution in the procurement dataset."
 msgstr ""
@@ -1413,10 +1413,10 @@ msgstr "Toate fazele au fost explorate!"
 msgid "All predefined views are already enabled."
 msgstr "Toate vizualizările predefinite sunt deja activate."
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:176
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:179
 #: src/features/procurement/components/procurement-overview-active-filters.tsx:64
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:211
-#: src/features/procurement/lib/hub-filter-chips.ts:44
+#: src/features/procurement/lib/hub-filter-chips.ts:52
 msgid "All time"
 msgstr "Tot timpul"
 
@@ -1558,7 +1558,7 @@ msgstr "ANAF nu a returnat ani de situații financiare pentru această companie 
 msgid "Analysis workspace"
 msgstr ""
 
-#: src/features/procurement/components/procurement-overview-page.tsx:192
+#: src/features/procurement/components/procurement-overview-page.tsx:213
 msgid "Analysis Workspace"
 msgstr ""
 
@@ -1763,6 +1763,14 @@ msgstr "Aplică gradient"
 msgid "Apply gradient colors?"
 msgstr "Aplici culorile gradientului?"
 
+#: src/features/procurement/components/procurement-territory-drawer.tsx:313
+msgid "Apply on List"
+msgstr ""
+
+#: src/features/procurement/components/procurement-territory-drawer.tsx:304
+msgid "Apply on Overview"
+msgstr ""
+
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:33
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:52
 msgid "Approved"
@@ -1896,7 +1904,7 @@ msgstr "August"
 
 #: src/features/procurement/components/procurement-party-ranking.tsx:362
 #: src/features/procurement/lib/export.ts:47
-#: src/features/procurement/lib/hub-filter-chips.ts:112
+#: src/features/procurement/lib/hub-filter-chips.ts:150
 msgid "Authority"
 msgstr ""
 
@@ -1908,7 +1916,7 @@ msgstr ""
 msgid "Authority procurement indicators"
 msgstr "Indicatori de achiziții ai autorității"
 
-#: src/features/procurement/components/procurement-overview-page.tsx:166
+#: src/features/procurement/components/procurement-overview-page.tsx:176
 msgid "Authority rankings are unavailable under the current regional rollup."
 msgstr ""
 
@@ -1987,13 +1995,24 @@ msgstr "Suma medie per UAT"
 msgid "Awarded"
 msgstr ""
 
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:243
+#: src/features/procurement/components/procurement-territory-drawer.tsx:196
 #: src/features/procurement/lib/detail-config.ts:51
+#: src/features/procurement/lib/hub-filter-chips.ts:34
 msgid "Awarded value"
-msgstr ""
+msgstr "Valoare atribuită"
 
 #: src/features/procurement/components/procurement-shell.tsx:261
 msgid "awarded value (partial)"
 msgstr "valoare atribuită (parțială)"
+
+#: src/features/procurement/components/procurement-overview-page.tsx:203
+msgid "Awarded value per month when amounts are present (tooltips still show counts)."
+msgstr ""
+
+#: src/features/procurement/components/procurement-territory-drawer.tsx:291
+msgid "Awarded value per month when amounts are present."
+msgstr ""
 
 #: src/features/procurement/components/procurement-overview-page.tsx:225
 #~ msgid "Awarded-value sum across contracts and direct acquisitions; procurement values are not payments."
@@ -2034,6 +2053,10 @@ msgstr "Înapoi la provocări"
 #: src/components/charts/components/views/SeriesConfigView.tsx:202
 msgid "Back to Configuration"
 msgstr "Înapoi la configurare"
+
+#: src/features/procurement/components/procurement-analytics-page.tsx:109
+#~ msgid "Back to hub"
+#~ msgstr "Înapoi la hub"
 
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:110
 msgid "Back to Hub"
@@ -2241,7 +2264,11 @@ msgstr "Detalierea clasificației selectate, incluzând capitolele grupate și t
 msgid "Browse entities"
 msgstr "Cauta entitati"
 
-#: src/features/procurement/components/procurement-quick-links.tsx:41
+#: src/features/procurement/components/procurement-territory-drawer.tsx:173
+#~ msgid "Browse records"
+#~ msgstr "Răsfoiește înregistrările"
+
+#: src/features/procurement/components/procurement-quick-links.tsx:49
 msgid "Browse spending by CPV from the overview rankings above."
 msgstr "Explorează cheltuielile pe CPV din clasamentele de mai sus."
 
@@ -2380,12 +2407,46 @@ msgstr "Editare în masă a filtrelor"
 msgid "Bursă"
 msgstr ""
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:246
+#: src/features/procurement/components/procurement-analytics-page.tsx:65
+#~ msgid "Buyer geography and aggregate exploration. The map is count-first and buyer-side only — supplier geography is not available."
+#~ msgstr ""
+
+#: src/features/procurement/components/procurement-map-preview.tsx:47
+#~ msgid "Buyer geography map"
+#~ msgstr "Hartă geografie cumpărători"
+
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:295
 msgid "Buyer location is kept in the URL for round-trip, but it is not applied to the record list yet."
 msgstr "Locația autorității rămâne în URL pentru continuitate, dar nu se aplică încă listei de înregistrări."
 
+#: src/features/procurement/components/procurement-quick-links.tsx:24
+msgid "Buyer map"
+msgstr "Hartă cumpărători"
+
+#: src/features/procurement/components/procurement-territory-drawer.tsx:104
+#~ msgid "Buyer-side development region. Counts exclude records without known buyer geography."
+#~ msgstr ""
+
+#: src/features/procurement/components/procurement-territory-drawer.tsx:102
+#~ msgid "Buyer-side development region. Counts exclude records without known buyer geography. Filters are not changed until you apply below."
+#~ msgstr ""
+
+#: src/features/procurement/components/procurement-territory-drawer.tsx:169
+msgid "Buyer-side development region. Inspect below, then apply a filter if you want Overview or List scoped to this area."
+msgstr ""
+
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1063
 msgid "BVB și rapoarte de piață"
+msgstr ""
+
+#: src/features/procurement/components/procurement-overview-page.tsx:169
+#: src/features/procurement/components/procurement-overview-page.tsx:184
+msgid "By awarded value when available; bars still use record counts until value sort is published."
+msgstr ""
+
+#: src/features/procurement/components/procurement-territory-drawer.tsx:227
+#: src/features/procurement/components/procurement-territory-drawer.tsx:250
+msgid "By awarded value when available."
 msgstr ""
 
 #: src/features/procurement/components/cpv-category-page.tsx:142
@@ -2393,10 +2454,12 @@ msgstr ""
 #: src/features/procurement/components/procurement-authority-slice.tsx:149
 #: src/features/procurement/components/procurement-authority-slice.tsx:158
 #: src/features/procurement/components/procurement-category-bars.tsx:89
-#: src/features/procurement/components/procurement-overview-page.tsx:161
-#: src/features/procurement/components/procurement-overview-page.tsx:172
+#: src/features/procurement/components/procurement-overview-page.tsx:170
+#: src/features/procurement/components/procurement-overview-page.tsx:185
 #: src/features/procurement/components/procurement-supplier-slice.tsx:132
 #: src/features/procurement/components/procurement-supplier-slice.tsx:141
+#: src/features/procurement/components/procurement-territory-drawer.tsx:228
+#: src/features/procurement/components/procurement-territory-drawer.tsx:251
 msgid "By number of records."
 msgstr "După numărul de înregistrări."
 
@@ -2574,7 +2637,7 @@ msgstr ""
 msgid "Categorie necunoscută"
 msgstr ""
 
-#: src/features/procurement/components/procurement-quick-links.tsx:40
+#: src/features/procurement/components/procurement-quick-links.tsx:48
 msgid "Categories"
 msgstr ""
 
@@ -2996,6 +3059,14 @@ msgstr "Alege cum dorești să fie trimisă cererea de dezbatere publică."
 msgid "Choose operator"
 msgstr "Alegeți operatorul"
 
+#: src/features/procurement/components/procurement-map-view.tsx:225
+msgid "Choropleth Preview — click for details"
+msgstr ""
+
+#: src/features/procurement/components/procurement-map-view.tsx:256
+#~ msgid "Choropleth Preview — click to set filter"
+#~ msgstr ""
+
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:151
 msgid "Citizens allowed to speak"
 msgstr "Cetățeni care au luat cuvântul"
@@ -3093,7 +3164,7 @@ msgstr "Șterge tot"
 msgid "Clear all filters"
 msgstr "Șterge toate filtrele"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:410
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:459
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:407
 msgid "Clear All Filters"
 msgstr ""
@@ -3198,7 +3269,7 @@ msgstr "Clonează instantaneul"
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4857
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:417
 #: src/features/procurement/components/procurement-filter-sheet.tsx:460
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:417
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:466
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:414
 msgid "Close"
 msgstr "Închide"
@@ -3395,7 +3466,7 @@ msgid "Companie de stat"
 msgstr ""
 
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:37
-#: src/features/procurement/components/procurement-quick-links.tsx:32
+#: src/features/procurement/components/procurement-quick-links.tsx:40
 msgid "Companies"
 msgstr "Firme"
 
@@ -4030,6 +4101,7 @@ msgid "Could not load territories"
 msgstr "Nu s-au putut încărca teritoriile"
 
 #: src/features/private-companies/components/hub/company-hub-blocks.tsx:58
+#: src/features/procurement/components/procurement-territory-drawer.tsx:345
 msgid "Could not load this section."
 msgstr "Nu am putut încărca acest bloc."
 
@@ -4060,6 +4132,10 @@ msgstr "Numără"
 msgid "Counties"
 msgstr "Județe"
 
+#: src/features/procurement/components/procurement-map-view.tsx:289
+msgid "Counties are coloured by their development region total. Records without known buyer geography are excluded from the map — never shown as zero."
+msgstr ""
+
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:122
 msgid "Counties with the most companies"
 msgstr "Județe cu cele mai multe firme"
@@ -4083,8 +4159,9 @@ msgstr "Județe cu cele mai multe firme"
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:522
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1511
 #: src/features/private-companies/components/search/company-filter-sheet.tsx:95
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:275
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:284
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:324
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:333
+#: src/features/procurement/components/procurement-map-view.tsx:412
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:304
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:313
 #: src/features/procurement/lib/detail-config.ts:69
@@ -4096,11 +4173,11 @@ msgstr "Județ"
 #. placeholder {0}: filters.buyerCounty
 #. placeholder {0}: state.buyerCounty
 #: src/features/procurement/components/procurement-overview-active-filters.tsx:97
-#: src/features/procurement/lib/hub-filter-chips.ts:76
+#: src/features/procurement/lib/hub-filter-chips.ts:106
 msgid "County {0}"
 msgstr ""
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:325
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:374
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:359
 msgid "County analytics are not published yet. This first version applies the county’s region and labels the result as a regional approximation."
 msgstr ""
@@ -4109,21 +4186,41 @@ msgstr ""
 msgid "County and region filters can both be selected and are combined using AND logic."
 msgstr "Filtrele de județ și regiune pot fi ambele selectate și sunt combinate folosind logica ȘI."
 
+#: src/features/procurement/components/procurement-map-view.tsx:276
+msgid "County and UAT colours are not published yet. Click a territory to open details; use the panel buttons to apply a buyer location filter."
+msgstr ""
+
+#: src/features/procurement/components/procurement-map-view.tsx:304
+#~ msgid "County and UAT colours are not published yet. You can still click a territory to set the buyer location filter."
+#~ msgstr ""
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:85
 msgid "County boundaries"
 msgstr "Limite județene"
 
 #. placeholder {0}: county.countyCode
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:75
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:76
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:83
 msgid "County code {0}"
 msgstr ""
+
+#: src/features/procurement/components/procurement-territory-drawer.tsx:108
+#~ msgid "County details. Choropleth stats are not published yet. Use the buttons below to apply this county as a buyer location filter."
+#~ msgstr ""
+
+#: src/features/procurement/components/procurement-territory-drawer.tsx:109
+#~ msgid "County filter is set in the URL. County choropleth stats are not published yet."
+#~ msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:759
 msgid "County Filters"
 msgstr "Filtre județe"
 
-#: src/features/procurement/components/procurement-overview-page.tsx:93
+#: src/features/procurement/components/procurement-territory-drawer.tsx:174
+msgid "County inspect panel. Apply below to set the buyer location filter."
+msgstr ""
+
+#: src/features/procurement/components/procurement-overview-page.tsx:94
 msgid "County precision is not available yet. Counts and charts below are scoped to the wider region: {appliedBuyerRegion}."
 msgstr "Precizia pe județ nu este încă disponibilă. Numărările și graficele de mai jos sunt limitate la regiunea mai largă: {appliedBuyerRegion}."
 
@@ -4139,6 +4236,10 @@ msgstr "Precizia pe județ nu este încă disponibilă. Numărările și grafice
 #: src/components/maps/utils.ts:193
 msgid "County:"
 msgstr "Județ:"
+
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:283
+#~ msgid "County/UAT choropleth not published yet — filter apply works"
+#~ msgstr ""
 
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:172
 msgid "Course Content"
@@ -4164,7 +4265,7 @@ msgstr "Calitatea acoperirii depinde în continuare de ratele de conectare și d
 #: src/components/shared/procurement-data/coverage-ribbon.tsx:50
 #: src/features/procurement/components/procurement-info-sheet.tsx:42
 #: src/features/procurement/lib/export.ts:41
-#: src/features/procurement/lib/hub-filter-chips.ts:130
+#: src/features/procurement/lib/hub-filter-chips.ts:168
 msgid "CPV"
 msgstr ""
 
@@ -4190,7 +4291,7 @@ msgstr ""
 
 #: src/features/procurement/components/cpv-category-page.tsx:81
 #: src/features/procurement/components/procurement-category-bars.tsx:260
-#: src/features/procurement/lib/hub-filter-chips.ts:138
+#: src/features/procurement/lib/hub-filter-chips.ts:176
 msgid "CPV division"
 msgstr ""
 
@@ -4928,7 +5029,7 @@ msgstr "Numărul implicit de intervale trebuie să fie un întreg mai mare sau e
 msgid "Default Color"
 msgstr "Culoare implicită"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:142
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:145
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:180
 msgid "Default is the previous calendar year. Analytics are monthly — start dates become the first day of the month and end dates become its last day."
 msgstr "Implicit este anul calendaristic anterior. Analizele sunt lunare — data de început devine prima zi a lunii, iar data de sfârșit ultima zi."
@@ -6427,6 +6528,10 @@ msgstr "Explorează mai multe parcursuri"
 msgid "Explore national budget."
 msgstr "Explorați bugetul național."
 
+#: src/features/procurement/components/procurement-map-preview.tsx:54
+#~ msgid "Explore public purchasing by development region. Open the full map to switch metrics and focus the hub on a territory."
+#~ msgstr ""
+
 #: src/features/procurement/components/procurement-analysis-workspace.tsx:63
 #~ msgid "Explore the live matrix by grain, dimension, time bucket and measure. Unsupported combinations are reported by the API."
 #~ msgstr ""
@@ -6894,7 +6999,7 @@ msgstr "Filtru"
 msgid "Filter by county"
 msgstr "Filtrează după județ"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:446
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:495
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:443
 msgid "Filter data"
 msgstr "Filtrează datele"
@@ -6907,7 +7012,7 @@ msgstr "Filtrați rezultatele analizelor entității pe mobil."
 msgid "Filter field"
 msgstr "Câmp de filtrare"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:119
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:122
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:157
 msgid "Filter procurement data"
 msgstr "Filtrează datele de achiziții"
@@ -6961,7 +7066,7 @@ msgstr "Filtrele marcate ca excludere vor elimina din rezultate datele care core
 msgid "Filters out missing or non-numeric points before chart mapping."
 msgstr "Filtrează punctele lipsă sau non-numerice înainte de maparea graficului."
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:441
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:490
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:438
 msgid "Filters, {activeCount} active"
 msgstr ""
@@ -7160,7 +7265,7 @@ msgid "Firme"
 msgstr ""
 
 #: src/features/procurement/components/procurement-overview-active-filters.tsx:76
-#: src/features/procurement/lib/hub-filter-chips.ts:55
+#: src/features/procurement/lib/hub-filter-chips.ts:63
 msgid "First available month"
 msgstr ""
 
@@ -7245,6 +7350,10 @@ msgstr "Focalizează Căutarea Cheltuielilor"
 msgid "Focus expense search in entity details"
 msgstr "Focalizează căutarea cheltuielilor în detaliile entității"
 
+#: src/features/procurement/components/procurement-territory-drawer.tsx:164
+#~ msgid "Focus hub on this area"
+#~ msgstr "Focalizează hub-ul pe această zonă"
+
 #: src/components/ui/shortcuts.tsx:33
 msgid "Focus Income Search"
 msgstr "Focalizează Căutarea Veniturilor"
@@ -7312,7 +7421,7 @@ msgstr ""
 
 #: src/features/private-companies/components/search/company-filter-sheet.tsx:212
 #: src/features/procurement/components/procurement-filter-sheet.tsx:234
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:183
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:186
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:218
 msgid "From"
 msgstr "De la"
@@ -7461,9 +7570,17 @@ msgstr "geo-spatial.org"
 msgid "Geografie"
 msgstr ""
 
-#: src/features/procurement/components/procurement-overview-page.tsx:110
+#: src/features/procurement/components/procurement-map-view.tsx:391
+#~ msgid "Geography"
+#~ msgstr "Geografie"
+
+#: src/features/procurement/components/procurement-overview-page.tsx:111
 msgid "Geography filters are kept in the URL but are not applied to the record list yet. Overview analytics still use buyer location when supported."
 msgstr "Filtrele geografice rămân în URL, dar nu se aplică încă listei de înregistrări. Analitica din Prezentare generală folosește în continuare locația autorității, când este suportată."
+
+#: src/features/procurement/components/procurement-map-view.tsx:235
+#~ msgid "Geography: development regions"
+#~ msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:59
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:141
@@ -8618,7 +8735,7 @@ msgstr "Instituție"
 msgid "Institution CUI {cui}"
 msgstr "Instituție CUI {cui}"
 
-#: src/features/procurement/components/procurement-quick-links.tsx:24
+#: src/features/procurement/components/procurement-quick-links.tsx:32
 msgid "Institutions"
 msgstr ""
 
@@ -8629,6 +8746,10 @@ msgstr "Date insuficiente"
 #: src/features/learning/components/interactive/RectificationHistory.tsx:225
 msgid "Interactive"
 msgstr "Interactiv"
+
+#: src/features/procurement/components/procurement-map-preview.tsx:68
+#~ msgid "Interactive region map with record counts. County and UAT views stay marked Preview until the serving API publishes those rollups."
+#~ msgstr ""
 
 #: src/components/entities/views/ins-stats-view.derived.ts:104
 msgid "Interpret together with birth rate and local age profile; short-term spikes can occur in crisis years."
@@ -8999,7 +9120,7 @@ msgid "Latest ANAF bilant indicators and fiscal status. Values are never shown a
 msgstr "Ultimii indicatori de bilanț ANAF și statutul fiscal. Valorile nu sunt afișate ca zero când lipsesc datele."
 
 #: src/features/procurement/components/procurement-overview-active-filters.tsx:79
-#: src/features/procurement/lib/hub-filter-chips.ts:58
+#: src/features/procurement/lib/hub-filter-chips.ts:66
 msgid "Latest available month"
 msgstr ""
 
@@ -9282,7 +9403,7 @@ msgid "Lipsă"
 msgstr ""
 
 #: src/features/procurement/components/procurement-hub-dev-panel.tsx:61
-#: src/features/procurement/components/procurement-tab-nav.tsx:45
+#: src/features/procurement/components/procurement-tab-nav.tsx:52
 msgid "List"
 msgstr "Listă"
 
@@ -9683,6 +9804,14 @@ msgstr ""
 msgid "Localități"
 msgstr ""
 
+#: src/features/procurement/components/procurement-territory-drawer.tsx:113
+#~ msgid "Locality details. Choropleth stats are not published yet. Use the buttons below to apply this UAT as a buyer location filter."
+#~ msgstr ""
+
+#: src/features/procurement/components/procurement-territory-drawer.tsx:179
+msgid "Locality inspect panel. Apply below to set the buyer location filter."
+msgstr ""
+
 #: src/components/charts/components/series-config/ins-dimension-values-list.tsx:59
 msgid "Locality options"
 msgstr "Opțiuni localitate"
@@ -9699,7 +9828,7 @@ msgstr ""
 msgid "Location"
 msgstr "Locație"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:307
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:356
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:338
 msgid "Location options could not be loaded."
 msgstr ""
@@ -9720,11 +9849,11 @@ msgstr "Blocat"
 msgid "Log scale"
 msgstr "Scară logaritmică"
 
-#: src/features/procurement/components/procurement-quick-links.tsx:25
+#: src/features/procurement/components/procurement-quick-links.tsx:33
 msgid "Look up a public buyer, then open its procurement profile."
 msgstr "Caută un cumpărător public, apoi deschide profilul de achiziții."
 
-#: src/features/procurement/components/procurement-quick-links.tsx:33
+#: src/features/procurement/components/procurement-quick-links.tsx:41
 msgid "Look up a supplier and its public-sector revenue."
 msgstr "Caută un furnizor și veniturile din sectorul public."
 
@@ -9896,6 +10025,7 @@ msgstr "Manual"
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:1228
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3726
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1411
+#: src/features/procurement/components/procurement-tab-nav.tsx:47
 #: src/routes/index.tsx:74
 msgid "Map"
 msgstr "Hartă"
@@ -9937,9 +10067,20 @@ msgstr "Descriere hartă"
 msgid "Map description markdown editor"
 msgstr "Editor markdown pentru descrierea hărții"
 
+#: src/features/procurement/components/procurement-map-view.tsx:402
+#: src/features/procurement/components/procurement-map-view.tsx:407
+msgid "Map detail"
+msgstr ""
+
 #: src/components/filters/MapFilter.tsx:192
 msgid "Map Filters"
 msgstr "Filtre hartă"
+
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:279
+#: src/features/procurement/components/procurement-map-view.tsx:430
+#: src/features/procurement/lib/hub-filter-chips.ts:97
+#~ msgid "Map geography"
+#~ msgstr ""
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3597
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3846
@@ -9975,6 +10116,10 @@ msgstr "Harta este acum publică"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:68
 msgid "Map name"
 msgstr "Nume hartă"
+
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:288
+#~ msgid "Map polygon level. Clicking a territory writes the matching buyer location filter. County and UAT colours need API rollups."
+#~ msgstr ""
 
 #: src/features/private-companies/components/sections/private-company-location-section.tsx:78
 msgid "Map preview is shown only when the UAT match is high confidence. Treat this location as indicative until verified."
@@ -10183,6 +10328,8 @@ msgid "Methodology"
 msgstr "Metodologie"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:708
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:229
+#: src/features/procurement/lib/hub-filter-chips.ts:82
 msgid "Metric"
 msgstr "Metrică"
 
@@ -10439,6 +10586,8 @@ msgid "Monthly Report"
 msgstr "Raport lunar"
 
 #: src/features/procurement/components/procurement-monthly-chart.tsx:57
+#: src/features/procurement/components/procurement-territory-drawer.tsx:277
+#: src/features/procurement/components/procurement-territory-drawer.tsx:288
 msgid "Monthly volume"
 msgstr ""
 
@@ -11463,7 +11612,7 @@ msgstr "Normalizare"
 msgid "Not a VAT payer"
 msgstr "Nu este plătitor de TVA"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:233
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:282
 msgid "Not applied to the record list yet"
 msgstr "Nu se aplică încă listei de înregistrări"
 
@@ -11954,6 +12103,8 @@ msgid "Number"
 msgstr ""
 
 #: src/features/procurement/components/procurement-monthly-chart.tsx:60
+#: src/features/procurement/components/procurement-overview-page.tsx:204
+#: src/features/procurement/components/procurement-territory-drawer.tsx:292
 msgid "Number of records per month."
 msgstr ""
 
@@ -12178,6 +12329,10 @@ msgstr "Deschide meniul preset de intervale"
 msgid "Open Budget Explorer"
 msgstr "Deschide Exploratorul de Bugete"
 
+#: src/features/procurement/components/procurement-map-preview.tsx:79
+#~ msgid "Open buyer map"
+#~ msgstr "Deschide harta cumpărătorilor"
+
 #: src/features/campaigns/buget/components/CampaignAccessShareCard.tsx:58
 msgid "Open campaign"
 msgstr "Deschide provocarea"
@@ -12239,7 +12394,7 @@ msgstr "Deschide dialogul de căutare entitate"
 msgid "Open feedback dialog"
 msgstr "Deschide fereastra de feedback"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:441
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:490
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:438
 #: src/routes/map.lazy.tsx:495
 msgid "Open filters"
@@ -12496,9 +12651,13 @@ msgstr "Peste {0} de firme — rafinează căutarea"
 
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:135
 #: src/features/procurement/components/procurement-hub-dev-panel.tsx:58
-#: src/features/procurement/components/procurement-tab-nav.tsx:40
+#: src/features/procurement/components/procurement-tab-nav.tsx:42
 msgid "Overview"
 msgstr "Prezentare generală"
+
+#: src/features/procurement/components/procurement-territory-drawer.tsx:320
+msgid "Overview applies buyer location when supported. List keeps it in the URL with a “Not applied yet” chip until the list geo API lands."
+msgstr ""
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:397
 msgid "Owner dataset"
@@ -12862,15 +13021,19 @@ msgstr ""
 #: src/components/maps/utils.ts:31
 #: src/components/maps/utils.ts:33
 #: src/features/procurement/components/procurement-filter-sheet.tsx:226
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:138
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:141
 #: src/features/procurement/components/procurement-overview-active-filters.tsx:63
 #: src/features/procurement/components/procurement-overview-active-filters.tsx:82
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:176
-#: src/features/procurement/lib/hub-filter-chips.ts:43
-#: src/features/procurement/lib/hub-filter-chips.ts:61
+#: src/features/procurement/lib/hub-filter-chips.ts:51
+#: src/features/procurement/lib/hub-filter-chips.ts:69
 #: src/lib/chart-filter-utils.ts:51
 msgid "Period"
 msgstr "Perioadă"
+
+#: src/features/procurement/components/procurement-map-view.tsx:259
+#~ msgid "Period {0} – {1}{2}"
+#~ msgstr ""
 
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:160
 msgid "Period and location filters apply to every supported indicator and analysis on this page."
@@ -12892,6 +13055,10 @@ msgstr "Perioadă:"
 #: src/features/procurement/lib/filter-meta.ts:94
 msgid "Period: {from} – {to}"
 msgstr ""
+
+#: src/features/procurement/components/procurement-map-view.tsx:267
+#~ msgid "Period: all time"
+#~ msgstr "Perioadă: tot timpul"
 
 #: src/features/statistics/components/filters/dataset-explorer-filter-sheet.tsx:114
 #: src/features/statistics/components/source-provenance-drawer.tsx:90
@@ -13264,7 +13431,7 @@ msgstr "Secțiunea anterioară"
 msgid "Previous step"
 msgstr "Pasul anterior"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:164
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:167
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:199
 msgid "Previous year"
 msgstr "Anul anterior"
@@ -13389,6 +13556,10 @@ msgstr "Se procesează..."
 #: src/features/procurement/components/procurement-shell.tsx:155
 msgid "Procurement"
 msgstr "Achiziții"
+
+#: src/features/procurement/components/procurement-analytics-page.tsx:56
+#~ msgid "Procurement analytics"
+#~ msgstr "Analiză achiziții"
 
 #: src/components/footer/AppFooter.tsx:84
 msgid "Product"
@@ -13610,12 +13781,13 @@ msgstr "Explorator public"
 
 #: src/features/procurement/components/procurement-overview-active-filters.tsx:100
 #: src/features/procurement/components/procurement-overview-active-filters.tsx:112
-#: src/features/procurement/lib/hub-filter-chips.ts:75
-#: src/features/procurement/lib/hub-filter-chips.ts:83
+#: src/features/procurement/lib/hub-filter-chips.ts:93
+#: src/features/procurement/lib/hub-filter-chips.ts:105
+#: src/features/procurement/lib/hub-filter-chips.ts:117
 msgid "Public institution"
 msgstr ""
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:229
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:278
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:272
 msgid "Public Institution Location"
 msgstr ""
@@ -13673,7 +13845,7 @@ msgstr ""
 msgid "Public procurement for this institution — contracts, direct acquisitions, suppliers, and CPV categories from SEAP and e-licitatie."
 msgstr ""
 
-#: src/features/procurement/components/procurement-tab-nav.tsx:71
+#: src/features/procurement/components/procurement-tab-nav.tsx:78
 msgid "Public procurement sections"
 msgstr ""
 
@@ -13750,7 +13922,7 @@ msgstr "Trimestrial"
 msgid "Quarterly Report"
 msgstr "Raport trimestrial"
 
-#: src/features/procurement/lib/hub-filter-chips.ts:103
+#: src/features/procurement/lib/hub-filter-chips.ts:141
 msgid "Query"
 msgstr ""
 
@@ -13949,9 +14121,18 @@ msgstr "Destinatar"
 msgid "Reclamant"
 msgstr ""
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:376
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:242
+#: src/features/procurement/lib/hub-filter-chips.ts:34
+msgid "Record count"
+msgstr "Număr înregistrări"
+
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:425
 msgid "Record list filters"
 msgstr "Filtre listă înregistrări"
+
+#: src/features/procurement/components/procurement-territory-drawer.tsx:178
+#~ msgid "Record list keeps geography in the URL but does not apply it yet — the list chip will say “Not applied yet”."
+#~ msgstr ""
 
 #: src/features/procurement/components/procurement-grain-tabs.tsx:22
 msgid "Record type"
@@ -13974,6 +14155,7 @@ msgstr "Se înregistrează..."
 #: src/features/procurement/components/procurement-category-bars.tsx:263
 #: src/features/procurement/components/procurement-monthly-chart.tsx:138
 #: src/features/procurement/components/procurement-party-ranking.tsx:368
+#: src/features/procurement/components/procurement-territory-drawer.tsx:190
 msgid "Records"
 msgstr ""
 
@@ -14044,21 +14226,38 @@ msgid "Regia Autonomă Exemplu București"
 msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:61
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:273
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:284
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:322
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:333
+#: src/features/procurement/components/procurement-map-view.tsx:411
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:302
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:313
 msgid "Region"
 msgstr "Regiune"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:358
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:407
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:388
 msgid "Region and county names are available, but procurement records are not yet linked to supplier geography. This filter will be enabled when Matrix v2 can apply it without returning unfiltered data."
 msgstr ""
 
+#: src/features/procurement/components/procurement-map-preview.tsx:50
+#~ msgid "Region choropleth — county/UAT after wave-2 rollups"
+#~ msgstr ""
+
+#: src/features/procurement/components/procurement-quick-links.tsx:25
+msgid "Region choropleth of purchasing volume (Preview)."
+msgstr "Hartă pe regiuni a volumului de achiziții (Previzualizare)."
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:766
 msgid "Region Filters"
 msgstr "Filtre regiuni"
+
+#: src/features/procurement/components/procurement-map-view.tsx:231
+#~ msgid "Region map Preview until county/UAT rollups"
+#~ msgstr ""
+
+#: src/features/procurement/components/procurement-map-view.tsx:342
+msgid "Region record totals (Preview)"
+msgstr "Totaluri pe regiune (Previzualizare)"
 
 #: src/features/private-companies/components/layout/private-company-status-tags.tsx:71
 msgid "Registered"
@@ -14094,7 +14293,7 @@ msgstr "Sediul social expirat"
 msgid "Registered office from ONRC and administrative location from the API. No client-side address matching is performed."
 msgstr "Sediu social de la ONRC și locație administrativă de la API. Nu se face potrivire de adrese pe client."
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:354
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:403
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:384
 msgid "Registered office of the awarded company."
 msgstr ""
@@ -14449,7 +14648,7 @@ msgstr ""
 msgid "Retry"
 msgstr "Reîncearcă"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:316
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:365
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:347
 msgid "Retry Loading Locations"
 msgstr ""
@@ -15146,7 +15345,7 @@ msgstr "Vezi analiza bugetară pentru entitatea selectată."
 msgid "See-through, clear"
 msgstr "Ușor de înțeles, clar"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:288
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:337
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:317
 msgid "Select a county…"
 msgstr ""
@@ -15167,7 +15366,7 @@ msgstr "Selectați un card de metrică sau un set de date din listă pentru a î
 msgid "Select a predefined dataset to track"
 msgstr "Selectați un set de date predefinit de urmărit"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:287
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:336
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:316
 msgid "Select a region…"
 msgstr ""
@@ -15601,13 +15800,21 @@ msgstr "Adaugă site-ul oficial al primăriei pentru ca alții să poată verifi
 msgid "Shareable dataset"
 msgstr "Set de date partajabil"
 
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:233
+msgid "Shared across Overview, Map, and List. Count is the default; awarded value stays secondary where amounts are answerable."
+msgstr ""
+
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:434
 msgid "Shared datasets will appear here when they are published or unlisted for reuse."
 msgstr "Seturile de date partajate vor apărea aici atunci când sunt publicate sau nelistate pentru reutilizare."
 
 #: src/features/procurement/components/procurement-hub-filter-sheet.tsx:122
-msgid "Shared filters for Overview and List. Unsupported controls stay visible and are marked when they are not applied yet."
-msgstr "Filtre comune pentru Prezentare generală și Listă. Controalele neacceptate rămân vizibile și sunt marcate când nu se aplică încă."
+#~ msgid "Shared filters for Overview and List. Unsupported controls stay visible and are marked when they are not applied yet."
+#~ msgstr "Filtre comune pentru Prezentare generală și Listă. Controalele neacceptate rămân vizibile și sunt marcate când nu se aplică încă."
+
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:125
+msgid "Shared filters for Overview, Map, and List. Unsupported controls stay visible and are marked when they are not applied yet."
+msgstr ""
 
 #: src/components/charts/components/series-config/SeriesItemMenu.tsx:43
 msgid "Show"
@@ -16036,7 +16243,7 @@ msgstr ""
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1157
 #: src/features/procurement/components/procurement-filter-sheet.tsx:140
 #: src/features/procurement/lib/export.ts:43
-#: src/features/procurement/lib/hub-filter-chips.ts:147
+#: src/features/procurement/lib/hub-filter-chips.ts:185
 msgid "Source"
 msgstr "Sursă"
 
@@ -16101,6 +16308,10 @@ msgstr "Calculul cheltuielilor"
 #: src/features/procurement/components/procurement-category-bars.tsx:86
 #: src/features/procurement/components/procurement-category-bars.tsx:221
 msgid "Spending categories"
+msgstr ""
+
+#: src/features/procurement/components/procurement-territory-drawer.tsx:272
+msgid "Spending categories in this territory."
 msgstr ""
 
 #: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:293
@@ -16271,7 +16482,7 @@ msgstr "Tip statistici"
 #: src/features/private-companies/components/layout/private-company-status-tags.tsx:54
 #: src/features/procurement/components/procurement-filter-sheet.tsx:167
 #: src/features/procurement/lib/export.ts:42
-#: src/features/procurement/lib/hub-filter-chips.ts:156
+#: src/features/procurement/lib/hub-filter-chips.ts:194
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:570
 msgid "Status"
 msgstr "Stare"
@@ -16497,7 +16708,7 @@ msgstr "Rezumat"
 #: src/features/procurement/components/procurement-party-ranking.tsx:364
 #: src/features/procurement/components/procurement-supplier-page.tsx:43
 #: src/features/procurement/lib/export.ts:49
-#: src/features/procurement/lib/hub-filter-chips.ts:121
+#: src/features/procurement/lib/hub-filter-chips.ts:159
 msgid "Supplier"
 msgstr "Furnizor"
 
@@ -16517,15 +16728,15 @@ msgstr ""
 msgid "Supplier CUI {cui}"
 msgstr "Furnizor CUI {cui}"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:350
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:399
 msgid "Supplier geography is not linked to records yet"
 msgstr "Geografia furnizorului nu este încă legată de înregistrări"
 
-#: src/features/procurement/lib/hub-filter-chips.ts:93
+#: src/features/procurement/lib/hub-filter-chips.ts:131
 msgid "Supplier location"
 msgstr ""
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:346
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:395
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:380
 msgid "Supplier Location"
 msgstr ""
@@ -16534,7 +16745,7 @@ msgstr ""
 msgid "Supplier procurement indicators"
 msgstr ""
 
-#: src/features/procurement/components/procurement-overview-page.tsx:177
+#: src/features/procurement/components/procurement-overview-page.tsx:191
 msgid "Supplier rankings are unavailable under the current regional rollup."
 msgstr ""
 
@@ -16832,18 +17043,27 @@ msgstr ""
 msgid "Terms of Service"
 msgstr "Termeni și condiții"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:256
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:305
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:285
 msgid "Territorial Level"
 msgstr ""
 
 #: src/components/charts/components/series-config/InsSeriesEditor.tsx:853
+#: src/features/procurement/components/procurement-territory-drawer.tsx:139
 msgid "Territory"
 msgstr "Teritoriu"
 
 #: src/components/charts/components/series-config/ins-dimension-values-list.tsx:58
 msgid "Territory options"
 msgstr "Opțiuni teritoriu"
+
+#: src/features/procurement/components/procurement-territory-drawer.tsx:154
+#~ msgid "Territory totals for this map level are not published yet."
+#~ msgstr ""
+
+#: src/features/procurement/components/procurement-territory-drawer.tsx:154
+#~ msgid "Territory totals for this map level are not published yet. The buyer location filter is still applied for Overview round-trip."
+#~ msgstr ""
 
 #: src/routes/test-error.tsx:9
 msgid "Test error"
@@ -16959,7 +17179,7 @@ msgstr "Contestația generată necesită identitatea expeditorului."
 msgid "The government planned to spend <0>{0}</0> on Infrastructure in {selectedYear}."
 msgstr "Guvernul a planificat să cheltuie <0>{0}</0> pe Infrastructură în {selectedYear}."
 
-#: src/features/procurement/components/procurement-overview-page.tsx:195
+#: src/features/procurement/components/procurement-overview-page.tsx:216
 msgid "The interactive workspace contains combinations that the regional rollup cannot answer yet. It is paused for this filter instead of showing unfiltered or partial results."
 msgstr ""
 
@@ -16993,7 +17213,7 @@ msgstr "Previzualizarea hărții folosește doar starea persistentă a setului d
 msgid "The new fiscal reality affecting your wallet."
 msgstr "Noua realitate fiscală care îți afectează portofelul."
 
-#: src/features/procurement/components/procurement-overview-page.tsx:136
+#: src/features/procurement/components/procurement-overview-page.tsx:142
 msgid "The overview analytics are filtered by buyer location. The record list does not apply geography yet — switch to List to browse records without silently dropping this filter from the URL."
 msgstr "Analitica din Prezentare generală este filtrată după locația autorității. Lista de înregistrări nu aplică încă geografia — treci la Listă ca să vezi înregistrările fără a elimina silențios acest filtru din URL."
 
@@ -17066,11 +17286,11 @@ msgstr "A apărut o problemă la încărcarea notificărilor. Vă rugăm să în
 msgid "There was an error processing your request. The link may be expired or invalid."
 msgstr "A apărut o eroare la procesarea solicitării dvs. Linkul poate fi expirat sau invalid."
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:380
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:429
 msgid "These facets apply on List. On Overview they stay in the URL as inactive “list only” chips."
 msgstr "Aceste filtre se aplică pe Listă. În Prezentare generală rămân în URL ca etichete inactive „doar listă”."
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:385
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:434
 msgid "These facets narrow the paginated record list."
 msgstr "Aceste filtre restrâng lista paginată de înregistrări."
 
@@ -17336,7 +17556,7 @@ msgstr ""
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:389
 #: src/features/private-companies/components/search/company-filter-sheet.tsx:230
 #: src/features/procurement/components/procurement-filter-sheet.tsx:255
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:200
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:203
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:236
 msgid "To"
 msgstr "Catre"
@@ -17385,6 +17605,22 @@ msgstr ""
 #: src/features/procurement/components/procurement-hub-dev-panel.tsx:15
 msgid "TODO"
 msgstr "TODO"
+
+#: src/features/procurement/components/procurement-map-view.tsx:416
+#~ msgid "TODO: county rollup not published yet"
+#~ msgstr ""
+
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:331
+#~ msgid "TODO: county rollup not published yet — filter apply still works"
+#~ msgstr ""
+
+#: src/features/procurement/components/procurement-map-view.tsx:417
+#~ msgid "TODO: UAT / SIRUTA scope not published yet"
+#~ msgstr ""
+
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:332
+#~ msgid "TODO: UAT / SIRUTA scope not published yet — filter apply still works"
+#~ msgstr ""
 
 #: src/routes/cookies.lazy.tsx:200
 msgid "Toggle analytics cookies"
@@ -17459,15 +17695,32 @@ msgstr "Top 15 județe după suma totală"
 msgid "Top 15 UATs by Total Amount"
 msgstr "Top 15 UAT-uri după suma totală"
 
+#: src/features/procurement/components/procurement-territory-drawer.tsx:260
+#: src/features/procurement/components/procurement-territory-drawer.tsx:271
+msgid "Top CPV divisions"
+msgstr ""
+
+#: src/features/procurement/components/procurement-territory-drawer.tsx:147
+#~ msgid "Top institutions and suppliers under a regional rollup are not published yet. Apply the filter to explore Overview aggregates for this area."
+#~ msgstr ""
+
+#: src/features/procurement/components/procurement-territory-drawer.tsx:148
+#~ msgid "Top institutions and suppliers under a regional rollup are not published yet. Focus the hub to explore aggregates for this area."
+#~ msgstr ""
+
 #: src/features/procurement/components/cpv-category-page.tsx:141
-#: src/features/procurement/components/procurement-overview-page.tsx:160
+#: src/features/procurement/components/procurement-overview-page.tsx:166
 #: src/features/procurement/components/procurement-supplier-slice.tsx:131
+#: src/features/procurement/components/procurement-territory-drawer.tsx:214
+#: src/features/procurement/components/procurement-territory-drawer.tsx:224
 msgid "Top public buyers"
 msgstr ""
 
 #: src/features/procurement/components/cpv-category-page.tsx:147
 #: src/features/procurement/components/procurement-authority-slice.tsx:148
-#: src/features/procurement/components/procurement-overview-page.tsx:171
+#: src/features/procurement/components/procurement-overview-page.tsx:181
+#: src/features/procurement/components/procurement-territory-drawer.tsx:237
+#: src/features/procurement/components/procurement-territory-drawer.tsx:247
 msgid "Top suppliers"
 msgstr ""
 
@@ -17736,14 +17989,24 @@ msgstr "Introduceți răspunsul..."
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:208
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3032
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:521
+#: src/features/procurement/components/procurement-map-view.tsx:413
 #: src/features/statistics/components/territory-header.tsx:14
 #: src/lib/chart-filter-utils.ts:39
 msgid "UAT"
 msgstr "UAT"
 
+#. placeholder {0}: state.buyerSiruta
+#: src/features/procurement/lib/hub-filter-chips.ts:94
+msgid "UAT {0}"
+msgstr ""
+
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:214
 msgid "UAT details"
 msgstr "Detalii UAT"
+
+#: src/features/procurement/components/procurement-territory-drawer.tsx:114
+#~ msgid "UAT filter is set in the URL. Locality choropleth stats are not published yet."
+#~ msgstr ""
 
 #. placeholder {0}: geography.matchConfidence
 #: src/features/private-companies/components/private-company-summary-highlights.tsx:145
@@ -18395,7 +18658,7 @@ msgstr "Valoare"
 
 #: src/features/procurement/components/procurement-filter-sheet.tsx:299
 #: src/features/procurement/lib/export.ts:44
-#: src/features/procurement/lib/hub-filter-chips.ts:178
+#: src/features/procurement/lib/hub-filter-chips.ts:216
 msgid "Value (RON)"
 msgstr ""
 
@@ -18412,7 +18675,7 @@ msgid "Value Filters"
 msgstr "Filtre de valori"
 
 #: src/features/procurement/components/procurement-filter-sheet.tsx:200
-#: src/features/procurement/lib/hub-filter-chips.ts:165
+#: src/features/procurement/lib/hub-filter-chips.ts:203
 msgid "Value quality"
 msgstr ""
 
@@ -18921,6 +19184,10 @@ msgstr "Fără transferuri"
 #: src/features/procurement/lib/enum-labels.ts:23
 msgid "Works"
 msgstr ""
+
+#: src/features/procurement/components/procurement-analytics-page.tsx:95
+#~ msgid "Workspace"
+#~ msgstr "Spațiu de lucru"
 
 #: src/features/advanced-map-analytics/components/map-analytics-group-workspace-import-dialog.tsx:207
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4681

@@ -19,6 +19,7 @@ import { ProcurementPartyRanking } from './procurement-party-ranking'
 import { ProcurementCategoryBars } from './procurement-category-bars'
 import { ProcurementMonthlyChart } from './procurement-monthly-chart'
 import { ProcurementQuickLinks } from './procurement-quick-links'
+import { ProcurementMapView } from './procurement-map-view'
 import { ProcurementErrorState } from './procurement-error-state'
 import { ProcurementOverviewSkeleton } from './procurement-skeletons'
 import { ProcurementAnswerabilityNotice } from './procurement-answerability-notice'
@@ -32,7 +33,7 @@ import { ProcurementHubActiveFilters } from './procurement-hub-active-filters'
 import { ProcurementHubDevPanel } from './procurement-hub-dev-panel'
 import { ProcurementSearchContent } from './procurement-search-content'
 
-/** Unified hub: Overview + List share one URL schema (A2 / F2). */
+/** Unified hub: Overview + Map + List share one URL schema (A2 / F2). */
 export function ProcurementOverviewPage({
   hubState,
 }: {
@@ -44,7 +45,7 @@ export function ProcurementOverviewPage({
   const data = query.data
   const [filterSheetOpen, setFilterSheetOpen] = useState(false)
   const hasBuyerGeography = Boolean(
-    hubState.buyerRegion || hubState.buyerCounty,
+    hubState.buyerRegion || hubState.buyerCounty || hubState.buyerSiruta,
   )
   const appliedBuyerRegion = effectiveBuyerRegion(
     geographyQuery.data,
@@ -61,7 +62,7 @@ export function ProcurementOverviewPage({
       ? data.analysisByGrain.contract
       : data.analysisByGrain.directAcquisition
     : undefined
-  const activeTab = hubState.view === 'list' ? 'list' : 'overview'
+  const activeTab = hubState.view
   const appliedChipCount = hub.hubChips.filter(
     (chip) => chip.kind === 'applied',
   ).length
@@ -121,6 +122,11 @@ export function ProcurementOverviewPage({
             onOpenFilters={() => setFilterSheetOpen(true)}
           />
         </div>
+      ) : hubState.view === 'map' ? (
+        <ProcurementMapView
+          hubState={hubState}
+          updateFilters={hub.updateFilters}
+        />
       ) : query.isPending ? (
         <ProcurementOverviewSkeleton />
       ) : query.isError && !data ? (
@@ -158,7 +164,11 @@ export function ProcurementOverviewPage({
           <div className="grid gap-6 lg:grid-cols-2">
             <ProcurementPartyRanking
               title={t`Top public buyers`}
-              description={t`By number of records.`}
+              description={
+                hubState.measure === 'value_awarded'
+                  ? t`By awarded value when available; bars still use record counts until value sort is published.`
+                  : t`By number of records.`
+              }
               rows={analytics?.topAuthorities ?? []}
               kind="authority"
               unavailableReason={
@@ -169,7 +179,11 @@ export function ProcurementOverviewPage({
             />
             <ProcurementPartyRanking
               title={t`Top suppliers`}
-              description={t`By number of records.`}
+              description={
+                hubState.measure === 'value_awarded'
+                  ? t`By awarded value when available; bars still use record counts until value sort is published.`
+                  : t`By number of records.`
+              }
               rows={analytics?.topSuppliers ?? []}
               kind="supplier"
               unavailableReason={
@@ -182,7 +196,14 @@ export function ProcurementOverviewPage({
 
           <ProcurementCategoryBars rows={analytics?.topCategories ?? []} />
 
-          <ProcurementMonthlyChart points={analytics?.monthly ?? []} />
+          <ProcurementMonthlyChart
+            points={analytics?.monthly ?? []}
+            description={
+              hubState.measure === 'value_awarded'
+                ? t`Awarded value per month when amounts are present (tooltips still show counts).`
+                : t`Number of records per month.`
+            }
+          />
 
           <ProcurementQuickLinks />
 

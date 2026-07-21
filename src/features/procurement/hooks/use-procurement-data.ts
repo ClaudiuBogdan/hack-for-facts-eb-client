@@ -14,6 +14,7 @@ import {
   fetchProcurementSearch,
   fetchProcurementSupplierRecords,
   fetchProcurementSupplierSlice,
+  fetchProcurementTerritoryOverview,
 } from '../api/procurement-api'
 import type {
   AuthorityProcurementSlice,
@@ -38,10 +39,35 @@ export function useProcurementLanding(filters: ProcurementLandingFilters = {}) {
       filters.dateTo ?? null,
       filters.buyerRegion ?? null,
       filters.buyerCounty ?? null,
+      filters.buyerSiruta ?? null,
       filters.supplierRegion ?? null,
       filters.supplierCounty ?? null,
     ],
     queryFn: () => fetchProcurementLanding(filters),
+  })
+}
+
+/**
+ * Territory drawer mini-overview (party rankings + CPV + monthly under geo).
+ * Always requests authorities/suppliers — see fetchProcurementTerritoryOverview TODOs.
+ */
+export function useProcurementTerritoryOverview(
+  filters: ProcurementLandingFilters,
+  enabled: boolean,
+) {
+  return useQuery({
+    queryKey: [
+      ...PROCUREMENT_QUERY_KEY,
+      'territory-overview',
+      filters.dateFrom ?? null,
+      filters.dateTo ?? null,
+      filters.period ?? null,
+      filters.buyerRegion ?? null,
+      filters.buyerCounty ?? null,
+      filters.buyerSiruta ?? null,
+    ],
+    queryFn: () => fetchProcurementTerritoryOverview(filters),
+    enabled,
   })
 }
 

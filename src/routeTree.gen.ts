@@ -55,6 +55,7 @@ import { Route as SettingsNotificationsRouteImport } from './routes/settings/not
 import { Route as ProvocareTermeniSiConditiiRouteImport } from './routes/provocare_.termeni-si-conditii'
 import { Route as ProvocareNotificariRouteImport } from './routes/provocare_.notificari'
 import { Route as ProcurementSearchRouteImport } from './routes/procurement/search'
+import { Route as ProcurementAnalyticsRouteImport } from './routes/procurement/analytics'
 import { Route as PnrrShareImageDotpngRouteImport } from './routes/pnrr.share-image[.]png'
 import { Route as OngUriServiciiRouteImport } from './routes/ong-uri.servicii'
 import { Route as OngUriCuiRouteImport } from './routes/ong-uri.$cui'
@@ -438,6 +439,13 @@ const ProcurementSearchRoute = ProcurementSearchRouteImport.update({
   getParentRoute: () => ProcurementRouteRoute,
 } as any).lazy(() =>
   import('./routes/procurement/search.lazy').then((d) => d.Route),
+)
+const ProcurementAnalyticsRoute = ProcurementAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => ProcurementRouteRoute,
+} as any).lazy(() =>
+  import('./routes/procurement/analytics.lazy').then((d) => d.Route),
 )
 const PnrrShareImageDotpngRoute = PnrrShareImageDotpngRouteImport.update({
   id: '/share-image.png',
@@ -1315,6 +1323,7 @@ export interface FileRoutesByFullPath {
   '/ong-uri/$cui': typeof OngUriCuiRoute
   '/ong-uri/servicii': typeof OngUriServiciiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
+  '/procurement/analytics': typeof ProcurementAnalyticsRoute
   '/procurement/search': typeof ProcurementSearchRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
   '/provocare/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
@@ -1464,6 +1473,7 @@ export interface FileRoutesByTo {
   '/ong-uri/$cui': typeof OngUriCuiRoute
   '/ong-uri/servicii': typeof OngUriServiciiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
+  '/procurement/analytics': typeof ProcurementAnalyticsRoute
   '/procurement/search': typeof ProcurementSearchRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
   '/provocare/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
@@ -1620,6 +1630,7 @@ export interface FileRoutesById {
   '/ong-uri/$cui': typeof OngUriCuiRoute
   '/ong-uri/servicii': typeof OngUriServiciiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
+  '/procurement/analytics': typeof ProcurementAnalyticsRoute
   '/procurement/search': typeof ProcurementSearchRoute
   '/provocare_/notificari': typeof ProvocareNotificariRoute
   '/provocare_/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
@@ -1782,6 +1793,7 @@ export interface FileRouteTypes {
     | '/ong-uri/$cui'
     | '/ong-uri/servicii'
     | '/pnrr/share-image.png'
+    | '/procurement/analytics'
     | '/procurement/search'
     | '/provocare/notificari'
     | '/provocare/termeni-si-conditii'
@@ -1931,6 +1943,7 @@ export interface FileRouteTypes {
     | '/ong-uri/$cui'
     | '/ong-uri/servicii'
     | '/pnrr/share-image.png'
+    | '/procurement/analytics'
     | '/procurement/search'
     | '/provocare/notificari'
     | '/provocare/termeni-si-conditii'
@@ -2086,6 +2099,7 @@ export interface FileRouteTypes {
     | '/ong-uri/$cui'
     | '/ong-uri/servicii'
     | '/pnrr/share-image.png'
+    | '/procurement/analytics'
     | '/procurement/search'
     | '/provocare_/notificari'
     | '/provocare_/termeni-si-conditii'
@@ -2619,6 +2633,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/procurement/search'
       preLoaderRoute: typeof ProcurementSearchRouteImport
+      parentRoute: typeof ProcurementRouteRoute
+    }
+    '/procurement/analytics': {
+      id: '/procurement/analytics'
+      path: '/analytics'
+      fullPath: '/procurement/analytics'
+      preLoaderRoute: typeof ProcurementAnalyticsRouteImport
       parentRoute: typeof ProcurementRouteRoute
     }
     '/pnrr/share-image.png': {
@@ -3488,6 +3509,7 @@ const LegislatieRouteRouteWithChildren = LegislatieRouteRoute._addFileChildren(
 )
 
 interface ProcurementRouteRouteChildren {
+  ProcurementAnalyticsRoute: typeof ProcurementAnalyticsRoute
   ProcurementSearchRoute: typeof ProcurementSearchRoute
   ProcurementIndexRoute: typeof ProcurementIndexRoute
   ProcurementCategoriesCodeRoute: typeof ProcurementCategoriesCodeRoute
@@ -3499,6 +3521,7 @@ interface ProcurementRouteRouteChildren {
 }
 
 const ProcurementRouteRouteChildren: ProcurementRouteRouteChildren = {
+  ProcurementAnalyticsRoute: ProcurementAnalyticsRoute,
   ProcurementSearchRoute: ProcurementSearchRoute,
   ProcurementIndexRoute: ProcurementIndexRoute,
   ProcurementCategoriesCodeRoute: ProcurementCategoriesCodeRoute,

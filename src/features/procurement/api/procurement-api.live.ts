@@ -250,6 +250,50 @@ export async function fetchProcurementLandingLive(
   return mapLanding({ aggregates, divisions, partyNames })
 }
 
+/**
+ * Map territory drawer overview — same landing payload shape, but requests
+ * party rankings under buyer geography as if the serving API retains keys.
+ *
+ * TODO(API party rankings under buyer geo): ClickHouse / GraphQL analysis must
+ * retain authority and supplier keys under `buyerRegion` (and later
+ * `buyerCounty` / `buyerSiruta`) so `procurementBreakdown` for those dimensions
+ * returns ranked buckets. Today the hub landing deliberately omits
+ * includeAuthorities/includeSuppliers when geo is set; this path always asks
+ * for them so ProcurementTerritoryDrawer can render real cards (or surface
+ * GraphQL errors) instead of Preview-unavailable placeholders.
+ *
+ * TODO(API Wave-2 buyer_county / buyer_siruta): accept those scope fields
+ * natively (see buildScopeFilter). Client sends them without region approximation.
+ */
+export async function fetchProcurementTerritoryOverviewLive(
+  filters: ProcurementLandingFilters = {},
+): Promise<ProcurementLanding> {
+  if (filters.supplierRegion || filters.supplierCounty) {
+    throw new Error(
+      'Supplier geography is not available in the live procurement matrix yet',
+    )
+  }
+
+  const monthScope = buildProcurementOverviewMonthScope(filters)
+  const scope = buildScopeFilter({
+    ...monthScope,
+    buyerRegion: filters.buyerRegion,
+    buyerCounty: filters.buyerCounty,
+    buyerSiruta: filters.buyerSiruta,
+  })
+
+  const [aggregates, divisions] = await Promise.all([
+    loadAggregates(scope, {
+      includeAuthorities: true,
+      includeSuppliers: true,
+      includeCategories: true,
+    }),
+    loadCpvDivisions(),
+  ])
+  const partyNames = await loadPartyNames(aggregates)
+  return mapLanding({ aggregates, divisions, partyNames })
+}
+
 // ── search ──────────────────────────────────────────────────────────────────
 
 async function fetchSearchRecords(

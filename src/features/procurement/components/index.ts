@@ -21,11 +21,13 @@ export {
 } from './procurement-hub-filter-sheet'
 export { ProcurementInfoSheet } from './procurement-info-sheet'
 export { ProcurementInstitutionPage } from './procurement-institution-page'
+export { ProcurementMapView } from './procurement-map-view'
 export { ProcurementMonthlyChart } from './procurement-monthly-chart'
 export { ProcurementOverviewActiveFilters } from './procurement-overview-active-filters'
 export { ProcurementOverviewPage } from './procurement-overview-page'
 export { ProcurementPagination } from './procurement-pagination'
 export { ProcurementPartyRanking } from './procurement-party-ranking'
+export { ProcurementTerritoryDrawer } from './procurement-territory-drawer'
 export { ProcurementPreviewBadge } from './procurement-preview-badge'
 export { ProcurementQuickLinks } from './procurement-quick-links'
 export {

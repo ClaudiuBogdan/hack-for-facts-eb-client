@@ -40,9 +40,12 @@ Reuse existing GraphQL analysis operations already exposed by the API:
 
 Side-by-side two institutions or two suppliers using the same stats/series/breakdown bundle (two scopes). Power-user; builds on institution/supplier pages.
 
-### Map
+## Map
 
-Buyer-county / UAT choropleth only after wave-2 rollups and geo coverage pass honesty floors. Until then, keep region as list/filter, not a map hero.
+Buyer-county / UAT choropleth only after wave-2 rollups and geo coverage pass honesty floors. Until then:
+
+- **M1 (client):** region Preview map at `/procurement?view=map` — see [`procurement-buyer-map-requirements.md`](../../../specs/procurement-buyer-map-requirements.md)
+- Map is a hub tab (Overview / Map / List); keep it off Overview hero until county/UAT + coverage floors
 
 ### Cross-domain Entity 360
 

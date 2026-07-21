@@ -5,6 +5,7 @@ export {
   fetchCpvCategoryPageLive as fetchProcurementCpvCategoryPage,
   fetchDirectAcquisitionDetailLive as fetchProcurementDirectAcquisitionDetail,
   fetchProcurementLandingLive as fetchProcurementLanding,
+  fetchProcurementTerritoryOverviewLive as fetchProcurementTerritoryOverview,
   fetchProcurementSearchLive as fetchProcurementSearch,
   fetchProcedureDetailLive as fetchProcurementProcedureDetail,
   fetchSupplierProcurementSliceLive as fetchProcurementSupplierSlice,

@@ -12,6 +12,39 @@ describe('procurement hub schema', () => {
     expect(parseProcurementHubSearch({}).view).toBe('overview')
     expect(parseProcurementHubSearch({ tab: 'search' }).view).toBe('list')
     expect(parseProcurementHubSearch({ view: 'list' }).view).toBe('list')
+    expect(parseProcurementHubSearch({ view: 'map' }).view).toBe('map')
+  })
+
+  it('defaults measure and mapGrain and cleans them when default', () => {
+    expect(parseProcurementHubSearch({}).measure).toBe('record_count')
+    expect(parseProcurementHubSearch({}).mapGrain).toBe('region')
+    expect(
+      cleanProcurementHubSearch({
+        measure: 'record_count',
+        mapGrain: 'region',
+        q: 'school',
+      }),
+    ).toEqual({ q: 'school' })
+    expect(
+      cleanProcurementHubSearch({
+        measure: 'value_awarded',
+        mapGrain: 'county',
+      }),
+    ).toEqual({ measure: 'value_awarded', mapGrain: 'county' })
+  })
+
+  it('keeps finest buyer geo key (siruta > county > region)', () => {
+    expect(
+      parseProcurementHubSearch({
+        buyerSiruta: '120855',
+        buyerCounty: 'CJ',
+        buyerRegion: 'Nord-Vest',
+      }),
+    ).toMatchObject({
+      buyerSiruta: '120855',
+      buyerCounty: undefined,
+      buyerRegion: undefined,
+    })
   })
 
   it('cleans default view/grain/sort/page from the URL', () => {

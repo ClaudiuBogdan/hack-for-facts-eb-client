@@ -123,9 +123,25 @@ const commaListValueCategory = z
   })
   .catch(undefined)
 
-/** Hub layout: aggregates vs paginated records (F2). */
-export const procurementHubViewSchema = z.enum(['overview', 'list'])
+/** Hub layout: aggregates, paginated records, or buyer map (F2). */
+export const procurementHubViewSchema = z.enum(['overview', 'list', 'map'])
 export type ProcurementHubView = z.infer<typeof procurementHubViewSchema>
+
+/** Shared display metric across Overview / Map / List. */
+export const procurementHubMeasureSchema = z.enum([
+  'record_count',
+  'value_awarded',
+])
+export type ProcurementHubMeasure = z.infer<typeof procurementHubMeasureSchema>
+
+/**
+ * Buyer map choropleth geography level. County/UAT paint is TODO until rollups;
+ * kept in URL as Map-tab chrome only (not a global filter chip / sheet control).
+ */
+export const procurementHubMapGrainSchema = z.enum(['region', 'county', 'uat'])
+export type ProcurementHubMapGrain = z.infer<
+  typeof procurementHubMapGrainSchema
+>
 
 /**
  * Hub grains used in the analysis toggle + list. Procedures/modifications remain
@@ -144,6 +160,8 @@ export const procurementHubSearchSchema = z
     // Legacy tab param → normalized in parse
     tab: z.enum(['overview', 'search']).optional().catch(undefined),
     grain: procurementGrainSchema.optional().catch(undefined),
+    measure: procurementHubMeasureSchema.optional().catch(undefined),
+    mapGrain: procurementHubMapGrainSchema.optional().catch(undefined),
     q: optionalStringParam,
     authority_cui: optionalStringParam,
     supplier_cui: optionalStringParam,
@@ -160,6 +178,7 @@ export const procurementHubSearchSchema = z
     period: optionalPeriodMode,
     buyerRegion: optionalGeographyKey,
     buyerCounty: optionalGeographyKey,
+    buyerSiruta: optionalGeographyKey,
     supplierRegion: optionalGeographyKey,
     supplierCounty: optionalGeographyKey,
     valueMin: z.coerce.number().nonnegative().optional().catch(undefined),
@@ -183,6 +202,8 @@ export type ProcurementHubSearch = z.output<typeof procurementHubSearchSchema>
 export type ProcurementHubState = {
   view: ProcurementHubView
   grain: ProcurementGrain
+  measure: ProcurementHubMeasure
+  mapGrain: ProcurementHubMapGrain
   sort: ProcurementSort
   page: number
   pageSize: number
@@ -202,6 +223,7 @@ export type ProcurementHubState = {
   period?: 'all'
   buyerRegion?: string
   buyerCounty?: string
+  buyerSiruta?: string
   supplierRegion?: string
   supplierCounty?: string
   valueMin?: number
@@ -214,6 +236,8 @@ export type ProcurementHubState = {
 export const PROCUREMENT_HUB_DEFAULTS = {
   view: 'overview' as const,
   grain: PROCUREMENT_SEARCH_DEFAULTS.grain,
+  measure: 'record_count' as const,
+  mapGrain: 'region' as const,
   sort: PROCUREMENT_SEARCH_DEFAULTS.sort,
   page: PROCUREMENT_SEARCH_DEFAULTS.page,
   pageSize: PROCUREMENT_SEARCH_DEFAULTS.pageSize,
@@ -250,6 +274,7 @@ export const PROCUREMENT_HUB_LIST_ONLY_KEYS = [
 export const PROCUREMENT_HUB_GEO_KEYS = [
   'buyerRegion',
   'buyerCounty',
+  'buyerSiruta',
   'supplierRegion',
   'supplierCounty',
 ] as const
@@ -269,6 +294,8 @@ export function withProcurementHubDefaults(
     ...rest,
     view: search.view ?? viewFromTab ?? PROCUREMENT_HUB_DEFAULTS.view,
     grain: search.grain ?? PROCUREMENT_HUB_DEFAULTS.grain,
+    measure: search.measure ?? PROCUREMENT_HUB_DEFAULTS.measure,
+    mapGrain: search.mapGrain ?? PROCUREMENT_HUB_DEFAULTS.mapGrain,
     sort: search.sort ?? PROCUREMENT_HUB_DEFAULTS.sort,
     page: search.page ?? PROCUREMENT_HUB_DEFAULTS.page,
     pageSize: search.pageSize ?? PROCUREMENT_HUB_DEFAULTS.pageSize,
@@ -282,16 +309,37 @@ export function parseProcurementHubSearch(
   const normalizedFrom = normalizeProcurementMonthStart(parsed.dateFrom)
   const normalizedTo = normalizeProcurementMonthEnd(parsed.dateTo)
 
+  // Finest buyer geo wins: SIRUTA > county > region.
+  const buyerGeo = parsed.buyerSiruta
+    ? {
+        buyerSiruta: parsed.buyerSiruta,
+        buyerCounty: undefined,
+        buyerRegion: undefined,
+      }
+    : parsed.buyerCounty
+      ? {
+          buyerCounty: parsed.buyerCounty,
+          buyerRegion: undefined,
+          buyerSiruta: undefined,
+        }
+      : parsed.buyerRegion
+        ? {
+            buyerRegion: parsed.buyerRegion,
+            buyerCounty: undefined,
+            buyerSiruta: undefined,
+          }
+        : {
+            buyerRegion: undefined,
+            buyerCounty: undefined,
+            buyerSiruta: undefined,
+          }
+
   const withDates: ProcurementHubSearch = {
     ...parsed,
     ...(normalizedFrom ? { dateFrom: normalizedFrom } : { dateFrom: undefined }),
     ...(normalizedTo ? { dateTo: normalizedTo } : { dateTo: undefined }),
     ...(parsed.period === 'all' ? { period: 'all' as const } : {}),
-    ...(parsed.buyerCounty
-      ? { buyerCounty: parsed.buyerCounty, buyerRegion: undefined }
-      : parsed.buyerRegion
-        ? { buyerRegion: parsed.buyerRegion }
-        : {}),
+    ...buyerGeo,
     ...(parsed.supplierCounty
       ? { supplierCounty: parsed.supplierCounty, supplierRegion: undefined }
       : parsed.supplierRegion
@@ -322,6 +370,7 @@ export function cleanProcurementHubSearch(
     'dateTo',
     'buyerRegion',
     'buyerCounty',
+    'buyerSiruta',
     'supplierRegion',
     'supplierCounty',
   ]
@@ -339,6 +388,10 @@ export function cleanProcurementHubSearch(
 
   if (cleaned.view === PROCUREMENT_HUB_DEFAULTS.view) delete cleaned.view
   if (cleaned.grain === PROCUREMENT_HUB_DEFAULTS.grain) delete cleaned.grain
+  if (cleaned.measure === PROCUREMENT_HUB_DEFAULTS.measure) delete cleaned.measure
+  if (cleaned.mapGrain === PROCUREMENT_HUB_DEFAULTS.mapGrain) {
+    delete cleaned.mapGrain
+  }
   if (cleaned.sort === PROCUREMENT_HUB_DEFAULTS.sort) delete cleaned.sort
   if (cleaned.page === PROCUREMENT_HUB_DEFAULTS.page) delete cleaned.page
   if (cleaned.pageSize === PROCUREMENT_HUB_DEFAULTS.pageSize) {
@@ -463,6 +516,13 @@ export const PROCUREMENT_HUB_CAPABILITY_MATRIX: readonly HubCapabilityRow[] = [
     overview: 'preview',
     list: 'live',
     note: 'List-only on overview (C1 inactive chips)',
+  },
+  {
+    id: 'buyer-map',
+    label: 'Buyer geography map',
+    overview: 'preview',
+    list: 'todo',
+    note: 'M1 region paint live; measure+mapGrain shared URL; TODO county/UAT choropleth',
   },
   {
     id: 'q-aggregates',

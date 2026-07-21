@@ -85,6 +85,12 @@ export interface ProcurementScopeFilterInput {
   cpvCode?: string
   buyerCounty?: string
   buyerRegion?: string
+  /**
+   * TODO(API buyer_siruta scope): accept buyerSiruta on ProcurementAnalysisScopeInput
+   * so UAT map drawer / hub filters can scope aggregates natively. Client already
+   * sends this from ProcurementTerritoryDrawer (mapGrain=uat).
+   */
+  buyerSiruta?: string
   supplierCounty?: string
   supplierRegion?: string
   status?: string
@@ -318,7 +324,7 @@ export function buildProcurementSort(
   }
 }
 
-/** Scope filter for the shared aggregate queries (landing/CPV/supplier). */
+/** Scope filter for the shared aggregate queries (landing/CPV/supplier/map drawer). */
 export function buildScopeFilter(scope: {
   authorityCui?: string
   supplierCui?: string
@@ -327,6 +333,8 @@ export function buildScopeFilter(scope: {
   monthFrom?: string
   monthTo?: string
   buyerRegion?: string
+  buyerCounty?: string
+  buyerSiruta?: string
   grain?: ProcurementScopeFilterInput['grain']
 }): ProcurementScopeFilterInput {
   const filter: ProcurementScopeFilterInput = {}
@@ -347,6 +355,15 @@ export function buildScopeFilter(scope: {
   if (monthTo) filter.to = monthTo
   const buyerRegion = trimmedOrUndefined(scope.buyerRegion)
   if (buyerRegion) filter.buyerRegion = buyerRegion
+  // TODO(API Wave-2 buyer_county rollup): serving must accept buyerCounty on
+  // ProcurementAnalysisScopeInput (not approximate to parent region). Used by
+  // ProcurementTerritoryDrawer when mapGrain=county and by hub buyerCounty.
+  const buyerCounty = trimmedOrUndefined(scope.buyerCounty)
+  if (buyerCounty) filter.buyerCounty = buyerCounty
+  // TODO(API buyer_siruta scope): serving must accept buyerSiruta. Used by
+  // ProcurementTerritoryDrawer when mapGrain=uat.
+  const buyerSiruta = trimmedOrUndefined(scope.buyerSiruta)
+  if (buyerSiruta) filter.buyerSiruta = buyerSiruta
   if (scope.grain) filter.grain = scope.grain
   return filter
 }
