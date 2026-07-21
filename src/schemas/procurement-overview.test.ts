@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildProcurementOverviewMonthScope,
+  getPreviousCalendarYearBounds,
   normalizeProcurementMonthEnd,
   normalizeProcurementMonthStart,
   parseProcurementOverviewSearch,
+  resolveProcurementOverviewPeriod,
+  toProcurementLandingQueryFilters,
 } from './procurement-overview'
 
 describe('procurement overview period', () => {
@@ -57,5 +60,58 @@ describe('procurement overview period', () => {
         supplierCounty: '  ',
       }),
     ).toEqual({ buyerRegion: 'Nord-Vest' })
+  })
+
+  it('defaults to the previous calendar year when period is unset', () => {
+    const now = new Date('2026-07-21T12:00:00Z')
+    expect(getPreviousCalendarYearBounds(now)).toEqual({
+      dateFrom: '2025-01-01',
+      dateTo: '2025-12-31',
+    })
+    expect(resolveProcurementOverviewPeriod({}, now)).toEqual({
+      dateFrom: '2025-01-01',
+      dateTo: '2025-12-31',
+      isDefault: true,
+      isAllTime: false,
+    })
+    expect(toProcurementLandingQueryFilters({}, now)).toEqual({
+      dateFrom: '2025-01-01',
+      dateTo: '2025-12-31',
+    })
+  })
+
+  it('honours period=all as explicit all-time', () => {
+    const now = new Date('2026-07-21T12:00:00Z')
+    expect(
+      resolveProcurementOverviewPeriod({ period: 'all' }, now),
+    ).toEqual({ isDefault: false, isAllTime: true })
+    expect(
+      toProcurementLandingQueryFilters(
+        { period: 'all', buyerRegion: 'Nord-Vest' },
+        now,
+      ),
+    ).toEqual({ buyerRegion: 'Nord-Vest' })
+  })
+
+  it('prefers explicit date bounds over the default year', () => {
+    const now = new Date('2026-07-21T12:00:00Z')
+    expect(
+      resolveProcurementOverviewPeriod(
+        { dateFrom: '2024-03-15', dateTo: '2024-06-02' },
+        now,
+      ),
+    ).toEqual({
+      dateFrom: '2024-03-01',
+      dateTo: '2024-06-30',
+      isDefault: false,
+      isAllTime: false,
+    })
+  })
+
+  it('parses period=all from the URL search', () => {
+    expect(parseProcurementOverviewSearch({ period: 'all' })).toEqual({
+      period: 'all',
+    })
+    expect(parseProcurementOverviewSearch({ period: 'weird' })).toEqual({})
   })
 })

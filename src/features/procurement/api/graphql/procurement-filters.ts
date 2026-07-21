@@ -15,16 +15,18 @@ import type {
   ProcurementSort,
 } from '@/schemas/procurement-search'
 import { procurementQOrUndefined } from '../../lib/search-query'
+import {
+  buildDateRange,
+  resolveDirectAcquisitionWindow,
+  type DateRangeInput,
+} from '../../lib/search-dates'
 import { expandValueCategories } from '../../lib/value-category'
 
 // ---------------------------------------------------------------------------
 // Operator-input shapes (mirror the SDL)
 // ---------------------------------------------------------------------------
 
-export interface DateRangeInput {
-  gte?: string
-  lte?: string
-}
+export type { DateRangeInput }
 
 export interface DecimalRangeInput {
   gte?: string
@@ -149,31 +151,6 @@ const STATUSES_BY_GRAIN: Readonly<Record<FlowGrainKey, readonly ProcurementStatu
 // Shared pieces
 // ---------------------------------------------------------------------------
 
-/** A date bound in `YYYY-MM-DD` (the GraphQL `Date` scalar form). */
-function toDateBound(value: string | undefined): string | undefined {
-  const trimmed = value?.trim()
-  if (!trimmed) return undefined
-  // Accept full ISO timestamps from date pickers; the server wants the day.
-  const day = trimmed.slice(0, 10)
-  return /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : undefined
-}
-
-/**
- * Date range from the search state. Explicit `dateFrom`/`dateTo` win; `year`
- * expands to the full year only when neither explicit bound is present.
- */
-function buildDateRange(search: ProcurementSearchState): DateRangeInput | undefined {
-  const gte = toDateBound(search.dateFrom)
-  const lte = toDateBound(search.dateTo)
-  if (gte || lte) {
-    return { ...(gte ? { gte } : {}), ...(lte ? { lte } : {}) }
-  }
-  if (search.year !== undefined) {
-    return { gte: `${search.year}-01-01`, lte: `${search.year}-12-31` }
-  }
-  return undefined
-}
-
 /** UI numeric value bounds → RON decimal strings for the server. */
 function buildValueRange(search: ProcurementSearchState): DecimalRangeInput | undefined {
   const range: DecimalRangeInput = {}
@@ -277,6 +254,12 @@ export function buildContractsFilter(
   return filter
 }
 
+/**
+ * DAs are the one grain the server refuses to search unbounded: without a party
+ * CUI it demands a fully-bounded ≤ 366-day date window, so the builder
+ * always sends one (see `lib/search-dates.ts`). The UI discloses the applied
+ * window via `resolveDirectAcquisitionWindow().adjustment`.
+ */
 export function buildDirectAcquisitionsFilter(
   search: ProcurementSearchState,
 ): ProcurementDirectAcquisitionsFilterInput {
@@ -292,7 +275,7 @@ export function buildDirectAcquisitionsFilter(
   if (sourceSystem) filter.sourceSystem = { in: sourceSystem }
   const status = buildStatuses(search, 'direct_acquisitions')
   if (status) filter.status = { in: status }
-  const dates = buildDateRange(search)
+  const dates = resolveDirectAcquisitionWindow(search).range
   if (dates) filter.publicationDate = dates
   const value = buildValueRange(search)
   if (value) filter.valueRon = value

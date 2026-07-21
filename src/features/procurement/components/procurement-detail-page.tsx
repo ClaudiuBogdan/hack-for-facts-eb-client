@@ -61,8 +61,8 @@ export function ProcurementDetailPage({ grain, detail, className }: Props) {
         </Link>
         <ChevronRight className="h-3.5 w-3.5" aria-hidden />
         <Link
-          to="/procurement/search"
-          search={{ grain: config.grain }}
+          to="/procurement"
+          search={{ view: 'list', grain: config.grain }}
           className="underline underline-offset-2 hover:text-[var(--pnrr-fg)]"
         >
           {config.pageLabel()}

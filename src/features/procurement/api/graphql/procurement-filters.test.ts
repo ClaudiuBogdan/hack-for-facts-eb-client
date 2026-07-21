@@ -11,6 +11,7 @@ import {
   buildProcurementSort,
   buildScopeFilter,
 } from './procurement-filters'
+import { PROCUREMENT_DA_MAX_WINDOW_DAYS } from '../../lib/search-dates'
 
 function state(
   overrides: Partial<ProcurementSearchState> = {},
@@ -106,6 +107,29 @@ describe('buildDirectAcquisitionsFilter', () => {
       buildDirectAcquisitionsFilter(state({ status: ['finalized', 'offered'] }))
         .status,
     ).toEqual({ in: ['finalized', 'offered'] })
+  })
+
+  // The server refuses an unbounded DA search (`assertDaOffsetSelective`): CPV
+  // and `q` refine but never qualify, so the builder must carry a window of its
+  // own or the page renders the generic "data could not be loaded" error.
+  it('always sends a bounded window when no party CUI qualifies the query', () => {
+    for (const overrides of [{}, { cpv: '45453000' }, { q: 'spital' }]) {
+      const range = buildDirectAcquisitionsFilter(state(overrides)).publicationDate
+      expect(range?.gte).toBeDefined()
+      expect(range?.lte).toBeDefined()
+      const days =
+        (Date.parse(`${range!.lte!}T00:00:00Z`) -
+          Date.parse(`${range!.gte!}T00:00:00Z`)) /
+        86_400_000
+      expect(days).toBeLessThanOrEqual(PROCUREMENT_DA_MAX_WINDOW_DAYS)
+    }
+  })
+
+  it('leaves a party-qualified search unwindowed (the whole history stays searchable)', () => {
+    expect(
+      buildDirectAcquisitionsFilter(state({ supplier_cui: '123' }))
+        .publicationDate,
+    ).toBeUndefined()
   })
 })
 

@@ -7,12 +7,12 @@
  */
 import { useCallback, useMemo } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import {
-  cleanProcurementSearch,
-  type ProcurementSearchState,
-  type ProcurementSort,
-  type ProcurementSource,
-  type ProcurementValueCategory,
+import { cleanProcurementHubSearch } from '@/schemas/procurement-hub'
+import type {
+  ProcurementSearchState,
+  ProcurementSort,
+  ProcurementSource,
+  ProcurementValueCategory,
 } from '@/schemas/procurement-search'
 import type {
   ProcurementGrain,
@@ -27,12 +27,16 @@ import {
 } from '../lib/filter-meta'
 
 export function useProcurementFilterState(search: ProcurementSearchState) {
-  const navigate = useNavigate({ from: '/procurement/search' })
+  const navigate = useNavigate({ from: '/procurement/' })
 
   const commit = useCallback(
     (patch: ProcurementFilterPatch, options?: { readonly resetScroll?: boolean }) => {
       void navigate({
-        search: cleanProcurementSearch({ ...search, ...patch }),
+        search: cleanProcurementHubSearch({
+          ...search,
+          ...patch,
+          view: 'list',
+        }),
         replace: true,
         resetScroll: options?.resetScroll ?? false,
       })

@@ -1,44 +1,25 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { getSiteUrl } from '@/config/env'
-import { createPublicPageCacheHeaders } from '@/lib/http-cache'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import {
-  cleanProcurementSearch,
-  parseProcurementSearch,
-  type ProcurementSearchState,
-} from '@/schemas/procurement-search'
+  cleanProcurementHubSearch,
+  parseProcurementHubSearch,
+} from '@/schemas/procurement-hub'
 
-export type ProcurementSearchRouteLoaderData = {
-  readonly initialSearch: ProcurementSearchState
-}
-
+/**
+ * Legacy search path — redirects into the unified hub list view (F2).
+ * `/procurement/search?*` → `/procurement?view=list&*`
+ */
 export const Route = createFileRoute('/procurement/search')({
   ssr: true,
-  validateSearch: (search: Record<string, unknown>) => {
-    const parsed = parseProcurementSearch(search)
-    return cleanProcurementSearch(parsed)
+  validateSearch: (search: Record<string, unknown>) =>
+    parseProcurementHubSearch(search),
+  beforeLoad: ({ search }) => {
+    throw redirect({
+      to: '/procurement',
+      search: cleanProcurementHubSearch({
+        ...search,
+        view: 'list',
+      }),
+      replace: true,
+    })
   },
-  headers: () =>
-    createPublicPageCacheHeaders({
-      sharedMaxAgeSeconds: 300,
-      staleWhileRevalidateSeconds: 3600,
-    }),
-  head: buildAchizitiiCautareHead,
 })
-
-function buildAchizitiiCautareHead() {
-  const site = getSiteUrl()
-  const canonical = `${site}/procurement/search`
-  const title = 'Caută în achiziții publice — Transparenta.eu'
-  const description =
-    'Caută în proceduri, contracte, achiziții directe și modificări. Filtre deterministe, acoperire dezvăluită, export CSV.'
-  return {
-    meta: [
-      { title },
-      { name: 'description', content: description },
-      { property: 'og:title', content: title },
-      { property: 'og:description', content: description },
-      { property: 'og:url', content: canonical },
-    ],
-    links: [{ rel: 'canonical', href: canonical }],
-  }
-}

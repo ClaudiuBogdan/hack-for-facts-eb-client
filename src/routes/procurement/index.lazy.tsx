@@ -1,23 +1,12 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { ProcurementOverviewPage } from '@/features/procurement/components/procurement-overview-page'
-import { parseProcurementOverviewSearch } from '@/schemas/procurement-overview'
+import { parseProcurementHubSearch } from '@/schemas/procurement-hub'
 
 export const Route = createLazyFileRoute('/procurement/')({
   component: ProcurementOverviewRoutePage,
 })
 
 function ProcurementOverviewRoutePage() {
-  const search = parseProcurementOverviewSearch(Route.useSearch())
-  return (
-    <ProcurementOverviewPage
-      filters={{
-        dateFrom: search.dateFrom,
-        dateTo: search.dateTo,
-        buyerRegion: search.buyerRegion,
-        buyerCounty: search.buyerCounty,
-        supplierRegion: search.supplierRegion,
-        supplierCounty: search.supplierCounty,
-      }}
-    />
-  )
+  const hubState = parseProcurementHubSearch(Route.useSearch())
+  return <ProcurementOverviewPage hubState={hubState} />
 }

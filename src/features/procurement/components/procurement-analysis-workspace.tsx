@@ -61,8 +61,8 @@ export function ProcurementAnalysisWorkspace({
         </h2>
         <p className={procurementSectionDescriptionClassName}>
           <Trans>
-            Explore the live matrix by grain, dimension, time bucket and measure.
-            Unsupported combinations are reported by the API.
+            Explore by grain, dimension, time bucket and measure. Unsupported
+            combinations are reported clearly.
           </Trans>
         </p>
       </div>
@@ -108,7 +108,7 @@ export function ProcurementAnalysisWorkspace({
         </div>
 
         {query.isPending ? (
-          <p className="text-sm text-[var(--pnrr-muted)]"><Trans>Loading live analysis…</Trans></p>
+          <p className="text-sm text-[var(--pnrr-muted)]"><Trans>Loading analysis…</Trans></p>
         ) : query.isError && !data ? (
           <ProcurementErrorState error={query.error} onRetry={() => void query.refetch()} isRetrying={query.isRefetching} />
         ) : data ? (

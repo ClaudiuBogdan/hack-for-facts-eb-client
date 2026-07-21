@@ -117,6 +117,7 @@ import { Route as InvestitiiPubliceJudeteCountyCodeRouteImport } from './routes/
 import { Route as EntitiesCuiShareImageDotpngRouteImport } from './routes/entities.$cui.share-image[.]png'
 import { Route as ClassificationsFunctionalCodeRouteImport } from './routes/classifications/functional/$code'
 import { Route as ClassificationsEconomicCodeRouteImport } from './routes/classifications/economic/$code'
+import { Route as ApiV1GraphqlRouteImport } from './routes/api/v1/graphql'
 import { Route as AlegeriContestContestKeyRouteImport } from './routes/alegeri/contest/$contestKey'
 import { Route as AchizitiiProceduriIdRouteImport } from './routes/achizitii/proceduri/$id'
 import { Route as AchizitiiCpvCodeRouteImport } from './routes/achizitii/cpv/$code'
@@ -869,6 +870,11 @@ const ClassificationsEconomicCodeRoute =
   } as any).lazy(() =>
     import('./routes/classifications/economic/$code.lazy').then((d) => d.Route),
   )
+const ApiV1GraphqlRoute = ApiV1GraphqlRouteImport.update({
+  id: '/api/v1/graphql',
+  path: '/api/v1/graphql',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AlegeriContestContestKeyRoute =
   AlegeriContestContestKeyRouteImport.update({
     id: '/alegeri/contest/$contestKey',
@@ -1343,6 +1349,7 @@ export interface FileRoutesByFullPath {
   '/achizitii/cpv/$code': typeof AchizitiiCpvCodeRoute
   '/achizitii/proceduri/$id': typeof AchizitiiProceduriIdRoute
   '/alegeri/contest/$contestKey': typeof AlegeriContestContestKeyRoute
+  '/api/v1/graphql': typeof ApiV1GraphqlRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
@@ -1487,6 +1494,7 @@ export interface FileRoutesByTo {
   '/achizitii/cpv/$code': typeof AchizitiiCpvCodeRoute
   '/achizitii/proceduri/$id': typeof AchizitiiProceduriIdRoute
   '/alegeri/contest/$contestKey': typeof AlegeriContestContestKeyRoute
+  '/api/v1/graphql': typeof ApiV1GraphqlRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
@@ -1646,6 +1654,7 @@ export interface FileRoutesById {
   '/achizitii/cpv/$code': typeof AchizitiiCpvCodeRoute
   '/achizitii/proceduri/$id': typeof AchizitiiProceduriIdRoute
   '/alegeri/contest/$contestKey': typeof AlegeriContestContestKeyRoute
+  '/api/v1/graphql': typeof ApiV1GraphqlRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
@@ -1807,6 +1816,7 @@ export interface FileRouteTypes {
     | '/achizitii/cpv/$code'
     | '/achizitii/proceduri/$id'
     | '/alegeri/contest/$contestKey'
+    | '/api/v1/graphql'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
@@ -1951,6 +1961,7 @@ export interface FileRouteTypes {
     | '/achizitii/cpv/$code'
     | '/achizitii/proceduri/$id'
     | '/alegeri/contest/$contestKey'
+    | '/api/v1/graphql'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
@@ -2109,6 +2120,7 @@ export interface FileRouteTypes {
     | '/achizitii/cpv/$code'
     | '/achizitii/proceduri/$id'
     | '/alegeri/contest/$contestKey'
+    | '/api/v1/graphql'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
@@ -2245,6 +2257,7 @@ export interface RootRouteChildren {
   ParlamentMembriMemberIdRouteRoute: typeof ParlamentMembriMemberIdRouteRouteWithChildren
   ParlamentProiecteBillIdRouteRoute: typeof ParlamentProiecteBillIdRouteRouteWithChildren
   AlegeriContestContestKeyRoute: typeof AlegeriContestContestKeyRoute
+  ApiV1GraphqlRoute: typeof ApiV1GraphqlRoute
   ClassificationsEconomicCodeRoute: typeof ClassificationsEconomicCodeRoute
   ClassificationsFunctionalCodeRoute: typeof ClassificationsFunctionalCodeRoute
   MapsDatasetsDatasetIdRoute: typeof MapsDatasetsDatasetIdRoute
@@ -3056,6 +3069,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClassificationsEconomicCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v1/graphql': {
+      id: '/api/v1/graphql'
+      path: '/api/v1/graphql'
+      fullPath: '/api/v1/graphql'
+      preLoaderRoute: typeof ApiV1GraphqlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/alegeri/contest/$contestKey': {
       id: '/alegeri/contest/$contestKey'
       path: '/alegeri/contest/$contestKey'
@@ -3838,6 +3858,7 @@ const rootRouteChildren: RootRouteChildren = {
   ParlamentProiecteBillIdRouteRoute:
     ParlamentProiecteBillIdRouteRouteWithChildren,
   AlegeriContestContestKeyRoute: AlegeriContestContestKeyRoute,
+  ApiV1GraphqlRoute: ApiV1GraphqlRoute,
   ClassificationsEconomicCodeRoute: ClassificationsEconomicCodeRoute,
   ClassificationsFunctionalCodeRoute: ClassificationsFunctionalCodeRoute,
   MapsDatasetsDatasetIdRoute: MapsDatasetsDatasetIdRoute,

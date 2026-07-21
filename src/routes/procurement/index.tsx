@@ -1,23 +1,16 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { getSiteUrl } from '@/config/env'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
-import { parseProcurementOverviewSearch } from '@/schemas/procurement-overview'
+import {
+  cleanProcurementHubSearch,
+  parseProcurementHubSearch,
+} from '@/schemas/procurement-hub'
 
-// Lenient `?tab=` handling: tabs are path-driven (Overview → /procurement,
-// Search → /procurement/search), but a stray tab param redirects instead of
-// 404ing or lingering in the URL.
 export const Route = createFileRoute('/procurement/')({
   ssr: true,
-  validateSearch: parseProcurementOverviewSearch,
-  beforeLoad: ({ search }) => {
-    if (search.tab === 'search') {
-      const { tab: _tab, ...rest } = search
-      throw redirect({ to: '/procurement/search', search: rest, replace: true })
-    }
-    if (search.tab === 'overview') {
-      const { tab: _tab, ...rest } = search
-      throw redirect({ to: '/procurement', search: rest, replace: true })
-    }
+  validateSearch: (search: Record<string, unknown>) => {
+    const parsed = parseProcurementHubSearch(search)
+    return cleanProcurementHubSearch(parsed)
   },
   headers: () =>
     createPublicPageCacheHeaders({

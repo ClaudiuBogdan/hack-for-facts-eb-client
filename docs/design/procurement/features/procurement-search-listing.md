@@ -1,5 +1,10 @@
 # Feature: Procurement search & listing (`/achizitii/cautare`)
 
+> **2026-07 update:** List layout lives on the unified hub at
+> `/procurement?view=list` (shared URL schema + filter sheet). Legacy
+> `/procurement/search` and `/achizitii/cautare` redirect there. See
+> [`docs/specs/procurement-shared-hub-scope-requirements.md`](../../../specs/procurement-shared-hub-scope-requirements.md).
+>
 > MVP-2. The general-purpose entry point that every other procurement surface links
 > into. Grain selector + capability-gated filter rail + result cards + coverage
 > banner + CSV export.
@@ -67,6 +72,12 @@ CSV export. It turns the unsearchable SEAP corpus into a guided, honest listing.
 - **Decision:** Multi-value filters comma-separated, parsed by the local schema
   (follow entity/company route conventions). Default view renders with no params.
   Invalid params normalized by `validateSearch`.
+- **Decision (2026-07):** Search is the **authority×supplier pair drill target**
+  for scoped ranking cards: deep links arrive with both CUIs, matching `grain`,
+  and `sort=value_desc`. Do not invent a parallel pair-list surface while this
+  path works. Spec:
+  [`procurement-ranking-cards-requirements.md`](../../../specs/procurement-ranking-cards-requirements.md)
+  § Authority × supplier drill-down.
 
 ## Data contract and mock states
 

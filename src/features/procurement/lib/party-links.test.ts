@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
+  analysisGrainToSearchGrain,
   partyLabel,
+  partyPairSearchLink,
   partyProcurementLink,
   partyProcurementRoute,
   partyProfileLink,
@@ -60,5 +62,69 @@ describe('party links', () => {
       to: '/procurement/institutions/$cui',
       params: { cui: '4267117' },
     })
+  })
+
+  it('maps analysis grain to search grain', () => {
+    expect(analysisGrainToSearchGrain('contract')).toBe('contracts')
+    expect(analysisGrainToSearchGrain('direct_acquisition')).toBe(
+      'direct_acquisitions',
+    )
+  })
+
+  it('builds pair search links sorted by value', () => {
+    expect(
+      partyPairSearchLink({
+        pairScope: { kind: 'authority', cui: ' 111 ' },
+        counterpart: { cui: ' 222 ', name: null, displayName: 'Supplier' },
+        counterpartKind: 'supplier',
+        grain: 'direct_acquisition',
+      }),
+    ).toEqual({
+      to: '/procurement',
+      search: {
+        view: 'list',
+        authority_cui: '111',
+        supplier_cui: '222',
+        grain: 'direct_acquisitions',
+        sort: 'value_desc',
+      },
+    })
+
+    expect(
+      partyPairSearchLink({
+        pairScope: { kind: 'supplier', cui: '222' },
+        counterpart: { cui: '111', name: null, displayName: 'Buyer' },
+        counterpartKind: 'authority',
+        grain: 'contract',
+      }),
+    ).toEqual({
+      to: '/procurement',
+      search: {
+        view: 'list',
+        authority_cui: '111',
+        supplier_cui: '222',
+        grain: 'contracts',
+        sort: 'value_desc',
+      },
+    })
+  })
+
+  it('rejects invalid pair scopes', () => {
+    expect(
+      partyPairSearchLink({
+        pairScope: { kind: 'authority', cui: '111' },
+        counterpart: { cui: null, name: 'X', displayName: null },
+        counterpartKind: 'supplier',
+        grain: 'contract',
+      }),
+    ).toBeNull()
+    expect(
+      partyPairSearchLink({
+        pairScope: { kind: 'authority', cui: '111' },
+        counterpart: { cui: '222', name: null, displayName: null },
+        counterpartKind: 'authority',
+        grain: 'contract',
+      }),
+    ).toBeNull()
   })
 })

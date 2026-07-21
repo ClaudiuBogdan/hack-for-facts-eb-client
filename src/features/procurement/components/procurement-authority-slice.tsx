@@ -146,14 +146,16 @@ function SliceContent({
       <div className="grid gap-5 lg:grid-cols-2">
         <ProcurementPartyRanking
           title={t`Top suppliers`}
+          description={t`By number of records.`}
           rows={analytics.topSuppliers}
           kind="supplier"
-          seeAllParam="supplier_cui"
+          pairScope={{ kind: 'authority', cui: slice.authorityCui }}
+          grain={grain}
         />
         <ProcurementCategoryBars
           rows={analytics.topCategories}
           title={t`Categories purchased`}
-          description={t`CPV divisions ranked by number of records.`}
+          description={t`By number of records.`}
         />
       </div>
 
@@ -174,8 +176,8 @@ function SliceContent({
 
       <div className="flex flex-wrap gap-x-4 gap-y-2">
         <Link
-          to="/procurement/search"
-          search={{ authority_cui: slice.authorityCui }}
+          to="/procurement"
+          search={{ view: 'list', authority_cui: slice.authorityCui }}
           className={procurementUnderlineLinkClassName}
         >
           <Trans>Search all records for this institution</Trans>

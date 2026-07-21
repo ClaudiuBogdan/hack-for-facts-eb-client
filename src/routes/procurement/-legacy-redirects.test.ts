@@ -75,7 +75,7 @@ describe('legacy achizitii redirects', () => {
 
   it.each([
     ['index', '/procurement', undefined],
-    ['search', '/procurement/search', undefined],
+    ['search', '/procurement', undefined],
     ['category', '/procurement/categories/$code', { code: '45' }],
     ['contract', '/procurement/contracts/$id', { id: 'contract-key-001' }],
     ['procedure', '/procurement/procedures/$id', { id: 'proc-001' }],
@@ -103,7 +103,10 @@ describe('legacy achizitii redirects', () => {
       expect(redirectMock).toHaveBeenCalledWith({
         to: expectedTo,
         ...(params ? { params } : {}),
-        search,
+        search:
+          legacyRoute === 'search'
+            ? expect.objectContaining({ view: 'list', q: 'spital', page: 2 })
+            : search,
         replace: true,
         statusCode: 301,
       })
@@ -112,7 +115,10 @@ describe('legacy achizitii redirects', () => {
         options: {
           to: expectedTo,
           ...(params ? { params } : {}),
-          search,
+          search:
+            legacyRoute === 'search'
+              ? expect.objectContaining({ view: 'list', q: 'spital', page: 2 })
+              : search,
           replace: true,
           statusCode: 301,
         },

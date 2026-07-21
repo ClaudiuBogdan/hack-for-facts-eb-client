@@ -19,14 +19,13 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
-import type { ProcurementLandingFilters } from '@/schemas/procurement-overview'
 import {
   getPreviousCalendarYearBounds,
   normalizeProcurementMonthEnd,
   normalizeProcurementMonthStart,
-  resolveProcurementOverviewPeriod,
-} from '@/schemas/procurement-overview'
+} from '@/schemas/procurement-hub'
 import { useProcurementGeographyOptions } from '../hooks/use-procurement-data'
+import type { ProcurementHubFilterState } from '../hooks/use-procurement-hub-state'
 import { formatProcurementCountyName } from '../lib/procurement-geography'
 import {
   procurementDateInputClassName,
@@ -38,35 +37,28 @@ import {
   ProcurementGeographyCombobox,
   type ProcurementGeographyPickerOption,
 } from './procurement-geography-combobox'
+import { ProcurementListFilterFields } from './procurement-filter-sheet'
+import { ProcurementPreviewBadge } from './procurement-preview-badge'
 
 type Props = {
   readonly open: boolean
   readonly onOpenChange: (open: boolean) => void
-  readonly filters: ProcurementLandingFilters
-  readonly onChange: (filters: ProcurementLandingFilters) => void
+  readonly hub: ProcurementHubFilterState
 }
 
-export function ProcurementOverviewFilterSheet({
-  open,
-  onOpenChange,
-  filters,
-  onChange,
-}: Props) {
+/**
+ * Full shared hub filter sheet (D3) — period, geography, and list facets.
+ * Unfinished controls stay visible with Preview / TODO honesty (B1).
+ */
+export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
+  const { state, period, listFilterState } = hub
   const [buyerLevel, setBuyerLevel] = useState<'region' | 'county'>(
-    filters.buyerCounty ? 'county' : 'region',
+    state.buyerCounty ? 'county' : 'region',
   )
   const geographyQuery = useProcurementGeographyOptions()
-  const resolvedPeriod = resolveProcurementOverviewPeriod(filters)
-  const displayDateFrom = resolvedPeriod.isAllTime
-    ? undefined
-    : resolvedPeriod.dateFrom
-  const displayDateTo = resolvedPeriod.isAllTime
-    ? undefined
-    : resolvedPeriod.dateTo
-  const activeCount =
-    (resolvedPeriod.isAllTime ? 0 : 1) +
-    (filters.buyerRegion || filters.buyerCounty ? 1 : 0) +
-    (filters.supplierRegion || filters.supplierCounty ? 1 : 0)
+  const displayDateFrom = period.isAllTime ? undefined : period.dateFrom
+  const displayDateTo = period.isAllTime ? undefined : period.dateTo
+  const onList = state.view === 'list'
 
   const regionOptions: readonly ProcurementGeographyPickerOption[] =
     geographyQuery.data?.regions.map((region) => ({
@@ -89,12 +81,7 @@ export function ProcurementOverviewFilterSheet({
       dateFrom && displayDateTo && dateFrom > displayDateTo
         ? normalizeProcurementMonthEnd(dateFrom)
         : displayDateTo
-    onChange({
-      ...filters,
-      period: undefined,
-      dateFrom,
-      dateTo,
-    })
+    hub.setDates(dateFrom, dateTo)
   }
 
   const setDateTo = (value: string | undefined) => {
@@ -103,45 +90,19 @@ export function ProcurementOverviewFilterSheet({
       dateTo && displayDateFrom && displayDateFrom > dateTo
         ? normalizeProcurementMonthStart(dateTo)
         : displayDateFrom
-    onChange({
-      ...filters,
-      period: undefined,
-      dateFrom,
-      dateTo,
-    })
-  }
-
-  const setPreviousCalendarYear = () => {
-    const bounds = getPreviousCalendarYearBounds()
-    onChange({
-      ...filters,
-      period: undefined,
-      dateFrom: bounds.dateFrom,
-      dateTo: bounds.dateTo,
-    })
-  }
-
-  const setAllTime = () => {
-    onChange({
-      ...filters,
-      period: 'all',
-      dateFrom: undefined,
-      dateTo: undefined,
-    })
+    hub.setDates(dateFrom, dateTo)
   }
 
   const changeBuyerLevel = (level: 'region' | 'county') => {
     setBuyerLevel(level)
-    onChange({
-      ...filters,
+    hub.setBuyerGeography({
       buyerRegion: undefined,
       buyerCounty: undefined,
     })
   }
 
   const changeBuyerLocation = (value: string | undefined) => {
-    onChange({
-      ...filters,
+    hub.setBuyerGeography({
       buyerRegion: buyerLevel === 'region' ? value : undefined,
       buyerCounty: buyerLevel === 'county' ? value : undefined,
     })
@@ -150,6 +111,7 @@ export function ProcurementOverviewFilterSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
+        onOpenAutoFocus={(event) => event.preventDefault()}
         className="flex w-full max-w-full flex-col gap-0 overflow-hidden overscroll-contain border-l-2 border-[#b1b4b6] bg-white p-0 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-bg)] sm:max-w-md"
       >
         <SheetHeader className="border-b-2 border-[#b1b4b6] p-6 pr-14 text-left dark:border-[var(--pnrr-border)]">
@@ -158,21 +120,21 @@ export function ProcurementOverviewFilterSheet({
           </SheetTitle>
           <SheetDescription className="pt-1 text-left text-sm font-semibold text-[#505a5f] dark:text-[var(--pnrr-muted)]">
             <Trans>
-              Period and location filters apply to every supported indicator
-              and analysis on this page.
+              Shared filters for Overview and List. Unsupported controls stay
+              visible and are marked when they are not applied yet.
             </Trans>
           </SheetDescription>
         </SheetHeader>
 
         <div className="min-w-0 flex-1 space-y-6 overflow-y-auto p-6">
-          <section className="space-y-4" aria-labelledby="procurement-period-label">
+          <section
+            className="space-y-4"
+            aria-labelledby="hub-period-label"
+          >
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <CalendarRange className="h-4 w-4" aria-hidden="true" />
-                <p
-                  id="procurement-period-label"
-                  className={procurementSectionLabelClassName}
-                >
+                <p id="hub-period-label" className={procurementSectionLabelClassName}>
                   <Trans>Period</Trans>
                 </p>
               </div>
@@ -192,9 +154,12 @@ export function ProcurementOverviewFilterSheet({
                 className={cn(
                   procurementOutlineButtonClassName,
                   'h-9 px-3 text-xs',
-                  resolvedPeriod.isDefault && 'border-[var(--pnrr-fg)]',
+                  period.isDefault && 'border-[var(--pnrr-fg)]',
                 )}
-                onClick={setPreviousCalendarYear}
+                onClick={() => {
+                  const bounds = getPreviousCalendarYearBounds()
+                  hub.setDates(bounds.dateFrom, bounds.dateTo)
+                }}
               >
                 <Trans>Previous year</Trans>
               </Button>
@@ -204,9 +169,9 @@ export function ProcurementOverviewFilterSheet({
                 className={cn(
                   procurementOutlineButtonClassName,
                   'h-9 px-3 text-xs',
-                  resolvedPeriod.isAllTime && 'border-[var(--pnrr-fg)]',
+                  period.isAllTime && 'border-[var(--pnrr-fg)]',
                 )}
-                onClick={setAllTime}
+                onClick={hub.setPeriodAll}
               >
                 <Trans>All time</Trans>
               </Button>
@@ -214,11 +179,11 @@ export function ProcurementOverviewFilterSheet({
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label htmlFor="overview-date-from" className="text-sm font-bold">
+                <Label htmlFor="hub-date-from" className="text-sm font-bold">
                   <Trans>From</Trans>
                 </Label>
                 <input
-                  id="overview-date-from"
+                  id="hub-date-from"
                   name="procurement-date-from"
                   type="date"
                   autoComplete="off"
@@ -230,13 +195,12 @@ export function ProcurementOverviewFilterSheet({
                   }
                 />
               </div>
-
               <div className="space-y-1.5">
-                <Label htmlFor="overview-date-to" className="text-sm font-bold">
+                <Label htmlFor="hub-date-to" className="text-sm font-bold">
                   <Trans>To</Trans>
                 </Label>
                 <input
-                  id="overview-date-to"
+                  id="hub-date-to"
                   name="procurement-date-to"
                   type="date"
                   autoComplete="off"
@@ -249,28 +213,26 @@ export function ProcurementOverviewFilterSheet({
                 />
               </div>
             </div>
-
-            <p className="border-l-4 border-[#1d70b8] pl-3 text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-              <Trans>
-                Full dates remain in the URL; the live analytics API receives
-                the matching calendar months.
-              </Trans>
-            </p>
           </section>
 
           <section
             className="space-y-4 border-t-2 border-[#b1b4b6] pt-6 dark:border-[var(--pnrr-border)]"
-            aria-labelledby="procurement-buyer-location-label"
+            aria-labelledby="hub-buyer-location-label"
           >
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Building2 className="h-4 w-4" aria-hidden="true" />
                 <p
-                  id="procurement-buyer-location-label"
+                  id="hub-buyer-location-label"
                   className={procurementSectionLabelClassName}
                 >
                   <Trans>Public Institution Location</Trans>
                 </p>
+                {onList ? (
+                  <ProcurementPreviewBadge
+                    reason={t`Not applied to the record list yet`}
+                  />
+                ) : null}
               </div>
               <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
                 <Trans>
@@ -278,6 +240,15 @@ export function ProcurementOverviewFilterSheet({
                   institution in the procurement dataset.
                 </Trans>
               </p>
+              {/* TODO(Search geography API): buyer territory is not applied to list GraphQL filters. */}
+              {onList ? (
+                <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
+                  <Trans>
+                    Buyer location is kept in the URL for round-trip, but it is
+                    not applied to the record list yet.
+                  </Trans>
+                </p>
+              ) : null}
             </div>
 
             <fieldset className="space-y-2">
@@ -309,7 +280,7 @@ export function ProcurementOverviewFilterSheet({
             </fieldset>
 
             <ProcurementGeographyCombobox
-              inputId="procurement-buyer-location"
+              inputId="hub-buyer-location"
               label={buyerLevel === 'region' ? t`Region` : t`County`}
               placeholder={
                 buyerLevel === 'region'
@@ -320,9 +291,7 @@ export function ProcurementOverviewFilterSheet({
                 buyerLevel === 'region' ? regionOptions : countyOptions
               }
               value={
-                buyerLevel === 'region'
-                  ? filters.buyerRegion
-                  : filters.buyerCounty
+                buyerLevel === 'region' ? state.buyerRegion : state.buyerCounty
               }
               loading={geographyQuery.isPending}
               disabled={geographyQuery.isError}
@@ -351,10 +320,7 @@ export function ProcurementOverviewFilterSheet({
 
             {buyerLevel === 'county' ? (
               <div className="flex gap-2 border-l-4 border-amber-500 bg-amber-50 p-3 text-sm leading-5 text-amber-950 dark:bg-amber-950/30 dark:text-amber-100">
-                <Info
-                  className="mt-0.5 h-4 w-4 shrink-0"
-                  aria-hidden="true"
-                />
+                <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                 <p>
                   <Trans>
                     County analytics are not published yet. This first version
@@ -368,17 +334,21 @@ export function ProcurementOverviewFilterSheet({
 
           <section
             className="space-y-3 border-t-2 border-[#b1b4b6] pt-6 dark:border-[var(--pnrr-border)]"
-            aria-labelledby="procurement-supplier-location-label"
+            aria-labelledby="hub-supplier-location-label"
           >
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <MapPin className="h-4 w-4" aria-hidden="true" />
                 <p
-                  id="procurement-supplier-location-label"
+                  id="hub-supplier-location-label"
                   className={procurementSectionLabelClassName}
                 >
                   <Trans>Supplier Location</Trans>
                 </p>
+                {/* TODO(Supplier geo resolution + list filter): control stays Preview until Matrix v2. */}
+                <ProcurementPreviewBadge
+                  reason={t`Supplier geography is not linked to records yet`}
+                />
               </div>
               <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
                 <Trans>Registered office of the awarded company.</Trans>
@@ -393,6 +363,39 @@ export function ProcurementOverviewFilterSheet({
               </Trans>
             </div>
           </section>
+
+          <section
+            className="space-y-4 border-t-2 border-[#b1b4b6] pt-6 dark:border-[var(--pnrr-border)]"
+            aria-labelledby="hub-list-facets-label"
+          >
+            <div className="space-y-1">
+              <p
+                id="hub-list-facets-label"
+                className={procurementSectionLabelClassName}
+              >
+                <Trans>Record list filters</Trans>
+              </p>
+              <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                {!onList ? (
+                  <Trans>
+                    These facets apply on List. On Overview they stay in the
+                    URL as inactive “list only” chips.
+                  </Trans>
+                ) : (
+                  <Trans>
+                    These facets narrow the paginated record list.
+                  </Trans>
+                )}
+              </p>
+            </div>
+            <div className="space-y-6">
+              <ProcurementListFilterFields
+                filters={listFilterState}
+                includePeriod={false}
+                idPrefix="hub-list"
+              />
+            </div>
+          </section>
         </div>
 
         <div className="border-t-2 border-[#b1b4b6] bg-white p-4 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-bg)]">
@@ -401,8 +404,8 @@ export function ProcurementOverviewFilterSheet({
               type="button"
               variant="outline"
               className={procurementOutlineButtonClassName}
-              disabled={activeCount === 0}
-              onClick={() => onChange({})}
+              disabled={hub.hubChips.length === 0}
+              onClick={hub.clearFilters}
             >
               <Trans>Clear All Filters</Trans>
             </Button>
@@ -420,7 +423,7 @@ export function ProcurementOverviewFilterSheet({
   )
 }
 
-export function ProcurementOverviewFilterTrigger({
+export function ProcurementHubFilterTrigger({
   activeCount,
   onClick,
 }: {

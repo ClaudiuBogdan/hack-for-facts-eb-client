@@ -35,6 +35,12 @@ litigation). The supplier mirror of the authority slice.
   CUI (contracts + DAs), currency-safe (RON; native-only flows disclosed, not
   summed). It is **procurement-sourced revenue**, labeled as such — not the
   company's total turnover (that is `financials`).
+- **Decision (2026-07):** Top-buyer ranking rows on this slice open
+  `/procurement/search` with **both** `authority_cui` and `supplier_cui`, the
+  current analysis grain, and `sort=value_desc` (mirror of the authority-slice
+  pair drill). See
+  [`procurement-ranking-cards-requirements.md`](../../../specs/procurement-ranking-cards-requirements.md)
+  § Authority × supplier drill-down.
 - **Assumption:** The supplier CUI equals the company CUI from the route; no extra
   identity resolution.
 

@@ -23,22 +23,14 @@ function SectionSkeleton({ className }: { readonly className?: string }) {
 export function ProcurementOverviewSkeleton() {
   return (
     <div className="space-y-6" data-testid="procurement-overview-skeleton">
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, index) => (
-          <div
-            key={index}
-            className={cn(procurementSectionClassName, 'p-4')}
-          >
-            <Skeleton className="h-3 w-24 rounded-none" />
-            <Skeleton className="mt-3 h-7 w-20 rounded-none" />
-          </div>
-        ))}
+      <div className="flex justify-end">
+        <Skeleton className="h-10 w-48 rounded-none" />
       </div>
-      <SectionSkeleton />
       <div className="grid gap-6 lg:grid-cols-2">
         <SectionSkeleton />
         <SectionSkeleton />
       </div>
+      <SectionSkeleton />
       <SectionSkeleton />
     </div>
   )

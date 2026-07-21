@@ -1,17 +1,9 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { ProcurementShell } from '@/features/procurement/components/procurement-shell'
-import { ProcurementSearchContent } from '@/features/procurement/components/procurement-search-content'
-import { parseProcurementSearch } from '@/schemas/procurement-search'
 
+/**
+ * Legacy search route body — redirect in `search.tsx` beforeLoad always runs
+ * first; this component should never render.
+ */
 export const Route = createLazyFileRoute('/procurement/search')({
-  component: ProcurementSearchRoutePage,
+  component: () => null,
 })
-
-function ProcurementSearchRoutePage() {
-  const search = parseProcurementSearch(Route.useSearch())
-  return (
-    <ProcurementShell activeTab="search">
-      <ProcurementSearchContent search={search} />
-    </ProcurementShell>
-  )
-}

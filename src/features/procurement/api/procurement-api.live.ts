@@ -86,7 +86,12 @@ import {
   resetProcurementReferenceCacheForTests,
 } from './procurement-reference-api'
 
-/** Rows per aggregate ranking (server default 10, capped at 50). */
+/**
+ * Rows per aggregate ranking (GraphQL default 10, server-capped at 50).
+ * TODO(ClickHouse analytics): Deeper scoped rankings (top-50/100, pagination,
+ * sort by awarded value) are not served here — keep TOP_N API-honest and do
+ * not pad UI with mock rows (product decision B1, 2026-07).
+ */
 const TOP_N = 10
 /** Supplier "load more" connection page size. */
 const SUPPLIER_RECORDS_PAGE_SIZE = 20

@@ -34,6 +34,15 @@ const optionalGeographyKey = z
   )
   .catch(undefined)
 
+/**
+ * Explicit all-time marker. Absent dates without this flag resolve to the
+ * previous calendar year (hub default). Custom `dateFrom`/`dateTo` win when set.
+ */
+const optionalPeriodMode = z
+  .enum(['all'])
+  .optional()
+  .catch(undefined)
+
 export function normalizeProcurementMonthStart(
   value: string | undefined,
 ): string | undefined {
@@ -56,6 +65,7 @@ export const procurementOverviewSearchSchema = z
     tab: z.enum(['overview', 'search']).optional().catch(undefined),
     dateFrom: optionalOverviewDate,
     dateTo: optionalOverviewDate,
+    period: optionalPeriodMode,
     buyerRegion: optionalGeographyKey,
     buyerCounty: optionalGeographyKey,
     supplierRegion: optionalGeographyKey,
@@ -67,6 +77,8 @@ export type ProcurementOverviewSearch = {
   readonly tab?: 'overview' | 'search'
   readonly dateFrom?: string
   readonly dateTo?: string
+  /** When `all`, hub analytics are unscoped by time (explicit escape from default). */
+  readonly period?: 'all'
   readonly buyerRegion?: string
   readonly buyerCounty?: string
   readonly supplierRegion?: string
@@ -77,10 +89,80 @@ export type ProcurementOverviewSearch = {
 export type ProcurementLandingFilters = {
   readonly dateFrom?: string
   readonly dateTo?: string
+  readonly period?: 'all'
   readonly buyerRegion?: string
   readonly buyerCounty?: string
   readonly supplierRegion?: string
   readonly supplierCounty?: string
+}
+
+export type ResolvedProcurementOverviewPeriod = {
+  readonly dateFrom?: string
+  readonly dateTo?: string
+  readonly isDefault: boolean
+  readonly isAllTime: boolean
+}
+
+/** Previous UTC calendar year as month-normalized ISO bounds. */
+export function getPreviousCalendarYearBounds(
+  now: Date = new Date(),
+): { readonly dateFrom: string; readonly dateTo: string } {
+  const year = now.getUTCFullYear() - 1
+  return {
+    dateFrom: `${year}-01-01`,
+    dateTo: `${year}-12-31`,
+  }
+}
+
+/**
+ * Resolve the hub period for display and analytics.
+ *
+ * - `period=all` → all time (no month bounds)
+ * - explicit `dateFrom` / `dateTo` → those months
+ * - otherwise → previous calendar year (product default)
+ */
+export function resolveProcurementOverviewPeriod(
+  filters: Pick<ProcurementLandingFilters, 'dateFrom' | 'dateTo' | 'period'>,
+  now: Date = new Date(),
+): ResolvedProcurementOverviewPeriod {
+  if (filters.period === 'all') {
+    return { isDefault: false, isAllTime: true }
+  }
+
+  const dateFrom = normalizeProcurementMonthStart(filters.dateFrom)
+  const dateTo = normalizeProcurementMonthEnd(filters.dateTo)
+  if (dateFrom || dateTo) {
+    return {
+      ...(dateFrom ? { dateFrom } : {}),
+      ...(dateTo ? { dateTo } : {}),
+      isDefault: false,
+      isAllTime: false,
+    }
+  }
+
+  const defaults = getPreviousCalendarYearBounds(now)
+  return {
+    dateFrom: defaults.dateFrom,
+    dateTo: defaults.dateTo,
+    isDefault: true,
+    isAllTime: false,
+  }
+}
+
+/** Filters sent to landing/analytics APIs after period resolution. */
+export function toProcurementLandingQueryFilters(
+  filters: ProcurementLandingFilters,
+  now: Date = new Date(),
+): ProcurementLandingFilters {
+  const resolved = resolveProcurementOverviewPeriod(filters, now)
+  return {
+    buyerRegion: filters.buyerRegion,
+    buyerCounty: filters.buyerCounty,
+    supplierRegion: filters.supplierRegion,
+    supplierCounty: filters.supplierCounty,
+    ...(resolved.dateFrom ? { dateFrom: resolved.dateFrom } : {}),
+    ...(resolved.dateTo ? { dateTo: resolved.dateTo } : {}),
+  }
 }
 
 export function parseProcurementOverviewSearch(
@@ -90,6 +172,7 @@ export function parseProcurementOverviewSearch(
   const {
     dateFrom,
     dateTo,
+    period,
     buyerRegion,
     buyerCounty,
     supplierRegion,
@@ -103,6 +186,7 @@ export function parseProcurementOverviewSearch(
     ...rest,
     ...(normalizedFrom ? { dateFrom: normalizedFrom } : {}),
     ...(normalizedTo ? { dateTo: normalizedTo } : {}),
+    ...(period === 'all' ? { period: 'all' as const } : {}),
     // County is the more specific deep-link when stale URLs contain both.
     // The live client still applies it as an explicitly-labelled regional
     // approximation until Matrix v2 exposes the buyer-county rollup.

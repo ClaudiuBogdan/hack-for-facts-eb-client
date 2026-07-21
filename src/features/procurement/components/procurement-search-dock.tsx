@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import { useNavigate } from '@tanstack/react-router'
 import { Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { cleanProcurementHubSearch } from '@/schemas/procurement-hub'
 import {
   procurementFieldClassName,
   procurementSectionClassName,
@@ -11,18 +12,93 @@ import {
   procurementSectionTitleClassName,
 } from '../lib/procurement-theme'
 
+type Props = {
+  /**
+   * `inline` — PNRR-style header search (no card chrome).
+   * `card` — bordered section used as a standalone body block.
+   */
+  readonly variant?: 'inline' | 'card'
+  readonly className?: string
+  /** URL `q` when the hub owns the dock (draft until Enter). */
+  readonly value?: string
+  /** Commit writes unified hub `q` and switches to list (F2). */
+  readonly onCommitQuery?: (q: string | undefined) => void
+}
+
 /**
- * The overview's single search entry point — submits into the search tab
- * (`/procurement/search?q=`), which owns all further filtering. One search
- * input across the feature, not two divergent ones.
- *
- * Deliberately NOT debounced-auto-applying like the search tab's input: this
- * one changes route, so committing on every keystroke would yank the reader off
- * the hub mid-word. Enter submits; the hint below says so.
+ * Hub search entry — commits into `/procurement?view=list&q=…` (F2).
+ * Enter commits; not debounced (route change would yank the reader mid-word).
  */
-export function ProcurementSearchDock() {
+export function ProcurementSearchDock({
+  variant = 'card',
+  className,
+  value,
+  onCommitQuery,
+}: Props) {
   const navigate = useNavigate()
-  const [query, setQuery] = useState('')
+  const [draft, setDraft] = useState(value ?? '')
+
+  useEffect(() => {
+    setDraft(value ?? '')
+  }, [value])
+
+  const commit = () => {
+    const q = draft.trim() || undefined
+    if (onCommitQuery) {
+      onCommitQuery(q)
+      return
+    }
+    void navigate({
+      to: '/procurement',
+      search: (previous) =>
+        cleanProcurementHubSearch({
+          ...previous,
+          q,
+          view: 'list',
+        }),
+    })
+  }
+
+  const form = (
+    <form
+      role="search"
+      className={cn(variant === 'inline' ? 'w-full max-w-[520px]' : 'mt-4', className)}
+      onSubmit={(event) => {
+        event.preventDefault()
+        commit()
+      }}
+    >
+      <div className="relative min-w-0">
+        <Search
+          aria-hidden
+          className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--pnrr-muted)]"
+        />
+        <input
+          id="procurement-hub-search"
+          type="search"
+          inputMode="search"
+          autoComplete="off"
+          className={cn(
+            procurementFieldClassName,
+            'h-12 w-full px-11 text-base font-bold placeholder:font-normal',
+          )}
+          placeholder={t`e.g. hospital, 4267117, road repairs`}
+          aria-label={t`Search procurement records`}
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+        />
+      </div>
+      {variant === 'card' ? (
+        <p className="mt-2 text-sm text-[var(--pnrr-muted)]">
+          <Trans>Press Enter to search</Trans>
+        </p>
+      ) : null}
+    </form>
+  )
+
+  if (variant === 'inline') {
+    return form
+  }
 
   return (
     <section className={cn(procurementSectionClassName, 'p-5 sm:p-6')}>
@@ -35,39 +111,7 @@ export function ProcurementSearchDock() {
           CUI or party name.
         </Trans>
       </p>
-      <form
-        role="search"
-        className="mt-4"
-        onSubmit={(event) => {
-          event.preventDefault()
-          const q = query.trim()
-          void navigate({
-            to: '/procurement/search',
-            search: q ? { q } : {},
-          })
-        }}
-      >
-        <div className="relative min-w-0">
-          <Search
-            aria-hidden
-            className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--pnrr-muted)]"
-          />
-          <input
-            id="procurement-hub-search"
-            type="search"
-            inputMode="search"
-            autoComplete="off"
-            className={cn(procurementFieldClassName, 'w-full px-11')}
-            placeholder={t`e.g. hospital, 4267117, road repairs`}
-            aria-label={t`Search procurement records`}
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </div>
-        <p className="mt-2 text-sm text-[var(--pnrr-muted)]">
-          <Trans>Press Enter to search</Trans>
-        </p>
-      </form>
+      {form}
     </section>
   )
 }

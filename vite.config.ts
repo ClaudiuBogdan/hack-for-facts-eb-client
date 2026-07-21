@@ -132,7 +132,10 @@ export default defineConfig(({ mode }) => {
   // Proxy best practices: https://vite.dev/config/server-options
   // Cookie handling: https://github.com/sagemathinc/http-proxy-3
   // Origin header security: https://github.com/vitejs/vite/issues/17562
-  const env = loadEnv(mode, process.cwd(), "");
+  // Keep config-time env loading narrow. An empty prefix loads every value from
+  // `.env` and the parent shell, which can expose unrelated credentials in Vite
+  // debug output even though they are not part of the browser runtime config.
+  const env = loadEnv(mode, process.cwd(), ["VITE_", "DEBUG_PROXY"]);
   const shouldPrepareSentrySourcemaps =
     mode === "production" && process.env.SENTRY_SOURCEMAPS === "true";
   const shouldGenerateSentrySourcemaps =
@@ -292,9 +295,7 @@ export default defineConfig(({ mode }) => {
         "Cross-Origin-Opener-Policy": "same-origin",
         "Cross-Origin-Embedder-Policy": "require-corp",
       },
-      allowedHosts: [
-        String(process.env.VITE_ALLOWED_HOST)
-      ],
+      allowedHosts: env.VITE_ALLOWED_HOST ? [env.VITE_ALLOWED_HOST] : [],
       https: getHttpsConfig(),
       proxy,
     },

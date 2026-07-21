@@ -139,15 +139,15 @@ export function CpvCategoryPage({ code, initialPage, className }: Props) {
           <div className="grid gap-6 lg:grid-cols-2">
             <ProcurementPartyRanking
               title={t`Top public buyers`}
+              description={t`By number of records.`}
               rows={analytics?.topAuthorities ?? []}
               kind="authority"
-              seeAllParam="authority_cui"
             />
             <ProcurementPartyRanking
               title={t`Top suppliers`}
+              description={t`By number of records.`}
               rows={analytics?.topSuppliers ?? []}
               kind="supplier"
-              seeAllParam="supplier_cui"
             />
           </div>
 
@@ -176,11 +176,11 @@ export function CpvCategoryPage({ code, initialPage, className }: Props) {
 
           <div>
             <Link
-              to="/procurement/search"
+              to="/procurement"
               search={
                 page.level === 'division'
-                  ? { cpv_division: page.code }
-                  : { cpv: page.code }
+                  ? { view: 'list' as const, cpv_division: page.code }
+                  : { view: 'list' as const, cpv: page.code }
               }
               className={procurementUnderlineLinkClassName}
             >

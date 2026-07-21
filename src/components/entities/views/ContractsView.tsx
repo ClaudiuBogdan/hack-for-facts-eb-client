@@ -30,7 +30,7 @@ export function ContractsView({ entity }: Readonly<Props>) {
       <div className="flex flex-col gap-3 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-subtle)] p-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-[var(--pnrr-muted)]">
           <Trans>
-            Live public procurement for this institution — contracts, direct
+            Public procurement for this institution — contracts, direct
             acquisitions, suppliers, and CPV categories from SEAP and
             e-licitatie.
           </Trans>
@@ -51,8 +51,8 @@ export function ContractsView({ entity }: Readonly<Props>) {
 
       <p className="text-sm">
         <Link
-          to="/procurement/search"
-          search={{ authority_cui: cui }}
+          to="/procurement"
+          search={{ view: 'list', authority_cui: cui }}
           className={procurementUnderlineLinkClassName}
         >
           <Trans>Search all records for this institution</Trans>

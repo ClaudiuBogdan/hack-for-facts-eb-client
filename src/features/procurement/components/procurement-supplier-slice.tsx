@@ -129,14 +129,16 @@ function SliceContent({
       <div className="grid gap-5 lg:grid-cols-2">
         <ProcurementPartyRanking
           title={t`Top public buyers`}
+          description={t`By number of records.`}
           rows={analytics.topAuthorities}
           kind="authority"
-          seeAllParam="authority_cui"
+          pairScope={{ kind: 'supplier', cui: slice.supplierCui }}
+          grain={grain}
         />
         <ProcurementCategoryBars
           rows={analytics.topCategories}
           title={t`Categories supplied`}
-          description={t`CPV divisions ranked by number of records.`}
+          description={t`By number of records.`}
         />
       </div>
 
@@ -152,8 +154,8 @@ function SliceContent({
 
       <div>
         <Link
-          to="/procurement/search"
-          search={{ supplier_cui: slice.supplierCui }}
+          to="/procurement"
+          search={{ view: 'list', supplier_cui: slice.supplierCui }}
           className={procurementUnderlineLinkClassName}
         >
           <Trans>Search all records for this supplier</Trans>

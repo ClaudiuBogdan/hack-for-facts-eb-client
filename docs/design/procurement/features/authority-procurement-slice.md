@@ -37,6 +37,12 @@ authority CUI from the route.
 - **Decision:** The slice shows aggregates from rollups only; it never live-scans
   the 19M DA fact table. Record-level drill-through links to `/achizitii/cautare`
   pre-filtered by `authority_cui`.
+- **Decision (2026-07):** Top-supplier ranking rows on this slice open
+  `/procurement/search` with **both** `authority_cui` and `supplier_cui`, the
+  current analysis grain, and `sort=value_desc` — so users can inspect the pair’s
+  records by value (not only the supplier profile). See
+  [`procurement-ranking-cards-requirements.md`](../../../specs/procurement-ranking-cards-requirements.md)
+  § Authority × supplier drill-down.
 - **Decision:** Authority is the buyer; this slice is the buyer view. Supplier view
   is the mirror on `/companies/$cui` (`supplier-procurement-slice.md`).
 - **Assumption:** The authority CUI is already available on the entity page context

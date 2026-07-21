@@ -55,21 +55,374 @@ const TONE_DOT_CLASSES: Record<string, string> = {
 
 const TEXT_INPUT_CLASS = procurementDateInputClassName
 
-type SheetProps = {
-  readonly open: boolean
-  readonly onOpenChange: (open: boolean) => void
+type ListFieldsProps = {
   readonly filters: ProcurementFilterState
+  /** When false, period controls are omitted (hub sheet owns E1 period). */
+  readonly includePeriod?: boolean
+  readonly idPrefix?: string
 }
 
-/** GOV.UK-style side panel with every search facet (multi-select status,
- * date range, value range, signal, page size — all previously URL-only). */
-export function ProcurementFilterSheet({ open, onOpenChange, filters }: SheetProps) {
+/** List-oriented facets shared by the search sheet and the hub sheet (D3). */
+export function ProcurementListFilterFields({
+  filters,
+  includePeriod = true,
+  idPrefix = 'filter',
+}: ListFieldsProps) {
   const { search } = filters
   const statusOptions = STATUS_OPTIONS_BY_GRAIN[search.grain]
   const showSupplier = search.grain !== 'procedures'
   const showCpv = search.grain !== 'modifications'
   const cpvValue = search.cpv ?? search.cpv_division ?? ''
 
+  return (
+    <>
+      <section className="space-y-2">
+        <Label
+          htmlFor={`${idPrefix}-authority`}
+          className={procurementSectionLabelClassName}
+        >
+          <Trans>Contracting authority (CUI)</Trans>
+        </Label>
+        <input
+          id={`${idPrefix}-authority`}
+          type="text"
+          inputMode="numeric"
+          className={TEXT_INPUT_CLASS}
+          placeholder={t`e.g. 4267117`}
+          value={search.authority_cui ?? ''}
+          onChange={(event) => filters.setAuthorityCui(event.target.value)}
+        />
+      </section>
+
+      {showSupplier ? (
+        <section className="space-y-2">
+          <Label
+            htmlFor={`${idPrefix}-supplier`}
+            className={procurementSectionLabelClassName}
+          >
+            <Trans>Supplier (CUI)</Trans>
+          </Label>
+          <input
+            id={`${idPrefix}-supplier`}
+            type="text"
+            inputMode="numeric"
+            className={TEXT_INPUT_CLASS}
+            placeholder={t`e.g. 14399840`}
+            value={search.supplier_cui ?? ''}
+            onChange={(event) => filters.setSupplierCui(event.target.value)}
+          />
+        </section>
+      ) : null}
+
+      {showCpv ? (
+        <section className="space-y-2">
+          <Label
+            htmlFor={`${idPrefix}-cpv`}
+            className={procurementSectionLabelClassName}
+          >
+            <Trans>CPV code or division</Trans>
+          </Label>
+          <input
+            id={`${idPrefix}-cpv`}
+            type="text"
+            inputMode="numeric"
+            className={TEXT_INPUT_CLASS}
+            placeholder={t`45 (division) or 45453000 (code)`}
+            value={cpvValue}
+            onChange={(event) => filters.setCpv(event.target.value)}
+          />
+        </section>
+      ) : null}
+
+      {search.grain !== 'modifications' ? (
+        <section className="space-y-2">
+          <Label className={procurementSectionLabelClassName}>
+            <Trans>Source</Trans>
+          </Label>
+          <ToggleGroup
+            type="single"
+            value={search.source ?? ''}
+            onValueChange={(value) => {
+              const parsed = procurementSourceSchema.safeParse(value)
+              filters.setSource(parsed.success ? parsed.data : undefined)
+            }}
+            className="grid grid-cols-2 gap-2"
+          >
+            {procurementSourceSchema.options.map((option) => (
+              <ToggleGroupItem
+                key={option}
+                value={option}
+                className={procurementToggleItemClassName}
+              >
+                {sourceLabel(option)}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </section>
+      ) : null}
+
+      {statusOptions.length > 0 ? (
+        <section className="space-y-2">
+          <Label className={procurementSectionLabelClassName}>
+            <Trans>Status</Trans>
+          </Label>
+          <ToggleGroup
+            type="multiple"
+            value={search.status ?? []}
+            onValueChange={(values) =>
+              filters.setStatuses(values as ProcurementStatus[])
+            }
+            className="grid grid-cols-2 gap-2"
+          >
+            {statusOptions.map((status) => (
+              <ToggleGroupItem
+                key={status}
+                value={status}
+                className={procurementToggleItemClassName}
+              >
+                <span
+                  aria-hidden
+                  className={cn(
+                    'inline-block h-2.5 w-2.5 shrink-0 rounded-full',
+                    TONE_DOT_CLASSES[statusMeta(status).tone],
+                  )}
+                />
+                <span className="truncate">{statusLabel(status)}</span>
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </section>
+      ) : null}
+
+      {search.grain !== 'modifications' ? (
+        <section className="space-y-2">
+          <Label className={procurementSectionLabelClassName}>
+            <Trans>Value quality</Trans>
+          </Label>
+          <ToggleGroup
+            type="multiple"
+            value={search.value_state ?? []}
+            onValueChange={(values) =>
+              filters.setValueCategories(values as ProcurementValueCategory[])
+            }
+            className="grid grid-cols-2 gap-2"
+          >
+            {PROCUREMENT_VALUE_CATEGORIES.map((category) => (
+              <ToggleGroupItem
+                key={category}
+                value={category}
+                className={procurementToggleItemClassName}
+              >
+                <span className="truncate">{valueCategoryLabel(category)}</span>
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </section>
+      ) : null}
+
+      {includePeriod ? (
+        <section className="space-y-2">
+          <Label className={procurementSectionLabelClassName}>
+            <Trans>Period</Trans>
+          </Label>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label
+                htmlFor={`${idPrefix}-date-from`}
+                className="text-xs font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]"
+              >
+                <Trans>From</Trans>
+              </Label>
+              <input
+                id={`${idPrefix}-date-from`}
+                type="date"
+                className={procurementDateInputClassName}
+                value={search.dateFrom ?? ''}
+                max={search.dateTo ?? undefined}
+                onChange={(event) =>
+                  filters.setDates(
+                    event.target.value || undefined,
+                    search.dateTo,
+                  )
+                }
+              />
+            </div>
+            <div className="space-y-1">
+              <Label
+                htmlFor={`${idPrefix}-date-to`}
+                className="text-xs font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]"
+              >
+                <Trans>To</Trans>
+              </Label>
+              <input
+                id={`${idPrefix}-date-to`}
+                type="date"
+                className={procurementDateInputClassName}
+                value={search.dateTo ?? ''}
+                min={search.dateFrom ?? undefined}
+                onChange={(event) =>
+                  filters.setDates(
+                    search.dateFrom,
+                    event.target.value || undefined,
+                  )
+                }
+              />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <Label
+              htmlFor={`${idPrefix}-year`}
+              className="text-xs font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]"
+            >
+              <Trans>Or a whole year</Trans>
+            </Label>
+            <input
+              id={`${idPrefix}-year`}
+              type="number"
+              min={2000}
+              max={2100}
+              className={TEXT_INPUT_CLASS}
+              placeholder={t`e.g. 2025`}
+              value={search.year ?? ''}
+              onChange={(event) => {
+                const value = event.target.valueAsNumber
+                filters.setYear(Number.isFinite(value) ? value : undefined)
+              }}
+            />
+          </div>
+        </section>
+      ) : null}
+
+      {search.grain !== 'modifications' ? (
+        <section className="space-y-2">
+          <Label className={procurementSectionLabelClassName}>
+            <Trans>Value (RON)</Trans>
+          </Label>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label
+                htmlFor={`${idPrefix}-value-min`}
+                className="text-xs font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]"
+              >
+                <Trans>Minimum</Trans>
+              </Label>
+              <input
+                id={`${idPrefix}-value-min`}
+                type="number"
+                min={0}
+                className={TEXT_INPUT_CLASS}
+                value={search.valueMin ?? ''}
+                onChange={(event) => {
+                  const value = event.target.valueAsNumber
+                  filters.setValueRange(
+                    Number.isFinite(value) ? value : undefined,
+                    search.valueMax,
+                  )
+                }}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label
+                htmlFor={`${idPrefix}-value-max`}
+                className="text-xs font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]"
+              >
+                <Trans>Maximum</Trans>
+              </Label>
+              <input
+                id={`${idPrefix}-value-max`}
+                type="number"
+                min={0}
+                className={TEXT_INPUT_CLASS}
+                value={search.valueMax ?? ''}
+                onChange={(event) => {
+                  const value = event.target.valueAsNumber
+                  filters.setValueRange(
+                    search.valueMin,
+                    Number.isFinite(value) ? value : undefined,
+                  )
+                }}
+              />
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section className="space-y-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Label className={procurementSectionLabelClassName}>
+            <Trans>Review signal</Trans>
+          </Label>
+          {/* TODO(Review signals API): keep disabled until same-day / pair candidates republish. */}
+        </div>
+        <ToggleGroup
+          type="single"
+          value=""
+          disabled
+          className="grid grid-cols-1 gap-2 opacity-60"
+        >
+          {REVIEW_SIGNAL_KIND_VALUES.map((signal) => (
+            <ToggleGroupItem
+              key={signal}
+              value={signal}
+              disabled
+              className={procurementToggleItemClassName}
+            >
+              {reviewSignalLabel(signal)}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+        <p className="border-l-4 border-amber-500 pl-3 text-xs leading-5 text-[var(--pnrr-muted)]">
+          <Trans>
+            Review signals are not wired to search yet. They will filter
+            results when the API republishes same-day and repeated-pair
+            candidates — until then this control stays disabled so it cannot
+            pretend to narrow the list.
+          </Trans>
+        </p>
+      </section>
+
+      <section className="space-y-2">
+        <Label className={procurementSectionLabelClassName}>
+          <Trans>Results per page</Trans>
+        </Label>
+        <ToggleGroup
+          type="single"
+          value={String(search.pageSize)}
+          onValueChange={(value) => {
+            const size = Number(value)
+            if (PAGE_SIZE_OPTIONS.some((option) => option === size)) {
+              filters.setPageSize(size)
+            }
+          }}
+          className="grid grid-cols-3 gap-2"
+        >
+          {PAGE_SIZE_OPTIONS.map((size) => (
+            <ToggleGroupItem
+              key={size}
+              value={String(size)}
+              className={procurementToggleItemClassName}
+            >
+              {size}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      </section>
+    </>
+  )
+}
+
+type SheetProps = {
+  readonly open: boolean
+  readonly onOpenChange: (open: boolean) => void
+  readonly filters: ProcurementFilterState
+}
+
+/** GOV.UK-style side panel with every search facet. */
+export function ProcurementFilterSheet({
+  open,
+  onOpenChange,
+  filters,
+}: SheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -86,292 +439,7 @@ export function ProcurementFilterSheet({ open, onOpenChange, filters }: SheetPro
         </SheetHeader>
 
         <div className="flex-1 space-y-6 overflow-y-auto p-6">
-          <section className="space-y-2">
-            <Label htmlFor="filter-authority" className={procurementSectionLabelClassName}>
-              <Trans>Contracting authority (CUI)</Trans>
-            </Label>
-            <input
-              id="filter-authority"
-              type="text"
-              inputMode="numeric"
-              className={TEXT_INPUT_CLASS}
-              placeholder={t`e.g. 4267117`}
-              value={search.authority_cui ?? ''}
-              onChange={(event) => filters.setAuthorityCui(event.target.value)}
-            />
-          </section>
-
-          {showSupplier ? (
-            <section className="space-y-2">
-              <Label htmlFor="filter-supplier" className={procurementSectionLabelClassName}>
-                <Trans>Supplier (CUI)</Trans>
-              </Label>
-              <input
-                id="filter-supplier"
-                type="text"
-                inputMode="numeric"
-                className={TEXT_INPUT_CLASS}
-                placeholder={t`e.g. 14399840`}
-                value={search.supplier_cui ?? ''}
-                onChange={(event) => filters.setSupplierCui(event.target.value)}
-              />
-            </section>
-          ) : null}
-
-          {showCpv ? (
-            <section className="space-y-2">
-              <Label htmlFor="filter-cpv" className={procurementSectionLabelClassName}>
-                <Trans>CPV code or division</Trans>
-              </Label>
-              <input
-                id="filter-cpv"
-                type="text"
-                inputMode="numeric"
-                className={TEXT_INPUT_CLASS}
-                placeholder={t`45 (division) or 45453000 (code)`}
-                value={cpvValue}
-                onChange={(event) => filters.setCpv(event.target.value)}
-              />
-            </section>
-          ) : null}
-
-          {search.grain !== 'modifications' ? (
-            <section className="space-y-2">
-              <Label className={procurementSectionLabelClassName}>
-                <Trans>Source</Trans>
-              </Label>
-              <ToggleGroup
-                type="single"
-                value={search.source ?? ''}
-                onValueChange={(value) => {
-                  const parsed = procurementSourceSchema.safeParse(value)
-                  filters.setSource(parsed.success ? parsed.data : undefined)
-                }}
-                className="grid grid-cols-2 gap-2"
-              >
-                {procurementSourceSchema.options.map((option) => (
-                  <ToggleGroupItem key={option} value={option} className={procurementToggleItemClassName}>
-                    {sourceLabel(option)}
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
-            </section>
-          ) : null}
-
-          {statusOptions.length > 0 ? (
-            <section className="space-y-2">
-              <Label className={procurementSectionLabelClassName}>
-                <Trans>Status</Trans>
-              </Label>
-              <ToggleGroup
-                type="multiple"
-                value={search.status ?? []}
-                onValueChange={(values) =>
-                  filters.setStatuses(values as ProcurementStatus[])
-                }
-                className="grid grid-cols-2 gap-2"
-              >
-                {statusOptions.map((status) => (
-                  <ToggleGroupItem key={status} value={status} className={procurementToggleItemClassName}>
-                    <span
-                      aria-hidden
-                      className={cn(
-                        'inline-block h-2.5 w-2.5 shrink-0 rounded-full',
-                        TONE_DOT_CLASSES[statusMeta(status).tone],
-                      )}
-                    />
-                    <span className="truncate">{statusLabel(status)}</span>
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
-            </section>
-          ) : null}
-
-          {search.grain !== 'modifications' ? (
-            <section className="space-y-2">
-              <Label className={procurementSectionLabelClassName}>
-                <Trans>Value quality</Trans>
-              </Label>
-              <ToggleGroup
-                type="multiple"
-                value={search.value_state ?? []}
-                onValueChange={(values) =>
-                  filters.setValueCategories(values as ProcurementValueCategory[])
-                }
-                className="grid grid-cols-2 gap-2"
-              >
-                {PROCUREMENT_VALUE_CATEGORIES.map((category) => (
-                  <ToggleGroupItem
-                    key={category}
-                    value={category}
-                    className={procurementToggleItemClassName}
-                  >
-                    <span className="truncate">
-                      {valueCategoryLabel(category)}
-                    </span>
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
-            </section>
-          ) : null}
-
-          <section className="space-y-2">
-            <Label className={procurementSectionLabelClassName}>
-              <Trans>Period</Trans>
-            </Label>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <Label htmlFor="filter-date-from" className="text-xs font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-                  <Trans>From</Trans>
-                </Label>
-                <input
-                  id="filter-date-from"
-                  type="date"
-                  className={procurementDateInputClassName}
-                  value={search.dateFrom ?? ''}
-                  max={search.dateTo ?? undefined}
-                  onChange={(event) =>
-                    filters.setDates(event.target.value || undefined, search.dateTo)
-                  }
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="filter-date-to" className="text-xs font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-                  <Trans>To</Trans>
-                </Label>
-                <input
-                  id="filter-date-to"
-                  type="date"
-                  className={procurementDateInputClassName}
-                  value={search.dateTo ?? ''}
-                  min={search.dateFrom ?? undefined}
-                  onChange={(event) =>
-                    filters.setDates(search.dateFrom, event.target.value || undefined)
-                  }
-                />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="filter-year" className="text-xs font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-                <Trans>Or a whole year</Trans>
-              </Label>
-              <input
-                id="filter-year"
-                type="number"
-                min={2000}
-                max={2100}
-                className={TEXT_INPUT_CLASS}
-                placeholder={t`e.g. 2025`}
-                value={search.year ?? ''}
-                onChange={(event) => {
-                  const value = event.target.valueAsNumber
-                  filters.setYear(Number.isFinite(value) ? value : undefined)
-                }}
-              />
-            </div>
-          </section>
-
-          {search.grain !== 'modifications' ? (
-            <section className="space-y-2">
-              <Label className={procurementSectionLabelClassName}>
-                <Trans>Value (RON)</Trans>
-              </Label>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <Label htmlFor="filter-value-min" className="text-xs font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-                    <Trans>Minimum</Trans>
-                  </Label>
-                  <input
-                    id="filter-value-min"
-                    type="number"
-                    min={0}
-                    className={TEXT_INPUT_CLASS}
-                    value={search.valueMin ?? ''}
-                    onChange={(event) => {
-                      const value = event.target.valueAsNumber
-                      filters.setValueRange(
-                        Number.isFinite(value) ? value : undefined,
-                        search.valueMax,
-                      )
-                    }}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="filter-value-max" className="text-xs font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-                    <Trans>Maximum</Trans>
-                  </Label>
-                  <input
-                    id="filter-value-max"
-                    type="number"
-                    min={0}
-                    className={TEXT_INPUT_CLASS}
-                    value={search.valueMax ?? ''}
-                    onChange={(event) => {
-                      const value = event.target.valueAsNumber
-                      filters.setValueRange(
-                        search.valueMin,
-                        Number.isFinite(value) ? value : undefined,
-                      )
-                    }}
-                  />
-                </div>
-              </div>
-            </section>
-          ) : null}
-
-          <section className="space-y-2">
-            <Label className={procurementSectionLabelClassName}>
-              <Trans>Review signal</Trans>
-            </Label>
-            <ToggleGroup
-              type="single"
-              value=""
-              disabled
-              className="grid grid-cols-1 gap-2 opacity-60"
-            >
-              {REVIEW_SIGNAL_KIND_VALUES.map((signal) => (
-                <ToggleGroupItem
-                  key={signal}
-                  value={signal}
-                  disabled
-                  className={procurementToggleItemClassName}
-                >
-                  {reviewSignalLabel(signal)}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-            <p className="border-l-4 border-amber-500 pl-3 text-xs leading-5 text-[var(--pnrr-muted)]">
-              <Trans>
-                Review signals are not wired to search yet. They will filter
-                results when the API republishes same-day and repeated-pair
-                candidates — until then this control stays disabled so it
-                cannot pretend to narrow the list.
-              </Trans>
-            </p>
-          </section>
-
-          <section className="space-y-2">
-            <Label className={procurementSectionLabelClassName}>
-              <Trans>Results per page</Trans>
-            </Label>
-            <ToggleGroup
-              type="single"
-              value={String(search.pageSize)}
-              onValueChange={(value) => {
-                const size = Number(value)
-                if (PAGE_SIZE_OPTIONS.some((option) => option === size)) {
-                  filters.setPageSize(size)
-                }
-              }}
-              className="grid grid-cols-3 gap-2"
-            >
-              {PAGE_SIZE_OPTIONS.map((size) => (
-                <ToggleGroupItem key={size} value={String(size)} className={procurementToggleItemClassName}>
-                  {size}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-          </section>
+          <ProcurementListFilterFields filters={filters} />
         </div>
 
         <div className="border-t-2 border-[#b1b4b6] p-4 dark:border-[var(--pnrr-border)]">

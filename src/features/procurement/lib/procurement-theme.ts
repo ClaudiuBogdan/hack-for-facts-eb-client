@@ -7,7 +7,7 @@
 
 // ── header / hero (parliament-shell rhythm) ─────────────────────────────────
 
-export const procurementHeaderHeroClassName = 'pt-10 pb-8 sm:pt-14 sm:pb-10'
+export const procurementHeaderHeroClassName = 'pt-10 pb-2 sm:pt-14 sm:pb-4'
 
 export const procurementHeaderTitleClassName =
   'max-w-5xl text-balance font-black leading-[0.85] tracking-tight text-[var(--pnrr-fg)]'
@@ -30,6 +30,19 @@ export const procurementHeaderStatValueClassName =
 
 export const procurementHeaderStatLabelClassName =
   'font-normal text-[var(--pnrr-muted)]'
+
+/** Lime active-filter chips — same token as PNRR for cross-domain recognition. */
+export const procurementActiveFilterChipClassName =
+  'group inline-flex max-w-full items-center gap-1.5 bg-[var(--pnrr-green)] px-3 py-2 text-sm text-[var(--pnrr-fg)]'
+
+export const procurementActiveFilterChipPrefixClassName =
+  'shrink-0 text-[var(--pnrr-fg)]/80'
+
+export const procurementActiveFilterChipValueClassName =
+  'min-w-0 truncate font-bold'
+
+export const procurementActiveFilterClearClassName =
+  'shrink-0 text-sm text-[var(--pnrr-fg)] underline underline-offset-4 transition-colors hover:text-[var(--pnrr-muted)]'
 
 // ── section surfaces ────────────────────────────────────────────────────────
 

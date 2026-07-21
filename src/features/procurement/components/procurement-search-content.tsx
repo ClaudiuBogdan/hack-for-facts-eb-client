@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { RequestDatasetAction } from '@/components/shared/procurement-data/request-dataset-action'
 import { ShareFilteredView } from '@/components/shared/procurement-data/share-filtered-view'
 import type { ProcurementSearchState } from '@/schemas/procurement-search'
+import type { ProcurementFilterState } from '../hooks/use-procurement-filter-state'
 import { useProcurementSearch } from '../hooks/use-procurement-data'
 import { useProcurementFilterState } from '../hooks/use-procurement-filter-state'
 import {
@@ -27,6 +28,7 @@ import {
   ProcurementFilterSheet,
   ProcurementFilterTriggerButton,
 } from './procurement-filter-sheet'
+import { ProcurementDaWindowNotice } from './procurement-da-window-notice'
 import { ProcurementGrainTabs } from './procurement-grain-tabs'
 import { ProcurementPagination } from './procurement-pagination'
 import { ProcurementRecordList } from './procurement-record-card'
@@ -36,11 +38,22 @@ import { ProcurementSearchSkeleton } from './procurement-skeletons'
 
 type Props = {
   readonly search: ProcurementSearchState
+  /** When provided (hub), URL writes go through the shared hub state. */
+  readonly filterState?: ProcurementFilterState
+  /** Hide the in-body filter trigger when the hub chrome owns the sheet. */
+  readonly hideFilterChrome?: boolean
+  readonly onOpenFilters?: () => void
 }
 
-/** The search tab: grain tabs, query, filters, results, pagination. */
-export function ProcurementSearchContent({ search }: Props) {
-  const filters = useProcurementFilterState(search)
+/** List layout: grain tabs, query, filters, results, pagination. */
+export function ProcurementSearchContent({
+  search,
+  filterState: externalFilters,
+  hideFilterChrome = false,
+  onOpenFilters,
+}: Props) {
+  const internalFilters = useProcurementFilterState(search)
+  const filters = externalFilters ?? internalFilters
   const query = useProcurementSearch(search)
   const [sheetOpen, setSheetOpen] = useState(false)
 
@@ -54,29 +67,35 @@ export function ProcurementSearchContent({ search }: Props) {
     )
   }
 
+  const openFilters = () => {
+    if (onOpenFilters) onOpenFilters()
+    else setSheetOpen(true)
+  }
+
   return (
     <div className="space-y-5">
       <ProcurementGrainTabs grain={search.grain} onGrainChange={filters.setGrain} />
 
-      {/* The query auto-applies 300 ms after the last keystroke — there is no
-          submit button. The form survives only to carry the `search` landmark
-          role; Enter must not trigger a native submit/reload. */}
-      <form role="search" onSubmit={(event) => event.preventDefault()}>
-        <ProcurementDebouncedSearchInput
-          value={search.q}
-          onCommit={filters.setQuery}
-          inputId="procurement-search-query"
-          placeholder={t`Search by title, number, CUI or party name`}
-          ariaLabel={t`Search procurement records`}
-        />
-      </form>
+      {!hideFilterChrome ? (
+        <form role="search" onSubmit={(event) => event.preventDefault()}>
+          <ProcurementDebouncedSearchInput
+            value={search.q}
+            onCommit={filters.setQuery}
+            inputId="procurement-search-query"
+            placeholder={t`Search by title, number, CUI or party name`}
+            ariaLabel={t`Search procurement records`}
+          />
+        </form>
+      ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <ProcurementFilterTriggerButton
-            activeCount={filters.activeCount}
-            onClick={() => setSheetOpen(true)}
-          />
+          {!hideFilterChrome ? (
+            <ProcurementFilterTriggerButton
+              activeCount={filters.activeCount}
+              onClick={openFilters}
+            />
+          ) : null}
           <ProcurementSortSelect
             sort={search.sort}
             onSortChange={filters.setSort}
@@ -99,7 +118,9 @@ export function ProcurementSearchContent({ search }: Props) {
         </div>
       </div>
 
-      <ProcurementActiveFilters filters={filters} />
+      {!hideFilterChrome ? <ProcurementActiveFilters filters={filters} /> : null}
+
+      <ProcurementDaWindowNotice search={search} />
 
       <p aria-live="polite" className="text-sm text-[var(--pnrr-muted)]">
         {page ? (
@@ -172,11 +193,13 @@ export function ProcurementSearchContent({ search }: Props) {
         </div>
       ) : null}
 
-      <ProcurementFilterSheet
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
-        filters={filters}
-      />
+      {!hideFilterChrome ? (
+        <ProcurementFilterSheet
+          open={sheetOpen}
+          onOpenChange={setSheetOpen}
+          filters={filters}
+        />
+      ) : null}
     </div>
   )
 }

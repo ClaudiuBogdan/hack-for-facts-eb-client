@@ -57,6 +57,9 @@ dev.html
 # Prompt tmp
 tmp/
 
+# Machine-local remote development launchers (may encode local topology)
+/scripts/local/
+
 .claude/
 sentry-issues/
 
@@ -65,6 +68,9 @@ sentry-issues/
 # Local scrapper cross-reference docs (temporary, machine-specific paths)
 docs/mock-first-ui-development.md
 docs/scraper-data-catalog.md
+
+# Local audits with machine paths / private infra topology
+docs/statistics-module-audit-*.md
 
 # Kubernetes plain secrets
 *.secret.yaml

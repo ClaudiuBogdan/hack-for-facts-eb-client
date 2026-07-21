@@ -1,8 +1,15 @@
 import { Trans } from '@lingui/react/macro'
 import { DataStatusBadge } from '@/components/shared/procurement-data/data-status-badge'
-import { procurementDataStatus, type ProcurementAnswerMeta } from '@/schemas/procurement'
+import {
+  procurementDataStatus,
+  type ProcurementAnswerMeta,
+} from '@/schemas/procurement'
 import { cn } from '@/lib/utils'
 
+/**
+ * Coverage honesty notice — only when the answer is degraded or abstained.
+ * Fully served answers need no status card (all data is production).
+ */
 export function ProcurementAnswerabilityNotice({
   meta,
   className,
@@ -10,7 +17,12 @@ export function ProcurementAnswerabilityNotice({
   readonly meta: ProcurementAnswerMeta
   readonly className?: string
 }) {
+  if (meta.answerability === 'served' && meta.caveats.length === 0) {
+    return null
+  }
+
   const status = procurementDataStatus(meta)
+
   return (
     <aside
       className={cn(
@@ -18,17 +30,15 @@ export function ProcurementAnswerabilityNotice({
         className,
       )}
     >
-      <DataStatusBadge
-        status={status}
-        tooltip={meta.caveats[0]}
-        label={
-          meta.answerability === 'served'
-            ? 'Live'
-            : meta.answerability === 'degraded'
-              ? 'Parțial'
-              : 'Indisponibil'
-        }
-      />
+      {meta.answerability !== 'served' ? (
+        <DataStatusBadge
+          status={status}
+          tooltip={meta.caveats[0]}
+          label={
+            meta.answerability === 'degraded' ? 'Parțial' : 'Indisponibil'
+          }
+        />
+      ) : null}
       <div className="min-w-0 text-[var(--pnrr-muted)]">
         {meta.answerability === 'abstained' ? (
           <p className="font-semibold text-[var(--pnrr-fg)]">
@@ -41,9 +51,7 @@ export function ProcurementAnswerabilityNotice({
               <li key={caveat}>{caveat}</li>
             ))}
           </ul>
-        ) : (
-          <p><Trans>Served from canonical procurement records.</Trans></p>
-        )}
+        ) : null}
       </div>
     </aside>
   )

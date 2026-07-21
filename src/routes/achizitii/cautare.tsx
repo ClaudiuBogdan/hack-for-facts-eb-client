@@ -1,18 +1,19 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import {
-  cleanProcurementSearch,
-  parseProcurementSearch,
-} from '@/schemas/procurement-search'
+  cleanProcurementHubSearch,
+  parseProcurementHubSearch,
+} from '@/schemas/procurement-hub'
 
 export const Route = createFileRoute('/achizitii/cautare')({
-  validateSearch: (search: Record<string, unknown>) => {
-    const parsed = parseProcurementSearch(search)
-    return cleanProcurementSearch(parsed)
-  },
+  validateSearch: (search: Record<string, unknown>) =>
+    parseProcurementHubSearch(search),
   beforeLoad: ({ search }) => {
     throw redirect({
-      to: '/procurement/search',
-      search,
+      to: '/procurement',
+      search: cleanProcurementHubSearch({
+        ...search,
+        view: 'list',
+      }),
       replace: true,
       statusCode: 301,
     })
