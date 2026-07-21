@@ -5,6 +5,7 @@ import {
   Building2,
   CalendarRange,
   Info,
+  Layers,
   MapPin,
   SlidersHorizontal,
 } from 'lucide-react'
@@ -38,6 +39,7 @@ import {
   ProcurementGeographyCombobox,
   type ProcurementGeographyPickerOption,
 } from './procurement-geography-combobox'
+import { ProcurementGrainTabs } from './procurement-grain-tabs'
 import { ProcurementListFilterFields } from './procurement-filter-sheet'
 import { ProcurementPreviewBadge } from './procurement-preview-badge'
 
@@ -216,6 +218,41 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
                 />
               </div>
             </div>
+          </section>
+
+          <section
+            className="space-y-4 border-t-2 border-[#b1b4b6] pt-6 dark:border-[var(--pnrr-border)]"
+            aria-labelledby="hub-grain-label"
+          >
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Layers className="h-4 w-4" aria-hidden="true" />
+                <p id="hub-grain-label" className={procurementSectionLabelClassName}>
+                  <Trans>Record type</Trans>
+                </p>
+              </div>
+              <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                <Trans>
+                  Shared across Overview, Map, and List. Overview and Map charts
+                  use contracts or direct acquisitions; procedures and
+                  modifications apply on List.
+                </Trans>
+              </p>
+            </div>
+            <ProcurementGrainTabs
+              grain={state.grain}
+              onGrainChange={hub.setGrain}
+            />
+            {!onList &&
+            (state.grain === 'procedures' ||
+              state.grain === 'modifications') ? (
+              <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
+                <Trans>
+                  Overview and Map show direct-acquisition analytics while this
+                  grain is selected. Switch to List to browse these records.
+                </Trans>
+              </p>
+            ) : null}
           </section>
 
           <section

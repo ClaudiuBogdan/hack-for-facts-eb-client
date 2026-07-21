@@ -3,7 +3,6 @@ import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import {
   analysisGrainToHubGrain,
-  buildProcurementOverviewMonthScope,
   hubGrainToAnalysisGrain,
   type ProcurementHubState,
 } from '@/schemas/procurement-hub'
@@ -23,7 +22,6 @@ import { ProcurementMapView } from './procurement-map-view'
 import { ProcurementErrorState } from './procurement-error-state'
 import { ProcurementOverviewSkeleton } from './procurement-skeletons'
 import { ProcurementAnswerabilityNotice } from './procurement-answerability-notice'
-import { ProcurementAnalysisWorkspace } from './procurement-analysis-workspace'
 import { ProcurementAnalysisGrainToggle } from './procurement-analysis-grain-toggle'
 import {
   ProcurementHubFilterSheet,
@@ -51,11 +49,6 @@ export function ProcurementOverviewPage({
     geographyQuery.data,
     hub.landingFilters,
   )
-  const monthScope = buildProcurementOverviewMonthScope(hub.landingFilters)
-  const analysisScope = {
-    ...(monthScope.monthFrom ? { from: monthScope.monthFrom } : {}),
-    ...(monthScope.monthTo ? { to: monthScope.monthTo } : {}),
-  }
   const analysisGrain = hubGrainToAnalysisGrain(hubState.grain)
   const analytics = data
     ? analysisGrain === 'contract'
@@ -206,23 +199,6 @@ export function ProcurementOverviewPage({
           />
 
           <ProcurementQuickLinks />
-
-          {hasBuyerGeography ? (
-            <section className="border-2 border-[var(--pnrr-border)] bg-background p-5 sm:p-6">
-              <h2 className="text-lg font-black text-[var(--pnrr-fg)]">
-                <Trans>Analysis Workspace</Trans>
-              </h2>
-              <p className="mt-2 border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
-                <Trans>
-                  The interactive workspace contains combinations that the
-                  regional rollup cannot answer yet. It is paused for this
-                  filter instead of showing unfiltered or partial results.
-                </Trans>
-              </p>
-            </section>
-          ) : (
-            <ProcurementAnalysisWorkspace scope={analysisScope} />
-          )}
         </div>
       ) : null}
 
