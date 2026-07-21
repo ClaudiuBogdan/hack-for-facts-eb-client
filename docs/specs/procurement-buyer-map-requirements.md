@@ -14,8 +14,8 @@ Journalists need a **buyer-geography choropleth** to see where public purchasing
 | --- | --- |
 | Side | **Buyer only** — no supplier map |
 | Default metric | **Record count** (value secondary / gated) |
-| Home | `/procurement?view=map` — peer hub tab (not Overview hero) |
-| Hub | Overview / **Map** / List share one URL schema |
+| Home | `/procurement` Overview — map is a section on the main page (not a peer tab) |
+| Hub | Overview / List share one URL schema; map chrome is Overview-only |
 | Honesty | Never paint unknown geography as zero; never pretend list is geo-filtered (B1) |
 
 ### Rejected
@@ -35,7 +35,7 @@ Journalists need a **buyer-geography choropleth** to see where public purchasing
 | **County (42)** | **Toggle live; paint TODO** | Empty choropleth + honesty until wave-2 `buyer_county` rollup | Sets `buyerCounty` |
 | **UAT** | **Toggle live; paint TODO** | UAT GeoJSON + empty paint until `buyer_siruta` + `referenceTerritories` | Sets `buyerSiruta` |
 
-Shared URL key: `mapGrain=region|county|uat` (default `region`). Toggle is enabled on Map and in the shared filter sheet.
+Shared URL key: `mapGrain=region|county|uat` (default `region`). Toggle lives on the Overview map toolbar only (not the shared filter sheet).
 
 ## Metric series
 
@@ -44,7 +44,7 @@ Shared URL key: `mapGrain=region|county|uat` (default `region`). Toggle is enabl
 | `record_count` | Record count | Yes | From breakdown `recordCount` |
 | `value_awarded` | Awarded value (RON) | No | Only when meta allows; never coerce null → 0 |
 
-Shared hub URL key: `measure` (same across Overview / Map / List). Also: `grain` (contracts / DA), period (E1 soft default previous year). Period is shown only via active-filter chips — not duplicated on the map.
+Shared hub URL key: `measure` (same across Overview and List). Also: `grain` (contracts / DA), period (E1 soft default previous year). Period is shown only via active-filter chips — not duplicated on the map.
 
 ## Filters ↔ map
 
@@ -53,9 +53,9 @@ Shared hub URL key: `measure` (same across Overview / Map / List). Also: `grain`
 | Period / dates | Scope for analysis request (chips only — no map period line) |
 | `grain` | Contracts vs DA block |
 | `measure` | Count vs awarded value series |
-| `mapGrain` | Map-tab polygon level only (not a global filter) |
+| `mapGrain` | Overview-map polygon level only (not a global filter) |
 | `buyerRegion` / `buyerCounty` / `buyerSiruta` | Written only via drawer Apply CTAs |
-| List-only facets | Ignored for paint; chips say “List only” on Overview/Map |
+| List-only facets | Ignored for paint; chips say “List only” on Overview |
 
 ## Click contract
 
@@ -63,9 +63,9 @@ Shared hub URL key: `measure` (same across Overview / Map / List). Also: `grain`
 2. Drawer shows: name, record count (+ value if answerable for region), coverage/caveats.
 3. Primary CTA: **Apply on Overview** → set `buyerRegion` / `buyerCounty` / `buyerSiruta`, `view=overview`.
 4. Secondary CTA: **Apply on List** → `view=list` + geo keys with B1 chip **“Not applied yet”**.
-5. `mapGrain` (Region / County / UAT) is Map-tab chrome in the URL — not a global filter sheet or chip.
+5. `mapGrain` (Region / County / UAT) is Overview-map chrome in the URL — not a global filter sheet or chip.
 
-Shared URL key: `mapGrain=region|county|uat` (default `region`). Toggle lives on the Map toolbar only.
+Shared URL key: `mapGrain=region|county|uat` (default `region`). Toggle lives on the Overview map toolbar only.
 
 ## Coverage disclosure
 
@@ -75,11 +75,11 @@ Always show a status line that records without known buyer geography are **exclu
 
 | Surface | Route / mount |
 | --- | --- |
-| Full map | `/procurement?view=map` (hub Map tab) |
+| Buyer map | Overview section on `/procurement` (`ProcurementMapView`) |
 | Filter sheet | Shared period, metric, buyer location, list facets (no mapGrain) |
 | Map toolbar | Region / County / UAT detail (`mapGrain` URL) |
-| Overview | Rankings + charts; respects `measure` labels where data exists |
-| Legacy | `/procurement/analytics` → redirect to `?view=map` |
+| Overview | Map + rankings + charts; respects `measure` labels where data exists |
+| Legacy | `/procurement/analytics` and `?view=map` → Overview (preserves `mapGrain`) |
 
 ## Phased delivery
 

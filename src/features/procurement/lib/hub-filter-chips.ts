@@ -41,8 +41,7 @@ export function buildHubActiveFilterChips(
 ): readonly HubFilterChip[] {
   const chips: HubFilterChip[] = []
   const onList = state.view === 'list'
-  const geoAppliedOnView =
-    state.view === 'overview' || state.view === 'map'
+  const geoAppliedOnView = state.view === 'overview'
   const listFacetKind: HubFilterChipKind = onList ? 'applied' : 'list-only'
 
   if (period.isAllTime) {

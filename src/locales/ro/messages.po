@@ -12682,7 +12682,7 @@ msgstr ""
 
 #: src/features/procurement/components/procurement-hub-filter-sheet.tsx:250
 msgid "Overview shows direct-acquisition analytics while this grain is selected. Switch to List to browse these records."
-msgstr ""
+msgstr "Prezentarea generală afișează analize pentru achiziții directe cât timp este selectat acest tip. Treceți la Listă pentru a răsfoi aceste înregistrări."
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:397
 msgid "Owner dataset"
@@ -15827,11 +15827,11 @@ msgstr "Set de date partajabil"
 
 #: src/features/procurement/components/procurement-hub-filter-sheet.tsx:270
 msgid "Shared across Overview and List. Count is the default; awarded value stays secondary where amounts are answerable."
-msgstr ""
+msgstr "Comun pentru Prezentare generală și Listă. Numărul de înregistrări este implicit; valoarea atribuită rămâne secundară acolo unde sumele sunt răspunzătoare."
 
 #: src/features/procurement/components/procurement-hub-filter-sheet.tsx:235
 msgid "Shared across Overview and List. Overview charts use contracts or direct acquisitions; procedures and modifications apply on List."
-msgstr ""
+msgstr "Comun pentru Prezentare generală și Listă. Graficele din Prezentare generală folosesc contracte sau achiziții directe; procedurile și modificările se aplică pe Listă."
 
 #: src/features/procurement/components/procurement-hub-filter-sheet.tsx:270
 #~ msgid "Shared across Overview, Map, and List. Count is the default; awarded value stays secondary where amounts are answerable."

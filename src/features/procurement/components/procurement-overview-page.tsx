@@ -31,7 +31,7 @@ import { ProcurementHubActiveFilters } from './procurement-hub-active-filters'
 import { ProcurementHubDevPanel } from './procurement-hub-dev-panel'
 import { ProcurementSearchContent } from './procurement-search-content'
 
-/** Unified hub: Overview + Map + List share one URL schema (A2 / F2). */
+/** Unified hub: Overview (incl. buyer map) + List share one URL schema (A2 / F2). */
 export function ProcurementOverviewPage({
   hubState,
 }: {
@@ -115,20 +115,7 @@ export function ProcurementOverviewPage({
             onOpenFilters={() => setFilterSheetOpen(true)}
           />
         </div>
-      ) : hubState.view === 'map' ? (
-        <ProcurementMapView
-          hubState={hubState}
-          updateFilters={hub.updateFilters}
-        />
-      ) : query.isPending ? (
-        <ProcurementOverviewSkeleton />
-      ) : query.isError && !data ? (
-        <ProcurementErrorState
-          error={query.error}
-          onRetry={() => void query.refetch()}
-          isRetrying={query.isRefetching}
-        />
-      ) : data ? (
+      ) : (
         <div className="space-y-6">
           {hasBuyerGeography ? (
             <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
@@ -150,57 +137,75 @@ export function ProcurementOverviewPage({
             />
           </div>
 
-          {analytics ? (
-            <ProcurementAnswerabilityNotice meta={analytics.stats.meta} />
+          {/* Landing-gated charts only — map keeps its own analysis query and
+              must stay mounted across landing pending/refetch (drawer state). */}
+          {query.isPending && !data ? (
+            <ProcurementOverviewSkeleton />
+          ) : query.isError && !data ? (
+            <ProcurementErrorState
+              error={query.error}
+              onRetry={() => void query.refetch()}
+              isRetrying={query.isRefetching}
+            />
+          ) : analytics ? (
+            <>
+              <ProcurementAnswerabilityNotice meta={analytics.stats.meta} />
+
+              <div className="grid gap-6 lg:grid-cols-2">
+                <ProcurementPartyRanking
+                  title={t`Top public buyers`}
+                  description={
+                    hubState.measure === 'value_awarded'
+                      ? t`By awarded value when available; bars still use record counts until value sort is published.`
+                      : t`By number of records.`
+                  }
+                  rows={analytics.topAuthorities}
+                  kind="authority"
+                  unavailableReason={
+                    hasBuyerGeography
+                      ? t`Authority rankings are unavailable under the current regional rollup.`
+                      : undefined
+                  }
+                />
+                <ProcurementPartyRanking
+                  title={t`Top suppliers`}
+                  description={
+                    hubState.measure === 'value_awarded'
+                      ? t`By awarded value when available; bars still use record counts until value sort is published.`
+                      : t`By number of records.`
+                  }
+                  rows={analytics.topSuppliers}
+                  kind="supplier"
+                  unavailableReason={
+                    hasBuyerGeography
+                      ? t`Supplier rankings are unavailable under the current regional rollup.`
+                      : undefined
+                  }
+                />
+              </div>
+
+              <ProcurementCategoryBars rows={analytics.topCategories} />
+
+              <ProcurementMonthlyChart
+                points={analytics.monthly}
+                description={
+                  hubState.measure === 'value_awarded'
+                    ? t`Awarded value per month when amounts are present (tooltips still show counts).`
+                    : t`Number of records per month.`
+                }
+              />
+            </>
           ) : null}
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            <ProcurementPartyRanking
-              title={t`Top public buyers`}
-              description={
-                hubState.measure === 'value_awarded'
-                  ? t`By awarded value when available; bars still use record counts until value sort is published.`
-                  : t`By number of records.`
-              }
-              rows={analytics?.topAuthorities ?? []}
-              kind="authority"
-              unavailableReason={
-                hasBuyerGeography
-                  ? t`Authority rankings are unavailable under the current regional rollup.`
-                  : undefined
-              }
-            />
-            <ProcurementPartyRanking
-              title={t`Top suppliers`}
-              description={
-                hubState.measure === 'value_awarded'
-                  ? t`By awarded value when available; bars still use record counts until value sort is published.`
-                  : t`By number of records.`
-              }
-              rows={analytics?.topSuppliers ?? []}
-              kind="supplier"
-              unavailableReason={
-                hasBuyerGeography
-                  ? t`Supplier rankings are unavailable under the current regional rollup.`
-                  : undefined
-              }
-            />
-          </div>
-
-          <ProcurementCategoryBars rows={analytics?.topCategories ?? []} />
-
-          <ProcurementMonthlyChart
-            points={analytics?.monthly ?? []}
-            description={
-              hubState.measure === 'value_awarded'
-                ? t`Awarded value per month when amounts are present (tooltips still show counts).`
-                : t`Number of records per month.`
-            }
+          <ProcurementMapView
+            hubState={hubState}
+            updateFilters={hub.updateFilters}
+            showAnalysisGrainToggle={false}
           />
 
           <ProcurementQuickLinks />
         </div>
-      ) : null}
+      )}
 
       <ProcurementHubFilterSheet
         open={filterSheetOpen}

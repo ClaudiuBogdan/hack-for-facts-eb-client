@@ -123,11 +123,11 @@ const commaListValueCategory = z
   })
   .catch(undefined)
 
-/** Hub layout: aggregates, paginated records, or buyer map (F2). */
-export const procurementHubViewSchema = z.enum(['overview', 'list', 'map'])
+/** Hub layout: aggregates or paginated records (A2 / F2). */
+export const procurementHubViewSchema = z.enum(['overview', 'list'])
 export type ProcurementHubView = z.infer<typeof procurementHubViewSchema>
 
-/** Shared display metric across Overview / Map / List. */
+/** Shared display metric across Overview and List. */
 export const procurementHubMeasureSchema = z.enum([
   'record_count',
   'value_awarded',
@@ -136,7 +136,7 @@ export type ProcurementHubMeasure = z.infer<typeof procurementHubMeasureSchema>
 
 /**
  * Buyer map choropleth geography level. County/UAT paint is TODO until rollups;
- * kept in URL as Map-tab chrome only (not a global filter chip / sheet control).
+ * kept in URL as Overview-map chrome only (not a global filter chip / sheet control).
  */
 export const procurementHubMapGrainSchema = z.enum(['region', 'county', 'uat'])
 export type ProcurementHubMapGrain = z.infer<
@@ -156,7 +156,13 @@ export const procurementHubGrainSchema = z.enum([
 
 export const procurementHubSearchSchema = z
   .object({
-    view: procurementHubViewSchema.optional().catch(undefined),
+    // Legacy `view=map` bookmarks normalize to Overview (map lives on Overview).
+    view: z
+      .preprocess(
+        (value) => (value === 'map' ? 'overview' : value),
+        procurementHubViewSchema.optional(),
+      )
+      .catch(undefined),
     // Legacy tab param → normalized in parse
     tab: z.enum(['overview', 'search']).optional().catch(undefined),
     grain: procurementGrainSchema.optional().catch(undefined),

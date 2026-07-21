@@ -23,9 +23,6 @@ function SectionSkeleton({ className }: { readonly className?: string }) {
 export function ProcurementOverviewSkeleton() {
   return (
     <div className="space-y-6" data-testid="procurement-overview-skeleton">
-      <div className="flex justify-end">
-        <Skeleton className="h-10 w-48 rounded-none" />
-      </div>
       <div className="grid gap-6 lg:grid-cols-2">
         <SectionSkeleton />
         <SectionSkeleton />

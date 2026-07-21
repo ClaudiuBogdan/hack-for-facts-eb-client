@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { Building2, ChevronRight, Factory, MapPinned, Search, Tag } from 'lucide-react'
+import { Building2, ChevronRight, Factory, Search, Tag } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   procurementCardChevronClassName,
@@ -17,14 +17,6 @@ export function ProcurementQuickLinks() {
       description: t`Find procedures, contracts, and direct acquisitions.`,
       to: '/procurement' as const,
       search: { view: 'list' as const },
-    },
-    {
-      key: 'map',
-      icon: MapPinned,
-      title: t`Buyer map`,
-      description: t`Region choropleth of purchasing volume (Preview).`,
-      to: '/procurement' as const,
-      search: { view: 'map' as const },
     },
     {
       key: 'institutions',

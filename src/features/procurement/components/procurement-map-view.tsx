@@ -70,14 +70,23 @@ type MapSelection = {
 type Props = {
   readonly hubState: ProcurementHubState
   readonly updateFilters: (patch: ProcurementHubFilterPatch) => void
+  /**
+   * When false (Overview embed), hide the contracts/DA toggle — Overview already
+   * owns the shared grain control. Map detail (`mapGrain`) stays map-only.
+   */
+  readonly showAnalysisGrainToggle?: boolean
 }
 
 /**
- * Buyer geography choropleth on the hub Map tab.
+ * Buyer geography choropleth on the procurement Overview.
  * Shared hub filters (period, measure, buyer geo…) apply globally.
- * `mapGrain` is map-tab chrome only (URL + toolbar), not a global filter chip.
+ * `mapGrain` is map-only chrome (URL + toolbar), not a global filter chip.
  */
-export function ProcurementMapView({ hubState, updateFilters }: Props) {
+export function ProcurementMapView({
+  hubState,
+  updateFilters,
+  showAnalysisGrainToggle = true,
+}: Props) {
   const [selection, setSelection] = useState<MapSelection | undefined>()
 
   const geographyQuery = useProcurementGeographyOptions()
@@ -261,6 +270,7 @@ export function ProcurementMapView({ hubState, updateFilters }: Props) {
       <MapToolbar
         analysisGrain={analysisGrain}
         mapGrain={mapGrain}
+        showAnalysisGrainToggle={showAnalysisGrainToggle}
         onGrainChange={(grain) =>
           updateFilters({ grain: analysisGrainToHubGrain(grain) })
         }
@@ -382,20 +392,29 @@ export function ProcurementMapView({ hubState, updateFilters }: Props) {
 function MapToolbar({
   analysisGrain,
   mapGrain,
+  showAnalysisGrainToggle,
   onGrainChange,
   onMapGrainChange,
 }: {
   readonly analysisGrain: FlowAnalysisGrain
   readonly mapGrain: ProcurementHubMapGrain
+  readonly showAnalysisGrainToggle: boolean
   readonly onGrainChange: (grain: FlowAnalysisGrain) => void
   readonly onMapGrainChange: (grain: ProcurementHubMapGrain) => void
 }) {
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-      <ProcurementAnalysisGrainToggle
-        value={analysisGrain}
-        onChange={onGrainChange}
-      />
+    <div
+      className={cn(
+        'flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center',
+        showAnalysisGrainToggle ? 'sm:justify-between' : 'sm:justify-end',
+      )}
+    >
+      {showAnalysisGrainToggle ? (
+        <ProcurementAnalysisGrainToggle
+          value={analysisGrain}
+          onChange={onGrainChange}
+        />
+      ) : null}
 
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs font-bold uppercase tracking-wide text-[var(--pnrr-muted)]">

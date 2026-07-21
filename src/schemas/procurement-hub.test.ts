@@ -8,11 +8,15 @@ import {
 } from './procurement-hub'
 
 describe('procurement hub schema', () => {
-  it('defaults view to overview and maps legacy tab=search to list', () => {
+  it('defaults view to overview and maps legacy tab=search / view=map', () => {
     expect(parseProcurementHubSearch({}).view).toBe('overview')
     expect(parseProcurementHubSearch({ tab: 'search' }).view).toBe('list')
     expect(parseProcurementHubSearch({ view: 'list' }).view).toBe('list')
-    expect(parseProcurementHubSearch({ view: 'map' }).view).toBe('map')
+    // Legacy Map tab bookmarks land on Overview; mapGrain is preserved.
+    expect(parseProcurementHubSearch({ view: 'map' }).view).toBe('overview')
+    expect(
+      parseProcurementHubSearch({ view: 'map', mapGrain: 'county' }).mapGrain,
+    ).toBe('county')
   })
 
   it('defaults measure and mapGrain and cleans them when default', () => {

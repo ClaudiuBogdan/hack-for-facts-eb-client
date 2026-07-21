@@ -125,8 +125,8 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
           </SheetTitle>
           <SheetDescription className="pt-1 text-left text-sm font-semibold text-[#505a5f] dark:text-[var(--pnrr-muted)]">
             <Trans>
-              Shared filters for Overview, Map, and List. Unsupported controls
-              stay visible and are marked when they are not applied yet.
+              Shared filters for Overview and List. Unsupported controls stay
+              visible and are marked when they are not applied yet.
             </Trans>
           </SheetDescription>
         </SheetHeader>
@@ -233,9 +233,9 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
               </div>
               <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
                 <Trans>
-                  Shared across Overview, Map, and List. Overview and Map charts
-                  use contracts or direct acquisitions; procedures and
-                  modifications apply on List.
+                  Shared across Overview and List. Overview charts use contracts
+                  or direct acquisitions; procedures and modifications apply on
+                  List.
                 </Trans>
               </p>
             </div>
@@ -248,8 +248,8 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
               state.grain === 'modifications') ? (
               <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
                 <Trans>
-                  Overview and Map show direct-acquisition analytics while this
-                  grain is selected. Switch to List to browse these records.
+                  Overview shows direct-acquisition analytics while this grain
+                  is selected. Switch to List to browse these records.
                 </Trans>
               </p>
             ) : null}
@@ -268,8 +268,8 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
               </div>
               <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
                 <Trans>
-                  Shared across Overview, Map, and List. Count is the default;
-                  awarded value stays secondary where amounts are answerable.
+                  Shared across Overview and List. Count is the default; awarded
+                  value stays secondary where amounts are answerable.
                 </Trans>
               </p>
             </div>
