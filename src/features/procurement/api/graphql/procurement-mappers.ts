@@ -52,10 +52,19 @@ import type {
   RawProcurementProcedure,
   RawProcurementSupplierRecordsConnection,
 } from './procurement-queries'
+import { toElicitatieClientUrl } from '../../lib/elicitatie-client-url'
 
 // ---------------------------------------------------------------------------
 // Scalars
 // ---------------------------------------------------------------------------
+
+/**
+ * Custody `api-pub` URLs from the API → public portal views for outbound links.
+ * See `toElicitatieClientUrl` for the api→client mapping and why it is needed.
+ */
+function mapSourceUrl(raw: string | null): string | null {
+  return toElicitatieClientUrl(raw)
+}
 
 const STATUS_TOKENS = new Set<string>(procurementStatusSchema.options)
 const LINK_METHODS = new Set(['notice_no', 'authority_cui+contract_no'])
@@ -114,7 +123,7 @@ export function mapProcedure(raw: RawProcurementProcedure): ProcedureRecord {
     publicationDate: raw.publicationDate,
     stateDate: raw.stateDate,
     sourceSystem: procurementSourceSystemSchema.parse(raw.sourceSystem),
-    sourceUrl: raw.sourceUrl,
+    sourceUrl: mapSourceUrl(raw.sourceUrl),
     isCanonical: raw.isCanonical,
     dupGroupId: raw.dupGroupId,
   }
@@ -155,7 +164,7 @@ export function mapContract(raw: RawProcurementContract): ContractRecord {
     value: raw.value,
     status: mapStatus(raw.status),
     sourceSystem: procurementSourceSystemSchema.parse(raw.sourceSystem),
-    sourceUrl: raw.sourceUrl,
+    sourceUrl: mapSourceUrl(raw.sourceUrl),
     isCanonical: raw.isCanonical,
     dupGroupId: raw.dupGroupId,
     canonicalValueSource: raw.canonicalValueSource,
@@ -187,7 +196,7 @@ export function mapDirectAcquisition(
     publicationDate: raw.publicationDate,
     finalizationDate: raw.finalizationDate,
     sourceSystem: procurementSourceSystemSchema.parse(raw.sourceSystem),
-    sourceUrl: raw.sourceUrl,
+    sourceUrl: mapSourceUrl(raw.sourceUrl),
     isCanonical: raw.isCanonical,
     dupGroupId: raw.dupGroupId,
   }
@@ -203,7 +212,7 @@ export function mapModification(
     supplier: mapParty(raw.supplier),
     contractNo: raw.contractNo,
     noticeNo: raw.noticeNo,
-    sourceUrl: raw.sourceUrl,
+    sourceUrl: mapSourceUrl(raw.sourceUrl),
     parentContract: raw.parentContract
       ? {
           contractNo: raw.parentContract.contractNo,

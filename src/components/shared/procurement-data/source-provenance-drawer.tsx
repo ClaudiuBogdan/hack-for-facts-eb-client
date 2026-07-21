@@ -11,6 +11,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
+import { toElicitatieClientUrl } from '@/features/procurement/lib/elicitatie-client-url'
 import type { ProvenanceInfo } from '@/schemas/procurement'
 
 type Props = {
@@ -49,6 +50,8 @@ export function SourceProvenanceDrawer({
     ) : (
       trigger
     )
+  // api-pub custody URLs must open as public /pub/ portal views (see toElicitatieClientUrl).
+  const clientSourceUrl = toElicitatieClientUrl(provenance.sourceUrl)
 
   return (
     <Sheet open={currentOpen} onOpenChange={setCurrentOpen}>
@@ -71,14 +74,14 @@ export function SourceProvenanceDrawer({
         <div className="mt-4 space-y-4 text-sm">
           <Section label={t`Sursă`}>
             <p>{provenance.sourceLabel}</p>
-            {provenance.sourceUrl ? (
+            {clientSourceUrl ? (
               <a
-                href={provenance.sourceUrl}
+                href={clientSourceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm font-medium text-foreground underline underline-offset-2"
               >
-                {provenance.sourceUrl}
+                {clientSourceUrl}
               </a>
             ) : (
               <p className="text-muted-foreground">

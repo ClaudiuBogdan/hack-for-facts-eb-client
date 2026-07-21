@@ -1,6 +1,7 @@
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import { ExternalLink, FileText, Database } from 'lucide-react'
+import { toElicitatieClientUrl } from '@/features/procurement/lib/elicitatie-client-url'
 import { cn } from '@/lib/utils'
 
 type Kind = 'source' | 'document' | 'record'
@@ -34,9 +35,11 @@ const DEFAULT_LABEL: Record<Kind, string> = {
 export function EvidenceLink({ href, label, kind = 'source', className }: Props) {
   const Icon = KIND_ICON[kind]
   const text = label ?? DEFAULT_LABEL[kind]
+  // Defense in depth: GraphQL may still return api-pub custody URLs; never open those.
+  const clientHref = toElicitatieClientUrl(href) ?? href
   return (
     <a
-      href={href}
+      href={clientHref}
       target="_blank"
       rel="noopener noreferrer"
       className={cn(
