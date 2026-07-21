@@ -109,6 +109,42 @@ describe('buildDirectAcquisitionsFilter', () => {
     ).toEqual({ in: ['finalized', 'offered'] })
   })
 
+  // A refused DA (e-licitatie states 3/4/6/8 → prod `cancelled`) is a real
+  // public record but NOT a purchase; 1.006M of them carry 262B RON of
+  // non-spend. They stay in the DB and the API and are one click away — the
+  // default list just does not present them as concluded acquisitions.
+  it('excludes cancelled DAs by default (no status selected)', () => {
+    expect(buildDirectAcquisitionsFilter(state()).status).toEqual({
+      in: ['offered', 'awarded', 'finalized', 'unknown'],
+    })
+  })
+
+  it('honours an explicit cancelled selection — the default is opt-out-able', () => {
+    expect(
+      buildDirectAcquisitionsFilter(state({ status: ['cancelled'] })).status,
+    ).toEqual({ in: ['cancelled'] })
+    expect(
+      buildDirectAcquisitionsFilter(state({ status: ['cancelled', 'finalized'] }))
+        .status,
+    ).toEqual({ in: ['cancelled', 'finalized'] })
+  })
+
+  // `unknown` is 8.97M seap rows whose status the parser never populated. They
+  // are probably genuine acquisitions, so the default must NOT hide them —
+  // hiding them would suppress data to cover our own extraction gap.
+  it('keeps unknown-status DAs in the default list', () => {
+    expect(buildDirectAcquisitionsFilter(state()).status?.in).toContain(
+      'unknown',
+    )
+  })
+
+  // Procedures and contracts have their own `cancelled`, and a cancelled
+  // tender is newsworthy in its own right — the DA default must not leak.
+  it('does not apply the DA default to procedures or contracts', () => {
+    expect(buildProceduresFilter(state()).status).toBeUndefined()
+    expect(buildContractsFilter(state()).status).toBeUndefined()
+  })
+
   // The server refuses an unbounded DA search (`assertDaOffsetSelective`): CPV
   // and `q` refine but never qualify, so the builder must carry a window of its
   // own or the page renders the generic "data could not be loaded" error.

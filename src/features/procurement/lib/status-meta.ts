@@ -89,7 +89,11 @@ const STATUS_META: Record<ProcurementStatus, StatusMeta> = {
     tone: 'negative',
     icon: CircleSlash,
     label: () => t`Cancelled`,
-    tooltip: () => t`Procedure cancelled.`,
+    // Shared across all three grains, so the wording must hold for a cancelled
+    // tender AND for a direct acquisition whose offer or conditions were
+    // refused. Both mean the same thing to a reader: no purchase, no spending.
+    tooltip: () =>
+      t`Cancelled or refused — the purchase did not go ahead, so no spending is counted.`,
   },
   suspended: {
     tone: 'pending',

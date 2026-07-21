@@ -105,7 +105,7 @@ export interface ProcurementScopeFilterInput {
 // Vocabulary maps (per-grain source systems + statuses)
 // ---------------------------------------------------------------------------
 
-type FlowGrainKey = 'procedures' | 'contracts' | 'direct_acquisitions'
+export type FlowGrainKey = 'procedures' | 'contracts' | 'direct_acquisitions'
 
 /**
  * The coarse UI `source` facet expands to the grain's prod source-system
@@ -153,6 +153,32 @@ const STATUSES_BY_GRAIN: Readonly<Record<FlowGrainKey, readonly ProcurementStatu
   ],
 }
 
+/**
+ * Statuses omitted from an *unfiltered* grain listing. Selecting the status
+ * explicitly still returns them — this is a default, not a suppression; the
+ * records stay in the DB, in the API and reachable by direct link.
+ *
+ * Only DAs have one. On e-licitatie a direct acquisition ends in one of five
+ * terminal states, and four of them (`Conditii refuzate`, `Conditii
+ * neacceptate la termen`, `Oferta refuzata`, `Oferta neacceptata in termen`)
+ * mean the purchase did NOT happen — 1,006,114 canonical rows carrying
+ * 262.32B RON of non-spend, measured 2026-07-21. They are legitimate public
+ * records of a refused offer, but listing them beside concluded purchases
+ * reads as if the money moved. The data layer already excludes `cancelled`
+ * from flows, rollups and analysis facts; this aligns the record list with
+ * those aggregates.
+ *
+ * Deliberately NOT applied to procedures/contracts: a cancelled tender is
+ * itself newsworthy and belongs in the default list.
+ */
+const DEFAULT_HIDDEN_STATUSES_BY_GRAIN: Readonly<
+  Record<FlowGrainKey, readonly ProcurementStatus[]>
+> = {
+  procedures: [],
+  contracts: [],
+  direct_acquisitions: ['cancelled'],
+}
+
 // ---------------------------------------------------------------------------
 // Shared pieces
 // ---------------------------------------------------------------------------
@@ -178,10 +204,33 @@ function buildStatuses(
   search: ProcurementSearchState,
   grain: FlowGrainKey,
 ): string[] | undefined {
-  if (!search.status || search.status.length === 0) return undefined
   const vocabulary = STATUSES_BY_GRAIN[grain]
-  const valid = search.status.filter((status) => vocabulary.includes(status))
-  return valid.length > 0 ? valid : undefined
+  // An explicit selection is authoritative — including one that asks for a
+  // default-hidden status, which is how the user opts back in.
+  if (search.status && search.status.length > 0) {
+    const valid = search.status.filter((status) => vocabulary.includes(status))
+    return valid.length > 0 ? valid : undefined
+  }
+  // Nothing selected: send the grain's default vocabulary as an explicit `in`
+  // list. The server has no `notIn` op on `status`, so the exclusion is
+  // expressed as its complement.
+  const hidden = DEFAULT_HIDDEN_STATUSES_BY_GRAIN[grain]
+  if (hidden.length === 0) return undefined
+  return vocabulary.filter((status) => !hidden.includes(status))
+}
+
+/**
+ * The statuses this search is silently dropping, for disclosure in the UI.
+ * Empty once the user makes any explicit status selection (their choice then
+ * governs) or on a grain with no default. A hidden slice the reader cannot see
+ * is a silent cap — `ProcurementDaWindowNotice` surfaces this.
+ */
+export function statusesHiddenByDefault(
+  search: ProcurementSearchState,
+  grain: FlowGrainKey,
+): readonly ProcurementStatus[] {
+  if (search.status && search.status.length > 0) return []
+  return DEFAULT_HIDDEN_STATUSES_BY_GRAIN[grain]
 }
 
 function trimmedOrUndefined(value: string | undefined): string | undefined {
