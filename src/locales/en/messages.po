@@ -120,13 +120,13 @@ msgstr "{0} companies found"
 
 #. placeholder {0}: region.countyCount
 #. placeholder {1}: region.uatCount
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:68
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:70
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:75
 msgid "{0} counties · {1} localities"
 msgstr "{0} counties · {1} localities"
 
 #. placeholder {0}: formatProcurementCountyName(county.countyName)
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:73
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:75
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:80
 msgid "{0} County"
 msgstr "{0} County"
@@ -245,7 +245,7 @@ msgstr "{0} rectifications"
 
 #. placeholder {0}: county.region
 #. placeholder {1}: county.countyCode
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:75
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:77
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:82
 msgid "{0} region · code {1}"
 msgstr "{0} region · code {1}"
@@ -553,9 +553,17 @@ msgstr "< median"
 msgid "<= median"
 msgstr "<= median"
 
+#: src/features/procurement/components/procurement-da-window-notice.tsx:143
+msgid "<0>Refused acquisitions are hidden.</0> On e-licitatie a direct acquisition can end with the offer or the conditions refused — the purchase never happened, so these are not counted as spending. They remain published: select the status “{cancelledLabel}” in the filters to see them."
+msgstr "<0>Refused acquisitions are hidden.</0> On e-licitatie a direct acquisition can end with the offer or the conditions refused — the purchase never happened, so these are not counted as spending. They remain published: select the status “{cancelledLabel}” in the filters to see them."
+
 #: src/features/procurement/components/procurement-da-window-notice.tsx:122
-msgid "<0>Refused acquisitions are hidden.</0> On e-licitatie a direct acquisition can end with the offer or the conditions refused — the purchase never happened, so these are not counted as spending. They remain published: select the status “Cancelled” in the filters to see them."
-msgstr "<0>Refused acquisitions are hidden.</0> On e-licitatie a direct acquisition can end with the offer or the conditions refused — the purchase never happened, so these are not counted as spending. They remain published: select the status “Cancelled” in the filters to see them."
+#~ msgid "<0>Refused acquisitions are hidden.</0> On e-licitatie a direct acquisition can end with the offer or the conditions refused — the purchase never happened, so these are not counted as spending. They remain published: select the status “Cancelled” in the filters to see them."
+#~ msgstr "<0>Refused acquisitions are hidden.</0> On e-licitatie a direct acquisition can end with the offer or the conditions refused — the purchase never happened, so these are not counted as spending. They remain published: select the status “Cancelled” in the filters to see them."
+
+#: src/features/procurement/components/procurement-da-window-notice.tsx:160
+msgid "<0>Refused acquisitions are included in this list.</0> These purchases did not go ahead, so the totals and charts on the other tabs do not count them — the list below will not add up to those figures. Clear the “{cancelledLabel}” status to return to concluded acquisitions only."
+msgstr "<0>Refused acquisitions are included in this list.</0> These purchases did not go ahead, so the totals and charts on the other tabs do not count them — the list below will not add up to those figures. Clear the “{cancelledLabel}” status to return to concluded acquisitions only."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:560
 msgid "> median"
@@ -1239,7 +1247,7 @@ msgstr "Adjust for inflation (constant 2024 prices)"
 msgid "Administrative location (API)"
 msgstr "Administrative location (API)"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:287
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:324
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:276
 msgid "Administrative territory linked to the contracting institution in the procurement dataset."
 msgstr "Administrative territory linked to the contracting institution in the procurement dataset."
@@ -1474,10 +1482,10 @@ msgstr "All phases explored!"
 msgid "All predefined views are already enabled."
 msgstr "All predefined views are already enabled."
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:179
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:181
 #: src/features/procurement/components/procurement-overview-active-filters.tsx:64
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:211
-#: src/features/procurement/lib/hub-filter-chips.ts:52
+#: src/features/procurement/lib/hub-filter-chips.ts:51
 msgid "All time"
 msgstr "All time"
 
@@ -1616,12 +1624,12 @@ msgid "ANAF returned no financial statement years for this company in the loaded
 msgstr "ANAF returned no financial statement years for this company in the loaded snapshot."
 
 #: src/features/procurement/components/procurement-analysis-workspace.tsx:60
-msgid "Analysis workspace"
-msgstr "Analysis workspace"
+#~ msgid "Analysis workspace"
+#~ msgstr "Analysis workspace"
 
 #: src/features/procurement/components/procurement-overview-page.tsx:213
-msgid "Analysis Workspace"
-msgstr "Analysis Workspace"
+#~ msgid "Analysis Workspace"
+#~ msgstr "Analysis Workspace"
 
 #: src/components/budget-explorer/BudgetTreemap.tsx:368
 #: src/components/entities/grouped-item-analytics.ts:63
@@ -1987,7 +1995,7 @@ msgstr "August"
 
 #: src/features/procurement/components/procurement-party-ranking.tsx:362
 #: src/features/procurement/lib/export.ts:47
-#: src/features/procurement/lib/hub-filter-chips.ts:150
+#: src/features/procurement/lib/hub-filter-chips.ts:149
 msgid "Authority"
 msgstr "Authority"
 
@@ -1999,7 +2007,7 @@ msgstr "Authority CUI"
 msgid "Authority procurement indicators"
 msgstr "Authority procurement indicators"
 
-#: src/features/procurement/components/procurement-overview-page.tsx:176
+#: src/features/procurement/components/procurement-overview-page.tsx:170
 msgid "Authority rankings are unavailable under the current regional rollup."
 msgstr "Authority rankings are unavailable under the current regional rollup."
 
@@ -2090,7 +2098,7 @@ msgstr "Avg. Amount per UAT"
 msgid "Awarded"
 msgstr "Awarded"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:243
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:280
 #: src/features/procurement/components/procurement-territory-drawer.tsx:212
 #: src/features/procurement/lib/detail-config.ts:51
 #: src/features/procurement/lib/hub-filter-chips.ts:34
@@ -2101,7 +2109,7 @@ msgstr "Awarded value"
 msgid "awarded value (partial)"
 msgstr "awarded value (partial)"
 
-#: src/features/procurement/components/procurement-overview-page.tsx:203
+#: src/features/procurement/components/procurement-overview-page.tsx:197
 msgid "Awarded value per month when amounts are present (tooltips still show counts)."
 msgstr "Awarded value per month when amounts are present (tooltips still show counts)."
 
@@ -2371,7 +2379,7 @@ msgstr "Browse entities"
 #~ msgid "Browse records"
 #~ msgstr "Browse records"
 
-#: src/features/procurement/components/procurement-quick-links.tsx:49
+#: src/features/procurement/components/procurement-quick-links.tsx:41
 msgid "Browse spending by CPV from the overview rankings above."
 msgstr "Browse spending by CPV from the overview rankings above."
 
@@ -2518,13 +2526,13 @@ msgstr "Bursă"
 #~ msgid "Buyer geography map"
 #~ msgstr "Buyer geography map"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:295
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:332
 msgid "Buyer location is kept in the URL for round-trip, but it is not applied to the record list yet."
 msgstr "Buyer location is kept in the URL for round-trip, but it is not applied to the record list yet."
 
 #: src/features/procurement/components/procurement-quick-links.tsx:24
-msgid "Buyer map"
-msgstr "Buyer map"
+#~ msgid "Buyer map"
+#~ msgstr "Buyer map"
 
 #: src/features/procurement/components/procurement-territory-drawer.tsx:104
 #~ msgid "Buyer-side development region. Counts exclude records without known buyer geography."
@@ -2542,8 +2550,8 @@ msgstr "Buyer-side development region. Inspect below, then apply a filter if you
 msgid "BVB și rapoarte de piață"
 msgstr "BVB și rapoarte de piață"
 
-#: src/features/procurement/components/procurement-overview-page.tsx:169
-#: src/features/procurement/components/procurement-overview-page.tsx:184
+#: src/features/procurement/components/procurement-overview-page.tsx:163
+#: src/features/procurement/components/procurement-overview-page.tsx:178
 msgid "By awarded value when available; bars still use record counts until value sort is published."
 msgstr "By awarded value when available; bars still use record counts until value sort is published."
 
@@ -2557,8 +2565,8 @@ msgstr "By awarded value when available."
 #: src/features/procurement/components/procurement-authority-slice.tsx:149
 #: src/features/procurement/components/procurement-authority-slice.tsx:158
 #: src/features/procurement/components/procurement-category-bars.tsx:89
-#: src/features/procurement/components/procurement-overview-page.tsx:170
-#: src/features/procurement/components/procurement-overview-page.tsx:185
+#: src/features/procurement/components/procurement-overview-page.tsx:164
+#: src/features/procurement/components/procurement-overview-page.tsx:179
 #: src/features/procurement/components/procurement-supplier-slice.tsx:132
 #: src/features/procurement/components/procurement-supplier-slice.tsx:141
 #: src/features/procurement/components/procurement-territory-drawer.tsx:144
@@ -2760,7 +2768,7 @@ msgstr "Categorie CPV"
 msgid "Categorie necunoscută"
 msgstr "Categorie necunoscută"
 
-#: src/features/procurement/components/procurement-quick-links.tsx:48
+#: src/features/procurement/components/procurement-quick-links.tsx:40
 msgid "Categories"
 msgstr "Categories"
 
@@ -3256,7 +3264,7 @@ msgstr "Choose how you want the public debate request to be sent."
 msgid "Choose operator"
 msgstr "Choose operator"
 
-#: src/features/procurement/components/procurement-map-view.tsx:225
+#: src/features/procurement/components/procurement-map-view.tsx:234
 msgid "Choropleth Preview — click for details"
 msgstr "Choropleth Preview — click for details"
 
@@ -3386,7 +3394,7 @@ msgstr "Clear all"
 msgid "Clear all filters"
 msgstr "Clear all filters"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:459
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:496
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:407
 msgid "Clear All Filters"
 msgstr "Clear All Filters"
@@ -3491,7 +3499,7 @@ msgstr "Clone snapshot"
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4857
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:417
 #: src/features/procurement/components/procurement-filter-sheet.tsx:460
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:466
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:503
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:414
 msgid "Close"
 msgstr "Close"
@@ -3692,7 +3700,7 @@ msgid "Companie de stat"
 msgstr "Companie de stat"
 
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:37
-#: src/features/procurement/components/procurement-quick-links.tsx:40
+#: src/features/procurement/components/procurement-quick-links.tsx:32
 msgid "Companies"
 msgstr "Companies"
 
@@ -4393,7 +4401,7 @@ msgstr "Count"
 msgid "Counties"
 msgstr "Counties"
 
-#: src/features/procurement/components/procurement-map-view.tsx:289
+#: src/features/procurement/components/procurement-map-view.tsx:299
 msgid "Counties are coloured by their development region total. Records without known buyer geography are excluded from the map — never shown as zero."
 msgstr "Counties are coloured by their development region total. Records without known buyer geography are excluded from the map — never shown as zero."
 
@@ -4420,9 +4428,9 @@ msgstr "Counties with the most companies"
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:522
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1511
 #: src/features/private-companies/components/search/company-filter-sheet.tsx:95
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:324
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:333
-#: src/features/procurement/components/procurement-map-view.tsx:412
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:361
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:370
+#: src/features/procurement/components/procurement-map-view.tsx:431
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:304
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:313
 #: src/features/procurement/lib/detail-config.ts:69
@@ -4434,11 +4442,11 @@ msgstr "County"
 #. placeholder {0}: filters.buyerCounty
 #. placeholder {0}: state.buyerCounty
 #: src/features/procurement/components/procurement-overview-active-filters.tsx:97
-#: src/features/procurement/lib/hub-filter-chips.ts:106
+#: src/features/procurement/lib/hub-filter-chips.ts:105
 msgid "County {0}"
 msgstr "County {0}"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:374
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:411
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:359
 msgid "County analytics are not published yet. This first version applies the county’s region and labels the result as a regional approximation."
 msgstr "County analytics are not published yet. This first version applies the county’s region and labels the result as a regional approximation."
@@ -4447,7 +4455,7 @@ msgstr "County analytics are not published yet. This first version applies the c
 msgid "County and region filters can both be selected and are combined using AND logic."
 msgstr "County and region filters can both be selected and are combined using AND logic."
 
-#: src/features/procurement/components/procurement-map-view.tsx:276
+#: src/features/procurement/components/procurement-map-view.tsx:286
 msgid "County and UAT colours are not published yet. Click a territory to open details; use the panel buttons to apply a buyer location filter."
 msgstr "County and UAT colours are not published yet. Click a territory to open details; use the panel buttons to apply a buyer location filter."
 
@@ -4460,7 +4468,7 @@ msgid "County boundaries"
 msgstr "County boundaries"
 
 #. placeholder {0}: county.countyCode
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:76
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:78
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:83
 msgid "County code {0}"
 msgstr "County code {0}"
@@ -4481,7 +4489,7 @@ msgstr "County Filters"
 msgid "County inspect panel. Apply below to set the buyer location filter."
 msgstr "County inspect panel. Apply below to set the buyer location filter."
 
-#: src/features/procurement/components/procurement-overview-page.tsx:94
+#: src/features/procurement/components/procurement-overview-page.tsx:87
 msgid "County precision is not available yet. Counts and charts below are scoped to the wider region: {appliedBuyerRegion}."
 msgstr "County precision is not available yet. Counts and charts below are scoped to the wider region: {appliedBuyerRegion}."
 
@@ -4526,7 +4534,7 @@ msgstr "Coverage quality still depends on connection rates and settlement densit
 #: src/components/shared/procurement-data/coverage-ribbon.tsx:50
 #: src/features/procurement/components/procurement-info-sheet.tsx:42
 #: src/features/procurement/lib/export.ts:41
-#: src/features/procurement/lib/hub-filter-chips.ts:168
+#: src/features/procurement/lib/hub-filter-chips.ts:167
 msgid "CPV"
 msgstr "CPV"
 
@@ -4552,7 +4560,7 @@ msgstr "CPV code or division"
 
 #: src/features/procurement/components/cpv-category-page.tsx:81
 #: src/features/procurement/components/procurement-category-bars.tsx:260
-#: src/features/procurement/lib/hub-filter-chips.ts:176
+#: src/features/procurement/lib/hub-filter-chips.ts:175
 msgid "CPV division"
 msgstr "CPV division"
 
@@ -5343,7 +5351,7 @@ msgstr "Default bin count must be an integer greater than or equal to 1."
 msgid "Default Color"
 msgstr "Default Color"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:145
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:147
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:180
 msgid "Default is the previous calendar year. Analytics are monthly — start dates become the first day of the month and end dates become its last day."
 msgstr "Default is the previous calendar year. Analytics are monthly — start dates become the first day of the month and end dates become its last day."
@@ -5666,8 +5674,8 @@ msgid "Differences can reflect housing stock structure, tourism pressure, and su
 msgstr "Differences can reflect housing stock structure, tourism pressure, and suburbanization patterns."
 
 #: src/features/procurement/components/procurement-analysis-workspace.tsx:73
-msgid "Dimension"
-msgstr "Dimension"
+#~ msgid "Dimension"
+#~ msgstr "Dimension"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1130
 msgid "Dimensions"
@@ -5708,7 +5716,7 @@ msgstr "direct acquisitions"
 msgid "Direct acquisitions"
 msgstr "Direct acquisitions"
 
-#: src/features/procurement/components/procurement-da-window-notice.tsx:46
+#: src/features/procurement/components/procurement-da-window-notice.tsx:51
 msgid "Direct acquisitions are shown for the last 12 months (<0>{from} – {to}</0>)."
 msgstr "Direct acquisitions are shown for the last 12 months (<0>{from} – {to}</0>)."
 
@@ -6839,8 +6847,8 @@ msgid "Explore budget classifications to understand how public spending is organ
 msgstr "Explore budget classifications to understand how public spending is organized and categorized"
 
 #: src/features/procurement/components/procurement-analysis-workspace.tsx:63
-msgid "Explore by grain, dimension, time bucket and measure. Unsupported combinations are reported clearly."
-msgstr "Explore by grain, dimension, time bucket and measure. Unsupported combinations are reported clearly."
+#~ msgid "Explore by grain, dimension, time bucket and measure. Unsupported combinations are reported clearly."
+#~ msgstr "Explore by grain, dimension, time bucket and measure. Unsupported combinations are reported clearly."
 
 #: src/routes/map.lazy.tsx:534
 msgid "Explore choropleth maps of public spending by UAT/County with per-capita or total normalization."
@@ -6971,8 +6979,8 @@ msgid "Eyes on Local Budgets"
 msgstr "Eyes on Local Budgets"
 
 #: src/features/procurement/components/procurement-analysis-workspace.tsx:130
-msgid "Facet ranking"
-msgstr "Facet ranking"
+#~ msgid "Facet ranking"
+#~ msgstr "Facet ranking"
 
 #: src/features/advanced-map-analytics/hooks/use-map-local-snapshots.ts:151
 #: src/features/advanced-map-datasets/hooks/use-advanced-map-dataset-local-snapshots.ts:128
@@ -7353,7 +7361,7 @@ msgstr "Filter"
 msgid "Filter by county"
 msgstr "Filter by county"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:495
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:532
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:443
 msgid "Filter data"
 msgstr "Filter data"
@@ -7366,7 +7374,7 @@ msgstr "Filter entity analytics results on mobile."
 msgid "Filter field"
 msgstr "Filter field"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:122
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:124
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:157
 msgid "Filter procurement data"
 msgstr "Filter procurement data"
@@ -7420,7 +7428,7 @@ msgstr "Filters marked as exclude will remove data matching these criteria from 
 msgid "Filters out missing or non-numeric points before chart mapping."
 msgstr "Filters out missing or non-numeric points before chart mapping."
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:490
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:527
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:438
 msgid "Filters, {activeCount} active"
 msgstr "Filters, {activeCount} active"
@@ -7627,7 +7635,7 @@ msgstr "Firme"
 #~ msgstr "Firme care apar cel mai des ca furnizori"
 
 #: src/features/procurement/components/procurement-overview-active-filters.tsx:76
-#: src/features/procurement/lib/hub-filter-chips.ts:63
+#: src/features/procurement/lib/hub-filter-chips.ts:62
 msgid "First available month"
 msgstr "First available month"
 
@@ -7802,7 +7810,7 @@ msgstr "Frecvență"
 
 #: src/features/private-companies/components/search/company-filter-sheet.tsx:212
 #: src/features/procurement/components/procurement-filter-sheet.tsx:234
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:186
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:188
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:218
 msgid "From"
 msgstr "From"
@@ -7967,7 +7975,7 @@ msgstr "Geografie"
 #~ msgid "Geography"
 #~ msgstr "Geography"
 
-#: src/features/procurement/components/procurement-overview-page.tsx:111
+#: src/features/procurement/components/procurement-overview-page.tsx:104
 msgid "Geography filters are kept in the URL but are not applied to the record list yet. Overview analytics still use buyer location when supported."
 msgstr "Geography filters are kept in the URL but are not applied to the record list yet. Overview analytics still use buyer location when supported."
 
@@ -9169,7 +9177,7 @@ msgstr "Institution"
 msgid "Institution CUI {cui}"
 msgstr "Institution CUI {cui}"
 
-#: src/features/procurement/components/procurement-quick-links.tsx:32
+#: src/features/procurement/components/procurement-quick-links.tsx:24
 msgid "Institutions"
 msgstr "Institutions"
 
@@ -9483,8 +9491,8 @@ msgid "Keyboard Shortcuts"
 msgstr "Keyboard Shortcuts"
 
 #: src/features/procurement/components/procurement-analysis-workspace.tsx:119
-msgid "Known suppliers"
-msgstr "Known suppliers"
+#~ msgid "Known suppliers"
+#~ msgstr "Known suppliers"
 
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:916
 msgid "KPI"
@@ -9566,7 +9574,7 @@ msgid "Latest ANAF bilant indicators and fiscal status. Values are never shown a
 msgstr "Latest ANAF bilant indicators and fiscal status. Values are never shown as zero when data is missing."
 
 #: src/features/procurement/components/procurement-overview-active-filters.tsx:79
-#: src/features/procurement/lib/hub-filter-chips.ts:66
+#: src/features/procurement/lib/hub-filter-chips.ts:65
 msgid "Latest available month"
 msgstr "Latest available month"
 
@@ -9861,7 +9869,7 @@ msgid "Lipsă"
 msgstr "Lipsă"
 
 #: src/features/procurement/components/procurement-hub-dev-panel.tsx:61
-#: src/features/procurement/components/procurement-tab-nav.tsx:52
+#: src/features/procurement/components/procurement-tab-nav.tsx:47
 msgid "List"
 msgstr "List"
 
@@ -10019,8 +10027,8 @@ msgid "Loading alert…"
 msgstr "Loading alert…"
 
 #: src/features/procurement/components/procurement-analysis-workspace.tsx:111
-msgid "Loading analysis…"
-msgstr "Loading analysis…"
+#~ msgid "Loading analysis…"
+#~ msgstr "Loading analysis…"
 
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:1113
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4028
@@ -10286,7 +10294,7 @@ msgstr "Localizare"
 msgid "Location"
 msgstr "Location"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:356
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:393
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:338
 msgid "Location options could not be loaded."
 msgstr "Location options could not be loaded."
@@ -10307,11 +10315,11 @@ msgstr "Locked"
 msgid "Log scale"
 msgstr "Log scale"
 
-#: src/features/procurement/components/procurement-quick-links.tsx:33
+#: src/features/procurement/components/procurement-quick-links.tsx:25
 msgid "Look up a public buyer, then open its procurement profile."
 msgstr "Look up a public buyer, then open its procurement profile."
 
-#: src/features/procurement/components/procurement-quick-links.tsx:41
+#: src/features/procurement/components/procurement-quick-links.tsx:33
 msgid "Look up a supplier and its public-sector revenue."
 msgstr "Look up a supplier and its public-sector revenue."
 
@@ -10487,7 +10495,6 @@ msgstr "Manual"
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:1228
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3726
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1411
-#: src/features/procurement/components/procurement-tab-nav.tsx:47
 #: src/routes/index.tsx:74
 msgid "Map"
 msgstr "Map"
@@ -10529,8 +10536,8 @@ msgstr "Map description"
 msgid "Map description markdown editor"
 msgstr "Map description markdown editor"
 
-#: src/features/procurement/components/procurement-map-view.tsx:402
-#: src/features/procurement/components/procurement-map-view.tsx:407
+#: src/features/procurement/components/procurement-map-view.tsx:421
+#: src/features/procurement/components/procurement-map-view.tsx:426
 msgid "Map detail"
 msgstr "Map detail"
 
@@ -10723,8 +10730,8 @@ msgid "Mean"
 msgstr "Mean"
 
 #: src/features/procurement/components/procurement-analysis-workspace.tsx:97
-msgid "Measure"
-msgstr "Measure"
+#~ msgid "Measure"
+#~ msgstr "Measure"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:400
 msgid "median"
@@ -10794,8 +10801,8 @@ msgid "Methodology"
 msgstr "Methodology"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:708
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:229
-#: src/features/procurement/lib/hub-filter-chips.ts:82
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:266
+#: src/features/procurement/lib/hub-filter-chips.ts:81
 msgid "Metric"
 msgstr "Metric"
 
@@ -11853,8 +11860,8 @@ msgid "No extra profile details are available yet for this UAT."
 msgstr "No extra profile details are available yet for this UAT."
 
 #: src/features/procurement/components/procurement-analysis-workspace.tsx:140
-msgid "No facet data available."
-msgstr "No facet data available."
+#~ msgid "No facet data available."
+#~ msgstr "No facet data available."
 
 #: src/routes/charts/index.lazy.tsx:279
 msgid "No favorites yet"
@@ -12043,8 +12050,8 @@ msgid "No saved versions yet"
 msgstr "No saved versions yet"
 
 #: src/features/procurement/components/procurement-analysis-workspace.tsx:153
-msgid "No series data available."
-msgstr "No series data available."
+#~ msgid "No series data available."
+#~ msgstr "No series data available."
 
 #: src/components/charts/components/series-config/CalculationEditor.tsx:165
 msgid "No series found."
@@ -12126,7 +12133,7 @@ msgstr "Normalization"
 msgid "Not a VAT payer"
 msgstr "Not a VAT payer"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:282
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:319
 msgid "Not applied to the record list yet"
 msgstr "Not applied to the record list yet"
 
@@ -12646,7 +12653,7 @@ msgid "Number"
 msgstr "Number"
 
 #: src/features/procurement/components/procurement-monthly-chart.tsx:60
-#: src/features/procurement/components/procurement-overview-page.tsx:204
+#: src/features/procurement/components/procurement-overview-page.tsx:198
 #: src/features/procurement/components/procurement-territory-drawer.tsx:154
 msgid "Number of records per month."
 msgstr "Number of records per month."
@@ -12954,7 +12961,7 @@ msgstr "Open entity search dialog"
 msgid "Open feedback dialog"
 msgstr "Open feedback dialog"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:490
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:527
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:438
 #: src/routes/map.lazy.tsx:495
 msgid "Open filters"
@@ -13189,8 +13196,8 @@ msgid "Other suppliers"
 msgstr "Other suppliers"
 
 #: src/features/procurement/components/procurement-analysis-workspace.tsx:28
-msgid "Other values"
-msgstr "Other values"
+#~ msgid "Other values"
+#~ msgstr "Other values"
 
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:118
 msgid "OUG 109/2011"
@@ -13215,9 +13222,17 @@ msgstr "Over {0} companies — refine your search"
 msgid "Overview"
 msgstr "Overview"
 
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:250
+#~ msgid "Overview and Map show direct-acquisition analytics while this grain is selected. Switch to List to browse these records."
+#~ msgstr "Overview and Map show direct-acquisition analytics while this grain is selected. Switch to List to browse these records."
+
 #: src/features/procurement/components/procurement-territory-drawer.tsx:361
 msgid "Overview applies buyer location when supported. List keeps it in the URL with a “Not applied yet” chip until the list geo API lands."
 msgstr "Overview applies buyer location when supported. List keeps it in the URL with a “Not applied yet” chip until the list geo API lands."
+
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:250
+msgid "Overview shows direct-acquisition analytics while this grain is selected. Switch to List to browse these records."
+msgstr "Overview shows direct-acquisition analytics while this grain is selected. Switch to List to browse these records."
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:397
 msgid "Owner dataset"
@@ -13605,12 +13620,12 @@ msgstr "Perioadă necunoscută"
 #: src/components/maps/utils.ts:31
 #: src/components/maps/utils.ts:33
 #: src/features/procurement/components/procurement-filter-sheet.tsx:226
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:141
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:143
 #: src/features/procurement/components/procurement-overview-active-filters.tsx:63
 #: src/features/procurement/components/procurement-overview-active-filters.tsx:82
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:176
-#: src/features/procurement/lib/hub-filter-chips.ts:51
-#: src/features/procurement/lib/hub-filter-chips.ts:69
+#: src/features/procurement/lib/hub-filter-chips.ts:50
+#: src/features/procurement/lib/hub-filter-chips.ts:68
 #: src/lib/chart-filter-utils.ts:51
 msgid "Period"
 msgstr "Period"
@@ -14019,7 +14034,7 @@ msgstr "Previous section"
 msgid "Previous step"
 msgstr "Previous step"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:167
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:169
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:199
 msgid "Previous year"
 msgstr "Previous year"
@@ -14401,13 +14416,13 @@ msgstr "Public explorer"
 
 #: src/features/procurement/components/procurement-overview-active-filters.tsx:100
 #: src/features/procurement/components/procurement-overview-active-filters.tsx:112
-#: src/features/procurement/lib/hub-filter-chips.ts:93
-#: src/features/procurement/lib/hub-filter-chips.ts:105
-#: src/features/procurement/lib/hub-filter-chips.ts:117
+#: src/features/procurement/lib/hub-filter-chips.ts:92
+#: src/features/procurement/lib/hub-filter-chips.ts:104
+#: src/features/procurement/lib/hub-filter-chips.ts:116
 msgid "Public institution"
 msgstr "Public institution"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:278
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:315
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:272
 msgid "Public Institution Location"
 msgstr "Public Institution Location"
@@ -14465,7 +14480,7 @@ msgstr "Public procurement"
 msgid "Public procurement for this institution — contracts, direct acquisitions, suppliers, and CPV categories from SEAP and e-licitatie."
 msgstr "Public procurement for this institution — contracts, direct acquisitions, suppliers, and CPV categories from SEAP and e-licitatie."
 
-#: src/features/procurement/components/procurement-tab-nav.tsx:78
+#: src/features/procurement/components/procurement-tab-nav.tsx:73
 msgid "Public procurement sections"
 msgstr "Public procurement sections"
 
@@ -14542,7 +14557,7 @@ msgstr "Quarterly"
 msgid "Quarterly Report"
 msgstr "Quarterly Report"
 
-#: src/features/procurement/lib/hub-filter-chips.ts:141
+#: src/features/procurement/lib/hub-filter-chips.ts:140
 msgid "Query"
 msgstr "Query"
 
@@ -14749,12 +14764,12 @@ msgstr "Recipient"
 msgid "Reclamant"
 msgstr "Reclamant"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:242
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:279
 #: src/features/procurement/lib/hub-filter-chips.ts:34
 msgid "Record count"
 msgstr "Record count"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:425
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:462
 msgid "Record list filters"
 msgstr "Record list filters"
 
@@ -14763,6 +14778,7 @@ msgstr "Record list filters"
 #~ msgstr "Record list keeps geography in the URL but does not apply it yet — the list chip will say “Not applied yet”."
 
 #: src/features/procurement/components/procurement-grain-tabs.tsx:22
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:231
 msgid "Record type"
 msgstr "Record type"
 
@@ -14779,7 +14795,6 @@ msgstr "Recording..."
 #~ msgid "records"
 #~ msgstr "records"
 
-#: src/features/procurement/components/procurement-analysis-workspace.tsx:117
 #: src/features/procurement/components/procurement-category-bars.tsx:263
 #: src/features/procurement/components/procurement-monthly-chart.tsx:138
 #: src/features/procurement/components/procurement-party-ranking.tsx:368
@@ -14854,15 +14869,15 @@ msgid "Regia Autonomă Exemplu București"
 msgstr "Regia Autonomă Exemplu București"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:61
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:322
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:333
-#: src/features/procurement/components/procurement-map-view.tsx:411
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:359
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:370
+#: src/features/procurement/components/procurement-map-view.tsx:430
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:302
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:313
 msgid "Region"
 msgstr "Region"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:407
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:444
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:388
 msgid "Region and county names are available, but procurement records are not yet linked to supplier geography. This filter will be enabled when Matrix v2 can apply it without returning unfiltered data."
 msgstr "Region and county names are available, but procurement records are not yet linked to supplier geography. This filter will be enabled when Matrix v2 can apply it without returning unfiltered data."
@@ -14872,8 +14887,8 @@ msgstr "Region and county names are available, but procurement records are not y
 #~ msgstr "Region choropleth — county/UAT after wave-2 rollups"
 
 #: src/features/procurement/components/procurement-quick-links.tsx:25
-msgid "Region choropleth of purchasing volume (Preview)."
-msgstr "Region choropleth of purchasing volume (Preview)."
+#~ msgid "Region choropleth of purchasing volume (Preview)."
+#~ msgstr "Region choropleth of purchasing volume (Preview)."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:766
 msgid "Region Filters"
@@ -14883,7 +14898,7 @@ msgstr "Region Filters"
 #~ msgid "Region map Preview until county/UAT rollups"
 #~ msgstr "Region map Preview until county/UAT rollups"
 
-#: src/features/procurement/components/procurement-map-view.tsx:342
+#: src/features/procurement/components/procurement-map-view.tsx:352
 msgid "Region record totals (Preview)"
 msgstr "Region record totals (Preview)"
 
@@ -14921,7 +14936,7 @@ msgstr "Registered office expired"
 msgid "Registered office from ONRC and administrative location from the API. No client-side address matching is performed."
 msgstr "Registered office from ONRC and administrative location from the API. No client-side address matching is performed."
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:403
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:440
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:384
 msgid "Registered office of the awarded company."
 msgstr "Registered office of the awarded company."
@@ -15292,7 +15307,7 @@ msgstr "Resursa de revizuit"
 msgid "Retry"
 msgstr "Retry"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:365
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:402
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:347
 msgid "Retry Loading Locations"
 msgstr "Retry Loading Locations"
@@ -16026,7 +16041,7 @@ msgstr "See the budget analysis for the selected entity."
 msgid "See-through, clear"
 msgstr "See-through, clear"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:337
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:374
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:317
 msgid "Select a county…"
 msgstr "Select a county…"
@@ -16047,7 +16062,7 @@ msgstr "Select a metric card or dataset from the list to load full history."
 msgid "Select a predefined dataset to track"
 msgstr "Select a predefined dataset to track"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:336
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:373
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:316
 msgid "Select a region…"
 msgstr "Select a region…"
@@ -16485,21 +16500,33 @@ msgstr "Share the official city hall website so others can verify the budget inf
 msgid "Shareable dataset"
 msgstr "Shareable dataset"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:233
-msgid "Shared across Overview, Map, and List. Count is the default; awarded value stays secondary where amounts are answerable."
-msgstr "Shared across Overview, Map, and List. Count is the default; awarded value stays secondary where amounts are answerable."
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:270
+msgid "Shared across Overview and List. Count is the default; awarded value stays secondary where amounts are answerable."
+msgstr "Shared across Overview and List. Count is the default; awarded value stays secondary where amounts are answerable."
+
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:235
+msgid "Shared across Overview and List. Overview charts use contracts or direct acquisitions; procedures and modifications apply on List."
+msgstr "Shared across Overview and List. Overview charts use contracts or direct acquisitions; procedures and modifications apply on List."
+
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:270
+#~ msgid "Shared across Overview, Map, and List. Count is the default; awarded value stays secondary where amounts are answerable."
+#~ msgstr "Shared across Overview, Map, and List. Count is the default; awarded value stays secondary where amounts are answerable."
+
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:235
+#~ msgid "Shared across Overview, Map, and List. Overview and Map charts use contracts or direct acquisitions; procedures and modifications apply on List."
+#~ msgstr "Shared across Overview, Map, and List. Overview and Map charts use contracts or direct acquisitions; procedures and modifications apply on List."
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:434
 msgid "Shared datasets will appear here when they are published or unlisted for reuse."
 msgstr "Shared datasets will appear here when they are published or unlisted for reuse."
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:122
-#~ msgid "Shared filters for Overview and List. Unsupported controls stay visible and are marked when they are not applied yet."
-#~ msgstr "Shared filters for Overview and List. Unsupported controls stay visible and are marked when they are not applied yet."
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:127
+msgid "Shared filters for Overview and List. Unsupported controls stay visible and are marked when they are not applied yet."
+msgstr "Shared filters for Overview and List. Unsupported controls stay visible and are marked when they are not applied yet."
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:125
-msgid "Shared filters for Overview, Map, and List. Unsupported controls stay visible and are marked when they are not applied yet."
-msgstr "Shared filters for Overview, Map, and List. Unsupported controls stay visible and are marked when they are not applied yet."
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:127
+#~ msgid "Shared filters for Overview, Map, and List. Unsupported controls stay visible and are marked when they are not applied yet."
+#~ msgstr "Shared filters for Overview, Map, and List. Unsupported controls stay visible and are marked when they are not applied yet."
 
 #: src/components/charts/components/series-config/SeriesItemMenu.tsx:43
 msgid "Show"
@@ -16936,7 +16963,7 @@ msgstr "Sortare:"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1157
 #: src/features/procurement/components/procurement-filter-sheet.tsx:140
 #: src/features/procurement/lib/export.ts:43
-#: src/features/procurement/lib/hub-filter-chips.ts:185
+#: src/features/procurement/lib/hub-filter-chips.ts:184
 msgid "Source"
 msgstr "Source"
 
@@ -17183,7 +17210,7 @@ msgstr "Stats type"
 #: src/features/private-companies/components/layout/private-company-status-tags.tsx:54
 #: src/features/procurement/components/procurement-filter-sheet.tsx:167
 #: src/features/procurement/lib/export.ts:42
-#: src/features/procurement/lib/hub-filter-chips.ts:194
+#: src/features/procurement/lib/hub-filter-chips.ts:193
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:570
 msgid "Status"
 msgstr "Status"
@@ -17413,7 +17440,7 @@ msgstr "Summary"
 #: src/features/procurement/components/procurement-party-ranking.tsx:364
 #: src/features/procurement/components/procurement-supplier-page.tsx:43
 #: src/features/procurement/lib/export.ts:49
-#: src/features/procurement/lib/hub-filter-chips.ts:159
+#: src/features/procurement/lib/hub-filter-chips.ts:158
 msgid "Supplier"
 msgstr "Supplier"
 
@@ -17422,8 +17449,8 @@ msgid "Supplier (CUI)"
 msgstr "Supplier (CUI)"
 
 #: src/features/procurement/components/procurement-analysis-workspace.tsx:158
-msgid "Supplier concentration (count basis): top 1"
-msgstr "Supplier concentration (count basis): top 1"
+#~ msgid "Supplier concentration (count basis): top 1"
+#~ msgstr "Supplier concentration (count basis): top 1"
 
 #: src/features/procurement/lib/export.ts:50
 msgid "Supplier CUI"
@@ -17433,15 +17460,15 @@ msgstr "Supplier CUI"
 msgid "Supplier CUI {cui}"
 msgstr "Supplier CUI {cui}"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:399
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:436
 msgid "Supplier geography is not linked to records yet"
 msgstr "Supplier geography is not linked to records yet"
 
-#: src/features/procurement/lib/hub-filter-chips.ts:131
+#: src/features/procurement/lib/hub-filter-chips.ts:130
 msgid "Supplier location"
 msgstr "Supplier location"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:395
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:432
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:380
 msgid "Supplier Location"
 msgstr "Supplier Location"
@@ -17450,7 +17477,7 @@ msgstr "Supplier Location"
 msgid "Supplier procurement indicators"
 msgstr "Supplier procurement indicators"
 
-#: src/features/procurement/components/procurement-overview-page.tsx:191
+#: src/features/procurement/components/procurement-overview-page.tsx:185
 msgid "Supplier rankings are unavailable under the current regional rollup."
 msgstr "Supplier rankings are unavailable under the current regional rollup."
 
@@ -17760,7 +17787,7 @@ msgstr "Termenul căutat rămâne în adresă. Poți încerca din nou."
 msgid "Terms of Service"
 msgstr "Terms of Service"
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:305
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:342
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:285
 msgid "Territorial Level"
 msgstr "Territorial Level"
@@ -17863,7 +17890,7 @@ msgstr "The dataset copy link is invalid or expired. Starting from an empty draf
 msgid "The dataset draft is invalid."
 msgstr "The dataset draft is invalid."
 
-#: src/features/procurement/components/procurement-da-window-notice.tsx:54
+#: src/features/procurement/components/procurement-da-window-notice.tsx:59
 msgid "The date range was narrowed to <0>{from} – {to}</0>."
 msgstr "The date range was narrowed to <0>{from} – {to}</0>."
 
@@ -17897,8 +17924,8 @@ msgid "The government planned to spend <0>{0}</0> on Infrastructure in {selected
 msgstr "The government planned to spend <0>{0}</0> on Infrastructure in {selectedYear}."
 
 #: src/features/procurement/components/procurement-overview-page.tsx:216
-msgid "The interactive workspace contains combinations that the regional rollup cannot answer yet. It is paused for this filter instead of showing unfiltered or partial results."
-msgstr "The interactive workspace contains combinations that the regional rollup cannot answer yet. It is paused for this filter instead of showing unfiltered or partial results."
+#~ msgid "The interactive workspace contains combinations that the regional rollup cannot answer yet. It is paused for this filter instead of showing unfiltered or partial results."
+#~ msgstr "The interactive workspace contains combinations that the regional rollup cannot answer yet. It is paused for this filter instead of showing unfiltered or partial results."
 
 #: src/features/learning/components/interactive/RevenueDistributionGame.tsx:64
 msgid "The largest chunk. VAT alone brings in nearly as much as all salary taxes combined."
@@ -17930,7 +17957,7 @@ msgstr "The map preview uses only the persisted dataset state from the server."
 msgid "The new fiscal reality affecting your wallet."
 msgstr "The new fiscal reality affecting your wallet."
 
-#: src/features/procurement/components/procurement-overview-page.tsx:142
+#: src/features/procurement/components/procurement-overview-page.tsx:130
 msgid "The overview analytics are filtered by buyer location. The record list does not apply geography yet — switch to List to browse records without silently dropping this filter from the URL."
 msgstr "The overview analytics are filtered by buyer location. The record list does not apply geography yet — switch to List to browse records without silently dropping this filter from the URL."
 
@@ -18003,11 +18030,11 @@ msgstr "There was a problem loading your notifications. Please try again."
 msgid "There was an error processing your request. The link may be expired or invalid."
 msgstr "There was an error processing your request. The link may be expired or invalid."
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:429
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:466
 msgid "These facets apply on List. On Overview they stay in the URL as inactive “list only” chips."
 msgstr "These facets apply on List. On Overview they stay in the URL as inactive “list only” chips."
 
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:434
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:471
 msgid "These facets narrow the paginated record list."
 msgstr "These facets narrow the paginated record list."
 
@@ -18081,7 +18108,7 @@ msgstr "This dataset is not available for the selected temporal split."
 msgid "This dataset is read-only here. Clone it to edit your own copy."
 msgstr "This dataset is read-only here. Clone it to edit your own copy."
 
-#: src/features/procurement/components/procurement-da-window-notice.tsx:62
+#: src/features/procurement/components/procurement-da-window-notice.tsx:67
 msgid "This grain holds tens of millions of records, so a search must be bounded: filter by buyer or supplier CUI to search the whole history, or pick a date range of up to {PROCUREMENT_DA_MAX_WINDOW_DAYS} days. Records with no date recorded cannot appear in a date-bounded search."
 msgstr "This grain holds tens of millions of records, so a search must be bounded: filter by buyer or supplier CUI to search the whole history, or pick a date range of up to {PROCUREMENT_DA_MAX_WINDOW_DAYS} days. Records with no date recorded cannot appear in a date-bounded search."
 
@@ -18214,12 +18241,12 @@ msgid "Time"
 msgstr "Time"
 
 #: src/features/procurement/components/procurement-analysis-workspace.tsx:85
-msgid "Time bucket"
-msgstr "Time bucket"
+#~ msgid "Time bucket"
+#~ msgstr "Time bucket"
 
 #: src/features/procurement/components/procurement-analysis-workspace.tsx:143
-msgid "Time series"
-msgstr "Time series"
+#~ msgid "Time series"
+#~ msgstr "Time series"
 
 #: src/features/ngos/components/ngo-profile-page.tsx:491
 #: src/features/ngos/components/ngo-profile-page.tsx:597
@@ -18289,7 +18316,7 @@ msgstr "Titlu"
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:389
 #: src/features/private-companies/components/search/company-filter-sheet.tsx:230
 #: src/features/procurement/components/procurement-filter-sheet.tsx:255
-#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:203
+#: src/features/procurement/components/procurement-hub-filter-sheet.tsx:205
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:236
 msgid "To"
 msgstr "To"
@@ -18453,7 +18480,7 @@ msgstr "Top CPV divisions"
 #~ msgstr "Top institutions and suppliers under a regional rollup are not published yet. Focus the hub to explore aggregates for this area."
 
 #: src/features/procurement/components/cpv-category-page.tsx:141
-#: src/features/procurement/components/procurement-overview-page.tsx:166
+#: src/features/procurement/components/procurement-overview-page.tsx:160
 #: src/features/procurement/components/procurement-supplier-slice.tsx:131
 #: src/features/procurement/components/procurement-territory-drawer.tsx:141
 msgid "Top public buyers"
@@ -18461,7 +18488,7 @@ msgstr "Top public buyers"
 
 #: src/features/procurement/components/cpv-category-page.tsx:147
 #: src/features/procurement/components/procurement-authority-slice.tsx:148
-#: src/features/procurement/components/procurement-overview-page.tsx:181
+#: src/features/procurement/components/procurement-overview-page.tsx:175
 #: src/features/procurement/components/procurement-territory-drawer.tsx:145
 msgid "Top suppliers"
 msgstr "Top suppliers"
@@ -18743,14 +18770,14 @@ msgstr "Type your answer..."
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:208
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3032
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:521
-#: src/features/procurement/components/procurement-map-view.tsx:413
+#: src/features/procurement/components/procurement-map-view.tsx:432
 #: src/features/statistics/components/territory-header.tsx:14
 #: src/lib/chart-filter-utils.ts:39
 msgid "UAT"
 msgstr "UAT"
 
 #. placeholder {0}: state.buyerSiruta
-#: src/features/procurement/lib/hub-filter-chips.ts:94
+#: src/features/procurement/lib/hub-filter-chips.ts:93
 msgid "UAT {0}"
 msgstr "UAT {0}"
 
@@ -18981,8 +19008,8 @@ msgid "Unknown type"
 msgstr "Unknown type"
 
 #: src/features/procurement/components/procurement-analysis-workspace.tsx:29
-msgid "Unknown value"
-msgstr "Unknown value"
+#~ msgid "Unknown value"
+#~ msgstr "Unknown value"
 
 #: src/features/advanced-map-datasets/components/dataset-list-page.tsx:647
 msgid "Unless it is still referenced by existing maps, it cannot be recovered."
@@ -19489,7 +19516,7 @@ msgstr "Value"
 
 #: src/features/procurement/components/procurement-filter-sheet.tsx:299
 #: src/features/procurement/lib/export.ts:44
-#: src/features/procurement/lib/hub-filter-chips.ts:216
+#: src/features/procurement/lib/hub-filter-chips.ts:215
 msgid "Value (RON)"
 msgstr "Value (RON)"
 
@@ -19506,7 +19533,7 @@ msgid "Value Filters"
 msgstr "Value Filters"
 
 #: src/features/procurement/components/procurement-filter-sheet.tsx:200
-#: src/features/procurement/lib/hub-filter-chips.ts:203
+#: src/features/procurement/lib/hub-filter-chips.ts:202
 msgid "Value quality"
 msgstr "Value quality"
 
@@ -20067,8 +20094,8 @@ msgid "Wipe All Data?"
 msgstr "Wipe All Data?"
 
 #: src/features/procurement/components/procurement-analysis-workspace.tsx:118
-msgid "With awarded value"
-msgstr "With awarded value"
+#~ msgid "With awarded value"
+#~ msgstr "With awarded value"
 
 #: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:153
 #: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:171
