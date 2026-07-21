@@ -34,6 +34,8 @@ export {
   ProcurementRecordCard,
   ProcurementRecordList,
 } from './procurement-record-card'
+export { ProcurementRankingTable } from './procurement-ranking-table'
+export { ProcurementRankingsView } from './procurement-rankings-view'
 export { ProcurementSearchContent } from './procurement-search-content'
 export { ProcurementSearchDock } from './procurement-search-dock'
 export { ProcurementShell } from './procurement-shell'

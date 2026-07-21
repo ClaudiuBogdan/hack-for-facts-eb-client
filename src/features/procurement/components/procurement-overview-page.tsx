@@ -30,8 +30,9 @@ import {
 import { ProcurementHubActiveFilters } from './procurement-hub-active-filters'
 import { ProcurementHubDevPanel } from './procurement-hub-dev-panel'
 import { ProcurementSearchContent } from './procurement-search-content'
+import { ProcurementRankingsView } from './procurement-rankings-view'
 
-/** Unified hub: Overview (incl. buyer map) + List share one URL schema (A2 / F2). */
+/** Unified hub: Overview (incl. buyer map) + Rankings + List share one URL schema (A2 / F2). */
 export function ProcurementOverviewPage({
   hubState,
 }: {
@@ -115,6 +116,8 @@ export function ProcurementOverviewPage({
             onOpenFilters={() => setFilterSheetOpen(true)}
           />
         </div>
+      ) : hubState.view === 'rankings' ? (
+        <ProcurementRankingsView hubState={hubState} hub={hub} />
       ) : (
         <div className="space-y-6">
           {hasBuyerGeography ? (
@@ -161,6 +164,7 @@ export function ProcurementOverviewPage({
                   }
                   rows={analytics.topAuthorities}
                   kind="authority"
+                  rankingsDim="buyer"
                   unavailableReason={
                     hasBuyerGeography
                       ? t`Authority rankings are unavailable under the current regional rollup.`
@@ -176,6 +180,7 @@ export function ProcurementOverviewPage({
                   }
                   rows={analytics.topSuppliers}
                   kind="supplier"
+                  rankingsDim="supplier"
                   unavailableReason={
                     hasBuyerGeography
                       ? t`Supplier rankings are unavailable under the current regional rollup.`
@@ -184,7 +189,10 @@ export function ProcurementOverviewPage({
                 />
               </div>
 
-              <ProcurementCategoryBars rows={analytics.topCategories} />
+              <ProcurementCategoryBars
+                rows={analytics.topCategories}
+                rankingsDim="cpv"
+              />
 
               <ProcurementMonthlyChart
                 points={analytics.monthly}

@@ -123,9 +123,25 @@ const commaListValueCategory = z
   })
   .catch(undefined)
 
-/** Hub layout: aggregates or paginated records (A2 / F2). */
-export const procurementHubViewSchema = z.enum(['overview', 'list'])
+/** Hub layout: aggregates, leaderboard, or paginated records (A2 / F2). */
+export const procurementHubViewSchema = z.enum([
+  'overview',
+  'list',
+  'rankings',
+])
 export type ProcurementHubView = z.infer<typeof procurementHubViewSchema>
+
+/** Rankings sub-tab dimension. */
+export const procurementRankDimSchema = z.enum(['buyer', 'supplier', 'cpv'])
+export type ProcurementRankDim = z.infer<typeof procurementRankDimSchema>
+
+/** CPV leaderboard grain — division default + code toggle. */
+export const procurementCpvLevelSchema = z.enum(['division', 'code'])
+export type ProcurementCpvLevel = z.infer<typeof procurementCpvLevelSchema>
+
+export const PROCUREMENT_RANK_PAGE_SIZES = [10, 25, 50] as const
+export type ProcurementRankPageSize =
+  (typeof PROCUREMENT_RANK_PAGE_SIZES)[number]
 
 /** Shared display metric across Overview and List. */
 export const procurementHubMeasureSchema = z.enum([
@@ -168,6 +184,25 @@ export const procurementHubSearchSchema = z
     grain: procurementGrainSchema.optional().catch(undefined),
     measure: procurementHubMeasureSchema.optional().catch(undefined),
     mapGrain: procurementHubMapGrainSchema.optional().catch(undefined),
+    rankDim: procurementRankDimSchema.optional().catch(undefined),
+    cpvLevel: procurementCpvLevelSchema.optional().catch(undefined),
+    rankPage: z.coerce.number().int().min(1).optional().catch(undefined),
+    rankPageSize: z
+      .preprocess((value) => {
+        const num =
+          typeof value === 'string' || typeof value === 'number'
+            ? Number(value)
+            : undefined
+        if (
+          typeof num === 'number' &&
+          Number.isInteger(num) &&
+          (PROCUREMENT_RANK_PAGE_SIZES as readonly number[]).includes(num)
+        ) {
+          return num as ProcurementRankPageSize
+        }
+        return undefined
+      }, z.custom<ProcurementRankPageSize>().optional())
+      .catch(undefined),
     q: optionalStringParam,
     authority_cui: optionalStringParam,
     supplier_cui: optionalStringParam,
@@ -210,6 +245,10 @@ export type ProcurementHubState = {
   grain: ProcurementGrain
   measure: ProcurementHubMeasure
   mapGrain: ProcurementHubMapGrain
+  rankDim: ProcurementRankDim
+  cpvLevel: ProcurementCpvLevel
+  rankPage: number
+  rankPageSize: ProcurementRankPageSize
   sort: ProcurementSort
   page: number
   pageSize: number
@@ -244,10 +283,21 @@ export const PROCUREMENT_HUB_DEFAULTS = {
   grain: PROCUREMENT_SEARCH_DEFAULTS.grain,
   measure: 'record_count' as const,
   mapGrain: 'region' as const,
+  rankDim: 'buyer' as const,
+  cpvLevel: 'division' as const,
+  rankPage: 1 as const,
+  rankPageSize: 10 as const,
   sort: PROCUREMENT_SEARCH_DEFAULTS.sort,
   page: PROCUREMENT_SEARCH_DEFAULTS.page,
   pageSize: PROCUREMENT_SEARCH_DEFAULTS.pageSize,
 } as const
+
+/**
+ * API-honest leaderboard depth for Rankings (GraphQL topN capped at 50).
+ * TODO(ClickHouse / server offset pagination): replace client slice over this
+ * payload with a real paginated leaderboard query.
+ */
+export const PROCUREMENT_RANKINGS_TOP_N = 50 as const
 
 /** Keys that apply to list queries but not overview aggregates (C1). */
 export const PROCUREMENT_HUB_LIST_ONLY_KEYS = [
@@ -302,6 +352,10 @@ export function withProcurementHubDefaults(
     grain: search.grain ?? PROCUREMENT_HUB_DEFAULTS.grain,
     measure: search.measure ?? PROCUREMENT_HUB_DEFAULTS.measure,
     mapGrain: search.mapGrain ?? PROCUREMENT_HUB_DEFAULTS.mapGrain,
+    rankDim: search.rankDim ?? PROCUREMENT_HUB_DEFAULTS.rankDim,
+    cpvLevel: search.cpvLevel ?? PROCUREMENT_HUB_DEFAULTS.cpvLevel,
+    rankPage: search.rankPage ?? PROCUREMENT_HUB_DEFAULTS.rankPage,
+    rankPageSize: search.rankPageSize ?? PROCUREMENT_HUB_DEFAULTS.rankPageSize,
     sort: search.sort ?? PROCUREMENT_HUB_DEFAULTS.sort,
     page: search.page ?? PROCUREMENT_HUB_DEFAULTS.page,
     pageSize: search.pageSize ?? PROCUREMENT_HUB_DEFAULTS.pageSize,
@@ -398,6 +452,16 @@ export function cleanProcurementHubSearch(
   if (cleaned.mapGrain === PROCUREMENT_HUB_DEFAULTS.mapGrain) {
     delete cleaned.mapGrain
   }
+  if (cleaned.rankDim === PROCUREMENT_HUB_DEFAULTS.rankDim) delete cleaned.rankDim
+  if (cleaned.cpvLevel === PROCUREMENT_HUB_DEFAULTS.cpvLevel) {
+    delete cleaned.cpvLevel
+  }
+  if (cleaned.rankPage === PROCUREMENT_HUB_DEFAULTS.rankPage) {
+    delete cleaned.rankPage
+  }
+  if (cleaned.rankPageSize === PROCUREMENT_HUB_DEFAULTS.rankPageSize) {
+    delete cleaned.rankPageSize
+  }
   if (cleaned.sort === PROCUREMENT_HUB_DEFAULTS.sort) delete cleaned.sort
   if (cleaned.page === PROCUREMENT_HUB_DEFAULTS.page) delete cleaned.page
   if (cleaned.pageSize === PROCUREMENT_HUB_DEFAULTS.pageSize) {
@@ -460,6 +524,60 @@ export function hubStateToListSearchState(
     from: state.from,
     highlight: state.highlight,
     // county/region legacy ignored for list
+  }
+}
+
+/**
+ * Analysis scope accepts a single status string. Rankings apply status only
+ * when exactly one token is selected.
+ */
+export function rankingStatusFromHubState(
+  state: ProcurementHubState,
+): string | undefined {
+  return state.status?.length === 1 ? state.status[0] : undefined
+}
+
+/**
+ * Shared aggregate/leaderboard scope from hub state (period, grain, geo,
+ * parties, CPV, single status). Unsupported list facets stay out.
+ */
+export function hubStateToRankingScopeInput(
+  state: ProcurementHubState,
+  now?: Date,
+): {
+  readonly authorityCui?: string
+  readonly supplierCui?: string
+  readonly cpvDivision?: string
+  readonly cpvCode?: string
+  readonly monthFrom?: string
+  readonly monthTo?: string
+  readonly buyerRegion?: string
+  readonly buyerCounty?: string
+  readonly buyerSiruta?: string
+  readonly grain?: 'procedure' | 'contract' | 'direct_acquisition'
+  readonly status?: string
+} {
+  const landing = hubStateToLandingFilters(state, now)
+  const monthScope = buildProcurementOverviewMonthScope(landing)
+  const grain =
+    state.grain === 'contracts'
+      ? ('contract' as const)
+      : state.grain === 'direct_acquisitions'
+        ? ('direct_acquisition' as const)
+        : state.grain === 'procedures'
+          ? ('procedure' as const)
+          : undefined
+  return {
+    ...monthScope,
+    authorityCui: state.authority_cui,
+    supplierCui: state.supplier_cui,
+    cpvCode: state.cpv,
+    cpvDivision: state.cpv_division,
+    buyerRegion: state.buyerRegion,
+    buyerCounty: state.buyerCounty,
+    buyerSiruta: state.buyerSiruta,
+    grain,
+    status: rankingStatusFromHubState(state),
   }
 }
 
@@ -529,6 +647,13 @@ export const PROCUREMENT_HUB_CAPABILITY_MATRIX: readonly HubCapabilityRow[] = [
     overview: 'preview',
     list: 'todo',
     note: 'M1 region paint live; measure+mapGrain shared URL; TODO county/UAT choropleth',
+  },
+  {
+    id: 'rankings',
+    label: 'Rankings leaderboard',
+    overview: 'live',
+    list: 'live',
+    note: 'view=rankings; top-50 + client pagination; party dims unavailable under buyer geo',
   },
   {
     id: 'q-aggregates',

@@ -1,6 +1,6 @@
 import { t } from '@lingui/core/macro'
 import { useNavigate, useSearch } from '@tanstack/react-router'
-import { LayoutDashboard, Search } from 'lucide-react'
+import { LayoutDashboard, ListOrdered, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   cleanProcurementHubSearch,
@@ -18,12 +18,12 @@ type Props = {
 }
 
 function normalizeTab(tab: ProcurementTab): ProcurementHubView {
-  if (tab === 'overview') return 'overview'
+  if (tab === 'overview' || tab === 'rankings' || tab === 'list') return tab
   return 'list'
 }
 
 /**
- * Hub section tabs — Overview / List on the same `/procurement` URL.
+ * Hub section tabs — Overview / List / Rankings on the same `/procurement` URL.
  * The buyer map lives on Overview (not a separate tab). Switching views must
  * never strip schema keys (A2 / F2).
  */
@@ -46,6 +46,11 @@ export function ProcurementTabNav({
       id: 'list' as const,
       label: t`List`,
       icon: Search,
+    },
+    {
+      id: 'rankings' as const,
+      label: t`Rankings`,
+      icon: ListOrdered,
     },
   ]
 

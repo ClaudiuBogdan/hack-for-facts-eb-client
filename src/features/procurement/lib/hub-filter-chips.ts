@@ -1,16 +1,22 @@
 /**
- * Hub active-filter chips — period always, geo with B1 suffixes, list-only (C1).
+ * Hub active-filter chips — period always, geo with B1 suffixes, list-only (C1),
+ * rankings unsupported facets (not applied to rankings).
  */
 import { t } from '@lingui/core/macro'
 import {
   PROCUREMENT_HUB_DEFAULTS,
+  rankingStatusFromHubState,
   type ProcurementHubState,
   type ResolvedProcurementOverviewPeriod,
 } from '@/schemas/procurement-hub'
 import { sourceLabel, valueCategoryLabel } from './enum-labels'
 import { statusLabel } from './status-meta'
 
-export type HubFilterChipKind = 'applied' | 'list-only' | 'not-on-list'
+export type HubFilterChipKind =
+  | 'applied'
+  | 'list-only'
+  | 'not-on-list'
+  | 'not-on-rankings'
 
 export type HubFilterChip = {
   readonly key: string
@@ -34,15 +40,33 @@ function measureLabel(measure: ProcurementHubState['measure']): string {
   return measure === 'value_awarded' ? t`Awarded value` : t`Record count`
 }
 
+/**
+ * Facets that rankings can honor via analysis scope (parties / CPV / single status).
+ * Unsupported facets stay inactive on Rankings.
+ */
+function rankingScopeFacetKind(
+  state: ProcurementHubState,
+  facet: 'scope' | 'unsupported' | 'status',
+): HubFilterChipKind {
+  if (state.view === 'list') return 'applied'
+  if (state.view === 'rankings') {
+    if (facet === 'unsupported') return 'not-on-rankings'
+    if (facet === 'status' && !rankingStatusFromHubState(state)) {
+      return 'not-on-rankings'
+    }
+    return 'applied'
+  }
+  return 'list-only'
+}
+
 export function buildHubActiveFilterChips(
   state: ProcurementHubState,
   period: ResolvedProcurementOverviewPeriod,
   locale = 'en',
 ): readonly HubFilterChip[] {
   const chips: HubFilterChip[] = []
-  const onList = state.view === 'list'
-  const geoAppliedOnView = state.view === 'overview'
-  const listFacetKind: HubFilterChipKind = onList ? 'applied' : 'list-only'
+  const geoAppliedOnView =
+    state.view === 'overview' || state.view === 'rankings'
 
   if (period.isAllTime) {
     chips.push({
@@ -80,7 +104,8 @@ export function buildHubActiveFilterChips(
     key: 'measure',
     prefix: t`Metric`,
     value: measureLabel(state.measure),
-    kind: 'applied',
+    // Rankings are count-sorted; measure does not change the leaderboard query.
+    kind: state.view === 'rankings' ? 'not-on-rankings' : 'applied',
     clear: { measure: PROCUREMENT_HUB_DEFAULTS.measure },
   })
 
@@ -129,7 +154,8 @@ export function buildHubActiveFilterChips(
       key: 'supplier-geo',
       prefix: t`Supplier location`,
       value: state.supplierCounty ?? state.supplierRegion ?? '',
-      kind: 'not-on-list',
+      kind:
+        state.view === 'rankings' ? 'not-on-rankings' : 'not-on-list',
       clear: { supplierCounty: undefined, supplierRegion: undefined },
     })
   }
@@ -139,7 +165,7 @@ export function buildHubActiveFilterChips(
       key: 'q',
       prefix: t`Query`,
       value: state.q,
-      kind: listFacetKind,
+      kind: rankingScopeFacetKind(state, 'unsupported'),
       clear: { q: undefined },
     })
   }
@@ -148,7 +174,7 @@ export function buildHubActiveFilterChips(
       key: 'authority',
       prefix: t`Authority`,
       value: state.authority_cui,
-      kind: listFacetKind,
+      kind: rankingScopeFacetKind(state, 'scope'),
       clear: { authority_cui: undefined },
     })
   }
@@ -157,7 +183,7 @@ export function buildHubActiveFilterChips(
       key: 'supplier',
       prefix: t`Supplier`,
       value: state.supplier_cui,
-      kind: listFacetKind,
+      kind: rankingScopeFacetKind(state, 'scope'),
       clear: { supplier_cui: undefined },
     })
   }
@@ -166,7 +192,7 @@ export function buildHubActiveFilterChips(
       key: 'cpv',
       prefix: t`CPV`,
       value: state.cpv,
-      kind: listFacetKind,
+      kind: rankingScopeFacetKind(state, 'scope'),
       clear: { cpv: undefined },
     })
   } else if (state.cpv_division) {
@@ -174,7 +200,7 @@ export function buildHubActiveFilterChips(
       key: 'cpv-division',
       prefix: t`CPV division`,
       value: state.cpv_division,
-      kind: listFacetKind,
+      kind: rankingScopeFacetKind(state, 'scope'),
       clear: { cpv_division: undefined },
     })
   }
@@ -183,7 +209,7 @@ export function buildHubActiveFilterChips(
       key: 'source',
       prefix: t`Source`,
       value: sourceLabel(state.source),
-      kind: listFacetKind,
+      kind: rankingScopeFacetKind(state, 'unsupported'),
       clear: { source: undefined },
     })
   }
@@ -192,7 +218,7 @@ export function buildHubActiveFilterChips(
       key: 'status',
       prefix: t`Status`,
       value: state.status.map(statusLabel).join(', '),
-      kind: listFacetKind,
+      kind: rankingScopeFacetKind(state, 'status'),
       clear: { status: undefined },
     })
   }
@@ -201,7 +227,7 @@ export function buildHubActiveFilterChips(
       key: 'value-state',
       prefix: t`Value quality`,
       value: state.value_state.map(valueCategoryLabel).join(', '),
-      kind: listFacetKind,
+      kind: rankingScopeFacetKind(state, 'unsupported'),
       clear: { value_state: undefined },
     })
   }
@@ -214,7 +240,7 @@ export function buildHubActiveFilterChips(
       key: 'value',
       prefix: t`Value (RON)`,
       value: `${min} – ${max}`,
-      kind: listFacetKind,
+      kind: rankingScopeFacetKind(state, 'unsupported'),
       clear: { valueMin: undefined, valueMax: undefined },
     })
   }

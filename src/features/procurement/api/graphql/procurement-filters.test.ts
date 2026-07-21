@@ -308,6 +308,12 @@ describe('buildScopeFilter', () => {
     )
   })
 
+  it('includes single status when provided', () => {
+    expect(buildScopeFilter({ status: 'cancelled', grain: 'contract' })).toEqual(
+      { status: 'cancelled', grain: 'contract' },
+    )
+  })
+
   it('passes calendar-month bounds to the analysis scope', () => {
     expect(
       buildScopeFilter({ monthFrom: '2024-05', monthTo: '2024-06' }),

@@ -13,8 +13,11 @@ import {
   hubStateToLandingFilters,
   hubStateToListSearchState,
   resolveProcurementOverviewPeriod,
+  type ProcurementCpvLevel,
   type ProcurementHubState,
   type ProcurementHubView,
+  type ProcurementRankDim,
+  type ProcurementRankPageSize,
   type ProcurementSort,
   type ProcurementSource,
   type ProcurementValueCategory,
@@ -48,7 +51,7 @@ export function useProcurementHubState(state: ProcurementHubState) {
 
   const updateFilters = useCallback(
     (patch: ProcurementHubFilterPatch) => {
-      commit({ ...patch, page: 1 })
+      commit({ page: 1, rankPage: 1, ...patch })
     },
     [commit],
   )
@@ -56,6 +59,27 @@ export function useProcurementHubState(state: ProcurementHubState) {
   const setView = useCallback(
     (view: ProcurementHubView) => commit({ view }),
     [commit],
+  )
+
+  const setRankDim = useCallback(
+    (rankDim: ProcurementRankDim) => updateFilters({ rankDim, rankPage: 1 }),
+    [updateFilters],
+  )
+
+  const setCpvLevel = useCallback(
+    (cpvLevel: ProcurementCpvLevel) => updateFilters({ cpvLevel, rankPage: 1 }),
+    [updateFilters],
+  )
+
+  const setRankPage = useCallback(
+    (rankPage: number) => commit({ rankPage }, { resetScroll: true }),
+    [commit],
+  )
+
+  const setRankPageSize = useCallback(
+    (rankPageSize: ProcurementRankPageSize) =>
+      updateFilters({ rankPageSize, rankPage: 1 }),
+    [updateFilters],
   )
 
   const setQuery = useCallback(
@@ -302,6 +326,10 @@ export function useProcurementHubState(state: ProcurementHubState) {
     commit,
     updateFilters,
     setView,
+    setRankDim,
+    setCpvLevel,
+    setRankPage,
+    setRankPageSize,
     setQuery,
     setSource,
     setStatuses,

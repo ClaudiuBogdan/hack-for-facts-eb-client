@@ -12,11 +12,43 @@ describe('procurement hub schema', () => {
     expect(parseProcurementHubSearch({}).view).toBe('overview')
     expect(parseProcurementHubSearch({ tab: 'search' }).view).toBe('list')
     expect(parseProcurementHubSearch({ view: 'list' }).view).toBe('list')
+    expect(parseProcurementHubSearch({ view: 'rankings' }).view).toBe('rankings')
     // Legacy Map tab bookmarks land on Overview; mapGrain is preserved.
     expect(parseProcurementHubSearch({ view: 'map' }).view).toBe('overview')
     expect(
       parseProcurementHubSearch({ view: 'map', mapGrain: 'county' }).mapGrain,
     ).toBe('county')
+  })
+
+  it('defaults rankings chrome and cleans them when default', () => {
+    expect(parseProcurementHubSearch({}).rankDim).toBe('buyer')
+    expect(parseProcurementHubSearch({}).cpvLevel).toBe('division')
+    expect(parseProcurementHubSearch({}).rankPage).toBe(1)
+    expect(parseProcurementHubSearch({}).rankPageSize).toBe(10)
+    expect(
+      cleanProcurementHubSearch({
+        view: 'rankings',
+        rankDim: 'supplier',
+        cpvLevel: 'code',
+        rankPage: 2,
+        rankPageSize: 25,
+      }),
+    ).toEqual({
+      view: 'rankings',
+      rankDim: 'supplier',
+      cpvLevel: 'code',
+      rankPage: 2,
+      rankPageSize: 25,
+    })
+    expect(
+      cleanProcurementHubSearch({
+        view: 'rankings',
+        rankDim: 'buyer',
+        cpvLevel: 'division',
+        rankPage: 1,
+        rankPageSize: 10,
+      }),
+    ).toEqual({ view: 'rankings' })
   })
 
   it('defaults measure and mapGrain and cleans them when default', () => {

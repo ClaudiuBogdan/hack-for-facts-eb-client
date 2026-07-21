@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link, useSearch } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
-import { ChevronDown, ChevronUp, Table2 } from 'lucide-react'
+import { ChevronDown, ChevronUp, ListOrdered, Table2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -13,6 +13,10 @@ import {
 } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
 import type { CategoryRow } from '@/schemas/procurement'
+import {
+  cleanProcurementHubSearch,
+  type ProcurementRankDim,
+} from '@/schemas/procurement-hub'
 import { formatFlowCount, formatRon } from '../lib/formatting'
 import {
   procurementMarkClassName,
@@ -25,8 +29,8 @@ import {
 } from '../lib/procurement-theme'
 
 /**
- * TODO(ClickHouse analytics): Deeper CPV rankings beyond the hub `topN` (≤10)
- * need analytics backend work. Keep API-honest depth until then (B1).
+ * Overview CPV glance deep-links to Rankings. Other surfaces keep a local sheet.
+ * TODO(ClickHouse analytics): CPV code labels / deeper depth beyond top-50.
  */
 
 const CARD_LIMIT = 5
@@ -47,20 +51,24 @@ type Props = {
   readonly title?: string
   readonly description?: string
   readonly className?: string
+  /** Deep-link to hub Rankings for CPV. */
+  readonly rankingsDim?: ProcurementRankDim
 }
 
 /**
- * CPV division breakdown — count-first bars, show 5 + more/less, sheet table
- * of the same live top-N (aligned with party ranking A2).
+ * CPV division breakdown — count-first bars, show 5 + more/less.
+ * Overview uses Rankings deep-link; other surfaces keep a sheet.
  */
 export function ProcurementCategoryBars({
   rows,
   title,
   description,
   className,
+  rankingsDim,
 }: Props) {
   const [expanded, setExpanded] = useState(false)
   const [sheetOpen, setSheetOpen] = useState(false)
+  const currentSearch = useSearch({ strict: false })
   const totalCount = rows.reduce(
     (sum, row) => sum + (Number(row.flowCount) || 0),
     0,
@@ -90,20 +98,40 @@ export function ProcurementCategoryBars({
           </p>
         </div>
         {rows.length > 0 ? (
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className={cn(
-              procurementOutlineButtonClassName,
-              'h-8 w-8 shrink-0',
-            )}
-            onClick={() => setSheetOpen(true)}
-            aria-label={t`Open ranking table`}
-            title={t`Open ranking table`}
-          >
-            <Table2 className="h-4 w-4" aria-hidden />
-          </Button>
+          rankingsDim ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className={cn(procurementOutlineButtonClassName, 'h-8 w-8 shrink-0')}
+              asChild
+            >
+              <Link
+                to="/procurement"
+                search={cleanProcurementHubSearch({
+                  ...(currentSearch as Record<string, unknown>),
+                  view: 'rankings',
+                  rankDim: rankingsDim,
+                })}
+                aria-label={t`See full rankings`}
+                title={t`See full rankings`}
+              >
+                <ListOrdered className="h-4 w-4" aria-hidden />
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className={cn(procurementOutlineButtonClassName, 'h-8 w-8 shrink-0')}
+              onClick={() => setSheetOpen(true)}
+              aria-label={t`Open ranking table`}
+              title={t`Open ranking table`}
+            >
+              <Table2 className="h-4 w-4" aria-hidden />
+            </Button>
+          )
         ) : null}
       </div>
 
@@ -215,12 +243,14 @@ export function ProcurementCategoryBars({
         ) : null}
       </div>
 
-      <CategoryRankingSheet
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
-        title={title ?? t`Spending categories`}
-        rows={rows}
-      />
+      {!rankingsDim ? (
+        <CategoryRankingSheet
+          open={sheetOpen}
+          onOpenChange={setSheetOpen}
+          title={title ?? t`Spending categories`}
+          rows={rows}
+        />
+      ) : null}
     </section>
   )
 }

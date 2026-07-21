@@ -1,8 +1,3 @@
-/**
- * TanStack Query hooks for the procurement feature. Key convention (mirrors
- * parliament): `[namespace, resource, ...discriminators]` — filters flow in
- * as the last key segment so any change refetches.
- */
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import {
   fetchProcurementAuthoritySlice,
@@ -26,6 +21,10 @@ import {
   fetchProcurementAnalysis,
   type ProcurementAnalysisRequest,
 } from '../api/procurement-analysis-api'
+import {
+  fetchProcurementLeaderboard,
+  type ProcurementLeaderboardRequest,
+} from '../api/procurement-leaderboard-api'
 import { fetchProcurementGeographyOptions } from '../api/procurement-reference-api'
 
 const PROCUREMENT_QUERY_KEY = ['procurement'] as const
@@ -75,6 +74,17 @@ export function useProcurementAnalysis(request: ProcurementAnalysisRequest) {
   return useQuery({
     queryKey: [...PROCUREMENT_QUERY_KEY, 'analysis', request],
     queryFn: () => fetchProcurementAnalysis(request),
+  })
+}
+
+export function useProcurementLeaderboard(
+  request: ProcurementLeaderboardRequest,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: [...PROCUREMENT_QUERY_KEY, 'leaderboard', request],
+    queryFn: () => fetchProcurementLeaderboard(request),
+    enabled,
   })
 }
 

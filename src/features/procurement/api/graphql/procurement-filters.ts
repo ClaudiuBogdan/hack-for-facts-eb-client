@@ -428,6 +428,8 @@ export function buildScopeFilter(scope: {
   buyerCounty?: string
   buyerSiruta?: string
   grain?: ProcurementScopeFilterInput['grain']
+  /** Single status token — analysis scope has no `in` operator. */
+  status?: string
 }): ProcurementScopeFilterInput {
   const filter: ProcurementScopeFilterInput = {}
   const authorityCui = trimmedOrUndefined(scope.authorityCui)
@@ -457,5 +459,7 @@ export function buildScopeFilter(scope: {
   const buyerSiruta = trimmedOrUndefined(scope.buyerSiruta)
   if (buyerSiruta) filter.buyerSiruta = buyerSiruta
   if (scope.grain) filter.grain = scope.grain
+  const status = trimmedOrUndefined(scope.status)
+  if (status) filter.status = status
   return filter
 }

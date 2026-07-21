@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link, useSearch } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
-import { ChevronDown, ChevronUp, Table2 } from 'lucide-react'
+import { ChevronDown, ChevronUp, ListOrdered, Table2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -13,6 +13,10 @@ import {
 } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
 import type { TopPartyRow } from '@/schemas/procurement'
+import {
+  cleanProcurementHubSearch,
+  type ProcurementRankDim,
+} from '@/schemas/procurement-hub'
 import { formatFlowCount, formatRon } from '../lib/formatting'
 import {
   partyLabel,
@@ -33,12 +37,11 @@ import {
 } from '../lib/procurement-theme'
 
 /**
- * TODO(ClickHouse analytics): Deeper scoped party rankings (top-50/100,
- * pagination, sort by awarded value, export) are not served by GraphQL
- * `procurementBreakdown` at the current hub `topN` (≤10). When ClickHouse
- * analytics is ready, extend this sheet / add `/procurement/rankings` with a
- * real paginated query. Do NOT pad the list with mock rows — keep API-honest
- * depth until then (product decision B1, 2026-07).
+ * Overview glance card deep-links to Rankings. Slice / territory / CPV pages
+ * keep a local sheet table (no hub Rankings context).
+ *
+ * TODO(ClickHouse analytics): value-sorted leaderboards and server offset
+ * pagination beyond top-50 are not served yet — Rankings stays API-honest.
  */
 
 const CARD_LIMIT = 5
@@ -68,11 +71,13 @@ type Props = {
   readonly pairScope?: PartyPairScope
   /** Analysis grain for pair Search when `pairScope` is set. */
   readonly grain?: AnalysisFlowGrain
+  /** Deep-link to hub Rankings for this dimension (Overview cards). */
+  readonly rankingsDim?: ProcurementRankDim
 }
 
 /**
- * Ranked party list — count-first bars, PNRR-style show more/less (5 → full
- * live top-N), plus a sheet table of the same API rows (decision A2).
+ * Ranked party list — count-first bars, show more/less. Overview uses Rankings
+ * deep-link; other surfaces keep a sheet of the same API rows.
  */
 export function ProcurementPartyRanking({
   title,
@@ -83,9 +88,11 @@ export function ProcurementPartyRanking({
   unavailableReason,
   pairScope,
   grain = 'direct_acquisition',
+  rankingsDim,
 }: Props) {
   const [expanded, setExpanded] = useState(false)
   const [sheetOpen, setSheetOpen] = useState(false)
+  const currentSearch = useSearch({ strict: false })
   const maxCount = rows.reduce(
     (max, row) => Math.max(max, Number(row.flowCount) || 0),
     0,
@@ -111,20 +118,40 @@ export function ProcurementPartyRanking({
           ) : null}
         </div>
         {rows.length > 0 && !unavailableReason ? (
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className={cn(
-              procurementOutlineButtonClassName,
-              'h-8 w-8 shrink-0',
-            )}
-            onClick={() => setSheetOpen(true)}
-            aria-label={t`Open ranking table`}
-            title={t`Open ranking table`}
-          >
-            <Table2 className="h-4 w-4" aria-hidden />
-          </Button>
+          rankingsDim ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className={cn(procurementOutlineButtonClassName, 'h-8 w-8 shrink-0')}
+              asChild
+            >
+              <Link
+                to="/procurement"
+                search={cleanProcurementHubSearch({
+                  ...(currentSearch as Record<string, unknown>),
+                  view: 'rankings',
+                  rankDim: rankingsDim,
+                })}
+                aria-label={t`See full rankings`}
+                title={t`See full rankings`}
+              >
+                <ListOrdered className="h-4 w-4" aria-hidden />
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className={cn(procurementOutlineButtonClassName, 'h-8 w-8 shrink-0')}
+              onClick={() => setSheetOpen(true)}
+              aria-label={t`Open ranking table`}
+              title={t`Open ranking table`}
+            >
+              <Table2 className="h-4 w-4" aria-hidden />
+            </Button>
+          )
         ) : null}
       </div>
 
@@ -185,15 +212,17 @@ export function ProcurementPartyRanking({
         ) : null}
       </div>
 
-      <PartyRankingSheet
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
-        title={title}
-        rows={rows}
-        kind={kind}
-        pairScope={pairScope}
-        grain={grain}
-      />
+      {!rankingsDim ? (
+        <PartyRankingSheet
+          open={sheetOpen}
+          onOpenChange={setSheetOpen}
+          title={title}
+          rows={rows}
+          kind={kind}
+          pairScope={pairScope}
+          grain={grain}
+        />
+      ) : null}
     </section>
   )
 }
