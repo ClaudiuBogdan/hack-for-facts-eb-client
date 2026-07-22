@@ -34,7 +34,9 @@ export function regionBucketsFromBreakdown(
   if (!buckets?.length) return []
   const out: ProcurementRegionMapBucket[] = []
   for (const bucket of buckets) {
-    if (bucket.kind !== 'value' || !bucket.key?.trim()) continue
+    // Named buckets only: facets emit kind 'value' (PG) or 'top' (ClickHouse
+    // dev backend); other/unknown never paint.
+    if ((bucket.kind !== 'value' && bucket.kind !== 'top') || !bucket.key?.trim()) continue
     out.push({
       region: bucket.key.trim(),
       recordCount: parseNullableNumber(bucket.recordCount),
@@ -95,11 +97,46 @@ export function buildRegionHeatmapByCounty(
   return points
 }
 
+/** County-grain paint: buckets keyed by county code map 1:1 onto polygons. */
+export function buildCountyHeatmap(
+  geography: ProcurementGeographyOptions | undefined,
+  countyBuckets: readonly ProcurementRegionMapBucket[],
+  seriesId: ProcurementMapSeriesId,
+): HeatmapCountyDataPoint[] {
+  const valueByCounty = new Map<string, number>()
+  for (const bucket of countyBuckets) {
+    const value = seriesValue(bucket, seriesId)
+    if (value === null) continue
+    valueByCounty.set(bucket.region, value)
+  }
+  const points: HeatmapCountyDataPoint[] = []
+  for (const county of geography?.counties ?? []) {
+    if (!county.countyCode) continue
+    const amount = valueByCounty.get(county.countyCode)
+    if (amount === undefined) continue
+    const countyName =
+      formatProcurementCountyName(county.countyName) ||
+      MNEMONIC_TO_COUNTY_NAME[county.countyCode] ||
+      county.countyCode
+    points.push({
+      county_code: county.countyCode,
+      county_name: countyName,
+      county_population: 0,
+      amount,
+      total_amount: amount,
+      per_capita_amount: 0,
+      county_entity: { cui: '', name: county.region },
+    })
+  }
+  return points
+}
+
 /**
  * Heatmap for the active map geography level.
  *
- * Region is live. County/UAT return empty until rollups exist — never fake
- * finer grain from region totals.
+ * Region and county paint from the buyerRegion/buyerCounty facet dimensions
+ * (ClickHouse dev backend). UAT needs the UAT geometry layer — data is
+ * plumbed (dimension buyerSiruta) but paint stays empty until then.
  */
 export function buildProcurementMapHeatmap(
   mapGrain: ProcurementMapGranularity,
@@ -110,8 +147,9 @@ export function buildProcurementMapHeatmap(
   if (mapGrain === 'region') {
     return buildRegionHeatmapByCounty(geography, regionBuckets, seriesId)
   }
-  // TODO(Wave-2 buyer_county rollup): query dimension buyerCounty + buildCountyHeatmap
-  // TODO(buyer_siruta + referenceTerritories): query dimension buyerSiruta + buildUatHeatmap
+  if (mapGrain === 'county') {
+    return buildCountyHeatmap(geography, regionBuckets, seriesId)
+  }
   return []
 }
 

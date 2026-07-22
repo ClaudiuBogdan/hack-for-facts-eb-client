@@ -102,23 +102,27 @@ export function ProcurementMapView({
       grain: analysisGrain,
       ...(monthScope.monthFrom ? { from: monthScope.monthFrom } : {}),
       ...(monthScope.monthTo ? { to: monthScope.monthTo } : {}),
-      // Region scope filter is live. County/UAT scope needs API rollups.
-      ...(mapGrain === 'region' && hubState.buyerRegion
-        ? { buyerRegion: hubState.buyerRegion }
-        : {}),
-      // TODO(Wave-2 buyer_county rollup): pass buyerCounty into analysis scope
-      // TODO(buyer_siruta): pass buyerSiruta into analysis scope
+      // Buyer geography scope is served at every level (ClickHouse dev backend).
+      ...(hubState.buyerRegion ? { buyerRegion: hubState.buyerRegion } : {}),
+      ...(hubState.buyerCounty ? { buyerCounty: hubState.buyerCounty } : {}),
+      ...(hubState.buyerSiruta ? { buyerSiruta: hubState.buyerSiruta } : {}),
     },
-    dimension: 'buyerRegion',
+    dimension:
+      mapGrain === 'county' || mapGrain === 'uat'
+        ? mapGrain === 'uat'
+          ? 'buyerSiruta'
+          : 'buyerCounty'
+        : 'buyerRegion',
     bucket: 'year',
     measure: measure === 'value_awarded' ? 'valueAwardedSum' : 'recordCount',
     topN: 20,
     basis: measure === 'value_awarded' ? 'value' : 'count',
   })
 
+  const mapDimension =
+    mapGrain === 'uat' ? 'buyerSiruta' : mapGrain === 'county' ? 'buyerCounty' : 'buyerRegion'
   const facetBlock = analysisQuery.data?.facets.blocks.find(
-    (block) =>
-      block.grain === analysisGrain && block.dimension === 'buyerRegion',
+    (block) => block.grain === analysisGrain && block.dimension === mapDimension,
   )
   const regionBuckets = useMemo(
     () => regionBucketsFromBreakdown(facetBlock?.buckets),
@@ -428,7 +432,7 @@ function MapToolbar({
           {(
             [
               { id: 'region' as const, label: t`Region`, live: true },
-              { id: 'county' as const, label: t`County`, live: false },
+              { id: 'county' as const, label: t`County`, live: true },
               { id: 'uat' as const, label: t`UAT`, live: false },
             ] as const
           ).map((option, index) => {
