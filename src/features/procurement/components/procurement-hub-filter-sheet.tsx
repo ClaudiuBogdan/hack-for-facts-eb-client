@@ -57,6 +57,9 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
   const [buyerLevel, setBuyerLevel] = useState<'region' | 'county'>(
     state.buyerCounty ? 'county' : 'region',
   )
+  const [supplierLevel, setSupplierLevel] = useState<'region' | 'county'>(
+    state.supplierCounty ? 'county' : 'region',
+  )
   const geographyQuery = useProcurementGeographyOptions()
   const displayDateFrom = period.isAllTime ? undefined : period.dateFrom
   const displayDateTo = period.isAllTime ? undefined : period.dateTo
@@ -109,6 +112,21 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
       buyerRegion: buyerLevel === 'region' ? value : undefined,
       buyerCounty: buyerLevel === 'county' ? value : undefined,
       buyerSiruta: undefined,
+    })
+  }
+
+  const changeSupplierLevel = (level: 'region' | 'county') => {
+    setSupplierLevel(level)
+    hub.setSupplierGeography({
+      supplierRegion: undefined,
+      supplierCounty: undefined,
+    })
+  }
+
+  const changeSupplierLocation = (value: string | undefined) => {
+    hub.setSupplierGeography({
+      supplierRegion: supplierLevel === 'region' ? value : undefined,
+      supplierCounty: supplierLevel === 'county' ? value : undefined,
     })
   }
 
@@ -418,23 +436,74 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
                 >
                   <Trans>Supplier Location</Trans>
                 </p>
-                {/* TODO(Supplier geo resolution + list filter): control stays Preview until Matrix v2. */}
-                <ProcurementPreviewBadge
-                  reason={t`Supplier geography is not linked to records yet`}
-                />
+                {onList ? (
+                  <ProcurementPreviewBadge
+                    reason={t`Not applied to the record list yet`}
+                  />
+                ) : null}
               </div>
               <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
                 <Trans>Registered office of the awarded company.</Trans>
               </p>
+              {onList ? (
+                <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
+                  <Trans>
+                    Supplier location scopes the analytics; it is kept in the
+                    URL for round-trip but is not applied to the record list
+                    yet.
+                  </Trans>
+                </p>
+              ) : null}
             </div>
-            <div className="border-l-4 border-[#1d70b8] bg-[#e8f1f8] p-3 text-sm leading-5 text-[#0b0c0c] dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-fg)]">
-              <Trans>
-                Region and county names are available, but procurement records
-                are not yet linked to supplier geography. This filter will be
-                enabled when Matrix v2 can apply it without returning
-                unfiltered data.
-              </Trans>
-            </div>
+
+            <fieldset className="space-y-2">
+              <legend className="text-sm font-bold">
+                <Trans>Territorial Level</Trans>
+              </legend>
+              <div className="grid grid-cols-2 gap-2">
+                {(['region', 'county'] as const).map((level) => (
+                  <Button
+                    key={level}
+                    type="button"
+                    variant="outline"
+                    aria-pressed={supplierLevel === level}
+                    className={
+                      supplierLevel === level
+                        ? 'h-10 rounded-none border-2 border-[#1d70b8] bg-[#e8f1f8] font-bold text-[#0b0c0c] hover:bg-[#d5e8f4] dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-fg)]'
+                        : 'h-10 rounded-none border-2 font-bold'
+                    }
+                    onClick={() => changeSupplierLevel(level)}
+                  >
+                    {level === 'region' ? (
+                      <Trans>Region</Trans>
+                    ) : (
+                      <Trans>County</Trans>
+                    )}
+                  </Button>
+                ))}
+              </div>
+            </fieldset>
+
+            <ProcurementGeographyCombobox
+              inputId="hub-supplier-location"
+              label={supplierLevel === 'region' ? t`Region` : t`County`}
+              placeholder={
+                supplierLevel === 'region'
+                  ? t`Select a region…`
+                  : t`Select a county…`
+              }
+              options={
+                supplierLevel === 'region' ? regionOptions : countyOptions
+              }
+              value={
+                supplierLevel === 'region'
+                  ? state.supplierRegion
+                  : state.supplierCounty
+              }
+              loading={geographyQuery.isPending}
+              disabled={geographyQuery.isError}
+              onChange={changeSupplierLocation}
+            />
           </section>
 
           <section

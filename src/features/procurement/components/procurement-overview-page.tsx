@@ -165,11 +165,6 @@ export function ProcurementOverviewPage({
                   rows={analytics.topAuthorities}
                   kind="authority"
                   rankingsDim="buyer"
-                  unavailableReason={
-                    hasBuyerGeography
-                      ? t`Authority rankings are unavailable under the current regional rollup.`
-                      : undefined
-                  }
                 />
                 <ProcurementPartyRanking
                   title={t`Top suppliers`}
@@ -181,11 +176,6 @@ export function ProcurementOverviewPage({
                   rows={analytics.topSuppliers}
                   kind="supplier"
                   rankingsDim="supplier"
-                  unavailableReason={
-                    hasBuyerGeography
-                      ? t`Supplier rankings are unavailable under the current regional rollup.`
-                      : undefined
-                  }
                 />
               </div>
 

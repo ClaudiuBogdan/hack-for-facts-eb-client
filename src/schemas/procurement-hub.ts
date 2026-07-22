@@ -645,9 +645,9 @@ export const PROCUREMENT_HUB_CAPABILITY_MATRIX: readonly HubCapabilityRow[] = [
   {
     id: 'supplier-geo',
     label: 'Supplier geography',
-    overview: 'preview',
+    overview: 'live',
     list: 'todo',
-    note: 'TODO(Supplier geo resolution + list filter)',
+    note: 'Overview/rankings scope supplier region+county (ClickHouse); TODO(list filter)',
   },
   {
     id: 'parties-cpv-value',
