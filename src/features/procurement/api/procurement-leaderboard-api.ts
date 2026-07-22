@@ -1,14 +1,14 @@
 /**
- * Rankings leaderboard fetch — top-50 breakdown + concentration summary.
- *
- * TODO(ClickHouse / server offset pagination): replace client slice over
- * topN=50 with a real paginated leaderboard query (page/pageSize → server).
- * Until then, UI pagination only windows the honest top-50 payload.
+ * Rankings leaderboard fetch — top-100 breakdown + concentration summary,
+ * count- or value-ranked (ClickHouse analytics). UI pagination windows the
+ * honest top-100 payload; server offset pagination remains a follow-up for
+ * deeper walks.
  */
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import {
   PROCUREMENT_RANKINGS_TOP_N,
   type ProcurementCpvLevel,
+  type ProcurementRankBy,
   type ProcurementRankDim,
 } from '@/schemas/procurement-hub'
 import {
@@ -18,6 +18,8 @@ import {
   procurementAnalysisResponseSchema,
   procurementCpvDivisionsResponseSchema,
   procurementPartyNamesResponseSchema,
+  PROCUREMENT_CPV_CODES_QUERY,
+  procurementCpvCodesResponseSchema,
   type RawProcurementBreakdownBucket,
   type RawProcurementCpvDivision,
 } from './graphql/procurement-queries'
@@ -43,17 +45,16 @@ export type ProcurementLeaderboardResult = {
   readonly distinctSuppliers: number | null
   readonly distinctAuthorities: number | null
   readonly topN: typeof PROCUREMENT_RANKINGS_TOP_N
+  /** Server echo of the effective ranking basis ('value' may fall back to 'count' when spend is gated). */
+  readonly rankedBy: string | null
 }
 
 export type ProcurementLeaderboardRequest = {
   readonly scope: Parameters<typeof buildScopeFilter>[0]
   readonly rankDim: ProcurementRankDim
   readonly cpvLevel: ProcurementCpvLevel
-  /**
-   * When true, skip party-dimension fetches (buyer geo honesty). Caller still
-   * may request CPV.
-   */
-  readonly partyRankingsUnavailable?: boolean
+  /** Ranking basis; the server yields count when the spend gate suppresses value. */
+  readonly rankBy?: ProcurementRankBy
 }
 
 function analysisDimension(
@@ -70,6 +71,7 @@ function rowLabel(
   dimension: ProcurementAnalysisDimension,
   partyNames: ReadonlyMap<string, string>,
   divisions: readonly RawProcurementCpvDivision[],
+  codeLabels: ReadonlyMap<string, string>,
 ): { readonly label: string | null; readonly secondaryLabel: string | null } {
   // other / unknown labels are translated in the rankings table UI.
   if (bucket.kind === 'other' || bucket.kind === 'unknown' || !bucket.key) {
@@ -94,7 +96,36 @@ function rowLabel(
     }
   }
 
+  if (dimension === 'cpvCode') {
+    const label = codeLabels.get(bucket.key)
+    return {
+      label: label ?? bucket.key,
+      secondaryLabel: label ? bucket.key : null,
+    }
+  }
+
   return { label: bucket.key, secondaryLabel: null }
+}
+
+async function loadCpvCodeLabels(
+  buckets: readonly RawProcurementBreakdownBucket[],
+): Promise<ReadonlyMap<string, string>> {
+  const codes = buckets
+    .map((bucket) => bucket.key)
+    .filter((key): key is string => Boolean(key))
+  if (codes.length === 0) return new Map()
+  const raw = await graphqlQuery<unknown>(
+    PROCUREMENT_CPV_CODES_QUERY,
+    { codes },
+    { operationName: 'ProcurementCpvCodes' },
+  )
+  const parsed = procurementCpvCodesResponseSchema.parse(raw)
+  const labels = new Map<string, string>()
+  for (const entry of parsed.procurementCpvCodes) {
+    const label = entry.labelRo ?? entry.labelEn
+    if (label) labels.set(entry.cpvCode, label)
+  }
+  return labels
 }
 
 async function loadPartyNamesForBuckets(
@@ -150,38 +181,21 @@ async function loadCpvDivisions(): Promise<RawProcurementCpvDivision[]> {
 }
 
 /**
- * Fetch count-sorted leaderboard rows (≤50) for the Rankings tab.
- *
- * TODO(ClickHouse analytics): deeper rankings, value sort, and server offset
- * pagination are not served here — keep topN API-honest.
+ * Fetch leaderboard rows (≤100) for the Rankings tab, count- or value-ranked.
  */
 export async function fetchProcurementLeaderboard(
   request: ProcurementLeaderboardRequest,
 ): Promise<ProcurementLeaderboardResult> {
   const dimension = analysisDimension(request.rankDim, request.cpvLevel)
-  const partyUnavailable =
-    Boolean(request.partyRankingsUnavailable) &&
-    (dimension === 'authority' || dimension === 'supplier')
-
-  if (partyUnavailable) {
-    return {
-      rows: [],
-      distinctSuppliers: null,
-      distinctAuthorities: null,
-      topN: PROCUREMENT_RANKINGS_TOP_N,
-    }
-  }
-
   const scope: ProcurementScopeFilterInput = buildScopeFilter(request.scope)
 
-  // TODO(ClickHouse / server offset pagination): topN is capped at 50 by the
-  // GraphQL analysis layer. Do not invent rows past the payload.
   const data = await graphqlQuery<unknown>(
     PROCUREMENT_ANALYSIS_QUERY,
     {
       scope,
       dimensions: [dimension],
       topN: PROCUREMENT_RANKINGS_TOP_N,
+      rankBy: request.rankBy ?? 'count',
       bucket: 'year',
       measure: 'recordCount',
       basis: 'count',
@@ -197,13 +211,16 @@ export async function fetchProcurementLeaderboard(
   )
   const buckets = facetBlock?.buckets ?? []
 
-  const [partyNames, divisions] = await Promise.all([
+  const [partyNames, divisions, codeLabels] = await Promise.all([
     dimension === 'authority' || dimension === 'supplier'
       ? loadPartyNamesForBuckets(dimension, buckets)
       : Promise.resolve(new Map<string, string>()),
-    dimension === 'cpvDivision' || dimension === 'cpvCode'
+    dimension === 'cpvDivision'
       ? loadCpvDivisions()
       : Promise.resolve([] as RawProcurementCpvDivision[]),
+    dimension === 'cpvCode'
+      ? loadCpvCodeLabels(buckets)
+      : Promise.resolve(new Map<string, string>()),
   ])
 
   const rows: ProcurementLeaderboardRow[] = buckets.map((bucket) => {
@@ -212,6 +229,7 @@ export async function fetchProcurementLeaderboard(
       dimension,
       partyNames,
       divisions,
+      codeLabels,
     )
     return {
       key: bucket.key,
@@ -234,5 +252,6 @@ export async function fetchProcurementLeaderboard(
     // Distinct institutions are not on the concentration payload yet.
     distinctAuthorities: null,
     topN: PROCUREMENT_RANKINGS_TOP_N,
+    rankedBy: facetBlock?.rankedBy ?? null,
   }
 }

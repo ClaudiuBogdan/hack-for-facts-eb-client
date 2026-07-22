@@ -115,7 +115,9 @@ export function ProcurementMapView({
         : 'buyerRegion',
     bucket: 'year',
     measure: measure === 'value_awarded' ? 'valueAwardedSum' : 'recordCount',
-    topN: 20,
+    // County paint needs EVERY county (42) — a truncated top-N would render the
+    // rest as false "no data" grey. 100 is the server cap.
+    topN: mapGrain === 'county' ? 100 : 20,
     basis: measure === 'value_awarded' ? 'value' : 'count',
   })
 
@@ -234,7 +236,7 @@ export function ProcurementMapView({
         undefined
       const name = String(properties.name ?? countyCode ?? '—')
 
-      if (mapGrain !== 'region') {
+      if (mapGrain === 'uat') {
         return `<div style="font-weight:700">${name}</div><div style="opacity:.8">${t`Choropleth Preview — click for details`}</div>`
       }
 
@@ -284,12 +286,12 @@ export function ProcurementMapView({
         }}
       />
 
-      {mapGrain !== 'region' ? (
+      {mapGrain === 'uat' ? (
         <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
-          {/* TODO(Wave-2 buyer_county / buyer_siruta): replace empty map with live choropleth. */}
+          {/* TODO(UAT geometry layer): UAT-level data is served (buyerSiruta); paint needs UAT polygons. */}
           <Trans>
-            County and UAT colours are not published yet. Click a territory to
-            open details; use the panel buttons to apply a buyer location filter.
+            UAT colours are not published yet. Click a territory to open
+            details; use the panel buttons to apply a buyer location filter.
           </Trans>
         </p>
       ) : facetBlock?.meta ? (
@@ -300,11 +302,19 @@ export function ProcurementMapView({
         </p>
       ) : (
         <p className="border-l-4 border-[var(--pnrr-border)] pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
-          <Trans>
-            Counties are coloured by their development region total. Records
-            without known buyer geography are excluded from the map — never shown
-            as zero.
-          </Trans>
+          {mapGrain === 'county' ? (
+            <Trans>
+              Counties are coloured by their own totals under the current
+              filters. Records without known buyer geography are excluded from
+              the map — never shown as zero.
+            </Trans>
+          ) : (
+            <Trans>
+              Counties are coloured by their development region total. Records
+              without known buyer geography are excluded from the map — never
+              shown as zero.
+            </Trans>
+          )}
         </p>
       )}
 
@@ -318,7 +328,7 @@ export function ProcurementMapView({
           <div className="flex h-full items-center justify-center">
             <LoadingSpinner />
           </div>
-        ) : analysisQuery.isError && !analysisQuery.data && mapGrain === 'region' ? (
+        ) : analysisQuery.isError && !analysisQuery.data && mapGrain !== 'uat' ? (
           <div className="p-6">
             <ProcurementErrorState
               error={analysisQuery.error}
@@ -353,7 +363,13 @@ export function ProcurementMapView({
         {heatmapData.length > 0 ? (
           <div className="pointer-events-none absolute bottom-3 left-3 right-3 flex justify-between gap-2 sm:right-auto">
             <div className="pointer-events-auto border-2 border-[var(--pnrr-border)] bg-background/95 px-3 py-2 text-xs font-semibold text-[var(--pnrr-fg)]">
-              <Trans>Region record totals (Preview)</Trans>
+              {mapGrain === 'county' ? (
+                <Trans>County totals</Trans>
+              ) : mapGrain === 'uat' ? (
+                <Trans>Region record totals (Preview)</Trans>
+              ) : (
+                <Trans>Region totals</Trans>
+              )}
               <div className="mt-1 flex h-2 w-40 overflow-hidden">
                 {Array.from({ length: 8 }, (_, index) => (
                   <span

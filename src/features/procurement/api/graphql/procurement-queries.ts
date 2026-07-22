@@ -544,12 +544,13 @@ export const PROCUREMENT_ANALYSIS_QUERY = /* GraphQL */ `
     $scope: ProcurementAnalysisScopeInput!
     $dimensions: [ProcurementBreakdownDimension!]!
     $topN: Int
+    $rankBy: ProcurementRankBy
     $bucket: ProcurementSeriesBucket!
     $measure: ProcurementAnalysisMeasure!
     $basis: ProcurementConcentrationBasis
   ) {
     stats: procurementStats(scope: $scope) { blocks { ${STATS_BLOCK_FIELDS} } }
-    facets: procurementFacets(scope: $scope, dimensions: $dimensions, topN: $topN) {
+    facets: procurementFacets(scope: $scope, dimensions: $dimensions, topN: $topN, rankBy: $rankBy) {
       blocks { ${BREAKDOWN_BLOCK_FIELDS} }
     }
     series: procurementSeries(scope: $scope, bucket: $bucket, measure: $measure) {
@@ -643,4 +644,19 @@ export const rawCpvDivisionSchema = z.object({
 export type RawProcurementCpvDivision = z.infer<typeof rawCpvDivisionSchema>
 export const procurementCpvDivisionsResponseSchema = z.object({
   procurementCpvDivisions: z.array(rawCpvDivisionSchema),
+})
+
+export const PROCUREMENT_CPV_CODES_QUERY = /* GraphQL */ `
+  query ProcurementCpvCodes($codes: [String!]!) {
+    procurementCpvCodes(codes: $codes) { cpvCode labelRo labelEn }
+  }
+`
+export const rawCpvCodeSchema = z.object({
+  cpvCode: z.string(),
+  labelRo: z.string().nullable(),
+  labelEn: z.string().nullable(),
+})
+export type RawProcurementCpvCode = z.infer<typeof rawCpvCodeSchema>
+export const procurementCpvCodesResponseSchema = z.object({
+  procurementCpvCodes: z.array(rawCpvCodeSchema),
 })

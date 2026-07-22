@@ -40,8 +40,8 @@ import {
  * Overview glance card deep-links to Rankings. Slice / territory / CPV pages
  * keep a local sheet table (no hub Rankings context).
  *
- * TODO(ClickHouse analytics): value-sorted leaderboards and server offset
- * pagination beyond top-50 are not served yet — Rankings stays API-honest.
+ * Value-sorted, top-100 leaderboards are live on the Rankings hub (rankBy).
+ * Server offset pagination beyond that is not served yet — stays API-honest.
  */
 
 const CARD_LIMIT = 5

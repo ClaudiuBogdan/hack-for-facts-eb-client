@@ -30,7 +30,7 @@ import {
 
 /**
  * Overview CPV glance deep-links to Rankings. Other surfaces keep a local sheet.
- * TODO(ClickHouse analytics): CPV code labels / deeper depth beyond top-50.
+ * CPV code labels + top-100 depth are live on the Rankings hub (cpvLevel=code).
  */
 
 const CARD_LIMIT = 5

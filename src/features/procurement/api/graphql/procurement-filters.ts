@@ -85,11 +85,7 @@ export interface ProcurementScopeFilterInput {
   cpvCode?: string
   buyerCounty?: string
   buyerRegion?: string
-  /**
-   * TODO(API buyer_siruta scope): accept buyerSiruta on ProcurementAnalysisScopeInput
-   * so UAT map drawer / hub filters can scope aggregates natively. Client already
-   * sends this from ProcurementTerritoryDrawer (mapGrain=uat).
-   */
+  /** Served by the ClickHouse analytics backend (dev, 2026-07-22). */
   buyerSiruta?: string
   supplierCounty?: string
   supplierRegion?: string
@@ -451,13 +447,10 @@ export function buildScopeFilter(scope: {
   if (monthTo) filter.to = monthTo
   const buyerRegion = trimmedOrUndefined(scope.buyerRegion)
   if (buyerRegion) filter.buyerRegion = buyerRegion
-  // TODO(API Wave-2 buyer_county rollup): serving must accept buyerCounty on
-  // ProcurementAnalysisScopeInput (not approximate to parent region). Used by
-  // ProcurementTerritoryDrawer when mapGrain=county and by hub buyerCounty.
+  // buyerCounty / buyerSiruta: served natively by the ClickHouse analytics
+  // backend (dev, 2026-07-22) — no region approximation.
   const buyerCounty = trimmedOrUndefined(scope.buyerCounty)
   if (buyerCounty) filter.buyerCounty = buyerCounty
-  // TODO(API buyer_siruta scope): serving must accept buyerSiruta. Used by
-  // ProcurementTerritoryDrawer when mapGrain=uat.
   const buyerSiruta = trimmedOrUndefined(scope.buyerSiruta)
   if (buyerSiruta) filter.buyerSiruta = buyerSiruta
   // Supplier geography: served by the ClickHouse analytics backend (dev,

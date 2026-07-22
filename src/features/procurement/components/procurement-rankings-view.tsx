@@ -30,14 +30,11 @@ type Props = {
 }
 
 /**
- * Rankings hub view — top-50 leaderboards with client-simulated pagination.
+ * Rankings hub view — top-100 leaderboards (count- or value-ranked) with
+ * client-simulated pagination over the honest payload.
  */
 export function ProcurementRankingsView({ hubState, hub }: Props) {
   const rankDim = hubState.rankDim
-  // Party rankings under buyer geography are served by the ClickHouse
-  // analytics backend (dev, 2026-07-22): arbitrary scope×dimension
-  // conjunctions — the rollup-era restriction is lifted.
-  const partyUnavailable = false
   const supplierUnsupported = hubState.grain === 'procedures' && rankDim === 'supplier'
 
   const scope = hubStateToRankingScopeInput(hubState)
@@ -46,7 +43,7 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
       scope,
       rankDim,
       cpvLevel: hubState.cpvLevel,
-      partyRankingsUnavailable: partyUnavailable,
+      rankBy: hubState.rankBy,
     },
     !supplierUnsupported,
   )
@@ -54,12 +51,15 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
   const rows = query.data?.rows ?? []
   const totalPages = Math.max(1, Math.ceil(rows.length / hubState.rankPageSize))
   const { setRankPage } = hub
+  const hasData = query.data !== undefined
 
   useEffect(() => {
-    if (hubState.rankPage > totalPages) {
+    // Clamp only once data is in — clamping against the empty loading payload
+    // would rewrite a deep-linked rankPage to 1 before rows arrive.
+    if (hasData && hubState.rankPage > totalPages) {
       setRankPage(totalPages)
     }
-  }, [setRankPage, hubState.rankPage, totalPages])
+  }, [setRankPage, hasData, hubState.rankPage, totalPages])
 
   const analysisGrain =
     hubState.grain === 'contracts' || hubState.grain === 'direct_acquisitions'
@@ -71,13 +71,15 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
     { id: 'cpv', label: t`CPV` },
   ]
 
-  const unavailableReason = partyUnavailable
-    ? t`Authority and supplier rankings are unavailable under the current buyer geography rollup. CPV rankings remain available.`
-    : supplierUnsupported
-      ? t`Supplier rankings need contracts or direct acquisitions — procedures have no awards.`
-      : undefined
+  const unavailableReason = supplierUnsupported
+    ? t`Supplier rankings need contracts or direct acquisitions — procedures have no awards.`
+    : undefined
 
-  const distinctHonesty = false
+  // The server echoes the effective basis: a value request falls back to count
+  // when the spend gate suppresses money — reflect what was actually served.
+  const servedRankedBy = query.data?.rankedBy ?? hubState.rankBy
+  const valueFellBack =
+    hubState.rankBy === 'value' && query.data?.rankedBy === 'count'
 
   return (
     <div className="space-y-6">
@@ -102,14 +104,41 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
           ))}
         </div>
 
-        {analysisGrain ? (
-          <ProcurementAnalysisGrainToggle
-            value={analysisGrain}
-            onChange={(grain) =>
-              hub.updateFilters({ grain: analysisGrainToHubGrain(grain) })
-            }
-          />
-        ) : null}
+        <div className="flex flex-wrap items-center gap-4">
+          <div
+            className="inline-flex border-2 border-[var(--pnrr-border)]"
+            role="group"
+            aria-label={t`Ranking basis`}
+          >
+            <Button
+              type="button"
+              variant={hubState.rankBy === 'count' ? 'default' : 'ghost'}
+              className="rounded-none"
+              aria-pressed={hubState.rankBy === 'count'}
+              onClick={() => hub.setRankBy('count')}
+            >
+              <Trans>By count</Trans>
+            </Button>
+            <Button
+              type="button"
+              variant={hubState.rankBy === 'value' ? 'default' : 'ghost'}
+              className="rounded-none border-l-2 border-[var(--pnrr-border)]"
+              aria-pressed={hubState.rankBy === 'value'}
+              onClick={() => hub.setRankBy('value')}
+            >
+              <Trans>By value</Trans>
+            </Button>
+          </div>
+
+          {analysisGrain ? (
+            <ProcurementAnalysisGrainToggle
+              value={analysisGrain}
+              onChange={(grain) =>
+                hub.updateFilters({ grain: analysisGrainToHubGrain(grain) })
+              }
+            />
+          ) : null}
+        </div>
       </div>
 
       {rankDim === 'cpv' ? (
@@ -153,10 +182,23 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
                   : t`Top CPV divisions`}
           </h2>
           <p className={procurementSectionDescriptionClassName}>
-            <Trans>
-              Sorted by record count. Awarded value is shown when the API
-              returns it for the current filters.
-            </Trans>
+            {servedRankedBy === 'value' ? (
+              <Trans>Sorted by awarded value for the current filters.</Trans>
+            ) : (
+              <Trans>
+                Sorted by record count. Awarded value is shown when the API
+                returns it for the current filters.
+              </Trans>
+            )}
+            {valueFellBack ? (
+              <>
+                {' '}
+                <Trans>
+                  Value ranking is unavailable for this scope — showing count
+                  order instead.
+                </Trans>
+              </>
+            ) : null}
           </p>
         </div>
 
@@ -167,7 +209,7 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
                 <Trans>Distinct institutions</Trans>
               </p>
               <p className="mt-1 font-bold tabular-nums text-[var(--pnrr-fg)]">
-                {distinctHonesty || query.data?.distinctAuthorities == null
+                {query.data?.distinctAuthorities == null
                   ? '—'
                   : formatFlowCount(query.data.distinctAuthorities)}
               </p>
@@ -177,20 +219,13 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
                 <Trans>Distinct suppliers</Trans>
               </p>
               <p className="mt-1 font-bold tabular-nums text-[var(--pnrr-fg)]">
-                {distinctHonesty || query.data?.distinctSuppliers == null
+                {query.data?.distinctSuppliers == null
                   ? '—'
                   : formatFlowCount(query.data.distinctSuppliers)}
               </p>
             </div>
-            {distinctHonesty ? (
-              <p className="max-w-md text-sm leading-6 text-[var(--pnrr-muted)]">
-                <Trans>
-                  Distinct party counts are unavailable under buyer geography
-                  until party keys are retained in the regional rollup.
-                </Trans>
-              </p>
-            ) : query.data?.distinctAuthorities == null &&
-              query.data?.distinctSuppliers != null ? (
+            {query.data?.distinctAuthorities == null &&
+            query.data?.distinctSuppliers != null ? (
               <p className="max-w-md text-sm leading-6 text-[var(--pnrr-muted)]">
                 <Trans>
                   Distinct institution counts are not published on this
@@ -200,17 +235,9 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
             ) : null}
           </div>
 
-          {query.isPending && !query.data ? (
-            <ProcurementOverviewSkeleton />
-          ) : query.isError && !query.data && !unavailableReason ? (
-            <ProcurementErrorState
-              error={query.error}
-              onRetry={() => void query.refetch()}
-              isRetrying={query.isRefetching}
-            />
-          ) : (
+          {unavailableReason ? (
             <ProcurementRankingTable
-              rows={unavailableReason || supplierUnsupported ? [] : rows}
+              rows={[]}
               hubState={hubState}
               rankDim={rankDim}
               cpvLevel={hubState.cpvLevel}
@@ -219,6 +246,25 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
               onRankPageChange={hub.setRankPage}
               onRankPageSizeChange={hub.setRankPageSize}
               unavailableReason={unavailableReason}
+            />
+          ) : query.isPending && !query.data ? (
+            <ProcurementOverviewSkeleton />
+          ) : query.isError && !query.data ? (
+            <ProcurementErrorState
+              error={query.error}
+              onRetry={() => void query.refetch()}
+              isRetrying={query.isRefetching}
+            />
+          ) : (
+            <ProcurementRankingTable
+              rows={rows}
+              hubState={hubState}
+              rankDim={rankDim}
+              cpvLevel={hubState.cpvLevel}
+              rankPage={hubState.rankPage}
+              rankPageSize={hubState.rankPageSize}
+              onRankPageChange={hub.setRankPage}
+              onRankPageSizeChange={hub.setRankPageSize}
             />
           )}
         </div>

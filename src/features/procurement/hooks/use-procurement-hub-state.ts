@@ -14,6 +14,7 @@ import {
   hubStateToListSearchState,
   resolveProcurementOverviewPeriod,
   type ProcurementCpvLevel,
+  type ProcurementRankBy,
   type ProcurementHubState,
   type ProcurementHubView,
   type ProcurementRankDim,
@@ -68,6 +69,11 @@ export function useProcurementHubState(state: ProcurementHubState) {
 
   const setCpvLevel = useCallback(
     (cpvLevel: ProcurementCpvLevel) => updateFilters({ cpvLevel, rankPage: 1 }),
+    [updateFilters],
+  )
+
+  const setRankBy = useCallback(
+    (rankBy: ProcurementRankBy) => updateFilters({ rankBy, rankPage: 1 }),
     [updateFilters],
   )
 
@@ -328,6 +334,7 @@ export function useProcurementHubState(state: ProcurementHubState) {
     setView,
     setRankDim,
     setCpvLevel,
+    setRankBy,
     setRankPage,
     setRankPageSize,
     setQuery,

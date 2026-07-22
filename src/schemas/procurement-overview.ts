@@ -159,6 +159,7 @@ export function toProcurementLandingQueryFilters(
   return {
     buyerRegion: filters.buyerRegion,
     buyerCounty: filters.buyerCounty,
+    buyerSiruta: filters.buyerSiruta,
     supplierRegion: filters.supplierRegion,
     supplierCounty: filters.supplierCounty,
     ...(resolved.dateFrom ? { dateFrom: resolved.dateFrom } : {}),
@@ -188,9 +189,8 @@ export function parseProcurementOverviewSearch(
     ...(normalizedFrom ? { dateFrom: normalizedFrom } : {}),
     ...(normalizedTo ? { dateTo: normalizedTo } : {}),
     ...(period === 'all' ? { period: 'all' as const } : {}),
-    // County is the more specific deep-link when stale URLs contain both.
-    // The live client still applies it as an explicitly-labelled regional
-    // approximation until Matrix v2 exposes the buyer-county rollup.
+    // County is the more specific deep-link when stale URLs contain both;
+    // it scopes analytics natively (ClickHouse, dev 2026-07-22).
     ...(buyerCounty
       ? { buyerCounty }
       : buyerRegion

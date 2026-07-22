@@ -139,6 +139,10 @@ export type ProcurementRankDim = z.infer<typeof procurementRankDimSchema>
 export const procurementCpvLevelSchema = z.enum(['division', 'code'])
 export type ProcurementCpvLevel = z.infer<typeof procurementCpvLevelSchema>
 
+/** Rankings sort basis — records (default) or awarded value (spend-gated server-side). */
+export const procurementRankBySchema = z.enum(['count', 'value'])
+export type ProcurementRankBy = z.infer<typeof procurementRankBySchema>
+
 export const PROCUREMENT_RANK_PAGE_SIZES = [10, 25, 50] as const
 export type ProcurementRankPageSize =
   (typeof PROCUREMENT_RANK_PAGE_SIZES)[number]
@@ -151,8 +155,9 @@ export const procurementHubMeasureSchema = z.enum([
 export type ProcurementHubMeasure = z.infer<typeof procurementHubMeasureSchema>
 
 /**
- * Buyer map choropleth geography level. County/UAT paint is TODO until rollups;
- * kept in URL as Overview-map chrome only (not a global filter chip / sheet control).
+ * Buyer map choropleth geography level. Region + county paint live (ClickHouse
+ * analytics); UAT stays preview until a UAT geometry layer ships. Kept in URL as
+ * Overview-map chrome only (not a global filter chip / sheet control).
  */
 export const procurementHubMapGrainSchema = z.enum(['region', 'county', 'uat'])
 export type ProcurementHubMapGrain = z.infer<
@@ -186,6 +191,7 @@ export const procurementHubSearchSchema = z
     mapGrain: procurementHubMapGrainSchema.optional().catch(undefined),
     rankDim: procurementRankDimSchema.optional().catch(undefined),
     cpvLevel: procurementCpvLevelSchema.optional().catch(undefined),
+    rankBy: procurementRankBySchema.optional().catch(undefined),
     rankPage: z.coerce.number().int().min(1).optional().catch(undefined),
     rankPageSize: z
       .preprocess((value) => {
@@ -247,6 +253,7 @@ export type ProcurementHubState = {
   mapGrain: ProcurementHubMapGrain
   rankDim: ProcurementRankDim
   cpvLevel: ProcurementCpvLevel
+  rankBy: ProcurementRankBy
   rankPage: number
   rankPageSize: ProcurementRankPageSize
   sort: ProcurementSort
@@ -285,6 +292,7 @@ export const PROCUREMENT_HUB_DEFAULTS = {
   mapGrain: 'region' as const,
   rankDim: 'buyer' as const,
   cpvLevel: 'division' as const,
+  rankBy: 'count' as const,
   rankPage: 1 as const,
   rankPageSize: 10 as const,
   sort: PROCUREMENT_SEARCH_DEFAULTS.sort,
@@ -293,11 +301,11 @@ export const PROCUREMENT_HUB_DEFAULTS = {
 } as const
 
 /**
- * API-honest leaderboard depth for Rankings (GraphQL topN capped at 50).
- * TODO(ClickHouse / server offset pagination): replace client slice over this
- * payload with a real paginated leaderboard query.
+ * API-honest leaderboard depth for Rankings (GraphQL topN capped at 100 —
+ * ClickHouse analytics, dev 2026-07-22). Client pagination windows this payload;
+ * server offset pagination is still a possible follow-up for deeper walks.
  */
-export const PROCUREMENT_RANKINGS_TOP_N = 50 as const
+export const PROCUREMENT_RANKINGS_TOP_N = 100 as const
 
 /** Keys that apply to list queries but not overview aggregates (C1). */
 export const PROCUREMENT_HUB_LIST_ONLY_KEYS = [
@@ -354,6 +362,7 @@ export function withProcurementHubDefaults(
     mapGrain: search.mapGrain ?? PROCUREMENT_HUB_DEFAULTS.mapGrain,
     rankDim: search.rankDim ?? PROCUREMENT_HUB_DEFAULTS.rankDim,
     cpvLevel: search.cpvLevel ?? PROCUREMENT_HUB_DEFAULTS.cpvLevel,
+    rankBy: search.rankBy ?? PROCUREMENT_HUB_DEFAULTS.rankBy,
     rankPage: search.rankPage ?? PROCUREMENT_HUB_DEFAULTS.rankPage,
     rankPageSize: search.rankPageSize ?? PROCUREMENT_HUB_DEFAULTS.rankPageSize,
     sort: search.sort ?? PROCUREMENT_HUB_DEFAULTS.sort,
@@ -456,6 +465,7 @@ export function cleanProcurementHubSearch(
   if (cleaned.cpvLevel === PROCUREMENT_HUB_DEFAULTS.cpvLevel) {
     delete cleaned.cpvLevel
   }
+  if (cleaned.rankBy === PROCUREMENT_HUB_DEFAULTS.rankBy) delete cleaned.rankBy
   if (cleaned.rankPage === PROCUREMENT_HUB_DEFAULTS.rankPage) {
     delete cleaned.rankPage
   }
@@ -486,6 +496,7 @@ export function hubStateToLandingFilters(
       period: state.period,
       buyerRegion: state.buyerRegion,
       buyerCounty: state.buyerCounty,
+      buyerSiruta: state.buyerSiruta,
       supplierRegion: state.supplierRegion,
       supplierCounty: state.supplierCounty,
     },
@@ -554,6 +565,8 @@ export function hubStateToRankingScopeInput(
   readonly buyerRegion?: string
   readonly buyerCounty?: string
   readonly buyerSiruta?: string
+  readonly supplierCounty?: string
+  readonly supplierRegion?: string
   readonly grain?: 'procedure' | 'contract' | 'direct_acquisition'
   readonly status?: string
 } {
@@ -648,14 +661,14 @@ export const PROCUREMENT_HUB_CAPABILITY_MATRIX: readonly HubCapabilityRow[] = [
     label: 'Buyer geography map',
     overview: 'preview',
     list: 'todo',
-    note: 'M1 region paint live; measure+mapGrain shared URL; TODO county/UAT choropleth',
+    note: 'Region+county paint live (ClickHouse); UAT paint blocked on geometry layer',
   },
   {
     id: 'rankings',
     label: 'Rankings leaderboard',
     overview: 'live',
     list: 'live',
-    note: 'view=rankings; top-50 + client pagination; party dims unavailable under buyer geo',
+    note: 'view=rankings; top-100 + count/value sort (ClickHouse); client pagination',
   },
   {
     id: 'q-aggregates',

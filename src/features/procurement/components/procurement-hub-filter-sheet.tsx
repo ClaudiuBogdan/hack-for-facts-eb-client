@@ -4,7 +4,6 @@ import { t } from '@lingui/core/macro'
 import {
   Building2,
   CalendarRange,
-  Info,
   Layers,
   MapPin,
   SlidersHorizontal,
@@ -404,18 +403,6 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
               </div>
             ) : null}
 
-            {buyerLevel === 'county' ? (
-              <div className="flex gap-2 border-l-4 border-amber-500 bg-amber-50 p-3 text-sm leading-5 text-amber-950 dark:bg-amber-950/30 dark:text-amber-100">
-                <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-                <p>
-                  <Trans>
-                    County analytics are not published yet. This first version
-                    applies the county’s region and labels the result as a
-                    regional approximation.
-                  </Trans>
-                </p>
-              </div>
-            ) : null}
           </section>
 
           <section

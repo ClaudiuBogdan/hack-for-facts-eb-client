@@ -25,11 +25,14 @@ describe('procurement hub schema', () => {
     expect(parseProcurementHubSearch({}).cpvLevel).toBe('division')
     expect(parseProcurementHubSearch({}).rankPage).toBe(1)
     expect(parseProcurementHubSearch({}).rankPageSize).toBe(10)
+    expect(parseProcurementHubSearch({}).rankBy).toBe('count')
+    expect(parseProcurementHubSearch({ rankBy: 'value' }).rankBy).toBe('value')
     expect(
       cleanProcurementHubSearch({
         view: 'rankings',
         rankDim: 'supplier',
         cpvLevel: 'code',
+        rankBy: 'value',
         rankPage: 2,
         rankPageSize: 25,
       }),
@@ -37,6 +40,7 @@ describe('procurement hub schema', () => {
       view: 'rankings',
       rankDim: 'supplier',
       cpvLevel: 'code',
+      rankBy: 'value',
       rankPage: 2,
       rankPageSize: 25,
     })
@@ -45,6 +49,7 @@ describe('procurement hub schema', () => {
         view: 'rankings',
         rankDim: 'buyer',
         cpvLevel: 'division',
+        rankBy: 'count',
         rankPage: 1,
         rankPageSize: 10,
       }),

@@ -59,11 +59,9 @@ type Props = {
 }
 
 /**
- * Rankings table with client-simulated pagination over the top-50 payload.
- *
- * TODO(ClickHouse / server offset pagination): replace client slice over
- * topN=50 with a real paginated leaderboard query (page/pageSize → server).
- * Until then, UI pagination only windows the honest top-50 payload.
+ * Rankings table with client-simulated pagination: UI pagination windows the
+ * honest top-100 payload; server offset pagination (page/pageSize → server)
+ * remains a follow-up for deeper walks.
  */
 export function ProcurementRankingTable({
   rows,

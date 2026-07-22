@@ -82,15 +82,13 @@ import {
   type ProcurementScopeFilterInput,
 } from './graphql/procurement-filters'
 import {
-  fetchProcurementGeographyOptions,
   resetProcurementReferenceCacheForTests,
 } from './procurement-reference-api'
 
 /**
- * Rows per aggregate ranking (GraphQL default 10, server-capped at 50).
- * TODO(ClickHouse analytics): Deeper scoped rankings (top-50/100, pagination,
- * sort by awarded value) are not served here — keep TOP_N API-honest and do
- * not pad UI with mock rows (product decision B1, 2026-07).
+ * Rows per aggregate ranking on overview/landing surfaces (server cap is 100).
+ * Deeper, value-sorted leaderboards live on the Rankings hub (rankBy + top-100);
+ * landing keeps a compact top-10 and never pads with mock rows (B1, 2026-07).
  */
 const TOP_N = 10
 /** Supplier "load more" connection page size. */
@@ -212,24 +210,13 @@ async function loadPartyNames(
 export async function fetchProcurementLandingLive(
   filters: ProcurementLandingFilters = {},
 ): Promise<ProcurementLanding> {
-  let buyerRegion = filters.buyerRegion
-  if (filters.buyerCounty) {
-    const geography = await fetchProcurementGeographyOptions()
-    const county = geography.counties.find(
-      (option) => option.countyCode === filters.buyerCounty,
-    )
-    if (!county?.region) {
-      throw new Error(
-        `County ${filters.buyerCounty} has no live procurement region mapping`,
-      )
-    }
-    buyerRegion = county.region
-  }
-
-
+  // Buyer county/UAT scope natively (ClickHouse analytics, dev 2026-07-22) —
+  // the rollup-era region approximation is gone.
   const scope = buildScopeFilter({
     ...buildProcurementOverviewMonthScope(filters),
-    buyerRegion,
+    buyerRegion: filters.buyerRegion,
+    buyerCounty: filters.buyerCounty,
+    buyerSiruta: filters.buyerSiruta,
     supplierCounty: filters.supplierCounty,
     supplierRegion: filters.supplierRegion,
   })
@@ -250,16 +237,8 @@ export async function fetchProcurementLandingLive(
  * Map territory drawer overview — same landing payload shape, but requests
  * party rankings under buyer geography as if the serving API retains keys.
  *
- * TODO(API party rankings under buyer geo): ClickHouse / GraphQL analysis must
- * retain authority and supplier keys under `buyerRegion` (and later
- * `buyerCounty` / `buyerSiruta`) so `procurementBreakdown` for those dimensions
- * returns ranked buckets. Today the hub landing deliberately omits
- * includeAuthorities/includeSuppliers when geo is set; this path always asks
- * for them so ProcurementTerritoryDrawer can render real cards (or surface
- * GraphQL errors) instead of Preview-unavailable placeholders.
- *
- * TODO(API Wave-2 buyer_county / buyer_siruta): accept those scope fields
- * natively (see buildScopeFilter). Client sends them without region approximation.
+ * Party rankings under buyer geography are served by the ClickHouse analytics
+ * backend (dev, 2026-07-22).
  */
 export async function fetchProcurementTerritoryOverviewLive(
   filters: ProcurementLandingFilters = {},

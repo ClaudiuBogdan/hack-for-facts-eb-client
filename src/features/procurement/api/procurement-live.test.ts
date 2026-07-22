@@ -163,7 +163,7 @@ describe('live procurement adapter', () => {
     expect(graphqlQueryMock.mock.calls[2]?.[0]).not.toContain('company(cui:')
   })
 
-  it('scopes landing analytics by buyer region without unsupported rankings', async () => {
+  it('scopes landing analytics by buyer region with party rankings included', async () => {
     graphqlQueryMock
       .mockResolvedValueOnce({
         ...aggregateResponse(),
@@ -181,27 +181,16 @@ describe('live procurement adapter', () => {
     expect(graphqlQueryMock).toHaveBeenCalledTimes(2)
     expect(graphqlQueryMock.mock.calls[0]?.[1]).toMatchObject({
       scope: { buyerRegion: 'Nord-Vest' },
-      includeAuthorities: false,
-      includeSuppliers: false,
+      // Party rankings under buyer geography are served (ClickHouse, dev
+      // 2026-07-22) — the rollup-era omission is lifted.
+      includeAuthorities: true,
+      includeSuppliers: true,
       includeCategories: true,
     })
   })
 
-  it('labels a county as a regional approximation before querying analytics', async () => {
+  it('scopes landing analytics by buyer county natively (no region approximation)', async () => {
     graphqlQueryMock
-      .mockResolvedValueOnce({
-        referenceRegions: [
-          { region: 'Nord-Vest', countyCount: 6, uatCount: 452 },
-        ],
-        referenceCounties: [
-          {
-            countyCode: 'CJ',
-            countyName: 'CLUJ',
-            region: 'Nord-Vest',
-            uatCount: 82,
-          },
-        ],
-      })
       .mockResolvedValueOnce({
         ...aggregateResponse(),
         authorities: undefined,
@@ -211,11 +200,9 @@ describe('live procurement adapter', () => {
 
     await fetchProcurementLandingLive({ buyerCounty: 'CJ' })
 
-    expect(graphqlQueryMock.mock.calls[0]?.[0]).toContain(
-      'query ProcurementGeographyOptions',
-    )
-    expect(graphqlQueryMock.mock.calls[1]?.[1]).toMatchObject({
-      scope: { buyerRegion: 'Nord-Vest' },
+    expect(graphqlQueryMock).toHaveBeenCalledTimes(2)
+    expect(graphqlQueryMock.mock.calls[0]?.[1]).toMatchObject({
+      scope: { buyerCounty: 'CJ' },
     })
   })
 })

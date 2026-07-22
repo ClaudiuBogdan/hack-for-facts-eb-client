@@ -125,7 +125,7 @@ export function buildCountyHeatmap(
       amount,
       total_amount: amount,
       per_capita_amount: 0,
-      county_entity: { cui: '', name: county.region },
+      county_entity: { cui: '', name: county.region ?? '' },
     })
   }
   return points
