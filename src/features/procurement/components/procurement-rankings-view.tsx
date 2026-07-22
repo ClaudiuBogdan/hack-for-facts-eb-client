@@ -33,12 +33,11 @@ type Props = {
  * Rankings hub view — top-50 leaderboards with client-simulated pagination.
  */
 export function ProcurementRankingsView({ hubState, hub }: Props) {
-  const hasBuyerGeography = Boolean(
-    hubState.buyerRegion || hubState.buyerCounty || hubState.buyerSiruta,
-  )
   const rankDim = hubState.rankDim
-  const partyUnavailable =
-    hasBuyerGeography && (rankDim === 'buyer' || rankDim === 'supplier')
+  // Party rankings under buyer geography are served by the ClickHouse
+  // analytics backend (dev, 2026-07-22): arbitrary scope×dimension
+  // conjunctions — the rollup-era restriction is lifted.
+  const partyUnavailable = false
   const supplierUnsupported = hubState.grain === 'procedures' && rankDim === 'supplier'
 
   const scope = hubStateToRankingScopeInput(hubState)
@@ -78,7 +77,7 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
       ? t`Supplier rankings need contracts or direct acquisitions — procedures have no awards.`
       : undefined
 
-  const distinctHonesty = hasBuyerGeography && (rankDim === 'buyer' || rankDim === 'supplier')
+  const distinctHonesty = false
 
   return (
     <div className="space-y-6">

@@ -576,6 +576,8 @@ export function hubStateToRankingScopeInput(
     buyerRegion: state.buyerRegion,
     buyerCounty: state.buyerCounty,
     buyerSiruta: state.buyerSiruta,
+    supplierCounty: state.supplierCounty,
+    supplierRegion: state.supplierRegion,
     grain,
     status: rankingStatusFromHubState(state),
   }

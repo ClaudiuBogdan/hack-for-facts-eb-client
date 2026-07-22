@@ -226,23 +226,19 @@ export async function fetchProcurementLandingLive(
     buyerRegion = county.region
   }
 
-  if (filters.supplierRegion || filters.supplierCounty) {
-    throw new Error(
-      'Supplier geography is not available in the live procurement matrix yet',
-    )
-  }
 
   const scope = buildScopeFilter({
     ...buildProcurementOverviewMonthScope(filters),
     buyerRegion,
+    supplierCounty: filters.supplierCounty,
+    supplierRegion: filters.supplierRegion,
   })
-  const hasBuyerGeography = Boolean(buyerRegion)
   const [aggregates, divisions] = await Promise.all([
+    // Party breakdowns under buyer geography are served by the ClickHouse
+    // analytics backend (dev, 2026-07-22) — the rollup-era omission is lifted.
     loadAggregates(scope, {
-      // Party-key rollups are not retained under buyer-region scope. Omitting
-      // these fields keeps the rest of the scoped landing response serviceable.
-      includeAuthorities: !hasBuyerGeography,
-      includeSuppliers: !hasBuyerGeography,
+      includeAuthorities: true,
+      includeSuppliers: true,
     }),
     loadCpvDivisions(),
   ])
@@ -268,11 +264,6 @@ export async function fetchProcurementLandingLive(
 export async function fetchProcurementTerritoryOverviewLive(
   filters: ProcurementLandingFilters = {},
 ): Promise<ProcurementLanding> {
-  if (filters.supplierRegion || filters.supplierCounty) {
-    throw new Error(
-      'Supplier geography is not available in the live procurement matrix yet',
-    )
-  }
 
   const monthScope = buildProcurementOverviewMonthScope(filters)
   const scope = buildScopeFilter({
@@ -280,6 +271,8 @@ export async function fetchProcurementTerritoryOverviewLive(
     buyerRegion: filters.buyerRegion,
     buyerCounty: filters.buyerCounty,
     buyerSiruta: filters.buyerSiruta,
+    supplierCounty: filters.supplierCounty,
+    supplierRegion: filters.supplierRegion,
   })
 
   const [aggregates, divisions] = await Promise.all([

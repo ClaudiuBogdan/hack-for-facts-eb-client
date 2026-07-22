@@ -154,8 +154,9 @@ export function buildHubActiveFilterChips(
       key: 'supplier-geo',
       prefix: t`Supplier location`,
       value: state.supplierCounty ?? state.supplierRegion ?? '',
-      kind:
-        state.view === 'rankings' ? 'not-on-rankings' : 'not-on-list',
+      // Supplier geo is applied to overview/rankings analytics (ClickHouse
+      // dev backend, 2026-07-22); record lists still exclude it.
+      kind: geoAppliedOnView ? 'applied' : 'not-on-list',
       clear: { supplierCounty: undefined, supplierRegion: undefined },
     })
   }

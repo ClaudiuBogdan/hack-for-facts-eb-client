@@ -427,6 +427,8 @@ export function buildScopeFilter(scope: {
   buyerRegion?: string
   buyerCounty?: string
   buyerSiruta?: string
+  supplierCounty?: string
+  supplierRegion?: string
   grain?: ProcurementScopeFilterInput['grain']
   /** Single status token — analysis scope has no `in` operator. */
   status?: string
@@ -458,6 +460,13 @@ export function buildScopeFilter(scope: {
   // ProcurementTerritoryDrawer when mapGrain=uat.
   const buyerSiruta = trimmedOrUndefined(scope.buyerSiruta)
   if (buyerSiruta) filter.buyerSiruta = buyerSiruta
+  // Supplier geography: served by the ClickHouse analytics backend (dev,
+  // 2026-07-22) — forwarded on the analysis scope; record lists still
+  // exclude it (list geo remains a separate TODO).
+  const supplierCounty = trimmedOrUndefined(scope.supplierCounty)
+  if (supplierCounty) filter.supplierCounty = supplierCounty
+  const supplierRegion = trimmedOrUndefined(scope.supplierRegion)
+  if (supplierRegion) filter.supplierRegion = supplierRegion
   if (scope.grain) filter.grain = scope.grain
   const status = trimmedOrUndefined(scope.status)
   if (status) filter.status = status
