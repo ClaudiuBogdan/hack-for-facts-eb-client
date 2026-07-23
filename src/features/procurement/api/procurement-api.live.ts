@@ -125,6 +125,7 @@ async function loadAggregates(
     readonly includeAuthorities?: boolean
     readonly includeSuppliers?: boolean
     readonly includeCategories?: boolean
+    readonly rankBy?: 'count' | 'value'
   } = {},
 ) {
   const data = await graphqlQuery<unknown>(
@@ -132,6 +133,7 @@ async function loadAggregates(
     {
       scope,
       topN: TOP_N,
+      rankBy: options.rankBy ?? 'count',
       includeAuthorities: options.includeAuthorities ?? true,
       includeSuppliers: options.includeSuppliers ?? true,
       includeCategories: options.includeCategories ?? true,
@@ -226,6 +228,7 @@ export async function fetchProcurementLandingLive(
     loadAggregates(scope, {
       includeAuthorities: true,
       includeSuppliers: true,
+      rankBy: filters.rankBy,
     }),
     loadCpvDivisions(),
   ])
@@ -259,6 +262,7 @@ export async function fetchProcurementTerritoryOverviewLive(
       includeAuthorities: true,
       includeSuppliers: true,
       includeCategories: true,
+      rankBy: filters.rankBy,
     }),
     loadCpvDivisions(),
   ])

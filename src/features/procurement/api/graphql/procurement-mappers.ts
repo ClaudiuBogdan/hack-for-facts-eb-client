@@ -410,6 +410,18 @@ function mapGrainAnalytics(
     ),
     monthly: mapMonthly(recordSeries, valueSeries),
     meta: {
+      authoritiesRankedBy:
+        authorities?.rankedBy === 'count' || authorities?.rankedBy === 'value'
+          ? authorities.rankedBy
+          : null,
+      suppliersRankedBy:
+        suppliers?.rankedBy === 'count' || suppliers?.rankedBy === 'value'
+          ? suppliers.rankedBy
+          : null,
+      categoriesRankedBy:
+        categories?.rankedBy === 'count' || categories?.rankedBy === 'value'
+          ? categories.rankedBy
+          : null,
       authorities: authorities ? mapAnswerMeta(authorities.meta) : null,
       suppliers: suppliers ? mapAnswerMeta(suppliers.meta) : null,
       categories: categories ? mapAnswerMeta(categories.meta) : null,

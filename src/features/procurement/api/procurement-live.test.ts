@@ -47,7 +47,7 @@ function aggregateResponse() {
   const breakdown = (dimension: string, key?: string) => grains.map((grain) => ({
     grain,
     dimension,
-    rankedBy: 'recordCount',
+    rankedBy: 'count',
     buckets: grain === 'contract' && key ? [{
       key, kind: 'top', recordCount: '1', withValueCount: '1',
       valueAwardedSum: '10.00', shareOfScope: '1.0000',
@@ -151,6 +151,7 @@ describe('live procurement adapter', () => {
     expect(graphqlQueryMock).toHaveBeenCalledTimes(3)
     expect(graphqlQueryMock.mock.calls[0]?.[1]).toMatchObject({
       scope: { from: '2024-05', to: '2024-06' },
+      rankBy: 'count',
     })
     expect(graphqlQueryMock.mock.calls[2]?.[0]).toContain(
       'query ProcurementPartyNames',
@@ -161,6 +162,22 @@ describe('live procurement adapter', () => {
     expect(graphqlQueryMock.mock.calls[2]?.[0]).toContain('suppliers: companies')
     expect(graphqlQueryMock.mock.calls[2]?.[0]).not.toContain('entity(cui:')
     expect(graphqlQueryMock.mock.calls[2]?.[0]).not.toContain('company(cui:')
+  })
+
+  it('requests value-ranked overview breakdowns when selected', async () => {
+    graphqlQueryMock
+      .mockResolvedValueOnce(aggregateResponse())
+      .mockResolvedValueOnce({ procurementCpvDivisions: [] })
+      .mockResolvedValueOnce({ authorities: { edges: [] }, suppliers: { edges: [] } })
+
+    await fetchProcurementLandingLive({ rankBy: 'value' })
+
+    expect(graphqlQueryMock.mock.calls[0]?.[0]).toContain(
+      'rankBy: $rankBy',
+    )
+    expect(graphqlQueryMock.mock.calls[0]?.[1]).toMatchObject({
+      rankBy: 'value',
+    })
   })
 
   it('scopes landing analytics by buyer region with party rankings included', async () => {

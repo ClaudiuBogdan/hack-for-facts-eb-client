@@ -499,6 +499,7 @@ export function hubStateToLandingFilters(
       buyerSiruta: state.buyerSiruta,
       supplierRegion: state.supplierRegion,
       supplierCounty: state.supplierCounty,
+      rankBy: state.measure === 'value_awarded' ? 'value' : 'count',
     },
     now,
   )

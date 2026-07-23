@@ -46,7 +46,7 @@ function aggregates(
   const breakdown = (dimension: string) => grains.map((grain) => ({
     grain,
     dimension,
-    rankedBy: 'recordCount',
+    rankedBy: 'count',
     buckets: [],
     meta: meta(grain),
   }))
@@ -113,6 +113,21 @@ describe('unified procurement mapper honesty', () => {
     expect(landing.analysisByGrain.contract.topSuppliers[0]?.supplier?.name).toBe(
       'Private Supplier',
     )
+  })
+
+  it('preserves the ranking basis actually served after spend gating', () => {
+    const input = aggregates(null, '5.00')
+    input.authorities[1]!.rankedBy = 'count'
+    input.suppliers[2]!.rankedBy = 'value'
+
+    const landing = mapLanding({ aggregates: input, divisions: [] })
+
+    expect(
+      landing.analysisByGrain.contract.meta.authoritiesRankedBy,
+    ).toBe('count')
+    expect(
+      landing.analysisByGrain.directAcquisition.meta.suppliersRankedBy,
+    ).toBe('value')
   })
 
   it('maps server answerability directly to DataStatus', () => {

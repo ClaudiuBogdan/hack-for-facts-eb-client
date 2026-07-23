@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useSearch } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
-import { ChevronDown, ChevronUp, ListOrdered, Table2 } from 'lucide-react'
+import { ArrowUpRight, ChevronDown, ChevronUp, Table2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -15,7 +15,9 @@ import { cn } from '@/lib/utils'
 import type { TopPartyRow } from '@/schemas/procurement'
 import {
   cleanProcurementHubSearch,
+  type ProcurementHubMeasure,
   type ProcurementRankDim,
+  type ProcurementRankBy,
 } from '@/schemas/procurement-hub'
 import { formatFlowCount, formatRon } from '../lib/formatting'
 import {
@@ -30,8 +32,10 @@ import {
   procurementMarkClassName,
   procurementMarkTrackClassName,
   procurementOutlineButtonClassName,
+  procurementSectionBodyClassName,
   procurementSectionClassName,
   procurementSectionDescriptionClassName,
+  procurementSectionFooterClassName,
   procurementSectionHeaderClassName,
   procurementSectionTitleClassName,
 } from '../lib/procurement-theme'
@@ -73,11 +77,16 @@ type Props = {
   readonly grain?: AnalysisFlowGrain
   /** Deep-link to hub Rankings for this dimension (Overview cards). */
   readonly rankingsDim?: ProcurementRankDim
+  /** Requested overview metric. Defaults to count on reused slice cards. */
+  readonly measure?: ProcurementHubMeasure
+  /** Basis the server actually served after answerability gates. */
+  readonly rankedBy?: ProcurementRankBy | null
 }
 
 /**
- * Ranked party list — count-first bars, show more/less. Overview uses Rankings
- * deep-link; other surfaces keep a sheet of the same API rows.
+ * Ranked party list — bars follow the server's effective count/value basis.
+ * Overview uses a Rankings deep-link; other surfaces keep a sheet of the same
+ * API rows.
  */
 export function ProcurementPartyRanking({
   title,
@@ -89,12 +98,26 @@ export function ProcurementPartyRanking({
   pairScope,
   grain = 'direct_acquisition',
   rankingsDim,
+  measure = 'record_count',
+  rankedBy,
 }: Props) {
   const [expanded, setExpanded] = useState(false)
   const [sheetOpen, setSheetOpen] = useState(false)
   const currentSearch = useSearch({ strict: false })
-  const maxCount = rows.reduce(
-    (max, row) => Math.max(max, Number(row.flowCount) || 0),
+  const effectiveMeasure =
+    measure === 'value_awarded' && rankedBy === 'value'
+      ? 'value_awarded'
+      : 'record_count'
+  const maxMetric = rows.reduce(
+    (max, row) =>
+      Math.max(
+        max,
+        Number(
+          effectiveMeasure === 'value_awarded'
+            ? row.amountRonSum ?? '0'
+            : row.flowCount,
+        ) || 0,
+      ),
     0,
   )
   const hasMore = rows.length > CARD_LIMIT
@@ -109,7 +132,7 @@ export function ProcurementPartyRanking({
           'flex items-start justify-between gap-3',
         )}
       >
-        <div className="min-w-0">
+        <div className="min-w-0 pr-1">
           <h2 className={procurementSectionTitleClassName}>{title}</h2>
           {description ? (
             <p className={procurementSectionDescriptionClassName}>
@@ -123,7 +146,10 @@ export function ProcurementPartyRanking({
               type="button"
               variant="outline"
               size="icon"
-              className={cn(procurementOutlineButtonClassName, 'h-8 w-8 shrink-0')}
+              className={cn(
+                procurementOutlineButtonClassName,
+                'mt-0.5 h-8 w-8 shrink-0',
+              )}
               asChild
             >
               <Link
@@ -132,11 +158,13 @@ export function ProcurementPartyRanking({
                   ...(currentSearch as Record<string, unknown>),
                   view: 'rankings',
                   rankDim: rankingsDim,
+                  rankBy:
+                    measure === 'value_awarded' ? 'value' : 'count',
                 })}
                 aria-label={t`See full rankings`}
                 title={t`See full rankings`}
               >
-                <ListOrdered className="h-4 w-4" aria-hidden />
+                <ArrowUpRight className="h-4 w-4" aria-hidden />
               </Link>
             </Button>
           ) : (
@@ -144,7 +172,10 @@ export function ProcurementPartyRanking({
               type="button"
               variant="outline"
               size="icon"
-              className={cn(procurementOutlineButtonClassName, 'h-8 w-8 shrink-0')}
+              className={cn(
+                procurementOutlineButtonClassName,
+                'mt-0.5 h-8 w-8 shrink-0',
+              )}
               onClick={() => setSheetOpen(true)}
               aria-label={t`Open ranking table`}
               title={t`Open ranking table`}
@@ -155,7 +186,7 @@ export function ProcurementPartyRanking({
         ) : null}
       </div>
 
-      <div className="flex flex-1 flex-col p-5 sm:p-6">
+      <div className={procurementSectionBodyClassName}>
         {unavailableReason ? (
           <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
             {unavailableReason}
@@ -167,7 +198,7 @@ export function ProcurementPartyRanking({
         ) : (
           <ol
             className={cn(
-              'space-y-3',
+              'space-y-3.5',
               expanded && hasMore && 'sm:max-h-[28rem] sm:overflow-y-auto',
             )}
           >
@@ -181,36 +212,37 @@ export function ProcurementPartyRanking({
                 rank={index + 1}
                 row={row}
                 kind={kind}
-                maxCount={maxCount}
+                maxMetric={maxMetric}
+                measure={effectiveMeasure}
                 pairScope={pairScope}
                 grain={grain}
               />
             ))}
           </ol>
         )}
-
-        {hasMore && !unavailableReason ? (
-          <div className="mt-auto border-t-2 border-[var(--pnrr-border)] pt-0">
-            <button
-              type="button"
-              onClick={() => setExpanded((value) => !value)}
-              className="mt-3 flex min-h-9 w-full items-center justify-center gap-2 text-sm font-semibold text-[var(--pnrr-muted)] transition-colors hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
-            >
-              {expanded ? (
-                <>
-                  <Trans>Show less</Trans>
-                  <ChevronUp className="h-3.5 w-3.5" aria-hidden />
-                </>
-              ) : (
-                <>
-                  <Trans>Show more</Trans>
-                  <ChevronDown className="h-3.5 w-3.5" aria-hidden />
-                </>
-              )}
-            </button>
-          </div>
-        ) : null}
       </div>
+
+      {hasMore && !unavailableReason ? (
+        <div className={procurementSectionFooterClassName}>
+          <button
+            type="button"
+            onClick={() => setExpanded((value) => !value)}
+            className="flex h-8 w-full items-center justify-center gap-1.5 text-sm font-semibold text-[var(--pnrr-muted)] transition-colors hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+          >
+            {expanded ? (
+              <>
+                <Trans>Show less</Trans>
+                <ChevronUp className="h-3.5 w-3.5" aria-hidden />
+              </>
+            ) : (
+              <>
+                <Trans>Show more</Trans>
+                <ChevronDown className="h-3.5 w-3.5" aria-hidden />
+              </>
+            )}
+          </button>
+        </div>
+      ) : null}
 
       {!rankingsDim ? (
         <PartyRankingSheet
@@ -255,26 +287,39 @@ function PartyRankingBarRow({
   rank,
   row,
   kind,
-  maxCount,
+  maxMetric,
+  measure,
   pairScope,
   grain,
 }: {
   readonly rank: number
   readonly row: TopPartyRow
   readonly kind: PartyKind
-  readonly maxCount: number
+  readonly maxMetric: number
+  readonly measure: ProcurementHubMeasure
   readonly pairScope?: PartyPairScope
   readonly grain: AnalysisFlowGrain
 }) {
   const party = kind === 'authority' ? row.authority : row.supplier
   const count = Number(row.flowCount) || 0
-  const width = maxCount > 0 ? Math.max((count / maxCount) * 100, 2) : 0
+  const amountValue = Number(row.amountRonSum ?? '0') || 0
+  const metricValue = measure === 'value_awarded' ? amountValue : count
+  const width =
+    maxMetric > 0 ? Math.max((metricValue / maxMetric) * 100, 2) : 0
   const destination = resolvePartyRowLink(row, kind, pairScope, grain)
   const label = rankingLabel(row, kind)
   const cui = party?.cui?.trim() || null
   const amount =
     row.amountRonSum !== null ? formatRon(row.amountRonSum, 'compact') : null
   const countLabel = formatFlowCount(row.flowCount)
+  const primaryLabel =
+    measure === 'value_awarded'
+      ? amount ?? t`unavailable`
+      : t`${countLabel} records`
+  const secondaryLabel =
+    measure === 'value_awarded'
+      ? t`${countLabel} records`
+      : amount
   const titleHint =
     pairScope && cui
       ? t`${label} — shared records by value`
@@ -319,13 +364,17 @@ function PartyRankingBarRow({
             </span>
           )}
           <span className="shrink-0 text-right text-sm tabular-nums">
-            <span className="font-bold text-[var(--pnrr-fg)]">{countLabel}</span>
-            {amount ? (
+            <span className="font-bold text-[var(--pnrr-fg)]">
+              {primaryLabel}
+            </span>
+            {secondaryLabel ? (
               <>
                 <span className="mx-1.5 text-[var(--pnrr-muted)]" aria-hidden>
                   ·
                 </span>
-                <span className="text-[var(--pnrr-muted)]">{amount}</span>
+                <span className="text-[var(--pnrr-muted)]">
+                  {secondaryLabel}
+                </span>
               </>
             ) : null}
           </span>
@@ -335,9 +384,13 @@ function PartyRankingBarRow({
         className={cn('ml-7 mt-1.5 h-1.5 w-[calc(100%-1.75rem)]', procurementMarkTrackClassName)}
         role="img"
         aria-label={
-          amount
-            ? t`${label}: ${countLabel} records, ${amount}`
-            : t`${label}: ${countLabel} records`
+          measure === 'value_awarded'
+            ? amount
+              ? t`${label}: ${amount}, ${countLabel} records`
+              : t`${label}: awarded value unavailable, ${countLabel} records`
+            : amount
+              ? t`${label}: ${countLabel} records, ${amount}`
+              : t`${label}: ${countLabel} records`
         }
       >
         <div

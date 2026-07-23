@@ -470,14 +470,15 @@ export const PROCUREMENT_AGGREGATES_QUERY = /* GraphQL */ `
   query ProcurementAggregates(
     $scope: ProcurementAnalysisScopeInput
     $topN: Int
+    $rankBy: ProcurementRankBy
     $includeAuthorities: Boolean!
     $includeSuppliers: Boolean!
     $includeCategories: Boolean!
   ) {
     procurementStats(scope: $scope) { blocks { ${STATS_BLOCK_FIELDS} } }
-    authorities: procurementBreakdown(scope: $scope, dimension: authority, topN: $topN) @include(if: $includeAuthorities) { ${BREAKDOWN_BLOCK_FIELDS} }
-    suppliers: procurementBreakdown(scope: $scope, dimension: supplier, topN: $topN) @include(if: $includeSuppliers) { ${BREAKDOWN_BLOCK_FIELDS} }
-    categories: procurementBreakdown(scope: $scope, dimension: cpvDivision, topN: $topN) @include(if: $includeCategories) { ${BREAKDOWN_BLOCK_FIELDS} }
+    authorities: procurementBreakdown(scope: $scope, dimension: authority, topN: $topN, rankBy: $rankBy) @include(if: $includeAuthorities) { ${BREAKDOWN_BLOCK_FIELDS} }
+    suppliers: procurementBreakdown(scope: $scope, dimension: supplier, topN: $topN, rankBy: $rankBy) @include(if: $includeSuppliers) { ${BREAKDOWN_BLOCK_FIELDS} }
+    categories: procurementBreakdown(scope: $scope, dimension: cpvDivision, topN: $topN, rankBy: $rankBy) @include(if: $includeCategories) { ${BREAKDOWN_BLOCK_FIELDS} }
     recordSeries: procurementSeries(scope: $scope, bucket: month, measure: recordCount) { ${SERIES_BLOCK_FIELDS} }
     valueSeries: procurementSeries(scope: $scope, bucket: month, measure: valueAwardedSum) { ${SERIES_BLOCK_FIELDS} }
   }

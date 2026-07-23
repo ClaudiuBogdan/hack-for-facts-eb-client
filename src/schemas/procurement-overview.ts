@@ -90,6 +90,8 @@ export type ProcurementLandingFilters = {
   readonly dateFrom?: string
   readonly dateTo?: string
   readonly period?: 'all'
+  /** Requested breakdown basis; the server may gate value back to count. */
+  readonly rankBy?: 'count' | 'value'
   readonly buyerRegion?: string
   readonly buyerCounty?: string
   readonly buyerSiruta?: string
@@ -157,6 +159,7 @@ export function toProcurementLandingQueryFilters(
 ): ProcurementLandingFilters {
   const resolved = resolveProcurementOverviewPeriod(filters, now)
   return {
+    rankBy: filters.rankBy,
     buyerRegion: filters.buyerRegion,
     buyerCounty: filters.buyerCounty,
     buyerSiruta: filters.buyerSiruta,

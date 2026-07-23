@@ -3,6 +3,7 @@ import { t } from '@lingui/core/macro'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import type { MonthlyPoint } from '@/schemas/procurement'
+import type { ProcurementHubMeasure } from '@/schemas/procurement-hub'
 import { formatFlowCount, formatRon } from '../lib/formatting'
 import {
   procurementMarkClassName,
@@ -18,6 +19,7 @@ type Props = {
   readonly title?: string
   readonly description?: string
   readonly className?: string
+  readonly measure?: ProcurementHubMeasure
 }
 
 function formatMonth(month: string): string {
@@ -30,18 +32,27 @@ function formatMonth(month: string): string {
 }
 
 /**
- * Monthly volume as single-series CSS columns — count is the primary metric
- * (available amounts follow in the tooltip/table). One mark hue,
- * columns grow from the baseline, per-mark tooltip, `<details>` table.
+ * Monthly count or awarded-value series as CSS columns. The alternate metric
+ * remains available in tooltips/table for context. One mark hue, columns grow
+ * from the baseline, per-mark tooltip, `<details>` table.
  */
 export function ProcurementMonthlyChart({
   points,
   title,
   description,
   className,
+  measure = 'record_count',
 }: Props) {
-  const maxCount = points.reduce(
-    (max, point) => Math.max(max, Number(point.flowCount) || 0),
+  const maxMetric = points.reduce(
+    (max, point) =>
+      Math.max(
+        max,
+        Number(
+          measure === 'value_awarded'
+            ? point.amountRonSum ?? '0'
+            : point.flowCount,
+        ) || 0,
+      ),
     0,
   )
   const missingTotal = points.reduce(
@@ -49,6 +60,7 @@ export function ProcurementMonthlyChart({
     0,
   )
   const showAmounts = points.some((point) => point.amountRonSum !== null)
+  const valueUnavailable = measure === 'value_awarded' && !showAmounts
 
   return (
     <section className={cn(procurementSectionClassName, className)}>
@@ -65,17 +77,34 @@ export function ProcurementMonthlyChart({
           <p className="text-sm text-[var(--pnrr-muted)]">
             <Trans>No monthly data available.</Trans>
           </p>
+        ) : valueUnavailable ? (
+          <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
+            <Trans>
+              Awarded value is unavailable for this scope. Select record count
+              to view the monthly volume.
+            </Trans>
+          </p>
         ) : (
           <>
             <div
               className="flex h-40 items-end gap-[2px]"
               role="img"
-              aria-label={t`Monthly record counts`}
+              aria-label={
+                measure === 'value_awarded'
+                  ? t`Monthly awarded values in RON`
+                  : t`Monthly record counts`
+              }
             >
               {points.map((point) => {
                 const count = Number(point.flowCount) || 0
+                const amount = Number(point.amountRonSum ?? '0') || 0
+                const metric = measure === 'value_awarded' ? amount : count
                 const height =
-                  maxCount > 0 ? Math.max((count / maxCount) * 100, 2) : 0
+                  maxMetric > 0 ? Math.max((metric / maxMetric) * 100, 2) : 0
+                const amountLabel =
+                  point.amountRonSum !== null
+                    ? formatRon(point.amountRonSum, 'compact')
+                    : t`unavailable`
                 return (
                   <Tooltip key={point.month}>
                     <TooltipTrigger asChild>
@@ -85,7 +114,11 @@ export function ProcurementMonthlyChart({
                           procurementMarkTrackClassName,
                         )}
                         tabIndex={0}
-                        aria-label={t`${formatMonth(point.month)}: ${formatFlowCount(point.flowCount)} records`}
+                        aria-label={
+                          measure === 'value_awarded'
+                            ? t`${formatMonth(point.month)}: ${amountLabel}`
+                            : t`${formatMonth(point.month)}: ${formatFlowCount(point.flowCount)} records`
+                        }
                       >
                         <div
                           className={cn(

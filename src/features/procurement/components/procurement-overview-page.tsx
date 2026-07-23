@@ -158,37 +158,63 @@ export function ProcurementOverviewPage({
                 <ProcurementPartyRanking
                   title={t`Top public buyers`}
                   description={
-                    hubState.measure === 'value_awarded'
-                      ? t`By awarded value when available; bars still use record counts until value sort is published.`
+                    hubState.measure === 'value_awarded' &&
+                    analytics.meta.authoritiesRankedBy === 'value'
+                      ? t`Ranked and scaled by awarded value. Record counts remain visible for context.`
+                      : hubState.measure === 'value_awarded'
+                        ? t`Awarded-value ranking is unavailable for this scope, so the server ranked by record count.`
                       : t`By number of records.`
                   }
                   rows={analytics.topAuthorities}
                   kind="authority"
                   rankingsDim="buyer"
+                  measure={hubState.measure}
+                  rankedBy={analytics.meta.authoritiesRankedBy}
                 />
                 <ProcurementPartyRanking
                   title={t`Top suppliers`}
                   description={
-                    hubState.measure === 'value_awarded'
-                      ? t`By awarded value when available; bars still use record counts until value sort is published.`
+                    hubState.measure === 'value_awarded' &&
+                    analytics.meta.suppliersRankedBy === 'value'
+                      ? t`Ranked and scaled by awarded value. Record counts remain visible for context.`
+                      : hubState.measure === 'value_awarded'
+                        ? t`Awarded-value ranking is unavailable for this scope, so the server ranked by record count.`
                       : t`By number of records.`
                   }
                   rows={analytics.topSuppliers}
                   kind="supplier"
                   rankingsDim="supplier"
+                  measure={hubState.measure}
+                  rankedBy={analytics.meta.suppliersRankedBy}
                 />
               </div>
 
               <ProcurementCategoryBars
                 rows={analytics.topCategories}
                 rankingsDim="cpv"
+                measure={hubState.measure}
+                rankedBy={analytics.meta.categoriesRankedBy}
+                description={
+                  hubState.measure === 'value_awarded' &&
+                  analytics.meta.categoriesRankedBy === 'value'
+                    ? t`Ranked and scaled by awarded value. Record counts remain visible for context.`
+                    : hubState.measure === 'value_awarded'
+                      ? t`Awarded-value ranking is unavailable for this scope, so the server ranked by record count.`
+                      : t`By number of records.`
+                }
               />
 
               <ProcurementMonthlyChart
                 points={analytics.monthly}
+                measure={hubState.measure}
+                title={
+                  hubState.measure === 'value_awarded'
+                    ? t`Monthly awarded value`
+                    : t`Monthly volume`
+                }
                 description={
                   hubState.measure === 'value_awarded'
-                    ? t`Awarded value per month when amounts are present (tooltips still show counts).`
+                    ? t`Awarded value per month in RON. Tooltips and the table retain record counts for context.`
                     : t`Number of records per month.`
                 }
               />

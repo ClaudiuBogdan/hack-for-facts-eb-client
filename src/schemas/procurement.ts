@@ -423,6 +423,9 @@ const procurementGrainAnalyticsSchema = z.object({
   topCategories: z.array(categoryRowSchema),
   monthly: z.array(monthlyPointSchema),
   meta: z.object({
+    authoritiesRankedBy: z.enum(['count', 'value']).nullable(),
+    suppliersRankedBy: z.enum(['count', 'value']).nullable(),
+    categoriesRankedBy: z.enum(['count', 'value']).nullable(),
     authorities: procurementAnswerMetaSchema.nullable(),
     suppliers: procurementAnswerMetaSchema.nullable(),
     categories: procurementAnswerMetaSchema.nullable(),

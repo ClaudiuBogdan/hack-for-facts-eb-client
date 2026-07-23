@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useSearch } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
-import { ChevronDown, ChevronUp, ListOrdered, Table2 } from 'lucide-react'
+import { ArrowUpRight, ChevronDown, ChevronUp, Table2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -15,15 +15,19 @@ import { cn } from '@/lib/utils'
 import type { CategoryRow } from '@/schemas/procurement'
 import {
   cleanProcurementHubSearch,
+  type ProcurementHubMeasure,
   type ProcurementRankDim,
+  type ProcurementRankBy,
 } from '@/schemas/procurement-hub'
 import { formatFlowCount, formatRon } from '../lib/formatting'
 import {
   procurementMarkClassName,
   procurementMarkTrackClassName,
   procurementOutlineButtonClassName,
+  procurementSectionBodyClassName,
   procurementSectionClassName,
   procurementSectionDescriptionClassName,
+  procurementSectionFooterClassName,
   procurementSectionHeaderClassName,
   procurementSectionTitleClassName,
 } from '../lib/procurement-theme'
@@ -53,11 +57,14 @@ type Props = {
   readonly className?: string
   /** Deep-link to hub Rankings for CPV. */
   readonly rankingsDim?: ProcurementRankDim
+  readonly measure?: ProcurementHubMeasure
+  readonly rankedBy?: ProcurementRankBy | null
 }
 
 /**
- * CPV division breakdown — count-first bars, show 5 + more/less.
- * Overview uses Rankings deep-link; other surfaces keep a sheet.
+ * CPV division breakdown — bars follow the server's effective count/value
+ * basis, showing 5 + more/less. Overview uses a Rankings deep-link; other
+ * surfaces keep a sheet.
  */
 export function ProcurementCategoryBars({
   rows,
@@ -65,16 +72,26 @@ export function ProcurementCategoryBars({
   description,
   className,
   rankingsDim,
+  measure = 'record_count',
+  rankedBy,
 }: Props) {
   const [expanded, setExpanded] = useState(false)
   const [sheetOpen, setSheetOpen] = useState(false)
   const currentSearch = useSearch({ strict: false })
-  const totalCount = rows.reduce(
-    (sum, row) => sum + (Number(row.flowCount) || 0),
-    0,
-  )
-  const maxCount = rows.reduce(
-    (max, row) => Math.max(max, Number(row.flowCount) || 0),
+  const effectiveMeasure =
+    measure === 'value_awarded' && rankedBy === 'value'
+      ? 'value_awarded'
+      : 'record_count'
+  const maxMetric = rows.reduce(
+    (max, row) =>
+      Math.max(
+        max,
+        Number(
+          effectiveMeasure === 'value_awarded'
+            ? row.amountRonSum ?? '0'
+            : row.flowCount,
+        ) || 0,
+      ),
     0,
   )
   const hasMore = rows.length > CARD_LIMIT
@@ -82,14 +99,14 @@ export function ProcurementCategoryBars({
     expanded || !hasMore ? rows : rows.slice(0, CARD_LIMIT)
 
   return (
-    <section className={cn(procurementSectionClassName, className)}>
+    <section className={cn(procurementSectionClassName, 'flex flex-col', className)}>
       <div
         className={cn(
           procurementSectionHeaderClassName,
           'flex items-start justify-between gap-3',
         )}
       >
-        <div className="min-w-0">
+        <div className="min-w-0 pr-1">
           <h2 className={procurementSectionTitleClassName}>
             {title ?? t`Spending categories`}
           </h2>
@@ -103,7 +120,10 @@ export function ProcurementCategoryBars({
               type="button"
               variant="outline"
               size="icon"
-              className={cn(procurementOutlineButtonClassName, 'h-8 w-8 shrink-0')}
+              className={cn(
+                procurementOutlineButtonClassName,
+                'mt-0.5 h-8 w-8 shrink-0',
+              )}
               asChild
             >
               <Link
@@ -112,11 +132,13 @@ export function ProcurementCategoryBars({
                   ...(currentSearch as Record<string, unknown>),
                   view: 'rankings',
                   rankDim: rankingsDim,
+                  rankBy:
+                    measure === 'value_awarded' ? 'value' : 'count',
                 })}
                 aria-label={t`See full rankings`}
                 title={t`See full rankings`}
               >
-                <ListOrdered className="h-4 w-4" aria-hidden />
+                <ArrowUpRight className="h-4 w-4" aria-hidden />
               </Link>
             </Button>
           ) : (
@@ -124,7 +146,10 @@ export function ProcurementCategoryBars({
               type="button"
               variant="outline"
               size="icon"
-              className={cn(procurementOutlineButtonClassName, 'h-8 w-8 shrink-0')}
+              className={cn(
+                procurementOutlineButtonClassName,
+                'mt-0.5 h-8 w-8 shrink-0',
+              )}
               onClick={() => setSheetOpen(true)}
               aria-label={t`Open ranking table`}
               title={t`Open ranking table`}
@@ -135,7 +160,7 @@ export function ProcurementCategoryBars({
         ) : null}
       </div>
 
-      <div className="flex flex-col p-5 sm:p-6">
+      <div className={procurementSectionBodyClassName}>
         {rows.length === 0 ? (
           <p className="text-sm text-[var(--pnrr-muted)]">
             <Trans>No category data available.</Trans>
@@ -143,19 +168,38 @@ export function ProcurementCategoryBars({
         ) : (
           <ol
             className={cn(
-              'space-y-3',
+              'space-y-3.5',
               expanded && hasMore && 'sm:max-h-[28rem] sm:overflow-y-auto',
             )}
           >
             {displayRows.map((row, index) => {
               const count = Number(row.flowCount) || 0
+              const amountValue = Number(row.amountRonSum ?? '0') || 0
+              const metricValue =
+                effectiveMeasure === 'value_awarded' ? amountValue : count
               const width =
-                maxCount > 0 ? Math.max((count / maxCount) * 100, 2) : 0
+                maxMetric > 0
+                  ? Math.max((metricValue / maxMetric) * 100, 2)
+                  : 0
               const share =
-                totalCount > 0 ? Math.round((count / totalCount) * 100) : 0
+                row.shareOfScope !== null
+                  ? Math.round((Number(row.shareOfScope) || 0) * 100)
+                  : null
               const label = categoryLabel(row)
               const code = row.cpvDivisionCode
               const countLabel = formatFlowCount(row.flowCount)
+              const amountLabel =
+                row.amountRonSum !== null
+                  ? formatRon(row.amountRonSum, 'compact')
+                  : null
+              const primaryLabel =
+                effectiveMeasure === 'value_awarded'
+                  ? amountLabel ?? t`unavailable`
+                  : t`${countLabel} records`
+              const secondaryLabel =
+                effectiveMeasure === 'value_awarded'
+                  ? t`${countLabel} records`
+                  : amountLabel
               const titleHint = code ? `${code} · ${label}` : label
 
               const name = (
@@ -187,14 +231,21 @@ export function ProcurementCategoryBars({
                       )}
                       <span className="shrink-0 text-right text-sm tabular-nums">
                         <span className="font-bold text-[var(--pnrr-fg)]">
-                          {share}%
+                          {primaryLabel}
                         </span>
-                        <span className="mx-1.5 text-[var(--pnrr-muted)]" aria-hidden>
-                          ·
-                        </span>
-                        <span className="text-[var(--pnrr-muted)]">
-                          {countLabel}
-                        </span>
+                        {secondaryLabel ? (
+                          <>
+                            <span
+                              className="mx-1.5 text-[var(--pnrr-muted)]"
+                              aria-hidden
+                            >
+                              ·
+                            </span>
+                            <span className="text-[var(--pnrr-muted)]">
+                              {secondaryLabel}
+                            </span>
+                          </>
+                        ) : null}
                       </span>
                     </div>
                   </div>
@@ -204,7 +255,11 @@ export function ProcurementCategoryBars({
                       procurementMarkTrackClassName,
                     )}
                     role="img"
-                    aria-label={t`${label}: ${countLabel} records (${share}%)`}
+                    aria-label={
+                      share === null
+                        ? t`${label}: ${primaryLabel}`
+                        : t`${label}: ${primaryLabel} (${share}% of scope)`
+                    }
                   >
                     <div
                       className={cn(
@@ -219,29 +274,29 @@ export function ProcurementCategoryBars({
             })}
           </ol>
         )}
-
-        {hasMore ? (
-          <div className="mt-auto border-t-2 border-[var(--pnrr-border)] pt-0">
-            <button
-              type="button"
-              onClick={() => setExpanded((value) => !value)}
-              className="mt-3 flex min-h-9 w-full items-center justify-center gap-2 text-sm font-semibold text-[var(--pnrr-muted)] transition-colors hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
-            >
-              {expanded ? (
-                <>
-                  <Trans>Show less</Trans>
-                  <ChevronUp className="h-3.5 w-3.5" aria-hidden />
-                </>
-              ) : (
-                <>
-                  <Trans>Show more</Trans>
-                  <ChevronDown className="h-3.5 w-3.5" aria-hidden />
-                </>
-              )}
-            </button>
-          </div>
-        ) : null}
       </div>
+
+      {hasMore ? (
+        <div className={procurementSectionFooterClassName}>
+          <button
+            type="button"
+            onClick={() => setExpanded((value) => !value)}
+            className="flex h-8 w-full items-center justify-center gap-1.5 text-sm font-semibold text-[var(--pnrr-muted)] transition-colors hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+          >
+            {expanded ? (
+              <>
+                <Trans>Show less</Trans>
+                <ChevronUp className="h-3.5 w-3.5" aria-hidden />
+              </>
+            ) : (
+              <>
+                <Trans>Show more</Trans>
+                <ChevronDown className="h-3.5 w-3.5" aria-hidden />
+              </>
+            )}
+          </button>
+        </div>
+      ) : null}
 
       {!rankingsDim ? (
         <CategoryRankingSheet

@@ -106,12 +106,21 @@ describe('procurement hub schema', () => {
     expect(hubStateToLandingFilters(state, now)).toEqual({
       dateFrom: '2025-01-01',
       dateTo: '2025-12-31',
+      rankBy: 'count',
     })
     expect(hubStateToListSearchState(state, now)).toMatchObject({
       dateFrom: '2025-01-01',
       dateTo: '2025-12-31',
       grain: 'contracts',
     })
+  })
+
+  it('maps the overview metric to the aggregate ranking request', () => {
+    const state = parseProcurementHubSearch({
+      measure: 'value_awarded',
+      period: 'all',
+    })
+    expect(hubStateToLandingFilters(state)).toEqual({ rankBy: 'value' })
   })
 
   it('omits geography from list search state (B1)', () => {
