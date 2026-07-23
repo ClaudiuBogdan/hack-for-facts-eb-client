@@ -38,9 +38,9 @@ export function PrivateCompanyHubPage() {
         </h1>
         <p className="max-w-2xl text-base leading-relaxed text-[var(--pnrr-muted)]">
           <Trans>
-            Every company in the ONRC register, with its registry status, ANAF
-            fiscal data and annual financial statements. Look up a company, or
-            start from a question.
+            Companies from the ONRC trade register snapshot, with registry
+            status, ANAF fiscal data and annual financial statements. Look up a
+            company, or start from a question.
           </Trans>
         </p>
       </header>

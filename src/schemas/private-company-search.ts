@@ -135,17 +135,22 @@ export const PRIVATE_COMPANY_STATUS_OPTIONS = [
 
 /**
  * Legal-form options for the directory filter — the ONRC `legalForm` strings as
- * stored. NOT verified against a production `DISTINCT legal_form` sweep; a live
- * pass should confirm the exact casing before these are trusted as an
- * exhaustive list.
+ * stored. Verified 2026-07-22 against a production `DISTINCT legal_form` sweep
+ * of `companies_v2.registrations`: exact casing confirmed; ordered by measured
+ * count (SRL 2.66M … RA 700). Covers every form with ≥700 registrations except
+ * placeholder/rare codes (`N/A`, `SC`, cooperative `OC*` variants); re-measure
+ * before treating as exhaustive after a snapshot generation change.
  */
 export const PRIVATE_COMPANY_LEGAL_FORM_OPTIONS = [
   'SRL',
-  'SA',
   'PFA',
   'II',
+  'PF',
+  'AF',
   'IF',
+  'SA',
   'SNC',
+  'CA',
   'SCS',
   'RA',
 ] as const
