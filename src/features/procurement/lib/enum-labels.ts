@@ -15,6 +15,7 @@ import type {
   ProcurementSort,
   ProcurementSource,
 } from '@/schemas/procurement-search'
+import type { ProcurementRecordKindOption } from './record-kind'
 import type { ProcurementValueCategory } from './value-category'
 
 export function contractKindLabel(kind: ContractKind): string {
@@ -82,12 +83,21 @@ export function valueCategoryLabel(category: ProcurementValueCategory): string {
       return t`Valută străină`
     case 'invalid':
       return t`Valoare atipică`
-    case 'framework':
-      return t`Valoare-cadru`
+    case 'ambiguous':
+      return t`Valoare neatribuibilă`
     case 'conflict':
       return t`Surse divergente`
     case 'missing':
       return t`Fără valoare`
+  }
+}
+
+export function recordKindLabel(option: ProcurementRecordKindOption): string {
+  switch (option) {
+    case 'purchases':
+      return t`Contracte efective`
+    case 'frameworks':
+      return t`Acorduri-cadru`
   }
 }
 

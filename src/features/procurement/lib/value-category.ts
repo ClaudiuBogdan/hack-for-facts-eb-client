@@ -9,7 +9,9 @@
  *   accepted  — the money is confirmed and comparable (the accepted states)
  *   foreign   — a foreign-currency-only value (no comparable RON, unless BNR)
  *   invalid   — a corrupted / out-of-bounds source value ("atipică")
- *   framework — a framework / acord-cadru ceiling, not a real spend
+ *   ambiguous — grain-ambiguous value (framework ceilings + cross-source
+ *               pending-audit rows); frameworks AS RECORDS live in the
+ *               separate record-kind facet (./record-kind)
  *   conflict  — sources disagree on the value
  *   missing   — no value recorded, or not applicable to the row
  *
@@ -39,7 +41,7 @@ const VALUE_STATES_BY_CATEGORY: Readonly<
   ],
   foreign: ['foreign_currency_only'],
   invalid: ['invalid_source_value'],
-  framework: ['ambiguous_grain'],
+  ambiguous: ['ambiguous_grain'],
   conflict: ['conflicting_sources'],
   missing: ['source_missing', 'not_applicable'],
 }

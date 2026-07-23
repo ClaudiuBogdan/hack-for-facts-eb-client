@@ -8,7 +8,7 @@
  */
 import { t } from '@lingui/core/macro'
 import type { ProcurementSearchState } from '@/schemas/procurement-search'
-import { sourceLabel, valueCategoryLabel } from './enum-labels'
+import { recordKindLabel, sourceLabel, valueCategoryLabel } from './enum-labels'
 import { statusLabel } from './status-meta'
 
 /** Patch merged into the search state + committed to the URL. */
@@ -86,6 +86,14 @@ export function buildActiveFilterChips(
       clear: { value_state: undefined },
     })
   }
+  if (search.record_kind && search.record_kind.length > 0) {
+    const kinds = search.record_kind.map(recordKindLabel).join(', ')
+    chips.push({
+      key: 'record-kind',
+      label: t`Record kind: ${kinds}`,
+      clear: { record_kind: undefined },
+    })
+  }
   if (search.dateFrom || search.dateTo) {
     const from = search.dateFrom ? formatChipDate(search.dateFrom) : '…'
     const to = search.dateTo ? formatChipDate(search.dateTo) : '…'
@@ -133,6 +141,7 @@ export const CLEAR_ALL_FILTERS_PATCH: ProcurementFilterPatch = {
   source: undefined,
   status: undefined,
   value_state: undefined,
+  record_kind: undefined,
   year: undefined,
   dateFrom: undefined,
   dateTo: undefined,

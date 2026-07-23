@@ -9,6 +9,7 @@ import { useCallback, useMemo } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { cleanProcurementHubSearch } from '@/schemas/procurement-hub'
 import type {
+  ProcurementRecordKindOption,
   ProcurementSearchState,
   ProcurementSort,
   ProcurementSource,
@@ -72,6 +73,14 @@ export function useProcurementFilterState(search: ProcurementSearchState) {
     (categories: readonly ProcurementValueCategory[]) =>
       updateFilters({
         value_state: categories.length > 0 ? [...categories] : undefined,
+      }),
+    [updateFilters],
+  )
+
+  const setRecordKinds = useCallback(
+    (options: readonly ProcurementRecordKindOption[]) =>
+      updateFilters({
+        record_kind: options.length > 0 ? [...options] : undefined,
       }),
     [updateFilters],
   )
@@ -177,6 +186,7 @@ export function useProcurementFilterState(search: ProcurementSearchState) {
     setSource,
     setStatuses,
     setValueCategories,
+    setRecordKinds,
     setSignal,
     setDates,
     setYear,

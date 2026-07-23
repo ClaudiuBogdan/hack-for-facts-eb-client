@@ -83,7 +83,9 @@ export const procurementValueCategorySchema = z.enum([
   'accepted',
   'foreign',
   'invalid',
-  'framework',
+  // Grain-ambiguous values (frameworks moved to the record-kind facet; this
+  // covers the value-trust axis only).
+  'ambiguous',
   'conflict',
   'missing',
 ])
@@ -94,6 +96,20 @@ export type ProcurementValueCategory = z.infer<
 
 export const PROCUREMENT_VALUE_CATEGORIES: readonly ProcurementValueCategory[] =
   procurementValueCategorySchema.options
+
+/**
+ * The record-kind facet (serving convention 2026-07-23): what a contract row
+ * IS — an actual purchase vs a framework umbrella. Orthogonal to value
+ * quality. Contracts grain only.
+ */
+export const procurementRecordKindSchema = z.enum(['purchases', 'frameworks'])
+
+export type ProcurementRecordKindOption = z.infer<
+  typeof procurementRecordKindSchema
+>
+
+export const PROCUREMENT_RECORD_KIND_OPTIONS: readonly ProcurementRecordKindOption[] =
+  procurementRecordKindSchema.options
 
 const commaListStatus = z
   .preprocess(toOptionalString, z.string().optional())
@@ -107,6 +123,23 @@ const commaListStatus = z
     // Validate against the enum so an invalid value normalizes away.
     const valid = parts.filter((part): part is ProcurementStatus =>
       (procurementStatusSchema.options as readonly string[]).includes(part),
+    )
+    return valid.length > 0 ? valid : undefined
+  })
+  .catch(undefined)
+
+/** Comma-list of record-kind options (unknown tokens normalize away). */
+const commaListRecordKind = z
+  .preprocess(toOptionalString, z.string().optional())
+  .transform((value) => {
+    if (typeof value !== 'string') return undefined
+    const parts = value
+      .split(',')
+      .map((part) => part.trim())
+      .filter(Boolean)
+    if (parts.length === 0) return undefined
+    const valid = parts.filter((part): part is ProcurementRecordKindOption =>
+      (procurementRecordKindSchema.options as readonly string[]).includes(part),
     )
     return valid.length > 0 ? valid : undefined
   })
@@ -144,6 +177,7 @@ export const procurementSearchSchema = z
     // type (the transform chain would otherwise mark it required).
     status: commaListStatus.optional(),
     value_state: commaListValueCategory.optional(),
+    record_kind: commaListRecordKind.optional(),
     // Reserved/ignored buyer-territory dimensions (parsed, not authoritative).
     county: optionalStringParam,
     region: optionalStringParam,
@@ -246,6 +280,7 @@ export function cleanProcurementSearch(
   }
   if (!cleaned.status?.length) delete cleaned.status
   if (!cleaned.value_state?.length) delete cleaned.value_state
+  if (!cleaned.record_kind?.length) delete cleaned.record_kind
 
   return cleaned
 }

@@ -20,6 +20,7 @@ import {
   resolveDirectAcquisitionWindow,
   type DateRangeInput,
 } from '../../lib/search-dates'
+import { expandRecordKinds } from '../../lib/record-kind'
 import { expandValueCategories } from '../../lib/value-category'
 
 // ---------------------------------------------------------------------------
@@ -56,6 +57,7 @@ export interface ProcurementContractsFilterInput {
   contractDate?: DateRangeInput
   valueRon?: DecimalRangeInput
   valueState?: { in: string[] }
+  recordKind?: { in: string[] }
 }
 
 export interface ProcurementDirectAcquisitionsFilterInput {
@@ -345,6 +347,9 @@ export function buildContractsFilter(
   if (value) filter.valueRon = value
   const valueState = expandValueCategories(search.value_state ?? [])
   if (valueState) filter.valueState = { in: valueState }
+  // Record kind is a contracts-only server filter (frameworks vs purchases).
+  const recordKind = expandRecordKinds(search.record_kind ?? [])
+  if (recordKind) filter.recordKind = { in: recordKind }
   return filter
 }
 

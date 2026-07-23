@@ -16,12 +16,15 @@ import { cn } from '@/lib/utils'
 import type { ProcurementGrain, ProcurementStatus } from '@/schemas/procurement'
 import { REVIEW_SIGNAL_KIND_VALUES } from '@/schemas/procurement-search'
 import {
+  PROCUREMENT_RECORD_KIND_OPTIONS,
   PROCUREMENT_VALUE_CATEGORIES,
   procurementSourceSchema,
+  type ProcurementRecordKindOption,
   type ProcurementValueCategory,
 } from '@/schemas/procurement-search'
 import type { ProcurementFilterState } from '../hooks/use-procurement-filter-state'
 import {
+  recordKindLabel,
   reviewSignalLabel,
   sourceLabel,
   valueCategoryLabel,
@@ -214,6 +217,32 @@ export function ProcurementListFilterFields({
                 className={procurementToggleItemClassName}
               >
                 <span className="truncate">{valueCategoryLabel(category)}</span>
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </section>
+      ) : null}
+
+      {search.grain === 'contracts' ? (
+        <section className="space-y-2">
+          <Label className={procurementSectionLabelClassName}>
+            <Trans>Record kind</Trans>
+          </Label>
+          <ToggleGroup
+            type="multiple"
+            value={search.record_kind ?? []}
+            onValueChange={(values) =>
+              filters.setRecordKinds(values as ProcurementRecordKindOption[])
+            }
+            className="grid grid-cols-2 gap-2"
+          >
+            {PROCUREMENT_RECORD_KIND_OPTIONS.map((option) => (
+              <ToggleGroupItem
+                key={option}
+                value={option}
+                className={procurementToggleItemClassName}
+              >
+                <span className="truncate">{recordKindLabel(option)}</span>
               </ToggleGroupItem>
             ))}
           </ToggleGroup>

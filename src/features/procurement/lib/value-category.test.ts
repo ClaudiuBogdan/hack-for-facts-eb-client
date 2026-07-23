@@ -21,7 +21,7 @@ describe('expandValueCategories', () => {
   it('maps each single category to its raw states', () => {
     expect(expandValueCategories(['foreign'])).toEqual(['foreign_currency_only'])
     expect(expandValueCategories(['invalid'])).toEqual(['invalid_source_value'])
-    expect(expandValueCategories(['framework'])).toEqual(['ambiguous_grain'])
+    expect(expandValueCategories(['ambiguous'])).toEqual(['ambiguous_grain'])
     expect(expandValueCategories(['conflict'])).toEqual(['conflicting_sources'])
     expect(expandValueCategories(['missing'])).toEqual([
       'source_missing',
