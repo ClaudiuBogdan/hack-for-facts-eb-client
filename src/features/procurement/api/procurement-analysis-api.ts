@@ -17,6 +17,9 @@ export const procurementAnalysisDimensionSchema = z.enum([
   'buyerRegion',
   'buyerCounty',
   'buyerSiruta',
+  'supplierRegion',
+  'supplierCounty',
+  'supplierSiruta',
 ])
 export const procurementAnalysisBucketSchema = z.enum(['month', 'quarter', 'year'])
 export const procurementAnalysisMeasureSchema = z.enum([

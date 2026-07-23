@@ -37,7 +37,7 @@ describe('ProcurementPagination', () => {
     expect(screen.queryByRole('button', { name: '3' })).toBeNull()
   })
 
-  it('returns null when a known total fits one page', () => {
+  it('returns null when a known total fits one page and page size is not editable', () => {
     const { container } = render(
       <ProcurementPagination
         page={1}
@@ -48,5 +48,25 @@ describe('ProcurementPagination', () => {
       />,
     )
     expect(container).toBeEmptyDOMElement()
+  })
+
+  it('keeps results-per-page when a known total fits one page', () => {
+    const onPageSizeChange = vi.fn()
+    render(
+      <ProcurementPagination
+        page={1}
+        pageSize={25}
+        total={10}
+        hasRecords
+        onPageChange={vi.fn()}
+        onPageSizeChange={onPageSizeChange}
+      />,
+    )
+
+    expect(screen.getByLabelText('Results per page')).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('Results per page'), {
+      target: { value: '50' },
+    })
+    expect(onPageSizeChange).toHaveBeenCalledWith(50)
   })
 })

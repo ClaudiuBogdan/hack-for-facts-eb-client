@@ -91,6 +91,8 @@ export interface ProcurementScopeFilterInput {
   buyerSiruta?: string
   supplierCounty?: string
   supplierRegion?: string
+  /** Supplier registered-office UAT (ClickHouse facts). */
+  supplierSiruta?: string
   status?: string
   procedureType?: string
   grain?: 'procedure' | 'contract' | 'direct_acquisition'
@@ -430,6 +432,7 @@ export function buildScopeFilter(scope: {
   buyerSiruta?: string
   supplierCounty?: string
   supplierRegion?: string
+  supplierSiruta?: string
   grain?: ProcurementScopeFilterInput['grain']
   /** Single status token — analysis scope has no `in` operator. */
   status?: string
@@ -465,6 +468,8 @@ export function buildScopeFilter(scope: {
   if (supplierCounty) filter.supplierCounty = supplierCounty
   const supplierRegion = trimmedOrUndefined(scope.supplierRegion)
   if (supplierRegion) filter.supplierRegion = supplierRegion
+  const supplierSiruta = trimmedOrUndefined(scope.supplierSiruta)
+  if (supplierSiruta) filter.supplierSiruta = supplierSiruta
   if (scope.grain) filter.grain = scope.grain
   const status = trimmedOrUndefined(scope.status)
   if (status) filter.status = status

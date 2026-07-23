@@ -163,13 +163,19 @@ export const procurementHubMeasureSchema = z.enum([
 export type ProcurementHubMeasure = z.infer<typeof procurementHubMeasureSchema>
 
 /**
- * Buyer map choropleth geography level. Region + county paint live (ClickHouse
- * analytics); UAT stays preview until a UAT geometry layer ships. Kept in URL as
- * Overview-map chrome only (not a global filter chip / sheet control).
+ * Map choropleth geography level. Region + county paint live; UAT stays preview
+ * until a UAT geometry layer ships. Kept in URL as Overview-map chrome only
+ * (not a global filter chip / sheet control).
  */
 export const procurementHubMapGrainSchema = z.enum(['region', 'county', 'uat'])
 export type ProcurementHubMapGrain = z.infer<
   typeof procurementHubMapGrainSchema
+>
+
+/** Which party geography the map choropleth paints (URL chrome, like mapGrain). */
+export const procurementHubMapPartySchema = z.enum(['buyer', 'supplier'])
+export type ProcurementHubMapParty = z.infer<
+  typeof procurementHubMapPartySchema
 >
 
 /**
@@ -197,6 +203,7 @@ export const procurementHubSearchSchema = z
     grain: procurementGrainSchema.optional().catch(undefined),
     measure: procurementHubMeasureSchema.optional().catch(undefined),
     mapGrain: procurementHubMapGrainSchema.optional().catch(undefined),
+    mapParty: procurementHubMapPartySchema.optional().catch(undefined),
     rankDim: procurementRankDimSchema.optional().catch(undefined),
     cpvLevel: procurementCpvLevelSchema.optional().catch(undefined),
     rankBy: procurementRankBySchema.optional().catch(undefined),
@@ -236,6 +243,7 @@ export const procurementHubSearchSchema = z
     buyerSiruta: optionalGeographyKey,
     supplierRegion: optionalGeographyKey,
     supplierCounty: optionalGeographyKey,
+    supplierSiruta: optionalGeographyKey,
     valueMin: z.coerce.number().nonnegative().optional().catch(undefined),
     valueMax: z.coerce.number().nonnegative().optional().catch(undefined),
     signal: reviewSignalKindSchema.optional().catch(undefined),
@@ -259,6 +267,7 @@ export type ProcurementHubState = {
   grain: ProcurementGrain
   measure: ProcurementHubMeasure
   mapGrain: ProcurementHubMapGrain
+  mapParty: ProcurementHubMapParty
   rankDim: ProcurementRankDim
   cpvLevel: ProcurementCpvLevel
   rankBy: ProcurementRankBy
@@ -281,26 +290,28 @@ export type ProcurementHubState = {
   dateFrom?: string
   dateTo?: string
   period?: 'all'
-  buyerRegion?: string
-  buyerCounty?: string
-  buyerSiruta?: string
-  supplierRegion?: string
-  supplierCounty?: string
-  valueMin?: number
-  valueMax?: number
-  signal?: ReviewSignalKind
-  from?: string
-  highlight?: string
-}
+    buyerRegion?: string
+    buyerCounty?: string
+    buyerSiruta?: string
+    supplierRegion?: string
+    supplierCounty?: string
+    supplierSiruta?: string
+    valueMin?: number
+    valueMax?: number
+    signal?: ReviewSignalKind
+    from?: string
+    highlight?: string
+  }
 
 export const PROCUREMENT_HUB_DEFAULTS = {
   view: 'overview' as const,
   grain: PROCUREMENT_SEARCH_DEFAULTS.grain,
-  measure: 'record_count' as const,
+  measure: 'value_awarded' as const,
   mapGrain: 'region' as const,
+  mapParty: 'buyer' as const,
   rankDim: 'buyer' as const,
   cpvLevel: 'division' as const,
-  rankBy: 'count' as const,
+  rankBy: 'value' as const,
   rankPage: 1 as const,
   rankPageSize: 10 as const,
   sort: PROCUREMENT_SEARCH_DEFAULTS.sort,
@@ -349,6 +360,7 @@ export const PROCUREMENT_HUB_GEO_KEYS = [
   'buyerSiruta',
   'supplierRegion',
   'supplierCounty',
+  'supplierSiruta',
 ] as const
 
 export function withProcurementHubDefaults(
@@ -368,6 +380,7 @@ export function withProcurementHubDefaults(
     grain: search.grain ?? PROCUREMENT_HUB_DEFAULTS.grain,
     measure: search.measure ?? PROCUREMENT_HUB_DEFAULTS.measure,
     mapGrain: search.mapGrain ?? PROCUREMENT_HUB_DEFAULTS.mapGrain,
+    mapParty: search.mapParty ?? PROCUREMENT_HUB_DEFAULTS.mapParty,
     rankDim: search.rankDim ?? PROCUREMENT_HUB_DEFAULTS.rankDim,
     cpvLevel: search.cpvLevel ?? PROCUREMENT_HUB_DEFAULTS.cpvLevel,
     rankBy: search.rankBy ?? PROCUREMENT_HUB_DEFAULTS.rankBy,
@@ -417,11 +430,25 @@ export function parseProcurementHubSearch(
     ...(normalizedTo ? { dateTo: normalizedTo } : { dateTo: undefined }),
     ...(parsed.period === 'all' ? { period: 'all' as const } : {}),
     ...buyerGeo,
-    ...(parsed.supplierCounty
-      ? { supplierCounty: parsed.supplierCounty, supplierRegion: undefined }
-      : parsed.supplierRegion
-        ? { supplierRegion: parsed.supplierRegion }
-        : {}),
+    ...(parsed.supplierSiruta
+      ? {
+          supplierSiruta: parsed.supplierSiruta,
+          supplierCounty: undefined,
+          supplierRegion: undefined,
+        }
+      : parsed.supplierCounty
+        ? {
+            supplierCounty: parsed.supplierCounty,
+            supplierRegion: undefined,
+            supplierSiruta: undefined,
+          }
+        : parsed.supplierRegion
+          ? {
+              supplierRegion: parsed.supplierRegion,
+              supplierCounty: undefined,
+              supplierSiruta: undefined,
+            }
+          : {}),
   }
 
   return withProcurementHubDefaults(withDates)
@@ -450,6 +477,7 @@ export function cleanProcurementHubSearch(
     'buyerSiruta',
     'supplierRegion',
     'supplierCounty',
+    'supplierSiruta',
   ]
   for (const key of trimmedText) {
     const value = cleaned[key]
@@ -468,6 +496,9 @@ export function cleanProcurementHubSearch(
   if (cleaned.measure === PROCUREMENT_HUB_DEFAULTS.measure) delete cleaned.measure
   if (cleaned.mapGrain === PROCUREMENT_HUB_DEFAULTS.mapGrain) {
     delete cleaned.mapGrain
+  }
+  if (cleaned.mapParty === PROCUREMENT_HUB_DEFAULTS.mapParty) {
+    delete cleaned.mapParty
   }
   if (cleaned.rankDim === PROCUREMENT_HUB_DEFAULTS.rankDim) delete cleaned.rankDim
   if (cleaned.cpvLevel === PROCUREMENT_HUB_DEFAULTS.cpvLevel) {
@@ -507,6 +538,7 @@ export function hubStateToLandingFilters(
       buyerSiruta: state.buyerSiruta,
       supplierRegion: state.supplierRegion,
       supplierCounty: state.supplierCounty,
+      supplierSiruta: state.supplierSiruta,
       rankBy: state.measure === 'value_awarded' ? 'value' : 'count',
     },
     now,
@@ -515,8 +547,11 @@ export function hubStateToLandingFilters(
 
 /**
  * Map territory drawer scope: same resolved hub filters as Overview/map
- * (period, measure→rankBy, supplier geo), with buyer geo replaced by the
- * clicked territory so sidebar metrics match the choropleth.
+ * (period, measure→rankBy, supplier geo), with **buyer** geo replaced by the
+ * clicked territory so sidebar cards match the original buyer-map panel.
+ *
+ * `mapParty` only affects map paint — not this drawer query. Apply still sets
+ * buyer location filters (supplier location stays on the filter sheet).
  *
  * `mapGrain` here is the **selection** grain (from paint mode), not the
  * toolbar chrome — county paint under region toolbar must scope to county.
@@ -538,8 +573,16 @@ export function hubStateToTerritoryLandingFilters(
     ...(base.rankBy ? { rankBy: base.rankBy } : {}),
     ...(base.supplierRegion ? { supplierRegion: base.supplierRegion } : {}),
     ...(base.supplierCounty ? { supplierCounty: base.supplierCounty } : {}),
+    ...(base.supplierSiruta ? { supplierSiruta: base.supplierSiruta } : {}),
   }
-  if (!territoryId) return shared
+  if (!territoryId) {
+    return {
+      ...shared,
+      ...(base.buyerRegion ? { buyerRegion: base.buyerRegion } : {}),
+      ...(base.buyerCounty ? { buyerCounty: base.buyerCounty } : {}),
+      ...(base.buyerSiruta ? { buyerSiruta: base.buyerSiruta } : {}),
+    }
+  }
   if (mapGrain === 'county') {
     return { ...shared, buyerCounty: territoryId }
   }
@@ -612,6 +655,7 @@ export function hubStateToRankingScopeInput(
   readonly buyerSiruta?: string
   readonly supplierCounty?: string
   readonly supplierRegion?: string
+  readonly supplierSiruta?: string
   readonly grain?: 'procedure' | 'contract' | 'direct_acquisition'
   readonly status?: string
 } {
@@ -636,6 +680,7 @@ export function hubStateToRankingScopeInput(
     buyerSiruta: state.buyerSiruta,
     supplierCounty: state.supplierCounty,
     supplierRegion: state.supplierRegion,
+    supplierSiruta: state.supplierSiruta,
     grain,
     status: rankingStatusFromHubState(state),
   }

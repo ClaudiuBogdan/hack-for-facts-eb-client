@@ -84,6 +84,13 @@ export const procurementPrimaryButtonClassName =
 export const procurementOutlineButtonClassName =
   'h-11 rounded-none border-2 border-[#b1b4b6] bg-white px-2 text-xs font-black uppercase tracking-wide text-[#0b0c0c] hover:bg-[#f3f2f1] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)] sm:text-sm'
 
+/** Compact choice chip — blue fill when pressed (metric / territorial level). */
+export const procurementChoiceButtonClassName =
+  'h-9 rounded-none border-2 border-[#b1b4b6] bg-white px-3 text-xs font-semibold text-[#0b0c0c] shadow-none transition-colors hover:bg-[#f3f2f1] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)] dark:hover:bg-[var(--pnrr-subtle)]'
+
+export const procurementChoiceButtonActiveClassName =
+  'border-[#1d70b8] bg-[#1d70b8] text-white hover:bg-[#1d70b8] hover:text-white dark:border-[#1d70b8] dark:bg-[#1d70b8] dark:text-white dark:hover:bg-[#1d70b8] dark:hover:text-white'
+
 export const procurementPaginationButtonClassName =
   'inline-flex h-10 min-w-10 items-center justify-center rounded-none border-2 border-[#b1b4b6] bg-white px-3 text-sm font-semibold text-[#0b0c0c] transition-colors hover:bg-[#f3f2f1] disabled:cursor-not-allowed disabled:opacity-40 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)] dark:hover:bg-[var(--pnrr-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]'
 

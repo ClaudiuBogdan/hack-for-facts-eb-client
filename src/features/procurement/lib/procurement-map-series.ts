@@ -1,10 +1,14 @@
 /**
- * Buyer map series helpers — region choropleth via county polygons (M1).
+ * Procurement map series helpers — region/county choropleth via county polygons.
+ * Paint party is buyer (public institutions) or supplier (registered office).
  *
  * @see docs/specs/procurement-buyer-map-requirements.md
  */
 import type { HeatmapCountyDataPoint } from '@/schemas/heatmap'
-import type { ProcurementHubMapGrain } from '@/schemas/procurement-hub'
+import type {
+  ProcurementHubMapGrain,
+  ProcurementHubMapParty,
+} from '@/schemas/procurement-hub'
 import type { RawProcurementBreakdownBucket } from '../api/graphql/procurement-queries'
 import type { ProcurementGeographyOptions } from '../api/procurement-reference-api'
 import { formatProcurementCountyName } from './procurement-geography'
@@ -13,6 +17,7 @@ import { MNEMONIC_TO_COUNTY_NAME } from '@/features/pnrr/lib/county-mnemonics'
 export type ProcurementMapSeriesId = 'record_count' | 'value_awarded'
 
 export type ProcurementMapGranularity = ProcurementHubMapGrain
+export type ProcurementMapParty = ProcurementHubMapParty
 
 export type ProcurementRegionMapBucket = {
   readonly region: string
@@ -35,7 +40,7 @@ export function regionBucketsFromBreakdown(
   const out: ProcurementRegionMapBucket[] = []
   for (const bucket of buckets) {
     // Named buckets only: facets emit kind 'value' (PG) or 'top' (ClickHouse
-    // dev backend); other/unknown never paint.
+    // backend); other/unknown never paint.
     if ((bucket.kind !== 'value' && bucket.kind !== 'top') || !bucket.key?.trim()) continue
     out.push({
       region: bucket.key.trim(),
@@ -125,7 +130,7 @@ export function buildCountyHeatmap(
       amount,
       total_amount: amount,
       per_capita_amount: 0,
-      county_entity: { cui: '', name: county.region ?? '' },
+      county_entity: { cui: '', name: countyName },
     })
   }
   return points
@@ -134,9 +139,9 @@ export function buildCountyHeatmap(
 /**
  * Heatmap for the active map geography level.
  *
- * Region and county paint from the buyerRegion/buyerCounty facet dimensions
- * (ClickHouse dev backend). UAT needs the UAT geometry layer — data is
- * plumbed (dimension buyerSiruta) but paint stays empty until then.
+ * Region and county paint from party geo facet dimensions. UAT needs the UAT
+ * geometry layer — data is plumbed (buyerSiruta / supplierSiruta) but paint
+ * stays empty until then.
  */
 export function buildProcurementMapHeatmap(
   mapGrain: ProcurementMapGranularity,
@@ -175,6 +180,9 @@ export type ProcurementMapAnalysisDimension =
   | 'buyerRegion'
   | 'buyerCounty'
   | 'buyerSiruta'
+  | 'supplierRegion'
+  | 'supplierCounty'
+  | 'supplierSiruta'
   | 'cpvDivision'
 
 export type ProcurementMapPaintMode =
@@ -198,61 +206,94 @@ export type ProcurementMapAnalysisPlan = {
   readonly singleTerritoryId?: string
 }
 
+type MapPartyGeo = {
+  readonly party?: ProcurementMapParty
+  readonly buyerRegion?: string
+  readonly buyerCounty?: string
+  readonly buyerSiruta?: string
+  readonly supplierRegion?: string
+  readonly supplierCounty?: string
+  readonly supplierSiruta?: string
+}
+
+function partyGeoDims(party: ProcurementMapParty): {
+  readonly region: ProcurementMapAnalysisDimension
+  readonly county: ProcurementMapAnalysisDimension
+  readonly siruta: ProcurementMapAnalysisDimension
+} {
+  if (party === 'supplier') {
+    return {
+      region: 'supplierRegion',
+      county: 'supplierCounty',
+      siruta: 'supplierSiruta',
+    }
+  }
+  return {
+    region: 'buyerRegion',
+    county: 'buyerCounty',
+    siruta: 'buyerSiruta',
+  }
+}
+
 /**
- * Pick a map analysis dimension that is not already fixed by buyer geo scope.
- * ClickHouse rejects `breakdown(buyerRegion)` when `scope.buyerRegion` is set
- * (single-bucket = use stats). After Apply filter we drill to the next finer
- * grain, or paint a single territory from stats.
+ * Pick a map analysis dimension that is not already fixed by the paint party's
+ * geography scope. ClickHouse rejects `breakdown(X)` when `scope.X` is set
+ * (single-bucket = use stats). After Apply we drill to the next finer grain,
+ * or paint a single territory from stats.
  */
 export function resolveProcurementMapAnalysisPlan(
   mapGrain: ProcurementMapGranularity,
-  buyerGeo: {
-    readonly buyerRegion?: string
-    readonly buyerCounty?: string
-    readonly buyerSiruta?: string
-  },
+  geo: MapPartyGeo,
 ): ProcurementMapAnalysisPlan {
-  const buyerSiruta = buyerGeo.buyerSiruta?.trim() || undefined
-  const buyerCounty = buyerGeo.buyerCounty?.trim() || undefined
-  const buyerRegion = buyerGeo.buyerRegion?.trim() || undefined
+  const party: ProcurementMapParty = geo.party ?? 'buyer'
+  const dims = partyGeoDims(party)
+  const siruta =
+    (party === 'supplier' ? geo.supplierSiruta : geo.buyerSiruta)?.trim() ||
+    undefined
+  const county =
+    (party === 'supplier' ? geo.supplierCounty : geo.buyerCounty)?.trim() ||
+    undefined
+  const region =
+    (party === 'supplier' ? geo.supplierRegion : geo.buyerRegion)?.trim() ||
+    undefined
 
-  if (buyerSiruta) {
+  if (siruta) {
     return {
       dimension: 'cpvDivision',
       paintMode: 'single-uat',
       topN: 1,
-      singleTerritoryId: buyerSiruta,
+      singleTerritoryId: siruta,
     }
   }
 
-  if (buyerCounty) {
+  if (county) {
     if (mapGrain === 'uat') {
-      return { dimension: 'buyerSiruta', paintMode: 'uat', topN: 100 }
+      return { dimension: dims.siruta, paintMode: 'uat', topN: 100 }
     }
     return {
       dimension: 'cpvDivision',
       paintMode: 'single-county',
       topN: 1,
-      singleTerritoryId: buyerCounty,
+      singleTerritoryId: county,
     }
   }
 
-  if (buyerRegion) {
+  if (region) {
     // Region is fixed — region breakdown is invalid. Paint counties (or UATs)
     // inside the scoped region instead.
     if (mapGrain === 'uat') {
-      return { dimension: 'buyerSiruta', paintMode: 'uat', topN: 100 }
+      return { dimension: dims.siruta, paintMode: 'uat', topN: 100 }
     }
-    return { dimension: 'buyerCounty', paintMode: 'county', topN: 100 }
+    return { dimension: dims.county, paintMode: 'county', topN: 100 }
   }
 
   if (mapGrain === 'uat') {
-    return { dimension: 'buyerSiruta', paintMode: 'uat', topN: 100 }
+    return { dimension: dims.siruta, paintMode: 'uat', topN: 100 }
   }
   if (mapGrain === 'county') {
-    return { dimension: 'buyerCounty', paintMode: 'county', topN: 100 }
+    return { dimension: dims.county, paintMode: 'county', topN: 100 }
   }
-  return { dimension: 'buyerRegion', paintMode: 'region', topN: 20 }
+  return { dimension: dims.region, paintMode: 'region', topN: 20 }
 }
 
 /**

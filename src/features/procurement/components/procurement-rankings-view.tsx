@@ -84,52 +84,7 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div
-          className="inline-flex border-2 border-[var(--pnrr-border)]"
-          role="tablist"
-          aria-label={t`Ranking dimension`}
-        >
-          {dims.map((dim) => (
-            <Button
-              key={dim.id}
-              type="button"
-              role="tab"
-              aria-selected={rankDim === dim.id}
-              variant={rankDim === dim.id ? 'default' : 'ghost'}
-              className="rounded-none border-l-2 border-[var(--pnrr-border)] first:border-l-0"
-              onClick={() => hub.setRankDim(dim.id)}
-            >
-              {dim.label}
-            </Button>
-          ))}
-        </div>
-
         <div className="flex flex-wrap items-center gap-4">
-          <div
-            className="inline-flex border-2 border-[var(--pnrr-border)]"
-            role="group"
-            aria-label={t`Ranking basis`}
-          >
-            <Button
-              type="button"
-              variant={hubState.rankBy === 'count' ? 'default' : 'ghost'}
-              className="rounded-none"
-              aria-pressed={hubState.rankBy === 'count'}
-              onClick={() => hub.setRankBy('count')}
-            >
-              <Trans>By count</Trans>
-            </Button>
-            <Button
-              type="button"
-              variant={hubState.rankBy === 'value' ? 'default' : 'ghost'}
-              className="rounded-none border-l-2 border-[var(--pnrr-border)]"
-              aria-pressed={hubState.rankBy === 'value'}
-              onClick={() => hub.setRankBy('value')}
-            >
-              <Trans>By value</Trans>
-            </Button>
-          </div>
-
           {analysisGrain ? (
             <ProcurementAnalysisGrainToggle
               value={analysisGrain}
@@ -138,6 +93,51 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
               }
             />
           ) : null}
+
+          <div
+            className="inline-flex border-2 border-[var(--pnrr-border)]"
+            role="tablist"
+            aria-label={t`Ranking dimension`}
+          >
+            {dims.map((dim) => (
+              <Button
+                key={dim.id}
+                type="button"
+                role="tab"
+                aria-selected={rankDim === dim.id}
+                variant={rankDim === dim.id ? 'default' : 'ghost'}
+                className="rounded-none border-l-2 border-[var(--pnrr-border)] first:border-l-0"
+                onClick={() => hub.setRankDim(dim.id)}
+              >
+                {dim.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <div
+          className="inline-flex border-2 border-[var(--pnrr-border)]"
+          role="group"
+          aria-label={t`Ranking basis`}
+        >
+          <Button
+            type="button"
+            variant={hubState.rankBy === 'count' ? 'default' : 'ghost'}
+            className="rounded-none"
+            aria-pressed={hubState.rankBy === 'count'}
+            onClick={() => hub.setRankBy('count')}
+          >
+            <Trans>By count</Trans>
+          </Button>
+          <Button
+            type="button"
+            variant={hubState.rankBy === 'value' ? 'default' : 'ghost'}
+            className="rounded-none border-l-2 border-[var(--pnrr-border)]"
+            aria-pressed={hubState.rankBy === 'value'}
+            onClick={() => hub.setRankBy('value')}
+          >
+            <Trans>By value</Trans>
+          </Button>
         </div>
       </div>
 

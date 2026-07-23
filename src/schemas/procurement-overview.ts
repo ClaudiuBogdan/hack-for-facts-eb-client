@@ -97,6 +97,7 @@ export type ProcurementLandingFilters = {
   readonly buyerSiruta?: string
   readonly supplierRegion?: string
   readonly supplierCounty?: string
+  readonly supplierSiruta?: string
   /**
    * Analysis grain for territory/map-scoped aggregates. Overview landing omits
    * this and returns both contract + DA blocks for client selection.
@@ -237,6 +238,7 @@ export function toProcurementLandingQueryFilters(
     buyerSiruta: filters.buyerSiruta,
     supplierRegion: filters.supplierRegion,
     supplierCounty: filters.supplierCounty,
+    supplierSiruta: filters.supplierSiruta,
     ...(resolved.dateFrom ? { dateFrom: resolved.dateFrom } : {}),
     ...(resolved.dateTo ? { dateTo: resolved.dateTo } : {}),
   }

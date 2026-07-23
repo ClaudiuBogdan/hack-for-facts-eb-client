@@ -70,6 +70,50 @@ describe('procurement map series', () => {
     })
   })
 
+  it('paints supplier geography dimensions when mapParty is supplier', () => {
+    expect(
+      resolveProcurementMapAnalysisPlan('region', { party: 'supplier' }),
+    ).toEqual({
+      dimension: 'supplierRegion',
+      paintMode: 'region',
+      topN: 20,
+    })
+    expect(
+      resolveProcurementMapAnalysisPlan('region', {
+        party: 'supplier',
+        supplierRegion: 'Nord-Vest',
+      }),
+    ).toEqual({
+      dimension: 'supplierCounty',
+      paintMode: 'county',
+      topN: 100,
+    })
+    expect(
+      resolveProcurementMapAnalysisPlan('county', {
+        party: 'supplier',
+        supplierCounty: 'CJ',
+      }),
+    ).toEqual({
+      dimension: 'cpvDivision',
+      paintMode: 'single-county',
+      topN: 1,
+      singleTerritoryId: 'CJ',
+    })
+  })
+
+  it('ignores opposite-party geo when resolving the paint plan', () => {
+    expect(
+      resolveProcurementMapAnalysisPlan('region', {
+        party: 'supplier',
+        buyerRegion: 'Centru',
+      }),
+    ).toEqual({
+      dimension: 'supplierRegion',
+      paintMode: 'region',
+      topN: 20,
+    })
+  })
+
   it('derives click/drawer grain from paint mode, not toolbar mapGrain', () => {
     expect(selectionGrainFromPaintMode('county')).toBe('county')
     expect(selectionGrainFromPaintMode('single-county')).toBe('county')

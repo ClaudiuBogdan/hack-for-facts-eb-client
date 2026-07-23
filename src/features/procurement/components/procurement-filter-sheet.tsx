@@ -46,8 +46,6 @@ const STATUS_OPTIONS_BY_GRAIN: Record<ProcurementGrain, readonly ProcurementStat
   modifications: [],
 }
 
-const PAGE_SIZE_OPTIONS = [25, 50, 100] as const
-
 const TONE_DOT_CLASSES: Record<string, string> = {
   positive: 'bg-emerald-500',
   active: 'bg-sky-500',
@@ -408,33 +406,6 @@ export function ProcurementListFilterFields({
             pretend to narrow the list.
           </Trans>
         </p>
-      </section>
-
-      <section className="space-y-2">
-        <Label className={procurementSectionLabelClassName}>
-          <Trans>Results per page</Trans>
-        </Label>
-        <ToggleGroup
-          type="single"
-          value={String(search.pageSize)}
-          onValueChange={(value) => {
-            const size = Number(value)
-            if (PAGE_SIZE_OPTIONS.some((option) => option === size)) {
-              filters.setPageSize(size)
-            }
-          }}
-          className="grid grid-cols-3 gap-2"
-        >
-          {PAGE_SIZE_OPTIONS.map((size) => (
-            <ToggleGroupItem
-              key={size}
-              value={String(size)}
-              className={procurementToggleItemClassName}
-            >
-              {size}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
       </section>
     </>
   )

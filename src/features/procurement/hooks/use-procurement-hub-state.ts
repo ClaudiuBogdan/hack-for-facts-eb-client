@@ -207,10 +207,12 @@ export function useProcurementHubState(state: ProcurementHubState) {
     (next: {
       readonly supplierRegion?: string
       readonly supplierCounty?: string
+      readonly supplierSiruta?: string
     }) =>
       updateFilters({
         supplierRegion: next.supplierRegion,
         supplierCounty: next.supplierCounty,
+        supplierSiruta: next.supplierSiruta,
       }),
     [updateFilters],
   )
@@ -253,10 +255,11 @@ export function useProcurementHubState(state: ProcurementHubState) {
       buyerSiruta: undefined,
       supplierRegion: undefined,
       supplierCounty: undefined,
+      supplierSiruta: undefined,
       measure: undefined,
       view: state.view,
       grain: state.grain,
-      // Keep mapGrain — map-tab chrome, not a global filter.
+      // Keep mapGrain / mapParty — map chrome, not global filters.
     })
   }, [updateFilters, state.view, state.grain])
 

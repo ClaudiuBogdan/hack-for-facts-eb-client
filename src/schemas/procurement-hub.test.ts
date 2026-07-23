@@ -26,14 +26,14 @@ describe('procurement hub schema', () => {
     expect(parseProcurementHubSearch({}).cpvLevel).toBe('division')
     expect(parseProcurementHubSearch({}).rankPage).toBe(1)
     expect(parseProcurementHubSearch({}).rankPageSize).toBe(10)
-    expect(parseProcurementHubSearch({}).rankBy).toBe('count')
-    expect(parseProcurementHubSearch({ rankBy: 'value' }).rankBy).toBe('value')
+    expect(parseProcurementHubSearch({}).rankBy).toBe('value')
+    expect(parseProcurementHubSearch({ rankBy: 'count' }).rankBy).toBe('count')
     expect(
       cleanProcurementHubSearch({
         view: 'rankings',
         rankDim: 'supplier',
         cpvLevel: 'code',
-        rankBy: 'value',
+        rankBy: 'count',
         rankPage: 2,
         rankPageSize: 25,
       }),
@@ -41,7 +41,7 @@ describe('procurement hub schema', () => {
       view: 'rankings',
       rankDim: 'supplier',
       cpvLevel: 'code',
-      rankBy: 'value',
+      rankBy: 'count',
       rankPage: 2,
       rankPageSize: 25,
     })
@@ -50,29 +50,36 @@ describe('procurement hub schema', () => {
         view: 'rankings',
         rankDim: 'buyer',
         cpvLevel: 'division',
-        rankBy: 'count',
+        rankBy: 'value',
         rankPage: 1,
         rankPageSize: 10,
       }),
     ).toEqual({ view: 'rankings' })
   })
 
-  it('defaults measure and mapGrain and cleans them when default', () => {
-    expect(parseProcurementHubSearch({}).measure).toBe('record_count')
+  it('defaults measure, mapGrain, and mapParty and cleans them when default', () => {
+    expect(parseProcurementHubSearch({}).measure).toBe('value_awarded')
     expect(parseProcurementHubSearch({}).mapGrain).toBe('region')
+    expect(parseProcurementHubSearch({}).mapParty).toBe('buyer')
     expect(
       cleanProcurementHubSearch({
-        measure: 'record_count',
+        measure: 'value_awarded',
         mapGrain: 'region',
+        mapParty: 'buyer',
         q: 'school',
       }),
     ).toEqual({ q: 'school' })
     expect(
       cleanProcurementHubSearch({
-        measure: 'value_awarded',
+        measure: 'record_count',
         mapGrain: 'county',
+        mapParty: 'supplier',
       }),
-    ).toEqual({ measure: 'value_awarded', mapGrain: 'county' })
+    ).toEqual({
+      measure: 'record_count',
+      mapGrain: 'county',
+      mapParty: 'supplier',
+    })
   })
 
   it('keeps finest buyer geo key (siruta > county > region)', () => {
@@ -107,7 +114,7 @@ describe('procurement hub schema', () => {
     expect(hubStateToLandingFilters(state, now)).toEqual({
       dateFrom: '2025-01-01',
       dateTo: '2025-12-31',
-      rankBy: 'count',
+      rankBy: 'value',
     })
     expect(hubStateToListSearchState(state, now)).toMatchObject({
       dateFrom: '2025-01-01',
@@ -174,6 +181,27 @@ describe('procurement hub schema', () => {
     expect(
       hubStateToTerritoryLandingFilters(state, 'county', 'BV', now),
     ).not.toHaveProperty('buyerRegion')
+  })
+
+  it('applies buyer territory even when mapParty is supplier', () => {
+    const now = new Date('2026-07-21T12:00:00Z')
+    const state = parseProcurementHubSearch({
+      mapParty: 'supplier',
+      supplierRegion: 'Centru',
+    })
+    // Map paint is supplier-only chrome; the territory drawer/Apply stay on
+    // buyer geography so Overview cards are not coupled to mapParty.
+    expect(
+      hubStateToTerritoryLandingFilters(state, 'region', 'Nord-Vest', now),
+    ).toMatchObject({
+      buyerRegion: 'Nord-Vest',
+      supplierRegion: 'Centru',
+      dateFrom: '2025-01-01',
+      dateTo: '2025-12-31',
+    })
+    expect(
+      hubStateToTerritoryLandingFilters(state, 'region', 'Nord-Vest', now),
+    ).not.toHaveProperty('supplierCounty')
   })
 
   it('omits geography from list search state (B1)', () => {

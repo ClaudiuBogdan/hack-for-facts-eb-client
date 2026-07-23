@@ -149,15 +149,31 @@ export function buildHubActiveFilterChips(
     })
   }
 
-  if (state.supplierCounty || state.supplierRegion) {
+  if (state.supplierSiruta) {
+    chips.push({
+      key: 'supplier-geo',
+      prefix: t`Supplier location`,
+      value: t`UAT ${state.supplierSiruta}`,
+      kind: geoAppliedOnView ? 'applied' : 'not-on-list',
+      clear: {
+        supplierSiruta: undefined,
+        supplierCounty: undefined,
+        supplierRegion: undefined,
+      },
+    })
+  } else if (state.supplierCounty || state.supplierRegion) {
     chips.push({
       key: 'supplier-geo',
       prefix: t`Supplier location`,
       value: state.supplierCounty ?? state.supplierRegion ?? '',
       // Supplier geo is applied to overview/rankings analytics (ClickHouse
-      // dev backend, 2026-07-22); record lists still exclude it.
+      // analytics backend); record lists still exclude it.
       kind: geoAppliedOnView ? 'applied' : 'not-on-list',
-      clear: { supplierCounty: undefined, supplierRegion: undefined },
+      clear: {
+        supplierCounty: undefined,
+        supplierRegion: undefined,
+        supplierSiruta: undefined,
+      },
     })
   }
 

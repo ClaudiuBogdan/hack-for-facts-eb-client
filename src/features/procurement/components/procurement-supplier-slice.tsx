@@ -120,7 +120,7 @@ function SliceContent({
         />
       </section>
 
-      <div className="flex justify-end">
+      <div className="flex justify-start">
         <ProcurementAnalysisGrainToggle value={grain} onChange={setGrain} />
       </div>
 

@@ -84,10 +84,13 @@ export function ProcurementTerritoryDrawer({
       : overviewQuery.data.analysisByGrain.directAcquisition
     : undefined
 
-  // Same facet buckets that drive map paint (region name or county/UAT key).
-  const mapBucket = territoryId
-    ? findRegionBucket(regionBuckets, territoryId)
-    : undefined
+  // Same facet buckets that drive map paint — only reuse them for drawer
+  // headlines when the map paints buyer geography. Supplier paint is map-only;
+  // the drawer panel stays on buyer-scoped overview cards + stats.
+  const mapBucket =
+    territoryId && hubState.mapParty !== 'supplier'
+      ? findRegionBucket(regionBuckets, territoryId)
+      : undefined
 
   const geoPatch =
     territoryGrain === 'uat'

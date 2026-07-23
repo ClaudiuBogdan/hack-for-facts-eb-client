@@ -42,6 +42,7 @@ export function useProcurementLanding(filters: ProcurementLandingFilters = {}) {
       filters.buyerSiruta ?? null,
       filters.supplierRegion ?? null,
       filters.supplierCounty ?? null,
+      filters.supplierSiruta ?? null,
     ],
     queryFn: () => fetchProcurementLanding(filters),
   })
@@ -68,6 +69,7 @@ export function useProcurementTerritoryOverview(
       filters.buyerSiruta ?? null,
       filters.supplierRegion ?? null,
       filters.supplierCounty ?? null,
+      filters.supplierSiruta ?? null,
     ],
     queryFn: () => fetchProcurementTerritoryOverview(filters),
     enabled,

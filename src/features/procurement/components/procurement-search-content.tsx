@@ -189,6 +189,7 @@ export function ProcurementSearchContent({
             total={page.page.total}
             hasRecords={page.records.length === search.pageSize}
             onPageChange={filters.setPage}
+            onPageSizeChange={filters.setPageSize}
           />
         </div>
       ) : null}

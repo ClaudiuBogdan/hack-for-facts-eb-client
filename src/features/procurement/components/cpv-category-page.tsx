@@ -125,7 +125,7 @@ export function CpvCategoryPage({ code, initialPage, className }: Props) {
             />
           </section>
 
-          <div className="flex justify-end">
+          <div className="flex justify-start">
             <ProcurementAnalysisGrainToggle value={grain} onChange={setGrain} />
           </div>
 

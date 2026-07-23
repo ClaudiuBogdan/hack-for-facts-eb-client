@@ -221,6 +221,7 @@ export async function fetchProcurementLandingLive(
     buyerSiruta: filters.buyerSiruta,
     supplierCounty: filters.supplierCounty,
     supplierRegion: filters.supplierRegion,
+    supplierSiruta: filters.supplierSiruta,
   })
   const [aggregates, divisions] = await Promise.all([
     // Party breakdowns under buyer geography are served by the ClickHouse
@@ -238,9 +239,9 @@ export async function fetchProcurementLandingLive(
 
 /**
  * Map territory drawer overview — same landing payload shape, but requests
- * party rankings under buyer geography as if the serving API retains keys.
+ * party rankings under geography as if the serving API retains keys.
  *
- * Party rankings under buyer geography are served by the ClickHouse analytics
+ * Party rankings under geography are served by the ClickHouse analytics
  * backend (dev, 2026-07-22).
  */
 export async function fetchProcurementTerritoryOverviewLive(
@@ -255,6 +256,7 @@ export async function fetchProcurementTerritoryOverviewLive(
     buyerSiruta: filters.buyerSiruta,
     supplierCounty: filters.supplierCounty,
     supplierRegion: filters.supplierRegion,
+    supplierSiruta: filters.supplierSiruta,
     grain: filters.grain,
   })
 

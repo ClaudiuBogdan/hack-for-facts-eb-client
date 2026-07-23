@@ -100,7 +100,8 @@ export function ProcurementOverviewPage({
         <div className="space-y-4">
           {hasBuyerGeography ||
           hubState.supplierRegion ||
-          hubState.supplierCounty ? (
+          hubState.supplierCounty ||
+          hubState.supplierSiruta ? (
             <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
               <Trans>
                 Geography filters are kept in the URL but are not applied to
@@ -131,7 +132,7 @@ export function ProcurementOverviewPage({
             </p>
           ) : null}
 
-          <div className="flex justify-end">
+          <div className="flex justify-start">
             <ProcurementAnalysisGrainToggle
               value={analysisGrain}
               onChange={(grain) =>

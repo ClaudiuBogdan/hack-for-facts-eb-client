@@ -84,9 +84,9 @@ type Props = {
 }
 
 /**
- * Buyer geography choropleth on the procurement Overview.
- * Shared hub filters (period, measure, buyer geo…) apply globally.
- * `mapGrain` is map-only chrome (URL + toolbar), not a global filter chip.
+ * Geography choropleth on the procurement Overview.
+ * Shared hub filters (period, measure, buyer/supplier geo…) apply globally.
+ * `mapGrain` / `mapParty` are map-only chrome (URL + toolbar), not filter chips.
  */
 export function ProcurementMapView({
   hubState,
@@ -100,9 +100,18 @@ export function ProcurementMapView({
   const monthScope = buildProcurementOverviewMonthScope(landingFilters)
   const analysisGrain = hubGrainToAnalysisGrain(hubState.grain)
   const mapGrain = hubState.mapGrain
+  const mapParty = hubState.mapParty
   const measure = hubState.measure
   const mapViewType = mapGrain === 'uat' ? 'UAT' : 'County'
-  const mapAnalysisPlan = resolveProcurementMapAnalysisPlan(mapGrain, hubState)
+  const mapAnalysisPlan = resolveProcurementMapAnalysisPlan(mapGrain, {
+    party: mapParty,
+    buyerRegion: hubState.buyerRegion,
+    buyerCounty: hubState.buyerCounty,
+    buyerSiruta: hubState.buyerSiruta,
+    supplierRegion: hubState.supplierRegion,
+    supplierCounty: hubState.supplierCounty,
+    supplierSiruta: hubState.supplierSiruta,
+  })
   const selectionGrain = selectionGrainFromPaintMode(mapAnalysisPlan.paintMode)
 
   const analysisQuery = useProcurementAnalysis({
@@ -110,10 +119,18 @@ export function ProcurementMapView({
       grain: analysisGrain,
       ...(monthScope.monthFrom ? { from: monthScope.monthFrom } : {}),
       ...(monthScope.monthTo ? { to: monthScope.monthTo } : {}),
-      // Buyer geography scope is served at every level (ClickHouse dev backend).
       ...(hubState.buyerRegion ? { buyerRegion: hubState.buyerRegion } : {}),
       ...(hubState.buyerCounty ? { buyerCounty: hubState.buyerCounty } : {}),
       ...(hubState.buyerSiruta ? { buyerSiruta: hubState.buyerSiruta } : {}),
+      ...(hubState.supplierRegion
+        ? { supplierRegion: hubState.supplierRegion }
+        : {}),
+      ...(hubState.supplierCounty
+        ? { supplierCounty: hubState.supplierCounty }
+        : {}),
+      ...(hubState.supplierSiruta
+        ? { supplierSiruta: hubState.supplierSiruta }
+        : {}),
     },
     dimension: mapAnalysisPlan.dimension,
     bucket: 'year',
@@ -360,10 +377,16 @@ export function ProcurementMapView({
 
   const unknownHint = facetBlock?.meta?.caveats?.join(' ')
   const drawerOpen = Boolean(selection)
+  const paintPartyRegion =
+    mapParty === 'supplier' ? hubState.supplierRegion : hubState.buyerRegion
+  const paintPartyCounty =
+    mapParty === 'supplier' ? hubState.supplierCounty : hubState.buyerCounty
+  const paintPartySiruta =
+    mapParty === 'supplier' ? hubState.supplierSiruta : hubState.buyerSiruta
   const paintUsesCountyDrill =
-    Boolean(hubState.buyerRegion) &&
-    !hubState.buyerCounty &&
-    !hubState.buyerSiruta &&
+    Boolean(paintPartyRegion) &&
+    !paintPartyCounty &&
+    !paintPartySiruta &&
     mapAnalysisPlan.paintMode === 'county'
 
   return (
@@ -371,6 +394,7 @@ export function ProcurementMapView({
       <MapToolbar
         analysisGrain={analysisGrain}
         mapGrain={mapGrain}
+        mapParty={mapParty}
         showAnalysisGrainToggle={showAnalysisGrainToggle}
         onGrainChange={(grain) =>
           updateFilters({ grain: analysisGrainToHubGrain(grain) })
@@ -379,23 +403,43 @@ export function ProcurementMapView({
           setSelection(undefined)
           updateFilters({ mapGrain: next })
         }}
+        onMapPartyChange={(next) => {
+          setSelection(undefined)
+          updateFilters({ mapParty: next })
+        }}
       />
 
       {mapGrain === 'uat' ? (
         <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
-          {/* TODO(UAT geometry layer): UAT-level data is served (buyerSiruta); paint needs UAT polygons. */}
-          <Trans>
-            UAT colours are not published yet. Click a territory to open
-            details; use the panel buttons to apply a buyer location filter.
-          </Trans>
+          {/* TODO(UAT geometry layer): UAT-level data is served; paint needs UAT polygons. */}
+          {mapParty === 'supplier' ? (
+            <Trans>
+              UAT colours are not published yet. Click a territory to open
+              details; the side panel still applies a public-institution
+              location filter.
+            </Trans>
+          ) : (
+            <Trans>
+              UAT colours are not published yet. Click a territory to open
+              details; use the panel buttons to apply a buyer location filter.
+            </Trans>
+          )}
         </p>
       ) : paintUsesCountyDrill ? (
         <p className="border-l-4 border-[var(--pnrr-border)] pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
-          <Trans>
-            A buyer region filter is active, so the map shows county totals
-            inside that region. Records without known buyer geography are
-            excluded — never shown as zero.
-          </Trans>
+          {mapParty === 'supplier' ? (
+            <Trans>
+              A supplier region filter is active, so the map shows county totals
+              for suppliers inside that region. Records without known supplier
+              geography are excluded — never shown as zero.
+            </Trans>
+          ) : (
+            <Trans>
+              A buyer region filter is active, so the map shows county totals
+              inside that region. Records without known buyer geography are
+              excluded — never shown as zero.
+            </Trans>
+          )}
         </p>
       ) : facetBlock?.meta &&
         mapAnalysisPlan.dimension !== 'cpvDivision' ? (
@@ -406,8 +450,23 @@ export function ProcurementMapView({
         </p>
       ) : (
         <p className="border-l-4 border-[var(--pnrr-border)] pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
-          {mapGrain === 'county' ||
-          mapAnalysisPlan.paintMode === 'single-county' ? (
+          {mapParty === 'supplier' ? (
+            mapGrain === 'county' ||
+            mapAnalysisPlan.paintMode === 'single-county' ? (
+              <Trans>
+                Counties are coloured by supplier registered-office totals under
+                the current filters. Records without known supplier geography
+                are excluded from the map — never shown as zero.
+              </Trans>
+            ) : (
+              <Trans>
+                Counties are coloured by supplier development-region totals.
+                Records without known supplier geography are excluded from the
+                map — never shown as zero.
+              </Trans>
+            )
+          ) : mapGrain === 'county' ||
+            mapAnalysisPlan.paintMode === 'single-county' ? (
             <Trans>
               Counties are coloured by their own totals under the current
               filters. Records without known buyer geography are excluded from
@@ -516,31 +575,68 @@ export function ProcurementMapView({
 function MapToolbar({
   analysisGrain,
   mapGrain,
+  mapParty,
   showAnalysisGrainToggle,
   onGrainChange,
   onMapGrainChange,
+  onMapPartyChange,
 }: {
   readonly analysisGrain: FlowAnalysisGrain
   readonly mapGrain: ProcurementHubMapGrain
+  readonly mapParty: ProcurementHubState['mapParty']
   readonly showAnalysisGrainToggle: boolean
   readonly onGrainChange: (grain: FlowAnalysisGrain) => void
   readonly onMapGrainChange: (grain: ProcurementHubMapGrain) => void
+  readonly onMapPartyChange: (party: ProcurementHubState['mapParty']) => void
 }) {
   return (
-    <div
-      className={cn(
-        'flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center',
-        showAnalysisGrainToggle ? 'sm:justify-between' : 'sm:justify-end',
-      )}
-    >
-      {showAnalysisGrainToggle ? (
-        <ProcurementAnalysisGrainToggle
-          value={analysisGrain}
-          onChange={onGrainChange}
-        />
-      ) : null}
-
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-wrap items-center gap-2">
+        {showAnalysisGrainToggle ? (
+          <ProcurementAnalysisGrainToggle
+            value={analysisGrain}
+            onChange={onGrainChange}
+          />
+        ) : null}
+
+        <div
+          className="inline-flex border-2 border-[var(--pnrr-border)]"
+          role="group"
+          aria-label={t`Paint by`}
+        >
+          {(
+            [
+              {
+                id: 'buyer' as const,
+                label: t`Public institutions`,
+              },
+              {
+                id: 'supplier' as const,
+                label: t`Suppliers`,
+              },
+            ] as const
+          ).map((option, index) => {
+            const selected = mapParty === option.id
+            return (
+              <Button
+                key={option.id}
+                type="button"
+                variant={selected ? 'default' : 'ghost'}
+                aria-pressed={selected}
+                className={cn(
+                  'rounded-none',
+                  index > 0 && 'border-l-2 border-[var(--pnrr-border)]',
+                )}
+                onClick={() => onMapPartyChange(option.id)}
+              >
+                {option.label}
+              </Button>
+            )
+          })}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 sm:justify-end">
         <span className="text-xs font-bold uppercase tracking-wide text-[var(--pnrr-muted)]">
           <Trans>Map detail</Trans>
         </span>
