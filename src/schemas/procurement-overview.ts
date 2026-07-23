@@ -97,6 +97,11 @@ export type ProcurementLandingFilters = {
   readonly buyerSiruta?: string
   readonly supplierRegion?: string
   readonly supplierCounty?: string
+  /**
+   * Analysis grain for territory/map-scoped aggregates. Overview landing omits
+   * this and returns both contract + DA blocks for client selection.
+   */
+  readonly grain?: 'procedure' | 'contract' | 'direct_acquisition'
 }
 
 export type ResolvedProcurementOverviewPeriod = {
@@ -110,11 +115,78 @@ export type ResolvedProcurementOverviewPeriod = {
 export function getPreviousCalendarYearBounds(
   now: Date = new Date(),
 ): { readonly dateFrom: string; readonly dateTo: string } {
-  const year = now.getUTCFullYear() - 1
+  return getCalendarYearBounds(now.getUTCFullYear() - 1)
+}
+
+/** Full calendar year as month-normalized ISO bounds (`YYYY-01-01` … `YYYY-12-31`). */
+export function getCalendarYearBounds(
+  year: number,
+): { readonly dateFrom: string; readonly dateTo: string } {
   return {
     dateFrom: `${year}-01-01`,
     dateTo: `${year}-12-31`,
   }
+}
+
+/**
+ * Quick period presets: current UTC year and the two prior years
+ * (e.g. 2026, 2025, 2024).
+ */
+export function getRecentCalendarYearQuickOptions(
+  now: Date = new Date(),
+): readonly [number, number, number] {
+  const currentYear = now.getUTCFullYear()
+  return [currentYear, currentYear - 1, currentYear - 2]
+}
+
+/** Oldest year offered in the period year dropdown. */
+export const PROCUREMENT_PERIOD_OLDEST_YEAR = 2020
+
+/**
+ * Older calendar years for the dropdown — immediately after the three quick
+ * presets, down to {@link PROCUREMENT_PERIOD_OLDEST_YEAR} (newest first).
+ */
+export function getOlderCalendarYearOptions(
+  now: Date = new Date(),
+  oldestYear: number = PROCUREMENT_PERIOD_OLDEST_YEAR,
+): readonly number[] {
+  const [, , oldestQuickYear] = getRecentCalendarYearQuickOptions(now)
+  const years: number[] = []
+  for (let year = oldestQuickYear - 1; year >= oldestYear; year -= 1) {
+    years.push(year)
+  }
+  return years
+}
+
+/** True when the resolved period is exactly one full calendar year. */
+export function matchesCalendarYearPeriod(
+  period: Pick<
+    ResolvedProcurementOverviewPeriod,
+    'dateFrom' | 'dateTo' | 'isAllTime'
+  >,
+  year: number,
+): boolean {
+  if (period.isAllTime) return false
+  const bounds = getCalendarYearBounds(year)
+  return period.dateFrom === bounds.dateFrom && period.dateTo === bounds.dateTo
+}
+
+/**
+ * Full calendar year selected by the resolved period, when it matches a
+ * complete Jan–Dec range (including the soft previous-year default).
+ */
+export function selectedCalendarYearFromPeriod(
+  period: Pick<
+    ResolvedProcurementOverviewPeriod,
+    'dateFrom' | 'dateTo' | 'isAllTime'
+  >,
+): number | undefined {
+  if (period.isAllTime || !period.dateFrom) return undefined
+  const year = Number(period.dateFrom.slice(0, 4))
+  if (!Number.isInteger(year) || !matchesCalendarYearPeriod(period, year)) {
+    return undefined
+  }
+  return year
 }
 
 /**

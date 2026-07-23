@@ -3,6 +3,7 @@ import {
   cleanProcurementHubSearch,
   hubStateToLandingFilters,
   hubStateToListSearchState,
+  hubStateToTerritoryLandingFilters,
   parseProcurementHubSearch,
   withProcurementHubDefaults,
 } from './procurement-hub'
@@ -121,6 +122,58 @@ describe('procurement hub schema', () => {
       period: 'all',
     })
     expect(hubStateToLandingFilters(state)).toEqual({ rankBy: 'value' })
+  })
+
+  it('scopes territory drawer filters to resolved period + clicked geo', () => {
+    const now = new Date('2026-07-21T12:00:00Z')
+    const state = parseProcurementHubSearch({
+      measure: 'value_awarded',
+      grain: 'contracts',
+      supplierRegion: 'Nord-Vest',
+    })
+    expect(
+      hubStateToTerritoryLandingFilters(state, 'region', 'Centru', now),
+    ).toEqual({
+      dateFrom: '2025-01-01',
+      dateTo: '2025-12-31',
+      rankBy: 'value',
+      buyerRegion: 'Centru',
+      supplierRegion: 'Nord-Vest',
+    })
+    expect(
+      hubStateToTerritoryLandingFilters(state, 'county', 'BV', now),
+    ).toMatchObject({
+      buyerCounty: 'BV',
+      dateFrom: '2025-01-01',
+      dateTo: '2025-12-31',
+      rankBy: 'value',
+    })
+    expect(
+      hubStateToTerritoryLandingFilters(state, 'county', 'BV', now),
+    ).not.toHaveProperty('buyerRegion')
+    expect(
+      hubStateToTerritoryLandingFilters(state, 'county', 'BV', now),
+    ).not.toHaveProperty('grain')
+  })
+
+  it('scopes drawer by selection grain even when toolbar mapGrain stays region', () => {
+    const now = new Date('2026-07-21T12:00:00Z')
+    const state = parseProcurementHubSearch({
+      mapGrain: 'region',
+      buyerCounty: 'CJ',
+    })
+    // Click/paint selection grain is county (single-county paint) — must not
+    // broaden to the parent region via the toolbar mapGrain.
+    expect(
+      hubStateToTerritoryLandingFilters(state, 'county', 'BV', now),
+    ).toMatchObject({
+      buyerCounty: 'BV',
+      dateFrom: '2025-01-01',
+      dateTo: '2025-12-31',
+    })
+    expect(
+      hubStateToTerritoryLandingFilters(state, 'county', 'BV', now),
+    ).not.toHaveProperty('buyerRegion')
   })
 
   it('omits geography from list search state (B1)', () => {

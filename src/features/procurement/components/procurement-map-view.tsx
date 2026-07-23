@@ -36,9 +36,13 @@ import type { ProcurementHubFilterPatch } from '../hooks/use-procurement-hub-sta
 import { formatFlowCount, formatRon } from '../lib/formatting'
 import type { AnalyticsFilterType } from '@/schemas/charts'
 import {
-  buildProcurementMapHeatmap,
+  buildProcurementMapHeatmapForPaintMode,
   findRegionForCountyCode,
+  isProcurementMapCountyPainted,
   regionBucketsFromBreakdown,
+  resolveProcurementMapAnalysisPlan,
+  selectionGrainFromPaintMode,
+  type ProcurementRegionMapBucket,
 } from '../lib/procurement-map-series'
 import { ProcurementPreviewBadge } from './procurement-preview-badge'
 import { ProcurementTerritoryDrawer } from './procurement-territory-drawer'
@@ -65,6 +69,8 @@ const DEFAULT_ZOOM = 6.4
 type MapSelection = {
   readonly id: string
   readonly label: string
+  /** Territory grain for drawer metrics / Apply — follows paint mode. */
+  readonly grain: ProcurementHubMapGrain
 }
 
 type Props = {
@@ -96,6 +102,8 @@ export function ProcurementMapView({
   const mapGrain = hubState.mapGrain
   const measure = hubState.measure
   const mapViewType = mapGrain === 'uat' ? 'UAT' : 'County'
+  const mapAnalysisPlan = resolveProcurementMapAnalysisPlan(mapGrain, hubState)
+  const selectionGrain = selectionGrainFromPaintMode(mapAnalysisPlan.paintMode)
 
   const analysisQuery = useProcurementAnalysis({
     scope: {
@@ -107,39 +115,75 @@ export function ProcurementMapView({
       ...(hubState.buyerCounty ? { buyerCounty: hubState.buyerCounty } : {}),
       ...(hubState.buyerSiruta ? { buyerSiruta: hubState.buyerSiruta } : {}),
     },
-    dimension:
-      mapGrain === 'county' || mapGrain === 'uat'
-        ? mapGrain === 'uat'
-          ? 'buyerSiruta'
-          : 'buyerCounty'
-        : 'buyerRegion',
+    dimension: mapAnalysisPlan.dimension,
     bucket: 'year',
-    measure: measure === 'value_awarded' ? 'valueAwardedSum' : 'recordCount',
-    // County paint needs EVERY county (42) — a truncated top-N would render the
-    // rest as false "no data" grey. 100 is the server cap.
-    topN: mapGrain === 'county' ? 100 : 20,
-    basis: measure === 'value_awarded' ? 'value' : 'count',
+    // Series/concentration stay on count — value basis can abstain/error under
+    // filtered scopes and would fail the whole map query. Facets carry both
+    // counts and awarded sums; rankBy selects the choropleth sort/priority.
+    measure: 'recordCount',
+    basis: 'count',
+    rankBy: measure === 'value_awarded' ? 'value' : 'count',
+    topN: mapAnalysisPlan.topN,
   })
 
-  const mapDimension =
-    mapGrain === 'uat' ? 'buyerSiruta' : mapGrain === 'county' ? 'buyerCounty' : 'buyerRegion'
   const facetBlock = analysisQuery.data?.facets.blocks.find(
-    (block) => block.grain === analysisGrain && block.dimension === mapDimension,
+    (block) =>
+      block.grain === analysisGrain &&
+      block.dimension === mapAnalysisPlan.dimension,
   )
-  const regionBuckets = useMemo(
-    () => regionBucketsFromBreakdown(facetBlock?.buckets),
-    [facetBlock?.buckets],
+  const statsBlock = analysisQuery.data?.stats.blocks.find(
+    (block) => block.grain === analysisGrain,
   )
+
+  const regionBuckets = useMemo((): readonly ProcurementRegionMapBucket[] => {
+    const singleId = mapAnalysisPlan.singleTerritoryId
+    if (
+      singleId &&
+      (mapAnalysisPlan.paintMode === 'single-region' ||
+        mapAnalysisPlan.paintMode === 'single-county' ||
+        mapAnalysisPlan.paintMode === 'single-uat')
+    ) {
+      if (!statsBlock) return []
+      const recordCount = Number(statsBlock.recordCount)
+      const valueAwardedSum = Number(statsBlock.valueAwardedSum)
+      return [
+        {
+          region: singleId,
+          recordCount: Number.isFinite(recordCount) ? recordCount : null,
+          valueAwardedSum: Number.isFinite(valueAwardedSum)
+            ? valueAwardedSum
+            : null,
+          kind: 'top',
+        },
+      ]
+    }
+    return regionBucketsFromBreakdown(facetBlock?.buckets)
+  }, [
+    facetBlock?.buckets,
+    mapAnalysisPlan.paintMode,
+    mapAnalysisPlan.singleTerritoryId,
+    statsBlock,
+  ])
 
   const heatmapData = useMemo(
     () =>
-      buildProcurementMapHeatmap(
-        mapGrain,
+      buildProcurementMapHeatmapForPaintMode(
+        mapAnalysisPlan.paintMode,
         geographyQuery.data,
         regionBuckets,
         measure,
       ),
-    [geographyQuery.data, mapGrain, measure, regionBuckets],
+    [
+      geographyQuery.data,
+      mapAnalysisPlan.paintMode,
+      measure,
+      regionBuckets,
+    ],
+  )
+
+  const paintedCountyCodes = useMemo(
+    () => new Set(heatmapData.map((point) => point.county_code)),
+    [heatmapData],
   )
 
   const { data: countyGeoJson, isPending: countyGeoPending } =
@@ -205,27 +249,55 @@ export function ProcurementMapView({
       const name = String(properties.name ?? countyCode ?? '—')
 
       // Open drawer only — do not write global buyer geo filters until CTA.
-      if (mapGrain === 'county') {
-        if (!countyCode) return
-        setSelection({ id: countyCode, label: name })
+      // Use paint-mode grain so county/UAT paint under mapGrain=region does not
+      // broaden selection (and Apply) to the parent region.
+      if (selectionGrain === 'county') {
+        const isSingleCounty = mapAnalysisPlan.paintMode === 'single-county'
+        const id = isSingleCounty
+          ? mapAnalysisPlan.singleTerritoryId
+          : countyCode
+        if (!id || (!isSingleCounty && !isProcurementMapCountyPainted(id, paintedCountyCodes))) return
+        const label =
+          countyCode && countyCode === id
+            ? name
+            : (geographyQuery.data?.counties.find((c) => c.countyCode === id)
+                ?.countyName ?? id)
+        setSelection({ id, label, grain: 'county' })
         return
       }
 
-      if (mapGrain === 'uat') {
-        const siruta =
+      if (selectionGrain === 'uat') {
+        const sirutaFromFeature =
           typeof properties.natcode === 'string' && properties.natcode
             ? properties.natcode
             : undefined
-        if (!siruta) return
-        setSelection({ id: siruta, label: name })
+        const isSingleUat = mapAnalysisPlan.paintMode === 'single-uat'
+        const id = isSingleUat
+          ? mapAnalysisPlan.singleTerritoryId
+          : sirutaFromFeature
+        if (!id) return
+        setSelection({
+          id,
+          label: sirutaFromFeature ? name : id,
+          grain: 'uat',
+        })
         return
       }
 
-      const region = findRegionForCountyCode(geographyQuery.data, countyCode)
+      const isSingleRegion = mapAnalysisPlan.paintMode === 'single-region'
+      if (
+        !isSingleRegion &&
+        !isProcurementMapCountyPainted(countyCode, paintedCountyCodes)
+      ) {
+        return
+      }
+      const region = isSingleRegion
+        ? mapAnalysisPlan.singleTerritoryId
+        : findRegionForCountyCode(geographyQuery.data, countyCode)
       if (!region) return
-      setSelection({ id: region, label: region })
+      setSelection({ id: region, label: region, grain: 'region' })
     },
-    [geographyQuery.data, mapGrain],
+    [geographyQuery.data, mapAnalysisPlan, paintedCountyCodes, selectionGrain],
   )
 
   const getTooltipContent = useCallback(
@@ -262,14 +334,37 @@ export function ProcurementMapView({
     () =>
       ({
         normalization: 'total',
+        // Labels use active-series formatting; currency here is unused for
+        // choropleth text but kept for InteractiveMap's legacy filter shape.
         currency: 'RON',
         account_category: 'ch',
       }) as AnalyticsFilterType,
     [],
   )
 
+  /** County mnemonic → value map so polygon labels follow the hub measure. */
+  const activeSeriesValuesByCountyCode = useMemo(() => {
+    const values = new Map<string, number | undefined>()
+    for (const point of heatmapData) {
+      values.set(point.county_code, point.amount)
+    }
+    return values
+  }, [heatmapData])
+
+  const activeSeriesUnit = measure === 'value_awarded' ? 'RON' : ''
+
+  const formatLegendValue = (value: number) =>
+    measure === 'value_awarded'
+      ? formatRon(String(Math.round(value)), 'compact')
+      : formatFlowCount(String(Math.round(value)))
+
   const unknownHint = facetBlock?.meta?.caveats?.join(' ')
   const drawerOpen = Boolean(selection)
+  const paintUsesCountyDrill =
+    Boolean(hubState.buyerRegion) &&
+    !hubState.buyerCounty &&
+    !hubState.buyerSiruta &&
+    mapAnalysisPlan.paintMode === 'county'
 
   return (
     <div className="space-y-4">
@@ -294,7 +389,16 @@ export function ProcurementMapView({
             details; use the panel buttons to apply a buyer location filter.
           </Trans>
         </p>
-      ) : facetBlock?.meta ? (
+      ) : paintUsesCountyDrill ? (
+        <p className="border-l-4 border-[var(--pnrr-border)] pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
+          <Trans>
+            A buyer region filter is active, so the map shows county totals
+            inside that region. Records without known buyer geography are
+            excluded — never shown as zero.
+          </Trans>
+        </p>
+      ) : facetBlock?.meta &&
+        mapAnalysisPlan.dimension !== 'cpvDivision' ? (
         <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
           <strong>{facetBlock.meta.answerability}</strong>
           {facetBlock.meta.reason ? ` · ${facetBlock.meta.reason}` : null}
@@ -302,7 +406,8 @@ export function ProcurementMapView({
         </p>
       ) : (
         <p className="border-l-4 border-[var(--pnrr-border)] pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
-          {mapGrain === 'county' ? (
+          {mapGrain === 'county' ||
+          mapAnalysisPlan.paintMode === 'single-county' ? (
             <Trans>
               Counties are coloured by their own totals under the current
               filters. Records without known buyer geography are excluded from
@@ -347,6 +452,9 @@ export function ProcurementMapView({
                 mapViewType={mapViewType}
                 heatmapData={heatmapData}
                 filters={mapFilters}
+                labelMode="active-series"
+                activeSeriesValuesBySirutaCode={activeSeriesValuesByCountyCode}
+                activeSeriesUnit={activeSeriesUnit}
                 getFeatureStyle={getFeatureStyle}
                 getTooltipContent={getTooltipContent}
                 onFeatureClick={handleFeatureClick}
@@ -363,9 +471,9 @@ export function ProcurementMapView({
         {heatmapData.length > 0 ? (
           <div className="pointer-events-none absolute bottom-3 left-3 right-3 flex justify-between gap-2 sm:right-auto">
             <div className="pointer-events-auto border-2 border-[var(--pnrr-border)] bg-background/95 px-3 py-2 text-xs font-semibold text-[var(--pnrr-fg)]">
-              {mapGrain === 'county' ? (
+              {selectionGrain === 'county' ? (
                 <Trans>County totals</Trans>
-              ) : mapGrain === 'uat' ? (
+              ) : selectionGrain === 'uat' ? (
                 <Trans>Region record totals (Preview)</Trans>
               ) : (
                 <Trans>Region totals</Trans>
@@ -382,12 +490,8 @@ export function ProcurementMapView({
                 ))}
               </div>
               <div className="mt-1 flex justify-between tabular-nums text-[10px] text-[var(--pnrr-muted)]">
-                <span>
-                  {formatFlowCount(String(Math.round(colorDomain.min)))}
-                </span>
-                <span>
-                  {formatFlowCount(String(Math.round(colorDomain.max)))}
-                </span>
+                <span>{formatLegendValue(colorDomain.min)}</span>
+                <span>{formatLegendValue(colorDomain.max)}</span>
               </div>
             </div>
           </div>
@@ -396,7 +500,7 @@ export function ProcurementMapView({
 
       <ProcurementTerritoryDrawer
         open={drawerOpen}
-        mapGrain={mapGrain}
+        territoryGrain={selection?.grain ?? selectionGrain}
         territoryId={selection?.id}
         territoryLabel={selection?.label}
         regionBuckets={regionBuckets}

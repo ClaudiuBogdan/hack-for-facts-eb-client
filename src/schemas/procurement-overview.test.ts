@@ -1,11 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildProcurementOverviewMonthScope,
+  getCalendarYearBounds,
+  getOlderCalendarYearOptions,
   getPreviousCalendarYearBounds,
+  getRecentCalendarYearQuickOptions,
+  matchesCalendarYearPeriod,
   normalizeProcurementMonthEnd,
   normalizeProcurementMonthStart,
   parseProcurementOverviewSearch,
   resolveProcurementOverviewPeriod,
+  selectedCalendarYearFromPeriod,
   toProcurementLandingQueryFilters,
 } from './procurement-overview'
 
@@ -68,12 +73,35 @@ describe('procurement overview period', () => {
       dateFrom: '2025-01-01',
       dateTo: '2025-12-31',
     })
+    expect(getCalendarYearBounds(2024)).toEqual({
+      dateFrom: '2024-01-01',
+      dateTo: '2024-12-31',
+    })
+    expect(getRecentCalendarYearQuickOptions(now)).toEqual([2026, 2025, 2024])
+    expect(getOlderCalendarYearOptions(now)).toEqual([2023, 2022, 2021, 2020])
     expect(resolveProcurementOverviewPeriod({}, now)).toEqual({
       dateFrom: '2025-01-01',
       dateTo: '2025-12-31',
       isDefault: true,
       isAllTime: false,
     })
+    expect(
+      matchesCalendarYearPeriod(
+        resolveProcurementOverviewPeriod({}, now),
+        2025,
+      ),
+    ).toBe(true)
+    expect(
+      selectedCalendarYearFromPeriod(
+        resolveProcurementOverviewPeriod({}, now),
+      ),
+    ).toBe(2025)
+    expect(
+      matchesCalendarYearPeriod(
+        resolveProcurementOverviewPeriod({}, now),
+        2026,
+      ),
+    ).toBe(false)
     expect(toProcurementLandingQueryFilters({}, now)).toEqual({
       dateFrom: '2025-01-01',
       dateTo: '2025-12-31',

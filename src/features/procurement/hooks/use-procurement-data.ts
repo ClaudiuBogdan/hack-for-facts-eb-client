@@ -66,6 +66,8 @@ export function useProcurementTerritoryOverview(
       filters.buyerRegion ?? null,
       filters.buyerCounty ?? null,
       filters.buyerSiruta ?? null,
+      filters.supplierRegion ?? null,
+      filters.supplierCounty ?? null,
     ],
     queryFn: () => fetchProcurementTerritoryOverview(filters),
     enabled,

@@ -46,6 +46,8 @@ export type ProcurementAnalysisRequest = {
   readonly measure: ProcurementAnalysisMeasure
   readonly topN?: number
   readonly basis?: 'count' | 'value'
+  /** Facet sort basis — independent of series `measure` / concentration `basis`. */
+  readonly rankBy?: 'count' | 'value'
 }
 
 /** Matrix-v2 dashboard request. Unsupported combinations surface as errors. */
@@ -58,6 +60,9 @@ export async function fetchProcurementAnalysis(
       scope: request.scope,
       dimensions: [request.dimension],
       topN: request.topN ?? 10,
+      rankBy:
+        request.rankBy ??
+        (request.basis === 'value' ? 'value' : 'count'),
       bucket: request.bucket,
       measure: request.measure,
       basis: request.basis ?? 'count',

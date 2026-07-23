@@ -17,7 +17,11 @@ import {
 } from './procurement'
 import {
   buildProcurementOverviewMonthScope,
+  getCalendarYearBounds,
+  getOlderCalendarYearOptions,
   getPreviousCalendarYearBounds,
+  getRecentCalendarYearQuickOptions,
+  matchesCalendarYearPeriod,
   normalizeProcurementMonthEnd,
   normalizeProcurementMonthStart,
   resolveProcurementOverviewPeriod,
@@ -38,7 +42,11 @@ import {
 
 export {
   buildProcurementOverviewMonthScope,
+  getCalendarYearBounds,
+  getOlderCalendarYearOptions,
   getPreviousCalendarYearBounds,
+  getRecentCalendarYearQuickOptions,
+  matchesCalendarYearPeriod,
   normalizeProcurementMonthEnd,
   normalizeProcurementMonthStart,
   resolveProcurementOverviewPeriod,
@@ -503,6 +511,42 @@ export function hubStateToLandingFilters(
     },
     now,
   )
+}
+
+/**
+ * Map territory drawer scope: same resolved hub filters as Overview/map
+ * (period, measure→rankBy, supplier geo), with buyer geo replaced by the
+ * clicked territory so sidebar metrics match the choropleth.
+ *
+ * `mapGrain` here is the **selection** grain (from paint mode), not the
+ * toolbar chrome — county paint under region toolbar must scope to county.
+ *
+ * Grain is intentionally omitted from the aggregates scope — `mapLanding`
+ * requires procedure + contract + DA blocks; grain selection stays client-side.
+ */
+export function hubStateToTerritoryLandingFilters(
+  state: ProcurementHubState,
+  mapGrain: ProcurementHubMapGrain,
+  territoryId: string | undefined,
+  now?: Date,
+): ProcurementLandingFilters {
+  const base = hubStateToLandingFilters(state, now)
+  const shared: ProcurementLandingFilters = {
+    ...(base.dateFrom ? { dateFrom: base.dateFrom } : {}),
+    ...(base.dateTo ? { dateTo: base.dateTo } : {}),
+    ...(base.period ? { period: base.period } : {}),
+    ...(base.rankBy ? { rankBy: base.rankBy } : {}),
+    ...(base.supplierRegion ? { supplierRegion: base.supplierRegion } : {}),
+    ...(base.supplierCounty ? { supplierCounty: base.supplierCounty } : {}),
+  }
+  if (!territoryId) return shared
+  if (mapGrain === 'county') {
+    return { ...shared, buyerCounty: territoryId }
+  }
+  if (mapGrain === 'uat') {
+    return { ...shared, buyerSiruta: territoryId }
+  }
+  return { ...shared, buyerRegion: territoryId }
 }
 
 /**

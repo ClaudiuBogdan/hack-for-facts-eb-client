@@ -17,10 +17,8 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { cn } from '@/lib/utils'
 import type { ProcurementLandingFilters } from '@/schemas/procurement-overview'
 import {
-  getPreviousCalendarYearBounds,
   normalizeProcurementMonthEnd,
   normalizeProcurementMonthStart,
   resolveProcurementOverviewPeriod,
@@ -37,6 +35,7 @@ import {
   ProcurementGeographyCombobox,
   type ProcurementGeographyPickerOption,
 } from './procurement-geography-combobox'
+import { ProcurementPeriodYearPresets } from './procurement-period-year-presets'
 
 type Props = {
   readonly open: boolean
@@ -113,22 +112,15 @@ export function ProcurementOverviewFilterSheet({
     })
   }
 
-  const setPreviousCalendarYear = () => {
-    const bounds = getPreviousCalendarYearBounds()
+  const setCalendarYear = (bounds: {
+    readonly dateFrom: string
+    readonly dateTo: string
+  }) => {
     onChange({
       ...filters,
       period: undefined,
       dateFrom: bounds.dateFrom,
       dateTo: bounds.dateTo,
-    })
-  }
-
-  const setAllTime = () => {
-    onChange({
-      ...filters,
-      period: 'all',
-      dateFrom: undefined,
-      dateTo: undefined,
     })
   }
 
@@ -204,32 +196,10 @@ export function ProcurementOverviewFilterSheet({
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                className={cn(
-                  procurementOutlineButtonClassName,
-                  'h-9 px-3 text-xs',
-                  resolvedPeriod.isDefault && 'border-[var(--pnrr-fg)]',
-                )}
-                onClick={setPreviousCalendarYear}
-              >
-                <Trans>Previous year</Trans>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className={cn(
-                  procurementOutlineButtonClassName,
-                  'h-9 px-3 text-xs',
-                  resolvedPeriod.isAllTime && 'border-[var(--pnrr-fg)]',
-                )}
-                onClick={setAllTime}
-              >
-                <Trans>All time</Trans>
-              </Button>
-            </div>
+            <ProcurementPeriodYearPresets
+              period={resolvedPeriod}
+              onSelectYear={setCalendarYear}
+            />
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">

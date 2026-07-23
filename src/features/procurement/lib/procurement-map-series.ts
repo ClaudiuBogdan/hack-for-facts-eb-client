@@ -170,3 +170,128 @@ export function findRegionBucket(
 ): ProcurementRegionMapBucket | undefined {
   return regionBuckets.find((bucket) => bucket.region === region)
 }
+
+export type ProcurementMapAnalysisDimension =
+  | 'buyerRegion'
+  | 'buyerCounty'
+  | 'buyerSiruta'
+  | 'cpvDivision'
+
+export type ProcurementMapPaintMode =
+  | 'region'
+  | 'county'
+  | 'uat'
+  | 'single-region'
+  | 'single-county'
+  | 'single-uat'
+
+export type ProcurementMapAnalysisPlan = {
+  /** Facet dimension — never the same key already fixed in scope. */
+  readonly dimension: ProcurementMapAnalysisDimension
+  /** How choropleth rows are built from facet buckets or stats. */
+  readonly paintMode: ProcurementMapPaintMode
+  readonly topN: number
+  /**
+   * When paintMode is `single-*`, the scoped territory key used to place one
+   * heatmap point from procurementStats (facets would be a one-bucket noop).
+   */
+  readonly singleTerritoryId?: string
+}
+
+/**
+ * Pick a map analysis dimension that is not already fixed by buyer geo scope.
+ * ClickHouse rejects `breakdown(buyerRegion)` when `scope.buyerRegion` is set
+ * (single-bucket = use stats). After Apply filter we drill to the next finer
+ * grain, or paint a single territory from stats.
+ */
+export function resolveProcurementMapAnalysisPlan(
+  mapGrain: ProcurementMapGranularity,
+  buyerGeo: {
+    readonly buyerRegion?: string
+    readonly buyerCounty?: string
+    readonly buyerSiruta?: string
+  },
+): ProcurementMapAnalysisPlan {
+  const buyerSiruta = buyerGeo.buyerSiruta?.trim() || undefined
+  const buyerCounty = buyerGeo.buyerCounty?.trim() || undefined
+  const buyerRegion = buyerGeo.buyerRegion?.trim() || undefined
+
+  if (buyerSiruta) {
+    return {
+      dimension: 'cpvDivision',
+      paintMode: 'single-uat',
+      topN: 1,
+      singleTerritoryId: buyerSiruta,
+    }
+  }
+
+  if (buyerCounty) {
+    if (mapGrain === 'uat') {
+      return { dimension: 'buyerSiruta', paintMode: 'uat', topN: 100 }
+    }
+    return {
+      dimension: 'cpvDivision',
+      paintMode: 'single-county',
+      topN: 1,
+      singleTerritoryId: buyerCounty,
+    }
+  }
+
+  if (buyerRegion) {
+    // Region is fixed — region breakdown is invalid. Paint counties (or UATs)
+    // inside the scoped region instead.
+    if (mapGrain === 'uat') {
+      return { dimension: 'buyerSiruta', paintMode: 'uat', topN: 100 }
+    }
+    return { dimension: 'buyerCounty', paintMode: 'county', topN: 100 }
+  }
+
+  if (mapGrain === 'uat') {
+    return { dimension: 'buyerSiruta', paintMode: 'uat', topN: 100 }
+  }
+  if (mapGrain === 'county') {
+    return { dimension: 'buyerCounty', paintMode: 'county', topN: 100 }
+  }
+  return { dimension: 'buyerRegion', paintMode: 'region', topN: 20 }
+}
+
+/**
+ * Territory grain for map clicks / drawer / Apply — follows paint mode, not the
+ * toolbar `mapGrain`. Otherwise a county/UAT paint under `mapGrain=region`
+ * would resolve clicks to the parent region and broaden an existing filter.
+ */
+export function selectionGrainFromPaintMode(
+  paintMode: ProcurementMapPaintMode,
+): ProcurementMapGranularity {
+  if (paintMode === 'county' || paintMode === 'single-county') {
+    return 'county'
+  }
+  if (paintMode === 'uat' || paintMode === 'single-uat') {
+    return 'uat'
+  }
+  return 'region'
+}
+
+/** True only when a county has a painted choropleth value in the active scope. */
+export function isProcurementMapCountyPainted(
+  countyCode: string | undefined,
+  paintedCountyCodes: ReadonlySet<string>,
+): countyCode is string {
+  return countyCode !== undefined && paintedCountyCodes.has(countyCode)
+}
+
+/** Build heatmap using the resolved paint mode (may differ from toolbar mapGrain). */
+export function buildProcurementMapHeatmapForPaintMode(
+  paintMode: ProcurementMapPaintMode,
+  geography: ProcurementGeographyOptions | undefined,
+  regionBuckets: readonly ProcurementRegionMapBucket[],
+  seriesId: ProcurementMapSeriesId,
+): HeatmapCountyDataPoint[] {
+  if (paintMode === 'region' || paintMode === 'single-region') {
+    return buildRegionHeatmapByCounty(geography, regionBuckets, seriesId)
+  }
+  if (paintMode === 'county' || paintMode === 'single-county') {
+    return buildCountyHeatmap(geography, regionBuckets, seriesId)
+  }
+  return []
+}

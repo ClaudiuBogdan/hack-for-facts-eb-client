@@ -20,7 +20,6 @@ import {
 } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
 import {
-  getPreviousCalendarYearBounds,
   normalizeProcurementMonthEnd,
   normalizeProcurementMonthStart,
   type ProcurementHubMeasure,
@@ -40,6 +39,7 @@ import {
 } from './procurement-geography-combobox'
 import { ProcurementGrainTabs } from './procurement-grain-tabs'
 import { ProcurementListFilterFields } from './procurement-filter-sheet'
+import { ProcurementPeriodYearPresets } from './procurement-period-year-presets'
 import { ProcurementPreviewBadge } from './procurement-preview-badge'
 
 type Props = {
@@ -169,35 +169,12 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                className={cn(
-                  procurementOutlineButtonClassName,
-                  'h-9 px-3 text-xs',
-                  period.isDefault && 'border-[var(--pnrr-fg)]',
-                )}
-                onClick={() => {
-                  const bounds = getPreviousCalendarYearBounds()
-                  hub.setDates(bounds.dateFrom, bounds.dateTo)
-                }}
-              >
-                <Trans>Previous year</Trans>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className={cn(
-                  procurementOutlineButtonClassName,
-                  'h-9 px-3 text-xs',
-                  period.isAllTime && 'border-[var(--pnrr-fg)]',
-                )}
-                onClick={hub.setPeriodAll}
-              >
-                <Trans>All time</Trans>
-              </Button>
-            </div>
+            <ProcurementPeriodYearPresets
+              period={period}
+              onSelectYear={(bounds) =>
+                hub.setDates(bounds.dateFrom, bounds.dateTo)
+              }
+            />
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">

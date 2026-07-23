@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest'
 import {
   buildProcurementMapHeatmap,
   buildRegionHeatmapByCounty,
+  isProcurementMapCountyPainted,
   regionBucketsFromBreakdown,
+  resolveProcurementMapAnalysisPlan,
+  selectionGrainFromPaintMode,
 } from './procurement-map-series'
 import type { ProcurementGeographyOptions } from '../api/procurement-reference-api'
 
@@ -42,6 +45,57 @@ describe('procurement map series', () => {
         kind: 'value',
       },
     ])
+  })
+
+  it('avoids buyerRegion facet when buyerRegion is already in scope', () => {
+    expect(
+      resolveProcurementMapAnalysisPlan('region', { buyerRegion: 'Centru' }),
+    ).toEqual({
+      dimension: 'buyerCounty',
+      paintMode: 'county',
+      topN: 100,
+    })
+    expect(
+      resolveProcurementMapAnalysisPlan('county', { buyerCounty: 'BV' }),
+    ).toEqual({
+      dimension: 'cpvDivision',
+      paintMode: 'single-county',
+      topN: 1,
+      singleTerritoryId: 'BV',
+    })
+    expect(resolveProcurementMapAnalysisPlan('region', {})).toEqual({
+      dimension: 'buyerRegion',
+      paintMode: 'region',
+      topN: 20,
+    })
+  })
+
+  it('derives click/drawer grain from paint mode, not toolbar mapGrain', () => {
+    expect(selectionGrainFromPaintMode('county')).toBe('county')
+    expect(selectionGrainFromPaintMode('single-county')).toBe('county')
+    expect(selectionGrainFromPaintMode('uat')).toBe('uat')
+    expect(selectionGrainFromPaintMode('single-uat')).toBe('uat')
+    expect(selectionGrainFromPaintMode('region')).toBe('region')
+    expect(selectionGrainFromPaintMode('single-region')).toBe('region')
+
+    const scopedCounty = resolveProcurementMapAnalysisPlan('region', {
+      buyerCounty: 'BV',
+    })
+    expect(selectionGrainFromPaintMode(scopedCounty.paintMode)).toBe('county')
+
+    const regionDrill = resolveProcurementMapAnalysisPlan('region', {
+      buyerRegion: 'Centru',
+    })
+    expect(selectionGrainFromPaintMode(regionDrill.paintMode)).toBe('county')
+  })
+
+  it('does not treat an unpainted county as selectable in the active scope', () => {
+    const paintedCountyCodes = new Set(['BV'])
+    expect(isProcurementMapCountyPainted('BV', paintedCountyCodes)).toBe(true)
+    expect(isProcurementMapCountyPainted('CJ', paintedCountyCodes)).toBe(false)
+    expect(isProcurementMapCountyPainted(undefined, paintedCountyCodes)).toBe(
+      false,
+    )
   })
 
   it('paints counties with parent region totals', () => {

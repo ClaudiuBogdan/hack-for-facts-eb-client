@@ -255,6 +255,7 @@ export async function fetchProcurementTerritoryOverviewLive(
     buyerSiruta: filters.buyerSiruta,
     supplierCounty: filters.supplierCounty,
     supplierRegion: filters.supplierRegion,
+    grain: filters.grain,
   })
 
   const [aggregates, divisions] = await Promise.all([

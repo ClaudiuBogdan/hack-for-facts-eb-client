@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import { type ReactNode } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
@@ -15,10 +15,10 @@ import { cn } from '@/lib/utils'
 import {
   cleanProcurementHubSearch,
   hubGrainToAnalysisGrain,
+  hubStateToTerritoryLandingFilters,
   type ProcurementHubMapGrain,
   type ProcurementHubState,
 } from '@/schemas/procurement-hub'
-import type { ProcurementLandingFilters } from '@/schemas/procurement-overview'
 import { useProcurementTerritoryOverview } from '../hooks/use-procurement-data'
 import { formatFlowCount, formatRon } from '../lib/formatting'
 import {
@@ -32,14 +32,14 @@ import { ProcurementMonthlyChart } from './procurement-monthly-chart'
 import { ProcurementErrorState } from './procurement-error-state'
 import { ProcurementAnswerabilityNotice } from './procurement-answerability-notice'
 import {
-  procurementOutlineButtonClassName,
   procurementPrimaryButtonClassName,
   procurementSectionClassName,
 } from '../lib/procurement-theme'
 
 type Props = {
   readonly open: boolean
-  readonly mapGrain: ProcurementHubMapGrain
+  /** Grain of the selected territory (from paint mode), used for metrics + Apply. */
+  readonly territoryGrain: ProcurementHubMapGrain
   readonly territoryId: string | undefined
   readonly territoryLabel: string | undefined
   readonly regionBuckets: readonly ProcurementRegionMapBucket[]
@@ -47,41 +47,29 @@ type Props = {
   readonly onOpenChange: (open: boolean) => void
 }
 
-function territoryLandingFilters(
-  hubState: ProcurementHubState,
-  mapGrain: ProcurementHubMapGrain,
-  territoryId: string | undefined,
-): ProcurementLandingFilters {
-  const base: ProcurementLandingFilters = {
-    dateFrom: hubState.dateFrom,
-    dateTo: hubState.dateTo,
-    period: hubState.period,
-  }
-  if (!territoryId) return base
-  if (mapGrain === 'county') return { ...base, buyerCounty: territoryId }
-  if (mapGrain === 'uat') return { ...base, buyerSiruta: territoryId }
-  return { ...base, buyerRegion: territoryId }
-}
-
 /**
  * Territory drawer for map clicks (inspect only).
  * Mini Overview: institutions → suppliers → CPV → monthly; Apply CTAs pinned
  * to the sheet footer (PNRR filter-sheet pattern).
  *
+ * Headline metrics prefer the same facet buckets that paint the map so the
+ * sidebar matches the choropleth under shared hub filters + selected geo.
+ *
  * @see docs/specs/procurement-buyer-map-requirements.md
  */
 export function ProcurementTerritoryDrawer({
   open,
-  mapGrain,
+  territoryGrain,
   territoryId,
   territoryLabel,
   regionBuckets,
   hubState,
   onOpenChange,
 }: Props) {
-  const landingFilters = territoryLandingFilters(
+  const navigate = useNavigate()
+  const landingFilters = hubStateToTerritoryLandingFilters(
     hubState,
-    mapGrain,
+    territoryGrain,
     territoryId,
   )
   const overviewQuery = useProcurementTerritoryOverview(
@@ -96,19 +84,19 @@ export function ProcurementTerritoryDrawer({
       : overviewQuery.data.analysisByGrain.directAcquisition
     : undefined
 
-  const mapBucket =
-    mapGrain === 'region' && territoryId
-      ? findRegionBucket(regionBuckets, territoryId)
-      : undefined
+  // Same facet buckets that drive map paint (region name or county/UAT key).
+  const mapBucket = territoryId
+    ? findRegionBucket(regionBuckets, territoryId)
+    : undefined
 
   const geoPatch =
-    mapGrain === 'uat'
+    territoryGrain === 'uat'
       ? {
           buyerSiruta: territoryId,
           buyerCounty: undefined,
           buyerRegion: undefined,
         }
-      : mapGrain === 'county'
+      : territoryGrain === 'county'
         ? {
             buyerCounty: territoryId,
             buyerRegion: undefined,
@@ -120,20 +108,14 @@ export function ProcurementTerritoryDrawer({
             buyerSiruta: undefined,
           }
 
-  const hubFocus = cleanProcurementHubSearch({
+  const appliedSearch = cleanProcurementHubSearch({
     ...hubState,
-    view: 'overview',
-    ...geoPatch,
-  })
-  const hubList = cleanProcurementHubSearch({
-    ...hubState,
-    view: 'list',
     ...geoPatch,
   })
 
   const title = territoryLabel ?? territoryId ?? t`Territory`
   const measureIsValue = hubState.measure === 'value_awarded'
-  const showPreviewBadge = mapGrain !== 'region'
+  const showPreviewBadge = territoryGrain !== 'region'
   const isPending = overviewQuery.isPending
   const queryFailed = overviewQuery.isError && !overviewQuery.data
   const retry = () => void overviewQuery.refetch()
@@ -154,16 +136,14 @@ export function ProcurementTerritoryDrawer({
     : t`Number of records per month.`
 
   const recordCount =
-    analytics?.stats.recordCount ??
-    (mapBucket?.recordCount !== null && mapBucket?.recordCount !== undefined
+    mapBucket?.recordCount !== null && mapBucket?.recordCount !== undefined
       ? String(mapBucket.recordCount)
-      : null)
+      : (analytics?.stats.recordCount ?? null)
   const awardedValue =
-    analytics?.stats.valueAwardedSum ??
-    (mapBucket?.valueAwardedSum !== null &&
+    mapBucket?.valueAwardedSum !== null &&
     mapBucket?.valueAwardedSum !== undefined
       ? String(mapBucket.valueAwardedSum)
-      : null)
+      : (analytics?.stats.valueAwardedSum ?? null)
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -176,12 +156,12 @@ export function ProcurementTerritoryDrawer({
             {showPreviewBadge ? <ProcurementPreviewBadge /> : null}
           </div>
           <SheetDescription className="pt-1 text-sm font-semibold text-[var(--pnrr-muted)]">
-            {mapGrain === 'region' ? (
+            {territoryGrain === 'region' ? (
               <Trans>
                 Buyer-side development region. Inspect below, then apply a
                 filter if you want Overview or List scoped to this area.
               </Trans>
-            ) : mapGrain === 'county' ? (
+            ) : territoryGrain === 'county' ? (
               <Trans>
                 County inspect panel. Apply below to set the buyer location
                 filter.
@@ -339,31 +319,29 @@ export function ProcurementTerritoryDrawer({
 
         <div className="shrink-0 border-t-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] p-4">
           {territoryId ? (
-            <div className="grid gap-3">
-              <Button asChild className={procurementPrimaryButtonClassName}>
-                <Link to="/procurement" search={hubFocus}>
-                  <Trans>Apply on Overview</Trans>
-                </Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                className={procurementOutlineButtonClassName}
-              >
-                <Link to="/procurement" search={hubList}>
-                  <Trans>Apply on List</Trans>
-                </Link>
-              </Button>
-            </div>
+            <Button
+              type="button"
+              className={cn(procurementPrimaryButtonClassName, 'w-full')}
+              onClick={() => {
+                onOpenChange(false)
+                void navigate({
+                  to: '/procurement',
+                  search: appliedSearch,
+                })
+              }}
+            >
+              <Trans>Apply filter</Trans>
+            </Button>
           ) : null}
-          <p className="mt-3 text-xs leading-5 text-[var(--pnrr-muted)]">
-            {/* TODO(Search geography API): list does not apply buyer geo yet (B1). */}
-            <Trans>
-              Overview applies buyer location when supported. List keeps it in
-              the URL with a “Not applied yet” chip until the list geo API
-              lands.
-            </Trans>
-          </p>
+          {hubState.view === 'list' ? (
+            <p className="mt-3 text-xs leading-5 text-[var(--pnrr-muted)]">
+              {/* TODO(Search geography API): list does not apply buyer geo yet (B1). */}
+              <Trans>
+                Buyer location stays in the URL with a “Not applied yet” chip
+                until the list geo API lands.
+              </Trans>
+            </p>
+          ) : null}
         </div>
       </SheetContent>
     </Sheet>
