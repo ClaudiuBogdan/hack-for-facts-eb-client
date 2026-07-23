@@ -154,13 +154,13 @@ export function ProcurementOverviewPage({
             <>
               <ProcurementAnswerabilityNotice meta={analytics.stats.meta} />
 
-              <div className="grid gap-6 lg:grid-cols-2">
+              <div className="grid items-start gap-6 lg:grid-cols-2">
                 <ProcurementPartyRanking
                   title={t`Top public buyers`}
                   description={
                     hubState.measure === 'value_awarded' &&
                     analytics.meta.authoritiesRankedBy === 'value'
-                      ? t`Ranked and scaled by awarded value. Record counts remain visible for context.`
+                      ? t`Ranked by awarded value. Record counts remain visible for context.`
                       : hubState.measure === 'value_awarded'
                         ? t`Awarded-value ranking is unavailable for this scope, so the server ranked by record count.`
                       : t`By number of records.`
@@ -176,7 +176,7 @@ export function ProcurementOverviewPage({
                   description={
                     hubState.measure === 'value_awarded' &&
                     analytics.meta.suppliersRankedBy === 'value'
-                      ? t`Ranked and scaled by awarded value. Record counts remain visible for context.`
+                      ? t`Ranked by awarded value. Record counts remain visible for context.`
                       : hubState.measure === 'value_awarded'
                         ? t`Awarded-value ranking is unavailable for this scope, so the server ranked by record count.`
                       : t`By number of records.`
@@ -197,7 +197,7 @@ export function ProcurementOverviewPage({
                 description={
                   hubState.measure === 'value_awarded' &&
                   analytics.meta.categoriesRankedBy === 'value'
-                    ? t`Ranked and scaled by awarded value. Record counts remain visible for context.`
+                    ? t`Ranked by awarded value. Record counts remain visible for context.`
                     : hubState.measure === 'value_awarded'
                       ? t`Awarded-value ranking is unavailable for this scope, so the server ranked by record count.`
                       : t`By number of records.`

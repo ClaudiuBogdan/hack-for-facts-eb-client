@@ -21,8 +21,6 @@ import {
 } from '@/schemas/procurement-hub'
 import { formatFlowCount, formatRon } from '../lib/formatting'
 import {
-  procurementMarkClassName,
-  procurementMarkTrackClassName,
   procurementOutlineButtonClassName,
   procurementSectionBodyClassName,
   procurementSectionClassName,
@@ -62,9 +60,8 @@ type Props = {
 }
 
 /**
- * CPV division breakdown — bars follow the server's effective count/value
- * basis, showing 5 + more/less. Overview uses a Rankings deep-link; other
- * surfaces keep a sheet.
+ * CPV division breakdown — primary metric + secondary context to the right of
+ * the name. Overview uses a Rankings deep-link; other surfaces keep a sheet.
  */
 export function ProcurementCategoryBars({
   rows,
@@ -82,24 +79,12 @@ export function ProcurementCategoryBars({
     measure === 'value_awarded' && rankedBy === 'value'
       ? 'value_awarded'
       : 'record_count'
-  const maxMetric = rows.reduce(
-    (max, row) =>
-      Math.max(
-        max,
-        Number(
-          effectiveMeasure === 'value_awarded'
-            ? row.amountRonSum ?? '0'
-            : row.flowCount,
-        ) || 0,
-      ),
-    0,
-  )
   const hasMore = rows.length > CARD_LIMIT
   const displayRows =
     expanded || !hasMore ? rows : rows.slice(0, CARD_LIMIT)
 
   return (
-    <section className={cn(procurementSectionClassName, 'flex flex-col', className)}>
+    <section className={cn(procurementSectionClassName, className)}>
       <div
         className={cn(
           procurementSectionHeaderClassName,
@@ -168,23 +153,11 @@ export function ProcurementCategoryBars({
         ) : (
           <ol
             className={cn(
-              'space-y-3.5',
+              'space-y-3',
               expanded && hasMore && 'sm:max-h-[28rem] sm:overflow-y-auto',
             )}
           >
             {displayRows.map((row, index) => {
-              const count = Number(row.flowCount) || 0
-              const amountValue = Number(row.amountRonSum ?? '0') || 0
-              const metricValue =
-                effectiveMeasure === 'value_awarded' ? amountValue : count
-              const width =
-                maxMetric > 0
-                  ? Math.max((metricValue / maxMetric) * 100, 2)
-                  : 0
-              const share =
-                row.shareOfScope !== null
-                  ? Math.round((Number(row.shareOfScope) || 0) * 100)
-                  : null
               const label = categoryLabel(row)
               const code = row.cpvDivisionCode
               const countLabel = formatFlowCount(row.flowCount)
@@ -200,74 +173,61 @@ export function ProcurementCategoryBars({
                 effectiveMeasure === 'value_awarded'
                   ? t`${countLabel} records`
                   : amountLabel
+              const share =
+                row.shareOfScope !== null
+                  ? Math.round((Number(row.shareOfScope) || 0) * 100)
+                  : null
               const titleHint = code ? `${code} · ${label}` : label
+              const metricsAria =
+                share === null
+                  ? secondaryLabel
+                    ? t`${label}: ${primaryLabel}, ${secondaryLabel}`
+                    : t`${label}: ${primaryLabel}`
+                  : secondaryLabel
+                    ? t`${label}: ${primaryLabel}, ${secondaryLabel} (${share}% of scope)`
+                    : t`${label}: ${primaryLabel} (${share}% of scope)`
 
               const name = (
-                <span className="min-w-0 truncate text-sm font-semibold text-[var(--pnrr-fg)]">
+                <span className="min-w-0 text-sm font-semibold leading-5 text-[var(--pnrr-fg)] sm:truncate">
                   {label}
                 </span>
               )
 
               return (
                 <li key={code ?? `row-${index}`} className="min-w-0">
-                  <div className="flex items-baseline gap-2.5">
-                    <span className="w-5 shrink-0 text-xs font-semibold tabular-nums text-[var(--pnrr-muted)]">
+                  <div className="flex items-start gap-2.5">
+                    <span className="w-5 shrink-0 pt-0.5 text-xs font-semibold tabular-nums text-[var(--pnrr-muted)]">
                       {index + 1}
                     </span>
-                    <div className="flex min-w-0 flex-1 items-baseline justify-between gap-3">
+                    <div className="flex min-w-0 flex-1 items-start justify-between gap-4">
                       {code ? (
                         <Link
                           to="/procurement/categories/$code"
                           params={{ code }}
-                          className="min-w-0 truncate underline-offset-2 hover:underline"
+                          className="min-w-0 underline-offset-2 hover:underline sm:truncate"
                           title={titleHint}
                         >
                           {name}
                         </Link>
                       ) : (
-                        <span className="min-w-0 truncate" title={titleHint}>
+                        <span className="min-w-0 sm:truncate" title={titleHint}>
                           {name}
                         </span>
                       )}
-                      <span className="shrink-0 text-right text-sm tabular-nums">
-                        <span className="font-bold text-[var(--pnrr-fg)]">
+                      <div
+                        className="shrink-0 text-right tabular-nums"
+                        aria-label={metricsAria}
+                      >
+                        <div className="text-sm font-bold leading-5 text-[var(--pnrr-fg)]">
                           {primaryLabel}
-                        </span>
+                        </div>
                         {secondaryLabel ? (
-                          <>
-                            <span
-                              className="mx-1.5 text-[var(--pnrr-muted)]"
-                              aria-hidden
-                            >
-                              ·
-                            </span>
-                            <span className="text-[var(--pnrr-muted)]">
-                              {secondaryLabel}
-                            </span>
-                          </>
+                          <div className="mt-0.5 text-xs leading-4 text-[var(--pnrr-muted)]">
+                            {secondaryLabel}
+                          </div>
                         ) : null}
-                      </span>
+                      </div>
                     </div>
-                  </div>
-                  <div
-                    className={cn(
-                      'ml-7 mt-1.5 h-1.5 w-[calc(100%-1.75rem)]',
-                      procurementMarkTrackClassName,
-                    )}
-                    role="img"
-                    aria-label={
-                      share === null
-                        ? t`${label}: ${primaryLabel}`
-                        : t`${label}: ${primaryLabel} (${share}% of scope)`
-                    }
-                  >
-                    <div
-                      className={cn(
-                        'h-full rounded-r-[4px]',
-                        procurementMarkClassName,
-                      )}
-                      style={{ width: `${width}%` }}
-                    />
                   </div>
                 </li>
               )

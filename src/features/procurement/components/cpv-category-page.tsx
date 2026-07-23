@@ -136,7 +136,7 @@ export function CpvCategoryPage({ code, initialPage, className }: Props) {
             title={t`Monthly volume in this category`}
           />
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid items-start gap-6 lg:grid-cols-2">
             <ProcurementPartyRanking
               title={t`Top public buyers`}
               description={t`By number of records.`}

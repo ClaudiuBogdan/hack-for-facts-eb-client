@@ -29,8 +29,6 @@ import {
   type PartyPairScope,
 } from '../lib/party-links'
 import {
-  procurementMarkClassName,
-  procurementMarkTrackClassName,
   procurementOutlineButtonClassName,
   procurementSectionBodyClassName,
   procurementSectionClassName,
@@ -84,9 +82,9 @@ type Props = {
 }
 
 /**
- * Ranked party list — bars follow the server's effective count/value basis.
- * Overview uses a Rankings deep-link; other surfaces keep a sheet of the same
- * API rows.
+ * Ranked party list — primary metric + secondary context to the right of the
+ * name. Overview uses a Rankings deep-link; other surfaces keep a sheet of the
+ * same API rows.
  */
 export function ProcurementPartyRanking({
   title,
@@ -108,24 +106,12 @@ export function ProcurementPartyRanking({
     measure === 'value_awarded' && rankedBy === 'value'
       ? 'value_awarded'
       : 'record_count'
-  const maxMetric = rows.reduce(
-    (max, row) =>
-      Math.max(
-        max,
-        Number(
-          effectiveMeasure === 'value_awarded'
-            ? row.amountRonSum ?? '0'
-            : row.flowCount,
-        ) || 0,
-      ),
-    0,
-  )
   const hasMore = rows.length > CARD_LIMIT
   const displayRows =
     expanded || !hasMore ? rows : rows.slice(0, CARD_LIMIT)
 
   return (
-    <section className={cn(procurementSectionClassName, 'flex flex-col', className)}>
+    <section className={cn(procurementSectionClassName, className)}>
       <div
         className={cn(
           procurementSectionHeaderClassName,
@@ -198,12 +184,12 @@ export function ProcurementPartyRanking({
         ) : (
           <ol
             className={cn(
-              'space-y-3.5',
+              'space-y-3',
               expanded && hasMore && 'sm:max-h-[28rem] sm:overflow-y-auto',
             )}
           >
             {displayRows.map((row, index) => (
-              <PartyRankingBarRow
+              <PartyRankingRow
                 key={
                   (kind === 'authority'
                     ? row.authority?.cui
@@ -212,7 +198,6 @@ export function ProcurementPartyRanking({
                 rank={index + 1}
                 row={row}
                 kind={kind}
-                maxMetric={maxMetric}
                 measure={effectiveMeasure}
                 pairScope={pairScope}
                 grain={grain}
@@ -283,11 +268,10 @@ function resolvePartyRowLink(
   return null
 }
 
-function PartyRankingBarRow({
+function PartyRankingRow({
   rank,
   row,
   kind,
-  maxMetric,
   measure,
   pairScope,
   grain,
@@ -295,17 +279,11 @@ function PartyRankingBarRow({
   readonly rank: number
   readonly row: TopPartyRow
   readonly kind: PartyKind
-  readonly maxMetric: number
   readonly measure: ProcurementHubMeasure
   readonly pairScope?: PartyPairScope
   readonly grain: AnalysisFlowGrain
 }) {
   const party = kind === 'authority' ? row.authority : row.supplier
-  const count = Number(row.flowCount) || 0
-  const amountValue = Number(row.amountRonSum ?? '0') || 0
-  const metricValue = measure === 'value_awarded' ? amountValue : count
-  const width =
-    maxMetric > 0 ? Math.max((metricValue / maxMetric) * 100, 2) : 0
   const destination = resolvePartyRowLink(row, kind, pairScope, grain)
   const label = rankingLabel(row, kind)
   const cui = party?.cui?.trim() || null
@@ -326,25 +304,33 @@ function PartyRankingBarRow({
       : cui && label !== cui
         ? `${label} · CUI ${cui}`
         : label
+  const metricsAria =
+    measure === 'value_awarded'
+      ? amount
+        ? t`${label}: ${amount}, ${countLabel} records`
+        : t`${label}: awarded value unavailable, ${countLabel} records`
+      : amount
+        ? t`${label}: ${countLabel} records, ${amount}`
+        : t`${label}: ${countLabel} records`
 
   const name = (
-    <span className="min-w-0 truncate text-sm font-semibold text-[var(--pnrr-fg)]">
+    <span className="min-w-0 text-sm font-semibold leading-5 text-[var(--pnrr-fg)] sm:truncate">
       {label}
     </span>
   )
 
   return (
     <li className="min-w-0">
-      <div className="flex items-baseline gap-2.5">
-        <span className="w-5 shrink-0 text-xs font-semibold tabular-nums text-[var(--pnrr-muted)]">
+      <div className="flex items-start gap-2.5">
+        <span className="w-5 shrink-0 pt-0.5 text-xs font-semibold tabular-nums text-[var(--pnrr-muted)]">
           {rank}
         </span>
-        <div className="flex min-w-0 flex-1 items-baseline justify-between gap-3">
+        <div className="flex min-w-0 flex-1 items-start justify-between gap-4">
           {destination?.mode === 'pair' ? (
             <Link
               to={destination.link.to}
               search={destination.link.search}
-              className="min-w-0 truncate underline-offset-2 hover:underline"
+              className="min-w-0 underline-offset-2 hover:underline sm:truncate"
               title={titleHint}
             >
               {name}
@@ -353,50 +339,30 @@ function PartyRankingBarRow({
             <Link
               to={destination.link.to}
               params={destination.link.params}
-              className="min-w-0 truncate underline-offset-2 hover:underline"
+              className="min-w-0 underline-offset-2 hover:underline sm:truncate"
               title={titleHint}
             >
               {name}
             </Link>
           ) : (
-            <span className="min-w-0 truncate" title={titleHint}>
+            <span className="min-w-0 sm:truncate" title={titleHint}>
               {name}
             </span>
           )}
-          <span className="shrink-0 text-right text-sm tabular-nums">
-            <span className="font-bold text-[var(--pnrr-fg)]">
+          <div
+            className="shrink-0 text-right tabular-nums"
+            aria-label={metricsAria}
+          >
+            <div className="text-sm font-bold leading-5 text-[var(--pnrr-fg)]">
               {primaryLabel}
-            </span>
+            </div>
             {secondaryLabel ? (
-              <>
-                <span className="mx-1.5 text-[var(--pnrr-muted)]" aria-hidden>
-                  ·
-                </span>
-                <span className="text-[var(--pnrr-muted)]">
-                  {secondaryLabel}
-                </span>
-              </>
+              <div className="mt-0.5 text-xs leading-4 text-[var(--pnrr-muted)]">
+                {secondaryLabel}
+              </div>
             ) : null}
-          </span>
+          </div>
         </div>
-      </div>
-      <div
-        className={cn('ml-7 mt-1.5 h-1.5 w-[calc(100%-1.75rem)]', procurementMarkTrackClassName)}
-        role="img"
-        aria-label={
-          measure === 'value_awarded'
-            ? amount
-              ? t`${label}: ${amount}, ${countLabel} records`
-              : t`${label}: awarded value unavailable, ${countLabel} records`
-            : amount
-              ? t`${label}: ${countLabel} records, ${amount}`
-              : t`${label}: ${countLabel} records`
-        }
-      >
-        <div
-          className={cn('h-full rounded-r-[4px]', procurementMarkClassName)}
-          style={{ width: `${width}%` }}
-        />
       </div>
     </li>
   )

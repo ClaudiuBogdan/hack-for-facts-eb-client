@@ -50,15 +50,19 @@ export const procurementSectionClassName =
   'overflow-hidden rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]'
 
 export const procurementSectionHeaderClassName =
-  'border-b-2 border-[var(--pnrr-border)] px-5 py-4 sm:px-6'
+  'border-b-2 border-[var(--pnrr-border)] px-5 py-4 sm:px-6 sm:py-5'
 
 export const procurementSectionBodyClassName = 'p-5 sm:p-6'
+
+/** Compact footer under ranking glance lists — mirrors header, not body padding. */
+export const procurementSectionFooterClassName =
+  'border-t-2 border-[var(--pnrr-border)] px-5 py-2.5 sm:px-6'
 
 export const procurementSectionTitleClassName =
   'text-xl font-bold tracking-tight text-[var(--pnrr-fg)] sm:text-2xl'
 
 export const procurementSectionDescriptionClassName =
-  'mt-1 text-sm text-[var(--pnrr-muted)]'
+  'mt-1.5 text-sm leading-5 text-[var(--pnrr-muted)]'
 
 export const procurementSectionLabelClassName =
   'text-xs font-bold uppercase tracking-wide text-[#0b0c0c] dark:text-[var(--pnrr-fg)]'
