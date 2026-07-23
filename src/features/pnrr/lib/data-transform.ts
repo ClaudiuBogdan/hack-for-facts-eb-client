@@ -24,8 +24,8 @@ import {
   resolvePnrrProjectLocation,
 } from './pnrr-uat-assignment'
 
-/** Date when the PNRR dataset was last updated (shown in UI and used in export filenames). */
-export const PNRR_LAST_UPDATED = '2026-06-19'
+/** Re-exported so existing imports keep working; derived in snapshot.ts. */
+export { PNRR_LAST_UPDATED } from './snapshot'
 
 const OFFICIAL_RON_TO_EUR_RATE = 5
 

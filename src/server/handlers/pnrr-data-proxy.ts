@@ -10,6 +10,7 @@ import {
   processPnrrData,
   processPnrrOfficialIndicators,
 } from '@/features/pnrr/lib/data-transform'
+import { PNRR_SNAPSHOT_PREFIX } from '@/features/pnrr/lib/snapshot'
 
 /**
  * Server-side proxy for PNRR project data hosted on Cloudflare Workers.
@@ -20,10 +21,9 @@ import {
 
 const DEFAULT_PNRR_OFFICIAL_DATA_BASE_URL =
   'https://s3.devostack.com/transparenta-eu-assets/pnrr/'
-const DEFAULT_PNRR_OFFICIAL_PROJECTS_PATH =
-  '20260619-progres_tehnic_proiecte.json.gz'
-const DEFAULT_PNRR_OFFICIAL_PAYMENTS_PATH = '20260619-persons.json.gz'
-const DEFAULT_PNRR_OFFICIAL_INDICATORS_PATH = '20260619-indicatori_total.json.gz'
+const DEFAULT_PNRR_OFFICIAL_PROJECTS_PATH = `${PNRR_SNAPSHOT_PREFIX}-progres_tehnic_proiecte.json.gz`
+const DEFAULT_PNRR_OFFICIAL_PAYMENTS_PATH = `${PNRR_SNAPSHOT_PREFIX}-persons.json.gz`
+const DEFAULT_PNRR_OFFICIAL_INDICATORS_PATH = `${PNRR_SNAPSHOT_PREFIX}-indicatori_total.json.gz`
 
 const PNRR_DATA_URL = buildOfficialDataUrl(
   process.env.PNRR_OFFICIAL_DATA_BASE_URL ??
