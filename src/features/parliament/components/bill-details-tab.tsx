@@ -100,6 +100,13 @@ export function BillDetailsTab({ bill }: Props) {
             </p>
           </div>
         </div>
+        {bill.dossierBillIds.length > 1 ? (
+          <p className="mt-3 max-w-4xl text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            Acest proiect are înregistrări atât la Camera Deputaților, cât și la
+            Senat; fișa reunește etapele, documentele și voturile ambelor
+            înregistrări.
+          </p>
+        ) : null}
       </section>
 
       <section>

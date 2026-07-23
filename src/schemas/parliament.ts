@@ -515,7 +515,13 @@ export const MemberWrittenQuestionSchema = z.object({
   questionId: z.string(),
   submittedAt: z.string(),
   title: z.string(),
-  status: z.enum(['raspuns', 'in_asteptare']),
+  /**
+   * Whether a response is RECORDED in the source (cdep/senat). The server's
+   * `responseStatus` is a raw source string, not an answered/unanswered fact:
+   * a null only means no response document is recorded — it must never be
+   * presented as "waiting for an answer" as if that were verified.
+   */
+  status: z.enum(['raspuns', 'fara_raspuns_inregistrat']),
   answerSummary: z.string().optional(),
   /** AI-generated metadata (summary + classification), when the item has it. */
   aiMetadata: ParliamentAiControlItemMetadataSchema.optional(),
@@ -594,6 +600,9 @@ export const BillCurrentLocationSchema = z.enum([
   'promulgat',
   'respins',
   'retras',
+  // Lapsed/terminated procedure ("clasat" / "procedură legislativă încetată") —
+  // a terminal outcome distinct from rejection (parliament.bill-lifecycle.v2).
+  'clasat',
 ])
 export type BillCurrentLocation = z.infer<typeof BillCurrentLocationSchema>
 
@@ -737,6 +746,13 @@ export const ParliamentBillDetailSchema = ParliamentBillSummarySchema.extend({
    */
   aiMetadata: ParliamentAiBillMetadataSchema.optional(),
   valueClass: z.string().optional(),
+  /**
+   * All bill_key views merged into this dossier (requested key first). A CDep
+   * and a Senate registration of the same initiative are separate rows in the
+   * source; when the server resolves them as a twin pair it merges their
+   * children and lists both keys here. Length 1 = single-view dossier.
+   */
+  dossierBillIds: z.array(z.string()).default([]),
 })
 export type ParliamentBillDetail = z.infer<typeof ParliamentBillDetailSchema>
 

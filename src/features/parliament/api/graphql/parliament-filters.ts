@@ -115,8 +115,13 @@ export function buildMembersFilter(
 
 /** Server bill-type tokens (ParliamentBillsFilter.billType). */
 export type ServerBillType = 'government' | 'parliamentary'
-/** Server bill-status tokens (ParliamentBillsFilter.status). */
-export type ServerBillStatus = 'promulgated' | 'rejected' | 'in_progress'
+/** Server bill-status tokens (ParliamentBillsFilter.status, bill-lifecycle.v2). */
+export type ServerBillStatus =
+  | 'promulgated'
+  | 'rejected'
+  | 'withdrawn'
+  | 'lapsed'
+  | 'in_progress'
 
 export interface ParliamentBillsFilterInput {
   year?: { eq: number }
@@ -146,14 +151,16 @@ const BILL_TYPE_TO_SERVER: Readonly<Record<string, ServerBillType>> = {
 }
 
 /**
- * UI billLocation enum → server status token. promulgat→promulgated,
- * respins→rejected; the in-pipeline locations (camera/senat/mediere/presedinte)
- * → in_progress. `retras` (withdrawn) has no server token → no filter (better
- * than mislabelling it rejected).
+ * UI billLocation enum → server status token (bill-lifecycle.v2 five-bucket
+ * partition). Terminal outcomes map 1:1 (promulgat→promulgated,
+ * respins→rejected, retras→withdrawn, clasat→lapsed); the in-pipeline
+ * locations (camera/senat/mediere/presedinte) → in_progress.
  */
 const BILL_LOCATION_TO_STATUS: Readonly<Record<string, ServerBillStatus>> = {
   promulgat: 'promulgated',
   respins: 'rejected',
+  retras: 'withdrawn',
+  clasat: 'lapsed',
   camera: 'in_progress',
   senat: 'in_progress',
   mediere: 'in_progress',

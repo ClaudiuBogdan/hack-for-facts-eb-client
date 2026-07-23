@@ -363,6 +363,52 @@ describe('mapBillDetail (golden anchor)', () => {
     })
   })
 
+  it('keeps merged dossier events and documents source-qualified', () => {
+    const detail = mapBillDetail({
+      ...goldenBill,
+      dossierBillKeys: ['12760', 'senat:123-2012'],
+      events: [
+        {
+          ...goldenBill.events[0]!,
+          sourceBillKey: '12760',
+          position: 1,
+          description: 'Camera: înregistrare',
+        },
+        {
+          ...goldenBill.events[0]!,
+          sourceBillKey: 'senat:123-2012',
+          position: 1,
+          description: 'Senat: înregistrare',
+        },
+      ],
+      documents: [
+        {
+          sourceBillKey: '12760',
+          url: 'https://www.cdep.ro/a.pdf',
+          label: 'Camera',
+          kind: 'pdf',
+          position: 1,
+        },
+        {
+          sourceBillKey: 'senat:123-2012',
+          url: 'https://www.senat.ro/b.pdf',
+          label: 'Senat',
+          kind: 'pdf',
+          position: 1,
+        },
+      ],
+    })
+
+    expect(detail.timeline.map((step) => step.stepId)).toEqual([
+      'ev-12760-1',
+      'ev-senat:123-2012-1',
+    ])
+    expect(detail.documents.map((document) => document.documentId)).toEqual([
+      '12760-doc-1',
+      'senat:123-2012-doc-1',
+    ])
+  })
+
   it('uses the server statusText for the stage label + classifies billType (Gap 2)', () => {
     const detail = mapBillDetail(goldenBill)
     expect(detail.currentStageLabel).toBe('Lege 423/2023 29.12.2023')

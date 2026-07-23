@@ -20,8 +20,10 @@ function formatActivityDate(isoDate: string): string {
   }).format(new Date(isoDate))
 }
 
-function getQuestionStatusLabel(status: 'raspuns' | 'in_asteptare'): string {
-  return status === 'raspuns' ? 'Răspuns primit' : 'În așteptare'
+function getQuestionStatusLabel(
+  status: 'raspuns' | 'fara_raspuns_inregistrat',
+): string {
+  return status === 'raspuns' ? 'Răspuns primit' : 'Fără răspuns înregistrat'
 }
 
 /** Written questions and interpellations tab */
@@ -42,8 +44,10 @@ export function MemberIntrebariTab({ member }: Props) {
     >
       <aside className={memberDetailNoticeClassName}>
         <p>
-          Statusul indică dacă a fost primit un răspuns oficial. Rezumatul
-          răspunsului este afișat când este disponibil.
+          Statusul indică dacă un răspuns oficial este înregistrat în sursa
+          parlamentară. Lipsa unui răspuns înregistrat nu înseamnă neapărat că
+          nu s-a răspuns. Rezumatul răspunsului este afișat când este
+          disponibil.
         </p>
       </aside>
 

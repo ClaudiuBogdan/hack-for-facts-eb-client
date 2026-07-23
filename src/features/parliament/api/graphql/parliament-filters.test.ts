@@ -87,13 +87,13 @@ describe('buildBillsFilter / buildBillsSort', () => {
     expect(buildBillsFilter({ billType: 'cetateni' })).toEqual({ billType: { eq: 'parliamentary' } })
   })
 
-  it('maps the UI billLocation enum to the server status token', () => {
+  it('maps the UI billLocation enum to the server status token (lifecycle.v2)', () => {
     expect(buildBillsFilter({ billLocation: 'promulgat' })).toEqual({ status: { eq: 'promulgated' } })
     expect(buildBillsFilter({ billLocation: 'respins' })).toEqual({ status: { eq: 'rejected' } })
+    expect(buildBillsFilter({ billLocation: 'retras' })).toEqual({ status: { eq: 'withdrawn' } })
+    expect(buildBillsFilter({ billLocation: 'clasat' })).toEqual({ status: { eq: 'lapsed' } })
     expect(buildBillsFilter({ billLocation: 'camera' })).toEqual({ status: { eq: 'in_progress' } })
     expect(buildBillsFilter({ billLocation: 'senat' })).toEqual({ status: { eq: 'in_progress' } })
-    // `retras` has no server token → not forwarded (never a raw/unknown token).
-    expect(buildBillsFilter({ billLocation: 'retras' })).toEqual({})
   })
 
   it('AND-composes billType + status + q', () => {

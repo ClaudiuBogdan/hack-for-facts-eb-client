@@ -849,8 +849,9 @@ export const PARLIAMENT_BILL_QUERY = /* GraphQL */ `
       statusText
       billType
       lastEventDate
-      events { position eventDate eventDateText description chamberCode committee voteIdv docs }
-      documents { url label kind position }
+      dossierBillKeys
+      events { sourceBillKey position eventDate eventDateText description chamberCode committee voteIdv docs }
+      documents { sourceBillKey url label kind position }
       initiators { mandateKey fullName groupName }
       relatedVotes {
         voteKey
@@ -873,6 +874,7 @@ export const PARLIAMENT_BILL_QUERY = /* GraphQL */ `
 `
 
 const rawBillEventSchema = z.object({
+  sourceBillKey: z.string().optional(),
   position: z.number(),
   eventDate: z.string().nullable(),
   eventDateText: z.string().nullable(),
@@ -887,6 +889,7 @@ const rawBillEventSchema = z.object({
   docs: z.unknown().nullable(),
 })
 const rawBillDocumentSchema = z.object({
+  sourceBillKey: z.string().optional(),
   url: z.string(),
   label: z.string().nullable(),
   kind: z.string().nullable(),
@@ -923,6 +926,10 @@ export type RawParliamentBillDocument = z.infer<typeof rawBillDocumentSchema>
 export type RawParliamentBillRelatedVote = z.infer<typeof rawBillRelatedVoteSchema>
 
 const rawBillDetailSchema = rawBillSummarySchema.extend({
+  // All bill_key views merged into this dossier (requested key first) — a
+  // resolved CDep/Senate twin pair lists both keys, otherwise just the one.
+  // Optional so the client tolerates servers without the field.
+  dossierBillKeys: z.array(z.string()).nullable().optional(),
   events: z.array(rawBillEventSchema),
   documents: z.array(rawBillDocumentSchema),
   initiators: z.array(rawBillInitiatorSchema),

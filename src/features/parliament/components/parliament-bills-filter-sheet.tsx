@@ -55,6 +55,7 @@ const BILL_LOCATIONS: readonly BillCurrentLocation[] = [
   'promulgat',
   'respins',
   'retras',
+  'clasat',
 ]
 
 type SheetProps = {

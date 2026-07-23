@@ -63,7 +63,7 @@ function synthesizeProfile(member: ParliamentMember): ParliamentMemberProfile {
       questionId: `${member.memberId}-wq-2`,
       submittedAt: '2026-05-12T09:00:00+03:00',
       title: 'Măsuri pentru transparența cheltuielilor publice',
-      status: 'in_asteptare',
+      status: 'fara_raspuns_inregistrat',
     },
   ]
 

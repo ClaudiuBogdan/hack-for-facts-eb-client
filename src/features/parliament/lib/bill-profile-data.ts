@@ -67,7 +67,11 @@ function synthesizePassage(bill: ParliamentBillSummary): ParliamentBillPassage {
 
   const cameraStages = bill.originatingChamber === 'camera' ? CAMERA_STAGES : CAMERA_STAGES
 
-  if (bill.currentLocation === 'respins' || bill.currentLocation === 'retras') {
+  if (
+    bill.currentLocation === 'respins' ||
+    bill.currentLocation === 'retras' ||
+    bill.currentLocation === 'clasat'
+  ) {
     const activeChamber = bill.originatingChamber
     const activeStages = activeChamber === 'camera' ? cameraStages : senatStages
     const inactiveStages = activeChamber === 'camera' ? senatStages : cameraStages
@@ -315,5 +319,7 @@ export function getBillLocationLabel(location: BillCurrentLocation): string {
       return 'Respins'
     case 'retras':
       return 'Retras'
+    case 'clasat':
+      return 'Clasat'
   }
 }

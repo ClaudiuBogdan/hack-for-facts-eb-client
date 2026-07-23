@@ -520,7 +520,10 @@ function deriveCurrentLocation(
   if (raw.finalLawNumber) return 'promulgat'
   const latest = lastEventText(events)
   if (latest.includes('respins')) return 'respins'
-  if (latest.includes('retras')) return 'retras'
+  if (latest.includes('retras') || latest.includes('restituit')) return 'retras'
+  if (latest.includes('clasat') || latest.includes('încetat') || latest.includes('incetat')) {
+    return 'clasat'
+  }
   if (latest.includes('mediere')) return 'mediere'
   if (latest.includes('promulgare') || latest.includes('preşedinte') || latest.includes('presedinte')) {
     return 'presedinte'
@@ -562,6 +565,7 @@ const LOCATION_LABEL: Record<BillCurrentLocation, string> = {
   promulgat: 'Promulgat',
   respins: 'Respins',
   retras: 'Retras',
+  clasat: 'Clasat',
 }
 
 function billNumber(raw: RawParliamentBillSummary): string {
@@ -677,7 +681,8 @@ function primeRelatedVoteSummary(v: {
  */
 export function mapBillDetail(raw: RawParliamentBillDetail): ParliamentBillDetail {
   const summary = mapBillSummary(raw, raw.events)
-  const timeline = buildBillTimeline(raw.events)
+  const dossierBillIds = raw.dossierBillKeys ?? [raw.billKey]
+  const timeline = buildBillTimeline(raw.events, dossierBillIds, raw.billKey)
 
   const initiator = raw.initiators[0]
   const billInitiator =
@@ -728,7 +733,7 @@ export function mapBillDetail(raw: RawParliamentBillDetail): ParliamentBillDetai
     documents: raw.documents
       .filter((d) => /^https?:\/\//i.test(d.url))
       .map((d, i) => ({
-        documentId: `${raw.billKey}-doc-${d.position ?? i}`,
+        documentId: `${d.sourceBillKey ?? raw.billKey}-doc-${d.position ?? i}`,
         label: d.label ?? d.kind?.toUpperCase() ?? 'Document',
         url: d.url,
         publishedAt: summary.lastUpdatedAt,
@@ -736,6 +741,9 @@ export function mapBillDetail(raw: RawParliamentBillDetail): ParliamentBillDetai
     timeline,
     ...(lawMilestone ? { lawMilestone } : {}),
     relatedVotes: mapBillRelatedVotes(raw),
+    // Server-merged twin-pair dossier keys (requested view first); falls back
+    // to the single requested key on servers without the field yet.
+    dossierBillIds,
   })
 }
 
@@ -800,13 +808,21 @@ function cleanEventDescription(description: string | null | undefined): string {
  */
 function buildBillTimeline(
   events: readonly RawParliamentBillEvent[],
+  dossierBillIds: readonly string[],
+  fallbackBillId: string,
 ): ParliamentBillTimelineStep[] {
+  const viewOrder = new Map(dossierBillIds.map((billId, index) => [billId, index]))
   return [...events]
-    .sort((a, b) => a.position - b.position)
+    .sort((a, b) => {
+      const aView = viewOrder.get(a.sourceBillKey ?? fallbackBillId) ?? dossierBillIds.length
+      const bView = viewOrder.get(b.sourceBillKey ?? fallbackBillId) ?? dossierBillIds.length
+      return aView - bView || a.position - b.position
+    })
     .map((e) => {
       const description = cleanEventDescription(e.description)
+      const sourceBillKey = e.sourceBillKey ?? fallbackBillId
       return {
-        stepId: `ev-${e.position}`,
+        stepId: `ev-${sourceBillKey}-${e.position}`,
         position: e.position,
         description,
         ...(e.eventDate ? { date: toIsoDate(e.eventDate, '') || undefined } : {}),
@@ -872,13 +888,17 @@ export function mapMemberProfile(raw: {
   }))
 
   // Control items (questions/interpellations) map to the "written questions"
-  // surface — responseStatus drives the answered/pending state; aiMetadata (when
-  // present) carries the AI summary shown in a collapsed <details> per item.
+  // surface. `responseStatus` is the RAW source response string — non-null
+  // means a response is recorded; null only means none is RECORDED, which must
+  // not be shown as a verified "waiting" state. aiMetadata (when present)
+  // carries the AI summary shown in a collapsed <details> per item.
   const writtenQuestions = raw.controlItems.items.map((c) => ({
     questionId: c.itemKey,
     submittedAt: toIsoDate(c.itemDate, fallbackDate),
     title: c.title ?? '(fără titlu)',
-    status: c.responseStatus ? ('raspuns' as const) : ('in_asteptare' as const),
+    status: c.responseStatus
+      ? ('raspuns' as const)
+      : ('fara_raspuns_inregistrat' as const),
     ...(c.aiMetadata
       ? { aiMetadata: mapControlItemAiMetadata(c.aiMetadata) }
       : {}),
