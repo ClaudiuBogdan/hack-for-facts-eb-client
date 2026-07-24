@@ -314,6 +314,7 @@ export const procurementAnswerabilitySchema = z.enum([
 
 export const procurementAnswerReasonSchema = z.enum([
   'SPEND_COVERAGE_BELOW_GATE',
+  'SPEND_SERVED_DISCLOSED',
   'TIME_COVERAGE_BELOW_FLOOR',
   'GEO_COVERAGE_BELOW_FLOOR',
   'MISSING_QUALITY_VERDICT',
