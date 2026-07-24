@@ -1,334 +1,113 @@
-# AGENTS - `hack-for-facts-eb-client`
-
-## Mock-First UI Development (Active Scope)
-
-Much of the product roadmap depends on new Romanian public datasets that are still
-experimental or loading in the sibling scrapper repo. **Primary work happens
-here in the client**: routes, UX, user stories, hooks, and components. Data
-formats, join rules, probe evidence, and worker status live in scrapper.
-
-Goal: build the best possible UI with **mock data shaped like the real sources**,
-so connecting the API later is an adapter swap in the feature API layer, not a
-UI rewrite.
-
-Read first:
-
-- [`docs/mock-first-ui-development.md`](docs/mock-first-ui-development.md) —
-  workflow, file layout, mock-mode env vars, quality gates (**local only,
-  gitignored**)
-- [`docs/scraper-data-catalog.md`](docs/scraper-data-catalog.md) — dataset index
-  with scrapper doc paths and client feature targets (**local only, gitignored**)
-- [`src/lib/scraper-references/`](src/lib/scraper-references/) — typed registry
-  imported by feature code (`getScraperDatasetById`, `isMockDataEnabled`)
-
-Create the gitignored docs locally when needed. Set `VITE_SCRAPPER_REPO_ROOT`
-if the scrapper checkout is not a sibling of this repo.
-
-Scrapper repos and layers:
-
-| Path | Purpose |
-| --- | --- |
-| `../hack-for-facts-eb-scrapper/experimental/` | Source discovery, schema notes, tiny samples |
-| `../hack-for-facts-eb-scrapper/new_latest/` | Promoted workers and Griffin PostgreSQL loaders |
-| `../hack-for-facts-eb-scrapper/experimental/docs/source-inventory.md` | Consolidated dataset status |
-
-When starting a new surface: register the dataset in `catalog.ts`, add Zod schemas
-under `src/schemas/`, place mocks under `src/features/{feature}/mocks/`, and
-document user stories/specs before polishing visuals.
-
-## Parallel Worktrees
-
-Use separate git worktrees for concurrent mock-first lanes.
-
-- Read [`docs/parallel-worktrees.md`](docs/parallel-worktrees.md)
-- Foundation branch: `feat/new-datasets`
-- Create a lane: `yarn worktree:create <slug> [branch-name]`
-- Cursor Agents Window uses [`.cursor/worktrees.json`](.cursor/worktrees.json)
-  to copy `.env` and run `yarn install` automatically
-
----
-
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
-## Project Overview
-
-Transparenta.eu is a platform for analyzing public budget data, targeting public sector and independent journalists who need an easy and accessible way of finding anomalies in public spending. The platform allows users to explore budget data using an intuitive interface with advanced filters, anomaly detection, and AI-powered query generation.
-
-## Tech Stack
-
-- **Frontend**: React 19 with TypeScript
-- **Styling**: Tailwind CSS v4, shadcn UI components (Radix UI primitives)
-- **State Management**: TanStack Query (React Query) for server state
-- **Routing**: TanStack Router (file-based routing)
-- **Build Tool**: Vite
-- **Data Visualization**: Recharts, D3-Sankey, Visx, Leaflet/React-Leaflet
-- **i18n**: Lingui (PO format, locales: en, ro)
-- **Authentication**: Clerk
-- **Error Tracking**: Sentry
-- **Analytics**: PostHog (with consent management)
-- **Testing**: Vitest, Playwright, Testing Library
-
-## Development Commands
-
-### Core Commands
-
-```bash
-yarn dev                  # Start development server
-yarn build                # Build for production (includes i18n compile)
-yarn typecheck            # Type-check without emitting (always run before finishing)
-yarn test                 # Run Vitest unit tests
-yarn test:watch           # Run tests in watch mode
-yarn test:coverage        # Generate test coverage report
-yarn preview              # Preview production build locally
-```
-
-### Type Checking
-
-**CRITICAL**: Always run `yarn typecheck` before completing any task. Fix all type errors before considering work complete.
-
-### Internationalization (i18n)
-
-```bash
-yarn i18n:extract         # Scan code for Lingui message IDs and update .po files
-yarn i18n:compile         # Compile translated catalogs into runtime assets
-yarn i18n:clean           # Remove obsolete/unused message IDs from catalogs
-
-Don't modify the .po files manually. 
-```
-
-**i18n Workflow**:
-
-1. Add messages in code using `t\`text\`` or `<Trans>text</Trans>`
-2. Run `yarn i18n:extract` to update .po files in `src/locales/{locale}/messages.po`
-3. Translate in .po files
-4. Run `yarn i18n:compile` to prepare runtime assets
-
-### E2E Testing
-
-```bash
-yarn test:e2e             # Run Playwright E2E tests
-yarn test:e2e:ui          # Open Playwright UI mode
-yarn test:e2e:debug       # Debug E2E tests
-```
-
-## Architecture
-
-### Directory Structure
-
-```
-src/
-├── components/          # Reusable UI components
-│   ├── ui/             # shadcn UI components (Radix primitives + Tailwind)
-│   ├── filters/        # Filter components (entity, county, period, etc.)
-│   ├── budget-explorer/# Budget visualization components (treemaps, breakdowns)
-│   ├── charts/         # Chart components and renderers
-│   ├── maps/           # Leaflet map components
-│   ├── sidebar/        # App sidebar navigation
-│   └── tables/         # Data table components
-├── routes/             # TanStack Router file-based routes
-│   └── __root.tsx      # Root route with providers (i18n, theme, query, error)
-├── features/           # Feature-specific modules (alerts, notifications)
-│   └── {feature}/
-│       ├── api/        # API calls for feature
-│       ├── hooks/      # Feature-specific hooks
-│       └── components/ # Feature-specific components
-├── hooks/              # Global custom hooks
-├── lib/                # Utility libraries and helpers
-│   ├── api/           # API client modules (graphql, charts, entities, etc.)
-│   ├── hooks/         # Reusable hooks (debounce, persisted state, etc.)
-│   ├── logger/        # Structured logging
-│   └── errors/        # Error handling utilities
-├── contexts/           # React contexts (ErrorContext)
-├── schemas/            # Zod schemas for validation
-├── types/              # TypeScript type definitions
-├── locales/            # i18n catalogs (en, ro)
-│   └── {locale}/messages.po
-└── config/             # Configuration files
-```
-
-### Key Architectural Patterns
-
-#### Data Flow
-
-1. **GraphQL API**: All backend communication uses GraphQL via `src/lib/api/graphql.ts`
-   - Simple fetch-based client with Clerk authentication
-   - Automatic error handling and logging
-   - Token management via `getAuthToken()`
-
-2. **State Management**:
-   - **Server State**: TanStack Query (`@tanstack/react-query`)
-   - **Local State**: React hooks (`useState`, `useReducer`)
-   - **URL State**: TanStack Router search params for filters
-   - **Persisted State**: `usePersistedState` hook for localStorage
-
-3. **Filter System**:
-   - URL-based filter state (search params)
-   - Each filter component in `src/components/filters/` manages its own state
-   - Base filter pattern in `src/components/filters/base-filter/`
-   - Filter utilities in `src/lib/filterUtils.ts`
-
-#### Classification System
-
-- Functional classifications (budget categories) in `src/lib/classifications.ts`
-- Economic classifications in `src/lib/economic-classifications.ts`
-- JSON data files in `src/assets/` with i18n support
-- Hierarchical structure with parent/child relationships
-
-#### Error Handling
-
-- Centralized error handling via `ErrorContext` (`src/contexts/ErrorContext.tsx`)
-- Custom `AppError` class with error types, codes, and severity
-- Integration with Sentry for error tracking
-- Structured logging via `src/lib/logger/`
-
-#### Analytics & Consent
-
-- PostHog integration via `src/lib/analytics.ts`
-- Consent management in `src/lib/consent.ts`
-- Analytics only fire if user has granted consent
-- Cookie consent banner component
-
-## React Development Standards
-
-### Component Structure
-
-- **Always use functional components** with hooks (never class components)
-- **Named exports** (not default exports)
-- **TypeScript**: No `any` types, explicit prop types, use `readonly` for immutability
-- **File naming**: PascalCase for components (`UserProfile.tsx`), kebab-case for utilities (`chart-utils.ts`)
-
-### Component Template
-
-```typescript
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-
-type Props = {
-  readonly title: string
-  readonly onClick: () => void
-}
-
-export function MyComponent({ title, onClick }: Props) {
-  const [state, setState] = useState(false)
-
-  return <Button onClick={onClick}>{title}</Button>
-}
-```
-
-### Performance
-
-- Minimize `useEffect` and `useState` usage
-- Use `React.memo` sparingly (React 19 compiler handles most optimization)
-- Use `React.lazy` for code-splitting heavy components
-- Prefer server-side data fetching with TanStack Query
-
-### UI Components
-
-1. **Always check shadcn UI first** before creating custom components
-2. Use Tailwind utility classes exclusively (no custom CSS)
-3. Mobile-first responsive design
-4. Leverage Radix UI primitives via shadcn for accessibility
-
-### Naming Conventions
-
-- **Variables/Functions**: camelCase (`getUserData`)
-- **Components**: PascalCase (`UserProfile`)
-- **Files**: kebab-case (`user-profile.tsx`)
-- **Constants**: UPPER_CASE (`MAX_ITEMS`)
-- **Directories**: kebab-case (`budget-explorer/`)
-
-## AI Filter Generator
-
-The platform includes natural language filter generation:
-
-- Users enter queries like "Show me education spending in Cluj from last year"
-- Server-side OpenAI integration generates structured filter JSON
-- Filters validated with Zod and applied to data discovery
-- Implementation in `src/lib/api/` and filter components
-
-## Environment Variables
-
-```bash
-# API
-VITE_API_URL=http://localhost:3000
-
-# Sentry
-VITE_SENTRY_ENABLED=true
-VITE_SENTRY_DSN=your_public_dsn
-VITE_SENTRY_TRACES_SAMPLE_RATE=0.1
-VITE_SENTRY_FEEDBACK_ENABLED=true
-
-# HTTPS (optional, run ./ssl.sh to generate certs)
-HTTPS_ENABLED=true
-```
-
-## Important Notes
-
-1. Always run `yarn check` when you are done with all the changes
-2. **i18n**: Mark all user-facing text for translation with Lingui macros
-3. **Accessibility**: Use semantic HTML and Radix UI primitives for keyboard navigation and ARIA
-4. **Error Boundaries**: All major routes should handle errors gracefully
-5. **Consent**: Check analytics consent before firing PostHog events
-6. **Authentication**: Use Clerk for auth, tokens managed automatically
-7. **Manual Testing Preferred**: Focus on manual testing over automated tests unless specified
-
-## Common Patterns
-
-### API Calls
-
-```typescript
-import { graphqlRequest } from '@/lib/api/graphql'
-
-const query = `query GetData { ... }`
-const data = await graphqlRequest<ResponseType>(query, variables)
-```
-
-### TanStack Query Hook
-
-```typescript
-import { useQuery } from '@tanstack/react-query'
-
-export function useEntityData(cui: string) {
-  return useQuery({
-    queryKey: ['entity', cui],
-    queryFn: () => fetchEntityData(cui),
-  })
-}
-```
-
-### Error Handling
-
-```typescript
-import { useErrorHandler } from '@/contexts/ErrorContext'
-
-const { handleError } = useErrorHandler()
-
-try {
-  // operation
-} catch (error) {
-  handleError(error as Error, 'feature-name')
-}
-```
-
-### Toast Notifications
-
-```typescript
-import { toast } from 'sonner'
-
-toast.success('Operation successful')
-toast.error('Something went wrong')
-toast.warning('Please check your input')
-```
-
-## Budget Explorer Components
-
-The budget explorer (treemaps, breakdowns) is in `src/components/budget-explorer/`:
-
-- `BudgetTreemap.tsx`: Interactive hierarchical budget visualization
-- `SpendingBreakdown.tsx`: Spending analysis by category
-- `RevenueBreakdown.tsx`: Revenue analysis by category
-- `budget-transform.ts`: Data transformation utilities
-- Uses economic classifications (ec) and functional classifications (fn)
-- Supports normalization (per capita, total, euro)
+# Transparenta.eu Client
+
+The web app over the Romanian public-money platform — investigative surfaces for
+journalists, public-sector staff, and citizens. `AGENTS.md` is the canonical
+instruction file; `CLAUDE.md` and `GEMINI.md` are symlinks to it.
+
+Sibling repos — keep the data shape consistent across all three:
+
+- **server** — the API this app consumes (GraphQL + REST + MCP).
+  `~/projects/devostack/hack-for-facts-eb-server`
+- **scrapper** — extraction, raw DBs, the production DB.
+  `~/projects/devostack/hack-for-facts-eb-scrapper` (dataset semantics, join rules,
+  and per-source status live there, in `prod-db/TRACKER.md` and `prod-db/*_NOTES.md`)
+
+## Architecture — this is a TanStack Start app, not a Vite SPA
+
+It server-renders. Getting this wrong is the most common and most expensive
+mistake here, because client-only patterns appear to work in dev and break in
+production:
+
+- `src/start.ts` + `src/client.tsx` are the entrypoints; `src/server/handlers/`
+  holds server-side handlers. Nitro builds the server output.
+- Routing is **file-based TanStack Router** under `src/routes/` — `routeTree.gen.ts`
+  is generated, never hand-edited (`yarn router:generate`).
+- Server state is TanStack Query, hydrated through `@tanstack/react-router-ssr-query`.
+  Anything that touches `window`/`document` at module scope or during first render
+  must be guarded or deferred.
+- URL state (filters, periods, scopes) lives in **router search params** — that's
+  the app's shareable-state contract, not component state.
+
+## How work is organised
+
+- `src/features/<feature>/` is the unit of work — ~24 of them (procurement,
+  parliament, elections, justice, legal, pnrr, private-companies,
+  public-enterprises, public-investments, statistics, entities, entity-search,
+  campaigns, notifications, learning, …), each with its own `api/`, `hooks/`,
+  `components/`, and where relevant `mocks/`.
+- `src/components/` holds cross-feature UI: `ui/` (shadcn), `filters/`, `charts/`,
+  `maps/`, `tables/`, `sidebar/`.
+- `src/lib/` holds the API clients, shared hooks, logging, error handling; `src/schemas/`
+  the Zod schemas; `src/locales/{en,ro}/` the Lingui catalogs.
+
+Design work starts from [`DESIGN.md`](DESIGN.md) — the design system: tokens,
+principles, component specs, reference patterns, do's and don'ts, the data-trust and
+mock-first contracts, and a decision log. See the `ui-and-design-system` skill.
+
+## Mock-first UI development (active)
+
+Parts of the roadmap depend on datasets that are still landing in the scrapper.
+Where the API isn't ready, build against **mock data shaped like the real source**
+so that connecting the API later is an adapter swap in the feature's `api/` layer,
+not a UI rewrite. This is live, not aspirational: mock mode is wired in ~33 files
+and 10+ features carry `mocks/`.
+
+- Registry: [`src/lib/scraper-references/`](src/lib/scraper-references/) —
+  `getScraperDatasetById`, `isMockDataEnabled`. Register a dataset in `catalog.ts`
+  before building its surface.
+- Add Zod schemas under `src/schemas/`, mocks under
+  `src/features/<feature>/mocks/`, and write the user stories/specs before
+  polishing visuals.
+- `docs/mock-first-ui-development.md` and `docs/scraper-data-catalog.md` carry the
+  workflow and the dataset index — both are **gitignored/local-only**, so create
+  them when they're missing rather than assuming they're gone. Set
+  `VITE_SCRAPPER_REPO_ROOT` if the scrapper isn't a sibling checkout.
+- `DESIGN.md` §Mock-First Contract governs how mocked data must be labelled in the
+  UI. Never present mock or partial data as if it were served truth — the
+  data-trust rules in `DESIGN.md` §Data Trust & Provenance are a product
+  requirement, not decoration.
+
+## Conventions
+
+- **Functional components with hooks only**, named exports, no `any`, `readonly`
+  props. Prefer pure functions and the RO-RO pattern (accept an object, return an
+  object); compose rather than nest.
+- Files kebab-case · components PascalCase · variables/functions camelCase ·
+  constants UPPER_CASE · directories kebab-case.
+- **shadcn first** — check `src/components/ui/` before building a component.
+  Tailwind utilities only, no custom CSS. Mobile-first. Accessibility comes from
+  semantic HTML + the Radix primitives underneath shadcn.
+- React 19's compiler handles most memoisation — reach for `React.memo` rarely,
+  minimise `useEffect`/`useState`, and lazy-load heavy components.
+- **All user-facing text is translated** with Lingui macros (`` t`…` ``,
+  `<Trans>`). Never hand-edit `messages.po`; run the extract/compile cycle
+  (`verify-and-ship` skill).
+- Check analytics consent before firing PostHog events; errors go through
+  `ErrorContext` / `AppError` and Sentry, not bare `console`.
+- Charts with mixed units follow the multi-axis standards in
+  [`.continue/rules/multi-axis-chart-standards.md`](.continue/rules/multi-axis-chart-standards.md).
+
+## Working agreements
+
+- **Always finish with `yarn check`** (typecheck via `tsgo` + ESLint at
+  `--max-warnings=0`). It is also the pre-commit hook, so a red build blocks the
+  commit either way.
+- Testing is **manual-first for UI judgement**, but the automated suite is real and
+  expected to stay green: Vitest unit tests, Playwright `integration` (mocked API)
+  and `e2e` (`E2E_MODE=live` vs `replay` snapshots), CI on `main` and `dev`, plus a
+  nightly run. Details in the `verify-and-ship` skill.
+- Work lands on the **`dev` branch**. Commit messages follow conventional commits
+  (`feat(procurement): …`) by convention — there's no commitlint here to catch you.
+- No AI-attribution trailers in commit messages.
+
+## Where to look
+
+| Question | Doc |
+|---|---|
+| What should this look like? Tokens, components, patterns | [`DESIGN.md`](DESIGN.md) |
+| Mock-first workflow and the dataset index | `docs/mock-first-ui-development.md` · `docs/scraper-data-catalog.md` (local-only) |
+| E2E strategy, reliability, flake triage | [`docs/e2e-testing-spec.md`](docs/e2e-testing-spec.md) · [`docs/e2e-reliability-guide.md`](docs/e2e-reliability-guide.md) |
+| Chart schemas and data validation | [`docs/chart-schema-guide.md`](docs/chart-schema-guide.md) · [`docs/chart-data-validation-spec.md`](docs/chart-data-validation-spec.md) |
+| Normalization semantics (per-capita, %GDP, EUR) | [`docs/normalization-client-spec.md`](docs/normalization-client-spec.md) |
+| What a dataset means / where it came from | scrapper `prod-db/TRACKER.md` + `prod-db/<SOURCE>_NOTES.md` |
+| What the API exposes | server `AGENTS.md` + `docs/server-redesign/` |
