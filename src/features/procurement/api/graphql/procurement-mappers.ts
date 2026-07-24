@@ -293,11 +293,13 @@ function optionalBlockForGrain<T extends { grain: string }>(
   return blocks.find((entry) => entry.grain === grain)
 }
 
-function mapStats(raw: RawProcurementAggregates['procurementStats']['blocks'][number]) {
+export function mapStats(
+  raw: RawProcurementAggregates['procurementStats']['blocks'][number],
+) {
   return procurementStatsBlockSchema.parse({ ...raw, meta: mapAnswerMeta(raw.meta) })
 }
 
-function mapPartyBucket(
+export function mapPartyBucket(
   bucket: RawProcurementBreakdownBucket,
   grain: ProcurementGrainAnalytics['grain'],
   dimension: 'authority' | 'supplier',
@@ -321,7 +323,9 @@ function mapPartyBucket(
     grain,
     bucketKind: bucket.kind,
     flowCount,
-    amountRonSum: bucket.valueAwardedSum,
+    // The grain's ANCHOR money (valueSum) — identical to valueAwardedSum on
+    // core grains; the call-off value on the calloff population.
+    amountRonSum: bucket.valueSum ?? bucket.valueAwardedSum,
     amountPresentCount,
     amountMissingCount: subtractIntegerStrings(flowCount, amountPresentCount),
     firstFlowDate: null,
@@ -331,7 +335,7 @@ function mapPartyBucket(
   })
 }
 
-function mapCategoryBucket(
+export function mapCategoryBucket(
   bucket: RawProcurementBreakdownBucket,
   grain: ProcurementGrainAnalytics['grain'],
   divisions: readonly RawProcurementCpvDivision[],
@@ -351,19 +355,20 @@ function mapCategoryBucket(
     grain,
     bucketKind: bucket.kind,
     flowCount,
-    amountRonSum: bucket.valueAwardedSum,
+    amountRonSum: bucket.valueSum ?? bucket.valueAwardedSum,
     amountPresentCount,
     amountMissingCount: subtractIntegerStrings(flowCount, amountPresentCount),
     shareOfScope: bucket.shareOfScope,
   })
 }
 
-function mapMonthly(
+export function mapMonthly(
   countBlock: RawProcurementAggregates['recordSeries'][number],
-  valueBlock: RawProcurementAggregates['valueSeries'][number],
+  // Absent on counts-only populations (no value series is requested).
+  valueBlock: RawProcurementAggregates['recordSeries'][number] | undefined,
 ): MonthlyPoint[] {
   const values = new Map(
-    (valueBlock.points ?? []).map((point) => [point.bucket, point.value]),
+    (valueBlock?.points ?? []).map((point) => [point.bucket, point.value]),
   )
   return (countBlock.points ?? []).map((point) => ({
     month: point.bucket,

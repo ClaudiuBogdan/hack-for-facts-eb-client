@@ -18,6 +18,7 @@ describe('procurement map series', () => {
         recordCount: '100',
         withValueCount: '90',
         valueAwardedSum: '1000.5',
+        valueSum: '1000.5',
         shareOfScope: '0.1',
       },
       {
@@ -26,6 +27,7 @@ describe('procurement map series', () => {
         recordCount: '50',
         withValueCount: null,
         valueAwardedSum: null,
+        valueSum: null,
         shareOfScope: null,
       },
       {
@@ -34,6 +36,7 @@ describe('procurement map series', () => {
         recordCount: '10',
         withValueCount: null,
         valueAwardedSum: null,
+        valueSum: null,
         shareOfScope: null,
       },
     ])

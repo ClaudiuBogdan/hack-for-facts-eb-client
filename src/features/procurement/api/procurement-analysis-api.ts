@@ -31,6 +31,8 @@ export const procurementAnalysisMeasureSchema = z.enum([
   'withValueCount',
   'valueAwardedSum',
   'valueEstimatedSum',
+  'valueCeilingSum',
+  'valueModAdjustedSum',
   'avgValueAwarded',
   'distinctSuppliers',
   'distinctAuthorities',
@@ -55,6 +57,8 @@ export type ProcurementAnalysisRequest = {
   readonly basis?: 'count' | 'value'
   /** Facet sort basis — independent of series `measure` / concentration `basis`. */
   readonly rankBy?: 'count' | 'value'
+  /** False for populations without supplier money (framework/modification). */
+  readonly includeConcentration?: boolean
 }
 
 /** Matrix-v2 dashboard request. Unsupported combinations surface as errors. */
@@ -73,6 +77,7 @@ export async function fetchProcurementAnalysis(
       bucket: request.bucket,
       measure: request.measure,
       basis: request.basis ?? 'count',
+      includeConcentration: request.includeConcentration ?? true,
     },
     { operationName: 'ProcurementAnalysis' },
   )

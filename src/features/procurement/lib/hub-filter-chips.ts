@@ -11,6 +11,7 @@ import {
 } from '@/schemas/procurement-hub'
 import { recordKindLabel, sourceLabel, valueCategoryLabel } from './enum-labels'
 import { statusLabel } from './status-meta'
+import { valueBasisLabel } from './value-basis-meta'
 
 export type HubFilterChipKind =
   | 'applied'
@@ -120,6 +121,18 @@ export function buildHubActiveFilterChips(
     kind: state.view === 'rankings' ? 'not-on-rankings' : 'applied',
     clear: { measure: PROCUREMENT_HUB_DEFAULTS.measure },
   })
+
+  // Value logic is an analytics lens — the record list keeps each record's
+  // own values, so the chip is honestly inactive on List.
+  if (state.vbasis !== PROCUREMENT_HUB_DEFAULTS.vbasis) {
+    chips.push({
+      key: 'vbasis',
+      prefix: t`Value logic`,
+      value: valueBasisLabel(state.vbasis),
+      kind: state.view === 'list' ? 'not-on-list' : 'applied',
+      clear: { vbasis: PROCUREMENT_HUB_DEFAULTS.vbasis },
+    })
+  }
 
   // mapGrain is map-tab chrome only — never a global active-filter chip.
 

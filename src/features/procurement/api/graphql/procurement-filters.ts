@@ -99,9 +99,16 @@ export interface ProcurementScopeFilterInput {
   supplierSiruta?: string
   status?: string
   procedureType?: string
-  /** Contract grain only: contract_award | framework_agreement. */
+  /** Contract grain only (modifications expose the linked contract's kind). */
   recordKind?: string
-  grain?: 'procedure' | 'contract' | 'direct_acquisition'
+  /** framework / calloff / modification are explicit-only populations (v1.1). */
+  grain?:
+    | 'procedure'
+    | 'contract'
+    | 'direct_acquisition'
+    | 'framework'
+    | 'calloff'
+    | 'modification'
   from?: string
   to?: string
   year?: number

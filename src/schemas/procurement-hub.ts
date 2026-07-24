@@ -209,6 +209,30 @@ export const procurementHubMeasureSchema = z.enum([
 export type ProcurementHubMeasure = z.infer<typeof procurementHubMeasureSchema>
 
 /**
+ * Value logic (vbasis) — which money concept the analytics serve. The contracts
+ * model carries several legitimate money figures per record; each option maps
+ * to a server (grain, measure) pair and they are NEVER interchangeable:
+ *
+ *  - `awarded` (default): accepted awarded value — what was signed.
+ *  - `estimated`: published estimated value — what was budgeted (its own
+ *    coverage verdict per grain; contracts abstain by design).
+ *  - `ceiling`: framework-agreement ceilings — the MAXIMUM committed under the
+ *    umbrellas, not spend (parent `framework` population; rankings withheld).
+ *  - `calloff`: subsequent contracts — execution under frameworks (its own
+ *    `calloff` population; never summed with contract awards).
+ *  - `mod_adjusted`: modification-adjusted value — final value after verified
+ *    amendment chains (contracts grain only).
+ */
+export const procurementValueBasisSchema = z.enum([
+  'awarded',
+  'estimated',
+  'ceiling',
+  'calloff',
+  'mod_adjusted',
+])
+export type ProcurementValueBasis = z.infer<typeof procurementValueBasisSchema>
+
+/**
  * Map choropleth geography level. Region + county paint live; UAT stays preview
  * until a UAT geometry layer ships. Kept in URL as Overview-map chrome only
  * (not a global filter chip / sheet control).
@@ -244,6 +268,7 @@ export const procurementHubSearchSchema = z
         procurementHubViewSchema.optional(),
       )
       .catch(undefined),
+    vbasis: procurementValueBasisSchema.optional().catch(undefined),
     // Legacy tab param → normalized in parse
     tab: z.enum(['overview', 'search']).optional().catch(undefined),
     grain: procurementGrainSchema.optional().catch(undefined),
@@ -315,6 +340,7 @@ export type ProcurementHubSearch = z.output<typeof procurementHubSearchSchema>
 export type ProcurementHubState = {
   view: ProcurementHubView
   grain: ProcurementGrain
+  vbasis: ProcurementValueBasis
   measure: ProcurementHubMeasure
   mapGrain: ProcurementHubMapGrain
   mapParty: ProcurementHubMapParty
@@ -360,6 +386,7 @@ export type ProcurementHubState = {
 export const PROCUREMENT_HUB_DEFAULTS = {
   view: 'overview' as const,
   grain: PROCUREMENT_SEARCH_DEFAULTS.grain,
+  vbasis: 'awarded' as const,
   measure: 'value_awarded' as const,
   mapGrain: 'region' as const,
   mapParty: 'buyer' as const,
@@ -430,10 +457,24 @@ export function withProcurementHubDefaults(
         : undefined
 
   const { tab: _tab, ...rest } = search
+
+  // Value-logic normalization (design v1.1): mod-adjusted exists only on the
+  // contracts grain; the modifications population is counts-only and carries
+  // no alternative value logic — an incompatible pair falls back on the grain.
+  const vbasis = search.vbasis ?? PROCUREMENT_HUB_DEFAULTS.vbasis
+  const grain = search.grain ?? PROCUREMENT_HUB_DEFAULTS.grain
+  const normalized: { vbasis: ProcurementValueBasis; grain: ProcurementGrain } =
+    vbasis === 'mod_adjusted'
+      ? { vbasis, grain: 'contracts' }
+      : grain === 'modifications' && vbasis !== 'awarded'
+        ? { vbasis: 'awarded', grain }
+        : { vbasis, grain }
+
   return {
     ...rest,
     view: search.view ?? viewFromTab ?? PROCUREMENT_HUB_DEFAULTS.view,
-    grain: search.grain ?? PROCUREMENT_HUB_DEFAULTS.grain,
+    grain: normalized.grain,
+    vbasis: normalized.vbasis,
     measure: search.measure ?? PROCUREMENT_HUB_DEFAULTS.measure,
     mapGrain: search.mapGrain ?? PROCUREMENT_HUB_DEFAULTS.mapGrain,
     mapParty: search.mapParty ?? PROCUREMENT_HUB_DEFAULTS.mapParty,
@@ -571,6 +612,7 @@ export function cleanProcurementHubSearch(
 
   if (cleaned.view === PROCUREMENT_HUB_DEFAULTS.view) delete cleaned.view
   if (cleaned.grain === PROCUREMENT_HUB_DEFAULTS.grain) delete cleaned.grain
+  if (cleaned.vbasis === PROCUREMENT_HUB_DEFAULTS.vbasis) delete cleaned.vbasis
   if (cleaned.measure === PROCUREMENT_HUB_DEFAULTS.measure) delete cleaned.measure
   if (cleaned.mapGrain === PROCUREMENT_HUB_DEFAULTS.mapGrain) {
     delete cleaned.mapGrain
@@ -743,14 +785,18 @@ export function rankingStatusFromHubState(
 }
 
 /**
- * Analysis scope accepts a single recordKind (contract grain only). Applied
- * when exactly one UI token is selected AND the hub grain is contracts —
- * the server rejects recordKind on other grains by design.
+ * Analysis scope accepts a single recordKind. Applied when exactly one UI
+ * token is selected AND the hub grain carries the dimension: contracts
+ * natively, modifications via the linked contract's record kind — the server
+ * rejects recordKind on the other grains by design (the per-population scrub
+ * drops it there).
  */
 export function rankingRecordKindFromHubState(
   state: ProcurementHubState,
 ): 'contract_award' | 'framework_agreement' | undefined {
-  if (state.grain !== 'contracts') return undefined
+  if (state.grain !== 'contracts' && state.grain !== 'modifications') {
+    return undefined
+  }
   if (state.record_kind?.length !== 1) return undefined
   return state.record_kind[0] === 'purchases'
     ? 'contract_award'
@@ -834,6 +880,229 @@ export function analysisGrainToHubGrain(
   return grain === 'contract' ? 'contracts' : 'direct_acquisitions'
 }
 
+// ---------------------------------------------------------------------------
+// Value-basis plan (design v1.1) — the single derivation from (vbasis, grain)
+// to the server population + measure + capability surface. Every view reads
+// THIS instead of re-deriving rules, so the UI and the queries cannot drift.
+// ---------------------------------------------------------------------------
+
+export type ProcurementServerAnalysisGrain =
+  | 'procedure'
+  | 'contract'
+  | 'direct_acquisition'
+  | 'framework'
+  | 'calloff'
+  | 'modification'
+
+export type ProcurementBasisValueMeasure =
+  | 'valueAwardedSum'
+  | 'valueEstimatedSum'
+  | 'valueCeilingSum'
+  | 'valueModAdjustedSum'
+
+export type ProcurementValueBasisPlan = {
+  readonly vbasis: ProcurementValueBasis
+  /** The server population the analytics run on. */
+  readonly analysisGrain: ProcurementServerAnalysisGrain
+  /** Value measure for tiles + value series; null = counts-only population. */
+  readonly valueMeasure: ProcurementBasisValueMeasure | null
+  /** True only for the default state — the untouched awarded landing pipeline. */
+  readonly usesLandingPipeline: boolean
+  /**
+   * Breakdown surface (rankings cards, leaderboards, map paint):
+   *  - `anchor`: available; buckets carry the population's ANCHOR money
+   *    (awarded for core grains, the call-off value for call-offs);
+   *  - `counts-only`: available but with no money column (modifications);
+   *  - `withheld`: not served (framework ceilings until repeat-cluster keys).
+   */
+  readonly breakdowns: 'anchor' | 'counts-only' | 'withheld'
+  /** Supplier dimension exists (procedures + frameworks have none). */
+  readonly supplierDimension: boolean
+  /** CPV leaderboard levels beyond division (call-offs/mods carry division only). */
+  readonly cpvBeyondDivision: boolean
+  /** Concentration payload (distinct suppliers) is answerable. */
+  readonly concentration: boolean
+  /** Grain choices the overview/rankings toggle offers (empty = fixed). */
+  readonly grainOptions: readonly ProcurementGrain[]
+}
+
+/** Hub grain → core server grain, with the legacy procedures→DA coercion off. */
+function coreAnalysisGrain(
+  grain: ProcurementGrain,
+): 'procedure' | 'contract' | 'direct_acquisition' {
+  if (grain === 'procedures') return 'procedure'
+  return grain === 'contracts' ? 'contract' : 'direct_acquisition'
+}
+
+export function resolveProcurementValueBasisPlan(
+  state: Pick<ProcurementHubState, 'vbasis' | 'grain'>,
+): ProcurementValueBasisPlan {
+  const vbasis = state.vbasis
+  if (vbasis === 'ceiling') {
+    return {
+      vbasis,
+      analysisGrain: 'framework',
+      valueMeasure: 'valueCeilingSum',
+      usesLandingPipeline: false,
+      breakdowns: 'withheld',
+      supplierDimension: false,
+      cpvBeyondDivision: true,
+      concentration: false,
+      grainOptions: [],
+    }
+  }
+  if (vbasis === 'calloff') {
+    return {
+      vbasis,
+      analysisGrain: 'calloff',
+      valueMeasure: 'valueAwardedSum',
+      usesLandingPipeline: false,
+      breakdowns: 'anchor',
+      supplierDimension: true,
+      cpvBeyondDivision: false,
+      concentration: true,
+      grainOptions: [],
+    }
+  }
+  if (vbasis === 'mod_adjusted') {
+    return {
+      vbasis,
+      analysisGrain: 'contract',
+      valueMeasure: 'valueModAdjustedSum',
+      usesLandingPipeline: false,
+      breakdowns: 'anchor',
+      supplierDimension: true,
+      cpvBeyondDivision: true,
+      concentration: true,
+      grainOptions: ['contracts'],
+    }
+  }
+  if (vbasis === 'estimated') {
+    const analysisGrain = coreAnalysisGrain(
+      state.grain === 'modifications' ? 'contracts' : state.grain,
+    )
+    return {
+      vbasis,
+      analysisGrain,
+      valueMeasure: 'valueEstimatedSum',
+      usesLandingPipeline: false,
+      breakdowns: 'anchor',
+      supplierDimension: analysisGrain !== 'procedure',
+      cpvBeyondDivision: true,
+      concentration: analysisGrain !== 'procedure',
+      grainOptions: ['contracts', 'direct_acquisitions', 'procedures'],
+    }
+  }
+  // awarded — the default pipeline, plus the counts-only modifications
+  // population when that grain is selected.
+  if (state.grain === 'modifications') {
+    return {
+      vbasis,
+      analysisGrain: 'modification',
+      valueMeasure: null,
+      usesLandingPipeline: false,
+      breakdowns: 'counts-only',
+      supplierDimension: true,
+      cpvBeyondDivision: false,
+      concentration: false,
+      grainOptions: ['contracts', 'direct_acquisitions', 'modifications'],
+    }
+  }
+  return {
+    vbasis,
+    analysisGrain: coreAnalysisGrain(
+      state.grain === 'procedures' ? 'direct_acquisitions' : state.grain,
+    ),
+    valueMeasure: 'valueAwardedSum',
+    usesLandingPipeline: true,
+    breakdowns: 'anchor',
+    supplierDimension: true,
+    cpvBeyondDivision: true,
+    concentration: true,
+    grainOptions: ['contracts', 'direct_acquisitions', 'modifications'],
+  }
+}
+
+/**
+ * Scope fields each value-basis population carries (server design v1.1) — a
+ * field outside the set would REJECT the whole analysis query, so the builders
+ * scrub it and the UI discloses the drop (never silently sent, never silently
+ * kept). Core grains pass through untouched except procedures (no supplier).
+ */
+type BasisScopeInput = ReturnType<typeof hubStateToRankingScopeInput>
+
+export type BasisScrubbedScope = {
+  readonly scope: BasisScopeInput
+  /** Hub state keys whose filters were dropped for this population. */
+  readonly dropped: readonly (keyof ProcurementHubState)[]
+}
+
+export function scrubScopeForAnalysisGrain<
+  T extends Partial<BasisScopeInput>,
+>(
+  scope: T,
+  analysisGrain: ProcurementServerAnalysisGrain,
+): { readonly scope: T; readonly dropped: readonly (keyof ProcurementHubState)[] } {
+  const next: Record<string, unknown> = { ...scope }
+  const dropped: (keyof ProcurementHubState)[] = []
+  const drop = (
+    scopeKey: keyof BasisScopeInput,
+    stateKey: keyof ProcurementHubState,
+  ) => {
+    if (next[scopeKey] !== undefined) {
+      delete next[scopeKey]
+      dropped.push(stateKey)
+    }
+  }
+
+  if (
+    analysisGrain === 'framework' ||
+    analysisGrain === 'calloff' ||
+    analysisGrain === 'modification'
+  ) {
+    // No title column on any value-basis population.
+    drop('q', 'q')
+    // Analysis-scope status/procedure-type are core-grain columns.
+    drop('status', 'status')
+  }
+  if (analysisGrain === 'framework') {
+    drop('supplierCui', 'supplier_cui')
+    drop('supplierRegion', 'supplierRegion')
+    drop('supplierCounty', 'supplierCounty')
+    drop('supplierSiruta', 'supplierSiruta')
+    drop('recordKind', 'record_kind')
+  }
+  if (analysisGrain === 'calloff' || analysisGrain === 'modification') {
+    // Only a validated CPV division exists on these rows.
+    drop('cpvGroup', 'cpv_group')
+    drop('cpvClass', 'cpv_class')
+    drop('cpvCategory', 'cpv_category')
+    drop('cpvCode', 'cpv')
+    // Supplier geography has no published coverage row yet (supplierCui stays).
+    drop('supplierRegion', 'supplierRegion')
+    drop('supplierCounty', 'supplierCounty')
+    drop('supplierSiruta', 'supplierSiruta')
+  }
+  if (analysisGrain === 'calloff') {
+    drop('recordKind', 'record_kind')
+  }
+  if (analysisGrain === 'modification') {
+    // Counts-only: raw amendment deltas are not servable money.
+    drop('valueMin', 'valueMin')
+    drop('valueMax', 'valueMax')
+  }
+  if (analysisGrain === 'procedure') {
+    // A procedure predates its award — no supplier columns.
+    drop('supplierCui', 'supplier_cui')
+    drop('supplierRegion', 'supplierRegion')
+    drop('supplierCounty', 'supplierCounty')
+    drop('supplierSiruta', 'supplierSiruta')
+    drop('recordKind', 'record_kind')
+  }
+
+  return { scope: next as T, dropped }
+}
+
 export type HubCapabilityStatus = 'live' | 'todo' | 'preview'
 
 export type HubCapabilityRow = {
@@ -909,6 +1178,20 @@ export const PROCUREMENT_HUB_CAPABILITY_MATRIX: readonly HubCapabilityRow[] = [
     overview: 'live',
     list: 'live',
     note: 'D3 — unfinished controls marked Preview',
+  },
+  {
+    id: 'value-basis',
+    label: 'Value logic (vbasis)',
+    overview: 'live',
+    list: 'todo',
+    note: 'awarded | estimated | ceiling (stats+series only; rankings withheld) | calloff (own population) | mod_adjusted (contracts). List records keep their own values — vbasis is analytics-only.',
+  },
+  {
+    id: 'modifications-analytics',
+    label: 'Modifications analytics (counts-only)',
+    overview: 'live',
+    list: 'live',
+    note: 'grain=modifications: counts + breakdowns, no money (raw deltas are quality-relabeled); ~48.5% undated disclosed by the server envelope.',
   },
 ]
 

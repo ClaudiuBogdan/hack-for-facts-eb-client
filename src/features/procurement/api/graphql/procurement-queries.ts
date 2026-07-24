@@ -230,6 +230,15 @@ const ANSWER_META_FIELDS = /* GraphQL */ `
   provisional caveats canonicalScope
 `
 
+/** Per-measure money answerability (one entry per declared money measure). */
+export const rawMoneyVerdictSchema = z.object({
+  measure: z.string(),
+  answerability: z.string(),
+  reason: z.string().nullable(),
+  caveats: z.array(z.string()),
+})
+export type RawProcurementMoneyVerdict = z.infer<typeof rawMoneyVerdictSchema>
+
 export const rawStatsBlockSchema = z.object({
   grain: z.string(),
   recordCount: z.string().nullable(),
@@ -237,16 +246,22 @@ export const rawStatsBlockSchema = z.object({
   withEstimatedCount: z.string().nullable(),
   valueAwardedSum: z.string().nullable(),
   valueEstimatedSum: z.string().nullable(),
+  // Value-basis wave: framework ceilings / contract mod-adjusted sums.
+  valueCeilingSum: z.string().nullable(),
+  valueModAdjustedSum: z.string().nullable(),
   avgValueAwarded: z.string().nullable(),
   minMonth: z.string().nullable(),
   maxMonth: z.string().nullable(),
+  moneyVerdicts: z.array(rawMoneyVerdictSchema),
   meta: rawAnswerMetaSchema,
 })
 export type RawProcurementStatsBlock = z.infer<typeof rawStatsBlockSchema>
 
 const STATS_BLOCK_FIELDS = /* GraphQL */ `
   grain recordCount withValueCount withEstimatedCount
-  valueAwardedSum valueEstimatedSum avgValueAwarded minMonth maxMonth
+  valueAwardedSum valueEstimatedSum valueCeilingSum valueModAdjustedSum
+  avgValueAwarded minMonth maxMonth
+  moneyVerdicts { measure answerability reason caveats }
   meta { ${ANSWER_META_FIELDS} }
 `
 
@@ -256,6 +271,8 @@ export const rawBreakdownBucketSchema = z.object({
   recordCount: z.string().nullable(),
   withValueCount: z.string().nullable(),
   valueAwardedSum: z.string().nullable(),
+  /** The grain's ANCHOR money (awarded / call-off value); null when counts-only. */
+  valueSum: z.string().nullable(),
   shareOfScope: z.string().nullable(),
 })
 export type RawProcurementBreakdownBucket = z.infer<
@@ -275,7 +292,7 @@ export type RawProcurementBreakdownBlock = z.infer<
 
 const BREAKDOWN_BLOCK_FIELDS = /* GraphQL */ `
   grain dimension rankedBy
-  buckets { key kind recordCount withValueCount valueAwardedSum shareOfScope }
+  buckets { key kind recordCount withValueCount valueAwardedSum valueSum shareOfScope }
   meta { ${ANSWER_META_FIELDS} }
 `
 
@@ -474,13 +491,15 @@ export const PROCUREMENT_AGGREGATES_QUERY = /* GraphQL */ `
     $includeAuthorities: Boolean!
     $includeSuppliers: Boolean!
     $includeCategories: Boolean!
+    $valueMeasure: ProcurementAnalysisMeasure! = valueAwardedSum
+    $includeValueSeries: Boolean! = true
   ) {
     procurementStats(scope: $scope) { blocks { ${STATS_BLOCK_FIELDS} } }
     authorities: procurementBreakdown(scope: $scope, dimension: authority, topN: $topN, rankBy: $rankBy) @include(if: $includeAuthorities) { ${BREAKDOWN_BLOCK_FIELDS} }
     suppliers: procurementBreakdown(scope: $scope, dimension: supplier, topN: $topN, rankBy: $rankBy) @include(if: $includeSuppliers) { ${BREAKDOWN_BLOCK_FIELDS} }
     categories: procurementBreakdown(scope: $scope, dimension: cpvDivision, topN: $topN, rankBy: $rankBy) @include(if: $includeCategories) { ${BREAKDOWN_BLOCK_FIELDS} }
     recordSeries: procurementSeries(scope: $scope, bucket: month, measure: recordCount) { ${SERIES_BLOCK_FIELDS} }
-    valueSeries: procurementSeries(scope: $scope, bucket: month, measure: valueAwardedSum) { ${SERIES_BLOCK_FIELDS} }
+    valueSeries: procurementSeries(scope: $scope, bucket: month, measure: $valueMeasure) @include(if: $includeValueSeries) { ${SERIES_BLOCK_FIELDS} }
   }
 `
 export const procurementAggregatesResponseSchema = z.object({
@@ -489,7 +508,8 @@ export const procurementAggregatesResponseSchema = z.object({
   suppliers: z.array(rawBreakdownBlockSchema).optional().default([]),
   categories: z.array(rawBreakdownBlockSchema).optional().default([]),
   recordSeries: z.array(rawSeriesBlockSchema),
-  valueSeries: z.array(rawSeriesBlockSchema),
+  // Absent when $includeValueSeries=false (counts-only populations).
+  valueSeries: z.array(rawSeriesBlockSchema).optional().default([]),
 })
 export type RawProcurementAggregates = z.infer<
   typeof procurementAggregatesResponseSchema
@@ -549,6 +569,7 @@ export const PROCUREMENT_ANALYSIS_QUERY = /* GraphQL */ `
     $bucket: ProcurementSeriesBucket!
     $measure: ProcurementAnalysisMeasure!
     $basis: ProcurementConcentrationBasis
+    $includeConcentration: Boolean! = true
   ) {
     stats: procurementStats(scope: $scope) { blocks { ${STATS_BLOCK_FIELDS} } }
     facets: procurementFacets(scope: $scope, dimensions: $dimensions, topN: $topN, rankBy: $rankBy) {
@@ -557,7 +578,7 @@ export const PROCUREMENT_ANALYSIS_QUERY = /* GraphQL */ `
     series: procurementSeries(scope: $scope, bucket: $bucket, measure: $measure) {
       ${SERIES_BLOCK_FIELDS}
     }
-    concentration: procurementConcentration(scope: $scope, basis: $basis) {
+    concentration: procurementConcentration(scope: $scope, basis: $basis) @include(if: $includeConcentration) {
       grain basis supplierCount top1Share top5Share hhi totalRon
       meta { ${ANSWER_META_FIELDS} }
     }
@@ -579,7 +600,8 @@ export const procurementAnalysisResponseSchema = z.object({
   stats: z.object({ blocks: z.array(rawStatsBlockSchema) }),
   facets: z.object({ blocks: z.array(rawBreakdownBlockSchema) }),
   series: z.array(rawSeriesBlockSchema),
-  concentration: z.array(rawConcentrationBlockSchema),
+  // Absent when $includeConcentration=false (populations without supplier money).
+  concentration: z.array(rawConcentrationBlockSchema).optional().default([]),
 })
 export type RawProcurementAnalysis = z.infer<
   typeof procurementAnalysisResponseSchema

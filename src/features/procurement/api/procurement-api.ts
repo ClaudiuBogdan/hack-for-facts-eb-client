@@ -1,5 +1,10 @@
 /** Live-only procurement facade. There is intentionally no fixture fallback. */
+export type {
+  ProcurementBasisAnalytics,
+  ProcurementBasisOverviewRequest,
+} from './procurement-api.live'
 export {
+  fetchProcurementBasisOverviewLive as fetchProcurementBasisOverview,
   fetchAuthorityProcurementSliceLive as fetchProcurementAuthoritySlice,
   fetchContractDetailLive as fetchProcurementContractDetail,
   fetchCpvCategoryPageLive as fetchProcurementCpvCategoryPage,

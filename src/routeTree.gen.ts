@@ -71,6 +71,7 @@ import { Route as CertificatesIdRouteImport } from './routes/certificates.$id'
 import { Route as BugeteLocale2026TermeniSiConditiiRouteImport } from './routes/bugete-locale-2026.termeni-si-conditii'
 import { Route as AlertsNewRouteImport } from './routes/alerts/new'
 import { Route as AlegeriElectionKeyRouteImport } from './routes/alegeri/$electionKey'
+import { Route as AchizitiiMetodologieRouteImport } from './routes/achizitii/metodologie'
 import { Route as AchizitiiCautareRouteImport } from './routes/achizitii/cautare'
 import { Route as PrimarieCuiRouteRouteImport } from './routes/primarie/$cui/route'
 import { Route as ChartsChartIdRouteRouteImport } from './routes/charts/$chartId/route'
@@ -535,6 +536,13 @@ const AlegeriElectionKeyRoute = AlegeriElectionKeyRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
   import('./routes/alegeri/$electionKey.lazy').then((d) => d.Route),
+)
+const AchizitiiMetodologieRoute = AchizitiiMetodologieRouteImport.update({
+  id: '/metodologie',
+  path: '/metodologie',
+  getParentRoute: () => AchizitiiRouteRoute,
+} as any).lazy(() =>
+  import('./routes/achizitii/metodologie.lazy').then((d) => d.Route),
 )
 const AchizitiiCautareRoute = AchizitiiCautareRouteImport.update({
   id: '/cautare',
@@ -1308,6 +1316,7 @@ export interface FileRoutesByFullPath {
   '/charts/$chartId': typeof ChartsChartIdRouteRouteWithChildren
   '/primarie/$cui': typeof PrimarieCuiRouteRouteWithChildren
   '/achizitii/cautare': typeof AchizitiiCautareRoute
+  '/achizitii/metodologie': typeof AchizitiiMetodologieRoute
   '/alegeri/$electionKey': typeof AlegeriElectionKeyRoute
   '/alerts/new': typeof AlertsNewRoute
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
@@ -1458,6 +1467,7 @@ export interface FileRoutesByTo {
   '/test-error': typeof TestErrorRoute
   '/terms': typeof TermsLazyRoute
   '/achizitii/cautare': typeof AchizitiiCautareRoute
+  '/achizitii/metodologie': typeof AchizitiiMetodologieRoute
   '/alegeri/$electionKey': typeof AlegeriElectionKeyRoute
   '/alerts/new': typeof AlertsNewRoute
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
@@ -1615,6 +1625,7 @@ export interface FileRoutesById {
   '/charts/$chartId': typeof ChartsChartIdRouteRouteWithChildren
   '/primarie/$cui': typeof PrimarieCuiRouteRouteWithChildren
   '/achizitii/cautare': typeof AchizitiiCautareRoute
+  '/achizitii/metodologie': typeof AchizitiiMetodologieRoute
   '/alegeri/$electionKey': typeof AlegeriElectionKeyRoute
   '/alerts/new': typeof AlertsNewRoute
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
@@ -1778,6 +1789,7 @@ export interface FileRouteTypes {
     | '/charts/$chartId'
     | '/primarie/$cui'
     | '/achizitii/cautare'
+    | '/achizitii/metodologie'
     | '/alegeri/$electionKey'
     | '/alerts/new'
     | '/bugete-locale-2026/termeni-si-conditii'
@@ -1928,6 +1940,7 @@ export interface FileRouteTypes {
     | '/test-error'
     | '/terms'
     | '/achizitii/cautare'
+    | '/achizitii/metodologie'
     | '/alegeri/$electionKey'
     | '/alerts/new'
     | '/bugete-locale-2026/termeni-si-conditii'
@@ -2084,6 +2097,7 @@ export interface FileRouteTypes {
     | '/charts/$chartId'
     | '/primarie/$cui'
     | '/achizitii/cautare'
+    | '/achizitii/metodologie'
     | '/alegeri/$electionKey'
     | '/alerts/new'
     | '/bugete-locale-2026/termeni-si-conditii'
@@ -2746,6 +2760,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/alegeri/$electionKey'
       preLoaderRoute: typeof AlegeriElectionKeyRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/achizitii/metodologie': {
+      id: '/achizitii/metodologie'
+      path: '/metodologie'
+      fullPath: '/achizitii/metodologie'
+      preLoaderRoute: typeof AchizitiiMetodologieRouteImport
+      parentRoute: typeof AchizitiiRouteRoute
     }
     '/achizitii/cautare': {
       id: '/achizitii/cautare'
@@ -3424,6 +3445,7 @@ declare module '@tanstack/react-router' {
 
 interface AchizitiiRouteRouteChildren {
   AchizitiiCautareRoute: typeof AchizitiiCautareRoute
+  AchizitiiMetodologieRoute: typeof AchizitiiMetodologieRoute
   AchizitiiIndexRoute: typeof AchizitiiIndexRoute
   AchizitiiAchizitiiDirecteIdRoute: typeof AchizitiiAchizitiiDirecteIdRoute
   AchizitiiContracteIdRoute: typeof AchizitiiContracteIdRoute
@@ -3433,6 +3455,7 @@ interface AchizitiiRouteRouteChildren {
 
 const AchizitiiRouteRouteChildren: AchizitiiRouteRouteChildren = {
   AchizitiiCautareRoute: AchizitiiCautareRoute,
+  AchizitiiMetodologieRoute: AchizitiiMetodologieRoute,
   AchizitiiIndexRoute: AchizitiiIndexRoute,
   AchizitiiAchizitiiDirecteIdRoute: AchizitiiAchizitiiDirecteIdRoute,
   AchizitiiContracteIdRoute: AchizitiiContracteIdRoute,

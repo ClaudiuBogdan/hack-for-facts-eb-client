@@ -1,6 +1,7 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import {
   fetchProcurementAuthoritySlice,
+  fetchProcurementBasisOverview,
   fetchProcurementCpvCategoryPage,
   fetchProcurementContractDetail,
   fetchProcurementDirectAcquisitionDetail,
@@ -10,6 +11,7 @@ import {
   fetchProcurementSupplierRecords,
   fetchProcurementSupplierSlice,
   fetchProcurementTerritoryOverview,
+  type ProcurementBasisOverviewRequest,
 } from '../api/procurement-api'
 import type {
   AuthorityProcurementSlice,
@@ -29,8 +31,12 @@ import { fetchProcurementGeographyOptions } from '../api/procurement-reference-a
 
 const PROCUREMENT_QUERY_KEY = ['procurement'] as const
 
-export function useProcurementLanding(filters: ProcurementLandingFilters = {}) {
+export function useProcurementLanding(
+  filters: ProcurementLandingFilters = {},
+  enabled = true,
+) {
   return useQuery({
+    enabled,
     queryKey: [
       ...PROCUREMENT_QUERY_KEY,
       'landing',
@@ -92,6 +98,22 @@ export function useProcurementTerritoryOverview(
       filters.cpvCode ?? null,
     ],
     queryFn: () => fetchProcurementTerritoryOverview(filters),
+    enabled,
+  })
+}
+
+/**
+ * Analytics bundle for a NON-default value logic (vbasis ≠ awarded, or the
+ * counts-only modifications population). The awarded default stays on
+ * `useProcurementLanding` — this hook never fires for it.
+ */
+export function useProcurementBasisOverview(
+  request: ProcurementBasisOverviewRequest,
+  enabled: boolean,
+) {
+  return useQuery({
+    queryKey: [...PROCUREMENT_QUERY_KEY, 'basis-overview', request],
+    queryFn: () => fetchProcurementBasisOverview(request),
     enabled,
   })
 }

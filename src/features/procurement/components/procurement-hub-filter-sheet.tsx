@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
+import { Link } from '@tanstack/react-router'
 import {
   Building2,
   CalendarRange,
+  Coins,
   MapPin,
   SlidersHorizontal,
 } from 'lucide-react'
@@ -21,7 +23,9 @@ import { cn } from '@/lib/utils'
 import {
   normalizeProcurementMonthEnd,
   normalizeProcurementMonthStart,
+  procurementValueBasisSchema,
   type ProcurementHubMeasure,
+  type ProcurementValueBasis,
 } from '@/schemas/procurement-hub'
 import { useProcurementGeographyOptions } from '../hooks/use-procurement-data'
 import type { ProcurementHubFilterState } from '../hooks/use-procurement-hub-state'
@@ -41,6 +45,11 @@ import {
 import { ProcurementListFilterFields } from './procurement-filter-sheet'
 import { ProcurementPeriodYearPresets } from './procurement-period-year-presets'
 import { ProcurementPreviewBadge } from './procurement-preview-badge'
+import {
+  valueBasisLabel,
+  valueBasisMoneyLabel,
+  valueBasisQuestion,
+} from '../lib/value-basis-meta'
 
 type Props = {
   readonly open: boolean
@@ -210,20 +219,41 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
             <div className="flex flex-wrap gap-2">
               {(
                 [
-                  { id: 'value_awarded' as const, label: t`Awarded value` },
+                  // The value option follows the ACTIVE value logic — calling
+                  // a ceiling or call-off metric "Awarded value" would
+                  // misname what the charts actually show.
+                  {
+                    id: 'value_awarded' as const,
+                    label: valueBasisMoneyLabel(state.vbasis),
+                  },
                   { id: 'record_count' as const, label: t`Record count` },
                 ] satisfies ReadonlyArray<{
                   id: ProcurementHubMeasure
                   label: string
                 }>
               ).map((option) => {
-                const active = state.measure === option.id
+                // The modifications population is counts-only — every surface
+                // coerces to counts, so the value option must not pretend and
+                // the EFFECTIVE metric (record count) shows as active.
+                const countsOnlyGrain = state.grain === 'modifications'
+                const effectiveMeasure = countsOnlyGrain
+                  ? 'record_count'
+                  : state.measure
+                const active = effectiveMeasure === option.id
+                const disabled =
+                  option.id === 'value_awarded' && countsOnlyGrain
                 return (
                   <Button
                     key={option.id}
                     type="button"
                     variant="outline"
                     aria-pressed={active}
+                    disabled={disabled}
+                    title={
+                      disabled
+                        ? t`Modifications are counts-only — no money measure is served for them.`
+                        : undefined
+                    }
                     className={cn(
                       procurementChoiceButtonClassName,
                       active && procurementChoiceButtonActiveClassName,
@@ -234,6 +264,86 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
                   </Button>
                 )
               })}
+            </div>
+          </section>
+
+          <section
+            className="space-y-4 border-t-2 border-[#b1b4b6] pt-6 dark:border-[var(--pnrr-border)]"
+            aria-labelledby="hub-vbasis-label"
+          >
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Coins className="h-4 w-4" aria-hidden="true" />
+                <p
+                  id="hub-vbasis-label"
+                  className={procurementSectionLabelClassName}
+                >
+                  <Trans>Value logic</Trans>
+                </p>
+              </div>
+              <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                <Trans>
+                  A procurement record carries several legitimate money figures.
+                  Choose which one the analytics serve — they are never mixed or
+                  summed together.
+                </Trans>{' '}
+                <Link
+                  to="/achizitii/metodologie"
+                  className="font-bold underline underline-offset-2"
+                >
+                  <Trans>Methodology</Trans>
+                </Link>
+              </p>
+            </div>
+            <div className="flex flex-col gap-2" role="radiogroup" aria-labelledby="hub-vbasis-label">
+              {procurementValueBasisSchema.options.map(
+                (option: ProcurementValueBasis) => {
+                  const active = state.vbasis === option
+                  return (
+                    <Button
+                      key={option}
+                      type="button"
+                      variant="outline"
+                      role="radio"
+                      aria-checked={active}
+                      className={cn(
+                        procurementChoiceButtonClassName,
+                        'h-auto w-full flex-col items-start gap-0.5 whitespace-normal py-2 text-left',
+                        active && procurementChoiceButtonActiveClassName,
+                      )}
+                      onClick={() =>
+                        hub.updateFilters({
+                          vbasis: option,
+                          // The counts-only modifications grain carries no
+                          // alternative value logic — selecting one moves to
+                          // contracts instead of silently normalizing back.
+                          ...(state.grain === 'modifications' &&
+                          option !== 'awarded'
+                            ? { grain: 'contracts' as const }
+                            : {}),
+                        })
+                      }
+                    >
+                      <span className="font-bold">
+                        {valueBasisLabel(option)}
+                        {option === 'awarded' ? (
+                          <span className="ml-1.5 font-normal opacity-80">
+                            <Trans>(default)</Trans>
+                          </span>
+                        ) : null}
+                      </span>
+                      <span
+                        className={cn(
+                          'text-xs leading-5',
+                          active ? 'opacity-90' : 'text-[var(--pnrr-muted)]',
+                        )}
+                      >
+                        {valueBasisQuestion(option)}
+                      </span>
+                    </Button>
+                  )
+                },
+              )}
             </div>
           </section>
 

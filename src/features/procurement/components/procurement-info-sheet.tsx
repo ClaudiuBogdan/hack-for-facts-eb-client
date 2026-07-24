@@ -36,7 +36,31 @@ export function ProcurementInfoSheet({
     },
     {
       term: t`Modification`,
-      description: t`An amendment (act adițional) that changes a contract's value; linked to its contract when the source data allows it.`,
+      description: t`An amendment (act adițional) that changes a contract's value; linked to its contract when the source data allows it. Analyzed as counts only — raw amendment money is quality-checked, not summed.`,
+    },
+    {
+      term: t`Awarded value`,
+      description: t`What was signed — the accepted award value of a contract or purchase. The default money figure; framework umbrellas are excluded from it.`,
+    },
+    {
+      term: t`Estimated value`,
+      description: t`What was budgeted — the value published before award. Reliable on procedures; on contracts it often repeats a whole framework's total, so a contract-level sum abstains.`,
+    },
+    {
+      term: t`Framework ceiling`,
+      description: t`The maximum a framework agreement allows, counted once per framework. An upper bound on commitment — never money spent, never added to awarded values.`,
+    },
+    {
+      term: t`Call-off (subsequent contract)`,
+      description: t`A contract executed under a framework agreement. Reported for only part of the frameworks, so totals are a lower bound; never summed with contract awards.`,
+    },
+    {
+      term: t`Modification-adjusted value`,
+      description: t`The final contract value after a verified chain of amendments. Contracts whose amendments cannot be ordered reliably are excluded, not served as awarded.`,
+    },
+    {
+      term: t`Coverage gate`,
+      description: t`Each money figure has its own measured coverage verdict: served in full, disclosed as partial (with an understatement warning), or withheld — never silently substituted.`,
     },
     {
       term: t`CPV`,

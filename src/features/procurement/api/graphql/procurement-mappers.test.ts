@@ -32,6 +32,9 @@ const block = (
   withEstimatedCount: '1',
   valueAwardedSum,
   valueEstimatedSum: grain === 'procedure' ? '999999999.99' : '500.00',
+  valueCeilingSum: null,
+  valueModAdjustedSum: null,
+  moneyVerdicts: [],
   avgValueAwarded: null,
   minMonth: '2025-01',
   maxMonth: '2025-02',
@@ -91,6 +94,7 @@ describe('unified procurement mapper honesty', () => {
       recordCount: '4',
       withValueCount: '3',
       valueAwardedSum: '10.00',
+      valueSum: '10.00',
       shareOfScope: '0.5000',
     }
     input.authorities[1]!.buckets = [bucket]

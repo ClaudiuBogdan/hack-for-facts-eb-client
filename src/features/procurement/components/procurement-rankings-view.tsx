@@ -4,12 +4,13 @@ import { t } from '@lingui/core/macro'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import {
-  analysisGrainToHubGrain,
-  hubGrainToAnalysisGrain,
   hubStateToRankingScopeInput,
+  resolveProcurementValueBasisPlan,
+  scrubScopeForAnalysisGrain,
   type ProcurementHubState,
   type ProcurementRankDim,
 } from '@/schemas/procurement-hub'
+import type { ProcurementGrain } from '@/schemas/procurement'
 import { useProcurementLeaderboard } from '../hooks/use-procurement-data'
 import type { ProcurementHubFilterState } from '../hooks/use-procurement-hub-state'
 import { formatFlowCount } from '../lib/formatting'
@@ -19,10 +20,23 @@ import {
   procurementSectionHeaderClassName,
   procurementSectionTitleClassName,
 } from '../lib/procurement-theme'
-import { ProcurementAnalysisGrainToggle } from './procurement-analysis-grain-toggle'
 import { ProcurementErrorState } from './procurement-error-state'
 import { ProcurementOverviewSkeleton } from './procurement-skeletons'
 import { ProcurementRankingTable } from './procurement-ranking-table'
+import { ProcurementValueBasisNotice } from './procurement-value-basis-notice'
+
+function rankingsGrainLabel(grain: ProcurementGrain): string {
+  switch (grain) {
+    case 'contracts':
+      return t`Contracts`
+    case 'direct_acquisitions':
+      return t`Direct acquisitions`
+    case 'procedures':
+      return t`Procedures`
+    case 'modifications':
+      return t`Modifications`
+  }
+}
 
 type Props = {
   readonly hubState: ProcurementHubState
@@ -35,17 +49,62 @@ type Props = {
  */
 export function ProcurementRankingsView({ hubState, hub }: Props) {
   const rankDim = hubState.rankDim
-  const supplierUnsupported = hubState.grain === 'procedures' && rankDim === 'supplier'
+  const plan = resolveProcurementValueBasisPlan(hubState)
+  const countsOnly = plan.valueMeasure === null
+  const rankingsWithheld = plan.breakdowns === 'withheld'
+  const supplierUnsupported = !plan.supplierDimension && rankDim === 'supplier'
+  // Populations carrying only a CPV division collapse finer levels to it.
+  const effectiveCpvLevel = plan.cpvBeyondDivision
+    ? hubState.cpvLevel
+    : 'division'
+  const effectiveRankBy = countsOnly ? 'count' : hubState.rankBy
 
-  const scope = hubStateToRankingScopeInput(hubState)
+  const { scope: scrubbedScope, dropped } = scrubScopeForAnalysisGrain(
+    hubStateToRankingScopeInput(hubState),
+    plan.analysisGrain,
+  )
+  // A breakdown over a dimension the scope already FIXES is a single bucket
+  // the server rejects (and the rejection fails the WHOLE operation) — guard
+  // here and explain instead of querying. CPV: a scope at level L fixes every
+  // breakdown at level ≤ L; finer levels stay free (the server's rule).
+  const scopeCpvLevel = scrubbedScope.cpvCode
+    ? 4
+    : scrubbedScope.cpvCategory
+      ? 3
+      : scrubbedScope.cpvClass
+        ? 2
+        : scrubbedScope.cpvGroup
+          ? 1
+          : scrubbedScope.cpvDivision
+            ? 0
+            : null
+  const CPV_LEVEL_ORDER = {
+    division: 0,
+    group: 1,
+    class: 2,
+    category: 3,
+    code: 4,
+  } as const
+  const dimensionFixedByScope =
+    rankDim === 'buyer'
+      ? Boolean(scrubbedScope.authorityCui)
+      : rankDim === 'supplier'
+        ? Boolean(scrubbedScope.supplierCui)
+        : scopeCpvLevel !== null &&
+          scopeCpvLevel >= CPV_LEVEL_ORDER[effectiveCpvLevel]
+
   const query = useProcurementLeaderboard(
     {
-      scope,
+      scope: { ...scrubbedScope, grain: plan.analysisGrain },
       rankDim,
-      cpvLevel: hubState.cpvLevel,
-      rankBy: hubState.rankBy,
+      cpvLevel: effectiveCpvLevel,
+      rankBy: effectiveRankBy,
+      // A supplier-scoped concentration is a single-supplier tautology the
+      // server rejects outright — independent of the ranking dimension.
+      includeConcentration:
+        plan.concentration && !scrubbedScope.supplierCui,
     },
-    !supplierUnsupported,
+    !supplierUnsupported && !rankingsWithheld && !dimensionFixedByScope,
   )
 
   const rows = query.data?.rows ?? []
@@ -61,10 +120,6 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
     }
   }, [setRankPage, hasData, hubState.rankPage, totalPages])
 
-  const analysisGrain =
-    hubState.grain === 'contracts' || hubState.grain === 'direct_acquisitions'
-      ? hubGrainToAnalysisGrain(hubState.grain)
-      : null
   const dims: Array<{ id: ProcurementRankDim; label: string }> = [
     { id: 'buyer', label: t`Buyers` },
     { id: 'supplier', label: t`Suppliers` },
@@ -72,26 +127,81 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
   ]
 
   const unavailableReason = supplierUnsupported
-    ? t`Supplier rankings need contracts or direct acquisitions — procedures have no awards.`
-    : undefined
+    ? t`Supplier rankings need a population that carries suppliers — procedures and framework ceilings have none.`
+    : dimensionFixedByScope
+      ? t`Your filters already fix this dimension to a single bucket, so there is nothing to rank. Clear the corresponding filter to see this leaderboard.`
+      : undefined
 
   // The server echoes the effective basis: a value request falls back to count
   // when the spend gate suppresses money — reflect what was actually served.
-  const servedRankedBy = query.data?.rankedBy ?? hubState.rankBy
+  const servedRankedBy = query.data?.rankedBy ?? effectiveRankBy
   const valueFellBack =
-    hubState.rankBy === 'value' && query.data?.rankedBy === 'count'
+    effectiveRankBy === 'value' && query.data?.rankedBy === 'count'
+
+  if (rankingsWithheld) {
+    return (
+      <div className="space-y-6">
+        <ProcurementValueBasisNotice
+          vbasis={hubState.vbasis}
+          droppedFilters={dropped}
+        />
+        <section className={cn(procurementSectionClassName, 'p-5 sm:p-6')}>
+          <h2 className={procurementSectionTitleClassName}>
+            <Trans>Rankings are withheld for framework ceilings</Trans>
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--pnrr-muted)]">
+            <Trans>
+              A ceiling ranking sliced by buyer, supplier or territory can count
+              the same framework's ceiling more than once and materially mislead
+              the order, so only the overall total and the monthly series are
+              served on the Overview. Switch the value logic back to awarded
+              value to rank institutions and suppliers.
+            </Trans>
+          </p>
+        </section>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
+      {hubState.vbasis !== 'awarded' || countsOnly ? (
+        <ProcurementValueBasisNotice
+          vbasis={hubState.vbasis}
+          droppedFilters={dropped}
+          countsOnly={countsOnly}
+          valueBoundsOnAnchor={
+            (hubState.valueMin !== undefined ||
+              hubState.valueMax !== undefined) &&
+            (hubState.vbasis === 'estimated' ||
+              hubState.vbasis === 'mod_adjusted')
+          }
+        />
+      ) : null}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-4">
-          {analysisGrain ? (
-            <ProcurementAnalysisGrainToggle
-              value={analysisGrain}
-              onChange={(grain) =>
-                hub.updateFilters({ grain: analysisGrainToHubGrain(grain) })
-              }
-            />
+          {plan.grainOptions.length > 1 ? (
+            <div
+              className="inline-flex border-2 border-[var(--pnrr-border)]"
+              role="group"
+              aria-label={t`Record population`}
+            >
+              {plan.grainOptions.map((grain, index) => (
+                <Button
+                  key={grain}
+                  type="button"
+                  variant={hubState.grain === grain ? 'default' : 'ghost'}
+                  aria-pressed={hubState.grain === grain}
+                  className={cn(
+                    'rounded-none',
+                    index > 0 && 'border-l-2 border-[var(--pnrr-border)]',
+                  )}
+                  onClick={() => hub.updateFilters({ grain })}
+                >
+                  {rankingsGrainLabel(grain)}
+                </Button>
+              ))}
+            </div>
           ) : null}
 
           <div
@@ -122,18 +232,24 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
         >
           <Button
             type="button"
-            variant={hubState.rankBy === 'count' ? 'default' : 'ghost'}
+            variant={effectiveRankBy === 'count' ? 'default' : 'ghost'}
             className="rounded-none"
-            aria-pressed={hubState.rankBy === 'count'}
+            aria-pressed={effectiveRankBy === 'count'}
             onClick={() => hub.setRankBy('count')}
           >
             <Trans>By count</Trans>
           </Button>
           <Button
             type="button"
-            variant={hubState.rankBy === 'value' ? 'default' : 'ghost'}
+            variant={effectiveRankBy === 'value' ? 'default' : 'ghost'}
             className="rounded-none border-l-2 border-[var(--pnrr-border)]"
-            aria-pressed={hubState.rankBy === 'value'}
+            aria-pressed={effectiveRankBy === 'value'}
+            disabled={countsOnly}
+            title={
+              countsOnly
+                ? t`Modifications are counts-only — there is no servable money to rank on.`
+                : undefined
+            }
             onClick={() => hub.setRankBy('value')}
           >
             <Trans>By value</Trans>
@@ -155,20 +271,30 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
               { level: 'category' as const, label: t`Category` },
               { level: 'code' as const, label: t`Code` },
             ]
-          ).map(({ level, label }) => (
-            <Button
-              key={level}
-              type="button"
-              variant={hubState.cpvLevel === level ? 'default' : 'ghost'}
-              className={cn(
-                'rounded-none border-l-2 border-[var(--pnrr-border)] first:border-l-0',
-              )}
-              aria-pressed={hubState.cpvLevel === level}
-              onClick={() => hub.setCpvLevel(level)}
-            >
-              {label}
-            </Button>
-          ))}
+          ).map(({ level, label }) => {
+            const levelUnavailable =
+              !plan.cpvBeyondDivision && level !== 'division'
+            return (
+              <Button
+                key={level}
+                type="button"
+                variant={effectiveCpvLevel === level ? 'default' : 'ghost'}
+                className={cn(
+                  'rounded-none border-l-2 border-[var(--pnrr-border)] first:border-l-0',
+                )}
+                aria-pressed={effectiveCpvLevel === level}
+                disabled={levelUnavailable}
+                title={
+                  levelUnavailable
+                    ? t`This population carries a validated CPV division only.`
+                    : undefined
+                }
+                onClick={() => hub.setCpvLevel(level)}
+              >
+                {label}
+              </Button>
+            )
+          })}
         </div>
       ) : null}
 
@@ -179,19 +305,32 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
               ? t`Top public buyers`
               : rankDim === 'supplier'
                 ? t`Top suppliers`
-                : hubState.cpvLevel === 'code'
+                : effectiveCpvLevel === 'code'
                   ? t`Top CPV codes`
-                  : hubState.cpvLevel === 'group'
+                  : effectiveCpvLevel === 'group'
                     ? t`Top CPV groups`
-                    : hubState.cpvLevel === 'class'
+                    : effectiveCpvLevel === 'class'
                       ? t`Top CPV classes`
-                      : hubState.cpvLevel === 'category'
+                      : effectiveCpvLevel === 'category'
                         ? t`Top CPV categories`
                         : t`Top CPV divisions`}
           </h2>
           <p className={procurementSectionDescriptionClassName}>
             {servedRankedBy === 'value' ? (
-              <Trans>Sorted by awarded value for the current filters.</Trans>
+              hubState.vbasis === 'calloff' ? (
+                <Trans>
+                  Sorted by reported call-off value for the current filters —
+                  execution under frameworks, never summed with contract
+                  awards.
+                </Trans>
+              ) : (
+                <Trans>Sorted by awarded value for the current filters.</Trans>
+              )
+            ) : countsOnly ? (
+              <Trans>
+                Sorted by record count. Modifications are counts-only — no
+                money column is served.
+              </Trans>
             ) : (
               <Trans>
                 Sorted by record count. Awarded value is shown when the API
@@ -250,7 +389,7 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
               rows={[]}
               hubState={hubState}
               rankDim={rankDim}
-              cpvLevel={hubState.cpvLevel}
+              cpvLevel={effectiveCpvLevel}
               rankPage={hubState.rankPage}
               rankPageSize={hubState.rankPageSize}
               onRankPageChange={hub.setRankPage}
@@ -275,7 +414,7 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
             rows={rows}
             hubState={hubState}
             rankDim={rankDim}
-            cpvLevel={hubState.cpvLevel}
+            cpvLevel={effectiveCpvLevel}
             rankPage={hubState.rankPage}
             rankPageSize={hubState.rankPageSize}
             onRankPageChange={hub.setRankPage}

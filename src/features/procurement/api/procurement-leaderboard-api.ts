@@ -55,6 +55,8 @@ export type ProcurementLeaderboardRequest = {
   readonly cpvLevel: ProcurementCpvLevel
   /** Ranking basis; the server yields count when the spend gate suppresses value. */
   readonly rankBy?: ProcurementRankBy
+  /** False for populations without supplier money (framework/modification). */
+  readonly includeConcentration?: boolean
 }
 
 function analysisDimension(
@@ -214,6 +216,7 @@ export async function fetchProcurementLeaderboard(
       bucket: 'year',
       measure: 'recordCount',
       basis: 'count',
+      includeConcentration: request.includeConcentration ?? true,
     },
     { operationName: 'ProcurementAnalysis' },
   )
@@ -252,7 +255,9 @@ export async function fetchProcurementLeaderboard(
       secondaryLabel,
       bucketKind: bucket.kind,
       recordCount: bucket.recordCount ?? '0',
-      valueAwardedSum: bucket.valueAwardedSum,
+      // The population's ANCHOR money — awarded on core grains, the call-off
+      // value on the calloff population, null on counts-only ones.
+      valueAwardedSum: bucket.valueSum ?? bucket.valueAwardedSum,
       shareOfScope: bucket.shareOfScope,
     }
   })

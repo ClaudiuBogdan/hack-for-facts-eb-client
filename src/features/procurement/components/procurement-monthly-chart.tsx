@@ -20,6 +20,11 @@ type Props = {
   readonly description?: string
   readonly className?: string
   readonly measure?: ProcurementHubMeasure
+  /**
+   * Name of the money series when it is not the default awarded value
+   * (value-basis wave: estimated / ceiling / call-off / adjusted money).
+   */
+  readonly valueLabel?: string
 }
 
 function formatMonth(month: string): string {
@@ -42,7 +47,9 @@ export function ProcurementMonthlyChart({
   description,
   className,
   measure = 'record_count',
+  valueLabel,
 }: Props) {
+  const moneyName = valueLabel ?? t`Awarded value`
   const maxMetric = points.reduce(
     (max, point) =>
       Math.max(
@@ -80,7 +87,7 @@ export function ProcurementMonthlyChart({
         ) : valueUnavailable ? (
           <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
             <Trans>
-              Awarded value is unavailable for this scope. Select record count
+              {moneyName} is unavailable for this scope. Select record count
               to view the monthly volume.
             </Trans>
           </p>
@@ -91,7 +98,7 @@ export function ProcurementMonthlyChart({
               role="img"
               aria-label={
                 measure === 'value_awarded'
-                  ? t`Monthly awarded values in RON`
+                  ? t`Monthly ${moneyName.toLocaleLowerCase()} in RON`
                   : t`Monthly record counts`
               }
             >

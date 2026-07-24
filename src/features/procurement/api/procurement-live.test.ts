@@ -50,7 +50,7 @@ function aggregateResponse() {
     rankedBy: 'count',
     buckets: grain === 'contract' && key ? [{
       key, kind: 'top', recordCount: '1', withValueCount: '1',
-      valueAwardedSum: '10.00', shareOfScope: '1.0000',
+      valueAwardedSum: '10.00', valueSum: '10.00', shareOfScope: '1.0000',
     }] : [],
     meta: answerMeta(grain),
   }))
@@ -61,7 +61,8 @@ function aggregateResponse() {
     procurementStats: { blocks: grains.map((grain) => ({
       grain, recordCount: '1', withValueCount: '1', withEstimatedCount: '0',
       valueAwardedSum: grain === 'procedure' ? null : '10.00',
-      valueEstimatedSum: null, avgValueAwarded: '10.00', minMonth: null,
+      valueEstimatedSum: null, valueCeilingSum: null, valueModAdjustedSum: null,
+      moneyVerdicts: [], avgValueAwarded: '10.00', minMonth: null,
       maxMonth: null, meta: answerMeta(grain),
     })) },
     authorities: breakdown('authority', '111'),

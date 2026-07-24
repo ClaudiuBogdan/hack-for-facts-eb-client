@@ -22,9 +22,10 @@ import { cn } from '@/lib/utils'
 import {
   analysisGrainToHubGrain,
   buildProcurementOverviewMonthScope,
-  hubGrainToAnalysisGrain,
   hubStateToLandingFilters,
   rankingRecordKindFromHubState,
+  resolveProcurementValueBasisPlan,
+  scrubScopeForAnalysisGrain,
   type ProcurementHubMapGrain,
   type ProcurementHubState,
 } from '@/schemas/procurement-hub'
@@ -104,10 +105,23 @@ export function ProcurementMapView({
   const geographyQuery = useProcurementGeographyOptions()
   const landingFilters = hubStateToLandingFilters(hubState)
   const monthScope = buildProcurementOverviewMonthScope(landingFilters)
-  const analysisGrain = hubGrainToAnalysisGrain(hubState.grain)
+  // Value-basis plan: the map paints the ACTIVE population (call-offs,
+  // modifications, estimated procedures…), not silently the awarded one.
+  const basisPlan = resolveProcurementValueBasisPlan(hubState)
+  const analysisGrain = basisPlan.analysisGrain
+  const isCoreGrain =
+    analysisGrain === 'contract' || analysisGrain === 'direct_acquisition'
+  const countsOnly = basisPlan.valueMeasure === null
   const mapGrain = hubState.mapGrain
-  const mapParty = hubState.mapParty
-  const measure = hubState.measure
+  // Supplier geography exists only on contracts/DA; other populations force
+  // buyer paint (the toolbar discloses the disabled option).
+  const mapParty = isCoreGrain ? hubState.mapParty : 'buyer'
+  const measure =
+    countsOnly || basisPlan.vbasis === 'estimated'
+      ? // No servable money paint: estimated has no per-territory sums
+        // (breakdowns carry ANCHOR money, which would mislabel the legend).
+        ('record_count' as const)
+      : hubState.measure
   const mapAnalysisPlan = resolveProcurementMapAnalysisPlan(mapGrain, {
     party: mapParty,
     buyerRegion: hubState.buyerRegion,
@@ -123,11 +137,12 @@ export function ProcurementMapView({
   const paintIsUat = selectionGrain === 'uat'
   const mapViewType = paintIsUat ? 'UAT' : 'County'
 
-  const analysisQuery = useProcurementAnalysis({
-    // buildScopeFilter carries the shared normalization: row filters
-    // (q / value bounds) + recordKind on the contract grain (2026-07-24).
-    scope: buildScopeFilter({
-      grain: analysisGrain,
+  // buildScopeFilter carries the shared normalization: row filters
+  // (q / value bounds) + recordKind on the contract grain (2026-07-24).
+  // Non-core populations first scrub the fields they cannot honor (the
+  // value-basis notice on the overview discloses exactly this drop).
+  const { scope: mapScopeInput } = scrubScopeForAnalysisGrain(
+    {
       monthFrom: monthScope.monthFrom,
       monthTo: monthScope.monthTo,
       buyerRegion: hubState.buyerRegion,
@@ -149,16 +164,24 @@ export function ProcurementMapView({
       cpvClass: hubState.cpv_class,
       cpvCategory: hubState.cpv_category,
       cpvCode: hubState.cpv,
-    }),
+    },
+    analysisGrain,
+  )
+  const analysisQuery = useProcurementAnalysis({
+    scope: buildScopeFilter({ ...mapScopeInput, grain: analysisGrain }),
     dimension: mapAnalysisPlan.dimension,
     bucket: 'year',
     // Series/concentration stay on count — value basis can abstain/error under
     // filtered scopes and would fail the whole map query. Facets carry both
-    // counts and awarded sums; rankBy selects the choropleth sort/priority.
+    // counts and anchor sums; rankBy selects the choropleth sort/priority.
     measure: 'recordCount',
     basis: 'count',
     rankBy: measure === 'value_awarded' ? 'value' : 'count',
     topN: mapAnalysisPlan.topN,
+    // Populations without supplier money cannot answer concentration, and a
+    // supplier-scoped concentration is a tautology the server rejects.
+    includeConcentration:
+      basisPlan.concentration && !mapScopeInput.supplierCui,
   })
 
   const facetBlock = analysisQuery.data?.facets.blocks.find(
@@ -296,6 +319,10 @@ export function ProcurementMapView({
 
   const handleFeatureClick = useCallback(
     (properties: UatProperties, _event: InteractiveMapFeatureEvent) => {
+      // The territory drawer serves the awarded contract/DA bundle — for
+      // other populations (call-offs, modifications, procedures) it would
+      // silently answer with a DIFFERENT population, so it stays closed.
+      if (!isCoreGrain) return
       const countyCode =
         (typeof properties.mnemonic === 'string' && properties.mnemonic) ||
         (typeof properties.countyCode === 'string' && properties.countyCode) ||
@@ -355,6 +382,7 @@ export function ProcurementMapView({
     },
     [
       geographyQuery.data,
+      isCoreGrain,
       mapAnalysisPlan,
       paintedCountyCodes,
       paintedSirutaCodes,
@@ -457,10 +485,11 @@ export function ProcurementMapView({
   return (
     <div className="space-y-4">
       <MapToolbar
-        analysisGrain={analysisGrain}
+        analysisGrain={isCoreGrain ? analysisGrain : 'contract'}
         mapGrain={mapGrain}
         mapParty={mapParty}
-        showAnalysisGrainToggle={showAnalysisGrainToggle}
+        showAnalysisGrainToggle={showAnalysisGrainToggle && isCoreGrain}
+        supplierPartyDisabled={!isCoreGrain}
         onGrainChange={(grain) =>
           updateFilters({ grain: analysisGrainToHubGrain(grain) })
         }
@@ -655,6 +684,7 @@ function MapToolbar({
   mapGrain,
   mapParty,
   showAnalysisGrainToggle,
+  supplierPartyDisabled = false,
   onGrainChange,
   onMapGrainChange,
   onMapPartyChange,
@@ -663,6 +693,8 @@ function MapToolbar({
   readonly mapGrain: ProcurementHubMapGrain
   readonly mapParty: ProcurementHubState['mapParty']
   readonly showAnalysisGrainToggle: boolean
+  /** True for populations without supplier geography (paint forced to buyer). */
+  readonly supplierPartyDisabled?: boolean
   readonly onGrainChange: (grain: FlowAnalysisGrain) => void
   readonly onMapGrainChange: (grain: ProcurementHubMapGrain) => void
   readonly onMapPartyChange: (party: ProcurementHubState['mapParty']) => void
@@ -695,12 +727,19 @@ function MapToolbar({
             ] as const
           ).map((option, index) => {
             const selected = mapParty === option.id
+            const disabled = option.id === 'supplier' && supplierPartyDisabled
             return (
               <Button
                 key={option.id}
                 type="button"
                 variant={selected ? 'default' : 'ghost'}
                 aria-pressed={selected}
+                disabled={disabled}
+                title={
+                  disabled
+                    ? t`This population has no supplier geography — the map paints buyer territories.`
+                    : undefined
+                }
                 className={cn(
                   'rounded-none',
                   index > 0 && 'border-l-2 border-[var(--pnrr-border)]',

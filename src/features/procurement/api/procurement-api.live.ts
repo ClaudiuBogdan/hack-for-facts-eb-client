@@ -12,16 +12,21 @@
  */
 import type {
   AuthorityProcurementSlice,
+  CategoryRow,
   ContractRecord,
   CpvCategoryPage,
   DirectAcquisitionRecord,
+  MonthlyPoint,
   ProcedureRecord,
+  ProcurementAnswerMeta,
   ProcurementLanding,
   ProcurementRecordDetail,
   ProcurementRecordSummary,
   ProcurementSearchPage,
+  ProcurementStatsBlock,
   SupplierProcurementSlice,
   SupplierRecordsPage,
+  TopPartyRow,
 } from '@/schemas/procurement'
 import { procurementSourceSystemSchema } from '@/schemas/procurement'
 import {
@@ -60,15 +65,20 @@ import {
   type RawProcurementAggregates,
 } from './graphql/procurement-queries'
 import {
+  mapAnswerMeta,
   mapAuthoritySlice,
+  mapCategoryBucket,
   mapContract,
   mapCpvCategoryPage,
   mapDirectAcquisition,
   mapLanding,
   mapModification,
   mapModificationTrailEntry,
+  mapMonthly,
+  mapPartyBucket,
   mapProcedure,
   mapSearchPage,
+  mapStats,
   mapSupplierRecords,
   mapSupplierSlice,
 } from './graphql/procurement-mappers'
@@ -255,6 +265,144 @@ function landingScope(
     cpvCode: filters.cpvCode,
     grain: filters.grain,
   })
+}
+
+// ── value-basis overview (design v1.1) ──────────────────────────────────────
+
+/**
+ * One analytics bundle for a NON-default value logic: stats + the population's
+ * allowed breakdowns + count/value series, all on ONE explicit grain. The
+ * default awarded state stays on the untouched landing pipeline.
+ */
+export type ProcurementBasisOverviewRequest = {
+  /** Explicit server population (already resolved by the value-basis plan). */
+  readonly analysisGrain:
+    | 'procedure'
+    | 'contract'
+    | 'direct_acquisition'
+    | 'framework'
+    | 'calloff'
+    | 'modification'
+  /** Value measure for tiles + the value series; null = counts-only. */
+  readonly valueMeasure:
+    | 'valueAwardedSum'
+    | 'valueEstimatedSum'
+    | 'valueCeilingSum'
+    | 'valueModAdjustedSum'
+    | null
+  readonly breakdowns: 'anchor' | 'counts-only' | 'withheld'
+  readonly supplierDimension: boolean
+  /** Hub scope input — ALREADY scrubbed for this population (never raw state). */
+  readonly scope: Parameters<typeof buildScopeFilter>[0]
+  readonly rankBy?: 'count' | 'value'
+}
+
+export type ProcurementBasisAnalytics = {
+  readonly grain: ProcurementBasisOverviewRequest['analysisGrain']
+  readonly stats: ProcurementStatsBlock
+  readonly topAuthorities: readonly TopPartyRow[]
+  readonly topSuppliers: readonly TopPartyRow[]
+  readonly topCategories: readonly CategoryRow[]
+  readonly monthly: readonly MonthlyPoint[]
+  readonly meta: {
+    readonly authoritiesRankedBy: 'count' | 'value' | null
+    readonly suppliersRankedBy: 'count' | 'value' | null
+    readonly categoriesRankedBy: 'count' | 'value' | null
+    readonly authorities: ProcurementAnswerMeta | null
+    readonly suppliers: ProcurementAnswerMeta | null
+    readonly categories: ProcurementAnswerMeta | null
+    readonly recordSeries: ProcurementAnswerMeta
+    /** Null on counts-only populations (no value series requested). */
+    readonly valueSeries: ProcurementAnswerMeta | null
+  }
+}
+
+export async function fetchProcurementBasisOverviewLive(
+  request: ProcurementBasisOverviewRequest,
+): Promise<ProcurementBasisAnalytics> {
+  const scope = buildScopeFilter({ ...request.scope, grain: request.analysisGrain })
+  const cpvFixed = Boolean(
+    scope.cpvDivision ||
+      scope.cpvGroup ||
+      scope.cpvClass ||
+      scope.cpvCategory ||
+      scope.cpvCode,
+  )
+  const includeBreakdowns = request.breakdowns !== 'withheld'
+  const includeAuthorities = includeBreakdowns && !scope.authorityCui
+  const includeSuppliers =
+    includeBreakdowns && request.supplierDimension && !scope.supplierCui
+  const includeCategories = includeBreakdowns && !cpvFixed
+  const includeValueSeries = request.valueMeasure !== null
+
+  const data = await graphqlQuery<unknown>(
+    PROCUREMENT_AGGREGATES_QUERY,
+    {
+      scope,
+      topN: TOP_N,
+      // Counts-only populations have no money to rank on.
+      rankBy:
+        request.breakdowns === 'counts-only' ? 'count' : (request.rankBy ?? 'count'),
+      includeAuthorities,
+      includeSuppliers,
+      includeCategories,
+      // $valueMeasure is non-null; any legal token works when the series is off.
+      valueMeasure: request.valueMeasure ?? 'recordCount',
+      includeValueSeries,
+    },
+    { operationName: 'ProcurementAggregates' },
+  )
+  const aggregates = procurementAggregatesResponseSchema.parse(data)
+  const [divisions, partyNames] = await Promise.all([
+    includeCategories
+      ? loadCpvDivisions()
+      : Promise.resolve([] as RawProcurementCpvDivision[]),
+    loadPartyNames(aggregates),
+  ])
+
+  const grain = request.analysisGrain
+  const statsRaw = aggregates.procurementStats.blocks.find(
+    (block) => block.grain === grain,
+  )
+  const recordSeries = aggregates.recordSeries.find(
+    (block) => block.grain === grain,
+  )
+  if (!statsRaw || !recordSeries) {
+    throw new Error(`procurement basis overview is missing the ${grain} block`)
+  }
+  const valueSeries = includeValueSeries
+    ? aggregates.valueSeries.find((block) => block.grain === grain)
+    : undefined
+  const authorities = aggregates.authorities.find((block) => block.grain === grain)
+  const suppliers = aggregates.suppliers.find((block) => block.grain === grain)
+  const categories = aggregates.categories.find((block) => block.grain === grain)
+  const rankedBy = (value: string | null | undefined) =>
+    value === 'count' || value === 'value' ? value : null
+
+  return {
+    grain,
+    stats: mapStats(statsRaw),
+    topAuthorities: (authorities?.buckets ?? []).map((bucket) =>
+      mapPartyBucket(bucket, grain, 'authority', partyNames),
+    ),
+    topSuppliers: (suppliers?.buckets ?? []).map((bucket) =>
+      mapPartyBucket(bucket, grain, 'supplier', partyNames),
+    ),
+    topCategories: (categories?.buckets ?? []).map((bucket) =>
+      mapCategoryBucket(bucket, grain, divisions),
+    ),
+    monthly: mapMonthly(recordSeries, valueSeries),
+    meta: {
+      authoritiesRankedBy: rankedBy(authorities?.rankedBy),
+      suppliersRankedBy: rankedBy(suppliers?.rankedBy),
+      categoriesRankedBy: rankedBy(categories?.rankedBy),
+      authorities: authorities ? mapAnswerMeta(authorities.meta) : null,
+      suppliers: suppliers ? mapAnswerMeta(suppliers.meta) : null,
+      categories: categories ? mapAnswerMeta(categories.meta) : null,
+      recordSeries: mapAnswerMeta(recordSeries.meta),
+      valueSeries: valueSeries ? mapAnswerMeta(valueSeries.meta) : null,
+    },
+  }
 }
 
 export async function fetchProcurementLandingLive(

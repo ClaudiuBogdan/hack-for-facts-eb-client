@@ -97,11 +97,18 @@ export type ProcurementSourceSystem = z.infer<
   typeof procurementSourceSystemSchema
 >
 
-/** Grain used by the unified procurement analysis API. */
+/**
+ * Grain used by the unified procurement analysis API. framework / calloff /
+ * modification (value-basis wave) are EXPLICIT-ONLY populations — they answer
+ * only when named; implicit requests fan out over the three core grains.
+ */
 export const procurementAnalysisGrainSchema = z.enum([
   'procedure',
   'contract',
   'direct_acquisition',
+  'framework',
+  'calloff',
+  'modification',
 ])
 
 export type ProcurementAnalysisGrain = z.infer<
@@ -399,6 +406,22 @@ export const monthlyPointSchema = z.object({
 
 export type MonthlyPoint = z.infer<typeof monthlyPointSchema>
 
+/**
+ * Per-measure money answerability: one stats block can carry different
+ * verdicts per money basis (awarded disclosed + estimated abstained). Display
+ * of a NON-anchor money figure must key on ITS verdict, not the block meta.
+ */
+export const procurementMoneyVerdictSchema = z.object({
+  measure: z.string(),
+  answerability: procurementAnswerabilitySchema,
+  reason: procurementAnswerReasonSchema.nullable(),
+  caveats: z.array(z.string()),
+})
+
+export type ProcurementMoneyVerdict = z.infer<
+  typeof procurementMoneyVerdictSchema
+>
+
 export const procurementStatsBlockSchema = z.object({
   grain: procurementAnalysisGrainSchema,
   recordCount: bigintStringSchema.nullable(),
@@ -406,9 +429,14 @@ export const procurementStatsBlockSchema = z.object({
   withEstimatedCount: bigintStringSchema.nullable(),
   valueAwardedSum: decimalStringSchema.nullable(),
   valueEstimatedSum: decimalStringSchema.nullable(),
+  /** Framework grain only: Σ attributed ceiling (maximum committed, NOT spend). */
+  valueCeilingSum: decimalStringSchema.nullable(),
+  /** Contract grain only: Σ modification-adjusted value (verified chains). */
+  valueModAdjustedSum: decimalStringSchema.nullable(),
   avgValueAwarded: decimalStringSchema.nullable(),
   minMonth: z.string().nullable(),
   maxMonth: z.string().nullable(),
+  moneyVerdicts: z.array(procurementMoneyVerdictSchema),
   meta: procurementAnswerMetaSchema,
 })
 

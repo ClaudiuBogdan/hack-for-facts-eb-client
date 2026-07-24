@@ -4,6 +4,7 @@ import { t } from '@lingui/core/macro'
 import {
   analysisGrainToHubGrain,
   hubGrainToAnalysisGrain,
+  resolveProcurementValueBasisPlan,
   type ProcurementHubState,
 } from '@/schemas/procurement-hub'
 import {
@@ -31,6 +32,7 @@ import { ProcurementHubActiveFilters } from './procurement-hub-active-filters'
 import { ProcurementHubDevPanel } from './procurement-hub-dev-panel'
 import { ProcurementSearchContent } from './procurement-search-content'
 import { ProcurementRankingsView } from './procurement-rankings-view'
+import { ProcurementValueBasisOverview } from './procurement-value-basis-overview'
 
 /** Unified hub: Overview (incl. buyer map) + Rankings + List share one URL schema (A2 / F2). */
 export function ProcurementOverviewPage({
@@ -39,7 +41,14 @@ export function ProcurementOverviewPage({
   readonly hubState: ProcurementHubState
 }) {
   const hub = useProcurementHubState(hubState)
-  const query = useProcurementLanding(hub.landingFilters)
+  // Non-default value logics (and the counts-only modifications population)
+  // render through the explicit-grain basis overview; the awarded landing
+  // bundle is not fetched for them.
+  const basisPlan = resolveProcurementValueBasisPlan(hubState)
+  const query = useProcurementLanding(
+    hub.landingFilters,
+    basisPlan.usesLandingPipeline,
+  )
   const geographyQuery = useProcurementGeographyOptions()
   const data = query.data
   const [filterSheetOpen, setFilterSheetOpen] = useState(false)
@@ -132,6 +141,20 @@ export function ProcurementOverviewPage({
             </p>
           ) : null}
 
+          {!basisPlan.usesLandingPipeline ? (
+            <>
+              <ProcurementValueBasisOverview hubState={hubState} hub={hub} />
+              {basisPlan.analysisGrain !== 'framework' ? (
+                <ProcurementMapView
+                  hubState={hubState}
+                  updateFilters={hub.updateFilters}
+                  showAnalysisGrainToggle={false}
+                />
+              ) : null}
+              <ProcurementQuickLinks />
+            </>
+          ) : (
+            <>
           <div className="flex justify-start">
             <ProcurementAnalysisGrainToggle
               value={analysisGrain}
@@ -241,6 +264,8 @@ export function ProcurementOverviewPage({
           />
 
           <ProcurementQuickLinks />
+            </>
+          )}
         </div>
       )}
 
