@@ -140,6 +140,15 @@ export function ProcurementMapView({
       valueMin: hubState.valueMin,
       valueMax: hubState.valueMax,
       recordKind: rankingRecordKindFromHubState(hubState),
+      // Party/CPV scopes paint too (C1): map dimensions are geography-only,
+      // so these never fix the requested facet dimension.
+      authorityCui: hubState.authority_cui,
+      supplierCui: hubState.supplier_cui,
+      cpvDivision: hubState.cpv_division,
+      cpvGroup: hubState.cpv_group,
+      cpvClass: hubState.cpv_class,
+      cpvCategory: hubState.cpv_category,
+      cpvCode: hubState.cpv,
     }),
     dimension: mapAnalysisPlan.dimension,
     bucket: 'year',
@@ -508,7 +517,7 @@ export function ProcurementMapView({
           )}
         </p>
       ) : facetBlock?.meta &&
-        mapAnalysisPlan.dimension !== 'cpvDivision' ? (
+        !mapAnalysisPlan.paintMode.startsWith('single-') ? (
         <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
           <strong>{facetBlock.meta.answerability}</strong>
           {facetBlock.meta.reason ? ` · ${facetBlock.meta.reason}` : null}

@@ -222,7 +222,6 @@ export type ProcurementMapAnalysisDimension =
   | 'supplierRegion'
   | 'supplierCounty'
   | 'supplierSiruta'
-  | 'cpvDivision'
 
 export type ProcurementMapPaintMode =
   | 'region'
@@ -296,9 +295,24 @@ export function resolveProcurementMapAnalysisPlan(
     (party === 'supplier' ? geo.supplierRegion : geo.buyerRegion)?.trim() ||
     undefined
 
+  // Single-territory modes paint from STATS; the facet dimension is a
+  // placeholder that must never collide with a scope-fixed dimension. The
+  // finest UNSET party-geo dim is structurally free — unlike the old
+  // cpvDivision placeholder, which broke under CPV filters (C1). Normalized
+  // state sets at most ONE level per party; if a raw caller ever sets all
+  // three, fall to the OTHER party's SIRUTA (a state fixing both is
+  // impossible — geo normalization keeps one level per party).
+  const oppositeDims = partyGeoDims(party === 'supplier' ? 'buyer' : 'supplier')
+  const freePlaceholderDim = !siruta
+    ? dims.siruta
+    : !county
+      ? dims.county
+      : !region
+        ? dims.region
+        : oppositeDims.siruta
   if (siruta) {
     return {
-      dimension: 'cpvDivision',
+      dimension: freePlaceholderDim,
       paintMode: 'single-uat',
       topN: 1,
       singleTerritoryId: siruta,
@@ -314,7 +328,7 @@ export function resolveProcurementMapAnalysisPlan(
       }
     }
     return {
-      dimension: 'cpvDivision',
+      dimension: freePlaceholderDim,
       paintMode: 'single-county',
       topN: 1,
       singleTerritoryId: county,

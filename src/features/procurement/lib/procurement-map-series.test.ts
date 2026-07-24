@@ -58,7 +58,10 @@ describe('procurement map series', () => {
     expect(
       resolveProcurementMapAnalysisPlan('county', { buyerCounty: 'BV' }),
     ).toEqual({
-      dimension: 'cpvDivision',
+      // Placeholder dim = the finest UNSET party-geo dim (structurally free
+      // under any party/CPV scope — the old cpvDivision placeholder broke
+      // under CPV filters).
+      dimension: 'buyerSiruta',
       paintMode: 'single-county',
       topN: 1,
       singleTerritoryId: 'BV',
@@ -94,7 +97,7 @@ describe('procurement map series', () => {
         supplierCounty: 'CJ',
       }),
     ).toEqual({
-      dimension: 'cpvDivision',
+      dimension: 'supplierSiruta',
       paintMode: 'single-county',
       topN: 1,
       singleTerritoryId: 'CJ',

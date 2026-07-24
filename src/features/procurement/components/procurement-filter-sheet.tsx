@@ -23,6 +23,7 @@ import {
   type ProcurementValueCategory,
 } from '@/schemas/procurement-search'
 import type { ProcurementFilterState } from '../hooks/use-procurement-filter-state'
+import { useProcurementPartyNames } from '../hooks/use-procurement-party-names'
 import {
   recordKindLabel,
   reviewSignalLabel,
@@ -512,11 +513,25 @@ type ChipsProps = {
 
 /** One removable chip per active facet + clear-all. */
 export function ProcurementActiveFilters({ filters }: ChipsProps) {
-  if (filters.chips.length === 0) return null
+  // Party badges show the entity NAME, not the bare CUI (fallback: CUI).
+  const partyNames = useProcurementPartyNames({
+    authorityCui: filters.search.authority_cui,
+    supplierCui: filters.search.supplier_cui,
+  })
+  const chips = filters.chips.map((chip) => {
+    if (chip.key === 'authority' && partyNames.authorityName) {
+      return { ...chip, label: t`Authority: ${partyNames.authorityName}` }
+    }
+    if (chip.key === 'supplier' && partyNames.supplierName) {
+      return { ...chip, label: t`Supplier: ${partyNames.supplierName}` }
+    }
+    return chip
+  })
+  if (chips.length === 0) return null
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {filters.chips.map((chip) => (
+      {chips.map((chip) => (
         <span
           key={chip.key}
           className="inline-flex max-w-full items-center gap-1.5 border-2 border-[#b1b4b6] bg-[#f3f2f1] px-2.5 py-1 text-sm font-semibold text-[#0b0c0c] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-fg)]"

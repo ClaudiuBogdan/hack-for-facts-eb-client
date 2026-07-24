@@ -3,6 +3,7 @@ import { t } from '@lingui/core/macro'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ProcurementHubFilterState } from '../hooks/use-procurement-hub-state'
+import { useProcurementPartyNames } from '../hooks/use-procurement-party-names'
 import type { HubFilterChip } from '../lib/hub-filter-chips'
 import {
   procurementActiveFilterChipClassName,
@@ -33,7 +34,21 @@ export function ProcurementHubActiveFilters({
   compact = false,
   className,
 }: Props) {
-  const chips = hub.hubChips
+  // Party badges show the entity NAME, not the bare CUI (falls back to the
+  // CUI until the bounded name lookup resolves).
+  const partyNames = useProcurementPartyNames({
+    authorityCui: hub.state.authority_cui,
+    supplierCui: hub.state.supplier_cui,
+  })
+  const chips = hub.hubChips.map((chip) => {
+    if (chip.key === 'authority' && partyNames.authorityName) {
+      return { ...chip, value: partyNames.authorityName }
+    }
+    if (chip.key === 'supplier' && partyNames.supplierName) {
+      return { ...chip, value: partyNames.supplierName }
+    }
+    return chip
+  })
   if (chips.length === 0) return null
 
   return (

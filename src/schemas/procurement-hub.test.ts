@@ -266,4 +266,16 @@ describe('procurement hub schema', () => {
     expect(landing.q).toBe('asfalt')
     expect(landing.valueMin).toBe(2500)
   })
+
+  it('landing filters carry party/CPV scopes (C1 closed)', () => {
+    const state = parseProcurementHubSearch({
+      authority_cui: '4267117',
+      cpv_group: '45200000',
+      period: 'all',
+    })
+    const landing = hubStateToLandingFilters(state)
+    expect(landing.authorityCui).toBe('4267117')
+    expect(landing.cpvGroup).toBe('45200000')
+    expect(landing.supplierCui).toBeUndefined()
+  })
 })

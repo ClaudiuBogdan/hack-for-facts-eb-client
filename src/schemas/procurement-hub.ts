@@ -622,6 +622,15 @@ export function hubStateToLandingFilters(
       q: state.q,
       valueMin: state.valueMin,
       valueMax: state.valueMax,
+      // Party / CPV scopes reach landing too (C1 closed 2026-07-24); the
+      // landing fetch skips each facet dimension the scope fixes.
+      authorityCui: state.authority_cui,
+      supplierCui: state.supplier_cui,
+      cpvDivision: state.cpv_division,
+      cpvGroup: state.cpv_group,
+      cpvClass: state.cpv_class,
+      cpvCategory: state.cpv_category,
+      cpvCode: state.cpv,
       rankBy: state.measure === 'value_awarded' ? 'value' : 'count',
     },
     now,
@@ -660,6 +669,13 @@ export function hubStateToTerritoryLandingFilters(
     ...(base.q ? { q: base.q } : {}),
     ...(base.valueMin !== undefined ? { valueMin: base.valueMin } : {}),
     ...(base.valueMax !== undefined ? { valueMax: base.valueMax } : {}),
+    ...(base.authorityCui ? { authorityCui: base.authorityCui } : {}),
+    ...(base.supplierCui ? { supplierCui: base.supplierCui } : {}),
+    ...(base.cpvDivision ? { cpvDivision: base.cpvDivision } : {}),
+    ...(base.cpvGroup ? { cpvGroup: base.cpvGroup } : {}),
+    ...(base.cpvClass ? { cpvClass: base.cpvClass } : {}),
+    ...(base.cpvCategory ? { cpvCategory: base.cpvCategory } : {}),
+    ...(base.cpvCode ? { cpvCode: base.cpvCode } : {}),
   }
   if (!territoryId) {
     return {
@@ -862,16 +878,16 @@ export const PROCUREMENT_HUB_CAPABILITY_MATRIX: readonly HubCapabilityRow[] = [
   {
     id: 'parties-cpv-value',
     label: 'Parties / CPV / value facets',
-    overview: 'preview',
+    overview: 'live',
     list: 'live',
-    note: 'Value bounds scope aggregates (2026-07-24); parties/CPV list-only on landing facets (single-bucket rejection); CPV hierarchy + record_kind scope rankings',
+    note: 'Parties/CPV/value bounds scope overview cards + map + rankings (C1 closed 2026-07-24; scope-fixed cards hide); value QUALITY stays list-only',
   },
   {
     id: 'buyer-map',
     label: 'Buyer geography map',
     overview: 'live',
     list: 'todo',
-    note: 'Region+county+UAT paint live (ClickHouse; UAT via siruta buckets × uat.json natcode, 2026-07-24)',
+    note: 'Region+county+UAT paint live (ClickHouse); list column = TODO(Search geography API): map territory does not filter the record list',
   },
   {
     id: 'rankings',

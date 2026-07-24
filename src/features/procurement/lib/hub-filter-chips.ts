@@ -66,7 +66,9 @@ function rankingScopeFacetKind(
     }
     return 'applied'
   }
-  return 'list-only'
+  // Overview: party/CPV scopes reach the landing cards + map (C1 closed
+  // 2026-07-24); status/source/value-quality stay list-only.
+  return facet === 'scope' ? 'applied' : 'list-only'
 }
 
 export function buildHubActiveFilterChips(
@@ -290,11 +292,9 @@ export function buildHubActiveFilterChips(
       key: 'record-kind',
       prefix: t`Record kind`,
       value: state.record_kind.map(recordKindLabel).join(', '),
-      // Analysis scope takes a single kind; both selected = no constraint.
-      kind:
-        state.record_kind.length === 1
-          ? rankingScopeFacetKind(state, 'scope')
-          : 'applied',
+      // Applied on list + rankings/map; the overview LANDING cards fetch
+      // both grains without recordKind, so overview stays list-only.
+      kind: state.view === 'overview' ? 'list-only' : 'applied',
       clear: { record_kind: undefined },
     })
   }

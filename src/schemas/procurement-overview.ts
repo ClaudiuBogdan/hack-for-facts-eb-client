@@ -106,6 +106,18 @@ export type ProcurementLandingFilters = {
   readonly valueMin?: number
   readonly valueMax?: number
   /**
+   * Party / CPV scopes (C1 closed 2026-07-24): landing serves them by
+   * SKIPPING the facet dimension each one fixes (a scope-fixed breakdown is
+   * a single bucket the server rejects); stats/series always apply them.
+   */
+  readonly authorityCui?: string
+  readonly supplierCui?: string
+  readonly cpvDivision?: string
+  readonly cpvGroup?: string
+  readonly cpvClass?: string
+  readonly cpvCategory?: string
+  readonly cpvCode?: string
+  /**
    * Analysis grain for territory/map-scoped aggregates. Overview landing omits
    * this and returns both contract + DA blocks for client selection.
    */
@@ -249,6 +261,13 @@ export function toProcurementLandingQueryFilters(
     q: filters.q,
     valueMin: filters.valueMin,
     valueMax: filters.valueMax,
+    authorityCui: filters.authorityCui,
+    supplierCui: filters.supplierCui,
+    cpvDivision: filters.cpvDivision,
+    cpvGroup: filters.cpvGroup,
+    cpvClass: filters.cpvClass,
+    cpvCategory: filters.cpvCategory,
+    cpvCode: filters.cpvCode,
     ...(resolved.dateFrom ? { dateFrom: resolved.dateFrom } : {}),
     ...(resolved.dateTo ? { dateTo: resolved.dateTo } : {}),
   }

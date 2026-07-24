@@ -209,7 +209,9 @@ export function ProcurementTerritoryDrawer({
           ) : null}
 
           <div className="space-y-5">
-            {isPending ? (
+            {/* A card whose dimension the hub scope FIXES is skipped by the
+                request — hide it instead of faking "no data" (C1). */}
+            {hubState.authority_cui ? null : isPending ? (
               <SectionCard
                 title={buyersTitle}
                 description={buyersDescription}
@@ -238,7 +240,7 @@ export function ProcurementTerritoryDrawer({
               />
             )}
 
-            {isPending ? (
+            {hubState.supplier_cui ? null : isPending ? (
               <SectionCard
                 title={suppliersTitle}
                 description={suppliersDescription}
@@ -267,7 +269,11 @@ export function ProcurementTerritoryDrawer({
               />
             )}
 
-            {isPending ? (
+            {hubState.cpv ||
+            hubState.cpv_division ||
+            hubState.cpv_group ||
+            hubState.cpv_class ||
+            hubState.cpv_category ? null : isPending ? (
               <SectionCard title={cpvTitle} description={cpvDescription}>
                 <ListBodySkeleton rows={4} />
               </SectionCard>

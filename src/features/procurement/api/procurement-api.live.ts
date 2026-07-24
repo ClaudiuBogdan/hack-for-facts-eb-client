@@ -209,12 +209,33 @@ async function loadPartyNames(
 
 // ── landing ─────────────────────────────────────────────────────────────────
 
-export async function fetchProcurementLandingLive(
-  filters: ProcurementLandingFilters = {},
-): Promise<ProcurementLanding> {
-  // Buyer county/UAT scope natively (ClickHouse analytics, dev 2026-07-22) —
-  // the rollup-era region approximation is gone.
-  const scope = buildScopeFilter({
+/**
+ * A facet breakdown over a dimension the scope already fixes is a single
+ * bucket the server rejects — skip exactly those dimensions (C1, 2026-07-24).
+ */
+function landingFacetFlags(filters: ProcurementLandingFilters): {
+  readonly includeAuthorities: boolean
+  readonly includeSuppliers: boolean
+  readonly includeCategories: boolean
+} {
+  const cpvFixed = Boolean(
+    filters.cpvDivision ||
+      filters.cpvGroup ||
+      filters.cpvClass ||
+      filters.cpvCategory ||
+      filters.cpvCode,
+  )
+  return {
+    includeAuthorities: !filters.authorityCui,
+    includeSuppliers: !filters.supplierCui,
+    includeCategories: !cpvFixed,
+  }
+}
+
+function landingScope(
+  filters: ProcurementLandingFilters,
+): ProcurementScopeFilterInput {
+  return buildScopeFilter({
     ...buildProcurementOverviewMonthScope(filters),
     buyerRegion: filters.buyerRegion,
     buyerCounty: filters.buyerCounty,
@@ -225,13 +246,27 @@ export async function fetchProcurementLandingLive(
     q: filters.q,
     valueMin: filters.valueMin,
     valueMax: filters.valueMax,
+    authorityCui: filters.authorityCui,
+    supplierCui: filters.supplierCui,
+    cpvDivision: filters.cpvDivision,
+    cpvGroup: filters.cpvGroup,
+    cpvClass: filters.cpvClass,
+    cpvCategory: filters.cpvCategory,
+    cpvCode: filters.cpvCode,
+    grain: filters.grain,
   })
+}
+
+export async function fetchProcurementLandingLive(
+  filters: ProcurementLandingFilters = {},
+): Promise<ProcurementLanding> {
+  // Buyer county/UAT + party/CPV scope natively (ClickHouse analytics) —
+  // scope-fixed facet dimensions are skipped, never re-requested.
+  const scope = landingScope(filters)
+  const facetFlags = landingFacetFlags(filters)
   const [aggregates, divisions] = await Promise.all([
-    // Party breakdowns under buyer geography are served by the ClickHouse
-    // analytics backend (dev, 2026-07-22) — the rollup-era omission is lifted.
     loadAggregates(scope, {
-      includeAuthorities: true,
-      includeSuppliers: true,
+      ...facetFlags,
       rankBy: filters.rankBy,
     }),
     loadCpvDivisions(),
@@ -250,27 +285,11 @@ export async function fetchProcurementLandingLive(
 export async function fetchProcurementTerritoryOverviewLive(
   filters: ProcurementLandingFilters = {},
 ): Promise<ProcurementLanding> {
-
-  const monthScope = buildProcurementOverviewMonthScope(filters)
-  const scope = buildScopeFilter({
-    ...monthScope,
-    buyerRegion: filters.buyerRegion,
-    buyerCounty: filters.buyerCounty,
-    buyerSiruta: filters.buyerSiruta,
-    supplierCounty: filters.supplierCounty,
-    supplierRegion: filters.supplierRegion,
-    supplierSiruta: filters.supplierSiruta,
-    q: filters.q,
-    valueMin: filters.valueMin,
-    valueMax: filters.valueMax,
-    grain: filters.grain,
-  })
-
+  const scope = landingScope(filters)
+  const facetFlags = landingFacetFlags(filters)
   const [aggregates, divisions] = await Promise.all([
     loadAggregates(scope, {
-      includeAuthorities: true,
-      includeSuppliers: true,
-      includeCategories: true,
+      ...facetFlags,
       rankBy: filters.rankBy,
     }),
     loadCpvDivisions(),
