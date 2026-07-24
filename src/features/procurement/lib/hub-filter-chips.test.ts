@@ -18,7 +18,8 @@ describe('buildHubActiveFilterChips', () => {
     })
     const period = resolveProcurementOverviewPeriod(state)
     const chips = buildHubActiveFilterChips(state, period)
-    expect(chips.find((chip) => chip.key === 'q')?.kind).toBe('not-on-rankings')
+    // q scopes rankings/overview as a title row filter since 2026-07-24.
+    expect(chips.find((chip) => chip.key === 'q')?.kind).toBe('applied')
     expect(chips.find((chip) => chip.key === 'source')?.kind).toBe(
       'not-on-rankings',
     )

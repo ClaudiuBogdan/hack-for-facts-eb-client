@@ -84,6 +84,10 @@ export interface ProcurementScopeFilterInput {
   authorityCui?: string
   supplierCui?: string
   cpvDivision?: string
+  /** Canonical 8-digit CPV level codes (group/class/category, 2026-07-24). */
+  cpvGroup?: string
+  cpvClass?: string
+  cpvCategory?: string
   cpvCode?: string
   buyerCounty?: string
   buyerRegion?: string
@@ -95,10 +99,16 @@ export interface ProcurementScopeFilterInput {
   supplierSiruta?: string
   status?: string
   procedureType?: string
+  /** Contract grain only: contract_award | framework_agreement. */
+  recordKind?: string
   grain?: 'procedure' | 'contract' | 'direct_acquisition'
   from?: string
   to?: string
   year?: number
+  /** Row filters — free-text title q + awarded-value bounds (RON). */
+  q?: string
+  valueMin?: number
+  valueMax?: number
 }
 
 // ---------------------------------------------------------------------------
@@ -424,6 +434,9 @@ export function buildScopeFilter(scope: {
   authorityCui?: string
   supplierCui?: string
   cpvDivision?: string
+  cpvGroup?: string
+  cpvClass?: string
+  cpvCategory?: string
   cpvCode?: string
   monthFrom?: string
   monthTo?: string
@@ -436,16 +449,32 @@ export function buildScopeFilter(scope: {
   grain?: ProcurementScopeFilterInput['grain']
   /** Single status token — analysis scope has no `in` operator. */
   status?: string
+  /** Single record-kind token (contract grain only). */
+  recordKind?: string
+  q?: string
+  valueMin?: number
+  valueMax?: number
 }): ProcurementScopeFilterInput {
   const filter: ProcurementScopeFilterInput = {}
   const authorityCui = trimmedOrUndefined(scope.authorityCui)
   if (authorityCui) filter.authorityCui = authorityCui
   const supplierCui = trimmedOrUndefined(scope.supplierCui)
   if (supplierCui) filter.supplierCui = supplierCui
+  // CPV hierarchy: the FINEST provided level wins; the server enforces
+  // at-most-one-level, so exactly one field is ever emitted.
   const cpvCode = trimmedOrUndefined(scope.cpvCode)
+  const cpvCategory = trimmedOrUndefined(scope.cpvCategory)
+  const cpvClass = trimmedOrUndefined(scope.cpvClass)
+  const cpvGroup = trimmedOrUndefined(scope.cpvGroup)
   const cpvDivision = trimmedOrUndefined(scope.cpvDivision)
   if (cpvCode) {
     filter.cpvCode = cpvCode
+  } else if (cpvCategory) {
+    filter.cpvCategory = cpvCategory
+  } else if (cpvClass) {
+    filter.cpvClass = cpvClass
+  } else if (cpvGroup) {
+    filter.cpvGroup = cpvGroup
   } else if (cpvDivision) {
     filter.cpvDivision = cpvDivision
   }
@@ -473,5 +502,24 @@ export function buildScopeFilter(scope: {
   if (scope.grain) filter.grain = scope.grain
   const status = trimmedOrUndefined(scope.status)
   if (status) filter.status = status
+  const recordKind = trimmedOrUndefined(scope.recordKind)
+  if (recordKind) filter.recordKind = recordKind
+  // Row filters (2026-07-24): q + value bounds reshape every aggregate figure;
+  // the server surfaces matching caveats in the answer envelope. Bounds are
+  // normalized to whole bani (server rejects sub-bani decimals) and an
+  // inverted range is omitted entirely (mid-edit state; an impossible range
+  // must not fail whole analytics views with the named rejection).
+  const q = trimmedOrUndefined(scope.q)
+  if (q && q.length >= 3) filter.q = q
+  const toBaniExact = (value: number | undefined): number | undefined => {
+    if (value === undefined || !Number.isFinite(value) || value < 0) return undefined
+    return Math.round(value * 100) / 100
+  }
+  const valueMin = toBaniExact(scope.valueMin)
+  const valueMax = toBaniExact(scope.valueMax)
+  if (valueMin === undefined || valueMax === undefined || valueMin <= valueMax) {
+    if (valueMin !== undefined) filter.valueMin = valueMin
+    if (valueMax !== undefined) filter.valueMax = valueMax
+  }
   return filter
 }

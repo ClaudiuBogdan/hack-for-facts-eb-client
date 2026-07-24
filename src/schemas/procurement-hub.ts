@@ -32,9 +32,11 @@ import {
 import {
   PROCUREMENT_SEARCH_DEFAULTS,
   PROCUREMENT_VALUE_CATEGORIES,
+  procurementRecordKindSchema,
   procurementSortSchema,
   procurementSourceSchema,
   procurementValueCategorySchema,
+  type ProcurementRecordKindOption,
   type ProcurementSort,
   type ProcurementSource,
   type ProcurementValueCategory,
@@ -131,6 +133,40 @@ const commaListValueCategory = z
   })
   .catch(undefined)
 
+/** Comma-list of record-kind options (unknown tokens normalize away). */
+const commaListRecordKind = z
+  .preprocess(toOptionalString, z.string().optional())
+  .transform((value) => {
+    if (typeof value !== 'string') return undefined
+    const parts = value
+      .split(',')
+      .map((part) => part.trim())
+      .filter(Boolean)
+    if (parts.length === 0) return undefined
+    const valid = parts.filter((part): part is ProcurementRecordKindOption =>
+      (procurementRecordKindSchema.options as readonly string[]).includes(part),
+    )
+    return valid.length > 0 ? valid : undefined
+  })
+  .catch(undefined)
+
+/**
+ * CPV hierarchy URL params: canonical 8-digit level codes with trailing zeros
+ * and a non-zero level digit (group XXY00000, class XXXY0000, category
+ * XXXXY000) — the exact server scope contract. Malformed values normalize away.
+ */
+const optionalCpvLevelCode = (re: RegExp) =>
+  z
+    .preprocess(
+      (value) => (typeof value === 'string' ? value.trim() : toOptionalString(value)),
+      z.string().regex(re).optional(),
+    )
+    .catch(undefined)
+
+const CPV_GROUP_RE = /^\d{2}[1-9]0{5}$/
+const CPV_CLASS_RE = /^\d{3}[1-9]0{4}$/
+const CPV_CATEGORY_RE = /^\d{4}[1-9]0{3}$/
+
 /** Hub layout: aggregates, leaderboard, or paginated records (A2 / F2). */
 export const procurementHubViewSchema = z.enum([
   'overview',
@@ -143,8 +179,18 @@ export type ProcurementHubView = z.infer<typeof procurementHubViewSchema>
 export const procurementRankDimSchema = z.enum(['buyer', 'supplier', 'cpv'])
 export type ProcurementRankDim = z.infer<typeof procurementRankDimSchema>
 
-/** CPV leaderboard grain — division default + code toggle. */
-export const procurementCpvLevelSchema = z.enum(['division', 'code'])
+/**
+ * CPV leaderboard level — the full official hierarchy (division 2 digits →
+ * group 3 → class 4 → category 5 → full 8-digit code). Level buckets key on
+ * canonical 8-digit codes with trailing zeros (server, 2026-07-24).
+ */
+export const procurementCpvLevelSchema = z.enum([
+  'division',
+  'group',
+  'class',
+  'category',
+  'code',
+])
 export type ProcurementCpvLevel = z.infer<typeof procurementCpvLevelSchema>
 
 /** Rankings sort basis — records (default) or awarded value (spend-gated server-side). */
@@ -229,9 +275,13 @@ export const procurementHubSearchSchema = z
     supplier_cui: optionalStringParam,
     cpv: optionalStringParam,
     cpv_division: optionalStringParam,
+    cpv_group: optionalCpvLevelCode(CPV_GROUP_RE),
+    cpv_class: optionalCpvLevelCode(CPV_CLASS_RE),
+    cpv_category: optionalCpvLevelCode(CPV_CATEGORY_RE),
     source: procurementSourceSchema.optional().catch(undefined),
     status: commaListStatus.optional(),
     value_state: commaListValueCategory.optional(),
+    record_kind: commaListRecordKind.optional(),
     county: optionalStringParam,
     region: optionalStringParam,
     year: z.coerce.number().int().min(2000).max(2100).optional().catch(undefined),
@@ -281,9 +331,13 @@ export type ProcurementHubState = {
   supplier_cui?: string
   cpv?: string
   cpv_division?: string
+  cpv_group?: string
+  cpv_class?: string
+  cpv_category?: string
   source?: ProcurementSource
   status?: ProcurementStatus[]
   value_state?: ProcurementValueCategory[]
+  record_kind?: ProcurementRecordKindOption[]
   county?: string
   region?: string
   year?: number
@@ -326,9 +380,13 @@ export const PROCUREMENT_HUB_DEFAULTS = {
  */
 export const PROCUREMENT_RANKINGS_TOP_N = 100 as const
 
-/** Keys that apply to list queries but not overview aggregates (C1). */
+/**
+ * Keys that apply to list queries but not overview aggregates (C1).
+ * 2026-07-24: `q` / `valueMin` / `valueMax` moved OUT of this set — they now
+ * scope aggregates as server row filters; record_kind + CPV hierarchy levels
+ * scope rankings (single-bucket rejection keeps them off landing facets).
+ */
 export const PROCUREMENT_HUB_LIST_ONLY_KEYS = [
-  'q',
   'authority_cui',
   'supplier_cui',
   'cpv',
@@ -336,8 +394,6 @@ export const PROCUREMENT_HUB_LIST_ONLY_KEYS = [
   'source',
   'status',
   'value_state',
-  'valueMin',
-  'valueMax',
   'sort',
   'page',
   'pageSize',
@@ -424,11 +480,30 @@ export function parseProcurementHubSearch(
             buyerSiruta: undefined,
           }
 
+  // Finest CPV level wins; coarser fields are dropped so a cleared chip does
+  // not resurrect a hidden coarser filter from the URL.
+  const cpvLevels: Partial<ProcurementHubSearch> = parsed.cpv
+    ? {
+        cpv: parsed.cpv,
+        cpv_category: undefined,
+        cpv_class: undefined,
+        cpv_group: undefined,
+        cpv_division: undefined,
+      }
+    : parsed.cpv_category
+      ? { cpv_category: parsed.cpv_category, cpv_class: undefined, cpv_group: undefined, cpv_division: undefined }
+      : parsed.cpv_class
+        ? { cpv_class: parsed.cpv_class, cpv_group: undefined, cpv_division: undefined }
+        : parsed.cpv_group
+          ? { cpv_group: parsed.cpv_group, cpv_division: undefined }
+          : {}
+
   const withDates: ProcurementHubSearch = {
     ...parsed,
     ...(normalizedFrom ? { dateFrom: normalizedFrom } : { dateFrom: undefined }),
     ...(normalizedTo ? { dateTo: normalizedTo } : { dateTo: undefined }),
     ...(parsed.period === 'all' ? { period: 'all' as const } : {}),
+    ...cpvLevels,
     ...buyerGeo,
     ...(parsed.supplierSiruta
       ? {
@@ -466,6 +541,9 @@ export function cleanProcurementHubSearch(
     'supplier_cui',
     'cpv',
     'cpv_division',
+    'cpv_group',
+    'cpv_class',
+    'cpv_category',
     'county',
     'region',
     'from',
@@ -518,6 +596,7 @@ export function cleanProcurementHubSearch(
   }
   if (!cleaned.status?.length) delete cleaned.status
   if (!cleaned.value_state?.length) delete cleaned.value_state
+  if (!cleaned.record_kind?.length) delete cleaned.record_kind
   if (cleaned.period !== 'all') delete cleaned.period
 
   return cleaned
@@ -539,6 +618,10 @@ export function hubStateToLandingFilters(
       supplierRegion: state.supplierRegion,
       supplierCounty: state.supplierCounty,
       supplierSiruta: state.supplierSiruta,
+      // Row filters scope aggregates too (q-on-aggregates + value bounds).
+      q: state.q,
+      valueMin: state.valueMin,
+      valueMax: state.valueMax,
       rankBy: state.measure === 'value_awarded' ? 'value' : 'count',
     },
     now,
@@ -574,6 +657,9 @@ export function hubStateToTerritoryLandingFilters(
     ...(base.supplierRegion ? { supplierRegion: base.supplierRegion } : {}),
     ...(base.supplierCounty ? { supplierCounty: base.supplierCounty } : {}),
     ...(base.supplierSiruta ? { supplierSiruta: base.supplierSiruta } : {}),
+    ...(base.q ? { q: base.q } : {}),
+    ...(base.valueMin !== undefined ? { valueMin: base.valueMin } : {}),
+    ...(base.valueMax !== undefined ? { valueMax: base.valueMax } : {}),
   }
   if (!territoryId) {
     return {
@@ -608,9 +694,13 @@ export function hubStateToListSearchState(
     supplier_cui: state.supplier_cui,
     cpv: state.cpv,
     cpv_division: state.cpv_division,
+    cpv_group: state.cpv_group,
+    cpv_class: state.cpv_class,
+    cpv_category: state.cpv_category,
     source: state.source,
     status: state.status,
     value_state: state.value_state,
+    record_kind: state.record_kind,
     year: state.year,
     dateFrom: resolved.isAllTime ? undefined : resolved.dateFrom,
     dateTo: resolved.isAllTime ? undefined : resolved.dateTo,
@@ -637,8 +727,24 @@ export function rankingStatusFromHubState(
 }
 
 /**
+ * Analysis scope accepts a single recordKind (contract grain only). Applied
+ * when exactly one UI token is selected AND the hub grain is contracts —
+ * the server rejects recordKind on other grains by design.
+ */
+export function rankingRecordKindFromHubState(
+  state: ProcurementHubState,
+): 'contract_award' | 'framework_agreement' | undefined {
+  if (state.grain !== 'contracts') return undefined
+  if (state.record_kind?.length !== 1) return undefined
+  return state.record_kind[0] === 'purchases'
+    ? 'contract_award'
+    : 'framework_agreement'
+}
+
+/**
  * Shared aggregate/leaderboard scope from hub state (period, grain, geo,
- * parties, CPV, single status). Unsupported list facets stay out.
+ * parties, CPV hierarchy, single status, record kind, q + value bounds).
+ * Unsupported list facets stay out.
  */
 export function hubStateToRankingScopeInput(
   state: ProcurementHubState,
@@ -647,6 +753,9 @@ export function hubStateToRankingScopeInput(
   readonly authorityCui?: string
   readonly supplierCui?: string
   readonly cpvDivision?: string
+  readonly cpvGroup?: string
+  readonly cpvClass?: string
+  readonly cpvCategory?: string
   readonly cpvCode?: string
   readonly monthFrom?: string
   readonly monthTo?: string
@@ -658,6 +767,10 @@ export function hubStateToRankingScopeInput(
   readonly supplierSiruta?: string
   readonly grain?: 'procedure' | 'contract' | 'direct_acquisition'
   readonly status?: string
+  readonly recordKind?: string
+  readonly q?: string
+  readonly valueMin?: number
+  readonly valueMax?: number
 } {
   const landing = hubStateToLandingFilters(state, now)
   const monthScope = buildProcurementOverviewMonthScope(landing)
@@ -675,6 +788,9 @@ export function hubStateToRankingScopeInput(
     supplierCui: state.supplier_cui,
     cpvCode: state.cpv,
     cpvDivision: state.cpv_division,
+    cpvGroup: state.cpv_group,
+    cpvClass: state.cpv_class,
+    cpvCategory: state.cpv_category,
     buyerRegion: state.buyerRegion,
     buyerCounty: state.buyerCounty,
     buyerSiruta: state.buyerSiruta,
@@ -683,6 +799,10 @@ export function hubStateToRankingScopeInput(
     supplierSiruta: state.supplierSiruta,
     grain,
     status: rankingStatusFromHubState(state),
+    recordKind: rankingRecordKindFromHubState(state),
+    q: state.q,
+    valueMin: state.valueMin,
+    valueMax: state.valueMax,
   }
 }
 
@@ -744,28 +864,28 @@ export const PROCUREMENT_HUB_CAPABILITY_MATRIX: readonly HubCapabilityRow[] = [
     label: 'Parties / CPV / value facets',
     overview: 'preview',
     list: 'live',
-    note: 'List-only on overview (C1 inactive chips)',
+    note: 'Value bounds scope aggregates (2026-07-24); parties/CPV list-only on landing facets (single-bucket rejection); CPV hierarchy + record_kind scope rankings',
   },
   {
     id: 'buyer-map',
     label: 'Buyer geography map',
-    overview: 'preview',
+    overview: 'live',
     list: 'todo',
-    note: 'Region+county paint live (ClickHouse); UAT paint blocked on geometry layer',
+    note: 'Region+county+UAT paint live (ClickHouse; UAT via siruta buckets × uat.json natcode, 2026-07-24)',
   },
   {
     id: 'rankings',
     label: 'Rankings leaderboard',
     overview: 'live',
     list: 'live',
-    note: 'view=rankings; top-100 + count/value sort (ClickHouse); client pagination',
+    note: 'view=rankings; top-100 + count/value sort (ClickHouse); CPV division→group→class→category→code levels; client pagination',
   },
   {
     id: 'q-aggregates',
     label: 'Text query on aggregates',
-    overview: 'todo',
+    overview: 'live',
     list: 'live',
-    note: 'TODO(API): q does not scope overview yet',
+    note: 'q scopes overview + rankings as a title row filter (server 2026-07-24); title coverage is partial per grain',
   },
   {
     id: 'shared-sheet',

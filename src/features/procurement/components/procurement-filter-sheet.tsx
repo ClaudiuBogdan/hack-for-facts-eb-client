@@ -73,7 +73,13 @@ export function ProcurementListFilterFields({
   const statusOptions = STATUS_OPTIONS_BY_GRAIN[search.grain]
   const showSupplier = search.grain !== 'procedures'
   const showCpv = search.grain !== 'modifications'
-  const cpvValue = search.cpv ?? search.cpv_division ?? ''
+  const cpvValue =
+    search.cpv ??
+    search.cpv_category ??
+    search.cpv_class ??
+    search.cpv_group ??
+    search.cpv_division ??
+    ''
 
   return (
     <>
@@ -121,14 +127,14 @@ export function ProcurementListFilterFields({
             htmlFor={`${idPrefix}-cpv`}
             className={procurementSectionLabelClassName}
           >
-            <Trans>CPV code or division</Trans>
+            <Trans>CPV code or hierarchy level</Trans>
           </Label>
           <input
             id={`${idPrefix}-cpv`}
             type="text"
             inputMode="numeric"
             className={TEXT_INPUT_CLASS}
-            placeholder={t`45 (division) or 45453000 (code)`}
+            placeholder={t`45 (division), 452 (group), 4523 (class), 45233 (category) or 45233140 (code)`}
             value={cpvValue}
             onChange={(event) => filters.setCpv(event.target.value)}
           />

@@ -143,30 +143,32 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
 
       {rankDim === 'cpv' ? (
         <div
-          className="inline-flex border-2 border-[var(--pnrr-border)]"
+          className="inline-flex flex-wrap border-2 border-[var(--pnrr-border)]"
           role="group"
           aria-label={t`CPV level`}
         >
-          <Button
-            type="button"
-            variant={hubState.cpvLevel === 'division' ? 'default' : 'ghost'}
-            className="rounded-none"
-            aria-pressed={hubState.cpvLevel === 'division'}
-            onClick={() => hub.setCpvLevel('division')}
-          >
-            <Trans>Division</Trans>
-          </Button>
-          <Button
-            type="button"
-            variant={hubState.cpvLevel === 'code' ? 'default' : 'ghost'}
-            className={cn(
-              'rounded-none border-l-2 border-[var(--pnrr-border)]',
-            )}
-            aria-pressed={hubState.cpvLevel === 'code'}
-            onClick={() => hub.setCpvLevel('code')}
-          >
-            <Trans>Code</Trans>
-          </Button>
+          {(
+            [
+              { level: 'division' as const, label: t`Division` },
+              { level: 'group' as const, label: t`Group` },
+              { level: 'class' as const, label: t`Class` },
+              { level: 'category' as const, label: t`Category` },
+              { level: 'code' as const, label: t`Code` },
+            ]
+          ).map(({ level, label }) => (
+            <Button
+              key={level}
+              type="button"
+              variant={hubState.cpvLevel === level ? 'default' : 'ghost'}
+              className={cn(
+                'rounded-none border-l-2 border-[var(--pnrr-border)] first:border-l-0',
+              )}
+              aria-pressed={hubState.cpvLevel === level}
+              onClick={() => hub.setCpvLevel(level)}
+            >
+              {label}
+            </Button>
+          ))}
         </div>
       ) : null}
 
@@ -179,7 +181,13 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
                 ? t`Top suppliers`
                 : hubState.cpvLevel === 'code'
                   ? t`Top CPV codes`
-                  : t`Top CPV divisions`}
+                  : hubState.cpvLevel === 'group'
+                    ? t`Top CPV groups`
+                    : hubState.cpvLevel === 'class'
+                      ? t`Top CPV classes`
+                      : hubState.cpvLevel === 'category'
+                        ? t`Top CPV categories`
+                        : t`Top CPV divisions`}
           </h2>
           <p className={procurementSectionDescriptionClassName}>
             {servedRankedBy === 'value' ? (
@@ -202,8 +210,8 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
           </p>
         </div>
 
-        <div className="space-y-4 p-5 sm:p-6">
-          <div className="flex flex-wrap gap-4 border-b-2 border-[var(--pnrr-border)] pb-4 text-sm">
+        <div className="px-5 py-4 sm:px-6">
+          <div className="flex flex-wrap gap-4 text-sm">
             <div>
               <p className="text-xs font-bold uppercase tracking-wide text-[var(--pnrr-muted)]">
                 <Trans>Distinct institutions</Trans>
@@ -234,8 +242,10 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
               </p>
             ) : null}
           </div>
+        </div>
 
-          {unavailableReason ? (
+        {unavailableReason ? (
+          <div className="p-5 sm:p-6">
             <ProcurementRankingTable
               rows={[]}
               hubState={hubState}
@@ -247,27 +257,31 @@ export function ProcurementRankingsView({ hubState, hub }: Props) {
               onRankPageSizeChange={hub.setRankPageSize}
               unavailableReason={unavailableReason}
             />
-          ) : query.isPending && !query.data ? (
+          </div>
+        ) : query.isPending && !query.data ? (
+          <div className="p-5 sm:p-6">
             <ProcurementOverviewSkeleton />
-          ) : query.isError && !query.data ? (
+          </div>
+        ) : query.isError && !query.data ? (
+          <div className="p-5 sm:p-6">
             <ProcurementErrorState
               error={query.error}
               onRetry={() => void query.refetch()}
               isRetrying={query.isRefetching}
             />
-          ) : (
-            <ProcurementRankingTable
-              rows={rows}
-              hubState={hubState}
-              rankDim={rankDim}
-              cpvLevel={hubState.cpvLevel}
-              rankPage={hubState.rankPage}
-              rankPageSize={hubState.rankPageSize}
-              onRankPageChange={hub.setRankPage}
-              onRankPageSizeChange={hub.setRankPageSize}
-            />
-          )}
-        </div>
+          </div>
+        ) : (
+          <ProcurementRankingTable
+            rows={rows}
+            hubState={hubState}
+            rankDim={rankDim}
+            cpvLevel={hubState.cpvLevel}
+            rankPage={hubState.rankPage}
+            rankPageSize={hubState.rankPageSize}
+            onRankPageChange={hub.setRankPage}
+            onRankPageSizeChange={hub.setRankPageSize}
+          />
+        )}
       </section>
     </div>
   )

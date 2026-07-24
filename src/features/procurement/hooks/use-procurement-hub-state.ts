@@ -8,6 +8,7 @@ import type {
   ProcurementStatus,
   ReviewSignalKind,
 } from '@/schemas/procurement'
+import type { ProcurementRecordKindOption } from '@/schemas/procurement-search'
 import {
   cleanProcurementHubSearch,
   hubStateToLandingFilters,
@@ -88,11 +89,12 @@ export function useProcurementHubState(state: ProcurementHubState) {
     [updateFilters],
   )
 
+  // q scopes aggregates too (server row filter, 2026-07-24) — searching no
+  // longer bounces the hub into the list view.
   const setQuery = useCallback(
     (q: string | undefined) =>
       updateFilters({
         q: q?.trim() || undefined,
-        view: 'list',
       }),
     [updateFilters],
   )
@@ -163,17 +165,50 @@ export function useProcurementHubState(state: ProcurementHubState) {
     [updateFilters],
   )
 
+  /**
+   * One CPV input, level by digit count: 2 = division, 3 = group, 4 = class,
+   * 5 = category, else exact code. Levels 3–5 normalize to the canonical
+   * 8-digit level code (trailing zeros — the server scope contract); at most
+   * one level is ever set.
+   */
   const setCpv = useCallback(
     (code: string | undefined) => {
       const trimmed = code?.trim()
+      const clear = {
+        cpv: undefined,
+        cpv_division: undefined,
+        cpv_group: undefined,
+        cpv_class: undefined,
+        cpv_category: undefined,
+      }
       if (!trimmed) {
-        updateFilters({ cpv: undefined, cpv_division: undefined })
+        updateFilters(clear)
       } else if (/^\d{2}$/.test(trimmed)) {
-        updateFilters({ cpv: undefined, cpv_division: trimmed })
+        updateFilters({ ...clear, cpv_division: trimmed })
+      } else if (/^\d{2}[1-9]$/.test(trimmed)) {
+        updateFilters({ ...clear, cpv_group: trimmed.padEnd(8, '0') })
+      } else if (/^\d{3}[1-9]$/.test(trimmed)) {
+        updateFilters({ ...clear, cpv_class: trimmed.padEnd(8, '0') })
+      } else if (/^\d{4}[1-9]$/.test(trimmed)) {
+        updateFilters({ ...clear, cpv_category: trimmed.padEnd(8, '0') })
+      } else if (/^\d{2}[1-9]0{5}$/.test(trimmed)) {
+        updateFilters({ ...clear, cpv_group: trimmed })
+      } else if (/^\d{3}[1-9]0{4}$/.test(trimmed)) {
+        updateFilters({ ...clear, cpv_class: trimmed })
+      } else if (/^\d{4}[1-9]0{3}$/.test(trimmed)) {
+        updateFilters({ ...clear, cpv_category: trimmed })
       } else {
-        updateFilters({ cpv: trimmed, cpv_division: undefined })
+        updateFilters({ ...clear, cpv: trimmed })
       }
     },
+    [updateFilters],
+  )
+
+  const setRecordKinds = useCallback(
+    (kinds: readonly ProcurementRecordKindOption[]) =>
+      updateFilters({
+        record_kind: kinds.length > 0 ? [...kinds] : undefined,
+      }),
     [updateFilters],
   )
 
@@ -247,6 +282,10 @@ export function useProcurementHubState(state: ProcurementHubState) {
     updateFilters({
       ...CLEAR_ALL_FILTERS_PATCH,
       q: undefined,
+      cpv_group: undefined,
+      cpv_class: undefined,
+      cpv_category: undefined,
+      record_kind: undefined,
       period: undefined,
       dateFrom: undefined,
       dateTo: undefined,
@@ -286,6 +325,7 @@ export function useProcurementHubState(state: ProcurementHubState) {
         setSource,
         setStatuses,
         setValueCategories,
+        setRecordKinds,
         setSignal,
         setDates,
         setYear,
@@ -308,6 +348,7 @@ export function useProcurementHubState(state: ProcurementHubState) {
       setSource,
       setStatuses,
       setValueCategories,
+      setRecordKinds,
       setSignal,
       setDates,
       setYear,
@@ -344,6 +385,7 @@ export function useProcurementHubState(state: ProcurementHubState) {
     setSource,
     setStatuses,
     setValueCategories,
+    setRecordKinds,
     setSignal,
     setDates,
     setPeriodAll,

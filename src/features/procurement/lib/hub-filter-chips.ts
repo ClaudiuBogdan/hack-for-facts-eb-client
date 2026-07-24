@@ -9,7 +9,7 @@ import {
   type ProcurementHubState,
   type ResolvedProcurementOverviewPeriod,
 } from '@/schemas/procurement-hub'
-import { sourceLabel, valueCategoryLabel } from './enum-labels'
+import { recordKindLabel, sourceLabel, valueCategoryLabel } from './enum-labels'
 import { statusLabel } from './status-meta'
 
 export type HubFilterChipKind =
@@ -44,6 +44,16 @@ function measureLabel(measure: ProcurementHubState['measure']): string {
  * Facets that rankings can honor via analysis scope (parties / CPV / single status).
  * Unsupported facets stay inactive on Rankings.
  */
+/**
+ * Intermediate CPV levels (group/class/category) scope AGGREGATES only — the
+ * record list has no CPV prefix filter yet, so on the list view the chip is
+ * honestly inactive (the geo-keys precedent).
+ */
+function cpvLevelChipKind(state: ProcurementHubState): HubFilterChipKind {
+  if (state.view === 'list') return 'not-on-list'
+  return rankingScopeFacetKind(state, 'scope')
+}
+
 function rankingScopeFacetKind(
   state: ProcurementHubState,
   facet: 'scope' | 'unsupported' | 'status',
@@ -182,7 +192,8 @@ export function buildHubActiveFilterChips(
       key: 'q',
       prefix: t`Query`,
       value: state.q,
-      kind: rankingScopeFacetKind(state, 'unsupported'),
+      // q scopes overview + rankings as a title row filter (2026-07-24).
+      kind: 'applied',
       clear: { q: undefined },
     })
   }
@@ -211,6 +222,30 @@ export function buildHubActiveFilterChips(
       value: state.cpv,
       kind: rankingScopeFacetKind(state, 'scope'),
       clear: { cpv: undefined },
+    })
+  } else if (state.cpv_category) {
+    chips.push({
+      key: 'cpv-category',
+      prefix: t`CPV category`,
+      value: state.cpv_category,
+      kind: cpvLevelChipKind(state),
+      clear: { cpv_category: undefined },
+    })
+  } else if (state.cpv_class) {
+    chips.push({
+      key: 'cpv-class',
+      prefix: t`CPV class`,
+      value: state.cpv_class,
+      kind: cpvLevelChipKind(state),
+      clear: { cpv_class: undefined },
+    })
+  } else if (state.cpv_group) {
+    chips.push({
+      key: 'cpv-group',
+      prefix: t`CPV group`,
+      value: state.cpv_group,
+      kind: cpvLevelChipKind(state),
+      clear: { cpv_group: undefined },
     })
   } else if (state.cpv_division) {
     chips.push({
@@ -248,6 +283,21 @@ export function buildHubActiveFilterChips(
       clear: { value_state: undefined },
     })
   }
+  // Record kind is contracts-only; on other grains the filter is inert and
+  // the chip is omitted (clear-all still resets it).
+  if (state.grain === 'contracts' && state.record_kind?.length) {
+    chips.push({
+      key: 'record-kind',
+      prefix: t`Record kind`,
+      value: state.record_kind.map(recordKindLabel).join(', '),
+      // Analysis scope takes a single kind; both selected = no constraint.
+      kind:
+        state.record_kind.length === 1
+          ? rankingScopeFacetKind(state, 'scope')
+          : 'applied',
+      clear: { record_kind: undefined },
+    })
+  }
   if (state.valueMin !== undefined || state.valueMax !== undefined) {
     const min =
       state.valueMin !== undefined ? RON_FORMAT.format(state.valueMin) : '…'
@@ -257,7 +307,8 @@ export function buildHubActiveFilterChips(
       key: 'value',
       prefix: t`Value (RON)`,
       value: `${min} – ${max}`,
-      kind: rankingScopeFacetKind(state, 'unsupported'),
+      // Value bounds scope aggregates as accepted-value row filters (2026-07-24).
+      kind: 'applied',
       clear: { valueMin: undefined, valueMax: undefined },
     })
   }

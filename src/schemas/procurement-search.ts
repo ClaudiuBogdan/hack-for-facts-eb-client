@@ -172,6 +172,12 @@ export const procurementSearchSchema = z
     supplier_cui: optionalStringParam,
     cpv: optionalStringParam,
     cpv_division: optionalStringParam,
+    // CPV hierarchy levels (canonical 8-digit codes). Display/roundtrip only
+    // on the list surface — no list builder sends them (aggregates scope them
+    // via the hub; the list has no CPV prefix filter yet).
+    cpv_group: optionalStringParam,
+    cpv_class: optionalStringParam,
+    cpv_category: optionalStringParam,
     source: procurementSourceSchema.optional().catch(undefined),
     // `.optional()` on the outside keeps the key optional in the inferred
     // type (the transform chain would otherwise mark it required).

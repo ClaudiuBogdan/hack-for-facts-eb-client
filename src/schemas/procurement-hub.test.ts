@@ -3,8 +3,10 @@ import {
   cleanProcurementHubSearch,
   hubStateToLandingFilters,
   hubStateToListSearchState,
+  hubStateToRankingScopeInput,
   hubStateToTerritoryLandingFilters,
   parseProcurementHubSearch,
+  rankingRecordKindFromHubState,
   withProcurementHubDefaults,
 } from './procurement-hub'
 
@@ -213,5 +215,55 @@ describe('procurement hub schema', () => {
     expect(list).not.toHaveProperty('buyerRegion')
     expect(list.dateFrom).toBeUndefined()
     expect(list.dateTo).toBeUndefined()
+  })
+
+  it('forwards CPV hierarchy levels, q and value bounds to the ranking scope', () => {
+    const state = parseProcurementHubSearch({
+      cpv_group: '45200000',
+      q: 'drum judetean',
+      valueMin: '1000',
+      valueMax: '500000',
+      period: 'all',
+    })
+    const scope = hubStateToRankingScopeInput(state)
+    expect(scope.cpvGroup).toBe('45200000')
+    expect(scope.q).toBe('drum judetean')
+    expect(scope.valueMin).toBe(1000)
+    expect(scope.valueMax).toBe(500000)
+    // Malformed level codes normalize away at parse time.
+    const malformed = parseProcurementHubSearch({ cpv_group: '45000000' })
+    expect(malformed.cpv_group).toBeUndefined()
+  })
+
+  it('applies recordKind to the ranking scope only on contracts with ONE token', () => {
+    const contracts = parseProcurementHubSearch({
+      grain: 'contracts',
+      record_kind: 'frameworks',
+    })
+    expect(rankingRecordKindFromHubState(contracts)).toBe('framework_agreement')
+    expect(hubStateToRankingScopeInput(contracts).recordKind).toBe(
+      'framework_agreement',
+    )
+    const bothTokens = parseProcurementHubSearch({
+      grain: 'contracts',
+      record_kind: 'frameworks,purchases',
+    })
+    expect(rankingRecordKindFromHubState(bothTokens)).toBeUndefined()
+    const daGrain = parseProcurementHubSearch({
+      grain: 'direct_acquisitions',
+      record_kind: 'frameworks',
+    })
+    expect(rankingRecordKindFromHubState(daGrain)).toBeUndefined()
+  })
+
+  it('landing filters carry the q/value row filters (aggregate-safe)', () => {
+    const state = parseProcurementHubSearch({
+      q: 'asfalt',
+      valueMin: '2500',
+      period: 'all',
+    })
+    const landing = hubStateToLandingFilters(state)
+    expect(landing.q).toBe('asfalt')
+    expect(landing.valueMin).toBe(2500)
   })
 })

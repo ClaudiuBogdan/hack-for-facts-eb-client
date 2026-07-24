@@ -24,9 +24,11 @@ import {
   buildProcurementOverviewMonthScope,
   hubGrainToAnalysisGrain,
   hubStateToLandingFilters,
+  rankingRecordKindFromHubState,
   type ProcurementHubMapGrain,
   type ProcurementHubState,
 } from '@/schemas/procurement-hub'
+import { buildScopeFilter } from '../api/graphql/procurement-filters'
 import { getPnrrBlueHeatmapColor } from '@/features/pnrr/lib/map-colors'
 import {
   useProcurementAnalysis,
@@ -35,6 +37,10 @@ import {
 import type { ProcurementHubFilterPatch } from '../hooks/use-procurement-hub-state'
 import { formatFlowCount, formatRon } from '../lib/formatting'
 import type { AnalyticsFilterType } from '@/schemas/charts'
+import type {
+  HeatmapCountyDataPoint,
+  HeatmapUATDataPoint,
+} from '@/schemas/heatmap'
 import {
   buildProcurementMapHeatmapForPaintMode,
   findRegionForCountyCode,
@@ -102,7 +108,6 @@ export function ProcurementMapView({
   const mapGrain = hubState.mapGrain
   const mapParty = hubState.mapParty
   const measure = hubState.measure
-  const mapViewType = mapGrain === 'uat' ? 'UAT' : 'County'
   const mapAnalysisPlan = resolveProcurementMapAnalysisPlan(mapGrain, {
     party: mapParty,
     buyerRegion: hubState.buyerRegion,
@@ -113,25 +118,29 @@ export function ProcurementMapView({
     supplierSiruta: hubState.supplierSiruta,
   })
   const selectionGrain = selectionGrainFromPaintMode(mapAnalysisPlan.paintMode)
+  // Geometry follows the PAINT mode, not the toolbar: a scoped UAT under a
+  // region/county toolbar paints its single locality on the UAT layer.
+  const paintIsUat = selectionGrain === 'uat'
+  const mapViewType = paintIsUat ? 'UAT' : 'County'
 
   const analysisQuery = useProcurementAnalysis({
-    scope: {
+    // buildScopeFilter carries the shared normalization: row filters
+    // (q / value bounds) + recordKind on the contract grain (2026-07-24).
+    scope: buildScopeFilter({
       grain: analysisGrain,
-      ...(monthScope.monthFrom ? { from: monthScope.monthFrom } : {}),
-      ...(monthScope.monthTo ? { to: monthScope.monthTo } : {}),
-      ...(hubState.buyerRegion ? { buyerRegion: hubState.buyerRegion } : {}),
-      ...(hubState.buyerCounty ? { buyerCounty: hubState.buyerCounty } : {}),
-      ...(hubState.buyerSiruta ? { buyerSiruta: hubState.buyerSiruta } : {}),
-      ...(hubState.supplierRegion
-        ? { supplierRegion: hubState.supplierRegion }
-        : {}),
-      ...(hubState.supplierCounty
-        ? { supplierCounty: hubState.supplierCounty }
-        : {}),
-      ...(hubState.supplierSiruta
-        ? { supplierSiruta: hubState.supplierSiruta }
-        : {}),
-    },
+      monthFrom: monthScope.monthFrom,
+      monthTo: monthScope.monthTo,
+      buyerRegion: hubState.buyerRegion,
+      buyerCounty: hubState.buyerCounty,
+      buyerSiruta: hubState.buyerSiruta,
+      supplierRegion: hubState.supplierRegion,
+      supplierCounty: hubState.supplierCounty,
+      supplierSiruta: hubState.supplierSiruta,
+      q: hubState.q,
+      valueMin: hubState.valueMin,
+      valueMax: hubState.valueMax,
+      recordKind: rankingRecordKindFromHubState(hubState),
+    }),
     dimension: mapAnalysisPlan.dimension,
     bucket: 'year',
     // Series/concentration stay on count — value basis can abstain/error under
@@ -161,15 +170,25 @@ export function ProcurementMapView({
         mapAnalysisPlan.paintMode === 'single-uat')
     ) {
       if (!statsBlock) return []
-      const recordCount = Number(statsBlock.recordCount)
-      const valueAwardedSum = Number(statsBlock.valueAwardedSum)
+      // Null stays null: Number(null) is 0, which would paint unobserved
+      // money as a real zero-RON territory.
+      const recordCount =
+        statsBlock.recordCount !== null ? Number(statsBlock.recordCount) : null
+      const valueAwardedSum =
+        statsBlock.valueAwardedSum !== null
+          ? Number(statsBlock.valueAwardedSum)
+          : null
       return [
         {
           region: singleId,
-          recordCount: Number.isFinite(recordCount) ? recordCount : null,
-          valueAwardedSum: Number.isFinite(valueAwardedSum)
-            ? valueAwardedSum
-            : null,
+          recordCount:
+            recordCount !== null && Number.isFinite(recordCount)
+              ? recordCount
+              : null,
+          valueAwardedSum:
+            valueAwardedSum !== null && Number.isFinite(valueAwardedSum)
+              ? valueAwardedSum
+              : null,
           kind: 'top',
         },
       ]
@@ -202,12 +221,21 @@ export function ProcurementMapView({
     () => new Set(heatmapData.map((point) => point.county_code)),
     [heatmapData],
   )
+  const paintedSirutaCodes = useMemo(
+    () =>
+      new Set(
+        heatmapData.flatMap((point) =>
+          'siruta_code' in point && point.siruta_code ? [point.siruta_code] : [],
+        ),
+      ),
+    [heatmapData],
+  )
 
   const { data: countyGeoJson, isPending: countyGeoPending } =
     useGeoJsonData('County')
   const { data: uatGeoJson, isPending: uatGeoPending } = useGeoJsonData('UAT')
-  const geoJsonData = mapGrain === 'uat' ? uatGeoJson : countyGeoJson
-  const geoPending = mapGrain === 'uat' ? uatGeoPending : countyGeoPending
+  const geoJsonData = paintIsUat ? uatGeoJson : countyGeoJson
+  const geoPending = paintIsUat ? uatGeoPending : countyGeoPending
 
   const colorDomain = useMemo(
     () =>
@@ -292,7 +320,9 @@ export function ProcurementMapView({
         const id = isSingleUat
           ? mapAnalysisPlan.singleTerritoryId
           : sirutaFromFeature
-        if (!id) return
+        // Painted-territory gate (county-paint parity): an unpainted locality
+        // has no SIRUTA bucket in scope — nothing to open or apply.
+        if (!id || (!isSingleUat && !paintedSirutaCodes.has(id))) return
         setSelection({
           id,
           label: sirutaFromFeature ? name : id,
@@ -314,7 +344,13 @@ export function ProcurementMapView({
       if (!region) return
       setSelection({ id: region, label: region, grain: 'region' })
     },
-    [geographyQuery.data, mapAnalysisPlan, paintedCountyCodes, selectionGrain],
+    [
+      geographyQuery.data,
+      mapAnalysisPlan,
+      paintedCountyCodes,
+      paintedSirutaCodes,
+      selectionGrain,
+    ],
   )
 
   const getTooltipContent = useCallback(
@@ -325,8 +361,23 @@ export function ProcurementMapView({
         undefined
       const name = String(properties.name ?? countyCode ?? '—')
 
-      if (mapGrain === 'uat') {
-        return `<div style="font-weight:700">${name}</div><div style="opacity:.8">${t`Choropleth Preview — click for details`}</div>`
+      if (paintIsUat) {
+        const natcode =
+          typeof properties.natcode === 'string' ? properties.natcode : undefined
+        const uatPoint = natcode
+          ? heatmapData.find(
+              (row) => 'siruta_code' in row && row.siruta_code === natcode,
+            )
+          : undefined
+        const county =
+          typeof properties.county === 'string' ? properties.county : '—'
+        const uatValue =
+          uatPoint === undefined
+            ? t`No records in scope`
+            : measure === 'value_awarded'
+              ? formatRon(String(uatPoint.amount), 'compact')
+              : formatFlowCount(uatPoint.amount)
+        return `<div style="font-weight:700">${name}</div><div style="opacity:.8">${county}</div><div style="margin-top:4px">${uatValue}</div>`
       }
 
       const point = countyCode
@@ -334,7 +385,7 @@ export function ProcurementMapView({
         : undefined
       const region =
         findRegionForCountyCode(geographyQuery.data, countyCode) ??
-        point?.county_entity.name ??
+        (point && 'county_entity' in point ? point.county_entity.name : undefined) ??
         '—'
       const value =
         point === undefined
@@ -344,7 +395,7 @@ export function ProcurementMapView({
             : formatFlowCount(point.amount)
       return `<div style="font-weight:700">${name}</div><div style="opacity:.8">${region}</div><div style="margin-top:4px">${value}</div>`
     },
-    [geographyQuery.data, heatmapData, mapGrain, measure],
+    [geographyQuery.data, heatmapData, measure, paintIsUat],
   )
 
   const mapFilters = useMemo(
@@ -359,11 +410,16 @@ export function ProcurementMapView({
     [],
   )
 
-  /** County mnemonic → value map so polygon labels follow the hub measure. */
+  /**
+   * Feature key → value map so polygon labels follow the hub measure.
+   * County features key on the mnemonic; UAT features key on natcode (the
+   * heatmap point's siruta_code).
+   */
   const activeSeriesValuesByCountyCode = useMemo(() => {
     const values = new Map<string, number | undefined>()
     for (const point of heatmapData) {
-      values.set(point.county_code, point.amount)
+      const key = 'siruta_code' in point ? point.siruta_code : point.county_code
+      values.set(key, point.amount)
     }
     return values
   }, [heatmapData])
@@ -409,19 +465,29 @@ export function ProcurementMapView({
         }}
       />
 
-      {mapGrain === 'uat' ? (
+      {mapGrain === 'uat' &&
+      facetBlock?.meta &&
+      facetBlock.meta.answerability !== 'served' ? (
+        // Same disclosure counties get: a degraded/abstained gate (e.g. the
+        // contract-grain spend abstention) is why value paint is missing.
         <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
-          {/* TODO(UAT geometry layer): UAT-level data is served; paint needs UAT polygons. */}
+          <strong>{facetBlock.meta.answerability}</strong>
+          {facetBlock.meta.reason ? ` · ${facetBlock.meta.reason}` : null}
+          {unknownHint ? ` · ${unknownHint}` : null}
+        </p>
+      ) : mapGrain === 'uat' ? (
+        <p className="border-l-4 border-[var(--pnrr-border)] pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
           {mapParty === 'supplier' ? (
             <Trans>
-              UAT colours are not published yet. Click a territory to open
-              details; the side panel still applies a public-institution
-              location filter.
+              Localities (UATs) are coloured by supplier registered-office
+              totals under the current filters. Records without known supplier
+              geography are excluded from the map — never shown as zero.
             </Trans>
           ) : (
             <Trans>
-              UAT colours are not published yet. Click a territory to open
-              details; use the panel buttons to apply a buyer location filter.
+              Localities (UATs) are coloured by their own totals under the
+              current filters. Records without known buyer geography are
+              excluded from the map — never shown as zero.
             </Trans>
           )}
         </p>
@@ -492,7 +558,7 @@ export function ProcurementMapView({
           <div className="flex h-full items-center justify-center">
             <LoadingSpinner />
           </div>
-        ) : analysisQuery.isError && !analysisQuery.data && mapGrain !== 'uat' ? (
+        ) : analysisQuery.isError && !analysisQuery.data ? (
           <div className="p-6">
             <ProcurementErrorState
               error={analysisQuery.error}
@@ -506,10 +572,13 @@ export function ProcurementMapView({
               <InteractiveMap
                 geoJsonData={geoJsonData ?? null}
                 countyBoundaryGeoJsonData={
-                  mapGrain === 'uat' ? (countyGeoJson ?? null) : null
+                  paintIsUat ? (countyGeoJson ?? null) : null
                 }
                 mapViewType={mapViewType}
-                heatmapData={heatmapData}
+                // Homogeneous per paint mode (county-shaped or UAT-shaped).
+                heatmapData={
+                  heatmapData as HeatmapCountyDataPoint[] | HeatmapUATDataPoint[]
+                }
                 filters={mapFilters}
                 labelMode="active-series"
                 activeSeriesValuesBySirutaCode={activeSeriesValuesByCountyCode}
@@ -533,7 +602,7 @@ export function ProcurementMapView({
               {selectionGrain === 'county' ? (
                 <Trans>County totals</Trans>
               ) : selectionGrain === 'uat' ? (
-                <Trans>Region record totals (Preview)</Trans>
+                <Trans>Locality (UAT) totals</Trans>
               ) : (
                 <Trans>Region totals</Trans>
               )}

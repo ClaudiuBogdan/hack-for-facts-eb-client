@@ -39,16 +39,28 @@ export function rankingRowViewRecordsSearch(options: {
       supplier_cui: key,
     })
   }
-  if (options.cpvLevel === 'code') {
-    return cleanProcurementHubSearch({
-      ...base,
-      cpv: key,
-      cpv_division: undefined,
-    })
-  }
-  return cleanProcurementHubSearch({
-    ...base,
-    cpv_division: key,
+  const cpvClear: Partial<ProcurementHubState> = {
     cpv: undefined,
-  })
+    cpv_division: undefined,
+    cpv_group: undefined,
+    cpv_class: undefined,
+    cpv_category: undefined,
+  }
+  if (options.cpvLevel === 'code') {
+    return cleanProcurementHubSearch({ ...base, ...cpvClear, cpv: key })
+  }
+  // Intermediate levels key on canonical 8-digit codes. The list view has no
+  // prefix filter yet, so these deep-links land on the hub with the level
+  // filter set (aggregates scope it; the list ignores it — same honesty rule
+  // as the geo keys).
+  if (options.cpvLevel === 'group') {
+    return cleanProcurementHubSearch({ ...base, ...cpvClear, cpv_group: key })
+  }
+  if (options.cpvLevel === 'class') {
+    return cleanProcurementHubSearch({ ...base, ...cpvClear, cpv_class: key })
+  }
+  if (options.cpvLevel === 'category') {
+    return cleanProcurementHubSearch({ ...base, ...cpvClear, cpv_category: key })
+  }
+  return cleanProcurementHubSearch({ ...base, ...cpvClear, cpv_division: key })
 }

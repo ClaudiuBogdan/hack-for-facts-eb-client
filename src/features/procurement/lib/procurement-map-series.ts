@@ -4,7 +4,10 @@
  *
  * @see docs/specs/procurement-buyer-map-requirements.md
  */
-import type { HeatmapCountyDataPoint } from '@/schemas/heatmap'
+import type {
+  HeatmapCountyDataPoint,
+  HeatmapUATDataPoint,
+} from '@/schemas/heatmap'
 import type {
   ProcurementHubMapGrain,
   ProcurementHubMapParty,
@@ -102,6 +105,43 @@ export function buildRegionHeatmapByCounty(
   return points
 }
 
+/**
+ * Full-country UAT paint depth: every UAT bucket (3,186 features in uat.json;
+ * server SIRUTA breakdowns allow topN 3300 — TOPN_SIRUTA_MAX, 2026-07-24).
+ */
+export const PROCUREMENT_UAT_PAINT_TOP_N = 3300
+
+/**
+ * UAT-grain paint: SIRUTA breakdown buckets (keys = `buyer_siruta_uat` /
+ * `supplier_siruta_uat` as digit strings, no leading zeros) join uat.json
+ * `properties.natcode` (same format) via `siruta_code` in the shared heatmap
+ * style lookup. Names/counties come from the polygons; the points carry only
+ * the key + value.
+ */
+export function buildUatHeatmap(
+  uatBuckets: readonly ProcurementRegionMapBucket[],
+  seriesId: ProcurementMapSeriesId,
+): HeatmapUATDataPoint[] {
+  const points: HeatmapUATDataPoint[] = []
+  for (const bucket of uatBuckets) {
+    const value = seriesValue(bucket, seriesId)
+    if (value === null) continue
+    points.push({
+      uat_id: bucket.region,
+      uat_code: bucket.region,
+      uat_name: '',
+      siruta_code: bucket.region,
+      county_code: '',
+      county_name: '',
+      population: 0,
+      amount: value,
+      total_amount: value,
+      per_capita_amount: 0,
+    })
+  }
+  return points
+}
+
 /** County-grain paint: buckets keyed by county code map 1:1 onto polygons. */
 export function buildCountyHeatmap(
   geography: ProcurementGeographyOptions | undefined,
@@ -139,23 +179,22 @@ export function buildCountyHeatmap(
 /**
  * Heatmap for the active map geography level.
  *
- * Region and county paint from party geo facet dimensions. UAT needs the UAT
- * geometry layer — data is plumbed (buyerSiruta / supplierSiruta) but paint
- * stays empty until then.
+ * Region and county paint from party geo facet dimensions; UAT paints from
+ * SIRUTA breakdown buckets joined to uat.json natcode (2026-07-24).
  */
 export function buildProcurementMapHeatmap(
   mapGrain: ProcurementMapGranularity,
   geography: ProcurementGeographyOptions | undefined,
   regionBuckets: readonly ProcurementRegionMapBucket[],
   seriesId: ProcurementMapSeriesId,
-): HeatmapCountyDataPoint[] {
+): (HeatmapCountyDataPoint | HeatmapUATDataPoint)[] {
   if (mapGrain === 'region') {
     return buildRegionHeatmapByCounty(geography, regionBuckets, seriesId)
   }
   if (mapGrain === 'county') {
     return buildCountyHeatmap(geography, regionBuckets, seriesId)
   }
-  return []
+  return buildUatHeatmap(regionBuckets, seriesId)
 }
 
 export function findRegionForCountyCode(
@@ -268,7 +307,11 @@ export function resolveProcurementMapAnalysisPlan(
 
   if (county) {
     if (mapGrain === 'uat') {
-      return { dimension: dims.siruta, paintMode: 'uat', topN: 100 }
+      return {
+        dimension: dims.siruta,
+        paintMode: 'uat',
+        topN: PROCUREMENT_UAT_PAINT_TOP_N,
+      }
     }
     return {
       dimension: 'cpvDivision',
@@ -282,13 +325,21 @@ export function resolveProcurementMapAnalysisPlan(
     // Region is fixed — region breakdown is invalid. Paint counties (or UATs)
     // inside the scoped region instead.
     if (mapGrain === 'uat') {
-      return { dimension: dims.siruta, paintMode: 'uat', topN: 100 }
+      return {
+        dimension: dims.siruta,
+        paintMode: 'uat',
+        topN: PROCUREMENT_UAT_PAINT_TOP_N,
+      }
     }
     return { dimension: dims.county, paintMode: 'county', topN: 100 }
   }
 
   if (mapGrain === 'uat') {
-    return { dimension: dims.siruta, paintMode: 'uat', topN: 100 }
+    return {
+      dimension: dims.siruta,
+      paintMode: 'uat',
+      topN: PROCUREMENT_UAT_PAINT_TOP_N,
+    }
   }
   if (mapGrain === 'county') {
     return { dimension: dims.county, paintMode: 'county', topN: 100 }
@@ -327,12 +378,14 @@ export function buildProcurementMapHeatmapForPaintMode(
   geography: ProcurementGeographyOptions | undefined,
   regionBuckets: readonly ProcurementRegionMapBucket[],
   seriesId: ProcurementMapSeriesId,
-): HeatmapCountyDataPoint[] {
+): (HeatmapCountyDataPoint | HeatmapUATDataPoint)[] {
   if (paintMode === 'region' || paintMode === 'single-region') {
     return buildRegionHeatmapByCounty(geography, regionBuckets, seriesId)
   }
   if (paintMode === 'county' || paintMode === 'single-county') {
     return buildCountyHeatmap(geography, regionBuckets, seriesId)
   }
-  return []
+  // 'uat' paints every bucket; 'single-uat' paints the one scoped territory
+  // (regionBuckets already carries the single stats-derived point).
+  return buildUatHeatmap(regionBuckets, seriesId)
 }

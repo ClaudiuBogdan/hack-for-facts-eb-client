@@ -63,8 +63,23 @@ function analysisDimension(
 ): ProcurementAnalysisDimension {
   if (rankDim === 'buyer') return 'authority'
   if (rankDim === 'supplier') return 'supplier'
-  return cpvLevel === 'code' ? 'cpvCode' : 'cpvDivision'
+  switch (cpvLevel) {
+    case 'code':
+      return 'cpvCode'
+    case 'group':
+      return 'cpvGroup'
+    case 'class':
+      return 'cpvClass'
+    case 'category':
+      return 'cpvCategory'
+    default:
+      return 'cpvDivision'
+  }
 }
+
+/** Levels whose bucket keys are canonical 8-digit codes → exact-label lookup. */
+const CPV_CODE_LABELED_DIMENSIONS: ReadonlySet<ProcurementAnalysisDimension> =
+  new Set(['cpvCode', 'cpvGroup', 'cpvClass', 'cpvCategory'])
 
 function rowLabel(
   bucket: RawProcurementBreakdownBucket,
@@ -96,7 +111,7 @@ function rowLabel(
     }
   }
 
-  if (dimension === 'cpvCode') {
+  if (CPV_CODE_LABELED_DIMENSIONS.has(dimension)) {
     const label = codeLabels.get(bucket.key)
     return {
       label: label ?? bucket.key,
@@ -218,7 +233,7 @@ export async function fetchProcurementLeaderboard(
     dimension === 'cpvDivision'
       ? loadCpvDivisions()
       : Promise.resolve([] as RawProcurementCpvDivision[]),
-    dimension === 'cpvCode'
+    CPV_CODE_LABELED_DIMENSIONS.has(dimension)
       ? loadCpvCodeLabels(buckets)
       : Promise.resolve(new Map<string, string>()),
   ])

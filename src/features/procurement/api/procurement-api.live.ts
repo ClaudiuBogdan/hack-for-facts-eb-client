@@ -222,6 +222,9 @@ export async function fetchProcurementLandingLive(
     supplierCounty: filters.supplierCounty,
     supplierRegion: filters.supplierRegion,
     supplierSiruta: filters.supplierSiruta,
+    q: filters.q,
+    valueMin: filters.valueMin,
+    valueMax: filters.valueMax,
   })
   const [aggregates, divisions] = await Promise.all([
     // Party breakdowns under buyer geography are served by the ClickHouse
@@ -257,6 +260,9 @@ export async function fetchProcurementTerritoryOverviewLive(
     supplierCounty: filters.supplierCounty,
     supplierRegion: filters.supplierRegion,
     supplierSiruta: filters.supplierSiruta,
+    q: filters.q,
+    valueMin: filters.valueMin,
+    valueMax: filters.valueMax,
     grain: filters.grain,
   })
 

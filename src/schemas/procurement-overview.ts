@@ -99,6 +99,13 @@ export type ProcurementLandingFilters = {
   readonly supplierCounty?: string
   readonly supplierSiruta?: string
   /**
+   * Row filters (never fix a breakdown dimension, so they are safe on every
+   * landing facet): free-text title q + awarded-value bounds in RON.
+   */
+  readonly q?: string
+  readonly valueMin?: number
+  readonly valueMax?: number
+  /**
    * Analysis grain for territory/map-scoped aggregates. Overview landing omits
    * this and returns both contract + DA blocks for client selection.
    */
@@ -239,6 +246,9 @@ export function toProcurementLandingQueryFilters(
     supplierRegion: filters.supplierRegion,
     supplierCounty: filters.supplierCounty,
     supplierSiruta: filters.supplierSiruta,
+    q: filters.q,
+    valueMin: filters.valueMin,
+    valueMax: filters.valueMax,
     ...(resolved.dateFrom ? { dateFrom: resolved.dateFrom } : {}),
     ...(resolved.dateTo ? { dateTo: resolved.dateTo } : {}),
   }
