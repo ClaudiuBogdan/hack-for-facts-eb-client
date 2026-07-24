@@ -327,3 +327,86 @@ describe('procurement hub schema', () => {
     expect(landing.supplierCui).toBeUndefined()
   })
 })
+
+describe('capability registry — every dropped list filter is classified', () => {
+  it('drops and explains every filter the modifications grain cannot carry', () => {
+    const state = parseProcurementHubSearch({
+      grain: 'modifications',
+      period: 'all',
+      cpv_division: '45',
+      cpv_group: '45200000',
+      status: 'awarded',
+      value_state: 'accepted',
+      record_kind: 'purchases',
+      source: 'seap',
+      valueMin: '1000',
+      valueMax: '5000',
+      buyerCounty: 'CJ',
+      supplierCounty: 'B',
+      supplier_cui: '6567900',
+    })
+    const list = hubStateToListSearchState(state)
+    // Everything the builder would silently omit is scrubbed here instead…
+    for (const key of [
+      'cpv_division',
+      'cpv_group',
+      'status',
+      'value_state',
+      'record_kind',
+      'source',
+      'valueMin',
+      'valueMax',
+      'buyerCounty',
+      'supplierCounty',
+    ] as const) {
+      expect(list[key]).toBeUndefined()
+    }
+    // A modification DOES name its parties — that filter stays.
+    expect(list.supplier_cui).toBe('6567900')
+    // …and every one of them is disclosed with a reason.
+    const drops = listCapabilityDrops(state)
+    const dropped = new Set(drops.map((drop) => drop.key))
+    for (const key of [
+      // `cpv_division` is normalized away by the finest-level-wins rule; the
+      // group is what survives parsing, so that is what must be disclosed.
+      'cpv_group',
+      'status',
+      'value_state',
+      'record_kind',
+      'source',
+      'valueMin',
+      'buyerCounty',
+      'supplierCounty',
+    ] as const) {
+      expect(dropped.has(key)).toBe(true)
+    }
+    expect(drops.every((drop) => drop.reason.length > 0)).toBe(true)
+  })
+
+  it('keeps those same filters on a grain that carries them', () => {
+    const state = parseProcurementHubSearch({
+      grain: 'contracts',
+      period: 'all',
+      cpv_group: '45200000',
+      status: 'awarded',
+      record_kind: 'purchases',
+      valueMin: '1000',
+      supplierCounty: 'B',
+    })
+    const list = hubStateToListSearchState(state)
+    expect(list.cpv_group).toBe('45200000')
+    expect(list.status).toEqual(['awarded'])
+    expect(list.record_kind).toEqual(['purchases'])
+    expect(list.valueMin).toBe(1000)
+    expect(list.supplierCounty).toBe('B')
+    expect(listCapabilityDrops(state)).toEqual([])
+  })
+
+  it('normalizes a malformed territory param instead of sending it to the server', () => {
+    // `buyerCounty=Cluj` would be rejected by the server and fail the request.
+    const state = parseProcurementHubSearch({ buyerCounty: 'Cluj', supplierSiruta: 'abc' })
+    expect(state.buyerCounty).toBeUndefined()
+    expect(state.supplierSiruta).toBeUndefined()
+    expect(parseProcurementHubSearch({ buyerCounty: 'CJ' }).buyerCounty).toBe('CJ')
+  })
+})

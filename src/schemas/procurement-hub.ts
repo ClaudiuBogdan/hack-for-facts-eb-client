@@ -77,12 +77,27 @@ const optionalStringParam = z
   .preprocess(toOptionalString, z.string().optional())
   .catch(undefined)
 
-const optionalGeographyKey = z
-  .preprocess(
-    (value) => (typeof value === 'string' ? value.trim() : value),
-    z.string().min(1).max(64).optional(),
-  )
-  .catch(undefined)
+/**
+ * Territory URL params, validated to the SAME shapes the server accepts —
+ * county codes are 1–2 uppercase letters, SIRUTA codes are ≤8 digits, region
+ * labels are bounded text. A hand-edited link carrying `buyerCounty=Cluj`
+ * normalizes away here instead of failing the whole list request server-side.
+ */
+const geographyKey = (pattern: RegExp) =>
+  z
+    .preprocess(
+      (value) => (typeof value === 'string' ? value.trim() : value),
+      z.string().regex(pattern).optional(),
+    )
+    .catch(undefined)
+
+const COUNTY_CODE_RE = /^[A-Z]{1,2}$/
+const SIRUTA_RE = /^\d{1,8}$/
+const REGION_RE = /^[\p{L}\p{N} .'-]{1,64}$/u
+
+const optionalRegionKey = geographyKey(REGION_RE)
+const optionalCountyKey = geographyKey(COUNTY_CODE_RE)
+const optionalSirutaKey = geographyKey(SIRUTA_RE)
 
 const optionalIsoDateParam = z
   .preprocess(
@@ -313,12 +328,12 @@ export const procurementHubSearchSchema = z
     dateFrom: optionalIsoDateParam,
     dateTo: optionalIsoDateParam,
     period: optionalPeriodMode,
-    buyerRegion: optionalGeographyKey,
-    buyerCounty: optionalGeographyKey,
-    buyerSiruta: optionalGeographyKey,
-    supplierRegion: optionalGeographyKey,
-    supplierCounty: optionalGeographyKey,
-    supplierSiruta: optionalGeographyKey,
+    buyerRegion: optionalRegionKey,
+    buyerCounty: optionalCountyKey,
+    buyerSiruta: optionalSirutaKey,
+    supplierRegion: optionalRegionKey,
+    supplierCounty: optionalCountyKey,
+    supplierSiruta: optionalSirutaKey,
     valueMin: z.coerce.number().nonnegative().optional().catch(undefined),
     valueMax: z.coerce.number().nonnegative().optional().catch(undefined),
     signal: reviewSignalKindSchema.optional().catch(undefined),
@@ -760,20 +775,20 @@ export function hubStateToListSearchState(
     q: state.q,
     authority_cui: state.authority_cui,
     supplier_cui: keep('supplier_cui', state.supplier_cui),
-    cpv: state.cpv,
-    cpv_division: state.cpv_division,
-    cpv_group: state.cpv_group,
-    cpv_class: state.cpv_class,
-    cpv_category: state.cpv_category,
-    source: state.source,
-    status: state.status,
-    value_state: state.value_state,
-    record_kind: state.record_kind,
+    cpv: keep('cpv', state.cpv),
+    cpv_division: keep('cpv_division', state.cpv_division),
+    cpv_group: keep('cpv_group', state.cpv_group),
+    cpv_class: keep('cpv_class', state.cpv_class),
+    cpv_category: keep('cpv_category', state.cpv_category),
+    source: keep('source', state.source),
+    status: keep('status', state.status),
+    value_state: keep('value_state', state.value_state),
+    record_kind: keep('record_kind', state.record_kind),
     year: state.year,
     dateFrom: resolved.isAllTime ? undefined : resolved.dateFrom,
     dateTo: resolved.isAllTime ? undefined : resolved.dateTo,
-    valueMin: state.valueMin,
-    valueMax: state.valueMax,
+    valueMin: keep('valueMin', state.valueMin),
+    valueMax: keep('valueMax', state.valueMax),
     signal: state.signal,
     sort: state.sort,
     page: state.page,
@@ -1239,12 +1254,69 @@ export const PROCUREMENT_HUB_CAPABILITIES: readonly HubCapability[] = [
     dropReason: 'these records carry no awarded supplier, so supplier territory cannot apply',
   },
   {
-    id: 'parties-cpv-value',
-    label: 'Parties / CPV / value facets',
+    id: 'parties',
+    label: 'Buyer filter',
     overview: 'live',
     list: 'live',
-    note: 'Parties/CPV/value bounds scope overview cards + map + rankings (C1 closed 2026-07-24; scope-fixed cards hide); CPV group/class/category reach the list too (2026-07-25); value QUALITY stays list-only',
-    keys: ['authority_cui', 'cpv', 'cpv_division', 'cpv_group', 'cpv_class', 'cpv_category'],
+    keys: ['authority_cui'],
+  },
+  {
+    id: 'cpv',
+    label: 'CPV category',
+    overview: 'live',
+    list: 'live',
+    note: 'Division on both surfaces; group/class/category reach the list too (2026-07-25) — compiled as a code prefix, the same rule the analytics apply',
+    keys: ['cpv', 'cpv_division', 'cpv_group', 'cpv_class', 'cpv_category'],
+    listUnsupportedGrains: ['modifications'],
+    dropReason: 'contract modifications carry no CPV code of their own',
+  },
+  {
+    id: 'value-bounds',
+    label: 'Value range',
+    overview: 'live',
+    list: 'live',
+    keys: ['valueMin', 'valueMax'],
+    listUnsupportedGrains: ['modifications'],
+    dropReason:
+      'the meaningful figure on a modification is the change in value, which has no range filter yet',
+  },
+  {
+    id: 'value-quality',
+    label: 'Value quality',
+    overview: 'na',
+    list: 'live',
+    note: 'List-only: the value-model resolution state of each record',
+    keys: ['value_state'],
+    listUnsupportedGrains: ['modifications'],
+    dropReason: 'modifications carry no value-model resolution state',
+  },
+  {
+    id: 'record-kind',
+    label: 'Record kind (purchase / framework)',
+    overview: 'live',
+    list: 'live',
+    keys: ['record_kind'],
+    listUnsupportedGrains: ['procedures', 'direct_acquisitions', 'modifications'],
+    dropReason: 'only contracts distinguish a purchase from a framework agreement',
+  },
+  {
+    id: 'source',
+    label: 'Source system',
+    overview: 'na',
+    list: 'live',
+    keys: ['source'],
+    listUnsupportedGrains: ['modifications'],
+    dropReason: 'modifications are not attributed to a source system',
+  },
+  {
+    id: 'status',
+    label: 'Status',
+    overview: 'live',
+    list: 'live',
+    note: 'Rankings accept a single status token; the list accepts several',
+    keys: ['status'],
+    listUnsupportedGrains: ['modifications'],
+    dropReason: 'modifications carry no status column',
   },
   {
     id: 'supplier-party',
