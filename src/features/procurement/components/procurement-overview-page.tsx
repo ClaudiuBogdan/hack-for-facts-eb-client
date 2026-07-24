@@ -107,21 +107,13 @@ export function ProcurementOverviewPage({
     >
       {hubState.view === 'list' ? (
         <div className="space-y-4">
-          {hasBuyerGeography ||
-          hubState.supplierRegion ||
-          hubState.supplierCounty ||
-          hubState.supplierSiruta ? (
-            <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
-              <Trans>
-                Geography filters are kept in the URL but are not applied to
-                the record list yet. Overview analytics still use buyer
-                location when supported.
-              </Trans>
-            </p>
-          ) : null}
+          {/* Geography now filters the record list (search engine, 2026-07-25).
+              What a given record type cannot honor is disclosed inside the
+              list, from the capability registry the builders scrub with. */}
           <ProcurementSearchContent
             search={hub.listSearch}
             filterState={hub.listFilterState}
+            hubState={hubState}
             hideFilterChrome
             onOpenFilters={() => setFilterSheetOpen(true)}
           />

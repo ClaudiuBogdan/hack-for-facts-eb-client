@@ -448,13 +448,37 @@ export async function fetchProcurementTerritoryOverviewLive(
 
 // ── search ──────────────────────────────────────────────────────────────────
 
+type SearchPageResult = {
+  records: ProcurementRecordSummary[]
+  total: number | null
+  provenance?: { engine: string; asOf: string | null } | null
+  facets?: ReadonlyArray<{
+    dimension: string
+    otherCount: number
+    buckets: ReadonlyArray<{ key: string; count: number }>
+  }>
+}
+
+/**
+ * Result-set facets requested with every engine-served page: how the CURRENT
+ * result set splits by territory, status and value quality. Cheap (one
+ * aggregation pass over the same filtered set) and per-grain validated by the
+ * server, which rejects a dimension the grain does not carry.
+ */
+const SEARCH_FACETS_BY_GRAIN: Readonly<Record<string, readonly string[]>> = {
+  procedures: ['buyerCounty', 'status', 'valueState'],
+  contracts: ['buyerCounty', 'supplierCounty', 'status', 'valueState'],
+  direct_acquisitions: ['buyerCounty', 'supplierCounty', 'status', 'valueState'],
+}
+
 async function fetchSearchRecords(
   params: ProcurementSearchState,
-): Promise<{ records: ProcurementRecordSummary[]; total: number | null }> {
+): Promise<SearchPageResult> {
   const variables = {
     sort: buildProcurementSort(params),
     page: params.page,
     pageSize: params.pageSize,
+    facets: SEARCH_FACETS_BY_GRAIN[params.grain] ?? [],
   }
   switch (params.grain) {
     case 'procedures': {
@@ -465,7 +489,12 @@ async function fetchSearchRecords(
       )
       const page =
         procurementProceduresResponseSchema.parse(data).procurementProcedures
-      return { records: page.items.map(mapProcedure), total: page.total }
+      return {
+        records: page.items.map(mapProcedure),
+        total: page.total,
+        provenance: page.provenance ?? null,
+        ...(page.facets ? { facets: page.facets } : {}),
+      }
     }
     case 'contracts': {
       const data = await graphqlQuery<unknown>(
@@ -475,7 +504,12 @@ async function fetchSearchRecords(
       )
       const page =
         procurementContractsResponseSchema.parse(data).procurementContracts
-      return { records: page.items.map(mapContract), total: page.total }
+      return {
+        records: page.items.map(mapContract),
+        total: page.total,
+        provenance: page.provenance ?? null,
+        ...(page.facets ? { facets: page.facets } : {}),
+      }
     }
     case 'direct_acquisitions': {
       const data = await graphqlQuery<unknown>(
@@ -488,6 +522,8 @@ async function fetchSearchRecords(
       return {
         records: page.items.map(mapDirectAcquisition),
         total: page.total,
+        provenance: page.provenance ?? null,
+        ...(page.facets ? { facets: page.facets } : {}),
       }
     }
     case 'modifications': {
@@ -507,13 +543,15 @@ async function fetchSearchRecords(
 export async function fetchProcurementSearchLive(
   params: ProcurementSearchState,
 ): Promise<ProcurementSearchPage> {
-  const { records, total } = await fetchSearchRecords(params)
+  const { records, total, provenance, facets } = await fetchSearchRecords(params)
   return mapSearchPage({
     grain: params.grain,
     records,
     total,
     page: params.page,
     pageSize: params.pageSize,
+    provenance,
+    ...(facets !== undefined && { facets }),
   })
 }
 

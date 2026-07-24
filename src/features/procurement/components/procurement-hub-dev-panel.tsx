@@ -12,6 +12,8 @@ import {
 function statusLabel(status: HubCapabilityStatus): string {
   if (status === 'live') return t`Live`
   if (status === 'preview') return t`Preview`
+  // Not applicable by design — distinct from unfinished work.
+  if (status === 'na') return t`N/A`
   return t`TODO`
 }
 

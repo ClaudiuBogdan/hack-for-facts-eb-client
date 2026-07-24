@@ -178,6 +178,16 @@ export const procurementSearchSchema = z
     cpv_group: optionalStringParam,
     cpv_class: optionalStringParam,
     cpv_category: optionalStringParam,
+    // Party geography — authoritative list filters since the search engine
+    // took over the record list (2026-07-25). Buyer = the institution's
+    // administrative territory, supplier = the awarded company's registered
+    // office; supplier geography does not exist on the procedures grain.
+    buyerRegion: optionalStringParam,
+    buyerCounty: optionalStringParam,
+    buyerSiruta: optionalStringParam,
+    supplierRegion: optionalStringParam,
+    supplierCounty: optionalStringParam,
+    supplierSiruta: optionalStringParam,
     source: procurementSourceSchema.optional().catch(undefined),
     // `.optional()` on the outside keeps the key optional in the inferred
     // type (the transform chain would otherwise mark it required).

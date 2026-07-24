@@ -316,15 +316,41 @@ const SERIES_BLOCK_FIELDS = /* GraphQL */ `
 // Search pages (offset)
 // ---------------------------------------------------------------------------
 
+/**
+ * Which surface answered the page and how fresh it is. `opensearch` pages are
+ * as of the index build (`asOf`); `postgres` pages are live but cannot carry
+ * geography or CPV mid-level filters. Optional on the wire so an older server
+ * (no provenance field) still parses.
+ */
+const rawSearchProvenanceSchema = z
+  .object({ engine: z.string(), asOf: z.string().nullable() })
+  .nullable()
+  .optional()
+
+/** Result-set facet: the distribution of THIS result set, never an analytic total. */
+const rawSearchFacetSchema = z.object({
+  dimension: z.string(),
+  otherCount: z.number(),
+  buckets: z.array(z.object({ key: z.string(), count: z.number() })),
+})
+
 const rawPageFields = {
   total: z.number().nullable(),
   totalEstimated: z.boolean(),
+  provenance: rawSearchProvenanceSchema,
+  facets: z.array(rawSearchFacetSchema).nullable().optional(),
 }
 
+const PAGE_META_FIELDS = /* GraphQL */ `
+  total totalEstimated
+  provenance { engine asOf }
+`
+
 export const PROCUREMENT_PROCEDURES_QUERY = /* GraphQL */ `
-  query ProcurementProcedures($filter: ProcurementProceduresFilter, $sort: ProcurementSort, $page: Int, $pageSize: Int) {
-    procurementProcedures(filter: $filter, sort: $sort, page: $page, pageSize: $pageSize) {
-      total totalEstimated
+  query ProcurementProcedures($filter: ProcurementProceduresFilter, $sort: ProcurementSort, $page: Int, $pageSize: Int, $facets: [String!]) {
+    procurementProcedures(filter: $filter, sort: $sort, page: $page, pageSize: $pageSize, facets: $facets) {
+      ${PAGE_META_FIELDS}
+      facets { dimension otherCount buckets { key count } }
       items { ${PROCEDURE_FIELDS} }
     }
   }
@@ -337,9 +363,10 @@ export const procurementProceduresResponseSchema = z.object({
 })
 
 export const PROCUREMENT_CONTRACTS_QUERY = /* GraphQL */ `
-  query ProcurementContracts($filter: ProcurementContractsFilter, $sort: ProcurementSort, $page: Int, $pageSize: Int) {
-    procurementContracts(filter: $filter, sort: $sort, page: $page, pageSize: $pageSize) {
-      total totalEstimated
+  query ProcurementContracts($filter: ProcurementContractsFilter, $sort: ProcurementSort, $page: Int, $pageSize: Int, $facets: [String!]) {
+    procurementContracts(filter: $filter, sort: $sort, page: $page, pageSize: $pageSize, facets: $facets) {
+      ${PAGE_META_FIELDS}
+      facets { dimension otherCount buckets { key count } }
       items { ${CONTRACT_FIELDS} }
     }
   }
@@ -352,9 +379,10 @@ export const procurementContractsResponseSchema = z.object({
 })
 
 export const PROCUREMENT_DIRECT_ACQUISITIONS_QUERY = /* GraphQL */ `
-  query ProcurementDirectAcquisitions($filter: ProcurementDirectAcquisitionsFilter, $sort: ProcurementSort, $page: Int, $pageSize: Int) {
-    procurementDirectAcquisitions(filter: $filter, sort: $sort, page: $page, pageSize: $pageSize) {
-      total totalEstimated
+  query ProcurementDirectAcquisitions($filter: ProcurementDirectAcquisitionsFilter, $sort: ProcurementSort, $page: Int, $pageSize: Int, $facets: [String!]) {
+    procurementDirectAcquisitions(filter: $filter, sort: $sort, page: $page, pageSize: $pageSize, facets: $facets) {
+      ${PAGE_META_FIELDS}
+      facets { dimension otherCount buckets { key count } }
       items { ${DIRECT_ACQUISITION_FIELDS} }
     }
   }

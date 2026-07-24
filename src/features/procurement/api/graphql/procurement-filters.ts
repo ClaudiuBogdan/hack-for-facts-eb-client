@@ -39,6 +39,12 @@ export interface ProcurementProceduresFilterInput {
   authorityCui?: { eq: string }
   cpvDivision?: { eq: string }
   cpvCode?: { eq: string }
+  cpvGroup?: { eq: string }
+  cpvClass?: { eq: string }
+  cpvCategory?: { eq: string }
+  buyerRegion?: { eq: string }
+  buyerCounty?: { eq: string }
+  buyerSiruta?: { eq: string }
   sourceSystem?: { in: string[] }
   status?: { in: string[] }
   publicationDate?: DateRangeInput
@@ -52,6 +58,15 @@ export interface ProcurementContractsFilterInput {
   supplierCui?: { eq: string }
   cpvDivision?: { eq: string }
   cpvCode?: { eq: string }
+  cpvGroup?: { eq: string }
+  cpvClass?: { eq: string }
+  cpvCategory?: { eq: string }
+  buyerRegion?: { eq: string }
+  buyerCounty?: { eq: string }
+  buyerSiruta?: { eq: string }
+  supplierRegion?: { eq: string }
+  supplierCounty?: { eq: string }
+  supplierSiruta?: { eq: string }
   sourceSystem?: { in: string[] }
   status?: { in: string[] }
   contractDate?: DateRangeInput
@@ -66,6 +81,15 @@ export interface ProcurementDirectAcquisitionsFilterInput {
   supplierCui?: { eq: string }
   cpvDivision?: { eq: string }
   cpvCode?: { eq: string }
+  cpvGroup?: { eq: string }
+  cpvClass?: { eq: string }
+  cpvCategory?: { eq: string }
+  buyerRegion?: { eq: string }
+  buyerCounty?: { eq: string }
+  buyerSiruta?: { eq: string }
+  supplierRegion?: { eq: string }
+  supplierCounty?: { eq: string }
+  supplierSiruta?: { eq: string }
   sourceSystem?: { in: string[] }
   status?: { in: string[] }
   publicationDate?: DateRangeInput
@@ -299,25 +323,85 @@ function trimmedOrUndefined(value: string | undefined): string | undefined {
 }
 
 /**
- * CPV facets: `cpv` is an exact (usually 8-digit) code, `cpv_division` the
- * 2-digit division. When both are present the exact code wins (more specific).
+ * CPV facets — the FINEST provided level wins and exactly one field is sent:
+ * exact code > category > class > group > division. Mirrors `buildScopeFilter`
+ * so the record list and the aggregates scope to the same rows; the server
+ * compiles a level code to a `cpv_code` prefix at that level's digit length.
  */
-function applyCpv<T extends { cpvDivision?: { eq: string }; cpvCode?: { eq: string } }>(
-  filter: T,
-  search: ProcurementSearchState,
-): void {
+function applyCpv<
+  T extends {
+    cpvDivision?: { eq: string }
+    cpvCode?: { eq: string }
+    cpvGroup?: { eq: string }
+    cpvClass?: { eq: string }
+    cpvCategory?: { eq: string }
+  },
+>(filter: T, search: ProcurementSearchState): void {
   const cpv = trimmedOrUndefined(search.cpv)
+  const category = trimmedOrUndefined(search.cpv_category)
+  const cpvClass = trimmedOrUndefined(search.cpv_class)
+  const group = trimmedOrUndefined(search.cpv_group)
   const division = trimmedOrUndefined(search.cpv_division)
   if (cpv) {
     filter.cpvCode = { eq: cpv }
+  } else if (category) {
+    filter.cpvCategory = { eq: category }
+  } else if (cpvClass) {
+    filter.cpvClass = { eq: cpvClass }
+  } else if (group) {
+    filter.cpvGroup = { eq: group }
   } else if (division) {
     filter.cpvDivision = { eq: division }
   }
 }
 
-// NOTE: `county` / `region` are reserved URL params (buyer-territory filters
-// the capability gate blocks) — they are parsed by the search schema but are
-// NEVER forwarded to the server by any builder here.
+/**
+ * Party geography. Each side sends its FINEST level only — the levels nest, so
+ * sending both a county and its region would be redundant, and sending a
+ * contradictory pair would silently return nothing.
+ *
+ * `supplier: false` (procedures) omits the supplier side entirely: a procedure
+ * predates its award and the server REJECTS supplier geography there. The hub
+ * capability registry keeps the control off that grain, so this is a guard,
+ * not the disclosure path.
+ */
+function applyGeography<
+  T extends {
+    buyerRegion?: { eq: string }
+    buyerCounty?: { eq: string }
+    buyerSiruta?: { eq: string }
+    supplierRegion?: { eq: string }
+    supplierCounty?: { eq: string }
+    supplierSiruta?: { eq: string }
+  },
+>(filter: T, search: ProcurementSearchState, options: { supplier: boolean }): void {
+  const buyerSiruta = trimmedOrUndefined(search.buyerSiruta)
+  const buyerCounty = trimmedOrUndefined(search.buyerCounty)
+  const buyerRegion = trimmedOrUndefined(search.buyerRegion)
+  if (buyerSiruta) {
+    filter.buyerSiruta = { eq: buyerSiruta }
+  } else if (buyerCounty) {
+    filter.buyerCounty = { eq: buyerCounty }
+  } else if (buyerRegion) {
+    filter.buyerRegion = { eq: buyerRegion }
+  }
+  if (!options.supplier) return
+  const supplierSiruta = trimmedOrUndefined(search.supplierSiruta)
+  const supplierCounty = trimmedOrUndefined(search.supplierCounty)
+  const supplierRegion = trimmedOrUndefined(search.supplierRegion)
+  if (supplierSiruta) {
+    filter.supplierSiruta = { eq: supplierSiruta }
+  } else if (supplierCounty) {
+    filter.supplierCounty = { eq: supplierCounty }
+  } else if (supplierRegion) {
+    filter.supplierRegion = { eq: supplierRegion }
+  }
+}
+
+// NOTE: `county` / `region` are LEGACY reserved URL params (the pre-hub
+// buyer-territory attempt). Territory now travels as `buyerRegion` /
+// `buyerCounty` / `buyerSiruta`; the legacy pair is still parsed so old deep
+// links do not error, and is never forwarded.
 
 // ---------------------------------------------------------------------------
 // Builders
@@ -332,6 +416,7 @@ export function buildProceduresFilter(
   const authorityCui = trimmedOrUndefined(search.authority_cui)
   if (authorityCui) filter.authorityCui = { eq: authorityCui }
   applyCpv(filter, search)
+  applyGeography(filter, search, { supplier: false })
   const sourceSystem = buildSourceSystems(search, 'procedures')
   if (sourceSystem) filter.sourceSystem = { in: sourceSystem }
   const status = buildStatuses(search, 'procedures')
@@ -356,6 +441,7 @@ export function buildContractsFilter(
   const supplierCui = trimmedOrUndefined(search.supplier_cui)
   if (supplierCui) filter.supplierCui = { eq: supplierCui }
   applyCpv(filter, search)
+  applyGeography(filter, search, { supplier: true })
   const sourceSystem = buildSourceSystems(search, 'contracts')
   if (sourceSystem) filter.sourceSystem = { in: sourceSystem }
   const status = buildStatuses(search, 'contracts')
@@ -389,6 +475,7 @@ export function buildDirectAcquisitionsFilter(
   const supplierCui = trimmedOrUndefined(search.supplier_cui)
   if (supplierCui) filter.supplierCui = { eq: supplierCui }
   applyCpv(filter, search)
+  applyGeography(filter, search, { supplier: true })
   const sourceSystem = buildSourceSystems(search, 'direct_acquisitions')
   if (sourceSystem) filter.sourceSystem = { in: sourceSystem }
   const status = buildStatuses(search, 'direct_acquisitions')
@@ -497,9 +584,9 @@ export function buildScopeFilter(scope: {
   if (buyerCounty) filter.buyerCounty = buyerCounty
   const buyerSiruta = trimmedOrUndefined(scope.buyerSiruta)
   if (buyerSiruta) filter.buyerSiruta = buyerSiruta
-  // Supplier geography: served by the ClickHouse analytics backend (dev,
-  // 2026-07-22) — forwarded on the analysis scope; record lists still
-  // exclude it (list geo remains a separate TODO).
+  // Supplier geography: served by the ClickHouse analytics backend on the
+  // analysis scope, and by the search engine on the record list (2026-07-25)
+  // — both resolve it from the same registered-office territory resolution.
   const supplierCounty = trimmedOrUndefined(scope.supplierCounty)
   if (supplierCounty) filter.supplierCounty = supplierCounty
   const supplierRegion = trimmedOrUndefined(scope.supplierRegion)

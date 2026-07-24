@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
 import {
+  isListCapabilityAvailable,
   normalizeProcurementMonthEnd,
   normalizeProcurementMonthStart,
   procurementValueBasisSchema,
@@ -44,7 +45,6 @@ import {
 } from './procurement-geography-combobox'
 import { ProcurementListFilterFields } from './procurement-filter-sheet'
 import { ProcurementPeriodYearPresets } from './procurement-period-year-presets'
-import { ProcurementPreviewBadge } from './procurement-preview-badge'
 import {
   valueBasisLabel,
   valueBasisMoneyLabel,
@@ -95,6 +95,10 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
   const displayDateFrom = period.isAllTime ? undefined : period.dateFrom
   const displayDateTo = period.isAllTime ? undefined : period.dateTo
   const onList = state.view === 'list'
+  // Territory availability comes from the ONE capability registry, so the
+  // control's promise and the query builder's behaviour cannot diverge.
+  const buyerGeoOnList = isListCapabilityAvailable('buyer-geo', state.grain)
+  const supplierGeoOnList = isListCapabilityAvailable('supplier-geo', state.grain)
 
   const regionOptions: readonly ProcurementGeographyPickerOption[] =
     geographyQuery.data?.regions.map((region) => ({
@@ -428,11 +432,6 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
                 >
                   <Trans>Public Institution Location</Trans>
                 </p>
-                {onList ? (
-                  <ProcurementPreviewBadge
-                    reason={t`Not applied to the record list yet`}
-                  />
-                ) : null}
               </div>
               <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
                 <Trans>
@@ -441,12 +440,12 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
                   with no region or county filter.
                 </Trans>
               </p>
-              {/* TODO(Search geography API): buyer territory is not applied to list GraphQL filters. */}
-              {onList ? (
+              {onList && !buyerGeoOnList ? (
                 <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
                   <Trans>
-                    Buyer location is kept in the URL for round-trip, but it is
-                    not applied to the record list yet.
+                    Contract modifications are not in the search index, so
+                    buyer location does not filter this record list. It still
+                    scopes the analytics views.
                   </Trans>
                 </p>
               ) : null}
@@ -543,11 +542,6 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
                 >
                   <Trans>Supplier Location</Trans>
                 </p>
-                {onList ? (
-                  <ProcurementPreviewBadge
-                    reason={t`Not applied to the record list yet`}
-                  />
-                ) : null}
               </div>
               <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
                 <Trans>
@@ -555,12 +549,12 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
                   suppliers with no region or county filter.
                 </Trans>
               </p>
-              {onList ? (
+              {onList && !supplierGeoOnList ? (
                 <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
                   <Trans>
-                    Supplier location scopes the analytics; it is kept in the
-                    URL for round-trip but is not applied to the record list
-                    yet.
+                    These records name no awarded supplier, so supplier
+                    location cannot filter this record list. It still scopes
+                    the analytics views.
                   </Trans>
                 </p>
               ) : null}

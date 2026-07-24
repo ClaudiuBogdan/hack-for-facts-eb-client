@@ -446,7 +446,23 @@ export function mapSearchPage(options: {
   total: number | null
   page: number
   pageSize: number
+  provenance?: { engine: string; asOf: string | null } | null
+  facets?: ReadonlyArray<{
+    dimension: string
+    otherCount: number
+    buckets: ReadonlyArray<{ key: string; count: number }>
+  }>
 }): ProcurementSearchPage {
+  // An unknown engine name is dropped rather than shown: a freshness claim we
+  // cannot interpret is worse than none.
+  const engine = options.provenance?.engine
+  const asOf = options.provenance?.asOf ?? null
+  const provenance =
+    engine === 'opensearch'
+      ? { engine: 'opensearch' as const, asOf }
+      : engine === 'postgres'
+        ? { engine: 'postgres' as const, asOf }
+        : null
   return {
     grain: options.grain,
     records: [...options.records],
@@ -455,6 +471,14 @@ export function mapSearchPage(options: {
       pageSize: options.pageSize,
       total: options.total,
     },
+    provenance,
+    ...(options.facets !== undefined && {
+      facets: options.facets.map((facet) => ({
+        dimension: facet.dimension,
+        otherCount: facet.otherCount,
+        buckets: facet.buckets.map((bucket) => ({ ...bucket })),
+      })),
+    }),
   }
 }
 

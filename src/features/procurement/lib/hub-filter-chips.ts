@@ -1,9 +1,11 @@
 /**
- * Hub active-filter chips — period always, geo with B1 suffixes, list-only (C1),
- * rankings unsupported facets (not applied to rankings).
+ * Hub active-filter chips — period always, list-only facets (C1), rankings
+ * unsupported facets, and the per-grain list capability (a chip that cannot
+ * apply says so, from the same registry the query builders scrub with).
  */
 import { t } from '@lingui/core/macro'
 import {
+  isListCapabilityAvailable,
   PROCUREMENT_HUB_DEFAULTS,
   rankingStatusFromHubState,
   type ProcurementHubState,
@@ -46,12 +48,12 @@ function measureLabel(measure: ProcurementHubState['measure']): string {
  * Unsupported facets stay inactive on Rankings.
  */
 /**
- * Intermediate CPV levels (group/class/category) scope AGGREGATES only — the
- * record list has no CPV prefix filter yet, so on the list view the chip is
- * honestly inactive (the geo-keys precedent).
+ * Intermediate CPV levels (group/class/category) scope aggregates AND the
+ * record list — the engine compiles a level code to a `cpv_code` prefix, the
+ * same rule ClickHouse applies.
  */
 function cpvLevelChipKind(state: ProcurementHubState): HubFilterChipKind {
-  if (state.view === 'list') return 'not-on-list'
+  if (state.view === 'list') return 'applied'
   return rankingScopeFacetKind(state, 'scope')
 }
 
@@ -78,8 +80,13 @@ export function buildHubActiveFilterChips(
   locale = 'en',
 ): readonly HubFilterChip[] {
   const chips: HubFilterChip[] = []
-  const geoAppliedOnView =
-    state.view === 'overview' || state.view === 'rankings'
+  // Geography reaches every view: aggregates via ClickHouse, the record list
+  // via the search engine (2026-07-25). On the list it still depends on the
+  // grain — the capability registry is the single answer for both sides.
+  const geoApplied = (capability: 'buyer-geo' | 'supplier-geo'): boolean =>
+    state.view !== 'list' || isListCapabilityAvailable(capability, state.grain)
+  const buyerGeoApplied = geoApplied('buyer-geo')
+  const supplierGeoApplied = geoApplied('supplier-geo')
 
   if (period.isAllTime) {
     chips.push({
@@ -141,7 +148,7 @@ export function buildHubActiveFilterChips(
       key: 'buyer-siruta',
       prefix: t`Public institution`,
       value: t`UAT ${state.buyerSiruta}`,
-      kind: geoAppliedOnView ? 'applied' : 'not-on-list',
+      kind: buyerGeoApplied ? 'applied' : 'not-on-list',
       clear: {
         buyerSiruta: undefined,
         buyerCounty: undefined,
@@ -153,7 +160,7 @@ export function buildHubActiveFilterChips(
       key: 'buyer-county',
       prefix: t`Public institution`,
       value: t`County ${state.buyerCounty}`,
-      kind: geoAppliedOnView ? 'applied' : 'not-on-list',
+      kind: buyerGeoApplied ? 'applied' : 'not-on-list',
       clear: {
         buyerCounty: undefined,
         buyerRegion: undefined,
@@ -165,7 +172,7 @@ export function buildHubActiveFilterChips(
       key: 'buyer-region',
       prefix: t`Public institution`,
       value: state.buyerRegion,
-      kind: geoAppliedOnView ? 'applied' : 'not-on-list',
+      kind: buyerGeoApplied ? 'applied' : 'not-on-list',
       clear: {
         buyerRegion: undefined,
         buyerCounty: undefined,
@@ -179,7 +186,7 @@ export function buildHubActiveFilterChips(
       key: 'supplier-geo',
       prefix: t`Supplier location`,
       value: t`UAT ${state.supplierSiruta}`,
-      kind: geoAppliedOnView ? 'applied' : 'not-on-list',
+      kind: supplierGeoApplied ? 'applied' : 'not-on-list',
       clear: {
         supplierSiruta: undefined,
         supplierCounty: undefined,
@@ -191,9 +198,7 @@ export function buildHubActiveFilterChips(
       key: 'supplier-geo',
       prefix: t`Supplier location`,
       value: state.supplierCounty ?? state.supplierRegion ?? '',
-      // Supplier geo is applied to overview/rankings analytics (ClickHouse
-      // analytics backend); record lists still exclude it.
-      kind: geoAppliedOnView ? 'applied' : 'not-on-list',
+      kind: supplierGeoApplied ? 'applied' : 'not-on-list',
       clear: {
         supplierCounty: undefined,
         supplierRegion: undefined,

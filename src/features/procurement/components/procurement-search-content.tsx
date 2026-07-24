@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { RequestDatasetAction } from '@/components/shared/procurement-data/request-dataset-action'
 import { ShareFilteredView } from '@/components/shared/procurement-data/share-filtered-view'
 import type { ProcurementSearchState } from '@/schemas/procurement-search'
+import type { ProcurementHubState } from '@/schemas/procurement-hub'
 import type { ProcurementFilterState } from '../hooks/use-procurement-filter-state'
 import { useProcurementSearch } from '../hooks/use-procurement-data'
 import { useProcurementFilterState } from '../hooks/use-procurement-filter-state'
@@ -29,6 +30,7 @@ import {
   ProcurementFilterTriggerButton,
 } from './procurement-filter-sheet'
 import { ProcurementDaWindowNotice } from './procurement-da-window-notice'
+import { ProcurementListProvenanceNotice } from './procurement-list-provenance-notice'
 import { ProcurementGrainTabs } from './procurement-grain-tabs'
 import { ProcurementPagination } from './procurement-pagination'
 import { ProcurementRecordList } from './procurement-record-card'
@@ -40,6 +42,8 @@ type Props = {
   readonly search: ProcurementSearchState
   /** When provided (hub), URL writes go through the shared hub state. */
   readonly filterState?: ProcurementFilterState
+  /** Hub state, when rendered inside the hub — drives the per-grain drop notice. */
+  readonly hubState?: ProcurementHubState
   /** Hide the in-body filter trigger when the hub chrome owns the sheet. */
   readonly hideFilterChrome?: boolean
   readonly onOpenFilters?: () => void
@@ -49,6 +53,7 @@ type Props = {
 export function ProcurementSearchContent({
   search,
   filterState: externalFilters,
+  hubState,
   hideFilterChrome = false,
   onOpenFilters,
 }: Props) {
@@ -121,6 +126,11 @@ export function ProcurementSearchContent({
       {!hideFilterChrome ? <ProcurementActiveFilters filters={filters} /> : null}
 
       <ProcurementDaWindowNotice search={search} />
+
+      <ProcurementListProvenanceNotice
+        provenance={page?.provenance ?? null}
+        {...(hubState !== undefined && { hubState })}
+      />
 
       <p aria-live="polite" className="text-sm text-[var(--pnrr-muted)]">
         {page ? (

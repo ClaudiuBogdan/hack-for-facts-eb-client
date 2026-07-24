@@ -433,9 +433,11 @@ export const PROCUREMENT_HUB_LIST_ONLY_KEYS = [
 ] as const
 
 /**
- * TODO(Search geography API): buyer/supplier territory is not an authoritative
- * list filter yet. Keep in URL for round-trip; do not send to GraphQL list
- * filters (product B1).
+ * Party-territory keys, buyer side then supplier side. Authoritative on BOTH
+ * surfaces since the search engine took over the record list (2026-07-25):
+ * aggregates resolve them in ClickHouse, the list in OpenSearch, from the same
+ * territory resolution. Supplier territory is structurally absent on grains
+ * with no award — see `PROCUREMENT_HUB_CAPABILITIES`.
  */
 export const PROCUREMENT_HUB_GEO_KEYS = [
   'buyerRegion',
@@ -737,19 +739,27 @@ export function hubStateToTerritoryLandingFilters(
 }
 
 /**
- * List/search API state from hub — period resolved into dates; geography
- * intentionally omitted (B1 / TODO Search geography API).
+ * List/search API state from hub — period resolved into dates, geography and
+ * the CPV hierarchy carried through (the search engine serves them on the
+ * record list since 2026-07-25).
+ *
+ * Keys the active grain cannot honor are dropped HERE, from the same registry
+ * that drives the disclosure, so the request and the explanation can never
+ * disagree (`listCapabilityDrops` returns what was dropped and why).
  */
 export function hubStateToListSearchState(
   state: ProcurementHubState,
   now?: Date,
 ): import('./procurement-search').ProcurementSearchState {
   const resolved = resolveProcurementOverviewPeriod(state, now)
+  const dropped = new Set<string>(listCapabilityDrops(state).map((drop) => drop.key))
+  const keep = <T>(key: keyof ProcurementHubState, value: T): T | undefined =>
+    dropped.has(key) ? undefined : value
   return {
     grain: state.grain,
     q: state.q,
     authority_cui: state.authority_cui,
-    supplier_cui: state.supplier_cui,
+    supplier_cui: keep('supplier_cui', state.supplier_cui),
     cpv: state.cpv,
     cpv_division: state.cpv_division,
     cpv_group: state.cpv_group,
@@ -770,6 +780,12 @@ export function hubStateToListSearchState(
     pageSize: state.pageSize,
     from: state.from,
     highlight: state.highlight,
+    buyerRegion: keep('buyerRegion', state.buyerRegion),
+    buyerCounty: keep('buyerCounty', state.buyerCounty),
+    buyerSiruta: keep('buyerSiruta', state.buyerSiruta),
+    supplierRegion: keep('supplierRegion', state.supplierRegion),
+    supplierCounty: keep('supplierCounty', state.supplierCounty),
+    supplierSiruta: keep('supplierSiruta', state.supplierSiruta),
     // county/region legacy ignored for list
   }
 }
@@ -1103,7 +1119,16 @@ export function scrubScopeForAnalysisGrain<
   return { scope: next as T, dropped }
 }
 
-export type HubCapabilityStatus = 'live' | 'todo' | 'preview'
+// ---------------------------------------------------------------------------
+// Capability registry — ONE source for what each surface can honor.
+//
+// Everything downstream reads this: the query builders scrub with it, the UI
+// discloses from it, and the developer matrix renders it. A capability that is
+// "live" here but unwired there is the drift this registry exists to prevent.
+// ---------------------------------------------------------------------------
+
+/** `na` = structurally not applicable, not unfinished work. */
+export type HubCapabilityStatus = 'live' | 'todo' | 'preview' | 'na'
 
 export type HubCapabilityRow = {
   readonly id: string
@@ -1113,50 +1138,146 @@ export type HubCapabilityRow = {
   readonly note?: string
 }
 
+export type HubCapability = HubCapabilityRow & {
+  /** Hub state keys this capability carries. */
+  readonly keys: readonly (keyof ProcurementHubState)[]
+  /**
+   * Grains whose RECORDS do not carry this dimension at all. The list drops
+   * these keys there — and says so — instead of sending a filter the server
+   * would reject or ignore.
+   */
+  readonly listUnsupportedGrains?: readonly ProcurementGrain[]
+  /** Shown to the reader when the drop happens. */
+  readonly dropReason?: string
+}
+
+/** A filter the active grain cannot honor on the record list. */
+export type HubCapabilityDrop = {
+  readonly key: keyof ProcurementHubState
+  readonly capabilityId: string
+  readonly label: string
+  readonly reason: string
+}
+
 /**
- * Developer matrix for F3 panel. Update when APIs land.
- * TODO(shared filter sheet): rows stay until matrix is fully green.
+ * Can the record list honor this capability for this grain? Drives control
+ * state in the filter sheet (the reader is told BEFORE choosing), while
+ * `listCapabilityDrops` explains an already-chosen filter that had to go.
  */
-export const PROCUREMENT_HUB_CAPABILITY_MATRIX: readonly HubCapabilityRow[] = [
+export function isListCapabilityAvailable(
+  capabilityId: string,
+  grain: ProcurementGrain,
+): boolean {
+  const capability = PROCUREMENT_HUB_CAPABILITIES.find((c) => c.id === capabilityId)
+  if (capability === undefined) return false
+  if (capability.list !== 'live') return false
+  return !capability.listUnsupportedGrains?.includes(grain)
+}
+
+/**
+ * Which of the current filters the record list must drop for this grain.
+ * Used by `hubStateToListSearchState` (to scrub) and by the UI (to disclose) —
+ * the same call, so a dropped filter is always an explained one.
+ */
+export function listCapabilityDrops(
+  state: ProcurementHubState,
+): readonly HubCapabilityDrop[] {
+  const drops: HubCapabilityDrop[] = []
+  for (const capability of PROCUREMENT_HUB_CAPABILITIES) {
+    if (!capability.listUnsupportedGrains?.includes(state.grain)) continue
+    for (const key of capability.keys) {
+      if (state[key] === undefined) continue
+      drops.push({
+        key,
+        capabilityId: capability.id,
+        label: capability.label,
+        reason: capability.dropReason ?? `not available on this record type`,
+      })
+    }
+  }
+  return drops
+}
+
+/**
+ * The registry. `PROCUREMENT_HUB_CAPABILITY_MATRIX` below is a projection of
+ * it — the developer panel cannot show a status the builders do not use.
+ */
+export const PROCUREMENT_HUB_CAPABILITIES: readonly HubCapability[] = [
   {
     id: 'period',
     label: 'Period',
     overview: 'live',
     list: 'live',
+    keys: ['dateFrom', 'dateTo', 'period', 'year'],
   },
   {
     id: 'grain',
     label: 'Grain',
     overview: 'live',
     list: 'live',
+    keys: ['grain'],
   },
   {
     id: 'buyer-geo',
     label: 'Buyer geography',
     overview: 'live',
-    list: 'todo',
-    note: 'TODO(Search geography API): not applied to record list',
+    list: 'live',
+    note: 'Region/county/UAT on aggregates (ClickHouse) and on the record list (search engine, 2026-07-25)',
+    keys: ['buyerRegion', 'buyerCounty', 'buyerSiruta'],
+    listUnsupportedGrains: ['modifications'],
+    dropReason:
+      'contract modifications are not in the search index — territory does not filter this list',
   },
   {
     id: 'supplier-geo',
     label: 'Supplier geography',
     overview: 'live',
-    list: 'todo',
-    note: 'Overview/rankings scope supplier region+county (ClickHouse); TODO(list filter)',
+    list: 'live',
+    note: "Registered office of the awarded company; absent on procedures (a procedure predates its award)",
+    keys: ['supplierRegion', 'supplierCounty', 'supplierSiruta'],
+    listUnsupportedGrains: ['procedures', 'modifications'],
+    dropReason: 'these records carry no awarded supplier, so supplier territory cannot apply',
   },
   {
     id: 'parties-cpv-value',
     label: 'Parties / CPV / value facets',
     overview: 'live',
     list: 'live',
-    note: 'Parties/CPV/value bounds scope overview cards + map + rankings (C1 closed 2026-07-24; scope-fixed cards hide); value QUALITY stays list-only',
+    note: 'Parties/CPV/value bounds scope overview cards + map + rankings (C1 closed 2026-07-24; scope-fixed cards hide); CPV group/class/category reach the list too (2026-07-25); value QUALITY stays list-only',
+    keys: ['authority_cui', 'cpv', 'cpv_division', 'cpv_group', 'cpv_class', 'cpv_category'],
+  },
+  {
+    id: 'supplier-party',
+    label: 'Supplier filter',
+    overview: 'live',
+    list: 'live',
+    keys: ['supplier_cui'],
+    listUnsupportedGrains: ['procedures'],
+    dropReason: 'a procedure predates its award and names no supplier',
   },
   {
     id: 'buyer-map',
     label: 'Buyer geography map',
     overview: 'live',
-    list: 'todo',
-    note: 'Region+county+UAT paint live (ClickHouse); list column = TODO(Search geography API): map territory does not filter the record list',
+    list: 'live',
+    note: 'Region+county+UAT paint (ClickHouse); the clicked territory now filters the record list too',
+    keys: [],
+  },
+  {
+    id: 'list-facets',
+    label: 'Result-set facet counts',
+    overview: 'na',
+    list: 'live',
+    note: 'Counts of the CURRENT result set per filter option (search engine aggregations) — never authoritative analytics',
+    keys: [],
+  },
+  {
+    id: 'list-freshness',
+    label: 'List freshness disclosure',
+    overview: 'na',
+    list: 'live',
+    note: 'Engine-served pages carry the index build stamp; the reader sees "as of"',
+    keys: [],
   },
   {
     id: 'rankings',
@@ -1164,27 +1285,31 @@ export const PROCUREMENT_HUB_CAPABILITY_MATRIX: readonly HubCapabilityRow[] = [
     overview: 'live',
     list: 'live',
     note: 'view=rankings; top-100 + count/value sort (ClickHouse); CPV division→group→class→category→code levels; client pagination',
+    keys: ['rankDim', 'cpvLevel', 'rankBy', 'rankPage', 'rankPageSize'],
   },
   {
     id: 'q-aggregates',
     label: 'Text query on aggregates',
     overview: 'live',
     list: 'live',
-    note: 'q scopes overview + rankings as a title row filter (server 2026-07-24); title coverage is partial per grain',
+    note: 'q scopes overview + rankings as a title row filter (server 2026-07-24); on the list it is full-text relevance search (Romanian analyzer)',
+    keys: ['q'],
   },
   {
     id: 'shared-sheet',
     label: 'Shared filter sheet',
     overview: 'live',
     list: 'live',
-    note: 'D3 — unfinished controls marked Preview',
+    note: 'One registry drives the sheet, the queries and this matrix',
+    keys: [],
   },
   {
     id: 'value-basis',
     label: 'Value logic (vbasis)',
     overview: 'live',
-    list: 'todo',
-    note: 'awarded | estimated | ceiling (stats+series only; rankings withheld) | calloff (own population) | mod_adjusted (contracts). List records keep their own values — vbasis is analytics-only.',
+    list: 'na',
+    note: 'awarded | estimated | ceiling (stats+series only; rankings withheld) | calloff (own population) | mod_adjusted (contracts). List records keep their own values — vbasis is analytics-only, by design.',
+    keys: ['vbasis'],
   },
   {
     id: 'modifications-analytics',
@@ -1192,8 +1317,22 @@ export const PROCUREMENT_HUB_CAPABILITY_MATRIX: readonly HubCapabilityRow[] = [
     overview: 'live',
     list: 'live',
     note: 'grain=modifications: counts + breakdowns, no money (raw deltas are quality-relabeled); ~48.5% undated disclosed by the server envelope.',
+    keys: [],
   },
 ]
+
+/**
+ * The developer matrix (F3 panel) — a projection of the registry above, so a
+ * row can never claim a capability the builders do not actually apply.
+ */
+export const PROCUREMENT_HUB_CAPABILITY_MATRIX: readonly HubCapabilityRow[] =
+  PROCUREMENT_HUB_CAPABILITIES.map(({ id, label, overview, list, note }) => ({
+    id,
+    label,
+    overview,
+    list,
+    ...(note !== undefined && { note }),
+  }))
 
 export function isProcurementHubDevPanelEnabled(): boolean {
   if (import.meta.env.DEV) return true

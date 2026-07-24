@@ -343,3 +343,46 @@ describe('free-text q is bounded before it reaches the wire', () => {
     expect(build(state({ q: '  spital  ' })).q).toEqual({ contains: 'spital' })
   })
 })
+
+describe('geography and CPV levels reach the record list', () => {
+  it('sends the finest buyer and supplier level, one field per side', () => {
+    const filter = buildContractsFilter(
+      state({
+        buyerRegion: 'Nord-Vest',
+        buyerCounty: 'CJ',
+        supplierRegion: 'Bucuresti-Ilfov',
+      }),
+    )
+    // County is finer than region — the coarser field is never sent alongside.
+    expect(filter.buyerCounty).toEqual({ eq: 'CJ' })
+    expect(filter.buyerRegion).toBeUndefined()
+    expect(filter.supplierRegion).toEqual({ eq: 'Bucuresti-Ilfov' })
+  })
+
+  it('never sends supplier territory on procedures (no award, no supplier)', () => {
+    const filter = buildProceduresFilter(
+      state({ buyerSiruta: '54975', supplierCounty: 'B' }),
+    )
+    expect(filter.buyerSiruta).toEqual({ eq: '54975' })
+    expect(filter).not.toHaveProperty('supplierCounty')
+  })
+
+  it('sends the finest CPV level only, exact code winning over every level', () => {
+    expect(
+      buildDirectAcquisitionsFilter(state({ cpv_group: '45200000' })).cpvGroup,
+    ).toEqual({ eq: '45200000' })
+
+    const finest = buildDirectAcquisitionsFilter(
+      state({ cpv_group: '45200000', cpv_class: '45230000' }),
+    )
+    expect(finest.cpvClass).toEqual({ eq: '45230000' })
+    expect(finest.cpvGroup).toBeUndefined()
+
+    const exact = buildContractsFilter(
+      state({ cpv: '45233140', cpv_class: '45230000', cpv_division: '45' }),
+    )
+    expect(exact.cpvCode).toEqual({ eq: '45233140' })
+    expect(exact.cpvClass).toBeUndefined()
+    expect(exact.cpvDivision).toBeUndefined()
+  })
+})

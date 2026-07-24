@@ -21,8 +21,9 @@ type Props = {
 function kindSuffix(kind: HubFilterChip['kind']): string | null {
   if (kind === 'list-only') return t`List only`
   if (kind === 'not-on-rankings') return t`Not applied to rankings`
-  // Buyer geo on list, supplier geo everywhere — not applied to the active query.
-  if (kind === 'not-on-list') return t`Not applied yet`
+  // The active record type cannot carry this filter (e.g. supplier territory
+  // on procedures, which name no supplier) — it is dropped, not pending.
+  if (kind === 'not-on-list') return t`Not applied to this record type`
   return null
 }
 

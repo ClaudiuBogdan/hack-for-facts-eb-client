@@ -521,6 +521,36 @@ export const procurementLandingSchema = z.object({
 
 export type ProcurementLanding = z.infer<typeof procurementLandingSchema>
 
+/**
+ * Which surface answered the record list and how fresh it is. The search
+ * engine serves membership, order and counts as of an index build; Postgres
+ * hydrates the row values either way, so the figures shown are always the
+ * production database's.
+ */
+export const procurementSearchProvenanceSchema = z.object({
+  engine: z.enum(['opensearch', 'postgres']),
+  /** Index build timestamp (ISO-8601); null on the live Postgres path. */
+  asOf: z.string().nullable(),
+})
+
+export type ProcurementSearchProvenance = z.infer<
+  typeof procurementSearchProvenanceSchema
+>
+
+/**
+ * How the CURRENT result set distributes over one dimension. Result-set
+ * counts — never authoritative analytics (those come from the analysis
+ * surface, over the whole scope).
+ */
+export const procurementSearchFacetSchema = z.object({
+  dimension: z.string(),
+  buckets: z.array(z.object({ key: z.string(), count: z.number() })),
+  /** Records outside the returned buckets — disclosed, never dropped. */
+  otherCount: z.number(),
+})
+
+export type ProcurementSearchFacet = z.infer<typeof procurementSearchFacetSchema>
+
 export const procurementSearchPageSchema = z.object({
   grain: procurementGrainSchema,
   records: z.array(procurementRecordSummarySchema),
@@ -530,6 +560,9 @@ export const procurementSearchPageSchema = z.object({
     /** Null = unknown / too-large; UI shows '1000+'. */
     total: z.number().nullable(),
   }),
+  /** Absent on an older server that does not report it. */
+  provenance: procurementSearchProvenanceSchema.nullable().optional(),
+  facets: z.array(procurementSearchFacetSchema).optional(),
 })
 
 export type ProcurementSearchPage = z.infer<typeof procurementSearchPageSchema>

@@ -5,9 +5,13 @@ import {
   hubStateToListSearchState,
   hubStateToRankingScopeInput,
   hubStateToTerritoryLandingFilters,
+  isListCapabilityAvailable,
+  listCapabilityDrops,
   parseProcurementHubSearch,
   rankingRecordKindFromHubState,
   withProcurementHubDefaults,
+  PROCUREMENT_HUB_CAPABILITIES,
+  PROCUREMENT_HUB_CAPABILITY_MATRIX,
 } from './procurement-hub'
 
 describe('procurement hub schema', () => {
@@ -206,15 +210,59 @@ describe('procurement hub schema', () => {
     ).not.toHaveProperty('supplierCounty')
   })
 
-  it('omits geography from list search state (B1)', () => {
+  it('carries geography into the list search state (search engine, 2026-07-25)', () => {
     const state = parseProcurementHubSearch({
       buyerRegion: 'Nord-Vest',
+      supplierCounty: 'CJ',
+      grain: 'contracts',
       period: 'all',
     })
     const list = hubStateToListSearchState(state)
-    expect(list).not.toHaveProperty('buyerRegion')
+    expect(list.buyerRegion).toBe('Nord-Vest')
+    expect(list.supplierCounty).toBe('CJ')
     expect(list.dateFrom).toBeUndefined()
     expect(list.dateTo).toBeUndefined()
+  })
+
+  it('drops the filters a grain cannot honor, and says which', () => {
+    // A procedure predates its award: no supplier, so no supplier territory.
+    const procedures = parseProcurementHubSearch({
+      grain: 'procedures',
+      buyerCounty: 'CJ',
+      supplierCounty: 'B',
+      supplier_cui: '6567900',
+      period: 'all',
+    })
+    const list = hubStateToListSearchState(procedures)
+    expect(list.buyerCounty).toBe('CJ')
+    expect(list.supplierCounty).toBeUndefined()
+    expect(list.supplier_cui).toBeUndefined()
+    expect(listCapabilityDrops(procedures).map((drop) => drop.key)).toEqual([
+      'supplierCounty',
+      'supplier_cui',
+    ])
+
+    // Modifications are not in the search index at all — no territory filter.
+    const modifications = parseProcurementHubSearch({
+      grain: 'modifications',
+      buyerCounty: 'CJ',
+      period: 'all',
+    })
+    expect(hubStateToListSearchState(modifications).buyerCounty).toBeUndefined()
+    expect(isListCapabilityAvailable('buyer-geo', 'modifications')).toBe(false)
+    expect(isListCapabilityAvailable('buyer-geo', 'contracts')).toBe(true)
+  })
+
+  it('projects the developer matrix from the capability registry', () => {
+    // The matrix is a VIEW of the registry — a row cannot claim a capability
+    // the builders do not apply.
+    expect(PROCUREMENT_HUB_CAPABILITY_MATRIX.map((row) => row.id)).toEqual(
+      PROCUREMENT_HUB_CAPABILITIES.map((capability) => capability.id),
+    )
+    const geo = PROCUREMENT_HUB_CAPABILITY_MATRIX.find(
+      (row) => row.id === 'buyer-geo',
+    )
+    expect(geo?.list).toBe('live')
   })
 
   it('forwards CPV hierarchy levels, q and value bounds to the ranking scope', () => {
