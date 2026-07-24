@@ -30,6 +30,7 @@ import {
   ProcurementFilterTriggerButton,
 } from './procurement-filter-sheet'
 import { ProcurementDaWindowNotice } from './procurement-da-window-notice'
+import { ProcurementListFacets } from './procurement-list-facets'
 import { ProcurementListProvenanceNotice } from './procurement-list-provenance-notice'
 import { ProcurementGrainTabs } from './procurement-grain-tabs'
 import { ProcurementPagination } from './procurement-pagination'
@@ -144,6 +145,11 @@ export function ProcurementSearchContent({
           )
         ) : null}
       </p>
+
+      <ProcurementListFacets
+        {...(page?.facets !== undefined && { facets: page.facets })}
+        loading={query.isPending}
+      />
 
       {query.isPending ? (
         <ProcurementSearchSkeleton />

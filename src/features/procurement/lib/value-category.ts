@@ -61,3 +61,18 @@ export function expandValueCategories(
   }
   return states.size > 0 ? [...states] : undefined
 }
+
+/**
+ * Raw `value_state` → the user-facing category. Used to roll a result-set
+ * facet (which counts raw states) up into the vocabulary the reader sees in
+ * the filter sheet. An unknown token returns null rather than being bucketed
+ * into a category it does not belong to.
+ */
+export function valueCategoryForState(
+  state: string,
+): ProcurementValueCategory | null {
+  for (const [category, states] of Object.entries(VALUE_STATES_BY_CATEGORY)) {
+    if (states.includes(state)) return category as ProcurementValueCategory
+  }
+  return null
+}
