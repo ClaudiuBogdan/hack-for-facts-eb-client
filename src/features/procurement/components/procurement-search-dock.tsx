@@ -62,7 +62,7 @@ export function ProcurementSearchDock({
   const form = (
     <form
       role="search"
-      className={cn(variant === 'inline' ? 'w-full max-w-[520px]' : 'mt-4', className)}
+      className={cn(variant === 'inline' ? 'w-full' : 'mt-4', className)}
       onSubmit={(event) => {
         event.preventDefault()
         commit()
@@ -88,11 +88,9 @@ export function ProcurementSearchDock({
           onChange={(event) => setDraft(event.target.value)}
         />
       </div>
-      {variant === 'card' ? (
-        <p className="mt-2 text-sm text-[var(--pnrr-muted)]">
-          <Trans>Press Enter to search</Trans>
-        </p>
-      ) : null}
+      <p className="mt-1.5 text-xs text-[var(--pnrr-muted)]">
+        <Trans>Press Enter to search</Trans>
+      </p>
     </form>
   )
 

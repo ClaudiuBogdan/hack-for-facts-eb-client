@@ -1,14 +1,21 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import { Link } from '@tanstack/react-router'
 import {
-  Building2,
   CalendarRange,
   Coins,
+  ListFilter,
   MapPin,
   SlidersHorizontal,
+  type LucideIcon,
 } from 'lucide-react'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -69,11 +76,49 @@ function resolveGeographyLevel(params: {
   return 'national'
 }
 
+function formatMonthShort(value: string): string {
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(`${value}T00:00:00Z`))
+}
+
+/** Collapsed-section trigger: icon + label left, active-value summary right. */
+function FilterSectionTrigger({
+  icon: Icon,
+  title,
+  summary,
+}: {
+  readonly icon: LucideIcon
+  readonly title: ReactNode
+  readonly summary: ReactNode
+}) {
+  return (
+    <AccordionTrigger className="py-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] [&>svg]:h-4 [&>svg]:w-4">
+      <span className="flex min-w-0 flex-1 items-center justify-between gap-3 pr-3">
+        <span className="flex shrink-0 items-center gap-2">
+          <Icon className="h-4 w-4" aria-hidden="true" />
+          <span className={procurementSectionLabelClassName}>{title}</span>
+        </span>
+        <span className="min-w-0 truncate text-xs font-semibold normal-case tracking-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          {summary}
+        </span>
+      </span>
+    </AccordionTrigger>
+  )
+}
+
 /**
  * Full shared hub filter sheet (D3) — period, metric, geography, and list facets.
  * Record type (grain) lives on each view’s own toolbar — Overview/Rankings use
  * contracts vs DA; List uses the full grain tabs. Unfinished controls stay
  * visible with Preview / TODO honesty (B1).
+ *
+ * Sections collapse into an accordion whose triggers carry the active value,
+ * so the panel reads as a summary first and a form second. The common path
+ * (metric, period) stays open; geography, list facets and the advanced value
+ * logic open on demand.
  */
 export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
   const { state, period, listFilterState } = hub
@@ -99,6 +144,47 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
   // control's promise and the query builder's behaviour cannot diverge.
   const buyerGeoOnList = isListCapabilityAvailable('buyer-geo', state.grain)
   const supplierGeoOnList = isListCapabilityAvailable('supplier-geo', state.grain)
+
+  // The modifications population is counts-only — the value option must not
+  // pretend, so the EFFECTIVE metric drives both the control and the summary.
+  const countsOnlyGrain = state.grain === 'modifications'
+  const effectiveMeasure: ProcurementHubMeasure = countsOnlyGrain
+    ? 'record_count'
+    : state.measure
+
+  const measureSummary =
+    effectiveMeasure === 'value_awarded'
+      ? valueBasisMoneyLabel(state.vbasis)
+      : t`Record count`
+  const periodSummary = period.isAllTime
+    ? t`All time`
+    : `${period.dateFrom ? formatMonthShort(period.dateFrom) : '…'} – ${period.dateTo ? formatMonthShort(period.dateTo) : '…'}`
+  const buyerGeoSummary = state.buyerSiruta
+    ? `UAT ${state.buyerSiruta}`
+    : (state.buyerCounty ?? state.buyerRegion ?? null)
+  const supplierGeoSummary = state.supplierSiruta
+    ? `UAT ${state.supplierSiruta}`
+    : (state.supplierCounty ?? state.supplierRegion ?? null)
+  const locationsSummary =
+    [buyerGeoSummary, supplierGeoSummary].filter(Boolean).join(' · ') ||
+    t`National`
+  const listFacetCount = [
+    state.authority_cui,
+    state.supplier_cui,
+    state.cpv,
+    state.cpv_category,
+    state.cpv_class,
+    state.cpv_group,
+    state.cpv_division,
+    state.source,
+    state.status?.length ? 'status' : undefined,
+    state.value_state?.length ? 'value' : undefined,
+    state.record_kind?.length ? 'kind' : undefined,
+    state.valueMin !== undefined ? 'min' : undefined,
+    state.valueMax !== undefined ? 'max' : undefined,
+  ].filter(Boolean).length
+  const vbasisSummary =
+    state.vbasis === 'awarded' ? t`Default` : valueBasisLabel(state.vbasis)
 
   const regionOptions: readonly ProcurementGeographyPickerOption[] =
     geographyQuery.data?.regions.map((region) => ({
@@ -200,453 +286,428 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
           </SheetDescription>
         </SheetHeader>
 
-        <div className="min-w-0 flex-1 space-y-6 overflow-y-auto p-6">
-          <section className="space-y-4" aria-labelledby="hub-measure-label">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
-                <p
-                  id="hub-measure-label"
-                  className={procurementSectionLabelClassName}
-                >
-                  <Trans>Metric</Trans>
-                </p>
-              </div>
-              <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-                <Trans>
-                  Shared across Overview and List. Awarded value is the default;
-                  switch to record count when amounts are missing or you care
-                  about volume.
-                </Trans>
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {(
-                [
-                  // The value option follows the ACTIVE value logic — calling
-                  // a ceiling or call-off metric "Awarded value" would
-                  // misname what the charts actually show.
-                  {
-                    id: 'value_awarded' as const,
-                    label: valueBasisMoneyLabel(state.vbasis),
-                  },
-                  { id: 'record_count' as const, label: t`Record count` },
-                ] satisfies ReadonlyArray<{
-                  id: ProcurementHubMeasure
-                  label: string
-                }>
-              ).map((option) => {
-                // The modifications population is counts-only — every surface
-                // coerces to counts, so the value option must not pretend and
-                // the EFFECTIVE metric (record count) shows as active.
-                const countsOnlyGrain = state.grain === 'modifications'
-                const effectiveMeasure = countsOnlyGrain
-                  ? 'record_count'
-                  : state.measure
-                const active = effectiveMeasure === option.id
-                const disabled =
-                  option.id === 'value_awarded' && countsOnlyGrain
-                return (
-                  <Button
-                    key={option.id}
-                    type="button"
-                    variant="outline"
-                    aria-pressed={active}
-                    disabled={disabled}
-                    title={
-                      disabled
-                        ? t`Modifications are counts-only — no money measure is served for them.`
-                        : undefined
-                    }
-                    className={cn(
-                      procurementChoiceButtonClassName,
-                      active && procurementChoiceButtonActiveClassName,
-                    )}
-                    onClick={() => hub.updateFilters({ measure: option.id })}
-                  >
-                    {option.label}
-                  </Button>
-                )
-              })}
-            </div>
-          </section>
-
-          <section
-            className="space-y-4 border-t-2 border-[#b1b4b6] pt-6 dark:border-[var(--pnrr-border)]"
-            aria-labelledby="hub-vbasis-label"
+        <div className="min-w-0 flex-1 overflow-y-auto px-6">
+          <Accordion
+            type="multiple"
+            defaultValue={['metric', 'period']}
+            className="w-full"
           >
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <Coins className="h-4 w-4" aria-hidden="true" />
-                <p
-                  id="hub-vbasis-label"
-                  className={procurementSectionLabelClassName}
-                >
-                  <Trans>Value logic</Trans>
+            <AccordionItem
+              value="metric"
+              className="border-b-2 border-[#b1b4b6] dark:border-[var(--pnrr-border)]"
+            >
+              <FilterSectionTrigger
+                icon={SlidersHorizontal}
+                title={t`Metric`}
+                summary={measureSummary}
+              />
+              <AccordionContent className="space-y-4 pb-6">
+                <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                  <Trans>What the charts and totals count.</Trans>
                 </p>
-              </div>
-              <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-                <Trans>
-                  A procurement record carries several legitimate money figures.
-                  Choose which one the analytics serve — they are never mixed or
-                  summed together.
-                </Trans>{' '}
-                <Link
-                  to="/achizitii/metodologie"
-                  className="font-bold underline underline-offset-2"
-                >
-                  <Trans>Methodology</Trans>
-                </Link>
-              </p>
-            </div>
-            <div className="flex flex-col gap-2" role="radiogroup" aria-labelledby="hub-vbasis-label">
-              {procurementValueBasisSchema.options.map(
-                (option: ProcurementValueBasis) => {
-                  const active = state.vbasis === option
-                  return (
-                    <Button
-                      key={option}
-                      type="button"
-                      variant="outline"
-                      role="radio"
-                      aria-checked={active}
-                      className={cn(
-                        procurementChoiceButtonClassName,
-                        'h-auto w-full flex-col items-start gap-0.5 whitespace-normal py-2 text-left',
-                        active && procurementChoiceButtonActiveClassName,
-                      )}
-                      onClick={() =>
-                        hub.updateFilters({
-                          vbasis: option,
-                          // The counts-only modifications grain carries no
-                          // alternative value logic — selecting one moves to
-                          // contracts instead of silently normalizing back.
-                          ...(state.grain === 'modifications' &&
-                          option !== 'awarded'
-                            ? { grain: 'contracts' as const }
-                            : {}),
-                        })
-                      }
-                    >
-                      <span className="font-bold">
-                        {valueBasisLabel(option)}
-                        {option === 'awarded' ? (
-                          <span className="ml-1.5 font-normal opacity-80">
-                            <Trans>(default)</Trans>
-                          </span>
-                        ) : null}
-                      </span>
-                      <span
+                <div className="flex flex-wrap gap-2">
+                  {(
+                    [
+                      // The value option follows the ACTIVE value logic —
+                      // calling a ceiling or call-off metric "Awarded value"
+                      // would misname what the charts actually show.
+                      {
+                        id: 'value_awarded' as const,
+                        label: valueBasisMoneyLabel(state.vbasis),
+                      },
+                      { id: 'record_count' as const, label: t`Record count` },
+                    ] satisfies ReadonlyArray<{
+                      id: ProcurementHubMeasure
+                      label: string
+                    }>
+                  ).map((option) => {
+                    const active = effectiveMeasure === option.id
+                    const disabled =
+                      option.id === 'value_awarded' && countsOnlyGrain
+                    return (
+                      <Button
+                        key={option.id}
+                        type="button"
+                        variant="outline"
+                        aria-pressed={active}
+                        disabled={disabled}
+                        title={
+                          disabled
+                            ? t`Modifications are counts-only — no money measure is served for them.`
+                            : undefined
+                        }
                         className={cn(
-                          'text-xs leading-5',
-                          active ? 'opacity-90' : 'text-[var(--pnrr-muted)]',
+                          procurementChoiceButtonClassName,
+                          active && procurementChoiceButtonActiveClassName,
                         )}
+                        onClick={() => hub.updateFilters({ measure: option.id })}
                       >
-                        {valueBasisQuestion(option)}
-                      </span>
-                    </Button>
-                  )
-                },
-              )}
-            </div>
-          </section>
+                        {option.label}
+                      </Button>
+                    )
+                  })}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
 
-          <section
-            className="space-y-4 border-t-2 border-[#b1b4b6] pt-6 dark:border-[var(--pnrr-border)]"
-            aria-labelledby="hub-period-label"
-          >
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <CalendarRange className="h-4 w-4" aria-hidden="true" />
-                <p
-                  id="hub-period-label"
-                  className={procurementSectionLabelClassName}
-                >
-                  <Trans>Period</Trans>
-                </p>
-              </div>
-              <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-                <Trans>
-                  Default is the previous calendar year. Analytics are monthly —
-                  start dates become the first day of the month and end dates
-                  become its last day.
-                </Trans>
-              </p>
-            </div>
-
-            <ProcurementPeriodYearPresets
-              period={period}
-              onSelectYear={(bounds) =>
-                hub.setDates(bounds.dateFrom, bounds.dateTo)
-              }
-            />
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="hub-date-from" className="text-sm font-bold">
-                  <Trans>From</Trans>
-                </Label>
-                <input
-                  id="hub-date-from"
-                  name="procurement-date-from"
-                  type="date"
-                  autoComplete="off"
-                  className={procurementDateInputClassName}
-                  value={displayDateFrom ?? ''}
-                  max={displayDateTo ?? undefined}
-                  onChange={(event) =>
-                    setDateFrom(event.target.value || undefined)
-                  }
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="hub-date-to" className="text-sm font-bold">
-                  <Trans>To</Trans>
-                </Label>
-                <input
-                  id="hub-date-to"
-                  name="procurement-date-to"
-                  type="date"
-                  autoComplete="off"
-                  className={procurementDateInputClassName}
-                  value={displayDateTo ?? ''}
-                  min={displayDateFrom ?? undefined}
-                  onChange={(event) =>
-                    setDateTo(event.target.value || undefined)
-                  }
-                />
-              </div>
-            </div>
-          </section>
-
-          <section
-            className="space-y-4 border-t-2 border-[#b1b4b6] pt-6 dark:border-[var(--pnrr-border)]"
-            aria-labelledby="hub-buyer-location-label"
-          >
-            <div className="space-y-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <Building2 className="h-4 w-4" aria-hidden="true" />
-                <p
-                  id="hub-buyer-location-label"
-                  className={procurementSectionLabelClassName}
-                >
-                  <Trans>Public Institution Location</Trans>
-                </p>
-              </div>
-              <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-                <Trans>
-                  Administrative territory linked to the contracting institution
-                  in the procurement dataset. National covers all institutions
-                  with no region or county filter.
-                </Trans>
-              </p>
-              {onList && !buyerGeoOnList ? (
-                <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
+            <AccordionItem
+              value="period"
+              className="border-b-2 border-[#b1b4b6] dark:border-[var(--pnrr-border)]"
+            >
+              <FilterSectionTrigger
+                icon={CalendarRange}
+                title={t`Period`}
+                summary={periodSummary}
+              />
+              <AccordionContent className="space-y-4 pb-6">
+                <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
                   <Trans>
-                    Contract modifications are not in the search index, so
-                    buyer location does not filter this record list. It still
-                    scopes the analytics views.
+                    Default is the previous calendar year. Dates snap to month
+                    bounds.
                   </Trans>
                 </p>
-              ) : null}
-            </div>
 
-            <fieldset className="space-y-2">
-              <legend className="text-sm font-bold">
-                <Trans>Territorial Level</Trans>
-              </legend>
-              <div className="grid grid-cols-3 gap-2">
-                {(
-                  [
-                    { id: 'national' as const, label: t`National` },
-                    { id: 'region' as const, label: t`Region` },
-                    { id: 'county' as const, label: t`County` },
-                  ] as const
-                ).map((level) => {
-                  const active = buyerLevel === level.id
-                  return (
-                    <Button
-                      key={level.id}
-                      type="button"
-                      variant="outline"
-                      aria-pressed={active}
-                      className={cn(
-                        procurementChoiceButtonClassName,
-                        'h-10 w-full justify-center font-bold',
-                        active && procurementChoiceButtonActiveClassName,
-                      )}
-                      onClick={() => changeBuyerLevel(level.id)}
-                    >
-                      {level.label}
-                    </Button>
-                  )
-                })}
-              </div>
-            </fieldset>
-
-            {buyerLevel !== 'national' ? (
-              <>
-                <ProcurementGeographyCombobox
-                  inputId="hub-buyer-location"
-                  label={buyerLevel === 'region' ? t`Region` : t`County`}
-                  placeholder={
-                    buyerLevel === 'region'
-                      ? t`Select a region…`
-                      : t`Select a county…`
+                <ProcurementPeriodYearPresets
+                  period={period}
+                  onSelectYear={(bounds) =>
+                    hub.setDates(bounds.dateFrom, bounds.dateTo)
                   }
-                  options={
-                    buyerLevel === 'region' ? regionOptions : countyOptions
-                  }
-                  value={
-                    buyerLevel === 'region'
-                      ? state.buyerRegion
-                      : state.buyerCounty
-                  }
-                  loading={geographyQuery.isPending}
-                  disabled={geographyQuery.isError}
-                  onChange={changeBuyerLocation}
                 />
-                {geographyQuery.isError ? (
-                  <div
-                    className="space-y-2 border-l-4 border-red-600 pl-3 text-sm"
-                    role="alert"
-                  >
-                    <p>
-                      <Trans>Location options could not be loaded.</Trans>
-                    </p>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      className="rounded-none"
-                      onClick={() => void geographyQuery.refetch()}
-                    >
-                      <Trans>Retry Loading Locations</Trans>
-                    </Button>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="hub-date-from" className="text-sm font-bold">
+                      <Trans>From</Trans>
+                    </Label>
+                    <input
+                      id="hub-date-from"
+                      name="procurement-date-from"
+                      type="date"
+                      autoComplete="off"
+                      className={procurementDateInputClassName}
+                      value={displayDateFrom ?? ''}
+                      max={displayDateTo ?? undefined}
+                      onChange={(event) =>
+                        setDateFrom(event.target.value || undefined)
+                      }
+                    />
                   </div>
-                ) : null}
-              </>
-            ) : null}
-          </section>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="hub-date-to" className="text-sm font-bold">
+                      <Trans>To</Trans>
+                    </Label>
+                    <input
+                      id="hub-date-to"
+                      name="procurement-date-to"
+                      type="date"
+                      autoComplete="off"
+                      className={procurementDateInputClassName}
+                      value={displayDateTo ?? ''}
+                      min={displayDateFrom ?? undefined}
+                      onChange={(event) =>
+                        setDateTo(event.target.value || undefined)
+                      }
+                    />
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
 
-          <section
-            className="space-y-4 border-t-2 border-[#b1b4b6] pt-6 dark:border-[var(--pnrr-border)]"
-            aria-labelledby="hub-supplier-location-label"
-          >
-            <div className="space-y-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <MapPin className="h-4 w-4" aria-hidden="true" />
-                <p
-                  id="hub-supplier-location-label"
-                  className={procurementSectionLabelClassName}
+            <AccordionItem
+              value="locations"
+              className="border-b-2 border-[#b1b4b6] dark:border-[var(--pnrr-border)]"
+            >
+              <FilterSectionTrigger
+                icon={MapPin}
+                title={t`Locations`}
+                summary={locationsSummary}
+              />
+              <AccordionContent className="space-y-6 pb-6">
+                <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                  <Trans>
+                    Territory of the contracting institution or the awarded
+                    company. National means no territorial filter.
+                  </Trans>
+                </p>
+
+                <div className="space-y-4">
+                  <p className={procurementSectionLabelClassName}>
+                    <Trans>Public Institution Location</Trans>
+                  </p>
+                  {onList && !buyerGeoOnList ? (
+                    <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
+                      <Trans>
+                        Contract modifications are not in the search index, so
+                        buyer location does not filter this record list. It
+                        still scopes the analytics views.
+                      </Trans>
+                    </p>
+                  ) : null}
+
+                  <fieldset className="space-y-2">
+                    <legend className="text-sm font-bold">
+                      <Trans>Territorial Level</Trans>
+                    </legend>
+                    <div className="grid grid-cols-3 gap-2">
+                      {(
+                        [
+                          { id: 'national' as const, label: t`National` },
+                          { id: 'region' as const, label: t`Region` },
+                          { id: 'county' as const, label: t`County` },
+                        ] as const
+                      ).map((level) => {
+                        const active = buyerLevel === level.id
+                        return (
+                          <Button
+                            key={level.id}
+                            type="button"
+                            variant="outline"
+                            aria-pressed={active}
+                            className={cn(
+                              procurementChoiceButtonClassName,
+                              'h-10 w-full justify-center font-bold',
+                              active && procurementChoiceButtonActiveClassName,
+                            )}
+                            onClick={() => changeBuyerLevel(level.id)}
+                          >
+                            {level.label}
+                          </Button>
+                        )
+                      })}
+                    </div>
+                  </fieldset>
+
+                  {buyerLevel !== 'national' ? (
+                    <>
+                      <ProcurementGeographyCombobox
+                        inputId="hub-buyer-location"
+                        label={buyerLevel === 'region' ? t`Region` : t`County`}
+                        placeholder={
+                          buyerLevel === 'region'
+                            ? t`Select a region…`
+                            : t`Select a county…`
+                        }
+                        options={
+                          buyerLevel === 'region' ? regionOptions : countyOptions
+                        }
+                        value={
+                          buyerLevel === 'region'
+                            ? state.buyerRegion
+                            : state.buyerCounty
+                        }
+                        loading={geographyQuery.isPending}
+                        disabled={geographyQuery.isError}
+                        onChange={changeBuyerLocation}
+                      />
+                      {geographyQuery.isError ? (
+                        <div
+                          className="space-y-2 border-l-4 border-red-600 pl-3 text-sm"
+                          role="alert"
+                        >
+                          <p>
+                            <Trans>Location options could not be loaded.</Trans>
+                          </p>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="rounded-none"
+                            onClick={() => void geographyQuery.refetch()}
+                          >
+                            <Trans>Retry Loading Locations</Trans>
+                          </Button>
+                        </div>
+                      ) : null}
+                    </>
+                  ) : null}
+                </div>
+
+                <div className="space-y-4 border-t border-[#b1b4b6] pt-5 dark:border-[var(--pnrr-border)]">
+                  <p className={procurementSectionLabelClassName}>
+                    <Trans>Supplier Location</Trans>
+                  </p>
+                  {onList && !supplierGeoOnList ? (
+                    <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
+                      <Trans>
+                        These records name no awarded supplier, so supplier
+                        location cannot filter this record list. It still
+                        scopes the analytics views.
+                      </Trans>
+                    </p>
+                  ) : null}
+
+                  <fieldset className="space-y-2">
+                    <legend className="text-sm font-bold">
+                      <Trans>Territorial Level</Trans>
+                    </legend>
+                    <div className="grid grid-cols-3 gap-2">
+                      {(
+                        [
+                          { id: 'national' as const, label: t`National` },
+                          { id: 'region' as const, label: t`Region` },
+                          { id: 'county' as const, label: t`County` },
+                        ] as const
+                      ).map((level) => {
+                        const active = supplierLevel === level.id
+                        return (
+                          <Button
+                            key={level.id}
+                            type="button"
+                            variant="outline"
+                            aria-pressed={active}
+                            className={cn(
+                              procurementChoiceButtonClassName,
+                              'h-10 w-full justify-center font-bold',
+                              active && procurementChoiceButtonActiveClassName,
+                            )}
+                            onClick={() => changeSupplierLevel(level.id)}
+                          >
+                            {level.label}
+                          </Button>
+                        )
+                      })}
+                    </div>
+                  </fieldset>
+
+                  {supplierLevel !== 'national' ? (
+                    <ProcurementGeographyCombobox
+                      inputId="hub-supplier-location"
+                      label={supplierLevel === 'region' ? t`Region` : t`County`}
+                      placeholder={
+                        supplierLevel === 'region'
+                          ? t`Select a region…`
+                          : t`Select a county…`
+                      }
+                      options={
+                        supplierLevel === 'region' ? regionOptions : countyOptions
+                      }
+                      value={
+                        supplierLevel === 'region'
+                          ? state.supplierRegion
+                          : state.supplierCounty
+                      }
+                      loading={geographyQuery.isPending}
+                      disabled={geographyQuery.isError}
+                      onChange={changeSupplierLocation}
+                    />
+                  ) : null}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem
+              value="list-filters"
+              className="border-b-2 border-[#b1b4b6] dark:border-[var(--pnrr-border)]"
+            >
+              <FilterSectionTrigger
+                icon={ListFilter}
+                title={t`List filters`}
+                summary={
+                  listFacetCount > 0
+                    ? t`${listFacetCount} active`
+                    : t`None`
+                }
+              />
+              <AccordionContent className="space-y-4 pb-6">
+                <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                  {!onList ? (
+                    <Trans>
+                      Apply on the List view — until then they stay in the URL
+                      as inactive chips.
+                    </Trans>
+                  ) : (
+                    <Trans>Narrow the paginated record list.</Trans>
+                  )}
+                </p>
+                <div className="space-y-6">
+                  <ProcurementListFilterFields
+                    filters={listFilterState}
+                    includePeriod={false}
+                    idPrefix="hub-list"
+                  />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem
+              value="value-logic"
+              className="border-b-2 border-[#b1b4b6] dark:border-[var(--pnrr-border)]"
+            >
+              <FilterSectionTrigger
+                icon={Coins}
+                title={t`Value logic`}
+                summary={vbasisSummary}
+              />
+              <AccordionContent className="space-y-4 pb-6">
+                <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                  <Trans>
+                    Advanced — which money figure the analytics serve. Figures
+                    are never mixed or summed together.
+                  </Trans>{' '}
+                  <Link
+                    to="/achizitii/metodologie"
+                    className="font-bold underline underline-offset-2"
+                  >
+                    <Trans>Methodology</Trans>
+                  </Link>
+                </p>
+                <div
+                  className="flex flex-col gap-2"
+                  role="radiogroup"
+                  aria-label={t`Value logic`}
                 >
-                  <Trans>Supplier Location</Trans>
-                </p>
-              </div>
-              <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-                <Trans>
-                  Registered office of the awarded company. National covers all
-                  suppliers with no region or county filter.
-                </Trans>
-              </p>
-              {onList && !supplierGeoOnList ? (
-                <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
-                  <Trans>
-                    These records name no awarded supplier, so supplier
-                    location cannot filter this record list. It still scopes
-                    the analytics views.
-                  </Trans>
-                </p>
-              ) : null}
-            </div>
-
-            <fieldset className="space-y-2">
-              <legend className="text-sm font-bold">
-                <Trans>Territorial Level</Trans>
-              </legend>
-              <div className="grid grid-cols-3 gap-2">
-                {(
-                  [
-                    { id: 'national' as const, label: t`National` },
-                    { id: 'region' as const, label: t`Region` },
-                    { id: 'county' as const, label: t`County` },
-                  ] as const
-                ).map((level) => {
-                  const active = supplierLevel === level.id
-                  return (
-                    <Button
-                      key={level.id}
-                      type="button"
-                      variant="outline"
-                      aria-pressed={active}
-                      className={cn(
-                        procurementChoiceButtonClassName,
-                        'h-10 w-full justify-center font-bold',
-                        active && procurementChoiceButtonActiveClassName,
-                      )}
-                      onClick={() => changeSupplierLevel(level.id)}
-                    >
-                      {level.label}
-                    </Button>
-                  )
-                })}
-              </div>
-            </fieldset>
-
-            {supplierLevel !== 'national' ? (
-              <ProcurementGeographyCombobox
-                inputId="hub-supplier-location"
-                label={supplierLevel === 'region' ? t`Region` : t`County`}
-                placeholder={
-                  supplierLevel === 'region'
-                    ? t`Select a region…`
-                    : t`Select a county…`
-                }
-                options={
-                  supplierLevel === 'region' ? regionOptions : countyOptions
-                }
-                value={
-                  supplierLevel === 'region'
-                    ? state.supplierRegion
-                    : state.supplierCounty
-                }
-                loading={geographyQuery.isPending}
-                disabled={geographyQuery.isError}
-                onChange={changeSupplierLocation}
-              />
-            ) : null}
-          </section>
-
-          <section
-            className="space-y-4 border-t-2 border-[#b1b4b6] pt-6 dark:border-[var(--pnrr-border)]"
-            aria-labelledby="hub-list-facets-label"
-          >
-            <div className="space-y-1">
-              <p
-                id="hub-list-facets-label"
-                className={procurementSectionLabelClassName}
-              >
-                <Trans>Record list filters</Trans>
-              </p>
-              <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-                {!onList ? (
-                  <Trans>
-                    These facets apply on List. On Overview they stay in the URL
-                    as inactive “list only” chips.
-                  </Trans>
-                ) : (
-                  <Trans>These facets narrow the paginated record list.</Trans>
-                )}
-              </p>
-            </div>
-            <div className="space-y-6">
-              <ProcurementListFilterFields
-                filters={listFilterState}
-                includePeriod={false}
-                idPrefix="hub-list"
-              />
-            </div>
-          </section>
+                  {procurementValueBasisSchema.options.map(
+                    (option: ProcurementValueBasis) => {
+                      const active = state.vbasis === option
+                      return (
+                        <Button
+                          key={option}
+                          type="button"
+                          variant="outline"
+                          role="radio"
+                          aria-checked={active}
+                          className={cn(
+                            procurementChoiceButtonClassName,
+                            'h-auto w-full flex-col items-start gap-0.5 whitespace-normal py-2 text-left',
+                            active && procurementChoiceButtonActiveClassName,
+                          )}
+                          onClick={() =>
+                            hub.updateFilters({
+                              vbasis: option,
+                              // The counts-only modifications grain carries no
+                              // alternative value logic — selecting one moves
+                              // to contracts instead of silently normalizing.
+                              ...(state.grain === 'modifications' &&
+                              option !== 'awarded'
+                                ? { grain: 'contracts' as const }
+                                : {}),
+                            })
+                          }
+                        >
+                          <span className="font-bold">
+                            {valueBasisLabel(option)}
+                            {option === 'awarded' ? (
+                              <span className="ml-1.5 font-normal opacity-80">
+                                <Trans>(default)</Trans>
+                              </span>
+                            ) : null}
+                          </span>
+                          <span
+                            className={cn(
+                              'text-xs leading-5',
+                              active ? 'opacity-90' : 'text-[var(--pnrr-muted)]',
+                            )}
+                          >
+                            {valueBasisQuestion(option)}
+                          </span>
+                        </Button>
+                      )
+                    },
+                  )}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
 
         <div className="border-t-2 border-[#b1b4b6] bg-white p-4 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-bg)]">
@@ -658,14 +719,14 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
               disabled={hub.hubChips.length === 0}
               onClick={hub.clearFilters}
             >
-              <Trans>Clear All Filters</Trans>
+              <Trans>Clear all</Trans>
             </Button>
             <Button
               type="button"
               className={procurementPrimaryButtonClassName}
               onClick={() => onOpenChange(false)}
             >
-              <Trans>Close</Trans>
+              <Trans>Show results</Trans>
             </Button>
           </div>
         </div>
