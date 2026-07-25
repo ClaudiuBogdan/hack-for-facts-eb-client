@@ -14,6 +14,21 @@ const cuiSchema = z
   .min(1)
   .regex(/^\d{1,12}$/, 'CUI invalid')
 
+/**
+ * Quick-filter state — the page's own basic filters (year, CPV division),
+ * kept in the URL so a filtered profile is shareable. Invalid values drop
+ * individually rather than failing the route.
+ */
+const institutionSearchSchema = z.object({
+  year: z.coerce.number().int().min(2000).max(2100).optional().catch(undefined),
+  cpv: z
+    .string()
+    .trim()
+    .regex(/^\d{2}$/)
+    .optional()
+    .catch(undefined),
+})
+
 export const Route = createFileRoute('/procurement/institutions/$cui')({
   ssr: true,
   params: {
@@ -25,6 +40,9 @@ export const Route = createFileRoute('/procurement/institutions/$cui')({
       return { cui: parsed.data }
     },
   },
+  validateSearch: (search: Record<string, unknown>) =>
+    institutionSearchSchema.parse(search),
+  loaderDeps: ({ search }) => ({ year: search.year, cpv: search.cpv }),
   headers: () =>
     createPublicPageCacheHeaders({
       sharedMaxAgeSeconds: 300,
@@ -32,13 +50,21 @@ export const Route = createFileRoute('/procurement/institutions/$cui')({
     }),
   // Both payloads are prefetched so the profile's spine is server-rendered:
   // the populations row and the signals are the page's content, and leaving
-  // them to a client-only query would ship a skeleton to crawlers.
-  loader: async ({ params }) => {
+  // them to a client-only query would ship a skeleton to crawlers. The slice
+  // prefetch stays UNFILTERED — it feeds the title and the quick-filter chip
+  // options; the filtered slice loads client-side when filters are active.
+  loader: async ({ params, deps }) => {
+    const scope = {
+      ...(deps.year
+        ? { monthFrom: `${deps.year}-01`, monthTo: `${deps.year}-12` }
+        : {}),
+      ...(deps.cpv ? { cpvDivision: deps.cpv } : {}),
+    }
     const [slice, overview] = await Promise.all([
       fetchProcurementAuthoritySlice(params.cui),
       fetchProcurementInstitutionOverview({
         authorityCui: params.cui,
-        scopes: buildInstitutionScopes(),
+        scopes: buildInstitutionScopes(scope),
       }),
     ])
     return { slice, overview }

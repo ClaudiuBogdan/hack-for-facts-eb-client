@@ -124,7 +124,7 @@ function SliceContent({
         <ProcurementAnalysisGrainToggle value={grain} onChange={setGrain} />
       </div>
 
-      <ProcurementAnswerabilityNotice meta={analytics.stats.meta} />
+      <ProcurementAnswerabilityNotice metas={[analytics.stats.meta]} />
 
       <div className="grid items-start gap-5 lg:grid-cols-2">
         <ProcurementPartyRanking

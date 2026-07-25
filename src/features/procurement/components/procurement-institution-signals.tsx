@@ -1,8 +1,10 @@
 import { t } from '@lingui/core/macro'
+import { Info } from 'lucide-react'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import type { ProcurementInstitutionSignals } from '@/schemas/procurement'
 import { formatRon, formatScopeShare } from '../lib/formatting'
-import { procurementSectionClassName } from '../lib/procurement-theme'
+import { procurementStripClassName } from '../lib/procurement-theme'
 
 type Props = {
   readonly signals: ProcurementInstitutionSignals
@@ -22,30 +24,55 @@ const NON_COMPETITIVE_PROCEDURE_TYPES = new Set([
   'Negociere fără publicare prealabilă',
 ])
 
-function SignalTile({
+/**
+ * One signal inside the strip. Below `lg` it is a single line (label left,
+ * figure right) so four signals cost four lines on a phone; from `lg` it
+ * stacks into the three-tier column the desktop grid reads best as.
+ */
+function SignalCell({
   label,
   value,
   hint,
-  className,
+  detail,
 }: {
   readonly label: string
   readonly value: string
   readonly hint?: string
-  readonly className?: string
+  /** Full methodology sentence, behind an (i) tooltip — the hint stays one line. */
+  readonly detail?: string
 }) {
   return (
-    <div className={cn(procurementSectionClassName, 'p-4', className)}>
-      <p className="text-xs font-bold uppercase tracking-wide text-[var(--pnrr-muted)]">
-        {label}
+    <div className="flex items-baseline justify-between gap-3 px-3 py-2.5 lg:block lg:px-4 lg:py-3">
+      <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-[var(--pnrr-muted)]">
+        <span className="min-w-0 truncate">{label}</span>
+        {detail ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                aria-label={t`How this is measured`}
+                className="inline-flex h-4 w-4 shrink-0 items-center justify-center text-[var(--pnrr-muted)] transition-colors hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+              >
+                <Info className="h-3.5 w-3.5" aria-hidden />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">{detail}</TooltipContent>
+          </Tooltip>
+        ) : null}
       </p>
-      <p className="mt-2 text-2xl font-semibold text-[var(--pnrr-fg)]">
-        {value}
-      </p>
-      {hint ? (
-        <p className="mt-1 text-xs leading-snug text-[var(--pnrr-muted)]">
-          {hint}
+      <div className="flex shrink-0 items-baseline gap-2 lg:mt-1.5 lg:block">
+        <p className="text-lg font-semibold tabular-nums text-[var(--pnrr-fg)] lg:text-xl">
+          {value}
         </p>
-      ) : null}
+        {hint ? (
+          <p
+            className="truncate text-xs leading-snug text-[var(--pnrr-muted)] lg:mt-0.5"
+            title={hint}
+          >
+            {hint}
+          </p>
+        ) : null}
+      </div>
     </div>
   )
 }
@@ -81,9 +108,13 @@ export function ProcurementInstitutionSignals({
   return (
     <section
       aria-label={t`Semnale`}
-      className={cn('grid gap-3 sm:grid-cols-2 lg:grid-cols-4', className)}
+      className={cn(
+        procurementStripClassName,
+        'grid grid-cols-1 divide-y divide-[#b1b4b6]/50 lg:grid-cols-4 lg:divide-x-2 lg:divide-y-0 lg:divide-[var(--pnrr-border)] dark:divide-[var(--pnrr-border)]/60',
+        className,
+      )}
     >
-      <SignalTile
+      <SignalCell
         label={t`Concentrare furnizori`}
         value={
           concentration?.top5Share
@@ -92,12 +123,17 @@ export function ProcurementInstitutionSignals({
         }
         hint={
           concentration
-            ? t`primii 5 furnizori din ${concentration.supplierCount ?? 0}; clasamentul acoperă ${formatRon(concentration.totalRon, 'compact')} din ${formatRon(contractAwardedRon, 'compact')} (restul are furnizor neidentificat)`
+            ? t`primii 5 din ${concentration.supplierCount ?? 0} furnizori`
+            : undefined
+        }
+        detail={
+          concentration
+            ? t`Clasamentul acoperă ${formatRon(concentration.totalRon, 'compact')} din ${formatRon(contractAwardedRon, 'compact')} atribuit — restul are furnizor neidentificat.`
             : undefined
         }
       />
 
-      <SignalTile
+      <SignalCell
         label={t`Atribuit fără publicare`}
         value={
           procedureMix.length === 0
@@ -107,21 +143,31 @@ export function ProcurementInstitutionSignals({
         hint={
           procedureMix.length === 0
             ? undefined
-            : t`${nonCompetitiveCount} contracte prin negociere fără publicare prealabilă`
+            : t`${nonCompetitiveCount} contracte`
+        }
+        detail={
+          procedureMix.length === 0
+            ? undefined
+            : t`Contracte atribuite prin negociere fără publicare prealabilă.`
         }
       />
 
-      <SignalTile
+      <SignalCell
         label={t`Efectul actelor adiționale`}
         value={amendment === null ? '—' : formatRon(amendment.deltaRon, 'compact')}
         hint={
           amendment === null
-            ? t`indisponibil: lanțurile de modificări nu se pot ordona`
-            : t`față de ${formatRon(amendment.matchedRon, 'compact')} atribuit inițial, pe contractele cu lanț de modificări verificabil`
+            ? t`indisponibil`
+            : t`față de ${formatRon(amendment.matchedRon, 'compact')} atribuit inițial`
+        }
+        detail={
+          amendment === null
+            ? t`Indisponibil: lanțurile de modificări nu se pot ordona.`
+            : t`Calculat pe contractele cu lanț de modificări verificabil.`
         }
       />
 
-      <SignalTile
+      <SignalCell
         label={t`Plafon acorduri-cadru`}
         value={
           frameworkExposure === null || frameworkExposure.frameworkCount === '0'
@@ -133,8 +179,14 @@ export function ProcurementInstitutionSignals({
             ? undefined
             : frameworkExposure.frameworkCount === '0'
               ? // No frameworks at all — distinct from a withheld ceiling.
-                t`această instituție nu are acorduri-cadru înregistrate`
-              : t`angajat maxim; comenzi raportate: ${formatRon(frameworkExposure.calloffRon, 'compact')}`
+                t`nu are acorduri-cadru`
+              : t`comenzi raportate: ${formatRon(frameworkExposure.calloffRon, 'compact')}`
+        }
+        detail={
+          frameworkExposure === null ||
+          frameworkExposure.frameworkCount === '0'
+            ? undefined
+            : t`Plafonul este angajatul maxim, nu o cheltuială; comenzile sunt contractele subsecvente raportate.`
         }
       />
     </section>

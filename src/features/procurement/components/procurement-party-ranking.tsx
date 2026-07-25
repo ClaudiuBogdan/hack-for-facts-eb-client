@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { Link, useSearch } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
-import { ArrowUpRight, ChevronDown, ChevronUp, Table2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { ArrowUpRight, ChevronDown, ChevronUp } from 'lucide-react'
 import {
   Sheet,
   SheetContent,
@@ -29,7 +28,6 @@ import {
   type PartyPairScope,
 } from '../lib/party-links'
 import {
-  procurementOutlineButtonClassName,
   procurementSectionBodyClassName,
   procurementSectionClassName,
   procurementSectionDescriptionClassName,
@@ -75,6 +73,12 @@ type Props = {
   readonly grain?: AnalysisFlowGrain
   /** Deep-link to hub Rankings for this dimension (Overview cards). */
   readonly rankingsDim?: ProcurementRankDim
+  /**
+   * Exact hub search for that deep-link. Surfaces whose own URL params are not
+   * hub params (the institution profile uses `year`/`cpv`) must translate them
+   * rather than let the current search leak through unmapped.
+   */
+  readonly rankingsSearch?: Record<string, unknown>
   /** Requested overview metric. Defaults to count on reused slice cards. */
   readonly measure?: ProcurementHubMeasure
   /** Basis the server actually served after answerability gates. */
@@ -96,6 +100,7 @@ export function ProcurementPartyRanking({
   pairScope,
   grain = 'direct_acquisition',
   rankingsDim,
+  rankingsSearch,
   measure = 'record_count',
   rankedBy,
 }: Props) {
@@ -111,68 +116,19 @@ export function ProcurementPartyRanking({
     expanded || !hasMore ? rows : rows.slice(0, CARD_LIMIT)
 
   return (
-    <section className={cn(procurementSectionClassName, className)}>
-      <div
-        className={cn(
-          procurementSectionHeaderClassName,
-          'flex items-start justify-between gap-3',
-        )}
-      >
-        <div className="min-w-0 pr-1">
-          <h2 className={procurementSectionTitleClassName}>{title}</h2>
-          {description ? (
-            <p className={procurementSectionDescriptionClassName}>
-              {description}
-            </p>
-          ) : null}
-        </div>
-        {rows.length > 0 && !unavailableReason ? (
-          rankingsDim ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className={cn(
-                procurementOutlineButtonClassName,
-                'mt-0.5 h-8 w-8 shrink-0',
-              )}
-              asChild
-            >
-              <Link
-                to="/procurement"
-                search={cleanProcurementHubSearch({
-                  ...(currentSearch as Record<string, unknown>),
-                  view: 'rankings',
-                  rankDim: rankingsDim,
-                  rankBy:
-                    measure === 'value_awarded' ? 'value' : 'count',
-                })}
-                aria-label={t`See full rankings`}
-                title={t`See full rankings`}
-              >
-                <ArrowUpRight className="h-4 w-4" aria-hidden />
-              </Link>
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className={cn(
-                procurementOutlineButtonClassName,
-                'mt-0.5 h-8 w-8 shrink-0',
-              )}
-              onClick={() => setSheetOpen(true)}
-              aria-label={t`Open ranking table`}
-              title={t`Open ranking table`}
-            >
-              <Table2 className="h-4 w-4" aria-hidden />
-            </Button>
-          )
+    <section
+      className={cn(procurementSectionClassName, 'flex h-full flex-col', className)}
+    >
+      <div className={procurementSectionHeaderClassName}>
+        <h2 className={procurementSectionTitleClassName}>{title}</h2>
+        {description ? (
+          <p className={procurementSectionDescriptionClassName}>
+            {description}
+          </p>
         ) : null}
       </div>
 
-      <div className={procurementSectionBodyClassName}>
+      <div className={cn(procurementSectionBodyClassName, 'flex-1')}>
         {unavailableReason ? (
           <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
             {unavailableReason}
@@ -207,25 +163,61 @@ export function ProcurementPartyRanking({
         )}
       </div>
 
-      {hasMore && !unavailableReason ? (
-        <div className={procurementSectionFooterClassName}>
-          <button
-            type="button"
-            onClick={() => setExpanded((value) => !value)}
-            className="flex h-8 w-full items-center justify-center gap-1.5 text-sm font-semibold text-[var(--pnrr-muted)] transition-colors hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
-          >
-            {expanded ? (
-              <>
-                <Trans>Show less</Trans>
-                <ChevronUp className="h-3.5 w-3.5" aria-hidden />
-              </>
+      {!unavailableReason && (hasMore || rows.length > 0) ? (
+        <div
+          className={cn(
+            procurementSectionFooterClassName,
+            'flex flex-wrap items-center justify-between gap-x-4 gap-y-1',
+          )}
+        >
+          {hasMore ? (
+            <button
+              type="button"
+              onClick={() => setExpanded((value) => !value)}
+              className="inline-flex h-8 items-center gap-1.5 text-sm font-semibold text-[var(--pnrr-muted)] transition-colors hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+            >
+              {expanded ? (
+                <>
+                  <Trans>Show less</Trans>
+                  <ChevronUp className="h-3.5 w-3.5" aria-hidden />
+                </>
+              ) : (
+                <>
+                  <Trans>Show more</Trans>
+                  <ChevronDown className="h-3.5 w-3.5" aria-hidden />
+                </>
+              )}
+            </button>
+          ) : (
+            <span aria-hidden />
+          )}
+          {rows.length > 0 ? (
+            rankingsDim ? (
+              <Link
+                to="/procurement"
+                search={cleanProcurementHubSearch({
+                  ...(rankingsSearch ??
+                    (currentSearch as Record<string, unknown>)),
+                  view: 'rankings',
+                  rankDim: rankingsDim,
+                  rankBy: measure === 'value_awarded' ? 'value' : 'count',
+                })}
+                className="inline-flex h-8 items-center gap-1 text-sm font-semibold text-[var(--pnrr-fg)] underline-offset-2 transition-colors hover:text-[var(--pnrr-muted)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+              >
+                <Trans>Vezi clasamentul complet</Trans>
+                <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+              </Link>
             ) : (
-              <>
-                <Trans>Show more</Trans>
-                <ChevronDown className="h-3.5 w-3.5" aria-hidden />
-              </>
-            )}
-          </button>
+              <button
+                type="button"
+                onClick={() => setSheetOpen(true)}
+                className="inline-flex h-8 items-center gap-1 text-sm font-semibold text-[var(--pnrr-fg)] underline-offset-2 transition-colors hover:text-[var(--pnrr-muted)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+              >
+                <Trans>Open full table</Trans>
+                <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+              </button>
+            )
+          ) : null}
         </div>
       ) : null}
 
@@ -314,54 +306,57 @@ function PartyRankingRow({
         : t`${label}: ${countLabel} records`
 
   const name = (
-    <span className="min-w-0 text-sm font-semibold leading-5 text-[var(--pnrr-fg)] sm:truncate">
+    <span className="min-w-0 text-base font-semibold leading-6 text-[var(--pnrr-fg)] sm:truncate">
       {label}
     </span>
   )
 
+  const nameNode =
+    destination?.mode === 'pair' ? (
+      <Link
+        to={destination.link.to}
+        search={destination.link.search}
+        className="min-w-0 underline-offset-2 hover:underline sm:truncate"
+        title={titleHint}
+      >
+        {name}
+      </Link>
+    ) : destination?.mode === 'party' ? (
+      <Link
+        to={destination.link.to}
+        params={destination.link.params}
+        className="min-w-0 underline-offset-2 hover:underline sm:truncate"
+        title={titleHint}
+      >
+        {name}
+      </Link>
+    ) : (
+      <span className="min-w-0 sm:truncate" title={titleHint}>
+        {name}
+      </span>
+    )
+
   return (
     <li className="min-w-0">
-      <div className="flex items-start gap-2.5">
-        <span className="w-5 shrink-0 pt-0.5 text-xs font-semibold tabular-nums text-[var(--pnrr-muted)]">
-          {rank}
-        </span>
-        <div className="flex min-w-0 flex-1 items-start justify-between gap-4">
-          {destination?.mode === 'pair' ? (
-            <Link
-              to={destination.link.to}
-              search={destination.link.search}
-              className="min-w-0 underline-offset-2 hover:underline sm:truncate"
-              title={titleHint}
-            >
-              {name}
-            </Link>
-          ) : destination?.mode === 'party' ? (
-            <Link
-              to={destination.link.to}
-              params={destination.link.params}
-              className="min-w-0 underline-offset-2 hover:underline sm:truncate"
-              title={titleHint}
-            >
-              {name}
-            </Link>
-          ) : (
-            <span className="min-w-0 sm:truncate" title={titleHint}>
-              {name}
-            </span>
-          )}
-          <div
-            className="shrink-0 text-right tabular-nums"
-            aria-label={metricsAria}
-          >
-            <div className="text-sm font-bold leading-5 text-[var(--pnrr-fg)]">
-              {primaryLabel}
-            </div>
-            {secondaryLabel ? (
-              <div className="mt-0.5 text-xs leading-4 text-[var(--pnrr-muted)]">
-                {secondaryLabel}
-              </div>
-            ) : null}
+      <div className="flex items-start justify-between gap-3 sm:gap-4">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="w-5 shrink-0 text-right text-sm font-semibold leading-6 tabular-nums text-[var(--pnrr-muted)]">
+            {rank}
+          </span>
+          {nameNode}
+        </div>
+        <div
+          className="shrink-0 text-right tabular-nums"
+          aria-label={metricsAria}
+        >
+          <div className="text-sm font-bold leading-5 text-[var(--pnrr-fg)]">
+            {primaryLabel}
           </div>
+          {secondaryLabel ? (
+            <div className="mt-0.5 text-xs leading-4 text-[var(--pnrr-muted)]">
+              {secondaryLabel}
+            </div>
+          ) : null}
         </div>
       </div>
     </li>

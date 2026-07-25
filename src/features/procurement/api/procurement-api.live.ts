@@ -572,7 +572,11 @@ async function fetchSearchRecords(
       const page =
         procurementModificationsResponseSchema.parse(data)
           .procurementModifications
-      return { records: page.items.map(mapModification), total: page.total }
+      return {
+        records: page.items.map(mapModification),
+        total: page.total,
+        provenance: page.provenance ?? null,
+      }
     }
   }
 }
@@ -890,19 +894,44 @@ export async function fetchProcurementInstitutionOverviewLive(request: {
   })
 }
 
+/** Optional slice scope — the institution page's year/CPV quick filters. */
+export type ProcurementAuthoritySliceScope = {
+  readonly monthFrom?: string
+  readonly monthTo?: string
+  readonly cpvDivision?: string
+}
+
+/** 'YYYY-MM' → the month's last day as 'YYYY-MM-DD' (search dates are inclusive). */
+function monthToEndDate(month: string): string {
+  const [year, mm] = month.split('-').map(Number)
+  return new Date(Date.UTC(year, mm, 0)).toISOString().slice(0, 10)
+}
+
 export async function fetchAuthorityProcurementSliceLive(
   cui: string,
+  scope: ProcurementAuthoritySliceScope = {},
 ): Promise<AuthorityProcurementSlice> {
   const authorityCui = cui.trim()
   const [aggregates, divisions, recentPage, authorityName] = await Promise.all([
-    loadAggregates(buildScopeFilter({ authorityCui }), {
+    loadAggregates(buildScopeFilter({ authorityCui, ...scope }), {
       includeAuthorities: false,
+      // A dimension the scope already pins is not a breakdown — the server
+      // rejects `breakdown(cpvDivision)` under a cpvDivision scope outright,
+      // which failed the whole slice the moment a category filter was applied.
+      includeCategories: scope.cpvDivision === undefined,
+      // Ask for money order; the gate answers with what it could actually
+      // serve (`rankedBy`), and the cards label themselves from that rather
+      // than assuming the request was honoured.
+      rankBy: 'value',
     }),
     loadCpvDivisions(),
     fetchProcurementSearchLive(
       withProcurementSearchDefaults({
         grain: 'contracts',
         authority_cui: authorityCui,
+        ...(scope.monthFrom ? { dateFrom: `${scope.monthFrom}-01` } : {}),
+        ...(scope.monthTo ? { dateTo: monthToEndDate(scope.monthTo) } : {}),
+        ...(scope.cpvDivision ? { cpv_division: scope.cpvDivision } : {}),
         sort: 'date_desc',
         page: 1,
         pageSize: AUTHORITY_RECENT_PAGE_SIZE,

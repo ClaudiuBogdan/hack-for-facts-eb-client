@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import {
@@ -8,7 +9,10 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { RequestDatasetAction } from '@/components/shared/procurement-data/request-dataset-action'
-import { procurementSectionLabelClassName } from '../lib/procurement-theme'
+import {
+  procurementSectionLabelClassName,
+  procurementUnderlineLinkClassName,
+} from '../lib/procurement-theme'
 import { PROCUREMENT_DATASET_ID } from '../lib/dataset'
 
 type Props = {
@@ -121,6 +125,19 @@ export function ProcurementInfoSheet({
               </Trans>
             </p>
             <RequestDatasetAction dataset={PROCUREMENT_DATASET_ID} />
+          </section>
+
+          <section className="space-y-2">
+            <p className={procurementSectionLabelClassName}>
+              <Trans>Metodologie</Trans>
+            </p>
+            <Link
+              to="/achizitii/metodologie"
+              onClick={() => onOpenChange(false)}
+              className={procurementUnderlineLinkClassName}
+            >
+              <Trans>Cum sunt calculate sumele</Trans>
+            </Link>
           </section>
         </div>
       </SheetContent>

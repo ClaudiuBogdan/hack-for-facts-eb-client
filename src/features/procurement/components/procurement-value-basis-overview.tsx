@@ -198,7 +198,7 @@ export function ProcurementValueBasisOverview({ hubState, hub }: Props) {
         />
       ) : data && statsMeta ? (
         <>
-          <ProcurementAnswerabilityNotice meta={statsMeta} />
+          <ProcurementAnswerabilityNotice metas={[statsMeta]} />
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <ProcurementStatTile

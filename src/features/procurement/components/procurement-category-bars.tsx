@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { Link, useSearch } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
-import { ArrowUpRight, ChevronDown, ChevronUp, Table2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { ArrowUpRight, ChevronDown, ChevronUp, X } from 'lucide-react'
 import {
   Sheet,
   SheetContent,
@@ -21,7 +20,7 @@ import {
 } from '@/schemas/procurement-hub'
 import { formatFlowCount, formatRon } from '../lib/formatting'
 import {
-  procurementOutlineButtonClassName,
+  procurementMarkClassName,
   procurementSectionBodyClassName,
   procurementSectionClassName,
   procurementSectionDescriptionClassName,
@@ -48,6 +47,20 @@ function categoryLabel(row: CategoryRow): string {
   )
 }
 
+/**
+ * Turns the breakdown into the page's CPV filter: each row toggles the
+ * division on the surface that owns it, instead of linking away to the CPV
+ * category page. The institution profile uses this so the card that already
+ * shows counts and values per division IS the filter — a second, truncated
+ * chip row at the top of the page said the same thing worse.
+ */
+export type CategorySelection = {
+  /** CPV division currently filtering the page, or null when unfiltered. */
+  readonly activeCode: string | null
+  /** Called with the division to apply, or null to clear. */
+  readonly onSelect: (code: string | null) => void
+}
+
 type Props = {
   readonly rows: readonly CategoryRow[]
   readonly title?: string
@@ -55,8 +68,11 @@ type Props = {
   readonly className?: string
   /** Deep-link to hub Rankings for CPV. */
   readonly rankingsDim?: ProcurementRankDim
+  /** Exact hub search for that deep-link (see party ranking). */
+  readonly rankingsSearch?: Record<string, unknown>
   readonly measure?: ProcurementHubMeasure
   readonly rankedBy?: ProcurementRankBy | null
+  readonly select?: CategorySelection
 }
 
 /**
@@ -69,8 +85,10 @@ export function ProcurementCategoryBars({
   description,
   className,
   rankingsDim,
+  rankingsSearch,
   measure = 'record_count',
   rankedBy,
+  select,
 }: Props) {
   const [expanded, setExpanded] = useState(false)
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -84,76 +102,39 @@ export function ProcurementCategoryBars({
     expanded || !hasMore ? rows : rows.slice(0, CARD_LIMIT)
 
   return (
-    <section className={cn(procurementSectionClassName, className)}>
-      <div
-        className={cn(
-          procurementSectionHeaderClassName,
-          'flex items-start justify-between gap-3',
-        )}
-      >
-        <div className="min-w-0 pr-1">
-          <h2 className={procurementSectionTitleClassName}>
-            {title ?? t`Spending categories`}
-          </h2>
-          <p className={procurementSectionDescriptionClassName}>
-            {description ?? t`By number of records.`}
-          </p>
-        </div>
-        {rows.length > 0 ? (
-          rankingsDim ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className={cn(
-                procurementOutlineButtonClassName,
-                'mt-0.5 h-8 w-8 shrink-0',
-              )}
-              asChild
-            >
-              <Link
-                to="/procurement"
-                search={cleanProcurementHubSearch({
-                  ...(currentSearch as Record<string, unknown>),
-                  view: 'rankings',
-                  rankDim: rankingsDim,
-                  rankBy:
-                    measure === 'value_awarded' ? 'value' : 'count',
-                })}
-                aria-label={t`See full rankings`}
-                title={t`See full rankings`}
-              >
-                <ArrowUpRight className="h-4 w-4" aria-hidden />
-              </Link>
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className={cn(
-                procurementOutlineButtonClassName,
-                'mt-0.5 h-8 w-8 shrink-0',
-              )}
-              onClick={() => setSheetOpen(true)}
-              aria-label={t`Open ranking table`}
-              title={t`Open ranking table`}
-            >
-              <Table2 className="h-4 w-4" aria-hidden />
-            </Button>
-          )
-        ) : null}
+    <section
+      className={cn(procurementSectionClassName, 'flex h-full flex-col', className)}
+    >
+      <div className={procurementSectionHeaderClassName}>
+        <h2 className={procurementSectionTitleClassName}>
+          {title ?? t`Spending categories`}
+        </h2>
+        <p className={procurementSectionDescriptionClassName}>
+          {select
+            ? `${description ?? t`By number of records.`} ${t`Apasă o categorie pentru a filtra pagina.`}`
+            : (description ?? t`By number of records.`)}
+        </p>
       </div>
 
-      <div className={procurementSectionBodyClassName}>
+      <div className={cn(procurementSectionBodyClassName, 'flex-1')}>
         {rows.length === 0 ? (
           <p className="text-sm text-[var(--pnrr-muted)]">
-            <Trans>No category data available.</Trans>
+            {select?.activeCode ? (
+              // Not "no data": the page is scoped to one division, so a
+              // per-division breakdown of it has exactly one bucket and the
+              // server serves it as stats instead.
+              <Trans>
+                Pagina este filtrată la o singură categorie, așa că defalcarea
+                pe categorii nu se aplică aici.
+              </Trans>
+            ) : (
+              <Trans>No category data available.</Trans>
+            )}
           </p>
         ) : (
           <ol
             className={cn(
-              'space-y-3',
+              'space-y-1',
               expanded && hasMore && 'sm:max-h-[28rem] sm:overflow-y-auto',
             )}
           >
@@ -169,66 +150,127 @@ export function ProcurementCategoryBars({
                 effectiveMeasure === 'value_awarded'
                   ? amountLabel ?? t`unavailable`
                   : t`${countLabel} records`
-              const secondaryLabel =
+              const shareRaw =
+                row.shareOfScope !== null
+                  ? (Number(row.shareOfScope) || 0) * 100
+                  : null
+              const share = shareRaw !== null ? Math.round(shareRaw) : null
+              const shareLabel =
+                shareRaw !== null
+                  ? share === 0 && shareRaw > 0
+                    ? '<1%'
+                    : `${share}%`
+                  : null
+              const secondaryBase =
                 effectiveMeasure === 'value_awarded'
                   ? t`${countLabel} records`
                   : amountLabel
-              const share =
-                row.shareOfScope !== null
-                  ? Math.round((Number(row.shareOfScope) || 0) * 100)
-                  : null
+              const secondaryLabel =
+                secondaryBase !== null && shareLabel !== null
+                  ? `${secondaryBase} · ${shareLabel}`
+                  : secondaryBase
               const titleHint = code ? `${code} · ${label}` : label
               const metricsAria =
-                share === null
-                  ? secondaryLabel
-                    ? t`${label}: ${primaryLabel}, ${secondaryLabel}`
+                shareLabel === null
+                  ? secondaryBase
+                    ? t`${label}: ${primaryLabel}, ${secondaryBase}`
                     : t`${label}: ${primaryLabel}`
-                  : secondaryLabel
-                    ? t`${label}: ${primaryLabel}, ${secondaryLabel} (${share}% of scope)`
-                    : t`${label}: ${primaryLabel} (${share}% of scope)`
+                  : secondaryBase
+                    ? t`${label}: ${primaryLabel}, ${secondaryBase} (${shareLabel} of scope)`
+                    : t`${label}: ${primaryLabel} (${shareLabel} of scope)`
 
+              const isSelected = code !== null && select?.activeCode === code
               const name = (
-                <span className="min-w-0 text-sm font-semibold leading-5 text-[var(--pnrr-fg)] sm:truncate">
+                <span
+                  className={cn(
+                    'min-w-0 text-base leading-6 sm:truncate',
+                    isSelected
+                      ? 'font-bold text-[#1d70b8] dark:text-[#3b82f6]'
+                      : 'font-semibold text-[var(--pnrr-fg)]',
+                  )}
+                >
                   {label}
                 </span>
               )
 
-              return (
-                <li key={code ?? `row-${index}`} className="min-w-0">
-                  <div className="flex items-start gap-2.5">
-                    <span className="w-5 shrink-0 pt-0.5 text-xs font-semibold tabular-nums text-[var(--pnrr-muted)]">
+              const rowBody = (
+                <>
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="w-5 shrink-0 text-right text-sm font-semibold leading-6 tabular-nums text-[var(--pnrr-muted)]">
                       {index + 1}
                     </span>
-                    <div className="flex min-w-0 flex-1 items-start justify-between gap-4">
-                      {code ? (
-                        <Link
-                          to="/procurement/categories/$code"
-                          params={{ code }}
-                          className="min-w-0 underline-offset-2 hover:underline sm:truncate"
-                          title={titleHint}
-                        >
-                          {name}
-                        </Link>
-                      ) : (
-                        <span className="min-w-0 sm:truncate" title={titleHint}>
-                          {name}
-                        </span>
-                      )}
-                      <div
-                        className="shrink-0 text-right tabular-nums"
-                        aria-label={metricsAria}
+                    {select ? (
+                      <span className="min-w-0 sm:truncate" title={titleHint}>
+                        {name}
+                      </span>
+                    ) : code ? (
+                      <Link
+                        to="/procurement/categories/$code"
+                        params={{ code }}
+                        className="min-w-0 underline-offset-2 hover:underline sm:truncate"
+                        title={titleHint}
                       >
-                        <div className="text-sm font-bold leading-5 text-[var(--pnrr-fg)]">
-                          {primaryLabel}
-                        </div>
-                        {secondaryLabel ? (
-                          <div className="mt-0.5 text-xs leading-4 text-[var(--pnrr-muted)]">
-                            {secondaryLabel}
-                          </div>
-                        ) : null}
-                      </div>
-                    </div>
+                        {name}
+                      </Link>
+                    ) : (
+                      <span className="min-w-0 sm:truncate" title={titleHint}>
+                        {name}
+                      </span>
+                    )}
                   </div>
+                  <div
+                    className="shrink-0 text-right tabular-nums"
+                    aria-label={metricsAria}
+                  >
+                    <div className="text-sm font-bold leading-5 text-[var(--pnrr-fg)]">
+                      {primaryLabel}
+                    </div>
+                    {secondaryLabel ? (
+                      <div className="mt-0.5 text-xs leading-4 text-[var(--pnrr-muted)]">
+                        {secondaryLabel}
+                      </div>
+                    ) : null}
+                  </div>
+                </>
+              )
+
+              return (
+                <li key={code ?? `row-${index}`} className="relative min-w-0">
+                  {/* Inline proportion fill — magnitude at a glance, no chart
+                      library (PNRR RankedListCard pattern). */}
+                  {shareRaw !== null && shareRaw > 0 ? (
+                    <span
+                      aria-hidden
+                      className={cn(
+                        procurementMarkClassName,
+                        'pointer-events-none absolute inset-y-0 left-0 opacity-10 dark:opacity-20',
+                      )}
+                      style={{ width: `${shareRaw}%` }}
+                    />
+                  ) : null}
+                  {select && code !== null ? (
+                    <button
+                      type="button"
+                      aria-pressed={isSelected}
+                      onClick={() => select.onSelect(isSelected ? null : code)}
+                      title={
+                        isSelected
+                          ? t`Elimină filtrul ${label}`
+                          : t`Filtrează după ${label}`
+                      }
+                      className={cn(
+                        'relative flex w-full items-start justify-between gap-3 border-l-4 border-transparent px-1.5 py-1.5 text-left transition-colors hover:bg-[#f3f2f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--pnrr-blue)] dark:hover:bg-[var(--pnrr-subtle)] sm:gap-4',
+                        isSelected &&
+                          'border-l-[#1d70b8] dark:border-l-[#3b82f6]',
+                      )}
+                    >
+                      {rowBody}
+                    </button>
+                  ) : (
+                    <div className="relative flex items-start justify-between gap-3 px-1.5 py-1.5 sm:gap-4">
+                      {rowBody}
+                    </div>
+                  )}
                 </li>
               )
             })}
@@ -236,25 +278,72 @@ export function ProcurementCategoryBars({
         )}
       </div>
 
-      {hasMore ? (
-        <div className={procurementSectionFooterClassName}>
-          <button
-            type="button"
-            onClick={() => setExpanded((value) => !value)}
-            className="flex h-8 w-full items-center justify-center gap-1.5 text-sm font-semibold text-[var(--pnrr-muted)] transition-colors hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
-          >
-            {expanded ? (
-              <>
-                <Trans>Show less</Trans>
-                <ChevronUp className="h-3.5 w-3.5" aria-hidden />
-              </>
+      {hasMore || rows.length > 0 || select?.activeCode ? (
+        <div
+          className={cn(
+            procurementSectionFooterClassName,
+            'flex flex-wrap items-center justify-between gap-x-4 gap-y-1',
+          )}
+        >
+          {select?.activeCode ? (
+            // A filtered card lists only the division it is filtered to, so
+            // the way back has to live here — not only in the header chip.
+            <button
+              type="button"
+              onClick={() => select.onSelect(null)}
+              className="inline-flex h-8 items-center gap-1.5 text-sm font-semibold text-[var(--pnrr-fg)] underline underline-offset-2 transition-colors hover:text-[var(--pnrr-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+            >
+              <X className="h-3.5 w-3.5" aria-hidden />
+              <Trans>Toate categoriile</Trans>
+            </button>
+          ) : hasMore ? (
+            <button
+              type="button"
+              onClick={() => setExpanded((value) => !value)}
+              className="inline-flex h-8 items-center gap-1.5 text-sm font-semibold text-[var(--pnrr-muted)] transition-colors hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+            >
+              {expanded ? (
+                <>
+                  <Trans>Show less</Trans>
+                  <ChevronUp className="h-3.5 w-3.5" aria-hidden />
+                </>
+              ) : (
+                <>
+                  <Trans>Show more</Trans>
+                  <ChevronDown className="h-3.5 w-3.5" aria-hidden />
+                </>
+              )}
+            </button>
+          ) : (
+            <span aria-hidden />
+          )}
+          {rows.length > 0 ? (
+            rankingsDim ? (
+              <Link
+                to="/procurement"
+                search={cleanProcurementHubSearch({
+                  ...(rankingsSearch ??
+                    (currentSearch as Record<string, unknown>)),
+                  view: 'rankings',
+                  rankDim: rankingsDim,
+                  rankBy: measure === 'value_awarded' ? 'value' : 'count',
+                })}
+                className="inline-flex h-8 items-center gap-1 text-sm font-semibold text-[var(--pnrr-fg)] underline-offset-2 transition-colors hover:text-[var(--pnrr-muted)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+              >
+                <Trans>Vezi clasamentul complet</Trans>
+                <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+              </Link>
             ) : (
-              <>
-                <Trans>Show more</Trans>
-                <ChevronDown className="h-3.5 w-3.5" aria-hidden />
-              </>
-            )}
-          </button>
+              <button
+                type="button"
+                onClick={() => setSheetOpen(true)}
+                className="inline-flex h-8 items-center gap-1 text-sm font-semibold text-[var(--pnrr-fg)] underline-offset-2 transition-colors hover:text-[var(--pnrr-muted)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+              >
+                <Trans>Open full table</Trans>
+                <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+              </button>
+            )
+          ) : null}
         </div>
       ) : null}
 

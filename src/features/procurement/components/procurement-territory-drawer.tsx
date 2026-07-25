@@ -205,7 +205,7 @@ export function ProcurementTerritoryDrawer({
           </div>
 
           {analytics?.stats.meta ? (
-            <ProcurementAnswerabilityNotice meta={analytics.stats.meta} />
+            <ProcurementAnswerabilityNotice metas={[analytics.stats.meta]} />
           ) : null}
 
           <div className="space-y-5">

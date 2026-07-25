@@ -1,15 +1,17 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
-import { Activity, Info } from 'lucide-react'
+import { Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useOptionalSidebar } from '@/components/ui/sidebar'
-import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import type { ProcurementLandingFilters } from '@/schemas/procurement-overview'
 import type { ProcurementHubView } from '@/schemas/procurement-hub'
 import { useProcurementLanding } from '../hooks/use-procurement-data'
+import {
+  stickyCompactBarPositionClassName,
+  useStickyCompactHeader,
+} from '../hooks/use-sticky-compact-header'
 import { formatFlowCount, formatRon } from '../lib/formatting'
 import {
   procurementHeaderDescriptionClassName,
@@ -49,15 +51,13 @@ export function ProcurementShell({
   onTabChange,
 }: Props) {
   const [infoOpen, setInfoOpen] = useState(false)
-  const [hasMounted, setHasMounted] = useState(false)
-  const [isCompactVisible, setIsCompactVisible] = useState(false)
-  const fullHeaderRef = useRef<HTMLElement | null>(null)
-  const lastScrollYRef = useRef(0)
-  const mobileCompactVisibleRef = useRef(false)
-  const sidebar = useOptionalSidebar()
-  const isViewportMobile = useIsMobile()
-  const sidebarState = sidebar?.state
-  const isMobile = sidebar?.isMobile ?? isViewportMobile
+  const {
+    headerRef: fullHeaderRef,
+    isCompactVisible,
+    hasMounted,
+    isMobile,
+    sidebarState,
+  } = useStickyCompactHeader({ enabled: enableStickyChrome })
   const { data, isPending } = useProcurementLanding(landingFilters)
   const hasStickyFilters = Boolean(stickyFilters)
   const hasActiveLandingFilters = Boolean(
@@ -67,54 +67,13 @@ export function ProcurementShell({
       landingFilters.buyerCounty,
   )
 
-  useEffect(() => {
-    if (!enableStickyChrome) return
-    setHasMounted(true)
-    lastScrollYRef.current = window.scrollY
-
-    const updateCompactVisibility = () => {
-      const headerBottom =
-        fullHeaderRef.current?.getBoundingClientRect().bottom ??
-        Number.POSITIVE_INFINITY
-      const currentScrollY = window.scrollY
-      if (isMobile) {
-        if (currentScrollY > lastScrollYRef.current + 4) {
-          mobileCompactVisibleRef.current = true
-        }
-        if (currentScrollY < lastScrollYRef.current - 4) {
-          mobileCompactVisibleRef.current = false
-        }
-      }
-      lastScrollYRef.current = currentScrollY
-      setIsCompactVisible(
-        headerBottom <= 0 && (!isMobile || mobileCompactVisibleRef.current),
-      )
-    }
-
-    updateCompactVisibility()
-    const visibilityInterval = window.setInterval(updateCompactVisibility, 120)
-    window.addEventListener('scroll', updateCompactVisibility, { passive: true })
-    document.addEventListener('scroll', updateCompactVisibility, {
-      passive: true,
-      capture: true,
-    })
-    window.addEventListener('resize', updateCompactVisibility)
-    return () => {
-      window.clearInterval(visibilityInterval)
-      window.removeEventListener('scroll', updateCompactVisibility)
-      document.removeEventListener('scroll', updateCompactVisibility, {
-        capture: true,
-      })
-      window.removeEventListener('resize', updateCompactVisibility)
-    }
-  }, [enableStickyChrome, isMobile])
-
   const actionsCluster = (
     <div className="flex shrink-0 items-center gap-2">
+      {/* Quiet utility — the filter trigger next to it stays the primary action. */}
       <Button
-        variant="outline"
+        variant="ghost"
         size="icon"
-        className="h-10 w-10 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] text-[var(--pnrr-fg)] hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)]"
+        className="h-10 w-10 rounded-none text-[var(--pnrr-muted)] hover:bg-[var(--pnrr-subtle)] hover:text-[var(--pnrr-fg)]"
         onClick={() => setInfoOpen(true)}
         aria-label={t`About this data`}
       >
@@ -135,14 +94,7 @@ export function ProcurementShell({
             isCompactVisible
               ? 'translate-y-0 opacity-100'
               : 'pointer-events-none -translate-y-full opacity-0',
-            isMobile && 'left-0 w-full',
-            !isMobile &&
-              sidebarState === 'expanded' &&
-              'left-[var(--sidebar-width)] right-0 w-auto',
-            !isMobile &&
-              sidebarState === 'collapsed' &&
-              'left-[var(--sidebar-width-icon)] right-0 w-auto',
-            !isMobile && !sidebarState && 'left-0 right-0 w-auto',
+            stickyCompactBarPositionClassName({ isMobile, sidebarState }),
           )}
         >
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2 sm:px-6 lg:px-8">
@@ -211,7 +163,6 @@ export function ProcurementShell({
                 {isPending ? (
                   <>
                     <div className={procurementHeaderStatClassName}>
-                      <Activity className="h-4 w-4 shrink-0" aria-hidden />
                       <Skeleton className="h-4 w-10 rounded-none" />
                       <span className={procurementHeaderStatLabelClassName}>
                         <Trans>direct acquisitions</Trans>
@@ -228,10 +179,6 @@ export function ProcurementShell({
                   <>
                     {data.headline.directAcquisitionsCount !== null ? (
                       <div className={procurementHeaderStatClassName}>
-                        <Activity
-                          className="h-4 w-4 shrink-0 text-[var(--pnrr-fg)]"
-                          aria-hidden
-                        />
                         <span className={procurementHeaderStatValueClassName}>
                           {formatFlowCount(
                             data.headline.directAcquisitionsCount,

@@ -23,3 +23,12 @@ export function buildInstitutionScopes(
     ]),
   ) as Record<ProcurementAnalysisGrain, Record<string, unknown>>
 }
+
+/**
+ * Last calendar day of a `YYYY-MM` bound. Hardcoding 28 silently dropped the
+ * 29th–31st of the closing month from any list scoped to it.
+ */
+export function monthEndDate(month: string): string {
+  const [year, mm] = month.split('-').map(Number)
+  return new Date(Date.UTC(year, mm, 0)).toISOString().slice(0, 10)
+}

@@ -12,6 +12,7 @@ import {
   fetchProcurementInstitutionOverview,
   fetchProcurementSupplierSlice,
   fetchProcurementTerritoryOverview,
+  type ProcurementAuthoritySliceScope,
   type ProcurementBasisOverviewRequest,
   type ProcurementInstitutionScopes,
 } from '../api/procurement-api'
@@ -148,12 +149,16 @@ export function useProcurementGeographyOptions() {
   })
 }
 
-export function useProcurementSearch(params: ProcurementSearchState) {
+export function useProcurementSearch(
+  params: ProcurementSearchState,
+  options?: { readonly enabled?: boolean },
+) {
   return useQuery({
     queryKey: [...PROCUREMENT_QUERY_KEY, 'search', params],
     queryFn: () => fetchProcurementSearch(params),
     // Keep the previous page visible while the next one loads (list paging).
     placeholderData: (prev) => prev,
+    enabled: options?.enabled ?? true,
   })
 }
 
@@ -223,10 +228,11 @@ export function useProcurementInstitutionOverview(
 export function useProcurementAuthoritySlice(
   cui: string,
   initialData?: AuthorityProcurementSlice,
+  scope?: ProcurementAuthoritySliceScope,
 ) {
   return useQuery({
-    queryKey: [...PROCUREMENT_QUERY_KEY, 'authority-slice', cui],
-    queryFn: () => fetchProcurementAuthoritySlice(cui),
+    queryKey: [...PROCUREMENT_QUERY_KEY, 'authority-slice', cui, scope ?? null],
+    queryFn: () => fetchProcurementAuthoritySlice(cui, scope),
     initialData,
     enabled: Boolean(cui),
   })

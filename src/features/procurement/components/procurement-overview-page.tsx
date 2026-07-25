@@ -100,7 +100,6 @@ export function ProcurementOverviewPage({
               </Trans>
             </p>
           ) : null}
-          <ProcurementHubDevPanel />
         </>
       }
       stickyFilters={<ProcurementHubActiveFilters hub={hub} compact />}
@@ -168,7 +167,7 @@ export function ProcurementOverviewPage({
             />
           ) : analytics ? (
             <>
-              <ProcurementAnswerabilityNotice meta={analytics.stats.meta} />
+              <ProcurementAnswerabilityNotice metas={[analytics.stats.meta]} />
 
               {/* A card whose dimension the scope FIXES is a single bucket —
                   the landing fetch skips it and the card hides (C1). */}
@@ -179,7 +178,7 @@ export function ProcurementOverviewPage({
                     description={
                       hubState.measure === 'value_awarded' &&
                       analytics.meta.authoritiesRankedBy === 'value'
-                        ? t`Ranked by awarded value. Record counts remain visible for context.`
+                        ? t`Ranked by awarded value.`
                         : hubState.measure === 'value_awarded'
                           ? t`Awarded-value ranking is unavailable for this scope, so the server ranked by record count.`
                         : t`By number of records.`
@@ -197,7 +196,7 @@ export function ProcurementOverviewPage({
                     description={
                       hubState.measure === 'value_awarded' &&
                       analytics.meta.suppliersRankedBy === 'value'
-                        ? t`Ranked by awarded value. Record counts remain visible for context.`
+                        ? t`Ranked by awarded value.`
                         : hubState.measure === 'value_awarded'
                           ? t`Awarded-value ranking is unavailable for this scope, so the server ranked by record count.`
                         : t`By number of records.`
@@ -224,7 +223,7 @@ export function ProcurementOverviewPage({
                   description={
                     hubState.measure === 'value_awarded' &&
                     analytics.meta.categoriesRankedBy === 'value'
-                      ? t`Ranked by awarded value. Record counts remain visible for context.`
+                      ? t`Ranked by awarded value.`
                       : hubState.measure === 'value_awarded'
                         ? t`Awarded-value ranking is unavailable for this scope, so the server ranked by record count.`
                         : t`By number of records.`
@@ -260,6 +259,11 @@ export function ProcurementOverviewPage({
           )}
         </div>
       )}
+
+      {/* Dev-only capability matrix — below the content, out of the header flow. */}
+      <div className="mt-10">
+        <ProcurementHubDevPanel />
+      </div>
 
       <ProcurementHubFilterSheet
         open={filterSheetOpen}

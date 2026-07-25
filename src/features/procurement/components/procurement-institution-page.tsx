@@ -1,38 +1,47 @@
 import { useMemo, useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
-import { ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type {
   AuthorityProcurementSlice,
   ProcurementAnalysisGrain,
+  ProcurementGrain,
   ProcurementInstitutionOverview,
   ProcurementInstitutionPopulation,
   ProcurementInstitutionSignals as InstitutionSignals,
 } from '@/schemas/procurement'
 import { buildInstitutionScopes } from '../lib/institution-scopes'
+import type { ProcurementAuthoritySliceScope } from '../api/procurement-api'
 import {
   useProcurementAuthoritySlice,
   useProcurementInstitutionOverview,
 } from '../hooks/use-procurement-data'
-import { formatFlowCount, formatRon } from '../lib/formatting'
+import { formatRon } from '../lib/formatting'
 import {
-  procurementSectionClassName,
-  procurementSectionLabelClassName,
-  procurementUnderlineLinkClassName,
-} from '../lib/procurement-theme'
+  populationLabel,
+  populationMoneyBasisLabel,
+} from '../lib/grain-labels'
 import { ProcurementAuthoritySlice } from './procurement-authority-slice'
+import type { FlowAnalysisGrain } from './procurement-analysis-grain-toggle'
 import { ProcurementAnswerabilityNotice } from './procurement-answerability-notice'
 import { ProcurementErrorState } from './procurement-error-state'
+import { ProcurementInfoSheet } from './procurement-info-sheet'
+import { ProcurementInstitutionHeader } from './procurement-institution-header'
 import { ProcurementInstitutionPopulations } from './procurement-institution-populations'
 import { ProcurementInstitutionSignals } from './procurement-institution-signals'
+import {
+  ProcurementInstitutionQuickFilters,
+  type InstitutionQuickFilterState,
+} from './procurement-institution-quick-filters'
 import { ProcurementDetailSkeleton } from './procurement-skeletons'
 
 type Props = {
   readonly cui: string
   readonly initialSlice?: AuthorityProcurementSlice
   readonly initialOverview?: ProcurementInstitutionOverview
+  /** Page quick filters from the URL (`year`, `cpv`) — defaults are all-time. */
+  readonly filters?: InstitutionQuickFilterState
   readonly className?: string
 }
 
@@ -45,18 +54,30 @@ function hasInstitutionSignals(signals: InstitutionSignals): boolean {
   )
 }
 
-/** What this population's headline money means, spelled out. */
-function headlineMoneyLabel(grain: ProcurementAnalysisGrain): string | null {
-  switch (grain) {
-    case 'framework':
-      return t`Plafon maxim angajat prin acorduri-cadru`
-    case 'calloff':
-      return t`Valoare comandată prin contracte subsecvente`
-    case 'modification':
-      return null
-    default:
-      return t`Valoare atribuită (nu plăți efectuate)`
-  }
+/**
+ * Which analysis grain a selected population maps to. The slice serves
+ * supplier/category/monthly breakdowns for two grains only; the other four
+ * populations say so rather than borrowing another population's numbers.
+ */
+const ANALYSIS_GRAIN: Partial<
+  Record<ProcurementAnalysisGrain, FlowAnalysisGrain>
+> = {
+  contract: 'contract',
+  direct_acquisition: 'direct_acquisition',
+}
+
+/**
+ * Which searchable record type backs each population's list. Frameworks and
+ * call-offs have no search grain of their own — they are contract rows — so
+ * the list shows contracts and the heading says so.
+ */
+const RECORD_GRAIN: Record<ProcurementAnalysisGrain, ProcurementGrain> = {
+  procedure: 'procedures',
+  contract: 'contracts',
+  direct_acquisition: 'direct_acquisitions',
+  modification: 'modifications',
+  framework: 'contracts',
+  calloff: 'contracts',
 }
 
 /** Dedicated buyer profile under `/procurement/institutions/$cui`. */
@@ -64,12 +85,36 @@ export function ProcurementInstitutionPage({
   cui,
   initialSlice,
   initialOverview,
+  filters = {},
   className,
 }: Props) {
+  const navigate = useNavigate()
+  const [infoOpen, setInfoOpen] = useState(false)
   const [activeGrain, setActiveGrain] =
     useState<ProcurementAnalysisGrain>('contract')
-  const scopes = useMemo(() => buildInstitutionScopes(), [])
+  const hasFilters = filters.year !== undefined || filters.cpv !== undefined
+  const scopeInput: ProcurementAuthoritySliceScope = useMemo(
+    () => ({
+      ...(filters.year
+        ? {
+            monthFrom: `${filters.year}-01`,
+            monthTo: `${filters.year}-12`,
+          }
+        : {}),
+      ...(filters.cpv ? { cpvDivision: filters.cpv } : {}),
+    }),
+    [filters.year, filters.cpv],
+  )
+  const scopes = useMemo(() => buildInstitutionScopes(scopeInput), [scopeInput])
   const nameQuery = useProcurementAuthoritySlice(cui, initialSlice)
+  // Same query key the slice below uses, so this shares its cache rather than
+  // refetching — the page needs the analysis envelope to fold its caveats into
+  // the single honesty card.
+  const scopedSlice = useProcurementAuthoritySlice(
+    cui,
+    hasFilters ? undefined : nameQuery.data,
+    scopeInput,
+  )
   const overviewQuery = useProcurementInstitutionOverview(
     cui,
     scopes,
@@ -85,10 +130,12 @@ export function ProcurementInstitutionPage({
   const populations = overview?.populations ?? []
   const active: ProcurementInstitutionPopulation | undefined =
     populations.find((entry) => entry.grain === activeGrain) ?? populations[0]
+  // `active` falls back to the first population when the selection is absent,
+  // so the analysis below must follow the population actually on screen.
+  const selectedGrain = active?.grain ?? activeGrain
   const contractAwarded =
     populations.find((entry) => entry.grain === 'contract')?.stats
       .valueAwardedSum ?? null
-  const moneyLabel = active ? headlineMoneyLabel(active.grain) : null
 
   // The envelope carries a caveat for EVERY money basis the grain declares,
   // but this block shows exactly one. Rendering the rest told readers that
@@ -109,137 +156,142 @@ export function ProcurementInstitutionPage({
     }
   }, [active])
 
-  return (
-    <div
-      className={cn(
-        'mx-auto w-full max-w-6xl space-y-6 px-4 py-6 sm:px-6 lg:px-8',
-        className,
-      )}
-    >
-      <nav
-        aria-label={t`Breadcrumb`}
-        className="flex flex-wrap items-center gap-1 text-sm text-[var(--pnrr-muted)]"
-      >
-        <Link
-          to="/procurement"
-          className="underline underline-offset-2 hover:text-[var(--pnrr-fg)]"
-        >
-          <Trans>Achiziții publice</Trans>
-        </Link>
-        <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-        <Link
-          to="/procurement"
-          search={{ view: 'rankings', rank_dim: 'buyer' }}
-          className="underline underline-offset-2 hover:text-[var(--pnrr-fg)]"
-        >
-          <Trans>Instituții</Trans>
-        </Link>
-        <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-        <span className="text-[var(--pnrr-fg)]">{title}</span>
-      </nav>
+  // The header carries the selected population's money — one figure, with the
+  // basis it means. Populations that are counts-only or simply empty carry no
+  // chip at all rather than a misleading "indisponibil".
+  const valueStat = (() => {
+    if (active === undefined) return null
+    const basis = populationMoneyBasisLabel(active.grain)
+    if (basis === null || active.recordCount === '0') return null
+    return { value: formatRon(active.anchorValueRon, 'compact'), label: basis }
+  })()
 
-      <header className="space-y-2">
-        <div className={procurementSectionLabelClassName}>
-          <Trans>Cumpărător public</Trans>
-        </div>
-        <h1 className="text-3xl font-black tracking-tight text-[var(--pnrr-fg)] sm:text-4xl">
-          {title}
-        </h1>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--pnrr-muted)]">
-          <span>
-            <Trans>CUI: {cui}</Trans>
-          </span>
-          <Link
-            to="/entities/$cui"
-            params={{ cui }}
-            className={procurementUnderlineLinkClassName}
-          >
-            <Trans>Profilul instituției</Trans>
-          </Link>
-          <Link
-            to="/procurement"
-            search={{ view: 'list', authority_cui: cui }}
-            className={procurementUnderlineLinkClassName}
-          >
-            <Trans>Toate înregistrările</Trans>
-          </Link>
-          <Link
-            to="/achizitii/metodologie"
-            className={procurementUnderlineLinkClassName}
-          >
-            <Trans>Cum sunt calculate sumele</Trans>
-          </Link>
-        </div>
-      </header>
-
-      {overviewQuery.isPending ? (
-        <ProcurementDetailSkeleton />
-      ) : overviewQuery.isError ? (
-        <ProcurementErrorState
-          error={overviewQuery.error}
-          onRetry={() => void overviewQuery.refetch()}
-          isRetrying={overviewQuery.isRefetching}
-        />
-      ) : overview === undefined || populations.length === 0 ? (
-        <p className="text-sm text-[var(--pnrr-muted)]">
-          <Trans>
-            This institution does not appear as a buyer in the procurement data.
-          </Trans>
-        </p>
-      ) : (
-        <>
-          {active ? (
-            <section className={cn(procurementSectionClassName, 'p-5')}>
-              <p className="text-xs font-bold uppercase tracking-wide text-[var(--pnrr-muted)]">
-                {moneyLabel ?? t`Modificări contractuale`}
-              </p>
-              <p className="mt-2 text-4xl font-black tracking-tight text-[var(--pnrr-fg)]">
-                {moneyLabel === null
-                  ? formatFlowCount(active.recordCount ?? '0')
-                  : formatRon(active.anchorValueRon, 'compact')}
-              </p>
-              <p className="mt-1 text-sm text-[var(--pnrr-muted)]">
-                {moneyLabel === null ? (
-                  <Trans>
-                    Actele adiționale se raportează ca număr — sumele brute din
-                    sursă nu sunt suficient de fiabile pentru a fi însumate.
-                  </Trans>
-                ) : (
-                  <Trans>
-                    {formatFlowCount(active.recordCount ?? '0')} înregistrări în
-                    această populație.
-                  </Trans>
-                )}
-              </p>
-              {headlineMeta ? (
-                <ProcurementAnswerabilityNotice
-                  meta={headlineMeta}
-                  className="mt-3"
-                />
-              ) : null}
-            </section>
-          ) : null}
-
-          <ProcurementInstitutionPopulations
-            populations={populations}
-            active={active?.grain ?? 'contract'}
-            onSelect={setActiveGrain}
-          />
-
-          {hasInstitutionSignals(overview.signals) ? (
-            <ProcurementInstitutionSignals
-              signals={overview.signals}
-              contractAwardedRon={contractAwarded}
-            />
-          ) : null}
-        </>
-      )}
-
-      <ProcurementAuthoritySlice
-        authorityCui={cui}
-        initialSlice={nameQuery.data}
-        showSummaryTiles={false}
+  // The switcher belongs to the header band, flush with its bottom rule, so
+  // the population it selects reads as the page's subject rather than as one
+  // more control stacked in the body.
+  const populationTabs =
+    populations.length > 0 ? (
+      <ProcurementInstitutionPopulations
+        populations={populations}
+        active={selectedGrain}
+        onSelect={setActiveGrain}
       />
+    ) : null
+
+  const compactPopulationTabs =
+    populations.length > 0 ? (
+      <ProcurementInstitutionPopulations
+        compact
+        populations={populations}
+        active={selectedGrain}
+        onSelect={setActiveGrain}
+      />
+    ) : null
+
+  // One card for the whole page: the selected population's envelope plus the
+  // analysis envelope below it.
+  const analysisMeta =
+    (ANALYSIS_GRAIN[selectedGrain] ?? 'contract') === 'contract'
+      ? scopedSlice.data?.analysisByGrain.contract.stats.meta
+      : scopedSlice.data?.analysisByGrain.directAcquisition.stats.meta
+  const answerMetas = [headlineMeta, analysisMeta].filter(
+    (meta): meta is NonNullable<typeof meta> => meta != null,
+  )
+
+  const quickFilters = initialSlice ? (
+    <ProcurementInstitutionQuickFilters
+      cui={cui}
+      filters={filters}
+      firstSeen={initialSlice.summary.firstSeen}
+      lastSeen={initialSlice.summary.lastSeen}
+      categories={initialSlice.analysisByGrain.contract.topCategories}
+    />
+  ) : null
+
+  return (
+    <div className={cn('min-h-screen min-w-0 bg-background', className)}>
+      <ProcurementInstitutionHeader
+        cui={cui}
+        title={title}
+        firstSeen={initialSlice?.summary.firstSeen ?? null}
+        lastSeen={initialSlice?.summary.lastSeen ?? null}
+        valueStat={valueStat}
+        filters={quickFilters}
+        tabs={populationTabs}
+        compactTabs={compactPopulationTabs}
+        onOpenMethodology={() => setInfoOpen(true)}
+      />
+
+      <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+        {overviewQuery.isPending ? (
+          <ProcurementDetailSkeleton />
+        ) : overviewQuery.isError ? (
+          <ProcurementErrorState
+            error={overviewQuery.error}
+            onRetry={() => void overviewQuery.refetch()}
+            isRetrying={overviewQuery.isRefetching}
+          />
+        ) : overview === undefined || populations.length === 0 ? (
+          <p className="text-sm text-[var(--pnrr-muted)]">
+            <Trans>
+              This institution does not appear as a buyer in the procurement
+              data.
+            </Trans>
+          </p>
+        ) : (
+          <>
+            {headlineMeta ? (
+              <ProcurementAnswerabilityNotice metas={answerMetas} />
+            ) : null}
+
+            {selectedGrain === 'modification' ? (
+              // The table says "doar număr"; this says why, once, and only
+              // where it applies.
+              <p className="text-sm text-[var(--pnrr-muted)]">
+                <Trans>
+                  Actele adiționale se raportează ca număr — sumele brute din
+                  sursă nu sunt suficient de fiabile pentru a fi însumate.
+                </Trans>
+              </p>
+            ) : null}
+
+            {hasInstitutionSignals(overview.signals) ? (
+              <ProcurementInstitutionSignals
+                signals={overview.signals}
+                contractAwardedRon={contractAwarded}
+              />
+            ) : null}
+          </>
+        )}
+
+        <ProcurementAuthoritySlice
+          authorityCui={cui}
+          initialSlice={hasFilters ? undefined : nameQuery.data}
+          showSummaryTiles={false}
+          scope={scopeInput}
+          analysis={{
+            grain: ANALYSIS_GRAIN[selectedGrain] ?? 'contract',
+            ...(ANALYSIS_GRAIN[selectedGrain] === undefined
+              ? { unservedLabel: populationLabel(selectedGrain) }
+              : {}),
+            recordGrain: RECORD_GRAIN[selectedGrain],
+            recordLabel: populationLabel(selectedGrain),
+          }}
+          categoryFilter={{
+            activeCode: filters.cpv ?? null,
+            onSelect: (code) =>
+              void navigate({
+                to: '.',
+                search: (prev: InstitutionQuickFilterState) => ({
+                  ...prev,
+                  cpv: code ?? undefined,
+                }),
+              }),
+          }}
+        />
+      </main>
+
+      <ProcurementInfoSheet open={infoOpen} onOpenChange={setInfoOpen} />
     </div>
   )
 }

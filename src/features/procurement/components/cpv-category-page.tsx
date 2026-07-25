@@ -129,7 +129,7 @@ export function CpvCategoryPage({ code, initialPage, className }: Props) {
             <ProcurementAnalysisGrainToggle value={grain} onChange={setGrain} />
           </div>
 
-          {analytics ? <ProcurementAnswerabilityNotice meta={analytics.stats.meta} /> : null}
+          {analytics ? <ProcurementAnswerabilityNotice metas={[analytics.stats.meta]} /> : null}
 
           <ProcurementMonthlyChart
             points={analytics?.monthly ?? []}

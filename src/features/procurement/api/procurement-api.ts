@@ -1,5 +1,6 @@
 /** Live-only procurement facade. There is intentionally no fixture fallback. */
 export type {
+  ProcurementAuthoritySliceScope,
   ProcurementBasisAnalytics,
   ProcurementBasisOverviewRequest,
   ProcurementInstitutionScopes,

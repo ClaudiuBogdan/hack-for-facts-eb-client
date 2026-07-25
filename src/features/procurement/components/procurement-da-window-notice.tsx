@@ -1,6 +1,10 @@
 import { Trans } from '@lingui/react/macro'
 import { CalendarRange, Ban, Eye } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import {
+  procurementNoticeClassName,
+  procurementNoticeIconClassName,
+} from '../lib/procurement-theme'
 import type { ProcurementSearchState } from '@/schemas/procurement-search'
 import {
   statusesHiddenByDefault,
@@ -22,10 +26,9 @@ function formatDay(iso: string): string {
   }).format(new Date(`${iso}T00:00:00Z`))
 }
 
-const NOTICE_CLASSES =
-  'flex items-start gap-2 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-subtle)] p-3 text-sm text-[var(--pnrr-muted)]'
+const NOTICE_CLASSES = procurementNoticeClassName
 
-const ICON_CLASSES = 'mt-0.5 h-4 w-4 shrink-0 text-[var(--pnrr-fg)]'
+const ICON_CLASSES = procurementNoticeIconClassName
 
 /**
  * The date-window disclosure, as its own component so `from`/`to` stay plain
