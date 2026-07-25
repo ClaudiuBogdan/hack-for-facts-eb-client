@@ -435,6 +435,7 @@ export const PROCUREMENT_MODIFICATIONS_QUERY = /* GraphQL */ `
   query ProcurementModifications($filter: ProcurementModificationsFilter, $sort: ProcurementSort, $page: Int, $pageSize: Int) {
     procurementModifications(filter: $filter, sort: $sort, page: $page, pageSize: $pageSize) {
       total totalEstimated
+      provenance { engine asOf }
       items { ${MODIFICATION_FIELDS} }
     }
   }

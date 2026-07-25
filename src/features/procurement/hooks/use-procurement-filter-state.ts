@@ -9,6 +9,7 @@ import { useCallback, useMemo } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { cleanProcurementHubSearch } from '@/schemas/procurement-hub'
 import type {
+  ProcurementQMode,
   ProcurementRecordKindOption,
   ProcurementSearchState,
   ProcurementSort,
@@ -55,6 +56,13 @@ export function useProcurementFilterState(search: ProcurementSearchState) {
 
   const setQuery = useCallback(
     (q: string | undefined) => updateFilters({ q: q?.trim() || undefined }),
+    [updateFilters],
+  )
+
+  /** How a multi-word `q` is read; `all` is the default and stays out of the URL. */
+  const setQMode = useCallback(
+    (qmode: ProcurementQMode | undefined) =>
+      updateFilters({ qmode: qmode === 'all' ? undefined : qmode }),
     [updateFilters],
   )
 
@@ -183,6 +191,7 @@ export function useProcurementFilterState(search: ProcurementSearchState) {
     search,
     updateFilters,
     setQuery,
+    setQMode,
     setSource,
     setStatuses,
     setValueCategories,

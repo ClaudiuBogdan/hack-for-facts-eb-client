@@ -11,6 +11,7 @@
  */
 import type { ProcurementStatus } from '@/schemas/procurement'
 import type {
+  ProcurementQMode,
   ProcurementSearchState,
   ProcurementSort,
 } from '@/schemas/procurement-search'
@@ -36,6 +37,8 @@ export interface DecimalRangeInput {
 
 export interface ProcurementProceduresFilterInput {
   q?: { contains: string }
+  /** How `q` is read; engine-served grains only. */
+  qMode?: ProcurementQMode
   authorityCui?: { eq: string }
   cpvDivision?: { eq: string }
   cpvCode?: { eq: string }
@@ -54,6 +57,8 @@ export interface ProcurementProceduresFilterInput {
 
 export interface ProcurementContractsFilterInput {
   q?: { contains: string }
+  /** How `q` is read; engine-served grains only. */
+  qMode?: ProcurementQMode
   authorityCui?: { eq: string }
   supplierCui?: { eq: string }
   cpvDivision?: { eq: string }
@@ -77,6 +82,8 @@ export interface ProcurementContractsFilterInput {
 
 export interface ProcurementDirectAcquisitionsFilterInput {
   q?: { contains: string }
+  /** How `q` is read; engine-served grains only. */
+  qMode?: ProcurementQMode
   authorityCui?: { eq: string }
   supplierCui?: { eq: string }
   cpvDivision?: { eq: string }
@@ -101,6 +108,10 @@ export interface ProcurementModificationsFilterInput {
   q?: { contains: string }
   authorityCui?: { eq: string }
   supplierCui?: { eq: string }
+  /** An amendment inherits its contract's buyer, so it carries buyer territory. */
+  buyerRegion?: { eq: string }
+  buyerCounty?: { eq: string }
+  buyerSiruta?: { eq: string }
   modificationDate?: DateRangeInput
 }
 
@@ -412,7 +423,10 @@ export function buildProceduresFilter(
 ): ProcurementProceduresFilterInput {
   const filter: ProcurementProceduresFilterInput = {}
   const q = procurementQOrUndefined(search.q)
-  if (q) filter.q = { contains: q }
+  if (q) {
+    filter.q = { contains: q }
+    if (search.qmode !== undefined) filter.qMode = search.qmode
+  }
   const authorityCui = trimmedOrUndefined(search.authority_cui)
   if (authorityCui) filter.authorityCui = { eq: authorityCui }
   applyCpv(filter, search)
@@ -435,7 +449,10 @@ export function buildContractsFilter(
 ): ProcurementContractsFilterInput {
   const filter: ProcurementContractsFilterInput = {}
   const q = procurementQOrUndefined(search.q)
-  if (q) filter.q = { contains: q }
+  if (q) {
+    filter.q = { contains: q }
+    if (search.qmode !== undefined) filter.qMode = search.qmode
+  }
   const authorityCui = trimmedOrUndefined(search.authority_cui)
   if (authorityCui) filter.authorityCui = { eq: authorityCui }
   const supplierCui = trimmedOrUndefined(search.supplier_cui)
@@ -469,7 +486,10 @@ export function buildDirectAcquisitionsFilter(
 ): ProcurementDirectAcquisitionsFilterInput {
   const filter: ProcurementDirectAcquisitionsFilterInput = {}
   const q = procurementQOrUndefined(search.q)
-  if (q) filter.q = { contains: q }
+  if (q) {
+    filter.q = { contains: q }
+    if (search.qmode !== undefined) filter.qMode = search.qmode
+  }
   const authorityCui = trimmedOrUndefined(search.authority_cui)
   if (authorityCui) filter.authorityCui = { eq: authorityCui }
   const supplierCui = trimmedOrUndefined(search.supplier_cui)
@@ -504,6 +524,9 @@ export function buildModificationsFilter(
   if (authorityCui) filter.authorityCui = { eq: authorityCui }
   const supplierCui = trimmedOrUndefined(search.supplier_cui)
   if (supplierCui) filter.supplierCui = { eq: supplierCui }
+  // Buyer territory only: the supplier side needs the search index, which this
+  // grain has no part of.
+  applyGeography(filter, search, { supplier: false })
   const dates = buildDateRange(search)
   if (dates) filter.modificationDate = dates
   return filter
@@ -517,6 +540,14 @@ export function buildProcurementSort(
     case 'value_desc':
     case 'value_asc':
       return search.sort
+    // BM25, and only ever with a query to rank against — the hub scrubs it back
+    // to the default otherwise. Listing it here is what stops "Best match" from
+    // falling through to the default and quietly serving newest-first.
+    // The VALIDATED query, not raw truthiness: a two-character `q` is dropped
+    // from the filter, so `search.q` is truthy while the request carries no
+    // query at all — and the server rejects relevance without one.
+    case 'relevance':
+      return procurementQOrUndefined(search.q) !== undefined ? 'relevance' : 'date_desc'
     case 'date_desc':
     default:
       return 'date_desc'

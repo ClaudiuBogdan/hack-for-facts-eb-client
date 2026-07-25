@@ -385,4 +385,39 @@ describe('geography and CPV levels reach the record list', () => {
     expect(exact.cpvClass).toBeUndefined()
     expect(exact.cpvDivision).toBeUndefined()
   })
+
+  it('sends buyer territory on modifications, and never supplier territory', () => {
+    // An amendment inherits its contract's buyer, so territory resolves through
+    // the parent's fact row. The supplier side needs the search index.
+    const filter = buildModificationsFilter(
+      state({ buyerCounty: 'CJ', supplierCounty: 'B' }),
+    )
+    expect(filter.buyerCounty).toEqual({ eq: 'CJ' })
+    expect(filter).not.toHaveProperty('supplierCounty')
+  })
+
+  it('sends relevance as relevance — not as the default order under a different label', () => {
+    // A missing case here made the sort fall through: the control said "Best
+    // match" while the request asked for newest-first.
+    expect(buildProcurementSort(state({ sort: 'relevance', q: 'spital' }))).toBe(
+      'relevance',
+    )
+    // Without a query there is nothing to rank; the server rejects it.
+    expect(buildProcurementSort(state({ sort: 'relevance' }))).toBe('date_desc')
+    expect(buildProcurementSort(state({ sort: 'value_asc' }))).toBe('value_asc')
+  })
+
+  it('sends the match mode only alongside a query, and never on modifications', () => {
+    const withQuery = state({ q: 'drumuri comunale', qmode: 'phrase' })
+    expect(buildContractsFilter(withQuery).qMode).toBe('phrase')
+    expect(buildProceduresFilter(withQuery).qMode).toBe('phrase')
+    expect(buildDirectAcquisitionsFilter(withQuery).qMode).toBe('phrase')
+
+    // No query: the mode has nothing to apply to, and the server rejects it.
+    expect(buildContractsFilter(state({ qmode: 'phrase' })).qMode).toBeUndefined()
+
+    // The SQL-served grain has one substring match and no mode — the input
+    // does not exist on its filter type, so it is never sent.
+    expect(buildModificationsFilter(withQuery)).not.toHaveProperty('qMode')
+  })
 })

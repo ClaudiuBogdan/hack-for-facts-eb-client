@@ -3,6 +3,7 @@ import {
   cleanProcurementHubSearch,
   hubStateToLandingFilters,
   hubStateToListSearchState,
+  isRelevanceSortAvailable,
   hubStateToRankingScopeInput,
   hubStateToTerritoryLandingFilters,
   isListCapabilityAvailable,
@@ -242,14 +243,15 @@ describe('procurement hub schema', () => {
       'supplier_cui',
     ])
 
-    // Modifications are not in the search index at all — no territory filter.
+    // Modifications DO carry buyer territory: an amendment inherits its
+    // contract's buyer, resolved through the parent's fact row.
     const modifications = parseProcurementHubSearch({
       grain: 'modifications',
       buyerCounty: 'CJ',
       period: 'all',
     })
-    expect(hubStateToListSearchState(modifications).buyerCounty).toBeUndefined()
-    expect(isListCapabilityAvailable('buyer-geo', 'modifications')).toBe(false)
+    expect(hubStateToListSearchState(modifications).buyerCounty).toBe('CJ')
+    expect(isListCapabilityAvailable('buyer-geo', 'modifications')).toBe(true)
     expect(isListCapabilityAvailable('buyer-geo', 'contracts')).toBe(true)
   })
 
@@ -356,13 +358,14 @@ describe('capability registry — every dropped list filter is classified', () =
       'source',
       'valueMin',
       'valueMax',
-      'buyerCounty',
       'supplierCounty',
     ] as const) {
       expect(list[key]).toBeUndefined()
     }
-    // A modification DOES name its parties — that filter stays.
+    // A modification DOES name its parties, and it inherits its contract's
+    // buyer territory — both filters stay.
     expect(list.supplier_cui).toBe('6567900')
+    expect(list.buyerCounty).toBe('CJ')
     // …and every one of them is disclosed with a reason.
     const drops = listCapabilityDrops(state)
     const dropped = new Set(drops.map((drop) => drop.key))
@@ -375,11 +378,13 @@ describe('capability registry — every dropped list filter is classified', () =
       'record_kind',
       'source',
       'valueMin',
-      'buyerCounty',
       'supplierCounty',
     ] as const) {
       expect(dropped.has(key)).toBe(true)
     }
+    // Buyer territory is NOT among them — it is served, so it is not disclosed
+    // as a drop.
+    expect(dropped.has('buyerCounty')).toBe(false)
     expect(drops.every((drop) => drop.reason.length > 0)).toBe(true)
   })
 
@@ -400,6 +405,117 @@ describe('capability registry — every dropped list filter is classified', () =
     expect(list.valueMin).toBe(1000)
     expect(list.supplierCounty).toBe('B')
     expect(listCapabilityDrops(state)).toEqual([])
+  })
+
+  it('keeps the match mode only where a grain and a query can honor it', () => {
+    const contracts = parseProcurementHubSearch({
+      grain: 'contracts',
+      q: 'drumuri comunale',
+      qmode: 'phrase',
+    })
+    expect(hubStateToListSearchState(contracts).qmode).toBe('phrase')
+
+    // No query: the mode has nothing to apply to.
+    const noQuery = parseProcurementHubSearch({ grain: 'contracts', qmode: 'phrase' })
+    expect(hubStateToListSearchState(noQuery).qmode).toBeUndefined()
+
+    // SQL-served grain: one substring match, no mode — dropped AND disclosed.
+    const modifications = parseProcurementHubSearch({
+      grain: 'modifications',
+      q: 'drumuri',
+      qmode: 'any',
+    })
+    expect(hubStateToListSearchState(modifications).qmode).toBeUndefined()
+    expect(listCapabilityDrops(modifications).map((drop) => drop.key)).toContain('qmode')
+  })
+
+  it('offers the engine-only controls only where the engine actually serves', () => {
+    // Direct acquisitions are TRANSITIONAL: the 22.6M-doc index is still being
+    // built, so that grain is answered from Postgres — one substring match, no
+    // score, no fragments. Advertising the controls there would offer a reader
+    // something the request then fails on. Drop DA from the unserved list when
+    // its index passes the parity gate and is wired into the index map.
+    for (const capability of ['q-mode', 'relevance-sort', 'list-highlight']) {
+      expect(isListCapabilityAvailable(capability, 'contracts')).toBe(true)
+      expect(isListCapabilityAvailable(capability, 'procedures')).toBe(true)
+      expect(isListCapabilityAvailable(capability, 'direct_acquisitions')).toBe(false)
+      expect(isListCapabilityAvailable(capability, 'modifications')).toBe(false)
+    }
+
+    // And the mode is scrubbed out of the request for those grains, not just
+    // hidden in the UI — a hand-edited URL cannot smuggle it through.
+    const da = parseProcurementHubSearch({
+      grain: 'direct_acquisitions',
+      q: 'mobilier',
+      qmode: 'phrase',
+    })
+    expect(hubStateToListSearchState(da).qmode).toBeUndefined()
+  })
+
+  it('keeps the filters the database can serve without the search index', () => {
+    // The reported failure: `?q=sibiu&buyerRegion=Sud-Est&grain=direct_acquisitions`
+    // first hard-failed, then dropped territory and listed 1,736 records under a
+    // header counting 31. Buyer territory comes from the analysis fact row and a
+    // CPV level is a code range, so BOTH are served on a grain with no index.
+    const da = parseProcurementHubSearch({
+      grain: 'direct_acquisitions',
+      q: 'sibiu',
+      buyerRegion: 'Sud-Est',
+      cpv_group: '45200000',
+    })
+    const list = hubStateToListSearchState(da)
+    expect(list.buyerRegion).toBe('Sud-Est')
+    expect(list.cpv_group).toBe('45200000')
+    expect(list.q).toBe('sibiu')
+    expect(listCapabilityDrops(da)).toEqual([])
+
+    // Supplier territory genuinely needs the index — it is resolved at build
+    // time from the company registry, and no fact table carries it.
+    const supplier = parseProcurementHubSearch({
+      grain: 'direct_acquisitions',
+      supplierCounty: 'SB',
+    })
+    expect(hubStateToListSearchState(supplier).supplierCounty).toBeUndefined()
+    expect(listCapabilityDrops(supplier)[0]?.reason).toContain('not indexed yet')
+  })
+
+  it('explains a drop in terms of the record type the reader is looking at', () => {
+    // One sentence cannot explain two grains: the DA list was telling readers
+    // "contract modifications are not in the search index".
+    const procedures = parseProcurementHubSearch({
+      grain: 'procedures',
+      supplierCounty: 'SB',
+    })
+    expect(listCapabilityDrops(procedures)[0]?.reason).toContain('predates its award')
+
+    const modifications = parseProcurementHubSearch({
+      grain: 'modifications',
+      supplierCounty: 'SB',
+    })
+    expect(listCapabilityDrops(modifications)[0]?.reason).toContain('modifications')
+  })
+
+  it('falls back from relevance to the default order when nothing can rank', () => {
+    const ranked = parseProcurementHubSearch({
+      grain: 'contracts',
+      q: 'spital',
+      sort: 'relevance',
+    })
+    expect(hubStateToListSearchState(ranked).sort).toBe('relevance')
+    expect(isRelevanceSortAvailable(ranked)).toBe(true)
+
+    // A bookmarked `sort=relevance` that loses its q must not reach the server:
+    // BM25 over a constant score is the pk tiebreak wearing a relevance label.
+    const noQuery = parseProcurementHubSearch({ grain: 'contracts', sort: 'relevance' })
+    expect(isRelevanceSortAvailable(noQuery)).toBe(false)
+    expect(hubStateToListSearchState(noQuery).sort).toBe('date_desc')
+
+    const modifications = parseProcurementHubSearch({
+      grain: 'modifications',
+      q: 'spital',
+      sort: 'relevance',
+    })
+    expect(hubStateToListSearchState(modifications).sort).toBe('date_desc')
   })
 
   it('normalizes a malformed territory param instead of sending it to the server', () => {

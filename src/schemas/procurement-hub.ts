@@ -30,12 +30,15 @@ import {
   type ResolvedProcurementOverviewPeriod,
 } from './procurement-overview'
 import {
+  PROCUREMENT_Q_MIN_LENGTH,
   PROCUREMENT_SEARCH_DEFAULTS,
   PROCUREMENT_VALUE_CATEGORIES,
+  procurementQModeSchema,
   procurementRecordKindSchema,
   procurementSortSchema,
   procurementSourceSchema,
   procurementValueCategorySchema,
+  type ProcurementQMode,
   type ProcurementRecordKindOption,
   type ProcurementSort,
   type ProcurementSource,
@@ -311,6 +314,7 @@ export const procurementHubSearchSchema = z
       }, z.custom<ProcurementRankPageSize>().optional())
       .catch(undefined),
     q: optionalStringParam,
+    qmode: procurementQModeSchema.optional().catch(undefined),
     authority_cui: optionalStringParam,
     supplier_cui: optionalStringParam,
     cpv: optionalStringParam,
@@ -368,6 +372,7 @@ export type ProcurementHubState = {
   page: number
   pageSize: number
   q?: string
+  qmode?: ProcurementQMode
   authority_cui?: string
   supplier_cui?: string
   cpv?: string
@@ -762,6 +767,25 @@ export function hubStateToTerritoryLandingFilters(
  * that drives the disclosure, so the request and the explanation can never
  * disagree (`listCapabilityDrops` returns what was dropped and why).
  */
+/**
+ * Can this state order by relevance? BM25 needs a query to rank against and an
+ * engine to compute it, so `relevance` is offered — and kept — only with a `q`
+ * on a search-served grain. Everywhere else the hub falls back to the default
+ * order rather than sending a sort the server will reject.
+ */
+export function isRelevanceSortAvailable(
+  state: Pick<ProcurementHubState, 'grain' | 'q' | 'sort'>,
+): boolean {
+  if (state.sort !== 'relevance') return true
+  // A query below the minimum length never reaches the server, so a state that
+  // "has a q" can still have nothing to rank.
+  const query = state.q?.trim() ?? ''
+  return (
+    query.length >= PROCUREMENT_Q_MIN_LENGTH &&
+    isListCapabilityAvailable('relevance-sort', state.grain)
+  )
+}
+
 export function hubStateToListSearchState(
   state: ProcurementHubState,
   now?: Date,
@@ -773,6 +797,7 @@ export function hubStateToListSearchState(
   return {
     grain: state.grain,
     q: state.q,
+    qmode: state.q === undefined ? undefined : keep('qmode', state.qmode),
     authority_cui: state.authority_cui,
     supplier_cui: keep('supplier_cui', state.supplier_cui),
     cpv: keep('cpv', state.cpv),
@@ -790,7 +815,7 @@ export function hubStateToListSearchState(
     valueMin: keep('valueMin', state.valueMin),
     valueMax: keep('valueMax', state.valueMax),
     signal: state.signal,
-    sort: state.sort,
+    sort: isRelevanceSortAvailable(state) ? state.sort : PROCUREMENT_HUB_DEFAULTS.sort,
     page: state.page,
     pageSize: state.pageSize,
     from: state.from,
@@ -1162,8 +1187,13 @@ export type HubCapability = HubCapabilityRow & {
    * would reject or ignore.
    */
   readonly listUnsupportedGrains?: readonly ProcurementGrain[]
-  /** Shown to the reader when the drop happens. */
-  readonly dropReason?: string
+  /**
+   * Shown to the reader when the drop happens. A function when the reason
+   * differs per record type — one sentence cannot explain two grains, and the
+   * DA list was telling readers "contract modifications are not in the search
+   * index".
+   */
+  readonly dropReason?: string | ((grain: ProcurementGrain) => string)
 }
 
 /** A filter the active grain cannot honor on the record list. */
@@ -1202,16 +1232,39 @@ export function listCapabilityDrops(
     if (!capability.listUnsupportedGrains?.includes(state.grain)) continue
     for (const key of capability.keys) {
       if (state[key] === undefined) continue
+      const reason =
+        typeof capability.dropReason === 'function'
+          ? capability.dropReason(state.grain)
+          : capability.dropReason
       drops.push({
         key,
         capabilityId: capability.id,
         label: capability.label,
-        reason: capability.dropReason ?? `not available on this record type`,
+        reason: reason ?? `not available on this record type`,
       })
     }
   }
   return drops
 }
+
+/**
+ * Record types the search engine does not serve, so the controls that only it
+ * can honour — match mode, relevance sort, highlighting — are not offered there.
+ *
+ * `modifications` is SQL by design. `direct_acquisitions` is TRANSITIONAL: its
+ * 22.6M-document index is still being built and gated, and until it is
+ * configured the server answers that grain from Postgres, which has one
+ * substring match, no relevance score and no fragments. Drop it from this list
+ * the moment `proto_procurement_da_v1` passes its parity gate and is wired into
+ * `PROCUREMENT_SEARCH_OPENSEARCH_INDEXES`.
+ */
+const SEARCH_ENGINE_UNSERVED_GRAINS: readonly ProcurementGrain[] = [
+  'modifications',
+  'direct_acquisitions',
+]
+
+const SEARCH_ENGINE_DROP_REASON =
+  'this record type is answered straight from the database while its search index is still being built — territory, CPV level, match mode, relevance and highlighting all need that index'
 
 /**
  * The registry. `PROCUREMENT_HUB_CAPABILITY_MATRIX` below is a projection of
@@ -1237,9 +1290,8 @@ export const PROCUREMENT_HUB_CAPABILITIES: readonly HubCapability[] = [
     label: 'Buyer geography',
     overview: 'live',
     list: 'live',
-    note: 'Region/county/UAT on aggregates (ClickHouse) and on the record list (search engine, 2026-07-25)',
+    note: 'Region/county/UAT on aggregates (ClickHouse) and on the record list — served from the analysis fact row (modifications inherit their contract\'s), so it never needs the search index',
     keys: ['buyerRegion', 'buyerCounty', 'buyerSiruta'],
-    listUnsupportedGrains: ['modifications'],
     dropReason:
       'contract modifications are not in the search index — territory does not filter this list',
   },
@@ -1250,8 +1302,13 @@ export const PROCUREMENT_HUB_CAPABILITIES: readonly HubCapability[] = [
     list: 'live',
     note: "Registered office of the awarded company; absent on procedures (a procedure predates its award)",
     keys: ['supplierRegion', 'supplierCounty', 'supplierSiruta'],
-    listUnsupportedGrains: ['procedures', 'modifications'],
-    dropReason: 'these records carry no awarded supplier, so supplier territory cannot apply',
+    listUnsupportedGrains: ['procedures', ...SEARCH_ENGINE_UNSERVED_GRAINS],
+    dropReason: (grain) =>
+      grain === 'procedures'
+        ? 'a procedure predates its award, so it has no supplier at all'
+        : grain === 'modifications'
+          ? 'contract modifications carry no supplier territory'
+          : 'the supplier’s registered office is resolved when the search index is built, and this record type is not indexed yet',
   },
   {
     id: 'parties',
@@ -1265,8 +1322,22 @@ export const PROCUREMENT_HUB_CAPABILITIES: readonly HubCapability[] = [
     label: 'CPV category',
     overview: 'live',
     list: 'live',
-    note: 'Division on both surfaces; group/class/category reach the list too (2026-07-25) — compiled as a code prefix, the same rule the analytics apply',
-    keys: ['cpv', 'cpv_division', 'cpv_group', 'cpv_class', 'cpv_category'],
+    note: 'Division and exact code are columns on the record itself, so the database can filter them without the search index',
+    keys: ['cpv', 'cpv_division'],
+    listUnsupportedGrains: ['modifications'],
+    dropReason: 'contract modifications carry no CPV code of their own',
+  },
+  {
+    // Split from `cpv` on purpose: a division or an exact code is a COLUMN, but
+    // the mid-levels compile to a code PREFIX that only the search index can
+    // answer. Bundling them meant a grain without an index advertised the
+    // levels and then failed the whole request.
+    id: 'cpv-levels',
+    label: 'CPV group / class / category',
+    overview: 'live',
+    list: 'live',
+    note: 'A level is its canonical code truncated to that level — a left-anchored code range, so the database serves it without the index',
+    keys: ['cpv_group', 'cpv_class', 'cpv_category'],
     listUnsupportedGrains: ['modifications'],
     dropReason: 'contract modifications carry no CPV code of their own',
   },
@@ -1364,8 +1435,42 @@ export const PROCUREMENT_HUB_CAPABILITIES: readonly HubCapability[] = [
     label: 'Text query on aggregates',
     overview: 'live',
     list: 'live',
-    note: 'q scopes overview + rankings as a title row filter (server 2026-07-24); on the list it is full-text relevance search (Romanian analyzer)',
+    // The same words mean different things per surface, and the counts differ
+    // by orders of magnitude: `reparatii drumuri comunale` matched 1 record as
+    // a ClickHouse title substring and 14 as an all-words engine search
+    // (90,872 in the broad mode). Disclosed here rather than silently reconciled.
+    note: 'q scopes overview + rankings as a case-insensitive TITLE SUBSTRING (ClickHouse); on the list it is full-text search over titles, party names and identifiers (Romanian analyzer) — the two counts legitimately differ',
     keys: ['q'],
+  },
+  {
+    id: 'q-mode',
+    label: 'Text match mode',
+    overview: 'na',
+    list: 'live',
+    note: 'all (default) / any (broad + one spelling edit) / phrase; search-engine grains only',
+    keys: ['qmode'],
+    listUnsupportedGrains: SEARCH_ENGINE_UNSERVED_GRAINS,
+    dropReason: SEARCH_ENGINE_DROP_REASON,
+  },
+  {
+    id: 'relevance-sort',
+    label: 'Sort by best match',
+    overview: 'na',
+    list: 'live',
+    note: 'BM25 _score with the pk tiebreak; requires a q and a search-engine grain',
+    keys: [],
+    listUnsupportedGrains: SEARCH_ENGINE_UNSERVED_GRAINS,
+    dropReason: SEARCH_ENGINE_DROP_REASON,
+  },
+  {
+    id: 'list-highlight',
+    label: 'Match highlighting',
+    overview: 'na',
+    list: 'live',
+    note: 'The index says WHICH words matched; the marks are applied to the database value, which is what renders',
+    keys: [],
+    listUnsupportedGrains: SEARCH_ENGINE_UNSERVED_GRAINS,
+    dropReason: SEARCH_ENGINE_DROP_REASON,
   },
   {
     id: 'shared-sheet',

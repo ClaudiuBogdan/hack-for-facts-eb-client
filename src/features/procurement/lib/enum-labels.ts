@@ -67,6 +67,8 @@ export function sortLabel(sort: ProcurementSort): string {
       return t`Highest value`
     case 'value_asc':
       return t`Lowest value`
+    case 'relevance':
+      return t`Best match`
   }
 }
 

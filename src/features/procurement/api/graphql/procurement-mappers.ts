@@ -452,6 +452,12 @@ export function mapSearchPage(options: {
     otherCount: number
     buckets: ReadonlyArray<{ key: string; count: number }>
   }>
+  highlights?: ReadonlyArray<{
+    id: string
+    title?: string | null
+    authorityName?: string | null
+    supplierName?: string | null
+  }>
 }): ProcurementSearchPage {
   // An unknown engine name is dropped rather than shown: a freshness claim we
   // cannot interpret is worse than none.
@@ -477,6 +483,14 @@ export function mapSearchPage(options: {
         dimension: facet.dimension,
         otherCount: facet.otherCount,
         buckets: facet.buckets.map((bucket) => ({ ...bucket })),
+      })),
+    }),
+    ...(options.highlights !== undefined && {
+      highlights: options.highlights.map((highlight) => ({
+        id: highlight.id,
+        ...(highlight.title != null && { title: highlight.title }),
+        ...(highlight.authorityName != null && { authorityName: highlight.authorityName }),
+        ...(highlight.supplierName != null && { supplierName: highlight.supplierName }),
       })),
     }),
   }

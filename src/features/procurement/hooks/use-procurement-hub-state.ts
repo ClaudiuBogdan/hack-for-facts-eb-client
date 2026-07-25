@@ -8,7 +8,10 @@ import type {
   ProcurementStatus,
   ReviewSignalKind,
 } from '@/schemas/procurement'
-import type { ProcurementRecordKindOption } from '@/schemas/procurement-search'
+import type {
+  ProcurementQMode,
+  ProcurementRecordKindOption,
+} from '@/schemas/procurement-search'
 import {
   cleanProcurementHubSearch,
   hubStateToLandingFilters,
@@ -96,6 +99,13 @@ export function useProcurementHubState(state: ProcurementHubState) {
       updateFilters({
         q: q?.trim() || undefined,
       }),
+    [updateFilters],
+  )
+
+  /** The match mode only means something with a query; clearing q clears it. */
+  const setQMode = useCallback(
+    (qmode: ProcurementQMode | undefined) =>
+      updateFilters({ qmode: qmode === 'all' ? undefined : qmode }),
     [updateFilters],
   )
 
@@ -322,6 +332,7 @@ export function useProcurementHubState(state: ProcurementHubState) {
         updateFilters: (patch: ProcurementFilterPatch) =>
           updateFilters(patch as ProcurementHubFilterPatch),
         setQuery,
+        setQMode,
         setSource,
         setStatuses,
         setValueCategories,
@@ -345,6 +356,7 @@ export function useProcurementHubState(state: ProcurementHubState) {
       listSearch,
       updateFilters,
       setQuery,
+      setQMode,
       setSource,
       setStatuses,
       setValueCategories,

@@ -56,11 +56,33 @@ const optionalIsoDateParam = z
   )
   .catch(undefined)
 
+/**
+ * Free-text `q` bounds, matching the server's. Below the minimum the query is
+ * never sent, so a state can carry a `q` the request does not — which is why
+ * anything deciding "is there something to search for" has to test the LENGTH
+ * rather than presence.
+ */
+export const PROCUREMENT_Q_MIN_LENGTH = 3
+export const PROCUREMENT_Q_MAX_LENGTH = 100
+
+/**
+ * How a multi-word `q` is read on the record list. Search-engine grains only —
+ * the SQL-served `modifications` grain has one substring match and no mode.
+ */
+export const procurementQModeSchema = z.enum(['all', 'any', 'phrase'])
+export type ProcurementQMode = z.infer<typeof procurementQModeSchema>
+
+/**
+ * `relevance` is BM25 from the search engine. It needs a `q` to rank against and
+ * a search-served grain, so the hub scrubs it back to the default when either is
+ * missing — the server rejects it rather than quietly answering in date order.
+ */
 export const procurementSortSchema = z.enum([
   'date_desc',
   'date_asc',
   'value_desc',
   'value_asc',
+  'relevance',
 ])
 
 export type ProcurementSort = z.infer<typeof procurementSortSchema>
@@ -168,6 +190,7 @@ export const procurementSearchSchema = z
   .object({
     grain: procurementGrainSchema.optional().catch(undefined),
     q: optionalStringParam,
+    qmode: procurementQModeSchema.optional().catch(undefined),
     authority_cui: optionalStringParam,
     supplier_cui: optionalStringParam,
     cpv: optionalStringParam,

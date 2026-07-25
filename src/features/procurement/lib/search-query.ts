@@ -7,8 +7,14 @@
  * debounce rather than on a submit button, the client must never let a short `q`
  * reach the wire — including via a deep link, since the search schema is lenient.
  */
-export const PROCUREMENT_Q_MIN_LENGTH = 3
-export const PROCUREMENT_Q_MAX_LENGTH = 100
+export {
+  PROCUREMENT_Q_MIN_LENGTH,
+  PROCUREMENT_Q_MAX_LENGTH,
+} from '@/schemas/procurement-search'
+import {
+  PROCUREMENT_Q_MIN_LENGTH,
+  PROCUREMENT_Q_MAX_LENGTH,
+} from '@/schemas/procurement-search'
 
 /** The trimmed `q` if it is long enough to send, otherwise `undefined`. */
 export function procurementQOrUndefined(value: string | undefined): string | undefined {

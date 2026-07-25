@@ -9,6 +9,12 @@ import { sortLabel } from '../lib/enum-labels'
 type Props = {
   readonly sort: ProcurementSort
   readonly onSortChange: (sort: ProcurementSort) => void
+  /**
+   * Offer "Best match"? BM25 needs a query to rank against and a
+   * search-engine-served record type, so the option is hidden rather than
+   * offered and then rejected.
+   */
+  readonly allowRelevance?: boolean
 }
 
 const SELECT_CLASS =
@@ -17,7 +23,11 @@ const SELECT_CLASS =
 export function ProcurementSortSelect({
   sort,
   onSortChange,
+  allowRelevance = false,
 }: Props) {
+  const options = procurementSortSchema.options.filter(
+    (option) => option !== 'relevance' || allowRelevance,
+  )
   return (
     <div className="flex items-center gap-2">
       <Label
@@ -35,7 +45,7 @@ export function ProcurementSortSelect({
           if (parsed.success) onSortChange(parsed.data)
         }}
       >
-        {procurementSortSchema.options.map((option) => (
+        {options.map((option) => (
           <option key={option} value={option}>
             {sortLabel(option)}
           </option>

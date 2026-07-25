@@ -7,7 +7,10 @@ import { cn } from '@/lib/utils'
 import { RequestDatasetAction } from '@/components/shared/procurement-data/request-dataset-action'
 import { ShareFilteredView } from '@/components/shared/procurement-data/share-filtered-view'
 import type { ProcurementSearchState } from '@/schemas/procurement-search'
-import type { ProcurementHubState } from '@/schemas/procurement-hub'
+import {
+  isListCapabilityAvailable,
+  type ProcurementHubState,
+} from '@/schemas/procurement-hub'
 import type { ProcurementFilterState } from '../hooks/use-procurement-filter-state'
 import { useProcurementSearch } from '../hooks/use-procurement-data'
 import { useProcurementFilterState } from '../hooks/use-procurement-filter-state'
@@ -35,6 +38,7 @@ import { ProcurementListProvenanceNotice } from './procurement-list-provenance-n
 import { ProcurementGrainTabs } from './procurement-grain-tabs'
 import { ProcurementPagination } from './procurement-pagination'
 import { ProcurementRecordList } from './procurement-record-card'
+import { ProcurementMatchModeSelect } from './procurement-match-mode-select'
 import { ProcurementSortSelect } from './procurement-sort-select'
 import { ProcurementErrorState } from './procurement-error-state'
 import { ProcurementSearchSkeleton } from './procurement-skeletons'
@@ -64,6 +68,8 @@ export function ProcurementSearchContent({
   const [sheetOpen, setSheetOpen] = useState(false)
 
   const page = query.data
+  const matchModeAvailable = isListCapabilityAvailable('q-mode', search.grain)
+  const relevanceAvailable = isListCapabilityAvailable('relevance-sort', search.grain)
   const onExport = () => {
     if (!page) return
     const csv = buildProcurementSearchCsv(page.records, search)
@@ -80,8 +86,6 @@ export function ProcurementSearchContent({
 
   return (
     <div className="space-y-5">
-      <ProcurementGrainTabs grain={search.grain} onGrainChange={filters.setGrain} />
-
       {!hideFilterChrome ? (
         <form role="search" onSubmit={(event) => event.preventDefault()}>
           <ProcurementDebouncedSearchInput
@@ -94,17 +98,33 @@ export function ProcurementSearchContent({
         </form>
       ) : null}
 
+      {/* One control row: record type + sort read left-to-right, export and
+          share close the row on the right. */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-3">
+          <ProcurementGrainTabs
+            grain={search.grain}
+            onGrainChange={filters.setGrain}
+          />
           {!hideFilterChrome ? (
             <ProcurementFilterTriggerButton
               activeCount={filters.activeCount}
               onClick={openFilters}
             />
           ) : null}
+          {/* Both controls exist only where the search engine serves the
+              list AND there is a query: relevance has nothing to rank
+              otherwise, and the match mode has nothing to apply to. */}
+          {search.q !== undefined && matchModeAvailable ? (
+            <ProcurementMatchModeSelect
+              mode={search.qmode ?? 'all'}
+              onModeChange={filters.setQMode}
+            />
+          ) : null}
           <ProcurementSortSelect
             sort={search.sort}
             onSortChange={filters.setSort}
+            allowRelevance={search.q !== undefined && relevanceAvailable}
           />
         </div>
         <div className="flex items-center gap-2">
@@ -164,11 +184,25 @@ export function ProcurementSearchContent({
           {filters.activeCount > 0 || search.q ? (
             <>
               <p className="text-base font-bold text-[var(--pnrr-fg)]">
-                <Trans>No records match these filters</Trans>
+                <Trans>
+                  No {grainLabelEn(search.grain)} records match these filters
+                </Trans>
               </p>
-              <p className="mt-1 text-sm text-[var(--pnrr-muted)]">
-                <Trans>Loosen or clear a filter and try again.</Trans>
-              </p>
+              {/* A text query that finds nothing on THIS record type usually
+                  means the wrong tab, not a filter that is too tight — the
+                  counts above the search box are across all record types. */}
+              {search.q ? (
+                <p className="mt-1 text-sm text-[var(--pnrr-muted)]">
+                  <Trans>
+                    Another record type above may still have matches. You can
+                    also widen Match to “Any word”, or loosen a filter.
+                  </Trans>
+                </p>
+              ) : (
+                <p className="mt-1 text-sm text-[var(--pnrr-muted)]">
+                  <Trans>Loosen or clear a filter and try again.</Trans>
+                </p>
+              )}
               <Button
                 type="button"
                 variant="outline"
@@ -198,7 +232,11 @@ export function ProcurementSearchContent({
             query.isPlaceholderData && 'opacity-60',
           )}
         >
-          <ProcurementRecordList records={page.records} />
+          <ProcurementRecordList
+            records={page.records}
+            {...(page.highlights !== undefined && { highlights: page.highlights })}
+            {...(search.q !== undefined && { query: search.q })}
+          />
           <ProcurementPagination
             page={search.page}
             pageSize={search.pageSize}

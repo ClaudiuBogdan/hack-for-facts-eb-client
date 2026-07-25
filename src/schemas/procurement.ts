@@ -558,6 +558,26 @@ export const procurementSearchFacetSchema = z.object({
 
 export type ProcurementSearchFacet = z.infer<typeof procurementSearchFacetSchema>
 
+/**
+ * Where the text query matched in one record. The strings are the ORIGINAL text
+ * with the matched terms wrapped in U+27E6 … U+27E7 — sentinels rather than
+ * markup, so the renderer splits on them and emits its own element (a title
+ * containing `<mark>` can never become markup).
+ *
+ * Presentational only: fragments come from the search index (as of
+ * `provenance.asOf`), while every rendered value comes from the database.
+ */
+export const procurementSearchHighlightSchema = z.object({
+  id: z.string(),
+  title: z.string().nullable().optional(),
+  authorityName: z.string().nullable().optional(),
+  supplierName: z.string().nullable().optional(),
+})
+
+export type ProcurementSearchHighlight = z.infer<
+  typeof procurementSearchHighlightSchema
+>
+
 export const procurementSearchPageSchema = z.object({
   grain: procurementGrainSchema,
   records: z.array(procurementRecordSummarySchema),
@@ -570,6 +590,8 @@ export const procurementSearchPageSchema = z.object({
   /** Absent on an older server that does not report it. */
   provenance: procurementSearchProvenanceSchema.nullable().optional(),
   facets: z.array(procurementSearchFacetSchema).optional(),
+  /** Present only for an engine-served `q` page. Keyed by record id. */
+  highlights: z.array(procurementSearchHighlightSchema).optional(),
 })
 
 export type ProcurementSearchPage = z.infer<typeof procurementSearchPageSchema>
