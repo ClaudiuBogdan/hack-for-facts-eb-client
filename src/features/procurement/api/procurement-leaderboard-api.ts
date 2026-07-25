@@ -166,12 +166,19 @@ async function loadPartyNamesForBuckets(
   )
   const parsed = procurementPartyNamesResponseSchema.parse(raw)
   const names = new Map<string, string>()
-  for (const edge of parsed.authorities?.edges ?? []) {
-    names.set(`authority:${edge.node.cui}`, edge.node.name)
-  }
-  for (const edge of parsed.suppliers?.edges ?? []) {
-    names.set(`supplier:${edge.node.cui}`, edge.node.name)
-  }
+  // Positional correlation against the `cuis` we sent: the server normalizes
+  // identifiers and returns null for unavailable ones, so keying off the
+  // RESPONSE cui would drop names whose input was formatted differently.
+  // Only `named` becomes a name — a `placeholder` stores the CUI as its name
+  // and must fall through to the CUI, not render as a numeric "name".
+  const labels = parsed.authorities ?? parsed.suppliers ?? []
+  labels.forEach((label, index) => {
+    const requested = cuis[index]
+    if (requested === undefined) return
+    if (label.status === 'named' && label.canonicalName !== null) {
+      names.set(`${dimension}:${requested}`, label.canonicalName)
+    }
+  })
   return names
 }
 

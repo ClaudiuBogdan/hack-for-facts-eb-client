@@ -590,9 +590,11 @@ export type RawProcurementAggregates = z.infer<
  * name as "missing".
  */
 const rawPartyLabelSchema = z.object({
-  cui: z.string(),
+  // Null when the identifier was malformed or is not served — correlate by
+  // POSITION, which the server guarantees matches the request.
+  cui: z.string().nullable(),
   canonicalName: z.string().nullable(),
-  status: z.enum(['named', 'placeholder', 'not_found']),
+  status: z.enum(['named', 'placeholder', 'unavailable']),
 })
 
 /**
@@ -602,7 +604,7 @@ const rawPartyLabelSchema = z.object({
  * suppliers. Both are role registries: a buyer that is a state company (CFR,
  * CNI, Transgaz, Nuclearelectrica…) is absent from the public-institution
  * registry, so 1,799 of 8,268 procurement buyers — 41.5% of contract award
- * money — rendered as a bare CUI. `referenceOrganizationLabels` reads
+ * money — rendered as a bare CUI. `organizationLabels` reads
  * `core.organizations`, which covers every role in one query.
  *
  * It also removes a cap defect: the old form paged the registries with
@@ -611,18 +613,18 @@ const rawPartyLabelSchema = z.object({
  */
 export const PROCUREMENT_PARTY_NAMES_QUERY = /* GraphQL */ `
   query ProcurementPartyNames(
-    $authorityCuis: [CUI!]!
-    $supplierCuis: [CUI!]!
+    $authorityCuis: [String!]!
+    $supplierCuis: [String!]!
     $includeAuthorities: Boolean!
     $includeSuppliers: Boolean!
   ) {
-    authorities: referenceOrganizationLabels(cuis: $authorityCuis)
+    authorities: organizationLabels(cuis: $authorityCuis)
       @include(if: $includeAuthorities) {
       cui
       canonicalName
       status
     }
-    suppliers: referenceOrganizationLabels(cuis: $supplierCuis)
+    suppliers: organizationLabels(cuis: $supplierCuis)
       @include(if: $includeSuppliers) {
       cui
       canonicalName

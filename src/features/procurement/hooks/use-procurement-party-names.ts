@@ -45,12 +45,25 @@ export function useProcurementPartyNames(input: {
         { operationName: 'ProcurementPartyNames' },
       )
       const parsed = procurementPartyNamesResponseSchema.parse(raw)
-      const authorityName = parsed.authorities?.edges.find(
-        (edge) => edge.node.cui === authorityCui,
-      )?.node.name
-      const supplierName = parsed.suppliers?.edges.find(
-        (edge) => edge.node.cui === supplierCui,
-      )?.node.name
+      // Correlate by POSITION, not by matching the returned cui against our
+      // input: the server answers with the NORMALIZED identifier (and null for
+      // unavailable ones), so `RO 4305857` in, `4305857` back — a string compare
+      // would silently lose the name. We send exactly one id per role, so the
+      // answer is the first element.
+      //
+      // Only `named` carries a real name: `placeholder` (a spine stub whose name
+      // is the CUI) and `unavailable` both mean "fall back to the CUI".
+      const nameOf = (
+        labels: ReadonlyArray<{
+          readonly canonicalName: string | null
+          readonly status: string
+        }>,
+      ): string | undefined => {
+        const hit = labels[0]
+        return hit?.status === 'named' ? (hit.canonicalName ?? undefined) : undefined
+      }
+      const authorityName = authorityCui ? nameOf(parsed.authorities ?? []) : undefined
+      const supplierName = supplierCui ? nameOf(parsed.suppliers ?? []) : undefined
       return {
         ...(authorityName ? { authorityName } : {}),
         ...(supplierName ? { supplierName } : {}),

@@ -131,12 +131,12 @@ describe('live procurement adapter', () => {
       .mockResolvedValueOnce(aggregateResponse())
       .mockResolvedValueOnce({ procurementCpvDivisions: [] })
       .mockResolvedValueOnce({
-        authorities: {
-          edges: [{ node: { cui: '111', name: 'Municipiul Exemplu' } }],
-        },
-        suppliers: {
-          edges: [{ node: { cui: '222', name: 'Furnizor Exemplu SRL' } }],
-        },
+        authorities: [
+          { cui: '111', canonicalName: 'Municipiul Exemplu', status: 'named' },
+        ],
+        suppliers: [
+          { cui: '222', canonicalName: 'Furnizor Exemplu SRL', status: 'named' },
+        ],
       })
 
     const landing = await fetchProcurementLandingLive({
@@ -158,10 +158,14 @@ describe('live procurement adapter', () => {
     expect(graphqlQueryMock.mock.calls[2]?.[0]).toContain(
       'query ProcurementPartyNames',
     )
+    // Both party roles resolve through the identity spine now — a role registry
+    // cannot name a buyer that is a state company.
     expect(graphqlQueryMock.mock.calls[2]?.[0]).toContain(
-      'referencePublicEntities',
+      'authorities: organizationLabels',
     )
-    expect(graphqlQueryMock.mock.calls[2]?.[0]).toContain('suppliers: companies')
+    expect(graphqlQueryMock.mock.calls[2]?.[0]).toContain(
+      'suppliers: organizationLabels',
+    )
     expect(graphqlQueryMock.mock.calls[2]?.[0]).not.toContain('entity(cui:')
     expect(graphqlQueryMock.mock.calls[2]?.[0]).not.toContain('company(cui:')
   })
@@ -170,7 +174,7 @@ describe('live procurement adapter', () => {
     graphqlQueryMock
       .mockResolvedValueOnce(aggregateResponse())
       .mockResolvedValueOnce({ procurementCpvDivisions: [] })
-      .mockResolvedValueOnce({ authorities: { edges: [] }, suppliers: { edges: [] } })
+      .mockResolvedValueOnce({ authorities: [], suppliers: [] })
 
     await fetchProcurementLandingLive({ rankBy: 'value' })
 

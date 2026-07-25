@@ -212,12 +212,30 @@ async function loadPartyNames(
     )
     const parsed = procurementPartyNamesResponseSchema.parse(raw)
     for (const cacheKey of requested.keys()) partyNameCache.set(cacheKey, null)
-    for (const edge of parsed.authorities?.edges ?? []) {
-      partyNameCache.set(`authority:${edge.node.cui}`, edge.node.name)
+    // Positional correlation, per role: the server returns the NORMALIZED
+    // identifier (null when unavailable), so the response cui is not a safe
+    // cache key for an input that was formatted differently.
+    //
+    // `named` only — a spine `placeholder` stores the CUI as its name, and
+    // caching that would print a number where a name belongs.
+    const cacheNames = (
+      labels: ReadonlyArray<{
+        readonly canonicalName: string | null
+        readonly status: string
+      }>,
+      sent: readonly string[],
+      dimension: 'authority' | 'supplier',
+    ): void => {
+      labels.forEach((label, index) => {
+        const requestedCui = sent[index]
+        if (requestedCui === undefined) return
+        if (label.status === 'named' && label.canonicalName !== null) {
+          partyNameCache.set(`${dimension}:${requestedCui}`, label.canonicalName)
+        }
+      })
     }
-    for (const edge of parsed.suppliers?.edges ?? []) {
-      partyNameCache.set(`supplier:${edge.node.cui}`, edge.node.name)
-    }
+    cacheNames(parsed.authorities ?? [], authorityCuis, 'authority')
+    cacheNames(parsed.suppliers ?? [], supplierCuis, 'supplier')
   }
 
   return new Map(
@@ -467,6 +485,12 @@ type SearchPageResult = {
     otherCount: number
     buckets: ReadonlyArray<{ key: string; count: number }>
   }>
+  highlights?: ReadonlyArray<{
+    id: string
+    title?: string | null
+    authorityName?: string | null
+    supplierName?: string | null
+  }>
 }
 
 /**
@@ -504,6 +528,7 @@ async function fetchSearchRecords(
         total: page.total,
         provenance: page.provenance ?? null,
         ...(page.facets ? { facets: page.facets } : {}),
+        ...(page.highlights ? { highlights: page.highlights } : {}),
       }
     }
     case 'contracts': {
@@ -519,6 +544,7 @@ async function fetchSearchRecords(
         total: page.total,
         provenance: page.provenance ?? null,
         ...(page.facets ? { facets: page.facets } : {}),
+        ...(page.highlights ? { highlights: page.highlights } : {}),
       }
     }
     case 'direct_acquisitions': {
@@ -534,6 +560,7 @@ async function fetchSearchRecords(
         total: page.total,
         provenance: page.provenance ?? null,
         ...(page.facets ? { facets: page.facets } : {}),
+        ...(page.highlights ? { highlights: page.highlights } : {}),
       }
     }
     case 'modifications': {
@@ -553,7 +580,8 @@ async function fetchSearchRecords(
 export async function fetchProcurementSearchLive(
   params: ProcurementSearchState,
 ): Promise<ProcurementSearchPage> {
-  const { records, total, provenance, facets } = await fetchSearchRecords(params)
+  const { records, total, provenance, facets, highlights } =
+    await fetchSearchRecords(params)
   return mapSearchPage({
     grain: params.grain,
     records,
@@ -562,6 +590,7 @@ export async function fetchProcurementSearchLive(
     pageSize: params.pageSize,
     provenance,
     ...(facets !== undefined && { facets }),
+    ...(highlights !== undefined && { highlights }),
   })
 }
 
@@ -910,7 +939,8 @@ async function resolveAuthorityName(cui: string): Promise<string | null> {
     { operationName: 'ProcurementPartyNames' },
   )
   const parsed = procurementPartyNamesResponseSchema.parse(raw)
-  const name = parsed.authorities?.edges?.[0]?.node.name ?? null
+  const label = parsed.authorities?.[0]
+  const name = label?.status === 'named' ? (label.canonicalName ?? null) : null
   partyNameCache.set(cacheKey, name)
   return name
 }
