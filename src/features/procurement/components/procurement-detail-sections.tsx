@@ -12,6 +12,8 @@ import { EvidenceLink } from '@/components/shared/procurement-data/evidence-link
 import type {
   ContractModification,
   ContractRecordSummary,
+  DaDetail,
+  DaDetailAvailability,
   Party,
   ProcedureRecordSummary,
   ProcurementSourceSystem,
@@ -35,6 +37,7 @@ import { ProcurementStatusBadge } from './procurement-status-badge'
 import { ProcurementRecordCard } from './procurement-record-card'
 import { ValueWithCurrency } from './value-with-currency'
 import { CpvLabel } from './cpv-label'
+import { formatRon } from '../lib/formatting'
 
 function formatDetailDate(iso: string): string {
   return new Intl.DateTimeFormat('ro-RO', {
@@ -502,6 +505,176 @@ export function ProcurementRelatedRecords({
               </li>
             ) : null}
           </ul>
+        </section>
+      ) : null}
+    </div>
+  )
+}
+
+// ── direct-acquisition detail: what was actually bought ──────────────────────
+
+/**
+ * Absence of a detail body is NOT absence of a purchase. The detail surface
+ * covers ~41% of direct acquisitions by design, and the two missing cases mean
+ * different things — so each gets its own honest sentence rather than an empty
+ * panel a reader could misread as "nothing was bought".
+ */
+function DaDetailUnavailable({
+  availability,
+}: {
+  readonly availability: DaDetailAvailability
+}) {
+  return (
+    <section className={procurementSectionClassName}>
+      <div className={procurementSectionHeaderClassName}>
+        <h2 className={procurementSectionLabelClassName}>
+          <Trans>Purchased items</Trans>
+        </h2>
+      </div>
+      <div className="px-5 pb-4 text-sm text-[var(--pnrr-muted)] sm:px-6">
+        {availability === "NOT_AVAILABLE_FOR_SOURCE" ? (
+          <Trans>
+            The source publishes no itemised detail for this kind of record — it
+            was collected from bulk exports that contain only the summary above.
+            This does not mean nothing was purchased.
+          </Trans>
+        ) : (
+          <Trans>
+            The itemised detail for this purchase has not been collected yet.
+            Older records are still being backfilled; the summary above is
+            complete.
+          </Trans>
+        )}
+      </div>
+    </section>
+  )
+}
+
+/**
+ * The itemised basket. `lineValue` is `unitPrice x quantity` computed in the
+ * database, so the table never re-derives money in the browser.
+ */
+export function ProcurementDaDetailSection({
+  detail,
+  availability,
+}: {
+  readonly detail: DaDetail | null
+  readonly availability: DaDetailAvailability
+}) {
+  if (detail === null || availability !== "AVAILABLE") {
+    return <DaDetailUnavailable availability={availability} />
+  }
+
+  const terms: DetailRow[] = [
+    { label: t`Contract type`, value: detail.contractTypeText },
+    { label: t`Delivery`, value: detail.deliveryCondition },
+    { label: t`Payment`, value: detail.paymentCondition },
+    {
+      label: t`EU funding`,
+      value: detail.isEuFunded ? (detail.euFundText ?? t`Yes`) : null,
+    },
+  ].filter((row) => row.value !== null)
+
+  return (
+    <div className="space-y-6">
+      <section className={procurementSectionClassName}>
+        <div className={procurementSectionHeaderClassName}>
+          <h2 className={procurementSectionLabelClassName}>
+            <Trans>What was purchased</Trans>
+          </h2>
+        </div>
+        <div className="space-y-3 px-5 pb-4 sm:px-6">
+          {detail.description !== null ? (
+            <p className="text-sm text-[var(--pnrr-fg)]">{detail.description}</p>
+          ) : detail.textRedacted ? (
+            <p className="text-sm italic text-[var(--pnrr-muted)]">
+              <Trans>
+                The description is withheld because it contains personal contact
+                details.
+              </Trans>
+            </p>
+          ) : null}
+          {terms.length > 0 ? <FactRows rows={terms} /> : null}
+        </div>
+      </section>
+
+      {detail.items.length > 0 ? (
+        <section className={procurementSectionClassName}>
+          <div className={procurementSectionHeaderClassName}>
+            <h2 className={procurementSectionLabelClassName}>
+              <Trans>Purchased items</Trans>
+            </h2>
+            <span className="text-sm text-[var(--pnrr-muted)]">
+              {detail.itemCount}
+            </span>
+          </div>
+
+          {detail.itemsReconciled === false ? (
+            <p className="px-5 pb-2 text-sm text-[var(--pnrr-muted)] sm:px-6">
+              <Trans>
+                These line items do not add up to the total reported for this
+                purchase. Both figures are shown exactly as the source published
+                them.
+              </Trans>
+            </p>
+          ) : null}
+
+          <div className="overflow-x-auto px-5 pb-4 sm:px-6">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-[var(--pnrr-border)] text-left text-[var(--pnrr-muted)]">
+                  <th scope="col" className="py-2 pr-3 font-medium">
+                    <Trans>Item</Trans>
+                  </th>
+                  <th scope="col" className="py-2 pr-3 text-right font-medium">
+                    <Trans>Quantity</Trans>
+                  </th>
+                  <th scope="col" className="py-2 pr-3 text-right font-medium">
+                    <Trans>Unit price</Trans>
+                  </th>
+                  <th scope="col" className="py-2 text-right font-medium">
+                    <Trans>Line total</Trans>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {detail.items.map((item) => (
+                  <tr
+                    key={item.id}
+                    className="border-b border-[var(--pnrr-border)] last:border-0 align-top"
+                  >
+                    <td className="py-2 pr-3">
+                      <span className="text-[var(--pnrr-fg)]">
+                        {item.catalogItemName ?? "—"}
+                      </span>
+                      {item.catalogItemDescription !== null ? (
+                        <span className="mt-0.5 block text-xs text-[var(--pnrr-muted)]">
+                          {item.catalogItemDescription}
+                        </span>
+                      ) : null}
+                      {item.cpvCode !== null ? (
+                        <CpvLabel code={item.cpvCode} className="mt-1" />
+                      ) : null}
+                    </td>
+                    <td className="py-2 pr-3 text-right tabular-nums">
+                      {item.itemQuantity ?? "—"}
+                      {item.itemMeasureUnit !== null ? (
+                        <span className="ml-1 text-[var(--pnrr-muted)]">
+                          {item.itemMeasureUnit}
+                        </span>
+                      ) : null}
+                    </td>
+                    <td className="py-2 pr-3 text-right tabular-nums">
+                      {item.unitPrice === null ? "—" : formatRon(item.unitPrice)}
+                    </td>
+                    <td className="py-2 text-right tabular-nums">
+                      {item.lineValue === null ? "—" : formatRon(item.lineValue)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       ) : null}
     </div>

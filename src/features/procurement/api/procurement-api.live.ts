@@ -672,6 +672,8 @@ export async function fetchDirectAcquisitionDetailLive(
   if (detail === null) return null
   return {
     record: mapDirectAcquisition(detail.directAcquisition),
+    daDetail: detail.detail,
+    daDetailAvailability: detail.detailAvailability,
     related: {
       procedure: null,
       contracts: [],
@@ -873,6 +875,8 @@ export async function fetchProcurementInstitutionOverviewLive(request: {
             top5Share: concentrationBlock.top5Share,
             hhi: concentrationBlock.hhi,
             totalRon: concentrationBlock.totalRon,
+            withheldConsortiumRon:
+              concentrationBlock.valueWithheldAssociationSum ?? null,
             meta: mapAnswerMeta(concentrationBlock.meta),
           }
         : null,

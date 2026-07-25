@@ -14,6 +14,7 @@ import { recordDate, recordSupplier } from '../lib/record-accessors'
 import { sourceSystemLabel } from '../lib/enum-labels'
 import { PROCUREMENT_DATASET_ID } from '../lib/dataset'
 import {
+  ProcurementDaDetailSection,
   ProcurementDetailHero,
   ProcurementKeyFactsSection,
   ProcurementModificationTrail,
@@ -82,6 +83,13 @@ export function ProcurementDetailPage({ grain, detail, className }: Props) {
 
       {config.showModificationTrail ? (
         <ProcurementModificationTrail modifications={detail.related.modifications} />
+      ) : null}
+
+      {grain === 'direct_acquisitions' ? (
+        <ProcurementDaDetailSection
+          detail={detail.daDetail ?? null}
+          availability={detail.daDetailAvailability ?? 'NOT_CAPTURED'}
+        />
       ) : null}
 
       <ProcurementRelatedRecords

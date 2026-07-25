@@ -343,6 +343,12 @@ const SERIES_BLOCK_FIELDS = /* GraphQL */ `
   meta { ${ANSWER_META_FIELDS} }
 `
 
+const CONCENTRATION_BLOCK_FIELDS = /* GraphQL */ `
+  grain basis supplierCount top1Share top5Share hhi totalRon
+  valueWithheldAssociationSum
+  meta { ${ANSWER_META_FIELDS} }
+`
+
 // ---------------------------------------------------------------------------
 // Search pages (offset)
 // ---------------------------------------------------------------------------
@@ -532,10 +538,74 @@ export type RawProcurementContractDetail = NonNullable<
   z.infer<typeof procurementContractDetailResponseSchema>['procurementContract']
 >
 
+const DA_ITEM_FIELDS = /* GraphQL */ `
+  id itemIndex catalogItemCode catalogItemName catalogItemDescription
+  itemMeasureUnit cpvCode cpvText
+  itemQuantity unitPrice unitEstimatedPrice catalogUnitPrice lineValue
+  sourceUrl
+`
+
+const DA_DETAIL_FIELDS = /* GraphQL */ `
+  description deliveryCondition paymentCondition contractTypeText
+  isEuFunded euFundText
+  caDecisionDate caDecisionDeadline supplierDecisionDate supplierDecisionDeadline
+  caRejectionReason supplierRejectionReason correctionReason
+  documentCount itemCount itemsTotal itemsValueDelta itemsReconciled
+  textRedacted sourceUrl
+  items { ${DA_ITEM_FIELDS} }
+`
+
+export const rawDaItemSchema = z.object({
+  id: z.string(),
+  itemIndex: z.number(),
+  catalogItemCode: z.string().nullable(),
+  catalogItemName: z.string().nullable(),
+  catalogItemDescription: z.string().nullable(),
+  itemMeasureUnit: z.string().nullable(),
+  cpvCode: z.string().nullable(),
+  cpvText: z.string().nullable(),
+  // Money and quantities arrive as decimal STRINGS — never parse them to
+  // Number for display arithmetic; the platform keeps full precision.
+  itemQuantity: z.string().nullable(),
+  unitPrice: z.string().nullable(),
+  unitEstimatedPrice: z.string().nullable(),
+  catalogUnitPrice: z.string().nullable(),
+  lineValue: z.string().nullable(),
+  sourceUrl: z.string(),
+})
+
+export const rawDaDetailSchema = z.object({
+  description: z.string().nullable(),
+  deliveryCondition: z.string().nullable(),
+  paymentCondition: z.string().nullable(),
+  contractTypeText: z.string().nullable(),
+  isEuFunded: z.boolean(),
+  euFundText: z.string().nullable(),
+  caDecisionDate: z.string().nullable(),
+  caDecisionDeadline: z.string().nullable(),
+  supplierDecisionDate: z.string().nullable(),
+  supplierDecisionDeadline: z.string().nullable(),
+  caRejectionReason: z.string().nullable(),
+  supplierRejectionReason: z.string().nullable(),
+  correctionReason: z.string().nullable(),
+  documentCount: z.number(),
+  itemCount: z.number(),
+  itemsTotal: z.string().nullable(),
+  itemsValueDelta: z.string().nullable(),
+  // Tri-state on purpose: null = the source recorded no value to reconcile
+  // against, which is NOT the same as "does not reconcile".
+  itemsReconciled: z.boolean().nullable(),
+  textRedacted: z.boolean(),
+  sourceUrl: z.string(),
+  items: z.array(rawDaItemSchema),
+})
+
 export const PROCUREMENT_DA_DETAIL_QUERY = /* GraphQL */ `
   query ProcurementDirectAcquisitionDetail($id: ID!) {
     procurementDirectAcquisition(id: $id) {
       directAcquisition { ${DIRECT_ACQUISITION_FIELDS} }
+      detail { ${DA_DETAIL_FIELDS} }
+      detailAvailability
       ${DETAIL_SHARED_FIELDS}
     }
   }
@@ -544,6 +614,12 @@ export const procurementDaDetailResponseSchema = z.object({
   procurementDirectAcquisition: z
     .object({
       directAcquisition: rawDirectAcquisitionSchema,
+      detail: rawDaDetailSchema.nullable(),
+      detailAvailability: z.enum([
+        'AVAILABLE',
+        'NOT_CAPTURED',
+        'NOT_AVAILABLE_FOR_SOURCE',
+      ]),
       duplicates: z.array(rawDuplicateRefSchema),
     })
     .nullable(),
@@ -671,8 +747,7 @@ export const PROCUREMENT_ANALYSIS_QUERY = /* GraphQL */ `
       ${SERIES_BLOCK_FIELDS}
     }
     concentration: procurementConcentration(scope: $scope, basis: $basis) @include(if: $includeConcentration) {
-      grain basis supplierCount top1Share top5Share hhi totalRon
-      meta { ${ANSWER_META_FIELDS} }
+      ${CONCENTRATION_BLOCK_FIELDS}
     }
   }
 `
@@ -685,6 +760,14 @@ export const rawConcentrationBlockSchema = z.object({
   top5Share: z.string().nullable(),
   hhi: z.string().nullable(),
   totalRon: z.string().nullable(),
+  /**
+   * Consortium money in scope that belongs to NO single supplier (the internal
+   * split is unpublished), so `totalRon` + this + the unknown-supplier weight
+   * reconcile to the attributed total. Without it the UI has to guess what the
+   * uncovered remainder is — and calling it "supplier unidentified" is false.
+   * `.nullish()`: tolerated as absent so pre-wave servers/fixtures parse.
+   */
+  valueWithheldAssociationSum: z.string().nullish(),
   meta: rawAnswerMetaSchema,
 })
 
@@ -733,8 +816,7 @@ export const PROCUREMENT_INSTITUTION_SPINE_QUERY = /* GraphQL */ `
     frameworks: procurementStats(scope: $frameworkScope) { blocks { ${STATS_BLOCK_FIELDS} } }
     calloffs: procurementStats(scope: $calloffScope) { blocks { ${STATS_BLOCK_FIELDS} } }
     concentration: procurementConcentration(scope: $contractScope, basis: value) {
-      grain basis supplierCount top1Share top5Share hhi totalRon
-      meta { ${ANSWER_META_FIELDS} }
+      ${CONCENTRATION_BLOCK_FIELDS}
     }
     procedureMix: procurementBreakdown(
       scope: $contractScope

@@ -651,8 +651,67 @@ export const procurementRecordDetailSchema = <T extends z.ZodTypeAny>(
     }),
   })
 
+/**
+ * Why a direct acquisition has no detail body. Absence of a detail is NOT
+ * absence of a purchase — the detail surface covers ~41% of direct acquisitions
+ * by design, and the two "missing" cases mean very different things:
+ * NOT_AVAILABLE_FOR_SOURCE is permanent (that family has no detail feed at
+ * all), NOT_CAPTURED is a gap a running backfill is still closing.
+ */
+export type DaDetailAvailability =
+  | 'AVAILABLE'
+  | 'NOT_AVAILABLE_FOR_SOURCE'
+  | 'NOT_CAPTURED'
+
+/** One catalog line item of a direct acquisition. */
+export type DaItem = {
+  readonly id: string
+  readonly itemIndex: number
+  readonly catalogItemCode: string | null
+  readonly catalogItemName: string | null
+  readonly catalogItemDescription: string | null
+  readonly itemMeasureUnit: string | null
+  readonly cpvCode: string | null
+  readonly cpvText: string | null
+  /** Decimal strings — keep them as strings; formatting must not lose precision. */
+  readonly itemQuantity: string | null
+  readonly unitPrice: string | null
+  readonly unitEstimatedPrice: string | null
+  readonly catalogUnitPrice: string | null
+  readonly lineValue: string | null
+  readonly sourceUrl: string
+}
+
+export type DaDetail = {
+  readonly description: string | null
+  readonly deliveryCondition: string | null
+  readonly paymentCondition: string | null
+  readonly contractTypeText: string | null
+  readonly isEuFunded: boolean
+  readonly euFundText: string | null
+  readonly caDecisionDate: string | null
+  readonly caDecisionDeadline: string | null
+  readonly supplierDecisionDate: string | null
+  readonly supplierDecisionDeadline: string | null
+  readonly caRejectionReason: string | null
+  readonly supplierRejectionReason: string | null
+  readonly correctionReason: string | null
+  readonly documentCount: number
+  readonly itemCount: number
+  readonly itemsTotal: string | null
+  readonly itemsValueDelta: string | null
+  /** false = the source's own numbers disagree; null = nothing to reconcile against. */
+  readonly itemsReconciled: boolean | null
+  /** true = free text withheld from this caller (contact data), not absent. */
+  readonly textRedacted: boolean
+  readonly sourceUrl: string
+  readonly items: readonly DaItem[]
+}
+
 export type ProcurementRecordDetail<T> = {
   readonly record: T
+  readonly daDetail?: DaDetail | null
+  readonly daDetailAvailability?: DaDetailAvailability
   readonly related: {
     readonly procedure: ProcedureRecordSummary | null
     readonly contracts: readonly ContractRecordSummary[]
@@ -768,6 +827,14 @@ export const procurementInstitutionSignalsSchema = z.object({
       top5Share: decimalStringSchema.nullable(),
       hhi: decimalStringSchema.nullable(),
       totalRon: decimalStringSchema.nullable(),
+      /**
+       * Awarded money in scope that belongs to multi-member consortium awards
+       * and therefore to no single supplier — the published data carries no
+       * split between the members. This is what the ranking does NOT cover,
+       * alongside the unknown-supplier weight; it is NOT "supplier
+       * unidentified", and the UI must not describe it that way.
+       */
+      withheldConsortiumRon: decimalStringSchema.nullable(),
       meta: procurementAnswerMetaSchema,
     })
     .nullable(),
