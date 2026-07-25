@@ -8,10 +8,21 @@ export const RawPnrrProjectSchema = z.object({
   cod_submasura: z.string().nullable().optional(),
   cri: z.string().nullable().optional(),
   sursa_finantare: z.string().nullable().optional(),
+  nr_contract: z.string().nullable().optional(),
   titlu_contract: z.string().nullable().optional(),
   denumire_beneficiar: z.string().nullable().optional(),
   cui: z.union([z.string(), z.number()]).nullable().optional(),
   valoare_fe: z.union([z.string(), z.number()]).nullable().optional(),
+  valoare_total: z.union([z.string(), z.number()]).nullable().optional(),
+  valoare_fpn: z.union([z.string(), z.number()]).nullable().optional(),
+  valoare_tva: z.union([z.string(), z.number()]).nullable().optional(),
+  valoare_neeligibil: z.union([z.string(), z.number()]).nullable().optional(),
+  data_angajament: z.string().nullable().optional(),
+  data_inceput: z.string().nullable().optional(),
+  data_finalizare: z.string().nullable().optional(),
+  tip_beneficiar: z.string().nullable().optional(),
+  impact: z.string().nullable().optional(),
+  cri_denumire: z.string().nullable().optional(),
   judet_implementare: z.string().nullable().optional(),
   localitate_implementare: z.string().nullable().optional(),
   stadiu: z.string().nullable().optional(),
@@ -68,9 +79,16 @@ export type PnrrProjectStatus =
   | 'completed'
   | 'not-started'
   | 'under-30'
+  | 'in-implementation'
   | 'mid-progress'
   | 'advanced'
   | 'unknown'
+
+export type PnrrReportedProgress =
+  | number
+  | null
+  | 'under-30-reported'
+  | 'in-implementation'
 
 export type AnomalyType =
   | 'financial-overrun'
@@ -122,8 +140,21 @@ export type PnrrProjectRecord = {
   readonly locality: string
   readonly fundingSource: 'grant' | 'loan' | 'grant/loan'
   readonly valueEur: number
-  readonly techProgress: number | null | 'in-implementation'
-  readonly finProgress: number | null | 'in-implementation'
+  readonly sourceValueRon?: number | null
+  readonly totalValueRon?: number | null
+  readonly nationalContributionRon?: number | null
+  readonly vatValueRon?: number | null
+  readonly ineligibleValueRon?: number | null
+  readonly contractNumber?: string | null
+  readonly commitmentDate?: string | null
+  readonly startDate?: string | null
+  readonly endDate?: string | null
+  readonly sourceBeneficiaryType?: string | null
+  readonly impact?: string | null
+  readonly criName?: string | null
+  readonly sourceUrl?: string
+  readonly techProgress: PnrrReportedProgress
+  readonly finProgress: PnrrReportedProgress
   readonly status: PnrrProjectStatus
   readonly componentCode: string
   readonly measureCode: string
@@ -351,7 +382,17 @@ export const PnrrSearchSchema = z.object({
   measures: z.array(z.string()).optional(),
   cris: z.array(z.string()).optional(),
   progressCategories: z
-    .array(z.enum(['completed', 'advanced', 'mid', 'under30', 'not-started', 'unknown']))
+    .array(
+      z.enum([
+        'completed',
+        'advanced',
+        'mid',
+        'under30',
+        'in-implementation',
+        'not-started',
+        'unknown',
+      ]),
+    )
     .optional(),
   onlyAnomalies: z.boolean().optional().default(PNRR_SEARCH_DEFAULTS.onlyAnomalies),
   excludeMicro: z.boolean().optional().default(PNRR_SEARCH_DEFAULTS.excludeMicro),
@@ -379,7 +420,9 @@ export const PnrrSearchSchema = z.object({
     (val) => {
       if (val === undefined) return PNRR_SEARCH_DEFAULTS.pageSize
       const n = Number(val)
-      return Number.isFinite(n) && n >= 1 ? Math.floor(n) : PNRR_SEARCH_DEFAULTS.pageSize
+      return Number.isFinite(n) && n >= 1
+        ? Math.min(100, Math.floor(n))
+        : PNRR_SEARCH_DEFAULTS.pageSize
     },
     z.number()
   ),

@@ -7,7 +7,7 @@ import {
   computeAggregates,
   getActiveFilterCount,
   hasPnrrDataFilters,
-  PNRR_LAST_UPDATED,
+  PNRR_FILESET_ID,
 } from '../lib/data-transform'
 import { PnrrCurrencyProvider } from '../lib/PnrrCurrencyProvider'
 import { PnrrContentSkeleton } from './PnrrSkeleton'
@@ -107,12 +107,12 @@ export function PnrrDashboard({
     typeof officialAllocatedTotalEur === 'number' &&
     officialAllocatedTotalEur > 0
   const headerTotalValue = data
-    ? (isUsingOfficialHeaderTotal
+    ? isUsingOfficialHeaderTotal
       ? officialAllocatedTotalEur
-      : filteredAggregates.rawTotalValue)
-    : (isUsingOfficialHeaderTotal
+      : filteredAggregates.rawTotalValue
+    : isUsingOfficialHeaderTotal
       ? officialAllocatedTotalEur
-      : (activeSsrSnapshot?.totalValueEur ?? 0))
+      : (activeSsrSnapshot?.totalValueEur ?? 0)
   const hasCachedHeaderStats = loading && !data && activeSsrSnapshot != null
   const cachedOverviewStats = activeSsrSnapshot
     ? buildCachedOverviewStats(activeSsrSnapshot)
@@ -135,7 +135,7 @@ export function PnrrDashboard({
           totalValueLabel={
             isUsingOfficialHeaderTotal
               ? t`total allocated`
-              : t`listed value`
+              : t`listed EU funding`
           }
           view={view}
           onViewChange={filterState.setView}
@@ -162,15 +162,39 @@ export function PnrrDashboard({
               <div className="hidden sm:block">
                 <PnrrExportButton
                   search={filterState.search}
-                  lastUpdated={PNRR_LAST_UPDATED}
+                  fileSetId={PNRR_FILESET_ID}
                 />
               </div>
             </div>
           }
         />
 
+        {(data?.meta.paymentCapability === 'degraded' ||
+          data?.meta.indicatorCapability === 'degraded') && (
+          <div className="mx-auto mt-4 flex max-w-7xl items-start gap-3 border-2 border-[var(--pnrr-orange)] bg-[var(--pnrr-card)] px-4 py-3 text-sm text-[var(--pnrr-fg)] sm:px-6">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--pnrr-orange)]" />
+            <div>
+              <p className="font-black uppercase tracking-wide">
+                <Trans>Partial PNRR data availability</Trans>
+              </p>
+              <p className="mt-1 text-[var(--pnrr-muted)]">
+                <Trans>
+                  The MIPE project index is available. One or more secondary
+                  sources are temporarily unavailable, so payment or national
+                  indicator sections may be incomplete.
+                </Trans>
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Tab Content */}
-        <main className="mx-auto min-w-0 max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <main
+          id={`pnrr-panel-${view}`}
+          role="tabpanel"
+          aria-labelledby={`pnrr-tab-${view}`}
+          className="mx-auto min-w-0 max-w-7xl px-4 py-8 sm:px-6 lg:px-8"
+        >
           {shouldRenderCachedOverview ? (
             <PnrrOverview
               aggregates={emptyAggregates}
@@ -210,10 +234,7 @@ export function PnrrDashboard({
                 />
               )}
               {view === 'map' && (
-                <PnrrMapView
-                  model={data!.mapModel}
-                  filterState={filterState}
-                />
+                <PnrrMapView model={data!.mapModel} filterState={filterState} />
               )}
               {view === 'beneficiaries' && (
                 <PnrrBeneficiariesView

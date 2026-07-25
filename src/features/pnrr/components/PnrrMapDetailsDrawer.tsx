@@ -93,6 +93,7 @@ export function PnrrMapDetailsDrawer({
     [rowStats, summary],
   )
   const totalValue = stats.totalValue
+  const hasTruncatedProjectList = stats.projectCount > projects.length
   const { data: selectedProjectResult } = usePnrrProjectDetail(selectedProjectId)
   const selectedProject = selectedProjectResult?.project ?? null
 
@@ -168,7 +169,11 @@ export function PnrrMapDetailsDrawer({
             <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]">
               <SectionHeader
                 title={t`Top projects`}
-                subtitle={t`Only the largest projects are shown.`}
+                subtitle={
+                  hasTruncatedProjectList
+                    ? t`Showing the ${formatNumber(projects.length)} largest of ${formatNumber(stats.projectCount)} projects. Use “View projects” for the complete filtered list.`
+                    : t`Projects are ordered by listed EU funding.`
+                }
               />
 
               <div className="divide-y divide-[var(--pnrr-border)]">
@@ -480,9 +485,15 @@ function TopProjectRow({
   const component = PNRR_COMPONENTS[project.componentCode]
   const color = component?.color ?? 'var(--pnrr-blue)'
   const techValue =
-    project.techProgress === 'in-implementation'
-      ? 15
-      : (project.techProgress ?? 0)
+    typeof project.techProgress === 'number' ? project.techProgress : null
+  const techLabel =
+    project.techProgress === 'under-30-reported'
+      ? t`Under 30% (reported category)`
+      : project.techProgress === 'in-implementation'
+        ? t`In implementation (percentage not published)`
+        : techValue === null
+          ? t`N/A`
+          : formatPnrrPercentage(techValue)
   const projectValue = project.totalValueEur ?? project.valueEur
 
   return (
@@ -513,25 +524,32 @@ function TopProjectRow({
           <span className="text-sm font-black tabular-nums text-[var(--pnrr-fg)]">
             {formatPnrrCurrency(projectValue, currency)}
           </span>
-          <div className="flex min-w-[160px] items-center gap-2">
-            <div
-              className="h-2 flex-1 rounded-full"
-              style={{ backgroundColor: `${color}26` }}
+          {techValue === null ? (
+            <span
+              className="max-w-48 text-right text-xs font-bold text-[var(--pnrr-muted)]"
+              title={techLabel}
             >
-              <div
-                className="h-full rounded-full"
-                style={{
-                  width: `${Math.min(techValue, 100)}%`,
-                  backgroundColor: color,
-                }}
-              />
-            </div>
-            <span className="w-14 text-right text-xs tabular-nums text-[var(--pnrr-fg)]">
-              {project.techProgress === 'in-implementation'
-                ? '<30%'
-                : formatPnrrPercentage(techValue)}
+              {techLabel}
             </span>
-          </div>
+          ) : (
+            <div className="flex min-w-[160px] items-center gap-2">
+              <div
+                className="h-2 flex-1 rounded-full"
+                style={{ backgroundColor: `${color}26` }}
+              >
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${Math.min(techValue, 100)}%`,
+                    backgroundColor: color,
+                  }}
+                />
+              </div>
+              <span className="w-14 text-right text-xs tabular-nums text-[var(--pnrr-fg)]">
+                {techLabel}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </button>

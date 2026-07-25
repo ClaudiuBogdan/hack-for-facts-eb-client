@@ -140,7 +140,7 @@ export function usePnrrFilterState() {
             ...clearPanelSearch(prev as Partial<PnrrSearchState>),
             ...partial,
           }),
-        replace: true,
+        replace: false,
         resetScroll: false,
       })
     },
@@ -157,8 +157,8 @@ export function usePnrrFilterState() {
             page: 1,
             beneficiaryPage: 1,
           }),
-        replace: true,
-        resetScroll: false,
+        replace: false,
+        resetScroll: true,
       })
     },
     [navigate]
@@ -175,8 +175,8 @@ export function usePnrrFilterState() {
             beneficiaryCui: beneficiary.cui ?? undefined,
             page: 1,
           }),
-        replace: true,
-        resetScroll: false,
+        replace: false,
+        resetScroll: true,
       })
     },
     [navigate]
@@ -194,8 +194,8 @@ export function usePnrrFilterState() {
             page: 1,
             beneficiaryPage: 1,
           }),
-        replace: true,
-        resetScroll: false,
+        replace: false,
+        resetScroll: true,
       })
     },
     [navigate]
@@ -315,7 +315,7 @@ export function usePnrrFilterState() {
             ...(prev as Partial<PnrrSearchState>),
             currency,
           }),
-        replace: true,
+        replace: false,
         resetScroll: false,
       })
     },
@@ -432,7 +432,7 @@ export function usePnrrFilterState() {
             panelProjectId: projectId,
           })
         },
-        replace: true,
+        replace: false,
         resetScroll: false,
       })
     },
@@ -509,23 +509,27 @@ export function usePnrrFilterState() {
     })
   }, [navigate])
 
-  const clearFilters = useCallback(() => {
-    navigate({
-      search: (prev) => {
-        const previous = prev as Partial<PnrrSearchState>
+  const clearFilters = useCallback(
+    (preset: Partial<PnrrSearchState> = {}) => {
+      navigate({
+        search: (prev) => {
+          const previous = prev as Partial<PnrrSearchState>
 
-        return cleanPnrrSearch({
-          ...getPanelSearch(previous),
-          view: search.view,
-          currency: search.currency,
-          page: 1,
-          pageSize: previous.pageSize,
-        })
-      },
-      replace: true,
-      resetScroll: false,
-    })
-  }, [navigate, search.currency, search.view])
+          return cleanPnrrSearch({
+            ...getPanelSearch(previous),
+            view: search.view,
+            currency: search.currency,
+            page: 1,
+            pageSize: previous.pageSize,
+            ...preset,
+          })
+        },
+        replace: true,
+        resetScroll: false,
+      })
+    },
+    [navigate, search.currency, search.view],
+  )
 
   return {
     search,

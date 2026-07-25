@@ -21,7 +21,7 @@ function makeRaw(overrides: Partial<RawPnrrProject> = {}): RawPnrrProject {
     'Titlu Proiect': 'Modernizare infrastructura scolara',
     'Nume Beneficiar': 'MUNICIPIUL TEST',
     CUI: '12345678',
-    'County': 'Cluj',
+    County: 'Cluj',
     'Sursă Finanțare': 'grant',
     'Valoare (EUR)': 1_000_000,
     'Progres Tehnic': '50%',
@@ -81,7 +81,7 @@ describe('pnrr-seo', () => {
         makeRaw(),
         makeRaw({
           'Titlu Proiect': 'Spital regional',
-          'County': 'Iasi',
+          County: 'Iasi',
           'Valoare (EUR)': 5_000_000,
           'Cod Componentă': 'C12',
           'Progres Tehnic': '100%',
@@ -167,7 +167,9 @@ describe('pnrr-seo', () => {
     })
 
     expect(first).toBe(second)
-    expect(normalizePnrrSeoSnapshotSearch({ includeNational: true })).toEqual({})
+    expect(normalizePnrrSeoSnapshotSearch({ includeNational: true })).toEqual(
+      {},
+    )
     expect(normalizePnrrSeoSnapshotSearch({ includeNational: false })).toEqual({
       includeNational: false,
     })
@@ -209,7 +211,8 @@ describe('pnrr-seo', () => {
       'Dataset',
       'WebPage',
     ])
-    expect(scripts[0].dateModified).toBe(snapshot.lastUpdated)
+    expect(scripts[0]).not.toHaveProperty('dateModified')
+    expect(scripts[0].identifier).toBe('20260619')
   })
 
   it('localizes route head metadata for English', () => {

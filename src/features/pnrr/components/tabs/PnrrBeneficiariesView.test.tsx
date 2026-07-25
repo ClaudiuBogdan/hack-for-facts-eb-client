@@ -45,6 +45,7 @@ function makeBeneficiaryRow(
   return {
     name: 'Test Beneficiar',
     cui: '12345678',
+    aliases: [],
     count: 1,
     value: 100_000,
     techProgressAvg: 50,
@@ -198,6 +199,7 @@ describe('PnrrBeneficiariesView', () => {
             {
               name: 'Other Beneficiary',
               cui: '99999999',
+              aliases: [],
               count: 1,
               value: 10_000,
               techProgressAvg: null,
@@ -258,8 +260,8 @@ describe('PnrrBeneficiariesView', () => {
       />,
     )
 
-    const c2 = screen.getByText('C2 Beneficiary')
-    const c10 = screen.getByText('C10 Beneficiary')
+    const c2 = screen.getAllByText('C2 Beneficiary')[0]!
+    const c10 = screen.getAllByText('C10 Beneficiary')[0]!
     expect(
       c2.compareDocumentPosition(c10) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()

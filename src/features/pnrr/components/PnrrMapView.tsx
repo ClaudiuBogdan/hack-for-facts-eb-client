@@ -43,7 +43,7 @@ const InteractiveMap = lazy(() =>
 )
 
 const SERIES_OPTIONS = [
-  { id: 'total-value' as PnrrMapSeriesId, label: t`Listed project value` },
+  { id: 'total-value' as PnrrMapSeriesId, label: t`Listed EU funding` },
   { id: 'project-count' as PnrrMapSeriesId, label: t`Project count` },
   { id: 'per-capita' as PnrrMapSeriesId, label: t`Per capita` },
   { id: 'grant-share' as PnrrMapSeriesId, label: t`Grant %` },
@@ -208,6 +208,9 @@ function MapLegend({
           <span>{formatLegendValue(min, seriesId, currency)}</span>
           <span>{formatLegendValue(max, seriesId, currency)}</span>
         </div>
+        <span className="text-[10px] font-bold uppercase tracking-wide text-[var(--pnrr-muted)]">
+          <Trans>Color scale clipped to the 5th–95th percentile</Trans>
+        </span>
       </div>
     </div>
   )
@@ -255,6 +258,15 @@ export function PnrrMapView({
 
   const nationalCount = activeModel.nationalCount
   const unmappedCount = activeModel.unmappedCount
+  const nationalValue = activeModel.nationalValue ?? 0
+  const unmappedValue = activeModel.unmappedValue ?? 0
+  const mappedValue = activeModel.mappedValue ?? 0
+  const mapScopeValue = nationalValue + unmappedValue + mappedValue
+  const excludedUnitCount = Math.max(
+    0,
+    (activeSeries.totalUnitCount ?? activeSeries.data.length) -
+      (activeSeries.coveredUnitCount ?? activeSeries.data.length),
+  )
 
   const heatmapData = useMemo(
     () =>
@@ -442,6 +454,19 @@ export function PnrrMapView({
 
   return (
     <div className="space-y-5">
+      <div className="border-l-[6px] border-[var(--pnrr-blue)] pl-4">
+        <h2 className="text-2xl font-black tracking-tight text-[var(--pnrr-fg)]">
+          <Trans>Geographic distribution</Trans>
+        </h2>
+        <p className="mt-1 max-w-3xl text-sm leading-relaxed text-[var(--pnrr-muted)]">
+          <Trans>
+            Compare the location published for each MIPE project record.
+            National projects and records without an exact geographic match are
+            disclosed separately below the map.
+          </Trans>
+        </p>
+      </div>
+
       {/* Toolbar */}
       <MapToolbar
         granularity={requestedGranularity}
@@ -526,13 +551,44 @@ export function PnrrMapView({
             <Info className="h-4 w-4 text-[var(--pnrr-fg)]" />
             {nationalCount.toLocaleString('ro-RO')}{' '}
             <Trans>national projects outside the map</Trans>
+            <span className="text-[var(--pnrr-fg)]">
+              · {formatPnrrCurrency(nationalValue, currency)}
+              {mapScopeValue > 0
+                ? ` (${formatNumber((nationalValue / mapScopeValue) * 100)}%)`
+                : ''}
+            </span>
           </span>
         )}
-        {unmappedCount > 0 && mapGranularity === 'uat' && (
+        {unmappedCount > 0 && (
           <span className="inline-flex min-h-9 items-center gap-2 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-xs font-bold uppercase tracking-wide text-[var(--pnrr-muted)]">
             <Info className="h-4 w-4 text-[var(--pnrr-fg)]" />
             {unmappedCount.toLocaleString('ro-RO')}{' '}
-            <Trans>projects without UAT mapping</Trans>
+            {mapGranularity === 'uat' ? (
+              <Trans>projects without UAT mapping</Trans>
+            ) : (
+              <Trans>projects without county mapping</Trans>
+            )}
+            <span className="text-[var(--pnrr-fg)]">
+              · {formatPnrrCurrency(unmappedValue, currency)}
+            </span>
+          </span>
+        )}
+        {excludedUnitCount > 0 && (
+          <span className="inline-flex min-h-9 items-center gap-2 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-xs font-bold uppercase tracking-wide text-[var(--pnrr-muted)]">
+            <Info className="h-4 w-4 text-[var(--pnrr-fg)]" />
+            {excludedUnitCount.toLocaleString('ro-RO')}{' '}
+            {renderedSeriesId === 'per-capita' ? (
+              <Trans>territories omitted because population is unavailable</Trans>
+            ) : (
+              <Trans>
+                territories omitted because exact technical progress is unavailable
+              </Trans>
+            )}
+            {(activeSeries.excludedValue ?? 0) > 0 && (
+              <span className="text-[var(--pnrr-fg)]">
+                · {formatPnrrCurrency(activeSeries.excludedValue!, currency)}
+              </span>
+            )}
           </span>
         )}
       </div>

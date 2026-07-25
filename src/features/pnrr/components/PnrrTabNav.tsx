@@ -1,4 +1,5 @@
 import { t } from '@lingui/core/macro'
+import type { KeyboardEvent } from 'react'
 import type { PnrrView } from '@/schemas/pnrr'
 import { cn } from '@/lib/utils'
 import {
@@ -18,7 +19,7 @@ const TABS: {
   { id: 'projects', label: t`Projects`, icon: List },
   { id: 'beneficiaries', label: t`Beneficiaries`, icon: Building2 },
   { id: 'map', label: t`Map`, icon: Map },
-  { id: 'anomalies', label: t`Semnale de risc`, icon: ShieldAlert },
+  { id: 'anomalies', label: t`Semnale de verificare`, icon: ShieldAlert },
 ]
 
 export function PnrrTabNav({
@@ -26,12 +27,40 @@ export function PnrrTabNav({
   onChange,
   compact = false,
   className,
+  idPrefix = 'pnrr-tab',
 }: {
   readonly view: PnrrView
   readonly onChange: (view: PnrrView) => void
   readonly compact?: boolean
   readonly className?: string
+  readonly idPrefix?: string
 }) {
+  const handleKeyDown = (
+    event: KeyboardEvent<HTMLButtonElement>,
+    tabIndex: number,
+  ) => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
+      return
+    }
+
+    event.preventDefault()
+    const nextIndex =
+      event.key === 'Home'
+        ? 0
+        : event.key === 'End'
+          ? TABS.length - 1
+          : (tabIndex + (event.key === 'ArrowRight' ? 1 : -1) + TABS.length) %
+            TABS.length
+    const nextTab = TABS[nextIndex]
+    if (!nextTab) return
+
+    onChange(nextTab.id)
+    event.currentTarget
+      .closest('[role="tablist"]')
+      ?.querySelector<HTMLButtonElement>(`#${idPrefix}-${nextTab.id}`)
+      ?.focus()
+  }
+
   return (
     <nav
       className={cn(
@@ -39,17 +68,22 @@ export function PnrrTabNav({
         className,
       )}
       role="tablist"
+      aria-label={t`PNRR sections`}
     >
-      {TABS.map((tab) => {
+      {TABS.map((tab, tabIndex) => {
         const Icon = tab.icon
         const isActive = view === tab.id
         return (
           <button
             key={tab.id}
+            id={`${idPrefix}-${tab.id}`}
             role="tab"
             aria-selected={isActive}
+            aria-controls={isActive ? `pnrr-panel-${tab.id}` : undefined}
             aria-label={tab.label}
+            tabIndex={isActive ? 0 : -1}
             onClick={() => onChange(tab.id)}
+            onKeyDown={(event) => handleKeyDown(event, tabIndex)}
             className={cn(
               'group relative flex items-center gap-2 whitespace-nowrap transition-colors',
               'select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-green)]/60',

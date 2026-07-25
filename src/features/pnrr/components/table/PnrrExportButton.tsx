@@ -6,10 +6,10 @@ import { exportPnrrCsvFromWorker } from '../../hooks/usePnrrData'
 
 export function PnrrExportButton({
   search,
-  lastUpdated,
+  fileSetId,
 }: {
   readonly search?: Partial<PnrrSearchState>
-  readonly lastUpdated?: string
+  readonly fileSetId?: string
 }) {
   const downloadCsv = async () => {
     const csv = await exportPnrrCsvFromWorker(search)
@@ -20,7 +20,7 @@ export function PnrrExportButton({
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `pnrr-projects-${lastUpdated ?? new Date().toISOString().slice(0, 10)}.csv`
+    link.download = `pnrr-projects-${fileSetId ?? 'export'}.csv`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)

@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import type {
-  PnrrBeneficiaryType,
-  PnrrSearchState,
-} from '@/schemas/pnrr'
+import type { PnrrBeneficiaryType, PnrrSearchState } from '@/schemas/pnrr'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
 import { getActiveFilterCount } from '../../lib/data-transform'
 import { Input } from '@/components/ui/input'
@@ -315,7 +312,10 @@ export function PnrrFilterSheet({
   }, [facets?.components])
 
   const countyOptions = useMemo(() => {
-    return (facets?.counties ?? []).map<Option>((c) => ({ value: c, label: c }))
+    return (facets?.counties ?? []).map<Option>((c) => ({
+      value: c,
+      label: c,
+    }))
   }, [facets?.counties])
 
   const uatOptions = useMemo(() => {
@@ -324,10 +324,16 @@ export function PnrrFilterSheet({
 
   const measureOptions = useMemo(() => {
     const measureValues = new Set(facets?.measures ?? [])
+    const selectedComponents = new Set(search.components ?? [])
     return getAllMeasureOptions()
       .filter((opt) => measureValues.has(opt.value))
+      .filter(
+        (opt) =>
+          selectedComponents.size === 0 ||
+          selectedComponents.has(opt.value.split('.')[0] ?? ''),
+      )
       .map<Option>((opt) => ({ value: opt.value, label: opt.label }))
-  }, [facets?.measures])
+  }, [facets?.measures, search.components])
 
   const criOptions = useMemo(() => {
     return (facets?.cris ?? []).map<Option>((c) => ({
@@ -673,6 +679,16 @@ export function PnrrFilterSheet({
                 />
               </section>
 
+              {selectedAnomalyTypes.length > 0 &&
+                selectedDataQualitySignalTypes.length > 0 && (
+                  <p className="border-l-4 border-[var(--pnrr-blue)] pl-3 text-xs font-semibold leading-relaxed text-[var(--pnrr-muted)]">
+                    <Trans>
+                      Risk and data-quality selections are combined with OR:
+                      projects matching either group are included.
+                    </Trans>
+                  </p>
+                )}
+
               <div className="border-t-2 border-[var(--pnrr-border)]" />
 
               {/* Toggles */}
@@ -724,6 +740,11 @@ export function PnrrFilterSheet({
 
           {/* Sticky footer with actions */}
           <div className="border-t-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] p-4">
+            <p className="mb-3 text-xs font-bold text-[var(--pnrr-muted)]">
+              <Trans>
+                Filters apply immediately and are saved in the page URL.
+              </Trans>
+            </p>
             <div className="grid grid-cols-2 gap-3">
               <Button
                 variant="outline"
@@ -736,7 +757,7 @@ export function PnrrFilterSheet({
                 className="h-11 min-w-0 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-fg)] px-2 text-xs font-black uppercase tracking-wide text-[var(--pnrr-bg)] hover:bg-[var(--pnrr-card)] hover:text-[var(--pnrr-fg)] sm:text-sm"
                 onClick={() => onOpenChange(false)}
               >
-                <Trans>Close</Trans>
+                <Trans>Done</Trans>
               </Button>
             </div>
           </div>
@@ -758,6 +779,11 @@ export function PnrrFilterTriggerButton({
       variant="outline"
       className="gap-2 relative rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-4 py-2 text-sm font-bold text-[var(--pnrr-fg)] hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)]"
       onClick={onClick}
+      aria-label={
+        activeCount > 0
+          ? t`Filter data, ${activeCount} active filters`
+          : t`Filter data`
+      }
     >
       <SlidersHorizontal className="h-4 w-4" />
       <span>

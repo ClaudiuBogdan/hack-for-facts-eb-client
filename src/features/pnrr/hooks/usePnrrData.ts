@@ -102,28 +102,54 @@ export function usePnrrProjectDetail(projectId?: string | null) {
   const [data, setData] = useState<{ readonly project: PnrrProject | null }>({
     project: null,
   })
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
     if (!projectId) {
       setData({ project: null })
+      setIsLoading(false)
+      setError(null)
       return
     }
     if (typeof window === 'undefined' || typeof Worker === 'undefined') {
       setData({ project: null })
+      setIsLoading(false)
+      setError(new Error('PNRR worker is only available in the browser'))
       return
     }
     let cancelled = false
+    setData({ project: null })
+    setError(null)
+    setIsLoading(true)
     void import('../workers/pnrr-worker-client')
       .then(({ getPnrrWorkerProject }) => getPnrrWorkerProject(projectId))
       .then((result) => {
-        if (!cancelled) setData(result)
+        if (!cancelled) {
+          setData(result)
+          setIsLoading(false)
+        }
+      })
+      .catch((reason) => {
+        if (!cancelled) {
+          setData({ project: null })
+          setError(
+            reason instanceof Error ? reason : new Error(String(reason)),
+          )
+          setIsLoading(false)
+        }
       })
     return () => {
       cancelled = true
     }
   }, [projectId])
 
-  return { data, isLoading: Boolean(projectId) && data.project?.id !== projectId }
+  return {
+    data,
+    error,
+    isError: error !== null,
+    isLoading,
+  }
 }
 
 export function usePnrrBeneficiaryDetail(
@@ -134,31 +160,51 @@ export function usePnrrBeneficiaryDetail(
   const [data, setData] = useState<{
     readonly beneficiary: import('../workers/pnrr-worker-types').PnrrWorkerBeneficiaryDetail | null
   }>({ beneficiary: null })
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
     if (!key && !cui) {
       setData({ beneficiary: null })
+      setIsLoading(false)
+      setError(null)
       return
     }
     if (typeof window === 'undefined' || typeof Worker === 'undefined') {
       setData({ beneficiary: null })
+      setIsLoading(false)
+      setError(new Error('PNRR worker is only available in the browser'))
       return
     }
     let cancelled = false
     setData({ beneficiary: null })
+    setError(null)
+    setIsLoading(true)
     void import('../workers/pnrr-worker-client')
       .then(({ getPnrrWorkerBeneficiary }) =>
         getPnrrWorkerBeneficiary({ key, cui, search }),
       )
       .then((result) => {
-        if (!cancelled) setData(result)
+        if (!cancelled) {
+          setData(result)
+          setIsLoading(false)
+        }
+      })
+      .catch((reason) => {
+        if (!cancelled) {
+          setData({ beneficiary: null })
+          setError(
+            reason instanceof Error ? reason : new Error(String(reason)),
+          )
+          setIsLoading(false)
+        }
       })
     return () => {
       cancelled = true
     }
   }, [key, cui, search])
 
-  return { data }
+  return { data, error, isError: error !== null, isLoading }
 }
 
 export async function exportPnrrCsvFromWorker(

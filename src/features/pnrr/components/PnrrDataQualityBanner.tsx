@@ -10,6 +10,8 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import { AlertCircle, ChevronDown } from 'lucide-react'
+import { usePnrrCurrency } from '../lib/usePnrrCurrency'
+import { formatPnrrCurrency } from '../lib/formatting'
 
 export function PnrrDataQualityBanner({
   aggregates,
@@ -17,6 +19,7 @@ export function PnrrDataQualityBanner({
   readonly aggregates: PnrrAggregates
 }) {
   const [open, setOpen] = useState(false)
+  const currency = usePnrrCurrency()
 
   const recordSliceCount = Math.max(
     0,
@@ -61,7 +64,8 @@ export function PnrrDataQualityBanner({
               </p>
               <p>
                 <Trans>
-                  Listed value: {formatNumber(aggregates.rawTotalValue)} € from{' '}
+                  Listed EU funding:{' '}
+                  {formatPnrrCurrency(aggregates.rawTotalValue, currency)} from{' '}
                   {formatNumber(aggregates.projectRecordCount)} official records.
                 </Trans>
               </p>

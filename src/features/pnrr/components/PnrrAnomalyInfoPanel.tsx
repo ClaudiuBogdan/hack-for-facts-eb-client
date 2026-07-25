@@ -20,6 +20,8 @@ import {
   type AnomalySeverity,
 } from '../lib/anomaly-definitions'
 import { BookOpen, ChevronRight } from 'lucide-react'
+import { usePnrrCurrency } from '../lib/usePnrrCurrency'
+import { formatPnrrCurrency } from '../lib/formatting'
 
 type SelectedSignal =
   | { readonly kind: 'risk'; readonly type: AnomalyType }
@@ -127,7 +129,7 @@ export function PnrrAnomalyInfoPanel({
                 <p>
                   <Trans>
                     Risk signals indicate projects where reported financial
-                    progress, reported technical progress, or listed value
+                    progress, reported technical progress, or listed EU funding
                     suggest priority verification.
                   </Trans>
                 </p>
@@ -238,6 +240,7 @@ function SignalGuideItem({
   readonly expanded: boolean
   readonly onToggle: () => void
 }) {
+  const currency = usePnrrCurrency()
   const Icon = cfg.icon
   const tone = SIGNAL_TONES[cfg.severity]
   const hasCount = !!data && data.count > 0
@@ -311,8 +314,8 @@ function SignalGuideItem({
                   value={String(data.count)}
                 />
                 <SignalStat
-                  label={<Trans>Listed value</Trans>}
-                  value={`${(data.value / 1_000_000).toFixed(1)}M EUR`}
+                  label={<Trans>Listed EU funding</Trans>}
+                  value={formatPnrrCurrency(data.value, currency)}
                 />
               </div>
             )}

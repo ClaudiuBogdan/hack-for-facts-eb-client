@@ -32,7 +32,7 @@ const SERIES_OPTIONS: {
   readonly id: PnrrMapSeriesId
   readonly label: string
 }[] = [
-  { id: 'total-value', label: t`Listed project value` },
+  { id: 'total-value', label: t`Listed EU funding` },
   { id: 'project-count', label: t`Project count` },
   { id: 'per-capita', label: t`Per capita` },
   { id: 'grant-share', label: t`Grant %` },

@@ -11,6 +11,7 @@ import {
   buildPnrrSeoSnapshotFromProjects,
   type PnrrSeoSnapshot,
 } from '@/features/pnrr/seo/pnrr-seo'
+import { PNRR_FILESET_ID } from '@/features/pnrr/lib/snapshot'
 import {
   fetchPnrrOfficialIndicators,
   fetchPnrrProjects,
@@ -163,16 +164,6 @@ function formatCurrencyEur(value: number): string {
   return `${formattedValue} €`
 }
 
-function formatDate(value: string): string {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return new Intl.DateTimeFormat('ro-RO', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(date)
-}
-
 export function buildPnrrShareImageViewModel(
   snapshot: PnrrSeoSnapshot,
   options: PnrrShareImageViewModelOptions = {},
@@ -193,7 +184,7 @@ export function buildPnrrShareImageViewModel(
     topCounty: options.showTotalScope
       ? 'Total'
       : (snapshot.topCounties[0]?.label ?? 'Toata Romania'),
-    updatedLabel: `Actualizat ${formatDate(snapshot.lastUpdated)}`,
+    updatedLabel: `Set fisiere MIPE ${PNRR_FILESET_ID}`,
   }
 }
 

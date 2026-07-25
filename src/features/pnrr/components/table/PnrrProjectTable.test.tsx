@@ -137,6 +137,28 @@ function makeFilterState(
 }
 
 describe('PnrrProjectTable', () => {
+  it('explains incompatible component and measure filters', () => {
+    usePnrrProjectDetailMock.mockReturnValue({ data: undefined })
+    const filterState = makeFilterState({
+      search: {
+        ...makeFilterState().search,
+        components: ['C15'],
+        measures: ['C16.I4.grant'],
+      },
+    })
+
+    render(
+      <PnrrProjectTable
+        page={makePage([], { totalCount: 0 })}
+        filterState={filterState}
+      />,
+    )
+
+    expect(
+      screen.getByText('Selected component and measure cannot match'),
+    ).toBeInTheDocument()
+  })
+
   it('renders the last available page and corrects out-of-range URL pages', async () => {
     usePnrrProjectDetailMock.mockReturnValue({ data: undefined })
     const setPagination = vi.fn()
@@ -268,7 +290,7 @@ describe('PnrrProjectTable', () => {
     const under30 = makeProject({
       id: 'under-30',
       title: 'Under 30 Progress',
-      techProgress: 'in-implementation',
+      techProgress: 'under-30-reported',
     })
     const mid = makeProject({
       id: 'mid',
@@ -322,7 +344,7 @@ describe('PnrrProjectTable', () => {
       />,
     )
 
-    await user.click(screen.getByText('Value'))
+    await user.click(screen.getByText('EU funding'))
 
     expect(setSorting).toHaveBeenCalledWith('value', 'asc')
   })

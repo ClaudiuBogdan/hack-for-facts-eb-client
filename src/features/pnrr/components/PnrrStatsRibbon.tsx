@@ -20,7 +20,7 @@ export function PnrrStatsRibbon({
 
   const stats = [
     {
-      label: t`Listed project value`,
+      label: t`Listed EU funding`,
       value: formatPnrrCurrency(aggregates.rawTotalValue, currency),
       sublabel: t`${formatNumber(aggregates.projectRecordCount)} records in the official dataset`,
       icon: Wallet,
@@ -42,7 +42,7 @@ export function PnrrStatsRibbon({
     {
       label: t`Funding from the loan component`,
       value: formatPnrrCurrency(aggregates.loanTotal, currency),
-      sublabel: t`${formatNumber(aggregates.loanPercent)}% of listed project value`,
+      sublabel: t`${formatNumber(aggregates.loanPercent)}% of listed EU funding`,
       icon: Landmark,
       iconBg: 'bg-red-500/10',
       iconColor: 'text-red-500',

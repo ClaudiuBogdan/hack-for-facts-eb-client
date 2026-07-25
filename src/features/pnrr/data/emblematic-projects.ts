@@ -68,7 +68,7 @@ export const EMBLEMATIC_PROJECTS: readonly EmblematicProjectConfig[] = [
   },
   {
     id: 'spital-constanta-mama-copil',
-    labelRo: 'Maternitate nouă — Spitalul Countyean Constanța',
+    labelRo: 'Maternitate nouă — Spitalul Județean Constanța',
     labelEn: 'New Maternity Department — Constanța County Hospital',
     keywords: ['sf. apostol andrei constanta'],
     componentCodes: ['C12'],

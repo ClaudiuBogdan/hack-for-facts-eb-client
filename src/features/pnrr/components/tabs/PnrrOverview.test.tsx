@@ -136,6 +136,8 @@ function makeOverview(
     topComponents: [],
     topCounties: [],
     topBeneficiaries: [],
+    beneficiaryRankingSource: 'listed-project-value',
+    beneficiaryRankingScope: 'filtered',
     projectPreviewRows: [],
     emblematicProjectRows: [],
     histogram: {
@@ -198,7 +200,7 @@ describe('PnrrOverview', () => {
       />,
     )
 
-    expect(screen.getByText('Listed project value')).toBeInTheDocument()
+    expect(screen.getByText('Listed EU funding')).toBeInTheDocument()
     expect(screen.getByText('Share of value of projects marked as completed')).toBeInTheDocument()
     expect(screen.getByText('25%')).toBeInTheDocument()
     expect(screen.getByText('12 projects marked as completed from 42')).toBeInTheDocument()
@@ -223,7 +225,7 @@ describe('PnrrOverview', () => {
 
     expect(screen.getByText('Total PNRR allocation')).toBeInTheDocument()
     expect(document.body).toHaveTextContent(/10\s*M RON/)
-    expect(screen.getByText(/listed value/)).toBeInTheDocument()
+    expect(screen.getAllByText(/listed EU funding/).length).toBeGreaterThan(0)
   })
 
   it('uses official allocated total for the unfiltered headline metric', () => {
@@ -242,8 +244,8 @@ describe('PnrrOverview', () => {
     )
 
     expect(screen.getByText('Total PNRR allocation')).toBeInTheDocument()
-    expect(screen.getAllByText(/listed value/).length).toBeGreaterThan(0)
-    expect(screen.queryByText('Listed project value')).not.toBeInTheDocument()
+    expect(screen.getAllByText(/listed EU funding/).length).toBeGreaterThan(0)
+    expect(screen.queryByText('Listed EU funding')).not.toBeInTheDocument()
   })
 
   it('renders beneficiary values from the main project dataset without React key warnings', () => {
@@ -298,7 +300,7 @@ describe('PnrrOverview', () => {
       )
 
       expect(
-        screen.getByText('Top beneficiaries by listed project value (Top 100)'),
+        screen.getByText('Top beneficiaries by listed EU funding (Top 100)'),
       ).toBeInTheDocument()
       expect(
         screen.getAllByText(
@@ -353,7 +355,7 @@ describe('PnrrOverview', () => {
       screen.getByText('Top beneficiaries by reported amounts received (Top 100)'),
     ).toBeInTheDocument()
     expect(screen.queryByText('received:')).not.toBeInTheDocument()
-    expect(screen.getByText(/Listed budget/)).toBeInTheDocument()
+    expect(screen.getAllByText(/Listed EU funding/).length).toBeGreaterThan(0)
     expect(screen.queryByText('share of total paid')).not.toBeInTheDocument()
     expect(
       screen.queryByText(/Amounts received are read from the official file/),

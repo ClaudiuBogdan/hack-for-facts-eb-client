@@ -122,9 +122,11 @@ export function PnrrOverview({
     [currency, overview?.topCounties],
   )
 
-  const hasOfficialPaymentData = (overview?.topBeneficiaries ?? []).some(
-    (item) => typeof item.secondaryValueEur === 'number',
-  )
+  const hasOfficialPaymentData =
+    overview?.beneficiaryRankingSource === 'reported-payments' ||
+    (overview?.topBeneficiaries ?? []).some(
+      (item) => typeof item.secondaryValueEur === 'number',
+    )
 
   const beneficiaryItems = useMemo(
     () =>
@@ -132,6 +134,7 @@ export function PnrrOverview({
         id: beneficiary.id,
         itemKey: beneficiary.itemKey ?? beneficiary.id,
         label: beneficiary.label,
+        beneficiaryCui: beneficiary.beneficiaryCui ?? null,
         value: formatPnrrCurrency(beneficiary.valueEur, currency),
         count: beneficiary.count,
         pct: beneficiary.pct,
@@ -160,9 +163,8 @@ export function PnrrOverview({
   )
 
   const handleBeneficiaryClick = useCallback(
-    (id: string) => {
-      filterState.setSearch(id)
-      filterState.setView('projects')
+    (beneficiary: { readonly name: string; readonly cui: string | null }) => {
+      filterState.showBeneficiaryProjects(beneficiary)
     },
     [filterState],
   )
@@ -186,13 +188,13 @@ export function PnrrOverview({
             label={
               isUsingOfficialAllocation
                 ? t`Total PNRR allocation`
-                : t`Listed project value`
+                : t`Listed EU funding`
             }
             value={formatPnrrCurrency(headlineTotalValue, currency)}
             valueParts={formatPnrrCompactCurrencyDisplayParts(headlineTotalValue, currency)}
             sublabel={
               isUsingOfficialAllocation
-                ? t`${formatPnrrCurrency(metricStats.rawTotalValue, currency)} listed value in ${formatNumber(metricStats.projectRecordCount)} records`
+                ? t`${formatPnrrCurrency(metricStats.rawTotalValue, currency)} listed EU funding in ${formatNumber(metricStats.projectRecordCount)} records`
                 : t`${formatNumber(metricStats.projectRecordCount)} records in the official dataset`
             }
           />
@@ -208,7 +210,7 @@ export function PnrrOverview({
             label={t`Funding from the loan component`}
             value={formatPnrrCurrency(metricStats.loanTotal, currency)}
             valueParts={formatPnrrCompactCurrencyDisplayParts(metricStats.loanTotal, currency)}
-            sublabel={t`${formatNumber(metricStats.loanPercent)}% of listed project value`}
+            sublabel={t`${formatNumber(metricStats.loanPercent)}% of listed EU funding`}
           />
 
           <InsightCard
@@ -237,11 +239,11 @@ export function PnrrOverview({
           limit={5}
           expandLabel={t`Show all components`}
           collapseLabel={t`Show less`}
-          infoTooltip={t`The percentage shows the share of listed project value from the component in the displayed project value. It is not the official PNRR allocation. Click on a row to filter.`}
+          infoTooltip={t`The percentage shows the component's share of displayed EU funding. It is not the official PNRR allocation. Click on a row to filter.`}
         />
 
         <RankedListCard
-          title={t`Top counties: listed value`}
+          title={t`Top counties: listed EU funding`}
           items={countyItems}
           onClick={handleCountyClick}
           neutral
@@ -249,7 +251,7 @@ export function PnrrOverview({
           limit={5}
           expandLabel={t`Show all counties`}
           collapseLabel={t`Show less`}
-          infoTooltip={t`The percentage shows the share of listed project value from the county in the displayed project value. National projects can distort local comparisons.`}
+          infoTooltip={t`The percentage shows the county's share of displayed EU funding. National projects can distort local comparisons.`}
         />
       </section>
 
@@ -282,13 +284,20 @@ export function PnrrOverview({
           title={
             hasOfficialPaymentData
               ? t`Top beneficiaries by reported amounts received (Top 100)`
-              : t`Top beneficiaries by listed project value (Top 100)`
+              : t`Top beneficiaries by listed EU funding (Top 100)`
           }
           items={beneficiaryItems}
           onClick={handleBeneficiaryClick}
           primaryValueLabel={hasOfficialPaymentData ? t`received` : undefined}
           secondaryValueLabel={
-            hasOfficialPaymentData ? t`Listed budget` : undefined
+            hasOfficialPaymentData ? t`Listed EU funding` : undefined
+          }
+          description={
+            hasOfficialPaymentData && hasScopedFilters
+              ? t`The payment ranking is national and does not change with the active project filters. Listed EU funding and project counts reflect the current filters.`
+              : hasOfficialPaymentData
+                ? t`National ranking from the dedicated MIPE beneficiary-payment files.`
+                : undefined
           }
         />
       </section>
@@ -325,7 +334,7 @@ export function PnrrOverview({
           />
 
           <CtaLink
-            label={t`Risk signals`}
+            label={t`Verification signals`}
             onClick={() => handleCtaNavigation('anomalies')}
           />
         </div>
@@ -435,20 +444,26 @@ function BeneficiaryValueCard({
   onClick,
   primaryValueLabel,
   secondaryValueLabel,
+  description,
 }: {
   readonly title: string
   readonly items: readonly {
     readonly id: string
     readonly itemKey: string
     readonly label: string
+    readonly beneficiaryCui: string | null
     readonly value: string
     readonly count: number
     readonly pct: number
     readonly secondaryValue?: string
   }[]
-  readonly onClick: (id: string) => void
+  readonly onClick: (beneficiary: {
+    readonly name: string
+    readonly cui: string | null
+  }) => void
   readonly primaryValueLabel?: string
   readonly secondaryValueLabel?: string
+  readonly description?: string
 }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const displayItems = isExpanded ? items : items.slice(0, 10)
@@ -466,6 +481,11 @@ function BeneficiaryValueCard({
           <h3 className="text-base font-semibold leading-none text-[var(--pnrr-fg)]">
             {title}
           </h3>
+          {description && (
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[var(--pnrr-muted)]">
+              {description}
+            </p>
+          )}
         </div>
       </div>
 
@@ -479,7 +499,9 @@ function BeneficiaryValueCard({
           <button
             key={item.itemKey}
             type="button"
-            onClick={() => onClick(item.id)}
+            onClick={() =>
+              onClick({ name: item.label, cui: item.beneficiaryCui })
+            }
             className="group relative grid w-full grid-cols-[40px_minmax(0,1fr)] gap-x-3 gap-y-1.5 px-5 py-3 text-left transition-colors hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-green)]/60 focus-visible:ring-inset sm:grid-cols-[40px_minmax(0,1fr)_minmax(210px,auto)] sm:items-center"
           >
             <div

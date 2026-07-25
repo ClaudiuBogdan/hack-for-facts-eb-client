@@ -40,9 +40,37 @@ const POPULATION_MAP: Record<string, number> = countyPopulations as Record<
 function getTechnicalProgressValue(
   progress: PnrrProjectRecord['techProgress'],
 ): number | null {
-  if (typeof progress === 'number') return progress
-  if (progress === 'in-implementation') return 15
-  return null
+  return typeof progress === 'number' ? progress : null
+}
+
+type ProjectProgressAccumulator = Map<string, { sum: number; count: number }>
+
+function addProjectProgress(
+  accumulator: ProjectProgressAccumulator,
+  projectId: string,
+  value: number | null,
+): void {
+  if (value === null) return
+  const existing = accumulator.get(projectId)
+  if (existing) {
+    existing.sum += value
+    existing.count++
+    return
+  }
+  accumulator.set(projectId, { sum: value, count: 1 })
+}
+
+function getProjectWeightedProgress(
+  accumulator: ProjectProgressAccumulator,
+): number | null {
+  if (accumulator.size === 0) return null
+  const projectMeans = [...accumulator.values()].map(
+    ({ sum, count }) => sum / count,
+  )
+  return (
+    projectMeans.reduce((sum, progress) => sum + progress, 0) /
+    projectMeans.length
+  )
 }
 
 function computeCountySeries(
@@ -60,8 +88,7 @@ function computeCountySeries(
       projectIds: Set<string>
       grantValue: number
       totalValueForShare: number
-      techProgressSum: number
-      techProgressCount: number
+      techProgressByProject: ProjectProgressAccumulator
     }
   >()
 
@@ -77,10 +104,7 @@ function computeCountySeries(
       existing.projectIds.add(projectId)
       if (p.fundingSource === 'grant') existing.grantValue += p.valueEur
       existing.totalValueForShare += p.valueEur
-      if (techProgress !== null) {
-        existing.techProgressSum += techProgress
-        existing.techProgressCount += 1
-      }
+      addProjectProgress(existing.techProgressByProject, projectId, techProgress)
     } else {
       agg.set(mnemonic, {
         countyName: p.county,
@@ -89,15 +113,28 @@ function computeCountySeries(
         projectIds: new Set([projectId]),
         grantValue: p.fundingSource === 'grant' ? p.valueEur : 0,
         totalValueForShare: p.valueEur,
-        techProgressSum: techProgress ?? 0,
-        techProgressCount: techProgress === null ? 0 : 1,
+        techProgressByProject: new Map(),
       })
+      addProjectProgress(
+        agg.get(mnemonic)!.techProgressByProject,
+        projectId,
+        techProgress,
+      )
     }
   }
 
   const data: HeatmapCountyDataPoint[] = []
   for (const entry of agg.values()) {
-    const population = POPULATION_MAP[entry.countyName] ?? 1
+    const population = POPULATION_MAP[entry.countyName] ?? null
+    const implementationRate = getProjectWeightedProgress(
+      entry.techProgressByProject,
+    )
+    if (
+      (seriesId === 'per-capita' && (!population || population <= 0)) ||
+      (seriesId === 'implementation-rate' && implementationRate === null)
+    ) {
+      continue
+    }
 
     let amount = 0
     switch (seriesId) {
@@ -108,7 +145,7 @@ function computeCountySeries(
         amount = entry.projectIds.size
         break
       case 'per-capita':
-        amount = population > 0 ? entry.totalValue / population : 0
+        amount = entry.totalValue / population!
         break
       case 'grant-share':
         amount =
@@ -117,20 +154,18 @@ function computeCountySeries(
             : 0
         break
       case 'implementation-rate':
-        amount =
-          entry.techProgressCount > 0
-            ? entry.techProgressSum / entry.techProgressCount
-            : 0
+        amount = implementationRate!
         break
     }
 
     data.push({
       county_code: entry.mnemonic,
       county_name: entry.countyName,
-      county_population: population,
+      county_population: population ?? 0,
       amount,
       total_amount: entry.totalValue,
-      per_capita_amount: population > 0 ? entry.totalValue / population : 0,
+      per_capita_amount:
+        population && population > 0 ? entry.totalValue / population : 0,
       county_entity: { cui: '', name: entry.countyName },
     })
   }
@@ -159,8 +194,7 @@ function computeUatSeries(
       projectIds: Set<string>
       grantValue: number
       totalValueForShare: number
-      techProgressSum: number
-      techProgressCount: number
+      techProgressByProject: ProjectProgressAccumulator
     }
   >()
 
@@ -174,10 +208,7 @@ function computeUatSeries(
       existing.projectIds.add(projectId)
       if (p.fundingSource === 'grant') existing.grantValue += p.valueEur
       existing.totalValueForShare += p.valueEur
-      if (techProgress !== null) {
-        existing.techProgressSum += techProgress
-        existing.techProgressCount += 1
-      }
+      addProjectProgress(existing.techProgressByProject, projectId, techProgress)
     } else {
       agg.set(siruta, {
         sirutaCode: siruta,
@@ -185,15 +216,28 @@ function computeUatSeries(
         projectIds: new Set([projectId]),
         grantValue: p.fundingSource === 'grant' ? p.valueEur : 0,
         totalValueForShare: p.valueEur,
-        techProgressSum: techProgress ?? 0,
-        techProgressCount: techProgress === null ? 0 : 1,
+        techProgressByProject: new Map(),
       })
+      addProjectProgress(
+        agg.get(siruta)!.techProgressByProject,
+        projectId,
+        techProgress,
+      )
     }
   }
 
   const data: HeatmapUATDataPoint[] = []
   for (const entry of agg.values()) {
-    const population = UAT_POPULATIONS[entry.sirutaCode] ?? 1
+    const population = UAT_POPULATIONS[entry.sirutaCode] ?? null
+    const implementationRate = getProjectWeightedProgress(
+      entry.techProgressByProject,
+    )
+    if (
+      (seriesId === 'per-capita' && (!population || population <= 0)) ||
+      (seriesId === 'implementation-rate' && implementationRate === null)
+    ) {
+      continue
+    }
 
     let amount = 0
     switch (seriesId) {
@@ -204,7 +248,7 @@ function computeUatSeries(
         amount = entry.projectIds.size
         break
       case 'per-capita':
-        amount = population > 0 ? entry.totalValue / population : 0
+        amount = entry.totalValue / population!
         break
       case 'grant-share':
         amount =
@@ -213,10 +257,7 @@ function computeUatSeries(
             : 0
         break
       case 'implementation-rate':
-        amount =
-          entry.techProgressCount > 0
-            ? entry.techProgressSum / entry.techProgressCount
-            : 0
+        amount = implementationRate!
         break
     }
 
@@ -227,10 +268,11 @@ function computeUatSeries(
       siruta_code: entry.sirutaCode,
       county_code: '',
       county_name: '',
-      population,
+      population: population ?? 0,
       amount,
       total_amount: entry.totalValue,
-      per_capita_amount: population > 0 ? entry.totalValue / population : 0,
+      per_capita_amount:
+        population && population > 0 ? entry.totalValue / population : 0,
     })
   }
 

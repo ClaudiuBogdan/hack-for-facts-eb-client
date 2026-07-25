@@ -7,6 +7,8 @@ import {
   deduplicateProjects,
   computeAggregates,
   filterProjects,
+  groupPnrrProjects,
+  hasPnrrComponentMeasureConflict,
   processPnrrBeneficiaryPayments,
   processPnrrData,
   processPnrrOfficialIndicators,
@@ -70,8 +72,10 @@ describe('parseProgress', () => {
     expect(parseProgress('0%')).toBe(0)
   })
 
-  it('returns in-implementation for status texts', () => {
-    expect(parseProgress('ÎN IMPLEMENTARE (sub 30%)')).toBe('in-implementation')
+  it('keeps distinct reported progress categories', () => {
+    expect(parseProgress('ÎN IMPLEMENTARE (sub 30%)')).toBe(
+      'under-30-reported',
+    )
     expect(parseProgress('ÎN IMPLEMENTARE')).toBe('in-implementation')
   })
 
@@ -100,7 +104,8 @@ describe('classifyStatus', () => {
     expect(classifyStatus(15)).toBe('under-30')
     expect(classifyStatus(50)).toBe('mid-progress')
     expect(classifyStatus(85)).toBe('advanced')
-    expect(classifyStatus('in-implementation')).toBe('under-30')
+    expect(classifyStatus('under-30-reported')).toBe('under-30')
+    expect(classifyStatus('in-implementation')).toBe('in-implementation')
   })
 })
 
@@ -194,13 +199,22 @@ describe('anomaly detection', () => {
     expect(p.anomalies).toContain('large-low-progress')
   })
 
-  it('flags large-low-progress for in-implementation status on large projects', () => {
+  it('flags large-low-progress for the explicit under-30 category', () => {
     const raw = makeRaw({
       'Valoare (EUR)': 15_000_000,
       'Progres Tehnic': 'ÎN IMPLEMENTARE (sub 30%)',
     })
     const p = transformProject(raw)
     expect(p.anomalies).toContain('large-low-progress')
+  })
+
+  it('does not invent low progress for a generic in-implementation status', () => {
+    const raw = makeRaw({
+      'Valoare (EUR)': 15_000_000,
+      'Progres Tehnic': 'ÎN IMPLEMENTARE',
+    })
+    const p = transformProject(raw)
+    expect(p.anomalies).not.toContain('large-low-progress')
   })
 
   it('does not flag large-low-progress when value<10M', () => {
@@ -505,6 +519,57 @@ describe('transformProject', () => {
     expect(p.isReform).toBe(false)
   })
 
+  it('preserves the published MIPE contract, dates, RON values, and labels', () => {
+    const p = transformProject(
+      makeRaw({
+        id_angajament: '3114346815',
+        nr_contract: 'OMF. Nr. 1403',
+        data_angajament: '2022-06-09T21:00:00Z',
+        data_inceput: '2022-06-09T21:00:00Z',
+        data_finalizare: '2026-12-30T22:00:00Z',
+        valoare_total: 113_133_054.56,
+        valoare_fe: 100_000_000,
+        valoare_fpn: 5_000_000,
+        valoare_tva: 8_000_000,
+        valoare_neeligibil: 133_054.56,
+        tip_beneficiar: 'ADMINISTRAȚIE PUBLICĂ CENTRALĂ',
+        impact: 'URBAN',
+        cri_denumire: 'Ministerul Finanțelor',
+      }),
+    )
+
+    expect(p).toMatchObject({
+      engagementId: '3114346815',
+      contractNumber: 'OMF. Nr. 1403',
+      commitmentDate: '2022-06-09T21:00:00Z',
+      startDate: '2022-06-09T21:00:00Z',
+      endDate: '2026-12-30T22:00:00Z',
+      totalValueRon: 113_133_054.56,
+      sourceValueRon: 100_000_000,
+      nationalContributionRon: 5_000_000,
+      vatValueRon: 8_000_000,
+      ineligibleValueRon: 133_054.56,
+      sourceBeneficiaryType: 'ADMINISTRAȚIE PUBLICĂ CENTRALĂ',
+      impact: 'URBAN',
+      criName: 'Ministerul Finanțelor',
+      sourceUrl: 'https://mfe.gov.ro/pnrr-dashboard',
+    })
+  })
+
+  it('preserves an explicit under-30 MIPE status when no numeric progress exists', () => {
+    const p = transformProject(
+      makeRaw({
+        id_angajament: 'status-under-30',
+        valoare_fe: 100,
+        progres_fizic: null,
+        stadiu: 'ÎN IMPLEMENTARE (sub 30%)',
+      }),
+    )
+
+    expect(p.techProgress).toBe('under-30-reported')
+    expect(p.status).toBe('under-30')
+  })
+
   it('marks explicit finalized projects as completed', () => {
     const p = transformProject(makeRaw({ 'Progres Tehnic': 'FINALIZAT' }))
     expect(p.techProgress).toBe(100)
@@ -755,6 +820,19 @@ describe('filterProjects', () => {
     expect(result[0].title).toBe('Alpha')
   })
 
+  it('searches by MIPE engagement ID and contract number', () => {
+    const indexed = transformProject(
+      makeRaw({
+        id_angajament: '3114346815',
+        nr_contract: 'OMF. Nr. 1403',
+        valoare_fe: 500,
+      }),
+    )
+
+    expect(filterProjects([indexed], { search: '3114346815' })).toHaveLength(1)
+    expect(filterProjects([indexed], { search: 'OMF' })).toHaveLength(1)
+  })
+
   it('filters by beneficiary search (name substring)', () => {
     const result = filterProjects(projects, { beneficiarySearch: 'Beta' })
     expect(result).toHaveLength(1)
@@ -892,6 +970,64 @@ describe('filterProjects', () => {
     const result = filterProjects(anomalyProjects, { anomalyTypes: ['payment-ahead-delivery'] })
     expect(result).toHaveLength(1)
     expect(result[0].title).toBe('B')
+  })
+
+  it('preserves every matching project slice for project-level risk filters', () => {
+    const riskRecord = {
+      ...transformProject(
+        makeRaw({
+          'Titlu Proiect': 'Shared project',
+          'Valoare (EUR)': 10_000,
+          'Progres Financiar': '150%',
+        }),
+      ),
+      id: 'risk-record',
+      engagementId: 'shared-engagement',
+    }
+    const normalRecord = {
+      ...transformProject(
+        makeRaw({
+          'Titlu Proiect': 'Shared project',
+          'Valoare (EUR)': 20_000,
+          'Cod Componentă': 'C5',
+        }),
+      ),
+      id: 'normal-record',
+      engagementId: 'shared-engagement',
+    }
+    const grouped = groupPnrrProjects([riskRecord, normalRecord])
+
+    const [result] = filterProjects(grouped, { onlyAnomalies: true })
+
+    expect(result.recordCount).toBe(2)
+    expect(result.records).toHaveLength(2)
+    expect(result.totalValueEur).toBe(30_000)
+  })
+
+  it('treats selected risk and data-quality signal types as an OR filter', () => {
+    const risk = transformProject(
+      makeRaw({
+        'Titlu Proiect': 'Risk',
+        'Progres Financiar': '150%',
+      }),
+    )
+    const dataQuality = transformProject(
+      makeRaw({
+        'Titlu Proiect': 'Data quality',
+        'Valoare (EUR)': 10_000_000,
+        'Progres Financiar': undefined,
+      }),
+    )
+
+    const result = filterProjects([risk, dataQuality], {
+      anomalyTypes: ['financial-overrun'],
+      dataQualitySignalTypes: ['large-missing-financial-progress'],
+    })
+
+    expect(result.map((project) => project.title).sort()).toEqual([
+      'Data quality',
+      'Risk',
+    ])
   })
 
   it('filters by data-quality signal type', () => {
@@ -1062,6 +1198,43 @@ describe('filterProjects', () => {
     const micro = transformProject(makeRaw({ 'Valoare (EUR)': 3000, 'Titlu Proiect': 'Micro' }))
     const result = filterProjects([...projects, micro], { excludeMicro: true })
     expect(result).toHaveLength(2) // Micro excluded
+  })
+
+  it('applies the micro threshold to the grouped project total', () => {
+    const first = {
+      ...transformProject(
+        makeRaw({ 'Titlu Proiect': 'Grouped micro', 'Valoare (EUR)': 3_000 }),
+      ),
+      id: 'micro-a',
+      engagementId: 'grouped-micro',
+    }
+    const second = {
+      ...transformProject(
+        makeRaw({ 'Titlu Proiect': 'Grouped micro', 'Valoare (EUR)': 3_000 }),
+      ),
+      id: 'micro-b',
+      engagementId: 'grouped-micro',
+    }
+    const grouped = groupPnrrProjects([first, second])
+
+    expect(filterProjects(grouped, { excludeMicro: true })).toHaveLength(1)
+  })
+})
+
+describe('hasPnrrComponentMeasureConflict', () => {
+  it('detects direct URLs whose selected measures belong to another component', () => {
+    expect(
+      hasPnrrComponentMeasureConflict({
+        components: ['C15'],
+        measures: ['C16.I4.grant'],
+      }),
+    ).toBe(true)
+    expect(
+      hasPnrrComponentMeasureConflict({
+        components: ['C15', 'C16'],
+        measures: ['C16.I4.grant'],
+      }),
+    ).toBe(false)
   })
 })
 

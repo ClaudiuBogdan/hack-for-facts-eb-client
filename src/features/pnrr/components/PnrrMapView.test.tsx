@@ -271,7 +271,7 @@ describe('PnrrMapView', () => {
       />,
     )
 
-    expect(screen.getByText(/241 projects/)).toBeInTheDocument()
+    expect(screen.getAllByText(/241 projects/).length).toBeGreaterThan(0)
     expect(screen.getByText('241')).toBeInTheDocument()
     expect(screen.getAllByText('12').length).toBeGreaterThan(0)
   })

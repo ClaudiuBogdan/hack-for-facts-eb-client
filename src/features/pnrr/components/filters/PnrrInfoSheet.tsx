@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/accordion'
 import { FileWarning, Info, LibraryBig } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { PNRR_FILESET_ID } from '../../lib/snapshot'
 
 interface PnrrInfoSheetProps {
   readonly open: boolean
@@ -106,9 +107,9 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
                   <Trans>
                     It is the official aggregated value from the
                     indicatori_total file, the alocat_eur field. We display it
-                    as the main value for parity with the official table. In RON
-                    it is converted using the rate used in the dashboard: 1 EUR
-                    = 5 RON.
+                    as the main value for parity with the official table. Its
+                    source unit is EUR; any other displayed currency is a
+                    presentation conversion, not a second official value.
                   </Trans>
                 </InfoAccordionItem>
 
@@ -131,11 +132,11 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
                   title={<Trans>Projects vs official records</Trans>}
                 >
                   <Trans>
-                    "Project count" is the distinct number of id_angajament.
-                    The main file has more records than projects, because the
-                    same project can have multiple rows on measures, components
-                    or funding sources. Project tables group these rows, and
-                    charts that distribute values sum the official rows.
+                    "Project count" is the distinct number of id_angajament. The
+                    main file has more records than projects, because the same
+                    project can have multiple rows on measures, components or
+                    funding sources. Project tables group these rows, and charts
+                    that distribute values sum the official rows.
                   </Trans>
                 </InfoAccordionItem>
 
@@ -161,16 +162,20 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
                   }
                 >
                   <Trans>
-                    Shows how much of the listed project value belongs to
-                    projects marked as completed. It is not the official
-                    "absorption rate": it does not measure money received by
-                    Romania or payments to beneficiaries.
+                    Shows how much of the listed EU funding belongs to projects
+                    marked as completed. It is not the official "absorption
+                    rate": it does not measure money received by Romania or
+                    payments to beneficiaries.
                   </Trans>
                 </InfoAccordionItem>
 
                 <InfoAccordionItem
                   value="reported-progress"
-                  title={<Trans>Technical progress vs reported financial progress</Trans>}
+                  title={
+                    <Trans>
+                      Technical progress vs reported financial progress
+                    </Trans>
+                  }
                 >
                   <Trans>
                     Technical progress shows how advanced the reported work or
@@ -186,9 +191,9 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
                 >
                   <Trans>
                     The grant is the non-reimbursable part. The loan is the
-                    reimbursable part of the PNRR at Romania level. The
-                    "loan" label does not mean that each beneficiary took an
-                    individual credit.
+                    reimbursable part of the PNRR at Romania level. The "loan"
+                    label does not mean that each beneficiary took an individual
+                    credit.
                   </Trans>
                 </InfoAccordionItem>
 
@@ -198,10 +203,9 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
                 >
                   <Trans>
                     Official data is published in EUR for indicators and in RON
-                    for project values. For comparisons we use the official rate
-                    applied in the dashboard: 1 EUR = 5 RON. Small differences
-                    may come from rounding and from the level at which each
-                    source is published.
+                    for project values. Currency conversion in this client is a
+                    display convenience and must not be read as a source value
+                    or an official daily exchange rate.
                   </Trans>
                 </InfoAccordionItem>
 
@@ -241,9 +245,9 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
                   title={<Trans>PNRR Component</Trans>}
                 >
                   <Trans>
-                    PNRR components group thematic reforms and investments.
-                    They help with filtering, but alone they do not tell how
-                    much money was paid or what risk a project has.
+                    PNRR components group thematic reforms and investments. They
+                    help with filtering, but alone they do not tell how much
+                    money was paid or what risk a project has.
                   </Trans>
                 </InfoAccordionItem>
 
@@ -262,7 +266,10 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
                     <p>
                       <Trans>
                         Measures can be investments (I) or reforms (R), each
-                        with the officially approved name in the plan.
+                        shown with the dated reference labels bundled with this
+                        client. These labels are navigation aids and are not a
+                        claim that this snapshot contains the latest adopted
+                        legal revision of the plan.
                       </Trans>
                     </p>
                   </div>
@@ -323,8 +330,9 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
                   title={<Trans>Funding source</Trans>}
                 >
                   <Trans>
-                    Grant, loan, or grant + loan. Original values are in EUR and
-                    are automatically converted to the selected currency.
+                    Grant, loan, or grant + loan. Project-row values in the MIPE
+                    source are published in RON. Other displayed currencies are
+                    client-side presentation conversions.
                   </Trans>
                 </InfoAccordionItem>
 
@@ -377,14 +385,16 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
                   title={<Trans>Large value and low progress</Trans>}
                   description={
                     <Trans>
-                      Listed value over 10 mil. EUR and reported technical
+                      Listed EU funding over 10 mil. EUR and reported technical
                       progress under 30%.
                     </Trans>
                   }
                 />
 
                 <DefinitionRow
-                  title={<Trans>Technically completed, low financial progress</Trans>}
+                  title={
+                    <Trans>Technically completed, low financial progress</Trans>
+                  }
                   description={
                     <Trans>
                       Project marked as technically completed, but with reported
@@ -418,22 +428,24 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
 
             <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-5">
               <SectionTitle>
-                <Trans>Currency conversion</Trans>
+                <Trans>Source currency units</Trans>
               </SectionTitle>
               <p className="mt-3 text-sm font-medium leading-relaxed text-[var(--pnrr-muted)]">
                 <Trans>
-                  PNRR project values use the official fixed conversion rate
-                  applied in the dashboard. Displayed RON values are converted
-                  with this rate.
+                  The MIPE project file publishes valoare_fe in RON. The
+                  national indicator file publishes allocation and payment
+                  indicators in EUR. The two source units remain distinct.
                 </Trans>
               </p>
-              <div className="mt-4 grid grid-cols-1 gap-3">
-                <CurrencyBox label="RON" value="1 EUR = 5 RON" />
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <CurrencyBox label="RON" value="MIPE project rows" />
+                <CurrencyBox label="EUR" value="National indicators" />
               </div>
               <p className="mt-3 text-xs font-medium leading-relaxed text-[var(--pnrr-muted)]">
                 <Trans>
-                  This is the fixed rate used by the PNRR dashboard model, not
-                  a daily BNR exchange rate.
+                  When another currency is selected, the result is a display
+                  conversion. Verify the source-unit value before quoting or
+                  comparing a figure.
                 </Trans>
               </p>
             </section>
@@ -445,8 +457,10 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
               <p className="mt-3 text-sm font-medium leading-relaxed text-[var(--pnrr-muted)]">
                 <Trans>
                   Data comes from the Ministry of Investments and European
-                  Projects (MIPE), through the official PNRR portal. Last
-                  update: April 30, 2026.
+                  Projects (MIPE), through the official PNRR portal. The
+                  application serves file set {PNRR_FILESET_ID}; this is a
+                  publication identifier, not a source observation date or a
+                  freshness guarantee.
                 </Trans>
               </p>
             </section>

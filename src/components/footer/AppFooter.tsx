@@ -20,6 +20,7 @@ export function AppFooter(): ReactElement {
     const showSentryFeedback = useSentryConsent();
     const location = useLocation();
     const { resolvedTheme } = useTheme();
+    const isPnrrPage = /(^|\/)pnrr(\/|$)/.test(location.pathname);
 
     const handleLinkClick = () => {
         // Scroll to top of page when navigating
@@ -136,26 +137,44 @@ export function AppFooter(): ReactElement {
                 {/* Data source and copyright */}
                 <div className="flex flex-col items-start justify-between gap-4 text-xs text-muted-foreground md:flex-row">
                     <p className="break-words">
-                        <Trans>Data source: &quot;Budget Transparency&quot; portal administered by ANAF/Ministry of Finance. See official resources:</Trans>
-                        {" "}
-                        <a
-                            href="https://mfinante.gov.ro/transparenta-bugetara"
-                            target="_blank"
-                            rel="noreferrer noopener"
-                            className="break-all underline underline-offset-2 hover:text-foreground"
-                        >
-                            mfinante.gov.ro/transparenta-bugetara
-                        </a>
-                        {" "}<Trans>and</Trans>{" "}
-                        <a
-                            href="https://extranet.anaf.mfinante.gov.ro/anaf/extranet/EXECUTIEBUGETARA"
-                            target="_blank"
-                            rel="noreferrer noopener"
-                            className="break-all underline underline-offset-2 hover:text-foreground"
-                        >
-                            extranet.anaf.mfinante.gov.ro
-                        </a>
-                        .
+                        {isPnrrPage ? (
+                            <>
+                                <Trans>PNRR data source: Ministry of Investments and European Projects (MIPE). See the official dashboard:</Trans>
+                                {" "}
+                                <a
+                                    href="https://mfe.gov.ro/pnrr-dashboard"
+                                    target="_blank"
+                                    rel="noreferrer noopener"
+                                    className="break-all underline underline-offset-2 hover:text-foreground"
+                                >
+                                    mfe.gov.ro/pnrr-dashboard
+                                </a>
+                                .
+                            </>
+                        ) : (
+                            <>
+                                <Trans>Data source: &quot;Budget Transparency&quot; portal administered by ANAF/Ministry of Finance. See official resources:</Trans>
+                                {" "}
+                                <a
+                                    href="https://mfinante.gov.ro/transparenta-bugetara"
+                                    target="_blank"
+                                    rel="noreferrer noopener"
+                                    className="break-all underline underline-offset-2 hover:text-foreground"
+                                >
+                                    mfinante.gov.ro/transparenta-bugetara
+                                </a>
+                                {" "}<Trans>and</Trans>{" "}
+                                <a
+                                    href="https://extranet.anaf.mfinante.gov.ro/anaf/extranet/EXECUTIEBUGETARA"
+                                    target="_blank"
+                                    rel="noreferrer noopener"
+                                    className="break-all underline underline-offset-2 hover:text-foreground"
+                                >
+                                    extranet.anaf.mfinante.gov.ro
+                                </a>
+                                .
+                            </>
+                        )}
                     </p>
                     <p className="shrink-0 sm:whitespace-nowrap"><Trans>&copy; {defaultYear} Transparenta.eu. All rights reserved.</Trans></p>
                 </div>
@@ -214,4 +233,3 @@ export function AppFooter(): ReactElement {
         </footer>
     );
 }
-

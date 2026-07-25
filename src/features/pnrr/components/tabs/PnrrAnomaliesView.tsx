@@ -107,7 +107,7 @@ export function PnrrAnomaliesView({
           <div>
             <h1 className="max-w-[520px] text-4xl font-black uppercase leading-[0.96] tracking-wide text-[var(--pnrr-fg)] sm:text-5xl">
               <span className="block max-w-[500px]">
-                <Trans>Investigation Center</Trans>
+                <Trans>Verification signals</Trans>
               </span>
             </h1>
             <div className="mt-5 grid max-w-[460px] gap-2 text-base text-[var(--pnrr-fg)]">
@@ -117,7 +117,7 @@ export function PnrrAnomaliesView({
                 </span>
                 <span>
                   {model.riskCount.toLocaleString('ro-RO')}{' '}
-                <Trans>projects with risk signals</Trans>
+                <Trans>projects with verification signals</Trans>
                 </span>
                 <span className="tabular-nums">
                   {formatPnrrCurrency(model.riskValue, currency, 'compact')}
@@ -136,6 +136,12 @@ export function PnrrAnomaliesView({
                 </span>
               </div>
             </div>
+            <p className="mt-3 max-w-[460px] text-xs font-bold leading-relaxed text-[var(--pnrr-muted)]">
+              <Trans>
+                Risk and data-quality groups can overlap. Counts and values are
+                not additive, and every signal requires source verification.
+              </Trans>
+            </p>
           </div>
 
           <div className="hidden h-full min-h-[150px] bg-[var(--pnrr-border)] lg:block" />

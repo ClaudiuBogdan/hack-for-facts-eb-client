@@ -9,7 +9,7 @@ import { PnrrTabNav } from './PnrrTabNav'
 import { PnrrActiveFilters } from './filters/PnrrActiveFilters'
 import { PnrrProjectSearchInput } from './filters/PnrrProjectSearchInput'
 import type { usePnrrFilterState } from '../hooks/usePnrrFilterState'
-import { getActiveFilterCount, PNRR_LAST_UPDATED } from '../lib/data-transform'
+import { getActiveFilterCount, PNRR_FILESET_ID } from '../lib/data-transform'
 import { useOptionalSidebar } from '@/components/ui/sidebar'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Activity } from 'lucide-react'
@@ -47,15 +47,6 @@ export function PnrrHeader({
   const sidebarState = sidebar?.state
   const isMobile = sidebar?.isMobile ?? isViewportMobile
   const currency = usePnrrCurrency()
-  const formattedLastUpdated = new Date(PNRR_LAST_UPDATED).toLocaleDateString(
-    'ro-RO',
-    {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    },
-  )
-
   useEffect(() => {
     setHasMounted(true)
     lastScrollYRef.current = window.scrollY
@@ -99,7 +90,9 @@ export function PnrrHeader({
   }, [isMobile])
 
   const hasActiveFilters = getActiveFilterCount(filterState.search) > 0
-  const displayedTotalValueLabel = totalValueLabel ?? <Trans>listed value</Trans>
+  const displayedTotalValueLabel = totalValueLabel ?? (
+    <Trans>listed EU funding</Trans>
+  )
 
   return (
     <>
@@ -136,6 +129,7 @@ export function PnrrHeader({
                 view={view}
                 onChange={onViewChange}
                 compact
+                idPrefix="pnrr-compact-tab"
                 className="border-0"
               />
             </div>
@@ -173,7 +167,7 @@ export function PnrrHeader({
           {/* Badge */}
           <div className="inline-flex items-center gap-2 border-2 border-[var(--pnrr-border)] px-2.5 py-1.5 text-[11px] font-black uppercase tracking-widest text-[var(--pnrr-fg)]">
             <span className="h-2.5 w-2.5 bg-[var(--pnrr-green)]" />
-            <Trans>Last update {formattedLastUpdated}</Trans>
+            <Trans>MIPE file set {PNRR_FILESET_ID}</Trans>
           </div>
 
           {/* Title */}
@@ -203,9 +197,9 @@ export function PnrrHeader({
           {/* Paragraph */}
           <p className="mt-4 max-w-[720px] text-base leading-relaxed text-[var(--pnrr-muted)]">
             <Trans>
-              Interactive dashboard with all PNRR projects. See where the money
-              goes, which projects are at risk, and how implementation is
-              progressing.
+              Explore the projects published in this MIPE snapshot, where EU
+              funding is assigned, and automated signals that may merit
+              verification. Signals are not findings of wrongdoing.
             </Trans>
           </p>
 

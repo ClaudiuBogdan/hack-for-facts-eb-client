@@ -10,6 +10,7 @@ import {
   type PnrrProject,
   type PnrrProjectRecord,
   type PnrrProjectStatus,
+  type PnrrReportedProgress,
   type AnomalyType,
   type DataQualitySignalType,
   type PnrrAggregates,
@@ -24,8 +25,9 @@ import {
   resolvePnrrProjectLocation,
 } from './pnrr-uat-assignment'
 
-/** Re-exported so existing imports keep working; derived in snapshot.ts. */
-export { PNRR_LAST_UPDATED } from './snapshot'
+import { PNRR_MIPE_SOURCE_URL } from './snapshot'
+
+export { PNRR_FILESET_ID, PNRR_MIPE_SOURCE_URL } from './snapshot'
 
 const OFFICIAL_RON_TO_EUR_RATE = 5
 
@@ -45,6 +47,7 @@ const PROGRESS_CATEGORY_TO_STATUS = {
   advanced: 'advanced',
   mid: 'mid-progress',
   under30: 'under-30',
+  'in-implementation': 'in-implementation',
   'not-started': 'not-started',
   unknown: 'unknown',
 } as const satisfies Readonly<
@@ -58,13 +61,11 @@ const PROGRESS_CATEGORY_TO_STATUS = {
 // Progress parsing
 // ---------------------------------------------------------------------------
 
-export function parseProgress(
-  val: string | undefined
-): number | null | 'in-implementation' {
+export function parseProgress(val: string | undefined): PnrrReportedProgress {
   if (!val || val.trim() === '') return null
   const trimmed = val.trim()
 
-  if (trimmed === 'ÎN IMPLEMENTARE (sub 30%)') return 'in-implementation'
+  if (trimmed === 'ÎN IMPLEMENTARE (sub 30%)') return 'under-30-reported'
   if (trimmed === 'ÎN IMPLEMENTARE') return 'in-implementation'
   if (trimmed === 'FINALIZAT') return 100
 
@@ -87,12 +88,11 @@ function roundProgressValue(value: number): number {
 // Status classification
 // ---------------------------------------------------------------------------
 
-export function classifyStatus(
-  tech: number | null | 'in-implementation'
-): PnrrProjectStatus {
+export function classifyStatus(tech: PnrrReportedProgress): PnrrProjectStatus {
   if (typeof tech === 'number' && tech >= 100) return 'completed'
   if (tech === 0) return 'not-started'
-  if (tech === 'in-implementation') return 'under-30'
+  if (tech === 'under-30-reported') return 'under-30'
+  if (tech === 'in-implementation') return 'in-implementation'
   if (typeof tech === 'number') {
     if (tech < 30) return 'under-30'
     if (tech < 70) return 'mid-progress'
@@ -106,15 +106,13 @@ export function classifyStatus(
 // ---------------------------------------------------------------------------
 
 type AnomalyInput = {
-  readonly techProgress: number | null | 'in-implementation'
-  readonly finProgress: number | null | 'in-implementation'
+  readonly techProgress: PnrrReportedProgress
+  readonly finProgress: PnrrReportedProgress
   readonly valueEur: number
 }
 
-function getRiskTechProgress(
-  progress: number | null | 'in-implementation'
-): number | null {
-  return progress === 'in-implementation' ? 15 : progress
+function getRiskTechProgress(progress: PnrrReportedProgress): number | null {
+  return typeof progress === 'number' ? progress : null
 }
 
 export function detectAnomalies(project: AnomalyInput): readonly AnomalyType[] {
@@ -122,7 +120,7 @@ export function detectAnomalies(project: AnomalyInput): readonly AnomalyType[] {
 
   const tech = getRiskTechProgress(project.techProgress)
   const fin =
-    project.finProgress === 'in-implementation' ? null : project.finProgress
+    typeof project.finProgress === 'number' ? project.finProgress : null
 
   if (fin !== null && fin > 100) {
     anomalies.push('financial-overrun')
@@ -142,7 +140,11 @@ export function detectAnomalies(project: AnomalyInput): readonly AnomalyType[] {
     anomalies.push('payment-ahead-delivery')
   }
 
-  if (project.valueEur >= 10_000_000 && tech !== null && tech < 30) {
+  if (
+    project.valueEur >= 10_000_000 &&
+    ((tech !== null && tech < 30) ||
+      project.techProgress === 'under-30-reported')
+  ) {
     anomalies.push('large-low-progress')
   }
 
@@ -150,7 +152,7 @@ export function detectAnomalies(project: AnomalyInput): readonly AnomalyType[] {
 }
 
 export function detectDataQualitySignals(
-  project: Pick<PnrrProjectRecord, 'techProgress' | 'finProgress' | 'valueEur'>
+  project: Pick<PnrrProjectRecord, 'techProgress' | 'finProgress' | 'valueEur'>,
 ): readonly DataQualitySignalType[] {
   const signals: DataQualitySignalType[] = []
 
@@ -284,9 +286,12 @@ function hasPrivateMarker(beneficiary: string): boolean {
 
   const hasSrl = normalized.includes('SRL')
   const hasSa = /\bSA\b/.test(normalized)
-  const hasLimitedLiability = normalized.includes('SOCIETATE CU RASPUNDERE LIMITATA')
+  const hasLimitedLiability = normalized.includes(
+    'SOCIETATE CU RASPUNDERE LIMITATA',
+  )
   const hasPfa =
-    normalized.includes('PERSOANA FIZICA AUTORIZATA') || normalized.includes('PFA')
+    normalized.includes('PERSOANA FIZICA AUTORIZATA') ||
+    normalized.includes('PFA')
 
   return hasSrl || hasSa || hasLimitedLiability || hasPfa
 }
@@ -308,7 +313,10 @@ export function classifyEntityType(
   const hasPublicKeyword = PUBLIC_KEYWORDS.some((kw) => upper.includes(kw))
   const hasCountyCouncilName = isCountyCouncilBeneficiaryName(normalized)
   const hasExplicitPrivateMarker = hasPrivateMarker(beneficiary)
-  const hasNonPublicKeyword = hasAnyBeneficiaryKeyword(normalized, NON_PUBLIC_KEYWORDS)
+  const hasNonPublicKeyword = hasAnyBeneficiaryKeyword(
+    normalized,
+    NON_PUBLIC_KEYWORDS,
+  )
 
   if (isOfficialPublicCompany || hasPriorityPublicKeyword) {
     return 'public'
@@ -318,7 +326,11 @@ export function classifyEntityType(
     return 'private'
   }
 
-  if (isPublicDirectoryType(directoryType) || hasPublicKeyword || hasCountyCouncilName) {
+  if (
+    isPublicDirectoryType(directoryType) ||
+    hasPublicKeyword ||
+    hasCountyCouncilName
+  ) {
     return 'public'
   }
 
@@ -361,7 +373,10 @@ function normalizeBeneficiaryName(value: string): string {
     .trim()
 }
 
-function hasAnyBeneficiaryKeyword(value: string, keywords: readonly string[]): boolean {
+function hasAnyBeneficiaryKeyword(
+  value: string,
+  keywords: readonly string[],
+): boolean {
   return keywords.some((keyword) => value.includes(keyword))
 }
 
@@ -381,7 +396,14 @@ export function classifyBeneficiaryType(
 
   if (entityType === 'private') {
     if (hasPrivateMarker(beneficiary)) return 'company'
-    if (hasAnyBeneficiaryKeyword(normalized, ['ASOCIATIA', 'FUNDATIA', 'FEDERATIA'])) return 'ngo'
+    if (
+      hasAnyBeneficiaryKeyword(normalized, [
+        'ASOCIATIA',
+        'FUNDATIA',
+        'FEDERATIA',
+      ])
+    )
+      return 'ngo'
     if (
       hasAnyBeneficiaryKeyword(normalized, [
         'PAROHIA',
@@ -407,10 +429,14 @@ export function classifyBeneficiaryType(
     if (directoryType.startsWith('defence_')) return 'military'
     if (directoryType.startsWith('culture_')) return 'culture'
     if (SOCIAL_DIRECTORY_TYPES.has(directoryType)) return 'social'
-    if (CENTRAL_AGENCY_DIRECTORY_TYPES.has(directoryType)) return 'central-agency'
+    if (CENTRAL_AGENCY_DIRECTORY_TYPES.has(directoryType))
+      return 'central-agency'
   }
 
-  if (hasAnyBeneficiaryKeyword(normalized, ['ASOCIATIA', 'FUNDATIA', 'FEDERATIA'])) return 'ngo'
+  if (
+    hasAnyBeneficiaryKeyword(normalized, ['ASOCIATIA', 'FUNDATIA', 'FEDERATIA'])
+  )
+    return 'ngo'
   if (
     hasAnyBeneficiaryKeyword(normalized, [
       'PAROHIA',
@@ -466,7 +492,13 @@ export function classifyBeneficiaryType(
   ) {
     return 'military'
   }
-  if (hasAnyBeneficiaryKeyword(normalized, ['MUZEUL', 'BIBLIOTECA', 'CASA DE CULTURA'])) {
+  if (
+    hasAnyBeneficiaryKeyword(normalized, [
+      'MUZEUL',
+      'BIBLIOTECA',
+      'CASA DE CULTURA',
+    ])
+  ) {
     return 'culture'
   }
   if (isNationalProject) return 'national'
@@ -490,7 +522,9 @@ export function normalizeTitle(title: string): string {
 // Raw → Normalized transformation
 // ---------------------------------------------------------------------------
 
-export function normalizePnrrProjectRecord(raw: RawPnrrProject): PnrrProjectRecord {
+export function normalizePnrrProjectRecord(
+  raw: RawPnrrProject,
+): PnrrProjectRecord {
   const normalized = normalizeRawProject(raw)
   const techRaw = parseProgress(normalized.techProgressInput)
   const finRaw = parseProgress(normalized.finProgressInput)
@@ -517,7 +551,7 @@ export function normalizePnrrProjectRecord(raw: RawPnrrProject): PnrrProjectReco
 
   const projectBase = {
     id: generatePnrrHash(
-      `${normalized.engagementId ?? ''}|${normalized.rowSignature}`
+      `${normalized.engagementId ?? ''}|${normalized.rowSignature}`,
     ),
     engagementId: normalized.engagementId,
     title: normalized.title,
@@ -527,6 +561,19 @@ export function normalizePnrrProjectRecord(raw: RawPnrrProject): PnrrProjectReco
     locality,
     fundingSource: normalized.fundingSource,
     valueEur: normalized.valueEur,
+    sourceValueRon: normalized.sourceValueRon,
+    totalValueRon: normalized.totalValueRon,
+    nationalContributionRon: normalized.nationalContributionRon,
+    vatValueRon: normalized.vatValueRon,
+    ineligibleValueRon: normalized.ineligibleValueRon,
+    contractNumber: normalized.contractNumber,
+    commitmentDate: normalized.commitmentDate,
+    startDate: normalized.startDate,
+    endDate: normalized.endDate,
+    sourceBeneficiaryType: normalized.sourceBeneficiaryType,
+    impact: normalized.impact,
+    criName: normalized.criName,
+    sourceUrl: PNRR_MIPE_SOURCE_URL,
     techProgress: techRaw,
     finProgress: finRaw,
     status: classifyStatus(techRaw),
@@ -598,9 +645,7 @@ export function processPnrrBeneficiaryPayments(
     .map((raw) => {
       const parsed = RawPnrrBeneficiaryPaymentSchema.safeParse(raw)
       return normalizePnrrBeneficiaryPayment(
-        parsed.success
-          ? parsed.data
-          : (raw as RawPnrrBeneficiaryPayment),
+        parsed.success ? parsed.data : (raw as RawPnrrBeneficiaryPayment),
       )
     })
     .filter((payment) => payment.beneficiary && payment.valueRon > 0)
@@ -648,6 +693,18 @@ type NormalizedRawProject = {
   readonly locality: string
   readonly fundingSource: PnrrProjectRecord['fundingSource']
   readonly valueEur: number
+  readonly sourceValueRon: number | null
+  readonly totalValueRon: number | null
+  readonly nationalContributionRon: number | null
+  readonly vatValueRon: number | null
+  readonly ineligibleValueRon: number | null
+  readonly contractNumber: string | null
+  readonly commitmentDate: string | null
+  readonly startDate: string | null
+  readonly endDate: string | null
+  readonly sourceBeneficiaryType: string | null
+  readonly impact: string | null
+  readonly criName: string | null
   readonly techProgressInput: string | undefined
   readonly finProgressInput: string | undefined
   readonly componentCode: string
@@ -676,7 +733,10 @@ function normalizeRawProject(raw: RawPnrrProject): NormalizedRawProject {
 
   return {
     engagementId: nullableStringValue(record.id_angajament),
-    title: stringValue(record.titlu_contract, stringValue(record['Titlu Proiect'])),
+    title: stringValue(
+      record.titlu_contract,
+      stringValue(record['Titlu Proiect']),
+    ),
     beneficiary: stringValue(
       record.denumire_beneficiar,
       stringValue(record['Nume Beneficiar']),
@@ -696,13 +756,28 @@ function normalizeRawProject(raw: RawPnrrProject): NormalizedRawProject {
         : record['Sursă Finanțare'],
     ),
     valueEur,
+    sourceValueRon: valueRon,
+    totalValueRon: toNumber(record.valoare_total),
+    nationalContributionRon: toNumber(record.valoare_fpn),
+    vatValueRon: toNumber(record.valoare_tva),
+    ineligibleValueRon: toNumber(record.valoare_neeligibil),
+    contractNumber: nullableStringValue(record.nr_contract),
+    commitmentDate: nullableStringValue(record.data_angajament),
+    startDate: nullableStringValue(record.data_inceput),
+    endDate: nullableStringValue(record.data_finalizare),
+    sourceBeneficiaryType: nullableStringValue(record.tip_beneficiar),
+    impact: nullableStringValue(record.impact),
+    criName: nullableStringValue(record.cri_denumire),
     techProgressInput,
     finProgressInput,
     componentCode: stringValue(
       record.cod_componenta,
       stringValue(record['Cod Componentă']),
     ),
-    measureCode: stringValue(record.cod_masura, stringValue(record['Cod Măsură'])),
+    measureCode: stringValue(
+      record.cod_masura,
+      stringValue(record['Cod Măsură']),
+    ),
     cri: stringValue(record.cri, stringValue(record['CRI'])),
     rowSignature: JSON.stringify([
       record.id_angajament,
@@ -715,7 +790,17 @@ function normalizeRawProject(raw: RawPnrrProject): NormalizedRawProject {
       record.titlu_contract,
       record.denumire_beneficiar,
       record.cui,
+      record.data_angajament,
+      record.data_inceput,
+      record.data_finalizare,
+      record.valoare_total,
       record.valoare_fe,
+      record.valoare_fpn,
+      record.valoare_tva,
+      record.valoare_neeligibil,
+      record.tip_beneficiar,
+      record.impact,
+      record.cri_denumire,
       record.judet_implementare,
       record.localitate_implementare,
       record.progres_fizic,
@@ -788,11 +873,19 @@ function officialProgressInput(
 
   const normalizedStatus = stringValue(status).toUpperCase()
   if (normalizedStatus.includes('FINALIZAT')) return 'FINALIZAT'
+  if (
+    normalizedStatus.includes('IMPLEMENTARE') &&
+    normalizedStatus.includes('30')
+  ) {
+    return 'ÎN IMPLEMENTARE (sub 30%)'
+  }
   if (normalizedStatus.includes('IMPLEMENTARE')) return 'ÎN IMPLEMENTARE'
   return undefined
 }
 
-function normalizeFundingSource(value: unknown): PnrrProjectRecord['fundingSource'] {
+function normalizeFundingSource(
+  value: unknown,
+): PnrrProjectRecord['fundingSource'] {
   const normalized = stringValue(value, 'grant')
     .toLowerCase()
     .normalize('NFD')
@@ -816,7 +909,7 @@ function normalizeFundingSource(value: unknown): PnrrProjectRecord['fundingSourc
 // ---------------------------------------------------------------------------
 
 export function deduplicateProjects(
-  projects: readonly PnrrProject[]
+  projects: readonly PnrrProject[],
 ): readonly PnrrProject[] {
   const seen = new Map<string, PnrrProject>()
 
@@ -831,10 +924,7 @@ export function deduplicateProjects(
 }
 
 export function getProjectIdentity(
-  project: Pick<
-    PnrrProjectRecord,
-    'engagementId' | 'title' | 'cui'
-  >,
+  project: Pick<PnrrProjectRecord, 'engagementId' | 'title' | 'cui'>,
 ): string {
   if (project.engagementId) return `engagement:${project.engagementId}`
   return `fallback:${normalizeTitle(project.title)}|${project.cui ?? ''}`
@@ -883,10 +973,17 @@ function buildGroupedProject(
   const primaryRecord = records.reduce((best, record) =>
     record.valueEur > best.valueEur ? record : best,
   )
-  const totalValueEur = records.reduce((sum, record) => sum + record.valueEur, 0)
+  const totalValueEur = records.reduce(
+    (sum, record) => sum + record.valueEur,
+    0,
+  )
   const statuses = new Set(records.map((record) => record.status))
-  const componentCodes = uniqueInOrder(records.map((record) => record.componentCode))
-  const measureCodes = uniqueInOrder(records.map((record) => record.measureCode))
+  const componentCodes = uniqueInOrder(
+    records.map((record) => record.componentCode),
+  )
+  const measureCodes = uniqueInOrder(
+    records.map((record) => record.measureCode),
+  )
   const measureFullCodes = uniqueInOrder(
     records.map((record) => record.measureFullCode),
   )
@@ -958,9 +1055,7 @@ function uniqueInOrder<T extends string>(values: readonly T[]): readonly T[] {
   return result
 }
 
-function progressIdentity(
-  progress: PnrrProjectRecord['techProgress'],
-): string {
+function progressIdentity(progress: PnrrProjectRecord['techProgress']): string {
   return progress === null ? 'null' : String(progress)
 }
 
@@ -969,7 +1064,7 @@ function progressIdentity(
 // ---------------------------------------------------------------------------
 
 export function computeAggregates(
-  projects: readonly PnrrProject[]
+  projects: readonly PnrrProject[],
 ): PnrrAggregates {
   const records = flattenPnrrProjectRecords(projects)
   const deduplicated = deduplicateProjects(records)
@@ -1019,7 +1114,10 @@ export function computeAggregates(
     'large-missing-financial-progress': { count: 0, value: 0 },
     'completed-missing-financial-progress': { count: 0, value: 0 },
   }
-  const dataQualitySignalProjectIds: Record<DataQualitySignalType, Set<string>> = {
+  const dataQualitySignalProjectIds: Record<
+    DataQualitySignalType,
+    Set<string>
+  > = {
     'duplicate-conflict': new Set(),
     'large-missing-financial-progress': new Set(),
     'completed-missing-financial-progress': new Set(),
@@ -1137,8 +1235,11 @@ export function computeAggregates(
     }
   }
 
-  for (const signal of Object.keys(dataQualitySignalCounts) as DataQualitySignalType[]) {
-    dataQualitySignalCounts[signal].count = dataQualitySignalProjectIds[signal].size
+  for (const signal of Object.keys(
+    dataQualitySignalCounts,
+  ) as DataQualitySignalType[]) {
+    dataQualitySignalCounts[signal].count =
+      dataQualitySignalProjectIds[signal].size
   }
 
   const componentStats = Object.fromEntries(
@@ -1194,9 +1295,8 @@ export function computeAggregates(
     inProgressCount,
     notStartedCount,
     missingFinProgressCount,
-    missingFinProgressPercent: projectCount > 0
-      ? (missingFinProgressCount / projectCount) * 100
-      : 0,
+    missingFinProgressPercent:
+      projectCount > 0 ? (missingFinProgressCount / projectCount) * 100 : 0,
     grantTotal,
     loanTotal,
     mixedTotal,
@@ -1210,14 +1310,17 @@ export function computeAggregates(
 }
 
 function isMissingFinancialProgress(project: PnrrProjectRecord): boolean {
-  return project.finProgress === null || project.finProgress === 'in-implementation'
+  return (
+    project.finProgress === null || project.finProgress === 'in-implementation'
+  )
 }
 
 function getGroupedProjectStatus(
   statuses: ReadonlySet<PnrrProjectStatus>,
 ): PnrrProjectStatus {
-  if (statuses.size === 1 && statuses.has('completed')) return 'completed'
-  if (statuses.size === 1 && statuses.has('not-started')) return 'not-started'
+  if (statuses.size === 1) {
+    return statuses.values().next().value ?? 'unknown'
+  }
   return 'mid-progress'
 }
 
@@ -1379,7 +1482,11 @@ function tokenizeSearch(query: string): string[] {
     if (char === '(' || char === ')') {
       flush()
       // Merge a preceding standalone '-' with '(' → '-('
-      if (char === '(' && tokens.length > 0 && tokens[tokens.length - 1] === '-') {
+      if (
+        char === '(' &&
+        tokens.length > 0 &&
+        tokens[tokens.length - 1] === '-'
+      ) {
         tokens[tokens.length - 1] = '-('
       } else {
         tokens.push(char)
@@ -1479,7 +1586,9 @@ function parseFlat(items: readonly FlatItem[]): SearchExpr {
   if (orGroups.length === 0) return { type: 'and', clauses: [] }
 
   const orClauses = orGroups.map((g) => parseAndGroup(g))
-  return orClauses.length === 1 ? orClauses[0] : { type: 'or', clauses: orClauses }
+  return orClauses.length === 1
+    ? orClauses[0]
+    : { type: 'or', clauses: orClauses }
 }
 
 /**
@@ -1524,7 +1633,8 @@ function toExpr(item: FlatItem): SearchExpr {
 }
 
 function makeTerm(token: string): SearchExpr {
-  const isExact = token.startsWith('"') && token.endsWith('"') && token.length >= 2
+  const isExact =
+    token.startsWith('"') && token.endsWith('"') && token.length >= 2
   const raw = isExact ? token.slice(1, -1) : token
   // Strip trailing * — prefix matching is the default, so * is redundant
   const value = raw.endsWith('*') ? raw.slice(0, -1) : raw
@@ -1610,8 +1720,7 @@ export function buildPnrrFiltersFromSearch(
     measures: search.measures,
     cris: search.cris,
     progressCategories: search.progressCategories?.map(
-      (category) =>
-        PROGRESS_CATEGORY_TO_STATUS[category] ?? 'unknown',
+      (category) => PROGRESS_CATEGORY_TO_STATUS[category] ?? 'unknown',
     ),
     onlyAnomalies: search.onlyAnomalies,
     excludeMicro: search.excludeMicro,
@@ -1628,6 +1737,17 @@ export function filterProjectsBySearch(
   search: Partial<PnrrSearchState>,
 ): readonly PnrrProject[] {
   return filterProjects(projects, buildPnrrFiltersFromSearch(search))
+}
+
+export function hasPnrrComponentMeasureConflict(
+  search: Pick<PnrrSearchState, 'components' | 'measures'>,
+): boolean {
+  if (!search.components?.length || !search.measures?.length) return false
+  const selectedComponents = new Set(search.components)
+  return search.measures.every((measure) => {
+    const [component] = measure.split('.')
+    return !selectedComponents.has(component)
+  })
 }
 
 // ---------------------------------------------------------------------------
@@ -1695,10 +1815,10 @@ export function hasPnrrDataFilters(filters: FilterCountInput): boolean {
       filters.anomalyTypes?.length ||
       filters.dataQualitySignalTypes?.length ||
       filters.entityTypes?.length ||
-      filters.beneficiaryTypes?.length ||
-      filters.onlyAnomalies ||
-      filters.excludeMicro ||
-      filters.includeNational === false
+    filters.beneficiaryTypes?.length ||
+    filters.onlyAnomalies ||
+    filters.excludeMicro ||
+    filters.includeNational === false,
   )
 }
 
@@ -1708,7 +1828,7 @@ function normalizeCui(value: string): string {
 
 function matchesBeneficiaryType(
   project: PnrrProjectRecord,
-  beneficiaryTypes: readonly PnrrBeneficiaryType[]
+  beneficiaryTypes: readonly PnrrBeneficiaryType[],
 ): boolean {
   return beneficiaryTypes.some(
     (type) => type === project.beneficiaryType || type === project.entityType,
@@ -1717,36 +1837,15 @@ function matchesBeneficiaryType(
 
 export function filterProjectRecords(
   records: readonly PnrrProjectRecord[],
-  filters: PnrrFilters
+  filters: PnrrFilters,
 ): readonly PnrrProjectRecord[] {
-  const searchExpr = filters.search ? buildSearchExpr(filters.search) : null
-  const beneficiarySearchExpr = filters.beneficiarySearch
-    ? buildSearchExpr(filters.beneficiarySearch)
+  const beneficiaryCui = filters.beneficiaryCui
+    ? normalizeCui(filters.beneficiaryCui)
     : null
-  const beneficiaryCui = filters.beneficiaryCui ? normalizeCui(filters.beneficiaryCui) : null
   const uatSiruta = filters.uatSiruta?.trim()
   const uatSirutas = filters.uatSirutas?.filter(Boolean)
 
   return records.filter((p) => {
-    if (searchExpr) {
-      const haystack = normalizeTitle(
-        `${p.title} ${p.beneficiary} ${p.cui ?? ''} ${p.county} ${p.locality} ${p.componentCode} ${p.measureCode} ${p.measureFullCode} ${p.fundingSource} ${p.cri}`
-      )
-      if (!evaluateSearchExpr(searchExpr, haystack)) return false
-    }
-
-    if (beneficiarySearchExpr) {
-      const nameHaystack = normalizeTitle(p.beneficiary)
-      const nameMatch = evaluateSearchExpr(beneficiarySearchExpr, nameHaystack)
-      const cuiMatch = p.cui
-        ? evaluateSearchExpr(
-            beneficiarySearchExpr,
-            p.cui
-          )
-        : false
-      if (!nameMatch && !cuiMatch) return false
-    }
-
     if (beneficiaryCui && (!p.cui || normalizeCui(p.cui) !== beneficiaryCui)) {
       return false
     }
@@ -1755,11 +1854,17 @@ export function filterProjectRecords(
       return false
     }
 
-    if (uatSirutas?.length && (!p.sirutaCode || !uatSirutas.includes(p.sirutaCode))) {
+    if (
+      uatSirutas?.length &&
+      (!p.sirutaCode || !uatSirutas.includes(p.sirutaCode))
+    ) {
       return false
     }
 
-    if (filters.components?.length && !filters.components.includes(p.componentCode)) {
+    if (
+      filters.components?.length &&
+      !filters.components.includes(p.componentCode)
+    ) {
       return false
     }
 
@@ -1767,7 +1872,10 @@ export function filterProjectRecords(
       return false
     }
 
-    if (filters.fundingSources?.length && !filters.fundingSources.includes(p.fundingSource)) {
+    if (
+      filters.fundingSources?.length &&
+      !filters.fundingSources.includes(p.fundingSource)
+    ) {
       return false
     }
 
@@ -1786,35 +1894,24 @@ export function filterProjectRecords(
       return false
     }
 
-    if (filters.progressCategories?.length && !filters.progressCategories.includes(p.status)) {
+    if (
+      filters.progressCategories?.length &&
+      !filters.progressCategories.includes(p.status)
+    ) {
       return false
     }
 
-    if (filters.excludeMicro && p.valueEur < 5000) {
+    if (
+      filters.entityTypes?.length &&
+      !filters.entityTypes.includes(p.entityType)
+    ) {
       return false
     }
 
-    if (filters.onlyAnomalies && p.anomalies.length === 0) {
-      return false
-    }
-
-    if (filters.anomalyTypes?.length) {
-      const hasMatch = p.anomalies.some((a) => filters.anomalyTypes!.includes(a))
-      if (!hasMatch) return false
-    }
-
-    if (filters.dataQualitySignalTypes?.length) {
-      const hasMatch = p.dataQualitySignals.some((signal) =>
-        filters.dataQualitySignalTypes!.includes(signal)
-      )
-      if (!hasMatch) return false
-    }
-
-    if (filters.entityTypes?.length && !filters.entityTypes.includes(p.entityType)) {
-      return false
-    }
-
-    if (filters.beneficiaryTypes?.length && !matchesBeneficiaryType(p, filters.beneficiaryTypes)) {
+    if (
+      filters.beneficiaryTypes?.length &&
+      !matchesBeneficiaryType(p, filters.beneficiaryTypes)
+    ) {
       return false
     }
 
@@ -1826,13 +1923,79 @@ export function filterProjectRecords(
   })
 }
 
+function projectMatchesTextFilters(
+  project: PnrrProject,
+  filters: PnrrFilters,
+): boolean {
+  const records = project.records ?? [project]
+
+  if (filters.search) {
+    const searchExpr = buildSearchExpr(filters.search)
+    const haystack = normalizeTitle(
+      records
+        .map(
+          (record) =>
+            `${record.engagementId ?? ''} ${record.contractNumber ?? ''} ${record.title} ${record.beneficiary} ${record.cui ?? ''} ${record.county} ${record.locality} ${record.componentCode} ${record.measureCode} ${record.measureFullCode} ${record.fundingSource} ${record.cri} ${record.criName ?? ''}`,
+        )
+        .join(' '),
+    )
+    if (!evaluateSearchExpr(searchExpr, haystack)) return false
+  }
+
+  if (filters.beneficiarySearch) {
+    const searchExpr = buildSearchExpr(filters.beneficiarySearch)
+    const matches = records.some((record) => {
+      const nameMatch = evaluateSearchExpr(
+        searchExpr,
+        normalizeTitle(record.beneficiary),
+      )
+      const cuiMatch = record.cui
+        ? evaluateSearchExpr(searchExpr, record.cui)
+        : false
+      return nameMatch || cuiMatch
+    })
+    if (!matches) return false
+  }
+
+  return true
+}
+
+function projectMatchesProjectFilters(
+  project: PnrrProject,
+  filters: PnrrFilters,
+): boolean {
+  if (!projectMatchesTextFilters(project, filters)) return false
+
+  const projectValue = project.totalValueEur ?? project.valueEur
+  if (filters.excludeMicro && projectValue < 5000) return false
+  if (filters.onlyAnomalies && project.anomalies.length === 0) return false
+
+  const hasRiskFilter = (filters.anomalyTypes?.length ?? 0) > 0
+  const hasDataQualityFilter = (filters.dataQualitySignalTypes?.length ?? 0) > 0
+  if (hasRiskFilter || hasDataQualityFilter) {
+    const matchesRisk =
+      hasRiskFilter &&
+      project.anomalies.some((type) => filters.anomalyTypes!.includes(type))
+    const matchesDataQuality =
+      hasDataQualityFilter &&
+      project.dataQualitySignals.some((type) =>
+        filters.dataQualitySignalTypes!.includes(type),
+      )
+    if (!matchesRisk && !matchesDataQuality) return false
+  }
+
+  return true
+}
+
 export function filterProjects(
   projects: readonly PnrrProject[],
-  filters: PnrrFilters
+  filters: PnrrFilters,
 ): readonly PnrrProject[] {
   const matchingRecords = filterProjectRecords(
     flattenPnrrProjectRecords(projects),
     filters,
   )
-  return groupPnrrProjects(matchingRecords)
+  return groupPnrrProjects(matchingRecords).filter((project) =>
+    projectMatchesProjectFilters(project, filters),
+  )
 }

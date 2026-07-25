@@ -14748,6 +14748,10 @@ msgstr "PNMC"
 msgid "PNRR"
 msgstr "PNRR"
 
+#: src/components/footer/AppFooter.tsx:142
+msgid "PNRR data source: Ministry of Investments and European Projects (MIPE). See the official dashboard:"
+msgstr "PNRR data source: Ministry of Investments and European Projects (MIPE). See the official dashboard:"
+
 #: src/components/data-trust/source-provenance-drawer.tsx:57
 msgid "Pointer sursa {index}"
 msgstr "Pointer sursa {index}"

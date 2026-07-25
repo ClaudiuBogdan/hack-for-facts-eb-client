@@ -10,9 +10,9 @@ import { PNRR_COMPONENTS } from '../data/component-definitions'
 import {
   computeAggregates,
   filterProjectsBySearch,
-  PNRR_LAST_UPDATED,
   processPnrrData,
 } from '../lib/data-transform'
+import { PNRR_FILESET_ID } from '../lib/snapshot'
 
 const PNRR_ROUTE_PATH = '/pnrr'
 const PNRR_SHARE_IMAGE_PATH = '/pnrr/share-image.png'
@@ -39,10 +39,12 @@ const PNRR_SEO_COPY: Readonly<
   >
 > = {
   ro: {
-    title: 'PNRR - Planul National de Redresare si Rezilienta | Transparenta.eu',
+    title:
+      'PNRR - Planul National de Redresare si Rezilienta | Transparenta.eu',
     description:
       'Dashboard interactiv cu proiectele PNRR: progres raportat, finantare, semnale de risc, anomalii de date, beneficiari si distributie geografica.',
-    imageAlt: 'Previzualizare Transparenta.eu pentru proiectele PNRR din Romania',
+    imageAlt:
+      'Previzualizare Transparenta.eu pentru proiectele PNRR din Romania',
     keywords: [
       'PNRR',
       'Planul National de Redresare si Rezilienta',
@@ -116,7 +118,7 @@ const PNRR_SEO_SNAPSHOT_SEARCH_KEYS = [
 ] as const satisfies readonly (keyof PnrrSearchState)[]
 
 export type PnrrSeoSnapshotSearch = Partial<
-  Pick<PnrrSearchState, typeof PNRR_SEO_SNAPSHOT_SEARCH_KEYS[number]>
+  Pick<PnrrSearchState, (typeof PNRR_SEO_SNAPSHOT_SEARCH_KEYS)[number]>
 >
 
 export type PnrrSeoListItem = {
@@ -127,7 +129,7 @@ export type PnrrSeoListItem = {
 }
 
 export type PnrrSeoSnapshot = {
-  readonly lastUpdated: string
+  readonly lastUpdated: string | null
   readonly projectCount: number
   readonly projectRecordCount: number
   readonly deduplicatedProjectCount: number
@@ -178,7 +180,9 @@ function sortObjectKeys<T extends Record<string, unknown>>(value: T): T {
   ) as T
 }
 
-function resolvePnrrSeoLocale(locale: SupportedLocale | undefined): SupportedLocale {
+function resolvePnrrSeoLocale(
+  locale: SupportedLocale | undefined,
+): SupportedLocale {
   return locale === 'en' ? 'en' : 'ro'
 }
 
@@ -209,7 +213,7 @@ export function buildPnrrSeoSnapshotSearchKey(
 
 export function buildFallbackPnrrSeoSnapshot(): PnrrSeoSnapshot {
   return {
-    lastUpdated: PNRR_LAST_UPDATED,
+    lastUpdated: null,
     projectCount: 0,
     projectRecordCount: 0,
     deduplicatedProjectCount: 0,
@@ -264,12 +268,14 @@ export function buildPnrrSeoSnapshotFromProjects(params: {
   ).reduce((sum, item) => sum + item.count, 0)
 
   return {
-    lastUpdated: PNRR_LAST_UPDATED,
+    lastUpdated: null,
     projectCount: aggregates.projectCount,
     projectRecordCount: aggregates.projectRecordCount,
     deduplicatedProjectCount: aggregates.deduplicatedProjectCount,
     totalValueEur: toFiniteNumber(aggregates.rawTotalValue),
-    deduplicatedTotalValueEur: toFiniteNumber(aggregates.deduplicatedTotalValue),
+    deduplicatedTotalValueEur: toFiniteNumber(
+      aggregates.deduplicatedTotalValue,
+    ),
     completedCount: aggregates.completedCount,
     completedValueEur: toFiniteNumber(aggregates.completedValue),
     inProgressCount: aggregates.inProgressCount,
@@ -304,9 +310,11 @@ export function buildPnrrSeoSnapshotFromProjects(params: {
       count: item.count,
       valueEur: toFiniteNumber(item.value),
     })),
-    officialAllocatedTotalEur: params.officialIndicators?.allocatedTotalEur ?? null,
+    officialAllocatedTotalEur:
+      params.officialIndicators?.allocatedTotalEur ?? null,
     officialPaidTotalEur: params.officialIndicators?.paidTotalEur ?? null,
-    paidBeneficiaryCount: params.officialIndicators?.paidBeneficiaryCount ?? null,
+    paidBeneficiaryCount:
+      params.officialIndicators?.paidBeneficiaryCount ?? null,
   }
 }
 
@@ -356,7 +364,11 @@ export function buildPnrrShareImageUrl(params: {
   appendSearchValue(query, 'onlyAnomalies', search.onlyAnomalies)
   appendSearchValue(query, 'excludeMicro', search.excludeMicro)
   appendSearchValue(query, 'anomalyTypes', search.anomalyTypes)
-  appendSearchValue(query, 'dataQualitySignalTypes', search.dataQualitySignalTypes)
+  appendSearchValue(
+    query,
+    'dataQualitySignalTypes',
+    search.dataQualitySignalTypes,
+  )
   appendSearchValue(query, 'entityTypes', search.entityTypes)
   appendSearchValue(query, 'beneficiaryTypes', search.beneficiaryTypes)
   appendSearchValue(query, 'includeNational', search.includeNational)
@@ -389,7 +401,8 @@ export function buildPnrrRouteHead(params: {
     name: copy.datasetName,
     description: copy.description,
     url: canonical,
-    dateModified: snapshot?.lastUpdated,
+    identifier: PNRR_FILESET_ID,
+    ...(snapshot?.lastUpdated ? { dateModified: snapshot.lastUpdated } : {}),
     spatialCoverage: { '@type': 'Place', name: 'Romania' },
     publisher: {
       '@type': 'Organization',

@@ -1,8 +1,13 @@
-import { useCallback, useEffect, memo } from 'react'
+import { useCallback, useEffect, memo, type ReactNode } from 'react'
 import { Trans } from '@lingui/react/macro'
+import { t } from '@lingui/core/macro'
 import { usePnrrCurrency } from '../../lib/usePnrrCurrency'
 import { formatPnrrCurrency, formatPnrrPercentage } from '../../lib/formatting'
-import type { PnrrProject, PnrrSearchState } from '@/schemas/pnrr'
+import type {
+  PnrrProject,
+  PnrrReportedProgress,
+  PnrrSearchState,
+} from '@/schemas/pnrr'
 import { PNRR_COMPONENTS } from '../../data/component-definitions'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
 import {
@@ -29,6 +34,7 @@ import type {
   PnrrWorkerProjectPage,
   PnrrWorkerProjectRow,
 } from '../../workers/pnrr-worker-types'
+import { hasPnrrComponentMeasureConflict } from '../../lib/data-transform'
 
 function SortIcon({
   active,
@@ -48,12 +54,108 @@ function SortIcon({
   )
 }
 
+function SortableTableHead({
+  column,
+  label,
+  currentSortBy,
+  currentSortOrder,
+  onSort,
+  align = 'left',
+  className = '',
+}: {
+  readonly column: PnrrSearchState['sortBy']
+  readonly label: ReactNode
+  readonly currentSortBy: PnrrSearchState['sortBy']
+  readonly currentSortOrder: 'asc' | 'desc'
+  readonly onSort: (column: PnrrSearchState['sortBy']) => void
+  readonly align?: 'left' | 'right'
+  readonly className?: string
+}) {
+  const isActive = currentSortBy === column
+  return (
+    <TableHead
+      className={`text-sm font-black uppercase text-[var(--pnrr-fg)] ${className}`}
+      aria-sort={
+        isActive
+          ? currentSortOrder === 'asc'
+            ? 'ascending'
+            : 'descending'
+          : 'none'
+      }
+    >
+      <button
+        type="button"
+        onClick={() => onSort(column)}
+        className={`flex w-full items-center py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] ${
+          align === 'right' ? 'justify-end text-right' : 'justify-start text-left'
+        }`}
+      >
+        {label}
+        <SortIcon active={isActive} order={currentSortOrder} />
+      </button>
+    </TableHead>
+  )
+}
+
 function getProgressValue(
   progress: PnrrProject['techProgress'] | PnrrProject['finProgress'],
 ): number | null {
-  if (typeof progress === 'number') return progress
-  if (progress === 'in-implementation') return 15
-  return null
+  return typeof progress === 'number' ? progress : null
+}
+
+function getProgressLabel(progress: PnrrReportedProgress): string {
+  if (progress === null) return t`N/A`
+  if (progress === 'under-30-reported') return t`Under 30% (reported category)`
+  if (progress === 'in-implementation') {
+    return t`In implementation (percentage not published)`
+  }
+  return formatPnrrPercentage(progress)
+}
+
+function CompactProgress({
+  progress,
+  color,
+  variantCount = 0,
+}: {
+  readonly progress: PnrrReportedProgress
+  readonly color: string
+  readonly variantCount?: number
+}) {
+  const numericValue = getProgressValue(progress)
+  const label = getProgressLabel(progress)
+
+  if (numericValue === null) {
+    return (
+      <span
+        className="inline-flex min-h-7 max-w-36 items-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] px-2 text-[10px] font-bold leading-tight text-[var(--pnrr-muted)]"
+        title={label}
+      >
+        {progress === null ? t`N/A` : label}
+        {variantCount > 0 && ` +${variantCount}`}
+      </span>
+    )
+  }
+
+  return (
+    <div className="flex w-32 items-center gap-2">
+      <div
+        className="h-2 flex-1 rounded-full"
+        style={{ backgroundColor: `${color}26` }}
+      >
+        <div
+          className="h-full rounded-full"
+          style={{
+            width: `${Math.min(numericValue, 100)}%`,
+            backgroundColor: color,
+          }}
+        />
+      </div>
+      <span className="w-14 shrink-0 text-right text-xs tabular-nums text-[var(--pnrr-fg)]">
+        {label}
+        {variantCount > 0 && ` +${variantCount}`}
+      </span>
+    </div>
+  )
 }
 
 function getProjectValue(project: Pick<PnrrProject, 'totalValueEur' | 'valueEur'>): number {
@@ -98,14 +200,21 @@ const ProjectRow = memo(function ProjectRow({
   onSelect,
 }: ProjectRowProps) {
   const comp = PNRR_COMPONENTS[project.componentCode]
-  const techVal = getProgressValue(project.techProgress) ?? 0
-  const finVal = getProgressValue(project.finProgress) ?? 0
   const projectValue = getProjectValue(project)
+  const progressColor = comp?.color ?? 'var(--pnrr-blue)'
 
   return (
     <TableRow
       className="cursor-pointer border-b border-[var(--pnrr-border)] transition-colors hover:bg-[var(--pnrr-bg)]"
       onClick={() => onSelect(project)}
+      tabIndex={0}
+      aria-label={t`Open project details: ${project.title}`}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onSelect(project)
+        }
+      }}
     >
       <TableCell className="max-w-[360px] py-3">
         <div className="flex items-center gap-2">
@@ -168,70 +277,24 @@ const ProjectRow = memo(function ProjectRow({
         {formatPnrrCurrency(projectValue, currency)}
       </TableCell>
       <TableCell className="py-3">
-        <div className="flex w-32 items-center gap-2">
-          <div
-            className="h-2 flex-1 rounded-full"
-            style={{
-              backgroundColor: comp ? `${comp.color}26` : 'var(--pnrr-track)',
-            }}
-          >
-            <div
-              className="h-full rounded-full"
-              style={{
-                width: `${Math.min(techVal, 100)}%`,
-                backgroundColor: comp?.color ?? 'var(--pnrr-blue)',
-              }}
-            />
-          </div>
-          <span className="w-14 shrink-0 text-right text-xs tabular-nums text-[var(--pnrr-fg)]">
-            {project.techProgress === 'in-implementation'
-              ? '<30%'
-              : formatPnrrPercentage(techVal)}
-            {getVariantCount(project, 'techProgress') > 0 &&
-              ` +${getVariantCount(project, 'techProgress')}`}
-          </span>
-        </div>
+        <CompactProgress
+          progress={project.techProgress}
+          color={progressColor}
+          variantCount={getVariantCount(project, 'techProgress')}
+        />
       </TableCell>
       <TableCell className="py-3">
-        <div className="flex w-32 items-center gap-2">
-          {project.finProgress == null ? (
-            <span className="inline-flex h-7 items-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] px-2 text-[10px] font-bold text-[var(--pnrr-muted)]">
-              <Trans>N/A</Trans>
-            </span>
-          ) : (
-            <>
-              <div
-                className="h-2 flex-1 rounded-full"
-                style={{
-                  backgroundColor: comp
-                    ? `${comp.color}26`
-                    : 'var(--pnrr-track)',
-                }}
-              >
-                <div
-                  className="h-full rounded-full"
-                  style={{
-                    width: `${Math.min(finVal, 100)}%`,
-                    backgroundColor: comp?.color ?? 'var(--pnrr-blue)',
-                  }}
-                />
-              </div>
-              <span className="w-14 shrink-0 text-right text-xs tabular-nums text-[var(--pnrr-fg)]">
-                {project.finProgress === 'in-implementation'
-                  ? '<30%'
-                  : formatPnrrPercentage(finVal)}
-                {getVariantCount(project, 'finProgress') > 0 &&
-                  ` +${getVariantCount(project, 'finProgress')}`}
-              </span>
-            </>
-          )}
-        </div>
+        <CompactProgress
+          progress={project.finProgress}
+          color={progressColor}
+          variantCount={getVariantCount(project, 'finProgress')}
+        />
       </TableCell>
       <TableCell className="w-12 py-3 text-right">
         <button
           type="button"
           className="inline-flex h-8 w-8 items-center justify-center rounded-sm border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] text-[var(--pnrr-fg)] hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)]"
-          aria-label="Detalii proiect"
+          aria-label={t`Open project details: ${project.title}`}
           onClick={(e) => {
             e.stopPropagation()
             onSelect(project)
@@ -258,7 +321,11 @@ export function PnrrProjectTable({
     filterState.search.panel === 'project'
       ? filterState.search.panelProjectId
       : null
-  const { data: selectedProjectResult } = usePnrrProjectDetail(selectedProjectId)
+  const {
+    data: selectedProjectResult,
+    isLoading: isProjectDetailLoading,
+    isError: isProjectDetailError,
+  } = usePnrrProjectDetail(selectedProjectId)
   const selectedProject = selectedProjectResult?.project ?? null
 
   const { setSorting, setPagination } = filterState
@@ -295,6 +362,9 @@ export function PnrrProjectTable({
   )
 
   const goToPage = useCallback((p: number) => setPagination(p, page.pageSize), [page.pageSize, setPagination])
+  const hasDimensionConflict = hasPnrrComponentMeasureConflict(
+    filterState.search,
+  )
 
   if (page.totalCount === 0) {
     return (
@@ -307,15 +377,27 @@ export function PnrrProjectTable({
             <AlertTriangle className="h-8 w-8 text-[var(--pnrr-muted)]" />
           </div>
           <p className="mt-4 text-lg font-black text-[var(--pnrr-fg)]">
-            <Trans>No projects found</Trans>
+            {hasDimensionConflict ? (
+              <Trans>Selected component and measure cannot match</Trans>
+            ) : (
+              <Trans>No projects found</Trans>
+            )}
           </p>
           <p className="mt-1 text-sm text-[var(--pnrr-muted)]">
-            <Trans>
-              Try changing the filters or searching for something else.
-            </Trans>
+            {hasDimensionConflict ? (
+              <Trans>
+                The selected measure belongs to another component. Remove one
+                of these filters or choose a measure from the selected
+                component.
+              </Trans>
+            ) : (
+              <Trans>
+                Try changing the filters or searching for something else.
+              </Trans>
+            )}
           </p>
           <button
-            onClick={filterState.clearFilters}
+            onClick={() => filterState.clearFilters()}
             className="mt-4 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] px-4 py-2 text-sm font-bold uppercase tracking-wide text-[var(--pnrr-fg)] transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
           >
             <Trans>Clear all filters</Trans>
@@ -327,95 +409,93 @@ export function PnrrProjectTable({
 
   return (
     <div className="space-y-4">
+      {selectedProjectId && isProjectDetailLoading && (
+        <div
+          className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-4 py-3 text-sm font-bold text-[var(--pnrr-muted)]"
+          role="status"
+        >
+          <Trans>Loading the complete MIPE project record…</Trans>
+        </div>
+      )}
+      {selectedProjectId &&
+        !isProjectDetailLoading &&
+        (isProjectDetailError || !selectedProject) && (
+          <div
+            className="flex flex-wrap items-center justify-between gap-3 border-2 border-[var(--pnrr-orange)] bg-[var(--pnrr-card)] px-4 py-3 text-sm text-[var(--pnrr-fg)]"
+            role="alert"
+          >
+            <span>
+              <Trans>
+                This project link is stale or the project is unavailable in the
+                loaded MIPE snapshot.
+              </Trans>
+            </span>
+            <button
+              type="button"
+              onClick={filterState.closePanel}
+              className="border-2 border-[var(--pnrr-border)] px-3 py-1 font-black uppercase"
+            >
+              <Trans>Close details</Trans>
+            </button>
+          </div>
+        )}
+
       {/* Desktop table */}
       <div className="hidden overflow-hidden border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] md:block">
         <Table>
           <TableHeader>
             <TableRow className="border-b-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] hover:bg-[var(--pnrr-card)]">
-              <TableHead
-                className="w-[360px] cursor-pointer text-sm font-black uppercase text-[var(--pnrr-fg)]"
-                onClick={() => toggleSort('title')}
-              >
-                <span className="flex items-center">
-                  <Trans>Project Title</Trans>
-                  <SortIcon
-                    active={currentSortBy === 'title'}
-                    order={currentSortOrder}
-                  />
-                </span>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer text-sm font-black uppercase text-[var(--pnrr-fg)]"
-                onClick={() => toggleSort('beneficiary')}
-              >
-                <span className="flex items-center">
-                  <Trans>Beneficiary</Trans>
-                  <SortIcon
-                    active={currentSortBy === 'beneficiary'}
-                    order={currentSortOrder}
-                  />
-                </span>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer text-sm font-black uppercase text-[var(--pnrr-fg)]"
-                onClick={() => toggleSort('component')}
-              >
-                <span className="flex items-center">
-                  <Trans>Comp.</Trans>
-                  <SortIcon
-                    active={currentSortBy === 'component'}
-                    order={currentSortOrder}
-                  />
-                </span>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer text-sm font-black uppercase text-[var(--pnrr-fg)]"
-                onClick={() => toggleSort('county')}
-              >
-                <span className="flex items-center">
-                  <Trans>County</Trans>
-                  <SortIcon
-                    active={currentSortBy === 'county'}
-                    order={currentSortOrder}
-                  />
-                </span>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer text-right text-sm font-black uppercase text-[var(--pnrr-fg)]"
-                onClick={() => toggleSort('value')}
-              >
-                <span className="flex items-center justify-end">
-                  <Trans>Value</Trans>
-                  <SortIcon
-                    active={currentSortBy === 'value'}
-                    order={currentSortOrder}
-                  />
-                </span>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer text-sm font-black uppercase text-[var(--pnrr-fg)]"
-                onClick={() => toggleSort('techProgress')}
-              >
-                <span className="flex items-center">
-                  <Trans>Technical reported</Trans>
-                  <SortIcon
-                    active={currentSortBy === 'techProgress'}
-                    order={currentSortOrder}
-                  />
-                </span>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer text-sm font-black uppercase text-[var(--pnrr-fg)]"
-                onClick={() => toggleSort('finProgress')}
-              >
-                <span className="flex items-center">
-                  <Trans>Financial reported</Trans>
-                  <SortIcon
-                    active={currentSortBy === 'finProgress'}
-                    order={currentSortOrder}
-                  />
-                </span>
-              </TableHead>
+              <SortableTableHead
+                column="title"
+                label={<Trans>Project Title</Trans>}
+                currentSortBy={currentSortBy}
+                currentSortOrder={currentSortOrder}
+                onSort={toggleSort}
+                className="w-[360px]"
+              />
+              <SortableTableHead
+                column="beneficiary"
+                label={<Trans>Beneficiary</Trans>}
+                currentSortBy={currentSortBy}
+                currentSortOrder={currentSortOrder}
+                onSort={toggleSort}
+              />
+              <SortableTableHead
+                column="component"
+                label={<Trans>Comp.</Trans>}
+                currentSortBy={currentSortBy}
+                currentSortOrder={currentSortOrder}
+                onSort={toggleSort}
+              />
+              <SortableTableHead
+                column="county"
+                label={<Trans>County</Trans>}
+                currentSortBy={currentSortBy}
+                currentSortOrder={currentSortOrder}
+                onSort={toggleSort}
+              />
+              <SortableTableHead
+                column="value"
+                label={<Trans>EU funding</Trans>}
+                currentSortBy={currentSortBy}
+                currentSortOrder={currentSortOrder}
+                onSort={toggleSort}
+                align="right"
+              />
+              <SortableTableHead
+                column="techProgress"
+                label={<Trans>Technical reported</Trans>}
+                currentSortBy={currentSortBy}
+                currentSortOrder={currentSortOrder}
+                onSort={toggleSort}
+              />
+              <SortableTableHead
+                column="finProgress"
+                label={<Trans>Financial reported</Trans>}
+                currentSortBy={currentSortBy}
+                currentSortOrder={currentSortOrder}
+                onSort={toggleSort}
+              />
               <TableHead className="w-12" />
             </TableRow>
           </TableHeader>
@@ -457,8 +537,14 @@ export function PnrrProjectTable({
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3 sm:justify-end">
           {/* Mobile compact pagination */}
-          <div className="flex items-center gap-1 sm:hidden">
+          <div
+            className="flex items-center gap-1 sm:hidden"
+            role="navigation"
+            aria-label={t`Project pages`}
+          >
             <button
+              type="button"
+              aria-label={t`Previous project page`}
               disabled={page.page <= 1}
               onClick={() => filterState.setPagination(page.page - 1, page.pageSize)}
               className="inline-flex h-8 w-8 items-center justify-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] text-[var(--pnrr-fg)] disabled:opacity-40 transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
@@ -469,6 +555,8 @@ export function PnrrProjectTable({
               {page.page} / {page.totalPages}
             </span>
             <button
+              type="button"
+              aria-label={t`Next project page`}
               disabled={page.page >= page.totalPages}
               onClick={() => filterState.setPagination(page.page + 1, page.pageSize)}
               className="inline-flex h-8 w-8 items-center justify-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] text-[var(--pnrr-fg)] disabled:opacity-40 transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
@@ -477,8 +565,14 @@ export function PnrrProjectTable({
             </button>
           </div>
           {/* Desktop pagination */}
-          <div className="hidden items-center gap-1 sm:flex">
+          <div
+            className="hidden items-center gap-1 sm:flex"
+            role="navigation"
+            aria-label={t`Project pages`}
+          >
             <button
+              type="button"
+              aria-label={t`Previous project page`}
               disabled={page.page <= 1}
               onClick={() => filterState.setPagination(page.page - 1, page.pageSize)}
               className="inline-flex h-8 items-center gap-1 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-xs font-bold text-[var(--pnrr-fg)] disabled:opacity-40 transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
@@ -502,6 +596,9 @@ export function PnrrProjectTable({
                 return (
                   <button
                     key={item}
+                    type="button"
+                    aria-label={t`Go to project page ${item}`}
+                    aria-current={isActive ? 'page' : undefined}
                     className={`h-8 w-8 shrink-0 border-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] ${
                       isActive
                         ? 'border-[var(--pnrr-fg)] bg-[var(--pnrr-fg)] text-[var(--pnrr-bg)]'
@@ -515,6 +612,8 @@ export function PnrrProjectTable({
               })}
             </div>
             <button
+              type="button"
+              aria-label={t`Next project page`}
               disabled={page.page >= page.totalPages}
               onClick={() => filterState.setPagination(page.page + 1, page.pageSize)}
               className="inline-flex h-8 items-center gap-1 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-xs font-bold text-[var(--pnrr-fg)] disabled:opacity-40 transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
@@ -544,9 +643,8 @@ function PnrrProjectCard({
   readonly currency: 'RON' | 'EUR' | 'USD'
 }) {
   const comp = PNRR_COMPONENTS[project.componentCode]
-  const techVal = getProgressValue(project.techProgress) ?? 0
-  const finVal = getProgressValue(project.finProgress) ?? 0
   const projectValue = getProjectValue(project)
+  const progressColor = comp?.color ?? 'var(--pnrr-fg)'
 
   return (
     <div
@@ -555,8 +653,12 @@ function PnrrProjectCard({
       onClick={onClick}
       role="button"
       tabIndex={0}
+      aria-label={t`Open project details: ${project.title}`}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') onClick()
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onClick()
+        }
       }}
     >
       {/* Title + anomaly */}
@@ -606,55 +708,23 @@ function PnrrProjectCard({
 
       {/* Progress */}
       <div className="mt-3 space-y-2">
-          <div className="flex items-center gap-3">
-            <span className="w-14 shrink-0 text-xs font-bold text-[var(--pnrr-fg)]">
-              <Trans>Technical reported</Trans>
-            </span>
-          <div className="min-w-0 flex-1">
-            <div className="h-2 border border-[var(--pnrr-border)] bg-transparent">
-              <div
-                className="h-full"
-                style={{
-                  width: `${Math.min(techVal, 100)}%`,
-                  backgroundColor: comp?.color ?? 'var(--pnrr-fg)',
-                }}
-              />
-            </div>
-          </div>
-          <span className="w-16 shrink-0 text-right text-sm font-black tabular-nums text-[var(--pnrr-fg)]">
-            {project.techProgress === 'in-implementation'
-              ? '<30%'
-              : formatPnrrPercentage(techVal)}
+        <div className="flex items-center gap-3">
+          <span className="w-20 shrink-0 text-xs font-bold text-[var(--pnrr-fg)]">
+            <Trans>Technical reported</Trans>
           </span>
+          <CompactProgress
+            progress={project.techProgress}
+            color={progressColor}
+          />
         </div>
         <div className="flex items-center gap-3">
-          <span className="w-14 shrink-0 text-xs font-bold text-[var(--pnrr-fg)]">
+          <span className="w-20 shrink-0 text-xs font-bold text-[var(--pnrr-fg)]">
             <Trans>Financial reported</Trans>
           </span>
-          {project.finProgress == null ? (
-            <span className="inline-flex h-7 items-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] px-2 text-[10px] font-bold text-[var(--pnrr-muted)]">
-              <Trans>N/A</Trans>
-            </span>
-          ) : (
-            <>
-              <div className="min-w-0 flex-1">
-                <div className="h-2 border border-[var(--pnrr-border)] bg-transparent">
-                  <div
-                    className="h-full"
-                    style={{
-                      width: `${Math.min(finVal, 100)}%`,
-                      backgroundColor: comp?.color ?? 'var(--pnrr-fg)',
-                    }}
-                  />
-                </div>
-              </div>
-              <span className="w-16 shrink-0 text-right text-sm font-black tabular-nums text-[var(--pnrr-fg)]">
-                {project.finProgress === 'in-implementation'
-                  ? '<30%'
-                  : formatPnrrPercentage(finVal)}
-              </span>
-            </>
-          )}
+          <CompactProgress
+            progress={project.finProgress}
+            color={progressColor}
+          />
         </div>
       </div>
     </div>

@@ -3,7 +3,12 @@ import { t } from '@lingui/core/macro'
 import type { ElementType, ReactNode } from 'react'
 import { usePnrrCurrency } from '../../lib/usePnrrCurrency'
 import { formatPnrrCurrency, formatPnrrPercentage } from '../../lib/formatting'
-import type { PnrrEntityType, PnrrProject, PnrrProjectRecord } from '@/schemas/pnrr'
+import type {
+  PnrrEntityType,
+  PnrrProject,
+  PnrrProjectRecord,
+  PnrrReportedProgress,
+} from '@/schemas/pnrr'
 import { PNRR_COMPONENTS } from '../../data/component-definitions'
 import { PNRR_MEASURES } from '../../data/measure-definitions'
 import {
@@ -16,8 +21,10 @@ import {
 import {
   AlertTriangle,
   Building2,
+  CalendarDays,
   Copy,
   Database,
+  ExternalLink,
   FileWarning,
   Gauge,
   MapPin,
@@ -31,6 +38,8 @@ import {
 } from '../../lib/anomaly-definitions'
 import { cn } from '@/lib/utils'
 import { PnrrEntityShortcutLinks } from '../PnrrEntityShortcutLinks'
+import { formatCurrency } from '@/lib/utils'
+import { PNRR_FILESET_ID, PNRR_MIPE_SOURCE_URL } from '../../lib/snapshot'
 
 export function PnrrProjectDrawer({
   project,
@@ -45,13 +54,9 @@ export function PnrrProjectDrawer({
   const comp = PNRR_COMPONENTS[project.componentCode]
   const measure = PNRR_MEASURES[project.measureFullCode]
   const techVal =
-    project.techProgress === 'in-implementation'
-      ? 15
-      : (project.techProgress ?? 0)
+    typeof project.techProgress === 'number' ? project.techProgress : null
   const finVal =
-    project.finProgress === 'in-implementation'
-      ? 15
-      : (project.finProgress ?? 0)
+    typeof project.finProgress === 'number' ? project.finProgress : null
   const componentColor = comp?.color ?? 'var(--pnrr-blue)'
   const hasSignals =
     project.anomalies.length > 0 || project.dataQualitySignals.length > 0
@@ -105,7 +110,7 @@ export function PnrrProjectDrawer({
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <MetricBox
               icon={Wallet}
-              label={t`Value`}
+              label={t`Listed EU funding`}
               value={formatPnrrCurrency(projectValue, currency, 'standard')}
               color={componentColor}
             />
@@ -122,25 +127,17 @@ export function PnrrProjectDrawer({
             <ProgressMeter
               label={t`Reported technical progress`}
               value={techVal}
-              displayValue={
-                project.techProgress === 'in-implementation'
-                  ? t`In implementation (<30%)`
-                  : formatPnrrPercentage(techVal)
-              }
+              displayValue={formatProgressForRecord(project.techProgress)}
+              isCategorical={typeof project.techProgress === 'string'}
               color={componentColor}
             />
 
             <div className="my-4 h-px bg-[var(--pnrr-border)]" />
             <ProgressMeter
               label={t`Reported financial progress`}
-              value={project.finProgress == null ? null : finVal}
-              displayValue={
-                project.finProgress == null
-                  ? t`No data`
-                  : project.finProgress === 'in-implementation'
-                    ? t`In implementation (<30%)`
-                    : formatPnrrPercentage(finVal)
-              }
+              value={finVal}
+              displayValue={formatProgressForRecord(project.finProgress)}
+              isCategorical={typeof project.finProgress === 'string'}
               color={componentColor}
             />
           </div>
@@ -167,17 +164,40 @@ export function PnrrProjectDrawer({
             <DetailRow label="id_angajament">
               <span>{project.engagementId ?? '—'}</span>
             </DetailRow>
+            <DetailRow label={t`Contract number`}>
+              <span>{project.contractNumber ?? '—'}</span>
+            </DetailRow>
             <DetailRow label={t`Records`}>
               <span>{records.length.toLocaleString('ro-RO')}</span>
             </DetailRow>
+            <DetailRow icon={CalendarDays} label={t`Commitment date`}>
+              <span>{formatSourceDate(project.commitmentDate)}</span>
+            </DetailRow>
+            <DetailRow label={t`Implementation period`}>
+              <span>
+                {formatSourceDate(project.startDate)} –{' '}
+                {formatSourceDate(project.endDate)}
+              </span>
+            </DetailRow>
             <DetailRow icon={MapPin} label={t`Location`}>
-              <span>{formatProjectLocation(project.locality, project.county)}</span>
+              <span>
+                {formatProjectLocation(project.locality, project.county)}
+              </span>
             </DetailRow>
             <DetailRow label={t`Beneficiary type`}>
-              <span>{getEntityTypeLabel(project.entityType)}</span>
+              <span>
+                {project.sourceBeneficiaryType ??
+                  getEntityTypeLabel(project.entityType)}
+              </span>
+            </DetailRow>
+            <DetailRow label={t`Impact`}>
+              <span>{project.impact ?? '—'}</span>
             </DetailRow>
             <DetailRow label={t`CRI`}>
-              <span>{project.cri}</span>
+              <span>
+                {project.cri}
+                {project.criName ? ` · ${project.criName}` : ''}
+              </span>
             </DetailRow>
           </div>
 
@@ -227,6 +247,28 @@ export function PnrrProjectDrawer({
 
           <div className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4">
             <h3 className="mb-2 text-sm font-black uppercase tracking-wide text-[var(--pnrr-fg)]">
+              <Trans>Provenance</Trans>
+            </h3>
+            <p className="text-sm leading-relaxed text-[var(--pnrr-muted)]">
+              <Trans>
+                MIPE PNRR project file set {PNRR_FILESET_ID}. This identifier
+                does not claim a source observation date. The official record
+                cards preserve the source unit and the published variants.
+              </Trans>
+            </p>
+            <a
+              href={project.sourceUrl ?? PNRR_MIPE_SOURCE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-2 text-sm font-black text-[var(--pnrr-fg)] underline underline-offset-4"
+            >
+              <Trans>Open the official MIPE dashboard</Trans>
+              <ExternalLink className="h-4 w-4" />
+            </a>
+          </div>
+
+          <div className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4">
+            <h3 className="mb-2 text-sm font-black uppercase tracking-wide text-[var(--pnrr-fg)]">
               <Trans>Component</Trans>
             </h3>
             <p className="text-sm leading-relaxed text-[var(--pnrr-fg)]">
@@ -244,7 +286,10 @@ export function PnrrProjectDrawer({
 function formatProjectLocation(locality: string, county: string): string {
   if (!locality) return county || '—'
   if (!county) return locality
-  if (normalizeLocationForDisplay(locality) === normalizeLocationForDisplay(county)) {
+  if (
+    normalizeLocationForDisplay(locality) ===
+    normalizeLocationForDisplay(county)
+  ) {
     return locality
   }
 
@@ -280,10 +325,52 @@ function ProjectRecordDetail({
         </span>
       </div>
       <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-[var(--pnrr-muted)]">
-        <RecordField label={t`Funding`} value={getFundingLabel(record.fundingSource)} />
+        <RecordField label={t`Contract`} value={record.contractNumber ?? '—'} />
+        <RecordField
+          label={t`Funding`}
+          value={getFundingLabel(record.fundingSource)}
+        />
         <RecordField label={t`CRI`} value={record.cri || '—'} />
+        <RecordField label={t`CRI name`} value={record.criName ?? '—'} />
         <RecordField label={t`County`} value={record.county || '—'} />
         <RecordField label={t`Locality`} value={record.locality || '—'} />
+        <RecordField
+          label={t`Commitment date`}
+          value={formatSourceDate(record.commitmentDate)}
+        />
+        <RecordField
+          label={t`Start date`}
+          value={formatSourceDate(record.startDate)}
+        />
+        <RecordField
+          label={t`End date`}
+          value={formatSourceDate(record.endDate)}
+        />
+        <RecordField
+          label={t`Source beneficiary type`}
+          value={record.sourceBeneficiaryType ?? '—'}
+        />
+        <RecordField label={t`Impact`} value={record.impact ?? '—'} />
+        <RecordField
+          label={t`Total value (RON)`}
+          value={formatRonValue(record.totalValueRon)}
+        />
+        <RecordField
+          label={t`EU funds (RON)`}
+          value={formatRonValue(record.sourceValueRon)}
+        />
+        <RecordField
+          label={t`National contribution (RON)`}
+          value={formatRonValue(record.nationalContributionRon)}
+        />
+        <RecordField
+          label={t`VAT (RON)`}
+          value={formatRonValue(record.vatValueRon)}
+        />
+        <RecordField
+          label={t`Ineligible value (RON)`}
+          value={formatRonValue(record.ineligibleValueRon)}
+        />
         <RecordField
           label={t`Technical`}
           value={formatProgressForRecord(record.techProgress)}
@@ -295,6 +382,23 @@ function ProjectRecordDetail({
       </dl>
     </div>
   )
+}
+
+function formatSourceDate(value: string | null | undefined): string {
+  if (!value) return '—'
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return value
+  return parsed.toLocaleDateString('ro-RO', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    timeZone: 'Europe/Bucharest',
+  })
+}
+
+function formatRonValue(value: number | null | undefined): string {
+  if (value === null || value === undefined) return '—'
+  return formatCurrency(value, 'standard', 'RON')
 }
 
 function RecordField({
@@ -314,11 +418,14 @@ function RecordField({
   )
 }
 
-function formatProgressForRecord(
-  progress: PnrrProjectRecord['techProgress'],
-): string {
+function formatProgressForRecord(progress: PnrrReportedProgress): string {
   if (progress === null) return t`No data`
-  if (progress === 'in-implementation') return t`In implementation (<30%)`
+  if (progress === 'under-30-reported') {
+    return t`Under 30% (reported category)`
+  }
+  if (progress === 'in-implementation') {
+    return t`In implementation (percentage not published)`
+  }
   return formatPnrrPercentage(progress)
 }
 
@@ -364,11 +471,13 @@ function ProgressMeter({
   label,
   value,
   displayValue,
+  isCategorical = false,
   color,
 }: {
   readonly label: string
   readonly value: number | null
   readonly displayValue: string
+  readonly isCategorical?: boolean
   readonly color: string
 }) {
   return (
@@ -381,7 +490,12 @@ function ProgressMeter({
           {displayValue}
         </span>
       </div>
-      {value == null ? (
+      {isCategorical ? (
+        <div className="flex min-h-9 items-center border-2 border-dashed border-[var(--pnrr-border)] px-3 text-xs font-black uppercase tracking-wide text-[var(--pnrr-muted)]">
+          <Database className="mr-2 h-4 w-4 shrink-0" />
+          <Trans>Reported category; exact percentage not published</Trans>
+        </div>
+      ) : value == null ? (
         <div className="flex h-9 items-center border-2 border-dashed border-[var(--pnrr-border)] px-3 text-xs font-black uppercase tracking-wide text-[var(--pnrr-muted)]">
           <Database className="mr-2 h-4 w-4" />
           <Trans>Missing from dataset</Trans>

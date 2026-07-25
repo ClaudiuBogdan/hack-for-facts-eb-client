@@ -14187,6 +14187,10 @@ msgstr ""
 msgid "PNRR"
 msgstr ""
 
+#: src/components/footer/AppFooter.tsx:142
+msgid "PNRR data source: Ministry of Investments and European Projects (MIPE). See the official dashboard:"
+msgstr "Sursa datelor PNRR: Ministerul Investițiilor și Proiectelor Europene (MIPE). Consultați tabloul de bord oficial:"
+
 #: src/components/data-trust/source-provenance-drawer.tsx:57
 msgid "Pointer sursa {index}"
 msgstr ""

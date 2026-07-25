@@ -4,6 +4,8 @@ import {
   flattenPnrrProjectRecords,
   getProjectIdentity,
   groupPnrrProjects,
+  PNRR_FILESET_ID,
+  PNRR_MIPE_SOURCE_URL,
   processPnrrBeneficiaryPayments,
   processPnrrData,
   processPnrrOfficialIndicators,
@@ -13,7 +15,10 @@ import {
   EMBLEMATIC_PROJECTS,
   projectMatchesEmblematicConfig,
 } from '../data/emblematic-projects'
-import { COUNTY_NAME_TO_MNEMONIC, MNEMONIC_TO_COUNTY_NAME } from '../lib/county-mnemonics'
+import {
+  COUNTY_NAME_TO_MNEMONIC,
+  MNEMONIC_TO_COUNTY_NAME,
+} from '../lib/county-mnemonics'
 import { getPnrrUatLabelsBySiruta } from '../lib/pnrr-uat-labels'
 import countyPopulations from '../data/ins-county-population.json'
 import { UAT_POPULATIONS } from '../lib/uat-populations'
@@ -83,17 +88,18 @@ const PROGRESS_BUCKETS = [
 ] as const
 
 type BeneficiarySummaryInternal = {
-  readonly name: string
+  name: string
   readonly cui: string | null
+  readonly aliases: Set<string>
+  readonly aliasValues: Map<string, number>
   count: number
-  readonly projectIds: Set<string>
   value: number
   techProgressSum: number
   techProgressCount: number
   finProgressSum: number
   finProgressCount: number
   readonly componentValues: Map<string, number>
-  readonly projects: PnrrProject[]
+  readonly projects: Map<string, PnrrProject>
 }
 
 let modelPromise: Promise<PnrrWorkerModel> | null = null
@@ -109,35 +115,58 @@ async function fetchJson(path: string): Promise<unknown> {
 
 async function loadModel(): Promise<PnrrWorkerModel> {
   if (!modelPromise) {
-    modelPromise = Promise.all([
-      fetchJson('/api/pnrr/raw/projects'),
-      fetchJson('/api/pnrr/raw/payments'),
-      fetchJson('/api/pnrr/raw/indicators'),
-    ])
-      .then(([rawProjects, rawPayments, rawIndicators]) => {
-        const projectRows = Array.isArray(rawProjects) ? rawProjects : []
-        const processed = processPnrrData(projectRows)
-        const beneficiaryPayments = processPnrrBeneficiaryPayments(
-          Array.isArray(rawPayments) ? rawPayments : [],
-        )
-        const indicators = processPnrrOfficialIndicators(rawIndicators)
+    modelPromise = (async (): Promise<PnrrWorkerModel> => {
+      const rawProjects = await fetchJson('/api/pnrr/raw/projects')
+      const [paymentsResult, indicatorsResult] = await Promise.allSettled([
+        fetchJson('/api/pnrr/raw/payments'),
+        fetchJson('/api/pnrr/raw/indicators'),
+      ])
+      const projectRows = Array.isArray(rawProjects) ? rawProjects : []
+      const processed = processPnrrData(projectRows)
+      const reasonCodes: string[] = []
 
-        return {
-          projects: processed.projects,
-          records: processed.projectRecords,
-          beneficiaryPayments,
-          indicators,
-          projectCount: processed.meta.projectCount,
-          projectRecordCount: processed.meta.projectRecordCount,
-        }
-      })
-      .catch((error) => {
-        modelPromise = null
-        throw error
-      })
+      if (paymentsResult.status === 'rejected') {
+        reasonCodes.push('beneficiary_payments_unavailable')
+        console.warn(
+          'PNRR beneficiary payments unavailable; serving the MIPE project index in degraded mode.',
+          paymentsResult.reason,
+        )
+      }
+      if (indicatorsResult.status === 'rejected') {
+        reasonCodes.push('official_indicators_unavailable')
+        console.warn(
+          'PNRR official indicators unavailable; serving the MIPE project index in degraded mode.',
+          indicatorsResult.reason,
+        )
+      }
+
+      const rawPayments =
+        paymentsResult.status === 'fulfilled' ? paymentsResult.value : []
+      const rawIndicators =
+        indicatorsResult.status === 'fulfilled' ? indicatorsResult.value : null
+
+      return {
+        projects: processed.projects,
+        records: processed.projectRecords,
+        beneficiaryPayments: processPnrrBeneficiaryPayments(
+          Array.isArray(rawPayments) ? rawPayments : [],
+        ),
+        indicators: processPnrrOfficialIndicators(rawIndicators),
+        projectCount: processed.meta.projectCount,
+        projectRecordCount: processed.meta.projectRecordCount,
+        paymentCapability:
+          paymentsResult.status === 'fulfilled' ? 'served' : 'degraded',
+        indicatorCapability:
+          indicatorsResult.status === 'fulfilled' ? 'served' : 'degraded',
+        capabilityReasonCodes: reasonCodes,
+      }
+    })().catch((error) => {
+      modelPromise = null
+      throw error
+    })
   }
 
-  return modelPromise
+  return modelPromise!
 }
 
 function stableSearchKey(search: Partial<PnrrSearchState> = {}): string {
@@ -192,9 +221,7 @@ function projectToRow(project: PnrrProject): PnrrWorkerProjectRow {
 function getProgressValue(
   progress: PnrrProject['techProgress'] | PnrrProject['finProgress'],
 ): number | null {
-  if (typeof progress === 'number') return progress
-  if (progress === 'in-implementation') return 15
-  return null
+  return typeof progress === 'number' ? progress : null
 }
 
 function getProjectValue(project: PnrrProject): number {
@@ -216,11 +243,13 @@ function sortProjects(
         cmp = a.title.localeCompare(b.title)
         break
       case 'techProgress':
-        cmp = (getProgressValue(a.techProgress) ?? -1) -
+        cmp =
+          (getProgressValue(a.techProgress) ?? -1) -
           (getProgressValue(b.techProgress) ?? -1)
         break
       case 'finProgress':
-        cmp = (getProgressValue(a.finProgress) ?? -1) -
+        cmp =
+          (getProgressValue(a.finProgress) ?? -1) -
           (getProgressValue(b.finProgress) ?? -1)
         break
       case 'county':
@@ -245,7 +274,10 @@ function buildProjectPage(
 ): PnrrWorkerProjectPage {
   const sortBy = search.sortBy ?? 'value'
   const sortOrder = search.sortOrder ?? 'desc'
-  const pageSize = search.pageSize ?? PROJECT_PAGE_SIZE_DEFAULT
+  const pageSize = Math.min(
+    100,
+    Math.max(1, search.pageSize ?? PROJECT_PAGE_SIZE_DEFAULT),
+  )
   const sorted = sortProjects(projects, sortBy, sortOrder)
   const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize))
   const page = Math.min(Math.max(1, search.page ?? 1), totalPages)
@@ -276,11 +308,25 @@ function normalizeBeneficiaryName(value: string): string {
     .toUpperCase()
 }
 
-function getBeneficiaryKey(project: PnrrProject): string {
-  return `${project.beneficiary}\u0000${project.cui ?? ''}`
+function getBeneficiaryKey(project: PnrrProjectRecord): string {
+  const normalizedCui = normalizeBeneficiaryCui(project.cui)
+  if (normalizedCui) return `cui:${normalizedCui}`
+  return `name:${normalizeBeneficiaryName(project.beneficiary)}`
 }
 
-function getPrimaryComponentCode(beneficiary: BeneficiarySummaryInternal): string {
+function chooseBeneficiaryName(
+  aliasValues: ReadonlyMap<string, number>,
+): string {
+  return (
+    [...aliasValues.entries()].sort(([nameA, valueA], [nameB, valueB]) => {
+      return valueB - valueA || nameA.localeCompare(nameB, 'ro')
+    })[0]?.[0] ?? ''
+  )
+}
+
+function getPrimaryComponentCode(
+  beneficiary: BeneficiarySummaryInternal,
+): string {
   let primaryCode = ''
   let primaryValue = -1
 
@@ -302,51 +348,77 @@ function buildBeneficiarySummaries(
   projects: readonly PnrrProject[],
 ): readonly BeneficiarySummaryInternal[] {
   const map = new Map<string, BeneficiarySummaryInternal>()
-  const records = flattenPnrrProjectRecords(projects)
 
-  for (const p of records) {
-    const beneficiaryKey = getBeneficiaryKey(p)
-    const projectId = getProjectIdentity(p)
-    const techProgress = getProgressValue(p.techProgress)
-    const finProgress = getProgressValue(p.finProgress)
-    const existing = map.get(beneficiaryKey)
+  for (const project of projects) {
+    const projectId = getProjectIdentity(project)
+    const recordsByBeneficiary = new Map<string, PnrrProjectRecord[]>()
 
-    if (existing) {
-      existing.projectIds.add(projectId)
-      existing.count = existing.projectIds.size
-      existing.value += p.valueEur
-      if (techProgress !== null) {
-        existing.techProgressSum += techProgress
-        existing.techProgressCount++
+    for (const record of project.records ?? [project]) {
+      const beneficiaryKey = getBeneficiaryKey(record)
+      const scopedRecords = recordsByBeneficiary.get(beneficiaryKey)
+      if (scopedRecords) {
+        scopedRecords.push(record)
+      } else {
+        recordsByBeneficiary.set(beneficiaryKey, [record])
       }
-      if (finProgress !== null) {
-        existing.finProgressSum += finProgress
-        existing.finProgressCount++
+      const normalizedCui = normalizeBeneficiaryCui(record.cui)
+      const existing = map.get(beneficiaryKey)
+
+      if (existing) {
+        existing.value += record.valueEur
+        existing.aliases.add(record.beneficiary)
+        existing.aliasValues.set(
+          record.beneficiary,
+          (existing.aliasValues.get(record.beneficiary) ?? 0) + record.valueEur,
+        )
+        existing.componentValues.set(
+          record.componentCode,
+          (existing.componentValues.get(record.componentCode) ?? 0) +
+            record.valueEur,
+        )
+        continue
       }
-      existing.componentValues.set(
-        p.componentCode,
-        (existing.componentValues.get(p.componentCode) ?? 0) + p.valueEur,
-      )
-      existing.projects.push(p)
-      continue
+
+      map.set(beneficiaryKey, {
+        name: record.beneficiary,
+        cui: normalizedCui,
+        aliases: new Set([record.beneficiary]),
+        aliasValues: new Map([[record.beneficiary, record.valueEur]]),
+        count: 0,
+        value: record.valueEur,
+        techProgressSum: 0,
+        techProgressCount: 0,
+        finProgressSum: 0,
+        finProgressCount: 0,
+        componentValues: new Map([[record.componentCode, record.valueEur]]),
+        projects: new Map(),
+      })
     }
 
-    map.set(beneficiaryKey, {
-      name: p.beneficiary,
-      cui: p.cui,
-      count: 1,
-      projectIds: new Set([projectId]),
-      value: p.valueEur,
-      techProgressSum: techProgress ?? 0,
-      techProgressCount: techProgress === null ? 0 : 1,
-      finProgressSum: finProgress ?? 0,
-      finProgressCount: finProgress === null ? 0 : 1,
-      componentValues: new Map([[p.componentCode, p.valueEur]]),
-      projects: [p],
-    })
+    for (const [beneficiaryKey, scopedRecords] of recordsByBeneficiary) {
+      const beneficiary = map.get(beneficiaryKey)
+      if (!beneficiary) continue
+      const scopedProject = groupPnrrProjects(scopedRecords)[0]
+      if (!scopedProject) continue
+      beneficiary.projects.set(projectId, scopedProject)
+      const techProgress = getProgressValue(scopedProject.techProgress)
+      const finProgress = getProgressValue(scopedProject.finProgress)
+      if (techProgress !== null) {
+        beneficiary.techProgressSum += techProgress
+        beneficiary.techProgressCount++
+      }
+      if (finProgress !== null) {
+        beneficiary.finProgressSum += finProgress
+        beneficiary.finProgressCount++
+      }
+    }
   }
 
-  return Array.from(map.values())
+  return Array.from(map.values()).map((beneficiary) => {
+    beneficiary.name = chooseBeneficiaryName(beneficiary.aliasValues)
+    beneficiary.count = beneficiary.projects.size
+    return beneficiary
+  })
 }
 
 function beneficiaryToRow(
@@ -355,14 +427,19 @@ function beneficiaryToRow(
   return {
     name: beneficiary.name,
     cui: beneficiary.cui,
+    aliases: [...beneficiary.aliases]
+      .filter((alias) => alias !== beneficiary.name)
+      .sort((a, b) => a.localeCompare(b, 'ro')),
     count: beneficiary.count,
     value: beneficiary.value,
-    techProgressAvg: beneficiary.techProgressCount > 0
-      ? beneficiary.techProgressSum / beneficiary.techProgressCount
-      : null,
-    finProgressAvg: beneficiary.finProgressCount > 0
-      ? beneficiary.finProgressSum / beneficiary.finProgressCount
-      : null,
+    techProgressAvg:
+      beneficiary.techProgressCount > 0
+        ? beneficiary.techProgressSum / beneficiary.techProgressCount
+        : null,
+    finProgressAvg:
+      beneficiary.finProgressCount > 0
+        ? beneficiary.finProgressSum / beneficiary.finProgressCount
+        : null,
     primaryComponentCode: getPrimaryComponentCode(beneficiary),
     extraComponentCount: Math.max(0, beneficiary.componentValues.size - 1),
   }
@@ -393,11 +470,19 @@ function sortBeneficiaries(
         )
         break
       case 'techProgress':
-        cmp = (a.techProgressCount > 0 ? a.techProgressSum / a.techProgressCount : -1) -
-          (b.techProgressCount > 0 ? b.techProgressSum / b.techProgressCount : -1)
+        cmp =
+          (a.techProgressCount > 0
+            ? a.techProgressSum / a.techProgressCount
+            : -1) -
+          (b.techProgressCount > 0
+            ? b.techProgressSum / b.techProgressCount
+            : -1)
         break
       case 'finProgress':
-        cmp = (a.finProgressCount > 0 ? a.finProgressSum / a.finProgressCount : -1) -
+        cmp =
+          (a.finProgressCount > 0
+            ? a.finProgressSum / a.finProgressCount
+            : -1) -
           (b.finProgressCount > 0 ? b.finProgressSum / b.finProgressCount : -1)
         break
     }
@@ -405,7 +490,7 @@ function sortBeneficiaries(
   })
 }
 
-function buildBeneficiaryPage(
+export function buildBeneficiaryPage(
   projects: readonly PnrrProject[],
   search: Partial<PnrrSearchState>,
 ): PnrrWorkerBeneficiaryPage {
@@ -432,7 +517,7 @@ function buildBeneficiaryPage(
   }
 }
 
-function findBeneficiaryDetail(
+export function findBeneficiaryDetail(
   projects: readonly PnrrProject[],
   selector: {
     readonly key?: string | null
@@ -441,22 +526,37 @@ function findBeneficiaryDetail(
 ): PnrrWorkerBeneficiaryDetail | null {
   const normalizedCui = normalizeBeneficiaryCui(selector.cui ?? null)
   const beneficiary = buildBeneficiarySummaries(projects).find((item) => {
-    if (selector.key && `${item.name}\u0000${item.cui ?? ''}` === selector.key) {
-      return true
+    if (selector.key) {
+      const [selectedName = '', selectedCui = ''] = selector.key.split('\u0000')
+      const selectedNormalizedCui = normalizeBeneficiaryCui(selectedCui)
+      const sameIdentity = selectedNormalizedCui
+        ? normalizeBeneficiaryCui(item.cui) === selectedNormalizedCui
+        : item.cui === null
+      if (
+        sameIdentity &&
+        (item.name === selectedName || item.aliases.has(selectedName))
+      ) {
+        return true
+      }
     }
     return Boolean(
-      normalizedCui &&
-        normalizeBeneficiaryCui(item.cui) === normalizedCui,
+      normalizedCui && normalizeBeneficiaryCui(item.cui) === normalizedCui,
     )
   })
   if (!beneficiary) return null
+  const beneficiaryProjects = [...beneficiary.projects.values()]
 
-  const groupedProjects = groupPnrrProjects(beneficiary.projects)
   return {
     ...beneficiaryToRow(beneficiary),
-    projects: sortProjects(groupedProjects, 'value', 'desc')
+    projects: sortProjects(beneficiaryProjects, 'value', 'desc')
       .slice(0, 100)
       .map(projectToRow),
+    riskProjectCount: beneficiaryProjects.filter(
+      (project) => project.anomalies.length > 0,
+    ).length,
+    dataQualityProjectCount: beneficiaryProjects.filter(
+      (project) => project.dataQualitySignals.length > 0,
+    ).length,
     componentValues: Array.from(beneficiary.componentValues.entries())
       .map(([code, value]) => ({ code, value }))
       .sort((a, b) => b.value - a.value),
@@ -473,9 +573,10 @@ function buildTopComponents(
       prefix: PNRR_COMPONENTS[code]?.code ?? code,
       valueEur: stats.value,
       count: stats.count,
-      pct: aggregates.rawTotalValue > 0
-        ? (stats.value / aggregates.rawTotalValue) * 100
-        : 0,
+      pct:
+        aggregates.rawTotalValue > 0
+          ? (stats.value / aggregates.rawTotalValue) * 100
+          : 0,
       color: PNRR_COMPONENTS[code]?.color ?? '#94a3b8',
     }))
     .sort((a, b) => b.valueEur - a.valueEur)
@@ -490,9 +591,10 @@ function buildTopCounties(
       label: county,
       valueEur: stats.value,
       count: stats.count,
-      pct: aggregates.rawTotalValue > 0
-        ? (stats.value / aggregates.rawTotalValue) * 100
-        : 0,
+      pct:
+        aggregates.rawTotalValue > 0
+          ? (stats.value / aggregates.rawTotalValue) * 100
+          : 0,
     }))
     .sort((a, b) => b.valueEur - a.valueEur)
 }
@@ -502,10 +604,17 @@ export function buildTopBeneficiaries(
   projects: readonly PnrrProject[],
   aggregates: ReturnType<typeof computeAggregates>,
 ): readonly PnrrWorkerRankedItem[] {
-  const projectBeneficiaries = [...buildBeneficiarySummaries(projects)]
-    .sort((a, b) => b.value - a.value)
-  const projectBeneficiariesByCui = new Map<string, BeneficiarySummaryInternal>()
-  const projectBeneficiariesByName = new Map<string, BeneficiarySummaryInternal>()
+  const projectBeneficiaries = [...buildBeneficiarySummaries(projects)].sort(
+    (a, b) => b.value - a.value,
+  )
+  const projectBeneficiariesByCui = new Map<
+    string,
+    BeneficiarySummaryInternal
+  >()
+  const projectBeneficiariesByName = new Map<
+    string,
+    BeneficiarySummaryInternal
+  >()
 
   for (const beneficiary of projectBeneficiaries) {
     const cui = normalizeBeneficiaryCui(beneficiary.cui)
@@ -523,21 +632,25 @@ export function buildTopBeneficiaries(
       (sum, payment) => sum + payment.valueRon / 5,
       0,
     )
-    const denominator = model.indicators?.paidTotalEur && model.indicators.paidTotalEur > 0
-      ? model.indicators.paidTotalEur
-      : listedPaymentTotalEur
+    const denominator =
+      model.indicators?.paidTotalEur && model.indicators.paidTotalEur > 0
+        ? model.indicators.paidTotalEur
+        : listedPaymentTotalEur
 
     return model.beneficiaryPayments.slice(0, 100).map((payment) => {
       const cui = normalizeBeneficiaryCui(payment.cui)
       const projectBeneficiary =
         (cui ? projectBeneficiariesByCui.get(cui) : undefined) ??
-        projectBeneficiariesByName.get(normalizeBeneficiaryName(payment.beneficiary))
+        projectBeneficiariesByName.get(
+          normalizeBeneficiaryName(payment.beneficiary),
+        )
       const valueEur = payment.valueRon / 5
 
       return {
-        id: payment.beneficiary,
+        id: cui ?? payment.beneficiary,
         itemKey: payment.id,
         label: payment.beneficiary,
+        beneficiaryCui: cui,
         valueEur,
         count: projectBeneficiary?.count ?? 0,
         pct: denominator > 0 ? (valueEur / denominator) * 100 : 0,
@@ -547,14 +660,16 @@ export function buildTopBeneficiaries(
   }
 
   return projectBeneficiaries.slice(0, 100).map((beneficiary) => ({
-    id: beneficiary.name,
+    id: beneficiary.cui ?? beneficiary.name,
     itemKey: `${beneficiary.name}\u0000${beneficiary.cui ?? ''}`,
     label: beneficiary.name,
+    beneficiaryCui: beneficiary.cui,
     valueEur: beneficiary.value,
     count: beneficiary.count,
-    pct: aggregates.rawTotalValue > 0
-      ? (beneficiary.value / aggregates.rawTotalValue) * 100
-      : 0,
+    pct:
+      aggregates.rawTotalValue > 0
+        ? (beneficiary.value / aggregates.rawTotalValue) * 100
+        : 0,
   }))
 }
 
@@ -567,10 +682,13 @@ function buildEmblematicRows(
     let bestMatch: PnrrProject | null = null
 
     for (const project of projects) {
-      const projectComponentCodes = project.componentCodes ?? [project.componentCode]
+      const projectComponentCodes = project.componentCodes ?? [
+        project.componentCode,
+      ]
       const isCandidate =
-        projectComponentCodes.some((code) => config.componentCodes.includes(code)) &&
-        projectMatchesEmblematicConfig(project.title, config)
+        projectComponentCodes.some((code) =>
+          config.componentCodes.includes(code),
+        ) && projectMatchesEmblematicConfig(project.title, config)
 
       if (
         isCandidate &&
@@ -596,8 +714,7 @@ function buildHistogramMetric(
   if (metric === 'gap') {
     const valid = records.filter(
       (p) =>
-        typeof p.techProgress === 'number' &&
-        typeof p.finProgress === 'number',
+        typeof p.techProgress === 'number' && typeof p.finProgress === 'number',
     )
     const validValue = valid.reduce((sum, p) => sum + p.valueEur, 0)
 
@@ -614,8 +731,10 @@ function buildHistogramMetric(
           color: bucket.color,
         }
       }),
-      countCoveragePercent: recordCount > 0 ? (valid.length / recordCount) * 100 : 0,
-      valueCoveragePercent: totalValue > 0 ? (validValue / totalValue) * 100 : 0,
+      countCoveragePercent:
+        recordCount > 0 ? (valid.length / recordCount) * 100 : 0,
+      valueCoveragePercent:
+        totalValue > 0 ? (validValue / totalValue) * 100 : 0,
       validCount: valid.length,
       validValue,
       totalRecordCount: recordCount,
@@ -640,7 +759,8 @@ function buildHistogramMetric(
         color: bucket.color,
       }
     }),
-    countCoveragePercent: recordCount > 0 ? (valid.length / recordCount) * 100 : 0,
+    countCoveragePercent:
+      recordCount > 0 ? (valid.length / recordCount) * 100 : 0,
     valueCoveragePercent: totalValue > 0 ? (validValue / totalValue) * 100 : 0,
     validCount: valid.length,
     validValue,
@@ -662,9 +782,7 @@ function buildHistogram(
 function getTechnicalProgressValue(
   progress: PnrrProjectRecord['techProgress'],
 ): number | null {
-  if (typeof progress === 'number') return progress
-  if (progress === 'in-implementation') return 15
-  return null
+  return typeof progress === 'number' ? progress : null
 }
 
 function countUniqueRecords(records: readonly PnrrProjectRecord[]): number {
@@ -700,13 +818,15 @@ function buildMapSelectionSummary(
   }
 }
 
-function buildMapSelection(
-  records: readonly PnrrProjectRecord[],
-): {
+function buildMapSelection(records: readonly PnrrProjectRecord[]): {
   readonly summary: PnrrWorkerMapSelectionSummary
   readonly projects: readonly PnrrWorkerProjectRow[]
 } {
-  const groupedProjects = sortProjects(groupPnrrProjects(records), 'value', 'desc')
+  const groupedProjects = sortProjects(
+    groupPnrrProjects(records),
+    'value',
+    'desc',
+  )
 
   return {
     summary: buildMapSelectionSummary(groupedProjects),
@@ -725,6 +845,36 @@ function buildMapSeries(
   return buildCountySeries(records, seriesId)
 }
 
+type ProjectProgressAccumulator = Map<string, { sum: number; count: number }>
+
+function addProjectProgress(
+  accumulator: ProjectProgressAccumulator,
+  projectId: string,
+  value: number | null,
+): void {
+  if (value === null) return
+  const existing = accumulator.get(projectId)
+  if (existing) {
+    existing.sum += value
+    existing.count++
+  } else {
+    accumulator.set(projectId, { sum: value, count: 1 })
+  }
+}
+
+function getProjectWeightedProgress(
+  accumulator: ProjectProgressAccumulator,
+): number | null {
+  if (accumulator.size === 0) return null
+  const projectMeans = [...accumulator.values()].map(
+    ({ sum, count }) => sum / count,
+  )
+  return (
+    projectMeans.reduce((sum, progress) => sum + progress, 0) /
+    projectMeans.length
+  )
+}
+
 function buildCountySeries(
   records: readonly PnrrProjectRecord[],
   seriesId: PnrrMapSeriesId,
@@ -738,8 +888,7 @@ function buildCountySeries(
       projectIds: Set<string>
       grantValue: number
       totalValueForShare: number
-      techProgressSum: number
-      techProgressCount: number
+      techProgressByProject: ProjectProgressAccumulator
     }
   >()
 
@@ -749,16 +898,18 @@ function buildCountySeries(
     if (!mnemonic) continue
     const existing = agg.get(mnemonic)
     const techProgress = getTechnicalProgressValue(p.techProgress)
+    const projectId = getProjectIdentity(p)
 
     if (existing) {
       existing.totalValue += p.valueEur
-      existing.projectIds.add(getProjectIdentity(p))
+      existing.projectIds.add(projectId)
       if (p.fundingSource === 'grant') existing.grantValue += p.valueEur
       existing.totalValueForShare += p.valueEur
-      if (techProgress !== null) {
-        existing.techProgressSum += techProgress
-        existing.techProgressCount++
-      }
+      addProjectProgress(
+        existing.techProgressByProject,
+        projectId,
+        techProgress,
+      )
       continue
     }
 
@@ -766,42 +917,60 @@ function buildCountySeries(
       countyName: p.county,
       mnemonic,
       totalValue: p.valueEur,
-      projectIds: new Set([getProjectIdentity(p)]),
+      projectIds: new Set([projectId]),
       grantValue: p.fundingSource === 'grant' ? p.valueEur : 0,
       totalValueForShare: p.valueEur,
-      techProgressSum: techProgress ?? 0,
-      techProgressCount: techProgress === null ? 0 : 1,
+      techProgressByProject: new Map(),
     })
+    addProjectProgress(
+      agg.get(mnemonic)!.techProgressByProject,
+      projectId,
+      techProgress,
+    )
   }
 
-  const data: HeatmapCountyDataPoint[] = Array.from(agg.values()).map((entry) => {
-    const population = POPULATION_MAP[entry.countyName] ?? 1
-    let amount = entry.totalValue
-    if (seriesId === 'project-count') amount = entry.projectIds.size
-    if (seriesId === 'per-capita') amount = population > 0 ? entry.totalValue / population : 0
-    if (seriesId === 'grant-share') {
-      amount = entry.totalValueForShare > 0
-        ? (entry.grantValue / entry.totalValueForShare) * 100
-        : 0
-    }
-    if (seriesId === 'implementation-rate') {
-      amount = entry.techProgressCount > 0
-        ? entry.techProgressSum / entry.techProgressCount
-        : 0
-    }
+  let excludedValue = 0
+  const data: HeatmapCountyDataPoint[] = Array.from(agg.values())
+    .flatMap((entry) => {
+      const population = POPULATION_MAP[entry.countyName] ?? null
+      const implementationRate = getProjectWeightedProgress(
+        entry.techProgressByProject,
+      )
+      if (
+        (seriesId === 'per-capita' && (!population || population <= 0)) ||
+        (seriesId === 'implementation-rate' && implementationRate === null)
+      ) {
+        excludedValue += entry.totalValue
+        return []
+      }
 
-    return {
-      county_code: entry.mnemonic,
-      county_name: entry.countyName,
-      county_population: population,
-      amount,
-      total_amount: entry.totalValue,
-      per_capita_amount: population > 0 ? entry.totalValue / population : 0,
-      county_entity: { cui: '', name: entry.countyName },
-    }
-  }).sort((a, b) => b.amount - a.amount)
+      let amount = entry.totalValue
+      if (seriesId === 'project-count') amount = entry.projectIds.size
+      if (seriesId === 'per-capita') amount = entry.totalValue / population!
+      if (seriesId === 'grant-share') {
+        amount =
+          entry.totalValueForShare > 0
+            ? (entry.grantValue / entry.totalValueForShare) * 100
+            : 0
+      }
+      if (seriesId === 'implementation-rate') {
+        amount = implementationRate!
+      }
 
-  return makeMapSeries(seriesId, data)
+      return {
+        county_code: entry.mnemonic,
+        county_name: entry.countyName,
+        county_population: population ?? 0,
+        amount,
+        total_amount: entry.totalValue,
+        per_capita_amount:
+          population && population > 0 ? entry.totalValue / population : 0,
+        county_entity: { cui: '', name: entry.countyName },
+      }
+    })
+    .sort((a, b) => b.amount - a.amount)
+
+  return makeMapSeries(seriesId, data, agg.size, excludedValue)
 }
 
 function buildUatSeries(
@@ -816,8 +985,7 @@ function buildUatSeries(
       projectIds: Set<string>
       grantValue: number
       totalValueForShare: number
-      techProgressSum: number
-      techProgressCount: number
+      techProgressByProject: ProjectProgressAccumulator
     }
   >()
 
@@ -825,66 +993,88 @@ function buildUatSeries(
     if (!p.sirutaCode) continue
     const existing = agg.get(p.sirutaCode)
     const techProgress = getTechnicalProgressValue(p.techProgress)
+    const projectId = getProjectIdentity(p)
 
     if (existing) {
       existing.totalValue += p.valueEur
-      existing.projectIds.add(getProjectIdentity(p))
+      existing.projectIds.add(projectId)
       if (p.fundingSource === 'grant') existing.grantValue += p.valueEur
       existing.totalValueForShare += p.valueEur
-      if (techProgress !== null) {
-        existing.techProgressSum += techProgress
-        existing.techProgressCount++
-      }
+      addProjectProgress(
+        existing.techProgressByProject,
+        projectId,
+        techProgress,
+      )
       continue
     }
 
     agg.set(p.sirutaCode, {
       sirutaCode: p.sirutaCode,
       totalValue: p.valueEur,
-      projectIds: new Set([getProjectIdentity(p)]),
+      projectIds: new Set([projectId]),
       grantValue: p.fundingSource === 'grant' ? p.valueEur : 0,
       totalValueForShare: p.valueEur,
-      techProgressSum: techProgress ?? 0,
-      techProgressCount: techProgress === null ? 0 : 1,
+      techProgressByProject: new Map(),
     })
+    addProjectProgress(
+      agg.get(p.sirutaCode)!.techProgressByProject,
+      projectId,
+      techProgress,
+    )
   }
 
-  const data: HeatmapUATDataPoint[] = Array.from(agg.values()).map((entry) => {
-    const population = UAT_POPULATIONS[entry.sirutaCode] ?? 1
-    let amount = entry.totalValue
-    if (seriesId === 'project-count') amount = entry.projectIds.size
-    if (seriesId === 'per-capita') amount = population > 0 ? entry.totalValue / population : 0
-    if (seriesId === 'grant-share') {
-      amount = entry.totalValueForShare > 0
-        ? (entry.grantValue / entry.totalValueForShare) * 100
-        : 0
-    }
-    if (seriesId === 'implementation-rate') {
-      amount = entry.techProgressCount > 0
-        ? entry.techProgressSum / entry.techProgressCount
-        : 0
-    }
+  let excludedValue = 0
+  const data: HeatmapUATDataPoint[] = Array.from(agg.values())
+    .flatMap((entry) => {
+      const population = UAT_POPULATIONS[entry.sirutaCode] ?? null
+      const implementationRate = getProjectWeightedProgress(
+        entry.techProgressByProject,
+      )
+      if (
+        (seriesId === 'per-capita' && (!population || population <= 0)) ||
+        (seriesId === 'implementation-rate' && implementationRate === null)
+      ) {
+        excludedValue += entry.totalValue
+        return []
+      }
 
-    return {
+      let amount = entry.totalValue
+      if (seriesId === 'project-count') amount = entry.projectIds.size
+      if (seriesId === 'per-capita') amount = entry.totalValue / population!
+      if (seriesId === 'grant-share') {
+        amount =
+          entry.totalValueForShare > 0
+            ? (entry.grantValue / entry.totalValueForShare) * 100
+            : 0
+      }
+      if (seriesId === 'implementation-rate') {
+        amount = implementationRate!
+      }
+
+      return {
       uat_id: entry.sirutaCode,
       uat_code: entry.sirutaCode,
       uat_name: '',
-      siruta_code: entry.sirutaCode,
-      county_code: '',
-      county_name: '',
-      population,
-      amount,
-      total_amount: entry.totalValue,
-      per_capita_amount: population > 0 ? entry.totalValue / population : 0,
-    }
-  }).sort((a, b) => b.amount - a.amount)
+        siruta_code: entry.sirutaCode,
+        county_code: '',
+        county_name: '',
+        population: population ?? 0,
+        amount,
+        total_amount: entry.totalValue,
+        per_capita_amount:
+          population && population > 0 ? entry.totalValue / population : 0,
+      }
+    })
+    .sort((a, b) => b.amount - a.amount)
 
-  return makeMapSeries(seriesId, data)
+  return makeMapSeries(seriesId, data, agg.size, excludedValue)
 }
 
 function makeMapSeries(
   seriesId: PnrrMapSeriesId,
   data: readonly HeatmapCountyDataPoint[] | readonly HeatmapUATDataPoint[],
+  totalUnitCount: number,
+  excludedValue: number,
 ): PnrrWorkerMapSeries {
   const amounts = data.map((point) => point.amount)
   return {
@@ -892,55 +1082,83 @@ function makeMapSeries(
     data,
     min: amounts.length > 0 ? amounts.reduce((a, b) => Math.min(a, b)) : 0,
     max: amounts.length > 0 ? amounts.reduce((a, b) => Math.max(a, b)) : 0,
+    coveredUnitCount: data.length,
+    totalUnitCount,
+    excludedValue,
   }
 }
 
-function buildMapModel(
+export function buildMapModel(
   records: readonly PnrrProjectRecord[],
   search: Partial<PnrrSearchState>,
   seriesId: PnrrMapSeriesId,
   granularity: PnrrGranularity,
 ): PnrrWorkerMapModel {
-  const selectedCounty = search.panel === 'map-county' && search.panelCountyCode
-    ? (MNEMONIC_TO_COUNTY_NAME[search.panelCountyCode] ?? null)
-    : null
-  const selectedUatLabel = search.panel === 'map-uat' && search.panelUatSiruta
-    ? getPnrrUatLabelsBySiruta().get(search.panelUatSiruta)
-    : undefined
-  const matchingUatRecord = search.panel === 'map-uat' && search.panelUatSiruta
-    ? records.find((record) => record.sirutaCode === search.panelUatSiruta)
-    : undefined
+  const selectedCounty =
+    search.panel === 'map-county' && search.panelCountyCode
+      ? (MNEMONIC_TO_COUNTY_NAME[search.panelCountyCode] ?? null)
+      : null
+  const selectedUatLabel =
+    search.panel === 'map-uat' && search.panelUatSiruta
+      ? getPnrrUatLabelsBySiruta().get(search.panelUatSiruta)
+      : undefined
+  const matchingUatRecord =
+    search.panel === 'map-uat' && search.panelUatSiruta
+      ? records.find((record) => record.sirutaCode === search.panelUatSiruta)
+      : undefined
   const selectedUat =
     search.panel === 'map-uat' && search.panelUatSiruta
       ? {
-          name: selectedUatLabel?.name ?? matchingUatRecord?.locality ?? search.panelUatSiruta,
+          name:
+            selectedUatLabel?.name ??
+            matchingUatRecord?.locality ??
+            search.panelUatSiruta,
           county: selectedUatLabel?.county ?? matchingUatRecord?.county ?? '',
           natcode: search.panelUatSiruta,
         }
       : null
   const selectedCountySelection = selectedCounty
-    ? buildMapSelection(records.filter((record) => record.county === selectedCounty))
+    ? buildMapSelection(
+        records.filter((record) => record.county === selectedCounty),
+      )
     : null
   const selectedUatSelection = selectedUat
     ? buildMapSelection(
         records.filter((record) => record.sirutaCode === selectedUat.natcode),
       )
     : null
+  const nationalRecords = records.filter(
+    (record) => record.county === 'Național',
+  )
+  const mappedRecords = records.filter((record) => {
+    if (record.county === 'Național') return false
+    if (granularity === 'uat') return record.sirutaCode !== null
+    return Boolean(COUNTY_NAME_TO_MNEMONIC[record.county])
+  })
+  const unmappedRecords = records.filter((record) => {
+    if (record.county === 'Național') return false
+    if (granularity === 'uat') return record.sirutaCode === null
+    return !COUNTY_NAME_TO_MNEMONIC[record.county]
+  })
 
   return {
     seriesId,
     granularity,
     series: buildMapSeries(records, seriesId, granularity),
-    nationalCount: countUniqueRecords(
-      records.filter((record) => record.county === 'Național'),
+    nationalCount: countUniqueRecords(nationalRecords),
+    nationalValue: nationalRecords.reduce(
+      (sum, record) => sum + record.valueEur,
+      0,
     ),
-    unmappedCount: granularity === 'uat'
-      ? countUniqueRecords(
-          records.filter(
-            (record) => record.sirutaCode === null && record.county !== 'Național',
-          ),
-        )
-      : 0,
+    unmappedCount: countUniqueRecords(unmappedRecords),
+    unmappedValue: unmappedRecords.reduce(
+      (sum, record) => sum + record.valueEur,
+      0,
+    ),
+    mappedValue: mappedRecords.reduce(
+      (sum, record) => sum + record.valueEur,
+      0,
+    ),
     uatProjectCount: new Set(
       records
         .filter((record) => record.sirutaCode !== null)
@@ -954,19 +1172,32 @@ function buildMapModel(
   }
 }
 
-function buildFilterFacets(records: readonly PnrrProjectRecord[]): PnrrWorkerFilterFacets {
-  const uats = new Map<string, { readonly name: string; readonly county: string }>()
+function buildFilterFacets(
+  records: readonly PnrrProjectRecord[],
+): PnrrWorkerFilterFacets {
+  const uats = new Map<
+    string,
+    { readonly name: string; readonly county: string }
+  >()
   for (const record of records) {
-    if (!record.sirutaCode || !record.locality || record.county === 'Național') continue
+    if (!record.sirutaCode || !record.locality || record.county === 'Național')
+      continue
     const existing = uats.get(record.sirutaCode)
     if (!existing || record.locality.localeCompare(existing.name, 'ro') < 0) {
-      uats.set(record.sirutaCode, { name: record.locality, county: record.county })
+      uats.set(record.sirutaCode, {
+        name: record.locality,
+        county: record.county,
+      })
     }
   }
 
   return {
-    components: Array.from(new Set(records.map((record) => record.componentCode))).sort(),
-    counties: Array.from(new Set(records.map((record) => record.county))).sort(),
+    components: Array.from(
+      new Set(records.map((record) => record.componentCode)),
+    ).sort(),
+    counties: Array.from(
+      new Set(records.map((record) => record.county)),
+    ).sort(),
     uats: Array.from(uats.entries())
       .map(([siruta, uat]) => ({
         value: siruta,
@@ -980,10 +1211,12 @@ function buildFilterFacets(records: readonly PnrrProjectRecord[]): PnrrWorkerFil
       }),
     measures: Array.from(
       new Set(
-        records.map(
-          (record) =>
-            `${record.componentCode}.${record.measureCode}.${record.fundingSource === 'grant/loan' ? 'grant' : record.fundingSource}`,
-        ),
+        records.flatMap((record) => {
+          const prefix = `${record.componentCode}.${record.measureCode}`
+          return record.fundingSource === 'grant/loan'
+            ? [`${prefix}.grant`, `${prefix}.loan`]
+            : [`${prefix}.${record.fundingSource}`]
+        }),
       ),
     ).sort(),
     cris: Array.from(new Set(records.map((record) => record.cri))).sort(),
@@ -994,7 +1227,9 @@ export function buildAnomalyModel(
   projects: readonly PnrrProject[],
   search: Partial<PnrrSearchState>,
 ): PnrrWorkerAnomalyModel {
-  const riskProjects = projects.filter((project) => project.anomalies.length > 0)
+  const riskProjects = projects.filter(
+    (project) => project.anomalies.length > 0,
+  )
   const dataQualityProjects = projects.filter(
     (project) => project.dataQualitySignals.length > 0,
   )
@@ -1004,13 +1239,21 @@ export function buildAnomalyModel(
   const hasDataQualityFilter = (activeDataQualitySignalTypes?.length ?? 0) > 0
   const hasSignalFilter = hasRiskFilter || hasDataQualityFilter
   const displayed = projects.filter((project) => {
+    if (search.onlyAnomalies && project.anomalies.length === 0) {
+      return false
+    }
+
     if (!hasSignalFilter) {
-      return project.anomalies.length > 0 || project.dataQualitySignals.length > 0
+      return (
+        project.anomalies.length > 0 || project.dataQualitySignals.length > 0
+      )
     }
 
     const matchesRisk =
       hasRiskFilter &&
-      activeAnomalyTypes!.some((type) => project.anomalies.includes(type as AnomalyType))
+      activeAnomalyTypes!.some((type) =>
+        project.anomalies.includes(type as AnomalyType),
+      )
     const matchesDataQuality =
       hasDataQualityFilter &&
       activeDataQualitySignalTypes!.some((type) =>
@@ -1022,7 +1265,10 @@ export function buildAnomalyModel(
 
   const sortBy = search.sortBy ?? 'value'
   const sortOrder = search.sortOrder ?? 'desc'
-  const pageSize = search.pageSize ?? PROJECT_PAGE_SIZE_DEFAULT
+  const pageSize = Math.min(
+    100,
+    Math.max(1, search.pageSize ?? PROJECT_PAGE_SIZE_DEFAULT),
+  )
   const sorted = sortProjects(displayed, sortBy, sortOrder)
   const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize))
   const page = Math.min(Math.max(1, search.page ?? 1), totalPages)
@@ -1030,7 +1276,10 @@ export function buildAnomalyModel(
 
   return {
     riskCount: riskProjects.length,
-    riskValue: riskProjects.reduce((sum, project) => sum + getProjectValue(project), 0),
+    riskValue: riskProjects.reduce(
+      (sum, project) => sum + getProjectValue(project),
+      0,
+    ),
     dataQualityCount: dataQualityProjects.length,
     dataQualityValue: dataQualityProjects.reduce(
       (sum, project) => sum + getProjectValue(project),
@@ -1053,7 +1302,15 @@ function buildOverview(
     topComponents: buildTopComponents(aggregates),
     topCounties: buildTopCounties(aggregates),
     topBeneficiaries: buildTopBeneficiaries(model, projects, aggregates),
-    projectPreviewRows: sortProjects(projects, 'value', 'desc').slice(0, 8).map(projectToRow),
+    beneficiaryRankingSource:
+      model.beneficiaryPayments.length > 0
+        ? 'reported-payments'
+        : 'listed-project-value',
+    beneficiaryRankingScope:
+      model.beneficiaryPayments.length > 0 ? 'national' : 'filtered',
+    projectPreviewRows: sortProjects(projects, 'value', 'desc')
+      .slice(0, 8)
+      .map(projectToRow),
     emblematicProjectRows: buildEmblematicRows(projects),
     histogram: buildHistogram(records),
     mapPreview: buildMapModel(records, search, 'total-value', 'uat'),
@@ -1061,15 +1318,39 @@ function buildOverview(
 }
 
 function escapeCsv(value: string): string {
-  if (value.includes(',') || value.includes('\n') || value.includes('"')) {
-    return `"${value.replace(/"/g, '""')}"`
+  const safeValue = /^(?:[\t\r]|\s*[=+\-@])/.test(value) ? `'${value}` : value
+  if (
+    safeValue.includes(',') ||
+    safeValue.includes('\n') ||
+    safeValue.includes('\r') ||
+    safeValue.includes('"')
+  ) {
+    return `"${safeValue.replace(/"/g, '""')}"`
   }
-  return value
+  return safeValue
 }
 
-function buildCsv(projects: readonly PnrrProject[]): string {
+function formatProgressForCsv(
+  progress: PnrrProject['techProgress'],
+): string | number {
+  if (progress === null) return ''
+  if (progress === 'under-30-reported') return 'UNDER 30% (REPORTED CATEGORY)'
+  if (progress === 'in-implementation') {
+    return 'IN IMPLEMENTATION (PERCENTAGE NOT PUBLISHED)'
+  }
+  return progress
+}
+
+export function buildCsv(
+  projects: readonly PnrrProject[],
+  search: Partial<PnrrSearchState> = {},
+): string {
   const headers = [
+    'source_fileset_id',
+    'source_url',
+    'scope_note',
     'id_angajament',
+    'contract_number',
     'record_count',
     'Title',
     'Beneficiary',
@@ -1083,15 +1364,29 @@ function buildCsv(projects: readonly PnrrProject[]): string {
     'All funding sources',
     'All counties',
     'CRI',
+    'CRI name',
     'Funding source',
-    'Value (EUR)',
+    'Listed EU funding (RON)',
+    'Commitment date',
+    'Start date',
+    'End date',
+    'Source beneficiary type',
+    'Impact',
     'Progres tehnic raportat',
     'Progres financiar raportat',
     'Semnale de risc',
     'Anomalii de date',
   ]
-  const rows = sortProjects(projects, 'value', 'desc').map((project) => [
+  const rows = sortProjects(
+    projects,
+    search.sortBy ?? 'value',
+    search.sortOrder ?? 'desc',
+  ).map((project) => [
+    PNRR_FILESET_ID,
+    project.sourceUrl ?? PNRR_MIPE_SOURCE_URL,
+    'Grouped project; listed EU funding includes only MIPE record slices matching the active filters',
     project.engagementId ?? '',
+    project.contractNumber ?? '',
     project.recordCount ?? project.records?.length ?? 1,
     project.title,
     project.beneficiary,
@@ -1105,18 +1400,29 @@ function buildCsv(projects: readonly PnrrProject[]): string {
     (project.fundingSources ?? [project.fundingSource]).join(' + '),
     (project.counties ?? [project.county]).join(' + '),
     project.cri,
+    project.criName ?? '',
     project.fundingSource,
-    project.totalValueEur ?? project.valueEur,
-    project.techProgress === 'in-implementation' ? 'IN IMPLEMENTATION' : (project.techProgress ?? ''),
-    project.finProgress === 'in-implementation' ? 'IN IMPLEMENTATION' : (project.finProgress ?? ''),
+    (project.records ?? [project]).reduce(
+      (sum, record) => sum + (record.sourceValueRon ?? 0),
+      0,
+    ),
+    project.commitmentDate ?? '',
+    project.startDate ?? '',
+    project.endDate ?? '',
+    project.sourceBeneficiaryType ?? '',
+    project.impact ?? '',
+    formatProgressForCsv(project.techProgress),
+    formatProgressForCsv(project.finProgress),
     project.anomalies.join(', '),
     project.dataQualitySignals.join(', '),
   ])
 
   return [
     headers.join(','),
-    ...rows.map((row) => row.map((value) => escapeCsv(String(value))).join(',')),
-  ].join('\n')
+    ...rows.map((row) =>
+      row.map((value) => escapeCsv(String(value))).join(','),
+    ),
+  ].join('\r\n')
 }
 
 async function query(
@@ -1125,6 +1431,12 @@ async function query(
   const model = await loadModel()
   const search = payload.search ?? {}
   const projects = getFilteredProjects(model, search)
+  const signalBaseProjects = getFilteredProjects(model, {
+    ...search,
+    onlyAnomalies: undefined,
+    anomalyTypes: undefined,
+    dataQualitySignalTypes: undefined,
+  })
   const records = flattenPnrrProjectRecords(projects)
   const aggregates = computeAggregates(projects)
   const mapSeriesId = payload.mapSeriesId ?? 'total-value'
@@ -1134,7 +1446,7 @@ async function query(
     overview: buildOverview(model, projects, records, aggregates, search),
     projectPage: buildProjectPage(projects, search),
     beneficiaryPage: buildBeneficiaryPage(projects, search),
-    anomalyModel: buildAnomalyModel(projects, search),
+    anomalyModel: buildAnomalyModel(signalBaseProjects, search),
     mapModel: buildMapModel(records, search, mapSeriesId, granularity),
     filterFacets: buildFilterFacets(model.records),
     meta: {
@@ -1147,6 +1459,10 @@ async function query(
       officialAllocatedTotalEur: model.indicators?.allocatedTotalEur ?? null,
       officialPaidTotalEur: model.indicators?.paidTotalEur ?? null,
       paidBeneficiaryCount: model.indicators?.paidBeneficiaryCount ?? null,
+      projectCapability: 'served',
+      paymentCapability: model.paymentCapability ?? 'served',
+      indicatorCapability: model.indicatorCapability ?? 'served',
+      capabilityReasonCodes: model.capabilityReasonCodes ?? [],
     },
   }
 }
@@ -1182,7 +1498,10 @@ self.addEventListener('message', (event: MessageEvent<PnrrWorkerRequest>) => {
 
       if (request.type === 'getBeneficiary') {
         const model = await loadModel()
-        const projects = getFilteredProjects(model, request.payload.search ?? {})
+        const projects = getFilteredProjects(
+          model,
+          request.payload.search ?? {},
+        )
         self.postMessage({
           id: request.id,
           type: 'getBeneficiary',
@@ -1195,11 +1514,16 @@ self.addEventListener('message', (event: MessageEvent<PnrrWorkerRequest>) => {
 
       if (request.type === 'exportCsv') {
         const model = await loadModel()
-        const projects = getFilteredProjects(model, request.payload.search ?? {})
+        const projects = getFilteredProjects(
+          model,
+          request.payload.search ?? {},
+        )
         self.postMessage({
           id: request.id,
           type: 'exportCsv',
-          payload: { csv: buildCsv(projects) } satisfies PnrrWorkerCsvResult,
+          payload: {
+            csv: buildCsv(projects, request.payload.search ?? {}),
+          } satisfies PnrrWorkerCsvResult,
         } satisfies PnrrWorkerResponse)
       }
     } catch (error) {

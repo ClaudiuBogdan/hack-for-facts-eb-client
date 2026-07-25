@@ -25,6 +25,10 @@ export type PnrrWorkerMeta = {
   readonly officialAllocatedTotalEur: number | null
   readonly officialPaidTotalEur: number | null
   readonly paidBeneficiaryCount: number | null
+  readonly projectCapability?: 'served'
+  readonly paymentCapability?: 'served' | 'degraded'
+  readonly indicatorCapability?: 'served' | 'degraded'
+  readonly capabilityReasonCodes?: readonly string[]
 }
 
 export type PnrrWorkerQueryPayload = {
@@ -38,6 +42,7 @@ export type PnrrWorkerRankedItem = {
   readonly id: string
   readonly itemKey?: string
   readonly label: string
+  readonly beneficiaryCui?: string | null
   readonly prefix?: string
   readonly valueEur: number
   readonly count: number
@@ -70,6 +75,9 @@ export type PnrrWorkerMapSeries = {
     | readonly HeatmapUATDataPoint[]
   readonly min: number
   readonly max: number
+  readonly coveredUnitCount?: number
+  readonly totalUnitCount?: number
+  readonly excludedValue?: number
 }
 
 export type PnrrWorkerMapSelectionSummary = {
@@ -84,7 +92,10 @@ export type PnrrWorkerMapModel = {
   readonly granularity: PnrrGranularity
   readonly series: PnrrWorkerMapSeries
   readonly nationalCount: number
+  readonly nationalValue?: number
   readonly unmappedCount: number
+  readonly unmappedValue?: number
+  readonly mappedValue?: number
   readonly uatProjectCount: number
   readonly selectedUat:
     | {
@@ -112,6 +123,7 @@ export type PnrrWorkerProjectPage = {
 export type PnrrWorkerBeneficiaryRow = {
   readonly name: string
   readonly cui: string | null
+  readonly aliases: readonly string[]
   readonly count: number
   readonly value: number
   readonly techProgressAvg: number | null
@@ -132,6 +144,8 @@ export type PnrrWorkerBeneficiaryPage = {
 
 export type PnrrWorkerBeneficiaryDetail = PnrrWorkerBeneficiaryRow & {
   readonly projects: readonly PnrrWorkerProjectRow[]
+  readonly riskProjectCount: number
+  readonly dataQualityProjectCount: number
   readonly componentValues: readonly { readonly code: string; readonly value: number }[]
 }
 
@@ -162,6 +176,8 @@ export type PnrrWorkerOverviewModel = {
   readonly topComponents: readonly PnrrWorkerRankedItem[]
   readonly topCounties: readonly PnrrWorkerRankedItem[]
   readonly topBeneficiaries: readonly PnrrWorkerRankedItem[]
+  readonly beneficiaryRankingSource: 'reported-payments' | 'listed-project-value'
+  readonly beneficiaryRankingScope: 'national' | 'filtered'
   readonly projectPreviewRows: readonly PnrrWorkerProjectRow[]
   readonly emblematicProjectRows: readonly PnrrWorkerProjectRow[]
   readonly histogram: {
@@ -256,4 +272,7 @@ export type PnrrWorkerModel = {
   readonly indicators: PnrrOfficialIndicators | null
   readonly projectCount: number
   readonly projectRecordCount: number
+  readonly paymentCapability?: 'served' | 'degraded'
+  readonly indicatorCapability?: 'served' | 'degraded'
+  readonly capabilityReasonCodes?: readonly string[]
 }

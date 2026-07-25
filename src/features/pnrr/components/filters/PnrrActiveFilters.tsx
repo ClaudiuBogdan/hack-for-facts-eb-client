@@ -310,7 +310,11 @@ export function PnrrActiveFilters({
                 type="button"
                 onClick={chip.onRemove}
                 className="inline-flex h-4 w-4 shrink-0 items-center justify-center text-[var(--pnrr-fg)]/70 transition-colors hover:text-[var(--pnrr-fg)]"
-                aria-label={t`Remove filter`}
+                aria-label={
+                  chip.prefix
+                    ? t`Remove ${chip.prefix} filter: ${chip.value}`
+                    : t`Remove filter: ${chip.value}`
+                }
               >
                 <X className="h-3 w-3" />
               </button>
@@ -319,7 +323,7 @@ export function PnrrActiveFilters({
         </div>
         <button
           type="button"
-          onClick={filterState.clearFilters}
+          onClick={() => filterState.clearFilters()}
           className="hidden shrink-0 text-sm text-[var(--pnrr-fg)] underline underline-offset-4 transition-colors hover:text-[var(--pnrr-muted)] sm:inline-flex"
         >
           <Trans>Clear all</Trans>
@@ -362,7 +366,7 @@ export function PnrrActiveFilters({
 
       <button
         type="button"
-        onClick={filterState.clearFilters}
+        onClick={() => filterState.clearFilters()}
         className="shrink-0 text-sm text-[var(--pnrr-fg)] underline underline-offset-4 transition-colors hover:text-[var(--pnrr-muted)] sm:mt-1"
       >
         <Trans>Clear all</Trans>

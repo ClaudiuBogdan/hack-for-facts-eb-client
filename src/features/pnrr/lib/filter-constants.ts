@@ -10,6 +10,7 @@ export type ProgressCategoryKey =
   | 'advanced'
   | 'mid'
   | 'under30'
+  | 'in-implementation'
   | 'not-started'
   | 'unknown'
 
@@ -20,6 +21,7 @@ export const PROGRESS_CATEGORY_LABELS: Readonly<
   advanced: t`Avansate (70-99%)`,
   mid: t`In progress (30-70%)`,
   under30: t`Sub 30%`,
+  'in-implementation': t`In implementation (percentage not published)`,
   'not-started': t`Not started`,
   unknown: t`Unknown`,
 }
@@ -36,6 +38,7 @@ export const PROGRESS_CATEGORY_TO_STATUS: Readonly<
   advanced: 'advanced',
   mid: 'mid-progress',
   under30: 'under-30',
+  'in-implementation': 'in-implementation',
   'not-started': 'not-started',
   unknown: 'unknown',
 }

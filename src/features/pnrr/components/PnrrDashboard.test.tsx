@@ -242,6 +242,8 @@ function makeWorkerResult(
       topComponents: [],
       topCounties: [],
       topBeneficiaries: [],
+      beneficiaryRankingSource: 'listed-project-value',
+      beneficiaryRankingScope: 'filtered',
       projectPreviewRows: [],
       emblematicProjectRows: [],
       histogram: {

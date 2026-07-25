@@ -75,7 +75,7 @@ describe('pnrr-share-image', () => {
     expect(viewModel.completedCount).toBe('9 mii')
     expect(viewModel.topComponent).toBe('Transformare digitala')
     expect(viewModel.topCounty).toBe('Cluj')
-    expect(viewModel.updatedLabel).toContain('2026')
+    expect(viewModel.updatedLabel).toBe('Set fisiere MIPE 20260619')
   })
 
   it('formats Romanian currency even when the active app locale is English', () => {
@@ -121,7 +121,9 @@ describe('pnrr-share-image', () => {
   })
 
   it('builds cacheable and fallback response headers', () => {
-    expect(buildPnrrShareImageResponseHeaders({ cacheable: true })).toMatchObject({
+    expect(
+      buildPnrrShareImageResponseHeaders({ cacheable: true }),
+    ).toMatchObject({
       'content-type': 'image/png',
       'cdn-cache-control': expect.stringContaining('max-age=86400'),
     })

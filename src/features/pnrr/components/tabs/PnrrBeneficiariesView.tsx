@@ -1,4 +1,10 @@
-import { useState, useEffect, useCallback, memo } from 'react'
+import {
+  useState,
+  useEffect,
+  useCallback,
+  memo,
+  type KeyboardEvent,
+} from 'react'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import { formatNumber } from '@/lib/utils'
@@ -88,6 +94,14 @@ const BeneficiaryRow = memo(function BeneficiaryRow({
     <TableRow
       className="cursor-pointer border-b-2 border-[var(--pnrr-border)] transition-colors hover:bg-[var(--pnrr-bg)]"
       onClick={() => onSelect(b)}
+      tabIndex={0}
+      aria-label={t`Open beneficiary details: ${b.name}`}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onSelect(b)
+        }
+      }}
     >
       <TableCell className="max-w-[300px]">
         <div className="flex flex-col">
@@ -133,6 +147,57 @@ const BeneficiaryRow = memo(function BeneficiaryRow({
     </TableRow>
   )
 })
+
+function BeneficiaryCard({
+  beneficiary,
+  currency,
+  onSelect,
+}: {
+  readonly beneficiary: PnrrWorkerBeneficiaryRow
+  readonly currency: 'RON' | 'EUR' | 'USD'
+  readonly onSelect: (beneficiary: PnrrWorkerBeneficiaryRow) => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(beneficiary)}
+      className="w-full border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+    >
+      <span className="block font-black text-[var(--pnrr-fg)]">
+        {beneficiary.name}
+      </span>
+      {beneficiary.cui && (
+        <span className="mt-1 block text-xs text-[var(--pnrr-muted)]">
+          CUI {beneficiary.cui}
+        </span>
+      )}
+      <span className="mt-3 grid grid-cols-2 gap-3 text-sm">
+        <span>
+          <span className="block text-xs font-bold uppercase text-[var(--pnrr-muted)]">
+            <Trans>Projects</Trans>
+          </span>
+          <span className="font-black text-[var(--pnrr-fg)]">
+            {beneficiary.count.toLocaleString('ro-RO')}
+          </span>
+        </span>
+        <span className="text-right">
+          <span className="block text-xs font-bold uppercase text-[var(--pnrr-muted)]">
+            <Trans>Listed EU funding</Trans>
+          </span>
+          <span className="font-black text-[var(--pnrr-fg)]">
+            {formatPnrrCurrency(beneficiary.value, currency)}
+          </span>
+        </span>
+      </span>
+      <span className="mt-3 block text-xs font-bold text-[var(--pnrr-muted)]">
+        <Trans>Average reported technical progress</Trans>:{' '}
+        {beneficiary.techProgressAvg === null
+          ? t`No exact percentage`
+          : `${formatNumber(beneficiary.techProgressAvg)}%`}
+      </span>
+    </button>
+  )
+}
 
 export function PnrrBeneficiariesView({
   page,
@@ -195,6 +260,18 @@ export function PnrrBeneficiariesView({
       }
     },
     [setBeneficiarySorting, sortKey, sortOrder],
+  )
+  const handleSortKeyDown = useCallback(
+    (
+      event: KeyboardEvent<HTMLTableCellElement>,
+      key: PnrrBeneficiarySortBy,
+    ) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault()
+        toggleSort(key)
+      }
+    },
+    [toggleSort],
   )
 
   const goToPage = useCallback(
@@ -269,8 +346,19 @@ export function PnrrBeneficiariesView({
         )}
       </div>
 
+      {page.totalCount === 0 ? (
+        <div className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-8 text-center">
+          <p className="font-black text-[var(--pnrr-fg)]">
+            <Trans>No beneficiaries found</Trans>
+          </p>
+          <p className="mt-1 text-sm text-[var(--pnrr-muted)]">
+            <Trans>Change the search or active filters and try again.</Trans>
+          </p>
+        </div>
+      ) : (
+        <>
       <div
-        className="overflow-x-auto border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]"
+        className="hidden overflow-x-auto border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] md:block"
         style={{ borderRadius: '6px' }}
       >
         <Table>
@@ -279,6 +367,17 @@ export function PnrrBeneficiariesView({
               <TableHead
                 className="cursor-pointer text-sm font-black text-[var(--pnrr-fg)]"
                 onClick={() => toggleSort('beneficiary')}
+                tabIndex={0}
+                aria-sort={
+                  sortKey === 'beneficiary'
+                    ? sortOrder === 'asc'
+                      ? 'ascending'
+                      : 'descending'
+                    : 'none'
+                }
+                onKeyDown={(event) =>
+                  handleSortKeyDown(event, 'beneficiary')
+                }
               >
                 <span className="inline-flex items-center">
                   <Trans>Beneficiary</Trans>
@@ -291,6 +390,15 @@ export function PnrrBeneficiariesView({
               <TableHead
                 className="w-[100px] cursor-pointer text-right text-sm font-black text-[var(--pnrr-fg)]"
                 onClick={() => toggleSort('count')}
+                tabIndex={0}
+                aria-sort={
+                  sortKey === 'count'
+                    ? sortOrder === 'asc'
+                      ? 'ascending'
+                      : 'descending'
+                    : 'none'
+                }
+                onKeyDown={(event) => handleSortKeyDown(event, 'count')}
               >
                 <span className="inline-flex items-center justify-end">
                   <Trans>Projects</Trans>
@@ -300,6 +408,15 @@ export function PnrrBeneficiariesView({
               <TableHead
                 className="w-[100px] cursor-pointer text-sm font-black text-[var(--pnrr-fg)]"
                 onClick={() => toggleSort('component')}
+                tabIndex={0}
+                aria-sort={
+                  sortKey === 'component'
+                    ? sortOrder === 'asc'
+                      ? 'ascending'
+                      : 'descending'
+                    : 'none'
+                }
+                onKeyDown={(event) => handleSortKeyDown(event, 'component')}
               >
                 <span className="inline-flex items-center">
                   <Trans>Comp.</Trans>
@@ -312,15 +429,35 @@ export function PnrrBeneficiariesView({
               <TableHead
                 className="w-[140px] cursor-pointer text-right text-sm font-black text-[var(--pnrr-fg)]"
                 onClick={() => toggleSort('value')}
+                tabIndex={0}
+                aria-sort={
+                  sortKey === 'value'
+                    ? sortOrder === 'asc'
+                      ? 'ascending'
+                      : 'descending'
+                    : 'none'
+                }
+                onKeyDown={(event) => handleSortKeyDown(event, 'value')}
               >
                 <span className="inline-flex items-center justify-end">
-                  <Trans>Value</Trans>
+                  <Trans>EU funding</Trans>
                   <SortIcon active={sortKey === 'value'} order={sortOrder} />
                 </span>
               </TableHead>
               <TableHead
                 className="w-[120px] cursor-pointer text-right text-sm font-black text-[var(--pnrr-fg)]"
                 onClick={() => toggleSort('techProgress')}
+                tabIndex={0}
+                aria-sort={
+                  sortKey === 'techProgress'
+                    ? sortOrder === 'asc'
+                      ? 'ascending'
+                      : 'descending'
+                    : 'none'
+                }
+                onKeyDown={(event) =>
+                  handleSortKeyDown(event, 'techProgress')
+                }
               >
                 <span className="inline-flex items-center justify-end">
                   <Trans>Reported technical progress</Trans>
@@ -333,6 +470,17 @@ export function PnrrBeneficiariesView({
               <TableHead
                 className="w-[120px] cursor-pointer text-right text-sm font-black text-[var(--pnrr-fg)]"
                 onClick={() => toggleSort('finProgress')}
+                tabIndex={0}
+                aria-sort={
+                  sortKey === 'finProgress'
+                    ? sortOrder === 'asc'
+                      ? 'ascending'
+                      : 'descending'
+                    : 'none'
+                }
+                onKeyDown={(event) =>
+                  handleSortKeyDown(event, 'finProgress')
+                }
               >
                 <span className="inline-flex items-center justify-end">
                   <Trans>Reported financial progress</Trans>
@@ -356,6 +504,18 @@ export function PnrrBeneficiariesView({
           </TableBody>
         </Table>
       </div>
+          <div className="space-y-3 md:hidden">
+            {page.rows.map((beneficiary) => (
+              <BeneficiaryCard
+                key={`${beneficiary.name}\u0000${beneficiary.cui ?? ''}`}
+                beneficiary={beneficiary}
+                currency={currency}
+                onSelect={handleBeneficiarySelect}
+              />
+            ))}
+          </div>
+        </>
+      )}
 
       {/* Pagination */}
       <div className="flex items-center justify-between gap-3">
@@ -455,6 +615,7 @@ function makeBeneficiaryPlaceholder(cui: string): PnrrWorkerBeneficiaryRow {
   return {
     name: cui,
     cui,
+    aliases: [],
     count: 0,
     value: 0,
     techProgressAvg: null,
@@ -480,7 +641,11 @@ function BeneficiaryDrawer({
   const beneficiaryKey = beneficiary
     ? `${beneficiary.name}\u0000${beneficiary.cui ?? ''}`
     : null
-  const { data: detailResult } = usePnrrBeneficiaryDetail(
+  const {
+    data: detailResult,
+    isLoading: isDetailLoading,
+    isError: isDetailError,
+  } = usePnrrBeneficiaryDetail(
     beneficiaryKey,
     search,
     beneficiary?.cui ?? null,
@@ -495,12 +660,8 @@ function BeneficiaryDrawer({
     .slice(0, TOP_PROJECT_LIMIT)
   const techAvg = displayBeneficiary.techProgressAvg
   const finAvg = displayBeneficiary.finProgressAvg
-  const riskCount = (detail?.projects ?? []).filter(
-    (project) => project.anomalies.length > 0,
-  ).length
-  const dataQualityCount = (detail?.projects ?? []).filter(
-    (project) => project.dataQualitySignals.length > 0,
-  ).length
+  const riskCount = detail?.riskProjectCount ?? 0
+  const dataQualityCount = detail?.dataQualityProjectCount ?? 0
 
   return (
     <Sheet open={!!beneficiary} onOpenChange={(open) => !open && onClose()}>
@@ -531,24 +692,55 @@ function BeneficiaryDrawer({
             {displayBeneficiary.name}
           </SheetTitle>
           <SheetDescription className="text-left text-sm font-medium text-[var(--pnrr-muted)]">
-            {displayBeneficiary.count.toLocaleString('ro-RO')}{' '}
-            <Trans>PNRR projects</Trans>
+            {isDetailLoading ? (
+              <Trans>Loading the complete beneficiary workspace…</Trans>
+            ) : (
+              <>
+                {displayBeneficiary.count.toLocaleString('ro-RO')}{' '}
+                <Trans>PNRR projects</Trans>
+              </>
+            )}
+            {displayBeneficiary.aliases.length > 0 && (
+              <span className="mt-1 block">
+                <Trans>Also published as:</Trans>{' '}
+                {displayBeneficiary.aliases.join(' · ')}
+              </span>
+            )}
           </SheetDescription>
         </SheetHeader>
 
         <div className="space-y-4 p-5">
+          {isDetailError && (
+            <div
+              className="border-2 border-[var(--pnrr-orange)] bg-[var(--pnrr-card)] p-4 text-sm font-bold text-[var(--pnrr-fg)]"
+              role="alert"
+            >
+              <Trans>
+                The beneficiary detail could not be loaded. Summary values
+                below may be incomplete.
+              </Trans>
+            </div>
+          )}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <BeneficiaryMetric
-              label={t`Listed project value`}
-              value={formatPnrrCurrency(
-                displayBeneficiary.value,
-                currency,
-                'standard',
-              )}
+              label={t`Listed EU funding`}
+              value={
+                isDetailLoading
+                  ? '—'
+                  : formatPnrrCurrency(
+                      displayBeneficiary.value,
+                      currency,
+                      'standard',
+                    )
+              }
             />
             <BeneficiaryMetric
               label={t`Projects`}
-              value={displayBeneficiary.count.toLocaleString('ro-RO')}
+              value={
+                isDetailLoading
+                  ? '—'
+                  : displayBeneficiary.count.toLocaleString('ro-RO')
+              }
             />
             <BeneficiaryMetric
               label={t`Average reported technical progress`}
@@ -670,9 +862,15 @@ function TopProjectItem({
   const component = PNRR_COMPONENTS[project.componentCode]
   const color = component?.color ?? 'var(--pnrr-blue)'
   const techValue =
-    project.techProgress === 'in-implementation'
-      ? 15
-      : (project.techProgress ?? 0)
+    typeof project.techProgress === 'number' ? project.techProgress : null
+  const techLabel =
+    project.techProgress === 'under-30-reported'
+      ? t`Under 30% (reported category)`
+      : project.techProgress === 'in-implementation'
+        ? t`In implementation (percentage not published)`
+        : techValue === null
+          ? t`N/A`
+          : formatPnrrPercentage(techValue)
 
   return (
     <div className="grid grid-cols-[auto_1fr] gap-3 p-4">
@@ -699,25 +897,32 @@ function TopProjectItem({
           <span className="text-sm font-black tabular-nums text-[var(--pnrr-fg)]">
             {formatPnrrCurrency(project.valueEur, currency)}
           </span>
-          <div className="flex min-w-[160px] items-center gap-2">
-            <div
-              className="h-2 flex-1 rounded-full"
-              style={{ backgroundColor: `${color}26` }}
+          {techValue === null ? (
+            <span
+              className="max-w-48 text-right text-xs font-bold text-[var(--pnrr-muted)]"
+              title={techLabel}
             >
-              <div
-                className="h-full rounded-full"
-                style={{
-                  width: `${Math.min(techValue, 100)}%`,
-                  backgroundColor: color,
-                }}
-              />
-            </div>
-            <span className="w-14 text-right text-xs tabular-nums text-[var(--pnrr-fg)]">
-              {project.techProgress === 'in-implementation'
-                ? '<30%'
-                : formatPnrrPercentage(techValue)}
+              {techLabel}
             </span>
-          </div>
+          ) : (
+            <div className="flex min-w-[160px] items-center gap-2">
+              <div
+                className="h-2 flex-1 rounded-full"
+                style={{ backgroundColor: `${color}26` }}
+              >
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${Math.min(techValue, 100)}%`,
+                    backgroundColor: color,
+                  }}
+                />
+              </div>
+              <span className="w-14 text-right text-xs tabular-nums text-[var(--pnrr-fg)]">
+                {techLabel}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>
