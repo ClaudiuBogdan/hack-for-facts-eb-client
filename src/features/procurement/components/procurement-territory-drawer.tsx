@@ -151,7 +151,7 @@ export function ProcurementTerritoryDrawer({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="flex h-full w-full max-w-full flex-col gap-0 overflow-hidden border-l-2 border-[var(--pnrr-border)] p-0 sm:max-w-lg">
-        <SheetHeader className="shrink-0 border-b-2 border-[var(--pnrr-border)] p-6 pr-14 text-left">
+        <SheetHeader className="shrink-0 border-b-2 border-[var(--pnrr-border)] px-4 py-5 pr-12 text-left">
           <div className="flex flex-wrap items-center gap-2">
             <SheetTitle className="text-2xl font-black tracking-tight text-[var(--pnrr-fg)]">
               {title}
@@ -178,8 +178,8 @@ export function ProcurementTerritoryDrawer({
           </SheetDescription>
         </SheetHeader>
 
-        <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain p-6">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-3 py-4 sm:px-4">
+          <div className="grid grid-cols-2 gap-3">
             <Metric
               label={t`Records`}
               value={
@@ -208,7 +208,7 @@ export function ProcurementTerritoryDrawer({
             <ProcurementAnswerabilityNotice metas={[analytics.stats.meta]} />
           ) : null}
 
-          <div className="space-y-5">
+          <div className="space-y-4">
             {/* A card whose dimension the hub scope FIXES is skipped by the
                 request — hide it instead of faking "no data" (C1). */}
             {hubState.authority_cui ? null : isPending ? (
@@ -237,6 +237,7 @@ export function ProcurementTerritoryDrawer({
                 rows={analytics?.topAuthorities ?? []}
                 kind="authority"
                 grain={analysisGrain}
+                compact
               />
             )}
 
@@ -266,6 +267,7 @@ export function ProcurementTerritoryDrawer({
                 rows={analytics?.topSuppliers ?? []}
                 kind="supplier"
                 grain={analysisGrain}
+                compact
               />
             )}
 
@@ -294,6 +296,7 @@ export function ProcurementTerritoryDrawer({
                 rows={analytics?.topCategories ?? []}
                 title={cpvTitle}
                 description={cpvDescription}
+                compact
               />
             )}
 
@@ -321,12 +324,13 @@ export function ProcurementTerritoryDrawer({
                 points={analytics?.monthly ?? []}
                 title={monthlyTitle}
                 description={monthlyDescription}
+                compact
               />
             )}
           </div>
         </div>
 
-        <div className="shrink-0 border-t-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] p-4">
+        <div className="shrink-0 border-t-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] px-4 py-3">
           {territoryId ? (
             <Button
               type="button"
@@ -368,7 +372,7 @@ function SectionCard({
 }) {
   return (
     <section className={cn(procurementSectionClassName, 'flex flex-col')}>
-      <div className="space-y-1 px-5 pt-5 sm:px-6 sm:pt-6">
+      <div className="space-y-1 px-4 pt-4">
         <h2 className="text-lg font-bold tracking-tight text-[var(--pnrr-fg)]">
           {title}
         </h2>
@@ -378,7 +382,7 @@ function SectionCard({
           </p>
         ) : null}
       </div>
-      <div className="px-5 pb-5 pt-4 sm:px-6 sm:pb-6">{children}</div>
+      <div className="px-4 pb-4 pt-3">{children}</div>
     </section>
   )
 }
@@ -426,7 +430,7 @@ function Metric({
   readonly loading?: boolean
 }) {
   return (
-    <div className="border-2 border-[var(--pnrr-border)] px-4 py-3">
+    <div className="border-2 border-[var(--pnrr-border)] px-3 py-3">
       <p className="text-xs font-bold uppercase tracking-wide text-[var(--pnrr-muted)]">
         {label}
       </p>

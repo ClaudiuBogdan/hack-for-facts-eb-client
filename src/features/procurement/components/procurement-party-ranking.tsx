@@ -62,6 +62,8 @@ type Props = {
   readonly rows: readonly TopPartyRow[]
   readonly kind: PartyKind
   readonly className?: string
+  /** Tighter card gutters for constrained surfaces such as map drawers. */
+  readonly compact?: boolean
   /** Explicit matrix limitation for a scoped request; distinct from no rows. */
   readonly unavailableReason?: string
   /**
@@ -96,6 +98,7 @@ export function ProcurementPartyRanking({
   rows,
   kind,
   className,
+  compact = false,
   unavailableReason,
   pairScope,
   grain = 'direct_acquisition',
@@ -119,7 +122,12 @@ export function ProcurementPartyRanking({
     <section
       className={cn(procurementSectionClassName, 'flex h-full flex-col', className)}
     >
-      <div className={procurementSectionHeaderClassName}>
+      <div
+        className={cn(
+          procurementSectionHeaderClassName,
+          compact && 'px-4 py-4 sm:px-4 sm:py-4',
+        )}
+      >
         <h2 className={procurementSectionTitleClassName}>{title}</h2>
         {description ? (
           <p className={procurementSectionDescriptionClassName}>
@@ -128,7 +136,13 @@ export function ProcurementPartyRanking({
         ) : null}
       </div>
 
-      <div className={cn(procurementSectionBodyClassName, 'flex-1')}>
+      <div
+        className={cn(
+          procurementSectionBodyClassName,
+          'flex-1',
+          compact && 'px-4 py-3 sm:px-4 sm:py-3',
+        )}
+      >
         {unavailableReason ? (
           <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
             {unavailableReason}
@@ -141,6 +155,7 @@ export function ProcurementPartyRanking({
           <ol
             className={cn(
               'space-y-3',
+              compact && 'space-y-2',
               expanded && hasMore && 'sm:max-h-[28rem] sm:overflow-y-auto',
             )}
           >
@@ -168,6 +183,7 @@ export function ProcurementPartyRanking({
           className={cn(
             procurementSectionFooterClassName,
             'flex flex-wrap items-center justify-between gap-x-4 gap-y-1',
+            compact && 'px-4 sm:px-4',
           )}
         >
           {hasMore ? (

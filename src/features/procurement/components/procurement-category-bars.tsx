@@ -66,6 +66,8 @@ type Props = {
   readonly title?: string
   readonly description?: string
   readonly className?: string
+  /** Tighter card gutters for constrained surfaces such as map drawers. */
+  readonly compact?: boolean
   /** Deep-link to hub Rankings for CPV. */
   readonly rankingsDim?: ProcurementRankDim
   /** Exact hub search for that deep-link (see party ranking). */
@@ -84,6 +86,7 @@ export function ProcurementCategoryBars({
   title,
   description,
   className,
+  compact = false,
   rankingsDim,
   rankingsSearch,
   measure = 'record_count',
@@ -105,7 +108,12 @@ export function ProcurementCategoryBars({
     <section
       className={cn(procurementSectionClassName, 'flex h-full flex-col', className)}
     >
-      <div className={procurementSectionHeaderClassName}>
+      <div
+        className={cn(
+          procurementSectionHeaderClassName,
+          compact && 'px-4 py-4 sm:px-4 sm:py-4',
+        )}
+      >
         <h2 className={procurementSectionTitleClassName}>
           {title ?? t`Spending categories`}
         </h2>
@@ -116,7 +124,13 @@ export function ProcurementCategoryBars({
         </p>
       </div>
 
-      <div className={cn(procurementSectionBodyClassName, 'flex-1')}>
+      <div
+        className={cn(
+          procurementSectionBodyClassName,
+          'flex-1',
+          compact && 'px-4 py-3 sm:px-4 sm:py-3',
+        )}
+      >
         {rows.length === 0 ? (
           <p className="text-sm text-[var(--pnrr-muted)]">
             {select?.activeCode ? (
@@ -283,6 +297,7 @@ export function ProcurementCategoryBars({
           className={cn(
             procurementSectionFooterClassName,
             'flex flex-wrap items-center justify-between gap-x-4 gap-y-1',
+            compact && 'px-4 sm:px-4',
           )}
         >
           {select?.activeCode ? (

@@ -19,6 +19,8 @@ type Props = {
   readonly title?: string
   readonly description?: string
   readonly className?: string
+  /** Tighter card gutters for constrained surfaces such as map drawers. */
+  readonly compact?: boolean
   readonly measure?: ProcurementHubMeasure
   /**
    * Name of the money series when it is not the default awarded value
@@ -56,6 +58,7 @@ export function ProcurementMonthlyChart({
   title,
   description,
   className,
+  compact = false,
   measure = 'record_count',
   valueLabel,
   select,
@@ -82,7 +85,12 @@ export function ProcurementMonthlyChart({
 
   return (
     <section className={cn(procurementSectionClassName, className)}>
-      <div className={procurementSectionHeaderClassName}>
+      <div
+        className={cn(
+          procurementSectionHeaderClassName,
+          compact && 'px-4 py-4 sm:px-4 sm:py-4',
+        )}
+      >
         <h2 className={procurementSectionTitleClassName}>
           {title ?? t`Monthly volume`}
         </h2>
@@ -90,7 +98,12 @@ export function ProcurementMonthlyChart({
           {description ?? t`Number of records per month.`}
         </p>
       </div>
-      <div className="p-5 sm:p-6">
+      <div
+        className={cn(
+          'p-5 sm:p-6',
+          compact && 'px-4 py-3 sm:px-4 sm:py-3',
+        )}
+      >
         {points.length === 0 ? (
           <p className="text-sm text-[var(--pnrr-muted)]">
             <Trans>No monthly data available.</Trans>
