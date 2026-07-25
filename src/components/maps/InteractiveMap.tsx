@@ -133,6 +133,31 @@ const MAP_STYLE: maplibregl.StyleSpecification = {
 };
 const MAP_TOOLTIP_POPUP_CLASS = 'interactive-map-tooltip-popup';
 
+// Global regexes rather than `replaceAll`: the app compiles against ES2020,
+// where that method does not exist. The ampersand still has to go first, or
+// the escapes introduced below it get double-escaped.
+function escapeAttributionHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function buildMapAttributions(
+  sourceAttribution: InteractiveMapProps['sourceAttribution'],
+): string[] {
+  // MapLibre prepends each custom entry, so input order is the reverse of the
+  // visible attribution row. Put MapLibre first to render source credit left.
+  const attributions = [MAPLIBRE_ATTRIBUTION_HTML];
+  if (sourceAttribution) {
+    attributions.push(
+      `<a href="${escapeAttributionHtml(sourceAttribution.href)}" target="_blank" rel="noopener noreferrer">${escapeAttributionHtml(sourceAttribution.label)}</a>`,
+    );
+  }
+  return attributions;
+}
+
 const NO_FEATURE_FILTER: FilterSpecification = ['==', ['get', '__featureId'], '__none__'];
 const COMMAND_DRAG_MIN_DISTANCE_PX = 6;
 const UAT_LOW_ZOOM_STROKE_FLOOR = 6;
@@ -1757,7 +1782,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       maxBounds: normalizeBounds(maxBounds),
       attributionControl: {
         compact: false,
-        customAttribution: MAPLIBRE_ATTRIBUTION_HTML,
+        customAttribution: buildMapAttributions(sourceAttribution),
       },
       scrollZoom: initialIsInteractionEnabled,
       dragPan: !shouldLockMobilePanByDefault,
@@ -2523,16 +2548,6 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       >
         <PopulationGridIcon />
       </MapLibreOverlayControl>
-      {sourceAttribution ? (
-        <a
-          href={sourceAttribution.href}
-          target="_blank"
-          rel="noreferrer"
-          className="absolute bottom-6 right-2 z-10 max-w-[calc(100%-1rem)] bg-white/90 px-1.5 py-0.5 text-right text-[10px] font-semibold leading-4 text-neutral-700 underline-offset-2 shadow-sm backdrop-blur-sm hover:text-black hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
-        >
-          {sourceAttribution.label}
-        </a>
-      ) : null}
     </div>
   );
 });
@@ -2657,6 +2672,7 @@ function PopulationGridIcon() {
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const __interactiveMapMapLibreTestUtils = {
+  buildMapAttributions,
   sourceIds: {
     main: MAIN_SOURCE_ID,
     countyBoundary: COUNTY_BOUNDARY_SOURCE_ID,
