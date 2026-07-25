@@ -6,6 +6,7 @@ import { __interactiveMapMapLibreTestUtils } from './InteractiveMap';
 import type { HeatmapUATDataPoint } from '@/schemas/heatmap';
 
 const {
+  buildMapAttributions,
   buildLabelLayerZoomRanges,
   buildLabelSourceData,
   buildLabelTextSizeExpression,
@@ -87,6 +88,20 @@ function createCountyFeature(
 }
 
 describe('InteractiveMap MapLibre adapters', () => {
+  it('orders escaped credits for source-left MapLibre rendering', () => {
+    const attributions = buildMapAttributions({
+      href: 'https://example.com/?source=geo&detail="regions"',
+      label: 'Administrative boundaries: <geo-spatial.org>',
+    });
+
+    expect(attributions).toHaveLength(2);
+    expect(attributions[0]).toContain('MapLibre');
+    expect(attributions[1]).toContain(
+      'Administrative boundaries: &lt;geo-spatial.org&gt;',
+    );
+    expect(attributions[1]).toContain('detail=&quot;regions&quot;');
+  });
+
   it('converts Leaflet-style center and bounds to MapLibre longitude-latitude order', () => {
     expect(normalizeCenter([45.9432, 24.9668])).toEqual([24.9668, 45.9432]);
     expect(
