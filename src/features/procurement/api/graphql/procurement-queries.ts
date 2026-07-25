@@ -256,6 +256,13 @@ export const rawStatsBlockSchema = z.object({
    */
   valueAwardedMatchedSum: z.string().nullable(),
   avgValueAwarded: z.string().nullable(),
+  /**
+   * Supplier-money reads only (association dedup): consortium money withheld
+   * from per-supplier totals in this scope — never redistributed. Null on
+   * buyer (attributed) reads, entity scopes, and value-bounded scopes.
+   * `.nullish()`: tolerated as absent so pre-wave servers/fixtures parse.
+   */
+  valueWithheldAssociationSum: z.string().nullish(),
   minMonth: z.string().nullable(),
   maxMonth: z.string().nullable(),
   moneyVerdicts: z.array(rawMoneyVerdictSchema),
@@ -268,6 +275,7 @@ const STATS_BLOCK_FIELDS = /* GraphQL */ `
   valueAwardedSum valueEstimatedSum valueCeilingSum valueModAdjustedSum
   valueAwardedMatchedSum
   avgValueAwarded minMonth maxMonth
+  valueWithheldAssociationSum
   moneyVerdicts { measure answerability reason caveats }
   meta { ${ANSWER_META_FIELDS} }
 `
@@ -291,6 +299,13 @@ export const rawBreakdownBlockSchema = z.object({
   dimension: z.string(),
   rankedBy: z.string().nullable(),
   buckets: z.array(rawBreakdownBucketSchema).nullable(),
+  /**
+   * Supplier-money breakdowns only: consortium money withheld from EVERY
+   * bucket in this scope (buckets + this = the attributed total). The
+   * under-map reconciliation panel renders it; null on buyer breakdowns.
+   * `.nullish()`: tolerated as absent so pre-wave servers/fixtures parse.
+   */
+  valueWithheldAssociationSum: z.string().nullish(),
   meta: rawAnswerMetaSchema,
 })
 export type RawProcurementBreakdownBlock = z.infer<
@@ -300,6 +315,7 @@ export type RawProcurementBreakdownBlock = z.infer<
 const BREAKDOWN_BLOCK_FIELDS = /* GraphQL */ `
   grain dimension rankedBy
   buckets { key kind recordCount withValueCount valueAwardedSum valueSum shareOfScope }
+  valueWithheldAssociationSum
   meta { ${ANSWER_META_FIELDS} }
 `
 
@@ -341,16 +357,30 @@ const rawSearchFacetSchema = z.object({
   buckets: z.array(z.object({ key: z.string(), count: z.number() })),
 })
 
+/**
+ * A match fragment. `title` etc. are the ORIGINAL text with the matched terms
+ * wrapped in U+27E6 … U+27E7 — sentinels, not markup, so the renderer splits
+ * on them and emits its own element (see `highlightSegments`).
+ */
+const rawSearchHighlightSchema = z.object({
+  id: z.string(),
+  title: z.string().nullable().optional(),
+  authorityName: z.string().nullable().optional(),
+  supplierName: z.string().nullable().optional(),
+})
+
 const rawPageFields = {
   total: z.number().nullable(),
   totalEstimated: z.boolean(),
   provenance: rawSearchProvenanceSchema,
   facets: z.array(rawSearchFacetSchema).nullable().optional(),
+  highlights: z.array(rawSearchHighlightSchema).nullable().optional(),
 }
 
 const PAGE_META_FIELDS = /* GraphQL */ `
   total totalEstimated
   provenance { engine asOf }
+  highlights { id title authorityName supplierName }
 `
 
 export const PROCUREMENT_PROCEDURES_QUERY = /* GraphQL */ `
@@ -554,40 +584,56 @@ export type RawProcurementAggregates = z.infer<
 // Party identity enrichment
 // ---------------------------------------------------------------------------
 
-const rawPartyNameNodeSchema = z.object({
+/**
+ * One spine label per requested CUI. `canonicalName` is null unless
+ * `status === 'named'`, so callers must read the status rather than treat a null
+ * name as "missing".
+ */
+const rawPartyLabelSchema = z.object({
   cui: z.string(),
-  name: z.string(),
+  canonicalName: z.string().nullable(),
+  status: z.enum(['named', 'placeholder', 'not_found']),
 })
 
-const rawPartyNameConnectionSchema = z.object({
-  edges: z.array(z.object({ node: rawPartyNameNodeSchema })),
-})
-
+/**
+ * Party names come from the identity SPINE, not from role registries.
+ *
+ * This previously asked `referencePublicEntities` for buyers and `companies` for
+ * suppliers. Both are role registries: a buyer that is a state company (CFR,
+ * CNI, Transgaz, Nuclearelectrica…) is absent from the public-institution
+ * registry, so 1,799 of 8,268 procurement buyers — 41.5% of contract award
+ * money — rendered as a bare CUI. `referenceOrganizationLabels` reads
+ * `core.organizations`, which covers every role in one query.
+ *
+ * It also removes a cap defect: the old form paged the registries with
+ * `first: 50` while the rankings ask for the top 100, so rows 51-100 were
+ * unnameable by construction. A CUI list has no page.
+ */
 export const PROCUREMENT_PARTY_NAMES_QUERY = /* GraphQL */ `
   query ProcurementPartyNames(
-    $authorityCuis: [String!]!
-    $supplierCuis: [String!]!
+    $authorityCuis: [CUI!]!
+    $supplierCuis: [CUI!]!
     $includeAuthorities: Boolean!
     $includeSuppliers: Boolean!
   ) {
-    authorities: referencePublicEntities(
-      filter: { cui: { in: $authorityCuis } }
-      first: 50
-    ) @include(if: $includeAuthorities) {
-      edges { node { cui name } }
+    authorities: referenceOrganizationLabels(cuis: $authorityCuis)
+      @include(if: $includeAuthorities) {
+      cui
+      canonicalName
+      status
     }
-    suppliers: companies(
-      filter: { cui: { in: $supplierCuis } }
-      first: 50
-    ) @include(if: $includeSuppliers) {
-      edges { node { cui name } }
+    suppliers: referenceOrganizationLabels(cuis: $supplierCuis)
+      @include(if: $includeSuppliers) {
+      cui
+      canonicalName
+      status
     }
   }
 `
 
 export const procurementPartyNamesResponseSchema = z.object({
-  authorities: rawPartyNameConnectionSchema.optional(),
-  suppliers: rawPartyNameConnectionSchema.optional(),
+  authorities: z.array(rawPartyLabelSchema).optional(),
+  suppliers: z.array(rawPartyLabelSchema).optional(),
 })
 
 

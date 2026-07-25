@@ -203,6 +203,45 @@ export function ProcurementValueModelMethodology() {
         </p>
       </Section>
 
+      <Section title="Geografia: cum se reconciliază hărțile">
+        <p>
+          Harta cumpărătorilor și harta furnizorilor pornesc din aceiași bani,
+          dar nu vor arăta niciodată identic — iar panoul de sub hartă arată
+          exact de ce, ca cifrele să se închidă în fața cititorului:
+        </p>
+        <ul className="list-disc space-y-2 pl-5">
+          <li>
+            <strong>Locația cumpărătorului</strong> este teritoriul
+            administrativ al instituției; pentru companiile publice naționale
+            (CNIR, CFR, Metrorex…) care nu au un teritoriu administrativ,
+            folosim <strong>sediul social înregistrat la ONRC</strong> — banii
+            lor apar deci în județul sediului (cel mai des București), nu acolo
+            unde se execută lucrarea. Proveniența fiecărei atribuiri
+            (administrativă vs. sediu) este înregistrată pe fiecare rând.
+          </li>
+          <li>
+            <strong>Locația furnizorului</strong> este sediul social
+            înregistrat; furnizorii străini sau nerezolvați rămân în categoria
+            „fără locație cunoscută”, afișată sub hartă — niciodată pictată ca
+            zero.
+          </li>
+          <li>
+            <strong>Consorțiile (asocierile de firme)</strong> câștigă
+            contracte fără să publice împărțirea internă a banilor. Suma lor —
+            peste jumătate din banii contractelor din unii ani — este
+            dezvăluită sub harta furnizorilor ca sumă globală{' '}
+            <strong>neatribuibilă</strong> vreunui furnizor sau teritoriu,
+            niciodată redistribuită pe ghicite.
+          </li>
+        </ul>
+        <p>
+          Procentele de acoperire se afișează în două ponderi: pe{' '}
+          <strong>înregistrări</strong> și pe <strong>banii atribuiți</strong> —
+          înregistrările fără teritoriu sunt puține, dar mari, deci cele două
+          procente diferă substanțial și ambele sunt spuse.
+        </p>
+      </Section>
+
       <Section title="De ce diferă totalurile între logici">
         <p>
           Cele cinci logici măsoară lucruri diferite pe populații diferite:

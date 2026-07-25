@@ -51,6 +51,7 @@ import {
   selectionGrainFromPaintMode,
   type ProcurementRegionMapBucket,
 } from '../lib/procurement-map-series'
+import { ProcurementMapReconciliationPanel } from './procurement-map-reconciliation-panel'
 import { ProcurementPreviewBadge } from './procurement-preview-badge'
 import { ProcurementTerritoryDrawer } from './procurement-territory-drawer'
 import { ProcurementErrorState } from './procurement-error-state'
@@ -663,6 +664,21 @@ export function ProcurementMapView({
           </div>
         ) : null}
       </div>
+
+      {facetBlock &&
+      !mapAnalysisPlan.paintMode.startsWith('single-') &&
+      facetBlock.meta.answerability !== 'abstained' ? (
+        // The maps must reconcile in front of the reader (geo/disclosure
+        // wave): named + no-geography (+ withheld consortium mass on the
+        // supplier side) = the scope total. Same facet block the map paints
+        // from — no extra fetch.
+        <ProcurementMapReconciliationPanel
+          buckets={facetBlock.buckets ?? []}
+          withheldRon={facetBlock.valueWithheldAssociationSum ?? null}
+          mapParty={mapParty}
+          measure={measure}
+        />
+      ) : null}
 
       <ProcurementTerritoryDrawer
         open={drawerOpen}
