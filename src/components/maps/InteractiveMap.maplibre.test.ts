@@ -91,15 +91,15 @@ describe('InteractiveMap MapLibre adapters', () => {
   it('orders escaped credits for source-left MapLibre rendering', () => {
     const attributions = buildMapAttributions({
       href: 'https://example.com/?source=geo&detail="regions"',
-      label: 'Administrative boundaries: <geo-spatial.org>',
+      label: '<geo-spatial.org>',
     });
 
-    expect(attributions).toHaveLength(2);
-    expect(attributions[0]).toContain('MapLibre');
-    expect(attributions[1]).toContain(
-      'Administrative boundaries: &lt;geo-spatial.org&gt;',
+    expect(attributions).toHaveLength(1);
+    expect(attributions[0]).toContain('&lt;geo-spatial.org&gt;');
+    expect(attributions[0]).toContain('detail=&quot;regions&quot;');
+    expect(attributions[0].indexOf('geo-spatial.org')).toBeLessThan(
+      attributions[0].indexOf('MapLibre'),
     );
-    expect(attributions[1]).toContain('detail=&quot;regions&quot;');
   });
 
   it('converts Leaflet-style center and bounds to MapLibre longitude-latitude order', () => {

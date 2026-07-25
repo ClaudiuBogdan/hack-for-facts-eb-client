@@ -147,15 +147,15 @@ function escapeAttributionHtml(value: string): string {
 function buildMapAttributions(
   sourceAttribution: InteractiveMapProps['sourceAttribution'],
 ): string[] {
-  // MapLibre prepends each custom entry, so input order is the reverse of the
-  // visible attribution row. Put MapLibre first to render source credit left.
-  const attributions = [MAPLIBRE_ATTRIBUTION_HTML];
-  if (sourceAttribution) {
-    attributions.push(
-      `<a href="${escapeAttributionHtml(sourceAttribution.href)}" target="_blank" rel="noopener noreferrer">${escapeAttributionHtml(sourceAttribution.label)}</a>`,
-    );
+  if (!sourceAttribution) {
+    return [MAPLIBRE_ATTRIBUTION_HTML];
   }
-  return attributions;
+
+  // MapLibre sorts separate attribution entries by HTML length. Keep both
+  // credits in one native entry so the source remains immediately to its left.
+  const sourceAttributionHtml =
+    `<a href="${escapeAttributionHtml(sourceAttribution.href)}" target="_blank" rel="noopener noreferrer">${escapeAttributionHtml(sourceAttribution.label)}</a>`;
+  return [`${sourceAttributionHtml} | ${MAPLIBRE_ATTRIBUTION_HTML}`];
 }
 
 const NO_FEATURE_FILTER: FilterSpecification = ['==', ['get', '__featureId'], '__none__'];

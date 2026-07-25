@@ -684,7 +684,7 @@ export function ProcurementMapView({
                 scrollWheelZoom
                 sourceAttribution={{
                   href: GEO_SPATIAL_BOUNDARIES_URL,
-                  label: t`Administrative boundaries: geo-spatial.org`,
+                  label: 'geo-spatial.org',
                 }}
               />
             </Suspense>

@@ -1357,8 +1357,8 @@ msgid "Adjusted value"
 msgstr ""
 
 #: src/features/procurement/components/procurement-map-view.tsx:687
-msgid "Administrative boundaries: geo-spatial.org"
-msgstr ""
+#~ msgid "Administrative boundaries: geo-spatial.org"
+#~ msgstr ""
 
 #: src/features/private-companies/components/sections/private-company-location-section.tsx:68
 msgid "Administrative location (API)"
@@ -8621,11 +8621,11 @@ msgstr "Ascunde detaliile"
 msgid "Hide Map Controls"
 msgstr "Ascunde controalele hărții"
 
-#: src/components/maps/InteractiveMap.tsx:2540
+#: src/components/maps/InteractiveMap.tsx:2544
 msgid "Hide population grid"
 msgstr "Ascunde grila populației"
 
-#: src/components/maps/InteractiveMap.tsx:2531
+#: src/components/maps/InteractiveMap.tsx:2535
 msgid "Hide roads"
 msgstr "Ascunde drumurile"
 
@@ -10860,7 +10860,7 @@ msgstr "Filtre hartă"
 msgid "Map geometry is unavailable."
 msgstr "Geometria hărții nu este disponibilă."
 
-#: src/components/maps/InteractiveMap.tsx:2507
+#: src/components/maps/InteractiveMap.tsx:2511
 msgid "Map geometry not available."
 msgstr "Geometria hărții nu este disponibilă."
 
@@ -10868,12 +10868,12 @@ msgstr "Geometria hărții nu este disponibilă."
 msgid "Map geometry unavailable."
 msgstr "Geometria hărții indisponibilă."
 
-#: src/components/maps/InteractiveMap.tsx:1496
+#: src/components/maps/InteractiveMap.tsx:1500
 #: src/components/maps/ScrollWheelZoomControl.tsx:38
 msgid "Map interaction: Off"
 msgstr "Interacțiune hartă: Dezactivată"
 
-#: src/components/maps/InteractiveMap.tsx:1493
+#: src/components/maps/InteractiveMap.tsx:1497
 #: src/components/maps/ScrollWheelZoomControl.tsx:35
 msgid "Map interaction: On"
 msgstr "Interacțiune hartă: Activată"
@@ -14232,11 +14232,11 @@ msgstr "Populație (POP107D)"
 msgid "Population field"
 msgstr "Câmp populație"
 
-#: src/components/maps/InteractiveMap.tsx:2541
+#: src/components/maps/InteractiveMap.tsx:2545
 msgid "Population grid: Off"
 msgstr "Grilă populație: Oprit"
 
-#: src/components/maps/InteractiveMap.tsx:2541
+#: src/components/maps/InteractiveMap.tsx:2545
 msgid "Population grid: On"
 msgstr "Grilă populație: Pornit"
 
@@ -15901,11 +15901,11 @@ msgstr ""
 msgid "Rezumatul în limbaj simplu nu este încă disponibil"
 msgstr ""
 
-#: src/components/maps/InteractiveMap.tsx:2532
+#: src/components/maps/InteractiveMap.tsx:2536
 msgid "Roads: Off"
 msgstr "Drumuri: Oprit"
 
-#: src/components/maps/InteractiveMap.tsx:2532
+#: src/components/maps/InteractiveMap.tsx:2536
 msgid "Roads: On"
 msgstr "Drumuri: Pornit"
 
@@ -16103,12 +16103,12 @@ msgstr ""
 msgid "Scrie numele unei localități sau al unui județ. Căutarea ignoră diacriticele."
 msgstr ""
 
-#: src/components/maps/InteractiveMap.tsx:1497
+#: src/components/maps/InteractiveMap.tsx:1501
 #: src/components/maps/ScrollWheelZoomControl.tsx:39
 msgid "Scroll zoom: Off"
 msgstr "Zoom la scroll: Dezactivat"
 
-#: src/components/maps/InteractiveMap.tsx:1494
+#: src/components/maps/InteractiveMap.tsx:1498
 #: src/components/maps/ScrollWheelZoomControl.tsx:36
 msgid "Scroll zoom: On"
 msgstr "Zoom la scroll: Activat"
@@ -17088,7 +17088,7 @@ msgstr "Afișează mai multe"
 msgid "Show period-over-period growth"
 msgstr "Afișează creșterea de la o perioadă la alta"
 
-#: src/components/maps/InteractiveMap.tsx:2540
+#: src/components/maps/InteractiveMap.tsx:2544
 msgid "Show population grid"
 msgstr "Afișează grila populației"
 
@@ -17104,7 +17104,7 @@ msgstr ""
 msgid "Show revenue"
 msgstr "Arată venituri"
 
-#: src/components/maps/InteractiveMap.tsx:2531
+#: src/components/maps/InteractiveMap.tsx:2535
 msgid "Show roads"
 msgstr "Afișează drumurile"
 
@@ -18969,7 +18969,7 @@ msgstr "Comută limitele județene"
 msgid "Toggle enhanced error reporting"
 msgstr "Comutare raportare avansată a erorilor"
 
-#: src/components/maps/InteractiveMap.tsx:1489
+#: src/components/maps/InteractiveMap.tsx:1493
 #: src/components/maps/ScrollWheelZoomControl.tsx:31
 msgid "Toggle map interaction"
 msgstr "Comută interacțiunea cu harta"
@@ -18982,7 +18982,7 @@ msgstr "Comută vizibilitatea hărții"
 msgid "Toggle notifications for {name}"
 msgstr "Comută notificările pentru {name}"
 
-#: src/components/maps/InteractiveMap.tsx:1490
+#: src/components/maps/InteractiveMap.tsx:1494
 #: src/components/maps/ScrollWheelZoomControl.tsx:32
 msgid "Toggle scroll zoom"
 msgstr "Comută zoomul la scroll"
