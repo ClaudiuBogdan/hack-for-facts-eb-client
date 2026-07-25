@@ -52,7 +52,6 @@ import {
   type ProcurementRegionMapBucket,
 } from '../lib/procurement-map-series'
 import { ProcurementMapReconciliationPanel } from './procurement-map-reconciliation-panel'
-import { ProcurementPreviewBadge } from './procurement-preview-badge'
 import { ProcurementTerritoryDrawer } from './procurement-territory-drawer'
 import { ProcurementErrorState } from './procurement-error-state'
 import {
@@ -72,7 +71,19 @@ const InteractiveMap = lazy(() =>
 const MAP_COLOR_MIN_PERCENTILE = 5
 const MAP_COLOR_MAX_PERCENTILE = 95
 const DEFAULT_CENTER: [number, number] = [45.9432, 24.9668]
-const DEFAULT_ZOOM = 6.4
+const DEFAULT_ZOOM = 5.5
+const GEO_SPATIAL_BOUNDARIES_URL =
+  'https://geo-spatial.org/descarcare/date/administrative-boundaries/'
+// Lat/lng bounds deliberately extend beyond Romania. MapLibre constrains the
+// minimum camera zoom to `maxBounds`; the tighter shared bounds crop the
+// country on wide procurement-map viewports.
+const PROCUREMENT_MAP_MAX_BOUNDS: [
+  [number, number],
+  [number, number],
+] = [
+  [36, 17],
+  [56, 33],
+]
 
 type MapSelection = {
   readonly id: string
@@ -133,8 +144,9 @@ export function ProcurementMapView({
     supplierSiruta: hubState.supplierSiruta,
   })
   const selectionGrain = selectionGrainFromPaintMode(mapAnalysisPlan.paintMode)
-  // Geometry follows the PAINT mode, not the toolbar: a scoped UAT under a
-  // region/county toolbar paints its single locality on the UAT layer.
+  // Geometry follows the PAINT mode, not the toolbar: scoped county/UAT
+  // drills under a region toolbar keep their finer polygon layer.
+  const paintIsRegion = selectionGrain === 'region'
   const paintIsUat = selectionGrain === 'uat'
   const mapViewType = paintIsUat ? 'UAT' : 'County'
 
@@ -264,11 +276,27 @@ export function ProcurementMapView({
     [heatmapData],
   )
 
-  const { data: countyGeoJson, isPending: countyGeoPending } =
-    useGeoJsonData('County')
-  const { data: uatGeoJson, isPending: uatGeoPending } = useGeoJsonData('UAT')
-  const geoJsonData = paintIsUat ? uatGeoJson : countyGeoJson
-  const geoPending = paintIsUat ? uatGeoPending : countyGeoPending
+  const { data: regionGeoJson, isPending: regionGeoPending } = useGeoJsonData(
+    'Region',
+    { enabled: paintIsRegion },
+  )
+  const { data: countyGeoJson, isPending: countyGeoPending } = useGeoJsonData(
+    'County',
+    { enabled: !paintIsRegion },
+  )
+  const { data: uatGeoJson, isPending: uatGeoPending } = useGeoJsonData('UAT', {
+    enabled: paintIsUat,
+  })
+  const geoJsonData = paintIsRegion
+    ? regionGeoJson
+    : paintIsUat
+      ? uatGeoJson
+      : countyGeoJson
+  const geoPending = paintIsRegion
+    ? regionGeoPending
+    : paintIsUat
+      ? uatGeoPending
+      : countyGeoPending
 
   const colorDomain = useMemo(
     () =>
@@ -368,18 +396,22 @@ export function ProcurementMapView({
         return
       }
 
+      const regionFromFeature =
+        typeof properties.mnemonic === 'string'
+          ? properties.mnemonic
+          : typeof properties.name === 'string'
+            ? properties.name
+            : undefined
       const isSingleRegion = mapAnalysisPlan.paintMode === 'single-region'
-      if (
-        !isSingleRegion &&
-        !isProcurementMapCountyPainted(countyCode, paintedCountyCodes)
-      ) {
-        return
-      }
       const region = isSingleRegion
         ? mapAnalysisPlan.singleTerritoryId
-        : findRegionForCountyCode(geographyQuery.data, countyCode)
-      if (!region) return
-      setSelection({ id: region, label: region, grain: 'region' })
+        : regionFromFeature
+      if (!region || (!isSingleRegion && !paintedCountyCodes.has(region))) return
+      setSelection({
+        id: region,
+        label: isSingleRegion ? region : name,
+        grain: 'region',
+      })
     },
     [
       geographyQuery.data,
@@ -398,6 +430,25 @@ export function ProcurementMapView({
         (typeof properties.countyCode === 'string' && properties.countyCode) ||
         undefined
       const name = String(properties.name ?? countyCode ?? '—')
+
+      if (paintIsRegion) {
+        const regionId =
+          typeof properties.mnemonic === 'string'
+            ? properties.mnemonic
+            : typeof properties.name === 'string'
+              ? properties.name
+              : undefined
+        const point = regionId
+          ? heatmapData.find((row) => row.county_code === regionId)
+          : undefined
+        const value =
+          point === undefined
+            ? t`No records in scope`
+            : measure === 'value_awarded'
+              ? formatRon(String(point.amount), 'compact')
+              : formatFlowCount(point.amount)
+        return `<div style="font-weight:700">${name}</div><div style="margin-top:4px">${value}</div>`
+      }
 
       if (paintIsUat) {
         const natcode =
@@ -433,7 +484,7 @@ export function ProcurementMapView({
             : formatFlowCount(point.amount)
       return `<div style="font-weight:700">${name}</div><div style="opacity:.8">${region}</div><div style="margin-top:4px">${value}</div>`
     },
-    [geographyQuery.data, heatmapData, measure, paintIsUat],
+    [geographyQuery.data, heatmapData, measure, paintIsRegion, paintIsUat],
   )
 
   const mapFilters = useMemo(
@@ -453,7 +504,7 @@ export function ProcurementMapView({
    * County features key on the mnemonic; UAT features key on natcode (the
    * heatmap point's siruta_code).
    */
-  const activeSeriesValuesByCountyCode = useMemo(() => {
+  const activeSeriesValuesByFeatureId = useMemo(() => {
     const values = new Map<string, number | undefined>()
     for (const point of heatmapData) {
       const key = 'siruta_code' in point ? point.siruta_code : point.county_code
@@ -565,9 +616,9 @@ export function ProcurementMapView({
               </Trans>
             ) : (
               <Trans>
-                Counties are coloured by supplier development-region totals.
-                Records without known supplier geography are excluded from the
-                map — never shown as zero.
+                Development regions are coloured by supplier registered-office
+                totals. Records without known supplier geography are excluded
+                from the map — never shown as zero.
               </Trans>
             )
           ) : mapGrain === 'county' ||
@@ -579,7 +630,7 @@ export function ProcurementMapView({
             </Trans>
           ) : (
             <Trans>
-              Counties are coloured by their development region total. Records
+              Development regions are coloured by their own totals. Records
               without known buyer geography are excluded from the map — never
               shown as zero.
             </Trans>
@@ -620,7 +671,7 @@ export function ProcurementMapView({
                 }
                 filters={mapFilters}
                 labelMode="active-series"
-                activeSeriesValuesBySirutaCode={activeSeriesValuesByCountyCode}
+                activeSeriesValuesBySirutaCode={activeSeriesValuesByFeatureId}
                 activeSeriesUnit={activeSeriesUnit}
                 getFeatureStyle={getFeatureStyle}
                 getTooltipContent={getTooltipContent}
@@ -628,8 +679,13 @@ export function ProcurementMapView({
                 center={DEFAULT_CENTER}
                 zoom={DEFAULT_ZOOM}
                 minZoom={5}
+                maxBounds={PROCUREMENT_MAP_MAX_BOUNDS}
                 mapHeight="100%"
                 scrollWheelZoom
+                sourceAttribution={{
+                  href: GEO_SPATIAL_BOUNDARIES_URL,
+                  label: t`Administrative boundaries: geo-spatial.org`,
+                }}
               />
             </Suspense>
           </ClientOnly>
@@ -780,9 +836,9 @@ function MapToolbar({
         >
           {(
             [
-              { id: 'region' as const, label: t`Region`, live: true },
-              { id: 'county' as const, label: t`County`, live: true },
-              { id: 'uat' as const, label: t`UAT`, live: false },
+              { id: 'region' as const, label: t`Region` },
+              { id: 'county' as const, label: t`County` },
+              { id: 'uat' as const, label: t`UAT` },
             ] as const
           ).map((option, index) => {
             const selected = mapGrain === option.id
@@ -799,15 +855,6 @@ function MapToolbar({
                 onClick={() => onMapGrainChange(option.id)}
               >
                 {option.label}
-                {!option.live ? (
-                  <ProcurementPreviewBadge
-                    className={cn(
-                      'ml-2',
-                      selected &&
-                        'border-white/40 bg-white/15 text-white',
-                    )}
-                  />
-                ) : null}
               </Button>
             )
           })}

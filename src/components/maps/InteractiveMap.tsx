@@ -227,6 +227,10 @@ interface InteractiveMapProps {
   onViewChange?: (center: [number, number], zoom: number) => void;
   getTooltipContent?: TooltipContentBuilder;
   mobilePanMode?: 'default' | 'pinch-zoom-until-unlocked';
+  sourceAttribution?: {
+    readonly href: string;
+    readonly label: string;
+  };
   /**
    * Deprecated Leaflet-only option kept as a no-op during the MapLibre migration.
    */
@@ -1386,6 +1390,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   onViewChange,
   getTooltipContent,
   mobilePanMode = 'default',
+  sourceAttribution,
   preferCanvasRenderer: _preferCanvasRenderer,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -2518,6 +2523,16 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       >
         <PopulationGridIcon />
       </MapLibreOverlayControl>
+      {sourceAttribution ? (
+        <a
+          href={sourceAttribution.href}
+          target="_blank"
+          rel="noreferrer"
+          className="absolute bottom-6 right-2 z-10 max-w-[calc(100%-1rem)] bg-white/90 px-1.5 py-0.5 text-right text-[10px] font-semibold leading-4 text-neutral-700 underline-offset-2 shadow-sm backdrop-blur-sm hover:text-black hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+        >
+          {sourceAttribution.label}
+        </a>
+      ) : null}
     </div>
   );
 });

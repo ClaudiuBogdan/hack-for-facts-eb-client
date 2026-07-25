@@ -1,14 +1,17 @@
 import { useQuery, type QueryOptions } from '@tanstack/react-query';
 import { GeoJsonObject } from 'geojson';
 import countyGeoJsonUrl from '@/assets/geojson/judete.json?url';
+import regionGeoJsonUrl from '@/assets/geojson/region.json?url';
 import uatGeoJsonUrl from '@/assets/geojson/uat.json?url';
 import { convertDaysToMs } from '@/lib/utils';
 
 export type MapViewType = 'UAT' | 'County';
+export type GeoJsonAssetType = MapViewType | 'Region';
 
-const GEO_JSON_ASSET_URLS: Record<MapViewType, string> = {
+const GEO_JSON_ASSET_URLS: Record<GeoJsonAssetType, string> = {
   UAT: uatGeoJsonUrl,
   County: countyGeoJsonUrl,
+  Region: regionGeoJsonUrl,
 };
 
 const isBrowser = typeof window !== 'undefined';
@@ -23,11 +26,11 @@ export const fetchGeoJsonData = async (path: string): Promise<GeoJsonObject> => 
   return data;
 };
 
-export function resolveGeoJsonAssetUrl(mapViewType: MapViewType): string {
+export function resolveGeoJsonAssetUrl(mapViewType: GeoJsonAssetType): string {
   return GEO_JSON_ASSET_URLS[mapViewType];
 }
 
-export function geoJsonQueryOptions(mapViewType: MapViewType) {
+export function geoJsonQueryOptions(mapViewType: GeoJsonAssetType) {
   const geoJsonAssetUrl = resolveGeoJsonAssetUrl(mapViewType);
 
   return {
@@ -35,14 +38,14 @@ export function geoJsonQueryOptions(mapViewType: MapViewType) {
     queryFn: () => fetchGeoJsonData(geoJsonAssetUrl),
     staleTime: ONE_HOUR_IN_MS,
     gcTime: convertDaysToMs(7),
-  } satisfies QueryOptions<GeoJsonObject, Error, GeoJsonObject, readonly [string, MapViewType, string]> & {
+  } satisfies QueryOptions<GeoJsonObject, Error, GeoJsonObject, readonly [string, GeoJsonAssetType, string]> & {
     staleTime?: number;
     gcTime?: number;
   };
 }
 
 export const useGeoJsonData = (
-  mapViewType: MapViewType,
+  mapViewType: GeoJsonAssetType,
   options?: {
     enabled?: boolean;
   }

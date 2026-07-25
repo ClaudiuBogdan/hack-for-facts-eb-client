@@ -8,6 +8,10 @@ vi.mock('@/assets/geojson/judete.json?url', () => ({
   default: '/assets/judete.hash.json',
 }));
 
+vi.mock('@/assets/geojson/region.json?url', () => ({
+  default: '/assets/region.hash.json',
+}));
+
 describe('useGeoJson query helpers', () => {
   const originalFetch = global.fetch;
   const fetchMock = vi.fn();
@@ -26,6 +30,7 @@ describe('useGeoJson query helpers', () => {
 
     expect(resolveGeoJsonAssetUrl('UAT')).toBe('/assets/uat.hash.json');
     expect(resolveGeoJsonAssetUrl('County')).toBe('/assets/judete.hash.json');
+    expect(resolveGeoJsonAssetUrl('Region')).toBe('/assets/region.hash.json');
   });
 
   it('includes the resolved asset URL in the query key', async () => {
@@ -40,6 +45,11 @@ describe('useGeoJson query helpers', () => {
       'geoJsonData',
       'County',
       '/assets/judete.hash.json',
+    ]);
+    expect(geoJsonQueryOptions('Region').queryKey).toEqual([
+      'geoJsonData',
+      'Region',
+      '/assets/region.hash.json',
     ]);
   });
 

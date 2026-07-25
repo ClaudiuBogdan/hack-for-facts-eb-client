@@ -118,7 +118,7 @@ export function ProcurementTerritoryDrawer({
 
   const title = territoryLabel ?? territoryId ?? t`Territory`
   const measureIsValue = hubState.measure === 'value_awarded'
-  const showPreviewBadge = territoryGrain !== 'region'
+  const showPreviewBadge = territoryGrain === 'county'
   const isPending = overviewQuery.isPending
   const queryFailed = overviewQuery.isError && !overviewQuery.data
   const retry = () => void overviewQuery.refetch()

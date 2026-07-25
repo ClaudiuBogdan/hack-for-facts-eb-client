@@ -1,5 +1,5 @@
 /**
- * Procurement map series helpers — region/county choropleth via county polygons.
+ * Procurement map series helpers — region/county/UAT choropleths.
  * Paint party is buyer (public institutions) or supplier (registered office).
  *
  * @see docs/specs/procurement-buyer-map-requirements.md
@@ -65,40 +65,25 @@ function seriesValue(
 }
 
 /**
- * Paint every county with its parent region's series value so the choropleth
- * reads as eight development regions without a separate region GeoJSON.
+ * Region-grain paint: one point per development region, keyed to
+ * region.json's `properties.mnemonic`.
  */
-export function buildRegionHeatmapByCounty(
-  geography: ProcurementGeographyOptions | undefined,
+export function buildRegionHeatmap(
   regionBuckets: readonly ProcurementRegionMapBucket[],
   seriesId: ProcurementMapSeriesId,
 ): HeatmapCountyDataPoint[] {
-  const valueByRegion = new Map<string, number>()
+  const points: HeatmapCountyDataPoint[] = []
   for (const bucket of regionBuckets) {
     const value = seriesValue(bucket, seriesId)
     if (value === null) continue
-    valueByRegion.set(bucket.region, value)
-  }
-
-  const counties = geography?.counties ?? []
-  const points: HeatmapCountyDataPoint[] = []
-
-  for (const county of counties) {
-    if (!county.region || !county.countyCode) continue
-    const amount = valueByRegion.get(county.region)
-    if (amount === undefined) continue
-    const countyName =
-      formatProcurementCountyName(county.countyName) ||
-      MNEMONIC_TO_COUNTY_NAME[county.countyCode] ||
-      county.countyCode
     points.push({
-      county_code: county.countyCode,
-      county_name: countyName,
+      county_code: bucket.region,
+      county_name: bucket.region,
       county_population: 0,
-      amount,
-      total_amount: amount,
+      amount: value,
+      total_amount: value,
       per_capita_amount: 0,
-      county_entity: { cui: '', name: county.region },
+      county_entity: { cui: '', name: bucket.region },
     })
   }
 
@@ -189,7 +174,7 @@ export function buildProcurementMapHeatmap(
   seriesId: ProcurementMapSeriesId,
 ): (HeatmapCountyDataPoint | HeatmapUATDataPoint)[] {
   if (mapGrain === 'region') {
-    return buildRegionHeatmapByCounty(geography, regionBuckets, seriesId)
+    return buildRegionHeatmap(regionBuckets, seriesId)
   }
   if (mapGrain === 'county') {
     return buildCountyHeatmap(geography, regionBuckets, seriesId)
@@ -394,7 +379,7 @@ export function buildProcurementMapHeatmapForPaintMode(
   seriesId: ProcurementMapSeriesId,
 ): (HeatmapCountyDataPoint | HeatmapUATDataPoint)[] {
   if (paintMode === 'region' || paintMode === 'single-region') {
-    return buildRegionHeatmapByCounty(geography, regionBuckets, seriesId)
+    return buildRegionHeatmap(regionBuckets, seriesId)
   }
   if (paintMode === 'county' || paintMode === 'single-county') {
     return buildCountyHeatmap(geography, regionBuckets, seriesId)

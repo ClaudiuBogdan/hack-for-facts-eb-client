@@ -1409,6 +1409,10 @@ msgstr "Adjust for inflation (constant 2024 prices)"
 msgid "Adjusted value"
 msgstr "Adjusted value"
 
+#: src/features/procurement/components/procurement-map-view.tsx:687
+msgid "Administrative boundaries: geo-spatial.org"
+msgstr "Administrative boundaries: geo-spatial.org"
+
 #: src/features/private-companies/components/sections/private-company-location-section.tsx:68
 msgid "Administrative location (API)"
 msgstr "Administrative location (API)"

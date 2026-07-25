@@ -1356,6 +1356,10 @@ msgstr "Ajustare la inflație (prețuri constante 2024)"
 msgid "Adjusted value"
 msgstr ""
 
+#: src/features/procurement/components/procurement-map-view.tsx:687
+msgid "Administrative boundaries: geo-spatial.org"
+msgstr ""
+
 #: src/features/private-companies/components/sections/private-company-location-section.tsx:68
 msgid "Administrative location (API)"
 msgstr "Locație administrativă (API)"

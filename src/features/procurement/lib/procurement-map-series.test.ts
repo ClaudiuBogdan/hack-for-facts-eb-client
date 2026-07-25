@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildProcurementMapHeatmap,
-  buildRegionHeatmapByCounty,
+  buildRegionHeatmap,
   isProcurementMapCountyPainted,
   regionBucketsFromBreakdown,
   resolveProcurementMapAnalysisPlan,
   selectionGrainFromPaintMode,
 } from './procurement-map-series'
-import type { ProcurementGeographyOptions } from '../api/procurement-reference-api'
 
 describe('procurement map series', () => {
   it('keeps only valued region keys from breakdown buckets', () => {
@@ -148,32 +147,8 @@ describe('procurement map series', () => {
     )
   })
 
-  it('paints counties with parent region totals', () => {
-    const geography: ProcurementGeographyOptions = {
-      regions: [{ region: 'Nord-Vest', countyCount: 2, uatCount: 0 }],
-      counties: [
-        {
-          countyCode: 'CJ',
-          countyName: 'CLUJ',
-          region: 'Nord-Vest',
-          uatCount: 1,
-        },
-        {
-          countyCode: 'BH',
-          countyName: 'BIHOR',
-          region: 'Nord-Vest',
-          uatCount: 1,
-        },
-        {
-          countyCode: 'B',
-          countyName: 'BUCURESTI',
-          region: 'București-Ilfov',
-          uatCount: 1,
-        },
-      ],
-    }
-    const points = buildRegionHeatmapByCounty(
-      geography,
+  it('paints one polygon for each valued development region', () => {
+    const points = buildRegionHeatmap(
       [
         {
           region: 'Nord-Vest',
@@ -184,9 +159,14 @@ describe('procurement map series', () => {
       ],
       'record_count',
     )
-    expect(points).toHaveLength(2)
-    expect(points.every((point) => point.amount === 42)).toBe(true)
-    expect(points.map((point) => point.county_code).sort()).toEqual(['BH', 'CJ'])
+    expect(points).toEqual([
+      expect.objectContaining({
+        county_code: 'Nord-Vest',
+        county_name: 'Nord-Vest',
+        amount: 42,
+        total_amount: 42,
+      }),
+    ])
   })
 
   it('returns empty heatmap for county/uat until rollups exist', () => {
