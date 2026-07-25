@@ -5,6 +5,7 @@ import { t } from '@lingui/core/macro'
 import { cn } from '@/lib/utils'
 import type {
   AuthorityProcurementSlice as AuthoritySliceData,
+  MonthlyPoint,
   ProcurementGrain,
 } from '@/schemas/procurement'
 import type { ProcurementAuthoritySliceScope } from '../api/procurement-api'
@@ -78,6 +79,16 @@ type AnalysisSelection = {
   readonly recordGrain?: ProcurementGrain
   /** Human label for the population, for the list heading. */
   readonly recordLabel?: string
+  /**
+   * Monthly series as a period picker. The points come from the surrounding
+   * period (year + CPV, WITHOUT the picked month), so selecting a month
+   * leaves the neighbouring columns clickable instead of one lone bar.
+   */
+  readonly monthly?: {
+    readonly points: readonly MonthlyPoint[]
+    readonly activeMonth: string | null
+    readonly onSelect: (month: string | null) => void
+  }
   /**
    * Set when the caller's selected population has no breakdowns at this grain
    * (tenders, frameworks, call-offs, amendments). The section then says which
@@ -330,7 +341,19 @@ function SliceContent({
       </div>
 
       <ProcurementMonthlyChart
-        points={analytics.monthly}
+        points={
+          analysis?.monthly?.points.length
+            ? analysis.monthly.points
+            : analytics.monthly
+        }
+        {...(analysis?.monthly
+          ? {
+              select: {
+                activeMonth: analysis.monthly.activeMonth,
+                onSelect: analysis.monthly.onSelect,
+              },
+            }
+          : {})}
         title={t`Achiziții în timp`}
         measure={valueSeriesServed ? 'value_awarded' : 'record_count'}
         description={

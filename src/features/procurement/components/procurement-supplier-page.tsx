@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import type { ProcurementSliceScope } from '../api/procurement-api'
 import { useProcurementSupplierSlice } from '../hooks/use-procurement-data'
 import { formatRon } from '../lib/formatting'
+import { definedScope } from '../lib/institution-scopes'
 import { procurementCompactActionClassName } from '../lib/procurement-theme'
 import { ProcurementEntityHeader } from './procurement-entity-header'
 import { ProcurementInfoSheet } from './procurement-info-sheet'
@@ -45,20 +46,31 @@ export function ProcurementSupplierPage({ cui, filters = {}, className }: Props)
   const [activeGrain, setActiveGrain] =
     useState<FlowAnalysisGrain>('contract')
 
-  const scopeInput: ProcurementSliceScope = useMemo(
-    () => ({
-      ...(filters.year
-        ? { monthFrom: `${filters.year}-01`, monthTo: `${filters.year}-12` }
-        : {}),
-      ...(filters.cpv ? { cpvDivision: filters.cpv } : {}),
-    }),
+  // The period the monthly picker spans: year + CPV, never the picked month.
+  const periodScope: ProcurementSliceScope | undefined = useMemo(
+    () =>
+      definedScope({
+        ...(filters.year
+          ? { monthFrom: `${filters.year}-01`, monthTo: `${filters.year}-12` }
+          : {}),
+        ...(filters.cpv ? { cpvDivision: filters.cpv } : {}),
+      }),
     [filters.year, filters.cpv],
+  )
+  const scopeInput: ProcurementSliceScope | undefined = useMemo(
+    () =>
+      filters.month
+        ? { ...periodScope, monthFrom: filters.month, monthTo: filters.month }
+        : periodScope,
+    [periodScope, filters.month],
   )
 
   // The unfiltered slice feeds the title and the chip options, so they stay
   // stable while the filtered one drives the figures.
   const baseQuery = useProcurementSupplierSlice(cui)
   const query = useProcurementSupplierSlice(cui, scopeInput)
+  // Same query key as above whenever no month is picked — one request then.
+  const periodQuery = useProcurementSupplierSlice(cui, periodScope)
   const slice = query.data
   const base = baseQuery.data
 
@@ -200,7 +212,25 @@ export function ProcurementSupplierPage({ cui, filters = {}, className }: Props)
           <ProcurementSupplierSlice
             supplierCui={cui}
             scope={scopeInput}
-            analysis={{ grain: activeGrain }}
+            analysis={{
+              grain: activeGrain,
+              monthly: {
+                points:
+                  activeGrain === 'contract'
+                    ? (periodQuery.data?.analysisByGrain.contract.monthly ?? [])
+                    : (periodQuery.data?.analysisByGrain.directAcquisition
+                        .monthly ?? []),
+                activeMonth: filters.month ?? null,
+                onSelect: (month: string | null) =>
+                  void navigate({
+                    to: '.',
+                    search: (prev: PartyQuickFilterState) => ({
+                      ...prev,
+                      month: month ?? undefined,
+                    }),
+                  }),
+              },
+            }}
             categoryFilter={{
               activeCode: filters.cpv ?? null,
               onSelect: (code: string | null) =>

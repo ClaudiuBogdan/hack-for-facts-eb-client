@@ -27,6 +27,12 @@ const institutionSearchSchema = z.object({
     .regex(/^\d{2}$/)
     .optional()
     .catch(undefined),
+  month: z
+    .string()
+    .trim()
+    .regex(/^\d{4}-(0[1-9]|1[0-2])$/)
+    .optional()
+    .catch(undefined),
 })
 
 export const Route = createFileRoute('/procurement/institutions/$cui')({
@@ -42,7 +48,11 @@ export const Route = createFileRoute('/procurement/institutions/$cui')({
   },
   validateSearch: (search: Record<string, unknown>) =>
     institutionSearchSchema.parse(search),
-  loaderDeps: ({ search }) => ({ year: search.year, cpv: search.cpv }),
+  loaderDeps: ({ search }) => ({
+    year: search.year,
+    cpv: search.cpv,
+    month: search.month,
+  }),
   headers: () =>
     createPublicPageCacheHeaders({
       sharedMaxAgeSeconds: 300,
@@ -55,9 +65,12 @@ export const Route = createFileRoute('/procurement/institutions/$cui')({
   // options; the filtered slice loads client-side when filters are active.
   loader: async ({ params, deps }) => {
     const scope = {
-      ...(deps.year
-        ? { monthFrom: `${deps.year}-01`, monthTo: `${deps.year}-12` }
-        : {}),
+      // A picked month wins over its year — it is the narrower selection.
+      ...(deps.month
+        ? { monthFrom: deps.month, monthTo: deps.month }
+        : deps.year
+          ? { monthFrom: `${deps.year}-01`, monthTo: `${deps.year}-12` }
+          : {}),
       ...(deps.cpv ? { cpvDivision: deps.cpv } : {}),
     }
     const [slice, overview] = await Promise.all([

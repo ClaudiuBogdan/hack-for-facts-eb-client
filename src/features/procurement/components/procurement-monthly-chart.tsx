@@ -25,6 +25,16 @@ type Props = {
    * (value-basis wave: estimated / ceiling / call-off / adjusted money).
    */
   readonly valueLabel?: string
+  /**
+   * Turns the columns into a period picker: clicking a month scopes the page
+   * to it, clicking it again clears. The series itself must stay on the
+   * surrounding period, or selecting a month would leave one column and no
+   * way to reach its neighbour.
+   */
+  readonly select?: {
+    readonly activeMonth: string | null
+    readonly onSelect: (month: string | null) => void
+  }
 }
 
 function formatMonth(month: string): string {
@@ -48,6 +58,7 @@ export function ProcurementMonthlyChart({
   className,
   measure = 'record_count',
   valueLabel,
+  select,
 }: Props) {
   const moneyName = valueLabel ?? t`Awarded value`
   const maxMetric = points.reduce(
@@ -112,29 +123,59 @@ export function ProcurementMonthlyChart({
                   point.amountRonSum !== null
                     ? formatRon(point.amountRonSum, 'compact')
                     : t`unavailable`
+                const isSelected = select?.activeMonth === point.month
+                const metricLabel =
+                  measure === 'value_awarded'
+                    ? t`${formatMonth(point.month)}: ${amountLabel}`
+                    : t`${formatMonth(point.month)}: ${formatFlowCount(point.flowCount)} records`
+                const column = (
+                  <div
+                    className={cn(
+                      'w-full rounded-t-[4px] transition-opacity',
+                      procurementMarkClassName,
+                      // A selection dims the rest rather than recolouring the
+                      // pick: one mark hue, and the state stays legible in
+                      // greyscale via the track fill below.
+                      select?.activeMonth && !isSelected && 'opacity-40',
+                    )}
+                    style={{ height: `${height}%` }}
+                  />
+                )
                 return (
                   <Tooltip key={point.month}>
                     <TooltipTrigger asChild>
-                      <div
-                        className={cn(
-                          'flex h-full flex-1 items-end',
-                          procurementMarkTrackClassName,
-                        )}
-                        tabIndex={0}
-                        aria-label={
-                          measure === 'value_awarded'
-                            ? t`${formatMonth(point.month)}: ${amountLabel}`
-                            : t`${formatMonth(point.month)}: ${formatFlowCount(point.flowCount)} records`
-                        }
-                      >
+                      {select ? (
+                        <button
+                          type="button"
+                          aria-pressed={isSelected}
+                          aria-label={metricLabel}
+                          onClick={() =>
+                            select.onSelect(isSelected ? null : point.month)
+                          }
+                          className={cn(
+                            'flex h-full flex-1 items-end transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--pnrr-blue)]',
+                            isSelected
+                              ? 'bg-[#1d70b8]/15 dark:bg-[#3b82f6]/25'
+                              : cn(
+                                  procurementMarkTrackClassName,
+                                  'hover:bg-[#dfe3e6] dark:hover:bg-[var(--pnrr-subtle)]',
+                                ),
+                          )}
+                        >
+                          {column}
+                        </button>
+                      ) : (
                         <div
                           className={cn(
-                            'w-full rounded-t-[4px]',
-                            procurementMarkClassName,
+                            'flex h-full flex-1 items-end',
+                            procurementMarkTrackClassName,
                           )}
-                          style={{ height: `${height}%` }}
-                        />
-                      </div>
+                          tabIndex={0}
+                          aria-label={metricLabel}
+                        >
+                          {column}
+                        </div>
+                      )}
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="font-semibold">{formatMonth(point.month)}</p>

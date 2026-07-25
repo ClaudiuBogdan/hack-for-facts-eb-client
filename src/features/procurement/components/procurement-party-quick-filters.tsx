@@ -22,6 +22,8 @@ import {
 export type PartyQuickFilterState = {
   readonly year?: number
   readonly cpv?: string
+  /** `YYYY-MM` picked on the monthly chart; narrower than `year`. */
+  readonly month?: string
 }
 
 type Props = {
@@ -50,6 +52,15 @@ function yearOf(iso: string | null): number | null {
   if (!iso) return null
   const year = Number(iso.slice(0, 4))
   return Number.isFinite(year) && year >= 2000 ? year : null
+}
+
+function monthChipLabel(month: string): string {
+  const [year, mm] = month.split('-')
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(Number(year), Number(mm) - 1, 1)))
 }
 
 function cpvChipLabel(row: CategoryRow): string {
@@ -122,7 +133,8 @@ export function ProcurementPartyQuickFilters({
     })
   }
 
-  if (years.length === 0 && activeCpvLabel === null) return null
+  if (years.length === 0 && activeCpvLabel === null && !filters.month)
+    return null
 
   return (
     <div
@@ -155,7 +167,7 @@ export function ProcurementPartyQuickFilters({
                 filters.year === undefined &&
                   procurementChoiceButtonActiveClassName,
               )}
-              onClick={() => setFilter({ year: undefined })}
+              onClick={() => setFilter({ year: undefined, month: undefined })}
             >
               <Trans>Toți anii</Trans>
             </Button>
@@ -172,7 +184,10 @@ export function ProcurementPartyQuickFilters({
                     procurementChoiceButtonActiveClassName,
                 )}
                 onClick={() =>
-                  setFilter({ year: filters.year === year ? undefined : year })
+                  setFilter({
+                    year: filters.year === year ? undefined : year,
+                    month: undefined,
+                  })
                 }
               >
                 {year}
@@ -218,6 +233,7 @@ export function ProcurementPartyQuickFilters({
                       onSelect={() =>
                         setFilter({
                           year: olderSelected === year ? undefined : year,
+                          month: undefined,
                         })
                       }
                     >
@@ -228,6 +244,25 @@ export function ProcurementPartyQuickFilters({
               </DropdownMenu>
             ) : null}
           </div>
+        ) : null}
+
+        {filters.month ? (
+          <span className={cn(procurementChipClassName)}>
+            <span className="shrink-0 font-normal text-[#0b0c0c]/70 dark:text-[var(--pnrr-fg)]/70">
+              <Trans>Luna</Trans>
+            </span>
+            <span className="min-w-0 truncate">
+              {monthChipLabel(filters.month)}
+            </span>
+            <button
+              type="button"
+              aria-label={t`Elimină filtrul de lună`}
+              onClick={() => setFilter({ month: undefined })}
+              className="-mr-1 shrink-0 p-0.5 text-[#0b0c0c] transition-colors hover:text-[#1d70b8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:text-[var(--pnrr-fg)]"
+            >
+              <X className="h-3.5 w-3.5" aria-hidden />
+            </button>
+          </span>
         ) : null}
 
         {activeCpvLabel !== null ? (

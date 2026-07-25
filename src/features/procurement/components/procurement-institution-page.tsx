@@ -13,7 +13,10 @@ import type {
   ProcurementInstitutionPopulation,
   ProcurementInstitutionSignals as InstitutionSignals,
 } from '@/schemas/procurement'
-import { buildInstitutionScopes } from '../lib/institution-scopes'
+import {
+  buildInstitutionScopes,
+  definedScope,
+} from '../lib/institution-scopes'
 import type { ProcurementAuthoritySliceScope } from '../api/procurement-api'
 import {
   useProcurementAuthoritySlice,
@@ -108,20 +111,39 @@ export function ProcurementInstitutionPage({
   const [infoOpen, setInfoOpen] = useState(false)
   const [activeGrain, setActiveGrain] =
     useState<ProcurementAnalysisGrain>('contract')
-  const hasFilters = filters.year !== undefined || filters.cpv !== undefined
-  const scopeInput: ProcurementAuthoritySliceScope = useMemo(
-    () => ({
-      ...(filters.year
-        ? {
-            monthFrom: `${filters.year}-01`,
-            monthTo: `${filters.year}-12`,
-          }
-        : {}),
-      ...(filters.cpv ? { cpvDivision: filters.cpv } : {}),
-    }),
+  const hasFilters =
+    filters.year !== undefined ||
+    filters.cpv !== undefined ||
+    filters.month !== undefined
+  // The period the monthly picker spans: year + CPV, never the picked month.
+  const periodScope: ProcurementAuthoritySliceScope | undefined = useMemo(
+    () =>
+      definedScope({
+        ...(filters.year
+          ? {
+              monthFrom: `${filters.year}-01`,
+              monthTo: `${filters.year}-12`,
+            }
+          : {}),
+        ...(filters.cpv ? { cpvDivision: filters.cpv } : {}),
+      }),
     [filters.year, filters.cpv],
   )
-  const scopes = useMemo(() => buildInstitutionScopes(scopeInput), [scopeInput])
+  const scopeInput: ProcurementAuthoritySliceScope | undefined = useMemo(
+    () =>
+      filters.month
+        ? {
+            ...periodScope,
+            monthFrom: filters.month,
+            monthTo: filters.month,
+          }
+        : periodScope,
+    [periodScope, filters.month],
+  )
+  const scopes = useMemo(
+    () => buildInstitutionScopes(scopeInput ?? {}),
+    [scopeInput],
+  )
   const nameQuery = useProcurementAuthoritySlice(cui, initialSlice)
   // Same query key the slice below uses, so this shares its cache rather than
   // refetching — the page needs the analysis envelope to fold its caveats into
@@ -130,6 +152,15 @@ export function ProcurementInstitutionPage({
     cui,
     hasFilters ? undefined : nameQuery.data,
     scopeInput,
+  )
+  // Same query key as above whenever no month is picked, so this costs a
+  // request only in the drilled-down state that needs it.
+  const periodSlice = useProcurementAuthoritySlice(
+    cui,
+    filters.year === undefined && filters.cpv === undefined
+      ? nameQuery.data
+      : undefined,
+    periodScope,
   )
   const overviewQuery = useProcurementInstitutionOverview(
     cui,
@@ -360,6 +391,22 @@ export function ProcurementInstitutionPage({
               : {}),
             recordGrain: RECORD_GRAIN[selectedGrain],
             recordLabel: populationLabel(selectedGrain),
+            monthly: {
+              points:
+                (ANALYSIS_GRAIN[selectedGrain] ?? 'contract') === 'contract'
+                  ? (periodSlice.data?.analysisByGrain.contract.monthly ?? [])
+                  : (periodSlice.data?.analysisByGrain.directAcquisition
+                      .monthly ?? []),
+              activeMonth: filters.month ?? null,
+              onSelect: (month) =>
+                void navigate({
+                  to: '.',
+                  search: (prev: PartyQuickFilterState) => ({
+                    ...prev,
+                    month: month ?? undefined,
+                  }),
+                }),
+            },
           }}
           categoryFilter={{
             activeCode: filters.cpv ?? null,

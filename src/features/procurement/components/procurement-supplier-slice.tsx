@@ -5,6 +5,7 @@ import { t } from '@lingui/core/macro'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import {
+  type MonthlyPoint,
   type SupplierProcurementSlice as SupplierSliceData,
 } from '@/schemas/procurement'
 import type { ProcurementSliceScope } from '../api/procurement-api'
@@ -49,9 +50,23 @@ type Props = {
    * (its tabs ARE the switcher), so the slice must not carry a second toggle
    * with its own state.
    */
-  readonly analysis?: { readonly grain: FlowAnalysisGrain }
+  readonly analysis?: SupplierAnalysisSelection
   /** Makes the CPV breakdown card the page's category filter. */
   readonly categoryFilter?: CategorySelection
+}
+
+type SupplierAnalysisSelection = {
+  readonly grain: FlowAnalysisGrain
+  /**
+   * Monthly series as a period picker, on the surrounding period rather than
+   * the picked month — otherwise one column remains and its neighbours are
+   * unreachable.
+   */
+  readonly monthly?: {
+    readonly points: readonly MonthlyPoint[]
+    readonly activeMonth: string | null
+    readonly onSelect: (month: string | null) => void
+  }
 }
 
 /**
@@ -119,7 +134,7 @@ function SliceContent({
   readonly slice: SupplierSliceData
   readonly className?: string
   readonly scope?: ProcurementSliceScope
-  readonly analysis?: { readonly grain: FlowAnalysisGrain }
+  readonly analysis?: SupplierAnalysisSelection
   readonly categoryFilter?: CategorySelection
 }) {
   const [ownGrain, setOwnGrain] = useState<FlowAnalysisGrain>(
@@ -227,7 +242,19 @@ function SliceContent({
       </div>
 
       <ProcurementMonthlyChart
-        points={analytics.monthly}
+        points={
+          analysis?.monthly?.points.length
+            ? analysis.monthly.points
+            : analytics.monthly
+        }
+        {...(analysis?.monthly
+          ? {
+              select: {
+                activeMonth: analysis.monthly.activeMonth,
+                onSelect: analysis.monthly.onSelect,
+              },
+            }
+          : {})}
         title={t`Venit public în timp`}
         measure={valueSeriesServed ? 'value_awarded' : 'record_count'}
         description={
