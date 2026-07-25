@@ -321,3 +321,29 @@ export function buildProcurementOverviewMonthScope(
     ...(dateTo ? { monthTo: dateTo.slice(0, 7) } : {}),
   }
 }
+
+/**
+ * The month a period covers exactly, or `null` when it spans more (or less)
+ * than one. Drives the monthly chart's selected column.
+ */
+export function selectedMonthFromPeriod(
+  period: Pick<ResolvedProcurementOverviewPeriod, 'dateFrom' | 'dateTo' | 'isAllTime'>,
+): string | null {
+  if (period.isAllTime || !period.dateFrom || !period.dateTo) return null
+  const month = period.dateFrom.slice(0, 7)
+  if (period.dateTo.slice(0, 7) !== month) return null
+  if (!period.dateFrom.endsWith('-01')) return null
+  return month
+}
+
+/** Calendar bounds of a `YYYY-MM` month, inclusive. */
+export function getCalendarMonthBounds(month: string): {
+  readonly dateFrom: string
+  readonly dateTo: string
+} {
+  const [year, mm] = month.split('-').map(Number)
+  return {
+    dateFrom: `${month}-01`,
+    dateTo: new Date(Date.UTC(year, mm, 0)).toISOString().slice(0, 10),
+  }
+}

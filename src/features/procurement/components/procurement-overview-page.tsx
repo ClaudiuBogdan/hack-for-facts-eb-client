@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import {
@@ -7,6 +7,11 @@ import {
   resolveProcurementValueBasisPlan,
   type ProcurementHubState,
 } from '@/schemas/procurement-hub'
+import {
+  getCalendarMonthBounds,
+  getCalendarYearBounds,
+  selectedMonthFromPeriod,
+} from '@/schemas/procurement-overview'
 import {
   useProcurementGeographyOptions,
   useProcurementLanding,
@@ -49,6 +54,25 @@ export function ProcurementOverviewPage({
     hub.landingFilters,
     basisPlan.usesLandingPipeline,
   )
+  // The monthly chart doubles as a period picker, so its series must span more
+  // than the current selection: when the period IS one month, the picker
+  // widens to that month's year and the columns stay reachable. Any other
+  // period is its own picker range, and the key matches `query` — one request.
+  const selectedMonth = selectedMonthFromPeriod(hub.period)
+  const pickerFilters = useMemo(
+    () =>
+      selectedMonth
+        ? {
+            ...hub.landingFilters,
+            ...getCalendarYearBounds(Number(selectedMonth.slice(0, 4))),
+          }
+        : hub.landingFilters,
+    [hub.landingFilters, selectedMonth],
+  )
+  const pickerQuery = useProcurementLanding(
+    pickerFilters,
+    basisPlan.usesLandingPipeline,
+  )
   const geographyQuery = useProcurementGeographyOptions()
   const data = query.data
   const [filterSheetOpen, setFilterSheetOpen] = useState(false)
@@ -64,6 +88,11 @@ export function ProcurementOverviewPage({
     ? analysisGrain === 'contract'
       ? data.analysisByGrain.contract
       : data.analysisByGrain.directAcquisition
+    : undefined
+  const pickerAnalytics = pickerQuery.data
+    ? analysisGrain === 'contract'
+      ? pickerQuery.data.analysisByGrain.contract
+      : pickerQuery.data.analysisByGrain.directAcquisition
     : undefined
   const activeTab = hubState.view
   const appliedChipCount = hub.hubChips.filter(
@@ -232,7 +261,24 @@ export function ProcurementOverviewPage({
               )}
 
               <ProcurementMonthlyChart
-                points={analytics.monthly}
+                points={pickerAnalytics?.monthly.length
+                  ? pickerAnalytics.monthly
+                  : analytics.monthly}
+                select={{
+                  activeMonth: selectedMonth,
+                  onSelect: (month) => {
+                    // Clearing returns to the picker's own range (the year),
+                    // which is the period the columns were drawn from.
+                    const bounds = month
+                      ? getCalendarMonthBounds(month)
+                      : selectedMonth
+                        ? getCalendarYearBounds(
+                            Number(selectedMonth.slice(0, 4)),
+                          )
+                        : { dateFrom: undefined, dateTo: undefined }
+                    hub.setDates(bounds.dateFrom, bounds.dateTo)
+                  },
+                }}
                 measure={hubState.measure}
                 title={
                   hubState.measure === 'value_awarded'

@@ -2373,7 +2373,7 @@ msgstr "awarded value (partial)"
 #~ msgid "Awarded value is unavailable for this scope. Select record count to view the monthly volume."
 #~ msgstr "Awarded value is unavailable for this scope. Select record count to view the monthly volume."
 
-#: src/features/procurement/components/procurement-overview-page.tsx:244
+#: src/features/procurement/components/procurement-overview-page.tsx:290
 msgid "Awarded value per month in RON. Tooltips and the table retain record counts for context."
 msgstr "Awarded value per month in RON. Tooltips and the table retain record counts for context."
 
@@ -2389,9 +2389,9 @@ msgstr "Awarded value per month when amounts are present."
 msgid "awarded values"
 msgstr "awarded values"
 
-#: src/features/procurement/components/procurement-overview-page.tsx:183
-#: src/features/procurement/components/procurement-overview-page.tsx:201
-#: src/features/procurement/components/procurement-overview-page.tsx:228
+#: src/features/procurement/components/procurement-overview-page.tsx:212
+#: src/features/procurement/components/procurement-overview-page.tsx:230
+#: src/features/procurement/components/procurement-overview-page.tsx:257
 msgid "Awarded-value ranking is unavailable for this scope, so the server ranked by record count."
 msgstr "Awarded-value ranking is unavailable for this scope, so the server ranked by record count."
 
@@ -2868,9 +2868,9 @@ msgstr "By count"
 #: src/features/procurement/components/cpv-category-page.tsx:148
 #: src/features/procurement/components/procurement-category-bars.tsx:114
 #: src/features/procurement/components/procurement-category-bars.tsx:115
-#: src/features/procurement/components/procurement-overview-page.tsx:184
-#: src/features/procurement/components/procurement-overview-page.tsx:202
-#: src/features/procurement/components/procurement-overview-page.tsx:229
+#: src/features/procurement/components/procurement-overview-page.tsx:213
+#: src/features/procurement/components/procurement-overview-page.tsx:231
+#: src/features/procurement/components/procurement-overview-page.tsx:258
 #: src/features/procurement/components/procurement-territory-drawer.tsx:129
 #: src/features/procurement/components/procurement-territory-drawer.tsx:133
 msgid "By number of records."
@@ -4940,7 +4940,7 @@ msgstr "County inspect panel. Apply below to set the buyer location filter."
 #~ msgid "County inspect panel. Apply below to set the supplier location filter."
 #~ msgstr "County inspect panel. Apply below to set the supplier location filter."
 
-#: src/features/procurement/components/procurement-overview-page.tsx:97
+#: src/features/procurement/components/procurement-overview-page.tsx:126
 msgid "County precision is not available yet. Counts and charts below are scoped to the wider region: {appliedBuyerRegion}."
 msgstr "County precision is not available yet. Counts and charts below are scoped to the wider region: {appliedBuyerRegion}."
 
@@ -11836,7 +11836,7 @@ msgstr "Monthly {0}"
 msgid "Monthly {0} in RON"
 msgstr "Monthly {0} in RON"
 
-#: src/features/procurement/components/procurement-overview-page.tsx:239
+#: src/features/procurement/components/procurement-overview-page.tsx:285
 msgid "Monthly awarded value"
 msgstr "Monthly awarded value"
 
@@ -11861,7 +11861,7 @@ msgid "Monthly Report"
 msgstr "Monthly Report"
 
 #: src/features/procurement/components/procurement-monthly-chart.tsx:87
-#: src/features/procurement/components/procurement-overview-page.tsx:240
+#: src/features/procurement/components/procurement-overview-page.tsx:286
 #: src/features/procurement/components/procurement-territory-drawer.tsx:136
 #: src/features/procurement/components/procurement-value-basis-overview.tsx:324
 msgid "Monthly volume"
@@ -13507,7 +13507,7 @@ msgid "Number of amendment records per month. Undated records are disclosed by t
 msgstr "Number of amendment records per month. Undated records are disclosed by the coverage notice, never guessed into a month."
 
 #: src/features/procurement/components/procurement-monthly-chart.tsx:90
-#: src/features/procurement/components/procurement-overview-page.tsx:245
+#: src/features/procurement/components/procurement-overview-page.tsx:291
 #: src/features/procurement/components/procurement-territory-drawer.tsx:139
 #: src/features/procurement/components/procurement-value-basis-overview.tsx:331
 msgid "Number of records per month."
@@ -15619,9 +15619,9 @@ msgstr "Rank (top/bottom N)"
 msgid "Rank (Top/Bottom N)"
 msgstr "Rank (Top/Bottom N)"
 
-#: src/features/procurement/components/procurement-overview-page.tsx:181
-#: src/features/procurement/components/procurement-overview-page.tsx:199
-#: src/features/procurement/components/procurement-overview-page.tsx:226
+#: src/features/procurement/components/procurement-overview-page.tsx:210
+#: src/features/procurement/components/procurement-overview-page.tsx:228
+#: src/features/procurement/components/procurement-overview-page.tsx:255
 #: src/features/procurement/components/procurement-value-basis-overview.tsx:153
 msgid "Ranked by awarded value."
 msgstr "Ranked by awarded value."
@@ -19176,7 +19176,7 @@ msgstr "The maximum committed under framework agreements — an upper bound, NOT
 msgid "The new fiscal reality affecting your wallet."
 msgstr "The new fiscal reality affecting your wallet."
 
-#: src/features/procurement/components/procurement-overview-page.tsx:126
+#: src/features/procurement/components/procurement-overview-page.tsx:155
 msgid "The overview analytics are filtered by buyer location. The record list does not apply geography yet — switch to List to browse records without silently dropping this filter from the URL."
 msgstr "The overview analytics are filtered by buyer location. The record list does not apply geography yet — switch to List to browse records without silently dropping this filter from the URL."
 
@@ -19769,7 +19769,7 @@ msgstr "Top furnizori"
 #~ msgstr "Top institutions and suppliers under a regional rollup are not published yet. Focus the hub to explore aggregates for this area."
 
 #: src/features/procurement/components/cpv-category-page.tsx:141
-#: src/features/procurement/components/procurement-overview-page.tsx:177
+#: src/features/procurement/components/procurement-overview-page.tsx:206
 #: src/features/procurement/components/procurement-rankings-view.tsx:305
 #: src/features/procurement/components/procurement-territory-drawer.tsx:126
 #: src/features/procurement/components/procurement-value-basis-overview.tsx:283
@@ -19777,7 +19777,7 @@ msgid "Top public buyers"
 msgstr "Top public buyers"
 
 #: src/features/procurement/components/cpv-category-page.tsx:147
-#: src/features/procurement/components/procurement-overview-page.tsx:195
+#: src/features/procurement/components/procurement-overview-page.tsx:224
 #: src/features/procurement/components/procurement-rankings-view.tsx:307
 #: src/features/procurement/components/procurement-territory-drawer.tsx:130
 #: src/features/procurement/components/procurement-value-basis-overview.tsx:294
