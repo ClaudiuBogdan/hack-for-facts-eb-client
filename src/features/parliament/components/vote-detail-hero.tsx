@@ -6,11 +6,10 @@ import { getVoteDetailHeroColor, voteDetailPageContainerClassName } from '../lib
 
 type Props = {
   readonly detail: ParliamentVoteDetail
-  readonly divisionNumber: number
 }
 
 /** UK Parliament division hero — title, meta, tallies */
-export function VoteDetailHero({ detail, divisionNumber }: Props) {
+export function VoteDetailHero({ detail }: Props) {
   const heroColor = getVoteDetailHeroColor(detail.chamber)
 
   return (
@@ -26,7 +25,7 @@ export function VoteDetailHero({ detail, divisionNumber }: Props) {
             {detail.title}
           </h1>
           <p className="mt-3 text-base text-white/90">
-            {formatVoteDivisionMeta(detail, divisionNumber)}
+            {formatVoteDivisionMeta(detail, detail.divisionNumber)}
           </p>
         </div>
 

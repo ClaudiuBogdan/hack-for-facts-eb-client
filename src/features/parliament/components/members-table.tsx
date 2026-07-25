@@ -111,6 +111,20 @@ export function MembersTableSkeleton({
   )
 }
 
+/**
+ * SC-1: the directory lists MANDATE rows. A replaced or deceased member keeps a
+ * row (their votes stay attributed to it), so an unmarked list answers "who
+ * represents my county" with a seat that no longer exists.
+ */
+function EndedMandateBadge({ member }: { readonly member: ParliamentMember }) {
+  if (member.isCurrent !== false) return null
+  return (
+    <span className="ml-2 inline-block whitespace-nowrap border border-[var(--pnrr-border)] px-1.5 py-0.5 align-middle text-[0.6875rem] font-semibold uppercase tracking-wide text-[var(--pnrr-muted)]">
+      Mandat încheiat
+    </span>
+  )
+}
+
 function MemberMobileCard({ member }: { readonly member: ParliamentMember }) {
   const name = formatMemberName(member.firstName, member.lastName)
   const groupColor = groupColors[member.groupId] ?? '#505a5f'
@@ -121,7 +135,10 @@ function MemberMobileCard({ member }: { readonly member: ParliamentMember }) {
       params={{ memberId: member.memberId }}
       className="block border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4 transition-colors hover:bg-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
     >
-      <p className="font-black text-[var(--pnrr-fg)]">{name}</p>
+      <p className="font-black text-[var(--pnrr-fg)]">
+        {name}
+        <EndedMandateBadge member={member} />
+      </p>
       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[var(--pnrr-muted)]">
         <span className="inline-flex items-center gap-2">
           <span
@@ -210,6 +227,7 @@ export function MembersTable({
                     >
                       {name}
                     </Link>
+                    <EndedMandateBadge member={member} />
                   </TableCell>
                   <TableCell className="px-4 py-3">
                     <span className="inline-flex items-center gap-2 text-[var(--pnrr-fg)]">

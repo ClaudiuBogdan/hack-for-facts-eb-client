@@ -198,6 +198,7 @@ function buildMemberVotes(
         defaultChoiceForGroup(summary.outcome, member.groupName)
 
       votes.push({
+        ballotKey: `${summary.voteId}#${member.memberId}`,
         memberId: member.memberId,
         memberName: `${member.firstName} ${member.lastName}`,
         groupId: member.groupId,

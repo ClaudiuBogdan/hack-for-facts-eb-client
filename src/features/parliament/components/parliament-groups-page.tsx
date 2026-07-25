@@ -1,77 +1,78 @@
-import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
-import type { ParliamentGroupsSearch } from '@/schemas/parliament'
-import { useParliamentMembers } from '../hooks/use-parliament-data'
-import { ChamberCompositionSection } from './chamber-composition-section'
-import { MembersFilters } from './members-filters'
-import { MembersTable, MembersTableSkeleton } from './members-table'
-import { ParliamentGroupsFloatingBar } from './parliament-groups-floating-bar'
-import { DEFAULT_MEMBERS_PAGE_SIZE } from '../lib/table-theme'
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import type { ParliamentGroupsSearch } from "@/schemas/parliament";
+import { useParliamentMembers } from "../hooks/use-parliament-data";
+import { ChamberCompositionSection } from "./chamber-composition-section";
+import { MembersFilters } from "./members-filters";
+import { MembersTable, MembersTableSkeleton } from "./members-table";
+import { ParliamentGroupsFloatingBar } from "./parliament-groups-floating-bar";
+import { ParliamentInlineLoadError } from "./parliament-load-error-page";
+import { DEFAULT_MEMBERS_PAGE_SIZE } from "../lib/table-theme";
 
 type Props = {
-  readonly search: ParliamentGroupsSearch
-}
+  readonly search: ParliamentGroupsSearch;
+};
 
 /** Groups tab — members directory and hemicycle composition charts */
 export function ParliamentGroupsContent({ search }: Props) {
-  const navigate = useNavigate({ from: '/parlament/' })
-  const { data, isLoading } = useParliamentMembers(search)
-  const filtersAnchorRef = useRef<HTMLDivElement>(null)
-  const [filterSheetOpen, setFilterSheetOpen] = useState(false)
-  const [findRepOpen, setFindRepOpen] = useState(false)
+  const navigate = useNavigate({ from: "/parlament/" });
+  const { data, isLoading, isError, refetch } = useParliamentMembers(search);
+  const filtersAnchorRef = useRef<HTMLDivElement>(null);
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [findRepOpen, setFindRepOpen] = useState(false);
 
-  const searchRef = useRef(search)
-  searchRef.current = search
+  const searchRef = useRef(search);
+  searchRef.current = search;
 
   useEffect(() => {
-    if (search.find !== '1' && search.find !== 1) return
+    if (search.find !== "1" && search.find !== 1) return;
 
-    setFindRepOpen(true)
-    const { find: _find, ...restSearch } = searchRef.current
+    setFindRepOpen(true);
+    const { find: _find, ...restSearch } = searchRef.current;
     void navigate({
       search: {
         ...restSearch,
-        tab: 'grupuri',
+        tab: "grupuri",
       },
       replace: true,
       resetScroll: false,
-    })
-  }, [navigate, search.find])
+    });
+  }, [navigate, search.find]);
 
   const handleSearchChange = (next: ParliamentGroupsSearch) => {
     void navigate({
       search: {
         ...next,
-        tab: 'grupuri',
+        tab: "grupuri",
         find: undefined,
       },
       replace: true,
       resetScroll: false,
-    })
-  }
+    });
+  };
 
   const handlePageChange = (page: number) => {
     void navigate({
       search: {
         ...search,
-        tab: 'grupuri',
+        tab: "grupuri",
         page,
       },
       replace: true,
       resetScroll: false,
-    })
-  }
+    });
+  };
 
   const handleClearFilters = () => {
     void navigate({
       search: {
-        tab: 'grupuri',
+        tab: "grupuri",
         page: 1,
       },
       replace: true,
       resetScroll: false,
-    })
-  }
+    });
+  };
 
   return (
     <>
@@ -95,10 +96,10 @@ export function ParliamentGroupsContent({ search }: Props) {
                 </h2>
                 {data ? (
                   <span className="text-sm text-[var(--pnrr-muted)]">
-                    {data.total.toLocaleString('ro-RO')} membri
+                    {data.total.toLocaleString("ro-RO")} membri
                     {data.totalPages > 1
                       ? ` · pagina ${data.page} din ${data.totalPages}`
-                      : ''}
+                      : ""}
                   </span>
                 ) : null}
               </div>
@@ -119,6 +120,12 @@ export function ParliamentGroupsContent({ search }: Props) {
           {isLoading ? (
             <MembersTableSkeleton
               rowCount={search.pageSize ?? DEFAULT_MEMBERS_PAGE_SIZE}
+            />
+          ) : isError ? (
+            <ParliamentInlineLoadError
+              title="Lista parlamentarilor nu a putut fi încărcată"
+              description="Serviciul de date nu a răspuns. Reîncearcă înainte de a concluziona că nu există membri pentru filtrele alese."
+              onRetry={() => void refetch()}
             />
           ) : data ? (
             <MembersTable
@@ -147,5 +154,5 @@ export function ParliamentGroupsContent({ search }: Props) {
         <ChamberCompositionSection chamber="senat" search={search} />
       </div>
     </>
-  )
+  );
 }

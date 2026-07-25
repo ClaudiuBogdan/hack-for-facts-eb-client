@@ -183,9 +183,10 @@ function buildSeatAssignments(
       })
     }
     // Anonymous remainder seats (no resolved member for this seat in the roster).
+    // NO memberId: these represent "a seat this group holds", not a person, so
+    // they must never become a navigable member link.
     for (let i = groupMembers.length; i < group.memberCount; i += 1) {
       assignments.push({
-        memberId: `${group.groupId}-seat-${i}`,
         memberName: '',
         groupId: group.groupId,
         groupName,
@@ -230,7 +231,8 @@ export function buildChamberComposition(
     const position = layout.positions[positionIndex]
     const isActive =
       !hasActiveFilters ||
-      filteredMemberIds?.has(assignment.memberId) === true ||
+      (assignment.memberId !== undefined &&
+        filteredMemberIds?.has(assignment.memberId) === true) ||
       filteredGroupIds?.has(assignment.groupId) === true
 
     return {

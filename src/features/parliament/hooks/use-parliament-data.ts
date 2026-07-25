@@ -103,10 +103,26 @@ export function useParliamentGroupMembers(groupId: string) {
   })
 }
 
+/** A single (newest-first) page of votes — the hub's "recent votes" strips. */
 export function useParliamentVotes(search: ParliamentVotesSearch) {
   return useQuery({
     queryKey: [...PARLIAMENT_QUERY_KEY, 'votes', search],
     queryFn: () => fetchParliamentVotes(search),
+  })
+}
+
+/**
+ * The chamber vote BROWSE list. `parliamentVotes` is a keyset connection with no
+ * exact total, so this pages forward on the cursor instead of pretending to know
+ * a page count.
+ */
+export function useParliamentVotesBrowse(search: ParliamentVotesSearch) {
+  return useInfiniteQuery({
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'votes-browse', search],
+    queryFn: ({ pageParam }) => fetchParliamentVotes(search, pageParam),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNextPage && lastPage.endCursor ? lastPage.endCursor : undefined,
   })
 }
 
@@ -303,6 +319,25 @@ export function useParliamentCommittees(params: {
   return useQuery({
     queryKey: [...PARLIAMENT_QUERY_KEY, 'committees', params],
     queryFn: () => fetchParliamentCommittees(params),
+  })
+}
+
+/**
+ * Committee browse. `parliamentCommittees` is a cursor connection; the page used
+ * to read only the first 60 rows and drop the cursor on the floor, so anything
+ * past #60 was unreachable (and looked like it did not exist).
+ */
+export function useParliamentCommitteesBrowse(params: {
+  chamber?: string
+  legislature?: string
+} = {}) {
+  return useInfiniteQuery({
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'committees-browse', params],
+    queryFn: ({ pageParam }) =>
+      fetchParliamentCommittees({ ...params, ...(pageParam ? { after: pageParam } : {}) }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNextPage && lastPage.endCursor ? lastPage.endCursor : undefined,
   })
 }
 

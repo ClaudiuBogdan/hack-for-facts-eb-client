@@ -1,9 +1,10 @@
 import { Link } from '@tanstack/react-router'
 import { cn } from '@/lib/utils'
 import {
-  MEMBER_DETAIL_NAV_ITEMS,
+  getMemberDetailNavItems,
   type MemberDetailTab,
 } from '../lib/member-detail-nav'
+import { isParliamentMockEnabled } from '../lib/mock-mode'
 import {
   memberDetailSidebarActiveLinkClassName,
   memberDetailSidebarColumnClassName,
@@ -18,10 +19,17 @@ type Props = {
 
 /** Left navigation for member profile sub-routes. */
 export function MemberDetailSidebar({ memberId, activeTab }: Props) {
+  // `alegeri` / `portret` have no live backing (see MEMBER_DETAIL_UNBACKED_TABS).
+  // Keep them reachable if the reader is already on one, so the highlight and
+  // the back button still work.
+  const items = getMemberDetailNavItems({
+    includeUnbacked: isParliamentMockEnabled() || activeTab === 'alegeri' || activeTab === 'portret',
+  })
+
   return (
     <div className={cn(memberDetailSidebarColumnClassName, 'lg:sticky lg:top-0 lg:self-start')}>
       <nav aria-label="Secțiuni profil parlamentar" className={memberDetailSidebarNavClassName}>
-        {MEMBER_DETAIL_NAV_ITEMS.map((item) => {
+        {items.map((item) => {
           const isActive = activeTab === item.id
 
           return (

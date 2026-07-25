@@ -7,7 +7,7 @@
  * Server typedefs (read-only reference):
  *   hack-for-facts-eb-server/src/modules/parliament/shell/graphql/typedefs.ts
  */
-import { z } from 'zod'
+import { z } from "zod";
 
 // ---------------------------------------------------------------------------
 // Shared raw fragments
@@ -19,13 +19,13 @@ const rawCommitteeRefSchema = z.object({
   chamber: z.string().nullable(),
   name: z.string(),
   sourceUrl: z.string().nullable(),
-})
+});
 const rawCommitteeMemberRefSchema = z.object({
   mandateKey: z.string().nullable(),
   fullName: z.string().nullable(),
   chamber: z.string().nullable(),
   groupName: z.string().nullable(),
-})
+});
 const rawCommitteeMembershipSchema = z.object({
   membershipKey: z.string(),
   committee: rawCommitteeRefSchema.nullable().optional(),
@@ -35,10 +35,10 @@ const rawCommitteeMembershipSchema = z.object({
   leftDate: z.string().nullable(),
   isBureau: z.boolean().nullable(),
   sourceUrl: z.string(),
-})
+});
 export type RawParliamentCommitteeMembership = z.infer<
   typeof rawCommitteeMembershipSchema
->
+>;
 
 // Raw AI-metadata fragments (bill + control item).
 const rawAiBillMetadataSchema = z.object({
@@ -58,8 +58,10 @@ const rawAiBillMetadataSchema = z.object({
   privacyClass: z.string(),
   trustClass: z.string(),
   disclaimer: z.string(),
-})
-export type RawParliamentAiBillMetadata = z.infer<typeof rawAiBillMetadataSchema>
+});
+export type RawParliamentAiBillMetadata = z.infer<
+  typeof rawAiBillMetadataSchema
+>;
 
 const rawAiControlItemMetadataSchema = z.object({
   summary: z.string().nullable(),
@@ -78,10 +80,10 @@ const rawAiControlItemMetadataSchema = z.object({
   privacyClass: z.string(),
   trustClass: z.string(),
   disclaimer: z.string(),
-})
+});
 export type RawParliamentAiControlItemMetadata = z.infer<
   typeof rawAiControlItemMetadataSchema
->
+>;
 
 /** GraphQL selection for the AI-bill-metadata block (reused across queries). */
 const AI_BILL_METADATA_FIELDS = /* GraphQL */ `
@@ -89,7 +91,7 @@ const AI_BILL_METADATA_FIELDS = /* GraphQL */ `
   configKey promptVersion schemaVersion model
   validationStatus confidence sourceUpdatedAt loadedAt
   privacyClass trustClass disclaimer
-`
+`;
 
 /** GraphQL selection for the AI-control-item-metadata block. */
 const AI_CONTROL_ITEM_METADATA_FIELDS = /* GraphQL */ `
@@ -97,13 +99,13 @@ const AI_CONTROL_ITEM_METADATA_FIELDS = /* GraphQL */ `
   configKey promptVersion schemaVersion model
   validationStatus confidence sourceUpdatedAt loadedAt
   privacyClass trustClass disclaimer
-`
+`;
 
 /** GraphQL selection for a committee membership row (member-side). */
 const COMMITTEE_MEMBERSHIP_FIELDS = /* GraphQL */ `
   membershipKey role joinedDate leftDate isBureau sourceUrl
   committee { committeeKey chamber name sourceUrl }
-`
+`;
 
 const rawTallySchema = z.object({
   pentru: z.number().nullable(),
@@ -111,8 +113,8 @@ const rawTallySchema = z.object({
   abtinere: z.number().nullable(),
   nuAVotat: z.number().nullable(),
   present: z.number().nullable(),
-})
-export type RawParliamentTally = z.infer<typeof rawTallySchema>
+});
+export type RawParliamentTally = z.infer<typeof rawTallySchema>;
 
 const rawGroupBreakdownSchema = z.object({
   groupName: z.string().nullable(),
@@ -120,7 +122,7 @@ const rawGroupBreakdownSchema = z.object({
   impotriva: z.number(),
   abtinere: z.number(),
   nuAVotat: z.number(),
-})
+});
 
 const rawVoteCoreSchema = z.object({
   voteKey: z.string(),
@@ -130,41 +132,54 @@ const rawVoteCoreSchema = z.object({
   outcome: z.string().nullable(),
   divisionNumber: z.number().nullable(),
   billKey: z.string().nullable(),
-})
+  sourceUrl: z.string().nullable().optional(),
+});
 
 // ---------------------------------------------------------------------------
 // Groups — parliamentGroups(legislature, chamber)
 // ---------------------------------------------------------------------------
 
 export const PARLIAMENT_GROUPS_QUERY = /* GraphQL */ `
-  query ParliamentGroups($legislature: String, $chamber: String, $current: Boolean) {
-    parliamentGroups(legislature: $legislature, chamber: $chamber, current: $current) {
+  query ParliamentGroups(
+    $legislature: String
+    $chamber: String
+    $current: Boolean
+  ) {
+    parliamentGroups(
+      legislature: $legislature
+      chamber: $chamber
+      current: $current
+    ) {
       groupId
       chamber
       name
       memberCount
     }
   }
-`
+`;
 
 const rawGroupSchema = z.object({
   groupId: z.string(),
   chamber: z.string(),
   name: z.string(),
   memberCount: z.number().nullable(),
-})
-export type RawParliamentGroup = z.infer<typeof rawGroupSchema>
+});
+export type RawParliamentGroup = z.infer<typeof rawGroupSchema>;
 
 export const parliamentGroupsResponseSchema = z.object({
   parliamentGroups: z.array(rawGroupSchema),
-})
+});
 
 // ---------------------------------------------------------------------------
 // Members list — parliamentMembers(filter, page, pageSize)
 // ---------------------------------------------------------------------------
 
 export const PARLIAMENT_MEMBERS_QUERY = /* GraphQL */ `
-  query ParliamentMembers($filter: ParliamentMembersFilter, $page: Int, $pageSize: Int) {
+  query ParliamentMembers(
+    $filter: ParliamentMembersFilter
+    $page: Int
+    $pageSize: Int
+  ) {
     parliamentMembers(filter: $filter, page: $page, pageSize: $pageSize) {
       total
       totalEstimated
@@ -176,10 +191,16 @@ export const PARLIAMENT_MEMBERS_QUERY = /* GraphQL */ `
         groupName
         constituencyName
         birthDate
+        # SC-1: the directory lists every MANDATE row, including seats that have
+        # ended (replacement/death). Without these, a citizen searching their
+        # county sees a former member indistinguishable from the sitting one.
+        isCurrent
+        mandateEndDate
+        mandateEndReason
       }
     }
   }
-`
+`;
 
 const rawMemberSchema = z.object({
   mandateKey: z.string(),
@@ -200,8 +221,8 @@ const rawMemberSchema = z.object({
   isCurrent: z.boolean().optional(),
   mandateEndDate: z.string().nullable().optional(),
   mandateEndReason: z.string().nullable().optional(),
-})
-export type RawParliamentMember = z.infer<typeof rawMemberSchema>
+});
+export type RawParliamentMember = z.infer<typeof rawMemberSchema>;
 
 export const parliamentMembersResponseSchema = z.object({
   parliamentMembers: z.object({
@@ -209,7 +230,7 @@ export const parliamentMembersResponseSchema = z.object({
     totalEstimated: z.boolean(),
     members: z.array(rawMemberSchema),
   }),
-})
+});
 
 // ---------------------------------------------------------------------------
 // Single member — parliamentMember(mandateKey)
@@ -227,36 +248,36 @@ export const PARLIAMENT_MEMBER_QUERY = /* GraphQL */ `
       birthDate
       profileUrl
       cvPdfUrl
+      # SC-1 seat lifecycle: a mandate row survives the seat ending, so the
+      # profile must be able to say "mandat încheiat" instead of presenting a
+      # replaced member as a sitting representative.
+      isCurrent
+      mandateEndDate
+      mandateEndReason
       committeeMemberships { ${COMMITTEE_MEMBERSHIP_FIELDS} }
-      activityCounts { votes controlItems speeches initiatives declarations }
     }
   }
-`
-
-const rawMemberDetailSchema = rawMemberSchema.extend({
-  activityCounts: z
-    .object({
-      votes: z.number(),
-      controlItems: z.number(),
-      speeches: z.number(),
-      initiatives: z.number(),
-      declarations: z.number(),
-    })
-    .nullable(),
-})
-export type RawParliamentMemberDetail = z.infer<typeof rawMemberDetailSchema>
+`;
 
 export const parliamentMemberResponseSchema = z.object({
-  parliamentMember: rawMemberDetailSchema.nullable(),
-})
+  parliamentMember: rawMemberSchema.nullable(),
+});
 
 // ---------------------------------------------------------------------------
 // Group members — parliamentGroupMembers(groupId, legislature)
 // ---------------------------------------------------------------------------
 
 export const PARLIAMENT_GROUP_MEMBERS_QUERY = /* GraphQL */ `
-  query ParliamentGroupMembers($groupId: ID!, $legislature: String, $current: Boolean) {
-    parliamentGroupMembers(groupId: $groupId, legislature: $legislature, current: $current) {
+  query ParliamentGroupMembers(
+    $groupId: ID!
+    $legislature: String
+    $current: Boolean
+  ) {
+    parliamentGroupMembers(
+      groupId: $groupId
+      legislature: $legislature
+      current: $current
+    ) {
       mandateKey
       chamber
       legislature
@@ -266,11 +287,11 @@ export const PARLIAMENT_GROUP_MEMBERS_QUERY = /* GraphQL */ `
       birthDate
     }
   }
-`
+`;
 
 export const parliamentGroupMembersResponseSchema = z.object({
   parliamentGroupMembers: z.array(rawMemberSchema),
-})
+});
 
 // ---------------------------------------------------------------------------
 // Votes (cursor) — parliamentVotes(filter, sort, first, after)
@@ -283,7 +304,12 @@ export const PARLIAMENT_VOTES_QUERY = /* GraphQL */ `
     $first: Int
     $after: String
   ) {
-    parliamentVotes(filter: $filter, sort: $sort, first: $first, after: $after) {
+    parliamentVotes(
+      filter: $filter
+      sort: $sort
+      first: $first
+      after: $after
+    ) {
       edges {
         cursor
         node {
@@ -294,17 +320,26 @@ export const PARLIAMENT_VOTES_QUERY = /* GraphQL */ `
           outcome
           divisionNumber
           billKey
-          tally { pentru impotriva abtinere nuAVotat present }
+          tally {
+            pentru
+            impotriva
+            abtinere
+            nuAVotat
+            present
+          }
         }
       }
-      pageInfo { hasNextPage endCursor }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
     }
   }
-`
+`;
 
 const rawVoteListNodeSchema = rawVoteCoreSchema.extend({
   tally: rawTallySchema,
-})
+});
 
 export const parliamentVotesResponseSchema = z.object({
   parliamentVotes: z.object({
@@ -316,8 +351,8 @@ export const parliamentVotesResponseSchema = z.object({
       endCursor: z.string().nullable(),
     }),
   }),
-})
-export type RawParliamentVoteListNode = z.infer<typeof rawVoteListNodeSchema>
+});
+export type RawParliamentVoteListNode = z.infer<typeof rawVoteListNodeSchema>;
 
 // ---------------------------------------------------------------------------
 // Single vote (+ ballots) — parliamentVote(voteKey)
@@ -333,17 +368,41 @@ export const PARLIAMENT_VOTE_QUERY = /* GraphQL */ `
       outcome
       divisionNumber
       billKey
-      tally { pentru impotriva abtinere nuAVotat present }
-      groupBreakdown { groupName pentru impotriva abtinere nuAVotat }
+      sourceUrl
+      tally {
+        pentru
+        impotriva
+        abtinere
+        nuAVotat
+        present
+      }
+      groupBreakdown {
+        groupName
+        pentru
+        impotriva
+        abtinere
+        nuAVotat
+      }
       ballots(first: $ballotsFirst, after: $after) {
         edges {
-          node { rowIndex memberName groupName choice mandateKey matchMethod constituencyName }
+          node {
+            rowIndex
+            memberName
+            groupName
+            choice
+            mandateKey
+            matchMethod
+            constituencyName
+          }
         }
-        pageInfo { hasNextPage endCursor }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
       }
     }
   }
-`
+`;
 
 const rawBallotSchema = z.object({
   rowIndex: z.number(),
@@ -355,8 +414,8 @@ const rawBallotSchema = z.object({
   // Constituency (județ) of the resolved member, JOINed server-side; null when
   // the ballot is unresolved or the member has no recorded constituency.
   constituencyName: z.string().nullable(),
-})
-export type RawParliamentBallot = z.infer<typeof rawBallotSchema>
+});
+export type RawParliamentBallot = z.infer<typeof rawBallotSchema>;
 
 const rawVoteDetailSchema = rawVoteCoreSchema.extend({
   tally: rawTallySchema,
@@ -368,12 +427,12 @@ const rawVoteDetailSchema = rawVoteCoreSchema.extend({
       endCursor: z.string().nullable(),
     }),
   }),
-})
-export type RawParliamentVoteDetail = z.infer<typeof rawVoteDetailSchema>
+});
+export type RawParliamentVoteDetail = z.infer<typeof rawVoteDetailSchema>;
 
 export const parliamentVoteResponseSchema = z.object({
   parliamentVote: rawVoteDetailSchema.nullable(),
-})
+});
 
 /**
  * Ballots-only follow-up page. The server caps the ballots connection at 200
@@ -385,13 +444,24 @@ export const PARLIAMENT_VOTE_BALLOTS_QUERY = /* GraphQL */ `
     parliamentVote(voteKey: $voteKey) {
       ballots(first: $first, after: $after) {
         edges {
-          node { rowIndex memberName groupName choice mandateKey matchMethod constituencyName }
+          node {
+            rowIndex
+            memberName
+            groupName
+            choice
+            mandateKey
+            matchMethod
+            constituencyName
+          }
         }
-        pageInfo { hasNextPage endCursor }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
       }
     }
   }
-`
+`;
 
 export const parliamentVoteBallotsResponseSchema = z.object({
   parliamentVote: z
@@ -405,7 +475,7 @@ export const parliamentVoteBallotsResponseSchema = z.object({
       }),
     })
     .nullable(),
-})
+});
 
 // ---------------------------------------------------------------------------
 // Member voting history — parliamentMember(mandateKey).votes(first)
@@ -433,11 +503,14 @@ export const PARLIAMENT_MEMBER_VOTES_QUERY = /* GraphQL */ `
             billKey
           }
         }
-        pageInfo { hasNextPage endCursor }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
       }
     }
   }
-`
+`;
 
 const rawMemberVoteSchema = z.object({
   voteKey: z.string(),
@@ -447,8 +520,8 @@ const rawMemberVoteSchema = z.object({
   outcome: z.string().nullable(),
   choice: z.string().nullable(),
   billKey: z.string().nullable(),
-})
-export type RawParliamentMemberVote = z.infer<typeof rawMemberVoteSchema>
+});
+export type RawParliamentMemberVote = z.infer<typeof rawMemberVoteSchema>;
 
 export const parliamentMemberVotesResponseSchema = z.object({
   parliamentMember: z
@@ -464,7 +537,7 @@ export const parliamentMemberVotesResponseSchema = z.object({
       }),
     })
     .nullable(),
-})
+});
 
 // ---------------------------------------------------------------------------
 // Member vote-activity heatmap — parliamentMember(mandateKey).voteActivity(year, filter)
@@ -493,7 +566,7 @@ export const PARLIAMENT_MEMBER_VOTE_ACTIVITY_QUERY = /* GraphQL */ `
       }
     }
   }
-`
+`;
 
 const rawVoteActivityDaySchema = z.object({
   date: z.string(),
@@ -502,19 +575,19 @@ const rawVoteActivityDaySchema = z.object({
   impotriva: z.number(),
   abtinere: z.number(),
   nuAVotat: z.number(),
-})
+});
 export type RawParliamentMemberVoteActivityDay = z.infer<
   typeof rawVoteActivityDaySchema
->
+>;
 
 const rawVoteActivitySchema = z.object({
   year: z.number(),
   availableYears: z.array(z.number()),
   days: z.array(rawVoteActivityDaySchema),
-})
+});
 export type RawParliamentMemberVoteActivity = z.infer<
   typeof rawVoteActivitySchema
->
+>;
 
 export const parliamentMemberVoteActivityResponseSchema = z.object({
   parliamentMember: z
@@ -523,7 +596,7 @@ export const parliamentMemberVoteActivityResponseSchema = z.object({
       voteActivity: rawVoteActivitySchema,
     })
     .nullable(),
-})
+});
 
 // ---------------------------------------------------------------------------
 // Member interventii — parliamentMember(mandateKey).speechesConnection(...)
@@ -557,11 +630,14 @@ export const PARLIAMENT_MEMBER_SPEECHES_QUERY = /* GraphQL */ `
             fullText
           }
         }
-        pageInfo { hasNextPage endCursor }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
       }
     }
   }
-`
+`;
 
 const rawMemberSpeechSchema = z.object({
   speechKey: z.string(),
@@ -572,8 +648,8 @@ const rawMemberSpeechSchema = z.object({
   sourceUrl: z.string().nullable(),
   sourceUrlKind: z.string().nullable(),
   fullText: z.string().nullable(),
-})
-export type RawParliamentMemberSpeech = z.infer<typeof rawMemberSpeechSchema>
+});
+export type RawParliamentMemberSpeech = z.infer<typeof rawMemberSpeechSchema>;
 
 export const parliamentMemberSpeechesResponseSchema = z.object({
   parliamentMember: z
@@ -591,7 +667,7 @@ export const parliamentMemberSpeechesResponseSchema = z.object({
       }),
     })
     .nullable(),
-})
+});
 
 // ---------------------------------------------------------------------------
 // Member speech-activity heatmap — parliamentMember(mandateKey).speechActivity
@@ -620,26 +696,26 @@ export const PARLIAMENT_MEMBER_SPEECH_ACTIVITY_QUERY = /* GraphQL */ `
       }
     }
   }
-`
+`;
 
 const rawSpeechActivityDaySchema = z.object({
   date: z.string(),
   total: z.number(),
   proprie: z.number(),
   comun: z.number(),
-})
+});
 export type RawParliamentMemberSpeechActivityDay = z.infer<
   typeof rawSpeechActivityDaySchema
->
+>;
 
 const rawSpeechActivitySchema = z.object({
   year: z.number(),
   availableYears: z.array(z.number()),
   days: z.array(rawSpeechActivityDaySchema),
-})
+});
 export type RawParliamentMemberSpeechActivity = z.infer<
   typeof rawSpeechActivitySchema
->
+>;
 
 export const parliamentMemberSpeechActivityResponseSchema = z.object({
   parliamentMember: z
@@ -648,46 +724,46 @@ export const parliamentMemberSpeechActivityResponseSchema = z.object({
       speechActivity: rawSpeechActivitySchema,
     })
     .nullable(),
-})
+});
 
 // ---------------------------------------------------------------------------
 // Member profile activity — speeches / control items / initiatives / declarations
 // ---------------------------------------------------------------------------
 
+/**
+ * The shared member-profile payload behind the întrebări + interese tabs.
+ *
+ * DELIBERATELY LEAN. It used to also pull `speeches(pageSize: 10)` and
+ * `initiatives(pageSize: 10)`: the speeches were mapped and never rendered (the
+ * intervenții tab runs its own cursor query) and the initiatives were never even
+ * mapped (the inițiative tab has its own paginated query). Both were fetched on
+ * every profile tab load.
+ *
+ * `controlItems` keeps its `total` so the tab can say how many of the member's
+ * questions it is actually showing instead of implying ten is all of them.
+ */
 export const PARLIAMENT_MEMBER_PROFILE_QUERY = /* GraphQL */ `
-  query ParliamentMemberProfile($mandateKey: ID!) {
+  query ParliamentMemberProfile($mandateKey: ID!, $controlPageSize: Int) {
     parliamentMember(mandateKey: $mandateKey) {
       mandateKey
       fullName
       constituencyName
       legislature
-      speeches(page: 1, pageSize: 10) {
-        total
-        speeches { speechKey spokenAt title summary chamber }
-      }
-      controlItems(page: 1, pageSize: 10) {
+      controlItems(page: 1, pageSize: $controlPageSize) {
         total
         items {
-          itemKey controlType title recipient itemDate responseStatus
+          itemKey controlType title recipient itemDate responseStatus sourceUrl
           aiMetadata { ${AI_CONTROL_ITEM_METADATA_FIELDS} }
         }
-      }
-      initiatives(page: 1, pageSize: 10) {
-        total
-        initiatives { initiativeKey billKey title status registrationDate promulgatedLawNumber promulgatedLawYear }
       }
       declarations { declarationType declarationDate label fileUrl }
     }
   }
-`
+`;
 
-const rawSpeechSchema = z.object({
-  speechKey: z.string(),
-  spokenAt: z.string().nullable(),
-  title: z.string().nullable(),
-  summary: z.string().nullable(),
-  chamber: z.string().nullable(),
-})
+// (The member-profile speech shape lived here until the profile query stopped
+// fetching speeches. The stenograme surfaces have their own raw speech schema in
+// `parliament-speeches-queries.ts`.)
 const rawControlItemSchema = z.object({
   itemKey: z.string(),
   controlType: z.string().nullable(),
@@ -695,8 +771,10 @@ const rawControlItemSchema = z.object({
   recipient: z.string().nullable(),
   itemDate: z.string().nullable(),
   responseStatus: z.string().nullable(),
+  /** Official interpelări/întrebări page (server §6 traceability). */
+  sourceUrl: z.string().nullable().optional(),
   aiMetadata: rawAiControlItemMetadataSchema.nullable().optional(),
-})
+});
 const rawInitiativeSchema = z.object({
   initiativeKey: z.string(),
   billKey: z.string().nullable(),
@@ -706,17 +784,16 @@ const rawInitiativeSchema = z.object({
   registrationDate: z.string().nullable(),
   promulgatedLawNumber: z.string().nullable(),
   promulgatedLawYear: z.number().nullable(),
-})
+});
 const rawDeclarationSchema = z.object({
   declarationType: z.string(),
   declarationDate: z.string().nullable(),
   label: z.string().nullable(),
   fileUrl: z.string(),
-})
-export type RawParliamentSpeech = z.infer<typeof rawSpeechSchema>
-export type RawParliamentControlItem = z.infer<typeof rawControlItemSchema>
-export type RawParliamentInitiative = z.infer<typeof rawInitiativeSchema>
-export type RawParliamentDeclaration = z.infer<typeof rawDeclarationSchema>
+});
+export type RawParliamentControlItem = z.infer<typeof rawControlItemSchema>;
+export type RawParliamentInitiative = z.infer<typeof rawInitiativeSchema>;
+export type RawParliamentDeclaration = z.infer<typeof rawDeclarationSchema>;
 
 export const parliamentMemberProfileResponseSchema = z.object({
   parliamentMember: z
@@ -725,16 +802,14 @@ export const parliamentMemberProfileResponseSchema = z.object({
       fullName: z.string().nullable(),
       constituencyName: z.string().nullable(),
       legislature: z.string().nullable(),
-      speeches: z.object({ total: z.number(), speeches: z.array(rawSpeechSchema) }),
-      controlItems: z.object({ total: z.number(), items: z.array(rawControlItemSchema) }),
-      initiatives: z.object({
+      controlItems: z.object({
         total: z.number(),
-        initiatives: z.array(rawInitiativeSchema),
+        items: z.array(rawControlItemSchema),
       }),
       declarations: z.array(rawDeclarationSchema),
     })
     .nullable(),
-})
+});
 
 // ---------------------------------------------------------------------------
 // Member initiatives (paginated) — parliamentMember(mandateKey).initiatives(page, pageSize)
@@ -742,7 +817,11 @@ export const parliamentMemberProfileResponseSchema = z.object({
 // ---------------------------------------------------------------------------
 
 export const PARLIAMENT_MEMBER_INITIATIVES_QUERY = /* GraphQL */ `
-  query ParliamentMemberInitiatives($mandateKey: ID!, $page: Int, $pageSize: Int) {
+  query ParliamentMemberInitiatives(
+    $mandateKey: ID!
+    $page: Int
+    $pageSize: Int
+  ) {
     parliamentMember(mandateKey: $mandateKey) {
       mandateKey
       initiatives(page: $page, pageSize: $pageSize) {
@@ -759,7 +838,7 @@ export const PARLIAMENT_MEMBER_INITIATIVES_QUERY = /* GraphQL */ `
       }
     }
   }
-`
+`;
 
 export const parliamentMemberInitiativesResponseSchema = z.object({
   parliamentMember: z
@@ -771,7 +850,7 @@ export const parliamentMemberInitiativesResponseSchema = z.object({
       }),
     })
     .nullable(),
-})
+});
 
 // ---------------------------------------------------------------------------
 // Bills list — parliamentBills(filter, sort, page, pageSize)
@@ -784,7 +863,12 @@ export const PARLIAMENT_BILLS_QUERY = /* GraphQL */ `
     $page: Int
     $pageSize: Int
   ) {
-    parliamentBills(filter: $filter, sort: $sort, page: $page, pageSize: $pageSize) {
+    parliamentBills(
+      filter: $filter
+      sort: $sort
+      page: $page
+      pageSize: $pageSize
+    ) {
       total
       totalEstimated
       bills {
@@ -802,7 +886,7 @@ export const PARLIAMENT_BILLS_QUERY = /* GraphQL */ `
       }
     }
   }
-`
+`;
 
 const rawBillSummarySchema = z.object({
   billKey: z.string(),
@@ -820,8 +904,8 @@ const rawBillSummarySchema = z.object({
   // Date of the bill's most recent procedural event; drives the card's
   // "Actualizat" line + the server's default last_event_date-desc sort.
   lastEventDate: z.string().nullable(),
-})
-export type RawParliamentBillSummary = z.infer<typeof rawBillSummarySchema>
+});
+export type RawParliamentBillSummary = z.infer<typeof rawBillSummarySchema>;
 
 export const parliamentBillsResponseSchema = z.object({
   parliamentBills: z.object({
@@ -829,7 +913,7 @@ export const parliamentBillsResponseSchema = z.object({
     totalEstimated: z.boolean(),
     bills: z.array(rawBillSummarySchema),
   }),
-})
+});
 
 // ---------------------------------------------------------------------------
 // Single bill (events / documents / initiators / related votes / act links)
@@ -860,7 +944,16 @@ export const PARLIAMENT_BILL_QUERY = /* GraphQL */ `
         title
         outcome
         divisionNumber
+        sourceUrl
         tally { pentru impotriva abtinere nuAVotat present }
+      }
+      # The ROLE-BEARING edge (bill_vote_links.role). Only an explicit
+      # 'final_adoption' / 'final_rejection' role proves a vote was the final one
+      # — chronological order does not.
+      voteLinks {
+        voteKey
+        role
+        resolutionStatus
       }
       actLinks {
         relationshipKind
@@ -871,7 +964,7 @@ export const PARLIAMENT_BILL_QUERY = /* GraphQL */ `
       aiMetadata { ${AI_BILL_METADATA_FIELDS} }
     }
   }
-`
+`;
 
 const rawBillEventSchema = z.object({
   sourceBillKey: z.string().optional(),
@@ -887,19 +980,19 @@ const rawBillEventSchema = z.object({
   // document links (often empty — bills carry bill-level documents instead).
   voteIdv: z.string().nullable(),
   docs: z.unknown().nullable(),
-})
+});
 const rawBillDocumentSchema = z.object({
   sourceBillKey: z.string().optional(),
   url: z.string(),
   label: z.string().nullable(),
   kind: z.string().nullable(),
   position: z.number().nullable(),
-})
+});
 const rawBillInitiatorSchema = z.object({
   mandateKey: z.string(),
   fullName: z.string().nullable(),
   groupName: z.string().nullable(),
-})
+});
 const rawBillRelatedVoteSchema = z.object({
   voteKey: z.string(),
   chamber: z.string(),
@@ -907,8 +1000,10 @@ const rawBillRelatedVoteSchema = z.object({
   title: z.string().nullable(),
   outcome: z.string().nullable(),
   divisionNumber: z.number().nullable(),
+  /** Official cdep.ro / senat.ro division page (server §6 traceability). */
+  sourceUrl: z.string().nullable().optional(),
   tally: rawTallySchema,
-})
+});
 const rawBillActLinkSchema = z.object({
   relationshipKind: z.string(),
   resolutionStatus: z.string(),
@@ -920,10 +1015,12 @@ const rawBillActLinkSchema = z.object({
       actType: z.string().nullable(),
     })
     .nullable(),
-})
-export type RawParliamentBillEvent = z.infer<typeof rawBillEventSchema>
-export type RawParliamentBillDocument = z.infer<typeof rawBillDocumentSchema>
-export type RawParliamentBillRelatedVote = z.infer<typeof rawBillRelatedVoteSchema>
+});
+export type RawParliamentBillEvent = z.infer<typeof rawBillEventSchema>;
+export type RawParliamentBillDocument = z.infer<typeof rawBillDocumentSchema>;
+export type RawParliamentBillRelatedVote = z.infer<
+  typeof rawBillRelatedVoteSchema
+>;
 
 const rawBillDetailSchema = rawBillSummarySchema.extend({
   // All bill_key views merged into this dossier (requested key first) — a
@@ -934,21 +1031,34 @@ const rawBillDetailSchema = rawBillSummarySchema.extend({
   documents: z.array(rawBillDocumentSchema),
   initiators: z.array(rawBillInitiatorSchema),
   relatedVotes: z.array(rawBillRelatedVoteSchema),
+  voteLinks: z
+    .array(
+      z.object({
+        voteKey: z.string(),
+        role: z.string(),
+        resolutionStatus: z.string(),
+      }),
+    )
+    .optional(),
   actLinks: z.array(rawBillActLinkSchema),
   aiMetadata: rawAiBillMetadataSchema.nullable().optional(),
-})
-export type RawParliamentBillDetail = z.infer<typeof rawBillDetailSchema>
+});
+export type RawParliamentBillDetail = z.infer<typeof rawBillDetailSchema>;
 
 export const parliamentBillResponseSchema = z.object({
   parliamentBill: rawBillDetailSchema.nullable(),
-})
+});
 
 // ---------------------------------------------------------------------------
 // Filter resolution — parliamentResolveFilter(dim, q, legislature)
 // ---------------------------------------------------------------------------
 
 export const PARLIAMENT_RESOLVE_QUERY = /* GraphQL */ `
-  query ParliamentResolve($dim: ParliamentFilterDim!, $q: String!, $legislature: String) {
+  query ParliamentResolve(
+    $dim: ParliamentFilterDim!
+    $q: String!
+    $legislature: String
+  ) {
     parliamentResolveFilter(dim: $dim, q: $q, legislature: $legislature) {
       dim
       value
@@ -957,7 +1067,7 @@ export const PARLIAMENT_RESOLVE_QUERY = /* GraphQL */ `
       score
     }
   }
-`
+`;
 
 const rawResolveHitSchema = z.object({
   dim: z.string(),
@@ -965,12 +1075,12 @@ const rawResolveHitSchema = z.object({
   label: z.string(),
   kind: z.string(),
   score: z.number().nullable(),
-})
-export type RawParliamentResolveHit = z.infer<typeof rawResolveHitSchema>
+});
+export type RawParliamentResolveHit = z.infer<typeof rawResolveHitSchema>;
 
 export const parliamentResolveResponseSchema = z.object({
   parliamentResolveFilter: z.array(rawResolveHitSchema),
-})
+});
 
 // ---------------------------------------------------------------------------
 // Data freshness — parliamentDataFreshness
@@ -978,9 +1088,12 @@ export const parliamentResolveResponseSchema = z.object({
 
 export const PARLIAMENT_FRESHNESS_QUERY = /* GraphQL */ `
   query ParliamentDataFreshness {
-    parliamentDataFreshness { latestVoteDate lastLoadedAt }
+    parliamentDataFreshness {
+      latestVoteDate
+      lastLoadedAt
+    }
   }
-`
+`;
 
 export const parliamentFreshnessResponseSchema = z.object({
   parliamentDataFreshness: z
@@ -989,7 +1102,7 @@ export const parliamentFreshnessResponseSchema = z.object({
       lastLoadedAt: z.string().nullable(),
     })
     .nullable(),
-})
+});
 
 // ---------------------------------------------------------------------------
 // Committees — parliamentCommittees(chamber, legislature, first, after)
@@ -1010,12 +1123,22 @@ export const PARLIAMENT_COMMITTEES_QUERY = /* GraphQL */ `
     ) {
       edges {
         cursor
-        node { committeeKey chamber name legislature committeeType sourceUrl }
+        node {
+          committeeKey
+          chamber
+          name
+          legislature
+          committeeType
+          sourceUrl
+        }
       }
-      pageInfo { hasNextPage endCursor }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
     }
   }
-`
+`;
 
 const rawCommitteeNodeSchema = z.object({
   committeeKey: z.string(),
@@ -1024,8 +1147,8 @@ const rawCommitteeNodeSchema = z.object({
   legislature: z.string().nullable(),
   committeeType: z.string().nullable(),
   sourceUrl: z.string(),
-})
-export type RawParliamentCommittee = z.infer<typeof rawCommitteeNodeSchema>
+});
+export type RawParliamentCommittee = z.infer<typeof rawCommitteeNodeSchema>;
 
 export const parliamentCommitteesResponseSchema = z.object({
   // Root is NULLABLE per the SDL (H2: the server returns null on internal error
@@ -1041,7 +1164,7 @@ export const parliamentCommitteesResponseSchema = z.object({
       }),
     })
     .nullable(),
-})
+});
 
 // ---------------------------------------------------------------------------
 // Committee detail — parliamentCommittee(committeeKey)
@@ -1057,8 +1180,18 @@ export const PARLIAMENT_COMMITTEE_QUERY = /* GraphQL */ `
       committeeType
       sourceUrl
       members {
-        membershipKey role joinedDate leftDate isBureau sourceUrl
-        member { mandateKey fullName chamber groupName }
+        membershipKey
+        role
+        joinedDate
+        leftDate
+        isBureau
+        sourceUrl
+        member {
+          mandateKey
+          fullName
+          chamber
+          groupName
+        }
       }
       linkedBills {
         billKey
@@ -1077,18 +1210,18 @@ export const PARLIAMENT_COMMITTEE_QUERY = /* GraphQL */ `
       meetingsCount
     }
   }
-`
+`;
 
 const rawCommitteeDetailSchema = rawCommitteeNodeSchema.extend({
   members: z.array(rawCommitteeMembershipSchema),
   linkedBills: z.array(rawBillSummarySchema),
   linkedBillsTotal: z.number(),
   meetingsCount: z.number(),
-})
+});
 export type RawParliamentCommitteeDetail = z.infer<
   typeof rawCommitteeDetailSchema
->
+>;
 
 export const parliamentCommitteeResponseSchema = z.object({
   parliamentCommittee: rawCommitteeDetailSchema.nullable(),
-})
+});

@@ -32,7 +32,7 @@ export function ParliamentHubContent() {
       ) : (
         <>
           <ParliamentRecentVotesSection votes={data.recentVotes.slice(0, 5)} />
-          <ParliamentHubBillsSection legislatureLabel={data.legislature.label} />
+          <ParliamentHubBillsSection />
           <ParliamentHubParlamentariSection
             groups={data.groups}
             memberCountByChamber={data.memberCountByChamber}

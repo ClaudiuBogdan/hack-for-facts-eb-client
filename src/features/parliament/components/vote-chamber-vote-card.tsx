@@ -15,7 +15,6 @@ import { ParliamentCardChevron } from './parliament-card-chevron'
 
 type Props = {
   readonly vote: ParliamentVoteSummary
-  readonly divisionNumber: number
   readonly className?: string
 }
 
@@ -50,7 +49,7 @@ function VoteTallyColumn({ label, count, icon, className }: TallyColumnProps) {
 }
 
 /** UK Parliament division card — border color reflects vote outcome */
-export function VoteChamberVoteCard({ vote, divisionNumber, className }: Props) {
+export function VoteChamberVoteCard({ vote, className }: Props) {
   const accentColor = getVoteOutcomeAccentColor(vote.outcome)
   const outcomeLabel = getOutcomeLabel(vote.outcome)
 
@@ -106,7 +105,7 @@ export function VoteChamberVoteCard({ vote, divisionNumber, className }: Props) 
             parliamentVoteCardDividerClassName,
           )}
         >
-          {formatVoteDivisionMeta(vote, divisionNumber)}
+          {formatVoteDivisionMeta(vote, vote.divisionNumber)}
         </p>
       </div>
     </Link>

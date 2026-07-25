@@ -1,35 +1,32 @@
-import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import type { ParliamentCommittee } from '@/schemas/parliament'
-import { useParliamentCommittees } from '../hooks/use-parliament-data'
+import { useParliamentCommitteesBrowse } from '../hooks/use-parliament-data'
 import { committeeChamberLabel } from '../lib/committee-format'
-import { LATEST_LEGISLATURE } from '../api/graphql/parliament-translate'
+import {
+  COMMITTEE_LEGISLATURE_YEARS,
+  DEFAULT_COMMITTEE_LEGISLATURE,
+  toCommitteeQueryParams,
+  type CommitteeChamberFilter,
+  type ParliamentCommitteeBrowseSearch,
+} from '../lib/committee-browse-search'
 import { ParliamentCardChevron } from './parliament-card-chevron'
 import { ParliamentBackLink, ParliamentPageFrame } from './parliament-page-frame'
 
-type ChamberFilter = 'all' | 'camera_deputatilor' | 'senat'
-/** 'all' → send no legislature (server returns every legislature, oldest first). */
-type LegislatureFilter = string
-
-const CHAMBER_TABS: ReadonlyArray<{ id: ChamberFilter; label: string }> = [
+const CHAMBER_TABS: ReadonlyArray<{ id: CommitteeChamberFilter; label: string }> = [
   { id: 'all', label: 'Toate' },
   { id: 'camera_deputatilor', label: 'Camera Deputaților' },
   { id: 'senat', label: 'Senat' },
 ]
 
-/**
- * Post-1990 legislatures (start year). The server orders committees by
- * `committee_key` (text), so WITHOUT a legislature filter the first page is the
- * 1990 committees — we default to the CURRENT legislature and offer a selector
- * (plus an explicit "all legislatures" escape hatch).
- */
 const LEGISLATURE_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
   { value: 'all', label: 'Toate legislaturile' },
-  ...['2024', '2020', '2016', '2012', '2008', '2004', '2000', '1996', '1992', '1990'].map(
-    (year) => ({ value: year, label: `Legislatura ${year}` }),
-  ),
+  ...COMMITTEE_LEGISLATURE_YEARS.map((year) => ({
+    value: year,
+    label: `Legislatura ${year}`,
+  })),
 ]
 
 function CommitteeRow({ committee }: { readonly committee: ParliamentCommittee }) {
@@ -53,16 +50,35 @@ function CommitteeRow({ committee }: { readonly committee: ParliamentCommittee }
   )
 }
 
+type Props = {
+  /** URL-backed filter state (see `committee-browse-search`). */
+  readonly search: ParliamentCommitteeBrowseSearch
+}
+
 /** Committee browse page at /parlament/comisii */
-export function ParliamentCommitteesPage() {
-  const [chamber, setChamber] = useState<ChamberFilter>('all')
-  // Default to the CURRENT legislature so the browse doesn't open on 1990 rows.
-  const [legislature, setLegislature] = useState<LegislatureFilter>(LATEST_LEGISLATURE)
-  const { data, isLoading } = useParliamentCommittees({
-    ...(chamber === 'all' ? {} : { chamber }),
-    ...(legislature === 'all' ? {} : { legislature }),
-  })
-  const committees = data?.committees ?? []
+export function ParliamentCommitteesPage({ search }: Props) {
+  const navigate = useNavigate({ from: '/parlament/comisii/' })
+  const chamber = search.chamber ?? 'all'
+  const legislatura = search.legislatura ?? DEFAULT_COMMITTEE_LEGISLATURE
+
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useParliamentCommitteesBrowse(toCommitteeQueryParams(search))
+
+  const committees = data?.pages.flatMap((page) => page.committees) ?? []
+
+  const applySearch = (next: ParliamentCommitteeBrowseSearch) => {
+    void navigate({
+      search: (): Record<string, unknown> => ({ chamber, legislatura, ...next }),
+      replace: true,
+    })
+  }
 
   return (
     <ParliamentPageFrame className="space-y-8">
@@ -88,7 +104,7 @@ export function ParliamentCommitteesPage() {
               type="button"
               role="tab"
               aria-selected={chamber === tab.id}
-              onClick={() => setChamber(tab.id)}
+              onClick={() => applySearch({ chamber: tab.id })}
               className={cn(
                 'rounded-none border-2 px-4 py-2 text-sm font-semibold transition-colors',
                 chamber === tab.id
@@ -104,8 +120,8 @@ export function ParliamentCommitteesPage() {
         <label className="flex items-center gap-2 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
           <span className="font-semibold">Legislatura</span>
           <select
-            value={legislature}
-            onChange={(e) => setLegislature(e.target.value)}
+            value={legislatura}
+            onChange={(e) => applySearch({ legislatura: e.target.value })}
             className="rounded-none border-2 border-[#b1b4b6] bg-white px-3 py-2 text-sm font-semibold text-[#0b0c0c] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)]"
             aria-label="Filtru legislatură"
           >
@@ -120,14 +136,46 @@ export function ParliamentCommitteesPage() {
 
       {isLoading ? (
         <Skeleton className="h-64 w-full rounded-none" />
+      ) : isError ? (
+        // A failed read is NOT an empty Parliament. Say so, and offer a retry.
+        <div className="border-2 border-[#b1b4b6] bg-white px-5 py-8 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]">
+          <p className="text-base font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+            Lista comisiilor nu a putut fi încărcată
+          </p>
+          <p className="mt-2 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            Este o eroare temporară a serviciului de date, nu o listă goală.
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            className="mt-4 h-10 rounded-none border-2"
+            onClick={() => void refetch()}
+          >
+            Reîncearcă
+          </Button>
+        </div>
       ) : committees.length > 0 ? (
-        <ul className="space-y-3">
-          {committees.map((committee) => (
-            <li key={committee.committeeKey}>
-              <CommitteeRow committee={committee} />
-            </li>
-          ))}
-        </ul>
+        <div className="space-y-4">
+          <ul className="space-y-3">
+            {committees.map((committee) => (
+              <li key={committee.committeeKey}>
+                <CommitteeRow committee={committee} />
+              </li>
+            ))}
+          </ul>
+
+          {hasNextPage ? (
+            <Button
+              type="button"
+              variant="outline"
+              className="h-11 w-full rounded-none border-2 border-[#0b0c0c] text-base font-normal dark:border-[var(--pnrr-border)]"
+              onClick={() => void fetchNextPage()}
+              disabled={isFetchingNextPage}
+            >
+              {isFetchingNextPage ? 'Se încarcă…' : 'Încarcă mai multe comisii'}
+            </Button>
+          ) : null}
+        </div>
       ) : (
         <p className="text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
           Nu există comisii disponibile pentru filtrul selectat.

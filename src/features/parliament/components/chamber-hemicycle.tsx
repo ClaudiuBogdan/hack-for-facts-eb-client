@@ -31,26 +31,16 @@ export function ChamberHemicycle({ composition, className }: Props) {
 
   const handleSeatClick = (
     event: React.MouseEvent<SVGCircleElement>,
-    seat: ParliamentSeat,
+    memberId: string,
   ) => {
     event.preventDefault()
-    void navigate({
-      to: '/parlament/membri/$memberId',
-      params: { memberId: seat.memberId },
-    })
+    void navigate({ to: '/parlament/membri/$memberId', params: { memberId } })
   }
 
-  const handleSeatKeyDown = (
-    event: React.KeyboardEvent<SVGCircleElement>,
-    seat: ParliamentSeat,
-  ) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      void navigate({
-        to: '/parlament/membri/$memberId',
-        params: { memberId: seat.memberId },
-      })
-    }
+  const seatLabel = (seat: ParliamentSeat): string => {
+    const who = seat.memberId === undefined ? 'Loc neatribuit unui profil' : seat.memberName
+    const base = `${who}, ${seat.groupName}`
+    return seat.isActive ? base : `${base} — nu corespunde filtrului`
   }
 
   return (
@@ -67,42 +57,40 @@ export function ChamberHemicycle({ composition, className }: Props) {
         className="mx-auto block w-full max-w-xl"
         style={{ height: 'auto', maxHeight: 'min(280px, 42vw)' }}
       >
-        {composition.seats.map((seat) => (
-          <circle
-            key={seat.seatIndex}
-            cx={seat.x}
-            cy={seat.y}
-            r={composition.seatRadius}
-            fill={getSeatFill(seat)}
-            stroke={seat.isActive ? '#ffffff' : INACTIVE_SEAT_STROKE}
-            strokeWidth={0.15}
-            className={cn(
-              'transition-opacity focus-visible:outline-none',
-              seat.isActive
-                ? 'cursor-pointer hover:opacity-80 focus-visible:opacity-80'
-                : 'cursor-pointer opacity-70 hover:opacity-90 focus-visible:opacity-90',
-            )}
-            tabIndex={0}
-            role="link"
-            aria-label={
-              seat.isActive
-                ? `${seat.memberName}, ${seat.groupName}`
-                : `${seat.memberName}, ${seat.groupName} — nu corespunde filtrului`
-            }
-            onMouseEnter={() => setHoveredSeat(seat)}
-            onMouseLeave={() => setHoveredSeat(null)}
-            onFocus={() => setHoveredSeat(seat)}
-            onBlur={() => setHoveredSeat(null)}
-            onClick={(event) => handleSeatClick(event, seat)}
-            onKeyDown={(event) => handleSeatKeyDown(event, seat)}
-          >
-            <title>
-              {seat.isActive
-                ? `${seat.memberName} (${seat.groupName})`
-                : `${seat.memberName} (${seat.groupName}) — nu corespunde filtrului`}
-            </title>
-          </circle>
-        ))}
+        {/*
+          Seats are NOT tab stops. 330 focusable SVG circles put a keyboard user
+          through hundreds of stops before the next control, and the placeholder
+          seats aren't even people. The chart is exposed as one labelled image;
+          the keyboard/AT path to the same data is the party legend below (each
+          card links to its group) plus the members directory.
+        */}
+        {composition.seats.map((seat) => {
+          const { memberId } = seat
+          return (
+            <circle
+              key={seat.seatIndex}
+              cx={seat.x}
+              cy={seat.y}
+              r={composition.seatRadius}
+              fill={getSeatFill(seat)}
+              stroke={seat.isActive ? '#ffffff' : INACTIVE_SEAT_STROKE}
+              strokeWidth={0.15}
+              className={cn(
+                'transition-opacity',
+                seat.isActive ? 'hover:opacity-80' : 'opacity-70 hover:opacity-90',
+                // Only a seat that resolves to a real member is clickable.
+                memberId === undefined ? 'cursor-default' : 'cursor-pointer',
+              )}
+              onMouseEnter={() => setHoveredSeat(seat)}
+              onMouseLeave={() => setHoveredSeat(null)}
+              {...(memberId === undefined
+                ? {}
+                : { onClick: (event) => handleSeatClick(event, memberId) })}
+            >
+              <title>{seatLabel(seat)}</title>
+            </circle>
+          )
+        })}
       </svg>
 
       {hoveredSeat ? (
@@ -110,7 +98,11 @@ export function ChamberHemicycle({ composition, className }: Props) {
           className="pointer-events-none absolute left-1/2 top-0 z-10 -translate-x-1/2 rounded-none border border-[#b1b4b6] bg-[#0b0c0c] px-3 py-1.5 text-center text-xs text-white shadow-sm dark:border-[var(--pnrr-border)]"
           role="tooltip"
         >
-          <p className="font-semibold">{hoveredSeat.memberName}</p>
+          <p className="font-semibold">
+            {hoveredSeat.memberId === undefined
+              ? 'Loc neatribuit unui profil'
+              : hoveredSeat.memberName}
+          </p>
           <p className="text-white/80">{hoveredSeat.groupName}</p>
           {!hoveredSeat.isActive ? (
             <p className="mt-0.5 text-white/60">Nu corespunde filtrului</p>

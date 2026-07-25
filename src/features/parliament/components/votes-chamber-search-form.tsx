@@ -154,11 +154,16 @@ export function VotesChamberSearchForm({
               <SelectTrigger id="vote-outcome" className={cn(voteSearchControlClassName, 'py-0')}>
                 <SelectValue />
               </SelectTrigger>
+              {/*
+                Only the two outcomes the source records (`votes.outcome` is
+                `adoptat | respins | null`). "Amânat" was offered but silently
+                dropped by the filter builder, so picking it BROADENED the query
+                back to every vote — the opposite of what the user asked for.
+              */}
               <SelectContent>
                 <SelectItem value="all">Toate rezultatele</SelectItem>
                 <SelectItem value="adoptat">Adoptat</SelectItem>
                 <SelectItem value="respins">Respins</SelectItem>
-                <SelectItem value="amânat">Amânat</SelectItem>
               </SelectContent>
             </Select>
           </div>

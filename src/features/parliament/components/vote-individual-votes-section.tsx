@@ -41,13 +41,19 @@ type Props = {
 }
 
 type ViewMode = 'party' | 'member'
-type VoteTab = 'pentru' | 'impotriva' | 'nu_a_votat'
+type VoteTab = 'pentru' | 'impotriva' | 'abtinere' | 'nu_a_votat'
 
 const ALL_PARTIES_VALUE = 'all'
 
+/**
+ * All four recorded choices. `abtinere` was missing even though the source and
+ * the tally both carry it, so abstaining members were invisible on the page that
+ * exists to show how each member voted.
+ */
 const TAB_CHOICES: ReadonlyArray<{ readonly id: VoteTab; readonly label: string }> = [
   { id: 'pentru', label: 'Voturi pentru' },
   { id: 'impotriva', label: 'Voturi împotrivă' },
+  { id: 'abtinere', label: 'Abțineri' },
   { id: 'nu_a_votat', label: 'Fără vot' },
 ]
 
@@ -241,7 +247,10 @@ export function VoteIndividualVotesSection({
               ) : viewMode === 'party' ? (
                 <Accordion
                   type="multiple"
-                  defaultValue={groupedVotes.map(([groupId]) => groupId)}
+                  // Only the FIRST group starts open. Expanding all of them
+                  // rendered every ballot of a 300-member division at once —
+                  // thousands of cards, no overview, and a page you cannot scan.
+                  defaultValue={groupedVotes.slice(0, 1).map(([groupId]) => groupId)}
                 >
                   {groupedVotes.map(([groupId, votes]) => (
                     <AccordionItem
@@ -256,11 +265,11 @@ export function VoteIndividualVotesSection({
                         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                           {votes.map((vote) => (
                             <VoteMemberResultCard
-                              key={vote.memberId}
+                              key={vote.ballotKey}
                               memberId={vote.memberId}
                               memberName={vote.memberName}
                               groupName={vote.groupName}
-                              judetName={memberJudete[vote.memberId]}
+                              judetName={vote.memberId ? memberJudete[vote.memberId] : undefined}
                               accentColor={groupColors[vote.groupId] ?? '#505a5f'}
                             />
                           ))}
@@ -273,11 +282,11 @@ export function VoteIndividualVotesSection({
                 <div className="grid gap-3 px-1 pb-2 sm:grid-cols-2 xl:grid-cols-3">
                   {tabVotes.map((vote) => (
                     <VoteMemberResultCard
-                      key={vote.memberId}
+                      key={vote.ballotKey}
                       memberId={vote.memberId}
                       memberName={vote.memberName}
                       groupName={vote.groupName}
-                      judetName={memberJudete[vote.memberId]}
+                      judetName={vote.memberId ? memberJudete[vote.memberId] : undefined}
                       accentColor={groupColors[vote.groupId] ?? '#505a5f'}
                     />
                   ))}

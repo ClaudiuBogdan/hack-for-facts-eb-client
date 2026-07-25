@@ -5,14 +5,10 @@ import { parliamentHubLinkClassName } from '../lib/hub-theme'
 import { BillListCard } from './bill-list-card'
 import { ParliamentHubSection } from './parliament-hub-section'
 
-type Props = {
-  readonly legislatureLabel: string
-}
-
 const HUB_BILLS_PAGE_SIZE = 4
 
 /** Recent legislative bills preview on the Parlament hub */
-export function ParliamentHubBillsSection({ legislatureLabel }: Props) {
+export function ParliamentHubBillsSection() {
   const { data, isLoading } = useParliamentBills({
     tab: 'proiecte',
     page: 1,
@@ -44,11 +40,7 @@ export function ParliamentHubBillsSection({ legislatureLabel }: Props) {
       ) : data && data.bills.length > 0 ? (
         <div className="space-y-4">
           {data.bills.map((bill) => (
-            <BillListCard
-              key={bill.billId}
-              bill={bill}
-              legislatureLabel={legislatureLabel}
-            />
+            <BillListCard key={bill.billId} bill={bill} />
           ))}
         </div>
       ) : (

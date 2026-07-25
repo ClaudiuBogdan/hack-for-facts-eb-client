@@ -3,7 +3,7 @@ import { ChevronRight, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { ParliamentBillDetail } from '@/schemas/parliament'
 import { cn } from '@/lib/utils'
-import { getParliamentVoteSummary, getVoteDivisionNumber } from '../api/parliament-api'
+import { getParliamentVoteSummary } from '../api/parliament-api'
 import {
   formatBillDate,
   formatBillUpdatedAt,
@@ -171,9 +171,13 @@ export function BillDetailsTab({ bill }: Props) {
               </Button>
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#b1b4b6] px-5 py-3 dark:border-[var(--pnrr-border)]">
-              <p className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-                {formatBillDate(currentDocument.publishedAt)}
-              </p>
+              {currentDocument.publishedAt ? (
+                <p className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                  {formatBillDate(currentDocument.publishedAt)}
+                </p>
+              ) : (
+                <span />
+              )}
               {currentDocument.chamber ? (
                 <div className="flex items-center gap-2">
                   <ParliamentChamberMark
@@ -222,11 +226,7 @@ export function BillDetailsTab({ bill }: Props) {
           </div>
           <div className="mt-4 grid gap-4 lg:grid-cols-2">
             {relatedVoteSummaries.slice(0, 2).map((vote) => (
-              <VoteChamberVoteCard
-                key={`${vote.chamber}-${vote.voteId}`}
-                vote={vote}
-                divisionNumber={getVoteDivisionNumber(vote.voteId) ?? 1}
-              />
+              <VoteChamberVoteCard key={`${vote.chamber}-${vote.voteId}`} vote={vote} />
             ))}
           </div>
           {bill.relatedVotes.length <= 2 ? (

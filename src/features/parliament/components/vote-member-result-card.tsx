@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -5,7 +6,11 @@ import { PARLIAMENT_ACTION_BLUE } from '../lib/hub-theme'
 import { voteMemberCardShadowClassName } from '../lib/vote-detail-theme'
 
 type Props = {
-  readonly memberId: string
+  /**
+   * Absent when the source ballot could not be resolved to a member. The card is
+   * then plain text — a link would point at a member page that does not exist.
+   */
+  readonly memberId?: string
   readonly memberName: string
   readonly groupName: string
   readonly judetName?: string
@@ -13,11 +18,48 @@ type Props = {
   readonly className?: string
 }
 
+const CARD_CLASS_NAME =
+  'group flex overflow-hidden rounded-none border border-l-0 border-[#ececec] bg-white transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:border-[var(--pnrr-border)]/50 dark:bg-[var(--pnrr-card)]'
+
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/)
   if (parts.length === 0) return '?'
   if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase()
   return `${parts[0]!.charAt(0)}${parts[parts.length - 1]!.charAt(0)}`.toUpperCase()
+}
+
+/** Links to the member profile only when the ballot resolved to a real mandate. */
+function VoteMemberResultCardShell({
+  memberId,
+  memberName,
+  className,
+  children,
+}: {
+  readonly memberId?: string
+  readonly memberName: string
+  readonly className?: string
+  readonly children: ReactNode
+}) {
+  if (memberId === undefined) {
+    return (
+      <div
+        className={cn(CARD_CLASS_NAME, className)}
+        title={`Votul nu a putut fi asociat unui parlamentar (${memberName})`}
+      >
+        {children}
+      </div>
+    )
+  }
+
+  return (
+    <Link
+      to="/parlament/membri/$memberId"
+      params={{ memberId }}
+      className={cn(CARD_CLASS_NAME, voteMemberCardShadowClassName, className)}
+    >
+      {children}
+    </Link>
+  )
 }
 
 /** UK Parliament “Members voting” member card — compact layout */
@@ -29,15 +71,13 @@ export function VoteMemberResultCard({
   accentColor,
   className,
 }: Props) {
+  const resolved = memberId !== undefined
+
   return (
-    <Link
-      to="/parlament/membri/$memberId"
-      params={{ memberId }}
-      className={cn(
-        'group flex overflow-hidden rounded-none border border-l-0 border-[#ececec] bg-white transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:border-[var(--pnrr-border)]/50 dark:bg-[var(--pnrr-card)]',
-        voteMemberCardShadowClassName,
-        className,
-      )}
+    <VoteMemberResultCardShell
+      memberId={memberId}
+      memberName={memberName}
+      className={className}
     >
       <span
         className="w-1.5 shrink-0 self-stretch sm:w-2"
@@ -55,18 +95,32 @@ export function VoteMemberResultCard({
         </span>
 
         <div className="col-start-2 row-start-1 min-w-0 self-start">
-          <p className="truncate text-[15px] font-bold leading-tight text-[#0b0c0c] group-hover:underline dark:text-[var(--pnrr-fg)]">
+          <p
+            className={cn(
+              'truncate text-[15px] font-bold leading-tight text-[#0b0c0c] dark:text-[var(--pnrr-fg)]',
+              resolved && 'group-hover:underline',
+            )}
+          >
             {memberName}
           </p>
           <p className="mt-0.5 truncate text-sm leading-tight text-[#505a5f] dark:text-[var(--pnrr-muted)]">
             {groupName}
           </p>
+          {resolved ? null : (
+            <p className="mt-0.5 truncate text-xs leading-tight text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              Neasociat unui profil
+            </p>
+          )}
         </div>
 
-        <ChevronRight
-          className="col-start-3 row-start-1 mt-0.5 h-5 w-5 shrink-0 self-start stroke-[2.5] text-[#505a5f] dark:text-[var(--pnrr-muted)]"
-          aria-hidden
-        />
+        {resolved ? (
+          <ChevronRight
+            className="col-start-3 row-start-1 mt-0.5 h-5 w-5 shrink-0 self-start stroke-[2.5] text-[#505a5f] dark:text-[var(--pnrr-muted)]"
+            aria-hidden
+          />
+        ) : (
+          <span className="col-start-3 row-start-1" aria-hidden />
+        )}
 
         {judetName ? (
           <>
@@ -80,6 +134,6 @@ export function VoteMemberResultCard({
           </>
         ) : null}
       </div>
-    </Link>
+    </VoteMemberResultCardShell>
   )
 }

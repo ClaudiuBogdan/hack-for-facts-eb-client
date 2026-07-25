@@ -176,10 +176,11 @@ export async function fetchParliamentGroupMembers(
 
 export async function fetchParliamentVotes(
   search: ParliamentVotesSearch = {},
+  after?: string,
 ): Promise<ParliamentVotesList> {
   return isParliamentMockEnabled()
-    ? fetchParliamentVotesMock(search)
-    : fetchParliamentVotesLive(search)
+    ? fetchParliamentVotesMock(search, after)
+    : fetchParliamentVotesLive(search, after)
 }
 
 export async function fetchParliamentBills(

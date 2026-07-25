@@ -14,12 +14,11 @@ import { ParliamentChamberMark } from './parliament-hub-panel'
 
 type Props = {
   readonly bill: ParliamentBillSummary
-  readonly legislatureLabel: string
   readonly className?: string
 }
 
 /** UK Parliament-style bill result card */
-export function BillListCard({ bill, legislatureLabel, className }: Props) {
+export function BillListCard({ bill, className }: Props) {
   const originColor =
     bill.originatingChamber === 'camera'
       ? PARLIAMENT_CAMERA_GREEN
@@ -62,8 +61,15 @@ export function BillListCard({ bill, legislatureLabel, className }: Props) {
                 {getChamberLabel(bill.originatingChamber)}
               </span>
             </div>
+            {/*
+              THIS bill's own registration year (plx_year / senate_year), not the
+              hub's current legislature. The card used to print
+              `Legislatura {hub.legislature.label}` — which rendered as
+              "Legislatura Legislatura 2024" AND stamped the current legislature
+              onto a bill registered in, say, 2012.
+            */}
             <p className="mt-2 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-              Legislatura {legislatureLabel}
+              Înregistrat în {bill.legislatureId}
             </p>
           </div>
 

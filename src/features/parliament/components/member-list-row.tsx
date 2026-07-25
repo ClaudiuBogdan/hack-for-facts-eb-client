@@ -20,7 +20,19 @@ export function MemberListRow({ member }: Props) {
       className="flex flex-col gap-1 border-b border-border py-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
     >
       <div className="min-w-0">
-        <p className="font-bold leading-tight">{name}</p>
+        <p className="flex flex-wrap items-center gap-2 font-bold leading-tight">
+          {name}
+          {/*
+            The directory lists MANDATE rows, not sitting members: a replaced or
+            deceased member keeps a row (their votes stay attributed to it). Mark
+            it, so "who represents my county" is not answered with a former seat.
+          */}
+          {member.isCurrent === false ? (
+            <span className="rounded-none border border-border px-1.5 py-0.5 text-[0.6875rem] font-semibold uppercase tracking-wide text-muted-foreground">
+              Mandat încheiat
+            </span>
+          ) : null}
+        </p>
         <p className="mt-0.5 text-sm text-muted-foreground">
           {member.groupName}
           {member.role ? ` · ${member.role}` : ''}

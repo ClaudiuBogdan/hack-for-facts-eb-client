@@ -1,5 +1,5 @@
 import type { ParliamentBillDetail } from '@/schemas/parliament'
-import { getParliamentVoteSummary, getVoteDivisionNumber } from '../api/parliament-api'
+import { getParliamentVoteSummary } from '../api/parliament-api'
 import { VoteChamberVoteCard } from './vote-chamber-vote-card'
 
 type Props = {
@@ -33,11 +33,7 @@ export function BillVotesTab({ bill }: Props) {
           if (!summary) return null
 
           return (
-            <VoteChamberVoteCard
-              key={`${vote.chamber}-${vote.voteId}`}
-              vote={summary}
-              divisionNumber={getVoteDivisionNumber(vote.voteId) ?? 1}
-            />
+            <VoteChamberVoteCard key={`${vote.chamber}-${vote.voteId}`} vote={summary} />
           )
         })}
       </div>

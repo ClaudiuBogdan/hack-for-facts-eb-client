@@ -332,10 +332,14 @@ function sumByChamber(
 
 export async function fetchParliamentHubLive(): Promise<ParliamentHubData> {
   // Composition + headline = CURRENT seats (SC-1). Secondary = all mandates.
-  const [currentGroups, allGroups, recent] = await Promise.all([
+  const [currentGroups, allGroups, recent, freshness] = await Promise.all([
     loadAllGroups(true),
     loadAllGroups(),
     fetchParliamentVotesLive({ pageSize: 6 }),
+    // REAL sync time. This used to be `new Date().toISOString()` — the shell then
+    // rendered "Actualizat <now>" on every page load, i.e. it presented REQUEST
+    // time as DATA time, which is always "just now" and therefore always wrong.
+    fetchParliamentFreshnessLive(),
   ])
 
   return ParliamentHubDataSchema.parse({
@@ -345,7 +349,8 @@ export async function fetchParliamentHubLive(): Promise<ParliamentHubData> {
       startYear: Number(LATEST_LEGISLATURE),
       endYear: Number(LATEST_LEGISLATURE) + 4,
     },
-    lastSyncedAt: new Date().toISOString(),
+    // Omitted (→ the UI drops the line) when the API has no freshness signal.
+    ...(freshness.lastLoadedAt !== undefined && { lastSyncedAt: freshness.lastLoadedAt }),
     sources: ['cdep.ro', 'senat.ro'],
     // Composition swatches reflect CURRENT seats (AUR 90, not 91).
     groups: currentGroups,
@@ -408,26 +413,28 @@ async function fetchCurrentMembersForComposition(): Promise<ParliamentMember[]> 
 
 export async function fetchParliamentVotesLive(
   search: ParliamentVotesSearch = {},
+  after?: string,
 ): Promise<ParliamentVotesList> {
   const filter = buildVotesFilter(search)
   const pageSize = search.pageSize ?? DEFAULT_VOTES_PAGE_SIZE
 
   const data = await graphqlQuery<unknown>(
     PARLIAMENT_VOTES_QUERY,
-    { filter, sort: 'voteDate', first: pageSize },
+    { filter, sort: 'voteDate', first: pageSize, ...(after ? { after } : {}) },
     { operationName: 'parliamentVotes' },
   )
   const parsed = parliamentVotesResponseSchema.parse(data)
   const votes = parsed.parliamentVotes.edges.map((e) => mapVoteListItem(e.node))
+  const { hasNextPage, endCursor } = parsed.parliamentVotes.pageInfo
 
-  // The votes surface is a cursor connection with no exact total; the UI list is
-  // single-page (recent votes). Report the page as page 1 of 1 over the page set.
+  // Pass the connection's own cursor state straight through. No invented total,
+  // no invented page count — `parliamentVotes` is keyset-paginated and reports
+  // neither.
   return {
     votes,
-    total: votes.length,
-    page: 1,
     pageSize,
-    totalPages: 1,
+    hasNextPage,
+    ...(endCursor ? { endCursor } : {}),
   }
 }
 
@@ -563,12 +570,15 @@ export async function fetchParliamentMemberSpeechActivityLive(
 
 // ── member profile ──────────────────────────────────────────────────────────
 
+/** How many control items the profile payload carries (the tab shows the total too). */
+const MEMBER_PROFILE_CONTROL_PAGE_SIZE = 25
+
 export async function fetchParliamentMemberProfileLive(
   memberId: string,
 ): Promise<ParliamentMemberProfile | null> {
   const data = await graphqlQuery<unknown>(
     PARLIAMENT_MEMBER_PROFILE_QUERY,
-    { mandateKey: memberId },
+    { mandateKey: memberId, controlPageSize: MEMBER_PROFILE_CONTROL_PAGE_SIZE },
     { operationName: 'parliamentMemberProfile' },
   )
   const parsed = parliamentMemberProfileResponseSchema.parse(data)
@@ -744,10 +754,16 @@ export async function fetchParliamentCommitteesLive(params: {
     { operationName: 'parliamentCommittees' },
   )
   const parsed = parliamentCommitteesResponseSchema.parse(data)
-  // Null root = server internal error (H2); degrade to an empty, non-paginating
-  // list rather than crashing the browse page.
+  // A null root is a SERVER FAILURE, not an empty result. It used to be swallowed
+  // into `{ committees: [] }`, which the browse page rendered as "Nu există
+  // comisii disponibile" — telling the reader that Parliament has no committees
+  // for that filter. Surface it so the UI can offer a retry instead.
   const connection = parsed.parliamentCommittees
-  if (!connection) return { committees: [], hasNextPage: false }
+  if (!connection) {
+    throw new GraphQLRequestError('parliamentCommittees returned null', {
+      query: 'parliamentCommittees',
+    })
+  }
   const { edges, pageInfo } = connection
   return {
     committees: edges.map((e) => mapCommittee(e.node)),

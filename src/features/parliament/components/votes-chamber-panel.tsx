@@ -92,13 +92,8 @@ export function VotesChamberPanel({ chamber, votes }: Props) {
 
       <div className="flex flex-col gap-4 px-5 pb-5 pt-4 lg:items-start lg:self-start">
         {recentVotes.length > 0 ? (
-          recentVotes.map((vote, index) => (
-            <VoteChamberVoteCard
-              key={vote.voteId}
-              vote={vote}
-              divisionNumber={recentVotes.length - index}
-              className="w-full"
-            />
+          recentVotes.map((vote) => (
+            <VoteChamberVoteCard key={vote.voteId} vote={vote} className="w-full" />
           ))
         ) : (
           <p className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">

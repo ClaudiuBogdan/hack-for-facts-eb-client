@@ -4,6 +4,7 @@ import { useParliamentBillDetail } from '../hooks/use-parliament-data'
 import { resolveBillDetailActiveTab } from '../lib/bill-detail-nav'
 import { BILL_DETAIL_SURFACE, billDetailPageContainerClassName } from '../lib/bill-detail-theme'
 import { BillProfileLayout } from './bill-profile-layout'
+import { ParliamentLoadErrorPage } from './parliament-load-error-page'
 import { ParliamentNotFoundPage } from './parliament-not-found-page'
 
 type Props = {
@@ -14,7 +15,7 @@ type Props = {
 export function BillRouteLayout({ billId }: Props) {
   const { pathname } = useLocation()
   const activeTab = resolveBillDetailActiveTab(pathname, billId)
-  const { data: bill, isLoading } = useParliamentBillDetail(billId)
+  const { data: bill, isLoading, isError, refetch } = useParliamentBillDetail(billId)
 
   if (isLoading) {
     return (
@@ -23,6 +24,18 @@ export function BillRouteLayout({ billId }: Props) {
           <Skeleton className="h-64 w-full rounded-none bg-white/70" />
         </div>
       </div>
+    )
+  }
+
+  // A FAILED READ is not a missing bill — say so, and keep a retry available.
+  if (isError) {
+    return (
+      <ParliamentLoadErrorPage
+        breadcrumbLabel="Proiect indisponibil"
+        title="Proiectul de lege nu a putut fi încărcat"
+        description="Serviciul de date nu a răspuns. Proiectul poate exista — reîncearcă în câteva momente."
+        onRetry={() => void refetch()}
+      />
     )
   }
 

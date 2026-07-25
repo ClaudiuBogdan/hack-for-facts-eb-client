@@ -5,6 +5,8 @@ import type {
   ParliamentBillDetail,
   ParliamentBillTimelineStep,
 } from '@/schemas/parliament'
+import { isFinalBillVote } from '../api/graphql/parliament-mappers'
+import { formatVoteDayLong } from '../lib/formatting'
 import {
   BILL_DETAIL_FINAL_PURPLE,
   billDetailCardClassName,
@@ -228,10 +230,16 @@ function ColumnHeader({ title, color }: { readonly title: string; readonly color
   )
 }
 
-/** Law + final-vote outcome summary (the key result), above the columns. */
+/** Law + headline-vote summary (the key result), above the columns. */
 function OutcomeSummary({ bill }: { readonly bill: ParliamentBillDetail }) {
-  const finalVote = bill.relatedVotes[0]
-  if (!bill.lawMilestone && !finalVote) return null
+  // Prefer a vote the SOURCE marks as final (`bill_vote_links.role`); otherwise
+  // fall back to the most recent related vote and LABEL IT AS SUCH. Calling the
+  // newest vote "Vot final" was a claim the data never made — an amendment or a
+  // procedural division is routinely the latest one.
+  const roleFinalVote = bill.relatedVotes.find(isFinalBillVote)
+  const headlineVote = roleFinalVote ?? bill.relatedVotes[0]
+  const isProvenFinal = roleFinalVote !== undefined
+  if (!bill.lawMilestone && !headlineVote) return null
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {bill.lawMilestone ? (
@@ -245,22 +253,18 @@ function OutcomeSummary({ bill }: { readonly bill: ParliamentBillDetail }) {
           </p>
         </div>
       ) : null}
-      {finalVote ? (
+      {headlineVote ? (
         <Link
           to="/parlament/voturi/$chamber/$voteId"
-          params={{ chamber: finalVote.chamber, voteId: finalVote.voteId }}
+          params={{ chamber: headlineVote.chamber, voteId: headlineVote.voteId }}
           className="group flex items-start justify-between gap-3 border-2 border-[#1d70b8] bg-[#f0f6fb] p-4 transition-colors hover:bg-[#e3eef8] dark:bg-[var(--pnrr-bg)]"
         >
           <div className="min-w-0">
             <p className="text-xs font-black uppercase tracking-wide text-[#1d70b8]">
-              Vot final
+              {isProvenFinal ? 'Vot final' : 'Cel mai recent vot asociat'}
             </p>
             <p className="mt-1 truncate text-base font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
-              {new Intl.DateTimeFormat('ro-RO', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              }).format(new Date(finalVote.heldAt))}
+              {formatVoteDayLong(headlineVote.heldAt)}
             </p>
           </div>
           <ParliamentCardChevron className="mt-1 shrink-0" />

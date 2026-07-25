@@ -1,29 +1,29 @@
-import { z } from 'zod'
+import { z } from "zod";
 
-export const ParliamentChamberSchema = z.enum(['camera', 'senat'])
-export type ParliamentChamber = z.infer<typeof ParliamentChamberSchema>
+export const ParliamentChamberSchema = z.enum(["camera", "senat"]);
+export type ParliamentChamber = z.infer<typeof ParliamentChamberSchema>;
 
-export const VoteTypeSchema = z.enum(['deschis', 'secret'])
-export type VoteType = z.infer<typeof VoteTypeSchema>
+export const VoteTypeSchema = z.enum(["deschis", "secret"]);
+export type VoteType = z.infer<typeof VoteTypeSchema>;
 
 export const MemberVoteChoiceSchema = z.enum([
-  'pentru',
-  'impotriva',
-  'abtinere',
-  'nu_a_votat',
-])
-export type MemberVoteChoice = z.infer<typeof MemberVoteChoiceSchema>
+  "pentru",
+  "impotriva",
+  "abtinere",
+  "nu_a_votat",
+]);
+export type MemberVoteChoice = z.infer<typeof MemberVoteChoiceSchema>;
 
-export const VoteOutcomeSchema = z.enum(['adoptat', 'respins', 'amânat'])
-export type VoteOutcome = z.infer<typeof VoteOutcomeSchema>
+export const VoteOutcomeSchema = z.enum(["adoptat", "respins", "amânat"]);
+export type VoteOutcome = z.infer<typeof VoteOutcomeSchema>;
 
 export const ParliamentLegislatureSchema = z.object({
   id: z.string(),
   label: z.string(),
   startYear: z.number().int(),
   endYear: z.number().int(),
-})
-export type ParliamentLegislature = z.infer<typeof ParliamentLegislatureSchema>
+});
+export type ParliamentLegislature = z.infer<typeof ParliamentLegislatureSchema>;
 
 export const ParliamentGroupSchema = z.object({
   groupId: z.string(),
@@ -32,8 +32,8 @@ export const ParliamentGroupSchema = z.object({
   chamber: ParliamentChamberSchema,
   memberCount: z.number().int().nonnegative(),
   color: z.string().optional(),
-})
-export type ParliamentGroup = z.infer<typeof ParliamentGroupSchema>
+});
+export type ParliamentGroup = z.infer<typeof ParliamentGroupSchema>;
 
 export const ParliamentMemberContactSchema = z.object({
   email: z.string().email().optional(),
@@ -42,8 +42,10 @@ export const ParliamentMemberContactSchema = z.object({
   website: z.string().url().optional(),
   /** Official CV document (PDF) published on cdep.ro / senat.ro, when present. */
   cvUrl: z.string().url().optional(),
-})
-export type ParliamentMemberContact = z.infer<typeof ParliamentMemberContactSchema>
+});
+export type ParliamentMemberContact = z.infer<
+  typeof ParliamentMemberContactSchema
+>;
 
 // ── committees ───────────────────────────────────────────────────────────────
 
@@ -57,8 +59,8 @@ export const ParliamentCommitteeSchema = z.object({
   committeeType: z.string().optional(),
   /** cdep.ro / senat.ro committee page — the source-traceability terminator. */
   sourceUrl: z.string(),
-})
-export type ParliamentCommittee = z.infer<typeof ParliamentCommitteeSchema>
+});
+export type ParliamentCommittee = z.infer<typeof ParliamentCommitteeSchema>;
 
 /** A slim member reference on a committee roster row (committee-detail view). */
 export const ParliamentCommitteeMemberRefSchema = z.object({
@@ -67,10 +69,10 @@ export const ParliamentCommitteeMemberRefSchema = z.object({
   fullName: z.string().optional(),
   chamber: z.string().optional(),
   groupName: z.string().optional(),
-})
+});
 export type ParliamentCommitteeMemberRef = z.infer<
   typeof ParliamentCommitteeMemberRefSchema
->
+>;
 
 /** A slim committee reference on a membership row (member-overview view). */
 export const ParliamentCommitteeRefSchema = z.object({
@@ -78,8 +80,10 @@ export const ParliamentCommitteeRefSchema = z.object({
   name: z.string(),
   chamber: z.string().optional(),
   sourceUrl: z.string().optional(),
-})
-export type ParliamentCommitteeRef = z.infer<typeof ParliamentCommitteeRefSchema>
+});
+export type ParliamentCommitteeRef = z.infer<
+  typeof ParliamentCommitteeRefSchema
+>;
 
 /**
  * One committee↔member link. Populated from EITHER side: the member overview
@@ -95,22 +99,32 @@ export const ParliamentCommitteeMembershipSchema = z.object({
   leftDate: z.string().optional(),
   isBureau: z.boolean().optional(),
   sourceUrl: z.string(),
-})
+});
 export type ParliamentCommitteeMembership = z.infer<
   typeof ParliamentCommitteeMembershipSchema
->
+>;
 
 export const ParliamentMemberSchema = z.object({
   memberId: z.string(),
   firstName: z.string(),
   lastName: z.string(),
-  chamber: z.enum(['camera', 'senat']),
+  chamber: z.enum(["camera", "senat"]),
   groupId: z.string(),
   groupName: z.string(),
   judetSlug: z.string(),
   judetName: z.string(),
   mandateStart: z.string().optional(),
   mandateEnd: z.string().optional(),
+  /**
+   * SC-1 seat lifecycle. `parliament.members` keeps one row per MANDATE, so a
+   * replaced/deceased member's mandate row survives (it must — every vote,
+   * initiative and question stays attributed to it). `isCurrent: false` means the
+   * seat has ended; `mandateEndDate` / `mandateEndReason` say when and why.
+   * Undefined = the surface did not request the lifecycle fields.
+   */
+  isCurrent: z.boolean().optional(),
+  mandateEndDate: z.string().optional(),
+  mandateEndReason: z.string().optional(),
   role: z.string().optional(),
   photoUrl: z.string().url().optional(),
   contact: ParliamentMemberContactSchema.optional(),
@@ -119,36 +133,42 @@ export const ParliamentMemberSchema = z.object({
    * member query requests these; the list/roster shapes leave it undefined.
    */
   committees: z.array(ParliamentCommitteeMembershipSchema).optional(),
-})
-export type ParliamentMember = z.infer<typeof ParliamentMemberSchema>
+});
+export type ParliamentMember = z.infer<typeof ParliamentMemberSchema>;
 
 // ── committee browse / detail ────────────────────────────────────────────────
 
-export const ParliamentCommitteeDetailSchema = ParliamentCommitteeSchema.extend({
-  /** Roster rows (each carries the `member` ref). */
-  members: z.array(ParliamentCommitteeMembershipSchema),
-  linkedBills: z.array(z.lazy(() => ParliamentBillSummarySchema)),
-  linkedBillsTotal: z.number().int().nonnegative(),
-  meetingsCount: z.number().int().nonnegative(),
-})
+export const ParliamentCommitteeDetailSchema = ParliamentCommitteeSchema.extend(
+  {
+    /** Roster rows (each carries the `member` ref). */
+    members: z.array(ParliamentCommitteeMembershipSchema),
+    linkedBills: z.array(z.lazy(() => ParliamentBillSummarySchema)),
+    linkedBillsTotal: z.number().int().nonnegative(),
+    meetingsCount: z.number().int().nonnegative(),
+  },
+);
 export type ParliamentCommitteeDetail = z.infer<
   typeof ParliamentCommitteeDetailSchema
->
+>;
 
 export const ParliamentCommitteeListSchema = z.object({
   committees: z.array(ParliamentCommitteeSchema),
   hasNextPage: z.boolean(),
   endCursor: z.string().optional(),
-})
-export type ParliamentCommitteeList = z.infer<typeof ParliamentCommitteeListSchema>
+});
+export type ParliamentCommitteeList = z.infer<
+  typeof ParliamentCommitteeListSchema
+>;
 
 // ── data freshness ───────────────────────────────────────────────────────────
 
 export const ParliamentDataFreshnessSchema = z.object({
   latestVoteDate: z.string().optional(),
   lastLoadedAt: z.string().optional(),
-})
-export type ParliamentDataFreshness = z.infer<typeof ParliamentDataFreshnessSchema>
+});
+export type ParliamentDataFreshness = z.infer<
+  typeof ParliamentDataFreshnessSchema
+>;
 
 // ── AI-generated metadata (summaries + classification) ───────────────────────
 
@@ -168,10 +188,10 @@ export const ParliamentAiBillMetadataSchema = z.object({
   disclaimer: z.string(),
   trustClass: z.string(),
   privacyClass: z.string(),
-})
+});
 export type ParliamentAiBillMetadata = z.infer<
   typeof ParliamentAiBillMetadataSchema
->
+>;
 
 /** AI-derived metadata for a control item (question/interpellation). */
 export const ParliamentAiControlItemMetadataSchema = z.object({
@@ -185,18 +205,18 @@ export const ParliamentAiControlItemMetadataSchema = z.object({
   disclaimer: z.string(),
   trustClass: z.string(),
   privacyClass: z.string(),
-})
+});
 export type ParliamentAiControlItemMetadata = z.infer<
   typeof ParliamentAiControlItemMetadataSchema
->
+>;
 
 export const ParliamentVoteTallySchema = z.object({
   pentru: z.number().int().nonnegative(),
   impotriva: z.number().int().nonnegative(),
   abtinere: z.number().int().nonnegative().optional(),
   nuAVotat: z.number().int().nonnegative().optional(),
-})
-export type ParliamentVoteTally = z.infer<typeof ParliamentVoteTallySchema>
+});
+export type ParliamentVoteTally = z.infer<typeof ParliamentVoteTallySchema>;
 
 export const ParliamentGroupVoteBreakdownSchema = z.object({
   groupId: z.string(),
@@ -205,25 +225,37 @@ export const ParliamentGroupVoteBreakdownSchema = z.object({
   impotriva: z.number().int().nonnegative(),
   abtinere: z.number().int().nonnegative().optional(),
   nuAVotat: z.number().int().nonnegative().optional(),
-})
+});
 export type ParliamentGroupVoteBreakdown = z.infer<
   typeof ParliamentGroupVoteBreakdownSchema
->
+>;
 
 export const ParliamentMemberVoteRecordSchema = z.object({
-  memberId: z.string(),
+  /**
+   * Stable per-vote row key (`<voteId>#<rowIndex>`). A RENDER key only — never a
+   * member identity and never a route param.
+   */
+  ballotKey: z.string(),
+  /**
+   * The resolved mandate key, or ABSENT when the source ballot could not be
+   * matched to a member (name collisions are deliberately left unresolved rather
+   * than mis-assigned). Absent → render the name as text, not as a profile link.
+   * This used to be filled with a fabricated `row-<n>` id, which produced links to
+   * member pages that cannot exist.
+   */
+  memberId: z.string().optional(),
   memberName: z.string(),
   groupId: z.string(),
   groupName: z.string(),
   choice: MemberVoteChoiceSchema,
-})
+});
 export type ParliamentMemberVoteRecord = z.infer<
   typeof ParliamentMemberVoteRecordSchema
->
+>;
 
 export const ParliamentVoteSummarySchema = z.object({
   voteId: z.string(),
-  chamber: z.enum(['camera', 'senat']),
+  chamber: z.enum(["camera", "senat"]),
   title: z.string(),
   heldAt: z.string(),
   voteType: VoteTypeSchema,
@@ -231,33 +263,62 @@ export const ParliamentVoteSummarySchema = z.object({
   outcomeLabel: z.string(),
   tally: ParliamentVoteTallySchema,
   relatedBillId: z.string().optional(),
-})
-export type ParliamentVoteSummary = z.infer<typeof ParliamentVoteSummarySchema>
+  /** Exact official cdep.ro / senat.ro vote page, when the source provides one. */
+  sourceUrl: z.string().url().optional(),
+  /**
+   * The OFFICIAL division number (`votes.division_number`), when the source
+   * recorded one. Optional and never synthesised: it is a checkable fact in the
+   * cdep.ro / senat.ro record, so a positional stand-in would be a false claim.
+   * Absent → the UI shows the date without a division label.
+   */
+  divisionNumber: z.number().int().positive().optional(),
+});
+export type ParliamentVoteSummary = z.infer<typeof ParliamentVoteSummarySchema>;
 
-export const ParliamentVoteListItemSchema = ParliamentVoteSummarySchema.extend({
-  divisionNumber: z.number().int().positive(),
-})
-export type ParliamentVoteListItem = z.infer<typeof ParliamentVoteListItemSchema>
+/**
+ * A vote as rendered in a browse list. Identical to the summary — `divisionNumber`
+ * lives on the summary now, and stays OPTIONAL here: the list used to force a
+ * value (`?? 1`), which labelled every division-less Senate vote "Divizare 1".
+ */
+export const ParliamentVoteListItemSchema = ParliamentVoteSummarySchema;
+export type ParliamentVoteListItem = z.infer<
+  typeof ParliamentVoteListItemSchema
+>;
 
+/**
+ * One CURSOR page of votes, newest first.
+ *
+ * `parliamentVotes` is a keyset connection: it has no exact total and no page
+ * numbers. This used to be modelled as an offset page and the adapter reported
+ * `page: 1, totalPages: 1, total: <length of the single page fetched>` — so the
+ * UI showed "10 rezultate" for a 20,672-row corpus and offered numbered
+ * pagination that could never move. The honest shape is what the API gives:
+ * a page of rows plus "is there more".
+ */
 export const ParliamentVotesListSchema = z.object({
   votes: z.array(ParliamentVoteListItemSchema),
-  total: z.number().int().nonnegative(),
-  page: z.number().int().positive(),
   pageSize: z.number().int().positive(),
-  totalPages: z.number().int().positive(),
-})
-export type ParliamentVotesList = z.infer<typeof ParliamentVotesListSchema>
+  hasNextPage: z.boolean(),
+  endCursor: z.string().optional(),
+});
+export type ParliamentVotesList = z.infer<typeof ParliamentVotesListSchema>;
 
 export const ParliamentVoteDetailSchema = ParliamentVoteSummarySchema.extend({
   description: z.string().optional(),
   groupBreakdown: z.array(ParliamentGroupVoteBreakdownSchema),
   memberVotes: z.array(ParliamentMemberVoteRecordSchema),
-})
-export type ParliamentVoteDetail = z.infer<typeof ParliamentVoteDetailSchema>
+});
+export type ParliamentVoteDetail = z.infer<typeof ParliamentVoteDetailSchema>;
 
 export const ParliamentHubDataSchema = z.object({
   legislature: ParliamentLegislatureSchema,
-  lastSyncedAt: z.string(),
+  /**
+   * When the DATA was last loaded (`parliamentDataFreshness.lastLoadedAt`) — NOT
+   * when this request ran. Optional on purpose: the API can legitimately have no
+   * freshness signal, and the UI must then omit the line rather than stamp
+   * `Date.now()` and present request time as sync time.
+   */
+  lastSyncedAt: z.string().optional(),
   sources: z.array(z.string()),
   groups: z.array(ParliamentGroupSchema),
   recentVotes: z.array(ParliamentVoteSummarySchema),
@@ -279,8 +340,8 @@ export const ParliamentHubDataSchema = z.object({
     camera: z.string(),
     senat: z.string(),
   }),
-})
-export type ParliamentHubData = z.infer<typeof ParliamentHubDataSchema>
+});
+export type ParliamentHubData = z.infer<typeof ParliamentHubDataSchema>;
 
 export const ParliamentMembersListSchema = z.object({
   members: z.array(ParliamentMemberSchema),
@@ -288,12 +349,19 @@ export const ParliamentMembersListSchema = z.object({
   page: z.number().int().positive(),
   pageSize: z.number().int().positive(),
   totalPages: z.number().int().positive(),
-})
-export type ParliamentMembersList = z.infer<typeof ParliamentMembersListSchema>
+});
+export type ParliamentMembersList = z.infer<typeof ParliamentMembersListSchema>;
 
 export const ParliamentSeatSchema = z.object({
   seatIndex: z.number().int().nonnegative(),
-  memberId: z.string(),
+  /**
+   * ABSENT on a filler seat. The authoritative seat count is the group's
+   * `memberCount`; when the roster page we hold is shorter, the remaining seats
+   * are anonymous placeholders that keep the hemicycle honest about chamber size.
+   * They used to carry a fabricated `"<groupId>-seat-<i>"` id and were rendered
+   * as links to member pages that do not exist.
+   */
+  memberId: z.string().optional(),
   memberName: z.string(),
   groupId: z.string(),
   groupName: z.string(),
@@ -301,8 +369,8 @@ export const ParliamentSeatSchema = z.object({
   x: z.number(),
   y: z.number(),
   isActive: z.boolean(),
-})
-export type ParliamentSeat = z.infer<typeof ParliamentSeatSchema>
+});
+export type ParliamentSeat = z.infer<typeof ParliamentSeatSchema>;
 
 export const ParliamentChamberCompositionSchema = z.object({
   chamber: ParliamentChamberSchema,
@@ -314,17 +382,17 @@ export const ParliamentChamberCompositionSchema = z.object({
   seats: z.array(ParliamentSeatSchema),
   viewBox: z.string(),
   seatRadius: z.number().positive(),
-})
+});
 export type ParliamentChamberComposition = z.infer<
   typeof ParliamentChamberCompositionSchema
->
+>;
 
 export const ParliamentMemberVotingHistorySchema = z.object({
   memberId: z.string(),
   votes: z.array(
     z.object({
       voteId: z.string(),
-      chamber: z.enum(['camera', 'senat']),
+      chamber: z.enum(["camera", "senat"]),
       title: z.string(),
       heldAt: z.string(),
       choice: MemberVoteChoiceSchema,
@@ -337,10 +405,10 @@ export const ParliamentMemberVotingHistorySchema = z.object({
   // Cursor paging over the server votes connection (load-more in the UI).
   hasNextPage: z.boolean(),
   endCursor: z.string().nullable(),
-})
+});
 export type ParliamentMemberVotingHistory = z.infer<
   typeof ParliamentMemberVotingHistorySchema
->
+>;
 
 /** One day cell of the member vote-activity heatmap (server aggregate). */
 export const ParliamentMemberVoteActivityDaySchema = z.object({
@@ -351,10 +419,10 @@ export const ParliamentMemberVoteActivityDaySchema = z.object({
   impotriva: z.number().int().nonnegative(),
   abtinere: z.number().int().nonnegative(),
   nuAVotat: z.number().int().nonnegative(),
-})
+});
 export type ParliamentMemberVoteActivityDay = z.infer<
   typeof ParliamentMemberVoteActivityDaySchema
->
+>;
 
 /**
  * Per-year vote-activity aggregate for a member (heatmap source). `days` carries
@@ -365,10 +433,10 @@ export const ParliamentMemberVoteActivitySchema = z.object({
   year: z.number().int(),
   days: z.array(ParliamentMemberVoteActivityDaySchema),
   availableYears: z.array(z.number().int()),
-})
+});
 export type ParliamentMemberVoteActivity = z.infer<
   typeof ParliamentMemberVoteActivitySchema
->
+>;
 
 // ── member speeches (interventii tab: heatmap + filterable list) ─────────────
 
@@ -394,8 +462,10 @@ export const ParliamentMemberSpeechSchema = z.object({
   sourceUrlKind: z.string().optional(),
   /** Verbatim transcript; undefined when not yet loaded ("indisponibil"). */
   fullText: z.string().optional(),
-})
-export type ParliamentMemberSpeech = z.infer<typeof ParliamentMemberSpeechSchema>
+});
+export type ParliamentMemberSpeech = z.infer<
+  typeof ParliamentMemberSpeechSchema
+>;
 
 export const ParliamentMemberSpeechesHistorySchema = z.object({
   memberId: z.string(),
@@ -404,10 +474,10 @@ export const ParliamentMemberSpeechesHistorySchema = z.object({
   total: z.number().int().nonnegative(),
   hasNextPage: z.boolean(),
   endCursor: z.string().nullable(),
-})
+});
 export type ParliamentMemberSpeechesHistory = z.infer<
   typeof ParliamentMemberSpeechesHistorySchema
->
+>;
 
 /** One day cell of the member speech-activity heatmap (proprie + comun = total). */
 export const ParliamentMemberSpeechActivityDaySchema = z.object({
@@ -417,10 +487,10 @@ export const ParliamentMemberSpeechActivityDaySchema = z.object({
   proprie: z.number().int().nonnegative(),
   /** Turns in a joint sitting (chamber = comun). */
   comun: z.number().int().nonnegative(),
-})
+});
 export type ParliamentMemberSpeechActivityDay = z.infer<
   typeof ParliamentMemberSpeechActivityDaySchema
->
+>;
 
 /**
  * Per-year speech-activity aggregate (heatmap source). `days` carries only days
@@ -431,10 +501,10 @@ export const ParliamentMemberSpeechActivitySchema = z.object({
   year: z.number().int(),
   days: z.array(ParliamentMemberSpeechActivityDaySchema),
   availableYears: z.array(z.number().int()),
-})
+});
 export type ParliamentMemberSpeechActivity = z.infer<
   typeof ParliamentMemberSpeechActivitySchema
->
+>;
 
 // ── global stenograme (all-parliament speeches page) ──────────────────────────
 
@@ -449,8 +519,10 @@ export const ParliamentSpeechSpeakerSchema = z.object({
   /** GraphQL chamber token; optional — mirrors the member surface. */
   chamber: z.string().optional(),
   groupName: z.string().optional(),
-})
-export type ParliamentSpeechSpeaker = z.infer<typeof ParliamentSpeechSpeakerSchema>
+});
+export type ParliamentSpeechSpeaker = z.infer<
+  typeof ParliamentSpeechSpeakerSchema
+>;
 
 /**
  * How deep the server actually searched when `q` was set (the connection's
@@ -459,20 +531,20 @@ export type ParliamentSpeechSpeaker = z.infer<typeof ParliamentSpeechSpeakerSche
  * (the server is the source of truth), never from a client-side guess.
  */
 export const ParliamentSpeechSearchDepthSchema = z.enum([
-  'TITLE_SUMMARY',
-  'FULL_TEXT',
-])
+  "TITLE_SUMMARY",
+  "FULL_TEXT",
+]);
 export type ParliamentSpeechSearchDepth = z.infer<
   typeof ParliamentSpeechSearchDepthSchema
->
+>;
 
 /** A global-list speech turn: the member-speech shape + speaker identity. */
 export const ParliamentSpeechSchema = ParliamentMemberSpeechSchema.extend({
   /** Speaker as printed in the stenogram — present even when unmatched. */
   speakerName: z.string().optional(),
   speaker: ParliamentSpeechSpeakerSchema.nullable().optional(),
-})
-export type ParliamentSpeech = z.infer<typeof ParliamentSpeechSchema>
+});
+export type ParliamentSpeech = z.infer<typeof ParliamentSpeechSchema>;
 
 /**
  * One page of the global speeches connection. `total` is CAPPED server-side at
@@ -486,8 +558,10 @@ export const ParliamentSpeechesListSchema = z.object({
   searchDepth: ParliamentSpeechSearchDepthSchema.nullable(),
   hasNextPage: z.boolean(),
   endCursor: z.string().nullable(),
-})
-export type ParliamentSpeechesList = z.infer<typeof ParliamentSpeechesListSchema>
+});
+export type ParliamentSpeechesList = z.infer<
+  typeof ParliamentSpeechesListSchema
+>;
 
 /**
  * Institution-wide per-year speech activity (the stenograme heatmap). Same day
@@ -498,22 +572,24 @@ export const ParliamentSpeechActivitySchema = z.object({
   days: z.array(ParliamentMemberSpeechActivityDaySchema),
   availableYears: z.array(z.number().int()),
   searchDepth: ParliamentSpeechSearchDepthSchema.nullable(),
-})
+});
 export type ParliamentSpeechActivity = z.infer<
   typeof ParliamentSpeechActivitySchema
->
+>;
 
 export const MemberSpokenContributionSchema = z.object({
   contributionId: z.string(),
   heldAt: z.string(),
   title: z.string(),
   summary: z.string().optional(),
-})
-export type MemberSpokenContribution = z.infer<typeof MemberSpokenContributionSchema>
+});
+export type MemberSpokenContribution = z.infer<
+  typeof MemberSpokenContributionSchema
+>;
 
 export const MemberWrittenQuestionSchema = z.object({
   questionId: z.string(),
-  submittedAt: z.string(),
+  submittedAt: z.string().optional(),
   title: z.string(),
   /**
    * Whether a response is RECORDED in the source (cdep/senat). The server's
@@ -521,20 +597,31 @@ export const MemberWrittenQuestionSchema = z.object({
    * a null only means no response document is recorded — it must never be
    * presented as "waiting for an answer" as if that were verified.
    */
-  status: z.enum(['raspuns', 'fara_raspuns_inregistrat']),
+  status: z.enum(["raspuns", "fara_raspuns_inregistrat"]),
   answerSummary: z.string().optional(),
+  /** Official cdep.ro / senat.ro page for this question (server §6 traceability). */
+  sourceUrl: z.string().url().optional(),
   /** AI-generated metadata (summary + classification), when the item has it. */
   aiMetadata: ParliamentAiControlItemMetadataSchema.optional(),
-})
-export type MemberWrittenQuestion = z.infer<typeof MemberWrittenQuestionSchema>
+});
+export type MemberWrittenQuestion = z.infer<typeof MemberWrittenQuestionSchema>;
 
 export const MemberInterestDeclarationSchema = z.object({
   declarationId: z.string(),
   category: z.string(),
   description: z.string(),
-  registeredAt: z.string(),
-})
-export type MemberInterestDeclaration = z.infer<typeof MemberInterestDeclarationSchema>
+  registeredAt: z.string().optional(),
+  /**
+   * The published declaration PDF on cdep.ro / senat.ro. This is the whole point
+   * of the row — prod stores only the LINK to the state's public-by-law document
+   * (contract §6) — and it was being dropped by the mapper, leaving a row the
+   * reader could not verify or open.
+   */
+  fileUrl: z.string().url().optional(),
+});
+export type MemberInterestDeclaration = z.infer<
+  typeof MemberInterestDeclarationSchema
+>;
 
 export const MemberElectionResultSchema = z.object({
   electionDate: z.string(),
@@ -543,19 +630,32 @@ export const MemberElectionResultSchema = z.object({
   votesSharePercent: z.number().nonnegative(),
   elected: z.boolean(),
   constituency: z.string(),
-})
-export type MemberElectionResult = z.infer<typeof MemberElectionResultSchema>
+});
+export type MemberElectionResult = z.infer<typeof MemberElectionResultSchema>;
 
 export const ParliamentMemberProfileSchema = z.object({
   memberId: z.string(),
-  spokenContributions: z.array(MemberSpokenContributionSchema),
+  /**
+   * OPTIONAL — the live profile query no longer fetches speeches. The intervenții
+   * tab has its own cursor-paginated, filterable query; this ten-row payload was
+   * fetched on every profile tab and rendered nowhere.
+   */
+  spokenContributions: z.array(MemberSpokenContributionSchema).optional(),
   writtenQuestions: z.array(MemberWrittenQuestionSchema),
+  /**
+   * The EXACT number of control items this member has, from the server's page
+   * `total`. `writtenQuestions` is only the first page; without the total the tab
+   * showed ten rows as if that were the complete record.
+   */
+  writtenQuestionsTotal: z.number().int().nonnegative().optional(),
   interestDeclarations: z.array(MemberInterestDeclarationSchema),
   electionResult: MemberElectionResultSchema.optional(),
   officialPortraitUrl: z.string().url().optional(),
   officialPortraitCaption: z.string().optional(),
-})
-export type ParliamentMemberProfile = z.infer<typeof ParliamentMemberProfileSchema>
+});
+export type ParliamentMemberProfile = z.infer<
+  typeof ParliamentMemberProfileSchema
+>;
 
 /** A legislative initiative the member authored/initiated. */
 export const MemberInitiativeSchema = z.object({
@@ -569,8 +669,8 @@ export const MemberInitiativeSchema = z.object({
   /** Promulgated-law reference, when the initiative became law. */
   promulgatedLawNumber: z.string().optional(),
   promulgatedLawYear: z.number().int().optional(),
-})
-export type MemberInitiative = z.infer<typeof MemberInitiativeSchema>
+});
+export type MemberInitiative = z.infer<typeof MemberInitiativeSchema>;
 
 export const ParliamentMemberInitiativesListSchema = z.object({
   memberId: z.string(),
@@ -579,48 +679,48 @@ export const ParliamentMemberInitiativesListSchema = z.object({
   page: z.number().int().positive(),
   pageSize: z.number().int().positive(),
   totalPages: z.number().int().positive(),
-})
+});
 export type ParliamentMemberInitiativesList = z.infer<
   typeof ParliamentMemberInitiativesListSchema
->
+>;
 
 export const BillTypeSchema = z.enum([
-  'guvern',
-  'parlamentar',
-  'cetateni',
-  'ordonanta',
-])
-export type BillType = z.infer<typeof BillTypeSchema>
+  "guvern",
+  "parlamentar",
+  "cetateni",
+  "ordonanta",
+]);
+export type BillType = z.infer<typeof BillTypeSchema>;
 
 export const BillCurrentLocationSchema = z.enum([
-  'camera',
-  'senat',
-  'mediere',
-  'presedinte',
-  'promulgat',
-  'respins',
-  'retras',
+  "camera",
+  "senat",
+  "mediere",
+  "presedinte",
+  "promulgat",
+  "respins",
+  "retras",
   // Lapsed/terminated procedure ("clasat" / "procedură legislativă încetată") —
   // a terminal outcome distinct from rejection (parliament.bill-lifecycle.v2).
-  'clasat',
-])
-export type BillCurrentLocation = z.infer<typeof BillCurrentLocationSchema>
+  "clasat",
+]);
+export type BillCurrentLocation = z.infer<typeof BillCurrentLocationSchema>;
 
 export const BillStageStatusSchema = z.enum([
-  'complete',
-  'in_progress',
-  'not_reached',
-  'not_applicable',
-])
-export type BillStageStatus = z.infer<typeof BillStageStatusSchema>
+  "complete",
+  "in_progress",
+  "not_reached",
+  "not_applicable",
+]);
+export type BillStageStatus = z.infer<typeof BillStageStatusSchema>;
 
 export const BillSortBySchema = z.enum([
-  'title_asc',
-  'title_desc',
-  'updated_desc',
-  'updated_asc',
-])
-export type BillSortBy = z.infer<typeof BillSortBySchema>
+  "title_asc",
+  "title_desc",
+  "updated_desc",
+  "updated_asc",
+]);
+export type BillSortBy = z.infer<typeof BillSortBySchema>;
 
 export const ParliamentBillSummarySchema = z.object({
   billId: z.string(),
@@ -633,8 +733,8 @@ export const ParliamentBillSummarySchema = z.object({
   nextStageLabel: z.string().optional(),
   lastUpdatedAt: z.string(),
   legislatureId: z.string(),
-})
-export type ParliamentBillSummary = z.infer<typeof ParliamentBillSummarySchema>
+});
+export type ParliamentBillSummary = z.infer<typeof ParliamentBillSummarySchema>;
 
 export const ParliamentBillListSchema = z.object({
   bills: z.array(ParliamentBillSummarySchema),
@@ -642,53 +742,68 @@ export const ParliamentBillListSchema = z.object({
   page: z.number().int().positive(),
   pageSize: z.number().int().positive(),
   totalPages: z.number().int().positive(),
-})
-export type ParliamentBillList = z.infer<typeof ParliamentBillListSchema>
+});
+export type ParliamentBillList = z.infer<typeof ParliamentBillListSchema>;
 
 export const ParliamentBillDocumentSchema = z.object({
   documentId: z.string(),
   label: z.string(),
   url: z.string().url(),
-  publishedAt: z.string(),
+  /**
+   * OPTIONAL. `parliament.bill_documents` has no date column, so the live path
+   * omits it (it used to copy the bill's latest event date onto EVERY document).
+   * Only the mock fixtures, which carry per-document dates, populate it.
+   */
+  publishedAt: z.string().optional(),
   chamber: ParliamentChamberSchema.optional(),
   versionLabel: z.string().optional(),
-})
-export type ParliamentBillDocument = z.infer<typeof ParliamentBillDocumentSchema>
+});
+export type ParliamentBillDocument = z.infer<
+  typeof ParliamentBillDocumentSchema
+>;
 
 export const ParliamentBillPassageStageSchema = z.object({
   stageId: z.string(),
   label: z.string(),
   status: BillStageStatusSchema,
   completedAt: z.string().optional(),
-})
+});
 export type ParliamentBillPassageStage = z.infer<
   typeof ParliamentBillPassageStageSchema
->
+>;
 
 export const ParliamentBillPassageSchema = z.object({
   camera: z.array(ParliamentBillPassageStageSchema),
   senat: z.array(ParliamentBillPassageStageSchema),
   final: z.array(ParliamentBillPassageStageSchema),
-})
-export type ParliamentBillPassage = z.infer<typeof ParliamentBillPassageSchema>
+});
+export type ParliamentBillPassage = z.infer<typeof ParliamentBillPassageSchema>;
 
 export const ParliamentBillInitiatorSchema = z.object({
-  type: z.enum(['guvern', 'parlamentar', 'cetateni']),
+  type: z.enum(["guvern", "parlamentar", "cetateni"]),
   departmentName: z.string().optional(),
   memberId: z.string().optional(),
   memberName: z.string().optional(),
-})
-export type ParliamentBillInitiator = z.infer<typeof ParliamentBillInitiatorSchema>
+});
+export type ParliamentBillInitiator = z.infer<
+  typeof ParliamentBillInitiatorSchema
+>;
 
 export const ParliamentBillRelatedVoteSchema = z.object({
   voteId: z.string(),
   chamber: ParliamentChamberSchema,
   title: z.string(),
   heldAt: z.string(),
-})
+  /**
+   * `bill_vote_links.role` for this edge, when the server resolved one
+   * ('final_adoption' | 'final_rejection' | 'amendment' | 'procedural' | …).
+   * The ONLY evidence that a vote was final — being the most recent is not.
+   */
+  linkRole: z.string().optional(),
+});
 export type ParliamentBillRelatedVote = z.infer<
   typeof ParliamentBillRelatedVoteSchema
->
+>;
 
 /** A single procedural step on the bill's chronological timeline (etape). */
 export const ParliamentBillTimelineStepSchema = z.object({
@@ -710,10 +825,10 @@ export const ParliamentBillTimelineStepSchema = z.object({
   docUrls: z.array(z.string()).default([]),
   /** Highlighted milestone steps (adoptare/promulgare/lege/reexaminare/înaintat). */
   isMilestone: z.boolean(),
-})
+});
 export type ParliamentBillTimelineStep = z.infer<
   typeof ParliamentBillTimelineStepSchema
->
+>;
 
 /** The bill's becomes-law milestone (resolved legal act), when present. */
 export const ParliamentBillLawMilestoneSchema = z.object({
@@ -721,10 +836,10 @@ export const ParliamentBillLawMilestoneSchema = z.object({
   lawYear: z.number().int().optional(),
   actId: z.string().optional(),
   actTitle: z.string().optional(),
-})
+});
 export type ParliamentBillLawMilestone = z.infer<
   typeof ParliamentBillLawMilestoneSchema
->
+>;
 
 export const ParliamentBillDetailSchema = ParliamentBillSummarySchema.extend({
   longTitle: z.string(),
@@ -753,22 +868,22 @@ export const ParliamentBillDetailSchema = ParliamentBillSummarySchema.extend({
    * children and lists both keys here. Length 1 = single-view dossier.
    */
   dossierBillIds: z.array(z.string()).default([]),
-})
-export type ParliamentBillDetail = z.infer<typeof ParliamentBillDetailSchema>
+});
+export type ParliamentBillDetail = z.infer<typeof ParliamentBillDetailSchema>;
 
 export const ParliamentTabSchema = z.enum([
-  'prezentare',
-  'membri',
-  'voturi',
-  'grupuri',
-  'proiecte',
-])
-export type ParliamentTabId = z.infer<typeof ParliamentTabSchema>
+  "prezentare",
+  "membri",
+  "voturi",
+  "grupuri",
+  "proiecte",
+]);
+export type ParliamentTabId = z.infer<typeof ParliamentTabSchema>;
 
 /** Unified search params for /parlament — tab drives the active section */
 export const ParliamentSearchSchema = z.object({
   tab: ParliamentTabSchema.optional().catch(undefined),
-  chamber: z.enum(['camera', 'senat', 'all']).optional().catch(undefined),
+  chamber: z.enum(["camera", "senat", "all"]).optional().catch(undefined),
   judet: z
     .union([z.string(), z.array(z.string())])
     .optional()
@@ -778,7 +893,10 @@ export const ParliamentSearchSchema = z.object({
     .optional()
     .catch(undefined),
   q: z.string().optional().catch(undefined),
-  find: z.union([z.literal('1'), z.literal(1)]).optional().catch(undefined),
+  find: z
+    .union([z.literal("1"), z.literal(1)])
+    .optional()
+    .catch(undefined),
   from: z.string().optional().catch(undefined),
   to: z.string().optional().catch(undefined),
   outcome: VoteOutcomeSchema.optional().catch(undefined),
@@ -787,23 +905,23 @@ export const ParliamentSearchSchema = z.object({
   sortBy: BillSortBySchema.optional().catch(undefined),
   page: z.coerce.number().int().min(1).optional().catch(undefined),
   pageSize: z.coerce.number().int().min(1).max(100).optional().catch(undefined),
-})
-export type ParliamentSearch = z.infer<typeof ParliamentSearchSchema>
+});
+export type ParliamentSearch = z.infer<typeof ParliamentSearchSchema>;
 
-export const ParliamentHubSearchSchema = ParliamentSearchSchema
-export type ParliamentHubSearch = ParliamentSearch
+export const ParliamentHubSearchSchema = ParliamentSearchSchema;
+export type ParliamentHubSearch = ParliamentSearch;
 
-export const ParliamentGroupsSearchSchema = ParliamentSearchSchema
-export type ParliamentGroupsSearch = ParliamentSearch
+export const ParliamentGroupsSearchSchema = ParliamentSearchSchema;
+export type ParliamentGroupsSearch = ParliamentSearch;
 
-export const ParliamentMembersSearchSchema = ParliamentSearchSchema
-export type ParliamentMembersSearch = ParliamentSearch
+export const ParliamentMembersSearchSchema = ParliamentSearchSchema;
+export type ParliamentMembersSearch = ParliamentSearch;
 
-export const ParliamentVotesSearchSchema = ParliamentSearchSchema
-export type ParliamentVotesSearch = ParliamentSearch
+export const ParliamentVotesSearchSchema = ParliamentSearchSchema;
+export type ParliamentVotesSearch = ParliamentSearch;
 
-export const ParliamentBillsSearchSchema = ParliamentSearchSchema
-export type ParliamentBillsSearch = ParliamentSearch
+export const ParliamentBillsSearchSchema = ParliamentSearchSchema;
+export type ParliamentBillsSearch = ParliamentSearch;
 
 /**
  * A calendar-REAL `YYYY-MM-DD` day, or `undefined`. The regex alone admits
@@ -817,14 +935,14 @@ const strictIsoDateParam = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/)
   .refine((day) => {
-    const parsed = new Date(`${day}T00:00:00Z`)
+    const parsed = new Date(`${day}T00:00:00Z`);
     return (
       !Number.isNaN(parsed.getTime()) &&
       parsed.toISOString().slice(0, 10) === day
-    )
+    );
   })
   .optional()
-  .catch(undefined)
+  .catch(undefined);
 
 /**
  * Search params for the member voting-history tab (heatmap + advanced filters).
@@ -846,11 +964,11 @@ export const MemberVotesSearchSchema = z.object({
     .union([z.string(), z.array(z.string())])
     .optional()
     .catch(undefined),
-  outcome: z.enum(['adoptat', 'respins']).optional().catch(undefined),
-  session: z.enum(['proprie', 'comun']).optional().catch(undefined),
+  outcome: z.enum(["adoptat", "respins"]).optional().catch(undefined),
+  session: z.enum(["proprie", "comun"]).optional().catch(undefined),
   an: z.coerce.number().int().optional().catch(undefined),
-})
-export type MemberVotesSearch = z.infer<typeof MemberVotesSearchSchema>
+});
+export type MemberVotesSearch = z.infer<typeof MemberVotesSearchSchema>;
 
 /**
  * Search params for the member interventii tab (speech heatmap + filters +
@@ -864,13 +982,13 @@ export type MemberVotesSearch = z.infer<typeof MemberVotesSearchSchema>
 export const MemberSpeechesSearchSchema = z.object({
   from: strictIsoDateParam,
   to: strictIsoDateParam,
-  session: z.enum(['proprie', 'comun']).optional().catch(undefined),
+  session: z.enum(["proprie", "comun"]).optional().catch(undefined),
   // Trimmed free-text; empty/oversized junk collapses to undefined so it never
   // reaches the query arg or the chip formatter.
   q: z.string().trim().min(1).max(200).optional().catch(undefined),
   an: z.coerce.number().int().optional().catch(undefined),
-})
-export type MemberSpeechesSearch = z.infer<typeof MemberSpeechesSearchSchema>
+});
+export type MemberSpeechesSearch = z.infer<typeof MemberSpeechesSearchSchema>;
 
 /**
  * Search params for the global stenograme page (/parlament/stenograme).
@@ -887,12 +1005,12 @@ export type MemberSpeechesSearch = z.infer<typeof MemberSpeechesSearchSchema>
  */
 export const ParliamentSpeechesSearchSchema = z.object({
   an: z.coerce.number().int().optional().catch(undefined),
-  camera: z.enum(['camera', 'senat', 'comun']).optional().catch(undefined),
+  camera: z.enum(["camera", "senat", "comun"]).optional().catch(undefined),
   vorbitor: z.string().trim().min(1).optional().catch(undefined),
   from: strictIsoDateParam,
   to: strictIsoDateParam,
   q: z.string().trim().min(1).max(200).optional().catch(undefined),
-})
+});
 export type ParliamentSpeechesSearch = z.infer<
   typeof ParliamentSpeechesSearchSchema
->
+>;

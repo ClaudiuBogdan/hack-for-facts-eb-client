@@ -86,6 +86,33 @@ export const MEMBER_DETAIL_TAB_LABELS: Record<MemberDetailTab, string> = {
   portret: 'Portret oficial',
 }
 
+/**
+ * Tabs with NO live backing.
+ *
+ * - `alegeri`: the electoral result (votes received, share, list position) lives
+ *   in the elections domain, which is not loaded or served yet — the server has
+ *   no `member.electionResult` field at all.
+ * - `portret`: no official portrait is captured (no extraction lane, and the
+ *   licensing question is open), so the tab rendered the member's INITIALS in a
+ *   frame under the heading "Portret oficial".
+ *
+ * Both are hidden from the profile navigation on live data and kept for mock
+ * mode, where the fixtures do carry them. Direct URLs still resolve — the tabs
+ * themselves say plainly that the dataset is not integrated yet.
+ */
+export const MEMBER_DETAIL_UNBACKED_TABS: ReadonlySet<MemberDetailTab> = new Set([
+  'alegeri',
+  'portret',
+])
+
+/** The nav items to render: the unbacked tabs are dropped unless mocks supply them. */
+export function getMemberDetailNavItems(options: {
+  readonly includeUnbacked: boolean
+}): readonly NavItem[] {
+  if (options.includeUnbacked) return MEMBER_DETAIL_NAV_ITEMS
+  return MEMBER_DETAIL_NAV_ITEMS.filter((item) => !MEMBER_DETAIL_UNBACKED_TABS.has(item.id))
+}
+
 export function getMemberDetailNavItem(tab: MemberDetailTab): NavItem {
   const item = MEMBER_DETAIL_NAV_ITEMS.find((entry) => entry.id === tab)
   if (!item) {

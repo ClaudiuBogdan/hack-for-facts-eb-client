@@ -1,33 +1,34 @@
-import { useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
-import { Label } from '@/components/ui/label'
+import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Skeleton } from '@/components/ui/skeleton'
-import type { BillSortBy, ParliamentBillsSearch } from '@/schemas/parliament'
-import { useParliamentBills, useParliamentHub } from '../hooks/use-parliament-data'
-import { BILL_DETAIL_INFO_BG } from '../lib/bill-detail-theme'
-import { countActiveBillFilters } from '../lib/bills-filter'
-import { BillListCard } from './bill-list-card'
-import { FilterTriggerButton } from './parliament-filter-trigger-button'
-import { ParliamentDebouncedSearchInput } from './parliament-debounced-search-input'
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { BillSortBy, ParliamentBillsSearch } from "@/schemas/parliament";
+import { useParliamentBills } from "../hooks/use-parliament-data";
+import { BILL_DETAIL_INFO_BG } from "../lib/bill-detail-theme";
+import { countActiveBillFilters } from "../lib/bills-filter";
+import { BillListCard } from "./bill-list-card";
+import { FilterTriggerButton } from "./parliament-filter-trigger-button";
+import { ParliamentDebouncedSearchInput } from "./parliament-debounced-search-input";
+import { ParliamentInlineLoadError } from "./parliament-load-error-page";
 import {
   ParliamentBillsActiveFilters,
   ParliamentBillsFilterSheet,
   type ParliamentBillsFilterPatch,
-} from './parliament-bills-filter-sheet'
-import { VotesListPagination } from './votes-list-pagination'
+} from "./parliament-bills-filter-sheet";
+import { VotesListPagination } from "./votes-list-pagination";
 
-const LIST_PAGE_SIZE = 10
+const LIST_PAGE_SIZE = 10;
 
 type Props = {
-  readonly search: ParliamentBillsSearch
-}
+  readonly search: ParliamentBillsSearch;
+};
 
 /**
  * Hub tab content — find and browse legislative bills. PNRR-style search: one
@@ -37,35 +38,33 @@ type Props = {
  * old submit-button form, so existing links keep filtering.
  */
 export function ParliamentBillsContent({ search }: Props) {
-  const navigate = useNavigate({ from: '/parlament/' })
-  const [filterOpen, setFilterOpen] = useState(false)
-  const { data: hub } = useParliamentHub()
+  const navigate = useNavigate({ from: "/parlament/" });
+  const [filterOpen, setFilterOpen] = useState(false);
   const listSearch = {
     ...search,
-    tab: 'proiecte' as const,
+    tab: "proiecte" as const,
     page: search.page ?? 1,
     pageSize: search.pageSize ?? LIST_PAGE_SIZE,
-  }
-  const { data, isLoading } = useParliamentBills(listSearch)
+  };
+  const { data, isLoading, isError, refetch } = useParliamentBills(listSearch);
 
-  const legislatureLabel = hub?.legislature.label ?? '2024–2028'
-  const activeCount = countActiveBillFilters(search)
+  const activeCount = countActiveBillFilters(search);
 
   const commit = (patch: ParliamentBillsFilterPatch) => {
     void navigate({
       search: {
         ...listSearch,
         ...patch,
-        tab: 'proiecte',
+        tab: "proiecte",
         page: 1,
       },
       replace: true,
       resetScroll: false,
-    })
-  }
+    });
+  };
 
   const handleClearAll = () =>
-    commit({ q: undefined, billType: undefined, billLocation: undefined })
+    commit({ q: undefined, billType: undefined, billLocation: undefined });
 
   const handlePageChange = (page: number) => {
     void navigate({
@@ -74,8 +73,8 @@ export function ParliamentBillsContent({ search }: Props) {
         page,
       },
       replace: true,
-    })
-  }
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -91,9 +90,9 @@ export function ParliamentBillsContent({ search }: Props) {
 
       <div
         className="border-l-4 px-5 py-4 text-sm leading-6 text-[#0b0c0c] dark:text-[var(--pnrr-fg)]"
-        style={{ backgroundColor: BILL_DETAIL_INFO_BG, borderColor: '#512178' }}
+        style={{ backgroundColor: BILL_DETAIL_INFO_BG, borderColor: "#512178" }}
       >
-        Pentru informații oficiale despre proiectele de lege, consultați{' '}
+        Pentru informații oficiale despre proiectele de lege, consultați{" "}
         <a
           href="https://www.cdep.ro/pls/legis/legis_pck.home"
           target="_blank"
@@ -101,8 +100,8 @@ export function ParliamentBillsContent({ search }: Props) {
           className="font-semibold underline underline-offset-2"
         >
           Camera Deputaților
-        </a>{' '}
-        și{' '}
+        </a>{" "}
+        și{" "}
         <a
           href="https://www.senat.ro/Legis/lista.aspx"
           target="_blank"
@@ -129,7 +128,7 @@ export function ParliamentBillsContent({ search }: Props) {
               Sortare
             </Label>
             <Select
-              value={search.sortBy ?? 'updated_desc'}
+              value={search.sortBy ?? "updated_desc"}
               onValueChange={(value) => commit({ sortBy: value as BillSortBy })}
             >
               <SelectTrigger
@@ -164,6 +163,12 @@ export function ParliamentBillsContent({ search }: Props) {
             <Skeleton key={index} className="h-40 w-full rounded-none" />
           ))}
         </div>
+      ) : isError ? (
+        <ParliamentInlineLoadError
+          title="Lista proiectelor de lege nu a putut fi încărcată"
+          description="Serviciul de date nu a răspuns. Niciun rezultat nu este ascuns ca și cum lista ar fi goală."
+          onRetry={() => void refetch()}
+        />
       ) : (
         <>
           {data && data.total > 0 ? (
@@ -177,17 +182,14 @@ export function ParliamentBillsContent({ search }: Props) {
 
           <div className="grid gap-4 lg:grid-cols-2">
             {data?.bills.map((bill) => (
-              <BillListCard
-                key={bill.billId}
-                bill={bill}
-                legislatureLabel={legislatureLabel}
-              />
+              <BillListCard key={bill.billId} bill={bill} />
             ))}
           </div>
 
           {data && data.total === 0 ? (
             <p className="text-base text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-              Nu am găsit proiecte de lege care să corespundă criteriilor selectate.
+              Nu am găsit proiecte de lege care să corespundă criteriilor
+              selectate.
             </p>
           ) : null}
 
@@ -210,5 +212,5 @@ export function ParliamentBillsContent({ search }: Props) {
         onClearAll={handleClearAll}
       />
     </div>
-  )
+  );
 }

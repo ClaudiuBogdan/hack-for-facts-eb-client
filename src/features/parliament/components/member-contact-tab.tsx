@@ -18,13 +18,27 @@ type Props = {
   readonly member: ParliamentMember
 }
 
+/**
+ * The best official link we have FOR THIS MEMBER.
+ *
+ * `contact.website` is `members.attrs.profile_url` — the member's own cdep.ro /
+ * senat.ro profile page. Prefer it: sending a reader to the chamber HOMEPAGE to
+ * look up a specific parliamentarian is a dead end when we already hold the deep
+ * link. The chamber root stays the fallback when no profile URL is recorded.
+ */
 function getOfficialChamberSite(member: ParliamentMember): {
   readonly label: string
   readonly url: string
+  readonly isMemberSpecific: boolean
 } {
-  return member.chamber === 'camera'
-    ? { label: 'Camera Deputaților', url: 'https://www.cdep.ro' }
-    : { label: 'Senatul României', url: 'https://www.senat.ro' }
+  const chamber =
+    member.chamber === 'camera'
+      ? { label: 'Camera Deputaților', url: 'https://www.cdep.ro' }
+      : { label: 'Senatul României', url: 'https://www.senat.ro' }
+  const profileUrl = member.contact?.website
+  return profileUrl
+    ? { label: `pagina oficială de pe ${chamber.label}`, url: profileUrl, isMemberSpecific: true }
+    : { ...chamber, isMemberSpecific: false }
 }
 
 function hasContactDetails(member: ParliamentMember): boolean {
@@ -60,14 +74,17 @@ export function MemberContactTab({ member }: Props) {
       <aside className={memberDetailNoticeClassName}>
         <p>
           Pentru cereri legate de activitatea parlamentară sau de circumscripție,
-          verificați și pagina oficială de pe{' '}
+          verificați și{' '}
+          {officialSite.isMemberSpecific ? null : 'pagina oficială de pe '}
           <a
             href={officialSite.url}
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold underline underline-offset-4"
           >
-            {officialSite.label}
+            {officialSite.isMemberSpecific
+              ? `${officialSite.label} a lui ${memberName}`
+              : officialSite.label}
           </a>
           .
         </p>

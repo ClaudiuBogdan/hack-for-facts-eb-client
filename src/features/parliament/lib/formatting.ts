@@ -3,10 +3,10 @@ import type {
   MemberVoteChoice,
   VoteOutcome,
   VoteType,
-} from '@/schemas/parliament'
+} from "@/schemas/parliament";
 
 export function formatMemberName(firstName: string, lastName: string): string {
-  return `${firstName} ${lastName}`
+  return `${firstName} ${lastName}`;
 }
 
 export function formatMemberMandatePeriod(
@@ -14,121 +14,134 @@ export function formatMemberMandatePeriod(
   mandateEnd?: string,
 ): string {
   if (!mandateStart) {
-    return 'Prezent'
+    if (!mandateEnd) return "Prezent";
+    const end = new Intl.DateTimeFormat("ro-RO", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(new Date(`${mandateEnd.slice(0, 10)}T00:00:00Z`));
+    return `Încheiat la ${end}`;
   }
 
-  const start = new Intl.DateTimeFormat('ro-RO', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(new Date(mandateStart))
+  const start = new Intl.DateTimeFormat("ro-RO", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(`${mandateStart.slice(0, 10)}T00:00:00Z`));
 
   if (!mandateEnd) {
-    return `${start} – Prezent`
+    return `${start} – Prezent`;
   }
 
-  const end = new Intl.DateTimeFormat('ro-RO', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(new Date(mandateEnd))
+  const end = new Intl.DateTimeFormat("ro-RO", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(`${mandateEnd.slice(0, 10)}T00:00:00Z`));
 
-  return `${start} – ${end}`
+  return `${start} – ${end}`;
 }
 
-export function getChamberLabel(chamber: 'camera' | 'senat'): string {
+export function getChamberLabel(chamber: "camera" | "senat"): string {
   switch (chamber) {
-    case 'camera':
-      return 'Camera Deputaților'
-    case 'senat':
-      return 'Senat'
+    case "camera":
+      return "Camera Deputaților";
+    case "senat":
+      return "Senat";
   }
 }
 
-export function getChamberShortLabel(chamber: 'camera' | 'senat'): string {
-  return chamber === 'camera' ? 'Camera' : 'Senat'
+export function getChamberShortLabel(chamber: "camera" | "senat"): string {
+  return chamber === "camera" ? "Camera" : "Senat";
 }
 
-export function getMemberChamberRoleLabel(chamber: 'camera' | 'senat'): string {
-  return chamber === 'camera' ? 'deputat' : 'senator'
+export function getMemberChamberRoleLabel(chamber: "camera" | "senat"): string {
+  return chamber === "camera" ? "deputat" : "senator";
 }
 
 export function formatMemberSalutation(member: ParliamentMember): string {
-  return member.lastName
+  return member.lastName;
 }
 
 export function getVoteTypeLabel(voteType: VoteType): string {
-  return voteType === 'deschis' ? 'Vot deschis' : 'Vot secret'
+  return voteType === "deschis" ? "Vot deschis" : "Vot secret";
 }
 
 export function getMemberVoteChoiceLabel(choice: MemberVoteChoice): string {
   switch (choice) {
-    case 'pentru':
-      return 'Pentru'
-    case 'impotriva':
-      return 'Împotrivă'
-    case 'abtinere':
-      return 'Abținere'
-    case 'nu_a_votat':
-      return 'Nu a votat'
+    case "pentru":
+      return "Pentru";
+    case "impotriva":
+      return "Împotrivă";
+    case "abtinere":
+      return "Abținere";
+    case "nu_a_votat":
+      return "Nu a votat";
   }
 }
 
 export function getOutcomeVariant(
   outcome: VoteOutcome,
-): 'default' | 'secondary' | 'destructive' | 'outline' {
+): "default" | "secondary" | "destructive" | "outline" {
   switch (outcome) {
-    case 'adoptat':
-      return 'default'
-    case 'respins':
-      return 'destructive'
-    case 'amânat':
-      return 'secondary'
+    case "adoptat":
+      return "default";
+    case "respins":
+      return "destructive";
+    case "amânat":
+      return "secondary";
   }
 }
 
 export function getOutcomeLabel(outcome: VoteOutcome): string {
   switch (outcome) {
-    case 'adoptat':
-      return 'Adoptat'
-    case 'respins':
-      return 'Respins'
-    case 'amânat':
-      return 'Amânat'
+    case "adoptat":
+      return "Adoptat";
+    case "respins":
+      return "Respins";
+    case "amânat":
+      return "Amânat";
   }
 }
 
 /** Accent / border color for vote cards — adoptat vs respins vs amânat */
 export function getVoteOutcomeAccentColor(outcome: VoteOutcome): string {
   switch (outcome) {
-    case 'adoptat':
-      return '#006435'
-    case 'respins':
-      return '#9C051A'
-    case 'amânat':
-      return '#505a5f'
+    case "adoptat":
+      return "#006435";
+    case "respins":
+      return "#9C051A";
+    case "amânat":
+      return "#505a5f";
   }
 }
 
 /** Left accent on member result cards — by individual vote choice */
 export function getVoteChoiceAccentColor(choice: MemberVoteChoice): string {
   switch (choice) {
-    case 'pentru':
-      return '#006435'
-    case 'impotriva':
-      return '#9C051A'
-    case 'abtinere':
-      return '#505a5f'
-    case 'nu_a_votat':
-      return '#b1b4b6'
+    case "pentru":
+      return "#006435";
+    case "impotriva":
+      return "#9C051A";
+    case "abtinere":
+      return "#505a5f";
+    case "nu_a_votat":
+      return "#b1b4b6";
   }
 }
 
+/**
+ * Short calendar date of a vote ("15 mai 2026"). DATE-ONLY on purpose: the source
+ * column (`parliament.votes.vote_date`) is a DATE, so the client stamps midnight
+ * to build a timestamp. Printing that midnight as "14:30"-style clock time would
+ * invent a sitting time the source never recorded. Pinned to UTC on the date part
+ * for the same reason as `formatVoteDayLong`.
+ */
 export function formatVoteDate(isoDate: string): string {
-  return new Intl.DateTimeFormat('ro-RO', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(isoDate))
+  return new Intl.DateTimeFormat("ro-RO", {
+    dateStyle: "medium",
+    timeZone: "UTC",
+  }).format(new Date(`${isoDate.slice(0, 10)}T00:00:00Z`));
 }
 
 /**
@@ -138,19 +151,19 @@ export function formatVoteDate(isoDate: string): string {
  * users west of Bucharest (a UTC browser shows 19 March for a 20 March vote).
  */
 export function formatVoteDayLong(isoDate: string): string {
-  return new Intl.DateTimeFormat('ro-RO', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    timeZone: 'UTC',
-  }).format(new Date(`${isoDate.slice(0, 10)}T00:00:00Z`))
+  return new Intl.DateTimeFormat("ro-RO", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${isoDate.slice(0, 10)}T00:00:00Z`));
 }
 
 export function formatSyncDate(isoDate: string): string {
-  return new Intl.DateTimeFormat('ro-RO', {
-    dateStyle: 'long',
-    timeStyle: 'short',
-  }).format(new Date(isoDate))
+  return new Intl.DateTimeFormat("ro-RO", {
+    dateStyle: "long",
+    timeStyle: "short",
+  }).format(new Date(isoDate));
 }
 
 /** Share of chamber seats highlighted by the current filters. */
@@ -159,58 +172,62 @@ export function formatSeatSharePercent(
   totalSeats: number,
 ): string {
   if (totalSeats <= 0) {
-    return '—'
+    return "—";
   }
 
-  const ratio = activeCount / totalSeats
-  const percent = ratio * 100
-  const maximumFractionDigits = ratio > 0 && ratio < 0.01 ? 1 : 0
+  const ratio = activeCount / totalSeats;
+  const percent = ratio * 100;
+  const maximumFractionDigits = ratio > 0 && ratio < 0.01 ? 1 : 0;
 
-  return `${new Intl.NumberFormat('ro-RO', {
+  return `${new Intl.NumberFormat("ro-RO", {
     minimumFractionDigits: 0,
     maximumFractionDigits,
-  }).format(percent)}%`
+  }).format(percent)}%`;
 }
 
+/**
+ * Meta line under a vote card: the SOURCE division number (when the source
+ * recorded one) plus the vote's calendar date.
+ *
+ * `divisionNumber` is optional and is never synthesised. It used to be derived
+ * from a card's position in the list ("Divizare 4/3/2/1" for the four most recent
+ * votes), which is a real, checkable number in the official record — so inventing
+ * it published a false fact. When the source has no division number we print the
+ * date alone.
+ *
+ * The date is DATE-ONLY: `votes.vote_date` is a DATE column, so a clock time here
+ * would be the midnight the client itself stamped.
+ */
 export function formatVoteDivisionMeta(
   vote: { readonly heldAt: string },
-  divisionNumber: number,
+  divisionNumber?: number,
 ): string {
-  const formatted = new Intl.DateTimeFormat('ro-RO', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(vote.heldAt))
-
-  return `Divizare ${divisionNumber}: ${formatted}`
+  const formatted = formatVoteDayLong(vote.heldAt);
+  return divisionNumber !== undefined && divisionNumber > 0
+    ? `Divizare ${divisionNumber}: ${formatted}`
+    : formatted;
 }
 
 export function formatBillUpdatedAt(isoDate: string): string {
-  return new Intl.DateTimeFormat('ro-RO', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(isoDate))
+  // `bills.last_event_date` is a DATE. Its midnight is an implementation detail,
+  // not the time an event happened, so never publish it as a sourced clock time.
+  return formatBillDate(isoDate);
 }
 
 export function formatBillDate(isoDate: string): string {
-  return new Intl.DateTimeFormat('ro-RO', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(new Date(isoDate))
+  return new Intl.DateTimeFormat("ro-RO", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(`${isoDate.slice(0, 10)}T00:00:00Z`));
 }
 
 export function downloadCsv(filename: string, content: string): void {
-  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = filename
-  link.click()
-  URL.revokeObjectURL(url)
+  const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
 }

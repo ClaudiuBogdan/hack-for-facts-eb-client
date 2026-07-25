@@ -80,9 +80,20 @@ export function MemberAlegeriTab({ member }: Props) {
           </div>
         </div>
       ) : (
-        <p className="text-base leading-7 text-[#505a5f]">
-          Nu există un rezultat electoral publicat pentru acest parlamentar.
-        </p>
+        // NOT "this member has no result" — nobody has one here yet. The
+        // electoral data lives in the elections domain, which is not loaded or
+        // served, so the API carries no `electionResult` field at all. Saying
+        // "nu există" about a dataset we never queried would be a false claim.
+        <div className="border-2 border-[#b1b4b6] bg-white px-5 py-6 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]">
+          <p className="text-base font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+            Rezultatele electorale nu sunt încă integrate
+          </p>
+          <p className="mt-2 max-w-2xl text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            Datele despre alegeri (voturi obținute, procent, poziția pe listă) provin
+            din setul de date electorale, care nu este încă publicat în platformă.
+            Nu înseamnă că acest parlamentar nu are un rezultat electoral.
+          </p>
+        </div>
       )}
     </MemberProfileSectionHeader>
   )

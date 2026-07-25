@@ -33,10 +33,21 @@ export function BillDocumentsTab({ bill }: Props) {
           >
             <div>
               <p className="text-base font-bold text-[#512178]">{document.label}</p>
-              <p className="mt-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-                {formatBillDate(document.publishedAt)}
-                {document.chamber ? ` · ${getChamberLabel(document.chamber)}` : ''}
-              </p>
+              {/*
+                The date is OPTIONAL: `bill_documents` has no date column, so a
+                shown date would be the bill's latest-event date copied onto
+                every document. Omit the line rather than invent it.
+              */}
+              {document.publishedAt || document.chamber ? (
+                <p className="mt-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                  {[
+                    document.publishedAt ? formatBillDate(document.publishedAt) : null,
+                    document.chamber ? getChamberLabel(document.chamber) : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+              ) : null}
               {document.versionLabel ? (
                 <p className="mt-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
                   {document.versionLabel}

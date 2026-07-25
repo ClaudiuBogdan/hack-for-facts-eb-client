@@ -165,7 +165,28 @@ const voteSummaries = buildExpandedVoteSummaries()
 const bills = billsData.map((bill) => ParliamentBillSummarySchema.parse(bill))
 const billDetailsMap = billDetailsData as Record<string, unknown>
 
-const voteDetailsMap = voteDetailsData as Record<string, unknown>
+/**
+ * Mock vote details, normalised to the live shape. The fixtures predate
+ * `ballotKey` (the render-only per-ballot key that replaced the fabricated
+ * `row-<n>` member ids), so derive it from the vote + the ballot's position —
+ * exactly what the live mapper does from `voteKey` + `rowIndex`.
+ */
+const voteDetailsMap: Record<string, unknown> = Object.fromEntries(
+  Object.entries(voteDetailsData as Record<string, unknown>).map(([voteId, raw]) => {
+    const detail = raw as { readonly memberVotes?: readonly Record<string, unknown>[] }
+    if (!Array.isArray(detail.memberVotes)) return [voteId, raw]
+    return [
+      voteId,
+      {
+        ...detail,
+        memberVotes: detail.memberVotes.map((mv, index) => ({
+          ballotKey: `${voteId}#${String(index)}`,
+          ...mv,
+        })),
+      },
+    ]
+  }),
+)
 
 function voteDetailBreakdownMatchesTally(detail: ParliamentVoteDetail): boolean {
   const totalPentru = detail.groupBreakdown.reduce(
@@ -310,26 +331,30 @@ function filterVotes(search: ParliamentVotesSearch): ParliamentVoteSummary[] {
   )
 }
 
+/**
+ * Mirror the live CURSOR shape: the cursor is the index of the first row of the
+ * next page, so the mock exercises the same load-more path as the API.
+ */
 function paginateVotes(
   search: ParliamentVotesSearch,
   filtered: ParliamentVoteSummary[],
+  after?: string,
 ): ParliamentVotesList {
   const pageSize = search.pageSize ?? DEFAULT_VOTES_PAGE_SIZE
-  const total = filtered.length
-  const totalPages = Math.max(1, Math.ceil(total / pageSize))
-  const page = Math.min(Math.max(1, search.page ?? 1), totalPages)
-  const start = (page - 1) * pageSize
+  const start = Number.isInteger(Number(after)) ? Math.max(0, Number(after)) : 0
   const slice = filtered.slice(start, start + pageSize)
+  const nextStart = start + slice.length
+  const hasNextPage = nextStart < filtered.length
 
   return ParliamentVotesListSchema.parse({
-    votes: slice.map((vote) => ({
-      ...vote,
-      divisionNumber: divisionNumbersByVoteId.get(vote.voteId) ?? 1,
-    })),
-    total,
-    page,
+    votes: slice.map((vote) => {
+      const divisionNumber = divisionNumbersByVoteId.get(vote.voteId)
+      // Only when the fixture actually has one — never a positional stand-in.
+      return divisionNumber === undefined ? vote : { ...vote, divisionNumber }
+    }),
     pageSize,
-    totalPages,
+    hasNextPage,
+    ...(hasNextPage ? { endCursor: String(nextStart) } : {}),
   })
 }
 
@@ -412,9 +437,10 @@ export async function fetchParliamentGroupMembersMock(
 
 export async function fetchParliamentVotesMock(
   search: ParliamentVotesSearch = {},
+  after?: string,
 ): Promise<ParliamentVotesList> {
   const filtered = filterVotes(search)
-  return paginateVotes(search, filtered)
+  return paginateVotes(search, filtered, after)
 }
 
 function filterBills(search: ParliamentBillsSearch): ParliamentBillSummary[] {

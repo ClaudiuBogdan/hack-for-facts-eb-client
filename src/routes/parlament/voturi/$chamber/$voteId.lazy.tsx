@@ -5,6 +5,7 @@ import {
   getParliamentGroupColorMap,
 } from '@/features/parliament/api/parliament-api'
 import { VoteDetailContent } from '@/features/parliament/components/vote-detail-content'
+import { ParliamentLoadErrorPage } from '@/features/parliament/components/parliament-load-error-page'
 import { ParliamentVoteNotFoundPage } from '@/features/parliament/components/parliament-not-found-page'
 import { useParliamentVoteDetail } from '@/features/parliament/hooks/use-parliament-data'
 import { VOTE_DETAIL_SURFACE, voteDetailPageContainerClassName } from '@/features/parliament/lib/vote-detail-theme'
@@ -18,7 +19,10 @@ const groupColors = getParliamentGroupColorMap()
 
 function ParliamentVoteDetailRoutePage() {
   const { chamber, voteId } = Route.useParams()
-  const { data: detail, isLoading } = useParliamentVoteDetail(chamber, voteId)
+  const { data: detail, isLoading, isError, refetch } = useParliamentVoteDetail(
+    chamber,
+    voteId,
+  )
 
   if (isLoading) {
     return (
@@ -27,6 +31,20 @@ function ParliamentVoteDetailRoutePage() {
           <Skeleton className="mt-6 h-64 rounded-none" />
         </div>
       </div>
+    )
+  }
+
+  // A read failure is not a missing division — the vote-detail page fans out to
+  // several ballot pages, so a transient error here is entirely plausible.
+  if (isError) {
+    return (
+      <ParliamentLoadErrorPage
+        chamber={chamber}
+        breadcrumbLabel="Vot indisponibil"
+        title="Votul nu a putut fi încărcat"
+        description="Serviciul de date nu a răspuns. Divizarea poate exista — reîncearcă în câteva momente."
+        onRetry={() => void refetch()}
+      />
     )
   }
 
