@@ -566,10 +566,23 @@ export function ProcurementDaDetailSection({
   }
 
   const terms: DetailRow[] = [
-    { label: t`Contract type`, value: detail.contractTypeText },
-    { label: t`Delivery`, value: detail.deliveryCondition },
-    { label: t`Payment`, value: detail.paymentCondition },
     {
+      key: 'contract-type',
+      label: t`Contract type`,
+      value: detail.contractTypeText,
+    },
+    {
+      key: 'delivery',
+      label: t`Delivery`,
+      value: detail.deliveryCondition,
+    },
+    {
+      key: 'payment',
+      label: t`Payment`,
+      value: detail.paymentCondition,
+    },
+    {
+      key: 'eu-funding',
       label: t`EU funding`,
       value: detail.isEuFunded ? (detail.euFundText ?? t`Yes`) : null,
     },
