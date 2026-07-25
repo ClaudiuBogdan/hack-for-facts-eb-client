@@ -232,10 +232,16 @@ export function ProcurementSearchContent({
             query.isPlaceholderData && 'opacity-60',
           )}
         >
+          {/* The literal-query marks belong to the DATABASE path only. On an
+              engine page the fragments say what actually matched, and a record
+              with no fragment matched somewhere else (an identifier, say) —
+              marking the query in its title would claim a match that the
+              engine did not make. */}
           <ProcurementRecordList
             records={page.records}
             {...(page.highlights !== undefined && { highlights: page.highlights })}
-            {...(search.q !== undefined && { query: search.q })}
+            {...(page.provenance?.engine !== 'opensearch' &&
+              search.q !== undefined && { query: search.q })}
           />
           <ProcurementPagination
             page={search.page}
