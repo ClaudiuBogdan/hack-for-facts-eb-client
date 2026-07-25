@@ -62,6 +62,7 @@ function aggregateResponse() {
       grain, recordCount: '1', withValueCount: '1', withEstimatedCount: '0',
       valueAwardedSum: grain === 'procedure' ? null : '10.00',
       valueEstimatedSum: null, valueCeilingSum: null, valueModAdjustedSum: null,
+      valueAwardedMatchedSum: null,
       moneyVerdicts: [], avgValueAwarded: '10.00', minMonth: null,
       maxMonth: null, meta: answerMeta(grain),
     })) },

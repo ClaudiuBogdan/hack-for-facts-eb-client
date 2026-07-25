@@ -29,6 +29,12 @@ type Props = {
   readonly className?: string
   /** When true, hide the deep-link to the dedicated institution page. */
   readonly embedded?: boolean
+  /**
+   * The dedicated institution page renders its own populations row (six
+   * record types with their own anchor money), so it suppresses these four
+   * tiles rather than showing the same counts twice. Embeds keep them.
+   */
+  readonly showSummaryTiles?: boolean
 }
 
 /**
@@ -40,6 +46,7 @@ export function ProcurementAuthoritySlice({
   initialSlice,
   className,
   embedded = false,
+  showSummaryTiles = true,
 }: Props) {
   const query = useProcurementAuthoritySlice(authorityCui, initialSlice)
   const slice = query.data
@@ -77,7 +84,12 @@ export function ProcurementAuthoritySlice({
   }
 
   return (
-    <SliceContent slice={slice} className={className} embedded={embedded} />
+    <SliceContent
+      slice={slice}
+      className={className}
+      embedded={embedded}
+      showSummaryTiles={showSummaryTiles}
+    />
   )
 }
 
@@ -85,10 +97,12 @@ function SliceContent({
   slice,
   className,
   embedded,
+  showSummaryTiles,
 }: {
   readonly slice: AuthoritySliceData
   readonly className?: string
   readonly embedded: boolean
+  readonly showSummaryTiles: boolean
 }) {
   const [grain, setGrain] = useState<FlowAnalysisGrain>('direct_acquisition')
   const analytics =
@@ -99,7 +113,10 @@ function SliceContent({
   return (
     <div className={cn('space-y-5', className)}>
       <section
-        className="grid grid-cols-2 gap-3 md:grid-cols-4"
+        className={cn(
+          'grid grid-cols-2 gap-3 md:grid-cols-4',
+          showSummaryTiles ? '' : 'hidden',
+        )}
         aria-label={t`Authority procurement indicators`}
       >
         <ProcurementStatTile

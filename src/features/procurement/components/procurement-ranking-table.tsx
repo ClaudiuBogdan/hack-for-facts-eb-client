@@ -22,6 +22,7 @@ import { rankingRowViewRecordsSearch } from '../lib/ranking-links'
 import {
   procurementOutlineButtonClassName,
   procurementPaginationButtonClassName,
+  procurementSectionFooterClassName,
 } from '../lib/procurement-theme'
 
 function displayLabel(
@@ -102,13 +103,13 @@ export function ProcurementRankingTable({
   const maxRank = PROCUREMENT_RANKINGS_TOP_N
 
   return (
-    <div className="space-y-4">
-      <div className="overflow-x-auto border-2 border-[var(--pnrr-border)]">
+    <>
+      <div className="overflow-x-auto">
         <table className="w-full min-w-[40rem] text-sm">
           <thead>
             <tr className="border-b-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] text-left">
-              <th className="px-3 py-2.5 font-bold tabular-nums">#</th>
-              <th className="px-3 py-2.5 font-bold">
+              <th className="px-3 py-2.5 font-bold tabular-nums sm:px-5">#</th>
+              <th className="px-3 py-2.5 font-bold sm:px-5">
                 {rankDim === 'buyer' ? (
                   <Trans>Authority</Trans>
                 ) : rankDim === 'supplier' ? (
@@ -117,16 +118,16 @@ export function ProcurementRankingTable({
                   <Trans>CPV</Trans>
                 )}
               </th>
-              <th className="px-3 py-2.5 text-right font-bold">
+              <th className="px-3 py-2.5 text-right font-bold sm:px-5">
                 <Trans>Records</Trans>
               </th>
-              <th className="px-3 py-2.5 text-right font-bold">
+              <th className="px-3 py-2.5 text-right font-bold sm:px-5">
                 <Trans>Share of scope</Trans>
               </th>
-              <th className="px-3 py-2.5 text-right font-bold">
+              <th className="px-3 py-2.5 text-right font-bold sm:px-5">
                 <Trans>Awarded value</Trans>
               </th>
-              <th className="px-3 py-2.5 text-right font-bold">
+              <th className="px-3 py-2.5 text-right font-bold sm:px-5">
                 <Trans>Actions</Trans>
               </th>
             </tr>
@@ -157,12 +158,12 @@ export function ProcurementRankingTable({
               return (
                 <tr
                   key={`${row.key ?? row.bucketKind}-${rank}`}
-                  className="border-b border-[var(--pnrr-border)]/40"
+                  className="border-b border-[var(--pnrr-border)]/40 last:border-b-0"
                 >
-                  <td className="px-3 py-2.5 tabular-nums text-[var(--pnrr-muted)]">
+                  <td className="px-3 py-2.5 tabular-nums text-[var(--pnrr-muted)] sm:px-5">
                     {rank}
                   </td>
-                  <td className="px-3 py-2.5">
+                  <td className="px-3 py-2.5 sm:px-5">
                     {profile ? (
                       <Link
                         to={profile.to}
@@ -184,16 +185,16 @@ export function ProcurementRankingTable({
                       </span>
                     ) : null}
                   </td>
-                  <td className="px-3 py-2.5 text-right font-bold tabular-nums">
+                  <td className="px-3 py-2.5 text-right font-bold tabular-nums sm:px-5">
                     {formatFlowCount(row.recordCount)}
                   </td>
-                  <td className="px-3 py-2.5 text-right tabular-nums text-[var(--pnrr-muted)]">
+                  <td className="px-3 py-2.5 text-right tabular-nums text-[var(--pnrr-muted)] sm:px-5">
                     {share ?? '—'}
                   </td>
-                  <td className="px-3 py-2.5 text-right tabular-nums text-[var(--pnrr-muted)]">
+                  <td className="px-3 py-2.5 text-right tabular-nums text-[var(--pnrr-muted)] sm:px-5">
                     {amount ?? '—'}
                   </td>
-                  <td className="px-3 py-2.5 text-right">
+                  <td className="px-3 py-2.5 text-right sm:px-5">
                     {listSearch ? (
                       <Link
                         to="/procurement"
@@ -213,7 +214,12 @@ export function ProcurementRankingTable({
         </table>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div
+        className={cn(
+          procurementSectionFooterClassName,
+          'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between',
+        )}
+      >
         <p className="text-sm text-[var(--pnrr-muted)]">
           {t`Showing ${shownCount} of ${totalRows} (up to ${maxRank} for the current filters).`}
         </p>
@@ -244,7 +250,10 @@ export function ProcurementRankingTable({
             type="button"
             variant="outline"
             size="sm"
-            className={cn(procurementOutlineButtonClassName, procurementPaginationButtonClassName)}
+            className={cn(
+              procurementOutlineButtonClassName,
+              procurementPaginationButtonClassName,
+            )}
             disabled={clampedPage <= 1}
             onClick={() => onRankPageChange(clampedPage - 1)}
             aria-label={t`Previous page`}
@@ -258,7 +267,10 @@ export function ProcurementRankingTable({
             type="button"
             variant="outline"
             size="sm"
-            className={cn(procurementOutlineButtonClassName, procurementPaginationButtonClassName)}
+            className={cn(
+              procurementOutlineButtonClassName,
+              procurementPaginationButtonClassName,
+            )}
             disabled={clampedPage >= totalPages}
             onClick={() => onRankPageChange(clampedPage + 1)}
             aria-label={t`Next page`}
@@ -267,6 +279,6 @@ export function ProcurementRankingTable({
           </Button>
         </div>
       </div>
-    </div>
+    </>
   )
 }

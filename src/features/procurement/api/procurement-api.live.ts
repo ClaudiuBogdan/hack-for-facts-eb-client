@@ -19,6 +19,8 @@ import type {
   MonthlyPoint,
   ProcedureRecord,
   ProcurementAnswerMeta,
+  ProcurementInstitutionOverview,
+  ProcurementInstitutionPopulation,
   ProcurementLanding,
   ProcurementRecordDetail,
   ProcurementRecordSummary,
@@ -28,7 +30,10 @@ import type {
   SupplierRecordsPage,
   TopPartyRow,
 } from '@/schemas/procurement'
-import { procurementSourceSystemSchema } from '@/schemas/procurement'
+import {
+  procurementInstitutionOverviewSchema,
+  procurementSourceSystemSchema,
+} from '@/schemas/procurement'
 import {
   withProcurementSearchDefaults,
   type ProcurementSearchState,
@@ -45,6 +50,7 @@ import {
   PROCUREMENT_CPV_DIVISIONS_QUERY,
   PROCUREMENT_DA_DETAIL_QUERY,
   PROCUREMENT_DIRECT_ACQUISITIONS_QUERY,
+  PROCUREMENT_INSTITUTION_SPINE_QUERY,
   PROCUREMENT_MODIFICATIONS_QUERY,
   PROCUREMENT_PARTY_NAMES_QUERY,
   PROCUREMENT_PROCEDURE_DETAIL_QUERY,
@@ -56,6 +62,7 @@ import {
   procurementCpvDivisionsResponseSchema,
   procurementDaDetailResponseSchema,
   procurementDirectAcquisitionsResponseSchema,
+  procurementInstitutionSpineResponseSchema,
   procurementModificationsResponseSchema,
   procurementPartyNamesResponseSchema,
   procurementProcedureDetailResponseSchema,
@@ -63,6 +70,7 @@ import {
   procurementSupplierRecordsResponseSchema,
   type RawProcurementCpvDivision,
   type RawProcurementAggregates,
+  type RawProcurementStatsBlock,
 } from './graphql/procurement-queries'
 import {
   mapAnswerMeta,
@@ -101,6 +109,8 @@ import {
  * landing keeps a compact top-10 and never pads with mock rows (B1, 2026-07).
  */
 const TOP_N = 10
+/** Procedure types are a short closed vocabulary (11 tokens observed live). */
+const INSTITUTION_PROCEDURE_MIX_TOP_N = 12
 /** Supplier "load more" connection page size. */
 const SUPPLIER_RECORDS_PAGE_SIZE = 20
 
@@ -699,6 +709,157 @@ export async function fetchSupplierProcurementSliceLive(
 
 /** Recent contracts for an authority (first page) — used on institution pages. */
 const AUTHORITY_RECENT_PAGE_SIZE = 10
+
+/** Anchor money measure per population — never borrowed across populations. */
+const INSTITUTION_ANCHOR_MEASURE: Record<
+  ProcurementInstitutionPopulation['grain'],
+  keyof ProcurementStatsBlock | null
+> = {
+  procedure: 'valueAwardedSum',
+  contract: 'valueAwardedSum',
+  direct_acquisition: 'valueAwardedSum',
+  framework: 'valueCeilingSum',
+  calloff: 'valueAwardedSum',
+  // Counts-only: raw amendment deltas are quality-relabeled, not servable money.
+  modification: null,
+}
+
+/** Exact RON decimal subtraction over the server's fixed 2-decimal strings. */
+function subtractRon(a: string, b: string): string {
+  const toBani = (value: string): bigint => {
+    const [whole, fraction = ''] = value.split('.')
+    const cents = `${fraction}00`.slice(0, 2)
+    const magnitude = BigInt(`${whole.replace('-', '')}${cents}`)
+    return whole.startsWith('-') ? -magnitude : magnitude
+  }
+  const delta = toBani(a) - toBani(b)
+  const sign = delta < 0n ? '-' : ''
+  const abs = delta < 0n ? -delta : delta
+  return `${sign}${(abs / 100n).toString()}.${(abs % 100n).toString().padStart(2, '0')}`
+}
+
+/**
+ * The buyer profile's spine: all six populations plus the four signals, in one
+ * round trip. `scopes` carries a per-grain scrubbed scope (the caller applies
+ * `scrubScopeForAnalysisGrain`) because populations reject dimensions they do
+ * not carry.
+ */
+export type ProcurementInstitutionScopes = Record<
+  ProcurementInstitutionPopulation['grain'],
+  Record<string, unknown>
+>
+
+export async function fetchProcurementInstitutionOverviewLive(request: {
+  readonly authorityCui: string
+  readonly scopes: ProcurementInstitutionScopes
+}): Promise<ProcurementInstitutionOverview> {
+  const authorityCui = request.authorityCui.trim()
+  const scopeFor = (grain: ProcurementInstitutionPopulation['grain']) =>
+    buildScopeFilter({ ...request.scopes[grain], authorityCui, grain })
+
+  const [raw, authorityName] = await Promise.all([
+    graphqlQuery<unknown>(
+      PROCUREMENT_INSTITUTION_SPINE_QUERY,
+      {
+        procedureScope: scopeFor('procedure'),
+        contractScope: scopeFor('contract'),
+        daScope: scopeFor('direct_acquisition'),
+        modificationScope: scopeFor('modification'),
+        frameworkScope: scopeFor('framework'),
+        calloffScope: scopeFor('calloff'),
+        procedureMixTopN: INSTITUTION_PROCEDURE_MIX_TOP_N,
+      },
+      { operationName: 'ProcurementInstitutionSpine' },
+    ),
+    resolveAuthorityName(authorityCui),
+  ])
+  const spine = procurementInstitutionSpineResponseSchema.parse(raw)
+
+  const blockFor = (
+    grain: ProcurementInstitutionPopulation['grain'],
+    holder: { blocks: readonly RawProcurementStatsBlock[] },
+  ): ProcurementInstitutionPopulation | null => {
+    const found = holder.blocks.find((block) => block.grain === grain)
+    if (!found) return null
+    const stats = mapStats(found)
+    const anchorMeasure = INSTITUTION_ANCHOR_MEASURE[grain]
+    const anchorValue =
+      anchorMeasure === null
+        ? null
+        : ((stats[anchorMeasure] as string | null | undefined) ?? null)
+    return {
+      grain,
+      recordCount: stats.recordCount,
+      anchorMeasure,
+      anchorValueRon: anchorValue,
+      stats,
+    }
+  }
+
+  const populations = [
+    blockFor('procedure', spine.procedures),
+    blockFor('contract', spine.contracts),
+    blockFor('direct_acquisition', spine.directAcquisitions),
+    blockFor('modification', spine.modifications),
+    blockFor('framework', spine.frameworks),
+    blockFor('calloff', spine.calloffs),
+  ].filter((entry): entry is ProcurementInstitutionPopulation => entry !== null)
+
+  const contract = populations.find((entry) => entry.grain === 'contract')
+  const framework = populations.find((entry) => entry.grain === 'framework')
+  const calloff = populations.find((entry) => entry.grain === 'calloff')
+
+  const concentrationBlock = spine.concentration[0]
+  const matched = contract?.stats.valueAwardedMatchedSum ?? null
+  const adjusted = contract?.stats.valueModAdjustedSum ?? null
+  const amendmentVerdict = contract?.stats.moneyVerdicts.find(
+    (entry) => entry.measure === 'valueModAdjustedSum',
+  )
+
+  return procurementInstitutionOverviewSchema.parse({
+    authorityCui,
+    authorityName,
+    populations,
+    signals: {
+      concentration: concentrationBlock
+        ? {
+            supplierCount: concentrationBlock.supplierCount,
+            top1Share: concentrationBlock.top1Share,
+            top5Share: concentrationBlock.top5Share,
+            hhi: concentrationBlock.hhi,
+            totalRon: concentrationBlock.totalRon,
+            meta: mapAnswerMeta(concentrationBlock.meta),
+          }
+        : null,
+      procedureMix: (spine.procedureMix[0]?.buckets ?? []).map((bucket) => ({
+        key: bucket.key,
+        kind: bucket.kind,
+        recordCount: bucket.recordCount,
+        valueRon: bucket.valueSum,
+      })),
+      // Both legs come from ONE population, so the difference is the amendment
+      // effect and nothing else; withheld together when the basis abstains.
+      amendment:
+        matched !== null && adjusted !== null
+          ? {
+              matchedRon: matched,
+              adjustedRon: adjusted,
+              deltaRon: subtractRon(adjusted, matched),
+              answerability: amendmentVerdict?.answerability ?? 'served',
+            }
+          : null,
+      frameworkExposure:
+        framework || calloff
+          ? {
+              frameworkCount: framework?.recordCount ?? null,
+              ceilingRon: framework?.stats.valueCeilingSum ?? null,
+              calloffCount: calloff?.recordCount ?? null,
+              calloffRon: calloff?.stats.valueAwardedSum ?? null,
+            }
+          : null,
+    },
+  })
+}
 
 export async function fetchAuthorityProcurementSliceLive(
   cui: string,

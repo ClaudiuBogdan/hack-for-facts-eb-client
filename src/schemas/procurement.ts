@@ -433,6 +433,13 @@ export const procurementStatsBlockSchema = z.object({
   valueCeilingSum: decimalStringSchema.nullable(),
   /** Contract grain only: Σ modification-adjusted value (verified chains). */
   valueModAdjustedSum: decimalStringSchema.nullable(),
+  /**
+   * Contract grain only: Σ awarded value over the SAME population as
+   * `valueModAdjustedSum`. The pair is the only valid amendment delta —
+   * `valueModAdjustedSum - valueAwardedSum` compares different populations
+   * and reads as a spurious multi-billion "saving".
+   */
+  valueAwardedMatchedSum: decimalStringSchema.nullable(),
   avgValueAwarded: decimalStringSchema.nullable(),
   minMonth: z.string().nullable(),
   maxMonth: z.string().nullable(),
@@ -686,6 +693,87 @@ export const supplierProcurementSliceSchema = z.object({
 
 export type SupplierProcurementSlice = z.infer<
   typeof supplierProcurementSliceSchema
+>
+
+/**
+ * Institution profile spine: every population this buyer appears in, plus the
+ * four signals. One population = one server grain; money is ALWAYS the
+ * population's own anchor measure (awarded / ceiling / call-off value), never
+ * a figure borrowed from another population, and never summed across them.
+ */
+export const procurementInstitutionPopulationSchema = z.object({
+  grain: procurementAnalysisGrainSchema,
+  recordCount: bigintStringSchema.nullable(),
+  /** The population's anchor money measure, or null on counts-only grains. */
+  anchorMeasure: z.string().nullable(),
+  /** Anchor money value — null when the population's gate withholds it. */
+  anchorValueRon: decimalStringSchema.nullable(),
+  stats: procurementStatsBlockSchema,
+})
+export type ProcurementInstitutionPopulation = z.infer<
+  typeof procurementInstitutionPopulationSchema
+>
+
+export const procurementInstitutionSignalsSchema = z.object({
+  /** Supplier concentration for this buyer; `totalRon` covers only KNOWN suppliers. */
+  concentration: z
+    .object({
+      supplierCount: z.number().nullable(),
+      top1Share: decimalStringSchema.nullable(),
+      top5Share: decimalStringSchema.nullable(),
+      hhi: decimalStringSchema.nullable(),
+      totalRon: decimalStringSchema.nullable(),
+      meta: procurementAnswerMetaSchema,
+    })
+    .nullable(),
+  /**
+   * How competitively the money was awarded — an IN-GRAIN procedure-type
+   * breakdown. A "direct acquisition share" would be a cross-grain ratio,
+   * which the serving contract forbids.
+   */
+  procedureMix: z.array(
+    z.object({
+      key: z.string().nullable(),
+      kind: z.string(),
+      recordCount: bigintStringSchema.nullable(),
+      valueRon: decimalStringSchema.nullable(),
+    }),
+  ),
+  /**
+   * Net amendment effect = adjusted − matched baseline, over the contracts
+   * whose amendment chains resolve. Never derived from the grain-wide awarded
+   * sum (different population).
+   */
+  amendment: z
+    .object({
+      matchedRon: decimalStringSchema,
+      adjustedRon: decimalStringSchema,
+      deltaRon: decimalStringSchema,
+      answerability: procurementAnswerabilitySchema,
+    })
+    .nullable(),
+  /** Committed framework ceilings vs the call-offs actually reported under them. */
+  frameworkExposure: z
+    .object({
+      frameworkCount: bigintStringSchema.nullable(),
+      ceilingRon: decimalStringSchema.nullable(),
+      calloffCount: bigintStringSchema.nullable(),
+      calloffRon: decimalStringSchema.nullable(),
+    })
+    .nullable(),
+})
+export type ProcurementInstitutionSignals = z.infer<
+  typeof procurementInstitutionSignalsSchema
+>
+
+export const procurementInstitutionOverviewSchema = z.object({
+  authorityCui: z.string(),
+  authorityName: z.string().nullable(),
+  populations: z.array(procurementInstitutionPopulationSchema),
+  signals: procurementInstitutionSignalsSchema,
+})
+export type ProcurementInstitutionOverview = z.infer<
+  typeof procurementInstitutionOverviewSchema
 >
 
 /**

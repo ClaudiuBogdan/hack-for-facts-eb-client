@@ -7,6 +7,12 @@ export const Route = createLazyFileRoute('/procurement/institutions/$cui')({
 
 function InstitutionRoutePage() {
   const { cui } = Route.useParams()
-  const { slice } = Route.useLoaderData()
-  return <ProcurementInstitutionPage cui={cui} initialSlice={slice} />
+  const { slice, overview } = Route.useLoaderData()
+  return (
+    <ProcurementInstitutionPage
+      cui={cui}
+      initialSlice={slice}
+      initialOverview={overview}
+    />
+  )
 }

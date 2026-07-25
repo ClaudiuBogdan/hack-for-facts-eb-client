@@ -9,13 +9,16 @@ import {
   fetchProcurementProcedureDetail,
   fetchProcurementSearch,
   fetchProcurementSupplierRecords,
+  fetchProcurementInstitutionOverview,
   fetchProcurementSupplierSlice,
   fetchProcurementTerritoryOverview,
   type ProcurementBasisOverviewRequest,
+  type ProcurementInstitutionScopes,
 } from '../api/procurement-api'
 import type {
   AuthorityProcurementSlice,
   CpvCategoryPage,
+  ProcurementInstitutionOverview,
 } from '@/schemas/procurement'
 import type { ProcurementSearchState } from '@/schemas/procurement-search'
 import type { ProcurementLandingFilters } from '@/schemas/procurement-overview'
@@ -194,6 +197,25 @@ export function useProcurementSupplierSlice(cui: string) {
   return useQuery({
     queryKey: [...PROCUREMENT_QUERY_KEY, 'supplier-slice', cui],
     queryFn: () => fetchProcurementSupplierSlice(cui),
+    enabled: Boolean(cui),
+  })
+}
+
+/**
+ * Institution profile spine — all six populations + the four signals for one
+ * buyer, under the page's current scope. The scope is part of the query key,
+ * so period/CPV/supplier changes refetch exactly like the hub does.
+ */
+export function useProcurementInstitutionOverview(
+  cui: string,
+  scopes: ProcurementInstitutionScopes,
+  initialData?: ProcurementInstitutionOverview,
+) {
+  return useQuery({
+    queryKey: [...PROCUREMENT_QUERY_KEY, 'institution-overview', cui, scopes],
+    queryFn: () =>
+      fetchProcurementInstitutionOverview({ authorityCui: cui, scopes }),
+    initialData,
     enabled: Boolean(cui),
   })
 }

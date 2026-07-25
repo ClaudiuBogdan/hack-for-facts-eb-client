@@ -34,6 +34,7 @@ const block = (
   valueEstimatedSum: grain === 'procedure' ? '999999999.99' : '500.00',
   valueCeilingSum: null,
   valueModAdjustedSum: null,
+  valueAwardedMatchedSum: null,
   moneyVerdicts: [],
   avgValueAwarded: null,
   minMonth: '2025-01',
