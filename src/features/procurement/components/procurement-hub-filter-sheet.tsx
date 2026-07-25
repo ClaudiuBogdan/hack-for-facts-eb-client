@@ -27,6 +27,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
+import { formatProcurementPeriodLabel } from '@/schemas/procurement-overview'
 import {
   isListCapabilityAvailable,
   normalizeProcurementMonthEnd,
@@ -158,7 +159,8 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
       : t`Record count`
   const periodSummary = period.isAllTime
     ? t`All time`
-    : `${period.dateFrom ? formatMonthShort(period.dateFrom) : '…'} – ${period.dateTo ? formatMonthShort(period.dateTo) : '…'}`
+    : (formatProcurementPeriodLabel(period) ??
+      `${period.dateFrom ? formatMonthShort(period.dateFrom) : '…'} – ${period.dateTo ? formatMonthShort(period.dateTo) : '…'}`)
   const buyerGeoSummary = state.buyerSiruta
     ? `UAT ${state.buyerSiruta}`
     : (state.buyerCounty ?? state.buyerRegion ?? null)

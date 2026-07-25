@@ -4,6 +4,7 @@
  * apply says so, from the same registry the query builders scrub with).
  */
 import { t } from '@lingui/core/macro'
+import { formatProcurementPeriodLabel } from '@/schemas/procurement-overview'
 import {
   isListCapabilityAvailable,
   PROCUREMENT_HUB_DEFAULTS,
@@ -110,7 +111,9 @@ export function buildHubActiveFilterChips(
     chips.push({
       key: 'period',
       prefix: t`Period`,
-      value: `${from} – ${to}`,
+      // A whole year or month reads as itself, not as its two endpoints.
+      value:
+        formatProcurementPeriodLabel(period, locale) ?? `${from} – ${to}`,
       kind: 'applied',
       clear: {
         period: 'all',

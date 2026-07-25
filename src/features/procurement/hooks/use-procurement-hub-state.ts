@@ -2,6 +2,7 @@
  * Centralized hub URL state (A2 / F2) — PNRR-style commit for `/procurement`.
  */
 import { useCallback, useMemo } from 'react'
+import { useLingui } from '@lingui/react'
 import { useNavigate } from '@tanstack/react-router'
 import type {
   ProcurementGrain,
@@ -316,12 +317,16 @@ export function useProcurementHubState(state: ProcurementHubState) {
   const landingFilters = useMemo(() => hubStateToLandingFilters(state), [state])
   const period = useMemo(() => resolveProcurementOverviewPeriod(state), [state])
 
+  const { i18n } = useLingui()
   const listChips = useMemo(() => buildActiveFilterChips(listSearch), [listSearch])
   const listActiveCount = countActiveProcurementFilters(listSearch)
 
+  // Month and range labels are locale-formatted, so the chips have to follow
+  // the active catalog — the builder's 'en' default printed "May 2025" on a
+  // Romanian page.
   const hubChips = useMemo(
-    () => buildHubActiveFilterChips(state, period),
-    [state, period],
+    () => buildHubActiveFilterChips(state, period, i18n.locale),
+    [state, period, i18n.locale],
   )
 
   /** Shape compatible with `ProcurementFilterState` for list UI reuse. */

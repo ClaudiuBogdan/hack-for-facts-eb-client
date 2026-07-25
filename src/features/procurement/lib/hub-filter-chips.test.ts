@@ -45,3 +45,36 @@ describe('buildHubActiveFilterChips', () => {
     )
   })
 })
+
+describe('period chip label', () => {
+  const periodChip = (
+    dateFrom: string,
+    dateTo: string,
+  ): string | undefined =>
+    buildHubActiveFilterChips(
+      parseProcurementHubSearch({ dateFrom, dateTo }),
+      { dateFrom, dateTo, isDefault: false, isAllTime: false },
+    ).find((chip) => chip.key === 'period')?.value
+
+  it('names a whole calendar year by its year', () => {
+    expect(periodChip('2025-01-01', '2025-12-31')).toBe('2025')
+  })
+
+  it('names a whole calendar month by its month', () => {
+    expect(periodChip('2025-05-01', '2025-05-31')).toMatch(/May 2025|mai 2025/)
+  })
+
+  it('handles a short month without falling back to a range', () => {
+    expect(periodChip('2024-02-01', '2024-02-29')).toMatch(
+      /February 2024|februarie 2024/,
+    )
+  })
+
+  it('keeps the endpoints when the period is a real range', () => {
+    expect(periodChip('2025-01-01', '2025-03-31')).toContain('–')
+  })
+
+  it('keeps the endpoints for a partial month', () => {
+    expect(periodChip('2025-05-02', '2025-05-31')).toContain('–')
+  })
+})
