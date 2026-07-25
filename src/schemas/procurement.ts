@@ -183,6 +183,24 @@ export const contractModificationSchema = z.object({
 
 export type ContractModification = z.infer<typeof contractModificationSchema>
 
+export const contractDisplayTitleSourceSchema = z.enum([
+  'native',
+  'matched_award',
+  'procedure',
+])
+
+export type ContractDisplayTitleSource = z.infer<
+  typeof contractDisplayTitleSourceSchema
+>
+
+export const contractDisplayTitleSchema = z.object({
+  text: z.string(),
+  source: contractDisplayTitleSourceSchema,
+  sourceUrl: z.string().nullable(),
+})
+
+export type ContractDisplayTitle = z.infer<typeof contractDisplayTitleSchema>
+
 export const contractRecordSchema = moneyFieldsSchema.extend({
   id: z.string(),
   grain: z.literal('contract'),
@@ -190,7 +208,10 @@ export const contractRecordSchema = moneyFieldsSchema.extend({
   contractDate: z.string().nullable(),
   procedureId: z.string().nullable(),
   noticeNo: z.string().nullable(),
+  // `title` remains source-owned. The display fields are additive evidence
+  // selected by the server and must never be used for identity or dedup.
   title: z.string().nullable(),
+  displayTitle: contractDisplayTitleSchema.nullable(),
   authority: partySchema,
   supplier: partySchema,
   cpvCode: z.string().nullable(),

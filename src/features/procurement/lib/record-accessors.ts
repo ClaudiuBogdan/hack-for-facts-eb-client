@@ -15,9 +15,10 @@ import type {
 export function recordTitle(record: ProcurementRecordSummary): string | null {
   switch (record.grain) {
     case 'procedure':
-    case 'contract':
     case 'direct_acquisition':
       return record.title
+    case 'contract':
+      return record.displayTitle?.text ?? null
     case 'modification':
       return record.modificationType
   }

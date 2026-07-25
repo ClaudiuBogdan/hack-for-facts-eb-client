@@ -19,8 +19,10 @@ import type {
 import type { DetailConfig, DetailRecord, DetailRow } from '../lib/detail-config'
 import {
   recordCpv,
+  recordNumberLabel,
   recordPrimaryMoney,
   recordSecondaryMoney,
+  recordTitle,
 } from '../lib/record-accessors'
 import { partyLabel, partyProfileLink, type PartyKind } from '../lib/party-links'
 import { sourceSystemLabel } from '../lib/enum-labels'
@@ -54,6 +56,14 @@ export function ProcurementDetailHero({
 }) {
   const primary = recordPrimaryMoney(record)
   const secondary = recordSecondaryMoney(record)
+  const title = recordTitle(record)
+  const number = recordNumberLabel(record)
+  const derivedTitleSource =
+    record.grain === 'contract' &&
+    record.displayTitle !== null &&
+    record.displayTitle.source !== 'native'
+      ? record.displayTitle.source
+      : null
 
   return (
     <section className={procurementSectionClassName}>
@@ -61,8 +71,34 @@ export function ProcurementDetailHero({
         <div className="p-5 sm:p-6">
           <p className={procurementSectionLabelClassName}>{config.pageLabel()}</p>
           <h1 className="mt-2 text-2xl font-black leading-tight tracking-tight text-[var(--pnrr-fg)] sm:text-3xl">
-            {record.title ?? <Trans>Untitled record</Trans>}
+            {title ??
+              (number ? (
+                <>
+                  {config.pageLabel()} {number}
+                </>
+              ) : (
+                <Trans>Untitled record</Trans>
+              ))}
           </h1>
+          {derivedTitleSource ? (
+            <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[var(--pnrr-muted)]">
+              <span>
+                {derivedTitleSource === 'matched_award' ? (
+                  <Trans>Title from matched award</Trans>
+                ) : (
+                  <Trans>Title from source procedure</Trans>
+                )}
+              </span>
+              {record.grain === 'contract' && record.displayTitle?.sourceUrl ? (
+                <EvidenceLink
+                  href={record.displayTitle.sourceUrl}
+                  label={t`Open title source`}
+                  kind="record"
+                  className="text-sm"
+                />
+              ) : null}
+            </div>
+          ) : null}
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <ProcurementStatusBadge status={record.status} />
             <span className="inline-flex items-center border-2 border-[var(--pnrr-border)] px-2 py-0.5 text-xs font-semibold text-[var(--pnrr-muted)]">

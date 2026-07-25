@@ -19,7 +19,9 @@ const graphqlQueryMock = vi.mocked(graphqlQuery)
 const party = { cui: '123', name: 'Company', displayName: 'Company' }
 const contract = {
   id: 'c1', contractNo: '1', contractDate: '2025-01-01', procedureId: null,
-  noticeNo: null, title: 'Live contract', authority: party, supplier: party,
+  noticeNo: null, title: null,
+  displayTitle: { text: 'Live contract', source: 'procedure', sourceUrl: 'https://example.test/procedure' },
+  authority: party, supplier: party,
   cpvCode: null, cpvDivisionCode: null, valueRon: '10.00', estimatedValueRon: null,
   currency: 'RON', status: 'awarded',
   value: {

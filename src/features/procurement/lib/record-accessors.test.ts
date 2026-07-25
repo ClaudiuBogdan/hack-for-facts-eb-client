@@ -71,6 +71,11 @@ const contract: ContractRecordSummary = {
   procedureId: null,
   noticeNo: 'CN100',
   title: 'Contract',
+  displayTitle: {
+    text: 'Contract de lucrari',
+    source: 'matched_award',
+    sourceUrl: 'https://example.test/award',
+  },
   authority: party,
   supplier: party,
   cpvCode: '45453000',
@@ -144,6 +149,7 @@ describe('record accessors', () => {
     expect(recordNumberLabel(procedure)).toBe('CN100')
     expect(recordNumberLabel(contract)).toBe('77')
     expect(recordNumberLabel(da)).toBe('DA1')
+    expect(recordTitle(contract)).toBe('Contract de lucrari')
     expect(recordTitle(linkedModification)).toBe('ACT ADITIONAL')
   })
 

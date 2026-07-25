@@ -39,7 +39,12 @@ const contract: ContractRecordSummary = {
   contractDate: '2025-03-01',
   procedureId: null,
   noticeNo: null,
-  title: 'Lucrări de reparații',
+  title: null,
+  displayTitle: {
+    text: 'Lucrări de reparații',
+    source: 'procedure',
+    sourceUrl: 'https://example.test/procedure',
+  },
   authority: party,
   supplier,
   cpvCode: '45453000',

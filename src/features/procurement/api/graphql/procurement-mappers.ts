@@ -12,6 +12,7 @@
  */
 import {
   categoryRowSchema,
+  contractDisplayTitleSchema,
   procurementSourceSystemSchema,
   procurementAnalysisGrainSchema,
   procurementAnswerMetaSchema,
@@ -154,6 +155,13 @@ export function mapContract(raw: RawProcurementContract): ContractRecord {
     procedureId: raw.procedureId,
     noticeNo: raw.noticeNo,
     title: raw.title,
+    displayTitle:
+      raw.displayTitle === null
+        ? null
+        : contractDisplayTitleSchema.parse({
+            ...raw.displayTitle,
+            sourceUrl: mapSourceUrl(raw.displayTitle.sourceUrl),
+          }),
     authority: mapParty(raw.authority),
     supplier: mapParty(raw.supplier),
     cpvCode: raw.cpvCode,

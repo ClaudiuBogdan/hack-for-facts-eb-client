@@ -111,6 +111,13 @@ export const rawContractSchema = z.object({
   procedureId: z.string().nullable(),
   noticeNo: z.string().nullable(),
   title: z.string().nullable(),
+  displayTitle: z
+    .object({
+      text: z.string(),
+      source: z.enum(['native', 'matched_award', 'procedure']),
+      sourceUrl: z.string().nullable(),
+    })
+    .nullable(),
   authority: rawPartySchema,
   supplier: rawPartySchema,
   cpvCode: z.string().nullable(),
@@ -129,6 +136,7 @@ export type RawProcurementContract = z.infer<typeof rawContractSchema>
 
 const CONTRACT_CORE_FIELDS = /* GraphQL */ `
   id contractNo contractDate procedureId noticeNo title
+  displayTitle { text source sourceUrl }
   authority { ${PARTY_FIELDS} }
   supplier { ${PARTY_FIELDS} }
   cpvCode cpvDivisionCode

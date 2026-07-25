@@ -1455,7 +1455,7 @@ msgstr "Afișăm metadata publică despre dosare, nu documente sau căutare în 
 msgid "After the message opens and you send it from your email client, confirm below."
 msgstr "After the message opens and you send it from your email client, confirm below."
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:301
+#: src/features/procurement/components/procurement-detail-sections.tsx:348
 msgid "After:"
 msgstr "After:"
 
@@ -1711,7 +1711,7 @@ msgstr "amanat"
 msgid "Amendment records are analyzed as counts. Their raw money fields are quality-checked in the data layer and are not reliable enough to sum here; verified amendment effects are served through the modification-adjusted contract value instead."
 msgstr "Amendment records are analyzed as counts. Their raw money fields are quality-checked in the data layer and are not reliable enough to sum here; verified amendment effects are served through the modification-adjusted contract value instead."
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:267
+#: src/features/procurement/components/procurement-detail-sections.tsx:314
 msgid "Amendments (acte adiționale) that changed this contract's value."
 msgstr "Amendments (acte adiționale) that changed this contract's value."
 
@@ -2527,7 +2527,7 @@ msgstr "Bază identitate"
 msgid "Before confirming, make sure you:"
 msgstr "Before confirming, make sure you:"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:290
+#: src/features/procurement/components/procurement-detail-sections.tsx:337
 msgid "Before:"
 msgstr "Before:"
 
@@ -3975,7 +3975,7 @@ msgstr "Collapse value filters panel"
 
 #. placeholder {0}: sourceSystemLabel(duplicate.sourceSystem)
 #. placeholder {1}: duplicate.id
-#: src/features/procurement/components/procurement-detail-sections.tsx:453
+#: src/features/procurement/components/procurement-detail-sections.tsx:506
 msgid "Collapsed duplicate in {0} (id {1})"
 msgstr "Collapsed duplicate in {0} (id {1})"
 
@@ -4503,7 +4503,7 @@ msgstr "Contracte subsecvente"
 #~ msgid "contracting authorities"
 #~ msgstr "contracting authorities"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:168
+#: src/features/procurement/components/procurement-detail-sections.tsx:217
 msgid "Contracting authority"
 msgstr "Contracting authority"
 
@@ -4532,7 +4532,7 @@ msgstr "Contracts"
 #~ msgid "contracts and awards served"
 #~ msgstr "contracts and awards served"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:400
+#: src/features/procurement/components/procurement-detail-sections.tsx:450
 msgid "Contracts awarded under this procedure"
 msgstr "Contracts awarded under this procedure"
 
@@ -5007,7 +5007,7 @@ msgstr "CPV — Vocabularul comun privind achizițiile. Cod: {code}, diviziune: 
 msgid "CPV below division level"
 msgstr "CPV below division level"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:230
+#: src/features/procurement/components/procurement-detail-sections.tsx:277
 #: src/features/procurement/lib/hub-filter-chips.ts:252
 msgid "CPV category"
 msgstr "CPV category"
@@ -5254,7 +5254,7 @@ msgstr "CUI indisponibil — achizițiile publice nu pot fi rezolvate."
 msgid "CUI reținut"
 msgstr "CUI reținut"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:147
+#: src/features/procurement/components/procurement-detail-sections.tsx:196
 msgid "CUI unavailable in the source data"
 msgstr "CUI unavailable in the source data"
 
@@ -5717,7 +5717,7 @@ msgstr "Date simulative — API-ul live nu este conectat."
 msgid "Date simulative pentru dezvoltare."
 msgstr "Date simulative pentru dezvoltare."
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:285
+#: src/features/procurement/components/procurement-detail-sections.tsx:332
 msgid "date unavailable"
 msgstr "date unavailable"
 
@@ -9132,7 +9132,7 @@ msgstr "ID"
 #~ msgid "ID stare"
 #~ msgstr "ID stare"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:223
+#: src/features/procurement/components/procurement-detail-sections.tsx:270
 msgid "Identification"
 msgstr "Identification"
 
@@ -10488,7 +10488,7 @@ msgstr "licente asociate furnizorului"
 msgid "Licitație"
 msgstr "Licitație"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:240
+#: src/features/procurement/components/procurement-detail-sections.tsx:287
 msgid "Lifecycle"
 msgstr "Lifecycle"
 
@@ -10561,7 +10561,7 @@ msgid "Link verificat"
 msgstr "Link verificat"
 
 #. placeholder {0}: Math.round(modification.linkConfidence * 100)
-#: src/features/procurement/components/procurement-detail-sections.tsx:336
+#: src/features/procurement/components/procurement-detail-sections.tsx:383
 msgid "Linked with reduced confidence ({0}%)."
 msgstr "Linked with reduced confidence ({0}%)."
 
@@ -11745,13 +11745,13 @@ msgstr "modificat de"
 msgid "Modificate recent"
 msgstr "Modificate recent"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:280
+#: src/features/procurement/components/procurement-detail-sections.tsx:327
 #: src/features/procurement/components/procurement-info-sheet.tsx:42
 #: src/features/procurement/lib/enum-labels.ts:137
 msgid "Modification"
 msgstr "Modification"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:264
+#: src/features/procurement/components/procurement-detail-sections.tsx:311
 msgid "Modification trail"
 msgstr "Modification trail"
 
@@ -13993,6 +13993,10 @@ msgstr "Open Table"
 msgid "Open the campaign forum discussion."
 msgstr "Open the campaign forum discussion."
 
+#: src/features/procurement/components/procurement-detail-sections.tsx:105
+msgid "Open title source"
+msgstr "Open title source"
+
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:5047
 msgid "Open UAT menu"
 msgstr "Open UAT menu"
@@ -14119,7 +14123,7 @@ msgstr "Other source"
 msgid "Other Sources"
 msgstr "Other Sources"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:447
+#: src/features/procurement/components/procurement-detail-sections.tsx:497
 msgid "Other sources for this record"
 msgstr "Other sources for this record"
 
@@ -14350,7 +14354,7 @@ msgstr "Participation"
 msgid "Participation report"
 msgstr "Participation report"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:163
+#: src/features/procurement/components/procurement-detail-sections.tsx:212
 msgid "Parties"
 msgstr "Parties"
 
@@ -14527,7 +14531,7 @@ msgstr "Per Capita"
 #~ msgid "Per-grain data-quality thresholds that decide which filters and rankings are served as authoritative."
 #~ msgstr "Per-grain data-quality thresholds that decide which filters and rankings are served as authoritative."
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:416
+#: src/features/procurement/components/procurement-detail-sections.tsx:466
 msgid "Per-lot winners"
 msgstr "Per-lot winners"
 
@@ -15141,7 +15145,7 @@ msgstr "Procedure type"
 msgid "Procedures"
 msgstr "Procedures"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:178
+#: src/features/procurement/components/procurement-detail-sections.tsx:227
 msgid "Procedures carry no supplier until an award."
 msgstr "Procedures carry no supplier until an award."
 
@@ -18108,7 +18112,7 @@ msgstr "Source"
 msgid "Source dataset:"
 msgstr "Source dataset:"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:391
+#: src/features/procurement/components/procurement-detail-sections.tsx:441
 msgid "Source procedure"
 msgstr "Source procedure"
 
@@ -18574,8 +18578,8 @@ msgstr "Sumarul pastreaza distinctia dintre rezultate de alegeri si voturi parla
 msgid "Summary"
 msgstr "Summary"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:171
-#: src/features/procurement/components/procurement-detail-sections.tsx:175
+#: src/features/procurement/components/procurement-detail-sections.tsx:220
+#: src/features/procurement/components/procurement-detail-sections.tsx:224
 #: src/features/procurement/components/procurement-party-ranking.tsx:423
 #: src/features/procurement/components/procurement-ranking-table.tsx:116
 #: src/features/procurement/lib/export.ts:49
@@ -18898,7 +18902,7 @@ msgstr "Taxes"
 #~ msgstr "TED"
 
 #. placeholder {0}: ted.tedNoticeNo
-#: src/features/procurement/components/procurement-detail-sections.tsx:463
+#: src/features/procurement/components/procurement-detail-sections.tsx:517
 msgid "TED notice {0}"
 msgstr "TED notice {0}"
 
@@ -19573,6 +19577,14 @@ msgstr "Title"
 msgid "Title A–Z"
 msgstr "Title A–Z"
 
+#: src/features/procurement/components/procurement-detail-sections.tsx:97
+msgid "Title from matched award"
+msgstr "Title from matched award"
+
+#: src/features/procurement/components/procurement-detail-sections.tsx:99
+msgid "Title from source procedure"
+msgstr "Title from source procedure"
+
 #: src/routes/charts/index.lazy.tsx:217
 msgid "Title Z–A"
 msgstr "Title Z–A"
@@ -20174,8 +20186,8 @@ msgstr "Unable to load notifications"
 
 #: src/features/procurement/components/procurement-category-bars.tsx:165
 #: src/features/procurement/components/procurement-category-bars.tsx:456
-#: src/features/procurement/components/procurement-detail-sections.tsx:85
-#: src/features/procurement/components/procurement-detail-sections.tsx:196
+#: src/features/procurement/components/procurement-detail-sections.tsx:131
+#: src/features/procurement/components/procurement-detail-sections.tsx:245
 #: src/features/procurement/components/procurement-monthly-chart.tsx:138
 #: src/features/procurement/components/procurement-monthly-chart.tsx:255
 #: src/features/procurement/components/procurement-party-ranking.tsx:303
@@ -20439,7 +20451,7 @@ msgstr "Untitled data series"
 msgid "Untitled map"
 msgstr "Untitled map"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:64
+#: src/features/procurement/components/procurement-detail-sections.tsx:90
 #: src/features/procurement/components/procurement-record-card.tsx:141
 msgid "Untitled record"
 msgstr "Untitled record"
