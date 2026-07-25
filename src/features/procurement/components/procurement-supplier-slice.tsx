@@ -7,10 +7,14 @@ import { cn } from '@/lib/utils'
 import {
   type SupplierProcurementSlice as SupplierSliceData,
 } from '@/schemas/procurement'
+import type { ProcurementSliceScope } from '../api/procurement-api'
 import {
+  useProcurementSearch,
   useProcurementSupplierRecords,
   useProcurementSupplierSlice,
 } from '../hooks/use-procurement-data'
+import { withProcurementSearchDefaults } from '@/schemas/procurement-search'
+import { monthEndDate } from '../lib/institution-scopes'
 import { formatFlowCount, formatRon } from '../lib/formatting'
 import {
   procurementChipClassName,
@@ -20,7 +24,10 @@ import {
 } from '../lib/procurement-theme'
 import { ProcurementStatTile } from './procurement-stat-tile'
 import { ProcurementPartyRanking } from './procurement-party-ranking'
-import { ProcurementCategoryBars } from './procurement-category-bars'
+import {
+  ProcurementCategoryBars,
+  type CategorySelection,
+} from './procurement-category-bars'
 import { ProcurementMonthlyChart } from './procurement-monthly-chart'
 import { ProcurementRecordList } from './procurement-record-card'
 import { ProcurementErrorState } from './procurement-error-state'
@@ -35,14 +42,30 @@ import {
 type Props = {
   readonly supplierCui: string
   readonly className?: string
+  /** Profile quick filters; omit for the all-time slice (company embed). */
+  readonly scope?: ProcurementSliceScope
+  /**
+   * Controlled analysis population. The supplier profile owns the selection
+   * (its tabs ARE the switcher), so the slice must not carry a second toggle
+   * with its own state.
+   */
+  readonly analysis?: { readonly grain: FlowAnalysisGrain }
+  /** Makes the CPV breakdown card the page's category filter. */
+  readonly categoryFilter?: CategorySelection
 }
 
 /**
  * Procurement slice embedded in company profiles (`private-company-achizitii-tab`).
  * Import path and export name are stable — the company feature needs no edits.
  */
-export function ProcurementSupplierSlice({ supplierCui, className }: Props) {
-  const query = useProcurementSupplierSlice(supplierCui)
+export function ProcurementSupplierSlice({
+  supplierCui,
+  className,
+  scope,
+  analysis,
+  categoryFilter,
+}: Props) {
+  const query = useProcurementSupplierSlice(supplierCui, scope)
   const slice = query.data
 
   if (query.isPending) {
@@ -75,26 +98,61 @@ export function ProcurementSupplierSlice({ supplierCui, className }: Props) {
     )
   }
 
-  return <SliceContent slice={slice} className={className} />
+  return (
+    <SliceContent
+      slice={slice}
+      className={className}
+      scope={scope}
+      analysis={analysis}
+      categoryFilter={categoryFilter}
+    />
+  )
 }
 
 function SliceContent({
   slice,
   className,
+  scope,
+  analysis,
+  categoryFilter,
 }: {
   readonly slice: SupplierSliceData
   readonly className?: string
+  readonly scope?: ProcurementSliceScope
+  readonly analysis?: { readonly grain: FlowAnalysisGrain }
+  readonly categoryFilter?: CategorySelection
 }) {
-  const [grain, setGrain] = useState<FlowAnalysisGrain>('direct_acquisition')
+  const [ownGrain, setOwnGrain] = useState<FlowAnalysisGrain>(
+    'direct_acquisition',
+  )
+  const grain = analysis?.grain ?? ownGrain
   const analytics =
     grain === 'contract'
       ? slice.analysisByGrain.contract
       : slice.analysisByGrain.directAcquisition
 
+  // Money is what a reader is here for; the gate reports whether it could
+  // actually order by value, and the cards label themselves from that.
+  const suppliersByValue = analytics.meta.authoritiesRankedBy === 'value'
+  const categoriesByValue = analytics.meta.categoriesRankedBy === 'value'
+  const valueSeriesServed =
+    analytics.meta.valueSeries.answerability !== 'abstained'
+  const rankingsSearch = analysis
+    ? {
+        supplier_cui: slice.supplierCui,
+        ...(scope?.monthFrom ? { dateFrom: `${scope.monthFrom}-01` } : {}),
+        ...(scope?.monthTo ? { dateTo: monthEndDate(scope.monthTo) } : {}),
+        ...(scope?.cpvDivision ? { cpv_division: scope.cpvDivision } : {}),
+      }
+    : undefined
+
   return (
     <div className={cn('space-y-5', className)}>
       <section
-        className="grid grid-cols-2 gap-3 md:grid-cols-4"
+        className={cn(
+          'grid grid-cols-2 gap-3 md:grid-cols-4',
+          analysis ? 'hidden' : '',
+        )}
         aria-label={t`Supplier procurement indicators`}
       >
         <ProcurementStatTile
@@ -120,35 +178,74 @@ function SliceContent({
         />
       </section>
 
-      <div className="flex justify-start">
-        <ProcurementAnalysisGrainToggle value={grain} onChange={setGrain} />
-      </div>
+      {analysis === undefined ? (
+        <div className="flex justify-start">
+          <ProcurementAnalysisGrainToggle
+            value={grain}
+            onChange={setOwnGrain}
+          />
+        </div>
+      ) : null}
 
       <ProcurementAnswerabilityNotice metas={[analytics.stats.meta]} />
 
-      <div className="grid items-start gap-5 lg:grid-cols-2">
+      {/* No `items-start`: the two cards share a row and must share a height,
+          so their footers line up when collapsed. */}
+      <div className="grid gap-5 lg:grid-cols-2">
         <ProcurementPartyRanking
-          title={t`Top public buyers`}
-          description={t`By number of records.`}
+          title={t`Cumpărători`}
+          measure="value_awarded"
+          rankedBy={analytics.meta.authoritiesRankedBy}
+          description={
+            suppliersByValue
+              ? t`După valoarea atribuită.`
+              : t`Clasamentul pe valoare nu este disponibil aici, așa că ordinea este dată de numărul de înregistrări.`
+          }
           rows={analytics.topAuthorities}
           kind="authority"
           pairScope={{ kind: 'supplier', cui: slice.supplierCui }}
           grain={grain}
+          {...(rankingsSearch
+            ? { rankingsDim: 'buyer' as const, rankingsSearch }
+            : {})}
         />
         <ProcurementCategoryBars
           rows={analytics.topCategories}
-          title={t`Categories supplied`}
-          description={t`By number of records.`}
+          title={t`Categorii livrate`}
+          measure="value_awarded"
+          rankedBy={analytics.meta.categoriesRankedBy}
+          description={
+            categoriesByValue
+              ? t`După valoarea atribuită.`
+              : t`Clasamentul pe valoare nu este disponibil aici, așa că ordinea este dată de numărul de înregistrări.`
+          }
+          select={categoryFilter}
+          {...(rankingsSearch
+            ? { rankingsDim: 'cpv' as const, rankingsSearch }
+            : {})}
         />
       </div>
 
       <ProcurementMonthlyChart
         points={analytics.monthly}
-        title={t`Public revenue over time`}
-        description={t`Records per month for this supplier.`}
+        title={t`Venit public în timp`}
+        measure={valueSeriesServed ? 'value_awarded' : 'record_count'}
+        description={
+          valueSeriesServed
+            ? t`Valoare atribuită pe lună pentru acest furnizor.`
+            : t`Înregistrări pe lună — seria pe valoare nu este disponibilă pentru această selecție.`
+        }
       />
 
-      <SupplierRecords supplierCui={slice.supplierCui} />
+      {analysis ? (
+        <ScopedSupplierRecords
+          supplierCui={slice.supplierCui}
+          grain={grain}
+          scope={scope}
+        />
+      ) : (
+        <SupplierRecords supplierCui={slice.supplierCui} />
+      )}
 
       <CrossDomainChips slice={slice} />
 
@@ -170,6 +267,48 @@ function SliceContent({
         </Link>
       </div>
     </div>
+  )
+}
+
+/**
+ * Recent records for the SELECTED population. The cursor list below spans both
+ * grains, so a profile whose tab says "Achiziții directe" has to re-ask —
+ * otherwise the heading sits over contract rows.
+ */
+function ScopedSupplierRecords({
+  supplierCui,
+  grain,
+  scope,
+}: {
+  readonly supplierCui: string
+  readonly grain: FlowAnalysisGrain
+  readonly scope?: ProcurementSliceScope
+}) {
+  const query = useProcurementSearch(
+    withProcurementSearchDefaults({
+      grain: grain === 'contract' ? 'contracts' : 'direct_acquisitions',
+      supplier_cui: supplierCui,
+      ...(scope?.monthFrom ? { dateFrom: `${scope.monthFrom}-01` } : {}),
+      ...(scope?.monthTo ? { dateTo: monthEndDate(scope.monthTo) } : {}),
+      ...(scope?.cpvDivision ? { cpv_division: scope.cpvDivision } : {}),
+      sort: 'date_desc',
+      page: 1,
+      pageSize: 10,
+    }),
+  )
+  const records = query.data?.records ?? []
+  if (records.length === 0) return null
+
+  return (
+    <section className="space-y-2">
+      <h2 className={procurementSectionLabelClassName}>
+        <Trans>
+          Înregistrări recente ·{' '}
+          {grain === 'contract' ? t`Contracte` : t`Achiziții directe`}
+        </Trans>
+      </h2>
+      <ProcurementRecordList records={records} />
+    </section>
   )
 }
 

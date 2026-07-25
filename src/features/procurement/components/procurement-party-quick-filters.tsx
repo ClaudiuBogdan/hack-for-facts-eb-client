@@ -19,19 +19,20 @@ import {
   procurementSectionLabelClassName,
 } from '../lib/procurement-theme'
 
-export type InstitutionQuickFilterState = {
+export type PartyQuickFilterState = {
   readonly year?: number
   readonly cpv?: string
 }
 
 type Props = {
-  readonly cui: string
-  readonly filters: InstitutionQuickFilterState
+  readonly filters: PartyQuickFilterState
   /** All-time activity bounds from the unfiltered slice (chip options stay stable). */
   readonly firstSeen: string | null
   readonly lastSeen: string | null
   /** Top CPV divisions from the unfiltered slice — the active chip's label. */
   readonly categories: readonly CategoryRow[]
+  /** Hub search the "advanced filter" link carries (party scope + filters). */
+  readonly advancedSearch: Record<string, unknown>
   readonly className?: string
 }
 
@@ -60,7 +61,7 @@ function cpvChipLabel(row: CategoryRow): string {
 }
 
 /**
- * The profile's basic filters: a year and a CPV division, in the URL. Only the
+ * A party profile's basic filters: a year and a CPV division, in the URL. Only the
  * years are buttons here — CPV divisions are picked on the breakdown card
  * further down, which already shows each division's records and value, so a
  * row of clipped category chips at the top said the same thing worse. An
@@ -69,12 +70,12 @@ function cpvChipLabel(row: CategoryRow): string {
  * The page content follows both; the trailing link carries the same selection
  * (plus this buyer) into the hub's advanced filter for deeper drilling.
  */
-export function ProcurementInstitutionQuickFilters({
-  cui,
+export function ProcurementPartyQuickFilters({
   filters,
   firstSeen,
   lastSeen,
   categories,
+  advancedSearch,
   className,
 }: Props) {
   const navigate = useNavigate()
@@ -114,24 +115,12 @@ export function ProcurementInstitutionQuickFilters({
       ? cpvChipLabel(activeCpvRow)
       : `CPV ${filters.cpv}`
 
-  const setFilter = (patch: InstitutionQuickFilterState) => {
+  const setFilter = (patch: PartyQuickFilterState) => {
     void navigate({
       to: '.',
-      search: (prev: InstitutionQuickFilterState) => ({ ...prev, ...patch }),
+      search: (prev: PartyQuickFilterState) => ({ ...prev, ...patch }),
     })
   }
-
-  const advancedSearch = cleanProcurementHubSearch({
-    view: 'list',
-    authority_cui: cui,
-    ...(filters.year
-      ? {
-          dateFrom: `${filters.year}-01-01`,
-          dateTo: `${filters.year}-12-31`,
-        }
-      : {}),
-    ...(filters.cpv ? { cpv_division: filters.cpv } : {}),
-  })
 
   if (years.length === 0 && activeCpvLabel === null) return null
 
@@ -271,7 +260,7 @@ export function ProcurementInstitutionQuickFilters({
 
       <Link
         to="/procurement"
-        search={advancedSearch}
+        search={cleanProcurementHubSearch(advancedSearch)}
         className="inline-flex h-9 shrink-0 items-center gap-1 text-sm font-semibold text-[var(--pnrr-fg)] underline-offset-2 transition-colors hover:text-[var(--pnrr-muted)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
       >
         <Trans>Deschide în filtrul avansat</Trans>

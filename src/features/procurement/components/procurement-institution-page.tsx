@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
+import { ChevronRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type {
   AuthorityProcurementSlice,
@@ -18,6 +20,7 @@ import {
   useProcurementInstitutionOverview,
 } from '../hooks/use-procurement-data'
 import { formatRon } from '../lib/formatting'
+import { procurementCompactActionClassName } from '../lib/procurement-theme'
 import {
   populationLabel,
   populationMoneyBasisLabel,
@@ -27,13 +30,16 @@ import type { FlowAnalysisGrain } from './procurement-analysis-grain-toggle'
 import { ProcurementAnswerabilityNotice } from './procurement-answerability-notice'
 import { ProcurementErrorState } from './procurement-error-state'
 import { ProcurementInfoSheet } from './procurement-info-sheet'
-import { ProcurementInstitutionHeader } from './procurement-institution-header'
-import { ProcurementInstitutionPopulations } from './procurement-institution-populations'
+import { ProcurementEntityHeader } from './procurement-entity-header'
+import {
+  ProcurementPartyPopulations,
+  type PartyPopulation,
+} from './procurement-party-populations'
 import { ProcurementInstitutionSignals } from './procurement-institution-signals'
 import {
-  ProcurementInstitutionQuickFilters,
-  type InstitutionQuickFilterState,
-} from './procurement-institution-quick-filters'
+  ProcurementPartyQuickFilters,
+  type PartyQuickFilterState,
+} from './procurement-party-quick-filters'
 import { ProcurementDetailSkeleton } from './procurement-skeletons'
 
 type Props = {
@@ -41,7 +47,7 @@ type Props = {
   readonly initialSlice?: AuthorityProcurementSlice
   readonly initialOverview?: ProcurementInstitutionOverview
   /** Page quick filters from the URL (`year`, `cpv`) — defaults are all-time. */
-  readonly filters?: InstitutionQuickFilterState
+  readonly filters?: PartyQuickFilterState
   readonly className?: string
 }
 
@@ -53,6 +59,16 @@ function hasInstitutionSignals(signals: InstitutionSignals): boolean {
     signals.frameworkExposure !== null
   )
 }
+
+/** Display order: how a buyer's process actually runs, not alphabetical. */
+const POPULATION_ORDER: readonly ProcurementAnalysisGrain[] = [
+  'procedure',
+  'contract',
+  'direct_acquisition',
+  'framework',
+  'calloff',
+  'modification',
+]
 
 /**
  * Which analysis grain a selected population maps to. The slice serves
@@ -169,24 +185,19 @@ export function ProcurementInstitutionPage({
   // The switcher belongs to the header band, flush with its bottom rule, so
   // the population it selects reads as the page's subject rather than as one
   // more control stacked in the body.
-  const populationTabs =
-    populations.length > 0 ? (
-      <ProcurementInstitutionPopulations
-        populations={populations}
-        active={selectedGrain}
-        onSelect={setActiveGrain}
-      />
-    ) : null
-
-  const compactPopulationTabs =
-    populations.length > 0 ? (
-      <ProcurementInstitutionPopulations
-        compact
-        populations={populations}
-        active={selectedGrain}
-        onSelect={setActiveGrain}
-      />
-    ) : null
+  const populationTabs: readonly PartyPopulation<ProcurementAnalysisGrain>[] =
+    POPULATION_ORDER.map((grain) =>
+      populations.find((entry) => entry.grain === grain),
+    )
+      .filter(
+        (entry): entry is ProcurementInstitutionPopulation =>
+          entry !== undefined,
+      )
+      .map((entry) => ({
+        grain: entry.grain,
+        label: populationLabel(entry.grain),
+        recordCount: entry.recordCount,
+      }))
 
   // One card for the whole page: the selected population's envelope plus the
   // analysis envelope below it.
@@ -199,26 +210,99 @@ export function ProcurementInstitutionPage({
   )
 
   const quickFilters = initialSlice ? (
-    <ProcurementInstitutionQuickFilters
-      cui={cui}
+    <ProcurementPartyQuickFilters
       filters={filters}
       firstSeen={initialSlice.summary.firstSeen}
       lastSeen={initialSlice.summary.lastSeen}
       categories={initialSlice.analysisByGrain.contract.topCategories}
+      advancedSearch={{
+        view: 'list',
+        authority_cui: cui,
+        ...(filters.year
+          ? {
+              dateFrom: `${filters.year}-01-01`,
+              dateTo: `${filters.year}-12-31`,
+            }
+          : {}),
+        ...(filters.cpv ? { cpv_division: filters.cpv } : {}),
+      }}
     />
   ) : null
 
   return (
     <div className={cn('min-h-screen min-w-0 bg-background', className)}>
-      <ProcurementInstitutionHeader
+      <ProcurementEntityHeader
         cui={cui}
         title={title}
+        eyebrow={<Trans>Cumpărător public</Trans>}
+        breadcrumb={
+          <>
+            <Link
+              to="/procurement"
+              className="underline underline-offset-2 hover:text-[var(--pnrr-fg)]"
+            >
+              <Trans>Achiziții publice</Trans>
+            </Link>
+            <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+            <Link
+              to="/procurement"
+              search={{ view: 'rankings', rank_dim: 'buyer' }}
+              className="underline underline-offset-2 hover:text-[var(--pnrr-fg)]"
+            >
+              <Trans>Instituții</Trans>
+            </Link>
+          </>
+        }
+        actions={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              asChild
+              className={procurementCompactActionClassName}
+            >
+              <Link to="/entities/$cui" params={{ cui }}>
+                <Trans>Profil</Trans>
+              </Link>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              asChild
+              className={procurementCompactActionClassName}
+            >
+              <Link
+                to="/procurement"
+                search={{ view: 'list', authority_cui: cui }}
+              >
+                <Trans>Înregistrări</Trans>
+              </Link>
+            </Button>
+          </>
+        }
         firstSeen={initialSlice?.summary.firstSeen ?? null}
         lastSeen={initialSlice?.summary.lastSeen ?? null}
         valueStat={valueStat}
         filters={quickFilters}
-        tabs={populationTabs}
-        compactTabs={compactPopulationTabs}
+        tabs={
+          populationTabs.length > 0 ? (
+            <ProcurementPartyPopulations
+              populations={populationTabs}
+              active={selectedGrain}
+              onSelect={setActiveGrain}
+            />
+          ) : null
+        }
+        compactTabs={
+          populationTabs.length > 0 ? (
+            <ProcurementPartyPopulations
+              compact
+              populations={populationTabs}
+              active={selectedGrain}
+              onSelect={setActiveGrain}
+            />
+          ) : null
+        }
         onOpenMethodology={() => setInfoOpen(true)}
       />
 
@@ -282,7 +366,7 @@ export function ProcurementInstitutionPage({
             onSelect: (code) =>
               void navigate({
                 to: '.',
-                search: (prev: InstitutionQuickFilterState) => ({
+                search: (prev: PartyQuickFilterState) => ({
                   ...prev,
                   cpv: code ?? undefined,
                 }),

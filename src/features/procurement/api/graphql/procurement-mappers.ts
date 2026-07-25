@@ -689,6 +689,7 @@ export function mapAuthoritySlice(parts: {
 
 export function mapSupplierSlice(parts: {
   supplierCui: string
+  supplierName?: string | null
   aggregates: RawProcurementAggregates
   divisions: readonly RawProcurementCpvDivision[]
   recentRecords: SupplierRecordsPage
@@ -714,6 +715,7 @@ export function mapSupplierSlice(parts: {
     .sort()
   return {
     supplierCui: parts.supplierCui,
+    supplierName: parts.supplierName ?? null,
     summary: {
       // Window falls back to the rollup month bounds when the stats dates are
       // absent (the schema requires strings; empty = nothing observed).

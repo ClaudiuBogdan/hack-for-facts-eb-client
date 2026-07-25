@@ -9,6 +9,21 @@ const cuiSchema = z
   .min(1)
   .regex(/^\d{1,12}$/, 'CUI invalid')
 
+/**
+ * Quick-filter state — the profile's own basic filters (year, CPV division),
+ * kept in the URL so a filtered supplier view is shareable. Invalid values
+ * drop individually rather than failing the route.
+ */
+const supplierSearchSchema = z.object({
+  year: z.coerce.number().int().min(2000).max(2100).optional().catch(undefined),
+  cpv: z
+    .string()
+    .trim()
+    .regex(/^\d{2}$/)
+    .optional()
+    .catch(undefined),
+})
+
 export const Route = createFileRoute('/procurement/suppliers/$cui')({
   ssr: true,
   params: {
@@ -20,6 +35,8 @@ export const Route = createFileRoute('/procurement/suppliers/$cui')({
       return { cui: parsed.data }
     },
   },
+  validateSearch: (search: Record<string, unknown>) =>
+    supplierSearchSchema.parse(search),
   headers: () =>
     createPublicPageCacheHeaders({
       sharedMaxAgeSeconds: 300,

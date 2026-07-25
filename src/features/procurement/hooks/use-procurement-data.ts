@@ -13,6 +13,7 @@ import {
   fetchProcurementSupplierSlice,
   fetchProcurementTerritoryOverview,
   type ProcurementAuthoritySliceScope,
+  type ProcurementSliceScope,
   type ProcurementBasisOverviewRequest,
   type ProcurementInstitutionScopes,
 } from '../api/procurement-api'
@@ -198,10 +199,13 @@ export function useProcurementCpvCategory(
   })
 }
 
-export function useProcurementSupplierSlice(cui: string) {
+export function useProcurementSupplierSlice(
+  cui: string,
+  scope?: ProcurementSliceScope,
+) {
   return useQuery({
-    queryKey: [...PROCUREMENT_QUERY_KEY, 'supplier-slice', cui],
-    queryFn: () => fetchProcurementSupplierSlice(cui),
+    queryKey: [...PROCUREMENT_QUERY_KEY, 'supplier-slice', cui, scope ?? null],
+    queryFn: () => fetchProcurementSupplierSlice(cui, scope),
     enabled: Boolean(cui),
   })
 }

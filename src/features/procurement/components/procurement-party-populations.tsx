@@ -1,53 +1,41 @@
 import { t } from '@lingui/core/macro'
 import { cn } from '@/lib/utils'
-import type {
-  ProcurementAnalysisGrain,
-  ProcurementInstitutionPopulation,
-} from '@/schemas/procurement'
 import { formatFlowCount } from '../lib/formatting'
-import { populationLabel } from '../lib/grain-labels'
 
-type Props = {
-  readonly populations: readonly ProcurementInstitutionPopulation[]
-  readonly active: ProcurementAnalysisGrain
-  readonly onSelect: (grain: ProcurementAnalysisGrain) => void
+/** One selectable record type, with the volume that makes it worth picking. */
+export type PartyPopulation<Grain extends string = string> = {
+  readonly grain: Grain
+  readonly label: string
+  /** Decimal string from the API; `null` renders as "—", never as zero. */
+  readonly recordCount: string | null
+}
+
+type Props<Grain extends string> = {
+  readonly populations: readonly PartyPopulation<Grain>[]
+  readonly active: Grain
+  readonly onSelect: (grain: Grain) => void
   /** Sticky-bar variant: tighter, and counts drop below `sm` to fit the row. */
   readonly compact?: boolean
   readonly className?: string
 }
 
-/** Display order: how a buyer's process actually runs, not alphabetical. */
-const POPULATION_ORDER: readonly ProcurementAnalysisGrain[] = [
-  'procedure',
-  'contract',
-  'direct_acquisition',
-  'framework',
-  'calloff',
-  'modification',
-]
-
 /**
- * The page's population switcher, as tabs — every record type this buyer
+ * A party profile's population switcher, as tabs — every record type the party
  * appears in, with its volume on the tab itself. The selected population's
  * money is a header stat rather than a column here: it is one figure with one
- * basis, and it belongs next to the institution it describes.
+ * basis, and it belongs next to the party it describes.
  *
  * Populations with no rows stay selectable — a reader may want to confirm the
  * absence — but they are muted so they don't compete with the ones carrying
  * the activity.
  */
-export function ProcurementInstitutionPopulations({
+export function ProcurementPartyPopulations<Grain extends string>({
   populations,
   active,
   onSelect,
   compact = false,
   className,
-}: Props) {
-  const byGrain = new Map(populations.map((entry) => [entry.grain, entry]))
-  const ordered = POPULATION_ORDER.map((grain) => byGrain.get(grain)).filter(
-    (entry): entry is ProcurementInstitutionPopulation => entry !== undefined,
-  )
-
+}: Props<Grain>) {
   return (
     <nav
       role="tablist"
@@ -59,11 +47,19 @@ export function ProcurementInstitutionPopulations({
         className,
       )}
     >
-      {ordered.map((population) => {
+      {populations.map((population) => {
         const isActive = population.grain === active
         const isQuiet =
           !isActive &&
           (population.recordCount === '0' || population.recordCount === null)
+        const tone = isActive
+          ? 'text-[var(--pnrr-fg)]'
+          : cn(
+              'group-hover:text-[var(--pnrr-fg)]',
+              isQuiet
+                ? 'text-[var(--pnrr-muted)]/70'
+                : 'text-[var(--pnrr-muted)]',
+            )
         return (
           <button
             key={population.grain}
@@ -78,32 +74,20 @@ export function ProcurementInstitutionPopulations({
           >
             <span
               className={cn(
-                compact ? 'text-[13px] transition-colors' : 'text-sm transition-colors',
-                isActive
-                  ? 'font-extrabold text-[var(--pnrr-fg)]'
-                  : cn(
-                      'font-semibold group-hover:text-[var(--pnrr-fg)]',
-                      isQuiet
-                        ? 'text-[var(--pnrr-muted)]/70'
-                        : 'text-[var(--pnrr-muted)]',
-                    ),
+                compact ? 'text-[13px]' : 'text-sm',
+                'transition-colors',
+                isActive ? 'font-extrabold' : 'font-semibold',
+                tone,
               )}
             >
-              {populationLabel(population.grain)}
+              {population.label}
             </span>
             <span
               className={cn(
-                compact
-                  ? 'hidden text-[13px] tabular-nums transition-colors sm:inline'
-                  : 'text-sm tabular-nums transition-colors',
-                isActive
-                  ? 'font-extrabold text-[var(--pnrr-fg)]'
-                  : cn(
-                      'font-bold group-hover:text-[var(--pnrr-fg)]',
-                      isQuiet
-                        ? 'text-[var(--pnrr-muted)]/70'
-                        : 'text-[var(--pnrr-muted)]',
-                    ),
+                'tabular-nums transition-colors',
+                compact ? 'hidden text-[13px] sm:inline' : 'text-sm',
+                isActive ? 'font-extrabold' : 'font-bold',
+                tone,
               )}
             >
               {population.recordCount === null

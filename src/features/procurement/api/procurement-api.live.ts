@@ -722,17 +722,29 @@ export async function fetchSupplierRecordsLive(
 
 export async function fetchSupplierProcurementSliceLive(
   cui: string,
+  scope: ProcurementSliceScope = {},
 ): Promise<SupplierProcurementSlice> {
-  const [aggregates, divisions, recentRecords] = await Promise.all([
-    loadAggregates(buildScopeFilter({ supplierCui: cui }), {
-      includeSuppliers: false,
-    }),
-    loadCpvDivisions(),
-    fetchSupplierRecordsLive(cui),
-  ])
-  const partyNames = await loadPartyNames(aggregates)
+  const [aggregates, divisions, recentRecords, supplierName] =
+    await Promise.all([
+      loadAggregates(buildScopeFilter({ supplierCui: cui, ...scope }), {
+        includeSuppliers: false,
+        // A dimension the scope already pins is not a breakdown; the server
+        // rejects `breakdown(cpvDivision)` under a cpvDivision scope.
+        includeCategories: scope.cpvDivision === undefined,
+        // Money order; the gate reports what it could actually serve.
+        rankBy: 'value',
+      }),
+      loadCpvDivisions(),
+      fetchSupplierRecordsLive(cui),
+      resolvePartyName(cui, 'supplier'),
+    ])
+  const partyNames = new Map(await loadPartyNames(aggregates))
+  if (supplierName) {
+    partyNames.set(`supplier:${cui}`, supplierName)
+  }
   return mapSupplierSlice({
     supplierCui: cui,
+    supplierName,
     aggregates,
     divisions,
     recentRecords,
@@ -804,7 +816,7 @@ export async function fetchProcurementInstitutionOverviewLive(request: {
       },
       { operationName: 'ProcurementInstitutionSpine' },
     ),
-    resolveAuthorityName(authorityCui),
+    resolvePartyName(authorityCui, 'authority'),
   ])
   const spine = procurementInstitutionSpineResponseSchema.parse(raw)
 
@@ -895,11 +907,17 @@ export async function fetchProcurementInstitutionOverviewLive(request: {
 }
 
 /** Optional slice scope — the institution page's year/CPV quick filters. */
-export type ProcurementAuthoritySliceScope = {
+/**
+ * Quick-filter scope shared by the buyer and supplier profiles: a calendar
+ * period and one CPV division, the two filters both pages expose in the URL.
+ */
+export type ProcurementSliceScope = {
   readonly monthFrom?: string
   readonly monthTo?: string
   readonly cpvDivision?: string
 }
+
+export type ProcurementAuthoritySliceScope = ProcurementSliceScope
 
 /** 'YYYY-MM' → the month's last day as 'YYYY-MM-DD' (search dates are inclusive). */
 function monthToEndDate(month: string): string {
@@ -937,7 +955,7 @@ export async function fetchAuthorityProcurementSliceLive(
         pageSize: AUTHORITY_RECENT_PAGE_SIZE,
       }),
     ),
-    resolveAuthorityName(authorityCui),
+    resolvePartyName(authorityCui, 'authority'),
   ])
   const partyNames = new Map(await loadPartyNames(aggregates))
   if (authorityName) {
@@ -952,23 +970,32 @@ export async function fetchAuthorityProcurementSliceLive(
   })
 }
 
-async function resolveAuthorityName(cui: string): Promise<string | null> {
-  const cacheKey = `authority:${cui}`
+/**
+ * Canonical name for one party from the identity spine. Only a `named` status
+ * yields a label — an unresolved CUI stays a CUI rather than borrowing a
+ * candidate name.
+ */
+async function resolvePartyName(
+  cui: string,
+  dimension: PartyDimension,
+): Promise<string | null> {
+  const cacheKey = `${dimension}:${cui}`
   if (partyNameCache.has(cacheKey)) {
     return partyNameCache.get(cacheKey) ?? null
   }
+  const isAuthority = dimension === 'authority'
   const raw = await graphqlQuery<unknown>(
     PROCUREMENT_PARTY_NAMES_QUERY,
     {
-      authorityCuis: [cui],
-      supplierCuis: [],
-      includeAuthorities: true,
-      includeSuppliers: false,
+      authorityCuis: isAuthority ? [cui] : [],
+      supplierCuis: isAuthority ? [] : [cui],
+      includeAuthorities: isAuthority,
+      includeSuppliers: !isAuthority,
     },
     { operationName: 'ProcurementPartyNames' },
   )
   const parsed = procurementPartyNamesResponseSchema.parse(raw)
-  const label = parsed.authorities?.[0]
+  const label = (isAuthority ? parsed.authorities : parsed.suppliers)?.[0]
   const name = label?.status === 'named' ? (label.canonicalName ?? null) : null
   partyNameCache.set(cacheKey, name)
   return name

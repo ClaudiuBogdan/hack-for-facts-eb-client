@@ -7,5 +7,6 @@ export const Route = createLazyFileRoute('/procurement/suppliers/$cui')({
 
 function SupplierRoutePage() {
   const { cui } = Route.useParams()
-  return <ProcurementSupplierPage cui={cui} />
+  const filters = Route.useSearch()
+  return <ProcurementSupplierPage cui={cui} filters={filters} />
 }

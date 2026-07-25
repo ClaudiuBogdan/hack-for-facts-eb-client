@@ -683,6 +683,8 @@ export type CpvCategoryPage = z.infer<typeof cpvCategoryPageSchema>
 
 export const supplierProcurementSliceSchema = z.object({
   supplierCui: z.string(),
+  /** Resolved display name when the identity spine has a canonical one. */
+  supplierName: z.string().nullable().default(null),
   summary: z.object({
     window: z.object({
       from: z.string().nullable(),

@@ -1,14 +1,12 @@
 import type { ReactNode } from 'react'
-import { Link } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
-import { ChevronRight, Info } from 'lucide-react'
+import { Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import {
   procurementHeaderEntityTitleStyle,
   procurementHeaderTitleClassName,
-  procurementCompactActionClassName,
   procurementSectionLabelClassName,
 } from '../lib/procurement-theme'
 import {
@@ -19,6 +17,12 @@ import {
 type Props = {
   readonly cui: string
   readonly title: string
+  /** Kicker above the title — what kind of party this is. */
+  readonly eyebrow: ReactNode
+  /** Trail links, without the current page (it is the title below). */
+  readonly breadcrumb: ReactNode
+  /** Page-specific navigation, rendered beside the shared info button. */
+  readonly actions?: ReactNode
   /** Activity window from the unfiltered slice, as a header stat. */
   readonly firstSeen: string | null
   readonly lastSeen: string | null
@@ -54,18 +58,21 @@ function activityYears(
 }
 
 /**
- * Institution profile header — the hub's rhythm (hero title, inline stat
- * chips, actions, filter toolbar) rather than the hub's own shell, because
- * this page has no Overview/List/Rankings tabs to carry.
+ * Party-profile header (buyer and supplier) — the hub's rhythm (hero title,
+ * metadata line, actions, filter toolbar) rather than the hub's own shell,
+ * because these pages have no Overview/List/Rankings tabs to carry.
  *
  * No money figure lives up here: every population's value is in the table
  * below, with the basis that makes it meaningful attached to it. A single
  * headline number could only ever repeat one row while implying it was the
  * page's total.
  */
-export function ProcurementInstitutionHeader({
+export function ProcurementEntityHeader({
   cui,
   title,
+  eyebrow,
+  breadcrumb,
+  actions: pageActions,
   firstSeen,
   lastSeen,
   valueStat,
@@ -80,26 +87,7 @@ export function ProcurementInstitutionHeader({
 
   const actions = (
     <div className="flex shrink-0 items-center gap-2">
-      <Button
-        type="button"
-        variant="outline"
-        asChild
-        className={cn(procurementCompactActionClassName)}
-      >
-        <Link to="/entities/$cui" params={{ cui }}>
-          <Trans>Profil</Trans>
-        </Link>
-      </Button>
-      <Button
-        type="button"
-        variant="outline"
-        asChild
-        className={cn(procurementCompactActionClassName)}
-      >
-        <Link to="/procurement" search={{ view: 'list', authority_cui: cui }}>
-          <Trans>Înregistrări</Trans>
-        </Link>
-      </Button>
+      {pageActions}
       {/* Quiet utility, same slot the hub gives it. */}
       <Button
         variant="ghost"
@@ -161,28 +149,13 @@ export function ProcurementInstitutionHeader({
               aria-label={t`Traseu de navigare`}
               className="flex min-w-0 flex-wrap items-center gap-1 text-sm text-[var(--pnrr-muted)]"
             >
-              <Link
-                to="/procurement"
-                className="underline underline-offset-2 hover:text-[var(--pnrr-fg)]"
-              >
-                <Trans>Achiziții publice</Trans>
-              </Link>
-              <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-              <Link
-                to="/procurement"
-                search={{ view: 'rankings', rank_dim: 'buyer' }}
-                className="underline underline-offset-2 hover:text-[var(--pnrr-fg)]"
-              >
-                <Trans>Instituții</Trans>
-              </Link>
+              {breadcrumb}
             </nav>
             {actions}
           </div>
 
           <div className="pb-5 pt-3 sm:pb-6 sm:pt-4">
-            <div className={procurementSectionLabelClassName}>
-              <Trans>Cumpărător public</Trans>
-            </div>
+            <div className={procurementSectionLabelClassName}>{eyebrow}</div>
             <h1
               className={cn(procurementHeaderTitleClassName, 'mt-1.5')}
               style={procurementHeaderEntityTitleStyle}
