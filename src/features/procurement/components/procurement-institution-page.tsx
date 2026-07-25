@@ -230,15 +230,21 @@ export function ProcurementInstitutionPage({
         recordCount: entry.recordCount,
       }))
 
-  // One card for the whole page: the selected population's envelope plus the
-  // analysis envelope below it.
-  const analysisMeta =
+  // One card for the whole page: the selected population's envelope, the
+  // analysis envelope below it, and the envelopes of the two supplier-money
+  // answers this page renders. Those two carry the consortium-withholding
+  // caveat — leaving them out meant the page showed a supplier ranking and a
+  // concentration tile whose limits were stated nowhere.
+  const visibleAnalysis =
     (ANALYSIS_GRAIN[selectedGrain] ?? 'contract') === 'contract'
-      ? scopedSlice.data?.analysisByGrain.contract.stats.meta
-      : scopedSlice.data?.analysisByGrain.directAcquisition.stats.meta
-  const answerMetas = [headlineMeta, analysisMeta].filter(
-    (meta): meta is NonNullable<typeof meta> => meta != null,
-  )
+      ? scopedSlice.data?.analysisByGrain.contract
+      : scopedSlice.data?.analysisByGrain.directAcquisition
+  const answerMetas = [
+    headlineMeta,
+    visibleAnalysis?.stats.meta,
+    visibleAnalysis?.meta.suppliers,
+    overview?.signals.concentration?.meta,
+  ].filter((meta): meta is NonNullable<typeof meta> => meta != null)
 
   const quickFilters = initialSlice ? (
     <ProcurementPartyQuickFilters

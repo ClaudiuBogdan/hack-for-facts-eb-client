@@ -12,6 +12,7 @@
  * leaking engineer prose back into the page.
  */
 import { t } from '@lingui/core/macro'
+import { formatRon } from './formatting'
 
 const GRAIN_TOKENS: Record<string, () => string> = {
   direct_acquisition: () => t`direct acquisitions`,
@@ -216,6 +217,109 @@ const fixedNoteSentence = (caveat: string): string | null => {
   return null
 }
 
+// ---------------------------------------------------------------------------
+// Supplier-money disclosures (association dedup + concentration semantics)
+// ---------------------------------------------------------------------------
+
+/**
+ * These reach the reader on the buyer and supplier profiles, where every
+ * surrounding string in this feature is authored in Romanian — so these are
+ * too, rather than depending on a translation round-trip to stop a Romanian
+ * page from explaining consortium money in English.
+ */
+const SUPPLIER_MONEY_BASIS: Record<string, () => string> = {
+  'awarded value': () => t`valoare atribuită`,
+  'record count': () => t`înregistrări`,
+}
+
+const supplierMoneyBasisOf = (token: string): string =>
+  SUPPLIER_MONEY_BASIS[token]?.() ?? token
+
+const SUPPLIER_MONEY_NOTES: readonly (readonly [string, () => string])[] = [
+  [
+    'per-supplier money for this supplier excludes any multi-member consortium awards',
+    () =>
+      t`Valoarea pe furnizor nu include contractele încredințate unor asocieri cu mai mulți membri: repartiția între membri nu este publicată, așa că nu se poate indica o sumă pentru o singură firmă.`,
+  ],
+  [
+    'value-bounded supplier reads exclude multi-member consortium awards',
+    () =>
+      t`Filtrul pe valoare lasă complet deoparte contractele încredințate unor asocieri cu mai mulți membri — valorile lor pe furnizor nu sunt publicate, deci nu pot fi comparate cu un prag.`,
+  ],
+  [
+    'consortium withheld mass is counted in the region of',
+    () =>
+      t`Suma nerepartizată este numărată în regiunea membrului care reprezintă asocierea.`,
+  ],
+  [
+    'per-supplier money in this scope excludes multi-member consortium awards (split unpublished); the amount is not quoted',
+    () =>
+      t`Valoarea pe furnizor nu include contractele încredințate unor asocieri cu mai mulți membri; suma nu este indicată pentru că cifrele de cheltuire ale acestei populații sunt reținute.`,
+  ],
+  [
+    'mod-adjusted money exists only for the attributed (buyer-side) population',
+    () =>
+      t`Valoarea ajustată cu acte adiționale există doar la nivelul cumpărătorului: repartiția ajustărilor pe furnizori nu este publicată.`,
+  ],
+  [
+    'ranked by record count (money ranking is gate-suppressed)',
+    () =>
+      t`Clasamentul este ordonat după numărul de înregistrări, pentru că valorile sunt reținute pentru această populație.`,
+  ],
+  [
+    'ranked by record count: no record in this scope carries an accepted value',
+    () =>
+      t`Clasamentul este ordonat după numărul de înregistrări: nicio înregistrare din această selecție nu are o valoare acceptată pe baza de calcul folosită, așa că o ordonare după valoare ar fi o egalitate de zerouri.`,
+  ],
+]
+
+const supplierMoneyNoteSentence = (caveat: string): string | null =>
+  SUPPLIER_MONEY_NOTES.find(([prefix]) => caveat.startsWith(prefix))?.[1]() ??
+  null
+
+/**
+ * The scope-exact consortium disclosure. It carries the two amounts and the
+ * share, so it is parsed rather than prefix-matched — dropping the numbers
+ * would turn the page's most load-bearing caveat into a vague warning.
+ */
+function consortiumWithheldSentence(caveat: string): string | null {
+  const match = caveat.match(
+    /^supplier attribution: ([\d.]+) RON of ([\d.]+) RON awarded in this scope(?: \(([\d.]+%)\))? belongs to multi-member consortium awards/,
+  )
+  if (!match) return null
+  const [, withheldRaw, awardedRaw, share] = match
+  const withheld = formatRon(withheldRaw ?? null, 'compact')
+  const awarded = formatRon(awardedRaw ?? null, 'compact')
+  return share === undefined
+    ? t`Din ${awarded} atribuiți în această selecție, ${withheld} revin unor contracte încredințate asocierilor cu mai mulți membri. Repartiția între membri nu este publicată, așa că suma nu este atribuită niciunui furnizor.`
+    : t`Din ${awarded} atribuiți în această selecție, ${withheld} (${share}) revin unor contracte încredințate asocierilor cu mai mulți membri. Repartiția între membri nu este publicată, așa că suma nu este atribuită niciunui furnizor.`
+}
+
+/** What the concentration actually covers, and what sits outside it. */
+function concentrationPopulationSentence(caveat: string): string | null {
+  const covered = caveat.match(
+    /^HHI\/top shares are computed over known suppliers with positive (.+?) \((\d+) of (\d+) known suppliers\)$/,
+  )
+  if (covered) {
+    const [, basisToken, positive, known] = covered
+    const basis = supplierMoneyBasisOf(basisToken ?? '')
+    return positive === '0'
+      ? t`Niciunul dintre cei ${known} furnizori identificați nu are ${basis} în această selecție, așa că nu se poate calcula o concentrare.`
+      : t`Concentrarea este calculată pe ${positive} din ${known} furnizori identificați — cei care au ${basis} în această selecție.`
+  }
+
+  const unknown = caveat.match(
+    /^records with an unknown supplier are excluded from concentration and hold (.+?) of (awarded value|record count) in scope$/,
+  )
+  if (unknown) {
+    const [, amount, basisToken] = unknown
+    const basis = supplierMoneyBasisOf(basisToken ?? '')
+    return t`Înregistrările fără furnizor identificat nu intră în calculul concentrării și cumulează ${amount} (${basis}) în această selecție.`
+  }
+
+  return null
+}
+
 /**
  * Plain-language rendering of a server caveat. Returns the original string
  * when the shape is not one of the known gate sentences.
@@ -223,6 +327,12 @@ const fixedNoteSentence = (caveat: string): string | null => {
 export function humanizeProcurementCaveat(caveat: string): string {
   const fixed = fixedNoteSentence(caveat)
   if (fixed) return fixed
+
+  const supplierMoney =
+    supplierMoneyNoteSentence(caveat) ??
+    consortiumWithheldSentence(caveat) ??
+    concentrationPopulationSentence(caveat)
+  if (supplierMoney) return supplierMoney
 
   const head = parseHead(caveat)
   if (head) {

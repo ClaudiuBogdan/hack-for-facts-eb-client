@@ -62,6 +62,31 @@ const SERVER_CAVEATS = {
     'denominator has no observed anchor-money values in scope — no ratio is derivable',
   ratioZeroDenominator:
     'denominator has zero anchor-money value in scope — no ratio is derivable',
+  // Supplier-money disclosures — `analysis-usecases.ts` (association dedup,
+  // concentration semantics, the value→count ranking fallback).
+  consortiumWithheld:
+    'supplier attribution: 22262996083.00 RON of 22262996083.00 RON awarded in this scope (100.0%) belongs to multi-member consortium awards — the internal split is not published, so per-supplier money excludes it (withheld, never redistributed)',
+  consortiumWithheldNoShare:
+    'supplier attribution: 500.00 RON of 2000.00 RON awarded in this scope belongs to multi-member consortium awards — the internal split is not published, so per-supplier money excludes it (withheld, never redistributed)',
+  consortiumQualitativeEntity:
+    'per-supplier money for this supplier excludes any multi-member consortium awards it participates in — the internal split is not published and consortium mass is never attributed to individual members, so no withheld amount is quoted per entity (it would depend on the technical carrier election)',
+  consortiumQualitativeBounded:
+    'value-bounded supplier reads exclude multi-member consortium awards entirely — their per-supplier values are unpublished, so they cannot satisfy a value bound and no withheld amount is quoted',
+  consortiumCarrierPlacement:
+    "consortium withheld mass is counted in the region of the award's representative (carrier) member",
+  consortiumSpendSuppressed:
+    'per-supplier money in this scope excludes multi-member consortium awards (split unpublished); the amount is not quoted because spend answers abstain for this grain',
+  supplierScopeNoModAdjusted:
+    'mod-adjusted money exists only for the attributed (buyer-side) population — supplier-scoped reads abstain on this basis (per-supplier adjustment splits are not published)',
+  concentrationNoPositiveSupplier:
+    'HHI/top shares are computed over known suppliers with positive awarded value (0 of 10 known suppliers)',
+  concentrationPartialSuppliers:
+    'HHI/top shares are computed over known suppliers with positive record count (7 of 10 known suppliers)',
+  concentrationUnknownSupplier:
+    'records with an unknown supplier are excluded from concentration and hold 1234.00 of awarded value in scope',
+  rankFallbackNoValue:
+    'ranked by record count: no record in this scope carries an accepted value on this breakdown’s money basis, so a value ranking would order an all-zero tie',
+  rankGateSuppressed: 'ranked by record count (money ranking is gate-suppressed)',
 } as const
 
 describe('humanizeProcurementCaveat', () => {
@@ -116,5 +141,71 @@ describe('humanizeProcurementCaveat', () => {
   it('passes an unknown shape through untouched', () => {
     const unknown = 'some caveat the gate has not emitted before'
     expect(humanizeProcurementCaveat(unknown)).toBe(unknown)
+  })
+})
+
+/**
+ * The consortium disclosures are the ones a reader most needs in their own
+ * language: they explain why a buyer's whole awarded total can sit outside
+ * every supplier figure on the page.
+ */
+describe('supplier-money disclosures', () => {
+  it('keeps both amounts and the share of the consortium withholding', () => {
+    const human = humanizeProcurementCaveat(SERVER_CAVEATS.consortiumWithheld)
+    expect(human).toContain('100.0%')
+    expect(human).toContain('asocierilor cu mai mulți membri')
+    expect(human).toContain('nu este publicată')
+  })
+
+  it('reads correctly when the server quoted no share', () => {
+    const human = humanizeProcurementCaveat(
+      SERVER_CAVEATS.consortiumWithheldNoShare,
+    )
+    expect(human).toContain('asocierilor cu mai mulți membri')
+    expect(human).not.toContain('()')
+    expect(human).not.toContain('undefined')
+  })
+
+  it('says a concentration cannot be computed when no supplier holds value', () => {
+    const human = humanizeProcurementCaveat(
+      SERVER_CAVEATS.concentrationNoPositiveSupplier,
+    )
+    expect(human).toContain('10')
+    expect(human).toContain('nu se poate calcula o concentrare')
+  })
+
+  it('states the covered supplier population when it is partial', () => {
+    const human = humanizeProcurementCaveat(
+      SERVER_CAVEATS.concentrationPartialSuppliers,
+    )
+    expect(human).toContain('7')
+    expect(human).toContain('10')
+    expect(human).toContain('înregistrări')
+  })
+
+  it('never calls consortium money an unidentified supplier', () => {
+    for (const caveat of [
+      SERVER_CAVEATS.consortiumWithheld,
+      SERVER_CAVEATS.consortiumQualitativeEntity,
+      SERVER_CAVEATS.consortiumQualitativeBounded,
+      SERVER_CAVEATS.consortiumSpendSuppressed,
+    ]) {
+      expect(humanizeProcurementCaveat(caveat)).not.toMatch(
+        /neidentificat|necunoscut/,
+      )
+    }
+    // The unknown-supplier weight is a DIFFERENT population and still says so.
+    expect(
+      humanizeProcurementCaveat(SERVER_CAVEATS.concentrationUnknownSupplier),
+    ).toContain('fără furnizor identificat')
+  })
+
+  it('explains the value→count ranking fallback without blaming the money gate', () => {
+    const human = humanizeProcurementCaveat(SERVER_CAVEATS.rankFallbackNoValue)
+    expect(human).toContain('numărul de înregistrări')
+    expect(human).not.toContain('reținute')
+    expect(humanizeProcurementCaveat(SERVER_CAVEATS.rankGateSuppressed)).toContain(
+      'reținute',
+    )
   })
 })

@@ -316,7 +316,10 @@ function SliceContent({
           description={
             suppliersByValue
               ? t`După valoarea atribuită.`
-              : t`Clasamentul pe valoare nu este disponibil aici, așa că ordinea este dată de numărul de înregistrări.`
+              : // The server ranks by value only when it CAN. When it falls
+                // back, it is the per-supplier value that is missing — the
+                // card must not imply the order came from money.
+                t`Valoarea pe furnizor nu este disponibilă pentru această selecție, așa că ordinea este dată de numărul de înregistrări.`
           }
           rows={analytics.topSuppliers}
           kind="supplier"

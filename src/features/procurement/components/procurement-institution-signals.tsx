@@ -3,7 +3,8 @@ import { Info } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import type { ProcurementInstitutionSignals } from '@/schemas/procurement'
-import { formatRon, formatScopeShare } from '../lib/formatting'
+import { formatRon } from '../lib/formatting'
+import { concentrationSignalCopy } from '../lib/concentration-copy'
 import { procurementStripClassName } from '../lib/procurement-theme'
 
 type Props = {
@@ -105,6 +106,15 @@ export function ProcurementInstitutionSignals({
     0,
   )
 
+  // What the ranking covers, and what it cannot. Consortium money belongs to a
+  // group of suppliers whose internal split is never published, so it is not
+  // attributable to anyone — the old copy called this remainder "furnizor
+  // neidentificat", which is a different (and here false) statement.
+  const concentrationCopy = concentrationSignalCopy({
+    concentration,
+    contractAwardedRon,
+  })
+
   return (
     <section
       aria-label={t`Semnale`}
@@ -114,23 +124,13 @@ export function ProcurementInstitutionSignals({
         className,
       )}
     >
+      {/* The dash stays when no supplier money can be attributed — the copy
+          explains what stands in its place instead of inventing a share. */}
       <SignalCell
         label={t`Concentrare furnizori`}
-        value={
-          concentration?.top5Share
-            ? formatScopeShare(concentration.top5Share)
-            : '—'
-        }
-        hint={
-          concentration
-            ? t`primii 5 din ${concentration.supplierCount ?? 0} furnizori`
-            : undefined
-        }
-        detail={
-          concentration
-            ? t`Clasamentul acoperă ${formatRon(concentration.totalRon, 'compact')} din ${formatRon(contractAwardedRon, 'compact')} atribuit — restul are furnizor neidentificat.`
-            : undefined
-        }
+        value={concentrationCopy.value}
+        hint={concentrationCopy.hint}
+        detail={concentrationCopy.detail}
       />
 
       <SignalCell
