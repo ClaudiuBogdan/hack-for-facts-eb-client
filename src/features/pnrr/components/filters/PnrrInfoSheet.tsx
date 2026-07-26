@@ -108,8 +108,7 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
                     It is the official aggregated value from the
                     indicatori_total file, the alocat_eur field. We display it
                     as the main value for parity with the official table. Its
-                    source unit is EUR; any other displayed currency is a
-                    presentation conversion, not a second official value.
+                    source unit is EUR and it is shown only in EUR.
                   </Trans>
                 </InfoAccordionItem>
 
@@ -199,13 +198,13 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
 
                 <InfoAccordionItem
                   value="currency"
-                  title={<Trans>EUR/RON conversion</Trans>}
+                  title={<Trans>Source currency units</Trans>}
                 >
                   <Trans>
-                    Official data is published in EUR for indicators and in RON
-                    for project values. Currency conversion in this client is a
-                    display convenience and must not be read as a source value
-                    or an official daily exchange rate.
+                    Official data is published in EUR for national indicators
+                    and in RON for current MIPE project values. The client keeps
+                    those source units separate and does not estimate one from
+                    the other.
                   </Trans>
                 </InfoAccordionItem>
 
@@ -385,8 +384,8 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
                   title={<Trans>Large value and low progress</Trans>}
                   description={
                     <Trans>
-                      Listed EU funding over 10 mil. EUR and reported technical
-                      progress under 30%.
+                      Exploration preset: listed EU funding over 10 mil. RON and
+                      reported technical progress under 30%.
                     </Trans>
                   }
                 />
@@ -443,9 +442,8 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
               </div>
               <p className="mt-3 text-xs font-medium leading-relaxed text-[var(--pnrr-muted)]">
                 <Trans>
-                  When another currency is selected, the result is a display
-                  conversion. Verify the source-unit value before quoting or
-                  comparing a figure.
+                  No exchange rate is applied. Compare figures only when their
+                  source currency and fact type match.
                 </Trans>
               </p>
             </section>

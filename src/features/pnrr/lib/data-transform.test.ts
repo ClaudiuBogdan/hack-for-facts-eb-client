@@ -20,6 +20,8 @@ import type { RawPnrrProject } from '@/schemas/pnrr'
 // ---------------------------------------------------------------------------
 
 function makeRaw(overrides: Partial<RawPnrrProject> = {}): RawPnrrProject {
+  const listedFundingRon =
+    overrides.valoare_fe ?? overrides['Valoare (EUR)'] ?? 100_000
   return {
     'Titlu Proiect': 'Test Project',
     'Nume Beneficiar': 'Test Beneficiar',
@@ -27,6 +29,7 @@ function makeRaw(overrides: Partial<RawPnrrProject> = {}): RawPnrrProject {
     'County': 'București',
     'Sursă Finanțare': 'grant',
     'Valoare (EUR)': 100_000,
+    valoare_fe: listedFundingRon,
     'Progres Tehnic': '50%',
     'Progres Financiar': '40%',
     'Cod Componentă': 'C4',
@@ -508,7 +511,7 @@ describe('transformProject', () => {
     expect(p.cui).toBe('12345678')
     expect(p.county).toBe('București')
     expect(p.fundingSource).toBe('grant')
-    expect(p.valueEur).toBe(100_000)
+    expect(p.listedFundingRon).toBe(100_000)
     expect(p.techProgress).toBe(50)
     expect(p.finProgress).toBe(40)
     expect(p.componentCode).toBe('C4')
@@ -758,7 +761,7 @@ describe('computeAggregates', () => {
     expect(agg.projectCount).toBe(1)
     expect(agg.projectRecordCount).toBe(2)
     expect(agg.rawProjectCount).toBe(2)
-    expect(agg.rawTotalValue).toBe(600)
+    expect(agg.rawTotalValue).toBe(3000)
     expect(agg.topBeneficiaries[0].count).toBe(1)
   })
 
@@ -1001,7 +1004,7 @@ describe('filterProjects', () => {
 
     expect(result.recordCount).toBe(2)
     expect(result.records).toHaveLength(2)
-    expect(result.totalValueEur).toBe(30_000)
+    expect(result.listedFundingTotalRon).toBe(30_000)
   })
 
   it('treats selected risk and data-quality signal types as an OR filter', () => {
@@ -1243,6 +1246,18 @@ describe('hasPnrrComponentMeasureConflict', () => {
 // ---------------------------------------------------------------------------
 
 describe('processPnrrData', () => {
+  it('keeps legacy EUR observations out of RON aggregates', () => {
+    const legacy = {
+      ...makeRaw({ 'Valoare (EUR)': 125_000 }),
+      valoare_fe: undefined,
+    }
+    const project = transformProject(legacy)
+
+    expect(project.listedFundingRon).toBe(0)
+    expect(project.sourceValueRon).toBeNull()
+    expect(project.sourceValueEur).toBe(125_000)
+  })
+
   it('processes raw array', () => {
     const raw = [
       makeRaw({ 'Valoare (EUR)': 100 }),
@@ -1270,7 +1285,7 @@ describe('processPnrrData', () => {
     expect(project.cui).toBe('16054368')
     expect(project.componentCode).toBe('C4')
     expect(project.measureCode).toBe('I3')
-    expect(project.valueEur).toBe(200)
+    expect(project.listedFundingRon).toBe(1000)
     expect(project.techProgress).toBeCloseTo(89.69)
     expect(project.finProgress).toBeCloseTo(61.69)
   })
@@ -1330,7 +1345,7 @@ describe('processPnrrData', () => {
     expect(meta.projectRecordCount).toBe(2)
     expect(projects[0].records).toHaveLength(2)
     expect(projects[0].componentCode).toBe('C5')
-    expect(projects[0].totalValueEur).toBe(600)
+    expect(projects[0].listedFundingTotalRon).toBe(3000)
     expect(projects[0].variantCounts?.components).toBe(1)
     expect(projects[0].variantCounts?.fundingSources).toBe(1)
   })

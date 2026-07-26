@@ -2,42 +2,23 @@ import { formatCurrency, formatNumber } from '@/lib/utils'
 import type { Currency } from '@/schemas/charts'
 
 /**
- * Presentation-only exchange rates used by the PNRR UI.
- *
- * MIPE publishes project values in RON and national indicators in EUR. The
- * normalized client model currently uses EUR-shaped values, so these rates
- * provide a consistent display toggle. They are not source values or a daily
- * official exchange rate.
+ * PNRR project values are source-native RON values. This compatibility helper
+ * deliberately performs no exchange-rate conversion.
  */
-const PNRR_DISPLAY_RON_PER_EUR = 5
-const PNRR_RON_PER_USD = 4.44
-
-export const PNRR_EXCHANGE_RATES: Readonly<Record<Currency, number>> = {
-  RON: PNRR_DISPLAY_RON_PER_EUR,
-  EUR: 1,
-  USD: PNRR_DISPLAY_RON_PER_EUR / PNRR_RON_PER_USD,
+export function convertPnrrValue(listedFundingRon: number, _currency: Currency): number {
+  return listedFundingRon
 }
 
 /**
- * Convert a PNRR value from EUR to the target currency.
- */
-export function convertPnrrValue(valueEur: number, currency: Currency): number {
-  return valueEur * PNRR_EXCHANGE_RATES[currency]
-}
-
-/**
- * Convert a PNRR EUR value to target currency and format as localized currency string.
+ * Format source-native MIPE project values. The requested currency is retained
+ * in the signature for existing callers, but the source value is always RON.
  */
 export function formatPnrrCurrency(
-  valueEur: number,
-  currency: Currency,
+  listedFundingRon: number,
+  _currency: Currency,
   notation: 'standard' | 'compact' = 'compact',
 ): string {
-  return formatCurrency(
-    convertPnrrValue(valueEur, currency),
-    notation,
-    currency,
-  )
+  return formatCurrency(listedFundingRon, notation, 'RON')
 }
 
 export function formatPnrrPercentage(value: number): string {

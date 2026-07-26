@@ -53,8 +53,8 @@ export function PnrrEmblematicProjects({
         if (
           isCandidate &&
           (!bestMatch ||
-            (project.totalValueEur ?? project.valueEur) >
-              (bestMatch.totalValueEur ?? bestMatch.valueEur))
+            (project.listedFundingTotalRon ?? project.listedFundingRon) >
+              (bestMatch.listedFundingTotalRon ?? bestMatch.listedFundingRon))
         ) {
           bestMatch = project
         }
@@ -83,7 +83,7 @@ export function PnrrEmblematicProjects({
         const techDisplay = getProgressDisplay(p.techProgress)
         const finDisplay = getProgressDisplay(p.finProgress)
 
-        const projectValue = p.totalValueEur ?? p.valueEur
+        const projectValue = p.listedFundingTotalRon ?? p.listedFundingRon
         const formattedAmount = formatPnrrCurrency(projectValue, currency)
         const { amount, unit } = formatPnrrCompactCurrencyDisplayParts(projectValue, currency)
 

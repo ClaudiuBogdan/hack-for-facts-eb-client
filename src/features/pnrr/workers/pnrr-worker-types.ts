@@ -25,9 +25,14 @@ export type PnrrWorkerMeta = {
   readonly officialAllocatedTotalEur: number | null
   readonly officialPaidTotalEur: number | null
   readonly paidBeneficiaryCount: number | null
-  readonly projectCapability?: 'served'
-  readonly paymentCapability?: 'served' | 'degraded'
-  readonly indicatorCapability?: 'served' | 'degraded'
+  readonly projectCapability: 'legacy_unversioned'
+  readonly paymentCapability: 'legacy_unversioned' | 'degraded'
+  readonly indicatorCapability: 'legacy_unversioned' | 'degraded'
+  readonly laneFreshness: {
+    readonly projects: 'legacy_unversioned'
+    readonly payments: 'legacy_unversioned' | 'degraded'
+    readonly indicators: 'legacy_unversioned' | 'degraded'
+  }
   readonly capabilityReasonCodes?: readonly string[]
 }
 
@@ -44,11 +49,11 @@ export type PnrrWorkerRankedItem = {
   readonly label: string
   readonly beneficiaryCui?: string | null
   readonly prefix?: string
-  readonly valueEur: number
+  readonly listedFundingRon: number
   readonly count: number
   readonly pct: number
   readonly color?: string
-  readonly secondaryValueEur?: number
+  readonly secondaryListedFundingRon?: number
 }
 
 export type PnrrWorkerHistogramBucket = {
@@ -272,7 +277,7 @@ export type PnrrWorkerModel = {
   readonly indicators: PnrrOfficialIndicators | null
   readonly projectCount: number
   readonly projectRecordCount: number
-  readonly paymentCapability?: 'served' | 'degraded'
-  readonly indicatorCapability?: 'served' | 'degraded'
+  readonly paymentCapability?: 'legacy_unversioned' | 'degraded'
+  readonly indicatorCapability?: 'legacy_unversioned' | 'degraded'
   readonly capabilityReasonCodes?: readonly string[]
 }

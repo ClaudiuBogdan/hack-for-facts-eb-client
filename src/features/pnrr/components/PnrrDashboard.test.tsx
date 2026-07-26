@@ -1,31 +1,47 @@
-import { fireEvent, render, screen } from '@testing-library/react'
-import type { ReactNode } from 'react'
-import { describe, expect, it, vi } from 'vitest'
-import { usePnrrWorkerModel } from '../hooks/usePnrrData'
-import { usePnrrFilterState } from '../hooks/usePnrrFilterState'
+import { fireEvent, render, screen } from "@testing-library/react";
+import type { ReactNode } from "react";
+import { describe, expect, it, vi } from "vitest";
+import { usePnrrWorkerModel } from "../hooks/usePnrrData";
+import { usePnrrFilterState } from "../hooks/usePnrrFilterState";
 import {
   buildPnrrSeoSnapshotSearchKey,
   type PnrrSeoSnapshot,
-} from '../seo/pnrr-seo'
-import { computeAggregates, processPnrrData } from '../lib/data-transform'
-import { PnrrDashboard } from './PnrrDashboard'
-import type { PnrrWorkerQueryResult } from '../workers/pnrr-worker-types'
+} from "../seo/pnrr-seo";
+import { computeAggregates, processPnrrData } from "../lib/data-transform";
+import { PnrrDashboard } from "./PnrrDashboard";
+import type { PnrrWorkerQueryResult } from "../workers/pnrr-worker-types";
 
-vi.mock('../hooks/usePnrrData', () => ({
+vi.mock("../hooks/usePnrrData", () => ({
   usePnrrWorkerModel: vi.fn(),
-}))
+}));
 
-vi.mock('../hooks/usePnrrFilterState', () => ({
+vi.mock("../hooks/usePnrrFilterState", () => ({
   usePnrrFilterState: vi.fn(),
-}))
+}));
 
-vi.mock('../lib/PnrrCurrencyProvider', () => ({
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({
+    children,
+    to,
+    className,
+  }: {
+    readonly children: ReactNode;
+    readonly to: string;
+    readonly className?: string;
+  }) => (
+    <a href={to} className={className}>
+      {children}
+    </a>
+  ),
+}));
+
+vi.mock("../lib/PnrrCurrencyProvider", () => ({
   PnrrCurrencyProvider: ({ children }: { readonly children: ReactNode }) => (
     <>{children}</>
   ),
-}))
+}));
 
-vi.mock('./PnrrHeader', () => ({
+vi.mock("./PnrrHeader", () => ({
   PnrrHeader: ({
     actions,
     isLoading,
@@ -33,11 +49,11 @@ vi.mock('./PnrrHeader', () => ({
     totalValue,
     totalValueLabel,
   }: {
-    readonly actions: ReactNode
-    readonly isLoading: boolean
-    readonly projectsCount: number
-    readonly totalValue: number
-    readonly totalValueLabel?: ReactNode
+    readonly actions: ReactNode;
+    readonly isLoading: boolean;
+    readonly projectsCount: number;
+    readonly totalValue: number;
+    readonly totalValueLabel?: ReactNode;
   }) => (
     <header data-testid="pnrr-header" data-loading={String(isLoading)}>
       <span data-testid="pnrr-header-projects">{projectsCount}</span>
@@ -46,28 +62,28 @@ vi.mock('./PnrrHeader', () => ({
       {actions}
     </header>
   ),
-}))
+}));
 
-vi.mock('./PnrrSkeleton', () => ({
+vi.mock("./PnrrSkeleton", () => ({
   PnrrContentSkeleton: ({
     hideMetricCards = false,
   }: {
-    readonly hideMetricCards?: boolean
+    readonly hideMetricCards?: boolean;
   }) => (
     <div
       data-testid="pnrr-content-skeleton"
       data-hide-metric-cards={String(hideMetricCards)}
     />
   ),
-}))
+}));
 
-vi.mock('./tabs/PnrrOverview', () => ({
+vi.mock("./tabs/PnrrOverview", () => ({
   PnrrOverview: ({
     cachedStats,
     isLoadingFullData,
   }: {
-    readonly cachedStats?: { readonly rawTotalValue: number } | null
-    readonly isLoadingFullData?: boolean
+    readonly cachedStats?: { readonly rawTotalValue: number } | null;
+    readonly isLoadingFullData?: boolean;
   }) => (
     <div
       data-testid="pnrr-overview"
@@ -76,53 +92,53 @@ vi.mock('./tabs/PnrrOverview', () => ({
       {cachedStats?.rawTotalValue}
     </div>
   ),
-}))
+}));
 
-vi.mock('./tabs/PnrrProjectsView', () => ({
+vi.mock("./tabs/PnrrProjectsView", () => ({
   PnrrProjectsView: () => <div data-testid="pnrr-projects" />,
-}))
+}));
 
-vi.mock('./tabs/PnrrAnomaliesView', () => ({
+vi.mock("./tabs/PnrrAnomaliesView", () => ({
   PnrrAnomaliesView: () => <div data-testid="pnrr-anomalies" />,
-}))
+}));
 
-vi.mock('./tabs/PnrrBeneficiariesView', () => ({
+vi.mock("./tabs/PnrrBeneficiariesView", () => ({
   PnrrBeneficiariesView: () => <div data-testid="pnrr-beneficiaries" />,
-}))
+}));
 
-vi.mock('./PnrrMapView', () => ({
+vi.mock("./PnrrMapView", () => ({
   PnrrMapView: () => <div data-testid="pnrr-map" />,
-}))
+}));
 
-vi.mock('./filters/PnrrFilterSheet', () => ({
+vi.mock("./filters/PnrrFilterSheet", () => ({
   PnrrFilterSheet: () => null,
   PnrrFilterTriggerButton: () => <button type="button">Filters</button>,
-}))
+}));
 
-vi.mock('./filters/PnrrInfoSheet', () => ({
+vi.mock("./filters/PnrrInfoSheet", () => ({
   PnrrInfoSheet: () => null,
-}))
+}));
 
-vi.mock('./table/PnrrExportButton', () => ({
+vi.mock("./table/PnrrExportButton", () => ({
   PnrrExportButton: () => null,
-}))
+}));
 
 function makeFilterState(
   overrides: Partial<ReturnType<typeof usePnrrFilterState>> = {},
 ): ReturnType<typeof usePnrrFilterState> {
   return {
     search: {
-      view: 'overview',
+      view: "overview",
       page: 1,
       pageSize: 25,
-      sortBy: 'value',
-      sortOrder: 'desc',
-      beneficiarySortBy: 'value',
-      beneficiarySortOrder: 'desc',
+      sortBy: "value",
+      sortOrder: "desc",
+      beneficiarySortBy: "value",
+      beneficiarySortOrder: "desc",
       beneficiaryPage: 1,
       onlyAnomalies: false,
       excludeMicro: false,
-      granularity: 'county',
+      granularity: "county",
       includeNational: false,
     },
     setView: vi.fn(),
@@ -162,22 +178,22 @@ function makeFilterState(
     closeProjectPanel: vi.fn(),
     clearFilters: vi.fn(),
     ...overrides,
-  }
+  };
 }
 
 function makeSnapshot(): PnrrSeoSnapshot {
   return {
-    lastUpdated: '2026-05-18',
+    lastUpdated: "2026-05-18",
     projectCount: 42,
     projectRecordCount: 45,
     deduplicatedProjectCount: 40,
-    totalValueEur: 1_200_000,
-    deduplicatedTotalValueEur: 1_100_000,
+    listedFundingTotalRon: 1_200_000,
+    deduplicatedListedFundingRon: 1_100_000,
     completedCount: 12,
-    completedValueEur: 300_000,
+    completedListedFundingRon: 300_000,
     inProgressCount: 25,
     notStartedCount: 5,
-    loanTotalEur: 250_000,
+    loanListedFundingRon: 250_000,
     loanPercent: 20.83,
     missingFinancialProgressCount: 8,
     missingFinancialProgressPercent: 19.05,
@@ -189,32 +205,38 @@ function makeSnapshot(): PnrrSeoSnapshot {
     officialAllocatedTotalEur: null,
     officialPaidTotalEur: null,
     paidBeneficiaryCount: null,
-  }
+  };
 }
 
-function makeSnapshotSearchKey(
-  search = makeFilterState().search,
-): string {
-  return buildPnrrSeoSnapshotSearchKey(search)
+function makeSnapshotSearchKey(search = makeFilterState().search): string {
+  return buildPnrrSeoSnapshotSearchKey(search);
 }
 
 function makeWorkerResult(
   data = processPnrrData([]),
-  overrides: Partial<PnrrWorkerQueryResult['meta']> = {},
+  overrides: Partial<PnrrWorkerQueryResult["meta"]> = {},
 ): PnrrWorkerQueryResult {
-  const aggregates = computeAggregates(data.projects)
+  const aggregates = computeAggregates(data.projects);
   const meta = {
     projectCount: data.meta.projectCount,
     projectRecordCount: data.meta.projectRecordCount,
-    source: 'worker' as const,
-    paymentSource: 'worker' as const,
-    indicatorSource: 'worker' as const,
+    source: "worker" as const,
+    paymentSource: "worker" as const,
+    indicatorSource: "worker" as const,
     beneficiaryPaymentCount: 0,
     officialAllocatedTotalEur: null,
     officialPaidTotalEur: null,
     paidBeneficiaryCount: null,
+    projectCapability: "legacy_unversioned" as const,
+    paymentCapability: "legacy_unversioned" as const,
+    indicatorCapability: "legacy_unversioned" as const,
+    laneFreshness: {
+      projects: "legacy_unversioned" as const,
+      payments: "legacy_unversioned" as const,
+      indicators: "legacy_unversioned" as const,
+    },
     ...overrides,
-  }
+  };
   const emptyHistogramMetric = {
     data: [],
     countCoveragePercent: 0,
@@ -223,18 +245,18 @@ function makeWorkerResult(
     validValue: 0,
     totalRecordCount: aggregates.projectRecordCount,
     totalValue: aggregates.rawTotalValue,
-  }
+  };
   const emptyMapModel = {
-    seriesId: 'total-value' as const,
-    granularity: 'county' as const,
-    series: { id: 'total-value' as const, data: [], min: 0, max: 0 },
+    seriesId: "total-value" as const,
+    granularity: "county" as const,
+    series: { id: "total-value" as const, data: [], min: 0, max: 0 },
     nationalCount: 0,
     unmappedCount: 0,
     uatProjectCount: 0,
     selectedUat: null,
     selectedCountyProjects: [],
     selectedUatProjects: [],
-  }
+  };
 
   return {
     overview: {
@@ -242,8 +264,8 @@ function makeWorkerResult(
       topComponents: [],
       topCounties: [],
       topBeneficiaries: [],
-      beneficiaryRankingSource: 'listed-project-value',
-      beneficiaryRankingScope: 'filtered',
+      beneficiaryRankingSource: "listed-project-value",
+      beneficiaryRankingScope: "filtered",
       projectPreviewRows: [],
       emblematicProjectRows: [],
       histogram: {
@@ -259,8 +281,8 @@ function makeWorkerResult(
       page: 1,
       pageSize: 25,
       totalPages: 1,
-      sortBy: 'value',
-      sortOrder: 'desc',
+      sortBy: "value",
+      sortOrder: "desc",
     },
     beneficiaryPage: {
       rows: [],
@@ -268,8 +290,8 @@ function makeWorkerResult(
       page: 1,
       pageSize: 25,
       totalPages: 1,
-      sortBy: 'value',
-      sortOrder: 'desc',
+      sortBy: "value",
+      sortOrder: "desc",
     },
     anomalyModel: {
       riskCount: 0,
@@ -288,43 +310,43 @@ function makeWorkerResult(
       cris: [],
     },
     meta,
-  }
+  };
 }
 
-describe('PnrrDashboard', () => {
-  it('uses distinct official project count in the header', () => {
+describe("PnrrDashboard", () => {
+  it("uses distinct official project count in the header", () => {
     const data = processPnrrData([
       {
         id_angajament: 123,
-        titlu_contract: 'Same project',
-        denumire_beneficiar: 'Beneficiar',
-        cui: '123',
-        judet_implementare: 'București',
-        localitate_implementare: 'București',
-        sursa_finantare: 'grant',
+        titlu_contract: "Same project",
+        denumire_beneficiar: "Beneficiar",
+        cui: "123",
+        judet_implementare: "București",
+        localitate_implementare: "București",
+        sursa_finantare: "grant",
         valoare_fe: 1_000,
         progres_fizic: 0.5,
         progres_financiar: 0.4,
-        cod_componenta: 'C4',
-        cod_masura: 'I3',
-        cri: 'MTI',
+        cod_componenta: "C4",
+        cod_masura: "I3",
+        cri: "MTI",
       },
       {
         id_angajament: 123,
-        titlu_contract: 'Same project',
-        denumire_beneficiar: 'Beneficiar',
-        cui: '123',
-        judet_implementare: 'București',
-        localitate_implementare: 'București',
-        sursa_finantare: 'loan',
+        titlu_contract: "Same project",
+        denumire_beneficiar: "Beneficiar",
+        cui: "123",
+        judet_implementare: "București",
+        localitate_implementare: "București",
+        sursa_finantare: "loan",
         valoare_fe: 2_000,
         progres_fizic: 0.5,
         progres_financiar: 0.4,
-        cod_componenta: 'C4',
-        cod_masura: 'I3',
-        cri: 'MTI',
+        cod_componenta: "C4",
+        cod_masura: "I3",
+        cri: "MTI",
       },
-    ])
+    ]);
     vi.mocked(usePnrrWorkerModel).mockReturnValue({
       data: makeWorkerResult(data),
       error: null,
@@ -332,33 +354,88 @@ describe('PnrrDashboard', () => {
       isLoading: false,
       isRefetching: false,
       refetch: vi.fn(),
-    } as unknown as ReturnType<typeof usePnrrWorkerModel>)
-    vi.mocked(usePnrrFilterState).mockReturnValue(makeFilterState())
+    } as unknown as ReturnType<typeof usePnrrWorkerModel>);
+    vi.mocked(usePnrrFilterState).mockReturnValue(makeFilterState());
 
-    render(<PnrrDashboard />)
+    render(<PnrrDashboard />);
 
-    expect(screen.getByTestId('pnrr-header-projects')).toHaveTextContent('1')
-    expect(screen.getByTestId('pnrr-header-total')).toHaveTextContent('600')
-  })
+    expect(screen.getByTestId("pnrr-header-projects")).toHaveTextContent("1");
+    expect(screen.getByTestId("pnrr-header-total")).toHaveTextContent("3000");
+    expect(screen.getByTestId("pnrr-overview")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", {
+        name: /projects and lifecycle|proiecte și ciclu de viață/i,
+      }),
+    ).not.toBeInTheDocument();
+  });
 
-  it('uses official allocated total in the unfiltered header', () => {
+  it("keeps the established degraded-source warning visible", () => {
+    vi.mocked(usePnrrWorkerModel).mockReturnValue({
+      data: makeWorkerResult(undefined, {
+        paymentCapability: "degraded",
+      }),
+      error: null,
+      isError: false,
+      isLoading: false,
+      isRefetching: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof usePnrrWorkerModel>);
+    vi.mocked(usePnrrFilterState).mockReturnValue(makeFilterState());
+
+    render(<PnrrDashboard />);
+
+    expect(
+      screen.getByText(
+        /partial pnrr data availability|disponibilitate parțială a datelor pnrr/i,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("explains legacy currency URLs instead of silently converting source values", () => {
+    vi.mocked(usePnrrWorkerModel).mockReturnValue({
+      data: makeWorkerResult(),
+      error: null,
+      isError: false,
+      isLoading: false,
+      isRefetching: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof usePnrrWorkerModel>);
+    vi.mocked(usePnrrFilterState).mockReturnValue(
+      makeFilterState({
+        search: {
+          ...makeFilterState().search,
+          currency: "EUR",
+        },
+      }),
+    );
+
+    render(<PnrrDashboard />);
+
+    expect(
+      screen.getByText(
+        /source currency preserved|moneda sursei este păstrată/i,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("uses official allocated total in the unfiltered header", () => {
     const data = processPnrrData([
       {
         id_angajament: 123,
-        titlu_contract: 'Same project',
-        denumire_beneficiar: 'Beneficiar',
-        cui: '123',
-        judet_implementare: 'București',
-        localitate_implementare: 'București',
-        sursa_finantare: 'grant',
+        titlu_contract: "Same project",
+        denumire_beneficiar: "Beneficiar",
+        cui: "123",
+        judet_implementare: "București",
+        localitate_implementare: "București",
+        sursa_finantare: "grant",
         valoare_fe: 1_000,
         progres_fizic: 0.5,
         progres_financiar: 0.4,
-        cod_componenta: 'C4',
-        cod_masura: 'I3',
-        cri: 'MTI',
+        cod_componenta: "C4",
+        cod_masura: "I3",
+        cri: "MTI",
       },
-    ])
+    ]);
     vi.mocked(usePnrrWorkerModel).mockReturnValue({
       data: makeWorkerResult(data, { officialAllocatedTotalEur: 2_000 }),
       error: null,
@@ -366,7 +443,7 @@ describe('PnrrDashboard', () => {
       isLoading: false,
       isRefetching: false,
       refetch: vi.fn(),
-    } as unknown as ReturnType<typeof usePnrrWorkerModel>)
+    } as unknown as ReturnType<typeof usePnrrWorkerModel>);
     vi.mocked(usePnrrFilterState).mockReturnValue(
       makeFilterState({
         search: {
@@ -374,17 +451,17 @@ describe('PnrrDashboard', () => {
           includeNational: true,
         },
       }),
-    )
+    );
 
-    render(<PnrrDashboard />)
+    render(<PnrrDashboard />);
 
-    expect(screen.getByTestId('pnrr-header-total')).toHaveTextContent('2000')
-    expect(screen.getByTestId('pnrr-header-total-label')).toHaveTextContent(
+    expect(screen.getByTestId("pnrr-header-total")).toHaveTextContent("2000");
+    expect(screen.getByTestId("pnrr-header-total-label")).toHaveTextContent(
       /alocat total|total allocated/,
-    )
-  })
+    );
+  });
 
-  it('uses cached SSR stats for the overview cards and header while full data loads', () => {
+  it("uses cached SSR stats for the overview cards and header while full data loads", () => {
     vi.mocked(usePnrrWorkerModel).mockReturnValue({
       data: undefined,
       error: null,
@@ -392,30 +469,32 @@ describe('PnrrDashboard', () => {
       isLoading: true,
       isRefetching: false,
       refetch: vi.fn(),
-    } as unknown as ReturnType<typeof usePnrrWorkerModel>)
-    vi.mocked(usePnrrFilterState).mockReturnValue(makeFilterState())
+    } as unknown as ReturnType<typeof usePnrrWorkerModel>);
+    vi.mocked(usePnrrFilterState).mockReturnValue(makeFilterState());
 
     render(
       <PnrrDashboard
         ssrSnapshot={makeSnapshot()}
         ssrSnapshotSearchKey={makeSnapshotSearchKey()}
       />,
-    )
+    );
 
-    expect(screen.getByTestId('pnrr-header')).toHaveAttribute(
-      'data-loading',
-      'false',
-    )
-    expect(screen.getByTestId('pnrr-header-projects')).toHaveTextContent('42')
-    expect(screen.getByTestId('pnrr-header-total')).toHaveTextContent('1200000')
-    expect(screen.getByTestId('pnrr-overview')).toHaveAttribute(
-      'data-loading-full-data',
-      'true',
-    )
-    expect(screen.getByTestId('pnrr-overview')).toHaveTextContent('1200000')
-  })
+    expect(screen.getByTestId("pnrr-header")).toHaveAttribute(
+      "data-loading",
+      "false",
+    );
+    expect(screen.getByTestId("pnrr-header-projects")).toHaveTextContent("42");
+    expect(screen.getByTestId("pnrr-header-total")).toHaveTextContent(
+      "1200000",
+    );
+    expect(screen.getByTestId("pnrr-overview")).toHaveAttribute(
+      "data-loading-full-data",
+      "true",
+    );
+    expect(screen.getByTestId("pnrr-overview")).toHaveTextContent("1200000");
+  });
 
-  it('keeps non-overview tabs on the standard skeleton while using cached header stats', () => {
+  it("keeps non-overview tabs on the standard skeleton while using cached header stats", () => {
     vi.mocked(usePnrrWorkerModel).mockReturnValue({
       data: undefined,
       error: null,
@@ -423,34 +502,34 @@ describe('PnrrDashboard', () => {
       isLoading: true,
       isRefetching: false,
       refetch: vi.fn(),
-    } as unknown as ReturnType<typeof usePnrrWorkerModel>)
+    } as unknown as ReturnType<typeof usePnrrWorkerModel>);
     const filterState = makeFilterState({
       search: {
         ...makeFilterState().search,
-        view: 'projects',
+        view: "projects",
       },
-    })
-    vi.mocked(usePnrrFilterState).mockReturnValue(filterState)
+    });
+    vi.mocked(usePnrrFilterState).mockReturnValue(filterState);
 
     render(
       <PnrrDashboard
         ssrSnapshot={makeSnapshot()}
         ssrSnapshotSearchKey={makeSnapshotSearchKey(filterState.search)}
       />,
-    )
+    );
 
-    expect(screen.getByTestId('pnrr-header')).toHaveAttribute(
-      'data-loading',
-      'false',
-    )
-    expect(screen.queryByTestId('pnrr-overview')).not.toBeInTheDocument()
-    expect(screen.getByTestId('pnrr-content-skeleton')).toHaveAttribute(
-      'data-hide-metric-cards',
-      'false',
-    )
-  })
+    expect(screen.getByTestId("pnrr-header")).toHaveAttribute(
+      "data-loading",
+      "false",
+    );
+    expect(screen.queryByTestId("pnrr-overview")).not.toBeInTheDocument();
+    expect(screen.getByTestId("pnrr-content-skeleton")).toHaveAttribute(
+      "data-hide-metric-cards",
+      "false",
+    );
+  });
 
-  it('ignores cached SSR stats when they were built for different filters', () => {
+  it("ignores cached SSR stats when they were built for different filters", () => {
     vi.mocked(usePnrrWorkerModel).mockReturnValue({
       data: undefined,
       error: null,
@@ -458,52 +537,52 @@ describe('PnrrDashboard', () => {
       isLoading: true,
       isRefetching: false,
       refetch: vi.fn(),
-    } as unknown as ReturnType<typeof usePnrrWorkerModel>)
+    } as unknown as ReturnType<typeof usePnrrWorkerModel>);
     vi.mocked(usePnrrFilterState).mockReturnValue(
       makeFilterState({
         search: {
           ...makeFilterState().search,
-          search: 'spital',
+          search: "spital",
         },
       }),
-    )
+    );
 
     render(
       <PnrrDashboard
         ssrSnapshot={makeSnapshot()}
         ssrSnapshotSearchKey={makeSnapshotSearchKey()}
       />,
-    )
+    );
 
-    expect(screen.getByTestId('pnrr-header')).toHaveAttribute(
-      'data-loading',
-      'true',
-    )
-    expect(screen.getByTestId('pnrr-header-projects')).toHaveTextContent('0')
-    expect(screen.queryByTestId('pnrr-overview')).not.toBeInTheDocument()
-    expect(screen.getByTestId('pnrr-content-skeleton')).toBeInTheDocument()
-  })
+    expect(screen.getByTestId("pnrr-header")).toHaveAttribute(
+      "data-loading",
+      "true",
+    );
+    expect(screen.getByTestId("pnrr-header-projects")).toHaveTextContent("0");
+    expect(screen.queryByTestId("pnrr-overview")).not.toBeInTheDocument();
+    expect(screen.getByTestId("pnrr-content-skeleton")).toBeInTheDocument();
+  });
 
-  it('shows a retryable error state when the dataset fails to load', () => {
-    const refetch = vi.fn()
+  it("shows a retryable error state when the dataset fails to load", () => {
+    const refetch = vi.fn();
     vi.mocked(usePnrrWorkerModel).mockReturnValue({
       data: undefined,
-      error: new Error('Failed to fetch PNRR projects'),
+      error: new Error("Failed to fetch PNRR projects"),
       isError: true,
       isLoading: false,
       isRefetching: false,
       refetch,
-    } as unknown as ReturnType<typeof usePnrrWorkerModel>)
-    vi.mocked(usePnrrFilterState).mockReturnValue(makeFilterState())
+    } as unknown as ReturnType<typeof usePnrrWorkerModel>);
+    vi.mocked(usePnrrFilterState).mockReturnValue(makeFilterState());
 
-    render(<PnrrDashboard />)
+    render(<PnrrDashboard />);
 
     expect(
-      screen.queryByTestId('pnrr-content-skeleton'),
-    ).not.toBeInTheDocument()
-    expect(screen.getByText('Could not load PNRR data')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: /Retry/i }))
+      screen.queryByTestId("pnrr-content-skeleton"),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("Could not load PNRR data")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Retry/i }));
 
-    expect(refetch).toHaveBeenCalledTimes(1)
-  })
-})
+    expect(refetch).toHaveBeenCalledTimes(1);
+  });
+});

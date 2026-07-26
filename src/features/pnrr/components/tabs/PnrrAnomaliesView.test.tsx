@@ -42,7 +42,7 @@ const PROJECT: PnrrProject = {
   county: 'București',
   locality: 'București',
   fundingSource: 'grant',
-  valueEur: 100_000,
+  listedFundingRon: 100_000,
   techProgress: 50,
   finProgress: 40,
   status: 'mid-progress',
@@ -121,7 +121,7 @@ describe('PnrrAnomaliesView', () => {
     const aggregates: PnrrAggregates = computeAggregates([PROJECT])
     const model: PnrrWorkerAnomalyModel = {
       riskCount: 1,
-      riskValue: PROJECT.valueEur,
+      riskValue: PROJECT.listedFundingRon,
       dataQualityCount: 0,
       dataQualityValue: 0,
       rows: [PROJECT],

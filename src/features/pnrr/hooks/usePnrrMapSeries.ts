@@ -23,7 +23,7 @@ export interface PnrrMapSeries {
   readonly id: PnrrMapSeriesId
   readonly label: string
   readonly unit: string
-  readonly currency?: 'EUR'
+  readonly currency?: 'RON'
   readonly isPercent?: boolean
   readonly data:
     | readonly HeatmapCountyDataPoint[]
@@ -100,19 +100,19 @@ function computeCountySeries(
     const techProgress = getTechnicalProgressValue(p.techProgress)
     const existing = agg.get(mnemonic)
     if (existing) {
-      existing.totalValue += p.valueEur
+      existing.totalValue += p.listedFundingRon
       existing.projectIds.add(projectId)
-      if (p.fundingSource === 'grant') existing.grantValue += p.valueEur
-      existing.totalValueForShare += p.valueEur
+      if (p.fundingSource === 'grant') existing.grantValue += p.listedFundingRon
+      existing.totalValueForShare += p.listedFundingRon
       addProjectProgress(existing.techProgressByProject, projectId, techProgress)
     } else {
       agg.set(mnemonic, {
         countyName: p.county,
         mnemonic,
-        totalValue: p.valueEur,
+        totalValue: p.listedFundingRon,
         projectIds: new Set([projectId]),
-        grantValue: p.fundingSource === 'grant' ? p.valueEur : 0,
-        totalValueForShare: p.valueEur,
+        grantValue: p.fundingSource === 'grant' ? p.listedFundingRon : 0,
+        totalValueForShare: p.listedFundingRon,
         techProgressByProject: new Map(),
       })
       addProjectProgress(
@@ -204,18 +204,18 @@ function computeUatSeries(
     const techProgress = getTechnicalProgressValue(p.techProgress)
     const existing = agg.get(siruta)
     if (existing) {
-      existing.totalValue += p.valueEur
+      existing.totalValue += p.listedFundingRon
       existing.projectIds.add(projectId)
-      if (p.fundingSource === 'grant') existing.grantValue += p.valueEur
-      existing.totalValueForShare += p.valueEur
+      if (p.fundingSource === 'grant') existing.grantValue += p.listedFundingRon
+      existing.totalValueForShare += p.listedFundingRon
       addProjectProgress(existing.techProgressByProject, projectId, techProgress)
     } else {
       agg.set(siruta, {
         sirutaCode: siruta,
-        totalValue: p.valueEur,
+        totalValue: p.listedFundingRon,
         projectIds: new Set([projectId]),
-        grantValue: p.fundingSource === 'grant' ? p.valueEur : 0,
-        totalValueForShare: p.valueEur,
+        grantValue: p.fundingSource === 'grant' ? p.listedFundingRon : 0,
+        totalValueForShare: p.listedFundingRon,
         techProgressByProject: new Map(),
       })
       addProjectProgress(
@@ -300,9 +300,9 @@ function makeSeriesMeta(
   }
 
   const units: Record<PnrrMapSeriesId, string> = {
-    'total-value': 'EUR',
+    'total-value': 'RON',
     'project-count': 'projects',
-    'per-capita': 'EUR / capita',
+    'per-capita': 'RON / capita',
     'grant-share': '%',
     'implementation-rate': '%',
   }
@@ -313,7 +313,7 @@ function makeSeriesMeta(
     unit: units[seriesId],
     currency:
       seriesId === 'total-value' || seriesId === 'per-capita'
-        ? 'EUR'
+        ? 'RON'
         : undefined,
     isPercent: seriesId === 'grant-share' || seriesId === 'implementation-rate',
     data,

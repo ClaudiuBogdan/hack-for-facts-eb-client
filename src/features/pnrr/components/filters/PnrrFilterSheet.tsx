@@ -36,12 +36,6 @@ import {
   BENEFICIARY_TYPE_OPTIONS,
   type ProgressCategoryKey,
 } from '../../lib/filter-constants'
-import type { Currency } from '@/schemas/charts'
-import { useUserCurrency } from '@/lib/hooks/useUserCurrency'
-import {
-  setPreferenceCookie,
-  USER_CURRENCY_STORAGE_KEY,
-} from '@/lib/user-preferences'
 import type { PnrrWorkerFilterFacets } from '../../workers/pnrr-worker-types'
 
 const SEARCH_DEBOUNCE_MS = 300
@@ -71,21 +65,6 @@ const FILTER_INPUT_CLASS =
   'h-11 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] pl-10 pr-9 text-sm font-semibold text-[var(--pnrr-fg)] placeholder:text-[var(--pnrr-muted)] focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]'
 const FILTER_TOGGLE_ITEM_CLASS =
   'h-10 min-w-0 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-2 text-sm font-black text-[var(--pnrr-fg)] transition-colors hover:bg-[var(--pnrr-bg)] data-[state=on]:bg-[var(--pnrr-fg)] data-[state=on]:text-[var(--pnrr-bg)] sm:px-4'
-
-function applyGlobalCurrency(currency: Currency): void {
-  if (typeof window !== 'undefined') {
-    try {
-      window.localStorage.setItem(
-        USER_CURRENCY_STORAGE_KEY,
-        JSON.stringify(currency),
-      )
-    } catch (error) {
-      console.warn('Failed to write currency to localStorage', error)
-    }
-  }
-
-  setPreferenceCookie(USER_CURRENCY_STORAGE_KEY, currency)
-}
 
 function getSelectionKey(values: readonly string[]): string {
   return values.join(SELECTION_SEPARATOR)
@@ -172,9 +151,6 @@ export function PnrrFilterSheet({
   const setSearch = filterState.setSearch
   const setBeneficiarySearch = filterState.setBeneficiarySearch
   const setBeneficiaryCui = filterState.setBeneficiaryCui
-  const [userCurrency, setUserCurrency] = useUserCurrency()
-  const selectedCurrency = search.currency ?? userCurrency
-
   // Local debounced state for search inputs
   const globalSearch = search.search ?? ''
   const globalBeneficiarySearch = search.beneficiarySearch ?? ''
@@ -372,43 +348,48 @@ export function PnrrFilterSheet({
             <div className="w-full min-w-0 max-w-full space-y-6 overflow-x-hidden p-4 sm:p-6">
               <section className="space-y-2">
                 <Label className={FILTER_LABEL_CLASS}>
-                  <Trans>Currency</Trans>
+                  <Trans>Source currency</Trans>
                 </Label>
                 <ToggleGroup
                   type="single"
-                  value={selectedCurrency}
-                  onValueChange={(value) => {
-                    if (value === 'RON' || value === 'EUR' || value === 'USD') {
-                      const nextCurrency = value as Currency
-                      applyGlobalCurrency(nextCurrency)
-                      setUserCurrency(nextCurrency)
-                      filterState.setCurrency(nextCurrency)
-                    }
-                  }}
+                  value="RON"
+                  aria-describedby="pnrr-source-currency-help"
                   className="grid w-full grid-cols-3 gap-2"
                 >
                   <ToggleGroupItem
                     value="RON"
                     className={FILTER_TOGGLE_ITEM_CLASS}
-                    aria-label={t`Display values in RON`}
+                    aria-label={t`PNRR project values are published in RON`}
                   >
                     RON
                   </ToggleGroupItem>
                   <ToggleGroupItem
                     value="EUR"
+                    disabled
                     className={FILTER_TOGGLE_ITEM_CLASS}
-                    aria-label={t`Display values in EUR`}
+                    aria-label={t`EUR conversion unavailable without an authoritative exchange rate`}
                   >
                     EURO
                   </ToggleGroupItem>
                   <ToggleGroupItem
                     value="USD"
+                    disabled
                     className={FILTER_TOGGLE_ITEM_CLASS}
-                    aria-label={t`Display values in USD`}
+                    aria-label={t`USD conversion unavailable without an authoritative exchange rate`}
                   >
                     USD
                   </ToggleGroupItem>
                 </ToggleGroup>
+                <p
+                  id="pnrr-source-currency-help"
+                  className="text-xs leading-relaxed text-[var(--pnrr-muted)]"
+                >
+                  <Trans>
+                    MIPE project values remain in their published RON. National
+                    indicators published in EUR are labeled separately. No
+                    estimated exchange rate is applied.
+                  </Trans>
+                </p>
               </section>
 
               <div className="border-t-2 border-[var(--pnrr-border)]" />

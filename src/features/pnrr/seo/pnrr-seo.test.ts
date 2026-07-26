@@ -17,6 +17,8 @@ type HeadMetaEntry = {
 }
 
 function makeRaw(overrides: Partial<RawPnrrProject> = {}): RawPnrrProject {
+  const listedFundingRon =
+    overrides.valoare_fe ?? overrides['Valoare (EUR)'] ?? 1_000_000
   return {
     'Titlu Proiect': 'Modernizare infrastructura scolara',
     'Nume Beneficiar': 'MUNICIPIUL TEST',
@@ -24,6 +26,7 @@ function makeRaw(overrides: Partial<RawPnrrProject> = {}): RawPnrrProject {
     County: 'Cluj',
     'Sursă Finanțare': 'grant',
     'Valoare (EUR)': 1_000_000,
+    valoare_fe: listedFundingRon,
     'Progres Tehnic': '50%',
     'Progres Financiar': '40%',
     'Cod Componentă': 'C10',
@@ -66,10 +69,10 @@ describe('pnrr-seo', () => {
     })
 
     expect(snapshot.projectCount).toBe(2)
-    expect(snapshot.totalValueEur).toBe(4_000_000)
+    expect(snapshot.listedFundingTotalRon).toBe(4_000_000)
     expect(snapshot.completedCount).toBe(1)
-    expect(snapshot.completedValueEur).toBe(1_000_000)
-    expect(snapshot.loanTotalEur).toBe(3_000_000)
+    expect(snapshot.completedListedFundingRon).toBe(1_000_000)
+    expect(snapshot.loanListedFundingRon).toBe(3_000_000)
     expect(snapshot.loanPercent).toBe(75)
     expect(snapshot.missingFinancialProgressCount).toBe(1)
     expect(snapshot.missingFinancialProgressPercent).toBe(50)
@@ -94,16 +97,16 @@ describe('pnrr-seo', () => {
     })
 
     expect(snapshot.projectCount).toBe(1)
-    expect(snapshot.totalValueEur).toBe(5_000_000)
+    expect(snapshot.listedFundingTotalRon).toBe(5_000_000)
     expect(snapshot.completedCount).toBe(1)
-    expect(snapshot.completedValueEur).toBe(5_000_000)
-    expect(snapshot.loanTotalEur).toBe(0)
+    expect(snapshot.completedListedFundingRon).toBe(5_000_000)
+    expect(snapshot.loanListedFundingRon).toBe(0)
     expect(snapshot.missingFinancialProgressCount).toBe(0)
     expect(snapshot.anomalyCount).toBe(1)
     expect(snapshot.topComponents[0]).toMatchObject({
       id: 'C12',
       count: 1,
-      valueEur: 5_000_000,
+      listedFundingRon: 5_000_000,
     })
     expect(snapshot.topCounties[0]).toMatchObject({
       id: 'Iași',

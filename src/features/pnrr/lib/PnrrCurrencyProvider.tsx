@@ -1,5 +1,4 @@
-import { useMemo, type ReactNode } from 'react'
-import { useUserCurrency } from '@/lib/hooks/useUserCurrency'
+import type { ReactNode } from 'react'
 import { PnrrCurrencyContext } from './pnrr-currency-context'
 import type { Currency } from '@/schemas/charts'
 
@@ -12,13 +11,10 @@ export function PnrrCurrencyProvider({
   readonly currency?: Currency
   readonly initialCurrency?: Currency
 }) {
-  const [userCurrency] = useUserCurrency(initialCurrency)
-  const value = useMemo(
-    () => currency ?? userCurrency,
-    [currency, userCurrency],
-  )
+  void currency
+  void initialCurrency
   return (
-    <PnrrCurrencyContext.Provider value={value}>
+    <PnrrCurrencyContext.Provider value="RON">
       {children}
     </PnrrCurrencyContext.Provider>
   )

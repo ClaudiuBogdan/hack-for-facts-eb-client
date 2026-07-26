@@ -56,6 +56,11 @@ import { Route as ProvocareTermeniSiConditiiRouteImport } from './routes/provoca
 import { Route as ProvocareNotificariRouteImport } from './routes/provocare_.notificari'
 import { Route as ProcurementSearchRouteImport } from './routes/procurement/search'
 import { Route as ProcurementAnalyticsRouteImport } from './routes/procurement/analytics'
+import { Route as PnrrVerificareRouteImport } from './routes/pnrr_.verificare'
+import { Route as PnrrSurseRouteImport } from './routes/pnrr_.surse'
+import { Route as PnrrProiecteRouteImport } from './routes/pnrr_.proiecte'
+import { Route as PnrrOrganizatiiRouteImport } from './routes/pnrr_.organizatii'
+import { Route as PnrrJudeteRouteImport } from './routes/pnrr_.judete'
 import { Route as PnrrShareImageDotpngRouteImport } from './routes/pnrr.share-image[.]png'
 import { Route as OngUriServiciiRouteImport } from './routes/ong-uri.servicii'
 import { Route as OngUriCuiRouteImport } from './routes/ong-uri.$cui'
@@ -101,6 +106,9 @@ import { Route as ProcurementDirectAcquisitionsIdRouteImport } from './routes/pr
 import { Route as ProcurementContractsIdRouteImport } from './routes/procurement/contracts/$id'
 import { Route as ProcurementCategoriesCodeRouteImport } from './routes/procurement/categories/$code'
 import { Route as PrimarieCuiShareImageDotpngRouteImport } from './routes/primarie/$cui/share-image[.]png'
+import { Route as PnrrProiecteProjectKeyRouteImport } from './routes/pnrr_.proiecte_.$projectKey'
+import { Route as PnrrOrganizatiiCuiRouteImport } from './routes/pnrr_.organizatii_.$cui'
+import { Route as PnrrJudeteCountySirutaRouteImport } from './routes/pnrr_.judete_.$countySiruta'
 import { Route as ParlamentStenogrameSpeechKeyRouteImport } from './routes/parlament/stenograme/$speechKey'
 import { Route as ParlamentGrupuriGroupIdRouteImport } from './routes/parlament/grupuri/$groupId'
 import { Route as ParlamentComisiiCommitteeKeyRouteImport } from './routes/parlament/comisii/$committeeKey'
@@ -449,6 +457,37 @@ const ProcurementAnalyticsRoute = ProcurementAnalyticsRouteImport.update({
 } as any).lazy(() =>
   import('./routes/procurement/analytics.lazy').then((d) => d.Route),
 )
+const PnrrVerificareRoute = PnrrVerificareRouteImport.update({
+  id: '/pnrr_/verificare',
+  path: '/pnrr/verificare',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/pnrr_.verificare.lazy').then((d) => d.Route),
+)
+const PnrrSurseRoute = PnrrSurseRouteImport.update({
+  id: '/pnrr_/surse',
+  path: '/pnrr/surse',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/pnrr_.surse.lazy').then((d) => d.Route))
+const PnrrProiecteRoute = PnrrProiecteRouteImport.update({
+  id: '/pnrr_/proiecte',
+  path: '/pnrr/proiecte',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/pnrr_.proiecte.lazy').then((d) => d.Route),
+)
+const PnrrOrganizatiiRoute = PnrrOrganizatiiRouteImport.update({
+  id: '/pnrr_/organizatii',
+  path: '/pnrr/organizatii',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/pnrr_.organizatii.lazy').then((d) => d.Route),
+)
+const PnrrJudeteRoute = PnrrJudeteRouteImport.update({
+  id: '/pnrr_/judete',
+  path: '/pnrr/judete',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/pnrr_.judete.lazy').then((d) => d.Route))
 const PnrrShareImageDotpngRoute = PnrrShareImageDotpngRouteImport.update({
   id: '/share-image.png',
   path: '/share-image.png',
@@ -759,6 +798,27 @@ const PrimarieCuiShareImageDotpngRoute =
     path: '/share-image.png',
     getParentRoute: () => PrimarieCuiRouteRoute,
   } as any)
+const PnrrProiecteProjectKeyRoute = PnrrProiecteProjectKeyRouteImport.update({
+  id: '/pnrr_/proiecte_/$projectKey',
+  path: '/pnrr/proiecte/$projectKey',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/pnrr_.proiecte_.$projectKey.lazy').then((d) => d.Route),
+)
+const PnrrOrganizatiiCuiRoute = PnrrOrganizatiiCuiRouteImport.update({
+  id: '/pnrr_/organizatii_/$cui',
+  path: '/pnrr/organizatii/$cui',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/pnrr_.organizatii_.$cui.lazy').then((d) => d.Route),
+)
+const PnrrJudeteCountySirutaRoute = PnrrJudeteCountySirutaRouteImport.update({
+  id: '/pnrr_/judete_/$countySiruta',
+  path: '/pnrr/judete/$countySiruta',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/pnrr_.judete_.$countySiruta.lazy').then((d) => d.Route),
+)
 const ParlamentStenogrameSpeechKeyRoute =
   ParlamentStenogrameSpeechKeyRouteImport.update({
     id: '/parlament/stenograme/$speechKey',
@@ -1343,6 +1403,11 @@ export interface FileRoutesByFullPath {
   '/ong-uri/$cui': typeof OngUriCuiRoute
   '/ong-uri/servicii': typeof OngUriServiciiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
+  '/pnrr/judete': typeof PnrrJudeteRoute
+  '/pnrr/organizatii': typeof PnrrOrganizatiiRoute
+  '/pnrr/proiecte': typeof PnrrProiecteRoute
+  '/pnrr/surse': typeof PnrrSurseRoute
+  '/pnrr/verificare': typeof PnrrVerificareRoute
   '/procurement/analytics': typeof ProcurementAnalyticsRoute
   '/procurement/search': typeof ProcurementSearchRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
@@ -1397,6 +1462,9 @@ export interface FileRoutesByFullPath {
   '/parlament/comisii/$committeeKey': typeof ParlamentComisiiCommitteeKeyRoute
   '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
   '/parlament/stenograme/$speechKey': typeof ParlamentStenogrameSpeechKeyRoute
+  '/pnrr/judete/$countySiruta': typeof PnrrJudeteCountySirutaRoute
+  '/pnrr/organizatii/$cui': typeof PnrrOrganizatiiCuiRoute
+  '/pnrr/proiecte/$projectKey': typeof PnrrProiecteProjectKeyRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/procurement/categories/$code': typeof ProcurementCategoriesCodeRoute
   '/procurement/contracts/$id': typeof ProcurementContractsIdRoute
@@ -1495,6 +1563,11 @@ export interface FileRoutesByTo {
   '/ong-uri/$cui': typeof OngUriCuiRoute
   '/ong-uri/servicii': typeof OngUriServiciiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
+  '/pnrr/judete': typeof PnrrJudeteRoute
+  '/pnrr/organizatii': typeof PnrrOrganizatiiRoute
+  '/pnrr/proiecte': typeof PnrrProiecteRoute
+  '/pnrr/surse': typeof PnrrSurseRoute
+  '/pnrr/verificare': typeof PnrrVerificareRoute
   '/procurement/analytics': typeof ProcurementAnalyticsRoute
   '/procurement/search': typeof ProcurementSearchRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
@@ -1545,6 +1618,9 @@ export interface FileRoutesByTo {
   '/parlament/comisii/$committeeKey': typeof ParlamentComisiiCommitteeKeyRoute
   '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
   '/parlament/stenograme/$speechKey': typeof ParlamentStenogrameSpeechKeyRoute
+  '/pnrr/judete/$countySiruta': typeof PnrrJudeteCountySirutaRoute
+  '/pnrr/organizatii/$cui': typeof PnrrOrganizatiiCuiRoute
+  '/pnrr/proiecte/$projectKey': typeof PnrrProiecteProjectKeyRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/procurement/categories/$code': typeof ProcurementCategoriesCodeRoute
   '/procurement/contracts/$id': typeof ProcurementContractsIdRoute
@@ -1654,6 +1730,11 @@ export interface FileRoutesById {
   '/ong-uri/$cui': typeof OngUriCuiRoute
   '/ong-uri/servicii': typeof OngUriServiciiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
+  '/pnrr_/judete': typeof PnrrJudeteRoute
+  '/pnrr_/organizatii': typeof PnrrOrganizatiiRoute
+  '/pnrr_/proiecte': typeof PnrrProiecteRoute
+  '/pnrr_/surse': typeof PnrrSurseRoute
+  '/pnrr_/verificare': typeof PnrrVerificareRoute
   '/procurement/analytics': typeof ProcurementAnalyticsRoute
   '/procurement/search': typeof ProcurementSearchRoute
   '/provocare_/notificari': typeof ProvocareNotificariRoute
@@ -1708,6 +1789,9 @@ export interface FileRoutesById {
   '/parlament/comisii/$committeeKey': typeof ParlamentComisiiCommitteeKeyRoute
   '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
   '/parlament/stenograme/$speechKey': typeof ParlamentStenogrameSpeechKeyRoute
+  '/pnrr_/judete_/$countySiruta': typeof PnrrJudeteCountySirutaRoute
+  '/pnrr_/organizatii_/$cui': typeof PnrrOrganizatiiCuiRoute
+  '/pnrr_/proiecte_/$projectKey': typeof PnrrProiecteProjectKeyRoute
   '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/procurement/categories/$code': typeof ProcurementCategoriesCodeRoute
   '/procurement/contracts/$id': typeof ProcurementContractsIdRoute
@@ -1819,6 +1903,11 @@ export interface FileRouteTypes {
     | '/ong-uri/$cui'
     | '/ong-uri/servicii'
     | '/pnrr/share-image.png'
+    | '/pnrr/judete'
+    | '/pnrr/organizatii'
+    | '/pnrr/proiecte'
+    | '/pnrr/surse'
+    | '/pnrr/verificare'
     | '/procurement/analytics'
     | '/procurement/search'
     | '/provocare/notificari'
@@ -1873,6 +1962,9 @@ export interface FileRouteTypes {
     | '/parlament/comisii/$committeeKey'
     | '/parlament/grupuri/$groupId'
     | '/parlament/stenograme/$speechKey'
+    | '/pnrr/judete/$countySiruta'
+    | '/pnrr/organizatii/$cui'
+    | '/pnrr/proiecte/$projectKey'
     | '/primarie/$cui/share-image.png'
     | '/procurement/categories/$code'
     | '/procurement/contracts/$id'
@@ -1971,6 +2063,11 @@ export interface FileRouteTypes {
     | '/ong-uri/$cui'
     | '/ong-uri/servicii'
     | '/pnrr/share-image.png'
+    | '/pnrr/judete'
+    | '/pnrr/organizatii'
+    | '/pnrr/proiecte'
+    | '/pnrr/surse'
+    | '/pnrr/verificare'
     | '/procurement/analytics'
     | '/procurement/search'
     | '/provocare/notificari'
@@ -2021,6 +2118,9 @@ export interface FileRouteTypes {
     | '/parlament/comisii/$committeeKey'
     | '/parlament/grupuri/$groupId'
     | '/parlament/stenograme/$speechKey'
+    | '/pnrr/judete/$countySiruta'
+    | '/pnrr/organizatii/$cui'
+    | '/pnrr/proiecte/$projectKey'
     | '/primarie/$cui/share-image.png'
     | '/procurement/categories/$code'
     | '/procurement/contracts/$id'
@@ -2129,6 +2229,11 @@ export interface FileRouteTypes {
     | '/ong-uri/$cui'
     | '/ong-uri/servicii'
     | '/pnrr/share-image.png'
+    | '/pnrr_/judete'
+    | '/pnrr_/organizatii'
+    | '/pnrr_/proiecte'
+    | '/pnrr_/surse'
+    | '/pnrr_/verificare'
     | '/procurement/analytics'
     | '/procurement/search'
     | '/provocare_/notificari'
@@ -2183,6 +2288,9 @@ export interface FileRouteTypes {
     | '/parlament/comisii/$committeeKey'
     | '/parlament/grupuri/$groupId'
     | '/parlament/stenograme/$speechKey'
+    | '/pnrr_/judete_/$countySiruta'
+    | '/pnrr_/organizatii_/$cui'
+    | '/pnrr_/proiecte_/$projectKey'
     | '/primarie/$cui/share-image.png'
     | '/procurement/categories/$code'
     | '/procurement/contracts/$id'
@@ -2284,6 +2392,11 @@ export interface RootRouteChildren {
   CompaniesSearchRoute: typeof CompaniesSearchRoute
   ExperimentalSearchRoute: typeof ExperimentalSearchRoute
   IntreprinderiPubliceCuiRoute: typeof IntreprinderiPubliceCuiRoute
+  PnrrJudeteRoute: typeof PnrrJudeteRoute
+  PnrrOrganizatiiRoute: typeof PnrrOrganizatiiRoute
+  PnrrProiecteRoute: typeof PnrrProiecteRoute
+  PnrrSurseRoute: typeof PnrrSurseRoute
+  PnrrVerificareRoute: typeof PnrrVerificareRoute
   ProvocareNotificariRoute: typeof ProvocareNotificariRoute
   ProvocareTermeniSiConditiiRoute: typeof ProvocareTermeniSiConditiiRoute
   SettingsNotificationsRoute: typeof SettingsNotificationsRoute
@@ -2313,6 +2426,9 @@ export interface RootRouteChildren {
   ParlamentComisiiCommitteeKeyRoute: typeof ParlamentComisiiCommitteeKeyRoute
   ParlamentGrupuriGroupIdRoute: typeof ParlamentGrupuriGroupIdRoute
   ParlamentStenogrameSpeechKeyRoute: typeof ParlamentStenogrameSpeechKeyRoute
+  PnrrJudeteCountySirutaRoute: typeof PnrrJudeteCountySirutaRoute
+  PnrrOrganizatiiCuiRoute: typeof PnrrOrganizatiiCuiRoute
+  PnrrProiecteProjectKeyRoute: typeof PnrrProiecteProjectKeyRoute
   StatisticiSeturiCodRoute: typeof StatisticiSeturiCodRoute
   StatisticiTeritoriiSirutaRoute: typeof StatisticiTeritoriiSirutaRoute
   ClassificationsEconomicIndexRoute: typeof ClassificationsEconomicIndexRoute
@@ -2674,6 +2790,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProcurementAnalyticsRouteImport
       parentRoute: typeof ProcurementRouteRoute
     }
+    '/pnrr_/verificare': {
+      id: '/pnrr_/verificare'
+      path: '/pnrr/verificare'
+      fullPath: '/pnrr/verificare'
+      preLoaderRoute: typeof PnrrVerificareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pnrr_/surse': {
+      id: '/pnrr_/surse'
+      path: '/pnrr/surse'
+      fullPath: '/pnrr/surse'
+      preLoaderRoute: typeof PnrrSurseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pnrr_/proiecte': {
+      id: '/pnrr_/proiecte'
+      path: '/pnrr/proiecte'
+      fullPath: '/pnrr/proiecte'
+      preLoaderRoute: typeof PnrrProiecteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pnrr_/organizatii': {
+      id: '/pnrr_/organizatii'
+      path: '/pnrr/organizatii'
+      fullPath: '/pnrr/organizatii'
+      preLoaderRoute: typeof PnrrOrganizatiiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pnrr_/judete': {
+      id: '/pnrr_/judete'
+      path: '/pnrr/judete'
+      fullPath: '/pnrr/judete'
+      preLoaderRoute: typeof PnrrJudeteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pnrr/share-image.png': {
       id: '/pnrr/share-image.png'
       path: '/share-image.png'
@@ -3002,6 +3153,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/primarie/$cui/share-image.png'
       preLoaderRoute: typeof PrimarieCuiShareImageDotpngRouteImport
       parentRoute: typeof PrimarieCuiRouteRoute
+    }
+    '/pnrr_/proiecte_/$projectKey': {
+      id: '/pnrr_/proiecte_/$projectKey'
+      path: '/pnrr/proiecte/$projectKey'
+      fullPath: '/pnrr/proiecte/$projectKey'
+      preLoaderRoute: typeof PnrrProiecteProjectKeyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pnrr_/organizatii_/$cui': {
+      id: '/pnrr_/organizatii_/$cui'
+      path: '/pnrr/organizatii/$cui'
+      fullPath: '/pnrr/organizatii/$cui'
+      preLoaderRoute: typeof PnrrOrganizatiiCuiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pnrr_/judete_/$countySiruta': {
+      id: '/pnrr_/judete_/$countySiruta'
+      path: '/pnrr/judete/$countySiruta'
+      fullPath: '/pnrr/judete/$countySiruta'
+      preLoaderRoute: typeof PnrrJudeteCountySirutaRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/parlament/stenograme/$speechKey': {
       id: '/parlament/stenograme/$speechKey'
@@ -3908,6 +4080,11 @@ const rootRouteChildren: RootRouteChildren = {
   CompaniesSearchRoute: CompaniesSearchRoute,
   ExperimentalSearchRoute: ExperimentalSearchRoute,
   IntreprinderiPubliceCuiRoute: IntreprinderiPubliceCuiRoute,
+  PnrrJudeteRoute: PnrrJudeteRoute,
+  PnrrOrganizatiiRoute: PnrrOrganizatiiRoute,
+  PnrrProiecteRoute: PnrrProiecteRoute,
+  PnrrSurseRoute: PnrrSurseRoute,
+  PnrrVerificareRoute: PnrrVerificareRoute,
   ProvocareNotificariRoute: ProvocareNotificariRoute,
   ProvocareTermeniSiConditiiRoute: ProvocareTermeniSiConditiiRoute,
   SettingsNotificationsRoute: SettingsNotificationsRoute,
@@ -3940,6 +4117,9 @@ const rootRouteChildren: RootRouteChildren = {
   ParlamentComisiiCommitteeKeyRoute: ParlamentComisiiCommitteeKeyRoute,
   ParlamentGrupuriGroupIdRoute: ParlamentGrupuriGroupIdRoute,
   ParlamentStenogrameSpeechKeyRoute: ParlamentStenogrameSpeechKeyRoute,
+  PnrrJudeteCountySirutaRoute: PnrrJudeteCountySirutaRoute,
+  PnrrOrganizatiiCuiRoute: PnrrOrganizatiiCuiRoute,
+  PnrrProiecteProjectKeyRoute: PnrrProiecteProjectKeyRoute,
   StatisticiSeturiCodRoute: StatisticiSeturiCodRoute,
   StatisticiTeritoriiSirutaRoute: StatisticiTeritoriiSirutaRoute,
   ClassificationsEconomicIndexRoute: ClassificationsEconomicIndexRoute,
@@ -3966,3 +4146,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

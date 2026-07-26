@@ -1,25 +1,27 @@
-import { Trans } from '@lingui/react/macro'
-import { t } from '@lingui/core/macro'
-import type { ElementType, ReactNode } from 'react'
-import { usePnrrCurrency } from '../../lib/usePnrrCurrency'
-import { formatPnrrCurrency, formatPnrrPercentage } from '../../lib/formatting'
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
+import { Link } from "@tanstack/react-router";
+import type { ElementType, ReactNode } from "react";
+import { usePnrrCurrency } from "../../lib/usePnrrCurrency";
+import { formatPnrrCurrency, formatPnrrPercentage } from "../../lib/formatting";
 import type {
   PnrrEntityType,
   PnrrProject,
   PnrrProjectRecord,
   PnrrReportedProgress,
-} from '@/schemas/pnrr'
-import { PNRR_COMPONENTS } from '../../data/component-definitions'
-import { PNRR_MEASURES } from '../../data/measure-definitions'
+} from "@/schemas/pnrr";
+import { PNRR_COMPONENTS } from "../../data/component-definitions";
+import { PNRR_MEASURES } from "../../data/measure-definitions";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetDescription,
-} from '@/components/ui/sheet'
+} from "@/components/ui/sheet";
 import {
   AlertTriangle,
+  ArrowRight,
   Building2,
   CalendarDays,
   Copy,
@@ -31,37 +33,38 @@ import {
   Scale,
   Wallet,
   Wrench,
-} from 'lucide-react'
+} from "lucide-react";
 import {
   getAnomalyLabel,
   getDataQualitySignalLabel,
-} from '../../lib/anomaly-definitions'
-import { cn } from '@/lib/utils'
-import { PnrrEntityShortcutLinks } from '../PnrrEntityShortcutLinks'
-import { formatCurrency } from '@/lib/utils'
-import { PNRR_FILESET_ID, PNRR_MIPE_SOURCE_URL } from '../../lib/snapshot'
+} from "../../lib/anomaly-definitions";
+import { cn } from "@/lib/utils";
+import { PnrrEntityShortcutLinks } from "../PnrrEntityShortcutLinks";
+import { formatCurrency } from "@/lib/utils";
+import { PNRR_FILESET_ID, PNRR_MIPE_SOURCE_URL } from "../../lib/snapshot";
 
 export function PnrrProjectDrawer({
   project,
   onClose,
 }: {
-  readonly project: PnrrProject | null
-  readonly onClose: () => void
+  readonly project: PnrrProject | null;
+  readonly onClose: () => void;
 }) {
-  const currency = usePnrrCurrency()
+  const currency = usePnrrCurrency();
 
-  if (!project) return null
-  const comp = PNRR_COMPONENTS[project.componentCode]
-  const measure = PNRR_MEASURES[project.measureFullCode]
+  if (!project) return null;
+  const comp = PNRR_COMPONENTS[project.componentCode];
+  const measure = PNRR_MEASURES[project.measureFullCode];
   const techVal =
-    typeof project.techProgress === 'number' ? project.techProgress : null
+    typeof project.techProgress === "number" ? project.techProgress : null;
   const finVal =
-    typeof project.finProgress === 'number' ? project.finProgress : null
-  const componentColor = comp?.color ?? 'var(--pnrr-blue)'
+    typeof project.finProgress === "number" ? project.finProgress : null;
+  const componentColor = comp?.color ?? "var(--pnrr-blue)";
   const hasSignals =
-    project.anomalies.length > 0 || project.dataQualitySignals.length > 0
-  const records = project.records ?? [project]
-  const projectValue = project.totalValueEur ?? project.valueEur
+    project.anomalies.length > 0 || project.dataQualitySignals.length > 0;
+  const records = project.records ?? [project];
+  const projectValue =
+    project.listedFundingTotalRon ?? project.listedFundingRon;
 
   return (
     <Sheet open={!!project} onOpenChange={(open) => !open && onClose()}>
@@ -84,12 +87,12 @@ export function PnrrProjectDrawer({
             </span>
             {measure && (
               <span className="inline-flex h-9 items-center gap-1.5 rounded-sm border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] px-3 text-sm font-black text-[var(--pnrr-fg)]">
-                {measure.type === 'reform' ? (
+                {measure.type === "reform" ? (
                   <Scale className="h-4 w-4" />
                 ) : (
                   <Wrench className="h-4 w-4" />
                 )}
-                {measure.type === 'reform' ? (
+                {measure.type === "reform" ? (
                   <Trans>Reform</Trans>
                 ) : (
                   <Trans>Investment</Trans>
@@ -102,7 +105,7 @@ export function PnrrProjectDrawer({
           </SheetTitle>
           <SheetDescription className="text-left text-sm font-medium text-[var(--pnrr-muted)]">
             {project.measureFullCode}
-            {measure ? ` · ${measure.nameRo}` : ''}
+            {measure ? ` · ${measure.nameRo}` : ""}
           </SheetDescription>
         </SheetHeader>
 
@@ -111,7 +114,7 @@ export function PnrrProjectDrawer({
             <MetricBox
               icon={Wallet}
               label={t`Listed EU funding`}
-              value={formatPnrrCurrency(projectValue, currency, 'standard')}
+              value={formatPnrrCurrency(projectValue, currency, "standard")}
               color={componentColor}
             />
 
@@ -128,7 +131,7 @@ export function PnrrProjectDrawer({
               label={t`Reported technical progress`}
               value={techVal}
               displayValue={formatProgressForRecord(project.techProgress)}
-              isCategorical={typeof project.techProgress === 'string'}
+              isCategorical={typeof project.techProgress === "string"}
               color={componentColor}
             />
 
@@ -137,7 +140,7 @@ export function PnrrProjectDrawer({
               label={t`Reported financial progress`}
               value={finVal}
               displayValue={formatProgressForRecord(project.finProgress)}
-              isCategorical={typeof project.finProgress === 'string'}
+              isCategorical={typeof project.finProgress === "string"}
               color={componentColor}
             />
           </div>
@@ -148,7 +151,7 @@ export function PnrrProjectDrawer({
             </DetailRow>
             <DetailRow label={t`CUI`}>
               <span className="inline-flex items-center gap-2">
-                {project.cui ?? '—'}
+                {project.cui ?? "—"}
                 {project.cui && (
                   <button
                     type="button"
@@ -162,20 +165,20 @@ export function PnrrProjectDrawer({
               </span>
             </DetailRow>
             <DetailRow label="id_angajament">
-              <span>{project.engagementId ?? '—'}</span>
+              <span>{project.engagementId ?? "—"}</span>
             </DetailRow>
             <DetailRow label={t`Contract number`}>
-              <span>{project.contractNumber ?? '—'}</span>
+              <span>{project.contractNumber ?? "—"}</span>
             </DetailRow>
             <DetailRow label={t`Records`}>
-              <span>{records.length.toLocaleString('ro-RO')}</span>
+              <span>{records.length.toLocaleString("ro-RO")}</span>
             </DetailRow>
             <DetailRow icon={CalendarDays} label={t`Commitment date`}>
               <span>{formatSourceDate(project.commitmentDate)}</span>
             </DetailRow>
             <DetailRow label={t`Implementation period`}>
               <span>
-                {formatSourceDate(project.startDate)} –{' '}
+                {formatSourceDate(project.startDate)} –{" "}
                 {formatSourceDate(project.endDate)}
               </span>
             </DetailRow>
@@ -191,17 +194,30 @@ export function PnrrProjectDrawer({
               </span>
             </DetailRow>
             <DetailRow label={t`Impact`}>
-              <span>{project.impact ?? '—'}</span>
+              <span>{project.impact ?? "—"}</span>
             </DetailRow>
             <DetailRow label={t`CRI`}>
               <span>
                 {project.cri}
-                {project.criName ? ` · ${project.criName}` : ''}
+                {project.criName ? ` · ${project.criName}` : ""}
               </span>
             </DetailRow>
           </div>
 
           <PnrrEntityShortcutLinks cui={project.cui} />
+
+          {project.engagementId && (
+            <Link
+              to="/pnrr/proiecte/$projectKey"
+              params={{
+                projectKey: `mipe-engagement:${project.engagementId.trim()}`,
+              }}
+              className="flex min-h-11 w-full items-center justify-center gap-2 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-fg)] px-4 py-2 text-center text-sm font-black uppercase tracking-wide text-[var(--pnrr-bg)] transition-colors hover:bg-[var(--pnrr-card)] hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+            >
+              <ArrowRight className="h-4 w-4" />
+              <Trans>Open the complete project page</Trans>
+            </Link>
+          )}
 
           {hasSignals && (
             <div className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4">
@@ -280,36 +296,36 @@ export function PnrrProjectDrawer({
         <DrawerFooterClose onClose={onClose} />
       </SheetContent>
     </Sheet>
-  )
+  );
 }
 
 function formatProjectLocation(locality: string, county: string): string {
-  if (!locality) return county || '—'
-  if (!county) return locality
+  if (!locality) return county || "—";
+  if (!county) return locality;
   if (
     normalizeLocationForDisplay(locality) ===
     normalizeLocationForDisplay(county)
   ) {
-    return locality
+    return locality;
   }
 
-  return `${locality}, ${county}`
+  return `${locality}, ${county}`;
 }
 
 function normalizeLocationForDisplay(value: string): string {
   return value
-    .toLocaleLowerCase('ro-RO')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z]/g, '')
+    .toLocaleLowerCase("ro-RO")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z]/g, "");
 }
 
 function ProjectRecordDetail({
   record,
   currency,
 }: {
-  readonly record: PnrrProjectRecord
-  readonly currency: 'RON' | 'EUR' | 'USD'
+  readonly record: PnrrProjectRecord;
+  readonly currency: "RON" | "EUR" | "USD";
 }) {
   return (
     <div className="border border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] p-3">
@@ -321,19 +337,19 @@ function ProjectRecordDetail({
           {record.measureFullCode}
         </span>
         <span className="ml-auto text-sm font-black tabular-nums text-[var(--pnrr-fg)]">
-          {formatPnrrCurrency(record.valueEur, currency, 'standard')}
+          {formatPnrrCurrency(record.listedFundingRon, currency, "standard")}
         </span>
       </div>
       <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-[var(--pnrr-muted)]">
-        <RecordField label={t`Contract`} value={record.contractNumber ?? '—'} />
+        <RecordField label={t`Contract`} value={record.contractNumber ?? "—"} />
         <RecordField
           label={t`Funding`}
           value={getFundingLabel(record.fundingSource)}
         />
-        <RecordField label={t`CRI`} value={record.cri || '—'} />
-        <RecordField label={t`CRI name`} value={record.criName ?? '—'} />
-        <RecordField label={t`County`} value={record.county || '—'} />
-        <RecordField label={t`Locality`} value={record.locality || '—'} />
+        <RecordField label={t`CRI`} value={record.cri || "—"} />
+        <RecordField label={t`CRI name`} value={record.criName ?? "—"} />
+        <RecordField label={t`County`} value={record.county || "—"} />
+        <RecordField label={t`Locality`} value={record.locality || "—"} />
         <RecordField
           label={t`Commitment date`}
           value={formatSourceDate(record.commitmentDate)}
@@ -348,9 +364,9 @@ function ProjectRecordDetail({
         />
         <RecordField
           label={t`Source beneficiary type`}
-          value={record.sourceBeneficiaryType ?? '—'}
+          value={record.sourceBeneficiaryType ?? "—"}
         />
-        <RecordField label={t`Impact`} value={record.impact ?? '—'} />
+        <RecordField label={t`Impact`} value={record.impact ?? "—"} />
         <RecordField
           label={t`Total value (RON)`}
           value={formatRonValue(record.totalValueRon)}
@@ -358,6 +374,10 @@ function ProjectRecordDetail({
         <RecordField
           label={t`EU funds (RON)`}
           value={formatRonValue(record.sourceValueRon)}
+        />
+        <RecordField
+          label={t`Legacy source value (EUR)`}
+          value={formatEurValue(record.sourceValueEur)}
         />
         <RecordField
           label={t`National contribution (RON)`}
@@ -381,32 +401,37 @@ function ProjectRecordDetail({
         />
       </dl>
     </div>
-  )
+  );
 }
 
 function formatSourceDate(value: string | null | undefined): string {
-  if (!value) return '—'
-  const parsed = new Date(value)
-  if (Number.isNaN(parsed.getTime())) return value
-  return parsed.toLocaleDateString('ro-RO', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    timeZone: 'Europe/Bucharest',
-  })
+  if (!value) return "—";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return parsed.toLocaleDateString("ro-RO", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: "Europe/Bucharest",
+  });
 }
 
 function formatRonValue(value: number | null | undefined): string {
-  if (value === null || value === undefined) return '—'
-  return formatCurrency(value, 'standard', 'RON')
+  if (value === null || value === undefined) return "—";
+  return formatCurrency(value, "standard", "RON");
+}
+
+function formatEurValue(value: number | null | undefined): string {
+  if (value === null || value === undefined) return "—";
+  return formatCurrency(value, "standard", "EUR");
 }
 
 function RecordField({
   label,
   value,
 }: {
-  readonly label: string
-  readonly value: string
+  readonly label: string;
+  readonly value: string;
 }) {
   return (
     <div className="min-w-0">
@@ -415,18 +440,18 @@ function RecordField({
         {value}
       </dd>
     </div>
-  )
+  );
 }
 
 function formatProgressForRecord(progress: PnrrReportedProgress): string {
-  if (progress === null) return t`No data`
-  if (progress === 'under-30-reported') {
-    return t`Under 30% (reported category)`
+  if (progress === null) return t`No data`;
+  if (progress === "under-30-reported") {
+    return t`Under 30% (reported category)`;
   }
-  if (progress === 'in-implementation') {
-    return t`In implementation (percentage not published)`
+  if (progress === "in-implementation") {
+    return t`In implementation (percentage not published)`;
   }
-  return formatPnrrPercentage(progress)
+  return formatPnrrPercentage(progress);
 }
 
 function DrawerFooterClose({ onClose }: { readonly onClose: () => void }) {
@@ -440,7 +465,7 @@ function DrawerFooterClose({ onClose }: { readonly onClose: () => void }) {
         <Trans>Close</Trans>
       </button>
     </div>
-  )
+  );
 }
 
 function MetricBox({
@@ -449,10 +474,10 @@ function MetricBox({
   value,
   color,
 }: {
-  readonly icon: ElementType
-  readonly label: string
-  readonly value: string
-  readonly color: string
+  readonly icon: ElementType;
+  readonly label: string;
+  readonly value: string;
+  readonly color: string;
 }) {
   return (
     <div className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4">
@@ -464,7 +489,7 @@ function MetricBox({
         {value}
       </div>
     </div>
-  )
+  );
 }
 
 function ProgressMeter({
@@ -474,11 +499,11 @@ function ProgressMeter({
   isCategorical = false,
   color,
 }: {
-  readonly label: string
-  readonly value: number | null
-  readonly displayValue: string
-  readonly isCategorical?: boolean
-  readonly color: string
+  readonly label: string;
+  readonly value: number | null;
+  readonly displayValue: string;
+  readonly isCategorical?: boolean;
+  readonly color: string;
 }) {
   return (
     <div>
@@ -515,7 +540,7 @@ function ProgressMeter({
         </div>
       )}
     </div>
-  )
+  );
 }
 
 function DetailRow({
@@ -523,9 +548,9 @@ function DetailRow({
   label,
   children,
 }: {
-  readonly icon?: ElementType
-  readonly label: string
-  readonly children: ReactNode
+  readonly icon?: ElementType;
+  readonly label: string;
+  readonly children: ReactNode;
 }) {
   return (
     <div className="grid grid-cols-[140px_1fr] gap-3 border-b border-[var(--pnrr-border)] px-4 py-3 last:border-b-0">
@@ -537,7 +562,7 @@ function DetailRow({
         {children}
       </span>
     </div>
-  )
+  );
 }
 
 function SignalChip({
@@ -545,32 +570,32 @@ function SignalChip({
   label,
   tone,
 }: {
-  readonly icon: ElementType
-  readonly label: string
-  readonly tone: 'red' | 'blue'
+  readonly icon: ElementType;
+  readonly label: string;
+  readonly tone: "red" | "blue";
 }) {
   return (
     <div
       className={cn(
-        'flex items-center gap-2 border-2 px-3 py-2 text-sm font-black uppercase tracking-wide',
-        tone === 'red'
-          ? 'border-[var(--pnrr-red)] bg-[var(--pnrr-red)]/10 text-[var(--pnrr-red)]'
-          : 'border-[var(--pnrr-blue)] bg-[var(--pnrr-blue)]/10 text-[var(--pnrr-blue)]',
+        "flex items-center gap-2 border-2 px-3 py-2 text-sm font-black uppercase tracking-wide",
+        tone === "red"
+          ? "border-[var(--pnrr-red)] bg-[var(--pnrr-red)]/10 text-[var(--pnrr-red)]"
+          : "border-[var(--pnrr-blue)] bg-[var(--pnrr-blue)]/10 text-[var(--pnrr-blue)]",
       )}
     >
       <Icon className="h-4 w-4 shrink-0" />
       <span>{label}</span>
     </div>
-  )
+  );
 }
 
-function getFundingLabel(source: PnrrProject['fundingSource']): string {
-  if (source === 'grant') return t`Grant`
-  if (source === 'loan') return t`Loan`
-  return t`Grant + loan`
+function getFundingLabel(source: PnrrProject["fundingSource"]): string {
+  if (source === "grant") return t`Grant`;
+  if (source === "loan") return t`Loan`;
+  return t`Grant + loan`;
 }
 
 function getEntityTypeLabel(type: PnrrEntityType): string {
-  if (type === 'private') return t`Private / non-public`
-  return t`Public`
+  if (type === "private") return t`Private / non-public`;
+  return t`Public`;
 }

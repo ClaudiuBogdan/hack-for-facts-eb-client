@@ -656,7 +656,7 @@ function BeneficiaryDrawer({
   const displayBeneficiary = detail ?? beneficiary
   const topProjects = (detail?.projects ?? [])
     .slice()
-    .sort((a, b) => b.valueEur - a.valueEur)
+    .sort((a, b) => b.listedFundingRon - a.listedFundingRon)
     .slice(0, TOP_PROJECT_LIMIT)
   const techAvg = displayBeneficiary.techProgressAvg
   const finAvg = displayBeneficiary.finProgressAvg
@@ -895,7 +895,7 @@ function TopProjectItem({
         </div>
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
           <span className="text-sm font-black tabular-nums text-[var(--pnrr-fg)]">
-            {formatPnrrCurrency(project.valueEur, currency)}
+            {formatPnrrCurrency(project.listedFundingRon, currency)}
           </span>
           {techValue === null ? (
             <span

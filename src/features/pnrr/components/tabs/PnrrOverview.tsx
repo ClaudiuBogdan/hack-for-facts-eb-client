@@ -10,7 +10,7 @@ import {
 } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
-import { formatNumber, cn } from '@/lib/utils'
+import { formatCurrency, formatNumber, cn } from '@/lib/utils'
 import { usePnrrCurrency } from '../../lib/usePnrrCurrency'
 import { formatPnrrCurrency } from '../../lib/formatting'
 import { formatPnrrCompactCurrencyDisplayParts } from '../pnrr-compact-currency-display'
@@ -88,6 +88,7 @@ export function PnrrOverview({
   const headlineTotalValue = isUsingOfficialAllocation
     ? officialAllocatedTotalEur
     : metricStats.rawTotalValue
+  const headlineCurrency = isUsingOfficialAllocation ? 'EUR' : 'RON'
 
   const selectedProjectId =
     filterState.search.panel === 'project'
@@ -102,7 +103,7 @@ export function PnrrOverview({
         id: c.id,
         label: c.label,
         prefix: c.prefix,
-        value: formatPnrrCurrency(c.valueEur, currency),
+        value: formatPnrrCurrency(c.listedFundingRon, currency),
         pct: c.pct,
         count: c.count,
         color: c.color,
@@ -115,7 +116,7 @@ export function PnrrOverview({
       (overview?.topCounties ?? []).map((c) => ({
         id: c.id,
         label: c.label,
-        value: formatPnrrCurrency(c.valueEur, currency),
+        value: formatPnrrCurrency(c.listedFundingRon, currency),
         pct: c.pct,
         count: c.count,
       })),
@@ -125,7 +126,7 @@ export function PnrrOverview({
   const hasOfficialPaymentData =
     overview?.beneficiaryRankingSource === 'reported-payments' ||
     (overview?.topBeneficiaries ?? []).some(
-      (item) => typeof item.secondaryValueEur === 'number',
+      (item) => typeof item.secondaryListedFundingRon === 'number',
     )
 
   const beneficiaryItems = useMemo(
@@ -135,12 +136,12 @@ export function PnrrOverview({
         itemKey: beneficiary.itemKey ?? beneficiary.id,
         label: beneficiary.label,
         beneficiaryCui: beneficiary.beneficiaryCui ?? null,
-        value: formatPnrrCurrency(beneficiary.valueEur, currency),
+        value: formatPnrrCurrency(beneficiary.listedFundingRon, currency),
         count: beneficiary.count,
         pct: beneficiary.pct,
         secondaryValue:
-          typeof beneficiary.secondaryValueEur === 'number'
-            ? formatPnrrCurrency(beneficiary.secondaryValueEur, currency)
+          typeof beneficiary.secondaryListedFundingRon === 'number'
+            ? formatPnrrCurrency(beneficiary.secondaryListedFundingRon, currency)
             : undefined,
       })),
     [currency, overview?.topBeneficiaries],
@@ -190,8 +191,12 @@ export function PnrrOverview({
                 ? t`Total PNRR allocation`
                 : t`Listed EU funding`
             }
-            value={formatPnrrCurrency(headlineTotalValue, currency)}
-            valueParts={formatPnrrCompactCurrencyDisplayParts(headlineTotalValue, currency)}
+            value={formatCurrency(headlineTotalValue, 'compact', headlineCurrency)}
+            valueParts={
+              isUsingOfficialAllocation
+                ? undefined
+                : formatPnrrCompactCurrencyDisplayParts(headlineTotalValue, currency)
+            }
             sublabel={
               isUsingOfficialAllocation
                 ? t`${formatPnrrCurrency(metricStats.rawTotalValue, currency)} listed EU funding in ${formatNumber(metricStats.projectRecordCount)} records`

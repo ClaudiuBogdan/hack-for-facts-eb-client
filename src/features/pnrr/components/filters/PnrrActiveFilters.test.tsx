@@ -13,7 +13,7 @@ const PROJECT: PnrrProject = {
   county: 'Ilfov',
   locality: 'Chiajna',
   fundingSource: 'grant',
-  valueEur: 100_000,
+  listedFundingRon: 100_000,
   techProgress: 50,
   finProgress: 40,
   status: 'mid-progress',

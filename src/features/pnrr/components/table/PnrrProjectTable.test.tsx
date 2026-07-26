@@ -39,7 +39,7 @@ const PROJECT: PnrrProject = {
   county: 'București',
   locality: 'București',
   fundingSource: 'grant',
-  valueEur: 100_000,
+  listedFundingRon: 100_000,
   techProgress: 50,
   finProgress: 40,
   status: 'mid-progress',
@@ -242,15 +242,15 @@ describe('PnrrProjectTable', () => {
       id: 'record-2',
       componentCode: 'C5',
       county: 'Cluj',
-      valueEur: 40_000,
+      listedFundingRon: 40_000,
     })
     const groupedProject = makeProject({
       id: 'engagement:engagement-1',
       primaryRecord: PROJECT,
       records: [PROJECT, secondaryRecord],
-      totalValueEur: 140_000,
+      listedFundingTotalRon: 140_000,
       recordCount: 2,
-      valueEur: 140_000,
+      listedFundingRon: 140_000,
       componentCodes: ['C4', 'C5'],
       counties: ['București', 'Cluj'],
       variantCounts: {

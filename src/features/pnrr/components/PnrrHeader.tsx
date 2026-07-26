@@ -1,10 +1,9 @@
 import { useEffect, useState, useRef } from 'react'
 import { Trans } from '@lingui/react/macro'
-import { usePnrrCurrency } from '../lib/usePnrrCurrency'
-import { formatPnrrCurrency } from '../lib/formatting'
 import { Skeleton } from '@/components/ui/skeleton'
-import { cn } from '@/lib/utils'
+import { cn, formatCurrency } from '@/lib/utils'
 import type { PnrrView } from '@/schemas/pnrr'
+import type { Currency } from '@/schemas/charts'
 import { PnrrTabNav } from './PnrrTabNav'
 import { PnrrActiveFilters } from './filters/PnrrActiveFilters'
 import { PnrrProjectSearchInput } from './filters/PnrrProjectSearchInput'
@@ -17,6 +16,7 @@ import { Activity } from 'lucide-react'
 export function PnrrHeader({
   projectsCount,
   totalValue,
+  totalValueCurrency,
   totalValueLabel,
   view,
   onViewChange,
@@ -28,6 +28,7 @@ export function PnrrHeader({
 }: {
   readonly projectsCount: number
   readonly totalValue: number
+  readonly totalValueCurrency: Currency
   readonly totalValueLabel?: React.ReactNode
   readonly view: PnrrView
   readonly onViewChange: (view: PnrrView) => void
@@ -46,7 +47,6 @@ export function PnrrHeader({
   const isViewportMobile = useIsMobile()
   const sidebarState = sidebar?.state
   const isMobile = sidebar?.isMobile ?? isViewportMobile
-  const currency = usePnrrCurrency()
   useEffect(() => {
     setHasMounted(true)
     lastScrollYRef.current = window.scrollY
@@ -247,7 +247,11 @@ export function PnrrHeader({
                     style={{ backgroundColor: 'var(--pnrr-card)' }}
                   >
                     <span className="text-sm font-black text-current">
-                      {formatPnrrCurrency(totalValue, currency)}
+                      {formatCurrency(
+                        totalValue,
+                        'compact',
+                        totalValueCurrency,
+                      )}
                     </span>
                     <span className="text-sm font-bold text-current">
                       {displayedTotalValueLabel}

@@ -12,13 +12,13 @@ function makeSnapshot(): PnrrSeoSnapshot {
     projectCount: 24885,
     projectRecordCount: 24967,
     deduplicatedProjectCount: 24000,
-    totalValueEur: 21_400_000_000,
-    deduplicatedTotalValueEur: 21_000_000_000,
+    listedFundingTotalRon: 21_400_000_000,
+    deduplicatedListedFundingRon: 21_000_000_000,
     completedCount: 9000,
-    completedValueEur: 8_000_000_000,
+    completedListedFundingRon: 8_000_000_000,
     inProgressCount: 14000,
     notStartedCount: 1885,
-    loanTotalEur: 6_000_000_000,
+    loanListedFundingRon: 6_000_000_000,
     loanPercent: 28.04,
     missingFinancialProgressCount: 3000,
     missingFinancialProgressPercent: 12.06,
@@ -29,7 +29,7 @@ function makeSnapshot(): PnrrSeoSnapshot {
         id: 'C7',
         label: 'Transformare digitala',
         count: 1200,
-        valueEur: 4_000_000_000,
+        listedFundingRon: 4_000_000_000,
       },
     ],
     topCounties: [
@@ -37,7 +37,7 @@ function makeSnapshot(): PnrrSeoSnapshot {
         id: 'Cluj',
         label: 'Cluj',
         count: 900,
-        valueEur: 800_000_000,
+        listedFundingRon: 800_000_000,
       },
     ],
     topBeneficiaries: [],
@@ -55,7 +55,7 @@ function makeSnapshotWithNationalTopCounty(): PnrrSeoSnapshot {
         id: 'Național',
         label: 'National',
         count: 5000,
-        valueEur: 10_000_000_000,
+        listedFundingRon: 10_000_000_000,
       },
     ],
   }
@@ -70,26 +70,26 @@ describe('pnrr-share-image', () => {
     const viewModel = buildPnrrShareImageViewModel(makeSnapshot())
 
     expect(viewModel.title).toBe('PNRR Romania')
-    expect(viewModel.totalValue).toContain('€')
+    expect(viewModel.totalValue).toContain('RON')
     expect(viewModel.projectCount).toBe('24,9 mii')
     expect(viewModel.completedCount).toBe('9 mii')
     expect(viewModel.topComponent).toBe('Transformare digitala')
     expect(viewModel.topCounty).toBe('Cluj')
-    expect(viewModel.updatedLabel).toBe('Set fisiere MIPE 20260619')
+    expect(viewModel.updatedLabel).toBe('Set fisiere MIPE legacy 20260619')
   })
 
   it('formats Romanian currency even when the active app locale is English', () => {
     i18n.activate('en')
     const viewModel = buildPnrrShareImageViewModel(makeSnapshot())
 
-    expect(viewModel.totalValue).toBe('21,4\u00A0mld. €')
+    expect(viewModel.totalValue).toBe('21,4\u00A0mld. RON')
   })
 
   it('uses the official allocation for the unfiltered total scope', () => {
     const viewModel = buildPnrrShareImageViewModel(
       {
         ...makeSnapshot(),
-        totalValueEur: 20_931_435_758.62,
+        listedFundingTotalRon: 20_931_435_758.62,
         officialAllocatedTotalEur: 21_410_527_592.99,
       },
       { showTotalScope: true },
@@ -102,13 +102,13 @@ describe('pnrr-share-image', () => {
     const viewModel = buildPnrrShareImageViewModel(
       {
         ...makeSnapshot(),
-        totalValueEur: 20_931_435_758.62,
+        listedFundingTotalRon: 20_931_435_758.62,
         officialAllocatedTotalEur: 21_410_527_592.99,
       },
       { showTotalScope: false },
     )
 
-    expect(viewModel.totalValue).toBe('20,93\u00A0mld. €')
+    expect(viewModel.totalValue).toBe('20,93\u00A0mld. RON')
   })
 
   it('uses Total instead of National for the unfiltered share image scope', () => {

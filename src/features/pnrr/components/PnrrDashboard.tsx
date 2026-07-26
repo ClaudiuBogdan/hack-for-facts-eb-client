@@ -1,47 +1,47 @@
-import { useMemo, useState } from 'react'
-import { Trans } from '@lingui/react/macro'
-import { t } from '@lingui/core/macro'
-import { usePnrrWorkerModel } from '../hooks/usePnrrData'
-import { usePnrrFilterState } from '../hooks/usePnrrFilterState'
+import { useMemo, useState } from "react";
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
+import { usePnrrWorkerModel } from "../hooks/usePnrrData";
+import { usePnrrFilterState } from "../hooks/usePnrrFilterState";
 import {
   computeAggregates,
   getActiveFilterCount,
   hasPnrrDataFilters,
   PNRR_FILESET_ID,
-} from '../lib/data-transform'
-import { PnrrCurrencyProvider } from '../lib/PnrrCurrencyProvider'
-import { PnrrContentSkeleton } from './PnrrSkeleton'
-import { PnrrHeader } from './PnrrHeader'
-import { PnrrOverview } from './tabs/PnrrOverview'
-import { PnrrProjectsView } from './tabs/PnrrProjectsView'
-import { PnrrAnomaliesView } from './tabs/PnrrAnomaliesView'
-import { PnrrBeneficiariesView } from './tabs/PnrrBeneficiariesView'
-import { PnrrMapView } from './PnrrMapView'
+} from "../lib/data-transform";
+import { PnrrCurrencyProvider } from "../lib/PnrrCurrencyProvider";
+import { PnrrContentSkeleton } from "./PnrrSkeleton";
+import { PnrrHeader } from "./PnrrHeader";
+import { PnrrOverview } from "./tabs/PnrrOverview";
+import { PnrrProjectsView } from "./tabs/PnrrProjectsView";
+import { PnrrAnomaliesView } from "./tabs/PnrrAnomaliesView";
+import { PnrrBeneficiariesView } from "./tabs/PnrrBeneficiariesView";
+import { PnrrMapView } from "./PnrrMapView";
 import {
   PnrrFilterSheet,
   PnrrFilterTriggerButton,
-} from './filters/PnrrFilterSheet'
-import { PnrrInfoSheet } from './filters/PnrrInfoSheet'
-import { PnrrExportButton } from './table/PnrrExportButton'
-import { Button } from '@/components/ui/button'
-import { AlertTriangle, Info, RefreshCw } from 'lucide-react'
+} from "./filters/PnrrFilterSheet";
+import { PnrrInfoSheet } from "./filters/PnrrInfoSheet";
+import { PnrrExportButton } from "./table/PnrrExportButton";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, Info, RefreshCw } from "lucide-react";
 import {
   buildPnrrSeoSnapshotSearchKey,
   type PnrrSeoSnapshot,
-} from '../seo/pnrr-seo'
-import type { PnrrOverviewMetricStats } from './tabs/PnrrOverview'
-import type { Currency } from '@/schemas/charts'
+} from "../seo/pnrr-seo";
+import type { PnrrOverviewMetricStats } from "./tabs/PnrrOverview";
+import type { Currency } from "@/schemas/charts";
 
 export function PnrrDashboard({
   initialCurrency,
   ssrSnapshot,
   ssrSnapshotSearchKey,
 }: {
-  readonly initialCurrency?: Currency
-  readonly ssrSnapshot?: PnrrSeoSnapshot | null
-  readonly ssrSnapshotSearchKey?: string
+  readonly initialCurrency?: Currency;
+  readonly ssrSnapshot?: PnrrSeoSnapshot | null;
+  readonly ssrSnapshotSearchKey?: string;
 }) {
-  const filterState = usePnrrFilterState()
+  const filterState = usePnrrFilterState();
   const {
     data,
     error,
@@ -50,75 +50,76 @@ export function PnrrDashboard({
     isRefetching,
     refetch,
     isPlaceholderData,
-  } = usePnrrWorkerModel(filterState.search)
-  const [filterSheetOpen, setFilterSheetOpen] = useState(false)
-  const [infoSheetOpen, setInfoSheetOpen] = useState(false)
-  const emptyAggregates = useMemo(() => computeAggregates([]), [])
+  } = usePnrrWorkerModel(filterState.search);
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [infoSheetOpen, setInfoSheetOpen] = useState(false);
+  const emptyAggregates = useMemo(() => computeAggregates([]), []);
 
-  const view = filterState.search.view ?? 'overview'
-  const effectiveCurrency = filterState.search.currency ?? initialCurrency
+  const view = filterState.search.view ?? "overview";
+  const effectiveCurrency: Currency = "RON";
+  void initialCurrency;
   const uatLabelsBySiruta = useMemo(() => {
-    const labels = new Map<string, string>()
+    const labels = new Map<string, string>();
 
     for (const uat of data?.filterFacets.uats ?? []) {
-      labels.set(uat.value, uat.label)
+      labels.set(uat.value, uat.label);
     }
 
-    return labels
-  }, [data?.filterFacets.uats])
+    return labels;
+  }, [data?.filterFacets.uats]);
   const beneficiaryNamesByCui = useMemo(() => {
-    const labels = new Map<string, string>()
+    const labels = new Map<string, string>();
 
     for (const beneficiary of data?.beneficiaryPage.rows ?? []) {
-      if (!beneficiary.cui || !beneficiary.name) continue
+      if (!beneficiary.cui || !beneficiary.name) continue;
 
-      const cui = beneficiary.cui.replace(/\D/g, '')
-      if (!cui) continue
+      const cui = beneficiary.cui.replace(/\D/g, "");
+      if (!cui) continue;
 
-      const existing = labels.get(cui)
-      if (!existing || beneficiary.name.localeCompare(existing, 'ro') < 0) {
-        labels.set(cui, beneficiary.name)
+      const existing = labels.get(cui);
+      if (!existing || beneficiary.name.localeCompare(existing, "ro") < 0) {
+        labels.set(cui, beneficiary.name);
       }
     }
 
-    return labels
-  }, [data?.beneficiaryPage.rows])
-  const hasScopedFilters = hasPnrrDataFilters(filterState.search)
+    return labels;
+  }, [data?.beneficiaryPage.rows]);
+  const hasScopedFilters = hasPnrrDataFilters(filterState.search);
 
-  const filteredAggregates = data?.overview.aggregates ?? emptyAggregates
+  const filteredAggregates = data?.overview.aggregates ?? emptyAggregates;
 
-  const loading = isLoading
-  const loadError = isError && !data ? error : null
+  const loading = isLoading;
+  const loadError = isError && !data ? error : null;
   const currentSnapshotSearchKey = useMemo(
     () => buildPnrrSeoSnapshotSearchKey(filterState.search),
     [filterState.search],
-  )
+  );
   const activeSsrSnapshot =
-    ssrSnapshotSearchKey === currentSnapshotSearchKey ? ssrSnapshot : null
+    ssrSnapshotSearchKey === currentSnapshotSearchKey ? ssrSnapshot : null;
   const headerProjectCount = data
     ? filteredAggregates.projectCount
-    : (activeSsrSnapshot?.projectCount ?? 0)
+    : (activeSsrSnapshot?.projectCount ?? 0);
   const officialAllocatedTotalEur =
     data?.meta?.officialAllocatedTotalEur ??
     activeSsrSnapshot?.officialAllocatedTotalEur ??
-    null
+    null;
   const isUsingOfficialHeaderTotal =
     !hasScopedFilters &&
-    typeof officialAllocatedTotalEur === 'number' &&
-    officialAllocatedTotalEur > 0
+    typeof officialAllocatedTotalEur === "number" &&
+    officialAllocatedTotalEur > 0;
   const headerTotalValue = data
     ? isUsingOfficialHeaderTotal
       ? officialAllocatedTotalEur
       : filteredAggregates.rawTotalValue
     : isUsingOfficialHeaderTotal
       ? officialAllocatedTotalEur
-      : (activeSsrSnapshot?.totalValueEur ?? 0)
-  const hasCachedHeaderStats = loading && !data && activeSsrSnapshot != null
+      : (activeSsrSnapshot?.listedFundingTotalRon ?? 0);
+  const hasCachedHeaderStats = loading && !data && activeSsrSnapshot != null;
   const cachedOverviewStats = activeSsrSnapshot
     ? buildCachedOverviewStats(activeSsrSnapshot)
-    : null
+    : null;
   const shouldRenderCachedOverview =
-    loading && !data && view === 'overview' && cachedOverviewStats != null
+    loading && !data && view === "overview" && cachedOverviewStats != null;
 
   return (
     <PnrrCurrencyProvider
@@ -127,11 +128,12 @@ export function PnrrDashboard({
     >
       <div
         className="min-h-screen min-w-0 max-w-full"
-        style={{ backgroundColor: 'var(--pnrr-bg)' }}
+        style={{ backgroundColor: "var(--pnrr-bg)" }}
       >
         <PnrrHeader
           projectsCount={headerProjectCount}
           totalValue={headerTotalValue}
+          totalValueCurrency={isUsingOfficialHeaderTotal ? "EUR" : "RON"}
           totalValueLabel={
             isUsingOfficialHeaderTotal
               ? t`total allocated`
@@ -169,8 +171,8 @@ export function PnrrDashboard({
           }
         />
 
-        {(data?.meta.paymentCapability === 'degraded' ||
-          data?.meta.indicatorCapability === 'degraded') && (
+        {(data?.meta.paymentCapability === "degraded" ||
+          data?.meta.indicatorCapability === "degraded") && (
           <div className="mx-auto mt-4 flex max-w-7xl items-start gap-3 border-2 border-[var(--pnrr-orange)] bg-[var(--pnrr-card)] px-4 py-3 text-sm text-[var(--pnrr-fg)] sm:px-6">
             <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--pnrr-orange)]" />
             <div>
@@ -187,6 +189,26 @@ export function PnrrDashboard({
             </div>
           </div>
         )}
+
+        {filterState.search.currency &&
+          filterState.search.currency !== "RON" && (
+            <div className="mx-auto mt-4 flex max-w-7xl items-start gap-3 border-2 border-[var(--pnrr-blue)] bg-[var(--pnrr-card)] px-4 py-3 text-sm text-[var(--pnrr-fg)] sm:px-6">
+              <Info className="mt-0.5 h-5 w-5 shrink-0 text-[var(--pnrr-blue)]" />
+              <div>
+                <p className="font-black uppercase tracking-wide">
+                  <Trans>Source currency preserved</Trans>
+                </p>
+                <p className="mt-1 text-[var(--pnrr-muted)]">
+                  <Trans>
+                    This older link requested a display conversion. Project
+                    values now remain in their published RON, while official EUR
+                    indicators are labeled separately. No estimated exchange
+                    rate is applied.
+                  </Trans>
+                </p>
+              </div>
+            </div>
+          )}
 
         {/* Tab Content */}
         <main
@@ -212,12 +234,12 @@ export function PnrrDashboard({
               error={loadError}
               isRetrying={isRefetching}
               onRetry={() => {
-                void refetch()
+                void refetch();
               }}
             />
           ) : (
             <>
-              {view === 'overview' && (
+              {view === "overview" && (
                 <PnrrOverview
                   aggregates={filteredAggregates}
                   filterState={filterState}
@@ -225,7 +247,7 @@ export function PnrrDashboard({
                   officialAllocatedTotalEur={officialAllocatedTotalEur}
                 />
               )}
-              {view === 'projects' && (
+              {view === "projects" && (
                 <PnrrProjectsView
                   page={data!.projectPage}
                   projectRecordCount={filteredAggregates.projectRecordCount}
@@ -233,16 +255,16 @@ export function PnrrDashboard({
                   isPageStatePending={isPlaceholderData}
                 />
               )}
-              {view === 'map' && (
+              {view === "map" && (
                 <PnrrMapView model={data!.mapModel} filterState={filterState} />
               )}
-              {view === 'beneficiaries' && (
+              {view === "beneficiaries" && (
                 <PnrrBeneficiariesView
                   page={data!.beneficiaryPage}
                   filterState={filterState}
                 />
               )}
-              {view === 'anomalies' && (
+              {view === "anomalies" && (
                 <PnrrAnomaliesView
                   model={data!.anomalyModel}
                   aggregates={filteredAggregates}
@@ -257,11 +279,11 @@ export function PnrrDashboard({
         {/* Data source disclaimer */}
         <footer
           className="border-t-2 border-[var(--pnrr-border)] py-6"
-          style={{ backgroundColor: 'var(--pnrr-bg)' }}
+          style={{ backgroundColor: "var(--pnrr-bg)" }}
         >
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <p className="text-center text-sm text-[var(--pnrr-muted)]">
-              <Trans>Data source</Trans>:{' '}
+              <Trans>Data source</Trans>:{" "}
               <a
                 href="https://mfe.gov.ro/pnrr-dashboard"
                 target="_blank"
@@ -286,24 +308,24 @@ export function PnrrDashboard({
         )}
       </div>
     </PnrrCurrencyProvider>
-  )
+  );
 }
 
 function buildCachedOverviewStats(
   snapshot: PnrrSeoSnapshot,
 ): PnrrOverviewMetricStats {
   return {
-    rawTotalValue: snapshot.totalValueEur,
-    deduplicatedTotalValue: snapshot.deduplicatedTotalValueEur,
+    rawTotalValue: snapshot.listedFundingTotalRon,
+    deduplicatedTotalValue: snapshot.deduplicatedListedFundingRon,
     projectCount: snapshot.projectCount,
     projectRecordCount: snapshot.projectRecordCount,
     completedCount: snapshot.completedCount,
-    completedValue: snapshot.completedValueEur,
-    loanTotal: snapshot.loanTotalEur,
+    completedValue: snapshot.completedListedFundingRon,
+    loanTotal: snapshot.loanListedFundingRon,
     loanPercent: snapshot.loanPercent,
     missingFinProgressCount: snapshot.missingFinancialProgressCount,
     missingFinProgressPercent: snapshot.missingFinancialProgressPercent,
-  }
+  };
 }
 
 function PnrrDataErrorState({
@@ -311,17 +333,17 @@ function PnrrDataErrorState({
   isRetrying,
   onRetry,
 }: {
-  readonly error: unknown
-  readonly isRetrying: boolean
-  readonly onRetry: () => void
+  readonly error: unknown;
+  readonly isRetrying: boolean;
+  readonly onRetry: () => void;
 }) {
   const errorMessage =
-    error instanceof Error ? error.message : t`Error loading data`
+    error instanceof Error ? error.message : t`Error loading data`;
 
   return (
     <section
       className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-8"
-      style={{ borderRadius: '6px' }}
+      style={{ borderRadius: "6px" }}
     >
       <div className="mx-auto flex max-w-xl flex-col items-center text-center">
         <div className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] p-4">
@@ -343,11 +365,11 @@ function PnrrDataErrorState({
           className="mt-5 h-10 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-fg)] px-4 text-sm font-black uppercase tracking-wide text-[var(--pnrr-bg)] hover:bg-[var(--pnrr-card)] hover:text-[var(--pnrr-fg)]"
         >
           <RefreshCw
-            className={`mr-2 h-4 w-4 ${isRetrying ? 'animate-spin' : ''}`}
+            className={`mr-2 h-4 w-4 ${isRetrying ? "animate-spin" : ""}`}
           />
           <Trans>Retry</Trans>
         </Button>
       </div>
     </section>
-  )
+  );
 }

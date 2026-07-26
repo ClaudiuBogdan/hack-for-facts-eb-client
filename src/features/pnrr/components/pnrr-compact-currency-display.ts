@@ -8,17 +8,17 @@ export type PnrrCompactCurrencyDisplayParts = {
 }
 
 export function formatPnrrCompactCurrencyDisplayParts(
-  valueEur: number,
-  currency: Currency,
+  listedFundingRon: number,
+  _currency: Currency,
 ): PnrrCompactCurrencyDisplayParts {
   const locale = getUserLocale() === 'ro' ? 'ro-RO' : 'en-US'
   const parts = new Intl.NumberFormat(locale, {
     style: 'currency',
-    currency,
+    currency: 'RON',
     notation: 'compact',
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  }).formatToParts(convertPnrrValue(valueEur, currency))
+  }).formatToParts(convertPnrrValue(listedFundingRon, 'RON'))
   const amount = parts
     .filter((part) =>
       ['minusSign', 'plusSign', 'integer', 'group', 'decimal', 'fraction'].includes(part.type),

@@ -78,7 +78,7 @@ export function PnrrProjectsPreview({
               {/* Right: Value + indicator */}
               <div className="flex shrink-0 items-center gap-3">
                 <span className="text-base font-black tabular-nums text-[var(--pnrr-fg)]">
-                  {formatPnrrCurrency(project.totalValueEur ?? project.valueEur, currency)}
+                  {formatPnrrCurrency(project.listedFundingTotalRon ?? project.listedFundingRon, currency)}
                 </span>
                 <StatusSquare status={project.status} />
               </div>

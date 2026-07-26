@@ -26,7 +26,7 @@ function makeProject(
     county: 'București',
     locality: 'București',
     fundingSource: 'grant',
-    valueEur: 1_000_000 - index,
+    listedFundingRon: 1_000_000 - index,
     techProgress: 50,
     finProgress: 40,
     status: 'mid-progress',
@@ -118,7 +118,7 @@ describe('buildTopBeneficiaries', () => {
     )
 
     expect(target.count).toBe(1)
-    expect(target.secondaryValueEur).toBe(targetProject.valueEur)
+    expect(target.secondaryListedFundingRon).toBe(targetProject.listedFundingRon)
   })
 })
 
@@ -129,12 +129,12 @@ describe('buildBeneficiaryPage', () => {
         makeProject(1, {
           beneficiary: 'COMPANIA EXEMPLU',
           cui: 'RO 12345678',
-          valueEur: 100,
+          listedFundingRon: 100,
         }),
         makeProject(2, {
           beneficiary: 'COMPANIA EXEMPLU S.A.',
           cui: '12345678',
-          valueEur: 200,
+          listedFundingRon: 200,
         }),
       ],
       {},
@@ -161,12 +161,12 @@ describe('buildBeneficiaryPage', () => {
     const firstDuplicateSlice = {
       ...first,
       id: 'first-duplicate-slice',
-      valueEur: 25,
+      listedFundingRon: 25,
     }
     const groupedFirst: PnrrProject = {
       ...first,
-      valueEur: first.valueEur + firstDuplicateSlice.valueEur,
-      totalValueEur: first.valueEur + firstDuplicateSlice.valueEur,
+      listedFundingRon: first.listedFundingRon + firstDuplicateSlice.listedFundingRon,
+      listedFundingTotalRon: first.listedFundingRon + firstDuplicateSlice.listedFundingRon,
       recordCount: 2,
       records: [first, firstDuplicateSlice],
     }
@@ -186,22 +186,22 @@ describe('buildBeneficiaryPage', () => {
     const firstRecord = makeProject(1, {
       beneficiary: 'BENEFICIAR A',
       cui: '111',
-      valueEur: 100,
+      listedFundingRon: 100,
       techProgress: 10,
     })
     const secondRecord = {
       ...makeProject(1, {
         beneficiary: 'BENEFICIAR B',
         cui: '222',
-        valueEur: 300,
+        listedFundingRon: 300,
         techProgress: 90,
       }),
       id: 'engagement:01-second-record',
     }
     const groupedProject: PnrrProject = {
       ...firstRecord,
-      valueEur: 400,
-      totalValueEur: 400,
+      listedFundingRon: 400,
+      listedFundingTotalRon: 400,
       recordCount: 2,
       records: [firstRecord, secondRecord],
     }
@@ -228,7 +228,7 @@ describe('buildBeneficiaryPage', () => {
     expect(detail?.projects).toHaveLength(1)
     expect(detail?.projects[0]).toMatchObject({
       beneficiary: 'BENEFICIAR A',
-      valueEur: 100,
+      listedFundingRon: 100,
       recordCount: 1,
     })
   })
@@ -256,7 +256,7 @@ describe('buildMapModel', () => {
   it('omits per-capita territories when population is unavailable', () => {
     const project = makeProject(1, {
       sirutaCode: '999999999',
-      valueEur: 123_000,
+      listedFundingRon: 123_000,
     })
 
     const model = buildMapModel([project], {}, 'per-capita', 'uat')

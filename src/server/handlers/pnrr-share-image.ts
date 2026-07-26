@@ -154,29 +154,32 @@ function formatCount(value: number): string {
   }).format(value))
 }
 
-function formatCurrencyEur(value: number): string {
+function formatSourceCurrency(value: number, currency: 'RON' | 'EUR'): string {
   const formattedValue = normalizeRomanianCompactUnit(new Intl.NumberFormat('ro-RO', {
     notation: 'compact',
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(value))
 
-  return `${formattedValue} €`
+  return `${formattedValue} ${currency === 'EUR' ? '€' : 'RON'}`
 }
 
 export function buildPnrrShareImageViewModel(
   snapshot: PnrrSeoSnapshot,
   options: PnrrShareImageViewModelOptions = {},
 ): PnrrShareImageViewModel {
-  const totalValueEur = options.showTotalScope
-    ? (snapshot.officialAllocatedTotalEur ?? snapshot.totalValueEur)
-    : snapshot.totalValueEur
+  const usesOfficialAllocation =
+    options.showTotalScope && snapshot.officialAllocatedTotalEur != null
+  const totalValue = usesOfficialAllocation
+    ? snapshot.officialAllocatedTotalEur!
+    : snapshot.listedFundingTotalRon
+  const totalValueCurrency = usesOfficialAllocation ? 'EUR' : 'RON'
 
   return {
     title: 'PNRR Romania',
     subtitle: 'Proiecte, progres, beneficiari si riscuri',
     badge: 'Transparenta.eu',
-    totalValue: formatCurrencyEur(totalValueEur),
+    totalValue: formatSourceCurrency(totalValue, totalValueCurrency),
     projectCount: formatCount(snapshot.projectCount),
     completedCount: formatCount(snapshot.completedCount),
     anomalyCount: formatCount(snapshot.anomalyCount),
@@ -184,7 +187,7 @@ export function buildPnrrShareImageViewModel(
     topCounty: options.showTotalScope
       ? 'Total'
       : (snapshot.topCounties[0]?.label ?? 'Toata Romania'),
-    updatedLabel: `Set fisiere MIPE ${PNRR_FILESET_ID}`,
+    updatedLabel: `Set fisiere MIPE legacy ${PNRR_FILESET_ID}`,
   }
 }
 

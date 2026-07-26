@@ -11,6 +11,7 @@ const config = defineConfig({
         "<rootDir>/src/routes/admin/**",
         "<rootDir>/src/routes/pnrr.tsx",
         "<rootDir>/src/routes/pnrr.lazy.tsx",
+        "<rootDir>/src/routes/pnrr_*.tsx",
         "<rootDir>/src/features/campaigns/buget/admin/**",
         "<rootDir>/src/features/pnrr/**",
       ],
@@ -27,6 +28,7 @@ const config = defineConfig({
       include: [
         "<rootDir>/src/routes/pnrr.tsx",
         "<rootDir>/src/routes/pnrr.lazy.tsx",
+        "<rootDir>/src/routes/pnrr_*.tsx",
         "<rootDir>/src/features/pnrr/**",
       ],
     },

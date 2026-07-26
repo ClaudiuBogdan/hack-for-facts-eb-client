@@ -110,7 +110,7 @@ function makeProject(overrides: Partial<PnrrProject>): PnrrProject {
     county: 'Național',
     locality: 'Național',
     fundingSource: 'grant',
-    valueEur: 100,
+    listedFundingRon: 100,
     techProgress: 50,
     finProgress: 40,
     status: 'mid-progress',
@@ -224,14 +224,14 @@ describe('PnrrOverview', () => {
     )
 
     expect(screen.getByText('Total PNRR allocation')).toBeInTheDocument()
-    expect(document.body).toHaveTextContent(/10\s*M RON/)
+    expect(document.body).toHaveTextContent(/€2M/)
     expect(screen.getAllByText(/listed EU funding/).length).toBeGreaterThan(0)
   })
 
   it('uses official allocated total for the unfiltered headline metric', () => {
     const projects = [
       makeProject({
-        valueEur: 100,
+        listedFundingRon: 100,
       }),
     ]
 
@@ -257,7 +257,7 @@ describe('PnrrOverview', () => {
         beneficiary:
           'DIRECTIA GENERALA DE ASISTENTA SOCIALA SI PROTECTIA COPILULUI',
         cui: '123',
-        valueEur: 120,
+        listedFundingRon: 120,
       }),
       makeProject({
         id: 'project-456',
@@ -265,7 +265,7 @@ describe('PnrrOverview', () => {
         beneficiary:
           'DIRECTIA GENERALA DE ASISTENTA SOCIALA SI PROTECTIA COPILULUI',
         cui: '456',
-        valueEur: 80,
+        listedFundingRon: 80,
       }),
     ]
 
@@ -281,7 +281,7 @@ describe('PnrrOverview', () => {
                 itemKey: 'Test 123',
                 label:
                   'DIRECTIA GENERALA DE ASISTENTA SOCIALA SI PROTECTIA COPILULUI',
-                valueEur: 120,
+                listedFundingRon: 120,
                 count: 1,
                 pct: 60,
               },
@@ -290,7 +290,7 @@ describe('PnrrOverview', () => {
                 itemKey: 'Test 456',
                 label:
                   'DIRECTIA GENERALA DE ASISTENTA SOCIALA SI PROTECTIA COPILULUI',
-                valueEur: 80,
+                listedFundingRon: 80,
                 count: 1,
                 pct: 40,
               },
@@ -326,7 +326,7 @@ describe('PnrrOverview', () => {
         beneficiary:
           'COMPANIA NAŢIONALĂ DE ADMINISTRARE A INFRASTRUCTURII RUTIERE S.A.',
         cui: '16054368',
-        valueEur: 2_000,
+        listedFundingRon: 2_000,
       }),
     ]
 
@@ -341,10 +341,10 @@ describe('PnrrOverview', () => {
               itemKey: 'payment:16054368',
               label:
                 'COMPANIA NAŢIONALĂ DE ADMINISTRARE A INFRASTRUCTURII RUTIERE S.A.',
-              valueEur: 1_000,
+              listedFundingRon: 1_000,
               count: 1,
               pct: 100,
-              secondaryValueEur: 2_000,
+              secondaryListedFundingRon: 2_000,
             },
           ],
         })}

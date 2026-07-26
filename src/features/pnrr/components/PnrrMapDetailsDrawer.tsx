@@ -329,7 +329,7 @@ function MapDrawerFooterClose({ onClose }: { readonly onClose: () => void }) {
 
 function buildMapStats(projects: readonly PnrrWorkerProjectRow[]) {
   const totalValue = projects.reduce(
-    (sum, project) => sum + project.valueEur,
+    (sum, project) => sum + project.listedFundingRon,
     0,
   )
   const projectCount = countUniqueMapProjects(projects)
@@ -361,7 +361,7 @@ function buildMapStats(projects: readonly PnrrWorkerProjectRow[]) {
         ...beneficiary,
         count: projectIds.size,
         projectIds,
-        value: beneficiary.value + project.valueEur,
+        value: beneficiary.value + project.listedFundingRon,
       })
     } else {
       beneficiaryMap.set(beneficiaryKey, {
@@ -369,7 +369,7 @@ function buildMapStats(projects: readonly PnrrWorkerProjectRow[]) {
         cui: project.cui,
         count: 1,
         projectIds: new Set([projectId]),
-        value: project.valueEur,
+        value: project.listedFundingRon,
       })
     }
 
@@ -382,7 +382,7 @@ function buildMapStats(projects: readonly PnrrWorkerProjectRow[]) {
         ...componentStat,
         count: projectIds.size,
         projectIds,
-        value: componentStat.value + project.valueEur,
+        value: componentStat.value + project.listedFundingRon,
       })
     } else {
       componentMap.set(project.componentCode, {
@@ -391,7 +391,7 @@ function buildMapStats(projects: readonly PnrrWorkerProjectRow[]) {
         color: component?.color ?? '#64748b',
         count: 1,
         projectIds: new Set([projectId]),
-        value: project.valueEur,
+        value: project.listedFundingRon,
       })
     }
 
@@ -406,7 +406,7 @@ function buildMapStats(projects: readonly PnrrWorkerProjectRow[]) {
     anomalyCount,
     dataQualityCount,
     topProjects: [...projects]
-      .sort((a, b) => (b.totalValueEur ?? b.valueEur) - (a.totalValueEur ?? a.valueEur))
+      .sort((a, b) => (b.listedFundingTotalRon ?? b.listedFundingRon) - (a.listedFundingTotalRon ?? a.listedFundingRon))
       .slice(0, 5),
     topBeneficiaries: Array.from(beneficiaryMap.values())
       .sort((a, b) => b.value - a.value)
@@ -494,7 +494,7 @@ function TopProjectRow({
         : techValue === null
           ? t`N/A`
           : formatPnrrPercentage(techValue)
-  const projectValue = project.totalValueEur ?? project.valueEur
+  const projectValue = project.listedFundingTotalRon ?? project.listedFundingRon
 
   return (
     <button

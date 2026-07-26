@@ -158,8 +158,8 @@ function CompactProgress({
   )
 }
 
-function getProjectValue(project: Pick<PnrrProject, 'totalValueEur' | 'valueEur'>): number {
-  return project.totalValueEur ?? project.valueEur
+function getProjectValue(project: Pick<PnrrProject, 'listedFundingTotalRon' | 'listedFundingRon'>): number {
+  return project.listedFundingTotalRon ?? project.listedFundingRon
 }
 
 function getVariantCount(

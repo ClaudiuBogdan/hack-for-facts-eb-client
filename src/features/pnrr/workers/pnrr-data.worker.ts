@@ -123,7 +123,7 @@ async function loadModel(): Promise<PnrrWorkerModel> {
       ])
       const projectRows = Array.isArray(rawProjects) ? rawProjects : []
       const processed = processPnrrData(projectRows)
-      const reasonCodes: string[] = []
+      const reasonCodes: string[] = ['legacy_unversioned_fileset']
 
       if (paymentsResult.status === 'rejected') {
         reasonCodes.push('beneficiary_payments_unavailable')
@@ -155,9 +155,13 @@ async function loadModel(): Promise<PnrrWorkerModel> {
         projectCount: processed.meta.projectCount,
         projectRecordCount: processed.meta.projectRecordCount,
         paymentCapability:
-          paymentsResult.status === 'fulfilled' ? 'served' : 'degraded',
+          paymentsResult.status === 'fulfilled'
+            ? 'legacy_unversioned'
+            : 'degraded',
         indicatorCapability:
-          indicatorsResult.status === 'fulfilled' ? 'served' : 'degraded',
+          indicatorsResult.status === 'fulfilled'
+            ? 'legacy_unversioned'
+            : 'degraded',
         capabilityReasonCodes: reasonCodes,
       }
     })().catch((error) => {
@@ -225,7 +229,7 @@ function getProgressValue(
 }
 
 function getProjectValue(project: PnrrProject): number {
-  return project.totalValueEur ?? project.valueEur
+  return project.listedFundingTotalRon ?? project.listedFundingRon
 }
 
 function sortProjects(
@@ -365,16 +369,16 @@ function buildBeneficiarySummaries(
       const existing = map.get(beneficiaryKey)
 
       if (existing) {
-        existing.value += record.valueEur
+        existing.value += record.listedFundingRon
         existing.aliases.add(record.beneficiary)
         existing.aliasValues.set(
           record.beneficiary,
-          (existing.aliasValues.get(record.beneficiary) ?? 0) + record.valueEur,
+          (existing.aliasValues.get(record.beneficiary) ?? 0) + record.listedFundingRon,
         )
         existing.componentValues.set(
           record.componentCode,
           (existing.componentValues.get(record.componentCode) ?? 0) +
-            record.valueEur,
+            record.listedFundingRon,
         )
         continue
       }
@@ -383,14 +387,14 @@ function buildBeneficiarySummaries(
         name: record.beneficiary,
         cui: normalizedCui,
         aliases: new Set([record.beneficiary]),
-        aliasValues: new Map([[record.beneficiary, record.valueEur]]),
+        aliasValues: new Map([[record.beneficiary, record.listedFundingRon]]),
         count: 0,
-        value: record.valueEur,
+        value: record.listedFundingRon,
         techProgressSum: 0,
         techProgressCount: 0,
         finProgressSum: 0,
         finProgressCount: 0,
-        componentValues: new Map([[record.componentCode, record.valueEur]]),
+        componentValues: new Map([[record.componentCode, record.listedFundingRon]]),
         projects: new Map(),
       })
     }
@@ -571,7 +575,7 @@ function buildTopComponents(
       id: code,
       label: PNRR_COMPONENTS[code]?.nameRo ?? code,
       prefix: PNRR_COMPONENTS[code]?.code ?? code,
-      valueEur: stats.value,
+      listedFundingRon: stats.value,
       count: stats.count,
       pct:
         aggregates.rawTotalValue > 0
@@ -579,7 +583,7 @@ function buildTopComponents(
           : 0,
       color: PNRR_COMPONENTS[code]?.color ?? '#94a3b8',
     }))
-    .sort((a, b) => b.valueEur - a.valueEur)
+    .sort((a, b) => b.listedFundingRon - a.listedFundingRon)
 }
 
 function buildTopCounties(
@@ -589,14 +593,14 @@ function buildTopCounties(
     .map(([county, stats]) => ({
       id: county,
       label: county,
-      valueEur: stats.value,
+      listedFundingRon: stats.value,
       count: stats.count,
       pct:
         aggregates.rawTotalValue > 0
           ? (stats.value / aggregates.rawTotalValue) * 100
           : 0,
     }))
-    .sort((a, b) => b.valueEur - a.valueEur)
+    .sort((a, b) => b.listedFundingRon - a.listedFundingRon)
 }
 
 export function buildTopBeneficiaries(
@@ -628,14 +632,11 @@ export function buildTopBeneficiaries(
   }
 
   if (model.beneficiaryPayments.length > 0) {
-    const listedPaymentTotalEur = model.beneficiaryPayments.reduce(
-      (sum, payment) => sum + payment.valueRon / 5,
+    const listedPaymentTotalRon = model.beneficiaryPayments.reduce(
+      (sum, payment) => sum + payment.valueRon,
       0,
     )
-    const denominator =
-      model.indicators?.paidTotalEur && model.indicators.paidTotalEur > 0
-        ? model.indicators.paidTotalEur
-        : listedPaymentTotalEur
+    const denominator = listedPaymentTotalRon
 
     return model.beneficiaryPayments.slice(0, 100).map((payment) => {
       const cui = normalizeBeneficiaryCui(payment.cui)
@@ -644,17 +645,17 @@ export function buildTopBeneficiaries(
         projectBeneficiariesByName.get(
           normalizeBeneficiaryName(payment.beneficiary),
         )
-      const valueEur = payment.valueRon / 5
+      const listedFundingRon = payment.valueRon
 
       return {
         id: cui ?? payment.beneficiary,
         itemKey: payment.id,
         label: payment.beneficiary,
         beneficiaryCui: cui,
-        valueEur,
+        listedFundingRon,
         count: projectBeneficiary?.count ?? 0,
-        pct: denominator > 0 ? (valueEur / denominator) * 100 : 0,
-        secondaryValueEur: projectBeneficiary?.value,
+        pct: denominator > 0 ? (listedFundingRon / denominator) * 100 : 0,
+        secondaryListedFundingRon: projectBeneficiary?.value,
       }
     })
   }
@@ -664,7 +665,7 @@ export function buildTopBeneficiaries(
     itemKey: `${beneficiary.name}\u0000${beneficiary.cui ?? ''}`,
     label: beneficiary.name,
     beneficiaryCui: beneficiary.cui,
-    valueEur: beneficiary.value,
+    listedFundingRon: beneficiary.value,
     count: beneficiary.count,
     pct:
       aggregates.rawTotalValue > 0
@@ -709,14 +710,14 @@ function buildHistogramMetric(
   metric: 'tech' | 'fin' | 'gap',
 ): PnrrWorkerHistogramMetric {
   const recordCount = records.length
-  const totalValue = records.reduce((sum, p) => sum + p.valueEur, 0)
+  const totalValue = records.reduce((sum, p) => sum + p.listedFundingRon, 0)
 
   if (metric === 'gap') {
     const valid = records.filter(
       (p) =>
         typeof p.techProgress === 'number' && typeof p.finProgress === 'number',
     )
-    const validValue = valid.reduce((sum, p) => sum + p.valueEur, 0)
+    const validValue = valid.reduce((sum, p) => sum + p.listedFundingRon, 0)
 
     return {
       data: GAP_BUCKETS.map((bucket) => {
@@ -727,7 +728,7 @@ function buildHistogramMetric(
         return {
           label: bucket.label,
           count: matches.length,
-          value: matches.reduce((sum, p) => sum + p.valueEur, 0),
+          value: matches.reduce((sum, p) => sum + p.listedFundingRon, 0),
           color: bucket.color,
         }
       }),
@@ -744,7 +745,7 @@ function buildHistogramMetric(
 
   const key = metric === 'tech' ? 'techProgress' : 'finProgress'
   const valid = records.filter((p) => typeof p[key] === 'number')
-  const validValue = valid.reduce((sum, p) => sum + p.valueEur, 0)
+  const validValue = valid.reduce((sum, p) => sum + p.listedFundingRon, 0)
 
   return {
     data: PROGRESS_BUCKETS.map((bucket) => {
@@ -755,7 +756,7 @@ function buildHistogramMetric(
       return {
         label: bucket.label,
         count: matches.length,
-        value: matches.reduce((sum, p) => sum + p.valueEur, 0),
+        value: matches.reduce((sum, p) => sum + p.listedFundingRon, 0),
         color: bucket.color,
       }
     }),
@@ -901,10 +902,10 @@ function buildCountySeries(
     const projectId = getProjectIdentity(p)
 
     if (existing) {
-      existing.totalValue += p.valueEur
+      existing.totalValue += p.listedFundingRon
       existing.projectIds.add(projectId)
-      if (p.fundingSource === 'grant') existing.grantValue += p.valueEur
-      existing.totalValueForShare += p.valueEur
+      if (p.fundingSource === 'grant') existing.grantValue += p.listedFundingRon
+      existing.totalValueForShare += p.listedFundingRon
       addProjectProgress(
         existing.techProgressByProject,
         projectId,
@@ -916,10 +917,10 @@ function buildCountySeries(
     agg.set(mnemonic, {
       countyName: p.county,
       mnemonic,
-      totalValue: p.valueEur,
+      totalValue: p.listedFundingRon,
       projectIds: new Set([projectId]),
-      grantValue: p.fundingSource === 'grant' ? p.valueEur : 0,
-      totalValueForShare: p.valueEur,
+      grantValue: p.fundingSource === 'grant' ? p.listedFundingRon : 0,
+      totalValueForShare: p.listedFundingRon,
       techProgressByProject: new Map(),
     })
     addProjectProgress(
@@ -996,10 +997,10 @@ function buildUatSeries(
     const projectId = getProjectIdentity(p)
 
     if (existing) {
-      existing.totalValue += p.valueEur
+      existing.totalValue += p.listedFundingRon
       existing.projectIds.add(projectId)
-      if (p.fundingSource === 'grant') existing.grantValue += p.valueEur
-      existing.totalValueForShare += p.valueEur
+      if (p.fundingSource === 'grant') existing.grantValue += p.listedFundingRon
+      existing.totalValueForShare += p.listedFundingRon
       addProjectProgress(
         existing.techProgressByProject,
         projectId,
@@ -1010,10 +1011,10 @@ function buildUatSeries(
 
     agg.set(p.sirutaCode, {
       sirutaCode: p.sirutaCode,
-      totalValue: p.valueEur,
+      totalValue: p.listedFundingRon,
       projectIds: new Set([projectId]),
-      grantValue: p.fundingSource === 'grant' ? p.valueEur : 0,
-      totalValueForShare: p.valueEur,
+      grantValue: p.fundingSource === 'grant' ? p.listedFundingRon : 0,
+      totalValueForShare: p.listedFundingRon,
       techProgressByProject: new Map(),
     })
     addProjectProgress(
@@ -1147,16 +1148,16 @@ export function buildMapModel(
     series: buildMapSeries(records, seriesId, granularity),
     nationalCount: countUniqueRecords(nationalRecords),
     nationalValue: nationalRecords.reduce(
-      (sum, record) => sum + record.valueEur,
+      (sum, record) => sum + record.listedFundingRon,
       0,
     ),
     unmappedCount: countUniqueRecords(unmappedRecords),
     unmappedValue: unmappedRecords.reduce(
-      (sum, record) => sum + record.valueEur,
+      (sum, record) => sum + record.listedFundingRon,
       0,
     ),
     mappedValue: mappedRecords.reduce(
-      (sum, record) => sum + record.valueEur,
+      (sum, record) => sum + record.listedFundingRon,
       0,
     ),
     uatProjectCount: new Set(
@@ -1459,9 +1460,14 @@ async function query(
       officialAllocatedTotalEur: model.indicators?.allocatedTotalEur ?? null,
       officialPaidTotalEur: model.indicators?.paidTotalEur ?? null,
       paidBeneficiaryCount: model.indicators?.paidBeneficiaryCount ?? null,
-      projectCapability: 'served',
-      paymentCapability: model.paymentCapability ?? 'served',
-      indicatorCapability: model.indicatorCapability ?? 'served',
+      projectCapability: 'legacy_unversioned',
+      paymentCapability: model.paymentCapability ?? 'legacy_unversioned',
+      indicatorCapability: model.indicatorCapability ?? 'legacy_unversioned',
+      laneFreshness: {
+        projects: 'legacy_unversioned',
+        payments: model.paymentCapability ?? 'legacy_unversioned',
+        indicators: model.indicatorCapability ?? 'legacy_unversioned',
+      },
       capabilityReasonCodes: model.capabilityReasonCodes ?? [],
     },
   }

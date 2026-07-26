@@ -125,7 +125,7 @@ export type PnrrSeoListItem = {
   readonly id: string
   readonly label: string
   readonly count: number
-  readonly valueEur: number
+  readonly listedFundingRon: number
 }
 
 export type PnrrSeoSnapshot = {
@@ -133,13 +133,13 @@ export type PnrrSeoSnapshot = {
   readonly projectCount: number
   readonly projectRecordCount: number
   readonly deduplicatedProjectCount: number
-  readonly totalValueEur: number
-  readonly deduplicatedTotalValueEur: number
+  readonly listedFundingTotalRon: number
+  readonly deduplicatedListedFundingRon: number
   readonly completedCount: number
-  readonly completedValueEur: number
+  readonly completedListedFundingRon: number
   readonly inProgressCount: number
   readonly notStartedCount: number
-  readonly loanTotalEur: number
+  readonly loanListedFundingRon: number
   readonly loanPercent: number
   readonly missingFinancialProgressCount: number
   readonly missingFinancialProgressPercent: number
@@ -167,7 +167,7 @@ function toFiniteNumber(value: number): number {
 function sortSeoItems(
   items: readonly PnrrSeoListItem[],
 ): readonly PnrrSeoListItem[] {
-  return [...items].sort((a, b) => b.valueEur - a.valueEur)
+  return [...items].sort((a, b) => b.listedFundingRon - a.listedFundingRon)
 }
 
 function sortStringValues(values: readonly string[]): readonly string[] {
@@ -217,13 +217,13 @@ export function buildFallbackPnrrSeoSnapshot(): PnrrSeoSnapshot {
     projectCount: 0,
     projectRecordCount: 0,
     deduplicatedProjectCount: 0,
-    totalValueEur: 0,
-    deduplicatedTotalValueEur: 0,
+    listedFundingTotalRon: 0,
+    deduplicatedListedFundingRon: 0,
     completedCount: 0,
-    completedValueEur: 0,
+    completedListedFundingRon: 0,
     inProgressCount: 0,
     notStartedCount: 0,
-    loanTotalEur: 0,
+    loanListedFundingRon: 0,
     loanPercent: 0,
     missingFinancialProgressCount: 0,
     missingFinancialProgressPercent: 0,
@@ -272,15 +272,15 @@ export function buildPnrrSeoSnapshotFromProjects(params: {
     projectCount: aggregates.projectCount,
     projectRecordCount: aggregates.projectRecordCount,
     deduplicatedProjectCount: aggregates.deduplicatedProjectCount,
-    totalValueEur: toFiniteNumber(aggregates.rawTotalValue),
-    deduplicatedTotalValueEur: toFiniteNumber(
+    listedFundingTotalRon: toFiniteNumber(aggregates.rawTotalValue),
+    deduplicatedListedFundingRon: toFiniteNumber(
       aggregates.deduplicatedTotalValue,
     ),
     completedCount: aggregates.completedCount,
-    completedValueEur: toFiniteNumber(aggregates.completedValue),
+    completedListedFundingRon: toFiniteNumber(aggregates.completedValue),
     inProgressCount: aggregates.inProgressCount,
     notStartedCount: aggregates.notStartedCount,
-    loanTotalEur: toFiniteNumber(aggregates.loanTotal),
+    loanListedFundingRon: toFiniteNumber(aggregates.loanTotal),
     loanPercent: toFiniteNumber(aggregates.loanPercent),
     missingFinancialProgressCount: aggregates.missingFinProgressCount,
     missingFinancialProgressPercent: toFiniteNumber(
@@ -293,7 +293,7 @@ export function buildPnrrSeoSnapshotFromProjects(params: {
         id: code,
         label: PNRR_COMPONENTS[code]?.nameRo ?? code,
         count: stats.count,
-        valueEur: toFiniteNumber(stats.value),
+        listedFundingRon: toFiniteNumber(stats.value),
       })),
     ).slice(0, 5),
     topCounties: sortSeoItems(
@@ -301,14 +301,14 @@ export function buildPnrrSeoSnapshotFromProjects(params: {
         id: county,
         label: county,
         count: stats.count,
-        valueEur: toFiniteNumber(stats.value),
+        listedFundingRon: toFiniteNumber(stats.value),
       })),
     ).slice(0, 5),
     topBeneficiaries: aggregates.topBeneficiaries.slice(0, 5).map((item) => ({
       id: item.cui ?? item.beneficiary,
       label: item.beneficiary,
       count: item.count,
-      valueEur: toFiniteNumber(item.value),
+      listedFundingRon: toFiniteNumber(item.value),
     })),
     officialAllocatedTotalEur:
       params.officialIndicators?.allocatedTotalEur ?? null,

@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import type { ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import type { PnrrProject } from '@/schemas/pnrr'
 import type { usePnrrFilterState } from '../hooks/usePnrrFilterState'
@@ -23,6 +24,16 @@ vi.mock('@/components/maps/InteractiveMap', () => ({
   },
 }))
 
+vi.mock('@tanstack/react-router', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@tanstack/react-router')>()
+  return {
+    ...actual,
+    Link: ({ children }: { children: ReactNode }) => (
+      <a href="/pnrr/proiecte/test">{children}</a>
+    ),
+  }
+})
+
 vi.mock('../hooks/usePnrrData', () => ({
   usePnrrMapModel: () => ({
     data: mockState.mapModel
@@ -45,7 +56,7 @@ const PROJECT: PnrrProject = {
   county: 'Ialomița',
   locality: 'Ion Roată',
   fundingSource: 'grant',
-  valueEur: 100_000,
+  listedFundingRon: 100_000,
   techProgress: 50,
   finProgress: 40,
   status: 'mid-progress',

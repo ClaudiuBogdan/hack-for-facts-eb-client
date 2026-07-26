@@ -29,8 +29,6 @@ import { PNRR_MIPE_SOURCE_URL } from './snapshot'
 
 export { PNRR_FILESET_ID, PNRR_MIPE_SOURCE_URL } from './snapshot'
 
-const OFFICIAL_RON_TO_EUR_RATE = 5
-
 function generatePnrrHash(message: string): string {
   let hash = 0x811c9dc5
 
@@ -108,7 +106,7 @@ export function classifyStatus(tech: PnrrReportedProgress): PnrrProjectStatus {
 type AnomalyInput = {
   readonly techProgress: PnrrReportedProgress
   readonly finProgress: PnrrReportedProgress
-  readonly valueEur: number
+  readonly listedFundingRon: number
 }
 
 function getRiskTechProgress(progress: PnrrReportedProgress): number | null {
@@ -141,7 +139,7 @@ export function detectAnomalies(project: AnomalyInput): readonly AnomalyType[] {
   }
 
   if (
-    project.valueEur >= 10_000_000 &&
+    project.listedFundingRon >= 10_000_000 &&
     ((tech !== null && tech < 30) ||
       project.techProgress === 'under-30-reported')
   ) {
@@ -152,18 +150,18 @@ export function detectAnomalies(project: AnomalyInput): readonly AnomalyType[] {
 }
 
 export function detectDataQualitySignals(
-  project: Pick<PnrrProjectRecord, 'techProgress' | 'finProgress' | 'valueEur'>,
+  project: Pick<PnrrProjectRecord, 'techProgress' | 'finProgress' | 'listedFundingRon'>,
 ): readonly DataQualitySignalType[] {
   const signals: DataQualitySignalType[] = []
 
-  if (project.finProgress === null && project.valueEur >= 10_000_000) {
+  if (project.finProgress === null && project.listedFundingRon >= 10_000_000) {
     signals.push('large-missing-financial-progress')
   }
 
   if (
     project.techProgress === 100 &&
     project.finProgress === null &&
-    project.valueEur >= 1_000_000
+    project.listedFundingRon >= 1_000_000
   ) {
     signals.push('completed-missing-financial-progress')
   }
@@ -560,8 +558,9 @@ export function normalizePnrrProjectRecord(
     county,
     locality,
     fundingSource: normalized.fundingSource,
-    valueEur: normalized.valueEur,
+    listedFundingRon: normalized.listedFundingRon,
     sourceValueRon: normalized.sourceValueRon,
+    sourceValueEur: normalized.sourceValueEur,
     totalValueRon: normalized.totalValueRon,
     nationalContributionRon: normalized.nationalContributionRon,
     vatValueRon: normalized.vatValueRon,
@@ -692,8 +691,9 @@ type NormalizedRawProject = {
   readonly county: string
   readonly locality: string
   readonly fundingSource: PnrrProjectRecord['fundingSource']
-  readonly valueEur: number
+  readonly listedFundingRon: number
   readonly sourceValueRon: number | null
+  readonly sourceValueEur: number | null
   readonly totalValueRon: number | null
   readonly nationalContributionRon: number | null
   readonly vatValueRon: number | null
@@ -716,13 +716,12 @@ type NormalizedRawProject = {
 function normalizeRawProject(raw: RawPnrrProject): NormalizedRawProject {
   const record = raw as Record<string, unknown>
   const hasOfficialValue =
-    hasValue(record.valoare_fe) ||
-    hasValue(record.id_angajament) ||
-    hasValue(record.titlu_contract)
+    hasValue(record.id_angajament) || hasValue(record.titlu_contract)
   const valueRon = toNumber(record.valoare_fe)
-  const valueEur = hasValue(record.valoare_fe)
-    ? (valueRon ?? 0) / OFFICIAL_RON_TO_EUR_RATE
-    : (toNumber(record['Valoare (EUR)']) ?? 0)
+  const listedFundingRon = valueRon ?? 0
+  const sourceValueEur = hasValue(record.valoare_fe)
+    ? null
+    : toNumber(record['Valoare (EUR)'])
 
   const techProgressInput = hasOfficialValue
     ? officialProgressInput(record.progres_fizic, record.stadiu)
@@ -755,8 +754,9 @@ function normalizeRawProject(raw: RawPnrrProject): NormalizedRawProject {
         ? record.sursa_finantare
         : record['Sursă Finanțare'],
     ),
-    valueEur,
+    listedFundingRon,
     sourceValueRon: valueRon,
+    sourceValueEur,
     totalValueRon: toNumber(record.valoare_total),
     nationalContributionRon: toNumber(record.valoare_fpn),
     vatValueRon: toNumber(record.valoare_tva),
@@ -971,10 +971,10 @@ function buildGroupedProject(
   records: readonly PnrrProjectRecord[],
 ): PnrrProject {
   const primaryRecord = records.reduce((best, record) =>
-    record.valueEur > best.valueEur ? record : best,
+    record.listedFundingRon > best.listedFundingRon ? record : best,
   )
-  const totalValueEur = records.reduce(
-    (sum, record) => sum + record.valueEur,
+  const listedFundingTotalRon = records.reduce(
+    (sum, record) => sum + record.listedFundingRon,
     0,
   )
   const statuses = new Set(records.map((record) => record.status))
@@ -1007,9 +1007,9 @@ function buildGroupedProject(
   const groupedProject: PnrrProject = {
     ...primaryRecord,
     id,
-    totalValueEur,
+    listedFundingTotalRon,
     recordCount: records.length,
-    valueEur: totalValueEur,
+    listedFundingRon: listedFundingTotalRon,
     status: getGroupedProjectStatus(statuses),
     anomalies,
     dataQualitySignals,
@@ -1142,38 +1142,38 @@ export function computeAggregates(
 
   for (const p of records) {
     const projectId = getProjectIdentity(p)
-    rawTotalValue += p.valueEur
+    rawTotalValue += p.listedFundingRon
 
     const projectGroup = projectGroups.get(projectId)
     if (projectGroup) {
-      projectGroup.value += p.valueEur
+      projectGroup.value += p.listedFundingRon
       projectGroup.statuses.add(p.status)
       projectGroup.missingFinProgress =
         projectGroup.missingFinProgress || isMissingFinancialProgress(p)
     } else {
       projectGroups.set(projectId, {
-        value: p.valueEur,
+        value: p.listedFundingRon,
         statuses: new Set([p.status]),
         missingFinProgress: isMissingFinancialProgress(p),
       })
     }
 
-    if (p.fundingSource === 'grant') grantTotal += p.valueEur
-    else if (p.fundingSource === 'loan') loanTotal += p.valueEur
-    else mixedTotal += p.valueEur
+    if (p.fundingSource === 'grant') grantTotal += p.listedFundingRon
+    else if (p.fundingSource === 'loan') loanTotal += p.listedFundingRon
+    else mixedTotal += p.listedFundingRon
 
     // Component stats
     const componentStat = componentMap.get(p.componentCode)
     if (componentStat) {
       componentStat.projectIds.add(projectId)
-      componentStat.value += p.valueEur
+      componentStat.value += p.listedFundingRon
       if (isMissingFinancialProgress(p)) {
         componentStat.missingFinProgressProjectIds.add(projectId)
       }
     } else {
       componentMap.set(p.componentCode, {
         projectIds: new Set([projectId]),
-        value: p.valueEur,
+        value: p.listedFundingRon,
         missingFinProgressProjectIds: isMissingFinancialProgress(p)
           ? new Set([projectId])
           : new Set(),
@@ -1184,23 +1184,23 @@ export function computeAggregates(
     const countyStat = countyMap.get(p.county)
     if (countyStat) {
       countyStat.projectIds.add(projectId)
-      countyStat.value += p.valueEur
+      countyStat.value += p.listedFundingRon
     } else {
       countyMap.set(p.county, {
         projectIds: new Set([projectId]),
-        value: p.valueEur,
+        value: p.listedFundingRon,
       })
     }
 
     // Anomalies
     for (const a of p.anomalies) {
       anomalyProjectIds[a].add(projectId)
-      anomalyValues[a] += p.valueEur
+      anomalyValues[a] += p.listedFundingRon
     }
 
     for (const signal of p.dataQualitySignals) {
       dataQualitySignalProjectIds[signal].add(projectId)
-      dataQualitySignalCounts[signal].value += p.valueEur
+      dataQualitySignalCounts[signal].value += p.listedFundingRon
     }
 
     // Beneficiary values remain row-level sums, but counts use distinct projects.
@@ -1208,13 +1208,13 @@ export function computeAggregates(
     const existing = beneficiaryMap.get(benKey)
     if (existing) {
       existing.projectIds.add(projectId)
-      existing.value += p.valueEur
+      existing.value += p.listedFundingRon
     } else {
       beneficiaryMap.set(benKey, {
         beneficiary: p.beneficiary,
         cui: p.cui,
         projectIds: new Set([projectId]),
-        value: p.valueEur,
+        value: p.listedFundingRon,
       })
     }
   }
@@ -1330,7 +1330,7 @@ function duplicateConflictSignature(project: PnrrProjectRecord): string {
     county: project.county,
     locality: project.locality,
     fundingSource: project.fundingSource,
-    valueEur: project.valueEur,
+    listedFundingRon: project.listedFundingRon,
     techProgress: project.techProgress,
     finProgress: project.finProgress,
     cri: project.cri,
@@ -1966,7 +1966,7 @@ function projectMatchesProjectFilters(
 ): boolean {
   if (!projectMatchesTextFilters(project, filters)) return false
 
-  const projectValue = project.totalValueEur ?? project.valueEur
+  const projectValue = project.listedFundingTotalRon ?? project.listedFundingRon
   if (filters.excludeMicro && projectValue < 5000) return false
   if (filters.onlyAnomalies && project.anomalies.length === 0) return false
 
