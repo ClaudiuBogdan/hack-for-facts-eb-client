@@ -94,11 +94,17 @@ const CHARS_PER_LINE = 70
 const LINE_HEIGHT_PX = 32
 const BLOCK_CHROME_PX = 56
 
+export function estimateBlockHeightPx(segment: {
+  readonly textChars: number
+}): number {
+  const lines = Math.max(1, Math.ceil(segment.textChars / CHARS_PER_LINE))
+  return lines * LINE_HEIGHT_PX + BLOCK_CHROME_PX
+}
+
 export function estimateBlockSize(segment: {
   readonly textChars: number
 }): string {
-  const lines = Math.max(1, Math.ceil(segment.textChars / CHARS_PER_LINE))
-  return `auto ${String(lines * LINE_HEIGHT_PX + BLOCK_CHROME_PX)}px`
+  return `auto ${String(estimateBlockHeightPx(segment))}px`
 }
 
 /** The block named by `?interventie=` — highlighted WITHOUT hiding its context. */
@@ -114,6 +120,102 @@ export const stenogramAgendaHeadingClassName =
 /** Table of contents rail — collapses below the document on small screens. */
 export const stenogramTocClassName =
   'border-2 border-[#b1b4b6] bg-[#f3f2f1] p-4 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-subtle)] print:hidden'
+
+/* ── intervention rail (the reading-progress scrollbar) ─────────────────── */
+
+/**
+ * The slim rail column, at the RIGHT edge of the reading column — where a
+ * scrollbar belongs, and where it cannot be confused with the agenda rail on the
+ * left, which navigates by the institution's own structure rather than by
+ * reading position.
+ *
+ * Hidden below `xl`: at `lg` the agenda rail and the reading measure already
+ * fill the row, and a third column there would squeeze the prose — the document
+ * itself and the previous/next contribution controls are the fallback, and they
+ * are not worse, only different.
+ */
+export const stenogramRailClassName = 'hidden shrink-0 xl:block print:hidden'
+
+/**
+ * The track. Exactly one viewport tall and NEVER scrolled inside itself, so a
+ * point on the rail always means the same point in the document; a 2px rule on
+ * its left edge ties it to the column it measures.
+ */
+export const stenogramRailTrackClassName =
+  'relative w-6 border-l-2 border-[#b1b4b6] bg-[#f3f2f1] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-subtle)]'
+
+/**
+ * Read so far — a continuous fill from the top of the sitting to the reading
+ * line, which is what makes the rail a progress bar rather than a list of ticks.
+ * Tinted, not saturated: it sits UNDER the markers and must not compete with
+ * them.
+ */
+export const stenogramRailProgressClassName =
+  'pointer-events-none absolute inset-x-0 top-0 bg-[#1d70b8]/15 dark:bg-[var(--pnrr-blue)]/25 motion-safe:transition-[height] motion-safe:duration-150 motion-safe:ease-out'
+
+/** The reading line itself — where the fill ends, drawn as a hairline. */
+export const stenogramRailHeadClassName =
+  'pointer-events-none absolute inset-x-0 h-px -translate-y-px bg-[#1d70b8] dark:bg-[var(--pnrr-blue)] motion-safe:transition-[top] motion-safe:duration-150 motion-safe:ease-out'
+
+/**
+ * A collapsed cluster: one tick standing for several contributions, its WIDTH
+ * stating how many. Weight is the honest encoding here — a wider tick is more
+ * turns in the same stretch of transcript, which is exactly what the reader
+ * needs to see before deciding to open it.
+ */
+export const stenogramRailClusterClassName =
+  'pointer-events-none absolute left-0 bg-[#8f9294] dark:bg-[var(--pnrr-border)] motion-safe:transition-opacity motion-safe:duration-150'
+
+export const stenogramRailClusterDensityClassName: Readonly<
+  Record<'few' | 'many' | 'crowd', string>
+> = {
+  few: 'w-3',
+  many: 'w-[1.125rem]',
+  crowd: 'w-6',
+}
+
+/** The paper a fanned-open cluster is drawn on, so its ticks stay legible. */
+export const stenogramRailFanClassName =
+  'pointer-events-none absolute -left-1 -right-1 border-y-2 border-[#0b0c0c] bg-white dark:border-[var(--pnrr-fg)] dark:bg-[var(--pnrr-card)] motion-safe:transition-[top,height] motion-safe:duration-150 motion-safe:ease-out'
+
+/** One tick. Grey by default; the accent is spent only on the two live states. */
+export const stenogramRailMarkerToneClassName: Readonly<
+  Record<'idle' | 'reading' | 'selected', string>
+> = {
+  // Hover and keyboard focus darken the tick identically — colour is never the
+  // only cue, but it must at least agree with the ring.
+  idle: 'bg-[#8f9294] group-hover/marker:bg-[#0b0c0c] group-focus-visible/marker:bg-[#0b0c0c] dark:bg-[var(--pnrr-border)] dark:group-hover/marker:bg-[var(--pnrr-fg)] dark:group-focus-visible/marker:bg-[var(--pnrr-fg)]',
+  reading: 'bg-[#1d70b8] dark:bg-[var(--pnrr-blue)]',
+  selected: 'bg-[#0b0c0c] dark:bg-[var(--pnrr-fg)]',
+}
+
+/**
+ * The deep-linked contribution, when it is NOT the one being read: a notch on
+ * the outer edge of the track. A second colour would compete with the reading
+ * marker for "you are here"; a shape does not.
+ */
+export const stenogramRailSelectedCueClassName =
+  'pointer-events-none absolute right-0 top-1/2 h-2 w-1 -translate-y-1/2 bg-[#0b0c0c] dark:bg-[var(--pnrr-fg)]'
+
+/** The hit area a marker owns — always taller and wider than the tick it draws. */
+export const stenogramRailMarkerHitClassName =
+  'group/marker absolute -left-1 -right-2 focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] motion-safe:transition-[top,height] motion-safe:duration-150 motion-safe:ease-out'
+
+/** The tick a marker draws. Live states break out of the track's own width. */
+export const stenogramRailMarkerTickClassName =
+  'absolute top-1/2 -translate-y-1/2 motion-safe:transition-[height,left,right,opacity,background-color] motion-safe:duration-150 motion-safe:ease-out'
+
+/**
+ * The hover/focus preview — a genuine floating layer, so it carries the one
+ * shadow this surface allows, over the flat document skin (2px border, no
+ * radius, white paper).
+ *
+ * Deliberately narrow, and opened to the RIGHT of the rail: the rail is the
+ * last column of the row, so the preview lands in the page's own margin instead
+ * of over the prose the reader is scanning.
+ */
+export const stenogramRailTooltipClassName =
+  'max-w-[15rem] rounded-none border-2 border-[#0b0c0c] bg-white p-3 text-left text-[#0b0c0c] shadow-md dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)]'
 
 /** In-document search hit. `mark` is semantic; the ring marks the CURRENT hit. */
 export const stenogramMatchClassName =

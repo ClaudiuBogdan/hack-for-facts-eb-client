@@ -15,7 +15,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import type {
   ParliamentStenogramReaderSearch,
-  ParliamentStenogramSegment,
   ParliamentStenogramSessionRef,
 } from '@/schemas/parliament'
 import {
@@ -37,7 +36,11 @@ import {
   stenogramAvailabilityLabel,
   stenogramChamberLabel,
 } from '../lib/stenogram-presentation'
-import { buildStenogramToc, segmentDomId } from '../lib/stenogram-toc'
+import {
+  buildStenogramInterventions,
+  buildStenogramToc,
+  segmentDomId,
+} from '../lib/stenogram-toc'
 import {
   stenogramAvailabilityToneClassName,
   stenogramBadgeClassName,
@@ -51,6 +54,7 @@ import { ParliamentShell } from './parliament-shell'
 import { ParliamentStenogramDocument } from './parliament-stenogram-document'
 import { ParliamentStenogramDocumentSearch } from './parliament-stenogram-document-search'
 import { ParliamentStenogramFailureNotice } from './parliament-stenogram-failure'
+import { ParliamentStenogramInterventionRail } from './parliament-stenogram-intervention-rail'
 import { ParliamentStenogramToc } from './parliament-stenogram-toc'
 
 type Props = {
@@ -60,6 +64,13 @@ type Props = {
 
 /** Landmark id for the reading column — the skip link's target. */
 const READING_REGION_ID = 'stenogram-reading'
+
+/**
+ * Anything that can NAME a contribution: a reading block, or a tick on the
+ * intervention rail. Both go through the one selection path, so the URL stays
+ * the single source of "which contribution is highlighted".
+ */
+type SelectableContribution = { readonly speechKey?: string }
 
 /** Skeleton shaped like the real reader (rail + column), so nothing jumps. */
 function ReaderSkeleton() {
@@ -126,6 +137,12 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
   const session = transcript?.session
 
   const toc = useMemo(() => buildStenogramToc(segments), [segments])
+  // The rail is derived from the document, so it gives the many captures that
+  // printed NO agenda headings a navigable shape without inventing one.
+  const interventions = useMemo(
+    () => buildStenogramInterventions(segments),
+    [segments],
+  )
 
   const matches = useMemo(
     () => findDocumentMatches(segments, documentQuery),
@@ -216,7 +233,7 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
   )
 
   const selectContribution = useCallback(
-    (segment: ParliamentStenogramSegment) => {
+    (segment: SelectableContribution) => {
       void navigate({
         to: '/parlament/stenograme/sedinte/$sessionKey',
         params: { sessionKey },
@@ -397,7 +414,9 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
 
         {/* The agenda rail precedes the document in source order (and stacks
             above it on mobile), so a keyboard reader would otherwise tab
-            through every agenda item to reach the text. Visible on focus. */}
+            through every agenda item to reach the text. Visible on focus.
+            The intervention rail needs no such escape: it FOLLOWS the reading
+            column, and holds a single tab stop of its own. */}
         {toc.length > 0 ? (
           <a
             href={`#${READING_REGION_ID}`}
@@ -419,11 +438,15 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
             className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:w-72 lg:shrink-0 lg:overflow-y-auto"
           />
 
+          {/* The reading column is capped at the prose measure from `xl` up, so
+              the rail that follows it sits against the text it measures and the
+              row's leftover width falls to the RIGHT of the rail — which is
+              where the rail's hover previews open, clear of the prose. */}
           <section
             id={READING_REGION_ID}
             tabIndex={-1}
             aria-label={t`Textul ședinței`}
-            className="min-w-0 flex-1"
+            className="min-w-0 flex-1 xl:max-w-3xl"
           >
             <ParliamentStenogramDocument
               segments={segments}
@@ -432,6 +455,20 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
               currentMatch={currentMatch}
             />
           </section>
+
+          {/* The reading-progress rail sits on the RIGHT edge of the reading
+              column, where a scrollbar belongs — and after it in source order,
+              so it never stands between a keyboard reader and the text. It
+              appears only at `xl`: at `lg` the third column would eat into the
+              reading measure, and the document plus the previous/next controls
+              already navigate. */}
+          <ParliamentStenogramInterventionRail
+            interventions={interventions}
+            selectedPosition={selectedPosition}
+            onSelect={selectContribution}
+            readingRegionId={READING_REGION_ID}
+            className="xl:sticky xl:top-24"
+          />
         </div>
 
         {/* ── previous/next CONTRIBUTION ───────────────────────────────── */}

@@ -45,14 +45,25 @@ Object.defineProperty(window, "matchMedia", {
   })),
 });
 
-// Mock IntersectionObserver
-const mockIntersectionObserver = vi.fn();
-mockIntersectionObserver.mockReturnValue({
-  observe: () => null,
-  unobserve: () => null,
-  disconnect: () => null,
-});
-window.IntersectionObserver = mockIntersectionObserver;
+// Mock IntersectionObserver. It must be a real CLASS, not a `vi.fn()`: vitest 4
+// refuses a `mockReturnValue` mock called with `new`, and a mock wrapped around
+// a class hands back an instance with none of the prototype methods. Either way
+// every component that actually observes something threw inside its effect.
+// A test that needs to count constructions subclasses this locally.
+class MockIntersectionObserver implements IntersectionObserver {
+  readonly root: Element | Document | null = null;
+  readonly rootMargin: string = "";
+  readonly scrollMargin: string = "";
+  readonly thresholds: readonly number[] = [];
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
+  takeRecords(): IntersectionObserverEntry[] {
+    return [];
+  }
+}
+window.IntersectionObserver =
+  MockIntersectionObserver as unknown as typeof IntersectionObserver;
 
 window.scrollTo = vi.fn();
 

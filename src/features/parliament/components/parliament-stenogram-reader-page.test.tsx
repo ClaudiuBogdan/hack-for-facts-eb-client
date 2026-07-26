@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
@@ -278,6 +278,241 @@ describe('the highlighted contribution keeps its context', () => {
   })
 })
 
+describe('the intervention rail maps the sitting', () => {
+  const rail = () =>
+    screen.getByRole('navigation', { name: 'Harta intervențiilor din ședință' })
+
+  /** A sitting dense enough that ticks cannot be drawn one per contribution. */
+  function denseSegments(count: number) {
+    return Array.from({ length: count }, (_, index) =>
+      segment(index, 'SPEECH', `Intervenția ${String(index)}.`, {
+        speakerName: `Vorbitor ${String(index)}`,
+        speechKey: `canon:sp:${String(index)}`,
+      }),
+    )
+  }
+
+  it('marks the CONTRIBUTIONS, and only those', () => {
+    // The agenda heading and the `(rumoare în sală)` narration get no tick:
+    // a rail of speakers must not imply somebody said them.
+    mockTranscript()
+    renderReader()
+
+    const markers = within(rail()).getAllByRole('button')
+    expect(markers).toHaveLength(2)
+    expect(markers.map((marker) => marker.getAttribute('aria-label'))).toEqual([
+      'Intervenția 1: Ion Popescu',
+      'Intervenția 2: Maria Ionescu',
+    ])
+  })
+
+  it('names an unresolved speaker as unprinted, never as a guessed member', () => {
+    mockTranscript({}, { availability: 'PARTIAL' }, [
+      SEGMENTS[1]!,
+      segment(2, 'SPEECH', 'Vă mulțumesc.', { speechKey: 'canon:sp:2' }),
+    ])
+    renderReader()
+
+    expect(
+      within(rail()).getByRole('button', {
+        name: 'Intervenția 2: Vorbitor netipărit în stenogramă',
+      }),
+    ).toBeInTheDocument()
+  })
+
+  it('selects the contribution through the shared, shareable URL flow', async () => {
+    mockTranscript()
+    renderReader()
+
+    await userEvent.click(
+      within(rail()).getByRole('button', { name: 'Intervenția 2: Maria Ionescu' }),
+    )
+    expect(navigate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        search: { interventie: 'canon:sp:3' },
+        replace: true,
+        resetScroll: false,
+      }),
+    )
+  })
+
+  it('marks the linked contribution as current, without hiding its context', () => {
+    mockTranscript()
+    const { container } = renderReader({ interventie: 'canon:sp:3' })
+
+    expect(
+      within(rail()).getByRole('button', { name: 'Intervenția 2: Maria Ionescu' }),
+    ).toHaveAttribute('aria-current', 'true')
+    expect(
+      within(rail()).getByRole('button', { name: 'Intervenția 1: Ion Popescu' }),
+    ).not.toHaveAttribute('aria-current')
+    expect(container.querySelectorAll('[id^="stenogram-block-"]')).toHaveLength(
+      4,
+    )
+  })
+
+  it('is ABSENT when the sitting printed no contributions', () => {
+    mockTranscript({}, {}, [SEGMENTS[0]!, SEGMENTS[2]!])
+    renderReader()
+    expect(
+      screen.queryByRole('navigation', {
+        name: 'Harta intervențiilor din ședință',
+      }),
+    ).toBeNull()
+  })
+
+  it('is a sticky, print-hidden column that only appears at xl', () => {
+    // Below xl the third column would eat the reading measure; the document
+    // and the previous/next contribution controls navigate there instead.
+    mockTranscript()
+    renderReader()
+    expect(rail().className).toContain('hidden')
+    expect(rail().className).toContain('xl:block')
+    expect(rail().className).toContain('xl:sticky')
+    expect(rail().className).toContain('print:hidden')
+  })
+
+  it('sits to the RIGHT of the reading column, and after it in source order', () => {
+    // A scrollbar belongs on the trailing edge of what it measures — and a
+    // keyboard reader must reach the transcript before the map of it.
+    mockTranscript()
+    renderReader()
+    const reading = screen.getByRole('region', { name: 'Textul ședinței' })
+    expect(
+      reading.compareDocumentPosition(rail()) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(reading.className).toContain('xl:max-w-3xl')
+  })
+
+  it('fills from the top of the sitting down to the reading line', () => {
+    // The rail is a progress bar first: the fill is read from the reading
+    // region's own box, so the heading band and the footers are not counted as
+    // transcript the reader has been through.
+    const rect = vi
+      .spyOn(Element.prototype, 'getBoundingClientRect')
+      .mockReturnValue({
+        ...new DOMRect(),
+        top: -400,
+        height: 4000,
+      } as DOMRect)
+    try {
+      mockTranscript()
+      const { container } = renderReader()
+      // The reading line sits at 40% of a 768px viewport: 307px of the 4000px
+      // transcript above it, plus the 400px already scrolled past.
+      expect(
+        container.querySelector('[data-rail-progress]'),
+      ).toHaveAttribute('data-progress', '18')
+    } finally {
+      rect.mockRestore()
+    }
+  })
+
+  it('never grows past one viewport, however dense the sitting', () => {
+    // The previous rail grew its track and scrolled inside its own box, which
+    // stopped a point on the rail meaning a point in the document. The track is
+    // now fixed: density is absorbed by clustering, not by scrolling.
+    mockTranscript({}, {}, denseSegments(120))
+    const { container } = renderReader()
+
+    const track = container.querySelector<HTMLElement>('[data-rail-track]')!
+    expect(track.style.height).toBe('640px')
+    expect(track.className).not.toContain('overflow-y-auto')
+  })
+
+  it('clusters crowded ticks instead of overlapping them, losing nobody', () => {
+    // 120 contributions cannot each own an 8px slot on a 640px track, so
+    // neighbours quantise onto one weighted tick — while every contribution
+    // keeps its own button, at its own position, for pointer and keyboard.
+    mockTranscript({}, {}, denseSegments(120))
+    const { container } = renderReader()
+
+    const markers = within(rail()).getAllByRole('button')
+    expect(markers).toHaveLength(120)
+
+    const clusters = container.querySelectorAll('[data-rail-cluster]')
+    expect(clusters.length).toBeGreaterThan(0)
+    expect(clusters.length).toBeLessThanOrEqual(640 / 8)
+    // A cluster tick states how many turns it stands for, and no two ticks may
+    // land on the same pixel.
+    const sizes = [...clusters].map((tick) =>
+      Number(tick.getAttribute('data-size')),
+    )
+    expect(Math.max(...sizes)).toBeGreaterThan(1)
+    const tops = [...container.querySelectorAll<HTMLElement>('[data-rail-cluster]')]
+      .map((tick) => tick.style.top)
+    expect(new Set(tops).size).toBe(tops.length)
+  })
+
+  it('gives every tick a hit area several times its own size', () => {
+    mockTranscript()
+    renderReader()
+    const marker = within(rail()).getAllByRole('button')[0]!
+    // One slot tall (8px) against a 3px tick, and overhanging the 24px track on
+    // both sides.
+    expect(marker.style.height).toBe('8px')
+    expect(marker.querySelector('span')!.style.height).toBe('3px')
+    expect(marker.className).toContain('-left-1')
+    expect(marker.className).toContain('-right-2')
+  })
+
+  it('holds ONE tab stop and moves between contributions with the arrows', async () => {
+    // A dense sitting must not put hundreds of tab stops between the document
+    // and the page's own navigation.
+    mockTranscript()
+    renderReader()
+
+    const markers = within(rail()).getAllByRole('button')
+    expect(markers.map((marker) => marker.tabIndex)).toEqual([0, -1])
+
+    await act(async () => markers[0]!.focus())
+    await userEvent.keyboard('{ArrowDown}')
+    expect(markers[1]!).toHaveFocus()
+    expect(markers.map((marker) => marker.tabIndex)).toEqual([-1, 0])
+
+    await userEvent.keyboard('{Home}')
+    expect(markers[0]!).toHaveFocus()
+  })
+
+  it('animates only where the reader allows motion', () => {
+    mockTranscript()
+    const { container } = renderReader()
+    expect(
+      container.querySelector('[data-rail-progress]')!.className,
+    ).toContain('motion-safe:transition-[height]')
+    expect(within(rail()).getAllByRole('button')[0]!.className).toContain(
+      'motion-safe:transition-[top,height]',
+    )
+  })
+
+  it('tracks the reading with ONE observer over the contribution blocks', () => {
+    // Not one scroll listener per tick, and not an observer rebuilt per scroll:
+    // exactly one observer, over a narrow reading band, for the whole sitting.
+    const Real = window.IntersectionObserver
+    const built: (IntersectionObserverInit | undefined)[] = []
+    class CountingObserver extends Real {
+      constructor(
+        callback: IntersectionObserverCallback,
+        init?: IntersectionObserverInit,
+      ) {
+        super(callback, init)
+        built.push(init)
+      }
+    }
+    window.IntersectionObserver = CountingObserver
+
+    try {
+      mockTranscript()
+      renderReader()
+      expect(built).toHaveLength(1)
+      expect(built[0]?.rootMargin).toBe('-40% 0px -45% 0px')
+    } finally {
+      window.IntersectionObserver = Real
+    }
+  })
+})
+
 describe('in-document search inside the reader', () => {
   it('finds diacritic-free typing and reports the hit count', async () => {
     mockTranscript()
@@ -515,12 +750,30 @@ describe('accessibility and landmarks', () => {
     ).toBeInTheDocument()
   })
 
-  it('omits the skip link when there is no agenda to skip', () => {
+  it('omits the skip link when the capture printed no agenda to skip', () => {
+    // A narration-only capture builds no agenda, so nothing precedes the
+    // reading and the skip link would jump nowhere.
+    mockTranscript({}, {}, [SEGMENTS[2]!])
+    renderReader()
+    expect(
+      screen.queryByRole('link', { name: 'Sari la textul ședinței' }),
+    ).toBeNull()
+  })
+
+  it('needs no skip link for the intervention rail, which FOLLOWS the reading', () => {
+    // The rail used to sit between the agenda and the document, so a keyboard
+    // reader tabbed through every tick to reach the text. It is now after the
+    // reading column, and holds a single tab stop of its own.
     mockTranscript({}, {}, [SEGMENTS[1]!])
     renderReader()
     expect(
       screen.queryByRole('link', { name: 'Sari la textul ședinței' }),
     ).toBeNull()
+    expect(
+      screen.getByRole('navigation', {
+        name: 'Harta intervențiilor din ședință',
+      }),
+    ).toBeInTheDocument()
   })
 
   it('names both navigation landmarks distinctly', () => {
