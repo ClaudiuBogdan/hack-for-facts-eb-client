@@ -5,7 +5,6 @@ import {
   ParliamentStenogramSegmentSchema,
   type ParliamentStenogramSegment,
 } from '@/schemas/parliament'
-import { findDocumentMatches } from '../lib/stenogram-document-search'
 import { segmentDomId } from '../lib/stenogram-toc'
 import { ParliamentStenogramDocument } from './parliament-stenogram-document'
 
@@ -72,8 +71,6 @@ function renderDocument(
     <ParliamentStenogramDocument
       segments={segments}
       selectedPosition={undefined}
-      matches={[]}
-      currentMatch={0}
       {...overrides}
     />,
   )
@@ -136,20 +133,61 @@ describe('ParliamentStenogramDocument', () => {
     expect(screen.getByText('Maria Ionescu')).toBeInTheDocument()
   })
 
-  it('marks in-document search hits and rings the CURRENT one', () => {
-    const matches = findDocumentMatches(segments, 'sanatat')
-    const { container } = renderDocument({ matches, currentMatch: 1 })
-
-    const marks = container.querySelectorAll('mark')
-    expect(marks.length).toBe(matches.length)
-    // Diacritic-forgiving: "sanatat" matched "sănătăț"/"sănătat" in place.
-    expect(marks[0]?.textContent).toMatch(/sănăt/)
-
-    const current = container.querySelector('mark[data-match-index="1"]')!
-    expect(current.className).toContain('outline-2')
+  it('links a speaker whose mandate is carried ONLY on `member`', () => {
+    // A block can hold the resolved mandate in either place depending on how it
+    // was fetched. Reading `mandateKey` alone is what made resolved speakers
+    // render as plain text.
+    renderDocument({
+      segments: [
+        segment(0, 'SPEECH', 'Ca membru al comisiei…', {
+          speakerName: 'Ana Radu',
+          speechKey: 'canon:sp:0',
+          member: { mandateKey: 'mandate-42', fullName: 'Ana Radu' },
+        }),
+      ],
+    })
+    expect(screen.getByRole('link', { name: 'Ana Radu' })).toHaveAttribute(
+      'href',
+      '/parlament/membri/mandate-42/interventii',
+    )
+    // …and the resolved key silences the "not identified as a member" note.
     expect(
-      container.querySelector('mark[data-match-index="0"]')!.className,
-    ).not.toContain('outline-2')
+      screen.queryByText(/Sursa nu a identificat acest vorbitor/),
+    ).toBeNull()
+  })
+
+  it('prefers the block own mandateKey when BOTH are present', () => {
+    renderDocument({
+      segments: [
+        segment(0, 'SPEECH', 'a', {
+          speakerName: 'Ana Radu',
+          mandateKey: 'mandate-primary',
+          member: { mandateKey: 'mandate-secondary', fullName: 'Ana Radu' },
+        }),
+      ],
+    })
+    expect(screen.getByRole('link', { name: 'Ana Radu' })).toHaveAttribute(
+      'href',
+      '/parlament/membri/mandate-primary/interventii',
+    )
+  })
+
+  it('never builds a member route out of a PRINTED NAME', () => {
+    // No mandate anywhere: the name is a string a stenographer typed, and
+    // guessing an identity from it is the one thing this surface must not do.
+    renderDocument({
+      segments: [
+        segment(0, 'SPEECH', 'Ca invitat…', {
+          speakerName: 'Invitat Guvern',
+          speechKey: 'canon:sp:0',
+        }),
+      ],
+    })
+    expect(screen.queryByRole('link')).toBeNull()
+    expect(screen.getByText('Invitat Guvern')).toBeInTheDocument()
+    expect(
+      screen.getByText(/Sursa nu a identificat acest vorbitor/),
+    ).toBeInTheDocument()
   })
 
   it('renders an agenda heading as a real heading', () => {

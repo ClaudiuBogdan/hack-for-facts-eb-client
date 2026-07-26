@@ -1,6 +1,6 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
 import { GraphQLRequestError } from '@/lib/graphql/graphql-client'
 import { ParliamentStenogramFailureError } from '../lib/parliament-stenogram-error'
@@ -55,6 +55,42 @@ vi.mock('../hooks/use-parliament-data', () => ({
 
 vi.mock('./parliament-shell', () => ({
   ParliamentShell: ({ children }: { children: ReactNode }) => <>{children}</>,
+}))
+
+/**
+ * The shared multi-select, as a plain list of toggles: this file tests what the
+ * READER does with a selection, not the dropdown/virtualiser the shared control
+ * owns (and which needs a layout engine jsdom does not have).
+ */
+vi.mock('@/components/ui/styled-multi-select', () => ({
+  StyledMultiSelect: ({
+    options,
+    selected,
+    onChange,
+  }: {
+    options: readonly { value: string; label: string; description?: string }[]
+    selected: readonly string[]
+    onChange: (values: string[]) => void
+  }) => (
+    <div data-testid="speaker-select">
+      {options.map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          aria-pressed={selected.includes(option.value)}
+          onClick={() =>
+            onChange(
+              selected.includes(option.value)
+                ? selected.filter((value) => value !== option.value)
+                : [...selected, option.value],
+            )
+          }
+        >
+          {`Filtru: ${option.label} (${option.description ?? ''})`}
+        </button>
+      ))}
+    </div>
+  ),
 }))
 
 const { ParliamentStenogramReaderPage } = await import(
@@ -150,10 +186,17 @@ beforeEach(() => {
   useParliamentSpeechContext.mockReturnValue({ ...idleQuery, data: null })
 })
 
-function renderReader(search: { interventie?: string } = {}) {
+function renderReader(
+  search: { interventie?: string; vorbitori?: string[] } = {},
+) {
   return render(
     <ParliamentStenogramReaderPage sessionKey="canon:s1" search={search} />,
   )
+}
+
+/** The reader's left column — one sticky stack, whatever it currently holds. */
+function leftLane(): HTMLElement {
+  return document.querySelector<HTMLElement>('[data-reader-lane]')!
 }
 
 describe('the reader renders a readable document', () => {
@@ -213,16 +256,92 @@ describe('the reader renders a readable document', () => {
     ).toBeInTheDocument()
   })
 
-  it('stacks on mobile and becomes a sticky rail + column at lg', () => {
+  it('stacks on mobile and becomes a sticky lane + column at lg', () => {
     mockTranscript()
     const { container } = renderReader()
     const grid = container.querySelector('.lg\\:flex-row')!
     expect(grid.className).toContain('flex-col')
-    const rail = screen.getByRole('navigation', {
+    expect(leftLane().className).toContain('lg:sticky')
+    expect(leftLane().className).toContain('lg:w-72')
+  })
+})
+
+/**
+ * The left lane is ONE sticky stack, and the geometry it produces must not
+ * depend on the filter: a document that jumps left and re-wraps the moment a
+ * speaker is selected reads as a different document — the exact impression an
+ * excerpt must not give.
+ */
+describe('the left lane holds its geometry in both modes', () => {
+  it('is a single sticky STACK, not several sticky children', () => {
+    // Separately sticky children pile onto the same offset and overlap; the
+    // stack sticks, its contents ride along in a fixed order.
+    mockTranscript()
+    renderReader()
+    const lane = leftLane()
+    expect(lane.className).toContain('lg:sticky')
+    expect(lane.className).toContain('lg:top-24')
+    expect(lane.className).toContain('lg:shrink-0')
+    const agenda = screen.getByRole('navigation', {
       name: 'Ordinea de zi a ședinței',
     })
-    expect(rail.className).toContain('lg:sticky')
-    expect(rail.className).toContain('lg:w-72')
+    expect(agenda.className).not.toContain('lg:sticky')
+    expect(lane.contains(agenda)).toBe(true)
+  })
+
+  it('keeps the SAME lane width and prose measure when filtering', () => {
+    mockTranscript()
+    const full = renderReader()
+    const fullLane = leftLane().className
+    const fullReading = screen.getByRole('region', { name: 'Textul ședinței' })
+      .className
+    full.unmount()
+
+    mockTranscript()
+    renderReader({ vorbitori: ['Maria Ionescu'] })
+    expect(leftLane().className).toBe(fullLane)
+    expect(
+      screen.getByRole('region', { name: 'Textul ședinței' }).className,
+    ).toBe(fullReading)
+  })
+
+  it('keeps the lane even when a filtered excerpt has no usable agenda', () => {
+    // No headings survive the selection, so no navigation is rendered — but the
+    // column stays, carrying the notice and the way back to the top.
+    mockTranscript({}, {}, [SEGMENTS[1]!, SEGMENTS[3]!])
+    renderReader({ vorbitori: ['Maria Ionescu'] })
+    expect(leftLane().className).toContain('lg:w-72')
+    expect(screen.queryByRole('navigation', { name: /Ordinea de zi/ })).toBeNull()
+    expect(screen.getByText('Extras filtrat — nu este stenograma integrală.'))
+      .toBeInTheDocument()
+  })
+
+  it('orders the lane: agenda, then the excerpt notice, then "back to top"', () => {
+    mockTranscript()
+    renderReader({ vorbitori: ['Maria Ionescu'] })
+    const lane = leftLane()
+    const agenda = screen.getByRole('navigation', {
+      name: 'Ordinea de zi din extras',
+    })
+    const notice = screen
+      .getByText('Extras filtrat — nu este stenograma integrală.')
+      .closest('[role="status"]')!
+    expect(lane.contains(agenda)).toBe(true)
+    expect(lane.contains(notice)).toBe(true)
+    expect(
+      agenda.compareDocumentPosition(notice) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+  })
+
+  it('precedes the reading column, and the rail follows it', () => {
+    mockTranscript()
+    renderReader()
+    const reading = screen.getByRole('region', { name: 'Textul ședinței' })
+    expect(
+      leftLane().compareDocumentPosition(reading) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
   })
 })
 
@@ -513,40 +632,379 @@ describe('the intervention rail maps the sitting', () => {
   })
 })
 
-describe('in-document search inside the reader', () => {
-  it('finds diacritic-free typing and reports the hit count', async () => {
+describe('filtering the reading by speaker', () => {
+  const rail = () =>
+    screen.getByRole('navigation', { name: 'Harta intervențiilor din ședință' })
+
+  it('offers the sitting own printed speakers, counted', () => {
+    mockTranscript()
+    renderReader()
+    expect(
+      screen.getByRole('button', { name: 'Filtru: Ion Popescu (1 luare de cuvânt)' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', {
+        name: 'Filtru: Maria Ionescu (1 luare de cuvânt)',
+      }),
+    ).toBeInTheDocument()
+  })
+
+  it('puts a chosen speaker in the URL, so a filtered reading is shareable', async () => {
     mockTranscript()
     renderReader()
 
-    await userEvent.type(
-      screen.getByRole('searchbox', { name: /Caută în textul acestei ședințe/ }),
-      'sanatat',
+    await userEvent.click(
+      screen.getByRole('button', { name: /Filtru: Maria Ionescu/ }),
     )
-    await waitFor(() => expect(screen.getByText(/1 din 2/)).toBeInTheDocument())
+    expect(navigate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        search: { vorbitori: ['Maria Ionescu'] },
+        replace: true,
+        resetScroll: false,
+      }),
+    )
   })
 
-  it('steps between matches and wraps around', async () => {
+  it('supports MANY speakers at once', async () => {
+    mockTranscript()
+    renderReader({ vorbitori: ['Ion Popescu'] })
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /Filtru: Maria Ionescu/ }),
+    )
+    expect(navigate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        search: { vorbitori: ['Ion Popescu', 'Maria Ionescu'] },
+      }),
+    )
+  })
+
+  it('renders ONLY the selected speaker contributions', () => {
+    mockTranscript()
+    const { container } = renderReader({ vorbitori: ['Maria Ionescu'] })
+
+    expect(container.querySelectorAll('[id^="stenogram-block-"]')).toHaveLength(1)
+    expect(screen.getByText(/Nu sunt de acord/)).toBeInTheDocument()
+    expect(screen.queryByText(/Susțin proiectul/)).toBeNull()
+    // The heading and the narration are gone from the READING with everything
+    // else: an excerpt must not keep the structure of a document it no longer
+    // contains. (The left lane still names the surviving section — see below.)
+    const reading = screen.getByRole('region', { name: 'Textul ședinței' })
+    expect(within(reading).queryByText(/Punctul 1/)).toBeNull()
+    expect(screen.queryByText(/rumoare în sală/)).toBeNull()
+  })
+
+  it('says it is an excerpt, counted against the WHOLE sitting, IN THE LANE', () => {
+    // Not a full-width band above the reader: as a band the claim is read once
+    // and then scrolls away, leaving screens of text that look like a sitting.
+    mockTranscript()
+    renderReader({ vorbitori: ['Maria Ionescu'] })
+    const notice = screen.getByText(
+      'Extras filtrat — nu este stenograma integrală.',
+    )
+    expect(notice).toBeInTheDocument()
+    expect(leftLane().contains(notice)).toBe(true)
+    expect(
+      screen.getByText(
+        /Se afișează 1 din 2 luări de cuvânt ale ședinței, doar de la: Maria Ionescu\./,
+      ),
+    ).toBeInTheDocument()
+  })
+
+  it('clears the whole filter in one click, back to the complete record', async () => {
+    mockTranscript()
+    renderReader({ vorbitori: ['Maria Ionescu'] })
+
+    const restore = screen.getAllByRole('button', {
+      name: 'Arată stenograma integrală',
+    })
+    // ONE restore-full action on the surface, not a pair with the toolbar.
+    expect(restore).toHaveLength(1)
+    await userEvent.click(restore[0]!)
+    expect(navigate).toHaveBeenCalledWith(
+      expect.objectContaining({ search: {} }),
+    )
+  })
+
+  it('rebuilds the AGENDA over the excerpt instead of hiding or faking it', () => {
+    mockTranscript()
+    renderReader({ vorbitori: ['Maria Ionescu'] })
+
+    // Named as what it is: the agenda OF THE EXCERPT.
+    const agenda = screen.getByRole('navigation', {
+      name: 'Ordinea de zi din extras',
+    })
+    expect(
+      screen.queryByRole('navigation', { name: 'Ordinea de zi a ședinței' }),
+    ).toBeNull()
+    // Its one entry counts the VISIBLE turns, not the section's real size.
+    expect(
+      within(agenda).getByRole('button', { name: /Punctul 1/ }).textContent,
+    ).toContain('1 luare de cuvânt afișată')
+  })
+
+  it('agenda entries land on a VISIBLE block, never on a hidden heading', async () => {
+    mockTranscript({}, {}, [
+      SEGMENTS[0]!,
+      SEGMENTS[1]!,
+      SEGMENTS[3]!,
+      segment(4, 'SPEECH', 'Revin cu o precizare.', {
+        speakerName: 'Maria Ionescu',
+        speechKey: 'canon:sp:4',
+      }),
+    ])
+    const { container } = renderReader({ vorbitori: ['Maria Ionescu'] })
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /Punctul 1/ }),
+    )
+    // Position 3 is Maria's first surviving turn; the heading at 0 is gone.
+    await waitFor(() =>
+      expect(container.querySelector(`#${segmentDomId(3)}`)).toHaveFocus(),
+    )
+    expect(container.querySelector(`#${segmentDomId(0)}`)).toBeNull()
+  })
+
+  it('renders NO agenda when the excerpt sits under no heading at all', () => {
+    // An honest gap beats a map of a document that is not on screen.
+    mockTranscript({}, {}, [SEGMENTS[1]!, SEGMENTS[3]!])
+    renderReader({ vorbitori: ['Maria Ionescu'] })
+    expect(screen.queryByRole('navigation', { name: /Ordinea de zi/ })).toBeNull()
+    expect(
+      screen.queryByRole('link', { name: 'Sari la textul ședinței' }),
+    ).toBeNull()
+  })
+
+  it('keeps the FULL reading, agenda and order intact when nothing is selected', () => {
     mockTranscript()
     const { container } = renderReader()
-
-    await userEvent.type(
-      screen.getByRole('searchbox', { name: /Caută în textul/ }),
-      'sanatat',
-    )
-    await waitFor(() => expect(screen.getByText(/1 din 2/)).toBeInTheDocument())
-
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Rezultatul următor' }),
-    )
-    await waitFor(() => expect(screen.getByText(/2 din 2/)).toBeInTheDocument())
+    expect(container.querySelectorAll('[id^="stenogram-block-"]')).toHaveLength(4)
     expect(
-      container.querySelector('mark[data-match-index="1"]')!.className,
-    ).toContain('outline-2')
+      screen.getByRole('navigation', { name: 'Ordinea de zi a ședinței' }),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/Extras filtrat/)).toBeNull()
+  })
+
+  it('narrows the intervention rail to the VISIBLE contributions', () => {
+    mockTranscript()
+    renderReader({ vorbitori: ['Maria Ionescu'] })
+    const markers = within(rail()).getAllByRole('button')
+    expect(markers.map((marker) => marker.getAttribute('aria-label'))).toEqual([
+      'Intervenția 1: Maria Ionescu',
+    ])
+  })
+
+  it('steps prev/next through the FILTERED set only', async () => {
+    mockTranscript({}, {}, [
+      SEGMENTS[0]!,
+      SEGMENTS[1]!,
+      SEGMENTS[3]!,
+      segment(4, 'SPEECH', 'Revin cu o precizare.', {
+        speakerName: 'Ion Popescu',
+        speechKey: 'canon:sp:4',
+      }),
+    ])
+    renderReader({ interventie: 'canon:sp:1', vorbitori: ['Ion Popescu'] })
 
     await userEvent.click(
-      screen.getByRole('button', { name: 'Rezultatul următor' }),
+      screen.getByRole('button', { name: /Intervenția următoare/ }),
     )
-    await waitFor(() => expect(screen.getByText(/1 din 2/)).toBeInTheDocument())
+    // Maria's turn sits between the two in the document and is skipped.
+    expect(navigate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        search: { interventie: 'canon:sp:4', vorbitori: ['Ion Popescu'] },
+      }),
+    )
+  })
+
+  it('prints the EXCERPT, and labels the print action as such', () => {
+    mockTranscript()
+    renderReader({ vorbitori: ['Maria Ionescu'] })
+    expect(
+      screen.getByRole('button', { name: /Printează extrasul filtrat/ }),
+    ).toBeInTheDocument()
+    // The notice that says it is an excerpt goes onto paper with it — so the
+    // lane that now holds it must not be `print:hidden` either.
+    const notice = screen
+      .getByText('Extras filtrat — nu este stenograma integrală.')
+      .closest('[role="status"]')!
+    expect(notice.className).not.toContain('print:hidden')
+    expect(leftLane().className).not.toContain('print:hidden')
+  })
+
+  it('prints the complete sitting, plainly labelled, when unfiltered', () => {
+    mockTranscript()
+    renderReader()
+    expect(screen.getByRole('button', { name: /Printează/ }).textContent).toBe(
+      'Printează',
+    )
+  })
+})
+
+describe('a deep link and a speaker filter that disagree', () => {
+  it('says the linked contribution is outside the excerpt, and offers the way back', () => {
+    mockTranscript()
+    renderReader({ interventie: 'canon:sp:1', vorbitori: ['Maria Ionescu'] })
+
+    // Stated inside the excerpt notice, which already carries the ONE way back
+    // — a second card with its own identical button would be the duplicate.
+    expect(
+      screen.getByText(/Intervenția din link nu aparține vorbitorilor selectați/),
+    ).toBeInTheDocument()
+    expect(
+      screen.getAllByRole('button', { name: 'Arată stenograma integrală' }),
+    ).toHaveLength(1)
+    // Nothing crashes, and the excerpt still reads.
+    expect(screen.getByText(/Nu sunt de acord/)).toBeInTheDocument()
+  })
+
+  it('drops the hidden link on the next filter action, keeping the URL honest', async () => {
+    mockTranscript()
+    renderReader({ interventie: 'canon:sp:1' })
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /Filtru: Maria Ionescu/ }),
+    )
+    expect(navigate).toHaveBeenCalledWith(
+      expect.objectContaining({ search: { vorbitori: ['Maria Ionescu'] } }),
+    )
+  })
+
+  it('KEEPS a link whose speaker survives the new selection', async () => {
+    mockTranscript()
+    renderReader({ interventie: 'canon:sp:1' })
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /Filtru: Ion Popescu/ }),
+    )
+    expect(navigate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        search: { interventie: 'canon:sp:1', vorbitori: ['Ion Popescu'] },
+      }),
+    )
+  })
+
+  it('keeps an UNRESOLVED legacy link rather than silently dropping it', async () => {
+    // It may still resolve through the server redirect map; discarding somebody
+    // shared URL because we cannot yet place it is the worse failure.
+    mockTranscript()
+    renderReader({ interventie: 'cdep:legacy:9043:9:718' })
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /Filtru: Ion Popescu/ }),
+    )
+    expect(navigate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        search: {
+          interventie: 'cdep:legacy:9043:9:718',
+          vorbitori: ['Ion Popescu'],
+        },
+      }),
+    )
+  })
+
+  it('a deep link still lands normally in FULL mode', async () => {
+    mockTranscript()
+    const { container } = renderReader({ interventie: 'canon:sp:3' })
+    await waitFor(() =>
+      expect(container.querySelector(`#${segmentDomId(3)}`)).toHaveFocus(),
+    )
+    expect(screen.queryByText(/nu aparține vorbitorilor selectați/)).toBeNull()
+  })
+})
+
+describe('the way back to the top of a long sitting', () => {
+  function scrollTo(y: number) {
+    Object.defineProperty(window, 'scrollY', {
+      writable: true,
+      configurable: true,
+      value: y,
+    })
+    act(() => {
+      window.dispatchEvent(new Event('scroll'))
+    })
+  }
+
+  const LABEL = 'Înapoi la începutul stenogramei'
+
+  beforeEach(() => {
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      callback(0)
+      return 1
+    })
+    window.scrollTo = vi.fn() as unknown as typeof window.scrollTo
+  })
+
+  afterEach(() => {
+    scrollTo(0)
+  })
+
+  it('appears only after meaningful scroll, and returns focus to the heading', async () => {
+    mockTranscript()
+    renderReader()
+    expect(screen.queryByRole('button', { name: LABEL })).toBeNull()
+
+    scrollTo(1200)
+    await userEvent.click(screen.getAllByRole('button', { name: LABEL })[0]!)
+    expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' })
+    expect(
+      screen.getByRole('heading', {
+        name: 'Ședința Camerei Deputaților din 13 mai 2026',
+        level: 1,
+      }),
+    ).toHaveFocus()
+  })
+
+  it('lives in the LEFT lane on desktop — never floating over the reading', () => {
+    // It used to be a fixed bottom-right FAB and it covered the prose, the
+    // intervention rail and the app's own dock. No overlay, no corner.
+    mockTranscript()
+    renderReader()
+    scrollTo(1200)
+
+    const inLane = screen
+      .getAllByRole('button', { name: LABEL })
+      .find((node) => leftLane().contains(node))!
+    expect(inLane).toBeDefined()
+    expect(inLane.className).not.toContain('fixed')
+    expect(inLane.className).toContain('lg:inline-flex')
+    // …and it sits BELOW the agenda and the notice in the lane.
+    const agenda = screen.getByRole('navigation', {
+      name: 'Ordinea de zi a ședinței',
+    })
+    expect(
+      agenda.compareDocumentPosition(inLane) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+  })
+
+  it('gives narrow screens an in-flow action at the END of the reading', () => {
+    // Below `lg` the bottom of the viewport belongs to the app's dock and its
+    // chat/feedback buttons; the desktop lane is hidden there instead.
+    mockTranscript()
+    renderReader()
+    scrollTo(1200)
+
+    const outside = screen
+      .getAllByRole('button', { name: LABEL })
+      .filter((node) => !leftLane().contains(node))
+    expect(outside).toHaveLength(1)
+    expect(outside[0]!.parentElement?.className).toContain('lg:hidden')
+    const reading = screen.getByRole('region', { name: 'Textul ședinței' })
+    expect(
+      reading.compareDocumentPosition(outside[0]!) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+  })
+
+  it('never covers the transcript: no fixed positioning anywhere', () => {
+    mockTranscript()
+    const { container } = renderReader()
+    scrollTo(1200)
+    for (const node of screen.getAllByRole('button', { name: LABEL })) {
+      expect(node.className).not.toContain('fixed')
+    }
+    expect(container.querySelector('.fixed')).toBeNull()
   })
 })
 

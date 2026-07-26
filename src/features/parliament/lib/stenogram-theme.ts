@@ -55,6 +55,53 @@ export const stenogramAvailabilityToneClassName: Readonly<
 export const stenogramNoticeClassName =
   'border-l-[5px] border-l-[#1d70b8] bg-[#f0f5fb] p-5 text-sm leading-6 text-[#0b0c0c] sm:p-6 dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-fg)]'
 
+/**
+ * The FILTERED-READING notice — the one band on this surface that is printed.
+ *
+ * Amber rather than blue, and never `print:hidden`: it is the statement that
+ * what follows is an excerpt of a sitting rather than the sitting, so it has to
+ * survive onto paper with the excerpt it qualifies. On paper it drops to a
+ * plain ruled box, because a tint that reads as a highlight on screen prints as
+ * a grey smear.
+ */
+export const stenogramFilterNoticeClassName =
+  'border-l-[5px] border-l-[#b58840] bg-[#fdf3e3] p-5 text-sm leading-6 text-[#0b0c0c] sm:p-6 dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-fg)] print:border-2 print:border-black print:border-l-2 print:bg-transparent print:p-3 print:text-black'
+
+/**
+ * The scroll-to-top button — an IN-FLOW action in the left lane, never a FAB.
+ *
+ * It used to be `position: fixed` in the bottom-right corner, and that corner is
+ * the busiest part of this app: the mobile dock owns the full width below `md`,
+ * the chat and feedback FABs stack above it, and on a wide screen the reader's
+ * own intervention rail sits there too. The button landed on top of all three
+ * and on the prose besides. A floating control that covers the document it
+ * belongs to is worse than one that is occasionally out of view, so it now sits
+ * in the left rail's sticky stack (desktop) and at the end of the reading
+ * (narrow), where it can overlap nothing.
+ */
+export const stenogramScrollTopClassName =
+  'h-11 w-full justify-start rounded-none border-2 border-[#0b0c0c] bg-white px-3 text-sm font-bold text-[#0b0c0c] hover:bg-[#f3f2f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:border-[var(--pnrr-fg)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)] dark:hover:bg-[var(--pnrr-subtle)] print:hidden'
+
+/**
+ * The reader's LEFT LANE — one sticky stack, not several sticky children.
+ *
+ * Everything that accompanies the reading rather than being part of it lives
+ * here in one box: the agenda, the excerpt notice while a speaker filter is on,
+ * and the way back to the top. Making the STACK sticky rather than each child
+ * is what keeps them in a fixed order relative to each other — separately
+ * sticky children pile onto the same offset and overlap.
+ *
+ * The width is stated here, once, and is the same in full and filtered mode:
+ * the reading measure to its right must not change when a reader selects a
+ * speaker, or the document appears to jump and re-wrap under them.
+ *
+ * On paper the lane collapses: its agenda and its "back to top" are screen
+ * affordances and hide themselves, while the excerpt notice must survive, so
+ * the box goes static and full width rather than `print:hidden`.
+ */
+export const stenogramLeftLaneClassName =
+  'flex flex-col gap-4 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:w-72 lg:shrink-0 print:static print:block print:max-h-none print:w-auto'
+
 /* ── reader ─────────────────────────────────────────────────────────────── */
 
 /**
@@ -153,9 +200,17 @@ export const stenogramRailTrackClassName =
 export const stenogramRailProgressClassName =
   'pointer-events-none absolute inset-x-0 top-0 bg-[#1d70b8]/15 dark:bg-[var(--pnrr-blue)]/25 motion-safe:transition-[height] motion-safe:duration-150 motion-safe:ease-out'
 
-/** The reading line itself — where the fill ends, drawn as a hairline. */
+/**
+ * The reading line itself — where the fill ends.
+ *
+ * THE ONE HORIZONTAL LIVE LINE ON THIS RAIL. Nothing else here may draw a rule
+ * across the track: the reader read two full-width bars (this one, plus the
+ * live/hover tick that broke out of the track's width) as two progress
+ * positions. Every other state below is a compact shape — a dot, a ring, a
+ * notch — precisely so this line keeps its meaning unshared.
+ */
 export const stenogramRailHeadClassName =
-  'pointer-events-none absolute inset-x-0 h-px -translate-y-px bg-[#1d70b8] dark:bg-[var(--pnrr-blue)] motion-safe:transition-[top] motion-safe:duration-150 motion-safe:ease-out'
+  'pointer-events-none absolute inset-x-0 h-0.5 -translate-y-px bg-[#1d70b8] dark:bg-[var(--pnrr-blue)] motion-safe:transition-[top] motion-safe:duration-150 motion-safe:ease-out'
 
 /**
  * A collapsed cluster: one tick standing for several contributions, its WIDTH
@@ -174,17 +229,30 @@ export const stenogramRailClusterDensityClassName: Readonly<
   crowd: 'w-6',
 }
 
-/** The paper a fanned-open cluster is drawn on, so its ticks stay legible. */
+/**
+ * The paper a fanned-open cluster is drawn on, so its ticks stay legible.
+ *
+ * Carries NO top/bottom rule. It used to be `border-y-2`, which put two more
+ * black horizontal lines onto a rail whose whole job is to own exactly one —
+ * an opened cluster looked like a second progress region. The expanded stretch
+ * is now stated by paper: a raised surface, a soft shadow, and a single
+ * VERTICAL rule on its leading edge, which is this app's own notice vocabulary
+ * and cannot be misread as progress.
+ */
 export const stenogramRailFanClassName =
-  'pointer-events-none absolute -left-1 -right-1 border-y-2 border-[#0b0c0c] bg-white dark:border-[var(--pnrr-fg)] dark:bg-[var(--pnrr-card)] motion-safe:transition-[top,height] motion-safe:duration-150 motion-safe:ease-out'
+  'pointer-events-none absolute -left-1 -right-1 border-l-2 border-[#0b0c0c] bg-white shadow-md dark:border-[var(--pnrr-fg)] dark:bg-[var(--pnrr-card)] motion-safe:transition-[top,height] motion-safe:duration-150 motion-safe:ease-out'
 
-/** One tick. Grey by default; the accent is spent only on the two live states. */
+/**
+ * One tick. Grey by default; the accent is spent only on the two live states.
+ *
+ * Hover and focus no longer darken it to near-black. A dark tick spanning the
+ * track is a bar, and a bar on this rail claims to be a reading position — so
+ * emphasis moved off the tick entirely and onto the node below.
+ */
 export const stenogramRailMarkerToneClassName: Readonly<
   Record<'idle' | 'reading' | 'selected', string>
 > = {
-  // Hover and keyboard focus darken the tick identically — colour is never the
-  // only cue, but it must at least agree with the ring.
-  idle: 'bg-[#8f9294] group-hover/marker:bg-[#0b0c0c] group-focus-visible/marker:bg-[#0b0c0c] dark:bg-[var(--pnrr-border)] dark:group-hover/marker:bg-[var(--pnrr-fg)] dark:group-focus-visible/marker:bg-[var(--pnrr-fg)]',
+  idle: 'bg-[#8f9294] dark:bg-[var(--pnrr-border)]',
   reading: 'bg-[#1d70b8] dark:bg-[var(--pnrr-blue)]',
   selected: 'bg-[#0b0c0c] dark:bg-[var(--pnrr-fg)]',
 }
@@ -192,18 +260,61 @@ export const stenogramRailMarkerToneClassName: Readonly<
 /**
  * The deep-linked contribution, when it is NOT the one being read: a notch on
  * the outer edge of the track. A second colour would compete with the reading
- * marker for "you are here"; a shape does not.
+ * marker for "you are here"; a shape does not — and this one is taller than it
+ * is wide, so it reads as a vertical nick off the edge rather than as a rule.
  */
 export const stenogramRailSelectedCueClassName =
-  'pointer-events-none absolute right-0 top-1/2 h-2 w-1 -translate-y-1/2 bg-[#0b0c0c] dark:bg-[var(--pnrr-fg)]'
+  'pointer-events-none absolute right-0 top-1/2 h-3 w-1 -translate-y-1/2 bg-[#0b0c0c] dark:bg-[var(--pnrr-fg)]'
 
 /** The hit area a marker owns — always taller and wider than the tick it draws. */
 export const stenogramRailMarkerHitClassName =
-  'group/marker absolute -left-1 -right-2 focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] motion-safe:transition-[top,height] motion-safe:duration-150 motion-safe:ease-out'
+  'group/marker absolute -left-1 -right-2 hover:z-10 focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] motion-safe:transition-[top,height] motion-safe:duration-150 motion-safe:ease-out'
 
-/** The tick a marker draws. Live states break out of the track's own width. */
+/**
+ * The tick a marker draws — a short neutral mark, always exactly the track's
+ * own width. It never grows, never breaks out sideways and never darkens: the
+ * geometry is fixed so no marker state can turn into a second rule.
+ */
 export const stenogramRailMarkerTickClassName =
-  'absolute top-1/2 -translate-y-1/2 motion-safe:transition-[height,left,right,opacity,background-color] motion-safe:duration-150 motion-safe:ease-out'
+  'absolute left-1 right-2 top-1/2 -translate-y-1/2 motion-safe:transition-opacity motion-safe:duration-150 motion-safe:ease-out'
+
+/**
+ * The tick steps aside when its marker is pointed at or focused, handing the
+ * emphasis to the node. Fading rather than resizing keeps the rail free of
+ * layout jitter under a moving pointer.
+ */
+export const stenogramRailTickYieldClassName =
+  'group-hover/marker:opacity-0 group-focus-visible/marker:opacity-0'
+
+/**
+ * The NODE — every emphasised marker state, as a compact round shape.
+ *
+ * Centred on the track rather than on the hit box: the box overhangs the 24px
+ * track by 4px on the left, so `left-4` is the track's own centre line. A
+ * circle is a deliberate break from this surface's 0-radius skin, and it is the
+ * point of the fix — a round mark is the one shape that cannot be mistaken for
+ * a progress rule, however close it sits to the head.
+ */
+export const stenogramRailNodeClassName =
+  'pointer-events-none absolute left-4 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-out'
+
+/**
+ * `reading` — the contribution under the reader's eye: a solid accent dot on
+ * the progress line, ringed in the surface colour so it stays legible over the
+ * fill in either theme. Always drawn; it grows slightly when pointed at.
+ *
+ * `cue` — hover and keyboard focus on any other marker: a hollow ring, smaller
+ * and unfilled, that scales in from nothing. Obvious enough to confirm what the
+ * tooltip is about, and unmistakably SECONDARY to the accent dot, so a reader
+ * hovering near the head still sees one reading position.
+ */
+export const stenogramRailNodeToneClassName: Readonly<
+  Record<'reading' | 'cue', string>
+> = {
+  reading:
+    'size-2.5 scale-100 bg-[#1d70b8] ring-2 ring-white group-hover/marker:scale-125 group-focus-visible/marker:scale-125 dark:bg-[var(--pnrr-blue)] dark:ring-[var(--pnrr-card)]',
+  cue: 'size-2 scale-0 border-2 border-[#0b0c0c] bg-white group-hover/marker:scale-100 group-focus-visible/marker:scale-100 dark:border-[var(--pnrr-fg)] dark:bg-[var(--pnrr-card)]',
+}
 
 /**
  * The hover/focus preview — a genuine floating layer, so it carries the one
@@ -216,13 +327,6 @@ export const stenogramRailMarkerTickClassName =
  */
 export const stenogramRailTooltipClassName =
   'max-w-[15rem] rounded-none border-2 border-[#0b0c0c] bg-white p-3 text-left text-[#0b0c0c] shadow-md dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)]'
-
-/** In-document search hit. `mark` is semantic; the ring marks the CURRENT hit. */
-export const stenogramMatchClassName =
-  'bg-[#fff2c9] text-[#0b0c0c] print:bg-transparent print:underline'
-
-export const stenogramMatchCurrentClassName =
-  'bg-[#ffdd00] text-[#0b0c0c] outline-2 outline-offset-1 outline-[#0b0c0c]'
 
 /** Hidden on screen, shown only on paper (source URL, provenance footer). */
 export const stenogramPrintOnlyClassName = 'hidden print:block'

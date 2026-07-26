@@ -22,7 +22,13 @@ import {
   useParliamentTranscript,
 } from '../hooks/use-parliament-data'
 import { classifyStenogramFailure } from '../lib/parliament-stenogram-error'
-import { findDocumentMatches, stepMatch } from '../lib/stenogram-document-search'
+import {
+  buildStenogramSpeakerFacets,
+  countStenogramContributions,
+  filterSegmentsBySpeakers,
+  isSegmentVisibleForSpeakers,
+  normalizeSpeakerSelection,
+} from '../lib/stenogram-speaker-filter'
 import {
   formatSittingDate,
   formatSittingDateShort,
@@ -37,6 +43,7 @@ import {
   stenogramChamberLabel,
 } from '../lib/stenogram-presentation'
 import {
+  buildFilteredStenogramToc,
   buildStenogramInterventions,
   buildStenogramToc,
   segmentDomId,
@@ -44,6 +51,7 @@ import {
 import {
   stenogramAvailabilityToneClassName,
   stenogramBadgeClassName,
+  stenogramLeftLaneClassName,
   stenogramLinkClassName,
   stenogramMutedTextClassName,
   stenogramNoticeClassName,
@@ -52,9 +60,11 @@ import {
 } from '../lib/stenogram-theme'
 import { ParliamentShell } from './parliament-shell'
 import { ParliamentStenogramDocument } from './parliament-stenogram-document'
-import { ParliamentStenogramDocumentSearch } from './parliament-stenogram-document-search'
 import { ParliamentStenogramFailureNotice } from './parliament-stenogram-failure'
+import { ParliamentStenogramFilterNotice } from './parliament-stenogram-filter-notice'
 import { ParliamentStenogramInterventionRail } from './parliament-stenogram-intervention-rail'
+import { ParliamentStenogramScrollTop } from './parliament-stenogram-scroll-top'
+import { ParliamentStenogramSpeakerFilter } from './parliament-stenogram-speaker-filter'
 import { ParliamentStenogramToc } from './parliament-stenogram-toc'
 
 type Props = {
@@ -64,6 +74,9 @@ type Props = {
 
 /** Landmark id for the reading column — the skip link's target. */
 const READING_REGION_ID = 'stenogram-reading'
+
+/** The reader's own heading — where "back to top" returns focus. */
+const READER_TOP_ID = 'stenogram-reader-top'
 
 /**
  * Anything that can NAME a contribution: a reading block, or a tick on the
@@ -114,20 +127,34 @@ function BackToList() {
  * THE COMPLETENESS INVARIANT. The transcript arrives as ONE complete response
  * from the REST endpoint. There is no paging state, no "load the rest" control
  * and no auto-fetch loop, because every one of those creates a window in which
- * find-in-document, print and "previous/next contribution" silently operate on
- * a prefix — telling a reader "no results in this sitting" when the match is in
- * a block that has not arrived is worse than being slow.
+ * the speaker filter, print and "previous/next contribution" silently operate
+ * on a prefix — telling a reader "this speaker said nothing here" when their
+ * turn is in a block that has not arrived is worse than being slow.
  *
- * The layout is a reading column with an agenda rail, not a list of cards: the
- * unit here is the sitting, and the ordered blocks ARE the record. Everything
- * else exists to let a reader cite it — precise provenance, a copyable link
- * carrying the highlighted contribution, and a print form.
+ * THE ONE NARROWING. `?vorbitori=` filters the reading to named speakers, and
+ * it is the only thing on this surface allowed to remove blocks. Because that
+ * is a strong claim to make about an official record, it is loud: a printed,
+ * counted "this is an excerpt" notice that STAYS beside the excerpt, an agenda
+ * rebuilt over the visible subset rather than left pointing at blocks that are
+ * gone, and one click back to the whole sitting. Everything downstream —
+ * reading column, agenda, intervention rail, prev/next — reads the same VISIBLE
+ * set, so no two of them can describe different documents.
+ *
+ * THE GEOMETRY IS FIXED. Three columns — a left lane, the reading measure, the
+ * intervention rail — and filtering does not change any of them. The lane keeps
+ * its width whether it holds an agenda, an excerpt notice or only the way back
+ * to the top, because a document that jumps left and re-wraps the moment a
+ * speaker is selected reads as a different document, which is precisely the
+ * impression a filtered EXCERPT must not give.
+ *
+ * The layout is a reading column with rails, not a list of cards: the unit here
+ * is the sitting, and the ordered blocks ARE the record. Everything else exists
+ * to let a reader cite it — precise provenance, a copyable link carrying the
+ * highlighted contribution and its filter, and a print form.
  */
 export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
   const { i18n } = useLingui()
   const navigate = useNavigate()
-  const [documentQuery, setDocumentQuery] = useState('')
-  const [currentMatch, setCurrentMatch] = useState(0)
   const [pendingFocus, setPendingFocus] = useState<number | undefined>(undefined)
 
   const { data: transcript, isLoading, isError, error, refetch } =
@@ -136,19 +163,58 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
   const segments = useMemo(() => transcript?.segments ?? [], [transcript])
   const session = transcript?.session
 
-  const toc = useMemo(() => buildStenogramToc(segments), [segments])
-  // The rail is derived from the document, so it gives the many captures that
-  // printed NO agenda headings a navigable shape without inventing one.
-  const interventions = useMemo(
-    () => buildStenogramInterventions(segments),
+  // ── the speaker filter, from the URL ─────────────────────────────────────
+  // The selection lives in `?vorbitori=` so a filtered reading is shareable as
+  // what it is; the options come from THIS sitting's printed names, so a
+  // speaker the source never resolved to a mandate stays filterable.
+  const speakerSelection = useMemo(
+    () => search.vorbitori ?? [],
+    [search.vorbitori],
+  )
+  const filterActive = speakerSelection.length > 0
+  const speakerFacets = useMemo(
+    () => buildStenogramSpeakerFacets(segments),
+    [segments],
+  )
+  const totalContributions = useMemo(
+    () => countStenogramContributions(segments),
     [segments],
   )
 
-  const matches = useMemo(
-    () => findDocumentMatches(segments, documentQuery),
-    [segments, documentQuery],
+  // Everything downstream — the reading column, the rail, prev/next — reads
+  // the VISIBLE document, so the three can never disagree about what is on
+  // screen. In full mode it is the sitting itself, untouched and in order.
+  const visibleSegments = useMemo(
+    () =>
+      filterActive
+        ? filterSegmentsBySpeakers({ segments, speakerNames: speakerSelection })
+        : segments,
+    [segments, speakerSelection, filterActive],
   )
-  useEffect(() => setCurrentMatch(0), [documentQuery])
+
+  // The agenda follows the VISIBLE document too. In full mode it is the
+  // sitting's own printed headings; under a filter it is those same headings
+  // restricted to the sections that still hold a selected speaker, each
+  // anchored at their first visible turn — so no entry can point at a block the
+  // excerpt does not render. When the excerpt lands under no heading at all the
+  // list is empty, and the reader shows no navigation rather than a wrong one.
+  const toc = useMemo(
+    () =>
+      filterActive
+        ? buildFilteredStenogramToc({
+            segments,
+            speakerNames: speakerSelection,
+          })
+        : buildStenogramToc(segments),
+    [segments, speakerSelection, filterActive],
+  )
+  const showToc = !filterActive || toc.length > 0
+  // The rail is derived from the document, so it gives the many captures that
+  // printed NO agenda headings a navigable shape without inventing one.
+  const interventions = useMemo(
+    () => buildStenogramInterventions(visibleSegments),
+    [visibleSegments],
+  )
 
   // ── the highlighted contribution ─────────────────────────────────────────
   const selectedFromDocument = useMemo(
@@ -178,17 +244,26 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
   }, [context.data, sessionKey, segments])
 
   const selected = selectedFromDocument ?? resolvedFromContext
-  const selectedPosition = selected?.position
+  // A deep link can name a contribution the CURRENT filter hides. That is not
+  // an error and it is not silently ignored: the block keeps its highlight in
+  // full mode, and in filtered mode the reader says the link is outside the
+  // excerpt and offers the way back to the whole sitting.
+  const selectedVisible = isSegmentVisibleForSpeakers({
+    segment: selected,
+    speakerNames: speakerSelection,
+  })
+  const selectedPosition = selectedVisible ? selected?.position : undefined
+  const selectedHiddenByFilter = Boolean(selected) && !selectedVisible
   const unresolvedInterventie =
     Boolean(search.interventie) &&
     !selected &&
     Boolean(transcript) &&
     !context.isLoading
 
-  // ── prev/next CONTRIBUTION, from the complete document ───────────────────
+  // ── prev/next CONTRIBUTION, over what is on screen ───────────────────────
   const contributions = useMemo(
-    () => segments.filter((s) => s.kind === 'SPEECH' && s.speechKey),
-    [segments],
+    () => visibleSegments.filter((s) => s.kind === 'SPEECH' && s.speechKey),
+    [visibleSegments],
   )
   const selectedIndex = selected
     ? contributions.findIndex((s) => s.segmentKey === selected.segmentKey)
@@ -221,28 +296,56 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
     setPendingFocus(undefined)
   }, [pendingFocus, scrollToPosition])
 
-  const handleStepMatch = useCallback(
-    (direction: 1 | -1) => {
-      if (matches.length === 0) return
-      const next = stepMatch(currentMatch, matches.length, direction)
-      setCurrentMatch(next)
-      const target = matches[next]
-      if (target) setPendingFocus(target.position)
-    },
-    [matches, currentMatch],
-  )
-
-  const selectContribution = useCallback(
-    (segment: SelectableContribution) => {
+  // ── the one write path to the URL ────────────────────────────────────────
+  const applySearch = useCallback(
+    (next: ParliamentStenogramReaderSearch) => {
       void navigate({
         to: '/parlament/stenograme/sedinte/$sessionKey',
         params: { sessionKey },
-        search: { interventie: segment.speechKey },
+        search: next,
         replace: true,
         resetScroll: false,
       })
     },
     [navigate, sessionKey],
+  )
+
+  const selectContribution = useCallback(
+    (segment: SelectableContribution) => {
+      applySearch({
+        interventie: segment.speechKey,
+        ...(filterActive && { vorbitori: [...speakerSelection] }),
+      })
+    },
+    [applySearch, filterActive, speakerSelection],
+  )
+
+  /**
+   * Changing the filter is the moment the deep link is reconciled.
+   *
+   * If the contribution named by `?interventie=` would not survive the new
+   * selection it is DROPPED rather than left pointing at a hidden block — but
+   * only when we actually resolved which block it names. An unresolved legacy
+   * key is kept: it may still resolve through the redirect map, and silently
+   * dropping someone's shared link is the worse failure.
+   */
+  const handleSpeakersChange = useCallback(
+    (values: string[]) => {
+      const nextSelection = normalizeSpeakerSelection(values)
+      const keepIntervention =
+        Boolean(search.interventie) &&
+        (!selected ||
+          isSegmentVisibleForSpeakers({
+            segment: selected,
+            speakerNames: nextSelection,
+          }))
+
+      applySearch({
+        ...(keepIntervention && { interventie: search.interventie }),
+        ...(nextSelection.length > 0 && { vorbitori: nextSelection }),
+      })
+    },
+    [applySearch, search.interventie, selected],
   )
 
   if (isLoading) {
@@ -320,7 +423,13 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
             </span>
           </div>
 
-          <h1 className={stenogramSectionTitleClassName}>{title}</h1>
+          <h1
+            id={READER_TOP_ID}
+            tabIndex={-1}
+            className={cn(stenogramSectionTitleClassName, 'scroll-mt-24')}
+          >
+            {title}
+          </h1>
 
           {session.presidingText || timeSpan ? (
             <p className={stenogramMutedTextClassName}>
@@ -342,6 +451,10 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
               <ExternalLink className="h-3.5 w-3.5" aria-hidden />
             </a>
 
+            {/* Print prints WHAT IS ON SCREEN — and says so. A filtered
+                reading prints as the excerpt it is, carrying the amber notice
+                onto paper; printing the whole sitting from a filtered view
+                would hand back a document the reader never saw. */}
             <Button
               type="button"
               variant="outline"
@@ -349,7 +462,11 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
               onClick={() => window.print()}
             >
               <Printer className="mr-2 h-4 w-4" aria-hidden />
-              <Trans>Printează</Trans>
+              {filterActive ? (
+                <Trans>Printează extrasul filtrat</Trans>
+              ) : (
+                <Trans>Printează</Trans>
+              )}
             </Button>
 
             <span className="inline-flex items-center gap-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
@@ -401,23 +518,21 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
           </p>
         ) : null}
 
-        {/* The document is complete, so this searches the WHOLE sitting. */}
-        <div className="print:hidden">
-          <ParliamentStenogramDocumentSearch
-            query={documentQuery}
-            onQueryChange={setDocumentQuery}
-            matchCount={matches.length}
-            currentMatch={currentMatch}
-            onStep={handleStepMatch}
-          />
-        </div>
+        {/* The one narrowing control — the TOOLBAR, above the reader row so it
+            reads as an action on the document below it. What the selection
+            MEANS is stated in the left lane, beside the excerpt it qualifies. */}
+        <ParliamentStenogramSpeakerFilter
+          facets={speakerFacets}
+          selected={speakerSelection}
+          onChange={handleSpeakersChange}
+        />
 
-        {/* The agenda rail precedes the document in source order (and stacks
+        {/* The left lane precedes the document in source order (and stacks
             above it on mobile), so a keyboard reader would otherwise tab
             through every agenda item to reach the text. Visible on focus.
             The intervention rail needs no such escape: it FOLLOWS the reading
             column, and holds a single tab stop of its own. */}
-        {toc.length > 0 ? (
+        {showToc && toc.length > 0 ? (
           <a
             href={`#${READING_REGION_ID}`}
             onClick={(event) => {
@@ -430,13 +545,47 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
           </a>
         ) : null}
 
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-          <ParliamentStenogramToc
-            entries={toc}
-            activePosition={selectedPosition}
-            onSelect={(position) => setPendingFocus(position)}
-            className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:w-72 lg:shrink-0 lg:overflow-y-auto"
-          />
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start print:block">
+          {/* ── the left lane ─────────────────────────────────────────────
+              ONE sticky stack, same width in both modes. Filtering must not
+              move the reading column: a document that jumps left and re-wraps
+              the moment a speaker is selected reads as a different document.
+              Separately sticky children were the previous shape and they piled
+              onto the same offset; the STACK sticks, its contents do not. */}
+          <div data-reader-lane className={stenogramLeftLaneClassName}>
+            {showToc ? (
+              <ParliamentStenogramToc
+                entries={toc}
+                activePosition={selectedPosition}
+                onSelect={(position) => setPendingFocus(position)}
+                excerpt={filterActive}
+                /* Shrinks and scrolls INSIDE the lane rather than growing to
+                   fill it: a short agenda must not draw a half-empty box, and
+                   a long one must not push the notice and the "back to top"
+                   below the fold of the sticky stack. */
+                className="lg:min-h-0 lg:overflow-y-auto"
+              />
+            ) : null}
+
+            {filterActive ? (
+              <ParliamentStenogramFilterNotice
+                selected={speakerSelection}
+                visibleCount={contributions.length}
+                totalCount={totalContributions}
+                linkedOutsideExcerpt={selectedHiddenByFilter}
+                onClear={() => handleSpeakersChange([])}
+                className="shrink-0"
+              />
+            ) : null}
+
+            {/* Desktop only: on a narrow screen this lane sits ABOVE the
+                document, where a "back to top" is never where the reader is.
+                The narrow-screen twin is at the end of the reading. */}
+            <ParliamentStenogramScrollTop
+              targetId={READER_TOP_ID}
+              className="hidden shrink-0 lg:inline-flex"
+            />
+          </div>
 
           {/* The reading column is capped at the prose measure from `xl` up, so
               the rail that follows it sits against the text it measures and the
@@ -449,10 +598,8 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
             className="min-w-0 flex-1 xl:max-w-3xl"
           >
             <ParliamentStenogramDocument
-              segments={segments}
+              segments={visibleSegments}
               selectedPosition={selectedPosition}
-              matches={matches}
-              currentMatch={currentMatch}
             />
           </section>
 
@@ -471,8 +618,8 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
           />
         </div>
 
-        {/* ── previous/next CONTRIBUTION ───────────────────────────────── */}
-        {selected ? (
+        {/* ── previous/next CONTRIBUTION — over the VISIBLE set ────────── */}
+        {selected && selectedVisible ? (
           <nav
             aria-label={t`Navigare între intervenții`}
             className="flex flex-wrap items-center justify-between gap-3 border-t-2 border-[#b1b4b6] pt-4 dark:border-[var(--pnrr-border)] print:hidden"
@@ -530,6 +677,19 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
             ) : null}
           </nav>
         ) : null}
+
+        {/* The narrow-screen "back to top". It is IN FLOW at the end of the
+            reading rather than floating: below `lg` the bottom of the viewport
+            belongs to the app's dock and its chat/feedback buttons, and a
+            floating control there covers both them and the transcript. Out of
+            view is a smaller cost than on top of the document — and this is
+            exactly where a reader who has read to the end is looking. */}
+        <div className="flex lg:hidden">
+          <ParliamentStenogramScrollTop
+            targetId={READER_TOP_ID}
+            className="sm:w-auto"
+          />
+        </div>
       </div>
     </ParliamentShell>
   )

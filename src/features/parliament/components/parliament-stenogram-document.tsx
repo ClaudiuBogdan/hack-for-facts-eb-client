@@ -3,11 +3,6 @@ import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@/lib/utils'
 import type { ParliamentStenogramSegment } from '@/schemas/parliament'
-import {
-  groupMatchesBySegment,
-  splitByMatches,
-  type DocumentMatch,
-} from '../lib/stenogram-document-search'
 import { segmentKindLabel } from '../lib/stenogram-presentation'
 import { segmentDomId } from '../lib/stenogram-toc'
 import {
@@ -16,28 +11,32 @@ import {
   stenogramBadgeClassName,
   stenogramBlockClassName,
   stenogramBlockSelectedClassName,
-  stenogramMatchClassName,
-  stenogramMatchCurrentClassName,
   stenogramReadingColumnClassName,
   stenogramSpeakerNameClassName,
 } from '../lib/stenogram-theme'
 
 type Props = {
+  /**
+   * The blocks to render, in source order. The reader passes the WHOLE sitting
+   * in full mode, and only the selected speakers' contributions when its
+   * speaker filter is on — this component renders exactly what it is given and
+   * never decides to omit anything itself.
+   */
   readonly segments: readonly ParliamentStenogramSegment[]
   /** The block named by `?interventie=` — highlighted, never isolated. */
   readonly selectedPosition: number | undefined
-  readonly matches: readonly DocumentMatch[]
-  readonly currentMatch: number
 }
 
 /**
  * The transcript itself, in the official printed order.
  *
  * THE CONTEXT RULE. A selected contribution is HIGHLIGHTED in place — the
- * blocks before and after it stay on screen, unchanged. Filtering the document
- * down to one turn is the tempting implementation and the wrong one: a
- * stenogram's meaning lives in the exchange, and a quote lifted out of the
- * debate around it is exactly the failure mode this surface exists to prevent.
+ * blocks before and after it stay on screen, unchanged. Isolating one turn is
+ * the tempting implementation and the wrong one: a stenogram's meaning lives in
+ * the exchange, and a quote lifted out of the debate around it is exactly the
+ * failure mode this surface exists to prevent. When the reader's speaker filter
+ * narrows what is passed here, that is a deliberate, named and reversible
+ * EXCERPT — stated as such next to this column, never a silent selection.
  *
  * Every block is an `<article>` with a stable DOM id derived from its POSITION
  * (the document's identity, enforced unique with the session key server-side),
@@ -46,16 +45,11 @@ type Props = {
 export function ParliamentStenogramDocument({
   segments,
   selectedPosition,
-  matches,
-  currentMatch,
 }: Props) {
-  const grouped = groupMatchesBySegment(matches)
-
   return (
     <div className={stenogramReadingColumnClassName}>
       {segments.map((segment) => {
         const selected = segment.position === selectedPosition
-        const group = grouped.get(segment.segmentKey)
 
         if (segment.kind === 'AGENDA_HEADING') {
           return (
@@ -68,11 +62,7 @@ export function ParliamentStenogramDocument({
                 'scroll-mt-32 print:scroll-mt-0',
               )}
             >
-              <SegmentText
-                text={segment.text}
-                group={group}
-                currentMatch={currentMatch}
-              />
+              {segment.text}
             </h2>
           )
         }
@@ -97,18 +87,32 @@ export function ParliamentStenogramDocument({
 
             <SegmentSpeakerLine segment={segment} />
 
-            <p className="whitespace-pre-wrap">
-              <SegmentText
-                text={segment.text}
-                group={group}
-                currentMatch={currentMatch}
-              />
-            </p>
+            <p className="whitespace-pre-wrap">{segment.text}</p>
           </article>
         )
       })}
     </div>
   )
+}
+
+/**
+ * The member this block was RESOLVED to, if the source resolved it at all.
+ *
+ * A block can carry the mandate in either of two places, and which one depends
+ * on the transport rather than on the speaker: the REST transcript and the
+ * segment GraphQL selection put it on `mandateKey`, while anything that
+ * resolves the block through the lazy `member` resolver (speech context, and
+ * any future selection that asks for it) carries it on `member.mandateKey`.
+ * Reading only the first is why linked names silently went plain.
+ *
+ * The printed NAME is never an input here. Deriving a member route from
+ * `speakerName` would be guessing an identity from a string the stenographer
+ * typed — which is the one thing this surface must not do.
+ */
+function resolveSpeakerMandateKey(
+  segment: ParliamentStenogramSegment,
+): string | undefined {
+  return segment.mandateKey ?? segment.member?.mandateKey
 }
 
 /**
@@ -126,6 +130,7 @@ function SegmentSpeakerLine({
   readonly segment: ParliamentStenogramSegment
 }) {
   const showKind = segment.kind !== 'SPEECH'
+  const mandateKey = resolveSpeakerMandateKey(segment)
 
   if (!segment.speakerName) {
     return showKind ? (
@@ -139,10 +144,10 @@ function SegmentSpeakerLine({
 
   return (
     <p className="mb-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-      {segment.mandateKey ? (
+      {mandateKey ? (
         <Link
           to="/parlament/membri/$memberId/interventii"
-          params={{ memberId: segment.mandateKey }}
+          params={{ memberId: mandateKey }}
           className={cn(
             stenogramSpeakerNameClassName,
             'underline underline-offset-4 hover:text-[#1d70b8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]',
@@ -160,45 +165,11 @@ function SegmentSpeakerLine({
           {segmentKindLabel(segment.kind)}
         </span>
       ) : null}
-      {!segment.mandateKey ? (
+      {!mandateKey ? (
         <span className="sr-only">
           {t`Sursa nu a identificat acest vorbitor ca membru al Parlamentului.`}
         </span>
       ) : null}
     </p>
-  )
-}
-
-/** Block text with in-document search hits marked; the current hit gets a ring. */
-function SegmentText({
-  text,
-  group,
-  currentMatch,
-}: {
-  readonly text: string
-  readonly group: { matches: DocumentMatch[]; offset: number } | undefined
-  readonly currentMatch: number
-}) {
-  if (!group) return <>{text}</>
-
-  return (
-    <>
-      {splitByMatches(text, group.matches, group.offset).map((part, index) =>
-        part.isMatch ? (
-          <mark
-            key={index}
-            data-match-index={part.matchIndex}
-            className={cn(
-              stenogramMatchClassName,
-              part.matchIndex === currentMatch && stenogramMatchCurrentClassName,
-            )}
-          >
-            {part.text}
-          </mark>
-        ) : (
-          <span key={index}>{part.text}</span>
-        ),
-      )}
-    </>
   )
 }

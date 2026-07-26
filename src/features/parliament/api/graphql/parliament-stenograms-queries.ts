@@ -151,6 +151,21 @@ export const rawStenogramSegmentSchema = z.object({
   speakerName: z.string().nullable(),
   speakerRef: z.string().nullable(),
   mandateKey: z.string().nullable(),
+  /**
+   * NOT selected by this client (see the note at the top of the file), but
+   * carried through when a caller that DOES resolve it hands us a block — the
+   * reader's speaker line reads the mandate from either place, so the mapper
+   * must not be the thing that drops it.
+   */
+  member: z
+    .object({
+      mandateKey: z.string(),
+      fullName: z.string(),
+      chamber: z.string().nullable().optional(),
+      groupName: z.string().nullable().optional(),
+    })
+    .nullable()
+    .optional(),
   speechKey: z.string().nullable(),
   agendaRef: z.string().nullable(),
   sourceUrl: z.string(),

@@ -164,3 +164,62 @@ describe('ParliamentStenogramReaderSearchSchema', () => {
     ).toEqual({})
   })
 })
+
+describe('the reader speaker filter param (`vorbitori`)', () => {
+  const parse = (input: unknown) =>
+    ParliamentStenogramReaderSearchSchema.parse(input)
+
+  it('accepts ONE speaker as a bare string', () => {
+    expect(parse({ vorbitori: 'Ion Popescu' })).toEqual({
+      vorbitori: ['Ion Popescu'],
+    })
+  })
+
+  it('accepts a repeated param as an array, in order', () => {
+    expect(parse({ vorbitori: ['Ion Popescu', 'Maria Ionescu'] })).toEqual({
+      vorbitori: ['Ion Popescu', 'Maria Ionescu'],
+    })
+  })
+
+  it('does not silently cap a dense sitting selection', () => {
+    const speakers = Array.from({ length: 60 }, (_, index) => `Vorbitor ${index}`)
+    expect(parse({ vorbitori: speakers })).toEqual({ vorbitori: speakers })
+  })
+
+  it('trims and DEDUPES, so a shared URL cannot double-count a speaker', () => {
+    expect(
+      parse({ vorbitori: [' Ion Popescu ', 'Ion Popescu', 'Maria Ionescu'] }),
+    ).toEqual({ vorbitori: ['Ion Popescu', 'Maria Ionescu'] })
+  })
+
+  it('never splits a printed name on its commas', () => {
+    // A stenogram may print "Popescu, Ion" — the value IS the printed name.
+    expect(parse({ vorbitori: 'Popescu, Ion' })).toEqual({
+      vorbitori: ['Popescu, Ion'],
+    })
+  })
+
+  it('drops blanks and junk without throwing, leaving no empty facet', () => {
+    expect(parse({ vorbitori: '   ' })).toEqual({})
+    expect(parse({ vorbitori: [] })).toEqual({})
+    expect(parse({ vorbitori: 42 })).toEqual({})
+    expect(parse({ vorbitori: { name: 'Ion' } })).toEqual({})
+    expect(parse({ vorbitori: ['', '  ', 7, null, 'Ion Popescu'] })).toEqual({
+      vorbitori: ['Ion Popescu'],
+    })
+    expect(parse({ vorbitori: 'x'.repeat(400) })).toEqual({})
+  })
+
+  it('carries the filter and the deep link TOGETHER — both are shareable', () => {
+    expect(
+      parse({ interventie: 'canon:sp:3', vorbitori: ['Maria Ionescu'] }),
+    ).toEqual({
+      interventie: 'canon:sp:3',
+      vorbitori: ['Maria Ionescu'],
+    })
+  })
+
+  it('the unfiltered reading needs no param at all', () => {
+    expect(parse({})).toEqual({})
+  })
+})

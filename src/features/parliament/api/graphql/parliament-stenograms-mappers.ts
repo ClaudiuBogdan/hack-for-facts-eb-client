@@ -83,6 +83,19 @@ export function mapStenogramSegment(
     speakerName: optText(raw.speakerName),
     speakerRef: optText(raw.speakerRef),
     mandateKey: optText(raw.mandateKey),
+    // Carried through, never synthesised: when a caller resolved the block to a
+    // member, that is the reader's link target — dropping it here is what makes
+    // a resolved speaker render as plain text.
+    ...(raw.member && {
+      member: {
+        mandateKey: raw.member.mandateKey,
+        fullName: raw.member.fullName,
+        ...(optText(raw.member.chamber) && { chamber: raw.member.chamber }),
+        ...(optText(raw.member.groupName) && {
+          groupName: raw.member.groupName,
+        }),
+      },
+    }),
     speechKey: optText(raw.speechKey),
     agendaRef: optText(raw.agendaRef),
     sourceUrl: raw.sourceUrl,

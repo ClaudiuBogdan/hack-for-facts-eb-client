@@ -11,6 +11,13 @@ type Props = {
   readonly entries: readonly StenogramTocEntry[]
   readonly activePosition: number | undefined
   readonly onSelect: (position: number) => void
+  /**
+   * These entries describe an EXCERPT, not the sitting: they were rebuilt from
+   * the speaker filter's visible subset, so both the landmark name and the
+   * counts have to say so. Anything else would present a partial agenda as the
+   * institution's own.
+   */
+  readonly excerpt?: boolean
   readonly className?: string
 }
 
@@ -24,6 +31,7 @@ export function ParliamentStenogramToc({
   entries,
   activePosition,
   onSelect,
+  excerpt = false,
   className,
 }: Props) {
   if (entries.length === 0) {
@@ -44,12 +52,22 @@ export function ParliamentStenogramToc({
 
   return (
     <nav
-      aria-label={t`Ordinea de zi a ședinței`}
+      aria-label={
+        excerpt ? t`Ordinea de zi din extras` : t`Ordinea de zi a ședinței`
+      }
       className={cn(stenogramTocClassName, className)}
     >
       <h2 className="text-sm font-bold uppercase tracking-wide text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
         <Trans>Ordinea de zi</Trans>
       </h2>
+      {excerpt ? (
+        <p className={cn(stenogramMutedTextClassName, 'mt-2')}>
+          <Trans>
+            Doar punctele în care vorbesc vorbitorii selectați. Fiecare duce la
+            prima lor luare de cuvânt din acel punct.
+          </Trans>
+        </p>
+      ) : null}
       <ol className="mt-3 space-y-1">
         {entries.map((entry) => {
           const active = entry.position === activePosition
@@ -69,7 +87,17 @@ export function ParliamentStenogramToc({
                 <span className="line-clamp-3">{entry.label}</span>
                 {entry.speechCount > 0 ? (
                   <span className="mt-0.5 block text-xs tabular-nums text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-                    <Trans>{entry.speechCount} luări de cuvânt</Trans>
+                    {excerpt ? (
+                      entry.speechCount === 1 ? (
+                        <Trans>1 luare de cuvânt afișată</Trans>
+                      ) : (
+                        <Trans>{entry.speechCount} luări de cuvânt afișate</Trans>
+                      )
+                    ) : entry.speechCount === 1 ? (
+                      <Trans>1 luare de cuvânt</Trans>
+                    ) : (
+                      <Trans>{entry.speechCount} luări de cuvânt</Trans>
+                    )}
                   </span>
                 ) : null}
               </button>

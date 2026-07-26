@@ -32,8 +32,11 @@ import {
   stenogramRailMarkerHitClassName,
   stenogramRailMarkerTickClassName,
   stenogramRailMarkerToneClassName,
+  stenogramRailNodeClassName,
+  stenogramRailNodeToneClassName,
   stenogramRailProgressClassName,
   stenogramRailSelectedCueClassName,
+  stenogramRailTickYieldClassName,
   stenogramRailTooltipClassName,
   stenogramRailTrackClassName,
 } from '../lib/stenogram-theme'
@@ -57,9 +60,15 @@ type Props = {
  */
 const SLOT_HEIGHT_PX = 8
 
-/** Visible tick height, and the taller tick the two live states get. */
+/**
+ * Visible tick height — the SAME for every marker state.
+ *
+ * There used to be a taller, wider tick for the two live states, and that is
+ * what made the rail look like it had two progress positions: a live marker
+ * near the reading line drew a second rule right beside it. Live states are now
+ * told by the node (a dot/ring), never by growing the tick.
+ */
 const TICK_HEIGHT_PX = 3
-const LIVE_TICK_HEIGHT_PX = 5
 
 /** Pitch a cluster's members are fanned to when it opens — a real hit target. */
 const FAN_PITCH_PX = 12
@@ -115,12 +124,16 @@ function densityOf(size: number): 'few' | 'many' | 'crowd' {
  * uses, so the reading column keeps the contribution IN its debate and the URL
  * stays citable.
  *
- * TWO LIVE STATES, TOLD APART. The contribution under the reader's eye is the
- * accent tick at the head of the fill, tracked from scroll. The one named by the
- * link is `aria-current` and carries a notch on the outer edge — a shape, not a
- * second colour, so it stays legible as the SECONDARY state when the reader has
- * scrolled away from it. Arriving from a shared link and then reading on is the
- * whole point of the surface.
+ * ONE LINE, THEN SHAPES. The rail draws exactly one horizontal rule across the
+ * track: the progress head, where the fill ends. Everything else is a compact
+ * shape, because a second full-width bar — which is what the live and hover
+ * ticks used to be — reads as a second reading position, and the reader has no
+ * way to know which of the two is the truth. The contribution under the eye is
+ * an accent DOT on the line; hover and focus are a small hollow RING; the one
+ * named by the link is `aria-current` and carries a NOTCH on the outer edge, so
+ * it stays legible as the SECONDARY state when the reader has scrolled away
+ * from it. Arriving from a shared link and then reading on is the whole point
+ * of the surface.
  *
  * DENSITY. See `clusterInterventionRail`: ticks are quantised onto fixed slots
  * so they cannot overlap, crowded slots draw one weighted tick, and hovering or
@@ -476,8 +489,14 @@ export function ParliamentStenogramInterventionRail({
  *
  * The button owns the whole slot (or the whole fan step once its cluster is
  * open) and overhangs the track on both sides, so the target a reader has to
- * hit is always several times the tick they see. The tick itself only ever
- * carries the state.
+ * hit is always several times the tick they see.
+ *
+ * Inside it are two drawings with one job each. The TICK is the resting mark:
+ * fixed width, fixed height, neutral, and it only ever fades. The NODE is every
+ * emphasised state — the accent dot when this is the contribution being read,
+ * a hollow ring when it is merely pointed at or focused. Splitting them is what
+ * keeps emphasis off the tick's geometry, and therefore off the rail's one
+ * horizontal line.
  */
 function RailMarker({
   intervention,
@@ -540,23 +559,38 @@ function RailMarker({
         >
           <span
             aria-hidden
+            data-rail-tick=""
             className={cn(
               stenogramRailMarkerTickClassName,
-              // Live ticks break out of the track's width, so the state is not
-              // carried by colour alone.
-              live ? 'left-0 right-1' : 'left-1 right-2',
-              // A collapsed member draws nothing — its cluster's tick is
-              // standing in for it — unless it is live, or focused before its
-              // cluster has finished opening.
-              !interactive &&
-                !live &&
-                'opacity-0 group-focus-visible/marker:opacity-100',
               stenogramRailMarkerToneClassName[tone],
+              // The reading marker is told by its node, so its tick is not
+              // drawn at all; every other tick fades out under the pointer or
+              // focus rather than darkening into a bar.
+              reading ? 'opacity-0' : stenogramRailTickYieldClassName,
+              // A collapsed member draws nothing — its cluster's tick is
+              // standing in for it — unless it is live. Focusing it before its
+              // cluster has opened is answered by the node, not by the tick.
+              !interactive && !live && 'opacity-0',
             )}
-            style={{ height: live ? LIVE_TICK_HEIGHT_PX : TICK_HEIGHT_PX }}
+            style={{ height: TICK_HEIGHT_PX }}
           />
-          {selected ? (
-            <span aria-hidden className={stenogramRailSelectedCueClassName} />
+          <span
+            aria-hidden
+            data-rail-node=""
+            data-node={reading ? 'reading' : 'cue'}
+            className={cn(
+              stenogramRailNodeClassName,
+              stenogramRailNodeToneClassName[reading ? 'reading' : 'cue'],
+            )}
+          />
+          {/* The deep link, only while it is somewhere OTHER than the reading
+              position — once the reader arrives at it, the node says it. */}
+          {selected && !reading ? (
+            <span
+              aria-hidden
+              data-rail-selected-cue=""
+              className={stenogramRailSelectedCueClassName}
+            />
           ) : null}
         </button>
       </TooltipTrigger>

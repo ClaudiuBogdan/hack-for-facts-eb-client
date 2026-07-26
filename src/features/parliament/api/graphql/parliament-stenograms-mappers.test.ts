@@ -90,6 +90,24 @@ describe('mapStenogramSegment', () => {
   it('keeps position 0 — the first block is a real position', () => {
     expect(mapStenogramSegment({ ...rawSegment, position: 0 }).position).toBe(0)
   })
+
+  it('preserves an explicitly resolved member for the profile link', () => {
+    const segment = mapStenogramSegment({
+      ...rawSegment,
+      member: {
+        mandateKey: 'senat:mandate:42',
+        fullName: 'Ion Popescu',
+        chamber: 'senat',
+        groupName: null,
+      },
+    })
+
+    expect(segment.member).toEqual({
+      mandateKey: 'senat:mandate:42',
+      fullName: 'Ion Popescu',
+      chamber: 'senat',
+    })
+  })
 })
 
 describe('mapStenogramSessions', () => {

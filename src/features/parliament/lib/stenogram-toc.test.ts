@@ -3,7 +3,9 @@ import {
   ParliamentStenogramSegmentSchema,
   type ParliamentStenogramSegment,
 } from '@/schemas/parliament'
+import { filterSegmentsBySpeakers } from './stenogram-speaker-filter'
 import {
+  buildFilteredStenogramToc,
   buildStenogramInterventions,
   buildStenogramToc,
   clusterInterventionRail,
@@ -102,6 +104,103 @@ describe('buildStenogramToc', () => {
     ])
     expect(toc).toHaveLength(2)
     expect(toc[1]?.speechCount).toBe(0)
+  })
+})
+
+describe('buildFilteredStenogramToc', () => {
+  /** One sitting, two agenda points, two speakers, narration between. */
+  const turn = (position: number, text: string, speakerName: string) =>
+    segment(position, 'SPEECH', text, {
+      speakerName,
+      speechKey: `canon:sp:${String(position)}`,
+    })
+
+  const SITTING = [
+    turn(0, 'deschiderea', 'Ion Popescu'),
+    segment(1, 'AGENDA_HEADING', 'Punctul 1 — educație'),
+    turn(2, 'a', 'Maria Ionescu'),
+    segment(3, 'CONTEXT', '(rumoare)'),
+    turn(4, 'b', 'Ion Popescu'),
+    turn(5, 'c', 'Ion Popescu'),
+    segment(6, 'AGENDA_HEADING', 'Punctul 2 — sănătate'),
+    turn(7, 'd', 'Maria Ionescu'),
+  ]
+
+  it('is the FULL agenda when nothing is selected', () => {
+    expect(
+      buildFilteredStenogramToc({ segments: SITTING, speakerNames: [] }),
+    ).toEqual(buildStenogramToc(SITTING))
+  })
+
+  it('keeps only the sections that still hold a selected speaker', () => {
+    const toc = buildFilteredStenogramToc({
+      segments: SITTING,
+      speakerNames: ['Ion Popescu'],
+    })
+    expect(toc.map((entry) => entry.label)).toEqual(['Punctul 1 — educație'])
+  })
+
+  it('anchors each entry at the FIRST VISIBLE turn, never at the heading', () => {
+    // The heading itself is not rendered in a filtered reading, so an anchor on
+    // its position would scroll to a block that does not exist.
+    const [entry] = buildFilteredStenogramToc({
+      segments: SITTING,
+      speakerNames: ['Ion Popescu'],
+    })
+    expect(entry?.position).toBe(4)
+  })
+
+  it('counts the VISIBLE speeches, not the section real size', () => {
+    // Claiming the section's true size would describe debate the excerpt omits.
+    const [entry] = buildFilteredStenogramToc({
+      segments: SITTING,
+      speakerNames: ['Ion Popescu'],
+    })
+    expect(entry?.speechCount).toBe(2)
+  })
+
+  it('never points at a block the excerpt does not render', () => {
+    const visible = new Set(
+      filterSegmentsBySpeakers({
+        segments: SITTING,
+        speakerNames: ['Ion Popescu', 'Maria Ionescu'],
+      }).map((s) => s.position),
+    )
+    const toc = buildFilteredStenogramToc({
+      segments: SITTING,
+      speakerNames: ['Ion Popescu', 'Maria Ionescu'],
+    })
+    expect(toc).toHaveLength(2)
+    for (const entry of toc) expect(visible.has(entry.position)).toBe(true)
+  })
+
+  it('gives no entry to turns printed BEFORE the first heading', () => {
+    // Same rule as the full agenda: there is no heading to name them by.
+    const toc = buildFilteredStenogramToc({
+      segments: SITTING,
+      speakerNames: ['Ion Popescu'],
+    })
+    expect(toc.some((entry) => entry.position === 0)).toBe(false)
+  })
+
+  it('is EMPTY when the excerpt lands under no heading at all', () => {
+    // The reader renders no navigation for this — an honest gap beats a map of
+    // a document that is not on screen.
+    expect(
+      buildFilteredStenogramToc({
+        segments: [turn(0, 'a', 'Ion Popescu'), turn(1, 'b', 'Maria Ionescu')],
+        speakerNames: ['Ion Popescu'],
+      }),
+    ).toEqual([])
+  })
+
+  it('is EMPTY when the selection matches nothing this sitting printed', () => {
+    expect(
+      buildFilteredStenogramToc({
+        segments: SITTING,
+        speakerNames: ['Cineva Absent'],
+      }),
+    ).toEqual([])
   })
 })
 

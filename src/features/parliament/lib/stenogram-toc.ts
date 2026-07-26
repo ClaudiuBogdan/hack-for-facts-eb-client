@@ -8,6 +8,7 @@
  * it out inline.
  */
 import type { ParliamentStenogramSegment } from '@/schemas/parliament'
+import { isSegmentVisibleForSpeakers } from './stenogram-speaker-filter'
 import { estimateBlockHeightPx } from './stenogram-theme'
 
 /**
@@ -62,6 +63,70 @@ export function buildStenogramToc(
     if (segment.kind === 'SPEECH' && current) current.speechCount += 1
   }
   if (current) entries.push(current)
+  return entries
+}
+
+/**
+ * The agenda OF AN EXCERPT — the same headings, restricted to what is on screen.
+ *
+ * A filtered reading contains no agenda headings at all (they are dropped with
+ * everything else), so the full table of contents would be a map of a document
+ * that is not on screen: every entry would anchor at a block the excerpt does
+ * not render. Hiding it entirely was the previous answer and it cost the reader
+ * the left lane and any sense of WHERE in the sitting a turn happened.
+ *
+ * So the entries are rebuilt from the ORIGINAL ordered sitting and the selected
+ * names:
+ *   - a section survives only if it holds at least one VISIBLE contribution;
+ *   - `speechCount` counts the visible ones, not the section's real size —
+ *     claiming the latter would describe debate the excerpt omits;
+ *   - `position` anchors at the FIRST visible contribution in the section, not
+ *     at the heading, because the heading has no DOM node here.
+ *
+ * Contributions printed BEFORE the first heading get no entry, exactly as in
+ * the full agenda: there is no heading to name them by.
+ */
+export function buildFilteredStenogramToc({
+  segments,
+  speakerNames,
+}: {
+  readonly segments: readonly ParliamentStenogramSegment[]
+  readonly speakerNames: readonly string[]
+}): readonly StenogramTocEntry[] {
+  if (speakerNames.length === 0) return buildStenogramToc(segments)
+
+  const entries: StenogramTocEntry[] = []
+  let heading: { segmentKey: string; label: string } | undefined
+  let open: {
+    segmentKey: string
+    position: number
+    label: string
+    speechCount: number
+  } | null = null
+
+  for (const segment of segments) {
+    if (segment.kind === 'AGENDA_HEADING') {
+      if (open) entries.push(open)
+      open = null
+      heading = {
+        segmentKey: segment.segmentKey,
+        label: segment.text.trim().split('\n')[0] ?? '',
+      }
+      continue
+    }
+    if (!heading) continue
+    if (!isSegmentVisibleForSpeakers({ segment, speakerNames })) continue
+
+    if (open) open.speechCount += 1
+    else
+      open = {
+        segmentKey: heading.segmentKey,
+        position: segment.position,
+        label: heading.label,
+        speechCount: 1,
+      }
+  }
+  if (open) entries.push(open)
   return entries
 }
 

@@ -1291,19 +1291,67 @@ export type ParliamentSpeechesSearch = z.infer<
 >;
 
 /**
+ * The speaker filter's URL contract: `?vorbitori=`, repeated or single.
+ *
+ * The VALUES are the names the transcript PRINTED, verbatim — that is the only
+ * identity a sitting is guaranteed to carry, and it keeps guests, ministers and
+ * anyone the source printed no mandate for just as filterable as resolved
+ * members. Names are therefore never comma-split (a printed name may hold one)
+ * and never case-folded: a name that does not occur in the sitting simply
+ * matches nothing, which the reader states rather than hides.
+ *
+ * Lenient like every other search param here — non-strings, blanks, duplicates
+ * and absurd lengths are dropped, and the param never throws.
+ */
+const MAX_SPEAKER_NAME_CHARS = 200;
+
+function parseSpeakerFilterParam(value: unknown): string[] | undefined {
+  const candidates = Array.isArray(value) ? value : [value];
+  const collected: string[] = [];
+  const seen = new Set<string>();
+
+  for (const candidate of candidates) {
+    if (typeof candidate !== "string") continue;
+    const trimmed = candidate.trim();
+    if (!trimmed || trimmed.length > MAX_SPEAKER_NAME_CHARS) continue;
+    if (seen.has(trimmed)) continue;
+    seen.add(trimmed);
+    collected.push(trimmed);
+  }
+
+  return collected.length > 0 ? collected : undefined;
+}
+
+/**
+ * `.optional()` on the OUTSIDE is load-bearing, not decoration: a preprocessed
+ * param takes `unknown` as its input type, and without it the router would
+ * infer `vorbitori` as a REQUIRED search key — forcing every existing link into
+ * the reader (member records, speech detail, sitting cards) to pass a filter it
+ * knows nothing about.
+ */
+const optionalSpeakerNamesParam = z
+  .preprocess(parseSpeakerFilterParam, z.array(z.string()).optional())
+  .catch(undefined)
+  .optional();
+
+/**
  * Search params for the sitting reader
  * (/parlament/stenograme/sedinte/$sessionKey).
  *   - `interventie` — the contribution to highlight and scroll to. Accepts a
  *     CANONICAL `canon:` key or a LEGACY `cdep:`/`senat:` key: a legacy deep
  *     link resolves through the server's speech_redirects, so old shared URLs
  *     keep landing on the right place in the document.
+ *   - `vorbitori` — printed speaker names to narrow the reading to. A filtered
+ *     reading is an EXCERPT, not the record, so the state is in the URL: what a
+ *     reader shares must be exactly what they were looking at, filter included.
  *
- * The in-document text search is deliberately NOT a search param: it is a
- * reading aid over an already-loaded document, and pushing every keystroke
- * through the router would rewrite history while the reader types.
+ * There is deliberately NO free-text param: find-in-document was a reading aid
+ * over an already-loaded document, and pushing every keystroke through the
+ * router would rewrite history while the reader types.
  */
 export const ParliamentStenogramReaderSearchSchema = z.object({
   interventie: z.string().trim().min(1).optional().catch(undefined),
+  vorbitori: optionalSpeakerNamesParam,
 });
 export type ParliamentStenogramReaderSearch = z.infer<
   typeof ParliamentStenogramReaderSearchSchema
