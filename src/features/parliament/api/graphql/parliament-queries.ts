@@ -628,6 +628,9 @@ export const PARLIAMENT_MEMBER_SPEECHES_QUERY = /* GraphQL */ `
             sourceUrl
             sourceUrlKind
             fullText
+            isCanonical
+            sessionKey
+            position
           }
         }
         pageInfo {
@@ -648,6 +651,10 @@ const rawMemberSpeechSchema = z.object({
   sourceUrl: z.string().nullable(),
   sourceUrlKind: z.string().nullable(),
   fullText: z.string().nullable(),
+  /** Canonical pointers — see `canonicalPointers` for why they are read defensively. */
+  isCanonical: z.boolean().nullable().optional(),
+  sessionKey: z.string().nullable().optional(),
+  position: z.number().nullable().optional(),
 });
 export type RawParliamentMemberSpeech = z.infer<typeof rawMemberSpeechSchema>;
 

@@ -6,6 +6,9 @@ import type {
   ParliamentVotesSearch,
 } from '@/schemas/parliament'
 import {
+  fetchParliamentSpeechContext,
+  fetchParliamentStenogramSessions,
+  fetchParliamentTranscript,
   fetchParliamentBillDetail,
   fetchParliamentBills,
   fetchParliamentChamberComposition,
@@ -34,6 +37,7 @@ import {
 import type { MemberVotesFilterInput } from '../lib/member-votes-filter'
 import type { MemberSpeechesFilterInput } from '../lib/member-speeches-filter'
 import type { ParliamentSpeechesFilterInput } from '../lib/parliament-speeches-filter'
+import type { ParliamentStenogramSessionsFilterInput } from '../lib/parliament-stenogram-filter'
 
 const PARLIAMENT_QUERY_KEY = ['parliament'] as const
 
@@ -260,6 +264,59 @@ export function useParliamentSpeechDetail(speechKey: string) {
     enabled: Boolean(speechKey),
   })
 }
+
+// ── canonical stenogram sittings ────────────────────────────────────────────
+
+export function useParliamentStenogramSessions(
+  filter?: ParliamentStenogramSessionsFilterInput,
+  q?: string,
+) {
+  return useInfiniteQuery({
+    queryKey: [
+      ...PARLIAMENT_QUERY_KEY,
+      'stenogram-sessions',
+      filter ?? null,
+      q ?? null,
+    ],
+    queryFn: ({ pageParam }) =>
+      fetchParliamentStenogramSessions(pageParam, filter, q),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNextPage && lastPage.endCursor ? lastPage.endCursor : undefined,
+  })
+}
+
+/**
+ * One sitting's COMPLETE ordered reading, in a single request.
+ *
+ * Not an infinite query, and deliberately so. The reader offers whole-document
+ * operations — find-in-document, print, cite — and each is false if it runs on
+ * a prefix. The REST endpoint serves one whole sitting per response (erroring
+ * rather than truncating), so there is no partial state for this hook to model.
+ *
+ * `retry: false`: the typed failures this read produces (NOT_FOUND, a
+ * SOURCE_ONLY capture) are FACTS, not flakes — retrying them three times only
+ * delays the honest answer. The reader offers an explicit retry for the states
+ * where one actually helps.
+ */
+export function useParliamentTranscript(sessionKey: string) {
+  return useQuery({
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'transcript', sessionKey],
+    queryFn: ({ signal }) => fetchParliamentTranscript(sessionKey, { signal }),
+    enabled: Boolean(sessionKey),
+    retry: false,
+  })
+}
+
+export function useParliamentSpeechContext(speechKey: string) {
+  return useQuery({
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'speech-context', speechKey],
+    queryFn: () => fetchParliamentSpeechContext(speechKey),
+    enabled: Boolean(speechKey),
+    retry: false,
+  })
+}
+
 
 export function useParliamentMemberProfile(memberId: string) {
   return useQuery({

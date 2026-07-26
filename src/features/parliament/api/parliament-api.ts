@@ -40,10 +40,14 @@ import type {
 } from '@/schemas/parliament'
 import { isParliamentMockEnabled } from '../lib/mock-mode'
 import type { ParliamentSpeechesFilterInput } from '../lib/parliament-speeches-filter'
+import type { ParliamentStenogramSessionsFilterInput } from '../lib/parliament-stenogram-filter'
 import type {
   ParliamentSpeech,
   ParliamentSpeechActivity,
+  ParliamentSpeechContext,
   ParliamentSpeechesList,
+  ParliamentStenogramSessionsList,
+  ParliamentStenogramTranscript,
 } from '@/schemas/parliament'
 import {
   fetchParliamentSpeechesMock,
@@ -55,6 +59,18 @@ import {
   fetchParliamentSpeechActivityLive,
   fetchParliamentSpeechDetailLive,
 } from './parliament-speeches-api.live'
+import {
+  fetchParliamentSpeechContextLive,
+  fetchParliamentStenogramSessionsLive,
+  fetchParliamentStenogramTranscriptLive,
+} from './parliament-stenograms-api.live'
+import {
+  fetchParliamentSpeechContextMock,
+  fetchParliamentStenogramSessionsMock,
+  fetchParliamentStenogramTranscriptMock,
+  fetchParliamentTranscriptMock,
+} from './parliament-stenograms-api.mock'
+import { fetchParliamentTranscriptLive } from './parliament-transcript-api.live'
 import type { MemberVotesFilterInput } from '../lib/member-votes-filter'
 import type { MemberSpeechesFilterInput } from '../lib/member-speeches-filter'
 import {
@@ -286,6 +302,54 @@ export async function fetchParliamentSpeechDetail(
   return isParliamentMockEnabled()
     ? fetchParliamentSpeechDetailMock(speechKey)
     : fetchParliamentSpeechDetailLive(speechKey)
+}
+
+// ── canonical stenogram sittings (the reading surface) ──────────────────────
+
+export async function fetchParliamentStenogramSessions(
+  after?: string,
+  filter?: ParliamentStenogramSessionsFilterInput,
+  q?: string,
+): Promise<ParliamentStenogramSessionsList> {
+  return isParliamentMockEnabled()
+    ? fetchParliamentStenogramSessionsMock(after, filter, q)
+    : fetchParliamentStenogramSessionsLive(after, filter, q)
+}
+
+/**
+ * The COMPLETE transcript — what the document reader uses.
+ *
+ * Goes over REST (`GET …/stenograms/:sessionKey/transcript`), which serves one
+ * whole sitting per response and is HTTP-cacheable. The reader must never hold
+ * a prefix: find-in-document, print and citation are all whole-document
+ * operations.
+ */
+export async function fetchParliamentTranscript(
+  sessionKey: string,
+  options?: { readonly signal?: AbortSignal },
+): Promise<ParliamentStenogramTranscript> {
+  return isParliamentMockEnabled()
+    ? fetchParliamentTranscriptMock(sessionKey)
+    : fetchParliamentTranscriptLive(sessionKey, options)
+}
+
+/** A bounded SLICE of a sitting (GraphQL root). Not used by the reader. */
+export async function fetchParliamentStenogramTranscript(
+  sessionKey: string,
+  offset?: number,
+  limit?: number,
+): Promise<ParliamentStenogramTranscript> {
+  return isParliamentMockEnabled()
+    ? fetchParliamentStenogramTranscriptMock(sessionKey, offset, limit)
+    : fetchParliamentStenogramTranscriptLive(sessionKey, offset, limit)
+}
+
+export async function fetchParliamentSpeechContext(
+  speechKey: string,
+): Promise<ParliamentSpeechContext | null> {
+  return isParliamentMockEnabled()
+    ? fetchParliamentSpeechContextMock(speechKey)
+    : fetchParliamentSpeechContextLive(speechKey)
 }
 
 export async function fetchParliamentMemberProfile(

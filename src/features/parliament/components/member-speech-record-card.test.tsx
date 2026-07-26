@@ -36,6 +36,8 @@ const base: ParliamentMemberSpeech = {
   sourceUrl: 'https://www.cdep.ro/pls/steno/steno2015.stenograma?ids=9000',
   sourceUrlKind: 'exact',
   fullText: 'Domnul deputat:\nSusțin amendamentul depus de colegii mei.',
+  // Legacy by default — the sitting link is an opt-in the canonical cases set.
+  isCanonical: false,
 }
 
 function renderCard(overrides: Partial<ParliamentMemberSpeech> = {}) {

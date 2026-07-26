@@ -1,5 +1,5 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { ParliamentSpeechesPage } from '@/features/parliament/components/parliament-speeches-page'
+import { ParliamentStenogramePage } from '@/features/parliament/components/parliament-stenograme-page'
 
 export const Route = createLazyFileRoute('/parlament/stenograme/')({
   component: RouteComponent,
@@ -7,5 +7,5 @@ export const Route = createLazyFileRoute('/parlament/stenograme/')({
 
 function RouteComponent() {
   const search = Route.useSearch()
-  return <ParliamentSpeechesPage search={search} />
+  return <ParliamentStenogramePage search={search} />
 }

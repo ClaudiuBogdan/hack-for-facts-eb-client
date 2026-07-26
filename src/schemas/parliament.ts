@@ -462,6 +462,21 @@ export const ParliamentMemberSpeechSchema = z.object({
   sourceUrlKind: z.string().optional(),
   /** Verbatim transcript; undefined when not yet loaded ("indisponibil"). */
   fullText: z.string().optional(),
+  /**
+   * CANONICAL POINTERS (`ParliamentSpeech.isCanonical` / `sessionKey` /
+   * `position`). A canonical row is a re-derived reading block: it carries the
+   * whole turn AND a provable position in its sitting, so — and only so — the
+   * card can link to the highlighted location inside the full transcript.
+   *
+   * `isCanonical` defaults to false because it is also false on any database
+   * where the canonical stenogram migration is not applied; treating "absent"
+   * as "canonical" would mint sitting links that resolve to nothing.
+   * `position` is absent (never 0) on a legacy row — position is only defined
+   * for a canonical block.
+   */
+  isCanonical: z.boolean().default(false),
+  sessionKey: z.string().optional(),
+  position: z.number().int().nonnegative().optional(),
 });
 export type ParliamentMemberSpeech = z.infer<
   typeof ParliamentMemberSpeechSchema
@@ -575,6 +590,234 @@ export const ParliamentSpeechActivitySchema = z.object({
 });
 export type ParliamentSpeechActivity = z.infer<
   typeof ParliamentSpeechActivitySchema
+>;
+
+/* ── canonical stenogram sittings (the sessions-first reading surface) ──────
+ *
+ * Mirrors the server's `ParliamentStenogramSession` / `…Segment` / `…Transcript`
+ * types 1:1. Two contracts drive most of the UI honesty here:
+ *
+ *  - `availability` is the SERVED-READING promise, not a quality score.
+ *    SOURCE_ONLY means the sitting and its official URL are held and NO reading
+ *    is served — the surface must say so and hand the reader the official link,
+ *    never render an empty transcript as if the sitting were silent.
+ *  - `sessionDate` is NULL when the source carries no trustworthy date, and
+ *    `sessionDateSource` says why. The date is never inferred, so the UI shows
+ *    "dată indisponibilă" rather than guessing from the title.
+ */
+export const ParliamentStenogramAvailabilitySchema = z.enum([
+  "COMPLETE",
+  "PARTIAL",
+  "SOURCE_ONLY",
+]);
+export type ParliamentStenogramAvailability = z.infer<
+  typeof ParliamentStenogramAvailabilitySchema
+>;
+
+/** Reading-block kind, in the official printed order of the transcript. */
+export const ParliamentStenogramSegmentKindSchema = z.enum([
+  "SPEECH",
+  "AGENDA_HEADING",
+  "VOTE_RESULT",
+  "CONTEXT",
+]);
+export type ParliamentStenogramSegmentKind = z.infer<
+  typeof ParliamentStenogramSegmentKindSchema
+>;
+
+/**
+ * SOURCE PRECISION of a stenogram URL — the server's `sourceUrlKind` taxonomy:
+ *   - `exact`        deep-links this sitting/turn (safe to call authoritative);
+ *   - `lossy_root`   resolves only to the sitting/section root (Senate);
+ *   - `raw_response` points at the stored capture, not a live page.
+ * Kept as a plain string (unknown future kinds must not break a page), with
+ * `isExactSource` doing the branch.
+ */
+export const ParliamentStenogramSessionSchema = z.object({
+  sessionKey: z.string(),
+  /** 'camera_deputatilor' | 'senat' | 'comun'. */
+  chamber: z.string(),
+  /** YYYY-MM-DD; absent when the source carries no trustworthy date. */
+  sessionDate: z.string().optional(),
+  /** 'stenogram_title' | 'session_date' | 'none' — provenance of sessionDate. */
+  sessionDateSource: z.string(),
+  title: z.string().optional(),
+  /** 'cdep_stenogram' | 'senat_stenogram'. */
+  sourceSystem: z.string(),
+  availability: ParliamentStenogramAvailabilitySchema,
+  /** Always present server-side: a sitting with no path back to the source is a defect. */
+  sourceUrl: z.string(),
+  sourceUrlKind: z.string(),
+  /** Agenda-owned sitting spine; absent is NORMAL, not a defect. */
+  sittingKey: z.string().optional(),
+  presidingText: z.string().optional(),
+  startTimeText: z.string().optional(),
+  endTimeText: z.string().optional(),
+  segmentCount: z.number().int().nonnegative(),
+  speechCount: z.number().int().nonnegative(),
+  speakerCount: z.number().int().nonnegative(),
+  sourceUpdatedAt: z.string().optional(),
+  /**
+   * Integrity anchors from the loader. `canonicalDigest` fixes the ORDERED
+   * reading and `captureDigest` the raw capture, so a client can tell a
+   * re-parse from a no-op refresh without diffing every block. Optional here
+   * because a NAVIGATION REF carries neither — see
+   * `ParliamentStenogramSessionRefSchema`.
+   */
+  canonicalDigest: z.string().optional(),
+  captureDigest: z.string().optional(),
+});
+export type ParliamentStenogramSession = z.infer<
+  typeof ParliamentStenogramSessionSchema
+>;
+
+/**
+ * A sitting as a NAVIGATION TARGET — enough to label it and open its source,
+ * and nothing more.
+ *
+ * This is the shape the server returns for previous/next sitting AND alongside
+ * a `TRANSCRIPT_UNAVAILABLE` error. That second use is the important one: it is
+ * exactly what makes "this sitting is real but yields no reading" different
+ * from "no such sitting", and it means a SOURCE_ONLY capture can be rendered
+ * with its real title, chamber and official link without a second request that
+ * would only 409 again.
+ */
+export const ParliamentStenogramSessionRefSchema = z.object({
+  sessionKey: z.string(),
+  chamber: z.string(),
+  sessionDate: z.string().optional(),
+  title: z.string().optional(),
+  availability: ParliamentStenogramAvailabilitySchema,
+  sourceUrl: z.string(),
+  sourceUrlKind: z.string(),
+});
+export type ParliamentStenogramSessionRef = z.infer<
+  typeof ParliamentStenogramSessionRefSchema
+>;
+
+/**
+ * Chamber-scoped chronological neighbours, SERVED BY THE API.
+ *
+ * These used to be derived client-side from a ±120-day window over the sittings
+ * connection — which could silently miss a neighbour across a long recess and
+ * cost an extra round trip. The server now computes them, so the reader states
+ * adjacency instead of guessing it. `null` on a side is authoritative: there is
+ * no such neighbour, not "we did not look far enough".
+ */
+export const ParliamentSittingNavigationSchema = z.object({
+  previous: ParliamentStenogramSessionRefSchema.nullable().optional(),
+  next: ParliamentStenogramSessionRefSchema.nullable().optional(),
+});
+export type ParliamentSittingNavigation = z.infer<
+  typeof ParliamentSittingNavigationSchema
+>;
+
+/**
+ * One canonical reading block. `(sessionKey, position)` IS the identity — the
+ * database enforces it unique, so the reader can anchor on `position` and the
+ * two can never disagree. `text` is the WHOLE block (not the card snippet).
+ */
+export const ParliamentStenogramSegmentSchema = z.object({
+  segmentKey: z.string(),
+  sessionKey: z.string(),
+  /** 0-based position in the official printed order. */
+  position: z.number().int().nonnegative(),
+  kind: ParliamentStenogramSegmentKindSchema,
+  text: z.string(),
+  textChars: z.number().int().nonnegative(),
+  /** Speaker AS PRINTED; absent for narration. NEVER an identity. */
+  speakerName: z.string().optional(),
+  /** The source's own speaker locator (CDep idm) — a locator, not an identity. */
+  speakerRef: z.string().optional(),
+  /** Roster-validated identity; absent is the honest, EXPECTED value for guests. */
+  mandateKey: z.string().optional(),
+  member: ParliamentSpeechSpeakerSchema.nullable().optional(),
+  /** The canonical serving speech row for this block (SPEECH blocks only). */
+  speechKey: z.string().optional(),
+  agendaRef: z.string().optional(),
+  sourceUrl: z.string(),
+  sourceUrlKind: z.string(),
+});
+export type ParliamentStenogramSegment = z.infer<
+  typeof ParliamentStenogramSegmentSchema
+>;
+
+/**
+ * A sitting, its COMPLETE ordered reading, and its sitting navigation.
+ *
+ * `complete` is not decoration. The reader offers whole-document operations —
+ * find-in-document, print, cite — and every one of them is a lie if the reader
+ * is holding a prefix. The REST transcript endpoint serves one whole sitting
+ * per response (it pages the repository internally and errors rather than
+ * truncating), so this flag is `true` there and the UI is allowed to make those
+ * promises. Anything that ever loads a slice must set it `false`, and the UI
+ * must then refuse to claim completeness.
+ */
+export const ParliamentStenogramTranscriptSchema = z.object({
+  session: ParliamentStenogramSessionSchema,
+  segments: z.array(ParliamentStenogramSegmentSchema),
+  totalSegments: z.number().int().nonnegative(),
+  navigation: ParliamentSittingNavigationSchema.default({}),
+  complete: z.boolean(),
+});
+export type ParliamentStenogramTranscript = z.infer<
+  typeof ParliamentStenogramTranscriptSchema
+>;
+
+/**
+ * One page of the sittings connection. `total` is CAPPED server-side at 10 000
+ * (`totalEstimated: true` → render "peste 10.000"), and a full-history `q` that
+ * resolved more sittings than it could return also sets it.
+ */
+export const ParliamentStenogramSessionsListSchema = z.object({
+  sessions: z.array(ParliamentStenogramSessionSchema),
+  total: z.number().int().nonnegative(),
+  totalEstimated: z.boolean(),
+  hasNextPage: z.boolean(),
+  endCursor: z.string().nullable(),
+});
+export type ParliamentStenogramSessionsList = z.infer<
+  typeof ParliamentStenogramSessionsListSchema
+>;
+
+/**
+ * How a LEGACY speech key was mapped onto the canonical reading.
+ *   - `exact_segment` carries all three canonical pointers — the deep link
+ *     reaches the exact contribution;
+ *   - `session_only`  resolves the sitting ALONE. That is the honest coarse
+ *     answer used when a single block could not be PROVEN — the reader opens
+ *     the sitting with no highlight rather than a guessed turn.
+ */
+export const ParliamentSpeechRedirectSchema = z.object({
+  legacySpeechKey: z.string(),
+  sessionKey: z.string(),
+  canonicalSpeechKey: z.string().optional(),
+  canonicalSegmentKey: z.string().optional(),
+  canonicalPosition: z.number().int().nonnegative().optional(),
+  mappingKind: z.string(),
+  matchMethod: z.string(),
+});
+export type ParliamentSpeechRedirect = z.infer<
+  typeof ParliamentSpeechRedirectSchema
+>;
+
+/**
+ * The canonical context of one contribution: its block, its sitting, and the
+ * neighbouring CONTRIBUTIONS (the previous/next SPEECH blocks — not the
+ * adjacent printed block, which is usually narration).
+ */
+export const ParliamentSpeechContextSchema = z.object({
+  /** The key that was REQUESTED — echoed so a client can tell a redirect happened. */
+  speechKey: z.string(),
+  session: ParliamentStenogramSessionSchema,
+  segment: ParliamentStenogramSegmentSchema.nullable().optional(),
+  previousContribution: ParliamentStenogramSegmentSchema.nullable().optional(),
+  nextContribution: ParliamentStenogramSegmentSchema.nullable().optional(),
+  /** Set ONLY when the requested key was legacy and resolved through speech_redirects. */
+  redirect: ParliamentSpeechRedirectSchema.nullable().optional(),
+});
+export type ParliamentSpeechContext = z.infer<
+  typeof ParliamentSpeechContextSchema
 >;
 
 export const MemberSpokenContributionSchema = z.object({
@@ -991,26 +1234,77 @@ export const MemberSpeechesSearchSchema = z.object({
 export type MemberSpeechesSearch = z.infer<typeof MemberSpeechesSearchSchema>;
 
 /**
+ * Which of the two stenograme views is showing. SITTINGS IS THE DEFAULT and the
+ * default renders with NO param: a stenogram is a document, so the primary unit
+ * of the surface is the sitting, not the isolated turn. `interventii` is the
+ * cross-sitting search over individual contributions.
+ */
+export const ParliamentStenogrameViewSchema = z.enum(["sedinte", "interventii"]);
+export type ParliamentStenogrameView = z.infer<
+  typeof ParliamentStenogrameViewSchema
+>;
+
+/**
+ * Availability facet on the sittings view — the SERVED-READING promise of a
+ * capture, surfaced as a filter because "show me only sittings I can actually
+ * read" is a real question. Values match the server enum exactly.
+ */
+export const ParliamentStenogramAvailabilityParamSchema = z
+  .enum(["COMPLETE", "PARTIAL", "SOURCE_ONLY"])
+  .optional()
+  .catch(undefined);
+
+/**
  * Search params for the global stenograme page (/parlament/stenograme).
  * Lenient like the other parliament search schemas — junk never throws.
- *   - `an`       — selected year. Load-bearing for the LIST too, not just the
- *                  heatmap: the server refuses an unbounded speeches query, so
- *                  when neither `vorbitor` nor from/to is set the client sends
- *                  the year window (defaults to the current year).
+ *   - `view`     — sedinte (default, omitted from the URL) | interventii.
+ *   - `an`       — selected year. On the INTERVENTII view it is load-bearing for
+ *                  the list too, not just the heatmap: the server refuses an
+ *                  unbounded speeches query, so when neither `vorbitor` nor
+ *                  from/to is set the client sends the year window. On the
+ *                  SEDINTE view it is a plain facet — the sittings table is one
+ *                  row per capture with an indexed date, so it needs no bound
+ *                  and the default view is the whole history, newest first.
  *   - `camera`   — camera | senat | comun (joint sittings) — one 3-way facet.
  *   - `vorbitor` — the speaker's mandateKey (picked via the roster combobox).
- *   - `from`/`to`— inclusive spoken-date range (YYYY-MM-DD).
- *   - `q`        — free-text; depth (titles+summaries vs full transcripts) is
- *                  decided server-side and reported back via `searchDepth`.
+ *                  On sittings it selects the sittings where that speaker holds
+ *                  at least one PUBLIC contribution.
+ *   - `from`/`to`— inclusive date range (YYYY-MM-DD).
+ *   - `q`        — free-text. The two views search DIFFERENT things and say so:
+ *                  sittings run a full-history search over the canonical
+ *                  transcript projection; interventions run the depth-reported
+ *                  title/summary(+transcript) search.
+ *   - `disponibilitate` — sittings-only availability facet.
  */
 export const ParliamentSpeechesSearchSchema = z.object({
+  view: ParliamentStenogrameViewSchema.optional().catch(undefined),
   an: z.coerce.number().int().optional().catch(undefined),
   camera: z.enum(["camera", "senat", "comun"]).optional().catch(undefined),
   vorbitor: z.string().trim().min(1).optional().catch(undefined),
   from: strictIsoDateParam,
   to: strictIsoDateParam,
   q: z.string().trim().min(1).max(200).optional().catch(undefined),
+  disponibilitate: ParliamentStenogramAvailabilityParamSchema,
 });
 export type ParliamentSpeechesSearch = z.infer<
   typeof ParliamentSpeechesSearchSchema
+>;
+
+/**
+ * Search params for the sitting reader
+ * (/parlament/stenograme/sedinte/$sessionKey).
+ *   - `interventie` — the contribution to highlight and scroll to. Accepts a
+ *     CANONICAL `canon:` key or a LEGACY `cdep:`/`senat:` key: a legacy deep
+ *     link resolves through the server's speech_redirects, so old shared URLs
+ *     keep landing on the right place in the document.
+ *
+ * The in-document text search is deliberately NOT a search param: it is a
+ * reading aid over an already-loaded document, and pushing every keystroke
+ * through the router would rewrite history while the reader types.
+ */
+export const ParliamentStenogramReaderSearchSchema = z.object({
+  interventie: z.string().trim().min(1).optional().catch(undefined),
+});
+export type ParliamentStenogramReaderSearch = z.infer<
+  typeof ParliamentStenogramReaderSearchSchema
 >;

@@ -75,6 +75,48 @@ export const mockResizeObserver = () => {
 }
 
 /**
+ * A CONSTRUCTIBLE ResizeObserver stub.
+ *
+ * `mockResizeObserver` above returns an arrow function, which has no
+ * [[Construct]] slot — any consumer that does `new ResizeObserver(...)` (cmdk,
+ * and most Radix-adjacent primitives) throws on it. This one is a class, so it
+ * works with `new`.
+ *
+ * Call it per-test (`beforeEach`), not once (`beforeAll`): the vitest config
+ * sets `unstubGlobals`, which restores the global after every test.
+ *
+ * Deliberately NOT installed in `src/test/setup.ts`: recharts'
+ * `ResponsiveContainer` measures via ResizeObserver and renders NOTHING when
+ * one exists but never fires, so a global stub silently breaks every chart
+ * test in the repo.
+ */
+export const stubResizeObserver = () => {
+  class ResizeObserverStub {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+  vi.stubGlobal('ResizeObserver', ResizeObserverStub)
+  return ResizeObserverStub
+}
+
+/**
+ * `Element.scrollIntoView`, which jsdom does not implement at all (it has no
+ * layout). Needed by cmdk, which keeps the active option in view, and by any
+ * surface that scrolls to an anchor — e.g. the stenogram reader moving to a
+ * contribution or a search hit.
+ *
+ * Per-file rather than in `src/test/setup.ts`, for the same reason as
+ * `stubResizeObserver`: the shared setup is load-bearing for ~650 test files
+ * and each addition to it is a repo-wide behaviour change.
+ */
+export const stubScrollIntoView = () => {
+  const scrollIntoView = vi.fn()
+  Element.prototype.scrollIntoView = scrollIntoView
+  return scrollIntoView
+}
+
+/**
  * Creates a mock for localStorage.
  *
  * @example

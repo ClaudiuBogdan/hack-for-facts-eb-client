@@ -791,6 +791,16 @@ export function mockOwnChamberToken(chamber: ParliamentChamber): string {
 }
 
 /**
+ * The mock sitting a turn belongs to — one captured sitting per (chamber, day),
+ * the same grain the real canonical lane uses. Lives here (not in the stenogram
+ * mock) so BOTH the member tab and the global corpus can stamp the same key
+ * without importing each other.
+ */
+export function mockSessionKeyFor(chamber: string, day: string): string {
+  return `canon:mock:${chamber}:${day}`
+}
+
+/**
  * The extended mock roster (fixture members + synthesized fill), shared with
  * the global-stenograme mock module so global speech turns reuse the SAME
  * speech keys and speaker identities as the member interventii tab.
@@ -818,6 +828,11 @@ function buildMemberSpeeches(
         : `https://www.cdep.ro/pls/steno/steno2015.stenograma?ids=${9000 + index}`,
       sourceUrlKind: lossy ? 'lossy_root' : 'exact',
       fullText: tpl.fullText,
+      // Canonical pointers. `position` is deliberately NOT stamped here: the
+      // member tab does not know a turn's place in the printed order, and the
+      // reader anchors on the speech key anyway. Absent is the honest value.
+      isCanonical: true,
+      sessionKey: mockSessionKeyFor(chamber, tpl.date),
     }
   })
 }

@@ -15,6 +15,10 @@ import {
   countActiveParliamentSpeechFilters,
   getParliamentSpeechQ,
 } from '../lib/parliament-speeches-filter'
+import {
+  countActiveStenogramSessionFilters,
+  getStenogrameView,
+} from '../lib/parliament-stenogram-filter'
 import { useParliamentMember } from '../hooks/use-parliament-data'
 import { formatMemberName } from '../lib/formatting'
 import { ParliamentSpeakerCombobox } from './parliament-speaker-combobox'
@@ -47,7 +51,11 @@ export function ParliamentSpeechesFilterSheet({
   onChange,
   onClearAll,
 }: SheetProps) {
-  const activeCount = countActiveParliamentSpeechFilters(search)
+  const view = getStenogrameView(search)
+  const activeCount =
+    view === 'sedinte'
+      ? countActiveStenogramSessionFilters(search)
+      : countActiveParliamentSpeechFilters(search)
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -103,6 +111,48 @@ export function ParliamentSpeechesFilterSheet({
             </ToggleGroup>
           </section>
 
+          {/* Availability describes a CAPTURE, so it only exists on the
+              sittings view. Rendering it on interventions would offer a filter
+              that has nothing to apply to. */}
+          {view === 'sedinte' ? (
+            <section className="space-y-2">
+              <Label className={SECTION_LABEL_CLASS}>Disponibilitate</Label>
+              <ToggleGroup
+                type="single"
+                value={search.disponibilitate ?? ''}
+                onValueChange={(value) =>
+                  onChange({
+                    disponibilitate:
+                      value === 'COMPLETE' ||
+                      value === 'PARTIAL' ||
+                      value === 'SOURCE_ONLY'
+                        ? value
+                        : undefined,
+                  })
+                }
+                className="grid grid-cols-1 gap-2"
+              >
+                <ToggleGroupItem value="COMPLETE" className={TOGGLE_ITEM_CLASS}>
+                  Transcriere completă
+                </ToggleGroupItem>
+                <ToggleGroupItem value="PARTIAL" className={TOGGLE_ITEM_CLASS}>
+                  Transcriere parțială
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="SOURCE_ONLY"
+                  className={TOGGLE_ITEM_CLASS}
+                >
+                  Doar linkul oficial
+                </ToggleGroupItem>
+              </ToggleGroup>
+              <p className="text-xs font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                Cât din ședință se poate citi aici. „Doar linkul oficial”
+                înseamnă că păstrăm ședința și adresa ei la sursă, dar textul
+                dezbaterii nu este servit — nu că ședința ar fi fost tăcută.
+              </p>
+            </section>
+          ) : null}
+
           <section className="space-y-2">
             <Label className={SECTION_LABEL_CLASS}>Interval de timp</Label>
             <div className="grid grid-cols-2 gap-2">
@@ -144,9 +194,9 @@ export function ParliamentSpeechesFilterSheet({
               </div>
             </div>
             <p className="text-xs font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-              Fără vorbitor sau interval, lista arată anul selectat în calendar.
-              Căutarea în transcrierea completă cere un vorbitor sau un interval
-              de cel mult 3 luni.
+              {view === 'sedinte'
+                ? 'Fără interval, lista arată tot istoricul de ședințe, cele mai recente primele. Căutarea acoperă întregul text al stenogramelor, pe tot istoricul.'
+                : 'Fără vorbitor sau interval, lista arată anul selectat. Căutarea în transcrierea completă cere un vorbitor sau un interval de cel mult 3 luni.'}
             </p>
           </section>
         </div>

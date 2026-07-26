@@ -1,5 +1,6 @@
-import { ExternalLink } from 'lucide-react'
+import { BookOpen, ExternalLink } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
+import { Trans } from '@lingui/react/macro'
 import type { ParliamentMemberSpeech } from '@/schemas/parliament'
 import { formatVoteDayLong } from '../lib/formatting'
 
@@ -14,8 +15,17 @@ type Props = {
     readonly memberId?: string
     readonly groupName?: string
   }
-  /** When set, the card links to the speech's own page (`$speechKey`). */
+  /**
+   * Fallback detail target for a LEGACY row (`$speechKey`). A canonical row
+   * ignores it and links into its sitting instead — that page shows the same
+   * words with the surrounding debate, which is strictly more useful.
+   */
   readonly detailTo?: string
+  /**
+   * Suppress the date line. Set when the card sits under a sitting heading
+   * that already carries the date — repeating it on every card is noise.
+   */
+  readonly showDate?: boolean
 }
 
 /** Longest summary snippet shown on the card before the transcript expander. */
@@ -76,33 +86,65 @@ function snippet(text: string): string {
   return `${text.slice(0, SNIPPET_MAX).trimEnd()}…`
 }
 
+/**
+ * The sitting-reader target for a CANONICAL turn: the full transcript, scrolled
+ * to and highlighting this contribution. Only minted when the row is canonical
+ * AND names its sitting — see `canonicalPointers`.
+ */
+function sittingTarget(
+  speech: ParliamentMemberSpeech,
+): { sessionKey: string; interventie: string } | undefined {
+  if (!speech.isCanonical || !speech.sessionKey) return undefined
+  return { sessionKey: speech.sessionKey, interventie: speech.speechKey }
+}
+
 /** One speech TURN in the interventii list: date + sitting badge + summary +
  * an expandable verbatim transcript + a source-honest stenogram link. */
-export function MemberSpeechRecordCard({ speech, speaker, detailTo }: Props) {
+export function MemberSpeechRecordCard({
+  speech,
+  speaker,
+  detailTo,
+  showDate = true,
+}: Props) {
   const badge = sittingBadge(speech.chamber)
   const lead = snippet(leadText(speech))
   const hasSource = Boolean(speech.sourceUrl)
   const isExact = speech.sourceUrlKind === 'exact'
+  const sitting = sittingTarget(speech)
   const dateLabel = speech.spokenAt
     ? formatVoteDayLong(speech.spokenAt)
     : 'Dată indisponibilă'
 
+  const dateLinkClassName =
+    'text-sm font-semibold text-[#1d70b8] underline underline-offset-4 hover:text-[#0b0c0c] dark:hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]'
+
   return (
     <article className="border-2 border-[#b1b4b6] bg-white p-5 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        {detailTo ? (
-          <Link
-            to="/parlament/stenograme/$speechKey"
-            params={{ speechKey: detailTo }}
-            className="text-sm font-semibold text-[#1d70b8] underline underline-offset-4 hover:text-[#0b0c0c] dark:hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
-          >
-            {dateLabel}
-          </Link>
-        ) : (
-          <span className="text-sm font-semibold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
-            {dateLabel}
-          </span>
-        )}
+        {showDate ? (
+          sitting ? (
+            <Link
+              to="/parlament/stenograme/sedinte/$sessionKey"
+              params={{ sessionKey: sitting.sessionKey }}
+              search={{ interventie: sitting.interventie }}
+              className={dateLinkClassName}
+            >
+              {dateLabel}
+            </Link>
+          ) : detailTo ? (
+            <Link
+              to="/parlament/stenograme/$speechKey"
+              params={{ speechKey: detailTo }}
+              className={dateLinkClassName}
+            >
+              {dateLabel}
+            </Link>
+          ) : (
+            <span className="text-sm font-semibold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+              {dateLabel}
+            </span>
+          )
+        ) : null}
         <span
           className="inline-flex items-center border border-[#b1b4b6] px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-[#505a5f] dark:border-[var(--pnrr-border)] dark:text-[var(--pnrr-muted)]"
         >
@@ -148,6 +190,20 @@ export function MemberSpeechRecordCard({ speech, speaker, detailTo }: Props) {
           </p>
         )}
       </details>
+
+      {sitting ? (
+        <div className="mt-3">
+          <Link
+            to="/parlament/stenograme/sedinte/$sessionKey"
+            params={{ sessionKey: sitting.sessionKey }}
+            search={{ interventie: sitting.interventie }}
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#1d70b8] underline underline-offset-4 hover:text-[#0b0c0c] dark:hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
+          >
+            <BookOpen className="h-3.5 w-3.5" aria-hidden />
+            <Trans>Vezi în stenograma completă a ședinței</Trans>
+          </Link>
+        </div>
+      ) : null}
 
       {hasSource ? (
         <div className="mt-3">

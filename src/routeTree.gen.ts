@@ -138,6 +138,7 @@ import { Route as LangLearningPathIdIndexRouteImport } from './routes/$lang/lear
 import { Route as PrimarieCuiBugetResurseRouteImport } from './routes/primarie/$cui/buget/resurse'
 import { Route as PrimarieCuiBugetCalendarRouteImport } from './routes/primarie/$cui/buget/calendar'
 import { Route as ParlamentVoturiChamberVoteIdRouteImport } from './routes/parlament/voturi/$chamber/$voteId'
+import { Route as ParlamentStenogrameSedinteSessionKeyRouteImport } from './routes/parlament/stenograme/sedinte.$sessionKey'
 import { Route as ParlamentProiecteBillIdVoturiRouteImport } from './routes/parlament/proiecte/$billId/voturi'
 import { Route as ParlamentProiecteBillIdEtapeRouteImport } from './routes/parlament/proiecte/$billId/etape'
 import { Route as ParlamentProiecteBillIdDocumenteRouteImport } from './routes/parlament/proiecte/$billId/documente'
@@ -1027,6 +1028,16 @@ const ParlamentVoturiChamberVoteIdRoute =
       (d) => d.Route,
     ),
   )
+const ParlamentStenogrameSedinteSessionKeyRoute =
+  ParlamentStenogrameSedinteSessionKeyRouteImport.update({
+    id: '/parlament/stenograme/sedinte/$sessionKey',
+    path: '/parlament/stenograme/sedinte/$sessionKey',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/parlament/stenograme/sedinte.$sessionKey.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const ParlamentProiecteBillIdVoturiRoute =
   ParlamentProiecteBillIdVoturiRouteImport.update({
     id: '/voturi',
@@ -1434,6 +1445,7 @@ export interface FileRoutesByFullPath {
   '/parlament/proiecte/$billId/documente': typeof ParlamentProiecteBillIdDocumenteRoute
   '/parlament/proiecte/$billId/etape': typeof ParlamentProiecteBillIdEtapeRoute
   '/parlament/proiecte/$billId/voturi': typeof ParlamentProiecteBillIdVoturiRoute
+  '/parlament/stenograme/sedinte/$sessionKey': typeof ParlamentStenogrameSedinteSessionKeyRoute
   '/parlament/voturi/$chamber/$voteId': typeof ParlamentVoturiChamberVoteIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
@@ -1580,6 +1592,7 @@ export interface FileRoutesByTo {
   '/parlament/proiecte/$billId/documente': typeof ParlamentProiecteBillIdDocumenteRoute
   '/parlament/proiecte/$billId/etape': typeof ParlamentProiecteBillIdEtapeRoute
   '/parlament/proiecte/$billId/voturi': typeof ParlamentProiecteBillIdVoturiRoute
+  '/parlament/stenograme/sedinte/$sessionKey': typeof ParlamentStenogrameSedinteSessionKeyRoute
   '/parlament/voturi/$chamber/$voteId': typeof ParlamentVoturiChamberVoteIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
@@ -1743,6 +1756,7 @@ export interface FileRoutesById {
   '/parlament/proiecte/$billId/documente': typeof ParlamentProiecteBillIdDocumenteRoute
   '/parlament/proiecte/$billId/etape': typeof ParlamentProiecteBillIdEtapeRoute
   '/parlament/proiecte/$billId/voturi': typeof ParlamentProiecteBillIdVoturiRoute
+  '/parlament/stenograme/sedinte/$sessionKey': typeof ParlamentStenogrameSedinteSessionKeyRoute
   '/parlament/voturi/$chamber/$voteId': typeof ParlamentVoturiChamberVoteIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
@@ -1907,6 +1921,7 @@ export interface FileRouteTypes {
     | '/parlament/proiecte/$billId/documente'
     | '/parlament/proiecte/$billId/etape'
     | '/parlament/proiecte/$billId/voturi'
+    | '/parlament/stenograme/sedinte/$sessionKey'
     | '/parlament/voturi/$chamber/$voteId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
@@ -2053,6 +2068,7 @@ export interface FileRouteTypes {
     | '/parlament/proiecte/$billId/documente'
     | '/parlament/proiecte/$billId/etape'
     | '/parlament/proiecte/$billId/voturi'
+    | '/parlament/stenograme/sedinte/$sessionKey'
     | '/parlament/voturi/$chamber/$voteId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
@@ -2215,6 +2231,7 @@ export interface FileRouteTypes {
     | '/parlament/proiecte/$billId/documente'
     | '/parlament/proiecte/$billId/etape'
     | '/parlament/proiecte/$billId/voturi'
+    | '/parlament/stenograme/sedinte/$sessionKey'
     | '/parlament/voturi/$chamber/$voteId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
@@ -2315,6 +2332,7 @@ export interface RootRouteChildren {
   ApiPnrrRawPaymentsRoute: typeof ApiPnrrRawPaymentsRoute
   ApiPnrrRawProjectsRoute: typeof ApiPnrrRawProjectsRoute
   MapsDatasetsPublicPublicIdRoute: typeof MapsDatasetsPublicPublicIdRoute
+  ParlamentStenogrameSedinteSessionKeyRoute: typeof ParlamentStenogrameSedinteSessionKeyRoute
   ParlamentVoturiChamberVoteIdRoute: typeof ParlamentVoturiChamberVoteIdRoute
 }
 
@@ -3244,6 +3262,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ParlamentVoturiChamberVoteIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/parlament/stenograme/sedinte/$sessionKey': {
+      id: '/parlament/stenograme/sedinte/$sessionKey'
+      path: '/parlament/stenograme/sedinte/$sessionKey'
+      fullPath: '/parlament/stenograme/sedinte/$sessionKey'
+      preLoaderRoute: typeof ParlamentStenogrameSedinteSessionKeyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/parlament/proiecte/$billId/voturi': {
       id: '/parlament/proiecte/$billId/voturi'
       path: '/voturi'
@@ -3934,18 +3959,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPnrrRawPaymentsRoute: ApiPnrrRawPaymentsRoute,
   ApiPnrrRawProjectsRoute: ApiPnrrRawProjectsRoute,
   MapsDatasetsPublicPublicIdRoute: MapsDatasetsPublicPublicIdRoute,
+  ParlamentStenogrameSedinteSessionKeyRoute:
+    ParlamentStenogrameSedinteSessionKeyRoute,
   ParlamentVoturiChamberVoteIdRoute: ParlamentVoturiChamberVoteIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

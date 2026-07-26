@@ -33,6 +33,7 @@ import {
   MOCK_PARLIAMENT_MEMBERS,
   MOCK_SPEECH_TEMPLATES,
   mockOwnChamberToken,
+  mockSessionKeyFor,
 } from './parliament-api.mock'
 
 const MOCK_SPEECHES_PAGE_SIZE = 20
@@ -48,6 +49,14 @@ function mockSpeakers() {
       .slice(0, MOCK_SPEAKERS_PER_CHAMBER)
   return [...byChamber('camera'), ...byChamber('senat')]
 }
+
+/**
+ * Position 0 of every mock sitting is its agenda heading, so the turns start at
+ * 1. The reader's table of contents is built from AGENDA_HEADING blocks, and a
+ * document whose first block is already a speech would exercise a shape the
+ * real captures do not have.
+ */
+export const MOCK_SESSION_FIRST_SPEECH_POSITION = 1
 
 /** Every global mock speech turn (built once, module-scoped, deterministic). */
 function buildGlobalSpeeches(): ParliamentSpeech[] {
@@ -77,22 +86,55 @@ function buildGlobalSpeeches(): ParliamentSpeech[] {
             chamber,
             groupName: member.groupName,
           },
+          isCanonical: true,
+          sessionKey: mockSessionKeyFor(chamber, tpl.date),
         }),
       )
     })
   }
   // Keyset order = spokenAt desc, then key for a stable same-day order.
-  return speeches.sort(
+  speeches.sort(
     (a, b) =>
       b.spokenAt.localeCompare(a.spokenAt) ||
       a.speechKey.localeCompare(b.speechKey),
   )
+
+  // Stamp the printed position of each turn inside its sitting. Within a
+  // sitting the printed order is the ASCENDING key order (the desc list above
+  // is a browse order, not a document order) — a document reads forwards.
+  const bySession = new Map<string, ParliamentSpeech[]>()
+  for (const speech of speeches) {
+    const key = speech.sessionKey
+    if (!key) continue
+    const bucket = bySession.get(key) ?? []
+    bucket.push(speech)
+    bySession.set(key, bucket)
+  }
+  for (const bucket of bySession.values()) {
+    bucket
+      .slice()
+      .sort((a, b) => a.speechKey.localeCompare(b.speechKey))
+      .forEach((speech, index) => {
+        speech.position = MOCK_SESSION_FIRST_SPEECH_POSITION + index
+      })
+  }
+
+  return speeches
 }
 
 let cache: ParliamentSpeech[] | null = null
-function allGlobalSpeeches(): ParliamentSpeech[] {
+/**
+ * The whole mock turn corpus, stamped with its canonical pointers. Exported so
+ * the stenogram mock derives its sittings from the SAME rows — a mock sitting
+ * that disagreed with the mock turns would make cross-navigation lie.
+ */
+export function allGlobalMockSpeeches(): readonly ParliamentSpeech[] {
   cache ??= buildGlobalSpeeches()
   return cache
+}
+
+function allGlobalSpeeches(): ParliamentSpeech[] {
+  return allGlobalMockSpeeches() as ParliamentSpeech[]
 }
 
 /** The applied search depth — the mock mirror of the server's hybrid rule. */

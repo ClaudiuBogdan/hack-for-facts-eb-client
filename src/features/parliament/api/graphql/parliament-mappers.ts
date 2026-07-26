@@ -79,6 +79,7 @@ import type {
   RawParliamentVoteDetail,
   RawParliamentVoteListNode,
 } from "./parliament-queries";
+import { canonicalPointers } from "./parliament-speeches-mappers";
 import { primeMemberJudet, primeVoteSummary } from "./vote-summary-cache";
 
 // ── primitives ────────────────────────────────────────────────────────────
@@ -494,6 +495,9 @@ export function mapMemberSpeeches(
       sourceUrlKind: optText(node.sourceUrlKind),
       // Keep the transcript's internal whitespace; only null → undefined.
       fullText: node.fullText ?? undefined,
+      // Canonical pointers — the same guard the global list uses: a sitting
+      // link is only offered for a row that is canonical AND names its sitting.
+      ...canonicalPointers(node),
     })),
   });
 }

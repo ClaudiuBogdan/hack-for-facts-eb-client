@@ -52,9 +52,35 @@ function mapSpeechNode(node: RawParliamentSpeech): ParliamentSpeech {
     sourceUrlKind: optText(node.sourceUrlKind),
     // Keep the transcript's internal whitespace; only null → undefined.
     fullText: node.fullText ?? undefined,
+    ...canonicalPointers(node),
     speakerName,
     speaker,
   })
+}
+
+/**
+ * The canonical pointers, collapsed to a shape the UI can trust blindly.
+ *
+ * A sitting link is only offered when the row is canonical AND names its
+ * sitting — a `sessionKey` without `isCanonical`, or the reverse, is a
+ * half-mapped row, and linking on it would produce a reader page that cannot
+ * highlight anything. `position` keeps 0 (the first block is a real position;
+ * only null means "no position").
+ */
+export function canonicalPointers(node: {
+  isCanonical?: boolean | null
+  sessionKey?: string | null
+  position?: number | null
+}): { isCanonical: boolean; sessionKey?: string; position?: number } {
+  const isCanonical = node.isCanonical === true
+  const sessionKey = node.sessionKey?.trim()
+  if (!isCanonical || !sessionKey) return { isCanonical: false }
+  return {
+    isCanonical: true,
+    sessionKey,
+    ...(typeof node.position === 'number' &&
+      Number.isFinite(node.position) && { position: node.position }),
+  }
 }
 
 export function mapParliamentSpeeches(

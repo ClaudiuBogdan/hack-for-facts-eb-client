@@ -37,6 +37,9 @@ export const PARLIAMENT_SPEECHES_QUERY = /* GraphQL */ `
           sourceUrl
           sourceUrlKind
           fullText
+          isCanonical
+          sessionKey
+          position
           speakerName
           member {
             mandateKey
@@ -71,6 +74,15 @@ export const rawParliamentSpeechSchema = z.object({
   sourceUrl: z.string().nullable(),
   sourceUrlKind: z.string().nullable(),
   fullText: z.string().nullable(),
+  /**
+   * Canonical pointers. `isCanonical` is non-null on the server but is read
+   * defensively here: a database without the canonical stenogram migration
+   * serves `false`, and an older deployment may not know the field at all —
+   * neither may be allowed to mint a sitting link that resolves to nothing.
+   */
+  isCanonical: z.boolean().nullable().optional(),
+  sessionKey: z.string().nullable().optional(),
+  position: z.number().nullable().optional(),
   speakerName: z.string().nullable(),
   /** Null for unmatched speakers (PM, guests) — real data, kept in the list. */
   member: rawSpeechMemberSchema.nullable(),
@@ -148,6 +160,9 @@ export const PARLIAMENT_SPEECH_QUERY = /* GraphQL */ `
       sourceUrl
       sourceUrlKind
       fullText
+      isCanonical
+      sessionKey
+      position
       speakerName
       member {
         mandateKey

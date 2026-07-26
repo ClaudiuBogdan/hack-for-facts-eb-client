@@ -16,6 +16,7 @@ import {
   buildYearGrid,
   RO_WEEKDAY_LABELS,
 } from '../lib/vote-activity-grid'
+import { ParliamentYearCombobox } from './parliament-year-combobox'
 
 /**
  * GOV.UK blue ramp (#1d70b8) for buckets 1–4 — light→dark tints of the action
@@ -33,6 +34,12 @@ type Props = {
   readonly year: number
   readonly onSelectYear: (year: number) => void
   readonly isLoading: boolean
+  /**
+   * `'none'` when the surrounding page already owns the year control (the
+   * stenograme toolbar does). Two year pickers on one screen that drive the
+   * same URL param is a bug, not redundancy.
+   */
+  readonly yearControl?: 'inline' | 'none'
 }
 
 function formatLongDate(isoDate: string): string {
@@ -49,49 +56,6 @@ function interventionsLabel(count: number): string {
   return `${count} ${count === 1 ? 'intervenție' : 'intervenții'}`
 }
 
-function YearSelector({
-  years,
-  year,
-  onSelectYear,
-  orientation,
-}: {
-  readonly years: readonly number[]
-  readonly year: number
-  readonly onSelectYear: (year: number) => void
-  readonly orientation: 'horizontal' | 'vertical'
-}) {
-  return (
-    <div
-      className={cn(
-        'flex gap-2',
-        orientation === 'vertical' ? 'flex-col' : 'flex-row flex-wrap',
-      )}
-      role="group"
-      aria-label="Alege anul"
-    >
-      {years.map((option) => {
-        const active = option === year
-        return (
-          <button
-            key={option}
-            type="button"
-            aria-pressed={active}
-            onClick={() => onSelectYear(option)}
-            className={cn(
-              'rounded-none border-2 px-4 py-1 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]',
-              active
-                ? 'border-[#1d70b8] bg-[#1d70b8] text-white'
-                : 'border-[#b1b4b6] text-[#0b0c0c] hover:bg-[#f3f2f1] dark:border-[var(--pnrr-border)] dark:text-[var(--pnrr-fg)] dark:hover:bg-[var(--pnrr-subtle)]',
-            )}
-          >
-            {option}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
 /** GitHub-style calendar heatmap of a member's per-day speech turns for a year. */
 export function MemberSpeechActivityHeatmap({
   activity,
@@ -100,6 +64,7 @@ export function MemberSpeechActivityHeatmap({
   year,
   onSelectYear,
   isLoading,
+  yearControl = 'inline',
 }: Props) {
   const grid = useMemo(() => buildYearGrid(year), [year])
   const dayMap = useMemo(() => {
@@ -118,17 +83,21 @@ export function MemberSpeechActivityHeatmap({
 
   return (
     <div className="space-y-4">
-      {/* Below lg: year selector as a horizontal row above the grid. */}
-      <div className="lg:hidden">
-        <YearSelector
+      {/* One fixed-size, keyboard-navigable control instead of the column of
+          year buttons this used to carry — that list grew every year, pushed
+          the grid sideways on desktop and wrapped on mobile. */}
+      {yearControl === 'inline' ? (
+        <ParliamentYearCombobox
+          id="speech-activity-year"
           years={years}
-          year={year}
-          onSelectYear={onSelectYear}
-          orientation="horizontal"
+          value={year}
+          onChange={(next) => {
+            if (next !== undefined) onSelectYear(next)
+          }}
         />
-      </div>
+      ) : null}
 
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+      <div className="flex flex-col gap-4">
         <div className="min-w-0 flex-1">
           {isLoading ? (
             <Skeleton className="h-32 w-full rounded-none" />
@@ -251,16 +220,6 @@ export function MemberSpeechActivityHeatmap({
               </div>
             </TooltipProvider>
           )}
-        </div>
-
-        {/* lg+: year selector as a vertical column right of the grid. */}
-        <div className="hidden lg:block">
-          <YearSelector
-            years={years}
-            year={year}
-            onSelectYear={onSelectYear}
-            orientation="vertical"
-          />
         </div>
       </div>
     </div>
