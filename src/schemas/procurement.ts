@@ -654,14 +654,17 @@ export const procurementRecordDetailSchema = <T extends z.ZodTypeAny>(
 /**
  * Why a direct acquisition has no detail body. Absence of a detail is NOT
  * absence of a purchase — the detail surface covers ~41% of direct acquisitions
- * by design, and the two "missing" cases mean very different things:
+ * by design, and the three "missing" cases mean very different things:
  * NOT_AVAILABLE_FOR_SOURCE is permanent (that family has no detail feed at
- * all), NOT_CAPTURED is a gap a running backfill is still closing.
+ * all), NOT_CAPTURED is a gap a running backfill is still closing, and
+ * TEMPORARILY_UNAVAILABLE is this request failing to read the detail projection
+ * — it says nothing about the source, and the summary shown above stays valid.
  */
 export type DaDetailAvailability =
   | 'AVAILABLE'
   | 'NOT_AVAILABLE_FOR_SOURCE'
   | 'NOT_CAPTURED'
+  | 'TEMPORARILY_UNAVAILABLE'
 
 /** One catalog line item of a direct acquisition. */
 export type DaItem = {

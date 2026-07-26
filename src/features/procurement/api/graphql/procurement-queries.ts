@@ -615,10 +615,15 @@ export const procurementDaDetailResponseSchema = z.object({
     .object({
       directAcquisition: rawDirectAcquisitionSchema,
       detail: rawDaDetailSchema.nullable(),
+      // Kept in step with the server enum (`ProcurementDetailAvailability`).
+      // TEMPORARILY_UNAVAILABLE is a per-request read failure of the optional
+      // detail projection — the base acquisition around it is still valid, so
+      // this must parse rather than reject the whole detail page.
       detailAvailability: z.enum([
         'AVAILABLE',
         'NOT_CAPTURED',
         'NOT_AVAILABLE_FOR_SOURCE',
+        'TEMPORARILY_UNAVAILABLE',
       ]),
       duplicates: z.array(rawDuplicateRefSchema),
     })

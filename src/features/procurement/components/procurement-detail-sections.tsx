@@ -515,15 +515,25 @@ export function ProcurementRelatedRecords({
 
 /**
  * Absence of a detail body is NOT absence of a purchase. The detail surface
- * covers ~41% of direct acquisitions by design, and the two missing cases mean
- * different things — so each gets its own honest sentence rather than an empty
- * panel a reader could misread as "nothing was bought".
+ * covers ~41% of direct acquisitions by design, and the three missing cases mean
+ * different things — a permanent limit of the source, a gap in our own import,
+ * and a read that failed just now — so each gets its own honest sentence rather
+ * than an empty panel a reader could misread as "nothing was bought".
+ *
+ * The record stays on its canonical page in all three: we link the official
+ * source out, we never bounce the reader to a bulk spreadsheet in its place.
  */
 function DaDetailUnavailable({
   availability,
+  sourceUrl,
 }: {
   readonly availability: DaDetailAvailability
+  readonly sourceUrl: string | null
 }) {
+  // A blank href would render a link back to this same page — worse than none.
+  const officialSource =
+    sourceUrl !== null && sourceUrl.trim() !== '' ? sourceUrl.trim() : null
+
   return (
     <section className={procurementSectionClassName}>
       <div className={procurementSectionHeaderClassName}>
@@ -531,20 +541,36 @@ function DaDetailUnavailable({
           <Trans>Purchased items</Trans>
         </h2>
       </div>
-      <div className="px-5 pb-4 text-sm text-[var(--pnrr-muted)] sm:px-6">
-        {availability === "NOT_AVAILABLE_FOR_SOURCE" ? (
-          <Trans>
-            The source publishes no itemised detail for this kind of record — it
-            was collected from bulk exports that contain only the summary above.
-            This does not mean nothing was purchased.
-          </Trans>
-        ) : (
-          <Trans>
-            The itemised detail for this purchase has not been collected yet.
-            Older records are still being backfilled; the summary above is
-            complete.
-          </Trans>
-        )}
+      <div className="space-y-3 px-5 pb-4 text-sm text-[var(--pnrr-muted)] sm:px-6">
+        <p>
+          {availability === 'NOT_AVAILABLE_FOR_SOURCE' ? (
+            <Trans>
+              The source publishes no itemised detail for this kind of record —
+              it was collected from official bulk exports that contain only the
+              summary above. This does not mean nothing was purchased.
+            </Trans>
+          ) : availability === 'TEMPORARILY_UNAVAILABLE' ? (
+            <Trans>
+              The itemised detail could not be loaded right now. This is a
+              problem on our side, not a gap in the source: the summary above is
+              valid, and reloading this page in a few moments may show the
+              detail.
+            </Trans>
+          ) : (
+            <Trans>
+              The itemised detail for this purchase has not been collected into
+              Transparenta yet. Older records are still being backfilled; the
+              summary above is complete.
+            </Trans>
+          )}
+        </p>
+        {officialSource !== null ? (
+          <EvidenceLink
+            href={officialSource}
+            label={t`Open the official source`}
+            kind="source"
+          />
+        ) : null}
       </div>
     </section>
   )
@@ -557,12 +583,17 @@ function DaDetailUnavailable({
 export function ProcurementDaDetailSection({
   detail,
   availability,
+  sourceUrl = null,
 }: {
   readonly detail: DaDetail | null
   readonly availability: DaDetailAvailability
+  /** The record's own official source, offered when the detail is unavailable. */
+  readonly sourceUrl?: string | null
 }) {
-  if (detail === null || availability !== "AVAILABLE") {
-    return <DaDetailUnavailable availability={availability} />
+  if (detail === null || availability !== 'AVAILABLE') {
+    return (
+      <DaDetailUnavailable availability={availability} sourceUrl={sourceUrl} />
+    )
   }
 
   const terms: DetailRow[] = [

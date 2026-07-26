@@ -89,6 +89,7 @@ export function ProcurementDetailPage({ grain, detail, className }: Props) {
         <ProcurementDaDetailSection
           detail={detail.daDetail ?? null}
           availability={detail.daDetailAvailability ?? 'NOT_CAPTURED'}
+          sourceUrl={record.sourceUrl}
         />
       ) : null}
 

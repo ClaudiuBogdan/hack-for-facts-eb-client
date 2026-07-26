@@ -87,16 +87,41 @@ describe('ProcurementDaDetailSection', () => {
       ).toBeInTheDocument()
     })
 
-    it('says older records are still being backfilled', () => {
+    it('says older records are still being backfilled into Transparenta', () => {
       render(
         <ProcurementDaDetailSection detail={null} availability="NOT_CAPTURED" />
       )
       expect(
         screen.getByText(/still being backfilled/i)
       ).toBeInTheDocument()
-      // Must NOT claim the source has nothing — this gap is closable.
+      // Must NOT claim the source has nothing — this gap is closable, and it is
+      // our import that is behind, not the publisher that withheld the detail.
       expect(
         screen.queryByText(/does not mean nothing was purchased/i)
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByText(/could not be loaded right now/i)
+      ).not.toBeInTheDocument()
+    })
+
+    it('says a transient failure is ours and the summary still holds', () => {
+      render(
+        <ProcurementDaDetailSection
+          detail={null}
+          availability="TEMPORARILY_UNAVAILABLE"
+        />
+      )
+      expect(
+        screen.getByText(/could not be loaded right now/i)
+      ).toBeInTheDocument()
+      // Reloading is the right advice here and only here.
+      expect(screen.getByText(/reloading this page/i)).toBeInTheDocument()
+      // Must NOT reach for either permanent explanation.
+      expect(
+        screen.queryByText(/does not mean nothing was purchased/i)
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByText(/still being backfilled/i)
       ).not.toBeInTheDocument()
     })
 
@@ -107,6 +132,56 @@ describe('ProcurementDaDetailSection', () => {
         <ProcurementDaDetailSection detail={null} availability="AVAILABLE" />
       )
       expect(screen.getByText(/still being backfilled/i)).toBeInTheDocument()
+    })
+  })
+
+  describe('the official source is offered, never substituted for the page', () => {
+    it.each([
+      'NOT_AVAILABLE_FOR_SOURCE',
+      'NOT_CAPTURED',
+      'TEMPORARILY_UNAVAILABLE',
+    ] as const)('links the record source url in the %s state', (availability) => {
+      render(
+        <ProcurementDaDetailSection
+          detail={null}
+          availability={availability}
+          sourceUrl="https://data.gov.ro/dataset/achizitii/resource/2019.xlsx"
+        />
+      )
+      const link = screen.getByRole('link', { name: /official source/i })
+      expect(link).toHaveAttribute(
+        'href',
+        'https://data.gov.ro/dataset/achizitii/resource/2019.xlsx'
+      )
+      // Opened deliberately in a new tab — the reader keeps the canonical page.
+      expect(link).toHaveAttribute('target', '_blank')
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+    })
+
+    it('omits the link when the record carries no source url', () => {
+      render(
+        <ProcurementDaDetailSection
+          detail={null}
+          availability="NOT_AVAILABLE_FOR_SOURCE"
+          sourceUrl={null}
+        />
+      )
+      expect(
+        screen.queryByRole('link', { name: /official source/i })
+      ).not.toBeInTheDocument()
+    })
+
+    it('omits the link for a blank source url rather than linking to nowhere', () => {
+      render(
+        <ProcurementDaDetailSection
+          detail={null}
+          availability="NOT_AVAILABLE_FOR_SOURCE"
+          sourceUrl="   "
+        />
+      )
+      expect(
+        screen.queryByRole('link', { name: /official source/i })
+      ).not.toBeInTheDocument()
     })
   })
 
