@@ -116,8 +116,11 @@ export function ParliamentGroupDetailPage({ groupId }: Props) {
   // Computed once per mount so the cached rows and the window printed on screen
   // can never describe different spans of time.
   const window = useMemo(() => cohesionWindow(new Date()), [])
-  const { data: cohesionRows, isLoading: cohesionLoading } =
-    useParliamentGroupCohesion(group?.chamber, window)
+  const {
+    data: cohesionRows,
+    isLoading: cohesionLoading,
+    isError: cohesionError,
+  } = useParliamentGroupCohesion(group?.chamber, window)
 
   const counties = useMemo(() => buildCountyFacets(members), [members])
   // Depend on the PRIMITIVES, not on `search` — `parseGroupDetailSearch` returns
@@ -252,6 +255,7 @@ export function ParliamentGroupDetailPage({ groupId }: Props) {
             rows={cohesionRows}
             window={window}
             isLoading={cohesionLoading}
+            isError={cohesionError}
           />
         </section>
 

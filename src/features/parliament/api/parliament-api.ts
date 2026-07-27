@@ -88,7 +88,6 @@ import {
   fetchParliamentBillRelatedVotesMock,
   fetchParliamentBillsMock,
   fetchParliamentChamberCompositionMock,
-  fetchParliamentGroupCohesionMock,
   fetchParliamentGroupMembersMock,
   fetchParliamentGroupMock,
   fetchParliamentGroupsMock,
@@ -193,13 +192,20 @@ export async function fetchParliamentGroupMembers(
     : fetchParliamentGroupMembersLive(groupId)
 }
 
+/**
+ * Cohesion has NO mock branch — it is served live in every mode.
+ *
+ * There is nothing honest to mock: cohesion is derived from ballot records the
+ * fixtures do not carry, so any mock would be a fabricated claim about how
+ * elected representatives voted, on a feature where `isParliamentMockEnabled`
+ * gates behaviour rather than adding provenance chrome. If the live call fails
+ * the panel says so, which is the truthful outcome.
+ */
 export async function fetchParliamentGroupCohesion(
   chamber: ParliamentChamber,
   window: { from: string; to: string },
 ): Promise<ParliamentGroupCohesion[]> {
-  return isParliamentMockEnabled()
-    ? fetchParliamentGroupCohesionMock(chamber)
-    : fetchParliamentGroupCohesionLive(chamber, window)
+  return fetchParliamentGroupCohesionLive(chamber, window)
 }
 
 export async function fetchParliamentVotes(

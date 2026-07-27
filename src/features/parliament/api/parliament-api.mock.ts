@@ -13,7 +13,6 @@ import type {
   ParliamentBillsSearch,
   ParliamentChamber,
   ParliamentChamberComposition,
-  ParliamentGroupCohesion,
   ParliamentCommittee,
   ParliamentCommitteeDetail,
   ParliamentDataFreshness,
@@ -434,36 +433,6 @@ export async function fetchParliamentGroupMembersMock(
   groupId: string,
 ): Promise<ParliamentMember[]> {
   return members.filter((m) => m.groupId === groupId)
-}
-
-/**
- * Deterministic cohesion rows for the mock groups of one chamber.
- *
- * Derived from the group id so the numbers are stable across reloads (a random
- * split would make the panel look like it was changing its mind). These are
- * NOT observed voting behaviour — mock mode is labelled as such app-wide, and
- * the dossier prints the same provenance notice it prints against live data.
- */
-export async function fetchParliamentGroupCohesionMock(
-  chamber: ParliamentChamber,
-): Promise<ParliamentGroupCohesion[]> {
-  return groups
-    .filter((group) => group.chamber === chamber)
-    .map((group) => {
-      const seed = [...group.groupId].reduce((sum, ch) => sum + ch.charCodeAt(0), 0)
-      const forPct = 55 + (seed % 35)
-      const againstPct = (seed % 17) + 3
-      const abstainPct = (seed % 11) + 2
-      return {
-        groupName: group.name,
-        forPct,
-        againstPct,
-        abstainPct,
-        absentPct: Math.max(0, 100 - forPct - againstPct - abstainPct),
-        cohesionIndex: Number((0.45 + (seed % 50) / 100).toFixed(3)),
-        voteCount: 120 + (seed % 80),
-      }
-    })
 }
 
 export async function fetchParliamentVotesMock(

@@ -72,6 +72,7 @@ type Props = {
   readonly rows: readonly ParliamentGroupCohesion[] | undefined
   readonly window: { from: string; to: string }
   readonly isLoading: boolean
+  readonly isError: boolean
 }
 
 /**
@@ -88,6 +89,7 @@ export function ParliamentGroupCohesionPanel({
   rows,
   window,
   isLoading,
+  isError,
 }: Props) {
   if (isLoading) {
     return (
@@ -99,19 +101,35 @@ export function ParliamentGroupCohesionPanel({
     )
   }
 
-  // No row means the cohesion endpoint does not know this group under this
-  // name — it answers with "neafiliat"/"Senatori neafiliați"/"PIR" for groups
-  // the directory calls something else. Guessing which row belongs to which
-  // group would attribute one group's voting record to another, so we say
-  // plainly that we cannot show it.
+  // Three DIFFERENT reasons produce no row, and they must not share a message.
+  // Explaining a failed request as a group-name mismatch would be a confident,
+  // specific and false account of why the reader is looking at an empty panel.
   if (!row) {
     return (
       <div className={cn(groupCardClassName, 'p-5 sm:p-6')}>
         <p className={groupMutedTextClassName}>
-          Nu putem afișa comportamentul de vot pentru {groupName}. Sursa
-          raportează rezultatele de vot sub alte denumiri de grup decât cele din
-          nomenclator, iar o potrivire aproximativă ar risca să atribuie acestui
-          grup voturile altuia.
+          {isError || rows === undefined ? (
+            <>
+              Nu am putut încărca datele de vot pentru {groupName}. Încercați
+              din nou mai târziu.
+            </>
+          ) : rows.length === 0 ? (
+            <>
+              Sursa nu raportează voturi în intervalul analizat, așa că nu putem
+              descrie comportamentul de vot al grupului {groupName}.
+            </>
+          ) : (
+            // The endpoint answers with "neafiliat" / "Senatori neafiliați" /
+            // "PIR" for groups the directory calls something else. Guessing
+            // which row belongs to which group would put one group's voting
+            // record on another's page.
+            <>
+              Nu putem afișa comportamentul de vot pentru {groupName}. Sursa
+              raportează rezultatele de vot sub alte denumiri de grup decât cele
+              din nomenclator, iar o potrivire aproximativă ar risca să atribuie
+              acestui grup voturile altuia.
+            </>
+          )}
         </p>
       </div>
     )
