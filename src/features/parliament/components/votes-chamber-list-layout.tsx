@@ -8,6 +8,15 @@ import { ParliamentChamberMark } from "./parliament-hub-panel";
 import { VoteChamberVoteCard } from "./vote-chamber-vote-card";
 import { VotesChamberSearchForm } from "./votes-chamber-search-form";
 import { ParliamentInlineLoadError } from "./parliament-load-error-page";
+import type { MemberVoteChoice } from "@/schemas/parliament";
+
+/** Ballot choices, worded for a citizen reading a filter chip. */
+const VOTE_CHOICE_LABELS: Readonly<Record<MemberVoteChoice, string>> = {
+  pentru: "Pentru",
+  impotriva: "Împotrivă",
+  abtinere: "Abținere",
+  nu_a_votat: "Nu au votat",
+};
 import {
   PARLIAMENT_CAMERA_GREEN,
   PARLIAMENT_SENAT_RED,
@@ -53,6 +62,12 @@ export function VotesChamberListLayout({ search }: Props) {
       : PARLIAMENT_SENAT_RED;
   const chamberLabel = getChamberLabel(search.chamber);
   const votes = data?.pages.flatMap((page) => page.votes) ?? [];
+  // Both halves or nothing — matches `buildVotesFilter`, so the chip can never
+  // claim a constraint the query did not actually send.
+  const groupVoteFilter =
+    search.grupVot && search.alegere
+      ? { group: search.grupVot, choice: search.alegere }
+      : undefined;
 
   const handleSearchChange = (next: ParliamentVotesSearch) => {
     void navigate({
@@ -93,6 +108,39 @@ export function VotesChamberListLayout({ search }: Props) {
         chamberLabel={chamberLabel}
         onSearchChange={handleSearchChange}
       />
+
+      {groupVoteFilter ? (
+        <div
+          className="border-l-[5px] border-l-[#512178] bg-[#f3f0ff] px-4 py-3 text-sm leading-6 text-[#0b0c0c] dark:text-[var(--pnrr-fg)]"
+          role="status"
+        >
+          {/*
+            The reader arrives here from a PERCENTAGE on the group dossier, and
+            this list is a COUNT OF VOTES — a different denominator. Restating
+            the rule at the destination is what stops the two numbers being read
+            as the same claim.
+          */}
+          <p>
+            Se afișează voturile în care majoritatea grupului{" "}
+            <span className="font-bold">{groupVoteFilter.group}</span> a ales
+            „{VOTE_CHOICE_LABELS[groupVoteFilter.choice]}”. Un vot în care
+            grupul s-a împărțit egal nu apare în listă.
+          </p>
+          <button
+            type="button"
+            onClick={() =>
+              handleSearchChange({
+                ...listSearch,
+                grupVot: undefined,
+                alegere: undefined,
+              })
+            }
+            className="mt-1 text-sm font-semibold underline underline-offset-2"
+          >
+            Renunță la acest filtru
+          </button>
+        </div>
+      ) : null}
 
       {isLoading ? (
         <Skeleton className="h-72 w-full rounded-none" />

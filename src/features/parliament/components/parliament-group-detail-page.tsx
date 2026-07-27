@@ -251,6 +251,7 @@ export function ParliamentGroupDetailPage({ groupId }: Props) {
           </div>
           <ParliamentGroupCohesionPanel
             groupName={group.name}
+            chamber={group.chamber}
             row={cohesionRow}
             rows={cohesionRows}
             window={window}

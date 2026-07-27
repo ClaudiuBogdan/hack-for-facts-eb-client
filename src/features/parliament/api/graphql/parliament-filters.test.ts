@@ -6,6 +6,32 @@ import {
   buildVotesFilter,
 } from './parliament-filters'
 
+describe('buildVotesFilter — groupVote', () => {
+  it('sends the pair when both halves are present', () => {
+    expect(
+      buildVotesFilter({ grupVot: 'PSD', alegere: 'pentru' }),
+    ).toEqual({ groupVote: { group: 'PSD', choice: 'pentru' } })
+  })
+
+  it('sends nothing when only the group is set', () => {
+    // Half a constraint would widen the list while the UI still showed the chip.
+    expect(buildVotesFilter({ grupVot: 'PSD' })).toEqual({})
+  })
+
+  it('sends nothing when only the choice is set', () => {
+    expect(buildVotesFilter({ alegere: 'pentru' })).toEqual({})
+  })
+
+  it('passes the group name through verbatim, without slugging it', () => {
+    // It must match `vote_records.group_name` exactly — "Senatori neafiliați"
+    // is a real value there.
+    expect(
+      buildVotesFilter({ grupVot: 'Senatori neafiliați', alegere: 'abtinere' })
+        .groupVote,
+    ).toEqual({ group: 'Senatori neafiliați', choice: 'abtinere' })
+  })
+})
+
 describe('buildVotesFilter', () => {
   it('maps chamber to the DB enum and drops "all"', () => {
     expect(buildVotesFilter({ chamber: 'camera' })).toEqual({

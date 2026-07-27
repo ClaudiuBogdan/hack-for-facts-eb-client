@@ -29,6 +29,17 @@ export interface ParliamentVotesFilterInput {
   voteDate?: { gte?: string; lte?: string }
   billKey?: { eq: string }
   q?: { contains: string }
+  /**
+   * Votes where ONE group's PLURALITY stance was `choice`.
+   *
+   * Plurality, not unanimity: a 91-member group splits, so the server picks the
+   * choice with the most ballots on that vote. Two consequences the UI must
+   * respect — a tie means the group took NO stance and the vote is excluded,
+   * and the resulting COUNT OF VOTES is a different denominator from the
+   * cohesion bar's share of BALLOT SLOTS. The two numbers will not agree and
+   * must never be presented as if they do.
+   */
+  groupVote?: { group: string; choice: string }
 }
 
 /**
@@ -59,6 +70,14 @@ export function buildVotesFilter(
 
   const q = search.q?.trim()
   if (q) filter.q = { contains: q }
+
+  // Both halves or neither: a group with no stance, or a stance with no group,
+  // does not describe a subset of votes, and sending half of it would silently
+  // widen the list while the UI still showed the chip.
+  const group = search.grupVot?.trim()
+  if (group && search.alegere) {
+    filter.groupVote = { group, choice: search.alegere }
+  }
 
   return filter
 }

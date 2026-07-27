@@ -1,4 +1,9 @@
-import type { ParliamentGroupCohesion } from '@/schemas/parliament'
+import { Link } from '@tanstack/react-router'
+import type {
+  MemberVoteChoice,
+  ParliamentChamber,
+  ParliamentGroupCohesion,
+} from '@/schemas/parliament'
 import { cn } from '@/lib/utils'
 import { cohesionBand, cohesionRank } from '../lib/group-roster'
 import {
@@ -27,6 +32,16 @@ function formatDay(iso: string): string {
 type Segment = {
   readonly key: keyof typeof GROUP_BALLOT_LABELS
   readonly pct: number
+}
+
+/** Bar segment → the `choice` the votes list filters on. */
+const SEGMENT_CHOICE: Readonly<
+  Record<keyof typeof GROUP_BALLOT_LABELS, MemberVoteChoice>
+> = {
+  pentru: 'pentru',
+  impotriva: 'impotriva',
+  abtinere: 'abtinere',
+  absent: 'nu_a_votat',
 }
 
 function segments(row: ParliamentGroupCohesion): readonly Segment[] {
@@ -68,6 +83,7 @@ function BallotBar({ parts }: { readonly parts: readonly Segment[] }) {
 
 type Props = {
   readonly groupName: string
+  readonly chamber: ParliamentChamber
   readonly row: ParliamentGroupCohesion | undefined
   readonly rows: readonly ParliamentGroupCohesion[] | undefined
   readonly window: { from: string; to: string }
@@ -85,6 +101,7 @@ type Props = {
  */
 export function ParliamentGroupCohesionPanel({
   groupName,
+  chamber,
   row,
   rows,
   window,
@@ -167,15 +184,46 @@ export function ParliamentGroupCohesionPanel({
                     {GROUP_BALLOT_LABELS[part.key]}
                   </dt>
                   <dd className="text-lg font-bold tabular-nums">
-                    {part.pct.toLocaleString('ro-RO', {
-                      maximumFractionDigits: 1,
-                    })}
-                    %
+                    {/* The group name sent to the votes list is the COHESION
+                        row's, not the nomenclator's: the filter matches
+                        `vote_records.group_name` exactly, and the two spell
+                        some groups differently. */}
+                    <Link
+                      to="/parlament"
+                      search={{
+                        tab: 'voturi',
+                        chamber,
+                        from: window.from,
+                        to: window.to,
+                        grupVot: row.groupName,
+                        alegere: SEGMENT_CHOICE[part.key],
+                      }}
+                      className="underline decoration-2 underline-offset-4 hover:no-underline"
+                    >
+                      {part.pct.toLocaleString('ro-RO', {
+                        maximumFractionDigits: 1,
+                      })}
+                      %
+                      <span className="sr-only">
+                        {' '}— vezi voturile în care majoritatea grupului a ales
+                        „{GROUP_BALLOT_LABELS[part.key]}”
+                      </span>
+                    </Link>
                   </dd>
                 </div>
               </div>
             ))}
           </dl>
+          {/* Named, because the two numbers genuinely differ: the percentage is
+              a share of the group's ballot slots across the window, the list
+              behind it counts VOTES where the group's majority chose that
+              option. Letting a reader assume they match would be the whole
+              point of the link quietly lying. */}
+          <p className={cn(groupMutedTextClassName, 'mt-3')}>
+            Procentele sunt din totalul voturilor exprimate de membrii grupului.
+            Apăsând pe un procent vedeți voturile în care majoritatea grupului a
+            ales acea variantă — o listă de voturi, deci un număr diferit.
+          </p>
         </>
       ) : (
         <p className={cn(groupMutedTextClassName, 'mt-4')}>

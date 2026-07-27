@@ -1213,6 +1213,21 @@ export const ParliamentSearchSchema = z.object({
   from: z.string().optional().catch(undefined),
   to: z.string().optional().catch(undefined),
   outcome: VoteOutcomeSchema.optional().catch(undefined),
+  /**
+   * Votes narrowed to one GROUP's stance — `grupVot` names the group, `alegere`
+   * the stance. Both must be present to constrain anything; either one alone is
+   * dropped by `buildVotesFilter`.
+   *
+   * Deliberately NOT the existing `grup` param, which is a MEMBERS facet on the
+   * same unified search object: reusing it would make a group selected on the
+   * members tab silently filter the votes tab when a reader switches tabs.
+   *
+   * `grupVot` is the group name AS THE VOTE DATA SPELLS IT, which is not always
+   * how the nomenclator spells it (the vote records say `neafiliat` where the
+   * group directory says `Neafiliaţi`). It is not a slug.
+   */
+  grupVot: z.string().optional().catch(undefined),
+  alegere: MemberVoteChoiceSchema.optional().catch(undefined),
   billType: BillTypeSchema.optional().catch(undefined),
   billLocation: BillCurrentLocationSchema.optional().catch(undefined),
   sortBy: BillSortBySchema.optional().catch(undefined),

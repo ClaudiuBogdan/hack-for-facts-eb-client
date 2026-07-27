@@ -1,5 +1,23 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
+// The bar segments link into the filtered votes list; the panel itself needs no
+// router state, so a plain anchor is enough to assert the search params.
+vi.mock('@tanstack/react-router', () => ({
+  Link: ({
+    children,
+    search,
+    to,
+  }: {
+    children: React.ReactNode
+    search: Record<string, unknown>
+    to: string
+  }) => (
+    <a href={to} data-search={JSON.stringify(search)}>
+      {children}
+    </a>
+  ),
+}))
 import type { ParliamentGroupCohesion } from '@/schemas/parliament'
 import { ParliamentGroupCohesionPanel } from './parliament-group-cohesion-panel'
 
@@ -9,6 +27,7 @@ function renderPanel(props: Partial<Parameters<typeof ParliamentGroupCohesionPan
   return render(
     <ParliamentGroupCohesionPanel
       groupName="PSD"
+      chamber="camera"
       row={undefined}
       rows={undefined}
       window={WINDOW}
@@ -81,5 +100,48 @@ describe('ParliamentGroupCohesionPanel — the reported figures', () => {
     expect(screen.getByText('Pentru')).toBeInTheDocument()
     expect(screen.queryByText('Nu au votat')).not.toBeInTheDocument()
     expect(screen.queryByText('0%')).not.toBeInTheDocument()
+  })
+})
+
+describe('ParliamentGroupCohesionPanel — the drill-down link', () => {
+  it('sends the cohesion row’s group name, not the nomenclator’s', () => {
+    // The filter matches `vote_records.group_name` exactly, and the two
+    // vocabularies differ for some groups.
+    renderPanel({
+      groupName: 'Neafiliaţi',
+      row: { ...PSD, groupName: 'neafiliat' },
+      rows: [{ ...PSD, groupName: 'neafiliat' }],
+    })
+    const search = JSON.parse(
+      screen.getByText('86,2%').closest('a')!.dataset['search']!,
+    )
+    expect(search.grupVot).toBe('neafiliat')
+  })
+
+  it('carries the chamber, the choice and the same window as the bar', () => {
+    renderPanel({ row: PSD, rows: [PSD], chamber: 'senat' })
+    const search = JSON.parse(
+      screen.getByText('5,9%').closest('a')!.dataset['search']!,
+    )
+    expect(search).toMatchObject({
+      tab: 'voturi',
+      chamber: 'senat',
+      alegere: 'impotriva',
+      from: WINDOW.from,
+      to: WINDOW.to,
+    })
+  })
+
+  it('maps the absence segment to nu_a_votat', () => {
+    renderPanel({ row: PSD, rows: [PSD] })
+    const search = JSON.parse(
+      screen.getByText('2,9%').closest('a')!.dataset['search']!,
+    )
+    expect(search.alegere).toBe('nu_a_votat')
+  })
+
+  it('warns that the percentage and the linked list count different things', () => {
+    renderPanel({ row: PSD, rows: [PSD] })
+    expect(screen.getByText(/deci un număr diferit/)).toBeInTheDocument()
   })
 })
