@@ -116,6 +116,42 @@ function resolveSpeakerMandateKey(
 }
 
 /**
+ * What to SAY about a printed name we did not link.
+ *
+ * The three no-identity states are different facts and must not read the same. A
+ * minister addressing the chamber is a complete answer; "we could not tell who this
+ * was" is an admission; "several members share this name" is a third thing. Before
+ * the data layer typed them (scrapper migration 20260727T140000) all three arrived
+ * as one silent absence, so the reader could only stay quiet.
+ *
+ * Returns null when the server sent no resolution at all — an older server, where
+ * we still have nothing to say and say nothing, exactly as before.
+ */
+function speakerAbsenceLabel(
+  segment: ParliamentStenogramSegment,
+): { readonly badge: string | null; readonly detail: string } | null {
+  switch (segment.speakerResolution) {
+    case 'NON_MEMBER_CAPACITY':
+      return {
+        badge: t`invitat`,
+        detail: t`Sursa a consemnat această intervenție în afara unui mandat parlamentar (membru al Guvernului, oficial sau invitat).`,
+      }
+    case 'AMBIGUOUS':
+      return {
+        badge: null,
+        detail: t`Mai mulți parlamentari poartă acest nume în legislatura respectivă; sursa nu permite alegerea între ei.`,
+      }
+    case 'UNRESOLVED':
+      return {
+        badge: null,
+        detail: t`Vorbitorul nu a putut fi identificat pe baza a ceea ce publică sursa.`,
+      }
+    default:
+      return null
+  }
+}
+
+/**
  * The speaker line.
  *
  * The NAME shown is always the one the transcript PRINTED — never a roster
@@ -124,6 +160,36 @@ function resolveSpeakerMandateKey(
  * did not (guests, ministers, anyone the source printed no id for) the name
  * stands on its own, which is the honest, expected outcome and not a gap.
  */
+/**
+ * The visible reason a printed name is not a link. A `NON_MEMBER_CAPACITY` speaker
+ * gets a badge — it is an ANSWER, not a gap — while the two genuine unknowns stay
+ * screen-reader-only so the reading is not littered with apologies.
+ */
+function SpeakerAbsenceNote({
+  segment,
+}: {
+  readonly segment: ParliamentStenogramSegment
+}) {
+  const absence = speakerAbsenceLabel(segment)
+  if (!absence) {
+    return (
+      <span className="sr-only">
+        {t`Sursa nu a identificat acest vorbitor ca membru al Parlamentului.`}
+      </span>
+    )
+  }
+  return (
+    <>
+      {absence.badge ? (
+        <span className={cn(stenogramBadgeClassName, 'print:hidden')}>
+          {absence.badge}
+        </span>
+      ) : null}
+      <span className="sr-only">{absence.detail}</span>
+    </>
+  )
+}
+
 function SegmentSpeakerLine({
   segment,
 }: {
@@ -165,11 +231,7 @@ function SegmentSpeakerLine({
           {segmentKindLabel(segment.kind)}
         </span>
       ) : null}
-      {!mandateKey ? (
-        <span className="sr-only">
-          {t`Sursa nu a identificat acest vorbitor ca membru al Parlamentului.`}
-        </span>
-      ) : null}
+      {!mandateKey ? <SpeakerAbsenceNote segment={segment} /> : null}
     </p>
   )
 }

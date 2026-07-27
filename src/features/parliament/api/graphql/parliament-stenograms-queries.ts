@@ -73,6 +73,10 @@ const SEGMENT_FIELDS = /* GraphQL */ `
   agendaRef
   sourceUrl
   sourceUrlKind
+  personId
+  speakerResolution
+  speakerMethod
+  speakerConfidence
 `
 
 export const PARLIAMENT_STENOGRAM_SESSIONS_QUERY = /* GraphQL */ `
@@ -151,6 +155,21 @@ export const rawStenogramSegmentSchema = z.object({
   speakerName: z.string().nullable(),
   speakerRef: z.string().nullable(),
   mandateKey: z.string().nullable(),
+  /**
+   * WHY this turn does or does not carry an identity. Optional in the schema so a
+   * server without the speaker-identity migration still validates — the reader
+   * degrades to the old behaviour (plain unlinked name) rather than erroring.
+   */
+  personId: z.string().nullable().optional(),
+  speakerResolution: z
+    .enum(['RESOLVED', 'NON_MEMBER_CAPACITY', 'AMBIGUOUS', 'UNRESOLVED'])
+    .nullable()
+    .optional(),
+  speakerMethod: z.string().nullable().optional(),
+  speakerConfidence: z
+    .enum(['EXACT', 'HIGH', 'MEDIUM', 'LOW'])
+    .nullable()
+    .optional(),
   /**
    * NOT selected by this client (see the note at the top of the file), but
    * carried through when a caller that DOES resolve it hands us a block — the

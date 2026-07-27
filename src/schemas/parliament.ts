@@ -717,6 +717,31 @@ export type ParliamentSittingNavigation = z.infer<
  * database enforces it unique, so the reader can anchor on `position` and the
  * two can never disagree. `text` is the WHOLE block (not the card snippet).
  */
+/**
+ * WHY a turn does or does not carry a speaker identity — four states, never one
+ * overloaded absence (server + scrapper migration 20260727T140000).
+ */
+export const ParliamentSpeakerResolutionSchema = z.enum([
+  'RESOLVED',
+  'NON_MEMBER_CAPACITY',
+  'AMBIGUOUS',
+  'UNRESOLVED',
+])
+export type ParliamentSpeakerResolution = z.infer<
+  typeof ParliamentSpeakerResolutionSchema
+>
+
+/** Strength of an identity claim. EXACT = read from the source's own printed id. */
+export const ParliamentSpeakerConfidenceSchema = z.enum([
+  'EXACT',
+  'HIGH',
+  'MEDIUM',
+  'LOW',
+])
+export type ParliamentSpeakerConfidence = z.infer<
+  typeof ParliamentSpeakerConfidenceSchema
+>
+
 export const ParliamentStenogramSegmentSchema = z.object({
   segmentKey: z.string(),
   sessionKey: z.string(),
@@ -737,6 +762,27 @@ export const ParliamentStenogramSegmentSchema = z.object({
   agendaRef: z.string().optional(),
   sourceUrl: z.string(),
   sourceUrlKind: z.string(),
+  /**
+   * The PERSON behind the mandate — stable across a career spanning several
+   * legislatures, unlike the per-legislature mandateKey.
+   */
+  personId: z.string().optional(),
+  /**
+   * WHY this turn does or does not carry an identity. Optional because a server
+   * without the speaker-identity migration omits it — the reader then falls back to
+   * its previous behaviour rather than claiming a reason it was not given.
+   *
+   * The three no-identity states are NOT interchangeable in the UI:
+   *  - NON_MEMBER_CAPACITY — a minister/guest speaking; show a role badge. Note it
+   *    does NOT mean "not a member": ministers often hold a mandate at the same
+   *    time, and the source is only saying they are not speaking under it here.
+   *  - AMBIGUOUS — several members share this printed name; we refuse to guess.
+   *  - UNRESOLVED — we could not tell.
+   */
+  speakerResolution: ParliamentSpeakerResolutionSchema.optional(),
+  /** Which rule produced speakerResolution — provenance, for the trust surface. */
+  speakerMethod: z.string().optional(),
+  speakerConfidence: ParliamentSpeakerConfidenceSchema.optional(),
 });
 export type ParliamentStenogramSegment = z.infer<
   typeof ParliamentStenogramSegmentSchema

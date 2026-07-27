@@ -83,6 +83,13 @@ export function mapStenogramSegment(
     speakerName: optText(raw.speakerName),
     speakerRef: optText(raw.speakerRef),
     mandateKey: optText(raw.mandateKey),
+    // Provenance travels with the block. Each is dropped when absent (an older
+    // server) rather than defaulted, so "no reason given" and "reason: unresolved"
+    // stay distinguishable in the UI.
+    ...(optText(raw.personId) && { personId: raw.personId }),
+    ...(raw.speakerResolution && { speakerResolution: raw.speakerResolution }),
+    ...(optText(raw.speakerMethod) && { speakerMethod: raw.speakerMethod }),
+    ...(raw.speakerConfidence && { speakerConfidence: raw.speakerConfidence }),
     // Carried through, never synthesised: when a caller resolved the block to a
     // member, that is the reader's link target — dropping it here is what makes
     // a resolved speaker render as plain text.
