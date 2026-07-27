@@ -23,7 +23,7 @@ type Props = {
 
 // ── chamber bucketing (driven by the REAL chamberCode — no string heuristic) ──
 
-type ColumnKey = 'camera' | 'senat' | 'final'
+type ColumnKey = 'camera' | 'senat' | 'final' | 'unstated'
 
 const COLUMN_BY_CHAMBER_CODE: Readonly<Record<string, ColumnKey>> = {
   CD: 'camera',
@@ -38,11 +38,23 @@ const COLUMN_META: Record<
   camera: { title: 'Camera Deputaților', color: PARLIAMENT_CAMERA_GREEN },
   senat: { title: 'Senat', color: PARLIAMENT_SENAT_RED },
   final: { title: 'Parlament / Promulgare', color: BILL_DETAIL_FINAL_PURPLE },
+  unstated: { title: 'Etape fără cameră indicată', color: '#505a5f' },
 }
 
-const COLUMN_ORDER: readonly ColumnKey[] = ['camera', 'senat', 'final']
+const COLUMN_ORDER: readonly ColumnKey[] = ['camera', 'senat', 'final', 'unstated']
 
-/** Group the position-ordered steps into the 3 chamber columns by chamberCode. */
+/**
+ * Group the position-ordered steps into chamber columns by the REAL chamberCode.
+ *
+ * A step whose chamber the source never stated goes to its own declared column —
+ * it is NOT dropped. The previous `if (key) cols[key].push(step)` silently
+ * discarded every such row, and the source leaves the chamber blank on 234,321
+ * events (19.9%, almost all Senate). A reader was shown a timeline missing a
+ * fifth of its steps with nothing to indicate the omission.
+ *
+ * Naming the column for what is true — "chamber not stated" — keeps the step
+ * visible without inventing a placement the source does not support.
+ */
 function bucketByChamber(
   steps: readonly ParliamentBillTimelineStep[],
 ): Record<ColumnKey, ParliamentBillTimelineStep[]> {
@@ -50,11 +62,11 @@ function bucketByChamber(
     camera: [],
     senat: [],
     final: [],
+    unstated: [],
   }
   for (const step of steps) {
     const key = step.chamberCode ? COLUMN_BY_CHAMBER_CODE[step.chamberCode] : undefined
-    // Unknown/absent code → not bucketed (no fabricated placement).
-    if (key) cols[key].push(step)
+    cols[key ?? 'unstated'].push(step)
   }
   return cols
 }
@@ -76,6 +88,19 @@ function isRoutineStep(step: ParliamentBillTimelineStep): boolean {
     d.includes('prezentare în biroul') ||
     d.includes('adresa')
   )
+}
+
+/**
+ * Route a step's vote to the chamber it was actually held in.
+ *
+ * This used to be hardcoded to 'camera'. Today that is wrong for only the four
+ * joint-sitting (`comun`) divisions reachable this way, because the underlying
+ * `voteIdv` column is cdep-only — but the vote key itself carries the namespace,
+ * and the Senate anchors now being resolved (6,221 divisions under `senat:`)
+ * would all route to the wrong chamber under a hardcode.
+ */
+function chamberOfVoteKey(voteKey: string): 'camera' | 'senat' {
+  return voteKey.startsWith('senat:') ? 'senat' : 'camera'
 }
 
 function formatStepDate(step: ParliamentBillTimelineStep): string | null {
@@ -123,7 +148,7 @@ function StepRow({ step }: { readonly step: ParliamentBillTimelineStep }) {
           {step.voteId ? (
             <Link
               to="/parlament/voturi/$chamber/$voteId"
-              params={{ chamber: 'camera', voteId: step.voteId }}
+              params={{ chamber: chamberOfVoteKey(step.voteId), voteId: step.voteId }}
               className="text-sm font-semibold text-[#1d70b8] underline underline-offset-4"
             >
               Vezi votul
@@ -292,7 +317,12 @@ export function BillPassageTracker({ bill }: Props) {
 
       {hasAnyBucketed ? (
         <div className="grid gap-6 xl:grid-cols-3">
-          {COLUMN_ORDER.map((key) => (
+          {COLUMN_ORDER.filter(
+            // The three chamber columns always render (an empty one is itself a
+            // fact: "did not go through this stage"). The unstated column is only
+            // meaningful when it holds something.
+            (key) => key !== 'unstated' || columns.unstated.length > 0,
+          ).map((key) => (
             <PassageColumn key={key} columnKey={key} steps={columns[key]} />
           ))}
         </div>

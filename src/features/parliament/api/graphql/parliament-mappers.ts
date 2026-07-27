@@ -111,14 +111,27 @@ function toVoteChoice(value: string | null | undefined): MemberVoteChoice {
   return (value && VOTE_CHOICE_MAP[value]) || "nu_a_votat";
 }
 
+/**
+ * `outcome` is SERVER-DEPRECATED and misnamed: the loader computes it as
+ * (pentru > impotriva) and the chambers publish no outcome word at all. It is
+ * therefore a statement about two counts, NOT about the bill — on a rejection
+ * motion it inverts (2,995 of 3,009 divisions the data calls `final_rejection`
+ * arrive here as "adoptat").
+ *
+ * We still map it, because it is what the field returns, but the LABELS below
+ * now describe the division's tally instead of claiming the bill's fate. Whether
+ * the bill was adopted or rejected is a different question, answered by
+ * `voteLinks.role` — see `isFinalBillVote`.
+ */
 function toOutcome(value: string | null | undefined): VoteOutcome {
-  // GraphQL only ever returns `adoptat | respins`; `amânat` is a UI-only state.
   return value === "respins" ? "respins" : "adoptat";
 }
 
 const OUTCOME_LABEL: Record<VoteOutcome, string> = {
-  adoptat: "Proiectul a fost adoptat",
-  respins: "Proiectul a fost respins",
+  // Literally true of every row, including the 202 with no published tally and
+  // the rejection motions the old wording described backwards.
+  adoptat: "Mai multe voturi „pentru” decât „împotrivă”",
+  respins: "Mai multe voturi „împotrivă” decât „pentru”",
   amânat: "Votul a fost amânat",
 };
 
