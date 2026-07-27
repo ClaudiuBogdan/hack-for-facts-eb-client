@@ -384,10 +384,16 @@ export function useParliamentCommittees(params: {
  * to read only the first 60 rows and drop the cursor on the floor, so anything
  * past #60 was unreachable (and looked like it did not exist).
  */
-export function useParliamentCommitteesBrowse(params: {
-  chamber?: string
-  legislature?: string
-} = {}) {
+export function useParliamentCommitteesBrowse(
+  params: {
+    chamber?: string
+    legislature?: string
+  } = {},
+  // The browse runs TWO of these — one per chamber, because the Senate carries
+  // no legislature and must not be asked for one. Whichever half the filters
+  // exclude is switched off rather than fetched and discarded.
+  options: { readonly enabled?: boolean } = {},
+) {
   return useInfiniteQuery({
     queryKey: [...PARLIAMENT_QUERY_KEY, 'committees-browse', params],
     queryFn: ({ pageParam }) =>
@@ -395,6 +401,7 @@ export function useParliamentCommitteesBrowse(params: {
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) =>
       lastPage.hasNextPage && lastPage.endCursor ? lastPage.endCursor : undefined,
+    enabled: options.enabled ?? true,
   })
 }
 

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { Link } from '@tanstack/react-router'
 import { cn } from '@/lib/utils'
 import type { ParliamentTabId } from '@/schemas/parliament'
@@ -8,6 +9,7 @@ export type ParliamentTab =
   | 'stenograme'
   | 'grupuri'
   | 'proiecte'
+  | 'comisii'
 
 /**
  * Each entry carries its own link target: the hub sections stay `?tab=` search
@@ -19,6 +21,7 @@ type TabEntry = {
 } & (
   | { readonly to: '/parlament'; readonly tab: ParliamentTabId }
   | { readonly to: '/parlament/stenograme' }
+  | { readonly to: '/parlament/comisii' }
 )
 
 const TABS: ReadonlyArray<TabEntry> = [
@@ -27,6 +30,10 @@ const TABS: ReadonlyArray<TabEntry> = [
   { id: 'stenograme', to: '/parlament/stenograme', label: 'Stenograme' },
   { id: 'proiecte', to: '/parlament', tab: 'proiecte', label: 'Proiecte' },
   { id: 'grupuri', to: '/parlament', tab: 'grupuri', label: 'Grupuri' },
+  // Committees had NO entry here at all: /parlament/comisii was reachable only
+  // from a link on another page, so a browse surface over 499 bodies was
+  // effectively unlisted.
+  { id: 'comisii', to: '/parlament/comisii', label: 'Comisii' },
 ]
 
 type Props = {
@@ -35,6 +42,17 @@ type Props = {
 
 /** Section navigation — tab state synced to /parlament?tab= */
 export function ParliamentTabNav({ activeTab }: Props) {
+  const activeRef = useRef<HTMLAnchorElement>(null)
+
+  // Bring the ACTIVE tab into view on mount. The row scrolls horizontally, and
+  // with six tabs the later ones sit off-screen on a phone — landing on
+  // /parlament/comisii showed a nav whose visible tabs were all inactive, so
+  // the page appeared to belong to no section at all. `nearest` leaves the
+  // desktop case, where everything already fits, untouched.
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({ inline: 'nearest', block: 'nearest' })
+  }, [activeTab])
+
   return (
     <nav
       className="flex min-w-0 items-end gap-1 overflow-x-auto hide-scrollbar"
@@ -45,6 +63,7 @@ export function ParliamentTabNav({ activeTab }: Props) {
         return (
           <Link
             key={tab.id}
+            ref={isActive ? activeRef : undefined}
             to={tab.to}
             search={'tab' in tab ? { tab: tab.tab } : undefined}
             className={cn(

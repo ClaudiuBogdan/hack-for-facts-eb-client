@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ParliamentCommitteeDetail } from '@/schemas/parliament'
 
@@ -54,8 +54,14 @@ describe('ParliamentCommitteeDetailPage roster (codex MAJOR: no fabricated names
   it('never renders a fabricated placeholder name for an unresolved roster row', () => {
     render(<ParliamentCommitteeDetailPage committeeKey="camera_deputatilor:buget|2024" />)
     expect(screen.queryByText('Membru (neasociat)')).not.toBeInTheDocument()
-    // The resolved member still renders (and deep-links).
+    // The resolved member still renders (and deep-links) — from the Conducere
+    // band, which lifts the bureau out of the roster.
     expect(screen.getByText('Ana Nord')).toBeInTheDocument()
+
+    // The rank-and-file sit in collapsed per-group panels now, so open the one
+    // holding the unresolved row before asserting on its name slot.
+    fireEvent.click(screen.getByRole('button', { name: /Neafiliat/ }))
+
     // The name-free slot exposes an accessible label instead of a made-up name.
     expect(
       screen.getByLabelText('Mandat neasociat unui profil'),

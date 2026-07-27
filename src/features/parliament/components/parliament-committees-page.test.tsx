@@ -5,7 +5,14 @@ import type { ParliamentCommittee } from '@/schemas/parliament'
 // Capture the params the page passes to the committees hook.
 const useCommitteesMock = vi.fn()
 vi.mock('../hooks/use-parliament-data', () => ({
-  useParliamentCommitteesBrowse: (params: unknown) => useCommitteesMock(params),
+  // The page runs TWO reads — Camera and Senat — because the Senate publishes
+  // no legislature for its committees. The mock answers per chamber so the
+  // roster on screen is not the same page counted twice.
+  useParliamentCommitteesBrowse: (params: unknown, options?: unknown) =>
+    useCommitteesMock(params, options),
+}))
+vi.mock('./parliament-shell', () => ({
+  ParliamentShell: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }))
 const navigateMock = vi.fn()
 vi.mock('@tanstack/react-router', () => ({
@@ -75,17 +82,45 @@ describe('ParliamentCommitteesPage', () => {
   beforeEach(() => {
     useCommitteesMock.mockReset()
     navigateMock.mockReset()
-    useCommitteesMock.mockReturnValue(page())
+    // Camera answers with the fixture; the Senate half answers empty unless a
+    // test says otherwise, so one committee on screen means one committee.
+    useCommitteesMock.mockImplementation((params: unknown) =>
+      (params as { chamber?: string }).chamber === 'senat'
+        ? page({ data: { pages: [{ committees: [], hasNextPage: false }] } })
+        : page(),
+    )
   })
 
   it('queries the CURRENT legislature by default', () => {
     render(<ParliamentCommitteesPage search={{}} />)
-    expect(useCommitteesMock).toHaveBeenCalledWith({ legislature: '2024' })
+    expect(useCommitteesMock).toHaveBeenCalledWith(
+      { legislature: '2024' },
+      expect.objectContaining({ enabled: true }),
+    )
   })
 
-  it('queries the chamber + legislature carried by the URL', () => {
-    render(<ParliamentCommitteesPage search={{ chamber: 'senat', legislatura: 'all' }} />)
-    expect(useCommitteesMock).toHaveBeenCalledWith({ chamber: 'senat' })
+  it('asks for the Senate WITHOUT a legislature, and never with one', () => {
+    // Every Senate committee carries `legislature: null`, so pairing the two
+    // asks for a combination that cannot exist — which is how choosing "Senat"
+    // used to report that the Senate has no committees. It has 33.
+    render(<ParliamentCommitteesPage search={{ chamber: 'senat' }} />)
+
+    const calls = useCommitteesMock.mock.calls as unknown as ReadonlyArray<
+      readonly [{ chamber?: string }, { enabled?: boolean } | undefined]
+    >
+    const senateCalls = calls.filter(([params]) => params.chamber === 'senat')
+    expect(senateCalls).toHaveLength(1)
+    expect(senateCalls[0]?.[0]).toEqual({ chamber: 'senat' })
+    expect(senateCalls[0]?.[1]).toMatchObject({ enabled: true })
+  })
+
+  it('switches the Camera read OFF when only the Senate is asked for', () => {
+    render(<ParliamentCommitteesPage search={{ chamber: 'senat' }} />)
+    const calls = useCommitteesMock.mock.calls as unknown as ReadonlyArray<
+      readonly [{ chamber?: string }, { enabled?: boolean } | undefined]
+    >
+    const cameraCall = calls.find(([params]) => params.chamber !== 'senat')
+    expect(cameraCall?.[1]).toMatchObject({ enabled: false })
   })
 
   it('writes a chamber change to the URL instead of local state', () => {
@@ -111,7 +146,11 @@ describe('ParliamentCommitteesPage', () => {
   })
 
   it('offers a load-more control while the cursor has further pages', () => {
-    useCommitteesMock.mockReturnValue(page({ hasNextPage: true }))
+    useCommitteesMock.mockImplementation((params: unknown) =>
+      (params as { chamber?: string }).chamber === 'senat'
+        ? page({ data: { pages: [{ committees: [], hasNextPage: false }] } })
+        : page({ hasNextPage: true }),
+    )
     render(<ParliamentCommitteesPage search={{}} />)
 
     expect(
@@ -120,7 +159,7 @@ describe('ParliamentCommitteesPage', () => {
   })
 
   it('shows an ERROR state, not "no committees", when the read fails', () => {
-    useCommitteesMock.mockReturnValue(page({ isError: true, data: undefined }))
+    useCommitteesMock.mockImplementation(() => page({ isError: true, data: undefined }))
     render(<ParliamentCommitteesPage search={{}} />)
 
     expect(screen.getByText('Lista comisiilor nu a putut fi încărcată')).toBeInTheDocument()
@@ -131,11 +170,11 @@ describe('ParliamentCommitteesPage', () => {
   })
 
   it('shows the empty state only for a genuinely empty result', () => {
-    useCommitteesMock.mockReturnValue(page({ data: { pages: [{ committees: [] }] } }))
+    useCommitteesMock.mockImplementation(() => page({ data: { pages: [{ committees: [] }] } }))
     render(<ParliamentCommitteesPage search={{}} />)
 
     expect(
-      screen.getByText('Nu există comisii disponibile pentru filtrul selectat.'),
+      screen.getByText('Nicio comisie nu corespunde filtrelor'),
     ).toBeInTheDocument()
   })
 })

@@ -1,8 +1,19 @@
-import { ExternalLink } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { ExternalLink, Search } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { cn } from '@/lib/utils'
 import type {
   ParliamentBillSummary,
+  ParliamentCommitteeDetail,
   ParliamentCommitteeMembership,
 } from '@/schemas/parliament'
 import { useParliamentCommittee } from '../hooks/use-parliament-data'
@@ -11,12 +22,55 @@ import {
   committeeRoleLabel,
   formatCommitteeDate,
 } from '../lib/committee-format'
+import { COMMITTEE_TYPE_BADGES } from '../lib/committee-browse-search'
+import {
+  COMMITTEE_BREADCRUMB_BG,
+  COMMITTEE_NOTICE_BG,
+  COMMITTEE_SURFACE,
+  committeeCardClassName,
+  committeeChamberColor,
+  committeeControlClassName,
+  committeeGroupHeadingClassName,
+  committeeMutedTextClassName,
+  committeeNoticeClassName,
+  committeePageContainerClassName,
+  committeeSectionTitleClassName,
+  PARLIAMENT_RESOURCE_PURPLE,
+} from '../lib/committee-theme'
 import { ParliamentCardChevron } from './parliament-card-chevron'
-import { ParliamentBackLink, ParliamentPageFrame } from './parliament-page-frame'
 
 type Props = {
   readonly committeeKey: string
 }
+
+/** Bills shown before the reader asks for the rest. */
+const BILLS_PREVIEW = 10
+
+/** Where a bill currently sits. Labels for the facet; unknown tokens pass through. */
+const BILL_LOCATION_LABELS: Readonly<Record<string, string>> = {
+  camera: 'La Camera Deputaților',
+  senat: 'La Senat',
+  mediere: 'În mediere',
+  presedinte: 'La promulgare',
+  promulgat: 'Promulgat',
+  respins: 'Respins',
+  retras: 'Retras',
+}
+
+/** Strip diacritics and case so "loteria" finds "Loteria". */
+function foldBill(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+}
+
+/** Bureau roles, in the order the institution ranks them. */
+const BUREAU_ROLE_ORDER: readonly string[] = [
+  'presedinte',
+  'vicepresedinte',
+  'secretar',
+]
 
 function isHttp(url: string | undefined): url is string {
   return Boolean(url && /^https?:\/\//i.test(url))
@@ -31,53 +85,61 @@ function membershipInterval(m: ParliamentCommitteeMembership): string | null {
   return null
 }
 
-function RosterRow({ membership }: { readonly membership: ParliamentCommitteeMembership }) {
+/** The name slot NEVER carries a fabricated placeholder — link, plain, or em-dash. */
+function MemberName({ membership }: { readonly membership: ParliamentCommitteeMembership }) {
   const member = membership.member
-  const interval = membershipInterval(membership)
-  const roleAndInterval = [committeeRoleLabel(membership.role), interval]
-    .filter(Boolean)
-    .join(' · ')
-
+  if (member?.mandateKey && member.fullName) {
+    return (
+      <Link
+        to="/parlament/membri/$memberId"
+        params={{ memberId: member.mandateKey }}
+        className="text-base font-bold text-[#1d70b8] underline-offset-2 hover:underline"
+      >
+        {member.fullName}
+      </Link>
+    )
+  }
+  if (member?.fullName) {
+    return (
+      <span className="text-base font-semibold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+        {member.fullName}
+      </span>
+    )
+  }
   return (
-    <li className="border border-[#b1b4b6] bg-white p-4 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          {/* The name slot NEVER carries a fabricated placeholder. Deep-link when
-              the row resolves to a real member; show a plain name when we have a
-              name but no linkable mandate; otherwise leave the slot name-free (a
-              muted em-dash) and keep only role/dates/isBureau — the footnote under
-              the roster explains the unassociated mandates. */}
-          {member?.mandateKey && member.fullName ? (
-            <Link
-              to="/parlament/membri/$memberId"
-              params={{ memberId: member.mandateKey }}
-              className="text-base font-bold text-[#1d70b8] underline-offset-2 hover:underline"
-            >
-              {member.fullName}
-            </Link>
-          ) : member?.fullName ? (
-            <span className="text-base font-semibold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
-              {member.fullName}
-            </span>
-          ) : (
-            <span
-              className="text-base text-[#505a5f] dark:text-[var(--pnrr-muted)]"
-              aria-label="Mandat neasociat unui profil"
-            >
-              —
-            </span>
-          )}
-          <p className="mt-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-            {roleAndInterval}
-            {member?.groupName ? ` · ${member.groupName}` : ''}
-          </p>
-        </div>
-        {membership.isBureau ? (
-          <span className="w-fit shrink-0 rounded-none bg-[#eef7f1] px-2 py-1 text-xs font-semibold text-[#006435]">
-            Birou
-          </span>
-        ) : null}
+    <span className={committeeMutedTextClassName} aria-label="Mandat neasociat unui profil">
+      —
+    </span>
+  )
+}
+
+function BureauCard({ membership }: { readonly membership: ParliamentCommitteeMembership }) {
+  const interval = membershipInterval(membership)
+  return (
+    <div className={cn(committeeCardClassName, 'p-4')}>
+      <p className={committeeGroupHeadingClassName}>
+        {committeeRoleLabel(membership.role)}
+      </p>
+      <div className="mt-1.5">
+        <MemberName membership={membership} />
       </div>
+      <p className={cn('mt-1', committeeMutedTextClassName)}>
+        {[membership.member?.groupName, interval].filter(Boolean).join(' · ')}
+      </p>
+    </div>
+  )
+}
+
+function RosterRow({ membership }: { readonly membership: ParliamentCommitteeMembership }) {
+  const interval = membershipInterval(membership)
+  return (
+    <li className="flex flex-col gap-1 border-b border-[#dee0e2] py-2.5 last:border-b-0 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4 dark:border-[var(--pnrr-border)]/60">
+      <MemberName membership={membership} />
+      {interval ? (
+        <span className={cn('shrink-0 tabular-nums', committeeMutedTextClassName)}>
+          {interval}
+        </span>
+      ) : null}
     </li>
   )
 }
@@ -87,13 +149,16 @@ function LinkedBillRow({ bill }: { readonly bill: ParliamentBillSummary }) {
     <Link
       to="/parlament/proiecte/$billId"
       params={{ billId: bill.billId }}
-      className="group flex items-center justify-between gap-4 border border-[#b1b4b6] bg-white p-4 transition-colors hover:bg-[#f8f8f8] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:hover:bg-[var(--pnrr-hover)]"
+      className={cn(
+        committeeCardClassName,
+        'group flex items-center justify-between gap-4 p-4 transition-colors hover:bg-[#f8f8f8] dark:hover:bg-[var(--pnrr-hover)]',
+      )}
     >
       <div className="min-w-0">
         <p className="text-base font-bold text-[#1d70b8] underline-offset-2 group-hover:underline">
           {bill.title}
         </p>
-        <p className="mt-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+        <p className={cn('mt-1 tabular-nums', committeeMutedTextClassName)}>
           {bill.number}
         </p>
       </div>
@@ -102,134 +167,530 @@ function LinkedBillRow({ bill }: { readonly bill: ParliamentBillSummary }) {
   )
 }
 
+function StatBlock({
+  value,
+  label,
+}: {
+  readonly value: string
+  readonly label: string
+}) {
+  return (
+    <div>
+      <span className="block text-3xl font-bold tabular-nums">{value}</span>
+      <span className="text-sm text-white/90">{label}</span>
+    </div>
+  )
+}
+
+/** Group the roster by parliamentary group, largest delegation first. */
+function groupRoster(
+  members: readonly ParliamentCommitteeMembership[],
+): ReadonlyArray<readonly [string, ParliamentCommitteeMembership[]]> {
+  const byGroup = new Map<string, ParliamentCommitteeMembership[]>()
+  for (const membership of members) {
+    const key = membership.member?.groupName ?? 'Neafiliat'
+    byGroup.set(key, [...(byGroup.get(key) ?? []), membership])
+  }
+  return [...byGroup.entries()].sort((left, right) => {
+    const bySize = right[1].length - left[1].length
+    return bySize !== 0 ? bySize : left[0].localeCompare(right[0], 'ro')
+  })
+}
+
+function CommitteeNotice({ children }: { readonly children: React.ReactNode }) {
+  return (
+    <div
+      className={committeeNoticeClassName}
+      style={{
+        backgroundColor: COMMITTEE_NOTICE_BG,
+        borderLeftColor: PARLIAMENT_RESOURCE_PURPLE,
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
 /** Committee detail at /parlament/comisii/$committeeKey */
 export function ParliamentCommitteeDetailPage({ committeeKey }: Props) {
-  const { data: committee, isLoading } = useParliamentCommittee(committeeKey)
+  const { data: committee, isLoading, isError, refetch } = useParliamentCommittee(committeeKey)
+  const [showAllBills, setShowAllBills] = useState(false)
+  const [billQuery, setBillQuery] = useState('')
+  const [billLocation, setBillLocation] = useState('all')
 
-  if (isLoading) {
+  if (isLoading) return <CommitteeDetailSkeleton />
+
+  if (isError) {
     return (
-      <ParliamentPageFrame>
-        <Skeleton className="h-32 w-full rounded-none" />
-      </ParliamentPageFrame>
+      <CommitteeShell>
+        <div className={cn(committeeCardClassName, 'px-5 py-8')}>
+          <p className="text-base font-bold">Comisia nu a putut fi încărcată</p>
+          <p className={cn('mt-2', committeeMutedTextClassName)}>
+            Este o eroare temporară a serviciului de date, nu o comisie inexistentă.
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            className="mt-4 h-10 rounded-none border-2"
+            onClick={() => void refetch()}
+          >
+            Reîncearcă
+          </Button>
+        </div>
+      </CommitteeShell>
     )
   }
 
   if (!committee) {
     return (
-      <ParliamentPageFrame>
-        <ParliamentBackLink to="/parlament/comisii" label="Comisii" />
-        <p className="text-muted-foreground">Comisia nu a fost găsită.</p>
-      </ParliamentPageFrame>
+      <CommitteeShell>
+        <div className={cn(committeeCardClassName, 'px-5 py-8')}>
+          <p className="text-base font-bold">Comisia nu a fost găsită</p>
+          <p className={cn('mt-2', committeeMutedTextClassName)}>
+            Cheia <span className="tabular-nums">{committeeKey}</span> nu corespunde
+            niciunei comisii publicate.
+          </p>
+        </div>
+      </CommitteeShell>
     )
   }
 
-  const showingLinkedBills = committee.linkedBills.length
-  const capped = committee.linkedBillsTotal > showingLinkedBills
-  // Some roster rows carry no resolved member profile (name-free); a footnote
-  // explains the empty name slots rather than inventing a placeholder name.
+  return (
+    <CommitteeDossier
+      committee={committee}
+      showAllBills={showAllBills}
+      onShowAllBills={() => setShowAllBills(true)}
+      billQuery={billQuery}
+      billLocation={billLocation}
+      onBillQuery={(value) => {
+        setBillQuery(value)
+        setShowAllBills(false)
+      }}
+      onBillLocation={(value) => {
+        setBillLocation(value)
+        setShowAllBills(false)
+      }}
+    />
+  )
+}
+
+function CommitteeShell({
+  children,
+  chamber,
+}: {
+  readonly children: React.ReactNode
+  readonly chamber?: string
+}) {
+  return (
+    <div className="min-h-screen" style={{ backgroundColor: COMMITTEE_SURFACE }}>
+      <nav
+        className="py-3 text-sm text-white"
+        style={{ backgroundColor: COMMITTEE_BREADCRUMB_BG }}
+        aria-label="Breadcrumb"
+      >
+        <div className={committeePageContainerClassName}>
+          <ol className="flex flex-wrap items-center gap-1">
+            <li>
+              <Link to="/parlament" search={{ tab: 'prezentare' }} className="hover:underline">
+                Parlament
+              </Link>
+            </li>
+            <li aria-hidden className="opacity-70">›</li>
+            <li>
+              <Link to="/parlament/comisii" className="hover:underline">
+                Comisii
+              </Link>
+            </li>
+            {chamber ? (
+              <>
+                <li aria-hidden className="opacity-70">›</li>
+                <li className="font-semibold" aria-current="page">
+                  {committeeChamberLabel(chamber)}
+                </li>
+              </>
+            ) : null}
+          </ol>
+        </div>
+      </nav>
+      <div className={cn(committeePageContainerClassName, 'py-8')}>{children}</div>
+    </div>
+  )
+}
+
+function CommitteeDetailSkeleton() {
+  return (
+    <div
+      className="min-h-screen"
+      style={{ backgroundColor: COMMITTEE_SURFACE }}
+      aria-busy="true"
+      aria-label="Se încarcă comisia"
+    >
+      <div className="py-3" style={{ backgroundColor: COMMITTEE_BREADCRUMB_BG }}>
+        <div className={committeePageContainerClassName}>
+          <Skeleton className="h-4 w-56 rounded-none bg-white/30" />
+        </div>
+      </div>
+      <section className="py-8 text-white" style={{ backgroundColor: committeeChamberColor(undefined) }}>
+        <div className={committeePageContainerClassName}>
+          <Skeleton className="h-8 w-full max-w-[34rem] rounded-none bg-white/25 sm:h-9" />
+          <Skeleton className="mt-3 h-5 w-64 rounded-none bg-white/20" />
+          <div className="mt-6 flex gap-10">
+            {[0, 1, 2].map((stat) => (
+              <div key={stat}>
+                <Skeleton className="h-8 w-16 rounded-none bg-white/25" />
+                <Skeleton className="mt-1 h-4 w-20 rounded-none bg-white/20" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+      <div className={cn(committeePageContainerClassName, 'space-y-6 py-8')}>
+        <Skeleton className="h-32 w-full rounded-none" />
+        <Skeleton className="h-64 w-full rounded-none" />
+      </div>
+    </div>
+  )
+}
+
+function CommitteeDossier({
+  committee,
+  showAllBills,
+  onShowAllBills,
+  billQuery,
+  billLocation,
+  onBillQuery,
+  onBillLocation,
+}: {
+  readonly committee: ParliamentCommitteeDetail
+  readonly showAllBills: boolean
+  readonly onShowAllBills: () => void
+  readonly billQuery: string
+  readonly billLocation: string
+  readonly onBillQuery: (value: string) => void
+  readonly onBillLocation: (value: string) => void
+}) {
+  const heroColor = committeeChamberColor(committee.chamber)
+  const isSenate = committee.chamber === 'senat'
+
+  const bureau = useMemo(
+    () =>
+      committee.members
+        .filter((m) => m.isBureau || BUREAU_ROLE_ORDER.includes((m.role ?? '').toLowerCase()))
+        .sort(
+          (left, right) =>
+            BUREAU_ROLE_ORDER.indexOf((left.role ?? '').toLowerCase()) -
+            BUREAU_ROLE_ORDER.indexOf((right.role ?? '').toLowerCase()),
+        ),
+    [committee.members],
+  )
+  const bureauKeys = useMemo(
+    () => new Set(bureau.map((m) => m.membershipKey)),
+    [bureau],
+  )
+  const rank = useMemo(
+    () => committee.members.filter((m) => !bureauKeys.has(m.membershipKey)),
+    [committee.members, bureauKeys],
+  )
+  const rosterGroups = useMemo(() => groupRoster(rank), [rank])
+
+  // The facet options come from the bills actually loaded, so the control can
+  // never offer a state that yields nothing.
+  const locationOptions = useMemo(() => {
+    const seen = new Set<string>()
+    for (const bill of committee.linkedBills) seen.add(bill.currentLocation)
+    return [...seen].sort((left, right) =>
+      (BILL_LOCATION_LABELS[left] ?? left).localeCompare(
+        BILL_LOCATION_LABELS[right] ?? right,
+        'ro',
+      ),
+    )
+  }, [committee.linkedBills])
+
+  const matchedBills = useMemo(() => {
+    const needle = foldBill(billQuery.trim())
+    return committee.linkedBills.filter(
+      (bill) =>
+        (billLocation === 'all' || bill.currentLocation === billLocation) &&
+        (!needle ||
+          foldBill(bill.title).includes(needle) ||
+          foldBill(bill.number).includes(needle)),
+    )
+  }, [committee.linkedBills, billQuery, billLocation])
+
+  const billFilterActive = billQuery.trim() !== '' || billLocation !== 'all'
+  const visibleBills = showAllBills ? matchedBills : matchedBills.slice(0, BILLS_PREVIEW)
+  const cappedByServer = committee.linkedBillsTotal > committee.linkedBills.length
   const hasUnassociatedRoster = committee.members.some((m) => !m.member?.fullName)
 
   return (
-    <ParliamentPageFrame className="space-y-8">
-      <ParliamentBackLink to="/parlament/comisii" label="Comisii" />
-
-      <header className="border-b border-border pb-6">
-        <h1
-          className="font-black leading-tight tracking-tight"
-          style={{ fontSize: 'clamp(1.5rem, 4vw, 2.25rem)' }}
-        >
-          {committee.name}
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {committeeChamberLabel(committee.chamber)}
-          {committee.committeeType ? ` · ${committee.committeeType}` : ''}
-        </p>
-        {isHttp(committee.sourceUrl) ? (
-          <a
-            href={committee.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#1d70b8] underline underline-offset-2"
-          >
-            Pagina oficială a comisiei
-            <ExternalLink className="h-4 w-4" aria-hidden />
-          </a>
-        ) : null}
-      </header>
-
-      <div className="flex flex-wrap gap-3">
-        <div className="border-2 border-[#b1b4b6] px-4 py-3 dark:border-[var(--pnrr-border)]">
-          <span className="block text-2xl font-black text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
-            {committee.members.length}
-          </span>
-          <span className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-            membri
-          </span>
+    <div className="min-h-screen" style={{ backgroundColor: COMMITTEE_SURFACE }}>
+      <nav
+        className="py-3 text-sm text-white"
+        style={{ backgroundColor: COMMITTEE_BREADCRUMB_BG }}
+        aria-label="Breadcrumb"
+      >
+        <div className={committeePageContainerClassName}>
+          <ol className="flex flex-wrap items-center gap-1">
+            <li>
+              <Link to="/parlament" search={{ tab: 'prezentare' }} className="hover:underline">
+                Parlament
+              </Link>
+            </li>
+            <li aria-hidden className="opacity-70">›</li>
+            <li>
+              <Link to="/parlament/comisii" className="hover:underline">
+                Comisii
+              </Link>
+            </li>
+            <li aria-hidden className="opacity-70">›</li>
+            <li className="min-w-0 truncate font-semibold" aria-current="page">
+              {committee.name}
+            </li>
+          </ol>
         </div>
-        <div className="border-2 border-[#b1b4b6] px-4 py-3 dark:border-[var(--pnrr-border)]">
-          <span className="block text-2xl font-black text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
-            {committee.meetingsCount.toLocaleString('ro-RO')}
-          </span>
-          <span className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-            ședințe
-          </span>
-        </div>
-        <div className="border-2 border-[#b1b4b6] px-4 py-3 dark:border-[var(--pnrr-border)]">
-          <span className="block text-2xl font-black text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
-            {committee.linkedBillsTotal.toLocaleString('ro-RO')}
-          </span>
-          <span className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-            proiecte asociate
-          </span>
-        </div>
-      </div>
+      </nav>
 
-      <section className="space-y-4">
-        <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
-          Componență
-        </h2>
-        {committee.members.length > 0 ? (
-          <>
-            <ul className="space-y-3">
-              {committee.members.map((membership) => (
-                <RosterRow key={membership.membershipKey} membership={membership} />
-              ))}
-            </ul>
-            {hasUnassociatedRoster ? (
-              <p className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-                Unele mandate nu sunt încă asociate unui profil.
-              </p>
-            ) : null}
-          </>
-        ) : (
-          <p className="text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-            Componența acestei comisii nu este disponibilă.
+      <section className="py-8 text-white" style={{ backgroundColor: heroColor }}>
+        <div className={committeePageContainerClassName}>
+          <h1 className="text-2xl font-bold leading-tight sm:text-3xl lg:text-[2rem]">
+            {committee.name}
+          </h1>
+          <p className="mt-3 text-base text-white/90">
+            {[
+              committee.committeeType
+                ? (COMMITTEE_TYPE_BADGES[committee.committeeType] ?? committee.committeeType)
+                : null,
+              committeeChamberLabel(committee.chamber),
+              committee.legislature ? `Legislatura ${committee.legislature}` : null,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
           </p>
-        )}
+
+          {/* The Senate's activity counters are ABSENT, not zero — every one of
+              its committees reports 0 bills and 0 meetings while 31 of 36
+              Camera committees report otherwise. That is a capture boundary, so
+              we omit the two numbers rather than print zeros that would read as
+              a committee that never met. */}
+          <div className="mt-6 flex flex-wrap gap-x-10 gap-y-4">
+            <StatBlock
+              value={committee.members.length.toLocaleString('ro-RO')}
+              label={committee.members.length === 1 ? 'membru' : 'membri'}
+            />
+            {isSenate ? null : (
+              <>
+                <StatBlock
+                  value={committee.linkedBillsTotal.toLocaleString('ro-RO')}
+                  label="proiecte repartizate"
+                />
+                <StatBlock
+                  value={committee.meetingsCount.toLocaleString('ro-RO')}
+                  label="ședințe"
+                />
+              </>
+            )}
+          </div>
+        </div>
       </section>
 
-      {committee.linkedBills.length > 0 ? (
+      <div className={cn(committeePageContainerClassName, 'space-y-10 py-8')}>
+        {bureau.length > 0 ? (
+          <section className="space-y-4">
+            <h2 className={committeeSectionTitleClassName}>Conducere</h2>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {bureau.map((membership) => (
+                <BureauCard key={membership.membershipKey} membership={membership} />
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         <section className="space-y-4">
-          <div className="flex flex-wrap items-end justify-between gap-2">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
-              Proiecte de lege
-            </h2>
-            {capped ? (
-              <span className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-                afișate {showingLinkedBills} din{' '}
-                {committee.linkedBillsTotal.toLocaleString('ro-RO')}
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className={committeeSectionTitleClassName}>Componență</h2>
+            {rank.length > 0 ? (
+              <span className={committeeMutedTextClassName}>
+                <span className="tabular-nums">{rank.length}</span> membri, pe grupuri
               </span>
             ) : null}
           </div>
-          <ul className="space-y-3">
-            {committee.linkedBills.map((bill) => (
-              <li key={bill.billId}>
-                <LinkedBillRow bill={bill} />
-              </li>
-            ))}
-          </ul>
+
+          {committee.members.length === 0 ? (
+            <CommitteeNotice>
+              Componența acestei comisii nu este publicată de sursă. Absența listei
+              nu înseamnă o comisie fără membri.
+            </CommitteeNotice>
+          ) : rosterGroups.length > 0 ? (
+            <>
+              {/* Collapsed by group: a 41-name roster in one column tells you
+                  nothing about the balance of the committee, which is the first
+                  thing a reader wants from it. */}
+              <Accordion type="multiple" className={cn(committeeCardClassName, 'px-4')}>
+                {rosterGroups.map(([groupName, members]) => (
+                  <AccordionItem key={groupName} value={groupName} className="border-0">
+                    <AccordionTrigger className="rounded-none px-0 py-3 text-base font-bold text-[#372554] hover:no-underline dark:text-[var(--pnrr-fg)]">
+                      {/* Name and count are ONE flex item. As two, the trigger's
+                          `justify-between` pushed each count to a position set
+                          by its own group's name width, so the column of counts
+                          landed ragged across 23px. The space is real text, not
+                          a margin, because a flex container drops a
+                          whitespace-only node and the accessible name read
+                          "PSD(6)". */}
+                      <span className="min-w-0 truncate">
+                        {groupName} <span className="tabular-nums font-normal">({members.length})</span>
+                      </span>
+                    </AccordionTrigger>
+                    <AccordionContent className="pb-4 pt-0">
+                      <ul>
+                        {members.map((membership) => (
+                          <RosterRow key={membership.membershipKey} membership={membership} />
+                        ))}
+                      </ul>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+              {hasUnassociatedRoster ? (
+                <p className={committeeMutedTextClassName}>
+                  Unele mandate nu sunt încă asociate unui profil.
+                </p>
+              ) : null}
+            </>
+          ) : null}
         </section>
-      ) : null}
-    </ParliamentPageFrame>
+
+        {isSenate ? (
+          <CommitteeNotice>
+            Pentru comisiile Senatului nu avem încă proiectele repartizate și
+            ședințele — sursa Camerei Deputaților publică aceste legături, sursa
+            Senatului nu. Lipsa lor nu înseamnă o comisie fără activitate.
+          </CommitteeNotice>
+        ) : committee.linkedBills.length > 0 ? (
+          <section className="space-y-4">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className={committeeSectionTitleClassName}>Proiecte de lege</h2>
+              {/* The count says WHICH set it counts. A filtered view reporting
+                  "din 208" would be counting bills that are not on screen, and
+                  the loaded set is itself capped below the total. */}
+              <span className={committeeMutedTextClassName}>
+                {billFilterActive ? (
+                  <>
+                    <span className="tabular-nums">{matchedBills.length}</span>{' '}
+                    din <span className="tabular-nums">{committee.linkedBills.length}</span>{' '}
+                    proiecte încărcate
+                  </>
+                ) : (
+                  <>
+                    afișate <span className="tabular-nums">{visibleBills.length}</span>{' '}
+                    din{' '}
+                    <span className="tabular-nums">
+                      {committee.linkedBillsTotal.toLocaleString('ro-RO')}
+                    </span>
+                  </>
+                )}
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="relative flex-1">
+                <Search
+                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#505a5f]"
+                  aria-hidden
+                />
+                <Input
+                  type="search"
+                  value={billQuery}
+                  onChange={(event) => onBillQuery(event.target.value)}
+                  placeholder="Caută după titlu sau număr…"
+                  aria-label="Caută un proiect după titlu sau număr"
+                  className={cn(committeeControlClassName, 'w-full pl-9')}
+                />
+              </div>
+              <select
+                value={billLocation}
+                onChange={(event) => onBillLocation(event.target.value)}
+                className={cn(committeeControlClassName, 'px-3 text-sm font-semibold sm:w-56')}
+                aria-label="Filtru stare a proiectului"
+              >
+                <option value="all">Toate stările</option>
+                {locationOptions.map((location) => (
+                  <option key={location} value={location}>
+                    {BILL_LOCATION_LABELS[location] ?? location}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {matchedBills.length === 0 ? (
+              <div className={cn(committeeCardClassName, 'px-5 py-8')}>
+                <p className="text-base font-bold">Niciun proiect nu corespunde filtrelor</p>
+                <p className={cn('mt-2', committeeMutedTextClassName)}>
+                  Căutarea acoperă cele{' '}
+                  <span className="tabular-nums">{committee.linkedBills.length}</span>{' '}
+                  proiecte încărcate pentru această comisie.
+                </p>
+              </div>
+            ) : (
+              <ul className="space-y-3">
+                {visibleBills.map((bill) => (
+                  <li key={bill.billId}>
+                    <LinkedBillRow bill={bill} />
+                  </li>
+                ))}
+              </ul>
+            )}
+            {!showAllBills && matchedBills.length > BILLS_PREVIEW ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 w-full rounded-none border-2 border-[#0b0c0c] text-base font-normal dark:border-[var(--pnrr-border)]"
+                onClick={onShowAllBills}
+              >
+                Arată toate cele {matchedBills.length} proiecte
+                {billFilterActive ? ' găsite' : ' încărcate'}
+              </Button>
+            ) : null}
+            {showAllBills && cappedByServer ? (
+              <CommitteeNotice>
+                Sursa returnează cel mult{' '}
+                <span className="tabular-nums">{committee.linkedBills.length}</span>{' '}
+                proiecte pentru o comisie; comisia are{' '}
+                <span className="tabular-nums">
+                  {committee.linkedBillsTotal.toLocaleString('ro-RO')}
+                </span>{' '}
+                în total. Lista completă este pe pagina oficială.
+              </CommitteeNotice>
+            ) : null}
+          </section>
+        ) : null}
+
+        {/* Provenance at the foot, where a citation belongs. */}
+        <div
+          className={committeeNoticeClassName}
+          style={{
+            backgroundColor: COMMITTEE_NOTICE_BG,
+            borderLeftColor: PARLIAMENT_RESOURCE_PURPLE,
+          }}
+        >
+          <p>
+            Sursă: {isSenate ? 'senat.ro' : 'cdep.ro'}. Componența, rolurile și
+            legăturile cu proiectele provin din pagina oficială a camerei.
+          </p>
+          {isHttp(committee.sourceUrl) ? (
+            <a
+              href={committee.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex items-center gap-1.5 font-semibold text-[#1d70b8] underline underline-offset-2"
+            >
+              {/* Senate committees all point at ONE index page, so promising
+                  "the committee's page" would overstate where the link lands. */}
+              {isSenate ? 'Lista comisiilor pe senat.ro' : 'Pagina oficială a comisiei'}
+              <ExternalLink className="h-4 w-4 shrink-0" aria-hidden />
+            </a>
+          ) : null}
+        </div>
+      </div>
+    </div>
   )
 }
