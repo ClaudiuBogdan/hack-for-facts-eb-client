@@ -232,6 +232,9 @@ function synthesizeTimeline(passage: ParliamentBillPassage) {
         folded.includes('promulg') ||
         folded.includes('adopt'),
       docUrls: [] as string[],
+      // Mock mode has no procedure model: no rowKind (so every synthesized row
+      // renders as a step) and no resolved links.
+      links: [],
     }
   })
 }

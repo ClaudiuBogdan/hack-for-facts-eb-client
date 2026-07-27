@@ -34,6 +34,7 @@ import {
   type ParliamentBillDetail,
   type ParliamentBillRelatedVote,
   type ParliamentBillSummary,
+  type ParliamentBillStepLink,
   type ParliamentBillTimelineStep,
   type ParliamentChamber,
   type ParliamentCommittee,
@@ -980,6 +981,20 @@ function buildBillTimeline(
         ...(e.voteIdv ? { voteId: `cdep:${e.voteIdv}` } : {}),
         docUrls: extractEventDocUrls(e.docs),
         isMilestone: isMilestoneDescription(description),
+        // Procedure model. Absent on an event the derive has not classified —
+        // the renderer treats that as a step, so nothing is ever hidden.
+        ...(e.rowKind ? { rowKind: e.rowKind as 'step' | 'attachment' | 'unclassified' } : {}),
+        ...(e.parentPosition != null ? { parentPosition: e.parentPosition } : {}),
+        ...(e.stepKind ? { stepKind: e.stepKind } : {}),
+        ...(e.actorKind ? { actorKind: e.actorKind } : {}),
+        links: (e.links ?? []).map((l) => ({
+          linkKind: l.linkKind as ParliamentBillStepLink['linkKind'],
+          targetKey: l.targetKey,
+          sourceHref: l.sourceHref,
+          sourceText: l.sourceText,
+          resolutionStatus:
+            l.resolutionStatus as ParliamentBillStepLink['resolutionStatus'],
+        })),
       };
     });
 }

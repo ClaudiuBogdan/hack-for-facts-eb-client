@@ -64,7 +64,7 @@ function bucketByChamber(
     final: [],
     unstated: [],
   }
-  for (const step of steps) {
+  for (const step of steps.filter(isProceduralStep)) {
     const key = step.chamberCode ? COLUMN_BY_CHAMBER_CODE[step.chamberCode] : undefined
     cols[key ?? 'unstated'].push(step)
   }
@@ -74,12 +74,16 @@ function bucketByChamber(
 // ── routine vs milestone grouping within a column ─────────────────────────────
 
 /**
- * Routine clusters that collapse under an "avize & termene" disclosure. A step
- * that is a milestone OR carries a vote / document is NEVER collapsed (its link
- * must stay visible).
+ * Routine clusters that collapse under an "avize & termene" disclosure.
+ *
+ * This is a DISPLAY preference, not a claim about the data — which is why it is
+ * still a keyword test. What used to be conflated with it, and is now decided by
+ * the source instead, is whether a row is a procedural step at all: see
+ * `rowKind`, which the server derives structurally.
  */
 function isRoutineStep(step: ParliamentBillTimelineStep): boolean {
   if (step.isMilestone || step.voteId || step.docUrls.length > 0) return false
+  if (step.links.length > 0) return false
   const d = step.description.toLowerCase()
   return (
     d.includes('aviz') ||
@@ -88,6 +92,24 @@ function isRoutineStep(step: ParliamentBillTimelineStep): boolean {
     d.includes('prezentare în biroul') ||
     d.includes('adresa')
   )
+}
+
+/**
+ * Keep only the rows the SOURCE printed as procedural events.
+ *
+ * cdep.ro emits a `<tr>` per attached document and per committee anchor as well
+ * as per step — 7 procedural rows for bill 23135 against 12 captured rows, and
+ * 276,251 attachment rows across the corpus (34.7% cdep / 15.1% senat). Showing
+ * them as peers reads as procedural events that never happened.
+ *
+ * An attachment is NOT lost: its documents and its committee/vote/stenogram
+ * links are already carried on the parent step by the server (206,130 such
+ * edges on prod). A row the derive has not classified (`rowKind` absent) is kept
+ * as a step — the failure direction must be an extra visible row, never a hidden
+ * one.
+ */
+function isProceduralStep(step: ParliamentBillTimelineStep): boolean {
+  return step.rowKind !== 'attachment'
 }
 
 /**
@@ -112,6 +134,89 @@ function formatStepDate(step: ParliamentBillTimelineStep): string | null {
     }).format(new Date(step.date))
   }
   return step.dateText ?? null
+}
+
+/**
+ * The bodies a step touched, linked into the platform where we can resolve them.
+ *
+ * Every one of these comes from an anchor the chamber ITSELF printed on the
+ * procedure table — never from matching a name. That distinction is the reason
+ * the chips are trustworthy: the free-text committee column yields 4,147
+ * distinct strings for 499 real committees (1.9% exact match), while the anchor
+ * resolves at 99.88%.
+ *
+ * An unresolved link still renders, as plain text with its official source
+ * link. `unresolved_registry` is not a gap in the record — the body is real and
+ * we simply do not hold it (the Senate committee registry covers 33 of the 183
+ * GUIDs the source cites, and plenary agenda days have no registry at all) — so
+ * saying nothing would be less honest than showing the name without a route.
+ */
+function StepLinks({ step }: { readonly step: ParliamentBillTimelineStep }) {
+  if (step.links.length === 0) return null
+
+  const committees = step.links.filter((l) => l.linkKind === 'committee')
+  const stenograms = step.links.filter(
+    (l) => l.linkKind === 'stenogram' && l.resolutionStatus === 'linked',
+  )
+  const votes = step.links.filter(
+    (l) => l.linkKind === 'vote' && l.resolutionStatus === 'linked',
+  )
+  if (committees.length === 0 && stenograms.length === 0 && votes.length === 0) {
+    return null
+  }
+
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-2">
+      {committees.map((link) =>
+        link.targetKey ? (
+          <Link
+            key={link.sourceHref}
+            to="/parlament/comisii/$committeeKey"
+            params={{ committeeKey: link.targetKey }}
+            className="inline-flex max-w-full items-center rounded-sm border border-[#b1b4b6] bg-white px-2 py-0.5 text-xs font-semibold text-[#1d70b8] hover:bg-[#f3f2f1] dark:bg-transparent"
+          >
+            <span className="truncate">{link.sourceText ?? 'Comisie'}</span>
+          </Link>
+        ) : (
+          <a
+            key={link.sourceHref}
+            href={link.sourceHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Comisia este publicată de sursă, dar nu figurează în registrul nostru"
+            className="inline-flex max-w-full items-center rounded-sm border border-dashed border-[#b1b4b6] px-2 py-0.5 text-xs text-[#505a5f] dark:text-[var(--pnrr-muted)]"
+          >
+            <span className="truncate">{link.sourceText ?? 'Comisie'}</span>
+          </a>
+        ),
+      )}
+      {votes.map((link) => (
+        <Link
+          key={link.sourceHref}
+          to="/parlament/voturi/$chamber/$voteId"
+          params={{
+            chamber: chamberOfVoteKey(link.targetKey ?? ''),
+            voteId: link.targetKey ?? '',
+          }}
+          className="inline-flex items-center rounded-sm border border-[#1d70b8] px-2 py-0.5 text-xs font-semibold text-[#1d70b8] hover:bg-[#f0f6fb]"
+        >
+          Votul
+        </Link>
+      ))}
+      {stenograms.map((link) => (
+        <Link
+          key={link.sourceHref}
+          // The SITTING transcript, not a single speech: /stenograme/$speechKey
+          // is a different surface and a session key there resolves to nothing.
+          to="/parlament/stenograme/sedinte/$sessionKey"
+          params={{ sessionKey: link.targetKey ?? '' }}
+          className="inline-flex items-center rounded-sm border border-[#512178] px-2 py-0.5 text-xs font-semibold text-[#512178] hover:bg-[#f6f2f9]"
+        >
+          Dezbaterea
+        </Link>
+      ))}
+    </div>
+  )
 }
 
 function StepRow({ step }: { readonly step: ParliamentBillTimelineStep }) {
@@ -166,6 +271,7 @@ function StepRow({ step }: { readonly step: ParliamentBillTimelineStep }) {
             </a>
           ))}
         </div>
+        <StepLinks step={step} />
       </div>
     </li>
   )
