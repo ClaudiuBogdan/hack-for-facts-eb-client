@@ -18,6 +18,7 @@ import type {
   ParliamentBillRelatedVote,
   ParliamentBillsSearch,
   ParliamentChamber,
+  ParliamentGroupCohesion,
   ParliamentChamberComposition,
   ParliamentCommittee,
   ParliamentCommitteeDetail,
@@ -87,6 +88,7 @@ import {
   fetchParliamentBillRelatedVotesMock,
   fetchParliamentBillsMock,
   fetchParliamentChamberCompositionMock,
+  fetchParliamentGroupCohesionMock,
   fetchParliamentGroupMembersMock,
   fetchParliamentGroupMock,
   fetchParliamentGroupsMock,
@@ -116,6 +118,7 @@ import {
   fetchParliamentBillsLive,
   fetchParliamentChamberCompositionLive,
   fetchParliamentGroupLive,
+  fetchParliamentGroupCohesionLive,
   fetchParliamentGroupMembersLive,
   fetchParliamentGroupsLive,
   fetchParliamentHubLive,
@@ -188,6 +191,15 @@ export async function fetchParliamentGroupMembers(
   return isParliamentMockEnabled()
     ? fetchParliamentGroupMembersMock(groupId)
     : fetchParliamentGroupMembersLive(groupId)
+}
+
+export async function fetchParliamentGroupCohesion(
+  chamber: ParliamentChamber,
+  window: { from: string; to: string },
+): Promise<ParliamentGroupCohesion[]> {
+  return isParliamentMockEnabled()
+    ? fetchParliamentGroupCohesionMock(chamber)
+    : fetchParliamentGroupCohesionLive(chamber, window)
 }
 
 export async function fetchParliamentVotes(

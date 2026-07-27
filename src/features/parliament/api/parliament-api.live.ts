@@ -18,6 +18,7 @@ import {
   type ParliamentBillRelatedVote,
   type ParliamentBillsSearch,
   type ParliamentChamber,
+  type ParliamentGroupCohesion,
   type ParliamentChamberComposition,
   type ParliamentCommittee,
   type ParliamentCommitteeDetail,
@@ -65,6 +66,8 @@ import {
   parliamentFreshnessResponseSchema,
   parliamentGroupMembersResponseSchema,
   parliamentGroupsResponseSchema,
+  parliamentVoteCohesionResponseSchema,
+  PARLIAMENT_VOTE_COHESION_QUERY,
   parliamentMemberInitiativesResponseSchema,
   parliamentMemberProfileResponseSchema,
   parliamentMemberResponseSchema,
@@ -86,6 +89,7 @@ import {
   mapCommitteeDetail,
   mapDataFreshness,
   mapGroup,
+  mapGroupCohesion,
   mapMember,
   mapMemberInitiatives,
   mapMemberProfile,
@@ -312,6 +316,27 @@ export async function fetchParliamentGroupMembersLive(
   return parsed.parliamentGroupMembers
     .map(mapMember)
     .sort((a, b) => a.lastName.localeCompare(b.lastName, 'ro'))
+}
+
+/**
+ * Chamber-wide vote cohesion for a bounded window.
+ *
+ * Asks for the WHOLE chamber, not one group: the dossier ranks its group among
+ * its peers, and a single row cannot supply a rank. `from`/`to` must already be
+ * inside the server's 500-vote cap — `cohesionWindow` picks them.
+ */
+export async function fetchParliamentGroupCohesionLive(
+  chamber: ParliamentChamber,
+  window: { from: string; to: string },
+): Promise<ParliamentGroupCohesion[]> {
+  const data = await graphqlQuery<unknown>(
+    PARLIAMENT_VOTE_COHESION_QUERY,
+    { chamber: toGraphqlChamber(chamber), from: window.from, to: window.to },
+    { operationName: 'parliamentVoteCohesion' },
+  )
+  return parliamentVoteCohesionResponseSchema
+    .parse(data)
+    .parliamentVoteCohesion.map(mapGroupCohesion)
 }
 
 // ── hub ─────────────────────────────────────────────────────────────────────

@@ -16,6 +16,7 @@ import {
   ParliamentCommitteeSchema,
   ParliamentDataFreshnessSchema,
   ParliamentGroupSchema,
+  ParliamentGroupCohesionSchema,
   ParliamentMemberSchema,
   ParliamentMemberProfileSchema,
   ParliamentMemberInitiativesListSchema,
@@ -40,6 +41,7 @@ import {
   type ParliamentCommitteeMembership,
   type ParliamentDataFreshness,
   type ParliamentGroup,
+  type ParliamentGroupCohesion,
   type ParliamentMember,
   type ParliamentMemberProfile,
   type ParliamentMemberInitiativesList,
@@ -69,6 +71,7 @@ import type {
   RawParliamentCommitteeDetail,
   RawParliamentCommitteeMembership,
   RawParliamentGroup,
+  RawParliamentGroupCohesion,
   RawParliamentInitiative,
   RawParliamentMember,
   RawParliamentMemberVote,
@@ -130,6 +133,25 @@ export function mapGroup(raw: RawParliamentGroup): ParliamentGroup {
     chamber,
     memberCount: num(raw.memberCount),
     color: resolveGroupColor({ groupId: raw.groupId, name: raw.name }),
+  });
+}
+
+/**
+ * Cohesion row → domain. Null stays ABSENT rather than becoming 0: a group with
+ * no ballots in the window has an unknown split, and printing "0% pentru" would
+ * state something the source never said.
+ */
+export function mapGroupCohesion(
+  raw: RawParliamentGroupCohesion,
+): ParliamentGroupCohesion {
+  return ParliamentGroupCohesionSchema.parse({
+    groupName: raw.groupName,
+    ...(raw.forPct === null ? {} : { forPct: raw.forPct }),
+    ...(raw.againstPct === null ? {} : { againstPct: raw.againstPct }),
+    ...(raw.abstainPct === null ? {} : { abstainPct: raw.abstainPct }),
+    ...(raw.absentPct === null ? {} : { absentPct: raw.absentPct }),
+    ...(raw.cohesionIndex === null ? {} : { cohesionIndex: raw.cohesionIndex }),
+    ...(raw.voteCount === null ? {} : { voteCount: raw.voteCount }),
   });
 }
 

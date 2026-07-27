@@ -171,6 +171,51 @@ export const parliamentGroupsResponseSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
+// Group cohesion — parliamentVoteCohesion(chamber, from, to)
+// ---------------------------------------------------------------------------
+
+/**
+ * The server rejects any window wider than 500 votes ("cohesion vote window too
+ * large"), so `from`/`to` are always a bounded slice — see `cohesionWindow`.
+ * We ask for the whole chamber rather than one `group`, because the dossier
+ * ranks the group against its peers and one row cannot supply a rank.
+ */
+export const PARLIAMENT_VOTE_COHESION_QUERY = /* GraphQL */ `
+  query ParliamentVoteCohesion(
+    $chamber: ParliamentChamber
+    $from: Date
+    $to: Date
+  ) {
+    parliamentVoteCohesion(chamber: $chamber, from: $from, to: $to) {
+      groupName
+      forPct
+      againstPct
+      abstainPct
+      absentPct
+      cohesionIndex
+      voteCount
+    }
+  }
+`;
+
+const rawGroupCohesionSchema = z.object({
+  groupName: z.string(),
+  forPct: z.number().nullable(),
+  againstPct: z.number().nullable(),
+  abstainPct: z.number().nullable(),
+  absentPct: z.number().nullable(),
+  cohesionIndex: z.number().nullable(),
+  voteCount: z.number().nullable(),
+});
+export type RawParliamentGroupCohesion = z.infer<
+  typeof rawGroupCohesionSchema
+>;
+
+export const parliamentVoteCohesionResponseSchema = z.object({
+  parliamentVoteCohesion: z.array(rawGroupCohesionSchema),
+});
+
+// ---------------------------------------------------------------------------
 // Members list — parliamentMembers(filter, page, pageSize)
 // ---------------------------------------------------------------------------
 

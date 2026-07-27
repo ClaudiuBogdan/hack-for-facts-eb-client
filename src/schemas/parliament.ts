@@ -35,6 +35,30 @@ export const ParliamentGroupSchema = z.object({
 });
 export type ParliamentGroup = z.infer<typeof ParliamentGroupSchema>;
 
+/**
+ * How a group voted, and how united it was, over a bounded window of votes.
+ *
+ * `cohesionIndex` runs 0–1: 1 means every member of the group cast the same
+ * ballot on every vote in the window. Every percentage is a share of the
+ * group's BALLOT SLOTS in that window, so the four add up to 100 — `absentPct`
+ * is "did not vote", which the source records but does not explain.
+ *
+ * Each field is optional because the server returns null for a group with no
+ * ballots in the window; the UI must omit the figure rather than print a zero.
+ */
+export const ParliamentGroupCohesionSchema = z.object({
+  groupName: z.string(),
+  forPct: z.number().optional(),
+  againstPct: z.number().optional(),
+  abstainPct: z.number().optional(),
+  absentPct: z.number().optional(),
+  cohesionIndex: z.number().optional(),
+  voteCount: z.number().int().nonnegative().optional(),
+});
+export type ParliamentGroupCohesion = z.infer<
+  typeof ParliamentGroupCohesionSchema
+>;
+
 export const ParliamentMemberContactSchema = z.object({
   email: z.string().email().optional(),
   phone: z.string().optional(),

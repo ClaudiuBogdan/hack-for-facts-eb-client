@@ -16,6 +16,7 @@ import {
   fetchParliamentCommittees,
   fetchParliamentFreshness,
   fetchParliamentGroup,
+  fetchParliamentGroupCohesion,
   fetchParliamentGroupMembers,
   fetchParliamentGroups,
   fetchParliamentHub,
@@ -104,6 +105,26 @@ export function useParliamentGroupMembers(groupId: string) {
     queryKey: [...PARLIAMENT_QUERY_KEY, 'group-members', groupId],
     queryFn: () => fetchParliamentGroupMembers(groupId),
     enabled: Boolean(groupId),
+  })
+}
+
+/**
+ * Chamber-wide vote cohesion for the dossier's "cum votează grupul" panel.
+ *
+ * The window is computed ONCE per mount and carried in the query key, so the
+ * cached rows and the window printed on screen can never describe different
+ * spans of time.
+ */
+export function useParliamentGroupCohesion(
+  chamber: ParliamentChamber | undefined,
+  window: { from: string; to: string },
+) {
+  return useQuery({
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'group-cohesion', chamber, window],
+    queryFn: () => fetchParliamentGroupCohesion(chamber!, window),
+    enabled: Boolean(chamber),
+    // A group's voting record over six months does not move minute to minute.
+    staleTime: 10 * 60 * 1000,
   })
 }
 
