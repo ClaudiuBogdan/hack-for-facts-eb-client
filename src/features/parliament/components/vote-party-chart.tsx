@@ -21,6 +21,7 @@ import {
 import { cn } from '@/lib/utils'
 import { PARLIAMENT_ACTION_BLUE } from '../lib/hub-theme'
 import {
+  VOTE_DETAIL_CHART_PLOT_BG,
   voteDetailCardClassName,
   voteDetailSectionTitleClassName,
 } from '../lib/vote-detail-theme'
@@ -53,7 +54,6 @@ type VotePartyTooltipProps = {
   readonly payload?: ReadonlyArray<VotePartyTooltipEntry>
 }
 
-const CHART_PLOT_BG = '#f8f9fd'
 const CHART_AXIS_COLOR = '#505a5f'
 const CHART_GRID_COLOR = '#dee0e2'
 const CHART_AXIS_LINE = '#b1b4b6'
@@ -230,7 +230,7 @@ export function VotePartyChart({
 
       <div
         className="mt-5 p-4 sm:p-5"
-        style={{ backgroundColor: CHART_PLOT_BG }}
+        style={{ backgroundColor: VOTE_DETAIL_CHART_PLOT_BG }}
       >
         <div className="h-[22rem] w-full min-w-0">
           <SafeResponsiveContainer width="100%" height="100%" minHeight={320}>

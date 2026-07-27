@@ -247,13 +247,93 @@ describe('the reader renders a readable document', () => {
     ).toBeInTheDocument()
   })
 
-  it('offers print and copy-link actions', () => {
+  it('puts copy and print as ICONS at the end of the source-link row', () => {
+    // Two one-glyph actions carried a line of words wider than the sentence
+    // above them. Their names survive on `aria-label`, which is what a screen
+    // reader announces either way.
     mockTranscript()
     renderReader()
-    expect(screen.getByRole('button', { name: /Printează/ })).toBeInTheDocument()
+
+    const source = screen.getByRole('link', {
+      name: /Vezi în stenograma oficială/,
+    })
+    const copy = screen.getByRole('button', {
+      name: /Copiază linkul acestei ședințe/,
+    })
+    const print = screen.getByRole('button', { name: /Printează stenograma/ })
+
+    expect(copy).toHaveTextContent('')
+    expect(print).toHaveTextContent('')
+    // Source first, then the actions, in the order they are reached for.
     expect(
-      screen.getByRole('button', { name: /Copiază linkul acestei ședințe/ }),
-    ).toBeInTheDocument()
+      source.compareDocumentPosition(copy) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(
+      copy.compareDocumentPosition(print) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    // …on ONE row with the link, pushed to its far end.
+    expect(print.parentElement!.className).toContain('ml-auto')
+    expect(source.parentElement).toContainElement(print.parentElement)
+  })
+
+  it('puts the source row under the TITLE, above the presiding line', () => {
+    // A reader checking what they are reading looks at the heading, not down
+    // among controls that are about the page rather than about the record.
+    mockTranscript({}, { presidingText: 'Condusă de domnul X' })
+    renderReader()
+
+    const title = screen.getByRole('heading', { level: 1 })
+    const source = screen.getByRole('link', {
+      name: /Vezi în stenograma oficială/,
+    })
+    const presiding = screen.getByText(/Condusă de domnul X/)
+    expect(
+      title.compareDocumentPosition(source) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(
+      source.compareDocumentPosition(presiding) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+  })
+
+  it('drops the "complete transcript" badge and the back link from the heading', () => {
+    // A caveat printed where there is no caveat teaches readers to skip the
+    // ones that matter; the availability is stated in words in the provenance
+    // card at the foot. The way back is the app's own navigation.
+    mockTranscript()
+    renderReader()
+    expect(screen.queryByText('Transcriere completă')).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Toate stenogramele' })).toBeNull()
+  })
+
+  it('KEEPS the badge when it warns — a partial capture says so beside the date', () => {
+    // The inverse of the test above, and the reason that one is scoped to
+    // COMPLETE: a reader arriving on a deep link must not be handed part of a
+    // sitting dressed as the whole of it, with the caveat parked below the
+    // entire transcript.
+    mockTranscript({}, { availability: 'PARTIAL' })
+    renderReader()
+
+    const badge = screen.getByText('Transcriere parțială')
+    const reading = screen.getByRole('region', { name: 'Textul ședinței' })
+    expect(
+      badge.compareDocumentPosition(reading) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+  })
+
+  it('moves the provenance card to the FOOT of the reading', () => {
+    // Four sentences of qualification above the title stood between the reader
+    // and the document; a citation belongs where a reader who has read it looks.
+    mockTranscript()
+    renderReader()
+
+    const provenance = screen.getByText(/Sursă:/)
+    const reading = screen.getByRole('region', { name: 'Textul ședinței' })
+    expect(
+      reading.compareDocumentPosition(provenance) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
   })
 
   it('stacks on mobile and becomes a sticky lane + column at lg', () => {
@@ -367,24 +447,25 @@ describe('the highlighted contribution keeps its context', () => {
     )
   })
 
-  it('steps to the next CONTRIBUTION, skipping the narration between', async () => {
+  it('steps between CONTRIBUTIONS on the rail, skipping the narration between', async () => {
+    // The previous/next footer is gone — the rail is how a reader moves turn by
+    // turn now — but the guarantee it carried is not: narration is not a turn
+    // and must never be a step.
     mockTranscript()
     renderReader({ interventie: 'canon:sp:1' })
 
-    await userEvent.click(
-      screen.getByRole('button', { name: /Intervenția următoare/ }),
-    )
+    const rail = screen.getByRole('navigation', {
+      name: 'Harta intervențiilor din ședință',
+    })
+    const marks = within(rail).getAllByRole('button')
+    // Two SPEECH blocks in the fixture; the AGENDA_HEADING and the CONTEXT
+    // narration between them are not marks.
+    expect(marks).toHaveLength(2)
+
+    await userEvent.click(marks[1]!)
     expect(navigate).toHaveBeenCalledWith(
       expect.objectContaining({ search: { interventie: 'canon:sp:3' } }),
     )
-  })
-
-  it('offers no "previous" at the first contribution', () => {
-    mockTranscript()
-    renderReader({ interventie: 'canon:sp:1' })
-    expect(
-      screen.queryByRole('button', { name: /Intervenția anterioară/ }),
-    ).toBeNull()
   })
 
   it('says so — and still renders the document — when the link cannot be placed', () => {
@@ -813,7 +894,7 @@ describe('filtering the reading by speaker', () => {
     ])
   })
 
-  it('steps prev/next through the FILTERED set only', async () => {
+  it('maps the FILTERED set only, and keeps the filter when stepping', async () => {
     mockTranscript({}, {}, [
       SEGMENTS[0]!,
       SEGMENTS[1]!,
@@ -825,10 +906,15 @@ describe('filtering the reading by speaker', () => {
     ])
     renderReader({ interventie: 'canon:sp:1', vorbitori: ['Ion Popescu'] })
 
-    await userEvent.click(
-      screen.getByRole('button', { name: /Intervenția următoare/ }),
-    )
-    // Maria's turn sits between the two in the document and is skipped.
+    // The rail reads the VISIBLE document, so Maria's turn — which sits between
+    // the two in the sitting — is not on it at all.
+    const rail = screen.getByRole('navigation', {
+      name: 'Harta intervențiilor din ședință',
+    })
+    const marks = within(rail).getAllByRole('button')
+    expect(marks).toHaveLength(2)
+
+    await userEvent.click(marks[1]!)
     expect(navigate).toHaveBeenCalledWith(
       expect.objectContaining({
         search: { interventie: 'canon:sp:4', vorbitori: ['Ion Popescu'] },
@@ -851,12 +937,18 @@ describe('filtering the reading by speaker', () => {
     expect(leftLane().className).not.toContain('print:hidden')
   })
 
-  it('prints the complete sitting, plainly labelled, when unfiltered', () => {
+  it('prints the complete sitting, plainly NAMED, when unfiltered', () => {
+    // The control is an icon now, so the distinction between printing the
+    // sitting and printing an excerpt lives entirely in its accessible name —
+    // which is the one place it must never be ambiguous.
     mockTranscript()
     renderReader()
-    expect(screen.getByRole('button', { name: /Printează/ }).textContent).toBe(
-      'Printează',
-    )
+    expect(
+      screen.getByRole('button', { name: 'Printează stenograma' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /extrasul filtrat/ }),
+    ).toBeNull()
   })
 })
 
@@ -1301,8 +1393,14 @@ describe('accessibility and landmarks', () => {
       },
     })
     renderReader({ interventie: 'canon:sp:1' })
+    // Three navigations on this page, each named for what it moves through.
     expect(
-      screen.getByRole('navigation', { name: 'Navigare între intervenții' }),
+      screen.getByRole('navigation', { name: 'Ordinea de zi a ședinței' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('navigation', {
+        name: 'Harta intervențiilor din ședință',
+      }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('navigation', { name: 'Navigare între ședințe' }),

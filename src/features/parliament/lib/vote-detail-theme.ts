@@ -8,6 +8,10 @@ export const VOTE_DETAIL_BREADCRUMB_BG = '#372554'
 export const VOTE_DETAIL_SURFACE = '#f3f2f1'
 export const VOTE_DETAIL_INFO_BG = '#f3f0ff'
 
+/** Plot-area wash behind the party chart. Shared so the loading placeholder
+ *  reserves the same block of colour the chart lands in. */
+export const VOTE_DETAIL_CHART_PLOT_BG = '#f8f9fd'
+
 export function getVoteDetailHeroColor(chamber: 'camera' | 'senat'): string {
   return chamber === 'camera' ? PARLIAMENT_CAMERA_GREEN : PARLIAMENT_SENAT_RED
 }

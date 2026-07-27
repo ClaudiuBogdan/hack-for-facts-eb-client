@@ -1,14 +1,13 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { Skeleton } from '@/components/ui/skeleton'
 import {
   getMemberJudetMap,
   getParliamentGroupColorMap,
 } from '@/features/parliament/api/parliament-api'
 import { VoteDetailContent } from '@/features/parliament/components/vote-detail-content'
+import { VoteDetailSkeleton } from '@/features/parliament/components/vote-detail-skeleton'
 import { ParliamentLoadErrorPage } from '@/features/parliament/components/parliament-load-error-page'
 import { ParliamentVoteNotFoundPage } from '@/features/parliament/components/parliament-not-found-page'
 import { useParliamentVoteDetail } from '@/features/parliament/hooks/use-parliament-data'
-import { VOTE_DETAIL_SURFACE, voteDetailPageContainerClassName } from '@/features/parliament/lib/vote-detail-theme'
 
 export const Route = createLazyFileRoute('/parlament/voturi/$chamber/$voteId')({
   component: ParliamentVoteDetailRoutePage,
@@ -25,13 +24,7 @@ function ParliamentVoteDetailRoutePage() {
   )
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen" style={{ backgroundColor: VOTE_DETAIL_SURFACE }}>
-        <div className={voteDetailPageContainerClassName}>
-          <Skeleton className="mt-6 h-64 rounded-none" />
-        </div>
-      </div>
-    )
+    return <VoteDetailSkeleton chamber={chamber} />
   }
 
   // A read failure is not a missing division — the vote-detail page fans out to

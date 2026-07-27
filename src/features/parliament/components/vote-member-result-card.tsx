@@ -14,6 +14,12 @@ type Props = {
   readonly memberName: string
   readonly groupName: string
   readonly judetName?: string
+  /**
+   * How this member voted, for lists that MIX choices. Omitted when the
+   * surrounding tab already states the choice — repeating it there would put
+   * the same word on every card.
+   */
+  readonly choiceLabel?: string
   readonly accentColor: string
   readonly className?: string
 }
@@ -68,10 +74,14 @@ export function VoteMemberResultCard({
   memberName,
   groupName,
   judetName,
+  choiceLabel,
   accentColor,
   className,
 }: Props) {
   const resolved = memberId !== undefined
+  // The footer row carries the choice, the county, or both — and the rule above
+  // it only earns its place when there is something under it.
+  const hasFootnote = Boolean(choiceLabel ?? judetName)
 
   return (
     <VoteMemberResultCardShell
@@ -122,13 +132,19 @@ export function VoteMemberResultCard({
           <span className="col-start-3 row-start-1" aria-hidden />
         )}
 
-        {judetName ? (
+        {hasFootnote ? (
           <>
             <div
               className="col-start-2 col-end-4 row-start-2 border-t border-[#dee0e2] dark:border-[var(--pnrr-border)]/60"
               aria-hidden
             />
-            <p className="col-start-2 col-end-4 row-start-3 pb-1.5 pt-1.5 text-xs text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            <p className="col-start-2 col-end-4 row-start-3 truncate pb-1.5 pt-1.5 text-xs text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              {choiceLabel ? (
+                <span className="font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+                  {choiceLabel}
+                </span>
+              ) : null}
+              {choiceLabel && judetName ? ' · ' : null}
               {judetName}
             </p>
           </>

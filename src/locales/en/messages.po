@@ -3180,7 +3180,7 @@ msgid "Captura acestei ședințe nu conține textul dezbaterii. Păstrăm ședin
 msgstr "Captura acestei ședințe nu conține textul dezbaterii. Păstrăm ședința și adresa ei oficială, ca să puteți merge direct la sursă."
 
 #. placeholder {0}: formatSittingDateShort( session.sourceUpdatedAt.slice(0, 10), i18n.locale, )
-#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:502
+#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:660
 msgid "Captura sursei, actualizată la {0}."
 msgstr "Captura sursei, actualizată la {0}."
 
@@ -4799,10 +4799,10 @@ msgid "Copiază link"
 msgstr "Copiază link"
 
 #: src/features/parliament/components/parliament-stenogram-reader-page.tsx:479
-msgid "Copiază linkul"
-msgstr "Copiază linkul"
+#~ msgid "Copiază linkul"
+#~ msgstr "Copiază linkul"
 
-#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:481
+#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:451
 msgid "Copiază linkul acestei ședințe"
 msgstr "Copiază linkul acestei ședințe"
 
@@ -10310,8 +10310,8 @@ msgid "Intervenția {ordinal}: {speakerLabel} — în dreptul lecturii"
 msgstr "Intervenția {ordinal}: {speakerLabel} — în dreptul lecturii"
 
 #: src/features/parliament/components/parliament-stenogram-reader-page.tsx:653
-msgid "Intervenția anterioară"
-msgstr "Intervenția anterioară"
+#~ msgid "Intervenția anterioară"
+#~ msgstr "Intervenția anterioară"
 
 #: src/features/parliament/components/parliament-stenogram-document.tsx:84
 msgid "Intervenția din link"
@@ -10322,8 +10322,8 @@ msgid "Intervenția din link nu aparține vorbitorilor selectați, așa că nu a
 msgstr "Intervenția din link nu aparține vorbitorilor selectați, așa că nu apare în acest extras."
 
 #: src/features/parliament/components/parliament-stenogram-reader-page.tsx:670
-msgid "Intervenția următoare"
-msgstr "Intervenția următoare"
+#~ msgid "Intervenția următoare"
+#~ msgstr "Intervenția următoare"
 
 #: src/features/parliament/components/parliament-speech-detail-page.tsx:219
 msgid "Intervenție în plen"
@@ -12542,10 +12542,10 @@ msgid "Natural increase shows the absolute demographic balance from births versu
 msgstr "Natural increase shows the absolute demographic balance from births versus deaths."
 
 #: src/features/parliament/components/parliament-stenogram-reader-page.tsx:641
-msgid "Navigare între intervenții"
-msgstr "Navigare între intervenții"
+#~ msgid "Navigare între intervenții"
+#~ msgstr "Navigare între intervenții"
 
-#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:684
+#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:616
 msgid "Navigare între ședințe"
 msgstr "Navigare între ședințe"
 
@@ -13865,7 +13865,7 @@ msgstr "Nu am putut încărca teritoriul"
 msgid "Nu am putut încărca teritoriul."
 msgstr "Nu am putut încărca teritoriul."
 
-#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:520
+#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:488
 msgid "Nu am putut localiza intervenția din link în această stenogramă. Textul integral al ședinței este mai jos, neschimbat."
 msgstr "Nu am putut localiza intervenția din link în această stenogramă. Textul integral al ședinței este mai jos, neschimbat."
 
@@ -15686,12 +15686,16 @@ msgid "Primul rezultat publicat de sursa"
 msgstr "Primul rezultat publicat de sursa"
 
 #: src/features/parliament/components/parliament-stenogram-reader-page.tsx:474
-msgid "Printează"
-msgstr "Printează"
+#~ msgid "Printează"
+#~ msgstr "Printează"
 
-#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:472
+#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:468
 msgid "Printează extrasul filtrat"
 msgstr "Printează extrasul filtrat"
+
+#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:469
+msgid "Printează stenograma"
+msgstr "Printează stenograma"
 
 #: src/components/footer/AppFooter.tsx:115
 msgid "Privacy Policy"
@@ -17340,7 +17344,7 @@ msgstr "Sancțiuni AMEPIP"
 msgid "Sankey Chart (Aggregated)"
 msgstr "Sankey Chart (Aggregated)"
 
-#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:550
+#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:518
 msgid "Sari la textul ședinței"
 msgstr "Sari la textul ședinței"
 
@@ -17812,7 +17816,7 @@ msgstr "Ședința {chamber} din {day}"
 #~ msgid "Ședința anterioară · {0}"
 #~ msgstr "Ședința anterioară · {0}"
 
-#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:737
+#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:701
 msgid "Ședința anterioară · {date}"
 msgstr "Ședința anterioară · {date}"
 
@@ -17844,7 +17848,7 @@ msgstr "Ședință fără titlu în sursă"
 #~ msgid "Ședința următoare · {0}"
 #~ msgstr "Ședința următoare · {0}"
 
-#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:741
+#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:705
 msgid "Ședința următoare · {date}"
 msgstr "Ședința următoare · {date}"
 
@@ -19555,7 +19559,7 @@ msgid "Sursa, referința colectorului, datele de preluare și notele de parsare 
 msgstr "Sursa, referința colectorului, datele de preluare și notele de parsare pentru această înregistrare."
 
 #. placeholder {0}: sourceSystemLabel(session.sourceSystem)
-#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:493
+#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:651
 msgid "Sursă: {0}."
 msgstr "Sursă: {0}."
 
@@ -19847,7 +19851,7 @@ msgstr "Textul integral al ședinței, în ordinea din stenograma oficială."
 msgid "Textul rezumatului lipsește"
 msgstr "Textul rezumatului lipsește"
 
-#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:607
+#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:575
 msgid "Textul ședinței"
 msgstr "Textul ședinței"
 
@@ -22099,7 +22103,7 @@ msgstr "Vezi sursa: {0}, {dateText}"
 #~ msgid "Vezi toate înregistrările din această categorie"
 #~ msgstr "Vezi toate înregistrările din această categorie"
 
-#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:387
+#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:381
 msgid "Vezi toate ședințele"
 msgstr "Vezi toate ședințele"
 

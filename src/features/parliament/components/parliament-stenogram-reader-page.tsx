@@ -261,20 +261,14 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
     Boolean(transcript) &&
     !context.isLoading
 
-  // ── prev/next CONTRIBUTION, over what is on screen ───────────────────────
+  // The contributions ON SCREEN — what the excerpt notice counts. The
+  // previous/next pair that also read this is gone: the rail navigates the
+  // sitting turn by turn, and a footer that appeared only once something was
+  // selected was a second answer to a question already answered above.
   const contributions = useMemo(
     () => visibleSegments.filter((s) => s.kind === 'SPEECH' && s.speechKey),
     [visibleSegments],
   )
-  const selectedIndex = selected
-    ? contributions.findIndex((s) => s.segmentKey === selected.segmentKey)
-    : -1
-  const previousContribution =
-    selectedIndex > 0 ? contributions[selectedIndex - 1] : undefined
-  const nextContribution =
-    selectedIndex >= 0 && selectedIndex < contributions.length - 1
-      ? contributions[selectedIndex + 1]
-      : undefined
 
   // ── scroll + focus (client-only; never during render) ────────────────────
   const scrollToPosition = useCallback((position: number) => {
@@ -402,10 +396,16 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
   return (
     <ParliamentShell activeTab="stenograme">
       <div className="space-y-6">
-        <BackToList />
-
         {/* ── heading band ─────────────────────────────────────────────── */}
         <header className="space-y-3">
+          {/* The availability badge is shown ONLY when it carries a warning.
+              "Transcriere completă" on every readable sitting was a caveat
+              printed where there is none, which is how readers learn to skip
+              the ones that matter — but the reverse, dropping the badge
+              entirely, hands a PARTIAL capture to a deep-linked reader dressed
+              as the whole sitting. So: COMPLETE is silent, PARTIAL and
+              SOURCE_ONLY still say so beside the date, and all three are stated
+              in words in the provenance card at the foot. */}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
             <span className="text-sm font-semibold tabular-nums text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
               {formatSittingDate(session.sessionDate, i18n.locale)}
@@ -418,15 +418,17 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
             >
               {stenogramChamberLabel(session.chamber)}
             </span>
-            <span
-              className={cn(
-                stenogramBadgeClassName,
-                'border-2',
-                stenogramAvailabilityToneClassName[session.availability],
-              )}
-            >
-              {stenogramAvailabilityLabel(session.availability)}
-            </span>
+            {session.availability === 'COMPLETE' ? null : (
+              <span
+                className={cn(
+                  stenogramBadgeClassName,
+                  'border-2',
+                  stenogramAvailabilityToneClassName[session.availability],
+                )}
+              >
+                {stenogramAvailabilityLabel(session.availability)}
+              </span>
+            )}
           </div>
 
           <h1
@@ -437,12 +439,13 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
             {title}
           </h1>
 
-          {session.presidingText || timeSpan ? (
-            <p className={stenogramMutedTextClassName}>
-              {[session.presidingText, timeSpan].filter(Boolean).join(' · ')}
-            </p>
-          ) : null}
-
+          {/* ONE row under the title: what this document IS on the left — its
+              official address, where a reader checking what they are reading
+              looks first — and what can be DONE with the page at the far right.
+              Both actions are icons: a line of words for two one-glyph actions
+              was wider than the sentence above it, and their names survive in
+              full on `aria-label`, which is what a screen reader announces
+              either way. */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 print:hidden">
             <a
               href={session.sourceUrl}
@@ -454,65 +457,44 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
               )}
             >
               {sourceLinkLabel(session.sourceSystem, session.sourceUrlKind)}
-              <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+              <ExternalLink className="h-3.5 w-3.5 shrink-0" aria-hidden />
             </a>
 
-            {/* Print prints WHAT IS ON SCREEN — and says so. A filtered
-                reading prints as the excerpt it is, carrying the amber notice
-                onto paper; printing the whole sitting from a filtered view
-                would hand back a document the reader never saw. */}
-            <Button
-              type="button"
-              variant="outline"
-              className="h-10 rounded-none border-2"
-              onClick={() => window.print()}
-            >
-              <Printer className="mr-2 h-4 w-4" aria-hidden />
-              {filterActive ? (
-                <Trans>Printează extrasul filtrat</Trans>
-              ) : (
-                <Trans>Printează</Trans>
-              )}
-            </Button>
-
-            <span className="inline-flex items-center gap-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-              <Trans>Copiază linkul</Trans>
+            <div className="flex items-center gap-1 sm:ml-auto">
               <CopyButton
                 ariaLabel={t`Copiază linkul acestei ședințe`}
                 onCopy={() =>
                   navigator.clipboard.writeText(window.location.href)
                 }
               />
-            </span>
+
+              {/* Print prints WHAT IS ON SCREEN — and its NAME says which: a
+                  filtered reading prints as the excerpt it is, carrying the
+                  amber notice onto paper, and printing the whole sitting from a
+                  filtered view would hand back a document the reader never saw.
+                  That distinction moves to the accessible name with the label. */}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                aria-label={
+                  filterActive
+                    ? t`Printează extrasul filtrat`
+                    : t`Printează stenograma`
+                }
+                className="relative h-9 w-9 p-2 text-muted-foreground hover:bg-background"
+                onClick={() => window.print()}
+              >
+                <Printer className="h-4 w-4" aria-hidden />
+              </Button>
+            </div>
           </div>
 
-          {/* Provenance, stated precisely — and printed on paper, where the
-              outbound link is not clickable and the URL has to be readable. */}
-          <div className={stenogramNoticeClassName}>
-            <p>
-              <Trans>Sursă: {sourceSystemLabel(session.sourceSystem)}.</Trans>{' '}
-              {dateProvenance}
+          {session.presidingText || timeSpan ? (
+            <p className={stenogramMutedTextClassName}>
+              {[session.presidingText, timeSpan].filter(Boolean).join(' · ')}
             </p>
-            {precisionNote ? <p className="mt-1">{precisionNote}</p> : null}
-            <p className="mt-1">
-              {stenogramAvailabilityDescription(session.availability)}
-            </p>
-            {session.sourceUpdatedAt ? (
-              <p className="mt-1">
-                <Trans>
-                  Captura sursei, actualizată la{' '}
-                  {formatSittingDateShort(
-                    session.sourceUpdatedAt.slice(0, 10),
-                    i18n.locale,
-                  )}
-                  .
-                </Trans>
-              </p>
-            ) : null}
-            <p className={cn(stenogramPrintOnlyClassName, 'mt-1 break-all')}>
-              {session.sourceUrl}
-            </p>
-          </div>
+          ) : null}
         </header>
 
         {unresolvedInterventie ? (
@@ -635,48 +617,12 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
           </div>
         </div>
 
-        {/* ── previous/next CONTRIBUTION — over the VISIBLE set ────────── */}
-        {selected && selectedVisible ? (
-          <nav
-            aria-label={t`Navigare între intervenții`}
-            className="flex flex-wrap items-center justify-between gap-3 border-t-2 border-[#b1b4b6] pt-4 dark:border-[var(--pnrr-border)] print:hidden"
-          >
-            {previousContribution ? (
-              <Button
-                type="button"
-                variant="outline"
-                className="h-10 max-w-full justify-start rounded-none border-2"
-                onClick={() => selectContribution(previousContribution)}
-              >
-                <ArrowLeft className="mr-2 h-4 w-4 shrink-0" aria-hidden />
-                <span className="truncate">
-                  <Trans>Intervenția anterioară</Trans>
-                  {previousContribution.speakerName
-                    ? ` · ${previousContribution.speakerName}`
-                    : null}
-                </span>
-              </Button>
-            ) : (
-              <span />
-            )}
-            {nextContribution ? (
-              <Button
-                type="button"
-                variant="outline"
-                className="h-10 max-w-full justify-end rounded-none border-2"
-                onClick={() => selectContribution(nextContribution)}
-              >
-                <span className="truncate">
-                  <Trans>Intervenția următoare</Trans>
-                  {nextContribution.speakerName
-                    ? ` · ${nextContribution.speakerName}`
-                    : null}
-                </span>
-                <ArrowRight className="ml-2 h-4 w-4 shrink-0" aria-hidden />
-              </Button>
-            ) : null}
-          </nav>
-        ) : null}
+        {/* No previous/next CONTRIBUTION pair here any more. It was a second
+            way to do what the intervention rail does better — every turn in the
+            sitting is one click away on it, and the arrow keys walk them — and
+            it only ever appeared once a contribution was selected, so it read
+            as a footer that came and went. The document itself remains the
+            fallback: the turns are in it, in order. */}
 
         {/* ── previous/next SITTING — served by the API, not derived ────── */}
         {previousSitting || nextSitting ? (
@@ -706,6 +652,38 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
             targetId={READER_TOP_ID}
             className="sm:w-auto"
           />
+        </div>
+
+        {/* Provenance, stated precisely — at the FOOT of the reading, which is
+            where a citation belongs and where a reader who has read the thing
+            goes to check what they read. Above the title it was four sentences
+            of qualification standing between the reader and the document.
+            Printed on paper too, where the outbound link is not clickable and
+            the URL has to be readable. */}
+        <div className={stenogramNoticeClassName}>
+          <p>
+            <Trans>Sursă: {sourceSystemLabel(session.sourceSystem)}.</Trans>{' '}
+            {dateProvenance}
+          </p>
+          {precisionNote ? <p className="mt-1">{precisionNote}</p> : null}
+          <p className="mt-1">
+            {stenogramAvailabilityDescription(session.availability)}
+          </p>
+          {session.sourceUpdatedAt ? (
+            <p className="mt-1">
+              <Trans>
+                Captura sursei, actualizată la{' '}
+                {formatSittingDateShort(
+                  session.sourceUpdatedAt.slice(0, 10),
+                  i18n.locale,
+                )}
+                .
+              </Trans>
+            </p>
+          ) : null}
+          <p className={cn(stenogramPrintOnlyClassName, 'mt-1 break-all')}>
+            {session.sourceUrl}
+          </p>
         </div>
       </div>
     </ParliamentShell>

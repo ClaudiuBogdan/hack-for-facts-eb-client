@@ -41,27 +41,44 @@ type Props = {
 }
 
 type ViewMode = 'party' | 'member'
-type VoteTab = 'pentru' | 'impotriva' | 'abtinere' | 'nu_a_votat'
+/** The four recorded choices, plus the unfiltered roll. */
+type VoteTab = MemberVoteChoice | typeof ALL_CHOICES_TAB
 
 const ALL_PARTIES_VALUE = 'all'
+const ALL_CHOICES_TAB = 'toate'
+
+/** How each choice is named on a card in the unfiltered tab. */
+const CHOICE_LABELS: Readonly<Record<MemberVoteChoice, string>> = {
+  pentru: 'Pentru',
+  impotriva: 'Împotrivă',
+  abtinere: 'Abținere',
+  nu_a_votat: 'Fără vot',
+}
 
 /**
- * All four recorded choices. `abtinere` was missing even though the source and
- * the tally both carry it, so abstaining members were invisible on the page that
- * exists to show how each member voted.
+ * All four recorded choices, then the whole roll. `abtinere` was missing even
+ * though the source and the tally both carry it, so abstaining members were
+ * invisible on the page that exists to show how each member voted.
+ *
+ * "Toate" comes LAST because it answers a different question from the four
+ * before it: not "who voted this way" but "who was on the list at all" — the
+ * one view where a group's full delegation is visible in one place, with each
+ * member's choice written on their card.
  */
 const TAB_CHOICES: ReadonlyArray<{ readonly id: VoteTab; readonly label: string }> = [
   { id: 'pentru', label: 'Voturi pentru' },
   { id: 'impotriva', label: 'Voturi împotrivă' },
   { id: 'abtinere', label: 'Abțineri' },
   { id: 'nu_a_votat', label: 'Fără vot' },
+  { id: ALL_CHOICES_TAB, label: 'Toate' },
 ]
 
 function filterByChoice(
   votes: ReadonlyArray<ParliamentMemberVoteRecord>,
-  choice: MemberVoteChoice,
+  tab: VoteTab,
 ): ParliamentMemberVoteRecord[] {
-  return votes.filter((vote) => vote.choice === choice)
+  if (tab === ALL_CHOICES_TAB) return [...votes]
+  return votes.filter((vote) => vote.choice === tab)
 }
 
 function filterByParty(
@@ -81,9 +98,15 @@ function groupByParty(
     map.set(vote.groupId, [...existing, vote])
   }
 
-  return [...map.entries()].sort((a, b) =>
-    (a[1][0]?.groupName ?? '').localeCompare(b[1][0]?.groupName ?? '', 'ro'),
-  )
+  // BIGGEST GROUP FIRST. Alphabetical order opened this list on AUR (1) and
+  // pushed PSD (87) into the middle — the question a reader brings here is who
+  // carried the vote, and the alphabet answers a different one. Ties fall back
+  // to the name so the order stays stable between renders.
+  return [...map.entries()].sort((a, b) => {
+    const bySize = b[1].length - a[1].length
+    if (bySize !== 0) return bySize
+    return (a[1][0]?.groupName ?? '').localeCompare(b[1][0]?.groupName ?? '', 'ro')
+  })
 }
 
 function getPartyOptions(
@@ -137,6 +160,21 @@ export function VoteIndividualVotesSection({
   const [partyFilter, setPartyFilter] = useState<string>(ALL_PARTIES_VALUE)
 
   const partyOptions = useMemo(() => getPartyOptions(detail), [detail])
+
+  // Counts follow the PARTY FILTER, not the whole division. A tab reading
+  // "Voturi pentru (205)" that opens onto 45 rows because a group is selected
+  // would be counting a set the reader cannot see.
+  const tabCounts = useMemo(() => {
+    const counts = new Map<VoteTab, number>()
+    for (const tab of TAB_CHOICES) {
+      counts.set(
+        tab.id,
+        filterByParty(filterByChoice(detail.memberVotes, tab.id), partyFilter)
+          .length,
+      )
+    }
+    return counts
+  }, [detail.memberVotes, partyFilter])
 
   return (
     <VoteIndividualVotesShell
@@ -217,7 +255,14 @@ export function VoteIndividualVotesSection({
       </div>
 
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as VoteTab)} className="mt-6">
-        <div className="-mx-5 overflow-x-auto px-5 [-ms-overflow-style:none] [scrollbar-width:none] sm:mx-0 sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
+        {/* The row scrolls at EVERY width. It used to go `sm:overflow-visible`,
+            on the assumption that five labels always fit above 640px — they do
+            not: with the counts on them the row is ~830px wide, so between
+            640px and ~830px the overflow escaped the card and scrolled the
+            whole document sideways, with the last tab off-canvas. The negative
+            margin tracks the card's own padding so the scroll area still bleeds
+            to its edge instead of cutting a label mid-word. */}
+        <div className="-mx-5 overflow-x-auto px-5 [-ms-overflow-style:none] [scrollbar-width:none] sm:-mx-6 sm:px-6 [&::-webkit-scrollbar]:hidden">
           <TabsList className={voteDetailTabListClassName}>
             {TAB_CHOICES.map((tab) => (
               <TabsTrigger
@@ -226,6 +271,14 @@ export function VoteIndividualVotesSection({
                 className={cn(voteDetailTabTriggerClassName, 'mr-6 last:mr-0 sm:mr-8')}
               >
                 {tab.label}
+                {/* BOTH a space and a margin, and both are load-bearing. The
+                    trigger is a flex container, so a whitespace-only text node
+                    is dropped from the layout — hence `ml-1.5` for the eye. But
+                    the accessible name is built from text, and without the
+                    space it announced "Voturi pentru(133)" — hence `{' '}`. */}{' '}
+                <span className="ml-1.5 tabular-nums">
+                  ({tabCounts.get(tab.id) ?? 0})
+                </span>
               </TabsTrigger>
             ))}
           </TabsList>
@@ -246,11 +299,14 @@ export function VoteIndividualVotesSection({
                 </p>
               ) : viewMode === 'party' ? (
                 <Accordion
+                  // ALL COLLAPSED (no `defaultValue`). Opening even one group
+                  // pushed the rest of the breakdown below the fold, so the
+                  // list stopped being a list — the reader lost the shape of
+                  // the vote, which groups and how large, to the roster of
+                  // whichever group happened to sort first. Closed, the whole
+                  // distribution fits on one screen and every group is one
+                  // click from its members.
                   type="multiple"
-                  // Only the FIRST group starts open. Expanding all of them
-                  // rendered every ballot of a 300-member division at once —
-                  // thousands of cards, no overview, and a page you cannot scan.
-                  defaultValue={groupedVotes.slice(0, 1).map(([groupId]) => groupId)}
                 >
                   {groupedVotes.map(([groupId, votes]) => (
                     <AccordionItem
@@ -271,6 +327,16 @@ export function VoteIndividualVotesSection({
                               groupName={vote.groupName}
                               judetName={vote.memberId ? memberJudete[vote.memberId] : undefined}
                               accentColor={groupColors[vote.groupId] ?? '#505a5f'}
+                              // Only in the unfiltered tab. Everywhere else the
+                              // tab IS the choice, and repeating it on 300
+                              // cards would be noise; here the cards mix all
+                              // four, so a card without it says nothing about
+                              // how that member voted.
+                              choiceLabel={
+                                tab.id === ALL_CHOICES_TAB
+                                  ? CHOICE_LABELS[vote.choice]
+                                  : undefined
+                              }
                             />
                           ))}
                         </div>
@@ -288,6 +354,11 @@ export function VoteIndividualVotesSection({
                       groupName={vote.groupName}
                       judetName={vote.memberId ? memberJudete[vote.memberId] : undefined}
                       accentColor={groupColors[vote.groupId] ?? '#505a5f'}
+                      choiceLabel={
+                        tab.id === ALL_CHOICES_TAB
+                          ? CHOICE_LABELS[vote.choice]
+                          : undefined
+                      }
                     />
                   ))}
                 </div>
