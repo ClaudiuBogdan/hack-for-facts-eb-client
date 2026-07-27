@@ -1,8 +1,11 @@
 import { Link } from '@tanstack/react-router'
-import { Landmark } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { ParliamentVoteSummary } from '@/schemas/parliament'
 import { cn } from '@/lib/utils'
+import cameraVotes1024 from '../assets/votes-camera-1024.png'
+import cameraVotes512 from '../assets/votes-camera-512.png'
+import senatVotes1024 from '../assets/votes-senat-1024.png'
+import senatVotes512 from '../assets/votes-senat-512.png'
 import {
   PARLIAMENT_ACTION_BLUE,
   PARLIAMENT_CAMERA_GREEN,
@@ -19,6 +22,10 @@ const CHAMBER_CONFIG = {
     description:
       'Voturile din Camera Deputaților sunt numite divizări. Pentru fiecare divizare, numărăm câți deputați au votat pentru, împotrivă sau s-au abținut.',
     findLabel: 'Caută voturi în Camera Deputaților',
+    illustration: {
+      src: cameraVotes1024,
+      srcSet: `${cameraVotes512} 512w, ${cameraVotes1024} 1024w`,
+    },
     recentLabel: 'Ultimele patru voturi în Camera Deputaților',
   },
   senat: {
@@ -27,6 +34,10 @@ const CHAMBER_CONFIG = {
     description:
       'Voturile din Senat sunt numite divizări. Pentru fiecare divizare, numărăm câți senatori au votat pentru, împotrivă sau s-au abținut.',
     findLabel: 'Caută voturi în Senat',
+    illustration: {
+      src: senatVotes1024,
+      srcSet: `${senatVotes512} 512w, ${senatVotes1024} 1024w`,
+    },
     recentLabel: 'Ultimele patru voturi în Senat',
   },
 } as const
@@ -34,6 +45,31 @@ const CHAMBER_CONFIG = {
 type Props = {
   readonly chamber: 'camera' | 'senat'
   readonly votes: ReadonlyArray<ParliamentVoteSummary>
+}
+
+type VoteIllustrationProps = {
+  readonly src: string
+  readonly srcSet: string
+}
+
+/** Responsive native image: explicit geometry prevents CLS; srcSet avoids oversized mobile downloads. */
+function VoteIllustration({ src, srcSet }: VoteIllustrationProps) {
+  return (
+    <img
+      src={src}
+      srcSet={srcSet}
+      sizes="(min-width: 1024px) 50vw, 100vw"
+      width={1024}
+      height={576}
+      alt=""
+      aria-hidden="true"
+      loading="lazy"
+      decoding="async"
+      fetchPriority="low"
+      draggable={false}
+      className="h-full w-full object-cover"
+    />
+  )
 }
 
 /** UK Parliament votes column — subgrid rows align headers/buttons across columns (lg+) */
@@ -58,13 +94,10 @@ export function VotesChamberPanel({ chamber, votes }: Props) {
       </div>
 
       <div className="border-b border-[#b1b4b6] dark:border-[var(--pnrr-border)]">
-        <div
-          className="flex aspect-[16/9] items-center justify-center bg-[#dee0e2] dark:bg-[var(--pnrr-subtle)]"
-          aria-hidden
-        >
-          <Landmark
-            className="h-14 w-14 text-[#505a5f]/30 dark:text-[var(--pnrr-muted)]/35"
-            strokeWidth={1}
+        <div className="aspect-[16/9] overflow-hidden bg-[#dee0e2] dark:bg-[var(--pnrr-subtle)]">
+          <VoteIllustration
+            src={config.illustration.src}
+            srcSet={config.illustration.srcSet}
           />
         </div>
         <div className="h-1.5" style={{ backgroundColor: config.color }} aria-hidden />
