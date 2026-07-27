@@ -17,6 +17,37 @@ export type MemberVoteChoice = z.infer<typeof MemberVoteChoiceSchema>;
 export const VoteOutcomeSchema = z.enum(["adoptat", "respins", "amânat"]);
 export type VoteOutcome = z.infer<typeof VoteOutcomeSchema>;
 
+/**
+ * What a vote was ABOUT. Server-side buckets, mutually exclusive and covering
+ * the whole corpus (measured 2026-07-28: they sum to all 20,745 rows).
+ *
+ * `legislative` is the only one backed by a COLUMN (`bill_key IS NOT NULL`).
+ * The rest are derived from the title text, which is free-form and messy — the
+ * UI labels them as derived rather than implying the same certainty.
+ */
+/**
+ * Ordering for the votes list. `voteDate` is the reader-meaningful axis;
+ * `voteKey` exists because the server offers it as a stable tiebreak, and both
+ * directions page correctly.
+ */
+export const VoteSortSchema = z.enum([
+  "voteDate_desc",
+  "voteDate_asc",
+  "voteKey_desc",
+  "voteKey_asc",
+]);
+export type VoteSort = z.infer<typeof VoteSortSchema>;
+
+export const VoteKindSchema = z.enum([
+  "legislative",
+  "amendment",
+  "procedural",
+  "chamber_decision",
+  "attendance",
+  "unclassified",
+]);
+export type VoteKind = z.infer<typeof VoteKindSchema>;
+
 export const ParliamentLegislatureSchema = z.object({
   id: z.string(),
   label: z.string(),
@@ -324,6 +355,15 @@ export const ParliamentVotesListSchema = z.object({
   pageSize: z.number().int().positive(),
   hasNextPage: z.boolean(),
   endCursor: z.string().optional(),
+  /**
+   * How many votes the ACTIVE FILTER matches — not how many are on screen.
+   *
+   * Capped by the server at 10,000; `totalEstimated` is true when the cap bit,
+   * and the UI must then say "peste 10.000" rather than print a number the
+   * source did not actually count.
+   */
+  total: z.number().int().nonnegative().optional(),
+  totalEstimated: z.boolean().optional(),
 });
 export type ParliamentVotesList = z.infer<typeof ParliamentVotesListSchema>;
 
@@ -1119,6 +1159,38 @@ export type ParliamentBillRelatedVote = z.infer<
 >;
 
 /** A single procedural step on the bill's chronological timeline (etape). */
+/**
+ * A stage-level edge the CHAMBER ITSELF printed as an anchor on the bill's
+ * procedure table. `targetKey` is set only when `resolutionStatus === 'linked'`;
+ * otherwise the status says why and `sourceHref` stays openable.
+ *
+ * `unresolved_registry` is not a data gap — the target is real, our registry
+ * just does not hold it (the Senate committee registry covers 33 of the 183
+ * GUIDs the source references, and plenary agenda days have no registry at all).
+ */
+export const ParliamentBillStepLinkSchema = z.object({
+  linkKind: z.enum([
+    'committee',
+    'vote',
+    'stenogram',
+    'agenda',
+    'document',
+    'act',
+  ]),
+  targetKey: z.string().nullable(),
+  sourceHref: z.string(),
+  sourceText: z.string().nullable(),
+  resolutionStatus: z.enum([
+    'linked',
+    'unresolved_registry',
+    'out_of_corpus',
+    'unresolved',
+  ]),
+})
+export type ParliamentBillStepLink = z.infer<
+  typeof ParliamentBillStepLinkSchema
+>
+
 export const ParliamentBillTimelineStepSchema = z.object({
   /** Stable key (source `position`); steps render in ascending position order. */
   stepId: z.string(),
@@ -1138,6 +1210,21 @@ export const ParliamentBillTimelineStepSchema = z.object({
   docUrls: z.array(z.string()).default([]),
   /** Highlighted milestone steps (adoptare/promulgare/lege/reexaminare/înaintat). */
   isMilestone: z.boolean(),
+  /**
+   * Procedure model. `rowKind='attachment'` means the SOURCE printed this row
+   * for an attached document or committee anchor, not for a procedural event —
+   * it folds under `parentPosition` instead of standing as a step of its own.
+   * Null when the derive has not classified the row: render it as a step rather
+   * than hiding it.
+   */
+  rowKind: z.enum(['step', 'attachment', 'unclassified']).optional(),
+  parentPosition: z.number().int().optional(),
+  /** Typed procedural kind, or absent when it was never established. */
+  stepKind: z.string().optional(),
+  /** Who acted: chamber | committee | government | other | unknown. */
+  actorKind: z.string().optional(),
+  /** Stage-level links resolved from the source's own anchors. */
+  links: z.array(ParliamentBillStepLinkSchema).default([]),
 });
 export type ParliamentBillTimelineStep = z.infer<
   typeof ParliamentBillTimelineStepSchema
@@ -1228,6 +1315,19 @@ export const ParliamentSearchSchema = z.object({
    */
   grupVot: z.string().optional().catch(undefined),
   alegere: MemberVoteChoiceSchema.optional().catch(undefined),
+  /**
+   * Vote KIND — what the chamber was actually voting on.
+   *
+   * Only `legislative` rests on a column (`bill_key IS NOT NULL`). The other
+   * five are classified from the free-text title, so the UI must not present
+   * them as equally certain. See `VOTE_KIND_LABELS`.
+   */
+  tipVot: z
+    .union([VoteKindSchema, z.array(VoteKindSchema)])
+    .optional()
+    .catch(undefined),
+  /** Ordering. Absent = the server default, newest vote first. */
+  ordine: VoteSortSchema.optional().catch(undefined),
   billType: BillTypeSchema.optional().catch(undefined),
   billLocation: BillCurrentLocationSchema.optional().catch(undefined),
   sortBy: BillSortBySchema.optional().catch(undefined),

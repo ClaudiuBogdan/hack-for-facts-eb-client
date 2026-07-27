@@ -346,15 +346,21 @@ export const PARLIAMENT_VOTES_QUERY = /* GraphQL */ `
   query ParliamentVotes(
     $filter: ParliamentVotesFilter
     $sort: ParliamentVoteSort
+    $dir: ParliamentSortDir
     $first: Int
     $after: String
   ) {
     parliamentVotes(
       filter: $filter
       sort: $sort
+      dir: $dir
       first: $first
       after: $after
     ) {
+      # How many votes the ACTIVE FILTER matches — capped by the server at
+      # 10,000, with totalEstimated flagging that the cap bit.
+      total
+      totalEstimated
       edges {
         cursor
         node {
@@ -388,6 +394,8 @@ const rawVoteListNodeSchema = rawVoteCoreSchema.extend({
 
 export const parliamentVotesResponseSchema = z.object({
   parliamentVotes: z.object({
+    total: z.number().nullable().optional(),
+    totalEstimated: z.boolean().nullable().optional(),
     edges: z.array(
       z.object({ cursor: z.string(), node: rawVoteListNodeSchema }),
     ),
@@ -398,6 +406,64 @@ export const parliamentVotesResponseSchema = z.object({
   }),
 });
 export type RawParliamentVoteListNode = z.infer<typeof rawVoteListNodeSchema>;
+
+// ---------------------------------------------------------------------------
+// Vote-kind counts — one aliased round trip
+// ---------------------------------------------------------------------------
+
+/**
+ * How many votes each KIND holds under the caller's other filters.
+ *
+ * Six aliased counts in ONE request rather than six requests: the counts are
+ * cheap server-side (1–65 ms each, measured 2026-07) but six round trips on a
+ * filter panel is not.
+ *
+ * The counts exist so an EMPTY bucket is visible instead of silently dead — the
+ * Senate genuinely has zero amendment and zero attendance votes, and a control
+ * offering them with no hint would look broken.
+ */
+export const PARLIAMENT_VOTE_KIND_COUNTS_QUERY = /* GraphQL */ `
+  query ParliamentVoteKindCounts($chamber: ParliamentVotesChamberFilter) {
+    legislative: parliamentVotes(
+      filter: { chamber: $chamber, kind: { in: ["legislative"] } }
+      first: 1
+    ) { total totalEstimated }
+    amendment: parliamentVotes(
+      filter: { chamber: $chamber, kind: { in: ["amendment"] } }
+      first: 1
+    ) { total totalEstimated }
+    procedural: parliamentVotes(
+      filter: { chamber: $chamber, kind: { in: ["procedural"] } }
+      first: 1
+    ) { total totalEstimated }
+    chamber_decision: parliamentVotes(
+      filter: { chamber: $chamber, kind: { in: ["chamber_decision"] } }
+      first: 1
+    ) { total totalEstimated }
+    attendance: parliamentVotes(
+      filter: { chamber: $chamber, kind: { in: ["attendance"] } }
+      first: 1
+    ) { total totalEstimated }
+    unclassified: parliamentVotes(
+      filter: { chamber: $chamber, kind: { in: ["unclassified"] } }
+      first: 1
+    ) { total totalEstimated }
+  }
+`;
+
+const rawKindCountSchema = z.object({
+  total: z.number().nullable().optional(),
+  totalEstimated: z.boolean().nullable().optional(),
+});
+
+export const parliamentVoteKindCountsResponseSchema = z.object({
+  legislative: rawKindCountSchema,
+  amendment: rawKindCountSchema,
+  procedural: rawKindCountSchema,
+  chamber_decision: rawKindCountSchema,
+  attendance: rawKindCountSchema,
+  unclassified: rawKindCountSchema,
+});
 
 // ---------------------------------------------------------------------------
 // Single vote (+ ballots) — parliamentVote(voteKey)
@@ -986,7 +1052,11 @@ export const PARLIAMENT_BILL_QUERY = /* GraphQL */ `
       billType
       lastEventDate
       dossierBillKeys
-      events { sourceBillKey position eventDate eventDateText description chamberCode committee voteIdv docs }
+      events {
+        sourceBillKey position eventDate eventDateText description chamberCode committee voteIdv docs
+        rowKind parentPosition stepKind actorKind
+        links { linkKind targetKey sourceHref sourceText resolutionStatus }
+      }
       documents { sourceBillKey url label kind position }
       initiators { mandateKey fullName groupName }
       relatedVotes {
@@ -1032,6 +1102,24 @@ const rawBillEventSchema = z.object({
   // document links (often empty — bills carry bill-level documents instead).
   voteIdv: z.string().nullable(),
   docs: z.unknown().nullable(),
+  // Procedure model (server: parliament.bill_procedure_steps, 1:1 with the
+  // event). All optional/nullable — an event loaded before the derive last ran
+  // is legitimately unclassified and must still render.
+  rowKind: z.string().nullable().optional(),
+  parentPosition: z.number().nullable().optional(),
+  stepKind: z.string().nullable().optional(),
+  actorKind: z.string().nullable().optional(),
+  links: z
+    .array(
+      z.object({
+        linkKind: z.string(),
+        targetKey: z.string().nullable(),
+        sourceHref: z.string(),
+        sourceText: z.string().nullable(),
+        resolutionStatus: z.string(),
+      })
+    )
+    .optional(),
 });
 const rawBillDocumentSchema = z.object({
   sourceBillKey: z.string().optional(),

@@ -17,6 +17,7 @@ import {
   fetchParliamentFreshness,
   fetchParliamentGroup,
   fetchParliamentGroupCohesion,
+  fetchParliamentVoteKindCounts,
   fetchParliamentGroupMembers,
   fetchParliamentGroups,
   fetchParliamentHub,
@@ -125,6 +126,15 @@ export function useParliamentGroupCohesion(
     enabled: Boolean(chamber),
     // A group's voting record over six months does not move minute to minute.
     staleTime: 10 * 60 * 1000,
+  })
+}
+
+/** Per-kind vote counts for the filter panel. Stable enough to cache hard. */
+export function useParliamentVoteKindCounts(chamber: ParliamentChamber) {
+  return useQuery({
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'vote-kind-counts', chamber],
+    queryFn: () => fetchParliamentVoteKindCounts(chamber),
+    staleTime: 30 * 60 * 1000,
   })
 }
 

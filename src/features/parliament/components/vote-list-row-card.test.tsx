@@ -1,0 +1,64 @@
+import { render, screen } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+import type { ParliamentVoteSummary } from '@/schemas/parliament'
+import { VoteListRowCard } from './vote-list-row-card'
+
+vi.mock('@tanstack/react-router', () => ({
+  Link: ({ children, ...rest }: { children: React.ReactNode }) => (
+    <a {...(rest as Record<string, unknown>)}>{children}</a>
+  ),
+}))
+
+function vote(overrides: Partial<ParliamentVoteSummary> = {}): ParliamentVoteSummary {
+  return {
+    voteId: 'cdep:1',
+    chamber: 'camera',
+    title: 'Proiect de Lege pentru completarea art.279',
+    heldAt: '2026-06-10T00:00:00+03:00',
+    outcome: 'adoptat',
+    tally: { pentru: 205, impotriva: 2 },
+    ...overrides,
+  } as ParliamentVoteSummary
+}
+
+describe('VoteListRowCard', () => {
+  it('prints the outcome as a WORD, not only as an accent colour', () => {
+    // On the old grid card the result was carried by border colour alone, which
+    // is invisible to a reader who cannot separate the green from the crimson.
+    render(<VoteListRowCard vote={vote({ outcome: 'respins' })} />)
+    expect(screen.getByText('Respins')).toBeInTheDocument()
+  })
+
+  it('shows the counts the source recorded', () => {
+    render(<VoteListRowCard vote={vote()} />)
+    expect(screen.getByText('Pentru')).toBeInTheDocument()
+    expect(screen.getByText('205')).toBeInTheDocument()
+    expect(screen.getByText('Împotrivă')).toBeInTheDocument()
+  })
+
+  it('omits an absent tally field rather than printing it as zero', () => {
+    // `abtinere` / `nuAVotat` are optional on the summary shape; a missing count
+    // is unknown, not zero.
+    render(<VoteListRowCard vote={vote()} />)
+    expect(screen.queryByText('Abțineri')).not.toBeInTheDocument()
+    expect(screen.queryByText('Nu au votat')).not.toBeInTheDocument()
+  })
+
+  it('shows abstentions and absences when the source did record them', () => {
+    render(
+      <VoteListRowCard
+        vote={vote({ tally: { pentru: 205, impotriva: 2, abtinere: 71, nuAVotat: 1 } })}
+      />,
+    )
+    expect(screen.getByText('Abțineri')).toBeInTheDocument()
+    expect(screen.getByText('71')).toBeInTheDocument()
+    expect(screen.getByText('Nu au votat')).toBeInTheDocument()
+  })
+
+  it('names the outcome in the accessible label alongside the title', () => {
+    render(<VoteListRowCard vote={vote()} />)
+    expect(
+      screen.getByLabelText(/Proiect de Lege pentru completarea art.279 — Adoptat/),
+    ).toBeInTheDocument()
+  })
+})

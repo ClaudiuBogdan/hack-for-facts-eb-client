@@ -65,6 +65,20 @@ class MockIntersectionObserver implements IntersectionObserver {
 window.IntersectionObserver =
   MockIntersectionObserver as unknown as typeof IntersectionObserver;
 
+// Mock ResizeObserver, for the same reason and with the same shape: jsdom has
+// none, and Radix's ScrollArea constructs one in a layout effect — so any test
+// rendering a component that contains a scroll area threw before it could
+// assert anything.
+class MockResizeObserver implements ResizeObserver {
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
+}
+window.ResizeObserver =
+  MockResizeObserver as unknown as typeof ResizeObserver;
+globalThis.ResizeObserver =
+  MockResizeObserver as unknown as typeof ResizeObserver;
+
 window.scrollTo = vi.fn();
 
 const localStorageStore: Record<string, string> = {};

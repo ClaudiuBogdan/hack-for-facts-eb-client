@@ -19,6 +19,7 @@ import {
   type ParliamentBillsSearch,
   type ParliamentChamber,
   type ParliamentGroupCohesion,
+  type VoteKind,
   type ParliamentChamberComposition,
   type ParliamentCommittee,
   type ParliamentCommitteeDetail,
@@ -67,6 +68,8 @@ import {
   parliamentGroupMembersResponseSchema,
   parliamentGroupsResponseSchema,
   parliamentVoteCohesionResponseSchema,
+  parliamentVoteKindCountsResponseSchema,
+  PARLIAMENT_VOTE_KIND_COUNTS_QUERY,
   PARLIAMENT_VOTE_COHESION_QUERY,
   parliamentMemberInitiativesResponseSchema,
   parliamentMemberProfileResponseSchema,
@@ -113,6 +116,7 @@ import {
   toGraphqlChamber,
 } from './graphql/parliament-translate'
 import { resolveGroupColor } from '../lib/group-colors'
+import { toVoteSortArgs } from '../lib/votes-filter-state'
 
 const DEFAULT_MEMBERS_PAGE_SIZE = 20
 const DEFAULT_VOTES_PAGE_SIZE = 10
@@ -445,21 +449,55 @@ export async function fetchParliamentVotesLive(
 
   const data = await graphqlQuery<unknown>(
     PARLIAMENT_VOTES_QUERY,
-    { filter, sort: 'voteDate', first: pageSize, ...(after ? { after } : {}) },
+    // `sort` and `dir` are both part of the CURSOR identity server-side, so
+    // they must be re-sent unchanged on every page — a cursor minted under one
+    // ordering is refused under another rather than paging the wrong way.
+    { filter, ...toVoteSortArgs(search.ordine), first: pageSize, ...(after ? { after } : {}) },
     { operationName: 'parliamentVotes' },
   )
   const parsed = parliamentVotesResponseSchema.parse(data)
   const votes = parsed.parliamentVotes.edges.map((e) => mapVoteListItem(e.node))
   const { hasNextPage, endCursor } = parsed.parliamentVotes.pageInfo
 
-  // Pass the connection's own cursor state straight through. No invented total,
-  // no invented page count — `parliamentVotes` is keyset-paginated and reports
-  // neither.
+  // Cursor state straight through, and the SERVER's own total — still no
+  // invented page count, because `parliamentVotes` is keyset-paginated and
+  // reports none. `total` is capped at 10,000; `totalEstimated` says when the
+  // cap bit, so the UI can say "peste 10.000" instead of printing a number the
+  // source did not actually reach.
+  const { total, totalEstimated } = parsed.parliamentVotes
   return {
     votes,
     pageSize,
     hasNextPage,
     ...(endCursor ? { endCursor } : {}),
+    ...(typeof total === 'number' ? { total } : {}),
+    ...(typeof totalEstimated === 'boolean' ? { totalEstimated } : {}),
+  }
+}
+
+/**
+ * Per-kind vote counts for one chamber, in a single aliased request.
+ *
+ * Returned even when zero: a bucket the chamber genuinely never uses (the
+ * Senate has no amendment or attendance votes) must be VISIBLE as empty in the
+ * filter, not quietly missing.
+ */
+export async function fetchParliamentVoteKindCountsLive(
+  chamber: ParliamentChamber,
+): Promise<Record<VoteKind, number>> {
+  const data = await graphqlQuery<unknown>(
+    PARLIAMENT_VOTE_KIND_COUNTS_QUERY,
+    { chamber: { eq: toGraphqlChamber(chamber) } },
+    { operationName: 'parliamentVoteKindCounts' },
+  )
+  const parsed = parliamentVoteKindCountsResponseSchema.parse(data)
+  return {
+    legislative: parsed.legislative.total ?? 0,
+    amendment: parsed.amendment.total ?? 0,
+    procedural: parsed.procedural.total ?? 0,
+    chamber_decision: parsed.chamber_decision.total ?? 0,
+    attendance: parsed.attendance.total ?? 0,
+    unclassified: parsed.unclassified.total ?? 0,
   }
 }
 

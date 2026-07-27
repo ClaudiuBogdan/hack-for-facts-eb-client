@@ -19,6 +19,7 @@ import type {
   ParliamentBillsSearch,
   ParliamentChamber,
   ParliamentGroupCohesion,
+  VoteKind,
   ParliamentChamberComposition,
   ParliamentCommittee,
   ParliamentCommitteeDetail,
@@ -118,6 +119,7 @@ import {
   fetchParliamentChamberCompositionLive,
   fetchParliamentGroupLive,
   fetchParliamentGroupCohesionLive,
+  fetchParliamentVoteKindCountsLive,
   fetchParliamentGroupMembersLive,
   fetchParliamentGroupsLive,
   fetchParliamentHubLive,
@@ -206,6 +208,17 @@ export async function fetchParliamentGroupCohesion(
   window: { from: string; to: string },
 ): Promise<ParliamentGroupCohesion[]> {
   return fetchParliamentGroupCohesionLive(chamber, window)
+}
+
+/**
+ * Vote-kind counts. Like cohesion, there is no mock branch — the buckets are a
+ * server-side classification of the real corpus, and inventing counts would put
+ * fabricated numbers next to every checkbox in the filter.
+ */
+export async function fetchParliamentVoteKindCounts(
+  chamber: ParliamentChamber,
+): Promise<Record<VoteKind, number>> {
+  return fetchParliamentVoteKindCountsLive(chamber)
 }
 
 export async function fetchParliamentVotes(

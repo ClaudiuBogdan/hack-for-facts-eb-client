@@ -12,7 +12,10 @@ import type {
   ParliamentMembersSearch,
   ParliamentVotesSearch,
 } from '@/schemas/parliament'
+import { VoteKindSchema } from '@/schemas/parliament'
 import { toGraphqlChamber } from './parliament-translate'
+
+const VOTE_KIND_COUNT = VoteKindSchema.options.length
 
 /** A vote-date bound in `YYYY-MM-DD` (the GraphQL `Date` scalar form). */
 function toDateBound(value: string | undefined): string | undefined {
@@ -39,7 +42,8 @@ export interface ParliamentVotesFilterInput {
    * cohesion bar's share of BALLOT SLOTS. The two numbers will not agree and
    * must never be presented as if they do.
    */
-  groupVote?: { group: string; choice: string }
+  groupVote?: { group: string; choice?: string }
+  kind?: { in: string[] }
 }
 
 /**
@@ -71,12 +75,25 @@ export function buildVotesFilter(
   const q = search.q?.trim()
   if (q) filter.q = { contains: q }
 
-  // Both halves or neither: a group with no stance, or a stance with no group,
-  // does not describe a subset of votes, and sending half of it would silently
-  // widen the list while the UI still showed the chip.
+  // The GROUP is what makes this a filter; the stance only narrows it further.
+  // A group alone means "every vote this group cast ballots on"; a stance with
+  // no group describes no subset at all, so it is dropped rather than sent.
   const group = search.grupVot?.trim()
-  if (group && search.alegere) {
-    filter.groupVote = { group, choice: search.alegere }
+  if (group) {
+    filter.groupVote = {
+      group,
+      ...(search.alegere ? { choice: search.alegere } : {}),
+    }
+  }
+
+  // A single value and an array both arrive as `tipVot`; normalise to the
+  // server's `in` shape. Selecting EVERY kind is the same as selecting none, so
+  // it is dropped rather than sent as a six-way `in` the planner must evaluate.
+  const kinds = search.tipVot
+    ? (Array.isArray(search.tipVot) ? search.tipVot : [search.tipVot])
+    : []
+  if (kinds.length > 0 && kinds.length < VOTE_KIND_COUNT) {
+    filter.kind = { in: [...kinds] }
   }
 
   return filter

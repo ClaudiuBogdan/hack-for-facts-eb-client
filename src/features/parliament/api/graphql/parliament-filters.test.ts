@@ -6,6 +6,41 @@ import {
   buildVotesFilter,
 } from './parliament-filters'
 
+describe('buildVotesFilter — kind', () => {
+  it('sends a single kind as an `in` list', () => {
+    expect(buildVotesFilter({ tipVot: 'legislative' }).kind).toEqual({
+      in: ['legislative'],
+    })
+  })
+
+  it('sends several kinds', () => {
+    expect(
+      buildVotesFilter({ tipVot: ['legislative', 'attendance'] }).kind,
+    ).toEqual({ in: ['legislative', 'attendance'] })
+  })
+
+  it('drops the filter when EVERY kind is selected', () => {
+    // Selecting all six is the same question as selecting none, so there is no
+    // reason to make the planner evaluate a six-way `in`.
+    expect(
+      buildVotesFilter({
+        tipVot: [
+          'legislative',
+          'amendment',
+          'procedural',
+          'chamber_decision',
+          'attendance',
+          'unclassified',
+        ],
+      }).kind,
+    ).toBeUndefined()
+  })
+
+  it('drops the filter when none is selected', () => {
+    expect(buildVotesFilter({}).kind).toBeUndefined()
+  })
+})
+
 describe('buildVotesFilter — groupVote', () => {
   it('sends the pair when both halves are present', () => {
     expect(
@@ -13,9 +48,10 @@ describe('buildVotesFilter — groupVote', () => {
     ).toEqual({ groupVote: { group: 'PSD', choice: 'pentru' } })
   })
 
-  it('sends nothing when only the group is set', () => {
-    // Half a constraint would widen the list while the UI still showed the chip.
-    expect(buildVotesFilter({ grupVot: 'PSD' })).toEqual({})
+  it('sends the group ALONE, meaning every vote it took part in', () => {
+    expect(buildVotesFilter({ grupVot: 'PSD' })).toEqual({
+      groupVote: { group: 'PSD' },
+    })
   })
 
   it('sends nothing when only the choice is set', () => {
