@@ -10,15 +10,21 @@ import { ParliamentStenogramInterventionRail } from './parliament-stenogram-inte
 
 /**
  * THE RULE THIS FILE EXISTS TO HOLD: the rail draws exactly ONE horizontal line
- * across its track — the progress head. The reader reported the previous
- * drawing as "two bars for the progress when I hover", because the live and
- * hovered markers grew into full-track rules of their own and a rail with two
- * rules on it has two reading positions and no way to tell which is true.
+ * across its track — the progress head. The reader reported an earlier drawing
+ * as "two bars for the progress when I hover", because the live and hovered
+ * markers grew into full-track rules of their own and a rail with two rules on
+ * it has two reading positions and no way to tell which is true.
+ *
+ * The wave lives inside that rule rather than around it: pointing at the rail
+ * lengthens and darkens the marks near the pointer, and never thickens one, so
+ * no amount of hovering can raise a second horizontal rule.
  *
  * jsdom has no Tailwind and no layout, so the assertions here are on the state
  * CLASSES and the `data-rail-*` attributes rather than on painted pixels. That
  * is the point: the classes are where the regression would come back, and a
- * class assertion catches it in CI rather than in Chrome.
+ * class assertion catches it in CI rather than in Chrome. The wave is the one
+ * thing that IS measurable here — it is written as an inline custom property —
+ * so it is asserted as numbers.
  */
 
 /** An observer whose callback the test drives, so a marker can be "reading". */
@@ -84,6 +90,17 @@ const dense: readonly StenogramInterventionMarker[] = Array.from(
   (_, index) => marker(index + 1, index / 400),
 )
 
+/**
+ * Three turns a couple of dozen pixels apart: far enough to keep one slot each,
+ * close enough that one wave reaches all three — which is what makes the
+ * falloff measurable.
+ */
+const neighbours: readonly StenogramInterventionMarker[] = [
+  marker(1, 0.1),
+  marker(2, 0.13),
+  marker(3, 0.16),
+]
+
 function renderRail({
   interventions = sparse,
   selectedPosition,
@@ -118,7 +135,27 @@ const tickOf = (button: HTMLElement) =>
   button.querySelector<HTMLElement>('[data-rail-tick]')!
 
 const nodeOf = (button: HTMLElement) =>
-  button.querySelector<HTMLElement>('[data-rail-node]')!
+  button.querySelector<HTMLElement>('[data-rail-node]')
+
+const trackOf = (container: HTMLElement) =>
+  container.querySelector<HTMLElement>('[data-rail-track]')!
+
+/** The buttons of one crowded slot — every turn quantised onto the same top. */
+const markersSharingASlot = () => {
+  const bySlot = new Map<string, HTMLElement[]>()
+  for (const button of markers()) {
+    const slot = bySlot.get(button.style.top) ?? []
+    slot.push(button)
+    bySlot.set(button.style.top, slot)
+  }
+  return [...bySlot.values()].find((slot) => slot.length > 1) ?? []
+}
+
+/** How hard one mark is leaning, 0 when it carries no wave at all. */
+const waveOf = (el: HTMLElement) =>
+  Number(el.style.getPropertyValue('--rail-wave') || '0')
+
+const waveCenterOf = (el: HTMLElement) => Number(el.dataset.waveCenter)
 
 /** Drive the reading position onto one contribution. */
 function readAt(position: number) {
@@ -131,18 +168,26 @@ beforeEach(() => {
   ControllableIntersectionObserver.instances = []
   vi.stubGlobal('IntersectionObserver', ControllableIntersectionObserver)
   stubResizeObserver()
+  // The wave is painted inside an animation frame. Running it synchronously is
+  // what makes it assertable; returning 0 keeps the component's "a frame is
+  // already booked" guard honest across calls.
+  vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+    callback(0)
+    return 0
+  })
+  vi.stubGlobal('cancelAnimationFrame', () => {})
 })
 
-describe('ParliamentStenogramInterventionRail — one progress line', () => {
-  it('draws exactly one horizontal rule, and it is the progress head', () => {
+describe('ParliamentStenogramInterventionRail — bars, and nothing but', () => {
+  it('draws no horizontal rule and no filled surface at all', () => {
     const { container } = renderRail()
     readAt(2)
 
-    const heads = container.querySelectorAll('[data-rail-head]')
-    expect(heads).toHaveLength(1)
-    // The head is the only full-bleed rule: `inset-x-0` plus a height class.
-    expect(heads[0]!.className).toContain('inset-x-0')
-    expect(heads[0]!.className).toContain('h-0.5')
+    // The wash, the rule where it ended, and the paper an opened cluster used
+    // to sit on: every one of them was a box around what the marks already say.
+    expect(container.querySelector('[data-rail-progress]')).toBeNull()
+    expect(container.querySelector('[data-rail-head]')).toBeNull()
+    expect(container.querySelector('[data-rail-fan]')).toBeNull()
 
     // Nothing a marker draws may span the track. `inset-x-0` is how the old
     // live tick broke out of it.
@@ -153,7 +198,7 @@ describe('ParliamentStenogramInterventionRail — one progress line', () => {
     }
   })
 
-  it('keeps every tick the same size in every state — no bar can grow back', () => {
+  it('keeps every tick the same HEIGHT in every state — no bar can grow back', () => {
     // idle, reading and selected all at once, so a state-dependent geometry
     // would show up as a difference between these three.
     renderRail({ selectedPosition: 3 })
@@ -165,134 +210,292 @@ describe('ParliamentStenogramInterventionRail — one progress line', () => {
     for (const button of markers()) {
       const tick = tickOf(button)
       expect(tick.style.height).toBe('3px')
-      // Exactly the track's own width, never wider.
-      expect(tick.className).toContain('left-1')
-      expect(tick.className).toContain('right-2')
-      expect(tick.className).not.toContain('left-0')
-      expect(tick.className).not.toContain('right-1')
+      // Pinned to the track's left edge and one fixed resting width. The wave
+      // is allowed to lengthen it — `scale-x` — and nothing else.
+      expect(tick.className).toContain('left-2')
+      expect(tick.className).toContain('w-3')
+      expect(tick.className).toContain(
+        'scale-x-[calc(1+var(--rail-wave,0)*1.2)]',
+      )
+      expect(tick.className).not.toContain('scale-y')
+      expect(tick.className).not.toContain('h-')
     }
   })
 
-  it('never darkens a tick on hover or focus — the emphasis is the node', () => {
+  it('never gives a tick a colour of its own on hover — the wave is weight', () => {
     renderRail()
     readAt(2)
 
-    for (const button of markers()) {
-      const tick = tickOf(button)
-      // A near-black tick spanning the track IS a second progress bar.
-      expect(tick.className).not.toContain('group-hover/marker:bg-')
-      expect(tick.className).not.toContain('group-focus-visible/marker:bg-')
-    }
+    // An idle mark: resting weight, ramping to full under the pointer. A hue
+    // for "pointed at" would compete with the accent the viewport run owns.
+    const tick = tickOf(markers()[0]!)
+    expect(tick.className).not.toContain('group-hover/marker:bg-')
+    expect(tick.className).not.toContain('group-focus-visible/marker:bg-')
+    expect(tick.className).toContain('opacity-[calc(0.3+var(--rail-wave,0)*0.7)]')
+  })
+
+  it('leaves the track itself unpainted — no border, no paper', () => {
+    const { container } = renderRail()
+
+    const track = trackOf(container)
+    expect(track.className).not.toContain('border')
+    expect(track.className).not.toContain('bg-')
   })
 })
 
-describe('ParliamentStenogramInterventionRail — the compact shape vocabulary', () => {
-  it('tells the reading position with a round accent node, ringed for contrast', () => {
+describe('ParliamentStenogramInterventionRail — the wave', () => {
+  it('crests under the pointer and falls away with distance', () => {
+    const { container } = renderRail({ interventions: neighbours })
+    const [first, second, third] = markers() as [
+      HTMLElement,
+      HTMLElement,
+      HTMLElement,
+    ]
+
+    act(() => {
+      fireEvent.pointerMove(trackOf(container), {
+        clientY: waveCenterOf(first),
+      })
+    })
+
+    expect(waveOf(first)).toBe(1)
+    expect(waveOf(second)).toBeGreaterThan(0)
+    expect(waveOf(second)).toBeLessThan(waveOf(first))
+    expect(waveOf(third)).toBeGreaterThan(0)
+    expect(waveOf(third)).toBeLessThan(waveOf(second))
+  })
+
+  it('moves with the pointer, leaving no mark leaning behind it', () => {
+    const { container } = renderRail({ interventions: neighbours })
+    const [first, , third] = markers() as [
+      HTMLElement,
+      HTMLElement,
+      HTMLElement,
+    ]
+    const track = trackOf(container)
+
+    act(() => {
+      fireEvent.pointerMove(track, { clientY: waveCenterOf(first) })
+    })
+    expect(waveOf(first)).toBe(1)
+
+    // Far enough that the first mark drops out of the wave's reach entirely.
+    act(() => {
+      fireEvent.pointerMove(track, { clientY: waveCenterOf(third) + 400 })
+    })
+    expect(waveOf(first)).toBe(0)
+    expect(waveOf(third)).toBe(0)
+  })
+
+  it('drops the whole wave when the pointer leaves the rail', () => {
+    const { container } = renderRail({ interventions: neighbours })
+    const track = trackOf(container)
+
+    act(() => {
+      fireEvent.pointerMove(track, {
+        clientY: waveCenterOf(markers()[0]!),
+      })
+    })
+    act(() => {
+      fireEvent.pointerLeave(track)
+    })
+
+    for (const button of markers()) expect(waveOf(button)).toBe(0)
+  })
+
+  it('raises the same swell from the keyboard, at the focused mark', async () => {
+    renderRail({ interventions: neighbours })
+
+    await act(async () => markers()[1]!.focus())
+
+    expect(waveOf(markers()[1]!)).toBe(1)
+    expect(waveOf(markers()[0]!)).toBeGreaterThan(0)
+    expect(waveOf(markers()[0]!)).toBeLessThan(1)
+  })
+
+  it('leans a collapsed cluster too, so a dense stretch is not dead to it', () => {
+    const { container } = renderRail({ interventions: dense })
+
+    const cluster = container.querySelector<HTMLElement>('[data-rail-cluster]')!
+    expect(cluster.dataset.railWave).toBe('')
+
+    act(() => {
+      fireEvent.pointerMove(trackOf(container), {
+        clientY: waveCenterOf(cluster),
+      })
+    })
+    expect(waveOf(cluster)).toBe(1)
+  })
+})
+
+describe('ParliamentStenogramInterventionRail — where the reader is', () => {
+  it('tells the section being read with a solid accent BAR, not a dot', () => {
     renderRail()
     readAt(2)
 
     const reading = markers()[1]!
     expect(reading.dataset.state).toBe('reading')
 
-    const node = nodeOf(reading)
-    expect(node.dataset.node).toBe('reading')
-    expect(node.className).toContain('rounded-full')
-    expect(node.className).toContain('bg-[#1d70b8]')
-    // The surface ring is what keeps the dot legible over the progress fill in
-    // either theme.
-    expect(node.className).toContain('ring-2')
-    expect(node.className).toContain('ring-white')
-    expect(node.className).toContain('dark:ring-[var(--pnrr-card)]')
-
-    // The tick under it is not drawn at all, so the two cannot read as two.
-    expect(tickOf(reading).className).toContain('opacity-0')
+    // The dot only ever made sense while there was a reading line for it to sit
+    // on. Its bar is the same mark as every other, in the accent at full weight.
+    expect(nodeOf(reading)).toBeNull()
+    const tick = tickOf(reading)
+    expect(tick.className).toContain('bg-[#1d70b8]')
+    expect(tick.className).toContain('opacity-100')
+    expect(tick.className).not.toContain('invisible')
+    expect(tick.className).not.toContain('rounded-full')
   })
 
-  it('answers hover and focus with a hollow ring that is secondary to it', () => {
-    renderRail()
+  it('lights the whole run of contributions the viewport holds', () => {
+    renderRail({ interventions: neighbours })
+    // Two blocks on screen at once: the run covers both, and the topmost of
+    // them is the section being read.
+    readAt(1)
     readAt(2)
 
-    const idle = markers()[0]!
-    const cue = nodeOf(idle)
-    expect(cue.dataset.node).toBe('cue')
-    expect(cue.className).toContain('rounded-full')
-    // Hollow and smaller than the accent dot: obvious, but plainly not the
-    // reading position.
-    expect(cue.className).toContain('size-2')
-    expect(cue.className).toContain('border-2')
-    expect(nodeOf(markers()[1]!).className).toContain('size-2.5')
-
-    // Hidden until pointed at or focused, and it grows in place.
-    expect(cue.className).toContain('scale-0')
-    expect(cue.className).toContain('group-hover/marker:scale-100')
-    expect(cue.className).toContain('group-focus-visible/marker:scale-100')
-    // …while the tick it replaces steps aside instead of stacking with it.
-    expect(tickOf(idle).className).toContain('group-hover/marker:opacity-0')
-    expect(tickOf(idle).className).toContain(
-      'group-focus-visible/marker:opacity-0',
+    expect(markers().map((button) => button.dataset.state)).toEqual([
+      'reading',
+      'inView',
+      'idle',
+    ])
+    expect(tickOf(markers()[1]!).className).toContain('bg-[#1d70b8]')
+    expect(tickOf(markers()[1]!).className).toContain(
+      'opacity-[calc(0.55+var(--rail-wave,0)*0.45)]',
     )
+    // …and a contribution off screen stays ink, not accent.
+    expect(tickOf(markers()[2]!).className).toContain('bg-[#0b0c0c]')
   })
 
-  it('keeps the deep link as an outer-edge notch, taller than it is wide', () => {
+  it('carries the run onto a collapsed cluster, so a dense stretch still lights', () => {
+    const { container } = renderRail({ interventions: dense })
+    readAt(3)
+
+    const cluster = container.querySelector<HTMLElement>('[data-rail-cluster]')!
+    expect(cluster.dataset.state).toBe('reading')
+    expect(cluster.className).toContain('bg-[#1d70b8]')
+  })
+
+  it('keeps the deep link as INK among the accent bars, with its notch', () => {
     renderRail({ selectedPosition: 3 })
     readAt(2)
 
     const selected = markers()[2]!
-    expect(selected).toHaveAttribute('aria-current', 'true')
-
-    const notch = selected.querySelector<HTMLElement>('[data-rail-selected-cue]')!
-    expect(notch.className).toContain('h-3')
-    expect(notch.className).toContain('w-1')
-    expect(notch.className).not.toContain('inset-x-0')
+    expect(selected.dataset.state).toBe('selected')
+    // Ink, not a second accent: the run owns the accent, and a deep link inside
+    // the run would vanish into it.
+    expect(tickOf(selected).className).toContain('bg-[#0b0c0c]')
+    expect(tickOf(selected).className).toContain(
+      'opacity-[calc(0.8+var(--rail-wave,0)*0.2)]',
+    )
   })
 
-  it('drops the notch once the reader arrives at the deep link', () => {
-    // Selected AND read: one position, one shape. Drawing both would put a
-    // second cue on the very marker the node already claims.
-    renderRail({ selectedPosition: 2 })
+  it('leaves NOTHING behind on the rail when a bar is clicked', async () => {
+    // Clicking a bar scrolls the reader to that contribution, so the bar turns
+    // accent because they are now there. A notch, a nick or any second mark
+    // beside it is the rail talking about a click that already had an answer.
+    const { container } = renderRail({ selectedPosition: 2 })
     readAt(2)
 
+    expect(container.querySelector('[data-rail-selected-cue]')).toBeNull()
     const reading = markers()[1]!
     expect(reading.dataset.state).toBe('reading')
     expect(reading).toHaveAttribute('aria-current', 'true')
-    expect(reading.querySelector('[data-rail-selected-cue]')).toBeNull()
+    expect(reading.querySelectorAll('span')).toHaveLength(1)
+  })
+
+  it('points back to the deep link in INK once the reader scrolls away', () => {
+    renderRail({ selectedPosition: 3 })
+    readAt(1)
+
+    const selected = markers()[2]!
+    expect(selected.dataset.state).toBe('selected')
+    expect(tickOf(selected).className).toContain('bg-[#0b0c0c]')
   })
 })
 
-describe('ParliamentStenogramInterventionRail — the fanned cluster', () => {
-  it('opens a crowded slot on hover and draws its paper without top or bottom rules', () => {
-    const { container } = renderRail({ interventions: dense })
-
-    const hit = container.querySelector<HTMLElement>('[data-rail-cluster-hit]')!
-    act(() => {
-      fireEvent.pointerEnter(hit)
-    })
-
-    const fan = container.querySelector<HTMLElement>('[data-rail-fan]')!
-    // The border-y-2 this used to carry was two more black horizontal lines on
-    // a rail that is allowed exactly one.
-    expect(fan.className).not.toContain('border-y')
-    expect(fan.className).not.toContain('border-t')
-    expect(fan.className).not.toContain('border-b')
-    // Paper instead: a raised surface with a single vertical leading rule.
-    expect(fan.className).toContain('shadow-md')
-    expect(fan.className).toContain('bg-white')
-    expect(fan.className).toContain('border-l-2')
-  })
-
-  it('still fans every member out to its own hit target, losing nobody', () => {
+describe('ParliamentStenogramInterventionRail — a rail that never moves', () => {
+  it('draws ONE bar for a crowded slot and no per-member mark under it', () => {
     const { container } = renderRail({ interventions: dense })
     expect(markers()).toHaveLength(40)
 
-    const hit = container.querySelector<HTMLElement>('[data-rail-cluster-hit]')!
-    act(() => {
-      fireEvent.pointerEnter(hit)
-    })
+    const cluster = container.querySelector<HTMLElement>('[data-rail-cluster]')!
+    const members = Number(cluster.dataset.size)
+    expect(members).toBeGreaterThan(1)
 
-    // The members of the opened slot now stand 12px apart instead of sharing
-    // one 8px slot.
-    const heights = markers().map((button) => button.style.height)
-    expect(heights.filter((height) => height === '12px').length).toBeGreaterThan(1)
+    // Every member of that slot keeps its button and draws nothing: a second
+    // mark on top of the cluster's bar is only a heavier smudge in one place.
+    const inSlot = markersSharingASlot()
+    for (const button of inSlot) {
+      expect(tickOf(button).className).toContain('invisible')
+      expect(button.dataset.railWave).toBeUndefined()
+    }
+  })
+
+  it('never moves a mark on hover — no fan, no shuffle under the pointer', () => {
+    const { container } = renderRail({ interventions: dense })
+    const track = trackOf(container)
+    const before = markers().map((button) => button.style.top)
+
+    // Run the pointer down the rail, over the crowded slots.
+    for (const clientY of [8, 24, 40, 64]) {
+      act(() => {
+        fireEvent.pointerMove(track, { clientY })
+      })
+    }
+
+    expect(markers().map((button) => button.style.top)).toEqual(before)
+    expect(container.querySelector('[data-rail-fan]')).toBeNull()
+    expect(container.querySelector('[data-rail-cluster-hit]')).toBeNull()
+  })
+
+  it('gives every turn the BAND around its bar, so a gap is never dead', () => {
+    // Three turns spread over a 640px track: the bars are 3px, the space
+    // between them is hundreds. Aiming at a hairline is what made the rail hard
+    // to click, so each turn takes the room halfway to its neighbours.
+    renderRail()
+    const bands = markers().map((button) => ({
+      top: Number.parseFloat(button.style.top),
+      height: Number.parseFloat(button.style.height),
+    }))
+
+    expect(bands[0]!.top).toBe(0)
+    expect(bands[0]!.height).toBeGreaterThan(100)
+    for (const [order, band] of bands.entries()) {
+      const next = bands[order + 1]
+      if (next) expect(next.top).toBeCloseTo(band.top + band.height, 5)
+    }
+    // …and the bar itself stays where its contribution is, rather than drifting
+    // to the middle of the room the band swept up.
+    const firstBar = tickOf(markers()[0]!)
+    expect(Number.parseFloat(firstBar.style.top)).toBeLessThan(
+      bands[0]!.height / 2,
+    )
+  })
+
+  it('selects the NEAREST turn when the click lands between two bars', async () => {
+    const onSelect = vi.fn()
+    renderRail({ interventions: neighbours, onSelect })
+
+    // The band of the middle turn covers the gap on both sides of its bar, so
+    // a click that misses the hairline still means the turn the reader aimed
+    // at — a click on the rail can honestly mean nothing else.
+    await userEvent.click(markers()[1]!)
+    expect(onSelect).toHaveBeenCalledWith(
+      expect.objectContaining({ ordinal: 2 }),
+    )
+  })
+
+  it('hands the pointer the FIRST turn of a crowded slot, keyboard the rest', () => {
+    renderRail({ interventions: dense })
+    const inSlot = markersSharingASlot()
+    expect(inSlot.length).toBeGreaterThan(1)
+
+    expect(inSlot[0]!.className).toContain('pointer-events-auto')
+    for (const button of inSlot.slice(1)) {
+      expect(button.className).toContain('pointer-events-none')
+      // …still focusable and still announced, so the arrows reach every turn.
+      expect(button).toHaveAttribute('aria-label')
+    }
   })
 })
 
@@ -348,17 +551,18 @@ describe('ParliamentStenogramInterventionRail — behaviour that must survive', 
     ).toBeInTheDocument()
   })
 
-  it('animates with transform and opacity only, and only where motion is allowed', () => {
-    // Transform/opacity keep the rail off the layout path: no reflow of the
-    // track as a pointer runs down it.
+  it('animates with scale and opacity only, and only where motion is allowed', () => {
+    // Scale/opacity keep the rail off the layout path: no reflow of the track
+    // as a pointer runs down several hundred marks.
     renderRail()
     readAt(2)
 
-    expect(nodeOf(markers()[0]!).className).toContain(
-      'motion-safe:transition-transform',
-    )
     expect(tickOf(markers()[0]!).className).toContain(
-      'motion-safe:transition-opacity',
+      'motion-safe:transition-[scale,opacity]',
     )
+    expect(tickOf(markers()[0]!).className).not.toContain('transition-[width')
+    // Short, because the wave is repainted every frame from the pointer's real
+    // position: a long ease only puts lag between the cursor and the rail.
+    expect(tickOf(markers()[0]!).className).toContain('motion-safe:duration-75')
   })
 })

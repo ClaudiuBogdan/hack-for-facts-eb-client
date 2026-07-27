@@ -51,6 +51,7 @@ import {
 import {
   stenogramAvailabilityToneClassName,
   stenogramBadgeClassName,
+  stenogramChamberToneClassName,
   stenogramLeftLaneClassName,
   stenogramLinkClassName,
   stenogramMutedTextClassName,
@@ -409,7 +410,12 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
             <span className="text-sm font-semibold tabular-nums text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
               {formatSittingDate(session.sessionDate, i18n.locale)}
             </span>
-            <span className={stenogramBadgeClassName}>
+            <span
+              className={cn(
+                stenogramBadgeClassName,
+                stenogramChamberToneClassName[session.chamber ?? ''],
+              )}
+            >
               {stenogramChamberLabel(session.chamber)}
             </span>
             <span
@@ -578,12 +584,16 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
               />
             ) : null}
 
-            {/* Desktop only: on a narrow screen this lane sits ABOVE the
-                document, where a "back to top" is never where the reader is.
-                The narrow-screen twin is at the end of the reading. */}
+            {/* `lg` ONLY. From `xl` the intervention rail appears and this
+                control moves to the foot of it, where the reader's navigation
+                already lives; at `lg` there is no rail, so the lane keeps it —
+                at its FOOT (`mt-auto`), never under the agenda box, which put a
+                way back up at the top of the screen. Below `lg` the lane sits
+                above the document and the twin at the end of the reading takes
+                over. */}
             <ParliamentStenogramScrollTop
               targetId={READER_TOP_ID}
-              className="hidden shrink-0 lg:inline-flex"
+              className="hidden shrink-0 lg:mt-auto lg:inline-flex xl:hidden"
             />
           </div>
 
@@ -608,14 +618,21 @@ export function ParliamentStenogramReaderPage({ sessionKey, search }: Props) {
               so it never stands between a keyboard reader and the text. It
               appears only at `xl`: at `lg` the third column would eat into the
               reading measure, and the document plus the previous/next controls
-              already navigate. */}
-          <ParliamentStenogramInterventionRail
-            interventions={interventions}
-            selectedPosition={selectedPosition}
-            onSelect={selectContribution}
-            readingRegionId={READING_REGION_ID}
-            className="xl:sticky xl:top-24"
-          />
+              already navigate.
+
+              "Back to the top" hangs off the FOOT of the rail: this column is
+              the reader's navigation, so the one control that is pure
+              navigation belongs at the end of it rather than in the lane that
+              carries the agenda. The rail's own height leaves the room for it —
+              see `RAIL_VIEWPORT_INSET_PX`. */}
+          <div className="hidden shrink-0 flex-col items-start gap-3 xl:sticky xl:top-24 xl:flex print:hidden">
+            <ParliamentStenogramInterventionRail
+              interventions={interventions}
+              selectedPosition={selectedPosition}
+              onSelect={selectContribution}
+            />
+            <ParliamentStenogramScrollTop targetId={READER_TOP_ID} compact />
+          </div>
         </div>
 
         {/* ── previous/next CONTRIBUTION — over the VISIBLE set ────────── */}
@@ -748,7 +765,12 @@ function UnavailableSittingHeader({
         <span className="text-sm font-semibold tabular-nums text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
           {formatSittingDate(session.sessionDate, i18n.locale)}
         </span>
-        <span className={stenogramBadgeClassName}>
+        <span
+          className={cn(
+            stenogramBadgeClassName,
+            stenogramChamberToneClassName[session.chamber ?? ''],
+          )}
+        >
           {stenogramChamberLabel(session.chamber)}
         </span>
         <span

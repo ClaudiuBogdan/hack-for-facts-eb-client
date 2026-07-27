@@ -75,32 +75,56 @@ function mondayIndex(date: Date): number {
 }
 
 /**
- * Build the Monday-first calendar grid for `year`. The first column starts on
- * the Monday on/before Jan 1; the last ends on the Sunday on/after Dec 31.
+ * Build the Monday-first calendar grid for ANY window of days, inclusive.
+ *
+ * The window generalises `buildYearGrid`, which is now a wrapper over it: a
+ * rolling "last 12 months" spans two calendar years and cannot be drawn by a
+ * builder that only knows about Januaries. The first column starts on the
+ * Monday on/before `startIso`; the last ends on the Sunday on/after `endIso`;
+ * cells outside the window are emitted as blanks so the weeks stay square.
+ *
+ * `inYear` reads "inside the window" — the field keeps its name because the
+ * vote-activity chart and this heatmap both draw from it, and a rename buys
+ * nothing but churn.
  */
-export function buildYearGrid(year: number): VoteActivityGrid {
-  const jan1 = new Date(Date.UTC(year, 0, 1))
-  const dec31 = new Date(Date.UTC(year, 11, 31))
+export function buildWindowGrid({
+  startIso,
+  endIso,
+}: {
+  readonly startIso: string
+  readonly endIso: string
+}): VoteActivityGrid {
+  const start = new Date(`${startIso}T00:00:00Z`)
+  const end = new Date(`${endIso}T00:00:00Z`)
 
-  const gridStart = new Date(jan1)
-  gridStart.setUTCDate(jan1.getUTCDate() - mondayIndex(jan1))
-  const gridEnd = new Date(dec31)
-  gridEnd.setUTCDate(dec31.getUTCDate() + (6 - mondayIndex(dec31)))
+  const gridStart = new Date(start)
+  gridStart.setUTCDate(start.getUTCDate() - mondayIndex(start))
+  const gridEnd = new Date(end)
+  gridEnd.setUTCDate(end.getUTCDate() + (6 - mondayIndex(end)))
 
   const weeks: VoteActivityGridWeek[] = []
   const monthLabels: VoteActivityMonthLabel[] = []
-  const seenMonths = new Set<number>()
+  // Keyed by YEAR-month, not month: a rolling window crosses a new year and
+  // would otherwise label only the first December it meets.
+  const seenMonths = new Set<string>()
 
   const cursor = new Date(gridStart)
   while (cursor.getTime() <= gridEnd.getTime()) {
     const days: VoteActivityGridCell[] = []
     for (let row = 0; row < 7; row++) {
-      const inYear = cursor.getUTCFullYear() === year
-      // The column holding the 1st of an in-year month anchors that month label.
-      if (inYear && cursor.getUTCDate() === 1 && !seenMonths.has(cursor.getUTCMonth())) {
-        const month = cursor.getUTCMonth()
-        seenMonths.add(month)
-        monthLabels.push({ columnIndex: weeks.length, month, label: RO_MONTHS_SHORT[month] })
+      const inYear =
+        cursor.getTime() >= start.getTime() && cursor.getTime() <= end.getTime()
+      const month = cursor.getUTCMonth()
+      const monthKey = `${String(cursor.getUTCFullYear())}-${String(month)}`
+      // The column holding the FIRST in-window day of a month anchors its
+      // label — the 1st itself may fall outside a rolling window's first month.
+      if (inYear && !seenMonths.has(monthKey)) {
+        seenMonths.add(monthKey)
+        monthLabels.push({
+          columnIndex: weeks.length,
+          month,
+          label: RO_MONTHS_SHORT[month],
+        })
       }
       days.push({ isoDate: isoFromUtc(cursor), inYear })
       cursor.setUTCDate(cursor.getUTCDate() + 1)
@@ -109,6 +133,17 @@ export function buildYearGrid(year: number): VoteActivityGrid {
   }
 
   return { weeks, monthLabels }
+}
+
+/**
+ * Build the Monday-first calendar grid for `year`. The first column starts on
+ * the Monday on/before Jan 1; the last ends on the Sunday on/after Dec 31.
+ */
+export function buildYearGrid(year: number): VoteActivityGrid {
+  return buildWindowGrid({
+    startIso: isoFromUtc(new Date(Date.UTC(year, 0, 1))),
+    endIso: isoFromUtc(new Date(Date.UTC(year, 11, 31))),
+  })
 }
 
 /**

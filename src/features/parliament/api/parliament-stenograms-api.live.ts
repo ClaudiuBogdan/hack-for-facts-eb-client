@@ -28,7 +28,15 @@ import {
   mapStenogramTranscript,
 } from './graphql/parliament-stenograms-mappers'
 
-const SESSIONS_PAGE_SIZE = 20
+/**
+ * Sittings per PAGE — and the browse list is paged, not accumulated.
+ *
+ * Ten, because a page of sittings is now something a reader steps through with
+ * a pager rather than a pile they grow with "load more": a short page keeps the
+ * whole of it on one screen, and the cursor the server hands back with it is
+ * what makes the next step exact. Larger pages only made the pile taller.
+ */
+const SESSIONS_PAGE_SIZE = 10
 
 /**
  * Blocks per GraphQL transcript SLICE.

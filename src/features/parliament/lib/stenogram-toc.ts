@@ -214,38 +214,11 @@ export function buildStenogramInterventions(
   }))
 }
 
-/**
- * Where the "you are here" line sits in the viewport, as a share of its height.
- *
- * One number, two consumers that MUST agree: the rail's progress fill (how much
- * transcript is behind the reader) and the reading band the active contribution
- * is observed in. If they disagreed, the fill and the highlighted tick would
- * tell the reader two different things about the same scroll position.
- */
-export const RAIL_READING_LINE_FRACTION = 0.4
-
-/**
- * How much of the transcript is BEHIND the reading line, 0–1.
- *
- * Measured from the reading region's own box rather than from page scroll: the
- * page also carries a heading band, a search bar and two navigation footers,
- * and counting those as "transcript read" would overstate progress on a short
- * sitting by a third.
- */
-export function readingProgressFraction({
-  regionTop,
-  regionHeight,
-  viewportHeight,
-}: {
-  /** `getBoundingClientRect().top` of the reading region. */
-  readonly regionTop: number
-  readonly regionHeight: number
-  readonly viewportHeight: number
-}): number {
-  if (regionHeight <= 0) return 0
-  const line = viewportHeight * RAIL_READING_LINE_FRACTION
-  return Math.min(1, Math.max(0, (line - regionTop) / regionHeight))
-}
+/* The reading-line fraction and the progress-fill maths that used to live here
+   went with the fill itself: the rail says where the reader is with the run of
+   contributions the viewport actually holds, which is measured by an
+   IntersectionObserver against the window and needs no share-of-height
+   constant to agree with. */
 
 /** Contributions that quantise onto the same slot of the track. */
 export interface InterventionRailCluster {
@@ -335,37 +308,9 @@ export function clusterInterventionRail({
   }
 }
 
-/**
- * Fan a cluster open — the progressive disclosure, in numbers.
- *
- * The members are spread around the slot they collapsed into, so the expansion
- * reads as "this is what was under here" rather than as a jump: the fan is
- * CENTRED on the slot, then clamped inside the track so it can never open off
- * the rail. When a cluster is too crowded to give every member the full pitch
- * (a sitting that prints fifty turns inside one screen-slot), the pitch shrinks
- * evenly instead of dropping members — the rail stays complete, and the document
- * itself remains the fallback for reading them apart.
- */
-export function fanOutCluster({
-  size,
-  slotTop,
-  slotHeight,
-  trackHeight,
-  pitch,
-}: {
-  readonly size: number
-  readonly slotTop: number
-  readonly slotHeight: number
-  readonly trackHeight: number
-  readonly pitch: number
-}): { readonly tops: readonly number[]; readonly pitch: number } {
-  if (size <= 0) return { tops: [], pitch }
-  const fanPitch = size * pitch <= trackHeight ? pitch : trackHeight / size
-  const height = size * fanPitch
-  const centred = slotTop + slotHeight / 2 - height / 2
-  const start = Math.min(Math.max(0, centred), Math.max(0, trackHeight - height))
-  return {
-    tops: Array.from({ length: size }, (_, index) => start + index * fanPitch),
-    pitch: fanPitch,
-  }
-}
+/* `fanOutCluster` used to live here: it spread a crowded slot's turns apart on
+   hover so each got its own hit target. It is gone with the fan itself — marks
+   that move out from under an approaching pointer cannot be aimed at, so a
+   crowded slot now draws one weighted bar and hands the pointer its first turn.
+   The keyboard still walks every turn, and the document is the fallback for
+   reading them apart. */

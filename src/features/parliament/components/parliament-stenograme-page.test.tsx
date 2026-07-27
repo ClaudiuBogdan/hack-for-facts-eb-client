@@ -184,16 +184,55 @@ describe('the interventions view', () => {
     expect(screen.queryByText(/ședințe/)).not.toHaveAttribute('aria-live')
   })
 
-  it('keeps the heatmap as an optional, collapsed activity section', () => {
+  it('shows the activity panel outright, with no show/hide of its own', () => {
+    // It used to be a `<details>` a reader had to open. A panel that hides its
+    // own contents behind a toggle is one more thing to discover before the
+    // page says anything.
     const { container } = renderPage({ view: 'interventii' })
-    const details = container.querySelector('details')!
-    expect(details.open).toBe(false)
-    expect(details).toHaveTextContent(/Activitatea în plen pe zile/)
+    expect(container.querySelector('details')).toBeNull()
+    expect(
+      screen.getByRole('region', { name: 'Activitatea în plen pe zile' }),
+    ).toBeInTheDocument()
   })
 
-  it('shows no heatmap at all on the sittings view', () => {
-    const { container } = renderPage()
-    expect(container.querySelector('details')).toBeNull()
+  it('opens on the LAST 12 MONTHS, with the years one step away', async () => {
+    // A calendar year is an accident of the archive: on the 3rd of January it
+    // shows three days of squares and hides the session that just ended.
+    renderPage({ view: 'interventii' })
+    const range = screen.getByRole('combobox', { name: /^Perioada afișată/ })
+    expect(range).toHaveTextContent('Ultimele 12 luni')
+
+    // The arrows walk the same order the dropdown offers: back one period from
+    // the rolling window is the newest year.
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Perioada anterioară' }),
+    )
+    expect(range).toHaveTextContent('2026')
+    // The closed control announces its VALUE, not just what it is for.
+    expect(range).toHaveAccessibleName('Perioada afișată: 2026')
+    // …and there is nothing newer than the rolling window to step to.
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Perioada următoare' }),
+    )
+    expect(range).toHaveTextContent('Ultimele 12 luni')
+    expect(
+      screen.getByRole('button', { name: 'Perioada următoare' }),
+    ).toBeDisabled()
+  })
+
+  it('puts the activity panel UNDER the list on the sittings view', () => {
+    // The sittings are the answer the reader arrived for; a chart between the
+    // toolbar and them would push the record below the fold to show a picture
+    // of it. On interventions it leads, because there it IS the shape of the
+    // thing being listed.
+    renderPage()
+    const panel = screen.getByRole('region', {
+      name: 'Activitatea în plen pe zile',
+    })
+    const list = screen.getByText('Ședința 0').closest('article')!
+    expect(
+      list.compareDocumentPosition(panel) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
   })
 })
 
@@ -313,10 +352,61 @@ describe('honest states on the sittings list', () => {
       sessionsPage(2, { total: 10_000, totalEstimated: true }),
     )
     renderPage()
-    expect(screen.getByText(/peste/)).toBeInTheDocument()
-    expect(
-      screen.getByText(/Numărul total este plafonat la 10.000 de ședințe/),
-    ).toBeInTheDocument()
+    // The tally is announced rather than boxed above the list — but it is still
+    // "peste 10.000", never a round number the server did not promise, so the
+    // cap needs no banner of its own.
+    const tally = screen.getByText(/peste/)
+    expect(tally).toBeInTheDocument()
+    expect(tally.closest('p')).toHaveAttribute('aria-live', 'polite')
+    expect(tally.closest('p')!.className).toContain('sr-only')
+  })
+
+  it('pages the sittings instead of piling them up, ten at a time', async () => {
+    // Two fetched pages: the reader sees ONE of them, and steps. "Load more"
+    // grew a column that no reader could hold a place in.
+    const page = (label: string) => ({
+      sessions: [
+        ParliamentStenogramSessionSchema.parse({
+          sessionKey: `canon:${label}`,
+          chamber: 'senat',
+          sessionDate: '2026-05-13',
+          sessionDateSource: 'stenogram_title',
+          title: `Ședința ${label}`,
+          sourceSystem: 'senate_stenogram',
+          availability: 'COMPLETE',
+          sourceUrl: 'https://senat.ro/x',
+          sourceUrlKind: 'exact',
+          segmentCount: 10,
+          speechCount: 5,
+          speakerCount: 3,
+        }),
+      ],
+      total: 2,
+      totalEstimated: false,
+      hasNextPage: false,
+      endCursor: null,
+    })
+    useParliamentStenogramSessions.mockReturnValue({
+      ...idle,
+      data: { pages: [page('A'), page('B')] },
+    })
+    renderPage()
+
+    expect(screen.getByText('Ședința A')).toBeInTheDocument()
+    expect(screen.queryByText('Ședința B')).toBeNull()
+    expect(screen.getByText('Pagina 1')).toBeInTheDocument()
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /Pagina următoare/ }),
+    )
+    expect(screen.getByText('Ședința B')).toBeInTheDocument()
+    expect(screen.queryByText('Ședința A')).toBeNull()
+
+    // Stepping back is free: the page was already fetched.
+    await userEvent.click(
+      screen.getByRole('button', { name: /Pagina anterioară/ }),
+    )
+    expect(screen.getByText('Ședința A')).toBeInTheDocument()
   })
 
   it('distinguishes "no results for these filters" from "nothing published"', () => {

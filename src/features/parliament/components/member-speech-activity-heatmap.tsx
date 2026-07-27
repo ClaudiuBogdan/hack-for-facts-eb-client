@@ -13,6 +13,7 @@ import type {
 } from '@/schemas/parliament'
 import {
   speechBucketFor,
+  buildWindowGrid,
   buildYearGrid,
   RO_WEEKDAY_LABELS,
 } from '../lib/vote-activity-grid'
@@ -40,6 +41,14 @@ type Props = {
    * same URL param is a bug, not redundancy.
    */
   readonly yearControl?: 'inline' | 'none'
+  /**
+   * Draw an arbitrary INCLUSIVE window instead of the calendar year — what a
+   * rolling "last 12 months" needs, since it crosses a new year halfway.
+   * `year` still names the fallback empty state and the inline picker.
+   */
+  readonly window?: { readonly startIso: string; readonly endIso: string }
+  /** Sentence for "nothing here", which a window phrases differently. */
+  readonly emptyLabel?: string
 }
 
 function formatLongDate(isoDate: string): string {
@@ -65,8 +74,13 @@ export function MemberSpeechActivityHeatmap({
   onSelectYear,
   isLoading,
   yearControl = 'inline',
+  window: dayWindow,
+  emptyLabel,
 }: Props) {
-  const grid = useMemo(() => buildYearGrid(year), [year])
+  const grid = useMemo(
+    () => (dayWindow ? buildWindowGrid(dayWindow) : buildYearGrid(year)),
+    [dayWindow, year],
+  )
   const dayMap = useMemo(() => {
     const map = new Map<string, ParliamentMemberSpeechActivityDay>()
     for (const day of activity?.days ?? []) map.set(day.date, day)
@@ -103,7 +117,7 @@ export function MemberSpeechActivityHeatmap({
             <Skeleton className="h-32 w-full rounded-none" />
           ) : !hasActivity ? (
             <p className="text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-              Nicio intervenție în plen în {year}.
+              {emptyLabel ?? `Nicio intervenție în plen în ${String(year)}.`}
             </p>
           ) : (
             <TooltipProvider delayDuration={100}>

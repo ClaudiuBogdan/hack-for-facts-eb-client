@@ -59,9 +59,40 @@ describe('ParliamentStenogramSessionCard', () => {
     ).toBeInTheDocument()
   })
 
-  it('states the availability in WORDS, not just a tint', () => {
+  it('states a CAVEATED availability in words, and says nothing when there is none', () => {
+    // A badge on every readable card is a caveat printed where there is no
+    // caveat, and one that is always there teaches readers to skip the ones
+    // that matter. A complete capture simply says nothing.
     render(<ParliamentStenogramSessionCard session={session()} />)
-    expect(screen.getByText('Transcriere completă')).toBeInTheDocument()
+    expect(screen.queryByText('Transcriere completă')).toBeNull()
+
+    render(
+      <ParliamentStenogramSessionCard
+        session={session({ availability: 'PARTIAL' })}
+      />,
+    )
+    expect(screen.getByText('Transcriere parțială')).toBeInTheDocument()
+  })
+
+  it('keeps the actions in the meta line, out of the title’s accent', () => {
+    // The accent is how a reader finds the way into the record; three blue
+    // claims per card is none.
+    render(<ParliamentStenogramSessionCard session={session()} />)
+
+    // The router `Link` is mocked here and drops its class, so the styling
+    // assertion rides on the source link — both carry the same class.
+    const source = screen.getByRole('link', { name: /cdep\.ro/ })
+    expect(source.className).not.toContain('text-[#1d70b8]')
+    expect(source.className).toContain('text-[#505a5f]')
+    expect(source.className).toContain('underline')
+
+    // …and both actions share the row with the counts rather than standing
+    // under them.
+    const row = screen.getByText(/luări de cuvânt/).closest('dl')!.parentElement!
+    expect(row).toContainElement(source)
+    expect(row).toContainElement(
+      screen.getByRole('link', { name: 'Citește stenograma' }),
+    )
   })
 
   it('shows the honest absence when the source carries no date', () => {

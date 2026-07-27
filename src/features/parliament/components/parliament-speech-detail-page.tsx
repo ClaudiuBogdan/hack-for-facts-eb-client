@@ -19,6 +19,7 @@ import {
   stenogramChamberLabel,
 } from '../lib/stenogram-presentation'
 import {
+  stenogramChamberToneClassName,
   stenogramLinkClassName,
   stenogramMutedTextClassName,
   stenogramNoticeClassName,
@@ -205,7 +206,12 @@ export function ParliamentSpeechDetailPage({ speechKey }: Props) {
                 ? formatVoteDayLong(turn.spokenAt)
                 : t`Dată indisponibilă`}
             </span>
-            <span className="inline-flex items-center border border-[#b1b4b6] px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-[#505a5f] dark:border-[var(--pnrr-border)] dark:text-[var(--pnrr-muted)]">
+            <span
+              className={cn(
+                'inline-flex items-center border border-[#b1b4b6] px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-[#505a5f] dark:border-[var(--pnrr-border)] dark:text-[var(--pnrr-muted)]',
+                stenogramChamberToneClassName[turn.chamber ?? ''],
+              )}
+            >
               {stenogramChamberLabel(turn.chamber)}
             </span>
           </div>

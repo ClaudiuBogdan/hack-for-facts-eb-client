@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Check, ChevronsUpDown } from 'lucide-react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
@@ -25,6 +25,14 @@ type Props = {
   readonly onChange: (year: number | undefined) => void
   /** Label for the "no year selected" entry; omit to make the year required. */
   readonly allLabel?: string
+  /**
+   * What this picker is FOR. Composed WITH the current selection into the
+   * accessible name — a closed combobox has to announce its value, so this
+   * replaces the purpose only, never the value. Defaults to the sittings year;
+   * the activity panel picks a display range with the same control, and
+   * announcing that as "the year of the sittings" would be a lie.
+   */
+  readonly ariaPurpose?: string
   readonly id: string
   readonly className?: string
 }
@@ -45,12 +53,23 @@ export function ParliamentYearCombobox({
   value,
   onChange,
   allLabel,
+  ariaPurpose,
   id,
   className,
 }: Props) {
   const [open, setOpen] = useState(false)
   const label =
     value !== undefined ? String(value) : (allLabel ?? t`Alege anul`)
+
+  // NEWEST FIRST, whatever order the caller holds them in. The server returns
+  // `availableYears` ascending, which opened the list on 1996 — three decades
+  // of scrolling away from the sittings anyone is actually looking for. The
+  // ordering is decided here rather than at each call site so no picker can
+  // disagree with another about which end of the archive is the near one.
+  const ordered = useMemo(
+    () => [...years].sort((left, right) => right - left),
+    [years],
+  )
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -61,10 +80,17 @@ export function ParliamentYearCombobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          aria-label={t`Anul ședințelor: ${label}`}
+          aria-label={
+            ariaPurpose
+              ? `${ariaPurpose}: ${label}`
+              : t`Anul ședințelor: ${label}`
+          }
           className={cn(
             stenogramControlClassName,
-            'w-full justify-between gap-2 sm:w-40',
+            // `h-11` matches the search field and the filter trigger it stands
+            // between: three controls on one bar at three heights read as three
+            // unrelated things.
+            'h-11 w-full justify-between gap-2 sm:w-40',
             className,
           )}
         >
@@ -99,7 +125,7 @@ export function ParliamentYearCombobox({
                   {allLabel}
                 </CommandItem>
               ) : null}
-              {years.map((year) => (
+              {ordered.map((year) => (
                 <CommandItem
                   key={year}
                   value={String(year)}

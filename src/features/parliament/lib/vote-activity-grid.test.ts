@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   bucketFor,
+  buildWindowGrid,
   buildYearGrid,
   RO_MONTHS_SHORT,
   RO_WEEKDAY_LABELS,
@@ -73,6 +74,36 @@ describe('buildYearGrid', () => {
     expect(RO_MONTHS_SHORT).toHaveLength(12)
     expect(RO_WEEKDAY_LABELS).toHaveLength(7)
     expect(RO_WEEKDAY_LABELS[0]).toBe('L')
+  })
+})
+
+describe('buildWindowGrid', () => {
+  it('draws a window that CROSSES a year, labelling both halves', () => {
+    // The rolling "last 12 months" is the reason this exists: a year-only
+    // builder cannot draw August 2025 → July 2026 at all.
+    const grid = buildWindowGrid({
+      startIso: '2025-08-01',
+      endIso: '2026-07-31',
+    })
+    expect(grid.monthLabels).toHaveLength(12)
+    expect(grid.monthLabels.map((label) => label.month)).toEqual([
+      7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5, 6,
+    ])
+    const inWindow = grid.weeks
+      .flatMap((week) => week.days)
+      .filter((day) => day.inYear)
+    expect(inWindow[0]!.isoDate).toBe('2025-08-01')
+    expect(inWindow[inWindow.length - 1]!.isoDate).toBe('2026-07-31')
+  })
+
+  it('labels a month whose 1st falls outside the window', () => {
+    // A rolling window can start mid-month; the label anchors to the first day
+    // of that month it actually contains, or the month would go unnamed.
+    const grid = buildWindowGrid({
+      startIso: '2026-03-15',
+      endIso: '2026-04-10',
+    })
+    expect(grid.monthLabels.map((label) => label.month)).toEqual([2, 3])
   })
 })
 

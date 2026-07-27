@@ -9,8 +9,6 @@ import {
   buildStenogramInterventions,
   buildStenogramToc,
   clusterInterventionRail,
-  fanOutCluster,
-  readingProgressFraction,
   segmentDomId,
   stenogramExcerpt,
 } from './stenogram-toc'
@@ -291,50 +289,6 @@ describe('buildStenogramInterventions', () => {
   })
 })
 
-describe('readingProgressFraction', () => {
-  it('is 0 before the reading line reaches the transcript', () => {
-    expect(
-      readingProgressFraction({
-        regionTop: 900,
-        regionHeight: 4000,
-        viewportHeight: 1000,
-      }),
-    ).toBe(0)
-  })
-
-  it('measures the transcript ITSELF, not the whole page', () => {
-    // The reading line sits at 40% of the viewport (400px). The transcript
-    // starts 400px above it, so exactly a tenth of it is behind the reader —
-    // the page heading and the footers above it count for nothing.
-    expect(
-      readingProgressFraction({
-        regionTop: -400,
-        regionHeight: 8000,
-        viewportHeight: 1000,
-      }),
-    ).toBeCloseTo(0.1)
-  })
-
-  it('never exceeds the document at either end', () => {
-    expect(
-      readingProgressFraction({
-        regionTop: -99999,
-        regionHeight: 4000,
-        viewportHeight: 1000,
-      }),
-    ).toBe(1)
-    // A region with no height yet (first paint, print, jsdom) reports nothing
-    // rather than dividing by zero.
-    expect(
-      readingProgressFraction({
-        regionTop: 0,
-        regionHeight: 0,
-        viewportHeight: 1000,
-      }),
-    ).toBe(0)
-  })
-})
-
 describe('clusterInterventionRail', () => {
   const layout = (fractions: readonly number[], trackHeight = 600) =>
     clusterInterventionRail({ fractions, trackHeight, slotHeight: 8 })
@@ -408,41 +362,3 @@ describe('clusterInterventionRail', () => {
   })
 })
 
-describe('fanOutCluster', () => {
-  const fan = (size: number, slotTop = 300) =>
-    fanOutCluster({
-      size,
-      slotTop,
-      slotHeight: 8,
-      trackHeight: 600,
-      pitch: 12,
-    })
-
-  it('centres the expansion on the slot it opened from', () => {
-    const { tops, pitch } = fan(4)
-    expect(pitch).toBe(12)
-    // 4 × 12 = 48px, centred on the slot's middle (304).
-    expect(tops).toEqual([280, 292, 304, 316])
-  })
-
-  it('never opens off the top or the bottom of the track', () => {
-    expect(fan(4, 0).tops[0]).toBe(0)
-    const bottom = fan(4, 592)
-    expect((bottom.tops[3] ?? 0) + bottom.pitch).toBeLessThanOrEqual(600)
-  })
-
-  it('shrinks the pitch rather than dropping members of a crowded slot', () => {
-    // A sitting that prints 100 turns inside one screen-slot cannot give each
-    // of them a 12px step. Every one still gets a step, and the document stays
-    // the fallback for reading them apart.
-    const { tops, pitch } = fan(100)
-    expect(tops).toHaveLength(100)
-    expect(pitch).toBe(6)
-    expect(tops[0]).toBe(0)
-    expect(tops[99]).toBe(594)
-  })
-
-  it('is a no-op for an empty cluster', () => {
-    expect(fan(0).tops).toEqual([])
-  })
-})

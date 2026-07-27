@@ -487,8 +487,13 @@ describe('the intervention rail maps the sitting', () => {
     renderReader()
     expect(rail().className).toContain('hidden')
     expect(rail().className).toContain('xl:block')
-    expect(rail().className).toContain('xl:sticky')
     expect(rail().className).toContain('print:hidden')
+    // The rail and the "back to the top" under it stick as ONE column, the way
+    // the left lane does — separately sticky children pile onto one offset.
+    const column = rail().parentElement!
+    expect(column.className).toContain('xl:sticky')
+    expect(column.className).toContain('xl:flex')
+    expect(column.className).toContain('print:hidden')
   })
 
   it('sits to the RIGHT of the reading column, and after it in source order', () => {
@@ -504,28 +509,16 @@ describe('the intervention rail maps the sitting', () => {
     expect(reading.className).toContain('xl:max-w-3xl')
   })
 
-  it('fills from the top of the sitting down to the reading line', () => {
-    // The rail is a progress bar first: the fill is read from the reading
-    // region's own box, so the heading band and the footers are not counted as
-    // transcript the reader has been through.
-    const rect = vi
-      .spyOn(Element.prototype, 'getBoundingClientRect')
-      .mockReturnValue({
-        ...new DOMRect(),
-        top: -400,
-        height: 4000,
-      } as DOMRect)
-    try {
-      mockTranscript()
-      const { container } = renderReader()
-      // The reading line sits at 40% of a 768px viewport: 307px of the 4000px
-      // transcript above it, plus the 400px already scrolled past.
-      expect(
-        container.querySelector('[data-rail-progress]'),
-      ).toHaveAttribute('data-progress', '18')
-    } finally {
-      rect.mockRestore()
-    }
+  it('says where the reader is in BARS, never in a filled rectangle', () => {
+    // The rail used to answer "how far in am I" with a tinted wash from the top
+    // of the sitting down to a rule across the track. Both were boxes drawn
+    // around what the marks already say, so both are gone: the run of accent
+    // bars is the answer now.
+    mockTranscript()
+    const { container } = renderReader()
+
+    expect(container.querySelector('[data-rail-progress]')).toBeNull()
+    expect(container.querySelector('[data-rail-head]')).toBeNull()
   })
 
   it('never grows past one viewport, however dense the sitting', () => {
@@ -536,7 +529,9 @@ describe('the intervention rail maps the sitting', () => {
     const { container } = renderReader()
 
     const track = container.querySelector<HTMLElement>('[data-rail-track]')!
-    expect(track.style.height).toBe('640px')
+    // One 768px jsdom viewport, less the sticky offset above the rail and the
+    // room its "back to the top" needs below it.
+    expect(track.style.height).toBe('560px')
     expect(track.className).not.toContain('overflow-y-auto')
   })
 
@@ -564,16 +559,37 @@ describe('the intervention rail maps the sitting', () => {
     expect(new Set(tops).size).toBe(tops.length)
   })
 
-  it('gives every tick a hit area several times its own size', () => {
+  it('partitions the whole track, so no click on the rail lands nowhere', () => {
     mockTranscript()
     renderReader()
+
+    const track = within(rail())
+      .getAllByRole('button')[0]!
+      .closest('[data-rail-track]') as HTMLElement
+    const trackHeight = Number.parseFloat(track.style.height)
+    const bands = within(rail())
+      .getAllByRole('button')
+      .filter((button) => button.className.includes('pointer-events-auto'))
+      .map((button) => ({
+        top: Number.parseFloat(button.style.top),
+        height: Number.parseFloat(button.style.height),
+      }))
+
+    // The bands tile the track end to end: the first starts at the very top,
+    // the last ends at the very bottom, and each one begins where the last
+    // stopped. A 3px bar is not a target; the band around it is.
+    expect(bands[0]!.top).toBe(0)
+    for (const [order, band] of bands.entries()) {
+      expect(band.height).toBeGreaterThan(3)
+      const next = bands[order + 1]
+      if (next) expect(next.top).toBeCloseTo(band.top + band.height, 5)
+      else expect(band.top + band.height).toBeCloseTo(trackHeight, 5)
+    }
+
     const marker = within(rail()).getAllByRole('button')[0]!
-    // One slot tall (8px) against a 3px tick, and overhanging the 24px track on
-    // both sides.
-    expect(marker.style.height).toBe('8px')
     expect(marker.querySelector('span')!.style.height).toBe('3px')
-    expect(marker.className).toContain('-left-1')
-    expect(marker.className).toContain('-right-2')
+    expect(marker.className).toContain('-left-2')
+    expect(marker.className).toContain('right-0')
   })
 
   it('holds ONE tab stop and moves between contributions with the arrows', async () => {
@@ -598,16 +614,17 @@ describe('the intervention rail maps the sitting', () => {
     mockTranscript()
     const { container } = renderReader()
     expect(
-      container.querySelector('[data-rail-progress]')!.className,
-    ).toContain('motion-safe:transition-[height]')
-    expect(within(rail()).getAllByRole('button')[0]!.className).toContain(
-      'motion-safe:transition-[top,height]',
+      container.querySelector('[data-rail-cluster],[data-rail-tick]')!.className,
+    ).toContain('motion-safe:transition-[scale,opacity]')
+    // The hit area itself animates nothing, because nothing about it moves.
+    expect(within(rail()).getAllByRole('button')[0]!.className).not.toContain(
+      'transition-',
     )
   })
 
   it('tracks the reading with ONE observer over the contribution blocks', () => {
     // Not one scroll listener per tick, and not an observer rebuilt per scroll:
-    // exactly one observer, over a narrow reading band, for the whole sitting.
+    // exactly one observer, against the viewport itself, for the whole sitting.
     const Real = window.IntersectionObserver
     const built: (IntersectionObserverInit | undefined)[] = []
     class CountingObserver extends Real {
@@ -625,7 +642,9 @@ describe('the intervention rail maps the sitting', () => {
       mockTranscript()
       renderReader()
       expect(built).toHaveLength(1)
-      expect(built[0]?.rootMargin).toBe('-40% 0px -45% 0px')
+      // The viewport itself is the root: the accent run IS the reader's window
+      // onto the sitting, so it must be measured against the real window.
+      expect(built[0]?.rootMargin ?? '').not.toContain('%')
     } finally {
       window.IntersectionObserver = Real
     }
@@ -914,6 +933,9 @@ describe('a deep link and a speaker filter that disagree', () => {
 })
 
 describe('the way back to the top of a long sitting', () => {
+  const rail = () =>
+    screen.getByRole('navigation', { name: 'Harta intervențiilor din ședință' })
+
   function scrollTo(y: number) {
     Object.defineProperty(window, 'scrollY', {
       writable: true,
@@ -955,7 +977,34 @@ describe('the way back to the top of a long sitting', () => {
     ).toHaveFocus()
   })
 
-  it('lives in the LEFT lane on desktop — never floating over the reading', () => {
+  it('hangs off the FOOT OF THE RAIL from xl, as an arrow with no label', () => {
+    // The rail column is the reader's navigation, so the one control that is
+    // pure navigation belongs at the end of it — not in the lane that carries
+    // the agenda, where it sat at the top of the screen offering to undo a
+    // scroll the reader had just made.
+    mockTranscript()
+    renderReader()
+    scrollTo(1200)
+
+    const onRail = screen
+      .getAllByRole('button', { name: LABEL })
+      .find((node) => node.parentElement?.contains(rail()))!
+    expect(onRail).toBeDefined()
+    expect(onRail.className).not.toContain('fixed')
+    // A bare arrow: no words, and no box either — the rail is marks on the
+    // page's own background, so the control at its foot is one too.
+    expect(onRail).toHaveTextContent('')
+    expect(onRail.className).toContain('border-0')
+    expect(onRail.className).toContain('bg-transparent')
+    // Aligned with the bars' own left edge, not centred in a box of its own.
+    expect(onRail.className).toContain('justify-start')
+    // …after the rail, so a keyboard reader meets the map before the way out.
+    expect(
+      rail().compareDocumentPosition(onRail) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+  })
+
+  it('keeps a labelled twin in the left lane at lg, where there is no rail', () => {
     // It used to be a fixed bottom-right FAB and it covered the prose, the
     // intervention rail and the app's own dock. No overlay, no corner.
     mockTranscript()
@@ -968,6 +1017,8 @@ describe('the way back to the top of a long sitting', () => {
     expect(inLane).toBeDefined()
     expect(inLane.className).not.toContain('fixed')
     expect(inLane.className).toContain('lg:inline-flex')
+    // …and it stands down again at xl, where the rail's own arrow takes over.
+    expect(inLane.className).toContain('xl:hidden')
     // …and it sits BELOW the agenda and the notice in the lane.
     const agenda = screen.getByRole('navigation', {
       name: 'Ordinea de zi a ședinței',
@@ -985,14 +1036,17 @@ describe('the way back to the top of a long sitting', () => {
     renderReader()
     scrollTo(1200)
 
-    const outside = screen
+    const atTheEnd = screen
       .getAllByRole('button', { name: LABEL })
-      .filter((node) => !leftLane().contains(node))
-    expect(outside).toHaveLength(1)
-    expect(outside[0]!.parentElement?.className).toContain('lg:hidden')
+      .filter(
+        (node) =>
+          !leftLane().contains(node) && !node.parentElement?.contains(rail()),
+      )
+    expect(atTheEnd).toHaveLength(1)
+    expect(atTheEnd[0]!.parentElement?.className).toContain('lg:hidden')
     const reading = screen.getByRole('region', { name: 'Textul ședinței' })
     expect(
-      reading.compareDocumentPosition(outside[0]!) &
+      reading.compareDocumentPosition(atTheEnd[0]!) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
   })

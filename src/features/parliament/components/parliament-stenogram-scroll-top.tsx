@@ -4,7 +4,10 @@ import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { stenogramScrollTopClassName } from '../lib/stenogram-theme'
+import {
+  stenogramScrollTopClassName,
+  stenogramScrollTopCompactClassName,
+} from '../lib/stenogram-theme'
 
 type Props = {
   /**
@@ -15,6 +18,12 @@ type Props = {
   readonly targetId: string
   /** How far the reader must have scrolled before the button appears. */
   readonly appearAfterPx?: number
+  /**
+   * Arrow only, no label — the form it takes at the foot of the intervention
+   * rail, where the column is narrower than the words would be. The accessible
+   * name is unchanged, so nothing is lost to a screen reader.
+   */
+  readonly compact?: boolean
   readonly className?: string
 }
 
@@ -32,6 +41,7 @@ const DEFAULT_APPEAR_AFTER_PX = 800
 export function ParliamentStenogramScrollTop({
   targetId,
   appearAfterPx = DEFAULT_APPEAR_AFTER_PX,
+  compact = false,
   className,
 }: Props) {
   // SSR renders NOTHING: the server has no scroll position, and a button that
@@ -82,13 +92,25 @@ export function ParliamentStenogramScrollTop({
   return (
     <Button
       type="button"
-      variant="outline"
+      variant={compact ? 'ghost' : 'outline'}
       onClick={handleClick}
       aria-label={t`Înapoi la începutul stenogramei`}
-      className={cn(stenogramScrollTopClassName, className)}
+      className={cn(
+        compact
+          ? stenogramScrollTopCompactClassName
+          : stenogramScrollTopClassName,
+        className,
+      )}
     >
-      <ArrowUp className="mr-2 h-4 w-4 shrink-0" aria-hidden />
-      <Trans>Înapoi sus</Trans>
+      <ArrowUp
+        // Bolder in the compact form: it is the only mark of its kind in a
+        // column of hairline bars, and a 1.5px arrow among them reads as one
+        // more tick rather than as the control it is.
+        strokeWidth={compact ? 2.75 : 2}
+        className={cn(compact ? 'size-5' : 'mr-2 h-4 w-4', 'shrink-0')}
+        aria-hidden
+      />
+      {compact ? null : <Trans>Înapoi sus</Trans>}
     </Button>
   )
 }

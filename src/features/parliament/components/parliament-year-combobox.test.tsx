@@ -66,6 +66,28 @@ describe('ParliamentYearCombobox — the accessible replacement for the year lis
     )
   })
 
+  it('lists the years NEWEST FIRST, whatever order it was handed', async () => {
+    // The server returns `availableYears` ascending, which opened the list on
+    // 1996 — three decades of scrolling away from the sittings anyone is
+    // looking for.
+    renderCombobox({ years: [1996, 1997, 2024, 2026] })
+    await userEvent.click(trigger())
+    const options = await screen.findAllByRole('option')
+    expect(options.map((option) => option.textContent)).toEqual([
+      '2026',
+      '2024',
+      '1997',
+      '1996',
+    ])
+  })
+
+  it('stands the same height as the controls it sits between', () => {
+    // The search field and the filter trigger beside it are both `h-11`; three
+    // heights on one bar read as three unrelated things.
+    renderCombobox()
+    expect(trigger().className).toContain('h-11')
+  })
+
   it('selects a year with the keyboard alone', async () => {
     const { onChange } = renderCombobox()
     await userEvent.tab()

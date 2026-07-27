@@ -18,7 +18,7 @@ import {
   stenogramSectionTitleClassName,
 } from '../lib/stenogram-theme'
 import { ParliamentShell } from './parliament-shell'
-import { MemberSpeechActivityHeatmap } from './member-speech-activity-heatmap'
+import { ParliamentSpeechActivityPanel } from './parliament-speech-activity-panel'
 import { ParliamentDebouncedSearchInput } from './parliament-debounced-search-input'
 import { FilterTriggerButton } from './parliament-filter-trigger-button'
 import { ParliamentYearCombobox } from './parliament-year-combobox'
@@ -90,16 +90,6 @@ export function ParliamentStenogramePage({ search }: Props) {
     search.an ??
     (serverYears.length > 0 ? Math.max(...serverYears) : currentYear)
 
-  // The heatmap is a secondary ACTIVITY read; it only ever runs on the
-  // interventions view, where a year is already committed.
-  const activityQuery = useParliamentSpeechActivity(
-    year,
-    activityFilter,
-    q,
-  )
-  const activity = activityQuery.data ?? undefined
-  const isActivityLoading = bootstrap.isLoading || activityQuery.isLoading
-
   const activeCount =
     view === 'sedinte'
       ? countActiveStenogramSessionFilters(search)
@@ -121,7 +111,21 @@ export function ParliamentStenogramePage({ search }: Props) {
       commit({ from: undefined, to: undefined })
       return
     }
-    commit({ from: day, to: day })
+    // The panel's window can reach back past the toolbar's year — a day clicked
+    // in the rolling window may belong to the year before it. On INTERVENTIONS
+    // the year is the query's own bound, so the two must be committed together
+    // or the toolbar would keep claiming a year the list is no longer showing.
+    // On sittings the date bound already outranks the year (see
+    // `buildStenogramSessionsFilter`), and forcing a year there would survive
+    // the day being cleared and silently narrow the whole history.
+    const dayYear = Number.parseInt(day.slice(0, 4), 10)
+    commit({
+      from: day,
+      to: day,
+      ...(view === 'interventii' && Number.isFinite(dayYear)
+        ? { an: dayYear }
+        : {}),
+    })
   }
 
   const handleClearAll = () =>
@@ -137,6 +141,28 @@ export function ParliamentStenogramePage({ search }: Props) {
       // list to the current year rather than to "everything".
       ...(view === 'sedinte' ? { an: undefined } : {}),
     })
+
+  // Built once and placed by the view below, so the two surfaces cannot drift
+  // into two different heatmaps of the same aggregate. It owns its own range —
+  // the toolbar's year bounds the LIST, this bounds the chart — and the only
+  // thing it writes back is the day filter.
+  // NOT shown while the sittings list is filtered by capture availability. The
+  // aggregate behind it counts TURNS and its filter has no availability field,
+  // so the squares would be drawn from every capture state while the list below
+  // showed one — offering a busy day that yields no sittings at all. A chart
+  // that disagrees with the list it sits under is worse than no chart.
+  const activityPanelApplies =
+    view === 'interventii' || search.disponibilitate === undefined
+
+  const activityPanel = activityPanelApplies ? (
+    <ParliamentSpeechActivityPanel
+      filter={activityFilter}
+      q={q}
+      availableYears={years}
+      selectedDay={selectedDay}
+      onSelectDay={handleSelectDay}
+    />
+  ) : null
 
   return (
     <ParliamentShell activeTab="stenograme">
@@ -197,47 +223,25 @@ export function ParliamentStenogramePage({ search }: Props) {
           />
         </ParliamentStenogramControls>
 
+        {/* The heatmap is an OPTIONAL activity read, collapsed by default: it
+            is a good overview but it is not how anyone finds a debate, and it
+            used to occupy the top of the page above the results.
+
+            On INTERVENTIONS it sits above the list, where it reads as the shape
+            of the thing being listed. On SITTINGS it goes UNDER the list: the
+            sittings are the answer to the question the reader arrived with, and
+            an activity chart between the toolbar and them would push the record
+            below the fold to show a picture of it. Both drive the same
+            `?from=/?to=` day filter, which the sittings list honours through
+            `sessionDate`, so a day clicked anywhere narrows what is on screen. */}
         {view === 'sedinte' ? (
-          <ParliamentStenogramSessionsView search={search} />
+          <>
+            <ParliamentStenogramSessionsView search={search} />
+            {activityPanel}
+          </>
         ) : (
           <>
-            {/* The heatmap is an OPTIONAL activity read, collapsed by default:
-                it is a nice overview but it is not how anyone finds a debate,
-                and it used to occupy the top of the page above the results. */}
-            <details className="group border-2 border-[#b1b4b6] bg-white dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-3 text-sm font-semibold text-[#0b0c0c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:text-[var(--pnrr-fg)]">
-                <span>
-                  <Trans>Activitatea în plen pe zile ({year})</Trans>
-                </span>
-                <span className="text-[#1d70b8] underline underline-offset-4">
-                  <span className="group-open:hidden">
-                    <Trans>Arată</Trans>
-                  </span>
-                  <span className="hidden group-open:inline">
-                    <Trans>Ascunde</Trans>
-                  </span>
-                </span>
-              </summary>
-              <div className="space-y-4 border-t-2 border-[#b1b4b6] p-5 dark:border-[var(--pnrr-border)]">
-                <p className="text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-                  <Trans>
-                    Fiecare pătrat este o zi; intensitatea arată câte intervenții
-                    au fost consemnate. Faceți clic pe o zi pentru a filtra lista.
-                  </Trans>
-                </p>
-                <MemberSpeechActivityHeatmap
-                  activity={activity}
-                  selectedDay={selectedDay}
-                  onSelectDay={handleSelectDay}
-                  year={year}
-                  onSelectYear={(next) => commit({ an: next })}
-                  isLoading={isActivityLoading}
-                  // The toolbar combobox owns the year for this page.
-                  yearControl="none"
-                />
-              </div>
-            </details>
-
+            {activityPanel}
             <ParliamentStenogramInterventionsView search={search} year={year} />
           </>
         )}
