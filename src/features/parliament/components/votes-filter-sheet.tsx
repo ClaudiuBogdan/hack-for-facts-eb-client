@@ -358,8 +358,10 @@ export function VotesFilterSheet({
                   aria-label="Rezultat"
                 >
                   <option value="all">Toate rezultatele</option>
-                  <option value="adoptat">Adoptat</option>
-                  <option value="respins">Respins</option>
+                  {/* These filter the TALLY (the server derives outcome as
+                      pentru > impotriva), not whether the bill passed. */}
+                  <option value="adoptat">Majoritate pentru</option>
+                  <option value="respins">Majoritate împotrivă</option>
                 </select>
               </fieldset>
 

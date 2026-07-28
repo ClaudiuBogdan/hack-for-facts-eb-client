@@ -124,7 +124,22 @@ function toVoteChoice(value: string | null | undefined): MemberVoteChoice {
  * the bill was adopted or rejected is a different question, answered by
  * `voteLinks.role` — see `isFinalBillVote`.
  */
-function toOutcome(value: string | null | undefined): VoteOutcome {
+function toOutcome(
+  value: string | null | undefined,
+  tally?: { pentru?: number | null; impotriva?: number | null },
+): VoteOutcome {
+  // A TIE is neither side. The server derives outcome as (pentru > impotriva),
+  // which is false on equal counts, so 21 tied divisions arrived as "respins"
+  // and were badged "Majoritate împotrivă" — a statement the counts contradict.
+  const pentru = tally?.pentru;
+  const impotriva = tally?.impotriva;
+  if (
+    typeof pentru === "number" &&
+    typeof impotriva === "number" &&
+    pentru === impotriva
+  ) {
+    return "egalitate";
+  }
   if (value === "respins") return "respins";
   if (value === "adoptat") return "adoptat";
   // No published tally — say so. Defaulting to "adoptat" invented a result for
@@ -138,6 +153,7 @@ const OUTCOME_LABEL: Record<VoteOutcome, string> = {
   adoptat: "Mai multe voturi „pentru” decât „împotrivă”",
   respins: "Mai multe voturi „împotrivă” decât „pentru”",
   amânat: "Votul a fost amânat",
+  egalitate: "Voturi „pentru” și „împotrivă” în număr egal",
   necunoscut: "Rezultatul votului nu a fost publicat",
 };
 
@@ -374,7 +390,7 @@ function mapVoteSummaryCommon(
   raw: RawParliamentVoteListNode | RawParliamentVoteDetail,
 ): ParliamentVoteSummary {
   const chamber = fromGraphqlChamber(raw.chamber) ?? "camera";
-  const outcome = toOutcome(raw.outcome);
+  const outcome = toOutcome(raw.outcome, raw.tally);
   return ParliamentVoteSummarySchema.parse({
     voteId: raw.voteKey,
     chamber,
@@ -783,7 +799,7 @@ function primeRelatedVoteSummary(v: {
   tally: RawParliamentTally;
 }): void {
   const chamber = fromGraphqlChamber(v.chamber) ?? "camera";
-  const outcome = toOutcome(v.outcome);
+  const outcome = toOutcome(v.outcome, v.tally);
   const summary = ParliamentVoteSummarySchema.parse({
     voteId: v.voteKey,
     chamber,

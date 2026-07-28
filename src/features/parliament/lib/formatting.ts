@@ -90,6 +90,7 @@ export function getOutcomeVariant(
       return "destructive";
     case "amânat":
       return "secondary";
+    case "egalitate":
     case "necunoscut":
       return "outline";
   }
@@ -111,6 +112,8 @@ export function getOutcomeLabel(outcome: VoteOutcome): string {
       return "Majoritate împotrivă";
     case "amânat":
       return "Amânat";
+    case "egalitate":
+      return "Egalitate";
     case "necunoscut":
       return "Rezultat nepublicat";
   }
@@ -119,6 +122,7 @@ export function getOutcomeLabel(outcome: VoteOutcome): string {
 /** Accent / border color for vote cards — adoptat vs respins vs amânat */
 export function getVoteOutcomeAccentColor(outcome: VoteOutcome): string {
   switch (outcome) {
+    case "egalitate":
     case "necunoscut":
       return "#505a5f";
     case "adoptat":

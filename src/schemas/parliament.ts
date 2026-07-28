@@ -25,6 +25,7 @@ export const VoteOutcomeSchema = z.enum([
   "adoptat",
   "respins",
   "amânat",
+  "egalitate",
   "necunoscut",
 ]);
 export type VoteOutcome = z.infer<typeof VoteOutcomeSchema>;

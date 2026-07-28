@@ -154,10 +154,10 @@ export function MemberVotesFilterSheet({
               className="grid grid-cols-2 gap-2"
             >
               <ToggleGroupItem value="adoptat" className={TOGGLE_ITEM_CLASS}>
-                Adoptat
+                Majoritate pentru
               </ToggleGroupItem>
               <ToggleGroupItem value="respins" className={TOGGLE_ITEM_CLASS}>
-                Respins
+                Majoritate împotrivă
               </ToggleGroupItem>
             </ToggleGroup>
           </section>
@@ -300,7 +300,8 @@ export function MemberVotesActiveFilters({
   if (search.outcome) {
     chips.push({
       key: 'outcome',
-      label: `Rezultat: ${search.outcome === 'adoptat' ? 'Adoptat' : 'Respins'}`,
+      // Describes the tally, not the bill's fate — see getOutcomeLabel.
+      label: `Vot: ${search.outcome === 'adoptat' ? 'Majoritate pentru' : 'Majoritate împotrivă'}`,
       onRemove: () => onChange({ outcome: undefined }),
     })
   }
