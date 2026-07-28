@@ -107,6 +107,17 @@ export function BillDetailsTab({ bill }: Props) {
             înregistrări.
           </p>
         ) : null}
+        {/* The card states where the bill stands; this is the way to how it got
+            there. Without it the reader has to work out that "Etape" is the tab
+            that expands the one fact they just read. */}
+        <Link
+          to="/parlament/proiecte/$billId/etape"
+          params={{ billId: bill.billId }}
+          className="mt-4 inline-flex items-center gap-1 text-base font-semibold text-[#1d70b8] underline underline-offset-4 hover:text-[#003078]"
+        >
+          Vezi toate etapele parcursului
+          <ChevronRight className="h-4 w-4 shrink-0" aria-hidden />
+        </Link>
       </section>
 
       <section>

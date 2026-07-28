@@ -281,6 +281,52 @@ describe('BillStagesTab — what the source actually printed', () => {
     ).toHaveLength(1)
   })
 
+  it('keeps two chips that share an href but not a caption, without a key clash', () => {
+    // The first dedupe keyed the DOM node on sourceHref alone, so these two
+    // survived the collapse and then collided as siblings — React logged
+    // "two children with the same key" and reserves the right to drop one.
+    const errors: unknown[] = []
+    const spy = vi
+      .spyOn(console, 'error')
+      .mockImplementation((...args) => errors.push(args))
+    render(
+      <BillStagesTab
+        bill={bill([
+          step({
+            position: 1,
+            chamberCode: 'CD',
+            description: 'trimis pentru raport la:',
+            rowKind: 'step',
+            links: [
+              {
+                linkKind: 'committee',
+                targetKey: 'cdep:2:2016:11',
+                sourceHref: 'https://www.cdep.ro/structura2015.co?idc=11',
+                sourceText: 'Comisia juridică',
+                resolutionStatus: 'linked',
+              },
+              {
+                linkKind: 'committee',
+                targetKey: 'cdep:2:2016:11',
+                sourceHref: 'https://www.cdep.ro/structura2015.co?idc=11',
+                sourceText: 'Comisia juridică (raport comun)',
+                resolutionStatus: 'linked',
+              },
+            ],
+          }),
+        ])}
+      />,
+    )
+    expect(screen.getByText('Comisia juridică')).toBeInTheDocument()
+    expect(
+      screen.getByText('Comisia juridică (raport comun)'),
+    ).toBeInTheDocument()
+    expect(
+      errors.filter((entry) => String(entry).includes('same key')),
+    ).toHaveLength(0)
+    spy.mockRestore()
+  })
+
   it('ignores a link kind it does not know, instead of blanking the page', () => {
     // linkKind is deliberately an open string: the contract is additive, and a
     // closed enum turns a new server kind into a crash rather than a missing chip.
@@ -514,14 +560,26 @@ describe('BillStagesTab — the switcher', () => {
         onViewChange={onViewChange}
       />,
     )
-    await user.selectOptions(screen.getByLabelText('Vizualizare'), 'cronologic')
+    await user.click(screen.getByRole('combobox', { name: 'Vizualizare' }))
+    await user.click(screen.getByRole('option', { name: 'Cronologic' }))
     expect(onViewChange).toHaveBeenCalledWith('cronologic')
+  })
+
+  it('shows the reading currently on screen, not a placeholder', () => {
+    render(
+      <BillStagesTab bill={mergedBill()} view="fise" onViewChange={vi.fn()} />,
+    )
+    expect(
+      screen.getByRole('combobox', { name: 'Vizualizare' }),
+    ).toHaveTextContent('Camere separate')
   })
 
   it('hides the switcher when the page cannot act on it', () => {
     // Without a handler the control would be a dead end: it would change nothing
     // and the reader would read that as a broken page.
     render(<BillStagesTab bill={mergedBill()} view="fise" />)
-    expect(screen.queryByLabelText('Vizualizare')).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('combobox', { name: 'Vizualizare' }),
+    ).not.toBeInTheDocument()
   })
 })

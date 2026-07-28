@@ -42,11 +42,20 @@ describe('parseBillStagesSearch', () => {
     expect(BILL_STAGES_VIEWS[0]).toBe('cronologic')
   })
 
-  it('offers every view a short label and a hint', () => {
+  it('labels every view', () => {
     for (const view of BILL_STAGES_VIEWS) {
       expect(BILL_STAGES_VIEW_LABELS[view]).toBeTruthy()
-      expect(BILL_STAGES_VIEW_HINTS[view]).toBeTruthy()
     }
+  })
+
+  it('explains only the views whose layout cannot explain itself', () => {
+    // The rail shows dates descending with a chamber against every step, so a
+    // sentence saying so is just the screen read back. The column views make a
+    // claim the layout cannot — above all that `camere` prints the same moment
+    // twice.
+    expect(BILL_STAGES_VIEW_HINTS.cronologic).toBeUndefined()
+    expect(BILL_STAGES_VIEW_HINTS.camere).toBeTruthy()
+    expect(BILL_STAGES_VIEW_HINTS.fise).toBeTruthy()
   })
 })
 

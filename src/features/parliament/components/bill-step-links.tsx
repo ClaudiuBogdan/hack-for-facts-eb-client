@@ -20,23 +20,35 @@ import { chamberOfVoteKey } from '../lib/bill-step-format'
  * the name without a route.
  */
 /**
+ * Everything that distinguishes one rendered chip from another.
+ *
+ * This is BOTH the dedupe identity and the React key, deliberately. Keying on
+ * `sourceHref` alone was the bug: the source prints the same href under two
+ * different captions often enough that those rows survive a dedupe and then
+ * collide as siblings.
+ */
+function linkIdentity(link: ParliamentBillStepLink): string {
+  return `${link.linkKind}|${link.targetKey ?? ''}|${link.sourceHref}|${link.sourceText ?? ''}`
+}
+
+/**
  * Collapse links that would render as the same chip.
  *
  * The API repeats an anchor that the database stores once — step 24 of bill
  * 23135 holds one `bill_step_links` row and arrives over GraphQL twice, down to
  * an identical `sourceHref`, so the resolver is fanning a join out. Left alone
- * that prints every committee twice AND gives two React children the same key.
+ * that prints every committee twice.
  *
  * Deduping here is right regardless of who fixes the fan-out: the same committee
- * named twice is one committee, and the identity we compare on is exactly what
- * the chip shows.
+ * named the same way is one committee, and the identity we compare on is exactly
+ * what the chip shows.
  */
 function dedupeLinks(
   links: readonly ParliamentBillStepLink[],
 ): ParliamentBillStepLink[] {
   const seen = new Set<string>()
   return links.filter((link) => {
-    const identity = `${link.linkKind}|${link.targetKey ?? ''}|${link.sourceHref}|${link.sourceText ?? ''}`
+    const identity = linkIdentity(link)
     if (seen.has(identity)) return false
     seen.add(identity)
     return true
@@ -79,7 +91,7 @@ export function StepLinks({
       {committees.map((link) =>
         link.targetKey ? (
           <Link
-            key={link.sourceHref}
+            key={linkIdentity(link)}
             to="/parlament/comisii/$committeeKey"
             params={{ committeeKey: link.targetKey }}
             className="inline-flex max-w-full items-center rounded-sm border border-[#b1b4b6] bg-white px-2 py-0.5 text-xs font-semibold text-[#1d70b8] hover:bg-[#f3f2f1] dark:bg-transparent"
@@ -88,7 +100,7 @@ export function StepLinks({
           </Link>
         ) : (
           <a
-            key={link.sourceHref}
+            key={linkIdentity(link)}
             href={link.sourceHref}
             target="_blank"
             rel="noopener noreferrer"
@@ -101,7 +113,7 @@ export function StepLinks({
       )}
       {votes.map((link) => (
         <Link
-          key={link.sourceHref}
+          key={linkIdentity(link)}
           to="/parlament/voturi/$chamber/$voteId"
           params={{
             chamber: chamberOfVoteKey(link.targetKey ?? ''),
@@ -114,7 +126,7 @@ export function StepLinks({
       ))}
       {citations.map((link) => (
         <a
-          key={link.sourceHref}
+          key={linkIdentity(link)}
           href={link.sourceHref}
           target="_blank"
           rel="noopener noreferrer"
@@ -128,7 +140,7 @@ export function StepLinks({
       ))}
       {stenograms.map((link) => (
         <Link
-          key={link.sourceHref}
+          key={linkIdentity(link)}
           // The SITTING transcript, not a single speech: /stenograme/$speechKey
           // is a different surface and a session key there resolves to nothing.
           to="/parlament/stenograme/sedinte/$sessionKey"
@@ -165,7 +177,9 @@ export function StepActions({
       ) : null}
       {step.docUrls.map((url, index) => (
         <a
-          key={url}
+          // Position-qualified: the label is "Document N" by position, so a
+          // repeated URL is still two distinct links and must not share a key.
+          key={`${String(index)}-${url}`}
           href={url}
           target="_blank"
           rel="noopener noreferrer"

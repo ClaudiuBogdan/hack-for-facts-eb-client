@@ -9,9 +9,26 @@ import {
 // BillDetailsTab renders TanStack <Link>s; stub the router to a plain anchor so
 // the component can render without a RouterProvider (mirrors other unit tests).
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, ...rest }: { children: React.ReactNode }) => (
-    <a {...(rest as Record<string, unknown>)}>{children}</a>
-  ),
+  Link: ({
+    children,
+    to,
+    params,
+    ...rest
+  }: {
+    children: React.ReactNode
+    to?: string
+    params?: Record<string, string>
+  }) => {
+    const href = Object.entries(params ?? {}).reduce(
+      (acc, [key, value]) => acc.replace(`$${key}`, value),
+      to ?? '',
+    )
+    return (
+      <a href={href} {...(rest as Record<string, unknown>)}>
+        {children}
+      </a>
+    )
+  },
 }))
 // The bill tab reads vote summaries via sync getters; no related votes here.
 vi.mock('../api/parliament-api', () => ({
@@ -75,5 +92,17 @@ describe('BillDetailsTab AI summary gate (C1)', () => {
   it('hides the AI summary card when the bill has no aiMetadata', () => {
     render(<BillDetailsTab bill={buildBill({})} />)
     expect(screen.queryByText('Rezumat generat de AI')).not.toBeInTheDocument()
+  })
+})
+
+describe('BillDetailsTab — Stadiu curent', () => {
+  it('routes from the stage the bill is at to the etape tab that explains it', () => {
+    // The card states one fact about where the bill stands. Without a route out
+    // of it, reaching the procedure means guessing that "Etape" is the tab that
+    // expands what was just read.
+    render(<BillDetailsTab bill={buildBill({})} />)
+    expect(
+      screen.getByRole('link', { name: /Vezi toate etapele parcursului/ }),
+    ).toHaveAttribute('href', '/parlament/proiecte/12760/etape')
   })
 })

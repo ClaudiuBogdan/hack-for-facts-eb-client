@@ -36,9 +36,17 @@ export const BILL_STAGES_VIEW_LABELS: Readonly<Record<BillStagesView, string>> =
     fise: 'Camere separate',
   }
 
-export const BILL_STAGES_VIEW_HINTS: Readonly<Record<BillStagesView, string>> = {
-  cronologic:
-    'Toate etapele pe o singură linie, de la cea mai recentă spre început, indiferent de Cameră.',
+/**
+ * A line of explanation, for the views that need one.
+ *
+ * `cronologic` has none: the rail shows dates descending with a chamber against
+ * every step, so a sentence saying so only repeats what is already on screen.
+ * The two column views do need one — each makes a claim the layout cannot, and
+ * `camere` in particular has to warn that the same moment appears twice.
+ */
+export const BILL_STAGES_VIEW_HINTS: Readonly<
+  Partial<Record<BillStagesView, string>>
+> = {
   camere:
     'Ambele fișe, turnate în aceleași trei coloane. Momentele consemnate de amândouă apar de două ori.',
   fise: 'Fiecare Cameră își ține propria fișă. Le arătăm separat, așa cum au fost publicate.',

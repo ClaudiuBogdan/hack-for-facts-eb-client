@@ -79,6 +79,20 @@ window.ResizeObserver =
 globalThis.ResizeObserver =
   MockResizeObserver as unknown as typeof ResizeObserver;
 
+// Pointer Events capture, which jsdom does not implement at all. Radix's Select
+// calls `hasPointerCapture` while opening, so a test that clicks the trigger of
+// any shadcn <Select> threw `target.hasPointerCapture is not a function` before
+// the listbox ever rendered. `scrollIntoView` is missing for the same reason and
+// runs when Radix scrolls the checked item into view.
+if (!Element.prototype.hasPointerCapture) {
+  Element.prototype.hasPointerCapture = () => false;
+  Element.prototype.setPointerCapture = () => {};
+  Element.prototype.releasePointerCapture = () => {};
+}
+if (!Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = () => {};
+}
+
 window.scrollTo = vi.fn();
 
 const localStorageStore: Record<string, string> = {};

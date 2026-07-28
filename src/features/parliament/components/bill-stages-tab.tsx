@@ -46,18 +46,20 @@ export function BillStagesTab({ bill, view, onViewChange }: Props) {
         ) : null}
       </div>
 
-      {/* Say what the chosen reading does BEFORE it is read, because the three
-          disagree about the same facts in ways a reader would otherwise take
-          for a data problem — most of all the duplication in `camere`. */}
-      <p className="max-w-4xl text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-        {BILL_STAGES_VIEW_HINTS[active]}
-        {isMergedDossier && active !== 'cronologic' ? (
-          <>
-            {' '}
-            Nu am eliminat suprapunerile: ambele sunt înregistrări oficiale.
-          </>
-        ) : null}
-      </p>
+      {/* Say what the chosen reading does BEFORE it is read, where the layout
+          cannot say it itself — most of all the duplication in `camere`. The
+          rail carries no hint: it would only restate what is on screen. */}
+      {BILL_STAGES_VIEW_HINTS[active] ? (
+        <p className="max-w-4xl text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          {BILL_STAGES_VIEW_HINTS[active]}
+          {isMergedDossier ? (
+            <>
+              {' '}
+              Nu am eliminat suprapunerile: ambele sunt înregistrări oficiale.
+            </>
+          ) : null}
+        </p>
+      ) : null}
 
       {steps.length === 0 ? (
         <p className="text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
