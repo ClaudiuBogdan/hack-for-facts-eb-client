@@ -10,6 +10,7 @@ export type ParliamentTab =
   | 'grupuri'
   | 'proiecte'
   | 'comisii'
+  | 'agenda'
 
 /**
  * Each entry carries its own link target: the hub sections stay `?tab=` search
@@ -22,6 +23,7 @@ type TabEntry = {
   | { readonly to: '/parlament'; readonly tab: ParliamentTabId }
   | { readonly to: '/parlament/stenograme' }
   | { readonly to: '/parlament/comisii' }
+  | { readonly to: '/parlament/agenda' }
 )
 
 const TABS: ReadonlyArray<TabEntry> = [
@@ -34,6 +36,9 @@ const TABS: ReadonlyArray<TabEntry> = [
   // from a link on another page, so a browse surface over 499 bodies was
   // effectively unlisted.
   { id: 'comisii', to: '/parlament/comisii', label: 'Comisii' },
+  // The orders of business have been in prod since June with no way to reach
+  // them: 1,296 agendas over 2,110 sittings, and no route, no tab, no link.
+  { id: 'agenda', to: '/parlament/agenda', label: 'Ordinea de zi' },
 ]
 
 type Props = {

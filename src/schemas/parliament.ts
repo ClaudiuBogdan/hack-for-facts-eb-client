@@ -1562,3 +1562,116 @@ export const ParliamentStenogramReaderSearchSchema = z.object({
 export type ParliamentStenogramReaderSearch = z.infer<
   typeof ParliamentStenogramReaderSearchSchema
 >;
+
+// ── plenary agenda (ordinea de zi) ───────────────────────────────────────────
+
+/**
+ * A sitting an order of business maps onto.
+ *
+ * `dateSource` is not decoration. `stenogram_session` is the sitting's own
+ * printed transcript title and the authority; `weekly_agenda` is the PLANNED
+ * week, which the source contradicted on 4 of the 5 sittings it dated. An
+ * absent `date` is not "sorts last" — it is its own bucket.
+ */
+export const ParliamentAgendaSittingSchema = z.object({
+  sittingKey: z.string(),
+  chamber: z.string(),
+  date: z.string().optional(),
+  dateSource: z.string(),
+  title: z.string().optional(),
+  /** Pass to the stenogram reader when present. */
+  stenogramSessionKey: z.string().optional(),
+  /** 'exact' | 'candidate' — open, because the contract is additive. */
+  resolutionStatus: z.string().optional(),
+})
+export type ParliamentAgendaSitting = z.infer<typeof ParliamentAgendaSittingSchema>
+
+export const ParliamentAgendaItemDocumentSchema = z.object({
+  url: z.string(),
+  label: z.string().optional(),
+  date: z.string().optional(),
+  manifestSide: z.string(),
+})
+export type ParliamentAgendaItemDocument = z.infer<
+  typeof ParliamentAgendaItemDocumentSchema
+>
+
+/** One numbered point of an order of business. */
+export const ParliamentAgendaItemSchema = z.object({
+  agendaItemKey: z.string(),
+  rowIndex: z.number().int().nonnegative(),
+  numberText: z.string().optional(),
+  /** 'administrative' | 'debate' | 'unknown' — open string, not an enum. */
+  itemKind: z.string(),
+  billKey: z.string().optional(),
+  billLabel: z.string().optional(),
+  billFamily: z.string().optional(),
+  titleText: z.string().optional(),
+  descriptionText: z.string().optional(),
+  lawCategory: z.string().optional(),
+  senateDisposition: z.string().optional(),
+  senateDispositionDate: z.string().optional(),
+  /**
+   * VERBATIM source strings. They name a committee and its recommendation but
+   * are deliberately unresolved server-side, so render them as source text —
+   * never as a link to a committee page.
+   */
+  committeeRapporteurs: z.array(z.string()).default([]),
+  procedureUrgency: z.boolean(),
+  decisionalChamber: z.boolean(),
+  debateReservation: z.boolean(),
+  /** 'linked' | 'unresolved' | 'not_applicable'. */
+  resolutionStatus: z.string(),
+  documents: z.array(ParliamentAgendaItemDocumentSchema).default([]),
+})
+export type ParliamentAgendaItem = z.infer<typeof ParliamentAgendaItemSchema>
+
+/**
+ * One published order of business.
+ *
+ * A PLAN, not a record of what happened. Nothing here proves a point was
+ * reached, debated or voted.
+ */
+export const ParliamentAgendaSchema = z.object({
+  agendaKey: z.string(),
+  chamber: z.string(),
+  title: z.string().optional(),
+  /** Absent on 391 of 1,296 agendas — the source printed none. */
+  approvedDate: z.string().optional(),
+  approvedDateText: z.string().optional(),
+  pdfUrl: z.string().optional(),
+  sourceUrl: z.string(),
+  sittings: z.array(ParliamentAgendaSittingSchema).default([]),
+  itemCount: z.number().int().nonnegative(),
+  billCount: z.number().int().nonnegative(),
+})
+export type ParliamentAgenda = z.infer<typeof ParliamentAgendaSchema>
+
+export const ParliamentAgendaDetailSchema = z.object({
+  agenda: ParliamentAgendaSchema,
+  items: z.array(ParliamentAgendaItemSchema).default([]),
+})
+export type ParliamentAgendaDetail = z.infer<typeof ParliamentAgendaDetailSchema>
+
+export const ParliamentAgendaListSchema = z.object({
+  agendas: z.array(ParliamentAgendaSchema).default([]),
+  total: z.number().int().nonnegative(),
+})
+export type ParliamentAgendaList = z.infer<typeof ParliamentAgendaListSchema>
+
+/** A bill's appearance on an order of business — SCHEDULING only. */
+export const ParliamentBillSchedulingSchema = z.object({
+  agendaKey: z.string(),
+  agendaItemKey: z.string(),
+  agendaTitle: z.string().optional(),
+  sittingKey: z.string(),
+  sittingDate: z.string().optional(),
+  sittingDateSource: z.string(),
+  chamber: z.string(),
+  /** 'scheduled_on_agenda' on every row today. */
+  relationshipKind: z.string(),
+  resolutionStatus: z.string(),
+  itemNumberText: z.string().optional(),
+  stenogramSessionKey: z.string().optional(),
+})
+export type ParliamentBillScheduling = z.infer<typeof ParliamentBillSchedulingSchema>

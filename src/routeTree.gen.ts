@@ -92,6 +92,7 @@ import { Route as ParlamentProiecteIndexRouteImport } from './routes/parlament/p
 import { Route as ParlamentMembriIndexRouteImport } from './routes/parlament/membri/index'
 import { Route as ParlamentGrupuriIndexRouteImport } from './routes/parlament/grupuri/index'
 import { Route as ParlamentComisiiIndexRouteImport } from './routes/parlament/comisii/index'
+import { Route as ParlamentAgendaIndexRouteImport } from './routes/parlament/agenda/index'
 import { Route as MapsEditorIndexRouteImport } from './routes/maps/editor/index'
 import { Route as MapsDatasetsIndexRouteImport } from './routes/maps/datasets/index'
 import { Route as ClassificationsFunctionalIndexRouteImport } from './routes/classifications/functional/index'
@@ -112,6 +113,7 @@ import { Route as PnrrJudeteCountySirutaRouteImport } from './routes/pnrr_.judet
 import { Route as ParlamentStenogrameSpeechKeyRouteImport } from './routes/parlament/stenograme/$speechKey'
 import { Route as ParlamentGrupuriGroupIdRouteImport } from './routes/parlament/grupuri/$groupId'
 import { Route as ParlamentComisiiCommitteeKeyRouteImport } from './routes/parlament/comisii/$committeeKey'
+import { Route as ParlamentAgendaAgendaKeyRouteImport } from './routes/parlament/agenda/$agendaKey'
 import { Route as OngUriSursaSnapshotIdRouteImport } from './routes/ong-uri.sursa.$snapshotId'
 import { Route as MapsPublicMapIdRouteImport } from './routes/maps/public/$mapId'
 import { Route as MapsEditorNewRouteImport } from './routes/maps/editor/new'
@@ -691,6 +693,13 @@ const ParlamentComisiiIndexRoute = ParlamentComisiiIndexRouteImport.update({
 } as any).lazy(() =>
   import('./routes/parlament/comisii/index.lazy').then((d) => d.Route),
 )
+const ParlamentAgendaIndexRoute = ParlamentAgendaIndexRouteImport.update({
+  id: '/parlament/agenda/',
+  path: '/parlament/agenda/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/parlament/agenda/index.lazy').then((d) => d.Route),
+)
 const MapsEditorIndexRoute = MapsEditorIndexRouteImport.update({
   id: '/maps/editor/',
   path: '/maps/editor/',
@@ -845,6 +854,14 @@ const ParlamentComisiiCommitteeKeyRoute =
     import('./routes/parlament/comisii/$committeeKey.lazy').then(
       (d) => d.Route,
     ),
+  )
+const ParlamentAgendaAgendaKeyRoute =
+  ParlamentAgendaAgendaKeyRouteImport.update({
+    id: '/parlament/agenda/$agendaKey',
+    path: '/parlament/agenda/$agendaKey',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/parlament/agenda/$agendaKey.lazy').then((d) => d.Route),
   )
 const OngUriSursaSnapshotIdRoute = OngUriSursaSnapshotIdRouteImport.update({
   id: '/sursa/$snapshotId',
@@ -1459,6 +1476,7 @@ export interface FileRoutesByFullPath {
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
   '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
+  '/parlament/agenda/$agendaKey': typeof ParlamentAgendaAgendaKeyRoute
   '/parlament/comisii/$committeeKey': typeof ParlamentComisiiCommitteeKeyRoute
   '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
   '/parlament/stenograme/$speechKey': typeof ParlamentStenogrameSpeechKeyRoute
@@ -1479,6 +1497,7 @@ export interface FileRoutesByFullPath {
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
   '/maps/datasets/': typeof MapsDatasetsIndexRoute
   '/maps/editor/': typeof MapsEditorIndexRoute
+  '/parlament/agenda/': typeof ParlamentAgendaIndexRoute
   '/parlament/comisii/': typeof ParlamentComisiiIndexRoute
   '/parlament/grupuri/': typeof ParlamentGrupuriIndexRoute
   '/parlament/membri/': typeof ParlamentMembriIndexRoute
@@ -1615,6 +1634,7 @@ export interface FileRoutesByTo {
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
   '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
+  '/parlament/agenda/$agendaKey': typeof ParlamentAgendaAgendaKeyRoute
   '/parlament/comisii/$committeeKey': typeof ParlamentComisiiCommitteeKeyRoute
   '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
   '/parlament/stenograme/$speechKey': typeof ParlamentStenogrameSpeechKeyRoute
@@ -1635,6 +1655,7 @@ export interface FileRoutesByTo {
   '/classifications/functional': typeof ClassificationsFunctionalIndexRoute
   '/maps/datasets': typeof MapsDatasetsIndexRoute
   '/maps/editor': typeof MapsEditorIndexRoute
+  '/parlament/agenda': typeof ParlamentAgendaIndexRoute
   '/parlament/comisii': typeof ParlamentComisiiIndexRoute
   '/parlament/grupuri': typeof ParlamentGrupuriIndexRoute
   '/parlament/membri': typeof ParlamentMembriIndexRoute
@@ -1786,6 +1807,7 @@ export interface FileRoutesById {
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
   '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
+  '/parlament/agenda/$agendaKey': typeof ParlamentAgendaAgendaKeyRoute
   '/parlament/comisii/$committeeKey': typeof ParlamentComisiiCommitteeKeyRoute
   '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
   '/parlament/stenograme/$speechKey': typeof ParlamentStenogrameSpeechKeyRoute
@@ -1806,6 +1828,7 @@ export interface FileRoutesById {
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
   '/maps/datasets/': typeof MapsDatasetsIndexRoute
   '/maps/editor/': typeof MapsEditorIndexRoute
+  '/parlament/agenda/': typeof ParlamentAgendaIndexRoute
   '/parlament/comisii/': typeof ParlamentComisiiIndexRoute
   '/parlament/grupuri/': typeof ParlamentGrupuriIndexRoute
   '/parlament/membri/': typeof ParlamentMembriIndexRoute
@@ -1959,6 +1982,7 @@ export interface FileRouteTypes {
     | '/maps/editor/new'
     | '/maps/public/$mapId'
     | '/ong-uri/sursa/$snapshotId'
+    | '/parlament/agenda/$agendaKey'
     | '/parlament/comisii/$committeeKey'
     | '/parlament/grupuri/$groupId'
     | '/parlament/stenograme/$speechKey'
@@ -1979,6 +2003,7 @@ export interface FileRouteTypes {
     | '/classifications/functional/'
     | '/maps/datasets/'
     | '/maps/editor/'
+    | '/parlament/agenda/'
     | '/parlament/comisii/'
     | '/parlament/grupuri/'
     | '/parlament/membri/'
@@ -2115,6 +2140,7 @@ export interface FileRouteTypes {
     | '/maps/editor/new'
     | '/maps/public/$mapId'
     | '/ong-uri/sursa/$snapshotId'
+    | '/parlament/agenda/$agendaKey'
     | '/parlament/comisii/$committeeKey'
     | '/parlament/grupuri/$groupId'
     | '/parlament/stenograme/$speechKey'
@@ -2135,6 +2161,7 @@ export interface FileRouteTypes {
     | '/classifications/functional'
     | '/maps/datasets'
     | '/maps/editor'
+    | '/parlament/agenda'
     | '/parlament/comisii'
     | '/parlament/grupuri'
     | '/parlament/membri'
@@ -2285,6 +2312,7 @@ export interface FileRouteTypes {
     | '/maps/editor/new'
     | '/maps/public/$mapId'
     | '/ong-uri/sursa/$snapshotId'
+    | '/parlament/agenda/$agendaKey'
     | '/parlament/comisii/$committeeKey'
     | '/parlament/grupuri/$groupId'
     | '/parlament/stenograme/$speechKey'
@@ -2305,6 +2333,7 @@ export interface FileRouteTypes {
     | '/classifications/functional/'
     | '/maps/datasets/'
     | '/maps/editor/'
+    | '/parlament/agenda/'
     | '/parlament/comisii/'
     | '/parlament/grupuri/'
     | '/parlament/membri/'
@@ -2423,6 +2452,7 @@ export interface RootRouteChildren {
   MapsEditorMapIdRoute: typeof MapsEditorMapIdRoute
   MapsEditorNewRoute: typeof MapsEditorNewRoute
   MapsPublicMapIdRoute: typeof MapsPublicMapIdRoute
+  ParlamentAgendaAgendaKeyRoute: typeof ParlamentAgendaAgendaKeyRoute
   ParlamentComisiiCommitteeKeyRoute: typeof ParlamentComisiiCommitteeKeyRoute
   ParlamentGrupuriGroupIdRoute: typeof ParlamentGrupuriGroupIdRoute
   ParlamentStenogrameSpeechKeyRoute: typeof ParlamentStenogrameSpeechKeyRoute
@@ -2435,6 +2465,7 @@ export interface RootRouteChildren {
   ClassificationsFunctionalIndexRoute: typeof ClassificationsFunctionalIndexRoute
   MapsDatasetsIndexRoute: typeof MapsDatasetsIndexRoute
   MapsEditorIndexRoute: typeof MapsEditorIndexRoute
+  ParlamentAgendaIndexRoute: typeof ParlamentAgendaIndexRoute
   ParlamentComisiiIndexRoute: typeof ParlamentComisiiIndexRoute
   ParlamentGrupuriIndexRoute: typeof ParlamentGrupuriIndexRoute
   ParlamentMembriIndexRoute: typeof ParlamentMembriIndexRoute
@@ -3056,6 +3087,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ParlamentComisiiIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/parlament/agenda/': {
+      id: '/parlament/agenda/'
+      path: '/parlament/agenda'
+      fullPath: '/parlament/agenda/'
+      preLoaderRoute: typeof ParlamentAgendaIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/maps/editor/': {
       id: '/maps/editor/'
       path: '/maps/editor'
@@ -3194,6 +3232,13 @@ declare module '@tanstack/react-router' {
       path: '/parlament/comisii/$committeeKey'
       fullPath: '/parlament/comisii/$committeeKey'
       preLoaderRoute: typeof ParlamentComisiiCommitteeKeyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parlament/agenda/$agendaKey': {
+      id: '/parlament/agenda/$agendaKey'
+      path: '/parlament/agenda/$agendaKey'
+      fullPath: '/parlament/agenda/$agendaKey'
+      preLoaderRoute: typeof ParlamentAgendaAgendaKeyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ong-uri/sursa/$snapshotId': {
@@ -4114,6 +4159,7 @@ const rootRouteChildren: RootRouteChildren = {
   MapsEditorMapIdRoute: MapsEditorMapIdRoute,
   MapsEditorNewRoute: MapsEditorNewRoute,
   MapsPublicMapIdRoute: MapsPublicMapIdRoute,
+  ParlamentAgendaAgendaKeyRoute: ParlamentAgendaAgendaKeyRoute,
   ParlamentComisiiCommitteeKeyRoute: ParlamentComisiiCommitteeKeyRoute,
   ParlamentGrupuriGroupIdRoute: ParlamentGrupuriGroupIdRoute,
   ParlamentStenogrameSpeechKeyRoute: ParlamentStenogrameSpeechKeyRoute,
@@ -4126,6 +4172,7 @@ const rootRouteChildren: RootRouteChildren = {
   ClassificationsFunctionalIndexRoute: ClassificationsFunctionalIndexRoute,
   MapsDatasetsIndexRoute: MapsDatasetsIndexRoute,
   MapsEditorIndexRoute: MapsEditorIndexRoute,
+  ParlamentAgendaIndexRoute: ParlamentAgendaIndexRoute,
   ParlamentComisiiIndexRoute: ParlamentComisiiIndexRoute,
   ParlamentGrupuriIndexRoute: ParlamentGrupuriIndexRoute,
   ParlamentMembriIndexRoute: ParlamentMembriIndexRoute,

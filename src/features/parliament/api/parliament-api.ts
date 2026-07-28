@@ -48,6 +48,9 @@ import type {
   ParliamentSpeechActivity,
   ParliamentSpeechContext,
   ParliamentSpeechesList,
+  ParliamentAgendaDetail,
+  ParliamentAgendaList,
+  ParliamentBillScheduling,
   ParliamentStenogramSessionsList,
   ParliamentStenogramTranscript,
 } from '@/schemas/parliament'
@@ -66,6 +69,17 @@ import {
   fetchParliamentStenogramSessionsLive,
   fetchParliamentStenogramTranscriptLive,
 } from './parliament-stenograms-api.live'
+import {
+  fetchParliamentAgendaLive,
+  fetchParliamentAgendasLive,
+  fetchParliamentBillSchedulingLive,
+  type ParliamentAgendaFilterInput,
+} from './parliament-agenda-api.live'
+import {
+  fetchParliamentAgendaMock,
+  fetchParliamentAgendasMock,
+  fetchParliamentBillSchedulingMock,
+} from './parliament-agenda-api.mock'
 import {
   fetchParliamentSpeechContextMock,
   fetchParliamentStenogramSessionsMock,
@@ -333,6 +347,41 @@ export async function fetchParliamentSpeechDetail(
   return isParliamentMockEnabled()
     ? fetchParliamentSpeechDetailMock(speechKey)
     : fetchParliamentSpeechDetailLive(speechKey)
+}
+
+// ── plenary agenda (ordinea de zi) ──────────────────────────────────────────
+//
+// CDep only: the Senate plenary agenda is not extracted, so an empty result
+// for a Senate bill is a gap in what we hold, not a fact about the bill.
+
+export async function fetchParliamentAgendas(
+  page = 1,
+  filter?: ParliamentAgendaFilterInput,
+): Promise<ParliamentAgendaList> {
+  return isParliamentMockEnabled()
+    ? fetchParliamentAgendasMock(page, filter)
+    : fetchParliamentAgendasLive(page, filter)
+}
+
+/** Resolves null for an unknown key — that is a 404, not an error. */
+export async function fetchParliamentAgenda(
+  agendaKey: string,
+): Promise<ParliamentAgendaDetail | null> {
+  return isParliamentMockEnabled()
+    ? fetchParliamentAgendaMock(agendaKey)
+    : fetchParliamentAgendaLive(agendaKey)
+}
+
+/**
+ * Every order of business a bill was PLACED ON. Scheduling evidence only —
+ * never render this as "debated on" or "voted on".
+ */
+export async function fetchParliamentBillScheduling(
+  billKey: string,
+): Promise<ParliamentBillScheduling[]> {
+  return isParliamentMockEnabled()
+    ? fetchParliamentBillSchedulingMock(billKey)
+    : fetchParliamentBillSchedulingLive(billKey)
 }
 
 // ── canonical stenogram sittings (the reading surface) ──────────────────────

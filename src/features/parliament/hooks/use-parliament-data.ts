@@ -6,6 +6,9 @@ import type {
   ParliamentVotesSearch,
 } from '@/schemas/parliament'
 import {
+  fetchParliamentAgenda,
+  fetchParliamentAgendas,
+  fetchParliamentBillScheduling,
   fetchParliamentSpeechContext,
   fetchParliamentStenogramSessions,
   fetchParliamentTranscript,
@@ -36,6 +39,7 @@ import {
   fetchParliamentVoteDetail,
   fetchParliamentVotes,
 } from '../api/parliament-api'
+import type { ParliamentAgendaFilterInput } from '../api/parliament-agenda-api.live'
 import type { MemberVotesFilterInput } from '../lib/member-votes-filter'
 import type { MemberSpeechesFilterInput } from '../lib/member-speeches-filter'
 import type { ParliamentSpeechesFilterInput } from '../lib/parliament-speeches-filter'
@@ -441,5 +445,33 @@ export function useParliamentCommittee(committeeKey: string) {
     queryKey: [...PARLIAMENT_QUERY_KEY, 'committee', committeeKey],
     queryFn: () => fetchParliamentCommittee(committeeKey),
     enabled: Boolean(committeeKey),
+  })
+}
+
+// ── plenary agenda (ordinea de zi) ───────────────────────────────────────────
+
+export function useParliamentAgendas(page: number, filter?: ParliamentAgendaFilterInput) {
+  return useQuery({
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'agendas', page, filter],
+    queryFn: () => fetchParliamentAgendas(page, filter),
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export function useParliamentAgenda(agendaKey: string) {
+  return useQuery({
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'agenda', agendaKey],
+    queryFn: () => fetchParliamentAgenda(agendaKey),
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+/** A bill's scheduling history. Enabled only when a bill key is known. */
+export function useParliamentBillScheduling(billKey: string | undefined) {
+  return useQuery({
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'bill-scheduling', billKey],
+    queryFn: () => fetchParliamentBillScheduling(billKey ?? ''),
+    enabled: billKey !== undefined && billKey !== '',
+    staleTime: 5 * 60 * 1000,
   })
 }
