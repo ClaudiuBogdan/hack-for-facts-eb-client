@@ -1,11 +1,83 @@
 import type { ParliamentBillDetail } from '@/schemas/parliament'
-import { BillPassageTracker } from './bill-passage-tracker'
+import { billDetailSectionTitleClassName } from '../lib/bill-detail-theme'
+import {
+  BILL_STAGES_VIEW_HINTS,
+  DEFAULT_BILL_STAGES_VIEW,
+  isProceduralStep,
+  type BillStagesView,
+} from '../lib/bill-stages-view'
+import { BillOutcomeSummary } from './bill-outcome-summary'
+import {
+  BillStagesColumns,
+  BillStagesRecordLanes,
+} from './bill-passage-tracker'
+import { BillStagesTimeline } from './bill-stages-timeline'
+import { BillStagesViewSwitcher } from './bill-stages-view-switcher'
 
 type Props = {
   readonly bill: ParliamentBillDetail
+  readonly view?: BillStagesView
+  readonly onViewChange?: (view: BillStagesView) => void
 }
 
-/** Etape tab — 3-column passage tracker (chamber columns from real chamberCode). */
-export function BillStagesTab({ bill }: Props) {
-  return <BillPassageTracker bill={bill} />
+/**
+ * Etape tab — the same procedure under three readings.
+ *
+ * All three draw on the same steps, so switching re-arranges what is on screen
+ * and never removes an event. The chosen view lives in the URL (`?vedere=`), the
+ * app's shareable-state contract.
+ */
+export function BillStagesTab({ bill, view, onViewChange }: Props) {
+  const active = view ?? DEFAULT_BILL_STAGES_VIEW
+  const steps = bill.timeline.filter(isProceduralStep)
+  const recordOrder =
+    bill.dossierBillIds.length > 0 ? bill.dossierBillIds : [bill.billId]
+  const isMergedDossier =
+    new Set(steps.map((step) => step.sourceBillKey ?? bill.billId)).size > 1
+
+  return (
+    <div className="space-y-6">
+      <BillOutcomeSummary bill={bill} />
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className={billDetailSectionTitleClassName}>Parcurs legislativ</h2>
+        {onViewChange ? (
+          <BillStagesViewSwitcher value={active} onChange={onViewChange} />
+        ) : null}
+      </div>
+
+      {/* Say what the chosen reading does BEFORE it is read, because the three
+          disagree about the same facts in ways a reader would otherwise take
+          for a data problem — most of all the duplication in `camere`. */}
+      <p className="max-w-4xl text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+        {BILL_STAGES_VIEW_HINTS[active]}
+        {isMergedDossier && active !== 'cronologic' ? (
+          <>
+            {' '}
+            Nu am eliminat suprapunerile: ambele sunt înregistrări oficiale.
+          </>
+        ) : null}
+      </p>
+
+      {steps.length === 0 ? (
+        <p className="text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          Nu există etape procedurale înregistrate pentru acest proiect.
+        </p>
+      ) : active === 'cronologic' ? (
+        <BillStagesTimeline
+          steps={steps}
+          recordOrder={recordOrder}
+          showRecordChip={isMergedDossier}
+        />
+      ) : active === 'camere' ? (
+        <BillStagesColumns steps={steps} />
+      ) : (
+        <BillStagesRecordLanes
+          steps={steps}
+          recordOrder={recordOrder}
+          fallbackKey={bill.billId}
+        />
+      )}
+    </div>
+  )
 }
