@@ -125,7 +125,11 @@ function toVoteChoice(value: string | null | undefined): MemberVoteChoice {
  * `voteLinks.role` — see `isFinalBillVote`.
  */
 function toOutcome(value: string | null | undefined): VoteOutcome {
-  return value === "respins" ? "respins" : "adoptat";
+  if (value === "respins") return "respins";
+  if (value === "adoptat") return "adoptat";
+  // No published tally — say so. Defaulting to "adoptat" invented a result for
+  // 202 divisions.
+  return "necunoscut";
 }
 
 const OUTCOME_LABEL: Record<VoteOutcome, string> = {
@@ -134,6 +138,7 @@ const OUTCOME_LABEL: Record<VoteOutcome, string> = {
   adoptat: "Mai multe voturi „pentru” decât „împotrivă”",
   respins: "Mai multe voturi „împotrivă” decât „pentru”",
   amânat: "Votul a fost amânat",
+  necunoscut: "Rezultatul votului nu a fost publicat",
 };
 
 // ── groups ──────────────────────────────────────────────────────────────────
@@ -969,6 +974,12 @@ function buildBillTimeline(
       return {
         stepId: `ev-${sourceBillKey}-${e.position}`,
         position: e.position,
+        // WHICH official record this step came from. A bicameral bill is two
+        // independent dossiers — 19,031 of 19,068 merged dossiers carry steps
+        // dated the same day in both — so a merged timeline that does not say
+        // which chamber's record a row belongs to implies one authoritative
+        // sequence that does not exist.
+        sourceBillKey,
         description,
         ...(e.eventDate
           ? { date: toIsoDate(e.eventDate, "") || undefined }

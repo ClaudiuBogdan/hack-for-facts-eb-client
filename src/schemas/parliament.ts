@@ -14,7 +14,19 @@ export const MemberVoteChoiceSchema = z.enum([
 ]);
 export type MemberVoteChoice = z.infer<typeof MemberVoteChoiceSchema>;
 
-export const VoteOutcomeSchema = z.enum(["adoptat", "respins", "amânat"]);
+/**
+ * NOT the bill's fate. The server computes `outcome` as (pentru > impotriva) and
+ * the chambers publish no outcome word at all, so this describes the TALLY.
+ * `necunoscut` is what a vote with no published counts must map to — 202 such
+ * votes on prod, every one of which used to arrive here as "adoptat".
+ * Whether a bill passed is answered by `voteLinks.role`.
+ */
+export const VoteOutcomeSchema = z.enum([
+  "adoptat",
+  "respins",
+  "amânat",
+  "necunoscut",
+]);
 export type VoteOutcome = z.infer<typeof VoteOutcomeSchema>;
 
 /**
@@ -1195,6 +1207,13 @@ export const ParliamentBillTimelineStepSchema = z.object({
   /** Stable key (source `position`); steps render in ascending position order. */
   stepId: z.string(),
   position: z.number().int().nonnegative(),
+  /**
+   * The bill VIEW this step came from. A bicameral bill is two independent
+   * official dossiers (a CDep record and a Senate record) merged into one
+   * reading; the same act is routinely present in both. Carrying the source lets
+   * the page say whose record a row is, instead of implying a single sequence.
+   */
+  sourceBillKey: z.string().optional(),
   /** Cleaned event description (rendered as-is; source fix handles glued tokens). */
   description: z.string(),
   /** ISO date when known; `dateText` is the source's display string. */

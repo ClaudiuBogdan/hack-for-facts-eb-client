@@ -46,8 +46,16 @@ const step = (
   ...over,
 })
 
-const bill = (timeline: readonly ParliamentBillTimelineStep[]): ParliamentBillDetail =>
-  ({ timeline, relatedVotes: [], lawMilestone: undefined }) as unknown as ParliamentBillDetail
+const bill = (
+  timeline: readonly ParliamentBillTimelineStep[],
+  dossierBillIds: readonly string[] = ['23135'],
+): ParliamentBillDetail =>
+  ({
+    timeline,
+    relatedVotes: [],
+    lawMilestone: undefined,
+    dossierBillIds,
+  }) as unknown as ParliamentBillDetail
 
 describe('BillPassageTracker — what the source actually printed', () => {
   it('renders a step but NOT the attachment row folded under it', () => {
@@ -143,5 +151,51 @@ describe('BillPassageTracker — what the source actually printed', () => {
       'href',
       'https://senat.ro/y',
     )
+  })
+
+  it('splits a MERGED dossier into one lane per official record', () => {
+    // A single-view bill has one record; labelling every row would be noise.
+    const single = render(
+      <BillPassageTracker
+        bill={bill([
+          step({
+            position: 1,
+            chamberCode: 'CD',
+            description: 'Etapă unică',
+            sourceBillKey: '23135',
+          }),
+        ])}
+      />,
+    )
+    expect(single.queryByText(/Fișa Camerei/)).not.toBeInTheDocument()
+    single.unmount()
+
+    // A bicameral bill is TWO records; 19,031 of 19,068 merged dossiers carry
+    // steps dated the same day in both, so the reader must be able to tell them
+    // apart rather than read one invented sequence.
+    render(
+      <BillPassageTracker
+        bill={bill(
+          [
+            step({
+              position: 1,
+              chamberCode: 'CD',
+              description: 'Etapă CDep',
+              sourceBillKey: '23135',
+            }),
+            step({
+              position: 2,
+              chamberCode: 'SE',
+              description: 'Etapă Senat',
+              sourceBillKey: 'senat:297-2026',
+            }),
+          ],
+          ['23135', 'senat:297-2026'],
+        )}
+      />,
+    )
+    expect(screen.getByText('Fișa Camerei Deputaților')).toBeInTheDocument()
+    expect(screen.getByText('Fișa Senatului')).toBeInTheDocument()
+    expect(screen.getByText(/nu am eliminat suprapunerile/)).toBeInTheDocument()
   })
 })

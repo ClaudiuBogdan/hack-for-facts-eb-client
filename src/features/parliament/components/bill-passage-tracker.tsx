@@ -219,6 +219,13 @@ function StepLinks({ step }: { readonly step: ParliamentBillTimelineStep }) {
   )
 }
 
+/** Which chamber's official record a set of steps came from. */
+function sourceRecordLabel(sourceBillKey: string): string {
+  return sourceBillKey.startsWith('senat:')
+    ? 'Fișa Senatului'
+    : 'Fișa Camerei Deputaților'
+}
+
 function StepRow({ step }: { readonly step: ParliamentBillTimelineStep }) {
   const date = formatStepDate(step)
   return (
@@ -411,9 +418,47 @@ function OutcomeSummary({ bill }: { readonly bill: ParliamentBillDetail }) {
  * source position order; within each column milestones are emphasised and the
  * routine cluster collapses. No string-heuristic / fabricated buckets.
  */
+/**
+ * Split the merged timeline back into the official records it was assembled
+ * from, canonical view first (the order `dossierBillIds` already carries).
+ * A single-view bill yields exactly one lane and renders as before.
+ */
+function groupByDossier(
+  bill: ParliamentBillDetail,
+): { sourceBillKey: string; columns: Record<ColumnKey, ParliamentBillTimelineStep[]> }[] {
+  const order = bill.dossierBillIds.length > 0 ? bill.dossierBillIds : [bill.billId]
+  const byKey = new Map<string, ParliamentBillTimelineStep[]>()
+  for (const step of bill.timeline) {
+    const key = step.sourceBillKey ?? order[0] ?? bill.billId
+    const bucket = byKey.get(key)
+    if (bucket) bucket.push(step)
+    else byKey.set(key, [step])
+  }
+  const keys = [
+    ...order.filter((k) => byKey.has(k)),
+    ...[...byKey.keys()].filter((k) => !order.includes(k)),
+  ]
+  return keys
+    .map((sourceBillKey) => ({
+      sourceBillKey,
+      columns: bucketByChamber(byKey.get(sourceBillKey) ?? []),
+    }))
+    .filter((lane) => COLUMN_ORDER.some((k) => lane.columns[k].length > 0))
+}
+
 export function BillPassageTracker({ bill }: Props) {
-  const columns = bucketByChamber(bill.timeline)
-  const hasAnyBucketed = COLUMN_ORDER.some((k) => columns[k].length > 0)
+  // A bicameral bill is TWO official records, not one sequence: each chamber
+  // keeps its own fișă and each mirrors much of the other's procedure. Measured
+  // on prod, 19,031 of 19,068 merged dossiers carry steps dated the same day in
+  // both, and the mirroring lands in the SAME chamber column — so a flat merged
+  // reading shows the reader the same act twice with nothing to explain it.
+  //
+  // We do NOT deduplicate: both entries are genuine official records, and the
+  // near-duplicates ("respinsă de către Senat" vs "respins de Senat") do not
+  // match exactly anyway, so suppression would be a judgement on fuzzy evidence.
+  // Grouping by the record instead makes the duplication structurally impossible
+  // to misread — each lane is one chamber's own account, internally coherent.
+  const lanes = groupByDossier(bill)
 
   return (
     <div className="space-y-6">
@@ -421,21 +466,39 @@ export function BillPassageTracker({ bill }: Props) {
 
       <h2 className={billDetailSectionTitleClassName}>Parcurs legislativ</h2>
 
-      {hasAnyBucketed ? (
-        <div className="grid gap-6 xl:grid-cols-3">
-          {COLUMN_ORDER.filter(
-            // The three chamber columns always render (an empty one is itself a
-            // fact: "did not go through this stage"). The unstated column is only
-            // meaningful when it holds something.
-            (key) => key !== 'unstated' || columns.unstated.length > 0,
-          ).map((key) => (
-            <PassageColumn key={key} columnKey={key} steps={columns[key]} />
-          ))}
-        </div>
-      ) : (
+      {lanes.length > 1 ? (
+        <p className="max-w-4xl text-sm leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          Fiecare Cameră ține propria fișă a aceluiași proiect, iar cele două
+          consemnează în bună parte aceleași momente. Le arătăm separat, așa cum
+          au fost publicate: nu am eliminat suprapunerile, pentru că ambele sunt
+          înregistrări oficiale.
+        </p>
+      ) : null}
+
+      {lanes.length === 0 ? (
         <p className="text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
           Nu există etape procedurale înregistrate pentru acest proiect.
         </p>
+      ) : (
+        lanes.map((lane) => (
+          <section key={lane.sourceBillKey} className="space-y-4">
+            {lanes.length > 1 ? (
+              <h3 className="text-base font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+                {sourceRecordLabel(lane.sourceBillKey)}
+              </h3>
+            ) : null}
+            <div className="grid gap-6 xl:grid-cols-3">
+              {COLUMN_ORDER.filter(
+                // The three chamber columns always render (an empty one is itself
+                // a fact: "did not go through this stage"). The unstated column is
+                // only meaningful when it holds something.
+                (key) => key !== 'unstated' || lane.columns.unstated.length > 0,
+              ).map((key) => (
+                <PassageColumn key={key} columnKey={key} steps={lane.columns[key]} />
+              ))}
+            </div>
+          </section>
+        ))
       )}
     </div>
   )

@@ -26,7 +26,10 @@ describe('VoteListRowCard', () => {
     // On the old grid card the result was carried by border colour alone, which
     // is invisible to a reader who cannot separate the green from the crimson.
     render(<VoteListRowCard vote={vote({ outcome: 'respins' })} />)
-    expect(screen.getByText('Respins')).toBeInTheDocument()
+    // The word describes the TALLY, not the bill's fate: the underlying value is
+    // (pentru > impotriva), so "Respins" would be wrong on a chamber that voted
+    // to reject — 2,995 of 3,009 final rejections used to read "Adoptat".
+    expect(screen.getByText('Majoritate împotrivă')).toBeInTheDocument()
   })
 
   it('shows the counts the source recorded', () => {
@@ -58,7 +61,9 @@ describe('VoteListRowCard', () => {
   it('names the outcome in the accessible label alongside the title', () => {
     render(<VoteListRowCard vote={vote()} />)
     expect(
-      screen.getByLabelText(/Proiect de Lege pentru completarea art.279 — Adoptat/),
+      screen.getByLabelText(
+        /Proiect de Lege pentru completarea art.279 — Majoritate pentru/,
+      ),
     ).toBeInTheDocument()
   })
 })

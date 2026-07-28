@@ -90,23 +90,37 @@ export function getOutcomeVariant(
       return "destructive";
     case "amânat":
       return "secondary";
+    case "necunoscut":
+      return "outline";
   }
 }
 
+/**
+ * Badge wording for a DIVISION's tally — not the bill's fate.
+ *
+ * "Adoptat" / "Respins" were the old labels, and they were wrong: the underlying
+ * value is (pentru > impotriva), so a chamber voting to REJECT a bill produced
+ * an "Adoptat" badge — on 2,995 of the 3,009 divisions the data itself calls a
+ * final rejection. Whether the BILL passed is answered by voteLinks.role.
+ */
 export function getOutcomeLabel(outcome: VoteOutcome): string {
   switch (outcome) {
     case "adoptat":
-      return "Adoptat";
+      return "Majoritate pentru";
     case "respins":
-      return "Respins";
+      return "Majoritate împotrivă";
     case "amânat":
       return "Amânat";
+    case "necunoscut":
+      return "Rezultat nepublicat";
   }
 }
 
 /** Accent / border color for vote cards — adoptat vs respins vs amânat */
 export function getVoteOutcomeAccentColor(outcome: VoteOutcome): string {
   switch (outcome) {
+    case "necunoscut":
+      return "#505a5f";
     case "adoptat":
       return "#006435";
     case "respins":
