@@ -4,6 +4,7 @@ import {
   useParliamentHub,
 } from '../hooks/use-parliament-data'
 import { ParliamentDataFreshnessLine } from './parliament-data-freshness-line'
+import { ParliamentHubAgendaSection } from './parliament-hub-agenda-section'
 import { ParliamentHubBillsSection } from './parliament-hub-bills-section'
 import { ParliamentHubParlamentariSection } from './parliament-hub-parlamentari-section'
 import { ParliamentHubResourcesSection } from './parliament-hub-resources-section'
@@ -31,6 +32,7 @@ export function ParliamentHubContent() {
         </p>
       ) : (
         <>
+          <ParliamentHubAgendaSection />
           <ParliamentRecentVotesSection votes={data.recentVotes.slice(0, 5)} />
           <ParliamentHubBillsSection />
           <ParliamentHubParlamentariSection

@@ -45,6 +45,9 @@ const agenda = (
   ],
   itemCount: 4,
   billCount: 2,
+  // One named bill has no dossier yet, mirroring the live shape: the newest
+  // agenda routinely names bills registered days earlier.
+  namedBillCount: 3,
 })
 
 const MOCK_AGENDAS: readonly ParliamentAgenda[] = [

@@ -26,6 +26,7 @@ const AGENDA_FIELDS = /* GraphQL */ `
   sourceUrl
   itemCount
   billCount
+  namedBillCount
   sittings {
     sittingKey
     chamber
@@ -126,6 +127,8 @@ const rawAgenda = z.object({
   sourceUrl: z.string(),
   itemCount: z.number(),
   billCount: z.number(),
+  // Absent on a payload cached before the field existed; the card falls back.
+  namedBillCount: z.number().nullish(),
   sittings: z.array(rawSitting).nullish(),
 })
 

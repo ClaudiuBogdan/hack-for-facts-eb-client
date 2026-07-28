@@ -1,213 +1,264 @@
-import { Link } from '@tanstack/react-router'
-import { CalendarDays, ExternalLink, FileText } from 'lucide-react'
+import { useEffect, useId, useState } from 'react'
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { cn } from '@/lib/utils'
-import type { ParliamentAgenda } from '@/schemas/parliament'
 import { useParliamentAgendas } from '../hooks/use-parliament-data'
 import {
-  agendaChamberLabel,
-  agendaResolutionLabel,
-  partitionByDate,
-  sittingDateSourceLabel,
+  agendaYearOptions,
+  getActiveAgendaFilterCount,
+  type ParliamentAgendaSearch,
 } from '../lib/agenda-format'
-import { formatSyncDate } from '../lib/formatting'
+import { billDetailControlClassName } from '../lib/bill-detail-theme'
+import { PARLIAMENT_ACTION_BLUE } from '../lib/hub-theme'
+import { AgendaFeatureCard, AgendaListCard } from './agenda-list-card'
 import { ParliamentShell } from './parliament-shell'
 
 const AGENDAS_PER_PAGE = 20
 
-function AgendaCard({ agenda }: { readonly agenda: ParliamentAgenda }) {
-  const { dated, undated } = partitionByDate(agenda.sittings)
-
-  return (
-    <li className="rounded-lg border-2 border-[var(--pnrr-border)] bg-background p-4 sm:p-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 flex-1">
-          <Link
-            to="/parlament/agenda/$agendaKey"
-            params={{ agendaKey: agenda.agendaKey }}
-            className="text-base font-semibold text-foreground underline-offset-4 hover:underline"
-          >
-            {agenda.title ?? 'Ordine de zi'}
-          </Link>
-
-          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-            <span>{agendaChamberLabel(agenda.chamber)}</span>
-            {agenda.approvedDate === undefined ? (
-              // 391 of 1,296 agendas carry no approval date. Say so, rather
-              // than letting the card read as though it were never approved or
-              // sorting it as the oldest thing in the list.
-              <span className="italic">Fără dată de aprobare publicată</span>
-            ) : (
-              <span>Aprobată {formatSyncDate(agenda.approvedDate)}</span>
-            )}
-            <span>
-              {agenda.itemCount} {agenda.itemCount === 1 ? 'punct' : 'puncte'}
-            </span>
-            {agenda.billCount > 0 && (
-              <span>
-                {agenda.billCount} {agenda.billCount === 1 ? 'proiect' : 'proiecte'}
-              </span>
-            )}
-          </div>
-
-          {dated.length > 0 && (
-            <ul className="mt-3 flex flex-wrap gap-2">
-              {dated.map((sitting) => {
-                const caveat = sittingDateSourceLabel(sitting.dateSource)
-                const probable = agendaResolutionLabel(sitting.resolutionStatus)
-                return (
-                  <li key={sitting.sittingKey}>
-                    {sitting.stenogramSessionKey === undefined ? (
-                      <span
-                        className="inline-flex items-center gap-1.5 rounded-full border border-[var(--pnrr-border)] px-2.5 py-1 text-xs text-muted-foreground"
-                        title={caveat}
-                      >
-                        <CalendarDays className="size-3.5" aria-hidden />
-                        {formatSyncDate(sitting.date ?? '')}
-                      </span>
-                    ) : (
-                      <Link
-                        to="/parlament/stenograme/sedinte/$sessionKey"
-                        params={{ sessionKey: sitting.stenogramSessionKey }}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-[var(--pnrr-border)] px-2.5 py-1 text-xs text-foreground hover:bg-muted"
-                        title={caveat ?? 'Vezi stenograma ședinței'}
-                      >
-                        <CalendarDays className="size-3.5" aria-hidden />
-                        {formatSyncDate(sitting.date ?? '')}
-                      </Link>
-                    )}
-                    {(caveat !== undefined || probable !== undefined) && (
-                      <span className="sr-only">{caveat ?? probable}</span>
-                    )}
-                  </li>
-                )
-              })}
-            </ul>
-          )}
-
-          {undated.length > 0 && (
-            // Never folded into the dated row: an undated sitting is a
-            // different statement, not a later one.
-            <p className="mt-2 text-xs italic text-muted-foreground">
-              {undated.length}{' '}
-              {undated.length === 1 ? 'ședință fără dată' : 'ședințe fără dată'} publicată de
-              sursă
-            </p>
-          )}
-        </div>
-
-        <div className="flex shrink-0 flex-wrap gap-2">
-          {agenda.pdfUrl !== undefined && (
-            <Button asChild variant="outline" size="sm">
-              <a href={agenda.pdfUrl} target="_blank" rel="noreferrer">
-                <FileText className="size-4" aria-hidden />
-                PDF
-              </a>
-            </Button>
-          )}
-          <Button asChild variant="ghost" size="sm">
-            <a href={agenda.sourceUrl} target="_blank" rel="noreferrer">
-              <ExternalLink className="size-4" aria-hidden />
-              Sursa
-            </a>
-          </Button>
-        </div>
-      </div>
-    </li>
-  )
-}
-
 type Props = {
-  readonly page: number
-  readonly onPageChange: (page: number) => void
+  readonly search: ParliamentAgendaSearch
+  readonly onSearchChange: (next: ParliamentAgendaSearch) => void
 }
 
 /**
  * The orders of business of the Chamber of Deputies.
  *
- * The banner is not decoration. This surface covers ONE chamber, and it records
- * intentions rather than outcomes — a reader who misses either of those will
- * draw wrong conclusions from a perfectly accurate page.
+ * Two facts shape this page. It records INTENTIONS, not outcomes — a reader who
+ * misses that will draw wrong conclusions from a perfectly accurate list. And
+ * there is only ever one live agenda against 1,296 past ones, so the newest is
+ * given the top of the page and the rest is an archive you come to with a
+ * question, which is why it is filtered rather than merely paged.
  */
-export function ParliamentAgendaPage({ page, onPageChange }: Props) {
-  const { data, isLoading, isError } = useParliamentAgendas(page)
+export function ParliamentAgendaPage({ search, onSearchChange }: Props) {
+  const page = search.pagina ?? 1
+  const { data, isLoading, isError } = useParliamentAgendas(page, {
+    // The SITTING year, never the approval year: 391 agendas carry no approval
+    // date and the gap runs 8%-54% in every year, so filtering on it would have
+    // returned 21 of 2011's 46 agendas and called that the year.
+    ...(search.an ? { sittingYear: search.an } : {}),
+    ...(search.q ? { q: search.q } : {}),
+  })
+
   const total = data?.total ?? 0
   const lastPage = Math.max(Math.ceil(total / AGENDAS_PER_PAGE), 1)
+  const agendas = data?.agendas ?? []
+  const activeFilters = getActiveAgendaFilterCount(search)
+  // The newest agenda leads only on the unfiltered first page. Inside a filter
+  // it would read as "the current sitting", which it is not.
+  const feature = page === 1 && activeFilters === 0 ? agendas[0] : undefined
+  const rows = feature ? agendas.slice(1) : agendas
 
   return (
     <ParliamentShell activeTab="agenda">
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Ordinea de zi</h1>
-          <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-            Ordinile de zi aprobate ale plenului Camerei Deputaților. O ordine de zi este un{' '}
-            <strong className="font-semibold text-foreground">plan de lucru</strong>: arată ce
-            urma să fie luat în discuție, nu ce s-a dezbătut sau s-a votat efectiv. Pentru
-            desfășurarea reală a ședinței, deschide stenograma.
+        <header>
+          <h1 className="text-2xl font-bold text-[#0b0c0c] sm:text-3xl dark:text-[var(--pnrr-fg)]">
+            Ordinea de zi
+          </h1>
+          <p className="mt-3 max-w-3xl text-base leading-7 text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+            Ce și-a propus plenul Camerei Deputaților să ia în discuție, ședință
+            cu ședință, din 2001 până azi.
           </p>
-          <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-            Ordinea de zi a plenului Senatului nu este colectată încă, deci absența unui
-            proiect aici nu spune nimic despre traseul lui în Senat.
+          <p className="mt-3 max-w-3xl border-l-[5px] border-l-[#512178] bg-[#f3f0ff] px-4 py-3 text-sm leading-6 text-[#0b0c0c] dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-fg)]">
+            O ordine de zi este un <strong className="font-bold">plan de lucru</strong>,
+            nu o consemnare. Prezența unui proiect aici nu dovedește că a fost
+            dezbătut sau votat — pentru ce s-a întâmplat efectiv, deschide
+            stenograma ședinței.
           </p>
-        </div>
+        </header>
 
-        {isError && (
-          <p className="rounded-lg border-2 border-destructive/40 bg-destructive/5 p-4 text-sm">
+        <AgendaFilterBar
+          search={search}
+          total={total}
+          isLoading={isLoading}
+          onSearchChange={onSearchChange}
+        />
+
+        {isError ? (
+          <p className="border-l-[5px] border-l-[#d4351c] bg-[#fef7f7] px-4 py-3 text-base text-[#0b0c0c] dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-fg)]">
             Nu am putut încărca ordinile de zi.
           </p>
-        )}
+        ) : null}
 
         {isLoading ? (
-          <ul className="space-y-3">
-            {Array.from({ length: 5 }, (_, i) => (
-              <li key={i}>
-                <Skeleton className="h-28 w-full rounded-lg" />
-              </li>
+          <div className="space-y-3">
+            {Array.from({ length: 6 }, (_, index) => (
+              <Skeleton key={index} className="h-24 w-full rounded-none" />
             ))}
-          </ul>
+          </div>
+        ) : agendas.length === 0 ? (
+          <p className="text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+            Nicio ordine de zi nu corespunde filtrelor alese.
+          </p>
         ) : (
-          <>
-            <p className="text-sm text-muted-foreground">
-              {total} {total === 1 ? 'ordine de zi' : 'ordini de zi'}
-            </p>
+          <div className="space-y-6">
+            {feature ? (
+              <AgendaFeatureCard agenda={feature} label="Cea mai recentă ședință" />
+            ) : null}
             <ul className="space-y-3">
-              {(data?.agendas ?? []).map((agenda) => (
-                <AgendaCard key={agenda.agendaKey} agenda={agenda} />
+              {rows.map((agenda) => (
+                <AgendaListCard key={agenda.agendaKey} agenda={agenda} />
               ))}
             </ul>
-            {(data?.agendas.length ?? 0) === 0 && (
-              <p className="text-sm text-muted-foreground">Nicio ordine de zi găsită.</p>
-            )}
-          </>
+          </div>
         )}
 
-        <nav className="flex items-center justify-between gap-3" aria-label="Paginare">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page <= 1}
-            onClick={() => {
-              onPageChange(page - 1)
-            }}
+        {lastPage > 1 ? (
+          <nav
+            className="flex items-center justify-between gap-3 border-t border-[#b1b4b6] pt-4 dark:border-[var(--pnrr-border)]"
+            aria-label="Paginare"
           >
-            Pagina anterioară
-          </Button>
-          <span className={cn('text-sm text-muted-foreground')}>
-            Pagina {page} din {lastPage}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page >= lastPage}
-            onClick={() => {
-              onPageChange(page + 1)
-            }}
-          >
-            Pagina următoare
-          </Button>
-        </nav>
+            <Button
+              variant="outline"
+              className="rounded-none"
+              disabled={page <= 1}
+              onClick={() => {
+                onSearchChange({ ...search, pagina: page - 1 })
+              }}
+            >
+              Pagina anterioară
+            </Button>
+            <span className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              Pagina <span className="font-bold">{page}</span> din {lastPage}
+            </span>
+            <Button
+              variant="outline"
+              className="rounded-none"
+              disabled={page >= lastPage}
+              onClick={() => {
+                onSearchChange({ ...search, pagina: page + 1 })
+              }}
+            >
+              Pagina următoare
+            </Button>
+          </nav>
+        ) : null}
       </div>
     </ParliamentShell>
+  )
+}
+
+/**
+ * Year and free text, applied to the server.
+ *
+ * `q` matches the agenda TITLE, which is boilerplate plus a date — so it is a
+ * date search, not a bill search, and the placeholder says so rather than
+ * letting a reader type a bill number and read the empty result as "never
+ * scheduled". A bill's own scheduling lives on the bill page.
+ */
+function AgendaFilterBar({
+  search,
+  total,
+  isLoading,
+  onSearchChange,
+}: {
+  readonly search: ParliamentAgendaSearch
+  readonly total: number
+  readonly isLoading: boolean
+  readonly onSearchChange: (next: ParliamentAgendaSearch) => void
+}) {
+  const yearId = useId()
+  const queryId = useId()
+  const [draft, setDraft] = useState(search.q ?? '')
+  // Keep the box honest when the URL changes under it (back button, reset).
+  useEffect(() => {
+    setDraft(search.q ?? '')
+  }, [search.q])
+
+  const years = agendaYearOptions(new Date())
+  const activeFilters = getActiveAgendaFilterCount(search)
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <form
+          className="flex min-w-0 flex-1 gap-3"
+          onSubmit={(event) => {
+            event.preventDefault()
+            const value = draft.trim()
+            onSearchChange({
+              ...search,
+              pagina: undefined,
+              ...(value ? { q: value } : { q: undefined }),
+            })
+          }}
+        >
+          <label htmlFor={queryId} className="sr-only">
+            Caută după data ședinței
+          </label>
+          <Input
+            id={queryId}
+            type="search"
+            value={draft}
+            onChange={(event) => {
+              setDraft(event.target.value)
+            }}
+            placeholder="Caută după data ședinței (ex. „decembrie 2019”)"
+            className="h-11 min-w-0 flex-1 rounded-none border-2 border-[#b1b4b6] bg-white px-3 text-base shadow-none focus-visible:ring-2 focus-visible:ring-[#1d70b8] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]"
+          />
+          <Button
+            type="submit"
+            className="h-11 shrink-0 rounded-none border-0 px-6 text-base font-normal text-white hover:opacity-90"
+            style={{ backgroundColor: PARLIAMENT_ACTION_BLUE }}
+          >
+            Caută
+          </Button>
+        </form>
+        <div className="flex shrink-0 items-center gap-2">
+          <label
+            htmlFor={yearId}
+            className="text-sm font-semibold text-[#505a5f] dark:text-[var(--pnrr-muted)]"
+          >
+            Anul
+          </label>
+          <select
+            id={yearId}
+            value={search.an ?? ''}
+            onChange={(event) => {
+              const value = event.target.value
+              onSearchChange({
+                ...search,
+                pagina: undefined,
+                an: value ? Number(value) : undefined,
+              })
+            }}
+            className={billDetailControlClassName}
+          >
+            <option value="">Toți anii</option>
+            {years.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {isLoading ? null : (
+        <p className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          <span className="font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+            {total.toLocaleString('ro-RO')}
+          </span>{' '}
+          {total === 1 ? 'ordine de zi' : 'ordini de zi'}
+          {activeFilters > 0 ? (
+            <>
+              {' '}
+              corespund filtrelor alese.{' '}
+              <button
+                type="button"
+                onClick={() => {
+                  onSearchChange({})
+                }}
+                className="font-semibold text-[#1d70b8] underline underline-offset-4"
+              >
+                Renunță la filtre
+              </button>
+            </>
+          ) : (
+            <> în arhivă, din 2001 până azi.</>
+          )}
+        </p>
+      )}
+    </div>
   )
 }

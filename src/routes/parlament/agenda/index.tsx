@@ -1,20 +1,21 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { z } from 'zod'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
+import {
+  parseAgendaSearch,
+  type ParliamentAgendaSearch,
+} from '@/features/parliament/lib/agenda-format'
 
 /**
- * The page number lives in the URL, per the app's shareable-state contract —
- * a reader who links page 7 of the orders of business must land on page 7.
+ * The page, the year and the search term live in the URL, per the app's
+ * shareable-state contract — a reader who links "orders of business from 2019"
+ * must land on 2019, not on page 1 of everything.
+ *
+ * The parse is tolerant: a hand-edited param drops that one filter rather than
+ * throwing the page away.
  */
-const AgendaSearchSchema = z.object({
-  pagina: z.coerce.number().int().min(1).catch(1),
-})
-
-export type ParliamentAgendaSearch = z.infer<typeof AgendaSearchSchema>
-
 export const Route = createFileRoute('/parlament/agenda/')({
   validateSearch: (search: Record<string, unknown>): ParliamentAgendaSearch =>
-    AgendaSearchSchema.parse(search),
+    parseAgendaSearch(search),
   headers: () =>
     createPublicPageCacheHeaders({
       sharedMaxAgeSeconds: 600,

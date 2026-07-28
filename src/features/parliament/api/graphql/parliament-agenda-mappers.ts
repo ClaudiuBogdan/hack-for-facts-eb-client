@@ -33,6 +33,7 @@ export const mapAgenda = (raw: RawParliamentAgenda): ParliamentAgenda =>
     sourceUrl: raw.sourceUrl,
     itemCount: raw.itemCount,
     billCount: raw.billCount,
+    namedBillCount: raw.namedBillCount ?? raw.billCount,
     sittings: (raw.sittings ?? []).map((s) => ({
       sittingKey: s.sittingKey,
       chamber: s.chamber,

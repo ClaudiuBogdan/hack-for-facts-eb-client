@@ -6,13 +6,21 @@ export const Route = createLazyFileRoute('/parlament/agenda/')({
 })
 
 function AgendaRoute() {
-  const { pagina } = Route.useSearch()
-  const navigate = useNavigate()
+  const search = Route.useSearch()
+  const navigate = useNavigate({ from: '/parlament/agenda/' })
+
   return (
     <ParliamentAgendaPage
-      page={pagina}
-      onPageChange={(page) => {
-        void navigate({ to: '/parlament/agenda', search: { pagina: page } })
+      search={search}
+      onSearchChange={(next) => {
+        void navigate({
+          // Defaults leave no param behind, so the plain URL stays canonical.
+          search: () => ({
+            ...(next.pagina && next.pagina > 1 ? { pagina: next.pagina } : {}),
+            ...(next.an ? { an: next.an } : {}),
+            ...(next.q ? { q: next.q } : {}),
+          }),
+        })
       }}
     />
   )

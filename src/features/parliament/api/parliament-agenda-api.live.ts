@@ -35,9 +35,18 @@ export const AGENDAS_PAGE_SIZE = 20
 
 export interface ParliamentAgendaFilterInput {
   readonly chamber?: string
+  /**
+   * Bounds on the APPROVAL date. Deliberately unused by the list page: 391 of
+   * 1,297 agendas carry no approval date, and the gap is 8%-54% in every year
+   * from 2001 to 2026, so `year: 2011` returns 21 of that year's 46 agendas.
+   */
   readonly dateFrom?: string
   readonly dateTo?: string
   readonly year?: number
+  /** Bounds on the SITTING days — the axis a reader means, and complete. */
+  readonly sittingFrom?: string
+  readonly sittingTo?: string
+  readonly sittingYear?: number
   readonly q?: string
 }
 

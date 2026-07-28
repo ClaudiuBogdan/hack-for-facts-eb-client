@@ -1643,7 +1643,14 @@ export const ParliamentAgendaSchema = z.object({
   sourceUrl: z.string(),
   sittings: z.array(ParliamentAgendaSittingSchema).default([]),
   itemCount: z.number().int().nonnegative(),
+  /** Bills on the agenda we hold a dossier for, and can therefore link. */
   billCount: z.number().int().nonnegative(),
+  /**
+   * Bills the agenda NAMES. Equal to `billCount` except where one is too new to
+   * have been ingested — rare overall (151 items, 112 agendas) but concentrated
+   * in the freshest agenda, which is the one the list features.
+   */
+  namedBillCount: z.number().int().nonnegative(),
 })
 export type ParliamentAgenda = z.infer<typeof ParliamentAgendaSchema>
 
