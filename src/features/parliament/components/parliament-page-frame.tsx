@@ -24,6 +24,7 @@ export function ParliamentPageFrame({ children, className }: Props) {
 type BackLinkProps = {
   readonly to:
     | '/parlament'
+    | '/parlament/agenda'
     | '/parlament/membri/$memberId'
     | '/parlament/grupuri/$groupId'
     | '/parlament/comisii'

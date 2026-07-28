@@ -1,4 +1,11 @@
-import { Landmark, MessageSquareText, ScrollText, UsersRound, Vote } from 'lucide-react'
+import {
+  CalendarDays,
+  Landmark,
+  MessageSquareText,
+  ScrollText,
+  UsersRound,
+  Vote,
+} from 'lucide-react'
 import { ParliamentHubSection } from './parliament-hub-section'
 import {
   ParliamentResourceCard,
@@ -53,6 +60,14 @@ export function ParliamentHubResourcesSection() {
             description="Comisiile permanente și speciale ale Camerei Deputaților și Senatului, cu componență și proiecte asociate."
             icon={Landmark}
             link={{ to: '/parlament/comisii' }}
+          />
+        </ParliamentResourceGridItem>
+        <ParliamentResourceGridItem>
+          <ParliamentResourceCard
+            title="Ordinea de zi"
+            description="Ce și-a propus plenul Camerei Deputaților să ia în discuție, ședință cu ședință, din 2001 până azi."
+            icon={CalendarDays}
+            link={{ to: '/parlament/agenda' }}
           />
         </ParliamentResourceGridItem>
       </ParliamentResourceGrid>

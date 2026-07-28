@@ -9,6 +9,7 @@ import {
   agendaYearOptions,
   formatAgendaDay,
   formatAgendaDayRange,
+  formatAgendaDayShort,
   getActiveAgendaFilterCount,
   isJointSittingTitle,
   parseAgendaSearch,
@@ -274,5 +275,24 @@ describe('cleanAgendaSourceText', () => {
     expect(cleanAgendaSourceText('Procedură de urgenţă')).toBeUndefined()
     expect(cleanAgendaSourceText(undefined)).toBeUndefined()
     expect(cleanAgendaSourceText('')).toBeUndefined()
+  })
+})
+
+describe('formatAgendaDayShort', () => {
+  it('drops the year, which the heading above the chips already carries', () => {
+    expect(formatAgendaDayShort('2026-07-27')).toBe('27 iul.')
+    expect(formatAgendaDayShort('2026-03-30')).toBe('30 mart.')
+  })
+
+  it('leaves May unabbreviated, since it is already short', () => {
+    expect(formatAgendaDayShort('2026-05-04')).toBe('4 mai')
+  })
+
+  it('never prints a time', () => {
+    expect(formatAgendaDayShort('2026-07-27')).not.toMatch(/\d\d:\d\d/)
+  })
+
+  it('returns the raw value rather than inventing one it cannot read', () => {
+    expect(formatAgendaDayShort('nu-e-o-data')).toBe('nu-e-o-data')
   })
 })

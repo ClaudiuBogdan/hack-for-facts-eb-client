@@ -233,6 +233,32 @@ export function formatAgendaDayRange(
   return `${String(start.day)} – ${formatAgendaDay(to ?? '')}`
 }
 
+/** Month abbreviations, for the compact day chips in a dossier header. */
+const MONTHS_RO_SHORT = [
+  'ian.',
+  'feb.',
+  'mart.',
+  'apr.',
+  'mai',
+  'iun.',
+  'iul.',
+  'aug.',
+  'sept.',
+  'oct.',
+  'nov.',
+  'dec.',
+]
+
+/**
+ * "27 iul." — a day without its year, for a row of chips that already sits
+ * under a heading carrying the year.
+ */
+export function formatAgendaDayShort(iso: string): string {
+  const parts = readDay(iso)
+  if (!parts) return iso
+  return `${String(parts.day)} ${MONTHS_RO_SHORT[parts.month] ?? ''}`
+}
+
 export type AgendaSpan = {
   readonly from?: string
   readonly to?: string
