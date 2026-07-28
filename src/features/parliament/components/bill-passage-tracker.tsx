@@ -161,7 +161,19 @@ function StepLinks({ step }: { readonly step: ParliamentBillTimelineStep }) {
   const votes = step.links.filter(
     (l) => l.linkKind === 'vote' && l.resolutionStatus === 'linked',
   )
-  if (committees.length === 0 && stenograms.length === 0 && votes.length === 0) {
+  // The act a step cites (the law it became, the decree that promulgated it, a
+  // Constitutional Court decision) and the Monitorul Oficial issue it appeared
+  // in. Both are shown by their PRINTED citation and open at the official page;
+  // we hold no in-platform route for them.
+  const citations = step.links.filter(
+    (l) => l.linkKind === 'act' || l.linkKind === 'mo_issue',
+  )
+  if (
+    committees.length === 0 &&
+    stenograms.length === 0 &&
+    votes.length === 0 &&
+    citations.length === 0
+  ) {
     return null
   }
 
@@ -202,6 +214,20 @@ function StepLinks({ step }: { readonly step: ParliamentBillTimelineStep }) {
         >
           Votul
         </Link>
+      ))}
+      {citations.map((link) => (
+        <a
+          key={link.sourceHref}
+          href={link.sourceHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex max-w-full items-center rounded-sm border border-[#512178] px-2 py-0.5 text-xs font-semibold text-[#512178] hover:bg-[#f6f2f9]"
+        >
+          <span className="truncate">
+            {link.linkKind === 'mo_issue' ? 'Monitorul Oficial ' : ''}
+            {link.sourceText ?? 'Act'}
+          </span>
+        </a>
       ))}
       {stenograms.map((link) => (
         <Link

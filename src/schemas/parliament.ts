@@ -1181,23 +1181,24 @@ export type ParliamentBillRelatedVote = z.infer<
  * GUIDs the source references, and plenary agenda days have no registry at all).
  */
 export const ParliamentBillStepLinkSchema = z.object({
-  linkKind: z.enum([
-    'committee',
-    'vote',
-    'stenogram',
-    'agenda',
-    'document',
-    'act',
-  ]),
+  /**
+   * OPEN on purpose — `z.string()`, not an enum.
+   *
+   * The server types this as String and the data contract is additive: new link
+   * kinds appear as the platform resolves more anchors. A closed enum turns that
+   * additive change into a PAGE CRASH, because Zod validates the whole dossier —
+   * and it did: adding `mo_issue` server-side would have broken 6,989 bill pages
+   * (7,003 edges) while every test still passed, since no fixture carried one.
+   *
+   * The renderer decides what it can draw and ignores the rest, so an unknown
+   * kind costs a missing chip, never a blank page.
+   */
+  linkKind: z.string(),
   targetKey: z.string().nullable(),
   sourceHref: z.string(),
   sourceText: z.string().nullable(),
-  resolutionStatus: z.enum([
-    'linked',
-    'unresolved_registry',
-    'out_of_corpus',
-    'unresolved',
-  ]),
+  /** Open for the same reason as `linkKind` — a new status must not blank a page. */
+  resolutionStatus: z.string(),
 })
 export type ParliamentBillStepLink = z.infer<
   typeof ParliamentBillStepLinkSchema

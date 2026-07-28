@@ -153,6 +153,70 @@ describe('BillPassageTracker — what the source actually printed', () => {
     )
   })
 
+  it('renders an act citation and an MO issue — the kinds no fixture used to carry', () => {
+    // This is the coverage gap that let a real bug through: the schema's
+    // linkKind enum omitted 'mo_issue' after the server started emitting it, so
+    // 7,003 edges across 6,989 bills would have failed dossier parsing — and
+    // every test passed, because not one fixture contained an MO edge.
+    render(
+      <BillPassageTracker
+        bill={bill([
+          step({
+            position: 1,
+            chamberCode: 'PA',
+            description: 'devine Legea nr. 214/2026',
+            rowKind: 'step',
+            links: [
+              {
+                linkKind: 'act',
+                targetKey: 'lege:214:2026:',
+                sourceHref: 'https://cdep.ro/legis_pck.htp_act?ida=220507',
+                sourceText: '214/2026',
+                resolutionStatus: 'linked',
+              },
+              {
+                linkKind: 'mo_issue',
+                targetKey: '4711',
+                sourceHref: 'https://cdep.ro/legis_pck.lista_mof?idp=9',
+                sourceText: '1100/2026',
+                resolutionStatus: 'linked',
+              },
+            ],
+          }),
+        ])}
+      />,
+    )
+    expect(screen.getByText('214/2026')).toBeInTheDocument()
+    expect(screen.getByText(/Monitorul Oficial 1100\/2026/)).toBeInTheDocument()
+  })
+
+  it('ignores a link kind it does not know, instead of blanking the page', () => {
+    // linkKind is deliberately an open string: the contract is additive, and a
+    // closed enum turns a new server kind into a crash rather than a missing chip.
+    render(
+      <BillPassageTracker
+        bill={bill([
+          step({
+            position: 1,
+            chamberCode: 'CD',
+            description: 'Etapă cu legătură necunoscută',
+            rowKind: 'step',
+            links: [
+              {
+                linkKind: 'something_new_from_the_server',
+                targetKey: 'x',
+                sourceHref: 'https://example.org/x',
+                sourceText: 'X',
+                resolutionStatus: 'linked',
+              },
+            ],
+          }),
+        ])}
+      />,
+    )
+    expect(screen.getByText('Etapă cu legătură necunoscută')).toBeInTheDocument()
+  })
+
   it('splits a MERGED dossier into one lane per official record', () => {
     // A single-view bill has one record; labelling every row would be noise.
     const single = render(
