@@ -460,9 +460,15 @@ function groupByDossier(
     if (bucket) bucket.push(step)
     else byKey.set(key, [step])
   }
+  // Deduped: a repeated entry in `dossierBillIds` would otherwise render the
+  // same lane twice, under a duplicate React key. Any view that carries steps
+  // but is absent from `order` still gets a lane — the reader sees every record
+  // we hold, never only the ones the dossier list happened to name.
   const keys = [
-    ...order.filter((k) => byKey.has(k)),
-    ...[...byKey.keys()].filter((k) => !order.includes(k)),
+    ...new Set([
+      ...order.filter((k) => byKey.has(k)),
+      ...[...byKey.keys()].filter((k) => !order.includes(k)),
+    ]),
   ]
   return keys
     .map((sourceBillKey) => ({

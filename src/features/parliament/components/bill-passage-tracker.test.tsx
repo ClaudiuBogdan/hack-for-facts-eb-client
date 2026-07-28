@@ -217,6 +217,43 @@ describe('BillPassageTracker — what the source actually printed', () => {
     expect(screen.getByText('Etapă cu legătură necunoscută')).toBeInTheDocument()
   })
 
+  it('loses no step when the payload carries no sourceBillKey', () => {
+    // A cached payload from before the field existed. The lanes collapse to one,
+    // which is the old behaviour — but every step must still render.
+    render(
+      <BillPassageTracker
+        bill={bill(
+          [
+            step({ position: 1, chamberCode: 'CD', description: 'Prima etapă' }),
+            step({ position: 2, chamberCode: 'SE', description: 'A doua etapă' }),
+          ],
+          ['23135', 'senat:297-2026'],
+        )}
+      />,
+    )
+    expect(screen.getByText('Prima etapă')).toBeInTheDocument()
+    expect(screen.getByText('A doua etapă')).toBeInTheDocument()
+  })
+
+  it('renders a view that carries steps even if the dossier list omits it', () => {
+    render(
+      <BillPassageTracker
+        bill={bill(
+          [
+            step({
+              position: 1,
+              chamberCode: 'CD',
+              description: 'Etapă dintr-o fișă nelistată',
+              sourceBillKey: 'senat:999-2026',
+            }),
+          ],
+          ['23135'],
+        )}
+      />,
+    )
+    expect(screen.getByText('Etapă dintr-o fișă nelistată')).toBeInTheDocument()
+  })
+
   it('splits a MERGED dossier into one lane per official record', () => {
     // A single-view bill has one record; labelling every row would be noise.
     const single = render(
