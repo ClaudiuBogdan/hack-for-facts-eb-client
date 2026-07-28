@@ -1,7 +1,10 @@
 import { Link } from '@tanstack/react-router'
 import { ExternalLink, FileText, Info } from 'lucide-react'
 import type { ParliamentAgenda } from '@/schemas/parliament'
+import { cn } from '@/lib/utils'
 import {
+  AGENDA_ITEM_FILTER_LABELS,
+  AGENDA_ITEM_FILTERS,
   agendaAccent,
   agendaBodyLabel,
   agendaResolutionLabel,
@@ -12,6 +15,7 @@ import {
   isJointSittingTitle,
   partitionByDate,
   sittingDateSourceLabel,
+  type AgendaItemFilter,
 } from '../lib/agenda-format'
 
 /**
@@ -26,8 +30,14 @@ import {
  */
 export function AgendaDossierHeader({
   agenda,
+  counts,
+  filter,
+  onFilterChange,
 }: {
   readonly agenda: ParliamentAgenda
+  readonly counts: Readonly<Record<AgendaItemFilter, number>>
+  readonly filter: AgendaItemFilter
+  readonly onFilterChange: (next: AgendaItemFilter) => void
 }) {
   const span = agendaSpan(agenda.sittings)
   const range = formatAgendaDayRange(span.from, span.to)
@@ -70,9 +80,6 @@ export function AgendaDossierHeader({
             ) : (
               <>Aprobată {formatAgendaDay(agenda.approvedDate)}</>
             )}
-            {' · '}
-            <span className="font-bold">{agenda.itemCount}</span>{' '}
-            {agenda.itemCount === 1 ? 'punct' : 'puncte'}
           </p>
         </div>
 
@@ -137,6 +144,46 @@ export function AgendaDossierHeader({
           ) : null}
         </ul>
       </div>
+
+      {counts.toate > 0 ? (
+        <div className="border-t border-[#e5e5e5] px-4 py-3 sm:px-5 dark:border-[var(--pnrr-border)]">
+          <ul className="flex flex-wrap items-center gap-2">
+            <li className="mr-1 text-xs font-black uppercase tracking-wide text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              Puncte
+            </li>
+            {AGENDA_ITEM_FILTERS.map((key) => {
+              const count = counts[key]
+              const active = filter === key
+              return (
+                <li key={key}>
+                  <button
+                    type="button"
+                    disabled={count === 0}
+                    aria-pressed={active}
+                    onClick={() => {
+                      onFilterChange(key)
+                    }}
+                    className={cn(
+                      'inline-flex items-center gap-1.5 border px-2 py-0.5 text-sm font-semibold transition-colors',
+                      active
+                        ? 'border-[#1d70b8] bg-[#1d70b8] text-white'
+                        : 'border-[#b1b4b6] text-[#0b0c0c] hover:bg-[#f3f2f1] dark:border-[var(--pnrr-border)] dark:text-[var(--pnrr-fg)] dark:hover:bg-[var(--pnrr-subtle)]',
+                      count === 0 && 'cursor-not-allowed opacity-40',
+                    )}
+                  >
+                    {AGENDA_ITEM_FILTER_LABELS[key]}
+                    {/* A REAL space: the flex container drops whitespace-only
+                        nodes, so `gap` alone leaves the accessible name reading
+                        "Urgență5". */}
+                    {' '}
+                    <span className="tabular-nums font-normal">{count}</span>
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      ) : null}
 
       {/* The data-trust line, kept but reduced to one sentence: an agenda is a
           plan, and reading it as a record is the mistake this page exists to

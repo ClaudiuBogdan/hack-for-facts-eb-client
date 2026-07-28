@@ -2,7 +2,10 @@ import { useState, type ReactNode } from 'react'
 import { Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { useParliamentHub } from '../hooks/use-parliament-data'
+import {
+  useParliamentFreshness,
+  useParliamentHub,
+} from '../hooks/use-parliament-data'
 import { formatSyncDate } from '../lib/formatting'
 import {
   parliamentHeaderDescriptionClassName,
@@ -15,6 +18,7 @@ import {
   parliamentHeaderTitleLineClassName,
   parliamentHeaderTitleStyle,
 } from '../lib/header-theme'
+import { formatParliamentVoteDay } from '../lib/freshness-format'
 import { ParliamentInfoSheet } from './parliament-info-sheet'
 import { ParliamentTabNav, type ParliamentTab } from './parliament-tab-nav'
 
@@ -28,9 +32,13 @@ type Props = {
 export function ParliamentShell({ activeTab, children, actions }: Props) {
   const [infoOpen, setInfoOpen] = useState(false)
   const { data } = useParliamentHub()
+  const { data: freshness } = useParliamentFreshness()
 
   const legislatureLabel = data?.legislature.label ?? 'Legislatura curentă'
   const lastSynced = data?.lastSyncedAt
+  // The freshness line used to sit on the hub body, repeating "Actualizat …"
+  // that this meta line already carries. Only the part it ADDS moves up here.
+  const latestVote = formatParliamentVoteDay(freshness?.latestVoteDate)
 
   return (
     <div className="min-h-screen min-w-0 bg-background">
@@ -58,6 +66,7 @@ export function ParliamentShell({ activeTab, children, actions }: Props) {
                 <p className={cn(parliamentHeaderMetaClassName, 'mt-4')}>
                   {legislatureLabel}
                   {lastSynced ? ` · Actualizat ${formatSyncDate(lastSynced)}` : null}
+                  {latestVote ? ` · ultimul vot înregistrat: ${latestVote}` : null}
                 </p>
               </div>
 

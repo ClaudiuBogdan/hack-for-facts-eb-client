@@ -357,3 +357,63 @@ export function getActiveAgendaFilterCount(
 ): number {
   return (search.an ? 1 : 0) + (search.q ? 1 : 0)
 }
+
+// ── agenda points ─────────────────────────────────────────────────────────────
+
+/**
+ * The ways into a long order of business.
+ *
+ * An agenda runs to a median of 81 points and up to 613, so the flags the source
+ * prints against each point double as navigation: "which of these are urgent" is
+ * a question scrolling cannot answer.
+ */
+export type AgendaItemFilter = 'toate' | 'urgenta' | 'decizionala' | 'rezerva'
+
+export const AGENDA_ITEM_FILTERS: readonly AgendaItemFilter[] = [
+  'toate',
+  'urgenta',
+  'decizionala',
+  'rezerva',
+]
+
+export const AGENDA_ITEM_FILTER_LABELS: Readonly<
+  Record<AgendaItemFilter, string>
+> = {
+  toate: 'Toate',
+  urgenta: 'Urgență',
+  decizionala: 'Decizională',
+  rezerva: 'Sub rezervă',
+}
+
+type FlaggedItem = {
+  readonly procedureUrgency: boolean
+  readonly decisionalChamber: boolean
+  readonly debateReservation: boolean
+}
+
+export function matchesAgendaItemFilter(
+  item: FlaggedItem,
+  filter: AgendaItemFilter,
+): boolean {
+  switch (filter) {
+    case 'urgenta':
+      return item.procedureUrgency
+    case 'decizionala':
+      return item.decisionalChamber
+    case 'rezerva':
+      return item.debateReservation
+    default:
+      return true
+  }
+}
+
+export function countAgendaItemFilters(
+  items: readonly FlaggedItem[],
+): Readonly<Record<AgendaItemFilter, number>> {
+  return {
+    toate: items.length,
+    urgenta: items.filter((item) => item.procedureUrgency).length,
+    decizionala: items.filter((item) => item.decisionalChamber).length,
+    rezerva: items.filter((item) => item.debateReservation).length,
+  }
+}
