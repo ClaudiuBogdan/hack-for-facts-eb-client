@@ -30,10 +30,21 @@ export type MemberVoteChoice = z.infer<typeof MemberVoteChoiceSchema>;
  * votes on prod, every one of which used to arrive here as "adoptat".
  * Whether a bill passed is answered by `voteLinks.role`.
  */
+/**
+ * `adoptat` and `respins` are the SERVER's two values (prod 2026-07-29: 16,916
+ * and 3,627, plus 202 rows with no published result). `egalitate` and
+ * `necunoscut` are DERIVED here from the tally — a tie the server's
+ * pentru>impotriva rule would badge backwards, and the 202 divisions where the
+ * source published no result.
+ *
+ * `amânat` is dropped: it is neither a server value nor a derived one, so
+ * filtering by it returned nothing while looking like a supported choice. The
+ * source never asserts a postponement, and naming one invents a procedural
+ * decision — `necunoscut` is what actually happened.
+ */
 export const VoteOutcomeSchema = z.enum([
   "adoptat",
   "respins",
-  "amânat",
   "egalitate",
   "necunoscut",
 ]);
@@ -439,20 +450,57 @@ export type ParliamentVoteActivityDay = z.infer<
  * `availableYears` for the picker), because the surface that reads it stitches
  * two years into a rolling window the same way the stenograme panel does.
  *
- * NOT YET SERVED. The API exposes per-MEMBER vote activity
- * (`parliamentMember.voteActivity`) and institution-wide SPEECH activity
- * (`parliamentSpeechActivity`), but no institution-wide vote aggregate; the
- * expected field is `parliamentVoteActivity(year: Int!, filter:
- * ParliamentVotesFilter)` returning this shape. Until the server ships it the
- * query errors, and the hub panel renders that failure as a stated error — it
- * must never fall back to deriving counts from the votes connection, which is
+ * Served by `parliamentVoteActivity(year: Int!, filter: ParliamentVotesFilter)`.
+ * It must never fall back to deriving counts from the votes connection, which is
  * capped at 100 rows per page and would draw a year out of the ~16 pages it
  * managed to fetch.
  */
+export const ParliamentVoteCoverageRangeSchema = z.object({
+  from: z.string(),
+  to: z.string(),
+});
+
+export const ParliamentVoteGapStatusSchema = z.enum([
+  "FAILED",
+  "SKIPPED",
+  "PARSER_EMPTY",
+  "PROVISIONAL",
+  "SOURCE_LIMITED",
+]);
+
+export const ParliamentVoteCoverageGapSchema = z.object({
+  date: z.string(),
+  status: ParliamentVoteGapStatusSchema,
+  reason: z.string().nullable(),
+});
+
+/**
+ * What the crawl actually covers. This is what lets a square distinguish "the
+ * chamber sat and did not divide" from "we never watched this day" — without it
+ * the zero-fill turns every uncrawled day into a quiet one.
+ */
+export const ParliamentVoteCoverageSchema = z.object({
+  chamber: z.string(),
+  sourceSystem: z.string(),
+  scope: z.string(),
+  sourceUrl: z.string(),
+  sourceAvailableFrom: z.string().nullable(),
+  observedFrom: z.string(),
+  observedThrough: z.string(),
+  finalizedThrough: z.string(),
+  asOf: z.string(),
+  ranges: z.array(ParliamentVoteCoverageRangeSchema),
+  gaps: z.array(ParliamentVoteCoverageGapSchema),
+});
+export type ParliamentVoteCoverage = z.infer<
+  typeof ParliamentVoteCoverageSchema
+>;
+
 export const ParliamentVoteActivitySchema = z.object({
   year: z.number().int(),
   days: z.array(ParliamentVoteActivityDaySchema),
   availableYears: z.array(z.number().int()),
+  coverage: z.array(ParliamentVoteCoverageSchema).default([]),
 });
 export type ParliamentVoteActivity = z.infer<
   typeof ParliamentVoteActivitySchema

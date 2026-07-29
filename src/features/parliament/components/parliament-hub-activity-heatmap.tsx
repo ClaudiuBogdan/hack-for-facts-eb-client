@@ -28,6 +28,16 @@ const GOVUK_BLUE_RAMP = ['#d2e2f1', '#a3c6e3', '#5e94c9', '#1d70b8'] as const
  */
 const MIN_CELL_PX = 12
 
+/**
+ * "We never watched this day." Deliberately NOT a lighter blue — it is not a
+ * smaller amount of the thing being measured, it is the absence of a
+ * measurement, so it reads as hatching rather than as a value on the ramp.
+ */
+const UNCAPTURED_FILL = {
+  backgroundImage:
+    'repeating-linear-gradient(45deg, #d8d8d4 0, #d8d8d4 1px, transparent 1px, transparent 4px)',
+} as const
+
 /** One counted day. Days absent from the map are drawn as empty squares. */
 export interface ActivityHeatmapDay {
   readonly total: number
@@ -62,6 +72,14 @@ type Props = {
   /** Shown when the window is genuinely empty — a counted zero, not a gap. */
   readonly emptyLabel: ReactNode
   readonly bucketOf: (total: number) => 0 | 1 | 2 | 3 | 4
+  /**
+   * Was this day inside what the crawl actually covers? OMIT on a surface with
+   * no coverage record — the grid then keeps its old two-state reading rather
+   * than inventing a third it cannot support.
+   */
+  readonly isCovered?: (isoDate: string) => boolean
+  /** Wording for an uncaptured square; the surface owns its own language. */
+  readonly uncapturedLabel?: (isoDate: string) => string
   /** The way into the full list. Always rendered, in every state. */
   readonly cta: ReactNode
 }
@@ -86,6 +104,8 @@ export function ParliamentHubActivityHeatmap({
   errorDetail,
   emptyLabel,
   bucketOf,
+  isCovered,
+  uncapturedLabel = (iso) => `${iso} — nu am colectat această zi`,
   cta,
 }: Props) {
   const grid = useMemo(
@@ -166,6 +186,28 @@ export function ParliamentHubActivityHeatmap({
 
                   const day = days.get(cell.isoDate)
                   if (!day || day.total === 0) {
+                    // THREE states, not two. A day we never watched and a day
+                    // the chamber sat without dividing are different facts, and
+                    // painting them the same pixel is how a crawl gap becomes a
+                    // claim that nothing happened.
+                    if (isCovered !== undefined && !isCovered(cell.isoDate)) {
+                      return (
+                        <Tooltip key={cell.isoDate}>
+                          <TooltipTrigger asChild>
+                            <div
+                              role="img"
+                              aria-label={uncapturedLabel(cell.isoDate)}
+                              title={uncapturedLabel(cell.isoDate)}
+                              className="aspect-square border border-[#e5e5e0] dark:border-[var(--pnrr-border)]"
+                              style={UNCAPTURED_FILL}
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent className="rounded-none bg-[#0b0c0c] text-white">
+                            {uncapturedLabel(cell.isoDate)}
+                          </TooltipContent>
+                        </Tooltip>
+                      )
+                    }
                     return (
                       <div
                         key={cell.isoDate}

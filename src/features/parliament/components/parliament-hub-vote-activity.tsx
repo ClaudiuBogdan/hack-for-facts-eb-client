@@ -119,11 +119,41 @@ export function ParliamentHubVoteActivity({
     return map
   }, [primary.data, secondary.data, needsBothYears, window, daySearch, onSelectDay])
 
+  /**
+   * A day is COVERED when at least one chamber's crawl window contains it and
+   * no typed gap claims it. Absent coverage (an older API) this stays undefined
+   * and the grid keeps its two-state reading rather than inventing a third.
+   *
+   * The union across chambers is the right reading for a cross-chamber square:
+   * it is uncaptured only when NOBODY watched that day.
+   */
+  const isCovered = useMemo(() => {
+    const coverage = [
+      ...(primary.data?.coverage ?? []),
+      ...(secondary.data?.coverage ?? []),
+    ]
+    if (coverage.length === 0) return undefined
+    const gapDays = new Set(
+      coverage.flatMap((c) =>
+        c.gaps
+          .filter((g) => g.status !== 'PROVISIONAL')
+          .map((g) => g.date),
+      ),
+    )
+    return (iso: string): boolean =>
+      !gapDays.has(iso) &&
+      coverage.some((c) => c.ranges.some((r) => iso >= r.from && iso <= r.to))
+  }, [primary.data, secondary.data])
+
   return (
     <ParliamentHubActivityHeatmap
       ariaLabel={t`Activitatea de vot pe zile, ultimele 12 luni`}
       window={window}
       days={days}
+      {...(isCovered !== undefined && { isCovered })}
+      uncapturedLabel={(iso) =>
+        t`${formatActivityDate(iso)} — nu am colectat această zi`
+      }
       status={isLoading ? 'loading' : hasFailed ? 'error' : 'ready'}
       errorLead={
         <Trans>

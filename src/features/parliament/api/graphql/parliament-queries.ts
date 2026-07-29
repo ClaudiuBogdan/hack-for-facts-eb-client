@@ -720,12 +720,12 @@ export const parliamentMemberVoteActivityResponseSchema = z.object({
 // ---------------------------------------------------------------------------
 // Institution-wide vote-activity heatmap — parliamentVoteActivity(year, filter)
 //
-// THE FIELD IS NOT SERVED YET. It is written here as the contract the server is
-// expected to grow, mirroring `parliamentSpeechActivity` argument for argument
-// (one calendar year per request, `availableYears` alongside the days) so the
-// resolver can be the speech one with `vote_date` swapped in. Until then this
-// query fails with "Cannot query field", and the hub panel says so instead of
-// drawing squares.
+// A day is a DIVISION count, not a ballot count. `coverage` is what keeps the
+// zero-fill honest: `days[]` carries only days WITH divisions, so without it a
+// day we never crawled and a day the chamber sat quietly paint the same pixel.
+// It is deliberately NOT year-bounded — the client needs the whole window to
+// know which years are even askable, and `availableYears` can only ever mean
+// "years that contain divisions".
 //
 // Deriving the same counts client-side from `parliamentVotes` is NOT a fallback:
 // the connection is capped at 100 rows per page in both the resolver and the
@@ -744,6 +744,26 @@ export const PARLIAMENT_VOTE_ACTIVITY_QUERY = /* GraphQL */ `
         senat
         comun
       }
+      coverage {
+        chamber
+        sourceSystem
+        scope
+        sourceUrl
+        sourceAvailableFrom
+        observedFrom
+        observedThrough
+        finalizedThrough
+        asOf
+        ranges {
+          from
+          to
+        }
+        gaps {
+          date
+          status
+          reason
+        }
+      }
     }
   }
 `;
@@ -756,10 +776,34 @@ const rawGlobalVoteActivityDaySchema = z.object({
   comun: z.number(),
 });
 
+const rawVoteCoverageSchema = z.object({
+  chamber: z.string(),
+  sourceSystem: z.string(),
+  scope: z.string(),
+  sourceUrl: z.string(),
+  sourceAvailableFrom: z.string().nullable(),
+  observedFrom: z.string(),
+  observedThrough: z.string(),
+  finalizedThrough: z.string(),
+  asOf: z.string(),
+  ranges: z.array(z.object({ from: z.string(), to: z.string() })),
+  gaps: z.array(
+    z.object({
+      date: z.string(),
+      status: z.string(),
+      reason: z.string().nullable(),
+    }),
+  ),
+});
+
 export const rawParliamentVoteActivitySchema = z.object({
   year: z.number(),
   availableYears: z.array(z.number()),
   days: z.array(rawGlobalVoteActivityDaySchema),
+  // Optional so a client running against an API that predates coverage still
+  // renders counts — it just cannot distinguish an uncrawled day, which is
+  // exactly the state it was in before.
+  coverage: z.array(rawVoteCoverageSchema).nullish(),
 });
 export type RawParliamentVoteActivity = z.infer<
   typeof rawParliamentVoteActivitySchema

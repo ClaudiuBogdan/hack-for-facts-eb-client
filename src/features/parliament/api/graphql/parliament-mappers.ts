@@ -159,7 +159,6 @@ const OUTCOME_LABEL: Record<VoteOutcome, string> = {
   // the rejection motions the old wording described backwards.
   adoptat: "Mai multe voturi „pentru” decât „împotrivă”",
   respins: "Mai multe voturi „împotrivă” decât „pentru”",
-  amânat: "Votul a fost amânat",
   egalitate: "Voturi „pentru” și „împotrivă” în număr egal",
   necunoscut: "Rezultatul votului nu a fost publicat",
 };
@@ -546,6 +545,7 @@ export function mapParliamentVoteActivity(
       senat: num(d.senat),
       comun: num(d.comun),
     })),
+    coverage: raw.coverage ?? [],
   });
 }
 

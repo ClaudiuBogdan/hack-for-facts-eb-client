@@ -62,7 +62,7 @@ export function buildVotesFilter(
   if (search.chamber && search.chamber !== 'all') {
     filter.chamber = { eq: toGraphqlVoteChamber(search.chamber) }
   }
-  if (search.outcome && search.outcome !== 'amânat') {
+  if (search.outcome) {
     filter.outcome = { eq: search.outcome }
   }
 

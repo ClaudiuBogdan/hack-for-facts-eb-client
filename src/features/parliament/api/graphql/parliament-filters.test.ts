@@ -85,9 +85,11 @@ describe('buildVotesFilter', () => {
     })
   })
 
-  it('passes adoptat/respins but never the UI-only amânat', () => {
+  it('passes the outcome the URL carries straight through', () => {
     expect(buildVotesFilter({ outcome: 'respins' })).toEqual({ outcome: { eq: 'respins' } })
-    expect(buildVotesFilter({ outcome: 'amânat' })).toEqual({})
+    expect(buildVotesFilter({ outcome: 'adoptat' })).toEqual({ outcome: { eq: 'adoptat' } })
+    // No outcome facet at all is the unfiltered list, not an empty result.
+    expect(buildVotesFilter({})).toEqual({})
   })
 
   it('collapses date pickers to day bounds', () => {

@@ -150,12 +150,15 @@ function buildExpandedVoteSummaries(): ParliamentVoteSummary[] {
           voteId: `${chamber}-gen-${String(i + 1).padStart(3, '0')}`,
           title: titleTemplate,
           heldAt: heldAt.toISOString(),
-          outcome: i % 4 === 0 ? 'respins' : i % 7 === 0 ? 'amânat' : 'adoptat',
+          // The readings that actually occur (prod 2026-07-29: adoptat 16,916 ·
+          // respins 3,627 · 202 with no published result). `amânat` was minted
+          // here and has never existed in the data.
+          outcome: i % 4 === 0 ? 'respins' : i % 7 === 0 ? 'necunoscut' : 'adoptat',
           outcomeLabel:
             i % 4 === 0
               ? 'Proiectul a fost respins'
               : i % 7 === 0
-                ? 'Votul a fost amânat'
+                ? 'Sursa nu a publicat un rezultat'
                 : 'Proiectul a fost adoptat',
         }),
       )
