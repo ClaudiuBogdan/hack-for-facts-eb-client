@@ -63,6 +63,8 @@ const senateFinalRejection = {
   chamber: 'senat' as const,
   title: 'Raport de respingere',
   heldAt: '2026-06-24T00:00:00+03:00',
+  // The rejection REPORT carried, 64–30 — which is what threw the bill out.
+  outcome: 'adoptat' as const,
   linkRole: 'final_rejection',
 }
 
@@ -87,26 +89,75 @@ describe('BillOutcomeSummary — a final vote belongs to ONE chamber', () => {
     expect(screen.queryByText('Vot final')).not.toBeInTheDocument()
   })
 
-  it('states the verdict from the link ROLE, not from the tally', () => {
-    // `final_rejection` → "Respins". The division's own outcome for this vote is
-    // "adoptat" (the rejection REPORT passed 64–30), so anything reading the
-    // tally would print the opposite of what happened to the bill.
+  it('prints the date alone when the motion merely carried on the counts', () => {
+    // The rejection REPORT passed 64–30, which is not proof it cleared the
+    // absolute majority the law requires. The chamber and the date are true; a
+    // verdict word would not be.
     render(<BillOutcomeSummary bill={buildBill({ relatedVotes: [senateFinalRejection] })} />)
-    expect(screen.getByText('Respins · 24 iunie 2026')).toBeInTheDocument()
+    expect(screen.getByText('Vot final în Senat')).toBeInTheDocument()
+    expect(screen.getByText('24 iunie 2026')).toBeInTheDocument()
+    expect(screen.queryByText(/Respins ·|Adoptat ·/)).not.toBeInTheDocument()
   })
 
-  it('says "Adoptat" for a final adoption', () => {
+  it('says "Respins" for a final adoption that was voted DOWN', () => {
+    // The one direction the counts DO prove: below a simple majority, the
+    // adoption certainly failed, so the bill was rejected.
     render(
       <BillOutcomeSummary
         bill={buildBill({
           relatedVotes: [
-            { ...senateFinalRejection, chamber: 'camera', linkRole: 'final_adoption' },
+            {
+              ...senateFinalRejection,
+              chamber: 'camera',
+              linkRole: 'final_adoption',
+              outcome: 'respins' as const,
+            },
           ],
         })}
       />,
     )
     expect(screen.getByText('Vot final în Camera Deputaților')).toBeInTheDocument()
-    expect(screen.getByText('Adoptat · 24 iunie 2026')).toBeInTheDocument()
+    expect(screen.getByText('Respins · 24 iunie 2026')).toBeInTheDocument()
+  })
+
+  it('says "Respins" for a final adoption that was voted DOWN', () => {
+    // L334/2026 in the Senate: 7–49–44 against adopting the bill. The role says
+    // adoption because the MOTION was to adopt; only the outcome says it failed.
+    render(
+      <BillOutcomeSummary
+        bill={buildBill({
+          relatedVotes: [
+            {
+              ...senateFinalRejection,
+              linkRole: 'final_adoption',
+              outcome: 'respins' as const,
+            },
+          ],
+        })}
+      />,
+    )
+    expect(screen.getByText('Respins · 24 iunie 2026')).toBeInTheDocument()
+  })
+
+  it('spells out a rejection motion that was itself defeated', () => {
+    render(
+      <BillOutcomeSummary
+        bill={buildBill({
+          relatedVotes: [
+            {
+              ...senateFinalRejection,
+              outcome: 'respins' as const,
+              // The second witness: without it the role stands alone and the
+              // summary abstains (cdep:27636 is why).
+              voteSubject: 'Raport de respingere',
+            },
+          ],
+        })}
+      />,
+    )
+    expect(
+      screen.getByText('Respingerea nu a trecut · 24 iunie 2026'),
+    ).toBeInTheDocument()
   })
 })
 

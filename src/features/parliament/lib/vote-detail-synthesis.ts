@@ -237,6 +237,9 @@ export function synthesizeVoteDetail(
   return {
     ...summary,
     description: `Rezultatul divizării pentru ${summary.title.toLowerCase()}.`,
+    // Synthesised detail: the bill↔vote edges are a server fact, so this path
+    // has none rather than a guess. The page falls back to the scalar bill key.
+    billLinks: [],
     groupBreakdown,
     memberVotes,
   }

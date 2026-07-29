@@ -13,7 +13,9 @@ import {
   PARLIAMENT_RESOURCE_PURPLE,
   PARLIAMENT_SENAT_RED,
 } from '../lib/hub-theme'
+import { VOTE_KIND_CHIP_LABELS } from '../lib/votes-filter-state'
 import { ParliamentCardChevron } from './parliament-card-chevron'
+import { VoteKindChip } from './vote-kind-chip'
 
 const CHAMBER_BADGE_COLOR: Readonly<Record<VoteChamber, string>> = {
   camera: PARLIAMENT_CAMERA_GREEN,
@@ -71,7 +73,23 @@ export function VoteListRowCard({ vote, className, showChamber }: Props) {
         'group flex rounded-none border border-[#b1b4b6] bg-white transition-colors hover:bg-[#f3f2f1] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:hover:bg-[var(--pnrr-surface)]',
         className,
       )}
-      aria-label={`${vote.title} — ${outcomeLabel}`}
+      // Title alone does not identify a row here: every division of a bill
+      // carries the BILL's title, so a bill with nine divisions announced nine
+      // identical links. The subject and the division meta are what separate
+      // them, and the kind places the rows that have neither.
+      aria-label={[
+        vote.title,
+        vote.voteSubject,
+        // The chamber chip is VISIBLE on a mixed list; an explicit aria-label
+        // replaces the link's text content, so omitting it hid a distinction
+        // sighted readers can see.
+        showChamber ? getVoteChamberLabel(vote.chamber) : undefined,
+        vote.kind ? VOTE_KIND_CHIP_LABELS[vote.kind] : undefined,
+        formatVoteDivisionMeta(vote, vote.divisionNumber),
+        outcomeLabel,
+      ]
+        .filter(Boolean)
+        .join(' — ')}
     >
       <span
         className="w-[5px] shrink-0 self-stretch"
@@ -84,6 +102,15 @@ export function VoteListRowCard({ vote, className, showChamber }: Props) {
           <h3 className="text-base font-bold leading-snug text-[#0b0c0c] group-hover:underline dark:text-[var(--pnrr-fg)]">
             {vote.title}
           </h3>
+          {/* The chamber's own label for the question. On this surface the title
+              leads — the hub is where a vote is IDENTIFIED, and for a bill-linked
+              division the title is the bill's — so the subject explains
+              underneath rather than replacing it. */}
+          {vote.voteSubject ? (
+            <p className="mt-1 text-sm leading-5 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              {vote.voteSubject}
+            </p>
+          ) : null}
           <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
             {showChamber ? (
               <>
@@ -107,6 +134,12 @@ export function VoteListRowCard({ vote, className, showChamber }: Props) {
             </span>
             <span aria-hidden>·</span>
             <span>{formatVoteDivisionMeta(vote, vote.divisionNumber)}</span>
+            {vote.kind ? (
+              <>
+                <span aria-hidden>·</span>
+                <VoteKindChip kind={vote.kind} />
+              </>
+            ) : null}
           </p>
         </div>
 

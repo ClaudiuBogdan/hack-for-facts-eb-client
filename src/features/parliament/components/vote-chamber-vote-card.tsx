@@ -18,6 +18,7 @@ import {
   getVoteTallySubjectNote,
 } from './bill-vote-role-badge'
 import { ParliamentCardChevron } from './parliament-card-chevron'
+import { VoteKindChip } from './vote-kind-chip'
 
 type Props = {
   readonly vote: ParliamentVoteSummary
@@ -193,13 +194,20 @@ export function VoteChamberVoteCard({ vote, className, billContext }: Props) {
           <span className="text-sm leading-5 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
             {formatVoteDivisionMeta(vote, vote.divisionNumber)}
           </span>
+          {/* On a bill page the edge's ROLE is the sharper fact and takes the
+              slot. Off it there is no bill-relative role, so the kind fills the
+              same space — and it is the only thing that places a division whose
+              source printed no subject. */}
           {billContext ? (
             <BillVoteRoleBadge
               chamber={vote.chamber}
               linkRole={billContext.linkRole}
+              outcome={vote.outcome}
               voteSubject={vote.voteSubject}
             />
-          ) : null}
+          ) : (
+            <VoteKindChip kind={vote.kind} />
+          )}
         </div>
       </div>
     </Link>

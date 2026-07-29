@@ -134,6 +134,12 @@ const rawVoteCoreSchema = z.object({
    * whole surface, and a large minority of divisions carry no readable label.
    */
   voteSubject: z.string().nullable().optional(),
+  /**
+   * The server's vote-kind bucket. Optional for the same reason as
+   * `voteSubject`; an unrecognised value is dropped rather than rendered, so a
+   * bucket added server-side costs a chip instead of breaking the surface.
+   */
+  kind: z.string().nullable().optional(),
   title: z.string().nullable(),
   outcome: z.string().nullable(),
   divisionNumber: z.number().nullable(),
@@ -374,6 +380,9 @@ export const PARLIAMENT_VOTES_QUERY = /* GraphQL */ `
           chamber
           voteDate
           voteSubject
+          # What the chamber was voting ON where no subject was printed — which
+          # is most of the corpus outside the legislative bucket.
+          kind
           title
           outcome
           divisionNumber
@@ -483,11 +492,29 @@ export const PARLIAMENT_VOTE_QUERY = /* GraphQL */ `
       chamber
       voteDate
       voteSubject
+      kind
       title
       outcome
       divisionNumber
       billKey
       sourceUrl
+      # The ROLE-BEARING edges of THIS division. billKey holds at most one bill
+      # and no role at all; role is the only field that says what the division
+      # was procedurally for. It names the MOTION, not the result — the verdict
+      # is role composed with outcome.
+      voteLinks {
+        billKey
+        role
+        resolutionStatus
+        bill {
+          billKey
+          title
+          plxNumber
+          plxYear
+          senateNumber
+          senateYear
+        }
+      }
       tally {
         pentru
         impotriva
@@ -538,6 +565,29 @@ export type RawParliamentBallot = z.infer<typeof rawBallotSchema>;
 
 const rawVoteDetailSchema = rawVoteCoreSchema.extend({
   tally: rawTallySchema,
+  /**
+   * Optional as a whole (a server without the field must not fail the page) and
+   * `bill` nullable within it (a link whose key resolves to no bill row).
+   */
+  voteLinks: z
+    .array(
+      z.object({
+        billKey: z.string().nullable(),
+        role: z.string(),
+        resolutionStatus: z.string(),
+        bill: z
+          .object({
+            billKey: z.string(),
+            title: z.string().nullable(),
+            plxNumber: z.string().nullable(),
+            plxYear: z.number().nullable(),
+            senateNumber: z.string().nullable(),
+            senateYear: z.number().nullable(),
+          })
+          .nullable(),
+      }),
+    )
+    .optional(),
   groupBreakdown: z.array(rawGroupBreakdownSchema),
   ballots: z.object({
     edges: z.array(z.object({ node: rawBallotSchema })),

@@ -56,6 +56,9 @@ import {
   type ParliamentVoteActivity,
   type ParliamentVoteDetail,
   type ParliamentVoteSummary,
+  type VoteChamber,
+  type VoteKind,
+  VoteKindSchema,
   type VoteOutcome,
 } from "@/schemas/parliament";
 import {
@@ -392,6 +395,10 @@ export function mapControlItemAiMetadata(
 
 // ── votes ───────────────────────────────────────────────────────────────────
 
+function isVoteKind(value: unknown): value is VoteKind {
+  return VoteKindSchema.safeParse(value).success;
+}
+
 function mapVoteSummaryCommon(
   raw: RawParliamentVoteListNode | RawParliamentVoteDetail,
 ): ParliamentVoteSummary {
@@ -405,6 +412,10 @@ function mapVoteSummaryCommon(
     // Blank-safe: the server nulls an empty label, but a whitespace-only one
     // would still render as a heading the chamber never printed.
     ...(raw.voteSubject?.trim() ? { voteSubject: raw.voteSubject.trim() } : {}),
+    // Open vocabulary, closed rendering: a bucket the server adds later arrives
+    // as a string this client has no label for, and is dropped rather than
+    // printed raw. A missing chip beats "chamber_decision" in the UI.
+    ...(isVoteKind(raw.kind) ? { kind: raw.kind } : {}),
     title: raw.title ?? "(fără titlu)",
     heldAt: toIsoDate(raw.voteDate, new Date(0).toISOString()),
     voteType: "deschis",
@@ -454,11 +465,56 @@ export function mapVoteDetail(
     mapBallot(node, gqlChamber, raw.voteKey),
   );
 
+  // Only RESOLVED edges. An unresolved link is the resolver's candidate, not the
+  // source's statement, and the same filter guards the bill surface.
+  const billLinks = (raw.voteLinks ?? [])
+    .filter((l) => l.resolutionStatus === "linked" && l.billKey !== null)
+    .map((l) => ({
+      billId: l.billKey ?? "",
+      ...(formatBillReference(l.bill, summary.chamber)
+        ? { billNumber: formatBillReference(l.bill, summary.chamber) }
+        : {}),
+      ...(l.bill?.title?.trim() ? { billTitle: l.bill.title.trim() } : {}),
+      ...(l.role ? { role: l.role } : {}),
+    }));
+
   return ParliamentVoteDetailSchema.parse({
     ...summary,
+    billLinks,
     groupBreakdown,
     memberVotes,
   });
+}
+
+/**
+ * The reference the VOTING chamber itself uses for a bill — "PL-x 518/2026" in
+ * the Chamber, "L334/2026" in the Senate.
+ *
+ * Chamber-preferred, not PL-x-preferred: 1,500 linked Senate rows carry BOTH
+ * references, and always printing the CDep form put a number the Senate never
+ * used on a Senate division — beside a Senate tally, under a Senate breadcrumb.
+ *
+ * Both halves must be present to print one: "PL-x 518/" is not a reference any
+ * source published. Undefined where neither pair is complete, and the caller
+ * falls back to the title.
+ */
+function formatBillReference(
+  bill:
+    | {
+        plxNumber: string | null;
+        plxYear: number | null;
+        senateNumber: string | null;
+        senateYear: number | null;
+      }
+    | null
+    | undefined,
+  chamber: VoteChamber,
+): string | undefined {
+  if (!bill) return undefined;
+  const plx = bill.plxNumber && bill.plxYear ? `PL-x ${bill.plxNumber}/${bill.plxYear}` : undefined;
+  const senate =
+    bill.senateNumber && bill.senateYear ? `L${bill.senateNumber}/${bill.senateYear}` : undefined;
+  return chamber === "senat" ? (senate ?? plx) : (plx ?? senate);
 }
 
 /**
@@ -811,6 +867,9 @@ export function mapBillRelatedVotes(
         ...(v.voteSubject?.trim() ? { voteSubject: v.voteSubject.trim() } : {}),
         title: v.title ?? "(fără titlu)",
         heldAt: toIsoDate(v.voteDate, new Date(0).toISOString()),
+        // Same derivation the primed summary uses, so the hero and the vote
+        // cards below it can never disagree about whether the division carried.
+        outcome: toOutcome(v.outcome, v.tally),
         ...(linkRole ? { linkRole } : {}),
       };
     })
@@ -830,13 +889,54 @@ export function isFinalBillVote(vote: { readonly linkRole?: string }): boolean {
 }
 
 /**
- * What a final vote DECIDED — read from the link role, never from the division.
+ * What a final vote DECIDED — the MOTION composed with whether it CARRIED.
  *
- * A division's `outcome` is (pentru > impotriva), so a chamber that adopts a
- * REJECTION report scores "adoptat" on the very vote that threw the bill out —
- * true of 2,995 of the 3,009 divisions the data itself calls a final rejection.
- * The role is the source's own statement of what the vote did to the bill, and
- * it is the only field allowed to answer this question.
+ * Neither field answers this alone, and reading either one by itself is a
+ * mistake this codebase has now made in both directions:
+ *
+ *  - `outcome` is (pentru > impotriva) and nothing else, so a chamber adopting a
+ *    REJECTION report scores "adoptat" on the very vote that threw the bill out
+ *    — 2,995 of the 3,009 divisions the data calls `final_rejection`.
+ *  - `bill_vote_links.role` names the MOTION ON THE FLOOR, not the result. A
+ *    `final_adoption` motion can be voted DOWN, and 441 of them were: on
+ *    L334/2026 the Senate voted 7–49–44 against adopting the bill, and reading
+ *    the role alone announced "Adoptat" over a tally that rejected it.
+ *
+ * The Senate's own vocabulary is what settles it — `Vot final` puts the BILL on
+ * the floor (4,406 carried, 435 failed) while `Raport de respingere` puts the
+ * rejection report there (1,579 carried). Same chamber, same field, opposite
+ * meanings, separable only by composing the motion with the count.
+ *
+ * Deliberately silent in three cases:
+ *  - a rejection motion that FAILED (8 divisions, e.g. cdep:28593 at 140–155):
+ *    the chamber declined to throw the bill out, which is neither an adoption
+ *    nor a rejection. `rejection_failed` says exactly that and nothing more —
+ *    but ONLY when the division's own subject corroborates that the motion was
+ *    a rejection. That state is 8 rows wide and review found 2 of them wrong
+ *    because the ROLE was wrong: cdep:27636 carries role `final_rejection`
+ *    while its official CDep page reads "Vot final Adoptare PL 448/2020"
+ *    (7–163–122, an adoption that failed). Its subject is null, so requiring
+ *    corroboration makes it abstain instead of announcing the opposite.
+ *  - `egalitate` / `necunoscut`, where no result was established at all.
+ *
+ * ONLY NEGATIVE VERDICTS ARE ASSERTED, and that asymmetry is the point rather
+ * than an omission. `respins` PROVES a motion failed — it did not clear even a
+ * simple majority. `adoptat` proves only that it cleared a simple one, and an
+ * organic law needs an ABSOLUTE majority the tally does not encode.
+ *
+ * That gap is not theoretical. cdep:33731 (PL 12/2024, Codul civil — "lege
+ * organica") carries 164–60 and `outcome='adoptat'`, and the official CDep page
+ * says "nu a fost întrunita majoritatea calificata": it FAILED. Reading the
+ * counts as a verdict printed "Adoptat" over an official rejection. At least 20
+ * final-vote links are provably wrong this way, and prod's own bill_events hold
+ * 48 "vot final adoptare - fără majoritate" and 788 "respingere" statements, so
+ * 20 is a floor and not a ceiling.
+ *
+ * So a CARRIED motion returns undefined and the chip names the motion without
+ * claiming an outcome. The counts sit beside it and say what they actually say.
+ * The missing fact — the chamber's own printed result line, which includes the
+ * "lege organica" qualifier — exists on the source page and was never extracted;
+ * when it is, this can assert positives again (user decision, 2026-07-29).
  *
  * Chamber-scoped by nature: a Romanian bill is voted finally in EACH chamber, so
  * this is "what this chamber decided", not "the bill's fate". Callers must name
@@ -844,10 +944,39 @@ export function isFinalBillVote(vote: { readonly linkRole?: string }): boolean {
  */
 export function getFinalBillVoteVerdict(vote: {
   readonly linkRole?: string;
-}): "adoptat" | "respins" | undefined {
-  if (vote.linkRole === "final_adoption") return "adoptat";
-  if (vote.linkRole === "final_rejection") return "respins";
-  return undefined;
+  // REQUIRED, deliberately. As an optional it type-checked at every existing
+  // call site while silently reverting them to the role-only reading this
+  // function exists to remove.
+  readonly outcome: VoteOutcome;
+  /** The division's own subject, used to corroborate a `rejection_failed`. */
+  readonly voteSubject?: string;
+  // No `adoptat` in the return type ON PURPOSE — so the compiler, not a comment,
+  // is what stops a caller from resurrecting a positive claim.
+}): "respins" | "rejection_failed" | undefined {
+  if (!isFinalBillVote(vote)) return undefined;
+  // A motion whose result was never established decides nothing.
+  if (vote.outcome !== "adoptat" && vote.outcome !== "respins") return undefined;
+  // The motion CARRIED on the counts — which is not proof it carried in law.
+  if (vote.outcome === "adoptat") return undefined;
+  // Below a simple majority, so the motion certainly failed. What that means for
+  // the bill depends on which motion it was.
+  if (vote.linkRole === "final_adoption") return "respins";
+  // A DEFEATED rejection is the rarest reading here and the only one that flips
+  // on a single wrong role. Assert it only when the chamber's own subject
+  // independently says the motion was a rejection.
+  return subjectSaysRejection(vote.voteSubject) ? "rejection_failed" : undefined;
+}
+
+/** Diacritic- and case-folded, like the chamber's own inconsistent spelling. */
+function foldSubject(subject: string): string {
+  return subject
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/gu, "")
+    .toLocaleLowerCase("ro");
+}
+
+function subjectSaysRejection(subject: string | undefined): boolean {
+  return subject !== undefined && /\brespinger|\brespins/.test(foldSubject(subject));
 }
 
 function primeRelatedVoteSummary(v: {

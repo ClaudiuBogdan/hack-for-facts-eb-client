@@ -13,6 +13,7 @@ import { VoteDetailBreadcrumb } from "./vote-detail-breadcrumb";
 import { VoteDetailHero } from "./vote-detail-hero";
 import { VoteIndividualVotesSection } from "./vote-individual-votes-section";
 import { VotePartyChart } from "./vote-party-chart";
+import { VoteRelatedBillsCard } from "./vote-related-bills-card";
 
 type Props = {
   readonly detail: ParliamentVoteDetail;
@@ -46,7 +47,16 @@ export function VoteDetailContent({
       <VoteDetailHero detail={detail} />
 
       <div className={cn(voteDetailPageContainerClassName, "pb-8 pt-6")}>
-        {detail.relatedBillId ? (
+        {/* The role-bearing edges when the server resolved any; otherwise the
+            vote's own scalar bill key, which names no bill and carries no role
+            but is still a true link. */}
+        {detail.billLinks.length > 0 ? (
+          <VoteRelatedBillsCard
+            links={detail.billLinks}
+            outcome={detail.outcome}
+            voteSubject={detail.voteSubject}
+          />
+        ) : detail.relatedBillId ? (
           <div className="mb-6 border border-[#b1b4b6] bg-white px-5 py-4 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]">
             <p className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
               Vot asociat proiectului de lege

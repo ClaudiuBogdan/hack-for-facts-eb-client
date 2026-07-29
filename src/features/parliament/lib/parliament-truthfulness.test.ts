@@ -197,23 +197,93 @@ describe('"Vot final" requires an explicit link role', () => {
   });
 });
 
-describe("what a final vote decided comes from the ROLE, not the tally", () => {
-  it("reads the verdict off the two final roles", () => {
-    expect(getFinalBillVoteVerdict({ linkRole: "final_adoption" })).toBe(
-      "adoptat",
-    );
-    // The trap this exists for: on PL-x 518/2026 the Senate's rejection division
-    // carries outcome "adoptat" — the REJECTION REPORT passed 64–30 — so a chip
-    // fed by the tally would announce the opposite of the bill's fate.
-    expect(getFinalBillVoteVerdict({ linkRole: "final_rejection" })).toBe(
-      "respins",
-    );
+describe("what a final vote decided is the MOTION composed with the RESULT", () => {
+  it("claims NOTHING for a motion that carried on the counts", () => {
+    // `pentru > impotriva` is not proof a motion carried in law. cdep:33731
+    // (PL 12/2024, Codul civil — "lege organica") stands 164–60 with
+    // outcome='adoptat', and the official CDep page says "nu a fost întrunita
+    // majoritatea calificata": it FAILED. Reading the counts as a verdict put
+    // "Adoptat" over an official rejection on at least 20 final-vote links.
+    expect(
+      getFinalBillVoteVerdict({
+        linkRole: "final_adoption",
+        outcome: "adoptat",
+      }),
+    ).toBeUndefined();
+    // Same for a rejection report that carried: it too needed a majority the
+    // tally does not encode.
+    expect(
+      getFinalBillVoteVerdict({
+        linkRole: "final_rejection",
+        outcome: "adoptat",
+      }),
+    ).toBeUndefined();
+  });
+
+  it("reads a DEFEATED adoption motion as a rejection", () => {
+    // The inverse trap, and the more common one: 441 links in prod. On L334/2026
+    // the Senate voted 7–49–44 against adopting the bill, and role-only reading
+    // badged that "Adoptat".
+    expect(
+      getFinalBillVoteVerdict({
+        linkRole: "final_adoption",
+        outcome: "respins",
+      }),
+    ).toBe("respins");
+  });
+
+  it("refuses to call a DEFEATED rejection motion either thing", () => {
+    // cdep:28593, 140–155, subject "Vot final respingere": the chamber declined
+    // to throw the bill out. CDep's own event says so —
+    // "vot final respingere - fără majoritate calificată" — and the bill ran four
+    // more years before being rejected in 2025. Calling it "Respins" inverts it.
+    expect(
+      getFinalBillVoteVerdict({
+        linkRole: "final_rejection",
+        outcome: "respins",
+        voteSubject: "Vot final respingere",
+      }),
+    ).toBe("rejection_failed");
+  });
+
+  it("will not claim a defeated rejection on an UNCORROBORATED role", () => {
+    // cdep:27636. Production role says `final_rejection`, but the official CDep
+    // page reads "Vot final Adoptare PL 448/2020 … - lege ordinara", 7–163–122:
+    // an ADOPTION that failed. The role is simply wrong, and its subject is null,
+    // so there is no second witness. Announcing "Respingerea nu a trecut" here
+    // states the opposite of what happened; abstaining does not.
+    expect(
+      getFinalBillVoteVerdict({ linkRole: "final_rejection", outcome: "respins" }),
+    ).toBeUndefined();
+    // A subject that talks about something else is not corroboration either.
+    expect(
+      getFinalBillVoteVerdict({
+        linkRole: "final_rejection",
+        outcome: "respins",
+        voteSubject: "Vot final",
+      }),
+    ).toBeUndefined();
+  });
+
+  it("answers nothing when no result was established", () => {
+    for (const outcome of ["egalitate", "necunoscut"] as const) {
+      expect(
+        getFinalBillVoteVerdict({ linkRole: "final_adoption", outcome }),
+      ).toBeUndefined();
+      expect(
+        getFinalBillVoteVerdict({ linkRole: "final_rejection", outcome }),
+      ).toBeUndefined();
+    }
   });
 
   it("answers nothing for a vote the source never called final", () => {
-    expect(getFinalBillVoteVerdict({})).toBeUndefined();
-    expect(getFinalBillVoteVerdict({ linkRole: "amendment" })).toBeUndefined();
-    expect(getFinalBillVoteVerdict({ linkRole: "procedural" })).toBeUndefined();
+    expect(getFinalBillVoteVerdict({ outcome: "adoptat" })).toBeUndefined();
+    expect(
+      getFinalBillVoteVerdict({ linkRole: "amendment", outcome: "adoptat" }),
+    ).toBeUndefined();
+    expect(
+      getFinalBillVoteVerdict({ linkRole: "procedural", outcome: "adoptat" }),
+    ).toBeUndefined();
   });
 });
 

@@ -61,43 +61,111 @@ const cameraProcedural: ParliamentVoteSummary = {
 }
 
 describe('BillVoteRoleBadge', () => {
-  it('says what a final vote decided, from the role', () => {
-    render(<BillVoteRoleBadge chamber="senat" linkRole="final_rejection" />)
-    expect(screen.getByText('Vot final · Respins')).toBeInTheDocument()
-    expect(screen.getByText('Senat')).toBeInTheDocument()
-  })
-
-  it('distinguishes the two final roles', () => {
+  it('names the motion but claims NO verdict when it carried on the counts', () => {
+    // Neither direction is provable from `pentru > impotriva`: an organic law
+    // needs an absolute majority the tally does not encode, and cdep:33731 is a
+    // 164–60 "adoption" the official page records as failing.
     const { unmount } = render(
-      <BillVoteRoleBadge chamber="camera" linkRole="final_adoption" />,
+      <BillVoteRoleBadge chamber="senat" linkRole="final_rejection" outcome="adoptat" />,
     )
-    expect(screen.getByText('Vot final · Adoptat')).toBeInTheDocument()
-    expect(screen.getByText('Camera Deputaților')).toBeInTheDocument()
+    expect(screen.getByText('Vot final')).toBeInTheDocument()
+    expect(screen.getByText('Senat')).toBeInTheDocument()
+    expect(screen.queryByText(/Adoptat|Respins/)).not.toBeInTheDocument()
     unmount()
 
-    render(<BillVoteRoleBadge chamber="camera" linkRole="final_rejection" />)
+    render(<BillVoteRoleBadge chamber="camera" linkRole="final_adoption" outcome="adoptat" />)
+    expect(screen.getByText('Vot final')).toBeInTheDocument()
+    expect(screen.getByText('Camera Deputaților')).toBeInTheDocument()
+    expect(screen.queryByText(/Adoptat|Respins/)).not.toBeInTheDocument()
+  })
+
+  it('badges a DEFEATED adoption motion as a rejection', () => {
+    // L334/2026: the Senate voted 7–49–44 against adopting the bill. Reading the
+    // role alone put "Adoptat" over that tally on 441 links.
+    render(
+      <BillVoteRoleBadge
+        chamber="senat"
+        linkRole="final_adoption"
+        outcome="respins"
+      />,
+    )
     expect(screen.getByText('Vot final · Respins')).toBeInTheDocument()
+  })
+
+  it('spells out a DEFEATED rejection motion instead of guessing', () => {
+    // cdep:28593, 140–155: the chamber declined to throw the bill out. Neither
+    // verdict is true, and the tally beside it reads as a rejection unless the
+    // chip says otherwise. The subject is what corroborates the role.
+    render(
+      <BillVoteRoleBadge
+        chamber="camera"
+        linkRole="final_rejection"
+        outcome="respins"
+        voteSubject="Vot final respingere"
+      />,
+    )
+    expect(
+      screen.getByText('Vot final · Respingerea nu a trecut'),
+    ).toBeInTheDocument()
+  })
+
+  it('abstains when nothing corroborates the defeated rejection', () => {
+    // cdep:27636 — role says rejection, the official page says "Vot final
+    // Adoptare", and the subject is null. The chip keeps the motion name only.
+    render(
+      <BillVoteRoleBadge chamber="camera" linkRole="final_rejection" outcome="respins" />,
+    )
+    expect(screen.getByText('Vot final')).toBeInTheDocument()
+    expect(screen.queryByText(/Respingerea nu a trecut/)).not.toBeInTheDocument()
+  })
+
+  it('claims no verdict when no result was established', () => {
+    render(
+      <BillVoteRoleBadge
+        chamber="senat"
+        linkRole="final_adoption"
+        outcome="egalitate"
+      />,
+    )
+    expect(screen.getByText('Vot final')).toBeInTheDocument()
+    expect(screen.queryByText(/Adoptat|Respins/)).not.toBeInTheDocument()
   })
 
   it('names the non-final kinds without claiming a verdict', () => {
     const { unmount } = render(
-      <BillVoteRoleBadge chamber="camera" linkRole="procedural" />,
+      <BillVoteRoleBadge
+        chamber="camera"
+        linkRole="procedural"
+        outcome="adoptat"
+      />,
     )
     expect(screen.getByText('Vot procedural')).toBeInTheDocument()
     unmount()
 
-    render(<BillVoteRoleBadge chamber="senat" linkRole="amendment" />)
+    render(
+      <BillVoteRoleBadge
+        chamber="senat"
+        linkRole="amendment"
+        outcome="adoptat"
+      />,
+    )
     expect(screen.getByText('Amendament')).toBeInTheDocument()
   })
 
   it('falls back to the chamber alone for a role it does not know', () => {
     // Open vocabulary: a role the server adds later must cost a chip, never a
     // wrong label. The chamber is always true, so it always renders.
-    render(<BillVoteRoleBadge chamber="senat" linkRole="some_future_role" />)
+    render(
+      <BillVoteRoleBadge
+        chamber="senat"
+        linkRole="some_future_role"
+        outcome="adoptat"
+      />,
+    )
     expect(screen.getByText('Senat')).toBeInTheDocument()
     expect(screen.queryByText(/Vot final/)).not.toBeInTheDocument()
 
-    render(<BillVoteRoleBadge chamber="camera" />)
+    render(<BillVoteRoleBadge chamber="camera" outcome="adoptat" />)
     expect(screen.getByText('Camera Deputaților')).toBeInTheDocument()
   })
 })
@@ -132,6 +200,7 @@ describe('a role that contradicts the division itself', () => {
       <BillVoteRoleBadge
         chamber="camera"
         linkRole="final_rejection"
+        outcome="adoptat"
         voteSubject="Vot final adoptare"
       />,
     )
@@ -185,9 +254,13 @@ describe('VoteChamberVoteCard — bill context', () => {
         />
       </div>,
     )
+    // The MOTION is what tells them apart — a procedural division from a final
+    // one — which is exactly the distinction the bill title erases. The Senate
+    // card claims no verdict: its rejection report carried on the counts, and
+    // that is not proof it carried in law.
     expect(screen.getByText('Vot procedural')).toBeInTheDocument()
     expect(screen.getByText('Camera Deputaților')).toBeInTheDocument()
-    expect(screen.getByText('Vot final · Respins')).toBeInTheDocument()
+    expect(screen.getByText('Vot final')).toBeInTheDocument()
     expect(screen.getByText('Senat')).toBeInTheDocument()
     // Both titles still render — the badge adds context, it replaces nothing.
     expect(

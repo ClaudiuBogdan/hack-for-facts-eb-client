@@ -351,7 +351,8 @@ export const ParliamentVoteSummarySchema = z.object({
    * Often a motion ("raport de respingere (a legii)"), but just as legitimately
    * a document version ("Text initial"), an amendment and sometimes its author,
    * an article or annexe, or a debate-time allocation. It is NOT a verdict and
-   * settles nothing about whether anything carried — `linkRole` answers that.
+   * settles nothing about whether anything carried — that is `linkRole` (the
+   * motion) composed with `outcome` (whether it carried), never either alone.
    *
    * It matters because `title` is the BILL's title on every division of a bill,
    * identical across all of them; this is the only field that tells two apart.
@@ -359,6 +360,16 @@ export const ParliamentVoteSummarySchema = z.object({
    * readable label — the UI falls back to the title there, never invents one.
    */
   voteSubject: z.string().optional(),
+  /**
+   * Which bucket of the server's vote-kind partition this division falls in —
+   * the same classification the `tipVot` filter selects on.
+   *
+   * The one signal that survives where the others do not: 8,408 divisions have
+   * no bill link, and outside the `legislative` bucket the chamber printed no
+   * subject on 92-97% of rows. Optional only because the mock transport has no
+   * classifier; the live server always sends it.
+   */
+  kind: VoteKindSchema.optional(),
   title: z.string(),
   heldAt: z.string(),
   voteType: VoteTypeSchema,
@@ -415,8 +426,32 @@ export const ParliamentVotesListSchema = z.object({
 });
 export type ParliamentVotesList = z.infer<typeof ParliamentVotesListSchema>;
 
+/**
+ * One bill this division was linked to, and what the division was FOR.
+ *
+ * `role` is the MOTION that was on the floor — 'final_adoption' means "a motion
+ * to adopt the bill", which can be and has been voted down. Compose it with the
+ * division's `outcome` to get what the chamber decided; see
+ * `getFinalBillVoteVerdict`.
+ */
+export const ParliamentVoteBillLinkSchema = z.object({
+  billId: z.string(),
+  /** Human-facing reference ("PL-x 518/2026", "L334/2026"), when derivable. */
+  billNumber: z.string().optional(),
+  billTitle: z.string().optional(),
+  role: z.string().optional(),
+});
+export type ParliamentVoteBillLink = z.infer<
+  typeof ParliamentVoteBillLinkSchema
+>;
+
 export const ParliamentVoteDetailSchema = ParliamentVoteSummarySchema.extend({
   description: z.string().optional(),
+  /**
+   * Only edges the server resolved (`resolutionStatus === 'linked'`). An
+   * unresolved edge is a candidate, not a fact, and must not be shown as one.
+   */
+  billLinks: z.array(ParliamentVoteBillLinkSchema).default([]),
   groupBreakdown: z.array(ParliamentGroupVoteBreakdownSchema),
   memberVotes: z.array(ParliamentMemberVoteRecordSchema),
 });
@@ -1334,6 +1369,12 @@ export const ParliamentBillRelatedVoteSchema = z.object({
   voteSubject: z.string().optional(),
   title: z.string(),
   heldAt: z.string(),
+  /**
+   * Whether the division CARRIED. Required alongside `linkRole`, never instead
+   * of it: the role says what was on the floor and this says what happened to
+   * it, and the bill's fate is only the two composed.
+   */
+  outcome: VoteOutcomeSchema,
   /**
    * `bill_vote_links.role` for this edge, when the server resolved one
    * ('final_adoption' | 'final_rejection' | 'amendment' | 'procedural' | …).

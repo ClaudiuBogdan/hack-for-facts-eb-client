@@ -1,5 +1,8 @@
 import type { VoteChamber, VoteOutcome } from '@/schemas/parliament'
-import { getFinalBillVoteVerdict } from '../api/graphql/parliament-mappers'
+import {
+  getFinalBillVoteVerdict,
+  isFinalBillVote,
+} from '../api/graphql/parliament-mappers'
 import { getVoteChamberLabel } from '../lib/formatting'
 
 /**
@@ -17,12 +20,44 @@ const VOTE_ROLE_LABEL: Readonly<Record<string, string>> = {
   procedural: 'Vot procedural',
 }
 
-const VERDICT_COLOR = { adoptat: '#006435', respins: '#9C051A' } as const
+/**
+ * What the chip says for each composed verdict — NEGATIVE READINGS ONLY.
+ *
+ * There is no „Adoptat" here and that is deliberate: a motion that carried on
+ * the counts is not thereby adopted in law (cdep:33731 carried 164–60 and the
+ * official page says the qualified majority was not reached). Where a motion
+ * carried, the chip names the motion and stops.
+ *
+ * `rejection_failed` is spelled out rather than collapsed into a colour: the
+ * chamber declined to throw the bill out, so neither „Adoptat" nor „Respins" is
+ * true, and the tally beside it (58–206 on cdep:18797) reads as a rejection
+ * unless the card says otherwise.
+ */
+const VERDICT_TEXT = {
+  respins: 'Respins',
+  rejection_failed: 'Respingerea nu a trecut',
+} as const
+
+const VERDICT_COLOR = {
+  respins: '#9C051A',
+  rejection_failed: '#505a5f',
+} as const
 const NEUTRAL_ROLE_COLOR = '#505a5f'
 
 type Props = {
-  readonly chamber: VoteChamber
+  /**
+   * Omitted where the surface already states it — the vote-detail page names the
+   * chamber in its breadcrumb AND its hero. Never pass a placeholder: half this
+   * badge's purpose is that a Romanian bill gets a final vote in EACH chamber,
+   * so a wrong chamber is worse than none.
+   */
+  readonly chamber?: VoteChamber
   readonly linkRole?: string
+  /**
+   * Whether the motion CARRIED. Required for the verdict: the role names what
+   * was on the floor, not what happened to it.
+   */
+  readonly outcome: VoteOutcome
   /** The division's own subject — used to refuse a contradicted verdict. */
   readonly voteSubject?: string
 }
@@ -40,7 +75,12 @@ type Props = {
  * The verdict comes from the ROLE and never from the tally; see
  * `getFinalBillVoteVerdict` for why the tally answers a different question.
  */
-export function BillVoteRoleBadge({ chamber, linkRole, voteSubject }: Props) {
+export function BillVoteRoleBadge({
+  chamber,
+  linkRole,
+  outcome,
+  voteSubject,
+}: Props) {
   // A contradicted role states nothing: keep the chamber, drop the claim.
   const contradicted = roleContradictsSubject(linkRole, voteSubject)
   const roleLabel = contradicted
@@ -48,26 +88,26 @@ export function BillVoteRoleBadge({ chamber, linkRole, voteSubject }: Props) {
     : linkRole
       ? VOTE_ROLE_LABEL[linkRole]
       : undefined
-  const verdict = contradicted ? undefined : getFinalBillVoteVerdict({ linkRole })
+  const verdict = contradicted
+    ? undefined
+    : getFinalBillVoteVerdict({ linkRole, outcome, voteSubject })
   const color = verdict ? VERDICT_COLOR[verdict] : NEUTRAL_ROLE_COLOR
 
   return (
     // Chamber first, chip last: the badge sits flush at the card footer's right
     // edge, so the coloured verdict lands on the edge rather than inside it.
     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-      <span className="text-xs font-semibold uppercase tracking-wide text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-        {getVoteChamberLabel(chamber)}
-      </span>
+      {chamber ? (
+        <span className="text-xs font-semibold uppercase tracking-wide text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          {getVoteChamberLabel(chamber)}
+        </span>
+      ) : null}
       {roleLabel ? (
         <span
           className="border-2 px-1.5 py-0.5 text-xs font-black uppercase leading-none tracking-wide"
           style={{ color, borderColor: color }}
         >
-          {verdict === 'adoptat'
-            ? `${roleLabel} · Adoptat`
-            : verdict === 'respins'
-              ? `${roleLabel} · Respins`
-              : roleLabel}
+          {verdict ? `${roleLabel} · ${VERDICT_TEXT[verdict]}` : roleLabel}
         </span>
       ) : null}
     </div>
@@ -99,8 +139,11 @@ export function getVoteTallySubjectNote(
   voteSubject?: string,
 ): string | undefined {
   if (roleContradictsSubject(linkRole, voteSubject)) return undefined
-  const verdict = getFinalBillVoteVerdict({ linkRole })
-  if (verdict === 'respins' && outcome === 'adoptat') {
+  // Keyed on the MOTION, not the composed verdict. A failed adoption also ends
+  // in „Respins", but there a „Pentru" was a vote FOR the bill exactly as the
+  // reader assumes — nothing needs rescuing, and printing this line over it
+  // would invert the meaning it exists to protect.
+  if (linkRole === 'final_rejection' && outcome === 'adoptat') {
     return '„Pentru” = pentru respingerea proiectului'
   }
   return undefined
@@ -119,24 +162,29 @@ export function getVoteTallySubjectNote(
  * the chamber and the subject, which are the chamber's own words, and drops the
  * verdict chip and the ballot-direction note. Silence is the only honest output
  * when the two witnesses contradict each other.
+ *
+ * Both witnesses are read as MOTIONS, which is the only way the comparison is
+ * meaningful: the role names what was put on the floor and so does the subject.
+ * Comparing the subject against the composed verdict would fire on every one of
+ * the 441 adoption motions that were voted down — where role and subject agree
+ * perfectly and it is the tally that turned them into a rejection.
  */
 // eslint-disable-next-line react-refresh/only-export-components
 export function roleContradictsSubject(
   linkRole: string | undefined,
   voteSubject: string | undefined,
 ): boolean {
-  const verdict = getFinalBillVoteVerdict({ linkRole })
-  if (verdict === undefined || voteSubject === undefined) return false
+  if (!isFinalBillVote({ linkRole }) || voteSubject === undefined) return false
   const folded = voteSubject
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .toLocaleLowerCase('ro')
-  // Only a subject that states a final outcome can contradict; anything else
+  // Only a subject that states a final motion can contradict; anything else
   // (an amendment, an article, a document version) simply says nothing.
   const saysAdopted = /\badopta/.test(folded) && !/\brespinger|respins/.test(folded)
   const saysRejected = /\brespinger|\brespins/.test(folded)
   return (
-    (verdict === 'respins' && saysAdopted) ||
-    (verdict === 'adoptat' && saysRejected)
+    (linkRole === 'final_rejection' && saysAdopted) ||
+    (linkRole === 'final_adoption' && saysRejected)
   )
 }

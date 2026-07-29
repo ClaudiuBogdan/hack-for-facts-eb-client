@@ -82,6 +82,27 @@ export const VOTE_KIND_LABELS: Readonly<Record<VoteKind, string>> = {
   unclassified: 'Neclasificate',
 }
 
+/**
+ * The same buckets in the SINGULAR — for a chip on ONE vote.
+ *
+ * The labels above name a facet you filter by ("Amendamente și articole"); these
+ * name what a single division was. Using the plural on a card reads as a
+ * category heading rather than a statement about that vote.
+ *
+ * `unclassified` is deliberately present rather than blank: 3,151 divisions land
+ * there, most carrying a synthesized date title that says nothing, and an absent
+ * chip would read as a rendering gap instead of the honest "the source gave us
+ * nothing to classify" that it is.
+ */
+export const VOTE_KIND_CHIP_LABELS: Readonly<Record<VoteKind, string>> = {
+  legislative: 'Proiect de lege',
+  amendment: 'Amendament',
+  procedural: 'Procedură',
+  chamber_decision: 'Hotărâre',
+  attendance: 'Prezență',
+  unclassified: 'Neclasificat',
+}
+
 /** Display order: the substantive buckets first, the residue last. */
 export const VOTE_KIND_ORDER: readonly VoteKind[] = [
   'legislative',

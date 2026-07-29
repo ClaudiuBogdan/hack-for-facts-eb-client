@@ -3,6 +3,7 @@ import type { ParliamentVoteDetail } from '@/schemas/parliament'
 import { formatVoteDivisionMeta } from '../lib/formatting'
 import { cn } from '@/lib/utils'
 import { getVoteDetailHeroColor, voteDetailPageContainerClassName } from '../lib/vote-detail-theme'
+import { VoteKindChip } from './vote-kind-chip'
 
 type Props = {
   readonly detail: ParliamentVoteDetail
@@ -21,9 +22,21 @@ export function VoteDetailHero({ detail }: Props) {
         )}
       >
         <div>
+          {detail.kind ? (
+            <VoteKindChip kind={detail.kind} tone="inverse" className="mb-3 inline-block" />
+          ) : null}
           <h1 className="text-2xl font-bold leading-tight sm:text-3xl lg:text-[2rem]">
             {detail.title}
           </h1>
+          {/* WHAT WAS ON THE FLOOR, in the chamber's own words. Without it the
+              page for a bill-linked division shows only the BILL's title — the
+              same heading every other division of that bill also carries — and
+              the reader cannot tell which vote they are looking at. */}
+          {detail.voteSubject ? (
+            <p className="mt-2 text-lg font-semibold leading-snug text-white/95">
+              {detail.voteSubject}
+            </p>
+          ) : null}
           <p className="mt-3 text-base text-white/90">
             {formatVoteDivisionMeta(detail, detail.divisionNumber)}
           </p>

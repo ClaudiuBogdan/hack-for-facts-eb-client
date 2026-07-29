@@ -27,6 +27,8 @@ export function BillOutcomeSummary({
   // Chamber's had just begun. Naming the chamber and the verdict says what the
   // role actually claims. Both come from hard fields (the linked edge's role and
   // the vote's own chamber), never from the division tally.
+  // The whole vote object: role, outcome AND subject. The subject is what keeps
+  // a "Respingerea nu a trecut" from riding on a role nothing corroborates.
   const verdict = roleFinalVote
     ? getFinalBillVoteVerdict(roleFinalVote)
     : undefined
@@ -34,11 +36,15 @@ export function BillOutcomeSummary({
     ? `Vot final în ${getChamberLabel(roleFinalVote.chamber)}`
     : 'Cel mai recent vot asociat'
   const voteDay = headlineVote ? formatVoteDayLong(headlineVote.heldAt) : ''
+  // Only the provable readings get a word. A motion that carried on the counts
+  // is NOT thereby adopted in law — an organic law needs an absolute majority
+  // the tally does not encode — so the date stands alone and the tally below
+  // says what it actually says. See `getFinalBillVoteVerdict`.
   const voteLine =
-    verdict === 'adoptat'
-      ? `Adoptat · ${voteDay}`
-      : verdict === 'respins'
-        ? `Respins · ${voteDay}`
+    verdict === 'respins'
+      ? `Respins · ${voteDay}`
+      : verdict === 'rejection_failed'
+        ? `Respingerea nu a trecut · ${voteDay}`
         : voteDay
 
   // The other half of the confusion: a final vote is not necessarily the last

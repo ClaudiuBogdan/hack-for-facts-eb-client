@@ -40,6 +40,7 @@ function ballots(
 const detail: ParliamentVoteDetail = {
   voteId: 'cdep:37100',
   chamber: 'camera',
+  billLinks: [],
   title: 'Proiect de Lege pentru completarea art.279',
   heldAt: '2026-06-10',
   voteType: 'deschis',

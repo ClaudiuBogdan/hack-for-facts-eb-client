@@ -70,10 +70,64 @@ describe('VoteListRowCard', () => {
   it('names the outcome in the accessible label alongside the title', () => {
     render(<VoteListRowCard vote={vote()} />)
     expect(
-      screen.getByLabelText(
-        /Proiect de Lege pentru completarea art.279 — Majoritate pentru/,
-      ),
+      screen.getByLabelText(/Proiect de Lege pentru completarea art.279/),
     ).toBeInTheDocument()
+    expect(screen.getByLabelText(/Majoritate pentru/)).toBeInTheDocument()
+  })
+
+  it('tells two divisions of the SAME bill apart in the accessible label', () => {
+    // Every division of a bill carries the BILL's title, so title + outcome
+    // announced identically across all of them. The subject and the division
+    // meta are what separate them.
+    render(
+      <div>
+        <VoteListRowCard
+          vote={vote({ voteId: 'senat:a', voteSubject: 'Vot final', divisionNumber: 9 })}
+        />
+        <VoteListRowCard
+          vote={vote({
+            voteId: 'senat:b',
+            voteSubject: 'Raport de respingere',
+            divisionNumber: 12,
+          })}
+        />
+      </div>,
+    )
+    expect(screen.getByLabelText(/Vot final — Divizare 9/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Raport de respingere — Divizare 12/)).toBeInTheDocument()
+  })
+})
+
+describe('VoteListRowCard — what the chamber was voting ON', () => {
+  it('prints the subject the chamber itself recorded', () => {
+    render(<VoteListRowCard vote={vote({ voteSubject: 'Raport de respingere' })} />)
+    expect(screen.getByText('Raport de respingere')).toBeInTheDocument()
+    // The title still LEADS here: the hub is where a vote is identified.
+    expect(
+      screen.getByRole('heading', { name: 'Proiect de Lege pentru completarea art.279' }),
+    ).toBeInTheDocument()
+  })
+
+  it('places a vote by KIND where the source printed no subject', () => {
+    // 8,408 divisions have no bill link, and outside the legislative bucket the
+    // chamber printed no subject on 92-97% of rows. There the title IS the
+    // motion ("Art. 178") and the kind is what places it.
+    render(<VoteListRowCard vote={vote({ title: 'Art. 178', kind: 'amendment' })} />)
+    expect(screen.getByText('Amendament')).toBeInTheDocument()
+  })
+
+  it('labels the residue honestly rather than leaving a gap', () => {
+    // 3,151 divisions land in `unclassified`, most carrying a synthesized date
+    // title. A blank reads as a rendering bug; "Neclasificat" is the fact.
+    render(<VoteListRowCard vote={vote({ title: 'Vot din 27 mai 2020', kind: 'unclassified' })} />)
+    expect(screen.getByText('Neclasificat')).toBeInTheDocument()
+  })
+
+  it('renders no chip at all when the server sent no kind', () => {
+    render(<VoteListRowCard vote={vote()} />)
+    for (const label of ['Proiect de lege', 'Amendament', 'Neclasificat']) {
+      expect(screen.queryByText(label)).not.toBeInTheDocument()
+    }
   })
 })
 
