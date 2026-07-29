@@ -38,7 +38,7 @@ export function ParliamentResourceCard({
       to={link.to}
       search={link.search}
       className={cn(
-        'group relative flex min-h-[7.5rem] overflow-hidden bg-[var(--pnrr-card)] transition-colors',
+        'group relative flex w-full min-h-[7.5rem] overflow-hidden bg-[var(--pnrr-card)] transition-colors',
         'hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] focus-visible:ring-inset',
       )}
     >
@@ -87,7 +87,9 @@ export function ParliamentResourceGridItem({
   readonly children: ReactNode
 }) {
   return (
-    <div className="border-b-2 border-r-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]">
+    // `flex` makes the card stretch to the tallest cell in its row — otherwise the
+    // card is content-sized and its 5px accent stops short of the cell's bottom border.
+    <div className="flex border-b-2 border-r-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]">
       {children}
     </div>
   )
