@@ -403,9 +403,9 @@ function mapVoteSummaryCommon(
   return ParliamentVoteSummarySchema.parse({
     voteId: raw.voteKey,
     chamber,
-    // Blank-safe: the server nulls an empty motion, but a whitespace-only one
+    // Blank-safe: the server nulls an empty label, but a whitespace-only one
     // would still render as a heading the chamber never printed.
-    ...(raw.voteAction?.trim() ? { voteAction: raw.voteAction.trim() } : {}),
+    ...(raw.voteSubject?.trim() ? { voteSubject: raw.voteSubject.trim() } : {}),
     title: raw.title ?? "(fără titlu)",
     heldAt: toIsoDate(raw.voteDate, new Date(0).toISOString()),
     voteType: "deschis",
@@ -808,7 +808,7 @@ export function mapBillRelatedVotes(
       return {
         voteId: v.voteKey,
         chamber: fromGraphqlChamber(v.chamber) ?? "camera",
-        ...(v.voteAction?.trim() ? { voteAction: v.voteAction.trim() } : {}),
+        ...(v.voteSubject?.trim() ? { voteSubject: v.voteSubject.trim() } : {}),
         title: v.title ?? "(fără titlu)",
         heldAt: toIsoDate(v.voteDate, new Date(0).toISOString()),
         ...(linkRole ? { linkRole } : {}),
@@ -854,7 +854,7 @@ function primeRelatedVoteSummary(v: {
   voteKey: string;
   chamber: string;
   voteDate: string | null;
-  voteAction?: string | null;
+  voteSubject?: string | null;
   title: string | null;
   outcome: string | null;
   divisionNumber: number | null;
@@ -866,7 +866,7 @@ function primeRelatedVoteSummary(v: {
   const summary = ParliamentVoteSummarySchema.parse({
     voteId: v.voteKey,
     chamber,
-    ...(v.voteAction?.trim() ? { voteAction: v.voteAction.trim() } : {}),
+    ...(v.voteSubject?.trim() ? { voteSubject: v.voteSubject.trim() } : {}),
     title: v.title ?? "(fără titlu)",
     heldAt: toIsoDate(v.voteDate, new Date(0).toISOString()),
     voteType: "deschis",

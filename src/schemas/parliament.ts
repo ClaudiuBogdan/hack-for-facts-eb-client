@@ -334,17 +334,20 @@ export const ParliamentVoteSummarySchema = z.object({
   voteId: z.string(),
   chamber: VoteChamberSchema,
   /**
-   * WHAT THE CHAMBER VOTED ON — the question, in the chamber's own words
-   * ("raport de respingere (a legii)").
+   * WHAT THE DIVISION WAS ABOUT, as the chamber itself labelled it — what
+   * cdep.ro prints under "Subiect vot".
    *
-   * `title` is the SUBJECT, and for a bill-linked division it is the BILL's
-   * title, identical across every division on that bill. This is the only field
-   * that tells two of them apart, and the only one that reconciles a tally with
-   * a fate: the Senate's 101-to-1 on L385/2018 was 101 votes FOR the rejection
-   * report. Absent on 9,223 of 20,745 divisions, where the source printed no
-   * readable motion — the UI falls back to the title there, never invents one.
+   * Often a motion ("raport de respingere (a legii)"), but just as legitimately
+   * a document version ("Text initial"), an amendment and sometimes its author,
+   * an article or annexe, or a debate-time allocation. It is NOT a verdict and
+   * settles nothing about whether anything carried — `linkRole` answers that.
+   *
+   * It matters because `title` is the BILL's title on every division of a bill,
+   * identical across all of them; this is the only field that tells two apart.
+   * Absent on a large minority of divisions, where the source printed no
+   * readable label — the UI falls back to the title there, never invents one.
    */
-  voteAction: z.string().optional(),
+  voteSubject: z.string().optional(),
   title: z.string(),
   heldAt: z.string(),
   voteType: VoteTypeSchema,
@@ -1273,8 +1276,8 @@ export type ParliamentBillInitiator = z.infer<
 export const ParliamentBillRelatedVoteSchema = z.object({
   voteId: z.string(),
   chamber: ParliamentChamberSchema,
-  /** The question this division put — see `ParliamentVoteSummary.voteAction`. */
-  voteAction: z.string().optional(),
+  /** The question this division put — see `ParliamentVoteSummary.voteSubject`. */
+  voteSubject: z.string().optional(),
   title: z.string(),
   heldAt: z.string(),
   /**

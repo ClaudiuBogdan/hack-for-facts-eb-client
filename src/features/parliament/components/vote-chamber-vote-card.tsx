@@ -75,14 +75,14 @@ export function VoteChamberVoteCard({ vote, className, billContext }: Props) {
   // What the card leads with depends on what the reader already knows.
   //
   // On a BILL page the bill is the context, so `title` — which IS the bill's
-  // title on every related vote — says nothing; the motion leads and the title
-  // is dropped as pure repetition. On the votes hub the opposite holds: the bill
-  // is the thing being identified, so the title leads and the motion explains
-  // underneath. When the source printed no motion (9,223 of 20,745 divisions)
-  // both surfaces fall back to the title, which is always true.
-  const motion = vote.voteAction
-  const heading = billContext && motion ? motion : vote.title
-  const subheading = billContext ? undefined : motion
+  // title on every related vote — says nothing; the chamber's own subject label
+  // leads and the title is dropped as pure repetition. On the votes hub the
+  // opposite holds: the bill is the thing being identified, so the title leads
+  // and the subject explains underneath. Where the source printed no label (a
+  // large minority) both fall back to the title, which is always true.
+  const subject = vote.voteSubject
+  const heading = billContext && subject ? subject : vote.title
+  const subheading = billContext ? undefined : subject
 
   return (
     <Link
@@ -96,8 +96,8 @@ export function VoteChamberVoteCard({ vote, className, billContext }: Props) {
       // divisions on one bill the SAME accessible name — the defect the visible
       // card just stopped having.
       aria-label={
-        motion
-          ? `${vote.title} — ${motion} — ${outcomeLabel}`
+        subject
+          ? `${vote.title} — ${subject} — ${outcomeLabel}`
           : `${vote.title} — ${outcomeLabel}`
       }
     >

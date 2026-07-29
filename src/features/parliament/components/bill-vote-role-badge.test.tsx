@@ -175,11 +175,11 @@ describe('VoteChamberVoteCard — bill context', () => {
     expect(screen.queryByText(/Pentru” =/)).not.toBeInTheDocument()
   })
 
-  it('leads with the MOTION on a bill page, dropping the repeated bill title', () => {
+  it('leads with the SUBJECT on a bill page, dropping the repeated bill title', () => {
     // The reader is already on the bill; its title on every card says nothing.
     render(
       <VoteChamberVoteCard
-        vote={{ ...senateFinalRejection, voteAction: 'Raport de respingere (a legii)' }}
+        vote={{ ...senateFinalRejection, voteSubject: 'Raport de respingere (a legii)' }}
         billContext={{ linkRole: 'final_rejection' }}
       />,
     )
@@ -191,12 +191,12 @@ describe('VoteChamberVoteCard — bill context', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('leads with the BILL TITLE on the hub, motion underneath', () => {
+  it('leads with the BILL TITLE on the hub, subject underneath', () => {
     // Off the bill page the bill is the thing being identified, so it leads and
-    // the motion explains.
+    // the subject explains.
     render(
       <VoteChamberVoteCard
-        vote={{ ...senateFinalRejection, voteAction: 'Raport de respingere (a legii)' }}
+        vote={{ ...senateFinalRejection, voteSubject: 'Raport de respingere (a legii)' }}
       />,
     )
     expect(
@@ -207,7 +207,7 @@ describe('VoteChamberVoteCard — bill context', () => {
     expect(screen.getByText('Raport de respingere (a legii)')).toBeInTheDocument()
   })
 
-  it('falls back to the bill title when the source printed no motion', () => {
+  it('falls back to the bill title when the source printed no label', () => {
     // 9,223 of 20,745 divisions. A heading is required; inventing one is not an
     // option, so the always-true fact stands in.
     render(
@@ -229,11 +229,11 @@ describe('VoteChamberVoteCard — bill context', () => {
     render(
       <div>
         <VoteChamberVoteCard
-          vote={{ ...cameraProcedural, voteAction: 'Retragerea de pe ordinea de zi a votului final' }}
+          vote={{ ...cameraProcedural, voteSubject: 'Retragerea de pe ordinea de zi a votului final' }}
           billContext={{ linkRole: 'procedural' }}
         />
         <VoteChamberVoteCard
-          vote={{ ...senateFinalRejection, voteAction: 'Raport de respingere (a legii)' }}
+          vote={{ ...senateFinalRejection, voteSubject: 'Raport de respingere (a legii)' }}
           billContext={{ linkRole: 'final_rejection' }}
         />
       </div>,

@@ -129,11 +129,11 @@ const rawVoteCoreSchema = z.object({
   chamber: z.string(),
   voteDate: z.string().nullable(),
   /**
-   * What the chamber voted ON, in its own words. OPTIONAL as well as nullable:
-   * a server without the field must not fail the whole surface, and 9,223 of
-   * 20,745 divisions legitimately carry no readable motion.
+   * The chamber's own label for what the division was about ("Subiect vot").
+   * OPTIONAL as well as nullable: a server without the field must not fail the
+   * whole surface, and a large minority of divisions carry no readable label.
    */
-  voteAction: z.string().nullable().optional(),
+  voteSubject: z.string().nullable().optional(),
   title: z.string().nullable(),
   outcome: z.string().nullable(),
   divisionNumber: z.number().nullable(),
@@ -373,7 +373,7 @@ export const PARLIAMENT_VOTES_QUERY = /* GraphQL */ `
           voteKey
           chamber
           voteDate
-          voteAction
+          voteSubject
           title
           outcome
           divisionNumber
@@ -482,7 +482,7 @@ export const PARLIAMENT_VOTE_QUERY = /* GraphQL */ `
       voteKey
       chamber
       voteDate
-      voteAction
+      voteSubject
       title
       outcome
       divisionNumber
@@ -1176,7 +1176,7 @@ export const PARLIAMENT_BILL_QUERY = /* GraphQL */ `
         voteDate
         # What the chamber voted ON. The title field here is the BILL's title on
         # every one of these rows, so without this the cards cannot be told apart.
-        voteAction
+        voteSubject
         title
         outcome
         divisionNumber
@@ -1251,8 +1251,8 @@ const rawBillRelatedVoteSchema = z.object({
   voteKey: z.string(),
   chamber: z.string(),
   voteDate: z.string().nullable(),
-  /** See `rawVoteCoreSchema.voteAction` — optional AND nullable, deliberately. */
-  voteAction: z.string().nullable().optional(),
+  /** See `rawVoteCoreSchema.voteSubject` — optional AND nullable, deliberately. */
+  voteSubject: z.string().nullable().optional(),
   title: z.string().nullable(),
   outcome: z.string().nullable(),
   divisionNumber: z.number().nullable(),
