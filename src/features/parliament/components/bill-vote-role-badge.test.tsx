@@ -30,7 +30,7 @@ vi.mock('@tanstack/react-router', () => ({
   ),
 }))
 
-const { BillVoteRoleBadge, getVoteTallySubjectNote } = await import(
+const { BillVoteRoleBadge, getVoteTallySubjectNote, roleContradictsSubject } = await import(
   './bill-vote-role-badge'
 )
 const { VoteChamberVoteCard } = await import('./vote-chamber-vote-card')
@@ -119,6 +119,55 @@ describe('getVoteTallySubjectNote', () => {
     // Not a final vote → it decided nothing about the bill either way.
     expect(getVoteTallySubjectNote('procedural', 'adoptat')).toBeUndefined()
     expect(getVoteTallySubjectNote(undefined, 'adoptat')).toBeUndefined()
+  })
+})
+
+describe('a role that contradicts the division itself', () => {
+  // cdep:18768 carried 184–0 with subject 'Vot final adoptare', while its link
+  // role said final_rejection — derived from a dossier row about the SENATE.
+  // The derivation is being fixed upstream; this surface must not depend on
+  // that landing first.
+  it('asserts NEITHER verdict when role and subject disagree', () => {
+    render(
+      <BillVoteRoleBadge
+        chamber="camera"
+        linkRole="final_rejection"
+        voteSubject="Vot final adoptare"
+      />,
+    )
+    expect(screen.getByText('Camera Deputaților')).toBeInTheDocument()
+    expect(screen.queryByText(/Respins/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Adoptat/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Vot final/)).not.toBeInTheDocument()
+  })
+
+  it('suppresses the ballot-direction note on a contradicted role too', () => {
+    expect(
+      getVoteTallySubjectNote('final_rejection', 'adoptat', 'Vot final adoptare'),
+    ).toBeUndefined()
+    // …but keeps it when the subject agrees, or says nothing at all.
+    expect(
+      getVoteTallySubjectNote('final_rejection', 'adoptat', 'Raport de respingere'),
+    ).toBe('„Pentru” = pentru respingerea proiectului')
+    expect(getVoteTallySubjectNote('final_rejection', 'adoptat')).toBe(
+      '„Pentru” = pentru respingerea proiectului',
+    )
+  })
+
+  it('does not treat a non-final subject as a contradiction', () => {
+    // An amendment or an article says nothing about the bill's fate, so it
+    // cannot contradict a final role.
+    expect(roleContradictsSubject('final_rejection', 'Amr.2')).toBe(false)
+    expect(roleContradictsSubject('final_rejection', 'Text initial')).toBe(false)
+    expect(roleContradictsSubject('procedural', 'Vot final adoptare')).toBe(false)
+    expect(roleContradictsSubject(undefined, 'Vot final adoptare')).toBe(false)
+  })
+
+  it('catches the contradiction in both directions', () => {
+    expect(roleContradictsSubject('final_rejection', 'Vot final adoptare')).toBe(true)
+    expect(roleContradictsSubject('final_adoption', 'Raport de respingere')).toBe(true)
+    // Diacritic- and case-insensitive, like the source's own spelling.
+    expect(roleContradictsSubject('final_rejection', 'VOT FINAL ADOPTARE')).toBe(true)
   })
 })
 
@@ -255,5 +304,54 @@ describe('VoteChamberVoteCard — bill context', () => {
     expect(
       container.querySelector('span[style*="rgb(0, 100, 53)"]'),
     ).toBeInTheDocument()
+  })
+})
+
+describe('VoteChamberVoteCard — telling identical divisions apart', () => {
+  it('gives same-title same-subject divisions DIFFERENT accessible names', () => {
+    // Review measured 240 groups of same-title, same-subject, same-outcome
+    // links covering 534 votes — worst case nine on one bill on one day. Title
+    // plus subject is not enough; chamber and the division meta are.
+    render(
+      <div>
+        <VoteChamberVoteCard
+          vote={{ ...cameraProcedural, divisionNumber: 4 }}
+          billContext={{ linkRole: 'procedural' }}
+        />
+        <VoteChamberVoteCard
+          vote={{ ...cameraProcedural, voteId: 'cdep:22632', divisionNumber: 5 }}
+          billContext={{ linkRole: 'procedural' }}
+        />
+      </div>,
+    )
+    const names = screen.getAllByRole('link').map((l) => l.getAttribute('aria-label'))
+    expect(new Set(names).size).toBe(2)
+    expect(names[0]).toContain('Camera Deputaților')
+    expect(names[0]).toContain('Divizare 4')
+    expect(names[1]).toContain('Divizare 5')
+  })
+
+  it('says so when the source recorded no subject, instead of looking like one', () => {
+    render(
+      <VoteChamberVoteCard
+        vote={cameraProcedural}
+        billContext={{ linkRole: 'procedural' }}
+      />,
+    )
+    expect(
+      screen.getByText('Subiectul votului nu a fost consemnat de sursă'),
+    ).toBeInTheDocument()
+  })
+
+  it('stays quiet about the subject when there IS one', () => {
+    render(
+      <VoteChamberVoteCard
+        vote={{ ...cameraProcedural, voteSubject: 'Amr.2' }}
+        billContext={{ linkRole: 'procedural' }}
+      />,
+    )
+    expect(
+      screen.queryByText('Subiectul votului nu a fost consemnat de sursă'),
+    ).not.toBeInTheDocument()
   })
 })

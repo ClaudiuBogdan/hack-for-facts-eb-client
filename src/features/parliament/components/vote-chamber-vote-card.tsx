@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import {
   formatVoteDivisionMeta,
   getOutcomeLabel,
+  getVoteChamberLabel,
   getVoteOutcomeAccentColor,
   toVoteDetailChamberParam,
 } from '../lib/formatting'
@@ -69,7 +70,7 @@ export function VoteChamberVoteCard({ vote, className, billContext }: Props) {
   // it in words rather than recolouring the bar to mean two things at once.
   const accentColor = getVoteOutcomeAccentColor(vote.outcome)
   const tallySubjectNote = billContext
-    ? getVoteTallySubjectNote(billContext.linkRole, vote.outcome)
+    ? getVoteTallySubjectNote(billContext.linkRole, vote.outcome, vote.voteSubject)
     : undefined
 
   // What the card leads with depends on what the reader already knows.
@@ -92,14 +93,20 @@ export function VoteChamberVoteCard({ vote, className, billContext }: Props) {
         voteId: vote.voteId,
       }}
       className={cn(parliamentVoteCardClassName, className)}
-      // Both facts, on every surface. Announcing `title` alone would give two
-      // divisions on one bill the SAME accessible name — the defect the visible
-      // card just stopped having.
-      aria-label={
-        subject
-          ? `${vote.title} — ${subject} — ${outcomeLabel}`
-          : `${vote.title} — ${outcomeLabel}`
-      }
+      // Title, subject, CHAMBER and the division's own date/number — because
+      // title+subject is not enough to be unique. Review measured 240 groups of
+      // same-title, same-subject, same-outcome links covering 534 votes, worst
+      // case nine divisions on one bill on a single day: they would all have
+      // announced identically. The meta line is what actually separates them.
+      aria-label={[
+        vote.title,
+        subject,
+        getVoteChamberLabel(vote.chamber),
+        formatVoteDivisionMeta(vote, vote.divisionNumber),
+        outcomeLabel,
+      ]
+        .filter(Boolean)
+        .join(' — ')}
     >
       <span
         className="w-[5px] shrink-0 self-stretch"
@@ -121,6 +128,15 @@ export function VoteChamberVoteCard({ vote, className, billContext }: Props) {
             {subheading ? (
               <p className="mt-1 text-sm leading-5 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
                 {subheading}
+              </p>
+            ) : null}
+            {/* On a bill page the heading is normally the division's subject, so
+                a card falling back to the bill title looks the same as one whose
+                subject happens to BE that text. Saying which is which costs one
+                muted line and removes the ambiguity the fallback created. */}
+            {billContext && !subject ? (
+              <p className="mt-1 text-sm italic leading-5 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                Subiectul votului nu a fost consemnat de sursă
               </p>
             ) : null}
           </div>
@@ -177,6 +193,7 @@ export function VoteChamberVoteCard({ vote, className, billContext }: Props) {
             <BillVoteRoleBadge
               chamber={vote.chamber}
               linkRole={billContext.linkRole}
+              voteSubject={vote.voteSubject}
             />
           ) : null}
         </div>

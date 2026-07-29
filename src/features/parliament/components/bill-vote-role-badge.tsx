@@ -23,6 +23,8 @@ const NEUTRAL_ROLE_COLOR = '#505a5f'
 type Props = {
   readonly chamber: VoteChamber
   readonly linkRole?: string
+  /** The division's own subject — used to refuse a contradicted verdict. */
+  readonly voteSubject?: string
 }
 
 /**
@@ -38,9 +40,15 @@ type Props = {
  * The verdict comes from the ROLE and never from the tally; see
  * `getFinalBillVoteVerdict` for why the tally answers a different question.
  */
-export function BillVoteRoleBadge({ chamber, linkRole }: Props) {
-  const roleLabel = linkRole ? VOTE_ROLE_LABEL[linkRole] : undefined
-  const verdict = getFinalBillVoteVerdict({ linkRole })
+export function BillVoteRoleBadge({ chamber, linkRole, voteSubject }: Props) {
+  // A contradicted role states nothing: keep the chamber, drop the claim.
+  const contradicted = roleContradictsSubject(linkRole, voteSubject)
+  const roleLabel = contradicted
+    ? undefined
+    : linkRole
+      ? VOTE_ROLE_LABEL[linkRole]
+      : undefined
+  const verdict = contradicted ? undefined : getFinalBillVoteVerdict({ linkRole })
   const color = verdict ? VERDICT_COLOR[verdict] : NEUTRAL_ROLE_COLOR
 
   return (
@@ -88,10 +96,47 @@ export function BillVoteRoleBadge({ chamber, linkRole }: Props) {
 export function getVoteTallySubjectNote(
   linkRole: string | undefined,
   outcome: VoteOutcome,
+  voteSubject?: string,
 ): string | undefined {
+  if (roleContradictsSubject(linkRole, voteSubject)) return undefined
   const verdict = getFinalBillVoteVerdict({ linkRole })
   if (verdict === 'respins' && outcome === 'adoptat') {
     return '„Pentru” = pentru respingerea proiectului'
   }
   return undefined
+}
+
+/**
+ * Does the edge's role contradict what the division itself says it was?
+ *
+ * `bill_vote_links.role` is derived, and its derivation has been wrong: on 15
+ * live links it read a rejection off a dossier row describing the OTHER
+ * chamber's act, while the division's own subject said 'Vot final adoptare'.
+ * cdep:18768 carried 184-0 FOR the bill and the role called it a rejection.
+ *
+ * The upstream derivation is being fixed, but this surface must not depend on
+ * that landing first. Where the two disagree the card asserts NEITHER: it keeps
+ * the chamber and the subject, which are the chamber's own words, and drops the
+ * verdict chip and the ballot-direction note. Silence is the only honest output
+ * when the two witnesses contradict each other.
+ */
+// eslint-disable-next-line react-refresh/only-export-components
+export function roleContradictsSubject(
+  linkRole: string | undefined,
+  voteSubject: string | undefined,
+): boolean {
+  const verdict = getFinalBillVoteVerdict({ linkRole })
+  if (verdict === undefined || voteSubject === undefined) return false
+  const folded = voteSubject
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLocaleLowerCase('ro')
+  // Only a subject that states a final outcome can contradict; anything else
+  // (an amendment, an article, a document version) simply says nothing.
+  const saysAdopted = /\badopta/.test(folded) && !/\brespinger|respins/.test(folded)
+  const saysRejected = /\brespinger|\brespins/.test(folded)
+  return (
+    (verdict === 'respins' && saysAdopted) ||
+    (verdict === 'adoptat' && saysRejected)
+  )
 }
