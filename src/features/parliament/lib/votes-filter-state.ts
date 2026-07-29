@@ -1,8 +1,35 @@
 import type {
   ParliamentVotesSearch,
+  VoteChamber,
   VoteKind,
   VoteSort,
 } from '@/schemas/parliament'
+
+/**
+ * What the votes list is narrowed to: one assembly (including `comun`, the
+ * joint sittings) or the whole parliament.
+ *
+ * `all` and an ABSENT `?chamber=` mean the same list. The tab links carry no
+ * chamber, so the default URL stays clean; `chamber=all` is written by the
+ * facet's own option and by every link that came from a cross-chamber count
+ * (the activity heatmap), and both render the mixed list.
+ */
+export type VotesListScope = 'camera' | 'senat' | 'comun' | 'all'
+
+/**
+ * The chamber the query should actually be bound to — `undefined` when the list
+ * spans the whole parliament.
+ *
+ * One place decides it, so the header, the filter chip, the row badges and the
+ * request can never disagree about whether a chamber is constraining the list.
+ */
+export function getVotesChamberFilter(
+  search: ParliamentVotesSearch,
+): VoteChamber | undefined {
+  return search.chamber === undefined || search.chamber === 'all'
+    ? undefined
+    : search.chamber
+}
 
 /**
  * Sort options, worded for a reader rather than as a field name.
@@ -85,11 +112,15 @@ export function readVoteKinds(
  * filter — alone it means "every vote this group took part in" — and the stance
  * only narrows that further, so counting them separately would claim two
  * constraints where the query carries one.
+ *
+ * The chamber counts, because it is a facet in the panel like any other: the
+ * list is one surface over the whole parliament and a chamber NARROWS it.
  */
 export function getActiveVoteFilterCount(
   search: ParliamentVotesSearch,
 ): number {
   return (
+    (getVotesChamberFilter(search) ? 1 : 0) +
     (search.from || search.to ? 1 : 0) +
     (search.outcome ? 1 : 0) +
     (search.grupVot ? 1 : 0) +

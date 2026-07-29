@@ -12,8 +12,19 @@ export const VOTE_DETAIL_INFO_BG = '#f3f0ff'
  *  reserves the same block of colour the chart lands in. */
 export const VOTE_DETAIL_CHART_PLOT_BG = '#f8f9fd'
 
-export function getVoteDetailHeroColor(chamber: 'camera' | 'senat'): string {
-  return chamber === 'camera' ? PARLIAMENT_CAMERA_GREEN : PARLIAMENT_SENAT_RED
+export function getVoteDetailHeroColor(
+  chamber: 'camera' | 'senat' | 'comun',
+): string {
+  switch (chamber) {
+    case 'camera':
+      return PARLIAMENT_CAMERA_GREEN
+    case 'senat':
+      return PARLIAMENT_SENAT_RED
+    // A joint sitting belongs to BOTH chambers, so it wears neither chamber's
+    // colour — the purple already used for cross-chamber resources.
+    case 'comun':
+      return PARLIAMENT_RESOURCE_PURPLE
+  }
 }
 
 /** UK Parliament member card shadow — soft lift, bottom/right bias */

@@ -13,6 +13,7 @@ import {
   ParliamentSeatSchema,
 } from "@/schemas/parliament";
 import {
+  getFinalBillVoteVerdict,
   isFinalBillVote,
   mapMember,
   mapVoteDetail,
@@ -193,6 +194,26 @@ describe('"Vot final" requires an explicit link role', () => {
     expect(isFinalBillVote({})).toBe(false);
     expect(isFinalBillVote({ linkRole: "amendment" })).toBe(false);
     expect(isFinalBillVote({ linkRole: "procedural" })).toBe(false);
+  });
+});
+
+describe("what a final vote decided comes from the ROLE, not the tally", () => {
+  it("reads the verdict off the two final roles", () => {
+    expect(getFinalBillVoteVerdict({ linkRole: "final_adoption" })).toBe(
+      "adoptat",
+    );
+    // The trap this exists for: on PL-x 518/2026 the Senate's rejection division
+    // carries outcome "adoptat" — the REJECTION REPORT passed 64–30 — so a chip
+    // fed by the tally would announce the opposite of the bill's fate.
+    expect(getFinalBillVoteVerdict({ linkRole: "final_rejection" })).toBe(
+      "respins",
+    );
+  });
+
+  it("answers nothing for a vote the source never called final", () => {
+    expect(getFinalBillVoteVerdict({})).toBeUndefined();
+    expect(getFinalBillVoteVerdict({ linkRole: "amendment" })).toBeUndefined();
+    expect(getFinalBillVoteVerdict({ linkRole: "procedural" })).toBeUndefined();
   });
 });
 

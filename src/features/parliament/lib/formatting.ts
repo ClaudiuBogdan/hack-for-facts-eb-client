@@ -55,6 +55,39 @@ export function getChamberShortLabel(chamber: "camera" | "senat"): string {
   return chamber === "camera" ? "Camera" : "Senat";
 }
 
+/**
+ * Label for the assembly that held a VOTE — includes joint sittings, which the
+ * member-facing `getChamberLabel` never sees. "Camerele reunite" is the
+ * Constitution's own phrase (art. 65) for the two chambers sitting together.
+ */
+export function getVoteChamberLabel(
+  chamber: "camera" | "senat" | "comun",
+): string {
+  switch (chamber) {
+    case "comun":
+      return "Camerele reunite";
+    default:
+      return getChamberLabel(chamber);
+  }
+}
+
+export function getVoteChamberShortLabel(
+  chamber: "camera" | "senat" | "comun",
+): string {
+  return chamber === "comun" ? "Camerele reunite" : getChamberShortLabel(chamber);
+}
+
+/**
+ * Route param for `/parlament/voturi/$chamber/$voteId`, which accepts only
+ * camera|senat. A joint sitting's detail page lives under `camera` — the
+ * chamber segment is presentational, the vote is fetched by its key alone.
+ */
+export function toVoteDetailChamberParam(
+  chamber: "camera" | "senat" | "comun",
+): "camera" | "senat" {
+  return chamber === "senat" ? "senat" : "camera";
+}
+
 export function getMemberChamberRoleLabel(chamber: "camera" | "senat"): string {
   return chamber === "camera" ? "deputat" : "senator";
 }

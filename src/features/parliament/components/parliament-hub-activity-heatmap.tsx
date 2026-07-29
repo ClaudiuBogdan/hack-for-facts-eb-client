@@ -41,6 +41,12 @@ export interface ActivityHeatmapDay {
    * not offer a link that would silently answer a wider question.
    */
   readonly search?: ParliamentSearch
+  /**
+   * Fired alongside the navigation. For the heatmap that sits UNDER a list, the
+   * link changes results the reader has already scrolled past, so the surface
+   * uses this to bring them back to what just changed.
+   */
+  readonly onSelect?: () => void
 }
 
 type Props = {
@@ -181,6 +187,7 @@ export function ParliamentHubActivityHeatmap({
                           <Link
                             to="/parlament"
                             search={day.search}
+                            onClick={day.onSelect}
                             aria-label={day.label}
                             title={day.label}
                             className="block aspect-square rounded-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"

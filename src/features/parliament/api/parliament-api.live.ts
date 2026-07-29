@@ -40,6 +40,7 @@ import {
   type ParliamentVoteDetail,
   type ParliamentVotesList,
   type ParliamentVotesSearch,
+  type VoteChamber,
 } from '@/schemas/parliament'
 import { GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
 import {
@@ -124,9 +125,10 @@ import {
 import {
   LATEST_LEGISLATURE,
   toGraphqlChamber,
+  toGraphqlVoteChamber,
 } from './graphql/parliament-translate'
 import { resolveGroupColor } from '../lib/group-colors'
-import { toVoteSortArgs } from '../lib/votes-filter-state'
+import { toVoteSortArgs, type VotesListScope } from '../lib/votes-filter-state'
 
 const DEFAULT_MEMBERS_PAGE_SIZE = 20
 const DEFAULT_VOTES_PAGE_SIZE = 10
@@ -267,8 +269,10 @@ export async function fetchParliamentMembersLive(
 ): Promise<ParliamentMembersList> {
   const resolved = await resolveMemberFilterValues(search)
   // An explicit chamber toggle wins; otherwise fall back to the group's chamber.
+  // `comun` counts as "no toggle" — it is a votes-tab value on the shared
+  // search object and buildMembersFilter drops it.
   const effectiveSearch =
-    search.chamber && search.chamber !== 'all'
+    search.chamber === 'camera' || search.chamber === 'senat'
       ? search
       : resolved.groupChamber
         ? { ...search, chamber: resolved.groupChamber }
@@ -340,12 +344,12 @@ export async function fetchParliamentGroupMembersLive(
  * inside the server's 500-vote cap — `cohesionWindow` picks them.
  */
 export async function fetchParliamentGroupCohesionLive(
-  chamber: ParliamentChamber,
+  chamber: VoteChamber,
   window: { from: string; to: string },
 ): Promise<ParliamentGroupCohesion[]> {
   const data = await graphqlQuery<unknown>(
     PARLIAMENT_VOTE_COHESION_QUERY,
-    { chamber: toGraphqlChamber(chamber), from: window.from, to: window.to },
+    { chamber: toGraphqlVoteChamber(chamber), from: window.from, to: window.to },
     { operationName: 'parliamentVoteCohesion' },
   )
   return parliamentVoteCohesionResponseSchema
@@ -486,18 +490,19 @@ export async function fetchParliamentVotesLive(
 }
 
 /**
- * Per-kind vote counts for one chamber, in a single aliased request.
+ * Per-kind vote counts for one list scope, in a single aliased request.
  *
- * Returned even when zero: a bucket the chamber genuinely never uses (the
+ * Returned even when zero: a bucket the scope genuinely never uses (the
  * Senate has no amendment or attendance votes) must be VISIBLE as empty in the
- * filter, not quietly missing.
+ * filter, not quietly missing. `all` omits the chamber variable — the aliased
+ * counts then describe the whole corpus, which is what the mixed list shows.
  */
 export async function fetchParliamentVoteKindCountsLive(
-  chamber: ParliamentChamber,
+  scope: VotesListScope,
 ): Promise<Record<VoteKind, number>> {
   const data = await graphqlQuery<unknown>(
     PARLIAMENT_VOTE_KIND_COUNTS_QUERY,
-    { chamber: { eq: toGraphqlChamber(chamber) } },
+    scope === 'all' ? {} : { chamber: { eq: toGraphqlVoteChamber(scope) } },
     { operationName: 'parliamentVoteKindCounts' },
   )
   const parsed = parliamentVoteKindCountsResponseSchema.parse(data)

@@ -76,6 +76,15 @@ describe('buildVotesFilter', () => {
     expect(buildVotesFilter({ chamber: 'all' })).toEqual({})
   })
 
+  it('sends comun as its own assembly, never collapsed into camera', () => {
+    // Joint sittings are a served chamber value; folding them into
+    // camera_deputatilor would return the Camera's votes for a query that asked
+    // for the joint ones.
+    expect(buildVotesFilter({ chamber: 'comun' })).toEqual({
+      chamber: { eq: 'comun' },
+    })
+  })
+
   it('passes adoptat/respins but never the UI-only amânat', () => {
     expect(buildVotesFilter({ outcome: 'respins' })).toEqual({ outcome: { eq: 'respins' } })
     expect(buildVotesFilter({ outcome: 'amânat' })).toEqual({})
@@ -118,6 +127,13 @@ describe('buildMembersFilter', () => {
       { chamber: 'all' },
       { legislature: '2024', groupNames: [], constituencyNames: [] },
     )
+    expect(filter).toEqual({ legislature: { eq: '2024' } })
+  })
+
+  it('drops "comun" — a votes-tab value no member roster can satisfy', () => {
+    // The search object is shared across tabs; honouring comun here would send
+    // a chamber filter that matches zero members.
+    const filter = buildMembersFilter({ chamber: 'comun' }, { legislature: '2024' })
     expect(filter).toEqual({ legislature: { eq: '2024' } })
   })
 

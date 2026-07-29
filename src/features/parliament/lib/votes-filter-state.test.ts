@@ -8,7 +8,16 @@ import {
 
 describe('getActiveVoteFilterCount', () => {
   it('counts nothing when nothing is narrowing the list', () => {
-    expect(getActiveVoteFilterCount({ tab: 'voturi', chamber: 'camera' })).toBe(0)
+    expect(getActiveVoteFilterCount({ tab: 'voturi' })).toBe(0)
+    // `all` is the whole parliament — the list's own default, not a constraint.
+    expect(getActiveVoteFilterCount({ tab: 'voturi', chamber: 'all' })).toBe(0)
+  })
+
+  it('counts the chamber, which is a facet in the panel like any other', () => {
+    // The votes tab is ONE list over the whole parliament now; a chamber
+    // narrows it, so the filter badge has to say so.
+    expect(getActiveVoteFilterCount({ tab: 'voturi', chamber: 'camera' })).toBe(1)
+    expect(getActiveVoteFilterCount({ chamber: 'comun' })).toBe(1)
   })
 
   it('does NOT count the free-text term', () => {

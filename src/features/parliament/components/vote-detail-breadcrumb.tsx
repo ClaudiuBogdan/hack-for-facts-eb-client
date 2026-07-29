@@ -1,10 +1,10 @@
 import { Link } from '@tanstack/react-router'
 import { Skeleton } from '@/components/ui/skeleton'
-import { getChamberLabel } from '../lib/formatting'
+import { getVoteChamberLabel } from '../lib/formatting'
 import { VOTE_DETAIL_BREADCRUMB_BG, voteDetailPageContainerClassName } from '../lib/vote-detail-theme'
 
 type Props = {
-  readonly chamber: 'camera' | 'senat'
+  readonly chamber: 'camera' | 'senat' | 'comun'
   /**
    * Absent while the division is still loading — the trail then ends in a
    * placeholder. The three links above it are known from the URL alone, so the
@@ -15,7 +15,7 @@ type Props = {
 
 /** UK Parliament breadcrumb band */
 export function VoteDetailBreadcrumb({ chamber, divisionLabel }: Props) {
-  const chamberLabel = getChamberLabel(chamber)
+  const chamberLabel = getVoteChamberLabel(chamber)
 
   return (
     <nav

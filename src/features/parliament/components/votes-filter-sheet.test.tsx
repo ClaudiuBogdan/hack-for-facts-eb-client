@@ -11,12 +11,12 @@ vi.mock('../hooks/use-parliament-data', () => ({
   useParliamentVoteKindCounts: () => kindCountsMock(),
 }))
 
-function renderSheet(search: ParliamentVotesSearch = {}) {
+/** The scope is read off `search.chamber`; an absent one is "toate camerele". */
+function renderSheet(search: ParliamentVotesSearch = { chamber: 'camera' }) {
   const onSearchChange = vi.fn()
   render(
     <VotesFilterSheet
       search={search}
-      chamber="camera"
       open
       onOpenChange={vi.fn()}
       onSearchChange={onSearchChange}
@@ -158,6 +158,92 @@ describe('VotesFilterSheet — outcome', () => {
   })
 })
 
+describe('VotesFilterSheet — chamber facet', () => {
+  it('offers the two chambers, the joint sittings, and all-at-once', () => {
+    renderSheet()
+    const options = [
+      ...screen.getByLabelText('Camera').querySelectorAll('option'),
+    ].map((option) => option.value)
+    expect(options).toEqual(['all', 'camera', 'senat', 'comun'])
+  })
+
+  it('drops the param entirely for „Toate camerele”', async () => {
+    // The widest reading is the list's default, so it leaves no token behind in
+    // a URL the reader may share.
+    const user = userEvent.setup()
+    const { onSearchChange } = renderSheet({ tab: 'voturi', chamber: 'senat' })
+    await user.selectOptions(screen.getByLabelText('Camera'), 'all')
+    await user.click(screen.getByRole('button', { name: 'Aplică filtrele' }))
+    expect(onSearchChange).toHaveBeenCalledWith(
+      expect.objectContaining({ chamber: undefined }),
+    )
+  })
+
+  it('opens on „Toate camerele” when the URL carries no chamber', () => {
+    renderSheet({ tab: 'voturi' })
+    expect(screen.getByLabelText('Camera')).toHaveValue('all')
+  })
+
+  it('applies the chosen scope with the other facets', async () => {
+    const user = userEvent.setup()
+    const { onSearchChange } = renderSheet({ tab: 'voturi', chamber: 'camera' })
+    await user.selectOptions(screen.getByLabelText('Camera'), 'senat')
+    await user.click(screen.getByRole('button', { name: 'Aplică filtrele' }))
+    expect(onSearchChange).toHaveBeenCalledWith(
+      expect.objectContaining({ chamber: 'senat' }),
+    )
+  })
+})
+
+describe('VotesFilterSheet — cross-chamber group filtering needs a period', () => {
+  // The server refuses `groupVote` with neither a chamber nor a date bound
+  // (vote_records has no index on group_name), so the all-chambers scope must
+  // carry a period. The sheet pre-fills one VISIBLY instead of failing later.
+  it('pre-fills the period when a group is chosen under Toate camerele', async () => {
+    const user = userEvent.setup()
+    renderSheet({ tab: 'voturi', chamber: 'all' })
+    expect(screen.getByLabelText('De la')).toHaveValue('')
+    await user.selectOptions(screen.getByLabelText('Grup'), 'PSD')
+    expect(screen.getByLabelText('De la')).not.toHaveValue('')
+    expect(screen.getByLabelText('Până la')).not.toHaveValue('')
+  })
+
+  it('refuses to apply when the reader clears the period back out', async () => {
+    const user = userEvent.setup()
+    const { onSearchChange } = renderSheet({ tab: 'voturi', chamber: 'all' })
+    await user.selectOptions(screen.getByLabelText('Grup'), 'PSD')
+    await user.clear(screen.getByLabelText('De la'))
+    await user.clear(screen.getByLabelText('Până la'))
+    expect(
+      screen.getByText(/poziția unui grup se caută\s+într-o perioadă/),
+    ).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Aplică filtrele' }))
+    expect(onSearchChange).not.toHaveBeenCalled()
+  })
+
+  it('leaves a period the reader already chose alone', async () => {
+    const user = userEvent.setup()
+    renderSheet({
+      tab: 'voturi',
+      chamber: 'all',
+      from: '2026-01-01',
+      to: '2026-02-01',
+    })
+    await user.selectOptions(screen.getByLabelText('Grup'), 'PSD')
+    expect(screen.getByLabelText('De la')).toHaveValue('2026-01-01')
+    expect(screen.getByLabelText('Până la')).toHaveValue('2026-02-01')
+  })
+
+  it('does not touch the period on a single-chamber scope', async () => {
+    // A chamber IS a bound; forcing a period there would narrow the reader's
+    // question without being asked to.
+    const user = userEvent.setup()
+    renderSheet({ tab: 'voturi', chamber: 'camera' })
+    await user.selectOptions(screen.getByLabelText('Grup'), 'PSD')
+    expect(screen.getByLabelText('De la')).toHaveValue('')
+  })
+})
+
 describe('VotesFilterSheet — reset', () => {
   it('clears the facets but KEEPS the free-text term', async () => {
     // The search bar lives outside this panel, so "Resetează" here must not
@@ -172,9 +258,10 @@ describe('VotesFilterSheet — reset', () => {
       alegere: 'pentru',
     })
     await user.click(screen.getByRole('button', { name: 'Resetează' }))
+    // The chamber goes too — it is a facet in this panel now, so resetting
+    // widens the list back to the whole parliament like every other one.
     expect(onSearchChange).toHaveBeenCalledWith({
       tab: 'voturi',
-      chamber: 'camera',
       q: 'buget',
       page: 1,
       pageSize: undefined,

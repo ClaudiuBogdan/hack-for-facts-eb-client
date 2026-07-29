@@ -4,7 +4,9 @@ import type {
   ParliamentChamber,
   ParliamentMembersSearch,
   ParliamentVotesSearch,
+  VoteChamber,
 } from '@/schemas/parliament'
+import type { VotesListScope } from '../lib/votes-filter-state'
 import {
   fetchParliamentAgenda,
   fetchParliamentAgendas,
@@ -123,7 +125,7 @@ export function useParliamentGroupMembers(groupId: string) {
  * spans of time.
  */
 export function useParliamentGroupCohesion(
-  chamber: ParliamentChamber | undefined,
+  chamber: VoteChamber | undefined,
   window: { from: string; to: string },
 ) {
   return useQuery({
@@ -136,10 +138,10 @@ export function useParliamentGroupCohesion(
 }
 
 /** Per-kind vote counts for the filter panel. Stable enough to cache hard. */
-export function useParliamentVoteKindCounts(chamber: ParliamentChamber) {
+export function useParliamentVoteKindCounts(scope: VotesListScope) {
   return useQuery({
-    queryKey: [...PARLIAMENT_QUERY_KEY, 'vote-kind-counts', chamber],
-    queryFn: () => fetchParliamentVoteKindCounts(chamber),
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'vote-kind-counts', scope],
+    queryFn: () => fetchParliamentVoteKindCounts(scope),
     staleTime: 30 * 60 * 1000,
   })
 }

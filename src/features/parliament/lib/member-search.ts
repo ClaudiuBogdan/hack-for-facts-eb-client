@@ -32,6 +32,20 @@ export function getJudetFilterValues(
   return Array.isArray(search.judet) ? search.judet : [search.judet]
 }
 
+/**
+ * The chamber the MEMBER surfaces should filter by, or undefined for "no
+ * constraint". `all` means exactly that; `comun` is a votes-tab value carried
+ * on the shared search object — no member belongs to a joint sitting, so
+ * honouring it here would filter every roster to nothing.
+ */
+export function getMemberChamberFilter(
+  search: ParliamentMembersSearch,
+): ParliamentChamber | undefined {
+  return search.chamber === 'camera' || search.chamber === 'senat'
+    ? search.chamber
+    : undefined
+}
+
 function resolveGroupFilterIds(
   search: ParliamentMembersSearch,
   groups?: ReadonlyArray<ParliamentGroup>,
@@ -41,8 +55,7 @@ function resolveGroupFilterIds(
   if (!groups) return new Set(selectedIds)
 
   const expandedIds = new Set<string>()
-  const chamber =
-    search.chamber && search.chamber !== 'all' ? search.chamber : undefined
+  const chamber = getMemberChamberFilter(search)
 
   for (const groupId of selectedIds) {
     const selectedGroup = groups.find((group) => group.groupId === groupId)
@@ -78,7 +91,7 @@ export function hasPanelMemberFilters(
   search: ParliamentMembersSearch,
 ): boolean {
   return Boolean(
-    (search.chamber && search.chamber !== 'all') ||
+    getMemberChamberFilter(search) !== undefined ||
       getGrupFilterValues(search).length > 0 ||
       getJudetFilterValues(search).length > 0,
   )
@@ -87,7 +100,7 @@ export function hasPanelMemberFilters(
 /** Count of active panel filters for the filter button badge. */
 export function getPanelFilterCount(search: ParliamentMembersSearch): number {
   let count = 0
-  if (search.chamber && search.chamber !== 'all') count += 1
+  if (getMemberChamberFilter(search) !== undefined) count += 1
   count += getGrupFilterValues(search).length
   count += getJudetFilterValues(search).length
   return count
@@ -108,8 +121,9 @@ export function filterMembersBySearch(
 ): ParliamentMember[] {
   let result = [...members]
 
-  if (search.chamber && search.chamber !== 'all') {
-    result = result.filter((member) => member.chamber === search.chamber)
+  const chamberFilter = getMemberChamberFilter(search)
+  if (chamberFilter) {
+    result = result.filter((member) => member.chamber === chamberFilter)
   }
   const judetSlugs = getJudetFilterValues(search)
   if (judetSlugs.length > 0) {
@@ -144,11 +158,8 @@ export function resolveChamberScopedSearch(
   chamber: ParliamentChamber,
   groups: ReadonlyArray<ParliamentGroup>,
 ): ChamberScopedSearch {
-  if (
-    search.chamber &&
-    search.chamber !== 'all' &&
-    search.chamber !== chamber
-  ) {
+  const chamberFilter = getMemberChamberFilter(search)
+  if (chamberFilter && chamberFilter !== chamber) {
     return { search: {}, chamberExcluded: true }
   }
 

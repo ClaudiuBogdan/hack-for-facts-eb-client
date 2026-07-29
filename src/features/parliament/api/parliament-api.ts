@@ -41,8 +41,10 @@ import type {
   ParliamentVoteSummary,
   ParliamentVotesList,
   ParliamentVotesSearch,
+  VoteChamber,
 } from '@/schemas/parliament'
 import { isParliamentMockEnabled } from '../lib/mock-mode'
+import type { VotesListScope } from '../lib/votes-filter-state'
 import type { ParliamentSpeechesFilterInput } from '../lib/parliament-speeches-filter'
 import type { ParliamentStenogramSessionsFilterInput } from '../lib/parliament-stenogram-filter'
 import type {
@@ -224,7 +226,7 @@ export async function fetchParliamentGroupMembers(
  * the panel says so, which is the truthful outcome.
  */
 export async function fetchParliamentGroupCohesion(
-  chamber: ParliamentChamber,
+  chamber: VoteChamber,
   window: { from: string; to: string },
 ): Promise<ParliamentGroupCohesion[]> {
   return fetchParliamentGroupCohesionLive(chamber, window)
@@ -236,9 +238,9 @@ export async function fetchParliamentGroupCohesion(
  * fabricated numbers next to every checkbox in the filter.
  */
 export async function fetchParliamentVoteKindCounts(
-  chamber: ParliamentChamber,
+  scope: VotesListScope,
 ): Promise<Record<VoteKind, number>> {
-  return fetchParliamentVoteKindCountsLive(chamber)
+  return fetchParliamentVoteKindCountsLive(scope)
 }
 
 export async function fetchParliamentVotes(

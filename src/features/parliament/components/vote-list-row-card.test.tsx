@@ -4,8 +4,17 @@ import type { ParliamentVoteSummary } from '@/schemas/parliament'
 import { VoteListRowCard } from './vote-list-row-card'
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, ...rest }: { children: React.ReactNode }) => (
-    <a {...(rest as Record<string, unknown>)}>{children}</a>
+  Link: ({
+    children,
+    params,
+    ...rest
+  }: {
+    children: React.ReactNode
+    params?: Record<string, string>
+  }) => (
+    <a data-params={JSON.stringify(params)} {...(rest as Record<string, unknown>)}>
+      {children}
+    </a>
   ),
 }))
 
@@ -65,5 +74,32 @@ describe('VoteListRowCard', () => {
         /Proiect de Lege pentru completarea art.279 — Majoritate pentru/,
       ),
     ).toBeInTheDocument()
+  })
+})
+
+describe('VoteListRowCard — mixed-list chamber badge', () => {
+  it('badges the assembly when showChamber is set', () => {
+    render(<VoteListRowCard vote={vote({ chamber: 'senat' })} showChamber />)
+    expect(screen.getByText('Senat')).toBeInTheDocument()
+  })
+
+  it('labels a joint sitting as Camerele reunite, never as the Camera', () => {
+    render(<VoteListRowCard vote={vote({ chamber: 'comun' })} showChamber />)
+    expect(screen.getByText('Camerele reunite')).toBeInTheDocument()
+    expect(screen.queryByText('Camera Deputaților')).not.toBeInTheDocument()
+  })
+
+  it('omits the badge on single-chamber lists, where the header states it', () => {
+    render(<VoteListRowCard vote={vote({ chamber: 'senat' })} />)
+    expect(screen.queryByText('Senat')).not.toBeInTheDocument()
+  })
+
+  it('links a comun vote under the camera detail route, which is all the route accepts', () => {
+    render(<VoteListRowCard vote={vote({ chamber: 'comun' })} showChamber />)
+    const link = screen.getByLabelText(/Proiect de Lege/)
+    expect(JSON.parse(link.getAttribute('data-params') ?? '{}')).toEqual({
+      chamber: 'camera',
+      voteId: 'cdep:1',
+    })
   })
 })

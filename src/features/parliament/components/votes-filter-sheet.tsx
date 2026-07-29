@@ -15,8 +15,8 @@ import {
 } from '@/components/ui/sheet'
 import type {
   MemberVoteChoice,
-  ParliamentChamber,
   ParliamentVotesSearch,
+  VoteChamber,
   VoteKind,
   VoteOutcome,
 } from '@/schemas/parliament'
@@ -25,11 +25,13 @@ import {
   useParliamentVoteKindCounts,
 } from '../hooks/use-parliament-data'
 import { cohesionWindow } from '../lib/group-roster'
+import { rollingWindow } from '../lib/vote-activity-grid'
 import {
   getActiveVoteFilterCount,
   readVoteKinds,
   VOTE_KIND_LABELS,
   VOTE_KIND_ORDER,
+  type VotesListScope,
 } from '../lib/votes-filter-state'
 import { PARLIAMENT_ACTION_BLUE } from '../lib/hub-theme'
 
@@ -68,13 +70,13 @@ export function VotesFilterTriggerButton({
 
 type Props = {
   readonly search: ParliamentVotesSearch
-  readonly chamber: ParliamentChamber
   readonly open: boolean
   readonly onOpenChange: (open: boolean) => void
   readonly onSearchChange: (search: ParliamentVotesSearch) => void
 }
 
 type DraftSearch = {
+  readonly chamber: VotesListScope
   readonly kinds: readonly VoteKind[]
   readonly from: string
   readonly to: string
@@ -82,6 +84,26 @@ type DraftSearch = {
   readonly grupVot: string
   readonly alegere: MemberVoteChoice | ''
 }
+
+/**
+ * The list's chamber, as the facet sees it. An absent `?chamber=` is the
+ * all-chambers list, so the select opens on "Toate camerele" rather than on no
+ * option at all.
+ */
+function toScope(chamber: ParliamentVotesSearch['chamber']): VotesListScope {
+  return chamber ?? 'all'
+}
+
+/** The chamber facet, in list order. `all` first — it is the widest reading. */
+const SCOPE_OPTIONS: ReadonlyArray<{
+  readonly value: VotesListScope
+  readonly label: string
+}> = [
+  { value: 'all', label: 'Toate camerele' },
+  { value: 'camera', label: 'Camera Deputaților' },
+  { value: 'senat', label: 'Senat' },
+  { value: 'comun', label: 'Camerele reunite (ședințe comune)' },
+]
 
 const labelClassName =
   'block text-sm font-bold leading-5 text-[var(--pnrr-fg)]'
@@ -115,13 +137,13 @@ const CHOICE_OPTIONS: ReadonlyArray<{
  */
 export function VotesFilterSheet({
   search,
-  chamber,
   open,
   onOpenChange,
   onSearchChange,
 }: Props) {
   const fieldId = useId()
   const [draft, setDraft] = useState<DraftSearch>(() => ({
+    chamber: toScope(search.chamber),
     kinds: readVoteKinds(search),
     from: search.from ?? '',
     to: search.to ?? '',
@@ -134,6 +156,7 @@ export function VotesFilterSheet({
   // fresh object each render, so depending on it would reset the panel mid-edit.
   useEffect(() => {
     setDraft({
+      chamber: toScope(search.chamber),
       // Read from the PARAM, not via `readVoteKinds(search)` — passing the
       // whole object would make this effect depend on a value that is a fresh
       // object every render, resetting the panel while the reader is using it.
@@ -149,6 +172,7 @@ export function VotesFilterSheet({
       alegere: search.alegere ?? '',
     })
   }, [
+    search.chamber,
     search.tipVot,
     search.from,
     search.to,
@@ -157,7 +181,9 @@ export function VotesFilterSheet({
     search.alegere,
   ])
 
-  const { data: kindCounts } = useParliamentVoteKindCounts(chamber)
+  // Counts follow the DRAFT scope, so switching the chamber facet updates the
+  // numbers next to each kind before the reader applies anything.
+  const { data: kindCounts } = useParliamentVoteKindCounts(draft.chamber)
 
   /**
    * The group options come from the COHESION rows, not from `parliamentGroups`.
@@ -170,26 +196,74 @@ export function VotesFilterSheet({
    * A FIXED six-month window sources it, independent of the dates the reader
    * chose: this call is for the vocabulary, never the numbers, and the endpoint
    * refuses windows wider than 500 votes.
+   *
+   * The endpoint is chamber-scoped, so the all-chambers scope UNIONS the three
+   * assemblies' vocabularies. Three hooks, always called — for a single-chamber
+   * scope they share one query key and React Query answers two from the cache.
    */
   const vocabularyWindow = useMemo(() => cohesionWindow(new Date()), [])
-  const { data: cohesionRows } = useParliamentGroupCohesion(
-    chamber,
-    vocabularyWindow,
-  )
+  const scopeIsAll = draft.chamber === 'all'
+  const chamberA: VoteChamber = scopeIsAll ? 'camera' : draft.chamber
+  const chamberB: VoteChamber = scopeIsAll ? 'senat' : chamberA
+  const chamberC: VoteChamber = scopeIsAll ? 'comun' : chamberA
+  const cohesionA = useParliamentGroupCohesion(chamberA, vocabularyWindow)
+  const cohesionB = useParliamentGroupCohesion(chamberB, vocabularyWindow)
+  const cohesionC = useParliamentGroupCohesion(chamberC, vocabularyWindow)
   const groupOptions = useMemo(
     () =>
-      [...(cohesionRows ?? [])]
-        .map((row) => row.groupName)
-        .sort((left, right) => left.localeCompare(right, 'ro')),
-    [cohesionRows],
+      [
+        ...new Set(
+          [cohesionA.data, cohesionB.data, cohesionC.data].flatMap(
+            (rows) => rows?.map((row) => row.groupName) ?? [],
+          ),
+        ),
+      ].sort((left, right) => left.localeCompare(right, 'ro')),
+    [cohesionA.data, cohesionB.data, cohesionC.data],
   )
 
   const activeCount = getActiveVoteFilterCount(search)
 
+  /**
+   * Cross-chamber group filtering needs a TIME BOUND: the server refuses a
+   * `groupVote` filter with no chamber and no period (vote_records has no index
+   * on group_name — an unbounded read is a deliberate INVALID_INPUT, not a slow
+   * success). So when the reader picks a group under "Toate camerele" with the
+   * period empty, the period fields are pre-filled with the last 12 months —
+   * visible and editable, never a hidden constraint.
+   */
+  const fillPeriodIfUnbounded = (next: Partial<DraftSearch>) => {
+    setDraft((prev) => {
+      const merged = { ...prev, ...next }
+      if (
+        merged.chamber === 'all' &&
+        merged.grupVot !== '' &&
+        merged.from === '' &&
+        merged.to === ''
+      ) {
+        const window = rollingWindow({ months: 12, today: new Date() })
+        return { ...merged, from: window.startIso, to: window.endIso }
+      }
+      return merged
+    })
+  }
+
+  const groupNeedsPeriod =
+    draft.chamber === 'all' &&
+    draft.grupVot !== '' &&
+    draft.from === '' &&
+    draft.to === ''
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    // The reader cleared the auto-filled period back out — refuse to send a
+    // query the server will reject, and let the inline note say why.
+    if (groupNeedsPeriod) return
     onSearchChange({
       ...search,
+      // "Toate camerele" is the ABSENT param, not `chamber=all`: the widest
+      // reading is the list's default, so it leaves no token behind in a URL
+      // the reader may share.
+      chamber: draft.chamber === 'all' ? undefined : draft.chamber,
       tipVot: draft.kinds.length > 0 ? [...draft.kinds] : undefined,
       from: draft.from || undefined,
       to: draft.to || undefined,
@@ -205,10 +279,19 @@ export function VotesFilterSheet({
   }
 
   const handleReset = () => {
-    setDraft({ kinds: [], from: '', to: '', outcome: 'all', grupVot: '', alegere: '' })
+    setDraft({
+      // The chamber is a facet in this panel, so "Resetează" widens it back to
+      // the whole parliament like every other one.
+      chamber: 'all',
+      kinds: [],
+      from: '',
+      to: '',
+      outcome: 'all',
+      grupVot: '',
+      alegere: '',
+    })
     onSearchChange({
       tab: search.tab,
-      chamber: search.chamber,
       // The free-text term lives outside this panel, so clearing the FILTERS
       // must not silently discard what the reader typed in the search bar.
       q: search.q,
@@ -237,6 +320,32 @@ export function VotesFilterSheet({
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <ScrollArea className="flex-1">
             <div className="w-full min-w-0 space-y-6 p-4 sm:p-6">
+              <fieldset className={sectionClassName}>
+                <legend className={legendClassName}>Camera</legend>
+                <p className="text-sm leading-5 text-[var(--pnrr-muted)]">
+                  „Toate camerele” caută în Camera Deputaților, Senat și
+                  ședințele comune deodată; fiecare rezultat spune camera care a
+                  votat.
+                </p>
+                <select
+                  id={`${fieldId}-chamber`}
+                  value={draft.chamber}
+                  onChange={(e) =>
+                    fillPeriodIfUnbounded({
+                      chamber: e.target.value as VotesListScope,
+                    })
+                  }
+                  className={controlClassName}
+                  aria-label="Camera"
+                >
+                  {SCOPE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </fieldset>
+
               <fieldset className={sectionClassName}>
                 <legend className={legendClassName}>Tipul votului</legend>
                 {/*
@@ -380,7 +489,7 @@ export function VotesFilterSheet({
                     id={`${fieldId}-grup`}
                     value={draft.grupVot}
                     onChange={(e) =>
-                      setDraft((prev) => ({ ...prev, grupVot: e.target.value }))
+                      fillPeriodIfUnbounded({ grupVot: e.target.value })
                     }
                     className={controlClassName}
                   >
@@ -425,6 +534,21 @@ export function VotesFilterSheet({
                   >
                     Alegeți un grup — o variantă de vot fără grup nu descrie
                     niciun set de voturi.
+                  </p>
+                ) : null}
+                {groupNeedsPeriod ? (
+                  <p
+                    className="border-l-4 border-l-[#d4351c] pl-3 text-sm leading-5 text-[var(--pnrr-fg)]"
+                    role="status"
+                  >
+                    Pentru „Toate camerele”, poziția unui grup se caută
+                    într-o perioadă de timp. Alegeți o perioadă mai sus —
+                    la selectarea grupului am completat ultimele 12 luni.
+                  </p>
+                ) : draft.chamber === 'all' && draft.grupVot !== '' ? (
+                  <p className="text-sm leading-5 text-[var(--pnrr-muted)]">
+                    În „Toate camerele”, poziția grupului se caută în perioada
+                    aleasă mai sus.
                   </p>
                 ) : null}
               </fieldset>

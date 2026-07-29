@@ -36,7 +36,9 @@ export function MembersActiveFilters({
     })
   }
 
-  if (search.chamber && search.chamber !== 'all') {
+  // `comun` is a votes-tab value; the members query drops it, so a chip here
+  // would claim a constraint the list is not applying.
+  if (search.chamber && search.chamber !== 'all' && search.chamber !== 'comun') {
     chips.push({
       key: 'chamber',
       label: getChamberLabel(search.chamber),

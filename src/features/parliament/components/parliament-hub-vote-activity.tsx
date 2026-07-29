@@ -1,9 +1,10 @@
-import { useMemo } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
 import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { Button } from '@/components/ui/button'
+import type { ParliamentSearch } from '@/schemas/parliament'
 import { useParliamentVoteActivity } from '../hooks/use-parliament-data'
 import { bucketFor, rollingWindow } from '../lib/vote-activity-grid'
 import {
@@ -14,19 +15,44 @@ import { formatActivityDate } from '../lib/activity-heatmap-format'
 
 const ROLLING_MONTHS = 12
 
+/** The mixed all-chambers list: what a square's cross-chamber count matches. */
+const DEFAULT_DAY_SEARCH: ParliamentSearch = { tab: 'voturi', chamber: 'all' }
+
+type Props = {
+  /**
+   * What a day square carries BESIDES its own `from`/`to`. Under the votes list
+   * this is the reader's live filter set, so choosing a day narrows the list
+   * they are looking at instead of resetting it to a fresh cross-chamber query.
+   */
+  readonly daySearch?: ParliamentSearch
+  /** Fired when a day is chosen — see `ActivityHeatmapDay.onSelect`. */
+  readonly onSelectDay?: () => void
+  /**
+   * Replaces the "Vezi toate voturile" button. The list surface is already
+   * there, so it passes its own footer rather than a link back to itself.
+   */
+  readonly cta?: ReactNode
+}
+
 /**
  * Plenary vote volume per day over the last 12 months, and the way into the
- * votes list — the footer of the hub's Voturi card.
+ * votes list — the footer of the hub's Voturi card and of the votes list.
  *
- * The window is FIXED. The hub answers "when did the chambers vote, and how
- * much" at a glance; choosing a period is the votes page's job, and a period
- * control here would be a filter with no visible results to change.
+ * The window is FIXED, and so is its scope: a square counts every division that
+ * day across Camera, Senat and the joint sittings, whatever the surface below
+ * it is filtered to. Recomputing it per filter would make the same square mean
+ * a different thing on each visit; the surface says which reading it is showing
+ * instead.
  *
  * A square is a DIVISION count, not a ballot count — the number of times the
  * chambers voted that day, which is why a busy day reads in the hundreds and
  * not the tens of thousands its ballots would.
  */
-export function ParliamentHubVoteActivity() {
+export function ParliamentHubVoteActivity({
+  daySearch = DEFAULT_DAY_SEARCH,
+  onSelectDay,
+  cta,
+}: Props = {}) {
   const window = useMemo(
     () => rollingWindow({ months: ROLLING_MONTHS, today: new Date() }),
     [],
@@ -71,9 +97,11 @@ export function ParliamentHubVoteActivity() {
         map.set(day.date, {
           total: day.total,
           label: t`${dateLabel} — ${countLabel}`,
-          // The ALL-chambers list: the square's count sums camera, senat and
-          // comun, so only the mixed list shows the set of votes it claims.
-          search: { tab: 'voturi', chamber: 'all', from: day.date, to: day.date },
+          // The day is added to whatever the surface already asks for: on the
+          // hub that is the ALL-chambers list (the square's count sums camera,
+          // senat and comun), on the votes page the reader's own filters.
+          search: { ...daySearch, from: day.date, to: day.date },
+          onSelect: onSelectDay,
           tooltip: (
             <>
               <p className="font-semibold">{dateLabel}</p>
@@ -89,7 +117,7 @@ export function ParliamentHubVoteActivity() {
       }
     }
     return map
-  }, [primary.data, secondary.data, needsBothYears, window])
+  }, [primary.data, secondary.data, needsBothYears, window, daySearch, onSelectDay])
 
   return (
     <ParliamentHubActivityHeatmap
@@ -109,15 +137,17 @@ export function ParliamentHubVoteActivity() {
       emptyLabel={<Trans>Niciun vot în plen în ultimele 12 luni.</Trans>}
       bucketOf={bucketFor}
       cta={
-        <Button
-          asChild
-          className="mt-4 h-10 rounded-none bg-[#1d70b8] px-5 text-base font-normal text-white hover:bg-[#1d70b8]/90"
-        >
-          <Link to="/parlament" search={{ tab: 'voturi', chamber: 'all' }}>
-            <Trans>Vezi toate voturile</Trans>
-            <ArrowRight className="ml-2 h-4 w-4" aria-hidden />
-          </Link>
-        </Button>
+        cta ?? (
+          <Button
+            asChild
+            className="mt-4 h-10 rounded-none bg-[#1d70b8] px-5 text-base font-normal text-white hover:bg-[#1d70b8]/90"
+          >
+            <Link to="/parlament" search={{ tab: 'voturi', chamber: 'all' }}>
+              <Trans>Vezi toate voturile</Trans>
+              <ArrowRight className="ml-2 h-4 w-4" aria-hidden />
+            </Link>
+          </Button>
+        )
       }
     />
   )

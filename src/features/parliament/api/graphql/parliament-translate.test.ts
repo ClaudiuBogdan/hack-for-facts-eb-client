@@ -4,11 +4,13 @@ import {
   deriveGroupId,
   foldSlug,
   fromGraphqlChamber,
+  fromGraphqlVoteChamber,
   PARLIAMENT_GROUP_FALLBACK_COLOR,
   toGraphqlChamber,
+  toGraphqlVoteChamber,
 } from './parliament-translate'
 
-describe('chamber translation', () => {
+describe('chamber translation (member grain)', () => {
   it('maps UI chamber to the DB enum', () => {
     expect(toGraphqlChamber('camera')).toBe('camera_deputatilor')
     expect(toGraphqlChamber('senat')).toBe('senat')
@@ -23,6 +25,25 @@ describe('chamber translation', () => {
   it('returns null for unknown chamber values', () => {
     expect(fromGraphqlChamber('unknown')).toBeNull()
     expect(fromGraphqlChamber(null)).toBeNull()
+  })
+})
+
+describe('chamber translation (vote grain)', () => {
+  it('preserves comun in BOTH directions — a joint sitting is not the Camera', () => {
+    expect(toGraphqlVoteChamber('comun')).toBe('comun')
+    expect(fromGraphqlVoteChamber('comun')).toBe('comun')
+  })
+
+  it('matches the member-grain mapping for the two chambers', () => {
+    expect(toGraphqlVoteChamber('camera')).toBe('camera_deputatilor')
+    expect(toGraphqlVoteChamber('senat')).toBe('senat')
+    expect(fromGraphqlVoteChamber('camera_deputatilor')).toBe('camera')
+    expect(fromGraphqlVoteChamber('senat')).toBe('senat')
+  })
+
+  it('returns null for unknown chamber values', () => {
+    expect(fromGraphqlVoteChamber('unknown')).toBeNull()
+    expect(fromGraphqlVoteChamber(undefined)).toBeNull()
   })
 })
 

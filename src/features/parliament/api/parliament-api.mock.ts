@@ -374,7 +374,9 @@ function buildMemberVotingHistory(
     if (!memberVote) continue
     votes.push({
       voteId,
-      chamber: detail.chamber,
+      // Member history rows still speak camera|senat (the live mapper collapses
+      // joint sittings the same way); the fixtures carry no comun votes anyway.
+      chamber: detail.chamber === 'comun' ? 'camera' : detail.chamber,
       title: detail.title,
       heldAt: detail.heldAt,
       choice: memberVote.choice,
@@ -583,7 +585,9 @@ function buildBillRelatedVotes(billId: string): ParliamentBillRelatedVote[] {
     .filter((vote) => vote.relatedBillId === billId)
     .map((vote) => ({
       voteId: vote.voteId,
-      chamber: vote.chamber,
+      // Bill-related-vote rows still speak camera|senat (live mapper collapses
+      // joint sittings the same way); no comun votes in the fixtures.
+      chamber: vote.chamber === 'comun' ? ('camera' as const) : vote.chamber,
       title: vote.title,
       heldAt: vote.heldAt,
     }))

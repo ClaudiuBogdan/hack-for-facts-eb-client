@@ -1,18 +1,19 @@
 import type { ParliamentVotesSearch } from '@/schemas/parliament'
-import { VotesChamberListLayout } from './votes-chamber-list-layout'
-import { VotesOverviewLayout } from './votes-overview-layout'
+import { VotesListLayout } from './votes-list-layout'
 
 type Props = {
   readonly search: ParliamentVotesSearch
 }
 
-/** Votes tab content — overview or chamber list via ?chamber= */
+/**
+ * Votes tab content — the list, always.
+ *
+ * `?chamber=` narrows it (`camera`, `senat`, `comun` for the joint sittings);
+ * absent or `all` spans the whole parliament, so the tab link, a shared URL and
+ * a cross-chamber heatmap day all land on the same surface. The chamber panels
+ * that used to stand in front of this list now open the Prezentare tab, where
+ * they introduce the chambers instead of gating the corpus.
+ */
 export function ParliamentVotesContent({ search }: Props) {
-  const chamber = search.chamber
-
-  if (chamber === 'camera' || chamber === 'senat') {
-    return <VotesChamberListLayout search={{ ...search, chamber }} />
-  }
-
-  return <VotesOverviewLayout />
+  return <VotesListLayout search={search} />
 }

@@ -13,7 +13,7 @@ import type {
   ParliamentVotesSearch,
 } from '@/schemas/parliament'
 import { VoteKindSchema } from '@/schemas/parliament'
-import { toGraphqlChamber } from './parliament-translate'
+import { toGraphqlChamber, toGraphqlVoteChamber } from './parliament-translate'
 
 const VOTE_KIND_COUNT = VoteKindSchema.options.length
 
@@ -47,12 +47,12 @@ export interface ParliamentVotesFilterInput {
 }
 
 /**
- * Votes filter. `chamber` maps the UI `camera|senat` to the DB enum; `all` is
- * dropped. `outcome` passes through (`adoptat|respins` — the UI's `amânat` has
- * no live rows and is simply never sent). A `q` search is paired with whatever
- * chamber/date bound is present (the server's ILIKE fallback requires a bound;
- * if the caller gives none we still send `q` and let the server reject — the
- * live module guards this by defaulting the chamber upstream).
+ * Votes filter. `chamber` maps the UI `camera|senat|comun` to the DB enum
+ * (`comun` = joint sittings, a served value); `all` is dropped — the votes
+ * connection is happy to run cross-chamber. `outcome` passes through
+ * (`adoptat|respins` — the UI's `amânat` has no live rows and is simply never
+ * sent). A `q` search is paired with whatever chamber/date bound is present
+ * (the server's ILIKE fallback requires a bound; Meili-primary needs none).
  */
 export function buildVotesFilter(
   search: ParliamentVotesSearch,
@@ -60,7 +60,7 @@ export function buildVotesFilter(
   const filter: ParliamentVotesFilterInput = {}
 
   if (search.chamber && search.chamber !== 'all') {
-    filter.chamber = { eq: toGraphqlChamber(search.chamber) }
+    filter.chamber = { eq: toGraphqlVoteChamber(search.chamber) }
   }
   if (search.outcome && search.outcome !== 'amânat') {
     filter.outcome = { eq: search.outcome }
@@ -120,7 +120,9 @@ export interface ParliamentMembersFilterInput {
  * supplied by the live module (default = latest). `group`/`judet` are the
  * RESOLVED display values (group_name / constituency_name) — the live module
  * resolves slugs via `parliamentResolveFilter` before calling this. The chamber
- * `all` selection is dropped (members span both chambers).
+ * `all` selection is dropped (members span both chambers), and so is `comun` —
+ * it is a VOTES-tab value on the shared search object, and no member roster
+ * belongs to a joint sitting.
  */
 export function buildMembersFilter(
   search: ParliamentMembersSearch,
@@ -134,7 +136,7 @@ export function buildMembersFilter(
     legislature: { eq: resolved.legislature },
   }
 
-  if (search.chamber && search.chamber !== 'all') {
+  if (search.chamber && search.chamber !== 'all' && search.chamber !== 'comun') {
     filter.chamber = { eq: toGraphqlChamber(search.chamber) }
   }
   if (resolved.groupNames && resolved.groupNames.length > 0) {

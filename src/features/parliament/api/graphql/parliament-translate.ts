@@ -14,10 +14,10 @@
  * synchronous (no I/O), which lets the group-colour map stay a sync getter that
  * behaves identically in mock and live mode.
  */
-import type { ParliamentChamber } from '@/schemas/parliament'
+import type { ParliamentChamber, VoteChamber } from '@/schemas/parliament'
 import { resolveGroupColor } from '@/features/parliament/lib/group-colors'
 
-/** GraphQL chamber enum (DB-native). The UI never sees `comun`. */
+/** GraphQL chamber enum (DB-native). Votes carry all three; members never `comun`. */
 export type GraphqlChamber = 'camera_deputatilor' | 'senat' | 'comun'
 
 /** Latest legislature on the production DB (verified 2026-06-17: 472 members). */
@@ -29,10 +29,11 @@ export function toGraphqlChamber(chamber: ParliamentChamber): GraphqlChamber {
 }
 
 /**
- * GraphQL chamber → UI chamber. `comun` (joint sessions) collapses to `camera`
- * for display purposes — the UI has no joint-chamber surface and joint votes are
- * still rendered in the Camera column. Returns `null` for anything unexpected so
- * callers can drop the row rather than mislabel it.
+ * GraphQL chamber → UI MEMBER chamber. `comun` (joint sessions) collapses to
+ * `camera` here because member/committee surfaces have no joint-sitting rows to
+ * label; VOTE rows go through `fromGraphqlVoteChamber` instead, which keeps
+ * `comun` so a joint sitting is never badged as the Camera's. Returns `null`
+ * for anything unexpected so callers can drop the row rather than mislabel it.
  */
 export function fromGraphqlChamber(
   chamber: string | null | undefined,
@@ -43,6 +44,34 @@ export function fromGraphqlChamber(
       return 'camera'
     case 'senat':
       return 'senat'
+    default:
+      return null
+  }
+}
+
+/** UI vote chamber (`camera`/`senat`/`comun`) → GraphQL chamber. */
+export function toGraphqlVoteChamber(chamber: VoteChamber): GraphqlChamber {
+  switch (chamber) {
+    case 'camera':
+      return 'camera_deputatilor'
+    case 'senat':
+      return 'senat'
+    case 'comun':
+      return 'comun'
+  }
+}
+
+/** GraphQL chamber → UI VOTE chamber, `comun` preserved. Null = unexpected token. */
+export function fromGraphqlVoteChamber(
+  chamber: string | null | undefined,
+): VoteChamber | null {
+  switch (chamber) {
+    case 'camera_deputatilor':
+      return 'camera'
+    case 'senat':
+      return 'senat'
+    case 'comun':
+      return 'comun'
     default:
       return null
   }

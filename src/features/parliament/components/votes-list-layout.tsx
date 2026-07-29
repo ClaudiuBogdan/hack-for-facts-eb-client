@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,8 +9,9 @@ import type {
   VoteSort,
 } from "@/schemas/parliament";
 import { useParliamentVotesBrowse } from "../hooks/use-parliament-data";
-import { getChamberLabel } from "../lib/formatting";
+import { getVoteChamberLabel } from "../lib/formatting";
 import { ParliamentChamberMark } from "./parliament-hub-panel";
+import { ParliamentHubVoteActivity } from "./parliament-hub-vote-activity";
 import { VoteListRowCard } from "./vote-list-row-card";
 import {
   VotesFilterSheet,
@@ -19,15 +20,12 @@ import {
 import {
   DEFAULT_VOTE_SORT,
   getActiveVoteFilterCount,
+  getVotesChamberFilter,
   VOTE_SORT_LABELS,
   VOTE_SORT_ORDER,
 } from "../lib/votes-filter-state";
 import { ParliamentInlineLoadError } from "./parliament-load-error-page";
-import {
-  PARLIAMENT_ACTION_BLUE,
-  PARLIAMENT_CAMERA_GREEN,
-  PARLIAMENT_SENAT_RED,
-} from "../lib/hub-theme";
+import { PARLIAMENT_ACTION_BLUE } from "../lib/hub-theme";
 
 /** Ballot choices, worded for a citizen reading a filter chip. */
 const VOTE_CHOICE_LABELS: Readonly<Record<MemberVoteChoice, string>> = {
@@ -39,10 +37,11 @@ const VOTE_CHOICE_LABELS: Readonly<Record<MemberVoteChoice, string>> = {
 
 const LIST_PAGE_SIZE = 10;
 
+/** Anchor the activity heatmap scrolls back to when a day is chosen. */
+const RESULTS_ANCHOR_ID = "voturi-rezultate";
+
 type Props = {
-  readonly search: ParliamentVotesSearch & {
-    readonly chamber: "camera" | "senat";
-  };
+  readonly search: ParliamentVotesSearch;
 };
 
 /** `2026-01-28` → `28 ian. 2026`, for the active-filter summary. */
@@ -58,7 +57,13 @@ function formatDay(value: string): string {
 }
 
 /**
- * Dedicated chamber votes list.
+ * THE votes list — every division in Parliament, with the chamber as a filter.
+ *
+ * It used to be four separate branded lists reached through a two-panel
+ * overview, so a reader who wanted "what did Parliament vote on" had to pick an
+ * assembly first and could never see the joint sittings next to the rest. One
+ * list answers that question directly; the chambers are still reachable, as a
+ * facet that says so in the filter summary.
  *
  * The votes API is a KEYSET connection: it reports "here is a page, and whether
  * more exist" — never a page count. This list used to render numbered pagination
@@ -74,7 +79,7 @@ function formatDay(value: string): string {
  * cards made a reader track two independent lists down the page for records
  * that all came from the same filter.
  */
-export function VotesChamberListLayout({ search }: Props) {
+export function VotesListLayout({ search }: Props) {
   const navigate = useNavigate({ from: "/parlament/" });
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [queryDraft, setQueryDraft] = useState(search.q ?? "");
@@ -97,11 +102,7 @@ export function VotesChamberListLayout({ search }: Props) {
     isFetchingNextPage,
   } = useParliamentVotesBrowse(listSearch);
 
-  const chamberColor =
-    search.chamber === "camera"
-      ? PARLIAMENT_CAMERA_GREEN
-      : PARLIAMENT_SENAT_RED;
-  const chamberLabel = getChamberLabel(search.chamber);
+  const chamberFilter = getVotesChamberFilter(search);
   const votes = data?.pages.flatMap((page) => page.votes) ?? [];
   // The count the ACTIVE FILTER matches, from the server. Capped at 10,000:
   // when the cap bit we say "peste 10.000" rather than print a number the
@@ -121,6 +122,7 @@ export function VotesChamberListLayout({ search }: Props) {
 
   const activeFilters = [
     search.q ? `„${search.q}”` : undefined,
+    chamberFilter ? getVoteChamberLabel(chamberFilter) : undefined,
     search.from || search.to
       ? `${search.from ? formatDay(search.from) : "început"} – ${search.to ? formatDay(search.to) : "prezent"}`
       : undefined,
@@ -142,35 +144,45 @@ export function VotesChamberListLayout({ search }: Props) {
   const handleSearchChange = (next: ParliamentVotesSearch) => {
     setFiltersOpen(false);
     void navigate({
+      // `next` is taken as the WHOLE new state, chamber included: it is a facet
+      // like any other now, so an absent one has to mean "all chambers" rather
+      // than "keep the one you had" — otherwise it could never be cleared.
       search: {
         ...next,
         tab: "voturi",
-        chamber: search.chamber,
         pageSize: next.pageSize ?? LIST_PAGE_SIZE,
       },
       replace: true,
     });
   };
 
+  /**
+   * A day chosen in the heatmap changes results the reader has already scrolled
+   * past. The link does the filtering; this brings them back to what changed.
+   */
+  const scrollToResults = () => {
+    document
+      .getElementById(RESULTS_ANCHOR_ID)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const dayFilter =
+    search.from && search.from === search.to ? search.from : undefined;
+
   return (
     <div className="space-y-6">
-      <Link
-        to="/parlament"
-        search={{ tab: "voturi" }}
-        className="inline-block text-sm font-semibold text-[var(--pnrr-fg)] underline underline-offset-2 hover:text-[var(--pnrr-muted)]"
-      >
-        ← Toate camerele
-      </Link>
-
+      {/* One heading, whatever the filters say. A chamber narrows this list; it
+          does not open a different page, so re-titling the surface per chamber
+          would make the same list look like four. */}
       <header className="max-w-4xl">
         <h2 className="flex items-start gap-2.5 text-2xl font-bold leading-snug text-[#0b0c0c] dark:text-[var(--pnrr-fg)] sm:text-[1.75rem]">
-          <ParliamentChamberMark color={chamberColor} className="mt-1" />
-          <span>Voturi în {chamberLabel}</span>
+          <ParliamentChamberMark color={PARLIAMENT_ACTION_BLUE} className="mt-1" />
+          <span>Voturile din Parlament</span>
         </h2>
         <p className="mt-3 max-w-3xl text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-          Caută divizările după titlu, perioadă, rezultat sau poziția unui grup.
-          Rezultatele sunt afișate de la cel mai recent, în ordinea datei
-          votului.
+          Divizările din Camera Deputaților, Senat și ședințele comune, într-o
+          singură listă — de la cea mai recentă. Caută după titlu sau
+          filtrează după cameră, perioadă, rezultat ori poziția unui grup.
         </p>
       </header>
 
@@ -231,7 +243,6 @@ export function VotesChamberListLayout({ search }: Props) {
 
       <VotesFilterSheet
         search={listSearch}
-        chamber={search.chamber}
         open={filtersOpen}
         onOpenChange={setFiltersOpen}
         onSearchChange={handleSearchChange}
@@ -265,7 +276,6 @@ export function VotesChamberListLayout({ search }: Props) {
             onClick={() =>
               handleSearchChange({
                 tab: search.tab,
-                chamber: search.chamber,
                 pageSize: listSearch.pageSize,
               })
             }
@@ -276,6 +286,7 @@ export function VotesChamberListLayout({ search }: Props) {
         </div>
       ) : null}
 
+      <div id={RESULTS_ANCHOR_ID} className="scroll-mt-4">
       {isLoading ? (
         <div className="space-y-4">
           {Array.from({ length: 5 }, (_, index) => (
@@ -316,7 +327,13 @@ export function VotesChamberListLayout({ search }: Props) {
 
           <div className="space-y-4">
             {votes.map((vote) => (
-              <VoteListRowCard key={vote.voteId} vote={vote} />
+              <VoteListRowCard
+                key={vote.voteId}
+                vote={vote}
+                // Only where it TELLS the reader something: with a chamber
+                // filter on, the summary above already says it, on every row.
+                showChamber={chamberFilter === undefined}
+              />
             ))}
           </div>
 
@@ -342,6 +359,58 @@ export function VotesChamberListLayout({ search }: Props) {
           </p>
         </div>
       )}
+      </div>
+
+      {/* WHEN the chambers voted, under the list it filters. A square counts
+          every division that day in all three assemblies — the caption says so,
+          because the list above may be narrowed to one of them and the two
+          numbers must not be read as the same claim. */}
+      <section
+        aria-labelledby="votes-list-activity-heading"
+        className="border-t-2 border-[var(--pnrr-border)] pt-6"
+      >
+        <h3
+          id="votes-list-activity-heading"
+          className="text-xl font-bold leading-snug text-[#0b0c0c] dark:text-[var(--pnrr-fg)]"
+        >
+          Când a votat Parlamentul
+        </h3>
+        <p className="mt-2 max-w-3xl text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          Numărul de voturi din plen pe zile, în ultimele 12 luni — Camera
+          Deputaților, Senatul și ședințele comune la un loc, indiferent de
+          filtrele de mai sus. Alege o zi pentru a o adăuga la filtrele
+          curente.
+        </p>
+        <div className="mt-5">
+          <ParliamentHubVoteActivity
+            daySearch={{ ...listSearch, tab: "voturi", page: 1 }}
+            onSelectDay={scrollToResults}
+            cta={
+              dayFilter ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-4 h-10 rounded-none border-2 border-[#0b0c0c] px-5 text-base font-normal dark:border-[var(--pnrr-border)]"
+                  onClick={() =>
+                    handleSearchChange({
+                      ...listSearch,
+                      from: undefined,
+                      to: undefined,
+                      page: 1,
+                    })
+                  }
+                >
+                  Renunță la ziua aleasă ({formatDay(dayFilter)})
+                </Button>
+              ) : (
+                <p className="mt-4 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                  Ziua aleasă se adaugă la filtre; celelalte rămân active.
+                </p>
+              )
+            }
+          />
+        </div>
+      </section>
     </div>
   );
 }

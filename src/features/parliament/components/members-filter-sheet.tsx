@@ -20,6 +20,7 @@ import { getChamberLabel } from '../lib/formatting'
 import {
   getGrupFilterValues,
   getJudetFilterValues,
+  getMemberChamberFilter,
   getPanelFilterCount,
 } from '../lib/member-search'
 import { parliamentFilterLabelClassName } from '../lib/table-theme'
@@ -45,9 +46,11 @@ export function MembersFilterSheet({
   const { data: judete = [] } = useParliamentJudete()
   const activeCount = getPanelFilterCount(search)
 
+  // `comun`/`all` mean "no chamber constraint" here — see getMemberChamberFilter.
+  const chamberFilter = getMemberChamberFilter(search)
   const filteredGroups =
-    search.chamber && search.chamber !== 'all'
-      ? groups.filter((group) => group.chamber === search.chamber)
+    chamberFilter
+      ? groups.filter((group) => group.chamber === chamberFilter)
       : groups.filter(
           (group, index, groupList) =>
             groupList.findIndex(
@@ -61,12 +64,9 @@ export function MembersFilterSheet({
       filteredGroups.map((group) => ({
         value: group.groupId,
         label: group.shortName ?? group.name,
-        description:
-          search.chamber && search.chamber !== 'all'
-            ? undefined
-            : getChamberLabel(group.chamber),
+        description: chamberFilter ? undefined : getChamberLabel(group.chamber),
       })),
-    [filteredGroups, search.chamber],
+    [filteredGroups, chamberFilter],
   )
 
   const selectedGroups = getGrupFilterValues(search)
@@ -114,7 +114,7 @@ export function MembersFilterSheet({
               <Label className={parliamentFilterLabelClassName}>Cameră</Label>
               <ToggleGroup
                 type="single"
-                value={search.chamber ?? 'all'}
+                value={chamberFilter ?? 'all'}
                 onValueChange={(value) => {
                   if (!value) return
                   onSearchChange({
