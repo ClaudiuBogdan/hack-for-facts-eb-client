@@ -1,23 +1,9 @@
 /**
- * Integration tests for the procurement search tab — debounced auto-applying
- * search (no submit button), the filter sheet's active-count badge + chips, and
- * grain switching.
+ * Integration tests for the legacy procurement search route and the unified
+ * hub it redirects into: Enter-committed search, active filter chips, and grain
+ * switching.
  *
- * Route: /procurement/search
- *
- * NOTE ON MOCKING: unlike the parliament specs, this file registers no
- * `mockApi.mockGraphQL(...)`. The procurement facade is mock-forced
- * (`PROCUREMENT_LIVE_API_READY = false` in `src/features/procurement/lib/
- * mock-mode.ts`), so `fetchProcurementSearch` resolves from the in-process
- * fixtures in `src/features/procurement/mocks/fixtures.ts` and never issues a
- * `POST /graphql`. Registering GraphQL mocks here would silently match nothing.
- * We still use the integration `test` fixture for its cookie-consent init
- * script, and we assert against the mock adapter's data. When the feature flips
- * to live, add the `ProcurementContracts` / `ProcurementAggregates` mocks here.
- *
- * The search box's debounce is 300 ms; every assertion below waits on the URL
- * or on a rendered chip via Playwright's auto-retrying matchers, never a bare
- * `waitForTimeout`.
+ * Route: /procurement/search -> /procurement?view=list
  */
 
 import { test, expect } from '../utils/integration-base'
@@ -25,9 +11,6 @@ import { waitForPageReady } from '../utils/test-helpers'
 import type { Page } from '@playwright/test'
 
 const ROUTE = '/procurement/search'
-
-/** Mirrors SEARCH_DEBOUNCE_MS in procurement-debounced-search-input.tsx. */
-const SEARCH_DEBOUNCE_MS = 300
 
 /**
  * The app defaults to Romanian. Pin `en` so the role names below match the
@@ -52,42 +35,35 @@ const searchBox = (page: Page) =>
 const queryParam = (page: Page) => new URL(page.url()).searchParams.get('q')
 const pageParam = (page: Page) => new URL(page.url()).searchParams.get('page')
 
-test.describe('Procurement search — debounced query, filters, grain', () => {
+test.describe('Procurement search — unified hub query, filters, grain', () => {
   test.beforeEach(async ({ page }) => {
     await useEnglishLocale(page)
   })
 
-  test('typing commits ?q= to the URL after the debounce, with no button click', async ({
+  test('typing stays local until Enter commits ?q= to the URL', async ({
     page,
   }) => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
 
     await searchBox(page).fill('spital')
-
-    // Auto-waits through the 300 ms debounce.
+    expect(queryParam(page)).toBeNull()
+    await searchBox(page).press('Enter')
     await expect.poll(() => queryParam(page)).toBe('spital')
   })
 
-  test('a term below the minimum length never reaches the URL, and says why', async ({
+  test('the legacy route redirects into the unified list view', async ({
     page,
   }) => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
 
-    const hint = page.getByText('Type at least 3 characters to search')
-
-    await searchBox(page).fill('sp')
-    await expect(hint).toBeVisible()
-    // Asserting a non-event: `q` must still be absent *after* the debounce
-    // window has passed. There is no state change to await here, so this is the
-    // one place a fixed wait is the honest instrument rather than a flake.
-    await page.waitForTimeout(SEARCH_DEBOUNCE_MS * 3)
-    expect(queryParam(page)).toBeNull()
-
-    await searchBox(page).fill('spi')
-    await expect.poll(() => queryParam(page)).toBe('spi')
-    await expect(hint).toBeHidden()
+    await expect
+      .poll(() => new URL(page.url()).pathname)
+      .toMatch(/^\/procurement\/?$/)
+    await expect
+      .poll(() => new URL(page.url()).searchParams.get('view'))
+      .toBe('list')
   })
 
   test('the search form has no submit button', async ({ page }) => {
@@ -101,12 +77,15 @@ test.describe('Procurement search — debounced query, filters, grain', () => {
     ).toHaveCount(0)
   })
 
-  test('the clear button drops ?q= from the URL', async ({ page }) => {
+  test('clearing the draft and pressing Enter drops ?q= from the URL', async ({
+    page,
+  }) => {
     await page.goto(`${ROUTE}?q=spital`)
     await waitForPageReady(page)
     await expect(searchBox(page)).toHaveValue('spital')
 
-    await page.getByRole('button', { name: 'Clear search' }).click()
+    await searchBox(page).fill('')
+    await searchBox(page).press('Enter')
 
     await expect.poll(() => queryParam(page)).toBeNull()
     await expect(searchBox(page)).toHaveValue('')
@@ -126,34 +105,53 @@ test.describe('Procurement search — debounced query, filters, grain', () => {
   test('the filter trigger badges the active count, chips render and clear-all resets', async ({
     page,
   }) => {
-    // `q` is not a facet: it carries no chip and clear-all keeps it.
     await page.goto(`${ROUTE}?q=spital&source=seap&year=2024`)
     await waitForPageReady(page)
 
     const trigger = page.getByRole('button', { name: /Filters/ })
-    await expect(trigger).toContainText('2')
+    await expect(trigger).toContainText('4')
 
-    await expect(
-      page.getByRole('button', { name: 'Remove filter Year: 2024' }),
-    ).toBeVisible()
-    const sourceChip = page.getByRole('button', {
-      name: 'Remove filter Source: SEAP / SICAP',
+    const periodChip = page.getByRole('button', {
+      name: 'Remove filter Period',
     })
+    const queryChip = page.getByRole('button', {
+      name: 'Remove filter Query',
+    })
+    const metricChip = page.getByRole('button', {
+      name: 'Remove filter Metric',
+    })
+    const sourceChip = page.getByRole('button', {
+      name: 'Remove filter Source',
+    })
+    await expect(periodChip).toBeVisible()
+    await expect(queryChip).toBeVisible()
+    await expect(metricChip).toBeVisible()
     await expect(sourceChip).toBeVisible()
 
-    // Removing one chip leaves the other and keeps `q`.
     await sourceChip.click()
     await expect.poll(() => new URL(page.url()).searchParams.get('source')).toBeNull()
-    await expect(trigger).toContainText('1')
+    await expect(trigger).toContainText('3')
     expect(queryParam(page)).toBe('spital')
 
     await page.getByRole('button', { name: 'Clear all' }).click()
 
     await expect.poll(() => new URL(page.url()).searchParams.get('year')).toBeNull()
+    await expect.poll(() => queryParam(page)).toBeNull()
     await expect(
-      page.getByRole('button', { name: /^Remove filter/ }),
+      page.getByRole('button', { name: 'Remove filter Query' }),
     ).toHaveCount(0)
-    expect(queryParam(page)).toBe('spital')
+    await expect(
+      page.getByRole('button', { name: 'Remove filter Source' }),
+    ).toHaveCount(0)
+    // Clearing restores the default period and metric rather than hiding the
+    // hub's active analytics scope.
+    await expect(
+      page.getByRole('button', { name: 'Remove filter Period' }),
+    ).toBeVisible()
+    await expect(
+      page.getByRole('button', { name: 'Remove filter Metric' }),
+    ).toBeVisible()
+    await expect(trigger).toContainText('2')
   })
 
   test('changing grain resets page to 1', async ({ page }) => {

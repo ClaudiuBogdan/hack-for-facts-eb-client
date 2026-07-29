@@ -6,9 +6,10 @@
  * GraphQL is mocked (fixtures under tests/fixtures/parliament-speeches-flow/).
  * The page fires `ParliamentSpeechActivity` (heatmap) + `ParliamentSpeeches`
  * (list); the speaker combobox fires `ParliamentMembers`; the speaker chip
- * resolves via `ParliamentMember`; the detail route fires `ParliamentSpeech`.
- * Filtered variants are keyed by exact `filter`/`q` variables, most specific
- * first; unfiltered fallbacks are registered last.
+ * resolves via `ParliamentMember`; the detail route first asks
+ * `ParliamentSpeechContext`, then falls back to `ParliamentSpeech` when the
+ * context is null. Filtered variants are keyed by exact `filter`/`q` variables,
+ * most specific first; unfiltered fallbacks are registered last.
  */
 
 import { test, expect } from '../utils/integration-base'
@@ -39,6 +40,7 @@ async function setupMocks(mockApi: MockApiFixture): Promise<void> {
   await mockApi.mockGraphQL('ParliamentSpeeches', 'speeches')
 
   // Detail route + speaker lookup surfaces.
+  await mockApi.mockGraphQL('ParliamentSpeechContext', 'speech-context-empty')
   await mockApi.mockGraphQL('ParliamentSpeech', 'speech-detail')
   await mockApi.mockGraphQL('ParliamentMembers', 'members')
   await mockApi.mockGraphQL('ParliamentMember', 'member')
