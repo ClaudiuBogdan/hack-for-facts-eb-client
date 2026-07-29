@@ -128,6 +128,12 @@ const rawVoteCoreSchema = z.object({
   voteKey: z.string(),
   chamber: z.string(),
   voteDate: z.string().nullable(),
+  /**
+   * What the chamber voted ON, in its own words. OPTIONAL as well as nullable:
+   * a server without the field must not fail the whole surface, and 9,223 of
+   * 20,745 divisions legitimately carry no readable motion.
+   */
+  voteAction: z.string().nullable().optional(),
   title: z.string().nullable(),
   outcome: z.string().nullable(),
   divisionNumber: z.number().nullable(),
@@ -367,6 +373,7 @@ export const PARLIAMENT_VOTES_QUERY = /* GraphQL */ `
           voteKey
           chamber
           voteDate
+          voteAction
           title
           outcome
           divisionNumber
@@ -475,6 +482,7 @@ export const PARLIAMENT_VOTE_QUERY = /* GraphQL */ `
       voteKey
       chamber
       voteDate
+      voteAction
       title
       outcome
       divisionNumber
@@ -1166,6 +1174,9 @@ export const PARLIAMENT_BILL_QUERY = /* GraphQL */ `
         voteKey
         chamber
         voteDate
+        # What the chamber voted ON. The title field here is the BILL's title on
+        # every one of these rows, so without this the cards cannot be told apart.
+        voteAction
         title
         outcome
         divisionNumber
@@ -1240,6 +1251,8 @@ const rawBillRelatedVoteSchema = z.object({
   voteKey: z.string(),
   chamber: z.string(),
   voteDate: z.string().nullable(),
+  /** See `rawVoteCoreSchema.voteAction` — optional AND nullable, deliberately. */
+  voteAction: z.string().nullable().optional(),
   title: z.string().nullable(),
   outcome: z.string().nullable(),
   divisionNumber: z.number().nullable(),

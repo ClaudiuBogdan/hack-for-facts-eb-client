@@ -3,6 +3,15 @@ import { z } from "zod";
 export const ParliamentChamberSchema = z.enum(["camera", "senat"]);
 export type ParliamentChamber = z.infer<typeof ParliamentChamberSchema>;
 
+/**
+ * The assembly that held a VOTE. Unlike members and groups, a vote can belong
+ * to a joint sitting of both chambers (`comun`) — collapsing those into
+ * `camera` (what the mapper used to do) put a false "Camera Deputaților" label
+ * on a sitting the Senate was equally part of.
+ */
+export const VoteChamberSchema = z.enum(["camera", "senat", "comun"]);
+export type VoteChamber = z.infer<typeof VoteChamberSchema>;
+
 export const VoteTypeSchema = z.enum(["deschis", "secret"]);
 export type VoteType = z.infer<typeof VoteTypeSchema>;
 
@@ -323,7 +332,19 @@ export type ParliamentMemberVoteRecord = z.infer<
 
 export const ParliamentVoteSummarySchema = z.object({
   voteId: z.string(),
-  chamber: z.enum(["camera", "senat"]),
+  chamber: VoteChamberSchema,
+  /**
+   * WHAT THE CHAMBER VOTED ON — the question, in the chamber's own words
+   * ("raport de respingere (a legii)").
+   *
+   * `title` is the SUBJECT, and for a bill-linked division it is the BILL's
+   * title, identical across every division on that bill. This is the only field
+   * that tells two of them apart, and the only one that reconciles a tally with
+   * a fate: the Senate's 101-to-1 on L385/2018 was 101 votes FOR the rejection
+   * report. Absent on 9,223 of 20,745 divisions, where the source printed no
+   * readable motion — the UI falls back to the title there, never invents one.
+   */
+  voteAction: z.string().optional(),
   title: z.string(),
   heldAt: z.string(),
   voteType: VoteTypeSchema,
@@ -1252,6 +1273,8 @@ export type ParliamentBillInitiator = z.infer<
 export const ParliamentBillRelatedVoteSchema = z.object({
   voteId: z.string(),
   chamber: ParliamentChamberSchema,
+  /** The question this division put — see `ParliamentVoteSummary.voteAction`. */
+  voteAction: z.string().optional(),
   title: z.string(),
   heldAt: z.string(),
   /**
@@ -1398,7 +1421,11 @@ export type ParliamentTabId = z.infer<typeof ParliamentTabSchema>;
 /** Unified search params for /parlament — tab drives the active section */
 export const ParliamentSearchSchema = z.object({
   tab: ParliamentTabSchema.optional().catch(undefined),
-  chamber: z.enum(["camera", "senat", "all"]).optional().catch(undefined),
+  /**
+   * `comun` is a VOTES-only value (joint sittings); member surfaces treat it
+   * like `all`, because no member roster belongs to a joint sitting.
+   */
+  chamber: z.enum(["camera", "senat", "comun", "all"]).optional().catch(undefined),
   judet: z
     .union([z.string(), z.array(z.string())])
     .optional()

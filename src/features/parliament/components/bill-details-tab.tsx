@@ -33,9 +33,13 @@ export function BillDetailsTab({ bill }: Props) {
     bill.originatingChamber === 'camera'
       ? PARLIAMENT_CAMERA_GREEN
       : PARLIAMENT_SENAT_RED
-  const relatedVoteSummaries = bill.relatedVotes
-    .map((vote) => getParliamentVoteSummary(vote.chamber, vote.voteId))
-    .filter((vote): vote is NonNullable<typeof vote> => vote !== undefined)
+  // Keep each summary PAIRED with its edge role: the cards all carry the bill's
+  // own title, so the role and the chamber are the only things that tell a
+  // procedural division apart from the final vote.
+  const relatedVoteCards = bill.relatedVotes.flatMap((vote) => {
+    const summary = getParliamentVoteSummary(vote.chamber, vote.voteId)
+    return summary ? [{ summary, linkRole: vote.linkRole }] : []
+  })
 
   // AI summary shown only for meaningful bills (valueClass 'standard'); low_value
   // bills (minor/technical) hide the card to avoid noise.
@@ -56,17 +60,17 @@ export function BillDetailsTab({ bill }: Props) {
         />
       ) : null}
 
-      <section>
-        <h2 className={billDetailSectionTitleClassName}>Titlu lung</h2>
-        <p className="mt-4 max-w-4xl text-base leading-7 text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
-          {bill.longTitle}
+      {/*
+        NO "Titlu lung" section. `longTitle` is mapped as `raw.title ?? title` —
+        the very field the hero prints a few centimetres above — so the section
+        restated the heading verbatim on every bill. If the source ever gains a
+        genuinely separate long title, this is where it goes back.
+      */}
+      {bill.summary ? (
+        <p className="max-w-4xl text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          {bill.summary}
         </p>
-        {bill.summary ? (
-          <p className="mt-4 max-w-4xl text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-            {bill.summary}
-          </p>
-        ) : null}
-      </section>
+      ) : null}
 
       <section>
         <h2 className={billDetailSectionTitleClassName}>Stadiu curent</h2>
@@ -216,7 +220,7 @@ export function BillDetailsTab({ bill }: Props) {
         </section>
       ) : null}
 
-      {relatedVoteSummaries.length > 0 ? (
+      {relatedVoteCards.length > 0 ? (
         <section>
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -236,8 +240,12 @@ export function BillDetailsTab({ bill }: Props) {
             ) : null}
           </div>
           <div className="mt-4 grid gap-4 lg:grid-cols-2">
-            {relatedVoteSummaries.slice(0, 2).map((vote) => (
-              <VoteChamberVoteCard key={`${vote.chamber}-${vote.voteId}`} vote={vote} />
+            {relatedVoteCards.slice(0, 2).map(({ summary, linkRole }) => (
+              <VoteChamberVoteCard
+                key={`${summary.chamber}-${summary.voteId}`}
+                vote={summary}
+                billContext={{ linkRole }}
+              />
             ))}
           </div>
           {bill.relatedVotes.length <= 2 ? (

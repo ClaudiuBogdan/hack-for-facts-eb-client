@@ -33,7 +33,13 @@ export function BillVotesTab({ bill }: Props) {
           if (!summary) return null
 
           return (
-            <VoteChamberVoteCard key={`${vote.chamber}-${vote.voteId}`} vote={summary} />
+            <VoteChamberVoteCard
+              key={`${vote.chamber}-${vote.voteId}`}
+              vote={summary}
+              // Every card here carries the same (bill) title; the edge role and
+              // the chamber are what tell them apart.
+              billContext={{ linkRole: vote.linkRole }}
+            />
           )
         })}
       </div>

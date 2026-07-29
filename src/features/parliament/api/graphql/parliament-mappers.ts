@@ -62,6 +62,7 @@ import {
   deriveGroupId,
   foldSlug,
   fromGraphqlChamber,
+  fromGraphqlVoteChamber,
   type GraphqlChamber,
 } from "./parliament-translate";
 import { resolveGroupColor } from "../../lib/group-colors";
@@ -395,11 +396,16 @@ export function mapControlItemAiMetadata(
 function mapVoteSummaryCommon(
   raw: RawParliamentVoteListNode | RawParliamentVoteDetail,
 ): ParliamentVoteSummary {
-  const chamber = fromGraphqlChamber(raw.chamber) ?? "camera";
+  // Vote-grain translation: joint sittings stay `comun` instead of collapsing
+  // into `camera`, so mixed lists can badge them as what they are.
+  const chamber = fromGraphqlVoteChamber(raw.chamber) ?? "camera";
   const outcome = toOutcome(raw.outcome, raw.tally);
   return ParliamentVoteSummarySchema.parse({
     voteId: raw.voteKey,
     chamber,
+    // Blank-safe: the server nulls an empty motion, but a whitespace-only one
+    // would still render as a heading the chamber never printed.
+    ...(raw.voteAction?.trim() ? { voteAction: raw.voteAction.trim() } : {}),
     title: raw.title ?? "(fără titlu)",
     heldAt: toIsoDate(raw.voteDate, new Date(0).toISOString()),
     voteType: "deschis",
@@ -802,6 +808,7 @@ export function mapBillRelatedVotes(
       return {
         voteId: v.voteKey,
         chamber: fromGraphqlChamber(v.chamber) ?? "camera",
+        ...(v.voteAction?.trim() ? { voteAction: v.voteAction.trim() } : {}),
         title: v.title ?? "(fără titlu)",
         heldAt: toIsoDate(v.voteDate, new Date(0).toISOString()),
         ...(linkRole ? { linkRole } : {}),
@@ -822,21 +829,44 @@ export function isFinalBillVote(vote: { readonly linkRole?: string }): boolean {
   return vote.linkRole !== undefined && FINAL_VOTE_ROLES.has(vote.linkRole);
 }
 
+/**
+ * What a final vote DECIDED — read from the link role, never from the division.
+ *
+ * A division's `outcome` is (pentru > impotriva), so a chamber that adopts a
+ * REJECTION report scores "adoptat" on the very vote that threw the bill out —
+ * true of 2,995 of the 3,009 divisions the data itself calls a final rejection.
+ * The role is the source's own statement of what the vote did to the bill, and
+ * it is the only field allowed to answer this question.
+ *
+ * Chamber-scoped by nature: a Romanian bill is voted finally in EACH chamber, so
+ * this is "what this chamber decided", not "the bill's fate". Callers must name
+ * the chamber alongside it.
+ */
+export function getFinalBillVoteVerdict(vote: {
+  readonly linkRole?: string;
+}): "adoptat" | "respins" | undefined {
+  if (vote.linkRole === "final_adoption") return "adoptat";
+  if (vote.linkRole === "final_rejection") return "respins";
+  return undefined;
+}
+
 function primeRelatedVoteSummary(v: {
   voteKey: string;
   chamber: string;
   voteDate: string | null;
+  voteAction?: string | null;
   title: string | null;
   outcome: string | null;
   divisionNumber: number | null;
   sourceUrl?: string | null;
   tally: RawParliamentTally;
 }): void {
-  const chamber = fromGraphqlChamber(v.chamber) ?? "camera";
+  const chamber = fromGraphqlVoteChamber(v.chamber) ?? "camera";
   const outcome = toOutcome(v.outcome, v.tally);
   const summary = ParliamentVoteSummarySchema.parse({
     voteId: v.voteKey,
     chamber,
+    ...(v.voteAction?.trim() ? { voteAction: v.voteAction.trim() } : {}),
     title: v.title ?? "(fără titlu)",
     heldAt: toIsoDate(v.voteDate, new Date(0).toISOString()),
     voteType: "deschis",
