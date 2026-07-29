@@ -291,6 +291,10 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
+      // Bind IPv4 loopback explicitly. The default ("localhost") resolves to
+      // [::1] only on macOS, and `tailscale serve` proxies to 127.0.0.1:3000 —
+      // so the tailnet hostname 502s unless we listen here.
+      host: env.VITE_DEV_HOST || "127.0.0.1",
       headers: {
         "Cross-Origin-Opener-Policy": "same-origin",
         "Cross-Origin-Embedder-Policy": "require-corp",
