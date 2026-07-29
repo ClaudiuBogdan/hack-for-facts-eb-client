@@ -226,9 +226,9 @@ test.describe('Map Page', () => {
       page.getByRole('heading', { name: /legendă|legend/i, level: 4 })
     ).toBeVisible({ timeout: 5000 })
 
-    // Check for value range in legend (RON values)
+    // Check for the compact million or billion range used by map fixtures
     await expect(
-      page.getByText(/mil\.\s*RON/i).first()
+      page.getByText(/(?:mil|mld)\.\s*RON/i).first()
     ).toBeVisible()
   })
 
