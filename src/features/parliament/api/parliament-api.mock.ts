@@ -479,11 +479,31 @@ export async function fetchParliamentVoteActivityMock(
   // chart/list mismatch the live path was fixed for.
   const chamberEq = filter?.chamber?.eq
   const outcomeEq = filter?.outcome?.eq
+  const qContains = filter?.q?.contains?.trim().toLowerCase()
+  /**
+   * `groupVote` and `kind` are NOT applied: the fixtures carry no ballots and no
+   * classifier, so there is nothing here to filter on. They are named rather
+   * than silently dropped — an unapplied facet makes the mock chart count MORE
+   * than the mock list, which is the exact mismatch this filter exists to close.
+   */
+  const unsupported = [
+    filter?.groupVote === undefined ? null : 'groupVote',
+    filter?.kind === undefined ? null : 'kind',
+  ].filter((f): f is string => f !== null)
+  if (unsupported.length > 0) {
+    console.warn(
+      `[parliament-mock] vote activity ignores ${unsupported.join(', ')} — no fixture data; ` +
+        `the chart will over-count relative to the list.`
+    )
+  }
   const matchesFilter = (vote: (typeof voteSummaries)[number]): boolean => {
     if (chamberEq !== undefined && toGraphqlVoteChamber(vote.chamber) !== chamberEq) {
       return false
     }
     if (outcomeEq !== undefined && vote.outcome !== outcomeEq) return false
+    if (qContains !== undefined && qContains !== '') {
+      if (!vote.title.toLowerCase().includes(qContains)) return false
+    }
     return true
   }
 
