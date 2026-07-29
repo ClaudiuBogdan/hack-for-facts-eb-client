@@ -1,4 +1,3 @@
-import { Link } from '@tanstack/react-router'
 import type { ParliamentBillDetail } from '@/schemas/parliament'
 import { cn } from '@/lib/utils'
 import { formatBillUpdatedAt, getChamberLabel } from '../lib/formatting'
@@ -51,13 +50,12 @@ export function BillDetailHero({ bill }: Props) {
           <p className="mt-1 text-lg font-bold leading-snug text-white">
             {statusLabel}
           </p>
-          <Link
-            to="/parlament/proiecte/$billId/etape"
-            params={{ billId: bill.billId }}
-            className="mt-4 inline-block text-sm font-semibold text-white underline underline-offset-2 hover:text-white/90"
-          >
-            Vezi parcursul complet
-          </Link>
+          {/*
+            NO route to the stages here. "Etape" is one of the four tabs a few
+            centimetres below, and the Detalii tab carries "Vezi toate etapele
+            parcursului" under the status card — a third link to the same place
+            from the same screen only made the hero busier.
+          */}
         </div>
       </div>
     </section>

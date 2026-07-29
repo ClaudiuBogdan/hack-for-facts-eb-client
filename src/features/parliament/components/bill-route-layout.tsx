@@ -1,8 +1,7 @@
 import { Outlet, useLocation } from '@tanstack/react-router'
-import { Skeleton } from '@/components/ui/skeleton'
 import { useParliamentBillDetail } from '../hooks/use-parliament-data'
 import { resolveBillDetailActiveTab } from '../lib/bill-detail-nav'
-import { BILL_DETAIL_SURFACE, billDetailPageContainerClassName } from '../lib/bill-detail-theme'
+import { BillDetailSkeleton } from './bill-detail-skeleton'
 import { BillProfileLayout } from './bill-profile-layout'
 import { ParliamentLoadErrorPage } from './parliament-load-error-page'
 import { ParliamentNotFoundPage } from './parliament-not-found-page'
@@ -18,13 +17,7 @@ export function BillRouteLayout({ billId }: Props) {
   const { data: bill, isLoading, isError, refetch } = useParliamentBillDetail(billId)
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen" style={{ backgroundColor: BILL_DETAIL_SURFACE }}>
-        <div className={`${billDetailPageContainerClassName} py-10`}>
-          <Skeleton className="h-64 w-full rounded-none bg-white/70" />
-        </div>
-      </div>
-    )
+    return <BillDetailSkeleton billId={billId} activeTab={activeTab} />
   }
 
   // A FAILED READ is not a missing bill — say so, and keep a retry available.

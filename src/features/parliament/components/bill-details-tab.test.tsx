@@ -95,6 +95,28 @@ describe('BillDetailsTab AI summary gate (C1)', () => {
   })
 })
 
+describe('BillDetailsTab — no long-title restatement', () => {
+  it('does not print the long title, which the hero already carries', () => {
+    // `mapBillDetail` sets `longTitle: raw.title ?? title` — the same field the
+    // hero prints directly above this tab — so the old "Titlu lung" section
+    // repeated the page heading word for word on every bill.
+    render(
+      <BillDetailsTab bill={buildBill({ longTitle: 'Proiect de Lege X (titlu lung)' })} />,
+    )
+    expect(screen.queryByText('Titlu lung')).not.toBeInTheDocument()
+    expect(
+      screen.queryByText('Proiect de Lege X (titlu lung)'),
+    ).not.toBeInTheDocument()
+  })
+
+  it('keeps the law-milestone line, which the long title never carried', () => {
+    render(
+      <BillDetailsTab bill={buildBill({ summary: 'Devenit Legea nr. 12/2023.' })} />,
+    )
+    expect(screen.getByText('Devenit Legea nr. 12/2023.')).toBeInTheDocument()
+  })
+})
+
 describe('BillDetailsTab — Stadiu curent', () => {
   it('routes from the stage the bill is at to the etape tab that explains it', () => {
     // The card states one fact about where the bill stands. Without a route out
