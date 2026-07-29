@@ -66,6 +66,9 @@ const activity: ParliamentVoteActivity = {
   year: 2026,
   days: [{ date: '2026-03-20', total: 42, camera: 30, senat: 10, comun: 2 }],
   availableYears: [2025, 2026],
+  // The activity read now carries its source-coverage rows; the fixture has
+  // none, which is what an unannotated year looks like.
+  coverage: [],
 }
 
 function renderList(search: ParliamentVotesSearch = {}) {

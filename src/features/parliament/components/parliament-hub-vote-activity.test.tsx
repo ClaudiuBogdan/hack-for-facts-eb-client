@@ -42,7 +42,14 @@ const TODAY = new Date('2026-07-29T09:00:00Z')
 const activity = (
   year: number,
   days: ParliamentVoteActivity['days'],
-): ParliamentVoteActivity => ({ year, days, availableYears: [2025, 2026] })
+): ParliamentVoteActivity => ({
+  year,
+  days,
+  availableYears: [2025, 2026],
+  // The activity read now carries source-coverage rows; the fixture has none,
+  // which is what an unannotated year looks like.
+  coverage: [],
+})
 
 const settled = (data: ParliamentVoteActivity) => ({
   data,
