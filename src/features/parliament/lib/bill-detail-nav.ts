@@ -38,19 +38,27 @@ const BILL_DETAIL_TAB_IDS = new Set<BillDetailTab>(
   BILL_DETAIL_NAV_ITEMS.map((item) => item.id),
 )
 
-/** Resolve active bill detail tab from the current URL. */
-export function resolveBillDetailActiveTab(
-  pathname: string,
-  billId: string,
-): BillDetailTab {
-  const basePath = `/parlament/proiecte/${billId}`
+/**
+ * Resolve the active bill detail tab from the current URL.
+ *
+ * The bill id takes NO part in the comparison. `useLocation().pathname` is
+ * percent-encoded while the route param is decoded, so a Senate key such as
+ * `senat:385-2018` (`senat%3A385-2018` in the path) never matched a base path
+ * built from the param, and every tab on those bills read as "Detalii". Only
+ * the segment that follows the id decides — and that segment is a literal
+ * route name, never encoded.
+ */
+export function resolveBillDetailActiveTab(pathname: string): BillDetailTab {
+  const segments = pathname.split('/').filter(Boolean)
+  const billsIndex = segments.indexOf('proiecte')
+  // …/proiecte/<id>/<tab>
+  const suffix = billsIndex === -1 ? undefined : segments[billsIndex + 2]
 
-  if (pathname === basePath || pathname === `${basePath}/`) {
-    return 'detalii'
-  }
-
-  const suffix = pathname.slice(basePath.length + 1).split('/')[0]
-  if (BILL_DETAIL_TAB_IDS.has(suffix as BillDetailTab) && suffix !== 'detalii') {
+  if (
+    suffix !== undefined &&
+    BILL_DETAIL_TAB_IDS.has(suffix as BillDetailTab) &&
+    suffix !== 'detalii'
+  ) {
     return suffix as BillDetailTab
   }
 

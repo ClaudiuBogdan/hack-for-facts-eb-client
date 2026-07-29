@@ -13,7 +13,7 @@ type Props = {
 /** Shared shell for bill detail nested routes — renders child tab content via Outlet. */
 export function BillRouteLayout({ billId }: Props) {
   const { pathname } = useLocation()
-  const activeTab = resolveBillDetailActiveTab(pathname, billId)
+  const activeTab = resolveBillDetailActiveTab(pathname)
   const { data: bill, isLoading, isError, refetch } = useParliamentBillDetail(billId)
 
   if (isLoading) {
