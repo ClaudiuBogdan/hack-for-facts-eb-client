@@ -487,7 +487,13 @@ export const ParliamentVoteCoverageSchema = z.object({
   sourceAvailableFrom: z.string().nullable(),
   observedFrom: z.string(),
   observedThrough: z.string(),
-  finalizedThrough: z.string(),
+  /**
+   * Settlement frontier, as a PREFIX: every observed day at or below it was
+   * re-polled after the day closed, so an empty day there is confirmed quiet.
+   * After it we polled once, possibly before the sitting — a zero is not a fact.
+   * NULL means nothing is settled, which reads as "nothing confirmed".
+   */
+  finalizedThrough: z.string().nullable(),
   asOf: z.string(),
   ranges: z.array(ParliamentVoteCoverageRangeSchema),
   gaps: z.array(ParliamentVoteCoverageGapSchema),

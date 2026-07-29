@@ -448,8 +448,7 @@ export function VotesListLayout({ search }: Props) {
           Când a votat Parlamentul
         </h3>
         <p className="mt-2 max-w-3xl text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-          Numărul de voturi din plen pe zile, în ultimele 12 luni — Camera
-          Deputaților, Senatul și ședințele comune la un loc, indiferent de
+          Numărul de voturi din plen pe zile, în ultimele 12 luni, folosind
           filtrele de mai sus. Alege o zi pentru a o adăuga la filtrele
           curente.
         </p>

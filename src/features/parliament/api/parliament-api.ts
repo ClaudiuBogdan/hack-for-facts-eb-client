@@ -44,6 +44,7 @@ import type {
   VoteChamber,
 } from '@/schemas/parliament'
 import { isParliamentMockEnabled } from '../lib/mock-mode'
+import type { ParliamentVotesFilterInput } from './graphql/parliament-filters'
 import type { VotesListScope } from '../lib/votes-filter-state'
 import type { ParliamentSpeechesFilterInput } from '../lib/parliament-speeches-filter'
 import type { ParliamentStenogramSessionsFilterInput } from '../lib/parliament-stenogram-filter'
@@ -338,10 +339,11 @@ export async function fetchParliamentMemberSpeechActivity(
  */
 export async function fetchParliamentVoteActivity(
   year: number,
+  filter?: ParliamentVotesFilterInput,
 ): Promise<ParliamentVoteActivity | null> {
   return isParliamentMockEnabled()
-    ? fetchParliamentVoteActivityMock(year)
-    : fetchParliamentVoteActivityLive(year)
+    ? fetchParliamentVoteActivityMock(year, filter)
+    : fetchParliamentVoteActivityLive(year, filter)
 }
 
 /**

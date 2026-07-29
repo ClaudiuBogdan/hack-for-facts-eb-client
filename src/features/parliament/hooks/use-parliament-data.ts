@@ -43,6 +43,7 @@ import {
   fetchParliamentBillActivity,
   fetchParliamentVoteActivity,
 } from '../api/parliament-api'
+import type { ParliamentVotesFilterInput } from '../api/graphql/parliament-filters'
 import type { ParliamentAgendaFilterInput } from '../api/parliament-agenda-api.live'
 import type { MemberVotesFilterInput } from '../lib/member-votes-filter'
 import type { MemberSpeechesFilterInput } from '../lib/member-speeches-filter'
@@ -297,16 +298,27 @@ export function useParliamentSpeechActivity(
 }
 
 /**
- * Institution-wide vote volume for one calendar year (the hub heatmap).
+ * Vote volume per day for one calendar year (the hub heatmap).
+ *
+ * `filter` is the SAME filter the votes list is showing, so a square counts what
+ * the list beneath it would return. Without it the tooltip and the list answer
+ * different questions under one gesture: on 2026-06-08 the chart said 18 while a
+ * Senate-filtered list returned 10, and clicking that 18 landed on the 10.
+ * Omitted on the hub, which has no filter panel.
+ *
+ * The filter is part of the query key, so each filter set caches separately.
  *
  * `retry: false` because the failure this query currently meets is a schema
  * error — the field is not served yet — and retrying a "Cannot query field"
  * three times only delays the message the panel is meant to show.
  */
-export function useParliamentVoteActivity(year: number) {
+export function useParliamentVoteActivity(
+  year: number,
+  filter?: ParliamentVotesFilterInput,
+) {
   return useQuery({
-    queryKey: [...PARLIAMENT_QUERY_KEY, 'vote-activity', year],
-    queryFn: () => fetchParliamentVoteActivity(year),
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'vote-activity', year, filter ?? null],
+    queryFn: () => fetchParliamentVoteActivity(year, filter),
     enabled: Boolean(year),
     retry: false,
   })

@@ -58,6 +58,8 @@ import {
   ParliamentVoteSummarySchema,
   ParliamentVotesListSchema,
 } from '@/schemas/parliament'
+import type { ParliamentVotesFilterInput } from './graphql/parliament-filters'
+import { toGraphqlVoteChamber } from './graphql/parliament-translate'
 
 import committeesData from '../mocks/committees.json'
 import groupsData from '../mocks/groups.json'
@@ -462,16 +464,33 @@ export async function fetchParliamentVotesMock(
  */
 export async function fetchParliamentVoteActivityMock(
   year: number,
+  filter?: ParliamentVotesFilterInput,
 ): Promise<ParliamentVoteActivity> {
+  // availableYears drives the year picker, so it stays UNfiltered — the same
+  // rule the server follows, or a search would delete years from navigation.
   const availableYears = Array.from(
     new Set(voteSummaries.map((vote) => Number(vote.heldAt.slice(0, 4)))),
   )
     .filter((candidate) => Number.isFinite(candidate))
     .sort((a, b) => b - a)
 
+  // The chart answers the same question as the list beneath it, so the mock has
+  // to honour the filter too — otherwise mock mode still shows the very
+  // chart/list mismatch the live path was fixed for.
+  const chamberEq = filter?.chamber?.eq
+  const outcomeEq = filter?.outcome?.eq
+  const matchesFilter = (vote: (typeof voteSummaries)[number]): boolean => {
+    if (chamberEq !== undefined && toGraphqlVoteChamber(vote.chamber) !== chamberEq) {
+      return false
+    }
+    if (outcomeEq !== undefined && vote.outcome !== outcomeEq) return false
+    return true
+  }
+
   const dayMap = new Map<string, ParliamentVoteActivityDay>()
   for (const vote of voteSummaries) {
     if (Number(vote.heldAt.slice(0, 4)) !== year) continue
+    if (!matchesFilter(vote)) continue
     const date = vote.heldAt.slice(0, 10)
     const day = dayMap.get(date) ?? {
       date,
@@ -593,6 +612,7 @@ function buildBillRelatedVotes(billId: string): ParliamentBillRelatedVote[] {
       chamber: vote.chamber === 'comun' ? ('camera' as const) : vote.chamber,
       title: vote.title,
       heldAt: vote.heldAt,
+      outcome: vote.outcome,
     }))
     .sort((a, b) => new Date(b.heldAt).getTime() - new Date(a.heldAt).getTime())
 }
