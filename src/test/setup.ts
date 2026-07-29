@@ -70,7 +70,40 @@ window.IntersectionObserver =
 // rendering a component that contains a scroll area threw before it could
 // assert anything.
 class MockResizeObserver implements ResizeObserver {
-  observe(): void {}
+  constructor(private readonly callback: ResizeObserverCallback) {}
+
+  observe(target: Element): void {
+    const contentRect = {
+      x: 0,
+      y: 0,
+      width: 1024,
+      height: 768,
+      top: 0,
+      right: 1024,
+      bottom: 768,
+      left: 0,
+      toJSON: () => ({}),
+    } as DOMRectReadOnly;
+
+    // SafeResponsiveContainer verifies the observer result with an immediate
+    // getBoundingClientRect() read. Keep both jsdom measurements consistent so
+    // the second (normally all-zero) read does not hide the chart again.
+    Object.defineProperty(target, "getBoundingClientRect", {
+      configurable: true,
+      value: () => contentRect,
+    });
+
+    this.callback(
+      [
+        {
+          target,
+          contentRect,
+        } as ResizeObserverEntry,
+      ],
+      this,
+    );
+  }
+
   unobserve(): void {}
   disconnect(): void {}
 }

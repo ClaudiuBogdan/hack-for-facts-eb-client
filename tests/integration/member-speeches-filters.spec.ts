@@ -11,11 +11,19 @@
  */
 
 import { test, expect } from '../utils/integration-base'
+import type { Page } from '@playwright/test'
 import { waitForPageReady } from '../utils/test-helpers'
 import type { MockApiFixture } from '../utils/types'
 
 const ROUTE = '/parlament/membri/1%3A2024%3A79/interventii?an=2026'
-const DAY_CELL = 'button[aria-label*="20 martie 2026"]'
+const DAY_CELL = 'button[aria-label*="20 martie 2026"]:visible'
+
+async function openHeatmap(page: Page): Promise<void> {
+  await page
+    .locator('summary')
+    .filter({ hasText: /Activitatea în plen pe zile/ })
+    .click()
+}
 
 async function setupMocks(mockApi: MockApiFixture): Promise<void> {
   await mockApi.mockGraphQL('ParliamentMember', 'member')
@@ -52,8 +60,9 @@ test.describe('Member interventii — heatmap + filters + search', () => {
   }) => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
+    await openHeatmap(page)
 
-    const cells = page.locator('button[aria-label*="intervenți"]')
+    const cells = page.locator('button[aria-label*="intervenți"]:visible')
     await expect(cells.first()).toBeVisible({ timeout: 15000 })
     expect(await cells.count()).toBe(3)
     await expect(page.getByText(/din 83 intervenții/)).toBeVisible({ timeout: 15000 })
@@ -64,6 +73,7 @@ test.describe('Member interventii — heatmap + filters + search', () => {
   }) => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
+    await openHeatmap(page)
     await expect(page.locator(DAY_CELL).first()).toBeVisible({ timeout: 15000 })
 
     await page.locator(DAY_CELL).first().click()

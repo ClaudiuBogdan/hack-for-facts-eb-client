@@ -91,7 +91,11 @@ test.describe('Entity Details Page', () => {
   test('displays current view and report actions', async ({ page }) => {
     const viewNavigator = page.getByTestId('challenge-entity-view-navigator')
     await expect(viewNavigator).toBeVisible({ timeout: 10000 })
-    await expect(viewNavigator.getByRole('button', { name: /Contracte|Contracts/i })).toBeVisible()
+    await expect(
+      viewNavigator.getByRole('button', {
+        name: /Achiziții publice|Public procurement/i,
+      }),
+    ).toBeVisible()
     await expect(viewNavigator.getByRole('button', { name: /Angajamente|Commitments/i })).toBeVisible()
     await expect(viewNavigator.getByRole('button', { name: /INS/i })).toBeVisible()
     await expect(viewNavigator.getByRole('button', { name: /Contact/i })).toBeVisible()

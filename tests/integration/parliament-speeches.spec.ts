@@ -15,8 +15,8 @@ import { test, expect } from '../utils/integration-base'
 import { waitForPageReady } from '../utils/test-helpers'
 import type { MockApiFixture } from '../utils/types'
 
-const ROUTE = '/parlament/stenograme?an=2026'
-const DAY_CELL = 'button[aria-label*="20 martie 2026"]'
+const ROUTE = '/parlament/stenograme?an=2026&view=interventii'
+const DAY_CELL = 'button[aria-label*="20 martie 2026"]:visible'
 const SPEAKER = '1:2024:79'
 
 async function setupMocks(mockApi: MockApiFixture): Promise<void> {
@@ -55,7 +55,7 @@ test.describe('Global stenograme — heatmap + filters + honest search', () => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
 
-    const cells = page.locator('button[aria-label*="intervenți"]')
+    const cells = page.locator('button[aria-label*="intervenți"]:visible')
     await expect(cells.first()).toBeVisible({ timeout: 15000 })
     expect(await cells.count()).toBe(3)
     await expect(page.getByText(/din 120 intervenții/)).toBeVisible({
@@ -104,7 +104,7 @@ test.describe('Global stenograme — heatmap + filters + honest search', () => {
       timeout: 15000,
     })
 
-    await page.locator('#parliament-speeches-q').fill('buget')
+    await page.locator('#parliament-stenograme-q').fill('buget')
 
     // No submit button: the URL updates after the 300ms debounce.
     await expect

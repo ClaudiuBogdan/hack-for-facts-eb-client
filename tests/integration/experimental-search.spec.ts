@@ -70,7 +70,7 @@ test.describe('Experimental entity search — desktop', () => {
     await expect(page.locator(LISTBOX)).toBeVisible({ timeout: 15000 })
 
     const chips = page.locator('button[aria-pressed]')
-    expect(await chips.count()).toBeGreaterThan(1)
+    await expect(chips).toHaveCount(5)
 
     // Click the first non-"all" facet chip → URL gains a types param.
     const legalChip = page.locator('button[aria-pressed]', { hasText: /legi|legisla/i }).first()

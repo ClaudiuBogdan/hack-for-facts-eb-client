@@ -8,8 +8,10 @@ import {
   transcriptUrl,
 } from './parliament-transcript-api.live'
 
-vi.mock('@/config/env', async (importOriginal) => ({
-  ...(await importOriginal<Record<string, unknown>>()),
+vi.mock('@/config/env', () => ({
+  env: {
+    VITE_APP_ENVIRONMENT: 'test',
+  },
   getApiBaseUrl: () => 'https://api.example.com',
 }))
 
