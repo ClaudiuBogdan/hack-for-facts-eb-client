@@ -710,6 +710,109 @@ export const parliamentMemberVoteActivityResponseSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
+// Institution-wide vote-activity heatmap — parliamentVoteActivity(year, filter)
+//
+// THE FIELD IS NOT SERVED YET. It is written here as the contract the server is
+// expected to grow, mirroring `parliamentSpeechActivity` argument for argument
+// (one calendar year per request, `availableYears` alongside the days) so the
+// resolver can be the speech one with `vote_date` swapped in. Until then this
+// query fails with "Cannot query field", and the hub panel says so instead of
+// drawing squares.
+//
+// Deriving the same counts client-side from `parliamentVotes` is NOT a fallback:
+// the connection is capped at 100 rows per page in both the resolver and the
+// repo, so a 12-month window (~1,500 divisions) costs ~16 sequential requests.
+// ---------------------------------------------------------------------------
+
+export const PARLIAMENT_VOTE_ACTIVITY_QUERY = /* GraphQL */ `
+  query ParliamentVoteActivity($year: Int!, $filter: ParliamentVotesFilter) {
+    parliamentVoteActivity(year: $year, filter: $filter) {
+      year
+      availableYears
+      days {
+        date
+        total
+        camera
+        senat
+        comun
+      }
+    }
+  }
+`;
+
+const rawGlobalVoteActivityDaySchema = z.object({
+  date: z.string(),
+  total: z.number(),
+  camera: z.number(),
+  senat: z.number(),
+  comun: z.number(),
+});
+
+export const rawParliamentVoteActivitySchema = z.object({
+  year: z.number(),
+  availableYears: z.array(z.number()),
+  days: z.array(rawGlobalVoteActivityDaySchema),
+});
+export type RawParliamentVoteActivity = z.infer<
+  typeof rawParliamentVoteActivitySchema
+>;
+
+export const parliamentVoteActivityResponseSchema = z.object({
+  parliamentVoteActivity: rawParliamentVoteActivitySchema.nullable(),
+});
+
+// ---------------------------------------------------------------------------
+// Legislative-activity heatmap — parliamentBillActivity(year, filter)
+//
+// ALSO NOT SERVED YET, and written the same way: one calendar year per request,
+// `availableYears` alongside, `ParliamentBillsFilter` so the panel can inherit
+// whatever facets the list carries. A day counts BILLS BY `last_event_date` —
+// the column the default `updated_desc` sort already reads — so the aggregate
+// is a GROUP BY over the same rows the list pages, not a new dataset.
+//
+// The step-grain alternative (count bill EVENTS per day) is not offered on
+// purpose: ~56% of cdep procedural rows carry no event date at source, so that
+// heatmap would draw most of the legislative record as empty days.
+//
+// The squares are NOT navigable until `ParliamentBillsFilter` grows a
+// `lastEventDate` range — the filter today has year/finalized/hasLaw/
+// publishedInMo/actId/billType/status/q and nothing per-day, so a link to a
+// single day would land on an unfiltered list and quietly answer a different
+// question.
+// ---------------------------------------------------------------------------
+
+export const PARLIAMENT_BILL_ACTIVITY_QUERY = /* GraphQL */ `
+  query ParliamentBillActivity($year: Int!, $filter: ParliamentBillsFilter) {
+    parliamentBillActivity(year: $year, filter: $filter) {
+      year
+      availableYears
+      days {
+        date
+        total
+      }
+    }
+  }
+`;
+
+const rawBillActivityDaySchema = z.object({
+  date: z.string(),
+  total: z.number(),
+});
+
+export const rawParliamentBillActivitySchema = z.object({
+  year: z.number(),
+  availableYears: z.array(z.number()),
+  days: z.array(rawBillActivityDaySchema),
+});
+export type RawParliamentBillActivity = z.infer<
+  typeof rawParliamentBillActivitySchema
+>;
+
+export const parliamentBillActivityResponseSchema = z.object({
+  parliamentBillActivity: rawParliamentBillActivitySchema.nullable(),
+});
+
+// ---------------------------------------------------------------------------
 // Member interventii — parliamentMember(mandateKey).speechesConnection(...)
 // Keyset (spokenAt desc). `fullText` is selected inline: measured avg 591 chars
 // / p90 ~1.5KB, so 50 nodes ≈ 30–75KB — cheaper than a per-turn round-trip, and

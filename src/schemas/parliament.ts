@@ -387,6 +387,100 @@ export const ParliamentVoteDetailSchema = ParliamentVoteSummarySchema.extend({
 });
 export type ParliamentVoteDetail = z.infer<typeof ParliamentVoteDetailSchema>;
 
+/**
+ * One day of institution-wide vote volume: how many divisions were held, split
+ * by the chamber that held them (`comun` = joint sitting).
+ *
+ * The counts are DIVISIONS, not ballots — a day with 40 here means the two
+ * chambers voted 40 times, not that 40 members voted. The member-grain
+ * equivalent is `ParliamentMemberVoteActivityDay`, whose numbers are one
+ * person's choices and therefore never comparable to these.
+ */
+export const ParliamentVoteActivityDaySchema = z.object({
+  /** `YYYY-MM-DD`. */
+  date: z.string(),
+  total: z.number().int().nonnegative(),
+  camera: z.number().int().nonnegative(),
+  senat: z.number().int().nonnegative(),
+  comun: z.number().int().nonnegative(),
+});
+export type ParliamentVoteActivityDay = z.infer<
+  typeof ParliamentVoteActivityDaySchema
+>;
+
+/**
+ * Institution-wide per-year vote activity — the hub's vote heatmap.
+ *
+ * Mirrors `ParliamentSpeechActivity` exactly (one calendar year per request,
+ * `availableYears` for the picker), because the surface that reads it stitches
+ * two years into a rolling window the same way the stenograme panel does.
+ *
+ * NOT YET SERVED. The API exposes per-MEMBER vote activity
+ * (`parliamentMember.voteActivity`) and institution-wide SPEECH activity
+ * (`parliamentSpeechActivity`), but no institution-wide vote aggregate; the
+ * expected field is `parliamentVoteActivity(year: Int!, filter:
+ * ParliamentVotesFilter)` returning this shape. Until the server ships it the
+ * query errors, and the hub panel renders that failure as a stated error — it
+ * must never fall back to deriving counts from the votes connection, which is
+ * capped at 100 rows per page and would draw a year out of the ~16 pages it
+ * managed to fetch.
+ */
+export const ParliamentVoteActivitySchema = z.object({
+  year: z.number().int(),
+  days: z.array(ParliamentVoteActivityDaySchema),
+  availableYears: z.array(z.number().int()),
+});
+export type ParliamentVoteActivity = z.infer<
+  typeof ParliamentVoteActivitySchema
+>;
+
+/**
+ * One day of institution-wide legislative activity: how many bills have their
+ * MOST RECENT procedural step on that day (`lastEventDate`, the same key the
+ * bills list sorts by).
+ *
+ * That definition is deliberately the one the list already shows on every card
+ * ("Actualizat: …"), and it is why the day carries no chamber split: a bill's
+ * last step belongs to whichever chamber holds it, and splitting it would
+ * invite reading the two numbers as separate legislative pipelines.
+ *
+ * It also DECAYS by design — a bill that moves again leaves the older day and
+ * joins the newer one, so a past square answers "how many bills still stand
+ * last-touched on this day", not "how many steps were taken that day". The
+ * step-grain count cannot be served honestly: ~56% of CDep procedural rows
+ * carry no date at source, so a per-event heatmap would silently draw more than
+ * half the record as empty.
+ */
+export const ParliamentBillActivityDaySchema = z.object({
+  /** `YYYY-MM-DD`. */
+  date: z.string(),
+  total: z.number().int().nonnegative(),
+});
+export type ParliamentBillActivityDay = z.infer<
+  typeof ParliamentBillActivityDaySchema
+>;
+
+/**
+ * Institution-wide per-year legislative activity — the hub's bills heatmap.
+ *
+ * Same envelope as `ParliamentVoteActivitySchema` (one calendar year per
+ * request, `availableYears` alongside), for the same reason: the surface that
+ * reads it stitches two years into a rolling window.
+ *
+ * NOT YET SERVED. The expected field is `parliamentBillActivity(year: Int!,
+ * filter: ParliamentBillsFilter)`. Until it lands the query errors and the hub
+ * panel states that failure. It must never be derived from the bills list,
+ * which is paged and would count only the page it happened to fetch.
+ */
+export const ParliamentBillActivitySchema = z.object({
+  year: z.number().int(),
+  days: z.array(ParliamentBillActivityDaySchema),
+  availableYears: z.array(z.number().int()),
+});
+export type ParliamentBillActivity = z.infer<
+  typeof ParliamentBillActivitySchema
+>;
+
 export const ParliamentHubDataSchema = z.object({
   legislature: ParliamentLegislatureSchema,
   /**

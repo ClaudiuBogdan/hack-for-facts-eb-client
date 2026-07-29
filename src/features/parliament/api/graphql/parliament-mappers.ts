@@ -24,6 +24,8 @@ import {
   ParliamentMemberVotingHistorySchema,
   ParliamentMemberSpeechesHistorySchema,
   ParliamentMemberSpeechActivitySchema,
+  ParliamentBillActivitySchema,
+  ParliamentVoteActivitySchema,
   ParliamentVoteDetailSchema,
   ParliamentVoteSummarySchema,
   type BillCurrentLocation,
@@ -50,6 +52,8 @@ import {
   type ParliamentMemberVotingHistory,
   type ParliamentMemberSpeechesHistory,
   type ParliamentMemberSpeechActivity,
+  type ParliamentBillActivity,
+  type ParliamentVoteActivity,
   type ParliamentVoteDetail,
   type ParliamentVoteSummary,
   type VoteOutcome,
@@ -80,6 +84,8 @@ import type {
   RawParliamentMemberSpeech,
   RawParliamentMemberSpeechActivity,
   RawParliamentTally,
+  RawParliamentBillActivity,
+  RawParliamentVoteActivity,
   RawParliamentVoteDetail,
   RawParliamentVoteListNode,
 } from "./parliament-queries";
@@ -517,6 +523,34 @@ export function mapMemberVoteActivity(
       abtinere: num(d.abtinere),
       nuAVotat: num(d.nuAVotat),
     })),
+  });
+}
+
+/** Institution-wide per-day vote volume (the hub heatmap). */
+export function mapParliamentVoteActivity(
+  raw: RawParliamentVoteActivity,
+): ParliamentVoteActivity {
+  return ParliamentVoteActivitySchema.parse({
+    year: raw.year,
+    availableYears: raw.availableYears,
+    days: raw.days.map((d) => ({
+      date: d.date,
+      total: num(d.total),
+      camera: num(d.camera),
+      senat: num(d.senat),
+      comun: num(d.comun),
+    })),
+  });
+}
+
+/** Institution-wide per-day legislative activity (the hub bills heatmap). */
+export function mapParliamentBillActivity(
+  raw: RawParliamentBillActivity,
+): ParliamentBillActivity {
+  return ParliamentBillActivitySchema.parse({
+    year: raw.year,
+    availableYears: raw.availableYears,
+    days: raw.days.map((d) => ({ date: d.date, total: num(d.total) })),
   });
 }
 

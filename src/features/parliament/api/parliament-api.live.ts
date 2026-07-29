@@ -35,6 +35,8 @@ import {
   type ParliamentMemberSpeechActivity,
   type ParliamentMembersList,
   type ParliamentMembersSearch,
+  type ParliamentBillActivity,
+  type ParliamentVoteActivity,
   type ParliamentVoteDetail,
   type ParliamentVotesList,
   type ParliamentVotesSearch,
@@ -57,6 +59,8 @@ import {
   PARLIAMENT_MEMBER_SPEECH_ACTIVITY_QUERY,
   PARLIAMENT_MEMBERS_QUERY,
   PARLIAMENT_RESOLVE_QUERY,
+  PARLIAMENT_BILL_ACTIVITY_QUERY,
+  PARLIAMENT_VOTE_ACTIVITY_QUERY,
   PARLIAMENT_VOTE_BALLOTS_QUERY,
   PARLIAMENT_VOTE_QUERY,
   PARLIAMENT_VOTES_QUERY,
@@ -75,6 +79,8 @@ import {
   parliamentMemberProfileResponseSchema,
   parliamentMemberResponseSchema,
   parliamentMemberVoteActivityResponseSchema,
+  parliamentBillActivityResponseSchema,
+  parliamentVoteActivityResponseSchema,
   parliamentMemberVotesResponseSchema,
   parliamentMemberSpeechesResponseSchema,
   parliamentMemberSpeechActivityResponseSchema,
@@ -97,6 +103,8 @@ import {
   mapMemberInitiatives,
   mapMemberProfile,
   mapMemberVoteActivity,
+  mapParliamentBillActivity,
+  mapParliamentVoteActivity,
   mapMemberVotingHistory,
   mapMemberSpeeches,
   mapMemberSpeechActivity,
@@ -110,6 +118,8 @@ import {
   buildBillsSort,
   buildMembersFilter,
   buildVotesFilter,
+  type ParliamentBillsFilterInput,
+  type ParliamentVotesFilterInput,
 } from './graphql/parliament-filters'
 import {
   LATEST_LEGISLATURE,
@@ -584,6 +594,49 @@ export async function fetchParliamentMemberVoteActivityLive(
   const parsed = parliamentMemberVoteActivityResponseSchema.parse(data)
   if (!parsed.parliamentMember) return null
   return mapMemberVoteActivity(parsed.parliamentMember.voteActivity)
+}
+
+/**
+ * Institution-wide vote activity for one calendar year.
+ *
+ * The field this asks for does not exist on the API yet (see
+ * `PARLIAMENT_VOTE_ACTIVITY_QUERY`), so in live mode this REJECTS until the
+ * server ships it. That is deliberate: the caller renders the rejection as a
+ * stated error, which is the honest reading of "we cannot count this yet".
+ */
+export async function fetchParliamentVoteActivityLive(
+  year: number,
+  filter?: ParliamentVotesFilterInput,
+): Promise<ParliamentVoteActivity | null> {
+  const data = await graphqlQuery<unknown>(
+    PARLIAMENT_VOTE_ACTIVITY_QUERY,
+    { year, ...(filter ? { filter } : {}) },
+    { operationName: 'parliamentVoteActivity' },
+  )
+  const parsed = parliamentVoteActivityResponseSchema.parse(data)
+  if (!parsed.parliamentVoteActivity) return null
+  return mapParliamentVoteActivity(parsed.parliamentVoteActivity)
+}
+
+/**
+ * Institution-wide legislative activity for one calendar year.
+ *
+ * Like its vote sibling, the field does not exist on the API yet (see
+ * `PARLIAMENT_BILL_ACTIVITY_QUERY`), so this REJECTS in live mode and the hub
+ * card states the gap rather than drawing an empty year.
+ */
+export async function fetchParliamentBillActivityLive(
+  year: number,
+  filter?: ParliamentBillsFilterInput,
+): Promise<ParliamentBillActivity | null> {
+  const data = await graphqlQuery<unknown>(
+    PARLIAMENT_BILL_ACTIVITY_QUERY,
+    { year, ...(filter ? { filter } : {}) },
+    { operationName: 'parliamentBillActivity' },
+  )
+  const parsed = parliamentBillActivityResponseSchema.parse(data)
+  if (!parsed.parliamentBillActivity) return null
+  return mapParliamentBillActivity(parsed.parliamentBillActivity)
 }
 
 // ── member speeches (interventii) ─────────────────────────────────────────────

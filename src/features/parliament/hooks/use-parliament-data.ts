@@ -38,6 +38,8 @@ import {
   fetchParliamentSpeeches,
   fetchParliamentVoteDetail,
   fetchParliamentVotes,
+  fetchParliamentBillActivity,
+  fetchParliamentVoteActivity,
 } from '../api/parliament-api'
 import type { ParliamentAgendaFilterInput } from '../api/parliament-agenda-api.live'
 import type { MemberVotesFilterInput } from '../lib/member-votes-filter'
@@ -289,6 +291,36 @@ export function useParliamentSpeechActivity(
     enabled: Boolean(year),
     // NO placeholderData: same lesson as the member activity queries — stale
     // carry-over would show the wrong year/filter cells as if current.
+  })
+}
+
+/**
+ * Institution-wide vote volume for one calendar year (the hub heatmap).
+ *
+ * `retry: false` because the failure this query currently meets is a schema
+ * error — the field is not served yet — and retrying a "Cannot query field"
+ * three times only delays the message the panel is meant to show.
+ */
+export function useParliamentVoteActivity(year: number) {
+  return useQuery({
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'vote-activity', year],
+    queryFn: () => fetchParliamentVoteActivity(year),
+    enabled: Boolean(year),
+    retry: false,
+  })
+}
+
+/**
+ * Institution-wide legislative volume for one calendar year (the hub bills
+ * heatmap). `retry: false` for the same reason as its vote sibling: the field
+ * is not served yet, and retrying a schema error only delays the message.
+ */
+export function useParliamentBillActivity(year: number) {
+  return useQuery({
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'bill-activity', year],
+    queryFn: () => fetchParliamentBillActivity(year),
+    enabled: Boolean(year),
+    retry: false,
   })
 }
 

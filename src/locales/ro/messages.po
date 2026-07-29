@@ -92,9 +92,19 @@ msgstr "(Lungimea rețelei de canalizare / Populație) × 1.000"
 msgid "{0, plural, one {# luare de cuvânt} few {# luări de cuvânt} other {# de luări de cuvânt}}"
 msgstr ""
 
+#. placeholder {0}: day.total
+#: src/features/parliament/components/parliament-hub-bill-activity.tsx:63
+msgid "{0, plural, one {# proiect} few {# proiecte} other {# de proiecte}}"
+msgstr ""
+
 #. placeholder {0}: session.speakerCount
 #: src/features/parliament/components/parliament-stenogram-session-card.tsx:144
 msgid "{0, plural, one {# vorbitor} few {# vorbitori} other {# de vorbitori}}"
+msgstr ""
+
+#. placeholder {0}: day.total
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:66
+msgid "{0, plural, one {# vot} few {# voturi} other {# de voturi}}"
 msgstr ""
 
 #. placeholder {0}: row.original.primaryUatName
@@ -428,6 +438,11 @@ msgstr "{count} UAT-uri alocate"
 msgid "{countLabel} records"
 msgstr "{countLabel} înregistrări"
 
+#: src/features/parliament/components/parliament-hub-bill-activity.tsx:70
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:73
+msgid "{dateLabel} — {countLabel}"
+msgstr ""
+
 #: src/features/private-companies/components/private-company-summary-highlights.tsx:99
 msgid "{euBranchCount} EU branches"
 msgstr "{euBranchCount} sucursale UE"
@@ -591,6 +606,11 @@ msgstr "{resultsCount} rezultate găsite"
 #: src/features/ngos/components/ngo-landing-page.tsx:230
 msgid "{staleCount} surse incarcate dar vechi"
 msgstr ""
+
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:193
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:222
+#~ msgid "{total, plural, one {# vot} few {# voturi} other {# de voturi}}"
+#~ msgstr ""
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4530
 msgid "{totalMemberCount} UATs"
@@ -1151,6 +1171,22 @@ msgstr "Criterii active pentru serii:"
 msgid "activitate"
 msgstr ""
 
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:117
+#~ msgid "Activitatea de vot pe zile"
+#~ msgstr ""
+
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:134
+#~ msgid "Activitatea de vot pe zile nu a putut fi încărcată. Lista de mai jos nu este afectată."
+#~ msgstr ""
+
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:99
+msgid "Activitatea de vot pe zile nu a putut fi încărcată. Lista de mai sus nu este afectată."
+msgstr ""
+
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:94
+msgid "Activitatea de vot pe zile, ultimele 12 luni"
+msgstr ""
+
 #: src/features/parliament/components/parliament-speech-activity-panel.tsx:181
 #: src/features/parliament/components/parliament-speech-activity-panel.tsx:191
 msgid "Activitatea în plen pe zile"
@@ -1158,6 +1194,14 @@ msgstr ""
 
 #: src/features/parliament/components/member-interventii-tab.tsx:222
 msgid "Activitatea în plen pe zile ({year})"
+msgstr ""
+
+#: src/features/parliament/components/parliament-hub-bill-activity.tsx:93
+msgid "Activitatea legislativă pe zile nu a putut fi încărcată. Lista de mai sus nu este afectată."
+msgstr ""
+
+#: src/features/parliament/components/parliament-hub-bill-activity.tsx:88
+msgid "Activitatea legislativă pe zile, ultimele 12 luni"
 msgstr ""
 
 #: src/features/parliament/components/parliament-speech-activity-panel.tsx:256
@@ -2957,6 +3001,13 @@ msgstr ""
 msgid "Camera"
 msgstr ""
 
+#. placeholder {0}: day.camera
+#. placeholder {1}: day.senat
+#. placeholder {2}: day.comun
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:80
+msgid "Camera {0} · Senat {1} · Comun {2}"
+msgstr ""
+
 #: src/features/parliament/lib/stenogram-presentation.ts:23
 msgid "Camera Deputaților"
 msgstr ""
@@ -3081,7 +3132,7 @@ msgid "Captura acestei ședințe nu conține textul dezbaterii. Păstrăm ședin
 msgstr ""
 
 #. placeholder {0}: formatSittingDateShort( session.sourceUpdatedAt.slice(0, 10), i18n.locale, )
-#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:660
+#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:674
 msgid "Captura sursei, actualizată la {0}."
 msgstr ""
 
@@ -4560,7 +4611,7 @@ msgstr ""
 #~ msgid "Copiază linkul"
 #~ msgstr ""
 
-#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:451
+#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:465
 msgid "Copiază linkul acestei ședințe"
 msgstr ""
 
@@ -5171,6 +5222,10 @@ msgstr ""
 
 #: src/features/statistics/components/dataset-explorer-status-toggle.tsx:39
 msgid "Cu date"
+msgstr ""
+
+#: src/features/parliament/components/parliament-hub-bill-activity.tsx:76
+msgid "cu ultima etapă în această zi"
 msgstr ""
 
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:200
@@ -11131,6 +11186,10 @@ msgstr ""
 msgid "Mai adaugă {remaining} localitate pentru a putea compara."
 msgstr ""
 
+#: src/features/parliament/components/parliament-hub-activity-heatmap.tsx:225
+msgid "Mai multe"
+msgstr ""
+
 #: src/features/parliament/components/parliament-stenogram-document.tsx:142
 msgid "Mai mulți parlamentari poartă acest nume în legislatura respectivă; sursa nu permite alegerea între ei."
 msgstr ""
@@ -11138,6 +11197,10 @@ msgstr ""
 #: src/features/procurement/components/procurement-answerability-notice.tsx:99
 #~ msgid "Mai puțin"
 #~ msgstr ""
+
+#: src/features/parliament/components/parliament-hub-activity-heatmap.tsx:214
+msgid "Mai puține"
+msgstr ""
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:103
 msgid "Main aggregated"
@@ -12087,7 +12150,7 @@ msgstr "Sporul natural arată balanța demografică absolută dintre nașteri ș
 #~ msgid "Navigare între intervenții"
 #~ msgstr ""
 
-#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:616
+#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:630
 msgid "Navigare între ședințe"
 msgstr ""
 
@@ -12361,6 +12424,10 @@ msgstr ""
 msgid "Niciun indicator cu date încărcate nu se potrivește căutării."
 msgstr ""
 
+#: src/features/parliament/components/parliament-hub-bill-activity.tsx:102
+msgid "Niciun proiect cu etape noi în ultimele 12 luni."
+msgstr ""
+
 #: src/features/statistics/components/detail-dimension-combobox.tsx:135
 msgid "Niciun rezultat"
 msgstr ""
@@ -12391,6 +12458,10 @@ msgstr ""
 
 #: src/features/statistics/components/territory-search.tsx:87
 msgid "Niciun teritoriu nu se potrivește cu acest termen."
+msgstr ""
+
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:107
+msgid "Niciun vot în plen în ultimele 12 luni."
 msgstr ""
 
 #: src/features/procurement/lib/caveat-text.ts:307
@@ -13362,7 +13433,7 @@ msgstr ""
 msgid "Nu am putut încărca teritoriul."
 msgstr ""
 
-#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:488
+#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:502
 msgid "Nu am putut localiza intervenția din link în această stenogramă. Textul integral al ședinței este mai jos, neschimbat."
 msgstr ""
 
@@ -15120,11 +15191,11 @@ msgstr ""
 #~ msgid "Printează"
 #~ msgstr ""
 
-#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:468
+#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:482
 msgid "Printează extrasul filtrat"
 msgstr ""
 
-#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:469
+#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:483
 msgid "Printează stenograma"
 msgstr ""
 
@@ -16715,7 +16786,7 @@ msgstr ""
 msgid "Sankey Chart (Aggregated)"
 msgstr "Diagramă Sankey (agregată)"
 
-#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:518
+#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:532
 msgid "Sari la textul ședinței"
 msgstr ""
 
@@ -17163,7 +17234,7 @@ msgstr ""
 #~ msgid "Ședința anterioară · {0}"
 #~ msgstr ""
 
-#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:701
+#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:715
 msgid "Ședința anterioară · {date}"
 msgstr ""
 
@@ -17195,7 +17266,7 @@ msgstr ""
 #~ msgid "Ședința următoare · {0}"
 #~ msgstr ""
 
-#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:705
+#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:719
 msgid "Ședința următoare · {date}"
 msgstr ""
 
@@ -18882,7 +18953,7 @@ msgid "Sursa, referința colectorului, datele de preluare și notele de parsare 
 msgstr ""
 
 #. placeholder {0}: sourceSystemLabel(session.sourceSystem)
-#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:651
+#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:665
 msgid "Sursă: {0}."
 msgstr ""
 
@@ -19162,7 +19233,7 @@ msgstr ""
 msgid "Textul rezumatului lipsește"
 msgstr ""
 
-#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:575
+#: src/features/parliament/components/parliament-stenogram-reader-page.tsx:589
 msgid "Textul ședinței"
 msgstr ""
 
@@ -21250,6 +21321,10 @@ msgstr ""
 msgid "Vezi sursa: {0}, {dateText}"
 msgstr ""
 
+#: src/features/parliament/components/parliament-hub-bill-activity.tsx:111
+msgid "Vezi toate proiectele"
+msgstr ""
+
 #: src/features/parliament/components/parliament-stenogram-reader-page.tsx:381
 msgid "Vezi toate ședințele"
 msgstr ""
@@ -21258,6 +21333,10 @@ msgstr ""
 #: src/features/parliament/components/parliament-speech-detail-page.tsx:161
 #: src/features/parliament/components/parliament-speech-detail-page.tsx:179
 msgid "Vezi toate stenogramele"
+msgstr ""
+
+#: src/features/parliament/components/parliament-hub-vote-activity.tsx:115
+msgid "Vezi toate voturile"
 msgstr ""
 
 #: src/components/filters/EntityAnalyticsFilter.tsx:436

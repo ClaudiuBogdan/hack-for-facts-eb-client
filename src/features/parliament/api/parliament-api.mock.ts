@@ -27,6 +27,9 @@ import type {
   ParliamentMemberSpeechActivity,
   ParliamentMembersList,
   ParliamentMembersSearch,
+  ParliamentBillActivity,
+  ParliamentVoteActivity,
+  ParliamentVoteActivityDay,
   ParliamentVoteDetail,
   ParliamentVoteSummary,
   ParliamentVotesList,
@@ -49,6 +52,8 @@ import {
   ParliamentMemberSpeechesHistorySchema,
   ParliamentMemberSpeechActivitySchema,
   ParliamentMembersListSchema,
+  ParliamentBillActivitySchema,
+  ParliamentVoteActivitySchema,
   ParliamentVoteDetailSchema,
   ParliamentVoteSummarySchema,
   ParliamentVotesListSchema,
@@ -441,6 +446,80 @@ export async function fetchParliamentVotesMock(
 ): Promise<ParliamentVotesList> {
   const filtered = filterVotes(search)
   return paginateVotes(search, filtered, after)
+}
+
+/**
+ * Institution-wide per-day vote volume for one calendar year, counted off the
+ * vote-summary fixtures.
+ *
+ * The fixtures carry no joint sittings, so `comun` is always 0 here — a
+ * property of this sample, not a claim that the chambers never sit together.
+ */
+export async function fetchParliamentVoteActivityMock(
+  year: number,
+): Promise<ParliamentVoteActivity> {
+  const availableYears = Array.from(
+    new Set(voteSummaries.map((vote) => Number(vote.heldAt.slice(0, 4)))),
+  )
+    .filter((candidate) => Number.isFinite(candidate))
+    .sort((a, b) => b - a)
+
+  const dayMap = new Map<string, ParliamentVoteActivityDay>()
+  for (const vote of voteSummaries) {
+    if (Number(vote.heldAt.slice(0, 4)) !== year) continue
+    const date = vote.heldAt.slice(0, 10)
+    const day = dayMap.get(date) ?? {
+      date,
+      total: 0,
+      camera: 0,
+      senat: 0,
+      comun: 0,
+    }
+    dayMap.set(date, {
+      ...day,
+      total: day.total + 1,
+      camera: day.camera + (vote.chamber === 'camera' ? 1 : 0),
+      senat: day.senat + (vote.chamber === 'senat' ? 1 : 0),
+    })
+  }
+
+  return ParliamentVoteActivitySchema.parse({
+    year,
+    availableYears,
+    days: Array.from(dayMap.values()).sort((a, b) =>
+      a.date.localeCompare(b.date),
+    ),
+  })
+}
+
+/**
+ * Institution-wide per-day legislative activity for one calendar year, counted
+ * off the bill fixtures by `lastUpdatedAt` — the fixture stand-in for the
+ * server's `lastEventDate`, and the same field the mock list sorts by.
+ */
+export async function fetchParliamentBillActivityMock(
+  year: number,
+): Promise<ParliamentBillActivity> {
+  const availableYears = Array.from(
+    new Set(bills.map((bill) => Number(bill.lastUpdatedAt.slice(0, 4)))),
+  )
+    .filter((candidate) => Number.isFinite(candidate))
+    .sort((a, b) => b - a)
+
+  const totals = new Map<string, number>()
+  for (const bill of bills) {
+    if (Number(bill.lastUpdatedAt.slice(0, 4)) !== year) continue
+    const date = bill.lastUpdatedAt.slice(0, 10)
+    totals.set(date, (totals.get(date) ?? 0) + 1)
+  }
+
+  return ParliamentBillActivitySchema.parse({
+    year,
+    availableYears,
+    days: Array.from(totals, ([date, total]) => ({ date, total })).sort((a, b) =>
+      a.date.localeCompare(b.date),
+    ),
+  })
 }
 
 function filterBills(search: ParliamentBillsSearch): ParliamentBillSummary[] {

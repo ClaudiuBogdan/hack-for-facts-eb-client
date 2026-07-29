@@ -35,6 +35,8 @@ import type {
   ParliamentMemberSpeechActivity,
   ParliamentMembersList,
   ParliamentMembersSearch,
+  ParliamentBillActivity,
+  ParliamentVoteActivity,
   ParliamentVoteDetail,
   ParliamentVoteSummary,
   ParliamentVotesList,
@@ -119,6 +121,8 @@ import {
   fetchParliamentCommitteeMock,
   fetchParliamentCommitteesMock,
   fetchParliamentFreshnessMock,
+  fetchParliamentBillActivityMock,
+  fetchParliamentVoteActivityMock,
   fetchParliamentVoteDetailMock,
   fetchParliamentVotesMock,
   getMemberJudetMapMock,
@@ -149,6 +153,8 @@ import {
   fetchParliamentCommitteeLive,
   fetchParliamentCommitteesLive,
   fetchParliamentFreshnessLive,
+  fetchParliamentBillActivityLive,
+  fetchParliamentVoteActivityLive,
   fetchParliamentVoteDetailLive,
   fetchParliamentVotesLive,
 } from './parliament-api.live'
@@ -317,6 +323,38 @@ export async function fetchParliamentMemberSpeechActivity(
   return isParliamentMockEnabled()
     ? fetchParliamentMemberSpeechActivityMock(memberId, year, filter, q)
     : fetchParliamentMemberSpeechActivityLive(memberId, year, filter, q)
+}
+
+/**
+ * Institution-wide vote volume per day, one calendar year at a time.
+ *
+ * Mock mode counts the vote fixtures. LIVE MODE REJECTS: the API has no
+ * institution-wide vote aggregate yet, so this call fails until the server
+ * grows `parliamentVoteActivity` — by design, so the hub states the gap rather
+ * than drawing a heatmap out of the ~16 paged requests the votes connection
+ * would otherwise cost.
+ */
+export async function fetchParliamentVoteActivity(
+  year: number,
+): Promise<ParliamentVoteActivity | null> {
+  return isParliamentMockEnabled()
+    ? fetchParliamentVoteActivityMock(year)
+    : fetchParliamentVoteActivityLive(year)
+}
+
+/**
+ * Institution-wide legislative activity per day, for one calendar year.
+ *
+ * Mock mode counts the bill fixtures by their last-updated day. LIVE MODE
+ * REJECTS: the API has no `parliamentBillActivity` aggregate yet, so the hub
+ * card states the gap instead of counting the one page of bills it can see.
+ */
+export async function fetchParliamentBillActivity(
+  year: number,
+): Promise<ParliamentBillActivity | null> {
+  return isParliamentMockEnabled()
+    ? fetchParliamentBillActivityMock(year)
+    : fetchParliamentBillActivityLive(year)
 }
 
 // ── global stenograme (all-parliament speeches page) ─────────────────────────

@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
+  billBucketFor,
   bucketFor,
   buildWindowGrid,
   buildYearGrid,
   RO_MONTHS_SHORT,
   RO_WEEKDAY_LABELS,
+  rollingWindow,
   speechBucketFor,
 } from './vote-activity-grid'
 
@@ -107,6 +109,55 @@ describe('buildWindowGrid', () => {
   })
 })
 
+describe('rollingWindow', () => {
+  it('spans `months` calendar months, ending today and starting on a 1st', () => {
+    const window = rollingWindow({
+      months: 12,
+      today: new Date('2026-07-29T11:00:00Z'),
+    })
+    expect(window).toEqual({
+      startIso: '2025-08-01',
+      endIso: '2026-07-29',
+      years: [2025, 2026],
+      anchorYear: 2026,
+    })
+  })
+
+  it('does NOT overflow out of a short target month (the 31st bug)', () => {
+    // `setUTCMonth` before `setUTCDate(1)` would land on 2025-05-01 here,
+    // silently dropping April from a window that claims to hold 12 months.
+    const window = rollingWindow({
+      months: 12,
+      today: new Date('2026-03-31T00:00:00Z'),
+    })
+    expect(window.startIso).toBe('2025-04-01')
+    expect(window.endIso).toBe('2026-03-31')
+  })
+
+  it('reports ONE year when the window does not cross a January', () => {
+    const window = rollingWindow({
+      months: 6,
+      today: new Date('2026-06-15T00:00:00Z'),
+    })
+    expect(window).toEqual({
+      startIso: '2026-01-01',
+      endIso: '2026-06-15',
+      years: [2026],
+      anchorYear: 2026,
+    })
+  })
+
+  it('is timezone-stable: a late-evening local time still keys off the UTC day', () => {
+    const window = rollingWindow({
+      months: 12,
+      today: new Date('2026-01-01T23:30:00Z'),
+    })
+    expect(window.startIso).toBe('2025-02-01')
+    expect(window.endIso).toBe('2026-01-01')
+    expect(window.years).toEqual([2025, 2026])
+  })
+})
+
 describe('bucketFor', () => {
   it('maps counts to fixed intensity buckets at the boundaries', () => {
     expect(bucketFor(0)).toBe(0)
@@ -122,6 +173,34 @@ describe('bucketFor', () => {
 
   it('treats negative/zero as empty', () => {
     expect(bucketFor(-5)).toBe(0)
+  })
+})
+
+describe('billBucketFor', () => {
+  it('maps bills-per-day to the 0 / 1–4 / 5–14 / 15–29 / 30+ buckets', () => {
+    expect(billBucketFor(0)).toBe(0)
+    expect(billBucketFor(1)).toBe(1)
+    expect(billBucketFor(4)).toBe(1)
+    expect(billBucketFor(5)).toBe(2)
+    expect(billBucketFor(14)).toBe(2)
+    expect(billBucketFor(15)).toBe(3)
+    expect(billBucketFor(29)).toBe(3)
+    expect(billBucketFor(30)).toBe(4)
+    expect(billBucketFor(50)).toBe(4)
+  })
+
+  it('spreads the MEASURED day distribution across the whole ramp', () => {
+    // Measured over the 600 most recently-updated bills: p50 = 9, p90 = 24,
+    // max = 50. This ramp puts the median mid-scale and reaches the darkest
+    // band; the vote ramp would leave the median palest and its top band unused.
+    expect(billBucketFor(9)).toBe(2)
+    expect(billBucketFor(50)).toBe(4)
+    expect(bucketFor(9)).toBe(1)
+    expect(bucketFor(50)).toBe(3)
+  })
+
+  it('treats negative/zero as empty', () => {
+    expect(billBucketFor(-3)).toBe(0)
   })
 })
 

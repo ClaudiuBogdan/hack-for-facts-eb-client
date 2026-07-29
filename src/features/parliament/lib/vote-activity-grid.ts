@@ -146,6 +146,52 @@ export function buildYearGrid(year: number): VoteActivityGrid {
   })
 }
 
+/** An inclusive `YYYY-MM-DD` window, plus the calendar years it touches. */
+export interface RollingWindow {
+  readonly startIso: string
+  readonly endIso: string
+  /** 1 or 2 entries — the aggregates are served one calendar year at a time. */
+  readonly years: readonly number[]
+  /** The year the window ENDS in: what an empty state should name. */
+  readonly anchorYear: number
+}
+
+/**
+ * The last `months` calendar months, ending today and starting on the 1st.
+ *
+ * Why a rolling window rather than a calendar year: on the 3rd of January a
+ * year-bounded chart shows three days of squares and hides the session that
+ * just ended. This always covers the same amount of recent record.
+ *
+ * The day is set to the 1st BEFORE the month is stepped back. `setUTCMonth`
+ * overflows when the target month is shorter than the current day — from
+ * 2026-03-31 it lands on 2025-05-01 instead of 2025-04-01, silently dropping a
+ * month from the window.
+ */
+export function rollingWindow({
+  months,
+  today,
+}: {
+  readonly months: number
+  readonly today: Date
+}): RollingWindow {
+  const end = new Date(
+    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
+  )
+  const start = new Date(end)
+  start.setUTCDate(1)
+  start.setUTCMonth(start.getUTCMonth() - (months - 1))
+
+  return {
+    startIso: isoFromUtc(start),
+    endIso: isoFromUtc(end),
+    years: [
+      ...new Set([start.getUTCFullYear(), end.getUTCFullYear()]),
+    ],
+    anchorYear: end.getUTCFullYear(),
+  }
+}
+
 /**
  * Bucket a day's vote count into an intensity level 0–4 (fixed thresholds):
  *   0 = none · 1 = 1–9 · 2 = 10–29 · 3 = 30–99 · 4 = 100+.
@@ -155,6 +201,25 @@ export function bucketFor(count: number): 0 | 1 | 2 | 3 | 4 {
   if (count < 10) return 1
   if (count < 30) return 2
   if (count < 100) return 3
+  return 4
+}
+
+/**
+ * Bucket a day's BILL count — bills whose most recent procedural step falls on
+ * that day — into an intensity level 0–4: 0 / 1–4 / 5–14 / 15–29 / 30+.
+ *
+ * Measured, not guessed: the 600 most recently-updated bills served by
+ * `parliamentBills` (2026-07-29) spread over 51 distinct `lastEventDate` days
+ * with p50 = 9, p90 = 24, max = 50. That sample is by construction the recent
+ * window this heatmap draws, so the ramp is calibrated where it is used. The
+ * vote ramp is the wrong shape for it: the median day lands in its palest band
+ * and its darkest (100+) is unreachable, so half the scale would go unused.
+ */
+export function billBucketFor(count: number): 0 | 1 | 2 | 3 | 4 {
+  if (count <= 0) return 0
+  if (count <= 4) return 1
+  if (count <= 14) return 2
+  if (count <= 29) return 3
   return 4
 }
 
