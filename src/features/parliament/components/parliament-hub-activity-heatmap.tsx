@@ -152,7 +152,12 @@ export function ParliamentHubActivityHeatmap({
             </p>
           ) : null}
         </div>
-      ) : !hasDays ? (
+      ) : !hasDays && isCovered === undefined ? (
+        // "Nothing happened" is only sayable when we know we were watching.
+        // WITH coverage the grid still draws: a window that is half uncaptured
+        // must show its hatching rather than collapse into a sentence claiming
+        // the chambers never voted. Without coverage this stays exactly as it
+        // was — the honest two-state reading.
         <p className="text-base leading-6 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
           {emptyLabel}
         </p>

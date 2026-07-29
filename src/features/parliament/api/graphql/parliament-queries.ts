@@ -834,7 +834,12 @@ const rawVoteCoverageSchema = z.object({
   sourceAvailableFrom: z.string().nullable(),
   observedFrom: z.string(),
   observedThrough: z.string(),
-  finalizedThrough: z.string(),
+  // NULLABLE, and the domain schema has been since the frontier became a prefix
+  // that can be empty. This parser is the one the response actually passes
+  // through first, so a `z.string()` here rejects the ENTIRE activity response
+  // the moment the server tells the truth about an unsettled lane — the domain
+  // schema's nullability is never reached.
+  finalizedThrough: z.string().nullable(),
   asOf: z.string(),
   ranges: z.array(z.object({ from: z.string(), to: z.string() })),
   gaps: z.array(

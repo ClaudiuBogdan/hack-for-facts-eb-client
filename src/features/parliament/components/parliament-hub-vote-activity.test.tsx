@@ -194,6 +194,18 @@ describe('ParliamentHubVoteActivity — what an empty square is allowed to claim
     ...over,
   })
 
+  /**
+   * All three chambers, since an unfiltered square SUMS them and coverage that
+   * omits a lane can no longer confirm anything. `over` applies to every lane.
+   */
+  const allLanes = (
+    over: Partial<ParliamentVoteCoverage> = {},
+  ): ParliamentVoteCoverage[] => [
+    lane(over),
+    lane({ chamber: 'senat', sourceSystem: 'senat', ...over }),
+    lane({ chamber: 'comun', sourceSystem: 'cdep', ...over }),
+  ]
+
   // At least one day, or the heatmap draws its empty state instead of a grid
   // and there are no squares to make a claim about.
   const withCoverage = (coverage: ParliamentVoteCoverage[]) => {
@@ -219,7 +231,7 @@ describe('ParliamentHubVoteActivity — what an empty square is allowed to claim
    * not read as quiet.
    */
   it('does not confirm a day inside the window but after the settled frontier', () => {
-    withCoverage([lane({ finalizedThrough: '2026-05-22' })])
+    withCoverage(allLanes({ finalizedThrough: '2026-05-22' }))
     render(<ParliamentHubVoteActivity />)
     expect(
       squareTitle(/27 iulie 2026 — am verificat dimineața/),
@@ -228,13 +240,13 @@ describe('ParliamentHubVoteActivity — what an empty square is allowed to claim
 
   /** A day the crawl never reached says so in different words. */
   it('distinguishes never-collected from collected-too-early', () => {
-    withCoverage([
-      lane({
+    withCoverage(
+      allLanes({
         ranges: [{ from: '2016-01-01', to: '2026-06-01' }],
         observedThrough: '2026-06-01',
         finalizedThrough: '2026-06-01',
       }),
-    ])
+    )
     render(<ParliamentHubVoteActivity />)
     expect(squareTitle(/27 iulie 2026 — nu am colectat/)).toBeInTheDocument()
   })
@@ -261,14 +273,14 @@ describe('ParliamentHubVoteActivity — what an empty square is allowed to claim
 
   /** No settled prefix at all confirms nothing. */
   it('confirms nothing when the frontier is NULL', () => {
-    withCoverage([lane({ finalizedThrough: null })])
+    withCoverage(allLanes({ finalizedThrough: null }))
     render(<ParliamentHubVoteActivity />)
     expect(squareTitle(/20 iulie 2026 —/)).toBeInTheDocument()
   })
 
   /** Inside the window and at/below the frontier: a zero here IS a fact. */
   it('does confirm a settled day inside every window', () => {
-    withCoverage([lane({ finalizedThrough: '2026-07-29' })])
+    withCoverage(allLanes({ finalizedThrough: '2026-07-29' }))
     render(<ParliamentHubVoteActivity />)
     expect(screen.queryByTitle(/27 iulie 2026 —/)).not.toBeInTheDocument()
   })
@@ -279,15 +291,68 @@ describe('ParliamentHubVoteActivity — what an empty square is allowed to claim
    * currently sit on such days.
    */
   it('marks a day that HAS votes but is past the frontier as not yet confirmed', () => {
-    withCoverage([lane({ finalizedThrough: '2026-01-01' })])
+    withCoverage(allLanes({ finalizedThrough: '2026-01-01' }))
     render(<ParliamentHubVoteActivity />)
     expect(
       screen.getByRole('link', { name: /20 martie 2026 — .*neconfirmat/ }),
     ).toBeInTheDocument()
   })
 
+  /**
+   * The hole the first fix left: `isCovered` was consulted only for EMPTY
+   * squares, so a day carrying divisions printed its count with no caveat even
+   * when a typed gap said another chamber's contribution was missing. Live, 28
+   * gap dates overlap 340 divisions from other chambers.
+   */
+  it('caveats a day that HAS divisions but also carries a typed gap', () => {
+    withCoverage(
+      allLanes({
+        gaps: [
+          {
+            date: '2026-03-20',
+            status: 'PARSER_EMPTY',
+            reason: 'Calendarul lunii a listat ziua, dar pagina nu a returnat nicio divizune.',
+          },
+        ],
+      }),
+    )
+    render(<ParliamentHubVoteActivity />)
+    expect(
+      screen.getByRole('link', { name: /20 martie 2026 — .*neconfirmat/ }),
+    ).toBeInTheDocument()
+  })
+
+  /** A gap day states the gap's own reason, not "we checked too early". */
+  it('gives a gap day its real reason rather than the morning-poll excuse', () => {
+    withCoverage(
+      allLanes({
+        gaps: [
+          { date: '2026-07-27', status: 'PARSER_EMPTY', reason: 'pagina nu a returnat nicio divizune' },
+        ],
+      }),
+    )
+    render(<ParliamentHubVoteActivity />)
+    expect(
+      squareTitle(/27 iulie 2026 — pagina nu a returnat/),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByTitle(/27 iulie 2026 — am verificat dimineața/),
+    ).not.toBeInTheDocument()
+  })
+
+  /**
+   * Coverage that simply OMITS a lane must not read as coverage that confirms
+   * it. An all-chamber square sums three chambers; two lanes cannot vouch for
+   * the third's silence.
+   */
+  it('confirms nothing when a contributing lane is absent from the read', () => {
+    withCoverage([lane(), lane({ chamber: 'senat', sourceSystem: 'senat' })])
+    render(<ParliamentHubVoteActivity />)
+    expect(squareTitle(/20 iulie 2026 — nu avem acoperirea/)).toBeInTheDocument()
+  })
+
   it('states a settled day’s count without a caveat', () => {
-    withCoverage([lane({ finalizedThrough: '2026-07-29' })])
+    withCoverage(allLanes({ finalizedThrough: '2026-07-29' }))
     render(<ParliamentHubVoteActivity />)
     expect(
       screen.getByRole('link', { name: /20 martie 2026 — / }),

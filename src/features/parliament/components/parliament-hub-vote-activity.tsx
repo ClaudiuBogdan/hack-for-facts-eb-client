@@ -6,6 +6,7 @@ import { Trans } from '@lingui/react/macro'
 import { Button } from '@/components/ui/button'
 import type { ParliamentSearch } from '@/schemas/parliament'
 import { buildVotesFilter } from '../api/graphql/parliament-filters'
+import { toGraphqlVoteChamber } from '../api/graphql/parliament-translate'
 import { useParliamentVoteActivity } from '../hooks/use-parliament-data'
 import { bucketFor, rollingWindow } from '../lib/vote-activity-grid'
 import {
@@ -87,16 +88,76 @@ export function ParliamentHubVoteActivity({
   const isLoading =
     !hasFailed && (primary.isLoading || (needsBothYears && secondary.isLoading))
 
-  /** One entry per lane; the two yearly reads repeat the same coverage rows. */
-  const lanes = useMemo(() => {
-    const rows = [
+  /**
+   * Every coverage row from BOTH yearly reads, deliberately NOT de-duplicated by
+   * lane key. De-duplicating let the second response overwrite the first, so a
+   * stale or more generous row could replace a stricter one. Keeping them all
+   * and requiring EVERY row to cover a day makes the merge conservative by
+   * construction: disagreement between the two reads can only narrow a claim.
+   */
+  const lanes = useMemo(
+    () => [
       ...(primary.data?.coverage ?? []),
       ...(secondary.data?.coverage ?? []),
-    ]
-    const byKey = new Map<string, (typeof rows)[number]>()
-    for (const c of rows) byKey.set(`${c.chamber}/${c.sourceSystem}`, c)
-    return [...byKey.values()]
-  }, [primary.data, secondary.data])
+    ],
+    [primary.data, secondary.data],
+  )
+
+  /**
+   * The chambers this square SUMS, so the chambers coverage must account for.
+   * Without this, coverage that simply omits a lane reads as coverage that
+   * confirms it — absence would never veto presence, and an all-chamber day
+   * could be confirmed on one lane's say-so.
+   */
+  const expectedChambers = useMemo(() => {
+    const c = daySearch.chamber
+    return c === undefined || c === 'all'
+      ? ['camera_deputatilor', 'senat', 'comun']
+      : [toGraphqlVoteChamber(c)]
+  }, [daySearch.chamber])
+
+  /**
+   * What we can honestly say about one day — ONE function, consulted by empty
+   * and non-empty squares alike. They used to be judged separately: empty cells
+   * checked gaps + ranges + frontier, while cells WITH divisions checked only
+   * the frontier. So a day carrying a typed Senate gap and five Camera
+   * divisions printed a bare "5 votes" (28 such gap dates overlap 340
+   * divisions live). A count is a completeness claim too.
+   */
+  const verdictFor = useMemo(() => {
+    if (lanes.length === 0) return undefined
+    const gapByDate = new Map<string, { status: string; reason: string | null }>()
+    for (const c of lanes) {
+      for (const g of c.gaps) if (!gapByDate.has(g.date)) gapByDate.set(g.date, g)
+    }
+    const covered = new Set(lanes.map((c) => c.chamber))
+    const laneSetComplete = expectedChambers.every((c) => covered.has(c))
+    return (
+      iso: string,
+    ):
+      | { kind: 'accounted' }
+      | { kind: 'gap'; status: string; reason: string | null }
+      | { kind: 'lane-missing' }
+      | { kind: 'not-captured' }
+      | { kind: 'not-settled' } => {
+      const gap = gapByDate.get(iso)
+      if (gap !== undefined) {
+        return { kind: 'gap', status: gap.status, reason: gap.reason }
+      }
+      if (!laneSetComplete) return { kind: 'lane-missing' }
+      if (!lanes.every((c) => c.ranges.some((r) => iso >= r.from && iso <= r.to))) {
+        return { kind: 'not-captured' }
+      }
+      if (
+        !lanes.every(
+          (c) => c.finalizedThrough !== null && iso <= c.finalizedThrough,
+        )
+      ) {
+        return { kind: 'not-settled' }
+      }
+      return { kind: 'accounted' }
+    }
+  }, [lanes, expectedChambers])
 
   // A window spanning two calendar years is only true once BOTH have answered.
   // Drawing the half that arrived would print the missing year as empty days —
@@ -127,11 +188,7 @@ export function ParliamentHubVoteActivity({
          * flatly there would assert a completeness we do not have — the same
          * error as painting an unwatched day quiet, one step less obvious.
          */
-        const settled =
-          lanes.length === 0 ||
-          lanes.every(
-            (c) => c.finalizedThrough !== null && day.date <= c.finalizedThrough,
-          )
+        const settled = (verdictFor?.(day.date).kind ?? 'accounted') === 'accounted'
         map.set(day.date, {
           total: day.total,
           label: settled
@@ -172,7 +229,7 @@ export function ParliamentHubVoteActivity({
     window,
     daySearch,
     onSelectDay,
-    lanes,
+    verdictFor,
   ])
 
   /**
@@ -196,33 +253,13 @@ export function ParliamentHubVoteActivity({
    * undefined and the grid keeps its two-state reading rather than inventing a
    * third from data it does not have.
    */
-  const isCovered = useMemo(() => {
-    if (lanes.length === 0) return undefined
-    const gapDays = new Set(lanes.flatMap((c) => c.gaps.map((g) => g.date)))
-    return (iso: string): boolean => {
-      if (gapDays.has(iso)) return false
-      return lanes.every(
-        (c) =>
-          c.ranges.some((r) => iso >= r.from && iso <= r.to) &&
-          c.finalizedThrough !== null &&
-          iso <= c.finalizedThrough,
-      )
-    }
-  }, [lanes])
-
-  /**
-   * WHY an unconfirmed day is unconfirmed, so the tooltip admits the right
-   * thing: 'not-settled' = we fetched it, but at 04:30 before the sitting;
-   * 'not-captured' = we never watched it at all.
-   */
-  const unconfirmedReason = useMemo(() => {
-    return (iso: string): 'not-settled' | 'not-captured' => {
-      const inEveryWindow = lanes.every((c) =>
-        c.ranges.some((r) => iso >= r.from && iso <= r.to),
-      )
-      return lanes.length > 0 && inEveryWindow ? 'not-settled' : 'not-captured'
-    }
-  }, [lanes])
+  const isCovered = useMemo(
+    () =>
+      verdictFor === undefined
+        ? undefined
+        : (iso: string): boolean => verdictFor(iso).kind === 'accounted',
+    [verdictFor],
+  )
 
   return (
     <ParliamentHubActivityHeatmap
@@ -232,12 +269,23 @@ export function ParliamentHubVoteActivity({
       {...(isCovered !== undefined && { isCovered })}
       uncapturedLabel={(iso) => {
         const dateLabel = formatActivityDate(iso)
-        // Two different admissions, and saying the wrong one is its own small
-        // lie. A day after the settled frontier WAS fetched — just at 04:30,
-        // before the chamber could sit — so "we never collected it" is false.
-        return unconfirmedReason(iso) === 'not-settled'
-          ? t`${dateLabel} — am verificat dimineața, înainte de ședință; ziua nu e confirmată`
-          : t`${dateLabel} — nu am colectat această zi`
+        // Four different admissions. Saying the wrong one is its own small lie:
+        // a day the crawl WATCHED and found listed-but-empty is not a day we
+        // "checked too early", and a day whose lane is simply missing from the
+        // coverage read is neither.
+        const v = verdictFor?.(iso)
+        switch (v?.kind) {
+          case 'gap':
+            return v.reason !== null
+              ? t`${dateLabel} — ${v.reason}`
+              : t`${dateLabel} — sursa nu a returnat nimic pentru această zi`
+          case 'not-settled':
+            return t`${dateLabel} — am verificat dimineața, înainte de ședință; ziua nu e confirmată`
+          case 'lane-missing':
+            return t`${dateLabel} — nu avem acoperirea tuturor camerelor pentru această zi`
+          default:
+            return t`${dateLabel} — nu am colectat această zi`
+        }
       }}
       status={isLoading ? 'loading' : hasFailed ? 'error' : 'ready'}
       errorLead={
