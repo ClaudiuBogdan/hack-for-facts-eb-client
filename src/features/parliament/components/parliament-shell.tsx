@@ -2,6 +2,8 @@ import { useState, type ReactNode } from 'react'
 import { Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import parliamentHeader1280 from '../assets/header-parliament-allegory-1280.png'
+import parliamentHeader768 from '../assets/header-parliament-allegory-768.png'
 import {
   useParliamentFreshness,
   useParliamentHub,
@@ -44,62 +46,97 @@ export function ParliamentShell({ activeTab, children, actions }: Props) {
     <div className="min-h-screen min-w-0 bg-background">
       <header className="border-b-2 border-[var(--pnrr-border)] bg-background">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className={parliamentHeaderHeroClassName}>
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-              <div className="min-w-0 flex-1">
-                <h1
-                  className={parliamentHeaderTitleClassName}
-                  style={parliamentHeaderTitleStyle}
-                >
-                  <span className={parliamentHeaderTitleLineClassName}>
-                    Parlamentul
-                  </span>
-                  <span className={parliamentHeaderTitleLineClassName}>
-                    României
-                  </span>
-                </h1>
-                <p className={cn(parliamentHeaderDescriptionClassName, 'mt-6 sm:mt-8')}>
-                  Parlamentul României este format din Camera Deputaților și Senat.
-                  Cele două camere adoptă legi, controlează activitatea Guvernului și
-                  dezbat deciziile importante pentru țară.
-                </p>
-                <p className={cn(parliamentHeaderMetaClassName, 'mt-4')}>
-                  {legislatureLabel}
-                  {lastSynced ? ` · Actualizat ${formatSyncDate(lastSynced)}` : null}
-                  {latestVote ? ` · ultimul vot înregistrat: ${latestVote}` : null}
-                </p>
-              </div>
-
-              <div className="flex shrink-0 items-center gap-2 sm:pt-1">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-9 w-9 rounded-none border-2"
-                  onClick={() => setInfoOpen(true)}
-                  aria-label="Informații despre date"
-                >
-                  <Info className="h-4 w-4" aria-hidden />
-                </Button>
-                {actions}
-              </div>
+          <div
+            className={cn(
+              parliamentHeaderHeroClassName,
+              'relative overflow-hidden xl:min-h-[32rem]',
+            )}
+          >
+            <div
+              className="pointer-events-none absolute inset-y-0 right-0 hidden w-[74%] items-end justify-end xl:flex"
+              aria-hidden="true"
+            >
+              <img
+                src={parliamentHeader768}
+                srcSet={`${parliamentHeader768} 768w, ${parliamentHeader1280} 1280w`}
+                sizes="(min-width: 1280px) 74vw, 0px"
+                width={1280}
+                height={687}
+                alt=""
+                loading="eager"
+                decoding="async"
+                fetchPriority="high"
+                draggable={false}
+                className="h-full w-full object-contain object-right-bottom"
+              />
             </div>
 
-            {data ? (
-              <div className="mt-8 flex flex-wrap gap-3">
-                <div className={parliamentHeaderStatClassName}>
-                  <span className={parliamentHeaderStatValueClassName}>
-                    {data.memberCountByChamber.camera}
-                  </span>
-                  <span className={parliamentHeaderStatLabelClassName}>deputați</span>
+            <div className="absolute right-0 top-0 z-20 flex items-center gap-2 sm:top-1">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9 rounded-none border-2"
+                onClick={() => setInfoOpen(true)}
+                aria-label="Informații despre date"
+              >
+                <Info className="h-4 w-4" aria-hidden />
+              </Button>
+              {actions}
+            </div>
+
+            <div className="relative z-10 min-w-0 pr-12 xl:max-w-[48%] xl:pr-0">
+              <h1
+                className={parliamentHeaderTitleClassName}
+                style={parliamentHeaderTitleStyle}
+              >
+                <span className={parliamentHeaderTitleLineClassName}>
+                  Parlamentul
+                </span>
+                <span className={parliamentHeaderTitleLineClassName}>
+                  României
+                </span>
+              </h1>
+              <p
+                className={cn(
+                  parliamentHeaderDescriptionClassName,
+                  'mt-6 sm:mt-8',
+                )}
+              >
+                Parlamentul României este format din Camera Deputaților și
+                Senat. Cele două camere adoptă legi, controlează activitatea
+                Guvernului și dezbat deciziile importante pentru țară.
+              </p>
+              <p className={cn(parliamentHeaderMetaClassName, 'mt-4')}>
+                {legislatureLabel}
+                {lastSynced
+                  ? ` · Actualizat ${formatSyncDate(lastSynced)}`
+                  : null}
+                {latestVote
+                  ? ` · ultimul vot înregistrat: ${latestVote}`
+                  : null}
+              </p>
+
+              {data ? (
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <div className={parliamentHeaderStatClassName}>
+                    <span className={parliamentHeaderStatValueClassName}>
+                      {data.memberCountByChamber.camera}
+                    </span>
+                    <span className={parliamentHeaderStatLabelClassName}>
+                      deputați
+                    </span>
+                  </div>
+                  <div className={parliamentHeaderStatClassName}>
+                    <span className={parliamentHeaderStatValueClassName}>
+                      {data.memberCountByChamber.senat}
+                    </span>
+                    <span className={parliamentHeaderStatLabelClassName}>
+                      senatori
+                    </span>
+                  </div>
                 </div>
-                <div className={parliamentHeaderStatClassName}>
-                  <span className={parliamentHeaderStatValueClassName}>
-                    {data.memberCountByChamber.senat}
-                  </span>
-                  <span className={parliamentHeaderStatLabelClassName}>senatori</span>
-                </div>
-              </div>
-            ) : null}
+              ) : null}
+            </div>
           </div>
 
           <div className="border-t-2 border-[var(--pnrr-border)]">
