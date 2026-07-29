@@ -8,6 +8,8 @@ type Props = {
   readonly total: number
   readonly onPageChange: (page: number) => void
   readonly className?: string
+  /** Names the nav for screen readers; the bar serves more than one list. */
+  readonly ariaLabel?: string
 }
 
 type PageItem = { readonly type: 'page'; readonly page: number } | { readonly type: 'ellipsis' }
@@ -41,6 +43,7 @@ export function VotesListPagination({
   total,
   onPageChange,
   className,
+  ariaLabel = 'Paginare voturi',
 }: Props) {
   const safePage = Math.min(Math.max(1, page), totalPages)
   const pageItems = buildPageItems(safePage, totalPages)
@@ -63,7 +66,7 @@ export function VotesListPagination({
       </p>
 
       {totalPages > 1 ? (
-        <nav className="flex flex-wrap items-center gap-1" aria-label="Paginare voturi">
+        <nav className="flex flex-wrap items-center gap-1" aria-label={ariaLabel}>
           <Button
             type="button"
             variant="outline"

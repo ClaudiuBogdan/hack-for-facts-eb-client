@@ -13,7 +13,7 @@ import type { BillSortBy, ParliamentBillsSearch } from "@/schemas/parliament";
 import { useParliamentBills } from "../hooks/use-parliament-data";
 import { BILL_DETAIL_INFO_BG } from "../lib/bill-detail-theme";
 import { countActiveBillFilters } from "../lib/bills-filter";
-import { BillListCard } from "./bill-list-card";
+import { BillListCard, BillListContainer } from "./bill-list-card";
 import { FilterTriggerButton } from "./parliament-filter-trigger-button";
 import { ParliamentDebouncedSearchInput } from "./parliament-debounced-search-input";
 import { ParliamentInlineLoadError } from "./parliament-load-error-page";
@@ -160,7 +160,7 @@ export function ParliamentBillsContent({ search }: Props) {
       {isLoading ? (
         <div className="space-y-4">
           {Array.from({ length: 4 }).map((_, index) => (
-            <Skeleton key={index} className="h-40 w-full rounded-none" />
+            <Skeleton key={index} className="h-32 w-full rounded-none" />
           ))}
         </div>
       ) : isError ? (
@@ -171,20 +171,31 @@ export function ParliamentBillsContent({ search }: Props) {
         />
       ) : (
         <>
+          {/*
+            The count, not a second pagination bar. It answers "how many did
+            that search find" right where the search was typed; the controls
+            themselves belong at the foot of the list, next to where a reader
+            runs out of rows.
+          */}
           {data && data.total > 0 ? (
-            <VotesListPagination
-              page={data.page}
-              totalPages={data.totalPages}
-              total={data.total}
-              onPageChange={handlePageChange}
-            />
+            <p className="text-sm text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
+              <span className="font-bold">{data.total}</span> rezultate
+              {data.totalPages > 1 ? (
+                <span className="text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                  {' '}
+                  (pagina {data.page} din {data.totalPages})
+                </span>
+              ) : null}
+            </p>
           ) : null}
 
-          <div className="grid gap-4 lg:grid-cols-2">
-            {data?.bills.map((bill) => (
-              <BillListCard key={bill.billId} bill={bill} />
-            ))}
-          </div>
+          {data && data.bills.length > 0 ? (
+            <BillListContainer>
+              {data.bills.map((bill) => (
+                <BillListCard key={bill.billId} bill={bill} />
+              ))}
+            </BillListContainer>
+          ) : null}
 
           {data && data.total === 0 ? (
             <p className="text-base text-[#505a5f] dark:text-[var(--pnrr-muted)]">
@@ -199,6 +210,7 @@ export function ParliamentBillsContent({ search }: Props) {
               totalPages={data.totalPages}
               total={data.total}
               onPageChange={handlePageChange}
+              ariaLabel="Paginare proiecte de lege"
             />
           ) : null}
         </>
