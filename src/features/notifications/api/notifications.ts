@@ -1,10 +1,11 @@
 import { getAuthToken } from '@/lib/auth';
 import { getApiBaseUrl } from '@/config/env';
-import { t } from '@lingui/core/macro';
+import { i18n } from '@lingui/core';
+import { msg } from '@lingui/core/macro';
 import type { Notification, NotificationType } from '../types';
 
 const getApiUrl = () => getApiBaseUrl();
-const AUTH_REQUIRED_MESSAGE = t`Sign in required to manage notifications`;
+const AUTH_REQUIRED_MESSAGE = msg`Sign in required to manage notifications`;
 
 interface ApiResponse<T> {
   ok: boolean;
@@ -16,7 +17,7 @@ interface ApiResponse<T> {
 async function requireAuthToken(): Promise<string> {
   const token = await getAuthToken();
   if (!token) {
-    throw new Error(AUTH_REQUIRED_MESSAGE);
+    throw new Error(i18n._(AUTH_REQUIRED_MESSAGE));
   }
   return token;
 }

@@ -311,7 +311,7 @@ describe('ClassificationTreeItem', () => {
       )
 
       const buttons = screen.getAllByRole('button')
-      expect(buttons[0]).toHaveStyle({ marginLeft: '0rem' })
+      expect(buttons[0]?.style.marginLeft).toBe('0rem')
     })
 
     it('applies margin at level 1', () => {
@@ -328,7 +328,7 @@ describe('ClassificationTreeItem', () => {
       )
 
       const buttons = screen.getAllByRole('button')
-      expect(buttons[0]).toHaveStyle({ marginLeft: '1.5rem' })
+      expect(buttons[0]?.style.marginLeft).toBe('1.5rem')
     })
 
     it('applies increased margin at level 2', () => {
@@ -345,7 +345,7 @@ describe('ClassificationTreeItem', () => {
       )
 
       const buttons = screen.getAllByRole('button')
-      expect(buttons[0]).toHaveStyle({ marginLeft: '3rem' })
+      expect(buttons[0]?.style.marginLeft).toBe('3rem')
     })
   })
 

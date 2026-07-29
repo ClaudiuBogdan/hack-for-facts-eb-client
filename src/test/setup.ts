@@ -25,6 +25,15 @@ vi.mock("@/config/env", () => ({
 expect.extend(matchers);
 configure({ asyncUtilTimeout: 10000 });
 
+// Node exposes its own CustomEvent implementation, but jsdom only accepts
+// events created by its window realm. Radix FocusScope dispatches a CustomEvent
+// from a delayed cleanup callback, so keep the test global aligned with jsdom.
+Object.defineProperty(globalThis, "CustomEvent", {
+  configurable: true,
+  writable: true,
+  value: window.CustomEvent,
+});
+
 // Cleanup after each test case (e.g. clearing jsdom)
 afterEach(() => {
   cleanup();

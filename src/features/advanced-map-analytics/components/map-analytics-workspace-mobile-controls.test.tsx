@@ -736,7 +736,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
       expect(latestState.groupWorkspaces[0]?.groups[0]?.memberSirutaCodes).toEqual(['1001']);
     });
 
-    fireEvent.click(mapClickButton);
+    fireEvent.click(screen.getByRole('button', { name: 'Map click with CUI' }));
 
     await waitFor(() => {
       expect(latestState.groupWorkspaces[0]?.groups).toHaveLength(0);
@@ -862,8 +862,19 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     clickEmptyGroupWorkspaceAddButton();
     await startAddingUatsToFirstGroupWorkspace();
     fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
+
+    await waitFor(() => {
+      expect(latestState.groupWorkspaces[0]?.groups[0]?.memberSirutaCodes).toEqual(['1001']);
+    });
+
     await startAddingUatsToFirstGroupWorkspace();
-    fireEvent.click(screen.getByRole('button', { name: 'Map click second UAT' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Map click second UAT' }));
+
+    await waitFor(() => {
+      expect(latestState.groupWorkspaces[0]?.groups).toHaveLength(2);
+      expect(latestState.groupWorkspaces[0]?.groups[1]?.memberSirutaCodes).toEqual(['2002']);
+    });
+
     fireEvent.click(screen.getByRole('button', { name: 'Map click without CUI' }));
 
     await waitFor(() => {

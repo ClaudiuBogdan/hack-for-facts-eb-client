@@ -7,8 +7,9 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import type {
+  AllPaintProperties,
   ExpressionSpecification,
   FilterSpecification,
   MapLayerMouseEvent,
@@ -1126,7 +1127,11 @@ function syncMainLinePaint(
 
   const paint = buildMainLinePaint(mapViewType, labelMode) ?? {};
   for (const [property, value] of Object.entries(paint)) {
-    map.setPaintProperty(MAIN_LINE_LAYER_ID, property, value);
+    map.setPaintProperty(
+      MAIN_LINE_LAYER_ID,
+      property as keyof AllPaintProperties,
+      value,
+    );
   }
 }
 

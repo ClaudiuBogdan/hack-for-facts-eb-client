@@ -314,7 +314,7 @@ describe('primarie index route', () => {
     })
   })
 
-  it('warms blocking queries and background prefetches without waiting on them, and skips GeoJSON on the server', async () => {
+  it('warms blocking queries without starting cancellable background work on the server', async () => {
     const ensureQueryData = vi.fn().mockResolvedValue(undefined)
     const prefetchQuery = vi.fn().mockImplementation(
       () => new Promise(() => {}),
@@ -495,15 +495,7 @@ describe('primarie index route', () => {
       }),
     )
     expect(ensureQueryData).toHaveBeenCalledTimes(2)
-    expect(challengeEntitySubordinateRankingQueryOptionsMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        entityCui: '4267117',
-        normalizationOptions: {
-          currency: 'RON',
-          inflation_adjusted: false,
-        },
-      }),
-    )
+    expect(challengeEntitySubordinateRankingQueryOptionsMock).not.toHaveBeenCalled()
     expect(applyMapRuntimeConfigMock).toHaveBeenCalledWith(
       expect.objectContaining({
         series: [{ id: 'preview-series', enabled: true }],
@@ -516,11 +508,9 @@ describe('primarie index route', () => {
         inflationAdjustedOverride: false,
       }),
     )
-    expect(advancedMapAnalyticsSeriesDataQueryOptionsMock).toHaveBeenCalledWith({
-      series: [{ id: 'preview-series', enabled: true }],
-    })
+    expect(advancedMapAnalyticsSeriesDataQueryOptionsMock).not.toHaveBeenCalled()
     expect(geoJsonQueryOptionsMock).not.toHaveBeenCalled()
-    expect(prefetchQuery).toHaveBeenCalledTimes(2)
+    expect(prefetchQuery).not.toHaveBeenCalled()
   })
 
   it('uses URL settings when present and otherwise falls back to URL-only defaults without reading persisted preferences', async () => {
@@ -582,7 +572,7 @@ describe('primarie index route', () => {
     expect(readClientInflationAdjustedPreferenceMock).not.toHaveBeenCalled()
   })
 
-  it('prefetches GeoJSON only during client-side execution', async () => {
+  it('starts non-blocking subordinate, map-series, and GeoJSON prefetches only on the client', async () => {
     ;(globalThis as { window?: { location: { origin: string } } }).window = {
       location: {
         origin: 'https://client.transparenta.eu',
@@ -614,6 +604,8 @@ describe('primarie index route', () => {
     expect(
       loaderResult.entityPageBootstrap.loaderPayload.requestSiteUrl,
     ).toBe('https://client.transparenta.eu')
+    expect(challengeEntitySubordinateRankingQueryOptionsMock).toHaveBeenCalledTimes(1)
+    expect(advancedMapAnalyticsSeriesDataQueryOptionsMock).toHaveBeenCalledTimes(1)
     expect(geoJsonQueryOptionsMock).toHaveBeenCalledWith('UAT')
     expect(geoJsonQueryOptionsMock).toHaveBeenCalledWith('County')
     expect(prefetchQuery).toHaveBeenCalledTimes(4)

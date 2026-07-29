@@ -187,30 +187,30 @@ export const Route = createFileRoute('/primarie/$cui/')({
       },
     )
 
-    void queryClient.prefetchQuery(
-      challengeEntitySubordinateRankingQueryOptions({
-        entityCui: normalizedSearch.main_creditor_cui ?? params.cui,
-        reportPeriod,
-        normalizationOptions: {
-          currency: executionContext.publicSettings.currency,
-          inflation_adjusted: executionContext.publicSettings.inflationAdjusted,
-        },
-      }),
-    )
-
     if (typeof window !== 'undefined') {
+      void queryClient.prefetchQuery(
+        challengeEntitySubordinateRankingQueryOptions({
+          entityCui: normalizedSearch.main_creditor_cui ?? params.cui,
+          reportPeriod,
+          normalizationOptions: {
+            currency: executionContext.publicSettings.currency,
+            inflation_adjusted: executionContext.publicSettings.inflationAdjusted,
+          },
+        }),
+      )
+
       void queryClient.prefetchQuery(geoJsonQueryOptions('UAT'))
 
       if (isCountyEntity) {
         void queryClient.prefetchQuery(geoJsonQueryOptions('County'))
       }
-    }
 
-    void queryClient.prefetchQuery(
-      advancedMapAnalyticsSeriesDataQueryOptions({
-        series: runtimeMapState.series,
-      }),
-    )
+      void queryClient.prefetchQuery(
+        advancedMapAnalyticsSeriesDataQueryOptions({
+          series: runtimeMapState.series,
+        }),
+      )
+    }
 
     return {
       entityPageBootstrap,

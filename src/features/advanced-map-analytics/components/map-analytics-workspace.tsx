@@ -1195,7 +1195,7 @@ export function MapAnalyticsWorkspace({
       let didRemoveFromActiveGroup = false;
       let didChangeGroup = false;
 
-      updateState((draft) => {
+      const nextState = produce(mapState, (draft) => {
         const grouping = ensureActiveManualGroupWorkspace(draft);
         draft.activeGroupWorkspaceId = grouping.id;
 
@@ -1296,6 +1296,7 @@ export function MapAnalyticsWorkspace({
         nextMemberCount = targetGroup.memberSirutaCodes.length;
       });
 
+      setMapState(nextState);
       setActiveManualGroupId(nextActiveGroupId);
       if (didRemoveFromActiveGroup) {
         toast.success(
@@ -1313,7 +1314,7 @@ export function MapAnalyticsWorkspace({
         );
       }
     },
-    [activeManualGroupId, isPreviewLayout, isReadOnly, mapViewType, updateState]
+    [activeManualGroupId, isPreviewLayout, isReadOnly, mapState, mapViewType, setMapState]
   );
 
   const addFeatureToManualGroup = useCallback(
