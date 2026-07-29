@@ -13,10 +13,7 @@ import {
   countActiveStenogramSessionFilters,
   getStenogrameView,
 } from '../lib/parliament-stenogram-filter'
-import {
-  stenogramSectionIntroClassName,
-  stenogramSectionTitleClassName,
-} from '../lib/stenogram-theme'
+import { ParliamentListHeader } from './parliament-list-surface'
 import { ParliamentShell } from './parliament-shell'
 import { ParliamentSpeechActivityPanel } from './parliament-speech-activity-panel'
 import { ParliamentDebouncedSearchInput } from './parliament-debounced-search-input'
@@ -167,19 +164,24 @@ export function ParliamentStenogramePage({ search }: Props) {
   return (
     <ParliamentShell activeTab="stenograme">
       <div className="space-y-8">
-        <div>
-          <h2 className={stenogramSectionTitleClassName}>
-            <Trans>Stenogramele Parlamentului</Trans>
-          </h2>
-          <p className={stenogramSectionIntroClassName}>
+        <ParliamentListHeader
+          title={<Trans>Stenogramele Parlamentului</Trans>}
+          description={
             <Trans>
-              Stenograma este transcrierea oficială a dezbaterilor din plen.
-              Începeți de la ședințe — fiecare ședință se poate citi integral,
-              în ordinea din stenograma oficială — sau treceți la intervenții
-              dacă vă interesează cine a spus ceva anume, indiferent de ședință.
+              Transcrierile oficiale ale dezbaterilor din plen — ședință cu
+              ședință, sau intervenție cu intervenție.
             </Trans>
-          </p>
-        </div>
+          }
+          about={
+            <Trans>
+              Începeți de la ședințe: fiecare ședință se poate citi integral, în
+              ordinea din stenograma oficială. Treceți la intervenții dacă vă
+              interesează cine a spus ceva anume, indiferent de ședință. Nu
+              toate ședințele au stenograma publicată; filtrul de disponibilitate
+              arată care sunt captate.
+            </Trans>
+          }
+        />
 
         <ParliamentStenogramControls
           search={search}

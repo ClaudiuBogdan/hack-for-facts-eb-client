@@ -144,10 +144,16 @@ function renderPage(search: ParliamentSpeechesSearch = {}) {
 
 describe('sittings is the default view', () => {
   it('renders the sittings list with NO search params at all', () => {
-    const { container } = renderPage()
-    // The count line is split across elements by the bold spans.
-    const countLine = container.querySelector('[aria-live="polite"]')!
-    expect(countLine.textContent).toMatch(/Afișate\s*2\s*din\s*2\s*ședințe/)
+    renderPage()
+    // The count closes the list, in the footer next to the pager. It is split
+    // across bold spans, so it is matched on the paragraph's whole text.
+    expect(
+      screen.getByText(
+        (_, element) =>
+          element?.tagName === 'P' &&
+          /2\s*din\s*2\s*ședințe/.test(element.textContent ?? ''),
+      ),
+    ).toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: 'Ședința 0' }),
     ).toHaveAttribute('href', '/parlament/stenograme/sedinte/canon:s0')
@@ -188,11 +194,14 @@ describe('the interventions view', () => {
     // It used to be a `<details>` a reader had to open. A panel that hides its
     // own contents behind a toggle is one more thing to discover before the
     // page says anything.
-    const { container } = renderPage({ view: 'interventii' })
-    expect(container.querySelector('details')).toBeNull()
-    expect(
-      screen.getByRole('region', { name: 'Activitatea în plen pe zile' }),
-    ).toBeInTheDocument()
+    renderPage({ view: 'interventii' })
+    const panel = screen.getByRole('region', {
+      name: 'Activitatea în plen pe zile',
+    })
+    expect(panel).toBeInTheDocument()
+    // The header's "despre aceste date" disclosure is a `<details>` of its own;
+    // what must not be collapsed is the PANEL.
+    expect(panel.closest('details')).toBeNull()
   })
 
   it('opens on the LAST 12 MONTHS, with the years one step away', async () => {
@@ -352,13 +361,9 @@ describe('honest states on the sittings list', () => {
       sessionsPage(2, { total: 10_000, totalEstimated: true }),
     )
     renderPage()
-    // The tally is announced rather than boxed above the list — but it is still
-    // "peste 10.000", never a round number the server did not promise, so the
-    // cap needs no banner of its own.
-    const tally = screen.getByText(/peste/)
-    expect(tally).toBeInTheDocument()
-    expect(tally.closest('p')).toHaveAttribute('aria-live', 'polite')
-    expect(tally.closest('p')!.className).toContain('sr-only')
+    // Still "peste 10.000" in the footer tally, never a round number the server
+    // did not promise.
+    expect(screen.getByText(/peste/)).toBeInTheDocument()
   })
 
   it('pages the sittings instead of piling them up, ten at a time', async () => {

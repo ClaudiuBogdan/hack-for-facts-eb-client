@@ -1,8 +1,6 @@
 import { useMemo } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import type { ParliamentCommittee } from '@/schemas/parliament'
@@ -29,7 +27,17 @@ import {
   committeeNoticeClassName,
   PARLIAMENT_RESOURCE_PURPLE,
 } from '../lib/committee-theme'
+import {
+  countedNoun,
+  parliamentListStrongClassName,
+} from '../lib/list-surface-theme'
 import { ParliamentCardChevron } from './parliament-card-chevron'
+import { ParliamentDebouncedSearchInput } from './parliament-debounced-search-input'
+import {
+  ParliamentListFooter,
+  ParliamentListHeader,
+  ParliamentListToolbar,
+} from './parliament-list-surface'
 import { ParliamentShell } from './parliament-shell'
 
 const CHAMBER_TABS: ReadonlyArray<{ id: CommitteeChamberFilter; label: string }> = [
@@ -158,90 +166,73 @@ export function ParliamentCommitteesPage({ search }: Props) {
   return (
     <ParliamentShell activeTab="comisii">
       <div className="space-y-8">
-      <header className="border-b border-border pb-6">
-        <h1
-          className="font-black leading-tight tracking-tight"
-          style={{ fontSize: 'clamp(1.5rem, 4vw, 2.25rem)' }}
-        >
-          Comisii parlamentare
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Comisiile permanente, speciale și comune ale Camerei Deputaților și
-          Senatului — componență, conducere și proiectele repartizate.
-        </p>
-      </header>
+      <ParliamentListHeader
+        title="Comisii parlamentare"
+        description="Comisiile permanente, speciale și comune ale celor două Camere — componență, conducere și proiectele repartizate."
+      />
 
-      <div className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="relative flex-1">
-            <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#505a5f]"
-              aria-hidden
-            />
-            <Input
-              type="search"
-              value={search.q ?? ''}
-              onChange={(event) =>
-                applySearch({ q: event.target.value.trim() ? event.target.value : undefined })
-              }
-              placeholder="Caută după nume…"
-              aria-label="Caută o comisie după nume"
-              className={cn(committeeControlClassName, 'w-full pl-9')}
-            />
+      <ParliamentListToolbar
+        secondary={
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Filtru cameră">
+            {CHAMBER_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                aria-pressed={chamber === tab.id}
+                onClick={() => applySearch({ chamber: tab.id })}
+                className={cn(
+                  // `h-11` matches the search field and the two selects on the
+                  // row above: four controls on one bar at two heights read as
+                  // two unrelated bars.
+                  'h-11 rounded-none border-2 px-4 text-sm font-semibold transition-colors',
+                  chamber === tab.id
+                    ? 'border-[#1d70b8] bg-[#1d70b8] text-white'
+                    : 'border-[#b1b4b6] bg-white text-[#0b0c0c] hover:bg-[#f3f2f1] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)]',
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
+        }
+      >
+        <ParliamentDebouncedSearchInput
+          inputId="committees-q"
+          ariaLabel="Caută o comisie după nume"
+          placeholder="Caută după nume…"
+          value={search.q}
+          onCommit={(next) => applySearch({ q: next })}
+          className="flex-1"
+        />
 
-          <select
-            value={tip}
-            onChange={(event) =>
-              applySearch({ tip: event.target.value as CommitteeTypeFilter })
-            }
-            className={cn(committeeControlClassName, 'px-3 text-sm font-semibold sm:w-48')}
-            aria-label="Filtru tip de comisie"
-          >
-            {TYPE_TABS.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={legislatura}
-            onChange={(event) => applySearch({ legislatura: event.target.value })}
-            className={cn(committeeControlClassName, 'px-3 text-sm font-semibold sm:w-52')}
-            aria-label="Filtru legislatură"
-          >
-            {LEGISLATURE_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filtru cameră">
-          {CHAMBER_TABS.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              role="tab"
-              aria-selected={chamber === tab.id}
-              onClick={() => applySearch({ chamber: tab.id })}
-              className={cn(
-                // `h-11` matches the search field and the two selects on the
-                // row above: four controls on one bar at two heights read as
-                // two unrelated bars.
-                'h-11 rounded-none border-2 px-4 text-sm font-semibold transition-colors',
-                chamber === tab.id
-                  ? 'border-[#1d70b8] bg-[#1d70b8] text-white'
-                  : 'border-[#b1b4b6] bg-white text-[#0b0c0c] hover:bg-[#f3f2f1] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)]',
-              )}
-            >
-              {tab.label}
-            </button>
+        <select
+          value={tip}
+          onChange={(event) =>
+            applySearch({ tip: event.target.value as CommitteeTypeFilter })
+          }
+          className={cn(committeeControlClassName, 'px-3 text-sm font-semibold sm:w-48')}
+          aria-label="Filtru tip de comisie"
+        >
+          {TYPE_TABS.map((option) => (
+            <option key={option.id} value={option.id}>
+              {option.label}
+            </option>
           ))}
-        </div>
-      </div>
+        </select>
+
+        <select
+          value={legislatura}
+          onChange={(event) => applySearch({ legislatura: event.target.value })}
+          className={cn(committeeControlClassName, 'px-3 text-sm font-semibold sm:w-52')}
+          aria-label="Filtru legislatură"
+        >
+          {LEGISLATURE_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </ParliamentListToolbar>
 
       {isLoading ? (
         <div className="space-y-3" aria-busy="true" aria-label="Se încarcă lista de comisii">
@@ -273,18 +264,6 @@ export function ParliamentCommitteesPage({ search }: Props) {
         </div>
       ) : total > 0 ? (
         <div className="space-y-8">
-          <p className={committeeMutedTextClassName} role="status">
-            <span className="font-semibold tabular-nums text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
-              {total}
-            </span>{' '}
-            {total === 1 ? 'comisie' : 'de comisii'}
-            {groups.length > 1
-              ? ` · ${groups
-                  .map((group) => `${String(group.committees.length)} ${group.label.replace('Comisii ', '')}`)
-                  .join(', ')}`
-              : ''}
-          </p>
-
           {/* Grouped by TYPE, alphabetical within each group. The source orders
               by `committee_key`, which is neither alphabetical nor meaningful,
               so finding one committee meant reading all of them. */}
@@ -324,22 +303,39 @@ export function ParliamentCommitteesPage({ search }: Props) {
             </div>
           ) : null}
 
-          {hasNextPage ? (
-            <Button
-              type="button"
-              variant="outline"
-              className="h-11 w-full rounded-none border-2 border-[#0b0c0c] text-base font-normal dark:border-[var(--pnrr-border)]"
-              onClick={() => {
-                if (camera.hasNextPage) void camera.fetchNextPage()
-                if (senate.hasNextPage) void senate.fetchNextPage()
-              }}
-              disabled={camera.isFetchingNextPage || senate.isFetchingNextPage}
-            >
-              {camera.isFetchingNextPage || senate.isFetchingNextPage
-                ? 'Se încarcă…'
-                : 'Încarcă mai multe comisii'}
-            </Button>
-          ) : null}
+          <ParliamentListFooter
+            summary={
+              <>
+                <span className={parliamentListStrongClassName}>{total}</span>{' '}
+                {countedNoun(total, 'comisie', 'comisii')}
+                {groups.length > 1
+                  ? ` · ${groups
+                      .map(
+                        (group) =>
+                          `${String(group.committees.length)} ${group.label.replace('Comisii ', '')}`,
+                      )
+                      .join(', ')}`
+                  : ''}
+              </>
+            }
+          >
+            {hasNextPage ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 rounded-none border-2 border-[#0b0c0c] px-5 text-base font-normal dark:border-[var(--pnrr-border)]"
+                onClick={() => {
+                  if (camera.hasNextPage) void camera.fetchNextPage()
+                  if (senate.hasNextPage) void senate.fetchNextPage()
+                }}
+                disabled={camera.isFetchingNextPage || senate.isFetchingNextPage}
+              >
+                {camera.isFetchingNextPage || senate.isFetchingNextPage
+                  ? 'Se încarcă…'
+                  : 'Încarcă mai multe comisii'}
+              </Button>
+            ) : null}
+          </ParliamentListFooter>
         </div>
       ) : (
         <div className={committeeCardClassName + ' px-5 py-8'}>

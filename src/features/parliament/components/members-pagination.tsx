@@ -1,7 +1,13 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getPaginationRange } from '@/lib/pagination-range'
+import {
+  countedNoun,
+  formatParliamentTotal,
+  parliamentListStrongClassName,
+} from '../lib/list-surface-theme'
 import { parliamentPaginationButtonClassName } from '../lib/table-theme'
+import { ParliamentListFooter } from './parliament-list-surface'
 
 type Props = {
   readonly page: number
@@ -24,24 +30,17 @@ export function MembersPagination({
   const safePage = Math.min(Math.max(1, page), totalPages)
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex items-center gap-2 text-sm text-[var(--pnrr-muted)]">
-        <span>
-          <span className="font-bold text-[var(--pnrr-fg)]">
-            {total.toLocaleString('ro-RO')}
+    <ParliamentListFooter
+      summary={
+        <>
+          <span className={parliamentListStrongClassName}>
+            {formatParliamentTotal(total)}
           </span>{' '}
-          membri
-        </span>
-        {totalPages > 1 ? (
-          <>
-            <span aria-hidden>·</span>
-            <span>
-              {safePage} / {totalPages}
-            </span>
-          </>
-        ) : null}
-      </div>
-
+          {countedNoun(total, 'parlamentar', 'parlamentari')}
+          {totalPages > 1 ? ` · pagina ${safePage} din ${totalPages}` : ''}
+        </>
+      }
+    >
       {totalPages > 1 ? (
         <div className="flex flex-wrap items-center justify-between gap-3 sm:justify-end">
           <div className="flex items-center gap-1 sm:hidden">
@@ -121,6 +120,6 @@ export function MembersPagination({
           </div>
         </div>
       ) : null}
-    </div>
+    </ParliamentListFooter>
   )
 }

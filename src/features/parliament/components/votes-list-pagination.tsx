@@ -36,7 +36,114 @@ function buildPageItems(current: number, total: number): PageItem[] {
   return items
 }
 
-/** UK Parliament-style compact pagination bar */
+type NavProps = {
+  readonly page: number
+  readonly totalPages: number
+  readonly onPageChange: (page: number) => void
+  readonly ariaLabel?: string
+}
+
+/**
+ * The numbered pager on its own, with no count and no box around it.
+ *
+ * Split out of `VotesListPagination` so the list surfaces can put it on the
+ * right-hand side of `ParliamentListFooter`, where the count is already
+ * rendered once for the whole list — the bar used to carry its own copy, which
+ * is how "N rezultate" ended up printed twice on the proiecte tab.
+ */
+export function ParliamentListPaginationNav({
+  page,
+  totalPages,
+  onPageChange,
+  ariaLabel = 'Paginare',
+}: NavProps) {
+  if (totalPages <= 1) return null
+
+  const safePage = Math.min(Math.max(1, page), totalPages)
+  const pageItems = buildPageItems(safePage, totalPages)
+
+  return (
+    <nav className="flex flex-wrap items-center gap-1" aria-label={ariaLabel}>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        className="h-9 w-9 rounded-none border-[#b1b4b6] bg-white dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]"
+        onClick={() => onPageChange(1)}
+        disabled={safePage <= 1}
+        aria-label="Prima pagină"
+      >
+        <ChevronsLeft className="h-4 w-4" />
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        className="h-9 w-9 rounded-none border-[#b1b4b6] bg-white dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]"
+        onClick={() => onPageChange(safePage - 1)}
+        disabled={safePage <= 1}
+        aria-label="Pagina anterioară"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
+
+      {pageItems.map((item, index) =>
+        item.type === 'ellipsis' ? (
+          <span
+            key={`ellipsis-${index}`}
+            className="px-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]"
+          >
+            …
+          </span>
+        ) : (
+          <Button
+            key={item.page}
+            type="button"
+            variant={item.page === safePage ? 'default' : 'outline'}
+            className={cn(
+              'h-9 min-w-9 rounded-none px-3 text-sm',
+              item.page === safePage
+                ? 'border-[#0b0c0c] bg-[#0b0c0c] text-white hover:bg-[#0b0c0c]/90'
+                : 'border-[#b1b4b6] bg-white dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]',
+            )}
+            onClick={() => onPageChange(item.page)}
+            aria-current={item.page === safePage ? 'page' : undefined}
+          >
+            {item.page}
+          </Button>
+        ),
+      )}
+
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        className="h-9 w-9 rounded-none border-[#b1b4b6] bg-white dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]"
+        onClick={() => onPageChange(safePage + 1)}
+        disabled={safePage >= totalPages}
+        aria-label="Pagina următoare"
+      >
+        <ChevronRight className="h-4 w-4" />
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        className="h-9 w-9 rounded-none border-[#b1b4b6] bg-white dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]"
+        onClick={() => onPageChange(totalPages)}
+        disabled={safePage >= totalPages}
+        aria-label="Ultima pagină"
+      >
+        <ChevronsRight className="h-4 w-4" />
+      </Button>
+    </nav>
+  )
+}
+
+/**
+ * Count and pager in one bordered bar — still used by the member initiative
+ * tab, which is a panel inside a profile rather than one of the list surfaces.
+ */
 export function VotesListPagination({
   page,
   totalPages,
@@ -46,7 +153,6 @@ export function VotesListPagination({
   ariaLabel = 'Paginare voturi',
 }: Props) {
   const safePage = Math.min(Math.max(1, page), totalPages)
-  const pageItems = buildPageItems(safePage, totalPages)
 
   return (
     <div
@@ -65,82 +171,12 @@ export function VotesListPagination({
         ) : null}
       </p>
 
-      {totalPages > 1 ? (
-        <nav className="flex flex-wrap items-center gap-1" aria-label={ariaLabel}>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="h-9 w-9 rounded-none border-[#b1b4b6] bg-white dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]"
-            onClick={() => onPageChange(1)}
-            disabled={safePage <= 1}
-            aria-label="Prima pagină"
-          >
-            <ChevronsLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="h-9 w-9 rounded-none border-[#b1b4b6] bg-white dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]"
-            onClick={() => onPageChange(safePage - 1)}
-            disabled={safePage <= 1}
-            aria-label="Pagina anterioară"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-
-          {pageItems.map((item, index) =>
-            item.type === 'ellipsis' ? (
-              <span
-                key={`ellipsis-${index}`}
-                className="px-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]"
-              >
-                …
-              </span>
-            ) : (
-              <Button
-                key={item.page}
-                type="button"
-                variant={item.page === safePage ? 'default' : 'outline'}
-                className={cn(
-                  'h-9 min-w-9 rounded-none px-3 text-sm',
-                  item.page === safePage
-                    ? 'border-[#0b0c0c] bg-[#0b0c0c] text-white hover:bg-[#0b0c0c]/90'
-                    : 'border-[#b1b4b6] bg-white dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]',
-                )}
-                onClick={() => onPageChange(item.page)}
-                aria-current={item.page === safePage ? 'page' : undefined}
-              >
-                {item.page}
-              </Button>
-            ),
-          )}
-
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="h-9 w-9 rounded-none border-[#b1b4b6] bg-white dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]"
-            onClick={() => onPageChange(safePage + 1)}
-            disabled={safePage >= totalPages}
-            aria-label="Pagina următoare"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="h-9 w-9 rounded-none border-[#b1b4b6] bg-white dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]"
-            onClick={() => onPageChange(totalPages)}
-            disabled={safePage >= totalPages}
-            aria-label="Ultima pagină"
-          >
-            <ChevronsRight className="h-4 w-4" />
-          </Button>
-        </nav>
-      ) : null}
+      <ParliamentListPaginationNav
+        page={page}
+        totalPages={totalPages}
+        onPageChange={onPageChange}
+        ariaLabel={ariaLabel}
+      />
     </div>
   )
 }

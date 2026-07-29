@@ -141,7 +141,7 @@ describe('VotesListLayout — one list, chamber as a filter', () => {
 
   it('clears the chamber along with the other filters', () => {
     renderList({ tab: 'voturi', chamber: 'senat', outcome: 'adoptat' })
-    fireEvent.click(screen.getByRole('button', { name: /Renunță la toate/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Șterge filtrele/ }))
     const [call] = navigateMock.mock.calls as [[{ search: ParliamentVotesSearch }]]
     expect(call[0].search.chamber).toBeUndefined()
     expect(call[0].search.outcome).toBeUndefined()

@@ -1,4 +1,3 @@
-import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import {
@@ -27,6 +26,10 @@ import {
   getBillTypeChipLabel,
 } from '../lib/bills-filter'
 import { getBillLocationLabel, getBillTypeLabel } from '../lib/bill-profile-data'
+import {
+  ParliamentActiveFilterChips,
+  type ParliamentFilterChip,
+} from './parliament-list-surface'
 
 /** Patch merged into the search + committed to the URL by the tab. */
 export type ParliamentBillsFilterPatch = Partial<ParliamentBillsSearch>
@@ -186,7 +189,7 @@ export function ParliamentBillsActiveFilters({
   onChange,
   onClearAll,
 }: ChipsProps) {
-  const chips: Array<{ key: string; label: string; onRemove: () => void }> = []
+  const chips: ParliamentFilterChip[] = []
 
   const typeChip = getBillTypeChipLabel(search)
   if (typeChip) {
@@ -217,31 +220,5 @@ export function ParliamentBillsActiveFilters({
 
   if (chips.length === 0) return null
 
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      {chips.map((chip) => (
-        <span
-          key={chip.key}
-          className="inline-flex max-w-full items-center gap-1.5 border-2 border-[#b1b4b6] bg-[#f3f2f1] px-2.5 py-1 text-sm font-semibold text-[#0b0c0c] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-fg)]"
-        >
-          <span className="min-w-0 truncate">{chip.label}</span>
-          <button
-            type="button"
-            onClick={chip.onRemove}
-            aria-label={`Elimină filtrul ${chip.label}`}
-            className="inline-flex h-4 w-4 shrink-0 items-center justify-center hover:text-[#1d70b8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
-          >
-            <X className="h-3.5 w-3.5" aria-hidden />
-          </button>
-        </span>
-      ))}
-      <button
-        type="button"
-        onClick={onClearAll}
-        className="text-sm font-semibold text-[#0b0c0c] underline underline-offset-4 hover:text-[#1d70b8] dark:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
-      >
-        Șterge tot
-      </button>
-    </div>
-  )
+  return <ParliamentActiveFilterChips chips={chips} onClearAll={onClearAll} />
 }

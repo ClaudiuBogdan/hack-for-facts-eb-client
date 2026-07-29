@@ -4,6 +4,7 @@ import type { ParliamentGroupsSearch } from "@/schemas/parliament";
 import { useParliamentMembers } from "../hooks/use-parliament-data";
 import { ChamberCompositionSection } from "./chamber-composition-section";
 import { MembersFilters } from "./members-filters";
+import { ParliamentListHeader } from "./parliament-list-surface";
 import { MembersTable, MembersTableSkeleton } from "./members-table";
 import { ParliamentGroupsFloatingBar } from "./parliament-groups-floating-bar";
 import { ParliamentInlineLoadError } from "./parliament-load-error-page";
@@ -87,24 +88,13 @@ export function ParliamentGroupsContent({ search }: Props) {
 
       <div className="space-y-8">
         <section id="membri" className="scroll-mt-8 space-y-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <span className="h-10 w-1.5 bg-[var(--pnrr-blue)]" aria-hidden />
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                <h2 className="text-2xl font-black leading-none tracking-tight text-[var(--pnrr-fg)]">
-                  Membri
-                </h2>
-                {data ? (
-                  <span className="text-sm text-[var(--pnrr-muted)]">
-                    {data.total.toLocaleString("ro-RO")} membri
-                    {data.totalPages > 1
-                      ? ` · pagina ${data.page} din ${data.totalPages}`
-                      : ""}
-                  </span>
-                ) : null}
-              </div>
-            </div>
-          </div>
+          {/* The count used to ride on this heading; it is the same fact the
+              pager states at the foot of the table, where it answers a question
+              the reader actually has by then. */}
+          <ParliamentListHeader
+            title="Parlamentari"
+            description="Deputații și senatorii, cu grupul din care fac parte și județul pe care îl reprezintă."
+          />
 
           <div ref={filtersAnchorRef}>
             <MembersFilters

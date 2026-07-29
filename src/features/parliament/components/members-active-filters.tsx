@@ -3,7 +3,7 @@ import type { ParliamentMembersSearch } from '@/schemas/parliament'
 import { useParliamentGroups, useParliamentJudete } from '../hooks/use-parliament-data'
 import { getChamberLabel } from '../lib/formatting'
 import { getGrupFilterValues, getJudetFilterValues } from '../lib/member-search'
-import { parliamentActiveFilterChipClassName } from '../lib/table-theme'
+import { ParliamentActiveFilterChips } from './parliament-list-surface'
 
 type Props = {
   readonly search: ParliamentMembersSearch
@@ -128,28 +128,7 @@ export function MembersActiveFilters({
     )
   }
 
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      {chips.map((chip) => (
-        <span key={chip.key} className={parliamentActiveFilterChipClassName}>
-          <span>{chip.label}</span>
-          <button
-            type="button"
-            onClick={chip.onRemove}
-            className="inline-flex h-5 w-5 items-center justify-center transition-colors hover:text-[var(--pnrr-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
-            aria-label={`Elimină filtrul ${chip.label}`}
-          >
-            <X className="h-3.5 w-3.5" aria-hidden />
-          </button>
-        </span>
-      ))}
-      <button
-        type="button"
-        onClick={onClearAll}
-        className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 py-2 text-xs font-bold uppercase tracking-wide text-[var(--pnrr-fg)] transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
-      >
-        Șterge filtrele
-      </button>
-    </div>
-  )
+  // In-page chips are the shared ones; the compact branch above stays as it is
+  // because it lives in the floating bar, on a dark strip of its own.
+  return <ParliamentActiveFilterChips chips={chips} onClearAll={onClearAll} />
 }

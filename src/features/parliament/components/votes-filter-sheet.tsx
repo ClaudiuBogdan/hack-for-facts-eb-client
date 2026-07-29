@@ -1,6 +1,4 @@
 import { useEffect, useId, useMemo, useState, type FormEvent } from 'react'
-import { SlidersHorizontal } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -34,7 +32,15 @@ import {
   type VotesListScope,
 } from '../lib/votes-filter-state'
 import { PARLIAMENT_ACTION_BLUE } from '../lib/hub-theme'
+import { FilterTriggerButton } from './parliament-filter-trigger-button'
 
+/**
+ * The votes tab's trigger — the shared one, with a name of its own.
+ *
+ * It used to be a second implementation of the same button at a different
+ * weight and border colour, which is how two tabs side by side ended up with
+ * two different "Filtre" buttons.
+ */
 export function VotesFilterTriggerButton({
   activeCount,
   onClick,
@@ -43,28 +49,15 @@ export function VotesFilterTriggerButton({
   readonly onClick: () => void
 }) {
   return (
-    <Button
-      type="button"
-      variant="outline"
-      className="relative h-11 gap-2 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-4 text-base font-bold text-[var(--pnrr-fg)] hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)]"
+    <FilterTriggerButton
+      activeCount={activeCount}
       onClick={onClick}
-      aria-label={
+      ariaLabel={
         activeCount > 0
           ? `Filtrează voturile, ${activeCount} filtre active`
           : 'Filtrează voturile'
       }
-    >
-      <SlidersHorizontal className="h-4 w-4" aria-hidden />
-      <span>Filtre</span>
-      {activeCount > 0 ? (
-        <Badge
-          variant="default"
-          className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--pnrr-fg)] p-0 text-[11px] text-[var(--pnrr-bg)]"
-        >
-          {activeCount}
-        </Badge>
-      ) : null}
-    </Button>
+    />
   )
 }
 

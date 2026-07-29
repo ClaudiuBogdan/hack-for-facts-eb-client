@@ -1,5 +1,4 @@
-import { useEffect, useId, useState } from 'react'
-import { Input } from '@/components/ui/input'
+import { useId } from 'react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useParliamentAgendas } from '../hooks/use-parliament-data'
@@ -9,8 +8,20 @@ import {
   type ParliamentAgendaSearch,
 } from '../lib/agenda-format'
 import { billDetailControlClassName } from '../lib/bill-detail-theme'
-import { PARLIAMENT_ACTION_BLUE } from '../lib/hub-theme'
+import {
+  countedNoun,
+  formatParliamentTotal,
+  parliamentListStrongClassName,
+} from '../lib/list-surface-theme'
 import { AgendaFeatureCard, AgendaListCard } from './agenda-list-card'
+import { ParliamentDebouncedSearchInput } from './parliament-debounced-search-input'
+import {
+  ParliamentActiveFilterChips,
+  ParliamentListFooter,
+  ParliamentListHeader,
+  ParliamentListToolbar,
+  type ParliamentFilterChip,
+} from './parliament-list-surface'
 import { ParliamentShell } from './parliament-shell'
 
 const AGENDAS_PER_PAGE = 20
@@ -51,28 +62,21 @@ export function ParliamentAgendaPage({ search, onSearchChange }: Props) {
   return (
     <ParliamentShell activeTab="agenda">
       <div className="space-y-6">
-        <header>
-          <h1 className="text-2xl font-bold text-[#0b0c0c] sm:text-3xl dark:text-[var(--pnrr-fg)]">
-            Ordinea de zi
-          </h1>
-          <p className="mt-3 max-w-3xl text-base leading-7 text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
-            Ce și-a propus plenul Camerei Deputaților să ia în discuție, ședință
-            cu ședință, din 2001 până azi.
-          </p>
-          <p className="mt-3 max-w-3xl border-l-[5px] border-l-[#512178] bg-[#f3f0ff] px-4 py-3 text-sm leading-6 text-[#0b0c0c] dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-fg)]">
-            O ordine de zi este un <strong className="font-bold">plan de lucru</strong>,
-            nu o consemnare. Prezența unui proiect aici nu dovedește că a fost
-            dezbătut sau votat — pentru ce s-a întâmplat efectiv, deschide
-            stenograma ședinței.
-          </p>
-        </header>
-
-        <AgendaFilterBar
-          search={search}
-          total={total}
-          isLoading={isLoading}
-          onSearchChange={onSearchChange}
+        <ParliamentListHeader
+          title="Ordinea de zi"
+          description="Ce și-a propus plenul Camerei Deputaților să ia în discuție, ședință cu ședință, din 2001 până azi."
+          about={
+            <>
+              O ordine de zi este un{' '}
+              <strong className="font-bold">plan de lucru</strong>, nu o
+              consemnare. Prezența unui proiect aici nu dovedește că a fost
+              dezbătut sau votat — pentru ce s-a întâmplat efectiv, deschide
+              stenograma ședinței.
+            </>
+          }
         />
+
+        <AgendaFilterBar search={search} onSearchChange={onSearchChange} />
 
         {isError ? (
           <p className="border-l-[5px] border-l-[#d4351c] bg-[#fef7f7] px-4 py-3 text-base text-[#0b0c0c] dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-fg)]">
@@ -103,36 +107,44 @@ export function ParliamentAgendaPage({ search, onSearchChange }: Props) {
           </div>
         )}
 
-        {lastPage > 1 ? (
-          <nav
-            className="flex items-center justify-between gap-3 border-t border-[#b1b4b6] pt-4 dark:border-[var(--pnrr-border)]"
-            aria-label="Paginare"
+        {isLoading || agendas.length === 0 ? null : (
+          <ParliamentListFooter
+            summary={
+              <>
+                <span className={parliamentListStrongClassName}>
+                  {formatParliamentTotal(total)}
+                </span>{' '}
+                {countedNoun(total, 'ordine de zi', 'ordini de zi')}
+                {lastPage > 1 ? ` · pagina ${page} din ${lastPage}` : ''}
+              </>
+            }
           >
-            <Button
-              variant="outline"
-              className="rounded-none"
-              disabled={page <= 1}
-              onClick={() => {
-                onSearchChange({ ...search, pagina: page - 1 })
-              }}
-            >
-              Pagina anterioară
-            </Button>
-            <span className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-              Pagina <span className="font-bold">{page}</span> din {lastPage}
-            </span>
-            <Button
-              variant="outline"
-              className="rounded-none"
-              disabled={page >= lastPage}
-              onClick={() => {
-                onSearchChange({ ...search, pagina: page + 1 })
-              }}
-            >
-              Pagina următoare
-            </Button>
-          </nav>
-        ) : null}
+            {lastPage > 1 ? (
+              <nav className="flex items-center gap-3" aria-label="Paginare">
+                <Button
+                  variant="outline"
+                  className="rounded-none"
+                  disabled={page <= 1}
+                  onClick={() => {
+                    onSearchChange({ ...search, pagina: page - 1 })
+                  }}
+                >
+                  Pagina anterioară
+                </Button>
+                <Button
+                  variant="outline"
+                  className="rounded-none"
+                  disabled={page >= lastPage}
+                  onClick={() => {
+                    onSearchChange({ ...search, pagina: page + 1 })
+                  }}
+                >
+                  Pagina următoare
+                </Button>
+              </nav>
+            ) : null}
+          </ParliamentListFooter>
+        )}
       </div>
     </ParliamentShell>
   )
@@ -148,117 +160,74 @@ export function ParliamentAgendaPage({ search, onSearchChange }: Props) {
  */
 function AgendaFilterBar({
   search,
-  total,
-  isLoading,
   onSearchChange,
 }: {
   readonly search: ParliamentAgendaSearch
-  readonly total: number
-  readonly isLoading: boolean
   readonly onSearchChange: (next: ParliamentAgendaSearch) => void
 }) {
   const yearId = useId()
-  const queryId = useId()
-  const [draft, setDraft] = useState(search.q ?? '')
-  // Keep the box honest when the URL changes under it (back button, reset).
-  useEffect(() => {
-    setDraft(search.q ?? '')
-  }, [search.q])
-
   const years = agendaYearOptions(new Date())
-  const activeFilters = getActiveAgendaFilterCount(search)
+
+  const chips: ParliamentFilterChip[] = []
+  if (search.q) {
+    chips.push({
+      key: 'q',
+      label: `Conține: ${search.q}`,
+      onRemove: () => onSearchChange({ ...search, q: undefined, pagina: undefined }),
+    })
+  }
+  if (search.an) {
+    chips.push({
+      key: 'an',
+      label: `Anul ${search.an}`,
+      onRemove: () => onSearchChange({ ...search, an: undefined, pagina: undefined }),
+    })
+  }
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <form
-          className="flex min-w-0 flex-1 gap-3"
-          onSubmit={(event) => {
-            event.preventDefault()
-            const value = draft.trim()
+    <ParliamentListToolbar
+      chips={
+        <ParliamentActiveFilterChips
+          chips={chips}
+          onClearAll={() => onSearchChange({})}
+        />
+      }
+    >
+      <ParliamentDebouncedSearchInput
+        inputId="agenda-q"
+        ariaLabel="Caută după data ședinței"
+        placeholder="Caută după data ședinței (ex. „decembrie 2019”)…"
+        value={search.q}
+        onCommit={(next) =>
+          onSearchChange({ ...search, q: next, pagina: undefined })
+        }
+        className="flex-1"
+      />
+      <div className="flex shrink-0 items-center gap-2">
+        <label htmlFor={yearId} className="sr-only">
+          Anul ședinței
+        </label>
+        <select
+          id={yearId}
+          value={search.an ?? ''}
+          onChange={(event) => {
+            const value = event.target.value
             onSearchChange({
               ...search,
               pagina: undefined,
-              ...(value ? { q: value } : { q: undefined }),
+              an: value ? Number(value) : undefined,
             })
           }}
+          className={billDetailControlClassName}
         >
-          <label htmlFor={queryId} className="sr-only">
-            Caută după data ședinței
-          </label>
-          <Input
-            id={queryId}
-            type="search"
-            value={draft}
-            onChange={(event) => {
-              setDraft(event.target.value)
-            }}
-            placeholder="Caută după data ședinței (ex. „decembrie 2019”)"
-            className="h-11 min-w-0 flex-1 rounded-none border-2 border-[#b1b4b6] bg-white px-3 text-base shadow-none focus-visible:ring-2 focus-visible:ring-[#1d70b8] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]"
-          />
-          <Button
-            type="submit"
-            className="h-11 shrink-0 rounded-none border-0 px-6 text-base font-normal text-white hover:opacity-90"
-            style={{ backgroundColor: PARLIAMENT_ACTION_BLUE }}
-          >
-            Caută
-          </Button>
-        </form>
-        <div className="flex shrink-0 items-center gap-2">
-          <label
-            htmlFor={yearId}
-            className="text-sm font-semibold text-[#505a5f] dark:text-[var(--pnrr-muted)]"
-          >
-            Anul
-          </label>
-          <select
-            id={yearId}
-            value={search.an ?? ''}
-            onChange={(event) => {
-              const value = event.target.value
-              onSearchChange({
-                ...search,
-                pagina: undefined,
-                an: value ? Number(value) : undefined,
-              })
-            }}
-            className={billDetailControlClassName}
-          >
-            <option value="">Toți anii</option>
-            {years.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
-        </div>
+          <option value="">Toți anii</option>
+          {years.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ))}
+        </select>
       </div>
-
-      {isLoading ? null : (
-        <p className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-          <span className="font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
-            {total.toLocaleString('ro-RO')}
-          </span>{' '}
-          {total === 1 ? 'ordine de zi' : 'ordini de zi'}
-          {activeFilters > 0 ? (
-            <>
-              {' '}
-              corespund filtrelor alese.{' '}
-              <button
-                type="button"
-                onClick={() => {
-                  onSearchChange({})
-                }}
-                className="font-semibold text-[#1d70b8] underline underline-offset-4"
-              >
-                Renunță la filtre
-              </button>
-            </>
-          ) : (
-            <> în arhivă, din 2001 până azi.</>
-          )}
-        </p>
-      )}
-    </div>
+    </ParliamentListToolbar>
   )
 }

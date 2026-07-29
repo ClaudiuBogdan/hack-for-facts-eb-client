@@ -11,18 +11,27 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import type { BillSortBy, ParliamentBillsSearch } from "@/schemas/parliament";
 import { useParliamentBills } from "../hooks/use-parliament-data";
-import { BILL_DETAIL_INFO_BG } from "../lib/bill-detail-theme";
 import { countActiveBillFilters } from "../lib/bills-filter";
+import {
+  countedNoun,
+  formatParliamentTotal,
+  parliamentListStrongClassName,
+} from "../lib/list-surface-theme";
 import { BillListCard, BillListContainer } from "./bill-list-card";
 import { FilterTriggerButton } from "./parliament-filter-trigger-button";
 import { ParliamentDebouncedSearchInput } from "./parliament-debounced-search-input";
+import {
+  ParliamentListFooter,
+  ParliamentListHeader,
+  ParliamentListToolbar,
+} from "./parliament-list-surface";
 import { ParliamentInlineLoadError } from "./parliament-load-error-page";
 import {
   ParliamentBillsActiveFilters,
   ParliamentBillsFilterSheet,
   type ParliamentBillsFilterPatch,
 } from "./parliament-bills-filter-sheet";
-import { VotesListPagination } from "./votes-list-pagination";
+import { ParliamentListPaginationNav } from "./votes-list-pagination";
 
 const LIST_PAGE_SIZE = 10;
 
@@ -78,84 +87,78 @@ export function ParliamentBillsContent({ search }: Props) {
 
   return (
     <div className="space-y-6">
-      <header className="max-w-4xl">
-        <h2 className="text-2xl font-bold leading-snug text-[#0b0c0c] dark:text-[var(--pnrr-fg)] sm:text-[1.75rem]">
-          Găsește un proiect de lege
-        </h2>
-        <p className="mt-3 max-w-3xl text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-          Caută proiecte de lege după titlu sau număr — rezultatele se
-          actualizează pe măsură ce tastați. Tipul și etapa se aleg din filtre.
-        </p>
-      </header>
-
-      <div
-        className="border-l-4 px-5 py-4 text-sm leading-6 text-[#0b0c0c] dark:text-[var(--pnrr-fg)]"
-        style={{ backgroundColor: BILL_DETAIL_INFO_BG, borderColor: "#512178" }}
-      >
-        Pentru informații oficiale despre proiectele de lege, consultați{" "}
-        <a
-          href="https://www.cdep.ro/pls/legis/legis_pck.home"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-semibold underline underline-offset-2"
-        >
-          Camera Deputaților
-        </a>{" "}
-        și{" "}
-        <a
-          href="https://www.senat.ro/Legis/lista.aspx"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-semibold underline underline-offset-2"
-        >
-          Senatul României
-        </a>
-        .
-      </div>
-
-      <div className="space-y-3">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <ParliamentDebouncedSearchInput
-            inputId="bills-q"
-            ariaLabel="Caută proiecte de lege"
-            placeholder="Caută după titlu sau număr (ex. PL 127/2026)…"
-            value={search.q}
-            onCommit={(next) => commit({ q: next })}
-            className="flex-1"
-          />
-          <div className="flex items-center gap-3">
-            <Label htmlFor="bills-sort" className="sr-only">
-              Sortare
-            </Label>
-            <Select
-              value={search.sortBy ?? "updated_desc"}
-              onValueChange={(value) => commit({ sortBy: value as BillSortBy })}
+      <ParliamentListHeader
+        title="Proiecte de lege"
+        description="Proiectele și propunerile legislative din Parlament, cu etapa la care au ajuns — caută după titlu sau după număr."
+        about={
+          <>
+            Pentru informații oficiale despre proiectele de lege, consultați{" "}
+            <a
+              href="https://www.cdep.ro/pls/legis/legis_pck.home"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold underline underline-offset-2"
             >
-              <SelectTrigger
-                id="bills-sort"
-                className="h-11 w-52 rounded-none border-2 border-[#b1b4b6] bg-white text-sm text-[#0b0c0c] shadow-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)]"
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="updated_desc">Cele mai recente</SelectItem>
-                <SelectItem value="updated_asc">Cele mai vechi</SelectItem>
-                <SelectItem value="title_asc">Titlu (A–Z)</SelectItem>
-                <SelectItem value="title_desc">Titlu (Z–A)</SelectItem>
-              </SelectContent>
-            </Select>
-            <FilterTriggerButton
-              activeCount={activeCount}
-              onClick={() => setFilterOpen(true)}
-            />
-          </div>
-        </div>
-        <ParliamentBillsActiveFilters
-          search={search}
-          onChange={commit}
-          onClearAll={handleClearAll}
+              Camera Deputaților
+            </a>{" "}
+            și{" "}
+            <a
+              href="https://www.senat.ro/Legis/lista.aspx"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold underline underline-offset-2"
+            >
+              Senatul României
+            </a>
+            .
+          </>
+        }
+      />
+
+      <ParliamentListToolbar
+        chips={
+          <ParliamentBillsActiveFilters
+            search={search}
+            onChange={commit}
+            onClearAll={handleClearAll}
+          />
+        }
+      >
+        <ParliamentDebouncedSearchInput
+          inputId="bills-q"
+          ariaLabel="Caută proiecte de lege"
+          placeholder="Caută după titlu sau număr (ex. PL 127/2026)…"
+          value={search.q}
+          onCommit={(next) => commit({ q: next })}
+          className="flex-1"
         />
-      </div>
+        <div className="flex shrink-0 items-center gap-3">
+          <Label htmlFor="bills-sort" className="sr-only">
+            Sortare
+          </Label>
+          <Select
+            value={search.sortBy ?? "updated_desc"}
+            onValueChange={(value) => commit({ sortBy: value as BillSortBy })}
+          >
+            <SelectTrigger
+              id="bills-sort"
+              className="h-11 w-52 rounded-none border-2 border-[#b1b4b6] bg-white text-sm text-[#0b0c0c] shadow-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)]"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="updated_desc">Cele mai recente</SelectItem>
+              <SelectItem value="updated_asc">Cele mai vechi</SelectItem>
+              <SelectItem value="title_asc">Titlu (A–Z)</SelectItem>
+              <SelectItem value="title_desc">Titlu (Z–A)</SelectItem>
+            </SelectContent>
+          </Select>
+          <FilterTriggerButton
+            activeCount={activeCount}
+            onClick={() => setFilterOpen(true)}
+          />
+        </div>
+      </ParliamentListToolbar>
 
       {isLoading ? (
         <div className="space-y-4">
@@ -171,24 +174,6 @@ export function ParliamentBillsContent({ search }: Props) {
         />
       ) : (
         <>
-          {/*
-            The count, not a second pagination bar. It answers "how many did
-            that search find" right where the search was typed; the controls
-            themselves belong at the foot of the list, next to where a reader
-            runs out of rows.
-          */}
-          {data && data.total > 0 ? (
-            <p className="text-sm text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
-              <span className="font-bold">{data.total}</span> rezultate
-              {data.totalPages > 1 ? (
-                <span className="text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-                  {' '}
-                  (pagina {data.page} din {data.totalPages})
-                </span>
-              ) : null}
-            </p>
-          ) : null}
-
           {data && data.bills.length > 0 ? (
             <BillListContainer>
               {data.bills.map((bill) => (
@@ -204,14 +189,32 @@ export function ParliamentBillsContent({ search }: Props) {
             </p>
           ) : null}
 
-          {data && data.totalPages > 1 ? (
-            <VotesListPagination
-              page={data.page}
-              totalPages={data.totalPages}
-              total={data.total}
-              onPageChange={handlePageChange}
-              ariaLabel="Paginare proiecte de lege"
-            />
+          {/* Count and pager on one line, under the rows they describe. */}
+          {data && data.total > 0 ? (
+            <ParliamentListFooter
+              summary={
+                <>
+                  <span className={parliamentListStrongClassName}>
+                    {data.bills.length}
+                  </span>{" "}
+                  din{" "}
+                  <span className={parliamentListStrongClassName}>
+                    {formatParliamentTotal(data.total)}
+                  </span>{" "}
+                  {countedNoun(data.total, "proiect", "proiecte")}
+                  {data.totalPages > 1
+                    ? ` · pagina ${data.page} din ${data.totalPages}`
+                    : ""}
+                </>
+              }
+            >
+              <ParliamentListPaginationNav
+                page={data.page}
+                totalPages={data.totalPages}
+                onPageChange={handlePageChange}
+                ariaLabel="Paginare proiecte de lege"
+              />
+            </ParliamentListFooter>
           ) : null}
         </>
       )}

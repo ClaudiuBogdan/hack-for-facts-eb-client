@@ -1,7 +1,14 @@
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import type {
   MemberVoteChoice,
@@ -10,8 +17,15 @@ import type {
 } from "@/schemas/parliament";
 import { useParliamentVotesBrowse } from "../hooks/use-parliament-data";
 import { getVoteChamberLabel } from "../lib/formatting";
-import { ParliamentChamberMark } from "./parliament-hub-panel";
+import { ParliamentDebouncedSearchInput } from "./parliament-debounced-search-input";
 import { ParliamentHubVoteActivity } from "./parliament-hub-vote-activity";
+import {
+  ParliamentActiveFilterChips,
+  ParliamentListFooter,
+  ParliamentListHeader,
+  ParliamentListToolbar,
+  type ParliamentFilterChip,
+} from "./parliament-list-surface";
 import { VoteListRowCard } from "./vote-list-row-card";
 import {
   VotesFilterSheet,
@@ -21,11 +35,17 @@ import {
   DEFAULT_VOTE_SORT,
   getActiveVoteFilterCount,
   getVotesChamberFilter,
+  readVoteKinds,
+  VOTE_KIND_LABELS,
   VOTE_SORT_LABELS,
   VOTE_SORT_ORDER,
 } from "../lib/votes-filter-state";
 import { ParliamentInlineLoadError } from "./parliament-load-error-page";
-import { PARLIAMENT_ACTION_BLUE } from "../lib/hub-theme";
+import {
+  countedNoun,
+  formatParliamentTotal,
+  parliamentListStrongClassName,
+} from "../lib/list-surface-theme";
 
 /** Ballot choices, worded for a citizen reading a filter chip. */
 const VOTE_CHOICE_LABELS: Readonly<Record<MemberVoteChoice, string>> = {
@@ -82,12 +102,6 @@ function formatDay(value: string): string {
 export function VotesListLayout({ search }: Props) {
   const navigate = useNavigate({ from: "/parlament/" });
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [queryDraft, setQueryDraft] = useState(search.q ?? "");
-  // Keep the bar in step with the URL (back/forward, or a reset from the panel)
-  // without clobbering what the reader is typing on unrelated re-renders.
-  useEffect(() => {
-    setQueryDraft(search.q ?? "");
-  }, [search.q]);
   const listSearch = {
     ...search,
     pageSize: search.pageSize ?? LIST_PAGE_SIZE,
@@ -120,26 +134,77 @@ export function VotesListLayout({ search }: Props) {
 
   const activeFilterCount = getActiveVoteFilterCount(search);
 
-  const activeFilters = [
-    search.q ? `„${search.q}”` : undefined,
-    chamberFilter ? getVoteChamberLabel(chamberFilter) : undefined,
-    search.from || search.to
-      ? `${search.from ? formatDay(search.from) : "început"} – ${search.to ? formatDay(search.to) : "prezent"}`
-      : undefined,
-    search.outcome ? `Rezultat: ${search.outcome}` : undefined,
-    groupVoteFilter
-      ? `${groupVoteFilter.group}: ${VOTE_CHOICE_LABELS[groupVoteFilter.choice]}`
-      : undefined,
-  ].filter((entry): entry is string => entry !== undefined);
-
-  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    handleSearchChange({
-      ...listSearch,
-      q: queryDraft.trim() || undefined,
-      page: 1,
+  /** Every narrowing facet, as one removable chip each. */
+  const chips: ParliamentFilterChip[] = [];
+  if (search.q) {
+    chips.push({
+      key: "q",
+      label: `Conține: ${search.q}`,
+      onRemove: () =>
+        handleSearchChange({ ...listSearch, q: undefined, page: 1 }),
     });
-  };
+  }
+  if (chamberFilter) {
+    chips.push({
+      key: "chamber",
+      label: getVoteChamberLabel(chamberFilter),
+      onRemove: () =>
+        handleSearchChange({ ...listSearch, chamber: undefined, page: 1 }),
+    });
+  }
+  if (search.from || search.to) {
+    chips.push({
+      key: "period",
+      label:
+        search.from && search.from === search.to
+          ? formatDay(search.from)
+          : `${search.from ? formatDay(search.from) : "început"} – ${search.to ? formatDay(search.to) : "prezent"}`,
+      onRemove: () =>
+        handleSearchChange({
+          ...listSearch,
+          from: undefined,
+          to: undefined,
+          page: 1,
+        }),
+    });
+  }
+  if (search.outcome) {
+    chips.push({
+      key: "outcome",
+      label: `Rezultat: ${search.outcome}`,
+      onRemove: () =>
+        handleSearchChange({ ...listSearch, outcome: undefined, page: 1 }),
+    });
+  }
+  for (const kind of readVoteKinds(search)) {
+    chips.push({
+      key: `kind-${kind}`,
+      label: VOTE_KIND_LABELS[kind],
+      onRemove: () => {
+        const remaining = readVoteKinds(search).filter(
+          (value) => value !== kind,
+        );
+        handleSearchChange({
+          ...listSearch,
+          tipVot: remaining.length > 0 ? remaining : undefined,
+          page: 1,
+        });
+      },
+    });
+  }
+  if (groupVoteFilter) {
+    chips.push({
+      key: "group",
+      label: `${groupVoteFilter.group}: ${VOTE_CHOICE_LABELS[groupVoteFilter.choice]}`,
+      onRemove: () =>
+        handleSearchChange({
+          ...listSearch,
+          grupVot: undefined,
+          alegere: undefined,
+          page: 1,
+        }),
+    });
+  }
 
   const handleSearchChange = (next: ParliamentVotesSearch) => {
     setFiltersOpen(false);
@@ -174,72 +239,110 @@ export function VotesListLayout({ search }: Props) {
       {/* One heading, whatever the filters say. A chamber narrows this list; it
           does not open a different page, so re-titling the surface per chamber
           would make the same list look like four. */}
-      <header className="max-w-4xl">
-        <h2 className="flex items-start gap-2.5 text-2xl font-bold leading-snug text-[#0b0c0c] dark:text-[var(--pnrr-fg)] sm:text-[1.75rem]">
-          <ParliamentChamberMark color={PARLIAMENT_ACTION_BLUE} className="mt-1" />
-          <span>Voturile din Parlament</span>
-        </h2>
-        <p className="mt-3 max-w-3xl text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-          Divizările din Camera Deputaților, Senat și ședințele comune, într-o
-          singură listă — de la cea mai recentă. Caută după titlu sau
-          filtrează după cameră, perioadă, rezultat ori poziția unui grup.
-        </p>
-      </header>
+      <ParliamentListHeader
+        title="Voturile din Parlament"
+        description="Divizările din Camera Deputaților, Senat și ședințele comune, într-o singură listă — de la cea mai recentă."
+        about={
+          <>
+            <p>
+              O divizare este o singură chemare la vot din plen. Ședințele
+              comune ale celor două Camere apar sub eticheta{" "}
+              <strong className="font-bold">Camerele reunite</strong>, alături de
+              voturile fiecărei Camere.
+            </p>
+            <p className="mt-2">
+              Filtrul pe poziția unui grup selectează voturile în care{" "}
+              <strong className="font-bold">majoritatea</strong> grupului a ales
+              acea variantă; un vot în care grupul s-a împărțit egal nu apare în
+              listă.
+            </p>
+          </>
+        }
+      />
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <ParliamentListToolbar
+        chips={
+          <ParliamentActiveFilterChips
+            chips={chips}
+            onClearAll={() =>
+              handleSearchChange({
+                tab: search.tab,
+                pageSize: listSearch.pageSize,
+              })
+            }
+            note={
+              groupVoteFilter ? (
+                /*
+                  The reader may arrive here from a PERCENTAGE on the group
+                  dossier while this list is a COUNT OF VOTES — a different
+                  denominator. Restating the rule at the destination is what
+                  stops the two numbers being read as the same claim.
+                */
+                <>
+                  Se afișează voturile în care majoritatea grupului{" "}
+                  <span className={parliamentListStrongClassName}>
+                    {groupVoteFilter.group}
+                  </span>{" "}
+                  a ales „{VOTE_CHOICE_LABELS[groupVoteFilter.choice]}”. Un vot
+                  în care grupul s-a împărțit egal nu apare în listă.
+                </>
+              ) : null
+            }
+          />
+        }
+      >
         {/* The free-text search stays on the page: it is the one control a
             reader reaches for immediately, and burying it behind the filter
             button would cost a click on every search. */}
-        <form onSubmit={handleSearchSubmit} className="flex min-w-0 flex-1 gap-3">
-          <Input
-            type="search"
-            value={queryDraft}
-            onChange={(event) => setQueryDraft(event.target.value)}
-            placeholder="Caută după titlu sau număr divizare"
-            aria-label="Caută după titlu sau număr divizare"
-            className="h-11 min-w-0 flex-1 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-base shadow-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
-          />
-          <Button
-            type="submit"
-            className="h-11 shrink-0 rounded-none border-0 px-6 text-base font-normal text-white hover:opacity-90"
-            style={{ backgroundColor: PARLIAMENT_ACTION_BLUE }}
-          >
-            Caută
-          </Button>
-        </form>
+        <ParliamentDebouncedSearchInput
+          inputId="votes-q"
+          ariaLabel="Caută după titlu sau număr divizare"
+          placeholder="Caută după titlu sau număr divizare…"
+          value={search.q}
+          onCommit={(next) =>
+            handleSearchChange({ ...listSearch, q: next, page: 1 })
+          }
+          className="flex-1"
+        />
         <div className="flex shrink-0 items-center gap-3">
-          <label htmlFor="vote-sort" className="sr-only">
+          <Label htmlFor="vote-sort" className="sr-only">
             Ordonează rezultatele
-          </label>
+          </Label>
           {/*
             Applied on change rather than behind the filter panel's Apply: it
             reorders what is already on screen, so making the reader open a
             panel and confirm would be a step with nothing to decide.
           */}
-          <select
-            id="vote-sort"
+          <Select
             value={search.ordine ?? DEFAULT_VOTE_SORT}
-            onChange={(event) =>
+            onValueChange={(value) =>
               handleSearchChange({
                 ...listSearch,
-                ordine: event.target.value as VoteSort,
+                ordine: value as VoteSort,
                 page: 1,
               })
             }
-            className="h-11 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-base text-[var(--pnrr-fg)] focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
           >
-            {VOTE_SORT_ORDER.map((option) => (
-              <option key={option} value={option}>
-                {VOTE_SORT_LABELS[option]}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger
+              id="vote-sort"
+              className="h-11 w-52 rounded-none border-2 border-[#b1b4b6] bg-white text-sm text-[#0b0c0c] shadow-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)]"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {VOTE_SORT_ORDER.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {VOTE_SORT_LABELS[option]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <VotesFilterTriggerButton
             activeCount={activeFilterCount}
             onClick={() => setFiltersOpen(true)}
           />
         </div>
-      </div>
+      </ParliamentListToolbar>
 
       <VotesFilterSheet
         search={listSearch}
@@ -247,44 +350,6 @@ export function VotesListLayout({ search }: Props) {
         onOpenChange={setFiltersOpen}
         onSearchChange={handleSearchChange}
       />
-
-      {activeFilters.length > 0 ? (
-        <div
-          className="border-l-[5px] border-l-[#512178] bg-[#f3f0ff] px-4 py-3 text-sm leading-6 text-[#0b0c0c] dark:text-[var(--pnrr-fg)]"
-          role="status"
-        >
-          <p>
-            Filtre active:{" "}
-            <span className="font-bold">{activeFilters.join(" · ")}</span>
-          </p>
-          {groupVoteFilter ? (
-            /*
-              The reader may arrive here from a PERCENTAGE on the group dossier
-              while this list is a COUNT OF VOTES — a different denominator.
-              Restating the rule at the destination is what stops the two
-              numbers being read as the same claim.
-            */
-            <p className="mt-1">
-              Se afișează voturile în care majoritatea grupului{" "}
-              <span className="font-bold">{groupVoteFilter.group}</span> a ales
-              „{VOTE_CHOICE_LABELS[groupVoteFilter.choice]}”. Un vot în care
-              grupul s-a împărțit egal nu apare în listă.
-            </p>
-          ) : null}
-          <button
-            type="button"
-            onClick={() =>
-              handleSearchChange({
-                tab: search.tab,
-                pageSize: listSearch.pageSize,
-              })
-            }
-            className="mt-1 text-sm font-semibold underline underline-offset-2"
-          >
-            Renunță la toate filtrele
-          </button>
-        </div>
-      ) : null}
 
       <div id={RESULTS_ANCHOR_ID} className="scroll-mt-4">
       {isLoading ? (
@@ -301,53 +366,60 @@ export function VotesListLayout({ search }: Props) {
         />
       ) : votes.length > 0 ? (
         <div className="space-y-5">
-          <p className="border border-[#b1b4b6] bg-[#f3f2f1] px-4 py-3 text-sm text-[#0b0c0c] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-fg)]">
-            {total === undefined ? (
-              /* No total from the server — describe only what is loaded, and
-                 never imply a corpus size the response did not report. */
-              <>
-                Se afișează cele mai recente{" "}
-                <span className="font-bold">{votes.length}</span> voturi
-                {hasNextPage ? " — mai există rezultate mai vechi." : "."}
-              </>
-            ) : (
-              <>
-                <span className="font-bold">
-                  {totalEstimated
-                    ? `peste ${total.toLocaleString("ro-RO")}`
-                    : total.toLocaleString("ro-RO")}
-                </span>{" "}
-                {total === 1 ? "vot corespunde" : "voturi corespund"} filtrelor
-                alese. Se afișează primele{" "}
-                <span className="font-bold">{votes.length}</span>, de la cel mai
-                recent.
-              </>
-            )}
-          </p>
-
           <div className="space-y-4">
             {votes.map((vote) => (
               <VoteListRowCard
                 key={vote.voteId}
                 vote={vote}
                 // Only where it TELLS the reader something: with a chamber
-                // filter on, the summary above already says it, on every row.
+                // filter on, the chip above already says it, on every row.
                 showChamber={chamberFilter === undefined}
               />
             ))}
           </div>
 
-          {hasNextPage ? (
-            <Button
-              type="button"
-              variant="outline"
-              className="h-11 w-full rounded-none border-2 border-[#0b0c0c] text-base font-normal dark:border-[var(--pnrr-border)]"
-              onClick={() => void fetchNextPage()}
-              disabled={isFetchingNextPage}
-            >
-              {isFetchingNextPage ? "Se încarcă…" : "Încarcă voturi mai vechi"}
-            </Button>
-          ) : null}
+          {/* The count closes the list rather than introducing it: it answers
+              "is this all of it?", which is a question the reader has after the
+              rows, not before them. */}
+          <ParliamentListFooter
+            summary={
+              total === undefined ? (
+                /* No total from the server — describe only what is loaded, and
+                   never imply a corpus size the response did not report. */
+                <>
+                  Se afișează cele mai recente{" "}
+                  <span className={parliamentListStrongClassName}>
+                    {votes.length}
+                  </span>{" "}
+                  voturi
+                  {hasNextPage ? " — mai există rezultate mai vechi." : "."}
+                </>
+              ) : (
+                <>
+                  <span className={parliamentListStrongClassName}>
+                    {votes.length}
+                  </span>{" "}
+                  din{" "}
+                  <span className={parliamentListStrongClassName}>
+                    {formatParliamentTotal(total, totalEstimated)}
+                  </span>{" "}
+                  {countedNoun(total, "vot", "voturi")}
+                </>
+              )
+            }
+          >
+            {hasNextPage ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 rounded-none border-2 border-[#0b0c0c] px-5 text-base font-normal dark:border-[var(--pnrr-border)]"
+                onClick={() => void fetchNextPage()}
+                disabled={isFetchingNextPage}
+              >
+                {isFetchingNextPage ? "Se încarcă…" : "Încarcă voturi mai vechi"}
+              </Button>
+            ) : null}
+          </ParliamentListFooter>
         </div>
       ) : (
         <div className="border border-[#b1b4b6] bg-white px-5 py-10 text-center dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]">

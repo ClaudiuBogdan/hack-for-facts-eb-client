@@ -14,8 +14,13 @@ import {
 import { getParliamentSpeechQ } from '../lib/parliament-speeches-filter'
 import { formatStenogramTotal } from '../lib/stenogram-presentation'
 import {
+  countedNoun,
+  parliamentListStrongClassName,
+} from '../lib/list-surface-theme'
+import {
   stenogramMutedTextClassName,
 } from '../lib/stenogram-theme'
+import { ParliamentListFooter } from './parliament-list-surface'
 import { ParliamentStenogramFailureNotice } from './parliament-stenogram-failure'
 import { ParliamentStenogramSessionCard } from './parliament-stenogram-session-card'
 
@@ -125,20 +130,10 @@ export function ParliamentStenogramSessionsView({ search }: Props) {
 
   return (
     <div className="space-y-4">
-      {/* The count stays, the BOX around it does not. Two banners stacked above
-          the results — a tally, then a caveat about the tally — pushed the
-          sittings themselves below the fold and made the reader read two
-          sentences about a list before reading the list. The tally is still
-          announced, because it is what tells a screen-reader user that a filter
-          did something; the cap needs no banner of its own, since the total is
-          already printed as "peste 10.000" rather than as a number it is not. */}
-      <p aria-live="polite" className="sr-only">
-        <Trans>
-          Afișate <span className="font-bold">{shown}</span> din{' '}
-          <span className="font-bold">{total}</span> ședințe
-        </Trans>
-      </p>
-
+      {/* The count stays, the BOX above the list does not — it closes the
+          list from the footer, like every other parliament list surface. The
+          cap needs no banner of its own, since the total is already printed as
+          "peste 10.000" rather than as a number it is not. */}
       {sessions.map((session) => (
         <ParliamentStenogramSessionCard
           key={session.sessionKey}
@@ -152,59 +147,72 @@ export function ParliamentStenogramSessionsView({ search }: Props) {
           it as an estimate, and a "din 1.000 de pagini" built on a capped
           number would be a made-up denominator. Where it can be exact, the
           pager simply stops offering a next page. */}
-      {canGoBack || canGoForward ? (
-        <nav
-          aria-label={t`Paginare ședințe`}
-          className="flex flex-wrap items-center gap-3 pt-2"
-        >
-          <Button
-            type="button"
-            variant="outline"
-            className="rounded-none border-2 px-4"
-            disabled={!canGoBack}
-            onClick={() => setPageIndex((index) => Math.max(0, index - 1))}
+      <ParliamentListFooter
+        summary={
+          <>
+            <span className={parliamentListStrongClassName}>{shown}</span>
+            {' din '}
+            <span className={parliamentListStrongClassName}>{total}</span>{' '}
+            {countedNoun(first.total, t`ședință`, t`ședințe`)}
+          </>
+        }
+      >
+        {canGoBack || canGoForward ? (
+          <nav
+            aria-label={t`Paginare ședințe`}
+            className="flex flex-wrap items-center gap-3"
           >
-            <ChevronLeft className="mr-1 h-4 w-4" aria-hidden />
-            <Trans>Pagina anterioară</Trans>
-          </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-none border-2 px-4"
+              disabled={!canGoBack}
+              onClick={() => setPageIndex((index) => Math.max(0, index - 1))}
+            >
+              <ChevronLeft className="mr-1 h-4 w-4" aria-hidden />
+              <Trans>Pagina anterioară</Trans>
+            </Button>
 
-          <span className="text-sm tabular-nums text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-            <Trans>Pagina {pageIndex + 1}</Trans>
-          </span>
+            <span className="text-sm tabular-nums text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              <Trans>Pagina {pageIndex + 1}</Trans>
+            </span>
 
-          <Button
-            type="button"
-            variant="outline"
-            className="rounded-none border-2 px-4"
-            disabled={!canGoForward || isFetchingNextPage}
-            onClick={() => {
-              // Already fetched? Just step. At the frontier, fetch and step
-              // once it lands, so the button never advances onto an empty page.
-              if (pageIndex + 1 < pages.length) {
-                setPageIndex((index) => index + 1)
-                return
-              }
-              const requestedFor = listKey
-              void fetchNextPage().then((result) => {
-                // Only step onto a page that actually arrived, and only if the
-                // reader has not changed the list meanwhile. A failed fetch
-                // resolves like any other, and a resolution that lands after a
-                // new filter would move the pager off a list it never paged.
-                if (requestedFor !== listKey) return
-                const fetched = result.data?.pages.length ?? 0
-                setPageIndex((index) => (index + 1 < fetched ? index + 1 : index))
-              })
-            }}
-          >
-            {isFetchingNextPage ? (
-              <Trans>Se încarcă…</Trans>
-            ) : (
-              <Trans>Pagina următoare</Trans>
-            )}
-            <ChevronRight className="ml-1 h-4 w-4" aria-hidden />
-          </Button>
-        </nav>
-      ) : null}
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-none border-2 px-4"
+              disabled={!canGoForward || isFetchingNextPage}
+              onClick={() => {
+                // Already fetched? Just step. At the frontier, fetch and step
+                // once it lands, so the button never advances onto an empty page.
+                if (pageIndex + 1 < pages.length) {
+                  setPageIndex((index) => index + 1)
+                  return
+                }
+                const requestedFor = listKey
+                void fetchNextPage().then((result) => {
+                  // Only step onto a page that actually arrived, and only if the
+                  // reader has not changed the list meanwhile. A failed fetch
+                  // resolves like any other, and a resolution that lands after a
+                  // new filter would move the pager off a list it never paged.
+                  if (requestedFor !== listKey) return
+                  const fetched = result.data?.pages.length ?? 0
+                  setPageIndex((index) =>
+                    index + 1 < fetched ? index + 1 : index,
+                  )
+                })
+              }}
+            >
+              {isFetchingNextPage ? (
+                <Trans>Se încarcă…</Trans>
+              ) : (
+                <Trans>Pagina următoare</Trans>
+              )}
+              <ChevronRight className="ml-1 h-4 w-4" aria-hidden />
+            </Button>
+          </nav>
+        ) : null}
+      </ParliamentListFooter>
     </div>
   )
 }

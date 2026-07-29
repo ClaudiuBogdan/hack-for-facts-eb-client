@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
-import { X } from 'lucide-react'
 import { t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@/lib/utils'
@@ -20,6 +19,10 @@ import {
   stenogramChamberLabel,
 } from '../lib/stenogram-presentation'
 import { stenogramStickyBarClassName } from '../lib/stenogram-theme'
+import {
+  ParliamentActiveFilterChips,
+  type ParliamentFilterChip,
+} from './parliament-list-surface'
 
 export type ParliamentStenogramePatch = Partial<ParliamentSpeechesSearch>
 
@@ -150,12 +153,7 @@ export function ParliamentStenogrameActiveFilters({
       timeZone: 'UTC',
     }).format(new Date(`${iso.slice(0, 10)}T00:00:00Z`))
 
-  const chips: Array<{
-    key: string
-    label: ReactNode
-    ariaLabel: string
-    onRemove: () => void
-  }> = []
+  const chips: ParliamentFilterChip[] = []
 
   if (search.vorbitor) {
     chips.push({
@@ -240,30 +238,10 @@ export function ParliamentStenogrameActiveFilters({
   if (chips.length === 0) return null
 
   return (
-    <div className="mt-2 flex flex-wrap items-center gap-2">
-      {chips.map((chip) => (
-        <span
-          key={chip.key}
-          className="inline-flex max-w-full items-center gap-1.5 border-2 border-[#b1b4b6] bg-[#f3f2f1] px-2.5 py-1 text-sm font-semibold text-[#0b0c0c] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-fg)]"
-        >
-          <span className="min-w-0 truncate">{chip.label}</span>
-          <button
-            type="button"
-            onClick={chip.onRemove}
-            aria-label={chip.ariaLabel}
-            className="inline-flex h-4 w-4 shrink-0 items-center justify-center hover:text-[#1d70b8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
-          >
-            <X className="h-3.5 w-3.5" aria-hidden />
-          </button>
-        </span>
-      ))}
-      <button
-        type="button"
-        onClick={onClearAll}
-        className="text-sm font-semibold text-[#0b0c0c] underline underline-offset-4 hover:text-[#1d70b8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:text-[var(--pnrr-fg)]"
-      >
-        <Trans>Șterge tot</Trans>
-      </button>
-    </div>
+    <ParliamentActiveFilterChips
+      chips={chips}
+      onClearAll={onClearAll}
+      className="mt-2"
+    />
   )
 }

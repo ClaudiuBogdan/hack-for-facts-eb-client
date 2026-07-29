@@ -125,7 +125,7 @@ describe('ParliamentCommitteesPage', () => {
 
   it('writes a chamber change to the URL instead of local state', () => {
     render(<ParliamentCommitteesPage search={{}} />)
-    fireEvent.click(screen.getByRole('tab', { name: 'Senat' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Senat' }))
 
     expect(navigateMock).toHaveBeenCalledTimes(1)
     const arg = navigateMock.mock.calls[0]?.[0] as {
