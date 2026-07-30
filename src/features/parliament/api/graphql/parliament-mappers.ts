@@ -56,6 +56,7 @@ import {
   type ParliamentVoteActivity,
   type ParliamentVoteDetail,
   type ParliamentVoteSummary,
+  type ParliamentVotePositionStatus,
   type VoteChamber,
   type VoteKind,
   VoteKindSchema,
@@ -118,8 +119,28 @@ const VOTE_CHOICE_MAP: Record<string, MemberVoteChoice> = {
   abtinere: "abtinere",
   nu_a_votat: "nu_a_votat",
 };
-function toVoteChoice(value: string | null | undefined): MemberVoteChoice {
-  return (value && VOTE_CHOICE_MAP[value]) || "nu_a_votat";
+function toVoteChoice(
+  value: string | null | undefined,
+): MemberVoteChoice | undefined {
+  return value ? VOTE_CHOICE_MAP[value] : undefined;
+}
+
+const POSITION_STATUSES = new Set<ParliamentVotePositionStatus>([
+  "confirmed",
+  "conflicting_choice",
+  "unknown_marker",
+  "identity_conflict",
+]);
+function toPositionStatus(value: string): ParliamentVotePositionStatus {
+  return POSITION_STATUSES.has(value as ParliamentVotePositionStatus)
+    ? (value as ParliamentVotePositionStatus)
+    : "unknown_marker";
+}
+
+function toObservedChoices(values: readonly string[]): MemberVoteChoice[] {
+  return values
+    .map((value) => VOTE_CHOICE_MAP[value])
+    .filter((value): value is MemberVoteChoice => value !== undefined);
 }
 
 /**
@@ -194,6 +215,10 @@ export function mapGroupCohesion(
     ...(raw.againstPct === null ? {} : { againstPct: raw.againstPct }),
     ...(raw.abstainPct === null ? {} : { abstainPct: raw.abstainPct }),
     ...(raw.absentPct === null ? {} : { absentPct: raw.absentPct }),
+    ...(raw.conflictingPct === null
+      ? {}
+      : { conflictingPct: raw.conflictingPct }),
+    ...(raw.unknownPct === null ? {} : { unknownPct: raw.unknownPct }),
     ...(raw.cohesionIndex === null ? {} : { cohesionIndex: raw.cohesionIndex }),
     ...(raw.voteCount === null ? {} : { voteCount: raw.voteCount }),
   });
@@ -459,10 +484,12 @@ export function mapVoteDetail(
     impotriva: num(g.impotriva),
     abtinere: num(g.abtinere),
     nuAVotat: num(g.nuAVotat),
+    conflicting: num(g.conflicting),
+    unknown: num(g.unknown),
   }));
 
   const memberVotes = raw.ballots.edges.map(({ node }) =>
-    mapBallot(node, gqlChamber, raw.voteKey),
+    mapBallot(node, gqlChamber),
   );
 
   // Only RESOLVED edges. An unresolved link is the resolver's candidate, not the
@@ -511,9 +538,14 @@ function formatBillReference(
   chamber: VoteChamber,
 ): string | undefined {
   if (!bill) return undefined;
-  const plx = bill.plxNumber && bill.plxYear ? `PL-x ${bill.plxNumber}/${bill.plxYear}` : undefined;
+  const plx =
+    bill.plxNumber && bill.plxYear
+      ? `PL-x ${bill.plxNumber}/${bill.plxYear}`
+      : undefined;
   const senate =
-    bill.senateNumber && bill.senateYear ? `L${bill.senateNumber}/${bill.senateYear}` : undefined;
+    bill.senateNumber && bill.senateYear
+      ? `L${bill.senateNumber}/${bill.senateYear}`
+      : undefined;
   return chamber === "senat" ? (senate ?? plx) : (plx ?? senate);
 }
 
@@ -526,21 +558,21 @@ function formatBillReference(
  * then linked those rows to `/parlament/membri/row-12` — a page that cannot
  * exist. We now leave `memberId` absent and carry a render-only `ballotKey`.
  */
-function mapBallot(
-  raw: RawParliamentBallot,
-  chamber: GraphqlChamber,
-  voteKey: string,
-) {
+function mapBallot(raw: RawParliamentBallot, chamber: GraphqlChamber) {
   // Prime the member→județ cache from the resolved member's constituency so the
   // vote-detail județ column (sync `getMemberJudetMap()`) is populated.
   if (raw.mandateKey) primeMemberJudet(raw.mandateKey, raw.constituencyName);
+  const choice = toVoteChoice(raw.choice);
   return {
-    ballotKey: `${voteKey}#${String(raw.rowIndex)}`,
+    ballotKey: raw.positionKey,
     ...(raw.mandateKey ? { memberId: raw.mandateKey } : {}),
     memberName: raw.memberName ?? "Necunoscut",
     groupId: deriveGroupId(raw.groupName, chamber),
     groupName: raw.groupName ?? "Necunoscut",
-    choice: toVoteChoice(raw.choice),
+    ...(choice ? { choice } : {}),
+    positionStatus: toPositionStatus(raw.positionStatus),
+    observationCount: raw.observationCount,
+    observedChoices: toObservedChoices(raw.observedChoices),
   };
 }
 
@@ -557,14 +589,21 @@ export function mapMemberVotingHistory(
     total,
     hasNextPage: pageInfo.hasNextPage,
     endCursor: pageInfo.endCursor,
-    votes: votes.map((v) => ({
-      voteId: v.voteKey,
-      chamber: fromGraphqlChamber(v.chamber) ?? "camera",
-      title: v.title ?? "(fără titlu)",
-      heldAt: toIsoDate(v.voteDate, new Date(0).toISOString()),
-      choice: toVoteChoice(v.choice),
-      outcome: toOutcome(v.outcome),
-    })),
+    votes: votes.map((v) => {
+      const choice = toVoteChoice(v.choice);
+      return {
+        positionKey: v.positionKey,
+        voteId: v.voteKey,
+        chamber: fromGraphqlChamber(v.chamber) ?? "camera",
+        title: v.title ?? "(fără titlu)",
+        heldAt: toIsoDate(v.voteDate, new Date(0).toISOString()),
+        ...(choice ? { choice } : {}),
+        positionStatus: toPositionStatus(v.positionStatus),
+        observationCount: v.observationCount,
+        observedChoices: toObservedChoices(v.observedChoices),
+        outcome: toOutcome(v.outcome),
+      };
+    }),
   });
 }
 
@@ -583,6 +622,8 @@ export function mapMemberVoteActivity(
       impotriva: num(d.impotriva),
       abtinere: num(d.abtinere),
       nuAVotat: num(d.nuAVotat),
+      conflicting: num(d.conflicting),
+      unknown: num(d.unknown),
     })),
   });
 }
@@ -955,7 +996,8 @@ export function getFinalBillVoteVerdict(vote: {
 }): "respins" | "rejection_failed" | undefined {
   if (!isFinalBillVote(vote)) return undefined;
   // A motion whose result was never established decides nothing.
-  if (vote.outcome !== "adoptat" && vote.outcome !== "respins") return undefined;
+  if (vote.outcome !== "adoptat" && vote.outcome !== "respins")
+    return undefined;
   // The motion CARRIED on the counts — which is not proof it carried in law.
   if (vote.outcome === "adoptat") return undefined;
   // Below a simple majority, so the motion certainly failed. What that means for
@@ -964,19 +1006,20 @@ export function getFinalBillVoteVerdict(vote: {
   // A DEFEATED rejection is the rarest reading here and the only one that flips
   // on a single wrong role. Assert it only when the chamber's own subject
   // independently says the motion was a rejection.
-  return subjectSaysRejection(vote.voteSubject) ? "rejection_failed" : undefined;
+  return subjectSaysRejection(vote.voteSubject)
+    ? "rejection_failed"
+    : undefined;
 }
 
 /** Diacritic- and case-folded, like the chamber's own inconsistent spelling. */
 function foldSubject(subject: string): string {
-  return subject
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/gu, "")
-    .toLocaleLowerCase("ro");
+  return subject.normalize("NFD").replace(/[̀-ͯ]/gu, "").toLocaleLowerCase("ro");
 }
 
 function subjectSaysRejection(subject: string | undefined): boolean {
-  return subject !== undefined && /\brespinger|\brespins/.test(foldSubject(subject));
+  return (
+    subject !== undefined && /\brespinger|\brespins/.test(foldSubject(subject))
+  );
 }
 
 function primeRelatedVoteSummary(v: {
@@ -1203,17 +1246,21 @@ function buildBillTimeline(
         isMilestone: isMilestoneDescription(description),
         // Procedure model. Absent on an event the derive has not classified —
         // the renderer treats that as a step, so nothing is ever hidden.
-        ...(e.rowKind ? { rowKind: e.rowKind as 'step' | 'attachment' | 'unclassified' } : {}),
-        ...(e.parentPosition != null ? { parentPosition: e.parentPosition } : {}),
+        ...(e.rowKind
+          ? { rowKind: e.rowKind as "step" | "attachment" | "unclassified" }
+          : {}),
+        ...(e.parentPosition != null
+          ? { parentPosition: e.parentPosition }
+          : {}),
         ...(e.stepKind ? { stepKind: e.stepKind } : {}),
         ...(e.actorKind ? { actorKind: e.actorKind } : {}),
         links: (e.links ?? []).map((l) => ({
-          linkKind: l.linkKind as ParliamentBillStepLink['linkKind'],
+          linkKind: l.linkKind as ParliamentBillStepLink["linkKind"],
           targetKey: l.targetKey,
           sourceHref: l.sourceHref,
           sourceText: l.sourceText,
           resolutionStatus:
-            l.resolutionStatus as ParliamentBillStepLink['resolutionStatus'],
+            l.resolutionStatus as ParliamentBillStepLink["resolutionStatus"],
         })),
       };
     });

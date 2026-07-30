@@ -9,16 +9,21 @@ import type {
 } from '@/schemas/parliament'
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, className }: { children: ReactNode; className?: string }) => (
+  Link: ({
+    children,
+    className,
+  }: {
+    children: ReactNode
+    className?: string
+  }) => (
     <a href="/parlament" className={className}>
       {children}
     </a>
   ),
 }))
 
-const { VoteIndividualVotesSection } = await import(
-  './vote-individual-votes-section'
-)
+const { VoteIndividualVotesSection } =
+  await import('./vote-individual-votes-section')
 
 /** `count` ballots for one group, all cast the same way. */
 function ballots(
@@ -33,6 +38,9 @@ function ballots(
     groupId,
     groupName: groupId,
     choice,
+    positionStatus: 'confirmed',
+    observationCount: 1,
+    observedChoices: [choice],
   }))
 }
 
@@ -48,9 +56,30 @@ const detail: ParliamentVoteDetail = {
   outcomeLabel: 'Proiectul a fost adoptat',
   tally: { pentru: 133, impotriva: 2, abtinere: 3, nuAVotat: 0 },
   groupBreakdown: [
-    { groupId: 'AUR', groupName: 'AUR', pentru: 1, impotriva: 2 },
-    { groupId: 'PSD', groupName: 'PSD', pentru: 87, impotriva: 0 },
-    { groupId: 'PNL', groupName: 'PNL', pentru: 45, impotriva: 0 },
+    {
+      groupId: 'AUR',
+      groupName: 'AUR',
+      pentru: 1,
+      impotriva: 2,
+      conflicting: 0,
+      unknown: 0,
+    },
+    {
+      groupId: 'PSD',
+      groupName: 'PSD',
+      pentru: 87,
+      impotriva: 0,
+      conflicting: 0,
+      unknown: 0,
+    },
+    {
+      groupId: 'PNL',
+      groupName: 'PNL',
+      pentru: 45,
+      impotriva: 0,
+      conflicting: 0,
+      unknown: 0,
+    },
   ],
   memberVotes: [
     ...ballots('AUR', 'pentru', 1),
@@ -66,6 +95,58 @@ function renderSection() {
     <VoteIndividualVotesSection
       detail={detail}
       groupColors={{ AUR: '#000000', PSD: '#e30613', PNL: '#ffcc00' }}
+      memberJudete={{}}
+    />,
+  )
+}
+
+function renderConflictSection() {
+  const conflictDetail: ParliamentVoteDetail = {
+    ...detail,
+    groupBreakdown: [
+      ...detail.groupBreakdown,
+      {
+        groupId: 'USR',
+        groupName: 'USR',
+        pentru: 0,
+        impotriva: 0,
+        conflicting: 1,
+        unknown: 1,
+      },
+    ],
+    memberVotes: [
+      ...detail.memberVotes,
+      {
+        ballotKey: 'usr-conflict',
+        memberId: 'usr-1',
+        memberName: 'Membru Conflict',
+        groupId: 'USR',
+        groupName: 'USR',
+        positionStatus: 'conflicting_choice',
+        observationCount: 2,
+        observedChoices: ['pentru', 'impotriva'],
+      },
+      {
+        ballotKey: 'usr-unknown',
+        memberId: 'usr-2',
+        memberName: 'Membru Necunoscut',
+        groupId: 'USR',
+        groupName: 'USR',
+        positionStatus: 'unknown_marker',
+        observationCount: 1,
+        observedChoices: [],
+      },
+    ],
+  }
+  render(
+    <VoteIndividualVotesSection
+      detail={conflictDetail}
+      groupColors={{
+        AUR: '#000000',
+        PSD: '#e30613',
+        PNL: '#ffcc00',
+        USR: '#00a1de',
+      }}
       memberJudete={{}}
     />,
   )
@@ -96,12 +177,18 @@ describe('VoteIndividualVotesSection', () => {
 
   it('carries the count on every tab, including the empty one', () => {
     renderSection()
-    expect(screen.getByRole('tab', { name: 'Voturi pentru (133)' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('tab', { name: 'Voturi pentru (133)' }),
+    ).toBeInTheDocument()
     expect(
       screen.getByRole('tab', { name: 'Voturi împotrivă (2)' }),
     ).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: 'Abțineri (3)' })).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: 'Fără vot (0)' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('tab', { name: 'Abțineri (3)' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('tab', { name: 'Fără vot (0)' }),
+    ).toBeInTheDocument()
   })
 
   it('ends on a "Toate" tab counting the whole roll', () => {
@@ -119,7 +206,7 @@ describe('VoteIndividualVotesSection', () => {
     expect(screen.getByRole('button', { name: 'AUR (6)' })).toBeInTheDocument()
   })
 
-  it('writes each member\'s choice on the card when the tab mixes them', async () => {
+  it("writes each member's choice on the card when the tab mixes them", async () => {
     const user = userEvent.setup()
     renderSection()
     await user.click(screen.getByRole('tab', { name: 'Toate (138)' }))
@@ -152,5 +239,31 @@ describe('VoteIndividualVotesSection', () => {
     await user.click(screen.getByRole('button', { name: 'AUR (1)' }))
     const region = screen.getByRole('region', { name: 'AUR (1)' })
     expect(within(region).queryByText('Pentru')).not.toBeInTheDocument()
+  })
+
+  it('keeps conflicting and unknown positions out of the no-vote bucket', async () => {
+    const user = userEvent.setup()
+    renderConflictSection()
+
+    expect(
+      screen.getByRole('tab', { name: 'Conflicte în sursă (1)' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('tab', { name: 'Poziții neclare (1)' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('tab', { name: 'Fără vot (0)' }),
+    ).toBeInTheDocument()
+
+    await user.click(
+      screen.getByRole('tab', { name: 'Conflicte în sursă (1)' }),
+    )
+    await user.click(screen.getByRole('button', { name: 'USR (1)' }))
+    expect(screen.getByText('Membru Conflict')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('tab', { name: 'Toate (140)' }))
+    await user.click(screen.getByRole('button', { name: 'USR (2)' }))
+    expect(screen.getByText('Conflict în sursă')).toBeInTheDocument()
+    expect(screen.getByText('Poziție neclară')).toBeInTheDocument()
   })
 })

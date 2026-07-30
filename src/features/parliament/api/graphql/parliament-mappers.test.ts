@@ -155,17 +155,37 @@ const goldenVoteDetail: RawParliamentVoteDetail = {
   billKey: "12760",
   tally: { pentru: 275, impotriva: 0, abtinere: 1, nuAVotat: 1, present: 277 },
   groupBreakdown: [
-    { groupName: "PNL", pentru: 100, impotriva: 0, abtinere: 0, nuAVotat: 0 },
-    { groupName: "UDMR", pentru: 20, impotriva: 0, abtinere: 1, nuAVotat: 0 },
+    {
+      groupName: "PNL",
+      pentru: 100,
+      impotriva: 0,
+      abtinere: 0,
+      nuAVotat: 0,
+      conflicting: 0,
+      unknown: 0,
+    },
+    {
+      groupName: "UDMR",
+      pentru: 20,
+      impotriva: 0,
+      abtinere: 1,
+      nuAVotat: 0,
+      conflicting: 0,
+      unknown: 0,
+    },
   ],
   ballots: {
     edges: [
       {
         node: {
+          positionKey: "cdep:29892#native:12",
           rowIndex: 0,
           memberName: "Gabriel Andronache",
           groupName: "PNL",
           choice: "pentru",
+          positionStatus: "confirmed",
+          observationCount: 1,
+          observedChoices: ["pentru"],
           mandateKey: "2:2020:12",
           matchMethod: "exact_token_set",
           constituencyName: "BRAŞOV",
@@ -229,10 +249,14 @@ describe("mapVoteDetail (golden anchor)", () => {
   it("maps every assembled ballot to a memberVote (>200, no truncation)", () => {
     const edges = Array.from({ length: 277 }, (_, i) => ({
       node: {
+        positionKey: `cdep:29892#native:${String(i)}`,
         rowIndex: i,
         memberName: `Member ${i}`,
         groupName: "PNL",
         choice: "pentru" as const,
+        positionStatus: "confirmed",
+        observationCount: 1,
+        observedChoices: ["pentru"],
         mandateKey: `2:2024:${i}`,
         matchMethod: "exact_token_set",
         constituencyName: "CLUJ",
@@ -244,6 +268,45 @@ describe("mapVoteDetail (golden anchor)", () => {
     });
     expect(detail.memberVotes).toHaveLength(277);
     expect(detail.memberVotes[276]).toMatchObject({ memberId: "2:2024:276" });
+  });
+
+  it("keeps conflicting observations out of effective vote choices", () => {
+    const detail = mapVoteDetail({
+      ...goldenVoteDetail,
+      groupBreakdown: [
+        {
+          groupName: "PNL",
+          pentru: 0,
+          impotriva: 0,
+          abtinere: 0,
+          nuAVotat: 0,
+          conflicting: 1,
+          unknown: 0,
+        },
+      ],
+      ballots: {
+        edges: [
+          {
+            node: {
+              ...goldenVoteDetail.ballots.edges[0]!.node,
+              choice: null,
+              positionStatus: "conflicting_choice",
+              observationCount: 2,
+              observedChoices: ["pentru", "impotriva"],
+            },
+          },
+        ],
+        pageInfo: { hasNextPage: false, endCursor: null },
+      },
+    });
+
+    expect(detail.groupBreakdown[0]).toMatchObject({ conflicting: 1 });
+    expect(detail.memberVotes[0]).toMatchObject({
+      positionStatus: "conflicting_choice",
+      observationCount: 2,
+      observedChoices: ["pentru", "impotriva"],
+    });
+    expect(detail.memberVotes[0]?.choice).toBeUndefined();
   });
 });
 
@@ -552,12 +615,16 @@ describe("mapMemberVotingHistory", () => {
       "1:2024:1",
       [
         {
+          positionKey: "senat:abc#native:1",
           voteKey: "senat:abc",
           chamber: "senat",
           voteDate: "2026-05-20",
           title: "X",
           outcome: "respins",
           choice: "impotriva",
+          positionStatus: "confirmed",
+          observationCount: 1,
+          observedChoices: ["impotriva"],
           billKey: null,
         },
       ],

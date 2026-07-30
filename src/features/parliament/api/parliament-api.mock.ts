@@ -94,7 +94,10 @@ const DEFAULT_BILLS_PAGE_SIZE = 10
 // `color` field), so mock and live share one source of truth for colours.
 const groups = groupsData.map((g) => {
   const parsed = ParliamentGroupSchema.parse(g)
-  return { ...parsed, color: resolveGroupColor({ groupId: parsed.groupId, name: parsed.name }) }
+  return {
+    ...parsed,
+    color: resolveGroupColor({ groupId: parsed.groupId, name: parsed.name }),
+  }
 })
 
 function buildGroupColorMap(
@@ -133,7 +136,9 @@ const EXTRA_VOTE_TITLES = [
 ] as const
 
 function buildExpandedVoteSummaries(): ParliamentVoteSummary[] {
-  const base = voteSummariesData.map((v) => ParliamentVoteSummarySchema.parse(v))
+  const base = voteSummariesData.map((v) =>
+    ParliamentVoteSummarySchema.parse(v),
+  )
   const extras: ParliamentVoteSummary[] = []
 
   for (const chamber of ['camera', 'senat'] as const) {
@@ -155,7 +160,8 @@ function buildExpandedVoteSummaries(): ParliamentVoteSummary[] {
           // The readings that actually occur (prod 2026-07-29: adoptat 16,916 ·
           // respins 3,627 · 202 with no published result). `amânat` was minted
           // here and has never existed in the data.
-          outcome: i % 4 === 0 ? 'respins' : i % 7 === 0 ? 'necunoscut' : 'adoptat',
+          outcome:
+            i % 4 === 0 ? 'respins' : i % 7 === 0 ? 'necunoscut' : 'adoptat',
           outcomeLabel:
             i % 4 === 0
               ? 'Proiectul a fost respins'
@@ -182,23 +188,29 @@ const billDetailsMap = billDetailsData as Record<string, unknown>
  * exactly what the live mapper does from `voteKey` + `rowIndex`.
  */
 const voteDetailsMap: Record<string, unknown> = Object.fromEntries(
-  Object.entries(voteDetailsData as Record<string, unknown>).map(([voteId, raw]) => {
-    const detail = raw as { readonly memberVotes?: readonly Record<string, unknown>[] }
-    if (!Array.isArray(detail.memberVotes)) return [voteId, raw]
-    return [
-      voteId,
-      {
-        ...detail,
-        memberVotes: detail.memberVotes.map((mv, index) => ({
-          ballotKey: `${voteId}#${String(index)}`,
-          ...mv,
-        })),
-      },
-    ]
-  }),
+  Object.entries(voteDetailsData as Record<string, unknown>).map(
+    ([voteId, raw]) => {
+      const detail = raw as {
+        readonly memberVotes?: readonly Record<string, unknown>[]
+      }
+      if (!Array.isArray(detail.memberVotes)) return [voteId, raw]
+      return [
+        voteId,
+        {
+          ...detail,
+          memberVotes: detail.memberVotes.map((mv, index) => ({
+            ballotKey: `${voteId}#${String(index)}`,
+            ...mv,
+          })),
+        },
+      ]
+    },
+  ),
 )
 
-function voteDetailBreakdownMatchesTally(detail: ParliamentVoteDetail): boolean {
+function voteDetailBreakdownMatchesTally(
+  detail: ParliamentVoteDetail,
+): boolean {
   const totalPentru = detail.groupBreakdown.reduce(
     (sum, group) => sum + group.pentru,
     0,
@@ -270,7 +282,9 @@ function getDivisionNumbersByChamber(): Map<string, number> {
   for (const chamber of ['camera', 'senat'] as const) {
     const sorted = voteSummaries
       .filter((v) => v.chamber === chamber)
-      .sort((a, b) => new Date(b.heldAt).getTime() - new Date(a.heldAt).getTime())
+      .sort(
+        (a, b) => new Date(b.heldAt).getTime() - new Date(a.heldAt).getTime(),
+      )
     sorted.forEach((vote, index) => {
       map.set(vote.voteId, sorted.length - index)
     })
@@ -280,7 +294,10 @@ function getDivisionNumbersByChamber(): Map<string, number> {
 
 const divisionNumbersByVoteId = getDivisionNumbersByChamber()
 
-function parseDateBoundary(value: string | undefined, endOfDay: boolean): Date | null {
+function parseDateBoundary(
+  value: string | undefined,
+  endOfDay: boolean,
+): Date | null {
   if (!value?.trim()) return null
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return null
@@ -333,7 +350,9 @@ function filterVotes(search: ParliamentVotesSearch): ParliamentVoteSummary[] {
       const detail = voteDetailsMap[v.voteId] as
         | { groupBreakdown?: Array<{ groupId: string }> }
         | undefined
-      return detail?.groupBreakdown?.some((g) => grupFilterValues.includes(g.groupId))
+      return detail?.groupBreakdown?.some((g) =>
+        grupFilterValues.includes(g.groupId),
+      )
     })
   }
   return result.sort(
@@ -378,6 +397,7 @@ function buildMemberVotingHistory(
     const memberVote = detail.memberVotes.find((mv) => mv.memberId === memberId)
     if (!memberVote) continue
     votes.push({
+      positionKey: memberVote.ballotKey,
       voteId,
       // Member history rows still speak camera|senat (the live mapper collapses
       // joint sittings the same way); the fixtures carry no comun votes anyway.
@@ -385,6 +405,9 @@ function buildMemberVotingHistory(
       title: detail.title,
       heldAt: detail.heldAt,
       choice: memberVote.choice,
+      positionStatus: memberVote.positionStatus,
+      observationCount: memberVote.observationCount,
+      observedChoices: memberVote.observedChoices,
       outcome: detail.outcome,
       divisionNumber: divisionNumbersByVoteId.get(voteId),
       tally: detail.tally,
@@ -493,11 +516,14 @@ export async function fetchParliamentVoteActivityMock(
   if (unsupported.length > 0) {
     console.warn(
       `[parliament-mock] vote activity ignores ${unsupported.join(', ')} — no fixture data; ` +
-        `the chart will over-count relative to the list.`
+        `the chart will over-count relative to the list.`,
     )
   }
   const matchesFilter = (vote: (typeof voteSummaries)[number]): boolean => {
-    if (chamberEq !== undefined && toGraphqlVoteChamber(vote.chamber) !== chamberEq) {
+    if (
+      chamberEq !== undefined &&
+      toGraphqlVoteChamber(vote.chamber) !== chamberEq
+    ) {
       return false
     }
     if (outcomeEq !== undefined && vote.outcome !== outcomeEq) return false
@@ -560,8 +586,8 @@ export async function fetchParliamentBillActivityMock(
   return ParliamentBillActivitySchema.parse({
     year,
     availableYears,
-    days: Array.from(totals, ([date, total]) => ({ date, total })).sort((a, b) =>
-      a.date.localeCompare(b.date),
+    days: Array.from(totals, ([date, total]) => ({ date, total })).sort(
+      (a, b) => a.date.localeCompare(b.date),
     ),
   })
 }
@@ -573,7 +599,9 @@ function filterBills(search: ParliamentBillsSearch): ParliamentBillSummary[] {
     result = result.filter((bill) => bill.billType === search.billType)
   }
   if (search.billLocation) {
-    result = result.filter((bill) => bill.currentLocation === search.billLocation)
+    result = result.filter(
+      (bill) => bill.currentLocation === search.billLocation,
+    )
   }
   if (search.q?.trim()) {
     const query = search.q.trim().toLowerCase()
@@ -592,10 +620,16 @@ function filterBills(search: ParliamentBillsSearch): ParliamentBillSummary[] {
       case 'title_desc':
         return b.title.localeCompare(a.title, 'ro')
       case 'updated_asc':
-        return new Date(a.lastUpdatedAt).getTime() - new Date(b.lastUpdatedAt).getTime()
+        return (
+          new Date(a.lastUpdatedAt).getTime() -
+          new Date(b.lastUpdatedAt).getTime()
+        )
       case 'updated_desc':
       default:
-        return new Date(b.lastUpdatedAt).getTime() - new Date(a.lastUpdatedAt).getTime()
+        return (
+          new Date(b.lastUpdatedAt).getTime() -
+          new Date(a.lastUpdatedAt).getTime()
+        )
     }
   })
 
@@ -706,7 +740,9 @@ export function getParliamentVoteSummaryMock(
   )
 }
 
-export function getParliamentGroupColorMapMock(): Readonly<Record<string, string>> {
+export function getParliamentGroupColorMapMock(): Readonly<
+  Record<string, string>
+> {
   return groupColorMap
 }
 
@@ -742,9 +778,15 @@ function applyMemberVotesFilter(
   // would drop out of its own day.
   const from = filter.voteDate?.gte
   const to = filter.voteDate?.lte
-  const chamber = filter.chamber ? mockChamberForToken(filter.chamber.eq) : undefined
+  const chamber = filter.chamber
+    ? mockChamberForToken(filter.chamber.eq)
+    : undefined
   return votes.filter((vote) => {
-    if (filter.choice && !filter.choice.in.includes(vote.choice)) return false
+    if (
+      filter.choice &&
+      (!vote.choice || !filter.choice.in.includes(vote.choice))
+    )
+      return false
     if (filter.outcome && vote.outcome !== filter.outcome.eq) return false
     if (filter.chamber && vote.chamber !== chamber) return false
     const day = vote.heldAt.slice(0, 10)
@@ -801,11 +843,20 @@ export async function fetchParliamentMemberVoteActivityMock(
   for (const vote of filtered) {
     if (Number(vote.heldAt.slice(0, 4)) !== year) continue
     const date = vote.heldAt.slice(0, 10)
-    const day =
-      dayMap.get(date) ??
-      { date, total: 0, pentru: 0, impotriva: 0, abtinere: 0, nuAVotat: 0 }
+    const day = dayMap.get(date) ?? {
+      date,
+      total: 0,
+      pentru: 0,
+      impotriva: 0,
+      abtinere: 0,
+      nuAVotat: 0,
+      conflicting: 0,
+      unknown: 0,
+    }
     day.total += 1
-    if (vote.choice === 'pentru') day.pentru += 1
+    if (vote.positionStatus === 'conflicting_choice') day.conflicting += 1
+    else if (vote.positionStatus !== 'confirmed') day.unknown += 1
+    else if (vote.choice === 'pentru') day.pentru += 1
     else if (vote.choice === 'impotriva') day.impotriva += 1
     else if (vote.choice === 'abtinere') day.abtinere += 1
     else if (vote.choice === 'nu_a_votat') day.nuAVotat += 1
@@ -815,7 +866,9 @@ export async function fetchParliamentMemberVoteActivityMock(
   return ParliamentMemberVoteActivitySchema.parse({
     year,
     availableYears,
-    days: Array.from(dayMap.values()).sort((a, b) => a.date.localeCompare(b.date)),
+    days: Array.from(dayMap.values()).sort((a, b) =>
+      a.date.localeCompare(b.date),
+    ),
   })
 }
 
@@ -844,7 +897,8 @@ export const MOCK_SPEECH_TEMPLATES: readonly MockSpeechTemplate[] = [
     date: '2026-05-13',
     sitting: 'own',
     title: 'Dezbatere privind bugetul educației',
-    summary: 'Mulțumesc, domnule președinte. Voi adresa o întrebare despre bugetul educației.',
+    summary:
+      'Mulțumesc, domnule președinte. Voi adresa o întrebare despre bugetul educației.',
     fullText:
       'Domnul deputat:\nMulțumesc, domnule președinte de ședință.\nVoi adresa o întrebare domnului ministru al educației despre alocările bugetare pentru anul în curs.',
   },
@@ -859,7 +913,8 @@ export const MOCK_SPEECH_TEMPLATES: readonly MockSpeechTemplate[] = [
     date: '2026-05-11',
     sitting: 'comun',
     title: 'Ședință comună privind sănătatea publică',
-    summary: 'Este vorba despre proiectul de lege privind sănătatea publică și rețeaua de spitale.',
+    summary:
+      'Este vorba despre proiectul de lege privind sănătatea publică și rețeaua de spitale.',
     fullText:
       'Foarte scurt, domnule președinte.\nEste vorba despre proiectul de lege privind sănătatea publică.',
   },
@@ -875,14 +930,16 @@ export const MOCK_SPEECH_TEMPLATES: readonly MockSpeechTemplate[] = [
     date: '2026-02-10',
     sitting: 'own',
     title: 'Intervenție privind transparența administrației',
-    summary: 'O intervenție scurtă despre transparența administrației publice locale.',
+    summary:
+      'O intervenție scurtă despre transparența administrației publice locale.',
     fullText: undefined,
   },
   {
     date: '2025-11-05',
     sitting: 'own',
     title: undefined,
-    summary: 'Vă mulțumesc pentru cuvânt. Câteva precizări despre transporturi.',
+    summary:
+      'Vă mulțumesc pentru cuvânt. Câteva precizări despre transporturi.',
     fullText:
       'Vă mulțumesc pentru cuvânt.\nAm câteva precizări de făcut pe marginea proiectului privind transporturile.',
   },
@@ -905,7 +962,8 @@ export const MOCK_SPEECH_TEMPLATES: readonly MockSpeechTemplate[] = [
     date: '2025-06-15',
     sitting: 'own',
     title: 'Continuarea dezbaterii privind fondurile europene',
-    summary: 'Continuare a dezbaterii despre fondurile europene și absorbția lor.',
+    summary:
+      'Continuare a dezbaterii despre fondurile europene și absorbția lor.',
     fullText:
       'Continuăm dezbaterea privind fondurile europene și gradul de absorbție la nivel regional.',
   },
@@ -1036,7 +1094,10 @@ export async function fetchParliamentMemberSpeechActivityMock(
     .filter((y) => Number.isFinite(y))
     .sort((a, b) => b - a)
 
-  const dayMap = new Map<string, ParliamentMemberSpeechActivity['days'][number]>()
+  const dayMap = new Map<
+    string,
+    ParliamentMemberSpeechActivity['days'][number]
+  >()
   for (const speech of filtered) {
     if (Number(speech.spokenAt.slice(0, 4)) !== year) continue
     const date = speech.spokenAt.slice(0, 10)
@@ -1050,7 +1111,9 @@ export async function fetchParliamentMemberSpeechActivityMock(
   return ParliamentMemberSpeechActivitySchema.parse({
     year,
     availableYears,
-    days: Array.from(dayMap.values()).sort((a, b) => a.date.localeCompare(b.date)),
+    days: Array.from(dayMap.values()).sort((a, b) =>
+      a.date.localeCompare(b.date),
+    ),
   })
 }
 
@@ -1138,7 +1201,11 @@ export async function fetchParliamentCommitteesMock(params: {
   legislature?: string
   first?: number
   after?: string
-}): Promise<{ committees: ParliamentCommittee[]; hasNextPage: boolean; endCursor?: string }> {
+}): Promise<{
+  committees: ParliamentCommittee[]
+  hasNextPage: boolean
+  endCursor?: string
+}> {
   // Mirror the live filters: chamber + legislature (absent legislature → all
   // legislatures, so the mock reflects the browse default vs "toate" behaviour).
   const filtered = committeeList.filter(

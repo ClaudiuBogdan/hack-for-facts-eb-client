@@ -136,7 +136,9 @@ export function MemberVotingTab({ member, search }: Props) {
 
       <section className="space-y-4">
         <div>
-          <h3 className={memberDetailSectionTitleClassName}>Activitatea de vot</h3>
+          <h3 className={memberDetailSectionTitleClassName}>
+            Activitatea de vot
+          </h3>
           <p className={memberDetailSectionIntroClassName}>
             Fiecare pătrat reprezintă o zi; intensitatea arată câte voturi a
             exprimat parlamentarul. Faceți clic pe o zi pentru a filtra lista.
@@ -184,12 +186,13 @@ export function MemberVotingTab({ member, search }: Props) {
           </p>
           {votes.map((vote) => (
             <MemberVoteRecordCard
-              key={vote.voteId}
+              key={vote.positionKey ?? vote.voteId}
               voteId={vote.voteId}
               chamber={vote.chamber}
               title={vote.title}
               heldAt={vote.heldAt}
               choice={vote.choice}
+              positionStatus={vote.positionStatus}
               divisionNumber={vote.divisionNumber}
               tally={vote.tally}
             />
@@ -203,7 +206,9 @@ export function MemberVotingTab({ member, search }: Props) {
                 disabled={isFetchingNextPage}
                 onClick={() => void fetchNextPage()}
               >
-                {isFetchingNextPage ? 'Se încarcă…' : 'Încarcă mai multe voturi'}
+                {isFetchingNextPage
+                  ? 'Se încarcă…'
+                  : 'Încarcă mai multe voturi'}
               </Button>
             </div>
           ) : null}

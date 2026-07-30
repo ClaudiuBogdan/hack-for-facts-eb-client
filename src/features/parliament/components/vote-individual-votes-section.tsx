@@ -1,5 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { Check, Circle } from 'lucide-react'
+import { Trans } from '@lingui/react/macro'
 import {
   Accordion,
   AccordionContent,
@@ -41,8 +42,11 @@ type Props = {
 }
 
 type ViewMode = 'party' | 'member'
-/** The four recorded choices, plus the unfiltered roll. */
-type VoteTab = MemberVoteChoice | typeof ALL_CHOICES_TAB
+type VoteTab =
+  | MemberVoteChoice
+  | 'conflicting_choice'
+  | 'unknown'
+  | typeof ALL_CHOICES_TAB
 
 const ALL_PARTIES_VALUE = 'all'
 const ALL_CHOICES_TAB = 'toate'
@@ -55,6 +59,17 @@ const CHOICE_LABELS: Readonly<Record<MemberVoteChoice, string>> = {
   nu_a_votat: 'Fără vot',
 }
 
+function votePositionLabel(vote: ParliamentMemberVoteRecord): string {
+  if (vote.positionStatus === 'conflicting_choice') return 'Conflict în sursă'
+  if (
+    vote.positionStatus === 'unknown_marker' ||
+    vote.positionStatus === 'identity_conflict'
+  ) {
+    return 'Poziție neclară'
+  }
+  return vote.choice ? CHOICE_LABELS[vote.choice] : 'Poziție neclară'
+}
+
 /**
  * All four recorded choices, then the whole roll. `abtinere` was missing even
  * though the source and the tally both carry it, so abstaining members were
@@ -65,11 +80,16 @@ const CHOICE_LABELS: Readonly<Record<MemberVoteChoice, string>> = {
  * one view where a group's full delegation is visible in one place, with each
  * member's choice written on their card.
  */
-const TAB_CHOICES: ReadonlyArray<{ readonly id: VoteTab; readonly label: string }> = [
+const TAB_CHOICES: ReadonlyArray<{
+  readonly id: VoteTab
+  readonly label: string
+}> = [
   { id: 'pentru', label: 'Voturi pentru' },
   { id: 'impotriva', label: 'Voturi împotrivă' },
   { id: 'abtinere', label: 'Abțineri' },
   { id: 'nu_a_votat', label: 'Fără vot' },
+  { id: 'conflicting_choice', label: 'Conflicte în sursă' },
+  { id: 'unknown', label: 'Poziții neclare' },
   { id: ALL_CHOICES_TAB, label: 'Toate' },
 ]
 
@@ -78,6 +98,16 @@ function filterByChoice(
   tab: VoteTab,
 ): ParliamentMemberVoteRecord[] {
   if (tab === ALL_CHOICES_TAB) return [...votes]
+  if (tab === 'conflicting_choice') {
+    return votes.filter((vote) => vote.positionStatus === 'conflicting_choice')
+  }
+  if (tab === 'unknown') {
+    return votes.filter(
+      (vote) =>
+        vote.positionStatus === 'unknown_marker' ||
+        vote.positionStatus === 'identity_conflict',
+    )
+  }
   return votes.filter((vote) => vote.choice === tab)
 }
 
@@ -105,7 +135,10 @@ function groupByParty(
   return [...map.entries()].sort((a, b) => {
     const bySize = b[1].length - a[1].length
     if (bySize !== 0) return bySize
-    return (a[1][0]?.groupName ?? '').localeCompare(b[1][0]?.groupName ?? '', 'ro')
+    return (a[1][0]?.groupName ?? '').localeCompare(
+      b[1][0]?.groupName ?? '',
+      'ro',
+    )
   })
 }
 
@@ -160,6 +193,13 @@ export function VoteIndividualVotesSection({
   const [partyFilter, setPartyFilter] = useState<string>(ALL_PARTIES_VALUE)
 
   const partyOptions = useMemo(() => getPartyOptions(detail), [detail])
+  const conflictingCount = useMemo(
+    () =>
+      detail.memberVotes.filter(
+        (vote) => vote.positionStatus === 'conflicting_choice',
+      ).length,
+    [detail.memberVotes],
+  )
 
   // Counts follow the PARTY FILTER, not the whole division. A tab reading
   // "Voturi pentru (205)" that opens onto 45 rows because a group is selected
@@ -188,12 +228,25 @@ export function VoteIndividualVotesSection({
           borderLeftColor: PARLIAMENT_RESOURCE_PURPLE,
         }}
       >
-        Numărul de voturi pe grup poate diferi de totalul din divizare atunci când unii
-        membri nu au participat sau nu au votat în mod explicit.
+        {conflictingCount > 0 ? (
+          <Trans>
+            {conflictingCount} poziții au alegeri contradictorii în observațiile
+            sursei. Sunt numărate ca participare, dar nu sunt atribuite niciunei
+            alegeri.
+          </Trans>
+        ) : (
+          <Trans>
+            Numărul de voturi pe grup poate diferi de totalul din divizare
+            atunci când unii membri nu au participat sau nu au votat în mod
+            explicit.
+          </Trans>
+        )}
       </div>
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <h2 className={voteDetailSectionTitleClassName}>Voturi individuale pe grup</h2>
+        <h2 className={voteDetailSectionTitleClassName}>
+          Voturi individuale pe grup
+        </h2>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="inline-flex overflow-hidden rounded-none border border-[#b1b4b6] dark:border-[var(--pnrr-border)]">
@@ -254,7 +307,11 @@ export function VoteIndividualVotesSection({
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as VoteTab)} className="mt-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => setActiveTab(value as VoteTab)}
+        className="mt-6"
+      >
         {/* The row scrolls at EVERY width. It used to go `sm:overflow-visible`,
             on the assumption that five labels always fit above 640px — they do
             not: with the counts on them the row is ~830px wide, so between
@@ -268,7 +325,10 @@ export function VoteIndividualVotesSection({
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}
-                className={cn(voteDetailTabTriggerClassName, 'mr-6 last:mr-0 sm:mr-8')}
+                className={cn(
+                  voteDetailTabTriggerClassName,
+                  'mr-6 last:mr-0 sm:mr-8',
+                )}
               >
                 {tab.label}
                 {/* BOTH a space and a margin, and both are load-bearing. The
@@ -325,8 +385,14 @@ export function VoteIndividualVotesSection({
                               memberId={vote.memberId}
                               memberName={vote.memberName}
                               groupName={vote.groupName}
-                              judetName={vote.memberId ? memberJudete[vote.memberId] : undefined}
-                              accentColor={groupColors[vote.groupId] ?? '#505a5f'}
+                              judetName={
+                                vote.memberId
+                                  ? memberJudete[vote.memberId]
+                                  : undefined
+                              }
+                              accentColor={
+                                groupColors[vote.groupId] ?? '#505a5f'
+                              }
                               // Only in the unfiltered tab. Everywhere else the
                               // tab IS the choice, and repeating it on 300
                               // cards would be noise; here the cards mix all
@@ -334,7 +400,7 @@ export function VoteIndividualVotesSection({
                               // how that member voted.
                               choiceLabel={
                                 tab.id === ALL_CHOICES_TAB
-                                  ? CHOICE_LABELS[vote.choice]
+                                  ? votePositionLabel(vote)
                                   : undefined
                               }
                             />
@@ -352,11 +418,13 @@ export function VoteIndividualVotesSection({
                       memberId={vote.memberId}
                       memberName={vote.memberName}
                       groupName={vote.groupName}
-                      judetName={vote.memberId ? memberJudete[vote.memberId] : undefined}
+                      judetName={
+                        vote.memberId ? memberJudete[vote.memberId] : undefined
+                      }
                       accentColor={groupColors[vote.groupId] ?? '#505a5f'}
                       choiceLabel={
                         tab.id === ALL_CHOICES_TAB
-                          ? CHOICE_LABELS[vote.choice]
+                          ? votePositionLabel(vote)
                           : undefined
                       }
                     />

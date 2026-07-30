@@ -24,30 +24,150 @@ const SYNTHETIC_CAMERA_MEMBERS: ReadonlyArray<{
   readonly groupId: string
   readonly judetName: string
 }> = [
-  { firstName: 'Adela', lastName: 'Nord', groupId: 'psd-camera', judetName: 'Iași' },
-  { firstName: 'Matei', lastName: 'Luncă', groupId: 'psd-camera', judetName: 'Vaslui' },
-  { firstName: 'Bianca', lastName: 'Vale', groupId: 'psd-camera', judetName: 'Teleorman' },
-  { firstName: 'Darius', lastName: 'Pajiște', groupId: 'psd-camera', judetName: 'Dolj' },
-  { firstName: 'Carmen', lastName: 'Dumbravă', groupId: 'psd-camera', judetName: 'Galați' },
-  { firstName: 'Toma', lastName: 'Izvor', groupId: 'pnl-camera', judetName: 'Sibiu' },
-  { firstName: 'Livia', lastName: 'Mesteacăn', groupId: 'pnl-camera', judetName: 'Argeș' },
-  { firstName: 'Radu', lastName: 'Culme', groupId: 'pnl-camera', judetName: 'Brașov' },
-  { firstName: 'Nora', lastName: 'Faleză', groupId: 'pnl-camera', judetName: 'Constanța' },
-  { firstName: 'Ovidiu', lastName: 'Lan', groupId: 'usr-camera', judetName: 'Timiș' },
-  { firstName: 'Mara', lastName: 'Runc', groupId: 'usr-camera', judetName: 'Arad' },
-  { firstName: 'Silviu', lastName: 'Prund', groupId: 'usr-camera', judetName: 'Mureș' },
-  { firstName: 'Dalia', lastName: 'Zori', groupId: 'aur-camera', judetName: 'Prahova' },
-  { firstName: 'Rareș', lastName: 'Codru', groupId: 'aur-camera', judetName: 'Bacău' },
-  { firstName: 'Ilinca', lastName: 'Poiană', groupId: 'aur-camera', judetName: 'Suceava' },
-  { firstName: 'Erik', lastName: 'Arbor', groupId: 'udmr-camera', judetName: 'Covasna' },
-  { firstName: 'Lilla', lastName: 'Meadow', groupId: 'udmr-camera', judetName: 'Mureș' },
-  { firstName: 'Nandor', lastName: 'Hill', groupId: 'udmr-camera', judetName: 'Bihor' },
-  { firstName: 'Petra', lastName: 'Fag', groupId: 'psd-camera', judetName: 'Hunedoara' },
-  { firstName: 'Dorin', lastName: 'Pârâu', groupId: 'pnl-camera', judetName: 'Ilfov' },
-  { firstName: 'Sanda', lastName: 'Nuc', groupId: 'usr-camera', judetName: 'Brașov' },
-  { firstName: 'Vlad', lastName: 'Răsărit', groupId: 'aur-camera', judetName: 'Dâmbovița' },
-  { firstName: 'Iulia', lastName: 'Câmp', groupId: 'psd-camera', judetName: 'Neamț' },
-  { firstName: 'Marius', lastName: 'Deal', groupId: 'pnl-camera', judetName: 'Alba' },
+  {
+    firstName: 'Adela',
+    lastName: 'Nord',
+    groupId: 'psd-camera',
+    judetName: 'Iași',
+  },
+  {
+    firstName: 'Matei',
+    lastName: 'Luncă',
+    groupId: 'psd-camera',
+    judetName: 'Vaslui',
+  },
+  {
+    firstName: 'Bianca',
+    lastName: 'Vale',
+    groupId: 'psd-camera',
+    judetName: 'Teleorman',
+  },
+  {
+    firstName: 'Darius',
+    lastName: 'Pajiște',
+    groupId: 'psd-camera',
+    judetName: 'Dolj',
+  },
+  {
+    firstName: 'Carmen',
+    lastName: 'Dumbravă',
+    groupId: 'psd-camera',
+    judetName: 'Galați',
+  },
+  {
+    firstName: 'Toma',
+    lastName: 'Izvor',
+    groupId: 'pnl-camera',
+    judetName: 'Sibiu',
+  },
+  {
+    firstName: 'Livia',
+    lastName: 'Mesteacăn',
+    groupId: 'pnl-camera',
+    judetName: 'Argeș',
+  },
+  {
+    firstName: 'Radu',
+    lastName: 'Culme',
+    groupId: 'pnl-camera',
+    judetName: 'Brașov',
+  },
+  {
+    firstName: 'Nora',
+    lastName: 'Faleză',
+    groupId: 'pnl-camera',
+    judetName: 'Constanța',
+  },
+  {
+    firstName: 'Ovidiu',
+    lastName: 'Lan',
+    groupId: 'usr-camera',
+    judetName: 'Timiș',
+  },
+  {
+    firstName: 'Mara',
+    lastName: 'Runc',
+    groupId: 'usr-camera',
+    judetName: 'Arad',
+  },
+  {
+    firstName: 'Silviu',
+    lastName: 'Prund',
+    groupId: 'usr-camera',
+    judetName: 'Mureș',
+  },
+  {
+    firstName: 'Dalia',
+    lastName: 'Zori',
+    groupId: 'aur-camera',
+    judetName: 'Prahova',
+  },
+  {
+    firstName: 'Rareș',
+    lastName: 'Codru',
+    groupId: 'aur-camera',
+    judetName: 'Bacău',
+  },
+  {
+    firstName: 'Ilinca',
+    lastName: 'Poiană',
+    groupId: 'aur-camera',
+    judetName: 'Suceava',
+  },
+  {
+    firstName: 'Erik',
+    lastName: 'Arbor',
+    groupId: 'udmr-camera',
+    judetName: 'Covasna',
+  },
+  {
+    firstName: 'Lilla',
+    lastName: 'Meadow',
+    groupId: 'udmr-camera',
+    judetName: 'Mureș',
+  },
+  {
+    firstName: 'Nandor',
+    lastName: 'Hill',
+    groupId: 'udmr-camera',
+    judetName: 'Bihor',
+  },
+  {
+    firstName: 'Petra',
+    lastName: 'Fag',
+    groupId: 'psd-camera',
+    judetName: 'Hunedoara',
+  },
+  {
+    firstName: 'Dorin',
+    lastName: 'Pârâu',
+    groupId: 'pnl-camera',
+    judetName: 'Ilfov',
+  },
+  {
+    firstName: 'Sanda',
+    lastName: 'Nuc',
+    groupId: 'usr-camera',
+    judetName: 'Brașov',
+  },
+  {
+    firstName: 'Vlad',
+    lastName: 'Răsărit',
+    groupId: 'aur-camera',
+    judetName: 'Dâmbovița',
+  },
+  {
+    firstName: 'Iulia',
+    lastName: 'Câmp',
+    groupId: 'psd-camera',
+    judetName: 'Neamț',
+  },
+  {
+    firstName: 'Marius',
+    lastName: 'Deal',
+    groupId: 'pnl-camera',
+    judetName: 'Alba',
+  },
 ]
 
 const SYNTHETIC_SENAT_MEMBERS: ReadonlyArray<{
@@ -56,16 +176,66 @@ const SYNTHETIC_SENAT_MEMBERS: ReadonlyArray<{
   readonly groupId: string
   readonly judetName: string
 }> = [
-  { firstName: 'Anca', lastName: 'Salcie', groupId: 'psd-senat', judetName: 'Gorj' },
-  { firstName: 'Mirel', lastName: 'Plop', groupId: 'pnl-senat', judetName: 'București' },
-  { firstName: 'Diana', lastName: 'Tei', groupId: 'usr-senat', judetName: 'București' },
-  { firstName: 'Sergiu', lastName: 'Carpen', groupId: 'aur-senat', judetName: 'Buzău' },
-  { firstName: 'Klara', lastName: 'Ridge', groupId: 'udmr-senat', judetName: 'Harghita' },
-  { firstName: 'Gabriela', lastName: 'Brumă', groupId: 'psd-senat', judetName: 'Giurgiu' },
-  { firstName: 'Roxana', lastName: 'Frunză', groupId: 'psd-senat', judetName: 'Brăila' },
-  { firstName: 'Virgil', lastName: 'Livadă', groupId: 'pnl-senat', judetName: 'Mehedinți' },
-  { firstName: 'Dragoș', lastName: 'Pietriș', groupId: 'usr-senat', judetName: 'București' },
-  { firstName: 'Nicoleta', lastName: 'Amurg', groupId: 'aur-senat', judetName: 'București' },
+  {
+    firstName: 'Anca',
+    lastName: 'Salcie',
+    groupId: 'psd-senat',
+    judetName: 'Gorj',
+  },
+  {
+    firstName: 'Mirel',
+    lastName: 'Plop',
+    groupId: 'pnl-senat',
+    judetName: 'București',
+  },
+  {
+    firstName: 'Diana',
+    lastName: 'Tei',
+    groupId: 'usr-senat',
+    judetName: 'București',
+  },
+  {
+    firstName: 'Sergiu',
+    lastName: 'Carpen',
+    groupId: 'aur-senat',
+    judetName: 'Buzău',
+  },
+  {
+    firstName: 'Klara',
+    lastName: 'Ridge',
+    groupId: 'udmr-senat',
+    judetName: 'Harghita',
+  },
+  {
+    firstName: 'Gabriela',
+    lastName: 'Brumă',
+    groupId: 'psd-senat',
+    judetName: 'Giurgiu',
+  },
+  {
+    firstName: 'Roxana',
+    lastName: 'Frunză',
+    groupId: 'psd-senat',
+    judetName: 'Brăila',
+  },
+  {
+    firstName: 'Virgil',
+    lastName: 'Livadă',
+    groupId: 'pnl-senat',
+    judetName: 'Mehedinți',
+  },
+  {
+    firstName: 'Dragoș',
+    lastName: 'Pietriș',
+    groupId: 'usr-senat',
+    judetName: 'București',
+  },
+  {
+    firstName: 'Nicoleta',
+    lastName: 'Amurg',
+    groupId: 'aur-senat',
+    judetName: 'București',
+  },
 ]
 
 /** Extend mock roster with synthetic members for vote detail demos */
@@ -111,7 +281,10 @@ export function extendParliamentMembers(
   return [...baseMembers, ...extras]
 }
 
-function distributeCount(total: number, weights: ReadonlyArray<number>): number[] {
+function distributeCount(
+  total: number,
+  weights: ReadonlyArray<number>,
+): number[] {
   if (total <= 0 || weights.length === 0) {
     return weights.map(() => 0)
   }
@@ -156,11 +329,17 @@ function buildGroupBreakdown(
     groupName: group.shortName ?? group.name,
     pentru: pentruCounts[index] ?? 0,
     impotriva: impotrivaCounts[index] ?? 0,
-    abtinere: (abtinereCounts[index] ?? 0) > 0 ? abtinereCounts[index] : undefined,
+    abtinere:
+      (abtinereCounts[index] ?? 0) > 0 ? abtinereCounts[index] : undefined,
+    conflicting: 0,
+    unknown: 0,
   }))
 }
 
-function defaultChoiceForGroup(outcome: VoteOutcome, groupShortName: string): MemberVoteChoice {
+function defaultChoiceForGroup(
+  outcome: VoteOutcome,
+  groupShortName: string,
+): MemberVoteChoice {
   const oppositionGroups = new Set(['AUR'])
   const isOpposition = oppositionGroups.has(groupShortName)
 
@@ -188,8 +367,14 @@ function buildMemberVotes(
 
     const choices: MemberVoteChoice[] = [
       ...Array.from({ length: breakdown.pentru }, () => 'pentru' as const),
-      ...Array.from({ length: breakdown.impotriva }, () => 'impotriva' as const),
-      ...Array.from({ length: breakdown.abtinere ?? 0 }, () => 'abtinere' as const),
+      ...Array.from(
+        { length: breakdown.impotriva },
+        () => 'impotriva' as const,
+      ),
+      ...Array.from(
+        { length: breakdown.abtinere ?? 0 },
+        () => 'abtinere' as const,
+      ),
     ]
 
     groupMembers.forEach((member, index) => {
@@ -204,6 +389,9 @@ function buildMemberVotes(
         groupId: member.groupId,
         groupName: member.groupName,
         choice,
+        positionStatus: 'confirmed',
+        observationCount: 1,
+        observedChoices: [choice],
       })
     })
   }
@@ -229,8 +417,12 @@ export function synthesizeVoteDetail(
   allMembers: ReadonlyArray<ParliamentMember>,
   allGroups: ReadonlyArray<ParliamentGroup>,
 ): ParliamentVoteDetail {
-  const chamberGroups = allGroups.filter((group) => group.chamber === summary.chamber)
-  const chamberMembers = allMembers.filter((member) => member.chamber === summary.chamber)
+  const chamberGroups = allGroups.filter(
+    (group) => group.chamber === summary.chamber,
+  )
+  const chamberMembers = allMembers.filter(
+    (member) => member.chamber === summary.chamber,
+  )
   const groupBreakdown = buildGroupBreakdown(summary, chamberGroups)
   const memberVotes = buildMemberVotes(summary, chamberMembers, groupBreakdown)
 

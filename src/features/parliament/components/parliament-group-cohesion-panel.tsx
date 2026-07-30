@@ -36,7 +36,7 @@ type Segment = {
 
 /** Bar segment → the `choice` the votes list filters on. */
 const SEGMENT_CHOICE: Readonly<
-  Record<keyof typeof GROUP_BALLOT_LABELS, MemberVoteChoice>
+  Partial<Record<keyof typeof GROUP_BALLOT_LABELS, MemberVoteChoice>>
 > = {
   pentru: 'pentru',
   impotriva: 'impotriva',
@@ -51,6 +51,8 @@ function segments(row: ParliamentGroupCohesion): readonly Segment[] {
       { key: 'impotriva', pct: row.againstPct },
       { key: 'abtinere', pct: row.abstainPct },
       { key: 'absent', pct: row.absentPct },
+      { key: 'conflicting', pct: row.conflictingPct },
+      { key: 'unknown', pct: row.unknownPct },
     ] as const
   )
     .filter((segment): segment is Segment => typeof segment.pct === 'number')
@@ -154,7 +156,9 @@ export function ParliamentGroupCohesionPanel({
 
   const parts = segments(row)
   const band =
-    row.cohesionIndex === undefined ? undefined : cohesionBand(row.cohesionIndex)
+    row.cohesionIndex === undefined
+      ? undefined
+      : cohesionBand(row.cohesionIndex)
   const rank = rows?.length ? cohesionRank(row, rows) : undefined
 
   return (
@@ -171,7 +175,7 @@ export function ParliamentGroupCohesionPanel({
           <div className="mt-4">
             <BallotBar parts={parts} />
           </div>
-          <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
+          <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 lg:grid-cols-6">
             {parts.map((part) => (
               <div key={part.key} className="flex items-start gap-2">
                 <span
@@ -188,27 +192,37 @@ export function ParliamentGroupCohesionPanel({
                         row's, not the nomenclator's: the filter matches
                         `vote_records.group_name` exactly, and the two spell
                         some groups differently. */}
-                    <Link
-                      to="/parlament"
-                      search={{
-                        tab: 'voturi',
-                        chamber,
-                        from: window.from,
-                        to: window.to,
-                        grupVot: row.groupName,
-                        alegere: SEGMENT_CHOICE[part.key],
-                      }}
-                      className="underline decoration-2 underline-offset-4 hover:no-underline"
-                    >
-                      {part.pct.toLocaleString('ro-RO', {
-                        maximumFractionDigits: 1,
-                      })}
-                      %
-                      <span className="sr-only">
-                        {' '}— vezi voturile în care majoritatea grupului a ales
-                        „{GROUP_BALLOT_LABELS[part.key]}”
+                    {SEGMENT_CHOICE[part.key] ? (
+                      <Link
+                        to="/parlament"
+                        search={{
+                          tab: 'voturi',
+                          chamber,
+                          from: window.from,
+                          to: window.to,
+                          grupVot: row.groupName,
+                          alegere: SEGMENT_CHOICE[part.key],
+                        }}
+                        className="underline decoration-2 underline-offset-4 hover:no-underline"
+                      >
+                        {part.pct.toLocaleString('ro-RO', {
+                          maximumFractionDigits: 1,
+                        })}
+                        %
+                        <span className="sr-only">
+                          {' '}
+                          — vezi voturile în care majoritatea grupului a ales „
+                          {GROUP_BALLOT_LABELS[part.key]}”
+                        </span>
+                      </Link>
+                    ) : (
+                      <span>
+                        {part.pct.toLocaleString('ro-RO', {
+                          maximumFractionDigits: 1,
+                        })}
+                        %
                       </span>
-                    </Link>
+                    )}
                   </dd>
                 </div>
               </div>

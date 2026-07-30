@@ -15,6 +15,8 @@ describe('mapMemberVoteActivity', () => {
           impotriva: 280,
           abtinere: 0,
           nuAVotat: 0,
+          conflicting: 3,
+          unknown: 2,
         },
       ],
     }
@@ -30,12 +32,18 @@ describe('mapMemberVoteActivity', () => {
         impotriva: 280,
         abtinere: 0,
         nuAVotat: 0,
+        conflicting: 3,
+        unknown: 2,
       },
     ])
   })
 
   it('handles an empty year', () => {
-    const mapped = mapMemberVoteActivity({ year: 2020, availableYears: [], days: [] })
+    const mapped = mapMemberVoteActivity({
+      year: 2020,
+      availableYears: [],
+      days: [],
+    })
     expect(mapped.days).toEqual([])
     expect(mapped.availableYears).toEqual([])
   })

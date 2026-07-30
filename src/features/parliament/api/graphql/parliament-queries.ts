@@ -122,6 +122,8 @@ const rawGroupBreakdownSchema = z.object({
   impotriva: z.number(),
   abtinere: z.number(),
   nuAVotat: z.number(),
+  conflicting: z.number(),
+  unknown: z.number(),
 });
 
 const rawVoteCoreSchema = z.object({
@@ -204,6 +206,8 @@ export const PARLIAMENT_VOTE_COHESION_QUERY = /* GraphQL */ `
       againstPct
       abstainPct
       absentPct
+      conflictingPct
+      unknownPct
       cohesionIndex
       voteCount
     }
@@ -216,12 +220,12 @@ const rawGroupCohesionSchema = z.object({
   againstPct: z.number().nullable(),
   abstainPct: z.number().nullable(),
   absentPct: z.number().nullable(),
+  conflictingPct: z.number().nullable(),
+  unknownPct: z.number().nullable(),
   cohesionIndex: z.number().nullable(),
   voteCount: z.number().nullable(),
 });
-export type RawParliamentGroupCohesion = z.infer<
-  typeof rawGroupCohesionSchema
->;
+export type RawParliamentGroupCohesion = z.infer<typeof rawGroupCohesionSchema>;
 
 export const parliamentVoteCohesionResponseSchema = z.object({
   parliamentVoteCohesion: z.array(rawGroupCohesionSchema),
@@ -443,27 +447,45 @@ export const PARLIAMENT_VOTE_KIND_COUNTS_QUERY = /* GraphQL */ `
     legislative: parliamentVotes(
       filter: { chamber: $chamber, kind: { in: ["legislative"] } }
       first: 1
-    ) { total totalEstimated }
+    ) {
+      total
+      totalEstimated
+    }
     amendment: parliamentVotes(
       filter: { chamber: $chamber, kind: { in: ["amendment"] } }
       first: 1
-    ) { total totalEstimated }
+    ) {
+      total
+      totalEstimated
+    }
     procedural: parliamentVotes(
       filter: { chamber: $chamber, kind: { in: ["procedural"] } }
       first: 1
-    ) { total totalEstimated }
+    ) {
+      total
+      totalEstimated
+    }
     chamber_decision: parliamentVotes(
       filter: { chamber: $chamber, kind: { in: ["chamber_decision"] } }
       first: 1
-    ) { total totalEstimated }
+    ) {
+      total
+      totalEstimated
+    }
     attendance: parliamentVotes(
       filter: { chamber: $chamber, kind: { in: ["attendance"] } }
       first: 1
-    ) { total totalEstimated }
+    ) {
+      total
+      totalEstimated
+    }
     unclassified: parliamentVotes(
       filter: { chamber: $chamber, kind: { in: ["unclassified"] } }
       first: 1
-    ) { total totalEstimated }
+    ) {
+      total
+      totalEstimated
+    }
   }
 `;
 
@@ -528,14 +550,20 @@ export const PARLIAMENT_VOTE_QUERY = /* GraphQL */ `
         impotriva
         abtinere
         nuAVotat
+        conflicting
+        unknown
       }
       ballots(first: $ballotsFirst, after: $after) {
         edges {
           node {
+            positionKey
             rowIndex
             memberName
             groupName
             choice
+            positionStatus
+            observationCount
+            observedChoices
             mandateKey
             matchMethod
             constituencyName
@@ -551,10 +579,14 @@ export const PARLIAMENT_VOTE_QUERY = /* GraphQL */ `
 `;
 
 const rawBallotSchema = z.object({
+  positionKey: z.string(),
   rowIndex: z.number(),
   memberName: z.string().nullable(),
   groupName: z.string().nullable(),
   choice: z.string().nullable(),
+  positionStatus: z.string(),
+  observationCount: z.number(),
+  observedChoices: z.array(z.string()),
   mandateKey: z.string().nullable(),
   matchMethod: z.string().nullable(),
   // Constituency (județ) of the resolved member, JOINed server-side; null when
@@ -614,10 +646,14 @@ export const PARLIAMENT_VOTE_BALLOTS_QUERY = /* GraphQL */ `
       ballots(first: $first, after: $after) {
         edges {
           node {
+            positionKey
             rowIndex
             memberName
             groupName
             choice
+            positionStatus
+            observationCount
+            observedChoices
             mandateKey
             matchMethod
             constituencyName
@@ -663,12 +699,16 @@ export const PARLIAMENT_MEMBER_VOTES_QUERY = /* GraphQL */ `
         total
         edges {
           node {
+            positionKey
             voteKey
             chamber
             voteDate
             title
             outcome
             choice
+            positionStatus
+            observationCount
+            observedChoices
             billKey
           }
         }
@@ -682,12 +722,16 @@ export const PARLIAMENT_MEMBER_VOTES_QUERY = /* GraphQL */ `
 `;
 
 const rawMemberVoteSchema = z.object({
+  positionKey: z.string(),
   voteKey: z.string(),
   chamber: z.string(),
   voteDate: z.string().nullable(),
   title: z.string().nullable(),
   outcome: z.string().nullable(),
   choice: z.string().nullable(),
+  positionStatus: z.string(),
+  observationCount: z.number(),
+  observedChoices: z.array(z.string()),
   billKey: z.string().nullable(),
 });
 export type RawParliamentMemberVote = z.infer<typeof rawMemberVoteSchema>;
@@ -731,6 +775,8 @@ export const PARLIAMENT_MEMBER_VOTE_ACTIVITY_QUERY = /* GraphQL */ `
           impotriva
           abtinere
           nuAVotat
+          conflicting
+          unknown
         }
       }
     }
@@ -744,6 +790,8 @@ const rawVoteActivityDaySchema = z.object({
   impotriva: z.number(),
   abtinere: z.number(),
   nuAVotat: z.number(),
+  conflicting: z.number(),
+  unknown: z.number(),
 });
 export type RawParliamentMemberVoteActivityDay = z.infer<
   typeof rawVoteActivityDaySchema
@@ -1330,7 +1378,7 @@ const rawBillEventSchema = z.object({
         sourceHref: z.string(),
         sourceText: z.string().nullable(),
         resolutionStatus: z.string(),
-      })
+      }),
     )
     .optional(),
 });

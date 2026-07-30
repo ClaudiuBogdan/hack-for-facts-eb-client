@@ -109,10 +109,14 @@ describe("unresolved ballots are not fabricated members", () => {
       edges: [
         {
           node: {
+            positionKey: "cdep:29892#native:42",
             rowIndex: 42,
             memberName: "ABRUDEAN Mircea",
             groupName: "PNL",
             choice: "pentru",
+            positionStatus: "confirmed",
+            observationCount: 1,
+            observedChoices: ["pentru"],
             mandateKey,
             matchMethod: mandateKey ? "exact_token_set" : null,
             constituencyName: null,
@@ -132,7 +136,7 @@ describe("unresolved ballots are not fabricated members", () => {
     // /parlament/membri/row-42 — a page that cannot exist.
     expect(ballot?.memberId).not.toBe("row-42");
     // A stable RENDER key is still available.
-    expect(ballot?.ballotKey).toBe("cdep:29892#42");
+    expect(ballot?.ballotKey).toBe("cdep:29892#native:42");
     expect(() => ParliamentVoteDetailSchema.parse(detail)).not.toThrow();
   });
 
@@ -253,7 +257,10 @@ describe("what a final vote decided is the MOTION composed with the RESULT", () 
     // so there is no second witness. Announcing "Respingerea nu a trecut" here
     // states the opposite of what happened; abstaining does not.
     expect(
-      getFinalBillVoteVerdict({ linkRole: "final_rejection", outcome: "respins" }),
+      getFinalBillVoteVerdict({
+        linkRole: "final_rejection",
+        outcome: "respins",
+      }),
     ).toBeUndefined();
     // A subject that talks about something else is not corroboration either.
     expect(

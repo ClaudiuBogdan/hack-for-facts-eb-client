@@ -1,32 +1,29 @@
-import { useEffect, useMemo, useRef, type ReactNode } from 'react'
-import { Link } from '@tanstack/react-router'
-import { Trans } from '@lingui/react/macro'
-import { Skeleton } from '@/components/ui/skeleton'
+import { useEffect, useMemo, useRef, type ReactNode } from "react";
+import { Link } from "@tanstack/react-router";
+import { Trans } from "@lingui/react/macro";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip'
-import type { ParliamentSearch } from '@/schemas/parliament'
-import {
-  buildWindowGrid,
-  type RollingWindow,
-} from '../lib/vote-activity-grid'
+} from "@/components/ui/tooltip";
+import type { ParliamentSearch } from "@/schemas/parliament";
+import { buildWindowGrid, type RollingWindow } from "../lib/vote-activity-grid";
 
 /**
  * GOV.UK blue ramp (#1d70b8) for buckets 1–4 — the same intensity scale the
  * member and stenograme heatmaps use, so a square means the same thing on
  * every parliamentary surface.
  */
-const GOVUK_BLUE_RAMP = ['#d2e2f1', '#a3c6e3', '#5e94c9', '#1d70b8'] as const
+const GOVUK_BLUE_RAMP = ["#d2e2f1", "#a3c6e3", "#5e94c9", "#1d70b8"] as const;
 
 /**
  * Smallest a square may get. Below `sm` a year of them is wider than the card,
  * so the grid keeps this floor and the strip scrolls instead of shrinking into
  * a row of unclickable dots.
  */
-const MIN_CELL_PX = 12
+const MIN_CELL_PX = 12;
 
 /**
  * "We never watched this day." Deliberately NOT a lighter blue — it is not a
@@ -35,54 +32,58 @@ const MIN_CELL_PX = 12
  */
 const UNCAPTURED_FILL = {
   backgroundImage:
-    'repeating-linear-gradient(45deg, #d8d8d4 0, #d8d8d4 1px, transparent 1px, transparent 4px)',
-} as const
+    "repeating-linear-gradient(45deg, #d8d8d4 0, #d8d8d4 1px, transparent 1px, transparent 4px)",
+} as const;
 
 /** One counted day. Days absent from the map are drawn as empty squares. */
 export interface ActivityHeatmapDay {
-  readonly total: number
+  readonly total: number;
   /** Accessible name + native title, e.g. "20 martie 2026 — 42 voturi". */
-  readonly label: string
+  readonly label: string;
   /** Tooltip body; the caller owns the wording and the pluralisation. */
-  readonly tooltip: ReactNode
+  readonly tooltip: ReactNode;
   /**
    * Search params the square links to on `/parlament`. OMIT to draw the day as
    * a static square: a surface whose list cannot be narrowed to one day must
    * not offer a link that would silently answer a wider question.
    */
-  readonly search?: ParliamentSearch
+  readonly search?: ParliamentSearch;
   /**
    * Fired alongside the navigation. For the heatmap that sits UNDER a list, the
    * link changes results the reader has already scrolled past, so the surface
    * uses this to bring them back to what just changed.
    */
-  readonly onSelect?: () => void
+  readonly onSelect?: () => void;
 }
 
 type Props = {
   /** Accessible name for the whole grid — it carries no visible heading. */
-  readonly ariaLabel: string
-  readonly window: RollingWindow
-  readonly days: ReadonlyMap<string, ActivityHeatmapDay>
-  readonly status: 'loading' | 'error' | 'ready'
+  readonly ariaLabel: string;
+  readonly window: RollingWindow;
+  readonly days: ReadonlyMap<string, ActivityHeatmapDay>;
+  readonly status: "loading" | "error" | "ready";
   /** What went wrong, in the surface's own words. */
-  readonly errorLead: ReactNode
+  readonly errorLead: ReactNode;
   /** The server's message, printed verbatim under the lead. */
-  readonly errorDetail?: string
+  readonly errorDetail?: string;
   /** Shown when the window is genuinely empty — a counted zero, not a gap. */
-  readonly emptyLabel: ReactNode
-  readonly bucketOf: (total: number) => 0 | 1 | 2 | 3 | 4
+  readonly emptyLabel: ReactNode;
+  readonly bucketOf: (total: number) => 0 | 1 | 2 | 3 | 4;
   /**
    * Was this day inside what the crawl actually covers? OMIT on a surface with
    * no coverage record — the grid then keeps its old two-state reading rather
    * than inventing a third it cannot support.
    */
-  readonly isCovered?: (isoDate: string) => boolean
+  readonly isCovered?: (isoDate: string) => boolean;
   /** Wording for an uncaptured square; the surface owns its own language. */
-  readonly uncapturedLabel?: (isoDate: string) => string
+  readonly uncapturedLabel?: (isoDate: string) => string;
+  /** Honest wording for an accounted zero (quiet day / no sitting). */
+  readonly coveredEmptyLabel?: (isoDate: string) => string;
   /** The way into the full list. Always rendered, in every state. */
-  readonly cta: ReactNode
-}
+  readonly cta: ReactNode;
+  /** Source scope and as-of provenance for the coverage verdicts. */
+  readonly coverageNote?: ReactNode;
+};
 
 /**
  * A GitHub-style calendar heatmap over a rolling window, plus the link out —
@@ -106,22 +107,24 @@ export function ParliamentHubActivityHeatmap({
   bucketOf,
   isCovered,
   uncapturedLabel = (iso) => `${iso} — nu am colectat această zi`,
+  coveredEmptyLabel,
+  coverageNote,
   cta,
 }: Props) {
   const grid = useMemo(
     () => buildWindowGrid({ startIso: window.startIso, endIso: window.endIso }),
     [window],
-  )
+  );
 
   // Open on the RECENT end. When the grid does fall back to scrolling, the left
   // edge is twelve months ago — the part of the window a hub reader is least
   // likely to have come for.
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const hasDays = days.size > 0
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const hasDays = days.size > 0;
   useEffect(() => {
-    const element = scrollRef.current
-    if (element) element.scrollLeft = element.scrollWidth
-  }, [hasDays])
+    const element = scrollRef.current;
+    if (element) element.scrollLeft = element.scrollWidth;
+  }, [hasDays]);
 
   /**
    * One track per week, stretching to fill the card and never dropping below
@@ -130,13 +133,13 @@ export function ParliamentHubActivityHeatmap({
    */
   const columns = {
     gridTemplateColumns: `repeat(${String(grid.weeks.length)}, minmax(${String(MIN_CELL_PX)}px, 1fr))`,
-  }
+  };
 
   return (
     <section aria-label={ariaLabel}>
-      {status === 'loading' ? (
+      {status === "loading" ? (
         <Skeleton className="h-32 w-full rounded-none" />
-      ) : status === 'error' ? (
+      ) : status === "error" ? (
         // The aggregate is not served. Say that, and say it as a failure — an
         // empty grid here would read as "Parliament did nothing".
         <div
@@ -186,44 +189,66 @@ export function ParliamentHubActivityHeatmap({
               {grid.weeks.flatMap((week) =>
                 week.days.map((cell) => {
                   if (!cell.inYear) {
-                    return <div key={cell.isoDate} className="aspect-square" />
+                    return <div key={cell.isoDate} className="aspect-square" />;
                   }
 
-                  const day = days.get(cell.isoDate)
+                  const day = days.get(cell.isoDate);
                   if (!day || day.total === 0) {
                     // THREE states, not two. A day we never watched and a day
                     // the chamber sat without dividing are different facts, and
                     // painting them the same pixel is how a crawl gap becomes a
                     // claim that nothing happened.
                     if (isCovered !== undefined && !isCovered(cell.isoDate)) {
+                      const label = uncapturedLabel(cell.isoDate);
                       return (
                         <Tooltip key={cell.isoDate}>
                           <TooltipTrigger asChild>
                             <div
                               role="img"
-                              aria-label={uncapturedLabel(cell.isoDate)}
-                              title={uncapturedLabel(cell.isoDate)}
+                              aria-label={label}
+                              title={label}
                               className="aspect-square border border-[#e5e5e0] dark:border-[var(--pnrr-border)]"
                               style={UNCAPTURED_FILL}
                             />
                           </TooltipTrigger>
                           <TooltipContent className="rounded-none bg-[#0b0c0c] text-white">
-                            {uncapturedLabel(cell.isoDate)}
+                            {label}
                           </TooltipContent>
                         </Tooltip>
-                      )
+                      );
+                    }
+                    if (
+                      isCovered?.(cell.isoDate) === true &&
+                      coveredEmptyLabel !== undefined
+                    ) {
+                      const label = coveredEmptyLabel(cell.isoDate);
+                      return (
+                        <Tooltip key={cell.isoDate}>
+                          <TooltipTrigger asChild>
+                            <div
+                              role="img"
+                              aria-label={label}
+                              title={label}
+                              className="aspect-square border border-[#e5e5e0] bg-[#f3f2f1] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-map-empty)]"
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent className="rounded-none bg-[#0b0c0c] text-white">
+                            {label}
+                          </TooltipContent>
+                        </Tooltip>
+                      );
                     }
                     return (
                       <div
                         key={cell.isoDate}
                         className="aspect-square border border-[#e5e5e0] bg-[#f3f2f1] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-map-empty)]"
                       />
-                    )
+                    );
                   }
 
                   const fill = {
                     backgroundColor: GOVUK_BLUE_RAMP[bucketOf(day.total) - 1],
-                  }
+                  };
                   return (
                     <Tooltip key={cell.isoDate}>
                       <TooltipTrigger asChild>
@@ -256,7 +281,7 @@ export function ParliamentHubActivityHeatmap({
                         {day.tooltip}
                       </TooltipContent>
                     </Tooltip>
-                  )
+                  );
                 }),
               )}
             </div>
@@ -282,7 +307,13 @@ export function ParliamentHubActivityHeatmap({
         </TooltipProvider>
       )}
 
+      {coverageNote ? (
+        <div className="mt-3 text-xs leading-5 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+          {coverageNote}
+        </div>
+      ) : null}
+
       {cta}
     </section>
-  )
+  );
 }

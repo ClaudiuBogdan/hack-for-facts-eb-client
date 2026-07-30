@@ -22,6 +22,15 @@ export const MemberVoteChoiceSchema = z.enum([
   "nu_a_votat",
 ]);
 export type MemberVoteChoice = z.infer<typeof MemberVoteChoiceSchema>;
+export const ParliamentVotePositionStatusSchema = z.enum([
+  "confirmed",
+  "conflicting_choice",
+  "unknown_marker",
+  "identity_conflict",
+]);
+export type ParliamentVotePositionStatus = z.infer<
+  typeof ParliamentVotePositionStatusSchema
+>;
 
 /**
  * NOT the bill's fate. The server computes `outcome` as (pentru > impotriva) and
@@ -116,6 +125,8 @@ export const ParliamentGroupCohesionSchema = z.object({
   againstPct: z.number().optional(),
   abstainPct: z.number().optional(),
   absentPct: z.number().optional(),
+  conflictingPct: z.number().optional(),
+  unknownPct: z.number().optional(),
   cohesionIndex: z.number().optional(),
   voteCount: z.number().int().nonnegative().optional(),
 });
@@ -313,6 +324,8 @@ export const ParliamentGroupVoteBreakdownSchema = z.object({
   impotriva: z.number().int().nonnegative(),
   abtinere: z.number().int().nonnegative().optional(),
   nuAVotat: z.number().int().nonnegative().optional(),
+  conflicting: z.number().int().nonnegative().default(0),
+  unknown: z.number().int().nonnegative().default(0),
 });
 export type ParliamentGroupVoteBreakdown = z.infer<
   typeof ParliamentGroupVoteBreakdownSchema
@@ -335,7 +348,10 @@ export const ParliamentMemberVoteRecordSchema = z.object({
   memberName: z.string(),
   groupId: z.string(),
   groupName: z.string(),
-  choice: MemberVoteChoiceSchema,
+  choice: MemberVoteChoiceSchema.optional(),
+  positionStatus: ParliamentVotePositionStatusSchema.default("confirmed"),
+  observationCount: z.number().int().positive().default(1),
+  observedChoices: z.array(MemberVoteChoiceSchema).default([]),
 });
 export type ParliamentMemberVoteRecord = z.infer<
   typeof ParliamentMemberVoteRecordSchema
@@ -675,11 +691,15 @@ export const ParliamentMemberVotingHistorySchema = z.object({
   memberId: z.string(),
   votes: z.array(
     z.object({
+      positionKey: z.string().optional(),
       voteId: z.string(),
       chamber: z.enum(["camera", "senat"]),
       title: z.string(),
       heldAt: z.string(),
-      choice: MemberVoteChoiceSchema,
+      choice: MemberVoteChoiceSchema.optional(),
+      positionStatus: ParliamentVotePositionStatusSchema.default("confirmed"),
+      observationCount: z.number().int().positive().default(1),
+      observedChoices: z.array(MemberVoteChoiceSchema).default([]),
       outcome: VoteOutcomeSchema,
       divisionNumber: z.number().int().positive().optional(),
       tally: ParliamentVoteTallySchema.optional(),
@@ -703,6 +723,8 @@ export const ParliamentMemberVoteActivityDaySchema = z.object({
   impotriva: z.number().int().nonnegative(),
   abtinere: z.number().int().nonnegative(),
   nuAVotat: z.number().int().nonnegative(),
+  conflicting: z.number().int().nonnegative().default(0),
+  unknown: z.number().int().nonnegative().default(0),
 });
 export type ParliamentMemberVoteActivityDay = z.infer<
   typeof ParliamentMemberVoteActivityDaySchema
@@ -1006,25 +1028,25 @@ export type ParliamentSittingNavigation = z.infer<
  * overloaded absence (server + scrapper migration 20260727T140000).
  */
 export const ParliamentSpeakerResolutionSchema = z.enum([
-  'RESOLVED',
-  'NON_MEMBER_CAPACITY',
-  'AMBIGUOUS',
-  'UNRESOLVED',
-])
+  "RESOLVED",
+  "NON_MEMBER_CAPACITY",
+  "AMBIGUOUS",
+  "UNRESOLVED",
+]);
 export type ParliamentSpeakerResolution = z.infer<
   typeof ParliamentSpeakerResolutionSchema
->
+>;
 
 /** Strength of an identity claim. EXACT = read from the source's own printed id. */
 export const ParliamentSpeakerConfidenceSchema = z.enum([
-  'EXACT',
-  'HIGH',
-  'MEDIUM',
-  'LOW',
-])
+  "EXACT",
+  "HIGH",
+  "MEDIUM",
+  "LOW",
+]);
 export type ParliamentSpeakerConfidence = z.infer<
   typeof ParliamentSpeakerConfidenceSchema
->
+>;
 
 export const ParliamentStenogramSegmentSchema = z.object({
   segmentKey: z.string(),
@@ -1415,10 +1437,10 @@ export const ParliamentBillStepLinkSchema = z.object({
   sourceText: z.string().nullable(),
   /** Open for the same reason as `linkKind` — a new status must not blank a page. */
   resolutionStatus: z.string(),
-})
+});
 export type ParliamentBillStepLink = z.infer<
   typeof ParliamentBillStepLinkSchema
->
+>;
 
 export const ParliamentBillTimelineStepSchema = z.object({
   /** Stable key (source `position`); steps render in ascending position order. */
@@ -1453,7 +1475,7 @@ export const ParliamentBillTimelineStepSchema = z.object({
    * Null when the derive has not classified the row: render it as a step rather
    * than hiding it.
    */
-  rowKind: z.enum(['step', 'attachment', 'unclassified']).optional(),
+  rowKind: z.enum(["step", "attachment", "unclassified"]).optional(),
   parentPosition: z.number().int().optional(),
   /** Typed procedural kind, or absent when it was never established. */
   stepKind: z.string().optional(),
@@ -1523,7 +1545,10 @@ export const ParliamentSearchSchema = z.object({
    * `comun` is a VOTES-only value (joint sittings); member surfaces treat it
    * like `all`, because no member roster belongs to a joint sitting.
    */
-  chamber: z.enum(["camera", "senat", "comun", "all"]).optional().catch(undefined),
+  chamber: z
+    .enum(["camera", "senat", "comun", "all"])
+    .optional()
+    .catch(undefined),
   judet: z
     .union([z.string(), z.array(z.string())])
     .optional()
@@ -1664,7 +1689,10 @@ export type MemberSpeechesSearch = z.infer<typeof MemberSpeechesSearchSchema>;
  * of the surface is the sitting, not the isolated turn. `interventii` is the
  * cross-sitting search over individual contributions.
  */
-export const ParliamentStenogrameViewSchema = z.enum(["sedinte", "interventii"]);
+export const ParliamentStenogrameViewSchema = z.enum([
+  "sedinte",
+  "interventii",
+]);
 export type ParliamentStenogrameView = z.infer<
   typeof ParliamentStenogrameViewSchema
 >;
@@ -1802,18 +1830,20 @@ export const ParliamentAgendaSittingSchema = z.object({
   stenogramSessionKey: z.string().optional(),
   /** 'exact' | 'candidate' — open, because the contract is additive. */
   resolutionStatus: z.string().optional(),
-})
-export type ParliamentAgendaSitting = z.infer<typeof ParliamentAgendaSittingSchema>
+});
+export type ParliamentAgendaSitting = z.infer<
+  typeof ParliamentAgendaSittingSchema
+>;
 
 export const ParliamentAgendaItemDocumentSchema = z.object({
   url: z.string(),
   label: z.string().optional(),
   date: z.string().optional(),
   manifestSide: z.string(),
-})
+});
 export type ParliamentAgendaItemDocument = z.infer<
   typeof ParliamentAgendaItemDocumentSchema
->
+>;
 
 /** One numbered point of an order of business. */
 export const ParliamentAgendaItemSchema = z.object({
@@ -1842,8 +1872,8 @@ export const ParliamentAgendaItemSchema = z.object({
   /** 'linked' | 'unresolved' | 'not_applicable'. */
   resolutionStatus: z.string(),
   documents: z.array(ParliamentAgendaItemDocumentSchema).default([]),
-})
-export type ParliamentAgendaItem = z.infer<typeof ParliamentAgendaItemSchema>
+});
+export type ParliamentAgendaItem = z.infer<typeof ParliamentAgendaItemSchema>;
 
 /**
  * One published order of business.
@@ -1870,20 +1900,22 @@ export const ParliamentAgendaSchema = z.object({
    * in the freshest agenda, which is the one the list features.
    */
   namedBillCount: z.number().int().nonnegative(),
-})
-export type ParliamentAgenda = z.infer<typeof ParliamentAgendaSchema>
+});
+export type ParliamentAgenda = z.infer<typeof ParliamentAgendaSchema>;
 
 export const ParliamentAgendaDetailSchema = z.object({
   agenda: ParliamentAgendaSchema,
   items: z.array(ParliamentAgendaItemSchema).default([]),
-})
-export type ParliamentAgendaDetail = z.infer<typeof ParliamentAgendaDetailSchema>
+});
+export type ParliamentAgendaDetail = z.infer<
+  typeof ParliamentAgendaDetailSchema
+>;
 
 export const ParliamentAgendaListSchema = z.object({
   agendas: z.array(ParliamentAgendaSchema).default([]),
   total: z.number().int().nonnegative(),
-})
-export type ParliamentAgendaList = z.infer<typeof ParliamentAgendaListSchema>
+});
+export type ParliamentAgendaList = z.infer<typeof ParliamentAgendaListSchema>;
 
 /** A bill's appearance on an order of business — SCHEDULING only. */
 export const ParliamentBillSchedulingSchema = z.object({
@@ -1899,5 +1931,7 @@ export const ParliamentBillSchedulingSchema = z.object({
   resolutionStatus: z.string(),
   itemNumberText: z.string().optional(),
   stenogramSessionKey: z.string().optional(),
-})
-export type ParliamentBillScheduling = z.infer<typeof ParliamentBillSchedulingSchema>
+});
+export type ParliamentBillScheduling = z.infer<
+  typeof ParliamentBillSchedulingSchema
+>;

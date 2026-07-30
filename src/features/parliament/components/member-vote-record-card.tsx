@@ -1,6 +1,9 @@
 import { Link } from '@tanstack/react-router'
-import { ThumbsDown, ThumbsUp } from 'lucide-react'
-import type { MemberVoteChoice } from '@/schemas/parliament'
+import { AlertTriangle, CircleHelp, ThumbsDown, ThumbsUp } from 'lucide-react'
+import type {
+  MemberVoteChoice,
+  ParliamentVotePositionStatus,
+} from '@/schemas/parliament'
 import { cn } from '@/lib/utils'
 import {
   getMemberVoteChoiceLabel,
@@ -16,7 +19,8 @@ type Props = {
   readonly chamber: 'camera' | 'senat'
   readonly title: string
   readonly heldAt: string
-  readonly choice: MemberVoteChoice
+  readonly choice?: MemberVoteChoice
+  readonly positionStatus: ParliamentVotePositionStatus
   readonly divisionNumber?: number
   readonly tally?: {
     readonly pentru: number
@@ -31,11 +35,31 @@ export function MemberVoteRecordCard({
   title,
   heldAt,
   choice,
+  positionStatus,
   divisionNumber,
   tally,
 }: Props) {
-  const Icon = choice === 'impotriva' ? ThumbsDown : ThumbsUp
-  const accentColor = getVoteChoiceAccentColor(choice)
+  const isConflict = positionStatus === 'conflicting_choice'
+  const isUnknown =
+    positionStatus === 'unknown_marker' ||
+    positionStatus === 'identity_conflict'
+  const Icon = isConflict
+    ? AlertTriangle
+    : isUnknown || choice === undefined
+      ? CircleHelp
+      : choice === 'impotriva'
+        ? ThumbsDown
+        : ThumbsUp
+  const accentColor = isConflict
+    ? '#d4351c'
+    : isUnknown || choice === undefined
+      ? '#505a5f'
+      : getVoteChoiceAccentColor(choice)
+  const positionLabel = isConflict
+    ? 'Conflict în sursă'
+    : isUnknown || choice === undefined
+      ? 'Poziție neclară'
+      : getMemberVoteChoiceLabel(choice)
 
   return (
     <Link
@@ -46,11 +70,18 @@ export function MemberVoteRecordCard({
         'group block transition-colors hover:bg-[#f8f8f8] dark:hover:bg-[var(--pnrr-hover)]',
       )}
     >
-      <div className="flex border-l-[5px]" style={{ borderLeftColor: accentColor }}>
+      <div
+        className="flex border-l-[5px]"
+        style={{ borderLeftColor: accentColor }}
+      >
         <div className="flex w-24 shrink-0 flex-col items-center justify-center gap-1 border-r border-[#b1b4b6] px-3 py-5 dark:border-[var(--pnrr-border)]">
-          <Icon className="h-5 w-5 text-[#505a5f]" strokeWidth={2} aria-hidden />
+          <Icon
+            className="h-5 w-5 text-[#505a5f]"
+            strokeWidth={2}
+            aria-hidden
+          />
           <span className="text-sm font-bold text-[#0b0c0c] dark:text-[var(--pnrr-fg)]">
-            {getMemberVoteChoiceLabel(choice)}
+            {positionLabel}
           </span>
         </div>
 
@@ -70,11 +101,15 @@ export function MemberVoteRecordCard({
             <div className="hidden shrink-0 gap-6 sm:flex">
               <div>
                 <p className="text-sm text-[#505a5f]">Pentru</p>
-                <p className="text-2xl font-bold tabular-nums text-[#0b0c0c]">{tally.pentru}</p>
+                <p className="text-2xl font-bold tabular-nums text-[#0b0c0c]">
+                  {tally.pentru}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-[#505a5f]">Împotrivă</p>
-                <p className="text-2xl font-bold tabular-nums text-[#0b0c0c]">{tally.impotriva}</p>
+                <p className="text-2xl font-bold tabular-nums text-[#0b0c0c]">
+                  {tally.impotriva}
+                </p>
               </div>
             </div>
           ) : null}

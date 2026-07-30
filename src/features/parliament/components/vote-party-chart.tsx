@@ -9,6 +9,7 @@ import {
 } from 'recharts'
 import { ChevronDown, Download } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { Trans } from '@lingui/react/macro'
 import type { ParliamentGroupVoteBreakdown } from '@/schemas/parliament'
 import { SafeResponsiveContainer } from '@/components/charts/safe-responsive-container'
 import { Button } from '@/components/ui/button'
@@ -77,7 +78,11 @@ const PNRR_TOOLTIP_STYLE = {
   padding: '10px 14px',
 } as const
 
-function VotePartyChartTooltip({ active, label, payload }: VotePartyTooltipProps) {
+function VotePartyChartTooltip({
+  active,
+  label,
+  payload,
+}: VotePartyTooltipProps) {
   if (!active || !payload?.length) return null
 
   const items = payload
@@ -118,7 +123,11 @@ type VotePartyLegendEntry = {
   readonly color?: string
 }
 
-function VotePartyChartLegend({ payload }: { readonly payload?: ReadonlyArray<VotePartyLegendEntry> }) {
+function VotePartyChartLegend({
+  payload,
+}: {
+  readonly payload?: ReadonlyArray<VotePartyLegendEntry>
+}) {
   if (!payload?.length) return null
 
   return (
@@ -145,8 +154,13 @@ function buildChartModel(
   groupColors: Readonly<Record<string, string>>,
   pentruTotal: number,
   impotrivaTotal: number,
-): { readonly rows: ReadonlyArray<Record<string, string | number>>; readonly series: ReadonlyArray<ChartSeries> } {
-  const activeGroups = groups.filter((group) => group.pentru > 0 || group.impotriva > 0)
+): {
+  readonly rows: ReadonlyArray<Record<string, string | number>>
+  readonly series: ReadonlyArray<ChartSeries>
+} {
+  const activeGroups = groups.filter(
+    (group) => group.pentru > 0 || group.impotriva > 0,
+  )
   const series = activeGroups.map((group) => ({
     id: group.groupId,
     name: group.groupName,
@@ -207,6 +221,11 @@ export function VotePartyChart({
     pentruTotal,
     impotrivaTotal,
   )
+  const conflictingTotal = groups.reduce(
+    (sum, group) => sum + group.conflicting,
+    0,
+  )
+  const unknownTotal = groups.reduce((sum, group) => sum + group.unknown, 0)
 
   const yAxisMax = Math.max(pentruTotal, impotrivaTotal)
   const yTicks = buildYAxisTicks(yAxisMax)
@@ -216,7 +235,9 @@ export function VotePartyChart({
   if (series.length === 0) {
     return (
       <VotePartyChartShell embedded={embedded} className={sectionClassName}>
-        <h2 className={voteDetailSectionTitleClassName}>Voturi pe grupuri parlamentare</h2>
+        <h2 className={voteDetailSectionTitleClassName}>
+          Voturi pe grupuri parlamentare
+        </h2>
         <p className="mt-4 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
           Nu există date de grup disponibile pentru această divizare.
         </p>
@@ -226,7 +247,20 @@ export function VotePartyChart({
 
   return (
     <VotePartyChartShell embedded={embedded} className={sectionClassName}>
-      <h2 className={voteDetailSectionTitleClassName}>Voturi pe grupuri parlamentare</h2>
+      <h2 className={voteDetailSectionTitleClassName}>
+        Voturi pe grupuri parlamentare
+      </h2>
+
+      {conflictingTotal > 0 || unknownTotal > 0 ? (
+        <p className="mt-4 border-l-4 border-[#d4351c] bg-[#f3f2f1] px-4 py-3 text-sm text-[#0b0c0c] dark:bg-[var(--pnrr-subtle)] dark:text-[var(--pnrr-fg)]">
+          <Trans>
+            Poziții fără alegere efectivă: {conflictingTotal} cu observații
+            contradictorii
+            {unknownTotal > 0 ? ` · ${String(unknownTotal)} neclare` : ''}. Sunt
+            participări, dar nu intră în barele „Pentru” sau „Împotrivă”.
+          </Trans>
+        </p>
+      ) : null}
 
       <div
         className="mt-5 p-4 sm:p-5"
@@ -274,15 +308,25 @@ export function VotePartyChart({
                 content={(props) => (
                   <VotePartyChartTooltip
                     active={props.active}
-                    label={typeof props.label === 'string' ? props.label : undefined}
-                    payload={props.payload as ReadonlyArray<VotePartyTooltipEntry> | undefined}
+                    label={
+                      typeof props.label === 'string' ? props.label : undefined
+                    }
+                    payload={
+                      props.payload as
+                        | ReadonlyArray<VotePartyTooltipEntry>
+                        | undefined
+                    }
                   />
                 )}
               />
               <Legend
                 content={(props) => (
                   <VotePartyChartLegend
-                    payload={props.payload as ReadonlyArray<VotePartyLegendEntry> | undefined}
+                    payload={
+                      props.payload as
+                        | ReadonlyArray<VotePartyLegendEntry>
+                        | undefined
+                    }
                   />
                 )}
               />

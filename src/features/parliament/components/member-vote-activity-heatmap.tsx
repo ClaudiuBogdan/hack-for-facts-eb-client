@@ -12,7 +12,10 @@ import type {
   ParliamentMemberVoteActivity,
   ParliamentMemberVoteActivityDay,
 } from '@/schemas/parliament'
-import { getMemberVoteChoiceLabel, getVoteChoiceAccentColor } from '../lib/formatting'
+import {
+  getMemberVoteChoiceLabel,
+  getVoteChoiceAccentColor,
+} from '../lib/formatting'
 import {
   bucketFor,
   buildYearGrid,
@@ -173,7 +176,9 @@ export function MemberVoteActivityHeatmap({
                           className="h-4 w-3 shrink-0 text-[11px] leading-4 text-[#505a5f] dark:text-[var(--pnrr-muted)]"
                         >
                           {label ? (
-                            <span className="whitespace-nowrap">{label.label}</span>
+                            <span className="whitespace-nowrap">
+                              {label.label}
+                            </span>
                           ) : null}
                         </div>
                       )
@@ -194,11 +199,17 @@ export function MemberVoteActivityHeatmap({
                     </div>
 
                     {grid.weeks.map((week, columnIndex) => (
-                      <div key={columnIndex} className="flex flex-col gap-[3px]">
+                      <div
+                        key={columnIndex}
+                        className="flex flex-col gap-[3px]"
+                      >
                         {week.days.map((cell) => {
                           if (!cell.inYear) {
                             return (
-                              <div key={cell.isoDate} className="h-3 w-3 shrink-0" />
+                              <div
+                                key={cell.isoDate}
+                                className="h-3 w-3 shrink-0"
+                              />
                             )
                           }
                           const day = dayMap.get(cell.isoDate)
@@ -235,12 +246,15 @@ export function MemberVoteActivityHeatmap({
                                     selectionRing,
                                   )}
                                   style={{
-                                    backgroundColor: GOVUK_BLUE_RAMP[bucket - 1],
+                                    backgroundColor:
+                                      GOVUK_BLUE_RAMP[bucket - 1],
                                   }}
                                 />
                               </TooltipTrigger>
                               <TooltipContent className="rounded-none bg-[#0b0c0c] text-white">
-                                <p className="font-semibold">{formatLongDate(cell.isoDate)}</p>
+                                <p className="font-semibold">
+                                  {formatLongDate(cell.isoDate)}
+                                </p>
                                 <p className="mb-1 text-[11px] text-white/80">
                                   {total} voturi
                                 </p>
@@ -253,12 +267,24 @@ export function MemberVoteActivityHeatmap({
                                       aria-hidden
                                       className="inline-block h-2 w-2 shrink-0"
                                       style={{
-                                        backgroundColor: getVoteChoiceAccentColor(choice),
+                                        backgroundColor:
+                                          getVoteChoiceAccentColor(choice),
                                       }}
                                     />
-                                    {getMemberVoteChoiceLabel(choice)}: {choiceCount(day, choice)}
+                                    {getMemberVoteChoiceLabel(choice)}:{' '}
+                                    {choiceCount(day, choice)}
                                   </p>
                                 ))}
+                                {day.conflicting > 0 ? (
+                                  <p className="text-[11px] text-[#ffdd00]">
+                                    Conflicte în sursă: {day.conflicting}
+                                  </p>
+                                ) : null}
+                                {day.unknown > 0 ? (
+                                  <p className="text-[11px] text-white/80">
+                                    Poziții neclare: {day.unknown}
+                                  </p>
+                                ) : null}
                               </TooltipContent>
                             </Tooltip>
                           )

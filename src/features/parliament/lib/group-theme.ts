@@ -50,7 +50,7 @@ export const groupNoticeClassName =
 export const GROUP_NOTICE_BG = '#f3f0ff'
 
 /**
- * The four ballot outcomes, in tally order.
+ * Four effective ballot outcomes plus two non-choice evidence buckets.
  *
  * Deliberately NOT a red/green pass-fail scale: "pentru" and "împotriva" are
  * positions, not a good and a bad outcome, so they get two neutral-weight
@@ -62,6 +62,8 @@ export const GROUP_BALLOT_COLORS = {
   impotriva: '#d4351c',
   abtinere: '#f47738',
   absent: '#b1b4b6',
+  conflicting: '#912b88',
+  unknown: '#505a5f',
 } as const
 
 export const GROUP_BALLOT_LABELS = {
@@ -69,6 +71,8 @@ export const GROUP_BALLOT_LABELS = {
   impotriva: 'Împotrivă',
   abtinere: 'Abțineri',
   absent: 'Nu au votat',
+  conflicting: 'Conflict în sursă',
+  unknown: 'Poziție neclară',
 } as const
 
 /**

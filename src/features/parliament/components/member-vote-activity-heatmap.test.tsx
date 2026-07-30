@@ -7,12 +7,32 @@ const activity: ParliamentMemberVoteActivity = {
   year: 2026,
   availableYears: [2025, 2026],
   days: [
-    { date: '2026-03-20', total: 280, pentru: 0, impotriva: 280, abtinere: 0, nuAVotat: 0 },
-    { date: '2026-02-02', total: 5, pentru: 3, impotriva: 1, abtinere: 1, nuAVotat: 0 },
+    {
+      date: '2026-03-20',
+      total: 280,
+      pentru: 0,
+      impotriva: 275,
+      abtinere: 0,
+      nuAVotat: 0,
+      conflicting: 3,
+      unknown: 2,
+    },
+    {
+      date: '2026-02-02',
+      total: 5,
+      pentru: 3,
+      impotriva: 1,
+      abtinere: 1,
+      nuAVotat: 0,
+      conflicting: 0,
+      unknown: 0,
+    },
   ],
 }
 
-function renderHeatmap(overrides: Partial<Parameters<typeof MemberVoteActivityHeatmap>[0]> = {}) {
+function renderHeatmap(
+  overrides: Partial<Parameters<typeof MemberVoteActivityHeatmap>[0]> = {},
+) {
   const onSelectDay = vi.fn()
   const onSelectYear = vi.fn()
   render(
@@ -71,6 +91,8 @@ describe('MemberVoteActivityHeatmap', () => {
         isLoading={false}
       />,
     )
-    expect(screen.getByText('Nicio activitate de vot în 2026.')).toBeInTheDocument()
+    expect(
+      screen.getByText('Nicio activitate de vot în 2026.'),
+    ).toBeInTheDocument()
   })
 })
