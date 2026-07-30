@@ -241,6 +241,18 @@ describe('VoteIndividualVotesSection', () => {
     expect(within(region).queryByText('Pentru')).not.toBeInTheDocument()
   })
 
+  it('hides the conflict and unclear tabs when the division has none', () => {
+    renderSection()
+    expect(
+      screen.queryByRole('tab', { name: /Conflicte în sursă/ }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('tab', { name: /Poziții neclare/ }),
+    ).not.toBeInTheDocument()
+    // The ordinary choice tabs stay, zero or not.
+    expect(screen.getByRole('tab', { name: 'Fără vot (0)' })).toBeInTheDocument()
+  })
+
   it('keeps conflicting and unknown positions out of the no-vote bucket', async () => {
     const user = userEvent.setup()
     renderConflictSection()

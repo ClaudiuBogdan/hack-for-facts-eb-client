@@ -200,6 +200,35 @@ export function VoteIndividualVotesSection({
       ).length,
     [detail.memberVotes],
   )
+  const unknownCount = useMemo(
+    () =>
+      detail.memberVotes.filter(
+        (vote) =>
+          vote.positionStatus === 'unknown_marker' ||
+          vote.positionStatus === 'identity_conflict',
+      ).length,
+    [detail.memberVotes],
+  )
+
+  // The two honesty tabs appear only when the division actually has such
+  // positions — a permanent "Conflicte în sursă (0)" would read as UI noise
+  // on the overwhelming majority of votes. Visibility keys on the WHOLE
+  // division (not the party filter) so tabs never appear/vanish while the
+  // reader is switching parties.
+  const visibleTabs = useMemo(
+    () =>
+      TAB_CHOICES.filter((tab) => {
+        if (tab.id === 'conflicting_choice') return conflictingCount > 0
+        if (tab.id === 'unknown') return unknownCount > 0
+        return true
+      }),
+    [conflictingCount, unknownCount],
+  )
+  // A hidden tab can never be the active one (a stale selection can linger
+  // when the reader navigates between votes with the section mounted).
+  const effectiveTab = visibleTabs.some((tab) => tab.id === activeTab)
+    ? activeTab
+    : 'pentru'
 
   // Counts follow the PARTY FILTER, not the whole division. A tab reading
   // "Voturi pentru (205)" that opens onto 45 rows because a group is selected
@@ -308,7 +337,7 @@ export function VoteIndividualVotesSection({
       </div>
 
       <Tabs
-        value={activeTab}
+        value={effectiveTab}
         onValueChange={(value) => setActiveTab(value as VoteTab)}
         className="mt-6"
       >
@@ -321,7 +350,7 @@ export function VoteIndividualVotesSection({
             to its edge instead of cutting a label mid-word. */}
         <div className="-mx-5 overflow-x-auto px-5 [-ms-overflow-style:none] [scrollbar-width:none] sm:-mx-6 sm:px-6 [&::-webkit-scrollbar]:hidden">
           <TabsList className={voteDetailTabListClassName}>
-            {TAB_CHOICES.map((tab) => (
+            {visibleTabs.map((tab) => (
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}
@@ -344,7 +373,7 @@ export function VoteIndividualVotesSection({
           </TabsList>
         </div>
 
-        {TAB_CHOICES.map((tab) => {
+        {visibleTabs.map((tab) => {
           const tabVotes = filterByParty(
             filterByChoice(detail.memberVotes, tab.id),
             partyFilter,
