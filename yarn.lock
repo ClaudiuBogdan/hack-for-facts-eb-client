@@ -7688,9 +7688,9 @@ seroval-plugins@^1.5.0:
   integrity sha512-qpY0Cl+fKYFn4GOf3cMiq6l72CpuVaawb6ILjubOQ+diJ54LfOWaSSPsaswN8DRPIPW4Yq+tE1k5aKd7ILyaFg==
 
 seroval@^1.5.0:
-  version "1.5.2"
-  resolved "https://registry.yarnpkg.com/seroval/-/seroval-1.5.2.tgz#b07584d531281498fa7f51f49dfdc5d76e76a681"
-  integrity sha512-xcRN39BdsnO9Tf+VzsE7b3JyTJASItIV1FVFewJKCFcW4s4haIKS3e6vj8PGB9qBwC7tnuOywQMdv5N4qkzi7Q==
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/seroval/-/seroval-1.6.0.tgz#ee442ee43837b6fceee90c52d0dcb02a49e68bff"
+  integrity sha512-TBwwKfscTEgnBEWmYKKeCcmCGmrJi0LV6qNUY//WBA3MDesh/zfn+KOMq/ckpxM4gZ0ouAE706A1eenekM2sug==
 
 shebang-command@^2.0.0:
   version "2.0.0"
