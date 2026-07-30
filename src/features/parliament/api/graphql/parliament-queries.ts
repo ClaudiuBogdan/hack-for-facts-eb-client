@@ -636,8 +636,8 @@ export const parliamentVoteResponseSchema = z.object({
 });
 
 /**
- * Ballots-only follow-up page. The server caps the ballots connection at 200
- * per page, so votes with >200 ballots need cursor pagination to assemble the
+ * Ballots-only follow-up page. The server caps the connection at 500 rows, so a
+ * future vote above that bound still uses cursor pagination to assemble the
  * full member-level list; this query fetches subsequent pages.
  */
 export const PARLIAMENT_VOTE_BALLOTS_QUERY = /* GraphQL */ `

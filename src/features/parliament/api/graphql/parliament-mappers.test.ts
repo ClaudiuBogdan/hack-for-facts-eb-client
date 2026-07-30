@@ -243,7 +243,7 @@ describe("mapVoteDetail (golden anchor)", () => {
     expect(getMemberJudetCache()["2:2020:12"]).toBe("BRAŞOV");
   });
 
-  // D2: the live module pages the ballots connection (server caps at 200/page)
+  // D2: the live module retains cursor fallback above the measured 500-row bound
   // and hands mapVoteDetail the FULL assembled edge set — verify the mapper
   // emits one memberVote per ballot (no truncation in the mapping itself).
   it("maps every assembled ballot to a memberVote (>200, no truncation)", () => {

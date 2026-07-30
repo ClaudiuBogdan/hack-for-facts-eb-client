@@ -82,6 +82,12 @@ export interface GraphQLQueryOptions {
    * Helps trace which feature query failed without dumping the full query.
    */
   readonly operationName?: string
+  /**
+   * Public reads can bypass Clerk initialization entirely. The default remains
+   * optional auth so existing private/mixed surfaces keep attaching a token
+   * whenever one is available.
+   */
+  readonly auth?: 'optional' | 'none'
 }
 
 /**
@@ -102,10 +108,12 @@ export async function graphqlQuery<T>(
   const label = options.operationName ?? 'graphql'
 
   let token: string | null = null
-  try {
-    token = await getAuthToken()
-  } catch {
-    // Anonymous access is supported for public data; ignore token failures.
+  if (options.auth !== 'none') {
+    try {
+      token = await getAuthToken()
+    } catch {
+      // Anonymous access is supported for public data; ignore token failures.
+    }
   }
 
   let response: Response

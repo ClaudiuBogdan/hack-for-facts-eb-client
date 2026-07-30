@@ -65,6 +65,19 @@ describe('graphqlQuery', () => {
     expect((init.headers as Record<string, string>).Authorization).toBe('Bearer tok-123')
   })
 
+  it('skips auth initialization for explicitly public queries', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ data: { ok: true } }))
+
+    await graphqlQuery('query { ok }', undefined, {
+      auth: 'none',
+      operationName: 'publicQuery',
+    })
+
+    expect(getAuthToken).not.toHaveBeenCalled()
+    const init = fetchMock.mock.calls[0]?.[1] as RequestInit
+    expect((init.headers as Record<string, string>).Authorization).toBeUndefined()
+  })
+
   it('proceeds anonymously when token retrieval throws', async () => {
     vi.mocked(getAuthToken).mockRejectedValue(new Error('clerk down'))
     fetchMock.mockResolvedValue(jsonResponse({ data: { ok: true } }))

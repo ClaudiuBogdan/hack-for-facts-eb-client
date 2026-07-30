@@ -133,10 +133,12 @@ import { toVoteSortArgs, type VotesListScope } from '../lib/votes-filter-state'
 const DEFAULT_MEMBERS_PAGE_SIZE = 20
 const DEFAULT_VOTES_PAGE_SIZE = 10
 const DEFAULT_BILLS_PAGE_SIZE = 10
-/** Ballot connection cap to assemble a vote's full member-level ballot list. */
-const MAX_BALLOTS = 500
-/** Server caps the ballots connection at 200/page (parliament-repo.ts). */
-const BALLOTS_PAGE_SIZE = 200
+/**
+ * Measured 2026-07-30 maximum: 447 public ballots on a single vote.
+ */
+const BALLOTS_PAGE_SIZE = 500
+/** Defensive client ceiling while retaining one fallback page for future growth. */
+const MAX_BALLOTS = BALLOTS_PAGE_SIZE * 2
 
 // ── groups ──────────────────────────────────────────────────────────────────
 
@@ -523,14 +525,14 @@ export async function fetchParliamentVoteDetailLive(
   const data = await graphqlQuery<unknown>(
     PARLIAMENT_VOTE_QUERY,
     { voteKey: voteId, ballotsFirst: BALLOTS_PAGE_SIZE },
-    { operationName: 'parliamentVote' },
+    { auth: 'none', operationName: 'parliamentVote' },
   )
   const parsed = parliamentVoteResponseSchema.parse(data)
   if (!parsed.parliamentVote) return null
 
-  // The server caps ballots at 200/page; votes with >200 ballots (≈half of all
-  // divisions) would otherwise truncate the per-member list. Page through the
-  // ballots cursor (bounded by MAX_BALLOTS) and append before mapping.
+  // Every current vote fits in one measured 500-row page. Keep the cursor
+  // fallback for future larger votes so the member list is never silently
+  // truncated.
   const vote = parsed.parliamentVote
   const allBallotEdges = [...vote.ballots.edges]
   let pageInfo = vote.ballots.pageInfo
@@ -538,7 +540,7 @@ export async function fetchParliamentVoteDetailLive(
     const moreData = await graphqlQuery<unknown>(
       PARLIAMENT_VOTE_BALLOTS_QUERY,
       { voteKey: voteId, first: BALLOTS_PAGE_SIZE, after: pageInfo.endCursor },
-      { operationName: 'parliamentVoteBallots' },
+      { auth: 'none', operationName: 'parliamentVoteBallots' },
     )
     const moreParsed = parliamentVoteBallotsResponseSchema.parse(moreData)
     if (!moreParsed.parliamentVote) break
