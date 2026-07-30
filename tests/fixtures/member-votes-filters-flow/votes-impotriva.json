@@ -5,8 +5,8 @@
       "votes": {
         "total": 240,
         "edges": [
-          { "node": { "voteKey": "cdep:99002", "chamber": "senat", "voteDate": "2026-03-19", "title": "Moțiune simplă privind sănătatea", "outcome": "respins", "choice": "impotriva", "billKey": null } },
-          { "node": { "voteKey": "cdep:99003", "chamber": "senat", "voteDate": "2026-03-20", "title": "Amendament respins la legea bugetului", "outcome": "respins", "choice": "impotriva", "billKey": null } }
+          { "node": { "positionKey": "cdep:99002#native:1", "voteKey": "cdep:99002", "chamber": "senat", "voteDate": "2026-03-19", "title": "Moțiune simplă privind sănătatea", "outcome": "respins", "choice": "impotriva", "positionStatus": "confirmed", "observationCount": 1, "observedChoices": ["impotriva"], "billKey": null } },
+          { "node": { "positionKey": "cdep:99003#native:1", "voteKey": "cdep:99003", "chamber": "senat", "voteDate": "2026-03-20", "title": "Amendament respins la legea bugetului", "outcome": "respins", "choice": "impotriva", "positionStatus": "confirmed", "observationCount": 1, "observedChoices": ["impotriva"], "billKey": null } }
         ],
         "pageInfo": { "hasNextPage": true, "endCursor": "c50" }
       }

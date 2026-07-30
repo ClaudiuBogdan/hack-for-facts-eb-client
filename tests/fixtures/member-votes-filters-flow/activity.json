@@ -6,9 +6,9 @@
         "year": 2026,
         "availableYears": [2024, 2025, 2026],
         "days": [
-          { "date": "2026-03-20", "total": 280, "pentru": 0, "impotriva": 280, "abtinere": 0, "nuAVotat": 0 },
-          { "date": "2026-03-19", "total": 27, "pentru": 20, "impotriva": 5, "abtinere": 2, "nuAVotat": 0 },
-          { "date": "2026-02-02", "total": 10, "pentru": 8, "impotriva": 1, "abtinere": 1, "nuAVotat": 0 }
+          { "date": "2026-03-20", "total": 280, "pentru": 0, "impotriva": 280, "abtinere": 0, "nuAVotat": 0, "conflicting": 0, "unknown": 0 },
+          { "date": "2026-03-19", "total": 27, "pentru": 20, "impotriva": 5, "abtinere": 2, "nuAVotat": 0, "conflicting": 0, "unknown": 0 },
+          { "date": "2026-02-02", "total": 10, "pentru": 8, "impotriva": 1, "abtinere": 1, "nuAVotat": 0, "conflicting": 0, "unknown": 0 }
         ]
       }
     }
