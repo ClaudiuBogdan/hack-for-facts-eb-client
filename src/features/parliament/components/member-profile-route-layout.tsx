@@ -1,9 +1,8 @@
 import { Outlet, useLocation } from '@tanstack/react-router'
-import { Skeleton } from '@/components/ui/skeleton'
 import { useParliamentMember } from '../hooks/use-parliament-data'
 import { resolveMemberDetailActiveTab } from '../lib/member-detail-nav'
-import { MEMBER_DETAIL_SURFACE, memberDetailPageContainerClassName } from '../lib/member-detail-theme'
 import { MemberProfileLayout } from './member-profile-layout'
+import { MemberProfileSkeleton } from './member-profile-skeleton'
 import { ParliamentLoadErrorPage } from './parliament-load-error-page'
 import { ParliamentNotFoundPage } from './parliament-not-found-page'
 
@@ -18,13 +17,7 @@ export function MemberProfileRouteLayout({ memberId }: Props) {
   const { data: member, isLoading, isError, refetch } = useParliamentMember(memberId)
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen" style={{ backgroundColor: MEMBER_DETAIL_SURFACE }}>
-        <div className={`${memberDetailPageContainerClassName} py-10`}>
-          <Skeleton className="h-64 w-full rounded-none bg-white/70" />
-        </div>
-      </div>
-    )
+    return <MemberProfileSkeleton memberId={memberId} activeTab={activeTab} />
   }
 
   // The live blocker this sweep started from: an ancillary DB failure nulled the
