@@ -8,6 +8,7 @@ import React, {
   useState,
 } from 'react';
 import * as maplibregl from 'maplibre-gl';
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import type {
   AllPaintProperties,
   ExpressionSpecification,
@@ -1777,6 +1778,9 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
     container.addEventListener('wheel', handlePreMapWheelCapture, { capture: true, passive: false });
 
     const initialMapCenter = normalizeCenter(center);
+    // Bundle MapLibre 6's ESM worker graph and expose its hashed URL. A plain
+    // `?url` copy omits the worker's `maplibre-gl-shared.mjs` dependency.
+    maplibregl.setWorkerUrl(maplibreWorkerUrl);
     const map = new maplibregl.Map({
       container,
       style: MAP_STYLE,
