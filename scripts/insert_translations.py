@@ -46,7 +46,7 @@ def parse_grep_output(lines: List[str]) -> Dict[str, str]:
         # Extract the actual content after the grep prefix
         # Format: ../src/locales/ro/messages.po:35:msgstr "..."
         # or:     ../src/locales/ro/messages.po-34-msgid "..."
-        match = re.match(r'.*messages\.po[-:](\d+)[-:](.+)', line)
+        match = re.match(r'.*\.po[-:](\d+)[-:](.+)', line)
         if not match:
             continue
 
@@ -144,8 +144,10 @@ def main():
         print("Warning: No translations found in input", file=sys.stderr)
         sys.exit(0)
 
-    # Path to Romanian locale file
-    ro_po_path = '../src/locales/ro/messages.po'
+    # Path to Romanian locale file. Keep the historical default for existing
+    # callers, while allowing isolated catalog batches (admin, PNRR, etc.) to
+    # target their own PO file explicitly.
+    ro_po_path = sys.argv[1] if len(sys.argv) > 1 else '../src/locales/ro/messages.po'
 
     # Read the current PO file
     print(f"Reading {ro_po_path}...", file=sys.stderr)
