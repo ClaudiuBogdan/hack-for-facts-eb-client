@@ -84,6 +84,7 @@ vi.mock('@/hooks/filters/useFilterLabels', () => ({
   useBudgetSectorLabel: () => ({ map: (id: string) => `BS ${id}`, add: vi.fn() }),
   useFundingSourceLabel: () => ({ map: (id: string) => `FS ${id}`, add: vi.fn() }),
   useEntityTypeLabel: () => ({ map: (id: string) => `ET ${id}`, add: vi.fn() }),
+  useEntityTagLabel: () => ({ map: (id: string) => `Tag ${id}`, add: vi.fn() }),
 }))
 
 // Mock filter components to simplify testing
@@ -189,6 +190,11 @@ vi.mock('./funding-source-filter/FundingSourceFilter', () => ({
   FundingSourceList: () => <div data-testid="funding-source-list">Funding Source List</div>,
 }))
 
+vi.mock('./tag-filter', () => ({
+  TagList: () => <div data-testid="tag-list">Tag List</div>,
+  TagExcludeList: () => <div data-testid="tag-exclude-list">Tag Exclude List</div>,
+}))
+
 // ============================================================================
 // TESTS
 // ============================================================================
@@ -281,6 +287,12 @@ describe('EntityAnalyticsFilter', () => {
       render(<EntityAnalyticsFilter />)
 
       expect(screen.getByTestId('filter-list-Funding Source')).toBeInTheDocument()
+    })
+
+    it('renders tags filter section', () => {
+      render(<EntityAnalyticsFilter />)
+
+      expect(screen.getByTestId('filter-list-Tags')).toBeInTheDocument()
     })
 
     it('renders report type filter section', () => {

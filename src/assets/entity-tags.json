@@ -1,0 +1,1018 @@
+{
+  "version": "v2-2026-07-31",
+  "semantics": "or-within-facet-and-across-facets",
+  "tagCount": 160,
+  "facets": [
+    {
+      "facet": "kind",
+      "labelRo": "Tip de instituție",
+      "labelEn": "Institution type",
+      "multi": false,
+      "tags": [
+        {
+          "tag": "kind::school",
+          "labelRo": "Școală",
+          "labelEn": "School",
+          "descriptionRo": "Unitate de învățământ preuniversitar, de orice tip. Selectarea acestuia include și toate subtipurile de mai jos.",
+          "descriptionEn": "Pre-university education unit, any type. Selecting this also matches every school subtype below."
+        },
+        {
+          "tag": "kind::school::nursery",
+          "labelRo": "Creșă",
+          "labelEn": "Nursery (0–3)",
+          "descriptionRo": "Educație antepreșcolară, 0–3 ani (Legea 198/2023 art. 27).",
+          "descriptionEn": "Early education for ages 0–3 (Law 198/2023 art. 27).",
+          "parent": "kind::school"
+        },
+        {
+          "tag": "kind::school::kindergarten",
+          "labelRo": "Grădiniță",
+          "labelEn": "Kindergarten (3–6)",
+          "parent": "kind::school"
+        },
+        {
+          "tag": "kind::school::gymnasium",
+          "labelRo": "Școală gimnazială",
+          "labelEn": "Lower-secondary school",
+          "parent": "kind::school"
+        },
+        {
+          "tag": "kind::school::highschool",
+          "labelRo": "Liceu / colegiu",
+          "labelEn": "High school",
+          "parent": "kind::school"
+        },
+        {
+          "tag": "kind::school::vocational",
+          "labelRo": "Școală profesională",
+          "labelEn": "Vocational school",
+          "parent": "kind::school"
+        },
+        {
+          "tag": "kind::school::postsecondary",
+          "labelRo": "Școală postliceală",
+          "labelEn": "Post-secondary school",
+          "parent": "kind::school"
+        },
+        {
+          "tag": "kind::school::arts",
+          "labelRo": "Școală de artă",
+          "labelEn": "Arts school",
+          "parent": "kind::school"
+        },
+        {
+          "tag": "kind::school::special",
+          "labelRo": "Școală specială",
+          "labelEn": "Special-needs school",
+          "descriptionRo": "Unitate de învățământ pentru copii cu cerințe educaționale speciale.",
+          "descriptionEn": "Education unit for children with special educational needs.",
+          "parent": "kind::school"
+        },
+        {
+          "tag": "kind::school::theological",
+          "labelRo": "Seminar / liceu teologic",
+          "labelEn": "Theological school",
+          "parent": "kind::school"
+        },
+        {
+          "tag": "kind::university",
+          "labelRo": "Universitate",
+          "labelEn": "University"
+        },
+        {
+          "tag": "kind::extracurricular_unit",
+          "labelRo": "Unitate extrașcolară",
+          "labelEn": "Extracurricular unit",
+          "descriptionRo": "Palatele și cluburile copiilor — unități de educație extrașcolară.",
+          "descriptionEn": "Children's palaces and clubs — extracurricular education units."
+        },
+        {
+          "tag": "kind::teacher_training_centre",
+          "labelRo": "Casa Corpului Didactic",
+          "labelEn": "Teacher training centre"
+        },
+        {
+          "tag": "kind::training_centre",
+          "labelRo": "Centru de formare profesională",
+          "labelEn": "Vocational training centre",
+          "descriptionRo": "Formare profesională a adulților (ex. centrele regionale ANOFM).",
+          "descriptionEn": "Adult vocational training (e.g. the ANOFM regional centres)."
+        },
+        {
+          "tag": "kind::hospital",
+          "labelRo": "Spital",
+          "labelEn": "Hospital",
+          "descriptionRo": "Orice spital. Selectarea acestuia include și institutele și sanatoriile de mai jos.",
+          "descriptionEn": "Any hospital. Selecting this also matches institutes and sanatoria below."
+        },
+        {
+          "tag": "kind::hospital::institute",
+          "labelRo": "Institut medical",
+          "labelEn": "Medical institute",
+          "descriptionRo": "Spital organizat ca institut (ex. institutele oncologice, de cardiologie).",
+          "descriptionEn": "Hospital organized as an institute (e.g. oncology, cardiology institutes).",
+          "parent": "kind::hospital"
+        },
+        {
+          "tag": "kind::hospital::sanatorium",
+          "labelRo": "Sanatoriu",
+          "labelEn": "Sanatorium",
+          "parent": "kind::hospital"
+        },
+        {
+          "tag": "kind::clinic",
+          "labelRo": "Clinică / policlinică",
+          "labelEn": "Clinic"
+        },
+        {
+          "tag": "kind::health_unit",
+          "labelRo": "Unitate sanitară",
+          "labelEn": "Health unit",
+          "descriptionRo": "Unitate sanitară a cărei formă exactă nu este dovedită de sursă — nu neapărat un spital.",
+          "descriptionEn": "A health unit whose specific form is not proven by the source — not necessarily a hospital."
+        },
+        {
+          "tag": "kind::ambulance_service",
+          "labelRo": "Serviciu de ambulanță",
+          "labelEn": "Ambulance service"
+        },
+        {
+          "tag": "kind::blood_centre",
+          "labelRo": "Centru de transfuzie sanguină",
+          "labelEn": "Blood transfusion centre"
+        },
+        {
+          "tag": "kind::medico_social_unit",
+          "labelRo": "Unitate medico-socială",
+          "labelEn": "Medico-social unit",
+          "descriptionRo": "Formă legală distinctă care oferă îngrijire medicală și socială combinată (Legea 95/2006 art. 170).",
+          "descriptionEn": "Distinct statutory form providing combined medical and social care (Law 95/2006 art. 170)."
+        },
+        {
+          "tag": "kind::insurance_house",
+          "labelRo": "Casă de asigurări de sănătate",
+          "labelEn": "Health insurance house"
+        },
+        {
+          "tag": "kind::pharmacy",
+          "labelRo": "Farmacie",
+          "labelEn": "Pharmacy"
+        },
+        {
+          "tag": "kind::social_care_home",
+          "labelRo": "Cămin / centru de îngrijire socială",
+          "labelEn": "Social care home"
+        },
+        {
+          "tag": "kind::social_assistance_body",
+          "labelRo": "Direcție / serviciu de asistență socială",
+          "labelEn": "Social assistance body",
+          "descriptionRo": "Ex. DGASPC, direcțiile locale de asistență socială.",
+          "descriptionEn": "E.g. DGASPC, local social assistance directorates."
+        },
+        {
+          "tag": "kind::pension_house",
+          "labelRo": "Casă de pensii",
+          "labelEn": "Pension authority",
+          "descriptionRo": "Administrează și plătește pensiile publice — nu este un cămin.",
+          "descriptionEn": "Administers and pays public pensions — not a care home."
+        },
+        {
+          "tag": "kind::museum",
+          "labelRo": "Muzeu",
+          "labelEn": "Museum"
+        },
+        {
+          "tag": "kind::theatre",
+          "labelRo": "Teatru",
+          "labelEn": "Theatre"
+        },
+        {
+          "tag": "kind::opera",
+          "labelRo": "Operă",
+          "labelEn": "Opera"
+        },
+        {
+          "tag": "kind::philharmonic",
+          "labelRo": "Filarmonică",
+          "labelEn": "Philharmonic"
+        },
+        {
+          "tag": "kind::library",
+          "labelRo": "Bibliotecă",
+          "labelEn": "Library"
+        },
+        {
+          "tag": "kind::culture_centre",
+          "labelRo": "Centru cultural",
+          "labelEn": "Cultural centre"
+        },
+        {
+          "tag": "kind::ensemble",
+          "labelRo": "Ansamblu artistic",
+          "labelEn": "Artistic ensemble"
+        },
+        {
+          "tag": "kind::circus",
+          "labelRo": "Circ",
+          "labelEn": "Circus"
+        },
+        {
+          "tag": "kind::zoo",
+          "labelRo": "Grădină zoologică",
+          "labelEn": "Zoo"
+        },
+        {
+          "tag": "kind::sport_club",
+          "labelRo": "Club sportiv",
+          "labelEn": "Sports club"
+        },
+        {
+          "tag": "kind::sport_complex",
+          "labelRo": "Complex sportiv",
+          "labelEn": "Sports complex"
+        },
+        {
+          "tag": "kind::sport_federation",
+          "labelRo": "Federație sportivă",
+          "labelEn": "Sports federation"
+        },
+        {
+          "tag": "kind::uat",
+          "labelRo": "Unitate administrativ-teritorială (UAT)",
+          "labelEn": "Administrative-territorial unit (UAT)",
+          "descriptionRo": "Comuna, orașul, municipiul sau județul ca atare, ca persoană juridică de drept public.",
+          "descriptionEn": "The commune, town, municipality or county itself, as a public-law legal person."
+        },
+        {
+          "tag": "kind::council",
+          "labelRo": "Consiliu",
+          "labelEn": "Council",
+          "descriptionRo": "Organ deliberativ ales (consiliu local sau județean).",
+          "descriptionEn": "Elected deliberative body (local or county council)."
+        },
+        {
+          "tag": "kind::administrative_apparatus",
+          "labelRo": "Aparat de specialitate",
+          "labelEn": "Administrative apparatus",
+          "descriptionRo": "Aparatul de specialitate al primarului sau al președintelui consiliului județean.",
+          "descriptionEn": "The mayor's or county-council president's specialized apparatus."
+        },
+        {
+          "tag": "kind::government",
+          "labelRo": "Guvern",
+          "labelEn": "Government"
+        },
+        {
+          "tag": "kind::ministry",
+          "labelRo": "Minister",
+          "labelEn": "Ministry"
+        },
+        {
+          "tag": "kind::government_secretariat",
+          "labelRo": "Secretariat al Guvernului",
+          "labelEn": "Government secretariat"
+        },
+        {
+          "tag": "kind::agency",
+          "labelRo": "Agenție",
+          "labelEn": "Agency"
+        },
+        {
+          "tag": "kind::authority",
+          "labelRo": "Autoritate",
+          "labelEn": "Authority"
+        },
+        {
+          "tag": "kind::directorate",
+          "labelRo": "Direcție",
+          "labelEn": "Directorate"
+        },
+        {
+          "tag": "kind::inspectorate",
+          "labelRo": "Inspectorat",
+          "labelEn": "Inspectorate"
+        },
+        {
+          "tag": "kind::inspection_guard",
+          "labelRo": "Gardă de control",
+          "labelEn": "Inspection guard",
+          "descriptionRo": "Ex. Garda Națională de Mediu (HG 1005/2012), gărzile forestiere (HG 743/2015).",
+          "descriptionEn": "E.g. the National Environmental Guard (HG 1005/2012), the forestry guards (HG 743/2015)."
+        },
+        {
+          "tag": "kind::commissionerate",
+          "labelRo": "Comisariat",
+          "labelEn": "Commissionerate",
+          "descriptionRo": "Ex. comisariatele regionale pentru protecția consumatorilor.",
+          "descriptionEn": "E.g. the regional consumer-protection commissionerates."
+        },
+        {
+          "tag": "kind::chamber",
+          "labelRo": "Cameră",
+          "labelEn": "Chamber",
+          "descriptionRo": "Ex. camerele agricole județene.",
+          "descriptionEn": "E.g. the county agricultural chambers."
+        },
+        {
+          "tag": "kind::office",
+          "labelRo": "Oficiu",
+          "labelEn": "Office"
+        },
+        {
+          "tag": "kind::administrative_body",
+          "labelRo": "Organ administrativ",
+          "labelEn": "Administrative body",
+          "descriptionRo": "Organ administrativ a cărui formă exactă nu este dovedită de sursă.",
+          "descriptionEn": "Administrative body whose specific form is not proven by the source."
+        },
+        {
+          "tag": "kind::prefecture",
+          "labelRo": "Instituția Prefectului",
+          "labelEn": "Prefecture"
+        },
+        {
+          "tag": "kind::org_unit",
+          "labelRo": "Structură organizatorică",
+          "labelEn": "Organizational unit",
+          "descriptionRo": "Structură componentă generică a unei instituții mai mari.",
+          "descriptionEn": "Generic sub-unit of a larger institution."
+        },
+        {
+          "tag": "kind::territorial_unit",
+          "labelRo": "Unitate teritorială",
+          "labelEn": "Territorial unit",
+          "descriptionRo": "Structură teritorială (cu personalitate juridică) a unei agenții centrale — ex. centrele județene APIA.",
+          "descriptionEn": "Territorial body (with legal personality) of a central agency — e.g. the APIA county centres."
+        },
+        {
+          "tag": "kind::community_public_service",
+          "labelRo": "Serviciu public comunitar",
+          "labelEn": "Community public service",
+          "descriptionRo": "Forma din OG 84/2001 — ex. evidența persoanelor, pașapoarte.",
+          "descriptionEn": "The OG 84/2001 form — e.g. civil records and passport services."
+        },
+        {
+          "tag": "kind::parliamentary_chamber",
+          "labelRo": "Cameră parlamentară",
+          "labelEn": "Parliamentary chamber",
+          "descriptionRo": "Camera Deputaților și Senatul.",
+          "descriptionEn": "The Chamber of Deputies and the Senate."
+        },
+        {
+          "tag": "kind::court",
+          "labelRo": "Instanță de judecată",
+          "labelEn": "Court"
+        },
+        {
+          "tag": "kind::prosecutor_office",
+          "labelRo": "Parchet",
+          "labelEn": "Prosecutor's office"
+        },
+        {
+          "tag": "kind::judicial_council",
+          "labelRo": "Consiliul Superior al Magistraturii",
+          "labelEn": "Judicial council",
+          "descriptionRo": "Organul de autoguvernare al magistraturii (Constituția art. 133) — nu este o instanță.",
+          "descriptionEn": "The judiciary's self-governing council (Constitution art. 133) — not a court."
+        },
+        {
+          "tag": "kind::constitutional_court",
+          "labelRo": "Curtea Constituțională",
+          "labelEn": "Constitutional Court"
+        },
+        {
+          "tag": "kind::audit_authority",
+          "labelRo": "Curtea de Conturi",
+          "labelEn": "Supreme audit institution"
+        },
+        {
+          "tag": "kind::penitentiary",
+          "labelRo": "Penitenciar",
+          "labelEn": "Penitentiary"
+        },
+        {
+          "tag": "kind::police_body",
+          "labelRo": "Structură de poliție",
+          "labelEn": "Police body"
+        },
+        {
+          "tag": "kind::gendarmerie_body",
+          "labelRo": "Structură de jandarmerie",
+          "labelEn": "Gendarmerie body"
+        },
+        {
+          "tag": "kind::emergency_service",
+          "labelRo": "Serviciu pentru situații de urgență",
+          "labelEn": "Emergency service",
+          "descriptionRo": "Ex. inspectoratele județene pentru situații de urgență (ISU).",
+          "descriptionEn": "E.g. the county inspectorates for emergency situations (ISU)."
+        },
+        {
+          "tag": "kind::mountain_rescue_service",
+          "labelRo": "Serviciu Salvamont",
+          "labelEn": "Mountain rescue service"
+        },
+        {
+          "tag": "kind::military_unit",
+          "labelRo": "Unitate militară",
+          "labelEn": "Military unit"
+        },
+        {
+          "tag": "kind::intelligence_body",
+          "labelRo": "Serviciu de informații",
+          "labelEn": "Intelligence body"
+        },
+        {
+          "tag": "kind::research_institute",
+          "labelRo": "Institut de cercetare",
+          "labelEn": "Research institute"
+        },
+        {
+          "tag": "kind::research_station",
+          "labelRo": "Stațiune de cercetare",
+          "labelEn": "Research station"
+        },
+        {
+          "tag": "kind::laboratory",
+          "labelRo": "Laborator oficial",
+          "labelEn": "Official laboratory",
+          "descriptionRo": "Efectuează analize oficiale — distinct de un institut de cercetare.",
+          "descriptionEn": "Performs official analysis — distinct from a research institute."
+        },
+        {
+          "tag": "kind::academy",
+          "labelRo": "Academie",
+          "labelEn": "Academy"
+        },
+        {
+          "tag": "kind::utility_operator",
+          "labelRo": "Operator de utilități publice",
+          "labelEn": "Public utility operator",
+          "descriptionRo": "Operator de servicii comunitare de utilități conform Legii 51/2006 — vezi fațeta Servicii operate pentru serviciile prestate.",
+          "descriptionEn": "Operator of community utility services under Law 51/2006 — see the Operated services facet for what it operates."
+        },
+        {
+          "tag": "kind::public_enterprise",
+          "labelRo": "Întreprindere publică",
+          "labelEn": "Public enterprise",
+          "descriptionRo": "Regii autonome și companii cu capital public.",
+          "descriptionEn": "Autonomous regies and publicly-owned companies."
+        },
+        {
+          "tag": "kind::forest_district",
+          "labelRo": "Ocol silvic",
+          "labelEn": "Forest district"
+        },
+        {
+          "tag": "kind::public_broadcaster",
+          "labelRo": "Serviciu public de radio/televiziune",
+          "labelEn": "Public broadcaster",
+          "descriptionRo": "SRR și SRTv — servicii publice autonome aflate sub control parlamentar (Legea 41/1994).",
+          "descriptionEn": "SRR and SRTv — autonomous national public services answerable to Parliament (Law 41/1994)."
+        },
+        {
+          "tag": "kind::public_institution",
+          "labelRo": "Instituție publică (generic)",
+          "labelEn": "Public institution (generic)",
+          "descriptionRo": "Formă generică folosită atunci când sursa nu dovedește un tip mai specific.",
+          "descriptionEn": "Generic form used when the source does not prove a more specific type."
+        }
+      ]
+    },
+    {
+      "facet": "sector",
+      "labelRo": "Domeniu",
+      "labelEn": "Sector",
+      "multi": true,
+      "noteRo": "Funcția publică deservită (categorii ale platformei, nu COFOG).",
+      "noteEn": "The public function served (platform buckets, not COFOG).",
+      "tags": [
+        {
+          "tag": "sector::education",
+          "labelRo": "Educație",
+          "labelEn": "Education"
+        },
+        {
+          "tag": "sector::health",
+          "labelRo": "Sănătate",
+          "labelEn": "Health"
+        },
+        {
+          "tag": "sector::culture_sport",
+          "labelRo": "Cultură și sport",
+          "labelEn": "Culture and sport"
+        },
+        {
+          "tag": "sector::social_protection",
+          "labelRo": "Protecție socială",
+          "labelEn": "Social protection"
+        },
+        {
+          "tag": "sector::general_government",
+          "labelRo": "Administrație generală",
+          "labelEn": "General government"
+        },
+        {
+          "tag": "sector::public_order",
+          "labelRo": "Ordine publică",
+          "labelEn": "Public order"
+        },
+        {
+          "tag": "sector::national_security",
+          "labelRo": "Securitate națională",
+          "labelEn": "National security"
+        },
+        {
+          "tag": "sector::defense",
+          "labelRo": "Apărare",
+          "labelEn": "Defence"
+        },
+        {
+          "tag": "sector::justice",
+          "labelRo": "Justiție",
+          "labelEn": "Justice"
+        },
+        {
+          "tag": "sector::economy_agriculture",
+          "labelRo": "Agricultură",
+          "labelEn": "Agriculture",
+          "descriptionRo": "Ramura agricolă a funcției economice.",
+          "descriptionEn": "The agricultural branch of the economic function."
+        },
+        {
+          "tag": "sector::economy",
+          "labelRo": "Economie",
+          "labelEn": "Economy"
+        },
+        {
+          "tag": "sector::environment",
+          "labelRo": "Mediu",
+          "labelEn": "Environment"
+        },
+        {
+          "tag": "sector::utilities",
+          "labelRo": "Utilități publice",
+          "labelEn": "Public utilities"
+        },
+        {
+          "tag": "sector::transport",
+          "labelRo": "Transport",
+          "labelEn": "Transport"
+        },
+        {
+          "tag": "sector::research",
+          "labelRo": "Cercetare",
+          "labelEn": "Research"
+        },
+        {
+          "tag": "sector::finance",
+          "labelRo": "Finanțe",
+          "labelEn": "Finance"
+        },
+        {
+          "tag": "sector::foreign_affairs",
+          "labelRo": "Afaceri externe",
+          "labelEn": "Foreign affairs"
+        },
+        {
+          "tag": "sector::communications",
+          "labelRo": "Comunicații",
+          "labelEn": "Communications"
+        }
+      ]
+    },
+    {
+      "facet": "uat",
+      "labelRo": "Tip UAT",
+      "labelEn": "UAT type",
+      "multi": false,
+      "noteRo": "Doar pentru entitățile care SUNT o unitate administrativ-teritorială.",
+      "noteEn": "Only for entities that ARE an administrative-territorial unit.",
+      "tags": [
+        {
+          "tag": "uat::commune",
+          "labelRo": "Comună",
+          "labelEn": "Commune"
+        },
+        {
+          "tag": "uat::town",
+          "labelRo": "Oraș",
+          "labelEn": "Town"
+        },
+        {
+          "tag": "uat::municipality",
+          "labelRo": "Municipiu",
+          "labelEn": "Municipality"
+        },
+        {
+          "tag": "uat::county",
+          "labelRo": "Județ",
+          "labelEn": "County"
+        },
+        {
+          "tag": "uat::sector",
+          "labelRo": "Sector al Municipiului București",
+          "labelEn": "Bucharest sector"
+        },
+        {
+          "tag": "uat::bucharest",
+          "labelRo": "Municipiul București",
+          "labelEn": "Bucharest"
+        }
+      ]
+    },
+    {
+      "facet": "level",
+      "labelRo": "Nivel de guvernare",
+      "labelEn": "Government tier",
+      "multi": false,
+      "noteRo": "Nivelul care DEȚINE/controlează entitatea — nu teritoriul acoperit. Un inspectorat școlar județean este de nivel central, cu acoperire județeană.",
+      "noteEn": "The tier that OWNS/controls the entity — not the territory it covers. A county school inspectorate is central-tier with county coverage.",
+      "tags": [
+        {
+          "tag": "level::central",
+          "labelRo": "Central",
+          "labelEn": "Central",
+          "descriptionRo": "Deținută/controlată de administrația centrală (minister sau organ național) — indiferent de teritoriul acoperit. Un inspectorat școlar județean este de nivel central.",
+          "descriptionEn": "Owned/controlled by central government (a ministry or national body) — regardless of the territory covered. A county school inspectorate is central-tier."
+        },
+        {
+          "tag": "level::county",
+          "labelRo": "Județean",
+          "labelEn": "County",
+          "descriptionRo": "Deținută/controlată de autoritățile județene (consiliul județean).",
+          "descriptionEn": "Owned/controlled by the county authorities (the county council)."
+        },
+        {
+          "tag": "level::local",
+          "labelRo": "Local",
+          "labelEn": "Local",
+          "descriptionRo": "Deținută/controlată de o comună, un oraș sau un municipiu.",
+          "descriptionEn": "Owned/controlled by a commune, town or municipality."
+        }
+      ]
+    },
+    {
+      "facet": "coverage",
+      "labelRo": "Acoperire teritorială",
+      "labelEn": "Territorial coverage",
+      "multi": false,
+      "noteRo": "Teritoriul pe care entitatea îl deservește efectiv.",
+      "noteEn": "The territory the entity actually serves.",
+      "tags": [
+        {
+          "tag": "coverage::national",
+          "labelRo": "Națională",
+          "labelEn": "National"
+        },
+        {
+          "tag": "coverage::regional",
+          "labelRo": "Regională (mai multe județe)",
+          "labelEn": "Regional (multi-county)",
+          "descriptionRo": "Acoperă mai multe județe (ex. direcțiile regionale ale finanțelor publice). România NU are un nivel regional de guvernare — este doar acoperire teritorială.",
+          "descriptionEn": "Covers several counties (e.g. the regional public-finance directorates). Romania has NO regional tier of government — this is reach only."
+        },
+        {
+          "tag": "coverage::county",
+          "labelRo": "Județeană",
+          "labelEn": "County"
+        },
+        {
+          "tag": "coverage::local",
+          "labelRo": "Locală",
+          "labelEn": "Local"
+        }
+      ]
+    },
+    {
+      "facet": "governance",
+      "labelRo": "Guvernanță",
+      "labelEn": "Governance",
+      "multi": false,
+      "noteRo": "Cum este condusă entitatea / cui îi este subordonată.",
+      "noteEn": "How the entity is governed / to whom it is subordinated.",
+      "tags": [
+        {
+          "tag": "governance::central_authority",
+          "labelRo": "Autoritate centrală",
+          "labelEn": "Central authority",
+          "descriptionRo": "Organ central de sine stătător (minister, autoritate națională).",
+          "descriptionEn": "A central body in its own right (ministry, national authority)."
+        },
+        {
+          "tag": "governance::central_subordinate",
+          "labelRo": "În subordine centrală",
+          "labelEn": "Centrally subordinated",
+          "descriptionRo": "În subordinea unui organ central.",
+          "descriptionEn": "Subordinated to a central body."
+        },
+        {
+          "tag": "governance::deconcentrated",
+          "labelRo": "Serviciu public deconcentrat",
+          "labelEn": "Deconcentrated service",
+          "descriptionRo": "Structură teritorială a unui minister/organ central care își exercită atribuțiile în județ (Codul administrativ) — NU face parte din administrația locală.",
+          "descriptionEn": "Territorial structure of a ministry/central body exercising its powers in a county (Administrative Code) — NOT part of local government."
+        },
+        {
+          "tag": "governance::self_government",
+          "labelRo": "Autonomie locală",
+          "labelEn": "Local self-government",
+          "descriptionRo": "Autoritățile alese ale administrației publice locale.",
+          "descriptionEn": "The elected local public administration authorities themselves."
+        },
+        {
+          "tag": "governance::local_subordinate",
+          "labelRo": "În subordine locală",
+          "labelEn": "Locally subordinated",
+          "descriptionRo": "În subordinea unui consiliu local sau județean.",
+          "descriptionEn": "Subordinated to a local or county council."
+        },
+        {
+          "tag": "governance::autonomous",
+          "labelRo": "Autonomă",
+          "labelEn": "Autonomous",
+          "descriptionRo": "Autonomă prin lege — ex. universitățile publice (Legea 199/2023 art. 11), autoritățile independente.",
+          "descriptionEn": "Autonomous by law — e.g. public universities (Law 199/2023 art. 11), independent authorities."
+        },
+        {
+          "tag": "governance::judicial",
+          "labelRo": "Judiciară",
+          "labelEn": "Judicial",
+          "descriptionRo": "Parte a autorității judecătorești.",
+          "descriptionEn": "Part of the judicial authority."
+        }
+      ]
+    },
+    {
+      "facet": "role",
+      "labelRo": "Atribuții",
+      "labelEn": "Statutory roles",
+      "multi": true,
+      "noteRo": "Atribuțiile legale pe care entitatea le exercită.",
+      "noteEn": "The statutory powers the entity exercises.",
+      "tags": [
+        {
+          "tag": "role::inspection_control",
+          "labelRo": "Inspecție și control",
+          "labelEn": "Inspection and control"
+        },
+        {
+          "tag": "role::law_enforcement",
+          "labelRo": "Aplicarea legii",
+          "labelEn": "Law enforcement"
+        },
+        {
+          "tag": "role::regulator",
+          "labelRo": "Reglementare",
+          "labelEn": "Regulator"
+        },
+        {
+          "tag": "role::adjudication",
+          "labelRo": "Judecarea cauzelor",
+          "labelEn": "Adjudication",
+          "descriptionRo": "Soluționează cauze ca jurisdicție (instanțele).",
+          "descriptionEn": "Resolves disputes as a jurisdiction (courts)."
+        },
+        {
+          "tag": "role::prosecution",
+          "labelRo": "Urmărire penală",
+          "labelEn": "Prosecution"
+        },
+        {
+          "tag": "role::funder_payer",
+          "labelRo": "Finanțator / plătitor",
+          "labelEn": "Funder / payer",
+          "descriptionRo": "Administrează și plătește fonduri publice (ex. CNAS, casele de pensii).",
+          "descriptionEn": "Administers and pays out public funds (e.g. CNAS, pension houses)."
+        },
+        {
+          "tag": "role::operator",
+          "labelRo": "Operator de servicii",
+          "labelEn": "Service operator"
+        },
+        {
+          "tag": "role::deliberative",
+          "labelRo": "Deliberativ",
+          "labelEn": "Deliberative",
+          "descriptionRo": "Organ ales care adoptă hotărâri (consiliile).",
+          "descriptionEn": "Elected body that adopts decisions (councils)."
+        },
+        {
+          "tag": "role::executive",
+          "labelRo": "Executiv",
+          "labelEn": "Executive"
+        },
+        {
+          "tag": "role::government_representative",
+          "labelRo": "Reprezentant al Guvernului în teritoriu",
+          "labelEn": "Government representative",
+          "descriptionRo": "Instituția prefectului.",
+          "descriptionEn": "The prefect institution."
+        },
+        {
+          "tag": "role::legality_control",
+          "labelRo": "Controlul legalității",
+          "labelEn": "Legality control",
+          "descriptionRo": "Verifică legalitatea actelor administrative locale.",
+          "descriptionEn": "Reviews the legality of local administrative acts."
+        },
+        {
+          "tag": "role::tax_collection",
+          "labelRo": "Colectarea taxelor și impozitelor",
+          "labelEn": "Tax collection"
+        },
+        {
+          "tag": "role::emergency_response",
+          "labelRo": "Intervenție în situații de urgență",
+          "labelEn": "Emergency response"
+        },
+        {
+          "tag": "role::education_provider",
+          "labelRo": "Furnizor de educație",
+          "labelEn": "Education provider"
+        },
+        {
+          "tag": "role::care_provider",
+          "labelRo": "Furnizor de îngrijire",
+          "labelEn": "Care provider",
+          "descriptionRo": "Oferă îngrijire medicală sau socială.",
+          "descriptionEn": "Provides medical or social care."
+        },
+        {
+          "tag": "role::culture_provider",
+          "labelRo": "Furnizor de cultură",
+          "labelEn": "Culture provider"
+        },
+        {
+          "tag": "role::sport_provider",
+          "labelRo": "Furnizor de sport",
+          "labelEn": "Sport provider"
+        },
+        {
+          "tag": "role::official_statistics",
+          "labelRo": "Statistică oficială",
+          "labelEn": "Official statistics"
+        },
+        {
+          "tag": "role::registry_operator",
+          "labelRo": "Operator de registre publice",
+          "labelEn": "Public registry operator",
+          "descriptionRo": "Ține registre publice oficiale (ex. cadastru, registrul comerțului).",
+          "descriptionEn": "Keeps official public registers (e.g. cadastre, trade registry)."
+        },
+        {
+          "tag": "role::sport_governing_body",
+          "labelRo": "Organism de conducere sportivă",
+          "labelEn": "Sports governing body"
+        },
+        {
+          "tag": "role::special_education",
+          "labelRo": "Învățământ special",
+          "labelEn": "Special education"
+        },
+        {
+          "tag": "role::external_audit",
+          "labelRo": "Audit public extern",
+          "labelEn": "External public audit",
+          "descriptionRo": "Curtea de Conturi (Legea 94/1992).",
+          "descriptionEn": "The Court of Accounts (Law 94/1992)."
+        },
+        {
+          "tag": "role::rights_protection",
+          "labelRo": "Apărarea drepturilor",
+          "labelEn": "Rights protection",
+          "descriptionRo": "Avocatul Poporului (Legea 35/1997).",
+          "descriptionEn": "The People's Advocate (Law 35/1997)."
+        },
+        {
+          "tag": "role::public_broadcasting",
+          "labelRo": "Serviciu public de radio și televiziune",
+          "labelEn": "Public broadcasting"
+        }
+      ]
+    },
+    {
+      "facet": "funder",
+      "labelRo": "Buget asociat",
+      "labelEn": "Associated budget",
+      "multi": true,
+      "noteRo": "Bugetul cu care entitatea este asociată — de regulă prin ordonatorul principal de credite din raportările de execuție; pentru entitățile fără creditor raportat este dedus din statutul entității (UAT sau organ central), iar pentru casele de pensii și de asigurări de sănătate este stabilit prin lege. NU este o dovadă a finanțării.",
+      "noteEn": "The budget the entity is associated with — usually through the principal credit officer (ordonator principal de credite) in execution reporting; for entities with no reported creditor it is inferred from the entity's own status (UAT or central body), and for pension and health-insurance houses it is set by law. NOT proof the entity is financed by that budget.",
+      "tags": [
+        {
+          "tag": "funder::state_budget",
+          "labelRo": "Bugetul de stat",
+          "labelEn": "State budget",
+          "descriptionRo": "Asociată cu bugetul de stat — de regulă prin ordonatorul principal de credite din raportări, sau dedusă pentru organele centrale fără creditor raportat. Nu este o dovadă a finanțării.",
+          "descriptionEn": "Associated with the state budget — usually via a principal credit officer in reporting, or inferred for central bodies with no reported creditor. Not proof of financing."
+        },
+        {
+          "tag": "funder::local_budget",
+          "labelRo": "Bugetul local",
+          "labelEn": "Local budget",
+          "descriptionRo": "Asociată cu un buget local — de regulă prin ordonatorul principal de credite din raportări, sau dedusă pentru UAT-urile fără creditor raportat. Bugetul județean ESTE un buget local conform Legii 273/2006 — combinați cu fațeta Nivel de guvernare pentru a distinge. Nu este o dovadă a finanțării.",
+          "descriptionEn": "Associated with a local budget — usually via a principal credit officer in reporting, or inferred for UATs with no reported creditor. A county budget IS a local budget under Law 273/2006 — combine with the Government tier facet to distinguish. Not proof of financing."
+        },
+        {
+          "tag": "funder::health_fund",
+          "labelRo": "Fondul asigurărilor de sănătate",
+          "labelEn": "Health insurance fund",
+          "descriptionRo": "Asociată cu Fondul național unic de asigurări sociale de sănătate (FNUASS) — prin raportări, sau prin lege pentru casele de asigurări de sănătate. Nu este o dovadă a finanțării.",
+          "descriptionEn": "Associated with the FNUASS health insurance fund — via reporting, or by law for the health-insurance houses. Not proof of financing."
+        },
+        {
+          "tag": "funder::social_security",
+          "labelRo": "Bugetul asigurărilor sociale",
+          "labelEn": "Social insurance budget",
+          "descriptionRo": "Asociată cu bugetul asigurărilor sociale de stat — prin raportări, sau prin lege pentru casele de pensii (HG 758/2024). Nu este o dovadă a finanțării.",
+          "descriptionEn": "Associated with the state social insurance budget — via reporting, or by law for the pension houses (HG 758/2024). Not proof of financing."
+        }
+      ]
+    },
+    {
+      "facet": "service",
+      "labelRo": "Servicii operate",
+      "labelEn": "Operated services",
+      "multi": true,
+      "noteRo": "Servicii publice concrete operate de entitate: utilitățile comunitare din Legea 51/2006, plus câteva alte servicii publice/de infrastructură (porturi, arii protejate, evidența persoanelor, transfuzie). Doar ~4% dintre entități au această fațetă.",
+      "noteEn": "Concrete public services the entity operates: the Law 51/2006 community utilities plus a few other infrastructure/public services (ports, protected areas, civil records, blood). Only ~4% of entities carry this facet.",
+      "tags": [
+        {
+          "tag": "service::water",
+          "labelRo": "Alimentare cu apă",
+          "labelEn": "Water supply"
+        },
+        {
+          "tag": "service::sewerage",
+          "labelRo": "Canalizare",
+          "labelEn": "Sewerage"
+        },
+        {
+          "tag": "service::heating",
+          "labelRo": "Termoficare",
+          "labelEn": "District heating"
+        },
+        {
+          "tag": "service::waste",
+          "labelRo": "Gestionarea deșeurilor",
+          "labelEn": "Waste management",
+          "descriptionRo": "Colectarea, tratarea și eliminarea deșeurilor (depozite, operatori de deșeuri).",
+          "descriptionEn": "Waste collection, treatment and disposal (landfills, waste operators)."
+        },
+        {
+          "tag": "service::sanitation",
+          "labelRo": "Salubrizare",
+          "labelEn": "Sanitation",
+          "descriptionRo": "Serviciul de salubrizare a localităților (Legea 51/2006): curățenie stradală, deszăpezire.",
+          "descriptionEn": "The municipal sanitation service (Law 51/2006): street cleaning, snow removal."
+        },
+        {
+          "tag": "service::lighting",
+          "labelRo": "Iluminat public",
+          "labelEn": "Public lighting"
+        },
+        {
+          "tag": "service::cemetery",
+          "labelRo": "Cimitire",
+          "labelEn": "Cemeteries"
+        },
+        {
+          "tag": "service::public_space",
+          "labelRo": "Administrarea domeniului public",
+          "labelEn": "Public space management"
+        },
+        {
+          "tag": "service::public_transport",
+          "labelRo": "Transport public local",
+          "labelEn": "Local public transport"
+        },
+        {
+          "tag": "service::roads",
+          "labelRo": "Drumuri",
+          "labelEn": "Roads"
+        },
+        {
+          "tag": "service::port",
+          "labelRo": "Servicii portuare",
+          "labelEn": "Port services"
+        },
+        {
+          "tag": "service::protected_area",
+          "labelRo": "Arii naturale protejate",
+          "labelEn": "Protected areas"
+        },
+        {
+          "tag": "service::civil_records",
+          "labelRo": "Evidența persoanelor",
+          "labelEn": "Civil records"
+        },
+        {
+          "tag": "service::blood",
+          "labelRo": "Transfuzie sanguină",
+          "labelEn": "Blood services"
+        }
+      ]
+    }
+  ]
+}

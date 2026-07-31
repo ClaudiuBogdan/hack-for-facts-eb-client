@@ -103,6 +103,7 @@ export function prepareFilterForServer(filter: AnalyticsFilterType, fallback?: {
     'regions',
     'uat_ids',
     'entity_types',
+    'tags',
     'is_uat',
     'search',
     'min_population',

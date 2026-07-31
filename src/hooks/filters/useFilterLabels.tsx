@@ -189,6 +189,87 @@ export const useEntityTypeOptions = () => {
     return { options };
 };
 
+// ---------------------------------------------------------------------------
+// Faceted entity tags (entity-tags.json asset, generated in the scrapper repo
+// from the closed tag vocabulary). One bilingual file; the label language is
+// picked at render time. Semantics: OR within a facet, AND across facets.
+// ---------------------------------------------------------------------------
+
+export interface EntityTagVocabularyTag {
+    tag: string;
+    labelRo: string;
+    labelEn: string;
+    descriptionRo?: string;
+    descriptionEn?: string;
+    parent?: string;
+}
+
+export interface EntityTagVocabularyFacet {
+    facet: string;
+    labelRo: string;
+    labelEn: string;
+    multi: boolean;
+    noteRo?: string;
+    noteEn?: string;
+    tags: EntityTagVocabularyTag[];
+}
+
+export interface EntityTagVocabulary {
+    version: string;
+    semantics: string;
+    tagCount: number;
+    facets: EntityTagVocabularyFacet[];
+}
+
+const fetchEntityTagVocabulary = async (): Promise<EntityTagVocabulary> => {
+    const mod = await import('@/assets/entity-tags.json');
+    return (mod as { default: EntityTagVocabulary }).default;
+};
+
+export const useEntityTagVocabulary = () => {
+    const { data: vocabulary } = useQuery<EntityTagVocabulary>({
+        queryKey: ["entity-tag-vocabulary"],
+        queryFn: fetchEntityTagVocabulary,
+        staleTime: Infinity,
+    });
+    return { vocabulary };
+};
+
+/**
+ * Maps a tag id (e.g. `kind::hospital`) to a localized `Facet: Label` chip
+ * label. The facet prefix is deliberate: bare labels collide across facets
+ * (level "Local" vs coverage "Locală") and the prefix keeps the OR-within /
+ * AND-across grouping visible on the selected chips.
+ */
+export const useEntityTagLabel = (): LabelStore => {
+    const { vocabulary } = useEntityTagVocabulary();
+    const locale = getUserLocale();
+
+    const tagLabelMap = useMemo(() => {
+        const map = new Map<string, string>();
+        if (!vocabulary) return map;
+        for (const facet of vocabulary.facets) {
+            const facetLabel = locale === 'ro' ? facet.labelRo : facet.labelEn;
+            for (const tag of facet.tags) {
+                const label = locale === 'ro' ? tag.labelRo : tag.labelEn;
+                map.set(tag.tag, `${facetLabel}: ${label}`);
+            }
+        }
+        return map;
+    }, [vocabulary, locale]);
+
+    const mapIdToLabel = useCallback(
+        (id: string | number) => tagLabelMap.get(String(id)) ?? String(id),
+        [tagLabelMap]
+    );
+
+    return {
+        map: mapIdToLabel,
+        add: () => { },
+        fetch: async () => { },
+    };
+};
+
 export const useAccountCategoryLabel = () => {
     const accountCategoryOptions = useMemo(() => {
         return {

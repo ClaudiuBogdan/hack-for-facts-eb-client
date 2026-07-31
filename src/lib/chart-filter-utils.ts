@@ -1,6 +1,6 @@
 // src/lib/chart-filter-utils.ts
 
-import { useAccountCategoryLabel, useBudgetSectorLabel, useEconomicClassificationLabel, useEntityLabel, useEntityTypeLabel, useFunctionalClassificationLabel, useFundingSourceLabel, useUatLabel } from "@/hooks/filters/useFilterLabels";
+import { useAccountCategoryLabel, useBudgetSectorLabel, useEconomicClassificationLabel, useEntityLabel, useEntityTagLabel, useEntityTypeLabel, useFunctionalClassificationLabel, useFundingSourceLabel, useUatLabel } from "@/hooks/filters/useFilterLabels";
 import { AnalyticsFilterType, Chart, CommitmentsSeriesConfiguration, Series, SeriesConfiguration } from "@/schemas/charts";
 import { ReportPeriodInput } from "@/schemas/reporting";
 import { t } from "@lingui/core/macro";
@@ -47,6 +47,7 @@ export const useFilterKeyLabel = () => {
     functional_prefixes: t`Functional prefix`,
     economic_prefixes: t`Economic prefix`,
     entity_types: t`Entity type`,
+    tags: t`Tags`,
     normalization: t`Normalization`,
     report_period: t`Period`,
   };
@@ -63,6 +64,7 @@ export const useMapFilterValue = (filter: FiltersWithLabels) => {
   const functionalCodesStore = useFunctionalClassificationLabel(filter.functional_codes ?? []);
   const uatLabelsStore = useUatLabel(filter.uat_ids ?? []);
   const entityTypesStore = useEntityTypeLabel();
+  const entityTagLabelsStore = useEntityTagLabel();
   const accountCategoryLabelsStore = useAccountCategoryLabel();
 
   
@@ -96,6 +98,10 @@ export const useMapFilterValue = (filter: FiltersWithLabels) => {
           return uatLabelsStore.map(value as string);
         case "entity_types":
           return entityTypesStore.map(value as string);
+        case "tags": {
+          if (Array.isArray(value)) return value.map(v => entityTagLabelsStore.map(String(v))).join(", ");
+          return entityTagLabelsStore.map(String(value));
+        }
         case "report_period": {
             const period = value as ReportPeriodInput;
             if (period.selection.dates) return `${period.selection.dates.length} dates`;

@@ -205,6 +205,7 @@ export function summarizeFilter(
     fn_codes_len: filter.functional_codes?.length ?? 0,
     ec_codes_len: filter.economic_codes?.length ?? 0,
     entity_types_len: filter.entity_types?.length ?? 0,
+    tags_len: filter.tags?.length ?? 0,
     uat_len: filter.uat_ids?.length ?? 0,
     counties_len: filter.county_codes?.length ?? 0,
     budget_sector_len: filter.budget_sector_ids?.length ?? 0,

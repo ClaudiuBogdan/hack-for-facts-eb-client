@@ -4,7 +4,7 @@ import { FunctionalClassificationList } from './functional-classification-filter
 import { EconomicClassificationList } from './economic-classification-filter'
 import { FilterRangeContainer } from './base-filter/FilterRangeContainer'
 import { AmountRangeFilter } from './amount-range-filter'
-import { Calendar, ChartBar, Tags, SlidersHorizontal, MapPinned, Building2, EuroIcon, MapPin, XCircle, ArrowUpDown, Divide, Globe, MinusCircle } from 'lucide-react'
+import { Calendar, ChartBar, Tags, Shapes, SlidersHorizontal, MapPinned, Building2, EuroIcon, MapPin, XCircle, ArrowUpDown, Divide, Globe, MinusCircle } from 'lucide-react'
 import { useMemo, useEffect, useState } from 'react'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
@@ -15,8 +15,9 @@ import { BudgetSectorList } from './budget-sector-filter/BudgetSectorFilter'
 import { FundingSourceList } from './funding-source-filter/FundingSourceFilter'
 import { UatList } from './uat-filter/UatList'
 import { EntityTypeList } from './entity-type-filter/EntityTypeList'
+import { TagList, TagExcludeList } from './tag-filter'
 import { EntityList } from './entity-filter/EntityList'
-import { useEntityLabel, useUatLabel, useEconomicClassificationLabel, useFunctionalClassificationLabel, useBudgetSectorLabel, useFundingSourceLabel, useEntityTypeLabel } from '@/hooks/filters/useFilterLabels'
+import { useEntityLabel, useUatLabel, useEconomicClassificationLabel, useFunctionalClassificationLabel, useBudgetSectorLabel, useFundingSourceLabel, useEntityTypeLabel, useEntityTagLabel } from '@/hooks/filters/useFilterLabels'
 import { Button } from '@/components/ui/button'
 import { FilterPrefixContainer, PrefixFilter } from './prefix-filter'
 import { FilterRadioContainer } from './base-filter/FilterRadioContainer'
@@ -90,6 +91,7 @@ export function EntityAnalyticsFilter() {
   const budgetSectorLabelsStore = useBudgetSectorLabel(filter.budget_sector_ids ?? [])
   const fundingSourceLabelsStore = useFundingSourceLabel(filter.funding_source_ids ?? [])
   const entityTypeLabelsStore = useEntityTypeLabel()
+  const entityTagLabelsStore = useEntityTagLabel()
 
   // Selected options builders
   const selectedUatOptions = useMemo<OptionItem<string | number>[]>(
@@ -112,6 +114,10 @@ export function EntityAnalyticsFilter() {
   const selectedEntityTypeOptions = useMemo<OptionItem<string>[]>(
     () => (filter.entity_types ?? []).map((id) => ({ id, label: entityTypeLabelsStore.map(id) })),
     [filter.entity_types, entityTypeLabelsStore],
+  )
+  const selectedTagOptions = useMemo<OptionItem<string>[]>(
+    () => (filter.tags ?? []).map((tag) => ({ id: tag, label: entityTagLabelsStore.map(tag) })),
+    [filter.tags, entityTagLabelsStore],
   )
   const selectedFunctionalOptions = useMemo<OptionItem<string>[]>(
     () => (filter.functional_codes ?? []).map((code) => ({ id: code, label: functionalLabelsStore.map(code) })),
@@ -184,6 +190,12 @@ export function EntityAnalyticsFilter() {
   ) => {
     const next = typeof updater === 'function' ? updater(selectedEntityTypeOptions) : updater
     setFilter({ entity_types: next.map((o) => String(o.id)) })
+  }
+  const updateTagOptions = (
+    updater: OptionItem<string | number>[] | ((prev: OptionItem<string | number>[]) => OptionItem<string | number>[]),
+  ) => {
+    const next = typeof updater === 'function' ? updater(selectedTagOptions) : updater
+    setFilter({ tags: next.length > 0 ? next.map((o) => String(o.id)) : undefined })
   }
   const updateFunctionalOptions = (
     updater: OptionItem<string | number>[] | ((prev: OptionItem<string | number>[]) => OptionItem<string | number>[]),
@@ -270,6 +282,11 @@ export function EntityAnalyticsFilter() {
     [exclude.entity_types, entityTypeLabelsStore],
   )
 
+  const excludeSelectedTagOptions = useMemo<OptionItem<string>[]>(
+    () => (exclude.tags ?? []).map((tag) => ({ id: tag, label: entityTagLabelsStore.map(tag) })),
+    [exclude.tags, entityTagLabelsStore],
+  )
+
   const excludeSelectedFunctionalOptions = useMemo<OptionItem<string>[]>(
     () => (exclude.functional_codes ?? []).map((code) => ({ id: code, label: excludeFunctionalLabelsStore.map(code) })),
     [exclude.functional_codes, excludeFunctionalLabelsStore],
@@ -319,6 +336,12 @@ export function EntityAnalyticsFilter() {
   const updateExcludeEntityTypeOptions = (updater: OptionItem<string | number>[] | ((prev: OptionItem<string | number>[]) => OptionItem<string | number>[])) => {
     const next = typeof updater === 'function' ? updater(excludeSelectedEntityTypeOptions) : updater
     const newExclude = { ...exclude, entity_types: next.map((o) => String(o.id)) }
+    setFilter({ exclude: newExclude })
+  }
+
+  const updateExcludeTagOptions = (updater: OptionItem<string | number>[] | ((prev: OptionItem<string | number>[]) => OptionItem<string | number>[])) => {
+    const next = typeof updater === 'function' ? updater(excludeSelectedTagOptions) : updater
+    const newExclude = { ...exclude, tags: next.length > 0 ? next.map((o) => String(o.id)) : undefined }
     setFilter({ exclude: newExclude })
   }
 
@@ -373,6 +396,7 @@ export function EntityAnalyticsFilter() {
       selectedUatOptions,
       selectedCountyOptions,
       selectedEntityTypeOptions,
+      selectedTagOptions,
       selectedFunctionalOptions,
       selectedEconomicOptions,
       selectedBudgetSectorOptions,
@@ -394,6 +418,7 @@ export function EntityAnalyticsFilter() {
       excludeSelectedUatOptions,
       excludeSelectedCountyOptions,
       excludeSelectedEntityTypeOptions,
+      excludeSelectedTagOptions,
       excludeSelectedFunctionalOptions,
       excludeSelectedEconomicOptions,
       excludeSelectedBudgetSectorOptions,
@@ -575,6 +600,14 @@ export function EntityAnalyticsFilter() {
           setSelected={updateFundingSourceOptions}
         />
 
+        <FilterListContainer
+          title={t`Tags`}
+          icon={<Shapes className="w-4 h-4" />}
+          listComponent={TagList}
+          selected={selectedTagOptions}
+          setSelected={updateTagOptions}
+        />
+
         <FilterRadioContainer
           title={t`Report Type`}
           icon={<ArrowUpDown className="w-4 h-4" />}
@@ -751,6 +784,14 @@ export function EntityAnalyticsFilter() {
                     listComponent={FundingSourceList}
                     selected={excludeSelectedFundingSourceOptions}
                     setSelected={updateExcludeFundingSourceOptions}
+                  />
+
+                  <FilterListContainer
+                    title={`${t`Exclude`} ${t`Tags`}`}
+                    icon={<Shapes className="w-4 h-4 text-destructive" />}
+                    listComponent={TagExcludeList}
+                    selected={excludeSelectedTagOptions}
+                    setSelected={updateExcludeTagOptions}
                   />
                 </div>
               </AccordionContent>
