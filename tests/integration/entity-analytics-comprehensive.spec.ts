@@ -484,6 +484,20 @@ test.describe('Entity Analytics - Comprehensive Tests', () => {
       await expect(page.locator('body')).toBeVisible()
     })
 
+    test('can expand the tags filter section (bilingual)', async ({ page }) => {
+      await page.goto('/entity-analytics')
+      await page.waitForLoadState('networkidle').catch(() => {})
+
+      // The faceted tags accordion trigger — 'Etichete' in RO, 'Tags' in EN
+      const tagsButton = page.getByRole('button', { name: /^etichete$|^tags$/i }).first()
+      await tagsButton.click()
+
+      // The picker loads the vocabulary asset and renders a facet header
+      // ('Tip de instituție' / 'Institution type') plus the semantics helper.
+      const facetHeader = page.getByText(/tip de institu|institution type/i).first()
+      await expect(facetHeader).toBeVisible({ timeout: 5000 })
+    })
+
     test('can toggle transfer filter in line items view', async ({ page }) => {
       await page.goto('/entity-analytics?view=line-items&account_category=ch')
       await page.waitForLoadState('networkidle').catch(() => {})
