@@ -259,10 +259,12 @@ describe('EntityAnalyticsFilter', () => {
       expect(screen.getByTestId('filter-list-County')).toBeInTheDocument()
     })
 
-    it('renders entity type filter section', () => {
+    it('hides the DEPRECATED entity type section unless a legacy URL carries values', () => {
+      // entity_type is the legacy coarse taxonomy, replaced by Tags. The
+      // section stays reachable only so old links remain visible and clearable.
       render(<EntityAnalyticsFilter />)
 
-      expect(screen.getByTestId('filter-list-Entity Type')).toBeInTheDocument()
+      expect(screen.queryByTestId('filter-list-Entity Type')).not.toBeInTheDocument()
     })
 
     it('renders functional classification filter section', () => {

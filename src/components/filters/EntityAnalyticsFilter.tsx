@@ -542,13 +542,17 @@ export function EntityAnalyticsFilter() {
           setSelected={updateCountyOptions}
         />
 
-        <FilterListContainer
-          title={t`Entity Type`}
-          icon={<ChartBar className="w-4 h-4" />}
-          listComponent={EntityTypeList}
-          selected={selectedEntityTypeOptions}
-          setSelected={updateEntityTypeOptions}
-        />
+        {/* DEPRECATED legacy coarse taxonomy: only shown when a saved URL
+            still carries values, so they stay visible and clearable. Use Tags. */}
+        {selectedEntityTypeOptions.length > 0 && (
+          <FilterListContainer
+            title={t`Entity Type`}
+            icon={<ChartBar className="w-4 h-4" />}
+            listComponent={EntityTypeList}
+            selected={selectedEntityTypeOptions}
+            setSelected={updateEntityTypeOptions}
+          />
+        )}
 
         <FilterListContainer
           title={t`Functional Classification`}
@@ -728,13 +732,15 @@ export function EntityAnalyticsFilter() {
                     setSelected={updateExcludeCountyOptions}
                   />
 
-                  <FilterListContainer
-                    title={`${t`Exclude`} ${t`Entity Type`}`}
-                    icon={<ChartBar className="w-4 h-4 text-destructive" />}
-                    listComponent={EntityTypeList}
-                    selected={excludeSelectedEntityTypeOptions}
-                    setSelected={updateExcludeEntityTypeOptions}
-                  />
+                  {excludeSelectedEntityTypeOptions.length > 0 && (
+                    <FilterListContainer
+                      title={`${t`Exclude`} ${t`Entity Type`}`}
+                      icon={<ChartBar className="w-4 h-4 text-destructive" />}
+                      listComponent={EntityTypeList}
+                      selected={excludeSelectedEntityTypeOptions}
+                      setSelected={updateExcludeEntityTypeOptions}
+                    />
+                  )}
 
                   <FilterListContainer
                     title={`${t`Exclude`} ${t`Functional Classification`}`}

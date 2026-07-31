@@ -229,7 +229,30 @@ export function prepareCommitmentsFilterForServer(
     }
   }
   if (normalized.exclude) {
-    serverFilter.exclude = normalized.exclude
+    // Whitelist exclude sub-keys too: CommitmentsExcludeInput has no `tags`
+    // field, but a series switched from an analytics type can still carry
+    // exclude.tags in its stored filter — passing it through would fail
+    // GraphQL validation on every commitments query for that series.
+    const allowedExcludeKeys = new Set([
+      'report_ids',
+      'entity_cuis',
+      'main_creditor_cui',
+      'functional_codes',
+      'functional_prefixes',
+      'economic_codes',
+      'economic_prefixes',
+      'funding_source_ids',
+      'budget_sector_ids',
+      'county_codes',
+      'regions',
+      'uat_ids',
+      'entity_types',
+    ])
+    const exclude: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(normalized.exclude)) {
+      if (allowedExcludeKeys.has(k)) exclude[k] = v
+    }
+    serverFilter.exclude = exclude as CommitmentsFilterInput['exclude']
   }
 
   const normalizedReportPeriod = normalized.report_period as ReportPeriodInput | undefined

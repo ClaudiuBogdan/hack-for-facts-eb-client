@@ -385,10 +385,16 @@ describe('MapFilter', () => {
       expect(screen.getByTestId('filter-list-Economic Classification')).toBeInTheDocument()
     })
 
-    it('renders entity type filter section', () => {
+    it('hides the DEPRECATED entity type section unless a legacy URL carries values', () => {
       render(<MapFilter />)
 
-      expect(screen.getByTestId('filter-list-Entity Type')).toBeInTheDocument()
+      expect(screen.queryByTestId('filter-list-Entity Type')).not.toBeInTheDocument()
+    })
+
+    it('renders the tags filter section', () => {
+      render(<MapFilter />)
+
+      expect(screen.getByTestId('filter-list-Tags')).toBeInTheDocument()
     })
 
     it('renders budget sector filter section', () => {

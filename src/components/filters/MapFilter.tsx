@@ -1,6 +1,6 @@
 import { FilterListContainer } from "./base-filter/FilterListContainer";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { ArrowUpDown, Calendar, ChartBar, Divide, Globe, Map, SlidersHorizontal, Tags, XCircle, Building2, HandCoins, Building, MapPin, MapPinned, TableIcon, BarChart2Icon, MapIcon, MinusCircle } from "lucide-react";
+import { ArrowUpDown, Calendar, ChartBar, Divide, Globe, Map, Shapes, SlidersHorizontal, Tags, XCircle, Building2, HandCoins, Building, MapPin, MapPinned, TableIcon, BarChart2Icon, MapIcon, MinusCircle } from "lucide-react";
 import { Button } from "../ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import { Badge } from "../ui/badge";
@@ -12,6 +12,7 @@ import { useMapFilter } from "@/hooks/useMapFilter";
 import { useEffect, useMemo, useState } from "react";
 import { ViewTypeRadioGroup } from "./ViewTypeRadioGroup";
 import { EntityTypeList } from './entity-type-filter/EntityTypeList';
+import { TagList, TagExcludeList } from './tag-filter';
 import { BudgetSectorList } from './budget-sector-filter/BudgetSectorFilter';
 import { FundingSourceList } from './funding-source-filter/FundingSourceFilter';
 import { PrefixFilter, FilterPrefixContainer } from './prefix-filter';
@@ -53,6 +54,8 @@ export function MapFilter() {
         setSelectedEntityOptions,
         setSelectedCountyOptions,
         setSelectedEntityTypeOptions,
+        setSelectedTagOptions,
+        entityTagLabelsStore,
         setSelectedBudgetSectorOptions,
         setSelectedFundingSourceOptions,
         setFunctionalPrefixes,
@@ -75,6 +78,7 @@ export function MapFilter() {
         setExcludeSelectedCountyOptions,
         excludeSelectedEntityTypeOptions,
         setExcludeSelectedEntityTypeOptions,
+        setExcludeSelectedTagOptions,
         excludeSelectedFunctionalClassificationOptions,
         setExcludeSelectedFunctionalClassificationOptions,
         excludeSelectedEconomicClassificationOptions,
@@ -129,6 +133,7 @@ export function MapFilter() {
         (exclude.budget_sector_ids?.length ?? 0) +
         (exclude.funding_source_ids?.length ?? 0) +
         (exclude.entity_types?.length ?? 0) +
+        (exclude.tags?.length ?? 0) +
         (exclude.functional_prefixes?.length ?? 0) +
         (exclude.economic_prefixes?.length ?? 0);
 
@@ -141,6 +146,7 @@ export function MapFilter() {
         (mapState.filters.entity_cuis?.length ?? 0) +
         (mapState.filters.main_creditor_cui ? 1 : 0) +
         (mapState.filters.entity_types?.length ?? 0) +
+        (mapState.filters.tags?.length ?? 0) +
         (mapState.filters.budget_sector_ids?.length ?? 0) +
         (mapState.filters.funding_source_ids?.length ?? 0) +
         (mapState.filters.program_codes?.length ?? 0) +
@@ -343,12 +349,23 @@ export function MapFilter() {
                     mapPrefixToLabel={getEconomicPrefixLabel}
                 />
 
+                {/* DEPRECATED legacy coarse taxonomy: only shown when a saved
+                    URL still carries values, so they stay visible and clearable. */}
+                {(mapState.filters.entity_types?.length ?? 0) > 0 && (
+                    <FilterListContainer
+                        title={t`Entity Type`}
+                        icon={<Building className="w-4 h-4" aria-hidden="true" />}
+                        listComponent={EntityTypeList}
+                        selected={(mapState.filters.entity_types ?? []).map(id => ({ id, label: id }))}
+                        setSelected={setSelectedEntityTypeOptions}
+                    />
+                )}
                 <FilterListContainer
-                    title={t`Entity Type`}
-                    icon={<Building className="w-4 h-4" aria-hidden="true" />}
-                    listComponent={EntityTypeList}
-                    selected={(mapState.filters.entity_types ?? []).map(id => ({ id, label: id }))}
-                    setSelected={setSelectedEntityTypeOptions}
+                    title={t`Tags`}
+                    icon={<Shapes className="w-4 h-4" aria-hidden="true" />}
+                    listComponent={TagList}
+                    selected={(mapState.filters.tags ?? []).map(id => ({ id, label: entityTagLabelsStore.map(id) }))}
+                    setSelected={setSelectedTagOptions}
                 />
 
                 <FilterListContainer
@@ -523,12 +540,21 @@ export function MapFilter() {
                                         mapPrefixToLabel={getEconomicPrefixLabel}
                                     />
 
+                                    {excludeSelectedEntityTypeOptions.length > 0 && (
+                                        <FilterListContainer
+                                            title={`${t`Exclude`} ${t`Entity Type`}`}
+                                            icon={<Building className="w-4 h-4 text-destructive" aria-hidden="true" />}
+                                            listComponent={EntityTypeList}
+                                            selected={excludeSelectedEntityTypeOptions}
+                                            setSelected={setExcludeSelectedEntityTypeOptions}
+                                        />
+                                    )}
                                     <FilterListContainer
-                                        title={`${t`Exclude`} ${t`Entity Type`}`}
-                                        icon={<Building className="w-4 h-4 text-destructive" aria-hidden="true" />}
-                                        listComponent={EntityTypeList}
-                                        selected={excludeSelectedEntityTypeOptions}
-                                        setSelected={setExcludeSelectedEntityTypeOptions}
+                                        title={`${t`Exclude`} ${t`Tags`}`}
+                                        icon={<Shapes className="w-4 h-4 text-destructive" aria-hidden="true" />}
+                                        listComponent={TagExcludeList}
+                                        selected={(exclude.tags ?? []).map(id => ({ id, label: entityTagLabelsStore.map(id) }))}
+                                        setSelected={setExcludeSelectedTagOptions}
                                     />
 
                                     <FilterListContainer

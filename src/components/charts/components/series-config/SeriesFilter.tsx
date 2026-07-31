@@ -13,6 +13,7 @@ import {
   Tags,
   MinusCircle,
   TrendingUp,
+  Shapes,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../ui/card";
 import { Button } from "../../../ui/button";
@@ -29,6 +30,7 @@ import { EconomicClassificationList } from "../../../filters/economic-classifica
 import { UatList } from "../../../filters/uat-filter";
 import { CountyList } from "../../../filters/county-filter/CountyList";
 import { EntityTypeList } from "../../../filters/entity-type-filter/EntityTypeList";
+import { TagList, TagExcludeList } from "../../../filters/tag-filter";
 import { AmountRangeFilter } from "../../../filters/amount-range-filter";
 import { EntityList } from "../../../filters/entity-filter";
 import { useChartStore } from "../../hooks/useChartStore";
@@ -46,6 +48,7 @@ import {
   useFunctionalClassificationLabel,
   useUatLabel,
   useEntityTypeLabel,
+  useEntityTagLabel,
   useAccountCategoryLabel,
 } from "@/hooks/filters/useFilterLabels";
 import { LabelStore } from "@/hooks/filters/interfaces";
@@ -220,6 +223,7 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
   const budgetSectorLabelsStore = useBudgetSectorLabel(series?.filter.budget_sector_ids ?? []);
   const fundingSourceLabelsStore = useFundingSourceLabel(series?.filter.funding_source_ids ?? []);
   const entityTypeLabelsStore = useEntityTypeLabel();
+  const entityTagLabelsStore = useEntityTagLabel();
   const accountCategoryLabelsStore = useAccountCategoryLabel();
 
   const exclude = (series?.filter?.exclude ?? {}) as NonNullable<AnalyticsFilterType["exclude"]>;
@@ -321,6 +325,10 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
   const selectedEntityTypeOptions: OptionItem[] =
     filter.entity_types?.map((id: string) => ({ id, label: entityTypeLabelsStore.map(id) })) ?? [];
   const setSelectedEntityTypeOptions = createListUpdater("entity_types", entityTypeLabelsStore);
+
+  const selectedTagOptions: OptionItem[] =
+    filter.tags?.map((id: string) => ({ id, label: entityTagLabelsStore.map(id) })) ?? [];
+  const setSelectedTagOptions = createListUpdater("tags", entityTagLabelsStore);
 
   const selectedCountyOptions: OptionItem<string>[] =
     filter.county_codes?.map((code: string) => ({ id: code, label: String(code) })) ?? [];
@@ -531,6 +539,10 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
     exclude.entity_types?.map((id: string) => ({ id, label: entityTypeLabelsStore.map(id) })) ?? [];
   const setExcludeSelectedEntityTypeOptions = createExcludeListUpdater("entity_types", entityTypeLabelsStore);
 
+  const excludeSelectedTagOptions: OptionItem[] =
+    exclude.tags?.map((id: string) => ({ id, label: entityTagLabelsStore.map(id) })) ?? [];
+  const setExcludeSelectedTagOptions = createExcludeListUpdater("tags", entityTagLabelsStore);
+
   const excludeSelectedCountyOptions: OptionItem<string>[] =
     exclude.county_codes?.map((code: string) => ({ id: code, label: String(code) })) ?? [];
   const setExcludeSelectedCountyOptions = createExcludeListUpdater("county_codes");
@@ -593,6 +605,7 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
     (filter.funding_source_ids?.length ?? 0) +
     (!isCommitmentsSeries && filter.account_category ? 1 : 0) +
     (filter.entity_types?.length ?? 0) +
+    (!isCommitmentsSeries ? (filter.tags?.length ?? 0) : 0) +
     (filter.aggregate_min_amount != null ? 1 : 0) +
     (filter.aggregate_max_amount != null ? 1 : 0) +
     (filter.item_min_amount != null ? 1 : 0) +
@@ -615,6 +628,7 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
     (exclude.budget_sector_ids?.length ?? 0) +
     (exclude.funding_source_ids?.length ?? 0) +
     (exclude.entity_types?.length ?? 0) +
+    (!isCommitmentsSeries ? (exclude.tags?.length ?? 0) : 0) +
     (exclude.functional_prefixes?.length ?? 0) +
     (exclude.economic_prefixes?.length ?? 0);
 
@@ -847,13 +861,27 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
           selected={selectedCountyOptions}
           setSelected={setSelectedCountyOptions}
         />
-        <FilterListContainer
-          title={t`Entity Type`}
-          icon={<Building2 className="w-4 h-4" aria-hidden="true" />}
-          listComponent={EntityTypeList}
-          selected={selectedEntityTypeOptions}
-          setSelected={setSelectedEntityTypeOptions}
-        />
+        {/* DEPRECATED legacy coarse taxonomy: only shown when a saved chart
+            still carries values, so they stay visible and clearable. */}
+        {selectedEntityTypeOptions.length > 0 && (
+          <FilterListContainer
+            title={t`Entity Type`}
+            icon={<Building2 className="w-4 h-4" aria-hidden="true" />}
+            listComponent={EntityTypeList}
+            selected={selectedEntityTypeOptions}
+            setSelected={setSelectedEntityTypeOptions}
+          />
+        )}
+        {/* Commitments series filter has no tags field on the server. */}
+        {!isCommitmentsSeries && (
+          <FilterListContainer
+            title={t`Tags`}
+            icon={<Shapes className="w-4 h-4" aria-hidden="true" />}
+            listComponent={TagList}
+            selected={selectedTagOptions}
+            setSelected={setSelectedTagOptions}
+          />
+        )}
         <FilterListContainer
           title={t`Functional Classification`}
           icon={<ChartBar className="w-4 h-4" aria-hidden="true" />}
@@ -1045,14 +1073,25 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
                     setSelected={setExcludeSelectedCountyOptions}
                   />
 
-                  {/* Entity Type Exclude */}
-                  <FilterListContainer
-                    title={`${t`Exclude`} ${t`Entity Type`}`}
-                    icon={<Building2 className="w-4 h-4 text-destructive" aria-hidden="true" />}
-                    listComponent={EntityTypeList}
-                    selected={excludeSelectedEntityTypeOptions}
-                    setSelected={setExcludeSelectedEntityTypeOptions}
-                  />
+                  {/* Entity Type Exclude — DEPRECATED, legacy visibility only */}
+                  {excludeSelectedEntityTypeOptions.length > 0 && (
+                    <FilterListContainer
+                      title={`${t`Exclude`} ${t`Entity Type`}`}
+                      icon={<Building2 className="w-4 h-4 text-destructive" aria-hidden="true" />}
+                      listComponent={EntityTypeList}
+                      selected={excludeSelectedEntityTypeOptions}
+                      setSelected={setExcludeSelectedEntityTypeOptions}
+                    />
+                  )}
+                  {!isCommitmentsSeries && (
+                    <FilterListContainer
+                      title={`${t`Exclude`} ${t`Tags`}`}
+                      icon={<Shapes className="w-4 h-4 text-destructive" aria-hidden="true" />}
+                      listComponent={TagExcludeList}
+                      selected={excludeSelectedTagOptions}
+                      setSelected={setExcludeSelectedTagOptions}
+                    />
+                  )}
 
                   {/* Functional Classification Exclude */}
                   <FilterListContainer

@@ -68,6 +68,7 @@ vi.mock('@/hooks/filters/useFilterLabels', () => ({
   useBudgetSectorLabel: () => ({ map: (id: string) => `BS ${id}`, add: vi.fn() }),
   useFundingSourceLabel: () => ({ map: (id: string) => `FS ${id}`, add: vi.fn() }),
   useEntityTypeLabel: () => ({ map: (id: string) => `ET ${id}`, add: vi.fn() }),
+  useEntityTagLabel: () => ({ map: (id: string) => `Tag ${id}`, add: vi.fn() }),
   useAccountCategoryLabel: () => ({ map: (id: string) => id === 'ch' ? 'Expenses' : 'Revenues', add: vi.fn() }),
 }))
 

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { defaultMapFilters, MapStateSchema, MapUrlState } from '@/schemas/map-filters';
-import { useEconomicClassificationLabel, useFunctionalClassificationLabel, useAccountCategoryLabel, useUatLabel, useEntityLabel } from '@/hooks/filters/useFilterLabels';
+import { useEconomicClassificationLabel, useFunctionalClassificationLabel, useAccountCategoryLabel, useUatLabel, useEntityLabel, useEntityTagLabel } from '@/hooks/filters/useFilterLabels';
 import { OptionItem } from '@/components/filters/base-filter/interfaces';
 import { AnalyticsFilterType } from '@/schemas/charts';
 import { LabelStore } from '@/hooks/filters/interfaces';
@@ -18,6 +18,7 @@ export function useMapFilter() {
     const accountCategoryLabelsStore = useAccountCategoryLabel();
     const uatLabelsStore = useUatLabel((mapState.filters.uat_ids ?? []).map(String));
     const entityLabelsStore = useEntityLabel((mapState.filters.entity_cuis ?? []) as string[]);
+    const entityTagLabelsStore = useEntityTagLabel();
 
     const setFilters = (filters: Partial<AnalyticsFilterType>) => {
         navigate({
@@ -57,6 +58,7 @@ export function useMapFilter() {
     const setSelectedEconomicClassificationOptions = createListUpdater('economic_codes', economicClassificationLabelsStore);
     const setSelectedUatOptions = createListUpdater('uat_ids', uatLabelsStore);
     const setSelectedEntityOptions = createListUpdater('entity_cuis', entityLabelsStore);
+    const setSelectedTagOptions = createListUpdater('tags', entityTagLabelsStore);
     const setSelectedCountyOptions = createListUpdater('county_codes');
     const setSelectedEntityTypeOptions = createListUpdater('entity_types');
     const setSelectedBudgetSectorOptions = createListUpdater('budget_sector_ids');
@@ -138,6 +140,7 @@ export function useMapFilter() {
     const setExcludeSelectedUatOptions = createExcludeListUpdater('uat_ids', excludeUatLabelsStore);
     const setExcludeSelectedCountyOptions = createExcludeListUpdater('county_codes');
     const setExcludeSelectedEntityTypeOptions = createExcludeListUpdater('entity_types');
+    const setExcludeSelectedTagOptions = createExcludeListUpdater('tags', entityTagLabelsStore);
     const setExcludeSelectedFunctionalClassificationOptions = createExcludeListUpdater('functional_codes', excludeFunctionalClassificationLabelsStore);
     const setExcludeSelectedEconomicClassificationOptions = createExcludeListUpdater('economic_codes', excludeEconomicClassificationLabelsStore);
     const setExcludeSelectedBudgetSectorOptions = createExcludeListUpdater('budget_sector_ids');
@@ -229,6 +232,8 @@ export function useMapFilter() {
         setSelectedEntityOptions,
         setSelectedCountyOptions,
         setSelectedEntityTypeOptions,
+        setSelectedTagOptions,
+        entityTagLabelsStore,
         setSelectedBudgetSectorOptions,
         setSelectedFundingSourceOptions,
         setFunctionalPrefixes,
@@ -254,6 +259,7 @@ export function useMapFilter() {
         setExcludeSelectedCountyOptions,
         excludeSelectedEntityTypeOptions,
         setExcludeSelectedEntityTypeOptions,
+        setExcludeSelectedTagOptions,
         excludeSelectedFunctionalClassificationOptions,
         setExcludeSelectedFunctionalClassificationOptions,
         excludeSelectedEconomicClassificationOptions,
