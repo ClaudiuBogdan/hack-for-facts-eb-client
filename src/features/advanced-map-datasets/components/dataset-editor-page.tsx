@@ -1090,6 +1090,37 @@ export function AdvancedMapDatasetEditorPage({
     );
   }
 
+  // The reference rows come from a fetched GeoJSON asset, so a failed request
+  // has to be recoverable — otherwise both modes wait forever on data that is
+  // never coming.
+  if (uatDirectoryQuery.error) {
+    return (
+      <div className="container mx-auto max-w-md py-16">
+        <Card className="border-destructive/30">
+          <CardHeader className="items-center space-y-3 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+              <Database className="h-5 w-5 text-destructive" />
+            </div>
+            <CardTitle className="text-base font-semibold">{t`Failed to load the UAT reference list`}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {uatDirectoryQuery.error.message}
+            </p>
+          </CardHeader>
+          <CardContent>
+            <Button
+              className="w-full"
+              onClick={() => {
+                void uatDirectoryQuery.refetch();
+              }}
+            >
+              {t`Try again`}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (mode === 'edit' && (!uatDirectoryQuery.data || !isInitialStateResolved)) {
     return (
       <div className="container mx-auto py-12">

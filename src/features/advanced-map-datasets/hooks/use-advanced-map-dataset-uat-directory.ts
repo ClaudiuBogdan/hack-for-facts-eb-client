@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { AdvancedMapDatasetReferenceRow } from '@/features/advanced-map-datasets/types';
-import uatGeoJson from '@/assets/geojson/uat.json';
+import { geoJsonQueryOptions } from '@/hooks/useGeoJson';
 
 type UatGeoJsonFeature = {
   properties?: {
@@ -31,8 +31,9 @@ export interface AdvancedMapDatasetUatDirectory {
   bySirutaCode: Map<string, AdvancedMapDatasetReferenceRow>;
 }
 
-export async function getAdvancedMapDatasetUatDirectory(): Promise<AdvancedMapDatasetUatDirectory> {
-  const collection = uatGeoJson as UatGeoJsonCollection;
+export function buildAdvancedMapDatasetUatDirectory(
+  collection: UatGeoJsonCollection,
+): AdvancedMapDatasetUatDirectory {
   const features = Array.isArray(collection.features) ? collection.features : [];
 
   const rows: AdvancedMapDatasetReferenceRow[] = [];
@@ -77,10 +78,21 @@ export async function getAdvancedMapDatasetUatDirectory(): Promise<AdvancedMapDa
 }
 
 export function useAdvancedMapDatasetUatDirectoryQuery() {
+  const queryClient = useQueryClient();
+
   return useQuery<AdvancedMapDatasetUatDirectory, Error>({
     queryKey: ['advanced-map-datasets', 'uat-directory'],
-    queryFn: async () => getAdvancedMapDatasetUatDirectory(),
+    // Goes through the shared GeoJSON query rather than its own fetch: the
+    // editor renders a map preview off the same UAT file, and a second cache
+    // entry would download and parse 3 MB twice.
+    queryFn: async () => {
+      const collection = await queryClient.ensureQueryData(geoJsonQueryOptions('UAT'));
+      return buildAdvancedMapDatasetUatDirectory(collection as UatGeoJsonCollection);
+    },
     staleTime: Infinity,
     gcTime: Infinity,
+    // The GeoJSON asset resolves to a root-relative URL, which only fetches in
+    // the browser.
+    enabled: typeof window !== 'undefined',
   });
 }

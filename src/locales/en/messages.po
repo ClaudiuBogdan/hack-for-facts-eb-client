@@ -642,15 +642,15 @@ msgstr "{staleCount} surse incarcate dar vechi"
 msgid "{totalMemberCount} UATs"
 msgstr "{totalMemberCount} UATs"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1417
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1448
 msgid "{totalRowCount} UATs · {editedRowCount} edited"
 msgstr "{totalRowCount} UATs · {editedRowCount} edited"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1416
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1447
 msgid "{visibleRowCount} of {totalRowCount} · {editedRowCount} edited"
 msgstr "{visibleRowCount} of {totalRowCount} · {editedRowCount} edited"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1590
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1621
 msgid "{visibleRowCount} visible · {totalRowCount} total · {editedRowCount} edited"
 msgstr "{visibleRowCount} visible · {totalRowCount} total · {editedRowCount} edited"
 
@@ -1790,7 +1790,7 @@ msgstr "All changes saved"
 msgid "All Classifications"
 msgstr "All Classifications"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1443
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1474
 msgid "All counties"
 msgstr "All counties"
 
@@ -2943,7 +2943,7 @@ msgstr "Budget submitted for {0}"
 msgid "Budgetary Academy"
 msgstr "Budgetary Academy"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1191
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1222
 msgid "Build a custom dataset for use in the map editor."
 msgstr "Build a custom dataset for use in the map editor."
 
@@ -3753,7 +3753,7 @@ msgstr "Challenge Question"
 msgid "Challenges"
 msgstr "Challenges"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1295
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1326
 msgid "Changes update every map and snapshot that references it. Create a copy first if you need to branch."
 msgstr "Changes update every map and snapshot that references it. Create a copy first if you need to branch."
 
@@ -4952,7 +4952,7 @@ msgstr "Copy config"
 msgid "Copy current page URL to clipboard"
 msgstr "Copy current page URL to clipboard"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1499
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1530
 msgid "Copy data"
 msgstr "Copy data"
 
@@ -4977,7 +4977,7 @@ msgstr "Copy failed. You can still select and copy the link manually."
 msgid "Copy link"
 msgstr "Copy link"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1283
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1314
 msgid "Copy link issue"
 msgstr "Copy link issue"
 
@@ -5190,7 +5190,7 @@ msgstr "Counts describe the records matching these filters, not the platform's t
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:229
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3059
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:522
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1511
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1542
 #: src/features/private-companies/components/search/company-filter-sheet.tsx:95
 #: src/features/procurement/components/procurement-hub-filter-sheet.tsx:458
 #: src/features/procurement/components/procurement-hub-filter-sheet.tsx:486
@@ -5431,14 +5431,14 @@ msgstr "Create alert from this series"
 msgid "Create chart"
 msgstr "Create chart"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1243
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1274
 #: src/features/advanced-map-datasets/components/dataset-list-page.tsx:184
 msgid "Create copy"
 msgstr "Create copy"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1173
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1186
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1268
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1204
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1217
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1299
 #: src/features/advanced-map-datasets/components/dataset-list-page.tsx:462
 msgid "Create data series"
 msgstr "Create data series"
@@ -5527,7 +5527,7 @@ msgstr "cu ultima etapă în această zi"
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:338
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3079
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3165
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1509
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1540
 #: src/features/ngos/components/ngo-profile-page.tsx:318
 #: src/features/private-companies/components/layout/private-company-header.tsx:23
 #: src/features/private-companies/components/search/company-sort-select.tsx:21
@@ -6434,7 +6434,7 @@ msgstr "Deschis din"
 msgid "Descoperire servicii sociale"
 msgstr "Descoperire servicii sociale"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1318
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1349
 msgid "Describe the dataset and control how it’s shared."
 msgstr "Describe the dataset and control how it’s shared."
 
@@ -6453,7 +6453,7 @@ msgstr "Describe what this map shows..."
 #: src/components/alerts/components/AlertEditorView.tsx:148
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1146
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:402
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1365
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1396
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:171
 msgid "Description"
 msgstr "Description"
@@ -6492,7 +6492,7 @@ msgid "Detailed warnings generated for map-series fetch and calculations."
 msgstr "Detailed warnings generated for map-series fetch and calculations."
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1541
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1316
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1347
 #: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:235
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:189
 msgid "Details"
@@ -7117,7 +7117,7 @@ msgstr "Edit bins preset"
 msgid "Edit Bins Preset"
 msgstr "Edit Bins Preset"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1186
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1217
 msgid "Edit data series"
 msgstr "Edit data series"
 
@@ -7151,7 +7151,7 @@ msgstr "Edit Value Filter Rule"
 msgid "Edit value filter rule {0}"
 msgstr "Edit value filter rule {0}"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1456
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1487
 msgid "Edited only"
 msgstr "Edited only"
 
@@ -7924,11 +7924,11 @@ msgstr "Explorer bugetar"
 msgid "Explorer de rezultate pe competitor si geografie, cu provenienta pentru fiecare cifra afisata."
 msgstr "Explorer de rezultate pe competitor si geografie, cu provenienta pentru fiecare cifra afisata."
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1227
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1258
 msgid "Export"
 msgstr "Export"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1234
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1265
 msgid "Export as CSV"
 msgstr "Export as CSV"
 
@@ -7940,7 +7940,7 @@ msgstr "Export as Image"
 msgid "Export as image or share with a link"
 msgstr "Export as image or share with a link"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1238
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1269
 msgid "Export as JSON"
 msgstr "Export as JSON"
 
@@ -8145,6 +8145,10 @@ msgstr "Failed to load map"
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:303
 msgid "Failed to load maps"
 msgstr "Failed to load maps"
+
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1104
+msgid "Failed to load the UAT reference list"
+msgstr "Failed to load the UAT reference list"
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3239
 msgid "Failed to load UAT profile details."
@@ -8408,7 +8412,7 @@ msgstr "Fill in the city hall's contact details and send the request to organize
 msgid "Filter"
 msgstr "Filter"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1440
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1471
 msgid "Filter by county"
 msgstr "Filter by county"
 
@@ -9410,14 +9414,12 @@ msgstr "Health (CASS)"
 
 #. placeholder {0}: typeof window !== "undefined" ? window.location.href : "N/A"
 #: src/components/footer/support-menu.tsx:36
-msgid ""
-"Hello,\n"
+msgid "Hello,\n"
 "\n"
 "I need help with: \n"
 "\n"
 "Page: {0}"
-msgstr ""
-"Hello,\n"
+msgstr "Hello,\n"
 "\n"
 "I need help with: \n"
 "\n"
@@ -9717,7 +9719,7 @@ msgstr "Impact fiscal neclasificat."
 msgid "Impact fiscal și sancțiuni"
 msgstr "Impact fiscal și sancțiuni"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1215
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1246
 msgid "Import"
 msgstr "Import"
 
@@ -11833,7 +11835,7 @@ msgstr "Manual"
 #: src/components/ui/shortcuts.tsx:44
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:1228
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3727
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1411
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1442
 #: src/routes/index.tsx:74
 msgid "Map"
 msgstr "Map"
@@ -12013,7 +12015,7 @@ msgstr "Mark this step as done to save your progress."
 msgid "Markdown"
 msgstr "Markdown"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1374
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1405
 msgid "Markdown notes"
 msgstr "Markdown notes"
 
@@ -12633,7 +12635,7 @@ msgstr "N/A"
 
 #: src/components/maps/HeatmapDataTable.tsx:120
 #: src/components/maps/HeatmapDataTable.tsx:481
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1510
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1541
 #: src/routes/certificates.$id.tsx:52
 msgid "Name"
 msgstr "Name"
@@ -15175,7 +15177,7 @@ msgid "Paused"
 msgstr "Paused"
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:525
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1513
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1544
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:287
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:193
 msgid "Payload"
@@ -15697,7 +15699,7 @@ msgstr "Prepared email"
 msgid "Preparing data series draft..."
 msgstr "Preparing data series draft..."
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1096
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1127
 msgid "Preparing data series editor..."
 msgstr "Preparing data series editor..."
 
@@ -15871,7 +15873,7 @@ msgstr "Privacy Policy"
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:541
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:110
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:101
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1358
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1389
 #: src/features/advanced-map-datasets/components/dataset-list-page.tsx:93
 msgid "Private"
 msgstr "Private"
@@ -16127,7 +16129,7 @@ msgstr "Provizoriu"
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:541
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:108
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:84
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1360
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1391
 #: src/features/advanced-map-datasets/components/dataset-list-page.tsx:78
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:164
 msgid "Public"
@@ -16700,8 +16702,8 @@ msgstr "Records with this value"
 msgid "Rectification History (2020-2024)"
 msgstr "Rectification History (2020-2024)"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1483
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1484
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1514
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1515
 msgid "Redo"
 msgstr "Redo"
 
@@ -17516,8 +17518,8 @@ msgstr "Sari la textul ședinței"
 msgid "Save"
 msgstr "Save"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1174
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1270
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1205
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1301
 msgid "Save changes"
 msgstr "Save changes"
 
@@ -17554,8 +17556,8 @@ msgstr "Saved only in this browser. Not synced to your account."
 
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:139
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3927
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1171
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1265
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1202
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1296
 #: src/routes/alerts/$alertId/index.lazy.tsx:124
 msgid "Saving…"
 msgstr "Saving…"
@@ -17775,7 +17777,7 @@ msgstr "Search by name, CUI, or SIRUTA"
 msgid "Search by title, number, CUI or party name"
 msgstr "Search by title, number, CUI or party name"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1434
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1465
 msgid "Search by UAT name, CUI, or SIRUTA"
 msgstr "Search by UAT name, CUI, or SIRUTA"
 
@@ -18852,7 +18854,7 @@ msgstr "sincronizare suspendată"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:48
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:199
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:523
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1508
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1539
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:229
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:191
 #: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:142
@@ -18916,7 +18918,7 @@ msgstr "Snapshot note"
 msgid "Snapshot saved"
 msgstr "Snapshot saved"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1256
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1287
 msgid "Snapshots"
 msgstr "Snapshots"
 
@@ -19210,7 +19212,7 @@ msgstr "Start at 3.5, then lower gradually if you need more candidates."
 msgid "Start by entering your monthly Gross (Brut) income."
 msgstr "Start by entering your monthly Gross (Brut) income."
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1390
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1421
 msgid "Start from the UAT list, then paste, import, or edit values manually."
 msgstr "Start from the UAT list, then paste, import, or edit values manually."
 
@@ -19864,7 +19866,7 @@ msgstr "Tabelul complet al randurilor brute ramane in adapterul API. In MVP afis
 #: src/components/filters/MapFilter.tsx:219
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:1229
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3728
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1405
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1436
 msgid "Table"
 msgstr "Table"
 
@@ -20403,7 +20405,7 @@ msgstr "This data build carries no quality check for {grain}, so {measure} answe
 msgid "This dataset does not currently expose any persisted rows."
 msgstr "This dataset does not currently expose any persisted rows."
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1293
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1324
 msgid "This dataset is live"
 msgstr "This dataset is live"
 
@@ -20597,7 +20599,7 @@ msgstr "Tip serviciu"
 msgid "Tip: Copy/Cut/Paste with ⌘/Ctrl+C, X, V. Duplicate with ⌘/Ctrl+D."
 msgstr "Tip: Copy/Cut/Paste with ⌘/Ctrl+C, X, V. Duplicate with ⌘/Ctrl+D."
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1593
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1624
 msgid "Tip: paste tabular SIRUTA + value to update many rows at once."
 msgstr "Tip: paste tabular SIRUTA + value to update many rows at once."
 
@@ -20615,7 +20617,7 @@ msgstr "Tipuri de înregistrări"
 
 #: src/components/alerts/components/AlertEditorView.tsx:136
 #: src/components/charts/components/views/AnnotationConfigView.tsx:82
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1322
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1353
 #: src/features/procurement/lib/export.ts:38
 msgid "Title"
 msgstr "Title"
@@ -21081,6 +21083,7 @@ msgstr "Try a different search term or sorting."
 #: src/components/errors/ErrorBoundary.tsx:68
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:199
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:489
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1116
 #: src/features/campaigns/buget/components/interactive/campaign-challenge-review-state.tsx:253
 #: src/features/challenges/components/analysis/challenge-entity-subordinates-section.tsx:247
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:304
@@ -21302,8 +21305,8 @@ msgstr "Understanding the consolidated general budget spending"
 msgid "Undetermined"
 msgstr "Undetermined"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1468
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1469
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1499
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1500
 msgid "Undo"
 msgstr "Undo"
 
@@ -21345,8 +21348,8 @@ msgstr "Unique code"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1406
 #: src/components/entities/views/ins-stats-view.tsx:1180
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:383
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1331
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1514
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1362
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1545
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:156
 msgid "Unit"
 msgstr "Unit"
@@ -21454,7 +21457,7 @@ msgstr "Unless it is still referenced by existing maps, it cannot be recovered."
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:109
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:93
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1359
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1390
 #: src/features/advanced-map-datasets/components/dataset-list-page.tsx:86
 msgid "Unlisted"
 msgstr "Unlisted"
@@ -21481,7 +21484,7 @@ msgid "Unreceived commitments"
 msgstr "Unreceived commitments"
 
 #: src/components/alerts/components/UnsavedChangesDialog.tsx:28
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1199
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1230
 #: src/features/advanced-map-datasets/components/dataset-unsaved-changes-dialog.tsx:33
 #: src/routes/alerts/$alertId/index.lazy.tsx:127
 msgid "Unsaved changes"
@@ -21558,7 +21561,7 @@ msgstr "Update Available"
 msgid "Update Data"
 msgstr "Update Data"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1192
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1223
 msgid "Update metadata and values for this custom dataset."
 msgstr "Update metadata and values for this custom dataset."
 
@@ -21797,7 +21800,7 @@ msgstr "Validat"
 msgid "Validation errors"
 msgstr "Validation errors"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1305
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1336
 msgid "Validation issues"
 msgstr "Validation issues"
 
@@ -21998,8 +22001,8 @@ msgstr "Valorile suspecte ×1000 sunt păstrate ca puncte de acoperire, dar nu i
 #: src/components/maps/charts/UatTopNBarChart.tsx:111
 #: src/components/maps/charts/UatTopNBarChart.tsx:113
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:524
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1512
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1559
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1543
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1590
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:238
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:267
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:192
@@ -22060,7 +22063,7 @@ msgstr "Value source"
 
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:509
 #: src/features/advanced-map-datasets/components/dataset-editor-map-preview.tsx:32
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1388
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1419
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:183
 msgid "Values"
 msgstr "Values"
@@ -22402,7 +22405,7 @@ msgid "Viewing:"
 msgstr "Viewing:"
 
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:444
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1340
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1371
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:160
 msgid "Visibility"
 msgstr "Visibility"

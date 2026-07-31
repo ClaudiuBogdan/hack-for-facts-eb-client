@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import regionGeoJson from './region.json'
+import regionGeoJson from '../../public/geojson/region-2026-07-25.json'
 
 const EXPECTED_REGION_NAMES = [
   'Nord-Est',

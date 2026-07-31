@@ -1,17 +1,5 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/assets/geojson/uat.json?url', () => ({
-  default: '/assets/uat.hash.json',
-}));
-
-vi.mock('@/assets/geojson/judete.json?url', () => ({
-  default: '/assets/judete.hash.json',
-}));
-
-vi.mock('@/assets/geojson/region.json?url', () => ({
-  default: '/assets/region.hash.json',
-}));
-
 describe('useGeoJson query helpers', () => {
   const originalFetch = global.fetch;
   const fetchMock = vi.fn();
@@ -25,12 +13,12 @@ describe('useGeoJson query helpers', () => {
     global.fetch = originalFetch;
   });
 
-  it('resolves hashed asset URLs per map view type', async () => {
+  it('resolves public asset URLs per map view type', async () => {
     const { resolveGeoJsonAssetUrl } = await import('./useGeoJson');
 
-    expect(resolveGeoJsonAssetUrl('UAT')).toBe('/assets/uat.hash.json');
-    expect(resolveGeoJsonAssetUrl('County')).toBe('/assets/judete.hash.json');
-    expect(resolveGeoJsonAssetUrl('Region')).toBe('/assets/region.hash.json');
+    expect(resolveGeoJsonAssetUrl('UAT')).toBe('/geojson/uat-2026-03-09.json');
+    expect(resolveGeoJsonAssetUrl('County')).toBe('/geojson/judete-2026-03-09.json');
+    expect(resolveGeoJsonAssetUrl('Region')).toBe('/geojson/region-2026-07-25.json');
   });
 
   it('includes the resolved asset URL in the query key', async () => {
@@ -39,17 +27,17 @@ describe('useGeoJson query helpers', () => {
     expect(geoJsonQueryOptions('UAT').queryKey).toEqual([
       'geoJsonData',
       'UAT',
-      '/assets/uat.hash.json',
+      '/geojson/uat-2026-03-09.json',
     ]);
     expect(geoJsonQueryOptions('County').queryKey).toEqual([
       'geoJsonData',
       'County',
-      '/assets/judete.hash.json',
+      '/geojson/judete-2026-03-09.json',
     ]);
     expect(geoJsonQueryOptions('Region').queryKey).toEqual([
       'geoJsonData',
       'Region',
-      '/assets/region.hash.json',
+      '/geojson/region-2026-07-25.json',
     ]);
   });
 
@@ -63,13 +51,13 @@ describe('useGeoJson query helpers', () => {
     });
 
     const { fetchGeoJsonData } = await import('./useGeoJson');
-    const data = await fetchGeoJsonData('/assets/uat.hash.json');
+    const data = await fetchGeoJsonData('/geojson/uat-2026-03-09.json');
 
     expect(data).toEqual({
       type: 'FeatureCollection',
       features: [],
     });
-    expect(fetchMock).toHaveBeenCalledWith('/assets/uat.hash.json');
+    expect(fetchMock).toHaveBeenCalledWith('/geojson/uat-2026-03-09.json');
     expect(fetchMock.mock.calls[0]?.[1]).toBeUndefined();
   });
 });
