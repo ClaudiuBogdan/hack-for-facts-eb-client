@@ -12,7 +12,7 @@
  *   ngo                 /ong-uri/$cui            (internal, cuis[0])
  *   member              /parlament/membri/$id    (internal, best-effort docId)
  *   bill                /parlament/proiecte/$id  (internal, best-effort docId)
- *   legal_act           /legislatie/acte/$id     (internal, best-effort docId)
+ *   legal_act           url                      (external, new tab)
  *   mo_act              url                      (external, new tab)
  *   pnrr_project        url                      (external, new tab)
  *   pnrr_entity         url                      (external, new tab)
@@ -63,7 +63,6 @@ const CUI_SPINE_ROUTES: Readonly<Record<string, RouteBuilder>> = {
 const DOC_ID_ROUTES: Readonly<Record<string, RouteBuilder>> = {
   member: (id) => `/parlament/membri/${encodeURIComponent(id)}`,
   bill: (id) => `/parlament/proiecte/${encodeURIComponent(id)}`,
-  legal_act: (id) => `/legislatie/acte/${encodeURIComponent(id)}`,
   procurement_contract: (id) => `/procurement/contracts/${encodeURIComponent(id)}`,
   procurement_procedure: (id) => `/procurement/procedures/${encodeURIComponent(id)}`,
   procurement_direct_acquisition: (id) =>

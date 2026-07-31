@@ -50,12 +50,13 @@ test.describe('Experimental entity search — desktop', () => {
     await expect(page.locator('a[href="/companies/2816464"]')).toBeVisible()
     // public_enterprise → internal /intreprinderi-publice/$cui (by cuis[0])
     await expect(page.locator('a[href="/intreprinderi-publice/10020943"]')).toBeVisible()
-    // legal_act + procurement_contract → internal doc-id routes (95a6c334 /
-    // f2632f6d moved them off external URLs); nothing in this fixture opens a
-    // new tab.
-    await expect(listbox.locator('a[href^="/legislatie/acte/"]')).toHaveCount(1)
+    // legal_act remains an external Portal Legislativ link while procurement
+    // contracts use their internal detail route.
+    await expect(
+      listbox.locator('a[href="https://legislatie.just.ro/Public/DetaliiDocument/1"]'),
+    ).toHaveCount(1)
     await expect(listbox.locator('a[href^="/procurement/contracts/"]')).toHaveCount(1)
-    await expect(listbox.locator('a[target="_blank"]')).toHaveCount(0)
+    await expect(listbox.locator('a[target="_blank"]')).toHaveCount(1)
 
     // titles render as plain text
     await expect(page.getByText('DEDEMAN SRL')).toBeVisible()

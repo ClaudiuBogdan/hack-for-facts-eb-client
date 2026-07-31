@@ -11,170 +11,167 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TestErrorRouteImport } from './routes/test-error'
-import { Route as SignUpRouteImport } from './routes/sign-up'
-import { Route as SignInRouteImport } from './routes/sign-in'
-import { Route as ProvocareRouteImport } from './routes/provocare'
-import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as PnrrRouteImport } from './routes/pnrr'
-import { Route as OngUriRouteImport } from './routes/ong-uri'
-import { Route as MapRouteImport } from './routes/map'
-import { Route as JustitieRouteImport } from './routes/justitie'
-import { Route as EntityAnalyticsRouteImport } from './routes/entity-analytics'
-import { Route as CookiesRouteImport } from './routes/cookies'
-import { Route as CookiePolicyRouteImport } from './routes/cookie-policy'
-import { Route as BugeteLocale2026RouteImport } from './routes/bugete-locale-2026'
-import { Route as BugetNational2026RouteImport } from './routes/buget-national-2026'
-import { Route as BudgetExplorerRouteImport } from './routes/budget-explorer'
-import { Route as AgentRouteImport } from './routes/agent'
-import { Route as ProcurementRouteRouteImport } from './routes/procurement/route'
-import { Route as LegislatieRouteRouteImport } from './routes/legislatie/route'
-import { Route as InvestitiiPubliceRouteRouteImport } from './routes/investitii-publice/route'
-import { Route as EntitiesRouteRouteImport } from './routes/entities/route'
-import { Route as AchizitiiRouteRouteImport } from './routes/achizitii/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as StatisticiIndexRouteImport } from './routes/statistici/index'
-import { Route as ProcurementIndexRouteImport } from './routes/procurement/index'
-import { Route as PrimarieIndexRouteImport } from './routes/primarie/index'
-import { Route as ParlamentIndexRouteImport } from './routes/parlament/index'
-import { Route as OngUriIndexRouteImport } from './routes/ong-uri/index'
-import { Route as LegislatieIndexRouteImport } from './routes/legislatie/index'
-import { Route as JustitieIndexRouteImport } from './routes/justitie.index'
-import { Route as InvestitiiPubliceIndexRouteImport } from './routes/investitii-publice/index'
-import { Route as IntreprinderiPubliceIndexRouteImport } from './routes/intreprinderi-publice/index'
-import { Route as EntitiesIndexRouteImport } from './routes/entities/index'
-import { Route as CompaniesIndexRouteImport } from './routes/companies.index'
-import { Route as AlegeriIndexRouteImport } from './routes/alegeri/index'
-import { Route as AchizitiiIndexRouteImport } from './routes/achizitii/index'
-import { Route as UnsubscribeTokenRouteImport } from './routes/unsubscribe.$token'
-import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
-import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
-import { Route as ShareCodeRouteImport } from './routes/share.$code'
-import { Route as SettingsProfileRouteImport } from './routes/settings/profile'
-import { Route as SettingsNotificationsRouteImport } from './routes/settings/notifications'
-import { Route as ProvocareTermeniSiConditiiRouteImport } from './routes/provocare_.termeni-si-conditii'
-import { Route as ProvocareNotificariRouteImport } from './routes/provocare_.notificari'
-import { Route as ProcurementSearchRouteImport } from './routes/procurement/search'
-import { Route as ProcurementAnalyticsRouteImport } from './routes/procurement/analytics'
-import { Route as PnrrVerificareRouteImport } from './routes/pnrr_.verificare'
-import { Route as PnrrSurseRouteImport } from './routes/pnrr_.surse'
-import { Route as PnrrProiecteRouteImport } from './routes/pnrr_.proiecte'
-import { Route as PnrrOrganizatiiRouteImport } from './routes/pnrr_.organizatii'
-import { Route as PnrrJudeteRouteImport } from './routes/pnrr_.judete'
-import { Route as PnrrShareImageDotpngRouteImport } from './routes/pnrr.share-image[.]png'
-import { Route as OngUriServiciiRouteImport } from './routes/ong-uri.servicii'
-import { Route as OngUriCuiRouteImport } from './routes/ong-uri.$cui'
-import { Route as JustitieCautareRouteImport } from './routes/justitie.cautare'
-import { Route as InvestitiiPubliceCautareRouteImport } from './routes/investitii-publice/cautare'
-import { Route as IntreprinderiPubliceCuiRouteImport } from './routes/intreprinderi-publice/$cui'
-import { Route as ExperimentalSearchRouteImport } from './routes/experimental.search'
-import { Route as EntitiesCuiRouteImport } from './routes/entities.$cui'
-import { Route as CompaniesSearchRouteImport } from './routes/companies.search'
-import { Route as CompaniesCuiRouteImport } from './routes/companies.$cui'
-import { Route as ChartsNewRouteImport } from './routes/charts/new'
-import { Route as CertificatesIdRouteImport } from './routes/certificates.$id'
-import { Route as BugeteLocale2026TermeniSiConditiiRouteImport } from './routes/bugete-locale-2026.termeni-si-conditii'
-import { Route as AlertsNewRouteImport } from './routes/alerts/new'
-import { Route as AlegeriElectionKeyRouteImport } from './routes/alegeri/$electionKey'
-import { Route as AchizitiiMetodologieRouteImport } from './routes/achizitii/metodologie'
-import { Route as AchizitiiCautareRouteImport } from './routes/achizitii/cautare'
-import { Route as PrimarieCuiRouteRouteImport } from './routes/primarie/$cui/route'
-import { Route as ChartsChartIdRouteRouteImport } from './routes/charts/$chartId/route'
-import { Route as AlertsAlertIdRouteRouteImport } from './routes/alerts/$alertId/route'
+import { Route as AchizitiiRouteRouteImport } from './routes/achizitii/route'
+import { Route as AgentRouteImport } from './routes/agent'
+import { Route as BudgetExplorerRouteImport } from './routes/budget-explorer'
+import { Route as BugetNational2026RouteImport } from './routes/buget-national-2026'
+import { Route as BugeteLocale2026RouteImport } from './routes/bugete-locale-2026'
+import { Route as CookiePolicyRouteImport } from './routes/cookie-policy'
+import { Route as CookiesRouteImport } from './routes/cookies'
+import { Route as EntitiesRouteRouteImport } from './routes/entities/route'
+import { Route as EntityAnalyticsRouteImport } from './routes/entity-analytics'
+import { Route as InvestitiiPubliceRouteRouteImport } from './routes/investitii-publice/route'
+import { Route as JustitieRouteImport } from './routes/justitie'
+import { Route as MapRouteImport } from './routes/map'
+import { Route as OngUriRouteImport } from './routes/ong-uri'
+import { Route as PnrrRouteImport } from './routes/pnrr'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ProcurementRouteRouteImport } from './routes/procurement/route'
+import { Route as ProvocareRouteImport } from './routes/provocare'
+import { Route as SignInRouteImport } from './routes/sign-in'
+import { Route as SignUpRouteImport } from './routes/sign-up'
+import { Route as TestErrorRouteImport } from './routes/test-error'
 import { Route as LangLearningRouteRouteImport } from './routes/$lang/learning/route'
-import { Route as StatisticiSeturiIndexRouteImport } from './routes/statistici/seturi/index'
-import { Route as StatisticiComparatiiIndexRouteImport } from './routes/statistici/comparatii/index'
-import { Route as PrimarieHartaIndexRouteImport } from './routes/primarie/harta/index'
-import { Route as PrimarieCuiIndexRouteImport } from './routes/primarie/$cui/index'
-import { Route as ParlamentVoturiIndexRouteImport } from './routes/parlament/voturi/index'
-import { Route as ParlamentStenogrameIndexRouteImport } from './routes/parlament/stenograme/index'
-import { Route as ParlamentProiecteIndexRouteImport } from './routes/parlament/proiecte/index'
-import { Route as ParlamentMembriIndexRouteImport } from './routes/parlament/membri/index'
-import { Route as ParlamentGrupuriIndexRouteImport } from './routes/parlament/grupuri/index'
-import { Route as ParlamentComisiiIndexRouteImport } from './routes/parlament/comisii/index'
-import { Route as ParlamentAgendaIndexRouteImport } from './routes/parlament/agenda/index'
-import { Route as MapsEditorIndexRouteImport } from './routes/maps/editor/index'
-import { Route as MapsDatasetsIndexRouteImport } from './routes/maps/datasets/index'
-import { Route as ClassificationsFunctionalIndexRouteImport } from './routes/classifications/functional/index'
-import { Route as ClassificationsEconomicIndexRouteImport } from './routes/classifications/economic/index'
+import { Route as AchizitiiIndexRouteImport } from './routes/achizitii/index'
+import { Route as AchizitiiCautareRouteImport } from './routes/achizitii/cautare'
+import { Route as AchizitiiMetodologieRouteImport } from './routes/achizitii/metodologie'
+import { Route as AlegeriIndexRouteImport } from './routes/alegeri/index'
+import { Route as AlegeriElectionKeyRouteImport } from './routes/alegeri/$electionKey'
+import { Route as AlertsAlertIdRouteRouteImport } from './routes/alerts/$alertId/route'
+import { Route as AlertsNewRouteImport } from './routes/alerts/new'
+import { Route as BugeteLocale2026TermeniSiConditiiRouteImport } from './routes/bugete-locale-2026.termeni-si-conditii'
+import { Route as CertificatesIdRouteImport } from './routes/certificates.$id'
+import { Route as ChartsChartIdRouteRouteImport } from './routes/charts/$chartId/route'
+import { Route as ChartsNewRouteImport } from './routes/charts/new'
+import { Route as CompaniesIndexRouteImport } from './routes/companies.index'
+import { Route as CompaniesCuiRouteImport } from './routes/companies.$cui'
+import { Route as CompaniesSearchRouteImport } from './routes/companies.search'
+import { Route as EntitiesIndexRouteImport } from './routes/entities/index'
+import { Route as EntitiesCuiRouteImport } from './routes/entities.$cui'
+import { Route as ExperimentalSearchRouteImport } from './routes/experimental.search'
+import { Route as IntreprinderiPubliceIndexRouteImport } from './routes/intreprinderi-publice/index'
+import { Route as IntreprinderiPubliceCuiRouteImport } from './routes/intreprinderi-publice/$cui'
+import { Route as InvestitiiPubliceIndexRouteImport } from './routes/investitii-publice/index'
+import { Route as InvestitiiPubliceCautareRouteImport } from './routes/investitii-publice/cautare'
+import { Route as JustitieIndexRouteImport } from './routes/justitie.index'
+import { Route as JustitieCautareRouteImport } from './routes/justitie.cautare'
+import { Route as OngUriIndexRouteImport } from './routes/ong-uri/index'
+import { Route as OngUriCuiRouteImport } from './routes/ong-uri.$cui'
+import { Route as OngUriServiciiRouteImport } from './routes/ong-uri.servicii'
+import { Route as ParlamentIndexRouteImport } from './routes/parlament/index'
+import { Route as PnrrShareImageDotpngRouteImport } from './routes/pnrr.share-image[.]png'
+import { Route as PnrrJudeteRouteImport } from './routes/pnrr_.judete'
+import { Route as PnrrOrganizatiiRouteImport } from './routes/pnrr_.organizatii'
+import { Route as PnrrProiecteRouteImport } from './routes/pnrr_.proiecte'
+import { Route as PnrrSurseRouteImport } from './routes/pnrr_.surse'
+import { Route as PnrrVerificareRouteImport } from './routes/pnrr_.verificare'
+import { Route as PrimarieIndexRouteImport } from './routes/primarie/index'
+import { Route as PrimarieCuiRouteRouteImport } from './routes/primarie/$cui/route'
+import { Route as ProcurementIndexRouteImport } from './routes/procurement/index'
+import { Route as ProcurementAnalyticsRouteImport } from './routes/procurement/analytics'
+import { Route as ProcurementSearchRouteImport } from './routes/procurement/search'
+import { Route as ProvocareNotificariRouteImport } from './routes/provocare_.notificari'
+import { Route as ProvocareTermeniSiConditiiRouteImport } from './routes/provocare_.termeni-si-conditii'
+import { Route as SettingsNotificationsRouteImport } from './routes/settings/notifications'
+import { Route as SettingsProfileRouteImport } from './routes/settings/profile'
+import { Route as ShareCodeRouteImport } from './routes/share.$code'
+import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
+import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
+import { Route as StatisticiIndexRouteImport } from './routes/statistici/index'
+import { Route as UnsubscribeTokenRouteImport } from './routes/unsubscribe.$token'
 import { Route as LangLearningIndexRouteImport } from './routes/$lang/learning/index'
-import { Route as StatisticiTeritoriiSirutaRouteImport } from './routes/statistici/teritorii/$siruta'
-import { Route as StatisticiSeturiCodRouteImport } from './routes/statistici/seturi/$cod'
-import { Route as ProcurementSuppliersCuiRouteImport } from './routes/procurement/suppliers/$cui'
-import { Route as ProcurementProceduresIdRouteImport } from './routes/procurement/procedures/$id'
-import { Route as ProcurementInstitutionsCuiRouteImport } from './routes/procurement/institutions/$cui'
-import { Route as ProcurementDirectAcquisitionsIdRouteImport } from './routes/procurement/direct-acquisitions/$id'
-import { Route as ProcurementContractsIdRouteImport } from './routes/procurement/contracts/$id'
-import { Route as ProcurementCategoriesCodeRouteImport } from './routes/procurement/categories/$code'
-import { Route as PrimarieCuiShareImageDotpngRouteImport } from './routes/primarie/$cui/share-image[.]png'
-import { Route as PnrrProiecteProjectKeyRouteImport } from './routes/pnrr_.proiecte_.$projectKey'
-import { Route as PnrrOrganizatiiCuiRouteImport } from './routes/pnrr_.organizatii_.$cui'
-import { Route as PnrrJudeteCountySirutaRouteImport } from './routes/pnrr_.judete_.$countySiruta'
-import { Route as ParlamentStenogrameSpeechKeyRouteImport } from './routes/parlament/stenograme/$speechKey'
-import { Route as ParlamentGrupuriGroupIdRouteImport } from './routes/parlament/grupuri/$groupId'
-import { Route as ParlamentComisiiCommitteeKeyRouteImport } from './routes/parlament/comisii/$committeeKey'
-import { Route as ParlamentAgendaAgendaKeyRouteImport } from './routes/parlament/agenda/$agendaKey'
-import { Route as OngUriSursaSnapshotIdRouteImport } from './routes/ong-uri.sursa.$snapshotId'
-import { Route as MapsPublicMapIdRouteImport } from './routes/maps/public/$mapId'
-import { Route as MapsEditorNewRouteImport } from './routes/maps/editor/new'
-import { Route as MapsEditorMapIdRouteImport } from './routes/maps/editor/$mapId'
-import { Route as MapsDatasetsNewRouteImport } from './routes/maps/datasets/new'
-import { Route as MapsDatasetsDatasetIdRouteImport } from './routes/maps/datasets/$datasetId'
-import { Route as LegislatieActeIdRouteImport } from './routes/legislatie/acte/$id'
-import { Route as JustitieInstanteCourtIdRouteImport } from './routes/justitie.instante.$courtId'
-import { Route as JustitieDosareCaseIdRouteImport } from './routes/justitie.dosare.$caseId'
-import { Route as InvestitiiPubliceObiectiveIdRouteImport } from './routes/investitii-publice/obiective.$id'
-import { Route as InvestitiiPubliceLocalitatiSirutaRouteImport } from './routes/investitii-publice/localitati.$siruta'
-import { Route as InvestitiiPubliceJudeteCountyCodeRouteImport } from './routes/investitii-publice/judete.$countyCode'
-import { Route as EntitiesCuiShareImageDotpngRouteImport } from './routes/entities.$cui.share-image[.]png'
-import { Route as ClassificationsFunctionalCodeRouteImport } from './routes/classifications/functional/$code'
-import { Route as ClassificationsEconomicCodeRouteImport } from './routes/classifications/economic/$code'
-import { Route as ApiV1GraphqlRouteImport } from './routes/api/v1/graphql'
-import { Route as AlegeriContestContestKeyRouteImport } from './routes/alegeri/contest/$contestKey'
-import { Route as AchizitiiProceduriIdRouteImport } from './routes/achizitii/proceduri/$id'
-import { Route as AchizitiiCpvCodeRouteImport } from './routes/achizitii/cpv/$code'
-import { Route as AchizitiiContracteIdRouteImport } from './routes/achizitii/contracte/$id'
-import { Route as AchizitiiAchizitiiDirecteIdRouteImport } from './routes/achizitii/achizitii-directe/$id'
 import { Route as LangLearningOnboardingRouteImport } from './routes/$lang/learning/onboarding'
-import { Route as PrimarieCuiBugetRouteRouteImport } from './routes/primarie/$cui/buget/route'
-import { Route as ParlamentProiecteBillIdRouteRouteImport } from './routes/parlament/proiecte/$billId/route'
-import { Route as ParlamentMembriMemberIdRouteRouteImport } from './routes/parlament/membri/$memberId/route'
+import { Route as AchizitiiAchizitiiDirecteIdRouteImport } from './routes/achizitii/achizitii-directe/$id'
+import { Route as AchizitiiContracteIdRouteImport } from './routes/achizitii/contracte/$id'
+import { Route as AchizitiiCpvCodeRouteImport } from './routes/achizitii/cpv/$code'
+import { Route as AchizitiiProceduriIdRouteImport } from './routes/achizitii/proceduri/$id'
 import { Route as AdminCampaignsCampaignKeyRouteRouteImport } from './routes/admin/campaigns/$campaignKey/route'
-import { Route as PrimarieCuiBugetIndexRouteImport } from './routes/primarie/$cui/buget/index'
-import { Route as ParlamentProiecteBillIdIndexRouteImport } from './routes/parlament/proiecte/$billId/index'
-import { Route as ParlamentMembriMemberIdIndexRouteImport } from './routes/parlament/membri/$memberId/index'
-import { Route as AdminCampaignsCampaignKeyIndexRouteImport } from './routes/admin/campaigns/$campaignKey/index'
+import { Route as AlegeriContestContestKeyRouteImport } from './routes/alegeri/contest/$contestKey'
+import { Route as ApiV1GraphqlRouteImport } from './routes/api/v1/graphql'
+import { Route as ClassificationsEconomicIndexRouteImport } from './routes/classifications/economic/index'
+import { Route as ClassificationsEconomicCodeRouteImport } from './routes/classifications/economic/$code'
+import { Route as ClassificationsFunctionalIndexRouteImport } from './routes/classifications/functional/index'
+import { Route as ClassificationsFunctionalCodeRouteImport } from './routes/classifications/functional/$code'
+import { Route as EntitiesCuiShareImageDotpngRouteImport } from './routes/entities.$cui.share-image[.]png'
+import { Route as InvestitiiPubliceJudeteCountyCodeRouteImport } from './routes/investitii-publice/judete.$countyCode'
+import { Route as InvestitiiPubliceLocalitatiSirutaRouteImport } from './routes/investitii-publice/localitati.$siruta'
+import { Route as InvestitiiPubliceObiectiveIdRouteImport } from './routes/investitii-publice/obiective.$id'
+import { Route as JustitieDosareCaseIdRouteImport } from './routes/justitie.dosare.$caseId'
+import { Route as JustitieInstanteCourtIdRouteImport } from './routes/justitie.instante.$courtId'
+import { Route as MapsDatasetsIndexRouteImport } from './routes/maps/datasets/index'
+import { Route as MapsDatasetsDatasetIdRouteImport } from './routes/maps/datasets/$datasetId'
+import { Route as MapsDatasetsNewRouteImport } from './routes/maps/datasets/new'
+import { Route as MapsEditorIndexRouteImport } from './routes/maps/editor/index'
+import { Route as MapsEditorMapIdRouteImport } from './routes/maps/editor/$mapId'
+import { Route as MapsEditorNewRouteImport } from './routes/maps/editor/new'
+import { Route as MapsPublicMapIdRouteImport } from './routes/maps/public/$mapId'
+import { Route as OngUriSursaSnapshotIdRouteImport } from './routes/ong-uri.sursa.$snapshotId'
+import { Route as ParlamentAgendaIndexRouteImport } from './routes/parlament/agenda/index'
+import { Route as ParlamentAgendaAgendaKeyRouteImport } from './routes/parlament/agenda/$agendaKey'
+import { Route as ParlamentComisiiIndexRouteImport } from './routes/parlament/comisii/index'
+import { Route as ParlamentComisiiCommitteeKeyRouteImport } from './routes/parlament/comisii/$committeeKey'
+import { Route as ParlamentGrupuriIndexRouteImport } from './routes/parlament/grupuri/index'
+import { Route as ParlamentGrupuriGroupIdRouteImport } from './routes/parlament/grupuri/$groupId'
+import { Route as ParlamentMembriIndexRouteImport } from './routes/parlament/membri/index'
+import { Route as ParlamentMembriMemberIdRouteRouteImport } from './routes/parlament/membri/$memberId/route'
+import { Route as ParlamentProiecteIndexRouteImport } from './routes/parlament/proiecte/index'
+import { Route as ParlamentProiecteBillIdRouteRouteImport } from './routes/parlament/proiecte/$billId/route'
+import { Route as ParlamentStenogrameIndexRouteImport } from './routes/parlament/stenograme/index'
+import { Route as ParlamentStenogrameSpeechKeyRouteImport } from './routes/parlament/stenograme/$speechKey'
+import { Route as ParlamentVoturiIndexRouteImport } from './routes/parlament/voturi/index'
+import { Route as PnrrJudeteCountySirutaRouteImport } from './routes/pnrr_.judete_.$countySiruta'
+import { Route as PnrrOrganizatiiCuiRouteImport } from './routes/pnrr_.organizatii_.$cui'
+import { Route as PnrrProiecteProjectKeyRouteImport } from './routes/pnrr_.proiecte_.$projectKey'
+import { Route as PrimarieCuiIndexRouteImport } from './routes/primarie/$cui/index'
+import { Route as PrimarieCuiBugetRouteRouteImport } from './routes/primarie/$cui/buget/route'
+import { Route as PrimarieCuiShareImageDotpngRouteImport } from './routes/primarie/$cui/share-image[.]png'
+import { Route as PrimarieHartaIndexRouteImport } from './routes/primarie/harta/index'
+import { Route as ProcurementCategoriesCodeRouteImport } from './routes/procurement/categories/$code'
+import { Route as ProcurementContractsIdRouteImport } from './routes/procurement/contracts/$id'
+import { Route as ProcurementDirectAcquisitionsIdRouteImport } from './routes/procurement/direct-acquisitions/$id'
+import { Route as ProcurementInstitutionsCuiRouteImport } from './routes/procurement/institutions/$cui'
+import { Route as ProcurementProceduresIdRouteImport } from './routes/procurement/procedures/$id'
+import { Route as ProcurementSuppliersCuiRouteImport } from './routes/procurement/suppliers/$cui'
+import { Route as StatisticiComparatiiIndexRouteImport } from './routes/statistici/comparatii/index'
+import { Route as StatisticiSeturiIndexRouteImport } from './routes/statistici/seturi/index'
+import { Route as StatisticiSeturiCodRouteImport } from './routes/statistici/seturi/$cod'
+import { Route as StatisticiTeritoriiSirutaRouteImport } from './routes/statistici/teritorii/$siruta'
 import { Route as LangLearningPathIdIndexRouteImport } from './routes/$lang/learning/$pathId/index'
-import { Route as PrimarieCuiBugetResurseRouteImport } from './routes/primarie/$cui/buget/resurse'
-import { Route as PrimarieCuiBugetCalendarRouteImport } from './routes/primarie/$cui/buget/calendar'
-import { Route as ParlamentVoturiChamberVoteIdRouteImport } from './routes/parlament/voturi/$chamber/$voteId'
-import { Route as ParlamentStenogrameSedinteSessionKeyRouteImport } from './routes/parlament/stenograme/sedinte.$sessionKey'
-import { Route as ParlamentProiecteBillIdVoturiRouteImport } from './routes/parlament/proiecte/$billId/voturi'
-import { Route as ParlamentProiecteBillIdEtapeRouteImport } from './routes/parlament/proiecte/$billId/etape'
-import { Route as ParlamentProiecteBillIdDocumenteRouteImport } from './routes/parlament/proiecte/$billId/documente'
-import { Route as ParlamentMembriMemberIdVoturiRouteImport } from './routes/parlament/membri/$memberId/voturi'
-import { Route as ParlamentMembriMemberIdPortretRouteImport } from './routes/parlament/membri/$memberId/portret'
-import { Route as ParlamentMembriMemberIdIntrebariRouteImport } from './routes/parlament/membri/$memberId/intrebari'
-import { Route as ParlamentMembriMemberIdInterventiiRouteImport } from './routes/parlament/membri/$memberId/interventii'
-import { Route as ParlamentMembriMemberIdIntereseRouteImport } from './routes/parlament/membri/$memberId/interese'
-import { Route as ParlamentMembriMemberIdInitiativeRouteImport } from './routes/parlament/membri/$memberId/initiative'
-import { Route as ParlamentMembriMemberIdContactRouteImport } from './routes/parlament/membri/$memberId/contact'
-import { Route as ParlamentMembriMemberIdAlegeriRouteImport } from './routes/parlament/membri/$memberId/alegeri'
-import { Route as MapsDatasetsPublicPublicIdRouteImport } from './routes/maps/datasets/public/$publicId'
-import { Route as ApiPnrrRawProjectsRouteImport } from './routes/api/pnrr/raw/projects'
-import { Route as ApiPnrrRawPaymentsRouteImport } from './routes/api/pnrr/raw/payments'
-import { Route as ApiPnrrRawIndicatorsRouteImport } from './routes/api/pnrr/raw/indicators'
-import { Route as AdminCampaignsCampaignKeyUsersRouteImport } from './routes/admin/campaigns/$campaignKey/users'
-import { Route as AdminCampaignsCampaignKeyUserInteractionsRouteImport } from './routes/admin/campaigns/$campaignKey/user-interactions'
-import { Route as AdminCampaignsCampaignKeyNotificationsRouteImport } from './routes/admin/campaigns/$campaignKey/notifications'
-import { Route as AdminCampaignsCampaignKeyEntitiesRouteImport } from './routes/admin/campaigns/$campaignKey/entities'
-import { Route as AdminCampaignsCampaignKeyAnalyticsRouteImport } from './routes/admin/campaigns/$campaignKey/analytics'
 import { Route as LangLearningCertificatesIdRouteImport } from './routes/$lang/learning/certificates.$id'
+import { Route as AdminCampaignsCampaignKeyIndexRouteImport } from './routes/admin/campaigns/$campaignKey/index'
+import { Route as AdminCampaignsCampaignKeyAnalyticsRouteImport } from './routes/admin/campaigns/$campaignKey/analytics'
+import { Route as AdminCampaignsCampaignKeyEntitiesRouteImport } from './routes/admin/campaigns/$campaignKey/entities'
+import { Route as AdminCampaignsCampaignKeyNotificationsRouteImport } from './routes/admin/campaigns/$campaignKey/notifications'
+import { Route as AdminCampaignsCampaignKeyUserInteractionsRouteImport } from './routes/admin/campaigns/$campaignKey/user-interactions'
+import { Route as AdminCampaignsCampaignKeyUsersRouteImport } from './routes/admin/campaigns/$campaignKey/users'
+import { Route as ApiPnrrRawIndicatorsRouteImport } from './routes/api/pnrr/raw/indicators'
+import { Route as ApiPnrrRawPaymentsRouteImport } from './routes/api/pnrr/raw/payments'
+import { Route as ApiPnrrRawProjectsRouteImport } from './routes/api/pnrr/raw/projects'
+import { Route as MapsDatasetsPublicPublicIdRouteImport } from './routes/maps/datasets/public/$publicId'
+import { Route as ParlamentMembriMemberIdIndexRouteImport } from './routes/parlament/membri/$memberId/index'
+import { Route as ParlamentMembriMemberIdAlegeriRouteImport } from './routes/parlament/membri/$memberId/alegeri'
+import { Route as ParlamentMembriMemberIdContactRouteImport } from './routes/parlament/membri/$memberId/contact'
+import { Route as ParlamentMembriMemberIdInitiativeRouteImport } from './routes/parlament/membri/$memberId/initiative'
+import { Route as ParlamentMembriMemberIdIntereseRouteImport } from './routes/parlament/membri/$memberId/interese'
+import { Route as ParlamentMembriMemberIdInterventiiRouteImport } from './routes/parlament/membri/$memberId/interventii'
+import { Route as ParlamentMembriMemberIdIntrebariRouteImport } from './routes/parlament/membri/$memberId/intrebari'
+import { Route as ParlamentMembriMemberIdPortretRouteImport } from './routes/parlament/membri/$memberId/portret'
+import { Route as ParlamentMembriMemberIdVoturiRouteImport } from './routes/parlament/membri/$memberId/voturi'
+import { Route as ParlamentProiecteBillIdIndexRouteImport } from './routes/parlament/proiecte/$billId/index'
+import { Route as ParlamentProiecteBillIdDocumenteRouteImport } from './routes/parlament/proiecte/$billId/documente'
+import { Route as ParlamentProiecteBillIdEtapeRouteImport } from './routes/parlament/proiecte/$billId/etape'
+import { Route as ParlamentProiecteBillIdVoturiRouteImport } from './routes/parlament/proiecte/$billId/voturi'
+import { Route as ParlamentStenogrameSedinteSessionKeyRouteImport } from './routes/parlament/stenograme/sedinte.$sessionKey'
+import { Route as ParlamentVoturiChamberVoteIdRouteImport } from './routes/parlament/voturi/$chamber/$voteId'
+import { Route as PrimarieCuiBugetIndexRouteImport } from './routes/primarie/$cui/buget/index'
+import { Route as PrimarieCuiBugetCalendarRouteImport } from './routes/primarie/$cui/buget/calendar'
 import { Route as PrimarieCuiBugetProvocariRouteRouteImport } from './routes/primarie/$cui/buget/provocari/route'
-import { Route as PrimarieCuiBugetProvocariIndexRouteImport } from './routes/primarie/$cui/buget/provocari/index'
-import { Route as AdminCampaignsCampaignKeyUsersUserIdRouteImport } from './routes/admin/campaigns/$campaignKey/users.$userId'
-import { Route as AdminCampaignsCampaignKeyEntitiesEntityCuiRouteImport } from './routes/admin/campaigns/$campaignKey/entities.$entityCui'
+import { Route as PrimarieCuiBugetResurseRouteImport } from './routes/primarie/$cui/buget/resurse'
 import { Route as LangLearningPathIdModuleIdLessonIdRouteImport } from './routes/$lang/learning/$pathId/$moduleId/$lessonId'
+import { Route as AdminCampaignsCampaignKeyEntitiesEntityCuiRouteImport } from './routes/admin/campaigns/$campaignKey/entities.$entityCui'
+import { Route as AdminCampaignsCampaignKeyUsersUserIdRouteImport } from './routes/admin/campaigns/$campaignKey/users.$userId'
+import { Route as PrimarieCuiBugetProvocariIndexRouteImport } from './routes/primarie/$cui/buget/provocari/index'
 import { Route as PrimarieCuiBugetProvocariModuleSlugIndexRouteImport } from './routes/primarie/$cui/buget/provocari/$moduleSlug/index'
 import { Route as PrimarieCuiBugetProvocariModuleSlugChallengeSlugStepSlugRouteImport } from './routes/primarie/$cui/buget/provocari/$moduleSlug/$challengeSlug/$stepSlug'
 
@@ -183,9 +180,115 @@ const ChartsIndexLazyRouteImport = createFileRoute('/charts/')()
 const ResearchEmployeesDataLazyRouteImport = createFileRoute(
   '/research/employees-data',
 )()
-const ChartsChartIdIndexLazyRouteImport = createFileRoute('/charts/$chartId/')()
 const AlertsAlertIdIndexLazyRouteImport = createFileRoute('/alerts/$alertId/')()
+const ChartsChartIdIndexLazyRouteImport = createFileRoute('/charts/$chartId/')()
 
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AchizitiiRouteRoute = AchizitiiRouteRouteImport.update({
+  id: '/achizitii',
+  path: '/achizitii',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentRoute = AgentRouteImport.update({
+  id: '/agent',
+  path: '/agent',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/agent.lazy').then((d) => d.Route))
+const BudgetExplorerRoute = BudgetExplorerRouteImport.update({
+  id: '/budget-explorer',
+  path: '/budget-explorer',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/budget-explorer.lazy').then((d) => d.Route),
+)
+const BugetNational2026Route = BugetNational2026RouteImport.update({
+  id: '/buget-national-2026',
+  path: '/buget-national-2026',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/buget-national-2026.lazy').then((d) => d.Route),
+)
+const BugeteLocale2026Route = BugeteLocale2026RouteImport.update({
+  id: '/bugete-locale-2026',
+  path: '/bugete-locale-2026',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CookiePolicyRoute = CookiePolicyRouteImport.update({
+  id: '/cookie-policy',
+  path: '/cookie-policy',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/cookie-policy.lazy').then((d) => d.Route))
+const CookiesRoute = CookiesRouteImport.update({
+  id: '/cookies',
+  path: '/cookies',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/cookies.lazy').then((d) => d.Route))
+const EntitiesRouteRoute = EntitiesRouteRouteImport.update({
+  id: '/entities',
+  path: '/entities',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EntityAnalyticsRoute = EntityAnalyticsRouteImport.update({
+  id: '/entity-analytics',
+  path: '/entity-analytics',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/entity-analytics.lazy').then((d) => d.Route),
+)
+const InvestitiiPubliceRouteRoute = InvestitiiPubliceRouteRouteImport.update({
+  id: '/investitii-publice',
+  path: '/investitii-publice',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JustitieRoute = JustitieRouteImport.update({
+  id: '/justitie',
+  path: '/justitie',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MapRoute = MapRouteImport.update({
+  id: '/map',
+  path: '/map',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/map.lazy').then((d) => d.Route))
+const OngUriRoute = OngUriRouteImport.update({
+  id: '/ong-uri',
+  path: '/ong-uri',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PnrrRoute = PnrrRouteImport.update({
+  id: '/pnrr',
+  path: '/pnrr',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/pnrr.lazy').then((d) => d.Route))
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/privacy.lazy').then((d) => d.Route))
+const ProcurementRouteRoute = ProcurementRouteRouteImport.update({
+  id: '/procurement',
+  path: '/procurement',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProvocareRoute = ProvocareRouteImport.update({
+  id: '/provocare',
+  path: '/provocare',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/provocare.lazy').then((d) => d.Route))
+const SignInRoute = SignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignUpRoute = SignUpRouteImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsLazyRoute = TermsLazyRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -196,115 +299,61 @@ const TestErrorRoute = TestErrorRouteImport.update({
   path: '/test-error',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SignUpRoute = SignUpRouteImport.update({
-  id: '/sign-up',
-  path: '/sign-up',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SignInRoute = SignInRouteImport.update({
-  id: '/sign-in',
-  path: '/sign-in',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProvocareRoute = ProvocareRouteImport.update({
-  id: '/provocare',
-  path: '/provocare',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/provocare.lazy').then((d) => d.Route))
-const PrivacyRoute = PrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/privacy.lazy').then((d) => d.Route))
-const PnrrRoute = PnrrRouteImport.update({
-  id: '/pnrr',
-  path: '/pnrr',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/pnrr.lazy').then((d) => d.Route))
-const OngUriRoute = OngUriRouteImport.update({
-  id: '/ong-uri',
-  path: '/ong-uri',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MapRoute = MapRouteImport.update({
-  id: '/map',
-  path: '/map',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/map.lazy').then((d) => d.Route))
-const JustitieRoute = JustitieRouteImport.update({
-  id: '/justitie',
-  path: '/justitie',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EntityAnalyticsRoute = EntityAnalyticsRouteImport.update({
-  id: '/entity-analytics',
-  path: '/entity-analytics',
+const LangLearningRouteRoute = LangLearningRouteRouteImport.update({
+  id: '/$lang/learning',
+  path: '/$lang/learning',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
-  import('./routes/entity-analytics.lazy').then((d) => d.Route),
+  import('./routes/$lang/learning/route.lazy').then((d) => d.Route),
 )
-const CookiesRoute = CookiesRouteImport.update({
-  id: '/cookies',
-  path: '/cookies',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/cookies.lazy').then((d) => d.Route))
-const CookiePolicyRoute = CookiePolicyRouteImport.update({
-  id: '/cookie-policy',
-  path: '/cookie-policy',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/cookie-policy.lazy').then((d) => d.Route))
-const BugeteLocale2026Route = BugeteLocale2026RouteImport.update({
-  id: '/bugete-locale-2026',
-  path: '/bugete-locale-2026',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BugetNational2026Route = BugetNational2026RouteImport.update({
-  id: '/buget-national-2026',
-  path: '/buget-national-2026',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/buget-national-2026.lazy').then((d) => d.Route),
-)
-const BudgetExplorerRoute = BudgetExplorerRouteImport.update({
-  id: '/budget-explorer',
-  path: '/budget-explorer',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/budget-explorer.lazy').then((d) => d.Route),
-)
-const AgentRoute = AgentRouteImport.update({
-  id: '/agent',
-  path: '/agent',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/agent.lazy').then((d) => d.Route))
-const ProcurementRouteRoute = ProcurementRouteRouteImport.update({
-  id: '/procurement',
-  path: '/procurement',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LegislatieRouteRoute = LegislatieRouteRouteImport.update({
-  id: '/legislatie',
-  path: '/legislatie',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InvestitiiPubliceRouteRoute = InvestitiiPubliceRouteRouteImport.update({
-  id: '/investitii-publice',
-  path: '/investitii-publice',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EntitiesRouteRoute = EntitiesRouteRouteImport.update({
-  id: '/entities',
-  path: '/entities',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AchizitiiRouteRoute = AchizitiiRouteRouteImport.update({
-  id: '/achizitii',
-  path: '/achizitii',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IndexRoute = IndexRouteImport.update({
+const AchizitiiIndexRoute = AchizitiiIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AchizitiiRouteRoute,
+} as any)
+const AchizitiiCautareRoute = AchizitiiCautareRouteImport.update({
+  id: '/cautare',
+  path: '/cautare',
+  getParentRoute: () => AchizitiiRouteRoute,
+} as any)
+const AchizitiiMetodologieRoute = AchizitiiMetodologieRouteImport.update({
+  id: '/metodologie',
+  path: '/metodologie',
+  getParentRoute: () => AchizitiiRouteRoute,
+} as any).lazy(() =>
+  import('./routes/achizitii/metodologie.lazy').then((d) => d.Route),
+)
+const AlegeriIndexRoute = AlegeriIndexRouteImport.update({
+  id: '/alegeri/',
+  path: '/alegeri/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/alegeri/index.lazy').then((d) => d.Route))
+const AlegeriElectionKeyRoute = AlegeriElectionKeyRouteImport.update({
+  id: '/alegeri/$electionKey',
+  path: '/alegeri/$electionKey',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/alegeri/$electionKey.lazy').then((d) => d.Route),
+)
+const AlertsAlertIdRouteRoute = AlertsAlertIdRouteRouteImport.update({
+  id: '/alerts/$alertId',
+  path: '/alerts/$alertId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlertsNewRoute = AlertsNewRouteImport.update({
+  id: '/alerts/new',
+  path: '/alerts/new',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/alerts/new.lazy').then((d) => d.Route))
+const BugeteLocale2026TermeniSiConditiiRoute =
+  BugeteLocale2026TermeniSiConditiiRouteImport.update({
+    id: '/termeni-si-conditii',
+    path: '/termeni-si-conditii',
+    getParentRoute: () => BugeteLocale2026Route,
+  } as any)
+const CertificatesIdRoute = CertificatesIdRouteImport.update({
+  id: '/certificates/$id',
+  path: '/certificates/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChartsIndexLazyRoute = ChartsIndexLazyRouteImport.update({
@@ -312,68 +361,15 @@ const ChartsIndexLazyRoute = ChartsIndexLazyRouteImport.update({
   path: '/charts/',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/charts/index.lazy').then((d) => d.Route))
-const StatisticiIndexRoute = StatisticiIndexRouteImport.update({
-  id: '/statistici/',
-  path: '/statistici/',
+const ChartsChartIdRouteRoute = ChartsChartIdRouteRouteImport.update({
+  id: '/charts/$chartId',
+  path: '/charts/$chartId',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/statistici/index.lazy').then((d) => d.Route),
-)
-const ProcurementIndexRoute = ProcurementIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => ProcurementRouteRoute,
-} as any).lazy(() =>
-  import('./routes/procurement/index.lazy').then((d) => d.Route),
-)
-const PrimarieIndexRoute = PrimarieIndexRouteImport.update({
-  id: '/primarie/',
-  path: '/primarie/',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/primarie/index.lazy').then((d) => d.Route),
-)
-const ParlamentIndexRoute = ParlamentIndexRouteImport.update({
-  id: '/parlament/',
-  path: '/parlament/',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/parlament/index.lazy').then((d) => d.Route),
-)
-const OngUriIndexRoute = OngUriIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => OngUriRoute,
-} as any).lazy(() => import('./routes/ong-uri/index.lazy').then((d) => d.Route))
-const LegislatieIndexRoute = LegislatieIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => LegislatieRouteRoute,
-} as any).lazy(() =>
-  import('./routes/legislatie/index.lazy').then((d) => d.Route),
-)
-const JustitieIndexRoute = JustitieIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => JustitieRoute,
 } as any)
-const InvestitiiPubliceIndexRoute = InvestitiiPubliceIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => InvestitiiPubliceRouteRoute,
-} as any)
-const IntreprinderiPubliceIndexRoute =
-  IntreprinderiPubliceIndexRouteImport.update({
-    id: '/intreprinderi-publice/',
-    path: '/intreprinderi-publice/',
-    getParentRoute: () => rootRouteImport,
-  } as any).lazy(() =>
-    import('./routes/intreprinderi-publice/index.lazy').then((d) => d.Route),
-  )
-const EntitiesIndexRoute = EntitiesIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => EntitiesRouteRoute,
+const ChartsNewRoute = ChartsNewRouteImport.update({
+  id: '/charts/new',
+  path: '/charts/new',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const CompaniesIndexRoute = CompaniesIndexRouteImport.update({
   id: '/companies/',
@@ -382,75 +378,153 @@ const CompaniesIndexRoute = CompaniesIndexRouteImport.update({
 } as any).lazy(() =>
   import('./routes/companies.index.lazy').then((d) => d.Route),
 )
-const AlegeriIndexRoute = AlegeriIndexRouteImport.update({
-  id: '/alegeri/',
-  path: '/alegeri/',
+const CompaniesCuiRoute = CompaniesCuiRouteImport.update({
+  id: '/companies/$cui',
+  path: '/companies/$cui',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/alegeri/index.lazy').then((d) => d.Route))
-const AchizitiiIndexRoute = AchizitiiIndexRouteImport.update({
+} as any).lazy(() =>
+  import('./routes/companies.$cui.lazy').then((d) => d.Route),
+)
+const CompaniesSearchRoute = CompaniesSearchRouteImport.update({
+  id: '/companies/search',
+  path: '/companies/search',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/companies.search.lazy').then((d) => d.Route),
+)
+const EntitiesIndexRoute = EntitiesIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AchizitiiRouteRoute,
+  getParentRoute: () => EntitiesRouteRoute,
 } as any)
-const ResearchEmployeesDataLazyRoute =
-  ResearchEmployeesDataLazyRouteImport.update({
-    id: '/research/employees-data',
-    path: '/research/employees-data',
-    getParentRoute: () => rootRouteImport,
-  } as any).lazy(() =>
-    import('./routes/research/employees-data.lazy').then((d) => d.Route),
-  )
-const UnsubscribeTokenRoute = UnsubscribeTokenRouteImport.update({
-  id: '/unsubscribe/$token',
-  path: '/unsubscribe/$token',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SignUpSplatRoute = SignUpSplatRouteImport.update({
-  id: '/$',
-  path: '/$',
-  getParentRoute: () => SignUpRoute,
-} as any)
-const SignInSplatRoute = SignInSplatRouteImport.update({
-  id: '/$',
-  path: '/$',
-  getParentRoute: () => SignInRoute,
-} as any)
-const ShareCodeRoute = ShareCodeRouteImport.update({
-  id: '/share/$code',
-  path: '/share/$code',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SettingsProfileRoute = SettingsProfileRouteImport.update({
-  id: '/settings/profile',
-  path: '/settings/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SettingsNotificationsRoute = SettingsNotificationsRouteImport.update({
-  id: '/settings/notifications',
-  path: '/settings/notifications',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProvocareTermeniSiConditiiRoute =
-  ProvocareTermeniSiConditiiRouteImport.update({
-    id: '/provocare_/termeni-si-conditii',
-    path: '/provocare/termeni-si-conditii',
-    getParentRoute: () => rootRouteImport,
-  } as any).lazy(() =>
-    import('./routes/provocare_.termeni-si-conditii.lazy').then((d) => d.Route),
-  )
-const ProvocareNotificariRoute = ProvocareNotificariRouteImport.update({
-  id: '/provocare_/notificari',
-  path: '/provocare/notificari',
+const EntitiesCuiRoute = EntitiesCuiRouteImport.update({
+  id: '/$cui',
+  path: '/$cui',
+  getParentRoute: () => EntitiesRouteRoute,
+} as any).lazy(() => import('./routes/entities.$cui.lazy').then((d) => d.Route))
+const ExperimentalSearchRoute = ExperimentalSearchRouteImport.update({
+  id: '/experimental/search',
+  path: '/experimental/search',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
-  import('./routes/provocare_.notificari.lazy').then((d) => d.Route),
+  import('./routes/experimental.search.lazy').then((d) => d.Route),
 )
-const ProcurementSearchRoute = ProcurementSearchRouteImport.update({
-  id: '/search',
-  path: '/search',
+const IntreprinderiPubliceIndexRoute =
+  IntreprinderiPubliceIndexRouteImport.update({
+    id: '/intreprinderi-publice/',
+    path: '/intreprinderi-publice/',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/intreprinderi-publice/index.lazy').then((d) => d.Route),
+  )
+const IntreprinderiPubliceCuiRoute = IntreprinderiPubliceCuiRouteImport.update({
+  id: '/intreprinderi-publice/$cui',
+  path: '/intreprinderi-publice/$cui',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/intreprinderi-publice/$cui.lazy').then((d) => d.Route),
+)
+const InvestitiiPubliceIndexRoute = InvestitiiPubliceIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => InvestitiiPubliceRouteRoute,
+} as any)
+const InvestitiiPubliceCautareRoute =
+  InvestitiiPubliceCautareRouteImport.update({
+    id: '/cautare',
+    path: '/cautare',
+    getParentRoute: () => InvestitiiPubliceRouteRoute,
+  } as any)
+const JustitieIndexRoute = JustitieIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => JustitieRoute,
+} as any)
+const JustitieCautareRoute = JustitieCautareRouteImport.update({
+  id: '/cautare',
+  path: '/cautare',
+  getParentRoute: () => JustitieRoute,
+} as any)
+const OngUriIndexRoute = OngUriIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => OngUriRoute,
+} as any).lazy(() => import('./routes/ong-uri/index.lazy').then((d) => d.Route))
+const OngUriCuiRoute = OngUriCuiRouteImport.update({
+  id: '/$cui',
+  path: '/$cui',
+  getParentRoute: () => OngUriRoute,
+} as any).lazy(() => import('./routes/ong-uri.$cui.lazy').then((d) => d.Route))
+const OngUriServiciiRoute = OngUriServiciiRouteImport.update({
+  id: '/servicii',
+  path: '/servicii',
+  getParentRoute: () => OngUriRoute,
+} as any).lazy(() =>
+  import('./routes/ong-uri.servicii.lazy').then((d) => d.Route),
+)
+const ParlamentIndexRoute = ParlamentIndexRouteImport.update({
+  id: '/parlament/',
+  path: '/parlament/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/parlament/index.lazy').then((d) => d.Route),
+)
+const PnrrShareImageDotpngRoute = PnrrShareImageDotpngRouteImport.update({
+  id: '/share-image.png',
+  path: '/share-image.png',
+  getParentRoute: () => PnrrRoute,
+} as any)
+const PnrrJudeteRoute = PnrrJudeteRouteImport.update({
+  id: '/pnrr_/judete',
+  path: '/pnrr/judete',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/pnrr_.judete.lazy').then((d) => d.Route))
+const PnrrOrganizatiiRoute = PnrrOrganizatiiRouteImport.update({
+  id: '/pnrr_/organizatii',
+  path: '/pnrr/organizatii',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/pnrr_.organizatii.lazy').then((d) => d.Route),
+)
+const PnrrProiecteRoute = PnrrProiecteRouteImport.update({
+  id: '/pnrr_/proiecte',
+  path: '/pnrr/proiecte',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/pnrr_.proiecte.lazy').then((d) => d.Route),
+)
+const PnrrSurseRoute = PnrrSurseRouteImport.update({
+  id: '/pnrr_/surse',
+  path: '/pnrr/surse',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/pnrr_.surse.lazy').then((d) => d.Route))
+const PnrrVerificareRoute = PnrrVerificareRouteImport.update({
+  id: '/pnrr_/verificare',
+  path: '/pnrr/verificare',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/pnrr_.verificare.lazy').then((d) => d.Route),
+)
+const PrimarieIndexRoute = PrimarieIndexRouteImport.update({
+  id: '/primarie/',
+  path: '/primarie/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/primarie/index.lazy').then((d) => d.Route),
+)
+const PrimarieCuiRouteRoute = PrimarieCuiRouteRouteImport.update({
+  id: '/primarie/$cui',
+  path: '/primarie/$cui',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/primarie/$cui/route.lazy').then((d) => d.Route),
+)
+const ProcurementIndexRoute = ProcurementIndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => ProcurementRouteRoute,
 } as any).lazy(() =>
-  import('./routes/procurement/search.lazy').then((d) => d.Route),
+  import('./routes/procurement/index.lazy').then((d) => d.Route),
 )
 const ProcurementAnalyticsRoute = ProcurementAnalyticsRouteImport.update({
   id: '/analytics',
@@ -459,169 +533,122 @@ const ProcurementAnalyticsRoute = ProcurementAnalyticsRouteImport.update({
 } as any).lazy(() =>
   import('./routes/procurement/analytics.lazy').then((d) => d.Route),
 )
-const PnrrVerificareRoute = PnrrVerificareRouteImport.update({
-  id: '/pnrr_/verificare',
-  path: '/pnrr/verificare',
+const ProcurementSearchRoute = ProcurementSearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => ProcurementRouteRoute,
+} as any).lazy(() =>
+  import('./routes/procurement/search.lazy').then((d) => d.Route),
+)
+const ProvocareNotificariRoute = ProvocareNotificariRouteImport.update({
+  id: '/provocare_/notificari',
+  path: '/provocare/notificari',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
-  import('./routes/pnrr_.verificare.lazy').then((d) => d.Route),
+  import('./routes/provocare_.notificari.lazy').then((d) => d.Route),
 )
-const PnrrSurseRoute = PnrrSurseRouteImport.update({
-  id: '/pnrr_/surse',
-  path: '/pnrr/surse',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/pnrr_.surse.lazy').then((d) => d.Route))
-const PnrrProiecteRoute = PnrrProiecteRouteImport.update({
-  id: '/pnrr_/proiecte',
-  path: '/pnrr/proiecte',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/pnrr_.proiecte.lazy').then((d) => d.Route),
-)
-const PnrrOrganizatiiRoute = PnrrOrganizatiiRouteImport.update({
-  id: '/pnrr_/organizatii',
-  path: '/pnrr/organizatii',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/pnrr_.organizatii.lazy').then((d) => d.Route),
-)
-const PnrrJudeteRoute = PnrrJudeteRouteImport.update({
-  id: '/pnrr_/judete',
-  path: '/pnrr/judete',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/pnrr_.judete.lazy').then((d) => d.Route))
-const PnrrShareImageDotpngRoute = PnrrShareImageDotpngRouteImport.update({
-  id: '/share-image.png',
-  path: '/share-image.png',
-  getParentRoute: () => PnrrRoute,
-} as any)
-const OngUriServiciiRoute = OngUriServiciiRouteImport.update({
-  id: '/servicii',
-  path: '/servicii',
-  getParentRoute: () => OngUriRoute,
-} as any).lazy(() =>
-  import('./routes/ong-uri.servicii.lazy').then((d) => d.Route),
-)
-const OngUriCuiRoute = OngUriCuiRouteImport.update({
-  id: '/$cui',
-  path: '/$cui',
-  getParentRoute: () => OngUriRoute,
-} as any).lazy(() => import('./routes/ong-uri.$cui.lazy').then((d) => d.Route))
-const JustitieCautareRoute = JustitieCautareRouteImport.update({
-  id: '/cautare',
-  path: '/cautare',
-  getParentRoute: () => JustitieRoute,
-} as any)
-const InvestitiiPubliceCautareRoute =
-  InvestitiiPubliceCautareRouteImport.update({
-    id: '/cautare',
-    path: '/cautare',
-    getParentRoute: () => InvestitiiPubliceRouteRoute,
-  } as any)
-const IntreprinderiPubliceCuiRoute = IntreprinderiPubliceCuiRouteImport.update({
-  id: '/intreprinderi-publice/$cui',
-  path: '/intreprinderi-publice/$cui',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/intreprinderi-publice/$cui.lazy').then((d) => d.Route),
-)
-const ExperimentalSearchRoute = ExperimentalSearchRouteImport.update({
-  id: '/experimental/search',
-  path: '/experimental/search',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/experimental.search.lazy').then((d) => d.Route),
-)
-const EntitiesCuiRoute = EntitiesCuiRouteImport.update({
-  id: '/$cui',
-  path: '/$cui',
-  getParentRoute: () => EntitiesRouteRoute,
-} as any).lazy(() => import('./routes/entities.$cui.lazy').then((d) => d.Route))
-const CompaniesSearchRoute = CompaniesSearchRouteImport.update({
-  id: '/companies/search',
-  path: '/companies/search',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/companies.search.lazy').then((d) => d.Route),
-)
-const CompaniesCuiRoute = CompaniesCuiRouteImport.update({
-  id: '/companies/$cui',
-  path: '/companies/$cui',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/companies.$cui.lazy').then((d) => d.Route),
-)
-const ChartsNewRoute = ChartsNewRouteImport.update({
-  id: '/charts/new',
-  path: '/charts/new',
+const ProvocareTermeniSiConditiiRoute =
+  ProvocareTermeniSiConditiiRouteImport.update({
+    id: '/provocare_/termeni-si-conditii',
+    path: '/provocare/termeni-si-conditii',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/provocare_.termeni-si-conditii.lazy').then((d) => d.Route),
+  )
+const ResearchEmployeesDataLazyRoute =
+  ResearchEmployeesDataLazyRouteImport.update({
+    id: '/research/employees-data',
+    path: '/research/employees-data',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/research/employees-data.lazy').then((d) => d.Route),
+  )
+const SettingsNotificationsRoute = SettingsNotificationsRouteImport.update({
+  id: '/settings/notifications',
+  path: '/settings/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CertificatesIdRoute = CertificatesIdRouteImport.update({
-  id: '/certificates/$id',
-  path: '/certificates/$id',
+const SettingsProfileRoute = SettingsProfileRouteImport.update({
+  id: '/settings/profile',
+  path: '/settings/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BugeteLocale2026TermeniSiConditiiRoute =
-  BugeteLocale2026TermeniSiConditiiRouteImport.update({
-    id: '/termeni-si-conditii',
-    path: '/termeni-si-conditii',
-    getParentRoute: () => BugeteLocale2026Route,
-  } as any)
-const AlertsNewRoute = AlertsNewRouteImport.update({
-  id: '/alerts/new',
-  path: '/alerts/new',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/alerts/new.lazy').then((d) => d.Route))
-const AlegeriElectionKeyRoute = AlegeriElectionKeyRouteImport.update({
-  id: '/alegeri/$electionKey',
-  path: '/alegeri/$electionKey',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/alegeri/$electionKey.lazy').then((d) => d.Route),
-)
-const AchizitiiMetodologieRoute = AchizitiiMetodologieRouteImport.update({
-  id: '/metodologie',
-  path: '/metodologie',
-  getParentRoute: () => AchizitiiRouteRoute,
-} as any).lazy(() =>
-  import('./routes/achizitii/metodologie.lazy').then((d) => d.Route),
-)
-const AchizitiiCautareRoute = AchizitiiCautareRouteImport.update({
-  id: '/cautare',
-  path: '/cautare',
-  getParentRoute: () => AchizitiiRouteRoute,
-} as any)
-const PrimarieCuiRouteRoute = PrimarieCuiRouteRouteImport.update({
-  id: '/primarie/$cui',
-  path: '/primarie/$cui',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/primarie/$cui/route.lazy').then((d) => d.Route),
-)
-const ChartsChartIdRouteRoute = ChartsChartIdRouteRouteImport.update({
-  id: '/charts/$chartId',
-  path: '/charts/$chartId',
+const ShareCodeRoute = ShareCodeRouteImport.update({
+  id: '/share/$code',
+  path: '/share/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AlertsAlertIdRouteRoute = AlertsAlertIdRouteRouteImport.update({
-  id: '/alerts/$alertId',
-  path: '/alerts/$alertId',
-  getParentRoute: () => rootRouteImport,
+const SignInSplatRoute = SignInSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => SignInRoute,
 } as any)
-const LangLearningRouteRoute = LangLearningRouteRouteImport.update({
-  id: '/$lang/learning',
-  path: '/$lang/learning',
+const SignUpSplatRoute = SignUpSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => SignUpRoute,
+} as any)
+const StatisticiIndexRoute = StatisticiIndexRouteImport.update({
+  id: '/statistici/',
+  path: '/statistici/',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
-  import('./routes/$lang/learning/route.lazy').then((d) => d.Route),
+  import('./routes/statistici/index.lazy').then((d) => d.Route),
 )
-const ChartsChartIdIndexLazyRoute = ChartsChartIdIndexLazyRouteImport.update({
+const UnsubscribeTokenRoute = UnsubscribeTokenRouteImport.update({
+  id: '/unsubscribe/$token',
+  path: '/unsubscribe/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LangLearningIndexRoute = LangLearningIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => ChartsChartIdRouteRoute,
+  getParentRoute: () => LangLearningRouteRoute,
 } as any).lazy(() =>
-  import('./routes/charts/$chartId/index.lazy').then((d) => d.Route),
+  import('./routes/$lang/learning/index.lazy').then((d) => d.Route),
 )
+const LangLearningOnboardingRoute = LangLearningOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => LangLearningRouteRoute,
+} as any).lazy(() =>
+  import('./routes/$lang/learning/onboarding.lazy').then((d) => d.Route),
+)
+const AchizitiiAchizitiiDirecteIdRoute =
+  AchizitiiAchizitiiDirecteIdRouteImport.update({
+    id: '/achizitii-directe/$id',
+    path: '/achizitii-directe/$id',
+    getParentRoute: () => AchizitiiRouteRoute,
+  } as any)
+const AchizitiiContracteIdRoute = AchizitiiContracteIdRouteImport.update({
+  id: '/contracte/$id',
+  path: '/contracte/$id',
+  getParentRoute: () => AchizitiiRouteRoute,
+} as any)
+const AchizitiiCpvCodeRoute = AchizitiiCpvCodeRouteImport.update({
+  id: '/cpv/$code',
+  path: '/cpv/$code',
+  getParentRoute: () => AchizitiiRouteRoute,
+} as any)
+const AchizitiiProceduriIdRoute = AchizitiiProceduriIdRouteImport.update({
+  id: '/proceduri/$id',
+  path: '/proceduri/$id',
+  getParentRoute: () => AchizitiiRouteRoute,
+} as any)
+const AdminCampaignsCampaignKeyRouteRoute =
+  AdminCampaignsCampaignKeyRouteRouteImport.update({
+    id: '/admin/campaigns/$campaignKey',
+    path: '/admin/campaigns/$campaignKey',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AlegeriContestContestKeyRoute =
+  AlegeriContestContestKeyRouteImport.update({
+    id: '/alegeri/contest/$contestKey',
+    path: '/alegeri/contest/$contestKey',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/alegeri/contest/$contestKey.lazy').then((d) => d.Route),
+  )
 const AlertsAlertIdIndexLazyRoute = AlertsAlertIdIndexLazyRouteImport.update({
   id: '/',
   path: '/',
@@ -629,91 +656,34 @@ const AlertsAlertIdIndexLazyRoute = AlertsAlertIdIndexLazyRouteImport.update({
 } as any).lazy(() =>
   import('./routes/alerts/$alertId/index.lazy').then((d) => d.Route),
 )
-const StatisticiSeturiIndexRoute = StatisticiSeturiIndexRouteImport.update({
-  id: '/statistici/seturi/',
-  path: '/statistici/seturi/',
+const ApiV1GraphqlRoute = ApiV1GraphqlRouteImport.update({
+  id: '/api/v1/graphql',
+  path: '/api/v1/graphql',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/statistici/seturi/index.lazy').then((d) => d.Route),
-)
-const StatisticiComparatiiIndexRoute =
-  StatisticiComparatiiIndexRouteImport.update({
-    id: '/statistici/comparatii/',
-    path: '/statistici/comparatii/',
-    getParentRoute: () => rootRouteImport,
-  } as any).lazy(() =>
-    import('./routes/statistici/comparatii/index.lazy').then((d) => d.Route),
-  )
-const PrimarieHartaIndexRoute = PrimarieHartaIndexRouteImport.update({
-  id: '/primarie/harta/',
-  path: '/primarie/harta/',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/primarie/harta/index.lazy').then((d) => d.Route),
-)
-const PrimarieCuiIndexRoute = PrimarieCuiIndexRouteImport.update({
+} as any)
+const ChartsChartIdIndexLazyRoute = ChartsChartIdIndexLazyRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => PrimarieCuiRouteRoute,
+  getParentRoute: () => ChartsChartIdRouteRoute,
 } as any).lazy(() =>
-  import('./routes/primarie/$cui/index.lazy').then((d) => d.Route),
+  import('./routes/charts/$chartId/index.lazy').then((d) => d.Route),
 )
-const ParlamentVoturiIndexRoute = ParlamentVoturiIndexRouteImport.update({
-  id: '/parlament/voturi/',
-  path: '/parlament/voturi/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ParlamentStenogrameIndexRoute =
-  ParlamentStenogrameIndexRouteImport.update({
-    id: '/parlament/stenograme/',
-    path: '/parlament/stenograme/',
+const ClassificationsEconomicIndexRoute =
+  ClassificationsEconomicIndexRouteImport.update({
+    id: '/classifications/economic/',
+    path: '/classifications/economic/',
     getParentRoute: () => rootRouteImport,
   } as any).lazy(() =>
-    import('./routes/parlament/stenograme/index.lazy').then((d) => d.Route),
+    import('./routes/classifications/economic/index.lazy').then((d) => d.Route),
   )
-const ParlamentProiecteIndexRoute = ParlamentProiecteIndexRouteImport.update({
-  id: '/parlament/proiecte/',
-  path: '/parlament/proiecte/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ParlamentMembriIndexRoute = ParlamentMembriIndexRouteImport.update({
-  id: '/parlament/membri/',
-  path: '/parlament/membri/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ParlamentGrupuriIndexRoute = ParlamentGrupuriIndexRouteImport.update({
-  id: '/parlament/grupuri/',
-  path: '/parlament/grupuri/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ParlamentComisiiIndexRoute = ParlamentComisiiIndexRouteImport.update({
-  id: '/parlament/comisii/',
-  path: '/parlament/comisii/',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/parlament/comisii/index.lazy').then((d) => d.Route),
-)
-const ParlamentAgendaIndexRoute = ParlamentAgendaIndexRouteImport.update({
-  id: '/parlament/agenda/',
-  path: '/parlament/agenda/',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/parlament/agenda/index.lazy').then((d) => d.Route),
-)
-const MapsEditorIndexRoute = MapsEditorIndexRouteImport.update({
-  id: '/maps/editor/',
-  path: '/maps/editor/',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/maps/editor/index.lazy').then((d) => d.Route),
-)
-const MapsDatasetsIndexRoute = MapsDatasetsIndexRouteImport.update({
-  id: '/maps/datasets/',
-  path: '/maps/datasets/',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/maps/datasets/index.lazy').then((d) => d.Route),
-)
+const ClassificationsEconomicCodeRoute =
+  ClassificationsEconomicCodeRouteImport.update({
+    id: '/classifications/economic/$code',
+    path: '/classifications/economic/$code',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/classifications/economic/$code.lazy').then((d) => d.Route),
+  )
 const ClassificationsFunctionalIndexRoute =
   ClassificationsFunctionalIndexRouteImport.update({
     id: '/classifications/functional/',
@@ -724,126 +694,127 @@ const ClassificationsFunctionalIndexRoute =
       (d) => d.Route,
     ),
   )
-const ClassificationsEconomicIndexRoute =
-  ClassificationsEconomicIndexRouteImport.update({
-    id: '/classifications/economic/',
-    path: '/classifications/economic/',
+const ClassificationsFunctionalCodeRoute =
+  ClassificationsFunctionalCodeRouteImport.update({
+    id: '/classifications/functional/$code',
+    path: '/classifications/functional/$code',
     getParentRoute: () => rootRouteImport,
   } as any).lazy(() =>
-    import('./routes/classifications/economic/index.lazy').then((d) => d.Route),
-  )
-const LangLearningIndexRoute = LangLearningIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => LangLearningRouteRoute,
-} as any).lazy(() =>
-  import('./routes/$lang/learning/index.lazy').then((d) => d.Route),
-)
-const StatisticiTeritoriiSirutaRoute =
-  StatisticiTeritoriiSirutaRouteImport.update({
-    id: '/statistici/teritorii/$siruta',
-    path: '/statistici/teritorii/$siruta',
-    getParentRoute: () => rootRouteImport,
-  } as any).lazy(() =>
-    import('./routes/statistici/teritorii/$siruta.lazy').then((d) => d.Route),
-  )
-const StatisticiSeturiCodRoute = StatisticiSeturiCodRouteImport.update({
-  id: '/statistici/seturi/$cod',
-  path: '/statistici/seturi/$cod',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/statistici/seturi/$cod.lazy').then((d) => d.Route),
-)
-const ProcurementSuppliersCuiRoute = ProcurementSuppliersCuiRouteImport.update({
-  id: '/suppliers/$cui',
-  path: '/suppliers/$cui',
-  getParentRoute: () => ProcurementRouteRoute,
-} as any).lazy(() =>
-  import('./routes/procurement/suppliers/$cui.lazy').then((d) => d.Route),
-)
-const ProcurementProceduresIdRoute = ProcurementProceduresIdRouteImport.update({
-  id: '/procedures/$id',
-  path: '/procedures/$id',
-  getParentRoute: () => ProcurementRouteRoute,
-} as any).lazy(() =>
-  import('./routes/procurement/procedures/$id.lazy').then((d) => d.Route),
-)
-const ProcurementInstitutionsCuiRoute =
-  ProcurementInstitutionsCuiRouteImport.update({
-    id: '/institutions/$cui',
-    path: '/institutions/$cui',
-    getParentRoute: () => ProcurementRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/procurement/institutions/$cui.lazy').then((d) => d.Route),
-  )
-const ProcurementDirectAcquisitionsIdRoute =
-  ProcurementDirectAcquisitionsIdRouteImport.update({
-    id: '/direct-acquisitions/$id',
-    path: '/direct-acquisitions/$id',
-    getParentRoute: () => ProcurementRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/procurement/direct-acquisitions/$id.lazy').then(
+    import('./routes/classifications/functional/$code.lazy').then(
       (d) => d.Route,
     ),
   )
-const ProcurementContractsIdRoute = ProcurementContractsIdRouteImport.update({
-  id: '/contracts/$id',
-  path: '/contracts/$id',
-  getParentRoute: () => ProcurementRouteRoute,
-} as any).lazy(() =>
-  import('./routes/procurement/contracts/$id.lazy').then((d) => d.Route),
-)
-const ProcurementCategoriesCodeRoute =
-  ProcurementCategoriesCodeRouteImport.update({
-    id: '/categories/$code',
-    path: '/categories/$code',
-    getParentRoute: () => ProcurementRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/procurement/categories/$code.lazy').then((d) => d.Route),
-  )
-const PrimarieCuiShareImageDotpngRoute =
-  PrimarieCuiShareImageDotpngRouteImport.update({
+const EntitiesCuiShareImageDotpngRoute =
+  EntitiesCuiShareImageDotpngRouteImport.update({
     id: '/share-image.png',
     path: '/share-image.png',
-    getParentRoute: () => PrimarieCuiRouteRoute,
+    getParentRoute: () => EntitiesCuiRoute,
   } as any)
-const PnrrProiecteProjectKeyRoute = PnrrProiecteProjectKeyRouteImport.update({
-  id: '/pnrr_/proiecte_/$projectKey',
-  path: '/pnrr/proiecte/$projectKey',
+const InvestitiiPubliceJudeteCountyCodeRoute =
+  InvestitiiPubliceJudeteCountyCodeRouteImport.update({
+    id: '/judete/$countyCode',
+    path: '/judete/$countyCode',
+    getParentRoute: () => InvestitiiPubliceRouteRoute,
+  } as any)
+const InvestitiiPubliceLocalitatiSirutaRoute =
+  InvestitiiPubliceLocalitatiSirutaRouteImport.update({
+    id: '/localitati/$siruta',
+    path: '/localitati/$siruta',
+    getParentRoute: () => InvestitiiPubliceRouteRoute,
+  } as any)
+const InvestitiiPubliceObiectiveIdRoute =
+  InvestitiiPubliceObiectiveIdRouteImport.update({
+    id: '/obiective/$id',
+    path: '/obiective/$id',
+    getParentRoute: () => InvestitiiPubliceRouteRoute,
+  } as any)
+const JustitieDosareCaseIdRoute = JustitieDosareCaseIdRouteImport.update({
+  id: '/dosare/$caseId',
+  path: '/dosare/$caseId',
+  getParentRoute: () => JustitieRoute,
+} as any)
+const JustitieInstanteCourtIdRoute = JustitieInstanteCourtIdRouteImport.update({
+  id: '/instante/$courtId',
+  path: '/instante/$courtId',
+  getParentRoute: () => JustitieRoute,
+} as any)
+const MapsDatasetsIndexRoute = MapsDatasetsIndexRouteImport.update({
+  id: '/maps/datasets/',
+  path: '/maps/datasets/',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
-  import('./routes/pnrr_.proiecte_.$projectKey.lazy').then((d) => d.Route),
+  import('./routes/maps/datasets/index.lazy').then((d) => d.Route),
 )
-const PnrrOrganizatiiCuiRoute = PnrrOrganizatiiCuiRouteImport.update({
-  id: '/pnrr_/organizatii_/$cui',
-  path: '/pnrr/organizatii/$cui',
+const MapsDatasetsDatasetIdRoute = MapsDatasetsDatasetIdRouteImport.update({
+  id: '/maps/datasets/$datasetId',
+  path: '/maps/datasets/$datasetId',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
-  import('./routes/pnrr_.organizatii_.$cui.lazy').then((d) => d.Route),
+  import('./routes/maps/datasets/$datasetId.lazy').then((d) => d.Route),
 )
-const PnrrJudeteCountySirutaRoute = PnrrJudeteCountySirutaRouteImport.update({
-  id: '/pnrr_/judete_/$countySiruta',
-  path: '/pnrr/judete/$countySiruta',
+const MapsDatasetsNewRoute = MapsDatasetsNewRouteImport.update({
+  id: '/maps/datasets/new',
+  path: '/maps/datasets/new',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
-  import('./routes/pnrr_.judete_.$countySiruta.lazy').then((d) => d.Route),
+  import('./routes/maps/datasets/new.lazy').then((d) => d.Route),
 )
-const ParlamentStenogrameSpeechKeyRoute =
-  ParlamentStenogrameSpeechKeyRouteImport.update({
-    id: '/parlament/stenograme/$speechKey',
-    path: '/parlament/stenograme/$speechKey',
+const MapsEditorIndexRoute = MapsEditorIndexRouteImport.update({
+  id: '/maps/editor/',
+  path: '/maps/editor/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/maps/editor/index.lazy').then((d) => d.Route),
+)
+const MapsEditorMapIdRoute = MapsEditorMapIdRouteImport.update({
+  id: '/maps/editor/$mapId',
+  path: '/maps/editor/$mapId',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/maps/editor/$mapId.lazy').then((d) => d.Route),
+)
+const MapsEditorNewRoute = MapsEditorNewRouteImport.update({
+  id: '/maps/editor/new',
+  path: '/maps/editor/new',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/maps/editor/new.lazy').then((d) => d.Route),
+)
+const MapsPublicMapIdRoute = MapsPublicMapIdRouteImport.update({
+  id: '/maps/public/$mapId',
+  path: '/maps/public/$mapId',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/maps/public/$mapId.lazy').then((d) => d.Route),
+)
+const OngUriSursaSnapshotIdRoute = OngUriSursaSnapshotIdRouteImport.update({
+  id: '/sursa/$snapshotId',
+  path: '/sursa/$snapshotId',
+  getParentRoute: () => OngUriRoute,
+} as any).lazy(() =>
+  import('./routes/ong-uri.sursa.$snapshotId.lazy').then((d) => d.Route),
+)
+const ParlamentAgendaIndexRoute = ParlamentAgendaIndexRouteImport.update({
+  id: '/parlament/agenda/',
+  path: '/parlament/agenda/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/parlament/agenda/index.lazy').then((d) => d.Route),
+)
+const ParlamentAgendaAgendaKeyRoute =
+  ParlamentAgendaAgendaKeyRouteImport.update({
+    id: '/parlament/agenda/$agendaKey',
+    path: '/parlament/agenda/$agendaKey',
     getParentRoute: () => rootRouteImport,
   } as any).lazy(() =>
-    import('./routes/parlament/stenograme/$speechKey.lazy').then(
-      (d) => d.Route,
-    ),
+    import('./routes/parlament/agenda/$agendaKey.lazy').then((d) => d.Route),
   )
-const ParlamentGrupuriGroupIdRoute = ParlamentGrupuriGroupIdRouteImport.update({
-  id: '/parlament/grupuri/$groupId',
-  path: '/parlament/grupuri/$groupId',
+const ParlamentComisiiIndexRoute = ParlamentComisiiIndexRouteImport.update({
+  id: '/parlament/comisii/',
+  path: '/parlament/comisii/',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
-  import('./routes/parlament/grupuri/$groupId.lazy').then((d) => d.Route),
+  import('./routes/parlament/comisii/index.lazy').then((d) => d.Route),
 )
 const ParlamentComisiiCommitteeKeyRoute =
   ParlamentComisiiCommitteeKeyRouteImport.update({
@@ -855,160 +826,37 @@ const ParlamentComisiiCommitteeKeyRoute =
       (d) => d.Route,
     ),
   )
-const ParlamentAgendaAgendaKeyRoute =
-  ParlamentAgendaAgendaKeyRouteImport.update({
-    id: '/parlament/agenda/$agendaKey',
-    path: '/parlament/agenda/$agendaKey',
+const ParlamentGrupuriIndexRoute = ParlamentGrupuriIndexRouteImport.update({
+  id: '/parlament/grupuri/',
+  path: '/parlament/grupuri/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ParlamentGrupuriGroupIdRoute = ParlamentGrupuriGroupIdRouteImport.update({
+  id: '/parlament/grupuri/$groupId',
+  path: '/parlament/grupuri/$groupId',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/parlament/grupuri/$groupId.lazy').then((d) => d.Route),
+)
+const ParlamentMembriIndexRoute = ParlamentMembriIndexRouteImport.update({
+  id: '/parlament/membri/',
+  path: '/parlament/membri/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ParlamentMembriMemberIdRouteRoute =
+  ParlamentMembriMemberIdRouteRouteImport.update({
+    id: '/parlament/membri/$memberId',
+    path: '/parlament/membri/$memberId',
     getParentRoute: () => rootRouteImport,
   } as any).lazy(() =>
-    import('./routes/parlament/agenda/$agendaKey.lazy').then((d) => d.Route),
-  )
-const OngUriSursaSnapshotIdRoute = OngUriSursaSnapshotIdRouteImport.update({
-  id: '/sursa/$snapshotId',
-  path: '/sursa/$snapshotId',
-  getParentRoute: () => OngUriRoute,
-} as any).lazy(() =>
-  import('./routes/ong-uri.sursa.$snapshotId.lazy').then((d) => d.Route),
-)
-const MapsPublicMapIdRoute = MapsPublicMapIdRouteImport.update({
-  id: '/maps/public/$mapId',
-  path: '/maps/public/$mapId',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/maps/public/$mapId.lazy').then((d) => d.Route),
-)
-const MapsEditorNewRoute = MapsEditorNewRouteImport.update({
-  id: '/maps/editor/new',
-  path: '/maps/editor/new',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/maps/editor/new.lazy').then((d) => d.Route),
-)
-const MapsEditorMapIdRoute = MapsEditorMapIdRouteImport.update({
-  id: '/maps/editor/$mapId',
-  path: '/maps/editor/$mapId',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/maps/editor/$mapId.lazy').then((d) => d.Route),
-)
-const MapsDatasetsNewRoute = MapsDatasetsNewRouteImport.update({
-  id: '/maps/datasets/new',
-  path: '/maps/datasets/new',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/maps/datasets/new.lazy').then((d) => d.Route),
-)
-const MapsDatasetsDatasetIdRoute = MapsDatasetsDatasetIdRouteImport.update({
-  id: '/maps/datasets/$datasetId',
-  path: '/maps/datasets/$datasetId',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/maps/datasets/$datasetId.lazy').then((d) => d.Route),
-)
-const LegislatieActeIdRoute = LegislatieActeIdRouteImport.update({
-  id: '/acte/$id',
-  path: '/acte/$id',
-  getParentRoute: () => LegislatieRouteRoute,
-} as any).lazy(() =>
-  import('./routes/legislatie/acte/$id.lazy').then((d) => d.Route),
-)
-const JustitieInstanteCourtIdRoute = JustitieInstanteCourtIdRouteImport.update({
-  id: '/instante/$courtId',
-  path: '/instante/$courtId',
-  getParentRoute: () => JustitieRoute,
-} as any)
-const JustitieDosareCaseIdRoute = JustitieDosareCaseIdRouteImport.update({
-  id: '/dosare/$caseId',
-  path: '/dosare/$caseId',
-  getParentRoute: () => JustitieRoute,
-} as any)
-const InvestitiiPubliceObiectiveIdRoute =
-  InvestitiiPubliceObiectiveIdRouteImport.update({
-    id: '/obiective/$id',
-    path: '/obiective/$id',
-    getParentRoute: () => InvestitiiPubliceRouteRoute,
-  } as any)
-const InvestitiiPubliceLocalitatiSirutaRoute =
-  InvestitiiPubliceLocalitatiSirutaRouteImport.update({
-    id: '/localitati/$siruta',
-    path: '/localitati/$siruta',
-    getParentRoute: () => InvestitiiPubliceRouteRoute,
-  } as any)
-const InvestitiiPubliceJudeteCountyCodeRoute =
-  InvestitiiPubliceJudeteCountyCodeRouteImport.update({
-    id: '/judete/$countyCode',
-    path: '/judete/$countyCode',
-    getParentRoute: () => InvestitiiPubliceRouteRoute,
-  } as any)
-const EntitiesCuiShareImageDotpngRoute =
-  EntitiesCuiShareImageDotpngRouteImport.update({
-    id: '/share-image.png',
-    path: '/share-image.png',
-    getParentRoute: () => EntitiesCuiRoute,
-  } as any)
-const ClassificationsFunctionalCodeRoute =
-  ClassificationsFunctionalCodeRouteImport.update({
-    id: '/classifications/functional/$code',
-    path: '/classifications/functional/$code',
-    getParentRoute: () => rootRouteImport,
-  } as any).lazy(() =>
-    import('./routes/classifications/functional/$code.lazy').then(
+    import('./routes/parlament/membri/$memberId/route.lazy').then(
       (d) => d.Route,
     ),
   )
-const ClassificationsEconomicCodeRoute =
-  ClassificationsEconomicCodeRouteImport.update({
-    id: '/classifications/economic/$code',
-    path: '/classifications/economic/$code',
-    getParentRoute: () => rootRouteImport,
-  } as any).lazy(() =>
-    import('./routes/classifications/economic/$code.lazy').then((d) => d.Route),
-  )
-const ApiV1GraphqlRoute = ApiV1GraphqlRouteImport.update({
-  id: '/api/v1/graphql',
-  path: '/api/v1/graphql',
+const ParlamentProiecteIndexRoute = ParlamentProiecteIndexRouteImport.update({
+  id: '/parlament/proiecte/',
+  path: '/parlament/proiecte/',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AlegeriContestContestKeyRoute =
-  AlegeriContestContestKeyRouteImport.update({
-    id: '/alegeri/contest/$contestKey',
-    path: '/alegeri/contest/$contestKey',
-    getParentRoute: () => rootRouteImport,
-  } as any).lazy(() =>
-    import('./routes/alegeri/contest/$contestKey.lazy').then((d) => d.Route),
-  )
-const AchizitiiProceduriIdRoute = AchizitiiProceduriIdRouteImport.update({
-  id: '/proceduri/$id',
-  path: '/proceduri/$id',
-  getParentRoute: () => AchizitiiRouteRoute,
-} as any)
-const AchizitiiCpvCodeRoute = AchizitiiCpvCodeRouteImport.update({
-  id: '/cpv/$code',
-  path: '/cpv/$code',
-  getParentRoute: () => AchizitiiRouteRoute,
-} as any)
-const AchizitiiContracteIdRoute = AchizitiiContracteIdRouteImport.update({
-  id: '/contracte/$id',
-  path: '/contracte/$id',
-  getParentRoute: () => AchizitiiRouteRoute,
-} as any)
-const AchizitiiAchizitiiDirecteIdRoute =
-  AchizitiiAchizitiiDirecteIdRouteImport.update({
-    id: '/achizitii-directe/$id',
-    path: '/achizitii-directe/$id',
-    getParentRoute: () => AchizitiiRouteRoute,
-  } as any)
-const LangLearningOnboardingRoute = LangLearningOnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => LangLearningRouteRoute,
-} as any).lazy(() =>
-  import('./routes/$lang/learning/onboarding.lazy').then((d) => d.Route),
-)
-const PrimarieCuiBugetRouteRoute = PrimarieCuiBugetRouteRouteImport.update({
-  id: '/buget',
-  path: '/buget',
-  getParentRoute: () => PrimarieCuiRouteRoute,
 } as any)
 const ParlamentProiecteBillIdRouteRoute =
   ParlamentProiecteBillIdRouteRouteImport.update({
@@ -1020,46 +868,166 @@ const ParlamentProiecteBillIdRouteRoute =
       (d) => d.Route,
     ),
   )
-const ParlamentMembriMemberIdRouteRoute =
-  ParlamentMembriMemberIdRouteRouteImport.update({
-    id: '/parlament/membri/$memberId',
-    path: '/parlament/membri/$memberId',
+const ParlamentStenogrameIndexRoute =
+  ParlamentStenogrameIndexRouteImport.update({
+    id: '/parlament/stenograme/',
+    path: '/parlament/stenograme/',
     getParentRoute: () => rootRouteImport,
   } as any).lazy(() =>
-    import('./routes/parlament/membri/$memberId/route.lazy').then(
+    import('./routes/parlament/stenograme/index.lazy').then((d) => d.Route),
+  )
+const ParlamentStenogrameSpeechKeyRoute =
+  ParlamentStenogrameSpeechKeyRouteImport.update({
+    id: '/parlament/stenograme/$speechKey',
+    path: '/parlament/stenograme/$speechKey',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/parlament/stenograme/$speechKey.lazy').then(
       (d) => d.Route,
     ),
   )
-const AdminCampaignsCampaignKeyRouteRoute =
-  AdminCampaignsCampaignKeyRouteRouteImport.update({
-    id: '/admin/campaigns/$campaignKey',
-    path: '/admin/campaigns/$campaignKey',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const PrimarieCuiBugetIndexRoute = PrimarieCuiBugetIndexRouteImport.update({
+const ParlamentVoturiIndexRoute = ParlamentVoturiIndexRouteImport.update({
+  id: '/parlament/voturi/',
+  path: '/parlament/voturi/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PnrrJudeteCountySirutaRoute = PnrrJudeteCountySirutaRouteImport.update({
+  id: '/pnrr_/judete_/$countySiruta',
+  path: '/pnrr/judete/$countySiruta',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/pnrr_.judete_.$countySiruta.lazy').then((d) => d.Route),
+)
+const PnrrOrganizatiiCuiRoute = PnrrOrganizatiiCuiRouteImport.update({
+  id: '/pnrr_/organizatii_/$cui',
+  path: '/pnrr/organizatii/$cui',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/pnrr_.organizatii_.$cui.lazy').then((d) => d.Route),
+)
+const PnrrProiecteProjectKeyRoute = PnrrProiecteProjectKeyRouteImport.update({
+  id: '/pnrr_/proiecte_/$projectKey',
+  path: '/pnrr/proiecte/$projectKey',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/pnrr_.proiecte_.$projectKey.lazy').then((d) => d.Route),
+)
+const PrimarieCuiIndexRoute = PrimarieCuiIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => PrimarieCuiBugetRouteRoute,
+  getParentRoute: () => PrimarieCuiRouteRoute,
 } as any).lazy(() =>
-  import('./routes/primarie/$cui/buget/index.lazy').then((d) => d.Route),
+  import('./routes/primarie/$cui/index.lazy').then((d) => d.Route),
 )
-const ParlamentProiecteBillIdIndexRoute =
-  ParlamentProiecteBillIdIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => ParlamentProiecteBillIdRouteRoute,
+const PrimarieCuiBugetRouteRoute = PrimarieCuiBugetRouteRouteImport.update({
+  id: '/buget',
+  path: '/buget',
+  getParentRoute: () => PrimarieCuiRouteRoute,
+} as any)
+const PrimarieCuiShareImageDotpngRoute =
+  PrimarieCuiShareImageDotpngRouteImport.update({
+    id: '/share-image.png',
+    path: '/share-image.png',
+    getParentRoute: () => PrimarieCuiRouteRoute,
+  } as any)
+const PrimarieHartaIndexRoute = PrimarieHartaIndexRouteImport.update({
+  id: '/primarie/harta/',
+  path: '/primarie/harta/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/primarie/harta/index.lazy').then((d) => d.Route),
+)
+const ProcurementCategoriesCodeRoute =
+  ProcurementCategoriesCodeRouteImport.update({
+    id: '/categories/$code',
+    path: '/categories/$code',
+    getParentRoute: () => ProcurementRouteRoute,
   } as any).lazy(() =>
-    import('./routes/parlament/proiecte/$billId/index.lazy').then(
+    import('./routes/procurement/categories/$code.lazy').then((d) => d.Route),
+  )
+const ProcurementContractsIdRoute = ProcurementContractsIdRouteImport.update({
+  id: '/contracts/$id',
+  path: '/contracts/$id',
+  getParentRoute: () => ProcurementRouteRoute,
+} as any).lazy(() =>
+  import('./routes/procurement/contracts/$id.lazy').then((d) => d.Route),
+)
+const ProcurementDirectAcquisitionsIdRoute =
+  ProcurementDirectAcquisitionsIdRouteImport.update({
+    id: '/direct-acquisitions/$id',
+    path: '/direct-acquisitions/$id',
+    getParentRoute: () => ProcurementRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/procurement/direct-acquisitions/$id.lazy').then(
       (d) => d.Route,
     ),
   )
-const ParlamentMembriMemberIdIndexRoute =
-  ParlamentMembriMemberIdIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
+const ProcurementInstitutionsCuiRoute =
+  ProcurementInstitutionsCuiRouteImport.update({
+    id: '/institutions/$cui',
+    path: '/institutions/$cui',
+    getParentRoute: () => ProcurementRouteRoute,
   } as any).lazy(() =>
-    import('./routes/parlament/membri/$memberId/index.lazy').then(
+    import('./routes/procurement/institutions/$cui.lazy').then((d) => d.Route),
+  )
+const ProcurementProceduresIdRoute = ProcurementProceduresIdRouteImport.update({
+  id: '/procedures/$id',
+  path: '/procedures/$id',
+  getParentRoute: () => ProcurementRouteRoute,
+} as any).lazy(() =>
+  import('./routes/procurement/procedures/$id.lazy').then((d) => d.Route),
+)
+const ProcurementSuppliersCuiRoute = ProcurementSuppliersCuiRouteImport.update({
+  id: '/suppliers/$cui',
+  path: '/suppliers/$cui',
+  getParentRoute: () => ProcurementRouteRoute,
+} as any).lazy(() =>
+  import('./routes/procurement/suppliers/$cui.lazy').then((d) => d.Route),
+)
+const StatisticiComparatiiIndexRoute =
+  StatisticiComparatiiIndexRouteImport.update({
+    id: '/statistici/comparatii/',
+    path: '/statistici/comparatii/',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/statistici/comparatii/index.lazy').then((d) => d.Route),
+  )
+const StatisticiSeturiIndexRoute = StatisticiSeturiIndexRouteImport.update({
+  id: '/statistici/seturi/',
+  path: '/statistici/seturi/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/statistici/seturi/index.lazy').then((d) => d.Route),
+)
+const StatisticiSeturiCodRoute = StatisticiSeturiCodRouteImport.update({
+  id: '/statistici/seturi/$cod',
+  path: '/statistici/seturi/$cod',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/statistici/seturi/$cod.lazy').then((d) => d.Route),
+)
+const StatisticiTeritoriiSirutaRoute =
+  StatisticiTeritoriiSirutaRouteImport.update({
+    id: '/statistici/teritorii/$siruta',
+    path: '/statistici/teritorii/$siruta',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/statistici/teritorii/$siruta.lazy').then((d) => d.Route),
+  )
+const LangLearningPathIdIndexRoute = LangLearningPathIdIndexRouteImport.update({
+  id: '/$pathId/',
+  path: '/$pathId/',
+  getParentRoute: () => LangLearningRouteRoute,
+} as any).lazy(() =>
+  import('./routes/$lang/learning/$pathId/index.lazy').then((d) => d.Route),
+)
+const LangLearningCertificatesIdRoute =
+  LangLearningCertificatesIdRouteImport.update({
+    id: '/certificates/$id',
+    path: '/certificates/$id',
+    getParentRoute: () => LangLearningRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/$lang/learning/certificates.$id.lazy').then(
       (d) => d.Route,
     ),
   )
@@ -1073,208 +1041,13 @@ const AdminCampaignsCampaignKeyIndexRoute =
       (d) => d.Route,
     ),
   )
-const LangLearningPathIdIndexRoute = LangLearningPathIdIndexRouteImport.update({
-  id: '/$pathId/',
-  path: '/$pathId/',
-  getParentRoute: () => LangLearningRouteRoute,
-} as any).lazy(() =>
-  import('./routes/$lang/learning/$pathId/index.lazy').then((d) => d.Route),
-)
-const PrimarieCuiBugetResurseRoute = PrimarieCuiBugetResurseRouteImport.update({
-  id: '/resurse',
-  path: '/resurse',
-  getParentRoute: () => PrimarieCuiBugetRouteRoute,
-} as any).lazy(() =>
-  import('./routes/primarie/$cui/buget/resurse.lazy').then((d) => d.Route),
-)
-const PrimarieCuiBugetCalendarRoute =
-  PrimarieCuiBugetCalendarRouteImport.update({
-    id: '/calendar',
-    path: '/calendar',
-    getParentRoute: () => PrimarieCuiBugetRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/primarie/$cui/buget/calendar.lazy').then((d) => d.Route),
-  )
-const ParlamentVoturiChamberVoteIdRoute =
-  ParlamentVoturiChamberVoteIdRouteImport.update({
-    id: '/parlament/voturi/$chamber/$voteId',
-    path: '/parlament/voturi/$chamber/$voteId',
-    getParentRoute: () => rootRouteImport,
-  } as any).lazy(() =>
-    import('./routes/parlament/voturi/$chamber/$voteId.lazy').then(
-      (d) => d.Route,
-    ),
-  )
-const ParlamentStenogrameSedinteSessionKeyRoute =
-  ParlamentStenogrameSedinteSessionKeyRouteImport.update({
-    id: '/parlament/stenograme/sedinte/$sessionKey',
-    path: '/parlament/stenograme/sedinte/$sessionKey',
-    getParentRoute: () => rootRouteImport,
-  } as any).lazy(() =>
-    import('./routes/parlament/stenograme/sedinte.$sessionKey.lazy').then(
-      (d) => d.Route,
-    ),
-  )
-const ParlamentProiecteBillIdVoturiRoute =
-  ParlamentProiecteBillIdVoturiRouteImport.update({
-    id: '/voturi',
-    path: '/voturi',
-    getParentRoute: () => ParlamentProiecteBillIdRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/parlament/proiecte/$billId/voturi.lazy').then(
-      (d) => d.Route,
-    ),
-  )
-const ParlamentProiecteBillIdEtapeRoute =
-  ParlamentProiecteBillIdEtapeRouteImport.update({
-    id: '/etape',
-    path: '/etape',
-    getParentRoute: () => ParlamentProiecteBillIdRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/parlament/proiecte/$billId/etape.lazy').then(
-      (d) => d.Route,
-    ),
-  )
-const ParlamentProiecteBillIdDocumenteRoute =
-  ParlamentProiecteBillIdDocumenteRouteImport.update({
-    id: '/documente',
-    path: '/documente',
-    getParentRoute: () => ParlamentProiecteBillIdRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/parlament/proiecte/$billId/documente.lazy').then(
-      (d) => d.Route,
-    ),
-  )
-const ParlamentMembriMemberIdVoturiRoute =
-  ParlamentMembriMemberIdVoturiRouteImport.update({
-    id: '/voturi',
-    path: '/voturi',
-    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/parlament/membri/$memberId/voturi.lazy').then(
-      (d) => d.Route,
-    ),
-  )
-const ParlamentMembriMemberIdPortretRoute =
-  ParlamentMembriMemberIdPortretRouteImport.update({
-    id: '/portret',
-    path: '/portret',
-    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/parlament/membri/$memberId/portret.lazy').then(
-      (d) => d.Route,
-    ),
-  )
-const ParlamentMembriMemberIdIntrebariRoute =
-  ParlamentMembriMemberIdIntrebariRouteImport.update({
-    id: '/intrebari',
-    path: '/intrebari',
-    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/parlament/membri/$memberId/intrebari.lazy').then(
-      (d) => d.Route,
-    ),
-  )
-const ParlamentMembriMemberIdInterventiiRoute =
-  ParlamentMembriMemberIdInterventiiRouteImport.update({
-    id: '/interventii',
-    path: '/interventii',
-    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/parlament/membri/$memberId/interventii.lazy').then(
-      (d) => d.Route,
-    ),
-  )
-const ParlamentMembriMemberIdIntereseRoute =
-  ParlamentMembriMemberIdIntereseRouteImport.update({
-    id: '/interese',
-    path: '/interese',
-    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/parlament/membri/$memberId/interese.lazy').then(
-      (d) => d.Route,
-    ),
-  )
-const ParlamentMembriMemberIdInitiativeRoute =
-  ParlamentMembriMemberIdInitiativeRouteImport.update({
-    id: '/initiative',
-    path: '/initiative',
-    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/parlament/membri/$memberId/initiative.lazy').then(
-      (d) => d.Route,
-    ),
-  )
-const ParlamentMembriMemberIdContactRoute =
-  ParlamentMembriMemberIdContactRouteImport.update({
-    id: '/contact',
-    path: '/contact',
-    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/parlament/membri/$memberId/contact.lazy').then(
-      (d) => d.Route,
-    ),
-  )
-const ParlamentMembriMemberIdAlegeriRoute =
-  ParlamentMembriMemberIdAlegeriRouteImport.update({
-    id: '/alegeri',
-    path: '/alegeri',
-    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/parlament/membri/$memberId/alegeri.lazy').then(
-      (d) => d.Route,
-    ),
-  )
-const MapsDatasetsPublicPublicIdRoute =
-  MapsDatasetsPublicPublicIdRouteImport.update({
-    id: '/maps/datasets/public/$publicId',
-    path: '/maps/datasets/public/$publicId',
-    getParentRoute: () => rootRouteImport,
-  } as any).lazy(() =>
-    import('./routes/maps/datasets/public/$publicId.lazy').then((d) => d.Route),
-  )
-const ApiPnrrRawProjectsRoute = ApiPnrrRawProjectsRouteImport.update({
-  id: '/api/pnrr/raw/projects',
-  path: '/api/pnrr/raw/projects',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPnrrRawPaymentsRoute = ApiPnrrRawPaymentsRouteImport.update({
-  id: '/api/pnrr/raw/payments',
-  path: '/api/pnrr/raw/payments',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPnrrRawIndicatorsRoute = ApiPnrrRawIndicatorsRouteImport.update({
-  id: '/api/pnrr/raw/indicators',
-  path: '/api/pnrr/raw/indicators',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminCampaignsCampaignKeyUsersRoute =
-  AdminCampaignsCampaignKeyUsersRouteImport.update({
-    id: '/users',
-    path: '/users',
+const AdminCampaignsCampaignKeyAnalyticsRoute =
+  AdminCampaignsCampaignKeyAnalyticsRouteImport.update({
+    id: '/analytics',
+    path: '/analytics',
     getParentRoute: () => AdminCampaignsCampaignKeyRouteRoute,
   } as any).lazy(() =>
-    import('./routes/admin/campaigns/$campaignKey/users.lazy').then(
-      (d) => d.Route,
-    ),
-  )
-const AdminCampaignsCampaignKeyUserInteractionsRoute =
-  AdminCampaignsCampaignKeyUserInteractionsRouteImport.update({
-    id: '/user-interactions',
-    path: '/user-interactions',
-    getParentRoute: () => AdminCampaignsCampaignKeyRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/admin/campaigns/$campaignKey/user-interactions.lazy').then(
-      (d) => d.Route,
-    ),
-  )
-const AdminCampaignsCampaignKeyNotificationsRoute =
-  AdminCampaignsCampaignKeyNotificationsRouteImport.update({
-    id: '/notifications',
-    path: '/notifications',
-    getParentRoute: () => AdminCampaignsCampaignKeyRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/admin/campaigns/$campaignKey/notifications.lazy').then(
+    import('./routes/admin/campaigns/$campaignKey/analytics.lazy').then(
       (d) => d.Route,
     ),
   )
@@ -1288,25 +1061,223 @@ const AdminCampaignsCampaignKeyEntitiesRoute =
       (d) => d.Route,
     ),
   )
-const AdminCampaignsCampaignKeyAnalyticsRoute =
-  AdminCampaignsCampaignKeyAnalyticsRouteImport.update({
-    id: '/analytics',
-    path: '/analytics',
+const AdminCampaignsCampaignKeyNotificationsRoute =
+  AdminCampaignsCampaignKeyNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
     getParentRoute: () => AdminCampaignsCampaignKeyRouteRoute,
   } as any).lazy(() =>
-    import('./routes/admin/campaigns/$campaignKey/analytics.lazy').then(
+    import('./routes/admin/campaigns/$campaignKey/notifications.lazy').then(
       (d) => d.Route,
     ),
   )
-const LangLearningCertificatesIdRoute =
-  LangLearningCertificatesIdRouteImport.update({
-    id: '/certificates/$id',
-    path: '/certificates/$id',
-    getParentRoute: () => LangLearningRouteRoute,
+const AdminCampaignsCampaignKeyUserInteractionsRoute =
+  AdminCampaignsCampaignKeyUserInteractionsRouteImport.update({
+    id: '/user-interactions',
+    path: '/user-interactions',
+    getParentRoute: () => AdminCampaignsCampaignKeyRouteRoute,
   } as any).lazy(() =>
-    import('./routes/$lang/learning/certificates.$id.lazy').then(
+    import('./routes/admin/campaigns/$campaignKey/user-interactions.lazy').then(
       (d) => d.Route,
     ),
+  )
+const AdminCampaignsCampaignKeyUsersRoute =
+  AdminCampaignsCampaignKeyUsersRouteImport.update({
+    id: '/users',
+    path: '/users',
+    getParentRoute: () => AdminCampaignsCampaignKeyRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/admin/campaigns/$campaignKey/users.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ApiPnrrRawIndicatorsRoute = ApiPnrrRawIndicatorsRouteImport.update({
+  id: '/api/pnrr/raw/indicators',
+  path: '/api/pnrr/raw/indicators',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPnrrRawPaymentsRoute = ApiPnrrRawPaymentsRouteImport.update({
+  id: '/api/pnrr/raw/payments',
+  path: '/api/pnrr/raw/payments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPnrrRawProjectsRoute = ApiPnrrRawProjectsRouteImport.update({
+  id: '/api/pnrr/raw/projects',
+  path: '/api/pnrr/raw/projects',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MapsDatasetsPublicPublicIdRoute =
+  MapsDatasetsPublicPublicIdRouteImport.update({
+    id: '/maps/datasets/public/$publicId',
+    path: '/maps/datasets/public/$publicId',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/maps/datasets/public/$publicId.lazy').then((d) => d.Route),
+  )
+const ParlamentMembriMemberIdIndexRoute =
+  ParlamentMembriMemberIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/membri/$memberId/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentMembriMemberIdAlegeriRoute =
+  ParlamentMembriMemberIdAlegeriRouteImport.update({
+    id: '/alegeri',
+    path: '/alegeri',
+    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/membri/$memberId/alegeri.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentMembriMemberIdContactRoute =
+  ParlamentMembriMemberIdContactRouteImport.update({
+    id: '/contact',
+    path: '/contact',
+    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/membri/$memberId/contact.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentMembriMemberIdInitiativeRoute =
+  ParlamentMembriMemberIdInitiativeRouteImport.update({
+    id: '/initiative',
+    path: '/initiative',
+    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/membri/$memberId/initiative.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentMembriMemberIdIntereseRoute =
+  ParlamentMembriMemberIdIntereseRouteImport.update({
+    id: '/interese',
+    path: '/interese',
+    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/membri/$memberId/interese.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentMembriMemberIdInterventiiRoute =
+  ParlamentMembriMemberIdInterventiiRouteImport.update({
+    id: '/interventii',
+    path: '/interventii',
+    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/membri/$memberId/interventii.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentMembriMemberIdIntrebariRoute =
+  ParlamentMembriMemberIdIntrebariRouteImport.update({
+    id: '/intrebari',
+    path: '/intrebari',
+    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/membri/$memberId/intrebari.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentMembriMemberIdPortretRoute =
+  ParlamentMembriMemberIdPortretRouteImport.update({
+    id: '/portret',
+    path: '/portret',
+    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/membri/$memberId/portret.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentMembriMemberIdVoturiRoute =
+  ParlamentMembriMemberIdVoturiRouteImport.update({
+    id: '/voturi',
+    path: '/voturi',
+    getParentRoute: () => ParlamentMembriMemberIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/membri/$memberId/voturi.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentProiecteBillIdIndexRoute =
+  ParlamentProiecteBillIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => ParlamentProiecteBillIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/proiecte/$billId/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentProiecteBillIdDocumenteRoute =
+  ParlamentProiecteBillIdDocumenteRouteImport.update({
+    id: '/documente',
+    path: '/documente',
+    getParentRoute: () => ParlamentProiecteBillIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/proiecte/$billId/documente.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentProiecteBillIdEtapeRoute =
+  ParlamentProiecteBillIdEtapeRouteImport.update({
+    id: '/etape',
+    path: '/etape',
+    getParentRoute: () => ParlamentProiecteBillIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/proiecte/$billId/etape.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentProiecteBillIdVoturiRoute =
+  ParlamentProiecteBillIdVoturiRouteImport.update({
+    id: '/voturi',
+    path: '/voturi',
+    getParentRoute: () => ParlamentProiecteBillIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/parlament/proiecte/$billId/voturi.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentStenogrameSedinteSessionKeyRoute =
+  ParlamentStenogrameSedinteSessionKeyRouteImport.update({
+    id: '/parlament/stenograme/sedinte/$sessionKey',
+    path: '/parlament/stenograme/sedinte/$sessionKey',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/parlament/stenograme/sedinte.$sessionKey.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const ParlamentVoturiChamberVoteIdRoute =
+  ParlamentVoturiChamberVoteIdRouteImport.update({
+    id: '/parlament/voturi/$chamber/$voteId',
+    path: '/parlament/voturi/$chamber/$voteId',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/parlament/voturi/$chamber/$voteId.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const PrimarieCuiBugetIndexRoute = PrimarieCuiBugetIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PrimarieCuiBugetRouteRoute,
+} as any).lazy(() =>
+  import('./routes/primarie/$cui/buget/index.lazy').then((d) => d.Route),
+)
+const PrimarieCuiBugetCalendarRoute =
+  PrimarieCuiBugetCalendarRouteImport.update({
+    id: '/calendar',
+    path: '/calendar',
+    getParentRoute: () => PrimarieCuiBugetRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/primarie/$cui/buget/calendar.lazy').then((d) => d.Route),
   )
 const PrimarieCuiBugetProvocariRouteRoute =
   PrimarieCuiBugetProvocariRouteRouteImport.update({
@@ -1314,23 +1285,20 @@ const PrimarieCuiBugetProvocariRouteRoute =
     path: '/provocari',
     getParentRoute: () => PrimarieCuiBugetRouteRoute,
   } as any)
-const PrimarieCuiBugetProvocariIndexRoute =
-  PrimarieCuiBugetProvocariIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => PrimarieCuiBugetProvocariRouteRoute,
+const PrimarieCuiBugetResurseRoute = PrimarieCuiBugetResurseRouteImport.update({
+  id: '/resurse',
+  path: '/resurse',
+  getParentRoute: () => PrimarieCuiBugetRouteRoute,
+} as any).lazy(() =>
+  import('./routes/primarie/$cui/buget/resurse.lazy').then((d) => d.Route),
+)
+const LangLearningPathIdModuleIdLessonIdRoute =
+  LangLearningPathIdModuleIdLessonIdRouteImport.update({
+    id: '/$pathId/$moduleId/$lessonId',
+    path: '/$pathId/$moduleId/$lessonId',
+    getParentRoute: () => LangLearningRouteRoute,
   } as any).lazy(() =>
-    import('./routes/primarie/$cui/buget/provocari/index.lazy').then(
-      (d) => d.Route,
-    ),
-  )
-const AdminCampaignsCampaignKeyUsersUserIdRoute =
-  AdminCampaignsCampaignKeyUsersUserIdRouteImport.update({
-    id: '/$userId',
-    path: '/$userId',
-    getParentRoute: () => AdminCampaignsCampaignKeyUsersRoute,
-  } as any).lazy(() =>
-    import('./routes/admin/campaigns/$campaignKey/users.$userId.lazy').then(
+    import('./routes/$lang/learning/$pathId/$moduleId/$lessonId.lazy').then(
       (d) => d.Route,
     ),
   )
@@ -1344,13 +1312,23 @@ const AdminCampaignsCampaignKeyEntitiesEntityCuiRoute =
       (d) => d.Route,
     ),
   )
-const LangLearningPathIdModuleIdLessonIdRoute =
-  LangLearningPathIdModuleIdLessonIdRouteImport.update({
-    id: '/$pathId/$moduleId/$lessonId',
-    path: '/$pathId/$moduleId/$lessonId',
-    getParentRoute: () => LangLearningRouteRoute,
+const AdminCampaignsCampaignKeyUsersUserIdRoute =
+  AdminCampaignsCampaignKeyUsersUserIdRouteImport.update({
+    id: '/$userId',
+    path: '/$userId',
+    getParentRoute: () => AdminCampaignsCampaignKeyUsersRoute,
   } as any).lazy(() =>
-    import('./routes/$lang/learning/$pathId/$moduleId/$lessonId.lazy').then(
+    import('./routes/admin/campaigns/$campaignKey/users.$userId.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const PrimarieCuiBugetProvocariIndexRoute =
+  PrimarieCuiBugetProvocariIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => PrimarieCuiBugetProvocariRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/primarie/$cui/buget/provocari/index.lazy').then(
       (d) => d.Route,
     ),
   )
@@ -1380,7 +1358,6 @@ export interface FileRoutesByFullPath {
   '/achizitii': typeof AchizitiiRouteRouteWithChildren
   '/entities': typeof EntitiesRouteRouteWithChildren
   '/investitii-publice': typeof InvestitiiPubliceRouteRouteWithChildren
-  '/legislatie': typeof LegislatieRouteRouteWithChildren
   '/procurement': typeof ProcurementRouteRouteWithChildren
   '/agent': typeof AgentRoute
   '/budget-explorer': typeof BudgetExplorerRoute
@@ -1443,7 +1420,6 @@ export interface FileRoutesByFullPath {
   '/intreprinderi-publice/': typeof IntreprinderiPubliceIndexRoute
   '/investitii-publice/': typeof InvestitiiPubliceIndexRoute
   '/justitie/': typeof JustitieIndexRoute
-  '/legislatie/': typeof LegislatieIndexRoute
   '/ong-uri/': typeof OngUriIndexRoute
   '/parlament/': typeof ParlamentIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
@@ -1469,7 +1445,6 @@ export interface FileRoutesByFullPath {
   '/investitii-publice/obiective/$id': typeof InvestitiiPubliceObiectiveIdRoute
   '/justitie/dosare/$caseId': typeof JustitieDosareCaseIdRoute
   '/justitie/instante/$courtId': typeof JustitieInstanteCourtIdRoute
-  '/legislatie/acte/$id': typeof LegislatieActeIdRoute
   '/maps/datasets/$datasetId': typeof MapsDatasetsDatasetIdRoute
   '/maps/datasets/new': typeof MapsDatasetsNewRoute
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
@@ -1605,7 +1580,6 @@ export interface FileRoutesByTo {
   '/intreprinderi-publice': typeof IntreprinderiPubliceIndexRoute
   '/investitii-publice': typeof InvestitiiPubliceIndexRoute
   '/justitie': typeof JustitieIndexRoute
-  '/legislatie': typeof LegislatieIndexRoute
   '/ong-uri': typeof OngUriIndexRoute
   '/parlament': typeof ParlamentIndexRoute
   '/primarie': typeof PrimarieIndexRoute
@@ -1627,7 +1601,6 @@ export interface FileRoutesByTo {
   '/investitii-publice/obiective/$id': typeof InvestitiiPubliceObiectiveIdRoute
   '/justitie/dosare/$caseId': typeof JustitieDosareCaseIdRoute
   '/justitie/instante/$courtId': typeof JustitieInstanteCourtIdRoute
-  '/legislatie/acte/$id': typeof LegislatieActeIdRoute
   '/maps/datasets/$datasetId': typeof MapsDatasetsDatasetIdRoute
   '/maps/datasets/new': typeof MapsDatasetsNewRoute
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
@@ -1711,7 +1684,6 @@ export interface FileRoutesById {
   '/achizitii': typeof AchizitiiRouteRouteWithChildren
   '/entities': typeof EntitiesRouteRouteWithChildren
   '/investitii-publice': typeof InvestitiiPubliceRouteRouteWithChildren
-  '/legislatie': typeof LegislatieRouteRouteWithChildren
   '/procurement': typeof ProcurementRouteRouteWithChildren
   '/agent': typeof AgentRoute
   '/budget-explorer': typeof BudgetExplorerRoute
@@ -1774,7 +1746,6 @@ export interface FileRoutesById {
   '/intreprinderi-publice/': typeof IntreprinderiPubliceIndexRoute
   '/investitii-publice/': typeof InvestitiiPubliceIndexRoute
   '/justitie/': typeof JustitieIndexRoute
-  '/legislatie/': typeof LegislatieIndexRoute
   '/ong-uri/': typeof OngUriIndexRoute
   '/parlament/': typeof ParlamentIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
@@ -1800,7 +1771,6 @@ export interface FileRoutesById {
   '/investitii-publice/obiective/$id': typeof InvestitiiPubliceObiectiveIdRoute
   '/justitie/dosare/$caseId': typeof JustitieDosareCaseIdRoute
   '/justitie/instante/$courtId': typeof JustitieInstanteCourtIdRoute
-  '/legislatie/acte/$id': typeof LegislatieActeIdRoute
   '/maps/datasets/$datasetId': typeof MapsDatasetsDatasetIdRoute
   '/maps/datasets/new': typeof MapsDatasetsNewRoute
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
@@ -1886,7 +1856,6 @@ export interface FileRouteTypes {
     | '/achizitii'
     | '/entities'
     | '/investitii-publice'
-    | '/legislatie'
     | '/procurement'
     | '/agent'
     | '/budget-explorer'
@@ -1949,7 +1918,6 @@ export interface FileRouteTypes {
     | '/intreprinderi-publice/'
     | '/investitii-publice/'
     | '/justitie/'
-    | '/legislatie/'
     | '/ong-uri/'
     | '/parlament/'
     | '/primarie/'
@@ -1975,7 +1943,6 @@ export interface FileRouteTypes {
     | '/investitii-publice/obiective/$id'
     | '/justitie/dosare/$caseId'
     | '/justitie/instante/$courtId'
-    | '/legislatie/acte/$id'
     | '/maps/datasets/$datasetId'
     | '/maps/datasets/new'
     | '/maps/editor/$mapId'
@@ -2111,7 +2078,6 @@ export interface FileRouteTypes {
     | '/intreprinderi-publice'
     | '/investitii-publice'
     | '/justitie'
-    | '/legislatie'
     | '/ong-uri'
     | '/parlament'
     | '/primarie'
@@ -2133,7 +2099,6 @@ export interface FileRouteTypes {
     | '/investitii-publice/obiective/$id'
     | '/justitie/dosare/$caseId'
     | '/justitie/instante/$courtId'
-    | '/legislatie/acte/$id'
     | '/maps/datasets/$datasetId'
     | '/maps/datasets/new'
     | '/maps/editor/$mapId'
@@ -2216,7 +2181,6 @@ export interface FileRouteTypes {
     | '/achizitii'
     | '/entities'
     | '/investitii-publice'
-    | '/legislatie'
     | '/procurement'
     | '/agent'
     | '/budget-explorer'
@@ -2279,7 +2243,6 @@ export interface FileRouteTypes {
     | '/intreprinderi-publice/'
     | '/investitii-publice/'
     | '/justitie/'
-    | '/legislatie/'
     | '/ong-uri/'
     | '/parlament/'
     | '/primarie/'
@@ -2305,7 +2268,6 @@ export interface FileRouteTypes {
     | '/investitii-publice/obiective/$id'
     | '/justitie/dosare/$caseId'
     | '/justitie/instante/$courtId'
-    | '/legislatie/acte/$id'
     | '/maps/datasets/$datasetId'
     | '/maps/datasets/new'
     | '/maps/editor/$mapId'
@@ -2390,7 +2352,6 @@ export interface RootRouteChildren {
   AchizitiiRouteRoute: typeof AchizitiiRouteRouteWithChildren
   EntitiesRouteRoute: typeof EntitiesRouteRouteWithChildren
   InvestitiiPubliceRouteRoute: typeof InvestitiiPubliceRouteRouteWithChildren
-  LegislatieRouteRoute: typeof LegislatieRouteRouteWithChildren
   ProcurementRouteRoute: typeof ProcurementRouteRouteWithChildren
   AgentRoute: typeof AgentRoute
   BudgetExplorerRoute: typeof BudgetExplorerRoute
@@ -2485,6 +2446,146 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/achizitii': {
+      id: '/achizitii'
+      path: '/achizitii'
+      fullPath: '/achizitii'
+      preLoaderRoute: typeof AchizitiiRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agent': {
+      id: '/agent'
+      path: '/agent'
+      fullPath: '/agent'
+      preLoaderRoute: typeof AgentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/budget-explorer': {
+      id: '/budget-explorer'
+      path: '/budget-explorer'
+      fullPath: '/budget-explorer'
+      preLoaderRoute: typeof BudgetExplorerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/buget-national-2026': {
+      id: '/buget-national-2026'
+      path: '/buget-national-2026'
+      fullPath: '/buget-national-2026'
+      preLoaderRoute: typeof BugetNational2026RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bugete-locale-2026': {
+      id: '/bugete-locale-2026'
+      path: '/bugete-locale-2026'
+      fullPath: '/bugete-locale-2026'
+      preLoaderRoute: typeof BugeteLocale2026RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cookie-policy': {
+      id: '/cookie-policy'
+      path: '/cookie-policy'
+      fullPath: '/cookie-policy'
+      preLoaderRoute: typeof CookiePolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cookies': {
+      id: '/cookies'
+      path: '/cookies'
+      fullPath: '/cookies'
+      preLoaderRoute: typeof CookiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/entities': {
+      id: '/entities'
+      path: '/entities'
+      fullPath: '/entities'
+      preLoaderRoute: typeof EntitiesRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/entity-analytics': {
+      id: '/entity-analytics'
+      path: '/entity-analytics'
+      fullPath: '/entity-analytics'
+      preLoaderRoute: typeof EntityAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/investitii-publice': {
+      id: '/investitii-publice'
+      path: '/investitii-publice'
+      fullPath: '/investitii-publice'
+      preLoaderRoute: typeof InvestitiiPubliceRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/justitie': {
+      id: '/justitie'
+      path: '/justitie'
+      fullPath: '/justitie'
+      preLoaderRoute: typeof JustitieRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/map': {
+      id: '/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof MapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ong-uri': {
+      id: '/ong-uri'
+      path: '/ong-uri'
+      fullPath: '/ong-uri'
+      preLoaderRoute: typeof OngUriRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pnrr': {
+      id: '/pnrr'
+      path: '/pnrr'
+      fullPath: '/pnrr'
+      preLoaderRoute: typeof PnrrRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/procurement': {
+      id: '/procurement'
+      path: '/procurement'
+      fullPath: '/procurement'
+      preLoaderRoute: typeof ProcurementRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/provocare': {
+      id: '/provocare'
+      path: '/provocare'
+      fullPath: '/provocare'
+      preLoaderRoute: typeof ProvocareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-in': {
+      id: '/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof SignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-up': {
+      id: '/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof SignUpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -2499,242 +2600,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TestErrorRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/sign-up': {
-      id: '/sign-up'
-      path: '/sign-up'
-      fullPath: '/sign-up'
-      preLoaderRoute: typeof SignUpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sign-in': {
-      id: '/sign-in'
-      path: '/sign-in'
-      fullPath: '/sign-in'
-      preLoaderRoute: typeof SignInRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/provocare': {
-      id: '/provocare'
-      path: '/provocare'
-      fullPath: '/provocare'
-      preLoaderRoute: typeof ProvocareRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/privacy': {
-      id: '/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pnrr': {
-      id: '/pnrr'
-      path: '/pnrr'
-      fullPath: '/pnrr'
-      preLoaderRoute: typeof PnrrRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ong-uri': {
-      id: '/ong-uri'
-      path: '/ong-uri'
-      fullPath: '/ong-uri'
-      preLoaderRoute: typeof OngUriRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/map': {
-      id: '/map'
-      path: '/map'
-      fullPath: '/map'
-      preLoaderRoute: typeof MapRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/justitie': {
-      id: '/justitie'
-      path: '/justitie'
-      fullPath: '/justitie'
-      preLoaderRoute: typeof JustitieRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/entity-analytics': {
-      id: '/entity-analytics'
-      path: '/entity-analytics'
-      fullPath: '/entity-analytics'
-      preLoaderRoute: typeof EntityAnalyticsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cookies': {
-      id: '/cookies'
-      path: '/cookies'
-      fullPath: '/cookies'
-      preLoaderRoute: typeof CookiesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cookie-policy': {
-      id: '/cookie-policy'
-      path: '/cookie-policy'
-      fullPath: '/cookie-policy'
-      preLoaderRoute: typeof CookiePolicyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/bugete-locale-2026': {
-      id: '/bugete-locale-2026'
-      path: '/bugete-locale-2026'
-      fullPath: '/bugete-locale-2026'
-      preLoaderRoute: typeof BugeteLocale2026RouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/buget-national-2026': {
-      id: '/buget-national-2026'
-      path: '/buget-national-2026'
-      fullPath: '/buget-national-2026'
-      preLoaderRoute: typeof BugetNational2026RouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/budget-explorer': {
-      id: '/budget-explorer'
-      path: '/budget-explorer'
-      fullPath: '/budget-explorer'
-      preLoaderRoute: typeof BudgetExplorerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/agent': {
-      id: '/agent'
-      path: '/agent'
-      fullPath: '/agent'
-      preLoaderRoute: typeof AgentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/procurement': {
-      id: '/procurement'
-      path: '/procurement'
-      fullPath: '/procurement'
-      preLoaderRoute: typeof ProcurementRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/legislatie': {
-      id: '/legislatie'
-      path: '/legislatie'
-      fullPath: '/legislatie'
-      preLoaderRoute: typeof LegislatieRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/investitii-publice': {
-      id: '/investitii-publice'
-      path: '/investitii-publice'
-      fullPath: '/investitii-publice'
-      preLoaderRoute: typeof InvestitiiPubliceRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/entities': {
-      id: '/entities'
-      path: '/entities'
-      fullPath: '/entities'
-      preLoaderRoute: typeof EntitiesRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/achizitii': {
-      id: '/achizitii'
-      path: '/achizitii'
-      fullPath: '/achizitii'
-      preLoaderRoute: typeof AchizitiiRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/charts/': {
-      id: '/charts/'
-      path: '/charts'
-      fullPath: '/charts/'
-      preLoaderRoute: typeof ChartsIndexLazyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/statistici/': {
-      id: '/statistici/'
-      path: '/statistici'
-      fullPath: '/statistici/'
-      preLoaderRoute: typeof StatisticiIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/procurement/': {
-      id: '/procurement/'
-      path: '/'
-      fullPath: '/procurement/'
-      preLoaderRoute: typeof ProcurementIndexRouteImport
-      parentRoute: typeof ProcurementRouteRoute
-    }
-    '/primarie/': {
-      id: '/primarie/'
-      path: '/primarie'
-      fullPath: '/primarie/'
-      preLoaderRoute: typeof PrimarieIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/parlament/': {
-      id: '/parlament/'
-      path: '/parlament'
-      fullPath: '/parlament/'
-      preLoaderRoute: typeof ParlamentIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ong-uri/': {
-      id: '/ong-uri/'
-      path: '/'
-      fullPath: '/ong-uri/'
-      preLoaderRoute: typeof OngUriIndexRouteImport
-      parentRoute: typeof OngUriRoute
-    }
-    '/legislatie/': {
-      id: '/legislatie/'
-      path: '/'
-      fullPath: '/legislatie/'
-      preLoaderRoute: typeof LegislatieIndexRouteImport
-      parentRoute: typeof LegislatieRouteRoute
-    }
-    '/justitie/': {
-      id: '/justitie/'
-      path: '/'
-      fullPath: '/justitie/'
-      preLoaderRoute: typeof JustitieIndexRouteImport
-      parentRoute: typeof JustitieRoute
-    }
-    '/investitii-publice/': {
-      id: '/investitii-publice/'
-      path: '/'
-      fullPath: '/investitii-publice/'
-      preLoaderRoute: typeof InvestitiiPubliceIndexRouteImport
-      parentRoute: typeof InvestitiiPubliceRouteRoute
-    }
-    '/intreprinderi-publice/': {
-      id: '/intreprinderi-publice/'
-      path: '/intreprinderi-publice'
-      fullPath: '/intreprinderi-publice/'
-      preLoaderRoute: typeof IntreprinderiPubliceIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/entities/': {
-      id: '/entities/'
-      path: '/'
-      fullPath: '/entities/'
-      preLoaderRoute: typeof EntitiesIndexRouteImport
-      parentRoute: typeof EntitiesRouteRoute
-    }
-    '/companies/': {
-      id: '/companies/'
-      path: '/companies'
-      fullPath: '/companies/'
-      preLoaderRoute: typeof CompaniesIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/alegeri/': {
-      id: '/alegeri/'
-      path: '/alegeri'
-      fullPath: '/alegeri/'
-      preLoaderRoute: typeof AlegeriIndexRouteImport
+    '/$lang/learning': {
+      id: '/$lang/learning'
+      path: '/$lang/learning'
+      fullPath: '/$lang/learning'
+      preLoaderRoute: typeof LangLearningRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/achizitii/': {
@@ -2744,214 +2614,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AchizitiiIndexRouteImport
       parentRoute: typeof AchizitiiRouteRoute
     }
-    '/research/employees-data': {
-      id: '/research/employees-data'
-      path: '/research/employees-data'
-      fullPath: '/research/employees-data'
-      preLoaderRoute: typeof ResearchEmployeesDataLazyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/unsubscribe/$token': {
-      id: '/unsubscribe/$token'
-      path: '/unsubscribe/$token'
-      fullPath: '/unsubscribe/$token'
-      preLoaderRoute: typeof UnsubscribeTokenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sign-up/$': {
-      id: '/sign-up/$'
-      path: '/$'
-      fullPath: '/sign-up/$'
-      preLoaderRoute: typeof SignUpSplatRouteImport
-      parentRoute: typeof SignUpRoute
-    }
-    '/sign-in/$': {
-      id: '/sign-in/$'
-      path: '/$'
-      fullPath: '/sign-in/$'
-      preLoaderRoute: typeof SignInSplatRouteImport
-      parentRoute: typeof SignInRoute
-    }
-    '/share/$code': {
-      id: '/share/$code'
-      path: '/share/$code'
-      fullPath: '/share/$code'
-      preLoaderRoute: typeof ShareCodeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/settings/profile': {
-      id: '/settings/profile'
-      path: '/settings/profile'
-      fullPath: '/settings/profile'
-      preLoaderRoute: typeof SettingsProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/settings/notifications': {
-      id: '/settings/notifications'
-      path: '/settings/notifications'
-      fullPath: '/settings/notifications'
-      preLoaderRoute: typeof SettingsNotificationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/provocare_/termeni-si-conditii': {
-      id: '/provocare_/termeni-si-conditii'
-      path: '/provocare/termeni-si-conditii'
-      fullPath: '/provocare/termeni-si-conditii'
-      preLoaderRoute: typeof ProvocareTermeniSiConditiiRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/provocare_/notificari': {
-      id: '/provocare_/notificari'
-      path: '/provocare/notificari'
-      fullPath: '/provocare/notificari'
-      preLoaderRoute: typeof ProvocareNotificariRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/procurement/search': {
-      id: '/procurement/search'
-      path: '/search'
-      fullPath: '/procurement/search'
-      preLoaderRoute: typeof ProcurementSearchRouteImport
-      parentRoute: typeof ProcurementRouteRoute
-    }
-    '/procurement/analytics': {
-      id: '/procurement/analytics'
-      path: '/analytics'
-      fullPath: '/procurement/analytics'
-      preLoaderRoute: typeof ProcurementAnalyticsRouteImport
-      parentRoute: typeof ProcurementRouteRoute
-    }
-    '/pnrr_/verificare': {
-      id: '/pnrr_/verificare'
-      path: '/pnrr/verificare'
-      fullPath: '/pnrr/verificare'
-      preLoaderRoute: typeof PnrrVerificareRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pnrr_/surse': {
-      id: '/pnrr_/surse'
-      path: '/pnrr/surse'
-      fullPath: '/pnrr/surse'
-      preLoaderRoute: typeof PnrrSurseRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pnrr_/proiecte': {
-      id: '/pnrr_/proiecte'
-      path: '/pnrr/proiecte'
-      fullPath: '/pnrr/proiecte'
-      preLoaderRoute: typeof PnrrProiecteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pnrr_/organizatii': {
-      id: '/pnrr_/organizatii'
-      path: '/pnrr/organizatii'
-      fullPath: '/pnrr/organizatii'
-      preLoaderRoute: typeof PnrrOrganizatiiRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pnrr_/judete': {
-      id: '/pnrr_/judete'
-      path: '/pnrr/judete'
-      fullPath: '/pnrr/judete'
-      preLoaderRoute: typeof PnrrJudeteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pnrr/share-image.png': {
-      id: '/pnrr/share-image.png'
-      path: '/share-image.png'
-      fullPath: '/pnrr/share-image.png'
-      preLoaderRoute: typeof PnrrShareImageDotpngRouteImport
-      parentRoute: typeof PnrrRoute
-    }
-    '/ong-uri/servicii': {
-      id: '/ong-uri/servicii'
-      path: '/servicii'
-      fullPath: '/ong-uri/servicii'
-      preLoaderRoute: typeof OngUriServiciiRouteImport
-      parentRoute: typeof OngUriRoute
-    }
-    '/ong-uri/$cui': {
-      id: '/ong-uri/$cui'
-      path: '/$cui'
-      fullPath: '/ong-uri/$cui'
-      preLoaderRoute: typeof OngUriCuiRouteImport
-      parentRoute: typeof OngUriRoute
-    }
-    '/justitie/cautare': {
-      id: '/justitie/cautare'
+    '/achizitii/cautare': {
+      id: '/achizitii/cautare'
       path: '/cautare'
-      fullPath: '/justitie/cautare'
-      preLoaderRoute: typeof JustitieCautareRouteImport
-      parentRoute: typeof JustitieRoute
+      fullPath: '/achizitii/cautare'
+      preLoaderRoute: typeof AchizitiiCautareRouteImport
+      parentRoute: typeof AchizitiiRouteRoute
     }
-    '/investitii-publice/cautare': {
-      id: '/investitii-publice/cautare'
-      path: '/cautare'
-      fullPath: '/investitii-publice/cautare'
-      preLoaderRoute: typeof InvestitiiPubliceCautareRouteImport
-      parentRoute: typeof InvestitiiPubliceRouteRoute
+    '/achizitii/metodologie': {
+      id: '/achizitii/metodologie'
+      path: '/metodologie'
+      fullPath: '/achizitii/metodologie'
+      preLoaderRoute: typeof AchizitiiMetodologieRouteImport
+      parentRoute: typeof AchizitiiRouteRoute
     }
-    '/intreprinderi-publice/$cui': {
-      id: '/intreprinderi-publice/$cui'
-      path: '/intreprinderi-publice/$cui'
-      fullPath: '/intreprinderi-publice/$cui'
-      preLoaderRoute: typeof IntreprinderiPubliceCuiRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/experimental/search': {
-      id: '/experimental/search'
-      path: '/experimental/search'
-      fullPath: '/experimental/search'
-      preLoaderRoute: typeof ExperimentalSearchRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/entities/$cui': {
-      id: '/entities/$cui'
-      path: '/$cui'
-      fullPath: '/entities/$cui'
-      preLoaderRoute: typeof EntitiesCuiRouteImport
-      parentRoute: typeof EntitiesRouteRoute
-    }
-    '/companies/search': {
-      id: '/companies/search'
-      path: '/companies/search'
-      fullPath: '/companies/search'
-      preLoaderRoute: typeof CompaniesSearchRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/companies/$cui': {
-      id: '/companies/$cui'
-      path: '/companies/$cui'
-      fullPath: '/companies/$cui'
-      preLoaderRoute: typeof CompaniesCuiRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/charts/new': {
-      id: '/charts/new'
-      path: '/charts/new'
-      fullPath: '/charts/new'
-      preLoaderRoute: typeof ChartsNewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/certificates/$id': {
-      id: '/certificates/$id'
-      path: '/certificates/$id'
-      fullPath: '/certificates/$id'
-      preLoaderRoute: typeof CertificatesIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/bugete-locale-2026/termeni-si-conditii': {
-      id: '/bugete-locale-2026/termeni-si-conditii'
-      path: '/termeni-si-conditii'
-      fullPath: '/bugete-locale-2026/termeni-si-conditii'
-      preLoaderRoute: typeof BugeteLocale2026TermeniSiConditiiRouteImport
-      parentRoute: typeof BugeteLocale2026Route
-    }
-    '/alerts/new': {
-      id: '/alerts/new'
-      path: '/alerts/new'
-      fullPath: '/alerts/new'
-      preLoaderRoute: typeof AlertsNewRouteImport
+    '/alegeri/': {
+      id: '/alegeri/'
+      path: '/alegeri'
+      fullPath: '/alegeri/'
+      preLoaderRoute: typeof AlegeriIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/alegeri/$electionKey': {
@@ -2961,25 +2642,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AlegeriElectionKeyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/achizitii/metodologie': {
-      id: '/achizitii/metodologie'
-      path: '/metodologie'
-      fullPath: '/achizitii/metodologie'
-      preLoaderRoute: typeof AchizitiiMetodologieRouteImport
-      parentRoute: typeof AchizitiiRouteRoute
+    '/alerts/$alertId': {
+      id: '/alerts/$alertId'
+      path: '/alerts/$alertId'
+      fullPath: '/alerts/$alertId'
+      preLoaderRoute: typeof AlertsAlertIdRouteRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/achizitii/cautare': {
-      id: '/achizitii/cautare'
-      path: '/cautare'
-      fullPath: '/achizitii/cautare'
-      preLoaderRoute: typeof AchizitiiCautareRouteImport
-      parentRoute: typeof AchizitiiRouteRoute
+    '/alerts/new': {
+      id: '/alerts/new'
+      path: '/alerts/new'
+      fullPath: '/alerts/new'
+      preLoaderRoute: typeof AlertsNewRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/primarie/$cui': {
-      id: '/primarie/$cui'
-      path: '/primarie/$cui'
-      fullPath: '/primarie/$cui'
-      preLoaderRoute: typeof PrimarieCuiRouteRouteImport
+    '/bugete-locale-2026/termeni-si-conditii': {
+      id: '/bugete-locale-2026/termeni-si-conditii'
+      path: '/termeni-si-conditii'
+      fullPath: '/bugete-locale-2026/termeni-si-conditii'
+      preLoaderRoute: typeof BugeteLocale2026TermeniSiConditiiRouteImport
+      parentRoute: typeof BugeteLocale2026Route
+    }
+    '/certificates/$id': {
+      id: '/certificates/$id'
+      path: '/certificates/$id'
+      fullPath: '/certificates/$id'
+      preLoaderRoute: typeof CertificatesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/charts/': {
+      id: '/charts/'
+      path: '/charts'
+      fullPath: '/charts/'
+      preLoaderRoute: typeof ChartsIndexLazyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/charts/$chartId': {
@@ -2989,137 +2684,270 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChartsChartIdRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/alerts/$alertId': {
-      id: '/alerts/$alertId'
-      path: '/alerts/$alertId'
-      fullPath: '/alerts/$alertId'
-      preLoaderRoute: typeof AlertsAlertIdRouteRouteImport
+    '/charts/new': {
+      id: '/charts/new'
+      path: '/charts/new'
+      fullPath: '/charts/new'
+      preLoaderRoute: typeof ChartsNewRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/$lang/learning': {
-      id: '/$lang/learning'
-      path: '/$lang/learning'
-      fullPath: '/$lang/learning'
-      preLoaderRoute: typeof LangLearningRouteRouteImport
+    '/companies/': {
+      id: '/companies/'
+      path: '/companies'
+      fullPath: '/companies/'
+      preLoaderRoute: typeof CompaniesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/charts/$chartId/': {
-      id: '/charts/$chartId/'
+    '/companies/$cui': {
+      id: '/companies/$cui'
+      path: '/companies/$cui'
+      fullPath: '/companies/$cui'
+      preLoaderRoute: typeof CompaniesCuiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/companies/search': {
+      id: '/companies/search'
+      path: '/companies/search'
+      fullPath: '/companies/search'
+      preLoaderRoute: typeof CompaniesSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/entities/': {
+      id: '/entities/'
       path: '/'
-      fullPath: '/charts/$chartId/'
-      preLoaderRoute: typeof ChartsChartIdIndexLazyRouteImport
-      parentRoute: typeof ChartsChartIdRouteRoute
+      fullPath: '/entities/'
+      preLoaderRoute: typeof EntitiesIndexRouteImport
+      parentRoute: typeof EntitiesRouteRoute
     }
-    '/alerts/$alertId/': {
-      id: '/alerts/$alertId/'
+    '/entities/$cui': {
+      id: '/entities/$cui'
+      path: '/$cui'
+      fullPath: '/entities/$cui'
+      preLoaderRoute: typeof EntitiesCuiRouteImport
+      parentRoute: typeof EntitiesRouteRoute
+    }
+    '/experimental/search': {
+      id: '/experimental/search'
+      path: '/experimental/search'
+      fullPath: '/experimental/search'
+      preLoaderRoute: typeof ExperimentalSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/intreprinderi-publice/': {
+      id: '/intreprinderi-publice/'
+      path: '/intreprinderi-publice'
+      fullPath: '/intreprinderi-publice/'
+      preLoaderRoute: typeof IntreprinderiPubliceIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/intreprinderi-publice/$cui': {
+      id: '/intreprinderi-publice/$cui'
+      path: '/intreprinderi-publice/$cui'
+      fullPath: '/intreprinderi-publice/$cui'
+      preLoaderRoute: typeof IntreprinderiPubliceCuiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/investitii-publice/': {
+      id: '/investitii-publice/'
       path: '/'
-      fullPath: '/alerts/$alertId/'
-      preLoaderRoute: typeof AlertsAlertIdIndexLazyRouteImport
-      parentRoute: typeof AlertsAlertIdRouteRoute
+      fullPath: '/investitii-publice/'
+      preLoaderRoute: typeof InvestitiiPubliceIndexRouteImport
+      parentRoute: typeof InvestitiiPubliceRouteRoute
     }
-    '/statistici/seturi/': {
-      id: '/statistici/seturi/'
-      path: '/statistici/seturi'
-      fullPath: '/statistici/seturi/'
-      preLoaderRoute: typeof StatisticiSeturiIndexRouteImport
-      parentRoute: typeof rootRouteImport
+    '/investitii-publice/cautare': {
+      id: '/investitii-publice/cautare'
+      path: '/cautare'
+      fullPath: '/investitii-publice/cautare'
+      preLoaderRoute: typeof InvestitiiPubliceCautareRouteImport
+      parentRoute: typeof InvestitiiPubliceRouteRoute
     }
-    '/statistici/comparatii/': {
-      id: '/statistici/comparatii/'
-      path: '/statistici/comparatii'
-      fullPath: '/statistici/comparatii/'
-      preLoaderRoute: typeof StatisticiComparatiiIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/primarie/harta/': {
-      id: '/primarie/harta/'
-      path: '/primarie/harta'
-      fullPath: '/primarie/harta/'
-      preLoaderRoute: typeof PrimarieHartaIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/primarie/$cui/': {
-      id: '/primarie/$cui/'
+    '/justitie/': {
+      id: '/justitie/'
       path: '/'
-      fullPath: '/primarie/$cui/'
-      preLoaderRoute: typeof PrimarieCuiIndexRouteImport
-      parentRoute: typeof PrimarieCuiRouteRoute
+      fullPath: '/justitie/'
+      preLoaderRoute: typeof JustitieIndexRouteImport
+      parentRoute: typeof JustitieRoute
     }
-    '/parlament/voturi/': {
-      id: '/parlament/voturi/'
-      path: '/parlament/voturi'
-      fullPath: '/parlament/voturi/'
-      preLoaderRoute: typeof ParlamentVoturiIndexRouteImport
+    '/justitie/cautare': {
+      id: '/justitie/cautare'
+      path: '/cautare'
+      fullPath: '/justitie/cautare'
+      preLoaderRoute: typeof JustitieCautareRouteImport
+      parentRoute: typeof JustitieRoute
+    }
+    '/ong-uri/': {
+      id: '/ong-uri/'
+      path: '/'
+      fullPath: '/ong-uri/'
+      preLoaderRoute: typeof OngUriIndexRouteImport
+      parentRoute: typeof OngUriRoute
+    }
+    '/ong-uri/$cui': {
+      id: '/ong-uri/$cui'
+      path: '/$cui'
+      fullPath: '/ong-uri/$cui'
+      preLoaderRoute: typeof OngUriCuiRouteImport
+      parentRoute: typeof OngUriRoute
+    }
+    '/ong-uri/servicii': {
+      id: '/ong-uri/servicii'
+      path: '/servicii'
+      fullPath: '/ong-uri/servicii'
+      preLoaderRoute: typeof OngUriServiciiRouteImport
+      parentRoute: typeof OngUriRoute
+    }
+    '/parlament/': {
+      id: '/parlament/'
+      path: '/parlament'
+      fullPath: '/parlament/'
+      preLoaderRoute: typeof ParlamentIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/parlament/stenograme/': {
-      id: '/parlament/stenograme/'
-      path: '/parlament/stenograme'
-      fullPath: '/parlament/stenograme/'
-      preLoaderRoute: typeof ParlamentStenogrameIndexRouteImport
+    '/pnrr/share-image.png': {
+      id: '/pnrr/share-image.png'
+      path: '/share-image.png'
+      fullPath: '/pnrr/share-image.png'
+      preLoaderRoute: typeof PnrrShareImageDotpngRouteImport
+      parentRoute: typeof PnrrRoute
+    }
+    '/pnrr_/judete': {
+      id: '/pnrr_/judete'
+      path: '/pnrr/judete'
+      fullPath: '/pnrr/judete'
+      preLoaderRoute: typeof PnrrJudeteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/parlament/proiecte/': {
-      id: '/parlament/proiecte/'
-      path: '/parlament/proiecte'
-      fullPath: '/parlament/proiecte/'
-      preLoaderRoute: typeof ParlamentProiecteIndexRouteImport
+    '/pnrr_/organizatii': {
+      id: '/pnrr_/organizatii'
+      path: '/pnrr/organizatii'
+      fullPath: '/pnrr/organizatii'
+      preLoaderRoute: typeof PnrrOrganizatiiRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/parlament/membri/': {
-      id: '/parlament/membri/'
-      path: '/parlament/membri'
-      fullPath: '/parlament/membri/'
-      preLoaderRoute: typeof ParlamentMembriIndexRouteImport
+    '/pnrr_/proiecte': {
+      id: '/pnrr_/proiecte'
+      path: '/pnrr/proiecte'
+      fullPath: '/pnrr/proiecte'
+      preLoaderRoute: typeof PnrrProiecteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/parlament/grupuri/': {
-      id: '/parlament/grupuri/'
-      path: '/parlament/grupuri'
-      fullPath: '/parlament/grupuri/'
-      preLoaderRoute: typeof ParlamentGrupuriIndexRouteImport
+    '/pnrr_/surse': {
+      id: '/pnrr_/surse'
+      path: '/pnrr/surse'
+      fullPath: '/pnrr/surse'
+      preLoaderRoute: typeof PnrrSurseRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/parlament/comisii/': {
-      id: '/parlament/comisii/'
-      path: '/parlament/comisii'
-      fullPath: '/parlament/comisii/'
-      preLoaderRoute: typeof ParlamentComisiiIndexRouteImport
+    '/pnrr_/verificare': {
+      id: '/pnrr_/verificare'
+      path: '/pnrr/verificare'
+      fullPath: '/pnrr/verificare'
+      preLoaderRoute: typeof PnrrVerificareRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/parlament/agenda/': {
-      id: '/parlament/agenda/'
-      path: '/parlament/agenda'
-      fullPath: '/parlament/agenda/'
-      preLoaderRoute: typeof ParlamentAgendaIndexRouteImport
+    '/primarie/': {
+      id: '/primarie/'
+      path: '/primarie'
+      fullPath: '/primarie/'
+      preLoaderRoute: typeof PrimarieIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/maps/editor/': {
-      id: '/maps/editor/'
-      path: '/maps/editor'
-      fullPath: '/maps/editor/'
-      preLoaderRoute: typeof MapsEditorIndexRouteImport
+    '/primarie/$cui': {
+      id: '/primarie/$cui'
+      path: '/primarie/$cui'
+      fullPath: '/primarie/$cui'
+      preLoaderRoute: typeof PrimarieCuiRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/maps/datasets/': {
-      id: '/maps/datasets/'
-      path: '/maps/datasets'
-      fullPath: '/maps/datasets/'
-      preLoaderRoute: typeof MapsDatasetsIndexRouteImport
+    '/procurement/': {
+      id: '/procurement/'
+      path: '/'
+      fullPath: '/procurement/'
+      preLoaderRoute: typeof ProcurementIndexRouteImport
+      parentRoute: typeof ProcurementRouteRoute
+    }
+    '/procurement/analytics': {
+      id: '/procurement/analytics'
+      path: '/analytics'
+      fullPath: '/procurement/analytics'
+      preLoaderRoute: typeof ProcurementAnalyticsRouteImport
+      parentRoute: typeof ProcurementRouteRoute
+    }
+    '/procurement/search': {
+      id: '/procurement/search'
+      path: '/search'
+      fullPath: '/procurement/search'
+      preLoaderRoute: typeof ProcurementSearchRouteImport
+      parentRoute: typeof ProcurementRouteRoute
+    }
+    '/provocare_/notificari': {
+      id: '/provocare_/notificari'
+      path: '/provocare/notificari'
+      fullPath: '/provocare/notificari'
+      preLoaderRoute: typeof ProvocareNotificariRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/classifications/functional/': {
-      id: '/classifications/functional/'
-      path: '/classifications/functional'
-      fullPath: '/classifications/functional/'
-      preLoaderRoute: typeof ClassificationsFunctionalIndexRouteImport
+    '/provocare_/termeni-si-conditii': {
+      id: '/provocare_/termeni-si-conditii'
+      path: '/provocare/termeni-si-conditii'
+      fullPath: '/provocare/termeni-si-conditii'
+      preLoaderRoute: typeof ProvocareTermeniSiConditiiRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/classifications/economic/': {
-      id: '/classifications/economic/'
-      path: '/classifications/economic'
-      fullPath: '/classifications/economic/'
-      preLoaderRoute: typeof ClassificationsEconomicIndexRouteImport
+    '/research/employees-data': {
+      id: '/research/employees-data'
+      path: '/research/employees-data'
+      fullPath: '/research/employees-data'
+      preLoaderRoute: typeof ResearchEmployeesDataLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/notifications': {
+      id: '/settings/notifications'
+      path: '/settings/notifications'
+      fullPath: '/settings/notifications'
+      preLoaderRoute: typeof SettingsNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/profile': {
+      id: '/settings/profile'
+      path: '/settings/profile'
+      fullPath: '/settings/profile'
+      preLoaderRoute: typeof SettingsProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/share/$code': {
+      id: '/share/$code'
+      path: '/share/$code'
+      fullPath: '/share/$code'
+      preLoaderRoute: typeof ShareCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-in/$': {
+      id: '/sign-in/$'
+      path: '/$'
+      fullPath: '/sign-in/$'
+      preLoaderRoute: typeof SignInSplatRouteImport
+      parentRoute: typeof SignInRoute
+    }
+    '/sign-up/$': {
+      id: '/sign-up/$'
+      path: '/$'
+      fullPath: '/sign-up/$'
+      preLoaderRoute: typeof SignUpSplatRouteImport
+      parentRoute: typeof SignUpRoute
+    }
+    '/statistici/': {
+      id: '/statistici/'
+      path: '/statistici'
+      fullPath: '/statistici/'
+      preLoaderRoute: typeof StatisticiIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/unsubscribe/$token': {
+      id: '/unsubscribe/$token'
+      path: '/unsubscribe/$token'
+      fullPath: '/unsubscribe/$token'
+      preLoaderRoute: typeof UnsubscribeTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/$lang/learning/': {
@@ -3129,249 +2957,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangLearningIndexRouteImport
       parentRoute: typeof LangLearningRouteRoute
     }
-    '/statistici/teritorii/$siruta': {
-      id: '/statistici/teritorii/$siruta'
-      path: '/statistici/teritorii/$siruta'
-      fullPath: '/statistici/teritorii/$siruta'
-      preLoaderRoute: typeof StatisticiTeritoriiSirutaRouteImport
-      parentRoute: typeof rootRouteImport
+    '/$lang/learning/onboarding': {
+      id: '/$lang/learning/onboarding'
+      path: '/onboarding'
+      fullPath: '/$lang/learning/onboarding'
+      preLoaderRoute: typeof LangLearningOnboardingRouteImport
+      parentRoute: typeof LangLearningRouteRoute
     }
-    '/statistici/seturi/$cod': {
-      id: '/statistici/seturi/$cod'
-      path: '/statistici/seturi/$cod'
-      fullPath: '/statistici/seturi/$cod'
-      preLoaderRoute: typeof StatisticiSeturiCodRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/procurement/suppliers/$cui': {
-      id: '/procurement/suppliers/$cui'
-      path: '/suppliers/$cui'
-      fullPath: '/procurement/suppliers/$cui'
-      preLoaderRoute: typeof ProcurementSuppliersCuiRouteImport
-      parentRoute: typeof ProcurementRouteRoute
-    }
-    '/procurement/procedures/$id': {
-      id: '/procurement/procedures/$id'
-      path: '/procedures/$id'
-      fullPath: '/procurement/procedures/$id'
-      preLoaderRoute: typeof ProcurementProceduresIdRouteImport
-      parentRoute: typeof ProcurementRouteRoute
-    }
-    '/procurement/institutions/$cui': {
-      id: '/procurement/institutions/$cui'
-      path: '/institutions/$cui'
-      fullPath: '/procurement/institutions/$cui'
-      preLoaderRoute: typeof ProcurementInstitutionsCuiRouteImport
-      parentRoute: typeof ProcurementRouteRoute
-    }
-    '/procurement/direct-acquisitions/$id': {
-      id: '/procurement/direct-acquisitions/$id'
-      path: '/direct-acquisitions/$id'
-      fullPath: '/procurement/direct-acquisitions/$id'
-      preLoaderRoute: typeof ProcurementDirectAcquisitionsIdRouteImport
-      parentRoute: typeof ProcurementRouteRoute
-    }
-    '/procurement/contracts/$id': {
-      id: '/procurement/contracts/$id'
-      path: '/contracts/$id'
-      fullPath: '/procurement/contracts/$id'
-      preLoaderRoute: typeof ProcurementContractsIdRouteImport
-      parentRoute: typeof ProcurementRouteRoute
-    }
-    '/procurement/categories/$code': {
-      id: '/procurement/categories/$code'
-      path: '/categories/$code'
-      fullPath: '/procurement/categories/$code'
-      preLoaderRoute: typeof ProcurementCategoriesCodeRouteImport
-      parentRoute: typeof ProcurementRouteRoute
-    }
-    '/primarie/$cui/share-image.png': {
-      id: '/primarie/$cui/share-image.png'
-      path: '/share-image.png'
-      fullPath: '/primarie/$cui/share-image.png'
-      preLoaderRoute: typeof PrimarieCuiShareImageDotpngRouteImport
-      parentRoute: typeof PrimarieCuiRouteRoute
-    }
-    '/pnrr_/proiecte_/$projectKey': {
-      id: '/pnrr_/proiecte_/$projectKey'
-      path: '/pnrr/proiecte/$projectKey'
-      fullPath: '/pnrr/proiecte/$projectKey'
-      preLoaderRoute: typeof PnrrProiecteProjectKeyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pnrr_/organizatii_/$cui': {
-      id: '/pnrr_/organizatii_/$cui'
-      path: '/pnrr/organizatii/$cui'
-      fullPath: '/pnrr/organizatii/$cui'
-      preLoaderRoute: typeof PnrrOrganizatiiCuiRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pnrr_/judete_/$countySiruta': {
-      id: '/pnrr_/judete_/$countySiruta'
-      path: '/pnrr/judete/$countySiruta'
-      fullPath: '/pnrr/judete/$countySiruta'
-      preLoaderRoute: typeof PnrrJudeteCountySirutaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/parlament/stenograme/$speechKey': {
-      id: '/parlament/stenograme/$speechKey'
-      path: '/parlament/stenograme/$speechKey'
-      fullPath: '/parlament/stenograme/$speechKey'
-      preLoaderRoute: typeof ParlamentStenogrameSpeechKeyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/parlament/grupuri/$groupId': {
-      id: '/parlament/grupuri/$groupId'
-      path: '/parlament/grupuri/$groupId'
-      fullPath: '/parlament/grupuri/$groupId'
-      preLoaderRoute: typeof ParlamentGrupuriGroupIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/parlament/comisii/$committeeKey': {
-      id: '/parlament/comisii/$committeeKey'
-      path: '/parlament/comisii/$committeeKey'
-      fullPath: '/parlament/comisii/$committeeKey'
-      preLoaderRoute: typeof ParlamentComisiiCommitteeKeyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/parlament/agenda/$agendaKey': {
-      id: '/parlament/agenda/$agendaKey'
-      path: '/parlament/agenda/$agendaKey'
-      fullPath: '/parlament/agenda/$agendaKey'
-      preLoaderRoute: typeof ParlamentAgendaAgendaKeyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ong-uri/sursa/$snapshotId': {
-      id: '/ong-uri/sursa/$snapshotId'
-      path: '/sursa/$snapshotId'
-      fullPath: '/ong-uri/sursa/$snapshotId'
-      preLoaderRoute: typeof OngUriSursaSnapshotIdRouteImport
-      parentRoute: typeof OngUriRoute
-    }
-    '/maps/public/$mapId': {
-      id: '/maps/public/$mapId'
-      path: '/maps/public/$mapId'
-      fullPath: '/maps/public/$mapId'
-      preLoaderRoute: typeof MapsPublicMapIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/maps/editor/new': {
-      id: '/maps/editor/new'
-      path: '/maps/editor/new'
-      fullPath: '/maps/editor/new'
-      preLoaderRoute: typeof MapsEditorNewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/maps/editor/$mapId': {
-      id: '/maps/editor/$mapId'
-      path: '/maps/editor/$mapId'
-      fullPath: '/maps/editor/$mapId'
-      preLoaderRoute: typeof MapsEditorMapIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/maps/datasets/new': {
-      id: '/maps/datasets/new'
-      path: '/maps/datasets/new'
-      fullPath: '/maps/datasets/new'
-      preLoaderRoute: typeof MapsDatasetsNewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/maps/datasets/$datasetId': {
-      id: '/maps/datasets/$datasetId'
-      path: '/maps/datasets/$datasetId'
-      fullPath: '/maps/datasets/$datasetId'
-      preLoaderRoute: typeof MapsDatasetsDatasetIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/legislatie/acte/$id': {
-      id: '/legislatie/acte/$id'
-      path: '/acte/$id'
-      fullPath: '/legislatie/acte/$id'
-      preLoaderRoute: typeof LegislatieActeIdRouteImport
-      parentRoute: typeof LegislatieRouteRoute
-    }
-    '/justitie/instante/$courtId': {
-      id: '/justitie/instante/$courtId'
-      path: '/instante/$courtId'
-      fullPath: '/justitie/instante/$courtId'
-      preLoaderRoute: typeof JustitieInstanteCourtIdRouteImport
-      parentRoute: typeof JustitieRoute
-    }
-    '/justitie/dosare/$caseId': {
-      id: '/justitie/dosare/$caseId'
-      path: '/dosare/$caseId'
-      fullPath: '/justitie/dosare/$caseId'
-      preLoaderRoute: typeof JustitieDosareCaseIdRouteImport
-      parentRoute: typeof JustitieRoute
-    }
-    '/investitii-publice/obiective/$id': {
-      id: '/investitii-publice/obiective/$id'
-      path: '/obiective/$id'
-      fullPath: '/investitii-publice/obiective/$id'
-      preLoaderRoute: typeof InvestitiiPubliceObiectiveIdRouteImport
-      parentRoute: typeof InvestitiiPubliceRouteRoute
-    }
-    '/investitii-publice/localitati/$siruta': {
-      id: '/investitii-publice/localitati/$siruta'
-      path: '/localitati/$siruta'
-      fullPath: '/investitii-publice/localitati/$siruta'
-      preLoaderRoute: typeof InvestitiiPubliceLocalitatiSirutaRouteImport
-      parentRoute: typeof InvestitiiPubliceRouteRoute
-    }
-    '/investitii-publice/judete/$countyCode': {
-      id: '/investitii-publice/judete/$countyCode'
-      path: '/judete/$countyCode'
-      fullPath: '/investitii-publice/judete/$countyCode'
-      preLoaderRoute: typeof InvestitiiPubliceJudeteCountyCodeRouteImport
-      parentRoute: typeof InvestitiiPubliceRouteRoute
-    }
-    '/entities/$cui/share-image.png': {
-      id: '/entities/$cui/share-image.png'
-      path: '/share-image.png'
-      fullPath: '/entities/$cui/share-image.png'
-      preLoaderRoute: typeof EntitiesCuiShareImageDotpngRouteImport
-      parentRoute: typeof EntitiesCuiRoute
-    }
-    '/classifications/functional/$code': {
-      id: '/classifications/functional/$code'
-      path: '/classifications/functional/$code'
-      fullPath: '/classifications/functional/$code'
-      preLoaderRoute: typeof ClassificationsFunctionalCodeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/classifications/economic/$code': {
-      id: '/classifications/economic/$code'
-      path: '/classifications/economic/$code'
-      fullPath: '/classifications/economic/$code'
-      preLoaderRoute: typeof ClassificationsEconomicCodeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/v1/graphql': {
-      id: '/api/v1/graphql'
-      path: '/api/v1/graphql'
-      fullPath: '/api/v1/graphql'
-      preLoaderRoute: typeof ApiV1GraphqlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/alegeri/contest/$contestKey': {
-      id: '/alegeri/contest/$contestKey'
-      path: '/alegeri/contest/$contestKey'
-      fullPath: '/alegeri/contest/$contestKey'
-      preLoaderRoute: typeof AlegeriContestContestKeyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/achizitii/proceduri/$id': {
-      id: '/achizitii/proceduri/$id'
-      path: '/proceduri/$id'
-      fullPath: '/achizitii/proceduri/$id'
-      preLoaderRoute: typeof AchizitiiProceduriIdRouteImport
-      parentRoute: typeof AchizitiiRouteRoute
-    }
-    '/achizitii/cpv/$code': {
-      id: '/achizitii/cpv/$code'
-      path: '/cpv/$code'
-      fullPath: '/achizitii/cpv/$code'
-      preLoaderRoute: typeof AchizitiiCpvCodeRouteImport
+    '/achizitii/achizitii-directe/$id': {
+      id: '/achizitii/achizitii-directe/$id'
+      path: '/achizitii-directe/$id'
+      fullPath: '/achizitii/achizitii-directe/$id'
+      preLoaderRoute: typeof AchizitiiAchizitiiDirecteIdRouteImport
       parentRoute: typeof AchizitiiRouteRoute
     }
     '/achizitii/contracte/$id': {
@@ -3381,32 +2978,228 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AchizitiiContracteIdRouteImport
       parentRoute: typeof AchizitiiRouteRoute
     }
-    '/achizitii/achizitii-directe/$id': {
-      id: '/achizitii/achizitii-directe/$id'
-      path: '/achizitii-directe/$id'
-      fullPath: '/achizitii/achizitii-directe/$id'
-      preLoaderRoute: typeof AchizitiiAchizitiiDirecteIdRouteImport
+    '/achizitii/cpv/$code': {
+      id: '/achizitii/cpv/$code'
+      path: '/cpv/$code'
+      fullPath: '/achizitii/cpv/$code'
+      preLoaderRoute: typeof AchizitiiCpvCodeRouteImport
       parentRoute: typeof AchizitiiRouteRoute
     }
-    '/$lang/learning/onboarding': {
-      id: '/$lang/learning/onboarding'
-      path: '/onboarding'
-      fullPath: '/$lang/learning/onboarding'
-      preLoaderRoute: typeof LangLearningOnboardingRouteImport
-      parentRoute: typeof LangLearningRouteRoute
+    '/achizitii/proceduri/$id': {
+      id: '/achizitii/proceduri/$id'
+      path: '/proceduri/$id'
+      fullPath: '/achizitii/proceduri/$id'
+      preLoaderRoute: typeof AchizitiiProceduriIdRouteImport
+      parentRoute: typeof AchizitiiRouteRoute
     }
-    '/primarie/$cui/buget': {
-      id: '/primarie/$cui/buget'
-      path: '/buget'
-      fullPath: '/primarie/$cui/buget'
-      preLoaderRoute: typeof PrimarieCuiBugetRouteRouteImport
-      parentRoute: typeof PrimarieCuiRouteRoute
+    '/admin/campaigns/$campaignKey': {
+      id: '/admin/campaigns/$campaignKey'
+      path: '/admin/campaigns/$campaignKey'
+      fullPath: '/admin/campaigns/$campaignKey'
+      preLoaderRoute: typeof AdminCampaignsCampaignKeyRouteRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/parlament/proiecte/$billId': {
-      id: '/parlament/proiecte/$billId'
-      path: '/parlament/proiecte/$billId'
-      fullPath: '/parlament/proiecte/$billId'
-      preLoaderRoute: typeof ParlamentProiecteBillIdRouteRouteImport
+    '/alegeri/contest/$contestKey': {
+      id: '/alegeri/contest/$contestKey'
+      path: '/alegeri/contest/$contestKey'
+      fullPath: '/alegeri/contest/$contestKey'
+      preLoaderRoute: typeof AlegeriContestContestKeyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alerts/$alertId/': {
+      id: '/alerts/$alertId/'
+      path: '/'
+      fullPath: '/alerts/$alertId/'
+      preLoaderRoute: typeof AlertsAlertIdIndexLazyRouteImport
+      parentRoute: typeof AlertsAlertIdRouteRoute
+    }
+    '/api/v1/graphql': {
+      id: '/api/v1/graphql'
+      path: '/api/v1/graphql'
+      fullPath: '/api/v1/graphql'
+      preLoaderRoute: typeof ApiV1GraphqlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/charts/$chartId/': {
+      id: '/charts/$chartId/'
+      path: '/'
+      fullPath: '/charts/$chartId/'
+      preLoaderRoute: typeof ChartsChartIdIndexLazyRouteImport
+      parentRoute: typeof ChartsChartIdRouteRoute
+    }
+    '/classifications/economic/': {
+      id: '/classifications/economic/'
+      path: '/classifications/economic'
+      fullPath: '/classifications/economic/'
+      preLoaderRoute: typeof ClassificationsEconomicIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/classifications/economic/$code': {
+      id: '/classifications/economic/$code'
+      path: '/classifications/economic/$code'
+      fullPath: '/classifications/economic/$code'
+      preLoaderRoute: typeof ClassificationsEconomicCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/classifications/functional/': {
+      id: '/classifications/functional/'
+      path: '/classifications/functional'
+      fullPath: '/classifications/functional/'
+      preLoaderRoute: typeof ClassificationsFunctionalIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/classifications/functional/$code': {
+      id: '/classifications/functional/$code'
+      path: '/classifications/functional/$code'
+      fullPath: '/classifications/functional/$code'
+      preLoaderRoute: typeof ClassificationsFunctionalCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/entities/$cui/share-image.png': {
+      id: '/entities/$cui/share-image.png'
+      path: '/share-image.png'
+      fullPath: '/entities/$cui/share-image.png'
+      preLoaderRoute: typeof EntitiesCuiShareImageDotpngRouteImport
+      parentRoute: typeof EntitiesCuiRoute
+    }
+    '/investitii-publice/judete/$countyCode': {
+      id: '/investitii-publice/judete/$countyCode'
+      path: '/judete/$countyCode'
+      fullPath: '/investitii-publice/judete/$countyCode'
+      preLoaderRoute: typeof InvestitiiPubliceJudeteCountyCodeRouteImport
+      parentRoute: typeof InvestitiiPubliceRouteRoute
+    }
+    '/investitii-publice/localitati/$siruta': {
+      id: '/investitii-publice/localitati/$siruta'
+      path: '/localitati/$siruta'
+      fullPath: '/investitii-publice/localitati/$siruta'
+      preLoaderRoute: typeof InvestitiiPubliceLocalitatiSirutaRouteImport
+      parentRoute: typeof InvestitiiPubliceRouteRoute
+    }
+    '/investitii-publice/obiective/$id': {
+      id: '/investitii-publice/obiective/$id'
+      path: '/obiective/$id'
+      fullPath: '/investitii-publice/obiective/$id'
+      preLoaderRoute: typeof InvestitiiPubliceObiectiveIdRouteImport
+      parentRoute: typeof InvestitiiPubliceRouteRoute
+    }
+    '/justitie/dosare/$caseId': {
+      id: '/justitie/dosare/$caseId'
+      path: '/dosare/$caseId'
+      fullPath: '/justitie/dosare/$caseId'
+      preLoaderRoute: typeof JustitieDosareCaseIdRouteImport
+      parentRoute: typeof JustitieRoute
+    }
+    '/justitie/instante/$courtId': {
+      id: '/justitie/instante/$courtId'
+      path: '/instante/$courtId'
+      fullPath: '/justitie/instante/$courtId'
+      preLoaderRoute: typeof JustitieInstanteCourtIdRouteImport
+      parentRoute: typeof JustitieRoute
+    }
+    '/maps/datasets/': {
+      id: '/maps/datasets/'
+      path: '/maps/datasets'
+      fullPath: '/maps/datasets/'
+      preLoaderRoute: typeof MapsDatasetsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/maps/datasets/$datasetId': {
+      id: '/maps/datasets/$datasetId'
+      path: '/maps/datasets/$datasetId'
+      fullPath: '/maps/datasets/$datasetId'
+      preLoaderRoute: typeof MapsDatasetsDatasetIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/maps/datasets/new': {
+      id: '/maps/datasets/new'
+      path: '/maps/datasets/new'
+      fullPath: '/maps/datasets/new'
+      preLoaderRoute: typeof MapsDatasetsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/maps/editor/': {
+      id: '/maps/editor/'
+      path: '/maps/editor'
+      fullPath: '/maps/editor/'
+      preLoaderRoute: typeof MapsEditorIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/maps/editor/$mapId': {
+      id: '/maps/editor/$mapId'
+      path: '/maps/editor/$mapId'
+      fullPath: '/maps/editor/$mapId'
+      preLoaderRoute: typeof MapsEditorMapIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/maps/editor/new': {
+      id: '/maps/editor/new'
+      path: '/maps/editor/new'
+      fullPath: '/maps/editor/new'
+      preLoaderRoute: typeof MapsEditorNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/maps/public/$mapId': {
+      id: '/maps/public/$mapId'
+      path: '/maps/public/$mapId'
+      fullPath: '/maps/public/$mapId'
+      preLoaderRoute: typeof MapsPublicMapIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ong-uri/sursa/$snapshotId': {
+      id: '/ong-uri/sursa/$snapshotId'
+      path: '/sursa/$snapshotId'
+      fullPath: '/ong-uri/sursa/$snapshotId'
+      preLoaderRoute: typeof OngUriSursaSnapshotIdRouteImport
+      parentRoute: typeof OngUriRoute
+    }
+    '/parlament/agenda/': {
+      id: '/parlament/agenda/'
+      path: '/parlament/agenda'
+      fullPath: '/parlament/agenda/'
+      preLoaderRoute: typeof ParlamentAgendaIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parlament/agenda/$agendaKey': {
+      id: '/parlament/agenda/$agendaKey'
+      path: '/parlament/agenda/$agendaKey'
+      fullPath: '/parlament/agenda/$agendaKey'
+      preLoaderRoute: typeof ParlamentAgendaAgendaKeyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parlament/comisii/': {
+      id: '/parlament/comisii/'
+      path: '/parlament/comisii'
+      fullPath: '/parlament/comisii/'
+      preLoaderRoute: typeof ParlamentComisiiIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parlament/comisii/$committeeKey': {
+      id: '/parlament/comisii/$committeeKey'
+      path: '/parlament/comisii/$committeeKey'
+      fullPath: '/parlament/comisii/$committeeKey'
+      preLoaderRoute: typeof ParlamentComisiiCommitteeKeyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parlament/grupuri/': {
+      id: '/parlament/grupuri/'
+      path: '/parlament/grupuri'
+      fullPath: '/parlament/grupuri/'
+      preLoaderRoute: typeof ParlamentGrupuriIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parlament/grupuri/$groupId': {
+      id: '/parlament/grupuri/$groupId'
+      path: '/parlament/grupuri/$groupId'
+      fullPath: '/parlament/grupuri/$groupId'
+      preLoaderRoute: typeof ParlamentGrupuriGroupIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parlament/membri/': {
+      id: '/parlament/membri/'
+      path: '/parlament/membri'
+      fullPath: '/parlament/membri/'
+      preLoaderRoute: typeof ParlamentMembriIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/parlament/membri/$memberId': {
@@ -3416,40 +3209,159 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ParlamentMembriMemberIdRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/campaigns/$campaignKey': {
-      id: '/admin/campaigns/$campaignKey'
-      path: '/admin/campaigns/$campaignKey'
-      fullPath: '/admin/campaigns/$campaignKey'
-      preLoaderRoute: typeof AdminCampaignsCampaignKeyRouteRouteImport
+    '/parlament/proiecte/': {
+      id: '/parlament/proiecte/'
+      path: '/parlament/proiecte'
+      fullPath: '/parlament/proiecte/'
+      preLoaderRoute: typeof ParlamentProiecteIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/primarie/$cui/buget/': {
-      id: '/primarie/$cui/buget/'
-      path: '/'
-      fullPath: '/primarie/$cui/buget/'
-      preLoaderRoute: typeof PrimarieCuiBugetIndexRouteImport
-      parentRoute: typeof PrimarieCuiBugetRouteRoute
+    '/parlament/proiecte/$billId': {
+      id: '/parlament/proiecte/$billId'
+      path: '/parlament/proiecte/$billId'
+      fullPath: '/parlament/proiecte/$billId'
+      preLoaderRoute: typeof ParlamentProiecteBillIdRouteRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/parlament/proiecte/$billId/': {
-      id: '/parlament/proiecte/$billId/'
-      path: '/'
-      fullPath: '/parlament/proiecte/$billId/'
-      preLoaderRoute: typeof ParlamentProiecteBillIdIndexRouteImport
-      parentRoute: typeof ParlamentProiecteBillIdRouteRoute
+    '/parlament/stenograme/': {
+      id: '/parlament/stenograme/'
+      path: '/parlament/stenograme'
+      fullPath: '/parlament/stenograme/'
+      preLoaderRoute: typeof ParlamentStenogrameIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/parlament/membri/$memberId/': {
-      id: '/parlament/membri/$memberId/'
-      path: '/'
-      fullPath: '/parlament/membri/$memberId/'
-      preLoaderRoute: typeof ParlamentMembriMemberIdIndexRouteImport
-      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
+    '/parlament/stenograme/$speechKey': {
+      id: '/parlament/stenograme/$speechKey'
+      path: '/parlament/stenograme/$speechKey'
+      fullPath: '/parlament/stenograme/$speechKey'
+      preLoaderRoute: typeof ParlamentStenogrameSpeechKeyRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/admin/campaigns/$campaignKey/': {
-      id: '/admin/campaigns/$campaignKey/'
+    '/parlament/voturi/': {
+      id: '/parlament/voturi/'
+      path: '/parlament/voturi'
+      fullPath: '/parlament/voturi/'
+      preLoaderRoute: typeof ParlamentVoturiIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pnrr_/judete_/$countySiruta': {
+      id: '/pnrr_/judete_/$countySiruta'
+      path: '/pnrr/judete/$countySiruta'
+      fullPath: '/pnrr/judete/$countySiruta'
+      preLoaderRoute: typeof PnrrJudeteCountySirutaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pnrr_/organizatii_/$cui': {
+      id: '/pnrr_/organizatii_/$cui'
+      path: '/pnrr/organizatii/$cui'
+      fullPath: '/pnrr/organizatii/$cui'
+      preLoaderRoute: typeof PnrrOrganizatiiCuiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pnrr_/proiecte_/$projectKey': {
+      id: '/pnrr_/proiecte_/$projectKey'
+      path: '/pnrr/proiecte/$projectKey'
+      fullPath: '/pnrr/proiecte/$projectKey'
+      preLoaderRoute: typeof PnrrProiecteProjectKeyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/primarie/$cui/': {
+      id: '/primarie/$cui/'
       path: '/'
-      fullPath: '/admin/campaigns/$campaignKey/'
-      preLoaderRoute: typeof AdminCampaignsCampaignKeyIndexRouteImport
-      parentRoute: typeof AdminCampaignsCampaignKeyRouteRoute
+      fullPath: '/primarie/$cui/'
+      preLoaderRoute: typeof PrimarieCuiIndexRouteImport
+      parentRoute: typeof PrimarieCuiRouteRoute
+    }
+    '/primarie/$cui/buget': {
+      id: '/primarie/$cui/buget'
+      path: '/buget'
+      fullPath: '/primarie/$cui/buget'
+      preLoaderRoute: typeof PrimarieCuiBugetRouteRouteImport
+      parentRoute: typeof PrimarieCuiRouteRoute
+    }
+    '/primarie/$cui/share-image.png': {
+      id: '/primarie/$cui/share-image.png'
+      path: '/share-image.png'
+      fullPath: '/primarie/$cui/share-image.png'
+      preLoaderRoute: typeof PrimarieCuiShareImageDotpngRouteImport
+      parentRoute: typeof PrimarieCuiRouteRoute
+    }
+    '/primarie/harta/': {
+      id: '/primarie/harta/'
+      path: '/primarie/harta'
+      fullPath: '/primarie/harta/'
+      preLoaderRoute: typeof PrimarieHartaIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/procurement/categories/$code': {
+      id: '/procurement/categories/$code'
+      path: '/categories/$code'
+      fullPath: '/procurement/categories/$code'
+      preLoaderRoute: typeof ProcurementCategoriesCodeRouteImport
+      parentRoute: typeof ProcurementRouteRoute
+    }
+    '/procurement/contracts/$id': {
+      id: '/procurement/contracts/$id'
+      path: '/contracts/$id'
+      fullPath: '/procurement/contracts/$id'
+      preLoaderRoute: typeof ProcurementContractsIdRouteImport
+      parentRoute: typeof ProcurementRouteRoute
+    }
+    '/procurement/direct-acquisitions/$id': {
+      id: '/procurement/direct-acquisitions/$id'
+      path: '/direct-acquisitions/$id'
+      fullPath: '/procurement/direct-acquisitions/$id'
+      preLoaderRoute: typeof ProcurementDirectAcquisitionsIdRouteImport
+      parentRoute: typeof ProcurementRouteRoute
+    }
+    '/procurement/institutions/$cui': {
+      id: '/procurement/institutions/$cui'
+      path: '/institutions/$cui'
+      fullPath: '/procurement/institutions/$cui'
+      preLoaderRoute: typeof ProcurementInstitutionsCuiRouteImport
+      parentRoute: typeof ProcurementRouteRoute
+    }
+    '/procurement/procedures/$id': {
+      id: '/procurement/procedures/$id'
+      path: '/procedures/$id'
+      fullPath: '/procurement/procedures/$id'
+      preLoaderRoute: typeof ProcurementProceduresIdRouteImport
+      parentRoute: typeof ProcurementRouteRoute
+    }
+    '/procurement/suppliers/$cui': {
+      id: '/procurement/suppliers/$cui'
+      path: '/suppliers/$cui'
+      fullPath: '/procurement/suppliers/$cui'
+      preLoaderRoute: typeof ProcurementSuppliersCuiRouteImport
+      parentRoute: typeof ProcurementRouteRoute
+    }
+    '/statistici/comparatii/': {
+      id: '/statistici/comparatii/'
+      path: '/statistici/comparatii'
+      fullPath: '/statistici/comparatii/'
+      preLoaderRoute: typeof StatisticiComparatiiIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/statistici/seturi/': {
+      id: '/statistici/seturi/'
+      path: '/statistici/seturi'
+      fullPath: '/statistici/seturi/'
+      preLoaderRoute: typeof StatisticiSeturiIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/statistici/seturi/$cod': {
+      id: '/statistici/seturi/$cod'
+      path: '/statistici/seturi/$cod'
+      fullPath: '/statistici/seturi/$cod'
+      preLoaderRoute: typeof StatisticiSeturiCodRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/statistici/teritorii/$siruta': {
+      id: '/statistici/teritorii/$siruta'
+      path: '/statistici/teritorii/$siruta'
+      fullPath: '/statistici/teritorii/$siruta'
+      preLoaderRoute: typeof StatisticiTeritoriiSirutaRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/$lang/learning/$pathId/': {
       id: '/$lang/learning/$pathId/'
@@ -3458,165 +3370,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangLearningPathIdIndexRouteImport
       parentRoute: typeof LangLearningRouteRoute
     }
-    '/primarie/$cui/buget/resurse': {
-      id: '/primarie/$cui/buget/resurse'
-      path: '/resurse'
-      fullPath: '/primarie/$cui/buget/resurse'
-      preLoaderRoute: typeof PrimarieCuiBugetResurseRouteImport
-      parentRoute: typeof PrimarieCuiBugetRouteRoute
+    '/$lang/learning/certificates/$id': {
+      id: '/$lang/learning/certificates/$id'
+      path: '/certificates/$id'
+      fullPath: '/$lang/learning/certificates/$id'
+      preLoaderRoute: typeof LangLearningCertificatesIdRouteImport
+      parentRoute: typeof LangLearningRouteRoute
     }
-    '/primarie/$cui/buget/calendar': {
-      id: '/primarie/$cui/buget/calendar'
-      path: '/calendar'
-      fullPath: '/primarie/$cui/buget/calendar'
-      preLoaderRoute: typeof PrimarieCuiBugetCalendarRouteImport
-      parentRoute: typeof PrimarieCuiBugetRouteRoute
-    }
-    '/parlament/voturi/$chamber/$voteId': {
-      id: '/parlament/voturi/$chamber/$voteId'
-      path: '/parlament/voturi/$chamber/$voteId'
-      fullPath: '/parlament/voturi/$chamber/$voteId'
-      preLoaderRoute: typeof ParlamentVoturiChamberVoteIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/parlament/stenograme/sedinte/$sessionKey': {
-      id: '/parlament/stenograme/sedinte/$sessionKey'
-      path: '/parlament/stenograme/sedinte/$sessionKey'
-      fullPath: '/parlament/stenograme/sedinte/$sessionKey'
-      preLoaderRoute: typeof ParlamentStenogrameSedinteSessionKeyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/parlament/proiecte/$billId/voturi': {
-      id: '/parlament/proiecte/$billId/voturi'
-      path: '/voturi'
-      fullPath: '/parlament/proiecte/$billId/voturi'
-      preLoaderRoute: typeof ParlamentProiecteBillIdVoturiRouteImport
-      parentRoute: typeof ParlamentProiecteBillIdRouteRoute
-    }
-    '/parlament/proiecte/$billId/etape': {
-      id: '/parlament/proiecte/$billId/etape'
-      path: '/etape'
-      fullPath: '/parlament/proiecte/$billId/etape'
-      preLoaderRoute: typeof ParlamentProiecteBillIdEtapeRouteImport
-      parentRoute: typeof ParlamentProiecteBillIdRouteRoute
-    }
-    '/parlament/proiecte/$billId/documente': {
-      id: '/parlament/proiecte/$billId/documente'
-      path: '/documente'
-      fullPath: '/parlament/proiecte/$billId/documente'
-      preLoaderRoute: typeof ParlamentProiecteBillIdDocumenteRouteImport
-      parentRoute: typeof ParlamentProiecteBillIdRouteRoute
-    }
-    '/parlament/membri/$memberId/voturi': {
-      id: '/parlament/membri/$memberId/voturi'
-      path: '/voturi'
-      fullPath: '/parlament/membri/$memberId/voturi'
-      preLoaderRoute: typeof ParlamentMembriMemberIdVoturiRouteImport
-      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
-    }
-    '/parlament/membri/$memberId/portret': {
-      id: '/parlament/membri/$memberId/portret'
-      path: '/portret'
-      fullPath: '/parlament/membri/$memberId/portret'
-      preLoaderRoute: typeof ParlamentMembriMemberIdPortretRouteImport
-      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
-    }
-    '/parlament/membri/$memberId/intrebari': {
-      id: '/parlament/membri/$memberId/intrebari'
-      path: '/intrebari'
-      fullPath: '/parlament/membri/$memberId/intrebari'
-      preLoaderRoute: typeof ParlamentMembriMemberIdIntrebariRouteImport
-      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
-    }
-    '/parlament/membri/$memberId/interventii': {
-      id: '/parlament/membri/$memberId/interventii'
-      path: '/interventii'
-      fullPath: '/parlament/membri/$memberId/interventii'
-      preLoaderRoute: typeof ParlamentMembriMemberIdInterventiiRouteImport
-      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
-    }
-    '/parlament/membri/$memberId/interese': {
-      id: '/parlament/membri/$memberId/interese'
-      path: '/interese'
-      fullPath: '/parlament/membri/$memberId/interese'
-      preLoaderRoute: typeof ParlamentMembriMemberIdIntereseRouteImport
-      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
-    }
-    '/parlament/membri/$memberId/initiative': {
-      id: '/parlament/membri/$memberId/initiative'
-      path: '/initiative'
-      fullPath: '/parlament/membri/$memberId/initiative'
-      preLoaderRoute: typeof ParlamentMembriMemberIdInitiativeRouteImport
-      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
-    }
-    '/parlament/membri/$memberId/contact': {
-      id: '/parlament/membri/$memberId/contact'
-      path: '/contact'
-      fullPath: '/parlament/membri/$memberId/contact'
-      preLoaderRoute: typeof ParlamentMembriMemberIdContactRouteImport
-      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
-    }
-    '/parlament/membri/$memberId/alegeri': {
-      id: '/parlament/membri/$memberId/alegeri'
-      path: '/alegeri'
-      fullPath: '/parlament/membri/$memberId/alegeri'
-      preLoaderRoute: typeof ParlamentMembriMemberIdAlegeriRouteImport
-      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
-    }
-    '/maps/datasets/public/$publicId': {
-      id: '/maps/datasets/public/$publicId'
-      path: '/maps/datasets/public/$publicId'
-      fullPath: '/maps/datasets/public/$publicId'
-      preLoaderRoute: typeof MapsDatasetsPublicPublicIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/pnrr/raw/projects': {
-      id: '/api/pnrr/raw/projects'
-      path: '/api/pnrr/raw/projects'
-      fullPath: '/api/pnrr/raw/projects'
-      preLoaderRoute: typeof ApiPnrrRawProjectsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/pnrr/raw/payments': {
-      id: '/api/pnrr/raw/payments'
-      path: '/api/pnrr/raw/payments'
-      fullPath: '/api/pnrr/raw/payments'
-      preLoaderRoute: typeof ApiPnrrRawPaymentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/pnrr/raw/indicators': {
-      id: '/api/pnrr/raw/indicators'
-      path: '/api/pnrr/raw/indicators'
-      fullPath: '/api/pnrr/raw/indicators'
-      preLoaderRoute: typeof ApiPnrrRawIndicatorsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/campaigns/$campaignKey/users': {
-      id: '/admin/campaigns/$campaignKey/users'
-      path: '/users'
-      fullPath: '/admin/campaigns/$campaignKey/users'
-      preLoaderRoute: typeof AdminCampaignsCampaignKeyUsersRouteImport
-      parentRoute: typeof AdminCampaignsCampaignKeyRouteRoute
-    }
-    '/admin/campaigns/$campaignKey/user-interactions': {
-      id: '/admin/campaigns/$campaignKey/user-interactions'
-      path: '/user-interactions'
-      fullPath: '/admin/campaigns/$campaignKey/user-interactions'
-      preLoaderRoute: typeof AdminCampaignsCampaignKeyUserInteractionsRouteImport
-      parentRoute: typeof AdminCampaignsCampaignKeyRouteRoute
-    }
-    '/admin/campaigns/$campaignKey/notifications': {
-      id: '/admin/campaigns/$campaignKey/notifications'
-      path: '/notifications'
-      fullPath: '/admin/campaigns/$campaignKey/notifications'
-      preLoaderRoute: typeof AdminCampaignsCampaignKeyNotificationsRouteImport
-      parentRoute: typeof AdminCampaignsCampaignKeyRouteRoute
-    }
-    '/admin/campaigns/$campaignKey/entities': {
-      id: '/admin/campaigns/$campaignKey/entities'
-      path: '/entities'
-      fullPath: '/admin/campaigns/$campaignKey/entities'
-      preLoaderRoute: typeof AdminCampaignsCampaignKeyEntitiesRouteImport
+    '/admin/campaigns/$campaignKey/': {
+      id: '/admin/campaigns/$campaignKey/'
+      path: '/'
+      fullPath: '/admin/campaigns/$campaignKey/'
+      preLoaderRoute: typeof AdminCampaignsCampaignKeyIndexRouteImport
       parentRoute: typeof AdminCampaignsCampaignKeyRouteRoute
     }
     '/admin/campaigns/$campaignKey/analytics': {
@@ -3626,12 +3391,180 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCampaignsCampaignKeyAnalyticsRouteImport
       parentRoute: typeof AdminCampaignsCampaignKeyRouteRoute
     }
-    '/$lang/learning/certificates/$id': {
-      id: '/$lang/learning/certificates/$id'
-      path: '/certificates/$id'
-      fullPath: '/$lang/learning/certificates/$id'
-      preLoaderRoute: typeof LangLearningCertificatesIdRouteImport
-      parentRoute: typeof LangLearningRouteRoute
+    '/admin/campaigns/$campaignKey/entities': {
+      id: '/admin/campaigns/$campaignKey/entities'
+      path: '/entities'
+      fullPath: '/admin/campaigns/$campaignKey/entities'
+      preLoaderRoute: typeof AdminCampaignsCampaignKeyEntitiesRouteImport
+      parentRoute: typeof AdminCampaignsCampaignKeyRouteRoute
+    }
+    '/admin/campaigns/$campaignKey/notifications': {
+      id: '/admin/campaigns/$campaignKey/notifications'
+      path: '/notifications'
+      fullPath: '/admin/campaigns/$campaignKey/notifications'
+      preLoaderRoute: typeof AdminCampaignsCampaignKeyNotificationsRouteImport
+      parentRoute: typeof AdminCampaignsCampaignKeyRouteRoute
+    }
+    '/admin/campaigns/$campaignKey/user-interactions': {
+      id: '/admin/campaigns/$campaignKey/user-interactions'
+      path: '/user-interactions'
+      fullPath: '/admin/campaigns/$campaignKey/user-interactions'
+      preLoaderRoute: typeof AdminCampaignsCampaignKeyUserInteractionsRouteImport
+      parentRoute: typeof AdminCampaignsCampaignKeyRouteRoute
+    }
+    '/admin/campaigns/$campaignKey/users': {
+      id: '/admin/campaigns/$campaignKey/users'
+      path: '/users'
+      fullPath: '/admin/campaigns/$campaignKey/users'
+      preLoaderRoute: typeof AdminCampaignsCampaignKeyUsersRouteImport
+      parentRoute: typeof AdminCampaignsCampaignKeyRouteRoute
+    }
+    '/api/pnrr/raw/indicators': {
+      id: '/api/pnrr/raw/indicators'
+      path: '/api/pnrr/raw/indicators'
+      fullPath: '/api/pnrr/raw/indicators'
+      preLoaderRoute: typeof ApiPnrrRawIndicatorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/pnrr/raw/payments': {
+      id: '/api/pnrr/raw/payments'
+      path: '/api/pnrr/raw/payments'
+      fullPath: '/api/pnrr/raw/payments'
+      preLoaderRoute: typeof ApiPnrrRawPaymentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/pnrr/raw/projects': {
+      id: '/api/pnrr/raw/projects'
+      path: '/api/pnrr/raw/projects'
+      fullPath: '/api/pnrr/raw/projects'
+      preLoaderRoute: typeof ApiPnrrRawProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/maps/datasets/public/$publicId': {
+      id: '/maps/datasets/public/$publicId'
+      path: '/maps/datasets/public/$publicId'
+      fullPath: '/maps/datasets/public/$publicId'
+      preLoaderRoute: typeof MapsDatasetsPublicPublicIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parlament/membri/$memberId/': {
+      id: '/parlament/membri/$memberId/'
+      path: '/'
+      fullPath: '/parlament/membri/$memberId/'
+      preLoaderRoute: typeof ParlamentMembriMemberIdIndexRouteImport
+      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
+    }
+    '/parlament/membri/$memberId/alegeri': {
+      id: '/parlament/membri/$memberId/alegeri'
+      path: '/alegeri'
+      fullPath: '/parlament/membri/$memberId/alegeri'
+      preLoaderRoute: typeof ParlamentMembriMemberIdAlegeriRouteImport
+      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
+    }
+    '/parlament/membri/$memberId/contact': {
+      id: '/parlament/membri/$memberId/contact'
+      path: '/contact'
+      fullPath: '/parlament/membri/$memberId/contact'
+      preLoaderRoute: typeof ParlamentMembriMemberIdContactRouteImport
+      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
+    }
+    '/parlament/membri/$memberId/initiative': {
+      id: '/parlament/membri/$memberId/initiative'
+      path: '/initiative'
+      fullPath: '/parlament/membri/$memberId/initiative'
+      preLoaderRoute: typeof ParlamentMembriMemberIdInitiativeRouteImport
+      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
+    }
+    '/parlament/membri/$memberId/interese': {
+      id: '/parlament/membri/$memberId/interese'
+      path: '/interese'
+      fullPath: '/parlament/membri/$memberId/interese'
+      preLoaderRoute: typeof ParlamentMembriMemberIdIntereseRouteImport
+      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
+    }
+    '/parlament/membri/$memberId/interventii': {
+      id: '/parlament/membri/$memberId/interventii'
+      path: '/interventii'
+      fullPath: '/parlament/membri/$memberId/interventii'
+      preLoaderRoute: typeof ParlamentMembriMemberIdInterventiiRouteImport
+      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
+    }
+    '/parlament/membri/$memberId/intrebari': {
+      id: '/parlament/membri/$memberId/intrebari'
+      path: '/intrebari'
+      fullPath: '/parlament/membri/$memberId/intrebari'
+      preLoaderRoute: typeof ParlamentMembriMemberIdIntrebariRouteImport
+      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
+    }
+    '/parlament/membri/$memberId/portret': {
+      id: '/parlament/membri/$memberId/portret'
+      path: '/portret'
+      fullPath: '/parlament/membri/$memberId/portret'
+      preLoaderRoute: typeof ParlamentMembriMemberIdPortretRouteImport
+      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
+    }
+    '/parlament/membri/$memberId/voturi': {
+      id: '/parlament/membri/$memberId/voturi'
+      path: '/voturi'
+      fullPath: '/parlament/membri/$memberId/voturi'
+      preLoaderRoute: typeof ParlamentMembriMemberIdVoturiRouteImport
+      parentRoute: typeof ParlamentMembriMemberIdRouteRoute
+    }
+    '/parlament/proiecte/$billId/': {
+      id: '/parlament/proiecte/$billId/'
+      path: '/'
+      fullPath: '/parlament/proiecte/$billId/'
+      preLoaderRoute: typeof ParlamentProiecteBillIdIndexRouteImport
+      parentRoute: typeof ParlamentProiecteBillIdRouteRoute
+    }
+    '/parlament/proiecte/$billId/documente': {
+      id: '/parlament/proiecte/$billId/documente'
+      path: '/documente'
+      fullPath: '/parlament/proiecte/$billId/documente'
+      preLoaderRoute: typeof ParlamentProiecteBillIdDocumenteRouteImport
+      parentRoute: typeof ParlamentProiecteBillIdRouteRoute
+    }
+    '/parlament/proiecte/$billId/etape': {
+      id: '/parlament/proiecte/$billId/etape'
+      path: '/etape'
+      fullPath: '/parlament/proiecte/$billId/etape'
+      preLoaderRoute: typeof ParlamentProiecteBillIdEtapeRouteImport
+      parentRoute: typeof ParlamentProiecteBillIdRouteRoute
+    }
+    '/parlament/proiecte/$billId/voturi': {
+      id: '/parlament/proiecte/$billId/voturi'
+      path: '/voturi'
+      fullPath: '/parlament/proiecte/$billId/voturi'
+      preLoaderRoute: typeof ParlamentProiecteBillIdVoturiRouteImport
+      parentRoute: typeof ParlamentProiecteBillIdRouteRoute
+    }
+    '/parlament/stenograme/sedinte/$sessionKey': {
+      id: '/parlament/stenograme/sedinte/$sessionKey'
+      path: '/parlament/stenograme/sedinte/$sessionKey'
+      fullPath: '/parlament/stenograme/sedinte/$sessionKey'
+      preLoaderRoute: typeof ParlamentStenogrameSedinteSessionKeyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parlament/voturi/$chamber/$voteId': {
+      id: '/parlament/voturi/$chamber/$voteId'
+      path: '/parlament/voturi/$chamber/$voteId'
+      fullPath: '/parlament/voturi/$chamber/$voteId'
+      preLoaderRoute: typeof ParlamentVoturiChamberVoteIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/primarie/$cui/buget/': {
+      id: '/primarie/$cui/buget/'
+      path: '/'
+      fullPath: '/primarie/$cui/buget/'
+      preLoaderRoute: typeof PrimarieCuiBugetIndexRouteImport
+      parentRoute: typeof PrimarieCuiBugetRouteRoute
+    }
+    '/primarie/$cui/buget/calendar': {
+      id: '/primarie/$cui/buget/calendar'
+      path: '/calendar'
+      fullPath: '/primarie/$cui/buget/calendar'
+      preLoaderRoute: typeof PrimarieCuiBugetCalendarRouteImport
+      parentRoute: typeof PrimarieCuiBugetRouteRoute
     }
     '/primarie/$cui/buget/provocari': {
       id: '/primarie/$cui/buget/provocari'
@@ -3640,19 +3573,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrimarieCuiBugetProvocariRouteRouteImport
       parentRoute: typeof PrimarieCuiBugetRouteRoute
     }
-    '/primarie/$cui/buget/provocari/': {
-      id: '/primarie/$cui/buget/provocari/'
-      path: '/'
-      fullPath: '/primarie/$cui/buget/provocari/'
-      preLoaderRoute: typeof PrimarieCuiBugetProvocariIndexRouteImport
-      parentRoute: typeof PrimarieCuiBugetProvocariRouteRoute
+    '/primarie/$cui/buget/resurse': {
+      id: '/primarie/$cui/buget/resurse'
+      path: '/resurse'
+      fullPath: '/primarie/$cui/buget/resurse'
+      preLoaderRoute: typeof PrimarieCuiBugetResurseRouteImport
+      parentRoute: typeof PrimarieCuiBugetRouteRoute
     }
-    '/admin/campaigns/$campaignKey/users/$userId': {
-      id: '/admin/campaigns/$campaignKey/users/$userId'
-      path: '/$userId'
-      fullPath: '/admin/campaigns/$campaignKey/users/$userId'
-      preLoaderRoute: typeof AdminCampaignsCampaignKeyUsersUserIdRouteImport
-      parentRoute: typeof AdminCampaignsCampaignKeyUsersRoute
+    '/$lang/learning/$pathId/$moduleId/$lessonId': {
+      id: '/$lang/learning/$pathId/$moduleId/$lessonId'
+      path: '/$pathId/$moduleId/$lessonId'
+      fullPath: '/$lang/learning/$pathId/$moduleId/$lessonId'
+      preLoaderRoute: typeof LangLearningPathIdModuleIdLessonIdRouteImport
+      parentRoute: typeof LangLearningRouteRoute
     }
     '/admin/campaigns/$campaignKey/entities/$entityCui': {
       id: '/admin/campaigns/$campaignKey/entities/$entityCui'
@@ -3661,12 +3594,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCampaignsCampaignKeyEntitiesEntityCuiRouteImport
       parentRoute: typeof AdminCampaignsCampaignKeyEntitiesRoute
     }
-    '/$lang/learning/$pathId/$moduleId/$lessonId': {
-      id: '/$lang/learning/$pathId/$moduleId/$lessonId'
-      path: '/$pathId/$moduleId/$lessonId'
-      fullPath: '/$lang/learning/$pathId/$moduleId/$lessonId'
-      preLoaderRoute: typeof LangLearningPathIdModuleIdLessonIdRouteImport
-      parentRoute: typeof LangLearningRouteRoute
+    '/admin/campaigns/$campaignKey/users/$userId': {
+      id: '/admin/campaigns/$campaignKey/users/$userId'
+      path: '/$userId'
+      fullPath: '/admin/campaigns/$campaignKey/users/$userId'
+      preLoaderRoute: typeof AdminCampaignsCampaignKeyUsersUserIdRouteImport
+      parentRoute: typeof AdminCampaignsCampaignKeyUsersRoute
+    }
+    '/primarie/$cui/buget/provocari/': {
+      id: '/primarie/$cui/buget/provocari/'
+      path: '/'
+      fullPath: '/primarie/$cui/buget/provocari/'
+      preLoaderRoute: typeof PrimarieCuiBugetProvocariIndexRouteImport
+      parentRoute: typeof PrimarieCuiBugetProvocariRouteRoute
     }
     '/primarie/$cui/buget/provocari/$moduleSlug/': {
       id: '/primarie/$cui/buget/provocari/$moduleSlug/'
@@ -3758,20 +3698,6 @@ const InvestitiiPubliceRouteRouteWithChildren =
   InvestitiiPubliceRouteRoute._addFileChildren(
     InvestitiiPubliceRouteRouteChildren,
   )
-
-interface LegislatieRouteRouteChildren {
-  LegislatieIndexRoute: typeof LegislatieIndexRoute
-  LegislatieActeIdRoute: typeof LegislatieActeIdRoute
-}
-
-const LegislatieRouteRouteChildren: LegislatieRouteRouteChildren = {
-  LegislatieIndexRoute: LegislatieIndexRoute,
-  LegislatieActeIdRoute: LegislatieActeIdRoute,
-}
-
-const LegislatieRouteRouteWithChildren = LegislatieRouteRoute._addFileChildren(
-  LegislatieRouteRouteChildren,
-)
 
 interface ProcurementRouteRouteChildren {
   ProcurementAnalyticsRoute: typeof ProcurementAnalyticsRoute
@@ -4094,7 +4020,6 @@ const rootRouteChildren: RootRouteChildren = {
   AchizitiiRouteRoute: AchizitiiRouteRouteWithChildren,
   EntitiesRouteRoute: EntitiesRouteRouteWithChildren,
   InvestitiiPubliceRouteRoute: InvestitiiPubliceRouteRouteWithChildren,
-  LegislatieRouteRoute: LegislatieRouteRouteWithChildren,
   ProcurementRouteRoute: ProcurementRouteRouteWithChildren,
   AgentRoute: AgentRoute,
   BudgetExplorerRoute: BudgetExplorerRoute,

@@ -98,17 +98,21 @@ describe('entityHref', () => {
       expect(entityHref(input({ docType: 'bill', docId: null }))).toBeNull()
     })
 
-    it('routes legal_act to /legislatie/acte/$docId', () => {
+    it('routes legal_act to its external url', () => {
       const result = entityHref(
-        input({ docType: 'legal_act', docId: 'lege-227-2015' }),
+        input({
+          docType: 'legal_act',
+          docId: 'lege-227-2015',
+          url: 'https://legislatie.just.ro/Public/DetaliiDocument/1',
+        }),
       )
       expect(result).toEqual({
-        href: '/legislatie/acte/lege-227-2015',
-        isExternal: false,
+        href: 'https://legislatie.just.ro/Public/DetaliiDocument/1',
+        isExternal: true,
       })
     })
 
-    it('routes legal_act by docKey when docId is unavailable', () => {
+    it('returns null for legal_act without an external url', () => {
       const result = entityHref(
         input({
           docType: 'legal_act',
@@ -116,10 +120,7 @@ describe('entityHref', () => {
           docKey: 'lege-100-2024',
         }),
       )
-      expect(result).toEqual({
-        href: '/legislatie/acte/lege-100-2024',
-        isExternal: false,
-      })
+      expect(result).toBeNull()
     })
 
     it('routes procurement contracts and procedures to internal detail pages', () => {
@@ -160,15 +161,15 @@ describe('entityHref', () => {
       })
     })
 
-    it('encodes doc ids for internal detail routes', () => {
+    it('routes procurement doc ids without affecting external legal acts', () => {
       const result = entityHref(
         input({
-          docType: 'legal_act',
-          docId: 'legal_act:doc:205009',
+          docType: 'procurement_procedure',
+          docId: 'procedure:205009',
         }),
       )
       expect(result).toEqual({
-        href: '/legislatie/acte/legal_act%3Adoc%3A205009',
+        href: '/procurement/procedures/procedure%3A205009',
         isExternal: false,
       })
     })
@@ -195,20 +196,20 @@ describe('entityHref', () => {
   })
 
   describe('internal route fallback behavior', () => {
-    it('falls back to url when an internal doc-id route has no id', () => {
+    it('falls back to url when a doc-id route has no id', () => {
       const result = entityHref(
         input({
-          docType: 'legal_act',
+          docType: 'member',
           docId: null,
           docKey: null,
-          url: 'https://gov.test/lege',
+          url: 'https://gov.test/member',
         }),
       )
-      expect(result).toEqual({ href: 'https://gov.test/lege', isExternal: true })
+      expect(result).toEqual({ href: 'https://gov.test/member', isExternal: true })
     })
 
-    it('returns null when an internal doc-id route has neither id nor url', () => {
-      expect(entityHref(input({ docType: 'legal_act', url: null }))).toBeNull()
+    it('returns null when a doc-id route has neither id nor url', () => {
+      expect(entityHref(input({ docType: 'member', url: null }))).toBeNull()
     })
 
     it('falls back to url when a dedicated CUI route cannot normalize the CUI', () => {
