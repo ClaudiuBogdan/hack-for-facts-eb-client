@@ -415,6 +415,39 @@ export const scraperDatasetCatalog: readonly ScraperDatasetReference[] = [
     privacySensitive: false,
   },
   {
+    id: 'legal-acts',
+    title: 'Legal — normative acts (Portal Legislativ + Monitorul Oficial)',
+    description:
+      'Romanian legal acts with status, citation graph, plain-language summaries, and Official Gazette publication evidence.',
+    lifecycle: 'production',
+    joinKeys: ['actId', 'actNaturalKey', 'moIssueId'],
+    scrapperRepoRelativePath: prodDb('LEGAL_CONTRACT.md'),
+    experimentalDocs: [],
+    newLatestPaths: [
+      prodDb('LEGAL_CONTRACT.md'),
+      prodDb('LEGAL_CURRENT_STATE.md'),
+      prodDb('LEGAL_DATA_BRIEF.md'),
+      prodDb('LEGAL_SCHEMA_DESIGN.md'),
+      prodDb('MONITORUL_NOTES.md'),
+      prodDb('PORTAL_LEGISLATIV_NOTES.md'),
+    ],
+    clientFeaturePaths: ['src/features/legal/', 'src/routes/legislation/'],
+    clientSchemaPaths: ['src/schemas/legal.ts'],
+    clientSpecPaths: [
+      'docs/design/legal/main-page.md',
+      'docs/design/legal/act-detail.md',
+      'docs/design/legal/design.md',
+      'docs/design/legal/ux.md',
+    ],
+    // Partly wired: `legal-act-api.live.ts` serves `/legislation/acts/$actId`
+    // from the real `legalAct` query, but the overview's live lane is still a
+    // stub. Flip to `true` when `legal-api.live.ts` lands — see
+    // docs/design/legal/main-page.md §5.
+    apiReady: false,
+    mockDataAvailable: true,
+    privacySensitive: false,
+  },
+  {
     id: 'legal-judicial-cases',
     title: 'Legal — judicial cases (Portal Just)',
     description: 'Court case search metadata and dossier references.',

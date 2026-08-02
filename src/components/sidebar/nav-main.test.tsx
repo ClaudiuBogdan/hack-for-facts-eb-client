@@ -42,6 +42,7 @@ vi.mock('lucide-react', () => ({
   ListOrdered: () => <span data-testid="icon-entity-analytics" />,
   Boxes: () => <span data-testid="icon-budget-explorer" />,
   Landmark: () => <span data-testid="icon-achizitii" />,
+  Scale: () => <span data-testid="icon-legislation" />,
   Building2: () => <span data-testid="icon-public-enterprises" />,
   Briefcase: () => <span data-testid="icon-companies" />,
   Vote: () => <span data-testid="icon-elections" />,
@@ -159,6 +160,13 @@ describe('NavMain', () => {
       expect(screen.getByText('Achiziții publice')).toBeInTheDocument()
     })
 
+    it('renders Legislație link', async () => {
+      await renderNavMain()
+
+      expect(screen.getByTestId('link-/legislation')).toBeInTheDocument()
+      expect(screen.getByText('Legislație')).toBeInTheDocument()
+    })
+
     it('renders Elections link', async () => {
       await renderNavMain()
 
@@ -184,7 +192,7 @@ describe('NavMain', () => {
       await renderNavMain()
 
       const menuItems = screen.getAllByTestId('sidebar-menu-item')
-      expect(menuItems).toHaveLength(10)
+      expect(menuItems).toHaveLength(11)
     })
 
     it('shows public enterprises navigation only while mock mode is enabled', async () => {
@@ -192,7 +200,7 @@ describe('NavMain', () => {
 
       expect(screen.getByTestId('link-/intreprinderi-publice')).toBeInTheDocument()
       expect(screen.getByText('Întreprinderi publice')).toBeInTheDocument()
-      expect(screen.getAllByTestId('sidebar-menu-item')).toHaveLength(11)
+      expect(screen.getAllByTestId('sidebar-menu-item')).toHaveLength(12)
     })
   })
 

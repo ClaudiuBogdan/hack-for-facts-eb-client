@@ -1,4 +1,4 @@
-import { Activity, LayoutDashboard, BarChart2, Map, ListOrdered, Boxes, Landmark, Building2, Briefcase, Vote, HeartHandshake } from "lucide-react";
+import { Activity, LayoutDashboard, BarChart2, Map, ListOrdered, Boxes, Landmark, Scale, Building2, Briefcase, Vote, HeartHandshake } from "lucide-react";
 import { Link, useMatches } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button-variants";
@@ -20,6 +20,7 @@ type MainItemUrl =
   | "/entity-analytics"
   | "/procurement"
   | "/companies"
+  | "/legislation"
   | "/intreprinderi-publice"
   | "/alegeri"
   | "/ong-uri"
@@ -76,6 +77,11 @@ const mainItems: ReadonlyArray<{
     title: <Trans>Firme</Trans>,
     url: "/companies",
     icon: Briefcase,
+  },
+  {
+    title: <Trans>Legislație</Trans>,
+    url: "/legislation",
+    icon: Scale,
   },
   ...(isPublicEnterpriseMockEnabled()
     ? [
