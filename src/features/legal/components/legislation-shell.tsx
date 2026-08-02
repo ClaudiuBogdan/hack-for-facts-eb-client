@@ -5,8 +5,6 @@ import { cn } from '@/lib/utils'
 import { DataStatusBadge } from '@/components/data-trust'
 import type { DataStatus } from '@/schemas/elections'
 import type { LegalActCounts } from '@/schemas/legal'
-import justiceHeader1280 from '../assets/header-justice-1280.png'
-import justiceHeader768 from '../assets/header-justice-768.png'
 import { formatLegalDate, formatLegalNumber } from '../lib/legal-format'
 import {
   legislationHeaderDescriptionClassName,
@@ -20,6 +18,7 @@ import {
   legislationHeaderTitleStyle,
 } from '../lib/legislation-theme'
 import { LegislationTabNav, type LegislationTab } from './legislation-tab-nav'
+import { LegislationHeaderVisual } from './legislation-header-visual'
 
 type Props = {
   readonly activeTab: LegislationTab
@@ -63,23 +62,8 @@ export function LegislationShell({
               'relative min-w-0 overflow-hidden xl:min-h-[34rem]',
             )}
           >
-            <div
-              className="pointer-events-none absolute inset-y-0 right-0 hidden w-[70%] items-end justify-end xl:flex"
-              aria-hidden="true"
-            >
-              <img
-                src={justiceHeader768}
-                srcSet={`${justiceHeader768} 768w, ${justiceHeader1280} 1280w`}
-                sizes="(min-width: 1280px) 70vw, 0px"
-                width={1280}
-                height={976}
-                alt=""
-                loading="eager"
-                decoding="async"
-                fetchPriority="high"
-                draggable={false}
-                className="h-full w-full object-contain object-right-bottom"
-              />
+            <div className="absolute inset-y-0 right-0 hidden w-[70%] items-end justify-end xl:flex">
+              <LegislationHeaderVisual />
             </div>
 
             <div className="relative z-10 min-w-0 pr-12 xl:max-w-[52%] xl:pr-0">

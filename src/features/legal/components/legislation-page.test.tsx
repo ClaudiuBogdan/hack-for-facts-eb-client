@@ -56,6 +56,16 @@ describe('LegislationPage', () => {
     ).toBeInTheDocument()
   })
 
+  it('lets the reader replay the digital header effect', () => {
+    render(<LegislationPage />)
+
+    expect(
+      screen.getByRole('button', {
+        name: 'Redă din nou efectul digital al imaginii',
+      }),
+    ).toBeInTheDocument()
+  })
+
   it('leaves the corpus figures to the analytics tab', () => {
     render(<LegislationPage />)
 
