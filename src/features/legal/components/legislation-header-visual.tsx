@@ -13,10 +13,13 @@ export function LegislationHeaderVisual() {
   const imageRef = useRef<HTMLImageElement>(null)
   const playRef = useRef<(() => void) | null>(null)
   const queuedManualPlayRef = useRef(false)
+  const [isCanvasMounted, setIsCanvasMounted] = useState(false)
   const [isImageCoverVisible, setIsImageCoverVisible] = useState(true)
   const [isEffectUnavailable, setIsEffectUnavailable] = useState(false)
 
   useEffect(() => {
+    if (!isCanvasMounted) return
+
     const canvas = canvasRef.current
     const image = imageRef.current
     if (!canvas || !image) return
@@ -42,8 +45,10 @@ export function LegislationHeaderVisual() {
       try {
         renderer = createLegislationHeaderGlitchRenderer({ canvas, image })
       } catch {
+        queuedManualPlayRef.current = false
         setIsEffectUnavailable(true)
         setIsImageCoverVisible(true)
+        setIsCanvasMounted(false)
         return
       }
 
@@ -57,22 +62,27 @@ export function LegislationHeaderVisual() {
       // presented across two browser paint opportunities.
       revealImageFrame = requestAnimationFrame(() => {
         revealCanvasFrame = requestAnimationFrame(() => {
-          if (!disposed) setIsImageCoverVisible(false)
+          if (disposed) return
+          setIsImageCoverVisible(false)
+          if (queuedManualPlayRef.current) playManually()
         })
       })
-
-      if (queuedManualPlayRef.current) playManually()
     }
 
     const handleImageError = () => {
       queuedManualPlayRef.current = false
+      playRef.current = null
       setIsEffectUnavailable(true)
       setIsImageCoverVisible(true)
+      setIsCanvasMounted(false)
     }
 
     const handleContextLost = () => {
+      queuedManualPlayRef.current = false
+      playRef.current = null
       setIsEffectUnavailable(true)
       setIsImageCoverVisible(true)
+      setIsCanvasMounted(false)
     }
 
     image.addEventListener('load', initialize)
@@ -95,11 +105,16 @@ export function LegislationHeaderVisual() {
       playRef.current = null
       queuedManualPlayRef.current = false
     }
-  }, [])
+  }, [isCanvasMounted])
 
   const replay = () => {
-    if (playRef.current) playRef.current()
-    else queuedManualPlayRef.current = true
+    if (playRef.current) {
+      playRef.current()
+      return
+    }
+
+    queuedManualPlayRef.current = true
+    setIsCanvasMounted(true)
   }
 
   return (
@@ -128,11 +143,13 @@ export function LegislationHeaderVisual() {
           isImageCoverVisible ? 'opacity-100' : 'opacity-0',
         )}
       />
-      <canvas
-        ref={canvasRef}
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-0 h-full w-full bg-transparent"
-      />
+      {isCanvasMounted ? (
+        <canvas
+          ref={canvasRef}
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-0 h-full w-full bg-transparent"
+        />
+      ) : null}
     </button>
   )
 }

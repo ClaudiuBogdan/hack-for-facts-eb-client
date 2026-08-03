@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { render, screen } from '@/test/test-utils'
+import { fireEvent, render, screen } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { legislationOverviewFixture } from '../mocks/fixtures/legislation-overview'
 import { LegislationPage } from './legislation-page'
@@ -56,14 +56,16 @@ describe('LegislationPage', () => {
     ).toBeInTheDocument()
   })
 
-  it('lets the reader replay the digital header effect', () => {
-    render(<LegislationPage />)
+  it('mounts the digital header canvas only after a reader click', () => {
+    const { container } = render(<LegislationPage />)
 
-    expect(
-      screen.getByRole('button', {
-        name: 'Redă din nou efectul digital al imaginii',
-      }),
-    ).toBeInTheDocument()
+    const playButton = screen.getByRole('button', {
+      name: 'Redă din nou efectul digital al imaginii',
+    })
+
+    expect(container.querySelector('canvas')).not.toBeInTheDocument()
+    fireEvent.click(playButton)
+    expect(container.querySelector('canvas')).toBeInTheDocument()
   })
 
   it('leaves the corpus figures to the analytics tab', () => {
@@ -127,6 +129,18 @@ describe('LegislationPage', () => {
       'aria-disabled',
       'true',
     )
+  })
+
+  it('does not scroll the tab navigation when it mounts', () => {
+    const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView')
+
+    try {
+      render(<LegislationPage />)
+
+      expect(scrollIntoView).not.toHaveBeenCalled()
+    } finally {
+      scrollIntoView.mockRestore()
+    }
   })
 
   it('renders a skeleton while loading', () => {

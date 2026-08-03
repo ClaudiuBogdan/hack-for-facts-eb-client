@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react'
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { cn } from '@/lib/utils'
@@ -42,13 +41,6 @@ type Props = {
  * once routed. Cut it rather than ship it empty if that query does not land.
  */
 export function LegislationTabNav({ activeTab }: Props) {
-  const activeRef = useRef<HTMLAnchorElement>(null)
-
-  // Bring the active tab into view — the row scrolls horizontally on a phone.
-  useEffect(() => {
-    activeRef.current?.scrollIntoView({ inline: 'nearest', block: 'nearest' })
-  }, [activeTab])
-
   const tabs: ReadonlyArray<TabSpec> = [
     { id: 'prezentare', label: t`Prezentare`, to: '/legislation' },
     { id: 'analiza', label: t`Analiză`, to: '/legislation/analytics' },
@@ -89,7 +81,6 @@ export function LegislationTabNav({ activeTab }: Props) {
         return (
           <Link
             key={tab.id}
-            ref={isActive ? activeRef : undefined}
             to={tab.to}
             aria-current={isActive ? 'page' : undefined}
             className={cn(
