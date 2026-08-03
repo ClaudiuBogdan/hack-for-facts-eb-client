@@ -18,6 +18,14 @@ describe('legislation header scanning lock', () => {
     expect(nearBottom.sweepMix).toBe(1)
   })
 
+  it('keeps the reveal edge locked to the corruption band', () => {
+    const firstFrame = getScanningLockFrame(0.2)
+    const secondFrame = getScanningLockFrame(0.6)
+
+    expect(firstFrame.sweepCenter).toBeGreaterThan(secondFrame.sweepCenter)
+    expect(firstFrame.sweepWidth).toBe(secondFrame.sweepWidth)
+  })
+
   it('returns directly to the untouched image without a final lock', () => {
     expect(getScanningLockFrame(1.01)).toEqual({
       strength: 0,

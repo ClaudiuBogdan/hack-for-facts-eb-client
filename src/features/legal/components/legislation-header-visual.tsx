@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { cn } from '@/lib/utils'
+import justiceHeaderFuture1280 from '../assets/header-justice-future-registered-1280.png'
+import justiceHeaderFuture768 from '../assets/header-justice-future-registered-768.png'
 import justiceHeader1280 from '../assets/header-justice-1280.png'
 import justiceHeader768 from '../assets/header-justice-768.png'
 import {
@@ -11,6 +13,7 @@ import {
 export function LegislationHeaderVisual() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const imageRef = useRef<HTMLImageElement>(null)
+  const futureImageRef = useRef<HTMLImageElement>(null)
   const playRef = useRef<(() => void) | null>(null)
   const queuedManualPlayRef = useRef(false)
   const [isCanvasMounted, setIsCanvasMounted] = useState(false)
@@ -22,7 +25,8 @@ export function LegislationHeaderVisual() {
 
     const canvas = canvasRef.current
     const image = imageRef.current
-    if (!canvas || !image) return
+    const futureImage = futureImageRef.current
+    if (!canvas || !image || !futureImage) return
 
     let renderer: LegislationHeaderGlitchRenderer | null = null
     let resizeObserver: ResizeObserver | null = null
@@ -40,10 +44,21 @@ export function LegislationHeaderVisual() {
     }
 
     const initialize = () => {
-      if (disposed || renderer || image.naturalWidth === 0) return
+      if (
+        disposed ||
+        renderer ||
+        image.naturalWidth === 0 ||
+        futureImage.naturalWidth === 0
+      ) {
+        return
+      }
 
       try {
-        renderer = createLegislationHeaderGlitchRenderer({ canvas, image })
+        renderer = createLegislationHeaderGlitchRenderer({
+          canvas,
+          sourceImage: image,
+          targetImage: futureImage,
+        })
       } catch {
         queuedManualPlayRef.current = false
         setIsEffectUnavailable(true)
@@ -87,9 +102,11 @@ export function LegislationHeaderVisual() {
 
     image.addEventListener('load', initialize)
     image.addEventListener('error', handleImageError)
+    futureImage.addEventListener('load', initialize)
+    futureImage.addEventListener('error', handleImageError)
     canvas.addEventListener('webglcontextlost', handleContextLost)
-    if (image.complete) {
-      if (image.naturalWidth > 0) initialize()
+    if (image.complete && futureImage.complete) {
+      if (image.naturalWidth > 0 && futureImage.naturalWidth > 0) initialize()
       else handleImageError()
     }
 
@@ -99,6 +116,8 @@ export function LegislationHeaderVisual() {
       cancelAnimationFrame(revealCanvasFrame)
       image.removeEventListener('load', initialize)
       image.removeEventListener('error', handleImageError)
+      futureImage.removeEventListener('load', initialize)
+      futureImage.removeEventListener('error', handleImageError)
       canvas.removeEventListener('webglcontextlost', handleContextLost)
       resizeObserver?.disconnect()
       renderer?.dispose()
@@ -142,6 +161,20 @@ export function LegislationHeaderVisual() {
           'pointer-events-none absolute inset-0 z-10 h-full w-full object-contain object-right-bottom transition-opacity duration-200 ease-out',
           isImageCoverVisible ? 'opacity-100' : 'opacity-0',
         )}
+      />
+      <img
+        ref={futureImageRef}
+        src={justiceHeaderFuture768}
+        srcSet={`${justiceHeaderFuture768} 768w, ${justiceHeaderFuture1280} 1280w`}
+        sizes="(min-width: 1280px) 70vw, 0px"
+        width={1280}
+        height={976}
+        alt=""
+        aria-hidden="true"
+        loading="eager"
+        decoding="async"
+        draggable={false}
+        className="pointer-events-none invisible absolute inset-0 h-full w-full object-contain object-right-bottom"
       />
       {isCanvasMounted ? (
         <canvas

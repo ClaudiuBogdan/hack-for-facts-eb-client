@@ -16,7 +16,8 @@ const VERTEX_SHADER_SOURCE = `#version 300 es
 const FRAGMENT_SHADER_SOURCE = `#version 300 es
   precision highp float;
 
-  uniform sampler2D u_texture;
+  uniform sampler2D u_source_texture;
+  uniform sampler2D u_target_texture;
   uniform vec2 u_resolution;
   uniform float u_time;
   uniform float u_strength;
@@ -25,6 +26,8 @@ const FRAGMENT_SHADER_SOURCE = `#version 300 es
   uniform float u_sweep_center;
   uniform float u_sweep_width;
   uniform float u_sweep_mix;
+  uniform float u_transition_from;
+  uniform float u_transition_to;
 
   in vec2 v_uv;
   out vec4 out_color;
@@ -33,9 +36,26 @@ const FRAGMENT_SHADER_SOURCE = `#version 300 es
     return fract(sin(value * 91.3458) * 47453.5453);
   }
 
+  vec4 sample_transition(vec2 uv, float transition_mix) {
+    vec4 source_sample = texture(u_source_texture, uv);
+    vec4 target_sample = texture(u_target_texture, uv);
+    return mix(source_sample, target_sample, transition_mix);
+  }
+
   void main() {
     vec2 uv = v_uv;
-    vec4 base_sample = texture(u_texture, uv);
+    float reveal_feather = max(2.0 / u_resolution.y, u_sweep_width * 0.12);
+    float reveal_mask = smoothstep(
+      u_sweep_center - reveal_feather,
+      u_sweep_center + reveal_feather,
+      uv.y
+    );
+    float transition_mix = mix(
+      u_transition_from,
+      u_transition_to,
+      reveal_mask
+    );
+    vec4 base_sample = sample_transition(uv, transition_mix);
     float time_cell = floor(u_time * 52.0);
     float band_id = floor(uv.y * 36.0);
     float fine_band_id = floor(uv.y * 110.0);
@@ -62,14 +82,14 @@ const FRAGMENT_SHADER_SOURCE = `#version 300 es
     vec2 shifted_uv = vec2(clamp(uv.x + slice_offset, 0.0, 1.0), uv.y);
     float chroma_shift = 0.011 * local_strength;
 
-    vec4 red_sample = texture(
-      u_texture,
-      vec2(clamp(shifted_uv.x + chroma_shift, 0.0, 1.0), shifted_uv.y)
+    vec4 red_sample = sample_transition(
+      vec2(clamp(shifted_uv.x + chroma_shift, 0.0, 1.0), shifted_uv.y),
+      transition_mix
     );
-    vec4 green_sample = texture(u_texture, shifted_uv);
-    vec4 blue_sample = texture(
-      u_texture,
-      vec2(clamp(shifted_uv.x - chroma_shift, 0.0, 1.0), shifted_uv.y)
+    vec4 green_sample = sample_transition(shifted_uv, transition_mix);
+    vec4 blue_sample = sample_transition(
+      vec2(clamp(shifted_uv.x - chroma_shift, 0.0, 1.0), shifted_uv.y),
+      transition_mix
     );
 
     vec3 color = vec3(red_sample.r, green_sample.g, blue_sample.b);
@@ -127,7 +147,8 @@ export type LegislationHeaderGlitchRenderer = {
 
 type CreateRendererOptions = {
   readonly canvas: HTMLCanvasElement
-  readonly image: HTMLImageElement
+  readonly sourceImage: HTMLImageElement
+  readonly targetImage: HTMLImageElement
 }
 
 type WindowEnvelopeOptions = {
@@ -270,7 +291,8 @@ function getUniformLocation({
 
 export function createLegislationHeaderGlitchRenderer({
   canvas,
-  image,
+  sourceImage,
+  targetImage,
 }: CreateRendererOptions): LegislationHeaderGlitchRenderer {
   const gl = requireGlResource(
     canvas.getContext('webgl2', {
@@ -289,9 +311,13 @@ export function createLegislationHeaderGlitchRenderer({
     gl.createBuffer(),
     'Could not create WebGL position buffer',
   )
-  const texture = requireGlResource(
+  const sourceTexture = requireGlResource(
     gl.createTexture(),
-    'Could not create WebGL texture',
+    'Could not create source WebGL texture',
+  )
+  const targetTexture = requireGlResource(
+    gl.createTexture(),
+    'Could not create target WebGL texture',
   )
 
   const positionLocation = gl.getAttribLocation(program, 'a_position')
@@ -333,10 +359,25 @@ export function createLegislationHeaderGlitchRenderer({
     program,
     name: 'u_sweep_mix',
   })
-  const textureLocation = getUniformLocation({
+  const sourceTextureLocation = getUniformLocation({
     gl,
     program,
-    name: 'u_texture',
+    name: 'u_source_texture',
+  })
+  const targetTextureLocation = getUniformLocation({
+    gl,
+    program,
+    name: 'u_target_texture',
+  })
+  const transitionFromLocation = getUniformLocation({
+    gl,
+    program,
+    name: 'u_transition_from',
+  })
+  const transitionToLocation = getUniformLocation({
+    gl,
+    program,
+    name: 'u_transition_to',
   })
 
   gl.bindVertexArray(vertexArray)
@@ -350,7 +391,7 @@ export function createLegislationHeaderGlitchRenderer({
   gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0)
 
   gl.activeTexture(gl.TEXTURE0)
-  gl.bindTexture(gl.TEXTURE_2D, texture)
+  gl.bindTexture(gl.TEXTURE_2D, sourceTexture)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
@@ -362,17 +403,37 @@ export function createLegislationHeaderGlitchRenderer({
     gl.RGBA,
     gl.RGBA,
     gl.UNSIGNED_BYTE,
-    image,
+    sourceImage,
+  )
+
+  gl.activeTexture(gl.TEXTURE1)
+  gl.bindTexture(gl.TEXTURE_2D, targetTexture)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    0,
+    gl.RGBA,
+    gl.RGBA,
+    gl.UNSIGNED_BYTE,
+    targetImage,
   )
 
   gl.useProgram(program)
-  gl.uniform1i(textureLocation, 0)
+  gl.uniform1i(sourceTextureLocation, 0)
+  gl.uniform1i(targetTextureLocation, 1)
   gl.disable(gl.BLEND)
   gl.clearColor(0, 0, 0, 0)
 
   let animationFrame = 0
   let currentFrame = CLEAN_FRAME
   let currentElapsedSeconds = 0
+  let stableTransitionMix = 0
+  let transitionFrom = 0
+  let transitionTo = 0
   let disposed = false
 
   const resizeBuffer = () => {
@@ -408,12 +469,16 @@ export function createLegislationHeaderGlitchRenderer({
     gl.uniform1f(sweepCenterLocation, frame.sweepCenter)
     gl.uniform1f(sweepWidthLocation, frame.sweepWidth)
     gl.uniform1f(sweepMixLocation, frame.sweepMix)
+    gl.uniform1f(transitionFromLocation, transitionFrom)
+    gl.uniform1f(transitionToLocation, transitionTo)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
   }
 
   const play = () => {
     if (disposed) return
     cancelAnimationFrame(animationFrame)
+    transitionFrom = stableTransitionMix
+    transitionTo = stableTransitionMix === 0 ? 1 : 0
     const startedAt = performance.now()
     draw({ frame: getScanningLockFrame(0), elapsedSeconds: 0 })
 
@@ -421,6 +486,8 @@ export function createLegislationHeaderGlitchRenderer({
       const elapsedSeconds = (now - startedAt) / 1_000
       if (elapsedSeconds >= GLITCH_DURATION_SECONDS) {
         animationFrame = 0
+        stableTransitionMix = transitionTo
+        transitionFrom = stableTransitionMix
         draw({ frame: CLEAN_FRAME, elapsedSeconds: GLITCH_DURATION_SECONDS })
         return
       }
@@ -441,7 +508,8 @@ export function createLegislationHeaderGlitchRenderer({
   const dispose = () => {
     disposed = true
     cancelAnimationFrame(animationFrame)
-    gl.deleteTexture(texture)
+    gl.deleteTexture(sourceTexture)
+    gl.deleteTexture(targetTexture)
     gl.deleteBuffer(positionBuffer)
     gl.deleteVertexArray(vertexArray)
     gl.deleteProgram(program)
