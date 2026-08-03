@@ -472,16 +472,18 @@ test.describe('Entity Analytics - Comprehensive Tests', () => {
       }
     })
 
-    test('can expand filter sections', async ({ page }) => {
+    test('can expand the budget sector filter section', async ({ page }) => {
       await page.goto('/entity-analytics')
       await page.waitForLoadState('networkidle').catch(() => {})
 
-      // Click Entity Type filter to expand
-      const entityTypeButton = page.getByRole('button', { name: /tip.*entitate|entity.*type/i }).first()
-      await entityTypeButton.click()
+      // Entity Type is deprecated and hidden for new URLs. Exercise a current
+      // filter section instead.
+      const budgetSectorButton = page
+        .getByRole('button', { name: /^sector bugetar$|^budget sector$/i })
+        .first()
+      await budgetSectorButton.click()
 
-      // Should see filter content
-      await expect(page.locator('body')).toBeVisible()
+      await expect(budgetSectorButton).toHaveAttribute('aria-expanded', 'true')
     })
 
     test('can expand the tags filter section (bilingual)', async ({ page }) => {

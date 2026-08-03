@@ -140,10 +140,10 @@ test.describe('Entity Analytics Page', () => {
     await expect(economicPrefixFilter.first()).toBeVisible()
   })
 
-  test('displays entity type and budget sector filters', async ({ page }) => {
-    // Check for Entity Type filter
-    const entityTypeFilter = page.getByRole('button', { name: /tip.*entitate|entity.*type/i })
-    await expect(entityTypeFilter.first()).toBeVisible({ timeout: 5000 })
+  test('displays tags, budget sector, and funding source filters', async ({ page }) => {
+    // Tags replaced the deprecated Entity Type filter for new URLs.
+    const tagsFilter = page.getByRole('button', { name: /^etichete$|^tags$/i })
+    await expect(tagsFilter.first()).toBeVisible({ timeout: 5000 })
 
     // Check for Budget Sector filter
     const budgetSectorFilter = page.getByRole('button', { name: /sector.*bugetar|budget.*sector/i })
