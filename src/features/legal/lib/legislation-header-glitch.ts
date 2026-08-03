@@ -2,6 +2,9 @@ const GLITCH_DURATION_SECONDS = 1
 const GLITCH_INTENSITY = 0.7
 const GLITCH_SLICE_DISPLACEMENT = 0.05
 const GLITCH_WHITE_NOISE = 0.05
+const SWEEP_START = 1.08
+const SWEEP_END = -0.08
+const SWEEP_WIDTH = 0.16
 
 const VERTEX_SHADER_SOURCE = `#version 300 es
   in vec2 a_position;
@@ -26,8 +29,6 @@ const FRAGMENT_SHADER_SOURCE = `#version 300 es
   uniform float u_sweep_center;
   uniform float u_sweep_width;
   uniform float u_sweep_mix;
-  uniform float u_transition_from;
-  uniform float u_transition_to;
 
   in vec2 v_uv;
   out vec4 out_color;
@@ -50,11 +51,7 @@ const FRAGMENT_SHADER_SOURCE = `#version 300 es
       u_sweep_center + reveal_feather,
       uv.y
     );
-    float transition_mix = mix(
-      u_transition_from,
-      u_transition_to,
-      reveal_mask
-    );
+    float transition_mix = reveal_mask;
     vec4 base_sample = sample_transition(uv, transition_mix);
     float time_cell = floor(u_time * 52.0);
     float band_id = floor(uv.y * 36.0);
@@ -151,18 +148,42 @@ type CreateRendererOptions = {
   readonly targetImage: HTMLImageElement
 }
 
-type WindowEnvelopeOptions = {
-  readonly elapsed: number
-  readonly start: number
-  readonly attack: number
-  readonly end: number
-  readonly release: number
+type ScanDirection = -1 | 1
+
+type AdvanceScanningLockProgressOptions = {
+  readonly progress: number
+  readonly direction: ScanDirection
+  readonly deltaSeconds: number
 }
 
-const CLEAN_FRAME: ScanningLockFrame = {
+type StartOrReverseScanningLockOptions = {
+  readonly progress: number
+  readonly direction: ScanDirection
+  readonly isAnimating: boolean
+}
+
+type HasReachedScanningLockEndpointOptions = {
+  readonly progress: number
+  readonly direction: ScanDirection
+}
+
+type ScanningLockFrameAtProgressOptions = {
+  readonly progress: number
+  readonly timeSeconds: number
+  readonly active: boolean
+}
+
+const SOURCE_FRAME: ScanningLockFrame = {
   strength: 0,
-  sweepCenter: 0.5,
-  sweepWidth: 1,
+  sweepCenter: SWEEP_START,
+  sweepWidth: SWEEP_WIDTH,
+  sweepMix: 0,
+}
+
+const TARGET_FRAME: ScanningLockFrame = {
+  strength: 0,
+  sweepCenter: SWEEP_END,
+  sweepWidth: SWEEP_WIDTH,
   sweepMix: 0,
 }
 
@@ -175,44 +196,82 @@ function smoothStep(start: number, end: number, value: number) {
   return position * position * (3 - 2 * position)
 }
 
-function windowEnvelope({
-  elapsed,
-  start,
-  attack,
-  end,
-  release,
-}: WindowEnvelopeOptions) {
-  return (
-    smoothStep(start, start + attack, elapsed) *
-    (1 - smoothStep(end - release, end, elapsed))
+export function advanceScanningLockProgress({
+  progress,
+  direction,
+  deltaSeconds,
+}: AdvanceScanningLockProgressOptions) {
+  return clamp01(
+    progress + (direction * deltaSeconds) / GLITCH_DURATION_SECONDS,
   )
+}
+
+export function startOrReverseScanningLock({
+  progress,
+  direction,
+  isAnimating,
+}: StartOrReverseScanningLockOptions) {
+  return {
+    direction: (isAnimating
+      ? direction === 1
+        ? -1
+        : 1
+      : progress >= 1
+        ? -1
+        : 1) as ScanDirection,
+    isAnimating: true,
+  }
+}
+
+export function hasReachedScanningLockEndpoint({
+  progress,
+  direction,
+}: HasReachedScanningLockEndpointOptions) {
+  return direction === 1 ? progress === 1 : progress === 0
+}
+
+function getSweepCenter(progress: number) {
+  if (progress <= 0) return SWEEP_START
+  if (progress >= 1) return SWEEP_END
+  return SWEEP_START + (SWEEP_END - SWEEP_START) * progress
+}
+
+function getScanningLockFrameAtProgress({
+  progress,
+  timeSeconds,
+  active,
+}: ScanningLockFrameAtProgressOptions): ScanningLockFrame {
+  const clampedProgress = clamp01(progress)
+  if (!active && clampedProgress === 0) return SOURCE_FRAME
+  if (!active && clampedProgress === 1) return TARGET_FRAME
+
+  const boundaryEnvelope =
+    smoothStep(0, 0.12, clampedProgress) *
+    (1 - smoothStep(0.88, 1, clampedProgress))
+  const scanStrength = active
+    ? boundaryEnvelope *
+      (0.88 + 0.12 * Math.abs(Math.sin(timeSeconds * 67)))
+    : 0
+
+  return {
+    strength: scanStrength,
+    sweepCenter: getSweepCenter(clampedProgress),
+    sweepWidth: SWEEP_WIDTH,
+    sweepMix: active ? 1 : 0,
+  }
 }
 
 export function getScanningLockFrame(
   elapsedSeconds: number,
 ): ScanningLockFrame {
-  if (elapsedSeconds < 0 || elapsedSeconds >= GLITCH_DURATION_SECONDS) {
-    return CLEAN_FRAME
-  }
+  if (elapsedSeconds < 0) return SOURCE_FRAME
+  if (elapsedSeconds >= GLITCH_DURATION_SECONDS) return TARGET_FRAME
 
-  const scanEnvelope = windowEnvelope({
-    elapsed: elapsedSeconds,
-    start: 0,
-    attack: 0.12,
-    end: 0.98,
-    release: 0.12,
+  return getScanningLockFrameAtProgress({
+    progress: elapsedSeconds / GLITCH_DURATION_SECONDS,
+    timeSeconds: elapsedSeconds,
+    active: true,
   })
-  const scanProgress = clamp01(elapsedSeconds / 0.9)
-  const scanStrength =
-    scanEnvelope *
-    (0.88 + 0.12 * Math.abs(Math.sin(elapsedSeconds * 67)))
-
-  return {
-    strength: scanStrength,
-    sweepCenter: 1.08 - scanProgress * 1.16,
-    sweepWidth: 0.16,
-    sweepMix: 1,
-  }
 }
 
 function requireGlResource<T>(resource: T | null, message: string): T {
@@ -369,17 +428,6 @@ export function createLegislationHeaderGlitchRenderer({
     program,
     name: 'u_target_texture',
   })
-  const transitionFromLocation = getUniformLocation({
-    gl,
-    program,
-    name: 'u_transition_from',
-  })
-  const transitionToLocation = getUniformLocation({
-    gl,
-    program,
-    name: 'u_transition_to',
-  })
-
   gl.bindVertexArray(vertexArray)
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
   gl.bufferData(
@@ -429,11 +477,13 @@ export function createLegislationHeaderGlitchRenderer({
   gl.clearColor(0, 0, 0, 0)
 
   let animationFrame = 0
-  let currentFrame = CLEAN_FRAME
+  let currentFrame = SOURCE_FRAME
   let currentElapsedSeconds = 0
-  let stableTransitionMix = 0
-  let transitionFrom = 0
-  let transitionTo = 0
+  let scanProgress = 0
+  let scanDirection: ScanDirection = 1
+  let isAnimating = false
+  let lastFrameAt = 0
+  let effectTimeSeconds = 0
   let disposed = false
 
   const resizeBuffer = () => {
@@ -469,35 +519,74 @@ export function createLegislationHeaderGlitchRenderer({
     gl.uniform1f(sweepCenterLocation, frame.sweepCenter)
     gl.uniform1f(sweepWidthLocation, frame.sweepWidth)
     gl.uniform1f(sweepMixLocation, frame.sweepMix)
-    gl.uniform1f(transitionFromLocation, transitionFrom)
-    gl.uniform1f(transitionToLocation, transitionTo)
     gl.drawArrays(gl.TRIANGLES, 0, 6)
+  }
+
+  const drawProgress = (active: boolean) => {
+    draw({
+      frame: getScanningLockFrameAtProgress({
+        progress: scanProgress,
+        timeSeconds: effectTimeSeconds,
+        active,
+      }),
+      elapsedSeconds: effectTimeSeconds,
+    })
+  }
+
+  const advanceProgressTo = (now: number) => {
+    const deltaSeconds = Math.max(0, (now - lastFrameAt) / 1_000)
+    lastFrameAt = now
+    effectTimeSeconds += deltaSeconds
+    scanProgress = advanceScanningLockProgress({
+      progress: scanProgress,
+      direction: scanDirection,
+      deltaSeconds,
+    })
+  }
+
+  const animate = (now: number) => {
+    if (disposed || !isAnimating) {
+      animationFrame = 0
+      return
+    }
+
+    advanceProgressTo(now)
+    const reachedEndpoint = hasReachedScanningLockEndpoint({
+      progress: scanProgress,
+      direction: scanDirection,
+    })
+    if (reachedEndpoint) {
+      isAnimating = false
+      animationFrame = 0
+      drawProgress(false)
+      return
+    }
+
+    drawProgress(true)
+    animationFrame = requestAnimationFrame(animate)
   }
 
   const play = () => {
     if (disposed) return
-    cancelAnimationFrame(animationFrame)
-    transitionFrom = stableTransitionMix
-    transitionTo = stableTransitionMix === 0 ? 1 : 0
-    const startedAt = performance.now()
-    draw({ frame: getScanningLockFrame(0), elapsedSeconds: 0 })
 
-    const animate = (now: number) => {
-      const elapsedSeconds = (now - startedAt) / 1_000
-      if (elapsedSeconds >= GLITCH_DURATION_SECONDS) {
-        animationFrame = 0
-        stableTransitionMix = transitionTo
-        transitionFrom = stableTransitionMix
-        draw({ frame: CLEAN_FRAME, elapsedSeconds: GLITCH_DURATION_SECONDS })
-        return
-      }
-      draw({
-        frame: getScanningLockFrame(elapsedSeconds),
-        elapsedSeconds,
-      })
-      animationFrame = requestAnimationFrame(animate)
+    const now = performance.now()
+    if (isAnimating) {
+      advanceProgressTo(now)
     }
 
+    const nextPlayback = startOrReverseScanningLock({
+      progress: scanProgress,
+      direction: scanDirection,
+      isAnimating,
+    })
+    scanDirection = nextPlayback.direction
+    isAnimating = nextPlayback.isAnimating
+    lastFrameAt = now
+    drawProgress(true)
+
+    // A click owns the next frame. Replacing any pending callback prevents a
+    // stale request from leaving the renderer active without a scheduled RAF.
+    cancelAnimationFrame(animationFrame)
     animationFrame = requestAnimationFrame(animate)
   }
 
@@ -507,6 +596,7 @@ export function createLegislationHeaderGlitchRenderer({
 
   const dispose = () => {
     disposed = true
+    isAnimating = false
     cancelAnimationFrame(animationFrame)
     gl.deleteTexture(sourceTexture)
     gl.deleteTexture(targetTexture)
@@ -515,7 +605,7 @@ export function createLegislationHeaderGlitchRenderer({
     gl.deleteProgram(program)
   }
 
-  draw({ frame: CLEAN_FRAME, elapsedSeconds: 0 })
+  draw({ frame: SOURCE_FRAME, elapsedSeconds: 0 })
   gl.finish()
 
   return { play, resize, dispose }
