@@ -92,6 +92,21 @@ export function FloatingEntitySearch({ className, externalOpen, showButton, onOp
                         autoFocus={hasMounted && !isMobile}
                         scrollToTopOnFocus={true}
                     />
+                    {/* This dialog SELECTS a public institution by CUI — it searches
+                        organizations only. The global palette covers all ten identity
+                        types (companies, NGOs, MPs, bills, committees, legislation,
+                        Monitorul Oficial), so offer it rather than leaving it
+                        unreachable from the shell. */}
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setIsOpen(false);
+                            void navigate({ to: '/experimental/search' } as never);
+                        }}
+                        className="mt-2 w-full rounded-md bg-white/95 px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200 transition-colors hover:bg-white dark:bg-slate-900/95 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-900"
+                    >
+                        {t`Caută în tot: firme, ONG-uri, parlamentari, legislație…`}
+                    </button>
                 </DialogContent>
             </Dialog>
         </>

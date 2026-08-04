@@ -16,14 +16,14 @@ describe('DOC_TYPE_META', () => {
   it('keeps the expected Romanian labels for visible chips and badges', () => {
     expect(DOC_TYPE_META.company.label).toBe('Firmă')
     expect(DOC_TYPE_META.public_enterprise.label).toBe('Companie de stat')
-    expect(DOC_TYPE_META.procurement_procedure.label).toBe('Licitație')
+    expect(DOC_TYPE_META.committee.label).toBe('Comisie')
     expect(DOC_TYPE_META.legal_act.label).toBe('Legislație')
     expect(DOC_TYPE_META.member.label).toBe('Parlamentar')
   })
 
   it('groups related types into the intended color families', () => {
     expect(DOC_TYPE_META.company.color).toContain('blue')
-    expect(DOC_TYPE_META.procurement_contract.color).toContain('amber')
+    expect(DOC_TYPE_META.organization.color).toContain('--pnrr-green')
     expect(DOC_TYPE_META.legal_act.color).toContain('violet')
     expect(DOC_TYPE_META.pnrr_entity.color).toContain('teal')
     expect(DOC_TYPE_META.public_enterprise.color).toContain('--pnrr-green')

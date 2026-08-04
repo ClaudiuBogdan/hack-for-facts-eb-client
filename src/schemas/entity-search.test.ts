@@ -18,9 +18,9 @@ describe('parseEntitySearchParams', () => {
     ).toEqual(['company', 'legal_act'])
   })
 
-  it('coerces year to an int and passes county through', () => {
-    const parsed = parseEntitySearchParams({ year: '2024', county: 'Cluj' })
-    expect(parsed.year).toBe(2024)
+  it('parses the active flag and passes county through', () => {
+    const parsed = parseEntitySearchParams({ active: 'true', county: 'Cluj' })
+    expect(parsed.active).toBe(true)
     expect(parsed.county).toBe('Cluj')
   })
 
@@ -28,7 +28,7 @@ describe('parseEntitySearchParams', () => {
     expect(parseEntitySearchParams({})).toEqual({})
   })
 
-  it('catches a malformed year to undefined instead of throwing', () => {
-    expect(parseEntitySearchParams({ year: 'not-a-year' }).year).toBeUndefined()
+  it('treats any non-true active value as false rather than throwing', () => {
+    expect(parseEntitySearchParams({ active: 'nope' }).active).toBe(false)
   })
 })

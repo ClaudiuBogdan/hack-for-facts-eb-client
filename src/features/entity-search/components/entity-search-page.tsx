@@ -15,6 +15,7 @@ import {
 } from '../hooks/use-entity-search'
 import { EntityEmptyState } from './entity-empty-state'
 import { EntityFacetChips } from './entity-facet-chips'
+import { EntityLoadMore } from './entity-load-more'
 import { EntityResultsHeader } from './entity-results-header'
 import { EntitySearchHeader } from './entity-search-header'
 import { EntitySearchInput } from './entity-search-input'
@@ -47,13 +48,7 @@ function normalizeTypes(types: readonly string[] | undefined): readonly string[]
   return normalizedTypes.length > 0 ? normalizedTypes : EMPTY_TYPES
 }
 
-function normalizeYear(year: number | undefined): number | undefined {
-  if (year === undefined || !Number.isInteger(year) || year <= 0) {
-    return undefined
-  }
 
-  return year
-}
 
 export function EntitySearchPage() {
   const searchParams = Route.useSearch()
@@ -70,22 +65,28 @@ export function EntitySearchPage() {
     [searchParams.types],
   )
   const normalizedCounty = searchParams.county?.trim() || undefined
-  const normalizedYear = normalizeYear(searchParams.year)
+  const activeOnly = searchParams.active === true
 
   const queryInput = useMemo<EntitySearchQueryInput>(
     () => ({
       q: normalizedQuery,
       docTypes: selectedTypes.length > 0 ? selectedTypes : undefined,
       county: normalizedCounty,
-      year: normalizedYear,
+      ...(activeOnly && { isActive: true }),
       limit: SEARCH_LIMIT,
     }),
-    [normalizedCounty, normalizedQuery, normalizedYear, selectedTypes],
+    [activeOnly, normalizedCounty, normalizedQuery, selectedTypes],
   )
 
   const search = useEntitySearch(queryInput)
-  const hits = search.data?.hits ?? EMPTY_HITS
-  const facets = search.data?.facets ?? EMPTY_FACETS
+  // Infinite query: flatten loaded pages; the envelope fields (facets, engine,
+  // estimatedTotalHits) describe the whole result set, so read them off page 1.
+  const firstPage = search.data?.pages[0]
+  const hits = useMemo(
+    () => search.data?.pages.flatMap((page) => page.hits) ?? EMPTY_HITS,
+    [search.data],
+  )
+  const facets = firstPage?.facets ?? EMPTY_FACETS
   const hasQuery = normalizedQuery.length > 0
   const hasResults = hits.length > 0
   const isInitialLoading =
@@ -170,7 +171,7 @@ export function EntitySearchPage() {
         ...previous,
         types: undefined,
         county: undefined,
-        year: undefined,
+        active: undefined,
       }),
     })
   }, [navigate])
@@ -259,7 +260,7 @@ export function EntitySearchPage() {
         <EntityFacetChips
           facets={facets}
           selectedTypes={selectedTypes}
-          estimatedTotalHits={search.data?.estimatedTotalHits ?? null}
+          estimatedTotalHits={firstPage?.estimatedTotalHits ?? null}
           onTypesChange={setTypes}
         />
       ) : null}
@@ -271,8 +272,8 @@ export function EntitySearchPage() {
         {shouldShowResultsHeader ? (
           <EntityResultsHeader
             shownCount={hits.length}
-            estimatedTotalHits={search.data?.estimatedTotalHits ?? null}
-            engine={search.data?.engine ?? null}
+            estimatedTotalHits={firstPage?.estimatedTotalHits ?? null}
+            engine={firstPage?.engine ?? null}
           />
         ) : null}
 
@@ -297,7 +298,19 @@ export function EntitySearchPage() {
             setRowRef={setRowRef}
             setActionRef={setActionRef}
           />
-        ) : (
+        ) : null}
+
+        {hasResults && search.hasNextPage ? (
+          <EntityLoadMore
+            isLoading={search.isFetchingNextPage}
+            disabled={!search.hasNextPage}
+            onClick={() => {
+              void search.fetchNextPage()
+            }}
+          />
+        ) : null}
+
+        {!hasQuery || search.isError || isInitialLoading || hasResults ? null : (
           <EntityEmptyState
             variant="zero"
             query={normalizedQuery}

@@ -17,9 +17,9 @@ type Props = {
 
 const POPULAR_DOC_TYPES = [
   'company',
+  'organization',
   'legal_act',
-  'procurement_contract',
-  'public_enterprise',
+  'member',
 ] as const satisfies readonly EntitySearchDocType[]
 
 function EmptyStateIcon({ variant }: { readonly variant: EmptyStateVariant }) {

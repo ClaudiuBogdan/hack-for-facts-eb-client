@@ -2,13 +2,11 @@ import { t } from '@lingui/core/macro'
 import {
   Building,
   Building2,
-  FileSignature,
   FileText,
   Gavel,
   HeartHandshake,
   Landmark,
   Newspaper,
-  PackageOpen,
   Scale,
   ScrollText,
   Users,
@@ -50,18 +48,6 @@ export const DOC_TYPE_META = {
       'border-[var(--pnrr-green)]/40 bg-[var(--pnrr-green)]/15 text-emerald-900 dark:text-emerald-200',
     Icon: Landmark,
   },
-  procurement_contract: {
-    label: t`Contract`,
-    color:
-      'border-amber-200 bg-amber-100 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200',
-    Icon: FileSignature,
-  },
-  procurement_procedure: {
-    label: t`Licitație`,
-    color:
-      'border-amber-200 bg-amber-100 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200',
-    Icon: Gavel,
-  },
   legal_act: {
     label: t`Legislație`,
     color:
@@ -86,17 +72,17 @@ export const DOC_TYPE_META = {
       'border-teal-200 bg-teal-100 text-teal-900 dark:border-teal-900 dark:bg-teal-950 dark:text-teal-200',
     Icon: Building,
   },
-  pnrr_project: {
-    label: t`PNRR`,
-    color:
-      'border-teal-200 bg-teal-100 text-teal-900 dark:border-teal-900 dark:bg-teal-950 dark:text-teal-200',
-    Icon: PackageOpen,
-  },
   member: {
     label: t`Parlamentar`,
     color:
       'border-rose-200 bg-rose-100 text-rose-900 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-200',
     Icon: Users,
+  },
+  committee: {
+    label: t`Comisie`,
+    color:
+      'border-rose-200 bg-rose-100 text-rose-900 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-200',
+    Icon: Gavel,
   },
 } satisfies Record<EntitySearchDocType, EntityDocTypeMeta>
 

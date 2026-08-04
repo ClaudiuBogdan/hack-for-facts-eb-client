@@ -7,11 +7,17 @@
  * - queryKey covers every normalized input field so filter changes refetch
  * - passes the React Query AbortSignal through to `searchEntitiesLive`
  * - `keepPreviousData` so the list does not flash while typing/filtering
+ *
+ * Paging is OFFSET-based, not a growing `limit`: the server clamps `limit` to 50,
+ * so raising it could never reach past the second page. It clamps `offset` to
+ * 1000 because Meili stops scanning at `maxTotalHits`, which is why
+ * `getNextPageParam` stops there rather than letting the user page into nothing.
  */
 import {
   keepPreviousData,
-  useQuery,
-  type UseQueryResult,
+  useInfiniteQuery,
+  type UseInfiniteQueryResult,
+  type InfiniteData,
 } from '@tanstack/react-query'
 import { searchEntitiesLive } from '../api/entity-search-api.live'
 import type {
@@ -19,25 +25,41 @@ import type {
   EntitySearchResult,
 } from '@/schemas/entity-search'
 
+/** Mirrors the server's own offset clamp (Meili maxTotalHits = 1000). */
+const OFFSET_MAX = 1000
+
 export function entitySearchQueryKey(input: EntitySearchInput) {
   return [
     'entity-search',
     input.q.trim(),
     [...(input.docTypes ?? [])].map((t) => t.trim()).sort(),
+    [...(input.roles ?? [])].map((r) => r.trim()).sort(),
     input.county?.trim() ?? '',
-    input.year ?? null,
+    input.isActive ?? null,
     input.limit ?? null,
-    input.offset ?? null,
   ] as const
 }
 
 export function useEntitySearch(
   input: EntitySearchInput,
-): UseQueryResult<EntitySearchResult, Error> {
+): UseInfiniteQueryResult<InfiniteData<EntitySearchResult, number>, Error> {
   const enabled = input.q.trim().length > 0
-  return useQuery({
+  const limit = input.limit ?? 20
+
+  return useInfiniteQuery({
     queryKey: entitySearchQueryKey(input),
-    queryFn: ({ signal }) => searchEntitiesLive(input, signal),
+    queryFn: ({ pageParam, signal }) =>
+      searchEntitiesLive({ ...input, offset: pageParam }, signal),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      const loaded = allPages.reduce((sum, page) => sum + page.hits.length, 0)
+      const next = allPages.length * limit
+      // Stop on a short page (the engine has nothing more), when everything the
+      // engine will admit to is loaded, or at the engine's own scan ceiling.
+      if (lastPage.hits.length < limit) return undefined
+      if (loaded >= lastPage.estimatedTotalHits) return undefined
+      return next < OFFSET_MAX ? next : undefined
+    },
     enabled,
     // Keep prior results visible while a new query/filter loads instead of
     // flashing the empty/loading state on every keystroke.

@@ -48,8 +48,9 @@ export async function searchEntitiesLive(
   const variables = {
     q,
     docTypes: nonEmptyList(input.docTypes),
+    roles: nonEmptyList(input.roles),
     county: county && county.length > 0 ? county : undefined,
-    year: input.year,
+    isActive: input.isActive,
     limit: input.limit,
     offset: input.offset,
   }

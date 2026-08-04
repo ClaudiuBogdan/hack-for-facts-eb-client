@@ -17,7 +17,9 @@ function rawHit(overrides: Partial<RawSearchHit>): RawSearchHit {
     url: null,
     rankBoost: null,
     cuis: null,
-    year: null,
+    identifiers: null,
+    roles: null,
+    isActive: null,
     ...overrides,
   }
 }
@@ -47,9 +49,20 @@ describe('mapSearchHit', () => {
     expect(hit.isExternal).toBe(false)
   })
 
-  it('normalizes null cuis to an empty array', () => {
-    const hit = mapSearchHit(rawHit({ cuis: null }))
-    expect(hit.cuis).toEqual([])
+  it('falls back to cuis when identifiers is absent', () => {
+    const hit = mapSearchHit(rawHit({ cuis: ['2816464'], identifiers: null }))
+    expect(hit.identifiers).toEqual(['2816464'])
+  })
+
+  it('normalizes null identifiers and roles to empty arrays', () => {
+    const hit = mapSearchHit(rawHit({ cuis: null, identifiers: null }))
+    expect(hit.identifiers).toEqual([])
+    expect(hit.roles).toEqual([])
+  })
+
+  it('defaults a null isActive to true (absence is not inactivity)', () => {
+    expect(mapSearchHit(rawHit({ isActive: null })).isActive).toBe(true)
+    expect(mapSearchHit(rawHit({ isActive: false })).isActive).toBe(false)
   })
 
   it('coerces a numeric docId to a string', () => {
@@ -74,14 +87,14 @@ describe('mapSearchHit', () => {
         subtitle: 'sub',
         snippet: 'snip',
         countyName: 'Cluj',
-        year: 2024,
+        roles: ['organization', 'pnrr_entity'],
         docKey: 'company:2816464',
       }),
     )
     expect(hit.subtitle).toBe('sub')
     expect(hit.snippet).toBe('snip')
     expect(hit.countyName).toBe('Cluj')
-    expect(hit.year).toBe(2024)
+    expect(hit.roles).toEqual(['organization', 'pnrr_entity'])
     expect(hit.docKey).toBe('company:2816464')
   })
 })

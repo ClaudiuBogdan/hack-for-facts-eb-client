@@ -13,16 +13,18 @@ export const SEARCH_ENTITIES_QUERY = /* GraphQL */ `
   query SearchEntities(
     $q: String!
     $docTypes: [String!]
+    $roles: [String!]
     $county: String
-    $year: Int
+    $isActive: Boolean
     $limit: Int
     $offset: Int
   ) {
     searchEntities(
       q: $q
       docTypes: $docTypes
+      roles: $roles
       county: $county
-      year: $year
+      isActive: $isActive
       limit: $limit
       offset: $offset
     ) {
@@ -48,7 +50,9 @@ export const SEARCH_ENTITIES_QUERY = /* GraphQL */ `
         url
         rankBoost
         cuis
-        year
+        identifiers
+        roles
+        isActive
       }
     }
   }
@@ -77,7 +81,9 @@ const rawSearchHitSchema = z.object({
   url: z.string().nullable(),
   rankBoost: numberOrNull,
   cuis: z.array(z.string()).nullable(),
-  year: z.number().int().nullable(),
+  identifiers: z.array(z.string()).nullable(),
+  roles: z.array(z.string()).nullable(),
+  isActive: z.boolean().nullable(),
 })
 
 export const searchEntitiesResponseSchema = z.object({

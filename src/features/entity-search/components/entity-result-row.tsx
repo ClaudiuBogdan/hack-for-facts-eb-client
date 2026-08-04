@@ -40,11 +40,15 @@ function isSafeExternalHref(href: string): boolean {
 function getHitMetaPieces(hit: EntitySearchHit): readonly MetaPiece[] {
   const pieces: MetaPiece[] = []
 
-  if (hit.subtitle?.trim()) {
-    pieces.push({ key: 'subtitle', label: hit.subtitle.trim() })
+  // The server maps snippet = subtitle for palette hits, so rendering both
+  // printed every secondary line twice ("uat, uat_municipality" ×2).
+  const subtitle = hit.subtitle?.trim()
+  if (subtitle && subtitle !== hit.snippet?.trim()) {
+    pieces.push({ key: 'subtitle', label: subtitle })
   }
 
-  const cui = hit.cuis[0]?.trim()
+  // identifiers carries every searchable form; the CUI is the numeric one.
+  const cui = hit.identifiers.find((value) => /^\d+$/.test(value))?.trim()
   if (cui && CUI_SPINE_DOC_TYPES.has(hit.docType)) {
     pieces.push({ key: 'cui', label: t`CUI ${cui}` })
   }
@@ -57,8 +61,10 @@ function getHitMetaPieces(hit: EntitySearchHit): readonly MetaPiece[] {
     })
   }
 
-  if (hit.year !== null && Number.isFinite(hit.year)) {
-    pieces.push({ key: 'year', label: String(hit.year) })
+  // Struck-off companies and repealed acts are half the corpus; say so rather
+  // than letting a dead entity look identical to a live one.
+  if (!hit.isActive) {
+    pieces.push({ key: 'inactive', label: t`Inactiv` })
   }
 
   return pieces

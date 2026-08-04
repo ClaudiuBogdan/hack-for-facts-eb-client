@@ -10,24 +10,25 @@ import { z } from 'zod'
  */
 
 /**
- * The 12 doc_type values the server allows in `docTypes`. Populated in prod
- * today: company, legal_act, procurement_contract, procurement_procedure,
- * pnrr_entity, public_enterprise. The rest return 0 rows for now but remain
- * valid filter values (and may surface as empty facets).
+ * The doc_type values the server allows in `docTypes`. All ten are populated.
+ * KEEP IN SYNC with SEARCH_ENTITY_DOC_TYPES on the server and PALETTE_DOC_TYPES
+ * in the scrapper.
+ *
+ * These are IDENTITIES, one hit each: a CUI that is both a municipality and a
+ * PNRR beneficiary is ONE hit whose `roles` carries both. Filter `docTypes` for
+ * what a thing IS, `roles` for what it PLAYS.
  */
 export const ENTITY_SEARCH_DOC_TYPES = [
   'organization',
   'company',
   'public_enterprise',
   'ngo',
+  'pnrr_entity',
   'member',
   'bill',
+  'committee',
   'legal_act',
   'mo_act',
-  'pnrr_project',
-  'pnrr_entity',
-  'procurement_contract',
-  'procurement_procedure',
 ] as const
 
 export type EntitySearchDocType = (typeof ENTITY_SEARCH_DOC_TYPES)[number]
@@ -47,8 +48,11 @@ export interface EntitySearchHit {
   readonly subtitle: string | null
   readonly snippet: string | null
   readonly countyName: string | null
-  readonly year: number | null
-  readonly cuis: readonly string[]
+  /** Every role this identity plays (organization + pnrr_entity + …). */
+  readonly roles: readonly string[]
+  /** False for struck-off companies and repealed acts. */
+  readonly isActive: boolean
+  readonly identifiers: readonly string[]
   readonly docId: string | null
   readonly docKey: string | null
   readonly url: string | null
@@ -77,8 +81,9 @@ export interface EntitySearchResult {
 export interface EntitySearchInput {
   readonly q: string
   readonly docTypes?: readonly string[]
+  readonly roles?: readonly string[]
   readonly county?: string
-  readonly year?: number
+  readonly isActive?: boolean
   readonly limit?: number
   readonly offset?: number
 }
@@ -111,7 +116,11 @@ export const entitySearchParamsSchema = z.object({
     .optional()
     .catch(undefined),
   county: optionalSearchString,
-  year: z.coerce.number().int().optional().catch(undefined),
+  active: z
+    .union([z.boolean(), z.string()])
+    .transform((value) => value === true || value === 'true')
+    .optional()
+    .catch(undefined),
 })
 
 export type EntitySearchParams = z.infer<typeof entitySearchParamsSchema>
