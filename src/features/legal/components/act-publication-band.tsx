@@ -1,12 +1,12 @@
 import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
-import { Trans } from '@lingui/react/macro'
+import { Plural, Trans } from '@lingui/react/macro'
 import { ExternalLink, FileText, FileX2 } from 'lucide-react'
 import type { LegalActDetail } from '@/schemas/legal'
 import { formatLegalDate } from '../lib/legal-format'
 import { legalGazettePartLabel } from '../lib/legal-vocabulary'
 import { LEGISLATION_ACCENT } from '../lib/legislation-theme'
-import { LegislationSection } from './legislation-section'
+import { ActAccordionItem } from './act-accordion'
 
 type Props = {
   readonly act: LegalActDetail
@@ -16,31 +16,45 @@ const OUT_LINK_CLASS =
   'inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--pnrr-fg)] underline underline-offset-2 hover:text-[var(--pnrr-muted)]'
 
 /**
- * Rung 3 — the proof, and the exit to the text.
+ * Rung 3 — the proof of publication.
  *
- * This band discharges the page's core promise: we do not hold the law, so we
- * owe the reader an unambiguous route to it. Two routes, in order of authority:
- * the Monitorul Oficial issue (publication is what makes an act produce
- * effects) and the Portal's consolidated record.
+ * Publication is what makes an act produce effects, so this band answers *which
+ * issue of the Monitorul Oficial* carried it, and links the official PDF where
+ * one exists.
+ *
+ * The exit to the consolidated text no longer lives here — it is the header's
+ * primary action, above the fold, because burying the page's whole purpose
+ * 1.200px down was the single worst thing about the old layout.
  *
  * Copy guardrail, inherited from the landing page and just as binding here: the
- * PDF marker means **an official PDF exists**, never that we hold the text.
+ * PDF marker means **an official PDF exists on monitoruloficial.ro**, never that
+ * we hold its text. This one survives full text landing in the product — holding
+ * the Portal's consolidated text says nothing about holding the gazette scan.
  *
  * `resolution` is surfaced when the act↔issue join is not `unique`, because a
- * clustered match is a guess about which issue published this act.
+ * clustered match is a guess about which issue published this act. When there is
+ * no match at all the band is absent and `ActProvenanceNotes` says so — a block
+ * with no content does not render (`docs/design/legal/act-detail.md` §2).
  */
 export function ActPublicationBand({ act }: Props) {
   const { i18n } = useLingui()
 
   const publications = act.gazettePublications
-  const hasPublications = publications.length > 0
 
-  if (!hasPublications && act.officialTextUrl === null) return null
+  if (publications.length === 0) return null
 
   return (
-    <LegislationSection
+    <ActAccordionItem
       id="act-publication-heading"
       title={t`Unde a fost publicat`}
+      meta={
+        <Plural
+          value={publications.length}
+          one="# publicare"
+          few="# publicări"
+          other="# de publicări"
+        />
+      }
       description={t`De la data apariției în Monitorul Oficial, un act produce efecte.`}
       footnote={
         <Trans>
@@ -49,7 +63,7 @@ export function ActPublicationBand({ act }: Props) {
         </Trans>
       }
     >
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 px-5 py-5 sm:px-6">
         {publications.map((publication, index) => {
           const hasPdf = publication.pdfUrl !== null
           const isUncertain =
@@ -110,37 +124,7 @@ export function ActPublicationBand({ act }: Props) {
             </div>
           )
         })}
-
-        {!hasPublications ? (
-          <p className="text-sm text-[var(--pnrr-muted)]">
-            <Trans>
-              Nu am putut lega acest act de un număr din Monitorul Oficial. Doar
-              46,4% dintre publicări se potrivesc cu certitudine unui act din
-              Portal Legislativ.
-            </Trans>
-          </p>
-        ) : null}
-
-        {act.officialTextUrl !== null ? (
-          <div className="border-t-2 border-[var(--pnrr-border)] pt-4">
-            <a
-              href={act.officialTextUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={OUT_LINK_CLASS}
-            >
-              <Trans>Citește textul oficial pe legislatie.just.ro</Trans>
-              <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-            </a>
-            <p className="mt-1.5 text-xs text-[var(--pnrr-muted)]">
-              <Trans>
-                Textul integral nu este disponibil aici. Portal Legislativ este
-                sursa oficială.
-              </Trans>
-            </p>
-          </div>
-        ) : null}
       </div>
-    </LegislationSection>
+    </ActAccordionItem>
   )
 }

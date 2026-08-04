@@ -535,6 +535,31 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 
 Append-only. Newest first. Each entry: date · decision · why.
 
+- **2026-08-04 — A detail page ranks its blocks: one lead, one action, one
+  accordion for everything else.** On `/legislation/acts/$actId` the summary is
+  the only open card. Every block below it — relevance, key dates, publication
+  proof, amendment timeline, both citation directions, article structure, and the
+  catalogue of data limits — is a row of a single accordion, closed, mounting its
+  content only when opened. The page's outbound action (the official text) is a
+  solid button in the header rather than an underlined link in the eighth card
+  down. The header itself is two columns, with act type, issuer, entry into force
+  and aliases joined into one line instead of four. Counts are stated once: the
+  header dropped the three stat chips that restated the amendment, citation and
+  structure totals of the blocks below it. A taxonomy gets one chip shape,
+  distinguished by fill, not three distinguished by border weight.
+  *Why:* eleven sibling cards of identical weight is not a hierarchy, it is a
+  list of containers, and the reader has to rank them personally. Principle 1
+  says an element that does not change a decision gets demoted or cut — so the
+  duplicated counts went and keywords dropped from chips to a line of text.
+  Collapsing a block is not hiding it, provided the closed row still answers its
+  own question: every row carries a count, and the relevance row puts its actual
+  answer — the affected audiences — in the row itself. The caveats collapse on
+  the same terms, because every claim they qualify is still stated where it is
+  made: the mock badge beside the status badge, the AI notice along the bottom of
+  the summary, "potrivire posibilă" on the citation row itself. Measured on the
+  Codul Fiscal, the worst case in the corpus: 3.226px → 2.076px, header 335px →
+  ~200px.
+
 - **2026-08-04 — Border weight encodes altitude: heavy for page chrome, one
   hairline for everything inside it.** On `/legislation`, 2px near-black
   (`--pnrr-border`) is now reserved for page-level chrome — the header edge and the

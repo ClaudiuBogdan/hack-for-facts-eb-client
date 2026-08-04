@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { render, screen } from '@/test/test-utils'
+import { fireEvent, render, screen } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { LegalActDetail } from '@/schemas/legal'
 import {
@@ -56,17 +56,17 @@ describe('LegalActPage', () => {
     ).toBeInTheDocument()
   })
 
-  it('never implies it holds the text of the law', () => {
+  it('routes to the official source without opening anything', () => {
     render(<LegalActPage actId="103524" />)
 
-    // The server serves no node text at all, so any phrasing that suggests the
-    // page carries the act itself is a lie. Guard the copy.
+    // The page describes an act it does not hold the text of, so the route to
+    // the official record is the one thing it owes every reader. It used to be
+    // an underlined link inside the eighth card down.
     expect(
-      screen.getByText(/Nu publicăm textul actelor normative/),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText(/Textul integral nu este disponibil aici/),
-    ).toBeInTheDocument()
+      screen
+        .getByRole('link', { name: /Citește textul oficial/ })
+        .getAttribute('href'),
+    ).toContain('legislatie.just.ro')
   })
 
   it('suppresses every empty block on a thin act', () => {
@@ -82,10 +82,24 @@ describe('LegalActPage', () => {
   it('keeps key dates whose date is null instead of dropping them', () => {
     render(<LegalActPage actId="103524" />)
 
+    fireEvent.click(screen.getByRole('button', { name: /Date cheie/ }))
+
     expect(screen.getByText('fără dată exactă')).toBeInTheDocument()
     expect(
       screen.getByText(/Data de 19 martie 2019 a adoptării/),
     ).toBeInTheDocument()
+  })
+
+  it('answers "does this concern me" without opening anything', () => {
+    render(<LegalActPage actId="103524" />)
+
+    // Rung 2's job is a relevance check that costs the reader nothing. Behind a
+    // closed row a count would not do that — "2 categorii" tells you nothing
+    // about whether you are one of them — so the audiences are the row's own
+    // description and read without a click.
+    const relevance = screen.getByRole('button', { name: /Pe cine privește/ })
+    expect(relevance).toHaveAttribute('aria-expanded', 'false')
+    expect(relevance).toHaveTextContent('cetățeni · firme')
   })
 
   it('warns that the summary is stale before the reader reaches it', () => {
@@ -122,7 +136,7 @@ describe('LegalActPage', () => {
     // value would have read "12 trimiteri" on an act with 2.621 of them.
     // The group separator follows the active locale, so match on the digits.
     const citations = screen.getByRole('button', { name: /Cine îl citează/ })
-    expect(citations).toHaveTextContent(/2[.,]621 trimiteri/)
+    expect(citations).toHaveTextContent(/2[.,]621 de trimiteri/)
     expect(citations).not.toHaveTextContent(/\b12 trimiteri/)
   })
 
@@ -142,6 +156,43 @@ describe('LegalActPage', () => {
     ).toHaveTextContent('cel puțin 3 trimiteri')
   })
 
+  it('states each headline count once', () => {
+    mockAct(legalActDetailRichFixture)
+    const { container } = render(<LegalActPage actId="66150" />)
+
+    // The header used to close with three stat chips — 295 modificări,
+    // 2.621 acte îl citează, 12 elemente de structură — and every one of those
+    // numbers is the subject of a block further down. Three facts, each said
+    // twice, on the screen with the least room to spare.
+    const header = container.querySelector('header')
+    expect(header).not.toHaveTextContent(/295/)
+    expect(header).not.toHaveTextContent(/2[.,]621/)
+
+    expect(
+      screen.getByText(/Acest act a fost modificat de 295 ori/),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /Cine îl citează/ }),
+    ).toHaveTextContent(/2[.,]621/)
+  })
+
+  it('counts in Romanian, which needs three plural forms and not one', () => {
+    mockAct(legalActDetailRichFixture)
+    render(<LegalActPage actId="66150" />)
+
+    // A single `{n} evenimente` template renders "1 evenimente" on the 18% of
+    // acts with exactly one status event, and Romanian also wants "de" past 19.
+    expect(
+      screen.getByRole('button', { name: /Ce s-a întâmplat cu acest act/ }),
+    ).toHaveTextContent('4 evenimente')
+    expect(
+      screen.getByRole('button', { name: /Cum e structurat/ }),
+    ).toHaveTextContent('12 elemente')
+    expect(
+      screen.getByRole('button', { name: /Unde a fost publicat/ }),
+    ).toHaveTextContent('1 publicare')
+  })
+
   it('renders a not-found page for an unknown act', () => {
     mockAct(null)
     render(<LegalActPage actId="999999999" />)
@@ -158,10 +209,32 @@ describe('LegalActPage', () => {
 
   it('labels mock data on the page itself', () => {
     // Both fixtures are real acts copied from production, so nothing about the
-    // rendering distinguishes them from served data. The label has to.
+    // rendering distinguishes them from served data. The label has to, and it
+    // has to be the always-visible one: the matching provenance note lives
+    // inside a closed accordion row.
     render(<LegalActPage actId="103524" />)
 
     expect(screen.getByText('Date demonstrative (mock)')).toBeInTheDocument()
+  })
+
+  it('keeps the limits of the data one click away, not one scroll past', () => {
+    render(<LegalActPage actId="103524" />)
+
+    // The catalogue of caveats used to be an always-open wall at the end of the
+    // page — the most screen space on the page, spent on the block with the
+    // least chance of being read. Closed, it is still one click from the
+    // reader, and the claims it qualifies are each stated where they are made.
+    const limits = screen.getByRole('button', {
+      name: /Ce nu vă putem spune despre acest act/,
+    })
+    expect(limits).toHaveAttribute('aria-expanded', 'false')
+    expect(
+      screen.queryByText(/deciziile Curții Constituționale/),
+    ).not.toBeInTheDocument()
+
+    fireEvent.click(limits)
+
+    expect(limits).toHaveAttribute('aria-expanded', 'true')
     expect(
       screen.getByText(/rulează pe date demonstrative/),
     ).toBeInTheDocument()

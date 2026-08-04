@@ -1,8 +1,10 @@
+import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { Link } from '@tanstack/react-router'
 import type { LegalActDetail } from '@/schemas/legal'
 import { useLegalAct } from '../hooks/use-legal-act'
 import { legislationLinkClassName } from '../lib/legislation-theme'
+import { ActAccordion } from './act-accordion'
 import { ActDetailHeader } from './act-detail-header'
 import { ActKeyDates } from './act-key-dates'
 import { ActPlainSummary } from './act-plain-summary'
@@ -31,16 +33,22 @@ type Props = {
  *
  * Order is the disclosure ladder from §3, and it is load-bearing:
  *
- *  0. header — what this is, is it alive
+ *  0. header — what this is, is it alive, and the route to the text itself
  *  ⚠  warnings — *before* the summary, because they qualify it
- *  1. plain summary — the lead; the only always-substantial block
- *  2. relevance — does this concern me
- *  3. key dates + publication — the record, and the exit to the official text
- *  4. timeline / references / structure — collapsed, and only when non-empty
- *  5. provenance — what we cannot tell you about this act
+ *  1. plain summary — the lead, and the page's only open block
+ *  2-4. one accordion — relevance, the record, the mechanics, the limits
  *
- * Every block below rung 1 self-suppresses when it has no data, so a thin act
- * ends after the publication band and still reads as a finished page.
+ * Every accordion row self-suppresses when it has no data, so a thin act shows
+ * three rows instead of eight and still reads as a finished page.
+ *
+ * **The summary is the only card.** Everything below rung 1 answers a question
+ * the reader has to have asked first — who does this affect, when did it
+ * happen, who cites it, what can you not tell me — and none of those is why
+ * anyone opened the page. As eleven equally-weighted cards they were a list of
+ * containers the reader had to rank personally; as rows of one container they
+ * are a menu, and the lead has nothing competing with it. A row's closed state
+ * still has to earn the click, so each carries a count, and rung 2 puts its
+ * actual answer — the affected audiences — in the row itself.
  */
 export function LegalActPage({ actId, initialAct }: Props) {
   const { data, isLoading, isError } = useLegalAct(actId, initialAct)
@@ -74,17 +82,22 @@ export function LegalActPage({ actId, initialAct }: Props) {
         <ActWarnings act={data} />
 
         {data.summary ? <ActPlainSummary summary={data.summary} /> : null}
-        {data.summary ? <ActRelevanceBand summary={data.summary} /> : null}
-        {data.summary ? <ActKeyDates keyDates={data.summary.keyDates} /> : null}
 
-        <ActPublicationBand act={data} />
-
-        <ActTimelineBand timeline={data.timeline} />
-        <ActReferencesBand group={data.outLinks} direction="out" />
-        <ActReferencesBand group={data.inLinks} direction="in" />
-        <ActStructureBand structure={data.structure} />
-
-        <ActProvenanceNotes act={data} />
+        {/* Rows stay in ladder order — relevance, then the record, then the
+            mechanics, then the limits — so opening them top to bottom is still
+            the progressive disclosure the page was designed around. */}
+        <ActAccordion label={t`Detalii despre acest act`}>
+          {data.summary ? <ActRelevanceBand summary={data.summary} /> : null}
+          {data.summary ? (
+            <ActKeyDates keyDates={data.summary.keyDates} />
+          ) : null}
+          <ActPublicationBand act={data} />
+          <ActTimelineBand timeline={data.timeline} />
+          <ActReferencesBand group={data.outLinks} direction="out" />
+          <ActReferencesBand group={data.inLinks} direction="in" />
+          <ActStructureBand structure={data.structure} />
+          <ActProvenanceNotes act={data} />
+        </ActAccordion>
       </main>
     </div>
   )

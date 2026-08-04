@@ -55,10 +55,24 @@ absence is stated in words, once, at the bottom.
 Five rungs. A reader who stops at rung 1 has a true answer; each rung below adds
 precision, never correction.
 
-### Rung 0 — Verdict strip · always, no interaction
+### Rung 0 — Verdict strip · always
 
-`displayCitation` as `h1`, `den` beneath it ("CODUL FISCAL din 8 septembrie
-2015"), the 7-value status badge, entry into force, aliases as chips.
+Two columns. Left: the status badge as an eyebrow, `displayCitation` as `h1`,
+`den` beneath it ("CODUL FISCAL din 8 septembrie 2015"), then act type, issuer,
+entry into force and aliases joined into **one** `·` line. Right: the solid
+button to the official text.
+
+That button is here and nowhere else. §1 says the page is *everything about this
+law except its text, plus a reliable route to the text*; the route was an
+underlined link 1.200px down, inside the publication card, while the header spent
+its last band on three stat chips restating counts from blocks further down. The
+chips are gone and the route is above the fold.
+
+It carries **no** "we do not publish the text" disclaimer — full text is landing
+in the product (2026-08-04), and a standing claim that we never hold it would be
+false on arrival. The narrower guardrail stays and is unaffected: the PDF marker
+means an official PDF exists *on monitoruloficial.ro*, never that we hold its
+text.
 
 ### Rung 1 — Ce spune, pe scurt · always, leads the page
 
@@ -77,15 +91,18 @@ check without making the reader parse the summary.
 
 ### Rung 3 — Dovada · always
 
-Key dates, the Monitorul Oficial publication card (issue, part, date, official
-PDF), and the outbound link to the official text on `legislatie.just.ro`. This is
-the rung that discharges §1: it is the route to the text.
+Key dates and the Monitorul Oficial publication card (issue, part, date,
+official PDF), side by side — both are short and both carry the publication
+date, so stacked they read as a repetition and paired they read as one fact.
 
-### Rung 4 — Mecanica · collapsed, and only when non-empty
+### Rung 4 — Mecanica · one accordion, closed, rows only when non-empty
 
-Amendment timeline · what this act changes · who cites it · article structure.
-Each renders only above its own threshold (§5). For most acts this rung does not
-exist, and the page ends at rung 3 without looking truncated.
+Amendment timeline · what this act changes · who cites it · article structure ·
+the limits of the data. One container, one row each, each renders only above its
+own threshold (§5). For most acts this is two or three rows, and the page ends
+there without looking truncated.
+
+The exit to `legislatie.just.ro` is **not** here — it is rung 0 (below).
 
 ---
 
@@ -140,14 +157,23 @@ empty.
 | Structure | `tree.length >= 10` | depth 1, lazy children |
 | Versions | ≥2 `corp`/`republicare` docs | **3 acts corpus-wide — see §8** |
 
+The publication card is absent when `gazettePublications` is empty rather than
+rendering a card to say so; the provenance row states the 46,4% match rate
+instead, which is where every other absence is stated (§2).
+
 ---
 
 ## 6. What carries over from `/parlament`, and what must not
 
-**Carries over.** The shell (large title, muted lede, meta line, stat chips), 2px
-borders, `rounded-none`, radius ≤ 8px, tabular figures, one accent per page
-(`--legislation-accent`, `#512178`), the section-band composition, the horizontal
-tab-nav idiom for the module level.
+**Carries over.** The shell (large title, muted lede, meta line), `rounded-none`,
+radius ≤ 8px, tabular figures, one accent per page (`--legislation-accent`,
+`#512178`), the section-band composition, the horizontal tab-nav idiom for the
+module level.
+
+Borders follow the module rule set on 2026-08-04: 2px near-black for page chrome
+only — here, the rule under the header — and one 1px `--pnrr-subtle` hairline for
+everything below it (DESIGN.md, Decision Log). Header stat chips do **not** carry
+over to this page; see rung 0.
 
 **Must not.**
 
@@ -258,3 +284,14 @@ word.
   (`1513020`), and a nonexistent id. All render; the provenance footer adapts
   from 2 to 4 notes depending on what the act is missing.
   Fixed in this pass: §9.1 and §9.2.
+- **2026-08-04 · ranked, not stacked.** v1 shipped eleven sibling cards of
+  identical weight, which is a list of containers rather than a hierarchy. This
+  pass gave the page one lead (the summary, its only open card), one action (the
+  official text, moved to rung 0) and one accordion carrying rungs 2–4 plus the
+  provenance notes. Cut on the way: three header stat chips restating counts from
+  blocks below, all three copies of the "we do not hold the text" disclaimer (see
+  rung 0 — full text is landing), the keyword chip cloud (now a line of text),
+  and two of the three chip shapes in rung 2. Romanian plurals fixed across the
+  page: `{n} evenimente` printed "1 evenimente" on the 18% of acts with exactly
+  one status event, and Romanian wants "de" past 19 ("2.621 de trimiteri").
+  Codul Fiscal 3.226px → 2.076px. Measured with `agent-browser` at 1440 and 390.

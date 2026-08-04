@@ -1,10 +1,10 @@
 import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
-import { Trans } from '@lingui/react/macro'
+import { Plural, Trans } from '@lingui/react/macro'
 import type { LegalKeyDate } from '@/schemas/legal'
 import { formatLegalDate } from '../lib/legal-format'
 import { LEGISLATION_ACCENT } from '../lib/legislation-theme'
-import { LegislationSection } from './legislation-section'
+import { ActAccordionItem } from './act-accordion'
 
 type Props = {
   readonly keyDates: readonly LegalKeyDate[]
@@ -30,16 +30,23 @@ export function ActKeyDates({ keyDates }: Props) {
   const undated = keyDates.filter((entry) => entry.date === null)
 
   return (
-    <LegislationSection
+    <ActAccordionItem
       id="act-key-dates-heading"
       title={t`Date cheie`}
-      bodyClassName="p-0"
+      meta={
+        <Plural
+          value={keyDates.length}
+          one="# dată"
+          few="# date"
+          other="# de date"
+        />
+      }
     >
       <ol className="flex flex-col">
         {dated.map((entry, index) => (
           <li
             key={`${entry.date}-${index}`}
-            className="flex flex-col gap-1 border-b border-[var(--pnrr-track)] px-5 py-3 last:border-b-0 sm:flex-row sm:gap-5 sm:px-6"
+            className="flex flex-col gap-1 border-b border-[var(--pnrr-subtle)] px-5 py-3 last:border-b-0 sm:flex-row sm:gap-5 sm:px-6"
           >
             <span
               className="shrink-0 text-sm font-bold tabular-nums sm:w-40"
@@ -56,7 +63,7 @@ export function ActKeyDates({ keyDates }: Props) {
         {undated.map((entry, index) => (
           <li
             key={`undated-${index}`}
-            className="flex flex-col gap-1 border-b border-[var(--pnrr-track)] px-5 py-3 last:border-b-0 sm:flex-row sm:gap-5 sm:px-6"
+            className="flex flex-col gap-1 border-b border-[var(--pnrr-subtle)] px-5 py-3 last:border-b-0 sm:flex-row sm:gap-5 sm:px-6"
           >
             <span className="shrink-0 text-xs text-[var(--pnrr-muted)] sm:w-40">
               <Trans>fără dată exactă</Trans>
@@ -67,6 +74,6 @@ export function ActKeyDates({ keyDates }: Props) {
           </li>
         ))}
       </ol>
-    </LegislationSection>
+    </ActAccordionItem>
   )
 }

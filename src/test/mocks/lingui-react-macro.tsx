@@ -21,6 +21,25 @@ type PluralProps = {
   other?: ReactNode;
 };
 
+/**
+ * Source messages in this codebase are written in Romanian, so plural forms are
+ * resolved against Romanian CLDR rules: `one` for 1, `few` for 0 and 2–19, and
+ * `other` (which takes the "de" particle) from 20 up.
+ *
+ * Picking a form by `value === 1 / === 2` instead, as this mock used to, gives
+ * every count above two the `other` branch — so "4 evenimente" rendered as
+ * "4 de evenimente" and a real plural bug in a component looked identical to a
+ * correct one under test.
+ */
+const PLURAL_RULES = new Intl.PluralRules("ro");
+const NUMBER_FORMAT = new Intl.NumberFormat("ro");
+
+/** `#` in an ICU plural is the value, formatted for the locale. */
+const substituteHash = (form: ReactNode, value: number): ReactNode =>
+  typeof form === "string"
+    ? form.split("#").join(NUMBER_FORMAT.format(value))
+    : form;
+
 export const Plural = ({
   value,
   zero,
@@ -30,16 +49,13 @@ export const Plural = ({
   many,
   other,
 }: PluralProps) => {
-  if (value === 0 && zero !== undefined) {
-    return <>{zero}</>;
-  }
-  if (value === 1 && one !== undefined) {
-    return <>{one}</>;
-  }
-  if (value === 2 && two !== undefined) {
-    return <>{two}</>;
-  }
-  return <>{other ?? many ?? few ?? one ?? ""}</>;
+  const exact = { 0: zero, 1: one, 2: two }[value];
+  const byCategory = { zero, one, two, few, many, other }[
+    PLURAL_RULES.select(value)
+  ];
+  const form = exact ?? byCategory ?? other ?? many ?? few ?? one ?? "";
+
+  return <>{substituteHash(form, value)}</>;
 };
 
 type SelectProps = {

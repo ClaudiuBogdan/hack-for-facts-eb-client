@@ -27,6 +27,10 @@ type Props = {
  * as repetition.
  *
  * This text is generated, and the page never lets it pass as the law itself.
+ *
+ * It is also the only block on the page allowed to look like a lead: no section
+ * heading competing with the `h1`, a quiet eyebrow instead, and prose set wider
+ * and larger than anything below it.
  */
 export function ActPlainSummary({ summary }: Props) {
   const { i18n } = useLingui()
@@ -70,7 +74,7 @@ export function ActPlainSummary({ summary }: Props) {
             {showFormal ? (
               <p
                 id="act-formal-description"
-                className="mt-3 max-w-[46rem] border-l-2 border-[var(--pnrr-track)] pl-4 text-base leading-7 text-[var(--pnrr-muted)]"
+                className="mt-3 max-w-[46rem] border-l-2 border-[var(--pnrr-subtle)] pl-4 text-base leading-7 text-[var(--pnrr-muted)]"
               >
                 {summary.description}
               </p>
@@ -79,7 +83,7 @@ export function ActPlainSummary({ summary }: Props) {
         ) : null}
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t-2 border-[var(--pnrr-border)] px-5 py-2.5 text-xs text-[var(--pnrr-muted)] sm:px-6">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-[var(--pnrr-subtle)] px-5 py-2.5 text-xs text-[var(--pnrr-muted)] sm:px-6">
         <Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden />
         <span>
           <Trans>

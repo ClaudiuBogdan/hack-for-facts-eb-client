@@ -1,12 +1,12 @@
 import { Link } from '@tanstack/react-router'
 import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
-import { Trans } from '@lingui/react/macro'
+import { Plural, Trans } from '@lingui/react/macro'
 import type { LegalReference, LegalReferenceGroup } from '@/schemas/legal'
 import { formatLegalNumber } from '../lib/legal-format'
 import { legalRelationLabel } from '../lib/legal-vocabulary'
 import { LegalStatusBadge } from './legal-status-badge'
-import { ActDisclosure } from './act-disclosure'
+import { ActAccordionItem } from './act-accordion'
 
 type Props = {
   readonly group: LegalReferenceGroup
@@ -38,15 +38,23 @@ export function ActReferencesBand({ group, direction }: Props) {
   // page exists to avoid, so an unknown total says so rather than guessing.
   const meta =
     group.totalCount !== null ? (
-      <Trans>{formatLegalNumber(group.totalCount, i18n.locale)} trimiteri</Trans>
+      <Plural
+        value={group.totalCount}
+        one="# trimitere"
+        few="# trimiteri"
+        other="# de trimiteri"
+      />
     ) : (
-      <Trans>
-        cel puțin {formatLegalNumber(shownCount, i18n.locale)} trimiteri
-      </Trans>
+      <Plural
+        value={shownCount}
+        one="cel puțin # trimitere"
+        few="cel puțin # trimiteri"
+        other="cel puțin # de trimiteri"
+      />
     )
 
   return (
-    <ActDisclosure
+    <ActAccordionItem
       id={`act-references-${direction}-heading`}
       title={isOut ? t`Ce face acest act` : t`Cine îl citează`}
       meta={meta}
@@ -72,7 +80,7 @@ export function ActReferencesBand({ group, direction }: Props) {
       </ul>
 
       {group.hasMore ? (
-        <p className="border-t border-[var(--pnrr-track)] px-5 py-3 text-sm text-[var(--pnrr-muted)] sm:px-6">
+        <p className="border-t border-[var(--pnrr-subtle)] px-5 py-3 text-sm text-[var(--pnrr-muted)] sm:px-6">
           {group.totalCount !== null ? (
             <Trans>
               Se afișează {formatLegalNumber(shownCount, i18n.locale)} din{' '}
@@ -87,7 +95,7 @@ export function ActReferencesBand({ group, direction }: Props) {
           )}
         </p>
       ) : null}
-    </ActDisclosure>
+    </ActAccordionItem>
   )
 }
 
@@ -95,7 +103,7 @@ function ReferenceRow({ reference }: { readonly reference: LegalReference }) {
   const isFirm = reference.resolution === 'unique' && reference.act !== null
 
   return (
-    <li className="flex flex-col gap-1.5 border-b border-[var(--pnrr-track)] px-5 py-3 last:border-b-0 sm:px-6">
+    <li className="flex flex-col gap-1.5 border-b border-[var(--pnrr-subtle)] px-5 py-3 last:border-b-0 sm:px-6">
       <span className="text-xs font-semibold uppercase tracking-wide text-[var(--pnrr-muted)]">
         {legalRelationLabel(reference.relation)}
       </span>

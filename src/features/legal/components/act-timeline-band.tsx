@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
-import { Trans } from '@lingui/react/macro'
+import { Plural, Trans } from '@lingui/react/macro'
 import type { LegalTimelineEntry } from '@/schemas/legal'
 import { formatLegalDate, formatLegalNumber } from '../lib/legal-format'
 import { legislationLinkClassName } from '../lib/legislation-theme'
-import { ActDisclosure } from './act-disclosure'
+import { ActAccordionItem } from './act-accordion'
 
 type Props = {
   readonly timeline: readonly LegalTimelineEntry[]
@@ -38,13 +38,16 @@ export function ActTimelineBand({ timeline }: Props) {
   const visible = expanded ? ordered : ordered.slice(0, PAGE)
 
   return (
-    <ActDisclosure
+    <ActAccordionItem
       id="act-timeline-heading"
       title={t`Ce s-a întâmplat cu acest act`}
       meta={
-        <Trans>
-          {formatLegalNumber(timeline.length, i18n.locale)} evenimente
-        </Trans>
+        <Plural
+          value={timeline.length}
+          one="# eveniment"
+          few="# evenimente"
+          other="# de evenimente"
+        />
       }
       description={t`Modificări, completări, abrogări și alte evenimente de statut.`}
       footnote={
@@ -59,7 +62,7 @@ export function ActTimelineBand({ timeline }: Props) {
         {visible.map((entry, index) => (
           <li
             key={`${entry.label}-${entry.effectiveDate}-${index}`}
-            className="flex flex-col gap-1 border-b border-[var(--pnrr-track)] px-5 py-3 last:border-b-0 sm:flex-row sm:items-baseline sm:gap-5 sm:px-6"
+            className="flex flex-col gap-1 border-b border-[var(--pnrr-subtle)] px-5 py-3 last:border-b-0 sm:flex-row sm:items-baseline sm:gap-5 sm:px-6"
           >
             <span className="shrink-0 text-sm tabular-nums text-[var(--pnrr-muted)] sm:w-32">
               {entry.effectiveDate
@@ -81,7 +84,7 @@ export function ActTimelineBand({ timeline }: Props) {
       </ol>
 
       {ordered.length > PAGE ? (
-        <div className="border-t border-[var(--pnrr-track)] px-5 py-3 sm:px-6">
+        <div className="border-t border-[var(--pnrr-subtle)] px-5 py-3 sm:px-6">
           <button
             type="button"
             onClick={() => setExpanded((value) => !value)}
@@ -100,6 +103,6 @@ export function ActTimelineBand({ timeline }: Props) {
           </button>
         </div>
       ) : null}
-    </ActDisclosure>
+    </ActAccordionItem>
   )
 }

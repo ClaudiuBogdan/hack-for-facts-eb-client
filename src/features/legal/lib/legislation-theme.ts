@@ -84,6 +84,44 @@ export const legislationSubmitClassName =
 export const legislationExampleChipClassName =
   'rounded-none border border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-2.5 py-1 text-xs transition-colors hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]'
 
+/**
+ * The outbound action that leaves the platform for the official source.
+ *
+ * Solid rather than outlined, because on the act page this is not one link among
+ * several: we do not hold the text of the law, so the route to it is the page's
+ * reason to exist (`docs/design/legal/act-detail.md` §1).
+ */
+export const legislationActionClassName =
+  'inline-flex items-center gap-2 rounded-none bg-[var(--pnrr-fg)] px-4 py-2.5 text-sm font-semibold text-[var(--pnrr-bg)] transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] focus-visible:ring-offset-2'
+
+/* ── chips ───────────────────────────────────────────────────────────────── */
+
+/**
+ * One chip shape for every taxonomy on a legislation surface, distinguished by
+ * fill rather than by border weight. Before this there were three shapes in a
+ * single card — a 2px black one, an accent-left-bar one and a hairline one — and
+ * the reader had to work out whether the differences meant anything. They did
+ * not.
+ */
+export const legislationChipClassName =
+  'inline-flex items-center gap-1.5 rounded-none border border-[var(--pnrr-subtle)] bg-[var(--pnrr-hover)] px-2.5 py-1 text-sm text-[var(--pnrr-fg)]'
+
+/** The same chip, demoted: for a second taxonomy that is navigation, not answer. */
+export const legislationQuietChipClassName =
+  'inline-flex items-center gap-1.5 rounded-none border border-[var(--pnrr-subtle)] bg-[var(--pnrr-card)] px-2.5 py-1 text-sm text-[var(--pnrr-muted)]'
+
+/* ── alerts ──────────────────────────────────────────────────────────────── */
+
+/**
+ * A caveat that must be read before the thing it qualifies.
+ *
+ * The tint carries the signal, so the border stays a hairline and the accent is
+ * a single left bar. A 2px box on all four sides made every warning shout at the
+ * same volume as the page chrome around it.
+ */
+export const legislationAlertClassName =
+  'flex gap-3 border border-l-4 border-[var(--pnrr-subtle)] border-l-[var(--pnrr-warning-fg)] bg-[var(--pnrr-warning-bg)] px-4 py-3 sm:px-5'
+
 /* ── three-tier text hierarchy (label → value → metadata) ────────────────── */
 
 export const legislationStatLabelClassName =

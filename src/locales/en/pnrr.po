@@ -30,7 +30,7 @@ msgid "“Snapshot from” must not be after “Snapshot to”."
 msgstr "“Snapshot from” must not be after “Snapshot to”."
 
 #. placeholder {0}: formatPnrrCurrency(amount, currency)
-#: src/features/pnrr/components/PnrrMapView.tsx:760
+#: src/features/pnrr/components/PnrrMapView.tsx:780
 msgid "{0} / inhabitant"
 msgstr "{0} / inhabitant"
 
@@ -46,7 +46,7 @@ msgstr "{0} listed EU funding in {1} records"
 
 #. placeholder {0}: formatNumber(amount, 'compact')
 #. placeholder {0}: page.totalCount.toLocaleString('ro-RO')
-#: src/features/pnrr/components/PnrrMapView.tsx:758
+#: src/features/pnrr/components/PnrrMapView.tsx:778
 #: src/features/pnrr/components/table/PnrrProjectTable.tsx:531
 msgid "{0} projects"
 msgstr "{0} projects"
@@ -85,7 +85,7 @@ msgid "{0} updates reported by MIPE"
 msgstr "{0} updates reported by MIPE"
 
 #. placeholder {0}: formatNumber(amount, 'compact')
-#: src/features/pnrr/components/PnrrMapView.tsx:762
+#: src/features/pnrr/components/PnrrMapView.tsx:782
 msgid "{0}% grant"
 msgstr "{0}% grant"
 
@@ -112,7 +112,7 @@ msgid "{0}% of projects do not have published financial progress in the dataset.
 msgstr "{0}% of projects do not have published financial progress in the dataset. Signals based on financial progress may be underestimated."
 
 #. placeholder {0}: formatNumber(amount, 'compact')
-#: src/features/pnrr/components/PnrrMapView.tsx:764
+#: src/features/pnrr/components/PnrrMapView.tsx:784
 msgid "{0}% technically implemented"
 msgstr "{0}% technically implemented"
 
@@ -433,7 +433,7 @@ msgstr "Close"
 msgid "Close details"
 msgstr "Close details"
 
-#: src/features/pnrr/components/PnrrMapView.tsx:214
+#: src/features/pnrr/components/PnrrMapView.tsx:218
 msgid "Color scale clipped to the 5th–95th percentile"
 msgstr "Color scale clipped to the 5th–95th percentile"
 
@@ -463,7 +463,7 @@ msgstr "Companies, NGOs, religious organizations, and other non-public beneficia
 msgid "Company registry"
 msgstr "Company registry"
 
-#: src/features/pnrr/components/PnrrMapView.tsx:479
+#: src/features/pnrr/components/PnrrMapView.tsx:495
 msgid "Compare the location published for each MIPE project record. National projects and records without an exact geographic match are disclosed separately below the map."
 msgstr "Compare the location published for each MIPE project record. National projects and records without an exact geographic match are disclosed separately below the map."
 
@@ -541,7 +541,7 @@ msgstr "Counties"
 #: src/features/pnrr/components/live/PnrrLivePages.tsx:996
 #: src/features/pnrr/components/PnrrCountyDetailsPanel.tsx:42
 #: src/features/pnrr/components/PnrrMapFilterPanel.tsx:19
-#: src/features/pnrr/components/PnrrMapView.tsx:700
+#: src/features/pnrr/components/PnrrMapView.tsx:720
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:351
 #: src/features/pnrr/components/table/PnrrProjectTable.tsx:472
 msgid "County"
@@ -805,7 +805,7 @@ msgstr "Explore the projects published in this MIPE snapshot, where EU funding i
 msgid "Explore the projects reported by MIPE, then open a profile for progress, dates, beneficiary, location, and source evidence."
 msgstr "Explore the projects reported by MIPE, then open a profile for progress, dates, beneficiary, location, and source evidence."
 
-#: src/features/pnrr/components/PnrrMapView.tsx:631
+#: src/features/pnrr/components/PnrrMapView.tsx:651
 #: src/features/pnrr/components/table/PnrrExportButton.tsx:37
 msgid "Export CSV"
 msgstr "Export CSV"
@@ -926,7 +926,7 @@ msgstr "Funding from the loan component"
 msgid "Funding source"
 msgstr "Funding source"
 
-#: src/features/pnrr/components/PnrrMapView.tsx:476
+#: src/features/pnrr/components/PnrrMapView.tsx:492
 msgid "Geographic distribution"
 msgstr "Geographic distribution"
 
@@ -951,7 +951,7 @@ msgid "Grant / Loan / Mixt"
 msgstr "Grant / Loan / Mixt"
 
 #: src/features/pnrr/components/PnrrMapFilterPanel.tsx:38
-#: src/features/pnrr/components/PnrrMapView.tsx:51
+#: src/features/pnrr/components/PnrrMapView.tsx:55
 #: src/features/pnrr/hooks/usePnrrMapSeries.ts:298
 msgid "Grant %"
 msgstr "Grant %"
@@ -1035,7 +1035,7 @@ msgid "Implementation status"
 msgstr "Implementation status"
 
 #: src/features/pnrr/components/PnrrMapFilterPanel.tsx:39
-#: src/features/pnrr/components/PnrrMapView.tsx:52
+#: src/features/pnrr/components/PnrrMapView.tsx:56
 #: src/features/pnrr/hooks/usePnrrMapSeries.ts:299
 msgid "Implemented %"
 msgstr "Implemented %"
@@ -1164,7 +1164,7 @@ msgstr "listed EU funding"
 
 #: src/features/pnrr/components/PnrrAnomalyInfoPanel.tsx:317
 #: src/features/pnrr/components/PnrrMapFilterPanel.tsx:35
-#: src/features/pnrr/components/PnrrMapView.tsx:48
+#: src/features/pnrr/components/PnrrMapView.tsx:52
 #: src/features/pnrr/components/PnrrStatsRibbon.tsx:23
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:116
 #: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:185
@@ -1236,9 +1236,9 @@ msgstr "Load more"
 #: src/features/pnrr/components/PnrrMapPreview.tsx:362
 #: src/features/pnrr/components/PnrrMapPreview.tsx:370
 #: src/features/pnrr/components/PnrrMapPreview.tsx:377
-#: src/features/pnrr/components/PnrrMapView.tsx:500
-#: src/features/pnrr/components/PnrrMapView.tsx:508
-#: src/features/pnrr/components/PnrrMapView.tsx:515
+#: src/features/pnrr/components/PnrrMapView.tsx:516
+#: src/features/pnrr/components/PnrrMapView.tsx:524
+#: src/features/pnrr/components/PnrrMapView.tsx:531
 msgid "Loading map..."
 msgstr "Loading map..."
 
@@ -1292,15 +1292,15 @@ msgid "Map"
 msgstr "Map"
 
 #: src/features/pnrr/components/PnrrMapPreview.tsx:406
-#: src/features/pnrr/components/PnrrMapView.tsx:547
+#: src/features/pnrr/components/PnrrMapView.tsx:563
 msgid "Map geometry not available."
 msgstr "Map geometry not available."
 
-#: src/features/pnrr/components/PnrrMapView.tsx:726
+#: src/features/pnrr/components/PnrrMapView.tsx:746
 msgid "Map indicator"
 msgstr "Map indicator"
 
-#: src/features/pnrr/components/PnrrMapView.tsx:697
+#: src/features/pnrr/components/PnrrMapView.tsx:717
 msgid "Map level"
 msgstr "Map level"
 
@@ -1429,7 +1429,7 @@ msgstr "National contribution (RON)"
 msgid "National is a location or beneficiary category for rows without a unique local assignment; it is not a third main-level sector."
 msgstr "National is a location or beneficiary category for rows without a unique local assignment; it is not a third main-level sector."
 
-#: src/features/pnrr/components/PnrrMapView.tsx:574
+#: src/features/pnrr/components/PnrrMapView.tsx:590
 msgid "national projects outside the map"
 msgstr "national projects outside the map"
 
@@ -1469,8 +1469,8 @@ msgstr "No beneficiaries found"
 
 #: src/features/pnrr/components/PnrrEmblematicProjects.tsx:21
 #: src/features/pnrr/components/PnrrMapPreview.tsx:285
-#: src/features/pnrr/components/PnrrMapView.tsx:421
-#: src/features/pnrr/components/PnrrMapView.tsx:431
+#: src/features/pnrr/components/PnrrMapView.tsx:437
+#: src/features/pnrr/components/PnrrMapView.tsx:447
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:447
 msgid "No data"
 msgstr "No data"
@@ -1650,7 +1650,7 @@ msgid "Payment totals remain subject to duplicate review. Procurement is shown a
 msgstr "Payment totals remain subject to duplicate review. Procurement is shown as relationship counts only because participant-level money is not available."
 
 #: src/features/pnrr/components/PnrrMapFilterPanel.tsx:37
-#: src/features/pnrr/components/PnrrMapView.tsx:50
+#: src/features/pnrr/components/PnrrMapView.tsx:54
 #: src/features/pnrr/hooks/usePnrrMapSeries.ts:297
 msgid "Per capita"
 msgstr "Per capita"
@@ -1806,7 +1806,7 @@ msgid "Project at a glance"
 msgstr "Project at a glance"
 
 #: src/features/pnrr/components/PnrrMapFilterPanel.tsx:36
-#: src/features/pnrr/components/PnrrMapView.tsx:49
+#: src/features/pnrr/components/PnrrMapView.tsx:53
 #: src/features/pnrr/hooks/usePnrrMapSeries.ts:296
 msgid "Project count"
 msgstr "Project count"
@@ -1867,7 +1867,7 @@ msgstr "Project values are published in RON. EUR and USD displays use fixed esti
 #: src/features/pnrr/components/PnrrHeader.tsx:242
 #: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:123
 #: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:221
-#: src/features/pnrr/components/PnrrMapView.tsx:158
+#: src/features/pnrr/components/PnrrMapView.tsx:162
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:546
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:553
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:746
@@ -1922,11 +1922,11 @@ msgstr "projects with location"
 msgid "projects with verification signals"
 msgstr "projects with verification signals"
 
-#: src/features/pnrr/components/PnrrMapView.tsx:593
+#: src/features/pnrr/components/PnrrMapView.tsx:609
 msgid "projects without county mapping"
 msgstr "projects without county mapping"
 
-#: src/features/pnrr/components/PnrrMapView.tsx:591
+#: src/features/pnrr/components/PnrrMapView.tsx:607
 msgid "projects without UAT mapping"
 msgstr "projects without UAT mapping"
 
@@ -2422,11 +2422,11 @@ msgstr "Technically completed, low financial progress"
 msgid "Tehnic raportat"
 msgstr "Reported technical"
 
-#: src/features/pnrr/components/PnrrMapView.tsx:610
+#: src/features/pnrr/components/PnrrMapView.tsx:626
 msgid "territories omitted because exact technical progress is unavailable"
 msgstr "territories omitted because exact technical progress is unavailable"
 
-#: src/features/pnrr/components/PnrrMapView.tsx:608
+#: src/features/pnrr/components/PnrrMapView.tsx:624
 msgid "territories omitted because population is unavailable"
 msgstr "territories omitted because population is unavailable"
 
@@ -2641,7 +2641,7 @@ msgstr "Try changing the filters or searching for something else."
 #: src/features/pnrr/components/filters/PnrrActiveFilters.tsx:98
 #: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:411
 #: src/features/pnrr/components/PnrrMapFilterPanel.tsx:20
-#: src/features/pnrr/components/PnrrMapView.tsx:701
+#: src/features/pnrr/components/PnrrMapView.tsx:721
 #: src/features/pnrr/components/PnrrUatDetailsPanel.tsx:47
 #: src/features/pnrr/lib/filter-constants.ts:78
 msgid "UAT"

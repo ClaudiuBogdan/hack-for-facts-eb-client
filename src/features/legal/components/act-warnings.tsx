@@ -3,6 +3,7 @@ import { Trans } from '@lingui/react/macro'
 import { AlertTriangle } from 'lucide-react'
 import type { LegalActDetail } from '@/schemas/legal'
 import { formatLegalDate, formatLegalNumber } from '../lib/legal-format'
+import { legislationAlertClassName } from '../lib/legislation-theme'
 
 type Props = {
   readonly act: LegalActDetail
@@ -21,6 +22,11 @@ type Props = {
  * So the warning qualifies the summary before it is read. Putting it after, or
  * in a footnote, would be a decorative apology.
  *
+ * Loud is not the same as first. These used to be 2px amber boxes competing with
+ * eleven equally heavy cards below them; now the tint carries the signal, one
+ * accent bar carries the urgency, and being the first thing under the title
+ * carries the priority.
+ *
  * See `docs/design/legal/act-detail.md` §4.
  */
 export function ActWarnings({ act }: Props) {
@@ -35,21 +41,21 @@ export function ActWarnings({ act }: Props) {
   if (!isStale && !isContradicted) return null
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       {isStale ? (
-        <div className="flex gap-3 rounded-none border-2 border-[var(--pnrr-warning-fg)] bg-[var(--pnrr-warning-bg)] px-4 py-3.5 sm:px-5">
+        <div className={legislationAlertClassName}>
           <AlertTriangle
-            className="mt-0.5 h-5 w-5 shrink-0 text-[var(--pnrr-warning-fg)]"
+            className="mt-0.5 h-4 w-4 shrink-0 text-[var(--pnrr-warning-fg)]"
             aria-hidden
           />
           <div className="min-w-0">
-            <p className="text-base font-bold text-[var(--pnrr-fg)]">
+            <p className="text-sm font-bold text-[var(--pnrr-fg)]">
               <Trans>
                 Acest act a fost modificat de{' '}
                 {number(act.amendedAfterPublication)} ori de la publicare.
               </Trans>
             </p>
-            <p className="mt-1 text-sm leading-6 text-[var(--pnrr-fg)]">
+            <p className="mt-1 max-w-prose text-sm leading-6 text-[var(--pnrr-muted)]">
               {publishedOn ? (
                 <Trans>
                   Rezumatul și structura de mai jos descriu actul așa cum a fost
@@ -70,16 +76,16 @@ export function ActWarnings({ act }: Props) {
       ) : null}
 
       {isContradicted ? (
-        <div className="flex gap-3 rounded-none border-2 border-[var(--pnrr-warning-fg)] bg-[var(--pnrr-warning-bg)] px-4 py-3.5 sm:px-5">
+        <div className={legislationAlertClassName}>
           <AlertTriangle
-            className="mt-0.5 h-5 w-5 shrink-0 text-[var(--pnrr-warning-fg)]"
+            className="mt-0.5 h-4 w-4 shrink-0 text-[var(--pnrr-warning-fg)]"
             aria-hidden
           />
           <div className="min-w-0">
-            <p className="text-base font-bold text-[var(--pnrr-fg)]">
+            <p className="text-sm font-bold text-[var(--pnrr-fg)]">
               <Trans>Sursele nu sunt de acord despre ce s-a abrogat.</Trans>
             </p>
-            <p className="mt-1 text-sm leading-6 text-[var(--pnrr-fg)]">
+            <p className="mt-1 max-w-prose text-sm leading-6 text-[var(--pnrr-muted)]">
               <Trans>
                 Am găsit {number(act.statusEvidence.contradictedAbrogations)}{' '}
                 semnale de abrogare care se contrazic între ele. Statutul afișat

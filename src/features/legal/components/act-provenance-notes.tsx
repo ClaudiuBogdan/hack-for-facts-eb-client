@@ -1,27 +1,36 @@
 import type { ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
-import { Trans } from '@lingui/react/macro'
+import { Plural, Trans } from '@lingui/react/macro'
 import { AlertTriangle, Info } from 'lucide-react'
 import type { LegalActDetail } from '@/schemas/legal'
 import { isLegalMockEnabled } from '../lib/mock-mode'
-import { LegislationSection } from './legislation-section'
+import { ActAccordionItem } from './act-accordion'
 
 type Props = {
   readonly act: LegalActDetail
 }
 
 /**
- * The page footer — what this page cannot tell you about *this* act.
+ * The last accordion row — what this page cannot tell you about *this* act.
  *
  * The Constitutional Court note leads and is unconditional: it is the only
  * over-claim the page can make on its own. Everything else is conditional on
- * the act's own record, so an act with a clean record gets a short footer rather
+ * the act's own record, so an act with a clean record gets three notes rather
  * than a wall of boilerplate.
+ *
+ * Closed by default, and that is not a demotion of the caveats. Every claim
+ * these notes qualify is already stated where it is made — the mock badge sits
+ * beside the status badge in the header, the AI notice runs along the bottom of
+ * the summary it applies to, and unresolved citations say "potrivire posibilă"
+ * on the row itself. What is left here is the *catalogue* of limits, which is
+ * reference material: as a permanently open wall at the end of the page it was
+ * read by nobody and cost more screen than the publication proof.
  */
 export function ActProvenanceNotes({ act }: Props) {
   const isSuspicious = act.canonical?.extractionStatus === 'suspicious'
   const hasNoStructure = act.structure.length === 0
   const hasNoSummary = act.summary?.plainLanguageSummary == null
+  const hasNoPublication = act.gazettePublications.length === 0
 
   const notes: ReadonlyArray<{
     key: string
@@ -57,16 +66,21 @@ export function ActProvenanceNotes({ act }: Props) {
         </Trans>
       ),
     },
-    {
-      key: 'no-text',
-      tone: 'info',
-      body: (
-        <Trans>
-          Nu publicăm textul actelor normative. Această pagină descrie actul și
-          te trimite la sursa oficială pentru text.
-        </Trans>
-      ),
-    },
+    ...(hasNoPublication
+      ? [
+          {
+            key: 'no-publication',
+            tone: 'info' as const,
+            body: (
+              <Trans>
+                Nu am putut lega acest act de un număr din Monitorul Oficial.
+                Doar 46,4% dintre publicări se potrivesc cu certitudine unui act
+                din Portal Legislativ.
+              </Trans>
+            ),
+          },
+        ]
+      : []),
     ...(isSuspicious
       ? [
           {
@@ -112,12 +126,20 @@ export function ActProvenanceNotes({ act }: Props) {
   ]
 
   return (
-    <LegislationSection
+    <ActAccordionItem
       id="act-provenance-heading"
       title={t`Ce nu vă putem spune despre acest act`}
+      meta={
+        <Plural
+          value={notes.length}
+          one="# limită"
+          few="# limite"
+          other="# de limite"
+        />
+      }
       description={t`Limitele acestor date, spuse pe față.`}
     >
-      <ul className="flex flex-col gap-4">
+      <ul className="flex flex-col gap-4 px-5 py-5 sm:px-6">
         {notes.map((note) => (
           <li key={note.key} className="flex gap-3">
             {note.tone === 'warning' ? (
@@ -134,8 +156,8 @@ export function ActProvenanceNotes({ act }: Props) {
             <p
               className={
                 note.tone === 'warning'
-                  ? 'text-sm font-medium text-[var(--pnrr-fg)]'
-                  : 'text-sm text-[var(--pnrr-fg)]'
+                  ? 'max-w-prose text-sm font-medium text-[var(--pnrr-fg)]'
+                  : 'max-w-prose text-sm text-[var(--pnrr-fg)]'
               }
             >
               {note.body}
@@ -143,6 +165,6 @@ export function ActProvenanceNotes({ act }: Props) {
           </li>
         ))}
       </ul>
-    </LegislationSection>
+    </ActAccordionItem>
   )
 }

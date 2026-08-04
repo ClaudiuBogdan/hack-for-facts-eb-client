@@ -1,10 +1,14 @@
-import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
-import { Trans } from '@lingui/react/macro'
+import { Plural, Trans } from '@lingui/react/macro'
+import { cn } from '@/lib/utils'
 import type { LegalStructureNode } from '@/schemas/legal'
-import { formatLegalNumber } from '../lib/legal-format'
 import { legalNodeKindLabel } from '../lib/legal-vocabulary'
-import { ActDisclosure } from './act-disclosure'
+import {
+  getGridFillerClassNames,
+  legislationGridClassName,
+  legislationGridFillerClassName,
+} from '../lib/legislation-theme'
+import { ActAccordionItem } from './act-accordion'
 
 type Props = {
   readonly structure: readonly LegalStructureNode[]
@@ -12,6 +16,9 @@ type Props = {
 
 /** Below this the tree is a stub, not a table of contents (§5). */
 const MIN_NODES = 10
+
+/** Column count per breakpoint, matching the grid classes below. */
+const STRUCTURE_GRID_COLUMNS = [1, 2, 3] as const
 
 /**
  * Rung 4 — the skeleton of the act.
@@ -26,18 +33,19 @@ const MIN_NODES = 10
  * only 24.502 have enough to be worth browsing.
  */
 export function ActStructureBand({ structure }: Props) {
-  const { i18n } = useLingui()
-
   if (structure.length < MIN_NODES) return null
 
   return (
-    <ActDisclosure
+    <ActAccordionItem
       id="act-structure-heading"
       title={t`Cum e structurat`}
       meta={
-        <Trans>
-          {formatLegalNumber(structure.length, i18n.locale)} elemente
-        </Trans>
+        <Plural
+          value={structure.length}
+          one="# element"
+          few="# elemente"
+          other="# de elemente"
+        />
       }
       description={t`Cuprinsul actului, la primul nivel.`}
       footnote={
@@ -47,11 +55,16 @@ export function ActStructureBand({ structure }: Props) {
         </Trans>
       }
     >
-      <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      <ul
+        className={cn(
+          legislationGridClassName,
+          'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+        )}
+      >
         {structure.map((node) => (
           <li
             key={node.nodeId}
-            className="border-b border-r border-[var(--pnrr-track)] px-4 py-2.5"
+            className="border-l border-t border-[var(--pnrr-subtle)] px-5 py-2.5 sm:px-6"
           >
             <span className="block text-sm font-medium text-[var(--pnrr-fg)]">
               {node.label ?? legalNodeKindLabel(node.nodeKind)}
@@ -63,7 +76,17 @@ export function ActStructureBand({ structure }: Props) {
             ) : null}
           </li>
         ))}
+        {getGridFillerClassNames({
+          itemCount: structure.length,
+          columns: STRUCTURE_GRID_COLUMNS,
+        }).map((visibility, index) => (
+          <li
+            key={`filler-${index}`}
+            aria-hidden
+            className={cn(legislationGridFillerClassName, visibility)}
+          />
+        ))}
       </ul>
-    </ActDisclosure>
+    </ActAccordionItem>
   )
 }
