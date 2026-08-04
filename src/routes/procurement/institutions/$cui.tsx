@@ -2,11 +2,17 @@ import { z } from 'zod'
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { getSiteUrl } from '@/config/env'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
+import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
 import {
   fetchProcurementAuthoritySlice,
   fetchProcurementInstitutionOverview,
 } from '@/features/procurement/api/procurement-api'
+import {
+  procurementAuthoritySliceQueryOptions,
+  procurementInstitutionOverviewQueryOptions,
+} from '@/features/procurement/hooks/use-procurement-data'
 import { buildInstitutionScopes } from '@/features/procurement/lib/institution-scopes'
+import { buildInstitutionDocumentTitle } from '@/features/procurement/lib/procurement-page-titles'
 
 const cuiSchema = z
   .string()
@@ -63,7 +69,13 @@ export const Route = createFileRoute('/procurement/institutions/$cui')({
   // them to a client-only query would ship a skeleton to crawlers. The slice
   // prefetch stays UNFILTERED — it feeds the title and the quick-filter chip
   // options; the filtered slice loads client-side when filters are active.
-  loader: async ({ params, deps }) => {
+  //
+  // AWAITED ON THE SERVER ONLY. These are ~1s of GraphQL; awaiting them on a
+  // client-side navigation froze the user on the previous page for ~1.4s with
+  // no feedback. In the browser we start the same two requests and hand the
+  // router an empty payload immediately — `ProcurementInstitutionPage` renders
+  // its header plus `ProcurementDetailSkeleton` and fills in when they land.
+  loader: async ({ context, params, deps }) => {
     const scope = {
       // A picked month wins over its year — it is the narrower selection.
       ...(deps.month
@@ -73,6 +85,28 @@ export const Route = createFileRoute('/procurement/institutions/$cui')({
           : {}),
       ...(deps.cpv ? { cpvDivision: deps.cpv } : {}),
     }
+    const sliceOptions = procurementAuthoritySliceQueryOptions(params.cui)
+    const overviewOptions = procurementInstitutionOverviewQueryOptions(
+      params.cui,
+      buildInstitutionScopes(scope),
+    )
+
+    if (!shouldBlockLoaderForSsr()) {
+      // Fire-and-forget into the query cache the page reads from, so the
+      // requests start at click time rather than after the lazy chunk mounts.
+      // Rejections surface through the page's own query error state.
+      void context.queryClient.prefetchQuery(sliceOptions)
+      void context.queryClient.prefetchQuery(overviewOptions)
+      return {}
+    }
+
+    // Fetched directly rather than through the query client: seeding the
+    // server cache would dehydrate the server's `dataUpdatedAt` into the HTML,
+    // so any CDN hit older than the 60s `staleTime` would refetch both queries
+    // on mount. Returning them as loader data lets the page's `initialData`
+    // stamp them fresh at hydration, as it did before. It also keeps the SSR
+    // path off the client's `retry: 1` default, which would double worst-case
+    // TTFB while the API is failing.
     const [slice, overview] = await Promise.all([
       fetchProcurementAuthoritySlice(params.cui),
       fetchProcurementInstitutionOverview({
@@ -94,10 +128,14 @@ function buildInstitutionHead({
 }) {
   const site = getSiteUrl()
   const canonical = `${site}/procurement/institutions/${params.cui}`
-  // The loader already resolved the buyer's name — a CUI-only title is a
-  // useless search result.
-  const name = loaderData?.overview?.authorityName?.trim()
-  const title = `${name || `Instituție CUI ${params.cui}`} — Achiziții publice — Transparenta.eu`
+  // The SSR loader already resolved the buyer's name — a CUI-only title is a
+  // useless search result. On a client-side navigation the loader returns
+  // early, so this falls back to the CUI and the page corrects it once its
+  // query lands (see `useClientDocumentTitle`).
+  const title = buildInstitutionDocumentTitle({
+    cui: params.cui,
+    authorityName: loaderData?.overview?.authorityName,
+  })
   return {
     meta: [
       { title },

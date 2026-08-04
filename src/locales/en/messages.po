@@ -1128,7 +1128,7 @@ msgstr "Achiziții în timp"
 
 #: src/components/sidebar/nav-main.tsx:70
 #: src/features/private-companies/lib/tab-config.ts:55
-#: src/features/procurement/components/procurement-institution-page.tsx:281
+#: src/features/procurement/components/procurement-institution-page.tsx:301
 #: src/features/procurement/components/procurement-supplier-page.tsx:157
 msgid "Achiziții publice"
 msgstr "Achiziții publice"
@@ -1276,7 +1276,7 @@ msgstr "Acte normative"
 #~ msgid "Acte normative din Portal Legislativ și coordonate de publicare din Monitorul Oficial, afișate cu status, rezumat și proveniență."
 #~ msgstr "Acte normative din Portal Legislativ și coordonate de publicare din Monitorul Oficial, afișate cu status, rezumat și proveniență."
 
-#: src/features/procurement/components/procurement-institution-page.tsx:372
+#: src/features/procurement/components/procurement-institution-page.tsx:392
 msgid "Actele adiționale se raportează ca număr — sumele brute din sursă nu sunt suficient de fiabile pentru a fi însumate."
 msgstr "Actele adiționale se raportează ca număr — sumele brute din sursă nu sunt suficient de fiabile pentru a fi însumate."
 
@@ -1368,7 +1368,7 @@ msgstr "Active series (dynamic)"
 msgid "Active series criteria:"
 msgstr "Active series criteria:"
 
-#: src/features/procurement/components/procurement-entity-header.tsx:180
+#: src/features/procurement/components/procurement-entity-header.tsx:198
 msgid "activitate"
 msgstr "activitate"
 
@@ -5846,7 +5846,7 @@ msgstr "cu ultima etapă în această zi"
 #: src/features/ngos/components/ngo-profile-page.tsx:318
 #: src/features/private-companies/components/layout/private-company-header.tsx:23
 #: src/features/private-companies/components/search/company-sort-select.tsx:21
-#: src/features/procurement/components/procurement-entity-header.tsx:171
+#: src/features/procurement/components/procurement-entity-header.tsx:189
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:836
 msgid "CUI"
 msgstr "CUI"
@@ -5919,12 +5919,12 @@ msgstr "Cum citesc aceste date"
 msgid "Cum e structurat"
 msgstr "Cum e structurat"
 
-#: src/features/procurement/components/procurement-entity-header.tsx:97
+#: src/features/procurement/components/procurement-entity-header.tsx:111
 #: src/features/procurement/components/procurement-info-sheet.tsx:139
 msgid "Cum sunt calculate sumele"
 msgstr "Cum sunt calculate sumele"
 
-#: src/features/procurement/components/procurement-institution-page.tsx:274
+#: src/features/procurement/components/procurement-institution-page.tsx:294
 msgid "Cumpărător public"
 msgstr "Cumpărător public"
 
@@ -10724,7 +10724,7 @@ msgstr "Inregistrari"
 msgid "înregistrări"
 msgstr "înregistrări"
 
-#: src/features/procurement/components/procurement-institution-page.tsx:315
+#: src/features/procurement/components/procurement-institution-page.tsx:335
 #: src/features/procurement/components/procurement-supplier-page.tsx:188
 msgid "Înregistrări"
 msgstr "Înregistrări"
@@ -10859,7 +10859,7 @@ msgstr "Instituție"
 msgid "Instituție publică"
 msgstr "Instituție publică"
 
-#: src/features/procurement/components/procurement-institution-page.tsx:289
+#: src/features/procurement/components/procurement-institution-page.tsx:309
 msgid "Instituții"
 msgstr "Instituții"
 
@@ -10879,7 +10879,7 @@ msgstr "instituții publice"
 #~ msgid "Institution"
 #~ msgstr "Institution"
 
-#: src/features/procurement/components/procurement-institution-page.tsx:175
+#: src/features/procurement/components/procurement-institution-page.tsx:176
 msgid "Institution CUI {cui}"
 msgstr "Institution CUI {cui}"
 
@@ -16699,7 +16699,7 @@ msgstr "Product"
 msgid "profesii reglementate"
 msgstr "profesii reglementate"
 
-#: src/features/procurement/components/procurement-institution-page.tsx:302
+#: src/features/procurement/components/procurement-institution-page.tsx:322
 #: src/features/public-enterprises/lib/tab-config.ts:43
 msgid "Profil"
 msgstr "Profil"
@@ -17950,6 +17950,7 @@ msgstr "Resursa de revizuit"
 
 #: src/features/agent/components/agent-chat.tsx:73
 #: src/features/private-companies/components/hub/company-hub-blocks.tsx:65
+#: src/features/private-companies/components/private-company-error-panel.tsx:46
 #: src/features/procurement/components/procurement-error-state.tsx:111
 #: src/routes/maps/editor/new.lazy.tsx:300
 msgid "Retry"
@@ -19789,6 +19790,10 @@ msgstr "Some saved local data was corrupted and has been reset."
 msgid "Something went wrong while fetching procurement data. Try again — if the problem persists, the data source may be temporarily unavailable."
 msgstr "Something went wrong while fetching procurement data. Try again — if the problem persists, the data source may be temporarily unavailable."
 
+#: src/features/private-companies/components/private-company-error-panel.tsx:28
+msgid "Something went wrong while fetching this profile. This does not mean the company is missing from the registry — try again, and if the problem persists the data source may be temporarily unavailable."
+msgstr "Something went wrong while fetching this profile. This does not mean the company is missing from the registry — try again, and if the problem persists the data source may be temporarily unavailable."
+
 #. js-lingui-explicit-id
 #: src/lib/errors-utils.ts:26
 msgid "error.genericError"
@@ -20970,6 +20975,10 @@ msgstr "The campaign request period has ended."
 msgid "The classification code \"{selectedCode}\" could not be found."
 msgstr "The classification code \"{selectedCode}\" could not be found."
 
+#: src/features/private-companies/components/private-company-error-panel.tsx:25
+msgid "The company profile could not be loaded"
+msgstr "The company profile could not be loaded"
+
 #: src/features/procurement/lib/caveat-text.ts:207
 msgid "The comparison base is zero in this selection, so no ratio can be derived."
 msgstr "The comparison base is zero in this selection, so no ratio can be derived."
@@ -21277,7 +21286,7 @@ msgid "This hides the view from this map. You can add it back later from Add vie
 msgstr "This hides the view from this map. You can add it back later from Add view."
 
 #: src/features/procurement/components/procurement-authority-slice.tsx:142
-#: src/features/procurement/components/procurement-institution-page.tsx:357
+#: src/features/procurement/components/procurement-institution-page.tsx:377
 msgid "This institution does not appear as a buyer in the procurement data."
 msgstr "This institution does not appear as a buyer in the procurement data."
 
@@ -21872,7 +21881,7 @@ msgstr "Transport"
 #~ msgid "Transport, roads and local networks."
 #~ msgstr "Transport, roads and local networks."
 
-#: src/features/procurement/components/procurement-entity-header.tsx:149
+#: src/features/procurement/components/procurement-entity-header.tsx:163
 msgid "Traseu de navigare"
 msgstr "Traseu de navigare"
 

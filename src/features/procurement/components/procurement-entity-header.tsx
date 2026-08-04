@@ -3,6 +3,7 @@ import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import { Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import {
   procurementHeaderEntityTitleStyle,
@@ -17,6 +18,18 @@ import {
 type Props = {
   readonly cui: string
   readonly title: string
+  /**
+   * Both name sources are still in flight, so `title` is only a CUI
+   * placeholder. Client-side navigation no longer blocks on the loader, so
+   * rendering the placeholder as the H1 would print a headline that visibly
+   * rewrites itself a beat later; show the title's skeleton instead.
+   *
+   * Must be false once the queries settle, even when they settle WITHOUT a
+   * name — `authorityName` is nullable, and a buyer the source never named
+   * would otherwise sit under a skeleton that resolves to nothing. In that
+   * state `title` carries the CUI fallback and is the real answer.
+   */
+  readonly isTitlePending?: boolean
   /** Kicker above the title — what kind of party this is. */
   readonly eyebrow: ReactNode
   /** Trail links, without the current page (it is the title below). */
@@ -70,6 +83,7 @@ function activityYears(
 export function ProcurementEntityHeader({
   cui,
   title,
+  isTitlePending,
   eyebrow,
   breadcrumb,
   actions: pageActions,
@@ -160,7 +174,11 @@ export function ProcurementEntityHeader({
               className={cn(procurementHeaderTitleClassName, 'mt-1.5')}
               style={procurementHeaderEntityTitleStyle}
             >
-              {title}
+              {isTitlePending ? (
+                <Skeleton className="h-[1em] w-[min(100%,26rem)] align-middle" />
+              ) : (
+                title
+              )}
             </h1>
 
             {/* Quiet metadata, deliberately NOT boxed: bordered stat tiles read

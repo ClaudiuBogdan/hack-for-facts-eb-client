@@ -4,6 +4,7 @@ import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import { ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useClientDocumentTitle } from '@/hooks/use-client-document-title'
 import { cn } from '@/lib/utils'
 import type {
   AuthorityProcurementSlice,
@@ -24,6 +25,7 @@ import {
 } from '../hooks/use-procurement-data'
 import { formatRon } from '../lib/formatting'
 import { procurementCompactActionClassName } from '../lib/procurement-theme'
+import { buildInstitutionDocumentTitle } from '../lib/procurement-page-titles'
 import {
   populationLabel,
   populationMoneyBasisLabel,
@@ -169,10 +171,21 @@ export function ProcurementInstitutionPage({
   )
 
   const overview = overviewQuery.data
-  const title =
-    overview?.authorityName?.trim() ||
-    nameQuery.data?.authorityName?.trim() ||
-    t`Institution CUI ${cui}`
+  const resolvedName =
+    overview?.authorityName?.trim() || nameQuery.data?.authorityName?.trim()
+  const title = resolvedName || t`Institution CUI ${cui}`
+  // Only while a name could still arrive. `authorityName` is nullable, so once
+  // both queries settle the CUI fallback IS the title — skeletoning it there
+  // would wait forever for a name the source does not have.
+  const isTitlePending =
+    !resolvedName && (overviewQuery.isPending || nameQuery.isPending)
+  // The route `head` only sees the buyer's name on the SSR path; on a
+  // client-side navigation the loader returns early so the click is instant.
+  useClientDocumentTitle(
+    resolvedName
+      ? buildInstitutionDocumentTitle({ cui, authorityName: resolvedName })
+      : null,
+  )
 
   const populations = overview?.populations ?? []
   const active: ProcurementInstitutionPopulation | undefined =
@@ -246,12 +259,18 @@ export function ProcurementInstitutionPage({
     overview?.signals.concentration?.meta,
   ].filter((meta): meta is NonNullable<typeof meta> => meta != null)
 
-  const quickFilters = initialSlice ? (
+  // Read from the query, not from `initialSlice` — the loader hands that over
+  // on the SSR path only, and the header's activity range and the chips must
+  // survive a client-side navigation (and a quick-filter change, which re-runs
+  // the loader through `loaderDeps`). `nameQuery` carries no scope, so this
+  // stays the all-time slice the chips and the range are supposed to describe.
+  const unfilteredSlice = nameQuery.data
+  const quickFilters = unfilteredSlice ? (
     <ProcurementPartyQuickFilters
       filters={filters}
-      firstSeen={initialSlice.summary.firstSeen}
-      lastSeen={initialSlice.summary.lastSeen}
-      categories={initialSlice.analysisByGrain.contract.topCategories}
+      firstSeen={unfilteredSlice.summary.firstSeen}
+      lastSeen={unfilteredSlice.summary.lastSeen}
+      categories={unfilteredSlice.analysisByGrain.contract.topCategories}
       advancedSearch={{
         view: 'list',
         authority_cui: cui,
@@ -271,6 +290,7 @@ export function ProcurementInstitutionPage({
       <ProcurementEntityHeader
         cui={cui}
         title={title}
+        isTitlePending={isTitlePending}
         eyebrow={<Trans>Cumpărător public</Trans>}
         breadcrumb={
           <>
@@ -317,8 +337,8 @@ export function ProcurementInstitutionPage({
             </Button>
           </>
         }
-        firstSeen={initialSlice?.summary.firstSeen ?? null}
-        lastSeen={initialSlice?.summary.lastSeen ?? null}
+        firstSeen={unfilteredSlice?.summary.firstSeen ?? null}
+        lastSeen={unfilteredSlice?.summary.lastSeen ?? null}
         valueStat={valueStat}
         filters={quickFilters}
         tabs={

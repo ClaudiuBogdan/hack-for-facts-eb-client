@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import { queryOptions, useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import {
   fetchProcurementAuthoritySlice,
   fetchProcurementBasisOverview,
@@ -211,6 +211,42 @@ export function useProcurementSupplierSlice(
 }
 
 /**
+ * Exported as options rather than inlined in the hooks below so the route
+ * loader can prefetch the *same* cache entries the page reads. Key drift
+ * between loader and hook would silently double every request.
+ */
+export function procurementInstitutionOverviewQueryOptions(
+  cui: string,
+  scopes: ProcurementInstitutionScopes,
+) {
+  return queryOptions({
+    queryKey: [
+      ...PROCUREMENT_QUERY_KEY,
+      'institution-overview',
+      cui,
+      scopes,
+    ] as const,
+    queryFn: () =>
+      fetchProcurementInstitutionOverview({ authorityCui: cui, scopes }),
+  })
+}
+
+export function procurementAuthoritySliceQueryOptions(
+  cui: string,
+  scope?: ProcurementAuthoritySliceScope,
+) {
+  return queryOptions({
+    queryKey: [
+      ...PROCUREMENT_QUERY_KEY,
+      'authority-slice',
+      cui,
+      scope ?? null,
+    ] as const,
+    queryFn: () => fetchProcurementAuthoritySlice(cui, scope),
+  })
+}
+
+/**
  * Institution profile spine — all six populations + the four signals for one
  * buyer, under the page's current scope. The scope is part of the query key,
  * so period/CPV/supplier changes refetch exactly like the hub does.
@@ -221,9 +257,7 @@ export function useProcurementInstitutionOverview(
   initialData?: ProcurementInstitutionOverview,
 ) {
   return useQuery({
-    queryKey: [...PROCUREMENT_QUERY_KEY, 'institution-overview', cui, scopes],
-    queryFn: () =>
-      fetchProcurementInstitutionOverview({ authorityCui: cui, scopes }),
+    ...procurementInstitutionOverviewQueryOptions(cui, scopes),
     initialData,
     enabled: Boolean(cui),
   })
@@ -235,8 +269,7 @@ export function useProcurementAuthoritySlice(
   scope?: ProcurementAuthoritySliceScope,
 ) {
   return useQuery({
-    queryKey: [...PROCUREMENT_QUERY_KEY, 'authority-slice', cui, scope ?? null],
-    queryFn: () => fetchProcurementAuthoritySlice(cui, scope),
+    ...procurementAuthoritySliceQueryOptions(cui, scope),
     initialData,
     enabled: Boolean(cui),
   })

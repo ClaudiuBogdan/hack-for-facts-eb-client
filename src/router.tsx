@@ -37,6 +37,14 @@ export function getRouter() {
     defaultErrorComponent: ({ error }) => <GlobalErrorPage error={error} />,
     parseSearch,
     stringifySearch,
+    // TanStack's defaults (1000ms / 500ms) meant a route's `pendingComponent`
+    // effectively never rendered: `/entities/$cui` declares `ViewLoading` yet
+    // its ~1s blocking loader finished just under the threshold, so a click
+    // froze the previous page with no feedback at all. Show the skeleton once
+    // a navigation is visibly slow, and hold it long enough not to flicker.
+    // Loader-less routes still transition instantly and never see this.
+    defaultPendingMs: 200,
+    defaultPendingMinMs: 300,
     // Enable automatic scroll-to-top on navigation
     scrollRestoration: true,
     // Use smooth scrolling for better UX
