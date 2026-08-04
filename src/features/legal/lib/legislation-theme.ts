@@ -38,13 +38,24 @@ export const legislationHeaderStatLabelClassName =
 
 export const legislationHeaderHeroClassName = 'pt-10 pb-8 sm:pt-14 sm:pb-10'
 
-/* ── section bands ───────────────────────────────────────────────────────── */
+/* ── section containers ──────────────────────────────────────────────────── */
 
+/**
+ * The container for a section of tab content.
+ *
+ * Inside a tab there is exactly **one separator language: 1px
+ * `--pnrr-subtle`** — the container edge, the rule under a heading, and the rows
+ * of a grid all draw it. What makes this read as a container is the card fill
+ * standing against the warm page background, not a heavy stroke, so the 2px
+ * near-black stays where it belongs: the page header and the tab nav.
+ */
 export const legislationSectionClassName =
-  'overflow-hidden rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]'
+  'overflow-hidden rounded-none border border-[var(--pnrr-subtle)] bg-[var(--pnrr-card)]'
 
+// A hairline under the title block, enough to seat the heading against its
+// content without walling the two apart the way a 2px rule did.
 export const legislationSectionHeaderClassName =
-  'border-b-2 border-[var(--pnrr-border)] px-5 py-4 sm:px-6'
+  'border-b border-[var(--pnrr-subtle)] px-5 py-4 sm:px-6'
 
 export const legislationSectionBodyClassName = 'p-5 sm:p-6'
 
@@ -54,8 +65,10 @@ export const legislationSectionTitleClassName =
 export const legislationSectionDescriptionClassName =
   'mt-1 text-sm text-[var(--pnrr-muted)]'
 
+// No rule of its own: quiet type already demotes a footnote to metadata, and the
+// last row of the body above it supplies the boundary.
 export const legislationSectionFootnoteClassName =
-  'border-t-2 border-[var(--pnrr-border)] px-5 py-2.5 text-xs text-[var(--pnrr-muted)] sm:px-6'
+  'px-5 pb-4 pt-3 text-xs text-[var(--pnrr-muted)] sm:px-6'
 
 export const legislationLinkClassName =
   'text-sm font-semibold text-[var(--pnrr-fg)] underline underline-offset-2 transition-colors hover:text-[var(--pnrr-muted)]'
@@ -85,7 +98,77 @@ export const legislationStatMetaClassName =
 /* ── rows ────────────────────────────────────────────────────────────────── */
 
 export const legislationRowClassName =
-  'relative flex w-full items-center gap-4 overflow-hidden border-b border-[var(--pnrr-track)] px-5 py-3 text-left transition-colors last:border-b-0 hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] sm:px-6'
+  'relative flex w-full items-center gap-4 overflow-hidden border-b border-[var(--pnrr-subtle)] px-5 py-3 text-left transition-colors last:border-b-0 hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] sm:px-6'
 
+/**
+ * A cell in a hairline lattice. Pair it with `legislationGridClassName`, and with
+ * `getGridFillerClassNames` when the item count may not fill the last row.
+ *
+ * Rules are drawn on the **top and left** rather than bottom and right, so every
+ * rule falls *between* two cells and none trails past the content into the
+ * container edge. Padding matches the section header, so the first column lines up
+ * with the title above it.
+ */
 export const legislationCellClassName =
-  'border-b border-r border-[var(--pnrr-track)] px-4 py-3 text-left transition-colors hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]'
+  'border-l border-t border-[var(--pnrr-subtle)] px-5 py-3 text-left transition-colors hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] sm:px-6'
+
+/**
+ * The grid that carries `legislationCellClassName` cells.
+ *
+ * The negative margins slide the leading row's and column's rules under the
+ * container edge, where `overflow-hidden` clips them — the top one landing exactly
+ * on the header hairline. Without this, the outer rules would double the container
+ * border. Add the column counts at the call site.
+ */
+export const legislationGridClassName = '-ml-px -mt-px grid'
+
+/** An empty cell that closes the lattice. No hover — there is nothing to point at. */
+export const legislationGridFillerClassName =
+  'border-l border-t border-[var(--pnrr-subtle)]'
+
+/**
+ * Written out in full rather than assembled from a prefix: Tailwind only emits
+ * classes it can find as literal strings in the source, so `` `${prefix}block` ``
+ * would compile to CSS that does not exist.
+ */
+const GRID_FILLER_VISIBILITY = [
+  { show: 'block', hide: 'hidden' },
+  { show: 'sm:block', hide: 'sm:hidden' },
+  { show: 'lg:block', hide: 'lg:hidden' },
+  { show: 'xl:block', hide: 'xl:hidden' },
+] as const
+
+/**
+ * Visibility classes for the empty cells that complete a lattice's final row, so
+ * the rules close the rectangle even where the data runs out.
+ *
+ * How many cells are missing depends on the column count, and the column count
+ * changes per breakpoint — five gazette issues leave one gap at three columns, one
+ * at two, and none at one. So this returns the widest set of fillers any
+ * breakpoint needs, each carrying the responsive visibility that shows it only
+ * where it is actually missing. Grid items stretch by default, so a filler takes
+ * its row's height without being given one.
+ *
+ * `columns` is the column count per breakpoint, widest last: `[2, 3, 4]`.
+ */
+export function getGridFillerClassNames({
+  itemCount,
+  columns,
+}: {
+  readonly itemCount: number
+  readonly columns: readonly number[]
+}): readonly string[] {
+  const missing = columns
+    .slice(0, GRID_FILLER_VISIBILITY.length)
+    .map((count) => (count - (itemCount % count)) % count)
+  const fillerCount = Math.max(0, ...missing)
+
+  return Array.from({ length: fillerCount }, (_unused, index) =>
+    missing
+      .map((missingHere, breakpoint) => {
+        const visibility = GRID_FILLER_VISIBILITY[breakpoint]
+        return index < missingHere ? visibility.show : visibility.hide
+      })
+      .join(' '),
+  )
+}

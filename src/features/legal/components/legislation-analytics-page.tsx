@@ -44,7 +44,7 @@ export function LegislationAnalyticsPage({ initialOverview }: Props) {
           <Trans>Nu am putut încărca datele despre legislație.</Trans>
         </p>
       ) : (
-        <div className="flex flex-col gap-10">
+        <div className="flex flex-col gap-12">
           <LegislationKpiStrip counts={data.counts} />
           <LegislationTopActs acts={data.mostCitedActs} />
           <LegislationHonestyNotes />

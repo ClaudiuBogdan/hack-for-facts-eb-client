@@ -51,7 +51,7 @@ export function LegislationPage({ initialOverview }: Props) {
           <Trans>Nu am putut încărca datele despre legislație.</Trans>
         </p>
       ) : (
-        <div className="flex flex-col gap-10">
+        <div className="flex flex-col gap-12">
           <LegislationSearchBand />
           <LegislationDomainGrid />
           <LegislationGazetteBand issues={data.latestGazetteIssues} />

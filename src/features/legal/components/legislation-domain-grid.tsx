@@ -1,8 +1,17 @@
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { legislationCellClassName } from '../lib/legislation-theme'
+import { cn } from '@/lib/utils'
+import {
+  getGridFillerClassNames,
+  legislationCellClassName,
+  legislationGridClassName,
+  legislationGridFillerClassName,
+} from '../lib/legislation-theme'
 import { LEGAL_DOMAIN_SLUGS, legalDomainLabel } from '../lib/legal-domains'
 import { LegislationSection } from './legislation-section'
+
+/** Column count per breakpoint, matching the grid classes below. */
+const DOMAIN_GRID_COLUMNS = [2, 3, 4] as const
 
 /**
  * The 16 subject domains.
@@ -32,13 +41,28 @@ export function LegislationDomainGrid() {
         </Trans>
       }
     >
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+      <div
+        className={cn(
+          legislationGridClassName,
+          'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4',
+        )}
+      >
         {LEGAL_DOMAIN_SLUGS.map((slug) => (
           <div key={slug} className={legislationCellClassName}>
             <span className="text-sm font-semibold text-[var(--pnrr-fg)]">
               {legalDomainLabel(slug)}
             </span>
           </div>
+        ))}
+        {getGridFillerClassNames({
+          itemCount: LEGAL_DOMAIN_SLUGS.length,
+          columns: DOMAIN_GRID_COLUMNS,
+        }).map((visibility, index) => (
+          <div
+            key={`filler-${index}`}
+            aria-hidden
+            className={cn(legislationGridFillerClassName, visibility)}
+          />
         ))}
       </div>
     </LegislationSection>

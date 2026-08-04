@@ -69,7 +69,7 @@ export function LegislationKpiStrip({ counts }: Props) {
       {tiles.map((tile) => (
         <div
           key={tile.key}
-          className="border-b-2 border-[var(--pnrr-border)] px-5 py-5 last:border-b-0 sm:px-6 lg:border-b-0 lg:border-r-2 lg:last:border-r-0"
+          className="border-b border-[var(--pnrr-subtle)] px-5 py-5 last:border-b-0 sm:px-6 lg:border-b-0 lg:border-r lg:last:border-r-0"
         >
           <div className={legislationStatLabelClassName}>{tile.label}</div>
           <div className={legislationStatValueClassName}>{tile.value}</div>

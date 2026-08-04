@@ -535,6 +535,24 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 
 Append-only. Newest first. Each entry: date · decision · why.
 
+- **2026-08-04 — Border weight encodes altitude: heavy for page chrome, one
+  hairline for everything inside it.** On `/legislation`, 2px near-black
+  (`--pnrr-border`) is now reserved for page-level chrome — the header edge and the
+  tab nav. Everything inside a tab draws a single 1px `--pnrr-subtle` hairline: the
+  section container, the rule under a heading, and the rules of a grid. Containment
+  comes from the card *fill* standing against the warm page background, not from
+  stroke weight. Grids rule on each cell's **top and left**, so a rule only ever
+  falls between two cells and never trails past the content; where the data does not
+  fill the final row, empty cells close the rectangle, computed per breakpoint
+  because the column count changes with it. Footnotes carry no rule — quiet type
+  already demotes them.
+  *Why:* the page previously ran four separator languages at once (2px black, 1px
+  black, two greys), applying a 2px box, a 2px header rule, a 2px footnote rule and
+  a cell lattice to every section. Nothing read as primary, every heading was walled
+  off from the content it introduced, and inert label grids looked like spreadsheets.
+  Principle 1 says hierarchy comes from borders *and spacing*; spacing was doing none
+  of the work. One weight per altitude restores the hierarchy without giving up the
+  brutalist skin, which stays quarantined to this surface as before.
 - **2026-06-26 — "Clean and clear over noisy" set as Principle 1**, with Parliament
   and PNRR named as the worked references and a Reference Patterns section added.
   *Why:* the product owner wants a low-noise interface; those two surfaces already

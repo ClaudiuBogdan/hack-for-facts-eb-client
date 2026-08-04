@@ -21,7 +21,7 @@ type Props = {
   readonly bodyClassName?: string
 }
 
-/** Shared section band for the legislation surfaces — header rule, body, footnote. */
+/** Shared section container for the legislation surfaces — heading, body, footnote. */
 export function LegislationSection({
   id,
   title,

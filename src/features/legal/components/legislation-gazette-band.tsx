@@ -3,13 +3,20 @@ import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { FileText, FileX2 } from 'lucide-react'
 import type { GazetteIssue } from '@/schemas/legal'
+import { cn } from '@/lib/utils'
 import { formatLegalDate, formatLegalNumber } from '../lib/legal-format'
 import { legalGazettePartLabel } from '../lib/legal-vocabulary'
 import {
   LEGISLATION_ACCENT,
+  getGridFillerClassNames,
   legislationCellClassName,
+  legislationGridClassName,
+  legislationGridFillerClassName,
 } from '../lib/legislation-theme'
 import { LegislationSection } from './legislation-section'
+
+/** Column count per breakpoint, matching the grid classes below. */
+const GAZETTE_GRID_COLUMNS = [1, 2, 3] as const
 
 type Props = {
   readonly issues: readonly GazetteIssue[]
@@ -41,12 +48,22 @@ export function LegislationGazetteBand({ issues }: Props) {
         </Trans>
       }
     >
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Five issues rarely fill three columns, so the trailing cells are filled
+          in to keep the lattice a closed rectangle. */}
+      <div
+        className={cn(
+          legislationGridClassName,
+          'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+        )}
+      >
         {issues.map((issue) => {
           const hasPdf = issue.hasEmonitorLink && issue.pdfUrl !== null
 
           return (
-            <div key={issue.moIssueId} className={legislationCellClassName}>
+            <div
+              key={issue.moIssueId}
+              className={cn(legislationCellClassName, 'min-w-0 py-4')}
+            >
               <div
                 className="text-[0.7rem] font-bold uppercase tracking-wider"
                 style={{ color: LEGISLATION_ACCENT }}
@@ -77,6 +94,16 @@ export function LegislationGazetteBand({ issues }: Props) {
             </div>
           )
         })}
+        {getGridFillerClassNames({
+          itemCount: issues.length,
+          columns: GAZETTE_GRID_COLUMNS,
+        }).map((visibility, index) => (
+          <div
+            key={`filler-${index}`}
+            aria-hidden
+            className={cn(legislationGridFillerClassName, visibility)}
+          />
+        ))}
       </div>
     </LegislationSection>
   )
