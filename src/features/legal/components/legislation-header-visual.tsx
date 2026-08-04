@@ -35,12 +35,15 @@ export function LegislationHeaderVisual() {
     let disposed = false
 
     const play = () => {
-      queuedManualPlayRef.current = false
       renderer?.play()
     }
 
-    const playManually = () => {
-      play()
+    const failGracefully = () => {
+      queuedManualPlayRef.current = false
+      playRef.current = null
+      setIsEffectUnavailable(true)
+      setIsImageCoverVisible(true)
+      setIsCanvasMounted(false)
     }
 
     const initialize = () => {
@@ -60,14 +63,11 @@ export function LegislationHeaderVisual() {
           targetImage: futureImage,
         })
       } catch {
-        queuedManualPlayRef.current = false
-        setIsEffectUnavailable(true)
-        setIsImageCoverVisible(true)
-        setIsCanvasMounted(false)
+        failGracefully()
         return
       }
 
-      playRef.current = playManually
+      playRef.current = play
       resizeObserver = new ResizeObserver(() => {
         renderer?.resize()
       })
@@ -79,35 +79,21 @@ export function LegislationHeaderVisual() {
         revealCanvasFrame = requestAnimationFrame(() => {
           if (disposed) return
           setIsImageCoverVisible(false)
-          if (queuedManualPlayRef.current) playManually()
+          if (!queuedManualPlayRef.current) return
+          queuedManualPlayRef.current = false
+          play()
         })
       })
     }
 
-    const handleImageError = () => {
-      queuedManualPlayRef.current = false
-      playRef.current = null
-      setIsEffectUnavailable(true)
-      setIsImageCoverVisible(true)
-      setIsCanvasMounted(false)
-    }
-
-    const handleContextLost = () => {
-      queuedManualPlayRef.current = false
-      playRef.current = null
-      setIsEffectUnavailable(true)
-      setIsImageCoverVisible(true)
-      setIsCanvasMounted(false)
-    }
-
     image.addEventListener('load', initialize)
-    image.addEventListener('error', handleImageError)
+    image.addEventListener('error', failGracefully)
     futureImage.addEventListener('load', initialize)
-    futureImage.addEventListener('error', handleImageError)
-    canvas.addEventListener('webglcontextlost', handleContextLost)
+    futureImage.addEventListener('error', failGracefully)
+    canvas.addEventListener('webglcontextlost', failGracefully)
     if (image.complete && futureImage.complete) {
       if (image.naturalWidth > 0 && futureImage.naturalWidth > 0) initialize()
-      else handleImageError()
+      else failGracefully()
     }
 
     return () => {
@@ -115,10 +101,10 @@ export function LegislationHeaderVisual() {
       cancelAnimationFrame(revealImageFrame)
       cancelAnimationFrame(revealCanvasFrame)
       image.removeEventListener('load', initialize)
-      image.removeEventListener('error', handleImageError)
+      image.removeEventListener('error', failGracefully)
       futureImage.removeEventListener('load', initialize)
-      futureImage.removeEventListener('error', handleImageError)
-      canvas.removeEventListener('webglcontextlost', handleContextLost)
+      futureImage.removeEventListener('error', failGracefully)
+      canvas.removeEventListener('webglcontextlost', failGracefully)
       resizeObserver?.disconnect()
       renderer?.dispose()
       playRef.current = null
@@ -126,9 +112,23 @@ export function LegislationHeaderVisual() {
     }
   }, [isCanvasMounted])
 
+  // Building the renderer costs a React commit plus WebGL setup, which is why
+  // the canvas stays unmounted until someone shows interest — page load should
+  // not pay for an effect most visitors never trigger. Warming it on pointer
+  // intent keeps that saving while handing the click a renderer that is already
+  // live, instead of one it has to wait ~250ms to build.
+  const warmUp = () => {
+    if (isEffectUnavailable || playRef.current) return
+    setIsCanvasMounted(true)
+  }
+
+  // `replay` owns the queued-play flag: it raises one when the renderer still
+  // has to be built, and clears it whenever it can play the click itself.
   const replay = () => {
-    if (playRef.current) {
-      playRef.current()
+    const play = playRef.current
+    if (play) {
+      queuedManualPlayRef.current = false
+      play()
       return
     }
 
@@ -140,6 +140,8 @@ export function LegislationHeaderVisual() {
     <button
       type="button"
       onClick={replay}
+      onPointerEnter={warmUp}
+      onPointerDown={warmUp}
       disabled={isEffectUnavailable}
       aria-label={t`Redă din nou efectul digital al imaginii`}
       className="relative aspect-[1280/976] h-full max-w-full cursor-pointer touch-manipulation border-0 bg-transparent p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-default"

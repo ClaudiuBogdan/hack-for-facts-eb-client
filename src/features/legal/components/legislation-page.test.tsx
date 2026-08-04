@@ -56,7 +56,7 @@ describe('LegislationPage', () => {
     ).toBeInTheDocument()
   })
 
-  it('mounts the digital header canvas only after a reader click', () => {
+  it('keeps the digital header canvas off page load until a reader engages', () => {
     const { container } = render(<LegislationPage />)
 
     const playButton = screen.getByRole('button', {
@@ -65,6 +65,21 @@ describe('LegislationPage', () => {
 
     expect(container.querySelector('canvas')).not.toBeInTheDocument()
     fireEvent.click(playButton)
+    expect(container.querySelector('canvas')).toBeInTheDocument()
+  })
+
+  it('warms the digital header up on pointer intent, before the click', () => {
+    const { container } = render(<LegislationPage />)
+
+    const playButton = screen.getByRole('button', {
+      name: 'Redă din nou efectul digital al imaginii',
+    })
+
+    // Building the renderer inside the click handler cost ~234ms before the
+    // first pixel moved, so the click read as a no-op. Hovering has to be what
+    // pays for it, leaving the click with a renderer that is already live.
+    expect(container.querySelector('canvas')).not.toBeInTheDocument()
+    fireEvent.pointerEnter(playButton)
     expect(container.querySelector('canvas')).toBeInTheDocument()
   })
 
