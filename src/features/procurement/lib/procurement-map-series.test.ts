@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   buildProcurementMapHeatmap,
   buildRegionHeatmap,
+  buildUatHeatmap,
+  filterUatHeatmapToPolygonDirectory,
   isProcurementMapCountyPainted,
   regionBucketsFromBreakdown,
   resolveProcurementMapAnalysisPlan,
@@ -176,5 +178,31 @@ describe('procurement map series', () => {
     expect(
       buildProcurementMapHeatmap('uat', undefined, [], 'value_awarded'),
     ).toEqual([])
+  })
+
+  it('keeps only UAT buckets present in the painted polygon directory', () => {
+    const points = buildUatHeatmap(
+      [
+        {
+          region: '130534',
+          recordCount: 3,
+          valueAwardedSum: 100,
+          kind: 'top',
+        },
+        {
+          region: '225',
+          recordCount: 2,
+          valueAwardedSum: 50,
+          kind: 'top',
+        },
+      ],
+      'value_awarded',
+    )
+
+    expect(
+      filterUatHeatmapToPolygonDirectory(points, new Set(['130534'])),
+    ).toEqual([
+      expect.objectContaining({ siruta_code: '130534', amount: 100 }),
+    ])
   })
 })

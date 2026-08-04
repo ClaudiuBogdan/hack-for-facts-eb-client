@@ -20,6 +20,11 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import {
+  buildMapDataCsv,
+  buildUatMapMetadataBySiruta,
+  downloadMapDataCsv,
+} from '@/lib/map-data-csv'
+import {
   analysisGrainToHubGrain,
   buildProcurementOverviewMonthScope,
   hubStateToLandingFilters,
@@ -44,6 +49,7 @@ import type {
 } from '@/schemas/heatmap'
 import {
   buildProcurementMapHeatmapForPaintMode,
+  filterUatHeatmapToPolygonDirectory,
   findRegionForCountyCode,
   isProcurementMapCountyPainted,
   regionBucketsFromBreakdown,
@@ -61,6 +67,7 @@ import {
 import {
   procurementSectionClassName,
 } from '../lib/procurement-theme'
+import { Download } from 'lucide-react'
 
 const InteractiveMap = lazy(() =>
   import('@/components/maps/InteractiveMap').then((module) => ({
@@ -246,7 +253,7 @@ export function ProcurementMapView({
     statsBlock,
   ])
 
-  const heatmapData = useMemo(
+  const unvalidatedHeatmapData = useMemo(
     () =>
       buildProcurementMapHeatmapForPaintMode(
         mapAnalysisPlan.paintMode,
@@ -260,20 +267,6 @@ export function ProcurementMapView({
       measure,
       regionBuckets,
     ],
-  )
-
-  const paintedCountyCodes = useMemo(
-    () => new Set(heatmapData.map((point) => point.county_code)),
-    [heatmapData],
-  )
-  const paintedSirutaCodes = useMemo(
-    () =>
-      new Set(
-        heatmapData.flatMap((point) =>
-          'siruta_code' in point && point.siruta_code ? [point.siruta_code] : [],
-        ),
-      ),
-    [heatmapData],
   )
 
   const { data: regionGeoJson, isPending: regionGeoPending } = useGeoJsonData(
@@ -297,6 +290,37 @@ export function ProcurementMapView({
     : paintIsUat
       ? uatGeoPending
       : countyGeoPending
+  const exportUatMetadataBySiruta = useMemo(
+    () => buildUatMapMetadataBySiruta(uatGeoJson),
+    [uatGeoJson],
+  )
+  const polygonUatSirutaCodes = useMemo(
+    () => new Set(exportUatMetadataBySiruta.keys()),
+    [exportUatMetadataBySiruta],
+  )
+  const heatmapData = useMemo(
+    () =>
+      paintIsUat
+        ? filterUatHeatmapToPolygonDirectory(
+            unvalidatedHeatmapData,
+            polygonUatSirutaCodes,
+          )
+        : unvalidatedHeatmapData,
+    [paintIsUat, polygonUatSirutaCodes, unvalidatedHeatmapData],
+  )
+  const paintedCountyCodes = useMemo(
+    () => new Set(heatmapData.map((point) => point.county_code)),
+    [heatmapData],
+  )
+  const paintedSirutaCodes = useMemo(
+    () =>
+      new Set(
+        heatmapData.flatMap((point) =>
+          'siruta_code' in point && point.siruta_code ? [point.siruta_code] : [],
+        ),
+      ),
+    [heatmapData],
+  )
 
   const colorDomain = useMemo(
     () =>
@@ -534,6 +558,20 @@ export function ProcurementMapView({
     !paintPartySiruta &&
     mapAnalysisPlan.paintMode === 'county'
 
+  const handleExportCsv = useCallback(() => {
+    const csv = buildMapDataCsv({
+      data: heatmapData,
+      grain: selectionGrain,
+      indicator: measure,
+      unit: measure === 'value_awarded' ? 'RON' : 'count',
+      uatMetadataBySiruta: exportUatMetadataBySiruta,
+    })
+    downloadMapDataCsv(
+      csv,
+      `procurement-map-${selectionGrain}-${measure}.csv`,
+    )
+  }, [exportUatMetadataBySiruta, heatmapData, measure, selectionGrain])
+
   return (
     <div className="space-y-4">
       <MapToolbar
@@ -719,6 +757,23 @@ export function ProcurementMapView({
             </div>
           </div>
         ) : null}
+      </div>
+
+      <div className="flex justify-end">
+        <Button
+          type="button"
+          variant="outline"
+          className="h-9 shrink-0 gap-2 rounded-none border-2 border-[var(--pnrr-border)] px-3 text-xs font-black"
+          disabled={
+            heatmapData.length === 0 ||
+            (selectionGrain === 'uat' &&
+              exportUatMetadataBySiruta.size === 0)
+          }
+          onClick={handleExportCsv}
+        >
+          <Download className="h-4 w-4" aria-hidden="true" />
+          <Trans>Export CSV</Trans>
+        </Button>
       </div>
 
       {facetBlock &&

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import type { PnrrBeneficiaryType, PnrrSearchState } from '@/schemas/pnrr'
+import type { Currency } from '@/schemas/charts'
+import { useUserCurrency } from '@/lib/hooks/useUserCurrency'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
 import { getActiveFilterCount } from '../../lib/data-transform'
 import { Input } from '@/components/ui/input'
@@ -151,6 +153,9 @@ export function PnrrFilterSheet({
   const setSearch = filterState.setSearch
   const setBeneficiarySearch = filterState.setBeneficiarySearch
   const setBeneficiaryCui = filterState.setBeneficiaryCui
+  const [userCurrency, setUserCurrency] = useUserCurrency()
+  const selectedCurrency = search.currency ?? userCurrency
+
   // Local debounced state for search inputs
   const globalSearch = search.search ?? ''
   const globalBeneficiarySearch = search.beneficiarySearch ?? ''
@@ -348,46 +353,52 @@ export function PnrrFilterSheet({
             <div className="w-full min-w-0 max-w-full space-y-6 overflow-x-hidden p-4 sm:p-6">
               <section className="space-y-2">
                 <Label className={FILTER_LABEL_CLASS}>
-                  <Trans>Source currency</Trans>
+                  <Trans>Currency</Trans>
                 </Label>
                 <ToggleGroup
                   type="single"
-                  value="RON"
-                  aria-describedby="pnrr-source-currency-help"
+                  value={selectedCurrency}
+                  onValueChange={(value) => {
+                    if (value === 'RON' || value === 'EUR' || value === 'USD') {
+                      const nextCurrency = value as Currency
+                      setUserCurrency(nextCurrency)
+                      filterState.setCurrency(nextCurrency)
+                    }
+                  }}
+                  aria-describedby="pnrr-currency-estimate-help"
                   className="grid w-full grid-cols-3 gap-2"
                 >
                   <ToggleGroupItem
                     value="RON"
                     className={FILTER_TOGGLE_ITEM_CLASS}
-                    aria-label={t`PNRR project values are published in RON`}
+                    aria-label={t`Display values in RON`}
                   >
                     RON
                   </ToggleGroupItem>
                   <ToggleGroupItem
                     value="EUR"
-                    disabled
                     className={FILTER_TOGGLE_ITEM_CLASS}
-                    aria-label={t`EUR conversion unavailable without an authoritative exchange rate`}
+                    aria-label={t`Display estimated values in EUR`}
                   >
                     EURO
                   </ToggleGroupItem>
                   <ToggleGroupItem
                     value="USD"
-                    disabled
                     className={FILTER_TOGGLE_ITEM_CLASS}
-                    aria-label={t`USD conversion unavailable without an authoritative exchange rate`}
+                    aria-label={t`Display estimated values in USD`}
                   >
                     USD
                   </ToggleGroupItem>
                 </ToggleGroup>
                 <p
-                  id="pnrr-source-currency-help"
+                  id="pnrr-currency-estimate-help"
                   className="text-xs leading-relaxed text-[var(--pnrr-muted)]"
                 >
                   <Trans>
-                    MIPE project values remain in their published RON. National
-                    indicators published in EUR are labeled separately. No
-                    estimated exchange rate is applied.
+                    Project values are published in RON. EUR and USD displays
+                    use fixed estimates of 5 RON/EUR and 4.44 RON/USD, not live
+                    exchange rates. Official EUR indicators remain labeled
+                    separately.
                   </Trans>
                 </p>
               </section>

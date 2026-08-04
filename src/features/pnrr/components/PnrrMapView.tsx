@@ -30,7 +30,13 @@ import { getPnrrBlueHeatmapColor } from '../lib/map-colors'
 import { buildPnrrMapTooltipHtml } from '../lib/map-tooltip'
 import { MNEMONIC_TO_COUNTY_NAME } from '../lib/county-mnemonics'
 import { formatNumber, cn } from '@/lib/utils'
-import { Info } from 'lucide-react'
+import {
+  buildMapDataCsv,
+  buildUatMapMetadataBySiruta,
+  downloadMapDataCsv,
+} from '@/lib/map-data-csv'
+import { Button } from '@/components/ui/button'
+import { Download, Info } from 'lucide-react'
 import bbox from '@turf/bbox'
 import center from '@turf/center'
 import type { FeatureCollection, Feature, Geometry } from 'geojson'
@@ -255,6 +261,10 @@ export function PnrrMapView({
     mapGranularity === 'uat' ? 'UAT' : 'County',
   )
   const { data: countyGeoJsonData } = useGeoJsonData('County')
+  const exportUatMetadataBySiruta = useMemo(
+    () => buildUatMapMetadataBySiruta(geoJsonData),
+    [geoJsonData],
+  )
 
   const nationalCount = activeModel.nationalCount
   const unmappedCount = activeModel.unmappedCount
@@ -298,6 +308,29 @@ export function PnrrMapView({
     () => getActiveSeriesLabelUnit(renderedSeriesId, currency),
     [renderedSeriesId, currency],
   )
+
+  const handleExportCsv = useCallback(() => {
+    const csv = buildMapDataCsv({
+      data: heatmapData,
+      grain: mapGranularity,
+      indicator: renderedSeriesId,
+      unit: activeSeriesUnit,
+      transformValue: (value) =>
+        getActiveSeriesLabelValue(value, renderedSeriesId, currency),
+      uatMetadataBySiruta: exportUatMetadataBySiruta,
+    })
+    downloadMapDataCsv(
+      csv,
+      `pnrr-map-${mapGranularity}-${renderedSeriesId}.csv`,
+    )
+  }, [
+    activeSeriesUnit,
+    currency,
+    exportUatMetadataBySiruta,
+    heatmapData,
+    mapGranularity,
+    renderedSeriesId,
+  ])
 
   const colorDomain = useMemo(
     () =>
@@ -545,52 +578,78 @@ export function PnrrMapView({
       </div>
 
       {/* Status bar */}
-      <div className="flex flex-wrap items-center gap-2">
-        {nationalCount > 0 && (
-          <span className="inline-flex min-h-9 items-center gap-2 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-xs font-bold uppercase tracking-wide text-[var(--pnrr-muted)]">
-            <Info className="h-4 w-4 text-[var(--pnrr-fg)]" />
-            {nationalCount.toLocaleString('ro-RO')}{' '}
-            <Trans>national projects outside the map</Trans>
-            <span className="text-[var(--pnrr-fg)]">
-              · {formatPnrrCurrency(nationalValue, currency)}
-              {mapScopeValue > 0
-                ? ` (${formatNumber((nationalValue / mapScopeValue) * 100)}%)`
-                : ''}
-            </span>
-          </span>
-        )}
-        {unmappedCount > 0 && (
-          <span className="inline-flex min-h-9 items-center gap-2 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-xs font-bold uppercase tracking-wide text-[var(--pnrr-muted)]">
-            <Info className="h-4 w-4 text-[var(--pnrr-fg)]" />
-            {unmappedCount.toLocaleString('ro-RO')}{' '}
-            {mapGranularity === 'uat' ? (
-              <Trans>projects without UAT mapping</Trans>
-            ) : (
-              <Trans>projects without county mapping</Trans>
-            )}
-            <span className="text-[var(--pnrr-fg)]">
-              · {formatPnrrCurrency(unmappedValue, currency)}
-            </span>
-          </span>
-        )}
-        {excludedUnitCount > 0 && (
-          <span className="inline-flex min-h-9 items-center gap-2 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-xs font-bold uppercase tracking-wide text-[var(--pnrr-muted)]">
-            <Info className="h-4 w-4 text-[var(--pnrr-fg)]" />
-            {excludedUnitCount.toLocaleString('ro-RO')}{' '}
-            {renderedSeriesId === 'per-capita' ? (
-              <Trans>territories omitted because population is unavailable</Trans>
-            ) : (
-              <Trans>
-                territories omitted because exact technical progress is unavailable
-              </Trans>
-            )}
-            {(activeSeries.excludedValue ?? 0) > 0 && (
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          {nationalCount > 0 && (
+            <span className="inline-flex min-h-9 items-center gap-2 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-xs font-bold uppercase tracking-wide text-[var(--pnrr-muted)]">
+              <Info
+                className="h-4 w-4 text-[var(--pnrr-fg)]"
+                aria-hidden="true"
+              />
+              {nationalCount.toLocaleString('ro-RO')}{' '}
+              <Trans>national projects outside the map</Trans>
               <span className="text-[var(--pnrr-fg)]">
-                · {formatPnrrCurrency(activeSeries.excludedValue!, currency)}
+                · {formatPnrrCurrency(nationalValue, currency)}
+                {mapScopeValue > 0
+                  ? ` (${formatNumber((nationalValue / mapScopeValue) * 100)}%)`
+                  : ''}
               </span>
-            )}
-          </span>
-        )}
+            </span>
+          )}
+          {unmappedCount > 0 && (
+            <span className="inline-flex min-h-9 items-center gap-2 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-xs font-bold uppercase tracking-wide text-[var(--pnrr-muted)]">
+              <Info
+                className="h-4 w-4 text-[var(--pnrr-fg)]"
+                aria-hidden="true"
+              />
+              {unmappedCount.toLocaleString('ro-RO')}{' '}
+              {mapGranularity === 'uat' ? (
+                <Trans>projects without UAT mapping</Trans>
+              ) : (
+                <Trans>projects without county mapping</Trans>
+              )}
+              <span className="text-[var(--pnrr-fg)]">
+                · {formatPnrrCurrency(unmappedValue, currency)}
+              </span>
+            </span>
+          )}
+          {excludedUnitCount > 0 && (
+            <span className="inline-flex min-h-9 items-center gap-2 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-xs font-bold uppercase tracking-wide text-[var(--pnrr-muted)]">
+              <Info
+                className="h-4 w-4 text-[var(--pnrr-fg)]"
+                aria-hidden="true"
+              />
+              {excludedUnitCount.toLocaleString('ro-RO')}{' '}
+              {renderedSeriesId === 'per-capita' ? (
+                <Trans>territories omitted because population is unavailable</Trans>
+              ) : (
+                <Trans>
+                  territories omitted because exact technical progress is unavailable
+                </Trans>
+              )}
+              {(activeSeries.excludedValue ?? 0) > 0 && (
+                <span className="text-[var(--pnrr-fg)]">
+                  · {formatPnrrCurrency(activeSeries.excludedValue!, currency)}
+                </span>
+              )}
+            </span>
+          )}
+        </div>
+
+        <Button
+          type="button"
+          variant="outline"
+          className="h-9 shrink-0 gap-2 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-xs font-black text-[var(--pnrr-fg)] hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)]"
+          disabled={
+            heatmapData.length === 0 ||
+            (mapGranularity === 'uat' &&
+              exportUatMetadataBySiruta.size === 0)
+          }
+          onClick={handleExportCsv}
+        >
+          <Download className="h-4 w-4" aria-hidden="true" />
+          <Trans>Export CSV</Trans>
+        </Button>
       </div>
 
       {/* Detail panels */}

@@ -1,24 +1,34 @@
 import { formatCurrency, formatNumber } from '@/lib/utils'
 import type { Currency } from '@/schemas/charts'
 
-/**
- * PNRR project values are source-native RON values. This compatibility helper
- * deliberately performs no exchange-rate conversion.
- */
-export function convertPnrrValue(listedFundingRon: number, _currency: Currency): number {
-  return listedFundingRon
+/** Fixed presentation estimates for converting source-native RON values. */
+export const PNRR_ESTIMATED_RON_PER_UNIT: Readonly<Record<Currency, number>> = {
+  RON: 1,
+  EUR: 5,
+  USD: 4.44,
+}
+
+export function convertPnrrValue(
+  listedFundingRon: number,
+  currency: Currency,
+): number {
+  return listedFundingRon / PNRR_ESTIMATED_RON_PER_UNIT[currency]
 }
 
 /**
- * Format source-native MIPE project values. The requested currency is retained
- * in the signature for existing callers, but the source value is always RON.
+ * Format source-native MIPE project values using the fixed display estimate.
+ * These values are presentation conversions, not authoritative source facts.
  */
 export function formatPnrrCurrency(
   listedFundingRon: number,
-  _currency: Currency,
+  currency: Currency,
   notation: 'standard' | 'compact' = 'compact',
 ): string {
-  return formatCurrency(listedFundingRon, notation, 'RON')
+  return formatCurrency(
+    convertPnrrValue(listedFundingRon, currency),
+    notation,
+    currency,
+  )
 }
 
 export function formatPnrrPercentage(value: number): string {

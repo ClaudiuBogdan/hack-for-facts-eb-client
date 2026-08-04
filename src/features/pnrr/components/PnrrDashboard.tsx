@@ -56,8 +56,7 @@ export function PnrrDashboard({
   const emptyAggregates = useMemo(() => computeAggregates([]), []);
 
   const view = filterState.search.view ?? "overview";
-  const effectiveCurrency: Currency = "RON";
-  void initialCurrency;
+  const effectiveCurrency = filterState.search.currency ?? initialCurrency;
   const uatLabelsBySiruta = useMemo(() => {
     const labels = new Map<string, string>();
 
@@ -190,25 +189,24 @@ export function PnrrDashboard({
           </div>
         )}
 
-        {filterState.search.currency &&
-          filterState.search.currency !== "RON" && (
-            <div className="mx-auto mt-4 flex max-w-7xl items-start gap-3 border-2 border-[var(--pnrr-blue)] bg-[var(--pnrr-card)] px-4 py-3 text-sm text-[var(--pnrr-fg)] sm:px-6">
-              <Info className="mt-0.5 h-5 w-5 shrink-0 text-[var(--pnrr-blue)]" />
-              <div>
-                <p className="font-black uppercase tracking-wide">
-                  <Trans>Source currency preserved</Trans>
-                </p>
-                <p className="mt-1 text-[var(--pnrr-muted)]">
-                  <Trans>
-                    This older link requested a display conversion. Project
-                    values now remain in their published RON, while official EUR
-                    indicators are labeled separately. No estimated exchange
-                    rate is applied.
-                  </Trans>
-                </p>
-              </div>
+        {effectiveCurrency && effectiveCurrency !== "RON" && (
+          <div className="mx-auto mt-4 flex max-w-7xl items-start gap-3 border-2 border-[var(--pnrr-blue)] bg-[var(--pnrr-card)] px-4 py-3 text-sm text-[var(--pnrr-fg)] sm:px-6">
+            <Info className="mt-0.5 h-5 w-5 shrink-0 text-[var(--pnrr-blue)]" />
+            <div>
+              <p className="font-black uppercase tracking-wide">
+                <Trans>Estimated currency conversion</Trans>
+              </p>
+              <p className="mt-1 text-[var(--pnrr-muted)]">
+                <Trans>
+                  Project values are published in RON. EUR and USD displays use
+                  fixed estimates of 5 RON/EUR and 4.44 RON/USD, not live
+                  exchange rates. Official EUR indicators remain labeled
+                  separately.
+                </Trans>
+              </p>
             </div>
-          )}
+          </div>
+        )}
 
         {/* Tab Content */}
         <main

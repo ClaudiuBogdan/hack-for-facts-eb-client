@@ -822,7 +822,7 @@ msgstr ""
 msgid "45 (division), 452 (group), 4523 (class), 45233 (category) or 45233140 (code)"
 msgstr "45 (diviziune), 452 (grupă), 4523 (clasă), 45233 (categorie) sau 45233140 (cod)"
 
-#: src/features/procurement/components/procurement-map-view.tsx:593
+#: src/features/procurement/components/procurement-map-view.tsx:608
 msgid "A buyer region filter is active, so the map shows county totals inside that region. Records without known buyer geography are excluded — never shown as zero."
 msgstr "Un filtru de regiune cumpărător este activ, deci harta arată totalurile pe județe din acea regiune. Înregistrările fără geografie de cumpărător cunoscută sunt excluse — niciodată afișate ca zero."
 
@@ -867,7 +867,7 @@ msgstr "O procedură de achiziție publică: anunțul, evaluarea și atribuirea 
 msgid "A purchase below the tender thresholds, made directly in the SEAP catalogue."
 msgstr "O achiziție sub pragurile de licitație, realizată direct în catalogul SEAP."
 
-#: src/features/procurement/components/procurement-map-view.tsx:587
+#: src/features/procurement/components/procurement-map-view.tsx:602
 msgid "A supplier region filter is active, so the map shows county totals for suppliers inside that region. Records without known supplier geography are excluded — never shown as zero."
 msgstr "Un filtru de regiune a furnizorului este activ, așa că harta arată totalurile pe județe pentru furnizorii din acea regiune. Înregistrările fără geografie cunoscută a furnizorului sunt excluse — nu apar niciodată ca zero."
 
@@ -908,7 +908,7 @@ msgstr ""
 msgid "Abrogat parțial"
 msgstr ""
 
-#: src/features/legal/components/legislation-shell.tsx:152
+#: src/features/legal/components/legislation-shell.tsx:136
 msgid "abrogate"
 msgstr ""
 
@@ -1159,11 +1159,11 @@ msgstr ""
 msgid "Act normativ"
 msgstr ""
 
-#: src/features/legal/components/legislation-shell.tsx:136
+#: src/features/legal/components/legislation-shell.tsx:120
 msgid "acte"
 msgstr ""
 
-#: src/features/legal/components/legislation-tab-nav.tsx:56
+#: src/features/legal/components/legislation-tab-nav.tsx:48
 msgid "Acte"
 msgstr ""
 
@@ -2019,7 +2019,7 @@ msgstr "ANAF raportează un cod de activitate fiscală diferit de lista autoriza
 msgid "ANAF returned no financial statement years for this company in the loaded snapshot."
 msgstr "ANAF nu a returnat ani de situații financiare pentru această companie în instantaneul încărcat."
 
-#: src/features/legal/components/legislation-tab-nav.tsx:54
+#: src/features/legal/components/legislation-tab-nav.tsx:46
 msgid "Analiză"
 msgstr ""
 
@@ -3450,7 +3450,7 @@ msgid "Cauta"
 msgstr ""
 
 #: src/features/legal/components/legislation-search-band.tsx:64
-#: src/features/legal/components/legislation-tab-nav.tsx:55
+#: src/features/legal/components/legislation-tab-nav.tsx:47
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:438
 #: src/routes/justitie.index.tsx:251
 msgid "Caută"
@@ -5171,7 +5171,7 @@ msgstr "Județe"
 #~ msgid "Counties are coloured by supplier development-region totals. Records without known supplier geography are excluded from the map — never shown as zero."
 #~ msgstr "Județele sunt colorate după totalurile regiunii de dezvoltare a furnizorilor. Înregistrările fără geografie cunoscută a furnizorului sunt excluse de pe hartă — nu apar niciodată ca zero."
 
-#: src/features/procurement/components/procurement-map-view.tsx:612
+#: src/features/procurement/components/procurement-map-view.tsx:627
 msgid "Counties are coloured by supplier registered-office totals under the current filters. Records without known supplier geography are excluded from the map — never shown as zero."
 msgstr "Județele sunt colorate după totalurile sediului social al furnizorilor, sub filtrele curente. Înregistrările fără geografie cunoscută a furnizorului sunt excluse de pe hartă — nu apar niciodată ca zero."
 
@@ -5179,7 +5179,7 @@ msgstr "Județele sunt colorate după totalurile sediului social al furnizorilor
 #~ msgid "Counties are coloured by their development region total. Records without known buyer geography are excluded from the map — never shown as zero."
 #~ msgstr ""
 
-#: src/features/procurement/components/procurement-map-view.tsx:626
+#: src/features/procurement/components/procurement-map-view.tsx:641
 msgid "Counties are coloured by their own totals under the current filters. Records without known buyer geography are excluded from the map — never shown as zero."
 msgstr "Județele sunt colorate după propriile totaluri pentru filtrele curente. Înregistrările fără geografie cunoscută a cumpărătorului sunt excluse din hartă — nu sunt afișate niciodată ca zero."
 
@@ -5214,7 +5214,7 @@ msgstr "Numărătorile descriu înregistrările care corespund acestor filtre, n
 #: src/features/procurement/components/procurement-hub-filter-sheet.tsx:486
 #: src/features/procurement/components/procurement-hub-filter-sheet.tsx:550
 #: src/features/procurement/components/procurement-hub-filter-sheet.tsx:577
-#: src/features/procurement/components/procurement-map-view.tsx:840
+#: src/features/procurement/components/procurement-map-view.tsx:868
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:325
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:353
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:425
@@ -5291,7 +5291,7 @@ msgstr "Precizia pe județ nu este încă disponibilă. Numărările și grafice
 #~ msgid "County precision is not available yet. Every result below is currently scoped to the wider region: {appliedBuyerRegion}."
 #~ msgstr ""
 
-#: src/features/procurement/components/procurement-map-view.tsx:698
+#: src/features/procurement/components/procurement-map-view.tsx:713
 msgid "County totals"
 msgstr "Totaluri pe județe"
 
@@ -6021,7 +6021,7 @@ msgid "Date până la"
 msgstr ""
 
 #. placeholder {0}: formatDate(measuredAt)
-#: src/features/legal/components/legislation-shell.tsx:122
+#: src/features/legal/components/legislation-shell.tsx:106
 msgid "date până la {0}"
 msgstr ""
 
@@ -6530,11 +6530,11 @@ msgstr "Detectează valori extreme folosind limite cuartile: Q1 - m*IQR și Q3 +
 msgid "Dev: hub filter capabilities"
 msgstr "Dev: capacități filtre hub"
 
-#: src/features/procurement/components/procurement-map-view.tsx:618
+#: src/features/procurement/components/procurement-map-view.tsx:633
 msgid "Development regions are coloured by supplier registered-office totals. Records without known supplier geography are excluded from the map — never shown as zero."
 msgstr "Regiunile de dezvoltare sunt colorate după totalurile sediilor sociale ale furnizorilor. Înregistrările fără geografie cunoscută a furnizorului sunt excluse din hartă — nu sunt afișate niciodată ca zero."
 
-#: src/features/procurement/components/procurement-map-view.tsx:632
+#: src/features/procurement/components/procurement-map-view.tsx:647
 msgid "Development regions are coloured by their own totals. Records without known buyer geography are excluded from the map — never shown as zero."
 msgstr "Regiunile de dezvoltare sunt colorate după propriile totaluri. Înregistrările fără geografie cunoscută a cumpărătorului sunt excluse din hartă — nu sunt afișate niciodată ca zero."
 
@@ -7985,6 +7985,7 @@ msgid "Export config"
 msgstr "Exportă configurația"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:1168
+#: src/features/procurement/components/procurement-map-view.tsx:748
 #: src/features/procurement/components/procurement-search-content.tsx:140
 #: src/routes/entity-analytics.lazy.tsx:242
 msgid "Export CSV"
@@ -8419,7 +8420,7 @@ msgstr ""
 msgid "Fiecare indicator păstrează perioada, unitatea și starea disponibilității la nivel de set."
 msgstr ""
 
-#: src/features/legal/components/legislation-shell.tsx:104
+#: src/features/legal/components/legislation-shell.tsx:88
 msgid "Fiecare lege, ordonanță și hotărâre publicată în România — cu statutul ei actual, ce a modificat, ce a modificat-o și numărul din Monitorul Oficial în care a apărut."
 msgstr ""
 
@@ -9138,7 +9139,7 @@ msgstr "Începe acum"
 msgid "Get updates about"
 msgstr "Primiți actualizări despre"
 
-#: src/features/legal/components/legislation-tab-nav.tsx:59
+#: src/features/legal/components/legislation-tab-nav.tsx:51
 #: src/features/legal/lib/legal-vocabulary.ts:133
 msgid "Ghid"
 msgstr ""
@@ -9806,7 +9807,7 @@ msgstr "în afara intervalului istoric publicat de sursă"
 msgid "în așteptare"
 msgstr ""
 
-#: src/features/legal/components/legislation-tab-nav.tsx:84
+#: src/features/legal/components/legislation-tab-nav.tsx:76
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:464
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:474
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1694
@@ -9862,7 +9863,7 @@ msgstr "În desfășurare"
 msgid "în revizuire"
 msgstr ""
 
-#: src/features/legal/components/legislation-shell.tsx:144
+#: src/features/legal/components/legislation-shell.tsx:128
 msgid "în vigoare"
 msgstr ""
 
@@ -10996,7 +10997,7 @@ msgstr ""
 msgid "Legi, ordonanțe și hotărâri din Portal Legislativ, cu statutul lor și dovada publicării în Monitorul Oficial."
 msgstr ""
 
-#: src/features/legal/components/legislation-shell.tsx:91
+#: src/features/legal/components/legislation-shell.tsx:75
 msgid "Legislația"
 msgstr ""
 
@@ -11594,15 +11595,15 @@ msgstr ""
 msgid "Localități"
 msgstr ""
 
-#: src/features/procurement/components/procurement-map-view.tsx:571
+#: src/features/procurement/components/procurement-map-view.tsx:586
 msgid "Localities (UATs) are coloured by supplier registered-office totals under the current filters. Records without known supplier geography are excluded from the map — never shown as zero."
 msgstr "Localitățile (UAT-urile) sunt colorate după totalurile sediilor sociale ale furnizorilor, conform filtrelor curente. Înregistrările fără geografie cunoscută a furnizorului sunt excluse din hartă — nu sunt afișate niciodată ca zero."
 
-#: src/features/procurement/components/procurement-map-view.tsx:577
+#: src/features/procurement/components/procurement-map-view.tsx:592
 msgid "Localities (UATs) are coloured by their own totals under the current filters. Records without known buyer geography are excluded from the map — never shown as zero."
 msgstr "Localitățile (UAT-urile) sunt colorate după propriile totaluri, conform filtrelor curente. Înregistrările fără geografie cunoscută a cumpărătorului sunt excluse din hartă — nu sunt afișate niciodată ca zero."
 
-#: src/features/procurement/components/procurement-map-view.tsx:700
+#: src/features/procurement/components/procurement-map-view.tsx:715
 msgid "Locality (UAT) totals"
 msgstr "Totaluri pe localități (UAT)"
 
@@ -11908,8 +11909,8 @@ msgstr "Descriere hartă"
 msgid "Map description markdown editor"
 msgstr "Editor markdown pentru descrierea hărții"
 
-#: src/features/procurement/components/procurement-map-view.tsx:830
-#: src/features/procurement/components/procurement-map-view.tsx:835
+#: src/features/procurement/components/procurement-map-view.tsx:858
+#: src/features/procurement/components/procurement-map-view.tsx:863
 msgid "Map detail"
 msgstr "Detalii hartă"
 
@@ -12382,7 +12383,7 @@ msgstr ""
 msgid "modificări"
 msgstr ""
 
-#: src/features/legal/components/legislation-tab-nav.tsx:57
+#: src/features/legal/components/legislation-tab-nav.tsx:49
 #: src/features/procurement/lib/grain-labels.ts:11
 #: src/features/procurement/lib/grain-labels.ts:36
 msgid "Modificări"
@@ -12489,7 +12490,7 @@ msgstr "Monitorizează această instituție"
 #: src/features/entity-search/lib/doc-type-meta.ts:78
 #: src/features/legal/components/act-publication-band.tsx:69
 #: src/features/legal/components/act-timeline-band.tsx:75
-#: src/features/legal/components/legislation-tab-nav.tsx:58
+#: src/features/legal/components/legislation-tab-nav.tsx:50
 msgid "Monitorul Oficial"
 msgstr ""
 
@@ -13536,8 +13537,8 @@ msgstr "Nu există date de clasament pentru filtrele curente."
 msgid "No ranking data available."
 msgstr "Nu există date pentru clasament."
 
-#: src/features/procurement/components/procurement-map-view.tsx:446
-#: src/features/procurement/components/procurement-map-view.tsx:465
+#: src/features/procurement/components/procurement-map-view.tsx:448
+#: src/features/procurement/components/procurement-map-view.tsx:467
 msgid "No records in scope"
 msgstr "Nicio înregistrare în domeniul selectat"
 
@@ -15025,7 +15026,7 @@ msgstr ""
 #~ msgid "pagini neprecizate"
 #~ msgstr ""
 
-#: src/features/procurement/components/procurement-map-view.tsx:787
+#: src/features/procurement/components/procurement-map-view.tsx:815
 msgid "Paint by"
 msgstr "Colorează după"
 
@@ -15672,7 +15673,7 @@ msgstr ""
 msgid "Portal Legislativ"
 msgstr ""
 
-#: src/features/legal/components/legislation-shell.tsx:118
+#: src/features/legal/components/legislation-shell.tsx:102
 msgid "Portal Legislativ și Monitorul Oficial"
 msgstr ""
 
@@ -15887,7 +15888,7 @@ msgstr "Pasul anterior"
 msgid "Prezenta"
 msgstr ""
 
-#: src/features/legal/components/legislation-tab-nav.tsx:53
+#: src/features/legal/components/legislation-tab-nav.tsx:45
 #: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:105
 #: src/routes/justitie.index.tsx:291
 #: src/routes/justitie.instante.$courtId.tsx:131
@@ -16292,7 +16293,7 @@ msgstr "Locația instituției publice"
 #~ msgid "Public institution:"
 #~ msgstr ""
 
-#: src/features/procurement/components/procurement-map-view.tsx:793
+#: src/features/procurement/components/procurement-map-view.tsx:821
 msgid "Public institutions"
 msgstr "Instituții publice"
 
@@ -16773,6 +16774,10 @@ msgstr ""
 msgid "Rectification History (2020-2024)"
 msgstr "Istoric rectificări (2020-2024)"
 
+#: src/features/legal/components/legislation-header-visual.tsx:146
+msgid "Redă din nou efectul digital al imaginii"
+msgstr ""
+
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1514
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1515
 msgid "Redo"
@@ -16828,7 +16833,7 @@ msgstr ""
 #: src/features/procurement/components/procurement-hub-filter-sheet.tsx:486
 #: src/features/procurement/components/procurement-hub-filter-sheet.tsx:549
 #: src/features/procurement/components/procurement-hub-filter-sheet.tsx:577
-#: src/features/procurement/components/procurement-map-view.tsx:839
+#: src/features/procurement/components/procurement-map-view.tsx:867
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:324
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:353
 #: src/features/procurement/components/procurement-overview-filter-sheet.tsx:424
@@ -16861,7 +16866,7 @@ msgstr "Filtre regiuni"
 #~ msgid "Region record totals (Preview)"
 #~ msgstr "Totaluri pe regiune (Previzualizare)"
 
-#: src/features/procurement/components/procurement-map-view.tsx:702
+#: src/features/procurement/components/procurement-map-view.tsx:717
 msgid "Region totals"
 msgstr "Totaluri pe regiuni"
 
@@ -17463,7 +17468,7 @@ msgstr "Harta termică a cheltuielilor României - Transparenta.eu"
 msgid "Romanian"
 msgstr "Română"
 
-#: src/features/legal/components/legislation-shell.tsx:94
+#: src/features/legal/components/legislation-shell.tsx:78
 msgid "României"
 msgstr ""
 
@@ -18047,7 +18052,7 @@ msgstr ""
 msgid "Secțiuni întreprindere publică"
 msgstr ""
 
-#: src/features/legal/components/legislation-tab-nav.tsx:68
+#: src/features/legal/components/legislation-tab-nav.tsx:60
 msgid "Secțiuni Legislație"
 msgstr ""
 
@@ -19719,7 +19724,7 @@ msgstr "Furnizor: {0}"
 #~ msgid "suppliers"
 #~ msgstr ""
 
-#: src/features/procurement/components/procurement-map-view.tsx:797
+#: src/features/procurement/components/procurement-map-view.tsx:825
 #: src/features/procurement/components/procurement-rankings-view.tsx:125
 msgid "Suppliers"
 msgstr "Furnizori"
@@ -20548,7 +20553,7 @@ msgstr "Această pagină nu poate afișa momentan detaliile despre buget sau dez
 msgid "This population carries a validated CPV division only."
 msgstr "Această populație conține doar o diviziune CPV validată."
 
-#: src/features/procurement/components/procurement-map-view.tsx:812
+#: src/features/procurement/components/procurement-map-view.tsx:840
 msgid "This population has no supplier geography — the map paints buyer territories."
 msgstr "Această populație nu are date geografice despre furnizori — harta colorează teritoriile cumpărătorilor."
 
@@ -21241,7 +21246,7 @@ msgstr "Introduceți răspunsul..."
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:208
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3033
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:521
-#: src/features/procurement/components/procurement-map-view.tsx:841
+#: src/features/procurement/components/procurement-map-view.tsx:869
 #: src/features/statistics/components/territory-header.tsx:14
 #: src/lib/chart-filter-utils.ts:39
 msgid "UAT"

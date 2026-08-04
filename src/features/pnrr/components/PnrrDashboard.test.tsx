@@ -391,7 +391,7 @@ describe("PnrrDashboard", () => {
     ).toBeInTheDocument();
   });
 
-  it("explains legacy currency URLs instead of silently converting source values", () => {
+  it("discloses estimated conversion for non-RON currency", () => {
     vi.mocked(usePnrrWorkerModel).mockReturnValue({
       data: makeWorkerResult(),
       error: null,
@@ -413,7 +413,7 @@ describe("PnrrDashboard", () => {
 
     expect(
       screen.getByText(
-        /source currency preserved|moneda sursei este păstrată/i,
+        /estimated currency conversion|conversie valutară estimată/i,
       ),
     ).toBeInTheDocument();
   });

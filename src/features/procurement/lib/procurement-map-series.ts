@@ -127,6 +127,20 @@ export function buildUatHeatmap(
   return points
 }
 
+/**
+ * Fail closed at the client boundary: a UAT bucket is paintable/exportable only
+ * when its SIRUTA key exists in the exact polygon directory rendered by the map.
+ */
+export function filterUatHeatmapToPolygonDirectory(
+  points: readonly (HeatmapCountyDataPoint | HeatmapUATDataPoint)[],
+  polygonSirutaCodes: ReadonlySet<string>,
+): HeatmapUATDataPoint[] {
+  return points.filter(
+    (point): point is HeatmapUATDataPoint =>
+      'siruta_code' in point && polygonSirutaCodes.has(point.siruta_code),
+  )
+}
+
 /** County-grain paint: buckets keyed by county code map 1:1 onto polygons. */
 export function buildCountyHeatmap(
   geography: ProcurementGeographyOptions | undefined,
