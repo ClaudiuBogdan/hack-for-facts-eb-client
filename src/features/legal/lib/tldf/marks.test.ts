@@ -12,7 +12,7 @@ import type {
   TldfRun,
 } from './types'
 
-const fixtureDir = join(process.cwd(), 'tests/fixtures/legal-tldf')
+const fixtureDir = join(process.cwd(), 'src/features/legal/mocks/fixtures/tldf')
 
 interface RenderRowFixture {
   readonly chunk_index: number

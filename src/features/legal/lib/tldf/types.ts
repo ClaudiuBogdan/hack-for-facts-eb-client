@@ -5,8 +5,9 @@
  * spans are half-open [start, end) in UTF-16 code units — JavaScript's native
  * string indexing — so `text.slice(start, end)` is THE addressing operation.
  *
- * Pinned against the committed real artifacts in tests/fixtures/legal-tldf/
- * (byte-identical copies of the scrapper fixtures).
+ * Pinned against the committed real artifacts in
+ * src/features/legal/mocks/fixtures/tldf/ (byte-identical copies of the
+ * scrapper fixtures; the same files feed the mock render lane).
  */
 
 export type TldfSpan = readonly [number, number]
