@@ -151,6 +151,39 @@ describe('fetchParliamentCommitteesLive — reads the directory to completion', 
     warn.mockRestore()
   })
 
+  it('makes a stuck cursor TERMINAL — it is never handed back for a retry', async () => {
+    // The `followed` set only lives for one call. This function sits under a
+    // `useInfiniteQuery`, which REMEMBERS the cursor we return and re-supplies
+    // it on the next "load more" press: returning a known-stuck cursor makes
+    // every press append the same page again. Withholding the cursor makes
+    // `getNextPageParam` return undefined, so the hook stops offering more.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    graphqlQueryMock.mockResolvedValue({
+      parliamentCommittees: {
+        edges: [{ cursor: '1', node: node(0) }],
+        pageInfo: { hasNextPage: true, endCursor: 'stuck' },
+      },
+    })
+
+    const res = await fetchParliamentCommitteesLive({})
+
+    expect(res.endCursor).toBeUndefined()
+    // The same predicate the hook applies (`hasNextPage && endCursor`).
+    expect(res.hasNextPage && res.endCursor).toBeFalsy()
+    warn.mockRestore()
+  })
+
+  it('KEEPS the cursor when it stops at the cap — there, continuing is right', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    servePages(5000, 100)
+
+    const res = await fetchParliamentCommitteesLive({})
+
+    expect(res.hasNextPage).toBe(true)
+    expect(res.endCursor).toBe('1200')
+    warn.mockRestore()
+  })
+
   it('lets a mid-directory failure surface instead of serving a silent prefix', async () => {
     let call = 0
     graphqlQueryMock.mockImplementation(() => {

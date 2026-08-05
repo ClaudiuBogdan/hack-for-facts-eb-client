@@ -947,15 +947,21 @@ export async function fetchParliamentCommitteesLive(params: {
   let page = await fetchCommitteesPage(params)
   const committees = [...page.committees]
   // A cursor that does not ADVANCE re-serves the same rows forever. Following it
-  // would append the same page up to the cap and, worse, let repeated "load
-  // more" presses grow the list without bound. Each cursor is followed once.
+  // would append the same page up to the cap. Each cursor is followed once.
   const followed = new Set<string>()
+  // ...and the set lives only for THIS call, so stopping is not enough: this
+  // function sits under a `useInfiniteQuery`, which stores the cursor we return
+  // and re-supplies it on the next "load more". Handing a known-stuck cursor
+  // back means every press appends the same page again (observed: page params
+  // [undefined, 'stuck', 'stuck']). A stuck cursor is therefore TERMINAL.
+  let stalled = false
 
   for (let drawn = 1; page.hasNextPage && page.endCursor; drawn += 1) {
     if (followed.has(page.endCursor)) {
       console.warn(
         `[parliament] committee browse stopped: cursor did not advance after ${committees.length} rows.`,
       )
+      stalled = true
       break
     }
     if (drawn >= COMMITTEES_MAX_PAGES) {
@@ -980,7 +986,11 @@ export async function fetchParliamentCommitteesLive(params: {
   return {
     committees,
     hasNextPage: page.hasNextPage,
-    ...(page.endCursor ? { endCursor: page.endCursor } : {}),
+    // Withholding the cursor is what makes a stall terminal: `getNextPageParam`
+    // returns undefined, so the hook stops offering "load more" rather than
+    // replaying the stuck cursor. The CAP path deliberately keeps its cursor —
+    // there, continuing is exactly the right thing to offer.
+    ...(page.endCursor && !stalled ? { endCursor: page.endCursor } : {}),
   }
 }
 
