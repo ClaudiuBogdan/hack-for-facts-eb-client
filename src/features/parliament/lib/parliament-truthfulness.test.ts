@@ -479,13 +479,42 @@ describe("who initiated a bill has ONE producer, and it is the evidence", () => 
   });
 
   it("still reads `ordonanta` from the text when there is no classification", () => {
-    // The branch is not dead: it remains the only signal for a bill the server
-    // has not classified. No live bill is in that position today, which is why
-    // this is a fixture rather than a measured population.
     const bill = mapBillSummary(
       billRaw({ billType: "Ordonanţă de urgenţă nr. 21/2012" }),
     );
     expect(bill.billType).toBe("ordonanta");
+  });
+
+  it("keeps `ordonanta` for a REAL ordinance even though the server calls it government", () => {
+    // senat:195-1995, verbatim — the ONE bill in all 41,990 whose title leads
+    // with the ordinance form. Its initiators list makes the server say
+    // `government`, which is true but less specific: an OUG is a government act
+    // AND an ordinance, and only one of those two answers "what is this".
+    //
+    // This is the case an earlier version of this change got wrong in the
+    // opposite direction: removing the carve-out outright relabelled it
+    // "Proiect al Guvernului".
+    const bill = mapBillSummary(
+      billRaw({
+        title:
+          "Ordonanţa de urgenţă a Guvernului nr. 3/1995 privind modificarea prevederilor art.4 din Legea nr.12/1990",
+        initiatorType: "government",
+      }),
+    );
+    expect(bill.billType).toBe("ordonanta");
+  });
+
+  it("does not let a MENTION of an ordinance anywhere in the title claim the type", () => {
+    // The anchoring, stated as a rule rather than as one example: 120 of the
+    // 121 bills the old `includes` caught merely amend or approve an ordinance.
+    const bill = mapBillSummary(
+      billRaw({
+        title:
+          "Lege privind respingerea Ordonanţei de urgenţă a Guvernului nr. 50/2010",
+        initiatorType: "parliamentary",
+      }),
+    );
+    expect(bill.billType).toBe("parlamentar");
   });
 
   it("leaves the text rule untouched on the 22,706 bills with no classification", () => {
@@ -589,6 +618,49 @@ describe("bill source facts are carried without being asserted", () => {
     expect(
       mapBillDetail(billRaw({ cdepProjectUrl: "http://" })).sourceLinks,
     ).toEqual([]);
+  });
+
+  it("drops a bill DOCUMENT whose URL would fail the schema, not the page", () => {
+    // Same hole as the source links had, one field over: the documents filter
+    // was a bare prefix test, so "http://" survived it and then threw inside
+    // ParliamentBillDetailSchema.parse — blanking the bill page over one link.
+    const detail = mapBillDetail(
+      billRaw({
+        documents: [
+          { url: "http://", label: "Broken", kind: null, position: 1 },
+          {
+            url: "https://www.cdep.ro/em.pdf",
+            label: "Expunere de motive",
+            kind: "pdf",
+            position: 2,
+          },
+        ],
+      }),
+    );
+    expect(detail.documents.map((d) => d.url)).toEqual([
+      "https://www.cdep.ro/em.pdf",
+    ]);
+  });
+
+  it("never lets an unparseable lastEventDate reach the date formatter", () => {
+    // `lastUpdatedAt` is REQUIRED and is formatted on every card, so a junk
+    // value here took down the whole bills LIST, not one row. It now degrades
+    // to the same Jan-1 fallback a genuinely date-less bill already gets.
+    const summary = mapBillSummary({
+      billKey: "1",
+      plxNumber: null,
+      plxYear: 2012,
+      senateNumber: null,
+      senateYear: null,
+      title: "T",
+      finalLawNumber: null,
+      finalLawYear: null,
+      statusText: null,
+      billType: null,
+      lastEventDate: "x",
+    });
+    expect(Number.isNaN(new Date(summary.lastUpdatedAt).getTime())).toBe(false);
+    expect(summary.lastUpdatedAt).toContain("2012-01-01");
   });
 
   it("drops a date it cannot parse instead of crashing the renderer", () => {

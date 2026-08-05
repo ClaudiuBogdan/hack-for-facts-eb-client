@@ -745,11 +745,15 @@ function classifyBillTypeFromText(
     return "parlamentar";
   }
   if (t.startsWith("proiect de lege")) return "guvern";
+  // ANCHORED to the leading form: the act IS an ordinance, as opposed to a law
+  // that merely mentions one. This used to be an `includes`, which matched any
+  // bill AMENDING or APPROVING an ordinance — 120 of the 121 rows it caught in
+  // the live corpus — and labelled each of them "Ordonanță de urgență".
   if (
-    t.includes("ordonanţ") ||
-    t.includes("ordonant") ||
-    t.includes("o.u.g") ||
-    t.includes("oug")
+    t.startsWith("ordonanţ") ||
+    t.startsWith("ordonant") ||
+    t.startsWith("o.u.g") ||
+    t.startsWith("oug")
   ) {
     return "ordonanta";
   }
@@ -781,24 +785,37 @@ function classifyBillTypeFromText(
  * "Initiator: Guvern" for senat:372-2001 (it said parlamentar). The evidence
  * wins in both directions.
  *
- * NO `ordonanta` carve-out. There was one, on the reasoning that an OUG is a
- * government act either way — but that reasoning does not survive the data.
- * Every one of the 121 bills reaching that branch is titled "Lege pentru
- * aprobarea Ordonanţei Guvernului nr. X": a LAW APPROVING an ordinance, not an
- * ordinance. The branch fires on the substring "ordonanţ" anywhere in the
- * title, so it was labelling all 121 "Ordonanță de urgență" — a false statement
- * about what the act IS, which the server's classification corrects to
- * `guvern`. (The branch stays for bills with no classification, where it is the
- * only signal; today no live bill is in that position.)
+ * THE `ordonanta` CARVE-OUT, and why it is narrow rather than absent. The
+ * question is whether the act IS an ordinance or is a LAW ABOUT one, and the
+ * text rule could not tell the difference: it fired on "ordonanţ" appearing
+ * ANYWHERE, so a bill titled "Lege pentru aprobarea Ordonanţei Guvernului nr.
+ * X" was labelled "Ordonanță de urgență". Measured over all 41,990 bills, 121
+ * reach that branch and only ONE — senat:195-1995, "Ordonanţa de urgenţă a
+ * Guvernului nr. 3/1995…", confirmed on senat.ro — actually leads with the
+ * ordinance form. The other 120 are laws.
+ *
+ * So the branch is ANCHORED to the leading form (see
+ * `classifyBillTypeFromText`), and the carve-out applies only to what survives
+ * it. A genuine ordinance keeps `ordonanta`, which the server's two-value
+ * classification cannot express; the 120 laws take the server's answer.
+ *
+ * I got this wrong twice before landing here, in both directions, and each time
+ * by generalising from a handful of rows ordered by key instead of classifying
+ * the whole population. The counts above are the whole population.
  *
  * Bills with no server classification (22,706) keep the text rule unchanged.
  */
 function classifyBillType(
   raw: Pick<RawParliamentBillSummary, "billType" | "title" | "initiatorType">,
 ): BillType {
+  const fromText = classifyBillTypeFromText(raw.billType, raw.title);
+  // Only reachable now for a title that LEADS with the ordinance form, i.e. one
+  // bill in the live corpus. "More specific and true" beats "less specific and
+  // also true": an OUG is a government act, but saying so loses what it is.
+  if (fromText === "ordonanta") return fromText;
   if (raw.initiatorType === "government") return "guvern";
   if (raw.initiatorType === "parliamentary") return "parlamentar";
-  return classifyBillTypeFromText(raw.billType, raw.title);
+  return fromText;
 }
 
 /**
@@ -906,9 +923,15 @@ export function mapBillSummary(
   // every card fell back to "1 ian. <year>"). Detail pages also have the events
   // array; either source works. Only a genuinely date-less bill falls back to
   // Jan-1 of its year.
+  // `renderableDate`, not `toIsoDate`: this value is REQUIRED and goes straight
+  // to `formatBillDate` on the card, the hero and the detail. `toIsoDate` passes
+  // through what it does not recognise, so an unparseable source value used to
+  // reach the formatter and raise `RangeError: Invalid time value` mid-render —
+  // taking down the whole bills LIST, not one card. An unusable date now falls
+  // through to the same Jan-1 fallback a date-less bill already gets.
   const lastUpdatedAt =
-    toIsoDate(raw.lastEventDate, "") ||
-    (events && events.length > 0 ? latestEventDate(events) : null) ||
+    renderableDate(raw.lastEventDate) ??
+    (events && events.length > 0 ? latestEventDate(events) : null) ??
     `${billYear(raw)}-01-01T00:00:00+03:00`;
 
   return ParliamentBillSummarySchema.parse({
@@ -940,9 +963,10 @@ function latestEventDate(
   for (const e of events) {
     if (e.eventDate && (!max || e.eventDate > max)) max = e.eventDate;
   }
-  return max
-    ? toIsoDate(max, `${new Date().getFullYear()}-01-01T00:00:00+03:00`)
-    : null;
+  // Guarded for the same reason as `lastUpdatedAt`: this feeds a formatter, and
+  // an event date the source wrote in an unexpected shape must degrade to "we
+  // do not have one" rather than throw during render.
+  return max ? (renderableDate(max) ?? null) : null;
 }
 
 export function mapBillRelatedVotes(
@@ -1212,12 +1236,24 @@ export function mapBillDetail(
     // and a 2023 promulgation text both claimed the same 2023 publication date.
     // The date is optional now and the UI omits it.
     documents: raw.documents
-      .filter((d) => /^https?:\/\//i.test(d.url))
-      .map((d, i) => ({
-        documentId: `${d.sourceBillKey ?? raw.billKey}-doc-${d.position ?? i}`,
-        label: d.label ?? d.kind?.toUpperCase() ?? "Document",
-        url: d.url,
-      })),
+      // `absoluteUrl`, not a bare prefix test: the literal "http://" passes a
+      // startsWith check and then fails the schema's `.url()` INSIDE
+      // `ParliamentBillDetailSchema.parse`, which throws and blanks the whole
+      // bill page — the exact opposite of the "one malformed link must not fail
+      // the page" rule this filter exists to implement. (All 296,746 live
+      // document URLs are well-formed today; this is defence, not a repair.)
+      .flatMap((d, i) => {
+        const url = absoluteUrl(d.url);
+        return url
+          ? [
+              {
+                documentId: `${d.sourceBillKey ?? raw.billKey}-doc-${d.position ?? i}`,
+                label: d.label ?? d.kind?.toUpperCase() ?? "Document",
+                url,
+              },
+            ]
+          : [];
+      }),
     timeline,
     ...(lawMilestone ? { lawMilestone } : {}),
     relatedVotes: mapBillRelatedVotes(raw),
