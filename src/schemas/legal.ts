@@ -297,6 +297,20 @@ export const legalActDetailSchema = z.object({
 })
 export type LegalActDetail = z.infer<typeof legalActDetailSchema>
 
+/**
+ * Reader route search params (`/legislation/acts/$actId/text`).
+ *  - `doc` — read a specific (non-canonical) expression instead of the act's
+ *    canonical document.
+ *  - `nod` — a `document_nodes` PATH deep link (never a node id: ids are
+ *    recompile-scoped). A search param, not a hash, so the SSR loader can
+ *    target the chunk containing it on giant documents.
+ */
+export const legalReaderSearchSchema = z.object({
+  doc: z.string().min(1).optional(),
+  nod: z.string().min(1).optional(),
+})
+export type LegalReaderSearch = z.infer<typeof legalReaderSearchSchema>
+
 /** The composed payload behind the `/legislation` overview tab. */
 export const legislationOverviewSchema = z.object({
   counts: legalActCountsSchema,

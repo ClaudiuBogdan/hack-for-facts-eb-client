@@ -151,6 +151,7 @@ import { Route as AdminCampaignsCampaignKeyUsersRouteImport } from './routes/adm
 import { Route as ApiPnrrRawIndicatorsRouteImport } from './routes/api/pnrr/raw/indicators'
 import { Route as ApiPnrrRawPaymentsRouteImport } from './routes/api/pnrr/raw/payments'
 import { Route as ApiPnrrRawProjectsRouteImport } from './routes/api/pnrr/raw/projects'
+import { Route as LegislationActsActIdTextRouteImport } from './routes/legislation/acts/$actId_.text'
 import { Route as MapsDatasetsPublicPublicIdRouteImport } from './routes/maps/datasets/public/$publicId'
 import { Route as ParlamentMembriMemberIdIndexRouteImport } from './routes/parlament/membri/$memberId/index'
 import { Route as ParlamentMembriMemberIdAlegeriRouteImport } from './routes/parlament/membri/$memberId/alegeri'
@@ -1130,6 +1131,14 @@ const ApiPnrrRawProjectsRoute = ApiPnrrRawProjectsRouteImport.update({
   path: '/api/pnrr/raw/projects',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegislationActsActIdTextRoute =
+  LegislationActsActIdTextRouteImport.update({
+    id: '/legislation/acts/$actId_/text',
+    path: '/legislation/acts/$actId/text',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/legislation/acts/$actId_.text.lazy').then((d) => d.Route),
+  )
 const MapsDatasetsPublicPublicIdRoute =
   MapsDatasetsPublicPublicIdRouteImport.update({
     id: '/maps/datasets/public/$publicId',
@@ -1522,6 +1531,7 @@ export interface FileRoutesByFullPath {
   '/api/pnrr/raw/indicators': typeof ApiPnrrRawIndicatorsRoute
   '/api/pnrr/raw/payments': typeof ApiPnrrRawPaymentsRoute
   '/api/pnrr/raw/projects': typeof ApiPnrrRawProjectsRoute
+  '/legislation/acts/$actId/text': typeof LegislationActsActIdTextRoute
   '/maps/datasets/public/$publicId': typeof MapsDatasetsPublicPublicIdRoute
   '/parlament/membri/$memberId/alegeri': typeof ParlamentMembriMemberIdAlegeriRoute
   '/parlament/membri/$memberId/contact': typeof ParlamentMembriMemberIdContactRoute
@@ -1680,6 +1690,7 @@ export interface FileRoutesByTo {
   '/api/pnrr/raw/indicators': typeof ApiPnrrRawIndicatorsRoute
   '/api/pnrr/raw/payments': typeof ApiPnrrRawPaymentsRoute
   '/api/pnrr/raw/projects': typeof ApiPnrrRawProjectsRoute
+  '/legislation/acts/$actId/text': typeof LegislationActsActIdTextRoute
   '/maps/datasets/public/$publicId': typeof MapsDatasetsPublicPublicIdRoute
   '/parlament/membri/$memberId/alegeri': typeof ParlamentMembriMemberIdAlegeriRoute
   '/parlament/membri/$memberId/contact': typeof ParlamentMembriMemberIdContactRoute
@@ -1854,6 +1865,7 @@ export interface FileRoutesById {
   '/api/pnrr/raw/indicators': typeof ApiPnrrRawIndicatorsRoute
   '/api/pnrr/raw/payments': typeof ApiPnrrRawPaymentsRoute
   '/api/pnrr/raw/projects': typeof ApiPnrrRawProjectsRoute
+  '/legislation/acts/$actId_/text': typeof LegislationActsActIdTextRoute
   '/maps/datasets/public/$publicId': typeof MapsDatasetsPublicPublicIdRoute
   '/parlament/membri/$memberId/alegeri': typeof ParlamentMembriMemberIdAlegeriRoute
   '/parlament/membri/$memberId/contact': typeof ParlamentMembriMemberIdContactRoute
@@ -2029,6 +2041,7 @@ export interface FileRouteTypes {
     | '/api/pnrr/raw/indicators'
     | '/api/pnrr/raw/payments'
     | '/api/pnrr/raw/projects'
+    | '/legislation/acts/$actId/text'
     | '/maps/datasets/public/$publicId'
     | '/parlament/membri/$memberId/alegeri'
     | '/parlament/membri/$memberId/contact'
@@ -2187,6 +2200,7 @@ export interface FileRouteTypes {
     | '/api/pnrr/raw/indicators'
     | '/api/pnrr/raw/payments'
     | '/api/pnrr/raw/projects'
+    | '/legislation/acts/$actId/text'
     | '/maps/datasets/public/$publicId'
     | '/parlament/membri/$memberId/alegeri'
     | '/parlament/membri/$memberId/contact'
@@ -2360,6 +2374,7 @@ export interface FileRouteTypes {
     | '/api/pnrr/raw/indicators'
     | '/api/pnrr/raw/payments'
     | '/api/pnrr/raw/projects'
+    | '/legislation/acts/$actId_/text'
     | '/maps/datasets/public/$publicId'
     | '/parlament/membri/$memberId/alegeri'
     | '/parlament/membri/$memberId/contact'
@@ -2484,6 +2499,7 @@ export interface RootRouteChildren {
   ApiPnrrRawIndicatorsRoute: typeof ApiPnrrRawIndicatorsRoute
   ApiPnrrRawPaymentsRoute: typeof ApiPnrrRawPaymentsRoute
   ApiPnrrRawProjectsRoute: typeof ApiPnrrRawProjectsRoute
+  LegislationActsActIdTextRoute: typeof LegislationActsActIdTextRoute
   MapsDatasetsPublicPublicIdRoute: typeof MapsDatasetsPublicPublicIdRoute
   ParlamentStenogrameSedinteSessionKeyRoute: typeof ParlamentStenogrameSedinteSessionKeyRoute
   ParlamentVoturiChamberVoteIdRoute: typeof ParlamentVoturiChamberVoteIdRoute
@@ -3506,6 +3522,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPnrrRawProjectsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legislation/acts/$actId_/text': {
+      id: '/legislation/acts/$actId_/text'
+      path: '/legislation/acts/$actId/text'
+      fullPath: '/legislation/acts/$actId/text'
+      preLoaderRoute: typeof LegislationActsActIdTextRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/maps/datasets/public/$publicId': {
       id: '/maps/datasets/public/$publicId'
       path: '/maps/datasets/public/$publicId'
@@ -4179,6 +4202,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPnrrRawIndicatorsRoute: ApiPnrrRawIndicatorsRoute,
   ApiPnrrRawPaymentsRoute: ApiPnrrRawPaymentsRoute,
   ApiPnrrRawProjectsRoute: ApiPnrrRawProjectsRoute,
+  LegislationActsActIdTextRoute: LegislationActsActIdTextRoute,
   MapsDatasetsPublicPublicIdRoute: MapsDatasetsPublicPublicIdRoute,
   ParlamentStenogrameSedinteSessionKeyRoute:
     ParlamentStenogrameSedinteSessionKeyRoute,
