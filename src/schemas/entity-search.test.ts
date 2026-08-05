@@ -28,7 +28,11 @@ describe('parseEntitySearchParams', () => {
     expect(parseEntitySearchParams({})).toEqual({})
   })
 
-  it('treats any non-true active value as false rather than throwing', () => {
-    expect(parseEntitySearchParams({ active: 'nope' }).active).toBe(false)
+  it('parses an explicit false active flag', () => {
+    expect(parseEntitySearchParams({ active: 'false' }).active).toBe(false)
+  })
+
+  it('ignores an unrecognized active flag instead of narrowing to inactive', () => {
+    expect(parseEntitySearchParams({ active: 'nope' }).active).toBeUndefined()
   })
 })

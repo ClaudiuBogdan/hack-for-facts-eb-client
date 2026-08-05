@@ -7,7 +7,7 @@
       "facets": [
         { "field": "doc_type", "value": "company", "count": 4000000 },
         { "field": "doc_type", "value": "legal_act", "count": 312 },
-        { "field": "doc_type", "value": "procurement_contract", "count": 88 },
+        { "field": "doc_type", "value": "organization", "count": 88 },
         { "field": "doc_type", "value": "public_enterprise", "count": 5 }
       ],
       "hits": [
@@ -15,7 +15,7 @@
           "id": "company_2816464_x",
           "docType": "company",
           "title": "DEDEMAN SRL",
-          "snippet": null,
+          "snippet": "Comerț cu amănuntul materiale de construcții",
           "score": 0.98,
           "source": "meili",
           "docId": "company:2816464",
@@ -25,45 +25,51 @@
           "url": null,
           "rankBoost": 0.1,
           "cuis": ["2816464"],
-          "year": null
+          "identifiers": ["J04/2621/1992", "2816464"],
+          "roles": ["company"],
+          "isActive": false
         },
         {
           "id": "legal_act_doc_1_x",
           "docType": "legal_act",
           "title": "Legea 1/2017 privind achizițiile",
-          "snippet": null,
+          "snippet": "Monitorul Oficial",
           "score": 0.81,
           "source": "meili",
-          "docId": "legal_act:doc:1",
+          "docId": "1",
           "docKey": "doc:1",
           "subtitle": "Monitorul Oficial",
           "countyName": null,
           "url": "https://legislatie.just.ro/Public/DetaliiDocument/1",
           "rankBoost": 0.2,
           "cuis": [],
-          "year": 2017
+          "identifiers": ["Legea 1/2017"],
+          "roles": ["legal_act"],
+          "isActive": true
         },
         {
-          "id": "pc_contract_5_x",
-          "docType": "procurement_contract",
-          "title": "Contract furnizare materiale Dedeman",
-          "snippet": null,
+          "id": "organization_4278337_x",
+          "docType": "organization",
+          "title": "MUNICIPIUL BACĂU",
+          "snippet": "Municipiu · beneficiar PNRR",
           "score": 0.72,
           "source": "meili",
-          "docId": "public-contracts:contract:5",
-          "docKey": "contract:5",
-          "subtitle": "Achiziție publică",
-          "countyName": "Cluj",
-          "url": "https://e-licitatie.ro/contract/5",
+          "docId": "organization:4278337",
+          "docKey": "4278337",
+          "subtitle": "Municipiu · beneficiar PNRR",
+          "countyName": "Bacău",
+          "url": null,
           "rankBoost": 0.0,
-          "cuis": [],
-          "year": 2023
+          "cuis": ["4278337"],
+          "identifiers": ["4278337"],
+          "roles": ["organization", "pnrr_entity"],
+          "isActive": true
         },
         {
           "id": "pe_10020943_x",
           "docType": "public_enterprise",
           "title": "REGIA AUTONOMĂ EXEMPLU",
-          "snippet": null,
+          "snippet": "Companie de stat",
           "score": 0.61,
           "source": "meili",
           "docId": "public_enterprise:core:10020943:2019",
@@ -73,7 +79,9 @@
           "url": null,
           "rankBoost": 0.0,
           "cuis": ["10020943"],
-          "year": 2019
+          "identifiers": ["10020943"],
+          "roles": ["organization", "public_enterprise"],
+          "isActive": true
         }
       ]
     }

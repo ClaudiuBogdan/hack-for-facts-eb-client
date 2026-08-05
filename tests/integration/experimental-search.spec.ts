@@ -46,20 +46,26 @@ test.describe('Experimental entity search — desktop', () => {
     await expect(listbox).toBeVisible({ timeout: 15000 })
     await expect(listbox.getByRole('option')).toHaveCount(4)
 
-    // company → internal /companies/$cui (by cuis[0])
-    await expect(page.locator('a[href="/companies/2816464"]')).toBeVisible()
+    // The ONRC identifier comes first in the fixture, proving routing uses the
+    // dedicated numeric cuis[] field rather than identifiers[].
+    await expect(listbox.locator('a[href="/companies/2816464"]')).toHaveCount(1)
     // public_enterprise → internal /intreprinderi-publice/$cui (by cuis[0])
-    await expect(page.locator('a[href="/intreprinderi-publice/10020943"]')).toBeVisible()
-    // legal_act remains an external Portal Legislativ link while procurement
-    // contracts use their internal detail route.
     await expect(
-      listbox.locator('a[href="https://legislatie.just.ro/Public/DetaliiDocument/1"]'),
+      listbox.locator('a[href="/intreprinderi-publice/10020943"]'),
     ).toHaveCount(1)
-    await expect(listbox.locator('a[href^="/procurement/contracts/"]')).toHaveCount(1)
-    await expect(listbox.locator('a[target="_blank"]')).toHaveCount(1)
+    // The identity-collapsed palette keeps organizations on the CUI spine and
+    // routes legal acts through the internal reader using the numeric act ID.
+    await expect(listbox.locator('a[href="/entities/4278337"]')).toHaveCount(1)
+    await expect(listbox.locator('a[href="/legislation/acts/1"]')).toHaveCount(1)
+    await expect(listbox.locator('a[target="_blank"]')).toHaveCount(0)
 
     // titles render as plain text
     await expect(page.getByText('DEDEMAN SRL')).toBeVisible()
+    await expect(listbox.getByText(/inactiv/i)).toHaveCount(1)
+    // Palette hits currently map snippet = subtitle; render the line once.
+    await expect(
+      listbox.getByText('Comerț cu amănuntul materiale de construcții'),
+    ).toHaveCount(1)
 
     await page.screenshot({ path: 'tmp/shots/desktop-results.png', fullPage: true })
   })
