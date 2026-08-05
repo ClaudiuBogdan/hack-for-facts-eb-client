@@ -143,7 +143,6 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
   const onList = state.view === 'list'
   // Territory availability comes from the ONE capability registry, so the
   // control's promise and the query builder's behaviour cannot diverge.
-  const buyerGeoOnList = isListCapabilityAvailable('buyer-geo', state.grain)
   const supplierGeoOnList = isListCapabilityAvailable('supplier-geo', state.grain)
 
   // The modifications population is counts-only — the value option must not
@@ -436,15 +435,6 @@ export function ProcurementHubFilterSheet({ open, onOpenChange, hub }: Props) {
                   <p className={procurementSectionLabelClassName}>
                     <Trans>Public Institution Location</Trans>
                   </p>
-                  {onList && !buyerGeoOnList ? (
-                    <p className="border-l-4 border-amber-500 pl-3 text-sm leading-6 text-[var(--pnrr-muted)]">
-                      <Trans>
-                        Contract modifications are not in the search index, so
-                        buyer location does not filter this record list. It
-                        still scopes the analytics views.
-                      </Trans>
-                    </p>
-                  ) : null}
 
                   <fieldset className="space-y-2">
                     <legend className="text-sm font-bold">

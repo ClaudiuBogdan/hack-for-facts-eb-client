@@ -78,7 +78,9 @@ describe('procurement overview period', () => {
       dateTo: '2024-12-31',
     })
     expect(getRecentCalendarYearQuickOptions(now)).toEqual([2026, 2025, 2024])
-    expect(getOlderCalendarYearOptions(now)).toEqual([2023, 2022, 2021, 2020])
+    expect(getOlderCalendarYearOptions(now)).toEqual([
+      2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016,
+    ])
     expect(resolveProcurementOverviewPeriod({}, now)).toEqual({
       dateFrom: '2025-01-01',
       dateTo: '2025-12-31',

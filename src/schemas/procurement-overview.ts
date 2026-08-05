@@ -159,8 +159,16 @@ export function getRecentCalendarYearQuickOptions(
   return [currentYear, currentYear - 1, currentYear - 2]
 }
 
-/** Oldest year offered in the period year dropdown. */
-export const PROCUREMENT_PERIOD_OLDEST_YEAR = 2020
+/**
+ * Oldest year offered in the period year dropdown.
+ *
+ * 2016 is where the served corpus becomes comparable and where the published
+ * IT-spend study starts; stopping at 2020 made a decade of held data
+ * unreachable from the UI while the API answered for it happily. Deriving
+ * this from the served `minMonth` is the better answer and the intended
+ * follow-up — a hard floor cannot know when the corpus grows backwards.
+ */
+export const PROCUREMENT_PERIOD_OLDEST_YEAR = 2016
 
 /**
  * Older calendar years for the dropdown — immediately after the three quick

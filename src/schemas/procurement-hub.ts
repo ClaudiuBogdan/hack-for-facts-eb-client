@@ -1292,8 +1292,6 @@ export const PROCUREMENT_HUB_CAPABILITIES: readonly HubCapability[] = [
     list: 'live',
     note: 'Region/county/UAT on aggregates (ClickHouse) and on the record list — served from the analysis fact row (modifications inherit their contract\'s), so it never needs the search index',
     keys: ['buyerRegion', 'buyerCounty', 'buyerSiruta'],
-    dropReason:
-      'contract modifications are not in the search index — territory does not filter this list',
   },
   {
     id: 'supplier-geo',
