@@ -98,11 +98,26 @@ describe('entityHref', () => {
       expect(entityHref(input({ docType: 'bill', docId: null }))).toBeNull()
     })
 
-    it('routes legal_act to its external url', () => {
+    it('routes legal_act to the internal act page off its docId (act_id)', () => {
       const result = entityHref(
         input({
           docType: 'legal_act',
-          docId: 'lege-227-2015',
+          docId: '66150',
+          url: 'https://legislatie.just.ro/Public/DetaliiDocument/1',
+        }),
+      )
+      expect(result).toEqual({
+        href: '/legislation/acts/66150',
+        isExternal: false,
+      })
+    })
+
+    it('falls back to the external url for legal_act without any internal id', () => {
+      const result = entityHref(
+        input({
+          docType: 'legal_act',
+          docId: null,
+          docKey: null,
           url: 'https://legislatie.just.ro/Public/DetaliiDocument/1',
         }),
       )
@@ -110,17 +125,6 @@ describe('entityHref', () => {
         href: 'https://legislatie.just.ro/Public/DetaliiDocument/1',
         isExternal: true,
       })
-    })
-
-    it('returns null for legal_act without an external url', () => {
-      const result = entityHref(
-        input({
-          docType: 'legal_act',
-          docId: null,
-          docKey: 'lege-100-2024',
-        }),
-      )
-      expect(result).toBeNull()
     })
 
     it('routes procurement contracts and procedures to internal detail pages', () => {
