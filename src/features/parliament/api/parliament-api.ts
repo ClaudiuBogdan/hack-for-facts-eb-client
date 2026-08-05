@@ -506,10 +506,14 @@ export async function fetchParliamentFreshness(): Promise<ParliamentDataFreshnes
     : fetchParliamentFreshnessLive()
 }
 
+/**
+ * Reads the committee directory whole (the live path follows the cursor to the
+ * end). No `first`: it used to name the result size and would now name the
+ * PER-PAGE size, so a caller asking for 20 would get up to 12 pages of them.
+ */
 export async function fetchParliamentCommittees(params: {
   chamber?: string
   legislature?: string
-  first?: number
   after?: string
 } = {}): Promise<{
   committees: ParliamentCommittee[]

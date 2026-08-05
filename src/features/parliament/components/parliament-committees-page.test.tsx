@@ -26,6 +26,7 @@ import { ParliamentCommitteesPage } from './parliament-committees-page'
 import {
   parseCommitteeBrowseSearch,
   toCommitteeQueryParams,
+  toSenateCommitteeQueryParams,
 } from '../lib/committee-browse-search'
 
 const committee: ParliamentCommittee = {
@@ -52,14 +53,23 @@ const page = (over: Record<string, unknown> = {}) => ({
 describe('committee browse URL state', () => {
   it('defaults to the CURRENT legislature (2024, not the 1990 first page)', () => {
     expect(toCommitteeQueryParams(parseCommitteeBrowseSearch({}))).toEqual({
+      chamber: 'camera_deputatilor',
       legislature: '2024',
     })
   })
 
   it('drops the legislature filter for "all"', () => {
     expect(toCommitteeQueryParams(parseCommitteeBrowseSearch({ legislatura: 'all' }))).toEqual(
-      {},
+      { chamber: 'camera_deputatilor' },
     )
+  })
+
+  it('binds Camera even for "toate" — the Senate is a SEPARATE read, not a second copy', () => {
+    // Unbound, this half returns both chambers and the Senate half then repeats
+    // all 191 of its rows: 848 committees rendered against 657 in the database.
+    const search = parseCommitteeBrowseSearch({ chamber: 'all', legislatura: 'all' })
+    expect(toCommitteeQueryParams(search)).toEqual({ chamber: 'camera_deputatilor' })
+    expect(toSenateCommitteeQueryParams(search)).toEqual({ chamber: 'senat' })
   })
 
   it('round-trips a chamber + legislature link', () => {
@@ -91,10 +101,12 @@ describe('ParliamentCommitteesPage', () => {
     )
   })
 
-  it('queries the CURRENT legislature by default', () => {
+  it('queries the CURRENT legislature by default, bound to Camera', () => {
     render(<ParliamentCommitteesPage search={{}} />)
     expect(useCommitteesMock).toHaveBeenCalledWith(
-      { legislature: '2024' },
+      // Camera is bound explicitly: this read is one HALF of the browse, and an
+      // unbound chamber returns Senate rows that the Senate read then repeats.
+      { chamber: 'camera_deputatilor', legislature: '2024' },
       expect.objectContaining({ enabled: true }),
     )
   })

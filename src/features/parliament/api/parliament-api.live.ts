@@ -858,12 +858,32 @@ export async function fetchParliamentFreshnessLive(): Promise<ParliamentDataFres
 
 // ── committees ────────────────────────────────────────────────────────────
 
-const DEFAULT_COMMITTEES_PAGE_SIZE = 60
+/** Server-side cap on `first` for `parliamentCommittees`. Asking for more is clamped. */
+const COMMITTEES_PAGE_SIZE = 100
 
-export async function fetchParliamentCommitteesLive(params: {
+/**
+ * Pages to draw before giving up and handing the cursor back to the caller.
+ * Each read is bound to ONE chamber, so the largest single draw is Camera's 466
+ * rows = 5 pages (Senate is 191 = 2); 12 leaves better than 2x headroom. NOT a
+ * silent cap: on exhaustion the partial set is returned WITH `hasNextPage`, so
+ * the page keeps its "load more" escape hatch instead of quietly presenting a
+ * prefix as the whole.
+ *
+ * Cost, measured 2026-08-05 rather than assumed: the whole directory is 360 KiB
+ * of JSON (~561 bytes/row) over 7 requests; the DEFAULT view (current
+ * legislature) is 227 rows over 3 requests. That is roughly double the old
+ * one-page read, and it is the price of a search box, a type filter and a set
+ * of counts that describe the whole directory instead of an arbitrary prefix.
+ *
+ * Two stop paths differ deliberately: a mid-directory FAILURE rejects (a partial
+ * directory presented as whole is the bug being fixed), while hitting the cap
+ * returns what it has plus the cursor to continue. Don't "harmonise" them.
+ */
+const COMMITTEES_MAX_PAGES = 12
+
+async function fetchCommitteesPage(params: {
   chamber?: string
   legislature?: string
-  first?: number
   after?: string
 }): Promise<{ committees: ParliamentCommittee[]; hasNextPage: boolean; endCursor?: string }> {
   const data = await graphqlQuery<unknown>(
@@ -871,7 +891,7 @@ export async function fetchParliamentCommitteesLive(params: {
     {
       ...(params.chamber ? { chamber: params.chamber } : {}),
       ...(params.legislature ? { legislature: params.legislature } : {}),
-      first: params.first ?? DEFAULT_COMMITTEES_PAGE_SIZE,
+      first: COMMITTEES_PAGE_SIZE,
       ...(params.after ? { after: params.after } : {}),
     },
     { operationName: 'parliamentCommittees' },
@@ -892,6 +912,75 @@ export async function fetchParliamentCommitteesLive(params: {
     committees: edges.map((e) => mapCommittee(e.node)),
     hasNextPage: pageInfo.hasNextPage,
     ...(pageInfo.endCursor ? { endCursor: pageInfo.endCursor } : {}),
+  }
+}
+
+/**
+ * Reads the committee directory to COMPLETION, not one page of it.
+ *
+ * The browse page's search box, type filter, grouping and counts all run over
+ * the rows in hand (`selectCommittees`), so a bounded first page silently
+ * bounded all four: with 191 Senate committees behind a 60-row page, searching
+ * "comunica" returned an older instance of a committee (#54) and not the current
+ * one (#172), which read as missing data. The corpus is 657 rows, so the whole
+ * set is the right unit to hold (see COMMITTEES_MAX_PAGES for the measured cost).
+ *
+ * A fifth thing the bounded read broke, and the one no reader could have caught:
+ * the server orders by BYTE order under a `C` collation while the client
+ * re-sorts with `localeCompare(…, 'ro')`. Re-sorting a byte-ordered PREFIX
+ * linguistically yields an order that looks Romanian and is simply wrong.
+ * Reading to completion is what makes the displayed ORDER correct, not just the
+ * search.
+ *
+ * Deliberately NOT a server-side `q`: a server `q` would fix one of those five
+ * and leave the type facet, the grouping, the counts and the order broken. (That
+ * `foldText` — NFD + strip combining marks — is what makes `ș` U+0219 and
+ * `ş` U+015F both match a typed `s` is true, and re-deriving it in SQL is a
+ * known way to lose half the corpus; but `unaccent` could be made to agree, so
+ * that argument alone would not settle it.)
+ */
+export async function fetchParliamentCommitteesLive(params: {
+  chamber?: string
+  legislature?: string
+  after?: string
+}): Promise<{ committees: ParliamentCommittee[]; hasNextPage: boolean; endCursor?: string }> {
+  let page = await fetchCommitteesPage(params)
+  const committees = [...page.committees]
+  // A cursor that does not ADVANCE re-serves the same rows forever. Following it
+  // would append the same page up to the cap and, worse, let repeated "load
+  // more" presses grow the list without bound. Each cursor is followed once.
+  const followed = new Set<string>()
+
+  for (let drawn = 1; page.hasNextPage && page.endCursor; drawn += 1) {
+    if (followed.has(page.endCursor)) {
+      console.warn(
+        `[parliament] committee browse stopped: cursor did not advance after ${committees.length} rows.`,
+      )
+      break
+    }
+    if (drawn >= COMMITTEES_MAX_PAGES) {
+      console.warn(
+        `[parliament] committee browse stopped at ${COMMITTEES_MAX_PAGES} pages (${committees.length} rows); more remain — filters and counts cover only these.`,
+      )
+      break
+    }
+    followed.add(page.endCursor)
+    // The filters ride along on EVERY page. Dropping them here would silently
+    // mix chambers into a result the caller asked to be chamber-bound.
+    page = await fetchCommitteesPage({ ...params, after: page.endCursor })
+    committees.push(...page.committees)
+  }
+
+  if (page.hasNextPage && !page.endCursor) {
+    console.warn(
+      `[parliament] committee browse stopped after ${committees.length} rows: the server reports more but returned no cursor.`,
+    )
+  }
+
+  return {
+    committees,
+    hasNextPage: page.hasNextPage,
+    ...(page.endCursor ? { endCursor: page.endCursor } : {}),
   }
 }
 

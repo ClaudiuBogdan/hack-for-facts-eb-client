@@ -460,28 +460,31 @@ function CommitteeDossier({
               .join(' · ')}
           </p>
 
-          {/* The Senate's activity counters are ABSENT, not zero — every one of
-              its committees reports 0 bills and 0 meetings while 31 of 36
-              Camera committees report otherwise. That is a capture boundary, so
-              we omit the two numbers rather than print zeros that would read as
-              a committee that never met. */}
+          {/* A Senate ZERO here is ambiguous — it can mean "no activity" or "we
+              have not linked it yet" — so a zero is omitted rather than printed
+              as a fact. A NON-zero is never ambiguous, so it is shown: suppressing
+              per chamber (the old rule) hid real counts, because Senate
+              committees do report bills and meetings. Camera prints both
+              unconditionally — its zero is a far better-founded floor (70% of
+              Camera committee documents carry a bill link, against 4% of the
+              Senate's), not a different KIND of number. */}
           <div className="mt-6 flex flex-wrap gap-x-10 gap-y-4">
             <StatBlock
               value={committee.members.length.toLocaleString('ro-RO')}
               label={committee.members.length === 1 ? 'membru' : 'membri'}
             />
-            {isSenate ? null : (
-              <>
-                <StatBlock
-                  value={committee.linkedBillsTotal.toLocaleString('ro-RO')}
-                  label="proiecte repartizate"
-                />
-                <StatBlock
-                  value={committee.meetingsCount.toLocaleString('ro-RO')}
-                  label="ședințe"
-                />
-              </>
-            )}
+            {!isSenate || committee.linkedBillsTotal > 0 ? (
+              <StatBlock
+                value={committee.linkedBillsTotal.toLocaleString('ro-RO')}
+                label="proiecte repartizate"
+              />
+            ) : null}
+            {!isSenate || committee.meetingsCount > 0 ? (
+              <StatBlock
+                value={committee.meetingsCount.toLocaleString('ro-RO')}
+                label="ședințe"
+              />
+            ) : null}
           </div>
         </div>
       </section>
@@ -552,13 +555,12 @@ function CommitteeDossier({
           ) : null}
         </section>
 
-        {isSenate ? (
-          <CommitteeNotice>
-            Pentru comisiile Senatului nu avem încă proiectele repartizate și
-            ședințele — sursa Camerei Deputaților publică aceste legături, sursa
-            Senatului nu. Lipsa lor nu înseamnă o comisie fără activitate.
-          </CommitteeNotice>
-        ) : committee.linkedBills.length > 0 ? (
+        {/* Render what the server SENT. This used to be `isSenate ? notice : …`,
+            which threw away every Senate committee's bills unread — the notice
+            fired on chamber alone, so a committee served with 24 linked bills and
+            2 meetings still rendered "we don't have them yet". The empty state is
+            a property of the payload, not of the chamber. */}
+        {committee.linkedBills.length > 0 ? (
           <section className="space-y-4">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className={committeeSectionTitleClassName}>Proiecte de lege</h2>
@@ -655,6 +657,27 @@ function CommitteeDossier({
               </CommitteeNotice>
             ) : null}
           </section>
+        ) : isSenate ? (
+          // Measured, not rounded up: 84 of 2,056 Senate committee documents
+          // carry a bill link (4%), against 29,967 of 42,570 for Camera (70%).
+          // "Doar parțial" would flatten a 17x difference into a phrase that
+          // reads as "most of it is there".
+          <CommitteeNotice>
+            Pentru această comisie nu avem încă proiectele repartizate. Am colectat
+            documentele comisiilor Senatului, dar deocamdată doar o mică parte
+            dintre ele (sub 5%) sunt legate de un proiect de lege. Absența listei nu
+            înseamnă o comisie fără activitate.
+          </CommitteeNotice>
+        ) : null}
+
+        {/* The meetings figure is suppressed for a Senate zero (see the hero),
+            which would otherwise leave a committee showing bills but silently
+            no meetings — the same absent-vs-zero ambiguity this page just
+            removed for bills. Say which one it is. */}
+        {isSenate && committee.meetingsCount === 0 ? (
+          <CommitteeNotice>
+            Numărul de ședințe pentru această comisie nu este încă disponibil.
+          </CommitteeNotice>
         ) : null}
 
         {/* Provenance at the foot, where a citation belongs. */}

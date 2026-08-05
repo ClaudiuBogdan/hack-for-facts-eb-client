@@ -94,9 +94,11 @@ export function parseCommitteeBrowseSearch(
  *
  * `parliamentCommittees` takes only `chamber` and `legislature` — there is no
  * type facet and no text search on the server, so `tip` and `q` are applied to
- * the fetched slice instead (see `selectCommittees`). That is sound only
- * because a chamber+legislature slice is at most ~45 rows and arrives whole;
- * filtering a partially-fetched list would describe a set the reader cannot see.
+ * the fetched slice instead (see `selectCommittees`). That is sound ONLY because
+ * the slice arrives whole: `fetchParliamentCommitteesLive` reads the directory
+ * to completion (657 rows platform-wide). It was not sound while the read
+ * stopped at one page — filtering a partial list described a set the reader
+ * could not see, and the Senate committee at #172 of 191 was unfindable.
  */
 export function toCommitteeQueryParams(
   search: ParliamentCommitteeBrowseSearch,
@@ -104,7 +106,14 @@ export function toCommitteeQueryParams(
   const chamber = search.chamber ?? 'all'
   const legislatura = search.legislatura ?? DEFAULT_COMMITTEE_LEGISLATURE
   return {
-    ...(chamber === 'all' ? {} : { chamber }),
+    // This is the CAMERA half of a two-read browse — the Senate is always
+    // fetched separately (see `toSenateCommitteeQueryParams`). "Toate" must
+    // therefore still bind Camera here: leaving the chamber unbound asked for
+    // BOTH chambers and the Senate rows then arrived twice. That stayed hidden
+    // while only the first page was read (Camera keys sort ahead of Senate
+    // ones, so the prefix held no Senate rows); reading the directory whole
+    // surfaced it as 848 committees against 657 in the database.
+    ...(chamber === 'all' ? { chamber: 'camera_deputatilor' } : { chamber }),
     ...(legislatura === 'all' ? {} : { legislature: legislatura }),
   }
 }

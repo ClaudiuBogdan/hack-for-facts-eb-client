@@ -83,3 +83,118 @@ describe('ParliamentCommitteeDetailPage roster (codex MAJOR: no fabricated names
     ).not.toBeInTheDocument()
   })
 })
+
+/**
+ * The empty state is a property of the PAYLOAD, not of the chamber.
+ *
+ * This page used to branch `isSenate ? <notice> : <bills>`, so every Senate
+ * committee rendered "we don't have the bills yet" no matter what the server
+ * sent. On live data that hid real rows: `senate:1d044a32-…` is served with
+ * 24 linked bills and 2 meetings and still showed the notice.
+ */
+const senateBill = {
+  billId: 'senat:123',
+  number: 'L123/2026',
+  title: 'Lege privind comunicațiile electronice',
+  billType: 'parlamentar' as const,
+  originatingChamber: 'senat' as const,
+  currentLocation: 'senat' as const,
+  currentStageLabel: 'La comisie',
+  lastUpdatedAt: '2026-06-01',
+  legislatureId: '2024',
+}
+
+const senateDetail: ParliamentCommitteeDetail = {
+  ...detail,
+  committeeKey: 'senate:1d044a32-1bad-4adf-925e-0abab63af58a',
+  chamber: 'senat',
+  name: 'Comisia pentru drepturile omului',
+  // Every Senate committee carries no legislature — 191/191 on live data.
+  legislature: undefined,
+  sourceUrl: 'https://www.senat.ro/EnumComisii.aspx?Permanenta=1',
+  linkedBills: [senateBill],
+  linkedBillsTotal: 24,
+  meetingsCount: 2,
+}
+
+const SENATE_EMPTY_NOTICE = /Pentru această comisie nu avem încă proiectele repartizate/
+
+describe('ParliamentCommitteeDetailPage — Senate activity is served, not assumed absent', () => {
+  beforeEach(() => {
+    useCommitteeMock.mockReset()
+  })
+
+  it('renders a Senate committee’s linked bills instead of the "not published" notice', () => {
+    useCommitteeMock.mockReturnValue({ data: senateDetail, isLoading: false })
+    render(<ParliamentCommitteeDetailPage committeeKey={senateDetail.committeeKey} />)
+
+    expect(screen.getByText('Proiecte de lege')).toBeInTheDocument()
+    expect(screen.getByText(senateBill.title)).toBeInTheDocument()
+    expect(screen.queryByText(SENATE_EMPTY_NOTICE)).not.toBeInTheDocument()
+  })
+
+  it('shows the Senate counters when they are non-zero (a zero stays omitted)', () => {
+    useCommitteeMock.mockReturnValue({ data: senateDetail, isLoading: false })
+    render(<ParliamentCommitteeDetailPage committeeKey={senateDetail.committeeKey} />)
+
+    expect(screen.getByText('proiecte repartizate')).toBeInTheDocument()
+    expect(screen.getByText('ședințe')).toBeInTheDocument()
+  })
+
+  it('omits an AMBIGUOUS Senate zero rather than printing "0 ședințe" as a fact', () => {
+    useCommitteeMock.mockReturnValue({
+      data: { ...senateDetail, linkedBills: [], linkedBillsTotal: 0, meetingsCount: 0 },
+      isLoading: false,
+    })
+    render(<ParliamentCommitteeDetailPage committeeKey={senateDetail.committeeKey} />)
+
+    expect(screen.queryByText('proiecte repartizate')).not.toBeInTheDocument()
+    expect(screen.queryByText('ședințe')).not.toBeInTheDocument()
+    expect(screen.getByText(SENATE_EMPTY_NOTICE)).toBeInTheDocument()
+  })
+
+  it('names the missing meetings figure when a Senate committee HAS bills but no meetings', () => {
+    // Otherwise the page shows bills, silently omits the meetings figure, and
+    // says nothing — the absent-vs-zero ambiguity this change set out to remove.
+    useCommitteeMock.mockReturnValue({
+      data: { ...senateDetail, meetingsCount: 0 },
+      isLoading: false,
+    })
+    render(<ParliamentCommitteeDetailPage committeeKey={senateDetail.committeeKey} />)
+
+    expect(screen.getByText(senateBill.title)).toBeInTheDocument()
+    expect(screen.queryByText('ședințe')).not.toBeInTheDocument()
+    expect(
+      screen.getByText('Numărul de ședințe pentru această comisie nu este încă disponibil.'),
+    ).toBeInTheDocument()
+  })
+
+  it('renders the bills section for a CAMERA committee too (the restructured branch)', () => {
+    useCommitteeMock.mockReturnValue({
+      data: { ...detail, linkedBills: [senateBill], linkedBillsTotal: 3 },
+      isLoading: false,
+    })
+    render(<ParliamentCommitteeDetailPage committeeKey={detail.committeeKey} />)
+
+    expect(screen.getByText('Proiecte de lege')).toBeInTheDocument()
+    expect(screen.getByText(senateBill.title)).toBeInTheDocument()
+    // No Senate-only notice may leak onto a Camera page.
+    expect(screen.queryByText(SENATE_EMPTY_NOTICE)).not.toBeInTheDocument()
+    expect(
+      screen.queryByText('Numărul de ședințe pentru această comisie nu este încă disponibil.'),
+    ).not.toBeInTheDocument()
+  })
+
+  it('still prints a Camera zero — there a zero is a better-founded floor', () => {
+    useCommitteeMock.mockReturnValue({
+      data: { ...detail, linkedBills: [], linkedBillsTotal: 0, meetingsCount: 0 },
+      isLoading: false,
+    })
+    render(<ParliamentCommitteeDetailPage committeeKey={detail.committeeKey} />)
+
+    expect(screen.getByText('proiecte repartizate')).toBeInTheDocument()
+    expect(screen.getByText('ședințe')).toBeInTheDocument()
+    // The Senate-only explanation must never appear on a Camera committee.
+    expect(screen.queryByText(SENATE_EMPTY_NOTICE)).not.toBeInTheDocument()
+  })
+})
