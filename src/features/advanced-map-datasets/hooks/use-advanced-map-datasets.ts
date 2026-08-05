@@ -88,19 +88,11 @@ export function useAdvancedMapDatasetsOwnerListQuery(
   });
 }
 
-export function useAdvancedMapDatasetsQuery(input?: { limit?: number; offset?: number }, enabled = true) {
-  return useAdvancedMapDatasetsOwnerListQuery(input, enabled);
-}
-
 export function useAdvancedMapDatasetOwnerDetailQuery(datasetId: string, enabled = true) {
   return useQuery({
     ...advancedMapDatasetOwnerDetailQueryOptions(datasetId),
     enabled,
   });
-}
-
-export function useAdvancedMapDatasetQuery(datasetId: string, enabled = true) {
-  return useAdvancedMapDatasetOwnerDetailQuery(datasetId, enabled);
 }
 
 export function useAdvancedMapDatasetsPublicListQuery(
@@ -113,19 +105,11 @@ export function useAdvancedMapDatasetsPublicListQuery(
   });
 }
 
-export function usePublicAdvancedMapDatasetsQuery(input?: { limit?: number; offset?: number }, enabled = true) {
-  return useAdvancedMapDatasetsPublicListQuery(input, enabled);
-}
-
 export function useAdvancedMapDatasetPublicDetailQuery(publicId: string, enabled = true) {
   return useQuery({
     ...advancedMapDatasetPublicDetailQueryOptions(publicId),
     enabled,
   });
-}
-
-export function usePublicAdvancedMapDatasetQuery(publicId: string, enabled = true) {
-  return useAdvancedMapDatasetPublicDetailQuery(publicId, enabled);
 }
 
 export function useCreateAdvancedMapDatasetMutation() {
@@ -160,10 +144,6 @@ export function useUpdateAdvancedMapDatasetMetadataMutation() {
       await invalidateAllDatasetQueries(queryClient);
     },
   });
-}
-
-export function useUpdateAdvancedMapDatasetMutation() {
-  return useUpdateAdvancedMapDatasetMetadataMutation();
 }
 
 export function useReplaceAdvancedMapDatasetRowsMutation() {

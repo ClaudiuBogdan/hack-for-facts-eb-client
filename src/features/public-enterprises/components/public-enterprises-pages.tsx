@@ -512,13 +512,28 @@ function FeaturedEnterprises({
             <Trans>Exemple mock-first cu profil complet în această interfață.</Trans>
           </p>
         </div>
-        <SourceLineageBadge lineage={summary.lineage} />
+        {/* The badge attests to the provenance of the rows below it. With no
+            rows there is nothing to attest to, so it must not render. */}
+        {hits.length > 0 ? <SourceLineageBadge lineage={summary.lineage} /> : null}
       </div>
-      <div className={cn(PANEL, 'divide-y divide-border/70')}>
-        {hits.map((hit) => (
-          <EnterpriseResultRow key={hit.cui} hit={hit} compact />
-        ))}
-      </div>
+      {result.isError ? (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>
+            <Trans>Nu am putut încărca exemplele</Trans>
+          </AlertTitle>
+          <AlertDescription>
+            <Trans>Reîncarcă pagina pentru a încerca din nou.</Trans>
+          </AlertDescription>
+        </Alert>
+      ) : null}
+      {hits.length > 0 ? (
+        <div className={cn(PANEL, 'divide-y divide-border/70')}>
+          {hits.map((hit) => (
+            <EnterpriseResultRow key={hit.cui} hit={hit} compact />
+          ))}
+        </div>
+      ) : null}
     </section>
   )
 }

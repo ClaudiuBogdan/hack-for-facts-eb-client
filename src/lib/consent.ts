@@ -15,18 +15,40 @@ export type ConsentPreferences = {
 
 const CONSENT_STORAGE_KEY = 'cookie-consent'
 
-export function hasStoredConsentDecision(): boolean {
-  if (typeof window === 'undefined') return false
+/**
+ * The stored decision, or null when there is none this schema version can
+ * honour. Validation lives here alone so the banner gate
+ * (`hasStoredConsentDecision`) and the value gate (`getConsent`) can never
+ * drift: a blob written by a different consent schema carries different
+ * semantics, so it is not a decision — and must not keep analytics or Sentry
+ * enabled while the banner is asking the user again.
+ */
+function readStoredConsent(): ConsentPreferences | null {
+  if (typeof window === 'undefined') return null
 
   try {
     const stored = window.localStorage.getItem(CONSENT_STORAGE_KEY)
-    if (!stored) return false
+    if (!stored) return null
 
     const parsed = JSON.parse(stored) as Partial<ConsentPreferences>
-    return parsed.version === 1 && typeof parsed.updatedAt === 'string'
+    if (parsed?.version !== 1 || typeof parsed.updatedAt !== 'string') {
+      return null
+    }
+
+    return {
+      version: 1,
+      essential: true,
+      analytics: Boolean(parsed.analytics),
+      sentry: Boolean(parsed.sentry),
+      updatedAt: parsed.updatedAt,
+    }
   } catch {
-    return false
+    return null
   }
+}
+
+export function hasStoredConsentDecision(): boolean {
+  return readStoredConsent() !== null
 }
 
 export function getDefaultConsent(): ConsentPreferences {
@@ -39,23 +61,13 @@ export function getDefaultConsent(): ConsentPreferences {
   }
 }
 
+/**
+ * The effective preferences. Falls back to the privacy-safe defaults (analytics
+ * and Sentry off) whenever there is no readable v1 decision — consent is never
+ * inferred from an unreadable or foreign-version blob.
+ */
 export function getConsent(): ConsentPreferences {
-  if (typeof window === 'undefined') return getDefaultConsent()
-
-  try {
-    const stored = window.localStorage.getItem(CONSENT_STORAGE_KEY)
-    if (!stored) return getDefaultConsent()
-    const parsed = JSON.parse(stored) as Partial<ConsentPreferences>
-    return {
-      version: 1,
-      essential: true,
-      analytics: Boolean(parsed.analytics),
-      sentry: Boolean(parsed.sentry),
-      updatedAt: parsed.updatedAt ?? new Date().toISOString(),
-    }
-  } catch {
-    return getDefaultConsent()
-  }
+  return readStoredConsent() ?? getDefaultConsent()
 }
 
 export function setConsent(next: ConsentPreferences): void {

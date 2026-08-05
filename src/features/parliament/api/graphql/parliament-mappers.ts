@@ -64,12 +64,12 @@ import {
 } from "@/schemas/parliament";
 import {
   deriveGroupId,
-  foldSlug,
   fromGraphqlChamber,
   fromGraphqlVoteChamber,
   type GraphqlChamber,
 } from "./parliament-translate";
 import { resolveGroupColor } from "../../lib/group-colors";
+import { foldSlug, foldText } from "../../lib/text-fold";
 import type {
   RawParliamentAiBillMetadata,
   RawParliamentAiControlItemMetadata,
@@ -1011,14 +1011,9 @@ export function getFinalBillVoteVerdict(vote: {
     : undefined;
 }
 
-/** Diacritic- and case-folded, like the chamber's own inconsistent spelling. */
-function foldSubject(subject: string): string {
-  return subject.normalize("NFD").replace(/[̀-ͯ]/gu, "").toLocaleLowerCase("ro");
-}
-
 function subjectSaysRejection(subject: string | undefined): boolean {
   return (
-    subject !== undefined && /\brespinger|\brespins/.test(foldSubject(subject))
+    subject !== undefined && /\brespinger|\brespins/.test(foldText(subject))
   );
 }
 

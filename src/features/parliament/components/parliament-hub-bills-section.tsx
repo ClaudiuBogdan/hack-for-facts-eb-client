@@ -1,8 +1,11 @@
+import { t } from '@lingui/core/macro'
+import { Trans } from '@lingui/react/macro'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useParliamentBills } from '../hooks/use-parliament-data'
 import { BillListCard } from './bill-list-card'
 import { ParliamentHubBillActivity } from './parliament-hub-bill-activity'
 import { ParliamentHubSection } from './parliament-hub-section'
+import { ParliamentInlineLoadError } from './parliament-load-error-page'
 
 const HUB_BILLS_PAGE_SIZE = 4
 
@@ -16,7 +19,7 @@ const HUB_BILLS_PAGE_SIZE = 4
  * same thing.
  */
 export function ParliamentHubBillsSection() {
-  const { data, isLoading } = useParliamentBills({
+  const { data, isLoading, isError, refetch } = useParliamentBills({
     tab: 'proiecte',
     page: 1,
     pageSize: HUB_BILLS_PAGE_SIZE,
@@ -35,6 +38,16 @@ export function ParliamentHubBillsSection() {
             <Skeleton key={index} className="h-32 w-full rounded-none" />
           ))}
         </div>
+      ) : /* A failed read is not "Parliament has no draft laws". Guarded on
+             `!data` so a failed background refetch keeps the listed bills. */
+      isError && !data ? (
+        <div className="p-5 sm:p-6">
+          <ParliamentInlineLoadError
+            title={t`Proiectele de lege nu au putut fi încărcate`}
+            description={t`O eroare de citire nu înseamnă că nu există proiecte de lege în lucru. Reîncercați; dacă problema persistă, sursa poate fi temporar indisponibilă.`}
+            onRetry={() => void refetch()}
+          />
+        </div>
       ) : data && data.bills.length > 0 ? (
         // Hairline rules between rows, exactly as the Voturi card lists its
         // votes — the bills used to arrive as bordered cards stacked inside an
@@ -46,7 +59,7 @@ export function ParliamentHubBillsSection() {
         </div>
       ) : (
         <p className="px-5 py-6 text-sm text-[var(--pnrr-muted)] sm:px-6">
-          Nu există proiecte de lege disponibile.
+          <Trans>Nu există proiecte de lege disponibile.</Trans>
         </p>
       )}
       <div className="border-t-2 border-[var(--pnrr-border)] p-5 sm:p-6">

@@ -1,4 +1,5 @@
 import type { ParliamentGroupCohesion, ParliamentMember } from '@/schemas/parliament'
+import { foldText } from './text-fold'
 
 /**
  * URL state and selectors for the group dossier (`/parlament/grupuri/$groupId`).
@@ -24,14 +25,6 @@ export function parseGroupDetailSearch(
     ...(typeof q === 'string' && q.trim() ? { q: q.trim() } : {}),
     ...(typeof judet === 'string' && judet.trim() ? { judet: judet.trim() } : {}),
   }
-}
-
-/** Strip diacritics and case so "tanase" finds "Tănase". */
-export function foldText(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
 }
 
 export interface GroupCountyFacet {

@@ -42,7 +42,10 @@ export const useDataLabelBuilder = (key: string, getLabels: GetLabels, initialId
         queryKey: [key],
         queryFn: () => loadLocalData(key),
         staleTime: Infinity,
-        initialData: loadLocalData(key),
+        // Must stay a thunk: passing the value would run this `localStorage`
+        // read during every render, so SSR (`{}`) and the first client render
+        // (the cached label map) would disagree and hydration would mismatch.
+        initialData: () => loadLocalData(key),
     });
 
     /**

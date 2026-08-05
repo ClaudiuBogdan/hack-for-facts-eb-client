@@ -796,14 +796,12 @@ export async function fetchParliamentJudeteLive(): Promise<
 > {
   if (!judeteCache) {
     judeteCache = (async () => {
-      const { foldSlug } = await import('./graphql/parliament-translate')
       const members = await fetchParliamentMembersLive({ pageSize: 500 })
       const seen = new Map<string, string>()
       for (const m of members.members) {
         if (m.judetName && !seen.has(m.judetSlug)) seen.set(m.judetSlug, m.judetName)
       }
-      // foldSlug is already applied by mapMember; keep names as the DB display.
-      void foldSlug
+      // `foldSlug` is already applied by mapMember; keep names as the DB display.
       return Array.from(seen.entries())
         .map(([slug, name]) => ({ slug, name }))
         .sort((a, b) => a.name.localeCompare(b.name, 'ro'))

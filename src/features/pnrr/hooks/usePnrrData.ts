@@ -44,22 +44,6 @@ export function usePnrrWorkerModel(
   })
 }
 
-export function usePnrrWorkerStatus(search?: Partial<PnrrSearchState>) {
-  return usePnrrWorkerModel(search)
-}
-
-export function usePnrrOverviewModel(search?: Partial<PnrrSearchState>) {
-  return usePnrrWorkerModel(search)
-}
-
-export function usePnrrProjectRows(search?: Partial<PnrrSearchState>) {
-  return usePnrrWorkerModel(search)
-}
-
-export function usePnrrBeneficiaryRows(search?: Partial<PnrrSearchState>) {
-  return usePnrrWorkerModel(search)
-}
-
 export function usePnrrMapModel(
   search?: Partial<PnrrSearchState>,
   mapSeriesId?: PnrrMapSeriesId,
@@ -88,14 +72,6 @@ export function usePnrrMapModel(
   }, [mapSeriesId, search])
 
   return { data, error, isError: error !== null, isLoading: !data && !error }
-}
-
-export function usePnrrAnomalyModel(search?: Partial<PnrrSearchState>) {
-  return usePnrrWorkerModel(search)
-}
-
-export function usePnrrFilterFacets(search?: Partial<PnrrSearchState>) {
-  return usePnrrWorkerModel(search)
 }
 
 export function usePnrrProjectDetail(projectId?: string | null) {

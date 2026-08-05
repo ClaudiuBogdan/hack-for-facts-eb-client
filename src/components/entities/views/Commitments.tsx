@@ -154,11 +154,14 @@ export function CommitmentsView({
     ]
   )
 
-  // Fetch summary data
-  const { data: summaryData, isLoading: isSummaryLoading } = useCommitmentsSummary(
-    filter,
-    { enabled: !!cui }
-  )
+  // Fetch summary data. `isError` matters as much as `isLoading` here:
+  // `extractSummaryValues([])` returns zeros, so without it a failed request
+  // renders three confident KPI tiles reading "0 RON" for a real institution.
+  const {
+    data: summaryData,
+    isLoading: isSummaryLoading,
+    isError: isSummaryError,
+  } = useCommitmentsSummary(filter, { enabled: !!cui })
 
   const hasNonTreasuryPayments = useMemo(
     () => (summaryData?.nodes ?? []).some((n) => n.plati_non_trezor > 0),
@@ -180,18 +183,21 @@ export function CommitmentsView({
     [filter]
   )
 
-  const { data: budgetAgg, isLoading: isBudgetAggLoading } = useCommitmentsAggregatedAll(
-    budgetAggInput,
-    { enabled: !!cui }
-  )
-  const { data: committedAgg, isLoading: isCommittedAggLoading } = useCommitmentsAggregatedAll(
-    committedAggInput,
-    { enabled: !!cui }
-  )
-  const { data: paidTreasuryAgg, isLoading: isPaidTreasuryAggLoading } = useCommitmentsAggregatedAll(
-    paidTreasuryAggInput,
-    { enabled: !!cui }
-  )
+  const {
+    data: budgetAgg,
+    isLoading: isBudgetAggLoading,
+    isError: isBudgetAggError,
+  } = useCommitmentsAggregatedAll(budgetAggInput, { enabled: !!cui })
+  const {
+    data: committedAgg,
+    isLoading: isCommittedAggLoading,
+    isError: isCommittedAggError,
+  } = useCommitmentsAggregatedAll(committedAggInput, { enabled: !!cui })
+  const {
+    data: paidTreasuryAgg,
+    isLoading: isPaidTreasuryAggLoading,
+    isError: isPaidTreasuryAggError,
+  } = useCommitmentsAggregatedAll(paidTreasuryAggInput, { enabled: !!cui })
   const { data: paidNonTreasuryAgg } = useCommitmentsAggregatedAll(
     paidNonTreasuryAggInput,
     { enabled: !!cui && hasNonTreasuryPayments }
@@ -230,6 +236,10 @@ export function CommitmentsView({
 
   // `PLATI_NON_TREZOR` may be unsupported/missing in some deployments; don't block UI on it.
   const isCategoryLoading = isBudgetAggLoading || isCommittedAggLoading || isPaidTreasuryAggLoading
+  // `categoryData` needs all three, so any one failing leaves the breakdown
+  // unknown rather than empty.
+  const isCategoryError =
+    isBudgetAggError || isCommittedAggError || isPaidTreasuryAggError
 
   // Extract summary values from union type
   const summaryValues = useMemo(
@@ -237,6 +247,9 @@ export function CommitmentsView({
     [summaryData]
   )
   const { totalBudget, commitmentAuthority, committed, paid } = summaryValues
+  // Only when the request failed AND left us with nothing — a failed
+  // background refetch over good data must not blank the tiles.
+  const hasNoSummary = isSummaryError && !summaryData
 
   // Join the aggregated queries into CategoryData[]
   // The API returns rows grouped by (functional_code, economic_code), so we
@@ -362,6 +375,7 @@ export function CommitmentsView({
           variant="budget"
           currency={normalized.currency}
           isLoading={isSummaryLoading}
+          isError={hasNoSummary}
         />
         <StatCard
           title={t`Legal Commitments`}
@@ -370,6 +384,7 @@ export function CommitmentsView({
           variant="committed"
           currency={normalized.currency}
           isLoading={isSummaryLoading}
+          isError={hasNoSummary}
         />
         <StatCard
           title={t`Payments Made`}
@@ -378,6 +393,7 @@ export function CommitmentsView({
           variant="paid"
           currency={normalized.currency}
           isLoading={isSummaryLoading}
+          isError={hasNoSummary}
         />
       </div>
 
@@ -409,6 +425,7 @@ export function CommitmentsView({
         data={categoryChartData}
         currency={normalized.currency}
         isLoading={isCategoryLoading}
+        isError={isCategoryError}
       />
 
       {/* Report type & normalization toggle buttons (opt-in) */}
@@ -445,6 +462,7 @@ export function CommitmentsView({
         data={categoryData}
         currency={normalized.currency}
         isLoading={isCategoryLoading}
+        isError={isCategoryError}
         filter={filter}
         grouping={grouping}
         detailLevel={detailLevel}

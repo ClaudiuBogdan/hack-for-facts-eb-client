@@ -8,15 +8,7 @@ import type {
   ParliamentVoteSummary,
   VoteOutcome,
 } from '@/schemas/parliament'
-
-function toJudetSlug(judetName: string): string {
-  return judetName
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-}
+import { foldSlug } from './text-fold'
 
 const SYNTHETIC_CAMERA_MEMBERS: ReadonlyArray<{
   readonly firstName: string
@@ -268,7 +260,7 @@ export function extendParliamentMembers(
         chamber,
         groupId: template.groupId,
         groupName: group.shortName ?? group.name,
-        judetSlug: toJudetSlug(template.judetName),
+        judetSlug: foldSlug(template.judetName),
         judetName: template.judetName,
         mandateStart: '2024-12-01',
       })

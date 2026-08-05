@@ -4,7 +4,6 @@ import {
   fetchNgoProfile,
   fetchNgoServiceDiscovery,
   fetchPublicFunding,
-  fetchSnapshotProvenance,
 } from '../api/ngo-api'
 
 export function ngoDomainCoverageQueryKey() {
@@ -40,18 +39,6 @@ export function useNgoServiceDiscovery() {
     queryKey: ngoServiceDiscoveryQueryKey(),
     queryFn: () => fetchNgoServiceDiscovery(),
     staleTime: 5 * 60 * 1000,
-  })
-}
-
-export function snapshotProvenanceQueryKey(snapshotId: string) {
-  return ['ngo', 'snapshot-provenance', snapshotId] as const
-}
-
-export function useSnapshotProvenance(snapshotId: string) {
-  return useQuery({
-    queryKey: snapshotProvenanceQueryKey(snapshotId),
-    queryFn: () => fetchSnapshotProvenance(snapshotId),
-    enabled: snapshotId.length > 0,
   })
 }
 

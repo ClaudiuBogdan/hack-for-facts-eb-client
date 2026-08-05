@@ -585,4 +585,49 @@ describe("PnrrDashboard", () => {
 
     expect(refetch).toHaveBeenCalledTimes(1);
   });
+
+  // With the default `networkMode: 'online'`, an offline browser parks the
+  // query at `fetchStatus: 'paused'`: not loading, not errored, and with no
+  // data. Rendering must not fall through to the data branch.
+  it("renders a retryable state instead of crashing when the query is paused offline", () => {
+    const refetch = vi.fn();
+    vi.mocked(usePnrrWorkerModel).mockReturnValue({
+      data: undefined,
+      error: null,
+      isError: false,
+      isLoading: false,
+      isRefetching: false,
+      refetch,
+    } as unknown as ReturnType<typeof usePnrrWorkerModel>);
+    vi.mocked(usePnrrFilterState).mockReturnValue(makeFilterState());
+
+    expect(() => render(<PnrrDashboard />)).not.toThrow();
+
+    expect(screen.queryByTestId("pnrr-overview")).not.toBeInTheDocument();
+    expect(screen.getByText("Could not load PNRR data")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Retry/i }));
+
+    expect(refetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not crash on a non-overview tab while the query is paused offline", () => {
+    vi.mocked(usePnrrWorkerModel).mockReturnValue({
+      data: undefined,
+      error: null,
+      isError: false,
+      isLoading: false,
+      isRefetching: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof usePnrrWorkerModel>);
+    vi.mocked(usePnrrFilterState).mockReturnValue(
+      makeFilterState({
+        search: { ...makeFilterState().search, view: "projects" },
+      }),
+    );
+
+    expect(() => render(<PnrrDashboard />)).not.toThrow();
+
+    expect(screen.queryByTestId("pnrr-projects")).not.toBeInTheDocument();
+    expect(screen.getByText("Could not load PNRR data")).toBeInTheDocument();
+  });
 });

@@ -88,17 +88,3 @@ export function useClassificationHierarchy(
     }
   }, [code, treeData, getByCode])
 }
-
-/**
- * Hook to check if a code exists
- */
-export function useClassificationExists(
-  type: ClassificationType,
-  code: string | undefined
-): boolean {
-  const { getByCode } = useClassificationData(type)
-  return useMemo(() => {
-    if (!code) return false
-    return getByCode(code) !== undefined
-  }, [code, getByCode])
-}

@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 import {
   colorForGroupName,
   deriveGroupId,
-  foldSlug,
   fromGraphqlChamber,
   fromGraphqlVoteChamber,
   PARLIAMENT_GROUP_FALLBACK_COLOR,
@@ -44,15 +43,6 @@ describe('chamber translation (vote grain)', () => {
   it('returns null for unknown chamber values', () => {
     expect(fromGraphqlVoteChamber('unknown')).toBeNull()
     expect(fromGraphqlVoteChamber(undefined)).toBeNull()
-  })
-})
-
-describe('foldSlug', () => {
-  it('folds diacritics and lowercases', () => {
-    expect(foldSlug('IAŞI')).toBe('iasi')
-    expect(foldSlug('MUREŞ')).toBe('mures')
-    expect(foldSlug('SATU-MARE')).toBe('satu-mare')
-    expect(foldSlug('București')).toBe('bucuresti')
   })
 })
 

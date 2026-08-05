@@ -20,7 +20,7 @@ type Props = {
 
 export function EntityReportsSummary({ cui, reportPeriod, reportType, limit = 12, mainCreditorCui }: Props) {
   const { start, end } = useMemo(() => getReportDateRange(reportPeriod), [reportPeriod]);
-  const { data, isLoading } = useReportsConnection({
+  const { data, isLoading, isError } = useReportsConnection({
     filter: { entity_cui: cui, report_type: reportType, report_date_start: start, report_date_end: end, main_creditor_cui: mainCreditorCui },
     limit,
     offset: 0,
@@ -43,6 +43,32 @@ export function EntityReportsSummary({ cui, reportPeriod, reportType, limit = 12
   }
 
   const nodes = data?.nodes ?? [];
+
+  // Checked before the empty case, which returns `null`: on a failed request
+  // that made the whole Financial Reports card — and the only entry point to
+  // the source documents — disappear without a trace, so a reader could not
+  // tell the difference between "no reports filed" and "we could not ask".
+  if (isError && nodes.length === 0) {
+    return (
+      <Card>
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-6 w-6" />
+            <Trans>Financial Reports</Trans>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div role="alert" className="text-sm text-muted-foreground">
+            <Trans>
+              The list of reports could not be loaded. This does not mean none
+              were filed — try again in a moment.
+            </Trans>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (nodes.length === 0) return null;
 
   return (

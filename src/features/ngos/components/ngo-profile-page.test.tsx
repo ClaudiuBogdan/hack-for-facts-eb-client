@@ -5,14 +5,20 @@ import {
   getMockNgoProfile,
   getMockPublicFunding,
 } from '@/features/ngos/mocks/ngo-mocks'
+import type { NgoProfile } from '@/schemas/ngos'
 import { NgoProfilePage } from './ngo-profile-page'
 
 const navigateMock = vi.fn()
+
+const refetchMock = vi.fn()
 
 const profileQueryState = {
   data: undefined as ReturnType<typeof getMockNgoProfile> | undefined,
   isLoading: false,
   isError: false,
+  isFetching: false,
+  status: 'success' as 'success' | 'error' | 'pending',
+  refetch: refetchMock,
 }
 
 const fundingQueryState = {
@@ -65,9 +71,12 @@ describe('NgoProfilePage', () => {
     profileQueryState.data = undefined
     profileQueryState.isLoading = false
     profileQueryState.isError = false
+    profileQueryState.isFetching = false
+    profileQueryState.status = 'success'
     fundingQueryState.data = undefined
     fundingQueryState.isLoading = false
     navigateMock.mockReset()
+    refetchMock.mockReset()
   })
 
   it('renders confirmed direct-CUI identity and trust rules on the identity tab', () => {
@@ -164,5 +173,50 @@ describe('NgoProfilePage', () => {
       within(drawer).getByRole('link', { name: /rueis\.anofm\.ro/i }),
     ).toBeInTheDocument()
     expect(within(drawer).getByText('Vezi sursa completă')).toBeInTheDocument()
+  })
+
+  // A failed request says nothing about whether the CUI is in the register, so
+  // it must never be reported as "ONG negasit" (DESIGN.md, Data Trust).
+  it('offers a retry instead of claiming the NGO is missing when the request fails', () => {
+    profileQueryState.status = 'error'
+    profileQueryState.isError = true
+
+    render(
+      <NgoProfilePage
+        cui="12345678"
+        initialProfile={null as unknown as NgoProfile}
+        initialFunding={null}
+        tab="identitate"
+      />,
+    )
+
+    expect(screen.queryByText('ONG negasit')).not.toBeInTheDocument()
+    expect(
+      screen.getByText('Profilul ONG nu a putut fi incarcat'),
+    ).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /Reincearca/i }))
+    expect(refetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('still reports a missing NGO when the register answers with no profile', () => {
+    profileQueryState.status = 'success'
+    profileQueryState.data = null as unknown as ReturnType<
+      typeof getMockNgoProfile
+    >
+
+    render(
+      <NgoProfilePage
+        cui="00000000"
+        initialProfile={null as unknown as NgoProfile}
+        initialFunding={null}
+        tab="identitate"
+      />,
+    )
+
+    expect(screen.getByText('ONG negasit')).toBeInTheDocument()
+    expect(
+      screen.queryByText('Profilul ONG nu a putut fi incarcat'),
+    ).not.toBeInTheDocument()
   })
 })

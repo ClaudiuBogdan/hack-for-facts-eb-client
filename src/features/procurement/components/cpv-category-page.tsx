@@ -10,6 +10,7 @@ import { useProcurementCpvCategory } from '../hooks/use-procurement-data'
 import { formatFlowCount, formatRon } from '../lib/formatting'
 import {
   procurementChipClassName,
+  procurementSectionClassName,
   procurementSectionLabelClassName,
   procurementUnderlineLinkClassName,
 } from '../lib/procurement-theme'
@@ -188,7 +189,22 @@ export function CpvCategoryPage({ code, initialPage, className }: Props) {
             </Link>
           </div>
         </>
-      ) : null}
+      ) : (
+        // The query succeeded and reported no such category. Reached on a
+        // client-side navigation, where the loader no longer 404s — before
+        // this branch existed the page rendered as a bare breadcrumb.
+        <div
+          role="status"
+          className={cn(procurementSectionClassName, 'p-6 text-center sm:p-8')}
+        >
+          <p className="text-base font-bold text-[var(--pnrr-fg)]">
+            <Trans>This CPV category could not be found</Trans>
+          </p>
+          <p className="mt-1 text-sm text-[var(--pnrr-muted)]">
+            <Trans>No category with the code {code} exists in the published data.</Trans>
+          </p>
+        </div>
+      )}
     </div>
   )
 }

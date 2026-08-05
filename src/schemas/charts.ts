@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ChartTypeEnum, DEFAULT_CHART } from './constants';
+import { ChartTypeEnum, createDefaultChart } from './constants';
 import { generateRandomColor } from '@/components/charts/components/chart-renderer/color-utils';
 import { DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES } from '@/lib/analytics-defaults';
 
@@ -45,7 +45,7 @@ export function createDefaultCommitmentsYearReportPeriod() {
  */
 export const ChartConfigSchema = z.object({
   chartType: ChartTypeEnum.describe('The visualization type for this chart. Available types: "line" (trends over time), "bar" (comparisons), "area" (cumulative trends), "bar-aggr" (aggregated comparisons), "pie-aggr" (proportions), "treemap-aggr" (hierarchical breakdowns), "sankey-aggr" (flow diagrams). Choose based on your analytical goal: use line/area for trends, bar for comparisons, pie/treemap for distributions.'),
-  color: z.string().default(generateRandomColor()).describe('Default color for the entire chart (hex format). Individual series can override this with their own colors. Example: "#0062ff" for blue, "#00c49f" for teal. Ensure sufficient contrast for accessibility.'),
+  color: z.string().default(() => generateRandomColor()).describe('Default color for the entire chart (hex format). Individual series can override this with their own colors. Example: "#0062ff" for blue, "#00c49f" for teal. Ensure sufficient contrast for accessibility.'),
   showDataLabels: z.boolean().optional().describe('Whether to display data values directly on the chart for all series. Useful for presentations or when exact values matter more than visual trends. Can be overridden per series. Warning: too many labels can clutter the visualization.'),
   showGridLines: z.boolean().default(true).describe('Whether to display horizontal grid lines on the chart. Grid lines help readers estimate values more accurately. Generally recommended for line and bar charts, less useful for pie/treemap charts.'),
   showLegend: z.boolean().default(true).describe('Whether to display the legend showing series labels and colors. Essential for multi-series charts. Can be disabled for single-series charts to save space. Legend appears at the top of the chart by default.'),
@@ -443,7 +443,7 @@ export const ChartSchema = z.object({
   // Metadata
   createdAt: z.string().default(() => new Date().toISOString()).describe('ISO 8601 timestamp when this chart was first created. Auto-generated on creation. Used for tracking, sorting, and auditing. Format: "2025-10-25T10:00:00Z". Immutable after creation - never changes even when chart is updated. Useful for "newest charts" sorting and creation history.'),
   updatedAt: z.string().default(() => new Date().toISOString()).describe('ISO 8601 timestamp of the most recent modification to this chart. Auto-updated whenever any field changes (title, series, config, annotations, etc.). Format: "2025-10-25T10:00:00Z". Used for cache invalidation, "recently edited" sorting, and change tracking. Should be set to current time on every save operation.'),
-}).default(DEFAULT_CHART).describe('Complete chart definition combining configuration, data series, and annotations. This is the root schema for the entire chart system. A chart consists of: (1) Metadata (id, title, description, timestamps), (2) Global config (chart type, display options), (3) Series array (data sources and calculations), (4) Annotations array (context and insights). Charts are self-contained and portable - can be saved, shared, embedded, or exported. Used throughout the application for budget data visualization and analysis.');
+}).default(createDefaultChart).describe('Complete chart definition combining configuration, data series, and annotations. This is the root schema for the entire chart system. A chart consists of: (1) Metadata (id, title, description, timestamps), (2) Global config (chart type, display options), (3) Series array (data sources and calculations), (4) Annotations array (context and insights). Charts are self-contained and portable - can be saved, shared, embedded, or exported. Used throughout the application for budget data visualization and analysis.');
 
 export type Chart = z.infer<typeof ChartSchema>;
 

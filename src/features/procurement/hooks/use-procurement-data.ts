@@ -3,10 +3,7 @@ import {
   fetchProcurementAuthoritySlice,
   fetchProcurementBasisOverview,
   fetchProcurementCpvCategoryPage,
-  fetchProcurementContractDetail,
-  fetchProcurementDirectAcquisitionDetail,
   fetchProcurementLanding,
-  fetchProcurementProcedureDetail,
   fetchProcurementSearch,
   fetchProcurementSupplierRecords,
   fetchProcurementInstitutionOverview,
@@ -21,7 +18,10 @@ import type {
   AuthorityProcurementSlice,
   CpvCategoryPage,
   ProcurementInstitutionOverview,
+  ProcurementRecordDetail,
 } from '@/schemas/procurement'
+import type { DetailGrainKey, DetailRecord } from '../lib/detail-config'
+import { RECORD_DETAIL_FETCHERS } from '../lib/detail-fetchers'
 import type { ProcurementSearchState } from '@/schemas/procurement-search'
 import type { ProcurementLandingFilters } from '@/schemas/procurement-overview'
 import {
@@ -163,27 +163,38 @@ export function useProcurementSearch(
   })
 }
 
-export function useProcurementProcedureDetail(id: string) {
-  return useQuery({
-    queryKey: [...PROCUREMENT_QUERY_KEY, 'procedure', id],
-    queryFn: () => fetchProcurementProcedureDetail(id),
+export function procurementRecordDetailQueryOptions(
+  grain: DetailGrainKey,
+  id: string,
+) {
+  return queryOptions({
+    queryKey: [...PROCUREMENT_QUERY_KEY, 'record-detail', grain, id] as const,
+    queryFn: () => RECORD_DETAIL_FETCHERS[grain](id),
     enabled: Boolean(id),
   })
 }
 
-export function useProcurementContractDetail(id: string) {
+/**
+ * `initialData` carries the server-rendered payload into the first client
+ * render, so a server-rendered visit does not re-request what SSR already
+ * resolved. Matches how the sibling institution route seeds its queries.
+ */
+export function useProcurementRecordDetail(
+  grain: DetailGrainKey,
+  id: string,
+  initialData?: ProcurementRecordDetail<DetailRecord>,
+) {
   return useQuery({
-    queryKey: [...PROCUREMENT_QUERY_KEY, 'contract', id],
-    queryFn: () => fetchProcurementContractDetail(id),
-    enabled: Boolean(id),
+    ...procurementRecordDetailQueryOptions(grain, id),
+    initialData,
   })
 }
 
-export function useProcurementDirectAcquisitionDetail(id: string) {
-  return useQuery({
-    queryKey: [...PROCUREMENT_QUERY_KEY, 'direct-acquisition', id],
-    queryFn: () => fetchProcurementDirectAcquisitionDetail(id),
-    enabled: Boolean(id),
+export function procurementCpvCategoryQueryOptions(code: string) {
+  return queryOptions({
+    queryKey: [...PROCUREMENT_QUERY_KEY, 'cpv', code] as const,
+    queryFn: () => fetchProcurementCpvCategoryPage(code),
+    enabled: Boolean(code),
   })
 }
 
@@ -192,10 +203,8 @@ export function useProcurementCpvCategory(
   initialData?: CpvCategoryPage,
 ) {
   return useQuery({
-    queryKey: [...PROCUREMENT_QUERY_KEY, 'cpv', code],
-    queryFn: () => fetchProcurementCpvCategoryPage(code),
+    ...procurementCpvCategoryQueryOptions(code),
     initialData,
-    enabled: Boolean(code),
   })
 }
 

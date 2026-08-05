@@ -5,6 +5,18 @@ import type {
   ParliamentMembersSearch,
 } from '@/schemas/parliament'
 
+/**
+ * NOT `foldText` from `./text-fold`, on purpose.
+ *
+ * `\p{Diacritic}` and `foldText`'s `[̀-ͯ]` agree on every Romanian
+ * spelling — `ă â î ș ț` and the legacy cedilla forms `ş ţ` decompose into
+ * marks that are in both sets — so member NAMES fold identically either way.
+ * They disagree on ~1150 other code points, including the spacing marks `^`,
+ * `` ` ``, `´` and `·`: this fold deletes them, `foldText` keeps them. The
+ * needle here is arbitrary user input, so switching would change the result
+ * for a query containing one of those. Left as-is rather than "consolidated"
+ * into a silent behaviour change.
+ */
 function normalizeSearchText(value: string): string {
   return value
     .normalize('NFD')

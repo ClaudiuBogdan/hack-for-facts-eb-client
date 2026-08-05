@@ -9,6 +9,7 @@ import {
   ExternalLink,
   FileSearch,
   MapPin,
+  RotateCw,
   ShieldAlert,
 } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -120,6 +121,64 @@ export function NgoProfileNotFound() {
         </CardHeader>
         <CardContent>
           <Button asChild variant="outline">
+            <Link to="/ong-uri" search={{}}>
+              <Trans>Inapoi la ONG-uri</Trans>
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
+    </main>
+  )
+}
+
+/**
+ * The profile could not be fetched — distinct from "this NGO is not in the
+ * register". A failed request says nothing about whether the CUI exists, so it
+ * must not be reported as an absence (DESIGN.md, Data Trust & Provenance).
+ */
+export function NgoProfileErrorPanel({
+  onRetry,
+  isRetrying = false,
+}: {
+  readonly onRetry?: () => void
+  readonly isRetrying?: boolean
+}) {
+  return (
+    <main
+      role="alert"
+      className="mx-auto flex min-h-[60vh] w-full max-w-3xl items-center px-4 py-8"
+    >
+      <Card className="w-full rounded-lg shadow-none">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5" aria-hidden />
+            <Trans>Profilul ONG nu a putut fi incarcat</Trans>
+          </CardTitle>
+          <CardDescription>
+            <Trans>
+              Cererea a esuat. Asta nu inseamna ca ONG-ul lipseste din registru
+              — incearca din nou, iar daca problema persista sursa de date este
+              probabil temporar indisponibila.
+            </Trans>
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-2">
+          {onRetry ? (
+            <Button
+              type="button"
+              variant="outline"
+              className="gap-2"
+              onClick={onRetry}
+              disabled={isRetrying}
+            >
+              <RotateCw
+                className={isRetrying ? 'h-4 w-4 animate-spin' : 'h-4 w-4'}
+                aria-hidden
+              />
+              <Trans>Reincearca</Trans>
+            </Button>
+          ) : null}
+          <Button asChild variant="ghost">
             <Link to="/ong-uri" search={{}}>
               <Trans>Inapoi la ONG-uri</Trans>
             </Link>
@@ -1004,21 +1063,24 @@ export function NgoProfilePage({
   )
   const profileQuery = useNgoProfile(cui)
   const fundingQuery = useNgoPublicFunding(cui)
-  const profile = profileQuery.data ?? initialProfile
+  // Widened deliberately: a failed query can leave us with no profile at all,
+  // and the guards below have to be able to tell that apart from "the register
+  // answered, and this CUI is not in it".
+  const profile: NgoProfile | null = profileQuery.data ?? initialProfile ?? null
   const funding = fundingQuery.data ?? initialFunding
 
   const selectedSnapshot = selectedSnapshotId
-    ? (profile.snapshotsById[selectedSnapshotId] ?? null)
+    ? (profile?.snapshotsById[selectedSnapshotId] ?? null)
     : null
 
   const directSourceCount = useMemo(
     () =>
       new Set(
-        profile.evidence
+        (profile?.evidence ?? [])
           .filter((row) => row.identityBasis === 'direct_cui')
           .map((row) => row.sourceSnapshotId),
       ).size,
-    [profile.evidence],
+    [profile?.evidence],
   )
 
   const setTab = (nextTab: NgoProfileTab) => {
@@ -1037,6 +1099,21 @@ export function NgoProfilePage({
   }
 
   if (!profile) {
+    // Order matters. "ONG negasit" is a claim about the register, so it is only
+    // honest once a *successful* response actually came back empty. Anything
+    // else — a failed request, or a query paused because the browser is offline
+    // — is a fetch problem and has to offer a retry instead.
+    if (profileQuery.status !== 'success') {
+      return (
+        <NgoProfileErrorPanel
+          onRetry={() => {
+            void profileQuery.refetch()
+          }}
+          isRetrying={profileQuery.isFetching}
+        />
+      )
+    }
+
     return <NgoProfileNotFound />
   }
 

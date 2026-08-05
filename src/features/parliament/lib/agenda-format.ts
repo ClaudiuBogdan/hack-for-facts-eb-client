@@ -10,6 +10,7 @@ import {
   PARLIAMENT_CAMERA_GREEN,
   PARLIAMENT_RESOURCE_PURPLE,
 } from './hub-theme'
+import { foldText } from './text-fold'
 
 /** Where a sitting's date came from, in words a reader can act on. */
 export function sittingDateSourceLabel(source: string): string | undefined {
@@ -80,15 +81,7 @@ export function agendaChamberLabel(chamber: string): string {
  */
 export function isJointSittingTitle(title: string | undefined): boolean {
   if (!title) return false
-  return /sedin[tț][aăe]?\s+comun[aăe]/i.test(foldAgendaText(title))
-}
-
-/** Diacritic-folded lower case, so the source's mixed spellings all match. */
-export function foldAgendaText(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
+  return /sedin[tț][aăe]?\s+comun[aăe]/i.test(foldText(title))
 }
 
 /**
@@ -148,7 +141,7 @@ export function cleanAgendaSourceText(
   value: string | undefined,
 ): string | undefined {
   if (!value) return undefined
-  const folded = foldAgendaText(value)
+  const folded = foldText(value)
   let cut = value.length
   for (const phrase of AGENDA_TRAILING_PHRASES) {
     const at = folded.indexOf(phrase)

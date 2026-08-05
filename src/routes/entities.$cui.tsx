@@ -257,15 +257,10 @@ export const Route = createFileRoute('/entities/$cui')({
         bootstrapResult.payload,
       )
 
-      if (!bootstrapResult.entityDetails) {
-        return {
-          entityPageBootstrap,
-          initialSettings: ssrSettings,
-          ssrSettings,
-          forcedOverrides,
-        } satisfies EntityRouteLoaderData
-      }
-
+      // A missing `entityDetails` is not special-cased: the page renders the
+      // same payload either way and resolves the entity through its own
+      // queries. (Both arms of the branch this replaces returned an identical
+      // object.)
       return {
         entityPageBootstrap,
         initialSettings: ssrSettings,

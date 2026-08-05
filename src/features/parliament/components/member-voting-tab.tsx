@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
+import { t } from '@lingui/core/macro'
+import { Trans } from '@lingui/react/macro'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { MemberVotesSearch, ParliamentMember } from '@/schemas/parliament'
@@ -19,6 +21,7 @@ import {
 } from '../lib/member-detail-theme'
 import { MemberVoteActivityHeatmap } from './member-vote-activity-heatmap'
 import { MemberVoteRecordCard } from './member-vote-record-card'
+import { ParliamentInlineLoadError } from './parliament-load-error-page'
 import {
   MemberVotesActiveFilters,
   MemberVotesFilterSheet,
@@ -81,8 +84,15 @@ export function MemberVotingTab({ member, search }: Props) {
   const activity = activityQuery.data ?? undefined
   const isActivityLoading = bootstrap.isLoading || activityQuery.isLoading
 
-  const { data, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
-    useParliamentMemberVotingHistory(member.memberId, listFilter)
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useParliamentMemberVotingHistory(member.memberId, listFilter)
 
   const pages = data?.pages ?? []
   const votes = pages.flatMap((page) => page?.votes ?? [])
@@ -178,6 +188,15 @@ export function MemberVotingTab({ member, search }: Props) {
 
       {isLoading ? (
         <Skeleton className="h-48 w-full rounded-none" />
+      ) : /* A failed read is not an empty voting record. Only when there is
+             nothing to show — a failed background refetch or a failed
+             `fetchNextPage` must not blow away the votes already on screen. */
+      isError && votes.length === 0 ? (
+        <ParliamentInlineLoadError
+          title={t`Istoricul de vot nu a putut fi încărcat`}
+          description={t`O eroare de citire nu înseamnă că acest parlamentar nu a votat. Reîncercați; dacă problema persistă, sursa poate fi temporar indisponibilă.`}
+          onRetry={() => void refetch()}
+        />
       ) : votes.length > 0 ? (
         <div className="space-y-4">
           <p className="border border-[#b1b4b6] bg-[#f3f2f1] px-5 py-3 text-sm text-[#0b0c0c] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-subtle)]">
@@ -215,9 +234,13 @@ export function MemberVotingTab({ member, search }: Props) {
         </div>
       ) : (
         <p className="text-base leading-7 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
-          {activeCount > 0
-            ? 'Niciun vot nu corespunde filtrelor selectate.'
-            : 'Nu există înregistrări de vot publicate pentru acest parlamentar.'}
+          {activeCount > 0 ? (
+            <Trans>Niciun vot nu corespunde filtrelor selectate.</Trans>
+          ) : (
+            <Trans>
+              Nu există înregistrări de vot publicate pentru acest parlamentar.
+            </Trans>
+          )}
         </p>
       )}
 

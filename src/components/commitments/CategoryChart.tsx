@@ -31,6 +31,8 @@ type Props = {
   readonly data: CategoryData[]
   readonly currency?: 'RON' | 'EUR' | 'USD'
   readonly isLoading?: boolean
+  /** The breakdown could not be fetched — distinct from "there is none". */
+  readonly isError?: boolean
 }
 
 type TooltipPayloadItem = {
@@ -77,7 +79,12 @@ function CustomTooltip({ active, payload, currency }: CustomTooltipProps) {
   return null
 }
 
-export function CategoryChart({ data, currency = 'RON', isLoading = false }: Props) {
+export function CategoryChart({
+  data,
+  currency = 'RON',
+  isLoading = false,
+  isError = false,
+}: Props) {
   // Sort by budget size descending
   const sortedData = [...data].sort((a, b) => b.budget - a.budget)
 
@@ -93,6 +100,21 @@ export function CategoryChart({ data, currency = 'RON', isLoading = false }: Pro
           </div>
         </div>
         <Skeleton className="h-[280px] w-full" />
+      </div>
+    )
+  }
+
+  // Checked before the empty case: an unanswered request tells us nothing
+  // about whether a breakdown exists.
+  if (isError && (!data || data.length === 0)) {
+    return (
+      <div
+        role="alert"
+        className="bg-card p-6 rounded-xl shadow-sm border border-border h-[380px] flex items-center justify-center"
+      >
+        <p className="text-muted-foreground">
+          <Trans>The category breakdown could not be loaded</Trans>
+        </p>
       </div>
     )
   }

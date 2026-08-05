@@ -5,7 +5,6 @@ import {
   cohesionBand,
   cohesionRank,
   cohesionWindow,
-  foldText,
   matchCohesionRow,
   parseGroupDetailSearch,
   selectRosterMembers,
@@ -35,13 +34,6 @@ describe('parseGroupDetailSearch', () => {
 
   it('drops empty and non-string values instead of throwing', () => {
     expect(parseGroupDetailSearch({ q: '   ', judet: 42, other: 'x' })).toEqual({})
-  })
-})
-
-describe('foldText', () => {
-  it('ignores diacritics and case', () => {
-    expect(foldText('Băișanu')).toBe('baisanu')
-    expect(foldText('Adomnicăi')).toBe('adomnicai')
   })
 })
 

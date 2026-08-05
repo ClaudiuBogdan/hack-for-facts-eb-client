@@ -4,6 +4,7 @@ import {
   isFinalBillVote,
 } from '../api/graphql/parliament-mappers'
 import { getVoteChamberLabel } from '../lib/formatting'
+import { foldText } from '../lib/text-fold'
 
 /**
  * What a bill↔vote edge was FOR, in the bill's own procedure.
@@ -175,10 +176,7 @@ export function roleContradictsSubject(
   voteSubject: string | undefined,
 ): boolean {
   if (!isFinalBillVote({ linkRole }) || voteSubject === undefined) return false
-  const folded = voteSubject
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLocaleLowerCase('ro')
+  const folded = foldText(voteSubject)
   // Only a subject that states a final motion can contradict; anything else
   // (an amendment, an article, a document version) simply says nothing.
   const saysAdopted = /\badopta/.test(folded) && !/\brespinger|respins/.test(folded)

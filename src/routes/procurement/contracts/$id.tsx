@@ -1,7 +1,7 @@
-import { createFileRoute, notFound } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { getSiteUrl } from '@/config/env'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
-import { fetchProcurementContractDetail } from '@/features/procurement/api/procurement-api'
+import { createProcurementDetailLoader } from '@/features/procurement/lib/detail-route-loader'
 
 export const Route = createFileRoute('/procurement/contracts/$id')({
   ssr: true,
@@ -10,13 +10,7 @@ export const Route = createFileRoute('/procurement/contracts/$id')({
       sharedMaxAgeSeconds: 300,
       staleWhileRevalidateSeconds: 3600,
     }),
-  loader: async ({ params }) => {
-    const detail = await fetchProcurementContractDetail(params.id)
-    if (!detail) {
-      throw notFound()
-    }
-    return { detail }
-  },
+  loader: createProcurementDetailLoader('contracts'),
   head: buildContractDetailHead,
 })
 

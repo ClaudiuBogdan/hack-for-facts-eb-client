@@ -4,7 +4,6 @@ import {
   getEntityExecutionLineItems,
   getEntityProfile,
   getEntityRelationships,
-  getEntityReports,
   getEntityRoutingSummary,
   getReportsConnection,
   ReportsFilterInput,
@@ -127,16 +126,6 @@ export function useEntityRelationships(params: { cui: string; enabled?: boolean 
   return useQuery({
     queryKey: ['entityRelationships', cui],
     queryFn: () => getEntityRelationships(cui),
-    enabled: !!cui && enabled,
-    staleTime: 1000 * 60 * 10,
-  });
-}
-
-export function useEntityReports(params: { cui: string; limit?: number; offset?: number; year?: number; period?: string; type?: GqlReportType; sort?: { by: string; order: 'ASC' | 'DESC' }; enabled?: boolean }) {
-  const { cui, limit, offset, year, period, type, sort, enabled = true } = params;
-  return useQuery({
-    queryKey: ['entityReports', cui, limit, offset, year, period, type, sort],
-    queryFn: () => getEntityReports(cui, { limit, offset, year, period, type, sort }),
     enabled: !!cui && enabled,
     staleTime: 1000 * 60 * 10,
   });

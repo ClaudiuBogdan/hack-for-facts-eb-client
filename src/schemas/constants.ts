@@ -30,7 +30,13 @@ export const DEFAULT_AXIS_CONFIG = {
 };
 
 
-export const DEFAULT_CHART = {
+/**
+ * A factory, not a constant: `id`, `createdAt` and `updatedAt` have to be
+ * minted per chart. As a module-level object literal these were evaluated once
+ * at import, so every chart falling back to this default shared one UUID and
+ * one timestamp — on the SSR server, the timestamp of process start.
+ */
+export const createDefaultChart = () => ({
     id: crypto.randomUUID(),
     title: '',
     description: '',
@@ -39,4 +45,4 @@ export const DEFAULT_CHART = {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     annotations: [],
-};
+});

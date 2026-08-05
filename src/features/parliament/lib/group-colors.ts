@@ -22,6 +22,8 @@
  * and "aur-senat" all resolve to AUR's single colour.
  */
 
+import { foldSlug } from './text-fold'
+
 export interface GroupColorInput {
   /** `<slug>-<chamber>` or a bare party slug/name. */
   readonly groupId?: string | null
@@ -29,20 +31,10 @@ export interface GroupColorInput {
   readonly name?: string | null
 }
 
-/** Fold diacritics + non-alphanumerics to a stable party-identity key. */
-function foldIdentity(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-}
-
 /** Strip a trailing chamber suffix so `psd-senat` → `psd`. */
 function partyKey(input: GroupColorInput): string {
   const raw = (input.name?.trim() || input.groupId?.trim() || '').toString()
-  const folded = foldIdentity(raw)
+  const folded = foldSlug(raw)
   return folded.replace(/-(camera_deputatilor|camera-deputatilor|senat|comun)$/, '')
 }
 

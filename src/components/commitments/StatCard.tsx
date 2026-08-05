@@ -5,6 +5,7 @@
  * Three variants: budget (emerald), committed (blue), paid (sky)
  */
 
+import { Trans } from '@lingui/react/macro'
 import { formatCurrency } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -17,6 +18,13 @@ type Props = {
   readonly variant: StatCardVariant
   readonly currency?: 'RON' | 'EUR' | 'USD'
   readonly isLoading?: boolean
+  /**
+   * The figure could not be fetched. Renders an em dash instead of `value`:
+   * an unanswered request leaves the amount unknown, and `0 RON` on a card
+   * titled "Total Allocated Budget" reads as a finding about a real public
+   * institution rather than as a missing datum.
+   */
+  readonly isError?: boolean
 }
 
 export function StatCard({
@@ -25,6 +33,7 @@ export function StatCard({
   subtitle,
   currency = 'RON',
   isLoading = false,
+  isError = false,
 }: Props) {
   if (isLoading) {
     return (
@@ -43,10 +52,20 @@ export function StatCard({
       </p>
       <div>
         <h2 className="text-2xl font-bold text-card-foreground mb-1">
-          {formatCurrency(value, 'compact', currency)}
+          {isError ? (
+            <span aria-hidden>—</span>
+          ) : (
+            formatCurrency(value, 'compact', currency)
+          )}
         </h2>
-        {subtitle && (
-          <p className="text-sm text-muted-foreground font-mono">{subtitle}</p>
+        {isError ? (
+          <p className="text-sm text-muted-foreground">
+            <Trans>Could not be loaded</Trans>
+          </p>
+        ) : (
+          subtitle && (
+            <p className="text-sm text-muted-foreground font-mono">{subtitle}</p>
+          )
         )}
       </div>
     </div>

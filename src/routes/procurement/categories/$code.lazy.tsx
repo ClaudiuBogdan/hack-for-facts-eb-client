@@ -7,6 +7,8 @@ export const Route = createLazyFileRoute('/procurement/categories/$code')({
 
 function CpvCategoryRoutePage() {
   const { code } = Route.useParams()
+  // `page` is empty on a client-side navigation — the loader only blocks while
+  // rendering HTML. See `lib/ssr/loader-blocking`.
   const { page } = Route.useLoaderData()
   return <CpvCategoryPage code={code} initialPage={page} />
 }

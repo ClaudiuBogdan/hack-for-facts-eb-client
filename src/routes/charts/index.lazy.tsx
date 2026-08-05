@@ -179,7 +179,11 @@ function ChartsListPage() {
               ) : null}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          {/* `flex-wrap`: the outer wrapper stacks at `md`, but this row's own
+              contents (two backup/restore buttons plus the `size="lg"` CTA)
+              still measure ~575px, which pushed "Create chart" off-screen at
+              390px wide. */}
+          <div className="flex flex-wrap items-center gap-2">
             <ChartsBackupRestore onAfterImport={() => {
               setCharts(getStore().loadSavedCharts({ filterDeleted: true, sort: true }));
               setCategories(getStore().loadCategories());

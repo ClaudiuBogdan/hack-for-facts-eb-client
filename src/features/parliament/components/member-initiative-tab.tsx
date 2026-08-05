@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
+import { t } from '@lingui/core/macro'
+import { Trans } from '@lingui/react/macro'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { ParliamentMember } from '@/schemas/parliament'
@@ -8,6 +10,7 @@ import { useParliamentMemberInitiatives } from '../hooks/use-parliament-data'
 import { memberDetailNoticeClassName } from '../lib/member-detail-theme'
 import { MemberProfileActivityRow } from './member-profile-activity-row'
 import { MemberProfileSectionHeader } from './member-profile-section-header'
+import { ParliamentInlineLoadError } from './parliament-load-error-page'
 import { VotesListPagination } from './votes-list-pagination'
 
 type Props = {
@@ -31,7 +34,7 @@ function formatActivityDate(isoDate: string): string {
  */
 export function MemberInitiativeTab({ member }: Props) {
   const [page, setPage] = useState(1)
-  const { data, isLoading } = useParliamentMemberInitiatives(
+  const { data, isLoading, isError, refetch } = useParliamentMemberInitiatives(
     member.memberId,
     page,
     PAGE_SIZE,
@@ -42,12 +45,29 @@ export function MemberInitiativeTab({ member }: Props) {
     return <Skeleton className="h-48 w-full rounded-none" />
   }
 
+  // A failed read is not an empty legislative record. Guarded on `!data` so a
+  // failed background refetch keeps the page already on screen.
+  if (isError && !data) {
+    return (
+      <MemberProfileSectionHeader
+        title={t`Inițiative legislative`}
+        intro={t`Propunerile și proiectele de lege inițiate de ${memberName}, cele mai recente primele.`}
+      >
+        <ParliamentInlineLoadError
+          title={t`Inițiativele legislative nu au putut fi încărcate`}
+          description={t`O eroare de citire nu înseamnă că acest parlamentar nu a inițiat proiecte de lege. Reîncercați; dacă problema persistă, sursa poate fi temporar indisponibilă.`}
+          onRetry={() => void refetch()}
+        />
+      </MemberProfileSectionHeader>
+    )
+  }
+
   const initiatives = data?.initiatives ?? []
 
   return (
     <MemberProfileSectionHeader
-      title="Inițiative legislative"
-      intro={`Propunerile și proiectele de lege inițiate de ${memberName}, cele mai recente primele.`}
+      title={t`Inițiative legislative`}
+      intro={t`Propunerile și proiectele de lege inițiate de ${memberName}, cele mai recente primele.`}
     >
       <aside className={memberDetailNoticeClassName}>
         <p>
@@ -106,7 +126,10 @@ export function MemberInitiativeTab({ member }: Props) {
           })
         ) : (
           <p className="text-base leading-7 text-[#505a5f]">
-            Nu există inițiative legislative publicate pentru acest parlamentar.
+            <Trans>
+              Nu există inițiative legislative publicate pentru acest
+              parlamentar.
+            </Trans>
           </p>
         )}
       </div>

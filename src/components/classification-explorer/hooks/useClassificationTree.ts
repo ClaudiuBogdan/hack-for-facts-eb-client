@@ -87,21 +87,3 @@ export function useSearchExpansion(
     }
   }, [matchedCodes, expandPath])
 }
-
-/**
- * Hook to sync tree expansion with selected code
- * Auto-expands tree to show the selected classification
- */
-export function useSelectedExpansion(
-  selectedCode: string | undefined,
-  ancestorCodes: readonly string[],
-  expansionState: TreeExpansionState
-) {
-  const { expandPath } = expansionState
-
-  useEffect(() => {
-    if (selectedCode && ancestorCodes.length > 0) {
-      expandPath(ancestorCodes)
-    }
-  }, [selectedCode, ancestorCodes, expandPath])
-}

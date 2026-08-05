@@ -6,6 +6,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Vote } from 'lucide-react'
 import type { ElectionHubSearch } from '../types'
 import { useElection } from '../hooks/use-elections'
 import { ElectionsPageLayout } from './elections-page-layout'
@@ -41,6 +42,18 @@ export function ElectionHubPage({ electionKey, search, onSearchChange }: Props) 
           <Skeleton className="h-44 w-full" />
           <Skeleton className="h-72 w-full" />
         </div>
+      )}
+
+      {/* Before the "not found" branch: a failed request leaves `data`
+          undefined, which matched none of the branches below and rendered the
+          page as bare layout chrome. It is also not evidence that the ballot
+          does not exist. Mirrors `elections-landing-page`. */}
+      {query.isError && data === undefined && (
+        <EmptyState
+          icon={<Vote className="h-6 w-6" aria-hidden />}
+          title={t`Nu am putut incarca scrutinul`}
+          description={t`URL-ul a fost pastrat; incearca din nou dupa refresh.`}
+        />
       )}
 
       {data?.election === null && (

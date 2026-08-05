@@ -35,6 +35,8 @@ type Props = {
   readonly data: CategoryData[]
   readonly currency?: 'RON' | 'EUR' | 'USD'
   readonly isLoading?: boolean
+  /** The rows could not be fetched — distinct from "there are none". */
+  readonly isError?: boolean
   readonly onDownload?: () => void
   readonly filter?: CommitmentsFilterInput
   readonly grouping: Grouping
@@ -402,6 +404,7 @@ export function DetailTable({
   data,
   currency = 'RON',
   isLoading = false,
+  isError = false,
   onDownload,
   filter,
   grouping,
@@ -484,6 +487,23 @@ export function DetailTable({
           {[...Array(5)].map((_, i) => (
             <Skeleton key={i} className="h-12 w-full" />
           ))}
+        </div>
+      </div>
+    )
+  }
+
+  // Checked before the empty case: an unanswered request is not evidence that
+  // there are no rows.
+  if (isError && (!data || data.length === 0)) {
+    return (
+      <div className="w-full min-w-0 rounded-[28px] border border-border/50 bg-card">
+        <div className="p-6 border-b border-border/50">
+          <h3 className="text-lg font-bold text-card-foreground">
+            <Trans>Table Detail</Trans>
+          </h3>
+        </div>
+        <div role="alert" className="p-8 text-center text-muted-foreground">
+          <Trans>The detail rows could not be loaded</Trans>
         </div>
       </div>
     )

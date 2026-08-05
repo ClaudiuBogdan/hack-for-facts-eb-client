@@ -23,6 +23,7 @@ import {
   formatCommitteeDate,
 } from '../lib/committee-format'
 import { COMMITTEE_TYPE_BADGES } from '../lib/committee-browse-search'
+import { foldText } from '../lib/text-fold'
 import {
   COMMITTEE_BREADCRUMB_BG,
   COMMITTEE_NOTICE_BG,
@@ -55,14 +56,6 @@ const BILL_LOCATION_LABELS: Readonly<Record<string, string>> = {
   promulgat: 'Promulgat',
   respins: 'Respins',
   retras: 'Retras',
-}
-
-/** Strip diacritics and case so "loteria" finds "Loteria". */
-function foldBill(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
 }
 
 /** Bureau roles, in the order the institution ranks them. */
@@ -407,13 +400,13 @@ function CommitteeDossier({
   }, [committee.linkedBills])
 
   const matchedBills = useMemo(() => {
-    const needle = foldBill(billQuery.trim())
+    const needle = foldText(billQuery.trim())
     return committee.linkedBills.filter(
       (bill) =>
         (billLocation === 'all' || bill.currentLocation === billLocation) &&
         (!needle ||
-          foldBill(bill.title).includes(needle) ||
-          foldBill(bill.number).includes(needle)),
+          foldText(bill.title).includes(needle) ||
+          foldText(bill.number).includes(needle)),
     )
   }, [committee.linkedBills, billQuery, billLocation])
 

@@ -157,6 +157,50 @@ describe('PublicEnterprisesLandingRoute', () => {
     expect(screen.getByText('Nu am putut încărca sumarul')).toBeInTheDocument()
   })
 
+  // The lineage badge attests to the provenance of the rows beside it. With no
+  // rows it attests to nothing, so a failed featured query must drop it rather
+  // than leave a source claim hanging over an empty panel.
+  it('drops the featured provenance badge when the featured query fails', async () => {
+    searchQueryMock.mockReturnValue({
+      isLoading: false,
+      isError: true,
+      data: undefined,
+    })
+
+    const { PublicEnterprisesLandingRoute } = await import('./public-enterprises-pages')
+    render(<PublicEnterprisesLandingRoute />)
+
+    const featured = screen
+      .getByRole('heading', { name: 'Întreprinderi reprezentative' })
+      .closest('section')
+    expect(featured).not.toBeNull()
+
+    expect(
+      within(featured!).queryByRole('button', {
+        name: 'Vezi proveniența datelor',
+      }),
+    ).not.toBeInTheDocument()
+    expect(
+      within(featured!).getByText('Nu am putut încărca exemplele'),
+    ).toBeInTheDocument()
+  })
+
+  it('keeps the featured provenance badge when featured rows load', async () => {
+    const { PublicEnterprisesLandingRoute } = await import('./public-enterprises-pages')
+    render(<PublicEnterprisesLandingRoute />)
+
+    const featured = screen
+      .getByRole('heading', { name: 'Întreprinderi reprezentative' })
+      .closest('section')
+    expect(featured).not.toBeNull()
+
+    expect(
+      within(featured!).getByRole('button', {
+        name: 'Vezi proveniența datelor',
+      }),
+    ).toBeInTheDocument()
+  })
+
   it('routes exact CUI search to the profile and text query to listing', async () => {
     const { PublicEnterprisesLandingRoute } = await import('./public-enterprises-pages')
     render(<PublicEnterprisesLandingRoute />)

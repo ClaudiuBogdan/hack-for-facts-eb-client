@@ -1,4 +1,5 @@
 import { LATEST_LEGISLATURE } from '../api/graphql/parliament-translate'
+import { foldText } from './text-fold'
 
 /**
  * URL state for the committee browse (`/parlament/comisii`).
@@ -136,17 +137,9 @@ export function isSenateLegislatureUnbounded(
   return (search.legislatura ?? DEFAULT_COMMITTEE_LEGISLATURE) !== 'all'
 }
 
-/** Strip diacritics and case so "juridica" finds "juridică". */
-function fold(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-}
-
 export function matchesCommitteeQuery(name: string, q: string | undefined): boolean {
   if (!q) return true
-  return fold(name).includes(fold(q))
+  return foldText(name).includes(foldText(q))
 }
 
 /** Display order: the standing bodies first, then the ad-hoc ones. */

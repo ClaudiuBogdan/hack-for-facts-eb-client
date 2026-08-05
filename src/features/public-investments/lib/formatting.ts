@@ -240,26 +240,3 @@ export function comparePayments(
       return 0
   }
 }
-
-/** Format a RON amount for display (no currency symbol rounding assumptions). */
-export function formatRonAmount(value: number | null): string {
-  if (value === null || !Number.isFinite(value)) {
-    return '—'
-  }
-  return new Intl.NumberFormat('ro-RO', {
-    style: 'currency',
-    currency: 'RON',
-    maximumFractionDigits: 0,
-  }).format(value)
-}
-
-/** Format an absorption percentage for display, preserving the real value. */
-export function formatAbsorptionPct(value: number | null): string {
-  if (value === null || !Number.isFinite(value)) {
-    return '—'
-  }
-  return new Intl.NumberFormat('ro-RO', {
-    style: 'percent',
-    maximumFractionDigits: 1,
-  }).format(value / 100)
-}

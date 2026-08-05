@@ -16,6 +16,7 @@
  */
 import type { ParliamentChamber, VoteChamber } from '@/schemas/parliament'
 import { resolveGroupColor } from '@/features/parliament/lib/group-colors'
+import { foldSlug } from '@/features/parliament/lib/text-fold'
 
 /** GraphQL chamber enum (DB-native). Votes carry all three; members never `comun`. */
 export type GraphqlChamber = 'camera_deputatilor' | 'senat' | 'comun'
@@ -75,16 +76,6 @@ export function fromGraphqlVoteChamber(
     default:
       return null
   }
-}
-
-/** Fold diacritics + lowercase, used for both group and county slugs. */
-export function foldSlug(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
 }
 
 /**

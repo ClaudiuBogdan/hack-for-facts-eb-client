@@ -71,7 +71,9 @@ function CoverageSkeleton() {
 
 function SourceCoverageCard({ row }: { readonly row: SourceCoverageRow }) {
   return (
-    <Card className="rounded-lg shadow-none">
+    // `min-w-0`: it is a grid item, so without this its content's min-content
+    // width sets the column width rather than the other way round.
+    <Card className="min-w-0 rounded-lg shadow-none">
       <CardHeader className="space-y-2 p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -246,8 +248,12 @@ export function NgoLandingPage({ initialCoverage }: NgoLandingPageProps) {
         </div>
       </section>
 
+      {/* `min-w-0` on both children: below `lg` this collapses to one column,
+          but grid items keep `min-width: auto`, so the coverage cards'
+          min-content width stretched the track to 433px inside a 390px
+          viewport and scrolled the whole document sideways. */}
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h2 className="text-xl font-semibold">
@@ -283,6 +289,7 @@ export function NgoLandingPage({ initialCoverage }: NgoLandingPageProps) {
                 <SourceCoverageCard key={row.sourceId} row={row} />
               ))}
             </div>
+
           ) : (
             <Card className="rounded-lg border-dashed shadow-none">
               <CardContent className="p-6 text-sm text-muted-foreground">
@@ -292,7 +299,7 @@ export function NgoLandingPage({ initialCoverage }: NgoLandingPageProps) {
           )}
         </div>
 
-        <aside className="space-y-4">
+        <aside className="min-w-0 space-y-4">
           <Card className="rounded-lg shadow-none">
             <CardHeader className="p-4">
               <CardTitle className="flex items-center gap-2 text-base">

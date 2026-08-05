@@ -227,7 +227,12 @@ export function PnrrDashboard({
             />
           ) : loading ? (
             <PnrrContentSkeleton />
-          ) : loadError ? (
+          ) : !data ? (
+            // `loading` and `loadError` do not cover every dataless state: with
+            // the default `networkMode: 'online'`, an offline browser parks the
+            // query at `fetchStatus: 'paused'`, where `isLoading` and `isError`
+            // are both false and `data` is undefined. Without this branch the
+            // render would fall through and dereference `undefined`.
             <PnrrDataErrorState
               error={loadError}
               isRetrying={isRefetching}
@@ -241,30 +246,30 @@ export function PnrrDashboard({
                 <PnrrOverview
                   aggregates={filteredAggregates}
                   filterState={filterState}
-                  overview={data!.overview}
+                  overview={data.overview}
                   officialAllocatedTotalEur={officialAllocatedTotalEur}
                 />
               )}
               {view === "projects" && (
                 <PnrrProjectsView
-                  page={data!.projectPage}
+                  page={data.projectPage}
                   projectRecordCount={filteredAggregates.projectRecordCount}
                   filterState={filterState}
                   isPageStatePending={isPlaceholderData}
                 />
               )}
               {view === "map" && (
-                <PnrrMapView model={data!.mapModel} filterState={filterState} />
+                <PnrrMapView model={data.mapModel} filterState={filterState} />
               )}
               {view === "beneficiaries" && (
                 <PnrrBeneficiariesView
-                  page={data!.beneficiaryPage}
+                  page={data.beneficiaryPage}
                   filterState={filterState}
                 />
               )}
               {view === "anomalies" && (
                 <PnrrAnomaliesView
-                  model={data!.anomalyModel}
+                  model={data.anomalyModel}
                   aggregates={filteredAggregates}
                   filterState={filterState}
                   isPageStatePending={isPlaceholderData}

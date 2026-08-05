@@ -81,52 +81,56 @@ describe('utils', () => {
       vi.unstubAllGlobals()
     })
 
+    // Money is asserted as the EXACT rendered string. `toContain('RON')` or a
+    // truthiness check survives a scaling bug, a lost thousands separator and a
+    // dropped decimal alike, so every expectation below pins the whole token —
+    // including Intl's NBSP (U+00A0) before the currency code.
+    //
+    // Locale note: this file mocks `@lingui/core` with an `i18n` that has no
+    // `locale`, so `getUserLocale()` falls through to the stubbed localStorage
+    // ('ro') and formatting is `ro-RO` here — unlike the shared Lingui double in
+    // `vitest.config.ts`, which reports `en`.
     it('should format RON currency with default notation', () => {
-      const result = formatCurrency(1234567.89)
-      expect(result).toContain('RON')
+      expect(formatCurrency(1234567.89)).toBe('1.234.567,89\u00A0RON')
     })
 
     it('should format EUR currency', () => {
-      const result = formatCurrency(1234567.89, 'standard', 'EUR')
-      expect(result).toContain('EUR')
+      expect(formatCurrency(1234567.89, 'standard', 'EUR')).toBe(
+        '1.234.567,89\u00A0EUR',
+      )
     })
 
     it('should format USD currency', () => {
-      const result = formatCurrency(1234567.89, 'standard', 'USD')
-      expect(result).toContain('USD')
+      expect(formatCurrency(1234567.89, 'standard', 'USD')).toBe(
+        '1.234.567,89\u00A0USD',
+      )
     })
 
     it('should use compact notation', () => {
-      const result = formatCurrency(1234567, 'compact')
-      // Compact notation should use abbreviated format (M, mil., K, etc.)
-      // The exact format depends on locale, so we check that it contains
-      // a compact indicator or is not the full number representation
-      const hasCompactIndicator = /[MKmil]/i.test(result) || !result.includes('1,234,567') && !result.includes('1.234.567')
-      expect(hasCompactIndicator).toBe(true)
+      expect(formatCurrency(1234567, 'compact')).toBe('1,23\u00A0mil.\u00A0RON')
     })
 
     it('should handle zero', () => {
-      const result = formatCurrency(0)
-      expect(result).toContain('0')
+      expect(formatCurrency(0)).toBe('0\u00A0RON')
     })
 
     it('should handle negative numbers', () => {
-      const result = formatCurrency(-1000)
-      expect(result).toContain('-')
+      expect(formatCurrency(-1000)).toBe('-1.000\u00A0RON')
     })
 
     it('should handle very large numbers', () => {
-      const result = formatCurrency(999999999999)
-      expect(result).toBeTruthy()
+      expect(formatCurrency(999999999999)).toBe('999.999.999.999\u00A0RON')
     })
 
     it('should handle decimal precision', () => {
-      const result = formatCurrency(100.123456)
-      // Should have at most 2 decimal places
-      const decimalPart = result.split(',').pop() || result.split('.').pop()
-      if (decimalPart && /\d+/.test(decimalPart)) {
-        expect(decimalPart.replace(/[^\d]/g, '').length).toBeLessThanOrEqual(2)
-      }
+      // Rounded to at most 2 decimals, and the digits themselves are pinned —
+      // an unconditional assertion, so a formatting change cannot make this
+      // test silently assert nothing.
+      expect(formatCurrency(100.123456)).toBe('100,12\u00A0RON')
+      expect(formatCurrency(100.125)).toBe('100,13\u00A0RON')
+      // Trailing zeros are dropped (minimumFractionDigits: 0).
+      expect(formatCurrency(1234.5)).toBe('1.234,5\u00A0RON')
+      expect(formatCurrency(1234)).toBe('1.234\u00A0RON')
     })
   })
 
