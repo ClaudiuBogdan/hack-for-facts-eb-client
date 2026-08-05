@@ -24,6 +24,27 @@ export type GraphqlChamber = 'camera_deputatilor' | 'senat' | 'comun'
 /** Latest legislature on the production DB (verified 2026-06-17: 472 members). */
 export const LATEST_LEGISLATURE = '2024'
 
+/**
+ * Every legislature the member spine actually carries, newest first.
+ *
+ * Measured on Chronos 2026-08-05: `parliament.members` holds all ten of these
+ * for BOTH chambers (5,289 mandates; smallest cell senat/1990 at 128). It is the
+ * navigable axis for any per-legislature surface — a page pinned to
+ * `LATEST_LEGISLATURE` is showing one tenth of what the server will serve.
+ */
+export const PARLIAMENT_LEGISLATURE_YEARS: readonly string[] = [
+  '2024',
+  '2020',
+  '2016',
+  '2012',
+  '2008',
+  '2004',
+  '2000',
+  '1996',
+  '1992',
+  '1990',
+]
+
 /** UI chamber (`camera`/`senat`) → GraphQL chamber. */
 export function toGraphqlChamber(chamber: ParliamentChamber): GraphqlChamber {
   return chamber === 'camera' ? 'camera_deputatilor' : 'senat'

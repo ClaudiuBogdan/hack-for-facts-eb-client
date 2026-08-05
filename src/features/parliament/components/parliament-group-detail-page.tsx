@@ -8,13 +8,18 @@ import {
   useParliamentGroupCohesion,
   useParliamentGroupMembers,
 } from '../hooks/use-parliament-data'
-import { LATEST_LEGISLATURE } from '../api/graphql/parliament-translate'
+import {
+  LATEST_LEGISLATURE,
+  PARLIAMENT_LEGISLATURE_YEARS,
+} from '../api/graphql/parliament-translate'
 import { formatMemberName, getChamberLabel } from '../lib/formatting'
 import {
   buildCountyFacets,
   cohesionWindow,
+  isCurrentLegislature,
   matchCohesionRow,
   parseGroupDetailSearch,
+  resolveGroupLegislature,
   selectRosterMembers,
 } from '../lib/group-roster'
 import {
@@ -109,9 +114,34 @@ export function ParliamentGroupDetailPage({ groupId }: Props) {
   const search = parseGroupDetailSearch(rawSearch)
   const navigate = useNavigate()
 
-  const { data: group, isLoading: groupLoading } = useParliamentGroup(groupId)
-  const { data: members = [], isLoading: membersLoading } =
-    useParliamentGroupMembers(groupId)
+  const legislature = resolveGroupLegislature(search)
+  const isCurrentTerm = isCurrentLegislature(legislature)
+
+  // TWO identity reads. The shown term supplies that term's seat count; the
+  // latest term supplies a heading that survives a term the group did not sit
+  // in — `parliamentGroups` returns a DIFFERENT SET per legislature (11 groups
+  // today, 8 in 2016, 18 in 1992), so a null here means "held no seats then",
+  // not "no such group". On the current term both resolve to one cache entry.
+  const { data: termGroup, isLoading: groupLoading } = useParliamentGroup(
+    groupId,
+    legislature,
+  )
+  const { data: latestGroup, isLoading: latestLoading } = useParliamentGroup(
+    groupId,
+    LATEST_LEGISLATURE,
+  )
+  const group = termGroup ?? latestGroup
+
+  // `isError` is carried, not swallowed. A failed roster read defaults `data` to
+  // [], and the historical empty state would then report "this group held no
+  // mandates in <term>" — a claim about Parliament made out of a network
+  // failure. Same rule as the bill dossier: a FAILED READ is not an absence.
+  const {
+    data: members = [],
+    isLoading: membersLoading,
+    isError: membersError,
+    refetch: refetchMembers,
+  } = useParliamentGroupMembers(groupId, legislature)
 
   // Computed once per mount so the cached rows and the window printed on screen
   // can never describe different spans of time.
@@ -146,16 +176,42 @@ export function ParliamentGroupDetailPage({ groupId }: Props) {
     })
   }
 
-  if (groupLoading) return <ParliamentGroupDetailSkeleton />
+  // The fallback read has to settle too, or a group absent from the shown term
+  // flashes "not found" before its current-term identity arrives.
+  if (groupLoading || (!termGroup && latestLoading)) {
+    return <ParliamentGroupDetailSkeleton />
+  }
 
   if (!group) {
+    // A group with no seats in the SITTING term (a historical-only group such
+    // as PSDR, last seated in 1992) resolves to null on both reads, and the
+    // picker lives further down the page — so without a way back the reader is
+    // stranded on a terminal "not found" for a group that demonstrably existed.
+    // Offer the return to the current term, and do not assert the group is
+    // unknown when all we know is that it did not sit in the term asked for.
     return (
       <div className="min-h-screen" style={{ backgroundColor: GROUP_SURFACE }}>
         <div className={cn(groupPageContainerClassName, 'py-10')}>
           <Link to="/parlament/grupuri" className="text-sm underline">
             ‹ Toate grupurile
           </Link>
-          <p className="mt-4">Grupul parlamentar nu a fost găsit.</p>
+          {isCurrentTerm ? (
+            <p className="mt-4">Grupul parlamentar nu a fost găsit.</p>
+          ) : (
+            <>
+              <p className="mt-4">
+                Acest grup nu a deținut mandate în legislatura {legislature}.
+              </p>
+              <Link
+                to="/parlament/grupuri/$groupId"
+                params={{ groupId }}
+                search={{}}
+                className="mt-3 inline-block text-sm font-semibold underline underline-offset-2"
+              >
+                Vezi legislatura {LATEST_LEGISLATURE}
+              </Link>
+            </>
+          )}
         </div>
       </div>
     )
@@ -167,7 +223,17 @@ export function ParliamentGroupDetailPage({ groupId }: Props) {
   // while the roster is scoped to seats currently held. The difference is the
   // seats that ended mid-term — named here rather than left as an unexplained
   // gap between the headline number and the number of cards below it.
-  const endedSeats = Math.max(0, group.memberCount - members.length)
+  //
+  // ONLY on the sitting term. A past term's roster is already every mandate it
+  // held (no `current` filter), so the difference is structurally 0; and when
+  // the group did not sit in the shown term at all, `group` is the CURRENT-term
+  // fallback, whose count would be subtracted from an unrelated roster.
+  // A failed roster read makes `members` [], which would turn the whole seat
+  // count into "ended mandates" (93 for PSD) — a fabricated number.
+  const endedSeats =
+    isCurrentTerm && termGroup && !membersError
+      ? Math.max(0, termGroup.memberCount - members.length)
+      : 0
   const filtersActive = Boolean(search.q || search.judet)
 
   return (
@@ -212,13 +278,24 @@ export function ParliamentGroupDetailPage({ groupId }: Props) {
             {group.name}
           </h1>
           <p className="mt-3 text-base text-white/90">
-            {getChamberLabel(group.chamber)} · Legislatura {LATEST_LEGISLATURE}
+            {getChamberLabel(group.chamber)} · Legislatura {legislature}
           </p>
 
           <div className="mt-6 flex flex-wrap gap-x-10 gap-y-4">
+            {/* "active" is a claim about TODAY, so it is only made about the
+                sitting term. A past term's roster is every seat it held, which
+                is a different number and a different statement. */}
             <StatBlock
               value={members.length.toLocaleString('ro-RO')}
-              label={members.length === 1 ? 'mandat activ' : 'mandate active'}
+              label={
+                isCurrentTerm
+                  ? members.length === 1
+                    ? 'mandat activ'
+                    : 'mandate active'
+                  : members.length === 1
+                    ? 'mandat'
+                    : 'mandate'
+              }
             />
             <StatBlock
               value={counties.length.toLocaleString('ro-RO')}
@@ -241,36 +318,78 @@ export function ParliamentGroupDetailPage({ groupId }: Props) {
       </section>
 
       <div className={cn(groupPageContainerClassName, 'space-y-10 py-8')}>
-        <section className="space-y-4">
-          <div>
-            <h2 className={groupSectionTitleClassName}>Cum a votat grupul</h2>
-            <p className={cn(groupMutedTextClassName, 'mt-1')}>
-              Repartiția voturilor exprimate de membrii grupului și cât de unit a
-              votat, pe un interval mărginit de voturi.
-            </p>
-          </div>
-          <ParliamentGroupCohesionPanel
-            groupName={group.name}
-            chamber={group.chamber}
-            row={cohesionRow}
-            rows={cohesionRows}
-            window={window}
-            isLoading={cohesionLoading}
-            isError={cohesionError}
-          />
-        </section>
+        {/* The cohesion window is a RECENT span of votes ending today, so it
+            describes the sitting term whatever the picker says. Rather than
+            print a current-term statistic under a 2016 heading, the panel is
+            withheld — a historical cohesion figure needs a window bounded by
+            that term, which is a different query. */}
+        {isCurrentTerm ? (
+          <section className="space-y-4">
+            <div>
+              <h2 className={groupSectionTitleClassName}>Cum a votat grupul</h2>
+              <p className={cn(groupMutedTextClassName, 'mt-1')}>
+                Repartiția voturilor exprimate de membrii grupului și cât de unit a
+                votat, pe un interval mărginit de voturi.
+              </p>
+            </div>
+            <ParliamentGroupCohesionPanel
+              groupName={group.name}
+              chamber={group.chamber}
+              row={cohesionRow}
+              rows={cohesionRows}
+              window={window}
+              isLoading={cohesionLoading}
+              isError={cohesionError}
+            />
+          </section>
+        ) : null}
 
         <section className="space-y-4">
           <div>
             <h2 className={groupSectionTitleClassName}>Componență</h2>
             <p className={cn(groupMutedTextClassName, 'mt-1')}>
-              Mandatele deținute în prezent de acest grup, în legislatura{' '}
-              {LATEST_LEGISLATURE}.
+              {isCurrentTerm
+                ? `Mandatele deținute în prezent de acest grup, în legislatura ${legislature}.`
+                : `Mandatele pe care fișa lor le atribuie acestui grup în legislatura ${legislature}, inclusiv cele încheiate pe parcursul ei.`}
             </p>
           </div>
 
           <div className={cn(groupCardClassName, 'p-4 sm:p-5')}>
             <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="sm:w-44">
+                <label
+                  htmlFor="group-roster-legislature"
+                  className={cn(groupEyebrowClassName, 'block')}
+                >
+                  Legislatura
+                </label>
+                <select
+                  id="group-roster-legislature"
+                  value={legislature}
+                  onChange={(event) =>
+                    setFilter({
+                      // The sitting term leaves no param behind, so the plain
+                      // URL stays the canonical one for the page.
+                      legislatura:
+                        event.target.value === LATEST_LEGISLATURE
+                          ? undefined
+                          : event.target.value,
+                      // The county facet is derived from the roster on screen, so
+                      // a slug picked in one term can name nothing in another —
+                      // it is cleared rather than left filtering to zero.
+                      judet: undefined,
+                    })
+                  }
+                  className={cn(groupControlClassName, 'mt-1.5 w-full px-3')}
+                >
+                  {PARLIAMENT_LEGISLATURE_YEARS.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                      {year === LATEST_LEGISLATURE ? ' (curentă)' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div className="flex-1">
                 <label
                   htmlFor="group-roster-search"
@@ -339,10 +458,31 @@ export function ParliamentGroupDetailPage({ groupId }: Props) {
                 />
               ))}
             </div>
+          ) : membersError ? (
+            <div className={cn(groupCardClassName, 'p-5 sm:p-6 space-y-3')}>
+              <p className={groupMutedTextClassName}>
+                Lista de mandate nu a putut fi încărcată. Grupul poate avea
+                mandate în legislatura {legislature} — reîncearcă în câteva
+                momente.
+              </p>
+              <button
+                type="button"
+                onClick={() => void refetchMembers()}
+                className="text-sm font-semibold underline underline-offset-2"
+              >
+                Reîncearcă
+              </button>
+            </div>
           ) : roster.length === 0 ? (
             <div className={cn(groupCardClassName, 'p-5 sm:p-6')}>
+              {/* An empty roster has three very different causes, and saying the
+                  wrong one misinforms: the read failed (handled above), the
+                  filters excluded everything, or the group held no seats in the
+                  chosen term (the group set changes every legislature). */}
               <p className={groupMutedTextClassName}>
-                Niciun mandat nu corespunde filtrelor alese.
+                {members.length === 0
+                  ? `Acest grup nu a deținut mandate în legislatura ${legislature}.`
+                  : 'Niciun mandat nu corespunde filtrelor alese.'}
               </p>
             </div>
           ) : (
@@ -358,11 +498,24 @@ export function ParliamentGroupDetailPage({ groupId }: Props) {
 
         <GroupNotice>
           Datele provin din nomenclatorul de grupuri parlamentare și din
-          rezultatele de vot publicate de Camera Deputaților și Senat.
-          Componența este cea a mandatelor active din legislatura{' '}
-          {LATEST_LEGISLATURE}; mandatele încheiate în timpul legislaturii nu
-          apar în listă, dar voturile lor rămân înregistrate pe profilul fiecărui
-          parlamentar.
+          rezultatele de vot publicate de Camera Deputaților și Senat.{' '}
+          {isCurrentTerm ? (
+            <>
+              Componența este cea a mandatelor active din legislatura{' '}
+              {legislature}; mandatele încheiate în timpul legislaturii nu apar
+              în listă, dar voturile lor rămân înregistrate pe profilul fiecărui
+              parlamentar.
+            </>
+          ) : (
+            <>
+              Pentru legislatura {legislature} sunt afișate mandatele pe care
+              fișa lor le atribuie acestui grup, inclusiv cele încheiate pe
+              parcursul legislaturii. Fișa reține o singură apartenență per
+              mandat, așa că un parlamentar care a schimbat grupul în cursul
+              legislaturii apare o singură dată, la grupul din fișă — nu la
+              fiecare grup pe care l-a reprezentat.
+            </>
+          )}
         </GroupNotice>
       </div>
     </div>

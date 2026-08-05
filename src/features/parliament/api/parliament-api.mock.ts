@@ -63,6 +63,7 @@ import { toGraphqlVoteChamber } from './graphql/parliament-translate'
 
 import committeesData from '../mocks/committees.json'
 import groupsData from '../mocks/groups.json'
+import { LATEST_LEGISLATURE } from './graphql/parliament-translate'
 import billDetailsData from '../mocks/bill-details.json'
 import billsData from '../mocks/bills.json'
 import judeteData from '../mocks/judete.json'
@@ -458,15 +459,26 @@ export async function fetchParliamentGroupsMock(
   return groups.filter((g) => g.chamber === chamber)
 }
 
+/**
+ * The group fixtures describe the SITTING legislature only — there is no
+ * historical mandate set in the mocks. Both adapters below therefore answer for
+ * `LATEST_LEGISLATURE` and return nothing for any other term, rather than
+ * serving the current roster under a historical heading: with the legislature
+ * picker on the page, that would present today's members as 2016's.
+ */
 export async function fetchParliamentGroupMock(
   groupId: string,
+  legislature: string = LATEST_LEGISLATURE,
 ): Promise<ParliamentGroup | null> {
+  if (legislature !== LATEST_LEGISLATURE) return null
   return groups.find((g) => g.groupId === groupId) ?? null
 }
 
 export async function fetchParliamentGroupMembersMock(
   groupId: string,
+  legislature: string = LATEST_LEGISLATURE,
 ): Promise<ParliamentMember[]> {
+  if (legislature !== LATEST_LEGISLATURE) return []
   return members.filter((m) => m.groupId === groupId)
 }
 

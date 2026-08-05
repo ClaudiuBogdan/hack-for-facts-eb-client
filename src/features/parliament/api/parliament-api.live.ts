@@ -128,6 +128,7 @@ import {
   toGraphqlVoteChamber,
 } from './graphql/parliament-translate'
 import { resolveGroupColor } from '../lib/group-colors'
+import { isCurrentLegislature } from '../lib/group-roster'
 import { toVoteSortArgs, type VotesListScope } from '../lib/votes-filter-state'
 
 const DEFAULT_MEMBERS_PAGE_SIZE = 20
@@ -142,18 +143,20 @@ const MAX_BALLOTS = BALLOTS_PAGE_SIZE * 2
 
 // ── groups ──────────────────────────────────────────────────────────────────
 
-// Two caches: all-mandates (default, for the directory/filters) and current-only
-// (for the hub composition + roster — SC-1 current-seat counts).
-let groupsCache: Promise<ParliamentGroup[]> | null = null
-let currentGroupsCache: Promise<ParliamentGroup[]> | null = null
+// Cached per (legislature, current). It used to be two module-level slots keyed
+// on `current` alone, which would have served the 2024 directory for every
+// legislature the moment one became selectable — the cache key has to name
+// every axis the request varies on.
+const groupsCaches = new Map<string, Promise<ParliamentGroup[]>>()
 
 async function loadGroupsForChamber(
   chamber: 'camera_deputatilor' | 'senat',
   current?: boolean,
+  legislature: string = LATEST_LEGISLATURE,
 ): Promise<ParliamentGroup[]> {
   const data = await graphqlQuery<unknown>(
     PARLIAMENT_GROUPS_QUERY,
-    { legislature: LATEST_LEGISLATURE, chamber, ...(current ? { current: true } : {}) },
+    { legislature, chamber, ...(current ? { current: true } : {}) },
     { operationName: 'parliamentGroups' },
   )
   return parliamentGroupsResponseSchema.parse(data).parliamentGroups.map(mapGroup)
@@ -172,25 +175,26 @@ async function loadGroupsForChamber(
  * per-chamber counts are 330/134 not 335/137. Use it ONLY for composition/roster
  * surfaces — never for attribution/voting-history (those keep all mandate rows).
  */
-async function loadAllGroups(current?: boolean): Promise<ParliamentGroup[]> {
-  const cacheRef = current ? currentGroupsCache : groupsCache
-  if (!cacheRef) {
-    const built = (async () => {
-      const [camera, senat] = await Promise.all([
-        loadGroupsForChamber('camera_deputatilor', current),
-        loadGroupsForChamber('senat', current),
-      ])
-      return [...camera, ...senat]
-    })().catch((error) => {
-      if (current) currentGroupsCache = null
-      else groupsCache = null
-      throw error
-    })
-    if (current) currentGroupsCache = built
-    else groupsCache = built
-    return built
-  }
-  return cacheRef
+async function loadAllGroups(
+  current?: boolean,
+  legislature: string = LATEST_LEGISLATURE,
+): Promise<ParliamentGroup[]> {
+  const cacheKey = `${legislature}|${current ? 'current' : 'all'}`
+  const cached = groupsCaches.get(cacheKey)
+  if (cached) return cached
+
+  const built = (async () => {
+    const [camera, senat] = await Promise.all([
+      loadGroupsForChamber('camera_deputatilor', current, legislature),
+      loadGroupsForChamber('senat', current, legislature),
+    ])
+    return [...camera, ...senat]
+  })().catch((error) => {
+    groupsCaches.delete(cacheKey)
+    throw error
+  })
+  groupsCaches.set(cacheKey, built)
+  return built
 }
 
 export async function fetchParliamentGroupsLive(
@@ -200,10 +204,21 @@ export async function fetchParliamentGroupsLive(
   return chamber ? groups.filter((g) => g.chamber === chamber) : groups
 }
 
+/**
+ * A group as it stood in one legislature.
+ *
+ * Returns null when the group held no seats then — which is a real answer, not
+ * a missing one: the group SET changes per term (11 groups today, 8 in 2016, 18
+ * in 1992 where PSD's ancestor sits under a different name). Callers must tell
+ * "this group never existed" apart from "this group did not sit in that term";
+ * the page does that by falling back to the current-term identity for the
+ * heading and saying so.
+ */
 export async function fetchParliamentGroupLive(
   groupId: string,
+  legislature: string = LATEST_LEGISLATURE,
 ): Promise<ParliamentGroup | null> {
-  const groups = await loadAllGroups()
+  const groups = await loadAllGroups(undefined, legislature)
   return groups.find((g) => g.groupId === groupId) ?? null
 }
 
@@ -322,14 +337,21 @@ export async function fetchParliamentMemberLive(
 
 export async function fetchParliamentGroupMembersLive(
   groupId: string,
+  legislature: string = LATEST_LEGISLATURE,
 ): Promise<ParliamentMember[]> {
-  // Group-detail roster is a CURRENT-seat surface (SC-1: current:true) — it shows
-  // the party's CURRENT members (AUR → 90, superseded/deceased excluded), so the
-  // roster count matches the composition swatch. Their votes/career are unaffected
-  // (those live on member-detail/voting-history, which never pass current).
+  // For the SITTING term the roster is a CURRENT-seat surface (SC-1: current:true)
+  // — it shows the party's CURRENT members (AUR → 90, superseded/deceased
+  // excluded), so the roster count matches the composition swatch. Their
+  // votes/career are unaffected (those live on member-detail/voting-history,
+  // which never pass current).
+  //
+  // For a PAST term `current` must go, and not as a preference: it means "holds
+  // the seat today", so `current:true` + 2016 returns 0 rows of 156 — the picker
+  // would answer every historical question with an empty roster.
+  const current = isCurrentLegislature(legislature)
   const data = await graphqlQuery<unknown>(
     PARLIAMENT_GROUP_MEMBERS_QUERY,
-    { groupId, legislature: LATEST_LEGISLATURE, current: true },
+    { groupId, legislature, ...(current ? { current: true } : {}) },
     { operationName: 'parliamentGroupMembers' },
   )
   const parsed = parliamentGroupMembersResponseSchema.parse(data)

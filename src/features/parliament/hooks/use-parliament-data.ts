@@ -43,6 +43,7 @@ import {
   fetchParliamentBillActivity,
   fetchParliamentVoteActivity,
 } from '../api/parliament-api'
+import { LATEST_LEGISLATURE } from '../api/graphql/parliament-translate'
 import type { ParliamentVotesFilterInput } from '../api/graphql/parliament-filters'
 import type { ParliamentAgendaFilterInput } from '../api/parliament-agenda-api.live'
 import type { MemberVotesFilterInput } from '../lib/member-votes-filter'
@@ -102,18 +103,28 @@ export function useParliamentGroups(chamber?: 'camera' | 'senat') {
   })
 }
 
-export function useParliamentGroup(groupId: string) {
+/**
+ * A group as it stood in one legislature. `legislature` is part of the query key
+ * because it changes the answer — memberCount is that term's seat count, and a
+ * group absent from the term resolves to null.
+ */
+export function useParliamentGroup(groupId: string, legislature?: string) {
+  // Resolved BEFORE it reaches the key, so `undefined` and the latest year are
+  // one cache entry — the page asks for both (the shown term, and the latest for
+  // a stable heading) and on the current term those must not be two fetches.
+  const leg = legislature ?? LATEST_LEGISLATURE
   return useQuery({
-    queryKey: [...PARLIAMENT_QUERY_KEY, 'group', groupId],
-    queryFn: () => fetchParliamentGroup(groupId),
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'group', groupId, leg],
+    queryFn: () => fetchParliamentGroup(groupId, leg),
     enabled: Boolean(groupId),
   })
 }
 
-export function useParliamentGroupMembers(groupId: string) {
+export function useParliamentGroupMembers(groupId: string, legislature?: string) {
+  const leg = legislature ?? LATEST_LEGISLATURE
   return useQuery({
-    queryKey: [...PARLIAMENT_QUERY_KEY, 'group-members', groupId],
-    queryFn: () => fetchParliamentGroupMembers(groupId),
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'group-members', groupId, leg],
+    queryFn: () => fetchParliamentGroupMembers(groupId, leg),
     enabled: Boolean(groupId),
   })
 }

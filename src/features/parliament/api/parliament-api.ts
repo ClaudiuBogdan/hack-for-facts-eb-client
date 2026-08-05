@@ -203,18 +203,20 @@ export async function fetchParliamentGroups(
 
 export async function fetchParliamentGroup(
   groupId: string,
+  legislature?: string,
 ): Promise<ParliamentGroup | null> {
   return isParliamentMockEnabled()
-    ? fetchParliamentGroupMock(groupId)
-    : fetchParliamentGroupLive(groupId)
+    ? fetchParliamentGroupMock(groupId, legislature)
+    : fetchParliamentGroupLive(groupId, legislature)
 }
 
 export async function fetchParliamentGroupMembers(
   groupId: string,
+  legislature?: string,
 ): Promise<ParliamentMember[]> {
   return isParliamentMockEnabled()
-    ? fetchParliamentGroupMembersMock(groupId)
-    : fetchParliamentGroupMembersLive(groupId)
+    ? fetchParliamentGroupMembersMock(groupId, legislature)
+    : fetchParliamentGroupMembersLive(groupId, legislature)
 }
 
 /**

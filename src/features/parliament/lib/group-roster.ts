@@ -1,4 +1,8 @@
 import type { ParliamentGroupCohesion, ParliamentMember } from '@/schemas/parliament'
+import {
+  LATEST_LEGISLATURE,
+  PARLIAMENT_LEGISLATURE_YEARS,
+} from '../api/graphql/parliament-translate'
 import { foldText } from './text-fold'
 
 /**
@@ -13,7 +17,18 @@ export interface ParliamentGroupDetailSearch {
   readonly q?: string
   /** A `judetSlug` from the roster itself — never a hardcoded county list. */
   readonly judet?: string
+  /**
+   * Which legislature's seats to show. Absent = the latest one.
+   *
+   * The page used to be pinned to `LATEST_LEGISLATURE` in the fetch layer, so a
+   * group's earlier terms were unreachable even though the server accepts the
+   * argument and the data carries ten of them (PSD Camera alone: 924 mandates
+   * across seven legislatures, of which 2024 is 93).
+   */
+  readonly legislatura?: string
 }
+
+const LEGISLATURE_VALUES: ReadonlySet<string> = new Set(PARLIAMENT_LEGISLATURE_YEARS)
 
 /** Tolerant parse: anything unrecognised falls back to "no filter". */
 export function parseGroupDetailSearch(
@@ -21,10 +36,66 @@ export function parseGroupDetailSearch(
 ): ParliamentGroupDetailSearch {
   const q = search['q']
   const judet = search['judet']
+  const legislatura = search['legislatura']
   return {
     ...(typeof q === 'string' && q.trim() ? { q: q.trim() } : {}),
     ...(typeof judet === 'string' && judet.trim() ? { judet: judet.trim() } : {}),
+    ...(toLegislature(legislatura) !== null
+      ? { legislatura: toLegislature(legislatura)! }
+      : {}),
   }
+}
+
+/**
+ * A legislature year out of a RAW search value, or null.
+ *
+ * Accepts a number as well as a string, and that is not defensive padding —
+ * it is what this page actually receives. The router parses search values with
+ * `JSON.parse` (src/router.tsx), so a shared or hand-typed `?legislatura=2016`
+ * arrives as the NUMBER 2016, while the router's own links carry the JSON form
+ * `?legislatura=%222016%22` and arrive as a string. Verified by A/B on the dev
+ * stack: with a string-only check, `?legislatura=2012` silently rendered the
+ * 2024 roster under a "Legislatura 2024" heading — the reader gets an answer to
+ * a question they did not ask.
+ *
+ * The committee browse is not exposed to this because it reads the
+ * route-VALIDATED search (`Route.useSearch()`), while this page re-parses the
+ * raw one (`useSearch({ strict: false })`). Routing that page through its
+ * validated search too would remove the asymmetry; until then the tolerant
+ * parse this function is documented to be has to cover both forms.
+ */
+function toLegislature(value: unknown): string | null {
+  const text =
+    typeof value === 'string'
+      ? value.trim()
+      : typeof value === 'number' && Number.isInteger(value)
+        ? String(value)
+        : null
+  return text !== null && LEGISLATURE_VALUES.has(text) ? text : null
+}
+
+/**
+ * The legislature a group page is currently showing.
+ *
+ * Kept as one function so the fetch layer, the labels and the "is this the
+ * current term" test can never disagree about which term is on screen.
+ */
+export function resolveGroupLegislature(
+  search: ParliamentGroupDetailSearch,
+): string {
+  return search.legislatura ?? LATEST_LEGISLATURE
+}
+
+/**
+ * Whether the shown legislature is the sitting one.
+ *
+ * `current: true` on the server means "seat held TODAY", so pairing it with a
+ * past legislature is not a narrower filter — it is an empty one (measured:
+ * psd-camera_deputatilor + 2016 + current:true returns 0 of 156). Every surface
+ * that means "currently seated" has to ask this first.
+ */
+export function isCurrentLegislature(legislature: string): boolean {
+  return legislature === LATEST_LEGISLATURE
 }
 
 export interface GroupCountyFacet {

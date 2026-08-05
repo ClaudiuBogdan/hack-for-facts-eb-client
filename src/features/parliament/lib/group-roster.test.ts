@@ -1,12 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import type { ParliamentGroupCohesion, ParliamentMember } from '@/schemas/parliament'
 import {
+  LATEST_LEGISLATURE,
+  PARLIAMENT_LEGISLATURE_YEARS,
+} from '../api/graphql/parliament-translate'
+import {
   buildCountyFacets,
   cohesionBand,
   cohesionRank,
   cohesionWindow,
+  isCurrentLegislature,
   matchCohesionRow,
   parseGroupDetailSearch,
+  resolveGroupLegislature,
   selectRosterMembers,
 } from './group-roster'
 
@@ -34,6 +40,76 @@ describe('parseGroupDetailSearch', () => {
 
   it('drops empty and non-string values instead of throwing', () => {
     expect(parseGroupDetailSearch({ q: '   ', judet: 42, other: 'x' })).toEqual({})
+  })
+
+  it('keeps a legislature the member spine actually carries', () => {
+    expect(parseGroupDetailSearch({ legislatura: '2016' })).toEqual({
+      legislatura: '2016',
+    })
+  })
+
+  it('accepts the hand-typed form, which reaches this parse as a NUMBER', () => {
+    // The router parses search values with JSON.parse, so a shared or typed
+    // `?legislatura=2016` arrives as 2016 while its own links carry the JSON
+    // string form. A string-only check rendered the 2024 roster under a
+    // "Legislatura 2024" heading for a reader who asked for 2016.
+    expect(parseGroupDetailSearch({ legislatura: 2016 })).toEqual({
+      legislatura: '2016',
+    })
+    expect(parseGroupDetailSearch({ legislatura: '2016' })).toEqual({
+      legislatura: '2016',
+    })
+  })
+
+  it('drops a legislature nobody sat in, rather than asking for an empty term', () => {
+    // 2018 is not a legislature; 1989 predates the spine. Either would resolve
+    // to a roster of zero that reads as "this group held no seats".
+    expect(parseGroupDetailSearch({ legislatura: '2018' })).toEqual({})
+    expect(parseGroupDetailSearch({ legislatura: '1989' })).toEqual({})
+    expect(parseGroupDetailSearch({ legislatura: 2018 })).toEqual({})
+    expect(parseGroupDetailSearch({ legislatura: 2016.5 })).toEqual({})
+  })
+})
+
+describe('resolveGroupLegislature / isCurrentLegislature', () => {
+  it('defaults to the sitting term when the URL says nothing', () => {
+    expect(resolveGroupLegislature({})).toBe(LATEST_LEGISLATURE)
+    expect(isCurrentLegislature(resolveGroupLegislature({}))).toBe(true)
+  })
+
+  it('honours an explicit term and reports it as not current', () => {
+    const search = { legislatura: '2008' }
+    expect(resolveGroupLegislature(search)).toBe('2008')
+    expect(isCurrentLegislature(resolveGroupLegislature(search))).toBe(false)
+  })
+
+  it('offers exactly the ten terms measured on prod, newest first', () => {
+    // Written out rather than compared against PARLIAMENT_LEGISLATURE_YEARS —
+    // asserting the picker list against the constant the picker is built from
+    // corroborates nothing. These ten are the legislatures `parliament.members`
+    // actually carries for BOTH chambers (Chronos, 2026-08-05); a value added
+    // here that the spine has no mandates for would render an empty roster as
+    // "this group held no seats".
+    expect([...PARLIAMENT_LEGISLATURE_YEARS]).toEqual([
+      '2024',
+      '2020',
+      '2016',
+      '2012',
+      '2008',
+      '2004',
+      '2000',
+      '1996',
+      '1992',
+      '1990',
+    ])
+    expect(PARLIAMENT_LEGISLATURE_YEARS[0]).toBe(LATEST_LEGISLATURE)
+    // And every offered value must survive the parse, or the picker would set a
+    // term the page then silently discards.
+    for (const year of PARLIAMENT_LEGISLATURE_YEARS) {
+      expect(parseGroupDetailSearch({ legislatura: year })).toEqual({
+        legislatura: year,
+      })
+    }
   })
 })
 
