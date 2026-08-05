@@ -3,12 +3,55 @@ import { cn } from '@/lib/utils'
 import { formatBillUpdatedAt, getChamberLabel } from '../lib/formatting'
 import { getBillTypeLabel } from '../lib/bill-profile-data'
 import {
+  getDecisionChamberLabel,
+  getLawCharacterLabel,
+} from '../lib/bill-source-facts'
+import {
   billDetailPageContainerClassName,
   getBillDetailHeroColor,
 } from '../lib/bill-detail-theme'
 
 type Props = {
   readonly bill: ParliamentBillDetail
+}
+
+/**
+ * The three procedural facts that change how the whole page reads.
+ *
+ * They are flags, not a table: each appears only when the source stated it.
+ * `urgency` is the one that matters most and the one most easily got wrong — it
+ * renders for `true` ALONE. An explicit "not urgent" (16,051 bills) and a silent
+ * source (21,242) are different facts, and neither is worth a chip.
+ *
+ * Where each is then said: the explicit "Nu" gets a row in the procedure table
+ * on the Detalii tab, where there is room for words. SILENCE GETS NOTHING —
+ * no chip and no row — because we have nothing to report, and an "unknown" row
+ * on 21,242 of 41,990 bills would be the loudest thing on the page. What must
+ * never happen is a missing chip reading as a stated "no".
+ */
+function BillProcedureFlags({ bill }: Props) {
+  const decisionChamber = getDecisionChamberLabel(bill.procedure.decisionChamber)
+  const lawCharacter = getLawCharacterLabel(bill.procedure.lawCharacter)
+  const flags = [
+    bill.procedure.urgency === true ? 'Procedură de urgență' : undefined,
+    decisionChamber ? `Cameră decizională: ${decisionChamber}` : undefined,
+    lawCharacter,
+  ].filter((flag): flag is string => flag !== undefined)
+
+  if (flags.length === 0) return null
+
+  return (
+    <ul className="mt-3 flex flex-wrap gap-2">
+      {flags.map((flag) => (
+        <li
+          key={flag}
+          className="inline-flex items-center border border-white/60 px-2 py-0.5 text-xs font-semibold text-white"
+        >
+          {flag}
+        </li>
+      ))}
+    </ul>
+  )
 }
 
 /** Full-width bill summary band — inner content aligned to main panel */
@@ -41,6 +84,7 @@ export function BillDetailHero({ bill }: Props) {
           <p className="mt-1 text-sm text-white/80">
             Actualizat: {formatBillUpdatedAt(bill.lastUpdatedAt)}
           </p>
+          <BillProcedureFlags bill={bill} />
         </div>
 
         <div className="min-w-[16rem]">

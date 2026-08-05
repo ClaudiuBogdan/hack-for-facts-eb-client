@@ -34,7 +34,10 @@ import {
   type ParliamentAiBillMetadata,
   type ParliamentAiControlItemMetadata,
   type ParliamentBillDetail,
+  type ParliamentBillInitiatorClassification,
+  type ParliamentBillProcedure,
   type ParliamentBillRelatedVote,
+  type ParliamentBillSourceLink,
   type ParliamentBillSummary,
   type ParliamentBillStepLink,
   type ParliamentBillTimelineStep,
@@ -507,6 +510,12 @@ export function mapVoteDetail(
 
   return ParliamentVoteDetailSchema.parse({
     ...summary,
+    // Carried VERBATIM. `heldAt` is parsed out of this string's date prefix, so
+    // it holds no time of day; this is the chamber's own clock and the only
+    // place it exists. Trimmed but never re-parsed or re-formatted.
+    ...(raw.voteDateTimeText?.trim()
+      ? { heldAtSourceText: raw.voteDateTimeText.trim() }
+      : {}),
     billLinks,
     groupBreakdown,
     memberVotes,
@@ -723,7 +732,7 @@ export function mapMemberSpeechActivity(
  *    still a government project, so the OUG check must NOT win over the prefix;
  *  - a bare "Ordonanţă"/"OUG" initiative → `ordonanta`.
  */
-function classifyBillType(
+function classifyBillTypeFromText(
   serverBillType: string | null | undefined,
   title: string | null | undefined,
 ): BillType {
@@ -745,6 +754,51 @@ function classifyBillType(
     return "ordonanta";
   }
   return "guvern";
+}
+
+/**
+ * ONE classification of who initiated a bill, from the better of two producers.
+ *
+ * The server derives `initiatorType` from the bill's own INITIATORS LIST
+ * (`initiators:guvern` when the Government is on it, `initiators:members` when
+ * only MPs are) — evidence about the actual initiator, served on the same type
+ * so a reader can check it. `classifyBillTypeFromText` reads the initiative-type
+ * PREFIX, and where the source printed no `tip_initiativa` it falls through to a
+ * bare `guvern` default that is a guess, not a reading.
+ *
+ * Measured on all 41,990 live bills (2026-08-05): the two disagree outright on
+ * 350, and preferring the evidence moves exactly those rows and no others.
+ *
+ * WHERE THE TEXT RULE GOES WRONG, precisely — not, as I first wrote, by running
+ * out of things to read. Only 7 of the 350 hit the bare default. The other 343
+ * had a title the rule DID read and misread: 250 titles beginning "Proiect de
+ * lege…" that the initiators list says are parliamentary, 91 that also mention
+ * "cetăţeni", and 2 more. The prefix describes the DOCUMENT; the initiators
+ * list is evidence about the ACTOR, and only the second answers the question.
+ *
+ * Checked outside the database, per the AGENTS.md rule: cdep.ro prints "5
+ * deputati+senatori" for senat:804-2007 (the text rule said guvern) and
+ * "Initiator: Guvern" for senat:372-2001 (it said parlamentar). The evidence
+ * wins in both directions.
+ *
+ * NO `ordonanta` carve-out. There was one, on the reasoning that an OUG is a
+ * government act either way — but that reasoning does not survive the data.
+ * Every one of the 121 bills reaching that branch is titled "Lege pentru
+ * aprobarea Ordonanţei Guvernului nr. X": a LAW APPROVING an ordinance, not an
+ * ordinance. The branch fires on the substring "ordonanţ" anywhere in the
+ * title, so it was labelling all 121 "Ordonanță de urgență" — a false statement
+ * about what the act IS, which the server's classification corrects to
+ * `guvern`. (The branch stays for bills with no classification, where it is the
+ * only signal; today no live bill is in that position.)
+ *
+ * Bills with no server classification (22,706) keep the text rule unchanged.
+ */
+function classifyBillType(
+  raw: Pick<RawParliamentBillSummary, "billType" | "title" | "initiatorType">,
+): BillType {
+  if (raw.initiatorType === "government") return "guvern";
+  if (raw.initiatorType === "parliamentary") return "parlamentar";
+  return classifyBillTypeFromText(raw.billType, raw.title);
 }
 
 /**
@@ -861,12 +915,21 @@ export function mapBillSummary(
     billId: raw.billKey,
     number: billNumber(raw),
     title: raw.title ?? "(fără titlu)",
-    billType: classifyBillType(raw.billType, raw.title),
+    billType: classifyBillType(raw),
     originatingChamber,
     currentLocation,
     currentStageLabel: stageLabel,
     lastUpdatedAt,
     legislatureId: String(billYear(raw)),
+    // Prose the source printed, passed through verbatim. Blank-safe: the server
+    // nulls an empty string, but a whitespace-only one would still render as an
+    // empty line the source never wrote.
+    ...(raw.lastEventDescription?.trim()
+      ? { lastEventDescription: raw.lastEventDescription.trim() }
+      : {}),
+    ...(raw.objectOfRegulation?.trim()
+      ? { objectOfRegulation: raw.objectOfRegulation.trim() }
+      : {}),
   });
 }
 
@@ -1067,12 +1130,21 @@ export function mapBillDetail(
   const timeline = buildBillTimeline(raw.events, dossierBillIds, raw.billKey);
 
   const initiator = raw.initiators[0];
+  // A parliamentary bill whose initiators we could not RESOLVE to member rows is
+  // still a parliamentary bill. It used to fall through to the `guvern` arm and
+  // print "Guvernul României" — naming the wrong initiator on 1,244 live bills
+  // that the server classifies parliamentary from their own mentions list but
+  // whose mandate keys are unresolved. Absent detail is shown as absent.
   const billInitiator =
-    summary.billType === "parlamentar" && initiator
+    summary.billType === "parlamentar"
       ? {
           type: "parlamentar" as const,
-          memberId: initiator.mandateKey,
-          memberName: initiator.fullName ?? undefined,
+          ...(initiator
+            ? {
+                memberId: initiator.mandateKey,
+                memberName: initiator.fullName ?? undefined,
+              }
+            : {}),
         }
       : summary.billType === "cetateni"
         ? {
@@ -1107,6 +1179,25 @@ export function mapBillDetail(
     ? mapBillAiMetadata(raw.aiMetadata)
     : undefined;
 
+  const governmentRegistration = buildGovernmentRegistration(raw);
+  // Kept as OUR classification with the rule that produced it, separately from
+  // `billType` — which the same value now drives, but which the page prints as
+  // a plain type label. Only the two values the server can produce are accepted;
+  // a third would be dropped rather than shown as a classification we cannot
+  // explain.
+  const initiatorClassification: ParliamentBillInitiatorClassification | undefined =
+    raw.initiatorType === "government" || raw.initiatorType === "parliamentary"
+      ? {
+          value: raw.initiatorType,
+          ...(raw.initiatorTypeMethod?.trim()
+            ? { method: raw.initiatorTypeMethod.trim() }
+            : {}),
+          ...(raw.initiatorTypeConfidence?.trim()
+            ? { confidence: raw.initiatorTypeConfidence.trim() }
+            : {}),
+        }
+      : undefined;
+
   return ParliamentBillDetailSchema.parse({
     ...summary,
     longTitle: raw.title ?? summary.title,
@@ -1133,7 +1224,133 @@ export function mapBillDetail(
     // Server-merged twin-pair dossier keys (requested view first); falls back
     // to the single requested key on servers without the field yet.
     dossierBillIds,
+    procedure: mapBillProcedure(raw),
+    sourceLinks: mapBillSourceLinks(raw),
+    ...(renderableDate(raw.firstEventDate) !== undefined
+      ? { firstEventAt: renderableDate(raw.firstEventDate) }
+      : {}),
+    ...(raw.lastEventSource?.trim()
+      ? { lastEventSource: raw.lastEventSource.trim() }
+      : {}),
+    // Named for what it IS — when WE captured the row, not when the chamber
+    // changed the bill. See the schema field for the measurement. Guarded like
+    // firstEventAt: it is also handed straight to a date formatter.
+    ...(renderableDate(raw.sourceUpdatedAt) !== undefined
+      ? { sourceCapturedAt: renderableDate(raw.sourceUpdatedAt) }
+      : {}),
+    ...(raw.senateCod?.trim() ? { senateCod: raw.senateCod.trim() } : {}),
+    ...(governmentRegistration ? { governmentRegistration } : {}),
+    ...(initiatorClassification ? { initiatorClassification } : {}),
   });
+}
+
+/**
+ * The Government's own registration for a bill it initiated, as one reference.
+ *
+ * Both halves are STRINGS server-side because the source stores them as text,
+ * and both must be present: an "E 123" with no year identifies nothing, and a
+ * bare year is not a reference at all.
+ */
+function buildGovernmentRegistration(
+  raw: RawParliamentBillDetail,
+): string | undefined {
+  const number = raw.governmentENumber?.trim();
+  const year = raw.governmentEYear?.trim();
+  return number && year ? `E ${number}/${year}` : undefined;
+}
+
+/** Procedural facts, passed through raw — the vocabulary match happens at render. */
+function mapBillProcedure(raw: RawParliamentBillDetail): ParliamentBillProcedure {
+  return {
+    ...(raw.decisionChamber?.trim()
+      ? { decisionChamber: raw.decisionChamber.trim() }
+      : {}),
+    ...(raw.lawCharacter?.trim()
+      ? { lawCharacter: raw.lawCharacter.trim() }
+      : {}),
+    // `?? undefined` and NOT `?? false`: the server sends null for the 21,242
+    // bills whose source printed no procedure block, and "the source did not
+    // say" must not arrive at the UI as "not urgent".
+    ...(raw.procedureUrgency != null ? { urgency: raw.procedureUrgency } : {}),
+    ...(raw.procedureRegime?.trim()
+      ? { constitutionalRegime: raw.procedureRegime.trim() }
+      : {}),
+  };
+}
+
+/**
+ * The official pages this bill can be read on, ordered chamber-first.
+ *
+ * Each is filtered through `absoluteUrl`, not `httpUrl`, and the difference is
+ * the whole point: `httpUrl` only checks the string STARTS with a scheme, so
+ * the literal `"http://"` passes it and then fails the UI schema's `.url()` —
+ * which throws inside `ParliamentBillDetailSchema.parse` and takes the ENTIRE
+ * bill page down. That is the opposite of the rule this is supposed to follow,
+ * so the filter here validates with the same parser the schema will use.
+ */
+function mapBillSourceLinks(
+  raw: RawParliamentBillDetail,
+): ParliamentBillSourceLink[] {
+  const candidates: readonly {
+    key: ParliamentBillSourceLink["key"];
+    label: string;
+    raw: string | null | undefined;
+  }[] = [
+    {
+      key: "cdepProject",
+      label: "Fișa proiectului la Camera Deputaților",
+      raw: raw.cdepProjectUrl,
+    },
+    {
+      key: "senateDetail",
+      label: "Fișa proiectului la Senat",
+      raw: raw.senateDetailUrl,
+    },
+    { key: "senateFile", label: "Fișa de înregistrare (Senat)", raw: raw.senateFileUrl },
+    {
+      key: "senateOpinions",
+      label: "Avize și puncte de vedere (Senat)",
+      raw: raw.senateOpinionsUrl,
+    },
+  ];
+
+  return candidates.flatMap(({ key, label, raw: value }) => {
+    const url = absoluteUrl(value);
+    return url ? [{ key, label, url }] : [];
+  });
+}
+
+/**
+ * An http(s) URL that will actually SURVIVE `z.string().url()`.
+ *
+ * `httpUrl` answers "does this look like a link"; this answers "can this be
+ * published", which is the question a value about to enter a `.url()` schema
+ * has to pass. Parsing with the URL constructor is the cheapest way to ask the
+ * same question the validator will.
+ */
+function absoluteUrl(value: string | null | undefined): string | undefined {
+  const candidate = httpUrl(value);
+  if (candidate === undefined) return undefined;
+  try {
+    const parsed = new URL(candidate);
+    return parsed.hostname === "" ? undefined : candidate;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * A date we can hand to a formatter without it throwing.
+ *
+ * `toIsoDate` PASSES THROUGH anything it does not recognise — a source value of
+ * "x" comes back as "x", reaches `formatBillDate`, and raises
+ * `RangeError: Invalid time value` inside render, blanking the page. A date we
+ * cannot parse is treated as a date we do not have.
+ */
+function renderableDate(value: string | null | undefined): string | undefined {
+  const iso = toIsoDate(value, "");
+  if (!iso) return undefined;
+  return Number.isNaN(new Date(iso).getTime()) ? undefined : iso;
 }
 
 /** Milestone keywords (RO, diacritic-insensitive) — highlighted timeline rows. */

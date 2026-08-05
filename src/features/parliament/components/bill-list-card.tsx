@@ -88,6 +88,21 @@ export function BillListCard({ bill, className }: Props) {
           >
             Inițiat în {getChamberLabel(bill.originatingChamber)}
           </span>
+          {/*
+            The bill's own account of what it does, where it exists — 1,007 of
+            41,990 bills (2.4%), averaging ~466 characters.
+
+            It sits OUTSIDE the four-track grid on purpose. The tracks are fixed
+            widths so a fact can be read straight down the list, and a paragraph
+            of source prose in one of them would either blow the column or wrap
+            to six lines and break that alignment for every row below it. Clamped
+            to two lines: the card is a way in, not the document.
+          */}
+          {bill.objectOfRegulation ? (
+            <p className="mt-2 line-clamp-2 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              {bill.objectOfRegulation}
+            </p>
+          ) : null}
         </div>
         <ParliamentCardChevron className="mt-0.5 shrink-0 text-[#505a5f] dark:text-[var(--pnrr-muted)]" />
       </div>
@@ -120,10 +135,21 @@ export function BillListCard({ bill, className }: Props) {
           </dd>
         </BillFact>
 
+        {/*
+          The last track is the `1fr` one — the only one with room for a
+          sentence, which is why WHAT happened goes here rather than in a fixed
+          column. The date alone told the reader a bill had moved and nothing
+          about what the movement was.
+        */}
         <BillFact label="Actualizat">
           <dd className={cn('mt-1', VALUE_CLASS)}>
             {formatBillUpdatedAt(bill.lastUpdatedAt)}
           </dd>
+          {bill.lastEventDescription ? (
+            <dd className="mt-1 line-clamp-2 text-xs text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              {bill.lastEventDescription}
+            </dd>
+          ) : null}
         </BillFact>
       </dl>
     </Link>

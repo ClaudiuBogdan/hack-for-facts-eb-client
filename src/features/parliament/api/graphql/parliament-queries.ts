@@ -132,8 +132,10 @@ const rawVoteCoreSchema = z.object({
   voteDate: z.string().nullable(),
   /**
    * The chamber's own label for what the division was about ("Subiect vot").
-   * OPTIONAL as well as nullable: a server without the field must not fail the
-   * whole surface, and a large minority of divisions carry no readable label.
+   * OPTIONAL as well as nullable: a large minority of divisions carry no
+   * readable label, and the mock transport omits the key entirely. (It does NOT
+   * make an older server safe — see `rawBillSourceFactsSchema`: an unknown field
+   * fails validation and 400s the whole document.)
    */
   voteSubject: z.string().nullable().optional(),
   /**
@@ -513,6 +515,11 @@ export const PARLIAMENT_VOTE_QUERY = /* GraphQL */ `
       voteKey
       chamber
       voteDate
+      # The clock time the chamber PRINTED against this division ("20.12.2023
+      # 16:16"), on all 14,158 CDep + joint divisions and none of the 6,702
+      # Senate ones. voteDate is a DATE column parsed OUT of this string, so it
+      # carries no time at all — this is the only place the hour exists.
+      voteDateTimeText
       voteSubject
       kind
       title
@@ -596,9 +603,20 @@ const rawBallotSchema = z.object({
 export type RawParliamentBallot = z.infer<typeof rawBallotSchema>;
 
 const rawVoteDetailSchema = rawVoteCoreSchema.extend({
+  /**
+   * The division's printed timestamp, verbatim ("20.12.2023 16:16").
+   *
+   * DETAIL ONLY — it is not on the list query, where nothing renders it.
+   *
+   * `voteDate` is DERIVED from this string's date prefix, so "the dates match"
+   * is true by construction on all 14,158 rows and proves nothing about the
+   * clock time. It is trustworthy only as what the source printed, which is
+   * exactly how it is rendered.
+   */
+  voteDateTimeText: z.string().nullable().optional(),
   tally: rawTallySchema,
   /**
-   * Optional as a whole (a server without the field must not fail the page) and
+   * Optional as a whole (transports that omit the key, e.g. the mocks) and
    * `bill` nullable within it (a link whose key resolves to no bill row).
    */
   voteLinks: z
@@ -1260,6 +1278,19 @@ export const PARLIAMENT_BILLS_QUERY = /* GraphQL */ `
         statusText
         billType
         lastEventDate
+        # The two prose fields the list can afford. lastEventDescription says
+        # WHAT the last move was (the list already sorts by WHEN); the object of
+        # regulation is the bill's own statement of what it does. Each row must
+        # read correctly without either, but NEITHER is rare on the page people
+        # actually land on: the default sort is last_event_date desc, and on the
+        # first page of 10 that means ~95% carry a description and half carry an
+        # object of regulation — against 49% and 2.4% corpus-wide. Cost measured
+        # on that real page: 2,897 bytes, ~290 B/row.
+        lastEventDescription
+        objectOfRegulation
+        # DERIVED classification — preferred over the client's title-prefix
+        # heuristic wherever present. See classifyBillType.
+        initiatorType
       }
     }
   }
@@ -1281,6 +1312,24 @@ const rawBillSummarySchema = z.object({
   // Date of the bill's most recent procedural event; drives the card's
   // "Actualizat" line + the server's default last_event_date-desc sort.
   lastEventDate: z.string().nullable(),
+  /**
+   * What the most recent event actually WAS (20,745 of 41,990 bills, ~77
+   * characters). The date alone says a bill moved; this says how.
+   */
+  lastEventDescription: z.string().nullable().optional(),
+  /**
+   * The bill's own statement of what it regulates, as the source printed it.
+   * RARE — 1,007 bills (2.4%) — and ~466 characters where present, so every
+   * surface that renders it has to look right for the other 97.6%.
+   */
+  objectOfRegulation: z.string().nullable().optional(),
+  /**
+   * Who initiated the bill, as the SERVER derives it from the initiators list
+   * ('government' | 'parliamentary', 19,284 bills). Optional and nullable: it
+   * is our classification, not a printed source field, and 22,706 bills have
+   * none. `classifyBillType` prefers it over the title-prefix heuristic.
+   */
+  initiatorType: z.string().nullable().optional(),
 });
 export type RawParliamentBillSummary = z.infer<typeof rawBillSummarySchema>;
 
@@ -1310,6 +1359,37 @@ export const PARLIAMENT_BILL_QUERY = /* GraphQL */ `
       statusText
       billType
       lastEventDate
+      lastEventDescription
+      objectOfRegulation
+      initiatorType
+      # ── How the bill is being handled (attrs.procedure) ──────────────────
+      # decisionChamber says which chamber casts the final, unappealable vote
+      # (art. 75) — the single fact that says where the bill's fate is decided.
+      # OPEN STRING: 11 rows carry parser-welded prose, so the client matches a
+      # known vocabulary before it renders one.
+      decisionChamber
+      lawCharacter
+      # TRI-STATE: true (4,697) / false (16,051) / null (21,242 with no
+      # procedure block at all). Null must never be shown as "not urgent".
+      procedureUrgency
+      procedureRegime
+      # ── Timeline bounds + provenance ────────────────────────────────────
+      firstEventDate
+      lastEventSource
+      sourceUpdatedAt
+      # ── The four human-openable source pages ────────────────────────────
+      cdepProjectUrl
+      senateDetailUrl
+      senateFileUrl
+      senateOpinionsUrl
+      # ── Cross-source identifiers ────────────────────────────────────────
+      senateCod
+      governmentENumber
+      governmentEYear
+      # DERIVED BY US, never printed by the chamber — rendered as our
+      # classification with the rule that produced it, never as a source fact.
+      initiatorTypeConfidence
+      initiatorTypeMethod
       dossierBillKeys
       events {
         sourceBillKey position eventDate eventDateText description chamberCode committee voteIdv docs
@@ -1426,10 +1506,72 @@ export type RawParliamentBillRelatedVote = z.infer<
   typeof rawBillRelatedVoteSchema
 >;
 
-const rawBillDetailSchema = rawBillSummarySchema.extend({
+/**
+ * Facts the source prints about HOW a bill is handled, plus the pages it can be
+ * read on and the identifiers other systems know it by.
+ *
+ * Every one is `.nullable().optional()`. NULLABLE because most are absent on
+ * most bills — the source simply printed nothing. OPTIONAL for the transports
+ * that legitimately omit them: the mock fixtures, and any future partial
+ * selection of this shape.
+ *
+ * OPTIONAL DOES NOT BUY BACKWARD COMPATIBILITY WITH AN OLDER SERVER, and it
+ * would be dangerous to believe it does. These field names are in the query
+ * DOCUMENT; a server whose schema lacks one rejects the operation at validation
+ * ("Cannot query field …") and the transport throws before Zod ever sees a
+ * response — so the whole bill list / bill page / vote page goes blank, not
+ * degraded. The client therefore MUST NOT be deployed ahead of the server.
+ * `client-bill-vote-contract.test.ts` in the server repo is what actually
+ * guards this: it validates these documents against the built SDL.
+ */
+const rawBillSourceFactsSchema = z.object({
+  /**
+   * Which chamber casts the final vote (art. 75) — 16,421 bills. OPEN STRING,
+   * deliberately not an enum: 16,410 rows carry one of three known values, but
+   * on 11 the CDep metadata parser welds an MP's name into the article
+   * reference. The UI matches the vocabulary and drops what it cannot place.
+   */
+  decisionChamber: z.string().nullable().optional(),
+  /** Majority required — 'ordinar' / 'organic' / 'constitutional' (14,765). */
+  lawCharacter: z.string().nullable().optional(),
+  /**
+   * The fast track. TRUE (4,697) / FALSE (16,051) / NULL (21,242 — no procedure
+   * block). Kept as a real tri-state; `undefined`/`null` may never render as
+   * "not urgent", because "the source did not say" is a different fact.
+   */
+  procedureUrgency: z.boolean().nullable().optional(),
+  /** Which constitutional text governs the procedure (the 1991 or 2003 text). */
+  procedureRegime: z.string().nullable().optional(),
+  /** First timeline event — pairs with lastEventDate to bound how long the bill has been in play. */
+  firstEventDate: z.string().nullable().optional(),
+  /** Which lane reported the last event; today only 'votes' (6,081 bills). */
+  lastEventSource: z.string().nullable().optional(),
+  /**
+   * When WE last recorded a change to the source rows — NOT when the chamber
+   * changed the bill (34,224 rows share one backfill stamp). Only ever shown
+   * labelled as our capture time.
+   */
+  sourceUpdatedAt: z.string().nullable().optional(),
+  cdepProjectUrl: z.string().nullable().optional(),
+  senateDetailUrl: z.string().nullable().optional(),
+  senateFileUrl: z.string().nullable().optional(),
+  senateOpinionsUrl: z.string().nullable().optional(),
+  /** The Senate's own code — a cross-reference key, not a display number. */
+  senateCod: z.string().nullable().optional(),
+  /** Government 'E' registration. STRINGS: the source stores them as text. */
+  governmentENumber: z.string().nullable().optional(),
+  governmentEYear: z.string().nullable().optional(),
+  /** Constant 'high' today — see ParliamentBillDetailSchema for why it is not rendered. */
+  initiatorTypeConfidence: z.string().nullable().optional(),
+  /** WHICH rule produced initiatorType. The honesty field; always shown with it. */
+  initiatorTypeMethod: z.string().nullable().optional(),
+});
+
+const rawBillDetailSchema = rawBillSummarySchema.merge(rawBillSourceFactsSchema).extend({
   // All bill_key views merged into this dossier (requested key first) — a
   // resolved CDep/Senate twin pair lists both keys, otherwise just the one.
-  // Optional so the client tolerates servers without the field.
+  // Optional for transports that omit the key, NOT for older servers — see
+  // `rawBillSourceFactsSchema` for why that distinction matters.
   dossierBillKeys: z.array(z.string()).nullable().optional(),
   events: z.array(rawBillEventSchema),
   documents: z.array(rawBillDocumentSchema),

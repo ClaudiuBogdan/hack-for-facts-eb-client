@@ -464,6 +464,20 @@ export type ParliamentVoteBillLink = z.infer<
 export const ParliamentVoteDetailSchema = ParliamentVoteSummarySchema.extend({
   description: z.string().optional(),
   /**
+   * The clock time the chamber PRINTED against this division, exactly as
+   * printed ("20.12.2023 16:16").
+   *
+   * `heldAt` is a DATE — parsed out of the date prefix of this very string — so
+   * it has no time in it and the midnight it carries is ours, not the chamber's.
+   * This is the only place the hour exists, and it exists on 14,158 of 20,860
+   * divisions: every CDep and joint one, and none of the 6,702 Senate ones.
+   *
+   * NEVER round-trip it through `Date`: reformatting in the viewer's timezone
+   * would move a 09:30 Bucharest division to 06:30 for a UTC-3 reader and
+   * across the day boundary for a few. It is source text; it is shown as text.
+   */
+  heldAtSourceText: z.string().optional(),
+  /**
    * Only edges the server resolved (`resolutionStatus === 'linked'`). An
    * unresolved edge is a candidate, not a fact, and must not be shown as one.
    */
@@ -1329,6 +1343,23 @@ export const ParliamentBillSummarySchema = z.object({
   nextStageLabel: z.string().optional(),
   lastUpdatedAt: z.string(),
   legislatureId: z.string(),
+  /**
+   * WHAT the last move was, next to `lastUpdatedAt`'s WHEN (20,745 of 41,990
+   * bills). The list already sorts on the date; this is the sentence that makes
+   * the date mean something.
+   */
+  lastEventDescription: z.string().optional(),
+  /**
+   * The bill's own statement of what it regulates, as printed by the source —
+   * the only prose about a bill beyond its title.
+   *
+   * On 1,007 bills (2.4%) corpus-wide, averaging ~466 characters. But the
+   * corpus rate is the WRONG number for a recency-sorted surface: on the
+   * default first page of the bills list, half the rows carry one (and 87 of
+   * any 100 recent rows do). So a surface must handle BOTH — degrade cleanly
+   * for the bills that have none, and not assume it is showing an exception.
+   */
+  objectOfRegulation: z.string().optional(),
 });
 export type ParliamentBillSummary = z.infer<typeof ParliamentBillSummarySchema>;
 
@@ -1500,6 +1531,60 @@ export type ParliamentBillLawMilestone = z.infer<
   typeof ParliamentBillLawMilestoneSchema
 >;
 
+/** One official page a bill can be read on, in the order a reader wants them. */
+export const ParliamentBillSourceLinkSchema = z.object({
+  key: z.enum(["cdepProject", "senateDetail", "senateFile", "senateOpinions"]),
+  label: z.string(),
+  url: z.string().url(),
+});
+export type ParliamentBillSourceLink = z.infer<
+  typeof ParliamentBillSourceLinkSchema
+>;
+
+/**
+ * OUR classification of who initiated a bill — never a source statement.
+ *
+ * `method` names the evidence that produced `value`, and is rendered WITH it so
+ * a reader can see why we say what we say. `confidence` is carried but not
+ * shown: it is constant 'high' on all 19,284 classified bills, because the only
+ * rules in use are deterministic, so a badge would imply a gradation that does
+ * not exist. Render it if and only if a graded value ever appears.
+ */
+export const ParliamentBillInitiatorClassificationSchema = z.object({
+  value: z.enum(["government", "parliamentary"]),
+  method: z.string().optional(),
+  confidence: z.string().optional(),
+});
+export type ParliamentBillInitiatorClassification = z.infer<
+  typeof ParliamentBillInitiatorClassificationSchema
+>;
+
+/**
+ * How the chamber is HANDLING the bill — the procedural facts the source prints
+ * in its metadata table, as opposed to anything about the bill's content.
+ *
+ * Every field is optional because the source is silent about most bills, and an
+ * absent field is rendered as absent, never as a negative. `urgency` in
+ * particular is a genuine tri-state: 4,697 bills are on the fast track, 16,051
+ * are explicitly not, and 21,242 carry no procedure block at all.
+ */
+export const ParliamentBillProcedureSchema = z.object({
+  /**
+   * RAW source value. Open vocabulary on purpose: 11 of 16,421 rows carry
+   * parser-welded prose, so presentation matches a known list first
+   * (`getDecisionChamberLabel`) and shows nothing for a value it cannot place.
+   */
+  decisionChamber: z.string().optional(),
+  /** RAW 'ordinar' / 'organic' / 'constitutional'; also vocabulary-matched. */
+  lawCharacter: z.string().optional(),
+  urgency: z.boolean().optional(),
+  /** Verbatim source sentence naming the governing constitutional text. */
+  constitutionalRegime: z.string().optional(),
+});
+export type ParliamentBillProcedure = z.infer<
+  typeof ParliamentBillProcedureSchema
+>;
+
 export const ParliamentBillDetailSchema = ParliamentBillSummarySchema.extend({
   longTitle: z.string(),
   summary: z.string().optional(),
@@ -1527,6 +1612,39 @@ export const ParliamentBillDetailSchema = ParliamentBillSummarySchema.extend({
    * children and lists both keys here. Length 1 = single-view dossier.
    */
   dossierBillIds: z.array(z.string()).default([]),
+  /** Procedural facts from the source metadata table; absent keys stay absent. */
+  procedure: ParliamentBillProcedureSchema.default({}),
+  /**
+   * Official pages this bill can be read on — the navigable path back to a
+   * human-openable source. Empty when the source recorded none; each of the
+   * four exists independently, because a bill is typically registered at one
+   * chamber and mirrored at the other.
+   */
+  sourceLinks: z.array(ParliamentBillSourceLinkSchema).default([]),
+  /** When the bill's FIRST event happened; bounds the dossier with `lastUpdatedAt`. */
+  firstEventAt: z.string().optional(),
+  /**
+   * Which lane reported the most recent event — today only 'votes' (6,081
+   * bills), meaning the recency signal came from a division rather than from
+   * the bill's own printed timeline. Worth saying: it explains a bill whose
+   * date moved without its event list changing.
+   */
+  lastEventSource: z.string().optional(),
+  /**
+   * When WE last recorded a change to the source rows.
+   *
+   * NOT the date the chamber touched the bill: 34,224 of 41,990 rows carry the
+   * same 2026-06-28 backfill stamp, a 2010 Senate bill included. Named
+   * `sourceCapturedAt` so the field itself resists being read as bill freshness,
+   * and only ever labelled as our capture time.
+   */
+  sourceCapturedAt: z.string().optional(),
+  /** The Senate's own code for this bill — a cross-reference, not a display number. */
+  senateCod: z.string().optional(),
+  /** The Government's 'E' registration ("E 123/2024") for a government bill. */
+  governmentRegistration: z.string().optional(),
+  /** OUR derived initiator classification; see the schema for why it is labelled. */
+  initiatorClassification: ParliamentBillInitiatorClassificationSchema.optional(),
 });
 export type ParliamentBillDetail = z.infer<typeof ParliamentBillDetailSchema>;
 
