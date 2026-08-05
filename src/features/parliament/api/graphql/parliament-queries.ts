@@ -919,8 +919,9 @@ export const parliamentVoteActivityResponseSchema = z.object({
 // ---------------------------------------------------------------------------
 // Legislative-activity heatmap — parliamentBillActivity(year, filter)
 //
-// ALSO NOT SERVED YET, and written the same way: one calendar year per request,
-// `availableYears` alongside, `ParliamentBillsFilter` so the panel can inherit
+// Served since 2026-08-05 (the server root was built to this exact contract):
+// one calendar year per request, `availableYears` alongside,
+// `ParliamentBillsFilter` so the panel can inherit
 // whatever facets the list carries. A day counts BILLS BY `last_event_date` —
 // the column the default `updated_desc` sort already reads — so the aggregate
 // is a GROUP BY over the same rows the list pages, not a new dataset.

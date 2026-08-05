@@ -628,9 +628,11 @@ export async function fetchParliamentVoteActivityLive(
 /**
  * Institution-wide legislative activity for one calendar year.
  *
- * Like its vote sibling, the field does not exist on the API yet (see
- * `PARLIAMENT_BILL_ACTIVITY_QUERY`), so this REJECTS in live mode and the hub
- * card states the gap rather than drawing an empty year.
+ * Served since 2026-08-05 — the server built `parliamentBillActivity` to this
+ * exact contract (see `PARLIAMENT_BILL_ACTIVITY_QUERY`). Counts are a
+ * current-recency snapshot: a bill sits on exactly one day (its latest event)
+ * and moves when a new event lands, so older days retain only the bills
+ * untouched since.
  */
 export async function fetchParliamentBillActivityLive(
   year: number,

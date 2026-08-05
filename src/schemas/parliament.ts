@@ -596,10 +596,11 @@ export type ParliamentBillActivityDay = z.infer<
  * request, `availableYears` alongside), for the same reason: the surface that
  * reads it stitches two years into a rolling window.
  *
- * NOT YET SERVED. The expected field is `parliamentBillActivity(year: Int!,
- * filter: ParliamentBillsFilter)`. Until it lands the query errors and the hub
- * panel states that failure. It must never be derived from the bills list,
- * which is paged and would count only the page it happened to fetch.
+ * Served since 2026-08-05 by `parliamentBillActivity(year: Int!,
+ * filter: ParliamentBillsFilter)` — built to this exact schema. It must never
+ * be derived from the bills list, which is paged and would count only the page
+ * it happened to fetch. Counts are a current-recency snapshot (a bill sits on
+ * its LATEST event's day and moves when a new event lands).
  */
 export const ParliamentBillActivitySchema = z.object({
   year: z.number().int(),
