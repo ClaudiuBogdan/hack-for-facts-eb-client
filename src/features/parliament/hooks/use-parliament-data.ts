@@ -521,8 +521,28 @@ export function useParliamentCommitteeDocuments(
     queryFn: ({ pageParam }) =>
       fetchParliamentCommitteeDocuments(committeeKey, pageParam),
     initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage && lastPage.endCursor ? lastPage.endCursor : undefined,
+    // The stuck-cursor guard belongs HERE, not in the fetcher: the fetcher draws
+    // one page and forgets it, while this hook is what STORES a cursor and
+    // re-supplies it on the next "Încarcă mai multe". A server that answers with
+    // hasNextPage:true and the cursor it was just given would otherwise append
+    // the same page on every press, forever (page params [undefined,'x','x',…] —
+    // the shape reproduced against the committees browse). A cursor that does not
+    // ADVANCE is therefore TERMINAL, not retried.
+    getNextPageParam: (lastPage, _allPages, lastPageParam, allPageParams) => {
+      if (!lastPage.hasNextPage || !lastPage.endCursor) return undefined
+      if (
+        lastPage.endCursor === lastPageParam ||
+        allPageParams.includes(lastPage.endCursor)
+      ) {
+        console.warn(
+          `[parliament] committee documents stopped: cursor did not advance after ${String(
+            allPageParams.length,
+          )} page(s).`,
+        )
+        return undefined
+      }
+      return lastPage.endCursor
+    },
     enabled: Boolean(committeeKey) && (options.enabled ?? true),
   })
 }

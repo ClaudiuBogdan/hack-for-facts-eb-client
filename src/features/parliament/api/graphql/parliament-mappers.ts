@@ -379,7 +379,7 @@ export function mapCommitteeDocuments(
       const sourceUrl = absoluteUrl(d.sourceUrl);
       if (!sourceUrl) return [];
       const documentUrl = absoluteUrl(d.documentUrl);
-      const publishedAt = renderableDate(d.docDate);
+      const publishedAt = calendarDate(d.docDate);
       return [
         {
           documentId: d.committeeDocumentKey,
@@ -1430,6 +1430,27 @@ function renderableDate(value: string | null | undefined): string | undefined {
   const iso = toIsoDate(value, "");
   if (!iso) return undefined;
   return Number.isNaN(new Date(iso).getTime()) ? undefined : iso;
+}
+
+/**
+ * A GraphQL `Date` kept as a CALENDAR date — deliberately NOT `renderableDate`.
+ *
+ * `renderableDate` routes through `toIsoDate`, which welds `T00:00:00+03:00`
+ * onto a bare date. That turns a day on a calendar into an instant, and the
+ * instant then renders in the reader's timezone: `2026-03-14` printed as
+ * 13 martie in UTC, in Bucharest and in New York alike. A date the source
+ * printed has no time and no zone, so it must not acquire one in transit — the
+ * value is carried through unchanged and formatted in UTC at the edge.
+ */
+function calendarDate(value: string | null | undefined): string | undefined {
+  const trimmed = value?.trim();
+  if (!trimmed) return undefined;
+  const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(trimmed);
+  if (!parts) return undefined;
+  // Shape alone is not validity: '2026-13-45' matches and is not a date.
+  return Number.isNaN(new Date(`${parts[0]}T00:00:00Z`).getTime())
+    ? undefined
+    : parts[0];
 }
 
 /** Milestone keywords (RO, diacritic-insensitive) — highlighted timeline rows. */

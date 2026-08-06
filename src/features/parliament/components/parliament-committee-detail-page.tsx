@@ -44,6 +44,20 @@ import {
 } from '../lib/committee-theme'
 import { ParliamentCardChevron } from './parliament-card-chevron'
 
+/**
+ * I18N DEBT, PAGE-WIDE — deliberate, not an oversight in one section.
+ *
+ * Every user-facing string on this page is hardcoded Romanian and every number
+ * is formatted `ro-RO` directly; there is no Lingui macro anywhere in this file.
+ * 27 of the 175 parliament components DO use Lingui, so the feature is midway
+ * through a conversion this page has not had.
+ *
+ * New copy here follows the page rather than the repo convention on purpose:
+ * half-converting one section would leave the page switching languages mid-scroll
+ * for a reader on `en`, which is worse than being uniformly untranslated and
+ * makes the remaining work harder to see. Convert the FILE in one pass — the
+ * strings, `formatCommitteeDate`'s locale, and every `toLocaleString('ro-RO')`.
+ */
 type Props = {
   readonly committeeKey: string
 }
@@ -227,6 +241,15 @@ function CommitteeDocumentRow({
   readonly isSenate: boolean
 }) {
   const href = document.documentUrl ?? document.sourceUrl
+  const label = document.title ?? 'Document fără titlu în sursă'
+  const sourceLabel = isSenate ? 'Vezi pe senat.ro' : 'Vezi pe cdep.ro'
+  // Every row's link reads "Descarcă" / "Vezi pe senat.ro" visually, which is
+  // fine beside the title but useless in a screen reader's link list — twenty
+  // identical "Descarcă" entries name nothing. The accessible name carries the
+  // document.
+  const linkLabel = document.documentUrl
+    ? `Descarcă ${label}`
+    : `${sourceLabel}: ${label}`
   return (
     <div
       className={cn(
@@ -236,7 +259,7 @@ function CommitteeDocumentRow({
     >
       <div className="min-w-0">
         <p className="text-base font-bold text-[#512178] dark:text-[var(--pnrr-text)]">
-          {document.title ?? 'Document fără titlu în sursă'}
+          {label}
         </p>
         {document.publishedAt ? (
           <p className={cn('mt-1', committeeMutedTextClassName)}>
@@ -256,16 +279,21 @@ function CommitteeDocumentRow({
         variant="outline"
         className="shrink-0 rounded-none border-2 border-[#1d70b8] text-[#1d70b8] hover:bg-[#1d70b8]/5"
       >
-        <a href={href} target="_blank" rel="noopener noreferrer">
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={linkLabel}
+        >
           {document.documentUrl ? (
             <>
-              <Download className="mr-2 h-4 w-4" />
+              <Download className="mr-2 h-4 w-4" aria-hidden />
               Descarcă
             </>
           ) : (
             <>
-              <ExternalLink className="mr-2 h-4 w-4" />
-              {isSenate ? 'Vezi pe senat.ro' : 'Vezi pe cdep.ro'}
+              <ExternalLink className="mr-2 h-4 w-4" aria-hidden />
+              {sourceLabel}
             </>
           )}
         </a>
@@ -291,7 +319,11 @@ function CommitteeDocumentsSection({
     return (
       <section className="space-y-4">
         <h2 className={committeeSectionTitleClassName}>Documente</h2>
-        <Skeleton className="h-24 w-full rounded-none" />
+        {/* A bare Skeleton is invisible to a screen reader — the section just
+            goes quiet. Announce that it is loading. */}
+        <div role="status" aria-label="Se încarcă documentele comisiei">
+          <Skeleton className="h-24 w-full rounded-none" />
+        </div>
       </section>
     )
   }
@@ -311,7 +343,21 @@ function CommitteeDocumentsSection({
     )
   }
 
-  if (documents.length === 0) return null
+  // A successful empty result is a FINDING, not an absence of the surface.
+  // Returning null here made "this committee published nothing we hold" look
+  // identical to "this page has no documents section" — and the reader cannot
+  // tell those apart, so they assume the second. Distinct from the failure
+  // notice above, which says the opposite thing.
+  if (documents.length === 0) {
+    return (
+      <section className="space-y-4">
+        <h2 className={committeeSectionTitleClassName}>Documente</h2>
+        <CommitteeNotice>
+          Nu am găsit documente publicate de această comisie în datele sursă.
+        </CommitteeNotice>
+      </section>
+    )
+  }
 
   return (
     <section className="space-y-4">
@@ -798,7 +844,12 @@ function CommitteeDossier({
                 <span className="tabular-nums">
                   {committee.linkedBillsTotal.toLocaleString('ro-RO')}
                 </span>{' '}
-                asociate acestei comisii. Restul se găsesc pe pagina oficială.
+                asociate acestei comisii.
+                {/* No "the rest are on the official page": the payload does not
+                    establish that. A Senate committee's sourceUrl is the shared
+                    committee INDEX — the same reason the provenance link below
+                    says "Lista comisiilor pe senat.ro" rather than naming the
+                    committee's own page. Say what was cut, not where to find it. */}
               </CommitteeNotice>
             ) : null}
           </section>

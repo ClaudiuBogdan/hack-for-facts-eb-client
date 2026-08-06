@@ -259,6 +259,10 @@ describe('ParliamentCommitteeDetailPage — Senate activity is served, not assum
     expect(screen.getByText(/Afișăm primele/)).toBeInTheDocument()
     // The header count prints the same total, so both occurrences are expected.
     expect(screen.getAllByText('3.352').length).toBeGreaterThan(0)
+    // …and it does NOT promise where the rest are. A Senate committee's
+    // sourceUrl is the shared committee index, so "restul se găsesc pe pagina
+    // oficială" asserts something the payload does not establish.
+    expect(screen.queryByText(/Restul se găsesc/)).not.toBeInTheDocument()
     // The bound is the API's, not the chamber's. "Sursa returnează cel mult N"
     // told the reader cdep.ro refuses to publish more, which it does not.
     expect(screen.queryByText(/Sursa returnează/)).not.toBeInTheDocument()
@@ -355,10 +359,85 @@ describe('ParliamentCommitteeDetailPage — Documente', () => {
     )
   })
 
-  it('renders nothing at all when the committee has no documents', () => {
+  it('says it found none — never removes the section', () => {
+    // Removing it made "this committee published nothing we hold" look exactly
+    // like "this page has no documents section", and a reader cannot tell those
+    // apart, so they read it as the second.
     useDocumentsMock.mockReturnValue(page([]))
     render(<ParliamentCommitteeDetailPage committeeKey={senateDetail.committeeKey} />)
-    expect(screen.queryByText('Documente')).not.toBeInTheDocument()
+
+    expect(screen.getByText('Documente')).toBeInTheDocument()
+    expect(
+      screen.getByText(/Nu am găsit documente publicate de această comisie/),
+    ).toBeInTheDocument()
+    // …and it is NOT the failure notice, which says the opposite thing.
+    expect(screen.queryByText(/nu au putut fi încărcate/)).not.toBeInTheDocument()
+  })
+
+  it('renders the date the source printed, not a timezone-shifted one', () => {
+    // The mapper used to weld T00:00:00+03:00 onto a calendar date, so this row
+    // rendered "13 martie 2026" in every timezone including Bucharest.
+    useCommitteeMock.mockReturnValue({ data: detail, isLoading: false })
+    useDocumentsMock.mockReturnValue(
+      page([
+        {
+          documentId: 'cdep-doc-001',
+          title: 'Raport asupra bugetului',
+          docType: 'raport',
+          publishedAt: '2026-03-14',
+          documentUrl: 'https://www.cdep.ro/rp123.pdf',
+          sourceUrl: 'https://www.cdep.ro/co/comisii.dc?comi=1',
+        },
+      ]),
+    )
+    render(<ParliamentCommitteeDetailPage committeeKey={detail.committeeKey} />)
+
+    expect(screen.getByText('14 martie 2026')).toBeInTheDocument()
+    expect(screen.queryByText('13 martie 2026')).not.toBeInTheDocument()
+  })
+
+  it('names the document in each link, not just the action', () => {
+    // Twenty rows all announcing "Descarcă" name nothing in a screen reader's
+    // link list.
+    useDocumentsMock.mockReturnValue(
+      page([
+        {
+          documentId: 'd1',
+          title: 'Raport asupra sănătății publice',
+          documentUrl: 'https://www.senat.ro/raport.pdf',
+          sourceUrl: 'https://www.senat.ro/ComisiiDetaliu.aspx',
+        },
+        {
+          documentId: 'd2',
+          title: 'Aviz comun',
+          sourceUrl: 'https://www.senat.ro/ComisiiDetaliu.aspx',
+        },
+      ]),
+    )
+    render(<ParliamentCommitteeDetailPage committeeKey={senateDetail.committeeKey} />)
+
+    expect(
+      screen.getByRole('link', { name: 'Descarcă Raport asupra sănătății publice' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'Vezi pe senat.ro: Aviz comun' }),
+    ).toBeInTheDocument()
+  })
+
+  it('announces the loading state instead of going silently blank', () => {
+    useDocumentsMock.mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      isError: false,
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      fetchNextPage: vi.fn(),
+    })
+    render(<ParliamentCommitteeDetailPage committeeKey={senateDetail.committeeKey} />)
+
+    expect(
+      screen.getByRole('status', { name: 'Se încarcă documentele comisiei' }),
+    ).toBeInTheDocument()
   })
 
   it('says a failed fetch failed — never that the committee published nothing', () => {
