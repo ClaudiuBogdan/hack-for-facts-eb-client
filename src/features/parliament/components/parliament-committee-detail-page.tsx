@@ -645,30 +645,33 @@ function CommitteeDossier({
                 {billFilterActive ? ' găsite' : ' încărcate'}
               </Button>
             ) : null}
+            {/* OUR bound, said as ours. This used to read "Sursa returnează cel
+                mult N" — blaming cdep.ro/senat.ro for a limit the API applies.
+                Both numbers come from the payload, so state them plainly. */}
             {showAllBills && cappedByServer ? (
               <CommitteeNotice>
-                Sursa returnează cel mult{' '}
+                Afișăm primele{' '}
                 <span className="tabular-nums">{committee.linkedBills.length}</span>{' '}
-                proiecte pentru o comisie; comisia are{' '}
+                proiecte din cele{' '}
                 <span className="tabular-nums">
                   {committee.linkedBillsTotal.toLocaleString('ro-RO')}
                 </span>{' '}
-                în total. Lista completă este pe pagina oficială.
+                asociate acestei comisii. Restul se găsesc pe pagina oficială.
               </CommitteeNotice>
             ) : null}
           </section>
-        ) : isSenate ? (
-          // Measured, not rounded up: 84 of 2,056 Senate committee documents
-          // carry a bill link (4%), against 29,967 of 42,570 for Camera (70%).
-          // "Doar parțial" would flatten a 17x difference into a phrase that
-          // reads as "most of it is there".
+        ) : (
+          // A NEUTRAL empty state, and only when the payload is actually empty.
+          // The old copy fired on `isSenate` and asserted "sub 5% sunt legate de
+          // un proiect de lege" — a measurement of the document-link path alone.
+          // Committee referrals are now served from the step-links as well, so
+          // that claim is both false and chamber-specific; the honest statement
+          // is that we found none, not why the reader should have expected none.
           <CommitteeNotice>
-            Pentru această comisie nu avem încă proiectele repartizate. Am colectat
-            documentele comisiilor Senatului, dar deocamdată doar o mică parte
-            dintre ele (sub 5%) sunt legate de un proiect de lege. Absența listei nu
-            înseamnă o comisie fără activitate.
+            Nu am găsit proiecte de lege asociate acestei comisii în datele sursă.
+            Absența listei nu înseamnă o comisie fără activitate.
           </CommitteeNotice>
-        ) : null}
+        )}
 
         {/* The meetings figure is suppressed for a Senate zero (see the hero),
             which would otherwise leave a committee showing bills but silently
