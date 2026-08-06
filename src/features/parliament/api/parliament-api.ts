@@ -23,6 +23,7 @@ import type {
   ParliamentChamberComposition,
   ParliamentCommittee,
   ParliamentCommitteeDetail,
+  ParliamentCommitteeDocumentPage,
   ParliamentDataFreshness,
   ParliamentGroup,
   ParliamentHubData,
@@ -121,6 +122,7 @@ import {
   fetchParliamentMemberSpeechesMock,
   fetchParliamentMemberSpeechActivityMock,
   fetchParliamentMembersMock,
+  fetchParliamentCommitteeDocumentsMock,
   fetchParliamentCommitteeMock,
   fetchParliamentCommitteesMock,
   fetchParliamentFreshnessMock,
@@ -153,6 +155,7 @@ import {
   fetchParliamentMemberSpeechesLive,
   fetchParliamentMemberSpeechActivityLive,
   fetchParliamentMembersLive,
+  fetchParliamentCommitteeDocumentsLive,
   fetchParliamentCommitteeLive,
   fetchParliamentCommitteesLive,
   fetchParliamentFreshnessLive,
@@ -533,6 +536,20 @@ export async function fetchParliamentCommittee(
   return isParliamentMockEnabled()
     ? fetchParliamentCommitteeMock(committeeKey)
     : fetchParliamentCommitteeLive(committeeKey)
+}
+
+/**
+ * ONE page of a committee's documents. Unlike the committee browse, this does
+ * not drain the cursor: 76 committees hold more than a screenful (max 2,469),
+ * so the reader asks for the next page rather than waiting for all of them.
+ */
+export async function fetchParliamentCommitteeDocuments(
+  committeeKey: string,
+  after?: string,
+): Promise<ParliamentCommitteeDocumentPage> {
+  return isParliamentMockEnabled()
+    ? fetchParliamentCommitteeDocumentsMock(committeeKey, after)
+    : fetchParliamentCommitteeDocumentsLive(committeeKey, after)
 }
 
 // ── synchronous getters (render-time) ───────────────────────────────────────

@@ -15,6 +15,7 @@ import type {
   ParliamentChamberComposition,
   ParliamentCommittee,
   ParliamentCommitteeDetail,
+  ParliamentCommitteeDocumentPage,
   ParliamentDataFreshness,
   ParliamentGroup,
   ParliamentHubData,
@@ -42,6 +43,8 @@ import {
   ParliamentChamberCompositionSchema,
   ParliamentCommitteeSchema,
   ParliamentCommitteeDetailSchema,
+  ParliamentCommitteeDocumentPageSchema,
+  ParliamentCommitteeDocumentSchema,
   ParliamentDataFreshnessSchema,
   ParliamentGroupSchema,
   ParliamentHubDataSchema,
@@ -1198,6 +1201,7 @@ type MockCommitteeDetailRaw = {
   linkedBillIds: string[]
   linkedBillsTotal: number
   meetingsCount: number
+  documents: unknown[]
 }
 
 const committeeList = committeesData.committees.map((c) =>
@@ -1243,5 +1247,30 @@ export async function fetchParliamentCommitteeMock(
     linkedBills,
     linkedBillsTotal: detail.linkedBillsTotal,
     meetingsCount: detail.meetingsCount,
+  })
+}
+
+/** Page size the mock emulates. Small on purpose, so "load more" is exercised. */
+const MOCK_COMMITTEE_DOCUMENTS_PAGE_SIZE = 3
+
+export async function fetchParliamentCommitteeDocumentsMock(
+  committeeKey: string,
+  after?: string,
+): Promise<ParliamentCommitteeDocumentPage> {
+  const detail = committeeDetailsRaw[committeeKey]
+  const all = (detail?.documents ?? []).map((d) =>
+    ParliamentCommitteeDocumentSchema.parse(d),
+  )
+  // Emulate the live cursor connection: the cursor is the numeric offset of the
+  // next page (opaque to the UI, which only passes endCursor back).
+  const start = after ? Math.max(0, Number.parseInt(after, 10) || 0) : 0
+  const documents = all.slice(start, start + MOCK_COMMITTEE_DOCUMENTS_PAGE_SIZE)
+  const end = start + documents.length
+  const hasNextPage = end < all.length
+  return ParliamentCommitteeDocumentPageSchema.parse({
+    documents,
+    total: all.length,
+    hasNextPage,
+    endCursor: hasNextPage ? String(end) : null,
   })
 }

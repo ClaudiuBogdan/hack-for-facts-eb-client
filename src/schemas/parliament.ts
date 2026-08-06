@@ -250,6 +250,42 @@ export type ParliamentCommitteeDetail = z.infer<
   typeof ParliamentCommitteeDetailSchema
 >;
 
+/**
+ * A document a committee published.
+ *
+ * Three fields are OPTIONAL because the source genuinely lacks them, not because
+ * the API is unfinished — and each absence changes what the row may render:
+ *  - `publishedAt`: absent on 1,980 of 2,056 Senate rows. Omit the date line;
+ *    never substitute the committee's or the bill's date.
+ *  - `docType`: the API serves it for Camera only. The Senate classifier read
+ *    senat.ro's navigation menu and mislabelled a newsletter and a JPEG, so the
+ *    server suppresses it. No badge rather than a wrong one.
+ *  - `documentUrl`: absent where the source page links no file. Link `sourceUrl`
+ *    instead of offering a download that would 404.
+ */
+export const ParliamentCommitteeDocumentSchema = z.object({
+  documentId: z.string(),
+  title: z.string().optional(),
+  docType: z.string().optional(),
+  publishedAt: z.string().optional(),
+  documentUrl: z.string().url().optional(),
+  sourceUrl: z.string().url(),
+  billKey: z.string().optional(),
+});
+export type ParliamentCommitteeDocument = z.infer<
+  typeof ParliamentCommitteeDocumentSchema
+>;
+
+export const ParliamentCommitteeDocumentPageSchema = z.object({
+  documents: z.array(ParliamentCommitteeDocumentSchema),
+  total: z.number().int().nonnegative(),
+  hasNextPage: z.boolean(),
+  endCursor: z.string().nullable(),
+});
+export type ParliamentCommitteeDocumentPage = z.infer<
+  typeof ParliamentCommitteeDocumentPageSchema
+>;
+
 export const ParliamentCommitteeListSchema = z.object({
   committees: z.array(ParliamentCommitteeSchema),
   hasNextPage: z.boolean(),

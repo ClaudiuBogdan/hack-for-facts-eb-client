@@ -3,9 +3,21 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ParliamentCommitteeDetail } from '@/schemas/parliament'
 
 const useCommitteeMock = vi.fn()
+const useDocumentsMock = vi.fn()
 vi.mock('../hooks/use-parliament-data', () => ({
   useParliamentCommittee: (key: string) => useCommitteeMock(key),
+  useParliamentCommitteeDocuments: (key: string) => useDocumentsMock(key),
 }))
+
+/** The documents section is its own query; default it to "empty, settled". */
+const noDocuments = {
+  data: { pages: [{ documents: [], total: 0, hasNextPage: false, endCursor: null }] },
+  isLoading: false,
+  isError: false,
+  hasNextPage: false,
+  isFetchingNextPage: false,
+  fetchNextPage: vi.fn(),
+}
 vi.mock('@tanstack/react-router', () => ({
   Link: ({ children, ...rest }: { children: React.ReactNode }) => (
     <a {...(rest as Record<string, unknown>)}>{children}</a>
@@ -48,6 +60,8 @@ const detail: ParliamentCommitteeDetail = {
 describe('ParliamentCommitteeDetailPage roster (codex MAJOR: no fabricated names)', () => {
   beforeEach(() => {
     useCommitteeMock.mockReset()
+    useDocumentsMock.mockReset()
+    useDocumentsMock.mockReturnValue(noDocuments)
     useCommitteeMock.mockReturnValue({ data: detail, isLoading: false })
   })
 
@@ -129,6 +143,8 @@ const EMPTY_BILLS_NOTICE = /Nu am găsit proiecte de lege asociate acestei comis
 describe('ParliamentCommitteeDetailPage — Senate activity is served, not assumed absent', () => {
   beforeEach(() => {
     useCommitteeMock.mockReset()
+    useDocumentsMock.mockReset()
+    useDocumentsMock.mockReturnValue(noDocuments)
   })
 
   it('renders a Senate committee’s linked bills instead of the "not published" notice', () => {
@@ -246,5 +262,139 @@ describe('ParliamentCommitteeDetailPage — Senate activity is served, not assum
     // The bound is the API's, not the chamber's. "Sursa returnează cel mult N"
     // told the reader cdep.ro refuses to publish more, which it does not.
     expect(screen.queryByText(/Sursa returnează/)).not.toBeInTheDocument()
+  })
+})
+
+/**
+ * The Documente section. Every assertion here is a shape the LIVE data forces:
+ * a Senate row usually has no date and never a type badge, and a document row
+ * may carry no file at all. Rendering a date, a badge or a download button
+ * anyway would print something the source never said.
+ */
+describe('ParliamentCommitteeDetailPage — Documente', () => {
+  const page = (documents: readonly unknown[], over: Record<string, unknown> = {}) => ({
+    data: {
+      pages: [
+        { documents, total: documents.length, hasNextPage: false, endCursor: null },
+      ],
+    },
+    isLoading: false,
+    isError: false,
+    hasNextPage: false,
+    isFetchingNextPage: false,
+    fetchNextPage: vi.fn(),
+    ...over,
+  })
+
+  beforeEach(() => {
+    useCommitteeMock.mockReset()
+    useDocumentsMock.mockReset()
+    useCommitteeMock.mockReturnValue({ data: senateDetail, isLoading: false })
+  })
+
+  it('omits the date line and the badge when the source carries neither', () => {
+    useDocumentsMock.mockReturnValue(
+      page([
+        {
+          documentId: 'senate-doc-002',
+          title: 'Aviz comun cu Comisia pentru buget',
+          sourceUrl: 'https://www.senat.ro/ComisiiDetaliu.aspx',
+        },
+      ]),
+    )
+    render(<ParliamentCommitteeDetailPage committeeKey={senateDetail.committeeKey} />)
+
+    expect(screen.getByText('Documente')).toBeInTheDocument()
+    const title = screen.getByText('Aviz comun cu Comisia pentru buget')
+    // Scoped to THIS row's info block: the page carries dates elsewhere, and a
+    // page-wide search would pass while the row printed a borrowed one. The
+    // block must hold the title and nothing else — no date line, no badge.
+    expect(title.parentElement?.textContent).toBe('Aviz comun cu Comisia pentru buget')
+  })
+
+  it('links to the source instead of offering a download when there is no file', () => {
+    useDocumentsMock.mockReturnValue(
+      page([
+        {
+          documentId: 'senate-doc-003',
+          title: 'Proces-verbal',
+          sourceUrl: 'https://www.senat.ro/ComisiiDetaliu.aspx',
+        },
+      ]),
+    )
+    render(<ParliamentCommitteeDetailPage committeeKey={senateDetail.committeeKey} />)
+
+    expect(screen.getByText('Vezi pe senat.ro')).toBeInTheDocument()
+    expect(screen.queryByText('Descarcă')).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Vezi pe senat\.ro/ })).toHaveAttribute(
+      'href',
+      'https://www.senat.ro/ComisiiDetaliu.aspx',
+    )
+  })
+
+  it('offers the download, the date and the badge when all three are present', () => {
+    useCommitteeMock.mockReturnValue({ data: detail, isLoading: false })
+    useDocumentsMock.mockReturnValue(
+      page([
+        {
+          documentId: 'cdep-doc-001',
+          title: 'Raport asupra bugetului',
+          docType: 'raport',
+          publishedAt: '2026-03-14',
+          documentUrl: 'https://www.cdep.ro/rp123.pdf',
+          sourceUrl: 'https://www.cdep.ro/co/comisii.dc?comi=1',
+        },
+      ]),
+    )
+    render(<ParliamentCommitteeDetailPage committeeKey={detail.committeeKey} />)
+
+    expect(screen.getByText('raport')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Descarcă/ })).toHaveAttribute(
+      'href',
+      'https://www.cdep.ro/rp123.pdf',
+    )
+  })
+
+  it('renders nothing at all when the committee has no documents', () => {
+    useDocumentsMock.mockReturnValue(page([]))
+    render(<ParliamentCommitteeDetailPage committeeKey={senateDetail.committeeKey} />)
+    expect(screen.queryByText('Documente')).not.toBeInTheDocument()
+  })
+
+  it('says a failed fetch failed — never that the committee published nothing', () => {
+    useDocumentsMock.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      fetchNextPage: vi.fn(),
+    })
+    render(<ParliamentCommitteeDetailPage committeeKey={senateDetail.committeeKey} />)
+
+    expect(screen.getByText(/nu au putut fi încărcate/)).toBeInTheDocument()
+    // The bills section above is unaffected — that is the point of fetching the
+    // documents through their own query rather than the committee detail.
+    expect(screen.getByText(senateBill.title)).toBeInTheDocument()
+  })
+
+  it('offers "load more" only while the connection has another page', () => {
+    const fetchNextPage = vi.fn()
+    useDocumentsMock.mockReturnValue(
+      page(
+        [
+          {
+            documentId: 'd1',
+            title: 'Primul document',
+            sourceUrl: 'https://www.senat.ro/ComisiiDetaliu.aspx',
+          },
+        ],
+        { hasNextPage: true, fetchNextPage },
+      ),
+    )
+    render(<ParliamentCommitteeDetailPage committeeKey={senateDetail.committeeKey} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Încarcă mai multe documente/ }))
+    expect(fetchNextPage).toHaveBeenCalledTimes(1)
   })
 })

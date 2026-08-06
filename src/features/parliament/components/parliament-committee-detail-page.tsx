@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ExternalLink, Search } from 'lucide-react'
+import { Download, ExternalLink, Search } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import {
   Accordion,
@@ -14,9 +14,13 @@ import { cn } from '@/lib/utils'
 import type {
   ParliamentBillSummary,
   ParliamentCommitteeDetail,
+  ParliamentCommitteeDocument,
   ParliamentCommitteeMembership,
 } from '@/schemas/parliament'
-import { useParliamentCommittee } from '../hooks/use-parliament-data'
+import {
+  useParliamentCommittee,
+  useParliamentCommitteeDocuments,
+} from '../hooks/use-parliament-data'
 import {
   committeeChamberLabel,
   committeeRoleLabel,
@@ -201,6 +205,144 @@ function CommitteeNotice({ children }: { readonly children: React.ReactNode }) {
     >
       {children}
     </div>
+  )
+}
+
+/**
+ * One committee document.
+ *
+ * Adapted from the bill documents tab with three changes the DATA forces, each
+ * of which would otherwise print something the source never said:
+ *  - no date line when the document carries none (1,980 of 2,056 Senate rows);
+ *  - no type badge when the API serves none (every Senate row — the server
+ *    suppresses a classifier that mislabelled a newsletter and a JPEG);
+ *  - no download affordance when there is no file, only a link to the page the
+ *    document lives on.
+ */
+function CommitteeDocumentRow({
+  document,
+  isSenate,
+}: {
+  readonly document: ParliamentCommitteeDocument
+  readonly isSenate: boolean
+}) {
+  const href = document.documentUrl ?? document.sourceUrl
+  return (
+    <div
+      className={cn(
+        committeeCardClassName,
+        'flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between',
+      )}
+    >
+      <div className="min-w-0">
+        <p className="text-base font-bold text-[#512178] dark:text-[var(--pnrr-text)]">
+          {document.title ?? 'Document fără titlu în sursă'}
+        </p>
+        {document.publishedAt ? (
+          <p className={cn('mt-1', committeeMutedTextClassName)}>
+            {formatCommitteeDate(document.publishedAt)}
+          </p>
+        ) : null}
+        {document.docType ? (
+          <span
+            className="mt-2 inline-block border-2 border-[#0b0c0c] px-2 py-0.5 text-xs font-bold uppercase dark:border-[var(--pnrr-border)]"
+          >
+            {document.docType}
+          </span>
+        ) : null}
+      </div>
+      <Button
+        asChild
+        variant="outline"
+        className="shrink-0 rounded-none border-2 border-[#1d70b8] text-[#1d70b8] hover:bg-[#1d70b8]/5"
+      >
+        <a href={href} target="_blank" rel="noopener noreferrer">
+          {document.documentUrl ? (
+            <>
+              <Download className="mr-2 h-4 w-4" />
+              Descarcă
+            </>
+          ) : (
+            <>
+              <ExternalLink className="mr-2 h-4 w-4" />
+              {isSenate ? 'Vezi pe senat.ro' : 'Vezi pe cdep.ro'}
+            </>
+          )}
+        </a>
+      </Button>
+    </div>
+  )
+}
+
+function CommitteeDocumentsSection({
+  committeeKey,
+  isSenate,
+}: {
+  readonly committeeKey: string
+  readonly isSenate: boolean
+}) {
+  const { data, isLoading, isError, hasNextPage, isFetchingNextPage, fetchNextPage } =
+    useParliamentCommitteeDocuments(committeeKey)
+
+  const documents = data?.pages.flatMap((page) => page.documents) ?? []
+  const total = data?.pages[0]?.total ?? 0
+
+  if (isLoading) {
+    return (
+      <section className="space-y-4">
+        <h2 className={committeeSectionTitleClassName}>Documente</h2>
+        <Skeleton className="h-24 w-full rounded-none" />
+      </section>
+    )
+  }
+
+  // A failed page is NOT "no documents" — saying so would tell the reader this
+  // committee published nothing. The bills and roster above are unaffected,
+  // which is why this section fetches separately.
+  if (isError) {
+    return (
+      <section className="space-y-4">
+        <h2 className={committeeSectionTitleClassName}>Documente</h2>
+        <CommitteeNotice>
+          Documentele comisiei nu au putut fi încărcate. Restul paginii este
+          neafectat; reîncărcați pagina pentru a încerca din nou.
+        </CommitteeNotice>
+      </section>
+    )
+  }
+
+  if (documents.length === 0) return null
+
+  return (
+    <section className="space-y-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className={committeeSectionTitleClassName}>Documente</h2>
+        <span className={committeeMutedTextClassName}>
+          afișate <span className="tabular-nums">{documents.length}</span> din{' '}
+          <span className="tabular-nums">{total.toLocaleString('ro-RO')}</span>
+        </span>
+      </div>
+      <div className="space-y-3">
+        {documents.map((document) => (
+          <CommitteeDocumentRow
+            key={document.documentId}
+            document={document}
+            isSenate={isSenate}
+          />
+        ))}
+      </div>
+      {hasNextPage ? (
+        <Button
+          type="button"
+          variant="outline"
+          className="h-11 w-full rounded-none border-2 border-[#0b0c0c] text-base font-normal dark:border-[var(--pnrr-border)]"
+          disabled={isFetchingNextPage}
+          onClick={() => void fetchNextPage()}
+        >
+          {isFetchingNextPage ? 'Se încarcă…' : 'Încarcă mai multe documente'}
+        </Button>
+      ) : null}
+    </section>
   )
 }
 
@@ -672,6 +814,8 @@ function CommitteeDossier({
             Absența listei nu înseamnă o comisie fără activitate.
           </CommitteeNotice>
         )}
+
+        <CommitteeDocumentsSection committeeKey={committee.committeeKey} isSenate={isSenate} />
 
         {/* The meetings figure is suppressed for a Senate zero (see the hero),
             which would otherwise leave a committee showing bills but silently

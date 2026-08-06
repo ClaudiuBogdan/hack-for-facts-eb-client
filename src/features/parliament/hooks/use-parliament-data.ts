@@ -18,6 +18,7 @@ import {
   fetchParliamentBills,
   fetchParliamentChamberComposition,
   fetchParliamentCommittee,
+  fetchParliamentCommitteeDocuments,
   fetchParliamentCommittees,
   fetchParliamentFreshness,
   fetchParliamentGroup,
@@ -502,6 +503,27 @@ export function useParliamentCommittee(committeeKey: string) {
     queryKey: [...PARLIAMENT_QUERY_KEY, 'committee', committeeKey],
     queryFn: () => fetchParliamentCommittee(committeeKey),
     enabled: Boolean(committeeKey),
+  })
+}
+
+/**
+ * A committee's documents, paged. Its own query — not part of the committee
+ * detail — so "load more" costs one document page rather than re-fetching the
+ * roster and up to 500 bills, and so a server that cannot answer it degrades
+ * this section instead of blanking the page.
+ */
+export function useParliamentCommitteeDocuments(
+  committeeKey: string,
+  options: { readonly enabled?: boolean } = {},
+) {
+  return useInfiniteQuery({
+    queryKey: [...PARLIAMENT_QUERY_KEY, 'committee-documents', committeeKey],
+    queryFn: ({ pageParam }) =>
+      fetchParliamentCommitteeDocuments(committeeKey, pageParam),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNextPage && lastPage.endCursor ? lastPage.endCursor : undefined,
+    enabled: Boolean(committeeKey) && (options.enabled ?? true),
   })
 }
 

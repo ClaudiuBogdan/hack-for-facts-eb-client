@@ -73,7 +73,46 @@
         "pl-x-2026-buget"
       ],
       "linkedBillsTotal": 8,
-      "meetingsCount": 42
+      "meetingsCount": 42,
+      "documents": [
+        {
+          "documentId": "cdep-doc-001",
+          "title": "Raport asupra proiectului de lege privind bugetul de stat",
+          "docType": "raport",
+          "publishedAt": "2026-03-14",
+          "documentUrl": "https://www.cdep.ro/comisii/buget/pdf/2026/rp123.pdf",
+          "sourceUrl": "https://www.cdep.ro/co/comisii.dc?comi=1",
+          "billKey": "pl-x-2026-buget"
+        },
+        {
+          "documentId": "cdep-doc-002",
+          "title": "Aviz asupra proiectului de lege privind finanțele publice locale",
+          "docType": "aviz",
+          "publishedAt": "2026-02-28",
+          "documentUrl": "https://www.cdep.ro/comisii/buget/pdf/2026/av045.pdf",
+          "sourceUrl": "https://www.cdep.ro/co/comisii.dc?comi=1"
+        },
+        {
+          "documentId": "cdep-doc-003",
+          "title": "Proces-verbal al ședinței din 12 februarie 2026",
+          "docType": "proces_verbal",
+          "publishedAt": "2026-02-12",
+          "sourceUrl": "https://www.cdep.ro/co/comisii.dc?comi=1"
+        },
+        {
+          "documentId": "cdep-doc-004",
+          "title": "Sinteza lucrărilor comisiei",
+          "docType": "sinteza",
+          "documentUrl": "https://www.cdep.ro/comisii/buget/pdf/sinteza.pdf",
+          "sourceUrl": "https://www.cdep.ro/co/comisii.dc?comi=1"
+        },
+        {
+          "documentId": "cdep-doc-005",
+          "docType": "raport",
+          "publishedAt": "2025-11-03",
+          "sourceUrl": "https://www.cdep.ro/co/comisii.dc?comi=1"
+        }
+      ]
     },
     "senat:sanatate|2024": {
       "members": [
@@ -93,7 +132,30 @@
       ],
       "linkedBillIds": [],
       "linkedBillsTotal": 0,
-      "meetingsCount": 11
+      "meetingsCount": 11,
+      "documents": [
+        {
+          "documentId": "senate-doc-001",
+          "title": "Raport asupra proiectului de lege privind sănătatea publică",
+          "publishedAt": "2026-01-20",
+          "sourceUrl": "https://www.senat.ro/ComisiiDetaliu.aspx?Zi&ComisieID=1"
+        },
+        {
+          "documentId": "senate-doc-002",
+          "title": "Aviz comun cu Comisia pentru buget",
+          "sourceUrl": "https://www.senat.ro/ComisiiDetaliu.aspx?Zi&ComisieID=1"
+        },
+        {
+          "documentId": "senate-doc-003",
+          "sourceUrl": "https://www.senat.ro/ComisiiDetaliu.aspx?Zi&ComisieID=1"
+        },
+        {
+          "documentId": "senate-doc-004",
+          "title": "Sinteza lucrărilor din 4 decembrie 2025",
+          "documentUrl": "https://www.senat.ro/Documente/sinteza-2025-12-04.pdf",
+          "sourceUrl": "https://www.senat.ro/ComisiiDetaliu.aspx?Zi&ComisieID=1"
+        }
+      ]
     }
   }
 }

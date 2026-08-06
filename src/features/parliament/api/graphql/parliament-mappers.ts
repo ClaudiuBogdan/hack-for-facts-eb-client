@@ -13,6 +13,7 @@ import {
   ParliamentBillSummarySchema,
   ParliamentChamberSchema,
   ParliamentCommitteeDetailSchema,
+  ParliamentCommitteeDocumentPageSchema,
   ParliamentCommitteeSchema,
   ParliamentDataFreshnessSchema,
   ParliamentGroupSchema,
@@ -44,6 +45,7 @@ import {
   type ParliamentChamber,
   type ParliamentCommittee,
   type ParliamentCommitteeDetail,
+  type ParliamentCommitteeDocumentPage,
   type ParliamentCommitteeMembership,
   type ParliamentDataFreshness,
   type ParliamentGroup,
@@ -82,6 +84,7 @@ import type {
   RawParliamentBillSummary,
   RawParliamentCommittee,
   RawParliamentCommitteeDetail,
+  RawParliamentCommitteeDocument,
   RawParliamentCommitteeMembership,
   RawParliamentGroup,
   RawParliamentGroupCohesion,
@@ -353,6 +356,46 @@ export function mapCommittee(raw: RawParliamentCommittee): ParliamentCommittee {
     ...(raw.legislature ? { legislature: raw.legislature } : {}),
     ...(raw.committeeType ? { committeeType: raw.committeeType } : {}),
     sourceUrl: raw.sourceUrl,
+  });
+}
+
+/**
+ * Committee documents → the UI page shape.
+ *
+ * `sourceUrl` is NOT NULL on the server and is the row's only guaranteed link,
+ * so a row whose sourceUrl does not survive `absoluteUrl` is DROPPED rather than
+ * served: the UI schema requires a URL there, and a failed `.url()` throws inside
+ * `.parse` and blanks the section — the same trap the bill documents mapper
+ * documents. `documentUrl` may legitimately be absent; that is a render branch,
+ * not a reason to drop the row.
+ */
+export function mapCommitteeDocuments(
+  raw: RawParliamentCommitteeDocument[],
+  total: number,
+  pageInfo: { hasNextPage: boolean; endCursor: string | null },
+): ParliamentCommitteeDocumentPage {
+  return ParliamentCommitteeDocumentPageSchema.parse({
+    documents: raw.flatMap((d) => {
+      const sourceUrl = absoluteUrl(d.sourceUrl);
+      if (!sourceUrl) return [];
+      const documentUrl = absoluteUrl(d.documentUrl);
+      const publishedAt = renderableDate(d.docDate);
+      return [
+        {
+          documentId: d.committeeDocumentKey,
+          ...(d.title ? { title: d.title } : {}),
+          // Absent on every Senate row by server policy — never inferred here.
+          ...(d.docType ? { docType: d.docType } : {}),
+          ...(publishedAt ? { publishedAt } : {}),
+          ...(documentUrl ? { documentUrl } : {}),
+          sourceUrl,
+          ...(d.billKey ? { billKey: d.billKey } : {}),
+        },
+      ];
+    }),
+    total,
+    hasNextPage: pageInfo.hasNextPage,
+    endCursor: pageInfo.endCursor,
   });
 }
 

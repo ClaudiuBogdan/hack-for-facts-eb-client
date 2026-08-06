@@ -16,10 +16,12 @@ import { describe, expect, it } from 'vitest'
 
 import {
   ParliamentBillDetailSchema,
+  ParliamentCommitteeDocumentSchema,
   ParliamentVoteDetailSchema,
 } from '@/schemas/parliament'
 
 import billDetails from './bill-details.json'
+import committees from './committees.json'
 import voteDetails from './vote-details.json'
 
 describe('mock bill details satisfy the UI schema', () => {
@@ -72,6 +74,52 @@ describe('mock vote details satisfy the UI schema', () => {
     }[] }][]) {
       const keys = (vote.memberVotes ?? []).map((m) => m.ballotKey)
       expect(new Set(keys).size).toBe(keys.length)
+    }
+  })
+})
+
+/**
+ * Committee documents are where the UGLY shapes live, so the fixture has to
+ * carry them or the mock path only ever exercises the happy row. The live data
+ * is mostly ugly: 1,980 of 2,056 Senate rows have no date, every Senate row is
+ * served without a type, and plenty link no file at all.
+ */
+describe('mock committee documents satisfy the UI schema — including the ugly rows', () => {
+  const details = Object.entries(
+    (committees as { details: Record<string, { documents?: readonly unknown[] }> }).details,
+  )
+  const documents = details.flatMap(([, d]) => d.documents ?? [])
+
+  it('has fixtures to check', () => {
+    expect(details.length).toBeGreaterThan(0)
+    expect(documents.length).toBeGreaterThan(0)
+  })
+
+  it('parses every fixture row', () => {
+    for (const raw of documents) {
+      expect(() => ParliamentCommitteeDocumentSchema.parse(raw)).not.toThrow()
+    }
+  })
+
+  it('covers the undated, badge-less and file-less shapes', () => {
+    const parsed = documents.map((d) => ParliamentCommitteeDocumentSchema.parse(d))
+    expect(parsed.some((d) => d.publishedAt === undefined)).toBe(true)
+    expect(parsed.some((d) => d.docType === undefined)).toBe(true)
+    expect(parsed.some((d) => d.documentUrl === undefined)).toBe(true)
+    expect(parsed.some((d) => d.title === undefined)).toBe(true)
+    // …and at least one row with all of them, so the negatives above are not
+    // passing simply because the fixture never populates anything.
+    expect(
+      parsed.some((d) => d.publishedAt && d.docType && d.documentUrl && d.title),
+    ).toBe(true)
+  })
+
+  it('gives every document a unique id within its committee', () => {
+    for (const [, d] of details) {
+      const ids = (d.documents ?? []).map(
+        (raw) => ParliamentCommitteeDocumentSchema.parse(raw).documentId,
+      )
+      expect(new Set(ids).size).toBe(ids.length)
     }
   })
 })

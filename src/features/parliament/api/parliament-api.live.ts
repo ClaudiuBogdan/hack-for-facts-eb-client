@@ -23,6 +23,7 @@ import {
   type ParliamentChamberComposition,
   type ParliamentCommittee,
   type ParliamentCommitteeDetail,
+  type ParliamentCommitteeDocumentPage,
   type ParliamentDataFreshness,
   type ParliamentGroup,
   type ParliamentHubData,
@@ -46,6 +47,7 @@ import { GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
 import {
   PARLIAMENT_BILL_QUERY,
   PARLIAMENT_BILLS_QUERY,
+  PARLIAMENT_COMMITTEE_DOCUMENTS_QUERY,
   PARLIAMENT_COMMITTEE_QUERY,
   PARLIAMENT_COMMITTEES_QUERY,
   PARLIAMENT_FRESHNESS_QUERY,
@@ -67,6 +69,7 @@ import {
   PARLIAMENT_VOTES_QUERY,
   parliamentBillResponseSchema,
   parliamentBillsResponseSchema,
+  parliamentCommitteeDocumentsResponseSchema,
   parliamentCommitteeResponseSchema,
   parliamentCommitteesResponseSchema,
   parliamentFreshnessResponseSchema,
@@ -97,6 +100,7 @@ import {
   mapBillSummary,
   mapCommittee,
   mapCommitteeDetail,
+  mapCommitteeDocuments,
   mapDataFreshness,
   mapGroup,
   mapGroupCohesion,
@@ -1028,6 +1032,41 @@ export async function fetchParliamentCommitteeLive(
   return parsed.parliamentCommittee
     ? mapCommitteeDetail(parsed.parliamentCommittee)
     : null
+}
+
+/** The server clamps `first` at 100; ask for a screenful and let the reader page. */
+const COMMITTEE_DOCUMENTS_PAGE_SIZE = 20
+
+export async function fetchParliamentCommitteeDocumentsLive(
+  committeeKey: string,
+  after?: string,
+): Promise<ParliamentCommitteeDocumentPage> {
+  const data = await graphqlQuery<unknown>(
+    PARLIAMENT_COMMITTEE_DOCUMENTS_QUERY,
+    // Omit `after` on the first page — an explicit null cursor is malformed to
+    // the server, not "start from the beginning".
+    {
+      committeeKey,
+      first: COMMITTEE_DOCUMENTS_PAGE_SIZE,
+      ...(after !== undefined && { after }),
+    },
+    { operationName: 'parliamentCommitteeDocuments' },
+  )
+  const parsed = parliamentCommitteeDocumentsResponseSchema.parse(data)
+  // A null root is a SERVER FAILURE, not "this committee has no documents" —
+  // swallowing it into an empty page would tell the reader the committee
+  // published nothing. Let the section show an error and offer a retry.
+  if (!parsed.parliamentCommittee) {
+    throw new GraphQLRequestError('parliamentCommittee returned null', {
+      query: 'parliamentCommitteeDocuments',
+    })
+  }
+  const { edges, total, pageInfo } = parsed.parliamentCommittee.documents
+  return mapCommitteeDocuments(
+    edges.map((e) => e.node),
+    total,
+    pageInfo,
+  )
 }
 
 // Re-export for the facade's chamber translation needs.

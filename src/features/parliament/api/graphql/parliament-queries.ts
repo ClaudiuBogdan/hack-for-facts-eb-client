@@ -1771,3 +1771,76 @@ export type RawParliamentCommitteeDetail = z.infer<
 export const parliamentCommitteeResponseSchema = z.object({
   parliamentCommittee: rawCommitteeDetailSchema.nullable(),
 });
+
+// ---------------------------------------------------------------------------
+// Committee documents — parliamentCommittee(committeeKey).documents(first, after)
+// ---------------------------------------------------------------------------
+
+/**
+ * A SEPARATE document, not a field added to PARLIAMENT_COMMITTEE_QUERY.
+ *
+ * Adding `documents` to the detail query would put the whole committee page
+ * behind a field a server without it rejects at VALIDATION ("Cannot query field
+ * …"), which 400s the operation and blanks the page — roster, bills and all.
+ * Re-entering through `parliamentCommittee` keeps the blast radius at this one
+ * section, and the section needs its own paging hook regardless. Same shape the
+ * ballots follow-up page uses.
+ */
+export const PARLIAMENT_COMMITTEE_DOCUMENTS_QUERY = /* GraphQL */ `
+  query ParliamentCommitteeDocuments(
+    $committeeKey: ID!
+    $first: Int
+    $after: String
+  ) {
+    parliamentCommittee(committeeKey: $committeeKey) {
+      committeeKey
+      documents(first: $first, after: $after) {
+        total
+        edges {
+          node {
+            committeeDocumentKey
+            title
+            docType
+            docDate
+            documentUrl
+            sourceUrl
+            billKey
+          }
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+  }
+`;
+
+const rawCommitteeDocumentSchema = z.object({
+  committeeDocumentKey: z.string(),
+  title: z.string().nullable(),
+  docType: z.string().nullable(),
+  docDate: z.string().nullable(),
+  documentUrl: z.string().nullable(),
+  sourceUrl: z.string(),
+  billKey: z.string().nullable(),
+});
+export type RawParliamentCommitteeDocument = z.infer<
+  typeof rawCommitteeDocumentSchema
+>;
+
+export const parliamentCommitteeDocumentsResponseSchema = z.object({
+  parliamentCommittee: z
+    .object({
+      committeeKey: z.string(),
+      documents: z.object({
+        total: z.number(),
+        edges: z.array(z.object({ node: rawCommitteeDocumentSchema })),
+        pageInfo: z.object({
+          hasNextPage: z.boolean(),
+          endCursor: z.string().nullable(),
+        }),
+      }),
+    })
+    .nullable(),
+});
