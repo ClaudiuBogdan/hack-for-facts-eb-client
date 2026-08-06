@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ParliamentCommitteeDetail } from '@/schemas/parliament'
 
@@ -475,5 +475,83 @@ describe('ParliamentCommitteeDetailPage — Documente', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Încarcă mai multe documente/ }))
     expect(fetchNextPage).toHaveBeenCalledTimes(1)
+  })
+})
+
+/**
+ * The stuck-cursor guard stops the LOOP, but it decides by reading the page it
+ * has already fetched — so one repeated page legitimately reaches query data.
+ * Rendering that raw showed the same document twice, under duplicate React keys,
+ * and counted it twice in "afișate N". The render layer is where the duplicate
+ * is removed.
+ */
+describe('ParliamentCommitteeDetailPage — a repeated page renders once', () => {
+  const doc = (id: string, title: string) => ({
+    documentId: id,
+    title,
+    sourceUrl: 'https://www.senat.ro/ComisiiDetaliu.aspx',
+  })
+
+  /** The bills section says "afișate" too — read the DOCUMENTS section's count. */
+  const documentsSection = () =>
+    within(screen.getByRole('heading', { name: 'Documente' }).closest('section')!)
+
+  beforeEach(() => {
+    useCommitteeMock.mockReset()
+    useDocumentsMock.mockReset()
+    useCommitteeMock.mockReturnValue({ data: senateDetail, isLoading: false })
+  })
+
+  it('renders each document once and counts what it rendered', () => {
+    // Exactly the shape the guard leaves behind: page 2 repeats page 1.
+    useDocumentsMock.mockReturnValue({
+      data: {
+        pages: [
+          { documents: [doc('d1', 'Raport unic')], total: 1, hasNextPage: false, endCursor: null },
+          { documents: [doc('d1', 'Raport unic')], total: 1, hasNextPage: false, endCursor: null },
+        ],
+      },
+      isLoading: false,
+      isError: false,
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      fetchNextPage: vi.fn(),
+    })
+    render(<ParliamentCommitteeDetailPage committeeKey={senateDetail.committeeKey} />)
+
+    // One row, not two.
+    expect(screen.getAllByText('Raport unic')).toHaveLength(1)
+    // …and the count is derived from the rendered list, so it says 1, not 2.
+    expect(documentsSection().getByText('afișate', { exact: false }).textContent).toContain('1')
+    expect(documentsSection().getAllByRole('link', { name: /Vezi pe senat\.ro/ })).toHaveLength(1)
+  })
+
+  it('keeps genuinely distinct documents across pages', () => {
+    // The positive control: dedupe must not collapse a real second page, which
+    // is what a too-eager key (say, the title) would do.
+    useDocumentsMock.mockReturnValue({
+      data: {
+        pages: [
+          { documents: [doc('d1', 'Raport A')], total: 3, hasNextPage: true, endCursor: '1' },
+          {
+            documents: [doc('d2', 'Raport A'), doc('d3', 'Raport B')],
+            total: 3,
+            hasNextPage: false,
+            endCursor: null,
+          },
+        ],
+      },
+      isLoading: false,
+      isError: false,
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      fetchNextPage: vi.fn(),
+    })
+    render(<ParliamentCommitteeDetailPage committeeKey={senateDetail.committeeKey} />)
+
+    // Two documents share a title and are still two documents.
+    expect(screen.getAllByText('Raport A')).toHaveLength(2)
+    expect(screen.getByText('Raport B')).toBeInTheDocument()
+    expect(documentsSection().getByText('afișate', { exact: false }).textContent).toContain('3')
   })
 })

@@ -45,7 +45,7 @@ import {
 import { ParliamentCardChevron } from './parliament-card-chevron'
 
 /**
- * I18N DEBT, PAGE-WIDE — deliberate, not an oversight in one section.
+ * I18N: DEFERRED DEBT — not resolved, and not an oversight in one section.
  *
  * Every user-facing string on this page is hardcoded Romanian and every number
  * is formatted `ro-RO` directly; there is no Lingui macro anywhere in this file.
@@ -55,8 +55,13 @@ import { ParliamentCardChevron } from './parliament-card-chevron'
  * New copy here follows the page rather than the repo convention on purpose:
  * half-converting one section would leave the page switching languages mid-scroll
  * for a reader on `en`, which is worse than being uniformly untranslated and
- * makes the remaining work harder to see. Convert the FILE in one pass — the
- * strings, `formatCommitteeDate`'s locale, and every `toLocaleString('ro-RO')`.
+ * makes the remaining work harder to see.
+ *
+ * This is a DEFERRAL, not a decision that the page is finished. It is open work
+ * awaiting product acceptance of the `en` parliament surface, and it lands as
+ * ONE pass over this file: the strings, `formatCommitteeDate`'s locale, and
+ * every `toLocaleString('ro-RO')`. Until that happens the page is Romanian-only,
+ * and a reader on `en` sees it that way.
  */
 type Props = {
   readonly committeeKey: string
@@ -302,6 +307,25 @@ function CommitteeDocumentRow({
   )
 }
 
+/**
+ * One row per document, in the order the server sent them.
+ *
+ * `documentId` is the server's `committeeDocumentKey` — the primary key, so it
+ * identifies the document rather than merely labelling it. First occurrence wins
+ * because pages arrive newest-first and the earlier copy is the one whose
+ * position in the list the reader has already scrolled past.
+ */
+function dedupeDocuments(
+  documents: readonly ParliamentCommitteeDocument[],
+): ParliamentCommitteeDocument[] {
+  const seen = new Set<string>()
+  return documents.filter((document) => {
+    if (seen.has(document.documentId)) return false
+    seen.add(document.documentId)
+    return true
+  })
+}
+
 function CommitteeDocumentsSection({
   committeeKey,
   isSenate,
@@ -312,7 +336,15 @@ function CommitteeDocumentsSection({
   const { data, isLoading, isError, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useParliamentCommitteeDocuments(committeeKey)
 
-  const documents = data?.pages.flatMap((page) => page.documents) ?? []
+  // Deduped at the FLATTEN boundary, first occurrence wins.
+  //
+  // The hook's stuck-cursor guard stops the loop, but it can only run AFTER the
+  // repeated page has been fetched and appended — `getNextPageParam` reads the
+  // page it is deciding about. So the cache legitimately holds one duplicate
+  // page, and rendering it raw meant the same document twice: duplicate React
+  // keys, and "afișate N" counting a document the reader can see only once.
+  // The count is derived from this list for exactly that reason.
+  const documents = dedupeDocuments(data?.pages.flatMap((page) => page.documents) ?? [])
   const total = data?.pages[0]?.total ?? 0
 
   if (isLoading) {

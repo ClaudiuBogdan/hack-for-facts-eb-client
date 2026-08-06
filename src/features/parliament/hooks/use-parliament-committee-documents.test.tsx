@@ -172,8 +172,16 @@ describe('useParliamentCommitteeDocuments — the stuck-cursor guard', () => {
     expect(result.current.hasNextPage).toBe(true)
     expect(await loadMore(result)).toBe(true)
 
+    // TWO rows for ONE document, and that is CORRECT here. `getNextPageParam`
+    // reads the page it is deciding about, so the repeated page is already in
+    // the cache before the guard can refuse the cursor. The guard's job is that
+    // it never grows past this; removing the DUPLICATE is the render layer's, at
+    // the flatten boundary (see `dedupeDocuments` — a component test pins it).
     const settled = rows(result.current.data).length
     expect(settled).toBe(2)
+    expect(
+      (rows(result.current.data) as { documentId: string }[]).map((d) => d.documentId),
+    ).toEqual(['doc-0', 'doc-0'])
     for (let press = 0; press < 3; press += 1) {
       await loadMore(result)
     }
