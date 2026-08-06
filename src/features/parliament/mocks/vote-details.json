@@ -7,22 +7,91 @@
     "voteType": "deschis",
     "outcome": "adoptat",
     "outcomeLabel": "Proiectul a fost adoptat",
-    "tally": {"pentru": 245, "impotriva": 78, "abtinere": 5, "nuAVotat": 2},
+    "tally": {
+      "pentru": 245,
+      "impotriva": 78,
+      "abtinere": 5,
+      "nuAVotat": 2
+    },
     "relatedBillId": "pl-x-2026-buget",
     "description": "Vot final asupra proiectului de lege pentru aprobarea bugetului de stat pe anul 2026.",
     "groupBreakdown": [
-      {"groupId": "psd-camera", "groupName": "PSD", "pentru": 92, "impotriva": 0, "abtinere": 2},
-      {"groupId": "pnl-camera", "groupName": "PNL", "pentru": 48, "impotriva": 2, "abtinere": 1},
-      {"groupId": "usr-camera", "groupName": "USR", "pentru": 35, "impotriva": 5},
-      {"groupId": "aur-camera", "groupName": "AUR", "pentru": 0, "impotriva": 60, "abtinere": 2},
-      {"groupId": "udmr-camera", "groupName": "UDMR", "pentru": 20, "impotriva": 0, "nuAVotat": 2}
+      {
+        "groupId": "psd-camera",
+        "groupName": "PSD",
+        "pentru": 92,
+        "impotriva": 0,
+        "abtinere": 2
+      },
+      {
+        "groupId": "pnl-camera",
+        "groupName": "PNL",
+        "pentru": 48,
+        "impotriva": 2,
+        "abtinere": 1
+      },
+      {
+        "groupId": "usr-camera",
+        "groupName": "USR",
+        "pentru": 35,
+        "impotriva": 5
+      },
+      {
+        "groupId": "aur-camera",
+        "groupName": "AUR",
+        "pentru": 0,
+        "impotriva": 60,
+        "abtinere": 2
+      },
+      {
+        "groupId": "udmr-camera",
+        "groupName": "UDMR",
+        "pentru": 20,
+        "impotriva": 0,
+        "nuAVotat": 2
+      }
     ],
     "memberVotes": [
-      {"memberId": "dep-001", "memberName": "Ana Nord", "groupId": "psd-camera", "groupName": "PSD", "choice": "pentru"},
-      {"memberId": "dep-002", "memberName": "Mihai Est", "groupId": "aur-camera", "groupName": "AUR", "choice": "impotriva"},
-      {"memberId": "dep-003", "memberName": "Irina Vest", "groupId": "pnl-camera", "groupName": "PNL", "choice": "pentru"},
-      {"memberId": "dep-004", "memberName": "Vlad Sud", "groupId": "usr-camera", "groupName": "USR", "choice": "pentru"},
-      {"memberId": "dep-005", "memberName": "Elena Munte", "groupId": "udmr-camera", "groupName": "UDMR", "choice": "pentru"}
+      {
+        "memberId": "dep-001",
+        "memberName": "Ana Nord",
+        "groupId": "psd-camera",
+        "groupName": "PSD",
+        "choice": "pentru",
+        "ballotKey": "cam-v-001#mock:0"
+      },
+      {
+        "memberId": "dep-002",
+        "memberName": "Mihai Est",
+        "groupId": "aur-camera",
+        "groupName": "AUR",
+        "choice": "impotriva",
+        "ballotKey": "cam-v-001#mock:1"
+      },
+      {
+        "memberId": "dep-003",
+        "memberName": "Irina Vest",
+        "groupId": "pnl-camera",
+        "groupName": "PNL",
+        "choice": "pentru",
+        "ballotKey": "cam-v-001#mock:2"
+      },
+      {
+        "memberId": "dep-004",
+        "memberName": "Vlad Sud",
+        "groupId": "usr-camera",
+        "groupName": "USR",
+        "choice": "pentru",
+        "ballotKey": "cam-v-001#mock:3"
+      },
+      {
+        "memberId": "dep-005",
+        "memberName": "Elena Munte",
+        "groupId": "udmr-camera",
+        "groupName": "UDMR",
+        "choice": "pentru",
+        "ballotKey": "cam-v-001#mock:4"
+      }
     ]
   },
   "cam-v-002": {
@@ -33,23 +102,108 @@
     "voteType": "deschis",
     "outcome": "respins",
     "outcomeLabel": "Moțiunea a fost respinsă",
-    "tally": {"pentru": 95, "impotriva": 210, "abtinere": 12, "nuAVotat": 13},
+    "tally": {
+      "pentru": 95,
+      "impotriva": 210,
+      "abtinere": 12,
+      "nuAVotat": 13
+    },
     "description": "Moțiune simplă inițiată de AUR privind politica fiscală.",
     "groupBreakdown": [
-      {"groupId": "aur-camera", "groupName": "AUR", "pentru": 58, "impotriva": 2, "abtinere": 2},
-      {"groupId": "psd-camera", "groupName": "PSD", "pentru": 5, "impotriva": 87, "abtinere": 2},
-      {"groupId": "pnl-camera", "groupName": "PNL", "pentru": 2, "impotriva": 48, "abtinere": 1},
-      {"groupId": "usr-camera", "groupName": "USR", "pentru": 28, "impotriva": 10, "abtinere": 2}
+      {
+        "groupId": "aur-camera",
+        "groupName": "AUR",
+        "pentru": 58,
+        "impotriva": 2,
+        "abtinere": 2
+      },
+      {
+        "groupId": "psd-camera",
+        "groupName": "PSD",
+        "pentru": 5,
+        "impotriva": 87,
+        "abtinere": 2
+      },
+      {
+        "groupId": "pnl-camera",
+        "groupName": "PNL",
+        "pentru": 2,
+        "impotriva": 48,
+        "abtinere": 1
+      },
+      {
+        "groupId": "usr-camera",
+        "groupName": "USR",
+        "pentru": 28,
+        "impotriva": 10,
+        "abtinere": 2
+      }
     ],
     "memberVotes": [
-      {"memberId": "dep-001", "memberName": "Ana Nord", "groupId": "psd-camera", "groupName": "PSD", "choice": "impotriva"},
-      {"memberId": "dep-002", "memberName": "Mihai Est", "groupId": "aur-camera", "groupName": "AUR", "choice": "pentru"},
-      {"memberId": "dep-003", "memberName": "Irina Vest", "groupId": "pnl-camera", "groupName": "PNL", "choice": "impotriva"},
-      {"memberId": "dep-004", "memberName": "Vlad Sud", "groupId": "usr-camera", "groupName": "USR", "choice": "pentru"},
-      {"memberId": "dep-005", "memberName": "Elena Munte", "groupId": "udmr-camera", "groupName": "UDMR", "choice": "impotriva"},
-      {"memberId": "dep-006", "memberName": "Sorin Râu", "groupId": "psd-camera", "groupName": "PSD", "choice": "impotriva"},
-      {"memberId": "dep-009", "memberName": "Clara Deal", "groupId": "usr-camera", "groupName": "USR", "choice": "pentru"},
-      {"memberId": "dep-012", "memberName": "Dorin Câmp", "groupId": "pnl-camera", "groupName": "PNL", "choice": "impotriva"}
+      {
+        "memberId": "dep-001",
+        "memberName": "Ana Nord",
+        "groupId": "psd-camera",
+        "groupName": "PSD",
+        "choice": "impotriva",
+        "ballotKey": "cam-v-002#mock:0"
+      },
+      {
+        "memberId": "dep-002",
+        "memberName": "Mihai Est",
+        "groupId": "aur-camera",
+        "groupName": "AUR",
+        "choice": "pentru",
+        "ballotKey": "cam-v-002#mock:1"
+      },
+      {
+        "memberId": "dep-003",
+        "memberName": "Irina Vest",
+        "groupId": "pnl-camera",
+        "groupName": "PNL",
+        "choice": "impotriva",
+        "ballotKey": "cam-v-002#mock:2"
+      },
+      {
+        "memberId": "dep-004",
+        "memberName": "Vlad Sud",
+        "groupId": "usr-camera",
+        "groupName": "USR",
+        "choice": "pentru",
+        "ballotKey": "cam-v-002#mock:3"
+      },
+      {
+        "memberId": "dep-005",
+        "memberName": "Elena Munte",
+        "groupId": "udmr-camera",
+        "groupName": "UDMR",
+        "choice": "impotriva",
+        "ballotKey": "cam-v-002#mock:4"
+      },
+      {
+        "memberId": "dep-006",
+        "memberName": "Sorin Râu",
+        "groupId": "psd-camera",
+        "groupName": "PSD",
+        "choice": "impotriva",
+        "ballotKey": "cam-v-002#mock:5"
+      },
+      {
+        "memberId": "dep-009",
+        "memberName": "Clara Deal",
+        "groupId": "usr-camera",
+        "groupName": "USR",
+        "choice": "pentru",
+        "ballotKey": "cam-v-002#mock:6"
+      },
+      {
+        "memberId": "dep-012",
+        "memberName": "Dorin Câmp",
+        "groupId": "pnl-camera",
+        "groupName": "PNL",
+        "choice": "impotriva",
+        "ballotKey": "cam-v-002#mock:7"
+      }
     ]
   },
   "sen-v-001": {
@@ -60,21 +214,84 @@
     "voteType": "deschis",
     "outcome": "adoptat",
     "outcomeLabel": "Proiectul a fost adoptat",
-    "tally": {"pentru": 98, "impotriva": 32, "abtinere": 4, "nuAVotat": 1},
+    "tally": {
+      "pentru": 98,
+      "impotriva": 32,
+      "abtinere": 4,
+      "nuAVotat": 1
+    },
     "relatedBillId": "pl-x-2026-buget",
     "description": "Vot final în Senat asupra bugetului de stat 2026.",
     "groupBreakdown": [
-      {"groupId": "psd-senat", "groupName": "PSD", "pentru": 36, "impotriva": 0, "abtinere": 2},
-      {"groupId": "pnl-senat", "groupName": "PNL", "pentru": 20, "impotriva": 1, "abtinere": 1},
-      {"groupId": "usr-senat", "groupName": "USR", "pentru": 15, "impotriva": 3, "abtinere": 1},
-      {"groupId": "aur-senat", "groupName": "AUR", "pentru": 0, "impotriva": 26, "nuAVotat": 2},
-      {"groupId": "udmr-senat", "groupName": "UDMR", "pentru": 9, "impotriva": 0, "nuAVotat": 1}
+      {
+        "groupId": "psd-senat",
+        "groupName": "PSD",
+        "pentru": 36,
+        "impotriva": 0,
+        "abtinere": 2
+      },
+      {
+        "groupId": "pnl-senat",
+        "groupName": "PNL",
+        "pentru": 20,
+        "impotriva": 1,
+        "abtinere": 1
+      },
+      {
+        "groupId": "usr-senat",
+        "groupName": "USR",
+        "pentru": 15,
+        "impotriva": 3,
+        "abtinere": 1
+      },
+      {
+        "groupId": "aur-senat",
+        "groupName": "AUR",
+        "pentru": 0,
+        "impotriva": 26,
+        "nuAVotat": 2
+      },
+      {
+        "groupId": "udmr-senat",
+        "groupName": "UDMR",
+        "pentru": 9,
+        "impotriva": 0,
+        "nuAVotat": 1
+      }
     ],
     "memberVotes": [
-      {"memberId": "sen-001", "memberName": "Nadia Arin", "groupId": "pnl-senat", "groupName": "PNL", "choice": "pentru"},
-      {"memberId": "sen-002", "memberName": "Paul Frasin", "groupId": "psd-senat", "groupName": "PSD", "choice": "pentru"},
-      {"memberId": "sen-003", "memberName": "Codrin Stejar", "groupId": "aur-senat", "groupName": "AUR", "choice": "impotriva"},
-      {"memberId": "sen-004", "memberName": "Ioana Brad", "groupId": "usr-senat", "groupName": "USR", "choice": "pentru"}
+      {
+        "memberId": "sen-001",
+        "memberName": "Nadia Arin",
+        "groupId": "pnl-senat",
+        "groupName": "PNL",
+        "choice": "pentru",
+        "ballotKey": "sen-v-001#mock:0"
+      },
+      {
+        "memberId": "sen-002",
+        "memberName": "Paul Frasin",
+        "groupId": "psd-senat",
+        "groupName": "PSD",
+        "choice": "pentru",
+        "ballotKey": "sen-v-001#mock:1"
+      },
+      {
+        "memberId": "sen-003",
+        "memberName": "Codrin Stejar",
+        "groupId": "aur-senat",
+        "groupName": "AUR",
+        "choice": "impotriva",
+        "ballotKey": "sen-v-001#mock:2"
+      },
+      {
+        "memberId": "sen-004",
+        "memberName": "Ioana Brad",
+        "groupId": "usr-senat",
+        "groupName": "USR",
+        "choice": "pentru",
+        "ballotKey": "sen-v-001#mock:3"
+      }
     ]
   }
 }

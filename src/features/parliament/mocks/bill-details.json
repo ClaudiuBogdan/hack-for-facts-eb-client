@@ -128,13 +128,15 @@
         "voteId": "cam-v-001",
         "chamber": "camera",
         "title": "Proiect de Lege privind bugetul de stat pe anul 2026",
-        "heldAt": "2026-05-15T14:30:00+03:00"
+        "heldAt": "2026-05-15T14:30:00+03:00",
+        "outcome": "adoptat"
       },
       {
         "voteId": "sen-v-001",
         "chamber": "senat",
         "title": "Proiect de Lege privind bugetul de stat pe anul 2026",
-        "heldAt": "2026-05-18T15:00:00+03:00"
+        "heldAt": "2026-05-18T15:00:00+03:00",
+        "outcome": "adoptat"
       }
     ],
     "valueClass": "standard",
@@ -274,7 +276,8 @@
         "voteId": "cam-v-004",
         "chamber": "camera",
         "title": "Proiect de Lege privind protecția consumatorilor",
-        "heldAt": "2026-05-21T17:00:00+03:00"
+        "heldAt": "2026-05-21T17:00:00+03:00",
+        "outcome": "necunoscut"
       }
     ]
   },
@@ -395,7 +398,8 @@
         "voteId": "sen-v-002",
         "chamber": "senat",
         "title": "Proiect de Lege privind reforma administrației publice",
-        "heldAt": "2026-05-12T11:30:00+03:00"
+        "heldAt": "2026-05-12T11:30:00+03:00",
+        "outcome": "necunoscut"
       }
     ],
     "valueClass": "low_value",
