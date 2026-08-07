@@ -62,9 +62,7 @@ afterEach(() => {
 })
 
 describe('ParliamentHubBillActivity', () => {
-  it('draws a counted day as a labelled, NON-navigable square', () => {
-    // The bills list has no per-day filter, so a linked square would land on an
-    // unfiltered list — the square states the count and stops there.
+  it('links a counted day to the bills with that exact last-event date', () => {
     useParliamentBillActivity.mockImplementation((year: number) =>
       settled(
         year === 2026
@@ -77,11 +75,13 @@ describe('ParliamentHubBillActivity', () => {
 
     // Matched on the date only: the harness aliases the Lingui macros to stubs
     // that pick the plural form but leave `#` unsubstituted (src/test/mocks).
-    const day = screen.getByRole('img', { name: /20 martie 2026 — .*proiecte/ })
-    expect(day.tagName).toBe('DIV')
-    expect(
-      screen.queryByRole('link', { name: /20 martie 2026/ }),
-    ).not.toBeInTheDocument()
+    const day = screen.getByRole('link', {
+      name: /20 martie 2026 — .*proiecte/,
+    })
+    expect(day).toHaveAttribute(
+      'href',
+      '/parlament?tab=proiecte&from=2026-03-20&to=2026-03-20',
+    )
   })
 
   it('always offers the way into the full bills list', () => {
@@ -151,7 +151,7 @@ describe('ParliamentHubBillActivity', () => {
     render(<ParliamentHubBillActivity />)
 
     expect(
-      screen.getByRole('img', { name: /10 septembrie 2025/ }),
+      screen.getByRole('link', { name: /10 septembrie 2025/ }),
     ).toBeInTheDocument()
     expect(
       screen.queryByRole('img', { name: /15 ianuarie 2025/ }),

@@ -186,6 +186,12 @@ describe('buildBillsFilter / buildBillsSort', () => {
     })
   })
 
+  it('maps the shared URL period to the bill last-event date range', () => {
+    expect(buildBillsFilter({ from: '2026-08-04', to: '2026-08-04' })).toEqual({
+      lastEventDate: { gte: '2026-08-04', lte: '2026-08-04' },
+    })
+  })
+
   it('defaults the sort to updated_desc', () => {
     expect(buildBillsSort({})).toBe('updated_desc')
     expect(buildBillsSort({ sortBy: 'title_asc' })).toBe('title_asc')

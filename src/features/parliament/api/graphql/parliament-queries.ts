@@ -948,11 +948,9 @@ export const parliamentVoteActivityResponseSchema = z.object({
 // purpose: ~56% of cdep procedural rows carry no event date at source, so that
 // heatmap would draw most of the legislative record as empty days.
 //
-// The squares are NOT navigable until `ParliamentBillsFilter` grows a
-// `lastEventDate` range — the filter today has year/finalized/hasLaw/
-// publishedInMo/actId/billType/status/q and nothing per-day, so a link to a
-// single day would land on an unfiltered list and quietly answer a different
-// question.
+// The bill list exposes the same `lastEventDate` range used by this aggregate,
+// so counted squares can navigate to the projects whose current last event
+// falls on that exact calendar day.
 // ---------------------------------------------------------------------------
 
 export const PARLIAMENT_BILL_ACTIVITY_QUERY = /* GraphQL */ `

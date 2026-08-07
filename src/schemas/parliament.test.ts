@@ -1,5 +1,20 @@
 import { describe, expect, it } from 'vitest'
-import { MemberSpeechesSearchSchema, MemberVotesSearchSchema } from './parliament'
+import {
+  MemberSpeechesSearchSchema,
+  MemberVotesSearchSchema,
+  ParliamentSearchSchema,
+} from './parliament'
+
+describe('ParliamentSearchSchema', () => {
+  it('keeps real URL dates and drops impossible calendar dates', () => {
+    expect(
+      ParliamentSearchSchema.parse({
+        from: '2024-02-29',
+        to: '2026-02-30',
+      }),
+    ).toMatchObject({ from: '2024-02-29', to: undefined })
+  })
+})
 
 describe('MemberVotesSearchSchema', () => {
   it('parses a single choice string and a choice array', () => {
