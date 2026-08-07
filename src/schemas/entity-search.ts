@@ -117,7 +117,7 @@ export const entitySearchParamsSchema = z.object({
     .catch(undefined),
   county: optionalSearchString,
   active: z
-    .union([z.boolean(), z.string()])
+    .union([z.boolean(), z.enum(['true', 'false'])])
     .transform((value) => value === true || value === 'true')
     .optional()
     .catch(undefined),

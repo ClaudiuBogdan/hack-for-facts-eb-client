@@ -20,7 +20,9 @@
           "url": null,
           "rankBoost": null,
           "cuis": ["999"],
-          "year": null
+          "identifiers": null,
+          "roles": null,
+          "isActive": null
         }
       ]
     }

@@ -31,16 +31,16 @@ describe('mapSearchHit', () => {
     expect(hit.isExternal).toBe(false)
   })
 
-  it('computes an external href for a legal_act hit', () => {
+  it('computes an internal href for a legal_act hit with an act ID', () => {
     const hit = mapSearchHit(
       rawHit({
         docType: 'legal_act',
-        docId: 'lege-227-2015',
+        docId: '66150',
         url: 'https://gov.test/lege',
       }),
     )
-    expect(hit.href).toBe('https://gov.test/lege')
-    expect(hit.isExternal).toBe(true)
+    expect(hit.href).toBe('/legislation/acts/66150')
+    expect(hit.isExternal).toBe(false)
   })
 
   it('falls back to empty href + non-external when no target is usable', () => {
