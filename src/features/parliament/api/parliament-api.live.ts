@@ -136,6 +136,8 @@ import { isCurrentLegislature } from '../lib/group-roster'
 import { toVoteSortArgs, type VotesListScope } from '../lib/votes-filter-state'
 
 const DEFAULT_MEMBERS_PAGE_SIZE = 20
+/** The server clamps `parliamentMembers.pageSize` to 100. */
+const MAX_MEMBERS_PAGE_SIZE = 100
 const DEFAULT_VOTES_PAGE_SIZE = 10
 const DEFAULT_BILLS_PAGE_SIZE = 10
 /**
@@ -437,6 +439,12 @@ export async function fetchParliamentHubLive(): Promise<ParliamentHubData> {
 
 // ── chamber composition ─────────────────────────────────────────────────────
 
+// Both chamber panels need the same current roster, and every filter change
+// rebuilds the composition from it. Keep one promise (like the group caches
+// above) so all API-capped pages are fetched once per app runtime, not
+// once per chamber and once again for every URL filter.
+let currentMembersForCompositionCache: Promise<ParliamentMember[]> | undefined
+
 export async function fetchParliamentChamberCompositionLive(
   chamber: ParliamentChamber,
   search: ParliamentMembersSearch = {},
@@ -465,19 +473,42 @@ export async function fetchParliamentChamberCompositionLive(
  * mandate rows) so the hard rule holds — current:true is composition-only.
  */
 async function fetchCurrentMembersForComposition(): Promise<ParliamentMember[]> {
-  const data = await graphqlQuery<unknown>(
-    PARLIAMENT_MEMBERS_QUERY,
-    {
-      filter: { legislature: { eq: LATEST_LEGISLATURE }, current: { eq: true } },
-      page: 1,
-      pageSize: 500,
-    },
-    { operationName: 'parliamentMembersCurrent' },
-  )
-  const parsed = parliamentMembersResponseSchema.parse(data)
-  return parsed.parliamentMembers.members
-    .map(mapMember)
-    .sort((a, b) => a.lastName.localeCompare(b.lastName, 'ro'))
+  const cached = currentMembersForCompositionCache
+  if (cached) return cached
+
+  const built = (async () => {
+    const loadPage = async (page: number) => {
+      const data = await graphqlQuery<unknown>(
+        PARLIAMENT_MEMBERS_QUERY,
+        {
+          filter: { legislature: { eq: LATEST_LEGISLATURE }, current: { eq: true } },
+          page,
+          pageSize: MAX_MEMBERS_PAGE_SIZE,
+        },
+        { operationName: 'parliamentMembersCurrent' },
+      )
+      return parliamentMembersResponseSchema.parse(data).parliamentMembers
+    }
+
+    const firstPage = await loadPage(1)
+    const pageCount = Math.ceil(firstPage.total / MAX_MEMBERS_PAGE_SIZE)
+    const remainingPages = await Promise.all(
+      Array.from({ length: Math.max(0, pageCount - 1) }, (_, index) =>
+        loadPage(index + 2),
+      ),
+    )
+
+    return [firstPage, ...remainingPages]
+      .flatMap((page) => page.members)
+      .map(mapMember)
+      .sort((a, b) => a.lastName.localeCompare(b.lastName, 'ro'))
+  })().catch((error) => {
+    currentMembersForCompositionCache = undefined
+    throw error
+  })
+
+  currentMembersForCompositionCache = built
+  return built
 }
 
 // ── votes ─────────────────────────────────────────────────────────────────
