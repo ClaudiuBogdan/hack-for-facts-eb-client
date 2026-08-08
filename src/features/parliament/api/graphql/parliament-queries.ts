@@ -525,7 +525,14 @@ export const PARLIAMENT_VOTE_QUERY = /* GraphQL */ `
       title
       outcome
       divisionNumber
+      # DEPRECATED as the answer — kept only so nothing breaks mid-cutover.
+      # resolutionStatus below is what says whether a bill may be shown at all.
       billKey
+      # W1.3: whether the resolver actually asserted a bill for this division,
+      # and how. Without this the page cannot tell "we refuse to claim a bill"
+      # (8,341 votes) from "this division had none".
+      resolutionStatus
+      resolutionMethod
       sourceUrl
       # The ROLE-BEARING edges of THIS division. billKey holds at most one bill
       # and no role at all; role is the only field that says what the division
@@ -603,6 +610,11 @@ const rawBallotSchema = z.object({
 export type RawParliamentBallot = z.infer<typeof rawBallotSchema>;
 
 const rawVoteDetailSchema = rawVoteCoreSchema.extend({
+  // W1.3 resolution contract. Optional because the field is only present once
+  // the API carrying it is deployed — a client ahead of the server must not
+  // fail to parse, it must simply assert no bill (which is the safe direction).
+  resolutionStatus: z.string().nullish(),
+  resolutionMethod: z.string().nullish(),
   /**
    * The division's printed timestamp, verbatim ("20.12.2023 16:16").
    *

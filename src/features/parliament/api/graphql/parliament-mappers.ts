@@ -553,6 +553,12 @@ export function mapVoteDetail(
 
   return ParliamentVoteDetailSchema.parse({
     ...summary,
+    // W1.3 contract — detail only. The vote LIST node does not carry these, so
+    // the shared summary mapper must not reference them: a list card shows no
+    // bill assertion of its own, and adding them there would be a wider cutover
+    // than this slice, not a free win.
+    ...(raw.resolutionStatus ? { resolutionStatus: raw.resolutionStatus } : {}),
+    ...(raw.resolutionMethod ? { resolutionMethod: raw.resolutionMethod } : {}),
     // Carried VERBATIM. `heldAt` is parsed out of this string's date prefix, so
     // it holds no time of day; this is the chamber's own clock and the only
     // place it exists. Trimmed but never re-parsed or re-formatted.

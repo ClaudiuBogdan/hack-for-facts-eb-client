@@ -518,6 +518,22 @@ export const ParliamentVoteDetailSchema = ParliamentVoteSummarySchema.extend({
    * unresolved edge is a candidate, not a fact, and must not be shown as one.
    */
   billLinks: z.array(ParliamentVoteBillLinkSchema).default([]),
+  /**
+   * W1.3 resolution contract. `relatedBillId` is the LEGACY scalar key and is
+   * not the answer: measured on live prod 2026-08-08 it is null on 860 votes
+   * the resolver DID resolve, and rendering it whenever it happens to be set
+   * asserts a bill for divisions the resolver deliberately refused.
+   *
+   * 'resolved' | 'adjudicated' -> a bill is asserted.
+   * 'unresolved' (8,341 votes) -> the resolver ABSTAINED for want of evidence.
+   *   Show that, do not show a bill and do not show nothing at all: a reader
+   *   cannot otherwise tell it from "this division had no bill".
+   * 'conflict' (18 votes) -> the evidence names 2-3 DIFFERENT dossiers. The
+   *   links stay visible as observations; none is THE bill.
+   * undefined -> not stamped yet.
+   */
+  resolutionStatus: z.string().optional(),
+  resolutionMethod: z.string().optional(),
   groupBreakdown: z.array(ParliamentGroupVoteBreakdownSchema),
   memberVotes: z.array(ParliamentMemberVoteRecordSchema),
 });
