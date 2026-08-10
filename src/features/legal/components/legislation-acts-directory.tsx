@@ -16,11 +16,16 @@ import { LegalStatusBadge } from './legal-status-badge'
 
 const PAGE_SIZE = 20
 
-/** The common instruments, curated; the full ~30-value vocabulary stays reachable by clearing the filter. */
+/**
+ * The common instruments, curated from the server's ACT_TYPE_VALUES
+ * vocabulary (legal-acts.spec.ts — 'oug'/'og' are the DB values, not the
+ * long-form slugs); the full ~30-value vocabulary stays reachable by
+ * clearing the filter.
+ */
 const ACT_TYPE_OPTIONS = [
   'lege',
-  'ordonanta-de-urgenta',
-  'ordonanta',
+  'oug',
+  'og',
   'hotarare',
   'ordin',
   'decret',

@@ -52,7 +52,10 @@ const rec = (value: unknown): Raw =>
 
 function buildFilter(filter: LegalActsBrowseFilter): Raw | null {
   const parts: Raw = {}
-  if (filter.actType !== undefined) parts.actType = { eq: filter.actType }
+  // actType and status are `in`-only filter families (array-typed spec);
+  // only year exposes `eq`. Validated against the real schema by the server's
+  // legal-client-contract test.
+  if (filter.actType !== undefined) parts.actType = { in: [filter.actType] }
   if (filter.year !== undefined) parts.year = { eq: filter.year }
   if (filter.status !== undefined) parts.status = { in: [filter.status] }
   return Object.keys(parts).length > 0 ? parts : null
