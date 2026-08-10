@@ -99,7 +99,7 @@ export function LegalActPage({ actId, initialAct }: Props) {
           <ActReferencesBand group={data.outLinks} direction="out" />
           <ActReferencesBand group={data.inLinks} direction="in" />
           <ActAnchorsBand group={data.incomingAnchors} />
-          <ActStructureBand structure={data.structure} />
+          <ActStructureBand act={data} />
           <ActProvenanceNotes act={data} />
         </ActAccordion>
       </main>

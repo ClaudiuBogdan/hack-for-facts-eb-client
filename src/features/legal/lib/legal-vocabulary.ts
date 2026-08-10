@@ -81,6 +81,28 @@ export function legalAudienceLabel(slug: string): string {
   }
 }
 
+/** `legal.acts.status` — the closed 7-value fold vocabulary, human-readable. */
+export function legalStatusLabel(status: string): string {
+  switch (status) {
+    case 'in-vigoare':
+      return t`În vigoare`
+    case 'modificat':
+      return t`Modificat`
+    case 'abrogat':
+      return t`Abrogat`
+    case 'abrogat-partial':
+      return t`Abrogat parțial`
+    case 'suspendat':
+      return t`Suspendat`
+    case 'iesit-din-vigoare':
+      return t`Ieșit din vigoare`
+    case 'necunoscut':
+      return t`Statut necunoscut`
+    default:
+      return status
+  }
+}
+
 /**
  * `legal.acts.act_type` — the issuing instrument.
  *

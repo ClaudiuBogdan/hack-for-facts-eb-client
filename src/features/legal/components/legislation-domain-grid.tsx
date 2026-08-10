@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@/lib/utils'
@@ -23,7 +24,7 @@ const DOMAIN_GRID_COLUMNS = [2, 3, 4] as const
  * `docs/design/legal/main-page.md` §6.2. A grid with no numbers is honest; a
  * grid with invented ones is not.
  *
- * Cells are inert until `/legislation/acts` exists to filter.
+ * Each cell filters the acts directory by its domain.
  */
 export function LegislationDomainGrid() {
   return (
@@ -48,11 +49,19 @@ export function LegislationDomainGrid() {
         )}
       >
         {LEGAL_DOMAIN_SLUGS.map((slug) => (
-          <div key={slug} className={legislationCellClassName}>
+          <Link
+            key={slug}
+            to="/legislation/acts"
+            search={{ domain: slug }}
+            className={cn(
+              legislationCellClassName,
+              'transition-colors hover:bg-[var(--pnrr-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]',
+            )}
+          >
             <span className="text-sm font-semibold text-[var(--pnrr-fg)]">
               {legalDomainLabel(slug)}
             </span>
-          </div>
+          </Link>
         ))}
         {getGridFillerClassNames({
           itemCount: LEGAL_DOMAIN_SLUGS.length,

@@ -87,6 +87,19 @@ const str = (value: unknown): string | null =>
 const int = (value: unknown): number =>
   typeof value === 'number' && Number.isFinite(value) ? Math.trunc(value) : 0
 
+/**
+ * KPI counts must never be fabricated: a missing/null totalCount rendered as
+ * "0 acte" over 223k acts is a lie with a confidence badge (observed live
+ * 2026-08-10, before the server implemented the count). Failing the query
+ * puts the page in its honest error state instead.
+ */
+const requiredCount = (value: unknown, name: string): number => {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new Error(`legislationOverview: server returned no ${name} count`)
+  }
+  return Math.trunc(value)
+}
+
 function nodes(connection: unknown): Raw[] {
   const edges = rec(connection).edges
   return Array.isArray(edges) ? edges.map((edge) => rec(rec(edge).node)) : []
@@ -144,10 +157,10 @@ export async function fetchLegislationOverviewLive(
 
   return legislationOverviewSchema.parse({
     counts: {
-      total: int(rec(data.all).totalCount),
-      inVigoare: int(rec(data.inVigoare).totalCount),
-      modificat: int(rec(data.modificat).totalCount),
-      abrogat: int(rec(data.abrogat).totalCount),
+      total: requiredCount(rec(data.all).totalCount, 'total'),
+      inVigoare: requiredCount(rec(data.inVigoare).totalCount, 'inVigoare'),
+      modificat: requiredCount(rec(data.modificat).totalCount, 'modificat'),
+      abrogat: requiredCount(rec(data.abrogat).totalCount, 'abrogat'),
     },
     mostCitedActs: nodes(data.mostCited).map(mapActNode),
     latestGazetteIssues: nodes(data.moIssues).map(mapIssueNode),

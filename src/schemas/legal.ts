@@ -433,6 +433,7 @@ export const legalActsBrowseFilterSchema = z.object({
   actType: z.string().optional(),
   year: z.number().int().optional(),
   status: legalActStatusSchema.optional(),
+  domain: legalDomainSlugSchema.optional(),
 })
 export type LegalActsBrowseFilter = z.infer<typeof legalActsBrowseFilterSchema>
 

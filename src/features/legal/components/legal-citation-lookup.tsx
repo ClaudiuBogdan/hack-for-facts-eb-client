@@ -62,10 +62,13 @@ export function LegalCitationLookup({ className }: { readonly className?: string
 
   return (
     <div ref={rootRef} className={className}>
-      <label className="text-sm font-medium" htmlFor={`${listboxId}-input`}>
-        <Trans>Sari direct la un act</Trans>
+      <label
+        className="text-xs font-semibold uppercase tracking-wide text-[var(--pnrr-muted)]"
+        htmlFor={`${listboxId}-input`}
+      >
+        <Trans>Citare sau nume uzual</Trans>
       </label>
-      <div className="relative mt-1">
+      <div className="relative mt-1.5">
         <Input
           id={`${listboxId}-input`}
           role="combobox"
@@ -75,6 +78,7 @@ export function LegalCitationLookup({ className }: { readonly className?: string
           placeholder={t`ex. Legea 227/2015 sau codul fiscal`}
           value={query}
           autoComplete="off"
+          className="h-12 w-full rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-base shadow-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
           onChange={(event) => {
             setQuery(event.target.value)
             setOpen(true)
@@ -86,28 +90,28 @@ export function LegalCitationLookup({ className }: { readonly className?: string
             id={listboxId}
             role="listbox"
             aria-label={t`Acte găsite`}
-            className="absolute z-20 mt-1 w-full rounded-md border bg-background shadow-md"
+            className="absolute z-20 mt-1 w-full rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] shadow-md"
           >
             {hitsQuery.isLoading && (
-              <p className="px-3 py-2 text-sm text-muted-foreground">
+              <p className="px-3 py-2.5 text-sm text-[var(--pnrr-muted)]">
                 <Trans>Se caută…</Trans>
               </p>
             )}
             {hitsQuery.isError && (
-              <p className="px-3 py-2 text-sm text-muted-foreground">
+              <p className="px-3 py-2.5 text-sm text-[var(--pnrr-muted)]">
                 <Trans>Căutarea nu a răspuns — încearcă din nou.</Trans>
               </p>
             )}
             {hitsQuery.isSuccess && hits.length === 0 && (
-              <p className="px-3 py-2 text-sm text-muted-foreground">
+              <p className="px-3 py-2.5 text-sm text-[var(--pnrr-muted)]">
                 <Trans>
                   Niciun act găsit — încearcă numărul și anul (ex. 227/2015).
                 </Trans>
               </p>
             )}
             {hits.length > 1 && (
-              <p className="border-b px-3 py-1.5 text-xs text-muted-foreground">
-                <Trans>{hits.length} potriviri — alege actul exact:</Trans>
+              <p className="border-b border-[var(--pnrr-subtle)] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-[var(--pnrr-muted)]">
+                <Trans>{hits.length} potriviri — alege actul exact</Trans>
               </p>
             )}
             {hits.map((hit) => {
@@ -119,13 +123,13 @@ export function LegalCitationLookup({ className }: { readonly className?: string
                   role="option"
                   aria-selected={false}
                   onClick={() => go(hit.value)}
-                  className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
+                  className="flex w-full items-center justify-between gap-3 border-b border-[var(--pnrr-subtle)] px-3 py-2.5 text-left text-sm text-[var(--pnrr-fg)] last:border-b-0 hover:bg-[var(--pnrr-hover)] focus-visible:bg-[var(--pnrr-hover)] focus-visible:outline-none"
                 >
-                  <span className="truncate">{hit.label}</span>
+                  <span className="truncate font-semibold">{hit.label}</span>
                   {parsedStatus.success ? (
                     <LegalStatusBadge status={parsedStatus.data} />
                   ) : hit.hint !== null ? (
-                    <span className="shrink-0 text-xs text-muted-foreground">{hit.hint}</span>
+                    <span className="shrink-0 text-xs text-[var(--pnrr-muted)]">{hit.hint}</span>
                   ) : null}
                 </button>
               )

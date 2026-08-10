@@ -58,6 +58,7 @@ function buildFilter(filter: LegalActsBrowseFilter): Raw | null {
   if (filter.actType !== undefined) parts.actType = { in: [filter.actType] }
   if (filter.year !== undefined) parts.year = { eq: filter.year }
   if (filter.status !== undefined) parts.status = { in: [filter.status] }
+  if (filter.domain !== undefined) parts.domain = { in: [filter.domain] }
   return Object.keys(parts).length > 0 ? parts : null
 }
 

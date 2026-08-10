@@ -24,6 +24,7 @@ vi.mock('@tanstack/react-router', () => ({
       {children}
     </a>
   ),
+  useNavigate: () => vi.fn(),
 }))
 
 vi.mock('../hooks/use-legal-act', () => ({ useLegalAct: vi.fn() }))
@@ -185,9 +186,9 @@ describe('LegalActPage', () => {
     expect(
       screen.getByRole('button', { name: /Ce s-a întâmplat cu acest act/ }),
     ).toHaveTextContent('4 evenimente')
-    expect(
-      screen.getByRole('button', { name: /Cum e structurat/ }),
-    ).toHaveTextContent('12 elemente')
+    // (The structure band now feeds from the outline transport and
+    // self-suppresses without an outline for the fixture's document — its
+    // plural meta is covered by the reader TOC tests.)
     expect(
       screen.getByRole('button', { name: /Unde a fost publicat/ }),
     ).toHaveTextContent('1 publicare')

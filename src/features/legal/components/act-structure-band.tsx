@@ -1,39 +1,53 @@
+import { useNavigate } from '@tanstack/react-router'
+import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
 import { Plural, Trans } from '@lingui/react/macro'
-import { cn } from '@/lib/utils'
-import type { LegalStructureNode } from '@/schemas/legal'
+import type { LegalActDetail } from '@/schemas/legal'
+import { useLegalOutline } from '../hooks/use-legal-outline'
+import { formatLegalNumber } from '../lib/legal-format'
 import { legalNodeKindLabel } from '../lib/legal-vocabulary'
-import {
-  getGridFillerClassNames,
-  legislationGridClassName,
-  legislationGridFillerClassName,
-} from '../lib/legislation-theme'
 import { ActAccordionItem } from './act-accordion'
+import { LegalReaderToc } from './reader/legal-reader-toc'
 
 type Props = {
-  readonly structure: readonly LegalStructureNode[]
+  readonly act: LegalActDetail
 }
 
-/** Below this the tree is a stub, not a table of contents (§5). */
-const MIN_NODES = 10
-
-/** Column count per breakpoint, matching the grid classes below. */
-const STRUCTURE_GRID_COLUMNS = [1, 2, 3] as const
-
 /**
- * Rung 4 — the skeleton of the act.
+ * Rung 4 — the full skeleton of the act, navigable.
  *
- * **This band shows labels only, and that is permanent, not provisional.** The
- * server serves `charStart`/`charEnd` as forward-compatible locators and no node
- * text at all (SDL §3.4), so there is nothing to expand into. Making the rows
- * look clickable would promise a reading experience that does not exist; they
- * are plain text, and the band says where the text actually lives.
+ * The served outline (`legalDocumentOutline`, the same authority the reader's
+ * TOC uses) renders as a collapsible tree down to article grain; selecting an
+ * entry opens the READER at that exact provision (`?nod=` deep link). The
+ * kind-count summary line says what the skeleton holds before you open it.
  *
- * Only renders above `MIN_NODES` — 152.603 documents have *some* structure but
- * only 24.502 have enough to be worth browsing.
+ * Degradations: no canonical document or an empty outline (paragraph_stream
+ * docs) → the band self-suppresses; an outline error renders one muted line
+ * inside the band rather than a fake emptiness.
  */
-export function ActStructureBand({ structure }: Props) {
-  if (structure.length < MIN_NODES) return null
+export function ActStructureBand({ act }: Props) {
+  const { i18n } = useLingui()
+  const navigate = useNavigate()
+  const documentId = act.canonical?.documentId ?? null
+  const outlineQuery = useLegalOutline(documentId)
+  const entries = outlineQuery.data ?? []
+
+  if (documentId === null) return null
+  if (outlineQuery.isSuccess && entries.length === 0) return null
+  if (outlineQuery.isLoading) return null
+
+  const kindCounts = new Map<string, number>()
+  for (const entry of entries) {
+    kindCounts.set(entry.nodeKind, (kindCounts.get(entry.nodeKind) ?? 0) + 1)
+  }
+  const summaryLine = [...kindCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4)
+    .map(
+      ([kind, count]) =>
+        `${formatLegalNumber(count, i18n.locale)} × ${legalNodeKindLabel(kind).toLowerCase()}`,
+    )
+    .join(' · ')
 
   return (
     <ActAccordionItem
@@ -41,52 +55,44 @@ export function ActStructureBand({ structure }: Props) {
       title={t`Cum e structurat`}
       meta={
         <Plural
-          value={structure.length}
+          value={entries.length}
           one="# element"
           few="# elemente"
           other="# de elemente"
         />
       }
-      description={t`Cuprinsul actului, la primul nivel.`}
+      description={t`Cuprinsul complet al actului — alege un element ca să îl citești direct în text.`}
       footnote={
         <Trans>
-          Afișăm doar titlurile elementelor. Textul articolelor nu este
-          disponibil aici — folosește linkul către textul oficial.
+          Structura vine din arborele oficial al textului; fiecare element
+          deschide cititorul exact la locul lui.
         </Trans>
       }
     >
-      <ul
-        className={cn(
-          legislationGridClassName,
-          'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+      <div className="px-5 py-4 sm:px-6">
+        {outlineQuery.isError ? (
+          <p className="text-sm text-[var(--pnrr-muted)]">
+            <Trans>Structura nu s-a putut încărca — textul rămâne disponibil în cititor.</Trans>
+          </p>
+        ) : (
+          <>
+            {summaryLine !== '' && (
+              <p className="mb-3 text-xs text-[var(--pnrr-muted)]">{summaryLine}</p>
+            )}
+            <LegalReaderToc
+              entries={entries}
+              activePath={null}
+              onSelect={(entry) => {
+                void navigate({
+                  to: '/legislation/acts/$actId/text',
+                  params: { actId: act.actId },
+                  search: { nod: entry.path },
+                })
+              }}
+            />
+          </>
         )}
-      >
-        {structure.map((node) => (
-          <li
-            key={node.nodeId}
-            className="border-l border-t border-[var(--pnrr-subtle)] px-5 py-2.5 sm:px-6"
-          >
-            <span className="block text-sm font-medium text-[var(--pnrr-fg)]">
-              {node.label ?? legalNodeKindLabel(node.nodeKind)}
-            </span>
-            {node.label !== null ? (
-              <span className="block text-xs text-[var(--pnrr-muted)]">
-                {legalNodeKindLabel(node.nodeKind)}
-              </span>
-            ) : null}
-          </li>
-        ))}
-        {getGridFillerClassNames({
-          itemCount: structure.length,
-          columns: STRUCTURE_GRID_COLUMNS,
-        }).map((visibility, index) => (
-          <li
-            key={`filler-${index}`}
-            aria-hidden
-            className={cn(legislationGridFillerClassName, visibility)}
-          />
-        ))}
-      </ul>
+      </div>
     </ActAccordionItem>
   )
 }
