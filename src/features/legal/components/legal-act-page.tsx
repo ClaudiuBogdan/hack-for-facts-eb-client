@@ -9,8 +9,10 @@ import { ActDetailHeader } from './act-detail-header'
 import { ActKeyDates } from './act-key-dates'
 import { ActPlainSummary } from './act-plain-summary'
 import { ActProvenanceNotes } from './act-provenance-notes'
+import { ActAnchorsBand } from './act-anchors-band'
 import { ActPublicationBand } from './act-publication-band'
 import { ActReferencesBand } from './act-references-band'
+import { ActVersionsBand } from './act-versions-band'
 import { ActRelevanceBand } from './act-relevance-band'
 import { ActStructureBand } from './act-structure-band'
 import { ActTimelineBand } from './act-timeline-band'
@@ -93,8 +95,10 @@ export function LegalActPage({ actId, initialAct }: Props) {
           ) : null}
           <ActPublicationBand act={data} />
           <ActTimelineBand timeline={data.timeline} />
+          <ActVersionsBand act={data} />
           <ActReferencesBand group={data.outLinks} direction="out" />
           <ActReferencesBand group={data.inLinks} direction="in" />
+          <ActAnchorsBand group={data.incomingAnchors} />
           <ActStructureBand structure={data.structure} />
           <ActProvenanceNotes act={data} />
         </ActAccordion>
