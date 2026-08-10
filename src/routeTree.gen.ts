@@ -101,6 +101,7 @@ import { Route as InvestitiiPubliceLocalitatiSirutaRouteImport } from './routes/
 import { Route as InvestitiiPubliceObiectiveIdRouteImport } from './routes/investitii-publice/obiective.$id'
 import { Route as JustitieDosareCaseIdRouteImport } from './routes/justitie.dosare.$caseId'
 import { Route as JustitieInstanteCourtIdRouteImport } from './routes/justitie.instante.$courtId'
+import { Route as LegislationActsIndexRouteImport } from './routes/legislation/acts/index'
 import { Route as LegislationActsActIdRouteImport } from './routes/legislation/acts/$actId'
 import { Route as MapsDatasetsIndexRouteImport } from './routes/maps/datasets/index'
 import { Route as MapsDatasetsDatasetIdRouteImport } from './routes/maps/datasets/$datasetId'
@@ -756,6 +757,13 @@ const JustitieInstanteCourtIdRoute = JustitieInstanteCourtIdRouteImport.update({
   path: '/instante/$courtId',
   getParentRoute: () => JustitieRoute,
 } as any)
+const LegislationActsIndexRoute = LegislationActsIndexRouteImport.update({
+  id: '/legislation/acts/',
+  path: '/legislation/acts/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/legislation/acts/index.lazy').then((d) => d.Route),
+)
 const LegislationActsActIdRoute = LegislationActsActIdRouteImport.update({
   id: '/legislation/acts/$actId',
   path: '/legislation/acts/$actId',
@@ -1506,6 +1514,7 @@ export interface FileRoutesByFullPath {
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
+  '/legislation/acts/': typeof LegislationActsIndexRoute
   '/maps/datasets/': typeof MapsDatasetsIndexRoute
   '/maps/editor/': typeof MapsEditorIndexRoute
   '/parlament/agenda/': typeof ParlamentAgendaIndexRoute
@@ -1666,6 +1675,7 @@ export interface FileRoutesByTo {
   '/$lang/learning': typeof LangLearningIndexRoute
   '/classifications/economic': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional': typeof ClassificationsFunctionalIndexRoute
+  '/legislation/acts': typeof LegislationActsIndexRoute
   '/maps/datasets': typeof MapsDatasetsIndexRoute
   '/maps/editor': typeof MapsEditorIndexRoute
   '/parlament/agenda': typeof ParlamentAgendaIndexRoute
@@ -1840,6 +1850,7 @@ export interface FileRoutesById {
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
+  '/legislation/acts/': typeof LegislationActsIndexRoute
   '/maps/datasets/': typeof MapsDatasetsIndexRoute
   '/maps/editor/': typeof MapsEditorIndexRoute
   '/parlament/agenda/': typeof ParlamentAgendaIndexRoute
@@ -2016,6 +2027,7 @@ export interface FileRouteTypes {
     | '/$lang/learning/'
     | '/classifications/economic/'
     | '/classifications/functional/'
+    | '/legislation/acts/'
     | '/maps/datasets/'
     | '/maps/editor/'
     | '/parlament/agenda/'
@@ -2176,6 +2188,7 @@ export interface FileRouteTypes {
     | '/$lang/learning'
     | '/classifications/economic'
     | '/classifications/functional'
+    | '/legislation/acts'
     | '/maps/datasets'
     | '/maps/editor'
     | '/parlament/agenda'
@@ -2349,6 +2362,7 @@ export interface FileRouteTypes {
     | '/$lang/learning/'
     | '/classifications/economic/'
     | '/classifications/functional/'
+    | '/legislation/acts/'
     | '/maps/datasets/'
     | '/maps/editor/'
     | '/parlament/agenda/'
@@ -2484,6 +2498,7 @@ export interface RootRouteChildren {
   StatisticiTeritoriiSirutaRoute: typeof StatisticiTeritoriiSirutaRoute
   ClassificationsEconomicIndexRoute: typeof ClassificationsEconomicIndexRoute
   ClassificationsFunctionalIndexRoute: typeof ClassificationsFunctionalIndexRoute
+  LegislationActsIndexRoute: typeof LegislationActsIndexRoute
   MapsDatasetsIndexRoute: typeof MapsDatasetsIndexRoute
   MapsEditorIndexRoute: typeof MapsEditorIndexRoute
   ParlamentAgendaIndexRoute: typeof ParlamentAgendaIndexRoute
@@ -3171,6 +3186,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/justitie/instante/$courtId'
       preLoaderRoute: typeof JustitieInstanteCourtIdRouteImport
       parentRoute: typeof JustitieRoute
+    }
+    '/legislation/acts/': {
+      id: '/legislation/acts/'
+      path: '/legislation/acts'
+      fullPath: '/legislation/acts/'
+      preLoaderRoute: typeof LegislationActsIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/legislation/acts/$actId': {
       id: '/legislation/acts/$actId'
@@ -4187,6 +4209,7 @@ const rootRouteChildren: RootRouteChildren = {
   StatisticiTeritoriiSirutaRoute: StatisticiTeritoriiSirutaRoute,
   ClassificationsEconomicIndexRoute: ClassificationsEconomicIndexRoute,
   ClassificationsFunctionalIndexRoute: ClassificationsFunctionalIndexRoute,
+  LegislationActsIndexRoute: LegislationActsIndexRoute,
   MapsDatasetsIndexRoute: MapsDatasetsIndexRoute,
   MapsEditorIndexRoute: MapsEditorIndexRoute,
   ParlamentAgendaIndexRoute: ParlamentAgendaIndexRoute,
@@ -4211,13 +4234,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

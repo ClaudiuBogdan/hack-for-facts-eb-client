@@ -21,6 +21,14 @@ vi.mock("@/config/env", () => ({
   getSiteUrl: () => "http://localhost:3000",
 }));
 
+// Legal surfaces default to their live adapters; unit tests must stay on the
+// committed fixtures (byte-identical scrapper artifacts), so legal is pinned
+// to mock via ITS OWN override — never the shared VITE_MOCK_DATASETS, whose
+// mere presence flips other domains' mock-first defaults to live.
+// (`vi.stubEnv` — the typed way to set import.meta.env in vitest; `unstubEnvs`
+// is off, so the stub holds for the whole worker.)
+vi.stubEnv("VITE_LEGAL_USE_LIVE_API", "false");
+
 // Extend Vitest's expect method with methods from react-testing-library
 expect.extend(matchers);
 configure({ asyncUtilTimeout: 10000 });

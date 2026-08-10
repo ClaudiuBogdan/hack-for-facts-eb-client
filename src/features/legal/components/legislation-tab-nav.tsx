@@ -15,7 +15,7 @@ type TabSpec = {
   readonly id: LegislationTab
   readonly label: string
   /** Omitted while the route does not exist — the tab renders inert. */
-  readonly to?: '/legislation' | '/legislation/analytics'
+  readonly to?: '/legislation' | '/legislation/analytics' | '/legislation/acts'
 }
 
 type Props = {
@@ -45,7 +45,7 @@ export function LegislationTabNav({ activeTab }: Props) {
     { id: 'prezentare', label: t`Prezentare`, to: '/legislation' },
     { id: 'analiza', label: t`Analiză`, to: '/legislation/analytics' },
     { id: 'cauta', label: t`Caută` },
-    { id: 'acte', label: t`Acte` },
+    { id: 'acte', label: t`Acte`, to: '/legislation/acts' },
     { id: 'modificari', label: t`Modificări` },
     { id: 'monitorul', label: t`Monitorul Oficial` },
     { id: 'ghid', label: t`Ghid` },

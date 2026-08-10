@@ -414,6 +414,43 @@ export const legalReaderSearchSchema = z.object({
 })
 export type LegalReaderSearch = z.infer<typeof legalReaderSearchSchema>
 
+/**
+ * One page of the acts directory (`legalActs` connection).
+ *
+ * `totalCount` is nullable on the server connection; when present it is the
+ * filtered total (unlike the per-act reference connection, whose totalCount
+ * is a page size — different resolvers, different honesty).
+ */
+export const legalActsPageSchema = z.object({
+  items: z.array(legalActListItemSchema),
+  endCursor: z.string().nullable(),
+  totalCount: z.number().int().nullable(),
+})
+export type LegalActsPage = z.infer<typeof legalActsPageSchema>
+
+/** Filters the directory exposes — all verified server-side filter families. */
+export const legalActsBrowseFilterSchema = z.object({
+  actType: z.string().optional(),
+  year: z.number().int().optional(),
+  status: legalActStatusSchema.optional(),
+})
+export type LegalActsBrowseFilter = z.infer<typeof legalActsBrowseFilterSchema>
+
+/**
+ * One `legalResolve` hit. `value` is the filter value the hit resolves to —
+ * for `dim: "act"` it is the actId to navigate to. Ambiguity is the feature:
+ * 'codul fiscal' returns MULTIPLE hits and the user picks; the UI never
+ * silently takes the first.
+ */
+export const legalResolveHitSchema = z.object({
+  kind: z.string(),
+  value: z.string(),
+  label: z.string(),
+  score: z.number().nullable(),
+  hint: z.string().nullable(),
+})
+export type LegalResolveHit = z.infer<typeof legalResolveHitSchema>
+
 /** The composed payload behind the `/legislation` overview tab. */
 export const legislationOverviewSchema = z.object({
   counts: legalActCountsSchema,

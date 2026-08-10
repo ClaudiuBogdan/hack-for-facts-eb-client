@@ -3,34 +3,28 @@ import { isMockDataEnabled } from '@/lib/scraper-references/mock-mode'
 export const LEGAL_DATASET_ID = 'legal-acts'
 
 /**
- * The `/legislation` surfaces render from typed mocks by default.
+ * The `/legislation` surfaces default to the LIVE lanes.
  *
- * The two lanes are at different stages, and this flag governs both:
+ * Every live adapter is now real — act detail, render/outline, overview,
+ * directory, resolver — so the domain follows the platform posture: live by
+ * default, fixtures only when mock mode is asked for
+ * (`VITE_USE_MOCK_DATA=true` or `VITE_MOCK_DATASETS=legal-acts`).
+ * `VITE_LEGAL_USE_LIVE_API` is the legal-scoped override in BOTH directions:
+ * `'true'` forces live even under a global mock flag (API smoke-testing
+ * behind an otherwise mocked app), `'false'` forces mock — the vitest setup
+ * pins the latter so unit tests stay on committed fixtures without touching
+ * the shared `VITE_MOCK_DATASETS` (a non-empty scoped list would silently
+ * flip OTHER domains' mock-first defaults to live).
  *
- *  - **act detail** (`legal-act-api.live.ts`) is a real adapter, built and
- *    verified against the production `legalAct` query;
- *  - **the overview** (`legal-api.live.ts`) is still a stub that fails loudly —
- *    its four calls are specified but unwritten (`main-page.md` §5).
- *
- * So the default stays mock until the overview lands, rather than shipping a
- * module whose front door throws while its detail pages work. Set
- * `VITE_LEGAL_USE_LIVE_API=true` (with `VITE_API_URL` pointed at a redesign API)
- * to take both lanes live.
- *
- * Every surface that renders under this flag must say so — the act page carries
- * a `DataStatusBadge` and a provenance note, because its fixtures are real acts
- * copied from production and are indistinguishable from served data otherwise.
+ * Every surface that renders under mock mode must say so — the act page
+ * carries a `DataStatusBadge` and a provenance note, because its fixtures are
+ * real acts copied from production and are indistinguishable from served data
+ * otherwise.
  */
 export function isLegalMockEnabled(): boolean {
-  if (import.meta.env.VITE_LEGAL_USE_LIVE_API === 'true') {
-    return false
-  }
+  const override = import.meta.env.VITE_LEGAL_USE_LIVE_API
+  if (override === 'true') return false
+  if (override === 'false') return true
 
-  if (isMockDataEnabled(LEGAL_DATASET_ID)) {
-    return true
-  }
-
-  // The overview's live lane is still a stub, so the domain stays mock-first
-  // unless explicitly opted in above.
-  return true
+  return isMockDataEnabled(LEGAL_DATASET_ID)
 }
