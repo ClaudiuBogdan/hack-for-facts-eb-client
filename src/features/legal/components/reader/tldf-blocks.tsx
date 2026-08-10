@@ -32,12 +32,19 @@ import type { TldfBlock, TldfMark, TldfRun } from '../../lib/tldf/types'
 
 const logger = createLogger('legal-reader')
 
-/** Block kinds with dedicated styling; anything else takes the plain fallback. */
+/**
+ * The compiler's CLOSED kind vocabulary — mirrors `TLDF_KIND_VALUES` in the
+ * scrapper's `prod/tldf/format.ts` (23 kinds), enumerated once instead of
+ * discovered one unknown-kind warning at a time. `tabel` is kept although
+ * absent from v1 of that enum. Anything else still takes the plain fallback
+ * and logs.
+ */
 const KNOWN_KINDS = new Set([
   'carte',
   'parte',
   'titlu',
   'titlu_act',
+  'subtitlu_act',
   'capitol',
   'subcapitol',
   'sectiune',
@@ -46,8 +53,11 @@ const KNOWN_KINDS = new Set([
   'apendice',
   'alineat',
   'litera',
+  'liniuta',
   'punct',
   'paragraf',
+  'bloc',
+  'citat',
   'nota',
   'emitent',
   'publicare',
@@ -95,6 +105,7 @@ const BLOCK_CLASS: Readonly<Record<string, string>> = {
   titlu: `mt-16 border-t border-[var(--pnrr-subtle)] pt-8 ${HEAD_FONT} ${RANK_EYEBROW} ${DEN_FONT} [&>[data-role=den]]:text-[1.75rem] [&>[data-role=den]]:font-black [&>[data-role=den]]:tracking-tight`,
   // The document's own masthead — the title lines the law opens with.
   titlu_act: 'text-lg leading-relaxed',
+  subtitlu_act: 'text-base leading-relaxed',
   capitol: `mt-11 border-t border-[var(--pnrr-subtle)] pt-6 ${HEAD_FONT} ${RANK_EYEBROW} ${DEN_FONT} [&>[data-role=den]]:text-[1.375rem] [&>[data-role=den]]:font-bold`,
   subcapitol: `mt-8 ${HEAD_FONT} [&>[data-role=ttl]]:text-[1.1875rem] [&>[data-role=ttl]]:font-bold`,
   sectiune: `mt-8 ${HEAD_FONT} [&>[data-role=ttl]]:text-[1.1875rem] [&>[data-role=ttl]]:font-bold`,
@@ -105,8 +116,13 @@ const BLOCK_CLASS: Readonly<Record<string, string>> = {
   apendice: `mt-11 ${HEAD_FONT} ${RANK_EYEBROW} ${DEN_FONT} [&>[data-role=den]]:font-bold`,
   alineat: 'mt-2.5',
   litera: 'mt-1.5 pl-6',
+  // Dash-items ("– ...") — same list grain as litera/punct.
+  liniuta: 'mt-1.5 pl-6',
   punct: 'mt-1.5 pl-6',
   paragraf: 'mt-2.5',
+  // A structurally-classified quotation — the same container the
+  // OPENS_QUOTED heuristic approximates when the parser didn't mark one.
+  citat: 'mt-3 border-l-[3px] border-[var(--pnrr-border)] bg-[var(--pnrr-hover)] py-2 pl-5 pr-3',
   nota: 'mt-3 pl-4 border-l-2 border-muted text-muted-foreground text-[0.95em]',
   // Publication metadata plate (EMITENT / Publicat în) — kept quiet; the
   // fișa above states the same facts with provenance.
