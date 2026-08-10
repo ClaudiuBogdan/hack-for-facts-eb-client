@@ -28,7 +28,6 @@ type Props = {
  */
 export function ActProvenanceNotes({ act }: Props) {
   const isSuspicious = act.canonical?.extractionStatus === 'suspicious'
-  const hasNoStructure = act.structure.length === 0
   const hasNoSummary = act.summary?.plainLanguageSummary == null
   const hasNoPublication = act.gazettePublications.length === 0
 
@@ -95,20 +94,9 @@ export function ActProvenanceNotes({ act }: Props) {
           },
         ]
       : []),
-    ...(hasNoStructure
-      ? [
-          {
-            key: 'structure',
-            tone: 'info' as const,
-            body: (
-              <Trans>
-                Nu avem structura pe articole pentru acest act, deci nu îi putem
-                arăta cuprinsul.
-              </Trans>
-            ),
-          },
-        ]
-      : []),
+    // The old "no article structure" note is gone with the `structure`
+    // field: the Cuprins in the left nav IS the served outline, and its
+    // absence is visible on the page itself rather than asserted here.
     ...(hasNoSummary
       ? [
           {

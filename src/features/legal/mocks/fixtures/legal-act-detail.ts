@@ -143,7 +143,6 @@ export const legalActDetailFixture: LegalActDetail = {
       render: { renderStatus: 'served', chunkCount: 1 },
     },
   ],
-  structure: [],
   officialTextUrl: 'https://legislatie.just.ro/Public/DetaliiDocument/222901',
 }
 
@@ -386,20 +385,6 @@ export const legalActDetailRichFixture: LegalActDetail = {
       firstPublicationDate: null,
       render: null,
     },
-  ],
-  structure: [
-    { nodeId: '1551923', nodeKind: 'preambul', label: null, path: '00000' },
-    { nodeId: '1551924', nodeKind: 'articol', label: 'Articolul 1', path: '00001' },
-    { nodeId: '1551925', nodeKind: 'articol', label: 'Articolul 2', path: '00002' },
-    { nodeId: '1551926', nodeKind: 'articol', label: 'Articolul 3', path: '00003' },
-    { nodeId: '1551927', nodeKind: 'articol', label: 'Articolul 4', path: '00004' },
-    { nodeId: '1551928', nodeKind: 'articol', label: 'Articolul 5', path: '00005' },
-    { nodeId: '1551929', nodeKind: 'articol', label: 'Articolul 6', path: '00006' },
-    { nodeId: '1551930', nodeKind: 'articol', label: 'Articolul 7', path: '00007' },
-    { nodeId: '1551931', nodeKind: 'articol', label: 'Articolul 8', path: '00008' },
-    { nodeId: '1551932', nodeKind: 'articol', label: 'Articolul 9', path: '00009' },
-    { nodeId: '1551933', nodeKind: 'articol', label: 'Articolul 10', path: '00010' },
-    { nodeId: '1551934', nodeKind: 'articol', label: 'Articolul 11', path: '00011' },
   ],
   officialTextUrl: 'https://legislatie.just.ro/Public/DetaliiDocument/171282',
 }

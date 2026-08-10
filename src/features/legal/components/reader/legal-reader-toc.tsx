@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { ChevronRight } from 'lucide-react'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
 import type { LegalOutlineEntry } from '@/schemas/legal'
 import { legalNodeKindLabel } from '../../lib/legal-vocabulary'
@@ -98,7 +97,7 @@ export function LegalReaderToc({ entries, activePath, onSelect, className }: Pro
             aria-expanded={hasChildren ? expanded : undefined}
             aria-selected={active}
           >
-            <div className="flex items-center">
+            <div className="flex min-w-0 items-center">
               {hasChildren ? (
                 <button
                   type="button"
@@ -122,11 +121,14 @@ export function LegalReaderToc({ entries, activePath, onSelect, className }: Pro
                 type="button"
                 onClick={() => onSelect(node.entry)}
                 aria-current={active ? 'location' : undefined}
+                // Active = 3px left rule + semibold, not a filled pill: the
+                // pill was the darkest object on the page, heavier than the
+                // H1, pulling the eye out of the reading column.
                 className={cn(
-                  'w-full truncate rounded px-2 py-1 text-left text-sm leading-5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  'min-w-0 flex-1 truncate rounded-none py-1 text-left text-sm leading-5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   active
-                    ? 'bg-accent font-semibold text-accent-foreground'
-                    : 'text-foreground hover:bg-muted',
+                    ? 'border-l-[3px] border-[var(--pnrr-fg)] pl-[5px] pr-2 font-semibold text-[var(--pnrr-fg)]'
+                    : 'px-2 text-foreground hover:bg-muted',
                 )}
                 title={tocLabel(node.entry)}
               >
@@ -144,14 +146,18 @@ export function LegalReaderToc({ entries, activePath, onSelect, className }: Pro
 
   return (
     <nav aria-label={t`Cuprinsul actului`} className={className}>
-      <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-muted-foreground">
+      {/* Same eyebrow style as "Pe această pagină" — one rail, one voice. */}
+      <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--pnrr-muted)]">
         <Trans>Cuprins</Trans>
       </h2>
-      <ScrollArea className="max-h-[calc(100vh-10rem)] overflow-y-auto pr-2">
+      {/* A plain overflow div, NOT ScrollArea: Radix's viewport lays the tree
+          out at content width (display:table), which defeated `truncate` and
+          produced a 2.800px-wide horizontally scrolling rail. */}
+      <div className="max-h-[calc(100vh-10rem)] overflow-y-auto overflow-x-hidden pr-2">
         <div role="tree" aria-label={t`Structura actului`}>
           {renderNodes(tree)}
         </div>
-      </ScrollArea>
+      </div>
     </nav>
   )
 }

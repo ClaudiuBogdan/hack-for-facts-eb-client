@@ -14,45 +14,39 @@ import { ActPublicationBand } from './act-publication-band'
 import { ActReferencesBand } from './act-references-band'
 import { ActVersionsBand } from './act-versions-band'
 import { ActRelevanceBand } from './act-relevance-band'
-import { ActStructureBand } from './act-structure-band'
 import { ActTimelineBand } from './act-timeline-band'
 import { ActWarnings } from './act-warnings'
 import { LegalActSkeleton } from './legal-act-skeleton'
+import { ActReadingLayout } from './reader/legal-reader-page'
 
 type Props = {
   readonly actId: string
   /** `null` means the loader established the act does not exist — see `useLegalAct`. */
   readonly initialAct?: LegalActDetail | null
+  /** `?doc=` — read this expression instead of the canonical document. */
+  readonly docOverride?: string
+  /** `?nod=` — a document_nodes PATH deep link into the text. */
+  readonly nod?: string
 }
 
 /**
- * `/legislation/acts/$actId` — one normative document.
+ * `/legislation/acts/$actId` — one normative document, ONE page (user
+ * decision 2026-08-10: the text is not a separate route). The shape is the
+ * portal's, redesigned: a left nav carrying the page's sections and the
+ * served Cuprins, and a main column that reads top to bottom as the
+ * disclosure ladder —
  *
- * One scrolling column with progressive layers, decided 2026-08-01 over the
- * four-tab parliament twin: the median act has 0 citations, 1 timeline entry and
- * no article tree, so tabs would have given it three empty rooms
- * (`docs/design/legal/act-detail.md` §2).
- *
- * Order is the disclosure ladder from §3, and it is load-bearing:
- *
- *  0. header — what this is, is it alive, and the route to the text itself
+ *  0. header — what this is, is it alive, the exit to the official source
  *  ⚠  warnings — *before* the summary, because they qualify it
- *  1. plain summary — the lead, and the page's only open block
+ *  1. plain summary — the lead, and the fișa's only open block
  *  2-4. one accordion — relevance, the record, the mechanics, the limits
+ *  5. the text itself — full, chunk-streamed, `?nod=`-addressable
  *
- * Every accordion row self-suppresses when it has no data, so a thin act shows
- * three rows instead of eight and still reads as a finished page.
- *
- * **The summary is the only card.** Everything below rung 1 answers a question
- * the reader has to have asked first — who does this affect, when did it
- * happen, who cites it, what can you not tell me — and none of those is why
- * anyone opened the page. As eleven equally-weighted cards they were a list of
- * containers the reader had to rank personally; as rows of one container they
- * are a menu, and the lead has nothing competing with it. A row's closed state
- * still has to earn the click, so each carries a count, and rung 2 puts its
- * actual answer — the affected audiences — in the row itself.
+ * Every accordion row self-suppresses when it has no data. The old
+ * "Cum e structurat" row is gone: the Cuprins in the left nav is the same
+ * served outline, always visible instead of folded into a band.
  */
-export function LegalActPage({ actId, initialAct }: Props) {
+export function LegalActPage({ actId, initialAct, docOverride, nod }: Props) {
   const { data, isLoading, isError } = useLegalAct(actId, initialAct)
 
   if (isLoading) return <LegalActSkeleton />
@@ -80,29 +74,36 @@ export function LegalActPage({ actId, initialAct }: Props) {
     <div className="min-h-screen min-w-0 bg-background">
       <ActDetailHeader act={data} />
 
-      <main className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
-        <ActWarnings act={data} />
-
-        {data.summary ? <ActPlainSummary summary={data.summary} /> : null}
-
-        {/* Rows stay in ladder order — relevance, then the record, then the
-            mechanics, then the limits — so opening them top to bottom is still
-            the progressive disclosure the page was designed around. */}
-        <ActAccordion label={t`Detalii despre acest act`}>
-          {data.summary ? <ActRelevanceBand summary={data.summary} /> : null}
-          {data.summary ? (
-            <ActKeyDates keyDates={data.summary.keyDates} />
-          ) : null}
-          <ActPublicationBand act={data} />
-          <ActTimelineBand timeline={data.timeline} />
-          <ActVersionsBand act={data} />
-          <ActReferencesBand group={data.outLinks} direction="out" />
-          <ActReferencesBand group={data.inLinks} direction="in" />
-          <ActAnchorsBand group={data.incomingAnchors} />
-          <ActStructureBand act={data} />
-          <ActProvenanceNotes act={data} />
-        </ActAccordion>
-      </main>
+      <ActReadingLayout
+        act={data}
+        {...(docOverride !== undefined && { docOverride })}
+        {...(nod !== undefined && { nod })}
+        lead={
+          <div className="flex flex-col gap-6">
+            <ActWarnings act={data} />
+            {data.summary ? <ActPlainSummary summary={data.summary} /> : null}
+          </div>
+        }
+        fisa={
+          /* Rows stay in ladder order — relevance, then the record, then
+             the mechanics, then the limits — so opening them top to bottom
+             is still the progressive disclosure the page was designed
+             around. */
+          <ActAccordion label={t`Detalii despre acest act`}>
+            {data.summary ? <ActRelevanceBand summary={data.summary} /> : null}
+            {data.summary ? (
+              <ActKeyDates keyDates={data.summary.keyDates} />
+            ) : null}
+            <ActPublicationBand act={data} />
+            <ActTimelineBand timeline={data.timeline} />
+            <ActVersionsBand act={data} />
+            <ActReferencesBand group={data.outLinks} direction="out" />
+            <ActReferencesBand group={data.inLinks} direction="in" />
+            <ActAnchorsBand group={data.incomingAnchors} />
+            <ActProvenanceNotes act={data} />
+          </ActAccordion>
+        }
+      />
     </div>
   )
 }

@@ -2,10 +2,7 @@ import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import {
-  legislationSectionClassName,
-  legislationSectionTitleClassName,
-} from '../lib/legislation-theme'
+import { legislationSectionClassName } from '../lib/legislation-theme'
 
 type AccordionProps = {
   /** Labels the group for assistive tech — the rows carry their own headings. */
@@ -80,7 +77,12 @@ export function ActAccordionItem({
         >
           <span className="min-w-0">
             <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <span className={legislationSectionTitleClassName}>{title}</span>
+              {/* Row-weight, not section-weight: nine of these stack before
+                  the text, and at section size they flattened the page's real
+                  three-section hierarchy (design review 2026-08-10, P1-6). */}
+              <span className="text-base font-semibold text-[var(--pnrr-fg)]">
+                {title}
+              </span>
               {meta ? (
                 <span className="text-sm tabular-nums text-[var(--pnrr-muted)]">
                   {meta}

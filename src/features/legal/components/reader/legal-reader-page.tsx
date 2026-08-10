@@ -1,11 +1,14 @@
 /**
- * The act READER — `/legislation/acts/$actId/text` (stenogram-reader model).
+ * The act READING LAYOUT — the body of `/legislation/acts/$actId`.
  *
- * Composes the four committed layers: the render transport (classified
- * failures, mock/live), the mark-slicing engine, the fidelity-gated block
- * renderer, and the served outline (TOC + `?nod=` deep links). What this page
- * shows IS the proven clean text; everything else on it is chrome around that
- * claim.
+ * One page, portal-legislativ-shaped (user decision 2026-08-10: the text is
+ * not a separate route): a left nav with the on-page sections and the served
+ * Cuprins, and a main column carrying the fișa (summary + detail bands,
+ * passed in as the `fisa` slot) followed by the full text. Composes the four
+ * committed layers: the render transport (classified failures, mock/live),
+ * the mark-slicing engine, the fidelity-gated block renderer, and the served
+ * outline (TOC + `?nod=` deep links). What the text section shows IS the
+ * proven clean text; everything else on the page is chrome around that claim.
  *
  * CHUNKED DOCUMENTS are never an infinite scroller hiding extent: the
  * manifest declares "partea N din M" up front, groups load progressively
@@ -18,8 +21,8 @@
  * FAILURE STATES ARE CONTENT, not apologies: "no servable text",
  * "restricted", "inconsistent" and "transport" each render their own fact,
  * and only retryable ones offer a retry. The portal source link is the
- * escape hatch on every one of them. An outline failure degrades to the
- * single-column reader — it never blocks the text.
+ * escape hatch on every one of them. An outline failure degrades to a
+ * nav-less text — it never blocks the text.
  *
  * `?doc=` reads a specific non-canonical expression. `?nod=` (a
  * document_nodes PATH) resolves against the served outline; scroll-position
@@ -32,6 +35,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { ChevronDown, ExternalLink, TriangleAlert } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
   Collapsible,
@@ -40,24 +44,31 @@ import {
 } from '@/components/ui/collapsible'
 import type { LegalActDetail, LegalOutlineEntry } from '@/schemas/legal'
 import { fetchLegalRender } from '../../api/legal-render-api'
-import { useLegalAct } from '../../hooks/use-legal-act'
 import { useLegalOutline } from '../../hooks/use-legal-outline'
 import { useLegalRender } from '../../hooks/use-legal-render'
 import { LegalRenderFailureError } from '../../lib/legal-render-error'
 import type { LegalRenderFailure } from '../../lib/legal-render-error'
+import { legislationStatLabelClassName } from '../../lib/legislation-theme'
+import { ActFaqBand } from '../act-faq-band'
 import { domAnchorForPath, resolveNod } from '../../lib/tldf/nod-resolve'
 import type { TldfChunkPayload, TldfManifestPayload } from '../../lib/tldf/types'
 import { LegalReaderToc } from './legal-reader-toc'
 import { TldfBlocksView } from './tldf-blocks'
 
 type Props = {
-  readonly actId: string
-  readonly initialAct?: LegalActDetail | null
+  readonly act: LegalActDetail
+  /** The page lead — warnings and the plain-language summary, no heading. */
+  readonly lead: React.ReactNode
+  /** The fișa — the detail accordion, rendered under its own section H2. */
+  readonly fisa: React.ReactNode
   /** `?doc=` — read this expression instead of the canonical document. */
   readonly docOverride?: string
   /** `?nod=` — a document_nodes PATH deep link into this text. */
   readonly nod?: string
 }
+
+/** The three on-page sections the left nav addresses, in reading order. */
+const PAGE_SECTIONS = ['act-fisa', 'act-text', 'act-faq'] as const
 
 /** Scroll to a nod's block, preferring the exact path over its outline anchor. */
 function scrollToNodTarget(nod: string, anchorPath: string): boolean {
@@ -71,14 +82,46 @@ function scrollToNodTarget(nod: string, anchorPath: string): boolean {
   return true
 }
 
-export function LegalReaderPage({ actId, initialAct, docOverride, nod }: Props) {
-  const actQuery = useLegalAct(actId, initialAct)
-  const act = actQuery.data ?? null
-  const documentId = docOverride ?? act?.canonical?.documentId ?? null
+export function ActReadingLayout({ act, lead, fisa, docOverride, nod }: Props) {
+  const documentId = docOverride ?? act.canonical?.documentId ?? null
   const render = useLegalRender(documentId)
   const outlineQuery = useLegalOutline(documentId)
   const outline = useMemo(() => outlineQuery.data ?? [], [outlineQuery.data])
   const navigate = useNavigate()
+
+  // Section scroll-spy for the "Pe această pagină" links — the Cuprins spies
+  // headings, this spies the three sections, so the rail always answers
+  // "where am I" at both grains.
+  const [activeSection, setActiveSection] = useState<string>('act-fisa')
+  useEffect(() => {
+    // Plain scroll/resize listeners with an rAF gate, NOT IntersectionObserver:
+    // rootMargin percentages resolve against the root's WIDTH (CSS margin
+    // semantics), so a "-40% 0% -60%" band is fiction on landscape viewports.
+    // Three getBoundingClientRect calls per frame is nothing.
+    let frame = 0
+    const compute = () => {
+      frame = 0
+      let current: string = PAGE_SECTIONS[0]
+      for (const id of PAGE_SECTIONS) {
+        const el = document.getElementById(id)
+        if (el !== null && el.getBoundingClientRect().top <= window.innerHeight * 0.4) {
+          current = id
+        }
+      }
+      setActiveSection(current)
+    }
+    const schedule = () => {
+      if (frame === 0) frame = requestAnimationFrame(compute)
+    }
+    window.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule, { passive: true })
+    compute()
+    return () => {
+      window.removeEventListener('scroll', schedule)
+      window.removeEventListener('resize', schedule)
+      if (frame !== 0) cancelAnimationFrame(frame)
+    }
+  }, [])
 
   /** Bumped whenever text blocks land in the DOM (envelope render, chunk load). */
   const [domVersion, setDomVersion] = useState(0)
@@ -94,27 +137,44 @@ export function LegalReaderPage({ actId, initialAct, docOverride, nod }: Props) 
     return resolveNod(nod, outline, manifest?.chunks)
   }, [nod, outline, manifest])
 
-  // An unresolvable nod is an honest notice, never a guessed scroll. Only
-  // conclude the miss once the outline actually answered.
-  useEffect(() => {
-    setNodMissed(nod !== undefined && outlineQuery.isSuccess && nodResolution === null)
-  }, [nod, outlineQuery.isSuccess, nodResolution])
-
   // Deep-link scroll: retried on every DOM growth until the anchor exists
-  // (on chunked documents the target group may still be loading).
+  // (on chunked documents the target group may still be loading). When the
+  // outline gives no resolution — 46.694 paragraph_stream documents serve an
+  // EMPTY outline yet render real block ids — the nod itself is tried as a
+  // direct DOM anchor, so a shared link still lands. The intent is keyed by
+  // DOCUMENT and nod: the same nod on a different `?doc=` is a new scroll,
+  // and there is no separate reset effect to erase a fresh landing.
+  const scrollIntentKey = `${documentId ?? ''}::${nod ?? ''}`
   const scrolledForRef = useRef<string | null>(null)
   useEffect(() => {
-    if (nod === undefined || nodResolution === null) return
-    if (scrolledForRef.current === nod) return
-    if (scrollToNodTarget(nod, nodResolution.entry.path)) {
-      scrolledForRef.current = nod
-      setActivePath(nodResolution.entry.path)
+    if (nod === undefined) return
+    if (scrolledForRef.current === scrollIntentKey) return
+    if (scrollToNodTarget(nod, nodResolution?.entry.path ?? nod)) {
+      scrolledForRef.current = scrollIntentKey
+      setActivePath(nodResolution?.entry.path ?? nod)
+      setNodMissed(false)
     }
-  }, [nod, nodResolution, domVersion])
+  }, [scrollIntentKey, nod, nodResolution, domVersion])
+
+  // An unresolvable nod is an honest notice, never a guessed scroll — but
+  // only once the page can actually judge: outline answered, text actually
+  // ON SCREEN (a manifest with all slots pending has rendered nothing —
+  // domVersion counts real block commits), no anchor landed. (Chunked
+  // no-outline docs cannot chain to an unloaded group without an outline;
+  // the notice is the honest answer for a target beyond the loaded extent.)
+  const renderSettled =
+    render.isSuccess && (render.data.kind !== 'manifest' || domVersion > 0)
+  const outlineSettled = outlineQuery.isSuccess || outlineQuery.isError
   useEffect(() => {
-    // A new nod is a new scroll intent.
-    scrolledForRef.current = null
-  }, [nod])
+    setNodMissed(
+      nod !== undefined &&
+        renderSettled &&
+        outlineSettled &&
+        nodResolution === null &&
+        scrolledForRef.current !== scrollIntentKey &&
+        document.getElementById(domAnchorForPath(nod)) === null,
+    )
+  }, [nod, scrollIntentKey, renderSettled, outlineSettled, nodResolution, domVersion])
 
   // Scroll-position sync: highlight the TOC entry of the heading nearest the
   // top of the viewport. Highlight only — never a URL writeback.
@@ -160,88 +220,238 @@ export function LegalReaderPage({ actId, initialAct, docOverride, nod }: Props) 
 
   const onDomGrowth = useCallback(() => setDomVersion((v) => v + 1), [])
 
-  if (actQuery.isLoading && act === null) {
-    return (
-      <ReaderShell actId={actId} act={null}>
-        <p className="text-muted-foreground">
-          <Trans>Se încarcă actul…</Trans>
-        </p>
-      </ReaderShell>
-    )
-  }
-
-  if (act === null && docOverride === undefined) {
-    return (
-      <ReaderShell actId={actId} act={null}>
-        <StateCard title={t`Actul nu a fost găsit`}>
-          <Trans>
-            Nu ținem un act cu acest identificator.{' '}
-            <Link to="/legislation" className="underline">
-              Înapoi la legislație
-            </Link>
-            .
-          </Trans>
-        </StateCard>
-      </ReaderShell>
-    )
-  }
-
-  if (documentId === null) {
-    return (
-      <ReaderShell actId={actId} act={act}>
-        <StateCard title={t`Fără expresie canonică`}>
-          <Trans>
-            Ținem metadatele acestui act, dar nu o expresie de text căreia să îi
-            servim conținutul.
-          </Trans>
-          <SourceLink act={act} />
-        </StateCard>
-      </ReaderShell>
-    )
-  }
-
   const toc =
     outline.length > 0 ? (
       <LegalReaderToc entries={outline} activePath={activePath} onSelect={onTocSelect} />
     ) : null
 
   return (
-    <ReaderShell actId={actId} act={act} toc={toc} outlineFailed={outlineQuery.isError}>
-      {nodMissed && (
-        <p className="mb-4 rounded border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
-          <Trans>Nu am găsit fragmentul cerut în acest text.</Trans>
-        </p>
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 print:max-w-none">
+      <a
+        href="#reader-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-background focus:px-3 focus:py-2"
+      >
+        <Trans>Sari la textul actului</Trans>
+      </a>
+
+      {/* The aside/main pair keeps ONE tree position whether or not a TOC
+          exists — flipping between layouts would remount the reader and wipe
+          already-loaded chunk state (measured: the TOC arriving mid-read reset
+          a chunked document to part 1). Keys pin the reconciliation. */}
+      {/* No `items-start`: the aside CELL must stretch the full row height so
+          the sticky inner nav has room to travel alongside the whole read. */}
+      <div className="lg:grid lg:grid-cols-[290px_minmax(0,1fr)] lg:gap-10">
+        <aside key="nav" className="print:hidden">
+          {/* Mobile: the section links as a horizontal row — on a page that
+              can run 26.000px there must be a way to the fișa and the FAQ —
+              and the Cuprins as a disclosure above the content. */}
+          <nav
+            aria-label={t`Pe această pagină`}
+            className="mb-3 flex flex-wrap gap-x-5 gap-y-1 border-b border-[var(--pnrr-subtle)] pb-3 text-sm lg:hidden"
+          >
+            <SectionLinks activeSection={activeSection} />
+          </nav>
+          {toc !== null && (
+            <div className="mb-4 lg:hidden">
+              <Collapsible>
+                <CollapsibleTrigger asChild>
+                  {/* In the module's control language — 2px near-black,
+                      square — not the app-default rounded outline. */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-between rounded-none border-2 border-[var(--pnrr-border)]"
+                  >
+                    <Trans>Cuprins</Trans>
+                    <ChevronDown className="size-4" aria-hidden />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-2 rounded-lg border p-3">
+                  {toc}
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
+          )}
+
+          {/* Desktop: the portal-shaped left column — the page's sections,
+              then the served Cuprins, sticky alongside the whole read. */}
+          <div className="hidden lg:sticky lg:top-20 lg:block">
+            <nav
+              aria-label={t`Pe această pagină`}
+              className="mb-5 border-b border-[var(--pnrr-subtle)] pb-4"
+            >
+              <p className={legislationStatLabelClassName}>
+                <Trans>Pe această pagină</Trans>
+              </p>
+              <ul className="mt-2 space-y-1.5 text-sm">
+                <SectionLinks activeSection={activeSection} asListItems />
+              </ul>
+            </nav>
+            {toc}
+          </div>
+        </aside>
+
+        {/* One 44rem column for everything in main: section rules end where
+            the text measure ends, instead of 190px past it. */}
+        <main key="content" className="min-w-0 max-w-[44rem]">
+          {lead}
+
+          <section id="act-fisa" aria-labelledby="act-fisa-heading" className="mt-10 scroll-mt-24">
+            <h2
+              id="act-fisa-heading"
+              className="mb-4 border-b-2 border-[var(--pnrr-border)] pb-3 text-3xl font-black tracking-tight text-[var(--pnrr-fg)]"
+            >
+              <Trans>Fișa actului</Trans>
+            </h2>
+            {fisa}
+          </section>
+
+          <section id="act-text" aria-labelledby="act-text-heading" className="mt-16 scroll-mt-24">
+            <div className="border-b-2 border-[var(--pnrr-border)] pb-3">
+              <h2
+                id="act-text-heading"
+                className="text-3xl font-black tracking-tight text-[var(--pnrr-fg)]"
+              >
+                <Trans>Textul actului</Trans>
+              </h2>
+              <p className="mt-1 text-xs text-[var(--pnrr-muted)]">
+                <Trans>
+                  Textul în forma publicată, reprodus caracter cu caracter din
+                  sursa oficială.
+                </Trans>{' '}
+                <SourceLink act={act} inline />
+              </p>
+              {outlineQuery.isError && (
+                <p className="mt-1 text-xs text-[var(--pnrr-muted)]">
+                  <Trans>
+                    Cuprinsul nu s-a putut încărca — textul rămâne integral mai jos.
+                  </Trans>
+                </p>
+              )}
+              {docOverride !== undefined && (
+                <p className="mt-1 text-xs text-[var(--pnrr-muted)]">
+                  <Trans>Afișezi o versiune anume a textului.</Trans>{' '}
+                  <Link to="." search={{}} className="underline underline-offset-2">
+                    <Trans>Revino la forma afișată în mod normal</Trans>
+                  </Link>
+                </p>
+              )}
+            </div>
+
+            <div className="pt-5">
+              {documentId === null && (
+                <StateCard title={t`Fără expresie canonică`}>
+                  <Trans>
+                    Ținem metadatele acestui act, dar nu o expresie de text
+                    căreia să îi servim conținutul.
+                  </Trans>
+                  <SourceLink act={act} />
+                </StateCard>
+              )}
+              {nodMissed && (
+                <p className="mb-4 rounded border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
+                  <Trans>Nu am găsit fragmentul cerut în acest text.</Trans>
+                </p>
+              )}
+              {documentId !== null && render.isLoading && (
+                // A skeleton at the serif's rhythm, not a bare grey line: it
+                // reserves real height, so the FAQ below doesn't leap
+                // thousands of pixels when the text lands.
+                <div role="status" aria-label={t`Se încarcă textul…`} className="space-y-4 pt-1">
+                  {Array.from({ length: 14 }, (_, i) => (
+                    <div
+                      key={i}
+                      className={cn(
+                        'h-4 animate-pulse rounded-sm bg-muted',
+                        i % 5 === 4 ? 'w-2/3' : i % 3 === 0 ? 'w-11/12' : 'w-full',
+                      )}
+                    />
+                  ))}
+                </div>
+              )}
+              {render.isError && (
+                <RenderFailureCard
+                  error={render.error}
+                  act={act}
+                  onRetry={() => void render.refetch()}
+                />
+              )}
+              {render.data !== undefined && render.data.kind === 'envelope' && (
+                <EnvelopeReader
+                  blocks={render.data.tldf.blocks}
+                  marks={render.data.tldf.marks}
+                  containsNonBmp={render.data.tldf.contains_non_bmp}
+                  onRendered={onDomGrowth}
+                />
+              )}
+              {render.data !== undefined && render.data.kind === 'manifest' && (
+                // Keyed by document: chunk slots are per-expression state,
+                // and a `?doc=` switch over a cached manifest must NEVER
+                // carry another document's loaded groups into this one.
+                <ChunkedReader
+                  key={documentId ?? ''}
+                  documentId={documentId ?? ''}
+                  manifest={render.data.tldf}
+                  chainThroughGroup={nodResolution?.chunkGroupIndex ?? null}
+                  onGroupLoaded={onDomGrowth}
+                />
+              )}
+              {/* The base route never answers `kind: 'chunk'`; the schema union simply carries it. */}
+            </div>
+          </section>
+
+          <ActFaqBand act={act} textServed={render.isSuccess} />
+        </main>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * The three section links, active state driven by the section scroll-spy.
+ * Rendered as `<li>`s in the desktop rail and as inline chips on mobile.
+ */
+function SectionLinks({
+  activeSection,
+  asListItems = false,
+}: {
+  readonly activeSection: string
+  readonly asListItems?: boolean
+}) {
+  const links = [
+    { id: 'act-fisa', label: <Trans>Fișa actului</Trans> },
+    { id: 'act-text', label: <Trans>Textul actului</Trans> },
+    { id: 'act-faq', label: <Trans>Întrebări frecvente</Trans> },
+  ]
+  const anchor = (link: (typeof links)[number]) => (
+    <a
+      href={`#${link.id}`}
+      aria-current={activeSection === link.id ? 'location' : undefined}
+      className={cn(
+        'underline-offset-2 hover:underline',
+        activeSection === link.id
+          ? 'border-l-[3px] border-[var(--pnrr-fg)] pl-2 font-semibold text-[var(--pnrr-fg)]'
+          : 'text-[var(--pnrr-fg)]',
       )}
-      {render.isLoading && (
-        <p className="text-muted-foreground">
-          <Trans>Se încarcă textul…</Trans>
-        </p>
-      )}
-      {render.isError && (
-        <RenderFailureCard
-          error={render.error}
-          act={act}
-          onRetry={() => void render.refetch()}
-        />
-      )}
-      {render.data !== undefined && render.data.kind === 'envelope' && (
-        <EnvelopeReader
-          blocks={render.data.tldf.blocks}
-          marks={render.data.tldf.marks}
-          containsNonBmp={render.data.tldf.contains_non_bmp}
-          onRendered={onDomGrowth}
-        />
-      )}
-      {render.data !== undefined && render.data.kind === 'manifest' && (
-        <ChunkedReader
-          documentId={documentId}
-          manifest={render.data.tldf}
-          chainThroughGroup={nodResolution?.chunkGroupIndex ?? null}
-          onGroupLoaded={onDomGrowth}
-        />
-      )}
-      {/* The base route never answers `kind: 'chunk'`; the schema union simply carries it. */}
-    </ReaderShell>
+    >
+      {link.label}
+    </a>
+  )
+  if (asListItems) {
+    return (
+      <>
+        {links.map((link) => (
+          <li key={link.id}>{anchor(link)}</li>
+        ))}
+      </>
+    )
+  }
+  return (
+    <>
+      {links.map((link) => (
+        <span key={link.id}>{anchor(link)}</span>
+      ))}
+    </>
   )
 }
 
@@ -264,89 +474,6 @@ function EnvelopeReader({
     <article id="reader-content" lang="ro">
       <TldfBlocksView blocks={blocks} marks={marks} containsNonBmp={containsNonBmp} />
     </article>
-  )
-}
-
-function ReaderShell({
-  actId,
-  act,
-  toc,
-  outlineFailed = false,
-  children,
-}: {
-  readonly actId: string
-  readonly act: LegalActDetail | null
-  readonly toc?: React.ReactNode
-  readonly outlineFailed?: boolean
-  readonly children: React.ReactNode
-}) {
-  const hasToc = toc !== null && toc !== undefined
-  return (
-    <div
-      className={
-        hasToc
-          ? 'mx-auto max-w-6xl px-4 py-8 print:max-w-none'
-          : 'mx-auto max-w-3xl px-4 py-8 print:max-w-none'
-      }
-    >
-      <a
-        href="#reader-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-background focus:px-3 focus:py-2"
-      >
-        <Trans>Sari la textul actului</Trans>
-      </a>
-      <header className="mb-6 border-b pb-4 print:hidden">
-        <p className="text-sm text-muted-foreground">
-          <Link to="/legislation/acts/$actId" params={{ actId }} className="underline">
-            {act?.displayCitation ?? t`Fișa actului`}
-          </Link>
-        </p>
-        <h1 className="mt-1 text-2xl font-semibold">
-          {act !== null ? act.displayCitation : <Trans>Text de lege</Trans>}
-        </h1>
-        {act?.canonical?.title !== null && act?.canonical?.title !== undefined && (
-          <p className="mt-1 text-muted-foreground">{act.canonical.title}</p>
-        )}
-        <p className="mt-2 text-xs text-muted-foreground">
-          <Trans>
-            Textul în forma publicată, reprodus caracter cu caracter din sursa
-            oficială.
-          </Trans>{' '}
-          <SourceLink act={act} inline />
-        </p>
-        {outlineFailed && (
-          <p className="mt-2 text-xs text-muted-foreground">
-            <Trans>Cuprinsul nu s-a putut încărca — textul rămâne integral mai jos.</Trans>
-          </p>
-        )}
-      </header>
-      {/* The aside/main pair keeps ONE tree position whether or not a TOC
-          exists — flipping between layouts would remount the reader and wipe
-          already-loaded chunk state (measured: the TOC arriving mid-read reset
-          a chunked document to part 1). Keys pin the reconciliation. */}
-      <div className={hasToc ? 'lg:grid lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-8' : undefined}>
-        <aside key="toc" className={hasToc ? 'print:hidden' : 'hidden'}>
-          {/* Mobile: a disclosure above the text. Desktop: sticky sidebar. */}
-          <div className="mb-4 lg:hidden">
-            <Collapsible>
-              <CollapsibleTrigger asChild>
-                <Button variant="outline" size="sm" className="w-full justify-between">
-                  <Trans>Cuprins</Trans>
-                  <ChevronDown className="size-4" aria-hidden />
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="mt-2 rounded-lg border p-3">
-                {toc}
-              </CollapsibleContent>
-            </Collapsible>
-          </div>
-          <div className="hidden lg:sticky lg:top-20 lg:block">{toc}</div>
-        </aside>
-        <main key="text" className="min-w-0">
-          {children}
-        </main>
-      </div>
-    </div>
   )
 }
 
@@ -510,6 +637,10 @@ function ChunkedReader({
   const loadedCount = slots.filter((slot) => slot.state === 'loaded').length
   const nextIndex = slots.findIndex((slot) => slot.state === 'pending')
   const failedIndex = slots.findIndex((slot) => slot.state === 'failed')
+  // "Se încarcă" is only true while a fetch is actually in flight — while the
+  // reader merely WAITS (for the scroll sentinel, or for a click where
+  // IntersectionObserver is unavailable) the line states progress instead.
+  const fetching = slots.some((slot) => slot.state === 'loading')
 
   // Deep-link chaining: keep loading the NEXT pending group (strictly in
   // order) while the target group is not yet loaded. Failures stop the chain
@@ -568,9 +699,16 @@ function ChunkedReader({
       {loadedCount < groupCount && failedIndex === -1 && (
         <div ref={sentinelRef} className="mt-8 text-center text-sm text-muted-foreground">
           <p aria-live="polite">
-            <Trans>
-              Se încarcă partea {Math.min(loadedCount + 1, groupCount)} din {groupCount}…
-            </Trans>
+            {fetching ? (
+              <Trans>
+                Se încarcă partea {Math.min(loadedCount + 1, groupCount)} din {groupCount}…
+              </Trans>
+            ) : (
+              <Trans>
+                Afișate {loadedCount} din {groupCount} părți — derulează sau
+                apasă pentru restul.
+              </Trans>
+            )}
           </p>
           {nextIndex !== -1 && (
             <Button

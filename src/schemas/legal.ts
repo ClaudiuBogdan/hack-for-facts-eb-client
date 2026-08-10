@@ -245,15 +245,6 @@ export type LegalGazettePublication = z.infer<
   typeof legalGazettePublicationSchema
 >
 
-/** One node of the intra-act structure. Node **text is never served**. */
-export const legalStructureNodeSchema = z.object({
-  nodeId: z.string(),
-  nodeKind: z.string(),
-  label: z.string().nullable(),
-  path: z.string(),
-})
-export type LegalStructureNode = z.infer<typeof legalStructureNodeSchema>
-
 /**
  * TLDF render availability for one document expression.
  *
@@ -384,12 +375,6 @@ export const legalActDetailSchema = z.object({
   /** Every document expression of the act, canonical flag included. */
   documents: z.array(legalActDocumentVersionSchema),
   /**
-   * Intra-act structure labels. The live lane no longer feeds this (the
-   * `tree` field never shipped in the server SDL); it stays until the outline
-   * transport lands and `ActStructureBand` is repointed — mock-only until then.
-   */
-  structure: z.array(legalStructureNodeSchema),
-  /**
    * Derived, not served: `legal.acts.source_url` equals
    * `https://legislatie.just.ro/Public/DetaliiDocument/{canonicalDocumentId}`
    * for **all 224.540 acts** (verified 2026-08-01), and the GraphQL surface does
@@ -401,7 +386,8 @@ export const legalActDetailSchema = z.object({
 export type LegalActDetail = z.infer<typeof legalActDetailSchema>
 
 /**
- * Reader route search params (`/legislation/acts/$actId/text`).
+ * Act page search params (`/legislation/acts/$actId` — the text lives ON the
+ * act page; the old `/text` sibling 301-redirects here).
  *  - `doc` — read a specific (non-canonical) expression instead of the act's
  *    canonical document.
  *  - `nod` — a `document_nodes` PATH deep link (never a node id: ids are

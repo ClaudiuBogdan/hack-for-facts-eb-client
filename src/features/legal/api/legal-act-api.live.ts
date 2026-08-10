@@ -456,9 +456,6 @@ function mapAct(raw: RawAct): LegalActDetail {
           : null,
       }
     }),
-    // The server SDL never shipped a `tree` field; structure labels move to
-    // the outline transport. Empty until `ActStructureBand` is repointed.
-    structure: [],
     officialTextUrl:
       canonicalDocumentId === null
         ? null

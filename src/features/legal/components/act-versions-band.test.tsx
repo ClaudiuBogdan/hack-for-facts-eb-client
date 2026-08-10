@@ -35,10 +35,11 @@ describe('ActVersionsBand', () => {
     render(<ActVersionsBand act={legalActDetailRichFixture} />)
     open()
 
-    // The corp expression is served → a reader link, canonical → no ?doc.
+    // The corp expression is served → a link to the text ON the act page
+    // (one-page model, 2026-08-10), canonical → no ?doc.
     const readLinks = screen.getAllByRole('link', { name: /Citește această versiune/ })
     expect(readLinks).toHaveLength(1)
-    expect(readLinks[0]).toHaveAttribute('href', '/legislation/acts/66150/text')
+    expect(readLinks[0]).toHaveAttribute('href', '/legislation/acts/66150')
   })
 
   it('says text indisponibil for consolidation placeholders, never implying a body', () => {

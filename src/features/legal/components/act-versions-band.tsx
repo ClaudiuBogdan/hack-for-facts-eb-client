@@ -106,9 +106,13 @@ function VersionRow({
 
       {served ? (
         <Link
-          to="/legislation/acts/$actId/text"
+          to="/legislation/acts/$actId"
           params={{ actId }}
-          {...(doc.isCanonical ? {} : { search: { doc: doc.documentId } })}
+          // The text lives on this same page — a non-canonical expression
+          // swaps it via `?doc=`; the canonical row just jumps to the text.
+          {...(doc.isCanonical
+            ? { hash: 'act-text' }
+            : { search: { doc: doc.documentId }, hash: 'act-text' })}
           className="text-sm underline underline-offset-2"
         >
           <Trans>Citește această versiune</Trans>

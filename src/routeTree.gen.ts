@@ -1144,9 +1144,7 @@ const LegislationActsActIdTextRoute =
     id: '/legislation/acts/$actId_/text',
     path: '/legislation/acts/$actId/text',
     getParentRoute: () => rootRouteImport,
-  } as any).lazy(() =>
-    import('./routes/legislation/acts/$actId_.text.lazy').then((d) => d.Route),
-  )
+  } as any)
 const MapsDatasetsPublicPublicIdRoute =
   MapsDatasetsPublicPublicIdRouteImport.update({
     id: '/maps/datasets/public/$publicId',
