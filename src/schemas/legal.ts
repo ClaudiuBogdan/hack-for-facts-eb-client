@@ -428,7 +428,7 @@ export const legalActsPageSchema = z.object({
 })
 export type LegalActsPage = z.infer<typeof legalActsPageSchema>
 
-/** Filters the directory exposes — all verified server-side filter families. */
+/** Filters the directory sends to the server — verified filter families. */
 export const legalActsBrowseFilterSchema = z.object({
   actType: z.string().optional(),
   year: z.number().int().optional(),
@@ -436,6 +436,17 @@ export const legalActsBrowseFilterSchema = z.object({
   domain: legalDomainSlugSchema.optional(),
 })
 export type LegalActsBrowseFilter = z.infer<typeof legalActsBrowseFilterSchema>
+
+/**
+ * The directory's URL state. `status` additionally admits the sentinel
+ * `'toate'`: an absent status DEFAULTS to `in-vigoare` (law in force is what
+ * people mean by "the acts"), so "no status filter" must be a stated choice
+ * in the URL, never the silent fallback.
+ */
+export const legalActsBrowseSearchSchema = legalActsBrowseFilterSchema.extend({
+  status: legalActStatusSchema.or(z.literal('toate')).optional(),
+})
+export type LegalActsBrowseSearch = z.infer<typeof legalActsBrowseSearchSchema>
 
 /**
  * One `legalResolve` hit. `value` is the filter value the hit resolves to —

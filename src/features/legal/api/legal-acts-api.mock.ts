@@ -10,6 +10,10 @@ import { legislationOverviewFixture } from '../mocks/fixtures/legislation-overvi
 export async function fetchLegalActsPageMock(
   filter: LegalActsBrowseFilter,
 ): Promise<LegalActsPage> {
+  // `filter.domain` is deliberately NOT applied: the fixture rows carry no
+  // domain dimension, and pretending to filter would return the same list
+  // under a claim it cannot honor. The domain family's request shape is
+  // pinned by the server-side client-contract test instead.
   const items = legislationOverviewFixture.mostCitedActs.filter(
     (act) =>
       (filter.actType === undefined || act.actType === filter.actType) &&

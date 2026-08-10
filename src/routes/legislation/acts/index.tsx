@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
-import { legalActsBrowseFilterSchema } from '@/schemas/legal'
+import { legalActsBrowseSearchSchema } from '@/schemas/legal'
 
 /**
  * The acts directory — the `Acte` tab. Filters live in the URL
@@ -9,7 +9,7 @@ import { legalActsBrowseFilterSchema } from '@/schemas/legal'
  * link; paging stays cursor-only and in memory, never a URL page number.
  */
 export const Route = createFileRoute('/legislation/acts/')({
-  validateSearch: legalActsBrowseFilterSchema,
+  validateSearch: legalActsBrowseSearchSchema,
   headers: () =>
     createPublicPageCacheHeaders({
       sharedMaxAgeSeconds: 600,
