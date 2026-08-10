@@ -10,7 +10,6 @@ import {
   legislationFieldClassName,
   legislationSubmitClassName,
 } from '../lib/legislation-theme'
-import { LegalCitationLookup } from './legal-citation-lookup'
 
 const EXAMPLES = [
   'Codul Fiscal',
@@ -82,9 +81,6 @@ export function LegislationSearchBand() {
         ))}
       </div>
 
-      {/* The deterministic path: an exact citation or alias resolves to the
-          act page directly, candidates surfaced — no ranking involved. */}
-      <LegalCitationLookup className="max-w-md" />
     </form>
   )
 }
