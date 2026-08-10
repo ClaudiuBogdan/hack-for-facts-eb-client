@@ -323,6 +323,32 @@ export type LegalIncomingAnchorGroup = z.infer<
 >
 
 /**
+ * One heading entry of a document's outline (`legalDocumentOutline`).
+ *
+ * The server is THE outline authority — role-null heading nodes in document
+ * order, generation-pinned (SDL: "the reader derives no structure from render
+ * blocks"). `path` doubles as the reader's DOM anchor (`#tldf-{path}`) and the
+ * `?nod=` deep-link value. `charStart`/`charEnd` locate the heading in the
+ * folded clean text, which is what picks the physical chunk on giant
+ * documents.
+ */
+export const legalOutlineEntrySchema = z.object({
+  documentId: z.string(),
+  path: z.string(),
+  nodeKind: z.string(),
+  label: z.string().nullable(),
+  numberKey: z.string().nullable(),
+  /** `parsed` | `unparsed` | `ambiguous` — an unparsed number is reported, never faked. */
+  numberStatus: z.string().nullable(),
+  /** Fixed grammar-rank depth (carte=1 … articol=7; anexa restarts at 1). */
+  depth: z.number().int(),
+  orderIndex: z.number().int(),
+  charStart: z.number().int().nullable(),
+  charEnd: z.number().int().nullable(),
+})
+export type LegalOutlineEntry = z.infer<typeof legalOutlineEntrySchema>
+
+/**
  * The full payload behind `/legislation/acts/$actId` — one `legalAct` query.
  *
  * There is deliberately **no `text` field and no article body anywhere**: the

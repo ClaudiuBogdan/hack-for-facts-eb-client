@@ -27,7 +27,6 @@ import { t } from '@lingui/core/macro'
 import { cn } from '@/lib/utils'
 import { createLogger } from '@/lib/logger'
 import { buildMarkIndex, sliceRun, actionableMark } from '../../lib/tldf/marks'
-import { isOutlineHeadingKind } from '../../lib/tldf/outline'
 import type { MarkIndex, RunSegment } from '../../lib/tldf/marks'
 import type { TldfBlock, TldfMark, TldfRun } from '../../lib/tldf/types'
 
@@ -161,12 +160,11 @@ function BlockView({ block, marks }: { readonly block: TldfBlock; readonly marks
     ...(block.children ?? []).map((child) => ({ start: child.span[0], child })),
   ].sort((a, b) => a.start - b.start)
 
-  const heading = isOutlineHeadingKind(block.kind)
   return (
     <div
       id={`tldf-${block.id}`}
       data-kind={block.kind}
-      className={cn(BLOCK_CLASS[block.kind], heading && 'scroll-mt-24')}
+      className={cn(BLOCK_CLASS[block.kind], 'scroll-mt-24')}
     >
       {items.map((item) =>
         'run' in item ? (

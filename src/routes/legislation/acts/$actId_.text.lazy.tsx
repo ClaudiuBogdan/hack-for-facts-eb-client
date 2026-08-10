@@ -8,7 +8,7 @@ export const Route = createLazyFileRoute('/legislation/acts/$actId_/text')({
 
 function LegalReaderRoutePage() {
   const { actId } = Route.useParams()
-  const { doc } = Route.useSearch()
+  const { doc, nod } = Route.useSearch()
   const loaderData = Route.useLoaderData() as LegalReaderRouteLoaderData | undefined
 
   // `loaderData.act === null` is a real answer ("no such act"), not a missing
@@ -18,6 +18,7 @@ function LegalReaderRoutePage() {
       actId={actId}
       initialAct={loaderData === undefined ? undefined : loaderData.act}
       {...(doc !== undefined && { docOverride: doc })}
+      {...(nod !== undefined && { nod })}
     />
   )
 }
