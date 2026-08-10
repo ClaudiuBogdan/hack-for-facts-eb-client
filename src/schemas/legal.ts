@@ -255,6 +255,74 @@ export const legalStructureNodeSchema = z.object({
 export type LegalStructureNode = z.infer<typeof legalStructureNodeSchema>
 
 /**
+ * TLDF render availability for one document expression.
+ *
+ * `renderStatus` is `served` | `content_unavailable` | `superseded_pending`;
+ * only `served` documents answer on the REST render route. `chunkCount` is
+ * null when a generation exists but render rows are missing (the route
+ * answers 409 there).
+ */
+export const legalRenderAvailabilitySchema = z.object({
+  renderStatus: z.string(),
+  chunkCount: z.number().int().nullable(),
+})
+export type LegalRenderAvailability = z.infer<
+  typeof legalRenderAvailabilitySchema
+>
+
+/**
+ * One document expression in the act's version list (`LegalAct.documents`).
+ *
+ * `render` null means the expression was never compiled — for
+ * `versionKind: 'consolidare'` timeline anchors that is the expected state
+ * (dates without bodies) and the UI must say "text indisponibil încă", never
+ * imply the text exists.
+ */
+export const legalActDocumentVersionSchema = z.object({
+  documentId: z.string(),
+  versionKind: z.string(),
+  versionDate: z.string().nullable(),
+  isCanonical: z.boolean(),
+  title: z.string().nullable(),
+  firstPublicationDate: z.string().nullable(),
+  render: legalRenderAvailabilitySchema.nullable(),
+})
+export type LegalActDocumentVersion = z.infer<
+  typeof legalActDocumentVersionSchema
+>
+
+/**
+ * One incoming anchor — a link the portal itself asserts in a citing
+ * document's text (`document_link_edges`). A DIFFERENT graph from
+ * `inLinks`/`outLinks` (LLM-inferred normative relations): they disagree by
+ * construction and both disagreements are informative, so the UI labels the
+ * two provenances and never merges them.
+ */
+export const legalIncomingAnchorSchema = z.object({
+  sourceDocumentId: z.string(),
+  /** The anchor's own words on the citing page. */
+  linkText: z.string().nullable(),
+  /** e.g. `art. 5` when the anchor points at a provision, not the whole act. */
+  targetFragment: z.string().nullable(),
+  targetResolution: z.string().nullable(),
+  sourceAct: legalActListItemSchema.nullable(),
+})
+export type LegalIncomingAnchor = z.infer<typeof legalIncomingAnchorSchema>
+
+/**
+ * A page of incoming anchors. Unlike `legalReferenceGroupSchema`, the server's
+ * `LegalIncomingAnchorConnection.totalCount` is a REAL count (SDL: "never the
+ * page size"), so it is non-nullable here.
+ */
+export const legalIncomingAnchorGroupSchema = z.object({
+  totalCount: z.number().int(),
+  items: z.array(legalIncomingAnchorSchema),
+})
+export type LegalIncomingAnchorGroup = z.infer<
+  typeof legalIncomingAnchorGroupSchema
+>
+
+/**
  * The full payload behind `/legislation/acts/$actId` — one `legalAct` query.
  *
  * There is deliberately **no `text` field and no article body anywhere**: the
@@ -285,6 +353,15 @@ export const legalActDetailSchema = z.object({
   gazettePublications: z.array(legalGazettePublicationSchema),
   outLinks: legalReferenceGroupSchema,
   inLinks: legalReferenceGroupSchema,
+  /** Portal-asserted incoming anchors — provenance-distinct from `inLinks`. */
+  incomingAnchors: legalIncomingAnchorGroupSchema,
+  /** Every document expression of the act, canonical flag included. */
+  documents: z.array(legalActDocumentVersionSchema),
+  /**
+   * Intra-act structure labels. The live lane no longer feeds this (the
+   * `tree` field never shipped in the server SDL); it stays until the outline
+   * transport lands and `ActStructureBand` is repointed — mock-only until then.
+   */
   structure: z.array(legalStructureNodeSchema),
   /**
    * Derived, not served: `legal.acts.source_url` equals

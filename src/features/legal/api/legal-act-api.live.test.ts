@@ -64,7 +64,8 @@ function respond(overrides: Record<string, unknown> = {}) {
       gazettePublications: [],
       outLinks: { totalCount: 0, edges: [] },
       inLinks: { totalCount: 0, edges: [] },
-      structure: [],
+      incomingAnchors: { totalCount: 0, edges: [] },
+      documents: [],
       ...overrides,
     },
   } as never)
@@ -178,6 +179,85 @@ describe('fetchLegalActDetailLive', () => {
     expect(act?.officialTextUrl).toBe(
       'https://legislatie.just.ro/Public/DetaliiDocument/171282',
     )
+  })
+
+  it('no longer requests the tree field the server SDL never shipped', async () => {
+    respond()
+
+    await fetchLegalActDetailLive('1')
+
+    const [query] = graphqlQueryMock.mock.calls[0] as unknown as [string]
+    expect(query).not.toContain('tree(')
+    expect(query).toContain('incomingAnchors')
+    expect(query).toContain('documents')
+    // The live lane serves no structure labels until the outline transport lands.
+    expect(graphqlQueryMock.mock.calls).toHaveLength(1)
+  })
+
+  it('maps document versions with their render availability', async () => {
+    respond({
+      documents: [
+        {
+          documentId: '171282',
+          versionKind: 'corp',
+          versionDate: '2015-09-10',
+          isCanonical: true,
+          title: 'COD FISCAL',
+          firstPublicationDate: '2015-09-10',
+          render: { renderStatus: 'served', chunkCount: 4 },
+        },
+        {
+          documentId: 'c-1',
+          versionKind: 'consolidare',
+          versionDate: '2026-07-01',
+          isCanonical: false,
+          title: null,
+          firstPublicationDate: null,
+          render: null,
+        },
+      ],
+    })
+
+    const act = await fetchLegalActDetailLive('1')
+
+    expect(act?.documents).toHaveLength(2)
+    expect(act?.documents[0]?.render?.chunkCount).toBe(4)
+    // A never-compiled expression keeps render null — "text indisponibil încă".
+    expect(act?.documents[1]?.render).toBeNull()
+  })
+
+  it('trusts the anchors totalCount only when it covers the returned rows', async () => {
+    respond({
+      incomingAnchors: {
+        totalCount: 395,
+        edges: [
+          {
+            node: {
+              sourceDocumentId: '279811',
+              linkText: 'art. 291 din Codul fiscal',
+              targetFragment: 'art. 291',
+              targetResolution: 'held_fragment_resolved',
+              sourceAct: edge('7').sourceAct,
+            },
+          },
+        ],
+      },
+    })
+
+    const act = await fetchLegalActDetailLive('1')
+
+    expect(act?.incomingAnchors.totalCount).toBe(395)
+    expect(act?.incomingAnchors.items[0]?.targetFragment).toBe('art. 291')
+
+    respond({
+      incomingAnchors: {
+        totalCount: 0,
+        edges: [{ node: { sourceDocumentId: 'x', sourceAct: null } }],
+      },
+    })
+    const inconsistent = await fetchLegalActDetailLive('1')
+    // A count below the rows it came with is not a count.
+    expect(inconsistent?.incomingAnchors.totalCount).toBe(1)
   })
 
   it('returns null for an act the server does not have', async () => {
