@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { Link } from '@tanstack/react-router'
@@ -31,16 +32,17 @@ type Props = {
 
 /**
  * `/legislation/acts/$actId` — one normative document, ONE page (user
- * decision 2026-08-10: the text is not a separate route). The shape is the
- * portal's, redesigned: a left nav carrying the page's sections and the
- * served Cuprins, and a main column that reads top to bottom as the
- * disclosure ladder —
+ * decision 2026-08-10: the text is not a separate route), with the TEXT as
+ * the main content (user decision 2026-08-11). The shape is the portal's,
+ * redesigned: a left nav carrying only the served Cuprins, and a main column
+ * that reads top to bottom as —
  *
  *  0. header — what this is, is it alive, the exit to the official source
- *  ⚠  warnings — *before* the summary, because they qualify it
- *  1. plain summary — the lead, and the fișa's only open block
- *  2-4. one accordion — relevance, the record, the mechanics, the limits
- *  5. the text itself — full, chunk-streamed, `?nod=`-addressable
+ *  1. one summary card — the clamped plain summary, its qualifying ⚠
+ *     warnings as collapsed footer rows, the AI-provenance row
+ *  2. the text itself — full, chunk-streamed, `?nod=`-addressable
+ *  3. fișa — one accordion at the bottom: relevance, the record, the
+ *     mechanics, the limits (it replaced the FAQ, same decision)
  *
  * Every accordion row self-suppresses when it has no data. The old
  * "Cum e structurat" row is gone: the Cuprins in the left nav is the same
@@ -48,6 +50,11 @@ type Props = {
  */
 export function LegalActPage({ actId, initialAct, docOverride, nod }: Props) {
   const { data, isLoading, isError } = useLegalAct(actId, initialAct)
+
+  // The act's subject ("privind achizițiile publice"), lifted from the
+  // text's masthead once it renders — it exists nowhere in the metadata, and
+  // the header's den line is its home now that the header IS the masthead.
+  const [textSubject, setTextSubject] = useState<string | null>(null)
 
   if (isLoading) return <LegalActSkeleton />
 
@@ -72,17 +79,28 @@ export function LegalActPage({ actId, initialAct, docOverride, nod }: Props) {
 
   return (
     <div className="min-h-screen min-w-0 bg-background">
-      <ActDetailHeader act={data} />
+      <ActDetailHeader act={data} textSubject={textSubject} />
 
       <ActReadingLayout
         act={data}
+        onMastheadSubject={setTextSubject}
         {...(docOverride !== undefined && { docOverride })}
         {...(nod !== undefined && { nod })}
         lead={
-          <div className="flex flex-col gap-6">
+          // Gated on the FIELD the card actually renders, not the summary
+          // object: `plainLanguageSummary` is nullable on its own, and a
+          // summary that suppresses the card must not swallow the warnings.
+          data.summary && data.summary.plainLanguageSummary !== null ? (
+            // One card: the summary with its qualifying warnings as footer
+            // rows (user decision 2026-08-11) — not three stacked elements.
+            <ActPlainSummary
+              summary={data.summary}
+              qualifiers={<ActWarnings act={data} variant="row" />}
+            />
+          ) : (
+            // No summary to attach them to — the warnings stand alone.
             <ActWarnings act={data} />
-            {data.summary ? <ActPlainSummary summary={data.summary} /> : null}
-          </div>
+          )
         }
         fisa={
           /* Rows stay in ladder order — relevance, then the record, then

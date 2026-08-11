@@ -124,8 +124,11 @@ export function LegalReaderToc({ entries, activePath, onSelect, className }: Pro
                 // Active = 3px left rule + semibold, not a filled pill: the
                 // pill was the darkest object on the page, heavier than the
                 // H1, pulling the eye out of the reading column.
+                // Two lines, not one: since the section rail was removed this
+                // is the page's ONLY navigation, and single-line truncation
+                // cut exactly the words that told two chapters apart.
                 className={cn(
-                  'min-w-0 flex-1 truncate rounded-none py-1 text-left text-sm leading-5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  'min-w-0 flex-1 rounded-none py-1 text-left text-sm leading-5 line-clamp-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   active
                     ? 'border-l-[3px] border-[var(--pnrr-fg)] pl-[5px] pr-2 font-semibold text-[var(--pnrr-fg)]'
                     : 'px-2 text-foreground hover:bg-muted',
@@ -146,7 +149,7 @@ export function LegalReaderToc({ entries, activePath, onSelect, className }: Pro
 
   return (
     <nav aria-label={t`Cuprinsul actului`} className={className}>
-      {/* Same eyebrow style as "Pe această pagină" — one rail, one voice. */}
+      {/* The stat-label eyebrow — the rail's one piece of chrome. */}
       <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--pnrr-muted)]">
         <Trans>Cuprins</Trans>
       </h2>

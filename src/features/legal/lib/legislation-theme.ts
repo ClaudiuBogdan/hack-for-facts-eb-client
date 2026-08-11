@@ -122,6 +122,16 @@ export const legislationQuietChipClassName =
 export const legislationAlertClassName =
   'flex gap-3 border border-l-4 border-[var(--pnrr-subtle)] border-l-[var(--pnrr-warning-fg)] bg-[var(--pnrr-warning-bg)] px-4 py-3 sm:px-5'
 
+/**
+ * The same caveat surface without the row layout or vertical padding — for a
+ * collapsible warning whose `<summary>` row owns the flex and the padding.
+ * A separate constant rather than `legislationAlertClassName` + overrides:
+ * `gap-0` vs `gap-3` at equal specificity is decided by stylesheet order,
+ * not by class-attribute order, so an override there breaks silently.
+ */
+export const legislationAlertShellClassName =
+  'border border-l-4 border-[var(--pnrr-subtle)] border-l-[var(--pnrr-warning-fg)] bg-[var(--pnrr-warning-bg)] px-4 sm:px-5'
+
 /* ── three-tier text hierarchy (label → value → metadata) ────────────────── */
 
 export const legislationStatLabelClassName =

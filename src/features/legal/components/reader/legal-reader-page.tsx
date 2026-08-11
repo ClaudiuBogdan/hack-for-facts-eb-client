@@ -2,13 +2,18 @@
  * The act READING LAYOUT — the body of `/legislation/acts/$actId`.
  *
  * One page, portal-legislativ-shaped (user decision 2026-08-10: the text is
- * not a separate route): a left nav with the on-page sections and the served
- * Cuprins, and a main column carrying the fișa (summary + detail bands,
- * passed in as the `fisa` slot) followed by the full text. Composes the four
- * committed layers: the render transport (classified failures, mock/live),
- * the mark-slicing engine, the fidelity-gated block renderer, and the served
- * outline (TOC + `?nod=` deep links). What the text section shows IS the
- * proven clean text; everything else on the page is chrome around that claim.
+ * not a separate route), with the TEXT as the main content (user decision
+ * 2026-08-11): a left nav carrying only the served Cuprins, and a main column
+ * that runs lead (the summary card, warnings folded in) → the full text
+ * (headingless — the page header is its masthead, and the text's own leading
+ * masthead lines hide exactly where the header provably repeats them, see
+ * `lib/tldf/masthead.ts`) → the fișa (detail bands, passed in as the `fisa`
+ * slot) at the bottom. Composes
+ * the four committed layers: the render transport (classified failures,
+ * mock/live), the mark-slicing engine, the fidelity-gated block renderer, and
+ * the served outline (TOC + `?nod=` deep links). What the text section shows
+ * IS the proven clean text; everything else on the page is chrome around that
+ * claim.
  *
  * CHUNKED DOCUMENTS are never an infinite scroller hiding extent: the
  * manifest declares "partea N din M" up front, groups load progressively
@@ -48,8 +53,10 @@ import { useLegalOutline } from '../../hooks/use-legal-outline'
 import { useLegalRender } from '../../hooks/use-legal-render'
 import { LegalRenderFailureError } from '../../lib/legal-render-error'
 import type { LegalRenderFailure } from '../../lib/legal-render-error'
-import { legislationStatLabelClassName } from '../../lib/legislation-theme'
-import { ActFaqBand } from '../act-faq-band'
+import { uniqueGazettePublication } from '../../lib/act-facts'
+import { legalIssuerLabel } from '../../lib/legal-vocabulary'
+import { splitMasthead } from '../../lib/tldf/masthead'
+import type { MastheadFactsInHeader, MastheadSplit } from '../../lib/tldf/masthead'
 import { domAnchorForPath, resolveNod } from '../../lib/tldf/nod-resolve'
 import type { TldfChunkPayload, TldfManifestPayload } from '../../lib/tldf/types'
 import { LegalReaderToc } from './legal-reader-toc'
@@ -65,10 +72,14 @@ type Props = {
   readonly docOverride?: string
   /** `?nod=` — a document_nodes PATH deep link into this text. */
   readonly nod?: string
+  /**
+   * Fires when the text's masthead is split off, carrying the act's subject
+   * ("privind achizițiile publice") so the page header can complete its den
+   * line — the header is this text's masthead now (user decision 2026-08-11),
+   * and the subject exists nowhere in the act's metadata.
+   */
+  readonly onMastheadSubject?: (subject: string | null) => void
 }
-
-/** The three on-page sections the left nav addresses, in reading order. */
-const PAGE_SECTIONS = ['act-fisa', 'act-text', 'act-faq'] as const
 
 /** Scroll to a nod's block, preferring the exact path over its outline anchor. */
 function scrollToNodTarget(nod: string, anchorPath: string): boolean {
@@ -82,46 +93,19 @@ function scrollToNodTarget(nod: string, anchorPath: string): boolean {
   return true
 }
 
-export function ActReadingLayout({ act, lead, fisa, docOverride, nod }: Props) {
+export function ActReadingLayout({
+  act,
+  lead,
+  fisa,
+  docOverride,
+  nod,
+  onMastheadSubject,
+}: Props) {
   const documentId = docOverride ?? act.canonical?.documentId ?? null
   const render = useLegalRender(documentId)
   const outlineQuery = useLegalOutline(documentId)
   const outline = useMemo(() => outlineQuery.data ?? [], [outlineQuery.data])
   const navigate = useNavigate()
-
-  // Section scroll-spy for the "Pe această pagină" links — the Cuprins spies
-  // headings, this spies the three sections, so the rail always answers
-  // "where am I" at both grains.
-  const [activeSection, setActiveSection] = useState<string>('act-fisa')
-  useEffect(() => {
-    // Plain scroll/resize listeners with an rAF gate, NOT IntersectionObserver:
-    // rootMargin percentages resolve against the root's WIDTH (CSS margin
-    // semantics), so a "-40% 0% -60%" band is fiction on landscape viewports.
-    // Three getBoundingClientRect calls per frame is nothing.
-    let frame = 0
-    const compute = () => {
-      frame = 0
-      let current: string = PAGE_SECTIONS[0]
-      for (const id of PAGE_SECTIONS) {
-        const el = document.getElementById(id)
-        if (el !== null && el.getBoundingClientRect().top <= window.innerHeight * 0.4) {
-          current = id
-        }
-      }
-      setActiveSection(current)
-    }
-    const schedule = () => {
-      if (frame === 0) frame = requestAnimationFrame(compute)
-    }
-    window.addEventListener('scroll', schedule, { passive: true })
-    window.addEventListener('resize', schedule, { passive: true })
-    compute()
-    return () => {
-      window.removeEventListener('scroll', schedule)
-      window.removeEventListener('resize', schedule)
-      if (frame !== 0) cancelAnimationFrame(frame)
-    }
-  }, [])
 
   /** Bumped whenever text blocks land in the DOM (envelope render, chunk load). */
   const [domVersion, setDomVersion] = useState(0)
@@ -220,6 +204,67 @@ export function ActReadingLayout({ act, lead, fisa, docOverride, nod }: Props) {
 
   const onDomGrowth = useCallback(() => setDomVersion((v) => v + 1), [])
 
+  // The VALUES the page header above actually displays — the text's leading
+  // masthead lines hide only behind an exact-fact match against these (user
+  // decision 2026-08-11: the header owns the act's identity). On a `?doc=`
+  // override nothing hides: the header describes the canonical act, and an
+  // alternate expression's masthead (a republicare's, say) may legitimately
+  // differ. Must assemble EXACTLY what ActDetailHeader renders — a value the
+  // header does not show must arrive here as null.
+  const mastheadFacts = useMemo<MastheadFactsInHeader>(() => {
+    if (docOverride !== undefined) {
+      return { den: null, issuerLabel: null, issueNumber: null, issueYear: null }
+    }
+    const publication = uniqueGazettePublication(act)
+    const issueDate = publication?.issueDate ?? null
+    return {
+      den: act.canonical?.den ?? null,
+      issuerLabel: act.issuerSlug !== null ? legalIssuerLabel(act.issuerSlug) : null,
+      issueNumber: publication?.issueNumber ?? null,
+      // The year the header's "din <date>" fragment displays — without a
+      // date the header shows no year, and a bare issue number identifies
+      // nothing (MO numbering restarts every year).
+      issueYear: issueDate !== null ? Number(issueDate.slice(0, 4)) : null,
+    }
+  }, [act, docOverride])
+
+  // The masthead split of whatever text is actually on screen. `null` until
+  // a text renders; drives the fidelity note's wording and (via the parent)
+  // the header's den+subject line. Reset when the expression changes — a
+  // subject lifted from one text must not caption another.
+  const [mastheadLift, setMastheadLift] = useState<{
+    readonly subject: string | null
+    readonly lifted: boolean
+  } | null>(null)
+  useEffect(() => {
+    setMastheadLift(null)
+    onMastheadSubject?.(null)
+  }, [documentId, onMastheadSubject])
+  const handleMasthead = useCallback(
+    (split: MastheadSplit) => {
+      setMastheadLift((prev) =>
+        prev !== null && prev.subject === split.subject && prev.lifted === split.lifted
+          ? prev
+          : { subject: split.subject, lifted: split.lifted },
+      )
+      onMastheadSubject?.(split.subject)
+    },
+    [onMastheadSubject],
+  )
+
+  // Envelope documents split synchronously from the payload; chunked ones
+  // report from group 0 inside ChunkedReader.
+  const envelopeSplit = useMemo(
+    () =>
+      render.data !== undefined && render.data.kind === 'envelope'
+        ? splitMasthead(render.data.tldf.blocks, mastheadFacts)
+        : null,
+    [render.data, mastheadFacts],
+  )
+  useEffect(() => {
+    if (envelopeSplit !== null) handleMasthead(envelopeSplit)
+  }, [envelopeSplit, handleMasthead])
+
   const toc =
     outline.length > 0 ? (
       <LegalReaderToc entries={outline} activePath={activePath} onSelect={onTocSelect} />
@@ -237,20 +282,18 @@ export function ActReadingLayout({ act, lead, fisa, docOverride, nod }: Props) {
       {/* The aside/main pair keeps ONE tree position whether or not a TOC
           exists — flipping between layouts would remount the reader and wipe
           already-loaded chunk state (measured: the TOC arriving mid-read reset
-          a chunked document to part 1). Keys pin the reconciliation. */}
+          a chunked document to part 1). Keys pin the reconciliation, so the
+          rail collapsing below cannot cost the reader loaded chunks. */}
       {/* No `items-start`: the aside CELL must stretch the full row height so
           the sticky inner nav has room to travel alongside the whole read. */}
+      {/* The rail column is UNCONDITIONAL even when the outline settles
+          empty: the page header above sits on this same grid, so releasing
+          the column here would tear the header's left edge away from the
+          text's and shift the whole read after settle. An empty gutter on
+          outline-less documents is the price of one shared edge. */}
       <div className="lg:grid lg:grid-cols-[290px_minmax(0,1fr)] lg:gap-10">
         <aside key="nav" className="print:hidden">
-          {/* Mobile: the section links as a horizontal row — on a page that
-              can run 26.000px there must be a way to the fișa and the FAQ —
-              and the Cuprins as a disclosure above the content. */}
-          <nav
-            aria-label={t`Pe această pagină`}
-            className="mb-3 flex flex-wrap gap-x-5 gap-y-1 border-b border-[var(--pnrr-subtle)] pb-3 text-sm lg:hidden"
-          >
-            <SectionLinks activeSection={activeSection} />
-          </nav>
+          {/* Mobile: the Cuprins as a disclosure above the content. */}
           {toc !== null && (
             <div className="mb-4 lg:hidden">
               <Collapsible>
@@ -266,29 +309,17 @@ export function ActReadingLayout({ act, lead, fisa, docOverride, nod }: Props) {
                     <ChevronDown className="size-4" aria-hidden />
                   </Button>
                 </CollapsibleTrigger>
-                <CollapsibleContent className="mt-2 rounded-lg border p-3">
+                <CollapsibleContent className="mt-2 rounded-none border border-[var(--pnrr-subtle)] p-3">
                   {toc}
                 </CollapsibleContent>
               </Collapsible>
             </div>
           )}
 
-          {/* Desktop: the portal-shaped left column — the page's sections,
-              then the served Cuprins, sticky alongside the whole read. */}
-          <div className="hidden lg:sticky lg:top-20 lg:block">
-            <nav
-              aria-label={t`Pe această pagină`}
-              className="mb-5 border-b border-[var(--pnrr-subtle)] pb-4"
-            >
-              <p className={legislationStatLabelClassName}>
-                <Trans>Pe această pagină</Trans>
-              </p>
-              <ul className="mt-2 space-y-1.5 text-sm">
-                <SectionLinks activeSection={activeSection} asListItems />
-              </ul>
-            </nav>
-            {toc}
-          </div>
+          {/* Desktop: only the served Cuprins, sticky alongside the whole
+              read — the "Pe această pagină" section rail is gone (user
+              decision 2026-08-11: one navigation grain, the law's own). */}
+          <div className="hidden lg:sticky lg:top-20 lg:block">{toc}</div>
         </aside>
 
         {/* One 44rem column for everything in main: section rules end where
@@ -296,49 +327,61 @@ export function ActReadingLayout({ act, lead, fisa, docOverride, nod }: Props) {
         <main key="content" className="min-w-0 max-w-[44rem]">
           {lead}
 
-          <section id="act-fisa" aria-labelledby="act-fisa-heading" className="mt-10 scroll-mt-24">
-            <h2
-              id="act-fisa-heading"
-              className="mb-4 border-b-2 border-[var(--pnrr-border)] pb-3 text-3xl font-black tracking-tight text-[var(--pnrr-fg)]"
-            >
-              <Trans>Fișa actului</Trans>
-            </h2>
-            {fisa}
-          </section>
+          {/* No "Textul actului" heading (user decision 2026-08-11): the page
+              header IS the text's masthead now, and the chrome between them
+              only restated it. The section keeps its id — external links and
+              the versions band still target #act-text. */}
+          <section id="act-text" aria-label={t`Textul actului`} className="mt-10 scroll-mt-24">
+            {(render.isSuccess || outlineQuery.isError || docOverride !== undefined) && (
+              <div className="mb-4 space-y-1">
+                {/* The fidelity statement survives the removed section header
+                    — and it must TRACK the masthead lift: once the header
+                    absorbs the opening lines, "caracter cu caracter" without
+                    the caveat would be a false claim about the body below. */}
+                {render.isSuccess && (
+                  <p className="text-xs text-[var(--pnrr-muted)]">
+                    {mastheadLift?.lifted === true ? (
+                      <Trans>
+                        Textul în forma publicată — antetul actului este
+                        preluat în capul paginii.
+                      </Trans>
+                    ) : (
+                      <Trans>
+                        Textul în forma publicată, reprodus caracter cu
+                        caracter din sursa oficială.
+                      </Trans>
+                    )}{' '}
+                    {act.officialTextUrl !== null && (
+                      <a
+                        href={act.officialTextUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline underline-offset-2"
+                      >
+                        <Trans>Compară pe legislatie.just.ro</Trans>
+                      </a>
+                    )}
+                  </p>
+                )}
+                {outlineQuery.isError && (
+                  <p className="text-xs text-[var(--pnrr-muted)]">
+                    <Trans>
+                      Cuprinsul nu s-a putut încărca — textul rămâne integral mai jos.
+                    </Trans>
+                  </p>
+                )}
+                {docOverride !== undefined && (
+                  <p className="text-xs text-[var(--pnrr-muted)]">
+                    <Trans>Afișezi o versiune anume a textului.</Trans>{' '}
+                    <Link to="." search={{}} className="underline underline-offset-2">
+                      <Trans>Revino la forma afișată în mod normal</Trans>
+                    </Link>
+                  </p>
+                )}
+              </div>
+            )}
 
-          <section id="act-text" aria-labelledby="act-text-heading" className="mt-16 scroll-mt-24">
-            <div className="border-b-2 border-[var(--pnrr-border)] pb-3">
-              <h2
-                id="act-text-heading"
-                className="text-3xl font-black tracking-tight text-[var(--pnrr-fg)]"
-              >
-                <Trans>Textul actului</Trans>
-              </h2>
-              <p className="mt-1 text-xs text-[var(--pnrr-muted)]">
-                <Trans>
-                  Textul în forma publicată, reprodus caracter cu caracter din
-                  sursa oficială.
-                </Trans>{' '}
-                <SourceLink act={act} inline />
-              </p>
-              {outlineQuery.isError && (
-                <p className="mt-1 text-xs text-[var(--pnrr-muted)]">
-                  <Trans>
-                    Cuprinsul nu s-a putut încărca — textul rămâne integral mai jos.
-                  </Trans>
-                </p>
-              )}
-              {docOverride !== undefined && (
-                <p className="mt-1 text-xs text-[var(--pnrr-muted)]">
-                  <Trans>Afișezi o versiune anume a textului.</Trans>{' '}
-                  <Link to="." search={{}} className="underline underline-offset-2">
-                    <Trans>Revino la forma afișată în mod normal</Trans>
-                  </Link>
-                </p>
-              )}
-            </div>
-
-            <div className="pt-5">
+            <div>
               {documentId === null && (
                 <StateCard title={t`Fără expresie canonică`}>
                   <Trans>
@@ -349,13 +392,13 @@ export function ActReadingLayout({ act, lead, fisa, docOverride, nod }: Props) {
                 </StateCard>
               )}
               {nodMissed && (
-                <p className="mb-4 rounded border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
+                <p className="mb-4 rounded-none border border-[var(--pnrr-subtle)] bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
                   <Trans>Nu am găsit fragmentul cerut în acest text.</Trans>
                 </p>
               )}
               {documentId !== null && render.isLoading && (
                 // A skeleton at the serif's rhythm, not a bare grey line: it
-                // reserves real height, so the FAQ below doesn't leap
+                // reserves real height, so the fișa below doesn't leap
                 // thousands of pixels when the text lands.
                 <div role="status" aria-label={t`Se încarcă textul…`} className="space-y-4 pt-1">
                   {Array.from({ length: 14 }, (_, i) => (
@@ -376,14 +419,16 @@ export function ActReadingLayout({ act, lead, fisa, docOverride, nod }: Props) {
                   onRetry={() => void render.refetch()}
                 />
               )}
-              {render.data !== undefined && render.data.kind === 'envelope' && (
-                <EnvelopeReader
-                  blocks={render.data.tldf.blocks}
-                  marks={render.data.tldf.marks}
-                  containsNonBmp={render.data.tldf.contains_non_bmp}
-                  onRendered={onDomGrowth}
-                />
-              )}
+              {render.data !== undefined &&
+                render.data.kind === 'envelope' &&
+                envelopeSplit !== null && (
+                  <EnvelopeReader
+                    blocks={envelopeSplit.blocks}
+                    marks={render.data.tldf.marks}
+                    containsNonBmp={render.data.tldf.contains_non_bmp}
+                    onRendered={onDomGrowth}
+                  />
+                )}
               {render.data !== undefined && render.data.kind === 'manifest' && (
                 // Keyed by document: chunk slots are per-expression state,
                 // and a `?doc=` switch over a cached manifest must NEVER
@@ -392,6 +437,8 @@ export function ActReadingLayout({ act, lead, fisa, docOverride, nod }: Props) {
                   key={documentId ?? ''}
                   documentId={documentId ?? ''}
                   manifest={render.data.tldf}
+                  mastheadFacts={mastheadFacts}
+                  onMasthead={handleMasthead}
                   chainThroughGroup={nodResolution?.chunkGroupIndex ?? null}
                   onGroupLoaded={onDomGrowth}
                 />
@@ -400,58 +447,22 @@ export function ActReadingLayout({ act, lead, fisa, docOverride, nod }: Props) {
             </div>
           </section>
 
-          <ActFaqBand act={act} textServed={render.isSuccess} />
+          {/* The fișa closes the page (user decision 2026-08-11): the reader
+              who wants the record — publication, versions, references — has
+              already decided the text isn't what they came for, and the
+              header carries the identity facts a first glance needs. */}
+          <section id="act-fisa" aria-labelledby="act-fisa-heading" className="mt-16 scroll-mt-24">
+            <h2
+              id="act-fisa-heading"
+              className="mb-4 border-b-2 border-[var(--pnrr-border)] pb-3 text-3xl font-black tracking-tight text-[var(--pnrr-fg)]"
+            >
+              <Trans>Fișa actului</Trans>
+            </h2>
+            {fisa}
+          </section>
         </main>
       </div>
     </div>
-  )
-}
-
-/**
- * The three section links, active state driven by the section scroll-spy.
- * Rendered as `<li>`s in the desktop rail and as inline chips on mobile.
- */
-function SectionLinks({
-  activeSection,
-  asListItems = false,
-}: {
-  readonly activeSection: string
-  readonly asListItems?: boolean
-}) {
-  const links = [
-    { id: 'act-fisa', label: <Trans>Fișa actului</Trans> },
-    { id: 'act-text', label: <Trans>Textul actului</Trans> },
-    { id: 'act-faq', label: <Trans>Întrebări frecvente</Trans> },
-  ]
-  const anchor = (link: (typeof links)[number]) => (
-    <a
-      href={`#${link.id}`}
-      aria-current={activeSection === link.id ? 'location' : undefined}
-      className={cn(
-        'underline-offset-2 hover:underline',
-        activeSection === link.id
-          ? 'border-l-[3px] border-[var(--pnrr-fg)] pl-2 font-semibold text-[var(--pnrr-fg)]'
-          : 'text-[var(--pnrr-fg)]',
-      )}
-    >
-      {link.label}
-    </a>
-  )
-  if (asListItems) {
-    return (
-      <>
-        {links.map((link) => (
-          <li key={link.id}>{anchor(link)}</li>
-        ))}
-      </>
-    )
-  }
-  return (
-    <>
-      {links.map((link) => (
-        <span key={link.id}>{anchor(link)}</span>
-      ))}
-    </>
   )
 }
 
@@ -477,26 +488,21 @@ function EnvelopeReader({
   )
 }
 
-function SourceLink({
-  act,
-  inline = false,
-}: {
-  readonly act: LegalActDetail | null
-  readonly inline?: boolean
-}) {
+function SourceLink({ act }: { readonly act: LegalActDetail | null }) {
   if (act?.officialTextUrl === null || act?.officialTextUrl === undefined) return null
-  const link = (
-    <a
-      href={act.officialTextUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center gap-1 underline"
-    >
-      <Trans>Vezi textul pe legislatie.just.ro</Trans>
-      <ExternalLink className="size-3" aria-hidden />
-    </a>
+  return (
+    <p className="mt-3">
+      <a
+        href={act.officialTextUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1 underline"
+      >
+        <Trans>Vezi textul pe legislatie.just.ro</Trans>
+        <ExternalLink className="size-3" aria-hidden />
+      </a>
+    </p>
   )
-  return inline ? link : <p className="mt-3">{link}</p>
 }
 
 function StateCard({
@@ -507,7 +513,7 @@ function StateCard({
   readonly children: React.ReactNode
 }) {
   return (
-    <div className="rounded-lg border bg-muted/30 p-6">
+    <div className="rounded-none border border-[var(--pnrr-subtle)] bg-muted/30 p-6">
       <p className="flex items-center gap-2 font-medium">
         <TriangleAlert className="size-4 text-muted-foreground" aria-hidden />
         {title}
@@ -580,11 +586,15 @@ type ChunkSlot =
 function ChunkedReader({
   documentId,
   manifest,
+  mastheadFacts,
+  onMasthead,
   chainThroughGroup = null,
   onGroupLoaded,
 }: {
   readonly documentId: string
   readonly manifest: TldfManifestPayload
+  readonly mastheadFacts: MastheadFactsInHeader
+  readonly onMasthead?: (split: MastheadSplit) => void
   readonly chainThroughGroup?: number | null
   readonly onGroupLoaded?: () => void
 }) {
@@ -592,6 +602,18 @@ function ChunkedReader({
   const [slots, setSlots] = useState<readonly ChunkSlot[]>(() =>
     Array.from({ length: groupCount }, () => ({ state: 'pending' as const })),
   )
+
+  // The masthead lives in group 0 — split once per loaded payload and hand
+  // the subject up for the header's den line.
+  const firstSlot = slots[0]
+  const firstBlocks = firstSlot?.state === 'loaded' ? firstSlot.payload.blocks : null
+  const firstSplit = useMemo(
+    () => (firstBlocks === null ? null : splitMasthead(firstBlocks, mastheadFacts)),
+    [firstBlocks, mastheadFacts],
+  )
+  useEffect(() => {
+    if (firstSplit !== null) onMasthead?.(firstSplit)
+  }, [firstSplit, onMasthead])
 
   const loadChunk = useCallback(
     (groupIndex: number) => {
@@ -678,7 +700,13 @@ function ChunkedReader({
           slot.state === 'loaded' ? (
             <TldfBlocksView
               key={manifest.chunks[i]?.block_id ?? i}
-              blocks={slot.payload.blocks}
+              // The masthead is a leading-prefix concern, so only group 0 is
+              // ever split. Safe under absolute spans: every block and run
+              // carries document offsets, so marks on the remaining blocks
+              // still land exactly where they did.
+              blocks={
+                i === 0 && firstSplit !== null ? firstSplit.blocks : slot.payload.blocks
+              }
               marks={manifest.marks}
               containsNonBmp={manifest.contains_non_bmp}
             />

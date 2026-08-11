@@ -103,21 +103,21 @@ describe('LegalActPage', () => {
     expect(relevance).toHaveTextContent('cetățeni · firme')
   })
 
-  it('warns that the summary is stale before the reader reaches it', () => {
+  it('keeps the staleness warning on the summary card itself', () => {
     mockAct(legalActDetailRichFixture)
     render(<LegalActPage actId="66150" />)
 
     const warning = screen.getByText(
       /Acest act a fost modificat de 295 ori de la publicare/,
     )
-    const summary = screen.getByText('Ce spune, pe scurt')
-
-    expect(warning).toBeInTheDocument()
-    // Order is the point: a warning under the summary is an apology, not a
-    // caveat. `DOCUMENT_POSITION_FOLLOWING` = summary comes after the warning.
-    expect(
-      warning.compareDocumentPosition(summary) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy()
+    // The warning qualifies the summary, so it lives ON the summary card as
+    // a footer row with its headline always visible (user decision
+    // 2026-08-11) — one card, not a separate banner the eye can file away.
+    const card = screen
+      .getByText('Ce spune, pe scurt')
+      .closest('section')
+    expect(card).not.toBeNull()
+    expect(card).toContainElement(warning)
   })
 
   it('surfaces contradicted abrogations', () => {
