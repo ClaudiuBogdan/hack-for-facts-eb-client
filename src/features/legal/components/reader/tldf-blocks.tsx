@@ -8,7 +8,13 @@
  * elements and classes; no element may inject or reorder a single character.
  * Find-in-page, copy/paste and citation all operate on the proven text. The
  * column renders under `whitespace-pre-wrap`, so `\n` separators ARE the
- * line structure.
+ * line structure — with two VISUAL exceptions (user decision 2026-08-12,
+ * the gap complaint), both `white-space: normal` spans around a separator,
+ * never a changed character: a block's LEADING `\n` collapses (the block
+ * element already breaks the line, so it only painted a phantom blank line
+ * inside every block), and in enumeration blocks (alineat/litera/punct/
+ * liniuta) the `\n` between the marker run and its body collapses to a
+ * space, so "(1)" and "a)" sit on the same line as their text.
  *
  * Marks slice runs through the tested engine (`lib/tldf/marks.ts`): resolved
  * act references become router links, unresolved/external ones become honest
@@ -115,10 +121,14 @@ const BLOCK_CLASS: Readonly<Record<string, string>> = {
   anexa: `mt-16 border-t border-[var(--pnrr-subtle)] pt-8 ${HEAD_FONT} ${RANK_EYEBROW} ${DEN_FONT} [&>[data-role=den]]:text-[1.375rem] [&>[data-role=den]]:font-bold`,
   apendice: `mt-11 ${HEAD_FONT} ${RANK_EYEBROW} ${DEN_FONT} [&>[data-role=den]]:font-bold`,
   alineat: 'mt-2.5',
-  litera: 'mt-1.5 pl-6',
+  // Same step as alineat, NOT tighter: at mt-1.5 the gap between two litere
+  // matched the leading inside one, so multi-line items (the definitions
+  // articles — the densest, most-consulted part of most laws) fused into an
+  // unparseable column. Short single-line runs still read as a list.
+  litera: 'mt-2.5 pl-6',
   // Dash-items ("– ...") — same list grain as litera/punct.
-  liniuta: 'mt-1.5 pl-6',
-  punct: 'mt-1.5 pl-6',
+  liniuta: 'mt-2.5 pl-6',
+  punct: 'mt-2.5 pl-6',
   paragraf: 'mt-2.5',
   // A structurally-classified quotation — the same container the
   // OPENS_QUOTED heuristic approximates when the parser didn't mark one.
@@ -158,6 +168,18 @@ const RUN_ROLE_CLASS: Readonly<Record<string, string>> = {
  */
 const ownText = (block: TldfBlock): string =>
   block.content.map((run) => (run.sep ?? '') + run.text).join('')
+
+/**
+ * Enumeration grains whose marker run ("(1)", "a)", "1.", "–") joins its
+ * body on one line: the `\n` between them renders as a space (the separator
+ * character itself is untouched — see the module docblock).
+ */
+const INLINE_MARKER_KINDS: ReadonlySet<string> = new Set([
+  'alineat',
+  'litera',
+  'punct',
+  'liniuta',
+])
 
 const DASH_RULE = /^[\s-–—]{4,}$/
 const OPENS_QUOTED = /^\s*["„«]/
@@ -226,7 +248,17 @@ function MarkElement({ mark, text }: { readonly mark: TldfMark; readonly text: s
   )
 }
 
-function RunSpan({ run, marks }: { readonly run: TldfRun; readonly marks: MarkIndex }) {
+function RunSpan({
+  run,
+  marks,
+  collapseSep = false,
+}: {
+  readonly run: TldfRun
+  readonly marks: MarkIndex
+  /** Render the separator in a `white-space: normal` span so it collapses
+      visually — the character stays in the text content untouched. */
+  readonly collapseSep?: boolean
+}) {
   const sliced = sliceRun(marks, run)
   const roleClass = run.role !== undefined ? RUN_ROLE_CLASS[run.role] : undefined
   return (
@@ -234,7 +266,14 @@ function RunSpan({ run, marks }: { readonly run: TldfRun; readonly marks: MarkIn
       {...(run.role !== undefined && { 'data-role': run.role })}
       {...(roleClass !== undefined && roleClass !== '' && { className: roleClass })}
     >
-      {run.sep ?? ''}
+      {/* Gated on '\n' exactly: the documented exceptions collapse LINE
+          BREAKS only — a ' ' separator must keep rendering as the space
+          character it is. */}
+      {collapseSep && run.sep === '\n' ? (
+        <span className="whitespace-normal">{run.sep}</span>
+      ) : (
+        (run.sep ?? '')
+      )}
       {sliced.segments.map((segment, i) => (
         <MarkedSegment key={i} segment={segment} />
       ))}
@@ -255,15 +294,40 @@ function BlockView({ block, marks }: { readonly block: TldfBlock; readonly marks
     ...(block.children ?? []).map((child) => ({ start: child.span[0], child })),
   ].sort((a, b) => a.start - b.start)
 
+  // Which separators collapse visually (never textually): a block-leading
+  // one — the div boundary already breaks the line, so it only painted a
+  // phantom blank line — and, on enumeration grains, the one right after
+  // the marker run, so "(1)"/"a)" joins its body.
+  const inlineMarker = INLINE_MARKER_KINDS.has(block.kind)
+  const collapseAt = new Set<number>()
+  for (const [index, item] of items.entries()) {
+    if (!('run' in item)) continue
+    if (index === 0) collapseAt.add(index)
+    const previous = items[index - 1]
+    if (
+      inlineMarker &&
+      previous !== undefined &&
+      'run' in previous &&
+      previous.run.role === 'ttl'
+    ) {
+      collapseAt.add(index)
+    }
+  }
+
   return (
     <div
       id={`tldf-${block.id}`}
       data-kind={block.kind}
       className={cn(BLOCK_CLASS[block.kind], displayClass(block), 'scroll-mt-24')}
     >
-      {items.map((item) =>
+      {items.map((item, index) =>
         'run' in item ? (
-          <RunSpan key={`r${String(item.start)}`} run={item.run} marks={marks} />
+          <RunSpan
+            key={`r${String(item.start)}`}
+            run={item.run}
+            marks={marks}
+            collapseSep={collapseAt.has(index)}
+          />
         ) : (
           <BlockView key={item.child.id} block={item.child} marks={marks} />
         ),

@@ -154,3 +154,48 @@ describe('marks become honest elements', () => {
     expect(container.querySelector('[data-kind="hologramă"]')).not.toBeNull()
   })
 })
+
+describe('separator collapse is visual-only and exactly scoped', () => {
+  // An enumeration block: marker run, body, then a SECOND body run whose
+  // internal line break must survive. Fold: "\n(1)\nScopul legii.\ncontinuă."
+  const litera: TldfBlock = {
+    id: 'lit-a',
+    kind: 'litera',
+    type: 'p',
+    span: [0, 30],
+    content: [
+      { role: 'ttl', sep: '\n', text: '(1)', span: [0, 4] },
+      { role: 'bdy', sep: '\n', text: 'Scopul legii.', span: [4, 18] },
+      { role: 'bdy', sep: '\n', text: 'continuă.', span: [18, 28] },
+    ],
+  }
+
+  it('keeps the fold intact and collapses only the leading and marker seps', () => {
+    const { container } = render(
+      <TldfBlocksView blocks={[litera]} marks={[]} containsNonBmp={false} />,
+    )
+    // Fidelity first: every character still in the DOM, in order.
+    expect(container.textContent).toBe(foldTldfBlocks([litera]))
+    // Exactly two collapsed separators: the block-leading one and the one
+    // joining the marker to its body. The second body's internal newline
+    // renders pre-wrap — a real line break.
+    const collapsed = container.querySelectorAll('.whitespace-normal')
+    expect(collapsed).toHaveLength(2)
+    for (const span of collapsed) expect(span.textContent).toBe('\n')
+  })
+
+  it('never collapses a space separator', () => {
+    const spaceLed: TldfBlock = {
+      id: 'p-1',
+      kind: 'paragraf',
+      type: 'p',
+      span: [0, 10],
+      content: [{ sep: ' ', text: 'text.', span: [0, 6] }],
+    }
+    const { container } = render(
+      <TldfBlocksView blocks={[spaceLed]} marks={[]} containsNonBmp={false} />,
+    )
+    expect(container.textContent).toBe(foldTldfBlocks([spaceLed]))
+    expect(container.querySelectorAll('.whitespace-normal')).toHaveLength(0)
+  })
+})
