@@ -22,9 +22,9 @@ const OUT_LINK_CLASS =
  * issue of the Monitorul Oficial* carried it, and links the official PDF where
  * one exists.
  *
- * The exit to the consolidated text no longer lives here — it is the header's
- * primary action, above the fold, because burying the page's whole purpose
- * 1.200px down was the single worst thing about the old layout.
+ * The exit to the consolidated text no longer lives here — it sits in the
+ * summary card's footer (user decision 2026-08-12; the header button that
+ * preceded it is gone too, since the page now serves the text itself).
  *
  * Copy guardrail, inherited from the landing page and just as binding here: the
  * PDF marker means **an official PDF exists on monitoruloficial.ro**, never that

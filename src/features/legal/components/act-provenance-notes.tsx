@@ -3,11 +3,20 @@ import { t } from '@lingui/core/macro'
 import { Plural, Trans } from '@lingui/react/macro'
 import { AlertTriangle, Info } from 'lucide-react'
 import type { LegalActDetail } from '@/schemas/legal'
+import { hasSummaryContent } from '../lib/act-facts'
 import { isLegalMockEnabled } from '../lib/mock-mode'
 import { ActAccordionItem } from './act-accordion'
 
 type Props = {
   readonly act: LegalActDetail
+  /**
+   * Whether the text on screen had its masthead lifted into the page header
+   * (titlu/emitent/publicare hidden from the body under the equality rule).
+   * An ACTIVE content transformation must be disclosed somewhere — the user
+   * removed the inline note above the text (2026-08-12), so this catalogue
+   * of limits is its home.
+   */
+  readonly mastheadInHeader?: boolean
 }
 
 /**
@@ -26,9 +35,12 @@ type Props = {
  * reference material: as a permanently open wall at the end of the page it was
  * read by nobody and cost more screen than the publication proof.
  */
-export function ActProvenanceNotes({ act }: Props) {
+export function ActProvenanceNotes({ act, mastheadInHeader = false }: Props) {
   const isSuspicious = act.canonical?.extractionStatus === 'suspicious'
-  const hasNoSummary = act.summary?.plainLanguageSummary == null
+  // The SAME predicate the page uses to render the summary card — this note
+  // must claim "no summary" exactly when no card is on screen, including
+  // blank-string summaries and description-only ones.
+  const hasNoSummary = !act.summary || !hasSummaryContent(act.summary)
   const hasNoPublication = act.gazettePublications.length === 0
 
   const notes: ReadonlyArray<{
@@ -94,6 +106,25 @@ export function ActProvenanceNotes({ act }: Props) {
           },
         ]
       : []),
+    ...(mastheadInHeader
+      ? [
+          {
+            key: 'masthead',
+            tone: 'info' as const,
+            body: (
+              // Non-enumerating on purpose: `lifted` means at least one
+              // masthead line moved, not all of them — naming all three
+              // would overstate a partial lift.
+              <Trans>
+                Liniile de antet ale actului nu sunt repetate în corpul
+                textului de mai sus acolo unde capul paginii afișează deja
+                aceleași informații. Restul textului este reprodus întocmai
+                din sursa oficială.
+              </Trans>
+            ),
+          },
+        ]
+      : []),
     // The old "no article structure" note is gone with the `structure`
     // field: the Cuprins in the left nav IS the served outline, and its
     // absence is visible on the page itself rather than asserted here.
@@ -104,8 +135,8 @@ export function ActProvenanceNotes({ act }: Props) {
             tone: 'info' as const,
             body: (
               <Trans>
-                Nu avem un rezumat generat pentru acest act, deci pagina arată
-                doar datele de identificare.
+                Nu avem un rezumat generat pentru acest act — stratul
+                explicativ lipsește; textul și fișa rămân complete.
               </Trans>
             ),
           },

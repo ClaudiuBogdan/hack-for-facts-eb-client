@@ -84,15 +84,11 @@ export const legislationSubmitClassName =
 export const legislationExampleChipClassName =
   'rounded-none border border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-2.5 py-1 text-xs transition-colors hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]'
 
-/**
- * The outbound action that leaves the platform for the official source.
- *
- * Solid rather than outlined, because on the act page this is not one link among
- * several: we do not hold the text of the law, so the route to it is the page's
- * reason to exist (`docs/design/legal/act-detail.md` §1).
- */
-export const legislationActionClassName =
-  'inline-flex items-center gap-2 rounded-none bg-[var(--pnrr-fg)] px-4 py-2.5 text-sm font-semibold text-[var(--pnrr-bg)] transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] focus-visible:ring-offset-2'
+/* The solid `legislationActionClassName` button is gone (2026-08-12): its
+   docblock argued the official-text exit was "the page's reason to exist"
+   because we did not hold the law's text — the act page now serves the full
+   text, so the route to legislatie.just.ro demoted to an inline link in the
+   summary card's footer. Do not restore a solid button on that premise. */
 
 /* ── chips ───────────────────────────────────────────────────────────────── */
 

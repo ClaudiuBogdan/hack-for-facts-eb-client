@@ -73,12 +73,17 @@ type Props = {
   /** `?nod=` — a document_nodes PATH deep link into this text. */
   readonly nod?: string
   /**
-   * Fires when the text's masthead is split off, carrying the act's subject
-   * ("privind achizițiile publice") so the page header can complete its den
-   * line — the header is this text's masthead now (user decision 2026-08-11),
-   * and the subject exists nowhere in the act's metadata.
+   * Fires when the text's masthead is split off: the act's subject
+   * ("privind achizițiile publice") completes the page header's den line —
+   * the header is this text's masthead now (user decision 2026-08-11), and
+   * the subject exists nowhere in the act's metadata — and `lifted` tells
+   * the fișa's provenance notes to DISCLOSE the move (the body no longer
+   * repeats the official opening lines, and that must be said somewhere).
+   * Called with `null` when the expression changes.
    */
-  readonly onMastheadSubject?: (subject: string | null) => void
+  readonly onMasthead?: (
+    info: { readonly subject: string | null; readonly lifted: boolean } | null,
+  ) => void
 }
 
 /** Scroll to a nod's block, preferring the exact path over its outline anchor. */
@@ -99,7 +104,7 @@ export function ActReadingLayout({
   fisa,
   docOverride,
   nod,
-  onMastheadSubject,
+  onMasthead,
 }: Props) {
   const documentId = docOverride ?? act.canonical?.documentId ?? null
   const render = useLegalRender(documentId)
@@ -228,28 +233,17 @@ export function ActReadingLayout({
     }
   }, [act, docOverride])
 
-  // The masthead split of whatever text is actually on screen. `null` until
-  // a text renders; drives the fidelity note's wording and (via the parent)
-  // the header's den+subject line. Reset when the expression changes — a
-  // subject lifted from one text must not caption another.
-  const [mastheadLift, setMastheadLift] = useState<{
-    readonly subject: string | null
-    readonly lifted: boolean
-  } | null>(null)
+  // The masthead split of whatever text is actually on screen goes up to
+  // the page (header subject + provenance disclosure). Reset when the
+  // expression changes — one text's lift must not describe another.
   useEffect(() => {
-    setMastheadLift(null)
-    onMastheadSubject?.(null)
-  }, [documentId, onMastheadSubject])
+    onMasthead?.(null)
+  }, [documentId, onMasthead])
   const handleMasthead = useCallback(
     (split: MastheadSplit) => {
-      setMastheadLift((prev) =>
-        prev !== null && prev.subject === split.subject && prev.lifted === split.lifted
-          ? prev
-          : { subject: split.subject, lifted: split.lifted },
-      )
-      onMastheadSubject?.(split.subject)
+      onMasthead?.({ subject: split.subject, lifted: split.lifted })
     },
-    [onMastheadSubject],
+    [onMasthead],
   )
 
   // Envelope documents split synchronously from the payload; chunked ones
@@ -332,37 +326,11 @@ export function ActReadingLayout({
               only restated it. The section keeps its id — external links and
               the versions band still target #act-text. */}
           <section id="act-text" aria-label={t`Textul actului`} className="mt-10 scroll-mt-24">
-            {(render.isSuccess || outlineQuery.isError || docOverride !== undefined) && (
+            {/* No standing fidelity caption (user decision 2026-08-12): the
+                provenance story lives in the summary footer and the fișa.
+                Only CONTEXTUAL notices render here. */}
+            {(outlineQuery.isError || docOverride !== undefined) && (
               <div className="mb-4 space-y-1">
-                {/* The fidelity statement survives the removed section header
-                    — and it must TRACK the masthead lift: once the header
-                    absorbs the opening lines, "caracter cu caracter" without
-                    the caveat would be a false claim about the body below. */}
-                {render.isSuccess && (
-                  <p className="text-xs text-[var(--pnrr-muted)]">
-                    {mastheadLift?.lifted === true ? (
-                      <Trans>
-                        Textul în forma publicată — antetul actului este
-                        preluat în capul paginii.
-                      </Trans>
-                    ) : (
-                      <Trans>
-                        Textul în forma publicată, reprodus caracter cu
-                        caracter din sursa oficială.
-                      </Trans>
-                    )}{' '}
-                    {act.officialTextUrl !== null && (
-                      <a
-                        href={act.officialTextUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline underline-offset-2"
-                      >
-                        <Trans>Compară pe legislatie.just.ro</Trans>
-                      </a>
-                    )}
-                  </p>
-                )}
                 {outlineQuery.isError && (
                   <p className="text-xs text-[var(--pnrr-muted)]">
                     <Trans>
@@ -437,6 +405,7 @@ export function ActReadingLayout({
                   key={documentId ?? ''}
                   documentId={documentId ?? ''}
                   manifest={render.data.tldf}
+                  act={act}
                   mastheadFacts={mastheadFacts}
                   onMasthead={handleMasthead}
                   chainThroughGroup={nodResolution?.chunkGroupIndex ?? null}
@@ -586,6 +555,7 @@ type ChunkSlot =
 function ChunkedReader({
   documentId,
   manifest,
+  act,
   mastheadFacts,
   onMasthead,
   chainThroughGroup = null,
@@ -593,6 +563,8 @@ function ChunkedReader({
 }: {
   readonly documentId: string
   readonly manifest: TldfManifestPayload
+  /** For the partial-failure card's official-source escape hatch. */
+  readonly act: LegalActDetail | null
   readonly mastheadFacts: MastheadFactsInHeader
   readonly onMasthead?: (split: MastheadSplit) => void
   readonly chainThroughGroup?: number | null
@@ -720,6 +692,10 @@ function ChunkedReader({
             <Button variant="outline" size="sm" onClick={() => loadChunk(failedIndex)}>
               <Trans>Reîncearcă partea {failedIndex + 1}</Trans>
             </Button>
+            {/* Every failure state keeps the official-source escape hatch —
+                on a summaryless act this card may be the page's only route
+                to the law. */}
+            <SourceLink act={act} />
           </StateCard>
         </div>
       )}

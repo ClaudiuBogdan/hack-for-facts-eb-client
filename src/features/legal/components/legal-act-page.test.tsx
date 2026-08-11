@@ -45,13 +45,13 @@ describe('LegalActPage', () => {
     mockAct(legalActDetailFixture)
   })
 
-  it('leads with the plain-language summary', () => {
+  it('leads with the summary card', () => {
     render(<LegalActPage actId="103524" />)
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
       'Legea nr. 2/2020',
     )
-    expect(screen.getByText('Ce spune, pe scurt')).toBeInTheDocument()
+    expect(screen.getByText('Pe scurt')).toBeInTheDocument()
     expect(
       screen.getByText(/încurajează românii să-și cumpere mașini noi/),
     ).toBeInTheDocument()
@@ -60,12 +60,12 @@ describe('LegalActPage', () => {
   it('routes to the official source without opening anything', () => {
     render(<LegalActPage actId="103524" />)
 
-    // The page describes an act it does not hold the text of, so the route to
-    // the official record is the one thing it owes every reader. It used to be
-    // an underlined link inside the eighth card down.
+    // The route to the official record lives in the summary card's footer
+    // now (user decision 2026-08-12: the header button is gone) — still
+    // reachable without opening anything.
     expect(
       screen
-        .getByRole('link', { name: /Citește textul oficial/ })
+        .getByRole('link', { name: /Textul oficial/ })
         .getAttribute('href'),
     ).toContain('legislatie.just.ro')
   })
@@ -114,7 +114,7 @@ describe('LegalActPage', () => {
     // a footer row with its headline always visible (user decision
     // 2026-08-11) — one card, not a separate banner the eye can file away.
     const card = screen
-      .getByText('Ce spune, pe scurt')
+      .getByText('Pe scurt')
       .closest('section')
     expect(card).not.toBeNull()
     expect(card).toContainElement(warning)

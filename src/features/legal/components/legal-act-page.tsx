@@ -7,6 +7,7 @@ import { useLegalAct } from '../hooks/use-legal-act'
 import { legislationLinkClassName } from '../lib/legislation-theme'
 import { ActAccordion } from './act-accordion'
 import { ActDetailHeader } from './act-detail-header'
+import { hasSummaryContent } from '../lib/act-facts'
 import { ActKeyDates } from './act-key-dates'
 import { ActPlainSummary } from './act-plain-summary'
 import { ActProvenanceNotes } from './act-provenance-notes'
@@ -37,9 +38,10 @@ type Props = {
  * redesigned: a left nav carrying only the served Cuprins, and a main column
  * that reads top to bottom as —
  *
- *  0. header — what this is, is it alive, the exit to the official source
- *  1. one summary card — the clamped plain summary, its qualifying ⚠
- *     warnings as collapsed footer rows, the AI-provenance row
+ *  0. header — what this is, is it alive, the act's own masthead
+ *  1. one summary card — the formal description, the clamped plain summary,
+ *     its qualifying ⚠ warnings as collapsed footer rows, and the
+ *     AI-provenance row carrying the official-source link
  *  2. the text itself — full, chunk-streamed, `?nod=`-addressable
  *  3. fișa — one accordion at the bottom: relevance, the record, the
  *     mechanics, the limits (it replaced the FAQ, same decision)
@@ -51,10 +53,15 @@ type Props = {
 export function LegalActPage({ actId, initialAct, docOverride, nod }: Props) {
   const { data, isLoading, isError } = useLegalAct(actId, initialAct)
 
-  // The act's subject ("privind achizițiile publice"), lifted from the
-  // text's masthead once it renders — it exists nowhere in the metadata, and
-  // the header's den line is its home now that the header IS the masthead.
-  const [textSubject, setTextSubject] = useState<string | null>(null)
+  // The masthead lift, reported by the reader once a text renders: the
+  // subject ("privind achizițiile publice") completes the header's den line
+  // — it exists nowhere in the metadata — and `lifted` makes the fișa's
+  // provenance notes disclose that the body no longer repeats the official
+  // opening lines.
+  const [masthead, setMasthead] = useState<{
+    readonly subject: string | null
+    readonly lifted: boolean
+  } | null>(null)
 
   if (isLoading) return <LegalActSkeleton />
 
@@ -79,22 +86,23 @@ export function LegalActPage({ actId, initialAct, docOverride, nod }: Props) {
 
   return (
     <div className="min-h-screen min-w-0 bg-background">
-      <ActDetailHeader act={data} textSubject={textSubject} />
+      <ActDetailHeader act={data} textSubject={masthead?.subject ?? null} />
 
       <ActReadingLayout
         act={data}
-        onMastheadSubject={setTextSubject}
+        onMasthead={setMasthead}
         {...(docOverride !== undefined && { docOverride })}
         {...(nod !== undefined && { nod })}
         lead={
-          // Gated on the FIELD the card actually renders, not the summary
-          // object: `plainLanguageSummary` is nullable on its own, and a
+          // Gated on the CONTENT the card actually renders, not the summary
+          // object: both its texts are independently nullable/blank, and a
           // summary that suppresses the card must not swallow the warnings.
-          data.summary && data.summary.plainLanguageSummary !== null ? (
+          data.summary && hasSummaryContent(data.summary) ? (
             // One card: the summary with its qualifying warnings as footer
             // rows (user decision 2026-08-11) — not three stacked elements.
             <ActPlainSummary
               summary={data.summary}
+              officialTextUrl={data.officialTextUrl}
               qualifiers={<ActWarnings act={data} variant="row" />}
             />
           ) : (
@@ -118,7 +126,10 @@ export function LegalActPage({ actId, initialAct, docOverride, nod }: Props) {
             <ActReferencesBand group={data.outLinks} direction="out" />
             <ActReferencesBand group={data.inLinks} direction="in" />
             <ActAnchorsBand group={data.incomingAnchors} />
-            <ActProvenanceNotes act={data} />
+            <ActProvenanceNotes
+              act={data}
+              mastheadInHeader={masthead?.lifted ?? false}
+            />
           </ActAccordion>
         }
       />
