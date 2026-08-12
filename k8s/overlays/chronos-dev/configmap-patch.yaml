@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hack-for-facts-eb-client-config
+  namespace: hack-for-facts
+data:
+  VITE_APP_ENVIRONMENT: development
+  VITE_API_URL: https://api-dev.transparenta.eu
+  VITE_SITE_URL: https://dev-chronos.transparenta.eu

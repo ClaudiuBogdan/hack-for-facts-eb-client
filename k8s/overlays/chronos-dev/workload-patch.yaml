@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hack-for-facts-eb-client
+  namespace: hack-for-facts
+  annotations:
+    image-sha: sha256:3566933cc0f8ce5add6a94bf61fce0a597b023d0c135e979f1d9ff6479b7e7b7
+spec:
+  replicas: 2
+  template:
+    spec:
+      serviceAccountName: hack-for-facts-eb-client
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      tolerations:
+        - key: dedicated
+          operator: Equal
+          value: compute
+          effect: NoSchedule
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: hack-for-facts-eb-client
+      containers:
+        - name: hack-for-facts-eb-client
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 256Mi
