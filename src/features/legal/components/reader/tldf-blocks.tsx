@@ -69,6 +69,9 @@ const KNOWN_KINDS = new Set([
   'publicare',
   'semnatura',
   'tabel',
+  'rand',
+  'celula',
+  'imagine',
   'preformatat',
 ])
 

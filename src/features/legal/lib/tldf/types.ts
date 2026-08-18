@@ -38,8 +38,24 @@ export interface TldfBlock {
   readonly span: TldfSpan
   readonly origin?: 'unmarked' | 'facsimil'
   readonly placement?: 'positional'
+  /** v1.1: cell geometry, present only when it differs from (1,1). */
+  readonly grid?: TldfGrid
+  /** v1.1: image description. Never a locator — resolve by block id. */
+  readonly asset?: TldfAsset
   readonly content: readonly TldfRun[]
   readonly children?: readonly TldfBlock[]
+}
+
+export interface TldfGrid {
+  readonly cols: number
+  readonly rows: number
+}
+
+export interface TldfAsset {
+  readonly sha256?: string
+  readonly width?: number
+  readonly height?: number
+  readonly alt?: string
 }
 
 export type TldfMarkKind = 'reference' | 'legal_ref' | 'ref'
@@ -95,7 +111,7 @@ export interface TldfDefect {
 
 interface TldfHead {
   readonly format: 'tldf'
-  readonly format_version: '1.0'
+  readonly format_version: '1.0' | '1.1'
   readonly document_id: string
   readonly generation: TldfGeneration
   readonly text_sha256: string
