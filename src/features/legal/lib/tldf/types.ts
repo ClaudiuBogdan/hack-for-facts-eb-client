@@ -58,7 +58,19 @@ export interface TldfAsset {
   readonly alt?: string
 }
 
-export type TldfMarkKind = 'reference' | 'legal_ref' | 'ref'
+/**
+ * `italic` / `underline` / `bold` are emphasis carried as MARK EDGES over the
+ * text, never as text of their own. Three kinds rather than one collapsed
+ * `emphasis` because the distinction is semantic in this corpus: the drug-annex
+ * profile uses bold to mark the active substance.
+ */
+export type TldfMarkKind =
+  | 'reference'
+  | 'legal_ref'
+  | 'ref'
+  | 'italic'
+  | 'underline'
+  | 'bold'
 export type TldfLinkKind = 'act' | 'act_missing_id' | 'external' | 'internal'
 
 export type TldfResolutionState =

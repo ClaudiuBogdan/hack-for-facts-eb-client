@@ -103,7 +103,7 @@ const tldfLinkSchema: z.ZodType<TldfLink> = z.object({
 
 const tldfMarkSchema: z.ZodType<TldfMark> = z.object({
   ordinal: z.number().int(),
-  kind: z.enum(['reference', 'legal_ref', 'ref']),
+  kind: z.enum(['reference', 'legal_ref', 'ref', 'italic', 'underline', 'bold']),
   span: tldfSpanSchema,
   link: tldfLinkSchema.optional(),
 })
