@@ -1,20 +1,31 @@
 # Chronos development overlay
 
-This source-only overlay renders the Transparenta.eu client workload for the
-future Chronos namespace `transparenta-eu-dev`. It is not an installation
-instruction and has not been applied.
+This source-only overlay renders the telemetry-disabled, unauthenticated
+Transparenta.eu client canary for the future Chronos namespace
+`transparenta-eu-dev`. It is not an installation instruction and has not been
+applied.
 
 The overlay intentionally owns only the Deployment, Service, ServiceAccount,
 ConfigMap, and PodDisruptionBudget. It excludes the Phoenix `VirtualService`
 and HPA. Chronos ingress remains centrally owned, and replicas remain fixed
 until the worker Metrics Server gate passes.
 
-The initial public configuration points the client canary at the existing
-Phoenix development API. Before any sync:
+Runtime configuration is read from the pod environment and injected into the
+browser bootstrap. The canary points to the future
+`https://api-dev-chronos.transparenta.eu` endpoint and
+`https://dev-chronos.transparenta.eu` site URL. PostHog and Sentry are
+explicitly disabled; no Clerk or application runtime Secret is mounted.
 
-- prove whether the image reads `VITE_API_URL` at runtime; otherwise build and
-  pin a distinct digest for each hostname-matrix row;
-- add independently resealed Chronos Secret declarations from Bitwarden;
+The repository-local secret generator owns only
+`registry-credentials-client` for the initial canary. The workload
+Kustomization excludes ciphertext; a separate, narrowly scoped Argo secrets
+Application owns the `secrets/` path.
+
+Before any sync:
+
+- retain the proven runtime-config bootstrap for `VITE_API_URL` and
+  `VITE_SITE_URL`;
+- generate and validate the independent image-pull ciphertext from BWS;
 - reconfirm the image digest and prove it can be pulled with the bounded
   Chronos registry credential;
 - pass the platform, policy, recovery, and ingress gates in the
@@ -31,3 +42,6 @@ kubectl kustomize k8s/overlays/chronos-dev
 Expected kinds are one ConfigMap, Deployment, PodDisruptionBudget, Service,
 and ServiceAccount. A render containing `VirtualService`, HPA, `HTTPRoute`, or
 a Secret is a failure.
+
+The separate `secrets/` render must contain exactly one SealedSecret and no raw
+Secret.

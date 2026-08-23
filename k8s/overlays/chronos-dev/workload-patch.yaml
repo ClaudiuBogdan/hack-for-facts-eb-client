@@ -29,6 +29,9 @@ spec:
               app: hack-for-facts-eb-client
       containers:
         - name: hack-for-facts-eb-client
+          envFrom:
+            - configMapRef:
+                name: hack-for-facts-eb-client-config
           securityContext:
             runAsNonRoot: true
             allowPrivilegeEscalation: false
