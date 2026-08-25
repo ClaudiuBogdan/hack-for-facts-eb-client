@@ -540,6 +540,135 @@ export const gazetteBrowseSearchSchema = z.object({
 export type GazetteBrowseSearch = z.infer<typeof gazetteBrowseSearchSchema>
 
 /**
+ * `legal.act_status_events.event_kind` — the DB CHECK vocabulary (12 values,
+ * `act_status_events_kind_check`). Closed at the database, so the FILTER param
+ * may be an enum; the ROW field stays an open string (`legalRecentChangeSchema`)
+ * so a 13th kind added upstream degrades to a prettified label instead of
+ * breaking the page. Census 2026-08-26 (sums to the feed's 84.484):
+ * modificare 29.985 · abrogare-totala 27.930 · completare 10.191 ·
+ * promulgare 9.310 · abrogare-partiala 2.052 · aprobare-oug 1.799 ·
+ * republicare 1.325 · aprobare-og 867 · rectificare 419 · suspendare 344 ·
+ * iesire-din-vigoare 262 · incetare-suspendare 0 (in the CHECK, no rows yet).
+ */
+export const legalEventKindSchema = z.enum([
+  'abrogare-totala',
+  'abrogare-partiala',
+  'modificare',
+  'completare',
+  'suspendare',
+  'incetare-suspendare',
+  'republicare',
+  'rectificare',
+  'iesire-din-vigoare',
+  'promulgare',
+  'aprobare-oug',
+  'aprobare-og',
+])
+export type LegalEventKind = z.infer<typeof legalEventKindSchema>
+
+/**
+ * `act_status_events.event_source` — which pipeline recorded the event. The
+ * server surfaces it deliberately and never merges the two (12.790 of 84.484
+ * events are `monitorul-oficial`, measured 2026-08-26); the UI shows it on
+ * every row. Enum for the FILTER param only — rows carry an open string.
+ */
+export const legalEventSourceSchema = z.enum(['portal', 'monitorul-oficial'])
+export type LegalEventSource = z.infer<typeof legalEventSourceSchema>
+
+/**
+ * One row of the global change feed (`LegalRecentChange`). BigInt scalars
+ * (`eventId`, `actId`) travel as strings. `sourceAct` is the ACTING act (the
+ * amending law) — null when the event records none or the id dangles, which
+ * is the norm on the undated cohort. `eventKind`/`eventSource` are open
+ * strings here (see the filter enums above for why).
+ */
+export const legalRecentChangeSchema = z.object({
+  eventId: z.string(),
+  eventKind: z.string(),
+  effectiveDate: z.string().nullable(),
+  eventSource: z.string(),
+  sourceAct: z
+    .object({ actId: z.string(), displayCitation: z.string() })
+    .nullable(),
+  actId: z.string(),
+  displayCitation: z.string(),
+  status: legalActStatusSchema,
+})
+export type LegalRecentChange = z.infer<typeof legalRecentChangeSchema>
+
+/**
+ * One cursor page of the change feed. Deliberately NO `totalCount`: the
+ * server resolves it lazily and a count failure arrives as `totalCount: null`
+ * PLUS a field-level `errors[]` entry — and the shared `graphqlQuery` throws
+ * on any non-empty `errors[]`, so selecting the count in the feed query would
+ * let a count timeout kill the feed. The count is its own query
+ * (`fetchRecentChangesCount`), keyed on the filter, not the cursor.
+ */
+export const legalChangesPageSchema = z.object({
+  items: z.array(legalRecentChangeSchema),
+  /** Null when the cursor is exhausted, even if the server minted one. */
+  endCursor: z.string().nullable(),
+})
+export type LegalChangesPage = z.infer<typeof legalChangesPageSchema>
+
+/**
+ * The filter the changes feed sends to the server (`legalRecentChanges`).
+ * `since`/`until` are INCLUSIVE `YYYY-MM-DD` bounds on `effective_date`.
+ * `undated: true` serves the no-effective-date cohort — the server REJECTS
+ * combining it with a window (the intersection is empty by construction), so
+ * the live adapter strips `since`/`until` whenever `undated` is set.
+ */
+export const legalChangesFilterSchema = z.object({
+  since: z.string().optional(),
+  until: z.string().optional(),
+  kind: legalEventKindSchema.optional(),
+  source: legalEventSourceSchema.optional(),
+  undated: z.boolean().optional(),
+})
+export type LegalChangesFilter = z.infer<typeof legalChangesFilterSchema>
+
+/**
+ * A calendar-valid `YYYY-MM-DD`. The round-trip guards V8's lenient parse:
+ * '2026-02-31' does NOT parse to NaN — it rolls over to March 3rd — and the
+ * server rejects such a date as invalid input, so the URL schema must drop it
+ * rather than forward it into an erroring request.
+ */
+const changesFeedDateSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .refine((value) => {
+    const parsed = Date.parse(value)
+    return (
+      !Number.isNaN(parsed) &&
+      new Date(parsed).toISOString().slice(0, 10) === value
+    )
+  })
+
+/**
+ * URL state for `/legislation/changes`. `.catch(undefined)` drops a malformed
+ * param to its default instead of erroring the route (gazette pattern).
+ *
+ * `view` names the feed's cohorts — the effective-date dimension has real
+ * populations a bare window cannot reach (measured 2026-08-26):
+ *  - absent (default): already-in-force events, `until = today` (63.210);
+ *  - `viitoare`: future-dated events, `since = tomorrow` (8);
+ *  - `toate`: the feed exactly as served — future first, undated trailing;
+ *  - `nedatate`: the 21.266 events with NO effective date (`undatedOnly`),
+ *    which every since/until window excludes.
+ * An explicit `since`/`until` is the custom-window mode; when a hand-edited
+ * URL carries BOTH a `view` and a window, the component lets `view` win and
+ * never sends the rejected `undatedOnly`+window combination to the server.
+ */
+export const legalChangesSearchSchema = z.object({
+  view: z.enum(['viitoare', 'toate', 'nedatate']).optional().catch(undefined),
+  since: changesFeedDateSchema.optional().catch(undefined),
+  until: changesFeedDateSchema.optional().catch(undefined),
+  kind: legalEventKindSchema.optional().catch(undefined),
+  source: legalEventSourceSchema.optional().catch(undefined),
+})
+export type LegalChangesSearch = z.infer<typeof legalChangesSearchSchema>
+
+/**
  * One `legalResolve` hit. `value` is the filter value the hit resolves to —
  * for `dim: "act"` it is the actId to navigate to. Ambiguity is the feature:
  * 'codul fiscal' returns MULTIPLE hits and the user picks; the UI never

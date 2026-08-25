@@ -19,6 +19,7 @@ type TabSpec = {
     | '/legislation'
     | '/legislation/analytics'
     | '/legislation/acts'
+    | '/legislation/changes'
     | '/legislation/gazette'
 }
 
@@ -29,20 +30,19 @@ type Props = {
 /**
  * Section navigation for `/legislation`.
  *
- * **Prezentare**, **Analiză**, **Acte** and **Monitorul Oficial** have routes;
- * the other three are rendered but inert — deliberately: the tab set is the
- * module's information architecture (`docs/design/legal/main-page.md` §3), and
- * hiding it until every route exists would misrepresent the shape of the
- * domain. They become links by gaining a `to`, with no other change.
+ * **Prezentare**, **Analiză**, **Acte**, **Modificări** and **Monitorul
+ * Oficial** have routes; the other two are rendered but inert — deliberately:
+ * the tab set is the module's information architecture
+ * (`docs/design/legal/main-page.md` §3), and hiding it until every route
+ * exists would misrepresent the shape of the domain. They become links by
+ * gaining a `to`, with no other change — Modificări did exactly that once the
+ * server shipped the global `legalRecentChanges` feed (the §6.1 gap that had
+ * kept it inert).
  *
  * Analiză sits second rather than last, where an analytics tab normally goes:
  * it holds the corpus figures that used to be on the landing page, and burying
- * it behind four disabled tabs would make them harder to find than before they
+ * it behind disabled tabs would make them harder to find than before they
  * moved.
- *
- * Note on Modificări: it is inert for a second reason. There is no global
- * "recently changed" query on the server (§6.1), so it has nothing to serve even
- * once routed. Cut it rather than ship it empty if that query does not land.
  */
 export function LegislationTabNav({ activeTab }: Props) {
   const tabs: ReadonlyArray<TabSpec> = [
@@ -50,7 +50,7 @@ export function LegislationTabNav({ activeTab }: Props) {
     { id: 'analiza', label: t`Analiză`, to: '/legislation/analytics' },
     { id: 'cauta', label: t`Caută` },
     { id: 'acte', label: t`Acte`, to: '/legislation/acts' },
-    { id: 'modificari', label: t`Modificări` },
+    { id: 'modificari', label: t`Modificări`, to: '/legislation/changes' },
     { id: 'monitorul', label: t`Monitorul Oficial`, to: '/legislation/gazette' },
     { id: 'ghid', label: t`Ghid` },
   ]

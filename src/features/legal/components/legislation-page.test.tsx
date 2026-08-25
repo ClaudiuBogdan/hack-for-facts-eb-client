@@ -140,10 +140,14 @@ describe('LegislationPage', () => {
       'href',
       '/legislation/analytics',
     )
+    // Live since the server shipped the global feed — a regression back to
+    // the inert span would silently unship the tab.
     expect(screen.getByText('Modificări')).toHaveAttribute(
-      'aria-disabled',
-      'true',
+      'href',
+      '/legislation/changes',
     )
+    // Caută and Ghid are still routeless and must stay honestly inert.
+    expect(screen.getByText('Ghid')).toHaveAttribute('aria-disabled', 'true')
   })
 
   it('does not scroll the tab navigation when it mounts', () => {

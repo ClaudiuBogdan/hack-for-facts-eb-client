@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { gazetteBrowseSearchSchema } from './legal'
+import { gazetteBrowseSearchSchema, legalChangesSearchSchema } from './legal'
 
 /**
  * `/legislation/gazette` URL params run through `validateSearch`: a throwing
@@ -42,5 +42,82 @@ describe('gazetteBrowseSearchSchema', () => {
     expect(
       gazetteBrowseSearchSchema.parse({ part: 'PVIII' }).part,
     ).toBeUndefined()
+  })
+})
+
+/**
+ * `/legislation/changes` URL params, same contract: junk pasted into the
+ * address bar degrades to defaults, never errors the route — and never
+ * travels on to a server that would REJECT it (`legalRecentChanges` refuses
+ * calendar-invalid dates as invalid input).
+ */
+describe('legalChangesSearchSchema', () => {
+  it('passes a fully valid search through unchanged', () => {
+    expect(
+      legalChangesSearchSchema.parse({
+        view: 'nedatate',
+        kind: 'abrogare-totala',
+        source: 'monitorul-oficial',
+      }),
+    ).toEqual({
+      view: 'nedatate',
+      kind: 'abrogare-totala',
+      source: 'monitorul-oficial',
+    })
+    expect(
+      legalChangesSearchSchema.parse({
+        since: '2026-01-01',
+        until: '2026-08-26',
+      }),
+    ).toEqual({ since: '2026-01-01', until: '2026-08-26' })
+  })
+
+  it('parses an empty search to all-defaults', () => {
+    expect(legalChangesSearchSchema.parse({})).toEqual({})
+  })
+
+  it('drops junk view/kind/source values instead of erroring the route', () => {
+    const parsed = legalChangesSearchSchema.parse({
+      view: 'everything',
+      kind: 'explozie',
+      source: 'facebook',
+    })
+    expect(parsed.view).toBeUndefined()
+    expect(parsed.kind).toBeUndefined()
+    expect(parsed.source).toBeUndefined()
+  })
+
+  it('drops malformed dates', () => {
+    expect(
+      legalChangesSearchSchema.parse({ since: 'abc' }).since,
+    ).toBeUndefined()
+    expect(
+      legalChangesSearchSchema.parse({ until: '2026-1-1' }).until,
+    ).toBeUndefined()
+    expect(legalChangesSearchSchema.parse({ since: 20260101 }).since,
+    ).toBeUndefined()
+  })
+
+  it('drops calendar-invalid dates that V8 would silently roll over', () => {
+    // '2026-02-31' does NOT parse to NaN — Date.parse rolls it to March 3rd —
+    // and the server rejects it as invalid input, so the schema must catch it
+    // by round-trip, not by Number.isNaN alone.
+    expect(
+      legalChangesSearchSchema.parse({ since: '2026-02-31' }).since,
+    ).toBeUndefined()
+    // A real leap day survives.
+    expect(legalChangesSearchSchema.parse({ until: '2024-02-29' }).until).toBe(
+      '2024-02-29',
+    )
+  })
+
+  it('parses a view combined with a window — precedence is the component contract', () => {
+    // A hand-edited URL can carry both; the SCHEMA keeps them (each is valid
+    // alone) and the COMPONENT lets the view win, never sending the server
+    // the undatedOnly+window combination it rejects — pinned in
+    // legislation-changes-feed.test.tsx, not here.
+    expect(
+      legalChangesSearchSchema.parse({ view: 'nedatate', since: '2026-01-01' }),
+    ).toEqual({ view: 'nedatate', since: '2026-01-01' })
   })
 })

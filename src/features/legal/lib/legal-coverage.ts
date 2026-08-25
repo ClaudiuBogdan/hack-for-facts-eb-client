@@ -55,3 +55,15 @@ export const GAZETTE_FIRST_ISSUE_YEAR = 1989
  * when discovery resumes — the gazette tab's default year derives from it.
  */
 export const GAZETTE_LATEST_ISSUE_DATE = '2026-07-09'
+
+/**
+ * The newest ALREADY-in-force event in the global change feed — the top of
+ * `legalRecentChanges(until: today)`. Measured live 2026-08-26 (a `completare`
+ * on OUG nr. 92/2021, effective 2026-07-11); nothing newer has taken effect in
+ * the corpus although six weeks had passed, so the changes tab captions itself
+ * "date până la" this day and carries a staleness note. The feed ALSO holds
+ * future-dated events beyond it (8 rows out to 2027-01-05, announced by acts
+ * already published) — those are ahead of this frontier by design, not a
+ * contradiction of it. Update when event capture moves again.
+ */
+export const CHANGES_LATEST_EFFECTIVE_DATE = '2026-07-11'

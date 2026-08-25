@@ -271,6 +271,62 @@ export function legalGazettePartLabel(partCode: string): string {
   }
 }
 
+/**
+ * `act_status_events.event_kind` — what happened to the affected act.
+ *
+ * The 12 mapped values ARE the DB CHECK vocabulary
+ * (`act_status_events_kind_check`), so the map is complete today; the
+ * fallthrough only exists for a future 13th kind, which must render readably
+ * rather than as a raw slug. Noun forms, lowercase — the feed row reads
+ * "completare prin Legea nr. 2/2026".
+ */
+export function legalEventKindLabel(kind: string): string {
+  switch (kind) {
+    case 'abrogare-totala':
+      return t`abrogare totală`
+    case 'abrogare-partiala':
+      return t`abrogare parțială`
+    case 'modificare':
+      return t`modificare`
+    case 'completare':
+      return t`completare`
+    case 'suspendare':
+      return t`suspendare`
+    case 'incetare-suspendare':
+      return t`încetarea suspendării`
+    case 'republicare':
+      return t`republicare`
+    case 'rectificare':
+      return t`rectificare`
+    case 'iesire-din-vigoare':
+      return t`ieșire din vigoare`
+    case 'promulgare':
+      return t`promulgare`
+    case 'aprobare-oug':
+      return t`aprobarea unei OUG`
+    case 'aprobare-og':
+      return t`aprobarea unei OG`
+    default:
+      return kind.replace(/-/g, ' ')
+  }
+}
+
+/**
+ * `act_status_events.event_source` — which pipeline recorded the event:
+ * 'portal' (Portal Legislativ) or 'monitorul-oficial'. The server never
+ * merges the two and neither does the UI — every feed row names its source.
+ */
+export function legalEventSourceLabel(source: string): string {
+  switch (source) {
+    case 'portal':
+      return t`Portal Legislativ`
+    case 'monitorul-oficial':
+      return t`Monitorul Oficial`
+    default:
+      return prettifySlug(source)
+  }
+}
+
 /** `document_nodes.node_kind` — the structural role of a node. */
 export function legalNodeKindLabel(kind: string): string {
   switch (kind) {
