@@ -40,6 +40,30 @@ export const privateCompanyGeographySchema = z.object({
   matchConfidence: privateCompanyMatchConfidenceSchema,
 })
 
+/**
+ * The balance-sheet metrics `CompanyFinancialYear.summary` carries beyond the
+ * four headline figures. Every one is nullable: MFP-era rows (FY2008-2018)
+ * deliberately leave blanks rather than writing zeros.
+ */
+export const privateCompanyFinancialSummarySchema = z.object({
+  totalRevenue: z.number().nullable(),
+  totalExpenses: z.number().nullable(),
+  grossProfit: z.number().nullable(),
+  grossLoss: z.number().nullable(),
+  receivables: z.number().nullable(),
+  currentAssets: z.number().nullable(),
+  fixedAssets: z.number().nullable(),
+  cashAndBank: z.number().nullable(),
+  prepaidExpenses: z.number().nullable(),
+  deferredIncome: z.number().nullable(),
+  subscribedCapital: z.number().nullable(),
+  inventories: z.number().nullable(),
+  debts: z.number().nullable(),
+  provisions: z.number().nullable(),
+  totalEquity: z.number().nullable(),
+  patrimonyRegie: z.number().nullable(),
+})
+
 export const privateCompanyFinancialYearSchema = z.object({
   fiscalYear: z.number().int(),
   turnover: z.number().nullable(),
@@ -47,6 +71,54 @@ export const privateCompanyFinancialYearSchema = z.object({
   netLoss: z.number().nullable(),
   employees: z.number().nullable(),
   currency: z.literal('RON'),
+  summary: privateCompanyFinancialSummarySchema.nullable(),
+})
+
+/**
+ * Server-computed year-on-year deltas. The server owns this arithmetic on
+ * purpose: a naive `netProfit - netLoss` propagates null where the authoritative
+ * value treats a missing side as zero, and ANAF writes `net_profit = 0` rather
+ * than null in a loss year.
+ */
+export const privateCompanyFinancialTrajectorySchema = z.object({
+  fromYear: z.number().int().nullable(),
+  toYear: z.number().int().nullable(),
+  turnoverDelta: z.number().nullable(),
+  netResultDelta: z.number().nullable(),
+  employeesDelta: z.number().nullable(),
+})
+
+/**
+ * Public money the company RECEIVED as a payee, split by the flow that carried
+ * it. `flowType` is never surfaced raw: each is named for its actual source
+ * (direct acquisition, procurement contract, PNRR subcontract).
+ */
+export const privateCompanyMoneyFlowSchema = z.object({
+  flowType: z.string(),
+  /** Null when the server sent a total we could not read — unknown, not zero. */
+  totalRon: z.number().nullable(),
+  count: z.number().int(),
+})
+
+export const privateCompanyMoneyYearSchema = z.object({
+  /** Null for flows whose year the source never recorded — a real bucket. */
+  year: z.number().int().nullable(),
+  flowType: z.string(),
+  totalRon: z.number(),
+  count: z.number().int(),
+})
+
+export const privateCompanyMoneyPayerSchema = z.object({
+  cui: z.string().nullable(),
+  name: z.string().nullable(),
+  totalRon: z.number(),
+  count: z.number().int(),
+})
+
+export const privateCompanyPublicMoneySchema = z.object({
+  totalRon: z.number().nullable(),
+  flowCount: z.number().int(),
+  byFlowType: z.array(privateCompanyMoneyFlowSchema),
 })
 
 export const privateCompanyFiscalSchema = z.object({
@@ -87,6 +159,9 @@ export const privateCompanyProfileSchema = z.object({
   euBranches: z.array(privateCompanyEuBranchSchema),
   fiscal: privateCompanyFiscalSchema,
   financials: z.array(privateCompanyFinancialYearSchema),
+  financialTrajectory: privateCompanyFinancialTrajectorySchema.nullable(),
+  /** Null when the company received no public money at all. */
+  publicMoney: privateCompanyPublicMoneySchema.nullable(),
   sources: z.array(privateCompanySourceSchema),
 })
 
@@ -100,6 +175,21 @@ export type PrivateCompanyGeography = z.infer<
 >
 export type PrivateCompanyFinancialYear = z.infer<
   typeof privateCompanyFinancialYearSchema
+>
+export type PrivateCompanyFinancialSummary = z.infer<
+  typeof privateCompanyFinancialSummarySchema
+>
+export type PrivateCompanyFinancialTrajectory = z.infer<
+  typeof privateCompanyFinancialTrajectorySchema
+>
+export type PrivateCompanyPublicMoney = z.infer<
+  typeof privateCompanyPublicMoneySchema
+>
+export type PrivateCompanyMoneyFlow = z.infer<
+  typeof privateCompanyMoneyFlowSchema
+>
+export type PrivateCompanyMoneyPayer = z.infer<
+  typeof privateCompanyMoneyPayerSchema
 >
 
 export const privateCompanyViewTabSchema = z.enum([

@@ -37,6 +37,11 @@ export const COMPANY_PROFILE_QUERY = /* GraphQL */ `
       caenActivities { code rev label source }
       representatives { name role }
       euBranches { branchName country euid fiscalCode }
+      publicMoney {
+        totalRon
+        flowCount
+        byFlowType { flowType totalRon count }
+      }
       asOf { onrc anaf }
     }
     companyFinancials(cui: $cui) {
@@ -46,6 +51,14 @@ export const COMPANY_PROFILE_QUERY = /* GraphQL */ `
         netProfit
         netLoss
         employees
+        summary
+      }
+      trajectory {
+        fromYear
+        toYear
+        turnoverDelta
+        netResultDelta
+        employeesDelta
       }
     }
   }
@@ -104,8 +117,30 @@ const rawCompanySchema = z.object({
       fiscalCode: z.string().nullable(),
     }),
   ),
+  publicMoney: z
+    .object({
+      totalRon: moneyString,
+      flowCount: z.number().int(),
+      byFlowType: z.array(
+        z.object({
+          flowType: z.string(),
+          totalRon: moneyString,
+          count: z.number().int(),
+        }),
+      ),
+    })
+    // Optional as well as nullable: the SSR loader parses with a throwing
+    // `.parse()`, so an absent key on an older API would blank the whole
+    // profile rather than hide one additive band.
+    .nullish(),
   asOf: z.object({ onrc: z.string().nullable(), anaf: z.string().nullable() }),
 })
+
+/** `summary: JSON!` — an object of Money strings, one per typed metric. */
+const rawFinancialSummarySchema = z.record(
+  z.string(),
+  z.union([z.string(), z.number(), z.null()]),
+)
 
 const rawFinancialYearSchema = z.object({
   year: z.number().int(),
@@ -113,12 +148,24 @@ const rawFinancialYearSchema = z.object({
   netProfit: moneyString,
   netLoss: moneyString,
   employees: moneyString,
+  summary: rawFinancialSummarySchema.nullable().optional(),
+})
+
+const rawTrajectorySchema = z.object({
+  fromYear: z.number().int().nullable(),
+  toYear: z.number().int().nullable(),
+  turnoverDelta: moneyString,
+  netResultDelta: moneyString,
+  employeesDelta: moneyString,
 })
 
 export const companyProfileResponseSchema = z.object({
   company: rawCompanySchema.nullable(),
   companyFinancials: z
-    .object({ years: z.array(rawFinancialYearSchema) })
+    .object({
+      years: z.array(rawFinancialYearSchema),
+      trajectory: rawTrajectorySchema.nullish(),
+    })
     .nullable(),
 })
 

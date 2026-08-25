@@ -26,6 +26,7 @@ describe('financial-chart-data', () => {
         netLoss: null,
         employees: 5,
         currency: 'RON',
+        summary: null,
       },
       {
         fiscalYear: 2022,
@@ -34,6 +35,7 @@ describe('financial-chart-data', () => {
         netLoss: null,
         employees: 4,
         currency: 'RON',
+        summary: null,
       },
     ])
 
