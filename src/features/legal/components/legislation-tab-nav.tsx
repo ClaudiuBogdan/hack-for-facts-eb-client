@@ -15,7 +15,11 @@ type TabSpec = {
   readonly id: LegislationTab
   readonly label: string
   /** Omitted while the route does not exist — the tab renders inert. */
-  readonly to?: '/legislation' | '/legislation/analytics' | '/legislation/acts'
+  readonly to?:
+    | '/legislation'
+    | '/legislation/analytics'
+    | '/legislation/acts'
+    | '/legislation/gazette'
 }
 
 type Props = {
@@ -25,11 +29,11 @@ type Props = {
 /**
  * Section navigation for `/legislation`.
  *
- * **Prezentare** and **Analiză** have routes; the other five are rendered but
- * inert — deliberately: the tab set is the module's information architecture
- * (`docs/design/legal/main-page.md` §3), and hiding it until every route exists
- * would misrepresent the shape of the domain. They become links by gaining a
- * `to`, with no other change.
+ * **Prezentare**, **Analiză**, **Acte** and **Monitorul Oficial** have routes;
+ * the other three are rendered but inert — deliberately: the tab set is the
+ * module's information architecture (`docs/design/legal/main-page.md` §3), and
+ * hiding it until every route exists would misrepresent the shape of the
+ * domain. They become links by gaining a `to`, with no other change.
  *
  * Analiză sits second rather than last, where an analytics tab normally goes:
  * it holds the corpus figures that used to be on the landing page, and burying
@@ -47,7 +51,7 @@ export function LegislationTabNav({ activeTab }: Props) {
     { id: 'cauta', label: t`Caută` },
     { id: 'acte', label: t`Acte`, to: '/legislation/acts' },
     { id: 'modificari', label: t`Modificări` },
-    { id: 'monitorul', label: t`Monitorul Oficial` },
+    { id: 'monitorul', label: t`Monitorul Oficial`, to: '/legislation/gazette' },
     { id: 'ghid', label: t`Ghid` },
   ]
 

@@ -435,6 +435,111 @@ export const legalActsBrowseSearchSchema = legalActsBrowseFilterSchema.extend({
 export type LegalActsBrowseSearch = z.infer<typeof legalActsBrowseSearchSchema>
 
 /**
+ * `MoPartCode` — the eight gazette parts the server serves. `PIM` is Partea I
+ * in Hungarian, a real part code with issues from 2008 on (verified live
+ * 2026-08-26: 113 issues in 2010, 22 in 2026).
+ */
+export const gazettePartCodeSchema = z.enum([
+  'PI',
+  'PIM',
+  'PII',
+  'PIII',
+  'PIV',
+  'PV',
+  'PVI',
+  'PVII',
+])
+export type GazettePartCode = z.infer<typeof gazettePartCodeSchema>
+
+/**
+ * One row of the gazette directory — `gazetteIssueSchema` plus
+ * `hasArchiveIndex`, which gates the contents expansion: `false` means the
+ * corpus holds no per-issue table of contents (all of Parts III–VII), so the
+ * row must not offer one.
+ */
+export const gazetteDirectoryIssueSchema = gazetteIssueSchema.extend({
+  hasArchiveIndex: z.boolean(),
+})
+export type GazetteDirectoryIssue = z.infer<typeof gazetteDirectoryIssueSchema>
+
+/**
+ * One page of the gazette directory. `moIssues` paging is the server's own
+ * page/pageSize — numbered pages are honest here (a year holds at most ~1.9k
+ * issues), unlike the cursor-only acts directory.
+ *
+ * `total` is the filtered total when the server asserts one, null when it does
+ * not. A past-the-end page returns `total: 0` WITH empty edges (verified live
+ * 2026-08-26: page 55 of 54 → `total: 0`, no error), so an empty page beyond
+ * page 1 must not be read as "the year is empty".
+ */
+export const gazetteIssuesPageSchema = z.object({
+  items: z.array(gazetteDirectoryIssueSchema),
+  total: z.number().int().nullable(),
+  hasNextPage: z.boolean(),
+})
+export type GazetteIssuesPage = z.infer<typeof gazetteIssuesPageSchema>
+
+/**
+ * One entry of an issue's archive index (`MoIssue.contents`). Only
+ * `resolution === 'unique'` may render a firm link to `act` — `ambiguous`
+ * stays a title, exactly like `cluster` references on the act page.
+ */
+export const gazettePublicationEntrySchema = z.object({
+  moActKey: z.string(),
+  title: z.string().nullable(),
+  actType: z.string().nullable(),
+  actNumberNorm: z.string().nullable(),
+  actYear: z.number().int().nullable(),
+  issuerSlug: z.string().nullable(),
+  actDate: z.string().nullable(),
+  /** `unique` | `ambiguous` | `unmatched` — the act↔publication join confidence. */
+  resolution: z.string(),
+  act: z
+    .object({
+      actId: z.string(),
+      displayCitation: z.string(),
+      status: legalActStatusSchema,
+    })
+    .nullable(),
+})
+export type GazettePublicationEntry = z.infer<
+  typeof gazettePublicationEntrySchema
+>
+
+/**
+ * An issue's contents page. The server's `MoActPublicationConnection` has no
+ * totalCount, so `hasMore` is all that can honestly be said past the first
+ * page — the UI says "primele N", never a total it does not have.
+ */
+export const gazetteIssueContentsSchema = z.object({
+  items: z.array(gazettePublicationEntrySchema),
+  hasMore: z.boolean(),
+})
+export type GazetteIssueContents = z.infer<typeof gazetteIssueContentsSchema>
+
+/** Filters the gazette directory sends to the server (`MoIssuesFilter`). */
+export const gazetteBrowseFilterSchema = z.object({
+  /** Mandatory server-side: `moIssues` refuses to browse without a year bound. */
+  year: z.number().int(),
+  part: gazettePartCodeSchema.optional(),
+})
+export type GazetteBrowseFilter = z.infer<typeof gazetteBrowseFilterSchema>
+
+/**
+ * URL state for `/legislation/gazette` — filters plus the server's own page
+ * number, so a filtered page is a shareable link. `.catch(undefined)` drops a
+ * malformed param to its default instead of erroring the route; the year's
+ * corpus bounds are enforced by the component (the valid range is a measured
+ * constant in `legal-coverage.ts`, which schemas do not import).
+ */
+export const gazetteBrowseSearchSchema = z.object({
+  year: z.number().int().optional().catch(undefined),
+  part: gazettePartCodeSchema.optional().catch(undefined),
+  page: z.number().int().min(1).optional().catch(undefined),
+})
+export type GazetteBrowseSearch = z.infer<typeof gazetteBrowseSearchSchema>
+
+/**
  * One `legalResolve` hit. `value` is the filter value the hit resolves to —
  * for `dim: "act"` it is the actId to navigate to. Ambiguity is the feature:
  * 'codul fiscal' returns MULTIPLE hits and the user picks; the UI never

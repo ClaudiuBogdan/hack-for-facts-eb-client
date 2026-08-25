@@ -38,3 +38,20 @@ export const LEGAL_ARTICLE_STRUCTURE_GAP_RATE = 0.31
  * struck down as unconstitutional still folds to its Portal status.
  */
 export const CCR_DECISION_COUNT = 23_378
+
+/**
+ * The first year with gazette issues in the corpus. Measured live 2026-08-26:
+ * `moIssues(filter: {year})` is 0 for every probed year up to 1988 and 9 for
+ * 1989 — the corpus opens with MO nr. 1/1989 of 22 December 1989, the day of
+ * the Revolution. Re-validate if pre-1989 numbers are ever backfilled.
+ */
+export const GAZETTE_FIRST_ISSUE_YEAR = 1989
+
+/**
+ * The newest issue date in the corpus. Upstream issue discovery has been
+ * FROZEN since this date, so the gazette surface must say "date până la" this
+ * day rather than let a reader believe they are seeing today's Monitor.
+ * Measured live 2026-08-26 (issues 565–566/2026, both 2026-07-09); update it
+ * when discovery resumes — the gazette tab's default year derives from it.
+ */
+export const GAZETTE_LATEST_ISSUE_DATE = '2026-07-09'

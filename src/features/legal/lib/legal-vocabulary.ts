@@ -243,11 +243,17 @@ export function legalRelationLabel(relation: string): string {
   }
 }
 
-/** Monitorul Oficial part codes. */
+/**
+ * Monitorul Oficial part codes — the server's `MoPartCode` enum. `PIM` is the
+ * Hungarian-language edition of Partea I (a real code: 113 issues in 2010),
+ * not a typo of `PI`.
+ */
 export function legalGazettePartLabel(partCode: string): string {
   switch (partCode) {
     case 'PI':
       return t`Partea I`
+    case 'PIM':
+      return t`Partea I (maghiară)`
     case 'PII':
       return t`Partea a II-a`
     case 'PIII':
