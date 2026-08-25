@@ -143,11 +143,17 @@ function mapPublicMoney(company: RawCompany): PrivateCompanyPublicMoney | null {
     totalRon: toNumberOrNull(flow.totalRon),
     count: flow.count,
   }))
+  const byYear = money.byYear.map((row) => ({
+    year: row.year,
+    flowType: row.flowType,
+    totalRon: toNumberOrNull(row.totalRon),
+    count: row.count,
+  }))
   const totalRon = toNumberOrNull(money.totalRon)
   // A header total we could not parse says nothing about the per-flow rows,
   // which come from an independent aggregation — keep them.
   if (totalRon === null && byFlowType.length === 0) return null
-  return { totalRon, flowCount: money.flowCount, byFlowType }
+  return { totalRon, flowCount: money.flowCount, byFlowType, byYear }
 }
 
 function buildSources(company: RawCompany): PrivateCompanySource[] {

@@ -41,6 +41,7 @@ export const COMPANY_PROFILE_QUERY = /* GraphQL */ `
         totalRon
         flowCount
         byFlowType { flowType totalRon count }
+        byYear { year flowType totalRon count }
       }
       asOf { onrc anaf }
     }
@@ -128,6 +129,17 @@ const rawCompanySchema = z.object({
           count: z.number().int(),
         }),
       ),
+      byYear: z
+        .array(
+          z.object({
+            year: z.number().int().nullable(),
+            flowType: z.string(),
+            totalRon: moneyString,
+            count: z.number().int(),
+          }),
+        )
+        .optional()
+        .default([]),
     })
     // Optional as well as nullable: the SSR loader parses with a throwing
     // `.parse()`, so an absent key on an older API would blank the whole

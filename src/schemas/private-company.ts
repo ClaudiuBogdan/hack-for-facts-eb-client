@@ -104,7 +104,7 @@ export const privateCompanyMoneyYearSchema = z.object({
   /** Null for flows whose year the source never recorded — a real bucket. */
   year: z.number().int().nullable(),
   flowType: z.string(),
-  totalRon: z.number(),
+  totalRon: z.number().nullable(),
   count: z.number().int(),
 })
 
@@ -119,6 +119,12 @@ export const privateCompanyPublicMoneySchema = z.object({
   totalRon: z.number().nullable(),
   flowCount: z.number().int(),
   byFlowType: z.array(privateCompanyMoneyFlowSchema),
+  /**
+   * Per (year, flowType). Carries a null-year bucket for flows whose year the
+   * source never recorded, so a min/max over it understates coverage — the
+   * server's own `min(flow_year)`/`max(flow_year)` has the same blind spot.
+   */
+  byYear: z.array(privateCompanyMoneyYearSchema),
 })
 
 export const privateCompanyFiscalSchema = z.object({
@@ -187,6 +193,9 @@ export type PrivateCompanyPublicMoney = z.infer<
 >
 export type PrivateCompanyMoneyFlow = z.infer<
   typeof privateCompanyMoneyFlowSchema
+>
+export type PrivateCompanyMoneyYear = z.infer<
+  typeof privateCompanyMoneyYearSchema
 >
 export type PrivateCompanyMoneyPayer = z.infer<
   typeof privateCompanyMoneyPayerSchema

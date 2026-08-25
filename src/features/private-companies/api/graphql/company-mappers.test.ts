@@ -153,6 +153,7 @@ describe('mapCompanyProfile — public money and trajectory', () => {
         flowCount: 5,
         // An empty string coerces to 0 in JS — the exact trap a `?? 0` hides.
         byFlowType: [{ flowType: 'pnrr_subcontract', totalRon: '', count: 5 }],
+        byYear: [],
       }),
     )
     expect(profile!.publicMoney!.byFlowType[0]!.totalRon).toBeNull()
@@ -168,6 +169,7 @@ describe('mapCompanyProfile — public money and trajectory', () => {
         byFlowType: [
           { flowType: 'procurement_contract', totalRon: '8766606.32', count: 172 },
         ],
+        byYear: [],
       }),
     )
     expect(profile!.publicMoney).not.toBeNull()
