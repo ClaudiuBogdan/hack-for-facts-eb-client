@@ -3,7 +3,6 @@ import { Trans } from '@lingui/react/macro'
 import { ChevronRight } from 'lucide-react'
 import type { PrivateCompanyViewTab } from '@/schemas/private-company'
 import type { PrivateCompanyProfile } from '@/schemas/private-company'
-import { getPrivateCompanyTabLabel } from '../lib/tab-config'
 
 type Props = {
   readonly profile: PrivateCompanyProfile
@@ -28,25 +27,23 @@ function HighlightLink({
     <button
       type="button"
       onClick={() => onTabChange(row.tab)}
-      className="group flex w-full items-center gap-4 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-4 py-4 text-left transition-colors hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-green)]/60 sm:px-5"
+      className="group grid w-full gap-x-4 gap-y-1 rounded-md px-2 py-4 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:grid-cols-[minmax(7.5rem,10rem)_1fr_auto] sm:items-baseline"
     >
-      <div className="min-w-0 flex-1 space-y-2">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--pnrr-muted)]">
-          {row.category}
-        </p>
-        <p className="text-base font-semibold leading-relaxed text-[var(--pnrr-fg)]">
+      <span className="text-sm font-semibold text-foreground">{row.category}</span>
+      <span className="min-w-0">
+        <span className="block text-base leading-snug text-foreground">
           {row.headline}
-        </p>
+        </span>
         {row.supporting ? (
-          <p className="text-sm leading-snug text-[var(--pnrr-muted)]">
+          <span className="mt-1 block text-sm leading-snug text-muted-foreground">
             {row.supporting}
-          </p>
+          </span>
         ) : null}
-      </div>
-      <span className="flex shrink-0 items-center gap-1 text-sm font-bold text-[var(--pnrr-muted)] group-hover:text-[var(--pnrr-fg)]">
-        {getPrivateCompanyTabLabel(row.tab)}
-        <ChevronRight className="h-4 w-4 shrink-0" aria-hidden />
       </span>
+      <ChevronRight
+        className="hidden h-4 w-4 shrink-0 translate-y-0.5 text-muted-foreground transition-transform group-hover:translate-x-0.5 sm:block"
+        aria-hidden
+      />
     </button>
   )
 }
@@ -119,22 +116,6 @@ export function PrivateCompanySummaryHighlights({
     })
   }
 
-  if (profile.fiscal.anafFound && profile.financials.length > 0) {
-    const years = [...profile.financials]
-      .map((year) => year.fiscalYear)
-      .sort((a, b) => a - b)
-
-    rows.push({
-      tab: 'financials',
-      category: t`Financial history`,
-      headline:
-        years.length === 1
-          ? t`Bilant for ${years[0]}`
-          : t`Bilant for ${years.join(', ')}`,
-      supporting: t`Full year table with I14, I19, I20, I21`,
-    })
-  }
-
   rows.push({
     tab: 'location',
     category: t`Location`,
@@ -151,11 +132,11 @@ export function PrivateCompanySummaryHighlights({
   }
 
   return (
-    <div className="space-y-3">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--pnrr-muted)]">
+    <section className="space-y-4">
+      <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         <Trans>Explore details</Trans>
-      </p>
-      <div className="space-y-2">
+      </h2>
+      <div className="-mx-2 space-y-2">
         {rows.map((row) => (
           <HighlightLink
             key={row.tab}
@@ -164,6 +145,6 @@ export function PrivateCompanySummaryHighlights({
           />
         ))}
       </div>
-    </div>
+    </section>
   )
 }
