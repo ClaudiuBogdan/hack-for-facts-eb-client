@@ -57,6 +57,11 @@ export interface UseComparisonsResult {
 
   /** The pins actually sent to the server (URL pins + auto-pinned totals). */
   readonly effectivePins: readonly ClassificationPin[]
+  /**
+   * Dimensions with no Total and no URL pin — the fetch is held until every
+   * one is pinned, and the page prompts for them by label.
+   */
+  readonly unresolvedDimensionLabels: readonly string[]
   /** The period on screen: the URL's when it exists in the data, else the latest. */
   readonly selectedPeriod: string | null
   /** Normalized territory tokens, in URL order (colour follows the slot). */
@@ -78,7 +83,7 @@ export function useComparisons(
 
   const datasetQuery = useQuery({
     queryKey: ['statistics', 'comparisons', 'dataset', datasetCode],
-    queryFn: () => fetchComparisonDataset(datasetCode),
+    queryFn: ({ signal }) => fetchComparisonDataset(datasetCode, signal),
     enabled: datasetCode.length > 0,
   })
 
@@ -95,10 +100,22 @@ export function useComparisons(
 
   // The dataset must be resolved before observations are fetched: without its
   // dimensions the auto-pinned totals are unknown, and an under-pinned filter
-  // silently mixes classification members into one number.
+  // silently mixes classification members into one number. The same holds for
+  // a dimension with no Total and no URL pin — the resolver omits it, so the
+  // fetch waits until every dimension carries a pin.
   const pinsResolved = datasetCode.length === 0 || datasetQuery.isSuccess
+  const unresolvedDimensionLabels = useMemo(() => {
+    if (!datasetMeta) return []
+    const covered = new Set(effectivePins.map((pin) => pin.typeCode))
+    return datasetMeta.classifications
+      .filter((dimension) => !covered.has(dimension.typeCode))
+      .map((dimension) => dimension.label)
+  }, [datasetMeta, effectivePins])
   const observationsEnabled =
-    datasetCode.length > 0 && sirutaCodes.length > 0 && pinsResolved
+    datasetCode.length > 0 &&
+    sirutaCodes.length > 0 &&
+    pinsResolved &&
+    unresolvedDimensionLabels.length === 0
 
   const observationsQuery = useQuery({
     // `perioada` is deliberately absent — see the module doc.
@@ -111,12 +128,13 @@ export function useComparisons(
       stableKey(effectivePins.map((pin) => `${pin.typeCode}:${pin.valueCode}`)),
       search.unitate ?? null,
     ],
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       fetchComparisonObservations({
         datasetCode,
         territoryCodes: sirutaCodes,
         classificationPins: effectivePins,
         unitCode: search.unitate,
+        signal,
       }),
     enabled: observationsEnabled,
   })
@@ -156,6 +174,7 @@ export function useComparisons(
     },
 
     effectivePins,
+    unresolvedDimensionLabels,
     selectedPeriod,
     tokens,
     hasDataset: datasetCode.length > 0,
@@ -218,8 +237,8 @@ export function useComparisonPeers(
 
   const identityQuery = useQuery({
     queryKey: ['statistics', 'comparisons', 'peer-identity', sirutaCode],
-    queryFn: () =>
-      searchInsTerritories({ filter: { sirutaCodes: [sirutaCode ?? ''] }, limit: 1 }),
+    queryFn: ({ signal }) =>
+      searchInsTerritories({ filter: { sirutaCodes: [sirutaCode ?? ''] }, limit: 1, signal }),
     enabled: sirutaCode !== null,
     staleTime: 1000 * 60 * 60 * 24,
   })
@@ -237,7 +256,7 @@ export function useComparisonPeers(
     })
   }
   if (tokens.length > 0) {
-    peers.push({ token: 'cod:RO', label: 'România' })
+    peers.push({ token: 'cod:RO', label: t`România` })
   }
   return peers
 }
@@ -266,16 +285,16 @@ export function useComparisonTerritoryNames(
 
   const lauQuery = useQuery({
     queryKey: ['statistics', 'comparisons', 'names', 'lau', [...lauCodes].sort()],
-    queryFn: () =>
-      searchInsTerritories({ filter: { sirutaCodes: lauCodes }, limit: lauCodes.length }),
+    queryFn: ({ signal }) =>
+      searchInsTerritories({ filter: { sirutaCodes: lauCodes }, limit: lauCodes.length, signal }),
     enabled: lauCodes.length > 0,
     staleTime: 1000 * 60 * 60 * 24,
   })
 
   const countyQuery = useQuery({
     queryKey: ['statistics', 'comparisons', 'names', 'counties'],
-    queryFn: () =>
-      searchInsTerritories({ filter: { levels: ['NUTS3'] }, limit: 60 }),
+    queryFn: ({ signal }) =>
+      searchInsTerritories({ filter: { levels: ['NUTS3'] }, limit: 60, signal }),
     enabled: needsCounties,
     staleTime: 1000 * 60 * 60 * 24,
   })

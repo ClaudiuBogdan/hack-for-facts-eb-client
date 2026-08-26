@@ -74,4 +74,28 @@ describe('buildLandingExample', () => {
     // and for the card to show a degraded note.
     expect(example?.ambiguousCellCount).toBe(1)
   })
+
+  it('stays loud when ambiguity rejects EVERY candidate year', () => {
+    // The only year is ambiguous for one territory: no common year survives.
+    // A bare null here would hide the defect — the degraded shape keeps the
+    // count so the log and the visible note still fire.
+    const example = buildLandingExample([
+      obs('NATIONAL', 'RO', 2024, '100'),
+      obs('NUTS3', 'CJ', 2024, '50'),
+      obs('LAU', '54975', 2024, '10'),
+      obs('LAU', '54975', 2024, '4'),
+    ])
+    expect(example).not.toBeNull()
+    expect(example?.year).toBeNull()
+    expect(example?.rows).toEqual([])
+    expect(example?.ambiguousCellCount).toBe(1)
+  })
+
+  it('stays a quiet null when plain coverage, not ambiguity, is missing', () => {
+    const example = buildLandingExample([
+      obs('NATIONAL', 'RO', 2024, '100'),
+      obs('LAU', '54975', 2023, '10'),
+    ])
+    expect(example).toBeNull()
+  })
 })

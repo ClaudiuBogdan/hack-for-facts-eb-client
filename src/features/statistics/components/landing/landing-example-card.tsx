@@ -21,7 +21,27 @@ type LandingExampleCardProps = {
  * with the mixed-level territory tokens prefilled.
  */
 export function LandingExampleCard({ example }: LandingExampleCardProps) {
-  if (!example || example.rows.length < 2) return null
+  if (!example) return null
+
+  // The loud-degradation shape: every candidate year was rejected as
+  // ambiguous. No numbers to show, but the note must still explain why the
+  // card is empty — silence would hide a data defect.
+  if (example.rows.length < 2) {
+    if (example.ambiguousCellCount === 0) return null
+    return (
+      <section className="space-y-4" aria-labelledby="landing-example-heading">
+        <h2 id="landing-example-heading" className={statisticsTheme.sectionTitle}>
+          <Trans>Compară două locuri</Trans>
+        </h2>
+        <p
+          role="status"
+          className="rounded-md border border-dashed border-border/70 px-3 py-2 text-sm text-muted-foreground"
+        >
+          <AmbiguityNote />
+        </p>
+      </section>
+    )
+  }
 
   const lau = example.rows.find((row) => row.level === 'LAU')
   const takeaway =
@@ -87,11 +107,7 @@ export function LandingExampleCard({ example }: LandingExampleCardProps) {
 
         {example.ambiguousCellCount > 0 ? (
           <p className="mt-3 text-xs text-muted-foreground">
-            <Trans>
-              Unele perioade au fost omise: sursa raportează mai multe valori
-              pentru aceeași combinație teritoriu-an, iar exemplul arată doar
-              perioadele fără ambiguitate.
-            </Trans>
+            <AmbiguityNote />
           </p>
         ) : null}
 
@@ -103,6 +119,16 @@ export function LandingExampleCard({ example }: LandingExampleCardProps) {
         </p>
       </Link>
     </section>
+  )
+}
+
+function AmbiguityNote() {
+  return (
+    <Trans>
+      Unele perioade au fost omise: sursa raportează mai multe valori pentru
+      aceeași combinație teritoriu-an, iar exemplul arată doar perioadele fără
+      ambiguitate.
+    </Trans>
   )
 }
 

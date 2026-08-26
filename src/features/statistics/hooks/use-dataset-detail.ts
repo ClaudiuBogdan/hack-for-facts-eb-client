@@ -22,7 +22,7 @@ const DIMENSION_STALE_TIME = 1000 * 60 * 30
 export function useDatasetDetail(code: string) {
   return useQuery<InsDatasetDetails | null>({
     queryKey: ['statisticsDatasetDetail', code],
-    queryFn: () => fetchDatasetDetail(code),
+    queryFn: ({ signal }) => fetchDatasetDetail(code, signal),
     enabled: code.trim().length > 0,
     staleTime: DATASET_STALE_TIME,
   })
@@ -52,13 +52,14 @@ export function useDimensionValues(params: {
       params.limit,
       params.offset,
     ],
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       fetchDimensionValuesPage({
         datasetCode: params.datasetCode,
         dimensionIndex: params.dimensionIndex,
         search,
         limit: params.limit,
         offset: params.offset,
+        signal,
       }),
     enabled: params.enabled && params.datasetCode.trim().length > 0,
     staleTime: DIMENSION_STALE_TIME,

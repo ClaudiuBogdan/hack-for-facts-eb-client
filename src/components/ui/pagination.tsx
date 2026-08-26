@@ -93,7 +93,7 @@ export function Pagination({
           aria-label={t`Prima pagină`}
         >
           <ChevronsLeft className="h-4 w-4 sm:mr-1" />
-          <span className="hidden sm:inline">First</span>
+          <span className="hidden sm:inline"><Trans>Prima</Trans></span>
         </Button>
         <Button
           variant="outline"
@@ -104,7 +104,7 @@ export function Pagination({
           aria-label={t`Pagina anterioară`}
         >
           <ChevronLeft className="h-4 w-4 sm:mr-1" />
-          <span className="hidden sm:inline">Previous</span>
+          <span className="hidden sm:inline"><Trans>Precedenta</Trans></span>
         </Button>
 
         {/* Numeric page buttons for sm+ */}
@@ -137,7 +137,7 @@ export function Pagination({
 
         {/* Mobile page info and page jump */}
         <div className="sm:hidden flex items-center justify-center px-2 text-sm font-medium gap-2">
-          <span>Page {safeCurrent} of {totalPages}</span>
+          <span><Trans>Pagina {safeCurrent} din {totalPages}</Trans></span>
         </div>
 
         <Button
@@ -148,7 +148,7 @@ export function Pagination({
           disabled={!canNext}
           aria-label={t`Pagina următoare`}
         >
-          <span className="hidden sm:inline">Next</span>
+          <span className="hidden sm:inline"><Trans>Următoarea</Trans></span>
           <ChevronRight className="h-4 w-4 sm:ml-1" />
         </Button>
         <Button
@@ -159,7 +159,7 @@ export function Pagination({
           disabled={!canNext}
           aria-label={t`Ultima pagină (${totalPages})`}
         >
-          <span className="hidden sm:inline">Last</span>
+          <span className="hidden sm:inline"><Trans>Ultima</Trans></span>
           <ChevronsRight className="h-4 w-4 sm:ml-1" />
         </Button>
 

@@ -91,6 +91,7 @@ export function StatisticsComparisonsPage() {
     partial,
     refetchObservations,
     effectivePins,
+    unresolvedDimensionLabels,
     selectedPeriod,
     tokens,
     hasDataset,
@@ -304,6 +305,29 @@ export function StatisticsComparisonsPage() {
     if (observationsError) {
       return (
         <ComparisonErrorState onRetry={refetchObservations} isRetrying={observationsFetching} />
+      )
+    }
+
+    // A dimension with no „Total" and no pin holds the fetch (an under-pinned
+    // filter would mix members into one number) — prompt, never a skeleton.
+    if (unresolvedDimensionLabels.length > 0) {
+      return (
+        <div
+          role="status"
+          className="rounded-md border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground"
+        >
+          <p>
+            <Trans>
+              Comparația pornește după ce alegi o valoare în „Dimensiuni
+              fixate" pentru:
+            </Trans>
+          </p>
+          <ul className="mt-2 list-inside list-disc">
+            {unresolvedDimensionLabels.map((label) => (
+              <li key={label}>{label}</li>
+            ))}
+          </ul>
+        </div>
       )
     }
 

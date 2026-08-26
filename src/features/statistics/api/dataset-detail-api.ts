@@ -33,11 +33,12 @@ import {
 
 export async function fetchDatasetDetail(
   code: string,
+  signal?: AbortSignal,
 ): Promise<InsDatasetDetails | null> {
   if (isStatisticsMockEnabled()) {
     return fetchDatasetDetailMock(code)
   }
-  return getInsDatasetDetails(code)
+  return getInsDatasetDetails(code, signal)
 }
 
 export async function fetchDimensionValuesPage(params: {
@@ -46,6 +47,7 @@ export async function fetchDimensionValuesPage(params: {
   readonly search?: string
   readonly limit: number
   readonly offset: number
+  readonly signal?: AbortSignal
 }): Promise<InsDimensionValueConnection> {
   if (isStatisticsMockEnabled()) {
     return fetchDimensionValuesPageMock(params)

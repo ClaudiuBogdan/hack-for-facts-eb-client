@@ -38,7 +38,7 @@ export function TerritoryHeader({ identity }: TerritoryHeaderProps) {
               to="/statistici"
               className="underline-offset-2 hover:text-foreground hover:underline"
             >
-              România
+              <Trans>România</Trans>
             </Link>
           </li>
           {identity.countyName ? (

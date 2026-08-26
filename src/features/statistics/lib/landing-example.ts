@@ -1,8 +1,12 @@
 import type { StatisticsExampleObservation } from '@/schemas/statistics'
 
 export interface LandingExample {
-  /** Latest year in which EVERY territory reports a value. */
-  readonly year: number
+  /**
+   * Latest year in which EVERY territory reports a value — `null` when
+   * ambiguity rejected every candidate year (the loud-degradation shape:
+   * `rows` is empty, `ambiguousCellCount` says why).
+   */
+  readonly year: number | null
   /** One row per territory, ordered NATIONAL → NUTS3 → LAU. */
   readonly rows: readonly StatisticsExampleObservation[]
   readonly unitSymbol: string | null
@@ -66,7 +70,21 @@ export function buildLandingExample(
   const ambiguousCellCount = ambiguous.size
 
   const year = commonYears[0]
-  if (year === undefined) return null
+  if (year === undefined) {
+    // No silent caps: when ambiguity is what emptied the candidate years, the
+    // caller must still learn about it (log + visible degraded note) — only
+    // plain lack of coverage stays a quiet null.
+    if (ambiguousCellCount > 0) {
+      return {
+        year: null,
+        rows: [],
+        unitSymbol: null,
+        lauShareOfCounty: null,
+        ambiguousCellCount,
+      }
+    }
+    return null
+  }
 
   const yearRows = byYear.get(year)
   if (!yearRows) return null

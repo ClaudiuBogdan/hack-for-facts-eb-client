@@ -38,6 +38,7 @@ export async function getInsUatDashboard(params: {
   sirutaCode: string
   period?: string
   contextCode?: string
+  signal?: AbortSignal
 }): Promise<InsDashboardData> {
   logger.info('Fetching INS UAT dashboard', params)
 
@@ -48,7 +49,7 @@ export async function getInsUatDashboard(params: {
       period: params.period,
       contextCode: params.contextCode,
     },
-    insRequestOptions()
+    insRequestOptions(params.signal)
   )
 
   const groups = response.insUatDashboard ?? []
@@ -60,7 +61,10 @@ export async function getInsUatDashboard(params: {
   }
 }
 
-export async function getInsDatasetsByCodes(codes: string[]): Promise<InsDataset[]> {
+export async function getInsDatasetsByCodes(
+  codes: string[],
+  signal?: AbortSignal,
+): Promise<InsDataset[]> {
   if (codes.length === 0) return []
 
   logger.info('Fetching INS datasets by codes', { count: codes.length })
@@ -71,7 +75,7 @@ export async function getInsDatasetsByCodes(codes: string[]): Promise<InsDataset
       codes,
       limit: Math.min(codes.length, 200),
     },
-    insRequestOptions()
+    insRequestOptions(signal)
   )
 
   return response.insDatasets.nodes ?? []
@@ -81,13 +85,14 @@ export async function getInsContexts(params: {
   filter?: InsContextFilterInput
   limit?: number
   offset?: number
+  signal?: AbortSignal
 }): Promise<InsContextConnection> {
   const response = await graphqlRequest<{ insContexts: InsContextConnection }>(INS_CONTEXTS_QUERY, {
     filter: params.filter,
     limit: params.limit ?? 200,
     offset: params.offset ?? 0,
   },
-    insRequestOptions())
+    insRequestOptions(params.signal))
 
   return response.insContexts
 }
@@ -96,13 +101,14 @@ export async function getInsDatasetsCatalog(params: {
   filter?: InsDatasetFilterInput
   limit?: number
   offset?: number
+  signal?: AbortSignal
 }): Promise<InsDatasetConnection> {
   const response = await graphqlRequest<{ insDatasets: InsDatasetConnection }>(INS_DATASETS_QUERY, {
     filter: params.filter,
     limit: params.limit ?? 500,
     offset: params.offset ?? 0,
   },
-    insRequestOptions())
+    insRequestOptions(params.signal))
 
   return response.insDatasets
 }
@@ -111,24 +117,28 @@ export async function searchInsDatasets(params: {
   filter?: InsDatasetFilterInput
   limit?: number
   offset?: number
+  signal?: AbortSignal
 }): Promise<InsDatasetConnection> {
   const response = await graphqlRequest<{ insDatasets: InsDatasetConnection }>(INS_DATASETS_QUERY, {
     filter: params.filter,
     limit: params.limit ?? 50,
     offset: params.offset ?? 0,
   },
-    insRequestOptions())
+    insRequestOptions(params.signal))
 
   return response.insDatasets
 }
 
-export async function getInsDatasetDetails(code: string): Promise<InsDatasetDetails | null> {
+export async function getInsDatasetDetails(
+  code: string,
+  signal?: AbortSignal,
+): Promise<InsDatasetDetails | null> {
   if (!code) return null
 
   const response = await graphqlRequest<{ insDataset: InsDatasetDetails | null }>(
     INS_DATASET_DETAILS_QUERY,
     { code },
-    insRequestOptions()
+    insRequestOptions(signal)
   )
 
   return response.insDataset
@@ -140,6 +150,7 @@ export async function getInsDimensionValuesPage(params: {
   search?: string
   limit?: number
   offset?: number
+  signal?: AbortSignal
 }): Promise<InsDimensionValueConnection> {
   if (!params.datasetCode) {
     return {
@@ -157,7 +168,7 @@ export async function getInsDimensionValuesPage(params: {
     limit: params.limit ?? 50,
     offset: params.offset ?? 0,
   },
-    insRequestOptions())
+    insRequestOptions(params.signal))
 
   return response.insDatasetDimensionValues ?? {
     nodes: [],
@@ -170,6 +181,7 @@ export async function getInsObservationsPage(params: {
   filter?: InsObservationFilterInput
   limit?: number
   offset?: number
+  signal?: AbortSignal
 }): Promise<InsObservationConnection> {
   const response = await graphqlRequest<{ insObservations: InsObservationConnection }>(
     INS_OBSERVATIONS_QUERY,
@@ -179,7 +191,7 @@ export async function getInsObservationsPage(params: {
       limit: params.limit ?? 200,
       offset: params.offset ?? 0,
     },
-    insRequestOptions()
+    insRequestOptions(params.signal)
   )
 
   return response.insObservations
@@ -190,6 +202,7 @@ export async function getAllInsObservations(params: {
   filter?: InsObservationFilterInput
   pageSize?: number
   maxPages?: number
+  signal?: AbortSignal
 }): Promise<InsObservation[]> {
   const pageSize = Math.max(1, Math.min(params.pageSize ?? 1000, 1000))
   const maxPages = Math.max(1, params.maxPages ?? 20)
@@ -205,6 +218,7 @@ export async function getAllInsObservations(params: {
       filter: params.filter,
       limit: pageSize,
       offset,
+      signal: params.signal,
     })
 
     const nodes = response.nodes ?? []
@@ -240,7 +254,10 @@ function connectionHasNextPage(connection: InsObservationConnection | null | und
   return connection?.pageInfo?.hasNextPage ?? false
 }
 
-export async function getInsDatasetDimensions(datasetCode: string): Promise<InsDatasetDimensionsResult | null> {
+export async function getInsDatasetDimensions(
+  datasetCode: string,
+  signal?: AbortSignal,
+): Promise<InsDatasetDimensionsResult | null> {
   if (datasetCode.trim().length === 0) return null
 
   const response = await graphqlRequest<{
@@ -250,7 +267,7 @@ export async function getInsDatasetDimensions(datasetCode: string): Promise<InsD
         dimensions?: InsDatasetDimensionsResult['dimensions'] | null
       }>
     }
-  }>(INS_DATASET_DIMENSIONS_QUERY, { datasetCode }, insRequestOptions())
+  }>(INS_DATASET_DIMENSIONS_QUERY, { datasetCode }, insRequestOptions(signal))
 
   const node = response.insDatasets?.nodes?.[0]
   if (!node) return null
@@ -266,6 +283,7 @@ export async function getInsDatasetHistory(params: {
   filter: InsObservationFilterInput
   pageSize?: number
   maxPages?: number
+  signal?: AbortSignal
 }): Promise<InsDatasetHistoryResult> {
   const pageSize = Math.max(1, Math.min(params.pageSize ?? 500, 1000))
   const maxPages = Math.max(1, params.maxPages ?? 20)
@@ -285,7 +303,7 @@ export async function getInsDatasetHistory(params: {
         limit: pageSize,
         offset,
       },
-    insRequestOptions()
+    insRequestOptions(params.signal)
     )
 
     const connection = response.insObservations
@@ -313,6 +331,7 @@ async function getInsObservationsBatch(params: {
   datasetCodes: string[]
   filter: InsObservationFilterInput
   limit?: number
+  signal?: AbortSignal
 }): Promise<Map<string, InsObservationConnection>> {
   if (params.datasetCodes.length === 0) return new Map()
 
@@ -323,7 +342,7 @@ async function getInsObservationsBatch(params: {
       filter: params.filter,
       limit: params.limit ?? INS_OBSERVATION_LIMIT,
     },
-    insRequestOptions(),
+    insRequestOptions(params.signal),
   )
 
   const result = new Map<string, InsObservationConnection>()
@@ -341,11 +360,13 @@ export async function getInsObservationsSnapshotByDatasets(params: {
   datasetCodes: string[]
   filter: InsObservationFilterInput
   limit?: number
+  signal?: AbortSignal
 }): Promise<InsObservationsSnapshotByDatasetResult> {
   const observationsByDatasetConnection = await getInsObservationsBatch({
     datasetCodes: params.datasetCodes,
     filter: params.filter,
     limit: params.limit,
+    signal: params.signal,
   })
 
   const observationsByDataset = new Map<string, InsObservation[]>()
@@ -381,6 +402,7 @@ function getLatestPeriod(observations: InsObservation[]): string | null {
 export async function getInsCountyDashboard(params: {
   countyCode: string
   datasetCodes: string[]
+  signal?: AbortSignal
 }): Promise<InsDashboardData> {
   const datasetCodes = params.datasetCodes
   if (datasetCodes.length === 0) return { groups: [], partial: false }
@@ -401,7 +423,7 @@ export async function getInsCountyDashboard(params: {
     datasetCount: datasetCodes.length,
   })
 
-  const datasets = await getInsDatasetsByCodes(datasetCodes)
+  const datasets = await getInsDatasetsByCodes(datasetCodes, params.signal)
   const datasetMap = new Map(datasets.map((dataset) => [dataset.code, dataset]))
 
   const buildGroups = (observationsMap: Map<string, InsObservationConnection>) => {
@@ -433,6 +455,7 @@ export async function getInsCountyDashboard(params: {
   const observationsByDataset = await getInsObservationsBatch({
     datasetCodes,
     filter: observationFilter,
+    signal: params.signal,
   })
 
   return buildGroups(observationsByDataset)

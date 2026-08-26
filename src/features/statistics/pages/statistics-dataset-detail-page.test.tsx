@@ -176,5 +176,10 @@ describe('StatisticsDatasetDetailPage', () => {
     // ONLY the unresolved dimension.
     expect(screen.getAllByText(/alege/i).length).toBeGreaterThan(0)
     expect(screen.getByText(/Alege o valoare pentru: Sexe/)).toBeInTheDocument()
+    // And the series query is actually OFF — the prompt without the gate
+    // would still leak a sibling-mixing fetch.
+    expect(useDatasetSeriesMock).toHaveBeenCalledWith(
+      expect.objectContaining({ enabled: false }),
+    )
   })
 })

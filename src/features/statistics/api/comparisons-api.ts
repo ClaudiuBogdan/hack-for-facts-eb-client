@@ -75,6 +75,7 @@ const EMPTY_OBSERVATIONS: ComparisonObservationsResult = {
 /** Parameters of the one observations request. Deliberately has no `period`. */
 export interface ComparisonObservationsParams {
   readonly datasetCode: string
+  readonly signal?: AbortSignal
   /**
    * Resolved territory CODES (a LAU's code IS its SIRUTA; counties are
    * alphabetic; `RO` is the national row) — ONE `territoryCodes` filter
@@ -89,6 +90,7 @@ export interface ComparisonObservationsParams {
 /** Dataset metadata + pinnable dimension options, or `null` when unknown. */
 export async function fetchComparisonDataset(
   code: string,
+  signal?: AbortSignal,
 ): Promise<ComparisonDatasetMeta | null> {
   if (code.trim().length === 0) return null
 
@@ -96,7 +98,7 @@ export async function fetchComparisonDataset(
     return fetchComparisonDatasetMock(code)
   }
 
-  const details = await getInsDatasetDetails(code)
+  const details = await getInsDatasetDetails(code, signal)
   if (!details) return null
 
   const classifications: ComparisonClassificationDimension[] = []
@@ -111,6 +113,7 @@ export async function fetchComparisonDataset(
       datasetCode: code,
       dimensionIndex: dimension.index,
       limit: DIMENSION_OPTION_LIMIT,
+      signal,
     })
 
     if (dimension.type === 'UNIT_OF_MEASURE') {
@@ -214,6 +217,7 @@ export async function fetchComparisonObservations(
     filter: buildComparisonObservationFilter(params),
     limit: COMPARISON_OBSERVATION_LIMIT,
     offset: 0,
+    signal: params.signal,
   })
 
   return {

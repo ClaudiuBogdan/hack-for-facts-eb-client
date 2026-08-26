@@ -7,7 +7,9 @@ import {
 import {
   buildEffectiveScope,
   buildSeriesFilter,
+  classificationTypeCode,
   detailScopeKey,
+  dimensionsOfType,
   NATIONAL_ENTITY,
   parseTerritoryPin,
   territoryPinToEntity,
@@ -33,8 +35,10 @@ export type StatisticsDatasetDetailLoaderData = {
  *   A. dataset metadata + server-resolved latest value for the entity
  *      (national by default, the URL's territory pin otherwise);
  *   B. the resolved series + the related-datasets probe, SKIPPED when the
- *      dataset is missing, catalog-only, or resolution answered NO_DATA with
- *      nothing pinned (the scope-prompt path — there is no cell to fetch).
+ *      dataset is missing, catalog-only, or the scope leaves any
+ *      classification dimension uncovered — the same every-dim-covered
+ *      predicate as the page's `seriesEnabled`, so the loader never fetches
+ *      (and 24h-caches) a sibling-leaking series the page would refuse.
  *
  * Failures degrade to nulls: SSR always answers, the client queries retry.
  */
@@ -83,8 +87,13 @@ export const Route = createFileRoute('/statistici/seturi/$cod')({
     }
 
     const scope = buildEffectiveScope({ search: deps, latest: tier0.latest })
-    const noData = !tier0.latest || tier0.latest.matchStrategy === 'NO_DATA'
-    if (noData && scope.classifications.size === 0) {
+    const everyDimensionCovered = dimensionsOfType(
+      tier0.dataset.dimensions,
+      'CLASSIFICATION',
+    ).every((dimension) =>
+      scope.classifications.has(classificationTypeCode(dimension)),
+    )
+    if (!everyDimensionCovered) {
       return { tier0, series: null, scopeKey }
     }
 

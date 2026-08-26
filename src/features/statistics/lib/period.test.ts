@@ -147,4 +147,31 @@ describe('B12: the router leaks raw-typed values past validateSearch', () => {
       loc: '54975',
     })
   })
+
+  it('coerces numeric elements in ?teritorii= on comparisons', async () => {
+    const { parseStatisticsComparisonsSearch } = await import(
+      '@/schemas/statistics'
+    )
+    expect(parseStatisticsComparisonsSearch({ teritorii: [54975] })).toEqual({
+      teritorii: ['54975'],
+    })
+  })
+
+  it('wraps a lone ?teritorii= value (number, not even a list) into a list', async () => {
+    const { parseStatisticsComparisonsSearch } = await import(
+      '@/schemas/statistics'
+    )
+    expect(parseStatisticsComparisonsSearch({ teritorii: 54975 })).toEqual({
+      teritorii: ['54975'],
+    })
+  })
+
+  it('coerces a numeric ?perioada= on comparisons', async () => {
+    const { parseStatisticsComparisonsSearch } = await import(
+      '@/schemas/statistics'
+    )
+    expect(parseStatisticsComparisonsSearch({ perioada: 2024 })).toEqual({
+      perioada: '2024',
+    })
+  })
 })
