@@ -89,6 +89,15 @@ export function EntitySearchPage() {
   const facets = firstPage?.facets ?? EMPTY_FACETS
   const hasQuery = normalizedQuery.length > 0
   const hasResults = hits.length > 0
+  /**
+   * ANY loaded page being degraded degrades the whole answer — not just page 1.
+   * The other envelope fields describe the result set and are read off the first
+   * page, but a Meili outage that starts between "load more" calls lands on a
+   * LATER page, and reading `firstPage` alone would keep presenting a partial
+   * list as complete (D5).
+   */
+  const isDegraded =
+    search.data?.pages.some((page) => page.degraded) ?? false
   const isInitialLoading =
     hasQuery && search.isFetching && !search.data && !search.isError
   const activeDescendantId =
@@ -274,6 +283,7 @@ export function EntitySearchPage() {
             shownCount={hits.length}
             estimatedTotalHits={firstPage?.estimatedTotalHits ?? null}
             engine={firstPage?.engine ?? null}
+            degraded={isDegraded}
           />
         ) : null}
 
@@ -312,9 +322,12 @@ export function EntitySearchPage() {
 
         {!hasQuery || search.isError || isInitialLoading || hasResults ? null : (
           <EntityEmptyState
-            variant="zero"
+            // "No results" is a claim about the world. When the engine could not
+            // be reached we did not look, so we must not make it (D5).
+            variant={isDegraded ? 'degraded' : 'zero'}
             query={normalizedQuery}
             onClearFilters={clearFilters}
+            onRetry={retrySearch}
           />
         )}
       </section>

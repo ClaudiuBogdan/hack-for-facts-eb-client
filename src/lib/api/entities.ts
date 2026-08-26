@@ -683,7 +683,12 @@ export async function searchEntities(
     return Promise.resolve([]);
   }
 
-  logger.info("Searching entities", { searchTerm, limit, options });
+  // Length, never the term. `logger.info` becomes a Sentry breadcrumb, so the
+  // raw query string was leaving the browser on every debounced search —
+  // including whatever a user typed before realising it was a search box. The
+  // analytics event on this same path already sends `query_len` only; this now
+  // matches it (SEARCH_LAYER_REVIEW_2026-08-25.md F15).
+  logger.info("Searching entities", { queryLength: searchTerm.length, limit, options });
 
   try {
     const filter = {
@@ -715,7 +720,9 @@ export async function searchEntities(
     return []; // Return empty array if data is not in the expected shape
 
   } catch (error) {
-    logger.error("Error searching entities", { error, searchTerm });
+    // `logger.error` ships a full Sentry EVENT, not just a breadcrumb, so the
+    // raw term was landing on a real retained issue.
+    logger.error("Error searching entities", { error, queryLength: searchTerm.length });
     // Depending on error handling strategy, you might want to throw the error
     // or return an empty array / specific error object.
     throw error; // Or return [];

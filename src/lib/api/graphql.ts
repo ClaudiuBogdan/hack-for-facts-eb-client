@@ -80,6 +80,10 @@ const buildHttpErrorMessage = (response: Response, payload: unknown, rawText: st
   return `GraphQL request failed: ${response.status} ${response.statusText}`;
 };
 
+/** `query MyThing(...)` / `mutation MyThing(...)` → `MyThing`. */
+const operationName = (document: string): string =>
+  /\b(?:query|mutation|subscription)\s+(\w+)/u.exec(document)?.[1] ?? "anonymous";
+
 export interface GraphQLRequestOptions {
   /**
    * Skip the Authorization header even when a Clerk token exists. For public
@@ -102,7 +106,17 @@ export async function graphqlRequest<T = unknown>(
   const endpoint = `${getApiBaseUrl()}/graphql`;
 
   try {
-    logger.info("Making GraphQL request", { query, variables });
+    // Operation name and variable KEYS only — never the values.
+    //
+    // `logger.info` becomes a Sentry breadcrumb, and this line sits on the
+    // shared legacy transport, so it was shipping every variable of every
+    // legacy request: entity search terms, and whatever else any other caller
+    // passes. Names are enough to correlate a request; values are the payload
+    // (SEARCH_LAYER_REVIEW_2026-08-25.md F15).
+    logger.info("Making GraphQL request", {
+      operation: operationName(query),
+      variableKeys: variables === undefined ? [] : Object.keys(variables),
+    });
 
     // Get a fresh token for the request; Clerk manages token lifecycle
     const token = options?.skipAuth ? null : await getAuthToken();

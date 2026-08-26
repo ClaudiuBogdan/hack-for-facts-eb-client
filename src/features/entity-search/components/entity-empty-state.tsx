@@ -4,7 +4,13 @@ import type { EntitySearchDocType } from '@/schemas/entity-search'
 import { cn } from '@/lib/utils'
 import { DOC_TYPE_META } from '../lib/doc-type-meta'
 
-type EmptyStateVariant = 'initial' | 'zero' | 'error'
+/**
+ * `degraded` is deliberately distinct from `zero`. The server answered
+ * successfully, but from its reduced outage path — so "no results" would be a
+ * claim we cannot support: we did not look, and the user must not conclude the
+ * entity does not exist (SEARCH_LAYER_REVIEW_2026-08-25.md D5).
+ */
+type EmptyStateVariant = 'initial' | 'zero' | 'degraded' | 'error'
 
 type Props = {
   readonly variant: EmptyStateVariant
@@ -127,6 +133,30 @@ export function EntityEmptyState({
               className="mt-2 border-2 border-[var(--pnrr-border)] px-5 py-2.5 text-sm font-bold text-[var(--pnrr-fg)] transition-colors hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-green)] motion-reduce:transition-none"
             >
               <Trans>Clear filters</Trans>
+            </button>
+          ) : null}
+        </>
+      ) : null}
+
+      {variant === 'degraded' ? (
+        <>
+          <p className="text-base font-semibold text-[var(--pnrr-fg)]">
+            <Trans>Căutarea este momentan limitată.</Trans>
+          </p>
+          <p className="mx-auto max-w-xl text-sm">
+            <Trans>
+              Motorul de căutare este indisponibil, așa că "{query}" nu a putut
+              fi căutat. Asta nu înseamnă că nu există rezultate. Momentan
+              funcționează doar căutarea după cod fiscal exact.
+            </Trans>
+          </p>
+          {onRetry ? (
+            <button
+              type="button"
+              onClick={onRetry}
+              className="mt-2 border-2 border-[var(--pnrr-border)] px-5 py-2.5 text-sm font-bold text-[var(--pnrr-fg)] transition-colors hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-green)] motion-reduce:transition-none"
+            >
+              <Trans>Încearcă din nou</Trans>
             </button>
           ) : null}
         </>

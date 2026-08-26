@@ -87,6 +87,39 @@ describe('entityHref', () => {
       })
     })
 
+    it('routes committee to /parlament/comisii/$committeeKey off docKey', () => {
+      // The palette gives committees no docId — `doc_key` IS the committee_key,
+      // and its colons must survive as a single path segment. Before this route
+      // existed, a committee hit fell through to `url` and left the site.
+      const result = entityHref(
+        input({
+          docType: 'committee',
+          docId: null,
+          docKey: 'cdep:1:1990:63',
+          url: 'https://www.cdep.ro/ords/committee',
+        }),
+      )
+      expect(result).toEqual({
+        href: '/parlament/comisii/cdep%3A1%3A1990%3A63',
+        isExternal: false,
+      })
+    })
+
+    it('falls back to url when a committee has neither id', () => {
+      const result = entityHref(
+        input({
+          docType: 'committee',
+          docId: null,
+          docKey: null,
+          url: 'https://www.cdep.ro/ords/committee',
+        }),
+      )
+      expect(result).toEqual({
+        href: 'https://www.cdep.ro/ords/committee',
+        isExternal: true,
+      })
+    })
+
     it('falls back to url when member has no docId', () => {
       const result = entityHref(
         input({ docType: 'member', docId: null, url: 'https://cdep.test/m' }),
