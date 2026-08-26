@@ -46,6 +46,49 @@ describe('tldf v1.1 block acceptance', () => {
     })
   })
 
+  it('keeps the source-state facts instead of stripping them (2026-08-26)', () => {
+    // Same trap, same proof style: the struck fields must SURVIVE parsing,
+    // not merely parse — a strip here would silently serve repealed text
+    // with no strike and no legal state, all checks green.
+    const parsed = tldfBlockSchema.parse({
+      id: '0.2.1',
+      kind: 'paragraf',
+      type: 'PAR',
+      span: [30, 60] as const,
+      struck: 'full',
+      struck_repealed: true,
+      annotation_role: 'amendment_note',
+      changed_since_base_form: false,
+      content: [
+        {
+          text: 'Text abrogat.',
+          span: [30, 43] as const,
+          role: 'ttl',
+          struck: 'full',
+        },
+      ],
+    })
+    expect(parsed.struck).toBe('full')
+    expect(parsed.struck_repealed).toBe(true)
+    expect(parsed.annotation_role).toBe('amendment_note')
+    // false is a REAL value ("proven unchanged"), distinct from omitted.
+    expect(parsed.changed_since_base_form).toBe(false)
+    expect(parsed.content[0]?.struck).toBe('full')
+  })
+
+  it('rejects a struck scope outside the vocabulary', () => {
+    expect(() =>
+      tldfBlockSchema.parse({
+        id: '0.2.2',
+        kind: 'paragraf',
+        type: 'PAR',
+        span: [0, 1] as const,
+        struck: 'struck',
+        content: [],
+      }),
+    ).toThrow()
+  })
+
   it('never accepts a locator on an asset', () => {
     // The served envelope must not carry a portal URL: an image is addressed by
     // its block id and resolved by the server, so a reader's browser never

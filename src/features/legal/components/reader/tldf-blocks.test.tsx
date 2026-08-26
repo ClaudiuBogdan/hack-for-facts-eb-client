@@ -1120,3 +1120,158 @@ describe('format 1.0 is untouched by the v1.1 renderer', () => {
     expect(container.textContent).toBe(foldTldfBlocks([bloc]))
   })
 })
+
+describe('v1.1 source-state rendering (struck, 2026-08-26)', () => {
+  const struckPar: TldfBlock = {
+    id: 's1',
+    kind: 'paragraf',
+    type: 'PAR',
+    span: [0, 13],
+    struck: 'full',
+    struck_repealed: true,
+    content: [{ text: 'Text abrogat.', span: [0, 13] }],
+  }
+
+  it('draws a full-struck block as visible strikethrough with the abrogat title', () => {
+    const { container } = render(
+      <TldfBlocksView blocks={[struckPar]} marks={[]} containsNonBmp={false} />,
+    )
+    const block = container.querySelector('[data-struck="full"]')
+    expect(block).not.toBeNull()
+    expect(block?.className).toContain('line-through')
+    // Only the VALIDATED narrow rule may assert legal state.
+    expect(block?.getAttribute('title')).toBe('Text abrogat')
+    // Fidelity: the strike changes styling, never one character.
+    expect(container.textContent).toBe('Text abrogat.')
+  })
+
+  it('a strike without struck_repealed asserts no legal state', () => {
+    const { container } = render(
+      <TldfBlocksView
+        blocks={[{ ...struckPar, struck_repealed: undefined }]}
+        marks={[]}
+        containsNonBmp={false}
+      />,
+    )
+    const block = container.querySelector('[data-struck="full"]')
+    expect(block).not.toBeNull()
+    expect(block?.getAttribute('title')).toBeNull()
+  })
+
+  it('a partial strike keeps the block face upright and draws the exact mark range', () => {
+    const blocks: TldfBlock[] = [
+      {
+        id: 'p1',
+        kind: 'paragraf',
+        type: 'PAR',
+        span: [0, 25],
+        struck: 'partial',
+        content: [{ text: 'păstrat abrogat păstrat', span: [0, 23] }],
+      },
+    ]
+    const marks: TldfMark[] = [{ ordinal: 0, kind: 'struck', span: [8, 15] }]
+    const { container } = render(
+      <TldfBlocksView blocks={blocks} marks={marks} containsNonBmp={false} />,
+    )
+    const block = container.querySelector('[data-struck="partial"]')
+    expect(block).not.toBeNull()
+    expect(block?.className ?? '').not.toContain('line-through')
+    const struckEl = container.querySelector('s')
+    expect(struckEl?.textContent).toBe('abrogat')
+    expect(container.textContent).toBe('păstrat abrogat păstrat')
+  })
+
+  it('a struck role run carries the strikethrough (role rows fold into runs)', () => {
+    const blocks: TldfBlock[] = [
+      {
+        id: 'a1',
+        kind: 'articol',
+        type: 'ART',
+        span: [0, 11],
+        number: { key: '5', system: 'arabic' },
+        content: [{ text: 'Articolul 5', span: [0, 11], role: 'ttl', struck: 'full' }],
+      },
+    ]
+    const { container } = render(
+      <TldfBlocksView blocks={blocks} marks={[]} containsNonBmp={false} />,
+    )
+    const run = container.querySelector('[data-role="ttl"]')
+    expect(run?.getAttribute('data-struck')).toBe('full')
+    expect(run?.className).toContain('line-through')
+  })
+
+  it('emphasis marks render semantic elements, never the reference face', () => {
+    // Regression for the pre-2026-08-26 fallthrough: every non-link mark
+    // rendered as a dotted "Referință legislativă" span.
+    const blocks: TldfBlock[] = [
+      {
+        id: 'e1',
+        kind: 'paragraf',
+        type: 'PAR',
+        span: [0, 21],
+        content: [{ text: 'unu doi trei patru x', span: [0, 20] }],
+      },
+    ]
+    const marks: TldfMark[] = [
+      { ordinal: 0, kind: 'italic', span: [0, 3] },
+      { ordinal: 1, kind: 'bold', span: [4, 7] },
+      { ordinal: 2, kind: 'underline', span: [8, 12] },
+      { ordinal: 3, kind: 'struck', span: [13, 18] },
+    ]
+    const { container } = render(
+      <TldfBlocksView blocks={blocks} marks={marks} containsNonBmp={false} />,
+    )
+    expect(container.querySelector('em')?.textContent).toBe('unu')
+    expect(container.querySelector('strong')?.textContent).toBe('doi')
+    expect(container.querySelector('s')?.textContent).toBe('patru')
+    // None of the four wears the unresolved-reference face.
+    expect(container.querySelectorAll('[title^="Referin"]')).toHaveLength(0)
+    expect(container.textContent).toBe('unu doi trei patru x')
+  })
+
+  it('a struck cell strikes the cell, not the table', () => {
+    const table: TldfBlock = {
+      id: 't1',
+      kind: 'tabel',
+      type: 'TBL',
+      span: [0, 8],
+      struck: 'full',
+      content: [],
+      children: [
+        {
+          id: 't1.r',
+          kind: 'rand',
+          type: 'ROW',
+          span: [0, 8],
+          content: [],
+          children: [
+            {
+              id: 't1.r.c1',
+              kind: 'celula',
+              type: 'CEL',
+              span: [0, 4],
+              struck: 'full',
+              content: [{ text: 'unu ', span: [0, 4] }],
+            },
+            {
+              id: 't1.r.c2',
+              kind: 'celula',
+              type: 'CEL',
+              span: [4, 8],
+              content: [{ text: 'doi.', span: [4, 8] }],
+            },
+          ],
+        },
+      ],
+    }
+    const { container } = render(
+      <TldfBlocksView blocks={[table]} marks={[]} containsNonBmp={false} />,
+    )
+    const cells = container.querySelectorAll('td')
+    expect(cells).toHaveLength(2)
+    expect(cells[0]?.getAttribute('data-struck')).toBe('full')
+    expect(cells[0]?.className).toContain('line-through')
+    expect(cells[1]?.getAttribute('data-struck')).toBeNull()
+    expect(cells[1]?.className).not.toContain('line-through')
+  })
+})

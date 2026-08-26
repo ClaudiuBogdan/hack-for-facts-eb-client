@@ -254,6 +254,19 @@ function MarkedSegment({ segment }: SegmentProps) {
 }
 
 function MarkElement({ mark, text }: { readonly mark: TldfMark; readonly text: string }) {
+  // Emphasis and strike marks are SEMANTIC, not references: before 2026-08-26
+  // every non-link mark fell through to the dotted "unresolved reference"
+  // face, so an italic drug name read as a broken citation. `struck` draws
+  // the source strike (user decision: visible strikethrough); legal meaning
+  // is asserted only by the BLOCK's struck_repealed, never by the mark.
+  if (mark.kind === 'italic') return <em>{text}</em>
+  if (mark.kind === 'bold') return <strong>{text}</strong>
+  if (mark.kind === 'underline') {
+    return <span className="underline underline-offset-2">{text}</span>
+  }
+  if (mark.kind === 'struck') {
+    return <s className="text-muted-foreground decoration-[1.5px]">{text}</s>
+  }
   const link = mark.link
   if (link?.kind === 'act' && typeof link.target_act_id === 'number') {
     return (
@@ -303,10 +316,16 @@ function RunSpan({
 }) {
   const sliced = sliceRun(marks, run)
   const roleClass = run.role !== undefined ? RUN_ROLE_CLASS[run.role] : undefined
+  // Role rows fold into runs, so a struck TTL/DEN/BDY arrives here rather
+  // than as a block — same visible-strikethrough treatment (2026-08-26).
+  const struckClass = run.struck !== undefined ? STRUCK_TEXT_CLASS : undefined
   return (
     <span
       {...(run.role !== undefined && { 'data-role': run.role })}
-      {...(roleClass !== undefined && roleClass !== '' && { className: roleClass })}
+      {...(run.struck !== undefined && { 'data-struck': run.struck })}
+      {...(cn(roleClass, struckClass) !== '' && {
+        className: cn(roleClass, struckClass),
+      })}
     >
       {/* Gated on '\n' exactly: the documented exceptions collapse LINE
           BREAKS only — a ' ' separator must keep rendering as the space
@@ -505,13 +524,20 @@ function TableBlock({ block, marks }: BlockProps) {
             mismatches (panel verdict 10). */}
         <tbody>
           {spanOrdered(block.children).map((row) => (
-            <tr key={row.id} id={`tldf-${row.id}`} data-kind="rand" className="scroll-mt-24">
+            <tr
+              key={row.id}
+              id={`tldf-${row.id}`}
+              data-kind="rand"
+              {...struckAttrsOf(row)}
+              className={cn('scroll-mt-24', struckClassOf(row))}
+            >
               {spanOrdered(row.children).map((cell) => (
                 <td
                   key={cell.id}
                   id={`tldf-${cell.id}`}
                   data-kind="celula"
-                  className={cn(CELL_CLASS, 'scroll-mt-24')}
+                  {...struckAttrsOf(cell)}
+                  className={cn(CELL_CLASS, 'scroll-mt-24', struckClassOf(cell))}
                   {...gridSpanProps(cell.grid)}
                 >
                   {/* A cell MAY own runs (bare `<td>` text) and may carry
@@ -565,7 +591,12 @@ function ImagineBlock({ block, marks }: BlockProps) {
   const width = assetDimension(block.asset?.width)
   const height = assetDimension(block.asset?.height)
   return (
-    <div id={`tldf-${block.id}`} data-kind="imagine" className="mt-4 scroll-mt-24">
+    <div
+      id={`tldf-${block.id}`}
+      data-kind="imagine"
+      {...struckAttrsOf(block)}
+      className={cn('mt-4 scroll-mt-24', block.struck === 'full' && 'opacity-60')}
+    >
       <div
         role="img"
         aria-label={label}
@@ -632,6 +663,31 @@ function foldedTextOpensWithMarker(folded: string, label: string): boolean {
     margin would still paint stray leading space. */
 const LIST_MARKER_CLASS = 'before:mr-2 before:content-[attr(data-list-marker)]'
 
+/* ── v1.1 source-state rendering (user decision 2026-08-26) ──────────────── */
+
+/**
+ * Visible strikethrough, maximum fidelity first: nothing hidden, nothing
+ * moved. A strike alone is SOURCE EVIDENCE — only `struck_repealed` (the
+ * validated narrow rule) is allowed to say "abrogat".
+ */
+const STRUCK_TEXT_CLASS = 'line-through decoration-[1.5px] text-muted-foreground'
+
+function struckClassOf(block: TldfBlock): string | undefined {
+  // 'partial' draws via exact `struck` marks; the block face stays upright.
+  return block.struck === 'full' ? STRUCK_TEXT_CLASS : undefined
+}
+
+function struckAttrsOf(block: TldfBlock): {
+  readonly 'data-struck'?: 'partial' | 'full'
+  readonly title?: string
+} {
+  if (block.struck === undefined) return {}
+  return {
+    'data-struck': block.struck,
+    ...(block.struck_repealed === true && { title: t`Text abrogat` }),
+  }
+}
+
 function BlockView({ block, marks }: BlockProps) {
   if (!KNOWN_KINDS.has(block.kind) && !warnedKinds.has(block.kind)) {
     warnedKinds.add(block.kind)
@@ -669,10 +725,12 @@ function BlockView({ block, marks }: BlockProps) {
       id={`tldf-${block.id}`}
       data-kind={block.kind}
       {...(marker !== undefined && { 'data-list-marker': marker })}
+      {...struckAttrsOf(block)}
       className={cn(
         BLOCK_CLASS[block.kind],
         displayClass(block),
         marker !== undefined && LIST_MARKER_CLASS,
+        struckClassOf(block),
         'scroll-mt-24',
       )}
     >

@@ -20,6 +20,11 @@ export interface TldfRun {
   readonly span: TldfSpan
   readonly role?: TldfRunRole
   readonly sep?: TldfSep
+  /**
+   * v1.1 source-state (2026-08-26): own-extent strike of the ROLE node this
+   * run was folded from. Omitted = none.
+   */
+  readonly struck?: 'partial' | 'full'
 }
 
 export interface TldfNumber {
@@ -42,6 +47,19 @@ export interface TldfBlock {
   readonly grid?: TldfGrid
   /** v1.1: image description. Never a locator — resolve by block id. */
   readonly asset?: TldfAsset
+  /**
+   * v1.1 source-state (2026-08-26): own-extent source strike. Omitted = none.
+   * 'full' is the only carrier for zero-text blocks (struck cells/images);
+   * 'partial' pairs with exact 'struck' marks. A strike alone asserts NO
+   * legal state — display is this renderer's decision.
+   */
+  readonly struck?: 'partial' | 'full'
+  /** Present iff the narrow legal rule validated the strike as repealed. */
+  readonly struck_repealed?: true
+  /** Amendment apparatus; omitted = not detected (NOT the same as operative). */
+  readonly annotation_role?: 'amendment_note'
+  /** Colour state; both true and false are emitted, only no-evidence omits. */
+  readonly changed_since_base_form?: boolean
   readonly content: readonly TldfRun[]
   readonly children?: readonly TldfBlock[]
 }
@@ -71,6 +89,7 @@ export type TldfMarkKind =
   | 'italic'
   | 'underline'
   | 'bold'
+  | 'struck'
 export type TldfLinkKind = 'act' | 'act_missing_id' | 'external' | 'internal'
 
 export type TldfResolutionState =
