@@ -1,6 +1,9 @@
 import { Trans } from '@lingui/react/macro'
 import type { LegislationOverview } from '@/schemas/legal'
-import { useLegislationOverview } from '../hooks/use-legislation'
+import {
+  useLegislationOverview,
+  useLegislationStatusCounts,
+} from '../hooks/use-legislation'
 import { LEGAL_CORPUS_MEASURED_AT } from '../lib/legal-coverage'
 import { LegislationDomainGrid } from './legislation-domain-grid'
 import { LegislationGazetteBand } from './legislation-gazette-band'
@@ -36,11 +39,15 @@ type Props = {
  */
 export function LegislationPage({ initialOverview }: Props) {
   const { data, isLoading, isError } = useLegislationOverview(initialOverview)
+  // The header chips ride the status-counts aggregate (shared query key with
+  // the analytics strip); `?? {}` keeps the chip row's space reserved while
+  // the counts are on the wire, so their arrival does not shift the tab nav.
+  const { data: statusCounts } = useLegislationStatusCounts()
 
   return (
     <LegislationShell
       activeTab="prezentare"
-      counts={data?.counts}
+      counts={statusCounts ?? {}}
       measuredAt={LEGAL_CORPUS_MEASURED_AT}
       dataStatus={data?.coverage.dataStatus}
     >

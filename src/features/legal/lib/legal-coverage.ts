@@ -13,6 +13,25 @@
 /** The date the figures below were measured. */
 export const LEGAL_CORPUS_MEASURED_AT = '2026-06-29'
 
+/**
+ * Acts in `legal.acts`, measured live 2026-08-26 (the STATUS aggregate's
+ * bucket sum = `legalActs.totalCount`). This one IS live-answerable — the
+ * analytics tab serves it live — but the guide's editorial prose keeps the
+ * dated measurement deliberately: a sentence must not have a loading or
+ * failure state, and printing a measurement WITH its date is the honest form.
+ */
+export const LEGAL_ACT_COUNT = 224_539
+
+/** The date `LEGAL_ACT_COUNT` and `LEGAL_PARSED_DOCUMENT_COUNT` were measured. */
+export const LEGAL_CORPUS_SIZE_MEASURED_AT = '2026-08-26'
+
+/**
+ * Parsed documents in `legal.documents`, measured 2026-08-26. Slightly more
+ * than the act count — the two are different grains; do not present one as
+ * the other. No server aggregate answers this one.
+ */
+export const LEGAL_PARSED_DOCUMENT_COUNT = 227_278
+
 /** Total resolved citation edges in `legal.act_references`. */
 export const LEGAL_REFERENCE_EDGE_COUNT = 1_103_595
 

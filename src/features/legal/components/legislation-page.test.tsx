@@ -26,12 +26,15 @@ vi.mock('@tanstack/react-router', () => ({
 vi.mock('../hooks/use-legislation', () => ({
   useLegislationOverview: vi.fn(),
   useLegislationDomainCounts: vi.fn(),
+  useLegislationStatusCounts: vi.fn(),
 }))
 
 import {
   useLegislationDomainCounts,
   useLegislationOverview,
+  useLegislationStatusCounts,
 } from '../hooks/use-legislation'
+import { legislationStatusCountsFixture } from '../mocks/fixtures/legislation-status-counts'
 
 function mockOverviewReady() {
   vi.mocked(useLegislationOverview).mockReturnValue({
@@ -43,6 +46,10 @@ function mockOverviewReady() {
     data: legislationDomainCountsFixture,
     isError: false,
   } as unknown as ReturnType<typeof useLegislationDomainCounts>)
+  vi.mocked(useLegislationStatusCounts).mockReturnValue({
+    data: legislationStatusCountsFixture,
+    isError: false,
+  } as unknown as ReturnType<typeof useLegislationStatusCounts>)
 }
 
 describe('LegislationPage', () => {
@@ -151,13 +158,17 @@ describe('LegislationPage', () => {
       '/legislation/analytics',
     )
     // Live since the server shipped the global feed — a regression back to
-    // the inert span would silently unship the tab.
+    // an inert span would silently unship the tab.
     expect(screen.getByText('Modificări')).toHaveAttribute(
       'href',
       '/legislation/changes',
     )
-    // Caută and Ghid are still routeless and must stay honestly inert.
-    expect(screen.getByText('Ghid')).toHaveAttribute('aria-disabled', 'true')
+    // The last inert tab went live 2026-08-26 — every tab is a link now.
+    expect(screen.getByText('Ghid')).toHaveAttribute(
+      'href',
+      '/legislation/guide',
+    )
+    expect(screen.getByText('Ghid')).not.toHaveAttribute('aria-disabled')
   })
 
   it('does not scroll the tab navigation when it mounts', () => {

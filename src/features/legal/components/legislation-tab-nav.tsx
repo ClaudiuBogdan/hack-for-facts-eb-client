@@ -14,14 +14,14 @@ export type LegislationTab =
 type TabSpec = {
   readonly id: LegislationTab
   readonly label: string
-  /** Omitted while the route does not exist — the tab renders inert. */
-  readonly to?:
+  readonly to:
     | '/legislation'
     | '/legislation/analytics'
     | '/legislation/search'
     | '/legislation/acts'
     | '/legislation/changes'
     | '/legislation/gazette'
+    | '/legislation/guide'
 }
 
 type Props = {
@@ -31,19 +31,16 @@ type Props = {
 /**
  * Section navigation for `/legislation`.
  *
- * **Prezentare**, **Analiză**, **Caută**, **Acte**, **Modificări** and
- * **Monitorul Oficial** have routes; **Ghid** alone is rendered but inert —
- * deliberately: the tab set is the module's information architecture
- * (`docs/design/legal/main-page.md` §3), and hiding it until every route
- * exists would misrepresent the shape of the domain. It becomes a link by
- * gaining a `to`, with no other change — Modificări and Caută each did
- * exactly that once their server capability shipped (the global
- * `legalRecentChanges` feed, then the `legalSearch` citation/name finder).
+ * Every tab of the module's information architecture
+ * (`docs/design/legal/main-page.md` §3) now has a route. While routes were
+ * still landing, a missing `to` rendered a tab honestly inert rather than
+ * hiding it — that mechanism retired with its last user when Ghid gained
+ * `/legislation/guide` (2026-08-26); a future tab would reintroduce it as a
+ * deliberate choice, not inherit it as dead code.
  *
  * Analiză sits second rather than last, where an analytics tab normally goes:
  * it holds the corpus figures that used to be on the landing page, and burying
- * it behind disabled tabs would make them harder to find than before they
- * moved.
+ * it behind other tabs would make them harder to find than before they moved.
  */
 export function LegislationTabNav({ activeTab }: Props) {
   const tabs: ReadonlyArray<TabSpec> = [
@@ -53,7 +50,7 @@ export function LegislationTabNav({ activeTab }: Props) {
     { id: 'acte', label: t`Acte`, to: '/legislation/acts' },
     { id: 'modificari', label: t`Modificări`, to: '/legislation/changes' },
     { id: 'monitorul', label: t`Monitorul Oficial`, to: '/legislation/gazette' },
-    { id: 'ghid', label: t`Ghid` },
+    { id: 'ghid', label: t`Ghid`, to: '/legislation/guide' },
   ]
 
   const baseClassName =
@@ -66,22 +63,6 @@ export function LegislationTabNav({ activeTab }: Props) {
     >
       {tabs.map((tab) => {
         const isActive = tab.id === activeTab
-
-        if (tab.to === undefined) {
-          return (
-            <span
-              key={tab.id}
-              aria-disabled="true"
-              className={cn(
-                baseClassName,
-                'cursor-not-allowed font-normal text-[var(--pnrr-muted)] opacity-55',
-              )}
-            >
-              {tab.label}
-              <span className="sr-only"> ({t`în curând`})</span>
-            </span>
-          )
-        }
 
         return (
           <Link

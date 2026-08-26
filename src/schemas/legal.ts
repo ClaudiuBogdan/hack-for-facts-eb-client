@@ -62,18 +62,33 @@ export const legalActListItemSchema = z.object({
 export type LegalActListItem = z.infer<typeof legalActListItemSchema>
 
 /**
- * Per-status act counts. Each entry is one
- * `legalActs(filter: {status}, first: 1).totalCount` call; `total` is the
- * unfiltered count. A `legalActCounts` aggregate would collapse these into one
- * request — see `docs/design/legal/main-page.md` §6.2.
+ * The four headline act counts. Since 2026-08-26 they come from ONE
+ * `legalActCounts(groupBy: STATUS)` round-trip (main-page.md §6.2) instead of
+ * four aliased `legalActs(filter: {status}).totalCount` calls inside the
+ * overview query. STATUS partitions the corpus exactly — the 7 buckets sum to
+ * `legalActs.totalCount` (verified live 2026-08-26: 224 539) — so `total` is
+ * the bucket sum and `abrogat` folds `abrogat` + `abrogat-partial`, exactly
+ * the filters it replaced.
  */
 export const legalActCountsSchema = z.object({
-  total: z.number().int(),
-  inVigoare: z.number().int(),
-  modificat: z.number().int(),
-  abrogat: z.number().int(),
+  total: z.number().int().nonnegative(),
+  inVigoare: z.number().int().nonnegative(),
+  modificat: z.number().int().nonnegative(),
+  abrogat: z.number().int().nonnegative(),
 })
 export type LegalActCounts = z.infer<typeof legalActCountsSchema>
+
+/**
+ * The same four numbers, each independently possibly-unknown — what the KPI
+ * strip and the header chips consume. A field is absent when the aggregate
+ * could not prove it (truncated buckets, a folded `otherCount`, a malformed
+ * bucket): 0 and "unknown" are different claims, and a surface renders
+ * nothing — never 0 — for the latter. The live adapter fills true zeros only
+ * when the response declares itself complete, mirroring
+ * `legalDomainActCountsSchema`.
+ */
+export const legalStatusActCountsSchema = legalActCountsSchema.partial()
+export type LegalStatusActCounts = z.infer<typeof legalStatusActCountsSchema>
 
 /**
  * `legalActCounts(groupBy: DOMAIN)` folded to a slug → count map — the
@@ -726,6 +741,19 @@ export type LegalSearchActHit = z.infer<typeof legalSearchActHitSchema>
 export const LEGAL_SEMANTIC_UNAVAILABLE_CAVEAT = 'semantic search unavailable'
 
 /**
+ * Byte-exact copy of the server's `LEGAL_ORIGINAL_TEXT_CAVEAT`
+ * (`hack-for-facts-eb-server/src/modules/legal/core/provenance.ts`) — the
+ * caveat the server itself attaches to served texts: what we hold is the
+ * PUBLISHED version of an act, not a consolidated current form. A surface
+ * that states this without a server response in hand (the guide) renders this
+ * constant rather than paraphrasing, so the module never speaks two versions
+ * of its most important disclaimer. Deliberately NOT run through Lingui: it
+ * mirrors server bytes, not UI copy.
+ */
+export const LEGAL_ORIGINAL_TEXT_CAVEAT =
+  'Textele și rezumatele servite sunt versiunile publicate ale actelor și nu garantează forma consolidată curentă — verificați forma în vigoare pe legislatie.just.ro.'
+
+/**
  * The `legalSearch` answer the Caută tab consumes — acts channel only. The
  * tab asks `channel: docs` deliberately: measured on production 2026-08-26,
  * the sections channel matches the act's NAME and echoes that act's sections
@@ -783,9 +811,14 @@ export const legalFinderSearchSchema = z.object({
 })
 export type LegalFinderSearch = z.infer<typeof legalFinderSearchSchema>
 
-/** The composed payload behind the `/legislation` overview tab. */
+/**
+ * The composed payload behind the `/legislation` overview tab. The headline
+ * `counts` are NOT here (since 2026-08-26): they ride their own
+ * `legalActCounts(groupBy: STATUS)` request (`legal-status-counts-api.ts`) so
+ * a failed aggregate degrades the chips and the KPI strip instead of failing
+ * the route, exactly like the domain grid's counts.
+ */
 export const legislationOverviewSchema = z.object({
-  counts: legalActCountsSchema,
   /** `legalActs(sort: IN_DEGREE, dir: DESC)` — the most-cited acts. */
   mostCitedActs: z.array(legalActListItemSchema),
   /** `moIssues(filter: {year}, sort: ISSUE_DATE_DESC)` — latest gazette issues. */

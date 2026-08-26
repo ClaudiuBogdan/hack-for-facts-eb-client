@@ -1,4 +1,5 @@
 import {
+  LEGAL_ORIGINAL_TEXT_CAVEAT,
   LEGAL_SEMANTIC_UNAVAILABLE_CAVEAT,
   type LegalSearchActHit,
   type LegalSearchResultData,
@@ -25,15 +26,11 @@ import {
  *    out-of-force acts on BOTH paths.
  *
  * Caveat strings are byte-identical to the server constants
- * (`LEGAL_ORIGINAL_TEXT_CAVEAT` in core/provenance.ts, `historicalCaveats`
- * in core/usecases.ts) — the component test asserts them verbatim, and a
- * paraphrased fixture would pass against itself while diverging from
- * production.
+ * (`LEGAL_ORIGINAL_TEXT_CAVEAT`, now imported from `@/schemas/legal` because
+ * the guide states it too; `historicalCaveats` in core/usecases.ts) — the
+ * component test asserts them verbatim, and a paraphrased fixture would pass
+ * against itself while diverging from production.
  */
-
-/** Byte-exact copy of the server's `LEGAL_ORIGINAL_TEXT_CAVEAT`. */
-export const LEGAL_ORIGINAL_TEXT_CAVEAT =
-  'Textele și rezumatele servite sunt versiunile publicate ale actelor și nu garantează forma consolidată curentă — verificați forma în vigoare pe legislatie.just.ro.'
 
 /** The server's `LEGAL_LIVE_STATUSES` (core/legal-engine-filter.ts). */
 const LIVE_STATUSES: readonly string[] = [

@@ -6,35 +6,26 @@ import {
 import { LEGAL_CORPUS_MEASURED_AT } from '../lib/legal-coverage'
 
 /**
- * Live overview adapter — the four calls named by `main-page.md` §5, folded
- * into ONE aliased GraphQL round-trip:
+ * Live overview adapter — ONE round-trip for the overview's bands:
  *
- *  - unfiltered `legalActs(first: 1).totalCount` + three status-filtered
- *    variants for the KPI strip (status filter values are the DB kebab
- *    vocabulary — the filter input is string-typed, not a GraphQL enum);
  *  - `legalActs(sort: IN_DEGREE, dir: DESC, first: 7)` for the ranked band;
  *  - `moIssues(filter: { year }, sort: ISSUE_DATE_DESC, pageSize: 5)` for the
  *    gazette band — the year bound is mandatory server-side, so a year with
  *    no issues yet (early January) retries the previous year once.
+ *
+ * The four headline counts are GONE from here (2026-08-26): they used to be
+ * four aliased `legalActs(filter: { status }).totalCount` calls, and now
+ * ride their own `legalActCounts(groupBy: STATUS)` request
+ * (`legal-status-counts-api.ts`) — one aggregate serves the strip and the
+ * chips, and its failure degrades those surfaces instead of failing this
+ * loader-run query.
  *
  * Coverage stays a MEASURED block (constants + date), not live counts — the
  * server has no aggregate for the gap figures, and printing measurements as
  * if they were live is exactly what `legal-coverage.ts` forbids.
  */
 const OVERVIEW_QUERY = /* GraphQL */ `
-  query LegislationOverview($abrogatIn: [String!]!, $inVigoareIn: [String!]!, $modificatIn: [String!]!, $moYear: Int!) {
-    all: legalActs(first: 1) {
-      totalCount
-    }
-    inVigoare: legalActs(filter: { status: { in: $inVigoareIn } }, first: 1) {
-      totalCount
-    }
-    modificat: legalActs(filter: { status: { in: $modificatIn } }, first: 1) {
-      totalCount
-    }
-    abrogat: legalActs(filter: { status: { in: $abrogatIn } }, first: 1) {
-      totalCount
-    }
+  query LegislationOverview($moYear: Int!) {
     mostCited: legalActs(sort: IN_DEGREE, dir: DESC, first: 7) {
       edges {
         node {
@@ -87,19 +78,6 @@ const str = (value: unknown): string | null =>
 const int = (value: unknown): number =>
   typeof value === 'number' && Number.isFinite(value) ? Math.trunc(value) : 0
 
-/**
- * KPI counts must never be fabricated: a missing/null totalCount rendered as
- * "0 acte" over 223k acts is a lie with a confidence badge (observed live
- * 2026-08-10, before the server implemented the count). Failing the query
- * puts the page in its honest error state instead.
- */
-const requiredCount = (value: unknown, name: string): number => {
-  if (typeof value !== 'number' || !Number.isFinite(value)) {
-    throw new Error(`legislationOverview: server returned no ${name} count`)
-  }
-  return Math.trunc(value)
-}
-
 function nodes(connection: unknown): Raw[] {
   const edges = rec(connection).edges
   return Array.isArray(edges) ? edges.map((edge) => rec(rec(edge).node)) : []
@@ -134,12 +112,7 @@ function mapIssueNode(node: Raw) {
 async function runOverviewQuery(moYear: number, signal?: AbortSignal): Promise<Raw> {
   return graphqlQuery<Raw>(
     OVERVIEW_QUERY,
-    {
-      inVigoareIn: ['in-vigoare'],
-      modificatIn: ['modificat'],
-      abrogatIn: ['abrogat', 'abrogat-partial'],
-      moYear,
-    },
+    { moYear },
     { operationName: 'legislationOverview', auth: 'none', signal },
   )
 }
@@ -156,12 +129,6 @@ export async function fetchLegislationOverviewLive(
   }
 
   return legislationOverviewSchema.parse({
-    counts: {
-      total: requiredCount(rec(data.all).totalCount, 'total'),
-      inVigoare: requiredCount(rec(data.inVigoare).totalCount, 'inVigoare'),
-      modificat: requiredCount(rec(data.modificat).totalCount, 'modificat'),
-      abrogat: requiredCount(rec(data.abrogat).totalCount, 'abrogat'),
-    },
     mostCitedActs: nodes(data.mostCited).map(mapActNode),
     latestGazetteIssues: nodes(data.moIssues).map(mapIssueNode),
     coverage: {
