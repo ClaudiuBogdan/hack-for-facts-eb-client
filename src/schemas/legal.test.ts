@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { gazetteBrowseSearchSchema, legalChangesSearchSchema } from './legal'
+import {
+  gazetteBrowseSearchSchema,
+  legalChangesSearchSchema,
+  legalFinderSearchSchema,
+} from './legal'
 
 /**
  * `/legislation/gazette` URL params run through `validateSearch`: a throwing
@@ -119,5 +123,44 @@ describe('legalChangesSearchSchema', () => {
     expect(
       legalChangesSearchSchema.parse({ view: 'nedatate', since: '2026-01-01' }),
     ).toEqual({ view: 'nedatate', since: '2026-01-01' })
+  })
+})
+
+describe('legalFinderSearchSchema', () => {
+  it('passes a query and the historical widening through unchanged', () => {
+    expect(
+      legalFinderSearchSchema.parse({ q: 'Legea 53/2003', historical: true }),
+    ).toEqual({ q: 'Legea 53/2003', historical: true })
+  })
+
+  it('parses an empty search to the landing state', () => {
+    expect(legalFinderSearchSchema.parse({})).toEqual({})
+  })
+
+  it('coerces a numeric-looking q back to text instead of dropping it', () => {
+    // TanStack Router JSON-parses params: `?q=227` arrives as the NUMBER 227.
+    // Dropping it would silently blank a legitimate act-number query.
+    expect(legalFinderSearchSchema.parse({ q: 227 }).q).toBe('227')
+  })
+
+  it('drops null/boolean q as junk, never as the literal text "null"', () => {
+    expect(legalFinderSearchSchema.parse({ q: null }).q).toBeUndefined()
+    expect(legalFinderSearchSchema.parse({ q: true }).q).toBeUndefined()
+    expect(legalFinderSearchSchema.parse({ q: '' }).q).toBeUndefined()
+  })
+
+  it('drops an oversized q instead of erroring the route', () => {
+    expect(
+      legalFinderSearchSchema.parse({ q: 'a'.repeat(401) }).q,
+    ).toBeUndefined()
+  })
+
+  it('stores only historical=true — false and junk mean URL-absence', () => {
+    expect(
+      legalFinderSearchSchema.parse({ historical: false }).historical,
+    ).toBeUndefined()
+    expect(
+      legalFinderSearchSchema.parse({ historical: 'da' }).historical,
+    ).toBeUndefined()
   })
 })

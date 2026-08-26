@@ -18,6 +18,7 @@ type TabSpec = {
   readonly to?:
     | '/legislation'
     | '/legislation/analytics'
+    | '/legislation/search'
     | '/legislation/acts'
     | '/legislation/changes'
     | '/legislation/gazette'
@@ -30,14 +31,14 @@ type Props = {
 /**
  * Section navigation for `/legislation`.
  *
- * **Prezentare**, **Analiză**, **Acte**, **Modificări** and **Monitorul
- * Oficial** have routes; the other two are rendered but inert — deliberately:
- * the tab set is the module's information architecture
+ * **Prezentare**, **Analiză**, **Caută**, **Acte**, **Modificări** and
+ * **Monitorul Oficial** have routes; **Ghid** alone is rendered but inert —
+ * deliberately: the tab set is the module's information architecture
  * (`docs/design/legal/main-page.md` §3), and hiding it until every route
- * exists would misrepresent the shape of the domain. They become links by
- * gaining a `to`, with no other change — Modificări did exactly that once the
- * server shipped the global `legalRecentChanges` feed (the §6.1 gap that had
- * kept it inert).
+ * exists would misrepresent the shape of the domain. It becomes a link by
+ * gaining a `to`, with no other change — Modificări and Caută each did
+ * exactly that once their server capability shipped (the global
+ * `legalRecentChanges` feed, then the `legalSearch` citation/name finder).
  *
  * Analiză sits second rather than last, where an analytics tab normally goes:
  * it holds the corpus figures that used to be on the landing page, and burying
@@ -48,7 +49,7 @@ export function LegislationTabNav({ activeTab }: Props) {
   const tabs: ReadonlyArray<TabSpec> = [
     { id: 'prezentare', label: t`Prezentare`, to: '/legislation' },
     { id: 'analiza', label: t`Analiză`, to: '/legislation/analytics' },
-    { id: 'cauta', label: t`Caută` },
+    { id: 'cauta', label: t`Caută`, to: '/legislation/search' },
     { id: 'acte', label: t`Acte`, to: '/legislation/acts' },
     { id: 'modificari', label: t`Modificări`, to: '/legislation/changes' },
     { id: 'monitorul', label: t`Monitorul Oficial`, to: '/legislation/gazette' },

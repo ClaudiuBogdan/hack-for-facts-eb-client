@@ -60,6 +60,7 @@ import { Route as LegislationIndexRouteImport } from './routes/legislation/index
 import { Route as LegislationAnalyticsRouteImport } from './routes/legislation/analytics'
 import { Route as LegislationChangesRouteImport } from './routes/legislation/changes'
 import { Route as LegislationGazetteRouteImport } from './routes/legislation/gazette'
+import { Route as LegislationSearchRouteImport } from './routes/legislation/search'
 import { Route as OngUriIndexRouteImport } from './routes/ong-uri/index'
 import { Route as OngUriCuiRouteImport } from './routes/ong-uri.$cui'
 import { Route as OngUriServiciiRouteImport } from './routes/ong-uri.servicii'
@@ -479,6 +480,13 @@ const LegislationGazetteRoute = LegislationGazetteRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
   import('./routes/legislation/gazette.lazy').then((d) => d.Route),
+)
+const LegislationSearchRoute = LegislationSearchRouteImport.update({
+  id: '/legislation/search',
+  path: '/legislation/search',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/legislation/search.lazy').then((d) => d.Route),
 )
 const OngUriIndexRoute = OngUriIndexRouteImport.update({
   id: '/',
@@ -1452,6 +1460,7 @@ export interface FileRoutesByFullPath {
   '/legislation/analytics': typeof LegislationAnalyticsRoute
   '/legislation/changes': typeof LegislationChangesRoute
   '/legislation/gazette': typeof LegislationGazetteRoute
+  '/legislation/search': typeof LegislationSearchRoute
   '/ong-uri/$cui': typeof OngUriCuiRoute
   '/ong-uri/servicii': typeof OngUriServiciiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
@@ -1619,6 +1628,7 @@ export interface FileRoutesByTo {
   '/legislation/analytics': typeof LegislationAnalyticsRoute
   '/legislation/changes': typeof LegislationChangesRoute
   '/legislation/gazette': typeof LegislationGazetteRoute
+  '/legislation/search': typeof LegislationSearchRoute
   '/ong-uri/$cui': typeof OngUriCuiRoute
   '/ong-uri/servicii': typeof OngUriServiciiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
@@ -1792,6 +1802,7 @@ export interface FileRoutesById {
   '/legislation/analytics': typeof LegislationAnalyticsRoute
   '/legislation/changes': typeof LegislationChangesRoute
   '/legislation/gazette': typeof LegislationGazetteRoute
+  '/legislation/search': typeof LegislationSearchRoute
   '/ong-uri/$cui': typeof OngUriCuiRoute
   '/ong-uri/servicii': typeof OngUriServiciiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
@@ -1971,6 +1982,7 @@ export interface FileRouteTypes {
     | '/legislation/analytics'
     | '/legislation/changes'
     | '/legislation/gazette'
+    | '/legislation/search'
     | '/ong-uri/$cui'
     | '/ong-uri/servicii'
     | '/pnrr/share-image.png'
@@ -2138,6 +2150,7 @@ export interface FileRouteTypes {
     | '/legislation/analytics'
     | '/legislation/changes'
     | '/legislation/gazette'
+    | '/legislation/search'
     | '/ong-uri/$cui'
     | '/ong-uri/servicii'
     | '/pnrr/share-image.png'
@@ -2310,6 +2323,7 @@ export interface FileRouteTypes {
     | '/legislation/analytics'
     | '/legislation/changes'
     | '/legislation/gazette'
+    | '/legislation/search'
     | '/ong-uri/$cui'
     | '/ong-uri/servicii'
     | '/pnrr/share-image.png'
@@ -2482,6 +2496,7 @@ export interface RootRouteChildren {
   LegislationAnalyticsRoute: typeof LegislationAnalyticsRoute
   LegislationChangesRoute: typeof LegislationChangesRoute
   LegislationGazetteRoute: typeof LegislationGazetteRoute
+  LegislationSearchRoute: typeof LegislationSearchRoute
   PnrrJudeteRoute: typeof PnrrJudeteRoute
   PnrrOrganizatiiRoute: typeof PnrrOrganizatiiRoute
   PnrrProiecteRoute: typeof PnrrProiecteRoute
@@ -2905,6 +2920,13 @@ declare module '@tanstack/react-router' {
       path: '/legislation/gazette'
       fullPath: '/legislation/gazette'
       preLoaderRoute: typeof LegislationGazetteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legislation/search': {
+      id: '/legislation/search'
+      path: '/legislation/search'
+      fullPath: '/legislation/search'
+      preLoaderRoute: typeof LegislationSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ong-uri/': {
@@ -4206,6 +4228,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegislationAnalyticsRoute: LegislationAnalyticsRoute,
   LegislationChangesRoute: LegislationChangesRoute,
   LegislationGazetteRoute: LegislationGazetteRoute,
+  LegislationSearchRoute: LegislationSearchRoute,
   PnrrJudeteRoute: PnrrJudeteRoute,
   PnrrOrganizatiiRoute: PnrrOrganizatiiRoute,
   PnrrProiecteRoute: PnrrProiecteRoute,

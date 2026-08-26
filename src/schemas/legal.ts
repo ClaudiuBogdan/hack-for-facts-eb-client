@@ -683,6 +683,89 @@ export const legalResolveHitSchema = z.object({
 })
 export type LegalResolveHit = z.infer<typeof legalResolveHitSchema>
 
+/**
+ * One act hit of `legalSearch` — the server's `LegalDocHit`, whose act is
+ * NESTED (`{ score, act, summary }`), never a flat act row. `description` is
+ * `summary.description` flattened by the adapter: the result card quotes one
+ * enrichment sentence, and carrying the whole 10-field summary object through
+ * the UI boundary for that one line would be weight without a reader.
+ */
+export const legalSearchActHitSchema = z.object({
+  score: z.number(),
+  act: legalActListItemSchema,
+  description: z.string().nullable(),
+})
+export type LegalSearchActHit = z.infer<typeof legalSearchActHitSchema>
+
+/**
+ * The English machine sentinel the server pushes into `legalSearch.caveats`
+ * when the semantic leg cannot run — byte-exact copy of `SEMANTIC_CAVEAT` in
+ * `hack-for-facts-eb-server/src/modules/legal/core/usecases.ts`. The finder
+ * translates THIS ONE caveat into the phrase-honesty messaging and renders
+ * every other caveat verbatim; keying the messaging on `degraded` instead
+ * would double-message on the engine path, whose own semantic caveat is
+ * already Romanian prose.
+ */
+export const LEGAL_SEMANTIC_UNAVAILABLE_CAVEAT = 'semantic search unavailable'
+
+/**
+ * The `legalSearch` answer the Caută tab consumes — acts channel only. The
+ * tab asks `channel: docs` deliberately: measured on production 2026-08-26,
+ * the sections channel matches the act's NAME and echoes that act's sections
+ * back ("codul muncii" → 5 sections of the code itself), while genuine text
+ * phrases ("concediu de odihna", "salariul minim") return nothing — so
+ * serving sections would dress a name lookup as the text search that does
+ * not exist yet. Re-open the channel when the OpenSearch engine ships and
+ * sections become content matches.
+ *
+ * The honesty fields travel untouched:
+ *  - `actsTotal` null means the answering path CANNOT count (the Postgres
+ *    path serves a bounded slice) — render "unknown", never 0;
+ *  - `totalsExhaustive` false makes any served total a lower bound;
+ *  - `degraded` true means a leg the request wanted could not run, and
+ *    `caveats` says which (including the sentinel above);
+ *  - `unhydratedHits` > 0 means the page is SHORTER than the engine ranking;
+ *  - `engine` names the answering path ('opensearch' | 'postgres');
+ *  - `asOf` is the index build stamp, null on the Postgres path.
+ */
+export const legalSearchResultSchema = z.object({
+  acts: z.array(legalSearchActHitSchema),
+  caveats: z.array(z.string()),
+  engine: z.string(),
+  actsTotal: z.number().int().nullable(),
+  totalsExhaustive: z.boolean(),
+  degraded: z.boolean(),
+  asOf: z.string().nullable(),
+  unhydratedHits: z.number().int(),
+})
+export type LegalSearchResultData = z.infer<typeof legalSearchResultSchema>
+
+/**
+ * URL state for `/legislation/search` — the Caută tab, so a search is a
+ * shareable link. TanStack Router JSON-parses search params, so a
+ * numeric-looking `q` (`?q=227`) arrives as a NUMBER — coerce it back to text
+ * rather than dropping a legitimate query, but treat `null`/booleans as junk
+ * (`z.coerce.string()` alone would turn `?q=null` into the literal text
+ * "null" and search for it); the same trap and cure as `entity-search.ts`'s
+ * `optionalSearchString`.
+ *
+ * `historical: true` widens the search to abrogated / out-of-force acts (the
+ * server's `includeHistorical`, default false — which silently zeroes even an
+ * exact-citation lookup of a repealed law). Only `true` is a stored value:
+ * the default is URL-absence, so `?historical=false` and junk both drop.
+ */
+export const legalFinderSearchSchema = z.object({
+  q: z
+    .preprocess(
+      (value) =>
+        value === null || typeof value === 'boolean' ? undefined : value,
+      z.coerce.string().min(1).max(400).optional(),
+    )
+    .catch(undefined),
+  historical: z.literal(true).optional().catch(undefined),
+})
+export type LegalFinderSearch = z.infer<typeof legalFinderSearchSchema>
+
 /** The composed payload behind the `/legislation` overview tab. */
 export const legislationOverviewSchema = z.object({
   counts: legalActCountsSchema,
