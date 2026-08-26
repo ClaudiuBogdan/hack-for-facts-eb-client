@@ -1,72 +1,72 @@
 import { queryOptions, useMutation, useQuery } from '@tanstack/react-query'
-import { generateHash } from '@/lib/utils'
 import type {
   DatasetRequestPayload,
-  StatisticsLanding,
-  StatisticsTerritoryHubResult,
+  StatisticsLandingCatalog,
+  StatisticsLandingData,
+  StatisticsUatSnapshot,
 } from '@/schemas/statistics'
 import {
-  fetchStatisticsLanding,
+  fetchLandingCatalog,
+  fetchLandingData,
   fetchStatisticsTerritoryHub,
+  fetchUatSnapshot,
   submitDatasetRequest,
 } from '../api/statistics-api'
 
 const DEFAULT_STALE_TIME = 1000 * 60 * 15
+/**
+ * The server caches every INS read for 24h, so a long client staleTime costs
+ * nothing in freshness and saves refetch churn.
+ */
 const LONG_STALE_TIME = 1000 * 60 * 60 * 24
 
-function buildHash(payload: unknown): string {
-  if (typeof payload === 'string') {
-    return generateHash(payload)
-  }
-  return generateHash(JSON.stringify(payload))
-}
-
-function splitEnabled<T extends object>(params: T & { enabled?: boolean }): {
-  enabled: boolean
-  queryParams: T
-} {
-  const { enabled = true, ...queryParams } = params
-  return {
-    enabled,
-    queryParams: queryParams as T,
-  }
-}
-
-function createQueryOptions<TData>(params: {
-  key: string
-  hashSource: unknown
-  queryFn: () => Promise<TData>
-  enabled: boolean
-  staleTime: number
-}) {
-  return queryOptions<TData>({
-    queryKey: [params.key, buildHash(params.hashSource)],
-    queryFn: params.queryFn,
-    enabled: params.enabled,
-    staleTime: params.staleTime,
+/**
+ * Query keys are readable tuples (`['statistics', ...]` prefix) so targeted
+ * invalidation works. Each landing aggregate has its own key: one failing
+ * POST degrades one band, never the page.
+ */
+export const statisticsLandingDataQueryOptions = (
+  initialData?: StatisticsLandingData,
+) =>
+  queryOptions<StatisticsLandingData>({
+    queryKey: ['statistics', 'landing', 'observations'] as const,
+    queryFn: ({ signal }) => fetchLandingData(signal),
+    staleTime: LONG_STALE_TIME,
+    ...(initialData ? { initialData } : {}),
   })
-}
 
-// ---------------------------------------------------------------------------
-// Statistics landing
-// ---------------------------------------------------------------------------
+export const statisticsLandingCatalogQueryOptions = (
+  initialData?: StatisticsLandingCatalog,
+) =>
+  queryOptions<StatisticsLandingCatalog>({
+    queryKey: ['statistics', 'landing', 'catalog'] as const,
+    queryFn: ({ signal }) => fetchLandingCatalog(signal),
+    staleTime: LONG_STALE_TIME,
+    ...(initialData ? { initialData } : {}),
+  })
 
-export const statisticsLandingQueryOptions = (params: {
-  enabled?: boolean
-}) => {
-  const { enabled } = splitEnabled({ enabled: params.enabled })
-
-  return createQueryOptions<StatisticsLanding>({
-    key: 'statisticsLanding',
-    hashSource: 'landing',
-    queryFn: () => fetchStatisticsLanding(),
-    enabled,
+export const statisticsUatSnapshotQueryOptions = (siruta: string) =>
+  queryOptions<StatisticsUatSnapshot>({
+    queryKey: ['statistics', 'landing', 'uat', siruta] as const,
+    queryFn: ({ signal }) => fetchUatSnapshot(siruta, signal),
     staleTime: LONG_STALE_TIME,
   })
+
+export function useStatisticsLandingData(initialData?: StatisticsLandingData) {
+  return useQuery(statisticsLandingDataQueryOptions(initialData))
 }
 
-export function useStatisticsLanding(params: { enabled?: boolean } = {}) {
-  return useQuery(statisticsLandingQueryOptions(params))
+export function useStatisticsLandingCatalog(
+  initialData?: StatisticsLandingCatalog,
+) {
+  return useQuery(statisticsLandingCatalogQueryOptions(initialData))
+}
+
+export function useStatisticsUatSnapshot(siruta: string | undefined) {
+  return useQuery({
+    ...statisticsUatSnapshotQueryOptions(siruta ?? ''),
+    enabled: Boolean(siruta),
+  })
 }
 
 // ---------------------------------------------------------------------------
@@ -82,14 +82,12 @@ export const statisticsTerritoryHubQueryOptions = (params: {
   siruta: string
   enabled?: boolean
 }) => {
-  const { enabled, queryParams } = splitEnabled(params)
-  const normalizedSiruta = queryParams.siruta.trim()
+  const normalizedSiruta = params.siruta.trim()
 
-  return createQueryOptions<StatisticsTerritoryHubResult | null>({
-    key: 'statisticsTerritoryHub',
-    hashSource: { siruta: normalizedSiruta },
+  return queryOptions({
+    queryKey: ['statistics', 'territory-hub', normalizedSiruta] as const,
     queryFn: () => fetchStatisticsTerritoryHub(normalizedSiruta),
-    enabled: enabled && normalizedSiruta.length > 0,
+    enabled: (params.enabled ?? true) && normalizedSiruta.length > 0,
     staleTime: DEFAULT_STALE_TIME,
   })
 }

@@ -66,9 +66,13 @@ export function buildCoverageFromCatalog(params: {
 /**
  * Human-readable ribbon text for the coverage summary.
  *
+ * When the counts are PARTIAL (built from a truncated catalog page) no ratio
+ * is printed — "200 din 1.898" out of a clamped page is a fabricated
+ * fraction, not a measurement.
+ *
  * Examples:
  * - "27 din 1.898 seturi cu date disponibile"
- * - "Date disponibile în 27 din 1.898 seturi (listă parțială)"
+ * - "27 seturi cu date disponibile (listă parțială)"
  */
 export function buildCoverageRibbonText(
   coverage: StatisticsCoverageSummary,
@@ -76,12 +80,11 @@ export function buildCoverageRibbonText(
 ): string {
   const available = coverage.availableDatasetCount.toLocaleString('ro-RO')
   const total = coverage.totalDatasetCount.toLocaleString('ro-RO')
-  const base = t`${available} din ${total} seturi cu date disponibile`
 
   if (coverage.partial) {
     const suffix = options?.partialSuffix ?? t`(listă parțială)`
-    return `${base} ${suffix}`
+    return `${t`${available} seturi cu date disponibile`} ${suffix}`
   }
 
-  return base
+  return t`${available} din ${total} seturi cu date disponibile`
 }

@@ -14,6 +14,11 @@ import { StatisticsDebouncedSearchInput } from './filters/statistics-debounced-s
 type Props = {
   readonly term: string | undefined
   readonly onTermChange: (term: string | undefined) => void
+  /**
+   * When provided, LAU rows become pick buttons (the landing „Locul tău"
+   * flow) instead of links into the territory hub.
+   */
+  readonly onSelectTerritory?: (row: StatisticsTerritorySearchRow) => void
 }
 
 /**
@@ -23,7 +28,7 @@ type Props = {
  * to the budget world. County (NUTS3) rows have none, so they are shown for
  * orientation but are not navigable — saying so beats a link that 404s.
  */
-export function TerritorySearch({ term, onTermChange }: Props) {
+export function TerritorySearch({ term, onTermChange, onSelectTerritory }: Props) {
   const query = useTerritorySearch(term)
   const hasTerm = (term ?? '').trim().length >= TERRITORY_SEARCH_MIN_LENGTH
 
@@ -92,7 +97,10 @@ export function TerritorySearch({ term, onTermChange }: Props) {
         <ul className="divide-y rounded-lg border border-border/70">
           {query.data.rows.map((row) => (
             <li key={row.code}>
-              <TerritoryResultRow row={row} />
+              <TerritoryResultRow
+                row={row}
+                {...(onSelectTerritory ? { onSelect: onSelectTerritory } : {})}
+              />
             </li>
           ))}
         </ul>
@@ -101,7 +109,13 @@ export function TerritorySearch({ term, onTermChange }: Props) {
   )
 }
 
-function TerritoryResultRow({ row }: { readonly row: StatisticsTerritorySearchRow }) {
+function TerritoryResultRow({
+  row,
+  onSelect,
+}: {
+  readonly row: StatisticsTerritorySearchRow
+  readonly onSelect?: (row: StatisticsTerritorySearchRow) => void
+}) {
   const label = row.name ?? row.code
   const meta = [row.countyName, row.siruta ? `SIRUTA ${row.siruta}` : null]
     .filter(Boolean)
@@ -118,6 +132,27 @@ function TerritoryResultRow({ row }: { readonly row: StatisticsTerritorySearchRo
         </div>
         <LevelBadge level={row.level} />
       </div>
+    )
+  }
+
+  if (onSelect) {
+    return (
+      <button
+        type="button"
+        onClick={() => onSelect(row)}
+        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+      >
+        <div className="flex min-w-0 items-center gap-2">
+          <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+          <div className="min-w-0">
+            <span className="block truncate font-medium text-foreground">{label}</span>
+            {meta ? (
+              <span className="block truncate text-xs text-muted-foreground">{meta}</span>
+            ) : null}
+          </div>
+        </div>
+        <LevelBadge level={row.level} />
+      </button>
     )
   }
 

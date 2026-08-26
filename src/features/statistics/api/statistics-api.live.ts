@@ -1,7 +1,7 @@
 import { t } from '@lingui/core/macro'
+import { z } from 'zod'
 import {
   getInsCountyDashboard,
-  getInsDatasetsByCodes,
   getInsDatasetsCatalog,
   getInsUatDashboard,
 } from '@/features/statistics/api/graphql/ins-fetchers'
@@ -12,7 +12,6 @@ import { getApiBaseUrl } from '@/config/env'
 import { createLogger } from '@/lib/logger'
 import type {
   InsDashboardData,
-  InsDataset,
   InsObservation,
   InsTerritory,
   InsTimePeriod,
@@ -22,9 +21,7 @@ import type {
   DatasetRequestPayload,
   DatasetRequestResult,
   StatisticsCoverageSummary,
-  StatisticsDatasetSummary,
   StatisticsIndicatorTile,
-  StatisticsLanding,
   StatisticsTerritoryHubResult,
   StatisticsTerritoryIdentity,
 } from '@/schemas/statistics'
@@ -53,99 +50,6 @@ const TOP_UAT_DATASET_CODES = [
 ] as const
 
 const CATALOG_LIMIT = 2000
-
-// ---------------------------------------------------------------------------
-// Landing
-// ---------------------------------------------------------------------------
-
-/**
- * Fetches the statistics landing payload from the live INS catalog.
- *
- * Delegates to `getInsDatasetsCatalog(limit: 2000)` to build coverage and
- * the "top datasets" summaries. Coverage counts come from the catalog
- * `pageInfo.totalCount` + per-dataset `sync_status` (never invented).
- */
-export async function fetchStatisticsLandingLive(): Promise<StatisticsLanding> {
-  logger.info('Fetching statistics landing', {
-    catalogLimit: CATALOG_LIMIT,
-  })
-
-  const catalog = await getInsDatasetsCatalog({ limit: CATALOG_LIMIT })
-  const datasets = catalog.nodes ?? []
-
-  const coverage = buildCoverageFromCatalog({
-    datasets,
-    totalCount: catalog.pageInfo?.totalCount ?? datasets.length,
-    hasNextPage: catalog.pageInfo?.hasNextPage ?? false,
-  })
-
-  const topDatasets = await buildTopDatasetSummaries(datasets)
-
-  const latestDataPeriod = pickLatestPeriod(
-    topDatasets.map((summary) => summary.latestPeriod ?? ''),
-  )
-
-  return {
-    topDatasets,
-    coverage,
-    latestDataPeriod,
-  }
-}
-
-async function buildTopDatasetSummaries(
-  catalogDatasets: readonly InsDataset[],
-): Promise<readonly StatisticsDatasetSummary[]> {
-  const catalogByCode = new Map(
-    catalogDatasets.map((dataset) => [dataset.code, dataset]),
-  )
-
-  const missingCodes = TOP_UAT_DATASET_CODES.filter(
-    (code) => !catalogByCode.has(code),
-  )
-
-  // Delegate to getInsDatasetsByCodes for any top codes not in the catalog page.
-  const extraDatasets =
-    missingCodes.length > 0 ? await getInsDatasetsByCodes(missingCodes) : []
-
-  const topDatasets = TOP_UAT_DATASET_CODES.flatMap((code) => {
-    const dataset = catalogByCode.get(code)
-    if (dataset) return [dataset]
-    return extraDatasets.filter((extra) => extra.code === code)
-  })
-
-  const catalogOnlyPreview = catalogDatasets.find(
-    (dataset) =>
-      getDatasetDataStatus(dataset) === 'catalog-only' &&
-      !topDatasets.some((topDataset) => topDataset.code === dataset.code),
-  )
-
-  return [...topDatasets, ...(catalogOnlyPreview ? [catalogOnlyPreview] : [])]
-    .map(toDatasetSummary)
-}
-
-function toDatasetSummary(dataset: InsDataset): StatisticsDatasetSummary {
-  const dataStatus = getDatasetDataStatus(dataset)
-  const yearRange = dataset.year_range
-  const latestYear =
-    dataStatus === 'available' && yearRange && yearRange.length > 0
-      ? yearRange[yearRange.length - 1]
-      : null
-
-  return {
-    code: dataset.code,
-    nameRo: dataset.name_ro ?? null,
-    nameEn: dataset.name_en ?? null,
-    periodicity: dataset.periodicity,
-    yearRange: dataset.year_range ?? null,
-    hasUatData: dataset.has_uat_data,
-    hasCountyData: dataset.has_county_data,
-    hasSiruta: dataset.has_siruta,
-    dataStatus,
-    latestPeriod: latestYear ? latestYear.toString() : null,
-    contextNameRo: dataset.context_name_ro ?? null,
-    contextPath: dataset.context_path ?? null,
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Territory hub
@@ -462,21 +366,6 @@ async function buildHubCoverage(): Promise<StatisticsCoverageSummary> {
   }
 }
 
-/**
- * Picks the chronologically latest non-empty period string from a list.
- * Used to derive the landing "data-through" period from dataset summaries
- * without `Array.prototype.at` (keeps the lib target compatible).
- */
-function pickLatestPeriod(periods: readonly string[]): string | null {
-  let latest: string | null = null
-  for (const period of periods) {
-    if (period.length === 0) continue
-    if (latest === null || period > latest) {
-      latest = period
-    }
-  }
-  return latest
-}
 
 function resolveHubLatestPeriod(dashboard: InsDashboardData): string | null {
   let latest: string | null = null
@@ -534,19 +423,27 @@ export async function submitDatasetRequestLive(
     body: JSON.stringify(payload),
   })
 
-  if (!response.ok) {
+  const envelope = await parseDatasetRequestEnvelope(response)
+
+  // The REST contract answers { ok: boolean } on EVERY status — a 2xx body
+  // can still carry ok:false, so acceptance reads the envelope, never the
+  // HTTP status alone.
+  if (!response.ok || envelope?.ok !== true) {
     logger.warn('Dataset request rejected', {
       datasetCode: payload.datasetCode,
       status: response.status,
+      envelopeError: envelope?.error ?? null,
     })
 
     return {
       accepted: false,
       datasetCode: payload.datasetCode,
       message:
-        response.status === 400
-          ? t`Cererea nu a fost acceptată. Verifică setul de date selectat.`
-          : t`Nu am putut trimite cererea. Încearcă din nou mai târziu.`,
+        response.status === 429
+          ? t`Prea multe cereri într-un minut. Așteaptă puțin și încearcă din nou.`
+          : response.status === 400 || envelope?.error === 'ValidationError'
+            ? t`Cererea nu a fost acceptată. Verifică setul de date selectat.`
+            : t`Nu am putut trimite cererea. Încearcă din nou mai târziu.`,
     }
   }
 
@@ -554,5 +451,23 @@ export async function submitDatasetRequestLive(
     accepted: true,
     datasetCode: payload.datasetCode,
     message: t`Cererea a fost înregistrată. Îți mulțumim!`,
+  }
+}
+
+const datasetRequestEnvelopeSchema = z.object({
+  ok: z.boolean(),
+  error: z.string().optional(),
+  message: z.string().optional(),
+})
+
+/** Body-parse failure yields null: an unreadable envelope is a rejection. */
+async function parseDatasetRequestEnvelope(
+  response: Response,
+): Promise<z.infer<typeof datasetRequestEnvelopeSchema> | null> {
+  try {
+    const body: unknown = await response.json()
+    return datasetRequestEnvelopeSchema.parse(body)
+  } catch {
+    return null
   }
 }

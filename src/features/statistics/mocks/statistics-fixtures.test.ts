@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest'
 import type { StatisticsIndicatorTile } from '@/schemas/statistics'
 import { applyHubPeriod } from '../lib/hub-period'
 import {
-  getMockStatisticsLanding,
+  getMockStatisticsLandingCatalog,
+  getMockStatisticsLandingData,
   getMockStatisticsTerritoryHub,
+  getMockStatisticsUatSnapshot,
 } from './statistics-fixtures'
 
 describe('statistics mock fixtures', () => {
@@ -87,22 +89,37 @@ describe('statistics mock fixtures', () => {
     expect(somTile?.unitSymbol).toBe('lei')
   })
 
-  it('builds landing with available top datasets and coverage derived from the mock catalog', () => {
-    const landing = getMockStatisticsLanding()
-    const codes = landing.topDatasets.map((dataset) => dataset.code)
-    expect(codes).toEqual([
-      'POP107D',
-      'FOM104D',
-      'SOM101F',
-      'SOM103A',
-      'LOC101B',
-      'TUR101C',
-    ])
-    // Catalog-only TUR101C remains visible so the landing can show the
-    // coverage gap with a request action.
-    expect(codes).toContain('TUR101C')
-    expect(landing.coverage.availableDatasetCount).toBe(27)
-    expect(landing.coverage.totalDatasetCount).toBe(1898)
+  it('serves the four national tiles with unit, period, and provenance code', () => {
+    const landing = getMockStatisticsLandingData()
+    const codes = landing.nationalValues.map((value) => value.datasetCode)
+    expect(codes).toEqual(['POP107D', 'FOM104D', 'SOM101F', 'LOC101B'])
+    for (const value of landing.nationalValues) {
+      expect(value.value).not.toBeNull()
+      expect(value.unitSymbol).not.toBeNull()
+      expect(value.period).not.toBeNull()
+    }
+  })
+
+  it('carries both decade endpoints for ranked counties and a missing endpoint for one', () => {
+    const landing = getMockStatisticsLandingData()
+    const clujYears = landing.decadeRows
+      .filter((row) => row.countyCode === 'CJ')
+      .map((row) => row.year)
+      .sort()
+    expect(clujYears).toEqual([2016, 2025])
+    const missing = landing.decadeRows.filter((row) => row.countyCode === 'XX')
+    expect(missing).toHaveLength(1)
+  })
+
+  it('answers catalog counts whose theme totals sum to the catalog', () => {
+    const catalog = getMockStatisticsLandingCatalog()
+    const themeSum = catalog.themes.reduce((sum, theme) => sum + theme.count, 0)
+    expect(themeSum).toBe(catalog.catalogCount)
+  })
+
+  it('returns a null-territory snapshot for an unknown SIRUTA', () => {
+    expect(getMockStatisticsUatSnapshot('00000000').territory).toBeNull()
+    expect(getMockStatisticsUatSnapshot('54975').territory?.siruta).toBe('54975')
   })
 
   it('emits related links only to existing routes (no deferred statistics routes)', () => {

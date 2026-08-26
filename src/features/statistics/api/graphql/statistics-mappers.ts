@@ -1,10 +1,19 @@
 import type {
   StatisticsDatasetDataStatus,
   StatisticsDatasetSummary,
+  StatisticsDecadeObservation,
+  StatisticsExampleObservation,
+  StatisticsLatestValue,
   StatisticsTerritorySearchRow,
 } from '@/schemas/statistics'
 import { getDatasetDataStatus } from '../../lib/dataset-status'
-import type { InsDatasetNodeRaw, InsTerritoryNodeRaw } from './statistics-raw-schemas'
+import type {
+  InsDatasetNodeRaw,
+  InsLatestValueNodeRaw,
+  InsTerritoryNodeRaw,
+  LandingDecadeNodeRaw,
+  LandingExampleNodeRaw,
+} from './statistics-raw-schemas'
 
 /**
  * Wire → domain mappers. Every optional wire field lands as an explicit `null`
@@ -54,4 +63,60 @@ export function mapTerritorySearchRow(
     countyCode: node.level === 'LAU' ? (node.parent_code ?? null) : null,
     countyName: node.level === 'LAU' ? (node.parent_name_ro ?? null) : null,
   }
+}
+
+export function mapLatestValue(node: InsLatestValueNodeRaw): StatisticsLatestValue {
+  return {
+    datasetCode: node.dataset.code,
+    datasetNameRo: node.dataset.name_ro ?? null,
+    datasetNameEn: node.dataset.name_en ?? null,
+    periodicity: node.dataset.periodicity ?? [],
+    matchStrategy: node.matchStrategy,
+    hasData: node.hasData,
+    value: node.observation?.value ?? null,
+    valueStatus: node.observation?.value_status ?? null,
+    unitSymbol: node.observation?.unit?.symbol ?? null,
+    unitNameRo: node.observation?.unit?.name_ro ?? null,
+    period: node.observation?.time_period.iso_period ?? node.latestPeriod ?? null,
+  }
+}
+
+/**
+ * Rows without a territory are dropped (a county row without its county is
+ * unusable); rows with a `value_status` marker keep their value — the status
+ * is the flag, absence stays `null`.
+ */
+export function mapDecadeRows(
+  nodes: readonly LandingDecadeNodeRaw[],
+): readonly StatisticsDecadeObservation[] {
+  return nodes.flatMap((node) => {
+    if (!node.territory) return []
+    return [
+      {
+        countyCode: node.territory.code,
+        countyName: node.territory.name_ro ?? null,
+        year: node.time_period.year,
+        value: node.value ?? null,
+      },
+    ]
+  })
+}
+
+export function mapExampleRows(
+  nodes: readonly LandingExampleNodeRaw[],
+): readonly StatisticsExampleObservation[] {
+  return nodes.flatMap((node) => {
+    if (!node.territory) return []
+    return [
+      {
+        level: node.territory.level ?? null,
+        code: node.territory.code,
+        siruta: node.territory.siruta_code ?? null,
+        name: node.territory.name_ro ?? null,
+        year: node.time_period.year,
+        value: node.value ?? null,
+        unitSymbol: node.unit?.symbol ?? null,
+      },
+    ]
+  })
 }

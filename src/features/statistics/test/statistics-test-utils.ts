@@ -1,49 +1,60 @@
 import { vi } from 'vitest'
 import type { UseQueryResult } from '@tanstack/react-query'
 import type {
-  StatisticsLanding,
+  StatisticsLandingCatalog,
+  StatisticsLandingData,
   StatisticsTerritoryHubResult,
+  StatisticsUatSnapshot,
 } from '@/schemas/statistics'
-import { buildDocsFallbackCoverage } from '../lib/coverage'
-import { getMockStatisticsLanding, getMockStatisticsTerritoryHub } from '../mocks/statistics-fixtures'
+import {
+  getMockStatisticsLandingCatalog,
+  getMockStatisticsLandingData,
+  getMockStatisticsTerritoryHub,
+  getMockStatisticsUatSnapshot,
+} from '../mocks/statistics-fixtures'
 
 type QueryStub<TData> = Pick<
   UseQueryResult<TData>,
   'data' | 'isLoading' | 'isError' | 'isSuccess' | 'refetch'
 >
 
-export function createLandingQueryStub(
-  overrides: Partial<QueryStub<StatisticsLanding>> = {},
-): QueryStub<StatisticsLanding> {
+function createQueryStub<TData>(
+  data: TData,
+  overrides: Partial<QueryStub<TData>> = {},
+): QueryStub<TData> {
   return {
-    data: getMockStatisticsLanding(),
+    data,
     isLoading: false,
     isError: false,
     isSuccess: true,
     refetch: vi.fn(),
     ...overrides,
   }
+}
+
+export function createLandingDataQueryStub(
+  overrides: Partial<QueryStub<StatisticsLandingData>> = {},
+): QueryStub<StatisticsLandingData> {
+  return createQueryStub(getMockStatisticsLandingData(), overrides)
+}
+
+export function createLandingCatalogQueryStub(
+  overrides: Partial<QueryStub<StatisticsLandingCatalog>> = {},
+): QueryStub<StatisticsLandingCatalog> {
+  return createQueryStub(getMockStatisticsLandingCatalog(), overrides)
+}
+
+export function createUatSnapshotQueryStub(
+  siruta = '54975',
+  overrides: Partial<QueryStub<StatisticsUatSnapshot>> = {},
+): QueryStub<StatisticsUatSnapshot> {
+  return createQueryStub(getMockStatisticsUatSnapshot(siruta), overrides)
 }
 
 export function createTerritoryHubQueryStub(
   overrides: Partial<QueryStub<StatisticsTerritoryHubResult | null>> = {},
 ): QueryStub<StatisticsTerritoryHubResult | null> {
-  return {
-    data: getMockStatisticsTerritoryHub('54975'),
-    isLoading: false,
-    isError: false,
-    isSuccess: true,
-    refetch: vi.fn(),
-    ...overrides,
-  }
-}
-
-export function createEmptyLandingData(): StatisticsLanding {
-  return {
-    topDatasets: [],
-    coverage: buildDocsFallbackCoverage(),
-    latestDataPeriod: null,
-  }
+  return createQueryStub(getMockStatisticsTerritoryHub('54975'), overrides)
 }
 
 export function createPartialTerritoryHub(

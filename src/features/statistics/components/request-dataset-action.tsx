@@ -71,7 +71,7 @@ export function RequestDatasetAction({
             <Trans>nu are încă observații încărcate în această interfață.</Trans>
           </DialogDescription>
         </DialogHeader>
-        {requestMutation.data ? (
+        {requestMutation.data?.accepted ? (
           <div
             className="rounded-lg border border-border bg-muted/40 p-4 text-sm"
             role="status"
@@ -126,6 +126,11 @@ export function RequestDatasetAction({
                 </Trans>
               </p>
             )}
+            {requestMutation.data && !requestMutation.data.accepted ? (
+              <p className="text-sm text-destructive" role="status" aria-live="polite">
+                {requestMutation.data.message}
+              </p>
+            ) : null}
             {requestMutation.isError ? (
               <p className="text-sm text-destructive">
                 <Trans>Cererea nu a putut fi pregătită. Verifică emailul și încearcă din nou.</Trans>
@@ -137,7 +142,7 @@ export function RequestDatasetAction({
           <Button variant="outline" onClick={() => setOpen(false)}>
             <Trans>Închide</Trans>
           </Button>
-          {!requestMutation.data ? (
+          {!requestMutation.data?.accepted ? (
             <Button
               onClick={submitRequest}
               disabled={requestMutation.isPending}

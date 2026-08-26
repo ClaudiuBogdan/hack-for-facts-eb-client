@@ -1,0 +1,98 @@
+import type { ReactNode } from 'react'
+import { Link } from '@tanstack/react-router'
+import { t } from '@lingui/core/macro'
+import { Trans } from '@lingui/react/macro'
+import type { StatisticsLatestValue } from '@/schemas/statistics'
+import { formatObservationValue } from '../../lib/format'
+import { statisticsTheme } from '../../lib/statistics-theme'
+
+type StatTileBodyProps = {
+  readonly shortLabel: string
+  readonly latest: StatisticsLatestValue
+  readonly comparison?: ReactNode
+}
+
+/**
+ * Three-tier stat tile body: muted label → strong value → quiet metadata.
+ * The matrix code is a mono provenance chip, never the label.
+ */
+function StatTileBody({ shortLabel, latest, comparison }: StatTileBodyProps) {
+  const formatted = formatObservationValue(latest.value)
+
+  return (
+    <>
+      <span className={statisticsTheme.statTileLabel}>{shortLabel}</span>
+      {formatted !== null ? (
+        <span className={statisticsTheme.statTileValue}>
+          {formatted}
+          {latest.unitSymbol ? (
+            <span className={statisticsTheme.statTileUnit}> {latest.unitSymbol}</span>
+          ) : null}
+        </span>
+      ) : (
+        <span className="text-sm text-muted-foreground">
+          <Trans>Fără date pentru această perioadă</Trans>
+        </span>
+      )}
+      <span className={statisticsTheme.statTileMeta}>
+        {latest.period ?? '—'}
+        {latest.matchStrategy === 'REPRESENTATIVE_FALLBACK' ? (
+          <>
+            {' · '}
+            <span className="text-amber-700 dark:text-amber-400">
+              <Trans>selecție reprezentativă</Trans>
+            </span>
+          </>
+        ) : null}
+      </span>
+      {comparison}
+      <span className={statisticsTheme.provenanceChip} aria-label={t`Matrice INS`}>
+        {latest.datasetCode}
+      </span>
+    </>
+  )
+}
+
+/** National tile → dataset detail (țara has no territory hub). */
+export function NationalStatTile({
+  shortLabel,
+  latest,
+}: {
+  readonly shortLabel: string
+  readonly latest: StatisticsLatestValue
+}) {
+  return (
+    <Link
+      to="/statistici/seturi/$cod"
+      params={{ cod: latest.datasetCode }}
+      className={statisticsTheme.statTile}
+      title={latest.datasetNameRo ?? undefined}
+    >
+      <StatTileBody shortLabel={shortLabel} latest={latest} />
+    </Link>
+  )
+}
+
+/** „Locul tău" tile → the territory hub for the picked SIRUTA. */
+export function UatStatTile({
+  shortLabel,
+  latest,
+  siruta,
+  comparison,
+}: {
+  readonly shortLabel: string
+  readonly latest: StatisticsLatestValue
+  readonly siruta: string
+  readonly comparison?: ReactNode
+}) {
+  return (
+    <Link
+      to="/statistici/teritorii/$siruta"
+      params={{ siruta }}
+      className={statisticsTheme.statTile}
+      title={latest.datasetNameRo ?? undefined}
+    >
+      <StatTileBody shortLabel={shortLabel} latest={latest} comparison={comparison} />
+    </Link>
+  )
+}
