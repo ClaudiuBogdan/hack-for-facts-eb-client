@@ -34,7 +34,7 @@ msgstr " (activ)"
 msgid " / capita"
 msgstr " / locuitor"
 
-#: src/features/statistics/components/detail-accordion.tsx:181
+#: src/features/statistics/components/detail-accordion.tsx:196
 msgid "— (nicio observație pentru selecția curentă)"
 msgstr ""
 
@@ -1240,7 +1240,7 @@ msgstr ""
 msgid "Acoperire date justiție"
 msgstr ""
 
-#: src/features/statistics/pages/statistics-territory-hub-page.tsx:261
+#: src/features/statistics/pages/statistics-territory-hub-page.tsx:270
 msgid "Acoperire indicatori"
 msgstr ""
 
@@ -1281,7 +1281,7 @@ msgstr ""
 msgid "Acoperire temporală"
 msgstr ""
 
-#: src/features/statistics/components/detail-accordion.tsx:141
+#: src/features/statistics/components/detail-accordion.tsx:156
 msgid "Acoperire teritorială"
 msgstr ""
 
@@ -1311,7 +1311,7 @@ msgstr ""
 msgid "Acoperirea surselor"
 msgstr ""
 
-#: src/features/statistics/components/detail-accordion.tsx:266
+#: src/features/statistics/components/detail-accordion.tsx:281
 msgid "acoperit"
 msgstr ""
 
@@ -1603,8 +1603,8 @@ msgstr ""
 #~ msgstr ""
 
 #: src/features/statistics/components/comparison-states.tsx:65
-msgid "Adaugă două localități pentru a le compara pe același indicator."
-msgstr ""
+#~ msgid "Adaugă două localități pentru a le compara pe același indicator."
+#~ msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:376
 msgid "Add"
@@ -1934,7 +1934,7 @@ msgstr ""
 msgid "Ajutor de stat RegAS"
 msgstr ""
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:264
+#: src/features/statistics/components/detail-scope-sentence.tsx:258
 msgid "alege"
 msgstr ""
 
@@ -1943,7 +1943,7 @@ msgid "Alege anul"
 msgstr ""
 
 #: src/features/statistics/components/detail-scope-sentence.tsx:165
-#: src/features/statistics/components/detail-scope-sentence.tsx:183
+#: src/features/statistics/components/detail-scope-sentence.tsx:177
 msgid "Alege ce arată seria"
 msgstr ""
 
@@ -1952,19 +1952,19 @@ msgid "Alege ce vrei să vezi"
 msgstr ""
 
 #: src/features/statistics/components/comparison-states.tsx:52
-msgid "Alege cel puțin două teritorii pentru a compara"
-msgstr ""
+#~ msgid "Alege cel puțin două teritorii pentru a compara"
+#~ msgstr ""
 
 #: src/features/statistics/components/comparison-pins.tsx:133
 msgid "Alege o perioadă"
 msgstr ""
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:534
+#: src/features/statistics/components/detail-scope-sentence.tsx:528
 msgid "Alege o unitate"
 msgstr ""
 
 #: src/features/statistics/components/comparison-pins.tsx:64
-#: src/features/statistics/components/detail-scope-sentence.tsx:436
+#: src/features/statistics/components/detail-scope-sentence.tsx:430
 msgid "Alege o valoare"
 msgstr ""
 
@@ -1972,7 +1972,7 @@ msgstr ""
 msgid "Alege o valoare pentru: {label}"
 msgstr ""
 
-#: src/features/statistics/components/comparison-states.tsx:54
+#: src/features/statistics/components/comparison-states.tsx:41
 msgid "Alege un indicator pentru a începe"
 msgstr ""
 
@@ -2196,11 +2196,11 @@ msgstr "Un act adițional care modifică valoarea unui contract; este asociat co
 msgid "An awarded contract between a contracting authority and a supplier, from SEAP or e-licitatie."
 msgstr "Un contract atribuit între o autoritate contractantă și un furnizor, din SEAP sau e-licitatie."
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:577
+#: src/features/statistics/components/detail-scope-sentence.tsx:571
 msgid "An de început"
 msgstr ""
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:591
+#: src/features/statistics/components/detail-scope-sentence.tsx:585
 msgid "An de sfârșit"
 msgstr ""
 
@@ -3619,7 +3619,7 @@ msgid "Cât de proaspete sunt datele"
 msgstr ""
 
 #. placeholder {0}: observedSpan ? `${observedSpan.from}–${observedSpan.to}` : t`— (nicio observație pentru selecția curentă)`
-#: src/features/statistics/components/detail-accordion.tsx:176
+#: src/features/statistics/components/detail-accordion.tsx:191
 msgid "Catalogul INS declară intervalul {catalogFrom}–{catalogTo}; observațiile încărcate aici acoperă {0}."
 msgstr ""
 
@@ -3820,7 +3820,7 @@ msgstr ""
 msgid "Caută întreprindere publică"
 msgstr ""
 
-#: src/features/statistics/components/landing/landing-hero.tsx:116
+#: src/features/statistics/components/landing/landing-hero.tsx:112
 msgid "Caută localitatea ta ca să vezi aceleași cifre pentru ea, față de țară."
 msgstr ""
 
@@ -3860,7 +3860,7 @@ msgstr ""
 msgid "Caută un indicator INS"
 msgstr ""
 
-#: src/features/statistics/components/comparison-states.tsx:60
+#: src/features/statistics/components/comparison-states.tsx:45
 msgid "Caută un indicator INS, apoi adaugă între două și șase localități. Comparația se construiește pe măsură ce alegi."
 msgstr ""
 
@@ -3873,7 +3873,7 @@ msgstr ""
 msgid "Caută un subiect (ex. buget, educație)…"
 msgstr ""
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:364
+#: src/features/statistics/components/detail-scope-sentence.tsx:358
 #: src/features/statistics/components/territory-search.tsx:39
 #: src/features/statistics/components/territory-search.tsx:54
 msgid "Caută un teritoriu"
@@ -4135,7 +4135,7 @@ msgstr ""
 msgid "Cererea a fost refuzată de server"
 msgstr ""
 
-#: src/features/statistics/components/comparison-states.tsx:109
+#: src/features/statistics/components/comparison-states.tsx:89
 msgid "Cererea către INS Tempo a eșuat. Datele nu lipsesc — nu am reușit să le citim."
 msgstr ""
 
@@ -4339,7 +4339,7 @@ msgstr ""
 msgid "Cifrele de mai sus sunt măsurate pe baza de date de producție la {0}."
 msgstr ""
 
-#: src/features/statistics/components/landing/landing-hero.tsx:172
+#: src/features/statistics/components/landing/landing-hero.tsx:168
 msgid "Cifrele naționale rămân disponibile mai jos."
 msgstr ""
 
@@ -4465,11 +4465,11 @@ msgstr ""
 msgid "Clasamentul pe valoare nu este disponibil aici, așa că ordinea este dată de numărul de înregistrări."
 msgstr ""
 
-#: src/features/statistics/components/detail-accordion.tsx:243
+#: src/features/statistics/components/detail-accordion.tsx:258
 msgid "clasificare"
 msgstr ""
 
-#: src/features/statistics/pages/statistics-comparisons-page.tsx:239
+#: src/features/statistics/pages/statistics-comparisons-page.tsx:242
 msgid "Clasificări și unitate"
 msgstr ""
 
@@ -4902,7 +4902,7 @@ msgstr ""
 msgid "Compară două locuri"
 msgstr ""
 
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:538
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:539
 msgid "Compară teritorii"
 msgstr ""
 
@@ -4910,11 +4910,11 @@ msgstr ""
 #~ msgid "Compară un indicator INS Tempo între două și șase localități. Perioadele fără date raportate rămân goale — nu sunt completate cu valori din alți ani."
 #~ msgstr ""
 
-#: src/features/statistics/pages/statistics-comparisons-page.tsx:194
+#: src/features/statistics/pages/statistics-comparisons-page.tsx:197
 msgid "Compară un indicator INS Tempo între localități, județe și România. Perioadele fără date raportate rămân goale — nu sunt completate cu valori din alți ani."
 msgstr ""
 
-#: src/features/statistics/pages/statistics-comparisons-page.tsx:320
+#: src/features/statistics/pages/statistics-comparisons-page.tsx:318
 msgid "Comparația pornește după ce alegi o valoare în „Dimensiuni fixate\" pentru:"
 msgstr ""
 
@@ -4922,11 +4922,11 @@ msgstr ""
 msgid "Comparație la perioada selectată"
 msgstr ""
 
-#: src/features/statistics/pages/statistics-comparisons-page.tsx:191
+#: src/features/statistics/pages/statistics-comparisons-page.tsx:194
 msgid "Comparații locale"
 msgstr ""
 
-#: src/features/statistics/pages/statistics-comparisons-page.tsx:201
+#: src/features/statistics/pages/statistics-comparisons-page.tsx:204
 msgid "Comparații predefinite"
 msgstr ""
 
@@ -6467,7 +6467,7 @@ msgstr ""
 msgid "Date indisponibile"
 msgstr ""
 
-#: src/features/statistics/pages/statistics-territory-hub-page.tsx:252
+#: src/features/statistics/pages/statistics-territory-hub-page.tsx:261
 msgid "Date indisponibile încă"
 msgstr ""
 
@@ -6625,7 +6625,7 @@ msgstr ""
 #~ msgid "Datele sunt preluate din sumarul Portal Legislativ și din câmpurile de intrare în vigoare ale actului."
 #~ msgstr ""
 
-#: src/features/statistics/components/detail-accordion.tsx:187
+#: src/features/statistics/components/detail-accordion.tsx:202
 msgid "Datele sunt un instantaneu al INS Tempo. Fiecare valoare își arată perioada de referință; valorile lipsă rămân goluri, niciodată zero."
 msgstr ""
 
@@ -6959,7 +6959,7 @@ msgstr ""
 msgid "deschide pe monitoruloficial.ro"
 msgstr ""
 
-#: src/features/statistics/components/landing/landing-hero.tsx:254
+#: src/features/statistics/components/landing/landing-hero.tsx:250
 msgid "Deschide profilul complet al teritoriului"
 msgstr ""
 
@@ -7146,7 +7146,7 @@ msgid "Dimensiune (bytes)"
 msgstr ""
 
 #. placeholder {0}: formatObservationValue(String(territorial.option_count))
-#: src/features/statistics/components/detail-accordion.tsx:151
+#: src/features/statistics/components/detail-accordion.tsx:166
 msgid "Dimensiunea teritorială are {0} opțiuni."
 msgstr ""
 
@@ -7159,11 +7159,11 @@ msgid "Dimensiuni fixate"
 msgstr ""
 
 #. placeholder {0}: dimensions.length
-#: src/features/statistics/components/detail-accordion.tsx:113
+#: src/features/statistics/components/detail-accordion.tsx:128
 msgid "Dimensiuni și clasificări ({0} axe)"
 msgstr ""
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:578
+#: src/features/statistics/components/detail-scope-sentence.tsx:572
 msgid "din"
 msgstr ""
 
@@ -7188,7 +7188,7 @@ msgstr ""
 msgid "Din {awarded} atribuiți în această selecție, {withheld} revin unor contracte încredințate asocierilor cu mai mulți membri. Repartiția între membri nu este publicată, așa că suma nu este atribuită niciunui furnizor."
 msgstr ""
 
-#: src/features/statistics/components/landing/landing-hero.tsx:291
+#: src/features/statistics/components/landing/landing-hero.tsx:287
 msgid "din totalul României"
 msgstr ""
 
@@ -8478,7 +8478,7 @@ msgid "Exemplu"
 msgstr ""
 
 #: src/features/statistics/components/landing/landing-example-card.tsx:79
-#: src/features/statistics/pages/statistics-comparisons-page.tsx:267
+#: src/features/statistics/pages/statistics-comparisons-page.tsx:270
 msgid "exemplu live"
 msgstr ""
 
@@ -8970,7 +8970,7 @@ msgid "fără dată exactă"
 msgstr ""
 
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1423
-#: src/features/statistics/components/detail-accordion.tsx:266
+#: src/features/statistics/components/detail-accordion.tsx:281
 msgid "fără date"
 msgstr ""
 
@@ -8979,7 +8979,7 @@ msgid "Fără date"
 msgstr ""
 
 #. placeholder {0}: period.isoPeriod
-#: src/features/statistics/components/comparison-table.tsx:115
+#: src/features/statistics/components/comparison-table.tsx:117
 msgid "Fără date pentru {0}"
 msgstr ""
 
@@ -8993,7 +8993,7 @@ msgid "Fără date raportate pentru această perioadă: {0}."
 msgstr ""
 
 #. placeholder {0}: emptyTerritoryNames.join(', ')
-#: src/features/statistics/pages/statistics-comparisons-page.tsx:357
+#: src/features/statistics/pages/statistics-comparisons-page.tsx:355
 msgid "Fără date raportate pentru: {0}. Teritoriile rămân în comparație ca absențe, nu sunt eliminate pe tăcute."
 msgstr ""
 
@@ -9144,7 +9144,7 @@ msgstr ""
 msgid "Fiecare cifră are o dovadă: butonul „Vezi dovada” deschide registrul sursă, snapshot-ul și extrasul brut."
 msgstr ""
 
-#: src/features/statistics/pages/statistics-territory-hub-page.tsx:264
+#: src/features/statistics/pages/statistics-territory-hub-page.tsx:273
 msgid "Fiecare indicator păstrează perioada, unitatea și starea disponibilității la nivel de set."
 msgstr ""
 
@@ -9642,7 +9642,7 @@ msgstr "Focalizează selectorul de an în detaliile entității"
 msgid "Follow the money"
 msgstr "Urmărește banii"
 
-#: src/features/statistics/pages/statistics-comparisons-page.tsx:283
+#: src/features/statistics/pages/statistics-comparisons-page.tsx:286
 msgid "Folosește acest exemplu"
 msgstr ""
 
@@ -9707,9 +9707,9 @@ msgstr "plafoanele acordurilor-cadru"
 msgid "Framework ceilings"
 msgstr "Plafoanele acordurilor-cadru"
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:306
-#: src/features/statistics/components/detail-scope-sentence.tsx:310
-#: src/features/statistics/components/detail-scope-sentence.tsx:317
+#: src/features/statistics/components/detail-scope-sentence.tsx:300
+#: src/features/statistics/components/detail-scope-sentence.tsx:304
+#: src/features/statistics/components/detail-scope-sentence.tsx:311
 msgid "Frecvență"
 msgstr ""
 
@@ -9872,7 +9872,7 @@ msgstr "Volumul de gaze pe locuitor indică dependența de infrastructura de gaz
 msgid "Găsește un act normativ după număr (Legea 53/2003) sau după denumire (Codul muncii), cu statutul lui actual. Căutarea după expresii din textul legilor nu este încă disponibilă."
 msgstr ""
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:195
+#: src/features/statistics/components/detail-scope-sentence.tsx:189
 msgid "Gata"
 msgstr ""
 
@@ -10557,8 +10557,8 @@ msgstr "Imigranți − Emigranți"
 #~ msgstr ""
 
 #: src/features/statistics/components/detail-scope-sentence.tsx:172
-msgid "implicit"
-msgstr ""
+#~ msgid "implicit"
+#~ msgstr ""
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1246
 msgid "Import"
@@ -10773,8 +10773,8 @@ msgstr ""
 msgid "Înapoi la statistici"
 msgstr ""
 
-#: src/features/statistics/components/landing/landing-hero.tsx:146
-#: src/features/statistics/components/landing/landing-hero.tsx:191
+#: src/features/statistics/components/landing/landing-hero.tsx:142
+#: src/features/statistics/components/landing/landing-hero.tsx:187
 msgid "Înapoi la țară"
 msgstr ""
 
@@ -11026,11 +11026,11 @@ msgstr ""
 msgid "Indicatorii ne-numerici rămân disponibili în tabel."
 msgstr ""
 
-#: src/features/statistics/components/comparison-states.tsx:130
+#: src/features/statistics/components/comparison-states.tsx:110
 msgid "Indicatorul a returnat mai multe observații decât putem afișa. Fixează mai multe dimensiuni sau alege mai puține teritorii."
 msgstr ""
 
-#: src/features/statistics/components/comparison-states.tsx:86
+#: src/features/statistics/components/comparison-states.tsx:66
 msgid "Indicatorul nu are valori raportate pentru teritoriile și dimensiunile alese. Încearcă altă valoare fixată sau alte localități."
 msgstr ""
 
@@ -11351,8 +11351,8 @@ msgstr "Note de interpretare"
 msgid "Interval"
 msgstr "Interval"
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:338
-#: src/features/statistics/components/detail-scope-sentence.tsx:571
+#: src/features/statistics/components/detail-scope-sentence.tsx:332
+#: src/features/statistics/components/detail-scope-sentence.tsx:565
 msgid "Interval de ani"
 msgstr ""
 
@@ -11601,7 +11601,7 @@ msgstr ""
 msgid "Judet"
 msgstr ""
 
-#: src/features/statistics/lib/comparison-format.ts:45
+#: src/features/statistics/lib/comparison-format.ts:56
 msgid "județ"
 msgstr ""
 
@@ -11628,7 +11628,7 @@ msgstr ""
 msgid "Judete"
 msgstr ""
 
-#: src/features/statistics/components/detail-accordion.tsx:148
+#: src/features/statistics/components/detail-accordion.tsx:163
 msgid "Județe"
 msgstr ""
 
@@ -11640,7 +11640,7 @@ msgstr ""
 msgid "Județe în schimbare: Ilfov vs Teleorman"
 msgstr ""
 
-#: src/features/statistics/components/landing/landing-hero.tsx:136
+#: src/features/statistics/components/landing/landing-hero.tsx:132
 #: src/features/statistics/components/territory-header.tsx:47
 #: src/features/statistics/hooks/use-comparisons.ts:254
 msgid "județul"
@@ -12527,7 +12527,7 @@ msgstr "Instantaneele locale vor apărea aici după salvarea automată sau salva
 msgid "Local update"
 msgstr "Actualizare locală"
 
-#: src/features/statistics/lib/comparison-format.ts:47
+#: src/features/statistics/lib/comparison-format.ts:58
 msgid "localitate"
 msgstr ""
 
@@ -12554,7 +12554,7 @@ msgstr ""
 msgid "Localități"
 msgstr ""
 
-#: src/features/statistics/components/detail-accordion.tsx:145
+#: src/features/statistics/components/detail-accordion.tsx:160
 msgid "Localități (SIRUTA)"
 msgstr ""
 
@@ -12630,7 +12630,7 @@ msgstr ""
 msgid "Locuințe în marile orașe"
 msgstr ""
 
-#: src/features/statistics/components/landing/landing-hero.tsx:110
+#: src/features/statistics/components/landing/landing-hero.tsx:106
 msgid "Locul tău în cifre"
 msgstr ""
 
@@ -12702,8 +12702,8 @@ msgid "mai"
 msgstr ""
 
 #: src/features/statistics/components/comparison-states.tsx:67
-msgid "Mai adaugă {remaining} localitate pentru a putea compara."
-msgstr ""
+#~ msgid "Mai adaugă {remaining} localitate pentru a putea compara."
+#~ msgstr ""
 
 #: src/features/parliament/components/parliament-hub-activity-heatmap.tsx:304
 msgid "Mai multe"
@@ -14017,7 +14017,7 @@ msgstr ""
 msgid "Nicio notă de parsare"
 msgstr ""
 
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:504
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:505
 msgid "Nicio observație"
 msgstr ""
 
@@ -14989,7 +14989,7 @@ msgstr ""
 msgid "Nu am găsit un teritoriu INS pentru acest SIRUTA."
 msgstr ""
 
-#: src/features/statistics/components/landing/landing-hero.tsx:180
+#: src/features/statistics/components/landing/landing-hero.tsx:176
 msgid "Nu am găsit un teritoriu INS pentru codul din adresă. Cifrele naționale rămân mai jos."
 msgstr ""
 
@@ -15029,11 +15029,11 @@ msgstr ""
 msgid "Nu am putut incarca alegerile"
 msgstr ""
 
-#: src/features/statistics/components/landing/landing-hero.tsx:169
+#: src/features/statistics/components/landing/landing-hero.tsx:165
 msgid "Nu am putut încărca cifrele pentru acest teritoriu"
 msgstr ""
 
-#: src/features/statistics/components/comparison-states.tsx:105
+#: src/features/statistics/components/comparison-states.tsx:85
 msgid "Nu am putut încărca datele de comparație"
 msgstr ""
 
@@ -15046,7 +15046,7 @@ msgstr ""
 msgid "Nu am putut încărca datele despre legislație."
 msgstr ""
 
-#: src/features/statistics/pages/statistics-comparisons-page.tsx:258
+#: src/features/statistics/pages/statistics-comparisons-page.tsx:261
 msgid "Nu am putut încărca detaliile indicatorului."
 msgstr ""
 
@@ -15074,7 +15074,7 @@ msgstr ""
 msgid "Nu am putut încărca exemplele"
 msgstr ""
 
-#: src/features/statistics/components/landing/landing-hero.tsx:155
+#: src/features/statistics/components/landing/landing-hero.tsx:151
 msgid "Nu am putut încărca indicatorii naționali"
 msgstr ""
 
@@ -15134,7 +15134,7 @@ msgstr ""
 msgid "Nu am putut incarca scrutinul"
 msgstr ""
 
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:459
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:460
 msgid "Nu am putut încărca seria de date"
 msgstr ""
 
@@ -15242,7 +15242,7 @@ msgstr ""
 msgid "Nu există date de litigii pentru acest profil"
 msgstr ""
 
-#: src/features/statistics/components/comparison-states.tsx:83
+#: src/features/statistics/components/comparison-states.tsx:63
 msgid "Nu există date pentru această combinație"
 msgstr ""
 
@@ -16001,7 +16001,7 @@ msgstr "Opțiuni"
 msgid "Options for {0}"
 msgstr "Opțiuni pentru {0}"
 
-#: src/features/statistics/components/detail-accordion.tsx:130
+#: src/features/statistics/components/detail-accordion.tsx:145
 msgid "opțiuni"
 msgstr ""
 
@@ -16269,7 +16269,7 @@ msgstr "Colorează după"
 msgid "Painted on the map (named territories)"
 msgstr "Pictat pe hartă (teritorii cunoscute)"
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:592
+#: src/features/statistics/components/detail-scope-sentence.tsx:586
 msgid "până în"
 msgstr ""
 
@@ -17519,7 +17519,7 @@ msgstr ""
 msgid "Proveniență INS"
 msgstr ""
 
-#: src/features/statistics/components/detail-accordion.tsx:162
+#: src/features/statistics/components/detail-accordion.tsx:177
 msgid "Proveniență și limite"
 msgstr ""
 
@@ -18347,12 +18347,12 @@ msgid "Reincearca"
 msgstr ""
 
 #: src/features/parliament/components/parliament-stenogram-failure.tsx:82
-#: src/features/statistics/components/comparison-states.tsx:114
+#: src/features/statistics/components/comparison-states.tsx:94
 #: src/features/statistics/components/detail-dimension-combobox.tsx:128
-#: src/features/statistics/components/landing/landing-hero.tsx:159
+#: src/features/statistics/components/landing/landing-hero.tsx:155
 #: src/features/statistics/components/territory-search.tsx:84
 #: src/features/statistics/pages/statistics-dataset-detail-page.tsx:145
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:467
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:468
 #: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:151
 #: src/features/statistics/pages/statistics-territory-hub-page.tsx:121
 msgid "Reîncearcă"
@@ -18473,6 +18473,10 @@ msgstr "Reordonează serii"
 msgid "Repeated buyer–supplier pairs"
 msgstr "Perechi cumpărător–furnizor repetate"
 
+#: src/features/statistics/pages/statistics-territory-hub-page.tsx:237
+msgid "Reperele pe județ și pe țară sunt fapte despre ultima perioadă, așa că nu apar cât timp filtrezi o perioadă anume."
+msgstr ""
+
 #: src/components/charts/components/chart-config/FilterBulkEdit.tsx:124
 msgid "Replace"
 msgstr "Înlocuiește"
@@ -18586,7 +18590,7 @@ msgstr "Resetează la valoarea implicită"
 msgid "Reseteaza"
 msgstr ""
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:611
+#: src/features/statistics/components/detail-scope-sentence.tsx:605
 msgid "Resetează"
 msgstr ""
 
@@ -18786,7 +18790,7 @@ msgstr ""
 msgid "Rezultate căutare"
 msgstr ""
 
-#: src/features/statistics/components/comparison-states.tsx:127
+#: src/features/statistics/components/comparison-states.tsx:107
 msgid "Rezultate parțiale"
 msgstr ""
 
@@ -18876,7 +18880,7 @@ msgstr ""
 msgid "România"
 msgstr ""
 
-#: src/features/statistics/components/landing/landing-hero.tsx:112
+#: src/features/statistics/components/landing/landing-hero.tsx:108
 msgid "România în cifre"
 msgstr ""
 
@@ -18888,7 +18892,7 @@ msgstr ""
 msgid "Romania spending heatmap - Transparenta.eu"
 msgstr "Harta termică a cheltuielilor României - Transparenta.eu"
 
-#: src/features/statistics/components/landing/landing-hero.tsx:277
+#: src/features/statistics/components/landing/landing-hero.tsx:273
 msgid "România:"
 msgstr ""
 
@@ -19145,7 +19149,7 @@ msgstr ""
 
 #. placeholder {0}: exactRows.length
 #. placeholder {1}: seriesData?.totalCount
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:519
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:520
 msgid "Se afișează cele mai recente {0} din {1} observații — capătul vechi al seriei este tăiat, deci începutul intervalului afișat poate fi mai recent decât primul an raportat."
 msgstr ""
 
@@ -19263,7 +19267,7 @@ msgstr ""
 msgid "Se încarcă…"
 msgstr ""
 
-#: src/features/statistics/components/comparison-states.tsx:114
+#: src/features/statistics/components/comparison-states.tsx:94
 msgid "Se reîncarcă…"
 msgstr ""
 
@@ -19813,7 +19817,7 @@ msgstr "UAT-ul selectat nu are cod SIRUTA."
 msgid "Selected UATs are already in group."
 msgstr "UAT-urile selectate sunt deja în grup."
 
-#: src/features/statistics/components/detail-accordion.tsx:88
+#: src/features/statistics/components/detail-accordion.tsx:103
 msgid "Selecția curentă nu are observații."
 msgstr ""
 
@@ -19821,7 +19825,7 @@ msgstr ""
 #~ msgid "Selecția curentă nu returnează observații. Încearcă alt teritoriu sau alt interval."
 #~ msgstr ""
 
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:505
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:506
 msgid "Selecția curentă nu returnează observații. Încearcă alt teritoriu sau altă valoare."
 msgstr ""
 
@@ -20084,7 +20088,7 @@ msgstr ""
 
 #. placeholder {0}: formatObservationValue(String(related.length))
 #. placeholder {1}: relatedTotalCount !== null && relatedTotalCount - 1 > related.length ? ` din ${formatObservationValue(String(relatedTotalCount - 1))}` : ''
-#: src/features/statistics/components/detail-accordion.tsx:199
+#: src/features/statistics/components/detail-accordion.tsx:214
 msgid "Seturi înrudite ({0}{1})"
 msgstr ""
 
@@ -21531,7 +21535,7 @@ msgstr "Insignă stare sistem"
 msgid "Tabel"
 msgstr ""
 
-#: src/features/statistics/components/comparison-table.tsx:52
+#: src/features/statistics/components/comparison-table.tsx:54
 msgid "Tabel de comparație: valorile indicatorului pentru fiecare teritoriu și perioadă."
 msgstr ""
 
@@ -21553,7 +21557,7 @@ msgid "Tabelul complet al randurilor brute ramane in adapterul API. In MVP afisa
 msgstr "Tabelul complet al rândurilor brute rămâne în adaptorul API. În MVP afișăm aceleași rânduri agregate cu pointere de sursă."
 
 #. placeholder {0}: formatObservationValue(String(observations.length))
-#: src/features/statistics/components/detail-accordion.tsx:75
+#: src/features/statistics/components/detail-accordion.tsx:81
 msgid "Tabelul seriei ({0})"
 msgstr ""
 
@@ -21598,7 +21602,7 @@ msgstr "Apasă"
 msgid "Tap an answer to continue."
 msgstr "Apasă pe un răspuns pentru a continua."
 
-#: src/features/statistics/lib/comparison-format.ts:43
+#: src/features/statistics/lib/comparison-format.ts:54
 msgid "țară"
 msgstr ""
 
@@ -21662,19 +21666,19 @@ msgstr ""
 msgid "Teritorii"
 msgstr ""
 
-#: src/features/statistics/components/detail-accordion.tsx:241
+#: src/features/statistics/components/detail-accordion.tsx:256
 msgid "teritoriu"
 msgstr ""
 
-#: src/features/statistics/components/comparison-table.tsx:57
+#: src/features/statistics/components/comparison-table.tsx:59
 #: src/features/statistics/components/detail-observations-table.tsx:51
-#: src/features/statistics/components/detail-scope-sentence.tsx:237
-#: src/features/statistics/components/detail-scope-sentence.tsx:363
+#: src/features/statistics/components/detail-scope-sentence.tsx:231
+#: src/features/statistics/components/detail-scope-sentence.tsx:357
 #: src/features/statistics/lib/observations-csv.ts:59
 msgid "Teritoriu"
 msgstr ""
 
-#: src/features/statistics/components/landing/landing-hero.tsx:132
+#: src/features/statistics/components/landing/landing-hero.tsx:128
 msgid "Teritoriu necunoscut"
 msgstr ""
 
@@ -21688,7 +21692,7 @@ msgstr ""
 #~ msgid "Teritoriu: {0}"
 #~ msgstr ""
 
-#: src/features/statistics/pages/statistics-territory-hub-page.tsx:253
+#: src/features/statistics/pages/statistics-territory-hub-page.tsx:262
 msgid "Teritoriul există, dar nu avem observații INS încărcate pentru indicatorii prioritari."
 msgstr ""
 
@@ -22351,7 +22355,7 @@ msgstr "Ora"
 #~ msgid "Time series"
 #~ msgstr ""
 
-#: src/features/statistics/components/detail-accordion.tsx:239
+#: src/features/statistics/components/detail-accordion.tsx:254
 msgid "timp"
 msgstr ""
 
@@ -23225,8 +23229,8 @@ msgstr "Suprascriere unitate"
 msgid "Unit price"
 msgstr "Preț unitar"
 
-#: src/features/statistics/components/detail-accordion.tsx:245
-#: src/features/statistics/pages/statistics-comparisons-page.tsx:143
+#: src/features/statistics/components/detail-accordion.tsx:260
+#: src/features/statistics/pages/statistics-comparisons-page.tsx:146
 msgid "unitate"
 msgstr ""
 
@@ -23238,14 +23242,14 @@ msgstr ""
 
 #: src/features/statistics/components/comparison-pins.tsx:89
 #: src/features/statistics/components/comparison-pins.tsx:92
-#: src/features/statistics/components/detail-scope-sentence.tsx:288
-#: src/features/statistics/components/detail-scope-sentence.tsx:528
-#: src/features/statistics/components/detail-scope-sentence.tsx:533
+#: src/features/statistics/components/detail-scope-sentence.tsx:282
+#: src/features/statistics/components/detail-scope-sentence.tsx:522
+#: src/features/statistics/components/detail-scope-sentence.tsx:527
 msgid "Unitate de măsură"
 msgstr ""
 
 #. placeholder {0}: matrix.unitSymbol
-#: src/features/statistics/components/comparison-table.tsx:132
+#: src/features/statistics/components/comparison-table.tsx:134
 msgid "Unitate de măsură: {0}"
 msgstr ""
 
@@ -23779,16 +23783,20 @@ msgstr ""
 msgid "Valoarea sursei depășește contractatul; bara este plafonată vizual."
 msgstr ""
 
-#: src/features/statistics/pages/statistics-comparisons-page.tsx:348
+#: src/features/statistics/pages/statistics-comparisons-page.tsx:346
 msgid "Valori absolute — nivelurile teritoriale nu sunt normalizate per locuitor."
 msgstr ""
 
-#: src/features/statistics/components/landing/landing-hero.tsx:243
+#: src/features/statistics/components/landing/landing-hero.tsx:239
 msgid "Valori pentru întreaga țară, la cea mai recentă perioadă raportată."
 msgstr ""
 
 #: src/features/statistics/components/detail-accordion.tsx:81
-msgid "Valorile din spatele graficului — aceeași selecție, aceleași rânduri, nu întregul set la acest teritoriu."
+#~ msgid "Valorile din spatele graficului — aceeași selecție, aceleași rânduri, nu întregul set la acest teritoriu."
+#~ msgstr ""
+
+#: src/features/statistics/components/detail-accordion.tsx:87
+msgid "Valorile din spatele graficului — aceeași selecție, aceleași rânduri, nu întregul set la acest teritoriu. Pentru alte teritorii, <0>compară teritorii</0>."
 msgstr ""
 
 #: src/features/statistics/components/comparison-bar-chart.tsx:78
@@ -23796,8 +23804,12 @@ msgid "Valorile raportate pentru perioada {selectedPeriod}."
 msgstr ""
 
 #: src/features/statistics/components/detail-scope-sentence.tsx:152
-msgid "Valorile subliniate punctat sunt selecții implicite — apasă pe ele ca să le schimbi."
+msgid "Valorile subliniate punctat sunt implicite sau încă nealese — apasă pe ele ca să le alegi sau să le schimbi."
 msgstr ""
+
+#: src/features/statistics/components/detail-scope-sentence.tsx:152
+#~ msgid "Valorile subliniate punctat sunt selecții implicite — apasă pe ele ca să le schimbi."
+#~ msgstr ""
 
 #: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:107
 msgid "Valorile suspecte ×1000 nu intră în totaluri."
