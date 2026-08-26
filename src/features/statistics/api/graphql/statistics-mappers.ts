@@ -56,20 +56,52 @@ export function mapDatasetSummary(node: InsDatasetNodeRaw): StatisticsDatasetSum
  * Territory rows are keyed by SIRUTA in the product (it is the join to the
  * budget world). NUTS3 rows have no SIRUTA of their own.
  *
- * The wire's `parent_*` fields carry the containing territory. For the LAU rows
- * the search surfaces, that parent is the county, which is what the UI labels
- * it — but only LAU rows are read that way.
+ * The wire's `parent_*` fields carry the containing territory, which for a LAU
+ * is usually — but not always — the county: a Bucharest sector's parent would
+ * be the numeric municipality `179132`, and `countyCode` feeds NUTS3-typed
+ * requests (hub county benchmarks, `cod:` compare tokens), so a numeric parent
+ * must never pass through. Romanian NUTS3 codes are 1–2 letters; NUTS2 codes
+ * carry digits (`RO32`) and fail the pattern too.
  */
+const NUTS3_COUNTY_CODE_PATTERN = /^[A-Za-z]{1,2}$/
+
+/**
+ * The one LAU that contains other LAUs. Sectors resolve to county `B` so they
+ * keep București benchmarks (user decision). The display name is the county's
+ * wire name — `179132`'s own `parent_name_ro` on `insTerritories` is
+ * „București" (verified live 2026-08-26), NOT the municipality's
+ * „MUNICIPIUL BUCUREŞTI".
+ */
+const BUCHAREST_MUNICIPALITY_SIRUTA = '179132'
+const BUCHAREST_COUNTY_CODE = 'B'
+const BUCHAREST_COUNTY_NAME = 'București'
+
+function isNuts3CountyCode(code: string | null | undefined): code is string {
+  return typeof code === 'string' && NUTS3_COUNTY_CODE_PATTERN.test(code.trim())
+}
+
 export function mapTerritorySearchRow(
   node: InsTerritoryNodeRaw,
 ): StatisticsTerritorySearchRow {
+  const parentCode = node.parent_code?.trim() ?? null
+  let countyCode: string | null = null
+  let countyName: string | null = null
+  if (node.level === 'LAU') {
+    if (isNuts3CountyCode(parentCode)) {
+      countyCode = parentCode.toUpperCase()
+      countyName = node.parent_name_ro ?? null
+    } else if (parentCode === BUCHAREST_MUNICIPALITY_SIRUTA) {
+      countyCode = BUCHAREST_COUNTY_CODE
+      countyName = BUCHAREST_COUNTY_NAME
+    }
+  }
   return {
     code: node.code,
     siruta: node.siruta_code ?? null,
     name: node.name_ro ?? null,
     level: node.level ?? null,
-    countyCode: node.level === 'LAU' ? (node.parent_code ?? null) : null,
-    countyName: node.level === 'LAU' ? (node.parent_name_ro ?? null) : null,
+    countyCode,
+    countyName,
   }
 }
 

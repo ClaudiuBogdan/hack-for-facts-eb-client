@@ -226,8 +226,8 @@ export function useComparisonPeers(
 
   const peers: { token: string; label: string }[] = []
   const identity = identityQuery.data?.rows[0]
-  // countyCode is set only when the parent is a REAL county (alphabetic NUTS3
-  // code) — a Bucharest sector's municipal parent never gets a „județul" chip.
+  // The mapper guarantees countyCode is a real NUTS3 code: an alphabetic
+  // parent, or the sector→B special-case — never a numeric SIRUTA.
   if (identity?.countyCode) {
     peers.push({
       token: `cod:${identity.countyCode}`,
