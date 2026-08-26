@@ -1,5 +1,9 @@
 import { defineConfig, devices } from '@playwright/test'
 
+// Overridable so local runs can dodge whatever else squats on :3000
+// (default unchanged for CI).
+const APP_PORT = Number(process.env.PLAYWRIGHT_APP_PORT ?? 3000)
+
 /**
  * Playwright Configuration
  *
@@ -18,7 +22,7 @@ export default defineConfig({
     ['html', { open: 'never' }],
   ],
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: `http://localhost:${APP_PORT}`,
     trace: 'on-first-retry',
     video: 'on-first-retry',
   },
@@ -43,9 +47,10 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'yarn build && yarn start',
-    url: 'http://localhost:3000',
+    command: `yarn build && PORT=${APP_PORT} yarn start`,
+    url: `http://localhost:${APP_PORT}`,
     reuseExistingServer: !process.env.CI,
-    timeout: 120000,
+    // yarn build alone runs several minutes; 120s guaranteed a dead run.
+    timeout: 420000,
   },
 })

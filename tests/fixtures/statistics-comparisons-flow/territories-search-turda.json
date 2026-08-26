@@ -1,0 +1,29 @@
+{
+  "data": {
+    "insTerritories": {
+      "nodes": [
+        {
+          "code": "55259",
+          "siruta_code": "55259",
+          "level": "LAU",
+          "name_ro": "MUNICIPIUL TURDA",
+          "parent_code": "CJ",
+          "parent_name_ro": "Cluj"
+        },
+        {
+          "code": "91688",
+          "siruta_code": "91688",
+          "level": "LAU",
+          "name_ro": "TURDAŞ",
+          "parent_code": "HD",
+          "parent_name_ro": "Hunedoara"
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 2,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}

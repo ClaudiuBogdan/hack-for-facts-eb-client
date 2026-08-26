@@ -1,0 +1,661 @@
+{
+  "data": {
+    "insObservations": {
+      "nodes": [
+        {
+          "dataset_code": "FOM104D",
+          "value": "121486",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "155243",
+            "siruta_code": "155243",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL TIMIŞOARA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "195025",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "131937",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "95060",
+            "siruta_code": "95060",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL IAŞI"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "121541",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2023",
+            "year": 2023,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "155243",
+            "siruta_code": "155243",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL TIMIŞOARA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "190486",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2023",
+            "year": 2023,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "129884",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2023",
+            "year": 2023,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "95060",
+            "siruta_code": "95060",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL IAŞI"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "122206",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2022",
+            "year": 2022,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "155243",
+            "siruta_code": "155243",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL TIMIŞOARA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "186456",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2022",
+            "year": 2022,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "123356",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2022",
+            "year": 2022,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "95060",
+            "siruta_code": "95060",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL IAŞI"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "122219",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2021",
+            "year": 2021,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "155243",
+            "siruta_code": "155243",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL TIMIŞOARA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "181883",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2021",
+            "year": 2021,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "119023",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2021",
+            "year": 2021,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "95060",
+            "siruta_code": "95060",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL IAŞI"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "122006",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2020",
+            "year": 2020,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "155243",
+            "siruta_code": "155243",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL TIMIŞOARA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "176996",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2020",
+            "year": 2020,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "115263",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2020",
+            "year": 2020,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "95060",
+            "siruta_code": "95060",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL IAŞI"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "125998",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2019",
+            "year": 2019,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "155243",
+            "siruta_code": "155243",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL TIMIŞOARA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "181226",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2019",
+            "year": 2019,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "118882",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2019",
+            "year": 2019,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "95060",
+            "siruta_code": "95060",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL IAŞI"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "127404",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2018",
+            "year": 2018,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "155243",
+            "siruta_code": "155243",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL TIMIŞOARA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "171637",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2018",
+            "year": 2018,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "115112",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2018",
+            "year": 2018,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "95060",
+            "siruta_code": "95060",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL IAŞI"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "126492",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2017",
+            "year": 2017,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "155243",
+            "siruta_code": "155243",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL TIMIŞOARA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "168718",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2017",
+            "year": 2017,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "111314",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2017",
+            "year": 2017,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "95060",
+            "siruta_code": "95060",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL IAŞI"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "123030",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "155243",
+            "siruta_code": "155243",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL TIMIŞOARA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "161610",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "118642",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "95060",
+            "siruta_code": "95060",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL IAŞI"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 27,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}

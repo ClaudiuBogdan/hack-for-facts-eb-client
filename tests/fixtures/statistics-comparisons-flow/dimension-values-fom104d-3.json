@@ -3,19 +3,19 @@
     "insDatasetDimensionValues": {
       "nodes": [
         {
-          "nom_item_id": 20,
+          "nom_item_id": 9685,
           "dimension_type": "UNIT_OF_MEASURE",
-          "label_ro": "Număr persoane",
-          "label_en": null,
+          "label_ro": "Numar persoane",
+          "label_en": "Number of persons",
           "parent_nom_item_id": null,
           "offset_order": 1,
           "territory": null,
           "time_period": null,
           "classification_value": null,
           "unit": {
-            "code": "NR_PERS",
-            "symbol": "Nr",
-            "name_ro": "Număr persoane"
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
           }
         }
       ],

@@ -1,0 +1,282 @@
+{
+  "data": {
+    "loaded": {
+      "pageInfo": {
+        "totalCount": 1898
+      }
+    },
+    "catalog": {
+      "pageInfo": {
+        "totalCount": 1898
+      }
+    },
+    "county": [
+      {
+        "latestPeriod": "2025",
+        "matchStrategy": "PREFERRED_CLASSIFICATION",
+        "hasData": true,
+        "dataset": {
+          "code": "POP107D",
+          "name_ro": "POPULATIA DUPA DOMICILIU la 1 ianuarie pe grupe de varsta si varste, sexe, judete si localitati",
+          "name_en": "LEGALLY RESIDENT POPULATION, by age group and ages, sex, counties and localities at January 1st.",
+          "periodicity": [
+            "ANNUAL"
+          ]
+        },
+        "observation": {
+          "value": "745318",
+          "value_status": null,
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          },
+          "classifications": [
+            {
+              "type_code": "SEX",
+              "code": "TOTAL",
+              "name_ro": "Total "
+            },
+            {
+              "type_code": "AGE_GROUP",
+              "code": "TOTAL",
+              "name_ro": "Total"
+            }
+          ]
+        }
+      },
+      {
+        "latestPeriod": "2024",
+        "matchStrategy": "TOTAL_FALLBACK",
+        "hasData": true,
+        "dataset": {
+          "code": "FOM104D",
+          "name_ro": "Numarul mediu al salariatilor pe judete si localitati",
+          "name_en": "Average number of employees by counties and localities",
+          "periodicity": [
+            "ANNUAL"
+          ]
+        },
+        "observation": {
+          "value": "261239",
+          "value_status": null,
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024
+          },
+          "classifications": []
+        }
+      },
+      {
+        "latestPeriod": "2025-11",
+        "matchStrategy": "PREFERRED_CLASSIFICATION",
+        "hasData": true,
+        "dataset": {
+          "code": "SOM101F",
+          "name_ro": "Ponderea somerilor inregistrati la sfarsitul lunii in totalul resurselor de munca, pe sexe, judete si localitati",
+          "name_en": "Share of registered unemployed at the end of the month in the total labor resources, by gender, counties and localities, at the end of the month\r\n",
+          "periodicity": [
+            "ANNUAL",
+            "MONTHLY"
+          ]
+        },
+        "observation": {
+          "value": "1.2",
+          "value_status": null,
+          "unit": {
+            "code": "PERCENT",
+            "symbol": "%",
+            "name_ro": "Procente"
+          },
+          "time_period": {
+            "iso_period": "2025-11",
+            "year": 2025
+          },
+          "classifications": [
+            {
+              "type_code": "SEX",
+              "code": "TOTAL",
+              "name_ro": "Total "
+            }
+          ]
+        }
+      },
+      {
+        "latestPeriod": "2023",
+        "matchStrategy": "PREFERRED_CLASSIFICATION",
+        "hasData": true,
+        "dataset": {
+          "code": "LOC101B",
+          "name_ro": "Locuinte existente la sfarsitul anului pe forme de proprietate, judete si localitati",
+          "name_en": "Dwellings stock at the end of the year by type of ownership, counties and localities",
+          "periodicity": [
+            "ANNUAL"
+          ]
+        },
+        "observation": {
+          "value": "371310",
+          "value_status": null,
+          "unit": {
+            "code": "NUMBER",
+            "symbol": "nr.",
+            "name_ro": "Numar"
+          },
+          "time_period": {
+            "iso_period": "2023",
+            "year": 2023
+          },
+          "classifications": [
+            {
+              "type_code": "OWNERSHIP",
+              "code": "TOTAL",
+              "name_ro": "Total"
+            }
+          ]
+        }
+      }
+    ],
+    "national": [
+      {
+        "latestPeriod": "2025",
+        "matchStrategy": "PREFERRED_CLASSIFICATION",
+        "hasData": true,
+        "dataset": {
+          "code": "POP107D",
+          "name_ro": "POPULATIA DUPA DOMICILIU la 1 ianuarie pe grupe de varsta si varste, sexe, judete si localitati",
+          "name_en": "LEGALLY RESIDENT POPULATION, by age group and ages, sex, counties and localities at January 1st.",
+          "periodicity": [
+            "ANNUAL"
+          ]
+        },
+        "observation": {
+          "value": "21739373",
+          "value_status": null,
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          },
+          "classifications": [
+            {
+              "type_code": "SEX",
+              "code": "TOTAL",
+              "name_ro": "Total "
+            },
+            {
+              "type_code": "AGE_GROUP",
+              "code": "TOTAL",
+              "name_ro": "Total"
+            }
+          ]
+        }
+      },
+      {
+        "latestPeriod": "2024",
+        "matchStrategy": "TOTAL_FALLBACK",
+        "hasData": true,
+        "dataset": {
+          "code": "FOM104D",
+          "name_ro": "Numarul mediu al salariatilor pe judete si localitati",
+          "name_en": "Average number of employees by counties and localities",
+          "periodicity": [
+            "ANNUAL"
+          ]
+        },
+        "observation": {
+          "value": "5453155",
+          "value_status": null,
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024
+          },
+          "classifications": []
+        }
+      },
+      {
+        "latestPeriod": "2025-11",
+        "matchStrategy": "PREFERRED_CLASSIFICATION",
+        "hasData": true,
+        "dataset": {
+          "code": "SOM101F",
+          "name_ro": "Ponderea somerilor inregistrati la sfarsitul lunii in totalul resurselor de munca, pe sexe, judete si localitati",
+          "name_en": "Share of registered unemployed at the end of the month in the total labor resources, by gender, counties and localities, at the end of the month\r\n",
+          "periodicity": [
+            "ANNUAL",
+            "MONTHLY"
+          ]
+        },
+        "observation": {
+          "value": "1.9",
+          "value_status": null,
+          "unit": {
+            "code": "PERCENT",
+            "symbol": "%",
+            "name_ro": "Procente"
+          },
+          "time_period": {
+            "iso_period": "2025-11",
+            "year": 2025
+          },
+          "classifications": [
+            {
+              "type_code": "SEX",
+              "code": "TOTAL",
+              "name_ro": "Total "
+            }
+          ]
+        }
+      },
+      {
+        "latestPeriod": "2023",
+        "matchStrategy": "PREFERRED_CLASSIFICATION",
+        "hasData": true,
+        "dataset": {
+          "code": "LOC101B",
+          "name_ro": "Locuinte existente la sfarsitul anului pe forme de proprietate, judete si localitati",
+          "name_en": "Dwellings stock at the end of the year by type of ownership, counties and localities",
+          "periodicity": [
+            "ANNUAL"
+          ]
+        },
+        "observation": {
+          "value": "9722223",
+          "value_status": null,
+          "unit": {
+            "code": "NUMBER",
+            "symbol": "nr.",
+            "name_ro": "Numar"
+          },
+          "time_period": {
+            "iso_period": "2023",
+            "year": 2023
+          },
+          "classifications": [
+            {
+              "type_code": "OWNERSHIP",
+              "code": "TOTAL",
+              "name_ro": "Total"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

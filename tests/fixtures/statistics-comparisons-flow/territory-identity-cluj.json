@@ -3,12 +3,12 @@
     "insTerritories": {
       "nodes": [
         {
-          "code": "38357",
-          "siruta_code": "38357",
+          "code": "54975",
+          "siruta_code": "54975",
           "level": "LAU",
-          "name_ro": "Municipiul Timișoara",
-          "county_code": "TM",
-          "county_name_ro": "Timiș"
+          "name_ro": "MUNICIPIUL CLUJ-NAPOCA",
+          "parent_code": "CJ",
+          "parent_name_ro": "Cluj"
         }
       ],
       "pageInfo": {
