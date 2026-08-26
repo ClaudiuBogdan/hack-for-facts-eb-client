@@ -25,6 +25,25 @@
  * Unknown block kinds render as plain blocks and are logged ONCE per kind —
  * the vocabulary is open at the parser end, and silence would hide a new
  * kind arriving unstyled.
+ *
+ * TLDF 1.1 adds PRESENTATION kinds (design: scrapper
+ * `prod-db/PORTAL_TABLE_CAPTURE_DESIGN.md`), rendered as real HTML structure
+ * under the same fidelity invariant. `tabel`/`rand`/`celula` become
+ * `<table><tbody><tr><td>` — the `<tbody>` is explicit and the subtree shape
+ * is guarded, because the HTML parser FOSTER-PARENTS any non-table content
+ * out of a `<table>`, so a server-rendered table carrying stray runs would
+ * reparse (and hydrate) into a different tree with characters out of order;
+ * an off-contract table subtree keeps the plain-div rendering instead — same
+ * characters, nothing for the parser to relocate. `imagine` is a
+ * zero-character block whose asset carries NO locator (an image is resolved
+ * by BLOCK ID at the server; the envelope never holds a portal URL), so it
+ * renders an honest placeholder whose visible label is CSS generated
+ * content + `aria-label` — never a text node. `lista`/`element_lista` become
+ * real list elements with native markers suppressed: a marker is either
+ * already in the character stream or restored from `label` as CSS content,
+ * never doubled, never browser-invented. Production still serves format 1.0
+ * (which has none of these kinds), so 1.0 documents render exactly as
+ * before by construction.
  */
 
 import { useMemo } from 'react'
@@ -34,16 +53,18 @@ import { cn } from '@/lib/utils'
 import { createLogger } from '@/lib/logger'
 import { buildMarkIndex, sliceRun, actionableMark } from '../../lib/tldf/marks'
 import type { MarkIndex, RunSegment } from '../../lib/tldf/marks'
+import { foldTldfBlocks } from '../../lib/tldf/fold'
 import type { TldfBlock, TldfMark, TldfRun } from '../../lib/tldf/types'
 
 const logger = createLogger('legal-reader')
 
 /**
  * The compiler's CLOSED kind vocabulary — mirrors `TLDF_KIND_VALUES` in the
- * scrapper's `prod/tldf/format.ts` (23 kinds), enumerated once instead of
- * discovered one unknown-kind warning at a time. `tabel` is kept although
- * absent from v1 of that enum. Anything else still takes the plain fallback
- * and logs.
+ * scrapper's `prod/tldf/format.ts` at format 1.1 (29 kinds: the 23 of v1.0
+ * plus the presentation families `tabel`/`rand`/`celula`, `imagine`, and
+ * `lista`/`element_lista`), enumerated once instead of discovered one
+ * unknown-kind warning at a time. Anything else still takes the plain
+ * fallback and logs.
  */
 const KNOWN_KINDS = new Set([
   'carte',
@@ -72,10 +93,16 @@ const KNOWN_KINDS = new Set([
   'rand',
   'celula',
   'imagine',
+  'lista',
+  'element_lista',
   'preformatat',
 ])
 
 const warnedKinds = new Set<string>()
+/** Fingerprints of off-contract `tabel` shapes already logged — one warn per
+    distinct (clause, child-kinds), not per block. A 13k-row annex that all
+    fail the same way must not emit 13k lines. */
+const warnedTableShapes = new Set<string>()
 
 /**
  * The UI sans inside the reader. Tailwind's `font-sans` is NOT mapped to the
@@ -143,8 +170,20 @@ const BLOCK_CLASS: Readonly<Record<string, string>> = {
   publicare: 'mt-3 text-[0.95em] text-muted-foreground',
   semnatura: 'mt-8 text-muted-foreground',
   // Column-aligned content: a proportional serif destroys the alignment.
+  // For `tabel` this slot is only the OFF-CONTRACT fallback — a well-formed
+  // v1.1 table takes the real `<table>` path in BlockView; a malformed one
+  // renders flat, where monospace keeps any space-padded alignment readable.
   tabel: 'mt-4 font-mono text-sm',
   preformatat: 'mt-4 font-mono text-sm',
+  // v1.1 source-asserted lists. Native markers are suppressed HERE
+  // (`list-none`) — not via Tailwind preflight, which only resets `ol, ul,
+  // menu` and would leave an off-contract `element_lista` (an `<li>` outside
+  // a `lista`) with a browser-invented bullet on top of the in-stream marker.
+  // A marker captured as run text must not be doubled, and an attribute-
+  // carried one is restored via LIST_MARKER_CLASS instead. The indent
+  // matches the litera/punct grain.
+  lista: 'mt-2.5 pl-6 list-none',
+  element_lista: 'mt-2.5 list-none',
 }
 
 const RUN_ROLE_CLASS: Readonly<Record<string, string>> = {
@@ -284,12 +323,16 @@ function RunSpan({
   )
 }
 
-function BlockView({ block, marks }: { readonly block: TldfBlock; readonly marks: MarkIndex }) {
-  if (!KNOWN_KINDS.has(block.kind) && !warnedKinds.has(block.kind)) {
-    warnedKinds.add(block.kind)
-    logger.warn('Unknown TLDF block kind, rendering as plain block', { kind: block.kind })
-  }
+type BlockProps = { readonly block: TldfBlock; readonly marks: MarkIndex }
 
+/**
+ * A block's interleaved run/child sequence in FOLD ORDER — runs and children
+ * by ascending span start, stable ties keeping document order — plus the
+ * visual-only separator collapses. Extracted so every wrapper element (plain
+ * div, `<td>`, `<li>`, `<ol>`/`<ul>`, the imagine shell) reproduces exactly
+ * the sequence the fold proves; the wrapper varies, the characters never do.
+ */
+function BlockContent({ block, marks }: BlockProps) {
   // Fold order: runs and children interleave by ascending span start. This is
   // the ONLY ordering that reproduces the proven clean text.
   const items = [
@@ -298,9 +341,9 @@ function BlockView({ block, marks }: { readonly block: TldfBlock; readonly marks
   ].sort((a, b) => a.start - b.start)
 
   // Which separators collapse visually (never textually): a block-leading
-  // one — the div boundary already breaks the line, so it only painted a
-  // phantom blank line — and, on enumeration grains, the one right after
-  // the marker run, so "(1)"/"a)" joins its body.
+  // one — the block-element boundary already breaks the line, so it only
+  // painted a phantom blank line — and, on enumeration grains, the one right
+  // after the marker run, so "(1)"/"a)" joins its body.
   const inlineMarker = INLINE_MARKER_KINDS.has(block.kind)
   const collapseAt = new Set<number>()
   for (const [index, item] of items.entries()) {
@@ -318,11 +361,7 @@ function BlockView({ block, marks }: { readonly block: TldfBlock; readonly marks
   }
 
   return (
-    <div
-      id={`tldf-${block.id}`}
-      data-kind={block.kind}
-      className={cn(BLOCK_CLASS[block.kind], displayClass(block), 'scroll-mt-24')}
-    >
+    <>
       {items.map((item, index) =>
         'run' in item ? (
           <RunSpan
@@ -335,7 +374,310 @@ function BlockView({ block, marks }: { readonly block: TldfBlock; readonly marks
           <BlockView key={item.child.id} block={item.child} marks={marks} />
         ),
       )}
+    </>
+  )
+}
+
+/* ── v1.1 presentation rendering ──────────────────────────────────────────── */
+
+/**
+ * The document's table face, not an app widget's: a 2px structural outer
+ * border, ONE hairline weight inside, zero radius, the reading column's serif
+ * inherited at a step down (tables are dense reference material — the CPV/NACE
+ * crosswalk annexes), cells top-aligned. Under `border-collapse` the 2px outer
+ * edge wins over the 1px cell hairlines at the perimeter, so the two weights
+ * never double up.
+ */
+const TABLE_CLASS =
+  'w-full border-collapse border-2 border-[var(--pnrr-border)] text-[0.9375rem] leading-[1.5]'
+
+/**
+ * Cell text is "a stack of row-synchronized visual lines", not prose
+ * (PORTAL_TABLE_CAPTURE_DESIGN, gaphunt-tables amendment 2: row 8 of the
+ * 178667 crosswalk carries 34 hard-wrapped lines per cell) — so the reading
+ * column's paragraph margin collapses to a line stack inside cells. Descendant
+ * scope on purpose: a nested table's cells want the same.
+ */
+const CELL_CLASS =
+  'border border-[var(--pnrr-subtle)] px-3 py-1.5 align-top [&_[data-kind=paragraf]]:mt-0'
+
+/** Serving smallint bound — mirrors `tldfGridSchema`. The API boundary already
+    validates it; re-checked here because tests (and any future caller) can
+    feed blocks straight into the renderer. */
+const GRID_SPAN_MAX = 32767
+
+/**
+ * `grid` → `colSpan`/`rowSpan`. ABSENT is the one canonical 1×1 encoding
+ * (spec §3.2 — `grid` is emitted iff it differs from (1,1)), so 1 — or
+ * anything malformed (0, negative, fractional, non-numeric) — emits NO
+ * attribute: a plain cell, never a throw.
+ */
+function gridSpanProps(grid: TldfBlock['grid']): {
+  readonly colSpan?: number
+  readonly rowSpan?: number
+} {
+  const spanOf = (value: unknown): number | undefined =>
+    typeof value === 'number' && Number.isInteger(value) && value > 1 && value <= GRID_SPAN_MAX
+      ? value
+      : undefined
+  const colSpan = spanOf(grid?.cols)
+  const rowSpan = spanOf(grid?.rows)
+  return {
+    ...(colSpan !== undefined && { colSpan }),
+    ...(rowSpan !== undefined && { rowSpan }),
+  }
+}
+
+/** Children in fold order (ascending span start; stable ties keep document
+    order — exactly `foldTldfBlocks`'s merge, so cell placement is the proven
+    character order). */
+const spanOrdered = (children: readonly TldfBlock[] | undefined): readonly TldfBlock[] =>
+  [...(children ?? [])].sort((a, b) => a.span[0] - b.span[0])
+
+type TableGuardClause =
+  | 'owns_runs'
+  | 'no_rows'
+  | 'non_rand_child'
+  | 'rand_owns_runs'
+  | 'non_celula_child'
+
+type TableGuardRejection = {
+  readonly clause: TableGuardClause
+  readonly childKinds: readonly string[]
+}
+
+/**
+ * The foster-parenting guard (PORTAL_TABLE_CAPTURE_DESIGN, panel verdict 10):
+ * the browser's HTML parser relocates ANY non-table content out of
+ * `<table>`/`<tr>`, so a server-rendered table with stray runs or non-row
+ * children would reparse — and hydrate — into a different tree, with
+ * characters out of order in the live DOM. Only a subtree matching the v1.1
+ * contract (`tabel`/`rand` own no runs; rows are `rand`; cells are `celula`)
+ * renders as a real table; anything else keeps the plain-div rendering —
+ * same characters, nothing for the parser to move. Returns the rejecting
+ * clause (and the offending child kinds) so a contract drift is logged
+ * instead of silently flattening every table in the corpus.
+ */
+function tableGuardRejection(block: TldfBlock): TableGuardRejection | null {
+  const rows = block.children ?? []
+  const childKinds = rows.map((row) => row.kind)
+  if (block.content.length !== 0) {
+    return { clause: 'owns_runs', childKinds }
+  }
+  if (rows.length === 0) {
+    return { clause: 'no_rows', childKinds }
+  }
+  if (rows.some((row) => row.kind !== 'rand')) {
+    return { clause: 'non_rand_child', childKinds }
+  }
+  if (rows.some((row) => row.content.length !== 0)) {
+    return { clause: 'rand_owns_runs', childKinds }
+  }
+  const cellKinds = rows.flatMap((row) => (row.children ?? []).map((cell) => cell.kind))
+  if (cellKinds.some((kind) => kind !== 'celula')) {
+    return { clause: 'non_celula_child', childKinds: cellKinds }
+  }
+  return null
+}
+
+function warnUnrenderableTable(rejection: TableGuardRejection): void {
+  const fingerprint = `${rejection.clause}:${rejection.childKinds.join(',')}`
+  if (warnedTableShapes.has(fingerprint)) return
+  warnedTableShapes.add(fingerprint)
+  logger.warn('TLDF tabel failed the renderable-table guard, rendering as plain block', {
+    clause: rejection.clause,
+    childKinds: rejection.childKinds,
+  })
+}
+
+function TableBlock({ block, marks }: BlockProps) {
+  return (
+    // The scroll shell is chrome (a 6-column annex table can outgrow the
+    // 78ch column); the table element itself stays the addressable block.
+    <div className="mt-4 overflow-x-auto">
+      <table
+        id={`tldf-${block.id}`}
+        data-kind="tabel"
+        className={cn(TABLE_CLASS, 'scroll-mt-24')}
+      >
+        {/* Explicit <tbody>: without it the SSR string serializes `table > tr`,
+            the browser reparses it WITH a parser-inserted tbody, and hydration
+            mismatches (panel verdict 10). */}
+        <tbody>
+          {spanOrdered(block.children).map((row) => (
+            <tr key={row.id} id={`tldf-${row.id}`} data-kind="rand" className="scroll-mt-24">
+              {spanOrdered(row.children).map((cell) => (
+                <td
+                  key={cell.id}
+                  id={`tldf-${cell.id}`}
+                  data-kind="celula"
+                  className={cn(CELL_CLASS, 'scroll-mt-24')}
+                  {...gridSpanProps(cell.grid)}
+                >
+                  {/* A cell MAY own runs (bare `<td>` text) and may carry
+                      whole child blocks — including a nested table, which
+                      re-enters BlockView and is judged on its own shape. An
+                      empty celula renders an empty <td>: dropping it would
+                      shift every later cell left (the §3.2 exemption). */}
+                  <BlockContent block={cell} marks={marks} />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
+  )
+}
+
+/**
+ * The `imagine` placeholder face. The visible label is CSS generated content
+ * from `data-figure-label` — with `aria-label` carrying the same text for
+ * assistive tech — and NEVER a text node: the column's textContent must stay
+ * exactly the fold, and an imagine block is a zero-character block. (CSS
+ * `attr()` also needs no escaping, unlike a literal `content` string.) Sans
+ * type on purpose: the placeholder is our chrome speaking, not the law's
+ * serif voice.
+ */
+const IMAGE_PLACEHOLDER_CLASS =
+  'mx-auto flex min-h-24 max-h-96 w-full items-center justify-center whitespace-normal border border-dashed border-[var(--pnrr-subtle)] bg-[var(--pnrr-hover)] px-4 py-6 text-center [font-family:var(--font-family)] text-sm text-[var(--pnrr-muted)] before:content-[attr(data-figure-label)]'
+
+const assetDimension = (value: number | undefined): number | undefined =>
+  typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined
+
+/**
+ * v1.1 `imagine` — an anchored zero-character block. Its asset deliberately
+ * carries no locator (no portal URL, no object-store key: the server resolves
+ * an image by BLOCK ID, which keeps the reader's browser away from the origin
+ * and the privacy gate enforceable). Until that asset endpoint serves bytes,
+ * the honest rendering is a placeholder that SAYS what it is — never an empty
+ * div, never a broken `<img>`. `alt`, when the source carried one, is the
+ * document's own description and leads the label; the compiler can emit
+ * `alt: ''` and zero dimensions, which count as absent here.
+ */
+function ImagineBlock({ block, marks }: BlockProps) {
+  const rawAlt = block.asset?.alt
+  const alt = typeof rawAlt === 'string' && rawAlt.trim() !== '' ? rawAlt.trim() : undefined
+  const label =
+    alt !== undefined
+      ? t`Figură din actul original: ${alt}`
+      : t`Figură din actul original (imagine indisponibilă)`
+  const width = assetDimension(block.asset?.width)
+  const height = assetDimension(block.asset?.height)
+  return (
+    <div id={`tldf-${block.id}`} data-kind="imagine" className="mt-4 scroll-mt-24">
+      <div
+        role="img"
+        aria-label={label}
+        data-figure-label={label}
+        className={IMAGE_PLACEHOLDER_CLASS}
+        // Declared dimensions shape the placeholder to the figure's footprint
+        // so the document keeps its visual rhythm; the min/max clamps keep a
+        // degenerate ratio from collapsing or swallowing the column.
+        {...(width !== undefined &&
+          height !== undefined && {
+            style: { aspectRatio: `${String(width)} / ${String(height)}`, maxWidth: width },
+          })}
+      />
+      {/* Contract: imagine owns no text. If a malformed artifact carries runs
+          or children anyway, fidelity outranks the contract — render them
+          (outside the role="img" shell, so nothing hides from the a11y tree).
+          Normally renders nothing. */}
+      <BlockContent block={block} marks={marks} />
+    </div>
+  )
+}
+
+/**
+ * `element_lista` markers. In the scrapper pipeline BOTH of `markerTextOf`'s
+ * paths leave the marker in the character stream: `portal-html-sanitize.ts`
+ * `materializeListMarkers` injects the `data-list-text` attribute value as
+ * REAL TEXT inside the li's first p/h*, and `preparePortalHtml` — the single
+ * preparation both parsers apply — always calls it; `structure-parser.ts`
+ * `markerTextOf` then returns that same attribute as the block's `label`
+ * (the other path is a leading classless span, also real text). The check
+ * below is therefore not a belt-and-braces net for an exotic case: it is
+ * the ONLY thing standing between `label` and a doubled marker. Native list
+ * markers are suppressed locally (`list-none`); when the item's folded text
+ * does not already open with the label as a marker, the label is restored
+ * as CSS generated content — visible, zero textContent. Never both, and
+ * never a browser-invented number.
+ *
+ * The materialiser injects the attribute VERBATIM while `markerTextOf`
+ * TRIMS it, so a `data-list-text=" I."` divergence (leading space in the
+ * stream, trimmed label) is the realistic doubling shape this check exists
+ * to catch. Do not "simplify" it away.
+ */
+function listMarkerOf(block: TldfBlock): string | undefined {
+  const label = block.label?.trim()
+  if (label === undefined || label === '') return undefined
+  return foldedTextOpensWithMarker(foldTldfBlocks([block]), label) ? undefined : label
+}
+
+/**
+ * True when the item's folded text already opens with `label` as a MARKER,
+ * not as a coincidental prefix. `1.` matches `1. Textul` (boundary after the
+ * label: end-of-text or a non-alphanumeric) and does not match `1.5% dobanda`.
+ * The body is trimStart'd — same trim behaviour `listMarkerOf` has always
+ * used; `label` is the already-trimmed value.
+ */
+function foldedTextOpensWithMarker(folded: string, label: string): boolean {
+  const body = folded.trimStart()
+  if (!body.startsWith(label)) return false
+  const remainder = body.slice(label.length)
+  return remainder === '' || !/^[\p{L}\p{N}]/u.test(remainder)
+}
+
+/** Applied only alongside `data-list-marker`: an empty `::before` with a
+    margin would still paint stray leading space. */
+const LIST_MARKER_CLASS = 'before:mr-2 before:content-[attr(data-list-marker)]'
+
+function BlockView({ block, marks }: BlockProps) {
+  if (!KNOWN_KINDS.has(block.kind) && !warnedKinds.has(block.kind)) {
+    warnedKinds.add(block.kind)
+    logger.warn('Unknown TLDF block kind, rendering as plain block', { kind: block.kind })
+  }
+
+  if (block.kind === 'tabel') {
+    const rejection = tableGuardRejection(block)
+    if (rejection === null) {
+      return <TableBlock block={block} marks={marks} />
+    }
+    warnUnrenderableTable(rejection)
+  }
+  if (block.kind === 'imagine') {
+    return <ImagineBlock block={block} marks={marks} />
+  }
+
+  // v1.1 lists take real list elements with no shape guard: unlike tables,
+  // the HTML parser never relocates stray content out of a list, so an
+  // off-contract child renders in place — invalid markup at worst, but
+  // hydration-consistent and character-exact. `rand`/`celula` outside a
+  // renderable table deliberately fall through to the plain div.
+  const Tag =
+    block.kind === 'lista'
+      ? block.type === 'OL'
+        ? 'ol'
+        : 'ul'
+      : block.kind === 'element_lista'
+        ? 'li'
+        : 'div'
+  const marker = block.kind === 'element_lista' ? listMarkerOf(block) : undefined
+
+  return (
+    <Tag
+      id={`tldf-${block.id}`}
+      data-kind={block.kind}
+      {...(marker !== undefined && { 'data-list-marker': marker })}
+      className={cn(
+        BLOCK_CLASS[block.kind],
+        displayClass(block),
+        marker !== undefined && LIST_MARKER_CLASS,
+        'scroll-mt-24',
+      )}
+    >
+      <BlockContent block={block} marks={marks} />
+    </Tag>
   )
 }
 
