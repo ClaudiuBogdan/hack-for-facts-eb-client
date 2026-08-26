@@ -653,6 +653,7 @@ function buildMockTerritoryHub(params: {
     relatedLinks: buildTerritoryRelatedLinks({ identity }),
     latestDataPeriod,
     partial: dashboard.partial,
+    benchmarks: {},
   }
 }
 

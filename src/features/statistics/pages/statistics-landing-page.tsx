@@ -45,7 +45,8 @@ export function StatisticsLandingPage({
   const navigate = useNavigate()
   const landingDataQuery = useStatisticsLandingData(initialLandingData)
   const catalogQuery = useStatisticsLandingCatalog(initialLandingCatalog)
-  const snapshotQuery = useStatisticsUatSnapshot(search.loc)
+  const loc = typeof search.loc === 'string' ? search.loc : undefined
+  const snapshotQuery = useStatisticsUatSnapshot(loc)
 
   const decadeStory = useMemo(() => {
     if (!landingDataQuery.data) return null
@@ -66,7 +67,7 @@ export function StatisticsLandingPage({
       to: '/statistici',
       search: {
         ...(q ? { q } : {}),
-        ...(search.loc ? { loc: search.loc } : {}),
+        ...(loc ? { loc } : {}),
       },
     })
   }
@@ -79,7 +80,7 @@ export function StatisticsLandingPage({
   const handleClearPick = () => {
     void navigate({
       to: '/statistici',
-      search: search.q ? { q: search.q } : {},
+      search: typeof search.q === 'string' ? { q: search.q } : {},
     })
   }
 
@@ -104,11 +105,11 @@ export function StatisticsLandingPage({
         </header>
 
         <LandingHero
-          searchTerm={search.q}
+          searchTerm={typeof search.q === 'string' ? search.q : undefined}
           onTermChange={handleTermChange}
           onPickTerritory={handlePickTerritory}
           onClearPick={handleClearPick}
-          loc={search.loc}
+          loc={loc}
           landingData={landingDataQuery.data}
           landingDataError={landingDataQuery.isError}
           landingDataLoading={landingDataQuery.isLoading}

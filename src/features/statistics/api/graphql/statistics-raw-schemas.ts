@@ -306,3 +306,31 @@ export type StatisticsDatasetTier0ResponseRaw = z.infer<
 export type StatisticsDatasetSeriesResponseRaw = z.infer<
   typeof statisticsDatasetSeriesResponseRawSchema
 >
+
+// ---------------------------------------------------------------------------
+// Territory hub
+// ---------------------------------------------------------------------------
+
+export const statisticsTerritoryHubResponseRawSchema = z.object({
+  dashboard: z.array(
+    z.object({
+      latestPeriod: z.string().nullish(),
+      dataset: insDatasetNodeRawSchema,
+      observations: z.array(insObservationNodeRawSchema),
+    }),
+  ),
+  identity: z.object({
+    nodes: z.array(insTerritoryNodeRawSchema),
+  }),
+})
+
+export const statisticsTerritoryHubContextResponseRawSchema = z.object({
+  loaded: totalCountProbeRawSchema,
+  catalog: totalCountProbeRawSchema,
+  county: z.array(insLatestValueNodeRawSchema).nullish(),
+  national: z.array(insLatestValueNodeRawSchema),
+})
+
+export type StatisticsTerritoryHubResponseRaw = z.infer<
+  typeof statisticsTerritoryHubResponseRawSchema
+>

@@ -1,74 +1,50 @@
 import { t } from '@lingui/core/macro'
 import { z } from 'zod'
 import {
-  getInsCountyDashboard,
-  getInsDatasetsCatalog,
-  getInsUatDashboard,
-} from '@/features/statistics/api/graphql/ins-fetchers'
-import { getUatLabels } from '@/lib/api/labels'
+  fetchStatisticsTerritoryHubContext,
+  fetchStatisticsTerritoryHubData,
+} from '@/features/statistics/api/graphql/statistics-fetchers'
 import { API_FETCH_REFERRER_POLICY } from '@/lib/api/fetch-options'
 import { getAuthToken } from '@/lib/auth'
 import { getApiBaseUrl } from '@/config/env'
 import { createLogger } from '@/lib/logger'
 import type {
-  InsDashboardData,
   InsObservation,
-  InsTerritory,
   InsTimePeriod,
   InsUatDatasetGroup,
 } from '@/schemas/ins'
 import type {
   DatasetRequestPayload,
   DatasetRequestResult,
-  StatisticsCoverageSummary,
   StatisticsIndicatorTile,
   StatisticsTerritoryHubResult,
-  StatisticsTerritoryIdentity,
+  StatisticsTileBenchmark,
 } from '@/schemas/statistics'
-import { buildCoverageFromCatalog, buildDocsFallbackCoverage } from '../lib/coverage'
 import { getDatasetDataStatus } from '../lib/dataset-status'
+import { LANDING_NATIONAL_DATASET_CODES } from '../lib/landing-constants'
 import { getLatestTimePeriod, resolveLatestPeriod } from '../lib/period'
-import {
-  buildTerritoryRelatedLinks,
-  inferFallbackCountyCode,
-  resolveTerritoryIdentity,
-} from '../lib/territory'
+import { buildTerritoryRelatedLinks, resolveTerritoryIdentity } from '../lib/territory'
 
 const logger = createLogger('statistics-api-live')
 
-/**
- * Top priority UAT-dashboard dataset codes (see `docs/ux-research/statistics.md`
- * §5: `INS_TOP_UAT_MATRIX_CODES` = POP107D, FOM104D, SOM101F, SOM103A, LOC101B).
- * Used to focus the territory hub tiles and the landing "top datasets" cards.
- */
-const TOP_UAT_DATASET_CODES = [
-  'POP107D',
-  'FOM104D',
-  'SOM101F',
-  'SOM103A',
-  'LOC101B',
-] as const
-
-const CATALOG_LIMIT = 2000
+/** The `insUatDashboard` observation budget; at the cap the result is partial. */
+const UAT_DASHBOARD_LIMIT = 2000
 
 // ---------------------------------------------------------------------------
 // Territory hub
 // ---------------------------------------------------------------------------
 
 /**
- * Fetches the territory hub for a SIRUTA code from the live INS APIs.
+ * The hub in exactly TWO POSTs:
  *
- * Delegates to:
- * - `getInsUatDashboard` for LAU territories (the verified UAT dashboard use
- *   case). This is the primary path and is NOT gated on
- *   `assertLiveApiAvailable` — the INS module is `apiReady: true`.
- * - `getInsCountyDashboard` for inferred county territories.
- * - `getInsDatasetsByCodes` to resolve top/catalog dataset metadata.
- * - `getUatLabels` for a territory display name when the dashboard territory
- *   record is missing one.
+ *   1. `insUatDashboard` + the territory identity (the only source of the
+ *      county breadcrumb) as two root fields of one operation;
+ *   2. exact catalog counts + county/national benchmarks for the headline
+ *      datasets, aliased into one operation.
  *
- * Returns an explicit fallback identity when name/level enrichment is
- * missing, but does NOT block the live dashboard calls.
+ * The old path (county-dashboard fallback, label lookups, a clamped
+ * 2000-row catalog scan for the ribbon) is retired: the hub is LAU-only and
+ * counts come from `totalCount` probes, never from scanning pages.
  */
 export async function fetchStatisticsTerritoryHubLive(
   siruta: string,
@@ -78,193 +54,68 @@ export async function fetchStatisticsTerritoryHubLive(
     return null
   }
 
-  logger.info('Fetching statistics territory hub', {
+  logger.info('Fetching statistics territory hub', { siruta: normalizedSiruta })
+
+  const { groups, identity: territoryRow } = await fetchStatisticsTerritoryHubData({
     siruta: normalizedSiruta,
   })
 
-  // Fetched unfiltered on purpose: the hub is filtered by period client-side
-  // (see `lib/hub-period.ts`), so switching periods never costs a round-trip.
-  const dashboard = await getInsUatDashboard({
-    sirutaCode: normalizedSiruta,
+  if (!territoryRow && groups.length === 0) {
+    return null
+  }
+
+  const identity = resolveTerritoryIdentity({
+    siruta: normalizedSiruta,
+    liveName: territoryRow?.name ?? null,
+    liveLevel: territoryRow?.level ?? null,
+    liveCountyName: territoryRow?.countyName ?? null,
+    liveCountyCode: territoryRow?.countyCode ?? null,
   })
-  let countyDashboard: InsDashboardData | null = null
 
-  if (dashboard.groups.length === 0) {
-    const fallbackCountyCode = inferFallbackCountyCode(normalizedSiruta)
-    if (fallbackCountyCode) {
-      countyDashboard = await fetchCountyDashboardByCountyCode(fallbackCountyCode)
-    }
+  const context = await fetchStatisticsTerritoryHubContext({
+    countyCode: territoryRow?.countyCode ?? null,
+    benchmarkCodes: LANDING_NATIONAL_DATASET_CODES,
+  })
 
-    if (!countyDashboard || countyDashboard.groups.length === 0) {
-      const labels = await getSafeUatLabels(normalizedSiruta)
-      if (labels.length === 0) {
-        return null
+  const benchmarks: Record<string, StatisticsTileBenchmark> = {}
+  for (const code of LANDING_NATIONAL_DATASET_CODES) {
+    const county = context.county.find((value) => value.datasetCode === code) ?? null
+    const national =
+      context.national.find((value) => value.datasetCode === code) ?? null
+    if (county?.hasData || national?.hasData) {
+      benchmarks[code] = {
+        county: county?.hasData ? county : null,
+        national: national?.hasData ? national : null,
       }
     }
   }
 
-  if (!countyDashboard) {
-    countyDashboard = await fetchCountyDashboardForIdentity(dashboard)
-  }
-
-  if (
-    dashboard.groups.length === 0 &&
-    (!countyDashboard || countyDashboard.groups.length === 0)
-  ) {
-    return null
-  }
-
-  const primaryDashboard =
-    countyDashboard && countyDashboard.groups.length > 0
-      ? countyDashboard
-      : dashboard
-
-  const identity = await resolveHubIdentity(
-    normalizedSiruta,
-    primaryDashboard,
-    countyDashboard,
+  const tiles = buildIndicatorTiles(groups)
+  const totalObservations = groups.reduce(
+    (total, group) => total + group.observations.length,
+    0,
   )
-
-  const tiles = buildIndicatorTiles(primaryDashboard.groups)
-  const availableDatasetCodes = primaryDashboard.groups
-    .filter((group) => getDatasetDataStatus(group.dataset) === 'available')
-    .map((group) => group.dataset.code)
-
-  const coverage = await buildHubCoverage()
-  const relatedLinks = buildTerritoryRelatedLinks({ identity })
-
-  const latestDataPeriod = resolveHubLatestPeriod(primaryDashboard)
 
   return {
     identity,
     tiles,
-    availableDatasetCodes,
-    coverage,
-    relatedLinks,
-    latestDataPeriod,
-    partial: primaryDashboard.partial,
+    availableDatasetCodes: groups
+      .filter((group) => getDatasetDataStatus(group.dataset) === 'available')
+      .map((group) => group.dataset.code),
+    coverage: {
+      availableDatasetCount: context.loadedCount,
+      totalDatasetCount: context.catalogCount,
+      catalogOnlyDatasetCount: Math.max(
+        context.catalogCount - context.loadedCount,
+        0,
+      ),
+      partial: false,
+    },
+    relatedLinks: buildTerritoryRelatedLinks({ identity }),
+    latestDataPeriod: resolveHubLatestPeriod(groups),
+    partial: totalObservations >= UAT_DASHBOARD_LIMIT,
+    benchmarks,
   }
-}
-
-async function resolveHubIdentity(
-  siruta: string,
-  dashboard: InsDashboardData,
-  countyDashboard: InsDashboardData | null,
-): Promise<StatisticsTerritoryIdentity> {
-  const territory = pickDashboardTerritory(dashboard.groups)
-  const countyTerritory = countyDashboard
-    ? pickDashboardTerritory(countyDashboard.groups)
-    : null
-
-  let liveName = territory?.name_ro ?? null
-  const liveLevel = (territory?.level ?? null) as
-    | StatisticsTerritoryIdentity['level']
-    | null
-  const liveCountyName = countyTerritory?.name_ro ?? null
-  const liveCountyCode = countyTerritory?.code ?? null
-
-  // getUatLabels can supply a UAT display name when the dashboard territory
-  // record carries none. Best-effort; failures degrade to fallback identity.
-  if (!liveName) {
-    const labels = await getSafeUatLabels(siruta)
-    const match = labels.find((label) => label.id === siruta)
-    if (match) {
-      liveName = match.label
-    }
-  }
-
-  return resolveTerritoryIdentity({
-    siruta,
-    liveName,
-    liveLevel,
-    liveCountyName,
-    liveCountyCode,
-  })
-}
-
-async function getSafeUatLabels(
-  siruta: string,
-): Promise<readonly { id: string; label: string }[]> {
-  try {
-    return await getUatLabels([siruta])
-  } catch (error) {
-    logger.warn('getUatLabels failed for territory name enrichment', {
-      siruta,
-      error,
-    })
-    return []
-  }
-}
-
-/**
- * Fetches a county-level dashboard when the territory appears to be a county
- * (NUTS3). Uses the SIRUTA as the county code when the UAT dashboard
- * territory reports level `NUTS3`; otherwise returns null. Best-effort:
- * failures degrade to a null county dashboard, never blocking the UAT path.
- */
-async function fetchCountyDashboardForIdentity(
-  dashboard: InsDashboardData,
-): Promise<InsDashboardData | null> {
-  if (dashboard.groups.length === 0) {
-    return null
-  }
-
-  const territory = pickDashboardTerritory(dashboard.groups)
-  const isCounty = territory?.level === 'NUTS3' || territory?.level === 'NUTS2'
-  if (!isCounty || !territory?.code) {
-    return null
-  }
-
-  const countyDatasetCodes = dashboard.groups
-    .filter((group) => group.dataset.has_county_data)
-    .map((group) => group.dataset.code)
-
-  if (countyDatasetCodes.length === 0) {
-    return null
-  }
-
-  try {
-    return await getInsCountyDashboard({
-      countyCode: territory.code,
-      datasetCodes: countyDatasetCodes,
-    })
-  } catch (error) {
-    logger.warn('getInsCountyDashboard failed for county enrichment', {
-      countyCode: territory.code,
-      error,
-    })
-    return null
-  }
-}
-
-async function fetchCountyDashboardByCountyCode(
-  countyCode: string,
-): Promise<InsDashboardData | null> {
-  try {
-    return await getInsCountyDashboard({
-      countyCode,
-      datasetCodes: [...TOP_UAT_DATASET_CODES],
-    })
-  } catch (error) {
-    logger.warn('getInsCountyDashboard failed for direct county lookup', {
-      countyCode,
-      error,
-    })
-    return null
-  }
-}
-
-function pickDashboardTerritory(
-  groups: readonly InsUatDatasetGroup[],
-): InsTerritory | null {
-  for (const group of groups) {
-    for (const observation of group.observations) {
-      if (observation.territory) {
-        return observation.territory
-      }
-    }
-  }
-  return null
 }
 
 function buildIndicatorTiles(
@@ -346,32 +197,13 @@ function buildSparkline(
     )
 }
 
-
-async function buildHubCoverage(): Promise<StatisticsCoverageSummary> {
-  try {
-    const catalog = await getInsDatasetsCatalog({ limit: CATALOG_LIMIT })
-    return buildCoverageFromCatalog({
-      datasets: catalog.nodes ?? [],
-      totalCount: catalog.pageInfo?.totalCount ?? (catalog.nodes?.length ?? 0),
-      hasNextPage: catalog.pageInfo?.hasNextPage ?? false,
-    })
-  } catch (error) {
-    logger.warn('Live catalog unavailable for territory coverage', { error })
-    // Catalog failure must not break the dashboard; fall back to the
-    // docs-grounded 27/1898 constants (cited in lib/coverage.ts).
-    return {
-      ...buildDocsFallbackCoverage(),
-      partial: true,
-    }
-  }
-}
-
-
-function resolveHubLatestPeriod(dashboard: InsDashboardData): string | null {
+function resolveHubLatestPeriod(
+  groups: readonly InsUatDatasetGroup[],
+): string | null {
   let latest: string | null = null
   let latestKey = Number.NEGATIVE_INFINITY
 
-  for (const group of dashboard.groups) {
+  for (const group of groups) {
     const period = resolveLatestPeriod({
       latestPeriod: group.latestPeriod,
       observations: group.observations,

@@ -48,9 +48,51 @@ export interface ComparisonCell {
   readonly valueStatus: string | null
 }
 
+/**
+ * A compared territory as the URL carries it: a discriminated token
+ * (`siruta:54975` | `cod:CJ` | `cod:RO`) resolved to the territory CODE the
+ * observation filter speaks. A LAU's code IS its SIRUTA code (M0-verified),
+ * so one `territoryCodes` filter serves mixed levels in one query — filter
+ * keys AND together, so `sirutaCodes` must never be mixed in.
+ */
+export interface ComparisonTerritoryToken {
+  readonly token: string
+  readonly code: string
+}
+
+/** Normalizes one URL entry: bare digits are a legacy SIRUTA-only link. */
+export function parseComparisonToken(raw: unknown): ComparisonTerritoryToken | null {
+  // Raw search values leak past validateSearch with their parsed type — a
+  // shared URL with unquoted numbers delivers numbers, not strings.
+  if (typeof raw !== 'string' && typeof raw !== 'number') return null
+  const trimmed = String(raw).trim()
+  if (/^\d{1,6}$/.test(trimmed)) {
+    return { token: `siruta:${trimmed}`, code: trimmed }
+  }
+  const match = /^(siruta|cod):([A-Za-z0-9]+)$/.exec(trimmed)
+  if (!match) return null
+  const code = match[1] === 'cod' && /^[A-Za-z]+$/.test(match[2])
+    ? match[2].toUpperCase()
+    : match[2]
+  return { token: `${match[1]}:${code}`, code }
+}
+
+/** Parses the URL list, dropping malformed entries and duplicate codes. */
+export function parseComparisonTokens(
+  raw: readonly unknown[] | undefined,
+): readonly ComparisonTerritoryToken[] {
+  const byCode = new Map<string, ComparisonTerritoryToken>()
+  for (const entry of Array.isArray(raw) ? raw : []) {
+    const parsed = parseComparisonToken(entry)
+    if (!parsed || byCode.has(parsed.code)) continue
+    byCode.set(parsed.code, parsed)
+  }
+  return [...byCode.values()]
+}
+
 /** One territory row: its identity plus the cells it actually has. */
 export interface ComparisonTerritoryRow {
-  readonly siruta: string
+  readonly code: string
   readonly name: string | null
   readonly cells: Readonly<Record<string, ComparisonCell>>
 }
@@ -105,7 +147,7 @@ export function resolveSelectedPeriod(
 /**
  * Folds a flat observation list into the territory × period matrix.
  *
- * Rows follow `sirutaCodes` order, so the chart colour assigned to a territory
+ * Rows follow `territoryCodes` order, so the chart colour assigned to a territory
  * follows the territory and not its rank — removing a chip never repaints the
  * survivors that stay ahead of it. A territory with zero observations still
  * gets a row (all cells missing), because "we asked and there was nothing" is
@@ -116,28 +158,34 @@ export function resolveSelectedPeriod(
  */
 export function buildComparisonMatrix(params: {
   readonly observations: readonly InsObservation[]
-  readonly sirutaCodes: readonly string[]
+  readonly territoryCodes: readonly string[]
 }): ComparisonMatrix {
-  const { observations, sirutaCodes } = params
+  const { observations, territoryCodes } = params
 
-  const cellsBySiruta = new Map<string, Record<string, ComparisonCell>>()
-  const nameBySiruta = new Map<string, string>()
+  const cellsByCode = new Map<string, Record<string, ComparisonCell>>()
+  const nameByCode = new Map<string, string>()
   let unitSymbol: string | null = null
 
-  for (const siruta of sirutaCodes) {
-    cellsBySiruta.set(siruta, {})
+  for (const code of territoryCodes) {
+    cellsByCode.set(code, {})
   }
 
   for (const observation of observations) {
-    const siruta = observation.territory?.siruta_code?.trim()
-    if (!siruta) continue
+    // The territory CODE is the universal key: for LAU rows it equals the
+    // SIRUTA code; county and national rows have no SIRUTA at all.
+    const code =
+      observation.territory?.code?.trim() ||
+      observation.territory?.siruta_code?.trim()
+    if (!code) continue
 
-    const cells = cellsBySiruta.get(siruta)
+    const cells = cellsByCode.get(code)
     if (!cells) continue
 
-    const name = observation.territory?.name_ro?.trim()
-    if (name && !nameBySiruta.has(siruta)) {
-      nameBySiruta.set(siruta, name)
+    const rawName = observation.territory?.name_ro?.trim()
+    // The API names the national row "TOTAL" — render the country.
+    const name = code === 'RO' ? 'România' : rawName
+    if (name && !nameByCode.has(code)) {
+      nameByCode.set(code, name)
     }
 
     unitSymbol ??= observation.unit?.symbol?.trim() || null
@@ -160,10 +208,10 @@ export function buildComparisonMatrix(params: {
   return {
     periods: buildPeriodOptions(observations),
     unitSymbol,
-    rows: sirutaCodes.map((siruta) => ({
-      siruta,
-      name: nameBySiruta.get(siruta) ?? null,
-      cells: cellsBySiruta.get(siruta) ?? {},
+    rows: territoryCodes.map((code) => ({
+      code,
+      name: nameByCode.get(code) ?? null,
+      cells: cellsByCode.get(code) ?? {},
     })),
   }
 }
@@ -197,7 +245,7 @@ export function toChartValue(value: string | null | undefined): number | null {
 
 /** One bar: a territory's value at the selected period. */
 export interface ComparisonBarDatum {
-  readonly siruta: string
+  readonly code: string
   readonly name: string | null
   readonly value: number | null
 }
@@ -208,7 +256,7 @@ export function buildBarSeries(
   isoPeriod: string | null,
 ): readonly ComparisonBarDatum[] {
   return matrix.rows.map((row) => ({
-    siruta: row.siruta,
+    code: row.code,
     name: row.name,
     value: toChartValue(getComparisonCell(row, isoPeriod)?.value),
   }))
@@ -241,7 +289,7 @@ export function buildLineSeries(
     }
 
     for (const row of matrix.rows) {
-      point[lineSeriesKey(row.siruta)] = toChartValue(
+      point[lineSeriesKey(row.code)] = toChartValue(
         getComparisonCell(row, option.isoPeriod)?.value,
       )
     }

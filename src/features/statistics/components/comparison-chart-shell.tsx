@@ -23,7 +23,7 @@ export function ComparisonLegend({ series }: LegendProps) {
   return (
     <ul className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
       {series.map((entry) => (
-        <li key={entry.siruta} className="flex items-center gap-2 text-xs text-muted-foreground">
+        <li key={entry.code} className="flex items-center gap-2 text-xs text-muted-foreground">
           <span
             aria-hidden
             className="h-2.5 w-2.5 shrink-0 rounded-sm ring-2 ring-background"

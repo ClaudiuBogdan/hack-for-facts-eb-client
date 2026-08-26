@@ -55,20 +55,20 @@ function ComparisonBarTooltip({ active, payload }: TooltipProps) {
  */
 export function ComparisonBarChart({ matrix, series, selectedPeriod }: Props) {
   const data = buildBarSeries(matrix, selectedPeriod)
-  const colorBySiruta = new Map(series.map((entry) => [entry.siruta, entry.color]))
-  const labelBySiruta = new Map(series.map((entry) => [entry.siruta, entry.label]))
+  const colorBySiruta = new Map(series.map((entry) => [entry.code, entry.color]))
+  const labelBySiruta = new Map(series.map((entry) => [entry.code, entry.label]))
 
   const plotted = data
     .filter((datum) => datum.value !== null)
     .map((datum) => ({
-      siruta: datum.siruta,
-      name: labelBySiruta.get(datum.siruta) ?? datum.siruta,
+      code: datum.code,
+      name: labelBySiruta.get(datum.code) ?? datum.code,
       value: datum.value as number,
     }))
 
   const missing = data
     .filter((datum) => datum.value === null)
-    .map((datum) => labelBySiruta.get(datum.siruta) ?? datum.siruta)
+    .map((datum) => labelBySiruta.get(datum.code) ?? datum.code)
 
   return (
     <ComparisonFigure
@@ -111,8 +111,8 @@ export function ComparisonBarChart({ matrix, series, selectedPeriod }: Props) {
               <Bar dataKey="value" radius={[4, 4, 0, 0]} isAnimationActive={false}>
                 {plotted.map((datum) => (
                   <Cell
-                    key={datum.siruta}
-                    fill={colorBySiruta.get(datum.siruta)}
+                    key={datum.code}
+                    fill={colorBySiruta.get(datum.code)}
                     // 2px surface gap between adjacent bars.
                     stroke="hsl(var(--background))"
                     strokeWidth={2}

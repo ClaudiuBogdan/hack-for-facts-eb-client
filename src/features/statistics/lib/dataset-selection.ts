@@ -75,10 +75,11 @@ export function encodeClassificationPin(pin: ClassificationPin): string {
 export function parseClassificationPins(
   pins: readonly string[] | undefined,
 ): readonly ClassificationPin[] {
-  if (!pins) return []
+  if (!pins || !Array.isArray(pins)) return []
 
   const byType = new Map<string, ClassificationPin>()
   for (const raw of pins) {
+    if (typeof raw !== 'string') continue
     const parsed = parseClassificationPin(raw)
     if (!parsed) continue
     if (byType.has(parsed.type)) continue
@@ -134,7 +135,8 @@ export function removeClassificationPin(
 export function parseTerritoryPin(
   pin: string | undefined,
 ): TerritoryPin | null {
-  if (!pin) return null
+  // Raw search values leak past validateSearch with their parsed type.
+  if (!pin || typeof pin !== 'string') return null
 
   const match = /^(siruta|cod):([A-Za-z0-9]+)$/.exec(pin)
   if (!match) return null

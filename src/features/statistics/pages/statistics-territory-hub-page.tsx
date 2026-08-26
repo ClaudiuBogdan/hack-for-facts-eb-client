@@ -50,21 +50,48 @@ export function StatisticsTerritoryHubPage({
   const navigate = useNavigate()
   const hubQuery = useStatisticsTerritoryHub({ siruta })
   const unfilteredHub = hubQuery.data
-  const activePeriod = search.period && search.period !== 'latest' ? search.period : null
+  // The router merges the RAW parent search over the validated child output,
+  // so a key the validator dropped (e.g. ?period=2009 parsed as a NUMBER)
+  // still arrives here with its raw type — read defensively, always.
+  const activePeriod =
+    typeof search.period === 'string' && search.period !== 'latest'
+      ? search.period
+      : null
   const periodOptions = collectHubPeriodOptions(unfilteredHub)
   const hub = unfilteredHub ? applyHubPeriod(unfilteredHub, activePeriod) : unfilteredHub
   const shouldShowHub = Boolean(hub) && !hubQuery.isError
 
+  // Merge, never replace: a future search key must survive a period change.
   const handlePeriodChange = (value: string) => {
     void navigate({
       to: '/statistici/teritorii/$siruta',
       params: { siruta },
-      search: value === LATEST_PERIOD_VALUE ? {} : { period: value },
+      search: (previous) => ({
+        ...previous,
+        ...(value === LATEST_PERIOD_VALUE
+          ? { period: undefined }
+          : { period: value }),
+      }),
     })
   }
 
+  // Malformed SIRUTA: a real not-found without a wasted round-trip.
+  const isValidSiruta = /^\d{1,6}$/.test(siruta.trim())
+  if (!isValidSiruta) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="mx-auto max-w-6xl px-4 py-6 md:px-6">
+          <EmptyState
+            title={t`Teritoriu negăsit`}
+            description={t`Adresa nu conține un cod SIRUTA valid.`}
+          />
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <main className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 md:px-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Button variant="outline" size="sm" asChild>
@@ -106,7 +133,33 @@ export function StatisticsTerritoryHubPage({
           <>
             <header className="space-y-4">
               <TerritoryHeader identity={hub.identity} />
-              {periodOptions.length > 0 ? (
+              {activePeriod &&
+              !periodOptions.some(
+                (option) => option.iso_period === activePeriod,
+              ) ? (
+                <Alert>
+                  <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+                  <AlertTitle>
+                    <Trans>Nicio serie nu raportează perioada {activePeriod}</Trans>
+                  </AlertTitle>
+                  <AlertDescription className="space-y-3">
+                    <p>
+                      <Trans>
+                        Filtrul rămâne în adresă; indicatorii de mai jos arată
+                        absența, nu valori inventate.
+                      </Trans>
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePeriodChange(LATEST_PERIOD_VALUE)}
+                    >
+                      <Trans>Șterge filtrul de perioadă</Trans>
+                    </Button>
+                  </AlertDescription>
+                </Alert>
+              ) : null}
+              {periodOptions.length > 0 || activePeriod ? (
                 <div className="flex flex-wrap items-center gap-2">
                   <label
                     htmlFor="statistics-hub-period"
@@ -140,9 +193,19 @@ export function StatisticsTerritoryHubPage({
                     </SelectContent>
                   </Select>
                   {activePeriod ? (
-                    <Badge variant="outline">
-                      <Trans>Filtrat</Trans>: {activePeriod}
-                    </Badge>
+                    <>
+                      <Badge variant="outline">
+                        <Trans>Filtrat</Trans>: {activePeriod}
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs"
+                        onClick={() => handlePeriodChange(LATEST_PERIOD_VALUE)}
+                      >
+                        <Trans>Șterge filtrul</Trans>
+                      </Button>
+                    </>
                   ) : null}
                 </div>
               ) : null}
@@ -173,6 +236,10 @@ export function StatisticsTerritoryHubPage({
                       key={tile.datasetCode}
                       tile={tile}
                       siruta={hub.identity.siruta}
+                      {...(hub.benchmarks[tile.datasetCode]
+                        ? { benchmark: hub.benchmarks[tile.datasetCode] }
+                        : {})}
+                      countyCode={hub.identity.countyCode}
                     />
                   ))}
                 </div>
@@ -201,6 +268,6 @@ export function StatisticsTerritoryHubPage({
           </>
         ) : null}
       </div>
-    </main>
+    </div>
   )
 }

@@ -31,8 +31,11 @@ import type {
  */
 export const statisticsPeriodSearchSchema = z
   .preprocess((value) => {
-    if (typeof value !== 'string') return 'latest'
-    const normalized = value.trim()
+    // The router's search parser JSON-parses bare digits, so the natural
+    // ?period=2019 arrives as a NUMBER — coerce before validating.
+    const candidate = typeof value === 'number' ? String(value) : value
+    if (typeof candidate !== 'string') return 'latest'
+    const normalized = candidate.trim()
     return normalized.length > 0 ? normalized : 'latest'
   }, z.union([
     z.literal('latest'),
@@ -343,6 +346,12 @@ export interface StatisticsRelatedLink {
   readonly disabledReason: string | null
 }
 
+/** County + national reference values for one hub tile's dataset. */
+export interface StatisticsTileBenchmark {
+  readonly county: StatisticsLatestValue | null
+  readonly national: StatisticsLatestValue | null
+}
+
 /** Aggregated territory hub result returned by the statistics API. */
 export interface StatisticsTerritoryHubResult {
   readonly identity: StatisticsTerritoryIdentity
@@ -352,6 +361,8 @@ export interface StatisticsTerritoryHubResult {
   readonly relatedLinks: readonly StatisticsRelatedLink[]
   readonly latestDataPeriod: string | null
   readonly partial: boolean
+  /** dataset code → county/national benchmark, for the headline datasets. */
+  readonly benchmarks: Readonly<Record<string, StatisticsTileBenchmark>>
 }
 
 /** How the server picked a "latest value" observation. */

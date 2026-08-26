@@ -75,7 +75,13 @@ const EMPTY_OBSERVATIONS: ComparisonObservationsResult = {
 /** Parameters of the one observations request. Deliberately has no `period`. */
 export interface ComparisonObservationsParams {
   readonly datasetCode: string
-  readonly sirutaCodes: readonly string[]
+  /**
+   * Resolved territory CODES (a LAU's code IS its SIRUTA; counties are
+   * alphabetic; `RO` is the national row) — ONE `territoryCodes` filter
+   * serves mixed levels. Filter keys AND together, so `sirutaCodes` must
+   * never be combined with it.
+   */
+  readonly territoryCodes: readonly string[]
   readonly classificationPins: readonly ClassificationPin[]
   readonly unitCode: string | undefined
 }
@@ -162,8 +168,7 @@ export function buildComparisonObservationFilter(
   params: ComparisonObservationsParams,
 ): InsObservationFilterInput {
   const filter: InsObservationFilterInput = {
-    sirutaCodes: [...params.sirutaCodes],
-    territoryLevels: ['LAU'],
+    territoryCodes: [...new Set(params.territoryCodes)],
   }
 
   if (params.classificationPins.length > 0) {
@@ -187,7 +192,7 @@ export function buildComparisonObservationFilter(
 export async function fetchComparisonObservations(
   params: ComparisonObservationsParams,
 ): Promise<ComparisonObservationsResult> {
-  if (params.datasetCode.trim().length === 0 || params.sirutaCodes.length === 0) {
+  if (params.datasetCode.trim().length === 0 || params.territoryCodes.length === 0) {
     return EMPTY_OBSERVATIONS
   }
 

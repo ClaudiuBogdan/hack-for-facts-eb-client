@@ -7,7 +7,7 @@
 
 /** A territory's identity as the legend and charts see it. */
 export interface ComparisonSeriesDescriptor {
-  readonly siruta: string
+  readonly code: string
   readonly label: string
   readonly color: string
 }

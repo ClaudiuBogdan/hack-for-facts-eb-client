@@ -420,3 +420,59 @@ export const STATISTICS_DATASET_SERIES_QUERY = `
     }
   }
 `
+
+/**
+ * Hub POST 1 — the one-fetch dashboard (client-side period filtering) plus
+ * the territory identity (the ONLY source of `parent_code`/`parent_name_ro`,
+ * hard-coded null inside observations) as two root fields of one operation.
+ */
+export const STATISTICS_TERRITORY_HUB_QUERY = `
+  query StatisticsTerritoryHub($sirutaCode: String!) {
+    dashboard: insUatDashboard(sirutaCode: $sirutaCode) {
+      latestPeriod
+      dataset { ${INS_DATASET_FIELDS} }
+      observations {
+        value
+        value_status
+        time_period { iso_period year quarter month periodicity }
+        territory { code siruta_code level name_ro }
+        unit { code symbol name_ro }
+        classifications { type_code type_name_ro code name_ro sort_order }
+      }
+    }
+    identity: insTerritories(filter: { sirutaCodes: [$sirutaCode] }, limit: 1) {
+      nodes { ${INS_TERRITORY_FIELDS} }
+    }
+  }
+`
+
+/**
+ * Hub POST 2 — exact catalog counts (no clamped page scans) plus the county
+ * and national benchmark values for the headline datasets, aliased into one
+ * operation. \`withCounty\` guards the county alias when the identity carries
+ * no parent code.
+ */
+export const STATISTICS_TERRITORY_HUB_CONTEXT_QUERY = `
+  query StatisticsTerritoryHubContext(
+    $countyCode: String
+    $benchmarkCodes: [String!]!
+    $withCounty: Boolean!
+  ) {
+    loaded: insDatasets(limit: 1) { pageInfo { totalCount } }
+    catalog: insDatasets(filter: { dataStatus: [] }, limit: 1) { pageInfo { totalCount } }
+    county: insLatestDatasetValues(
+      entity: { territoryCode: $countyCode, territoryLevel: NUTS3 }
+      datasetCodes: $benchmarkCodes
+      preferredClassificationCodes: ["TOTAL"]
+    ) @include(if: $withCounty) {
+      ${INS_LATEST_VALUE_FIELDS}
+    }
+    national: insLatestDatasetValues(
+      entity: { territoryCode: "RO", territoryLevel: NATIONAL }
+      datasetCodes: $benchmarkCodes
+      preferredClassificationCodes: ["TOTAL"]
+    ) {
+      ${INS_LATEST_VALUE_FIELDS}
+    }
+  }
+`

@@ -5,14 +5,17 @@ import type {
   InsEntitySelectorInput,
   InsObservationFilterInput,
   InsTerritoryFilterInput,
+  InsUatDatasetGroup,
 } from '@/schemas/ins'
 import type {
   StatisticsDatasetPage,
   StatisticsDatasetSeries,
   StatisticsDatasetTier0,
+  StatisticsLatestValue,
   StatisticsLandingCatalog,
   StatisticsLandingData,
   StatisticsTerritorySearchResult,
+  StatisticsTerritorySearchRow,
   StatisticsUatSnapshot,
 } from '@/schemas/statistics'
 import {
@@ -20,6 +23,8 @@ import {
   INS_TERRITORIES_QUERY,
   STATISTICS_DATASET_SERIES_QUERY,
   STATISTICS_DATASET_TIER0_QUERY,
+  STATISTICS_TERRITORY_HUB_CONTEXT_QUERY,
+  STATISTICS_TERRITORY_HUB_QUERY,
   STATISTICS_LANDING_CATALOG_QUERY,
   STATISTICS_LANDING_DATA_QUERY,
   STATISTICS_UAT_SNAPSHOT_QUERY,
@@ -39,6 +44,8 @@ import {
   insTerritoriesResponseRawSchema,
   statisticsDatasetSeriesResponseRawSchema,
   statisticsDatasetTier0ResponseRawSchema,
+  statisticsTerritoryHubContextResponseRawSchema,
+  statisticsTerritoryHubResponseRawSchema,
   statisticsLandingCatalogResponseRawSchema,
   statisticsLandingDataResponseRawSchema,
   statisticsUatSnapshotResponseRawSchema,
@@ -235,5 +242,66 @@ export async function fetchStatisticsDatasetSeries(params: {
     totalCount: parsed.series.pageInfo.totalCount,
     related: mapRelatedDatasets(parsed.related ?? null, params.code),
     relatedTotalCount: parsed.related?.pageInfo.totalCount ?? null,
+  }
+}
+
+/** Hub POST 1 — dashboard groups + territory identity, one operation. */
+export async function fetchStatisticsTerritoryHubData(params: {
+  siruta: string
+  signal?: AbortSignal
+}): Promise<{
+  readonly groups: readonly InsUatDatasetGroup[]
+  readonly identity: StatisticsTerritorySearchRow | null
+}> {
+  const response = await graphqlRequest<unknown>(
+    STATISTICS_TERRITORY_HUB_QUERY,
+    { sirutaCode: params.siruta },
+    insRequestOptions(params.signal),
+  )
+
+  const parsed = statisticsTerritoryHubResponseRawSchema.parse(response)
+  const identityNode = parsed.identity.nodes[0]
+
+  return {
+    groups: parsed.dashboard.map((group) => ({
+      dataset: mapDatasetDetails({ ...group.dataset, dimensions: [] }),
+      latestPeriod: group.latestPeriod ?? null,
+      observations: group.observations.map((node) => ({
+        ...mapObservationNode(node),
+        dataset_code: group.dataset.code,
+      })),
+    })),
+    identity: identityNode ? mapTerritorySearchRow(identityNode) : null,
+  }
+}
+
+/** Hub POST 2 — exact counts + county/national benchmarks, one operation. */
+export async function fetchStatisticsTerritoryHubContext(params: {
+  countyCode: string | null
+  benchmarkCodes: readonly string[]
+  signal?: AbortSignal
+}): Promise<{
+  readonly loadedCount: number
+  readonly catalogCount: number
+  readonly county: readonly StatisticsLatestValue[]
+  readonly national: readonly StatisticsLatestValue[]
+}> {
+  const response = await graphqlRequest<unknown>(
+    STATISTICS_TERRITORY_HUB_CONTEXT_QUERY,
+    {
+      countyCode: params.countyCode,
+      benchmarkCodes: params.benchmarkCodes,
+      withCounty: params.countyCode !== null,
+    },
+    insRequestOptions(params.signal),
+  )
+
+  const parsed = statisticsTerritoryHubContextResponseRawSchema.parse(response)
+
+  return {
+    loadedCount: parsed.loaded.pageInfo.totalCount,
+    catalogCount: parsed.catalog.pageInfo.totalCount,
+    county: (parsed.county ?? []).map(mapLatestValue),
+    national: parsed.national.map(mapLatestValue),
   }
 }

@@ -1,8 +1,13 @@
 import { t } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Trans } from '@lingui/react/macro'
-import { AlertCircle } from 'lucide-react'
-import type { StatisticsIndicatorTile } from '@/schemas/statistics'
+import { Link } from '@tanstack/react-router'
+import { AlertCircle, ArrowRight } from 'lucide-react'
+import type {
+  StatisticsIndicatorTile,
+  StatisticsTileBenchmark,
+} from '@/schemas/statistics'
+import { activeNumberLocale } from '../lib/format'
 import { DataStatusBadge } from './data-status-badge'
 import { FreshnessBadge } from './freshness-badge'
 import { RequestDatasetAction } from './request-dataset-action'
@@ -11,13 +16,16 @@ import { SourceProvenanceDrawer } from './source-provenance-drawer'
 type IndicatorTileProps = {
   readonly tile: StatisticsIndicatorTile
   readonly siruta: string
+  /** County + national reference values, when the headline data allows. */
+  readonly benchmark?: StatisticsTileBenchmark
+  readonly countyCode?: string | null
 }
 
 function formatValue(rawValue: string | null, unit: string | null): string {
   if (rawValue === null) return '—'
   const numeric = Number(rawValue.replace(',', '.'))
   if (!Number.isFinite(numeric)) return rawValue
-  const formatted = new Intl.NumberFormat('ro-RO', {
+  const formatted = new Intl.NumberFormat(activeNumberLocale(), {
     maximumFractionDigits: numeric % 1 === 0 ? 0 : 2,
   }).format(numeric)
   return unit ? `${formatted} ${unit}` : formatted
@@ -121,30 +129,81 @@ function Sparkline({
   }
 
   const paths = buildSparklinePaths(points)
+  const min = Math.min(...numericPoints)
+  const max = Math.max(...numericPoints)
+  const firstPeriod = points[0]?.[0].iso_period ?? ''
+  const lastPeriod = points[points.length - 1]?.[0].iso_period ?? ''
+  const axisFormat = new Intl.NumberFormat(activeNumberLocale(), {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  })
 
   return (
-    <svg
-      className="h-10 w-full"
-      viewBox="0 0 100 40"
-      role="img"
-      aria-label={t`Evoluție până în ${points[points.length - 1]?.[0].iso_period ?? ''}`}
-      preserveAspectRatio="none"
-    >
-      {paths.map((path) => (
-        <path
-          key={path}
-          d={path}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          className="text-primary"
-        />
-      ))}
-    </svg>
+    <div>
+      <div className="flex items-stretch gap-1.5">
+        <div
+          className="flex w-10 shrink-0 flex-col justify-between text-right text-[10px] tabular-nums text-muted-foreground"
+          aria-hidden
+        >
+          <span>{axisFormat.format(max)}</span>
+          <span>{axisFormat.format(min)}</span>
+        </div>
+        <svg
+          className="h-10 w-full"
+          viewBox="0 0 100 40"
+          role="img"
+          aria-label={t`Evoluție de la ${firstPeriod} până în ${lastPeriod}, între ${axisFormat.format(min)} și ${axisFormat.format(max)}`}
+          preserveAspectRatio="none"
+        >
+          <title>{`${firstPeriod} – ${lastPeriod}`}</title>
+          {paths.map((path) => (
+            <path
+              key={path}
+              d={path}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="text-primary"
+            />
+          ))}
+        </svg>
+      </div>
+      <div
+        className="ml-[2.875rem] flex justify-between text-[10px] tabular-nums text-muted-foreground"
+        aria-hidden
+      >
+        <span>{firstPeriod}</span>
+        <span>{lastPeriod}</span>
+      </div>
+    </div>
   )
 }
 
-export function IndicatorTile({ tile, siruta }: IndicatorTileProps) {
+function BenchmarkLine({
+  benchmark,
+}: {
+  readonly benchmark: StatisticsTileBenchmark
+}) {
+  const parts: string[] = []
+  if (benchmark.county?.value) {
+    parts.push(
+      `${t`Județ`}: ${formatValue(benchmark.county.value, benchmark.county.unitSymbol)} (${benchmark.county.period ?? ''})`,
+    )
+  }
+  if (benchmark.national?.value) {
+    parts.push(
+      `${t`România`}: ${formatValue(benchmark.national.value, benchmark.national.unitSymbol)} (${benchmark.national.period ?? ''})`,
+    )
+  }
+  if (parts.length === 0) return null
+  return (
+    <p className="mt-2 text-xs tabular-nums text-muted-foreground">
+      {parts.join(' · ')}
+    </p>
+  )
+}
+
+export function IndicatorTile({ tile, siruta, benchmark, countyCode }: IndicatorTileProps) {
   const { i18n } = useLingui()
   const isRomanian = i18n.locale.toLowerCase().startsWith('ro')
   const datasetName =
@@ -175,6 +234,7 @@ export function IndicatorTile({ tile, siruta }: IndicatorTileProps) {
               <Trans>Status valoare</Trans>: {statusLabel}
             </p>
           ) : null}
+          {benchmark ? <BenchmarkLine benchmark={benchmark} /> : null}
           <div className="mt-4">
             <Sparkline points={tile.sparkline} />
           </div>
@@ -205,6 +265,23 @@ export function IndicatorTile({ tile, siruta }: IndicatorTileProps) {
             datasetName={tile.datasetNameRo}
             siruta={siruta}
           />
+        ) : null}
+        {tile.tileState === 'available' ? (
+          <Link
+            to="/statistici/comparatii"
+            search={{
+              cod: tile.datasetCode,
+              teritorii: [
+                `siruta:${siruta}`,
+                ...(countyCode ? [`cod:${countyCode}`] : []),
+                'cod:RO',
+              ] as [string, ...string[]],
+            }}
+            className="inline-flex items-center gap-1 text-xs font-medium text-primary underline-offset-2 hover:underline"
+          >
+            <Trans>Compară</Trans>
+            <ArrowRight className="h-3 w-3" aria-hidden="true" />
+          </Link>
         ) : null}
       </div>
     </article>

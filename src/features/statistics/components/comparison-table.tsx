@@ -37,8 +37,8 @@ type Props = {
  * dash. A value is never borrowed from an adjacent period to fill the hole.
  */
 export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
-  const labelBySiruta = new Map(series.map((entry) => [entry.siruta, entry.label]))
-  const colorBySiruta = new Map(series.map((entry) => [entry.siruta, entry.color]))
+  const labelBySiruta = new Map(series.map((entry) => [entry.code, entry.label]))
+  const colorBySiruta = new Map(series.map((entry) => [entry.code, entry.color]))
 
   return (
     <div className={COMPARISON_PALETTE_CLASS}>
@@ -69,16 +69,16 @@ export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
           </TableHeader>
           <TableBody>
             {matrix.rows.map((row) => {
-              const label = labelBySiruta.get(row.siruta) ?? row.name ?? row.siruta
+              const label = labelBySiruta.get(row.code) ?? row.name ?? row.code
 
               return (
-                <TableRow key={row.siruta}>
+                <TableRow key={row.code}>
                   <TableCell className="font-medium">
                     <span className="flex items-center gap-2">
                       <span
                         aria-hidden
                         className="h-2.5 w-2.5 shrink-0 rounded-sm"
-                        style={{ backgroundColor: colorBySiruta.get(row.siruta) }}
+                        style={{ backgroundColor: colorBySiruta.get(row.code) }}
                       />
                       <span>{label}</span>
                     </span>

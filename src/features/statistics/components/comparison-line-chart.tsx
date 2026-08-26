@@ -40,7 +40,7 @@ function ComparisonLineTooltip({ active, label, payload, series }: TooltipProps)
 
   const rows = series
     .map((entry) => {
-      const match = payload.find((item) => item.dataKey === lineSeriesKey(entry.siruta))
+      const match = payload.find((item) => item.dataKey === lineSeriesKey(entry.code))
       return { entry, value: typeof match?.value === 'number' ? match.value : null }
     })
     .filter((row) => row.value !== null)
@@ -52,7 +52,7 @@ function ComparisonLineTooltip({ active, label, payload, series }: TooltipProps)
       <p className="mb-1.5 text-xs font-medium text-foreground">{label}</p>
       <ul className="space-y-1">
         {rows.map((row) => (
-          <li key={row.entry.siruta} className="flex items-center gap-2 text-xs">
+          <li key={row.entry.code} className="flex items-center gap-2 text-xs">
             <span
               aria-hidden
               className="h-2 w-2 shrink-0 rounded-sm"
@@ -115,9 +115,9 @@ export function ComparisonLineChart({ matrix, series }: Props) {
             />
             {series.map((entry) => (
               <Line
-                key={entry.siruta}
+                key={entry.code}
                 type="monotone"
-                dataKey={lineSeriesKey(entry.siruta)}
+                dataKey={lineSeriesKey(entry.code)}
                 name={entry.label}
                 stroke={entry.color}
                 strokeWidth={2}
