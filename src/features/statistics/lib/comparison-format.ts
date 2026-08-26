@@ -1,3 +1,5 @@
+import { t } from '@lingui/core/macro'
+
 /**
  * Number formatting shared by the comparison axes, tooltips and direct labels.
  *
@@ -10,6 +12,8 @@ export interface ComparisonSeriesDescriptor {
   readonly code: string
   readonly label: string
   readonly color: string
+  /** Deterministic from the URL token shape — present even for empty rows. */
+  readonly level: 'NATIONAL' | 'NUTS3' | 'LAU'
 }
 
 const numberFormatter = new Intl.NumberFormat('ro-RO', {
@@ -28,4 +32,18 @@ const compactFormatter = new Intl.NumberFormat('ro-RO', {
 
 export function formatComparisonAxisTick(value: number): string {
   return compactFormatter.format(value)
+}
+
+/** Short level tag shown beside mixed-level series (identity, not colour). */
+export function comparisonLevelLabel(
+  level: ComparisonSeriesDescriptor['level'],
+): string {
+  switch (level) {
+    case 'NATIONAL':
+      return t`țară`
+    case 'NUTS3':
+      return t`județ`
+    case 'LAU':
+      return t`localitate`
+  }
 }

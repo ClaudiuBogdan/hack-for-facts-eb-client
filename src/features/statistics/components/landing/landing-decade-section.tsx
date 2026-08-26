@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
+import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import type { DecadeCountyChange, DecadeStory } from '../../lib/decade'
 import { DECADE_DATASET_CODE } from '../../lib/landing-constants'
@@ -8,6 +9,8 @@ import { formatObservationValue, formatPercent } from '../../lib/format'
 
 type LandingDecadeSectionProps = {
   readonly story: DecadeStory | null
+  /** The wire unit of the decade rows; persoane only as a last resort. */
+  readonly unitLabel: string | null
 }
 
 /**
@@ -17,7 +20,7 @@ type LandingDecadeSectionProps = {
  * endpoint year are EXCLUDED with a footnote, never zero-filled. No „fastest
  * UATs" claim is possible or made — the 1,000-row clamp forbids it.
  */
-export function LandingDecadeSection({ story }: LandingDecadeSectionProps) {
+export function LandingDecadeSection({ story, unitLabel }: LandingDecadeSectionProps) {
   if (!story || (story.declines.length === 0 && story.gains.length === 0)) {
     return null
   }
@@ -53,7 +56,10 @@ export function LandingDecadeSection({ story }: LandingDecadeSectionProps) {
 
       <p className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
         <span className={statisticsTheme.provenanceChip}>{DECADE_DATASET_CODE}</span>
-        <Trans>INS Tempo · persoane · {story.rankedCount} județe comparate</Trans>
+        <Trans>
+          INS Tempo · {unitLabel ?? t`persoane`} · {story.rankedCount} județe
+          comparate
+        </Trans>
         {story.excludedCount > 0 ? (
           <Trans>
             · {story.excludedCount} județe fără ambele capete de interval au

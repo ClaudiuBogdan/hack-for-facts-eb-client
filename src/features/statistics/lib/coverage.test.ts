@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { InsDataset } from '@/schemas/ins'
 import {
   buildCoverageFromCatalog,
+  buildCoverageRibbonText,
   buildDocsFallbackCoverage,
 } from './coverage'
 
@@ -70,8 +71,7 @@ describe('statistics coverage helpers', () => {
 // ratio — "200 din 1.898" out of a server-clamped page was a fabricated
 // fraction. The full ratio remains only when counts are exact.
 describe('buildCoverageRibbonText', () => {
-  it('prints the ratio only for exact (non-partial) counts', async () => {
-    const { buildCoverageRibbonText } = await import('./coverage')
+  it('prints the ratio only for exact (non-partial) counts', () => {
     expect(
       buildCoverageRibbonText({
         availableDatasetCount: 27,
@@ -82,8 +82,7 @@ describe('buildCoverageRibbonText', () => {
     ).toMatch(/27 din 1\.898 seturi cu date disponibile/)
   })
 
-  it('prints NO ratio when the counts are partial', async () => {
-    const { buildCoverageRibbonText } = await import('./coverage')
+  it('prints NO ratio when the counts are partial', () => {
     const text = buildCoverageRibbonText({
       availableDatasetCount: 200,
       totalDatasetCount: 1898,

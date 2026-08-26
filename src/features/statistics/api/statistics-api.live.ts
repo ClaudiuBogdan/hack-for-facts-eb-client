@@ -72,16 +72,28 @@ export async function fetchStatisticsTerritoryHubLive(
     liveCountyCode: territoryRow?.countyCode ?? null,
   })
 
-  const context = await fetchStatisticsTerritoryHubContext({
-    countyCode: territoryRow?.countyCode ?? null,
-    benchmarkCodes: LANDING_NATIONAL_DATASET_CODES,
-  })
+  // POST 2 is enrichment: its failure degrades to tiles-without-benchmarks
+  // and a hidden ribbon, never a blank hub.
+  let context: Awaited<ReturnType<typeof fetchStatisticsTerritoryHubContext>> | null =
+    null
+  try {
+    context = await fetchStatisticsTerritoryHubContext({
+      countyCode: territoryRow?.countyCode ?? null,
+      benchmarkCodes: LANDING_NATIONAL_DATASET_CODES,
+    })
+  } catch (error) {
+    logger.warn('Hub context (counts + benchmarks) unavailable', {
+      siruta: normalizedSiruta,
+      error,
+    })
+  }
 
   const benchmarks: Record<string, StatisticsTileBenchmark> = {}
   for (const code of LANDING_NATIONAL_DATASET_CODES) {
-    const county = context.county.find((value) => value.datasetCode === code) ?? null
+    const county =
+      context?.county.find((value) => value.datasetCode === code) ?? null
     const national =
-      context.national.find((value) => value.datasetCode === code) ?? null
+      context?.national.find((value) => value.datasetCode === code) ?? null
     if (county?.hasData || national?.hasData) {
       benchmarks[code] = {
         county: county?.hasData ? county : null,
@@ -102,15 +114,17 @@ export async function fetchStatisticsTerritoryHubLive(
     availableDatasetCodes: groups
       .filter((group) => getDatasetDataStatus(group.dataset) === 'available')
       .map((group) => group.dataset.code),
-    coverage: {
-      availableDatasetCount: context.loadedCount,
-      totalDatasetCount: context.catalogCount,
-      catalogOnlyDatasetCount: Math.max(
-        context.catalogCount - context.loadedCount,
-        0,
-      ),
-      partial: false,
-    },
+    coverage: context
+      ? {
+          availableDatasetCount: context.loadedCount,
+          totalDatasetCount: context.catalogCount,
+          catalogOnlyDatasetCount: Math.max(
+            context.catalogCount - context.loadedCount,
+            0,
+          ),
+          partial: false,
+        }
+      : null,
     relatedLinks: buildTerritoryRelatedLinks({ identity }),
     latestDataPeriod: resolveHubLatestPeriod(groups),
     partial: totalObservations >= UAT_DASHBOARD_LIMIT,

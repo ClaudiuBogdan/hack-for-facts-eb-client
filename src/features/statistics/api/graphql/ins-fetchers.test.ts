@@ -131,7 +131,8 @@ describe('ins fetchers', () => {
         datasetCode: 'POP107D',
         limit: 1000,
         offset: 0,
-      })
+      }),
+      expect.objectContaining({ skipAuth: true }),
     )
     expect(graphqlRequest).toHaveBeenNthCalledWith(
       2,
@@ -140,7 +141,8 @@ describe('ins fetchers', () => {
         datasetCode: 'POP107D',
         limit: 1000,
         offset: 2,
-      })
+      }),
+      expect.objectContaining({ skipAuth: true }),
     )
 
     expect(result.partial).toBe(false)
@@ -167,7 +169,8 @@ describe('ins fetchers', () => {
         filter: { hasCountyData: true, rootContextCode: '2' },
         limit: 50,
         offset: 0,
-      })
+      }),
+      expect.objectContaining({ skipAuth: true }),
     )
   })
 
@@ -195,7 +198,8 @@ describe('ins fetchers', () => {
 
     expect(graphqlRequest).toHaveBeenCalledWith(
       expect.stringContaining('query InsDatasetDimensions'),
-      expect.objectContaining({ datasetCode: 'SAN104B' })
+      expect.objectContaining({ datasetCode: 'SAN104B' }),
+      expect.objectContaining({ skipAuth: true }),
     )
     expect(result).toEqual({
       datasetCode: 'SAN104B',

@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { Link, useNavigate, useSearch } from '@tanstack/react-router'
+import { t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { ChevronDown } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
@@ -13,9 +14,11 @@ import type { StatisticsComparisonsSearch } from '@/schemas/statistics'
 import {
   useComparisonPeers,
   useComparisons,
+  useComparisonTerritoryNames,
 } from '../hooks/use-comparisons'
 import {
   MAX_COMPARISON_TERRITORIES,
+  parseComparisonTokens,
   upsertClassificationPin,
 } from '../lib/comparison-series'
 import {
@@ -30,6 +33,7 @@ import { ComparisonLineChart } from '../components/comparison-line-chart'
 import { ComparisonPeriodSelect, ComparisonPins } from '../components/comparison-pins'
 import {
   ComparisonErrorState,
+  ComparisonGuidedEmptyState,
   ComparisonNoData,
   ComparisonPartialNotice,
   ComparisonSkeleton,
@@ -52,19 +56,28 @@ export function StatisticsComparisonsPage() {
   const { i18n } = useLingui()
 
   const patchSearch = useCallback(
-    (patch: Partial<StatisticsComparisonsSearch>) => {
+    (
+      patch: Partial<StatisticsComparisonsSearch>,
+      options: { readonly replace?: boolean } = {},
+    ) => {
       void navigate({
         search: (previous) => ({ ...previous, ...patch }),
-        replace: true,
+        replace: options.replace ?? true,
       })
     },
     [navigate],
   )
 
+  // ONE token source for every read — search.teritorii is NEVER read raw
+  // (raw values leak past validateSearch with their parsed types).
+  const userTokens = useMemo(
+    () => parseComparisonTokens(search.teritorii),
+    [search.teritorii],
+  )
+
   // Below two territories the RESULTS run on the example preset, live and
   // labeled — never an empty chart shell.
-  const urlTokenCount = (search.teritorii ?? []).length
-  const exampleMode = urlTokenCount < 2
+  const exampleMode = userTokens.length < 2
   const effectiveSearch = exampleMode ? COMPARISON_EXAMPLE_PRESET.search : search
 
   const {
@@ -83,11 +96,8 @@ export function StatisticsComparisonsPage() {
     hasDataset,
   } = useComparisons(effectiveSearch)
 
-  // The picker reflects the USER's URL selection, not the example's.
-  const { tokens: userTokens } = useComparisons(
-    exampleMode ? { ...search, teritorii: search.teritorii } : search,
-  )
   const peers = useComparisonPeers(userTokens)
+  const resolvedNames = useComparisonTerritoryNames(tokens, matrix)
 
   const series: readonly ComparisonSeriesDescriptor[] = useMemo(() => {
     const nameByCode = new Map(
@@ -96,10 +106,12 @@ export function StatisticsComparisonsPage() {
 
     return tokens.slice(0, MAX_COMPARISON_TERRITORIES).map((entry, index) => ({
       code: entry.code,
-      label: nameByCode.get(entry.code) ?? entry.code,
+      label:
+        nameByCode.get(entry.code) ?? resolvedNames.get(entry.code) ?? entry.code,
       color: comparisonSeriesColor(index),
+      level: entry.level,
     }))
-  }, [matrix, tokens])
+  }, [matrix, tokens, resolvedNames])
 
   const labelByCode = useMemo(
     () => new Map(series.map((entry) => [entry.code, entry.label])),
@@ -127,9 +139,9 @@ export function StatisticsComparisonsPage() {
       )
     }
     const unit = datasetMeta?.units.find((entry) => entry.code === search.unitate)
-    if (unit) parts.push(`${i18n._('unitate')}: ${unit.label}`)
+    if (unit) parts.push(`${t`unitate`}: ${unit.label}`)
     return parts.join(' · ')
-  }, [effectivePins, datasetMeta, search.unitate, i18n])
+  }, [effectivePins, datasetMeta, search.unitate])
 
   const handleSelectDataset = (code: string) => {
     // Pins belong to the previous dataset's dimensions; carrying them over
@@ -138,15 +150,24 @@ export function StatisticsComparisonsPage() {
   }
 
   const handleAddTerritory = (token: string) => {
-    const current = search.teritorii ?? []
-    if (current.includes(token) || current.length >= MAX_COMPARISON_TERRITORIES) return
-    const next: [string, ...string[]] = [current[0] ?? token, ...current.slice(1), ...(current.length > 0 ? [token] : [])]
-    patchSearch({ teritorii: next })
+    const current = userTokens.map((entry) => entry.token)
+    if (current.includes(token) || current.length >= MAX_COMPARISON_TERRITORIES) {
+      return
+    }
+    // A user action is a history entry, not a normalization — push, not replace.
+    const next: [string, ...string[]] = [current[0] ?? token, ...current.slice(1)]
+    if (current.length > 0) next.push(token)
+    patchSearch({ teritorii: next }, { replace: false })
   }
 
   const handleRemoveTerritory = (token: string) => {
-    const next = (search.teritorii ?? []).filter((entry) => entry !== token)
-    patchSearch({ teritorii: next.length > 0 ? (next as [string, ...string[]]) : undefined })
+    const next = userTokens
+      .map((entry) => entry.token)
+      .filter((entry) => entry !== token)
+    patchSearch(
+      { teritorii: next.length > 0 ? (next as [string, ...string[]]) : undefined },
+      { replace: false },
+    )
   }
 
   const handlePinClassification = (typeCode: string, valueCode: string) => {
@@ -176,7 +197,7 @@ export function StatisticsComparisonsPage() {
           </p>
         </header>
 
-        <nav aria-label="Comparații predefinite" className="flex flex-wrap gap-1.5">
+        <nav aria-label={t`Comparații predefinite`} className="flex flex-wrap gap-1.5">
           {COMPARISON_PRESETS.map((preset) => (
             <Link
               key={preset.id}
@@ -251,7 +272,12 @@ export function StatisticsComparisonsPage() {
                   variant="outline"
                   size="sm"
                   className="h-7 px-2 text-xs"
-                  onClick={() => patchSearch(COMPARISON_EXAMPLE_PRESET.search)}
+                  onClick={() =>
+                    void navigate({
+                      search: COMPARISON_EXAMPLE_PRESET.search,
+                      replace: false,
+                    })
+                  }
                 >
                   <Trans>Folosește acest exemplu</Trans>
                 </Button>
@@ -265,13 +291,23 @@ export function StatisticsComparisonsPage() {
   )
 
   function renderResults() {
+    // Two territories but no dataset: guide, never an infinite skeleton.
+    if (!hasDataset) {
+      return (
+        <ComparisonGuidedEmptyState
+          hasDataset={false}
+          selectedCount={userTokens.length}
+        />
+      )
+    }
+
     if (observationsError) {
       return (
         <ComparisonErrorState onRetry={refetchObservations} isRetrying={observationsFetching} />
       )
     }
 
-    if (!hasDataset || datasetLoading || observationsLoading || !matrix) {
+    if (datasetLoading || observationsLoading || !matrix) {
       return <ComparisonSkeleton />
     }
 
@@ -282,6 +318,15 @@ export function StatisticsComparisonsPage() {
     return (
       <>
         {partial ? <ComparisonPartialNotice /> : null}
+
+        {new Set(series.map((entry) => entry.level)).size > 1 ? (
+          <p className="text-xs text-muted-foreground">
+            <Trans>
+              Valori absolute — nivelurile teritoriale nu sunt normalizate per
+              locuitor.
+            </Trans>
+          </p>
+        ) : null}
 
         {emptyTerritoryNames.length > 0 ? (
           <p className="rounded-md border border-dashed border-border/70 px-3 py-2 text-sm text-muted-foreground">

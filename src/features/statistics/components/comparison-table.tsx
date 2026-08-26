@@ -10,7 +10,10 @@ import {
 } from '@/components/ui/table'
 import { getComparisonCell, type ComparisonMatrix } from '../lib/comparison-series'
 import { COMPARISON_PALETTE_CLASS } from './comparison-palette'
-import type { ComparisonSeriesDescriptor } from '../lib/comparison-format'
+import {
+  comparisonLevelLabel,
+  type ComparisonSeriesDescriptor,
+} from '../lib/comparison-format'
 
 /** The em-dash cell for "this territory reported nothing for this period". */
 const MISSING_MARK = '—'
@@ -39,6 +42,7 @@ type Props = {
 export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
   const labelBySiruta = new Map(series.map((entry) => [entry.code, entry.label]))
   const colorBySiruta = new Map(series.map((entry) => [entry.code, entry.color]))
+  const levelByCode = new Map(series.map((entry) => [entry.code, entry.level]))
 
   return (
     <div className={COMPARISON_PALETTE_CLASS}>
@@ -70,6 +74,7 @@ export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
           <TableBody>
             {matrix.rows.map((row) => {
               const label = labelBySiruta.get(row.code) ?? row.name ?? row.code
+              const level = levelByCode?.get(row.code)
 
               return (
                 <TableRow key={row.code}>
@@ -81,6 +86,11 @@ export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
                         style={{ backgroundColor: colorBySiruta.get(row.code) }}
                       />
                       <span>{label}</span>
+                      {level ? (
+                        <span className="rounded-sm border border-border/70 px-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+                          {comparisonLevelLabel(level)}
+                        </span>
+                      ) : null}
                     </span>
                   </TableCell>
 

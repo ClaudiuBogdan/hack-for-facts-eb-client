@@ -104,6 +104,7 @@ export const insMatchStrategyRawSchema = z.enum([
 const insTimePeriodRefRawSchema = z.object({
   iso_period: z.string(),
   year: z.number(),
+  periodicity: insPeriodicityRawSchema.nullish(),
 })
 
 export const insLatestValueNodeRawSchema = z.object({
@@ -146,6 +147,7 @@ const landingDecadeNodeRawSchema = z.object({
   value_status: z.string().nullish(),
   territory: z.object({ code: z.string(), name_ro: z.string().nullish() }).nullish(),
   time_period: insTimePeriodRefRawSchema,
+  unit: z.object({ symbol: z.string().nullish(), name_ro: z.string().nullish() }).nullish(),
 })
 
 const landingExampleNodeRawSchema = z.object({

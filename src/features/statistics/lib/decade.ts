@@ -9,6 +9,9 @@ export interface DecadeCountyChange {
   readonly pctChange: number
 }
 
+/** Measured 2026-08-26 on the live corpus: 42 NUTS3 rows per endpoint year. */
+export const NUTS3_COUNTY_COUNT = 42
+
 export interface DecadeStory {
   readonly startYear: number
   readonly endYear: number
@@ -60,11 +63,9 @@ export function buildDecadeStory(params: {
   }
 
   const ranked: DecadeCountyChange[] = []
-  let excludedCount = 0
 
   for (const [countyCode, entry] of byCounty) {
     if (entry.start === null || entry.end === null || entry.start === 0) {
-      excludedCount += 1
       continue
     }
     ranked.push({
@@ -93,7 +94,9 @@ export function buildDecadeStory(params: {
     endYear,
     declines,
     gains,
-    excludedCount,
+    // Counties ABSENT from the payload count as excluded too — occupancy of
+    // the response alone would under-report the gaps.
+    excludedCount: Math.max(NUTS3_COUNTY_COUNT - ranked.length, 0),
     rankedCount: ranked.length,
     maxAbsChange,
   }

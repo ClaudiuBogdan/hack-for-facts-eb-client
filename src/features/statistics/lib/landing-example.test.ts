@@ -55,4 +55,20 @@ describe('buildLandingExample', () => {
     ])
     expect(example?.year).toBe(2023)
   })
+
+  it('REJECTS a (territory, year) with two cells — never last-write-wins', () => {
+    // Two SEX slices for the same territory-year: an ambiguous cell. Keeping
+    // either would silently mix classification slices into "the" value.
+    const example = buildLandingExample([
+      obs('NATIONAL', 'RO', 2024, '100'),
+      obs('NUTS3', 'CJ', 2024, '50'),
+      { ...obs('LAU', '54975', 2024, '10'), name: 'Cluj-Napoca' },
+      { ...obs('LAU', '54975', 2024, '4'), name: 'Cluj-Napoca' },
+      // 2023 is unambiguous everywhere.
+      obs('NATIONAL', 'RO', 2023, '90'),
+      obs('NUTS3', 'CJ', 2023, '45'),
+      obs('LAU', '54975', 2023, '9'),
+    ])
+    expect(example?.year).toBe(2023)
+  })
 })

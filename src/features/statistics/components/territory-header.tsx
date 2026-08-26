@@ -47,7 +47,7 @@ export function TerritoryHeader({ identity }: TerritoryHeaderProps) {
               <Trans>județul</Trans> {identity.countyName}
             </li>
           ) : null}
-          <li className="flex items-center gap-1">
+          <li className="flex items-center gap-1" aria-current="page">
             <span aria-hidden>/</span>
             <span className="text-foreground">{name}</span>
           </li>

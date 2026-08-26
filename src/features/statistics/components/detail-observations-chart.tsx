@@ -1,10 +1,10 @@
+import { SafeResponsiveContainer } from '@/components/charts/safe-responsive-container'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import {
   CartesianGrid,
   Line,
   LineChart,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
@@ -51,7 +51,7 @@ export function DetailObservationsChart({ series, title, unitLabel }: Props) {
       </figcaption>
 
       <div className="h-72 w-full">
-        <ResponsiveContainer width="100%" height="100%">
+        <SafeResponsiveContainer width="100%" height="100%">
           <LineChart
             data={series.points as TimeSeriesPoint[]}
             margin={{ top: 8, right: 16, bottom: 0, left: 8 }}
@@ -90,7 +90,7 @@ export function DetailObservationsChart({ series, title, unitLabel }: Props) {
               activeDot={{ r: 5, strokeWidth: 2, stroke: SURFACE_COLOR }}
             />
           </LineChart>
-        </ResponsiveContainer>
+        </SafeResponsiveContainer>
       </div>
 
       {series.truncated ? (

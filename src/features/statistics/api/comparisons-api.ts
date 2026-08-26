@@ -172,7 +172,16 @@ export function buildComparisonObservationFilter(
   }
 
   if (params.classificationPins.length > 0) {
-    filter.classificationValueCodes = params.classificationPins.map((pin) => pin.valueCode)
+    filter.classificationValueCodes = [
+      ...new Set(params.classificationPins.map((pin) => pin.valueCode)),
+    ]
+    // Type-aware AND (each requested type must carry one of the values). The
+    // server still shares ONE value set across types, so sibling cells can
+    // slip through — the client exact-cell match closes that (use-comparisons).
+    const typeCodes = params.classificationPins.map((pin) => pin.typeCode)
+    if (typeCodes.every((code) => !code.startsWith('DIM'))) {
+      filter.classificationTypeCodes = typeCodes
+    }
   }
 
   if (params.unitCode) {

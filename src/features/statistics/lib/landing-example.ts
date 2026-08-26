@@ -29,12 +29,26 @@ export function buildLandingExample(
   const territoryCodes = new Set(rows.map((row) => row.code))
   if (territoryCodes.size < 2) return null
 
+  // One row per (territory, year) or the pair is REJECTED: the example query
+  // cannot pin classifications server-side (FOM104D has none, and a value-only
+  // filter on a classification-less dataset would exclude every row), so a
+  // duplicate here means an ambiguous cell — last-write-wins would silently
+  // mix classification slices.
   const byYear = new Map<number, Map<string, StatisticsExampleObservation>>()
+  const ambiguous = new Set<string>()
   for (const row of rows) {
     if (row.value === null) continue
-    const yearRows = byYear.get(row.year) ?? new Map()
+    const key = `${row.year}:${row.code}`
+    const yearRows = byYear.get(row.year) ?? new Map<string, StatisticsExampleObservation>()
+    if (yearRows.has(row.code)) {
+      ambiguous.add(key)
+    }
     yearRows.set(row.code, row)
     byYear.set(row.year, yearRows)
+  }
+  for (const key of ambiguous) {
+    const [yearPart, code] = key.split(':')
+    byYear.get(Number(yearPart))?.delete(code)
   }
 
   const commonYears = [...byYear.entries()]

@@ -130,3 +130,21 @@ describe('isPeriodStale (cadence-aware)', () => {
     ).toBe(false)
   })
 })
+
+describe('B12: the router leaks raw-typed values past validateSearch', () => {
+  it('coerces a numeric ?period= into its string form', async () => {
+    const { statisticsPeriodSearchSchema, parseStatisticsTerritoryHubSearch } =
+      await import('@/schemas/statistics')
+    expect(statisticsPeriodSearchSchema.parse(2019)).toBe('2019')
+    expect(parseStatisticsTerritoryHubSearch({ period: 2019 })).toEqual({
+      period: '2019',
+    })
+  })
+
+  it('coerces a numeric ?loc= on the landing', async () => {
+    const { parseStatisticsLandingSearch } = await import('@/schemas/statistics')
+    expect(parseStatisticsLandingSearch({ loc: 54975 })).toEqual({
+      loc: '54975',
+    })
+  })
+})

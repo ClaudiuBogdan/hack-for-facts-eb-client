@@ -19,6 +19,7 @@ import {
   type ComparisonMatrix,
   type ComparisonTerritoryToken,
 } from '../lib/comparison-series'
+import { filterExactCell } from '../lib/dataset-selection'
 
 /**
  * Data layer for `/statistici/comparatii`.
@@ -123,8 +124,17 @@ export function useComparisons(
   const matrix = useMemo(() => {
     const observations = observationsQuery.data?.observations
     if (!observations) return null
-    return buildComparisonMatrix({ observations, territoryCodes: sirutaCodes })
-  }, [observationsQuery.data, sirutaCodes])
+    // The exact resolved cell per territory: the server's type-aware filter
+    // still admits sibling cells (shared value set across types) — the client
+    // match is what makes "one number per territory×period" true.
+    const pinMap = new Map(
+      effectivePins.map((pin) => [pin.typeCode, pin.valueCode]),
+    )
+    return buildComparisonMatrix({
+      observations: filterExactCell(observations, pinMap),
+      territoryCodes: sirutaCodes,
+    })
+  }, [observationsQuery.data, sirutaCodes, effectivePins])
 
   const selectedPeriod = useMemo(
     () => (matrix ? resolveSelectedPeriod(matrix.periods, search.perioada) : null),
@@ -216,6 +226,8 @@ export function useComparisonPeers(
 
   const peers: { token: string; label: string }[] = []
   const identity = identityQuery.data?.rows[0]
+  // countyCode is set only when the parent is a REAL county (alphabetic NUTS3
+  // code) — a Bucharest sector's municipal parent never gets a „județul" chip.
   if (identity?.countyCode) {
     peers.push({
       token: `cod:${identity.countyCode}`,
@@ -228,4 +240,57 @@ export function useComparisonPeers(
     peers.push({ token: 'cod:RO', label: 'România' })
   }
   return peers
+}
+
+/**
+ * Names for territories the observations could not name — a token with ZERO
+ * rows structurally never carries a name. LAU codes resolve by SIRUTA; county
+ * codes resolve from the (42-row, day-cached) NUTS3 list; RO is România.
+ */
+export function useComparisonTerritoryNames(
+  tokens: readonly ComparisonTerritoryToken[],
+  matrix: ComparisonMatrix | null,
+): ReadonlyMap<string, string> {
+  const unresolved = useMemo(() => {
+    if (!matrix) return [] as readonly ComparisonTerritoryToken[]
+    const named = new Set(
+      matrix.rows.filter((row) => row.name).map((row) => row.code),
+    )
+    return tokens.filter((token) => !named.has(token.code))
+  }, [tokens, matrix])
+
+  const lauCodes = unresolved
+    .filter((token) => token.level === 'LAU')
+    .map((token) => token.code)
+  const needsCounties = unresolved.some((token) => token.level === 'NUTS3')
+
+  const lauQuery = useQuery({
+    queryKey: ['statistics', 'comparisons', 'names', 'lau', [...lauCodes].sort()],
+    queryFn: () =>
+      searchInsTerritories({ filter: { sirutaCodes: lauCodes }, limit: lauCodes.length }),
+    enabled: lauCodes.length > 0,
+    staleTime: 1000 * 60 * 60 * 24,
+  })
+
+  const countyQuery = useQuery({
+    queryKey: ['statistics', 'comparisons', 'names', 'counties'],
+    queryFn: () =>
+      searchInsTerritories({ filter: { levels: ['NUTS3'] }, limit: 60 }),
+    enabled: needsCounties,
+    staleTime: 1000 * 60 * 60 * 24,
+  })
+
+  return useMemo(() => {
+    const names = new Map<string, string>()
+    for (const token of unresolved) {
+      if (token.level === 'NATIONAL') names.set(token.code, 'România')
+    }
+    for (const row of lauQuery.data?.rows ?? []) {
+      if (row.siruta && row.name) names.set(row.siruta, row.name)
+    }
+    for (const row of countyQuery.data?.rows ?? []) {
+      if (row.code && row.name) names.set(row.code, row.name)
+    }
+    return names
+  }, [unresolved, lauQuery.data, countyQuery.data])
 }

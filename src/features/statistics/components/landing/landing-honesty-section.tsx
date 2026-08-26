@@ -37,7 +37,7 @@ export function LandingHonestySection({
 
   if (!catalog) return null
 
-  const catalogOnlyCount = catalog.catalogCount - catalog.loadedCount
+  const catalogOnlyCount = Math.max(catalog.catalogCount - catalog.loadedCount, 0)
   const loaded = formatObservationValue(String(catalog.loadedCount))
   const total = formatObservationValue(String(catalog.catalogCount))
 

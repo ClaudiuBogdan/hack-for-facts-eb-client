@@ -73,11 +73,16 @@ export function DetailAccordion({
       <AccordionItem value="tabel" className="px-4">
         <AccordionTrigger className="text-sm font-medium">
           <Trans>
-            Tabel de observații (
-            {formatObservationValue(String(observations.length))})
+            Tabelul seriei ({formatObservationValue(String(observations.length))})
           </Trans>
         </AccordionTrigger>
         <AccordionContent className="space-y-3">
+          <p className="text-xs text-muted-foreground">
+            <Trans>
+              Valorile din spatele graficului — aceeași selecție, aceleași
+              rânduri, nu întregul set la acest teritoriu.
+            </Trans>
+          </p>
           {observations.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               <Trans>Selecția curentă nu are observații.</Trans>
@@ -192,10 +197,10 @@ export function DetailAccordion({
         <AccordionItem value="inrudite" className="border-b-0 px-4">
           <AccordionTrigger className="text-sm font-medium">
             <Trans>
-              Seturi înrudite (
-              {formatObservationValue(
-                String(relatedTotalCount !== null ? relatedTotalCount - 1 : related.length),
-              )}
+              Seturi înrudite ({formatObservationValue(String(related.length))}
+              {relatedTotalCount !== null && relatedTotalCount - 1 > related.length
+                ? ` din ${formatObservationValue(String(relatedTotalCount - 1))}`
+                : ''}
               )
             </Trans>
           </AccordionTrigger>

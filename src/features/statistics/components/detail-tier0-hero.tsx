@@ -26,17 +26,15 @@ export function DetailTier0Hero({ latest, matchChip }: Props) {
 
   return (
     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-      <span className="text-4xl font-semibold tabular-nums tracking-tight">
+      <span className={statisticsTheme.heroValue}>
         {formatted}
         {latest.unitSymbol ? (
-          <span className="ml-1.5 text-lg font-normal text-muted-foreground">
-            {latest.unitSymbol}
-          </span>
+          <span className={statisticsTheme.heroUnit}>{latest.unitSymbol}</span>
         ) : null}
       </span>
       <span className="text-sm text-muted-foreground">{latest.period}</span>
       {matchChip === 'representative' ? (
-        <span className="rounded-sm bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+        <span className={statisticsTheme.warningChip}>
           <Trans>selecție reprezentativă</Trans>
         </span>
       ) : null}

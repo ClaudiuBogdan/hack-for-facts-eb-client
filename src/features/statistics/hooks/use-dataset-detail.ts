@@ -3,7 +3,6 @@ import type {
   InsDatasetDetails,
   InsDimensionValueConnection,
   InsEntitySelectorInput,
-  InsObservationConnection,
   InsObservationFilterInput,
 } from '@/schemas/ins'
 import type {
@@ -15,12 +14,10 @@ import {
   fetchDatasetSeries,
   fetchDatasetTier0,
   fetchDimensionValuesPage,
-  fetchObservationsPage,
 } from '../api/dataset-detail-api'
 
 const DATASET_STALE_TIME = 1000 * 60 * 60 * 24
 const DIMENSION_STALE_TIME = 1000 * 60 * 30
-const OBSERVATIONS_STALE_TIME = 1000 * 60 * 15
 
 export function useDatasetDetail(code: string) {
   return useQuery<InsDatasetDetails | null>({
@@ -66,41 +63,6 @@ export function useDimensionValues(params: {
     enabled: params.enabled && params.datasetCode.trim().length > 0,
     staleTime: DIMENSION_STALE_TIME,
     placeholderData: (previous) => previous,
-  })
-}
-
-/**
- * A page of observations.
- *
- * `enabled` is not a convenience here — `insObservations` scans 23.6M rows and
- * an unscoped call is a 30-second server timeout. Callers pass the result of
- * `isObservationsQueryEnabled`; when it is false the page shows a prompt
- * naming what to pin, never a spinner.
- */
-export function useDatasetObservations(params: {
-  readonly datasetCode: string
-  readonly filter: InsObservationFilterInput
-  readonly limit: number
-  readonly offset: number
-  readonly enabled: boolean
-}) {
-  return useQuery<InsObservationConnection>({
-    queryKey: [
-      'statisticsObservations',
-      params.datasetCode,
-      JSON.stringify(params.filter),
-      params.limit,
-      params.offset,
-    ],
-    queryFn: () =>
-      fetchObservationsPage({
-        datasetCode: params.datasetCode,
-        filter: params.filter,
-        limit: params.limit,
-        offset: params.offset,
-      }),
-    enabled: params.enabled && params.datasetCode.trim().length > 0,
-    staleTime: OBSERVATIONS_STALE_TIME,
   })
 }
 

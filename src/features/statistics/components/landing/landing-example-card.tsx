@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { ArrowRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
@@ -101,6 +102,6 @@ function rowDisplayName(
   code: string,
 ): string {
   // The API's national row is literally named "TOTAL" — render the country.
-  if (level === 'NATIONAL') return 'România'
+  if (level === 'NATIONAL') return t`România`
   return name ?? code
 }

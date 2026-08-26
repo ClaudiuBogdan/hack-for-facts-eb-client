@@ -216,6 +216,7 @@ export async function fetchDatasetTier0Mock(params: {
         unitSymbol: latestObservation?.unit?.symbol ?? null,
         unitNameRo: latestObservation?.unit?.name_ro ?? null,
         period: latestObservation?.time_period.iso_period ?? null,
+        resolvedPeriodicity: latestObservation?.time_period.periodicity ?? null,
         resolvedClassifications: (latestObservation?.classifications ?? []).flatMap(
           (classification) =>
             classification.type_code && classification.code

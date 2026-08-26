@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
+import { Skeleton } from '@/components/ui/skeleton'
 import type {
   StatisticsLandingCatalog,
   StatisticsLandingData,
@@ -119,11 +120,39 @@ export function StatisticsLandingPage({
           snapshotError={snapshotQuery.isError}
         />
 
-        <LandingDecadeSection story={decadeStory} />
+        {landingDataQuery.isLoading ? (
+          <div className="space-y-4" aria-busy="true">
+            <Skeleton className="h-8 w-72" />
+            <div className="grid gap-4 md:grid-cols-2">
+              <Skeleton className="h-64" />
+              <Skeleton className="h-64" />
+            </div>
+            <Skeleton className="h-48 w-full" />
+          </div>
+        ) : (
+          <>
+            <LandingDecadeSection
+              story={decadeStory}
+              unitLabel={
+                landingDataQuery.data?.decadeRows.find((row) => row.unitNameRo)
+                  ?.unitNameRo ?? null
+              }
+            />
 
-        <LandingExampleCard example={example} />
+            <LandingExampleCard example={example} />
+          </>
+        )}
 
-        <LandingThemesSection catalog={catalogQuery.data} />
+        {catalogQuery.isError ? (
+          <p className="text-sm text-muted-foreground">
+            <Trans>
+              Temele nu au putut fi încărcate — catalogul complet rămâne
+              disponibil în explorator.
+            </Trans>
+          </p>
+        ) : (
+          <LandingThemesSection catalog={catalogQuery.data} />
+        )}
 
         <LandingHonestySection
           catalog={catalogQuery.data}

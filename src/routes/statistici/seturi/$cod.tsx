@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import {
   fetchDatasetSeries,
@@ -40,11 +40,24 @@ export type StatisticsDatasetDetailLoaderData = {
  */
 export const Route = createFileRoute('/statistici/seturi/$cod')({
   validateSearch: parseStatisticsDatasetDetailSearch,
+  // Canonical uppercase codes: insDataset(code:) is exact-match, and one URL
+  // per dataset beats two cache entries.
+  beforeLoad: ({ params }) => {
+    const canonical = params.cod.trim().toUpperCase()
+    if (params.cod !== canonical) {
+      throw redirect({
+        to: '/statistici/seturi/$cod',
+        params: { cod: canonical },
+        replace: true,
+      })
+    }
+  },
+  // frecventa is DELIBERATELY absent: cadence switches are a client-side view
+  // over the fetched series and must not re-run the loader.
   loaderDeps: ({ search }) => ({
     teritoriu: search.teritoriu,
     clasificari: search.clasificari,
     unitate: search.unitate,
-    frecventa: search.frecventa,
   }),
   loader: async ({ params, deps, abortController }): Promise<StatisticsDatasetDetailLoaderData> => {
     // insDataset(code:) is exact-match, no trim, no uppercase — normalize once.

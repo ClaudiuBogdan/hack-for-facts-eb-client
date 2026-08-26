@@ -693,6 +693,7 @@ export function getMockStatisticsLandingData(): StatisticsLandingData {
         unitSymbol: 'pers.',
         unitNameRo: 'Numar persoane',
         period: '2025',
+        resolvedPeriodicity: 'ANNUAL',
         resolvedClassifications: [{ typeCode: 'SEX', code: 'TOTAL', nameRo: 'Total' }],
       },
       {
@@ -708,6 +709,7 @@ export function getMockStatisticsLandingData(): StatisticsLandingData {
         unitSymbol: 'pers.',
         unitNameRo: 'Numar persoane',
         period: '2024',
+        resolvedPeriodicity: 'ANNUAL',
         resolvedClassifications: [{ typeCode: 'SEX', code: 'TOTAL', nameRo: 'Total' }],
       },
       {
@@ -723,6 +725,7 @@ export function getMockStatisticsLandingData(): StatisticsLandingData {
         unitSymbol: '%',
         unitNameRo: 'Procente',
         period: '2025-11',
+        resolvedPeriodicity: 'MONTHLY',
         resolvedClassifications: [{ typeCode: 'SEX', code: 'TOTAL', nameRo: 'Total' }],
       },
       {
@@ -738,20 +741,21 @@ export function getMockStatisticsLandingData(): StatisticsLandingData {
         unitSymbol: 'nr.',
         unitNameRo: 'Numar',
         period: '2023',
+        resolvedPeriodicity: 'ANNUAL',
         resolvedClassifications: [{ typeCode: 'SEX', code: 'TOTAL', nameRo: 'Total' }],
       },
     ],
     decadeRows: [
-      { countyCode: 'CJ', countyName: 'Cluj', year: 2016, value: '691106' },
-      { countyCode: 'CJ', countyName: 'Cluj', year: 2025, value: '736302' },
-      { countyCode: 'TR', countyName: 'Teleorman', year: 2016, value: '360178' },
-      { countyCode: 'TR', countyName: 'Teleorman', year: 2025, value: '297372' },
-      { countyCode: 'IF', countyName: 'Ilfov', year: 2016, value: '388738' },
-      { countyCode: 'IF', countyName: 'Ilfov', year: 2025, value: '542686' },
-      { countyCode: 'HD', countyName: 'Hunedoara', year: 2016, value: '458106' },
-      { countyCode: 'HD', countyName: 'Hunedoara', year: 2025, value: '404356' },
+      { countyCode: 'CJ', countyName: 'Cluj', year: 2016, value: '691106', unitNameRo: 'Numar persoane' },
+      { countyCode: 'CJ', countyName: 'Cluj', year: 2025, value: '736302', unitNameRo: 'Numar persoane' },
+      { countyCode: 'TR', countyName: 'Teleorman', year: 2016, value: '360178', unitNameRo: 'Numar persoane' },
+      { countyCode: 'TR', countyName: 'Teleorman', year: 2025, value: '297372', unitNameRo: 'Numar persoane' },
+      { countyCode: 'IF', countyName: 'Ilfov', year: 2016, value: '388738', unitNameRo: 'Numar persoane' },
+      { countyCode: 'IF', countyName: 'Ilfov', year: 2025, value: '542686', unitNameRo: 'Numar persoane' },
+      { countyCode: 'HD', countyName: 'Hunedoara', year: 2016, value: '458106', unitNameRo: 'Numar persoane' },
+      { countyCode: 'HD', countyName: 'Hunedoara', year: 2025, value: '404356', unitNameRo: 'Numar persoane' },
       // Missing 2016 endpoint on purpose: exercised as EXCLUDED, never zero.
-      { countyCode: 'XX', countyName: 'Exemplu lipsă', year: 2025, value: '100000' },
+      { countyCode: 'XX', countyName: 'Exemplu lipsă', year: 2025, value: '100000', unitNameRo: 'Numar persoane' },
     ],
     exampleRows: [
       {
@@ -831,6 +835,7 @@ export function getMockStatisticsUatSnapshot(siruta: string): StatisticsUatSnaps
         unitSymbol: 'pers.',
         unitNameRo: 'Numar persoane',
         period: '2025',
+        resolvedPeriodicity: 'ANNUAL',
         resolvedClassifications: [{ typeCode: 'SEX', code: 'TOTAL', nameRo: 'Total' }],
       },
       {
@@ -846,6 +851,7 @@ export function getMockStatisticsUatSnapshot(siruta: string): StatisticsUatSnaps
         unitSymbol: 'pers.',
         unitNameRo: 'Numar persoane',
         period: '2024',
+        resolvedPeriodicity: 'ANNUAL',
         resolvedClassifications: [{ typeCode: 'SEX', code: 'TOTAL', nameRo: 'Total' }],
       },
       {
@@ -861,6 +867,7 @@ export function getMockStatisticsUatSnapshot(siruta: string): StatisticsUatSnaps
         unitSymbol: '%',
         unitNameRo: 'Procente',
         period: '2025-11',
+        resolvedPeriodicity: 'MONTHLY',
         resolvedClassifications: [{ typeCode: 'SEX', code: 'TOTAL', nameRo: 'Total' }],
       },
       {
@@ -876,6 +883,7 @@ export function getMockStatisticsUatSnapshot(siruta: string): StatisticsUatSnaps
         unitSymbol: null,
         unitNameRo: null,
         period: null,
+        resolvedPeriodicity: null,
         resolvedClassifications: [],
       },
     ],

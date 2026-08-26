@@ -246,7 +246,7 @@ export const INS_LATEST_VALUE_FIELDS = `
     value
     value_status
     unit { code symbol name_ro }
-    time_period { iso_period year }
+    time_period { iso_period year periodicity }
     classifications { type_code code name_ro }
   }
 `
@@ -294,6 +294,7 @@ export const STATISTICS_LANDING_DATA_QUERY = `
         value_status
         territory { code name_ro }
         time_period { iso_period year }
+        unit { symbol name_ro }
       }
     }
     example: insObservations(

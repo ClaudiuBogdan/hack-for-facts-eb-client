@@ -1,6 +1,9 @@
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
-import type { ComparisonSeriesDescriptor } from '../lib/comparison-format'
+import {
+  comparisonLevelLabel,
+  type ComparisonSeriesDescriptor,
+} from '../lib/comparison-format'
 import { COMPARISON_PALETTE_CLASS } from './comparison-palette'
 
 /**
@@ -30,6 +33,9 @@ export function ComparisonLegend({ series }: LegendProps) {
             style={{ backgroundColor: entry.color }}
           />
           <span>{entry.label}</span>
+          <span className="rounded-sm border border-border/70 px-1 text-[10px] uppercase tracking-wide">
+            {comparisonLevelLabel(entry.level)}
+          </span>
         </li>
       ))}
     </ul>

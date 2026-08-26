@@ -110,9 +110,10 @@ export async function fetchInsDatasetPage(params: {
 
 /**
  * All INS reads are public: send no Authorization header (a stale Clerk token
- * 401s an otherwise-public endpoint before any resolver runs).
+ * 401s an otherwise-public endpoint before any resolver runs). Shared with
+ * the legacy `ins-fetchers.ts` lane so no INS read can regress to auth.
  */
-function insRequestOptions(signal?: AbortSignal): GraphQLRequestOptions {
+export function insRequestOptions(signal?: AbortSignal): GraphQLRequestOptions {
   return { skipAuth: true, ...(signal ? { signal } : {}) }
 }
 

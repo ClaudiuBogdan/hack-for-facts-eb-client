@@ -7,7 +7,13 @@ const row = (
   year: number,
   value: string | null,
   countyName = countyCode,
-): StatisticsDecadeObservation => ({ countyCode, countyName, year, value })
+): StatisticsDecadeObservation => ({
+  countyCode,
+  countyName,
+  year,
+  value,
+  unitNameRo: 'Numar persoane',
+})
 
 describe('buildDecadeStory', () => {
   it('ranks declines and gains by percent change', () => {
@@ -29,7 +35,8 @@ describe('buildDecadeStory', () => {
     expect(story.gains[0]?.pctChange).toBeCloseTo(39.6, 1)
     expect(story.declines[0]?.pctChange).toBeCloseTo(-17.4, 1)
     expect(story.rankedCount).toBe(3)
-    expect(story.excludedCount).toBe(0)
+    // 42 − ranked: counties absent from the payload count as excluded too.
+    expect(story.excludedCount).toBe(39)
     expect(story.maxAbsChange).toBeCloseTo(39.6, 1)
   })
 
@@ -47,7 +54,7 @@ describe('buildDecadeStory', () => {
     })
 
     expect(story.rankedCount).toBe(1)
-    expect(story.excludedCount).toBe(2)
+    expect(story.excludedCount).toBe(41)
     expect(story.gains.map((c) => c.countyCode)).toEqual(['CJ'])
     expect(story.declines).toEqual([])
   })

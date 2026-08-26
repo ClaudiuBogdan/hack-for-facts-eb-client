@@ -48,7 +48,11 @@ export function StatisticsTerritoryHubPage({
   search,
 }: StatisticsTerritoryHubPageProps) {
   const navigate = useNavigate()
-  const hubQuery = useStatisticsTerritoryHub({ siruta })
+  // Malformed SIRUTA must never cost a request — the query is gated, and the
+  // early return below (after the hooks, per the rules of hooks) renders the
+  // not-found state.
+  const isValidSiruta = /^\d{1,6}$/.test(siruta.trim())
+  const hubQuery = useStatisticsTerritoryHub({ siruta, enabled: isValidSiruta })
   const unfilteredHub = hubQuery.data
   // The router merges the RAW parent search over the validated child output,
   // so a key the validator dropped (e.g. ?period=2009 parsed as a NUMBER)
@@ -75,8 +79,6 @@ export function StatisticsTerritoryHubPage({
     })
   }
 
-  // Malformed SIRUTA: a real not-found without a wasted round-trip.
-  const isValidSiruta = /^\d{1,6}$/.test(siruta.trim())
   if (!isValidSiruta) {
     return (
       <div className="min-h-screen bg-background">
@@ -209,6 +211,7 @@ export function StatisticsTerritoryHubPage({
                   ) : null}
                 </div>
               ) : null}
+              {hub.coverage ? (
               <CoverageRibbon
                 coverage={hub.coverage}
                 latestDataPeriod={hub.latestDataPeriod}
@@ -218,6 +221,7 @@ export function StatisticsTerritoryHubPage({
                     : null
                 }
               />
+              ) : null}
             </header>
 
             <section className="space-y-3">
@@ -236,7 +240,7 @@ export function StatisticsTerritoryHubPage({
                       key={tile.datasetCode}
                       tile={tile}
                       siruta={hub.identity.siruta}
-                      {...(hub.benchmarks[tile.datasetCode]
+                      {...(!activePeriod && hub.benchmarks[tile.datasetCode]
                         ? { benchmark: hub.benchmarks[tile.datasetCode] }
                         : {})}
                       countyCode={hub.identity.countyCode}

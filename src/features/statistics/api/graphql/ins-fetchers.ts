@@ -1,5 +1,6 @@
 import { createLogger } from '@/lib/logger'
 import { graphqlRequest } from '@/lib/api/graphql'
+import { insRequestOptions } from './statistics-fetchers'
 import type {
   InsContextConnection,
   InsContextFilterInput,
@@ -46,7 +47,8 @@ export async function getInsUatDashboard(params: {
       sirutaCode: params.sirutaCode,
       period: params.period,
       contextCode: params.contextCode,
-    }
+    },
+    insRequestOptions()
   )
 
   const groups = response.insUatDashboard ?? []
@@ -68,7 +70,8 @@ export async function getInsDatasetsByCodes(codes: string[]): Promise<InsDataset
     {
       codes,
       limit: Math.min(codes.length, 200),
-    }
+    },
+    insRequestOptions()
   )
 
   return response.insDatasets.nodes ?? []
@@ -83,7 +86,8 @@ export async function getInsContexts(params: {
     filter: params.filter,
     limit: params.limit ?? 200,
     offset: params.offset ?? 0,
-  })
+  },
+    insRequestOptions())
 
   return response.insContexts
 }
@@ -97,7 +101,8 @@ export async function getInsDatasetsCatalog(params: {
     filter: params.filter,
     limit: params.limit ?? 500,
     offset: params.offset ?? 0,
-  })
+  },
+    insRequestOptions())
 
   return response.insDatasets
 }
@@ -111,7 +116,8 @@ export async function searchInsDatasets(params: {
     filter: params.filter,
     limit: params.limit ?? 50,
     offset: params.offset ?? 0,
-  })
+  },
+    insRequestOptions())
 
   return response.insDatasets
 }
@@ -121,7 +127,8 @@ export async function getInsDatasetDetails(code: string): Promise<InsDatasetDeta
 
   const response = await graphqlRequest<{ insDataset: InsDatasetDetails | null }>(
     INS_DATASET_DETAILS_QUERY,
-    { code }
+    { code },
+    insRequestOptions()
   )
 
   return response.insDataset
@@ -149,7 +156,8 @@ export async function getInsDimensionValuesPage(params: {
     search: params.search ?? '',
     limit: params.limit ?? 50,
     offset: params.offset ?? 0,
-  })
+  },
+    insRequestOptions())
 
   return response.insDatasetDimensionValues ?? {
     nodes: [],
@@ -170,7 +178,8 @@ export async function getInsObservationsPage(params: {
       filter: params.filter,
       limit: params.limit ?? 200,
       offset: params.offset ?? 0,
-    }
+    },
+    insRequestOptions()
   )
 
   return response.insObservations
@@ -241,7 +250,7 @@ export async function getInsDatasetDimensions(datasetCode: string): Promise<InsD
         dimensions?: InsDatasetDimensionsResult['dimensions'] | null
       }>
     }
-  }>(INS_DATASET_DIMENSIONS_QUERY, { datasetCode })
+  }>(INS_DATASET_DIMENSIONS_QUERY, { datasetCode }, insRequestOptions())
 
   const node = response.insDatasets?.nodes?.[0]
   if (!node) return null
@@ -275,7 +284,8 @@ export async function getInsDatasetHistory(params: {
         filter: params.filter,
         limit: pageSize,
         offset,
-      }
+      },
+    insRequestOptions()
     )
 
     const connection = response.insObservations
@@ -307,10 +317,14 @@ async function getInsObservationsBatch(params: {
   if (params.datasetCodes.length === 0) return new Map()
 
   const { query, aliasMap } = buildInsObservationsBatchQuery(params.datasetCodes)
-  const response = await graphqlRequest<Record<string, InsObservationConnection>>(query, {
-    filter: params.filter,
-    limit: params.limit ?? INS_OBSERVATION_LIMIT,
-  })
+  const response = await graphqlRequest<Record<string, InsObservationConnection>>(
+    query,
+    {
+      filter: params.filter,
+      limit: params.limit ?? INS_OBSERVATION_LIMIT,
+    },
+    insRequestOptions(),
+  )
 
   const result = new Map<string, InsObservationConnection>()
   for (const [alias, connection] of Object.entries(response)) {

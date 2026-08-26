@@ -17,6 +17,7 @@ const latest = (
   unitSymbol: 'pers.',
   unitNameRo: null,
   period: '2025',
+  resolvedPeriodicity: 'ANNUAL',
   resolvedClassifications: [],
   ...overrides,
 })

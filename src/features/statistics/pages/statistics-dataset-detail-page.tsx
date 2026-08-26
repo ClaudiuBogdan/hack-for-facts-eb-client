@@ -8,12 +8,12 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { InsDatasetDetails, InsObservation } from '@/schemas/ins'
+import type { InsDatasetDetails, InsDimension, InsObservation } from '@/schemas/ins'
 import type {
   StatisticsDatasetDetailSearch,
   StatisticsDatasetSeries,
   StatisticsDatasetTier0,
-  StatisticsLatestMatchStrategy,
+  StatisticsLatestValue,
 } from '@/schemas/statistics'
 import { DataStatusBadge } from '../components/data-status-badge'
 import { DetailAccordion } from '../components/detail-accordion'
@@ -33,8 +33,8 @@ import {
   detailScopeKey,
   dimensionsOfType,
   encodeTerritoryPin,
+  DETAIL_PAGE_SIZE,
   filterExactCell,
-  inferPeriodicityFromPeriod,
   NATIONAL_ENTITY,
   observedYearSpan,
   parseTerritoryPin,
@@ -96,11 +96,19 @@ export function StatisticsDatasetDetailPage({
     () => buildEffectiveScope({ search, latest }),
     [search, latest],
   )
-  const noData = !latest || latest.matchStrategy === 'NO_DATA'
+  // The series (chart/table/CSV) runs only on a FULLY resolved cell: every
+  // classification dimension carries a value (server default or URL pin).
+  // A partially covered scope would let sibling cells leak into "one series".
+  const unresolvedDimensions = useMemo(
+    () =>
+      dimensionsOfType(dataset?.dimensions, 'CLASSIFICATION').filter(
+        (dimension) =>
+          !scope.classifications.has(classificationTypeCode(dimension)),
+      ),
+    [dataset, scope.classifications],
+  )
   const seriesEnabled =
-    Boolean(dataset) &&
-    !isCatalogOnly &&
-    !(noData && scope.classifications.size === 0)
+    Boolean(dataset) && !isCatalogOnly && unresolvedDimensions.length === 0
 
   const seriesQuery = useDatasetSeries({
     code,
@@ -159,9 +167,10 @@ export function StatisticsDatasetDetailPage({
             dataset={dataset}
             search={search}
             scope={scope}
-            latestMatchStrategy={latest?.matchStrategy ?? 'NO_DATA'}
+            latest={latest}
             seriesQuery={seriesQuery}
             seriesEnabled={seriesEnabled}
+            unresolvedDimensions={unresolvedDimensions}
             territoryPin={territoryPin ? encodeTerritoryPin(territoryPin) : null}
             onSearchChange={onSearchChange}
           />
@@ -270,18 +279,20 @@ function DatasetDetailBody({
   dataset,
   search,
   scope,
-  latestMatchStrategy,
+  latest,
   seriesQuery,
   seriesEnabled,
+  unresolvedDimensions,
   territoryPin,
   onSearchChange,
 }: {
   readonly dataset: InsDatasetDetails
   readonly search: StatisticsDatasetDetailSearch
   readonly scope: EffectiveScope
-  readonly latestMatchStrategy: StatisticsLatestMatchStrategy
+  readonly latest: StatisticsLatestValue | null
   readonly seriesQuery: ReturnType<typeof useDatasetSeries>
   readonly seriesEnabled: boolean
+  readonly unresolvedDimensions: readonly InsDimension[]
   readonly territoryPin: string | null
   readonly onSearchChange: (patch: DetailSearchPatch) => void
 }) {
@@ -300,11 +311,9 @@ function DatasetDetailBody({
 
   const periodicity = useMemo(() => {
     if (scope.periodicity) return scope.periodicity
+    // Fallback reads the observation's own cadence FIELD, never grammar.
     const lastRow = exactRows[exactRows.length - 1]
-    return (
-      inferPeriodicityFromPeriod(lastRow?.time_period.iso_period ?? null) ??
-      'ANNUAL'
-    )
+    return lastRow?.time_period.periodicity ?? 'ANNUAL'
   }, [scope.periodicity, exactRows])
 
   const periodicityRows = useMemo(
@@ -312,18 +321,18 @@ function DatasetDetailBody({
     [exactRows, periodicity],
   )
 
+  const serverTruncated =
+    (seriesData?.totalCount ?? 0) > (seriesData?.observations.length ?? 0)
+
   const observedSpan = observedYearSpan(periodicityRows)
-  const yearWindow = useMemo(
-    () =>
-      observedSpan
-        ? {
-            from: search.din ?? observedSpan.from,
-            to: search.pana ?? observedSpan.to,
-          }
-        : null,
+  const yearWindow = useMemo(() => {
+    if (!observedSpan) return null
+    const from = search.din ?? observedSpan.from
+    const to = search.pana ?? observedSpan.to
+    // Reversed bounds swap rather than producing an empty window.
+    return from <= to ? { from, to } : { from: to, to: from }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [periodicityRows, search.din, search.pana],
-  )
+  }, [periodicityRows, search.din, search.pana])
 
   const windowedRows = useMemo(
     () =>
@@ -386,19 +395,12 @@ function DatasetDetailBody({
   const unitLabel =
     sampleRow?.unit?.name_ro ?? sampleRow?.unit?.symbol ?? scope.unitCode
 
-  const missingClassificationLabels = dimensionsOfType(
-    dataset.dimensions,
-    'CLASSIFICATION',
+  const missingClassificationLabels = unresolvedDimensions.map(
+    (dimension) =>
+      dimension.classification_type?.name_ro ??
+      dimension.label_ro ??
+      classificationTypeCode(dimension),
   )
-    .filter(
-      (dimension) => !scope.classifications.has(classificationTypeCode(dimension)),
-    )
-    .map(
-      (dimension) =>
-        dimension.classification_type?.name_ro ??
-        dimension.label_ro ??
-        classificationTypeCode(dimension),
-    )
 
   const compareSearch = {
     cod: dataset.code,
@@ -414,33 +416,59 @@ function DatasetDetailBody({
 
       {!seriesEnabled ? (
         <DetailScopePrompt
-          needsTerritory={
-            dimensionsOfType(dataset.dimensions, 'TERRITORIAL').length > 0
-          }
+          needsTerritory={false}
           missingClassificationLabels={missingClassificationLabels}
         />
       ) : null}
+
+      {/* Tier 1 renders WHENEVER the dataset is loaded: the scope sentence is
+          the way OUT of an unresolved state, so it can never hide behind it. */}
+      <DetailScopeSentence
+        dataset={dataset}
+        search={search}
+        scope={scope}
+        unresolvedDimensions={unresolvedDimensions}
+        territoryLabel={territoryLabel}
+        classificationLabels={classificationLabels}
+        unitLabel={unitLabel ?? null}
+        yearSpanLabel={yearWindow ? `${yearWindow.from}–${yearWindow.to}` : null}
+        onChange={onSearchChange}
+      />
 
       {seriesEnabled ? (
         <section className="space-y-4">
           {seriesQuery.isLoading ? <Skeleton className="h-64 w-full" /> : null}
 
           {seriesQuery.isError ? (
-            <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4" aria-hidden="true" />
-              <AlertTitle>
-                <Trans>Nu am putut încărca seria de date</Trans>
-              </AlertTitle>
-              <AlertDescription className="space-y-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => seriesQuery.refetch()}
-                >
-                  <Trans>Reîncearcă</Trans>
-                </Button>
-              </AlertDescription>
-            </Alert>
+            <>
+              {/* POST B failing must not discard POST A: the resolved latest
+                  value stays on screen, the retry sits beside it. */}
+              {latest && latest.hasData ? (
+                <DetailTier0Hero
+                  latest={latest}
+                  matchChip={
+                    latest.matchStrategy === 'REPRESENTATIVE_FALLBACK'
+                      ? 'representative'
+                      : null
+                  }
+                />
+              ) : null}
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+                <AlertTitle>
+                  <Trans>Nu am putut încărca seria de date</Trans>
+                </AlertTitle>
+                <AlertDescription className="space-y-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => seriesQuery.refetch()}
+                  >
+                    <Trans>Reîncearcă</Trans>
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            </>
           ) : null}
 
           {seriesQuery.isSuccess && latestValuedRow ? (
@@ -450,7 +478,7 @@ function DatasetDetailBody({
                 datasetNameRo: dataset.name_ro ?? null,
                 datasetNameEn: dataset.name_en ?? null,
                 periodicity: dataset.periodicity ?? [],
-                matchStrategy: latestMatchStrategy,
+                matchStrategy: latest?.matchStrategy ?? 'NO_DATA',
                 hasData: true,
                 value: latestValuedRow.value,
                 valueStatus: latestValuedRow.value_status ?? null,
@@ -458,10 +486,13 @@ function DatasetDetailBody({
                 unitSymbol: latestValuedRow.unit?.symbol ?? null,
                 unitNameRo: latestValuedRow.unit?.name_ro ?? null,
                 period: latestValuedRow.time_period.iso_period,
+                resolvedPeriodicity: latestValuedRow.time_period.periodicity,
                 resolvedClassifications: [],
               }}
               matchChip={
-                latestMatchStrategy === 'REPRESENTATIVE_FALLBACK'
+                latest?.matchStrategy === 'REPRESENTATIVE_FALLBACK' &&
+                search.clasificari === undefined &&
+                search.unitate === undefined
                   ? 'representative'
                   : null
               }
@@ -483,18 +514,16 @@ function DatasetDetailBody({
             />
           ) : null}
 
-          <DetailScopeSentence
-            dataset={dataset}
-            search={search}
-            scope={scope}
-            territoryLabel={territoryLabel}
-            classificationLabels={classificationLabels}
-            unitLabel={unitLabel ?? null}
-            yearSpanLabel={
-              yearWindow ? `${yearWindow.from}–${yearWindow.to}` : null
-            }
-            onChange={onSearchChange}
-          />
+          {serverTruncated ? (
+            <p className="text-xs text-muted-foreground">
+              <Trans>
+                Se afișează cele mai recente {exactRows.length} din{' '}
+                {seriesData?.totalCount} observații — capătul vechi al seriei
+                este tăiat, deci începutul intervalului afișat poate fi mai
+                recent decât primul an raportat.
+              </Trans>
+            </p>
+          ) : null}
 
           <div className="flex flex-wrap items-center gap-2">
             <DetailExportButton
@@ -502,6 +531,7 @@ function DatasetDetailBody({
               observations={windowedRows}
               classificationColumns={classificationColumns}
               disabled={windowedRows.length === 0}
+              serverTruncated={serverTruncated}
             />
             <Button variant="outline" size="sm" asChild className="gap-1.5">
               <Link to="/statistici/comparatii" search={compareSearch}>
@@ -519,7 +549,10 @@ function DatasetDetailBody({
               observedSpan={observedSpan}
               related={seriesData?.related ?? []}
               relatedTotalCount={seriesData?.relatedTotalCount ?? null}
-              page={search.pagina ?? 1}
+              page={Math.min(
+                Math.max(1, typeof search.pagina === 'number' ? search.pagina : 1),
+                Math.max(1, Math.ceil(windowedRows.length / DETAIL_PAGE_SIZE)),
+              )}
               onPageChange={(next) =>
                 onSearchChange({ pagina: next > 1 ? next : undefined })
               }

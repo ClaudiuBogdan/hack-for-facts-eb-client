@@ -48,48 +48,6 @@ export interface ComparisonCell {
   readonly valueStatus: string | null
 }
 
-/**
- * A compared territory as the URL carries it: a discriminated token
- * (`siruta:54975` | `cod:CJ` | `cod:RO`) resolved to the territory CODE the
- * observation filter speaks. A LAU's code IS its SIRUTA code (M0-verified),
- * so one `territoryCodes` filter serves mixed levels in one query — filter
- * keys AND together, so `sirutaCodes` must never be mixed in.
- */
-export interface ComparisonTerritoryToken {
-  readonly token: string
-  readonly code: string
-}
-
-/** Normalizes one URL entry: bare digits are a legacy SIRUTA-only link. */
-export function parseComparisonToken(raw: unknown): ComparisonTerritoryToken | null {
-  // Raw search values leak past validateSearch with their parsed type — a
-  // shared URL with unquoted numbers delivers numbers, not strings.
-  if (typeof raw !== 'string' && typeof raw !== 'number') return null
-  const trimmed = String(raw).trim()
-  if (/^\d{1,6}$/.test(trimmed)) {
-    return { token: `siruta:${trimmed}`, code: trimmed }
-  }
-  const match = /^(siruta|cod):([A-Za-z0-9]+)$/.exec(trimmed)
-  if (!match) return null
-  const code = match[1] === 'cod' && /^[A-Za-z]+$/.test(match[2])
-    ? match[2].toUpperCase()
-    : match[2]
-  return { token: `${match[1]}:${code}`, code }
-}
-
-/** Parses the URL list, dropping malformed entries and duplicate codes. */
-export function parseComparisonTokens(
-  raw: readonly unknown[] | undefined,
-): readonly ComparisonTerritoryToken[] {
-  const byCode = new Map<string, ComparisonTerritoryToken>()
-  for (const entry of Array.isArray(raw) ? raw : []) {
-    const parsed = parseComparisonToken(entry)
-    if (!parsed || byCode.has(parsed.code)) continue
-    byCode.set(parsed.code, parsed)
-  }
-  return [...byCode.values()]
-}
-
 /** One territory row: its identity plus the cells it actually has. */
 export interface ComparisonTerritoryRow {
   readonly code: string
@@ -299,50 +257,24 @@ export function buildLineSeries(
 }
 
 // ---------------------------------------------------------------------------
-// Classification pins (`"TYPE:VALUE"` in the URL)
+// Classification pins — ONE canonical codec, shared with the detail surface.
 // ---------------------------------------------------------------------------
 
-/** A classification pin split into its dimension type and its value code. */
-export interface ClassificationPin {
-  readonly typeCode: string
-  readonly valueCode: string
-}
-
-/** Parses `"SEX:TOTAL"`. Returns `null` for anything not in that shape. */
-export function parseClassificationPin(pin: string): ClassificationPin | null {
-  const separator = pin.indexOf(':')
-  if (separator <= 0 || separator === pin.length - 1) return null
-
-  return {
-    typeCode: pin.slice(0, separator),
-    valueCode: pin.slice(separator + 1),
-  }
-}
-
-/** Encodes a pin back into its URL form. */
-export function formatClassificationPin(pin: ClassificationPin): string {
-  return `${pin.typeCode}:${pin.valueCode}`
-}
-
-/**
- * Upserts a pin keyed by its dimension type: picking a second value for a
- * dimension replaces the first rather than adding a contradictory filter.
- */
-export function upsertClassificationPin(
-  pins: readonly string[],
-  next: ClassificationPin,
-): readonly string[] {
-  const others = pins.filter((pin) => parseClassificationPin(pin)?.typeCode !== next.typeCode)
-  return [...others, formatClassificationPin(next)]
-}
-
-/** Removes every pin belonging to a dimension type. */
-export function removeClassificationPin(
-  pins: readonly string[],
-  typeCode: string,
-): readonly string[] {
-  return pins.filter((pin) => parseClassificationPin(pin)?.typeCode !== typeCode)
-}
+export {
+  encodeClassificationPin as formatClassificationPin,
+  parseClassificationPin,
+  parseClassificationPins,
+  parseComparisonToken,
+  parseComparisonTokens,
+  removeClassificationPin,
+  upsertClassificationPin,
+  type ClassificationPin,
+  type ComparisonTerritoryToken,
+} from './dataset-selection'
+import {
+  parseClassificationPin as parsePinInternal,
+  type ClassificationPin as ClassificationPinInternal,
+} from './dataset-selection'
 
 /** A selectable classification value. */
 export interface ClassificationOptionLike {
@@ -382,16 +314,16 @@ export interface ClassificationDimensionLike {
 export function resolveEffectiveClassificationPins(params: {
   readonly dimensions: readonly ClassificationDimensionLike[]
   readonly urlPins: readonly string[]
-}): readonly ClassificationPin[] {
+}): readonly ClassificationPinInternal[] {
   const { dimensions, urlPins } = params
 
-  const pinnedByType = new Map<string, ClassificationPin>()
+  const pinnedByType = new Map<string, ClassificationPinInternal>()
   for (const raw of urlPins) {
-    const pin = parseClassificationPin(raw)
+    const pin = parsePinInternal(raw)
     if (pin) pinnedByType.set(pin.typeCode, pin)
   }
 
-  const resolved: ClassificationPin[] = []
+  const resolved: ClassificationPinInternal[] = []
 
   for (const dimension of dimensions) {
     const pinned = pinnedByType.get(dimension.typeCode)

@@ -1,4 +1,6 @@
+import { useEffect, useRef } from 'react'
 import { Link } from '@tanstack/react-router'
+import { t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { AlertTriangle, X } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -37,7 +39,7 @@ function TileGridSkeleton() {
     <div
       className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
       aria-busy="true"
-      aria-label="Se încarcă indicatorii"
+      aria-label={t`Se încarcă indicatorii`}
     >
       {Array.from({ length: 4 }, (_, index) => (
         <Skeleton key={index} className="h-32 w-full" />
@@ -72,11 +74,38 @@ export function LandingHero({
   const uatMode = Boolean(loc)
   const territoryName = snapshot?.territory?.name ?? null
   const countyName = snapshot?.territory?.countyName ?? null
+  // Unknown but valid-shaped ?loc: the snapshot answers with no identity and
+  // no values — an explicit state, never a titled empty grid.
+  const unknownLoc =
+    uatMode &&
+    snapshot !== undefined &&
+    snapshot.territory === null &&
+    snapshot.values.length === 0
+
+  // After a pick, focus moves to the band heading so the re-render is
+  // announced and keyboard users land where the answer is.
+  const headingRef = useRef<HTMLHeadingElement>(null)
+  const previousLoc = useRef(loc)
+  useEffect(() => {
+    if (loc && loc !== previousLoc.current) {
+      headingRef.current?.focus()
+    }
+    previousLoc.current = loc
+  }, [loc])
 
   return (
-    <section className="space-y-4" aria-labelledby="landing-hero-heading">
+    <section
+      className="space-y-4"
+      aria-labelledby="landing-hero-heading"
+      aria-live="polite"
+    >
       <div>
-        <h2 id="landing-hero-heading" className={statisticsTheme.sectionTitle}>
+        <h2
+          id="landing-hero-heading"
+          ref={headingRef}
+          tabIndex={-1}
+          className={statisticsTheme.sectionTitle}
+        >
           {uatMode && territoryName ? (
             <Trans>Locul tău în cifre</Trans>
           ) : (
@@ -145,11 +174,30 @@ export function LandingHero({
         </Alert>
       ) : null}
 
+      {unknownLoc ? (
+        <div className="rounded-lg border border-dashed border-border/70 p-4 text-sm text-muted-foreground">
+          <p>
+            <Trans>
+              Nu am găsit un teritoriu INS pentru codul din adresă. Cifrele
+              naționale rămân mai jos.
+            </Trans>
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-3"
+            onClick={onClearPick}
+          >
+            <Trans>Înapoi la țară</Trans>
+          </Button>
+        </div>
+      ) : null}
+
       {(uatMode && snapshotLoading) || (!uatMode && landingDataLoading) ? (
         <TileGridSkeleton />
       ) : null}
 
-      {uatMode && snapshot && loc ? (
+      {uatMode && snapshot && !unknownLoc && loc ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {LANDING_NATIONAL_DATASETS.map((entry) => {
             const local = snapshot.values.find(

@@ -2,7 +2,6 @@ import type {
   InsDatasetDetails,
   InsDimensionValueConnection,
   InsEntitySelectorInput,
-  InsObservationConnection,
   InsObservationFilterInput,
 } from '@/schemas/ins'
 import type {
@@ -13,7 +12,6 @@ import { isStatisticsMockEnabled } from '../lib/mock-mode'
 import {
   getInsDatasetDetails,
   getInsDimensionValuesPage,
-  getInsObservationsPage,
 } from './graphql/ins-fetchers'
 import {
   fetchStatisticsDatasetSeries,
@@ -25,7 +23,6 @@ import {
   fetchDatasetSeriesMock,
   fetchDatasetTier0Mock,
   fetchDimensionValuesPageMock,
-  fetchObservationsPageMock,
 } from './dataset-detail-api.mock'
 
 /**
@@ -54,18 +51,6 @@ export async function fetchDimensionValuesPage(params: {
     return fetchDimensionValuesPageMock(params)
   }
   return getInsDimensionValuesPage(params)
-}
-
-export async function fetchObservationsPage(params: {
-  readonly datasetCode: string
-  readonly filter: InsObservationFilterInput
-  readonly limit: number
-  readonly offset: number
-}): Promise<InsObservationConnection> {
-  if (isStatisticsMockEnabled()) {
-    return fetchObservationsPageMock(params)
-  }
-  return getInsObservationsPage(params)
 }
 
 /** Tier-0: dataset metadata + the server-resolved latest value (POST A). */

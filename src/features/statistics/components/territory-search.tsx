@@ -178,7 +178,18 @@ function TerritoryResultRow({
 
 function LevelBadge({ level }: { readonly level: string | null }) {
   if (!level) return null
-  const label = level === 'LAU' ? t`Localitate` : level === 'NUTS3' ? t`Județ` : level
+  const label =
+    level === 'LAU'
+      ? t`Localitate`
+      : level === 'NUTS3'
+        ? t`Județ`
+        : level === 'NUTS2'
+          ? t`Regiune`
+          : level === 'NUTS1'
+            ? t`Macroregiune`
+            : level === 'NATIONAL'
+              ? t`Național`
+              : level
   return (
     <Badge variant="outline" className="shrink-0">
       {label}

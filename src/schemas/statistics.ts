@@ -3,6 +3,7 @@ import type {
   InsDataset,
   InsDatasetDetails,
   InsObservation,
+  InsPeriodicity,
   InsTerritoryLevel,
   InsTimePeriod,
   InsUnit,
@@ -179,16 +180,30 @@ export type StatisticsDatasetDetailSearch = z.infer<
  * `teritorii` holds 2–6 SIRUTA codes. Below two the page shows a guided empty
  * state rather than a chart of one line.
  */
+const coerceNumberToString = (value: unknown) =>
+  typeof value === 'number' ? String(value) : value
+
 export const statisticsComparisonsSearchSchema = z
   .object({
     cod: z.string().trim().min(1).optional().catch(undefined),
+    // The router JSON-parses bare digits, so `?teritorii=[54975]` delivers
+    // NUMBERS and a lone token arrives as a bare string — both normalized.
     teritorii: z
-      .array(z.string().trim().min(1))
-      .min(1)
-      .max(6)
-      .optional()
+      .preprocess(
+        (value) => {
+          const entries = Array.isArray(value)
+            ? value
+            : value === undefined
+              ? undefined
+              : [value]
+          return entries?.map(coerceNumberToString)
+        },
+        z.array(z.string().trim().min(1)).min(1).max(6).optional(),
+      )
       .catch(undefined),
-    perioada: z.string().trim().min(1).optional().catch(undefined),
+    perioada: z
+      .preprocess(coerceNumberToString, z.string().trim().min(1).optional())
+      .catch(undefined),
     clasificari: z
       .array(classificationPinSchema)
       .max(8)
@@ -357,7 +372,8 @@ export interface StatisticsTerritoryHubResult {
   readonly identity: StatisticsTerritoryIdentity
   readonly tiles: readonly StatisticsIndicatorTile[]
   readonly availableDatasetCodes: readonly string[]
-  readonly coverage: StatisticsCoverageSummary
+  /** Null when the counts/benchmarks POST failed — the ribbon hides. */
+  readonly coverage: StatisticsCoverageSummary | null
   readonly relatedLinks: readonly StatisticsRelatedLink[]
   readonly latestDataPeriod: string | null
   readonly partial: boolean
@@ -396,6 +412,8 @@ export interface StatisticsLatestValue {
   readonly unitSymbol: string | null
   readonly unitNameRo: string | null
   readonly period: string | null
+  /** The resolved observation's own cadence FIELD — never string grammar. */
+  readonly resolvedPeriodicity: InsPeriodicity | null
   /** The exact cell the server resolved — the tier-0 classification defaults. */
   readonly resolvedClassifications: readonly StatisticsResolvedClassification[]
 }
@@ -406,6 +424,7 @@ export interface StatisticsDecadeObservation {
   readonly countyName: string | null
   readonly year: number
   readonly value: string | null
+  readonly unitNameRo: string | null
 }
 
 /** One observation of the worked comparison example (mixed levels). */

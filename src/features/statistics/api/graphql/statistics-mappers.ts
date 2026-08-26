@@ -87,6 +87,7 @@ export function mapLatestValue(node: InsLatestValueNodeRaw): StatisticsLatestVal
     unitSymbol: node.observation?.unit?.symbol ?? null,
     unitNameRo: node.observation?.unit?.name_ro ?? null,
     period: node.observation?.time_period.iso_period ?? node.latestPeriod ?? null,
+    resolvedPeriodicity: node.observation?.time_period.periodicity ?? null,
     resolvedClassifications: (node.observation?.classifications ?? []).flatMap(
       (classification) => {
         if (!classification.type_code || !classification.code) return []
@@ -118,6 +119,7 @@ export function mapDecadeRows(
         countyName: node.territory.name_ro ?? null,
         year: node.time_period.year,
         value: node.value ?? null,
+        unitNameRo: node.unit?.name_ro ?? node.unit?.symbol ?? null,
       },
     ]
   })

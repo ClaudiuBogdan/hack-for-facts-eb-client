@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { InsObservation, InsTimePeriod } from '@/schemas/ins'
+import { filterExactCell } from './dataset-selection'
 import {
+  parseComparisonTokens,
   buildBarSeries,
   buildComparisonMatrix,
   buildLineSeries,
@@ -320,7 +322,8 @@ describe('classification pins', () => {
       typeCode: 'SEX',
       valueCode: 'M',
     })
-    expect(pins).toEqual(['AGE:ALL', 'SEX:M'])
+    // The canonical codec upserts IN PLACE: the pin keeps its slot.
+    expect(pins).toEqual(['SEX:M', 'AGE:ALL'])
   })
 
   it('removes every pin for a dimension type', () => {
@@ -408,8 +411,7 @@ describe('resolveEffectiveClassificationPins', () => {
 })
 
 describe('parseComparisonTokens (mixed-level URL tokens)', () => {
-  it('accepts siruta:, cod:, and legacy bare-digit entries', async () => {
-    const { parseComparisonTokens } = await import('./comparison-series')
+  it('accepts siruta:, cod:, and legacy bare-digit entries', () => {
     const tokens = parseComparisonTokens([
       'siruta:54975',
       'cod:cj',
@@ -417,21 +419,49 @@ describe('parseComparisonTokens (mixed-level URL tokens)', () => {
       '179132',
     ])
     expect(tokens).toEqual([
-      { token: 'siruta:54975', code: '54975' },
-      { token: 'cod:CJ', code: 'CJ' },
-      { token: 'cod:RO', code: 'RO' },
-      { token: 'siruta:179132', code: '179132' },
+      { token: 'siruta:54975', code: '54975', level: 'LAU' },
+      { token: 'cod:CJ', code: 'CJ', level: 'NUTS3' },
+      { token: 'cod:RO', code: 'RO', level: 'NATIONAL' },
+      { token: 'siruta:179132', code: '179132', level: 'LAU' },
     ])
   })
 
-  it('drops malformed entries and duplicate codes', async () => {
-    const { parseComparisonTokens } = await import('./comparison-series')
+  it('drops malformed entries and duplicate codes', () => {
     const tokens = parseComparisonTokens([
       'siruta:54975',
       '54975',
       'garbage entry',
       'cod:',
     ])
-    expect(tokens).toEqual([{ token: 'siruta:54975', code: '54975' }])
+    expect(tokens).toEqual([{ token: 'siruta:54975', code: '54975', level: 'LAU' }])
+  })
+})
+
+describe('exact-cell filtering before the matrix (A5)', () => {
+  it('drops the sibling cell the server filter admits', () => {
+    const exact = {
+      ...observation({ code: '54975', period: annual(2024), value: '10' }),
+      classifications: [
+        { type_code: 'SEX', code: 'FEMININ' },
+        { type_code: 'AGE_GROUP', code: 'TOTAL' },
+      ],
+    }
+    const sibling = {
+      ...observation({ code: '54975', period: annual(2024), value: '20' }),
+      classifications: [
+        { type_code: 'SEX', code: 'TOTAL' },
+        { type_code: 'AGE_GROUP', code: 'TOTAL' },
+      ],
+    }
+    const pinMap = new Map([
+      ['SEX', 'FEMININ'],
+      ['AGE_GROUP', 'TOTAL'],
+    ])
+    const matrix = buildComparisonMatrix({
+      observations: filterExactCell([sibling, exact], pinMap),
+      territoryCodes: ['54975'],
+    })
+    // ONE number per territory×period — the exact cell, not the first write.
+    expect(matrix.rows[0]?.cells['2024']?.value).toBe('10')
   })
 })

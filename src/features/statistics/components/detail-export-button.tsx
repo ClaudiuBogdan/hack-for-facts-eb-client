@@ -21,6 +21,9 @@ type Props = {
   readonly observations: readonly InsObservation[]
   readonly classificationColumns: readonly CsvClassificationColumn[]
   readonly disabled: boolean
+  /** True when the SERVER cut the series (rows < totalCount) — the export
+   *  then carries only the newest end and must say so. */
+  readonly serverTruncated?: boolean
 }
 
 /**
@@ -33,6 +36,7 @@ export function DetailExportButton({
   observations,
   classificationColumns,
   disabled,
+  serverTruncated = false,
 }: Props) {
   const [isExporting, setIsExporting] = useState(false)
 
@@ -51,9 +55,9 @@ export function DetailExportButton({
 
       downloadObservationsCsv(csv, buildObservationsCsvFilename(datasetCode))
 
-      if (truncated) {
+      if (truncated || serverTruncated) {
         toast.warning(
-          t`Export limitat la primele ${rowCount} rânduri. Restrânge selecția pentru un export complet.`,
+          t`Export incomplet: fișierul conține ${rowCount} rânduri, dar seria de la server are mai multe (capătul vechi este tăiat).`,
         )
       } else {
         toast.success(t`Am exportat ${rowCount} rânduri.`)

@@ -3,11 +3,12 @@ import type { InsObservation } from '@/schemas/ins'
 import type { StatisticsLatestValue } from '@/schemas/statistics'
 import {
   buildEffectiveScope,
+  parseComparisonToken,
+  parseComparisonTokens,
   buildSeriesFilter,
   detailScopeKey,
   filterExactCell,
   inferCodTerritoryLevel,
-  inferPeriodicityFromPeriod,
   NATIONAL_ENTITY,
   observedYearSpan,
   parseTerritoryPin,
@@ -29,6 +30,7 @@ const latest = (
   unitSymbol: 'pers.',
   unitNameRo: null,
   period: '2025',
+  resolvedPeriodicity: 'ANNUAL',
   resolvedClassifications: [
     { typeCode: 'SEX', code: 'TOTAL', nameRo: 'Total' },
     { typeCode: 'AGE_GROUP', code: 'TOTAL', nameRo: 'Total' },
@@ -108,14 +110,27 @@ describe('buildEffectiveScope', () => {
     expect(scope.defaultedTypes.has('AGE_GROUP')).toBe(true)
   })
 
-  it('infers periodicity from the resolved period grammar when ambiguous', () => {
-    const scope = buildEffectiveScope({
+  it('prefers MONTHLY when offered, else the resolved cadence FIELD — never grammar', () => {
+    const monthlyOffered = buildEffectiveScope({
       search: {},
       latest: latest({ periodicity: ['ANNUAL', 'MONTHLY'], period: '2025-11' }),
     })
-    expect(scope.periodicity).toBe('MONTHLY')
-    expect(inferPeriodicityFromPeriod('2024-Q2')).toBe('QUARTERLY')
-    expect(inferPeriodicityFromPeriod('garbage')).toBeNull()
+    expect(monthlyOffered.periodicity).toBe('MONTHLY')
+
+    const fieldFallback = buildEffectiveScope({
+      search: {},
+      latest: latest({
+        periodicity: ['ANNUAL', 'QUARTERLY'],
+        resolvedPeriodicity: 'QUARTERLY',
+      }),
+    })
+    expect(fieldFallback.periodicity).toBe('QUARTERLY')
+
+    const pinned = buildEffectiveScope({
+      search: { frecventa: 'ANNUAL' },
+      latest: latest({ periodicity: ['ANNUAL', 'MONTHLY'] }),
+    })
+    expect(pinned.periodicity).toBe('ANNUAL')
   })
 })
 
@@ -213,5 +228,60 @@ describe('observedYearSpan', () => {
       ]),
     ).toEqual({ from: 2016, to: 2025 })
     expect(observedYearSpan([])).toBeNull()
+  })
+})
+
+describe('partial-pin sibling leak (why the series gates on FULL resolution)', () => {
+  it('filterExactCell keeps BOTH siblings of an uncovered type — the leak', () => {
+    const pinnedOnly = new Map([['SEX', 'FEMININ']])
+    const rows = [
+      observation({
+        year: 2024,
+        value: '1',
+        classifications: [
+          { type: 'SEX', code: 'FEMININ' },
+          { type: 'AGE_GROUP', code: 'TOTAL' },
+        ],
+      }),
+      observation({
+        year: 2024,
+        value: '2',
+        classifications: [
+          { type: 'SEX', code: 'FEMININ' },
+          { type: 'AGE_GROUP', code: '0-14' },
+        ],
+      }),
+      observation({
+        year: 2024,
+        value: '3',
+        classifications: [
+          { type: 'SEX', code: 'TOTAL' },
+          { type: 'AGE_GROUP', code: 'TOTAL' },
+        ],
+      }),
+    ]
+    const kept = filterExactCell(rows, pinnedOnly)
+    // The SEX filter holds, but BOTH AGE_GROUP siblings survive: a partial
+    // scope cannot yield "one series" — hence seriesEnabled requires every
+    // classification dimension covered.
+    expect(kept).toHaveLength(2)
+  })
+})
+
+describe('B12 merge-leak coercions', () => {
+  it('siruta:siruta:X parses to null, numeric entries coerce, lone string is a list', () => {
+    expect(parseComparisonToken('siruta:siruta:54975')).toBeNull()
+    expect(parseComparisonToken(54975)).toEqual({
+      token: 'siruta:54975',
+      code: '54975',
+      level: 'LAU',
+    })
+    expect(parseComparisonTokens('siruta:54975')).toEqual([
+      { token: 'siruta:54975', code: '54975', level: 'LAU' },
+    ])
+    expect(parseComparisonTokens([54975, 'cod:CJ'])).toEqual([
+      { token: 'siruta:54975', code: '54975', level: 'LAU' },
+      { token: 'cod:CJ', code: 'CJ', level: 'NUTS3' },
+    ])
   })
 })

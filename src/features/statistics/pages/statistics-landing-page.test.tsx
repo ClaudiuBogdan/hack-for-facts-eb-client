@@ -31,6 +31,13 @@ vi.mock('../hooks/use-statistics', async (importOriginal) => {
 
 vi.mock('@lingui/react/macro', () => ({
   Trans: ({ children }: { readonly children?: ReactNode }) => <>{children}</>,
+  Plural: ({
+    value,
+    other,
+  }: {
+    readonly value: number
+    readonly other?: string
+  }) => <>{(other ?? '#').replace('#', String(value))}</>,
   useLingui: () => ({
     i18n: {
       locale: 'ro',

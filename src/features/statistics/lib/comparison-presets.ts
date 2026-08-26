@@ -76,5 +76,16 @@ export const COMPARISON_PRESETS: readonly ComparisonPreset[] = [
   },
 ]
 
-/** The live worked example shown when fewer than two territories are picked. */
-export const COMPARISON_EXAMPLE_PRESET = COMPARISON_PRESETS[0]
+/**
+ * The live worked example shown when fewer than two territories are picked.
+ * SAME-LEVEL trio by ruling (mixed levels stay a chip + the landing B3
+ * target): three municipalities on the salaried-employees headcount.
+ */
+export const COMPARISON_EXAMPLE_PRESET: ComparisonPreset = {
+  id: 'exemplu-trei-municipii',
+  title: msg`Cluj-Napoca vs Iași vs Timișoara`,
+  search: {
+    cod: 'FOM104D',
+    teritorii: ['siruta:54975', 'siruta:95060', 'siruta:155243'],
+  },
+}
