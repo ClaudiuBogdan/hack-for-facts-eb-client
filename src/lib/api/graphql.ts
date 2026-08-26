@@ -80,12 +80,24 @@ const buildHttpErrorMessage = (response: Response, payload: unknown, rawText: st
   return `GraphQL request failed: ${response.status} ${response.statusText}`;
 };
 
+export interface GraphQLRequestOptions {
+  /**
+   * Skip the Authorization header even when a Clerk token exists. For public
+   * reads (the INS surface) a stale token turns an otherwise-public request
+   * into a 401 before any resolver runs — sending no header is strictly safer.
+   */
+  skipAuth?: boolean;
+  /** Abort signal threaded to fetch (route loaders / TanStack Query). */
+  signal?: AbortSignal;
+}
+
 /**
  * Simple GraphQL client to make queries to the server
  */
 export async function graphqlRequest<T = unknown>(
   query: string,
-  variables?: Record<string, unknown>
+  variables?: Record<string, unknown>,
+  options?: GraphQLRequestOptions
 ): Promise<T> {
   const endpoint = `${getApiBaseUrl()}/graphql`;
 
@@ -93,7 +105,7 @@ export async function graphqlRequest<T = unknown>(
     logger.info("Making GraphQL request", { query, variables });
 
     // Get a fresh token for the request; Clerk manages token lifecycle
-    const token = await getAuthToken();
+    const token = options?.skipAuth ? null : await getAuthToken();
 
     const response = await fetch(endpoint, {
       method: "POST",
@@ -106,6 +118,7 @@ export async function graphqlRequest<T = unknown>(
         query,
         variables,
       }),
+      ...(options?.signal ? { signal: options.signal } : {}),
     })
 
     const rawText = await response.text();
