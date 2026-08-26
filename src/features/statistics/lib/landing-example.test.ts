@@ -70,5 +70,8 @@ describe('buildLandingExample', () => {
       obs('LAU', '54975', 2023, '9'),
     ])
     expect(example?.year).toBe(2023)
+    // LOUD, never silent: the rejection is counted for the caller to log
+    // and for the card to show a degraded note.
+    expect(example?.ambiguousCellCount).toBe(1)
   })
 })

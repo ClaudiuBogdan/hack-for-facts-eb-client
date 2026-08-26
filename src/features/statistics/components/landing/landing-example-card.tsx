@@ -85,6 +85,16 @@ export function LandingExampleCard({ example }: LandingExampleCardProps) {
 
         {takeaway ? <p className="mt-4 text-sm">{takeaway}</p> : null}
 
+        {example.ambiguousCellCount > 0 ? (
+          <p className="mt-3 text-xs text-muted-foreground">
+            <Trans>
+              Unele perioade au fost omise: sursa raportează mai multe valori
+              pentru aceeași combinație teritoriu-an, iar exemplul arată doar
+              perioadele fără ambiguitate.
+            </Trans>
+          </p>
+        ) : null}
+
         <p className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           <span className={statisticsTheme.provenanceChip}>
             {EXAMPLE_DATASET_CODE}

@@ -8,6 +8,13 @@ export interface LandingExample {
   readonly unitSymbol: string | null
   /** LAU value as a share of the county value, percent, when computable. */
   readonly lauShareOfCounty: number | null
+  /**
+   * (territory, year) pairs REJECTED because they carried multiple cells.
+   * Zero today (FOM104D has no classification dimensions); if the dataset
+   * ever grows one upstream, this must be LOUD — the caller logs it and the
+   * card shows a degraded note, never a silent skip.
+   */
+  readonly ambiguousCellCount: number
 }
 
 const LEVEL_ORDER: Record<string, number> = {
@@ -56,6 +63,8 @@ export function buildLandingExample(
     .map(([year]) => year)
     .sort((a, b) => b - a)
 
+  const ambiguousCellCount = ambiguous.size
+
   const year = commonYears[0]
   if (year === undefined) return null
 
@@ -80,5 +89,6 @@ export function buildLandingExample(
     rows: ordered,
     unitSymbol: ordered.find((row) => row.unitSymbol !== null)?.unitSymbol ?? null,
     lauShareOfCounty,
+    ambiguousCellCount,
   }
 }

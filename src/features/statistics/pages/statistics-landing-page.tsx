@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
 import { Skeleton } from '@/components/ui/skeleton'
+import { createLogger } from '@/lib/logger'
 import type {
   StatisticsLandingCatalog,
   StatisticsLandingData,
@@ -26,6 +27,8 @@ import { LandingHero } from '../components/landing/landing-hero'
 import { LandingHonestySection } from '../components/landing/landing-honesty-section'
 import { LandingThemesSection } from '../components/landing/landing-themes-section'
 import { ShareFilteredView } from '../components/share-filtered-view'
+
+const logger = createLogger('statistics-landing')
 
 type StatisticsLandingPageProps = {
   readonly search: StatisticsLandingSearch
@@ -60,7 +63,15 @@ export function StatisticsLandingPage({
 
   const example = useMemo(() => {
     if (!landingDataQuery.data) return null
-    return buildLandingExample(landingDataQuery.data.exampleRows)
+    const built = buildLandingExample(landingDataQuery.data.exampleRows)
+    if (built && built.ambiguousCellCount > 0) {
+      // No silent caps: the example dataset grew a classification dimension
+      // upstream and cells became ambiguous — the card degrades VISIBLY.
+      logger.warn('Landing example rejected ambiguous cells', {
+        ambiguousCellCount: built.ambiguousCellCount,
+      })
+    }
+    return built
   }, [landingDataQuery.data])
 
   const handleTermChange = (q: string | undefined) => {
