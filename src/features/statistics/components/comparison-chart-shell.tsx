@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import {
   comparisonLevelLabel,
+  hasMixedComparisonLevels,
   type ComparisonSeriesDescriptor,
 } from '../lib/comparison-format'
 import { COMPARISON_PALETTE_CLASS } from './comparison-palette'
@@ -21,6 +22,7 @@ type LegendProps = {
  * text stays in muted ink — never the series colour.
  */
 export function ComparisonLegend({ series }: LegendProps) {
+  const mixedLevels = hasMixedComparisonLevels(series)
   if (series.length < 2) return null
 
   return (
@@ -33,9 +35,11 @@ export function ComparisonLegend({ series }: LegendProps) {
             style={{ backgroundColor: entry.color }}
           />
           <span>{entry.label}</span>
-          <span className="rounded-sm border border-border/70 px-1 text-[10px] uppercase tracking-wide">
-            {comparisonLevelLabel(entry.level)}
-          </span>
+          {mixedLevels ? (
+            <span className="rounded-sm border border-border/70 px-1 text-[10px] uppercase tracking-wide">
+              {comparisonLevelLabel(entry.level)}
+            </span>
+          ) : null}
         </li>
       ))}
     </ul>

@@ -414,15 +414,9 @@ function DatasetDetailBody({
         latestPeriod={latestValuedRow?.time_period.iso_period ?? null}
       />
 
-      {!seriesEnabled ? (
-        <DetailScopePrompt
-          needsTerritory={false}
-          missingClassificationLabels={missingClassificationLabels}
-        />
-      ) : null}
-
       {/* Tier 1 renders WHENEVER the dataset is loaded: the scope sentence is
-          the way OUT of an unresolved state, so it can never hide behind it. */}
+          the way OUT of an unresolved state, so it can never hide behind it.
+          It sits ABOVE the prompt — the prompt's copy points „mai sus". */}
       <DetailScopeSentence
         dataset={dataset}
         search={search}
@@ -434,6 +428,13 @@ function DatasetDetailBody({
         yearSpanLabel={yearWindow ? `${yearWindow.from}–${yearWindow.to}` : null}
         onChange={onSearchChange}
       />
+
+      {!seriesEnabled ? (
+        <DetailScopePrompt
+          needsTerritory={false}
+          missingClassificationLabels={missingClassificationLabels}
+        />
+      ) : null}
 
       {seriesEnabled ? (
         <section className="space-y-4">
@@ -553,6 +554,7 @@ function DatasetDetailBody({
                 Math.max(1, typeof search.pagina === 'number' ? search.pagina : 1),
                 Math.max(1, Math.ceil(windowedRows.length / DETAIL_PAGE_SIZE)),
               )}
+              compareSearch={compareSearch}
               onPageChange={(next) =>
                 onSearchChange({ pagina: next > 1 ? next : undefined })
               }

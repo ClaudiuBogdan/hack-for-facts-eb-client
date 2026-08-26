@@ -94,11 +94,7 @@ export function LandingHero({
   }, [loc])
 
   return (
-    <section
-      className="space-y-4"
-      aria-labelledby="landing-hero-heading"
-      aria-live="polite"
-    >
+    <section className="space-y-4" aria-labelledby="landing-hero-heading">
       <div>
         <h2
           id="landing-hero-heading"
@@ -198,7 +194,7 @@ export function LandingHero({
       ) : null}
 
       {uatMode && snapshot && !unknownLoc && loc ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div aria-live="polite" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {LANDING_NATIONAL_DATASETS.map((entry) => {
             const local = snapshot.values.find(
               (value) => value.datasetCode === entry.code,
@@ -223,7 +219,7 @@ export function LandingHero({
       ) : null}
 
       {!uatMode && landingData ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div aria-live="polite" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {LANDING_NATIONAL_DATASETS.map((entry) => {
             const latest = nationalByCode.get(entry.code)
             if (!latest) return null

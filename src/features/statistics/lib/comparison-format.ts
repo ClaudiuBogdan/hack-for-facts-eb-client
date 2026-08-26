@@ -34,6 +34,17 @@ export function formatComparisonAxisTick(value: number): string {
   return compactFormatter.format(value)
 }
 
+/**
+ * Level badges (and the absolute-values note) appear ONLY when the compared
+ * levels actually mix — a same-level set would wear N identical tags
+ * (user ruling C2).
+ */
+export function hasMixedComparisonLevels(
+  series: readonly ComparisonSeriesDescriptor[],
+): boolean {
+  return new Set(series.map((entry) => entry.level)).size > 1
+}
+
 /** Short level tag shown beside mixed-level series (identity, not colour). */
 export function comparisonLevelLabel(
   level: ComparisonSeriesDescriptor['level'],

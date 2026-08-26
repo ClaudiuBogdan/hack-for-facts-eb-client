@@ -28,6 +28,11 @@ type Props = {
   readonly relatedTotalCount: number | null
   readonly page: number
   readonly onPageChange: (page: number) => void
+  /** The compare bundle for this dataset+territory — the note points there. */
+  readonly compareSearch: {
+    readonly cod: string
+    readonly teritorii: [string, ...string[]]
+  }
 }
 
 /**
@@ -45,6 +50,7 @@ export function DetailAccordion({
   relatedTotalCount,
   page,
   onPageChange,
+  compareSearch,
 }: Props) {
   const dimensions = dataset.dimensions ?? []
   const territorial = dimensions.find((dimension) => dimension.type === 'TERRITORIAL')
@@ -80,7 +86,16 @@ export function DetailAccordion({
           <p className="text-xs text-muted-foreground">
             <Trans>
               Valorile din spatele graficului — aceeași selecție, aceleași
-              rânduri, nu întregul set la acest teritoriu.
+              rânduri, nu întregul set la acest teritoriu. Pentru alte
+              teritorii,{' '}
+              <Link
+                to="/statistici/comparatii"
+                search={compareSearch}
+                className="underline underline-offset-2 hover:text-foreground"
+              >
+                compară teritorii
+              </Link>
+              .
             </Trans>
           </p>
           {observations.length === 0 ? (

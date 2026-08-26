@@ -27,7 +27,10 @@ import {
 } from '../lib/comparison-presets'
 import { ComparisonBarChart } from '../components/comparison-bar-chart'
 import { comparisonSeriesColor } from '../components/comparison-palette'
-import type { ComparisonSeriesDescriptor } from '../lib/comparison-format'
+import {
+  hasMixedComparisonLevels,
+  type ComparisonSeriesDescriptor,
+} from '../lib/comparison-format'
 import { ComparisonDatasetPicker } from '../components/comparison-dataset-picker'
 import { ComparisonLineChart } from '../components/comparison-line-chart'
 import { ComparisonPeriodSelect, ComparisonPins } from '../components/comparison-pins'
@@ -294,12 +297,7 @@ export function StatisticsComparisonsPage() {
   function renderResults() {
     // Two territories but no dataset: guide, never an infinite skeleton.
     if (!hasDataset) {
-      return (
-        <ComparisonGuidedEmptyState
-          hasDataset={false}
-          selectedCount={userTokens.length}
-        />
-      )
+      return <ComparisonGuidedEmptyState />
     }
 
     if (observationsError) {
@@ -343,7 +341,7 @@ export function StatisticsComparisonsPage() {
       <>
         {partial ? <ComparisonPartialNotice /> : null}
 
-        {new Set(series.map((entry) => entry.level)).size > 1 ? (
+        {hasMixedComparisonLevels(series) ? (
           <p className="text-xs text-muted-foreground">
             <Trans>
               Valori absolute — nivelurile teritoriale nu sunt normalizate per

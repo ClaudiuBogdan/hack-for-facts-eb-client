@@ -147,11 +147,11 @@ export function DetailScopeSentence({
           </span>
         ))}
       </div>
-      {segments.some((segment) => segment.defaulted) ? (
-        <p className="mt-1 hidden text-xs text-muted-foreground md:block">
+      {segments.some((segment) => segment.defaulted || segment.unresolved) ? (
+        <p className="mt-1 text-xs text-muted-foreground">
           <Trans>
-            Valorile subliniate punctat sunt selecții implicite — apasă pe ele
-            ca să le schimbi.
+            Valorile subliniate punctat sunt implicite sau încă nealese —
+            apasă pe ele ca să le alegi sau să le schimbi.
           </Trans>
         </p>
       ) : null}
@@ -166,13 +166,7 @@ export function DetailScopeSentence({
               className="flex w-full items-center justify-between gap-2 rounded-md border border-border/70 px-3 py-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <span className="line-clamp-2 min-w-0">
-                {segments
-                  .map((segment) =>
-                    segment.defaulted
-                      ? `${segment.text} (${t`implicit`})`
-                      : segment.text,
-                  )
-                  .join(' · ')}
+                {segments.map((segment) => segment.text).join(' · ')}
               </span>
               <SlidersHorizontal className="h-4 w-4 shrink-0" aria-hidden />
             </button>

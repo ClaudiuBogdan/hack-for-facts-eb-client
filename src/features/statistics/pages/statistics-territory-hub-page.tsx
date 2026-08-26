@@ -232,6 +232,15 @@ export function StatisticsTerritoryHubPage({
                 <p className="mt-1 text-sm text-muted-foreground">
                   <Trans>Indicatorii afișează valorile disponibile pentru teritoriu, fără interpolarea perioadelor lipsă.</Trans>
                 </p>
+                {activePeriod ? (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    <Trans>
+                      Reperele pe județ și pe țară sunt fapte despre ultima
+                      perioadă, așa că nu apar cât timp filtrezi o perioadă
+                      anume.
+                    </Trans>
+                  </p>
+                ) : null}
               </div>
               {hub.tiles.length > 0 ? (
                 <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">

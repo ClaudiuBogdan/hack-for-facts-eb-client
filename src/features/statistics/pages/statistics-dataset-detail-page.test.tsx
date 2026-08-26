@@ -172,9 +172,12 @@ describe('StatisticsDatasetDetailPage', () => {
 
     render(<StatisticsDatasetDetailPage code="POP107D" search={{}} onSearchChange={vi.fn()} />)
 
-    // The way OUT stays on screen: the sentence renders, the prompt names
-    // ONLY the unresolved dimension.
-    expect(screen.getAllByText(/alege/i).length).toBeGreaterThan(0)
+    // The way OUT stays on screen: the SENTENCE renders (a segment button,
+    // not just the prompt — the prompt alone would satisfy a /alege/ match),
+    // and the prompt names ONLY the unresolved dimension.
+    expect(
+      screen.getByRole('button', { name: /Județe: România/ }),
+    ).toBeInTheDocument()
     expect(screen.getByText(/Alege o valoare pentru: Sexe/)).toBeInTheDocument()
     // And the series query is actually OFF — the prompt without the gate
     // would still leak a sibling-mixing fetch.

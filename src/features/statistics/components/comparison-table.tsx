@@ -12,6 +12,7 @@ import { getComparisonCell, type ComparisonMatrix } from '../lib/comparison-seri
 import { COMPARISON_PALETTE_CLASS } from './comparison-palette'
 import {
   comparisonLevelLabel,
+  hasMixedComparisonLevels,
   type ComparisonSeriesDescriptor,
 } from '../lib/comparison-format'
 
@@ -40,6 +41,7 @@ type Props = {
  * dash. A value is never borrowed from an adjacent period to fill the hole.
  */
 export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
+  const mixedLevels = hasMixedComparisonLevels(series)
   const labelBySiruta = new Map(series.map((entry) => [entry.code, entry.label]))
   const colorBySiruta = new Map(series.map((entry) => [entry.code, entry.color]))
   const levelByCode = new Map(series.map((entry) => [entry.code, entry.level]))
@@ -86,7 +88,7 @@ export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
                         style={{ backgroundColor: colorBySiruta.get(row.code) }}
                       />
                       <span>{label}</span>
-                      {level ? (
+                      {mixedLevels && level ? (
                         <span className="rounded-sm border border-border/70 px-1 text-[10px] uppercase tracking-wide text-muted-foreground">
                           {comparisonLevelLabel(level)}
                         </span>
