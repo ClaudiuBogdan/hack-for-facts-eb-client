@@ -1,18 +1,26 @@
 import type {
+  InsDatasetDetails,
+  InsObservation,
+} from '@/schemas/ins'
+import type {
   StatisticsDatasetDataStatus,
   StatisticsDatasetSummary,
   StatisticsDecadeObservation,
   StatisticsExampleObservation,
   StatisticsLatestValue,
+  StatisticsRelatedDataset,
   StatisticsTerritorySearchRow,
 } from '@/schemas/statistics'
 import { getDatasetDataStatus } from '../../lib/dataset-status'
 import type {
   InsDatasetNodeRaw,
   InsLatestValueNodeRaw,
+  InsObservationNodeRaw,
   InsTerritoryNodeRaw,
   LandingDecadeNodeRaw,
   LandingExampleNodeRaw,
+  StatisticsDatasetSeriesResponseRaw,
+  StatisticsDatasetTier0ResponseRaw,
 } from './statistics-raw-schemas'
 
 /**
@@ -75,9 +83,22 @@ export function mapLatestValue(node: InsLatestValueNodeRaw): StatisticsLatestVal
     hasData: node.hasData,
     value: node.observation?.value ?? null,
     valueStatus: node.observation?.value_status ?? null,
+    unitCode: node.observation?.unit?.code ?? null,
     unitSymbol: node.observation?.unit?.symbol ?? null,
     unitNameRo: node.observation?.unit?.name_ro ?? null,
     period: node.observation?.time_period.iso_period ?? node.latestPeriod ?? null,
+    resolvedClassifications: (node.observation?.classifications ?? []).flatMap(
+      (classification) => {
+        if (!classification.type_code || !classification.code) return []
+        return [
+          {
+            typeCode: classification.type_code,
+            code: classification.code,
+            nameRo: classification.name_ro ?? null,
+          },
+        ]
+      },
+    ),
   }
 }
 
@@ -119,4 +140,101 @@ export function mapExampleRows(
       },
     ]
   })
+}
+
+/** Tier-0 dataset node → the detail shape the page consumes. */
+export function mapDatasetDetails(
+  node: NonNullable<StatisticsDatasetTier0ResponseRaw['dataset']>,
+): InsDatasetDetails {
+  return {
+    id: node.id,
+    code: node.code,
+    name_ro: node.name_ro ?? null,
+    name_en: node.name_en ?? null,
+    definition_ro: node.definition_ro ?? null,
+    definition_en: node.definition_en ?? null,
+    periodicity: [...(node.periodicity ?? [])],
+    year_range: node.year_range ? [...node.year_range] : null,
+    dimension_count: node.dimension_count ?? null,
+    has_uat_data: node.has_uat_data ?? false,
+    has_county_data: node.has_county_data ?? false,
+    has_siruta: node.has_siruta ?? false,
+    sync_status: node.sync_status ?? null,
+    data_status: node.data_status ?? null,
+    last_sync_at: node.last_sync_at ?? null,
+    context_code: node.context_code ?? null,
+    context_name_ro: node.context_name_ro ?? null,
+    context_name_en: node.context_name_en ?? null,
+    context_path: node.context_path ?? null,
+    metadata: node.metadata ?? null,
+    dimensions: (node.dimensions ?? []).map((dimension) => ({
+      index: dimension.index,
+      type: dimension.type,
+      label_ro: dimension.label_ro ?? null,
+      label_en: dimension.label_en ?? null,
+      is_hierarchical: dimension.is_hierarchical ?? null,
+      option_count: dimension.option_count ?? null,
+      classification_type: dimension.classification_type
+        ? {
+            code: dimension.classification_type.code ?? null,
+            name_ro: dimension.classification_type.name_ro ?? null,
+            name_en: dimension.classification_type.name_en ?? null,
+            is_hierarchical: dimension.classification_type.is_hierarchical ?? null,
+          }
+        : null,
+    })),
+  }
+}
+
+/** Series observation node → the shared `InsObservation` shape. */
+export function mapObservationNode(node: InsObservationNodeRaw): InsObservation {
+  return {
+    dataset_code: '',
+    value: node.value ?? null,
+    value_status: node.value_status ?? null,
+    time_period: {
+      iso_period: node.time_period.iso_period,
+      year: node.time_period.year,
+      quarter: node.time_period.quarter ?? null,
+      month: node.time_period.month ?? null,
+      periodicity: node.time_period.periodicity,
+    },
+    territory: node.territory
+      ? {
+          code: node.territory.code ?? null,
+          siruta_code: node.territory.siruta_code ?? null,
+          level: node.territory.level ?? null,
+          name_ro: node.territory.name_ro ?? null,
+        }
+      : null,
+    unit: node.unit
+      ? {
+          code: node.unit.code ?? null,
+          symbol: node.unit.symbol ?? null,
+          name_ro: node.unit.name_ro ?? null,
+        }
+      : null,
+    classifications: (node.classifications ?? []).map((classification) => ({
+      type_code: classification.type_code ?? null,
+      type_name_ro: classification.type_name_ro ?? null,
+      code: classification.code ?? null,
+      name_ro: classification.name_ro ?? null,
+      sort_order: classification.sort_order ?? null,
+    })),
+    dimensions: null,
+  }
+}
+
+export function mapRelatedDatasets(
+  related: StatisticsDatasetSeriesResponseRaw['related'],
+  selfCode: string,
+): readonly StatisticsRelatedDataset[] {
+  if (!related) return []
+  return related.nodes
+    .filter((node) => node.code !== selfCode)
+    .map((node) => ({
+      code: node.code,
+      nameRo: node.name_ro ?? null,
+      dataStatus: node.data_status === 'CATALOG_ONLY' ? 'catalog-only' : 'available',
+    }))
 }

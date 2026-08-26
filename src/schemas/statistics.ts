@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import type {
   InsDataset,
+  InsDatasetDetails,
   InsObservation,
   InsTerritoryLevel,
   InsTimePeriod,
@@ -365,6 +366,12 @@ export type StatisticsLatestMatchStrategy =
  * „Locul tău" tile). `value` stays a decimal string; formatting is a render
  * concern.
  */
+export interface StatisticsResolvedClassification {
+  readonly typeCode: string
+  readonly code: string
+  readonly nameRo: string | null
+}
+
 export interface StatisticsLatestValue {
   readonly datasetCode: string
   readonly datasetNameRo: string | null
@@ -374,9 +381,12 @@ export interface StatisticsLatestValue {
   readonly hasData: boolean
   readonly value: string | null
   readonly valueStatus: string | null
+  readonly unitCode: string | null
   readonly unitSymbol: string | null
   readonly unitNameRo: string | null
   readonly period: string | null
+  /** The exact cell the server resolved — the tier-0 classification defaults. */
+  readonly resolvedClassifications: readonly StatisticsResolvedClassification[]
 }
 
 /** One NUTS3 endpoint-year observation for the decade story. */
@@ -416,6 +426,27 @@ export interface StatisticsLandingCatalog {
   readonly loadedCount: number
   readonly catalogCount: number
   readonly themes: readonly StatisticsThemeCount[]
+}
+
+/** Detail POST A payload: the dataset + the resolved tier-0 value. */
+export interface StatisticsDatasetTier0 {
+  readonly dataset: InsDatasetDetails | null
+  readonly latest: StatisticsLatestValue | null
+}
+
+export interface StatisticsRelatedDataset {
+  readonly code: string
+  readonly nameRo: string | null
+  readonly dataStatus: StatisticsDatasetDataStatus
+}
+
+/** Detail POST B payload: the resolved series + the related-datasets probe. */
+export interface StatisticsDatasetSeries {
+  readonly observations: readonly InsObservation[]
+  readonly totalCount: number
+  readonly related: readonly StatisticsRelatedDataset[]
+  /** Catalog size of the dataset's context, self included; null when unprobed. */
+  readonly relatedTotalCount: number | null
 }
 
 /** „Locul tău" snapshot: the picked territory's identity + latest values. */

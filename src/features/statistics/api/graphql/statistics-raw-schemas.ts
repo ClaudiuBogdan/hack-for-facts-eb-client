@@ -120,8 +120,23 @@ export const insLatestValueNodeRawSchema = z.object({
     .object({
       value: z.string().nullish(),
       value_status: z.string().nullish(),
-      unit: z.object({ symbol: z.string().nullish(), name_ro: z.string().nullish() }).nullish(),
+      unit: z
+        .object({
+          code: z.string().nullish(),
+          symbol: z.string().nullish(),
+          name_ro: z.string().nullish(),
+        })
+        .nullish(),
       time_period: insTimePeriodRefRawSchema,
+      classifications: z
+        .array(
+          z.object({
+            type_code: z.string().nullish(),
+            code: z.string().nullish(),
+            name_ro: z.string().nullish(),
+          }),
+        )
+        .nullish(),
     })
     .nullish(),
 })
@@ -187,4 +202,107 @@ export type LandingDecadeNodeRaw = z.infer<typeof landingDecadeNodeRawSchema>
 export type LandingExampleNodeRaw = z.infer<typeof landingExampleNodeRawSchema>
 export type StatisticsLandingCatalogResponseRaw = z.infer<
   typeof statisticsLandingCatalogResponseRawSchema
+>
+
+// ---------------------------------------------------------------------------
+// Dataset detail (tier 0 + series)
+// ---------------------------------------------------------------------------
+
+export const insDimensionTypeRawSchema = z.enum([
+  'TEMPORAL',
+  'TERRITORIAL',
+  'CLASSIFICATION',
+  'UNIT_OF_MEASURE',
+])
+
+const insDatasetDimensionRawSchema = z.object({
+  index: z.number(),
+  type: insDimensionTypeRawSchema,
+  label_ro: z.string().nullish(),
+  label_en: z.string().nullish(),
+  is_hierarchical: z.boolean().nullish(),
+  option_count: z.number().nullish(),
+  classification_type: z
+    .object({
+      code: z.string().nullish(),
+      name_ro: z.string().nullish(),
+      name_en: z.string().nullish(),
+      is_hierarchical: z.boolean().nullish(),
+    })
+    .nullish(),
+})
+
+export const statisticsDatasetTier0ResponseRawSchema = z.object({
+  dataset: insDatasetNodeRawSchema
+    .extend({
+      dimensions: z.array(insDatasetDimensionRawSchema).nullish(),
+    })
+    .nullish(),
+  latest: z.array(insLatestValueNodeRawSchema),
+})
+
+/** Full observation node for the series/table (the validated detail lane). */
+export const insObservationNodeRawSchema = z.object({
+  value: z.string().nullish(),
+  value_status: z.string().nullish(),
+  time_period: z.object({
+    iso_period: z.string(),
+    year: z.number(),
+    quarter: z.number().nullish(),
+    month: z.number().nullish(),
+    periodicity: insPeriodicityRawSchema,
+  }),
+  territory: z
+    .object({
+      code: z.string().nullish(),
+      siruta_code: z.string().nullish(),
+      level: insTerritoryLevelRawSchema.nullish(),
+      name_ro: z.string().nullish(),
+    })
+    .nullish(),
+  unit: z
+    .object({
+      code: z.string().nullish(),
+      symbol: z.string().nullish(),
+      name_ro: z.string().nullish(),
+    })
+    .nullish(),
+  classifications: z
+    .array(
+      z.object({
+        type_code: z.string().nullish(),
+        type_name_ro: z.string().nullish(),
+        code: z.string().nullish(),
+        name_ro: z.string().nullish(),
+        sort_order: z.number().nullish(),
+      }),
+    )
+    .nullish(),
+})
+
+export const statisticsDatasetSeriesResponseRawSchema = z.object({
+  series: z.object({
+    pageInfo: insPageInfoRawSchema,
+    nodes: z.array(insObservationNodeRawSchema),
+  }),
+  related: z
+    .object({
+      pageInfo: z.object({ totalCount: z.number() }),
+      nodes: z.array(
+        z.object({
+          code: z.string(),
+          name_ro: z.string().nullish(),
+          data_status: insDataStatusRawSchema.nullish(),
+        }),
+      ),
+    })
+    .nullish(),
+})
+
+export type InsObservationNodeRaw = z.infer<typeof insObservationNodeRawSchema>
+export type StatisticsDatasetTier0ResponseRaw = z.infer<
+  typeof statisticsDatasetTier0ResponseRawSchema
+>
+export type StatisticsDatasetSeriesResponseRaw = z.infer<
+  typeof statisticsDatasetSeriesResponseRawSchema
 >

@@ -13,9 +13,11 @@ const latest = (
   hasData: true,
   value: '100',
   valueStatus: null,
+  unitCode: 'PERS',
   unitSymbol: 'pers.',
   unitNameRo: null,
   period: '2025',
+  resolvedClassifications: [],
   ...overrides,
 })
 

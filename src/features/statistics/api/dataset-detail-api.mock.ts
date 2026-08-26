@@ -3,10 +3,18 @@ import type {
   InsDatasetDetails,
   InsDimensionValue,
   InsDimensionValueConnection,
+  InsEntitySelectorInput,
   InsObservation,
   InsObservationConnection,
   InsObservationFilterInput,
 } from '@/schemas/ins'
+import type {
+  StatisticsDatasetSeries,
+  StatisticsDatasetTier0,
+  StatisticsLatestValue,
+} from '@/schemas/statistics'
+import { getDatasetDataStatus } from '../lib/dataset-status'
+import { isTotalOption } from '../lib/dataset-selection'
 import { periodSortKey } from '../lib/period'
 import {
   MOCK_DETAIL_DATASETS,
@@ -150,4 +158,114 @@ function matchesFilter(
   }
 
   return true
+}
+
+/**
+ * Mock tier-0 resolution. Mirrors `insLatestDatasetValues` semantics: filter
+ * to the entity's rows, prefer the all-total cell, answer NO_DATA when the
+ * entity has no rows (the mock corpus is LAU-only, so the national default
+ * exercises the scope-prompt path — as a live dataset without national rows
+ * would).
+ */
+export async function fetchDatasetTier0Mock(params: {
+  readonly code: string
+  readonly entity: InsEntitySelectorInput
+}): Promise<StatisticsDatasetTier0> {
+  const dataset = MOCK_DETAIL_DATASETS.get(params.code) ?? null
+  const all = MOCK_DETAIL_OBSERVATIONS.get(params.code) ?? []
+
+  const entityRows = all.filter((observation) => {
+    if (params.entity.sirutaCode) {
+      return observation.territory?.siruta_code === params.entity.sirutaCode
+    }
+    if (params.entity.territoryCode) {
+      return (
+        observation.territory?.code === params.entity.territoryCode &&
+        observation.territory?.level === params.entity.territoryLevel
+      )
+    }
+    return false
+  })
+
+  const totalRows = entityRows.filter((observation) =>
+    (observation.classifications ?? []).every((classification) =>
+      isTotalOption(classification.name_ro ?? classification.code),
+    ),
+  )
+  const pool = totalRows.length > 0 ? totalRows : entityRows
+  const latestObservation = [...pool].sort(
+    (left, right) =>
+      periodSortKey(right.time_period) - periodSortKey(left.time_period),
+  )[0]
+
+  const latest: StatisticsLatestValue | null = dataset
+    ? {
+        datasetCode: dataset.code,
+        datasetNameRo: dataset.name_ro ?? null,
+        datasetNameEn: dataset.name_en ?? null,
+        periodicity: dataset.periodicity,
+        matchStrategy: latestObservation
+          ? totalRows.length > 0
+            ? 'TOTAL_FALLBACK'
+            : 'REPRESENTATIVE_FALLBACK'
+          : 'NO_DATA',
+        hasData: Boolean(latestObservation),
+        value: latestObservation?.value ?? null,
+        valueStatus: latestObservation?.value_status ?? null,
+        unitCode: latestObservation?.unit?.code ?? null,
+        unitSymbol: latestObservation?.unit?.symbol ?? null,
+        unitNameRo: latestObservation?.unit?.name_ro ?? null,
+        period: latestObservation?.time_period.iso_period ?? null,
+        resolvedClassifications: (latestObservation?.classifications ?? []).flatMap(
+          (classification) =>
+            classification.type_code && classification.code
+              ? [
+                  {
+                    typeCode: classification.type_code,
+                    code: classification.code,
+                    nameRo: classification.name_ro ?? null,
+                  },
+                ]
+              : [],
+        ),
+      }
+    : null
+
+  return { dataset, latest }
+}
+
+/** Mock series: the same in-memory filter, plus a same-context related list. */
+export async function fetchDatasetSeriesMock(params: {
+  readonly code: string
+  readonly filter: InsObservationFilterInput
+  readonly contextCode: string | null
+  readonly limit: number
+}): Promise<StatisticsDatasetSeries> {
+  const page = await fetchObservationsPageMock({
+    datasetCode: params.code,
+    filter: params.filter,
+    limit: params.limit,
+    offset: 0,
+  })
+
+  const related = params.contextCode
+    ? [...MOCK_DETAIL_DATASETS.values()]
+        .filter(
+          (dataset) =>
+            dataset.context_code === params.contextCode &&
+            dataset.code !== params.code,
+        )
+        .map((dataset) => ({
+          code: dataset.code,
+          nameRo: dataset.name_ro ?? null,
+          dataStatus: getDatasetDataStatus(dataset),
+        }))
+    : []
+
+  return {
+    observations: page.nodes,
+    totalCount: page.pageInfo.totalCount,
+    related,
+    relatedTotalCount: params.contextCode ? related.length + 1 : null,
+  }
 }

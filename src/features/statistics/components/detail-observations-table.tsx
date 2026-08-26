@@ -42,7 +42,9 @@ export function DetailObservationsTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>
+            {/* Sticky on horizontal overflow: the period anchors every row
+                on narrow screens. */}
+            <TableHead className="sticky left-0 z-10 bg-card">
               <Trans>Perioadă</Trans>
             </TableHead>
             <TableHead>
@@ -62,7 +64,7 @@ export function DetailObservationsTable({
         <TableBody>
           {observations.map((observation, index) => (
             <TableRow key={`${observation.time_period.iso_period}-${index}`}>
-              <TableCell className="font-medium">
+              <TableCell className="sticky left-0 z-10 bg-card font-medium">
                 {observation.time_period.iso_period}
               </TableCell>
               <TableCell>{observation.territory?.name_ro ?? '—'}</TableCell>

@@ -5,9 +5,7 @@ import { Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { createLogger } from '@/lib/logger'
-import type { InsObservationFilterInput } from '@/schemas/ins'
-import { fetchObservationsPage } from '../api/dataset-detail-api'
-import { CSV_MAX_ROWS } from '../lib/dataset-selection'
+import type { InsObservation } from '@/schemas/ins'
 import {
   buildObservationsCsv,
   buildObservationsCsvFilename,
@@ -19,40 +17,30 @@ const logger = createLogger('statistics-dataset-detail-export')
 
 type Props = {
   readonly datasetCode: string
-  readonly filter: InsObservationFilterInput
+  /** The RESOLVED series rows — exactly what the chart plots, never a dump. */
+  readonly observations: readonly InsObservation[]
   readonly classificationColumns: readonly CsvClassificationColumn[]
   readonly disabled: boolean
 }
 
 /**
- * Exports the current selection, not the current page.
- *
- * The export re-fetches with the same filter at the 10,000-row cap rather than
- * serializing the 50 rows on screen — but it stays behind the same scope guard
- * as the table, so it can never issue the unscoped query the guard exists to
- * prevent. When the server has more rows than the cap, the user is told the
- * file is a prefix instead of quietly receiving a truncated dataset.
+ * Exports the resolved series from memory: the same rows, same scope, same
+ * window as the chart above it. No refetch — the export can never disagree
+ * with what is on screen.
  */
 export function DetailExportButton({
   datasetCode,
-  filter,
+  observations,
   classificationColumns,
   disabled,
 }: Props) {
   const [isExporting, setIsExporting] = useState(false)
 
-  const handleExport = async () => {
+  const handleExport = () => {
     setIsExporting(true)
     try {
-      const page = await fetchObservationsPage({
-        datasetCode,
-        filter,
-        limit: CSV_MAX_ROWS,
-        offset: 0,
-      })
-
       const { csv, rowCount, truncated } = buildObservationsCsv({
-        observations: page.nodes,
+        observations,
         classificationColumns,
       })
 
@@ -63,10 +51,9 @@ export function DetailExportButton({
 
       downloadObservationsCsv(csv, buildObservationsCsvFilename(datasetCode))
 
-      const serverTruncated = truncated || page.pageInfo.hasNextPage
-      if (serverTruncated) {
+      if (truncated) {
         toast.warning(
-          t`Export limitat la primele ${CSV_MAX_ROWS} rânduri din ${page.pageInfo.totalCount}. Restrânge selecția pentru un export complet.`,
+          t`Export limitat la primele ${rowCount} rânduri. Restrânge selecția pentru un export complet.`,
         )
       } else {
         toast.success(t`Am exportat ${rowCount} rânduri.`)

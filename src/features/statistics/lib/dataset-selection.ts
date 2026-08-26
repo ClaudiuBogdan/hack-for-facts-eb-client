@@ -1,9 +1,14 @@
 import type {
   InsDimension,
+  InsEntitySelectorInput,
+  InsObservation,
   InsObservationFilterInput,
   InsPeriodicity,
 } from '@/schemas/ins'
-import type { StatisticsDatasetDetailSearch } from '@/schemas/statistics'
+import type {
+  StatisticsDatasetDetailSearch,
+  StatisticsLatestValue,
+} from '@/schemas/statistics'
 
 /**
  * The selection model behind `/statistici/seturi/$cod`.
@@ -17,6 +22,9 @@ import type { StatisticsDatasetDetailSearch } from '@/schemas/statistics'
  * `nom_item_id` surrogate keys — those are dimension-value row ids and are
  * meaningless outside the dataset that produced them.
  */
+
+/** A partial URL-state write: every control patches exactly one key. */
+export type DetailSearchPatch = Partial<StatisticsDatasetDetailSearch>
 
 /** Rows per observations table page. */
 export const DETAIL_PAGE_SIZE = 50
@@ -342,7 +350,10 @@ export function buildObservationFilter(params: {
     filter.sirutaCodes = [territory.value]
   } else if (territory?.kind === 'cod') {
     filter.territoryCodes = [territory.value]
-    filter.territoryLevels = ['NUTS3']
+    // 'RO' is the national row; alphabetic codes are counties. Without the
+    // level, territoryCodes: ['CJ'] would also match a LAU code collision.
+    filter.territoryLevels =
+      territory.value.toUpperCase() === 'RO' ? ['NATIONAL'] : ['NUTS3']
   }
 
   // `InsObservationFilterInput` takes a flat list of value codes, so two
@@ -374,4 +385,209 @@ export function buildObservationFilter(params: {
   }
 
   return filter
+}
+
+// ---------------------------------------------------------------------------
+// Tier-0 resolution (server-resolved defaults + effective scope)
+// ---------------------------------------------------------------------------
+
+/** Rows fetched for the resolved series (also the table's backing rows). */
+export const SERIES_MAX_ROWS = 1000
+
+export const NATIONAL_ENTITY: InsEntitySelectorInput = {
+  territoryCode: 'RO',
+  territoryLevel: 'NATIONAL',
+}
+
+/**
+ * The territory level a `cod:` pin denotes. Explicit fallthrough: an
+ * unrecognized shape (e.g. a NUTS2 code) resolves to null and the caller
+ * treats the pin as absent rather than guessing a level.
+ */
+export function inferCodTerritoryLevel(
+  value: string,
+): 'NATIONAL' | 'NUTS3' | 'LAU' | null {
+  const trimmed = value.trim()
+  if (trimmed.toUpperCase() === 'RO') return 'NATIONAL'
+  if (/^[A-Za-z]{1,2}$/.test(trimmed)) return 'NUTS3'
+  if (/^\d+$/.test(trimmed)) return 'LAU'
+  return null
+}
+
+/**
+ * Maps a territory pin to the `insLatestDatasetValues` entity selector.
+ * Invalid pins yield null → the caller falls back to the national entity.
+ */
+export function territoryPinToEntity(
+  pin: TerritoryPin | null,
+): InsEntitySelectorInput | null {
+  if (!pin) return null
+  if (pin.kind === 'siruta') return { sirutaCode: pin.value }
+
+  const level = inferCodTerritoryLevel(pin.value)
+  if (level === null) return null
+  if (level === 'LAU') return { sirutaCode: pin.value }
+  return { territoryCode: pin.value.toUpperCase(), territoryLevel: level }
+}
+
+/** The infered periodicity of an ISO period string, from its own grammar. */
+export function inferPeriodicityFromPeriod(
+  period: string | null,
+): InsPeriodicity | null {
+  if (!period) return null
+  const trimmed = period.trim()
+  if (/^\d{4}$/.test(trimmed)) return 'ANNUAL'
+  if (/^\d{4}-Q[1-4]$/.test(trimmed)) return 'QUARTERLY'
+  if (/^\d{4}-(0[1-9]|1[0-2])$/.test(trimmed)) return 'MONTHLY'
+  return null
+}
+
+export interface EffectiveScope {
+  /** The territory pin, or null = the national default. */
+  readonly territory: TerritoryPin | null
+  readonly territoryDefaulted: boolean
+  /** type code → value code: URL pins over server-resolved defaults. */
+  readonly classifications: ReadonlyMap<string, string>
+  /** The classification types whose value came from the resolved default. */
+  readonly defaultedTypes: ReadonlySet<string>
+  readonly unitCode: string | null
+  readonly unitDefaulted: boolean
+  readonly periodicity: InsPeriodicity | null
+}
+
+/**
+ * The effective tier-0 scope: URL pins where present, server-resolved
+ * defaults everywhere else. Defaults are display-marked (defaultedTypes,
+ * territoryDefaulted) and never written into the URL.
+ */
+export function buildEffectiveScope(params: {
+  readonly search: StatisticsDatasetDetailSearch
+  readonly latest: StatisticsLatestValue | null
+}): EffectiveScope {
+  const { search, latest } = params
+
+  const territory = parseTerritoryPin(search.teritoriu)
+  const pinned = classificationPinMap(search.clasificari)
+
+  const classifications = new Map<string, string>()
+  const defaultedTypes = new Set<string>()
+
+  for (const resolved of latest?.resolvedClassifications ?? []) {
+    classifications.set(resolved.typeCode, resolved.code)
+    defaultedTypes.add(resolved.typeCode)
+  }
+  for (const [typeCode, value] of pinned) {
+    classifications.set(typeCode, value)
+    defaultedTypes.delete(typeCode)
+  }
+
+  const unitCode = search.unitate ?? latest?.unitCode ?? null
+
+  return {
+    territory,
+    territoryDefaulted: territory === null,
+    classifications,
+    defaultedTypes,
+    unitCode,
+    unitDefaulted: !search.unitate && unitCode !== null,
+    periodicity:
+      resolvePeriodicity({ search, periodicity: latest?.periodicity as
+        | readonly InsPeriodicity[]
+        | undefined }) ?? inferPeriodicityFromPeriod(latest?.period ?? null),
+  }
+}
+
+/**
+ * The series/table filter for an effective scope. Always territory-scoped
+ * (national by default) so it can never issue the unscoped 23.6M-row query.
+ *
+ * Both classification lists are sent when every type code is a real server
+ * code (type-aware AND). The server's semantics share ONE value set across
+ * types, so a multi-type scope can still match sibling cells —
+ * {@link filterExactCell} makes the single-cell guarantee client-side.
+ */
+export function buildSeriesFilter(scope: EffectiveScope): InsObservationFilterInput {
+  const filter: InsObservationFilterInput = {}
+
+  if (scope.territory?.kind === 'siruta') {
+    filter.sirutaCodes = [scope.territory.value]
+  } else if (scope.territory?.kind === 'cod') {
+    const level = inferCodTerritoryLevel(scope.territory.value)
+    if (level === 'LAU') {
+      filter.sirutaCodes = [scope.territory.value]
+    } else {
+      filter.territoryCodes = [scope.territory.value.toUpperCase()]
+      filter.territoryLevels = [level ?? 'NUTS3']
+    }
+  } else {
+    filter.territoryLevels = ['NATIONAL']
+  }
+
+  if (scope.classifications.size > 0) {
+    filter.classificationValueCodes = [
+      ...new Set(scope.classifications.values()),
+    ]
+    const typeCodes = [...scope.classifications.keys()]
+    if (typeCodes.every((code) => !code.startsWith('DIM'))) {
+      filter.classificationTypeCodes = typeCodes
+    }
+  }
+
+  if (scope.unitCode) {
+    filter.unitCodes = [scope.unitCode]
+  }
+
+  return filter
+}
+
+/**
+ * Keeps only the rows of the EXACT resolved cell: for every classification
+ * type in scope, the row carries that type with the scoped value. This is the
+ * guarantee the server filter cannot make (shared value set across types).
+ */
+export function filterExactCell(
+  observations: readonly InsObservation[],
+  classifications: ReadonlyMap<string, string>,
+): readonly InsObservation[] {
+  if (classifications.size === 0) return observations
+
+  return observations.filter((observation) => {
+    for (const [typeCode, valueCode] of classifications) {
+      const match = (observation.classifications ?? []).find(
+        (classification) => classification.type_code === typeCode,
+      )
+      if (!match || match.code !== valueCode) return false
+    }
+    return true
+  })
+}
+
+/**
+ * The canonical scope key: ONE serialization consumed by loaderDeps, query
+ * keys, and initialData matching, so they can never drift apart. `din`/`pana`
+ * window client-side and `pagina` pages client-side — neither enters the key.
+ */
+export function detailScopeKey(
+  search: StatisticsDatasetDetailSearch,
+): string {
+  return JSON.stringify({
+    teritoriu: search.teritoriu ?? null,
+    clasificari: [...(search.clasificari ?? [])].sort(),
+    unitate: search.unitate ?? null,
+    frecventa: search.frecventa ?? null,
+  })
+}
+
+/** The observed year span of fetched rows — never the catalog `year_range`. */
+export function observedYearSpan(
+  observations: readonly InsObservation[],
+): { readonly from: number; readonly to: number } | null {
+  let from = Number.POSITIVE_INFINITY
+  let to = Number.NEGATIVE_INFINITY
+  for (const observation of observations) {
+    from = Math.min(from, observation.time_period.year)
+    to = Math.max(to, observation.time_period.year)
+  }
+  if (!Number.isFinite(from) || !Number.isFinite(to)) return null
+  return { from, to }
 }

@@ -2,11 +2,18 @@ import { useQuery } from '@tanstack/react-query'
 import type {
   InsDatasetDetails,
   InsDimensionValueConnection,
+  InsEntitySelectorInput,
   InsObservationConnection,
   InsObservationFilterInput,
 } from '@/schemas/ins'
+import type {
+  StatisticsDatasetSeries,
+  StatisticsDatasetTier0,
+} from '@/schemas/statistics'
 import {
   fetchDatasetDetail,
+  fetchDatasetSeries,
+  fetchDatasetTier0,
   fetchDimensionValuesPage,
   fetchObservationsPage,
 } from '../api/dataset-detail-api'
@@ -94,5 +101,51 @@ export function useDatasetObservations(params: {
       }),
     enabled: params.enabled && params.datasetCode.trim().length > 0,
     staleTime: OBSERVATIONS_STALE_TIME,
+  })
+}
+
+/**
+ * Tier-0 (POST A): dataset + resolved latest. Keyed by code + entity so a
+ * territory deep link resolves its own cell. The route loader supplies
+ * `initialData` for the CURRENT scope (loaderDeps re-run it per navigation),
+ * so in the normal flow this query never fetches client-side.
+ */
+export function useDatasetTier0(params: {
+  readonly code: string
+  readonly entity: InsEntitySelectorInput
+  readonly entityKey: string
+  readonly initialData?: StatisticsDatasetTier0
+}) {
+  return useQuery<StatisticsDatasetTier0>({
+    queryKey: ['statistics', 'dataset', params.code, 'tier0', params.entityKey] as const,
+    queryFn: ({ signal }) =>
+      fetchDatasetTier0({ code: params.code, entity: params.entity, signal }),
+    enabled: params.code.trim().length > 0,
+    staleTime: DATASET_STALE_TIME,
+    ...(params.initialData ? { initialData: params.initialData } : {}),
+  })
+}
+
+/** The resolved series + related datasets (POST B), keyed by the scope key. */
+export function useDatasetSeries(params: {
+  readonly code: string
+  readonly scopeKey: string
+  readonly filter: InsObservationFilterInput
+  readonly contextCode: string | null
+  readonly enabled: boolean
+  readonly initialData?: StatisticsDatasetSeries
+}) {
+  return useQuery<StatisticsDatasetSeries>({
+    queryKey: ['statistics', 'dataset', params.code, 'series', params.scopeKey] as const,
+    queryFn: ({ signal }) =>
+      fetchDatasetSeries({
+        code: params.code,
+        filter: params.filter,
+        contextCode: params.contextCode,
+        signal,
+      }),
+    enabled: params.enabled && params.code.trim().length > 0,
+    staleTime: DATASET_STALE_TIME,
+    ...(params.initialData ? { initialData: params.initialData } : {}),
   })
 }
