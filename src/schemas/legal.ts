@@ -76,6 +76,23 @@ export const legalActCountsSchema = z.object({
 export type LegalActCounts = z.infer<typeof legalActCountsSchema>
 
 /**
+ * `legalActCounts(groupBy: DOMAIN)` folded to a slug → count map — the
+ * one-round-trip aggregate behind the domain grid's numbers (main-page.md
+ * §6.2, live since 2026-08-26). DOMAIN buckets OVERLAP: `domains` is an
+ * array on `document_summaries` and an act carries more than two on average,
+ * so these counts sum to well over the corpus total — never render them as
+ * shares of a whole (STATUS and ACT_TYPE partition the corpus; DOMAIN does
+ * not). A missing slug means the server did not assert a count for it —
+ * render nothing, never 0; the live adapter fills true zeros only when the
+ * response declares itself complete.
+ */
+export const legalDomainActCountsSchema = z.partialRecord(
+  legalDomainSlugSchema,
+  z.number().int().nonnegative(),
+)
+export type LegalDomainActCounts = z.infer<typeof legalDomainActCountsSchema>
+
+/**
  * One Monitorul Oficial issue.
  *
  * There is deliberately **no** `hasFullText` and **no** per-issue act count:

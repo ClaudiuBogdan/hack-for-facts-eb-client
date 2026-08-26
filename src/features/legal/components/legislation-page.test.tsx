@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
-import { fireEvent, render, screen } from '@/test/test-utils'
+import { fireEvent, render, screen, within } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { legislationOverviewFixture } from '../mocks/fixtures/legislation-overview'
+import { legislationDomainCountsFixture } from '../mocks/fixtures/legislation-domain-counts'
 import { LegislationPage } from './legislation-page'
 
 const navigateMock = vi.fn()
@@ -24,9 +25,13 @@ vi.mock('@tanstack/react-router', () => ({
 
 vi.mock('../hooks/use-legislation', () => ({
   useLegislationOverview: vi.fn(),
+  useLegislationDomainCounts: vi.fn(),
 }))
 
-import { useLegislationOverview } from '../hooks/use-legislation'
+import {
+  useLegislationDomainCounts,
+  useLegislationOverview,
+} from '../hooks/use-legislation'
 
 function mockOverviewReady() {
   vi.mocked(useLegislationOverview).mockReturnValue({
@@ -34,6 +39,10 @@ function mockOverviewReady() {
     isLoading: false,
     isError: false,
   } as unknown as ReturnType<typeof useLegislationOverview>)
+  vi.mocked(useLegislationDomainCounts).mockReturnValue({
+    data: legislationDomainCountsFixture,
+    isError: false,
+  } as unknown as ReturnType<typeof useLegislationDomainCounts>)
 }
 
 describe('LegislationPage', () => {
@@ -119,15 +128,16 @@ describe('LegislationPage', () => {
     ).toBeGreaterThan(0)
   })
 
-  it('renders all 16 domains without invented per-domain counts', () => {
+  it('renders all 16 domains, counted by the one aggregate query', () => {
     render(<LegislationPage />)
 
     const domains = screen.getByRole('region', { name: 'Domenii' })
     expect(domains).toHaveTextContent('Fiscal și bugetar')
     expect(domains).toHaveTextContent('Telecomunicații și digital')
-    // Counts need one totalCount query per domain, so the grid ships without
-    // them. Guard against a future edit inventing numbers to fill the cells.
-    expect(screen.queryByText(/^[\d.,\s]+acte$/)).not.toBeInTheDocument()
+    // One `legalActCounts(groupBy: DOMAIN)` round-trip serves every cell —
+    // numbers are served, never invented client-side, and the grid's own
+    // tests pin that a failed aggregate degrades to label-only cells.
+    expect(within(domains).getByText('109,969')).toBeInTheDocument()
   })
 
   it('shows the tab set with Prezentare and Analiză navigable', () => {
