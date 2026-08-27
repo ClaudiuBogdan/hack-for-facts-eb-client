@@ -48,9 +48,10 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import type { LegalActDetail, LegalOutlineEntry } from '@/schemas/legal'
+import { useQueryClient } from '@tanstack/react-query'
 import { fetchLegalRender } from '../../api/legal-render-api'
 import { useLegalOutline } from '../../hooks/use-legal-outline'
-import { useLegalRender } from '../../hooks/use-legal-render'
+import { legalRenderQueryKey, useLegalRender } from '../../hooks/use-legal-render'
 import { LegalRenderFailureError } from '../../lib/legal-render-error'
 import type { LegalRenderFailure } from '../../lib/legal-render-error'
 import { uniqueGazettePublication } from '../../lib/act-facts'
@@ -398,11 +399,14 @@ export function ActReadingLayout({
                   />
                 )}
               {render.data !== undefined && render.data.kind === 'manifest' && (
-                // Keyed by document: chunk slots are per-expression state,
-                // and a `?doc=` switch over a cached manifest must NEVER
-                // carry another document's loaded groups into this one.
+                // Keyed by document AND generation: chunk slots are
+                // per-expression state, a `?doc=` switch over a cached
+                // manifest must NEVER carry another document's loaded
+                // groups into this one, and a refetched manifest from a
+                // NEWER generation must remount with fresh slots rather
+                // than mix its marks over already-loaded older blocks.
                 <ChunkedReader
-                  key={documentId ?? ''}
+                  key={`${documentId ?? ''}:${render.data.tldf.generation.run_id}`}
                   documentId={documentId ?? ''}
                   manifest={render.data.tldf}
                   act={act}
@@ -570,6 +574,7 @@ function ChunkedReader({
   readonly chainThroughGroup?: number | null
   readonly onGroupLoaded?: () => void
 }) {
+  const queryClient = useQueryClient()
   const groupCount = manifest.chunks.length
   const [slots, setSlots] = useState<readonly ChunkSlot[]>(() =>
     Array.from({ length: groupCount }, () => ({ state: 'pending' as const })),
@@ -601,12 +606,43 @@ function ChunkedReader({
       // Physical chunk rows are 1-based; group i is chunk_index i+1.
       fetchLegalRender(documentId, { chunkIndex: groupIndex + 1 })
         .then((data) => {
+          // Generation pin (mirrors the server's reassembleTldf head
+          // comparison, which the progressive path bypasses): a chunk
+          // fetched across a recompile carries another generation's
+          // blocks, and the manifest's document-level marks would land
+          // on the wrong text. Refuse the slot honestly instead. The
+          // comparison and the invalidation live OUTSIDE the state
+          // updater — updaters must stay pure (StrictMode double-invokes
+          // them).
+          const mismatch =
+            data.kind === 'chunk' &&
+            (data.tldf.generation.run_id !== manifest.generation.run_id ||
+              data.tldf.text_sha256 !== manifest.text_sha256 ||
+              data.tldf.format_version !== manifest.format_version ||
+              data.tldf.document_id !== manifest.document_id)
+          if (mismatch) {
+            // The cached manifest is stale (30-minute staleTime): a slot
+            // retry against it can never succeed, so invalidate the
+            // manifest query — the refetched generation remounts the
+            // reader (generation-carrying key above) with fresh slots.
+            void queryClient.invalidateQueries({
+              queryKey: legalRenderQueryKey(documentId),
+            })
+          }
           setSlots((prev) => {
             const next = [...prev]
-            next[groupIndex] =
-              data.kind === 'chunk'
-                ? { state: 'loaded', payload: data.tldf }
-                : { state: 'failed', message: `unexpected payload kind ${data.kind}` }
+            if (data.kind !== 'chunk') {
+              next[groupIndex] = { state: 'failed', message: `unexpected payload kind ${data.kind}` }
+              return next
+            }
+            if (mismatch) {
+              next[groupIndex] = {
+                state: 'failed',
+                message: t`Documentul a fost recompilat între încărcări — se reîncarcă varianta curentă.`,
+              }
+              return next
+            }
+            next[groupIndex] = { state: 'loaded', payload: data.tldf }
             return next
           })
         })
@@ -620,7 +656,7 @@ function ChunkedReader({
           })
         })
     },
-    [documentId],
+    [documentId, manifest, queryClient],
   )
 
   // First group loads immediately; the rest wait for the sentinel.
@@ -689,6 +725,12 @@ function ChunkedReader({
       {failedIndex !== -1 && (
         <div className="mt-6">
           <StateCard title={t`O parte a textului nu s-a încărcat`}>
+            {(() => {
+              const failedSlot = slots[failedIndex]
+              return failedSlot?.state === 'failed' && failedSlot.message !== '' ? (
+                <p className="text-sm text-muted-foreground">{failedSlot.message}</p>
+              ) : null
+            })()}
             <Button variant="outline" size="sm" onClick={() => loadChunk(failedIndex)}>
               <Trans>Reîncearcă partea {failedIndex + 1}</Trans>
             </Button>

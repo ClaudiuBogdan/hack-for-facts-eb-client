@@ -1879,7 +1879,7 @@ msgstr "Advanced map analytics active view"
 msgid "Afișăm metadata publică despre dosare, nu documente sau căutare în textul soluțiilor."
 msgstr "Afișăm metadata publică despre dosare, nu documente sau căutare în textul soluțiilor."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:711
+#: src/features/legal/components/reader/legal-reader-page.tsx:753
 msgid "Afișate {loadedCount} din {groupCount} părți — derulează sau apasă pentru restul."
 msgstr "Afișate {loadedCount} din {groupCount} părți — derulează sau apasă pentru restul."
 
@@ -1896,7 +1896,7 @@ msgstr "Afișate <0>{shown}</0> din <1>{total}</1> intervenții"
 #~ msgid "Afișate <0>{shown}</0> din <1>{total}</1> ședințe"
 #~ msgstr "Afișate <0>{shown}</0> din <1>{total}</1> ședințe"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:343
+#: src/features/legal/components/reader/legal-reader-page.tsx:344
 msgid "Afișezi o versiune anume a textului."
 msgstr "Afișezi o versiune anume a textului."
 
@@ -2175,7 +2175,7 @@ msgstr "Am exportat {rowCount} rânduri."
 msgid "Am găsit {0} semnale de abrogare care se contrazic între ele. Statutul afișat este cea mai bună interpretare a noastră, nu o certitudine."
 msgstr "Am găsit {0} semnale de abrogare care se contrazic între ele. Statutul afișat este cea mai bună interpretare a noastră, nu o certitudine."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:521
+#: src/features/legal/components/reader/legal-reader-page.tsx:525
 msgid "Am refuzat să afișăm o citire parțială. O regenerare este de regulă pe drum."
 msgstr "Am refuzat să afișăm o citire parțială. O regenerare este de regulă pe drum."
 
@@ -6398,7 +6398,7 @@ msgstr "Cunoaștem structura acestei matrice din catalogul INS, dar nu i-am înc
 msgid "cunoscut și ca {0}"
 msgstr "cunoscut și ca {0}"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:302
+#: src/features/legal/components/reader/legal-reader-page.tsx:303
 #: src/features/legal/components/reader/legal-reader-toc.tsx:154
 msgid "Cuprins"
 msgstr "Cuprins"
@@ -6415,7 +6415,7 @@ msgstr "Cuprinsul actului"
 msgid "Cuprinsul nu s-a încărcat — închide și redeschide ediția."
 msgstr "Cuprinsul nu s-a încărcat — închide și redeschide ediția."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:336
+#: src/features/legal/components/reader/legal-reader-page.tsx:337
 msgid "Cuprinsul nu s-a putut încărca — textul rămâne integral mai jos."
 msgstr "Cuprinsul nu s-a putut încărca — textul rămâne integral mai jos."
 
@@ -7749,6 +7749,10 @@ msgstr "Document your participation in the local budget debate."
 msgid "Documente de guvernanță"
 msgstr "Documente de guvernanță"
 
+#: src/features/legal/components/reader/legal-reader-page.tsx:641
+msgid "Documentul a fost recompilat între încărcări — se reîncarcă varianta curentă."
+msgstr "Documentul a fost recompilat între încărcări — se reîncarcă varianta curentă."
+
 #: src/features/legal/components/act-relevance-band.tsx:92
 #: src/features/legal/components/legislation-domain-grid.tsx:52
 msgid "Domenii"
@@ -8469,7 +8473,7 @@ msgstr "Equal width"
 msgid "equals"
 msgstr "equals"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:522
+#: src/features/legal/components/reader/legal-reader-page.tsx:526
 msgid "Eroare de rețea sau de server — existența textului rămâne o întrebare deschisă."
 msgstr "Eroare de rețea sau de server — existența textului rămâne o întrebare deschisă."
 
@@ -9031,7 +9035,7 @@ msgstr "External link"
 msgid "Extinde {0}"
 msgstr "Extinde {0}"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:520
+#: src/features/legal/components/reader/legal-reader-page.tsx:524
 msgid "Extracția nu a produs un text servibil pentru această expresie."
 msgstr "Extracția nu a produs un text servibil pentru această expresie."
 
@@ -9340,7 +9344,7 @@ msgstr "fără distribuție"
 msgid "fără documente de dosar"
 msgstr "fără documente de dosar"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:354
+#: src/features/legal/components/reader/legal-reader-page.tsx:355
 msgid "Fără expresie canonică"
 msgstr "Fără expresie canonică"
 
@@ -9876,7 +9880,7 @@ msgstr "First value only"
 msgid "First value only: keep one deterministic row (fallback/debug)."
 msgstr "First value only: keep one deterministic row (fallback/debug)."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:428
+#: src/features/legal/components/reader/legal-reader-page.tsx:432
 msgid "Fișa actului"
 msgstr "Fișa actului"
 
@@ -11204,7 +11208,7 @@ msgstr "Încarcă mai multe intervenții"
 #~ msgid "Încarcă mai multe ședințe"
 #~ msgstr "Încarcă mai multe ședințe"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:724
+#: src/features/legal/components/reader/legal-reader-page.tsx:766
 msgid "Încarcă partea următoare"
 msgstr "Încarcă partea următoare"
 
@@ -11230,7 +11234,7 @@ msgstr "Încărcat"
 #: src/features/legal/components/legislation-acts-directory.tsx:370
 #: src/features/legal/components/legislation-changes-feed.tsx:460
 #: src/features/legal/components/legislation-gazette-directory.tsx:266
-#: src/features/legal/components/reader/legal-reader-page.tsx:531
+#: src/features/legal/components/reader/legal-reader-page.tsx:535
 msgid "Încearcă din nou"
 msgstr "Încearcă din nou"
 
@@ -13621,7 +13625,7 @@ msgstr "Metadate instantaneu"
 msgid "Metadatele de acoperire nu sunt disponibile; zilele și totalurile sunt afișate ca neconfirmate."
 msgstr "Metadatele de acoperire nu sunt disponibile; zilele și totalurile sunt afișate ca neconfirmate."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:519
+#: src/features/legal/components/reader/legal-reader-page.tsx:523
 msgid "Metadatele rămân publice; textul se consultă la sursa oficială."
 msgstr "Metadatele rămân publice; textul se consultă la sursa oficială."
 
@@ -15419,7 +15423,7 @@ msgstr "Nu am găsit cauze în intervalul acoperit pentru această instanță"
 msgid "Nu am găsit cauze publicabile pentru aceste filtre"
 msgstr "Nu am găsit cauze publicabile pentru aceste filtre"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:364
+#: src/features/legal/components/reader/legal-reader-page.tsx:365
 msgid "Nu am găsit fragmentul cerut în acest text."
 msgstr "Nu am găsit fragmentul cerut în acest text."
 
@@ -15664,7 +15668,7 @@ msgstr "Nu am putut încărca teritoriul"
 msgid "Nu am putut încărca teritoriul."
 msgstr "Nu am putut încărca teritoriul."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:514
+#: src/features/legal/components/reader/legal-reader-page.tsx:518
 msgid "Nu am putut încărca textul"
 msgstr "Nu am putut încărca textul"
 
@@ -15720,7 +15724,7 @@ msgstr "Nu avem un rezumat generat pentru acest act — stratul explicativ lipse
 #~ msgid "Nu avem un rezumat generat pentru acest act, deci pagina arată doar datele de identificare."
 #~ msgstr "Nu avem un rezumat generat pentru acest act, deci pagina arată doar datele de identificare."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:512
+#: src/features/legal/components/reader/legal-reader-page.tsx:516
 msgid "Nu avem un text servibil pentru acest act"
 msgstr "Nu avem un text servibil pentru acest act"
 
@@ -15844,7 +15848,7 @@ msgstr "Nu există stenograme publicate."
 msgid "Nu exista un profil mock pentru acest CUI."
 msgstr "Nu exista un profil mock pentru acest CUI."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:510
+#: src/features/legal/components/reader/legal-reader-page.tsx:514
 msgid "Nu există un text servit pentru acest document"
 msgstr "Nu există un text servit pentru acest document"
 
@@ -16027,7 +16031,7 @@ msgstr "O linie per teritoriu, toate perioadele disponibile. Întreruperile marc
 msgid "o modificare înregistrată"
 msgstr "o modificare înregistrată"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:691
+#: src/features/legal/components/reader/legal-reader-page.tsx:727
 msgid "O parte a textului nu s-a încărcat"
 msgstr "O parte a textului nu s-a încărcat"
 
@@ -18967,7 +18971,7 @@ msgstr "Reîncearcă"
 #~ msgstr "Reîncearcă mai târziu."
 
 #. placeholder {0}: failedIndex + 1
-#: src/features/legal/components/reader/legal-reader-page.tsx:693
+#: src/features/legal/components/reader/legal-reader-page.tsx:735
 msgid "Reîncearcă partea {0}"
 msgstr "Reîncearcă partea {0}"
 
@@ -19355,7 +19359,7 @@ msgstr "Review signal"
 msgid "Review signals are not wired to search yet. They will filter results when the API republishes same-day and repeated-pair candidates — until then this control stays disabled so it cannot pretend to narrow the list."
 msgstr "Review signals are not wired to search yet. They will filter results when the API republishes same-day and repeated-pair candidates — until then this control stays disabled so it cannot pretend to narrow the list."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:345
+#: src/features/legal/components/reader/legal-reader-page.tsx:346
 msgid "Revino la forma afișată în mod normal"
 msgstr "Revino la forma afișată în mod normal"
 
@@ -19653,7 +19657,7 @@ msgstr "Sancțiuni AMEPIP"
 msgid "Sankey Chart (Aggregated)"
 msgstr "Sankey Chart (Aggregated)"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:273
+#: src/features/legal/components/reader/legal-reader-page.tsx:274
 msgid "Sari la textul actului"
 msgstr "Sari la textul actului"
 
@@ -19875,7 +19879,7 @@ msgid "Se încarcă modificările legislative"
 msgstr "Se încarcă modificările legislative"
 
 #. placeholder {0}: Math.min(loadedCount + 1, groupCount)
-#: src/features/legal/components/reader/legal-reader-page.tsx:707
+#: src/features/legal/components/reader/legal-reader-page.tsx:749
 msgid "Se încarcă partea {0} din {groupCount}…"
 msgstr "Se încarcă partea {0} din {groupCount}…"
 
@@ -19895,7 +19899,7 @@ msgstr "Se încarcă rezultatele"
 msgid "Se încarcă stenograma ședinței"
 msgstr "Se încarcă stenograma ședinței"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:371
+#: src/features/legal/components/reader/legal-reader-page.tsx:372
 msgid "Se încarcă textul…"
 msgstr "Se încarcă textul…"
 
@@ -20756,7 +20760,7 @@ msgstr "Sewer network length (GOS110A)"
 msgid "Sewer network length per 1,000 inhabitants approximates sanitation infrastructure intensity."
 msgstr "Sewer network length per 1,000 inhabitants approximates sanitation infrastructure intensity."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:732
+#: src/features/legal/components/reader/legal-reader-page.tsx:774
 msgid "Sfârșitul textului — {groupCount} părți afișate integral."
 msgstr "Sfârșitul textului — {groupCount} părți afișate integral."
 
@@ -22453,7 +22457,7 @@ msgstr "text indisponibil pentru această expresie"
 msgid "Text search"
 msgstr "Text search"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:511
+#: src/features/legal/components/reader/legal-reader-page.tsx:515
 msgid "Textul acestui document este restricționat"
 msgstr "Textul acestui document este restricționat"
 
@@ -22461,7 +22465,7 @@ msgstr "Textul acestui document este restricționat"
 #~ msgid "textul actului"
 #~ msgstr "textul actului"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:328
+#: src/features/legal/components/reader/legal-reader-page.tsx:329
 msgid "Textul actului"
 msgstr "Textul actului"
 
@@ -22501,7 +22505,7 @@ msgstr "Textul ședinței este disponibil, dar sursa nu a tipărit numele vorbit
 msgid "Textul servit este versiunea publicată, nu forma consolidată la zi."
 msgstr "Textul servit este versiunea publicată, nu forma consolidată la zi."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:513
+#: src/features/legal/components/reader/legal-reader-page.tsx:517
 msgid "Textul stocat este momentan inconsistent"
 msgstr "Textul stocat este momentan inconsistent"
 
@@ -23039,11 +23043,11 @@ msgstr "Time"
 msgid "timp"
 msgstr "timp"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:518
+#: src/features/legal/components/reader/legal-reader-page.tsx:522
 msgid "Ținem actul, dar nicio generare de text pentru această expresie."
 msgstr "Ținem actul, dar nicio generare de text pentru această expresie."
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:355
+#: src/features/legal/components/reader/legal-reader-page.tsx:356
 msgid "Ținem metadatele acestui act, dar nu o expresie de text căreia să îi servim conținutul."
 msgstr "Ținem metadatele acestui act, dar nu o expresie de text căreia să îi servim conținutul."
 
@@ -24941,7 +24945,7 @@ msgstr "Vezi sursa: {0}, {dateText}"
 #~ msgid "Vezi surse pe e-licitatie.ro"
 #~ msgstr "Vezi surse pe e-licitatie.ro"
 
-#: src/features/legal/components/reader/legal-reader-page.tsx:470
+#: src/features/legal/components/reader/legal-reader-page.tsx:474
 msgid "Vezi textul pe legislatie.just.ro"
 msgstr "Vezi textul pe legislatie.just.ro"
 
