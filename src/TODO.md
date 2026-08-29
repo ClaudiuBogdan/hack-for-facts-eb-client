@@ -1,5 +1,6 @@
 # TODO
-
+- Add population popup with info
+- Add last update
 
 ## Funky Campaign
 
