@@ -46,9 +46,11 @@ export function formatCurrency(amount: number, notation?: "standard" | "compact"
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(amount);
-  // ro-RO compact uses "K" for thousands — replace with "mii"
+  // ro-RO compact uses "K" for thousands — replace with "mii". The currency
+  // string ends in " RON", not "K", so this must not be anchored to the end
+  // (formatNumber's decimal output does end in "K", so its copy is correct).
   if (notation === 'compact' && locale === 'ro') {
-    return formatted.replace(/\sK$/, ' mii');
+    return formatted.replace(/\sK(?=\s|$)/, ' mii');
   }
   return formatted;
 }

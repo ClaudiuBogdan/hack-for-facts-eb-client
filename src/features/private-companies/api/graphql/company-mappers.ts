@@ -13,9 +13,12 @@
  */
 import type {
   PrivateCompanyCaenActivity,
+  PrivateCompanyFinancialSummary,
+  PrivateCompanyFinancialTrajectory,
   PrivateCompanyFinancialYear,
   PrivateCompanyMatchConfidence,
   PrivateCompanyProfile,
+  PrivateCompanyPublicMoney,
   PrivateCompanySource,
 } from '@/schemas/private-company'
 import type {
@@ -32,8 +35,14 @@ import type {
 
 function toNumberOrNull(value: string | number | null | undefined): number | null {
   if (value == null) return null
-  const n = typeof value === 'number' ? value : Number(value)
-  return Number.isFinite(n) ? n : null
+  if (typeof value === 'string') {
+    // `Number('')` and `Number('  ')` are both 0, so an empty Money string
+    // would otherwise be mapped as "this company received exactly zero".
+    if (value.trim() === '') return null
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : null
+  }
+  return Number.isFinite(value) ? value : null
 }
 
 function mapMatchConfidence(raw: string): PrivateCompanyMatchConfidence {
@@ -52,6 +61,36 @@ function mapCaenSource(raw: string): PrivateCompanyCaenActivity['source'] {
   return raw.toLowerCase() === 'anaf' ? 'anaf' : 'onrc'
 }
 
+/**
+ * `summary` arrives as a JSON object of Money strings. Only the 16 metrics the
+ * four headline fields don't already carry are modelled; a missing key and an
+ * explicit null both mean "not reported", never zero.
+ */
+function mapFinancialSummary(
+  raw: RawCompanyFinancialYear['summary'],
+): PrivateCompanyFinancialSummary | null {
+  if (!raw) return null
+  const read = (key: string) => toNumberOrNull(raw[key] ?? null)
+  return {
+    totalRevenue: read('totalRevenue'),
+    totalExpenses: read('totalExpenses'),
+    grossProfit: read('grossProfit'),
+    grossLoss: read('grossLoss'),
+    receivables: read('receivables'),
+    currentAssets: read('currentAssets'),
+    fixedAssets: read('fixedAssets'),
+    cashAndBank: read('cashAndBank'),
+    prepaidExpenses: read('prepaidExpenses'),
+    deferredIncome: read('deferredIncome'),
+    subscribedCapital: read('subscribedCapital'),
+    inventories: read('inventories'),
+    debts: read('debts'),
+    provisions: read('provisions'),
+    totalEquity: read('totalEquity'),
+    patrimonyRegie: read('patrimonyRegie'),
+  }
+}
+
 function mapFinancialYear(year: RawCompanyFinancialYear): PrivateCompanyFinancialYear {
   // netProfit / netLoss are a mutually-exclusive pair: the server sends "0.00"
   // for the inactive side (a profitable year carries netLoss "0.00"). The UI
@@ -67,7 +106,48 @@ function mapFinancialYear(year: RawCompanyFinancialYear): PrivateCompanyFinancia
     netLoss: netLoss || null,
     employees: toNumberOrNull(year.employees),
     currency: 'RON',
+    summary: mapFinancialSummary(year.summary),
   }
+}
+
+/**
+ * The server owns the delta arithmetic (see the companies module's `usecases`):
+ * a missing side counts as zero, but both sides missing stays null rather than
+ * collapsing to a misleading "broke even".
+ */
+function mapTrajectory(
+  raw: CompanyProfileResponse['companyFinancials'],
+): PrivateCompanyFinancialTrajectory | null {
+  const trajectory = raw?.trajectory
+  if (!trajectory) return null
+  return {
+    fromYear: trajectory.fromYear,
+    toYear: trajectory.toYear,
+    turnoverDelta: toNumberOrNull(trajectory.turnoverDelta),
+    netResultDelta: toNumberOrNull(trajectory.netResultDelta),
+    employeesDelta: toNumberOrNull(trajectory.employeesDelta),
+  }
+}
+
+/**
+ * Public money received as a payee. Null (not a zeroed object) when the company
+ * appears in no flow at all, so the UI can stay silent instead of asserting 0.
+ */
+function mapPublicMoney(company: RawCompany): PrivateCompanyPublicMoney | null {
+  const money = company.publicMoney
+  if (!money) return null
+  const byFlowType = money.byFlowType.map((flow) => ({
+    flowType: flow.flowType,
+    // Never `?? 0`: an unreadable total is unknown. Asserting that a company
+    // received exactly nothing under an instrument is a claim, not a fallback.
+    totalRon: toNumberOrNull(flow.totalRon),
+    count: flow.count,
+  }))
+  const totalRon = toNumberOrNull(money.totalRon)
+  // A header total we could not parse says nothing about the per-flow rows,
+  // which come from an independent aggregation — keep them.
+  if (totalRon === null && byFlowType.length === 0) return null
+  return { totalRon, flowCount: money.flowCount, byFlowType }
 }
 
 function buildSources(company: RawCompany): PrivateCompanySource[] {
@@ -167,6 +247,8 @@ export function mapCompanyProfile(
       fiscalCaen,
     },
     financials,
+    financialTrajectory: mapTrajectory(response.companyFinancials),
+    publicMoney: mapPublicMoney(company),
     sources: buildSources(company),
   }
 }

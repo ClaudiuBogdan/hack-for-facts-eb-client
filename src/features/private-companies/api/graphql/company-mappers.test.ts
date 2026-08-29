@@ -37,6 +37,7 @@ const dedemanResponse: CompanyProfileResponse = {
     ],
     representatives: [{ name: 'PAVĂL ADRIAN', role: 'administrator' }],
     euBranches: [],
+    publicMoney: null,
     asOf: { onrc: '2026-05-17', anaf: '2026-05-18' },
   },
   companyFinancials: {
@@ -44,6 +45,7 @@ const dedemanResponse: CompanyProfileResponse = {
       { year: 2024, turnover: '12294042595.00', netProfit: '1636814708.00', netLoss: '0.00', employees: '12313' },
       { year: 2022, turnover: '11045879922.00', netProfit: '1702616369.00', netLoss: '0.00', employees: '12245' },
     ],
+    trajectory: null,
   },
 }
 
@@ -109,7 +111,7 @@ describe('mapCompanyProfile', () => {
         fiscal: null,
         asOf: { onrc: '2026-05-17', anaf: null },
       },
-      companyFinancials: { years: [] },
+      companyFinancials: { years: [], trajectory: null },
     }
     expect(mapCompanyProfile(noAnaf)!.fiscal.anafFound).toBe(false)
   })
@@ -133,5 +135,94 @@ describe('mapCompanyListItem', () => {
     expect(item.county).toBe('Bacău')
     expect(item.status).toEqual({ code: '1048', label: 'funcțiune' })
     expect(item.registrationDate).toBeNull()
+  })
+})
+
+describe('mapCompanyProfile — public money and trajectory', () => {
+  const withMoney = (publicMoney: NonNullable<
+    CompanyProfileResponse['company']
+  >['publicMoney']): CompanyProfileResponse => ({
+    ...dedemanResponse,
+    company: { ...dedemanResponse.company!, publicMoney },
+  })
+
+  it('never fabricates a zero for a per-flow total it cannot read', () => {
+    const profile = mapCompanyProfile(
+      withMoney({
+        totalRon: '100.00',
+        flowCount: 5,
+        // An empty string coerces to 0 in JS — the exact trap a `?? 0` hides.
+        byFlowType: [{ flowType: 'pnrr_subcontract', totalRon: '', count: 5 }],
+      }),
+    )
+    expect(profile!.publicMoney!.byFlowType[0]!.totalRon).toBeNull()
+  })
+
+  it('keeps the per-flow rows when only the header total is unreadable', () => {
+    // byFlowType comes from an independent aggregation; a bad header says
+    // nothing about it, and dropping the rows is an undetectable false negative.
+    const profile = mapCompanyProfile(
+      withMoney({
+        totalRon: 'n/a',
+        flowCount: 3,
+        byFlowType: [
+          { flowType: 'procurement_contract', totalRon: '8766606.32', count: 172 },
+        ],
+      }),
+    )
+    expect(profile!.publicMoney).not.toBeNull()
+    expect(profile!.publicMoney!.totalRon).toBeNull()
+    expect(profile!.publicMoney!.byFlowType).toHaveLength(1)
+  })
+
+  it('stays null when the company appears in no flow at all', () => {
+    expect(mapCompanyProfile(withMoney(null))!.publicMoney).toBeNull()
+  })
+
+  it('passes the server trajectory through without re-deriving the net result', () => {
+    const profile = mapCompanyProfile({
+      ...dedemanResponse,
+      companyFinancials: {
+        years: [],
+        trajectory: {
+          fromYear: 2024,
+          toYear: 2025,
+          turnoverDelta: '863792940.00',
+          netResultDelta: '-1477503.00',
+          employeesDelta: '389',
+        },
+      },
+    })
+    expect(profile!.financialTrajectory).toEqual({
+      fromYear: 2024,
+      toYear: 2025,
+      turnoverDelta: 863_792_940,
+      netResultDelta: -1_477_503,
+      employeesDelta: 389,
+    })
+  })
+
+  it('maps the balance-sheet summary, keeping an absent metric null not zero', () => {
+    const profile = mapCompanyProfile({
+      ...dedemanResponse,
+      companyFinancials: {
+        years: [
+          {
+            year: 2025,
+            turnover: '1',
+            netProfit: '1',
+            netLoss: '0.00',
+            employees: '1',
+            summary: { totalEquity: '5110382928', debts: null },
+          },
+        ],
+        trajectory: null,
+      },
+    })
+    const summary = profile!.financials[0]!.summary!
+    expect(summary.totalEquity).toBe(5_110_382_928)
+    expect(summary.debts).toBeNull()
+    // A metric the server never sent is absent, not zero.
+    expect(summary.inventories).toBeNull()
   })
 })

@@ -51,6 +51,7 @@ export const danteInternationalProfile: PrivateCompanyProfile = {
       netLoss: null,
       employees: 4_200,
       currency: 'RON',
+      summary: null,
     },
     {
       fiscalYear: 2022,
@@ -59,8 +60,29 @@ export const danteInternationalProfile: PrivateCompanyProfile = {
       netLoss: null,
       employees: 3_900,
       currency: 'RON',
+      summary: null,
     },
   ],
+  financialTrajectory: {
+    fromYear: 2022,
+    toYear: 2024,
+    turnoverDelta: 2_650_000_000,
+    netResultDelta: -1_477_503,
+    // A stable headcount is common; it must render as "no change", not "0".
+    employeesDelta: 0,
+  },
+  publicMoney: {
+    totalRon: 424_468_235.41,
+    flowCount: 406_119,
+    byFlowType: [
+      { flowType: 'direct_acquisition', totalRon: 415_603_318.47, count: 405_912 },
+      { flowType: 'procurement_contract', totalRon: 8_766_606.32, count: 172 },
+      // An obligation, not money received — must never read as a receipt.
+      { flowType: 'pnrr_commitment', totalRon: 4_100_000, count: 3 },
+      // An amount the server sent unreadably: unknown, never rendered as 0.
+      { flowType: 'pnrr_subcontract', totalRon: null, count: 35 },
+    ],
+  },
   sources: [
     { id: 'onrc', snapshotDate: '2026-05-06', label: 'firme-06-05-2026' },
     { id: 'anaf', snapshotDate: '2026-05-16' },
@@ -103,6 +125,8 @@ export const anafNotFoundProfile: PrivateCompanyProfile = {
     fiscalCaen: null,
   },
   financials: [],
+  financialTrajectory: null,
+  publicMoney: null,
   sources: [{ id: 'onrc', snapshotDate: '2026-05-06' }],
 }
 
@@ -160,6 +184,7 @@ export const sparseBilantProfile: PrivateCompanyProfile = {
       netLoss: null,
       employees: 1_850,
       currency: 'RON',
+      summary: null,
     },
     {
       fiscalYear: 2020,
@@ -168,8 +193,11 @@ export const sparseBilantProfile: PrivateCompanyProfile = {
       netLoss: 12_000_000,
       employees: 1_720,
       currency: 'RON',
+      summary: null,
     },
   ],
+  financialTrajectory: null,
+  publicMoney: null,
   sources: [
     { id: 'onrc', snapshotDate: '2026-05-06' },
     { id: 'anaf', snapshotDate: '2026-05-16' },
@@ -216,6 +244,8 @@ export const struckOffProfile: PrivateCompanyProfile = {
     fiscalCaen: { code: '4711', rev: 'rev2' },
   },
   financials: [],
+  financialTrajectory: null,
+  publicMoney: null,
   sources: [
     { id: 'onrc', snapshotDate: '2026-05-06' },
     { id: 'anaf', snapshotDate: '2026-05-16' },
@@ -262,8 +292,11 @@ export const insolventProfile: PrivateCompanyProfile = {
       netLoss: 3_100_000,
       employees: 96,
       currency: 'RON',
+      summary: null,
     },
   ],
+  financialTrajectory: null,
+  publicMoney: null,
   sources: [
     { id: 'onrc', snapshotDate: '2026-05-06' },
     { id: 'anaf', snapshotDate: '2026-05-16' },
@@ -303,6 +336,8 @@ export const pfaProfile: PrivateCompanyProfile = {
     fiscalCaen: { code: '6201', rev: 'rev2' },
   },
   financials: [],
+  financialTrajectory: null,
+  publicMoney: null,
   sources: [
     { id: 'onrc', snapshotDate: '2026-05-06' },
     { id: 'anaf', snapshotDate: '2026-05-16' },
@@ -342,6 +377,8 @@ export const bankruptProfile: PrivateCompanyProfile = {
     fiscalCaen: { code: '4941', rev: 'rev2' },
   },
   financials: [],
+  financialTrajectory: null,
+  publicMoney: null,
   sources: [
     { id: 'onrc', snapshotDate: '2026-05-06' },
     { id: 'anaf', snapshotDate: '2026-05-16' },
