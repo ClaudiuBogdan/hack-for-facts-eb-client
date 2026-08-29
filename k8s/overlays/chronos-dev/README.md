@@ -13,7 +13,7 @@ until the worker Metrics Server gate passes.
 
 Runtime configuration is read from the pod environment and injected into the
 browser bootstrap. The canary points to the future
-`https://api-dev-chronos.transparenta.eu` endpoint and
+`https://dev-chronos-api.transparenta.eu` endpoint and
 `https://dev-chronos.transparenta.eu` site URL. PostHog and Sentry are
 explicitly disabled; no Clerk or application runtime Secret is mounted.
 
