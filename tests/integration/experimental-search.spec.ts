@@ -125,7 +125,7 @@ test.describe('Experimental entity search — desktop', () => {
     await page.getByRole('combobox').fill('fallback')
 
     await expect(page.locator(LISTBOX)).toBeVisible({ timeout: 15000 })
-    await expect(page.getByText(/simpl/i)).toBeVisible()
+    await expect(page.getByText('Căutare limitată')).toBeVisible()
   })
 })
 
