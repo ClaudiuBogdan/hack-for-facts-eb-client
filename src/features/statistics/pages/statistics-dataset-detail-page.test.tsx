@@ -155,6 +155,42 @@ describe('StatisticsDatasetDetailPage', () => {
     expect(screen.getByRole('button', { name: 'Reîncearcă' })).toBeInTheDocument()
   })
 
+  it('keeps catalog-only datasets in the request state without a fake series', () => {
+    useDatasetTier0Mock.mockReturnValue(
+      queryStub({
+        ...tier0,
+        dataset: {
+          ...tier0.dataset,
+          code: 'TUR101C',
+          data_status: 'CATALOG_ONLY',
+          sync_status: 'PENDING',
+        },
+        latest: {
+          ...tier0.latest,
+          datasetCode: 'TUR101C',
+          matchStrategy: 'NO_DATA',
+          hasData: false,
+          value: null,
+        },
+      }),
+    )
+
+    render(
+      <StatisticsDatasetDetailPage
+        code="TUR101C"
+        search={{}}
+        onSearchChange={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByTestId('catalog-only-body')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Cere set' })).toBeInTheDocument()
+    expect(screen.queryByRole('figure')).not.toBeInTheDocument()
+    expect(useDatasetSeriesMock).toHaveBeenCalledWith(
+      expect.objectContaining({ enabled: false }),
+    )
+  })
+
   it('renders the scope sentence with the prompt when a dimension is unresolved', () => {
     useDatasetTier0Mock.mockReturnValue(
       queryStub({

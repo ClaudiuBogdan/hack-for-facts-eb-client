@@ -1,0 +1,46 @@
+{
+  "data": {
+    "budgetExecutionLineItems": {
+      "edges": [
+        {
+          "node": {
+            "executionLineItemId": "li-001",
+            "accountCategory": "EXPENSE",
+            "fundingSource": "Buget local",
+            "fundingSourceId": 1,
+            "expenseType": "functionare",
+            "anomaly": null,
+            "functionalCode": "51",
+            "functionalName": "Servicii publice generale",
+            "economicCode": "10",
+            "economicName": "Cheltuieli de personal",
+            "ytdAmount": "45000000",
+            "quarterlyAmount": "11250000",
+            "monthlyAmount": "3750000"
+          }
+        },
+        {
+          "node": {
+            "executionLineItemId": "li-002",
+            "accountCategory": "EXPENSE",
+            "fundingSource": "Buget local",
+            "fundingSourceId": 1,
+            "expenseType": "functionare",
+            "anomaly": null,
+            "functionalCode": "65",
+            "functionalName": "Invatamant",
+            "economicCode": "20",
+            "economicName": "Bunuri si servicii",
+            "ytdAmount": "32000000",
+            "quarterlyAmount": "8000000",
+            "monthlyAmount": "2666667"
+          }
+        }
+      ],
+      "pageInfo": {
+        "hasNextPage": false,
+        "endCursor": null
+      }
+    }
+  }
+}

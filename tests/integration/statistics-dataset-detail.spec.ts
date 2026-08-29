@@ -134,17 +134,6 @@ test.describe('Dataset detail — the disclosure ladder', () => {
     await expect(page.getByText('11.136.500')).toBeVisible({ timeout: 15000 })
   })
 
-  test('catalog-only datasets keep the request body, never a fake series', async ({
-    page,
-  }) => {
-    await page.goto('/statistici/seturi/TUR101C')
-    await waitForPageReady(page)
-
-    await expect(page.getByTestId('catalog-only-body')).toBeVisible({ timeout: 15000 })
-    await expect(page.getByRole('button', { name: 'Cere set' })).toBeVisible()
-    await expect(page.locator('.recharts-responsive-container')).toHaveCount(0)
-  })
-
   test('an unknown code renders not-found, not an error page', async ({ page }) => {
     await page.goto('/statistici/seturi/NUEXISTA')
     await waitForPageReady(page)

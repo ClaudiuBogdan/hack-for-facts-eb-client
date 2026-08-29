@@ -12,17 +12,21 @@ test.describe('Entity Exploration Flow', () => {
     // Mock entity search results
     await mockApi.mockGraphQL('EntitySearch', 'entity-search')
 
-    // Mock entity details (for any entity)
-    await mockApi.mockGraphQL('GetEntityDetails', 'entity-details')
+    // Mock the redesign entity metadata and budget operations.
+    await mockApi.mockGraphQL('GetEntityMetadata', 'entity-metadata')
+    await mockApi.mockGraphQL('GetEntityBudget', 'entity-budget')
 
-    // Mock line items
-    await mockApi.mockGraphQL('GetEntityLineItems', 'entity-line-items')
+    // The redesign client fetches expense and income pages concurrently.
+    await mockApi.mockGraphQL(
+      'GetEntityLineItems',
+      ['entity-line-items-expense', 'entity-line-items-income'],
+    )
 
     // Mock entity names lookup
     await mockApi.mockGraphQL('EntityNames', 'entity-names')
 
-    // Mock reports
-    await mockApi.mockGraphQL('GetReports', 'get-reports')
+    // Mock reports exposed by the redesign API.
+    await mockApi.mockGraphQL('GetEntityReports', 'entity-reports')
 
     // Mock preferred UAT route data used by /primarie/$cui
     await mockApi.mockGraphQL(
@@ -31,7 +35,7 @@ test.describe('Entity Exploration Flow', () => {
     )
     await mockApi.mockGraphQL(
       'GetEntityRelationships',
-      'challenge-entity-relationships',
+      'entity-relationships',
     )
     await mockApi.mockGraphQL(
       'GetExecutionLineItemsAnalytics',
@@ -113,7 +117,7 @@ test.describe('Entity Exploration Flow', () => {
     }
 
     // Re-mock with delay to test loading state
-    await mockApi.mockGraphQL('GetEntityDetails', 'entity-details', {
+    await mockApi.mockGraphQL('GetEntityMetadata', 'entity-metadata', {
       delay: 1500,
     })
 
@@ -134,7 +138,7 @@ test.describe('Entity Exploration - Error Handling', () => {
     }
 
     // Mock error response
-    await mockApi.mockGraphQL('GetEntityDetails', 'entity-details', {
+    await mockApi.mockGraphQL('GetEntityMetadata', 'entity-metadata', {
       status: 500,
     })
 
@@ -157,7 +161,7 @@ test.describe('Entity Exploration - Error Handling', () => {
     }
 
     // Mock empty response
-    await mockApi.mockGraphQL('GetEntityDetails', 'entity-not-found', {
+    await mockApi.mockGraphQL('GetEntityMetadata', 'entity-not-found', {
       status: 200,
     })
 

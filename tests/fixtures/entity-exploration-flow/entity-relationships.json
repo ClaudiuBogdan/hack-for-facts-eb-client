@@ -1,0 +1,16 @@
+{
+  "data": {
+    "referencePublicEntity": {
+      "parents": {
+        "cui1": null,
+        "cui2": null
+      }
+    },
+    "referencePublicEntityChildren": [
+      {
+        "cui": "12345678",
+        "name": "DIRECȚIA DE ASISTENȚĂ SOCIALĂ CLUJ-NAPOCA"
+      }
+    ]
+  }
+}

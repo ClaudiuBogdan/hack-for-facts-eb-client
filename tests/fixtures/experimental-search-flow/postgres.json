@@ -3,6 +3,7 @@
     "searchEntities": {
       "query": "fallback",
       "engine": "postgres",
+      "degraded": true,
       "estimatedTotalHits": 1,
       "facets": [],
       "hits": [

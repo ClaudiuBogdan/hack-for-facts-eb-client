@@ -1,0 +1,22 @@
+{
+  "data": {
+    "budgetReports": {
+      "items": [
+        {
+          "reportId": "report-2025-10",
+          "entityCui": "4305857",
+          "entityName": "MUNICIPIUL CLUJ-NAPOCA",
+          "reportType": "Executie bugetara agregata la nivel de ordonator principal",
+          "mainCreditorCui": "4305857",
+          "reportDate": "2025-10-31",
+          "reportingYear": 2025,
+          "budgetSectorId": 2,
+          "downloadLinks": []
+        }
+      ],
+      "total": 1,
+      "estimated": false,
+      "caveats": []
+    }
+  }
+}
