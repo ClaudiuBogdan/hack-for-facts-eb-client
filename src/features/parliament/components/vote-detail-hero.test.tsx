@@ -52,4 +52,34 @@ describe('VoteDetailHero — which division is this?', () => {
     expect(screen.getByText('49')).toBeInTheDocument()
     expect(screen.getByText(/Divizare 9/)).toBeInTheDocument()
   })
+
+  it('rides at the top of the page while the division scrolls — on DESKTOP', () => {
+    // The title and the two tallies have to stay readable next to whichever
+    // group the reader has scrolled down to.
+    const { container } = render(
+      <VoteDetailHero detail={detail({ voteSubject: 'Vot final' })} />,
+    )
+    const hero = container.querySelector('section')
+    // `top-0`: no fixed global header in this shell, so the viewport's top edge
+    // is the anchor. `z-30`: over the vote table's own sticky head (`z-10`) and
+    // pinned group rows (`z-[5]`), under the sidebar and FABs (`z-40`).
+    expect(hero).toHaveClass('lg:sticky', 'lg:top-0', 'lg:z-30')
+    // Its own opaque fill, so the page does not read through it.
+    expect(hero).toHaveStyle({ backgroundColor: '#9C051A' })
+  })
+
+  it('stays ordinary in-flow content below the desktop breakpoint', () => {
+    // Under `lg` the title wraps to three or four lines and the tallies sit
+    // underneath it — pinned, that band would hold a third of a phone screen
+    // against the reader for the whole page. EVERY part of the behaviour is
+    // behind the prefix, not just the positioning.
+    const { container } = render(
+      <VoteDetailHero detail={detail({ voteSubject: 'Vot final' })} />,
+    )
+    const hero = container.querySelector('section')
+    expect(hero).not.toHaveClass('sticky')
+    expect(hero).not.toHaveClass('top-0')
+    expect(hero).not.toHaveClass('z-30')
+    expect(hero).not.toHaveClass('fixed')
+  })
 })

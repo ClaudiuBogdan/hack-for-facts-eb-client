@@ -17,11 +17,15 @@ import {
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type {
-  MemberVoteChoice,
   ParliamentMemberVoteRecord,
   ParliamentVoteDetail,
 } from '@/schemas/parliament'
 import { cn } from '@/lib/utils'
+import {
+  ALL_CHOICES_TAB,
+  DEFAULT_VOTE_TAB,
+  type VoteTab,
+} from '../lib/vote-detail-search'
 import { PARLIAMENT_RESOURCE_PURPLE } from '../lib/hub-theme'
 import {
   voteDetailCardClassName,
@@ -31,9 +35,11 @@ import {
   voteDetailToggleActiveClassName,
   voteDetailToggleInactiveClassName,
 } from '../lib/vote-detail-theme'
+import { votePositionLabel } from '../lib/vote-position-labels'
+import { VoteGroupVotesTable } from './vote-group-votes-table'
 import { VoteMemberResultCard } from './vote-member-result-card'
 
-type Props = {
+type BaseProps = {
   readonly detail: ParliamentVoteDetail
   readonly groupColors: Readonly<Record<string, string>>
   readonly memberJudete: Readonly<Record<string, string>>
@@ -41,34 +47,29 @@ type Props = {
   readonly className?: string
 }
 
+type ControlledTabProps = {
+  /**
+   * Controlled tab state for the route that mirrors the selection into the URL.
+   */
+  readonly activeTab: VoteTab
+  readonly onActiveTabChange: (tab: VoteTab) => void
+}
+
+type UncontrolledTabProps = {
+  /** Embedded uses without route search keep their own tab state. */
+  readonly activeTab?: never
+  readonly onActiveTabChange?: never
+}
+
+export type VoteIndividualVotesTabStateProps =
+  | ControlledTabProps
+  | UncontrolledTabProps
+
+type Props = BaseProps & VoteIndividualVotesTabStateProps
+
 type ViewMode = 'party' | 'member'
-type VoteTab =
-  | MemberVoteChoice
-  | 'conflicting_choice'
-  | 'unknown'
-  | typeof ALL_CHOICES_TAB
 
 const ALL_PARTIES_VALUE = 'all'
-const ALL_CHOICES_TAB = 'toate'
-
-/** How each choice is named on a card in the unfiltered tab. */
-const CHOICE_LABELS: Readonly<Record<MemberVoteChoice, string>> = {
-  pentru: 'Pentru',
-  impotriva: 'Împotrivă',
-  abtinere: 'Abținere',
-  nu_a_votat: 'Fără vot',
-}
-
-function votePositionLabel(vote: ParliamentMemberVoteRecord): string {
-  if (vote.positionStatus === 'conflicting_choice') return 'Conflict în sursă'
-  if (
-    vote.positionStatus === 'unknown_marker' ||
-    vote.positionStatus === 'identity_conflict'
-  ) {
-    return 'Poziție neclară'
-  }
-  return vote.choice ? CHOICE_LABELS[vote.choice] : 'Poziție neclară'
-}
 
 /**
  * All four recorded choices, then the whole roll. `abtinere` was missing even
@@ -187,10 +188,24 @@ export function VoteIndividualVotesSection({
   memberJudete,
   embedded = false,
   className,
+  activeTab: controlledTab,
+  onActiveTabChange,
 }: Props) {
   const [viewMode, setViewMode] = useState<ViewMode>('party')
-  const [activeTab, setActiveTab] = useState<VoteTab>('pentru')
+  const [ownTab, setOwnTab] = useState<VoteTab>(DEFAULT_VOTE_TAB)
   const [partyFilter, setPartyFilter] = useState<string>(ALL_PARTIES_VALUE)
+
+  // Controlled by the route when it passes a tab, self-managed otherwise. No
+  // effect mirrors one into the other — a second source of truth is what makes
+  // a URL-backed tab flicker on the way in and fight the back button.
+  const activeTab = controlledTab ?? ownTab
+  const setActiveTab = (tab: VoteTab) => {
+    if (onActiveTabChange) {
+      onActiveTabChange(tab)
+      return
+    }
+    setOwnTab(tab)
+  }
 
   const partyOptions = useMemo(() => getPartyOptions(detail), [detail])
   const conflictingCount = useMemo(
@@ -224,11 +239,14 @@ export function VoteIndividualVotesSection({
       }),
     [conflictingCount, unknownCount],
   )
-  // A hidden tab can never be the active one (a stale selection can linger
-  // when the reader navigates between votes with the section mounted).
+  // A hidden tab can never be the active one — a stale selection can linger when
+  // the reader navigates between votes with the section mounted, and a URL can
+  // name `conflicting_choice` for a division that has no conflicts. Resolved on
+  // render only: the URL is left as the reader wrote it, so there is nothing to
+  // navigate and no loop to enter.
   const effectiveTab = visibleTabs.some((tab) => tab.id === activeTab)
     ? activeTab
-    : 'pentru'
+    : DEFAULT_VOTE_TAB
 
   // Counts follow the PARTY FILTER, not the whole division. A tab reading
   // "Voturi pentru (205)" that opens onto 45 rows because a group is selected
@@ -386,6 +404,16 @@ export function VoteIndividualVotesSection({
                 <p className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
                   Nu există membri în această categorie.
                 </p>
+              ) : viewMode === 'party' && tab.id === ALL_CHOICES_TAB ? (
+                // The one tab that mixes all four choices is the one where a
+                // card list cannot answer the question it exists for: how a
+                // group split. A table puts the split on the group's own row
+                // and keeps the members one click underneath it.
+                <VoteGroupVotesTable
+                  groups={groupedVotes}
+                  groupColors={groupColors}
+                  memberJudete={memberJudete}
+                />
               ) : viewMode === 'party' ? (
                 <Accordion
                   // ALL COLLAPSED (no `defaultValue`). Opening even one group
@@ -422,16 +450,9 @@ export function VoteIndividualVotesSection({
                               accentColor={
                                 groupColors[vote.groupId] ?? '#505a5f'
                               }
-                              // Only in the unfiltered tab. Everywhere else the
-                              // tab IS the choice, and repeating it on 300
-                              // cards would be noise; here the cards mix all
-                              // four, so a card without it says nothing about
-                              // how that member voted.
-                              choiceLabel={
-                                tab.id === ALL_CHOICES_TAB
-                                  ? votePositionLabel(vote)
-                                  : undefined
-                              }
+                              // No choice label: this branch only ever renders a
+                              // single-choice tab now — the tab IS the choice,
+                              // and the mixed tab is the table above.
                             />
                           ))}
                         </div>

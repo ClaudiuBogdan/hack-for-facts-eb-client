@@ -2,7 +2,11 @@ import { ThumbsDown, ThumbsUp } from 'lucide-react'
 import type { ParliamentVoteDetail } from '@/schemas/parliament'
 import { formatVoteDivisionMeta } from '../lib/formatting'
 import { cn } from '@/lib/utils'
-import { getVoteDetailHeroColor, voteDetailPageContainerClassName } from '../lib/vote-detail-theme'
+import {
+  getVoteDetailHeroColor,
+  voteDetailHeroStickyClassName,
+  voteDetailPageContainerClassName,
+} from '../lib/vote-detail-theme'
 import { VoteKindChip } from './vote-kind-chip'
 
 type Props = {
@@ -14,7 +18,10 @@ export function VoteDetailHero({ detail }: Props) {
   const heroColor = getVoteDetailHeroColor(detail.chamber)
 
   return (
-    <section className="py-8 text-white" style={{ backgroundColor: heroColor }}>
+    <section
+      className={cn(voteDetailHeroStickyClassName, 'py-8 text-white')}
+      style={{ backgroundColor: heroColor }}
+    >
       <div
         className={cn(
           voteDetailPageContainerClassName,
@@ -25,7 +32,7 @@ export function VoteDetailHero({ detail }: Props) {
           {detail.kind ? (
             <VoteKindChip kind={detail.kind} tone="inverse" className="mb-3 inline-block" />
           ) : null}
-          <h1 className="text-2xl font-bold leading-tight sm:text-3xl lg:text-[2rem]">
+          <h1 className="text-balance text-2xl font-bold leading-tight sm:text-3xl lg:text-[2rem]">
             {detail.title}
           </h1>
           {/* WHAT WAS ON THE FLOOR, in the chamber's own words. Without it the

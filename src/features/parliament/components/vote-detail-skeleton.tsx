@@ -8,6 +8,7 @@ import {
   VOTE_DETAIL_INFO_BG,
   VOTE_DETAIL_SURFACE,
   voteDetailCardClassName,
+  voteDetailHeroStickyClassName,
   voteDetailPageContainerClassName,
   voteDetailSectionTitleClassName,
 } from '../lib/vote-detail-theme'
@@ -73,7 +74,12 @@ export function VoteDetailSkeleton({ chamber }: Props) {
     >
       <VoteDetailBreadcrumb chamber={chamber} />
 
-      <section className="py-8 text-white" style={{ backgroundColor: heroColor }}>
+      {/* Pinned exactly as the real hero is, so the band does not jump the
+          moment the division resolves. */}
+      <section
+        className={cn(voteDetailHeroStickyClassName, 'py-8 text-white')}
+        style={{ backgroundColor: heroColor }}
+      >
         <div
           className={cn(
             voteDetailPageContainerClassName,

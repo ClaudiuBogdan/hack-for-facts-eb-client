@@ -27,6 +27,34 @@ export function getVoteDetailHeroColor(
   }
 }
 
+/**
+ * The division hero rides at the top of the page while everything under it
+ * scrolls, so the title and the two tallies stay readable next to whichever
+ * group the reader has scrolled down to.
+ *
+ * DESKTOP ONLY, at `lg` — the same line where the hero itself turns from a
+ * stacked block into its two-column layout. Below it the title wraps to three or
+ * four lines and the tallies sit underneath, so a pinned hero would hold a third
+ * of a phone screen against the reader for the whole page. Every part of the
+ * behaviour is behind the prefix, so under `lg` the band is ordinary in-flow
+ * content: not positioned, no offset, no stacking context, no shadow.
+ *
+ * `top-0`: this app has no fixed global header — the shell is a left sidebar
+ * plus `SidebarInset`, and the DOCUMENT scrolls — so the viewport's top edge is
+ * the right anchor. No ancestor between here and `<body>` carries an `overflow`,
+ * `transform` or `filter` rule, which is what would silently disable sticky.
+ *
+ * `z-30`: above the vote table's own sticky column head (`z-10`) and pinned
+ * group rows (`z-[5]`), which compete in the same stacking context and would
+ * otherwise paint over the hero for being later in the document; below the
+ * sidebar, the FABs and the mobile dock (`z-40`).
+ *
+ * No added border or shadow: the hero is a saturated chamber-coloured band on a
+ * light grey page and is already its own boundary. Sticky also keeps the element
+ * in normal flow, so nothing jumps when it engages.
+ */
+export const voteDetailHeroStickyClassName = 'lg:sticky lg:top-0 lg:z-30'
+
 /** UK Parliament member card shadow — soft lift, bottom/right bias */
 export const voteMemberCardShadowClassName =
   'shadow-[1px_2px_8px_rgba(11,12,12,0.08)] hover:shadow-[1px_3px_10px_rgba(11,12,12,0.1)]'

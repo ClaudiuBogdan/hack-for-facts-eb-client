@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ExternalLink } from "lucide-react";
 import type { ParliamentVoteDetail } from "@/schemas/parliament";
+import type { VoteTab } from "../lib/vote-detail-search";
 import { exportVoteDetailAsCsv } from "../api/parliament-api";
 import { downloadCsv, formatVoteDayLong } from "../lib/formatting";
 import { cn } from "@/lib/utils";
@@ -11,21 +12,41 @@ import {
 } from "../lib/vote-detail-theme";
 import { VoteDetailBreadcrumb } from "./vote-detail-breadcrumb";
 import { VoteDetailHero } from "./vote-detail-hero";
-import { VoteIndividualVotesSection } from "./vote-individual-votes-section";
+import {
+  VoteIndividualVotesSection,
+  type VoteIndividualVotesTabStateProps,
+} from "./vote-individual-votes-section";
 import { VotePartyChart } from "./vote-party-chart";
 import { VoteRelatedBillsCard } from "./vote-related-bills-card";
 
-type Props = {
+type BaseProps = {
   readonly detail: ParliamentVoteDetail;
   readonly groupColors: Readonly<Record<string, string>>;
   readonly memberJudete: Readonly<Record<string, string>>;
 };
+
+type ControlledVoteTabProps = {
+  /**
+   * The tab the URL names, paired with the callback that updates route search.
+   */
+  readonly activeVoteTab: VoteTab;
+  readonly onVoteTabChange: (tab: VoteTab) => void;
+};
+
+type UncontrolledVoteTabProps = {
+  readonly activeVoteTab?: never;
+  readonly onVoteTabChange?: never;
+};
+
+type Props = BaseProps & (ControlledVoteTabProps | UncontrolledVoteTabProps);
 
 /** UK Parliament division detail page */
 export function VoteDetailContent({
   detail,
   groupColors,
   memberJudete,
+  activeVoteTab,
+  onVoteTabChange,
 }: Props) {
   // The SOURCE division number when there is one; otherwise the vote's date. The
   // old `?? 1` labelled every division-less vote "Divizare 1".
@@ -33,6 +54,13 @@ export function VoteDetailContent({
     detail.divisionNumber !== undefined
       ? `Divizare ${String(detail.divisionNumber)}`
       : `Vot din ${formatVoteDayLong(detail.heldAt)}`;
+  const voteTabProps: VoteIndividualVotesTabStateProps =
+    activeVoteTab !== undefined && onVoteTabChange !== undefined
+      ? {
+          activeTab: activeVoteTab,
+          onActiveTabChange: onVoteTabChange,
+        }
+      : {};
 
   return (
     <div
@@ -136,6 +164,7 @@ export function VoteDetailContent({
             detail={detail}
             groupColors={groupColors}
             memberJudete={memberJudete}
+            {...voteTabProps}
           />
         </section>
       </div>

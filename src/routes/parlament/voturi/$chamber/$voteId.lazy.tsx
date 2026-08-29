@@ -1,8 +1,12 @@
-import { createLazyFileRoute } from '@tanstack/react-router'
+import { createLazyFileRoute, useNavigate } from '@tanstack/react-router'
 import {
   getMemberJudetMap,
   getParliamentGroupColorMap,
 } from '@/features/parliament/api/parliament-api'
+import {
+  DEFAULT_VOTE_TAB,
+  voteDetailSearchWithTab,
+} from '@/features/parliament/lib/vote-detail-search'
 import { VoteDetailContent } from '@/features/parliament/components/vote-detail-content'
 import { VoteDetailSkeleton } from '@/features/parliament/components/vote-detail-skeleton'
 import { ParliamentLoadErrorPage } from '@/features/parliament/components/parliament-load-error-page'
@@ -18,6 +22,10 @@ const groupColors = getParliamentGroupColorMap()
 
 function ParliamentVoteDetailRoutePage() {
   const { chamber, voteId } = Route.useParams()
+  // The ROUTE owns the tab and hands it down; the section stays a reusable
+  // component that works uncontrolled wherever it is embedded without a URL.
+  const { alegere } = Route.useSearch()
+  const navigate = useNavigate({ from: '/parlament/voturi/$chamber/$voteId' })
   const { data: detail, isLoading, isError, refetch } = useParliamentVoteDetail(
     chamber,
     voteId,
@@ -55,6 +63,15 @@ function ParliamentVoteDetailRoutePage() {
       detail={detail}
       groupColors={groupColors}
       memberJudete={memberJudete}
+      activeVoteTab={alegere ?? DEFAULT_VOTE_TAB}
+      onVoteTabChange={(tab) => {
+        void navigate({
+          // Functional form: a param this route does not own must survive the
+          // click. NOT `replace` — a tab is a place the reader can come back to,
+          // so the browser's back button has to undo it.
+          search: (previous) => voteDetailSearchWithTab(previous, tab),
+        })
+      }}
     />
   )
 }
