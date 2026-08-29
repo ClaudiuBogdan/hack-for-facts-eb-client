@@ -40,10 +40,6 @@ msgstr "{0} / inhabitant"
 msgid "{0} listed EU funding in {1} records"
 msgstr "{0} listed EU funding in {1} records"
 
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:195
-#~ msgid "{0} listed value in {1} records"
-#~ msgstr "{0} listed value in {1} records"
-
 #. placeholder {0}: formatNumber(amount, 'compact')
 #. placeholder {0}: page.totalCount.toLocaleString('ro-RO')
 #: src/features/pnrr/components/PnrrMapView.tsx:778
@@ -87,11 +83,6 @@ msgstr "{0}% grant"
 msgid "{0}% of listed EU funding"
 msgstr "{0}% of listed EU funding"
 
-#: src/features/pnrr/components/PnrrStatsRibbon.tsx:45
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:211
-#~ msgid "{0}% of listed project value"
-#~ msgstr "{0}% of listed project value"
-
 #. placeholder {0}: aggregates.missingFinProgressPercent.toFixed(0)
 #: src/features/pnrr/components/PnrrAnomalyInfoPanel.tsx:194
 msgid "{0}% of projects do not have published financial progress in the dataset, which may hide signals based on the comparison between technical and financial progress."
@@ -115,17 +106,9 @@ msgstr "{activeCount} active filters"
 msgid "{shownCount} loaded records"
 msgstr "{shownCount} loaded records"
 
-#: src/features/pnrr/components/charts/PnrrCountyChart.tsx:88
-#~ msgid "/capita"
-#~ msgstr "/capita"
-
 #: src/features/pnrr/lib/anomaly-definitions.ts:100
 msgid "100% technical, but under 80% financial"
 msgstr "100% technical, but under 80% financial"
-
-#: src/features/pnrr/lib/anomaly-definitions.ts:133
-#~ msgid "100% technical, over 1 mil. EUR, without financial data"
-#~ msgstr "100% technical, over 1 mil. EUR, without financial data"
 
 #: src/features/pnrr/components/live/PnrrLivePages.tsx:2178
 msgid "Active"
@@ -138,10 +121,6 @@ msgstr "Additional records could not be loaded. The records already shown remain
 #: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:345
 msgid "Advanced filters"
 msgstr "Advanced filters"
-
-#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:121
-#~ msgid "Aggregation"
-#~ msgstr "Aggregation"
 
 #: src/features/pnrr/components/live/PnrrLivePages.tsx:1949
 msgid "Aggregation state"
@@ -473,10 +452,6 @@ msgstr "Component"
 msgid "Component: {0}"
 msgstr "Component: {0}"
 
-#: src/features/pnrr/components/charts/PnrrComponentChart.tsx:71
-#~ msgid "components"
-#~ msgstr "components"
-
 #: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:238
 msgid "Components"
 msgstr "Components"
@@ -516,11 +491,6 @@ msgstr "Copy CUI"
 #: src/features/pnrr/components/PnrrDashboard.tsx:356
 msgid "Could not load PNRR data"
 msgstr "Could not load PNRR data"
-
-#: src/features/pnrr/components/charts/PnrrComponentChart.tsx:84
-#: src/features/pnrr/components/charts/PnrrCountyChart.tsx:85
-#~ msgid "Count"
-#~ msgstr "Count"
 
 #: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:424
 msgid "Counties"
@@ -571,10 +541,6 @@ msgstr "Culture"
 msgid "Currency"
 msgstr "Currency"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:421
-#~ msgid "Currency conversion"
-#~ msgstr "Currency conversion"
-
 #: src/features/pnrr/components/filters/PnrrActiveFilters.tsx:194
 msgid "Data"
 msgstr "Data"
@@ -587,14 +553,6 @@ msgstr "Data anomalies"
 #: src/features/pnrr/components/live/PnrrLivePages.tsx:177
 msgid "Data available"
 msgstr "Data available"
-
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:457
-#~ msgid "Data comes from the Ministry of Investments and European Projects (MIPE), through the official PNRR portal. Last snapshot update: {formattedLastUpdated}."
-#~ msgstr "Data comes from the Ministry of Investments and European Projects (MIPE), through the official PNRR portal. Last snapshot update: {formattedLastUpdated}."
-
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:446
-#~ msgid "Data comes from the Ministry of Investments and European Projects (MIPE), through the official PNRR portal. Last update: April 30, 2026."
-#~ msgstr "Data comes from the Ministry of Investments and European Projects (MIPE), through the official PNRR portal. Last update: April 30, 2026."
 
 #: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:456
 msgid "Data comes from the Ministry of Investments and European Projects (MIPE), through the official PNRR portal. The application serves file set {PNRR_FILESET_ID}; this is a publication identifier, not a source observation date or a freshness guarantee."
@@ -633,14 +591,6 @@ msgstr "Data unavailable"
 msgid "Data unavailable for this release"
 msgstr "Data unavailable for this release"
 
-#: src/features/pnrr/components/PnrrContextBar.tsx:14
-#~ msgid "Deadline: December 2026"
-#~ msgstr "Deadline: December 2026"
-
-#: src/features/pnrr/components/PnrrDataQualityBanner.tsx:47
-#~ msgid "Details"
-#~ msgstr "Details"
-
 #: src/features/pnrr/components/PnrrAnomalyRibbon.tsx:247
 msgid "Details about {label}"
 msgstr "Details about {label}"
@@ -665,25 +615,13 @@ msgstr "Display estimated values in EUR"
 msgid "Display estimated values in USD"
 msgstr "Display estimated values in USD"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:400
-#~ msgid "Display values in EUR"
-#~ msgstr "Display values in EUR"
-
 #: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:374
 msgid "Display values in RON"
 msgstr "Display values in RON"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:407
-#~ msgid "Display values in USD"
-#~ msgstr "Display values in USD"
-
 #: src/features/pnrr/components/charts/PnrrFundingBar.tsx:83
 msgid "Distribution"
 msgstr "Distribution"
-
-#: src/features/pnrr/components/charts/PnrrComponentChart.tsx:68
-#~ msgid "Distribution by Components"
-#~ msgstr "Distribution by Components"
 
 #: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:752
 msgid "Done"
@@ -704,10 +642,6 @@ msgstr "End date"
 #: src/features/pnrr/components/filters/PnrrActiveFilters.tsx:209
 msgid "Entity"
 msgstr "Entity"
-
-#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:149
-#~ msgid "Entity type"
-#~ msgstr "Entity type"
 
 #: src/features/pnrr/components/PnrrDashboard.tsx:344
 msgid "Error loading data"
@@ -733,14 +667,6 @@ msgstr "EU funding"
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:375
 msgid "EU funds (RON)"
 msgstr "EU funds (RON)"
-
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:370
-#~ msgid "EUR conversion unavailable without an authoritative exchange rate"
-#~ msgstr "EUR conversion unavailable without an authoritative exchange rate"
-
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:198
-#~ msgid "EUR/RON conversion"
-#~ msgstr "EUR/RON conversion"
 
 #: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:477
 msgid "Exact CUI..."
@@ -853,10 +779,6 @@ msgstr "Financial percentage above usual threshold; may be error, regularization
 msgid "Financial progress"
 msgstr "Financial progress"
 
-#: src/features/pnrr/components/PnrrDataQualityBanner.tsx:57
-#~ msgid "Financial progress is missing for many projects in some components (for example: C9 - financial instruments). Official projects are identified by id_angajament, and some appear on multiple rows for measures or distinct values."
-#~ msgstr "Financial progress is missing for many projects in some components (for example: C9 - financial instruments). Official projects are identified by id_angajament, and some appear on multiple rows for measures or distinct values."
-
 #: src/features/pnrr/lib/anomaly-definitions.ts:80
 msgid "Financial progress well above technical progress"
 msgstr "Financial progress well above technical progress"
@@ -953,10 +875,6 @@ msgstr "Grant + loan"
 msgid "Grant and loan"
 msgstr "Grant and loan"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:325
-#~ msgid "Grant, loan, or grant + loan. Original values are in EUR and are automatically converted to the selected currency."
-#~ msgstr "Grant, loan, or grant + loan. Original values are in EUR and are automatically converted to the selected currency."
-
 #: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:331
 msgid "Grant, loan, or grant + loan. Project-row values in the MIPE source are published in RON. Other displayed currencies are client-side presentation conversions."
 msgstr "Grant, loan, or grant + loan. Project-row values in the MIPE source are published in RON. Other displayed currencies are client-side presentation conversions."
@@ -964,10 +882,6 @@ msgstr "Grant, loan, or grant + loan. Project-row values in the MIPE source are 
 #: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:189
 msgid "Grants and loans"
 msgstr "Grants and loans"
-
-#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:93
-#~ msgid "Granularity"
-#~ msgstr "Granularity"
 
 #: src/features/pnrr/components/PnrrAnomalyInfoPanel.tsx:109
 #: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:157
@@ -977,10 +891,6 @@ msgstr "Guide"
 #: src/features/pnrr/lib/filter-constants.ts:84
 msgid "Health"
 msgstr "Health"
-
-#: src/features/pnrr/components/PnrrMapFilterPanel.tsx:85
-#~ msgid "Hide filters"
-#~ msgstr "Hide filters"
 
 #: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:34
 msgid "How to read PNRR figures"
@@ -1024,12 +934,6 @@ msgstr "Implementation status"
 #: src/features/pnrr/hooks/usePnrrMapSeries.ts:299
 msgid "Implemented %"
 msgstr "Implemented %"
-
-#: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:127
-#: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:141
-#: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:321
-#~ msgid "In implementation (<30%)"
-#~ msgstr "In implementation (<30%)"
 
 #: src/features/pnrr/components/PnrrEmblematicProjects.tsx:26
 #: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:493
@@ -1080,29 +984,13 @@ msgstr "Information"
 msgid "Information about percentages over 100%"
 msgstr "Information about percentages over 100%"
 
-#: src/features/pnrr/components/PnrrHeader.tsx:205
-#~ msgid "Interactive dashboard with all PNRR projects. See where the money goes, which projects are at risk, and how implementation is progressing."
-#~ msgstr "Interactive dashboard with all PNRR projects. See where the money goes, which projects are at risk, and how implementation is progressing."
-
-#: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:110
-#~ msgid "Investigation Center"
-#~ msgstr "Investigation Center"
-
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:98
 msgid "Investment"
 msgstr "Investment"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:106
-#~ msgid "It is the official aggregated value from the indicatori_total file, the alocat_eur field. We display it as the main value for parity with the official table. In RON it is converted using the rate used in the dashboard: 1 EUR = 5 RON."
-#~ msgstr "It is the official aggregated value from the indicatori_total file, the alocat_eur field. We display it as the main value for parity with the official table. In RON it is converted using the rate used in the dashboard: 1 EUR = 5 RON."
-
 #: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:107
 msgid "It is the official aggregated value from the indicatori_total file, the alocat_eur field. We display it as the main value for parity with the official table. Its source unit is EUR and it is shown only in EUR."
 msgstr "It is the official aggregated value from the indicatori_total file, the alocat_eur field. We display it as the main value for parity with the official table. Its source unit is EUR and it is shown only in EUR."
-
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:107
-#~ msgid "It is the official aggregated value from the indicatori_total file, the alocat_eur field. We display it as the main value for parity with the official table. Its source unit is EUR; any other displayed currency is a presentation conversion, not a second official value."
-#~ msgstr "It is the official aggregated value from the indicatori_total file, the alocat_eur field. We display it as the main value for parity with the official table. Its source unit is EUR; any other displayed currency is a presentation conversion, not a second official value."
 
 #: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:384
 #: src/features/pnrr/lib/anomaly-definitions.ts:89
@@ -1121,10 +1009,6 @@ msgstr "Large value, low progress"
 msgid "Last funding date"
 msgstr "Last funding date"
 
-#: src/features/pnrr/components/PnrrHeader.tsx:178
-#~ msgid "Last update {formattedLastUpdated}"
-#~ msgstr "Last update {formattedLastUpdated}"
-
 #: src/features/pnrr/components/live/PnrrLivePages.tsx:1705
 msgid "Latest MIPE update"
 msgstr "Latest MIPE update"
@@ -1136,10 +1020,6 @@ msgstr "Legacy source value (EUR)"
 #: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:117
 msgid "Listed / contracted value"
 msgstr "Listed / contracted value"
-
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:291
-#~ msgid "Listed budget"
-#~ msgstr "Listed budget"
 
 #: src/features/pnrr/components/PnrrDashboard.tsx:139
 #: src/features/pnrr/components/PnrrHeader.tsx:94
@@ -1156,60 +1036,9 @@ msgstr "listed EU funding"
 msgid "Listed EU funding"
 msgstr "Listed EU funding"
 
-#: src/features/pnrr/lib/anomaly-definitions.ts:126
-#~ msgid "Listed EU funding >= 10,000,000 EUR and financial progress not published in dataset"
-#~ msgstr "Listed EU funding >= 10,000,000 EUR and financial progress not published in dataset"
-
-#: src/features/pnrr/lib/anomaly-definitions.ts:93
-#~ msgid "Listed EU funding >= 10,000,000 EUR and reported technical progress under 30% or \"in implementation\""
-#~ msgstr "Listed EU funding >= 10,000,000 EUR and reported technical progress under 30% or \"in implementation\""
-
-#: src/features/pnrr/lib/anomaly-definitions.ts:93
-#~ msgid "Listed EU funding >= 10,000,000 EUR and reported technical progress under 30%, including the published \"under 30%\" category"
-#~ msgstr "Listed EU funding >= 10,000,000 EUR and reported technical progress under 30%, including the published \"under 30%\" category"
-
-#: src/features/pnrr/lib/anomaly-definitions.ts:90
-#~ msgid "Listed EU funding over 10 mil. EUR and progress under 30%"
-#~ msgstr "Listed EU funding over 10 mil. EUR and progress under 30%"
-
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:383
-#~ msgid "Listed EU funding over 10 mil. EUR and reported technical progress under 30%."
-#~ msgstr "Listed EU funding over 10 mil. EUR and reported technical progress under 30%."
-
-#. placeholder {0}: formatPnrrCurrency(aggregates.rawTotalValue, currency)
-#. placeholder {1}: formatNumber(aggregates.projectRecordCount)
-#: src/features/pnrr/components/PnrrDataQualityBanner.tsx:66
-#~ msgid "Listed EU funding: {0} from {1} official records."
-#~ msgstr "Listed EU funding: {0} from {1} official records."
-
 #: src/features/pnrr/hooks/usePnrrMapSeries.ts:295
 msgid "Listed project value"
 msgstr "Listed project value"
-
-#: src/features/pnrr/components/PnrrDashboard.tsx:138
-#: src/features/pnrr/components/PnrrHeader.tsx:102
-#~ msgid "listed value"
-#~ msgstr "listed value"
-
-#: src/features/pnrr/components/PnrrAnomalyInfoPanel.tsx:314
-#~ msgid "Listed value"
-#~ msgstr "Listed value"
-
-#: src/features/pnrr/lib/anomaly-definitions.ts:126
-#~ msgid "Listed value >= 10,000,000 EUR and financial progress not published in dataset"
-#~ msgstr "Listed value >= 10,000,000 EUR and financial progress not published in dataset"
-
-#: src/features/pnrr/lib/anomaly-definitions.ts:93
-#~ msgid "Listed value >= 10,000,000 EUR and reported technical progress under 30% or \"in implementation\""
-#~ msgstr "Listed value >= 10,000,000 EUR and reported technical progress under 30% or \"in implementation\""
-
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:379
-#~ msgid "Listed value over 10 mil. EUR and reported technical progress under 30%."
-#~ msgstr "Listed value over 10 mil. EUR and reported technical progress under 30%."
-
-#: src/features/pnrr/components/PnrrDataQualityBanner.tsx:63
-#~ msgid "Listed value: {0} € from {1} official records."
-#~ msgstr "Listed value: {0} € from {1} official records."
 
 #: src/features/pnrr/components/live/PnrrLivePages.tsx:364
 msgid "Load more"
@@ -1255,10 +1084,6 @@ msgstr "Loading…"
 #: src/features/pnrr/lib/filter-constants.ts:52
 msgid "Loan"
 msgstr "Loan"
-
-#: src/features/pnrr/components/PnrrQuickInvestigation.tsx:62
-#~ msgid "Loans to non-public"
-#~ msgstr "Loans to non-public"
 
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:352
 msgid "Locality"
@@ -1309,10 +1134,6 @@ msgstr "Measure: {0}"
 msgid "Measures can be investments (I) or reforms (R), each shown with the dated reference labels bundled with this client. These labels are navigation aids and are not a claim that this snapshot contains the latest adopted legal revision of the plan."
 msgstr "Measures can be investments (I) or reforms (R), each shown with the dated reference labels bundled with this client. These labels are navigation aids and are not a claim that this snapshot contains the latest adopted legal revision of the plan."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:263
-#~ msgid "Measures can be investments (I) or reforms (R), each with the officially approved name in the plan."
-#~ msgstr "Measures can be investments (I) or reforms (R), each with the officially approved name in the plan."
-
 #: src/features/pnrr/lib/filter-constants.ts:85
 msgid "Military"
 msgstr "Military"
@@ -1349,17 +1170,9 @@ msgstr "MIPE observations with the same source identity. This history does not p
 msgid "MIPE PNRR project file set {PNRR_FILESET_ID}. This identifier does not claim a source observation date. The official record cards preserve the source unit and the published variants."
 msgstr "MIPE PNRR project file set {PNRR_FILESET_ID}. This identifier does not claim a source observation date. The official record cards preserve the source unit and the published variants."
 
-#: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:251
-#~ msgid "MIPE PNRR project snapshot dated {PNRR_LAST_UPDATED}. The official record cards preserve the source unit and the published variants."
-#~ msgstr "MIPE PNRR project snapshot dated {PNRR_LAST_UPDATED}. The official record cards preserve the source unit and the published variants."
-
 #: src/features/pnrr/components/live/PnrrLivePages.tsx:888
 msgid "MIPE project progress"
 msgstr "MIPE project progress"
-
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:387
-#~ msgid "MIPE project values remain in their published RON. National indicators published in EUR are labeled separately. No estimated exchange rate is applied."
-#~ msgstr "MIPE project values remain in their published RON. National indicators published in EUR are labeled separately. No estimated exchange rate is applied."
 
 #: src/features/pnrr/components/live/PnrrLivePages.tsx:1818
 msgid "MIPE source updates associated with this project observation"
@@ -1505,14 +1318,6 @@ msgstr "Note about data"
 msgid "of"
 msgstr "of"
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:200
-#~ msgid "Official data is published in EUR for indicators and in RON for project values. Currency conversion in this client is a display convenience and must not be read as a source value or an official daily exchange rate."
-#~ msgstr "Official data is published in EUR for indicators and in RON for project values. Currency conversion in this client is a display convenience and must not be read as a source value or an official daily exchange rate."
-
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:199
-#~ msgid "Official data is published in EUR for indicators and in RON for project values. For comparisons we use the official rate applied in the dashboard: 1 EUR = 5 RON. Small differences may come from rounding and from the level at which each source is published."
-#~ msgstr "Official data is published in EUR for indicators and in RON for project values. For comparisons we use the official rate applied in the dashboard: 1 EUR = 5 RON. Small differences may come from rounding and from the level at which each source is published."
-
 #: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:203
 msgid "Official data is published in EUR for national indicators and in RON for current MIPE project values. The client keeps those source units separate and does not estimate one from the other."
 msgstr "Official data is published in EUR for national indicators and in RON for current MIPE project values. The client keeps those source units separate and does not estimate one from the other."
@@ -1594,10 +1399,6 @@ msgstr "Other private / non-public"
 msgid "Other public institutions"
 msgstr "Other public institutions"
 
-#: src/features/pnrr/lib/anomaly-definitions.ts:123
-#~ msgid "Over 10 mil. EUR without usable financial data"
-#~ msgstr "Over 10 mil. EUR without usable financial data"
-
 #: src/features/pnrr/components/PnrrQuickInvestigation.tsx:39
 msgid "Over 100% financial"
 msgstr "Over 100% financial"
@@ -1605,10 +1406,6 @@ msgstr "Over 100% financial"
 #: src/features/pnrr/components/PnrrTabNav.tsx:18
 msgid "Overview"
 msgstr "Overview"
-
-#: src/features/pnrr/components/PnrrContextBar.tsx:18
-#~ msgid "Package reduced from ~€28.5B to ~€21.6B (2025)"
-#~ msgstr "Package reduced from ~€28.5B to ~€21.6B (2025)"
 
 #: src/features/pnrr/components/live/PnrrLivePages.tsx:1494
 msgid "Paid"
@@ -1694,14 +1491,6 @@ msgstr "PNRR Measure"
 #: src/features/pnrr/components/live/PnrrLivePages.tsx:1562
 msgid "PNRR project"
 msgstr "PNRR project"
-
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:362
-#~ msgid "PNRR project values are published in RON"
-#~ msgstr "PNRR project values are published in RON"
-
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:424
-#~ msgid "PNRR project values use the official fixed conversion rate applied in the dashboard. Displayed RON values are converted with this rate."
-#~ msgstr "PNRR project values use the official fixed conversion rate applied in the dashboard. Displayed RON values are converted with this rate."
 
 #: src/features/pnrr/components/live/PnrrLivePages.tsx:891
 #: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:700
@@ -1892,10 +1681,6 @@ msgid "projects with location"
 msgstr "projects with location"
 
 #: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:120
-#~ msgid "projects with risk signals"
-#~ msgstr "projects with risk signals"
-
-#: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:120
 msgid "projects with verification signals"
 msgstr "projects with verification signals"
 
@@ -2062,14 +1847,6 @@ msgstr "Reported technical progress"
 msgid "Reported technical progress = 100% and reported financial progress < 80%"
 msgstr "Reported technical progress = 100% and reported financial progress < 80%"
 
-#: src/features/pnrr/lib/anomaly-definitions.ts:136
-#~ msgid "Reported technical progress = 100%, listed EU funding >= 1,000,000 EUR and financial progress not published in dataset"
-#~ msgstr "Reported technical progress = 100%, listed EU funding >= 1,000,000 EUR and financial progress not published in dataset"
-
-#: src/features/pnrr/lib/anomaly-definitions.ts:136
-#~ msgid "Reported technical progress = 100%, listed value >= 1,000,000 EUR and financial progress not published in dataset"
-#~ msgstr "Reported technical progress = 100%, listed value >= 1,000,000 EUR and financial progress not published in dataset"
-
 #: src/features/pnrr/components/live/PnrrLivePages.tsx:1128
 msgid "Reported value"
 msgstr "Reported value"
@@ -2131,10 +1908,6 @@ msgstr "Risk signals are shortcuts for verification: large projects with low pro
 msgid "Risk signals indicate projects where reported financial progress, reported technical progress, or listed EU funding suggest priority verification."
 msgstr "Risk signals indicate projects where reported financial progress, reported technical progress, or listed EU funding suggest priority verification."
 
-#: src/features/pnrr/components/PnrrAnomalyInfoPanel.tsx:128
-#~ msgid "Risk signals indicate projects where reported financial progress, reported technical progress, or listed value suggest priority verification."
-#~ msgstr "Risk signals indicate projects where reported financial progress, reported technical progress, or listed value suggest priority verification."
-
 #: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:225
 msgid "Risk signals, not verdict"
 msgstr "Risk signals, not verdict"
@@ -2142,10 +1915,6 @@ msgstr "Risk signals, not verdict"
 #: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:113
 msgid "risks"
 msgstr "risks"
-
-#: src/features/pnrr/components/PnrrContextBar.tsx:10
-#~ msgid "Romania: ~20% estimated absorption"
-#~ msgstr "Romania: ~20% estimated absorption"
 
 #: src/features/pnrr/components/live/PnrrLivePages.tsx:1736
 msgid "RON and EUR values stay separate and are never converted or added together."
@@ -2195,12 +1964,6 @@ msgstr "Risk signals are separate from data quality issues to keep clear the dif
 msgid "Semnalele de risc sunt separate de problemele de calitate a datelor. Ele ajută verificarea, dar nu sunt verdict juridic sau financiar."
 msgstr "Risk signals are separate from data quality issues. They help verification, but are not a legal or financial verdict."
 
-#. placeholder {0}: formatNumber(aggregates.missingFinProgressPercent)
-#. placeholder {1}: formatNumber(recordSliceCount)
-#: src/features/pnrr/components/PnrrDataQualityBanner.tsx:37
-#~ msgid "Setul conține {0}% proiecte fără progres financiar publicat și {1} înregistrări suplimentare față de proiectele unice."
-#~ msgstr "The dataset contains {0}% projects without published financial progress and {1} additional records compared to unique projects."
-
 #: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:158
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:208
 msgid "Share of value of projects marked as completed"
@@ -2245,10 +2008,6 @@ msgstr "Showing the {0} largest of {1} projects. Use “View projects” for the
 msgid "Shows how much of the listed EU funding belongs to projects marked as completed. It is not the official \"absorption rate\": it does not measure money received by Romania or payments to beneficiaries."
 msgstr "Shows how much of the listed EU funding belongs to projects marked as completed. It is not the official \"absorption rate\": it does not measure money received by Romania or payments to beneficiaries."
 
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:163
-#~ msgid "Shows how much of the listed project value belongs to projects marked as completed. It is not the official \"absorption rate\": it does not measure money received by Romania or payments to beneficiaries."
-#~ msgstr "Shows how much of the listed project value belongs to projects marked as completed. It is not the official \"absorption rate\": it does not measure money received by Romania or payments to beneficiaries."
-
 #: src/features/pnrr/components/PnrrAnomalyInfoPanel.tsx:112
 msgid "Signal guide"
 msgstr "Signal guide"
@@ -2284,14 +2043,6 @@ msgstr "Social"
 #: src/features/pnrr/components/table/PnrrProjectDrawer.tsx:366
 msgid "Source beneficiary type"
 msgstr "Source beneficiary type"
-
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:351
-#~ msgid "Source currency"
-#~ msgstr "Source currency"
-
-#: src/features/pnrr/components/PnrrDashboard.tsx:199
-#~ msgid "Source currency preserved"
-#~ msgstr "Source currency preserved"
 
 #: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:201
 #: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:430
@@ -2445,14 +2196,6 @@ msgstr "The percentage shows the component's share of displayed EU funding. It i
 msgid "The percentage shows the county's share of displayed EU funding. National projects can distort local comparisons."
 msgstr "The percentage shows the county's share of displayed EU funding. National projects can distort local comparisons."
 
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:240
-#~ msgid "The percentage shows the share of listed project value from the component in the displayed project value. It is not the official PNRR allocation. Click on a row to filter."
-#~ msgstr "The percentage shows the share of listed project value from the component in the displayed project value. It is not the official PNRR allocation. Click on a row to filter."
-
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:252
-#~ msgid "The percentage shows the share of listed project value from the county in the displayed project value. National projects can distort local comparisons."
-#~ msgstr "The percentage shows the share of listed project value from the county in the displayed project value. National projects can distort local comparisons."
-
 #: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:88
 msgid "The project has a published-data issue, such as possible duplicate rows or missing financial progress. It does not automatically indicate wrongdoing or zero payments."
 msgstr "The project has a published-data issue, such as possible duplicate rows or missing financial progress. It does not automatically indicate wrongdoing or zero payments."
@@ -2477,14 +2220,6 @@ msgstr "The selected measure belongs to another component. Remove one of these f
 msgid "This exploratory preset highlights projects with large listed EU funding and low reported technical progress. It is not a finding and requires verification in official documents."
 msgstr "This exploratory preset highlights projects with large listed EU funding and low reported technical progress. It is not a finding and requires verification in official documents."
 
-#: src/features/pnrr/lib/anomaly-definitions.ts:91
-#~ msgid "This filter highlights projects with large listed EU funding and low reported technical progress. It is implementation pressure and requires verification in official documents."
-#~ msgstr "This filter highlights projects with large listed EU funding and low reported technical progress. It is implementation pressure and requires verification in official documents."
-
-#: src/features/pnrr/lib/anomaly-definitions.ts:91
-#~ msgid "This filter highlights projects with large listed value and low reported technical progress. It is implementation pressure and requires verification in official documents."
-#~ msgstr "This filter highlights projects with large listed value and low reported technical progress. It is implementation pressure and requires verification in official documents."
-
 #: src/features/pnrr/lib/anomaly-definitions.ts:114
 msgid "This filter marks rows that appear to describe the same project, but have different information. It is a data interpretation issue, not proof of double funding."
 msgstr "This filter marks rows that appear to describe the same project, but have different information. It is a data interpretation issue, not proof of double funding."
@@ -2508,14 +2243,6 @@ msgstr "This filter shows projects where reported financial progress exceeds 100
 #: src/features/pnrr/lib/anomaly-definitions.ts:81
 msgid "This filter shows projects where reported financial progress is well above reported technical progress. It may have legitimate explanations, including advances or delayed technical reporting."
 msgstr "This filter shows projects where reported financial progress is well above reported technical progress. It may have legitimate explanations, including advances or delayed technical reporting."
-
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:434
-#~ msgid "This is the fixed rate used by the PNRR dashboard model, not a daily BNR exchange rate."
-#~ msgstr "This is the fixed rate used by the PNRR dashboard model, not a daily BNR exchange rate."
-
-#: src/features/pnrr/components/PnrrDashboard.tsx:202
-#~ msgid "This older link requested a display conversion. Project values now remain in their published RON, while official EUR indicators are labeled separately. No estimated exchange rate is applied."
-#~ msgstr "This older link requested a display conversion. Project values now remain in their published RON, while official EUR indicators are labeled separately. No estimated exchange rate is applied."
 
 #: src/features/pnrr/components/live/PnrrLivePages.tsx:2056
 msgid "This organization is not available in the current PNRR release."
@@ -2559,10 +2286,6 @@ msgstr "Top beneficiaries"
 msgid "Top beneficiaries by listed EU funding (Top 100)"
 msgstr "Top beneficiaries by listed EU funding (Top 100)"
 
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:285
-#~ msgid "Top beneficiaries by listed project value (Top 100)"
-#~ msgstr "Top beneficiaries by listed project value (Top 100)"
-
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:291
 msgid "Top beneficiaries by reported amounts received (Top 100)"
 msgstr "Top beneficiaries by reported amounts received (Top 100)"
@@ -2571,17 +2294,9 @@ msgstr "Top beneficiaries by reported amounts received (Top 100)"
 msgid "Top Components"
 msgstr "Top Components"
 
-#: src/features/pnrr/components/charts/PnrrCountyChart.tsx:69
-#~ msgid "Top Counties"
-#~ msgstr "Top Counties"
-
 #: src/features/pnrr/components/tabs/PnrrOverview.tsx:251
 msgid "Top counties: listed EU funding"
 msgstr "Top counties: listed EU funding"
-
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:244
-#~ msgid "Top counties: listed value"
-#~ msgstr "Top counties: listed value"
 
 #: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:171
 msgid "Top projects"
@@ -2654,22 +2369,10 @@ msgstr "Update history loads independently"
 msgid "Updated"
 msgstr "Updated"
 
-#: src/features/pnrr/components/filters/PnrrFilterSheet.tsx:378
-#~ msgid "USD conversion unavailable without an authoritative exchange rate"
-#~ msgstr "USD conversion unavailable without an authoritative exchange rate"
-
 #: src/features/pnrr/components/charts/PnrrProgressHistogram.tsx:43
 #: src/features/pnrr/components/charts/PnrrProgressHistogram.tsx:216
 msgid "Value"
 msgstr "Value"
-
-#: src/features/pnrr/lib/anomaly-definitions.ts:90
-#~ msgid "Value over 10 mil. EUR and progress under 30%"
-#~ msgstr "Value over 10 mil. EUR and progress under 30%"
-
-#: src/features/pnrr/components/charts/PnrrCountyChart.tsx:144
-#~ msgid "Value per capita"
-#~ msgstr "Value per capita"
 
 #: src/features/pnrr/components/charts/PnrrProgressHistogram.tsx:142
 msgid "value with complete data"
@@ -2747,10 +2450,6 @@ msgstr "What is worth checking"
 #: src/features/pnrr/components/PnrrAnomalyInfoPanel.tsx:304
 msgid "What it means"
 msgstr "What it means"
-
-#: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:439
-#~ msgid "When another currency is selected, the result is a display conversion. Verify the source-unit value before quoting or comparing a figure."
-#~ msgstr "When another currency is selected, the result is a display conversion. Verify the source-unit value before quoting or comparing a figure."
 
 #: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:771
 msgid "with data anomalies"
