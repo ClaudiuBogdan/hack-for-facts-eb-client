@@ -13,10 +13,14 @@ import { waitForHydration } from '../utils/test-helpers'
 const TEST_ENTITY_CUI = '4305857'
 
 async function mockEntityDetailsOperations(mockApi: MockApiFixture) {
-  await mockApi.mockGraphQL('GetEntityDetails', 'entity-details')
-  await mockApi.mockGraphQL('GetEntityLineItems', 'entity-line-items')
+  await mockApi.mockGraphQL('GetEntityMetadata', 'entity-metadata')
+  await mockApi.mockGraphQL('GetEntityBudget', 'entity-budget')
+  await mockApi.mockGraphQL(
+    'GetEntityLineItems',
+    ['entity-line-items-expense', 'entity-line-items-income'],
+  )
   await mockApi.mockGraphQL('GetEntityRelationships', 'challenge-entity-relationships')
-  await mockApi.mockGraphQL('EntityAnalytics', 'entity-analytics')
+  await mockApi.mockGraphQL('EntitySubordinateRanking', 'entity-subordinate-ranking')
   await mockApi.mockGraphQL('GetEntityReports', 'entity-reports')
   await mockApi.mockGraphQL('GetReports', 'get-reports')
 }
@@ -135,6 +139,56 @@ test.describe('Entity Details Page', () => {
     await expect(
       page.getByText(/Distribuția Cheltuielilor|Spending breakdown/i).first(),
     ).toBeVisible({ timeout: 10000 })
+  })
+})
+
+test.describe('Entity Details - redesign transport boundary', () => {
+  test('does not dispatch legacy entity endpoints', async ({ page, mockApi }) => {
+    if (mockApi.mode === 'live') {
+      test.skip()
+      return
+    }
+
+    await page.addInitScript(() => {
+      let runtimeConfig: Record<string, string> = {}
+      Object.defineProperty(window, '__APP_RUNTIME_CONFIG__', {
+        configurable: false,
+        get: () => runtimeConfig,
+        set: (next: Record<string, string>) => {
+          runtimeConfig = { ...next, VITE_API_MODE: 'redesign' }
+        },
+      })
+    })
+
+    const forbiddenRequests: string[] = []
+    const redesignRankingRequests: string[] = []
+    page.on('request', (request) => {
+      const pathname = new URL(request.url()).pathname
+      if (
+        request.method() === 'POST' &&
+        pathname.endsWith('/api/v1/graphql') &&
+        (request.postData() ?? '').includes('EntitySubordinateRanking')
+      ) {
+        redesignRankingRequests.push(pathname)
+      }
+      if (
+        (pathname.endsWith('/graphql') &&
+          !pathname.endsWith('/api/v1/graphql')) ||
+        pathname.startsWith('/api/v1/advanced-map-analytics')
+      ) {
+        forbiddenRequests.push(`${request.method()} ${pathname}`)
+      }
+    })
+
+    await mockEntityDetailsOperations(mockApi)
+    await openEntityDetails(page)
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+    await expect(
+      page.getByText(/Instituții subordonate|Subordinate institutions/i).first(),
+    ).toBeVisible({ timeout: 10000 })
+
+    expect(forbiddenRequests).toEqual([])
+    expect(redesignRankingRequests.length).toBeGreaterThan(0)
   })
 })
 

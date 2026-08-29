@@ -1,0 +1,26 @@
+{
+  "data": {
+    "budgetExecutionLineItems": {
+      "edges": [
+        {
+          "node": {
+            "executionLineItemId": "li-101",
+            "accountCategory": "INCOME",
+            "fundingSource": "Buget local",
+            "fundingSourceId": 1,
+            "expenseType": null,
+            "anomaly": null,
+            "functionalCode": "01",
+            "functionalName": "Venituri fiscale",
+            "economicCode": "01.01",
+            "economicName": "Impozit pe venit",
+            "ytdAmount": "520000000",
+            "quarterlyAmount": "130000000",
+            "monthlyAmount": "43333333"
+          }
+        }
+      ],
+      "pageInfo": { "hasNextPage": false, "endCursor": null }
+    }
+  }
+}

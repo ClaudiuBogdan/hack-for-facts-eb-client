@@ -24,10 +24,10 @@ const BudgetReportTypeSchema = z.enum([
 
 type BudgetReportType = z.infer<typeof BudgetReportTypeSchema>;
 
-type BudgetNormalization =
+export type BudgetNormalization =
   "TOTAL" | "TOTAL_EURO" | "PER_CAPITA" | "PER_CAPITA_EURO" | "PERCENT_GDP";
 
-const MoneySchema = z
+export const MoneySchema = z
   .union([z.string(), z.number()])
   .transform((value, context) => {
     const amount = Number(value);
@@ -363,7 +363,7 @@ function toLegacyReportType(reportType: BudgetReportType): GqlReportType {
   }
 }
 
-function toBudgetNormalization(
+export function toBudgetNormalization(
   options: NormalizationOptions,
 ): BudgetNormalization {
   if (options.inflation_adjusted === true) {

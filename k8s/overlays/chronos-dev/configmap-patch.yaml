@@ -8,6 +8,7 @@ data:
   VITE_APP_ENVIRONMENT: development
   VITE_API_URL: https://dev-chronos-api.transparenta.eu
   VITE_API_USE_PROXY: "false"
+  VITE_API_MODE: redesign
   VITE_SITE_URL: https://dev-chronos.transparenta.eu
   VITE_POSTHOG_ENABLED: "false"
   VITE_SENTRY_ENABLED: "false"

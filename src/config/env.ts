@@ -7,6 +7,7 @@ const PUBLIC_RUNTIME_CONFIG_KEYS = [
   "VITE_APP_ENVIRONMENT",
   "VITE_API_URL",
   "VITE_API_USE_PROXY",
+  "VITE_API_MODE",
   "VITE_SITE_URL",
   "VITE_POSTHOG_ENABLED",
   "VITE_POSTHOG_API_KEY",
@@ -38,6 +39,7 @@ const envSchema = z
       .enum(["true", "false"])
       .optional()
       .transform((val) => val === "true"),
+    VITE_API_MODE: z.enum(["legacy", "redesign"]).optional().default("legacy"),
     // Optional canonical site URL used for SEO metadata generation
     VITE_SITE_URL: z.string().url().optional(),
 

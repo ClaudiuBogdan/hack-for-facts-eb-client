@@ -1,7 +1,9 @@
 import { queryOptions } from '@tanstack/react-query'
 
-import { fetchEntityAnalytics } from '@/lib/api/entity-analytics'
-import type { EntityAnalyticsConnection } from '@/schemas/entity-analytics'
+import {
+  fetchRedesignEntitySubordinateRanking,
+  type EntitySubordinateRankingConnection,
+} from '@/lib/api/entity-ranking-redesign'
 import type { Currency } from '@/schemas/charts'
 import { defaultYearRange } from '@/schemas/charts'
 import type { ForcedOverrides } from '@/lib/globalSettings/params'
@@ -9,7 +11,6 @@ import type { NormalizationOptions } from '@/lib/normalization'
 import {
   getInitialFilterState,
   makeTrendPeriod,
-  toReportTypeValue,
   type ReportPeriodInput,
   type ReportPeriodType,
   type TMonth,
@@ -29,10 +30,6 @@ export type ChallengeEntityAnalysisPeriodSelection = {
   readonly month: TMonth
   readonly quarter: TQuarter
 }
-
-const CHALLENGE_DETAILED_ANALYTICS_REPORT_TYPE = toReportTypeValue('DETAILED')
-const CHALLENGE_SHOW_PERIOD_GROWTH = false
-const MAX_VISIBLE_SUBORDINATE_CARDS = 5
 
 export function buildChallengeEntityAnalysisReportPeriod(
   params: ChallengeEntityAnalysisPeriodSelection,
@@ -67,7 +64,7 @@ export function challengeEntitySubordinateRankingQueryOptions(params: {
 }) {
   const { entityCui, reportPeriod, normalizationOptions, enabled = true } = params
 
-  return queryOptions<EntityAnalyticsConnection>({
+  return queryOptions<EntitySubordinateRankingConnection>({
     queryKey: [
       'challenge-entity-subordinates',
       entityCui,
@@ -76,26 +73,10 @@ export function challengeEntitySubordinateRankingQueryOptions(params: {
       normalizationOptions.inflation_adjusted,
     ],
     queryFn: () =>
-      fetchEntityAnalytics({
-        filter: {
-          account_category: 'ch',
-          main_creditor_cui: entityCui,
-          report_period: reportPeriod,
-          report_type: CHALLENGE_DETAILED_ANALYTICS_REPORT_TYPE,
-          normalization: 'total',
-          currency: normalizationOptions.currency,
-          inflation_adjusted: normalizationOptions.inflation_adjusted,
-          show_period_growth: CHALLENGE_SHOW_PERIOD_GROWTH,
-          exclude: {
-            entity_cuis: [entityCui],
-          },
-        },
-        sort: {
-          by: 'total_amount',
-          order: 'desc',
-        },
-        limit: MAX_VISIBLE_SUBORDINATE_CARDS,
-        offset: 0,
+      fetchRedesignEntitySubordinateRanking({
+        entityCui,
+        reportPeriod,
+        normalizationOptions,
       }),
     enabled: enabled && entityCui.length > 0,
     staleTime: 1000 * 60 * 5,

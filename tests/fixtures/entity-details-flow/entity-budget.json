@@ -1,0 +1,21 @@
+{
+  "data": {
+    "summary": [
+      {
+        "mainCreditorCui": "4305857",
+        "year": 2025,
+        "month": null,
+        "quarter": null,
+        "totalIncome": "2113522844.10",
+        "totalExpense": "1627387390.88",
+        "budgetBalance": "486135453.22"
+      }
+    ],
+    "currentIncome": [{ "periodLabel": "2025", "amount": "2113522844.10" }],
+    "currentExpense": [{ "periodLabel": "2025", "amount": "1627387390.88" }],
+    "currentBalance": [{ "periodLabel": "2025", "amount": "486135453.22" }],
+    "trendIncome": [{ "periodLabel": "2025", "amount": "2113522844.10" }],
+    "trendExpense": [{ "periodLabel": "2025", "amount": "1627387390.88" }],
+    "trendBalance": [{ "periodLabel": "2025", "amount": "486135453.22" }]
+  }
+}

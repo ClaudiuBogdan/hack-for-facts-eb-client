@@ -1,0 +1,26 @@
+{
+  "data": {
+    "budgetExecutionLineItems": {
+      "edges": [
+        {
+          "node": {
+            "executionLineItemId": "li-001",
+            "accountCategory": "EXPENSE",
+            "fundingSource": "Buget local",
+            "fundingSourceId": 1,
+            "expenseType": "functionare",
+            "anomaly": null,
+            "functionalCode": "51",
+            "functionalName": "Servicii publice generale",
+            "economicCode": "10",
+            "economicName": "Cheltuieli de personal",
+            "ytdAmount": "45000000",
+            "quarterlyAmount": "11250000",
+            "monthlyAmount": "3750000"
+          }
+        }
+      ],
+      "pageInfo": { "hasNextPage": false, "endCursor": null }
+    }
+  }
+}

@@ -18,10 +18,7 @@ import {
 } from '@/lib/hooks/useEntityDetails'
 import type { GqlReportType } from '@/schemas/reporting'
 import { toReportTypeValue } from '@/schemas/reporting'
-import type {
-  AggregatedLineItemConnection,
-  EntityAnalyticsConnection,
-} from '@/schemas/entity-analytics'
+import type { AggregatedLineItemConnection } from '@/schemas/entity-analytics'
 import type { ChallengeLocale } from '../types'
 
 export const CHALLENGE_LESSON_YEAR = 2025
@@ -237,7 +234,7 @@ export function useChallengeLessonSubordinateRanking(params: {
 }) {
   const { entityCui, enabled = true } = params
 
-  return useQuery<EntityAnalyticsConnection>({
+  return useQuery({
     ...challengeEntitySubordinateRankingQueryOptions({
       entityCui,
       reportPeriod: CHALLENGE_LESSON_REPORT_PERIOD,
