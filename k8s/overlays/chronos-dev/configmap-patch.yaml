@@ -4,6 +4,7 @@ metadata:
   name: hack-for-facts-eb-client-config
   namespace: hack-for-facts
 data:
+  INTERNAL_API_URL: http://hack-for-facts-eb-server.transparenta-eu-dev.svc.cluster.local
   VITE_APP_ENVIRONMENT: development
   VITE_API_URL: https://dev-chronos-api.transparenta.eu
   VITE_API_USE_PROXY: "false"

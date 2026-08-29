@@ -3,8 +3,6 @@ kind: Deployment
 metadata:
   name: hack-for-facts-eb-client
   namespace: hack-for-facts
-  annotations:
-    image-sha: sha256:3566933cc0f8ce5add6a94bf61fce0a597b023d0c135e979f1d9ff6479b7e7b7
 spec:
   replicas: 2
   strategy:

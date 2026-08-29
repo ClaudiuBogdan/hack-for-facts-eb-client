@@ -16,11 +16,6 @@ labels:
       app.kubernetes.io/part-of: transparenta-eu
       app.kubernetes.io/environment: development
 
-images:
-  - name: harbor.devostack.com/hack-for-facts/hack-for-facts-eb-client
-    newName: harbor.devostack.com/hack-for-facts/hack-for-facts-eb-client
-    digest: sha256:3566933cc0f8ce5add6a94bf61fce0a597b023d0c135e979f1d9ff6479b7e7b7
-
 patches:
   - path: configmap-patch.yaml
   - path: remove-platform-owned-resources.yaml
