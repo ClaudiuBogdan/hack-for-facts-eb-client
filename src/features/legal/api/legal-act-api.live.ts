@@ -22,6 +22,7 @@ const ACT_DETAIL_QUERY = /* GraphQL */ `
     $citation: String
     $outFirst: Int!
     $inFirst: Int!
+    $anchorsFirst: Int!
   ) {
     legalAct(actId: $actId, citation: $citation) {
       actId
@@ -118,11 +119,38 @@ const ACT_DETAIL_QUERY = /* GraphQL */ `
           }
         }
       }
-      structure: tree(depth: 1) {
-        nodeId
-        nodeKind
-        label
-        path
+      incomingAnchors(first: $anchorsFirst) {
+        totalCount
+        edges {
+          node {
+            sourceDocumentId
+            linkText
+            targetFragment
+            targetResolution
+            sourceAct {
+              actId
+              displayCitation
+              actType
+              actNumber
+              actYear
+              issuerSlug
+              status
+              inDegree
+            }
+          }
+        }
+      }
+      documents {
+        documentId
+        versionKind
+        versionDate
+        isCanonical
+        title
+        firstPublicationDate
+        render {
+          renderStatus
+          chunkCount
+        }
       }
     }
   }
@@ -151,6 +179,8 @@ const RESOLUTIONS = new Set(['unique', 'cluster', 'unresolved', 'external'])
  */
 const OUT_PAGE_SIZE = 60
 const IN_PAGE_SIZE = 12
+/** Anchors have a REAL totalCount server-side, so a short page is honest. */
+const ANCHORS_PAGE_SIZE = 12
 
 type RawAct = Record<string, unknown>
 
@@ -285,6 +315,32 @@ function mapReferenceGroup(
   }
 }
 
+/**
+ * Anchors arrive as a Relay connection with a REAL `totalCount` (SDL: "never
+ * the page size"), so no saturation dance — but a malformed count still must
+ * not render "0 trimiteri" above a non-empty list, so it falls back to the
+ * page length.
+ */
+function mapIncomingAnchors(value: unknown) {
+  const raw = asRecord(value)
+  const edges = Array.isArray(raw.edges) ? raw.edges : []
+  const items = edges.map((edge) => {
+    const node = asRecord(asRecord(edge).node)
+    return {
+      sourceDocumentId: String(node.sourceDocumentId ?? ''),
+      linkText: asString(node.linkText),
+      targetFragment: asString(node.targetFragment),
+      targetResolution: asString(node.targetResolution),
+      sourceAct: mapListItem(node.sourceAct),
+    }
+  })
+  const reported = asNullableInt(raw.totalCount)
+  return {
+    totalCount: reported !== null && reported >= items.length ? reported : items.length,
+    items,
+  }
+}
+
 function mapAct(raw: RawAct): LegalActDetail {
   const evidence = asRecord(raw.statusEvidence)
   const canonical = raw.canonical ? asRecord(raw.canonical) : null
@@ -381,13 +437,23 @@ function mapAct(raw: RawAct): LegalActDetail {
       IN_PAGE_SIZE,
       asNullableInt(raw.inDegree),
     ),
-    structure: (Array.isArray(raw.structure) ? raw.structure : []).map((entry) => {
+    incomingAnchors: mapIncomingAnchors(raw.incomingAnchors),
+    documents: (Array.isArray(raw.documents) ? raw.documents : []).map((entry) => {
       const item = asRecord(entry)
+      const render = item.render ? asRecord(item.render) : null
       return {
-        nodeId: String(item.nodeId ?? ''),
-        nodeKind: asString(item.nodeKind) ?? 'nod',
-        label: asString(item.label),
-        path: asString(item.path) ?? '',
+        documentId: String(item.documentId ?? ''),
+        versionKind: asString(item.versionKind) ?? 'original',
+        versionDate: asString(item.versionDate),
+        isCanonical: item.isCanonical === true,
+        title: asString(item.title),
+        firstPublicationDate: asString(item.firstPublicationDate),
+        render: render
+          ? {
+              renderStatus: asString(render.renderStatus) ?? 'content_unavailable',
+              chunkCount: asNullableInt(render.chunkCount),
+            }
+          : null,
       }
     }),
     officialTextUrl:
@@ -404,7 +470,12 @@ export async function fetchLegalActDetailLive(
 ): Promise<LegalActDetail | null> {
   const data = await graphqlQuery<{ legalAct: RawAct | null }>(
     ACT_DETAIL_QUERY,
-    { actId, outFirst: OUT_PAGE_SIZE, inFirst: IN_PAGE_SIZE },
+    {
+      actId,
+      outFirst: OUT_PAGE_SIZE,
+      inFirst: IN_PAGE_SIZE,
+      anchorsFirst: ANCHORS_PAGE_SIZE,
+    },
     { operationName: 'legalAct', auth: 'none', signal },
   )
 

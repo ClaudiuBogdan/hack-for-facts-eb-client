@@ -24,6 +24,7 @@ vi.mock('@tanstack/react-router', () => ({
       {children}
     </a>
   ),
+  useNavigate: () => vi.fn(),
 }))
 
 vi.mock('../hooks/use-legal-act', () => ({ useLegalAct: vi.fn() }))
@@ -44,13 +45,13 @@ describe('LegalActPage', () => {
     mockAct(legalActDetailFixture)
   })
 
-  it('leads with the plain-language summary', () => {
+  it('leads with the summary card', () => {
     render(<LegalActPage actId="103524" />)
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
       'Legea nr. 2/2020',
     )
-    expect(screen.getByText('Ce spune, pe scurt')).toBeInTheDocument()
+    expect(screen.getByText('Pe scurt')).toBeInTheDocument()
     expect(
       screen.getByText(/încurajează românii să-și cumpere mașini noi/),
     ).toBeInTheDocument()
@@ -59,12 +60,12 @@ describe('LegalActPage', () => {
   it('routes to the official source without opening anything', () => {
     render(<LegalActPage actId="103524" />)
 
-    // The page describes an act it does not hold the text of, so the route to
-    // the official record is the one thing it owes every reader. It used to be
-    // an underlined link inside the eighth card down.
+    // The route to the official record lives in the summary card's footer
+    // now (user decision 2026-08-12: the header button is gone) — still
+    // reachable without opening anything.
     expect(
       screen
-        .getByRole('link', { name: /Citește textul oficial/ })
+        .getByRole('link', { name: /Textul oficial/ })
         .getAttribute('href'),
     ).toContain('legislatie.just.ro')
   })
@@ -102,21 +103,21 @@ describe('LegalActPage', () => {
     expect(relevance).toHaveTextContent('cetățeni · firme')
   })
 
-  it('warns that the summary is stale before the reader reaches it', () => {
+  it('keeps the staleness warning on the summary card itself', () => {
     mockAct(legalActDetailRichFixture)
     render(<LegalActPage actId="66150" />)
 
     const warning = screen.getByText(
       /Acest act a fost modificat de 295 ori de la publicare/,
     )
-    const summary = screen.getByText('Ce spune, pe scurt')
-
-    expect(warning).toBeInTheDocument()
-    // Order is the point: a warning under the summary is an apology, not a
-    // caveat. `DOCUMENT_POSITION_FOLLOWING` = summary comes after the warning.
-    expect(
-      warning.compareDocumentPosition(summary) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy()
+    // The warning qualifies the summary, so it lives ON the summary card as
+    // a footer row with its headline always visible (user decision
+    // 2026-08-11) — one card, not a separate banner the eye can file away.
+    const card = screen
+      .getByText('Pe scurt')
+      .closest('section')
+    expect(card).not.toBeNull()
+    expect(card).toContainElement(warning)
   })
 
   it('surfaces contradicted abrogations', () => {
@@ -185,9 +186,9 @@ describe('LegalActPage', () => {
     expect(
       screen.getByRole('button', { name: /Ce s-a întâmplat cu acest act/ }),
     ).toHaveTextContent('4 evenimente')
-    expect(
-      screen.getByRole('button', { name: /Cum e structurat/ }),
-    ).toHaveTextContent('12 elemente')
+    // (The structure band now feeds from the outline transport and
+    // self-suppresses without an outline for the fixture's document — its
+    // plural meta is covered by the reader TOC tests.)
     expect(
       screen.getByRole('button', { name: /Unde a fost publicat/ }),
     ).toHaveTextContent('1 publicare')

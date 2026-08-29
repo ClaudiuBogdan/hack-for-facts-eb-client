@@ -8,6 +8,7 @@ export const Route = createLazyFileRoute('/legislation/acts/$actId')({
 
 function LegalActRoutePage() {
   const { actId } = Route.useParams()
+  const { doc, nod } = Route.useSearch()
   const loaderData = Route.useLoaderData() as
     | LegalActRouteLoaderData
     | undefined
@@ -18,6 +19,8 @@ function LegalActRoutePage() {
     <LegalActPage
       actId={actId}
       initialAct={loaderData === undefined ? undefined : loaderData.act}
+      {...(doc !== undefined && { docOverride: doc })}
+      {...(nod !== undefined && { nod })}
     />
   )
 }

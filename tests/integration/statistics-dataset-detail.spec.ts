@@ -1,208 +1,154 @@
 /**
- * Integration tests for the dataset detail page.
+ * Integration tests for the dataset detail disclosure ladder.
  *
  * Route: /statistici/seturi/$cod
- * GraphQL is mocked (fixtures under tests/fixtures/statistics-dataset-detail-flow/).
- *
- * The load-bearing test is `does not fire InsObservations before a territory is
- * pinned`. `insObservations` scans 23.6M rows and an unscoped call is a
- * 30-second server timeout, so the assertion is made on **request
- * interception**, not on UI text: a page that renders a prompt while quietly
- * issuing the query would still pass a text-only check.
- *
- * POP107D is fixtured with two classification dimensions — `SEXE` (which has a
- * "Total" option and therefore auto-pins) and `VARSTA` (which has none). That
- * asymmetry is deliberate: if every classification auto-pinned, the guard's
- * "all classifications pinned" branch would open the query on first paint and
- * the prompt would be unreachable.
+ * Fixtures captured from the live API. In this harness the SSR loader has no
+ * API, so POST A (tier 0) and POST B (series+related) fetch client-side and
+ * are counted against the two-POST budget.
  */
 
 import { test, expect } from '../utils/integration-base'
 import { waitForPageReady } from '../utils/test-helpers'
 import type { MockApiFixture } from '../utils/types'
-import type { Page, Request } from '@playwright/test'
+import type { Page } from '@playwright/test'
 
-/**
- * The first navigation of a worker pays for a cold Vite compile of this lazy
- * route, which pulls in Recharts and papaparse.
- */
-const FIRST_PAINT_TIMEOUT = 45000
-
-const POP107D_ROUTE = '/statistici/seturi/POP107D'
-const TUR101C_ROUTE = '/statistici/seturi/TUR101C'
+const ROUTE = '/statistici/seturi/POP107D'
 
 async function setupMocks(mockApi: MockApiFixture): Promise<void> {
-  await mockApi.mockGraphQL('InsDatasetDetails', 'dataset-pop107d', {
-    variables: { code: 'POP107D' },
-  })
-  await mockApi.mockGraphQL('InsDatasetDetails', 'dataset-tur101c', {
+  await mockApi.mockGraphQL('StatisticsDatasetTier0', 'tier0-catalog-only', {
     variables: { code: 'TUR101C' },
   })
+  await mockApi.mockGraphQL('StatisticsDatasetTier0', 'tier0-not-found', {
+    variables: { code: 'NUEXISTA' },
+  })
+  await mockApi.mockGraphQL('StatisticsDatasetTier0', 'tier0-pop107d')
 
-  // Dimension option pages, keyed by the dimension they belong to.
-  await mockApi.mockGraphQL('InsDatasetDimensionValues', 'dim-territory', {
-    variables: { datasetCode: 'POP107D', dimensionIndex: 1 },
+  // Most specific first: the pinned FEMININ scope, then the default cell.
+  await mockApi.mockGraphQL('StatisticsDatasetSeries', 'series-pop107d-feminin', {
+    variables: {
+      filter: {
+        territoryLevels: ['NATIONAL'],
+        classificationValueCodes: ['FEMININ', 'TOTAL'],
+        classificationTypeCodes: ['SEX', 'AGE_GROUP'],
+        unitCodes: ['PERSONS'],
+      },
+    },
   })
-  await mockApi.mockGraphQL('InsDatasetDimensionValues', 'dim-sexe', {
-    variables: { datasetCode: 'POP107D', dimensionIndex: 2 },
-  })
-  await mockApi.mockGraphQL('InsDatasetDimensionValues', 'dim-varsta', {
-    variables: { datasetCode: 'POP107D', dimensionIndex: 3 },
-  })
+  await mockApi.mockGraphQL('StatisticsDatasetSeries', 'series-pop107d')
 
-  await mockApi.mockGraphQL('InsObservations', 'observations-cluj')
+  await mockApi.mockGraphQL('InsDatasetDimensionValues', 'dimension-values-sex')
 }
 
-/** Counts GraphQL POSTs carrying the `InsObservations` operation. */
-function trackObservationRequests(page: Page): { count: () => number } {
-  let count = 0
-  page.on('request', (request: Request) => {
-    if (request.method() !== 'POST') return
-    if (!request.url().includes('/graphql')) return
-    const body = request.postData() ?? ''
-    if (body.includes('query InsObservations')) count += 1
+function countGraphQLPosts(page: Page): { readonly count: () => number } {
+  let posts = 0
+  page.on('request', (request) => {
+    if (request.url().includes('/graphql') && request.method() === 'POST') {
+      posts += 1
+    }
   })
-  return { count: () => count }
+  return { count: () => posts }
 }
 
-function searchParam(page: Page, key: string): string | null {
-  return new URL(page.url()).searchParams.get(key)
-}
-
-async function pinClujNapoca(page: Page): Promise<void> {
-  // The controls only exist once InsDatasetDetails resolves; waiting for the
-  // trigger explicitly keeps a slow cold compile from reading as a click bug.
-  const trigger = page.getByRole('combobox', { name: 'Localități' })
-  await expect(trigger).toBeVisible({ timeout: FIRST_PAINT_TIMEOUT })
-  await trigger.click()
-  await page.getByRole('option', { name: 'Municipiul Cluj-Napoca' }).click()
-}
-
-test.describe('Dataset detail — scope guard, filters, table, export', () => {
-  test.slow()
+test.describe('Dataset detail — the disclosure ladder', () => {
   test.beforeEach(async ({ mockApi }) => {
     await setupMocks(mockApi)
   })
 
-  test('does not fire InsObservations before a territory is pinned', async ({ page }) => {
-    const observations = trackObservationRequests(page)
-
-    await page.goto(POP107D_ROUTE)
+  test('tier 0 is useful with ZERO interactions', async ({ page }) => {
+    await page.goto(ROUTE)
     await waitForPageReady(page)
 
-    // The prompt naming the missing pins stands in for the table.
-    await expect(page.getByText('Alege ce vrei să vezi')).toBeVisible({ timeout: FIRST_PAINT_TIMEOUT })
+    // The latest resolved value, LARGE, with unit and period.
+    await expect(page.getByText('21.739.373')).toBeVisible({ timeout: 15000 })
+    await expect(page.getByText('pers.').first()).toBeVisible()
 
-    // Give any stray query a chance to fire before asserting it did not.
-    await page.waitForTimeout(1000)
-    expect(observations.count()).toBe(0)
+    // Provenance chips: INS Tempo + the matrix code, never in title position.
+    await expect(page.getByText('INS Tempo').first()).toBeVisible()
+    await expect(page.getByText('POP107D').first()).toBeVisible()
+
+    // The scope sentence marks server-resolved defaults: dotted underline +
+    // ONE legend line on desktop; "(implicit)" lives in the aria-label.
+    await expect(
+      page.getByText(/Valorile subliniate punctat/),
+    ).toBeVisible()
+    await expect(page.getByLabel(/\(implicit\)/).first()).toBeVisible()
+
+    // Trend chart under the number.
+    await expect(page.locator('.recharts-responsive-container')).toBeVisible()
+
+    // Tiers 2–3 are closed accordion rows labeled with their answers.
+    await expect(page.getByText(/Tabelul seriei \(/)).toBeVisible()
+    await expect(page.getByText(/Dimensiuni și clasificări/)).toBeVisible()
+    await expect(page.getByText(/Proveniență și limite/)).toBeVisible()
   })
 
-  test('auto-pins the Total option of the SEXE dimension into the URL', async ({ page }) => {
-    await page.goto(POP107D_ROUTE)
+  test('tier 0 stays inside the two-POST budget', async ({ page }) => {
+    const posts = countGraphQLPosts(page)
+    await page.goto(ROUTE)
     await waitForPageReady(page)
+    await expect(page.getByText('21.739.373')).toBeVisible({ timeout: 15000 })
+    await page.waitForTimeout(1500)
 
-    await expect
-      .poll(() => searchParam(page, 'clasificari'), { timeout: FIRST_PAINT_TIMEOUT })
-      .toContain('SEXE:total')
-
-    // VARSTA has no Total, so it stays unpinned and the prompt names it.
-    expect(searchParam(page, 'clasificari')).not.toContain('VARSTA')
-    await expect(page.getByText(/Grupe de vârstă/).first()).toBeVisible()
+    expect(posts.count()).toBeLessThanOrEqual(2)
   })
 
-  test('picking a territory writes teritoriu and loads the observations', async ({
+  test('the observations table mounts on accordion open and prints values verbatim', async ({
     page,
   }) => {
-    const observations = trackObservationRequests(page)
-
-    await page.goto(POP107D_ROUTE)
+    await page.goto(ROUTE)
     await waitForPageReady(page)
-    await expect(page.getByText('Alege ce vrei să vezi')).toBeVisible({ timeout: FIRST_PAINT_TIMEOUT })
-
-    await pinClujNapoca(page)
-
-    await expect
-      .poll(() => searchParam(page, 'teritoriu'), { timeout: FIRST_PAINT_TIMEOUT })
-      .toBe('siruta:54975')
-
-    await expect(page.getByRole('table')).toBeVisible({ timeout: FIRST_PAINT_TIMEOUT })
-    expect(observations.count()).toBeGreaterThan(0)
-  })
-
-  test('the 2019 gap is a gap: the table skips it rather than filling it', async ({
-    page,
-  }) => {
-    await page.goto(POP107D_ROUTE)
-    await waitForPageReady(page)
-    await pinClujNapoca(page)
-
-    await expect(page.getByRole('table')).toBeVisible({ timeout: FIRST_PAINT_TIMEOUT })
-
-    const periodCell = (period: string) =>
-      page.getByRole('cell', { name: period, exact: true })
-
-    await expect(periodCell('2018')).toBeVisible()
-    await expect(periodCell('2020')).toBeVisible()
-    await expect(periodCell('2019')).toHaveCount(0)
-  })
-
-  test('a value_status row carries its marker and the legend explains it', async ({
-    page,
-  }) => {
-    await page.goto(POP107D_ROUTE)
-    await waitForPageReady(page)
-    await pinClujNapoca(page)
-
-    await expect(page.getByRole('table')).toBeVisible({ timeout: FIRST_PAINT_TIMEOUT })
-    await expect(page.getByLabel('date estimate')).toBeVisible()
-    await expect(page.getByText('Marcaje de calitate INS')).toBeVisible()
-  })
-
-  test('exporting downloads a CSV', async ({ page }) => {
-    await page.goto(POP107D_ROUTE)
-    await waitForPageReady(page)
-    await pinClujNapoca(page)
-
-    await expect(page.getByRole('table')).toBeVisible({ timeout: FIRST_PAINT_TIMEOUT })
-
-    const downloadPromise = page.waitForEvent('download', { timeout: FIRST_PAINT_TIMEOUT })
-    await page.getByRole('button', { name: 'Descarcă CSV' }).click()
-    const download = await downloadPromise
-
-    expect(download.suggestedFilename()).toMatch(/^POP107D-\d{4}-\d{2}-\d{2}\.csv$/)
-  })
-
-  test('a deep link restores the selection without any clicking', async ({ page }) => {
-    await page.goto(
-      `${POP107D_ROUTE}?teritoriu=siruta%3A54975&clasificari=%5B%22SEXE%3Atotal%22%5D`,
-    )
-    await waitForPageReady(page)
-
-    await expect(page.getByRole('table')).toBeVisible({ timeout: FIRST_PAINT_TIMEOUT })
-    await expect(page.getByRole('cell', { name: '2020', exact: true })).toBeVisible()
-  })
-})
-
-test.describe('Dataset detail — catalog-only', () => {
-  test.slow()
-  test.beforeEach(async ({ mockApi }) => {
-    await setupMocks(mockApi)
-  })
-
-  test('shows the request action and no observations UI', async ({ page }) => {
-    const observations = trackObservationRequests(page)
-
-    await page.goto(TUR101C_ROUTE)
-    await waitForPageReady(page)
-
-    await expect(page.getByText('Doar catalog')).toBeVisible({ timeout: FIRST_PAINT_TIMEOUT })
-    await expect(page.getByRole('button', { name: 'Cere set' })).toBeVisible()
+    await expect(page.getByText('21.739.373')).toBeVisible({ timeout: 15000 })
 
     await expect(page.getByRole('table')).toHaveCount(0)
-    await expect(page.getByRole('button', { name: 'Descarcă CSV' })).toHaveCount(0)
+    await page.getByText(/Tabelul seriei \(/).click()
+    await expect(page.getByRole('table')).toBeVisible()
+    await expect(page.getByRole('table')).toContainText('2025')
+  })
 
-    await page.waitForTimeout(500)
-    expect(observations.count()).toBe(0)
+  test('changing a scope segment writes the URL and re-resolves the series', async ({
+    page,
+  }) => {
+    await page.goto(ROUTE)
+    await waitForPageReady(page)
+    await expect(page.getByText('21.739.373')).toBeVisible({ timeout: 15000 })
+
+    // Desktop: the Sexe segment (3 options) opens a popover holding the C4
+    // INLINE list — plain aria-pressed buttons, no combobox. Segment order
+    // follows the dims (Vârste first), so nth(1) is Sexe; the wire names are
+    // capitalized with a trailing space, hence the /i.
+    await page.locator('button', { hasText: /^total/i }).nth(1).click()
+    await page.getByRole('button', { name: /Feminin/i }).click()
+
+    // The URL contract: the pin lands in ?clasificari=.
+    await expect
+      .poll(
+        () =>
+          decodeURIComponent(
+            new URL(page.url()).searchParams.get('clasificari') ?? '',
+          ),
+        { timeout: 5000 },
+      )
+      .toContain('SEX:FEMININ')
+
+    // The hero re-resolves to the pinned cell, (implicit) drops for it.
+    await expect(page.getByText('11.136.500')).toBeVisible({ timeout: 15000 })
+  })
+
+  test('catalog-only datasets keep the request body, never a fake series', async ({
+    page,
+  }) => {
+    await page.goto('/statistici/seturi/TUR101C')
+    await waitForPageReady(page)
+
+    await expect(page.getByTestId('catalog-only-body')).toBeVisible({ timeout: 15000 })
+    await expect(page.getByRole('button', { name: 'Cere set' })).toBeVisible()
+    await expect(page.locator('.recharts-responsive-container')).toHaveCount(0)
+  })
+
+  test('an unknown code renders not-found, not an error page', async ({ page }) => {
+    await page.goto('/statistici/seturi/NUEXISTA')
+    await waitForPageReady(page)
+
+    await expect(page.getByText('Set de date negăsit')).toBeVisible({ timeout: 15000 })
   })
 })

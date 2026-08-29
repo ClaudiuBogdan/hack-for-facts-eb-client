@@ -30,6 +30,7 @@ export const SEARCH_ENTITIES_QUERY = /* GraphQL */ `
     ) {
       query
       engine
+      degraded
       estimatedTotalHits
       facets {
         field
@@ -42,13 +43,11 @@ export const SEARCH_ENTITIES_QUERY = /* GraphQL */ `
         title
         snippet
         score
-        source
         docId
         docKey
         subtitle
         countyName
         url
-        rankBoost
         cuis
         identifiers
         roles
@@ -58,7 +57,7 @@ export const SEARCH_ENTITIES_QUERY = /* GraphQL */ `
   }
 `
 
-/** `score` / `rankBoost` may arrive as number or null; coerce defensively. */
+/** `score` may arrive as number or null; coerce defensively. */
 const numberOrNull = z.union([z.number(), z.string()]).nullable()
 
 const rawSearchFacetSchema = z.object({
@@ -73,13 +72,16 @@ const rawSearchHitSchema = z.object({
   title: z.string(),
   snippet: z.string().nullable(),
   score: numberOrNull,
-  source: z.string().nullable(),
+  // `source` and `rankBoost` were fetched here and discarded: neither reached
+  // the mapper, the seam type, or any component. Dropped 2026-08-26
+  // (SEARCH_LAYER_REVIEW_2026-08-25.md F15). `roles` stays — it is part of the
+  // declared identity contract (filter `docTypes` for what a thing IS, `roles`
+  // for what it PLAYS) and the input filter is plumbed end to end.
   docId: z.union([z.string(), z.number()]).nullable(),
   docKey: z.string().nullable(),
   subtitle: z.string().nullable(),
   countyName: z.string().nullable(),
   url: z.string().nullable(),
-  rankBoost: numberOrNull,
   cuis: z.array(z.string()).nullable(),
   identifiers: z.array(z.string()).nullable(),
   roles: z.array(z.string()).nullable(),
@@ -90,6 +92,14 @@ export const searchEntitiesResponseSchema = z.object({
   searchEntities: z.object({
     query: z.string(),
     engine: z.enum(['meili', 'postgres']),
+    // DEPLOY ORDER: SERVER FIRST, THEN CLIENT — this default does not change
+    // that. An earlier version of this comment claimed the default made a
+    // client-first rollout safe; it does not. The document above SELECTS
+    // `degraded`, so a server without the field rejects the whole query
+    // ("Cannot query field \"degraded\" on type \"GlobalSearchResult\"") and no
+    // response ever reaches Zod. The default only covers a server that answers
+    // without the field, which GraphQL does not do.
+    degraded: z.boolean().optional().default(false),
     estimatedTotalHits: z.number(),
     facets: z.array(rawSearchFacetSchema),
     hits: z.array(rawSearchHitSchema),

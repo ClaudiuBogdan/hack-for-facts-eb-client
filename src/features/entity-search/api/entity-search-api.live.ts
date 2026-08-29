@@ -22,6 +22,8 @@ function emptyResult(query: string): EntitySearchResult {
   return {
     query,
     engine: 'meili',
+    // A blank query is answered without any network call, so nothing degraded.
+    degraded: false,
     estimatedTotalHits: 0,
     facets: [],
     hits: [],

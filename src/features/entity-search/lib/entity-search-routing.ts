@@ -12,6 +12,7 @@
  *   ngo                 /ong-uri/$cui            (internal, cuis[0])
  *   member              /parlament/membri/$id    (internal, best-effort docId)
  *   bill                /parlament/proiecte/$id  (internal, best-effort docId)
+ *   committee           /parlament/comisii/$id   (internal, docKey = committee_key)
  *   legal_act           /legislation/acts/$id    (internal, docId = act_id)
  *   mo_act              url                      (external, new tab)
  *   pnrr_project        url                      (external, new tab)
@@ -63,6 +64,14 @@ const CUI_SPINE_ROUTES: Readonly<Record<string, RouteBuilder>> = {
 const DOC_ID_ROUTES: Readonly<Record<string, RouteBuilder>> = {
   member: (id) => `/parlament/membri/${encodeURIComponent(id)}`,
   bill: (id) => `/parlament/proiecte/${encodeURIComponent(id)}`,
+  // `committee` had a badge but NO route, so every committee hit fell through to
+  // its `url` and sent the user to cdep.ro — for a page we host ourselves. The
+  // palette's `doc_key` IS `parliament.committees.committee_key` (e.g.
+  // `cdep:1:1990:63`), the same value `parliament-committees-page` passes as
+  // `params.committeeKey`. Measured 2026-08-26: all 700 committees carry a
+  // source_url, so this turns an external link into an internal one rather than
+  // fixing a dead row (SEARCH_LAYER_REVIEW_2026-08-25.md F15).
+  committee: (id) => `/parlament/comisii/${encodeURIComponent(id)}`,
   legal_act: (id) => `/legislation/acts/${encodeURIComponent(id)}`,
   procurement_contract: (id) => `/procurement/contracts/${encodeURIComponent(id)}`,
   procurement_procedure: (id) => `/procurement/procedures/${encodeURIComponent(id)}`,

@@ -1,8 +1,10 @@
 /**
- * The reader page over the REAL mock lane (fixtures through the live Zod
- * contract): the envelope path renders the complete proven text, the chunked
- * path declares its extent and loads groups progressively with an explicit
- * button fallback, and every failure state renders as content, not apology.
+ * The act reading layout over the REAL mock lane (fixtures through the live
+ * Zod contract): the envelope path renders the complete proven text, the
+ * chunked path declares its extent and loads groups progressively with an
+ * explicit button fallback, and every failure state renders as content, not
+ * apology. Since 2026-08-10 this layout is the body of the act page itself
+ * (fisa + text on one page), so every render passes a `fisa` slot.
  */
 
 import { readFileSync } from 'node:fs'
@@ -23,9 +25,10 @@ const render = (ui: Parameters<typeof renderShared>[0]) =>
 
 import { legalActDetailFixture } from '../../mocks/fixtures/legal-act-detail'
 import { foldTldfBlocks } from '../../lib/tldf/fold'
-import { LegalReaderPage } from './legal-reader-page'
+import { ActReadingLayout } from './legal-reader-page'
 import type { TldfChunkPayload, TldfEnvelope } from '../../lib/tldf/types'
 
+const navigateMock = vi.fn()
 vi.mock('@tanstack/react-router', () => ({
   Link: ({
     children,
@@ -41,6 +44,7 @@ vi.mock('@tanstack/react-router', () => ({
       {children}
     </a>
   ),
+  useNavigate: () => navigateMock,
 }))
 
 const fixtureDir = join(process.cwd(), 'src/features/legal/mocks/fixtures/tldf')
@@ -57,10 +61,10 @@ const chunk2 = rows100019[2]?.tldf as TldfChunkPayload
 const readerText = (container: HTMLElement): string =>
   container.querySelector('#reader-content')?.textContent ?? ''
 
-describe('LegalReaderPage (mock lane end-to-end)', () => {
+describe('ActReadingLayout (mock lane end-to-end)', () => {
   it('renders the complete envelope text, character-identical to the fold', async () => {
     const { container } = render(
-      <LegalReaderPage actId="424242" initialAct={legalActDetailFixture} docOverride="100023" />,
+      <ActReadingLayout act={legalActDetailFixture} docOverride="100023" lead={null} fisa={null} />,
     )
     await waitFor(() => {
       expect(container.querySelector('#reader-content')).not.toBeNull()
@@ -76,7 +80,7 @@ describe('LegalReaderPage (mock lane end-to-end)', () => {
           ? null
           : { ...legalActDetailFixture.canonical, documentId: '100023' },
     }
-    const { container } = render(<LegalReaderPage actId="424242" initialAct={act} />)
+    const { container } = render(<ActReadingLayout act={act} lead={null} fisa={null} />)
     await waitFor(() => {
       expect(container.querySelector('#reader-content')).not.toBeNull()
     })
@@ -85,7 +89,7 @@ describe('LegalReaderPage (mock lane end-to-end)', () => {
 
   it('declares the extent of a chunked document and loads groups on demand', async () => {
     const { container } = render(
-      <LegalReaderPage actId="424242" initialAct={legalActDetailFixture} docOverride="100019" />,
+      <ActReadingLayout act={legalActDetailFixture} docOverride="100019" lead={null} fisa={null} />,
     )
     // Group 1 loads eagerly. Generous timeouts: the 1.5 MB fixture's dynamic
     // import is transformed on first use and can exceed the 1 s default.
@@ -115,7 +119,7 @@ describe('LegalReaderPage (mock lane end-to-end)', () => {
 
   it('answers the honest unavailable state for a document without servable text', async () => {
     render(
-      <LegalReaderPage actId="424242" initialAct={legalActDetailFixture} docOverride="999999" />,
+      <ActReadingLayout act={legalActDetailFixture} docOverride="999999" lead={null} fisa={null} />,
     )
     expect(
       await screen.findByText(/Nu avem un text servibil pentru acest act/),
@@ -124,8 +128,53 @@ describe('LegalReaderPage (mock lane end-to-end)', () => {
     expect(screen.queryByRole('button', { name: /Încearcă din nou/ })).toBeNull()
   })
 
-  it('renders not-found for an unknown act without an override', () => {
-    render(<LegalReaderPage actId="0" initialAct={null} />)
-    expect(screen.getByText(/Actul nu a fost găsit/)).toBeInTheDocument()
+  it('renders the TOC from the served outline and keeps the text intact', async () => {
+    const { container } = render(
+      <ActReadingLayout act={legalActDetailFixture} docOverride="100023" lead={null} fisa={null} />,
+    )
+    await waitFor(() => {
+      expect(container.querySelector('#reader-content')).not.toBeNull()
+    })
+    // The mock outline derives from the same fixture blocks; the fixture has
+    // six heading kinds, so a TOC must appear.
+    const toc = await screen.findByRole('navigation', { name: /Cuprinsul actului/ })
+    expect(toc).toBeInTheDocument()
+    // The fidelity invariant survives the split layout.
+    expect(readerText(container)).toBe(foldTldfBlocks(envelope.blocks))
+  })
+
+  it('deep-links ?nod= on a chunked document by chaining groups in order', async () => {
+    const { container } = render(
+      <ActReadingLayout
+        act={legalActDetailFixture}
+        docOverride="100019"
+        nod={chunk2.blocks[0]?.id ?? ''}
+        lead={null} fisa={null}
+      />,
+    )
+    // The target lives in group 2: BOTH groups must arrive without any click,
+    // in order (group 1's text always precedes group 2's).
+    await waitFor(
+      () => {
+        expect(readerText(container)).toBe(
+          foldTldfBlocks(chunk1.blocks) + foldTldfBlocks(chunk2.blocks),
+        )
+      },
+      { timeout: 15_000 },
+    )
+  }, 60_000)
+
+  it('says so when a ?nod= cannot be found instead of guessing a scroll', async () => {
+    render(
+      <ActReadingLayout
+        act={legalActDetailFixture}
+        docOverride="100023"
+        nod="9999.9999"
+        lead={null} fisa={null}
+      />,
+    )
+    expect(
+      await screen.findByText(/Nu am găsit fragmentul cerut în acest text/),
+    ).toBeInTheDocument()
   })
 })

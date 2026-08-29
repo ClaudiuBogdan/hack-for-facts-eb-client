@@ -7,8 +7,10 @@ import type {
   InsTimePeriod,
 } from '@/schemas/ins'
 import type {
-  StatisticsLanding,
+  StatisticsLandingCatalog,
+  StatisticsLandingData,
   StatisticsTerritoryHubResult,
+  StatisticsUatSnapshot,
 } from '@/schemas/statistics'
 import { buildDocsFallbackCoverage } from '../lib/coverage'
 import { getDatasetDataStatus } from '../lib/dataset-status'
@@ -251,14 +253,6 @@ const mockCatalogDatasets: readonly InsDataset[] = [
   ...mockAvailableDatasets,
   tur101cCatalogOnlyDataset,
 ]
-
-const mockTopUatDatasetCodes = [
-  'POP107D',
-  'FOM104D',
-  'SOM101F',
-  'SOM103A',
-  'LOC101B',
-] as const
 
 /** Catalog connection used to build landing coverage in mock mode. */
 export const mockStatisticsDatasetCatalog: InsDatasetConnection = {
@@ -561,9 +555,20 @@ function buildMockSparkline(
 /**
  * SIRUTA → mock territory hub result. Unknown SIRUTA codes return `null`
  * (404), matching the live adapter's not-found contract.
+ *
+ * Built LAZILY: `buildMockTerritoryHub` reaches translation helpers
+ * (`buildTerritoryRelatedLinks` → Lingui `t`), and this module is pulled
+ * into the eager route bundle through the api seam — a module-eval call would
+ * run before `i18n.activate` and crash router init.
  */
-const mockTerritoryHubBySiruta: ReadonlyMap<string, StatisticsTerritoryHubResult> =
-  new Map([
+let mockTerritoryHubCache: ReadonlyMap<string, StatisticsTerritoryHubResult> | null =
+  null
+
+function mockTerritoryHubBySiruta(): ReadonlyMap<
+  string,
+  StatisticsTerritoryHubResult
+> {
+  mockTerritoryHubCache ??= new Map([
     [
       '54975',
       buildMockTerritoryHub({
@@ -581,6 +586,8 @@ const mockTerritoryHubBySiruta: ReadonlyMap<string, StatisticsTerritoryHubResult
       }),
     ],
   ])
+  return mockTerritoryHubCache
+}
 
 function buildMockTerritoryHub(params: {
   readonly siruta: string
@@ -646,6 +653,7 @@ function buildMockTerritoryHub(params: {
     relatedLinks: buildTerritoryRelatedLinks({ identity }),
     latestDataPeriod,
     partial: dashboard.partial,
+    benchmarks: {},
   }
 }
 
@@ -657,58 +665,227 @@ function buildMockTerritoryHub(params: {
 export function getMockStatisticsTerritoryHub(
   siruta: string,
 ): StatisticsTerritoryHubResult | null {
-  return mockTerritoryHubBySiruta.get(siruta.trim()) ?? null
+  return mockTerritoryHubBySiruta().get(siruta.trim()) ?? null
 }
 
-export function getMockStatisticsLanding(): StatisticsLanding {
-  const coverage = buildDocsFallbackCoverage()
-  const catalogByCode = new Map(
-    mockCatalogDatasets.map((dataset) => [dataset.code, dataset]),
-  )
-  const priorityDatasets = mockTopUatDatasetCodes.flatMap((code) => {
-    const dataset = catalogByCode.get(code)
-    return dataset ? [dataset] : []
-  })
-  const catalogOnlyPreview = mockCatalogDatasets.find(
-    (dataset) =>
-      getDatasetDataStatus(dataset) === 'catalog-only' &&
-      !priorityDatasets.some((priorityDataset) => priorityDataset.code === dataset.code),
-  )
+// ---------------------------------------------------------------------------
+// Landing fixtures (post-redesign shapes)
+// ---------------------------------------------------------------------------
 
-  const topDatasets = [
-    ...priorityDatasets,
-    ...(catalogOnlyPreview ? [catalogOnlyPreview] : []),
-  ]
-    .map((dataset) => {
-      const dataStatus = getDatasetDataStatus(dataset)
-      const yearRange = dataset.year_range
-      const latestYear =
-        dataStatus === 'available' && yearRange && yearRange.length > 0
-          ? yearRange[yearRange.length - 1]
-          : null
-      return {
-        code: dataset.code,
-        nameRo: dataset.name_ro ?? null,
-        nameEn: dataset.name_en ?? null,
-        periodicity: dataset.periodicity,
-        yearRange: dataset.year_range ?? null,
-        hasUatData: dataset.has_uat_data,
-        hasCountyData: dataset.has_county_data,
-        hasSiruta: dataset.has_siruta,
-        dataStatus,
-        latestPeriod: latestYear ? latestYear.toString() : null,
-        contextNameRo: dataset.context_name_ro ?? null,
-        contextPath: dataset.context_path ?? null,
-      }
-    })
-
-  const latestDataPeriod = pickLatestPeriodString(
-    topDatasets.map((dataset) => dataset.latestPeriod ?? ''),
-  )
-
+/**
+ * Landing POST 1 fixture: national tiles + two decade endpoint years for a
+ * handful of counties (including one missing endpoint → exclusion path) +
+ * the worked mixed-level example.
+ */
+export function getMockStatisticsLandingData(): StatisticsLandingData {
   return {
-    topDatasets,
-    coverage,
-    latestDataPeriod,
+    nationalValues: [
+      {
+        datasetCode: 'POP107D',
+        datasetNameRo: pop107dDataset.name_ro ?? null,
+        datasetNameEn: pop107dDataset.name_en ?? null,
+        periodicity: ['ANNUAL'],
+        matchStrategy: 'PREFERRED_CLASSIFICATION',
+        hasData: true,
+        value: '21739373',
+        valueStatus: null,
+        unitCode: 'PERS',
+        unitSymbol: 'pers.',
+        unitNameRo: 'Numar persoane',
+        period: '2025',
+        resolvedPeriodicity: 'ANNUAL',
+        resolvedClassifications: [{ typeCode: 'SEX', code: 'TOTAL', nameRo: 'Total' }],
+      },
+      {
+        datasetCode: 'FOM104D',
+        datasetNameRo: fom104dDataset.name_ro ?? null,
+        datasetNameEn: fom104dDataset.name_en ?? null,
+        periodicity: ['ANNUAL'],
+        matchStrategy: 'TOTAL_FALLBACK',
+        hasData: true,
+        value: '5453155',
+        valueStatus: null,
+        unitCode: 'PERS',
+        unitSymbol: 'pers.',
+        unitNameRo: 'Numar persoane',
+        period: '2024',
+        resolvedPeriodicity: 'ANNUAL',
+        resolvedClassifications: [{ typeCode: 'SEX', code: 'TOTAL', nameRo: 'Total' }],
+      },
+      {
+        datasetCode: 'SOM101F',
+        datasetNameRo: som101fDataset.name_ro ?? null,
+        datasetNameEn: som101fDataset.name_en ?? null,
+        periodicity: ['ANNUAL', 'MONTHLY'],
+        matchStrategy: 'TOTAL_FALLBACK',
+        hasData: true,
+        value: '1.9',
+        valueStatus: null,
+        unitCode: 'PCT',
+        unitSymbol: '%',
+        unitNameRo: 'Procente',
+        period: '2025-11',
+        resolvedPeriodicity: 'MONTHLY',
+        resolvedClassifications: [{ typeCode: 'SEX', code: 'TOTAL', nameRo: 'Total' }],
+      },
+      {
+        datasetCode: 'LOC101B',
+        datasetNameRo: loc101bDataset.name_ro ?? null,
+        datasetNameEn: loc101bDataset.name_en ?? null,
+        periodicity: ['ANNUAL'],
+        matchStrategy: 'TOTAL_FALLBACK',
+        hasData: true,
+        value: '9722223',
+        valueStatus: null,
+        unitCode: 'NR',
+        unitSymbol: 'nr.',
+        unitNameRo: 'Numar',
+        period: '2023',
+        resolvedPeriodicity: 'ANNUAL',
+        resolvedClassifications: [{ typeCode: 'SEX', code: 'TOTAL', nameRo: 'Total' }],
+      },
+    ],
+    decadeRows: [
+      { countyCode: 'CJ', countyName: 'Cluj', year: 2016, value: '691106', unitNameRo: 'Numar persoane' },
+      { countyCode: 'CJ', countyName: 'Cluj', year: 2025, value: '736302', unitNameRo: 'Numar persoane' },
+      { countyCode: 'TR', countyName: 'Teleorman', year: 2016, value: '360178', unitNameRo: 'Numar persoane' },
+      { countyCode: 'TR', countyName: 'Teleorman', year: 2025, value: '297372', unitNameRo: 'Numar persoane' },
+      { countyCode: 'IF', countyName: 'Ilfov', year: 2016, value: '388738', unitNameRo: 'Numar persoane' },
+      { countyCode: 'IF', countyName: 'Ilfov', year: 2025, value: '542686', unitNameRo: 'Numar persoane' },
+      { countyCode: 'HD', countyName: 'Hunedoara', year: 2016, value: '458106', unitNameRo: 'Numar persoane' },
+      { countyCode: 'HD', countyName: 'Hunedoara', year: 2025, value: '404356', unitNameRo: 'Numar persoane' },
+      // Missing 2016 endpoint on purpose: exercised as EXCLUDED, never zero.
+      { countyCode: 'XX', countyName: 'Exemplu lipsă', year: 2025, value: '100000', unitNameRo: 'Numar persoane' },
+    ],
+    exampleRows: [
+      {
+        level: 'NATIONAL',
+        code: 'RO',
+        siruta: null,
+        name: 'TOTAL',
+        year: 2024,
+        value: '5453155',
+        unitSymbol: 'pers.',
+      },
+      {
+        level: 'NUTS3',
+        code: 'CJ',
+        siruta: null,
+        name: 'Cluj',
+        year: 2024,
+        value: '261239',
+        unitSymbol: 'pers.',
+      },
+      {
+        level: 'LAU',
+        code: '54975',
+        siruta: '54975',
+        name: 'MUNICIPIUL CLUJ-NAPOCA',
+        year: 2024,
+        value: '195025',
+        unitSymbol: 'pers.',
+      },
+    ],
+  }
+}
+
+/** Landing POST 2 fixture: all-loaded corpus (measured live shape). */
+export function getMockStatisticsLandingCatalog(): StatisticsLandingCatalog {
+  return {
+    loadedCount: 1898,
+    catalogCount: 1898,
+    themes: [
+      { code: '1', count: 832 },
+      { code: '2', count: 531 },
+      { code: '3', count: 9 },
+      { code: '4', count: 20 },
+      { code: '5', count: 23 },
+      { code: '6', count: 39 },
+      { code: '7', count: 107 },
+      { code: '8', count: 337 },
+    ],
+  }
+}
+
+/** „Locul tău" fixture for the Cluj-Napoca SIRUTA; null-shape otherwise. */
+export function getMockStatisticsUatSnapshot(siruta: string): StatisticsUatSnapshot {
+  if (siruta.trim() !== '54975') {
+    return { territory: null, values: [] }
+  }
+  return {
+    territory: {
+      code: '54975',
+      siruta: '54975',
+      name: 'MUNICIPIUL CLUJ-NAPOCA',
+      level: 'LAU',
+      countyCode: 'CJ',
+      countyName: 'Cluj',
+    },
+    values: [
+      {
+        datasetCode: 'POP107D',
+        datasetNameRo: pop107dDataset.name_ro ?? null,
+        datasetNameEn: pop107dDataset.name_en ?? null,
+        periodicity: ['ANNUAL'],
+        matchStrategy: 'PREFERRED_CLASSIFICATION',
+        hasData: true,
+        value: '325353',
+        valueStatus: null,
+        unitCode: 'PERS',
+        unitSymbol: 'pers.',
+        unitNameRo: 'Numar persoane',
+        period: '2025',
+        resolvedPeriodicity: 'ANNUAL',
+        resolvedClassifications: [{ typeCode: 'SEX', code: 'TOTAL', nameRo: 'Total' }],
+      },
+      {
+        datasetCode: 'FOM104D',
+        datasetNameRo: fom104dDataset.name_ro ?? null,
+        datasetNameEn: fom104dDataset.name_en ?? null,
+        periodicity: ['ANNUAL'],
+        matchStrategy: 'TOTAL_FALLBACK',
+        hasData: true,
+        value: '195025',
+        valueStatus: null,
+        unitCode: 'PERS',
+        unitSymbol: 'pers.',
+        unitNameRo: 'Numar persoane',
+        period: '2024',
+        resolvedPeriodicity: 'ANNUAL',
+        resolvedClassifications: [{ typeCode: 'SEX', code: 'TOTAL', nameRo: 'Total' }],
+      },
+      {
+        datasetCode: 'SOM101F',
+        datasetNameRo: som101fDataset.name_ro ?? null,
+        datasetNameEn: som101fDataset.name_en ?? null,
+        periodicity: ['ANNUAL', 'MONTHLY'],
+        matchStrategy: 'TOTAL_FALLBACK',
+        hasData: true,
+        value: '0.3',
+        valueStatus: null,
+        unitCode: 'PCT',
+        unitSymbol: '%',
+        unitNameRo: 'Procente',
+        period: '2025-11',
+        resolvedPeriodicity: 'MONTHLY',
+        resolvedClassifications: [{ typeCode: 'SEX', code: 'TOTAL', nameRo: 'Total' }],
+      },
+      {
+        datasetCode: 'LOC101B',
+        datasetNameRo: loc101bDataset.name_ro ?? null,
+        datasetNameEn: loc101bDataset.name_en ?? null,
+        periodicity: ['ANNUAL'],
+        matchStrategy: 'NO_DATA',
+        hasData: false,
+        value: null,
+        valueStatus: null,
+        unitCode: null,
+        unitSymbol: null,
+        unitNameRo: null,
+        period: null,
+        resolvedPeriodicity: null,
+        resolvedClassifications: [],
+      },
+    ],
   }
 }

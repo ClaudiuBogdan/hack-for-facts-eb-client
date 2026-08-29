@@ -1,9 +1,14 @@
 import type {
   InsDimension,
+  InsEntitySelectorInput,
+  InsObservation,
   InsObservationFilterInput,
   InsPeriodicity,
 } from '@/schemas/ins'
-import type { StatisticsDatasetDetailSearch } from '@/schemas/statistics'
+import type {
+  StatisticsDatasetDetailSearch,
+  StatisticsLatestValue,
+} from '@/schemas/statistics'
 
 /**
  * The selection model behind `/statistici/seturi/$cod`.
@@ -18,6 +23,9 @@ import type { StatisticsDatasetDetailSearch } from '@/schemas/statistics'
  * meaningless outside the dataset that produced them.
  */
 
+/** A partial URL-state write: every control patches exactly one key. */
+export type DetailSearchPatch = Partial<StatisticsDatasetDetailSearch>
+
 /** Rows per observations table page. */
 export const DETAIL_PAGE_SIZE = 50
 
@@ -31,8 +39,8 @@ export const CHART_MAX_POINTS = 200
 export const CSV_MAX_ROWS = 10_000
 
 export interface ClassificationPin {
-  readonly type: string
-  readonly value: string
+  readonly typeCode: string
+  readonly valueCode: string
 }
 
 export type TerritoryPin =
@@ -52,29 +60,30 @@ export function parseClassificationPin(pin: string): ClassificationPin | null {
   const separator = pin.indexOf(':')
   if (separator <= 0 || separator === pin.length - 1) return null
 
-  const type = pin.slice(0, separator)
-  const value = pin.slice(separator + 1)
-  if (value.includes(':')) return null
+  const typeCode = pin.slice(0, separator)
+  const valueCode = pin.slice(separator + 1)
+  if (valueCode.includes(':')) return null
 
-  return { type, value }
+  return { typeCode, valueCode }
 }
 
 export function encodeClassificationPin(pin: ClassificationPin): string {
-  return `${pin.type}:${pin.value}`
+  return `${pin.typeCode}:${pin.valueCode}`
 }
 
 /** Decodes the pin list, dropping malformed entries and later duplicates of a type. */
 export function parseClassificationPins(
   pins: readonly string[] | undefined,
 ): readonly ClassificationPin[] {
-  if (!pins) return []
+  if (!pins || !Array.isArray(pins)) return []
 
   const byType = new Map<string, ClassificationPin>()
   for (const raw of pins) {
+    if (typeof raw !== 'string') continue
     const parsed = parseClassificationPin(raw)
     if (!parsed) continue
-    if (byType.has(parsed.type)) continue
-    byType.set(parsed.type, parsed)
+    if (byType.has(parsed.typeCode)) continue
+    byType.set(parsed.typeCode, parsed)
   }
 
   return [...byType.values()]
@@ -85,7 +94,7 @@ export function classificationPinMap(
   pins: readonly string[] | undefined,
 ): ReadonlyMap<string, string> {
   return new Map(
-    parseClassificationPins(pins).map((pin) => [pin.type, pin.value]),
+    parseClassificationPins(pins).map((pin) => [pin.typeCode, pin.valueCode]),
   )
 }
 
@@ -99,10 +108,10 @@ export function upsertClassificationPin(
   next: ClassificationPin,
 ): readonly string[] {
   const existing = parseClassificationPins(pins)
-  const replaced = existing.some((pin) => pin.type === next.type)
+  const replaced = existing.some((pin) => pin.typeCode === next.typeCode)
 
   const merged = replaced
-    ? existing.map((pin) => (pin.type === next.type ? next : pin))
+    ? existing.map((pin) => (pin.typeCode === next.typeCode ? next : pin))
     : [...existing, next]
 
   return merged.map(encodeClassificationPin)
@@ -114,7 +123,7 @@ export function removeClassificationPin(
   type: string,
 ): readonly string[] {
   return parseClassificationPins(pins)
-    .filter((pin) => pin.type !== type)
+    .filter((pin) => pin.typeCode !== type)
     .map(encodeClassificationPin)
 }
 
@@ -126,7 +135,8 @@ export function removeClassificationPin(
 export function parseTerritoryPin(
   pin: string | undefined,
 ): TerritoryPin | null {
-  if (!pin) return null
+  // Raw search values leak past validateSearch with their parsed type.
+  if (!pin || typeof pin !== 'string') return null
 
   const match = /^(siruta|cod):([A-Za-z0-9]+)$/.exec(pin)
   if (!match) return null
@@ -184,194 +194,279 @@ export function isTotalOption(label: string | null | undefined): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// The enabled guard
-// ---------------------------------------------------------------------------
-
-export interface ObservationScope {
-  readonly dimensions: readonly InsDimension[] | null | undefined
-  readonly search: Pick<StatisticsDatasetDetailSearch, 'teritoriu' | 'clasificari'>
-}
-
-/**
- * Whether the observations query may run.
- *
- * `insObservations` scans a 23.6M-row fact table. An unscoped query is a
- * 30-second server timeout, not a slow render, so the query is `enabled` only
- * when the request is narrow enough to hit an index:
- *
- * 1. a territory is pinned, or
- * 2. the dataset has no TERRITORIAL dimension (it is already national), or
- * 3. every CLASSIFICATION dimension is pinned.
- *
- * Case 3 requires at least one classification dimension: a dataset with a
- * territorial dimension and no classifications would otherwise pass on a
- * vacuous "all zero of them are pinned".
- *
- * An unknown dimension list (null, or empty because the detail query has not
- * resolved) is treated as "not safe", not as case 2. Absence of evidence that
- * the dataset is territorial is not evidence that it isn't, and guessing wrong
- * costs a 30-second timeout. A dataset with genuinely zero dimensions has no
- * observations to show anyway.
- */
-export function isObservationsQueryEnabled(scope: ObservationScope): boolean {
-  const dimensions = scope.dimensions ?? []
-  if (dimensions.length === 0) return false
-
-  if (parseTerritoryPin(scope.search.teritoriu)) return true
-
-  const territorial = dimensionsOfType(dimensions, 'TERRITORIAL')
-  if (territorial.length === 0) return true
-
-  return areAllClassificationsPinned(scope)
-}
-
-/** True when the dataset has classification dimensions and each one is pinned. */
-export function areAllClassificationsPinned(scope: ObservationScope): boolean {
-  const classifications = dimensionsOfType(scope.dimensions, 'CLASSIFICATION')
-  if (classifications.length === 0) return false
-
-  const pinned = classificationPinMap(scope.search.clasificari)
-  return classifications.every((dimension) =>
-    pinned.has(classificationTypeCode(dimension)),
-  )
-}
-
-/** Which pins the user still has to make. Drives the scope prompt copy. */
-export function missingScopeRequirements(scope: ObservationScope): {
-  readonly needsTerritory: boolean
-  readonly missingClassificationTypes: readonly string[]
-} {
-  const pinned = classificationPinMap(scope.search.clasificari)
-  const missingClassificationTypes = dimensionsOfType(
-    scope.dimensions,
-    'CLASSIFICATION',
-  )
-    .filter((dimension) => !pinned.has(classificationTypeCode(dimension)))
-    .map(classificationTypeCode)
-
-  return {
-    needsTerritory:
-      dimensionsOfType(scope.dimensions, 'TERRITORIAL').length > 0 &&
-      !parseTerritoryPin(scope.search.teritoriu),
-    missingClassificationTypes,
-  }
-}
-
-/**
- * A chart of one series needs a single value per period, so it draws only once
- * the scope collapses the dataset to one cell per period: one territory (or
- * none to pick), every classification pinned, and one unit.
- */
-export function isSeriesFullyPinned(params: {
-  readonly dimensions: readonly InsDimension[] | null | undefined
-  readonly search: StatisticsDatasetDetailSearch
-}): boolean {
-  const { dimensions, search } = params
-
-  const territorial = dimensionsOfType(dimensions, 'TERRITORIAL')
-  if (territorial.length > 0 && !parseTerritoryPin(search.teritoriu)) return false
-
-  const classifications = dimensionsOfType(dimensions, 'CLASSIFICATION')
-  if (classifications.length > 0) {
-    const pinned = classificationPinMap(search.clasificari)
-    const allPinned = classifications.every((dimension) =>
-      pinned.has(classificationTypeCode(dimension)),
-    )
-    if (!allPinned) return false
-  }
-
-  const units = dimensionsOfType(dimensions, 'UNIT_OF_MEASURE')
-  if (units.length > 0 && !search.unitate) return false
-
-  return true
-}
-
-// ---------------------------------------------------------------------------
 // Server filter
 // ---------------------------------------------------------------------------
 
-/** Zero-based offset for the requested observations page. */
-export function detailOffset(search: StatisticsDatasetDetailSearch): number {
-  const page = search.pagina ?? 1
-  return (page - 1) * DETAIL_PAGE_SIZE
-}
+// ---------------------------------------------------------------------------
+// Tier-0 resolution (server-resolved defaults + effective scope)
+// ---------------------------------------------------------------------------
 
-/** Effective `[from, to]` year window: URL pins, clamped to the dataset's range. */
-export function resolveYearWindow(params: {
-  readonly search: Pick<StatisticsDatasetDetailSearch, 'din' | 'pana'>
-  readonly yearRange: readonly number[] | null | undefined
-}): { readonly from: number; readonly to: number } | null {
-  const range = params.yearRange
-  const datasetFrom = range && range.length > 0 ? Math.min(...range) : null
-  const datasetTo = range && range.length > 0 ? Math.max(...range) : null
+/** Rows fetched for the resolved series (also the table's backing rows). */
+export const SERIES_MAX_ROWS = 1000
 
-  const from = params.search.din ?? datasetFrom
-  const to = params.search.pana ?? datasetTo
-  if (from === null || to === null) return null
-
-  return from <= to ? { from, to } : { from: to, to: from }
-}
-
-/** The dataset's periodicity to draw at: the URL pin, else its only one. */
-export function resolvePeriodicity(params: {
-  readonly search: Pick<StatisticsDatasetDetailSearch, 'frecventa'>
-  readonly periodicity: readonly InsPeriodicity[] | null | undefined
-}): InsPeriodicity | null {
-  if (params.search.frecventa) return params.search.frecventa
-
-  const available = params.periodicity ?? []
-  return available.length === 1 ? available[0] : null
+export const NATIONAL_ENTITY: InsEntitySelectorInput = {
+  territoryCode: 'RO',
+  territoryLevel: 'NATIONAL',
 }
 
 /**
- * Builds the `InsObservationFilterInput` for the current URL state.
- *
- * `cod:` territory pins are NUTS3 county codes, so they carry an explicit
- * `territoryLevels` — without it `territoryCodes: ['CJ']` would also match a
- * LAU whose code happens to collide.
+ * The territory level a `cod:` pin denotes. Explicit fallthrough: an
+ * unrecognized shape (e.g. a NUTS2 code) resolves to null and the caller
+ * treats the pin as absent rather than guessing a level.
  */
-export function buildObservationFilter(params: {
+export function inferCodTerritoryLevel(
+  value: string,
+): 'NATIONAL' | 'NUTS3' | 'LAU' | null {
+  const trimmed = value.trim()
+  if (trimmed.toUpperCase() === 'RO') return 'NATIONAL'
+  if (/^[A-Za-z]{1,2}$/.test(trimmed)) return 'NUTS3'
+  if (/^\d+$/.test(trimmed)) return 'LAU'
+  return null
+}
+
+/**
+ * Maps a territory pin to the `insLatestDatasetValues` entity selector.
+ * Invalid pins yield null → the caller falls back to the national entity.
+ */
+export function territoryPinToEntity(
+  pin: TerritoryPin | null,
+): InsEntitySelectorInput | null {
+  if (!pin) return null
+  if (pin.kind === 'siruta') return { sirutaCode: pin.value }
+
+  const level = inferCodTerritoryLevel(pin.value)
+  if (level === null) return null
+  if (level === 'LAU') return { sirutaCode: pin.value }
+  return { territoryCode: pin.value.toUpperCase(), territoryLevel: level }
+}
+
+
+function singlePeriodicity(
+  periodicity: readonly string[] | undefined,
+): InsPeriodicity | null {
+  return periodicity?.length === 1 ? (periodicity[0] as InsPeriodicity) : null
+}
+
+export interface EffectiveScope {
+  /** The territory pin, or null = the national default. */
+  readonly territory: TerritoryPin | null
+  readonly territoryDefaulted: boolean
+  /** type code → value code: URL pins over server-resolved defaults. */
+  readonly classifications: ReadonlyMap<string, string>
+  /** The classification types whose value came from the resolved default. */
+  readonly defaultedTypes: ReadonlySet<string>
+  readonly unitCode: string | null
+  readonly unitDefaulted: boolean
+  readonly periodicity: InsPeriodicity | null
+}
+
+/**
+ * The effective tier-0 scope: URL pins where present, server-resolved
+ * defaults everywhere else. Defaults are display-marked (defaultedTypes,
+ * territoryDefaulted) and never written into the URL.
+ */
+export function buildEffectiveScope(params: {
   readonly search: StatisticsDatasetDetailSearch
-  readonly yearRange?: readonly number[] | null
-}): InsObservationFilterInput {
-  const { search } = params
+  readonly latest: StatisticsLatestValue | null
+}): EffectiveScope {
+  const { search, latest } = params
+
+  const rawTerritory = parseTerritoryPin(search.teritoriu)
+  // Unknown cod: level (e.g. NUTS2) is treated as no pin — never guessed.
+  const territory =
+    rawTerritory?.kind === 'cod' &&
+    inferCodTerritoryLevel(rawTerritory.value) === null
+      ? null
+      : rawTerritory
+  const pinned = classificationPinMap(search.clasificari)
+
+  const classifications = new Map<string, string>()
+  const defaultedTypes = new Set<string>()
+
+  for (const resolved of latest?.resolvedClassifications ?? []) {
+    classifications.set(resolved.typeCode, resolved.code)
+    defaultedTypes.add(resolved.typeCode)
+  }
+  for (const [typeCode, value] of pinned) {
+    classifications.set(typeCode, value)
+    defaultedTypes.delete(typeCode)
+  }
+
+  const unitCode = search.unitate ?? latest?.unitCode ?? null
+
+  return {
+    territory,
+    territoryDefaulted: territory === null,
+    classifications,
+    defaultedTypes,
+    unitCode,
+    unitDefaulted: !search.unitate && unitCode !== null,
+    // Explicit product rule, never string grammar: the URL pin, else the
+    // dataset's only cadence, else MONTHLY when offered (the freshest view),
+    // else the resolved observation's own periodicity FIELD.
+    periodicity:
+      search.frecventa ??
+      (singlePeriodicity(latest?.periodicity) ||
+        (latest?.periodicity?.includes('MONTHLY') ? 'MONTHLY' : null) ||
+        latest?.resolvedPeriodicity ||
+        null),
+  }
+}
+
+/**
+ * The series/table filter for an effective scope. Always territory-scoped
+ * (national by default) so it can never issue the unscoped 23.6M-row query.
+ *
+ * Both classification lists are sent when every type code is a real server
+ * code (type-aware AND). The server's semantics share ONE value set across
+ * types, so a multi-type scope can still match sibling cells —
+ * {@link filterExactCell} makes the single-cell guarantee client-side.
+ */
+export function buildSeriesFilter(scope: EffectiveScope): InsObservationFilterInput {
   const filter: InsObservationFilterInput = {}
 
-  const territory = parseTerritoryPin(search.teritoriu)
-  if (territory?.kind === 'siruta') {
-    filter.sirutaCodes = [territory.value]
-  } else if (territory?.kind === 'cod') {
-    filter.territoryCodes = [territory.value]
-    filter.territoryLevels = ['NUTS3']
+  if (scope.territory?.kind === 'siruta') {
+    filter.sirutaCodes = [scope.territory.value]
+  } else if (scope.territory?.kind === 'cod') {
+    const level = inferCodTerritoryLevel(scope.territory.value)
+    if (level === 'LAU') {
+      filter.sirutaCodes = [scope.territory.value]
+    } else if (level !== null) {
+      filter.territoryCodes = [scope.territory.value.toUpperCase()]
+      filter.territoryLevels = [level]
+    } else {
+      // Unknown cod: shape (e.g. a NUTS2 code) — rejected, never guessed.
+      filter.territoryLevels = ['NATIONAL']
+    }
+  } else {
+    filter.territoryLevels = ['NATIONAL']
   }
 
-  // `InsObservationFilterInput` takes a flat list of value codes, so two
-  // dimensions that both name their aggregate `total` collapse to one entry.
-  // Deduplicating keeps the request honest about that rather than sending a
-  // list the server would read as a repeated constraint.
-  const classifications = parseClassificationPins(search.clasificari)
-  if (classifications.length > 0) {
+  if (scope.classifications.size > 0) {
     filter.classificationValueCodes = [
-      ...new Set(classifications.map((pin) => pin.value)),
+      ...new Set(scope.classifications.values()),
     ]
-  }
-
-  if (search.unitate) {
-    filter.unitCodes = [search.unitate]
-  }
-
-  const window = resolveYearWindow({ search, yearRange: params.yearRange })
-  if (window && (search.din !== undefined || search.pana !== undefined)) {
-    filter.period = {
-      type: 'YEAR',
-      selection: {
-        interval: {
-          start: `${window.from}`,
-          end: `${window.to}`,
-        },
-      },
+    const typeCodes = [...scope.classifications.keys()]
+    if (typeCodes.every((code) => !code.startsWith('DIM'))) {
+      filter.classificationTypeCodes = typeCodes
     }
   }
 
+  if (scope.unitCode) {
+    filter.unitCodes = [scope.unitCode]
+  }
+
   return filter
+}
+
+/**
+ * Keeps only the rows of the EXACT resolved cell: for every classification
+ * type in scope, the row carries that type with the scoped value. This is the
+ * guarantee the server filter cannot make (shared value set across types).
+ */
+export function filterExactCell(
+  observations: readonly InsObservation[],
+  classifications: ReadonlyMap<string, string>,
+): readonly InsObservation[] {
+  if (classifications.size === 0) return observations
+
+  return observations.filter((observation) => {
+    for (const [typeCode, valueCode] of classifications) {
+      const match = (observation.classifications ?? []).find(
+        (classification) => classification.type_code === typeCode,
+      )
+      if (!match || match.code !== valueCode) return false
+    }
+    return true
+  })
+}
+
+/**
+ * The canonical scope key: ONE serialization consumed by loaderDeps, query
+ * keys, and initialData matching, so they can never drift apart. `din`/`pana`
+ * window client-side and `pagina` pages client-side — neither enters the key.
+ */
+export function detailScopeKey(
+  search: StatisticsDatasetDetailSearch,
+): string {
+  // frecventa and din/pana window CLIENT-side; pagina pages client-side —
+  // none of them belongs in the fetch identity.
+  return JSON.stringify({
+    teritoriu: search.teritoriu ?? null,
+    clasificari: [...(search.clasificari ?? [])].sort(),
+    unitate: search.unitate ?? null,
+  })
+}
+
+/** The observed year span of fetched rows — never the catalog `year_range`. */
+export function observedYearSpan(
+  observations: readonly InsObservation[],
+): { readonly from: number; readonly to: number } | null {
+  let from = Number.POSITIVE_INFINITY
+  let to = Number.NEGATIVE_INFINITY
+  for (const observation of observations) {
+    from = Math.min(from, observation.time_period.year)
+    to = Math.max(to, observation.time_period.year)
+  }
+  if (!Number.isFinite(from) || !Number.isFinite(to)) return null
+  return { from, to }
+}
+
+// ---------------------------------------------------------------------------
+// Comparison territory tokens (shared with /statistici/comparatii)
+// ---------------------------------------------------------------------------
+
+/**
+ * A compared territory as the URL carries it: a discriminated token
+ * (`siruta:54975` | `cod:CJ` | `cod:RO`) resolved to the territory CODE the
+ * observation filter speaks, plus its DETERMINISTIC level (derived from the
+ * token shape, so an empty result row still knows its level). A LAU's code IS
+ * its SIRUTA code — one `territoryCodes` filter serves mixed levels; filter
+ * keys AND together, so `sirutaCodes` must never be mixed in.
+ */
+export interface ComparisonTerritoryToken {
+  readonly token: string
+  readonly code: string
+  readonly level: 'NATIONAL' | 'NUTS3' | 'LAU'
+}
+
+/**
+ * Normalizes one URL entry: bare digits are a legacy SIRUTA-only link. Raw
+ * search values leak past validateSearch with their parsed type, so numbers
+ * are accepted and coerced; everything else non-string is rejected.
+ */
+export function parseComparisonToken(raw: unknown): ComparisonTerritoryToken | null {
+  if (typeof raw !== 'string' && typeof raw !== 'number') return null
+  const trimmed = String(raw).trim()
+  if (/^\d{1,6}$/.test(trimmed)) {
+    return { token: `siruta:${trimmed}`, code: trimmed, level: 'LAU' }
+  }
+  const match = /^(siruta|cod):([A-Za-z0-9]+)$/.exec(trimmed)
+  if (!match) return null
+  if (match[1] === 'siruta') {
+    if (!/^\d{1,6}$/.test(match[2])) return null
+    return { token: `siruta:${match[2]}`, code: match[2], level: 'LAU' }
+  }
+  const level = inferCodTerritoryLevel(match[2])
+  if (level === null) return null
+  if (level === 'LAU') {
+    return { token: `siruta:${match[2]}`, code: match[2], level: 'LAU' }
+  }
+  const code = match[2].toUpperCase()
+  return { token: `cod:${code}`, code, level }
+}
+
+/** Parses the URL list, dropping malformed entries and duplicate codes. */
+export function parseComparisonTokens(
+  raw: readonly unknown[] | unknown,
+): readonly ComparisonTerritoryToken[] {
+  // A lone string (`?teritorii=siruta:54975` without brackets) is a list of one.
+  const entries = Array.isArray(raw) ? raw : raw === undefined ? [] : [raw]
+  const byCode = new Map<string, ComparisonTerritoryToken>()
+  for (const entry of entries) {
+    const parsed = parseComparisonToken(entry)
+    if (!parsed || byCode.has(parsed.code)) continue
+    byCode.set(parsed.code, parsed)
+  }
+  return [...byCode.values()]
 }

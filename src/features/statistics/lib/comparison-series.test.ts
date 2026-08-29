@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { InsObservation, InsTimePeriod } from '@/schemas/ins'
+import { filterExactCell } from './dataset-selection'
 import {
+  parseComparisonTokens,
   buildBarSeries,
   buildComparisonMatrix,
   buildLineSeries,
@@ -39,7 +41,7 @@ function monthly(year: number, month: number): InsTimePeriod {
 }
 
 function observation(params: {
-  siruta: string
+  code: string
   name?: string
   period: InsTimePeriod
   value: string | null
@@ -50,10 +52,10 @@ function observation(params: {
     value: params.value,
     time_period: params.period,
     territory: {
-      code: params.siruta,
-      siruta_code: params.siruta,
+      code: params.code,
+      siruta_code: params.code,
       level: 'LAU',
-      name_ro: params.name ?? `Territory ${params.siruta}`,
+      name_ro: params.name ?? `Territory ${params.code}`,
     },
     unit: params.unitSymbol ? { code: 'NR', symbol: params.unitSymbol } : null,
   }
@@ -62,10 +64,10 @@ function observation(params: {
 describe('buildPeriodOptions', () => {
   it('dedupes periods and sorts them oldest-first', () => {
     const options = buildPeriodOptions([
-      observation({ siruta: '1', period: annual(2024), value: '3' }),
-      observation({ siruta: '2', period: annual(2022), value: '1' }),
-      observation({ siruta: '1', period: annual(2022), value: '2' }),
-      observation({ siruta: '2', period: annual(2023), value: '4' }),
+      observation({ code: '1', period: annual(2024), value: '3' }),
+      observation({ code: '2', period: annual(2022), value: '1' }),
+      observation({ code: '1', period: annual(2022), value: '2' }),
+      observation({ code: '2', period: annual(2023), value: '4' }),
     ])
 
     expect(options.map((option) => option.isoPeriod)).toEqual([
@@ -77,9 +79,9 @@ describe('buildPeriodOptions', () => {
 
   it('orders quarterly periods chronologically across a year boundary', () => {
     const options = buildPeriodOptions([
-      observation({ siruta: '1', period: quarterly(2024, 2), value: '3' }),
-      observation({ siruta: '1', period: quarterly(2024, 1), value: '2' }),
-      observation({ siruta: '1', period: quarterly(2023, 4), value: '1' }),
+      observation({ code: '1', period: quarterly(2024, 2), value: '3' }),
+      observation({ code: '1', period: quarterly(2024, 1), value: '2' }),
+      observation({ code: '1', period: quarterly(2023, 4), value: '1' }),
     ])
 
     expect(options.map((option) => option.isoPeriod)).toEqual([
@@ -91,9 +93,9 @@ describe('buildPeriodOptions', () => {
 
   it('orders monthly periods chronologically across a year boundary', () => {
     const options = buildPeriodOptions([
-      observation({ siruta: '1', period: monthly(2024, 3), value: '3' }),
-      observation({ siruta: '1', period: monthly(2024, 1), value: '2' }),
-      observation({ siruta: '1', period: monthly(2023, 11), value: '1' }),
+      observation({ code: '1', period: monthly(2024, 3), value: '3' }),
+      observation({ code: '1', period: monthly(2024, 1), value: '2' }),
+      observation({ code: '1', period: monthly(2023, 11), value: '1' }),
     ])
 
     expect(options.map((option) => option.isoPeriod)).toEqual([
@@ -110,9 +112,9 @@ describe('buildPeriodOptions', () => {
     // is that the order follows `periodSortKey` on the structured
     // year/quarter/month fields — the numbers the server actually gave us.
     const options = buildPeriodOptions([
-      observation({ siruta: '1', period: quarterly(2024, 4), value: '1' }),
-      observation({ siruta: '1', period: annual(2024), value: '2' }),
-      observation({ siruta: '1', period: monthly(2025, 1), value: '3' }),
+      observation({ code: '1', period: quarterly(2024, 4), value: '1' }),
+      observation({ code: '1', period: annual(2024), value: '2' }),
+      observation({ code: '1', period: monthly(2025, 1), value: '3' }),
     ])
 
     const keys = options.map((option) => option.sortKey)
@@ -128,8 +130,8 @@ describe('buildPeriodOptions', () => {
 
 describe('resolveSelectedPeriod', () => {
   const periods = buildPeriodOptions([
-    observation({ siruta: '1', period: annual(2022), value: '1' }),
-    observation({ siruta: '1', period: annual(2024), value: '2' }),
+    observation({ code: '1', period: annual(2022), value: '1' }),
+    observation({ code: '1', period: annual(2024), value: '2' }),
   ])
 
   it('defaults to the latest period', () => {
@@ -151,33 +153,33 @@ describe('resolveSelectedPeriod', () => {
 
 describe('buildComparisonMatrix', () => {
   const observations = [
-    observation({ siruta: '54975', name: 'Cluj-Napoca', period: annual(2023), value: '286598', unitSymbol: 'Nr' }),
-    observation({ siruta: '54975', name: 'Cluj-Napoca', period: annual(2024), value: '288104' }),
-    observation({ siruta: '54984', name: 'Turda', period: annual(2023), value: '43302' }),
+    observation({ code: '54975', name: 'Cluj-Napoca', period: annual(2023), value: '286598', unitSymbol: 'Nr' }),
+    observation({ code: '54975', name: 'Cluj-Napoca', period: annual(2024), value: '288104' }),
+    observation({ code: '54984', name: 'Turda', period: annual(2023), value: '43302' }),
     // Turda genuinely has no 2024 figure.
-    observation({ siruta: '54993', name: 'Dej', period: annual(2023), value: '32118' }),
-    observation({ siruta: '54993', name: 'Dej', period: annual(2024), value: '31904' }),
+    observation({ code: '54993', name: 'Dej', period: annual(2023), value: '32118' }),
+    observation({ code: '54993', name: 'Dej', period: annual(2024), value: '31904' }),
   ]
 
   it('builds one row per requested territory, in selection order', () => {
     const matrix = buildComparisonMatrix({
       observations,
-      sirutaCodes: ['54993', '54975', '54984'],
+      territoryCodes: ['54993', '54975', '54984'],
     })
 
-    expect(matrix.rows.map((row) => row.siruta)).toEqual(['54993', '54975', '54984'])
+    expect(matrix.rows.map((row) => row.code)).toEqual(['54993', '54975', '54984'])
     expect(matrix.rows.map((row) => row.name)).toEqual(['Dej', 'Cluj-Napoca', 'Turda'])
   })
 
   it('reads the unit symbol off the observations', () => {
-    const matrix = buildComparisonMatrix({ observations, sirutaCodes: ['54975'] })
+    const matrix = buildComparisonMatrix({ observations, territoryCodes: ['54975'] })
     expect(matrix.unitSymbol).toBe('Nr')
   })
 
   it('leaves a missing cell missing instead of borrowing another period', () => {
     const matrix = buildComparisonMatrix({
       observations,
-      sirutaCodes: ['54975', '54984'],
+      territoryCodes: ['54975', '54984'],
     })
     const turda = matrix.rows[1]
 
@@ -188,15 +190,15 @@ describe('buildComparisonMatrix', () => {
   it('keeps a row for a territory with no observations at all', () => {
     const matrix = buildComparisonMatrix({
       observations,
-      sirutaCodes: ['54975', '999999'],
+      territoryCodes: ['54975', '999999'],
     })
 
     expect(matrix.rows).toHaveLength(2)
-    expect(matrix.rows[1]).toEqual({ siruta: '999999', name: null, cells: {} })
+    expect(matrix.rows[1]).toEqual({ code: '999999', name: null, cells: {} })
   })
 
   it('ignores observations for territories that were not requested', () => {
-    const matrix = buildComparisonMatrix({ observations, sirutaCodes: ['54975'] })
+    const matrix = buildComparisonMatrix({ observations, territoryCodes: ['54975'] })
     expect(matrix.rows).toHaveLength(1)
     expect(Object.keys(matrix.rows[0].cells)).toEqual(['2023', '2024'])
   })
@@ -204,10 +206,10 @@ describe('buildComparisonMatrix', () => {
   it('keeps the first of two observations for the same cell rather than summing', () => {
     const matrix = buildComparisonMatrix({
       observations: [
-        observation({ siruta: '54975', period: annual(2024), value: '10' }),
-        observation({ siruta: '54975', period: annual(2024), value: '20' }),
+        observation({ code: '54975', period: annual(2024), value: '10' }),
+        observation({ code: '54975', period: annual(2024), value: '20' }),
       ],
-      sirutaCodes: ['54975'],
+      territoryCodes: ['54975'],
     })
 
     expect(getComparisonCell(matrix.rows[0], '2024')?.value).toBe('10')
@@ -216,7 +218,7 @@ describe('buildComparisonMatrix', () => {
   it('exposes every period present across all territories', () => {
     const matrix = buildComparisonMatrix({
       observations,
-      sirutaCodes: ['54975', '54984', '54993'],
+      territoryCodes: ['54975', '54984', '54993'],
     })
     expect(matrix.periods.map((period) => period.isoPeriod)).toEqual(['2023', '2024'])
   })
@@ -246,16 +248,16 @@ describe('toChartValue', () => {
 describe('buildBarSeries', () => {
   const matrix = buildComparisonMatrix({
     observations: [
-      observation({ siruta: '54975', name: 'Cluj-Napoca', period: annual(2024), value: '288104' }),
-      observation({ siruta: '54984', name: 'Turda', period: annual(2023), value: '43302' }),
+      observation({ code: '54975', name: 'Cluj-Napoca', period: annual(2024), value: '288104' }),
+      observation({ code: '54984', name: 'Turda', period: annual(2023), value: '43302' }),
     ],
-    sirutaCodes: ['54975', '54984'],
+    territoryCodes: ['54975', '54984'],
   })
 
   it('emits null (a gap) for a territory missing the selected period', () => {
     expect(buildBarSeries(matrix, '2024')).toEqual([
-      { siruta: '54975', name: 'Cluj-Napoca', value: 288104 },
-      { siruta: '54984', name: 'Turda', value: null },
+      { code: '54975', name: 'Cluj-Napoca', value: 288104 },
+      { code: '54984', name: 'Turda', value: null },
     ])
   })
 
@@ -268,11 +270,11 @@ describe('buildLineSeries', () => {
   it('emits explicit nulls for gaps so connectNulls={false} can break the line', () => {
     const matrix = buildComparisonMatrix({
       observations: [
-        observation({ siruta: '54975', period: annual(2023), value: '2' }),
-        observation({ siruta: '54975', period: annual(2024), value: '3' }),
-        observation({ siruta: '54984', period: annual(2023), value: '1' }),
+        observation({ code: '54975', period: annual(2023), value: '2' }),
+        observation({ code: '54975', period: annual(2024), value: '3' }),
+        observation({ code: '54984', period: annual(2023), value: '1' }),
       ],
-      sirutaCodes: ['54975', '54984'],
+      territoryCodes: ['54975', '54984'],
     })
 
     expect(buildLineSeries(matrix)).toEqual([
@@ -288,10 +290,10 @@ describe('buildLineSeries', () => {
   it('orders points oldest-first across a year boundary', () => {
     const matrix = buildComparisonMatrix({
       observations: [
-        observation({ siruta: '1', period: quarterly(2024, 1), value: '2' }),
-        observation({ siruta: '1', period: quarterly(2023, 4), value: '1' }),
+        observation({ code: '1', period: quarterly(2024, 1), value: '2' }),
+        observation({ code: '1', period: quarterly(2023, 4), value: '1' }),
       ],
-      sirutaCodes: ['1'],
+      territoryCodes: ['1'],
     })
 
     expect(buildLineSeries(matrix).map((point) => point.isoPeriod)).toEqual([
@@ -320,7 +322,8 @@ describe('classification pins', () => {
       typeCode: 'SEX',
       valueCode: 'M',
     })
-    expect(pins).toEqual(['AGE:ALL', 'SEX:M'])
+    // The canonical codec upserts IN PLACE: the pin keeps its slot.
+    expect(pins).toEqual(['SEX:M', 'AGE:ALL'])
   })
 
   it('removes every pin for a dimension type', () => {
@@ -404,5 +407,61 @@ describe('resolveEffectiveClassificationPins', () => {
         urlPins: [],
       }),
     ).toEqual([])
+  })
+})
+
+describe('parseComparisonTokens (mixed-level URL tokens)', () => {
+  it('accepts siruta:, cod:, and legacy bare-digit entries', () => {
+    const tokens = parseComparisonTokens([
+      'siruta:54975',
+      'cod:cj',
+      'cod:RO',
+      '179132',
+    ])
+    expect(tokens).toEqual([
+      { token: 'siruta:54975', code: '54975', level: 'LAU' },
+      { token: 'cod:CJ', code: 'CJ', level: 'NUTS3' },
+      { token: 'cod:RO', code: 'RO', level: 'NATIONAL' },
+      { token: 'siruta:179132', code: '179132', level: 'LAU' },
+    ])
+  })
+
+  it('drops malformed entries and duplicate codes', () => {
+    const tokens = parseComparisonTokens([
+      'siruta:54975',
+      '54975',
+      'garbage entry',
+      'cod:',
+    ])
+    expect(tokens).toEqual([{ token: 'siruta:54975', code: '54975', level: 'LAU' }])
+  })
+})
+
+describe('exact-cell filtering before the matrix (A5)', () => {
+  it('drops the sibling cell the server filter admits', () => {
+    const exact = {
+      ...observation({ code: '54975', period: annual(2024), value: '10' }),
+      classifications: [
+        { type_code: 'SEX', code: 'FEMININ' },
+        { type_code: 'AGE_GROUP', code: 'TOTAL' },
+      ],
+    }
+    const sibling = {
+      ...observation({ code: '54975', period: annual(2024), value: '20' }),
+      classifications: [
+        { type_code: 'SEX', code: 'TOTAL' },
+        { type_code: 'AGE_GROUP', code: 'TOTAL' },
+      ],
+    }
+    const pinMap = new Map([
+      ['SEX', 'FEMININ'],
+      ['AGE_GROUP', 'TOTAL'],
+    ])
+    const matrix = buildComparisonMatrix({
+      observations: filterExactCell([sibling, exact], pinMap),
+      territoryCodes: ['54975'],
+    })
+    // ONE number per territory×period — the exact cell, not the first write.
+    expect(matrix.rows[0]?.cells['2024']?.value).toBe('10')
   })
 })

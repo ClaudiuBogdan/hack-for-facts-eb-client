@@ -1,5 +1,6 @@
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
+import { Link } from '@tanstack/react-router'
 import { MapPin } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import type { StatisticsTerritoryIdentity } from '@/schemas/statistics'
@@ -30,6 +31,28 @@ export function TerritoryHeader({ identity }: TerritoryHeaderProps) {
 
   return (
     <div className="space-y-3">
+      <nav aria-label={t`Ierarhie teritorială`} className="text-xs text-muted-foreground">
+        <ol className="flex flex-wrap items-center gap-1">
+          <li>
+            <Link
+              to="/statistici"
+              className="underline-offset-2 hover:text-foreground hover:underline"
+            >
+              <Trans>România</Trans>
+            </Link>
+          </li>
+          {identity.countyName ? (
+            <li className="flex items-center gap-1">
+              <span aria-hidden>/</span>
+              <Trans>județul</Trans> {identity.countyName}
+            </li>
+          ) : null}
+          <li className="flex items-center gap-1" aria-current="page">
+            <span aria-hidden>/</span>
+            <span className="text-foreground">{name}</span>
+          </li>
+        </ol>
+      </nav>
       <div className="flex flex-wrap items-center gap-2">
         <MapPin className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
         <h1 className="text-2xl font-semibold tracking-tight">{name}</h1>

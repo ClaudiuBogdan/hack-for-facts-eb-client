@@ -1,5 +1,7 @@
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Trans } from '@lingui/react/macro'
 import {
   Select,
   SelectContent,
@@ -22,6 +24,7 @@ import type {
 } from '@/schemas/parliament'
 import {
   countActiveBillFilters,
+  getBillLastEventDateChipLabel,
   getBillLocationChipLabel,
   getBillTypeChipLabel,
 } from '../lib/bills-filter'
@@ -151,6 +154,54 @@ export function ParliamentBillsFilterSheet({
               </SelectContent>
             </Select>
           </section>
+
+          <section className="space-y-2">
+            <Label className={SECTION_LABEL_CLASS}>
+              <Trans>Data ultimei etape</Trans>
+            </Label>
+            <p className="text-sm leading-5 text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              <Trans>
+                Filtrează după data ultimei etape publicate pentru fiecare
+                proiect.
+              </Trans>
+            </p>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="space-y-1">
+                <Label
+                  htmlFor="bills-last-event-from"
+                  className="text-sm font-semibold"
+                >
+                  <Trans>De la</Trans>
+                </Label>
+                <Input
+                  id="bills-last-event-from"
+                  type="date"
+                  value={search.from ?? ''}
+                  onChange={(event) =>
+                    onChange({ from: event.target.value || undefined })
+                  }
+                  className={SELECT_CLASS}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label
+                  htmlFor="bills-last-event-to"
+                  className="text-sm font-semibold"
+                >
+                  <Trans>Până la</Trans>
+                </Label>
+                <Input
+                  id="bills-last-event-to"
+                  type="date"
+                  value={search.to ?? ''}
+                  onChange={(event) =>
+                    onChange({ to: event.target.value || undefined })
+                  }
+                  className={SELECT_CLASS}
+                />
+              </div>
+            </div>
+          </section>
         </div>
 
         <div className="border-t-2 border-[#b1b4b6] p-4 dark:border-[var(--pnrr-border)]">
@@ -206,6 +257,15 @@ export function ParliamentBillsActiveFilters({
       key: 'billLocation',
       label: locationChip,
       onRemove: () => onChange({ billLocation: undefined }),
+    })
+  }
+
+  const dateChip = getBillLastEventDateChipLabel(search)
+  if (dateChip) {
+    chips.push({
+      key: 'lastEventDate',
+      label: dateChip,
+      onRemove: () => onChange({ from: undefined, to: undefined }),
     })
   }
 

@@ -518,6 +518,22 @@ export const ParliamentVoteDetailSchema = ParliamentVoteSummarySchema.extend({
    * unresolved edge is a candidate, not a fact, and must not be shown as one.
    */
   billLinks: z.array(ParliamentVoteBillLinkSchema).default([]),
+  /**
+   * W1.3 resolution contract. `relatedBillId` is the LEGACY scalar key and is
+   * not the answer: measured on live prod 2026-08-08 it is null on 860 votes
+   * the resolver DID resolve, and rendering it whenever it happens to be set
+   * asserts a bill for divisions the resolver deliberately refused.
+   *
+   * 'resolved' | 'adjudicated' -> a bill is asserted.
+   * 'unresolved' (8,341 votes) -> the resolver ABSTAINED for want of evidence.
+   *   Show that, do not show a bill and do not show nothing at all: a reader
+   *   cannot otherwise tell it from "this division had no bill".
+   * 'conflict' (18 votes) -> the evidence names 2-3 DIFFERENT dossiers. The
+   *   links stay visible as observations; none is THE bill.
+   * undefined -> not stamped yet.
+   */
+  resolutionStatus: z.string().optional(),
+  resolutionMethod: z.string().optional(),
   groupBreakdown: z.array(ParliamentGroupVoteBreakdownSchema),
   memberVotes: z.array(ParliamentMemberVoteRecordSchema),
 });
@@ -1693,6 +1709,27 @@ export const ParliamentTabSchema = z.enum([
 ]);
 export type ParliamentTabId = z.infer<typeof ParliamentTabSchema>;
 
+/**
+ * A calendar-REAL `YYYY-MM-DD` day, or `undefined`. The regex alone admits
+ * impossible values (`2026-99-99`, `2026-02-30`) that then throw RangeError in
+ * the Intl date/chip formatters — so we also round-trip through UTC and require
+ * the parsed date to re-serialise to the same string. `.catch(undefined)` keeps
+ * the lenient contract: any junk (bad shape OR impossible date) falls to
+ * undefined, it never throws.
+ */
+const strictIsoDateParam = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .refine((day) => {
+    const parsed = new Date(`${day}T00:00:00Z`);
+    return (
+      !Number.isNaN(parsed.getTime()) &&
+      parsed.toISOString().slice(0, 10) === day
+    );
+  })
+  .optional()
+  .catch(undefined);
+
 /** Unified search params for /parlament — tab drives the active section */
 export const ParliamentSearchSchema = z.object({
   tab: ParliamentTabSchema.optional().catch(undefined),
@@ -1717,8 +1754,8 @@ export const ParliamentSearchSchema = z.object({
     .union([z.literal("1"), z.literal(1)])
     .optional()
     .catch(undefined),
-  from: z.string().optional().catch(undefined),
-  to: z.string().optional().catch(undefined),
+  from: strictIsoDateParam,
+  to: strictIsoDateParam,
   outcome: VoteOutcomeSchema.optional().catch(undefined),
   /**
    * Votes narrowed to one GROUP's stance — `grupVot` names the group, `alegere`
@@ -1770,27 +1807,6 @@ export type ParliamentVotesSearch = ParliamentSearch;
 
 export const ParliamentBillsSearchSchema = ParliamentSearchSchema;
 export type ParliamentBillsSearch = ParliamentSearch;
-
-/**
- * A calendar-REAL `YYYY-MM-DD` day, or `undefined`. The regex alone admits
- * impossible values (`2026-99-99`, `2026-02-30`) that then throw RangeError in
- * the Intl date/chip formatters — so we also round-trip through UTC and require
- * the parsed date to re-serialise to the same string. `.catch(undefined)` keeps
- * the lenient contract: any junk (bad shape OR impossible date) falls to
- * undefined, it never throws.
- */
-const strictIsoDateParam = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/)
-  .refine((day) => {
-    const parsed = new Date(`${day}T00:00:00Z`);
-    return (
-      !Number.isNaN(parsed.getTime()) &&
-      parsed.toISOString().slice(0, 10) === day
-    );
-  })
-  .optional()
-  .catch(undefined);
 
 /**
  * Search params for the member voting-history tab (heatmap + advanced filters).

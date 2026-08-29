@@ -74,7 +74,7 @@ export function StatisticsDatasetExplorerPage({ search }: Props) {
   )
 
   return (
-    <main className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 md:px-6">
         <header className="space-y-3">
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -201,6 +201,6 @@ export function StatisticsDatasetExplorerPage({ search }: Props) {
           </section>
         ) : null}
       </div>
-    </main>
+    </div>
   )
 }

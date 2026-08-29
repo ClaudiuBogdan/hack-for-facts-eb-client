@@ -10,7 +10,11 @@ import {
 } from '@/components/ui/table'
 import { getComparisonCell, type ComparisonMatrix } from '../lib/comparison-series'
 import { COMPARISON_PALETTE_CLASS } from './comparison-palette'
-import type { ComparisonSeriesDescriptor } from '../lib/comparison-format'
+import {
+  comparisonLevelLabel,
+  hasMixedComparisonLevels,
+  type ComparisonSeriesDescriptor,
+} from '../lib/comparison-format'
 
 /** The em-dash cell for "this territory reported nothing for this period". */
 const MISSING_MARK = '—'
@@ -37,8 +41,10 @@ type Props = {
  * dash. A value is never borrowed from an adjacent period to fill the hole.
  */
 export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
-  const labelBySiruta = new Map(series.map((entry) => [entry.siruta, entry.label]))
-  const colorBySiruta = new Map(series.map((entry) => [entry.siruta, entry.color]))
+  const mixedLevels = hasMixedComparisonLevels(series)
+  const labelBySiruta = new Map(series.map((entry) => [entry.code, entry.label]))
+  const colorBySiruta = new Map(series.map((entry) => [entry.code, entry.color]))
+  const levelByCode = new Map(series.map((entry) => [entry.code, entry.level]))
 
   return (
     <div className={COMPARISON_PALETTE_CLASS}>
@@ -69,18 +75,24 @@ export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
           </TableHeader>
           <TableBody>
             {matrix.rows.map((row) => {
-              const label = labelBySiruta.get(row.siruta) ?? row.name ?? row.siruta
+              const label = labelBySiruta.get(row.code) ?? row.name ?? row.code
+              const level = levelByCode?.get(row.code)
 
               return (
-                <TableRow key={row.siruta}>
+                <TableRow key={row.code}>
                   <TableCell className="font-medium">
                     <span className="flex items-center gap-2">
                       <span
                         aria-hidden
                         className="h-2.5 w-2.5 shrink-0 rounded-sm"
-                        style={{ backgroundColor: colorBySiruta.get(row.siruta) }}
+                        style={{ backgroundColor: colorBySiruta.get(row.code) }}
                       />
                       <span>{label}</span>
+                      {mixedLevels && level ? (
+                        <span className="rounded-sm border border-border/70 px-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+                          {comparisonLevelLabel(level)}
+                        </span>
+                      ) : null}
                     </span>
                   </TableCell>
 

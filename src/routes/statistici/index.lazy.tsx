@@ -7,6 +7,13 @@ export const Route = createLazyFileRoute('/statistici/')({
 
 function StatisticsLandingRoutePage() {
   const search = Route.useSearch()
+  const { landingData, landingCatalog } = Route.useLoaderData()
 
-  return <StatisticsLandingPage search={search} />
+  return (
+    <StatisticsLandingPage
+      search={search}
+      {...(landingData ? { initialLandingData: landingData } : {})}
+      {...(landingCatalog ? { initialLandingCatalog: landingCatalog } : {})}
+    />
+  )
 }

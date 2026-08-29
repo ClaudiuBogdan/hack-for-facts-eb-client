@@ -73,7 +73,13 @@ export function ParliamentBillsContent({ search }: Props) {
   };
 
   const handleClearAll = () =>
-    commit({ q: undefined, billType: undefined, billLocation: undefined });
+    commit({
+      q: undefined,
+      billType: undefined,
+      billLocation: undefined,
+      from: undefined,
+      to: undefined,
+    });
 
   const handlePageChange = (page: number) => {
     void navigate({

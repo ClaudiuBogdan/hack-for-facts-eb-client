@@ -73,6 +73,7 @@ export function mapSearchResult(
   return {
     query: result.query,
     engine: result.engine,
+    degraded: result.degraded,
     estimatedTotalHits: result.estimatedTotalHits,
     facets: result.facets.map(mapSearchFacet),
     hits: result.hits.map(mapSearchHit),

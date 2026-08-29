@@ -34,11 +34,31 @@ const tldfRunSchema: z.ZodType<TldfRun> = z.object({
   span: tldfSpanSchema,
   role: z.enum(['ttl', 'den', 'bdy']).optional(),
   sep: z.enum(['\n', ' ']).optional(),
+  struck: z.enum(['partial', 'full']).optional(),
 })
 
 const tldfNumberSchema: z.ZodType<TldfNumber> = z.object({
   key: z.string(),
   system: z.string(),
+})
+
+/** v1.1 cell geometry. Emitted only when it differs from (1,1). */
+export const tldfGridSchema = z.object({
+  cols: z.number().int().min(1).max(32767),
+  rows: z.number().int().min(1).max(32767),
+})
+
+/**
+ * v1.1 image description. Deliberately carries NO locator: an image is
+ * addressed by its BLOCK ID and resolved by the server, so the reader's browser
+ * never contacts the origin directly. `sha256` is content identity, not a
+ * fetchable URL.
+ */
+export const tldfAssetSchema = z.object({
+  sha256: z.string().optional(),
+  width: z.number().int().optional(),
+  height: z.number().int().optional(),
+  alt: z.string().optional(),
 })
 
 export const tldfBlockSchema: z.ZodType<TldfBlock> = z.lazy(() =>
@@ -52,6 +72,19 @@ export const tldfBlockSchema: z.ZodType<TldfBlock> = z.lazy(() =>
     span: tldfSpanSchema,
     origin: z.enum(['unmarked', 'facsimil']).optional(),
     placement: z.literal('positional').optional(),
+    // v1.1. Added WITH the format_version union on purpose: a plain z.object
+    // strips unknown keys instead of rejecting them, so widening the version
+    // without these fields would silently drop every cell geometry and image
+    // description while every check stayed green.
+    grid: tldfGridSchema.optional(),
+    asset: tldfAssetSchema.optional(),
+    // v1.1 source-state (2026-08-26), same strip hazard as grid/asset: these
+    // must land WITH the compiler that emits them or a plain z.object drops
+    // every struck fact silently while every check stays green.
+    struck: z.enum(['partial', 'full']).optional(),
+    struck_repealed: z.literal(true).optional(),
+    annotation_role: z.literal('amendment_note').optional(),
+    changed_since_base_form: z.boolean().optional(),
     content: z.array(tldfRunSchema),
     children: z.array(tldfBlockSchema).optional(),
   }),
@@ -78,7 +111,15 @@ const tldfLinkSchema: z.ZodType<TldfLink> = z.object({
 
 const tldfMarkSchema: z.ZodType<TldfMark> = z.object({
   ordinal: z.number().int(),
-  kind: z.enum(['reference', 'legal_ref', 'ref']),
+  kind: z.enum([
+    'reference',
+    'legal_ref',
+    'ref',
+    'italic',
+    'underline',
+    'bold',
+    'struck',
+  ]),
   span: tldfSpanSchema,
   link: tldfLinkSchema.optional(),
 })
@@ -106,7 +147,7 @@ const tldfDefectSchema: z.ZodType<TldfDefect> = z.object({
 
 const tldfHeadShape = {
   format: z.literal('tldf'),
-  format_version: z.literal('1.0'),
+  format_version: z.union([z.literal('1.0'), z.literal('1.1')]),
   document_id: z.string(),
   generation: tldfGenerationSchema,
   text_sha256: z.string(),

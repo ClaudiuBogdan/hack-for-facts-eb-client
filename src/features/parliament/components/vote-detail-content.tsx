@@ -47,16 +47,43 @@ export function VoteDetailContent({
       <VoteDetailHero detail={detail} />
 
       <div className={cn(voteDetailPageContainerClassName, "pb-8 pt-6")}>
-        {/* The role-bearing edges when the server resolved any; otherwise the
-            vote's own scalar bill key, which names no bill and carries no role
-            but is still a true link. */}
+        {/* W1.3 resolution contract. The role-bearing edges when the resolver
+            asserted a bill; otherwise an EXPLICIT state, never a silent gap and
+            never the legacy scalar key.
+
+            The old fallback rendered `relatedBillId` whenever it happened to be
+            set, which asserted a bill for divisions the resolver had refused to
+            resolve. It is now reachable only when the resolver actually
+            asserted one. */}
         {detail.billLinks.length > 0 ? (
           <VoteRelatedBillsCard
             links={detail.billLinks}
             outcome={detail.outcome}
             voteSubject={detail.voteSubject}
           />
-        ) : detail.relatedBillId ? (
+        ) : detail.resolutionStatus === "conflict" ? (
+          <div className="mb-6 border border-[#b1b4b6] bg-white px-5 py-4 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]">
+            <p className="text-sm font-bold text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              Proiect de lege neconfirmat
+            </p>
+            <p className="mt-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              Sursele indică mai multe proiecte de lege diferite pentru acest
+              vot, așa că niciunul nu este prezentat ca fiind cel corect.
+            </p>
+          </div>
+        ) : detail.resolutionStatus === "unresolved" ? (
+          <div className="mb-6 border border-[#b1b4b6] bg-white px-5 py-4 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]">
+            <p className="text-sm font-bold text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              Fără proiect de lege asociat
+            </p>
+            <p className="mt-1 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              Nu există dovezi suficiente pentru a lega acest vot de un proiect
+              de lege. Aceasta nu înseamnă că votul nu a avut unul.
+            </p>
+          </div>
+        ) : detail.relatedBillId &&
+          (detail.resolutionStatus === "resolved" ||
+            detail.resolutionStatus === "adjudicated") ? (
           <div className="mb-6 border border-[#b1b4b6] bg-white px-5 py-4 dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)]">
             <p className="text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
               Vot asociat proiectului de lege

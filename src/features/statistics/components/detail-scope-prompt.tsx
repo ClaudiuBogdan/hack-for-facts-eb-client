@@ -7,13 +7,13 @@ type Props = {
 }
 
 /**
- * What the user sees instead of a table while the observations query is
- * blocked by `isObservationsQueryEnabled`.
+ * What the user sees instead of the series while the scope is unresolved:
+ * a classification dimension has neither a server default nor a URL pin.
  *
- * Deliberately not a spinner: nothing is loading, and nothing will load until
- * the selection narrows. `insObservations` scans 23.6M rows, so an unscoped
- * query would end in a 30-second timeout rather than in data. Naming the exact
- * missing pins turns a dead end into the next click.
+ * Deliberately not a spinner — nothing loads until the cell is fully
+ * resolved (a partial scope would mix sibling cells into "one series"). The
+ * scope sentence above stays interactive; this names EXACTLY the unresolved
+ * dimensions and nothing else.
  */
 export function DetailScopePrompt({
   needsTerritory,
@@ -30,8 +30,9 @@ export function DetailScopePrompt({
       </h3>
       <p className="max-w-prose text-sm text-muted-foreground">
         <Trans>
-          Setul are prea multe observații pentru a fi afișat nefiltrat. Restrânge
-          selecția ca să încărcăm datele.
+          Pentru acest set nu există o selecție implicită pentru dimensiunile de
+          mai jos. Alege o valoare din propoziția de selecție de mai sus ca să
+          încărcăm seria.
         </Trans>
       </p>
       <ul className="space-y-1 text-sm">
@@ -46,13 +47,7 @@ export function DetailScopePrompt({
           </li>
         ))}
       </ul>
-      {needsTerritory && missingClassificationLabels.length > 0 ? (
-        <p className="text-xs text-muted-foreground">
-          <Trans>
-            E suficient un teritoriu, sau toate clasificările de mai sus.
-          </Trans>
-        </p>
-      ) : null}
+
     </div>
   )
 }

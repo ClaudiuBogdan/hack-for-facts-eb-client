@@ -75,7 +75,14 @@ const EMPTY_OBSERVATIONS: ComparisonObservationsResult = {
 /** Parameters of the one observations request. Deliberately has no `period`. */
 export interface ComparisonObservationsParams {
   readonly datasetCode: string
-  readonly sirutaCodes: readonly string[]
+  readonly signal?: AbortSignal
+  /**
+   * Resolved territory CODES (a LAU's code IS its SIRUTA; counties are
+   * alphabetic; `RO` is the national row) — ONE `territoryCodes` filter
+   * serves mixed levels. Filter keys AND together, so `sirutaCodes` must
+   * never be combined with it.
+   */
+  readonly territoryCodes: readonly string[]
   readonly classificationPins: readonly ClassificationPin[]
   readonly unitCode: string | undefined
 }
@@ -83,6 +90,7 @@ export interface ComparisonObservationsParams {
 /** Dataset metadata + pinnable dimension options, or `null` when unknown. */
 export async function fetchComparisonDataset(
   code: string,
+  signal?: AbortSignal,
 ): Promise<ComparisonDatasetMeta | null> {
   if (code.trim().length === 0) return null
 
@@ -90,7 +98,7 @@ export async function fetchComparisonDataset(
     return fetchComparisonDatasetMock(code)
   }
 
-  const details = await getInsDatasetDetails(code)
+  const details = await getInsDatasetDetails(code, signal)
   if (!details) return null
 
   const classifications: ComparisonClassificationDimension[] = []
@@ -105,6 +113,7 @@ export async function fetchComparisonDataset(
       datasetCode: code,
       dimensionIndex: dimension.index,
       limit: DIMENSION_OPTION_LIMIT,
+      signal,
     })
 
     if (dimension.type === 'UNIT_OF_MEASURE') {
@@ -162,12 +171,20 @@ export function buildComparisonObservationFilter(
   params: ComparisonObservationsParams,
 ): InsObservationFilterInput {
   const filter: InsObservationFilterInput = {
-    sirutaCodes: [...params.sirutaCodes],
-    territoryLevels: ['LAU'],
+    territoryCodes: [...new Set(params.territoryCodes)],
   }
 
   if (params.classificationPins.length > 0) {
-    filter.classificationValueCodes = params.classificationPins.map((pin) => pin.valueCode)
+    filter.classificationValueCodes = [
+      ...new Set(params.classificationPins.map((pin) => pin.valueCode)),
+    ]
+    // Type-aware AND (each requested type must carry one of the values). The
+    // server still shares ONE value set across types, so sibling cells can
+    // slip through — the client exact-cell match closes that (use-comparisons).
+    const typeCodes = params.classificationPins.map((pin) => pin.typeCode)
+    if (typeCodes.every((code) => !code.startsWith('DIM'))) {
+      filter.classificationTypeCodes = typeCodes
+    }
   }
 
   if (params.unitCode) {
@@ -187,7 +204,7 @@ export function buildComparisonObservationFilter(
 export async function fetchComparisonObservations(
   params: ComparisonObservationsParams,
 ): Promise<ComparisonObservationsResult> {
-  if (params.datasetCode.trim().length === 0 || params.sirutaCodes.length === 0) {
+  if (params.datasetCode.trim().length === 0 || params.territoryCodes.length === 0) {
     return EMPTY_OBSERVATIONS
   }
 
@@ -200,6 +217,7 @@ export async function fetchComparisonObservations(
     filter: buildComparisonObservationFilter(params),
     limit: COMPARISON_OBSERVATION_LIMIT,
     offset: 0,
+    signal: params.signal,
   })
 
   return {

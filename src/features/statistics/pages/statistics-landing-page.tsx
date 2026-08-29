@@ -1,187 +1,175 @@
-import { Link, useNavigate } from '@tanstack/react-router'
-import { t } from '@lingui/core/macro'
+import { useMemo } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
-import { AlertTriangle, ArrowRight } from 'lucide-react'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
-import { EmptyState } from '@/components/ui/empty-state'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { StatisticsLandingSearch } from '@/schemas/statistics'
-import { useStatisticsLanding } from '../hooks/use-statistics'
-import { CoverageRibbon } from '../components/coverage-ribbon'
-import { DataStatusBadge } from '../components/data-status-badge'
-import { FreshnessBadge } from '../components/freshness-badge'
-import { RequestDatasetAction } from '../components/request-dataset-action'
+import { createLogger } from '@/lib/logger'
+import type {
+  StatisticsLandingCatalog,
+  StatisticsLandingData,
+  StatisticsLandingSearch,
+  StatisticsTerritorySearchRow,
+} from '@/schemas/statistics'
+import {
+  useStatisticsLandingCatalog,
+  useStatisticsLandingData,
+  useStatisticsUatSnapshot,
+} from '../hooks/use-statistics'
+import { buildDecadeStory } from '../lib/decade'
+import { buildLandingExample } from '../lib/landing-example'
+import {
+  DECADE_END_YEAR,
+  DECADE_START_YEAR,
+} from '../lib/landing-constants'
+import { statisticsTheme } from '../lib/statistics-theme'
+import { LandingDecadeSection } from '../components/landing/landing-decade-section'
+import { LandingExampleCard } from '../components/landing/landing-example-card'
+import { LandingHero } from '../components/landing/landing-hero'
+import { LandingHonestySection } from '../components/landing/landing-honesty-section'
+import { LandingThemesSection } from '../components/landing/landing-themes-section'
 import { ShareFilteredView } from '../components/share-filtered-view'
-import { TerritorySearch } from '../components/territory-search'
+
+const logger = createLogger('statistics-landing')
 
 type StatisticsLandingPageProps = {
   readonly search: StatisticsLandingSearch
+  readonly initialLandingData?: StatisticsLandingData
+  readonly initialLandingCatalog?: StatisticsLandingCatalog
 }
 
-function LandingSkeleton() {
-  return (
-    <div className="space-y-4">
-      <Skeleton className="h-20 w-full" />
-      <div className="grid gap-3 md:grid-cols-2">
-        <Skeleton className="h-28" />
-        <Skeleton className="h-28" />
-      </div>
-      <Skeleton className="h-64 w-full" />
-    </div>
-  )
-}
-
-export function StatisticsLandingPage({ search }: StatisticsLandingPageProps) {
+/**
+ * The statistici landing. The app shell owns the <main> landmark — this page
+ * renders bands only. Two aggregates, two query keys: a failing POST degrades
+ * its own bands, never the page.
+ */
+export function StatisticsLandingPage({
+  search,
+  initialLandingData,
+  initialLandingCatalog,
+}: StatisticsLandingPageProps) {
   const navigate = useNavigate()
-  const landingQuery = useStatisticsLanding()
-  const landing = landingQuery.data
-  const shouldShowLanding = Boolean(landing) && !landingQuery.isError
+  const landingDataQuery = useStatisticsLandingData(initialLandingData)
+  const catalogQuery = useStatisticsLandingCatalog(initialLandingCatalog)
+  const loc = typeof search.loc === 'string' ? search.loc : undefined
+  const snapshotQuery = useStatisticsUatSnapshot(loc)
+
+  const decadeStory = useMemo(() => {
+    if (!landingDataQuery.data) return null
+    return buildDecadeStory({
+      rows: landingDataQuery.data.decadeRows,
+      startYear: DECADE_START_YEAR,
+      endYear: DECADE_END_YEAR,
+    })
+  }, [landingDataQuery.data])
+
+  const example = useMemo(() => {
+    if (!landingDataQuery.data) return null
+    const built = buildLandingExample(landingDataQuery.data.exampleRows)
+    if (built && built.ambiguousCellCount > 0) {
+      // No silent caps: the example dataset grew a classification dimension
+      // upstream and cells became ambiguous — the card degrades VISIBLY.
+      logger.warn('Landing example rejected ambiguous cells', {
+        ambiguousCellCount: built.ambiguousCellCount,
+      })
+    }
+    return built
+  }, [landingDataQuery.data])
 
   const handleTermChange = (q: string | undefined) => {
-    void navigate({ to: '/statistici', search: q ? { q } : {} })
+    void navigate({
+      to: '/statistici',
+      search: {
+        ...(q ? { q } : {}),
+        ...(loc ? { loc } : {}),
+      },
+    })
+  }
+
+  const handlePickTerritory = (row: StatisticsTerritorySearchRow) => {
+    if (!row.siruta) return
+    void navigate({ to: '/statistici', search: { loc: row.siruta } })
+  }
+
+  const handleClearPick = () => {
+    void navigate({
+      to: '/statistici',
+      search: typeof search.q === 'string' ? { q: search.q } : {},
+    })
   }
 
   return (
-    <main className="min-h-screen bg-background">
-      <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 md:px-6">
-        <header className="space-y-3">
+    <div className="min-h-screen bg-background">
+      <div className={statisticsTheme.page}>
+        <header className="space-y-2">
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div className="space-y-2">
               <h1 className="text-2xl font-semibold tracking-tight">
                 <Trans>Statistici</Trans>
               </h1>
               <p className="max-w-3xl text-sm text-muted-foreground">
-                <Trans>Date oficiale INS Tempo, ancorate în teritorii SIRUTA.</Trans>
+                <Trans>
+                  Date oficiale INS Tempo pentru fiecare localitate, județ și
+                  pentru întreaga țară.
+                </Trans>
               </p>
             </div>
             <ShareFilteredView />
           </div>
-          {shouldShowLanding && landing ? (
-            <CoverageRibbon
-              coverage={landing.coverage}
-              latestDataPeriod={landing.latestDataPeriod}
-            />
-          ) : null}
         </header>
 
-        {landingQuery.isLoading ? <LandingSkeleton /> : null}
+        <LandingHero
+          searchTerm={typeof search.q === 'string' ? search.q : undefined}
+          onTermChange={handleTermChange}
+          onPickTerritory={handlePickTerritory}
+          onClearPick={handleClearPick}
+          loc={loc}
+          landingData={landingDataQuery.data}
+          landingDataError={landingDataQuery.isError}
+          landingDataLoading={landingDataQuery.isLoading}
+          onRetryLandingData={() => void landingDataQuery.refetch()}
+          snapshot={snapshotQuery.data}
+          snapshotLoading={Boolean(search.loc) && snapshotQuery.isLoading}
+          snapshotError={snapshotQuery.isError}
+        />
 
-        {landingQuery.isError ? (
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" aria-hidden="true" />
-            <AlertTitle>
-              <Trans>Nu am putut încărca statistica</Trans>
-            </AlertTitle>
-            <AlertDescription className="space-y-3">
-              <p>
-                <Trans>Încearcă din nou fără să pierzi adresa curentă.</Trans>
-              </p>
-              <Button variant="outline" size="sm" onClick={() => landingQuery.refetch()}>
-                <Trans>Reîncearcă</Trans>
-              </Button>
-            </AlertDescription>
-          </Alert>
-        ) : null}
-
-        {shouldShowLanding && landing?.topDatasets.length === 0 ? (
-          <EmptyState
-            title={t`Nu există seturi de afișat`}
-            description={t`Catalogul INS nu a returnat seturi pentru această suprafață.`}
-          />
-        ) : null}
-
-        <TerritorySearch term={search.q} onTermChange={handleTermChange} />
-
-        <section className="space-y-3">
-          <h2 className="text-base font-semibold">
-            <Trans>Explorează</Trans>
-          </h2>
-          <div className="grid gap-3 md:grid-cols-2">
-            <ExploreCard
-              to="/statistici/seturi"
-              title={t`Toate seturile de date`}
-              description={t`Caută în catalogul INS și vezi ce are date încărcate.`}
-            />
-            <ExploreCard
-              to="/statistici/comparatii"
-              title={t`Compară teritorii`}
-              description={t`Pune până la șase localități față în față pe același indicator.`}
-            />
+        {landingDataQuery.isLoading ? (
+          <div className="space-y-4" aria-busy="true">
+            <Skeleton className="h-8 w-72" />
+            <div className="grid gap-4 md:grid-cols-2">
+              <Skeleton className="h-64" />
+              <Skeleton className="h-64" />
+            </div>
+            <Skeleton className="h-48 w-full" />
           </div>
-        </section>
+        ) : (
+          <>
+            <LandingDecadeSection
+              story={decadeStory}
+              unitLabel={
+                landingDataQuery.data?.decadeRows.find((row) => row.unitNameRo)
+                  ?.unitNameRo ?? null
+              }
+            />
 
-        {shouldShowLanding && landing ? (
-          <section className="space-y-4">
-            <div>
-              <h2 className="text-base font-semibold">
-                <Trans>Seturi INS prioritare</Trans>
-              </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                <Trans>Codul matricei este afișat ca proveniență, nu ca etichetă principală.</Trans>
-              </p>
-            </div>
-            <div className="rounded-lg border border-border/70">
-              <div className="divide-y">
-                {landing.topDatasets.map((dataset) => (
-                  <div
-                    key={dataset.code}
-                    className="grid gap-3 px-4 py-4 md:grid-cols-[1fr_auto] md:items-center"
-                  >
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-sm font-medium">
-                          {dataset.nameRo || dataset.nameEn || dataset.code}
-                        </h3>
-                        <DataStatusBadge status={dataset.dataStatus} />
-                      </div>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {dataset.code}
-                        {dataset.contextNameRo ? ` · ${dataset.contextNameRo}` : ''}
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 md:justify-end">
-                      <FreshnessBadge period={dataset.latestPeriod} />
-                      {dataset.dataStatus === 'catalog-only' ? (
-                        <RequestDatasetAction
-                          datasetCode={dataset.code}
-                          datasetName={dataset.nameRo || dataset.nameEn}
-                        />
-                      ) : null}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        ) : null}
-      </div>
-    </main>
-  )
-}
+            <LandingExampleCard example={example} />
+          </>
+        )}
 
-function ExploreCard({
-  to,
-  title,
-  description,
-}: {
-  readonly to: '/statistici/seturi' | '/statistici/comparatii'
-  readonly title: string
-  readonly description: string
-}) {
-  return (
-    <Link
-      to={to}
-      className="group flex items-start justify-between gap-3 rounded-lg border border-border/70 p-4 text-sm transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-    >
-      <div>
-        <span className="block font-medium text-foreground">{title}</span>
-        <span className="mt-1 block text-muted-foreground">{description}</span>
+        {catalogQuery.isError ? (
+          <p className="text-sm text-muted-foreground">
+            <Trans>
+              Temele nu au putut fi încărcate — catalogul complet rămâne
+              disponibil în explorator.
+            </Trans>
+          </p>
+        ) : (
+          <LandingThemesSection catalog={catalogQuery.data} />
+        )}
+
+        <LandingHonestySection
+          catalog={catalogQuery.data}
+          catalogError={catalogQuery.isError}
+        />
       </div>
-      <ArrowRight
-        aria-hidden
-        className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
-      />
-    </Link>
+    </div>
   )
 }

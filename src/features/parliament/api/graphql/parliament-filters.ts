@@ -167,6 +167,7 @@ export interface ParliamentBillsFilterInput {
   q?: { contains: string }
   billType?: { eq: ServerBillType }
   status?: { eq: ServerBillStatus }
+  lastEventDate?: { gte?: string; lte?: string }
 }
 
 export type ParliamentBillSortInput =
@@ -208,9 +209,10 @@ const BILL_LOCATION_TO_STATUS: Readonly<Record<string, ServerBillStatus>> = {
 /**
  * Bills filter — now fully SERVER-backed (billType + status columns landed on
  * :3001). billType/billLocation are mapped to the server's quoted tokens and
- * AND-composed with q/year/finalized; filtering spans the FULL result set, so
- * pagination is honest (no client-side over-page facet). Only the allowed tokens
- * are ever sent (unmapped UI values are dropped, never forwarded raw).
+ * AND-composed with q/year/finalized/lastEventDate; filtering spans the FULL
+ * result set, so pagination is honest (no client-side over-page facet). Only
+ * the allowed tokens are ever sent (unmapped UI values are dropped, never
+ * forwarded raw).
  */
 export function buildBillsFilter(
   search: ParliamentBillsSearch,
@@ -226,6 +228,15 @@ export function buildBillsFilter(
   if (search.billLocation) {
     const token = BILL_LOCATION_TO_STATUS[search.billLocation]
     if (token) filter.status = { eq: token }
+  }
+
+  const gte = toDateBound(search.from)
+  const lte = toDateBound(search.to)
+  if (gte || lte) {
+    filter.lastEventDate = {
+      ...(gte ? { gte } : {}),
+      ...(lte ? { lte } : {}),
+    }
   }
   return filter
 }
@@ -243,4 +254,3 @@ export function buildBillsSort(
       return 'updated_desc'
   }
 }
-

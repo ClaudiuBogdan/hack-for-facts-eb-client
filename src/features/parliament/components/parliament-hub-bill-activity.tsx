@@ -23,9 +23,8 @@ const ROLLING_MONTHS = 12
  * not a count of procedural steps: ~56% of CDep procedural rows carry no date
  * at source, so a step-grain heatmap would draw most of the record as empty.
  *
- * The squares do NOT link. The bills list can be narrowed by type, stage, year
- * and text, but not to a single day, so a link would land on an unfiltered list
- * and answer a wider question than the square asked.
+ * A square opens the bills list filtered to that exact `lastEventDate`, matching
+ * the vote heatmap's day-to-list interaction without changing the grain.
  */
 export function ParliamentHubBillActivity() {
   const window = useMemo(
@@ -68,6 +67,11 @@ export function ParliamentHubBillActivity() {
         map.set(day.date, {
           total: day.total,
           label: t`${dateLabel} — ${countLabel}`,
+          search: {
+            tab: 'proiecte',
+            from: day.date,
+            to: day.date,
+          },
           tooltip: (
             <>
               <p className="font-semibold">{dateLabel}</p>
@@ -102,6 +106,12 @@ export function ParliamentHubBillActivity() {
         <Trans>Niciun proiect cu etape noi în ultimele 12 luni.</Trans>
       }
       bucketOf={billBucketFor}
+      coverageNote={
+        <Trans>
+          Fiecare proiect este numărat în ziua ultimei etape publicate. Când
+          proiectul avansează, se mută în ziua noii etape.
+        </Trans>
+      }
       cta={
         <Button
           asChild

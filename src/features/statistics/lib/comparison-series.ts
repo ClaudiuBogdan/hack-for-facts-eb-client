@@ -50,7 +50,7 @@ export interface ComparisonCell {
 
 /** One territory row: its identity plus the cells it actually has. */
 export interface ComparisonTerritoryRow {
-  readonly siruta: string
+  readonly code: string
   readonly name: string | null
   readonly cells: Readonly<Record<string, ComparisonCell>>
 }
@@ -105,7 +105,7 @@ export function resolveSelectedPeriod(
 /**
  * Folds a flat observation list into the territory × period matrix.
  *
- * Rows follow `sirutaCodes` order, so the chart colour assigned to a territory
+ * Rows follow `territoryCodes` order, so the chart colour assigned to a territory
  * follows the territory and not its rank — removing a chip never repaints the
  * survivors that stay ahead of it. A territory with zero observations still
  * gets a row (all cells missing), because "we asked and there was nothing" is
@@ -116,28 +116,34 @@ export function resolveSelectedPeriod(
  */
 export function buildComparisonMatrix(params: {
   readonly observations: readonly InsObservation[]
-  readonly sirutaCodes: readonly string[]
+  readonly territoryCodes: readonly string[]
 }): ComparisonMatrix {
-  const { observations, sirutaCodes } = params
+  const { observations, territoryCodes } = params
 
-  const cellsBySiruta = new Map<string, Record<string, ComparisonCell>>()
-  const nameBySiruta = new Map<string, string>()
+  const cellsByCode = new Map<string, Record<string, ComparisonCell>>()
+  const nameByCode = new Map<string, string>()
   let unitSymbol: string | null = null
 
-  for (const siruta of sirutaCodes) {
-    cellsBySiruta.set(siruta, {})
+  for (const code of territoryCodes) {
+    cellsByCode.set(code, {})
   }
 
   for (const observation of observations) {
-    const siruta = observation.territory?.siruta_code?.trim()
-    if (!siruta) continue
+    // The territory CODE is the universal key: for LAU rows it equals the
+    // SIRUTA code; county and national rows have no SIRUTA at all.
+    const code =
+      observation.territory?.code?.trim() ||
+      observation.territory?.siruta_code?.trim()
+    if (!code) continue
 
-    const cells = cellsBySiruta.get(siruta)
+    const cells = cellsByCode.get(code)
     if (!cells) continue
 
-    const name = observation.territory?.name_ro?.trim()
-    if (name && !nameBySiruta.has(siruta)) {
-      nameBySiruta.set(siruta, name)
+    const rawName = observation.territory?.name_ro?.trim()
+    // The API names the national row "TOTAL" — render the country.
+    const name = code === 'RO' ? 'România' : rawName
+    if (name && !nameByCode.has(code)) {
+      nameByCode.set(code, name)
     }
 
     unitSymbol ??= observation.unit?.symbol?.trim() || null
@@ -160,10 +166,10 @@ export function buildComparisonMatrix(params: {
   return {
     periods: buildPeriodOptions(observations),
     unitSymbol,
-    rows: sirutaCodes.map((siruta) => ({
-      siruta,
-      name: nameBySiruta.get(siruta) ?? null,
-      cells: cellsBySiruta.get(siruta) ?? {},
+    rows: territoryCodes.map((code) => ({
+      code,
+      name: nameByCode.get(code) ?? null,
+      cells: cellsByCode.get(code) ?? {},
     })),
   }
 }
@@ -197,7 +203,7 @@ export function toChartValue(value: string | null | undefined): number | null {
 
 /** One bar: a territory's value at the selected period. */
 export interface ComparisonBarDatum {
-  readonly siruta: string
+  readonly code: string
   readonly name: string | null
   readonly value: number | null
 }
@@ -208,7 +214,7 @@ export function buildBarSeries(
   isoPeriod: string | null,
 ): readonly ComparisonBarDatum[] {
   return matrix.rows.map((row) => ({
-    siruta: row.siruta,
+    code: row.code,
     name: row.name,
     value: toChartValue(getComparisonCell(row, isoPeriod)?.value),
   }))
@@ -241,7 +247,7 @@ export function buildLineSeries(
     }
 
     for (const row of matrix.rows) {
-      point[lineSeriesKey(row.siruta)] = toChartValue(
+      point[lineSeriesKey(row.code)] = toChartValue(
         getComparisonCell(row, option.isoPeriod)?.value,
       )
     }
@@ -251,50 +257,24 @@ export function buildLineSeries(
 }
 
 // ---------------------------------------------------------------------------
-// Classification pins (`"TYPE:VALUE"` in the URL)
+// Classification pins — ONE canonical codec, shared with the detail surface.
 // ---------------------------------------------------------------------------
 
-/** A classification pin split into its dimension type and its value code. */
-export interface ClassificationPin {
-  readonly typeCode: string
-  readonly valueCode: string
-}
-
-/** Parses `"SEX:TOTAL"`. Returns `null` for anything not in that shape. */
-export function parseClassificationPin(pin: string): ClassificationPin | null {
-  const separator = pin.indexOf(':')
-  if (separator <= 0 || separator === pin.length - 1) return null
-
-  return {
-    typeCode: pin.slice(0, separator),
-    valueCode: pin.slice(separator + 1),
-  }
-}
-
-/** Encodes a pin back into its URL form. */
-export function formatClassificationPin(pin: ClassificationPin): string {
-  return `${pin.typeCode}:${pin.valueCode}`
-}
-
-/**
- * Upserts a pin keyed by its dimension type: picking a second value for a
- * dimension replaces the first rather than adding a contradictory filter.
- */
-export function upsertClassificationPin(
-  pins: readonly string[],
-  next: ClassificationPin,
-): readonly string[] {
-  const others = pins.filter((pin) => parseClassificationPin(pin)?.typeCode !== next.typeCode)
-  return [...others, formatClassificationPin(next)]
-}
-
-/** Removes every pin belonging to a dimension type. */
-export function removeClassificationPin(
-  pins: readonly string[],
-  typeCode: string,
-): readonly string[] {
-  return pins.filter((pin) => parseClassificationPin(pin)?.typeCode !== typeCode)
-}
+export {
+  encodeClassificationPin as formatClassificationPin,
+  parseClassificationPin,
+  parseClassificationPins,
+  parseComparisonToken,
+  parseComparisonTokens,
+  removeClassificationPin,
+  upsertClassificationPin,
+  type ClassificationPin,
+  type ComparisonTerritoryToken,
+} from './dataset-selection'
+import {
+  parseClassificationPin as parsePinInternal,
+  type ClassificationPin as ClassificationPinInternal,
+} from './dataset-selection'
 
 /** A selectable classification value. */
 export interface ClassificationOptionLike {
@@ -334,16 +314,16 @@ export interface ClassificationDimensionLike {
 export function resolveEffectiveClassificationPins(params: {
   readonly dimensions: readonly ClassificationDimensionLike[]
   readonly urlPins: readonly string[]
-}): readonly ClassificationPin[] {
+}): readonly ClassificationPinInternal[] {
   const { dimensions, urlPins } = params
 
-  const pinnedByType = new Map<string, ClassificationPin>()
+  const pinnedByType = new Map<string, ClassificationPinInternal>()
   for (const raw of urlPins) {
-    const pin = parseClassificationPin(raw)
+    const pin = parsePinInternal(raw)
     if (pin) pinnedByType.set(pin.typeCode, pin)
   }
 
-  const resolved: ClassificationPin[] = []
+  const resolved: ClassificationPinInternal[] = []
 
   for (const dimension of dimensions) {
     const pinned = pinnedByType.get(dimension.typeCode)

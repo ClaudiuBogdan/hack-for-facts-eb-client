@@ -1,9 +1,8 @@
 import { Trans } from '@lingui/react/macro'
-import { AlertTriangle, BarChart3, MapPin } from 'lucide-react'
+import { AlertTriangle, BarChart3 } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { MIN_COMPARISON_TERRITORIES } from '../lib/comparison-series'
 
 /**
  * The four states the results area can be in, kept distinct on purpose.
@@ -27,45 +26,26 @@ export function ComparisonSkeleton() {
   )
 }
 
-type GuidedProps = {
-  readonly hasDataset: boolean
-  readonly selectedCount: number
-}
-
 /**
- * Shown below two territories. Distinct from {@link ComparisonNoData}: here the
- * user has not asked a complete question yet, so there is nothing to report.
+ * Shown when no dataset is chosen. Distinct from {@link ComparisonNoData}: here
+ * the user has not asked a complete question yet, so there is nothing to
+ * report. (Below two territories WITH a dataset the page renders the worked
+ * example instead, so this state has exactly one shape.)
  */
-export function ComparisonGuidedEmptyState({ hasDataset, selectedCount }: GuidedProps) {
-  const remaining = MIN_COMPARISON_TERRITORIES - selectedCount
-
+export function ComparisonGuidedEmptyState() {
   return (
     <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border px-6 py-16 text-center">
-      {hasDataset ? (
-        <MapPin aria-hidden className="h-8 w-8 text-muted-foreground" />
-      ) : (
-        <BarChart3 aria-hidden className="h-8 w-8 text-muted-foreground" />
-      )}
+      <BarChart3 aria-hidden className="h-8 w-8 text-muted-foreground" />
 
       <h2 className="text-base font-semibold text-foreground">
-        {hasDataset ? (
-          <Trans>Alege cel puțin două teritorii pentru a compara</Trans>
-        ) : (
-          <Trans>Alege un indicator pentru a începe</Trans>
-        )}
+        <Trans>Alege un indicator pentru a începe</Trans>
       </h2>
 
       <p className="max-w-md text-sm text-muted-foreground">
-        {!hasDataset ? (
-          <Trans>
-            Caută un indicator INS, apoi adaugă între două și șase localități. Comparația se
-            construiește pe măsură ce alegi.
-          </Trans>
-        ) : selectedCount === 0 ? (
-          <Trans>Adaugă două localități pentru a le compara pe același indicator.</Trans>
-        ) : (
-          <Trans>Mai adaugă {remaining} localitate pentru a putea compara.</Trans>
-        )}
+        <Trans>
+          Caută un indicator INS, apoi adaugă între două și șase localități. Comparația se
+          construiește pe măsură ce alegi.
+        </Trans>
       </p>
     </div>
   )

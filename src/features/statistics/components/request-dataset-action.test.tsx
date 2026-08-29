@@ -96,3 +96,37 @@ describe('RequestDatasetAction', () => {
     })
   })
 })
+
+describe('RequestDatasetAction — rejected envelope', () => {
+  beforeEach(() => {
+    useOptionalUserMock.mockReturnValue({ id: 'user_1' })
+    vi.mocked(submitDatasetRequest).mockResolvedValue({
+      accepted: false,
+      datasetCode: 'TUR101C',
+      message: 'Cererea nu a fost acceptată. Verifică setul de date selectat.',
+    })
+  })
+
+  it('shows the failure message and keeps the submit button for a retry', async () => {
+    render(
+      <RequestDatasetAction datasetCode="TUR101C" datasetName={null} />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cere set' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Trimite cererea' }))
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          'Cererea nu a fost acceptată. Verifică setul de date selectat.',
+        ),
+      ).toBeInTheDocument()
+    })
+
+    // accepted:false must NOT collapse into the success state — the retry
+    // affordance stays.
+    expect(
+      screen.getByRole('button', { name: 'Trimite cererea' }),
+    ).toBeInTheDocument()
+  })
+})

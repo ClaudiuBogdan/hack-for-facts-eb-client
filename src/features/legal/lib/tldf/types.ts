@@ -20,6 +20,11 @@ export interface TldfRun {
   readonly span: TldfSpan
   readonly role?: TldfRunRole
   readonly sep?: TldfSep
+  /**
+   * v1.1 source-state (2026-08-26): own-extent strike of the ROLE node this
+   * run was folded from. Omitted = none.
+   */
+  readonly struck?: 'partial' | 'full'
 }
 
 export interface TldfNumber {
@@ -38,11 +43,53 @@ export interface TldfBlock {
   readonly span: TldfSpan
   readonly origin?: 'unmarked' | 'facsimil'
   readonly placement?: 'positional'
+  /** v1.1: cell geometry, present only when it differs from (1,1). */
+  readonly grid?: TldfGrid
+  /** v1.1: image description. Never a locator — resolve by block id. */
+  readonly asset?: TldfAsset
+  /**
+   * v1.1 source-state (2026-08-26): own-extent source strike. Omitted = none.
+   * 'full' is the only carrier for zero-text blocks (struck cells/images);
+   * 'partial' pairs with exact 'struck' marks. A strike alone asserts NO
+   * legal state — display is this renderer's decision.
+   */
+  readonly struck?: 'partial' | 'full'
+  /** Present iff the narrow legal rule validated the strike as repealed. */
+  readonly struck_repealed?: true
+  /** Amendment apparatus; omitted = not detected (NOT the same as operative). */
+  readonly annotation_role?: 'amendment_note'
+  /** Colour state; both true and false are emitted, only no-evidence omits. */
+  readonly changed_since_base_form?: boolean
   readonly content: readonly TldfRun[]
   readonly children?: readonly TldfBlock[]
 }
 
-export type TldfMarkKind = 'reference' | 'legal_ref' | 'ref'
+export interface TldfGrid {
+  readonly cols: number
+  readonly rows: number
+}
+
+export interface TldfAsset {
+  readonly sha256?: string
+  readonly width?: number
+  readonly height?: number
+  readonly alt?: string
+}
+
+/**
+ * `italic` / `underline` / `bold` are emphasis carried as MARK EDGES over the
+ * text, never as text of their own. Three kinds rather than one collapsed
+ * `emphasis` because the distinction is semantic in this corpus: the drug-annex
+ * profile uses bold to mark the active substance.
+ */
+export type TldfMarkKind =
+  | 'reference'
+  | 'legal_ref'
+  | 'ref'
+  | 'italic'
+  | 'underline'
+  | 'bold'
+  | 'struck'
 export type TldfLinkKind = 'act' | 'act_missing_id' | 'external' | 'internal'
 
 export type TldfResolutionState =
@@ -95,7 +142,7 @@ export interface TldfDefect {
 
 interface TldfHead {
   readonly format: 'tldf'
-  readonly format_version: '1.0'
+  readonly format_version: '1.0' | '1.1'
   readonly document_id: string
   readonly generation: TldfGeneration
   readonly text_sha256: string

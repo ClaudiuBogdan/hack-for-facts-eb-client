@@ -1,164 +1,162 @@
 /**
- * Integration tests for local comparisons.
+ * Integration tests for territory-first comparisons (mixed levels).
  *
  * Route: /statistici/comparatii
- * GraphQL is mocked (fixtures under tests/fixtures/statistics-comparisons-flow/).
- *
- * The page fires:
- * - `InsDatasetsExplorer` — the dataset picker list;
- * - `InsDatasetDetails` + `InsDatasetDimensionValues` — the pinnable dimensions;
- * - `InsObservations` — exactly ONE call per (dataset × territories × pins).
- *
- * `InsDatasetDimensionValues` variants are keyed on `dimensionIndex` and
- * registered most-specific-first, as the fixture matcher does partial variable
- * matching in registration order.
- *
- * The load-bearing assertion is the last one: `perioada` is derived from data
- * already in memory, so changing it must not produce a second `InsObservations`
- * request.
+ * Fixtures captured from the live API. The RESULTS are always ONE
+ * InsObservations POST; picker/metadata requests are separate and declared.
  */
 
-import type { Page } from '@playwright/test'
 import { test, expect } from '../utils/integration-base'
 import { waitForPageReady } from '../utils/test-helpers'
 import type { MockApiFixture } from '../utils/types'
+import type { Page } from '@playwright/test'
 
-const ROUTE = '/statistici/comparatii'
-
-/** Cluj-Napoca, Turda, Dej. Dej has no 2024 observation in the fixture. */
-const THREE_TERRITORIES = ['54975', '54984', '54993']
-
-const DEEP_LINK = `${ROUTE}?cod=POP107D&teritorii=${encodeURIComponent(
-  JSON.stringify(THREE_TERRITORIES),
-)}`
+const MIXED_LINK =
+  '/statistici/comparatii?cod=FOM104D&teritorii=%5B%22siruta%3A54975%22%2C%22cod%3ACJ%22%2C%22cod%3ARO%22%5D'
 
 async function setupMocks(mockApi: MockApiFixture): Promise<void> {
-  await mockApi.mockGraphQL('InsDatasetsExplorer', 'datasets')
-  await mockApi.mockGraphQL('InsDatasetDetails', 'dataset-details')
-  await mockApi.mockGraphQL('InsTerritories', 'territories')
-
-  // Dimension values, keyed by dimension index. Most specific first.
-  await mockApi.mockGraphQL('InsDatasetDimensionValues', 'dimension-values-unit', {
-    variables: { dimensionIndex: 3 },
+  // Most specific first: the same-level example trio, then the mixed link.
+  await mockApi.mockGraphQL('InsObservations', 'observations-three-cities', {
+    variables: { filter: { territoryCodes: ['54975', '95060', '155243'] } },
   })
-  await mockApi.mockGraphQL('InsDatasetDimensionValues', 'dimension-values-sex', {
-    variables: { dimensionIndex: 2 },
+  await mockApi.mockGraphQL('InsObservations', 'observations-mixed')
+  await mockApi.mockGraphQL('InsDatasetDetails', 'dataset-details-fom104d')
+  await mockApi.mockGraphQL('InsDatasetDimensionValues', 'dimension-values-fom104d-3')
+  await mockApi.mockGraphQL('InsDatasetsExplorer', 'datasets-available')
+  await mockApi.mockGraphQL('InsTerritories', 'territory-identity-cluj', {
+    variables: { filter: { sirutaCodes: ['54975'] } },
   })
-
-  // A pin the fixture data does not carry → the honest "no data" state.
-  await mockApi.mockGraphQL('InsObservations', 'observations-empty', {
-    variables: { filter: { sirutaCodes: THREE_TERRITORIES, territoryLevels: ['LAU'], classificationValueCodes: ['SEX_M'] } },
-  })
-  await mockApi.mockGraphQL('InsObservations', 'observations')
+  await mockApi.mockGraphQL('InsTerritories', 'territories-search-turda')
 }
 
-/** Table body rows, one per selected territory. */
-function territoryRows(page: Page) {
-  return page.getByRole('table').locator('tbody tr')
-}
-
-/**
- * Counts `InsObservations` POSTs. Registered before `mockApi`'s own route so it
- * observes the request and passes it along to the fixture handler.
- */
-async function countObservationRequests(page: Page): Promise<() => number> {
-  let count = 0
-
+function countOperationPosts(page: Page, operation: string): { readonly count: () => number } {
+  let posts = 0
   page.on('request', (request) => {
-    if (request.method() !== 'POST' || !request.url().includes('/graphql')) return
-    const body = request.postData() ?? ''
-    if (body.includes('InsObservations')) count += 1
+    if (!request.url().includes('/graphql') || request.method() !== 'POST') return
+    try {
+      const body = JSON.parse(request.postData() ?? '{}') as { query?: string }
+      if (body.query?.includes(`query ${operation}`)) posts += 1
+    } catch {
+      // Non-JSON bodies are not GraphQL operations.
+    }
   })
-
-  return () => count
+  return { count: () => posts }
 }
 
-test.describe('Local comparisons — deep link, missing cells, single fetch', () => {
+test.describe('Comparisons — mixed territory levels', () => {
   test.beforeEach(async ({ mockApi }) => {
     await setupMocks(mockApi)
   })
 
-
-  test('a deep-linked URL with three territories renders three rows', async ({ page }) => {
-    await page.goto(DEEP_LINK)
-    await waitForPageReady(page)
-
-    await expect(territoryRows(page).first()).toBeVisible({ timeout: 15000 })
-    expect(await territoryRows(page).count()).toBe(3)
-
-    await expect(page.getByRole('cell', { name: 'Municipiul Cluj-Napoca' })).toBeVisible()
-    await expect(page.getByRole('cell', { name: 'Municipiul Turda' })).toBeVisible()
-    await expect(page.getByRole('cell', { name: 'Municipiul Dej' })).toBeVisible()
-  })
-
-  test('the territory missing the latest year shows an em-dash, not a borrowed value', async ({
+  test('a mixed-level deep link renders all three levels from ONE observations POST', async ({
     page,
   }) => {
-    await page.goto(DEEP_LINK)
+    const observationPosts = countOperationPosts(page, 'InsObservations')
+    await page.goto(MIXED_LINK)
     await waitForPageReady(page)
-    await expect(territoryRows(page).first()).toBeVisible({ timeout: 15000 })
 
-    const dejRow = territoryRows(page).filter({ hasText: 'Municipiul Dej' })
-    await expect(dejRow).toHaveCount(1)
+    // All three levels, and the API's literal TOTAL renders as România.
+    await expect(page.getByText(/MUNICIPIUL CLUJ-NAPOCA/i).first()).toBeVisible({
+      timeout: 15000,
+    })
+    await expect(page.getByText('România').first()).toBeVisible()
+    // The table prints the wire's decimal strings VERBATIM (same principle
+    // as the detail observations table); formatted numbers live in the charts.
+    await expect(page.getByRole('table')).toContainText('195025')
+    await expect(page.getByRole('table')).toContainText('261239')
+    await expect(page.getByRole('table')).toContainText('5453155')
 
-    // Columns: territory, 2022, 2023, 2024. The 2024 cell is missing.
-    const latestCell = dejRow.locator('td').nth(3)
-    await expect(latestCell).toHaveText('—')
-    await expect(latestCell.getByLabel('Fără date pentru 2024')).toBeVisible()
+    await page.waitForTimeout(1500)
+    expect(observationPosts.count()).toBe(1)
+  })
 
-    // The bar chart names it rather than drawing a zero-height bar.
+  test('below two territories the worked example renders LIVE, marked exemplu', async ({
+    page,
+  }) => {
+    await page.goto('/statistici/comparatii')
+    await waitForPageReady(page)
+
+    await expect(page.getByText('exemplu live')).toBeVisible({ timeout: 15000 })
+    await expect(page.getByRole('table')).toContainText('195025')
     await expect(
-      page.getByText(/Fără date raportate pentru această perioadă: Municipiul Dej/),
+      page.getByRole('button', { name: /Folosește acest exemplu/ }),
+    ).toBeVisible()
+
+    // Presets are URL bundles.
+    await expect(
+      page.getByRole('link', { name: /Cele mai mari 6 orașe/ }),
     ).toBeVisible()
   })
 
-  test('changing perioada triggers no additional InsObservations request', async ({ page }) => {
-    const observationRequests = await countObservationRequests(page)
-
-    await page.goto(DEEP_LINK)
+  test('adopting the example writes the URL bundle', async ({ page }) => {
+    await page.goto('/statistici/comparatii')
     await waitForPageReady(page)
-    await expect(territoryRows(page).first()).toBeVisible({ timeout: 15000 })
+    await expect(page.getByText('exemplu live')).toBeVisible({ timeout: 15000 })
 
-    // Settle: no further requests are in flight before we take the baseline.
-    await expect.poll(observationRequests, { timeout: 10000 }).toBeGreaterThan(0)
-    const baseline = observationRequests()
-    expect(baseline).toBe(1)
+    await page.getByRole('button', { name: /Folosește acest exemplu/ }).click()
 
-    // 2024 is the default (latest). Switch to 2022 through the period select.
-    await page.getByLabel('Perioadă').click()
-    await page.getByRole('option', { name: '2022' }).click()
-
-    // The router stringifies search values with `JSON.stringify`, so a string
-    // param arrives quoted.
-    await expect.poll(() => new URL(page.url()).searchParams.get('perioada')).toBe('"2022"')
-
-    // The bar chart re-rendered from data already in memory: Dej is no longer
-    // the territory without a value, because it has a 2022 figure.
-    await expect(page.getByText(/Fără date raportate pentru această perioadă/)).toHaveCount(0)
-
-    // Give any stray refetch a chance to fire before asserting it did not.
-    await page.waitForTimeout(1000)
-    expect(observationRequests()).toBe(baseline)
+    await expect
+      .poll(
+        () =>
+          decodeURIComponent(
+            new URL(page.url()).searchParams.get('teritorii') ?? '',
+          ),
+        { timeout: 5000 },
+      )
+      .toContain('siruta:54975')
+    await expect
+      .poll(() => new URL(page.url()).searchParams.get('cod'), { timeout: 5000 })
+      .toBe('FOM104D')
   })
 
-  test('below two territories the guided empty state replaces the results', async ({ page }) => {
+  test('the peer chip adds România as a cod: token (URL contract)', async ({
+    page,
+  }) => {
     await page.goto(
-      `${ROUTE}?cod=POP107D&teritorii=${encodeURIComponent(JSON.stringify(['54975']))}`,
+      '/statistici/comparatii?cod=FOM104D&teritorii=%5B%22siruta%3A54975%22%5D',
     )
     await waitForPageReady(page)
 
-    await expect(
-      page.getByRole('heading', { name: 'Alege cel puțin două teritorii pentru a compara' }),
-    ).toBeVisible({ timeout: 15000 })
-    await expect(page.getByRole('table')).toHaveCount(0)
+    await page.getByRole('button', { name: /România/ }).first().click()
+
+    await expect
+      .poll(
+        () =>
+          decodeURIComponent(
+            new URL(page.url()).searchParams.get('teritorii') ?? '',
+          ),
+        { timeout: 5000 },
+      )
+      .toContain('cod:RO')
   })
 
-  test('a pin with no matching observations shows "no data", not an error', async ({ page }) => {
-    await page.goto(`${DEEP_LINK}&clasificari=${encodeURIComponent(JSON.stringify(['SEX:SEX_M']))}`)
+  test('removing a territory chip updates teritorii[]', async ({ page }) => {
+    await page.goto(MIXED_LINK)
     await waitForPageReady(page)
+    await expect(page.getByText(/MUNICIPIUL CLUJ-NAPOCA/i).first()).toBeVisible({
+      timeout: 15000,
+    })
 
-    await expect(
-      page.getByRole('heading', { name: 'Nu există date pentru această combinație' }),
-    ).toBeVisible({ timeout: 15000 })
+    // Remove the county chip.
+    await page
+      .getByRole('button', { name: /Elimină filtrul|Cluj$/ })
+      .filter({ hasText: /^Cluj$/ })
+      .first()
+      .click()
+      .catch(async () => {
+        // Chip remove buttons carry the label text; fall back to any chip
+        // whose accessible name mentions the county alone.
+        await page.getByLabel(/Elimină.*Cluj/).first().click()
+      })
+
+    await expect
+      .poll(
+        () =>
+          decodeURIComponent(
+            new URL(page.url()).searchParams.get('teritorii') ?? '',
+          ),
+        { timeout: 5000 },
+      )
+      .not.toContain('cod:CJ')
   })
 })

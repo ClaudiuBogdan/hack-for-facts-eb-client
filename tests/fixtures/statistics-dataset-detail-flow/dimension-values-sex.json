@@ -1,0 +1,61 @@
+{
+  "data": {
+    "insDatasetDimensionValues": {
+      "nodes": [
+        {
+          "nom_item_id": 105,
+          "dimension_type": "CLASSIFICATION",
+          "label_ro": "Total ",
+          "label_en": "Total ",
+          "parent_nom_item_id": null,
+          "offset_order": 1,
+          "territory": null,
+          "time_period": null,
+          "classification_value": {
+            "type_code": "SEX",
+            "code": "TOTAL",
+            "name_ro": "Total "
+          },
+          "unit": null
+        },
+        {
+          "nom_item_id": 106,
+          "dimension_type": "CLASSIFICATION",
+          "label_ro": "Masculin ",
+          "label_en": "Male ",
+          "parent_nom_item_id": null,
+          "offset_order": 2,
+          "territory": null,
+          "time_period": null,
+          "classification_value": {
+            "type_code": "SEX",
+            "code": "MASCULIN",
+            "name_ro": "Masculin "
+          },
+          "unit": null
+        },
+        {
+          "nom_item_id": 107,
+          "dimension_type": "CLASSIFICATION",
+          "label_ro": "Feminin ",
+          "label_en": "Female ",
+          "parent_nom_item_id": null,
+          "offset_order": 3,
+          "territory": null,
+          "time_period": null,
+          "classification_value": {
+            "type_code": "SEX",
+            "code": "FEMININ",
+            "name_ro": "Feminin "
+          },
+          "unit": null
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 3,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}

@@ -1,6 +1,9 @@
 import { Trans } from '@lingui/react/macro'
 import type { LegislationOverview } from '@/schemas/legal'
-import { useLegislationOverview } from '../hooks/use-legislation'
+import {
+  useLegislationOverview,
+  useLegislationStatusCounts,
+} from '../hooks/use-legislation'
 import { LEGAL_CORPUS_MEASURED_AT } from '../lib/legal-coverage'
 import { LegislationAnalyticsSkeleton } from './legislation-analytics-skeleton'
 import { LegislationHonestyNotes } from './legislation-honesty-notes'
@@ -25,15 +28,20 @@ type Props = {
  * Constitutional Court caveat without navigating away.
  *
  * It shares `useLegislationOverview` with the landing page, so switching tabs
- * costs no request.
+ * costs no request; the headline counts ride `useLegislationStatusCounts`
+ * (one aggregate request, shared with the KPI strip via the query key), so a
+ * failed aggregate degrades the chips and the tiles instead of this route.
  */
 export function LegislationAnalyticsPage({ initialOverview }: Props) {
   const { data, isLoading, isError } = useLegislationOverview(initialOverview)
+  // `?? {}` keeps the chip row's space reserved while the counts are on the
+  // wire, so their arrival does not shift the tab nav.
+  const { data: statusCounts } = useLegislationStatusCounts()
 
   return (
     <LegislationShell
       activeTab="analiza"
-      counts={data?.counts}
+      counts={statusCounts ?? {}}
       measuredAt={LEGAL_CORPUS_MEASURED_AT}
       dataStatus={data?.coverage.dataStatus}
     >
@@ -45,7 +53,7 @@ export function LegislationAnalyticsPage({ initialOverview }: Props) {
         </p>
       ) : (
         <div className="flex flex-col gap-12">
-          <LegislationKpiStrip counts={data.counts} />
+          <LegislationKpiStrip />
           <LegislationTopActs acts={data.mostCitedActs} />
           <LegislationHonestyNotes />
         </div>
