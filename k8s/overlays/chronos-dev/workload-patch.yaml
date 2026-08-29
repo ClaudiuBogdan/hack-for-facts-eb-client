@@ -7,6 +7,11 @@ metadata:
     image-sha: sha256:3566933cc0f8ce5add6a94bf61fce0a597b023d0c135e979f1d9ff6479b7e7b7
 spec:
   replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
   template:
     spec:
       serviceAccountName: hack-for-facts-eb-client
@@ -32,6 +37,13 @@ spec:
           labelSelector:
             matchLabels:
               app: hack-for-facts-eb-client
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: hack-for-facts-eb-client
+              topologyKey: kubernetes.io/hostname
       containers:
         - name: hack-for-facts-eb-client
           envFrom:
