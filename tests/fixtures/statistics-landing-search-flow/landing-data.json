@@ -1,0 +1,1589 @@
+{
+  "data": {
+    "latest": [
+      {
+        "latestPeriod": "2025",
+        "matchStrategy": "PREFERRED_CLASSIFICATION",
+        "hasData": true,
+        "dataset": {
+          "code": "POP107D",
+          "name_ro": "POPULATIA DUPA DOMICILIU la 1 ianuarie pe grupe de varsta si varste, sexe, judete si localitati",
+          "name_en": "LEGALLY RESIDENT POPULATION, by age group and ages, sex, counties and localities at January 1st.",
+          "periodicity": [
+            "ANNUAL"
+          ]
+        },
+        "observation": {
+          "value": "21739373",
+          "value_status": null,
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          },
+          "classifications": [
+            {
+              "type_code": "SEX",
+              "code": "TOTAL",
+              "name_ro": "Total "
+            },
+            {
+              "type_code": "AGE_GROUP",
+              "code": "TOTAL",
+              "name_ro": "Total"
+            }
+          ]
+        }
+      },
+      {
+        "latestPeriod": "2024",
+        "matchStrategy": "TOTAL_FALLBACK",
+        "hasData": true,
+        "dataset": {
+          "code": "FOM104D",
+          "name_ro": "Numarul mediu al salariatilor pe judete si localitati",
+          "name_en": "Average number of employees by counties and localities",
+          "periodicity": [
+            "ANNUAL"
+          ]
+        },
+        "observation": {
+          "value": "5453155",
+          "value_status": null,
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024
+          },
+          "classifications": []
+        }
+      },
+      {
+        "latestPeriod": "2025-11",
+        "matchStrategy": "PREFERRED_CLASSIFICATION",
+        "hasData": true,
+        "dataset": {
+          "code": "SOM101F",
+          "name_ro": "Ponderea somerilor inregistrati la sfarsitul lunii in totalul resurselor de munca, pe sexe, judete si localitati",
+          "name_en": "Share of registered unemployed at the end of the month in the total labor resources, by gender, counties and localities, at the end of the month\r\n",
+          "periodicity": [
+            "ANNUAL",
+            "MONTHLY"
+          ]
+        },
+        "observation": {
+          "value": "1.9",
+          "value_status": null,
+          "unit": {
+            "code": "PERCENT",
+            "symbol": "%",
+            "name_ro": "Procente"
+          },
+          "time_period": {
+            "iso_period": "2025-11",
+            "year": 2025
+          },
+          "classifications": [
+            {
+              "type_code": "SEX",
+              "code": "TOTAL",
+              "name_ro": "Total "
+            }
+          ]
+        }
+      },
+      {
+        "latestPeriod": "2023",
+        "matchStrategy": "PREFERRED_CLASSIFICATION",
+        "hasData": true,
+        "dataset": {
+          "code": "LOC101B",
+          "name_ro": "Locuinte existente la sfarsitul anului pe forme de proprietate, judete si localitati",
+          "name_en": "Dwellings stock at the end of the year by type of ownership, counties and localities",
+          "periodicity": [
+            "ANNUAL"
+          ]
+        },
+        "observation": {
+          "value": "9722223",
+          "value_status": null,
+          "unit": {
+            "code": "NUMBER",
+            "symbol": "nr.",
+            "name_ro": "Numar"
+          },
+          "time_period": {
+            "iso_period": "2023",
+            "year": 2023
+          },
+          "classifications": [
+            {
+              "type_code": "OWNERSHIP",
+              "code": "TOTAL",
+              "name_ro": "Total"
+            }
+          ]
+        }
+      }
+    ],
+    "decade": {
+      "pageInfo": {
+        "totalCount": 84
+      },
+      "nodes": [
+        {
+          "value": "361781",
+          "value_status": null,
+          "territory": {
+            "code": "AB",
+            "name_ro": "Alba"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "606726",
+          "value_status": null,
+          "territory": {
+            "code": "AG",
+            "name_ro": "Argeș"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "458446",
+          "value_status": null,
+          "territory": {
+            "code": "AR",
+            "name_ro": "Arad"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "2123457",
+          "value_status": null,
+          "territory": {
+            "code": "B",
+            "name_ro": "București"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "710085",
+          "value_status": null,
+          "territory": {
+            "code": "BC",
+            "name_ro": "Bacău"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "608277",
+          "value_status": null,
+          "territory": {
+            "code": "BH",
+            "name_ro": "Bihor"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "322724",
+          "value_status": null,
+          "territory": {
+            "code": "BN",
+            "name_ro": "Bistrița-Năsăud"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "317390",
+          "value_status": null,
+          "territory": {
+            "code": "BR",
+            "name_ro": "Brăila"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "457767",
+          "value_status": null,
+          "territory": {
+            "code": "BT",
+            "name_ro": "Botoșani"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "643351",
+          "value_status": null,
+          "territory": {
+            "code": "BV",
+            "name_ro": "Brașov"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "435578",
+          "value_status": null,
+          "territory": {
+            "code": "BZ",
+            "name_ro": "Buzău"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "745318",
+          "value_status": null,
+          "territory": {
+            "code": "CJ",
+            "name_ro": "Cluj"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "292094",
+          "value_status": null,
+          "territory": {
+            "code": "CL",
+            "name_ro": "Călărași"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "297762",
+          "value_status": null,
+          "territory": {
+            "code": "CS",
+            "name_ro": "Caraș-Severin"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "745478",
+          "value_status": null,
+          "territory": {
+            "code": "CT",
+            "name_ro": "Constanța"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "220257",
+          "value_status": null,
+          "territory": {
+            "code": "CV",
+            "name_ro": "Covasna"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "501935",
+          "value_status": null,
+          "territory": {
+            "code": "DB",
+            "name_ro": "Dâmbovița"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "663167",
+          "value_status": null,
+          "territory": {
+            "code": "DJ",
+            "name_ro": "Dolj"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "339112",
+          "value_status": null,
+          "territory": {
+            "code": "GJ",
+            "name_ro": "Gorj"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "617529",
+          "value_status": null,
+          "territory": {
+            "code": "GL",
+            "name_ro": "Galați"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "257935",
+          "value_status": null,
+          "territory": {
+            "code": "GR",
+            "name_ro": "Giurgiu"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "426022",
+          "value_status": null,
+          "territory": {
+            "code": "HD",
+            "name_ro": "Hunedoara"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "322851",
+          "value_status": null,
+          "territory": {
+            "code": "HR",
+            "name_ro": "Harghita"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "531598",
+          "value_status": null,
+          "territory": {
+            "code": "IF",
+            "name_ro": "Ilfov"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "273643",
+          "value_status": null,
+          "territory": {
+            "code": "IL",
+            "name_ro": "Ialomița"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "988621",
+          "value_status": null,
+          "territory": {
+            "code": "IS",
+            "name_ro": "Iași"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "263963",
+          "value_status": null,
+          "territory": {
+            "code": "MH",
+            "name_ro": "Mehedinți"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "507375",
+          "value_status": null,
+          "territory": {
+            "code": "MM",
+            "name_ro": "Maramureș"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "576163",
+          "value_status": null,
+          "territory": {
+            "code": "MS",
+            "name_ro": "Mureș"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "543702",
+          "value_status": null,
+          "territory": {
+            "code": "NT",
+            "name_ro": "Neamț"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "406355",
+          "value_status": null,
+          "territory": {
+            "code": "OT",
+            "name_ro": "Olt"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "751244",
+          "value_status": null,
+          "territory": {
+            "code": "PH",
+            "name_ro": "Prahova"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "467800",
+          "value_status": null,
+          "territory": {
+            "code": "SB",
+            "name_ro": "Sibiu"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "236934",
+          "value_status": null,
+          "territory": {
+            "code": "SJ",
+            "name_ro": "Sălaj"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "376890",
+          "value_status": null,
+          "territory": {
+            "code": "SM",
+            "name_ro": "Satu Mare"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "764240",
+          "value_status": null,
+          "territory": {
+            "code": "SV",
+            "name_ro": "Suceava"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "219695",
+          "value_status": null,
+          "territory": {
+            "code": "TL",
+            "name_ro": "Tulcea"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "763989",
+          "value_status": null,
+          "territory": {
+            "code": "TM",
+            "name_ro": "Timiș"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "337434",
+          "value_status": null,
+          "territory": {
+            "code": "TR",
+            "name_ro": "Teleorman"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "382778",
+          "value_status": null,
+          "territory": {
+            "code": "VL",
+            "name_ro": "Vâlcea"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "368443",
+          "value_status": null,
+          "territory": {
+            "code": "VN",
+            "name_ro": "Vrancea"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "503464",
+          "value_status": null,
+          "territory": {
+            "code": "VS",
+            "name_ro": "Vaslui"
+          },
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025
+          }
+        },
+        {
+          "value": "381372",
+          "value_status": null,
+          "territory": {
+            "code": "AB",
+            "name_ro": "Alba"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "646649",
+          "value_status": null,
+          "territory": {
+            "code": "AG",
+            "name_ro": "Argeș"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "474643",
+          "value_status": null,
+          "territory": {
+            "code": "AR",
+            "name_ro": "Arad"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "2107500",
+          "value_status": null,
+          "territory": {
+            "code": "B",
+            "name_ro": "București"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "748459",
+          "value_status": null,
+          "territory": {
+            "code": "BC",
+            "name_ro": "Bacău"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "619758",
+          "value_status": null,
+          "territory": {
+            "code": "BH",
+            "name_ro": "Bihor"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "329643",
+          "value_status": null,
+          "territory": {
+            "code": "BN",
+            "name_ro": "Bistrița-Năsăud"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "356503",
+          "value_status": null,
+          "territory": {
+            "code": "BR",
+            "name_ro": "Brăila"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "456763",
+          "value_status": null,
+          "territory": {
+            "code": "BT",
+            "name_ro": "Botoșani"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "631835",
+          "value_status": null,
+          "territory": {
+            "code": "BV",
+            "name_ro": "Brașov"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "479139",
+          "value_status": null,
+          "territory": {
+            "code": "BZ",
+            "name_ro": "Buzău"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "722779",
+          "value_status": null,
+          "territory": {
+            "code": "CJ",
+            "name_ro": "Cluj"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "317770",
+          "value_status": null,
+          "territory": {
+            "code": "CL",
+            "name_ro": "Călărași"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "328464",
+          "value_status": null,
+          "territory": {
+            "code": "CS",
+            "name_ro": "Caraș-Severin"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "770252",
+          "value_status": null,
+          "territory": {
+            "code": "CT",
+            "name_ro": "Constanța"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "228897",
+          "value_status": null,
+          "territory": {
+            "code": "CV",
+            "name_ro": "Covasna"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "528978",
+          "value_status": null,
+          "territory": {
+            "code": "DB",
+            "name_ro": "Dâmbovița"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "701249",
+          "value_status": null,
+          "territory": {
+            "code": "DJ",
+            "name_ro": "Dolj"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "366510",
+          "value_status": null,
+          "territory": {
+            "code": "GJ",
+            "name_ro": "Gorj"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "632913",
+          "value_status": null,
+          "territory": {
+            "code": "GL",
+            "name_ro": "Galați"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "277042",
+          "value_status": null,
+          "territory": {
+            "code": "GR",
+            "name_ro": "Giurgiu"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "470451",
+          "value_status": null,
+          "territory": {
+            "code": "HD",
+            "name_ro": "Hunedoara"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "333862",
+          "value_status": null,
+          "territory": {
+            "code": "HR",
+            "name_ro": "Harghita"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "391027",
+          "value_status": null,
+          "territory": {
+            "code": "IF",
+            "name_ro": "Ilfov"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "294283",
+          "value_status": null,
+          "territory": {
+            "code": "IL",
+            "name_ro": "Ialomița"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "922198",
+          "value_status": null,
+          "territory": {
+            "code": "IS",
+            "name_ro": "Iași"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "287192",
+          "value_status": null,
+          "territory": {
+            "code": "MH",
+            "name_ro": "Mehedinți"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "526413",
+          "value_status": null,
+          "territory": {
+            "code": "MM",
+            "name_ro": "Maramureș"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "596660",
+          "value_status": null,
+          "territory": {
+            "code": "MS",
+            "name_ro": "Mureș"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "578360",
+          "value_status": null,
+          "territory": {
+            "code": "NT",
+            "name_ro": "Neamț"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "450448",
+          "value_status": null,
+          "territory": {
+            "code": "OT",
+            "name_ro": "Olt"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "809606",
+          "value_status": null,
+          "territory": {
+            "code": "PH",
+            "name_ro": "Prahova"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "464746",
+          "value_status": null,
+          "territory": {
+            "code": "SB",
+            "name_ro": "Sibiu"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "247769",
+          "value_status": null,
+          "territory": {
+            "code": "SJ",
+            "name_ro": "Sălaj"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "391135",
+          "value_status": null,
+          "territory": {
+            "code": "SM",
+            "name_ro": "Satu Mare"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "746237",
+          "value_status": null,
+          "territory": {
+            "code": "SV",
+            "name_ro": "Suceava"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "244461",
+          "value_status": null,
+          "territory": {
+            "code": "TL",
+            "name_ro": "Tulcea"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "743844",
+          "value_status": null,
+          "territory": {
+            "code": "TM",
+            "name_ro": "Timiș"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "389940",
+          "value_status": null,
+          "territory": {
+            "code": "TR",
+            "name_ro": "Teleorman"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "403407",
+          "value_status": null,
+          "territory": {
+            "code": "VL",
+            "name_ro": "Vâlcea"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "391780",
+          "value_status": null,
+          "territory": {
+            "code": "VN",
+            "name_ro": "Vrancea"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        },
+        {
+          "value": "482372",
+          "value_status": null,
+          "territory": {
+            "code": "VS",
+            "name_ro": "Vaslui"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          }
+        }
+      ]
+    },
+    "example": {
+      "nodes": [
+        {
+          "value": "195025",
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "261239",
+          "territory": {
+            "code": "CJ",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Cluj"
+          },
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "5453155",
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "190486",
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "time_period": {
+            "iso_period": "2023",
+            "year": 2023
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "255126",
+          "territory": {
+            "code": "CJ",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Cluj"
+          },
+          "time_period": {
+            "iso_period": "2023",
+            "year": 2023
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "5364938",
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "time_period": {
+            "iso_period": "2023",
+            "year": 2023
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "186456",
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "time_period": {
+            "iso_period": "2022",
+            "year": 2022
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "248860",
+          "territory": {
+            "code": "CJ",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Cluj"
+          },
+          "time_period": {
+            "iso_period": "2022",
+            "year": 2022
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "5209493",
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "time_period": {
+            "iso_period": "2022",
+            "year": 2022
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "181883",
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "time_period": {
+            "iso_period": "2021",
+            "year": 2021
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "241685",
+          "territory": {
+            "code": "CJ",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Cluj"
+          },
+          "time_period": {
+            "iso_period": "2021",
+            "year": 2021
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "5094288",
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "time_period": {
+            "iso_period": "2021",
+            "year": 2021
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "176996",
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "time_period": {
+            "iso_period": "2020",
+            "year": 2020
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "233881",
+          "territory": {
+            "code": "CJ",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Cluj"
+          },
+          "time_period": {
+            "iso_period": "2020",
+            "year": 2020
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "5031767",
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "time_period": {
+            "iso_period": "2020",
+            "year": 2020
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "181226",
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "time_period": {
+            "iso_period": "2019",
+            "year": 2019
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "239293",
+          "territory": {
+            "code": "CJ",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Cluj"
+          },
+          "time_period": {
+            "iso_period": "2019",
+            "year": 2019
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "5164471",
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "time_period": {
+            "iso_period": "2019",
+            "year": 2019
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "171637",
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "time_period": {
+            "iso_period": "2018",
+            "year": 2018
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "231119",
+          "territory": {
+            "code": "CJ",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Cluj"
+          },
+          "time_period": {
+            "iso_period": "2018",
+            "year": 2018
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "5068063",
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "time_period": {
+            "iso_period": "2018",
+            "year": 2018
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "168718",
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "time_period": {
+            "iso_period": "2017",
+            "year": 2017
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "225171",
+          "territory": {
+            "code": "CJ",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Cluj"
+          },
+          "time_period": {
+            "iso_period": "2017",
+            "year": 2017
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "4945868",
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "time_period": {
+            "iso_period": "2017",
+            "year": 2017
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "161610",
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "210713",
+          "territory": {
+            "code": "CJ",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Cluj"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        },
+        {
+          "value": "4759419",
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016
+          },
+          "unit": {
+            "symbol": "pers."
+          }
+        }
+      ]
+    }
+  }
+}

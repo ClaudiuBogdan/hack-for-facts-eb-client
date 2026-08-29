@@ -1,19 +1,28 @@
 import type {
   InsDatasetDetails,
   InsDimensionValueConnection,
-  InsObservationConnection,
+  InsEntitySelectorInput,
   InsObservationFilterInput,
 } from '@/schemas/ins'
+import type {
+  StatisticsDatasetSeries,
+  StatisticsDatasetTier0,
+} from '@/schemas/statistics'
 import { isStatisticsMockEnabled } from '../lib/mock-mode'
 import {
   getInsDatasetDetails,
   getInsDimensionValuesPage,
-  getInsObservationsPage,
 } from './graphql/ins-fetchers'
 import {
+  fetchStatisticsDatasetSeries,
+  fetchStatisticsDatasetTier0,
+} from './graphql/statistics-fetchers'
+import { SERIES_MAX_ROWS } from '../lib/dataset-selection'
+import {
   fetchDatasetDetailMock,
+  fetchDatasetSeriesMock,
+  fetchDatasetTier0Mock,
   fetchDimensionValuesPageMock,
-  fetchObservationsPageMock,
 } from './dataset-detail-api.mock'
 
 /**
@@ -24,11 +33,12 @@ import {
 
 export async function fetchDatasetDetail(
   code: string,
+  signal?: AbortSignal,
 ): Promise<InsDatasetDetails | null> {
   if (isStatisticsMockEnabled()) {
     return fetchDatasetDetailMock(code)
   }
-  return getInsDatasetDetails(code)
+  return getInsDatasetDetails(code, signal)
 }
 
 export async function fetchDimensionValuesPage(params: {
@@ -37,6 +47,7 @@ export async function fetchDimensionValuesPage(params: {
   readonly search?: string
   readonly limit: number
   readonly offset: number
+  readonly signal?: AbortSignal
 }): Promise<InsDimensionValueConnection> {
   if (isStatisticsMockEnabled()) {
     return fetchDimensionValuesPageMock(params)
@@ -44,14 +55,27 @@ export async function fetchDimensionValuesPage(params: {
   return getInsDimensionValuesPage(params)
 }
 
-export async function fetchObservationsPage(params: {
-  readonly datasetCode: string
-  readonly filter: InsObservationFilterInput
-  readonly limit: number
-  readonly offset: number
-}): Promise<InsObservationConnection> {
+/** Tier-0: dataset metadata + the server-resolved latest value (POST A). */
+export async function fetchDatasetTier0(params: {
+  readonly code: string
+  readonly entity: InsEntitySelectorInput
+  readonly signal?: AbortSignal
+}): Promise<StatisticsDatasetTier0> {
   if (isStatisticsMockEnabled()) {
-    return fetchObservationsPageMock(params)
+    return fetchDatasetTier0Mock(params)
   }
-  return getInsObservationsPage(params)
+  return fetchStatisticsDatasetTier0(params)
+}
+
+/** The resolved series + related datasets in one POST (POST B). */
+export async function fetchDatasetSeries(params: {
+  readonly code: string
+  readonly filter: InsObservationFilterInput
+  readonly contextCode: string | null
+  readonly signal?: AbortSignal
+}): Promise<StatisticsDatasetSeries> {
+  if (isStatisticsMockEnabled()) {
+    return fetchDatasetSeriesMock({ ...params, limit: SERIES_MAX_ROWS })
+  }
+  return fetchStatisticsDatasetSeries(params)
 }

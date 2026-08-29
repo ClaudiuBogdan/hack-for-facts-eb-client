@@ -1,0 +1,815 @@
+{
+  "data": {
+    "series": {
+      "pageInfo": {
+        "totalCount": 20,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      },
+      "nodes": [
+        {
+          "value": "21739373",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "code": "TOTAL",
+              "name_ro": "Total ",
+              "sort_order": 1
+            },
+            {
+              "type_code": "AGE_GROUP",
+              "type_name_ro": "Grupe de vârstă",
+              "code": "TOTAL",
+              "name_ro": "Total",
+              "sort_order": 1
+            }
+          ]
+        },
+        {
+          "value": "11136500",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "type_code": "AGE_GROUP",
+              "type_name_ro": "Grupe de vârstă",
+              "code": "TOTAL",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "code": "FEMININ",
+              "name_ro": "Feminin ",
+              "sort_order": 3
+            }
+          ]
+        },
+        {
+          "value": "21849217",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "code": "TOTAL",
+              "name_ro": "Total ",
+              "sort_order": 1
+            },
+            {
+              "type_code": "AGE_GROUP",
+              "type_name_ro": "Grupe de vârstă",
+              "code": "TOTAL",
+              "name_ro": "Total",
+              "sort_order": 1
+            }
+          ]
+        },
+        {
+          "value": "11189124",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "type_code": "AGE_GROUP",
+              "type_name_ro": "Grupe de vârstă",
+              "code": "TOTAL",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "code": "FEMININ",
+              "name_ro": "Feminin ",
+              "sort_order": 3
+            }
+          ]
+        },
+        {
+          "value": "21953617",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2023",
+            "year": 2023,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "code": "TOTAL",
+              "name_ro": "Total ",
+              "sort_order": 1
+            },
+            {
+              "type_code": "AGE_GROUP",
+              "type_name_ro": "Grupe de vârstă",
+              "code": "TOTAL",
+              "name_ro": "Total",
+              "sort_order": 1
+            }
+          ]
+        },
+        {
+          "value": "11240296",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2023",
+            "year": 2023,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "type_code": "AGE_GROUP",
+              "type_name_ro": "Grupe de vârstă",
+              "code": "TOTAL",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "code": "FEMININ",
+              "name_ro": "Feminin ",
+              "sort_order": 3
+            }
+          ]
+        },
+        {
+          "value": "22028486",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2022",
+            "year": 2022,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "code": "TOTAL",
+              "name_ro": "Total ",
+              "sort_order": 1
+            },
+            {
+              "type_code": "AGE_GROUP",
+              "type_name_ro": "Grupe de vârstă",
+              "code": "TOTAL",
+              "name_ro": "Total",
+              "sort_order": 1
+            }
+          ]
+        },
+        {
+          "value": "11276393",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2022",
+            "year": 2022,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "type_code": "AGE_GROUP",
+              "type_name_ro": "Grupe de vârstă",
+              "code": "TOTAL",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "code": "FEMININ",
+              "name_ro": "Feminin ",
+              "sort_order": 3
+            }
+          ]
+        },
+        {
+          "value": "22138604",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2021",
+            "year": 2021,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "code": "TOTAL",
+              "name_ro": "Total ",
+              "sort_order": 1
+            },
+            {
+              "type_code": "AGE_GROUP",
+              "type_name_ro": "Grupe de vârstă",
+              "code": "TOTAL",
+              "name_ro": "Total",
+              "sort_order": 1
+            }
+          ]
+        },
+        {
+          "value": "11329957",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2021",
+            "year": 2021,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "type_code": "AGE_GROUP",
+              "type_name_ro": "Grupe de vârstă",
+              "code": "TOTAL",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "code": "FEMININ",
+              "name_ro": "Feminin ",
+              "sort_order": 3
+            }
+          ]
+        },
+        {
+          "value": "22211708",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2020",
+            "year": 2020,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "code": "TOTAL",
+              "name_ro": "Total ",
+              "sort_order": 1
+            },
+            {
+              "type_code": "AGE_GROUP",
+              "type_name_ro": "Grupe de vârstă",
+              "code": "TOTAL",
+              "name_ro": "Total",
+              "sort_order": 1
+            }
+          ]
+        },
+        {
+          "value": "11362123",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2020",
+            "year": 2020,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "type_code": "AGE_GROUP",
+              "type_name_ro": "Grupe de vârstă",
+              "code": "TOTAL",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "code": "FEMININ",
+              "name_ro": "Feminin ",
+              "sort_order": 3
+            }
+          ]
+        },
+        {
+          "value": "22215217",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2019",
+            "year": 2019,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "code": "TOTAL",
+              "name_ro": "Total ",
+              "sort_order": 1
+            },
+            {
+              "type_code": "AGE_GROUP",
+              "type_name_ro": "Grupe de vârstă",
+              "code": "TOTAL",
+              "name_ro": "Total",
+              "sort_order": 1
+            }
+          ]
+        },
+        {
+          "value": "11365193",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2019",
+            "year": 2019,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "type_code": "AGE_GROUP",
+              "type_name_ro": "Grupe de vârstă",
+              "code": "TOTAL",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "code": "FEMININ",
+              "name_ro": "Feminin ",
+              "sort_order": 3
+            }
+          ]
+        },
+        {
+          "value": "22221895",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2018",
+            "year": 2018,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "code": "TOTAL",
+              "name_ro": "Total ",
+              "sort_order": 1
+            },
+            {
+              "type_code": "AGE_GROUP",
+              "type_name_ro": "Grupe de vârstă",
+              "code": "TOTAL",
+              "name_ro": "Total",
+              "sort_order": 1
+            }
+          ]
+        },
+        {
+          "value": "11372472",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2018",
+            "year": 2018,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "type_code": "AGE_GROUP",
+              "type_name_ro": "Grupe de vârstă",
+              "code": "TOTAL",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "code": "FEMININ",
+              "name_ro": "Feminin ",
+              "sort_order": 3
+            }
+          ]
+        },
+        {
+          "value": "22236154",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2017",
+            "year": 2017,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "code": "TOTAL",
+              "name_ro": "Total ",
+              "sort_order": 1
+            },
+            {
+              "type_code": "AGE_GROUP",
+              "type_name_ro": "Grupe de vârstă",
+              "code": "TOTAL",
+              "name_ro": "Total",
+              "sort_order": 1
+            }
+          ]
+        },
+        {
+          "value": "11381773",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2017",
+            "year": 2017,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "type_code": "AGE_GROUP",
+              "type_name_ro": "Grupe de vârstă",
+              "code": "TOTAL",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "code": "FEMININ",
+              "name_ro": "Feminin ",
+              "sort_order": 3
+            }
+          ]
+        },
+        {
+          "value": "22273309",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "code": "TOTAL",
+              "name_ro": "Total ",
+              "sort_order": 1
+            },
+            {
+              "type_code": "AGE_GROUP",
+              "type_name_ro": "Grupe de vârstă",
+              "code": "TOTAL",
+              "name_ro": "Total",
+              "sort_order": 1
+            }
+          ]
+        },
+        {
+          "value": "11400776",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "type_code": "AGE_GROUP",
+              "type_name_ro": "Grupe de vârstă",
+              "code": "TOTAL",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "type_code": "SEX",
+              "type_name_ro": "Sexe",
+              "code": "FEMININ",
+              "name_ro": "Feminin ",
+              "sort_order": 3
+            }
+          ]
+        }
+      ]
+    },
+    "related": {
+      "pageInfo": {
+        "totalCount": 7
+      },
+      "nodes": [
+        {
+          "code": "POP107A",
+          "name_ro": "POPULATIA DUPA DOMICILIU la 1 ianuarie pe grupe de varsta si varste, sexe, medii de rezidenta, macroregiuni, regiuni de dezvoltare si judete",
+          "data_status": "AVAILABLE"
+        },
+        {
+          "code": "POP107B",
+          "name_ro": "POPULATIA DUPA DOMICILIU in varsta de munca la 1 ianuarie pe medii de rezidenta si sexe, macroregiuni, regiuni de dezvoltare si judete",
+          "data_status": "AVAILABLE"
+        },
+        {
+          "code": "POP107D",
+          "name_ro": "POPULATIA DUPA DOMICILIU la 1 ianuarie pe grupe de varsta si varste, sexe, judete si localitati",
+          "data_status": "AVAILABLE"
+        },
+        {
+          "code": "POP108B",
+          "name_ro": "POPULATIA DUPA DOMICILIU la 1 iulie pe grupe de varsta si varste, sexe, medii de rezidenta, macroregiuni, regiuni de dezvoltare si judete",
+          "data_status": "AVAILABLE"
+        },
+        {
+          "code": "POP108C",
+          "name_ro": "POPULATIA DUPA DOMICILIU la 1 iulie pentru grupa de varsta oficiala corespunzatoare invatamantului prescolar pe judete si localitati",
+          "data_status": "AVAILABLE"
+        },
+        {
+          "code": "POP108D",
+          "name_ro": "POPULATIA DUPA DOMICILIU la 1 iulie pe grupe de varsta si varste, sexe, judete si localitati",
+          "data_status": "AVAILABLE"
+        },
+        {
+          "code": "POP110A",
+          "name_ro": "Varsta medie a populatiei dupa domiciliu la 1 iulie pe sexe, medii de rezidenta, macroregiuni, regiuni de dezvoltare si judete",
+          "data_status": "AVAILABLE"
+        }
+      ]
+    }
+  }
+}

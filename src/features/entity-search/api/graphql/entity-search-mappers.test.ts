@@ -9,13 +9,11 @@ function rawHit(overrides: Partial<RawSearchHit>): RawSearchHit {
     title: 'ACME SRL',
     snippet: null,
     score: null,
-    source: null,
     docId: null,
     docKey: null,
     subtitle: null,
     countyName: null,
     url: null,
-    rankBoost: null,
     cuis: null,
     identifiers: null,
     roles: null,
@@ -105,6 +103,7 @@ describe('mapSearchResult', () => {
       searchEntities: {
         query: 'acme',
         engine: 'meili',
+        degraded: false,
         estimatedTotalHits: 2,
         facets: [{ field: 'doc_type', value: 'company', count: 2 }],
         hits: [
@@ -129,16 +128,36 @@ describe('mapSearchResult', () => {
     expect(result.hits[1]?.isExternal).toBe(true)
   })
 
-  it('preserves the postgres fallback engine', () => {
+  it('preserves the postgres engine AND the degraded flag', () => {
+    // The pair matters: `engine` says who answered, `degraded` says whether the
+    // answer is complete. Mapping one and dropping the other is exactly how
+    // `source` and `rankBoost` died — fetched, never mapped, never noticed.
     const response: SearchEntitiesResponse = {
       searchEntities: {
         query: 'x',
         engine: 'postgres',
+        degraded: true,
         estimatedTotalHits: 0,
         facets: [],
         hits: [],
       },
     }
-    expect(mapSearchResult(response).engine).toBe('postgres')
+    const result = mapSearchResult(response)
+    expect(result.engine).toBe('postgres')
+    expect(result.degraded).toBe(true)
+  })
+
+  it('carries degraded=false through unchanged', () => {
+    const response: SearchEntitiesResponse = {
+      searchEntities: {
+        query: 'x',
+        engine: 'meili',
+        degraded: false,
+        estimatedTotalHits: 0,
+        facets: [],
+        hits: [],
+      },
+    }
+    expect(mapSearchResult(response).degraded).toBe(false)
   })
 })

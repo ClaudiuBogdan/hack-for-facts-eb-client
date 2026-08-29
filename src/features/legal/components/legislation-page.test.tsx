@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
-import { fireEvent, render, screen } from '@/test/test-utils'
+import { fireEvent, render, screen, within } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { legislationOverviewFixture } from '../mocks/fixtures/legislation-overview'
+import { legislationDomainCountsFixture } from '../mocks/fixtures/legislation-domain-counts'
 import { LegislationPage } from './legislation-page'
 
 const navigateMock = vi.fn()
@@ -24,9 +25,16 @@ vi.mock('@tanstack/react-router', () => ({
 
 vi.mock('../hooks/use-legislation', () => ({
   useLegislationOverview: vi.fn(),
+  useLegislationDomainCounts: vi.fn(),
+  useLegislationStatusCounts: vi.fn(),
 }))
 
-import { useLegislationOverview } from '../hooks/use-legislation'
+import {
+  useLegislationDomainCounts,
+  useLegislationOverview,
+  useLegislationStatusCounts,
+} from '../hooks/use-legislation'
+import { legislationStatusCountsFixture } from '../mocks/fixtures/legislation-status-counts'
 
 function mockOverviewReady() {
   vi.mocked(useLegislationOverview).mockReturnValue({
@@ -34,6 +42,14 @@ function mockOverviewReady() {
     isLoading: false,
     isError: false,
   } as unknown as ReturnType<typeof useLegislationOverview>)
+  vi.mocked(useLegislationDomainCounts).mockReturnValue({
+    data: legislationDomainCountsFixture,
+    isError: false,
+  } as unknown as ReturnType<typeof useLegislationDomainCounts>)
+  vi.mocked(useLegislationStatusCounts).mockReturnValue({
+    data: legislationStatusCountsFixture,
+    isError: false,
+  } as unknown as ReturnType<typeof useLegislationStatusCounts>)
 }
 
 describe('LegislationPage', () => {
@@ -119,15 +135,16 @@ describe('LegislationPage', () => {
     ).toBeGreaterThan(0)
   })
 
-  it('renders all 16 domains without invented per-domain counts', () => {
+  it('renders all 16 domains, counted by the one aggregate query', () => {
     render(<LegislationPage />)
 
     const domains = screen.getByRole('region', { name: 'Domenii' })
     expect(domains).toHaveTextContent('Fiscal și bugetar')
     expect(domains).toHaveTextContent('Telecomunicații și digital')
-    // Counts need one totalCount query per domain, so the grid ships without
-    // them. Guard against a future edit inventing numbers to fill the cells.
-    expect(screen.queryByText(/^[\d.,\s]+acte$/)).not.toBeInTheDocument()
+    // One `legalActCounts(groupBy: DOMAIN)` round-trip serves every cell —
+    // numbers are served, never invented client-side, and the grid's own
+    // tests pin that a failed aggregate degrades to label-only cells.
+    expect(within(domains).getByText('109,969')).toBeInTheDocument()
   })
 
   it('shows the tab set with Prezentare and Analiză navigable', () => {
@@ -140,10 +157,18 @@ describe('LegislationPage', () => {
       'href',
       '/legislation/analytics',
     )
+    // Live since the server shipped the global feed — a regression back to
+    // an inert span would silently unship the tab.
     expect(screen.getByText('Modificări')).toHaveAttribute(
-      'aria-disabled',
-      'true',
+      'href',
+      '/legislation/changes',
     )
+    // The last inert tab went live 2026-08-26 — every tab is a link now.
+    expect(screen.getByText('Ghid')).toHaveAttribute(
+      'href',
+      '/legislation/guide',
+    )
+    expect(screen.getByText('Ghid')).not.toHaveAttribute('aria-disabled')
   })
 
   it('does not scroll the tab navigation when it mounts', () => {

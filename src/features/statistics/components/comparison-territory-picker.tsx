@@ -2,33 +2,52 @@ import { useState } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import { Plus } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import type { StatisticsTerritorySearchRow } from '@/schemas/statistics'
 import { TERRITORY_SEARCH_MIN_LENGTH } from '../api/territory-search-api'
 import { useTerritorySearch } from '../hooks/use-comparisons'
-import { MAX_COMPARISON_TERRITORIES } from '../lib/comparison-series'
+import {
+  MAX_COMPARISON_TERRITORIES,
+  type ComparisonTerritoryToken,
+} from '../lib/comparison-series'
 import { StatisticsActiveFilters, type StatisticsFilterChip } from './filters/statistics-active-filters'
 import { StatisticsDebouncedSearchInput } from './filters/statistics-debounced-search-input'
 
+/** A one-tap suggestion („+ județul Cluj", „+ România"). */
+export interface ComparisonPeerSuggestion {
+  readonly token: string
+  readonly label: string
+}
+
 type Props = {
-  readonly selected: readonly string[]
-  /** Resolved names for the selected SIRUTA codes, when the data supplies them. */
-  readonly labelBySiruta: ReadonlyMap<string, string>
-  readonly onAdd: (siruta: string) => void
-  readonly onRemove: (siruta: string) => void
+  readonly selected: readonly ComparisonTerritoryToken[]
+  /** Resolved names for the selected codes, when the data supplies them. */
+  readonly labelByCode: ReadonlyMap<string, string>
+  readonly peers: readonly ComparisonPeerSuggestion[]
+  readonly onAdd: (token: string) => void
+  readonly onRemove: (token: string) => void
   readonly onClear: () => void
 }
 
+/** The token a search row contributes: LAU → siruta:, county → cod:. */
+function rowToken(row: StatisticsTerritorySearchRow): string | null {
+  if (row.siruta) return `siruta:${row.siruta}`
+  if (row.level === 'NUTS3' && row.code) return `cod:${row.code}`
+  return null
+}
+
 /**
- * Territory picker writing `teritorii` (up to six SIRUTA codes).
- *
- * Selected territories appear as removable chips. Their labels come from the
- * observations already on screen; a territory whose name is not yet known —
- * because it has no rows in this dataset — shows its SIRUTA code rather than a
- * guessed name.
+ * Territory picker writing `teritorii` — mixed-level tokens (localități,
+ * județe, România). Selected territories appear as removable chips whose
+ * labels come from the observations already on screen. Peer suggestions
+ * (same county, the country) sit one tap away.
  */
 export function ComparisonTerritoryPicker({
   selected,
-  labelBySiruta,
+  labelByCode,
+  peers,
   onAdd,
   onRemove,
   onClear,
@@ -37,15 +56,19 @@ export function ComparisonTerritoryPicker({
   const { rows, isLoading, error, enabled } = useTerritorySearch(term ?? '')
 
   const isFull = selected.length >= MAX_COMPARISON_TERRITORIES
-  const selectedSet = new Set(selected)
+  const selectedTokens = new Set(selected.map((entry) => entry.token))
 
-  const chips: readonly StatisticsFilterChip[] = selected.map((siruta) => ({
-    id: siruta,
-    label: labelBySiruta.get(siruta) ?? siruta,
-    onRemove: () => onRemove(siruta),
+  const chips: readonly StatisticsFilterChip[] = selected.map((entry) => ({
+    id: entry.token,
+    label: labelByCode.get(entry.code) ?? entry.code,
+    onRemove: () => onRemove(entry.token),
   }))
 
-  const available = rows.filter((row) => !selectedSet.has(row.siruta as string))
+  const available = rows.flatMap((row) => {
+    const token = rowToken(row)
+    if (!token || selectedTokens.has(token)) return []
+    return [{ row, token }]
+  })
 
   return (
     <section className="space-y-2" aria-labelledby="comparison-territory-heading">
@@ -55,11 +78,30 @@ export function ComparisonTerritoryPicker({
 
       <StatisticsActiveFilters chips={chips} onClearAll={onClear} />
 
+      {!isFull && peers.length > 0 ? (
+        <div className="flex flex-wrap gap-1.5">
+          {peers
+            .filter((peer) => !selectedTokens.has(peer.token))
+            .map((peer) => (
+              <Button
+                key={peer.token}
+                variant="outline"
+                size="sm"
+                className="h-7 gap-1 px-2 text-xs"
+                onClick={() => onAdd(peer.token)}
+              >
+                <Plus className="h-3 w-3" aria-hidden />
+                {peer.label}
+              </Button>
+            ))}
+        </div>
+      ) : null}
+
       <StatisticsDebouncedSearchInput
         value={term}
         onCommit={setTerm}
         inputId="comparison-territory-search"
-        placeholder={t`Caută o localitate (min. ${TERRITORY_SEARCH_MIN_LENGTH} caractere)…`}
+        placeholder={t`Caută o localitate sau un județ (min. ${TERRITORY_SEARCH_MIN_LENGTH} caractere)…`}
         ariaLabel={t`Caută un teritoriu de adăugat în comparație`}
         clearLabel={t`Șterge căutarea de teritorii`}
       />
@@ -94,16 +136,20 @@ export function ComparisonTerritoryPicker({
 
       {!isFull && available.length > 0 ? (
         <ul className="max-h-52 overflow-y-auto rounded-md border border-border">
-          {available.map((row) => (
-            <li key={row.code}>
+          {available.map(({ row, token }) => (
+            <li key={token}>
               <button
                 type="button"
-                onClick={() => onAdd(row.siruta as string)}
+                onClick={() => onAdd(token)}
                 className="flex w-full items-center gap-2 border-b border-border px-3 py-2 text-left text-sm transition-colors last:border-b-0 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
               >
                 <Plus aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <span className="min-w-0 flex-1 truncate">{row.name ?? row.siruta}</span>
-                {row.countyName ? (
+                <span className="min-w-0 flex-1 truncate">{row.name ?? row.code}</span>
+                {row.level === 'NUTS3' ? (
+                  <Badge variant="outline" className="shrink-0 text-[10px]">
+                    <Trans>Județ</Trans>
+                  </Badge>
+                ) : row.countyName ? (
                   <span className="shrink-0 text-xs text-muted-foreground">{row.countyName}</span>
                 ) : null}
               </button>

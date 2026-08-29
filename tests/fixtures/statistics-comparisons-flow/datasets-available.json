@@ -1,0 +1,662 @@
+{
+  "data": {
+    "insDatasets": {
+      "nodes": [
+        {
+          "id": "1",
+          "code": "ACC101B",
+          "name_ro": "Accidente colective de munca pe macroregiuni, regiuni de dezvoltare si judete",
+          "name_en": "Colective accidents at work by macroregions, development regions and counties",
+          "definition_ro": "Prin accident de munca se intelege vatamarea violenta a organismului, precum si intoxicatia acuta profesionala, care au loc in timpul procesului de munca sau in indeplinirea indatoririlor de serviciu si care provoaca incapacitate temporara de munca de cel putin 3 zile, invaliditate sau deces. Accidentul colectiv de munca reprezinta accidentul de munca in urma caruia s-au accidentat cel putin trei persoane in acelasi timp si din aceeasi cauza.",
+          "definition_en": "Accident at work means violent body injury as well as acute professional intoxication during labor process or when accomplishing duties at work which causes temporary disability at work of at least three days, invalidity or death. Collective accidents are the accident at work when at least 3 persons were injured at the same time and by the same causes, within the same event.",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            1992,
+            2024
+          ],
+          "dimension_count": 3,
+          "has_uat_data": false,
+          "has_county_data": true,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T10:29:13.402Z",
+          "context_code": "1520",
+          "context_name_ro": "10. CONDITII DE MUNCA",
+          "context_name_en": "10. WORKING CONDITIONS",
+          "context_path": "0.1.15.1520",
+          "metadata": null
+        },
+        {
+          "id": "2",
+          "code": "ACC101C",
+          "name_ro": "Accidente colective de munca pe activitati economice CAEN Rev.2",
+          "name_en": "Colective accidents at work by economic activities CANE Rev.2",
+          "definition_ro": "Prin accident de munca se intelege vatamarea violenta a organismului, precum si intoxicatia acuta profesionala, care au loc in timpul procesului de munca sau in indeplinirea indatoririlor de serviciu si care provoaca incapacitate temporara de munca de cel putin 3 zile, invaliditate sau deces. Accidentul colectiv de munca reprezinta accidentul de munca in urma caruia s-au accidentat cel putin trei persoane in acelasi timp si din aceeasi cauza.",
+          "definition_en": "Accident at work means violent body injury as well as acute professional intoxication during labor process or when accomplishing duties at work which causes temporary disability at work of at least three days, invalidity or death. Collective accidents are the accident at work when at least 3 persons were injured at the same time and by the same causes, within the same event.",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2008,
+            2024
+          ],
+          "dimension_count": 3,
+          "has_uat_data": false,
+          "has_county_data": false,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T17:23:21.058Z",
+          "context_code": "1520",
+          "context_name_ro": "10. CONDITII DE MUNCA",
+          "context_name_en": "10. WORKING CONDITIONS",
+          "context_path": "0.1.15.1520",
+          "metadata": null
+        },
+        {
+          "id": "3",
+          "code": "ACC102A",
+          "name_ro": "Accidentati in munca pe activitati economice CAEN Rev.1 si categorii de accidente de munca",
+          "name_en": "Injuried persons at work by economic activities CANE Rev.1, type of accidents at work",
+          "definition_ro": "Prin accident de munca se intelege vatamarea violenta a organismului, precum si intoxicatia acuta profesionala, care au loc in timpul procesului de munca sau in indeplinirea indatoririlor de serviciu si care provoaca incapacitate temporara de munca de cel putin 3 zile, invaliditate sau deces. Numarul  accidentatilor in  munca reprezinta numarul persoanelor care s-au accidentat la locul de munca, indiferent de natura accidentului si de urmarile produse de acesta. Din numarul accidentatilor sunt excluse cazurile de accidente de traseu.\nRata accidentelor de munca reprezinta frecventa de accidentare sau numarul accidentatilor ce revin la 1000 salariati.",
+          "definition_en": "Accident at work means violent body injury as well as acute professional intoxication during labor process or when accomplishing duties at work, which causes temporary disability at work of at least three days, invalidity or death. The number of persons injured at work represents number of persons injured at work, no matter of accident type or its consequences. The number of accidents at work excludes cases of commuting accidents.\nThe rate of accidents at work represents the frequency of injuries or the number of injured persons per 1000 employees.",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            1992,
+            2007
+          ],
+          "dimension_count": 4,
+          "has_uat_data": false,
+          "has_county_data": false,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T10:29:14.079Z",
+          "context_code": "1520",
+          "context_name_ro": "10. CONDITII DE MUNCA",
+          "context_name_en": "10. WORKING CONDITIONS",
+          "context_path": "0.1.15.1520",
+          "metadata": null
+        },
+        {
+          "id": "4",
+          "code": "ACC102B",
+          "name_ro": "Accidentati in munca pe categorii de accidente, macroregiuni, regiuni de dezvoltare si judete",
+          "name_en": "Injuried persons at work by type of accidents at work, by macroregions, development regions and counties",
+          "definition_ro": "Prin accident de munca se intelege vatamarea violenta a organismului, precum si intoxicatia acuta profesionala, care au loc in timpul procesului de munca sau in indeplinirea indatoririlor de serviciu si care provoaca incapacitate temporara de munca de cel putin 3 zile, invaliditate sau deces. Numarul  accidentatilor in  munca reprezinta numarul persoanelor care s-au accidentat la locul de munca, indiferent de natura accidentului si de urmarile produse de acesta. Din numarul accidentatilor sunt excluse cazurile de accidente de traseu.\nRata accidentelor de munca reprezinta frecventa de accidentare sau numarul accidentatilor ce revin la 1000 salariati.",
+          "definition_en": "Accident at work means violent body injury as well as acute professional intoxication during labor process or when accomplishing duties at work, which causes temporary disability at work of at least three days, invalidity or death. The number of persons injured at work represents number of persons injured at work, no matter of accident type or its consequences. The number of accidents at work excludes cases of commuting accidents.\nThe rate of accidents at work represents the frequency of injuries or the number of injured persons per 1000 employees.",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            1992,
+            2024
+          ],
+          "dimension_count": 4,
+          "has_uat_data": false,
+          "has_county_data": true,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T10:29:17.818Z",
+          "context_code": "1520",
+          "context_name_ro": "10. CONDITII DE MUNCA",
+          "context_name_en": "10. WORKING CONDITIONS",
+          "context_path": "0.1.15.1520",
+          "metadata": null
+        },
+        {
+          "id": "5",
+          "code": "ACC102C",
+          "name_ro": "Accidentati in munca pe categorii de accidente de munca si activitati economice CAEN Rev.2",
+          "name_en": "Injuried persons at work by economic activities CANE Rev.2, type of accidents at work",
+          "definition_ro": "Prin accident de munca se intelege vatamarea violenta a organismului, precum si intoxicatia acuta profesionala, care au loc in timpul procesului de munca sau in indeplinirea indatoririlor de serviciu si care provoaca incapacitate temporara de munca de cel putin 3 zile, invaliditate sau deces. Numarul  accidentatilor in  munca reprezinta numarul persoanelor care s-au accidentat la locul de munca, indiferent de natura accidentului si de urmarile produse de acesta. Din numarul accidentatilor sunt excluse cazurile de accidente de traseu.\nRata accidentelor de munca reprezinta frecventa de accidentare sau numarul accidentatilor ce revin la 1000 salariati.",
+          "definition_en": "Accident at work means violent body injury as well as acute professional intoxication during labor process or when accomplishing duties at work, which causes temporary disability at work of at least three days, invalidity or death. The number of persons injured at work represents number of persons injured at work, no matter of accident type or its consequences. The number of accidents at work excludes cases of commuting accidents.\nThe rate of accidents at work represents the frequency of injuries or the number of injured persons per 1000 employees.",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            2008,
+            2024
+          ],
+          "dimension_count": 4,
+          "has_uat_data": false,
+          "has_county_data": false,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T17:23:23.154Z",
+          "context_code": "1520",
+          "context_name_ro": "10. CONDITII DE MUNCA",
+          "context_name_en": "10. WORKING CONDITIONS",
+          "context_path": "0.1.15.1520",
+          "metadata": null
+        },
+        {
+          "id": "6",
+          "code": "ADM101A",
+          "name_ro": "Organizarea administrativa a teritoriului, pe categorii de unitati administrative, macroregiuni, regiuni de dezvoltare si judete",
+          "name_en": "Administrative organisation of Romanian territory, by administrative units category, macroregions, development regions and counties",
+          "definition_ro": "Teritoriul Romaniei este organizat in unitati administrativ-teritoriale: judetul, municipiul, orasul, comuna si satul. Capitala Romaniei este municipiul Bucuresti care este organizat pe sectoare. Judetul este unitatea administrativ-teritoriala alcatuita din municipii, orase si comune - unitati de baza - administrativ teritoriale. Organizarea judetelor se face in functie de conditiile geografice, economice si  social-politice. Judetul asigura dezvoltarea social-culturala si edilitar-gospodareasca a municipiilor, oraselor si comunelor. Municipiul este localitatea urbana  care  are  un  numar  mai  mare  de locuitori, o industie dezvoltata, o insemnatate deosebita in viata economica, social-politica si cultural-stiintifica a tarii, un important fond de locuinte si dotari edilitar-gospodaresti, o retea complexa de unitati de invatamant, sanatate si cultura. Municipiile in care isi au sediul prefecturile sunt municipii-resedinta de judet. Orasul este centrul de populatie mai dezvoltata din punct de vedere economic, social-cultural si edilitar- gospodaresc. Comuna este unitatea administrativ-teritoriala alcatuita din unul sau mai multe sate care cuprind populatia rurala, fiind organizata in functie de conditiile economice, social-culturale si geografice. Satele  in care  isi au resedinta  primariile (organele de conducere ale comunei) sunt resedinta de comuna. Satul este unitatea administrativ-teritoriala elementara.",
+          "definition_en": "Roumanian territory is divided from administrative viewpoint into: county, municipality, town, commune, village.The capital of Roumania is Bucharest Municipality, and it is organised into administrative sectors. County represents administrative-territorial unit including municipalities, towns and communes - base administrative-territorial units. The counties are organized depending on geographical, economic and socio-political conditions. The county assures socio-cultural and municipal administration developement of the municipalities, towns and communes. The municipality is that town having a larger number of inhabitants, a developed industry, a special importance in the economy, socio-political and cultural-scientific life of the country, an important dwelling stock and municipal administrative endowments, a complex system of education, health and culture. The municipalities, where the prefect office has the residence, are the county towns. The town represents a human settlement which is much more developed from the economic, socio-cultural and municipal administration viewpoint. The commune is the territorial-administrative unit which includes one or several villages comprising rural population, and it is organized according to economic, socio-cultural and geographical conditions. The villages, where the mayor office has the residences, are the commune villages. The village is the smallest administrative-territorial unit. ",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            1990,
+            2025
+          ],
+          "dimension_count": 4,
+          "has_uat_data": false,
+          "has_county_data": true,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T10:29:22.123Z",
+          "context_code": "7530",
+          "context_name_ro": "1. ADMINISTRAREA TERITORILUI",
+          "context_name_en": "1. TERRITORY ADMINISTRATION",
+          "context_path": "0.6.75.7530",
+          "metadata": null
+        },
+        {
+          "id": "7",
+          "code": "AED101A",
+          "name_ro": "Rata de participare a persoanelor de 18-69 ani la educatia formala, non-formala sau invatarea informala pe sexe, medii de rezidenta, grupe de varsta, nivel de instruire absolvit, statut ocupational curent si regiuni de dezvoltare",
+          "name_en": "Participation rate in formal education, non-formal education or informal learning - for persons aged 18-69 years, by sex, urban/rural area, age groups, level of education, current activity status and development regions",
+          "definition_ro": "Educatia formala se refera la activitatea de invatare institutionalizata , intentionata si planificata, care se realizeaza in scoli, licee, universitati, institute, academii de studii, scoli doctorale sau postdoctorale si alte institutii de invatamant preuniversitar sau superior din cadrul sistemului national de educatie si consta, in general, in educatia de baza/generala si formarea profesionala initiala (educatia care preceda intrarea individului pe piata muncii). Educatia non-formala se refera la orice activitate de invatare, institutionalizata, intentionata si planificata, organizata de catre un furnizor de educatie sau formare profesionala. Caracteristica definitorie a acestei forme de educatie este ca aceasta ofera fie completarea si dezvoltarea cunostintelor, abilitatilor si competentelor dobandite prin sistemul national de educatie, fie o alternativa  la acesta. Invatarea informala se refera la educatia intentionata, dar mai putin organizata si structurata, si cuprinde instruirea pe cont propriu care are loc in familie, la locul de munca, in comunitate si in viata de fiecare zi a oricarei persoane. Invatarea informala este neinstitutionalizata. \n",
+          "definition_en": "Formal education refers to the institutionalized, intentional and planned learning activity that is carried out in schools, high schools, universities, institutes, study academies, doctoral or postdoctoral schools and other pre-university or higher education institutions within the national education system and consists , generally in basic/general education and initial vocational training (the education that precedes the individual's entry into the labor market). Non-formal education refers to any institutionalized, intentional and planned learning activity organized by a vocational education or training provider. The defining feature of this form of education is that it either complements and develops the knowledge, skills and competences acquired through the national education system, or is an alternative to it. Informal learning refers to intentional but less organized and structured education and includes self-directed learning that takes place in the family, workplace, community and everyday life of any person. Informal learning is non-institutionalized.\n",
+          "periodicity": [],
+          "year_range": [
+            2022,
+            2022
+          ],
+          "dimension_count": 4,
+          "has_uat_data": false,
+          "has_county_data": false,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T17:23:23.336Z",
+          "context_code": "2700",
+          "context_name_ro": "1. EDUCATIA ADULTILOR",
+          "context_name_en": "1. ADULT EDUCATION",
+          "context_path": "0.1.27.2700",
+          "metadata": null
+        },
+        {
+          "id": "8",
+          "code": "AED103A",
+          "name_ro": "Persoane de 18-69 ani dupa participarea la educatia formala, non-formala sau invatarea informala pe sexe, medii de rezidenta, grupe de varsta, nivel de instruire absolvit, statut ocupational curent si regiuni de dezvoltare",
+          "name_en": "Persons aged 18-69 years by participation in formal education, non-formal education or informal learning , by sex, urban/rural area, age groups, level of education, current activity status and development regions",
+          "definition_ro": " Educatia formala se refera la activitatea de invatare institutionalizata , intentionata si planificata, care se realizeaza in scoli, licee, universitati, institute, academii de studii, scoli doctorale sau postdoctorale si alte institutii de invatamant preuniversitar sau superior din cadrul sistemului national de educatie si consta, in general, in educatia de baza/generala si formarea profesionala initiala (educatia care preceda intrarea individului pe piata muncii). Educatia non-formala se refera la orice activitate de invatare, institutionalizata, intentionata si planificata, organizata de catre un furnizor de educatie sau formare profesionala. Caracteristica definitorie a acestei forme de educatie este ca aceasta ofera fie completarea si dezvoltarea cunostintelor, abilitatilor si competentelor dobandite prin sistemul national de educatie, fie o alternativa  la acesta. Invatarea informala se refera la educatia intentionata, dar mai putin organizata si structurata, si cuprinde instruirea pe cont propriu care are loc in familie, la locul de munca, in comunitate si in viata de fiecare zi a oricarei persoane. Invatarea informala este neinstitutionalizata. \n",
+          "definition_en": "Formal education refers to the institutionalized, intentional and planned learning activity that is carried out in schools, high schools, universities, institutes, study academies, doctoral or postdoctoral schools and other pre-university or higher education institutions within the national education system and consists , generally in basic/general education and initial vocational training (the education that precedes the individual's entry into the labor market). Non-formal education refers to any institutionalized, intentional and planned learning activity organized by a vocational education or training provider. The defining feature of this form of education is that it either complements and develops the knowledge, skills and competences acquired through the national education system, or is an alternative to it. Informal learning refers to intentional but less organized and structured education and includes self-directed learning that takes place in the family, workplace, community and everyday life of any person. Informal learning is non-institutionalized.",
+          "periodicity": [],
+          "year_range": [
+            2022,
+            2022
+          ],
+          "dimension_count": 4,
+          "has_uat_data": false,
+          "has_county_data": false,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T17:23:24.160Z",
+          "context_code": "2700",
+          "context_name_ro": "1. EDUCATIA ADULTILOR",
+          "context_name_en": "1. ADULT EDUCATION",
+          "context_path": "0.1.27.2700",
+          "metadata": null
+        },
+        {
+          "id": "9",
+          "code": "AED105A",
+          "name_ro": "Distributia persoanelor de 18-69 ani dupa accesul la informatiile privind oportunitatile de invatare, pe sexe, medii de rezidenta, grupe de varsta, nivel de instruire absolvit, statut ocupational curent si regiuni de dezvoltare",
+          "name_en": " Distribution of people aged 18-69 by access to information on learning opportunities,  by sex, urban/rural area, age groups, level of education, current activity status and development regions",
+          "definition_ro": "Educatia non-formala se refera la orice activitate de invatare, institutionalizata, intentionata si planificata, organizata de catre un furnizor de educatie sau formare profesionala. Caracteristica definitorie a acestei forme de educatie este ca aceasta ofera fie completarea si dezvoltarea cunostintelor, abilitatilor si competentelor dobandite prin sistemul national de educatte, fie o alternativa  la acesta.  Activitatile educationale in scop profesional sunt acele activitati educationale urmate cu scopul de a dobandi cunostinte si abilitati necesare exercitarii profesiei la locul de munca actual sau un loc de munca viitor si imbunatatirii oportunitatilor in cariera. Activitatile educationale sponsorizate de angajator sunt activitati educa?ionale cu scop profesional, pentru care fie costurile participarii au fost platite total sau partial de angajator (sau potential angajator) fie respectivele activitati s-au desfasurat in timpul orelor de lucru platite.",
+          "definition_en": "Non-formal education refers to any institutionalized, intentional and planned learning activity organized by a vocational education or training provider. The defining feature of this form of education is that it either complements and develops the knowledge, skills and competences acquired through the national education system, or is an alternative to it. Educational activities for professional purposes are those educational activities pursued with the aim of acquiring knowledge and skills necessary for practicing the profession in the current workplace or a future workplace and improving career opportunities. Employer-sponsored educational activities are educational activities with a professional purpose, for which either the costs of participation were paid in whole or in part by the employer (or potential employer) or the respective activities were carried out during paid working hours.",
+          "periodicity": [],
+          "year_range": [
+            2022,
+            2022
+          ],
+          "dimension_count": 4,
+          "has_uat_data": false,
+          "has_county_data": false,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T17:23:24.841Z",
+          "context_code": "2700",
+          "context_name_ro": "1. EDUCATIA ADULTILOR",
+          "context_name_en": "1. ADULT EDUCATION",
+          "context_path": "0.1.27.2700",
+          "metadata": null
+        },
+        {
+          "id": "10",
+          "code": "AED106A",
+          "name_ro": "Rata de participare a populatiei ocupate la activitati educationale non-formale in scop profesional si la cele sponsorizate de angajator, dupa caracteristicile locului de munca",
+          "name_en": "Participation rate of employed population in non-formal job-related and sponsored by employer education, job characteristics",
+          "definition_ro": "Educatia non-formala se refera la orice activitate de invatare, institutionalizata, intentionata si planificata, organizata de catre un furnizor de educatie sau formare profesionala. Caracteristica definitorie a acestei forme de educatie este ca aceasta ofera fie completarea si dezvoltarea cunostintelor, abilitatilor si competentelor dobandite prin sistemul national de educatie, fie o alternativa  la acesta.  Activitatile educationale in scop profesional sunt acele activitati educationale urmate cu scopul de a dobandi cunostinte si abilitati necesare exercitarii profesiei la locul de munca actual sau un loc de munca viitor si imbunatatirii oportunitatlor in cariera. Activitatile educationale sponsorizate de angajator sunt activitati educationale cu scop profesional, pentru care fie costurile participarii au fost platite total sau partial de angajator (sau potential angajator) fie respectivele activitati s-au desfasurat in timpul orelor de lucru platite.",
+          "definition_en": "Non-formal education refers to any institutionalized, intentional and planned learning activity organized by a vocational education or training provider. The defining feature of this form of education is that it either complements and develops the knowledge, skills and competences acquired through the national education system, or is an alternative to it. Educational activities for professional purposes are those educational activities pursued with the aim of acquiring knowledge and skills necessary for practicing the profession in the current workplace or a future workplace and improving career opportunities. Employer-sponsored educational activities are educational activities with a professional purpose, for which either the costs of participation were paid in whole or in part by the employer (or potential employer) or the respective activities were carried out during paid working hours.",
+          "periodicity": [],
+          "year_range": [
+            2022,
+            2022
+          ],
+          "dimension_count": 4,
+          "has_uat_data": false,
+          "has_county_data": false,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T17:23:25.544Z",
+          "context_code": "2700",
+          "context_name_ro": "1. EDUCATIA ADULTILOR",
+          "context_name_en": "1. ADULT EDUCATION",
+          "context_path": "0.1.27.2700",
+          "metadata": null
+        },
+        {
+          "id": "11",
+          "code": "AED108A",
+          "name_ro": "Limbile straine cel mai frecvent cunoscute de catre persoanele de 18-69 ani, dupa caracteristicile persoanelor care le cunosc",
+          "name_en": "Foreign languages most frequently known by people aged 18-69, according to the characteristics of the people who know them",
+          "definition_ro": "Limba straina este orice limba cunoscuta (utilizata) de catre respondent, alta decat cea pe care acesta o considera a fi limba materna. Persoanele avand alta limba materna decat limba romana au putut-o declara pe acesta din urma ca fiind limba straina cunoscuta.",
+          "definition_en": "Foreign language is any language known (used) by the respondent, other than the one he considers to be his mother tongue. People with a mother tongue other than Romanian could declare the latter as a \"known foreign language\".\nLanguages used means all languages that a person can understand or speak, even if very little.",
+          "periodicity": [],
+          "year_range": [
+            2022,
+            2022
+          ],
+          "dimension_count": 4,
+          "has_uat_data": false,
+          "has_county_data": false,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T17:23:26.373Z",
+          "context_code": "2700",
+          "context_name_ro": "1. EDUCATIA ADULTILOR",
+          "context_name_en": "1. ADULT EDUCATION",
+          "context_path": "0.1.27.2700",
+          "metadata": null
+        },
+        {
+          "id": "12",
+          "code": "AED109A",
+          "name_ro": "Distributia persoanelor de 18-69 ani care cunosc cel putin o limba straina dupa nivelul de competenta autoevaluat, pe sexe, medii de rezidenta, grupe de varsta, nivel de instruire absolvit, statut ocupational curent si regiuni de dezvoltare",
+          "name_en": "Distribution of people aged 18-69 who know at least one foreign language according to the self-reported level of competence,  by sex, urban/rural area, age groups, level of education, current activity status and development regions",
+          "definition_ro": "Limba straina este orice limba cunoscuta (utilizata) de catre respondent, alta decat cea pe care acesta o considera a fi limba materna. Persoanele avand alta limba materna decat limba romana au putut-o declara pe acesta din urma ca fiind limba straina cunoscuta.\nLimbile utilizate inseamna toate limbile pe care o persoana le poate intelege sau vorbi, chiar daca foarte putin. \nCompetentele lingvistice intr-o limba straina sunt determinate pe baza evaluarii proprii de catre respondent a nivelului de cunoastere a acesteia:\n- Utilizator elementar se refera la faptul ca persoana poate sa comunice intr-o conversatie simpla, sa formuleze intrebari simple pe teme cunoscute sau de necesitate imediata si sa raspunda la asemenea intrebari; \n- Utilizator intermediar se refera la faptul ca persoana poate sa participe fara pregatire prealabila la o conversatie pe teme familiare, de interes personal sau referitoare la viata cotidiana (de ex. familie, petrecerea timpului liber, calatoriile, activitatea profesionala si evenimentele curente);\n- Utilizator avansat se refera la faptul ca persoana poate sa se exprime fluent si spontan, si sa utilizeze limba in mod flexibil si eficient in relatiile sociale si in scopuri profesionale.\n",
+          "definition_en": "Foreign language is any language known (used) by the respondent, other than the one he considers to be his mother tongue. People with a mother tongue other than Romanian could declare the latter as a known foreign language.\nLanguages used means all languages that a person can understand or speak, even if very little.\nLinguistic skills in a foreign language are determined based on the respondent's own assessment of the level of knowledge of it:\n- Basic user refers to the fact that the person can communicate in a simple conversation, formulate simple questions on known topics or of immediate need and answer such questions;\n- Intermediate user refers to the fact that the person can participate without prior preparation in a conversation on familiar topics, of personal interest or related to everyday life (e.g. family, leisure, travel, professional activity and current events) ;\n-Advanced user refers to the fact that the person can express himself fluently and spontaneously, and use the language flexibly and effectively in social relations and for professional purposes.",
+          "periodicity": [],
+          "year_range": [
+            2022,
+            2022
+          ],
+          "dimension_count": 4,
+          "has_uat_data": false,
+          "has_county_data": false,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T17:23:27.087Z",
+          "context_code": "2700",
+          "context_name_ro": "1. EDUCATIA ADULTILOR",
+          "context_name_en": "1. ADULT EDUCATION",
+          "context_path": "0.1.27.2700",
+          "metadata": null
+        },
+        {
+          "id": "13",
+          "code": "AED301A",
+          "name_ro": "Distributia persoanelor de 18-69 ani care au participat la educatia non-formala dupa numarul activitatilor educationale non-formale la care au participat in ultimele 12 luni, pe sexe, medii de rezidenta, grupe de varsta, nivel de instruire absolvit, statut ocupational curent si regiuni de dezvoltare",
+          "name_en": "Distribution of persons aged 18-69 years who participated in non-formal education by the number of non-formal educational activities in which they participated in the last 12 months, by sex, urban/rural area, age groups, level of education, current activity status and development regions",
+          "definition_ro": "Educatia non-formala se refera la orice activitate de invatare, institutionalizata, intentonata si planificata, organizata de catre un furnizor de educatie sau formare profesionala. Caracteristica definitorie a acestei forme de educatie este ca aceasta ofera fie completarea si dezvoltarea cunostintelor, abilitatilor si competentelor dobandite prin sistemul national de educatie, fie o alternativa  la acesta.",
+          "definition_en": "Non-formal education refers to any institutionalized, intentional and planned learning activity organized by a vocational education or training provider. The defining feature of this form of education is that it either complements and develops the knowledge, skills and competences acquired through the national education system, or is an alternative to it.",
+          "periodicity": [],
+          "year_range": [
+            2022,
+            2022
+          ],
+          "dimension_count": 4,
+          "has_uat_data": false,
+          "has_county_data": false,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T17:23:27.794Z",
+          "context_code": "2700",
+          "context_name_ro": "1. EDUCATIA ADULTILOR",
+          "context_name_en": "1. ADULT EDUCATION",
+          "context_path": "0.1.27.2700",
+          "metadata": null
+        },
+        {
+          "id": "14",
+          "code": "AED302A",
+          "name_ro": "Distributia participarilor la activitati educationale non-formale desfasurate in ultimele 12 luni, dupa tipul activitatii si caracteristicile participantilor",
+          "name_en": "Distribution of participations in non-formal educational activities carried out in the last 12 months, according to the type of activity and characteristics of  participants",
+          "definition_ro": "Educatia non-formala se refera la orice activitate de invatare, institutionalizata, intentionata si planificata, organizata de catre un furnizor de educatie sau formare profesionala. Caracteristica definitorie a acestei forme de educatie este ca aceasta ofera fie completarea si dezvoltarea cunostintelor, abilitatilor si competentelor dobandite prin sistemul national de educatie, fie o alternativa  la acesta.",
+          "definition_en": "Non-formal education refers to any institutionalized, intentional and planned learning activity organized by a vocational education or training provider. The defining feature of this form of education is that it either complements and develops the knowledge, skills and competences acquired through the national education system, or is an alternative to it.",
+          "periodicity": [],
+          "year_range": [
+            2022,
+            2022
+          ],
+          "dimension_count": 4,
+          "has_uat_data": false,
+          "has_county_data": false,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T17:23:28.541Z",
+          "context_code": "2700",
+          "context_name_ro": "1. EDUCATIA ADULTILOR",
+          "context_name_en": "1. ADULT EDUCATION",
+          "context_path": "0.1.27.2700",
+          "metadata": null
+        },
+        {
+          "id": "15",
+          "code": "AED304A",
+          "name_ro": "Modalitatati de invatare utilizate de persoanele de 18-69 ani care au participat la invatarea informala, pe sexe, medii de rezidenta, grupe de varsta, nivel de instruire absolvit, statut ocupational curent si regiuni de dezvoltare",
+          "name_en": "Ways of learning used by people aged 18-69 who participated in informal learning, by sex, urban/rural area, age groups, level of education, current activity status and development regions",
+          "definition_ro": "Invatarea informala se refera la educatia intentonata, dar mai putin organizata si structurata, si cuprinde instruirea pe cont propriu care are loc in familie, la locul de munca, in comunitate si in viata de fiecare zi a oricarei persoane. Invatarea informala este neinstitutionalizata.",
+          "definition_en": "Informal learning refers to intentional but less organized and structured education and includes self-directed learning that takes place in the family, workplace, community and everyday life of any person. Informal learning is non-institutionalized.",
+          "periodicity": [],
+          "year_range": [
+            2022,
+            2022
+          ],
+          "dimension_count": 4,
+          "has_uat_data": false,
+          "has_county_data": false,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T17:23:29.373Z",
+          "context_code": "2700",
+          "context_name_ro": "1. EDUCATIA ADULTILOR",
+          "context_name_en": "1. ADULT EDUCATION",
+          "context_path": "0.1.27.2700",
+          "metadata": null
+        },
+        {
+          "id": "16",
+          "code": "AED305A",
+          "name_ro": "Rata de participare la activitati educationale non-formale in scop profesional si la cele sponsorizate de angajator, pe sexe, medii de rezidenta, grupe de varsta, nivel de instruire absolvit, statut profesional si regiuni de dezvoltare",
+          "name_en": "Participation rate in non-formal job-related and sponsored by employer education, by sex,  urban/rural area, age groups, level of education, current activity status and development regions",
+          "definition_ro": "Educatia formala se refera la activitatea de invatare institutionalizata,intentionata si planificata, care se realizeaza in scoli, licee, universitati, institute, academii de studii, scoli doctorale sau postdoctorale si alte institutii de invatamant preuniversitar sau superior din cadrul sistemului national de educatie si consta, in general, in educatia de baza/generala si formarea profesionala initiala (educatia care preceda intrarea individului pe piata muncii). Educatia non-formala se refera la orice activitate de invatare, institutionalizata, intentionata si planificata, organizata de catre un furnizor de educatie sau formare profesionala. Caracteristica definitorie a acestei forme de educatie este ca aceasta ofera fie completarea si dezvoltarea cunostintelor, abilitatilor si competentelor dobandite prin sistemul national de educatie, fie o alternativa  la acesta.",
+          "definition_en": "Formal education refers to the institutionalized, intentional and planned learning activity that is carried out in schools, high schools, universities, institutes, study academies, doctoral or postdoctoral schools and other pre-university or higher education institutions within the national education system and consists , generally in basic/general education and initial vocational training (the education that precedes the individual's entry into the labor market). Non-formal education refers to any institutionalized, intentional and planned learning activity organized by a vocational education or training provider. The defining feature of this form of education is that it either complements and develops the knowledge, skills and competences acquired through the national education system, or is an alternative to it.",
+          "periodicity": [],
+          "year_range": [
+            2022,
+            2022
+          ],
+          "dimension_count": 4,
+          "has_uat_data": false,
+          "has_county_data": false,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T17:23:30.064Z",
+          "context_code": "2700",
+          "context_name_ro": "1. EDUCATIA ADULTILOR",
+          "context_name_en": "1. ADULT EDUCATION",
+          "context_path": "0.1.27.2700",
+          "metadata": null
+        },
+        {
+          "id": "17",
+          "code": "AED307A",
+          "name_ro": "Distributia persoanelor de 18-69 ani dupa numarul limbilor straine cunoscute, pe sexe, medii de rezidenta, grupe de varsta, nivel de instruire absolvit, statut ocupational curent si regiuni de dezvoltare",
+          "name_en": "Distribution of people aged 18-69 according to the number of foreign languages known,  by sex, urban/rural area, age groups, level of education, current activity status and development regions",
+          "definition_ro": "Limba straina este orice limba cunoscuta (utilizata) de catre respondent, alta decat cea pe care acesta o considera a fi limba materna. Persoanele avand alta limba materna decat limba romana au putut-o declara pe aceasta din urma ca fiind limba straina cunoscuta.\nLimbile utilizate inseamna toate limbile pe care o persoana le poate intelege sau vorbi, chiar daca foarte putin.",
+          "definition_en": "Foreign language is any language known (used) by the respondent, other than the one he considers to be his mother tongue. People with a mother tongue other than Romanian could declare the latter as a \"known foreign language\".",
+          "periodicity": [],
+          "year_range": [
+            2022,
+            2022
+          ],
+          "dimension_count": 4,
+          "has_uat_data": false,
+          "has_county_data": false,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T17:23:30.797Z",
+          "context_code": "2700",
+          "context_name_ro": "1. EDUCATIA ADULTILOR",
+          "context_name_en": "1. ADULT EDUCATION",
+          "context_path": "0.1.27.2700",
+          "metadata": null
+        },
+        {
+          "id": "18",
+          "code": "AED313A",
+          "name_ro": "Ponderea participarilor la activitati educationale non-formale in scop profesional desfasurate in ultimele 12 luni, dupa caracteristicile participantilor",
+          "name_en": "Share of participations in non-formal job-related educational activities carried out in the last 12 months, by  characteristics of  participants",
+          "definition_ro": "Educatia non-formala se refera la orice activitate de invatare, institutionalizata, intentionata si planificata, organizata de catre un furnizor de educatie sau formare profesionala. Caracteristica definitorie a acestei forme de educatie este ca aceasta ofera fie completarea si dezvoltarea cunostintelor, abilitatilor si competentelor dobandite prin sistemul national de educatie, fie o alternativa  la acesta.  Activitatile educationale in scop profesional sunt acele activitati educationale urmate cu scopul de a dobandi cunostinte si abilitati necesare exercitarii profesiei la locul de munca actual sau un loc de munca viitor si imbunatatirii oportunitatilor in cariera.",
+          "definition_en": "Non-formal education refers to any institutionalized, intentional and planned learning activity organized by a vocational education or training provider. The defining feature of this form of education is that it either complements and develops the knowledge, skills and competences acquired through the national education system, or is an alternative to it. Educational activities for professional purposes are those educational activities pursued with the aim of acquiring knowledge and skills necessary for practicing the profession in the current workplace or a future workplace and improving career opportunities.",
+          "periodicity": [],
+          "year_range": [
+            2022,
+            2022
+          ],
+          "dimension_count": 4,
+          "has_uat_data": false,
+          "has_county_data": false,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T17:23:31.536Z",
+          "context_code": "2700",
+          "context_name_ro": "1. EDUCATIA ADULTILOR",
+          "context_name_en": "1. ADULT EDUCATION",
+          "context_path": "0.1.27.2700",
+          "metadata": null
+        },
+        {
+          "id": "19",
+          "code": "AED314A",
+          "name_ro": "Ponderea participarilor persoanelor ocupate la activitati educationale non-formale in scop profesional desfasurate in ultimele 12 luni, dupa caracteristicile locului de munca",
+          "name_en": "Share of participations of employed persons in non-formal job-related educational activities carried out in the last 12 months, by job characteristics",
+          "definition_ro": "Educatia non-formala se refera la orice activitate de invatare, institutionalizata, intentionata si planificata, organizata de catre un furnizor de educatie sau formare profesionala. Caracteristica definitorie a acestei forme de educatie este ca aceasta ofera fie completarea si dezvoltarea cunostintelor, abilitatilor si competentelor dobandite prin sistemul national de educatie, fie o alternativa  la acesta.  Activitatile educationale in scop profesional sunt acele activitati educationale urmate cu scopul de a dobandi cunostinte si abilitati necesare exercitarii profesiei la locul de munca actual sau un loc de munca viitor si imbunatatirii oportunitatilor in cariera.",
+          "definition_en": "Non-formal education refers to any institutionalized, intentional and planned learning activity organized by a vocational education or training provider. The defining feature of this form of education is that it either complements and develops the knowledge, skills and competences acquired through the national education system, or is an alternative to it. Educational activities for professional purposes are those educational activities pursued with the aim of acquiring knowledge and skills necessary for practicing the profession in the current workplace or a future workplace and improving career opportunities.\n\n",
+          "periodicity": [],
+          "year_range": [
+            2022,
+            2022
+          ],
+          "dimension_count": 4,
+          "has_uat_data": false,
+          "has_county_data": false,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T17:23:32.262Z",
+          "context_code": "2700",
+          "context_name_ro": "1. EDUCATIA ADULTILOR",
+          "context_name_en": "1. ADULT EDUCATION",
+          "context_path": "0.1.27.2700",
+          "metadata": null
+        },
+        {
+          "id": "20",
+          "code": "AGR101A",
+          "name_ro": "Suprafata fondului funciar dupa modul de folosinta, pe forme de proprietate, macroregiuni, regiuni de dezvoltare si judete",
+          "name_en": "Land fund area by usage, ownership form, macroregions, development region and counties",
+          "definition_ro": "Fondul funciar - este constituit din terenurile de orice fel, indiferent de destinatie, de titlul pe baza caruia sunt detinute sau de domeniul (public, privat, cooperatist, obstesc etc.) din care fac parte.",
+          "definition_en": "Land fund it consists of any kind of land, irrespective of its destination, title base of possession or domain (public, private, cooperative, common, etc.)  which they belong to. \nLand fund by use and by county represents the pieces of land possessed by owners within the administrative range.\n",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            1990,
+            2014
+          ],
+          "dimension_count": 5,
+          "has_uat_data": false,
+          "has_county_data": false,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T10:29:31.225Z",
+          "context_code": "4505",
+          "context_name_ro": "1. FONDUL FUNCIAR",
+          "context_name_en": "1. TOTAL LAND FUND",
+          "context_path": "0.2.45.4505",
+          "metadata": null
+        },
+        {
+          "id": "21",
+          "code": "AGR101B",
+          "name_ro": "Suprafata fondului funciar dupa modul de folosinta, pe judete si localitati",
+          "name_en": "Land fund area by usage, counties and localities",
+          "definition_ro": "Fondul funciar - este constituit din terenurile de orice fel, indiferent de destinatie, de titlul pe baza caruia sunt detinute sau de domeniul (public, privat, cooperatist, obstesc etc.) din care fac parte.",
+          "definition_en": "Land fund it consists of any kind of land, irrespective of its destination, title base of possession or domain (public, private, cooperative, common, etc.)  which they belong to. \nLand fund by use and by county represents the pieces of land possessed by owners within the administrative range.\n",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            1990,
+            2014
+          ],
+          "dimension_count": 6,
+          "has_uat_data": false,
+          "has_county_data": false,
+          "has_siruta": true,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T10:29:31.278Z",
+          "context_code": "4505",
+          "context_name_ro": "1. FONDUL FUNCIAR",
+          "context_name_en": "1. TOTAL LAND FUND",
+          "context_path": "0.2.45.4505",
+          "metadata": null
+        },
+        {
+          "id": "22",
+          "code": "AGR102A",
+          "name_ro": "Suprafata terenurilor amenajate cu lucrari de irigatii si suprafata agricola irigata, pe categorii de folosinta a terenurilor, macroregiuni, regiuni de dezvoltare si judete",
+          "name_en": "Area under irrigation command and agricultural area irrigated, by land use, macroregions, development regions and counties",
+          "definition_ro": "Imbunatatiri funciare - totalitatea complexului de lucrari hidrotehnice care se executa pentru ameliorarea terenurilor, asigurarea fertilitatii solului prin imbunatatirea calitatilor acestuia in vederea valorificarii in folosul agriculturii a unor terenuri neproductive sau imbunatatirii conditiilor de dezvoltare a culturilor agricole pe unele terenuri slab productive. \nSuprafata amenajata pentru irigatii - reprezinta ansamblul lucrarilor efectuate pentru a se asigura aprovizionarea controlata cu apa, a culturilor agricole in vederea maririi productiei agricole si asigurarii independentei acesteia fata de conditiile meteorologice. \nSuprafata amenajata pentru desecare - reprezinta totalitatea lucrarilor hidrotehnice efectuate pentru eliminarea excesului de apa de la suprafata terenurilor joase in vederea cultivarii lor sau din motive sanitar profilactice. \nSuprafata amenajata cu lucrari de drenaj - reprezinta totalitatea lucrarilor hidrotehnice pentru indepartarea excesului de umiditate si de consolidare a unui teren de pe o suprafata agricola sau neagricola printr-o retea de drenuri care sunt conducte subterane sau canale deschise la suprafata. \nSuprafata amenajata pentru combaterea eroziunii solului - reprezinta complexul de lucrari hidrotehnice efectuate pentru reducerea sau stoparea degradarii suprafetei solului prin indepartarea stratului fertil al acestuia sub actiunea agentilor geografici externi si efectuarea de lucrari de regularizare pentru evitarea scurgerilor de ape pluviale de pe versanti pentru evitarea pagubelor provocate de inundatii pe terenurile de la piciorul versantului. \n\nSuprafata agricola irigata - reprezinta suprafata pe care s-au efectuat irigatii cel putin o data intr-un an agricol.",
+          "definition_en": "Land improvements - the total hydrotechnical works meant for land improvement, ensurance of soil fertility by improving its quality in order to use unproductive land for agricultural purposes or to improve the development conditions of crops on low productivity land. \nIrrigated area - the total works carried out to ensure the controlled water supply to the crops in order to increase the agricultural output and guarantee its independence from weather conditions. \nReclaimed area - the total hydrotechnical works carried out to remove the excess water from low land surface for cultivation purposes or for plant health reasons. \nDrained area - the total hydrotechnical works meant to remove the excess moisture and to consolidate the land of an agricultural or non-agricultural area through a network of drainage ducts which are underground ducts or open surface channels. \nErosion proof area - the hydrotechnical works carried out to reduce or to stop the soil surface degradation due to external geographical agents by removing its fertile layer and the performance of water-course regulation works to avoid rain water flowing from slopes to prevent damage caused by floods at the slope base. \n\nAgricultural area irrigated - represents the area on which irrigations were carried out at least once in an agricultural year. \n",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            1997,
+            2024
+          ],
+          "dimension_count": 5,
+          "has_uat_data": false,
+          "has_county_data": true,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T10:29:34.956Z",
+          "context_code": "4523",
+          "context_name_ro": "6. INDICATORI DE AGRI - MEDIU",
+          "context_name_en": "6. INDICATORS OF AGRI- ENVIRONMENT",
+          "context_path": "0.2.45.4523",
+          "metadata": null
+        },
+        {
+          "id": "23",
+          "code": "AGR102B",
+          "name_ro": "Suprafata terenurilor amenajate cu lucrari de desecare, pe categorii de folosinta a terenurilor, macroregiuni, regiuni de dezvoltare si judete",
+          "name_en": "Drainage area, open canals, by land use , macroregions, development regions and counties",
+          "definition_ro": "Imbunatatiri funciare - totalitatea complexului de lucrari hidrotehnice care se executa pentru ameliorarea terenurilor, asigurarea fertilitatii solului prin imbunatatirea calitatilor acestuia in vederea valorificarii in folosul agriculturii a unor terenuri neproductive sau imbunatatirii conditiilor de dezvoltare a culturilor agricole pe unele terenuri slab productive. \nSuprafata amenajata pentru irigatii - reprezinta ansamblul lucrarilor efectuate pentru a se asigura aprovizionarea controlata cu apa, a culturilor agricole in vederea maririi productiei agricole si asigurarii independentei acesteia fata de conditiile meteorologice. \nSuprafata amenajata pentru desecare - reprezinta totalitatea lucrarilor hidrotehnice efectuate pentru eliminarea excesului de apa de la suprafata terenurilor joase in vederea cultivarii lor sau din motive sanitar profilactice. \nSuprafata amenajata cu lucrari de drenaj - reprezinta totalitatea lucrarilor hidrotehnice pentru indepartarea excesului de umiditate si de consolidare a unui teren de pe o suprafata agricola sau neagricola printr-o retea de drenuri care sunt conducte subterane sau canale deschise la suprafata. \nSuprafata amenajata pentru combaterea eroziunii solului - reprezinta complexul de lucrari hidrotehnice efectuate pentru reducerea sau stoparea degradarii suprafetei solului prin indepartarea stratului fertil al acestuia sub actiunea agentilor geografici externi si efectuarea de lucrari de regularizare pentru evitarea scurgerilor de ape pluviale de pe versanti pentru evitarea pagubelor provocate de inundatii pe terenurile de la piciorul versantului. \n\nSuprafata agricola irigata - reprezinta suprafata pe care s-au efectuat irigatii cel putin o data intr-un an agricol.",
+          "definition_en": "Land improvements - the total hydrotechnical works meant for land improvement, ensurance of soil fertility by improving its quality in order to use unproductive land for agricultural purposes or to improve the development conditions of crops on low productivity land. \nIrrigated area - the total works carried out to ensure the controlled water supply to the crops in order to increase the agricultural output and guarantee its independence from weather conditions. \nReclaimed area - the total hydrotechnical works carried out to remove the excess water from low land surface for cultivation purposes or for plant health reasons. \nDrained area - the total hydrotechnical works meant to remove the excess moisture and to consolidate the land of an agricultural or non-agricultural area through a network of drainage ducts which are underground ducts or open surface channels. \nErosion proof area - the hydrotechnical works carried out to reduce or to stop the soil surface degradation due to external geographical agents by removing its fertile layer and the performance of water-course regulation works to avoid rain water flowing from slopes to prevent damage caused by floods at the slope base. \n\nAgricultural area irrigated - represents the area on which irrigations were carried out at least once in an agricultural year. \n",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            1997,
+            2024
+          ],
+          "dimension_count": 4,
+          "has_uat_data": false,
+          "has_county_data": true,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T10:29:38.022Z",
+          "context_code": "4523",
+          "context_name_ro": "6. INDICATORI DE AGRI - MEDIU",
+          "context_name_en": "6. INDICATORS OF AGRI- ENVIRONMENT",
+          "context_path": "0.2.45.4523",
+          "metadata": null
+        },
+        {
+          "id": "24",
+          "code": "AGR102C",
+          "name_ro": "Suprafata terenurilor amenajate cu lucrari de ameliorare si combaterea eroziunii solului, pe categorii de folosinta a terenurilor, macroregiuni, regiuni de dezvoltare si judete",
+          "name_en": "Area reclamed  with soil erosion control works, by land use, macroregions, development regions and counties",
+          "definition_ro": "Imbunatatiri funciare - totalitatea complexului de lucrari hidrotehnice care se executa pentru ameliorarea terenurilor, asigurarea fertilitatii solului prin imbunatatirea calitatilor acestuia in vederea valorificarii in folosul agriculturii a unor terenuri neproductive sau imbunatatirii conditiilor de dezvoltare a culturilor agricole pe unele terenuri slab productive. \nSuprafata amenajata pentru irigatii - reprezinta ansamblul lucrarilor efectuate pentru a se asigura aprovizionarea controlata cu apa, a culturilor agricole in vederea maririi productiei agricole si asigurarii independentei acesteia fata de conditiile meteorologice. \nSuprafata amenajata pentru desecare - reprezinta totalitatea lucrarilor hidrotehnice efectuate pentru eliminarea excesului de apa de la suprafata terenurilor joase in vederea cultivarii lor sau din motive sanitar profilactice. \nSuprafata amenajata cu lucrari de drenaj - reprezinta totalitatea lucrarilor hidrotehnice pentru indepartarea excesului de umiditate si de consolidare a unui teren de pe o suprafata agricola sau neagricola printr-o retea de drenuri care sunt conducte subterane sau canale deschise la suprafata. \nSuprafata amenajata pentru combaterea eroziunii solului - reprezinta complexul de lucrari hidrotehnice efectuate pentru reducerea sau stoparea degradarii suprafetei solului prin indepartarea stratului fertil al acestuia sub actiunea agentilor geografici externi si efectuarea de lucrari de regularizare pentru evitarea scurgerilor de ape pluviale de pe versanti pentru evitarea pagubelor provocate de inundatii pe terenurile de la piciorul versantului. \n\nSuprafata agricola irigata - reprezinta suprafata pe care s-au efectuat irigatii cel putin o data intr-un an agricol.",
+          "definition_en": "Land improvements - the total hydrotechnical works meant for land improvement, ensurance of soil fertility by improving its quality in order to use unproductive land for agricultural purposes or to improve the development conditions of crops on low productivity land. \nIrrigated area - the total works carried out to ensure the controlled water supply to the crops in order to increase the agricultural output and guarantee its independence from weather conditions. \nReclaimed area - the total hydrotechnical works carried out to remove the excess water from low land surface for cultivation purposes or for plant health reasons. \nDrained area - the total hydrotechnical works meant to remove the excess moisture and to consolidate the land of an agricultural or non-agricultural area through a network of drainage ducts which are underground ducts or open surface channels. \nErosion proof area - the hydrotechnical works carried out to reduce or to stop the soil surface degradation due to external geographical agents by removing its fertile layer and the performance of water-course regulation works to avoid rain water flowing from slopes to prevent damage caused by floods at the slope base. \n\nAgricultural area irrigated - represents the area on which irrigations were carried out at least once in an agricultural year. \n",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            1997,
+            2024
+          ],
+          "dimension_count": 5,
+          "has_uat_data": false,
+          "has_county_data": true,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T10:29:42.139Z",
+          "context_code": "4523",
+          "context_name_ro": "6. INDICATORI DE AGRI - MEDIU",
+          "context_name_en": "6. INDICATORS OF AGRI- ENVIRONMENT",
+          "context_path": "0.2.45.4523",
+          "metadata": null
+        },
+        {
+          "id": "25",
+          "code": "AGR103A",
+          "name_ro": "Parcul de tractoare si masini agricole principale din agricultura (la sfarsitul anului) pe forme de proprietate, macroregiuni, regiuni de dezvoltare si judete",
+          "name_en": "Park of tractors and of main agricultural machinery in agriculture (end of year) by ownership form, macroregions, development regions and counties",
+          "definition_ro": "Parcul de tractoare si principalele masini agricole reprezinta numarul tractoarelor si principalelor masini agricole din agricultura la sfarsitul anului",
+          "definition_en": "The park of tractors and of main agricultural machinery represents the number of tractors and main agricultural machinery at the end of the year.",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "year_range": [
+            1990,
+            2024
+          ],
+          "dimension_count": 5,
+          "has_uat_data": false,
+          "has_county_data": true,
+          "has_siruta": false,
+          "sync_status": "SYNCED",
+          "data_status": "AVAILABLE",
+          "last_sync_at": "2026-02-05T10:29:47.459Z",
+          "context_code": "4510",
+          "context_name_ro": "2. BAZA TEHNICO - MATERIALA A AGRICULTURII",
+          "context_name_en": "2. MATERIAL- TEHNICAL RESOURCES OF AGRICULTURE",
+          "context_path": "0.2.45.4510",
+          "metadata": null
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 1898,
+        "hasNextPage": true,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}

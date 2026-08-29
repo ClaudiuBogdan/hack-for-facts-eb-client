@@ -13,6 +13,25 @@
 /** The date the figures below were measured. */
 export const LEGAL_CORPUS_MEASURED_AT = '2026-06-29'
 
+/**
+ * Acts in `legal.acts`, measured live 2026-08-26 (the STATUS aggregate's
+ * bucket sum = `legalActs.totalCount`). This one IS live-answerable — the
+ * analytics tab serves it live — but the guide's editorial prose keeps the
+ * dated measurement deliberately: a sentence must not have a loading or
+ * failure state, and printing a measurement WITH its date is the honest form.
+ */
+export const LEGAL_ACT_COUNT = 224_539
+
+/** The date `LEGAL_ACT_COUNT` and `LEGAL_PARSED_DOCUMENT_COUNT` were measured. */
+export const LEGAL_CORPUS_SIZE_MEASURED_AT = '2026-08-26'
+
+/**
+ * Parsed documents in `legal.documents`, measured 2026-08-26. Slightly more
+ * than the act count — the two are different grains; do not present one as
+ * the other. No server aggregate answers this one.
+ */
+export const LEGAL_PARSED_DOCUMENT_COUNT = 227_278
+
 /** Total resolved citation edges in `legal.act_references`. */
 export const LEGAL_REFERENCE_EDGE_COUNT = 1_103_595
 
@@ -38,3 +57,32 @@ export const LEGAL_ARTICLE_STRUCTURE_GAP_RATE = 0.31
  * struck down as unconstitutional still folds to its Portal status.
  */
 export const CCR_DECISION_COUNT = 23_378
+
+/**
+ * The first year with gazette issues in the corpus. Measured live 2026-08-26:
+ * `moIssues(filter: {year})` is 0 for every probed year up to 1988 and 9 for
+ * 1989 — the corpus opens with MO nr. 1/1989 of 22 December 1989, the day of
+ * the Revolution. Re-validate if pre-1989 numbers are ever backfilled.
+ */
+export const GAZETTE_FIRST_ISSUE_YEAR = 1989
+
+/**
+ * The newest issue date in the corpus. Upstream issue discovery has been
+ * FROZEN since this date, so the gazette surface must say "date până la" this
+ * day rather than let a reader believe they are seeing today's Monitor.
+ * Measured live 2026-08-26 (issues 565–566/2026, both 2026-07-09); update it
+ * when discovery resumes — the gazette tab's default year derives from it.
+ */
+export const GAZETTE_LATEST_ISSUE_DATE = '2026-07-09'
+
+/**
+ * The newest ALREADY-in-force event in the global change feed — the top of
+ * `legalRecentChanges(until: today)`. Measured live 2026-08-26 (a `completare`
+ * on OUG nr. 92/2021, effective 2026-07-11); nothing newer has taken effect in
+ * the corpus although six weeks had passed, so the changes tab captions itself
+ * "date până la" this day and carries a staleness note. The feed ALSO holds
+ * future-dated events beyond it (8 rows out to 2027-01-05, announced by acts
+ * already published) — those are ahead of this frontier by design, not a
+ * contradiction of it. Update when event capture moves again.
+ */
+export const CHANGES_LATEST_EFFECTIVE_DATE = '2026-07-11'

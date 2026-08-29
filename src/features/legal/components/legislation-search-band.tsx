@@ -12,21 +12,22 @@ import {
 } from '../lib/legislation-theme'
 
 const EXAMPLES = [
-  'Codul Fiscal',
+  'Codul fiscal',
+  'Codul muncii',
   'OUG 57/2019',
   'Legea 98/2016',
-  'salariul minim',
 ] as const
 
 /**
  * The front door's search box — unframed, so the input itself is the first thing
  * on the page rather than a card wrapped around one.
  *
- * It hands off to the existing global search filtered to `legal_act` rather than
- * to `/legislation/search`, which does not exist yet: the global
- * `searchEntities` query already indexes legal acts, so this works today instead
- * of being inert. Repoint it at the dedicated faceted search (with the citation
- * resolver and semantic channel) when the Caută tab lands.
+ * It hands off to the Caută tab (`/legislation/search`), the domain's own
+ * citation/name finder. The examples and the placeholder deliberately show
+ * only query shapes that tab can answer — act numbers and act names, never a
+ * text phrase ("salariul minim" was dropped, "concediu de creștere a
+ * copilului" left the placeholder): the corpus is not phrase-searchable yet,
+ * and the front door must not advertise a query the finder will refuse.
  */
 export function LegislationSearchBand() {
   const navigate = useNavigate()
@@ -37,8 +38,8 @@ export function LegislationSearchBand() {
     const trimmed = query.trim()
     if (trimmed.length === 0) return
     void navigate({
-      to: '/experimental/search',
-      search: { q: trimmed, types: ['legal_act'] },
+      to: '/legislation/search',
+      search: { q: trimmed },
     })
   }
 
@@ -54,7 +55,7 @@ export function LegislationSearchBand() {
           onChange={(event) => setQuery(event.target.value)}
           className={legislationFieldClassName}
           aria-label={t`Caută în legislație`}
-          placeholder={t`Legea 227/2015 · Codul Muncii · concediu de creștere a copilului`}
+          placeholder={t`Legea 227/2015 · Codul muncii · OUG 57/2019`}
         />
         <Button
           type="submit"

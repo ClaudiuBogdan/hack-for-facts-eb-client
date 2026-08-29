@@ -1,4 +1,6 @@
 import { useMemo } from "react";
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -55,13 +57,17 @@ export function Pagination({
       {/* Left: entries info + page size */}
       <div className="flex w-full flex-col items-center gap-2 text-sm text-muted-foreground sm:flex-row sm:gap-4 md:w-auto">
         <span aria-live="polite">
-          Showing {from}-{to} of {totalCount} entries
+          <Trans>
+            Se afișează {from}–{to} din {totalCount} rânduri
+          </Trans>
         </span>
         {onPageSizeChange ? (
           <div className="flex items-center space-x-2">
-            <span>Rows:</span>
+            <span>
+              <Trans>Rânduri:</Trans>
+            </span>
             <Select value={String(pageSize)} onValueChange={(v) => onPageSizeChange(Number(v))}>
-              <SelectTrigger className="h-9 w-[90px] text-sm" aria-label="Select rows per page">
+              <SelectTrigger className="h-9 w-[90px] text-sm" aria-label={t`Rânduri pe pagină`}>
                 <SelectValue placeholder={String(pageSize)} />
               </SelectTrigger>
               <SelectContent>
@@ -77,17 +83,17 @@ export function Pagination({
       </div>
 
       {/* Right: pagination controls */}
-      <nav className="flex w-full flex-wrap items-center justify-center gap-2 md:w-auto md:justify-end" aria-label="Pagination">
+      <nav className="flex w-full flex-wrap items-center justify-center gap-2 md:w-auto md:justify-end" aria-label={t`Paginare`}>
         <Button
           variant="outline"
           size="sm"
           className="h-9 px-2 sm:px-3"
           onClick={() => onPageChange(1)}
           disabled={!canPrev}
-          aria-label="Go to first page"
+          aria-label={t`Prima pagină`}
         >
           <ChevronsLeft className="h-4 w-4 sm:mr-1" />
-          <span className="hidden sm:inline">First</span>
+          <span className="hidden sm:inline"><Trans>Prima</Trans></span>
         </Button>
         <Button
           variant="outline"
@@ -95,10 +101,10 @@ export function Pagination({
           className="h-9 px-2 sm:px-3"
           onClick={() => onPageChange(safeCurrent - 1)}
           disabled={!canPrev}
-          aria-label="Previous page"
+          aria-label={t`Pagina anterioară`}
         >
           <ChevronLeft className="h-4 w-4 sm:mr-1" />
-          <span className="hidden sm:inline">Previous</span>
+          <span className="hidden sm:inline"><Trans>Precedenta</Trans></span>
         </Button>
 
         {/* Numeric page buttons for sm+ */}
@@ -119,7 +125,7 @@ export function Pagination({
                 size="sm"
                 className="h-9 min-w-9 w-auto px-3 text-sm"
                 onClick={() => onPageChange(item.page)}
-                aria-label={`Go to page ${item.page}`}
+                aria-label={t`Pagina ${item.page}`}
                 aria-current={isActive ? "page" : undefined}
                 disabled={isLoading}
               >
@@ -131,7 +137,7 @@ export function Pagination({
 
         {/* Mobile page info and page jump */}
         <div className="sm:hidden flex items-center justify-center px-2 text-sm font-medium gap-2">
-          <span>Page {safeCurrent} of {totalPages}</span>
+          <span><Trans>Pagina {safeCurrent} din {totalPages}</Trans></span>
         </div>
 
         <Button
@@ -140,9 +146,9 @@ export function Pagination({
           className="h-9 px-2 sm:px-3"
           onClick={() => onPageChange(safeCurrent + 1)}
           disabled={!canNext}
-          aria-label="Next page"
+          aria-label={t`Pagina următoare`}
         >
-          <span className="hidden sm:inline">Next</span>
+          <span className="hidden sm:inline"><Trans>Următoarea</Trans></span>
           <ChevronRight className="h-4 w-4 sm:ml-1" />
         </Button>
         <Button
@@ -151,16 +157,18 @@ export function Pagination({
           className="h-9 px-2 sm:px-3"
           onClick={() => onPageChange(totalPages)}
           disabled={!canNext}
-          aria-label={`Go to last page (${totalPages})`}
+          aria-label={t`Ultima pagină (${totalPages})`}
         >
-          <span className="hidden sm:inline">Last</span>
+          <span className="hidden sm:inline"><Trans>Ultima</Trans></span>
           <ChevronsRight className="h-4 w-4 sm:ml-1" />
         </Button>
 
         {/* Page jump (desktop) */}
         {totalPages > 1 ? (
           <div className="hidden sm:flex items-center gap-2 pl-2">
-            <span className="text-sm text-muted-foreground">Go to</span>
+            <span className="text-sm text-muted-foreground">
+              <Trans>Mergi la</Trans>
+            </span>
             <Input
               type="number"
               min={1}
@@ -174,7 +182,7 @@ export function Pagination({
                 if (next !== safeCurrent) onPageChange(next);
               }}
               className="h-9 w-16 text-center"
-              aria-label="Go to page"
+              aria-label={t`Mergi la pagina`}
               disabled={isLoading}
             />
           </div>

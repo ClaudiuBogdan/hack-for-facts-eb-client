@@ -1,0 +1,21 @@
+{
+  "data": {
+    "insTerritories": {
+      "nodes": [
+        {
+          "code": "54975",
+          "siruta_code": "54975",
+          "level": "LAU",
+          "name_ro": "MUNICIPIUL CLUJ-NAPOCA",
+          "parent_code": "CJ",
+          "parent_name_ro": "Cluj"
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 1,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}

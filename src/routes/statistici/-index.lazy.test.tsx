@@ -7,6 +7,7 @@ vi.mock('@tanstack/react-router', () => ({
     ...options,
     options,
     useSearch: () => ({}),
+    useLoaderData: () => ({ landingData: null, landingCatalog: null }),
   }),
 }))
 

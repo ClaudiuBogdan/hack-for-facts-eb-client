@@ -1,0 +1,13 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hack-for-facts-eb-client
+  namespace: hack-for-facts
+$patch: delete
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: istio-transparenta-client-virtualservice
+  namespace: hack-for-facts
+$patch: delete

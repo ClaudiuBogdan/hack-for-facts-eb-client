@@ -22,8 +22,11 @@ const PUBLIC_RUNTIME_CONFIG_KEYS = [
   "VITE_CAMPAIGN_SELF_SEND_CC_EMAILS",
 ] as const;
 
-export type PublicRuntimeConfigKey = (typeof PUBLIC_RUNTIME_CONFIG_KEYS)[number];
-export type PublicRuntimeConfig = Partial<Record<PublicRuntimeConfigKey, string>>;
+export type PublicRuntimeConfigKey =
+  (typeof PUBLIC_RUNTIME_CONFIG_KEYS)[number];
+export type PublicRuntimeConfig = Partial<
+  Record<PublicRuntimeConfigKey, string>
+>;
 
 const envSchema = z
   .object({
@@ -61,9 +64,7 @@ const envSchema = z
       .optional()
       .transform((val) => val === "true"),
     VITE_SENTRY_DSN: z.string().min(1).optional(),
-    VITE_SENTRY_TRACES_SAMPLE_RATE: z
-      .string()
-      .optional(),
+    VITE_SENTRY_TRACES_SAMPLE_RATE: z.string().optional(),
     VITE_SENTRY_FEEDBACK_ENABLED: z
       .enum(["true", "false"]) // enabled unless explicitly set to false
       .optional()
@@ -107,7 +108,8 @@ type RuntimeEnvSource = Record<string, unknown>;
 function toOptionalString(value: unknown): string | undefined {
   if (value === undefined || value === null || value === "") return undefined;
   if (typeof value === "string") return value;
-  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (typeof value === "number" || typeof value === "boolean")
+    return String(value);
   return undefined;
 }
 
@@ -214,27 +216,44 @@ export function getRuntimeConfigBootstrapScript(): string {
  */
 export function getSiteUrl(): string {
   if (env.VITE_SITE_URL) return env.VITE_SITE_URL;
-  if (typeof window !== 'undefined' && window.location?.origin) return window.location.origin;
+  if (typeof window !== "undefined" && window.location?.origin)
+    return window.location.origin;
   // Sensible default for build-time usage where window is not available
-  return 'https://transparenta.eu';
+  return "https://transparenta.eu";
+}
+
+function getInternalApiBaseUrl(): string | undefined {
+  if (typeof window !== "undefined" || typeof process === "undefined") {
+    return undefined;
+  }
+
+  const value = toOptionalString(process.env?.INTERNAL_API_URL);
+  if (!value) return undefined;
+
+  const parsed = z.string().url().safeParse(value);
+  if (!parsed.success) {
+    throw new Error("INTERNAL_API_URL must be a valid absolute URL");
+  }
+
+  return parsed.data.replace(/\/+$/u, "");
 }
 
 /**
- * Returns the API base URL. In development, opt into same-origin to allow Vite
- * proxying and avoid browser CORS issues when the configured API host differs.
+ * Returns the API base URL. Server rendering can use the private cluster
+ * service while the browser retains the public API authority. In development,
+ * opt into same-origin to allow Vite proxying and avoid browser CORS issues.
  */
 export function getApiBaseUrl(): string {
+  const internalApiBaseUrl = getInternalApiBaseUrl();
+  if (internalApiBaseUrl) return internalApiBaseUrl;
+
   const devProxyTarget = toOptionalString(
     (import.meta.env as unknown as Record<string, unknown>)
       .VITE_API_PROXY_TARGET,
   );
   const hasDevProxyTarget = Boolean(devProxyTarget);
   const shouldUseDevProxy =
-    import.meta.env.DEV &&
-    (
-      env.VITE_API_USE_PROXY ||
-      hasDevProxyTarget
-    );
+    import.meta.env.DEV && (env.VITE_API_USE_PROXY || hasDevProxyTarget);
 
   if (typeof window !== "undefined" && shouldUseDevProxy) {
     return window.location.origin;

@@ -1,7 +1,9 @@
 import { z } from 'zod'
 import type {
   InsDataset,
+  InsDatasetDetails,
   InsObservation,
+  InsPeriodicity,
   InsTerritoryLevel,
   InsTimePeriod,
   InsUnit,
@@ -30,8 +32,11 @@ import type {
  */
 export const statisticsPeriodSearchSchema = z
   .preprocess((value) => {
-    if (typeof value !== 'string') return 'latest'
-    const normalized = value.trim()
+    // The router's search parser JSON-parses bare digits, so the natural
+    // ?period=2019 arrives as a NUMBER — coerce before validating.
+    const candidate = typeof value === 'number' ? String(value) : value
+    if (typeof candidate !== 'string') return 'latest'
+    const normalized = candidate.trim()
     return normalized.length > 0 ? normalized : 'latest'
   }, z.union([
     z.literal('latest'),
@@ -50,10 +55,25 @@ export type StatisticsPeriodSearch = z.infer<
  *
  * `q` is the debounced territory search term, shareable so a colleague can be
  * sent straight to "the Cluj-Napoca result".
+ *
+ * `loc` is the picked territory (SIRUTA) the „Locul tău" band renders for —
+ * shareable, so a link can land directly on "your place" numbers.
  */
 export const statisticsLandingSearchSchema = z
   .object({
     q: z.string().trim().min(1).optional().catch(undefined),
+    // The router's search parser JSON-parses bare digits into a number —
+    // coerce back before validating, or every ?loc= deep link drops.
+    loc: z
+      .preprocess(
+        (value) => (typeof value === 'number' ? String(value) : value),
+        z
+          .string()
+          .trim()
+          .regex(/^\d{1,6}$/)
+          .optional(),
+      )
+      .catch(undefined),
   })
   .catch({})
 
@@ -160,16 +180,30 @@ export type StatisticsDatasetDetailSearch = z.infer<
  * `teritorii` holds 2–6 SIRUTA codes. Below two the page shows a guided empty
  * state rather than a chart of one line.
  */
+const coerceNumberToString = (value: unknown) =>
+  typeof value === 'number' ? String(value) : value
+
 export const statisticsComparisonsSearchSchema = z
   .object({
     cod: z.string().trim().min(1).optional().catch(undefined),
+    // The router JSON-parses bare digits, so `?teritorii=[54975]` delivers
+    // NUMBERS and a lone token arrives as a bare string — both normalized.
     teritorii: z
-      .array(z.string().trim().min(1))
-      .min(1)
-      .max(6)
-      .optional()
+      .preprocess(
+        (value) => {
+          const entries = Array.isArray(value)
+            ? value
+            : value === undefined
+              ? undefined
+              : [value]
+          return entries?.map(coerceNumberToString)
+        },
+        z.array(z.string().trim().min(1)).min(1).max(6).optional(),
+      )
       .catch(undefined),
-    perioada: z.string().trim().min(1).optional().catch(undefined),
+    perioada: z
+      .preprocess(coerceNumberToString, z.string().trim().min(1).optional())
+      .catch(undefined),
     clasificari: z
       .array(classificationPinSchema)
       .max(8)
@@ -327,22 +361,128 @@ export interface StatisticsRelatedLink {
   readonly disabledReason: string | null
 }
 
+/** County + national reference values for one hub tile's dataset. */
+export interface StatisticsTileBenchmark {
+  readonly county: StatisticsLatestValue | null
+  readonly national: StatisticsLatestValue | null
+}
+
 /** Aggregated territory hub result returned by the statistics API. */
 export interface StatisticsTerritoryHubResult {
   readonly identity: StatisticsTerritoryIdentity
   readonly tiles: readonly StatisticsIndicatorTile[]
   readonly availableDatasetCodes: readonly string[]
-  readonly coverage: StatisticsCoverageSummary
+  /** Null when the counts/benchmarks POST failed — the ribbon hides. */
+  readonly coverage: StatisticsCoverageSummary | null
   readonly relatedLinks: readonly StatisticsRelatedLink[]
   readonly latestDataPeriod: string | null
   readonly partial: boolean
+  /** dataset code → county/national benchmark, for the headline datasets. */
+  readonly benchmarks: Readonly<Record<string, StatisticsTileBenchmark>>
 }
 
-/** Statistics landing payload: themed dataset cards + coverage ribbon. */
-export interface StatisticsLanding {
-  readonly topDatasets: readonly StatisticsDatasetSummary[]
-  readonly coverage: StatisticsCoverageSummary
-  readonly latestDataPeriod: string | null
+/** How the server picked a "latest value" observation. */
+export type StatisticsLatestMatchStrategy =
+  | 'PREFERRED_CLASSIFICATION'
+  | 'TOTAL_FALLBACK'
+  | 'REPRESENTATIVE_FALLBACK'
+  | 'NO_DATA'
+
+/**
+ * Latest resolved value of one dataset for one territory (national tile or
+ * „Locul tău" tile). `value` stays a decimal string; formatting is a render
+ * concern.
+ */
+export interface StatisticsResolvedClassification {
+  readonly typeCode: string
+  readonly code: string
+  readonly nameRo: string | null
+}
+
+export interface StatisticsLatestValue {
+  readonly datasetCode: string
+  readonly datasetNameRo: string | null
+  readonly datasetNameEn: string | null
+  readonly periodicity: readonly string[]
+  readonly matchStrategy: StatisticsLatestMatchStrategy
+  readonly hasData: boolean
+  readonly value: string | null
+  readonly valueStatus: string | null
+  readonly unitCode: string | null
+  readonly unitSymbol: string | null
+  readonly unitNameRo: string | null
+  readonly period: string | null
+  /** The resolved observation's own cadence FIELD — never string grammar. */
+  readonly resolvedPeriodicity: InsPeriodicity | null
+  /** The exact cell the server resolved — the tier-0 classification defaults. */
+  readonly resolvedClassifications: readonly StatisticsResolvedClassification[]
+}
+
+/** One NUTS3 endpoint-year observation for the decade story. */
+export interface StatisticsDecadeObservation {
+  readonly countyCode: string
+  readonly countyName: string | null
+  readonly year: number
+  readonly value: string | null
+  readonly unitNameRo: string | null
+}
+
+/** One observation of the worked comparison example (mixed levels). */
+export interface StatisticsExampleObservation {
+  readonly level: InsTerritoryLevel | null
+  readonly code: string
+  readonly siruta: string | null
+  readonly name: string | null
+  readonly year: number
+  readonly value: string | null
+  readonly unitSymbol: string | null
+}
+
+/** Landing POST 1 payload: every observation-bearing block. */
+export interface StatisticsLandingData {
+  readonly nationalValues: readonly StatisticsLatestValue[]
+  readonly decadeRows: readonly StatisticsDecadeObservation[]
+  readonly exampleRows: readonly StatisticsExampleObservation[]
+}
+
+/** Live per-theme dataset count (theme = INS level-0 context group). */
+export interface StatisticsThemeCount {
+  readonly code: string
+  readonly count: number
+}
+
+/** Landing POST 2 payload: catalog honesty counts + theme counts. */
+export interface StatisticsLandingCatalog {
+  readonly loadedCount: number
+  readonly catalogCount: number
+  readonly themes: readonly StatisticsThemeCount[]
+}
+
+/** Detail POST A payload: the dataset + the resolved tier-0 value. */
+export interface StatisticsDatasetTier0 {
+  readonly dataset: InsDatasetDetails | null
+  readonly latest: StatisticsLatestValue | null
+}
+
+export interface StatisticsRelatedDataset {
+  readonly code: string
+  readonly nameRo: string | null
+  readonly dataStatus: StatisticsDatasetDataStatus
+}
+
+/** Detail POST B payload: the resolved series + the related-datasets probe. */
+export interface StatisticsDatasetSeries {
+  readonly observations: readonly InsObservation[]
+  readonly totalCount: number
+  readonly related: readonly StatisticsRelatedDataset[]
+  /** Catalog size of the dataset's context, self included; null when unprobed. */
+  readonly relatedTotalCount: number | null
+}
+
+/** „Locul tău" snapshot: the picked territory's identity + latest values. */
+export interface StatisticsUatSnapshot {
+  readonly territory: StatisticsTerritorySearchRow | null
+  readonly values: readonly StatisticsLatestValue[]
 }
 
 // ---------------------------------------------------------------------------

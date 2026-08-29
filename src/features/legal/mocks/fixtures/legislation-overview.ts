@@ -2,23 +2,16 @@ import type { LegislationOverview } from '@/schemas/legal'
 import { LEGAL_CORPUS_MEASURED_AT } from '../../lib/legal-coverage'
 
 /**
- * Overview fixture.
+ * Overview fixture. The headline counts left this payload with the overview
+ * schema (2026-08-26) — they live in `legislation-status-counts.ts`, behind
+ * the status aggregate's own request.
  *
- * The **counts are the real measured prod values** (scrapper
- * `prod-db/LEGAL_CURRENT_STATE.md`, 2026-06-29) rather than invented numbers, so
- * the layout is exercised at true magnitude. The **act titles and gazette issues
- * are illustrative** — the surface labels the whole payload `mock` either way.
- *
- * `inDegree` for the Codul Fiscal (2 621) is the one measured per-act figure we
- * have; the rest of the ranking is plausible filler at the right order.
+ * The **act titles and gazette issues are illustrative** — the surface labels
+ * the whole payload `mock` either way. `inDegree` for the Codul Fiscal
+ * (2 621) is the one measured per-act figure we have; the rest of the ranking
+ * is plausible filler at the right order.
  */
 export const legislationOverviewFixture: LegislationOverview = {
-  counts: {
-    total: 224_369,
-    inVigoare: 193_981,
-    modificat: 6_542,
-    abrogat: 22_125,
-  },
   mostCitedActs: [
     {
       actId: '66150',

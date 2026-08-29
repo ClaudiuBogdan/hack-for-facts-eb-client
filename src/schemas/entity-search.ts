@@ -72,6 +72,12 @@ export interface EntitySearchFacet {
 export interface EntitySearchResult {
   readonly query: string
   readonly engine: EntitySearchEngine
+  /**
+   * The engine could not answer, so this came from the server's reduced outage
+   * path (exact identifier only). Empty `hits` then mean "we could not look",
+   * NOT "no matches" — say so rather than rendering an empty state.
+   */
+  readonly degraded: boolean
   readonly estimatedTotalHits: number
   readonly facets: readonly EntitySearchFacet[]
   readonly hits: readonly EntitySearchHit[]

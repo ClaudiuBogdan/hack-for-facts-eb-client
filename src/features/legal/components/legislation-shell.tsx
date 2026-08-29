@@ -4,7 +4,7 @@ import { useLingui } from '@lingui/react'
 import { cn } from '@/lib/utils'
 import { DataStatusBadge } from '@/components/data-trust'
 import type { DataStatus } from '@/schemas/elections'
-import type { LegalActCounts } from '@/schemas/legal'
+import type { LegalStatusActCounts } from '@/schemas/legal'
 import { formatLegalDate, formatLegalNumber } from '../lib/legal-format'
 import {
   legislationHeaderDescriptionClassName,
@@ -22,7 +22,14 @@ import { LegislationHeaderVisual } from './legislation-header-visual'
 
 type Props = {
   readonly activeTab: LegislationTab
-  readonly counts?: LegalActCounts
+  /**
+   * The headline chips — each may be independently unknown (the aggregate
+   * behind them degrades rather than failing the page), and a chip whose
+   * number is unknown is OMITTED rather than given a placeholder: 0 and
+   * "unknown" are different claims, and a chip has no room to explain the
+   * difference. A true 0 still renders.
+   */
+  readonly counts?: LegalStatusActCounts
   readonly measuredAt?: string | null
   /**
    * Trust state for the whole surface. Rendered in the meta line rather than in
@@ -110,32 +117,37 @@ export function LegislationShell({
                 {dataStatus ? <DataStatusBadge status={dataStatus} /> : null}
               </div>
 
-              {counts ? (
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <div className={legislationHeaderStatClassName}>
-                    <span className={legislationHeaderStatValueClassName}>
-                      {formatCount(counts.total)}
-                    </span>
-                    <span className={legislationHeaderStatLabelClassName}>
-                      <Trans>acte</Trans>
-                    </span>
-                  </div>
-                  <div className={legislationHeaderStatClassName}>
-                    <span className={legislationHeaderStatValueClassName}>
-                      {formatCount(counts.inVigoare)}
-                    </span>
-                    <span className={legislationHeaderStatLabelClassName}>
-                      <Trans>în vigoare</Trans>
-                    </span>
-                  </div>
-                  <div className={legislationHeaderStatClassName}>
-                    <span className={legislationHeaderStatValueClassName}>
-                      {formatCount(counts.abrogat)}
-                    </span>
-                    <span className={legislationHeaderStatLabelClassName}>
-                      <Trans>abrogate</Trans>
-                    </span>
-                  </div>
+              {counts !== undefined ? (
+                // min-h reserves one chip row (border-2 + py-2 + text-base =
+                // 44px), so counts arriving after hydration do not shift the
+                // tab nav below. An unknown value simply has no chip.
+                <div className="mt-8 flex min-h-11 flex-wrap gap-3">
+                  {(
+                    [
+                      { key: 'total', value: counts.total, label: <Trans>acte</Trans> },
+                      {
+                        key: 'in-vigoare',
+                        value: counts.inVigoare,
+                        label: <Trans>în vigoare</Trans>,
+                      },
+                      {
+                        key: 'abrogat',
+                        value: counts.abrogat,
+                        label: <Trans>abrogate</Trans>,
+                      },
+                    ] as const
+                  ).map((chip) =>
+                    chip.value !== undefined ? (
+                      <div key={chip.key} className={legislationHeaderStatClassName}>
+                        <span className={legislationHeaderStatValueClassName}>
+                          {formatCount(chip.value)}
+                        </span>
+                        <span className={legislationHeaderStatLabelClassName}>
+                          {chip.label}
+                        </span>
+                      </div>
+                    ) : null,
+                  )}
                 </div>
               ) : null}
             </div>

@@ -58,6 +58,10 @@ import { Route as JustitieIndexRouteImport } from './routes/justitie.index'
 import { Route as JustitieCautareRouteImport } from './routes/justitie.cautare'
 import { Route as LegislationIndexRouteImport } from './routes/legislation/index'
 import { Route as LegislationAnalyticsRouteImport } from './routes/legislation/analytics'
+import { Route as LegislationChangesRouteImport } from './routes/legislation/changes'
+import { Route as LegislationGazetteRouteImport } from './routes/legislation/gazette'
+import { Route as LegislationGuideRouteImport } from './routes/legislation/guide'
+import { Route as LegislationSearchRouteImport } from './routes/legislation/search'
 import { Route as OngUriIndexRouteImport } from './routes/ong-uri/index'
 import { Route as OngUriCuiRouteImport } from './routes/ong-uri.$cui'
 import { Route as OngUriServiciiRouteImport } from './routes/ong-uri.servicii'
@@ -463,6 +467,34 @@ const LegislationAnalyticsRoute = LegislationAnalyticsRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
   import('./routes/legislation/analytics.lazy').then((d) => d.Route),
+)
+const LegislationChangesRoute = LegislationChangesRouteImport.update({
+  id: '/legislation/changes',
+  path: '/legislation/changes',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/legislation/changes.lazy').then((d) => d.Route),
+)
+const LegislationGazetteRoute = LegislationGazetteRouteImport.update({
+  id: '/legislation/gazette',
+  path: '/legislation/gazette',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/legislation/gazette.lazy').then((d) => d.Route),
+)
+const LegislationGuideRoute = LegislationGuideRouteImport.update({
+  id: '/legislation/guide',
+  path: '/legislation/guide',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/legislation/guide.lazy').then((d) => d.Route),
+)
+const LegislationSearchRoute = LegislationSearchRouteImport.update({
+  id: '/legislation/search',
+  path: '/legislation/search',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/legislation/search.lazy').then((d) => d.Route),
 )
 const OngUriIndexRoute = OngUriIndexRouteImport.update({
   id: '/',
@@ -1434,6 +1466,10 @@ export interface FileRoutesByFullPath {
   '/investitii-publice/cautare': typeof InvestitiiPubliceCautareRoute
   '/justitie/cautare': typeof JustitieCautareRoute
   '/legislation/analytics': typeof LegislationAnalyticsRoute
+  '/legislation/changes': typeof LegislationChangesRoute
+  '/legislation/gazette': typeof LegislationGazetteRoute
+  '/legislation/guide': typeof LegislationGuideRoute
+  '/legislation/search': typeof LegislationSearchRoute
   '/ong-uri/$cui': typeof OngUriCuiRoute
   '/ong-uri/servicii': typeof OngUriServiciiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
@@ -1599,6 +1635,10 @@ export interface FileRoutesByTo {
   '/investitii-publice/cautare': typeof InvestitiiPubliceCautareRoute
   '/justitie/cautare': typeof JustitieCautareRoute
   '/legislation/analytics': typeof LegislationAnalyticsRoute
+  '/legislation/changes': typeof LegislationChangesRoute
+  '/legislation/gazette': typeof LegislationGazetteRoute
+  '/legislation/guide': typeof LegislationGuideRoute
+  '/legislation/search': typeof LegislationSearchRoute
   '/ong-uri/$cui': typeof OngUriCuiRoute
   '/ong-uri/servicii': typeof OngUriServiciiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
@@ -1770,6 +1810,10 @@ export interface FileRoutesById {
   '/investitii-publice/cautare': typeof InvestitiiPubliceCautareRoute
   '/justitie/cautare': typeof JustitieCautareRoute
   '/legislation/analytics': typeof LegislationAnalyticsRoute
+  '/legislation/changes': typeof LegislationChangesRoute
+  '/legislation/gazette': typeof LegislationGazetteRoute
+  '/legislation/guide': typeof LegislationGuideRoute
+  '/legislation/search': typeof LegislationSearchRoute
   '/ong-uri/$cui': typeof OngUriCuiRoute
   '/ong-uri/servicii': typeof OngUriServiciiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
@@ -1947,6 +1991,10 @@ export interface FileRouteTypes {
     | '/investitii-publice/cautare'
     | '/justitie/cautare'
     | '/legislation/analytics'
+    | '/legislation/changes'
+    | '/legislation/gazette'
+    | '/legislation/guide'
+    | '/legislation/search'
     | '/ong-uri/$cui'
     | '/ong-uri/servicii'
     | '/pnrr/share-image.png'
@@ -2112,6 +2160,10 @@ export interface FileRouteTypes {
     | '/investitii-publice/cautare'
     | '/justitie/cautare'
     | '/legislation/analytics'
+    | '/legislation/changes'
+    | '/legislation/gazette'
+    | '/legislation/guide'
+    | '/legislation/search'
     | '/ong-uri/$cui'
     | '/ong-uri/servicii'
     | '/pnrr/share-image.png'
@@ -2282,6 +2334,10 @@ export interface FileRouteTypes {
     | '/investitii-publice/cautare'
     | '/justitie/cautare'
     | '/legislation/analytics'
+    | '/legislation/changes'
+    | '/legislation/gazette'
+    | '/legislation/guide'
+    | '/legislation/search'
     | '/ong-uri/$cui'
     | '/ong-uri/servicii'
     | '/pnrr/share-image.png'
@@ -2452,6 +2508,10 @@ export interface RootRouteChildren {
   ExperimentalSearchRoute: typeof ExperimentalSearchRoute
   IntreprinderiPubliceCuiRoute: typeof IntreprinderiPubliceCuiRoute
   LegislationAnalyticsRoute: typeof LegislationAnalyticsRoute
+  LegislationChangesRoute: typeof LegislationChangesRoute
+  LegislationGazetteRoute: typeof LegislationGazetteRoute
+  LegislationGuideRoute: typeof LegislationGuideRoute
+  LegislationSearchRoute: typeof LegislationSearchRoute
   PnrrJudeteRoute: typeof PnrrJudeteRoute
   PnrrOrganizatiiRoute: typeof PnrrOrganizatiiRoute
   PnrrProiecteRoute: typeof PnrrProiecteRoute
@@ -2861,6 +2921,34 @@ declare module '@tanstack/react-router' {
       path: '/legislation/analytics'
       fullPath: '/legislation/analytics'
       preLoaderRoute: typeof LegislationAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legislation/changes': {
+      id: '/legislation/changes'
+      path: '/legislation/changes'
+      fullPath: '/legislation/changes'
+      preLoaderRoute: typeof LegislationChangesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legislation/gazette': {
+      id: '/legislation/gazette'
+      path: '/legislation/gazette'
+      fullPath: '/legislation/gazette'
+      preLoaderRoute: typeof LegislationGazetteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legislation/guide': {
+      id: '/legislation/guide'
+      path: '/legislation/guide'
+      fullPath: '/legislation/guide'
+      preLoaderRoute: typeof LegislationGuideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legislation/search': {
+      id: '/legislation/search'
+      path: '/legislation/search'
+      fullPath: '/legislation/search'
+      preLoaderRoute: typeof LegislationSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ong-uri/': {
@@ -4160,6 +4248,10 @@ const rootRouteChildren: RootRouteChildren = {
   ExperimentalSearchRoute: ExperimentalSearchRoute,
   IntreprinderiPubliceCuiRoute: IntreprinderiPubliceCuiRoute,
   LegislationAnalyticsRoute: LegislationAnalyticsRoute,
+  LegislationChangesRoute: LegislationChangesRoute,
+  LegislationGazetteRoute: LegislationGazetteRoute,
+  LegislationGuideRoute: LegislationGuideRoute,
+  LegislationSearchRoute: LegislationSearchRoute,
   PnrrJudeteRoute: PnrrJudeteRoute,
   PnrrOrganizatiiRoute: PnrrOrganizatiiRoute,
   PnrrProiecteRoute: PnrrProiecteRoute,

@@ -33,15 +33,16 @@ export function fetchComparisonObservationsMock(
   params: ComparisonObservationsParams,
 ): Promise<ComparisonObservationsResult> {
   const filter = buildComparisonObservationFilter(params)
-  const sirutaCodes = new Set(filter.sirutaCodes ?? [])
+  const territoryCodes = new Set(filter.territoryCodes ?? [])
   const unitCodes = filter.unitCodes ? new Set(filter.unitCodes) : null
   const classificationValueCodes = filter.classificationValueCodes ?? []
 
   const observations = MOCK_COMPARISON_OBSERVATIONS.filter((observation) => {
     if (observation.dataset_code !== params.datasetCode) return false
 
-    const siruta = observation.territory?.siruta_code ?? ''
-    if (!sirutaCodes.has(siruta)) return false
+    const code =
+      observation.territory?.code ?? observation.territory?.siruta_code ?? ''
+    if (!territoryCodes.has(code)) return false
 
     if (unitCodes && !unitCodes.has(observation.unit?.code ?? '')) return false
 

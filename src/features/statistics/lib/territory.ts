@@ -8,52 +8,17 @@ import type {
 /**
  * Territory identity + related-links helpers for the statistics surface.
  *
- * Territory level is inferred from the live INS dashboard territory when
- * available. When the live API cannot supply name/level, the UI receives an
- * explicit fallback identity instead of guessing a source fact.
+ * Territory facts (name, level, county) come ONLY from the live INS territory
+ * record. When the live API cannot supply them, the UI receives an explicit
+ * fallback identity instead of guessing a source fact — there is deliberately
+ * no client-side SIRUTA→level table (a stale one mislabeled `179132` as a
+ * county; it is a LAU).
  *
  * Related links point ONLY at existing platform routes
  * (`/budget-explorer`, `/primarie/$cui`, `/entities/$cui`, `/companies/$cui`,
  * `/map`). Deferred statistics routes (`/statistici/harti`,
  * `/statistici/comparatii`) are intentionally NOT linked.
  */
-
-/**
- * Known county (NUTS3) SIRUTA codes. A SIRUTA that exactly matches one of
- * these is treated as county-level. This is a small, stable subset used
- * only as a fallback hint when the live territory level is missing; the
- * authoritative level always comes from the INS territory record.
- */
-const KNOWN_COUNTY_SIRUTA_CODES: ReadonlySet<string> = new Set([
-  '179132', // Municipiul București
-])
-
-const KNOWN_COUNTY_CODE_BY_SIRUTA: ReadonlyMap<string, string> = new Map([
-  ['179132', 'B'], // Municipiul București
-])
-
-/**
- * Infers a fallback territory level from a SIRUTA code when the live
- * territory record is missing its `level`. Returns `null` when no confident
- * inference is possible — callers must then surface an explicit fallback
- * identity rather than guess.
- */
-export function inferFallbackTerritoryLevel(
-  siruta: string,
-): InsTerritoryLevel | null {
-  const normalized = siruta.trim()
-  if (normalized.length === 0) return null
-
-  if (KNOWN_COUNTY_SIRUTA_CODES.has(normalized)) {
-    return 'NUTS3'
-  }
-
-  return null
-}
-
-export function inferFallbackCountyCode(siruta: string): string | null {
-  return KNOWN_COUNTY_CODE_BY_SIRUTA.get(siruta.trim()) ?? null
-}
 
 /**
  * Resolves a territory identity for a SIRUTA code.
@@ -71,7 +36,7 @@ export function resolveTerritoryIdentity(params: {
   readonly liveCountyCode?: string | null
 }): StatisticsTerritoryIdentity {
   const siruta = params.siruta.trim()
-  const liveLevel = (params.liveLevel ?? null) as InsTerritoryLevel | null
+  const level = (params.liveLevel ?? null) as InsTerritoryLevel | null
 
   const hasLiveName =
     typeof params.liveName === 'string' && params.liveName.trim().length > 0
@@ -79,16 +44,6 @@ export function resolveTerritoryIdentity(params: {
   const name = hasLiveName ? params.liveName!.trim() : null
   const countyName = params.liveCountyName?.trim() || null
   const countyCode = params.liveCountyCode?.trim() || null
-  let level = liveLevel
-  let enrichedFallback = !name
-
-  if (!level) {
-    const inferred = inferFallbackTerritoryLevel(siruta)
-    if (inferred) {
-      level = inferred
-      enrichedFallback = true
-    }
-  }
 
   return {
     siruta,
@@ -96,7 +51,7 @@ export function resolveTerritoryIdentity(params: {
     level,
     countyName,
     countyCode,
-    enrichedFallback,
+    enrichedFallback: !name,
   }
 }
 

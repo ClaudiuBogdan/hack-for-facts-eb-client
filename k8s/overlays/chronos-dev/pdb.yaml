@@ -1,0 +1,9 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: hack-for-facts-eb-client-pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: hack-for-facts-eb-client

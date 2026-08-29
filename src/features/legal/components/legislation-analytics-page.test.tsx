@@ -22,9 +22,14 @@ vi.mock('@tanstack/react-router', () => ({
 
 vi.mock('../hooks/use-legislation', () => ({
   useLegislationOverview: vi.fn(),
+  useLegislationStatusCounts: vi.fn(),
 }))
 
-import { useLegislationOverview } from '../hooks/use-legislation'
+import {
+  useLegislationOverview,
+  useLegislationStatusCounts,
+} from '../hooks/use-legislation'
+import { legislationStatusCountsFixture } from '../mocks/fixtures/legislation-status-counts'
 
 describe('LegislationAnalyticsPage', () => {
   beforeEach(() => {
@@ -33,6 +38,10 @@ describe('LegislationAnalyticsPage', () => {
       isLoading: false,
       isError: false,
     } as unknown as ReturnType<typeof useLegislationOverview>)
+    vi.mocked(useLegislationStatusCounts).mockReturnValue({
+      data: legislationStatusCountsFixture,
+      isError: false,
+    } as unknown as ReturnType<typeof useLegislationStatusCounts>)
   })
 
   it('renders the headline counts and the most-cited acts', () => {

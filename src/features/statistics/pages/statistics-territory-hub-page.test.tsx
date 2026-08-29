@@ -138,7 +138,9 @@ describe('StatisticsTerritoryHubPage', () => {
         JSON.stringify(call[0]),
       ),
     )
-    expect([...distinctParams]).toEqual([JSON.stringify({ siruta: '54975' })])
+    expect([...distinctParams]).toEqual([
+      JSON.stringify({ siruta: '54975', enabled: true }),
+    ])
   })
 
   it('re-anchors indicator tiles to the selected period', () => {
@@ -178,5 +180,46 @@ describe('StatisticsTerritoryHubPage', () => {
     expect(
       screen.getByText('Rezultate parțiale — unele serii pot lipsi.'),
     ).toBeInTheDocument()
+  })
+})
+
+describe('StatisticsTerritoryHubPage — search hygiene', () => {
+  beforeEach(() => {
+    useStatisticsTerritoryHubMock.mockReturnValue(createTerritoryHubQueryStub())
+  })
+
+  it('shows the honest notice for a period no series reports', () => {
+    render(
+      <StatisticsTerritoryHubPage siruta="54975" search={{ period: '2005' }} />,
+    )
+
+    expect(
+      screen.getByText(/Nicio serie nu raportează perioada 2005/),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /Șterge filtrul de perioadă/ }),
+    ).toBeInTheDocument()
+  })
+
+  it('gates the query OFF for a malformed SIRUTA (never a request)', () => {
+    render(<StatisticsTerritoryHubPage siruta="nu-e-siruta" search={{}} />)
+
+    expect(screen.getByText('Teritoriu negăsit')).toBeInTheDocument()
+    expect(useStatisticsTerritoryHubMock).toHaveBeenCalledWith(
+      expect.objectContaining({ enabled: false }),
+    )
+  })
+
+  it('reads a raw-leaked NUMBER period defensively (no crash, treated absent)', () => {
+    render(
+      <StatisticsTerritoryHubPage
+        siruta="54975"
+        search={{ period: 2009 } as unknown as { period?: string }}
+      />,
+    )
+
+    // The validator would coerce this, but the router can leak raw values —
+    // the page itself must never .trim() a number.
+    expect(screen.queryByText(/Filtrat/)).not.toBeInTheDocument()
   })
 })

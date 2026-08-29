@@ -1,0 +1,54 @@
+{
+  "data": {
+    "loaded": {
+      "pageInfo": {
+        "totalCount": 1898
+      }
+    },
+    "catalog": {
+      "pageInfo": {
+        "totalCount": 1898
+      }
+    },
+    "t1": {
+      "pageInfo": {
+        "totalCount": 832
+      }
+    },
+    "t2": {
+      "pageInfo": {
+        "totalCount": 531
+      }
+    },
+    "t3": {
+      "pageInfo": {
+        "totalCount": 9
+      }
+    },
+    "t4": {
+      "pageInfo": {
+        "totalCount": 20
+      }
+    },
+    "t5": {
+      "pageInfo": {
+        "totalCount": 23
+      }
+    },
+    "t6": {
+      "pageInfo": {
+        "totalCount": 39
+      }
+    },
+    "t7": {
+      "pageInfo": {
+        "totalCount": 107
+      }
+    },
+    "t8": {
+      "pageInfo": {
+        "totalCount": 337
+      }
+    }
+  }
+}

@@ -64,5 +64,12 @@ export function useEntitySearch(
     // Keep prior results visible while a new query/filter loads instead of
     // flashing the empty/loading state on every keystroke.
     placeholderData: keepPreviousData,
+    // NO automatic retry, overriding the global `retry: 1` (D5). A search-engine
+    // outage is no longer an error here — the server answers `ok` with
+    // `degraded: true` — so anything that DOES reach this branch is a real
+    // transport or server failure, and retrying it silently doubles the load on
+    // something already failing while the user waits through two backoffs for
+    // the same answer. The empty state offers an explicit retry instead.
+    retry: false,
   })
 }

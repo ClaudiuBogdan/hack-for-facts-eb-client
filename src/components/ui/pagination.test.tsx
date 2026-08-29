@@ -78,25 +78,25 @@ describe('Pagination', () => {
     it('shows correct entries range', () => {
       render(<Pagination {...defaultProps} />)
 
-      expect(screen.getByText(/Showing 1-25 of 100 entries/)).toBeInTheDocument()
+      expect(screen.getByText(/Se afișează 1–25 din 100 rânduri/)).toBeInTheDocument()
     })
 
     it('shows correct range for middle page', () => {
       render(<Pagination {...defaultProps} currentPage={2} />)
 
-      expect(screen.getByText(/Showing 26-50 of 100 entries/)).toBeInTheDocument()
+      expect(screen.getByText(/Se afișează 26–50 din 100 rânduri/)).toBeInTheDocument()
     })
 
     it('shows correct range for last page', () => {
       render(<Pagination {...defaultProps} currentPage={4} />)
 
-      expect(screen.getByText(/Showing 76-100 of 100 entries/)).toBeInTheDocument()
+      expect(screen.getByText(/Se afișează 76–100 din 100 rânduri/)).toBeInTheDocument()
     })
 
     it('shows 0-0 for empty results', () => {
       render(<Pagination {...defaultProps} totalCount={0} />)
 
-      expect(screen.getByText(/Showing 0-0 of 0 entries/)).toBeInTheDocument()
+      expect(screen.getByText(/Se afișează 0–0 din 0 rânduri/)).toBeInTheDocument()
     })
   })
 
@@ -104,48 +104,48 @@ describe('Pagination', () => {
     it('renders first page button', () => {
       render(<Pagination {...defaultProps} />)
 
-      expect(screen.getByLabelText('Go to first page')).toBeInTheDocument()
+      expect(screen.getByLabelText('Prima pagină')).toBeInTheDocument()
     })
 
     it('renders previous page button', () => {
       render(<Pagination {...defaultProps} />)
 
-      expect(screen.getByLabelText('Previous page')).toBeInTheDocument()
+      expect(screen.getByLabelText('Pagina anterioară')).toBeInTheDocument()
     })
 
     it('renders next page button', () => {
       render(<Pagination {...defaultProps} />)
 
-      expect(screen.getByLabelText('Next page')).toBeInTheDocument()
+      expect(screen.getByLabelText('Pagina următoare')).toBeInTheDocument()
     })
 
     it('renders last page button', () => {
       render(<Pagination {...defaultProps} />)
 
-      expect(screen.getByLabelText(/Go to last page/)).toBeInTheDocument()
+      expect(screen.getByLabelText(/Ultima pagină/)).toBeInTheDocument()
     })
 
     it('disables first and previous on first page', () => {
       render(<Pagination {...defaultProps} currentPage={1} />)
 
-      expect(screen.getByLabelText('Go to first page')).toBeDisabled()
-      expect(screen.getByLabelText('Previous page')).toBeDisabled()
+      expect(screen.getByLabelText('Prima pagină')).toBeDisabled()
+      expect(screen.getByLabelText('Pagina anterioară')).toBeDisabled()
     })
 
     it('disables next and last on last page', () => {
       render(<Pagination {...defaultProps} currentPage={4} />)
 
-      expect(screen.getByLabelText('Next page')).toBeDisabled()
-      expect(screen.getByLabelText(/Go to last page/)).toBeDisabled()
+      expect(screen.getByLabelText('Pagina următoare')).toBeDisabled()
+      expect(screen.getByLabelText(/Ultima pagină/)).toBeDisabled()
     })
 
     it('enables all buttons on middle page', () => {
       render(<Pagination {...defaultProps} currentPage={2} />)
 
-      expect(screen.getByLabelText('Go to first page')).not.toBeDisabled()
-      expect(screen.getByLabelText('Previous page')).not.toBeDisabled()
-      expect(screen.getByLabelText('Next page')).not.toBeDisabled()
-      expect(screen.getByLabelText(/Go to last page/)).not.toBeDisabled()
+      expect(screen.getByLabelText('Prima pagină')).not.toBeDisabled()
+      expect(screen.getByLabelText('Pagina anterioară')).not.toBeDisabled()
+      expect(screen.getByLabelText('Pagina următoare')).not.toBeDisabled()
+      expect(screen.getByLabelText(/Ultima pagină/)).not.toBeDisabled()
     })
   })
 
@@ -154,7 +154,7 @@ describe('Pagination', () => {
       const onPageChange = vi.fn()
       render(<Pagination {...defaultProps} currentPage={2} onPageChange={onPageChange} />)
 
-      fireEvent.click(screen.getByLabelText('Go to first page'))
+      fireEvent.click(screen.getByLabelText('Prima pagină'))
       expect(onPageChange).toHaveBeenCalledWith(1)
     })
 
@@ -162,7 +162,7 @@ describe('Pagination', () => {
       const onPageChange = vi.fn()
       render(<Pagination {...defaultProps} currentPage={3} onPageChange={onPageChange} />)
 
-      fireEvent.click(screen.getByLabelText('Previous page'))
+      fireEvent.click(screen.getByLabelText('Pagina anterioară'))
       expect(onPageChange).toHaveBeenCalledWith(2)
     })
 
@@ -170,7 +170,7 @@ describe('Pagination', () => {
       const onPageChange = vi.fn()
       render(<Pagination {...defaultProps} currentPage={2} onPageChange={onPageChange} />)
 
-      fireEvent.click(screen.getByLabelText('Next page'))
+      fireEvent.click(screen.getByLabelText('Pagina următoare'))
       expect(onPageChange).toHaveBeenCalledWith(3)
     })
 
@@ -178,7 +178,7 @@ describe('Pagination', () => {
       const onPageChange = vi.fn()
       render(<Pagination {...defaultProps} currentPage={2} onPageChange={onPageChange} />)
 
-      fireEvent.click(screen.getByLabelText(/Go to last page/))
+      fireEvent.click(screen.getByLabelText(/Ultima pagină/))
       expect(onPageChange).toHaveBeenCalledWith(4)
     })
   })
@@ -187,13 +187,13 @@ describe('Pagination', () => {
     it('renders page size selector when onPageSizeChange provided', () => {
       render(<Pagination {...defaultProps} onPageSizeChange={vi.fn()} />)
 
-      expect(screen.getByText('Rows:')).toBeInTheDocument()
+      expect(screen.getByText('Rânduri:')).toBeInTheDocument()
     })
 
     it('does not render page size selector when onPageSizeChange not provided', () => {
       render(<Pagination {...defaultProps} />)
 
-      expect(screen.queryByText('Rows:')).not.toBeInTheDocument()
+      expect(screen.queryByText('Rânduri:')).not.toBeInTheDocument()
     })
 
     it('calls onPageSizeChange when size changed', () => {
@@ -258,9 +258,9 @@ describe('Pagination', () => {
     it('handles single page correctly', () => {
       render(<Pagination {...defaultProps} totalCount={5} pageSize={25} />)
 
-      expect(screen.getByText(/Showing 1-5 of 5 entries/)).toBeInTheDocument()
-      expect(screen.getByLabelText('Go to first page')).toBeDisabled()
-      expect(screen.getByLabelText(/Go to last page/)).toBeDisabled()
+      expect(screen.getByText(/Se afișează 1–5 din 5 rânduri/)).toBeInTheDocument()
+      expect(screen.getByLabelText('Prima pagină')).toBeDisabled()
+      expect(screen.getByLabelText(/Ultima pagină/)).toBeDisabled()
     })
   })
 
@@ -268,21 +268,21 @@ describe('Pagination', () => {
     it('handles zero total count', () => {
       render(<Pagination {...defaultProps} totalCount={0} />)
 
-      expect(screen.getByText(/Showing 0-0 of 0 entries/)).toBeInTheDocument()
+      expect(screen.getByText(/Se afișează 0–0 din 0 rânduri/)).toBeInTheDocument()
     })
 
     it('handles current page exceeding total pages', () => {
       render(<Pagination {...defaultProps} currentPage={100} totalCount={50} />)
 
       // Should clamp to last page (2)
-      expect(screen.getByText(/Showing 26-50 of 50 entries/)).toBeInTheDocument()
+      expect(screen.getByText(/Se afișează 26–50 din 50 rânduri/)).toBeInTheDocument()
     })
 
     it('handles negative current page', () => {
       render(<Pagination {...defaultProps} currentPage={-1} />)
 
       // Should default to page 1
-      expect(screen.getByText(/Showing 1-25 of 100 entries/)).toBeInTheDocument()
+      expect(screen.getByText(/Se afișează 1–25 din 100 rânduri/)).toBeInTheDocument()
     })
   })
 
@@ -306,13 +306,13 @@ describe('Pagination', () => {
     it('has aria-live for entries info', () => {
       render(<Pagination {...defaultProps} />)
 
-      expect(screen.getByText(/Showing/)).toHaveAttribute('aria-live', 'polite')
+      expect(screen.getByText(/Se afișează/)).toHaveAttribute('aria-live', 'polite')
     })
 
     it('has aria-label on navigation', () => {
       render(<Pagination {...defaultProps} />)
 
-      expect(screen.getByRole('navigation')).toHaveAttribute('aria-label', 'Pagination')
+      expect(screen.getByRole('navigation')).toHaveAttribute('aria-label', 'Paginare')
     })
   })
 })

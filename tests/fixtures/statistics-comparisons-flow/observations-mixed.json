@@ -1,0 +1,661 @@
+{
+  "data": {
+    "insObservations": {
+      "nodes": [
+        {
+          "dataset_code": "FOM104D",
+          "value": "195025",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "261239",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "CJ",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Cluj"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "5453155",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "190486",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2023",
+            "year": 2023,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "255126",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2023",
+            "year": 2023,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "CJ",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Cluj"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "5364938",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2023",
+            "year": 2023,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "186456",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2022",
+            "year": 2022,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "248860",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2022",
+            "year": 2022,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "CJ",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Cluj"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "5209493",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2022",
+            "year": 2022,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "181883",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2021",
+            "year": 2021,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "241685",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2021",
+            "year": 2021,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "CJ",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Cluj"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "5094288",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2021",
+            "year": 2021,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "176996",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2020",
+            "year": 2020,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "233881",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2020",
+            "year": 2020,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "CJ",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Cluj"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "5031767",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2020",
+            "year": 2020,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "181226",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2019",
+            "year": 2019,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "239293",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2019",
+            "year": 2019,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "CJ",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Cluj"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "5164471",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2019",
+            "year": 2019,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "171637",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2018",
+            "year": 2018,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "231119",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2018",
+            "year": 2018,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "CJ",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Cluj"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "5068063",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2018",
+            "year": 2018,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "168718",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2017",
+            "year": 2017,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "225171",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2017",
+            "year": 2017,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "CJ",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Cluj"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "4945868",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2017",
+            "year": 2017,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "161610",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "54975",
+            "siruta_code": "54975",
+            "level": "LAU",
+            "name_ro": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "210713",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "CJ",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Cluj"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        },
+        {
+          "dataset_code": "FOM104D",
+          "value": "4759419",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2016",
+            "year": 2016,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "TOTAL"
+          },
+          "unit": {
+            "code": "PERSONS",
+            "symbol": "pers.",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": []
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 27,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}

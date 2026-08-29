@@ -67,6 +67,7 @@ function hub(tiles: StatisticsIndicatorTile[]): StatisticsTerritoryHubResult {
     relatedLinks: [],
     latestDataPeriod: '2024',
     partial: false,
+    benchmarks: {},
   }
 }
 
