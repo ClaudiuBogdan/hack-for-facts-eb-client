@@ -1,0 +1,38 @@
+{
+  "data": {
+    "budgetEntityRanking": [
+      {
+        "entityCui": "12345678",
+        "entityName": "DIRECȚIA DE ASISTENȚĂ SOCIALĂ CLUJ-NAPOCA",
+        "amount": "185000000",
+        "perCapita": null,
+        "population": null,
+        "countyCode": null,
+        "entity": {
+          "reference": {
+            "entityType": "public_institution",
+            "territory": {
+              "countyName": "Cluj"
+            }
+          }
+        }
+      },
+      {
+        "entityCui": "87654321",
+        "entityName": "LICEUL TEORETIC NICOLAE BĂLCESCU",
+        "amount": "92000000",
+        "perCapita": null,
+        "population": null,
+        "countyCode": null,
+        "entity": {
+          "reference": {
+            "entityType": "school",
+            "territory": {
+              "countyName": "Cluj"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

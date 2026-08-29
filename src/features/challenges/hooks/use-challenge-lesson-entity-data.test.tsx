@@ -15,7 +15,11 @@ const fetchEntityAnalyticsMock = vi.fn()
 
 vi.mock('@/lib/api/entity-analytics', () => ({
   fetchAggregatedLineItems: (...args: unknown[]) => fetchAggregatedLineItemsMock(...args),
-  fetchEntityAnalytics: (...args: unknown[]) => fetchEntityAnalyticsMock(...args),
+}))
+
+vi.mock('@/lib/api/entity-ranking-redesign', () => ({
+  fetchRedesignEntitySubordinateRanking: (...args: unknown[]) =>
+    fetchEntityAnalyticsMock(...args),
 }))
 
 describe('useChallengeLessonNationalAggregatedLineItems', () => {
@@ -94,25 +98,12 @@ describe('useChallengeLessonNationalAggregatedLineItems', () => {
     })
 
     expect(fetchEntityAnalyticsMock).toHaveBeenCalledWith({
-      filter: {
-        account_category: 'ch',
-        main_creditor_cui: '12345678',
-        report_period: CHALLENGE_LESSON_REPORT_PERIOD,
-        report_type: toReportTypeValue('DETAILED'),
-        normalization: 'total',
+      entityCui: '12345678',
+      reportPeriod: CHALLENGE_LESSON_REPORT_PERIOD,
+      normalizationOptions: {
         currency: CHALLENGE_LESSON_DEFAULT_CURRENCY,
         inflation_adjusted: false,
-        show_period_growth: false,
-        exclude: {
-          entity_cuis: ['12345678'],
-        },
       },
-      sort: {
-        by: 'total_amount',
-        order: 'desc',
-      },
-      limit: 5,
-      offset: 0,
     })
   })
 })

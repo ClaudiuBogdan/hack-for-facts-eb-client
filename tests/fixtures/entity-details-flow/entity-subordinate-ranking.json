@@ -1,0 +1,22 @@
+{
+  "data": {
+    "budgetEntityRanking": [
+      {
+        "entityCui": "4288110",
+        "entityName": "JUDETUL CLUJ",
+        "amount": "1345678901",
+        "perCapita": null,
+        "population": null,
+        "countyCode": null,
+        "entity": {
+          "reference": {
+            "entityType": "admin_county_council",
+            "territory": {
+              "countyName": "Cluj"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

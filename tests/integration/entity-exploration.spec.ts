@@ -30,8 +30,8 @@ test.describe('Entity Exploration Flow', () => {
 
     // Mock preferred UAT route data used by /primarie/$cui
     await mockApi.mockGraphQL(
-      'EntityAnalytics',
-      'challenge-entity-subordinates',
+      'EntitySubordinateRanking',
+      'challenge-entity-subordinates-redesign',
     )
     await mockApi.mockGraphQL(
       'GetEntityRelationships',

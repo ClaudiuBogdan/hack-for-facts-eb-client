@@ -26,6 +26,7 @@ import { useEntityTypeLabel } from '@/hooks/filters/useFilterLabels'
 import { useGeoJsonData } from '@/hooks/useGeoJson'
 import { usePeriodLabel } from '@/hooks/use-period-label'
 import { useRecentEntities } from '@/hooks/useRecentEntities'
+import { isRedesignOnlyApiDeployment } from '@/lib/api/api-mode'
 import {
   DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES,
   DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES,
@@ -1032,6 +1033,37 @@ function EntityViewContentFallback() {
   )
 }
 
+function EntityViewUnavailable({
+  feature,
+  locale,
+}: {
+  readonly feature: string
+  readonly locale: 'ro' | 'en'
+}) {
+  return (
+    <Card className="rounded-[28px] border-border/50">
+      <CardHeader>
+        <CardTitle>{feature}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Alert>
+          <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+          <AlertTitle>
+            {locale === 'en'
+              ? 'Not available on the new API yet'
+              : 'Indisponibil momentan în noul API'}
+          </AlertTitle>
+          <AlertDescription>
+            {locale === 'en'
+              ? 'This section is paused during the migration. Budget execution and public procurement remain available.'
+              : 'Această secțiune este oprită pe durata migrării. Execuțiile bugetare și achizițiile publice rămân disponibile.'}
+          </AlertDescription>
+        </Alert>
+      </CardContent>
+    </Card>
+  )
+}
+
 export function ChallengeEntityAnalysisPage({
   entityCui,
   languageQuery,
@@ -1072,6 +1104,7 @@ export function ChallengeEntityAnalysisPage({
     mapPreviewKey,
   } = state
   const locale = languageQuery === 'en' ? 'en' : 'ro'
+  const isRedesignOnlyApi = isRedesignOnlyApiDeployment()
   const queryClient = useQueryClient()
   const entityTypeLabel = useEntityTypeLabel()
   const selectedMapPreviewDefinition = useMemo(
@@ -2400,13 +2433,16 @@ export function ChallengeEntityAnalysisPage({
           id: 'contracts',
           label: CHALLENGE_ENTITY_VIEW_LABELS[locale].contracts,
         },
-        {
-          id: 'commitments',
-          label: CHALLENGE_ENTITY_VIEW_LABELS[locale].commitments,
-        },
       ]
 
-      if (isUatEntity) {
+      if (!isRedesignOnlyApi) {
+        views.push({
+          id: 'commitments',
+          label: CHALLENGE_ENTITY_VIEW_LABELS[locale].commitments,
+        })
+      }
+
+      if (isUatEntity && !isRedesignOnlyApi) {
         views.push({
           id: 'ins',
           label: CHALLENGE_ENTITY_VIEW_LABELS[locale].ins,
@@ -2422,6 +2458,7 @@ export function ChallengeEntityAnalysisPage({
     },
     [
       isUatEntity,
+      isRedesignOnlyApi,
       locale,
     ],
   )
@@ -2689,6 +2726,14 @@ export function ChallengeEntityAnalysisPage({
         )
 
       case 'commitments':
+        if (isRedesignOnlyApi) {
+          return (
+            <EntityViewUnavailable
+              feature={CHALLENGE_ENTITY_VIEW_LABELS[locale].commitments}
+              locale={locale}
+            />
+          )
+        }
         return (
           <Suspense fallback={<EntityViewContentFallback />}>
             <DeferredCommitmentsView
@@ -2737,6 +2782,14 @@ export function ChallengeEntityAnalysisPage({
         )
 
       case 'ins':
+        if (isRedesignOnlyApi) {
+          return (
+            <EntityViewUnavailable
+              feature={CHALLENGE_ENTITY_VIEW_LABELS[locale].ins}
+              locale={locale}
+            />
+          )
+        }
         return (
           <Suspense fallback={<EntityViewContentFallback />}>
             <DeferredInsStatsView
@@ -2818,7 +2871,7 @@ export function ChallengeEntityAnalysisPage({
               ) : null}
             </div>
 
-            {supportsEntityMapPreview ? (
+            {!isRedesignOnlyApi && supportsEntityMapPreview ? (
               <div className="space-y-3">
                 {isPublicMapPreviewReady ? (
                   <Suspense fallback={<MapPreviewSectionFallback />}>
@@ -2930,7 +2983,11 @@ export function ChallengeEntityAnalysisPage({
                         currency={displayNormalizationOptions.currency}
                         excludedItemsSummary={excludedItemsSummary}
                         amountFilter={amountFilter}
-                        onAnalyticsRequest={handleBudgetItemAnalyticsRequest}
+                        onAnalyticsRequest={
+                          isRedesignOnlyApi
+                            ? undefined
+                            : handleBudgetItemAnalyticsRequest
+                        }
                       />
                     )}
                   </div>
@@ -3063,43 +3120,49 @@ export function ChallengeEntityAnalysisPage({
                     currentYear={selectedYear}
                     normalizationOptions={displayNormalizationOptions}
                     presetSearchTerm={groupedLineItemsPresetSearchTerm}
-                    onAnalyticsRequest={handleBudgetItemAnalyticsRequest}
+                    onAnalyticsRequest={
+                      isRedesignOnlyApi
+                        ? undefined
+                        : handleBudgetItemAnalyticsRequest
+                    }
                     exportContext={markdownExportContext}
                   />
                 </CardContent>
               </Card>
             </div>
 
-            <DeferredSectionGate
-              className="min-h-[520px] sm:min-h-[540px]"
-              fallback={
-                <DeferredSectionFallback
-                  titleWidthClassName="w-52"
-                  bodyHeightClassName="h-[360px]"
-                  showControls
+            {!isRedesignOnlyApi ? (
+              <DeferredSectionGate
+                className="min-h-[520px] sm:min-h-[540px]"
+                fallback={
+                  <DeferredSectionFallback
+                    titleWidthClassName="w-52"
+                    bodyHeightClassName="h-[360px]"
+                    showControls
+                  />
+                }
+                onPrefetch={handleCategoryEvolutionPrefetch}
+              >
+                <DeferredChallengeEntityCategoryEvolution
+                  locale={locale}
+                  entityCui={entityCui}
+                  lineItems={entityLineItemsQuery.data?.nodes ?? []}
+                  currentYear={selectedYear}
+                  reportType={selectedReportType}
+                  periodType={periodType}
+                  trendPeriod={trendPeriod}
+                  queryNormalizationOptions={queryNormalizationOptions}
+                  displayNormalizationOptions={displayNormalizationOptions}
+                  onYearChange={handleYearChange}
+                  onSelectPeriod={handleSelectedPeriodChange}
+                  selectedQuarter={quarter}
+                  selectedMonth={month}
+                  accountCategory={evolutionAccountCategory}
+                  primary={evolutionPrimary}
+                  onStateChange={(patch) => onStateChange(patch)}
                 />
-              }
-              onPrefetch={handleCategoryEvolutionPrefetch}
-            >
-              <DeferredChallengeEntityCategoryEvolution
-                locale={locale}
-                entityCui={entityCui}
-                lineItems={entityLineItemsQuery.data?.nodes ?? []}
-                currentYear={selectedYear}
-                reportType={selectedReportType}
-                periodType={periodType}
-                trendPeriod={trendPeriod}
-                queryNormalizationOptions={queryNormalizationOptions}
-                displayNormalizationOptions={displayNormalizationOptions}
-                onYearChange={handleYearChange}
-                onSelectPeriod={handleSelectedPeriodChange}
-                selectedQuarter={quarter}
-                selectedMonth={month}
-                accountCategory={evolutionAccountCategory}
-                primary={evolutionPrimary}
-                onStateChange={(patch) => onStateChange(patch)}
-              />
-            </DeferredSectionGate>
+              </DeferredSectionGate>
+            ) : null}
 
             <ChallengeEntitySubordinatesSection
               locale={locale}
@@ -3118,7 +3181,7 @@ export function ChallengeEntityAnalysisPage({
               onRetry={handleSubordinatesRetry}
               normalizationOptions={displayNormalizationOptions}
               showAllSearch={
-                showParentMainCreditorSection
+                isRedesignOnlyApi || showParentMainCreditorSection
                   ? undefined
                   : showAllSubordinatesSearch
               }
@@ -3199,7 +3262,9 @@ export function ChallengeEntityAnalysisPage({
 
       {renderActiveView()}
 
-      {isBudgetItemAnalyticsOpen && selectedBudgetItemAnalyticsProps ? (
+      {!isRedesignOnlyApi &&
+      isBudgetItemAnalyticsOpen &&
+      selectedBudgetItemAnalyticsProps ? (
         <Suspense fallback={null}>
           <DeferredBudgetItemAnalyticsModal
             open={isBudgetItemAnalyticsOpen}

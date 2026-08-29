@@ -14,6 +14,14 @@ import type { EntityDetailsData, ExecutionLineItem } from '@/lib/api/entities'
 import type { ChallengeEntityAnalysisPageState } from './challenge-entity-analysis-page'
 import type { BudgetItemAnalyticsSearchState } from './budget-item-analytics-search-state'
 
+const runtimeApiMode = vi.hoisted(() => ({
+  value: 'legacy' as 'legacy' | 'redesign',
+}))
+
+vi.mock('@/lib/api/api-mode', () => ({
+  isRedesignOnlyApiDeployment: () => runtimeApiMode.value === 'redesign',
+}))
+
 const useEntityDetailsMock = vi.fn()
 const useEntityRelationshipsMock = vi.fn()
 const useEntityExecutionLineItemsMock = vi.fn()
@@ -138,6 +146,11 @@ vi.mock('@/lib/hooks/useGlobalSettings', () => ({
 
 vi.mock('@/lib/api/entity-analytics', () => ({
   fetchEntityAnalytics: (...args: unknown[]) => fetchEntityAnalyticsMock(...args),
+}))
+
+vi.mock('@/lib/api/entity-ranking-redesign', () => ({
+  fetchRedesignEntitySubordinateRanking: (...args: unknown[]) =>
+    fetchEntityAnalyticsMock(...args),
 }))
 
 vi.mock('@/hooks/useGeoJson', () => ({
@@ -750,6 +763,7 @@ function setDeferredSectionInViewState(nextState: {
 describe('ChallengeEntityAnalysisPage', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
+    runtimeApiMode.value = 'legacy'
     deferredSectionInViewState.prefetch = true
     deferredSectionInViewState.render = true
     ;({ ChallengeEntityAnalysisPage } = await import(
@@ -1116,6 +1130,44 @@ describe('ChallengeEntityAnalysisPage', () => {
     expect(await screen.findByTestId('ins-view')).toHaveTextContent(
       'unsupported:12345678:YEAR',
     )
+  })
+
+  it('blocks legacy-only views in redesign-only deployments', () => {
+    runtimeApiMode.value = 'redesign'
+
+    renderAnalysisPage({
+      languageQuery: 'en',
+      state: {
+        activeView: 'commitments',
+      },
+    })
+
+    expect(
+      screen.getByText('Not available on the new API yet'),
+    ).toBeInTheDocument()
+    expect(screen.queryByTestId('commitments-view')).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Commitments' }),
+    ).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'INS' })).not.toBeInTheDocument()
+  })
+
+  it('does not dispatch unsupported auxiliary UI in redesign-only deployments', () => {
+    runtimeApiMode.value = 'redesign'
+
+    renderAnalysisPage({ languageQuery: 'en' })
+
+    expect(mapAnalyticsPublicPreviewCardMock).not.toHaveBeenCalled()
+    expect(screen.queryByTestId('category-evolution')).not.toBeInTheDocument()
+    expect(budgetTreemapMock).toHaveBeenCalledWith(
+      expect.objectContaining({ onAnalyticsRequest: undefined }),
+    )
+    expect(challengeGroupedLineItemsMock).toHaveBeenCalledWith(
+      expect.objectContaining({ onAnalyticsRequest: undefined }),
+    )
+    expect(
+      screen.queryByRole('link', { name: 'View all institutions' }),
+    ).not.toBeInTheDocument()
   })
 
   it('preserves main info state when switching away and back through the entity menu', async () => {
@@ -3056,11 +3108,7 @@ describe('ChallengeEntityAnalysisPage', () => {
       }),
     )
     expect(fetchEntityAnalyticsMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        filter: expect.objectContaining({
-          main_creditor_cui: '99887766',
-        }),
-      }),
+      expect.objectContaining({ entityCui: '99887766' }),
     )
   })
 
@@ -3508,7 +3556,7 @@ describe('ChallengeEntityAnalysisPage', () => {
     })
   })
 
-  it('queries subordinate cards from entity analytics with the current period and current-entity exclusion', async () => {
+  it('queries subordinate cards through the redesign ranking adapter', async () => {
     renderAnalysisPage({
       entityCui: '12345678',
       state: {
@@ -3518,33 +3566,20 @@ describe('ChallengeEntityAnalysisPage', () => {
 
     await waitFor(() => {
       expect(fetchEntityAnalyticsMock).toHaveBeenCalledWith({
-        filter: {
-          account_category: 'ch',
-          main_creditor_cui: '12345678',
-          report_period: {
-            type: 'YEAR',
-            selection: {
-              interval: {
-                start: '2024',
-                end: '2024',
-              },
+        entityCui: '12345678',
+        reportPeriod: {
+          type: 'YEAR',
+          selection: {
+            interval: {
+              start: '2024',
+              end: '2024',
             },
           },
-          report_type: 'Executie bugetara detaliata',
-          normalization: 'total',
+        },
+        normalizationOptions: {
           currency: 'RON',
           inflation_adjusted: false,
-          show_period_growth: false,
-          exclude: {
-            entity_cuis: ['12345678'],
-          },
         },
-        sort: {
-          by: 'total_amount',
-          order: 'desc',
-        },
-        limit: 5,
-        offset: 0,
       })
     })
 
@@ -3566,14 +3601,14 @@ describe('ChallengeEntityAnalysisPage', () => {
     ])
   })
 
-  it('uses the paginated analytics total count for the subordinate badge', () => {
+  it('uses the bounded redesign result count for the subordinate badge', () => {
     useQueryMock.mockImplementation((options: any) => {
       if (options?.enabled !== false) {
         void options?.queryFn?.()
       }
 
       return {
-        data: createSubordinateRankingConnection(subordinateRankingNodes, 12),
+        data: createSubordinateRankingConnection(subordinateRankingNodes),
         isLoading: false,
         isFetching: false,
         isError: false,
@@ -3584,7 +3619,7 @@ describe('ChallengeEntityAnalysisPage', () => {
 
     renderAnalysisPage()
 
-    expect(screen.getByText('Top 2 din 12')).toBeInTheDocument()
+    expect(screen.getByText('2 instituții')).toBeInTheDocument()
   })
 
   it('updates the selected year when the trends chart requests a different year', async () => {

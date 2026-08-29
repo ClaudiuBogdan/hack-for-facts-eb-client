@@ -18,6 +18,15 @@ browser points to the public
 `https://dev-chronos-api.transparenta.eu` endpoint and
 `https://dev-chronos.transparenta.eu` site URL. PostHog and Sentry are
 explicitly disabled; no Clerk or application runtime Secret is mounted.
+`VITE_API_MODE=redesign` prevents this redesign-only canary from dispatching
+requests for auxiliary entity panels that have not moved off the legacy API;
+other environments retain their existing behavior by default.
+
+Deploy the server before the client. Before syncing a client revision that uses
+the redesign entity ranking, verify both Phoenix and Chronos accept
+`BudgetRankingFilter.frequency` and
+`BudgetRankingFilterExclude.excludeEntityCuis` on `/api/v1/graphql`. Do not add a
+client fallback to the legacy endpoint if that gate fails.
 
 The repository-local secret generator owns only
 `registry-credentials-client` for the initial canary. The workload
