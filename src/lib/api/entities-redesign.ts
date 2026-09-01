@@ -1,7 +1,11 @@
 import { z } from "zod";
 
 import { graphqlQuery } from "@/lib/graphql/graphql-client";
-import type { NormalizationOptions } from "@/lib/normalization";
+import {
+  resolveAppliedNormalization,
+  type BudgetNormalizationCaveats,
+  type NormalizationOptions,
+} from "@/lib/normalization";
 import type { AnalyticsSeries } from "@/schemas/charts";
 import type { GqlReportType, ReportPeriodInput } from "@/schemas/reporting";
 import { toReportTypeValue } from "@/schemas/reporting";
@@ -363,27 +367,39 @@ function toLegacyReportType(reportType: BudgetReportType): GqlReportType {
   }
 }
 
+/**
+ * The supported normalization for a request plus the caveats for what could
+ * not be applied (no CPI mode, no USD yet — program D2). One rule for fetching
+ * and labelling: `resolveAppliedNormalization` in `@/lib/normalization`.
+ */
+export type { BudgetNormalizationCaveats } from "@/lib/normalization";
+
+export function resolveBudgetNormalization(options: NormalizationOptions): {
+  readonly normalization: BudgetNormalization;
+  readonly caveats: BudgetNormalizationCaveats | null;
+} {
+  const applied = resolveAppliedNormalization(options);
+  if (applied.normalization === "percent_gdp") {
+    return { normalization: "PERCENT_GDP", caveats: applied.caveats };
+  }
+  if (applied.normalization === "per_capita") {
+    return {
+      normalization:
+        applied.currency === "EUR" ? "PER_CAPITA_EURO" : "PER_CAPITA",
+      caveats: applied.caveats,
+    };
+  }
+  return {
+    normalization: applied.currency === "EUR" ? "TOTAL_EURO" : "TOTAL",
+    caveats: applied.caveats,
+  };
+}
+
+/** The supported normalization for a request; never throws (see resolveBudgetNormalization). */
 export function toBudgetNormalization(
   options: NormalizationOptions,
 ): BudgetNormalization {
-  if (options.inflation_adjusted === true) {
-    throw new Error(
-      "Inflation-adjusted entity values are not available in the redesign API yet",
-    );
-  }
-  if (options.currency === "USD") {
-    throw new Error(
-      "USD entity values are not available in the redesign API yet",
-    );
-  }
-
-  if (options.normalization === "percent_gdp") return "PERCENT_GDP";
-  if (options.normalization === "total_euro") return "TOTAL_EURO";
-  if (options.normalization === "per_capita_euro") return "PER_CAPITA_EURO";
-  if (options.normalization === "per_capita") {
-    return options.currency === "EUR" ? "PER_CAPITA_EURO" : "PER_CAPITA";
-  }
-  return options.currency === "EUR" ? "TOTAL_EURO" : "TOTAL";
+  return resolveBudgetNormalization(options).normalization;
 }
 
 function periodValues(period: ReportPeriodInput): readonly string[] {
@@ -541,7 +557,9 @@ export async function fetchRedesignEntityDetails(
     balanceTrend: null,
   };
 
-  if (metadata.budget?.presence !== true) return base;
+  if (metadata.budget?.presence !== true) {
+    return { ...base, normalizationCaveats: resolveBudgetNormalization(params).caveats };
+  }
 
   const trendPeriod = params.trendPeriod ?? params.reportPeriod;
   const currentBounds = periodYearBounds(params.reportPeriod);
@@ -551,7 +569,9 @@ export async function fetchRedesignEntityDetails(
     trendBounds.yearFrom,
   );
   const summaryYearTo = Math.max(currentBounds.yearTo, trendBounds.yearTo);
-  const normalization = toBudgetNormalization(params);
+  const { normalization, caveats: normalizationCaveats } =
+    resolveBudgetNormalization(params);
+  base.normalizationCaveats = normalizationCaveats;
   const budgetRaw = await graphqlQuery<unknown>(
     ENTITY_BUDGET_QUERY,
     {

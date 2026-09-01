@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import type { AnalyticsFilterType } from '@/schemas/charts'
 import type { AnalyticsSeries, Currency } from '@/schemas/charts'
 import type { EntityDetailsData, ExecutionLineItem } from '@/lib/api/entities'
-import type { NormalizationOptions } from '@/lib/normalization'
+import { resolveAppliedNormalization, type NormalizationOptions } from '@/lib/normalization'
 import { DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES } from '@/lib/analytics-defaults'
 import { fetchAggregatedLineItems } from '@/lib/api/entity-analytics'
 import {
@@ -180,6 +180,12 @@ export function useChallengeLessonEntityBundle(entityCui: string) {
     aggregatedTotalSummaryQuery: totalSummaryQuery,
     aggregatedPerCapitaSummaryQuery: perCapitaSummaryQuery,
     inflationAdjustedTrendSummaryQuery,
+    // False while the budget API has no CPI mode (program D2): the trend
+    // series above are then NOMINAL and the lesson must not say "2025 prices".
+    inflationAdjustedTrendsApplied: resolveAppliedNormalization({
+      normalization: 'total',
+      inflation_adjusted: true,
+    }).inflationAdjusted,
     aggregatedLineItemsQuery: lineItemsQuery,
     summaryTrends,
   }

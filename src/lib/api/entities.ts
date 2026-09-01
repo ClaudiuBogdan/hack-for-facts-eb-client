@@ -5,6 +5,7 @@ import { AnalyticsSeries } from "@/schemas/charts";
 import { GqlReportType, ReportPeriodInput } from "@/schemas/reporting";
 import type { NormalizationOptions } from "@/lib/normalization";
 import {
+  type BudgetNormalizationCaveats,
   fetchRedesignEntityDetails,
   fetchRedesignEntityExecutionLineItems,
   fetchRedesignEntityRelationships,
@@ -67,6 +68,11 @@ export interface EntityDetailsData {
     cui: string;
     name: string;
   }[];
+  /**
+   * Requested transformations the budget API could not apply (values are then
+   * nominal and/or RON). `null`/absent when everything requested was applied.
+   */
+  normalizationCaveats?: BudgetNormalizationCaveats | null;
   totalIncome?: number | null;
   totalExpenses?: number | null;
   budgetBalance?: number | null;

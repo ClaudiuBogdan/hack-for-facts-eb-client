@@ -47,7 +47,10 @@ import {
   useEntityRelationships,
   reportsConnectionQueryOptions,
 } from '@/lib/hooks/useEntityDetails'
-import type { NormalizationOptions } from '@/lib/normalization'
+import {
+  resolveAppliedNormalization,
+  type NormalizationOptions,
+} from '@/lib/normalization'
 import { getReportDateRange } from '@/lib/period-utils'
 import { defaultYearRange } from '@/schemas/charts'
 import {
@@ -1215,19 +1218,30 @@ export function ChallengeEntityAnalysisPage({
     }),
     [currency, inflationAdjusted, normalizationMode, showPeriodGrowth],
   )
+  // What the budget API can actually apply for the requested settings (no CPI
+  // mode, no USD yet — scrapper program D2). Every label, formatter and export
+  // below uses the APPLIED values, so the page never claims an adjustment or a
+  // currency the numbers do not carry; the caveats drive the notice.
+  const appliedNormalization = useMemo(
+    () =>
+      resolveAppliedNormalization({
+        normalization: normalizationMode,
+        show_period_growth: showPeriodGrowth,
+        currency: displayCurrency,
+        inflation_adjusted: displayInflationAdjusted,
+      }),
+    [displayCurrency, displayInflationAdjusted, normalizationMode, showPeriodGrowth],
+  )
+  const appliedCurrency = appliedNormalization.currency
+  const appliedInflationAdjusted = appliedNormalization.inflationAdjusted
   const displayNormalizationOptions = useMemo<NormalizationOptions>(
     () => ({
       normalization: normalizationMode,
       show_period_growth: showPeriodGrowth,
-      currency: displayCurrency,
-      inflation_adjusted: displayInflationAdjusted,
+      currency: appliedCurrency,
+      inflation_adjusted: appliedInflationAdjusted,
     }),
-    [
-      displayCurrency,
-      displayInflationAdjusted,
-      normalizationMode,
-      showPeriodGrowth,
-    ],
+    [appliedCurrency, appliedInflationAdjusted, normalizationMode, showPeriodGrowth],
   )
   const localizedSelectedMapPreviewName = useMemo(
     () =>
@@ -2553,6 +2567,13 @@ export function ChallengeEntityAnalysisPage({
   }
 
   const entity = entityDetailsQuery.data
+  // Prefer the caveat carried by the data when the API reports one (it will
+  // become per-entity/per-year once the factor tables land); fall back to the
+  // client-side capability rule, which is what the API applies today.
+  const normalizationCaveats =
+    entity.normalizationCaveats !== undefined
+      ? entity.normalizationCaveats
+      : appliedNormalization.caveats
   const allowPerCapita = canUsePerCapitaNormalization
   const allowAdministrativeExpenseShortcut = isUatEntity
   const pageLocale = resolveChallengePageLocale(languageQuery)
@@ -2638,8 +2659,8 @@ export function ChallengeEntityAnalysisPage({
       year: selectedYear,
       reportType: selectedReportType,
       normalization: normalizationMode,
-      currency: displayCurrency,
-      inflationAdjusted: displayInflationAdjusted,
+      currency: appliedCurrency,
+      inflationAdjusted: appliedInflationAdjusted,
       treemapAccountCategory,
       budgetTotal:
         treemapAccountCategory === 'vn'
@@ -2764,7 +2785,7 @@ export function ChallengeEntityAnalysisPage({
                 <ChallengeCommitmentsExplainer
                   locale={locale}
                   reportType={selectedReportType}
-                  inflationAdjusted={displayInflationAdjusted}
+                  inflationAdjusted={appliedInflationAdjusted}
                   isPerCapita={normalizationMode === 'per_capita'}
                 />
               }
@@ -2813,7 +2834,7 @@ export function ChallengeEntityAnalysisPage({
             <ChallengeEntityAnalysisExplainer
               locale={locale}
               reportType={selectedReportType}
-              inflationAdjusted={displayInflationAdjusted}
+              inflationAdjusted={appliedInflationAdjusted}
               copyVariant={isUatEntity ? 'city-hall' : 'entity'}
             />
 
@@ -3220,7 +3241,7 @@ export function ChallengeEntityAnalysisPage({
 
             <ChallengeEntityFaqSection
               locale={locale}
-              inflationAdjusted={displayInflationAdjusted}
+              inflationAdjusted={appliedInflationAdjusted}
             />
           </>
         )
@@ -3254,9 +3275,27 @@ export function ChallengeEntityAnalysisPage({
         activeView={activeView}
         availableViews={availableViews}
         onViewChange={handleViewChange}
-        showInflationBadge={displayInflationAdjusted}
+        showInflationBadge={appliedInflationAdjusted}
         languageQuery={languageQuery}
       />
+
+      {normalizationCaveats !== null ? (
+        <Alert
+          className="rounded-[28px] border-border/60 bg-muted/30"
+          data-testid="normalization-caveats"
+        >
+          <AlertTriangle className="h-5 w-5" />
+          <AlertTitle>{t`Some display settings are not available on this page yet.`}</AlertTitle>
+          <AlertDescription className="space-y-1">
+            {normalizationCaveats.inflationAdjustedUnavailable ? (
+              <p>{t`Inflation-adjusted (real) values are not available yet; the amounts shown are nominal.`}</p>
+            ) : null}
+            {normalizationCaveats.currencyUnavailable !== null ? (
+              <p>{t`USD values are not available yet; the amounts shown are in RON.`}</p>
+            ) : null}
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
       {resolvedBelowHeader}
 

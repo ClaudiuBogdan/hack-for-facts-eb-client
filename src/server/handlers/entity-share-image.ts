@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises'
+import { resolveAppliedNormalization } from '@/lib/normalization'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -244,7 +245,7 @@ function parseReportType(rawType: string | undefined): GqlReportType | undefined
   return parsedType.data
 }
 
-function parseEntityShareFilterContext(query: EntityShareQuery): EntityShareFilterContext {
+export function parseEntityShareFilterContext(query: EntityShareQuery): EntityShareFilterContext {
   const year = parseYear(readQueryString(query, 'year'))
   const period = parsePeriod(readQueryString(query, 'period'))
   const month = period === 'MONTH' ? parseMonth(readQueryString(query, 'month')) : undefined
@@ -263,6 +264,18 @@ function parseEntityShareFilterContext(query: EntityShareQuery): EntityShareFilt
   const urlInflationAdjusted = parseBooleanParam(readQueryString(query, 'inflation_adjusted'))
   const showPeriodGrowth = parseBooleanParam(readQueryString(query, 'show_period_growth')) ?? false
 
+  // The card LABELS and FORMATS with this context, so it must carry what the
+  // budget API actually applies (no CPI mode, no USD yet): a cached or
+  // hand-edited share URL asking for inflation-adjusted USD must not render
+  // nominal RON amounts stamped "inflation adjusted" in dollars.
+  const applied = resolveAppliedNormalization({
+    normalization,
+    currency: forcedCurrency ?? urlCurrency ?? DEFAULT_CURRENCY,
+    inflation_adjusted:
+      forcedInflationAdjusted ?? urlInflationAdjusted ?? DEFAULT_INFLATION_ADJUSTED,
+    show_period_growth: showPeriodGrowth,
+  })
+
   return {
     year,
     period,
@@ -271,8 +284,8 @@ function parseEntityShareFilterContext(query: EntityShareQuery): EntityShareFilt
     reportType: parseReportType(readQueryString(query, 'report_type')),
     mainCreditorCui: readQueryString(query, 'main_creditor_cui'),
     normalization,
-    currency: forcedCurrency ?? urlCurrency ?? DEFAULT_CURRENCY,
-    inflationAdjusted: forcedInflationAdjusted ?? urlInflationAdjusted ?? DEFAULT_INFLATION_ADJUSTED,
+    currency: applied.currency,
+    inflationAdjusted: applied.inflationAdjusted,
     showPeriodGrowth,
     lang: normalizeLocale(readQueryString(query, 'lang')) ?? undefined,
   }

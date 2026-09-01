@@ -1,4 +1,5 @@
 import type { QueryClient } from '@tanstack/react-query'
+import { resolveAppliedNormalization } from '@/lib/normalization'
 import { createIsomorphicFn } from '@tanstack/react-start'
 import type { EntityDetailsData } from '@/lib/api/entities'
 import {
@@ -73,6 +74,12 @@ export function buildEntityPageSeoSnapshotBase(params: {
 }): EntitySeoSnapshot {
   const { executionContext } = params
 
+  const appliedPublicNormalization = resolveAppliedNormalization({
+    normalization: executionContext.publicSettings.normalization,
+    currency: executionContext.publicSettings.currency,
+    inflation_adjusted: executionContext.publicSettings.inflationAdjusted,
+    show_period_growth: executionContext.publicSettings.showPeriodGrowth,
+  })
   return {
     cui: executionContext.cui,
     filterContext: {
@@ -83,8 +90,10 @@ export function buildEntityPageSeoSnapshotBase(params: {
       reportType: executionContext.reportType,
       mainCreditorCui: executionContext.mainCreditorCui,
       normalization: executionContext.publicSettings.normalization,
-      currency: executionContext.publicSettings.currency,
-      inflationAdjusted: executionContext.publicSettings.inflationAdjusted,
+      // Applied, not requested: the share image and the SEO description label
+      // and format these numbers, and the budget API has no CPI/USD yet.
+      currency: appliedPublicNormalization.currency,
+      inflationAdjusted: appliedPublicNormalization.inflationAdjusted,
       showPeriodGrowth: executionContext.publicSettings.showPeriodGrowth,
       lang: executionContext.lang,
     },

@@ -222,7 +222,7 @@ vi.mock(
 vi.mock('@/components/entities/EntityFinancialSummary', () => ({
   EntityFinancialSummary: (props: any) => (
     <div data-testid="financial-summary">
-      {props.periodLabel}:{props.trendLabel ?? 'YoY'}:{props.totalIncome}:{props.totalExpenses}:{props.budgetBalance}
+      {props.periodLabel}:{props.trendLabel ?? 'YoY'}:{props.totalIncome}:{props.totalExpenses}:{props.budgetBalance}:{props.normalizationOptions?.currency ?? 'no-currency'}:{String(props.normalizationOptions?.inflation_adjusted ?? 'no-inflation')}
     </div>
   ),
 }))
@@ -1625,7 +1625,57 @@ describe('ChallengeEntityAnalysisPage', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('uses the global currency and inflation settings for fetches and shows the inflation badge', async () => {
+  it('degrades visibly when the budget API cannot apply the requested inflation adjustment or USD', () => {
+    useGlobalSettingsMock.mockReturnValue({
+      currency: 'USD',
+      inflationAdjusted: true,
+      displayCurrency: 'USD',
+      displayInflationAdjusted: true,
+      confirmSettingsApplied: vi.fn(),
+    })
+    useEntityDetailsMock.mockImplementation(
+      ({ reportType }: { reportType?: string }) => ({
+        data: {
+          ...(reportType === 'DETAILED' ? detailedEntityDetails : entityDetails),
+          normalizationCaveats: {
+            inflationAdjustedUnavailable: true,
+            currencyUnavailable: 'USD',
+          },
+        },
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: vi.fn(),
+      }),
+    )
+
+    renderAnalysisPage()
+
+    // The page must NOT claim adjusted values it did not get — neither the
+    // header badge nor the explainer sentence …
+    expect(
+      screen.queryByText('Valori ajustate cu inflația (2024)'),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByText(/Sumele sunt ajustate la inflație/),
+    ).not.toBeInTheDocument()
+    // … and must say what was degraded, without erroring the page.
+    expect(screen.getByTestId('normalization-caveats')).toHaveTextContent(
+      'nominal',
+    )
+    expect(screen.getByTestId('normalization-caveats')).toHaveTextContent(
+      'RON',
+    )
+    // … and every formatter is fed the APPLIED settings (RON, nominal), never
+    // the requested USD / inflation-adjusted pair.
+    expect(screen.getByTestId('financial-summary')).toHaveTextContent(':RON:false')
+    expect(screen.getByTestId('financial-summary')).not.toHaveTextContent('USD')
+    expect(
+      screen.queryByText('We could not load the analysis.'),
+    ).not.toBeInTheDocument()
+  })
+
+  it('passes the global currency and inflation settings to the fetches but never claims an adjustment the API cannot apply', async () => {
     useGlobalSettingsMock.mockReturnValue({
       currency: 'EUR',
       inflationAdjusted: true,
@@ -1636,7 +1686,12 @@ describe('ChallengeEntityAnalysisPage', () => {
 
     renderAnalysisPage()
 
-    expect(screen.getByText('Valori ajustate cu inflația (2024)')).toBeInTheDocument()
+    // The budget API has no CPI mode yet (program D2): the requested setting is
+    // forwarded, but the page shows the caveat, not the "adjusted" badge.
+    expect(
+      screen.queryByText('Valori ajustate cu inflația (2024)'),
+    ).not.toBeInTheDocument()
+    expect(screen.getByTestId('normalization-caveats')).toBeInTheDocument()
     expect(useEntityDetailsMock).toHaveBeenCalledWith(
       expect.objectContaining({
         currency: 'EUR',

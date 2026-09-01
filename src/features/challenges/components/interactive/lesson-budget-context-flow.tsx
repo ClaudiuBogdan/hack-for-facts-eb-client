@@ -78,6 +78,8 @@ type LessonBudgetContextCopy = {
   expensesPerCapitaLabel: string
   incomeGrowthLabel: string
   expensesGrowthLabel: string
+  incomeGrowthNominalLabel: string
+  expensesGrowthNominalLabel: string
   countyQuizTitle: (countyName: string) => string
   countyQuizQuestion: (countyName: string) => string
   countyQuizExplanation: (uatName: string, countyName: string, perCapita: string, population: string) => string
@@ -124,6 +126,8 @@ const LESSON_BUDGET_CONTEXT_COPY: Record<ChallengeLocale, LessonBudgetContextCop
     expensesPerCapitaLabel: 'Cheltuieli per capita',
     incomeGrowthLabel: 'Venituri 2025 vs 2024 (prețuri 2025)',
     expensesGrowthLabel: 'Cheltuieli 2025 vs 2024 (prețuri 2025)',
+    incomeGrowthNominalLabel: 'Venituri 2025 vs 2024 (prețuri curente)',
+    expensesGrowthNominalLabel: 'Cheltuieli 2025 vs 2024 (prețuri curente)',
     countyQuizTitle: (countyName: string) => `Care UAT este pe primul loc în ${countyName}?`,
     countyQuizQuestion: (countyName: string) => `Care UAT ocupă locul 1 în județul ${countyName} după cheltuieli per capita în 2025?`,
     countyQuizExplanation: (uatName: string, countyName: string, perCapita: string, population: string) =>
@@ -169,6 +173,8 @@ const LESSON_BUDGET_CONTEXT_COPY: Record<ChallengeLocale, LessonBudgetContextCop
     expensesPerCapitaLabel: 'Spending per capita',
     incomeGrowthLabel: 'Income 2025 vs 2024 (2025 prices)',
     expensesGrowthLabel: 'Spending 2025 vs 2024 (2025 prices)',
+    incomeGrowthNominalLabel: 'Income 2025 vs 2024 (current prices)',
+    expensesGrowthNominalLabel: 'Spending 2025 vs 2024 (current prices)',
     countyQuizTitle: (countyName: string) => `Which UAT ranks first in ${countyName}?`,
     countyQuizQuestion: (countyName: string) => `Which UAT ranks #1 in ${countyName} county by spending per capita?`,
     countyQuizExplanation: (uatName: string, countyName: string, perCapita: string, population: string) =>
@@ -382,6 +388,7 @@ export function LessonBudgetContextFlow({
     aggregatedPerCapitaSummaryQuery,
     aggregatedTotalSummaryQuery,
     inflationAdjustedTrendSummaryQuery,
+    inflationAdjustedTrendsApplied,
   } = useChallengeLessonEntityBundle(entityCui)
   const [interactiveSlideIndex, setInteractiveSlideIndex] = useState(0)
   const [activeMapSeriesId, setActiveMapSeriesId] =
@@ -775,25 +782,41 @@ export function LessonBudgetContextFlow({
                   </TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell className="font-semibold">{copy.incomeGrowthLabel}</TableCell>
+                  <TableCell className="font-semibold">
+                    {inflationAdjustedTrendsApplied
+                      ? copy.incomeGrowthLabel
+                      : copy.incomeGrowthNominalLabel}
+                  </TableCell>
                   <TableCell className="text-right font-mono tabular-nums">
                     {incomeGrowthLabel}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {locale === 'en'
-                      ? 'Shows the year-over-year income change after recalculating the earlier year in 2025 prices.'
-                      : 'Arată schimbarea veniturilor față de anul anterior, după recalcularea anului anterior în prețuri 2025.'}
+                    {inflationAdjustedTrendsApplied
+                      ? locale === 'en'
+                        ? 'Shows the year-over-year income change after recalculating the earlier year in 2025 prices.'
+                        : 'Arată schimbarea veniturilor față de anul anterior, după recalcularea anului anterior în prețuri 2025.'
+                      : locale === 'en'
+                        ? 'Shows the year-over-year income change in current prices (inflation-adjusted values are not available yet).'
+                        : 'Arată schimbarea veniturilor față de anul anterior în prețuri curente (valorile ajustate cu inflația nu sunt încă disponibile).'}
                   </TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell className="font-semibold">{copy.expensesGrowthLabel}</TableCell>
+                  <TableCell className="font-semibold">
+                    {inflationAdjustedTrendsApplied
+                      ? copy.expensesGrowthLabel
+                      : copy.expensesGrowthNominalLabel}
+                  </TableCell>
                   <TableCell className="text-right font-mono tabular-nums">
                     {expenseGrowthLabel}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {locale === 'en'
-                      ? 'Shows the year-over-year spending change after recalculating the earlier year in 2025 prices.'
-                      : 'Arată schimbarea cheltuielilor față de anul anterior, după recalcularea anului anterior în prețuri 2025.'}
+                    {inflationAdjustedTrendsApplied
+                      ? locale === 'en'
+                        ? 'Shows the year-over-year spending change after recalculating the earlier year in 2025 prices.'
+                        : 'Arată schimbarea cheltuielilor față de anul anterior, după recalcularea anului anterior în prețuri 2025.'
+                      : locale === 'en'
+                        ? 'Shows the year-over-year spending change in current prices (inflation-adjusted values are not available yet).'
+                        : 'Arată schimbarea cheltuielilor față de anul anterior în prețuri curente (valorile ajustate cu inflația nu sunt încă disponibile).'}
                   </TableCell>
                 </TableRow>
               </TableBody>

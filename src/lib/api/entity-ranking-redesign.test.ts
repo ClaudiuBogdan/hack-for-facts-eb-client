@@ -103,17 +103,22 @@ describe('fetchRedesignEntitySubordinateRanking', () => {
   it.each([
     { currency: 'USD' as const, inflation_adjusted: false },
     { currency: 'RON' as const, inflation_adjusted: true },
-  ])('rejects unsupported normalization %# before dispatch', async (options) => {
-    await expect(
-      fetchRedesignEntitySubordinateRanking({
-        entityCui: '4270740',
-        reportPeriod: {
-          type: 'YEAR',
-          selection: { interval: { start: '2025', end: '2025' } },
-        },
-        normalizationOptions: options,
-      }),
-    ).rejects.toThrow()
-    expect(graphqlQuery).not.toHaveBeenCalled()
+  ])('degrades unsupported normalization %# to TOTAL instead of failing', async (options) => {
+    // The Chronos API has no CPI mode and no USD rate yet; the request must
+    // still be dispatched (nominal RON) rather than take the panel down — the
+    // entity page reports the degrade from the entity-details caveats.
+    vi.mocked(graphqlQuery).mockResolvedValueOnce({ budgetEntityRanking: [] })
+    await fetchRedesignEntitySubordinateRanking({
+      entityCui: '4270740',
+      reportPeriod: {
+        type: 'YEAR',
+        selection: { interval: { start: '2025', end: '2025' } },
+      },
+      normalizationOptions: options,
+    })
+    expect(graphqlQuery).toHaveBeenCalledTimes(1)
+    expect(vi.mocked(graphqlQuery).mock.calls[0]?.[1]).toMatchObject({
+      normalization: 'TOTAL',
+    })
   })
 })

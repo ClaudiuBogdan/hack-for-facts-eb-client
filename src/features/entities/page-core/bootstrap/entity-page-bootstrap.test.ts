@@ -120,7 +120,7 @@ describe('entity-page-bootstrap', () => {
           mainCreditorCui: '1234567',
           normalization: 'per_capita',
           currency: 'EUR',
-          inflationAdjusted: true,
+          inflationAdjusted: false, // applied, not requested: no CPI mode on the budget API yet
           showPeriodGrowth: true,
           lang: 'ro',
         },

@@ -3,6 +3,7 @@ import {
   buildEntityShareImageViewModel,
   buildShareImageResponseHeaders,
   formatShareKpiValue,
+  parseEntityShareFilterContext,
   resolveEntityShareLocale,
 } from './entity-share-image'
 import type { EntitySeoSnapshot } from '@/features/entities/seo/entity-share-seo'
@@ -145,5 +146,40 @@ describe('entity-share-image', () => {
     })
     expect(cacheableHeaders['cache-control']).toContain('max-age=86400')
     expect(cacheableHeaders['cdn-cache-control']).toContain('max-age=86400')
+  })
+})
+
+describe('parseEntityShareFilterContext', () => {
+  // The card labels and formats with this context. A cached or hand-edited
+  // share URL asking for inflation-adjusted USD must resolve to what the
+  // budget API applies today (nominal RON), never render RON amounts stamped
+  // "inflation adjusted" in dollars.
+  it('resolves unsupported inflation adjustment and USD to nominal RON', () => {
+    const context = parseEntityShareFilterContext(
+      new URLSearchParams({
+        year: '2025',
+        period: 'YEAR',
+        normalization: 'total',
+        currency: 'USD',
+        inflation_adjusted: 'true',
+      }),
+    )
+
+    expect(context.currency).toBe('RON')
+    expect(context.inflationAdjusted).toBe(false)
+    expect(context.normalization).toBe('total')
+  })
+
+  it('keeps supported settings and the euro composites as they were', () => {
+    const eur = parseEntityShareFilterContext(
+      new URLSearchParams({ year: '2025', period: 'YEAR', normalization: 'total', currency: 'EUR' }),
+    )
+    expect(eur.currency).toBe('EUR')
+    expect(eur.inflationAdjusted).toBe(false)
+
+    const composite = parseEntityShareFilterContext(
+      new URLSearchParams({ year: '2025', period: 'YEAR', normalization: 'total_euro', currency: 'USD' }),
+    )
+    expect(composite.currency).toBe('EUR')
   })
 })

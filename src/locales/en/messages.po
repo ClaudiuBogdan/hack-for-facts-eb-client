@@ -7500,7 +7500,7 @@ msgstr "Entity Analytics"
 msgid "Entity Details"
 msgstr "Entity Details"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2483
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2534
 msgid "Entity not found"
 msgstr "Entity not found"
 
@@ -8509,11 +8509,11 @@ msgstr "Fiecare reper de pe bară este o luare de cuvânt, în ordinea din steno
 msgid "Fiecare sumă critică are dovadă de sursă."
 msgstr "Fiecare sumă critică are dovadă de sursă."
 
-#: src/features/legal/components/reader/tldf-blocks.tsx:590
+#: src/features/legal/components/reader/tldf-blocks.tsx:679
 msgid "Figură din actul original (imagine indisponibilă)"
 msgstr "Figură din actul original (imagine indisponibilă)"
 
-#: src/features/legal/components/reader/tldf-blocks.tsx:589
+#: src/features/legal/components/reader/tldf-blocks.tsx:678
 msgid "Figură din actul original: {alt}"
 msgstr "Figură din actul original: {alt}"
 
@@ -10283,6 +10283,14 @@ msgstr "Inflation Adjustment"
 msgid "Inflation adjustment is ignored for % of GDP."
 msgstr "Inflation adjustment is ignored for % of GDP."
 
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3277
+#~ msgid "Inflation-adjusted (real) values are not available for this institution yet; the amounts shown are nominal."
+#~ msgstr "Inflation-adjusted (real) values are not available for this institution yet; the amounts shown are nominal."
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3291
+msgid "Inflation-adjusted (real) values are not available yet; the amounts shown are nominal."
+msgstr "Inflation-adjusted (real) values are not available yet; the amounts shown are nominal."
+
 #: src/components/common/classification-info-link.tsx:378
 msgid "Info"
 msgstr "Info"
@@ -11534,7 +11542,7 @@ msgstr "Loading map editor..."
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3612
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3854
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3861
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:987
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:991
 #: src/routes/map.lazy.tsx:330
 #: src/routes/map.lazy.tsx:337
 msgid "Loading map..."
@@ -11566,7 +11574,7 @@ msgstr "Loading shared datasets..."
 msgid "Loading table data..."
 msgstr "Loading table data..."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1029
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1033
 msgid "Loading view…"
 msgstr "Loading view…"
 
@@ -16887,7 +16895,7 @@ msgstr "Reference"
 msgid "Referință din registru"
 msgstr "Referință din registru"
 
-#: src/features/legal/components/reader/tldf-blocks.tsx:299
+#: src/features/legal/components/reader/tldf-blocks.tsx:311
 msgid "Referință legislativă (fără țintă navigabilă)"
 msgstr "Referință legislativă (fără țintă navigabilă)"
 
@@ -19113,6 +19121,10 @@ msgstr "Soluționat"
 msgid "Some data issues were automatically resolved"
 msgstr "Some data issues were automatically resolved"
 
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3288
+msgid "Some display settings are not available on this page yet."
+msgstr "Some display settings are not available on this page yet."
+
 #: src/components/entities/views/ins-stats-view.presentation.tsx:507
 msgid "Some indicators use the latest available period because the selected period had missing values."
 msgstr "Some indicators use the latest available period because the selected period had missing values."
@@ -20189,7 +20201,7 @@ msgstr "text"
 msgid "Text"
 msgstr "Text"
 
-#: src/features/legal/components/reader/tldf-blocks.tsx:687
+#: src/features/legal/components/reader/tldf-blocks.tsx:785
 msgid "Text abrogat"
 msgstr "Text abrogat"
 
@@ -21250,13 +21262,13 @@ msgid "Try again"
 msgstr "Try again"
 
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:493
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2511
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2562
 #: src/features/learning/components/assessment/Quiz.tsx:188
 #: src/routes/settings/notifications.tsx:198
 msgid "Try Again"
 msgstr "Try Again"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:625
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:629
 msgid "Try again in a few moments."
 msgstr "Try again in a few moments."
 
@@ -21834,6 +21846,14 @@ msgstr "Usage analytics"
 #: src/components/theme/currency-toggle.tsx:80
 msgid "USD"
 msgstr "USD"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3280
+#~ msgid "USD values are not available for this institution yet; the amounts shown are in RON."
+#~ msgstr "USD values are not available for this institution yet; the amounts shown are in RON."
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3294
+msgid "USD values are not available yet; the amounts shown are in RON."
+msgstr "USD values are not available yet; the amounts shown are in RON."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:136
 msgid "Use abs_gte for two-sided anomalies, gte/lte for one-sided anomalies."
@@ -22598,11 +22618,11 @@ msgstr "We cannot confirm whether requests are still open right now. Please try 
 msgid "We could not find a private company profile for this CUI. Check the identifier or try a mock sample such as 14399840."
 msgstr "We could not find a private company profile for this CUI. Check the identifier or try a mock sample such as 14399840."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2486
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2537
 msgid "We could not find an entity for this CUI. Check the identifier or search for another entity."
 msgstr "We could not find an entity for this CUI. Check the identifier or search for another entity."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2501
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2552
 msgid "We could not load the analysis."
 msgstr "We could not load the analysis."
 
