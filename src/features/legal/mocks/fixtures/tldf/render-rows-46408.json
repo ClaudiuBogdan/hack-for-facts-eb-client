@@ -1,0 +1,473 @@
+[
+  {
+    "chunk_index": 0,
+    "chunk_count": 1,
+    "block_id": null,
+    "tldf": {
+      "marks": [
+        {
+          "kind": "reference",
+          "link": {
+            "kind": "act",
+            "resolution": "unheld_other",
+            "target_fragment": "id_artA44",
+            "target_document_id": "43433"
+          },
+          "span": [
+            82,
+            149
+          ],
+          "ordinal": 0
+        }
+      ],
+      "shape": "paragraph_stream",
+      "blocks": [
+        {
+          "id": "0.1.1.1",
+          "kind": "titlu_act",
+          "span": [
+            0,
+            28
+          ],
+          "type": "DEN",
+          "content": [
+            {
+              "span": [
+                0,
+                28
+              ],
+              "text": "LISTA din 23 septembrie 2003"
+            }
+          ]
+        },
+        {
+          "id": "0.1.1.2",
+          "kind": "paragraf",
+          "span": [
+            29,
+            269
+          ],
+          "type": "PAR",
+          "content": [
+            {
+              "sep": "\n",
+              "span": [
+                29,
+                81
+              ],
+              "text": "depozitelor speciale, publicată conform prevederilor"
+            },
+            {
+              "sep": " ",
+              "span": [
+                82,
+                149
+              ],
+              "text": "art. 11 alin. (3) din Ordonanţa de urgenta a Guvernului nr. 30/2003"
+            },
+            {
+              "sep": " ",
+              "span": [
+                150,
+                269
+              ],
+              "text": "pentru instituirea unor măsuri speciale privind producţia, importul şi comercializarea uleiurilor minerale (completare)"
+            }
+          ],
+          "source_element_id": "id_parA2",
+          "changed_since_base_form": false
+        },
+        {
+          "id": "0.1.1.3",
+          "kind": "emitent",
+          "span": [
+            270,
+            307
+          ],
+          "type": "EMT",
+          "label": "EMITENT",
+          "content": [
+            {
+              "sep": "\n",
+              "role": "ttl",
+              "span": [
+                270,
+                277
+              ],
+              "text": "EMITENT"
+            },
+            {
+              "sep": "\n",
+              "role": "bdy",
+              "span": [
+                278,
+                307
+              ],
+              "text": "MINISTERUL FINANŢELOR PUBLICE"
+            }
+          ]
+        },
+        {
+          "id": "0.1.1.4",
+          "kind": "publicare",
+          "span": [
+            308,
+            368
+          ],
+          "type": "PUB",
+          "label": "Publicat în",
+          "content": [
+            {
+              "sep": "\n",
+              "role": "ttl",
+              "span": [
+                308,
+                319
+              ],
+              "text": "Publicat în"
+            },
+            {
+              "sep": "\n",
+              "role": "bdy",
+              "span": [
+                320,
+                368
+              ],
+              "text": "MONITORUL OFICIAL nr. 673 din 23 septembrie 2003"
+            }
+          ]
+        },
+        {
+          "id": "0.1.1.6",
+          "kind": "tabel",
+          "span": [
+            369,
+            777
+          ],
+          "type": "TBL",
+          "content": [],
+          "children": [
+            {
+              "id": "0.1.1.6.2.0",
+              "kind": "rand",
+              "span": [
+                369,
+                619
+              ],
+              "type": "ROW",
+              "content": [],
+              "children": [
+                {
+                  "id": "0.1.1.6.2.0.0",
+                  "kind": "celula",
+                  "span": [
+                    369,
+                    369
+                  ],
+                  "type": "CEL",
+                  "content": []
+                },
+                {
+                  "id": "0.1.1.6.2.0.1",
+                  "kind": "celula",
+                  "span": [
+                    369,
+                    377
+                  ],
+                  "type": "CEL",
+                  "content": [
+                    {
+                      "sep": "\n",
+                      "span": [
+                        369,
+                        377
+                      ],
+                      "text": "Nr. crt."
+                    }
+                  ]
+                },
+                {
+                  "id": "0.1.1.6.2.0.2",
+                  "kind": "celula",
+                  "span": [
+                    378,
+                    420
+                  ],
+                  "type": "CEL",
+                  "content": [
+                    {
+                      "sep": "\n",
+                      "span": [
+                        378,
+                        420
+                      ],
+                      "text": "Denumirea societăţii comerciale autorizate"
+                    }
+                  ]
+                },
+                {
+                  "id": "0.1.1.6.2.0.3",
+                  "kind": "celula",
+                  "span": [
+                    421,
+                    447
+                  ],
+                  "type": "CEL",
+                  "content": [
+                    {
+                      "sep": "\n",
+                      "span": [
+                        421,
+                        447
+                      ],
+                      "text": "Codul unic de înregistrare"
+                    }
+                  ]
+                },
+                {
+                  "id": "0.1.1.6.2.0.4",
+                  "kind": "celula",
+                  "span": [
+                    448,
+                    498
+                  ],
+                  "type": "CEL",
+                  "content": [
+                    {
+                      "sep": "\n",
+                      "span": [
+                        448,
+                        498
+                      ],
+                      "text": "Numărul de autorizare la Garda Financiară Centrală"
+                    }
+                  ]
+                },
+                {
+                  "id": "0.1.1.6.2.0.5",
+                  "kind": "celula",
+                  "span": [
+                    499,
+                    592
+                  ],
+                  "type": "CEL",
+                  "content": [
+                    {
+                      "sep": "\n",
+                      "span": [
+                        499,
+                        592
+                      ],
+                      "text": "Numărul avizului pentru autorizarea depozitelor speciale - Ministerul Economiei şi Comerţului"
+                    }
+                  ]
+                },
+                {
+                  "id": "0.1.1.6.2.0.6",
+                  "kind": "celula",
+                  "span": [
+                    593,
+                    619
+                  ],
+                  "type": "CEL",
+                  "content": [
+                    {
+                      "sep": "\n",
+                      "span": [
+                        593,
+                        619
+                      ],
+                      "text": "Adresa depozitului special"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "0.1.1.6.2.1",
+              "kind": "rand",
+              "span": [
+                620,
+                777
+              ],
+              "type": "ROW",
+              "content": [],
+              "children": [
+                {
+                  "id": "0.1.1.6.2.1.0",
+                  "kind": "celula",
+                  "span": [
+                    620,
+                    620
+                  ],
+                  "type": "CEL",
+                  "content": []
+                },
+                {
+                  "id": "0.1.1.6.2.1.1",
+                  "kind": "celula",
+                  "span": [
+                    620,
+                    622
+                  ],
+                  "type": "CEL",
+                  "content": [
+                    {
+                      "sep": "\n",
+                      "span": [
+                        620,
+                        622
+                      ],
+                      "text": "1."
+                    }
+                  ]
+                },
+                {
+                  "id": "0.1.1.6.2.1.2",
+                  "kind": "celula",
+                  "span": [
+                    623,
+                    640
+                  ],
+                  "type": "CEL",
+                  "content": [
+                    {
+                      "sep": "\n",
+                      "span": [
+                        623,
+                        640
+                      ],
+                      "text": "PETROTRANS - S.A."
+                    }
+                  ]
+                },
+                {
+                  "id": "0.1.1.6.2.1.3",
+                  "kind": "celula",
+                  "span": [
+                    641,
+                    649
+                  ],
+                  "type": "CEL",
+                  "content": [
+                    {
+                      "sep": "\n",
+                      "span": [
+                        641,
+                        649
+                      ],
+                      "text": "14512353"
+                    }
+                  ]
+                },
+                {
+                  "id": "0.1.1.6.2.1.4",
+                  "kind": "celula",
+                  "span": [
+                    650,
+                    679
+                  ],
+                  "type": "CEL",
+                  "content": [
+                    {
+                      "sep": "\n",
+                      "span": [
+                        650,
+                        679
+                      ],
+                      "text": "393823 din 19 septembrie 2003"
+                    }
+                  ]
+                },
+                {
+                  "id": "0.1.1.6.2.1.5",
+                  "kind": "celula",
+                  "span": [
+                    680,
+                    705
+                  ],
+                  "type": "CEL",
+                  "content": [
+                    {
+                      "sep": "\n",
+                      "span": [
+                        680,
+                        705
+                      ],
+                      "text": "65 din 19 septembrie 2003"
+                    }
+                  ]
+                },
+                {
+                  "id": "0.1.1.6.2.1.6",
+                  "kind": "celula",
+                  "span": [
+                    706,
+                    777
+                  ],
+                  "type": "CEL",
+                  "content": [
+                    {
+                      "sep": "\n",
+                      "span": [
+                        706,
+                        777
+                      ],
+                      "text": "Comuna Cristian, judeţul Braşov - Depozitul Cristian - Rezervorul nr. 5"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "0.1.1.7",
+          "kind": "paragraf",
+          "span": [
+            778,
+            783
+          ],
+          "type": "PAR",
+          "content": [
+            {
+              "sep": "\n",
+              "span": [
+                778,
+                783
+              ],
+              "text": "-----"
+            }
+          ],
+          "source_element_id": "id_parA43",
+          "changed_since_base_form": false
+        }
+      ],
+      "format": "tldf",
+      "accounting": {
+        "emitted_chars": 763,
+        "separator_chars": 20,
+        "excluded_by_reason": {
+          "hidden_element": 289
+        },
+        "zero_char_blocks_kept": {
+          "celula": 2
+        }
+      },
+      "generation": {
+        "run_id": 1330278,
+        "body_sha256": "57caa0885544676da57beba18e46c6e7d7c90fd8bb6706531c62a500f8125c27",
+        "content_parser_version": "portal-afis-structured-v9",
+        "structure_parser_version": "portal-tree-v6"
+      },
+      "source_url": "https://legislatie.just.ro/Public/DetaliiDocumentAfis/46408",
+      "document_id": "46408",
+      "offset_unit": "utf16_code_unit",
+      "text_sha256": "9af38db95f1e1afde4f8f207c0c6d6e865c88d1f8042a7137fcea8975d8c2a5f",
+      "privacy_class": "public",
+      "format_version": "1.1",
+      "compiler_version": "tldf-compiler-v4",
+      "contains_non_bmp": false
+    }
+  }
+]

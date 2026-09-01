@@ -51,17 +51,17 @@
  * agreement (`legal-reader-page.tsx:621`), never to branch a render.
  */
 
-import { useMemo } from 'react'
-import { Link } from '@tanstack/react-router'
-import { t } from '@lingui/core/macro'
-import { cn } from '@/lib/utils'
-import { createLogger } from '@/lib/logger'
-import { buildMarkIndex, sliceRun, actionableMark } from '../../lib/tldf/marks'
-import type { MarkIndex, RunSegment } from '../../lib/tldf/marks'
-import { foldTldfBlocks } from '../../lib/tldf/fold'
-import type { TldfBlock, TldfMark, TldfRun } from '../../lib/tldf/types'
+import { useMemo } from "react";
+import { Link } from "@tanstack/react-router";
+import { t } from "@lingui/core/macro";
+import { cn } from "@/lib/utils";
+import { createLogger } from "@/lib/logger";
+import { buildMarkIndex, sliceRun, actionableMark } from "../../lib/tldf/marks";
+import type { MarkIndex, RunSegment } from "../../lib/tldf/marks";
+import { foldTldfBlocks } from "../../lib/tldf/fold";
+import type { TldfBlock, TldfMark, TldfRun } from "../../lib/tldf/types";
 
-const logger = createLogger('legal-reader')
+const logger = createLogger("legal-reader");
 
 /**
  * The compiler's CLOSED kind vocabulary — mirrors `TLDF_KIND_VALUES` in the
@@ -72,42 +72,42 @@ const logger = createLogger('legal-reader')
  * fallback and logs.
  */
 const KNOWN_KINDS = new Set([
-  'carte',
-  'parte',
-  'titlu',
-  'titlu_act',
-  'subtitlu_act',
-  'capitol',
-  'subcapitol',
-  'sectiune',
-  'articol',
-  'anexa',
-  'apendice',
-  'alineat',
-  'litera',
-  'liniuta',
-  'punct',
-  'paragraf',
-  'bloc',
-  'citat',
-  'nota',
-  'emitent',
-  'publicare',
-  'semnatura',
-  'tabel',
-  'rand',
-  'celula',
-  'imagine',
-  'lista',
-  'element_lista',
-  'preformatat',
-])
+  "carte",
+  "parte",
+  "titlu",
+  "titlu_act",
+  "subtitlu_act",
+  "capitol",
+  "subcapitol",
+  "sectiune",
+  "articol",
+  "anexa",
+  "apendice",
+  "alineat",
+  "litera",
+  "liniuta",
+  "punct",
+  "paragraf",
+  "bloc",
+  "citat",
+  "nota",
+  "emitent",
+  "publicare",
+  "semnatura",
+  "tabel",
+  "rand",
+  "celula",
+  "imagine",
+  "lista",
+  "element_lista",
+  "preformatat",
+]);
 
-const warnedKinds = new Set<string>()
+const warnedKinds = new Set<string>();
 /** Fingerprints of off-contract `tabel` shapes already logged — one warn per
     distinct (clause, child-kinds), not per block. A 13k-row annex that all
     fail the same way must not emit 13k lines. */
-const warnedTableShapes = new Set<string>()
+const warnedTableShapes = new Set<string>();
 
 /**
  * The UI sans inside the reader. Tailwind's `font-sans` is NOT mapped to the
@@ -115,7 +115,7 @@ const warnedTableShapes = new Set<string>()
  * reference the token directly or they silently fall back to the system UI
  * stack — measured as `-apple-system` against Inter everywhere else.
  */
-const HEAD_FONT = '[&>[data-role=ttl]]:[font-family:var(--font-family)]'
+const HEAD_FONT = "[&>[data-role=ttl]]:[font-family:var(--font-family)]";
 
 /**
  * Per-kind spacing plus a heading scale. The `[&>[data-role=ttl]]` variants
@@ -137,16 +137,16 @@ const HEAD_FONT = '[&>[data-role=ttl]]:[font-family:var(--font-family)]'
  * served characters exactly.
  */
 const RANK_EYEBROW =
-  '[&:has(>[data-role=den])>[data-role=ttl]]:text-sm [&:has(>[data-role=den])>[data-role=ttl]]:font-bold [&:has(>[data-role=den])>[data-role=ttl]]:uppercase [&:has(>[data-role=den])>[data-role=ttl]]:tracking-wider [&:has(>[data-role=den])>[data-role=ttl]]:text-muted-foreground [&:not(:has(>[data-role=den]))>[data-role=ttl]]:text-[1.375rem] [&:not(:has(>[data-role=den]))>[data-role=ttl]]:font-bold [&:not(:has(>[data-role=den]))>[data-role=ttl]]:tracking-tight'
-const DEN_FONT = '[&>[data-role=den]]:[font-family:var(--font-family)]'
+  "[&:has(>[data-role=den])>[data-role=ttl]]:text-sm [&:has(>[data-role=den])>[data-role=ttl]]:font-bold [&:has(>[data-role=den])>[data-role=ttl]]:uppercase [&:has(>[data-role=den])>[data-role=ttl]]:tracking-wider [&:has(>[data-role=den])>[data-role=ttl]]:text-muted-foreground [&:not(:has(>[data-role=den]))>[data-role=ttl]]:text-[1.375rem] [&:not(:has(>[data-role=den]))>[data-role=ttl]]:font-bold [&:not(:has(>[data-role=den]))>[data-role=ttl]]:tracking-tight";
+const DEN_FONT = "[&>[data-role=den]]:[font-family:var(--font-family)]";
 
 const BLOCK_CLASS: Readonly<Record<string, string>> = {
   carte: `mt-16 border-t border-[var(--pnrr-subtle)] pt-8 ${HEAD_FONT} ${RANK_EYEBROW} ${DEN_FONT} [&>[data-role=den]]:text-3xl [&>[data-role=den]]:font-black [&>[data-role=den]]:tracking-tight`,
   parte: `mt-16 border-t border-[var(--pnrr-subtle)] pt-8 ${HEAD_FONT} ${RANK_EYEBROW} ${DEN_FONT} [&>[data-role=den]]:text-3xl [&>[data-role=den]]:font-black [&>[data-role=den]]:tracking-tight`,
   titlu: `mt-16 border-t border-[var(--pnrr-subtle)] pt-8 ${HEAD_FONT} ${RANK_EYEBROW} ${DEN_FONT} [&>[data-role=den]]:text-[1.75rem] [&>[data-role=den]]:font-black [&>[data-role=den]]:tracking-tight`,
   // The document's own masthead — the title lines the law opens with.
-  titlu_act: 'text-lg leading-relaxed',
-  subtitlu_act: 'text-base leading-relaxed',
+  titlu_act: "text-lg leading-relaxed",
+  subtitlu_act: "text-base leading-relaxed",
   capitol: `mt-11 border-t border-[var(--pnrr-subtle)] pt-6 ${HEAD_FONT} ${RANK_EYEBROW} ${DEN_FONT} [&>[data-role=den]]:text-[1.375rem] [&>[data-role=den]]:font-bold`,
   subcapitol: `mt-8 ${HEAD_FONT} [&>[data-role=ttl]]:text-[1.1875rem] [&>[data-role=ttl]]:font-bold`,
   sectiune: `mt-8 ${HEAD_FONT} [&>[data-role=ttl]]:text-[1.1875rem] [&>[data-role=ttl]]:font-bold`,
@@ -155,31 +155,32 @@ const BLOCK_CLASS: Readonly<Record<string, string>> = {
   // usually den-less and takes the :has fallback size.
   anexa: `mt-16 border-t border-[var(--pnrr-subtle)] pt-8 ${HEAD_FONT} ${RANK_EYEBROW} ${DEN_FONT} [&>[data-role=den]]:text-[1.375rem] [&>[data-role=den]]:font-bold`,
   apendice: `mt-11 ${HEAD_FONT} ${RANK_EYEBROW} ${DEN_FONT} [&>[data-role=den]]:font-bold`,
-  alineat: 'mt-2.5',
+  alineat: "mt-2.5",
   // Same step as alineat, NOT tighter: at mt-1.5 the gap between two litere
   // matched the leading inside one, so multi-line items (the definitions
   // articles — the densest, most-consulted part of most laws) fused into an
   // unparseable column. Short single-line runs still read as a list.
-  litera: 'mt-2.5 pl-6',
+  litera: "mt-2.5 pl-6",
   // Dash-items ("– ...") — same list grain as litera/punct.
-  liniuta: 'mt-2.5 pl-6',
-  punct: 'mt-2.5 pl-6',
-  paragraf: 'mt-2.5',
+  liniuta: "mt-2.5 pl-6",
+  punct: "mt-2.5 pl-6",
+  paragraf: "mt-2.5",
   // A structurally-classified quotation — the same container the
   // OPENS_QUOTED heuristic approximates when the parser didn't mark one.
-  citat: 'mt-3 border-l-[3px] border-[var(--pnrr-border)] bg-[var(--pnrr-hover)] py-2 pl-5 pr-3',
-  nota: 'mt-3 pl-4 border-l-2 border-muted text-muted-foreground text-[0.95em]',
+  citat:
+    "mt-3 border-l-[3px] border-[var(--pnrr-border)] bg-[var(--pnrr-hover)] py-2 pl-5 pr-3",
+  nota: "mt-3 pl-4 border-l-2 border-muted text-muted-foreground text-[0.95em]",
   // Publication metadata plate (EMITENT / Publicat în) — kept quiet; the
   // fișa above states the same facts with provenance.
-  emitent: 'mt-4 text-[0.95em] text-muted-foreground',
-  publicare: 'mt-3 text-[0.95em] text-muted-foreground',
-  semnatura: 'mt-8 text-muted-foreground',
+  emitent: "mt-4 text-[0.95em] text-muted-foreground",
+  publicare: "mt-3 text-[0.95em] text-muted-foreground",
+  semnatura: "mt-8 text-muted-foreground",
   // Column-aligned content: a proportional serif destroys the alignment.
   // For `tabel` this slot is only the OFF-CONTRACT fallback — a well-formed
   // v1.1 table takes the real `<table>` path in BlockView; a malformed one
   // renders flat, where monospace keeps any space-padded alignment readable.
-  tabel: 'mt-4 font-mono text-sm',
-  preformatat: 'mt-4 font-mono text-sm',
+  tabel: "mt-4 font-mono text-sm",
+  preformatat: "mt-4 font-mono text-sm",
   // v1.1 source-asserted lists. Native markers are suppressed HERE
   // (`list-none`) — not via Tailwind preflight, which only resets `ol, ul,
   // menu` and would leave an off-contract `element_lista` (an `<li>` outside
@@ -187,21 +188,21 @@ const BLOCK_CLASS: Readonly<Record<string, string>> = {
   // A marker captured as run text must not be doubled, and an attribute-
   // carried one is restored via LIST_MARKER_CLASS instead. The indent
   // matches the litera/punct grain.
-  lista: 'mt-2.5 pl-6 list-none',
-  element_lista: 'mt-2.5 list-none',
-}
+  lista: "mt-2.5 pl-6 list-none",
+  element_lista: "mt-2.5 list-none",
+};
 
 const RUN_ROLE_CLASS: Readonly<Record<string, string>> = {
   // Heading line of a structural unit ("Articolul 1", "CAPITOLUL II").
   // No color here: emitent/publicare mute their whole block, and a forced
   // `text-foreground` made the same label near-black on one act and muted on
   // another depending on class order.
-  ttl: 'font-semibold',
+  ttl: "font-semibold",
   // Denomination/label run ("LEGE nr. 17") — the document's own masthead.
-  den: '[font-family:var(--font-family)] font-semibold tracking-wide',
+  den: "[font-family:var(--font-family)] font-semibold tracking-wide",
   // Body text — the default reading style.
-  bdy: '',
-}
+  bdy: "",
+};
 
 /**
  * Display heuristics over the block's OWN text (children excluded). Both are
@@ -214,7 +215,7 @@ const RUN_ROLE_CLASS: Readonly<Record<string, string>> = {
  *   same voice.
  */
 const ownText = (block: TldfBlock): string =>
-  block.content.map((run) => (run.sep ?? '') + run.text).join('')
+  block.content.map((run) => (run.sep ?? "") + run.text).join("");
 
 /**
  * Enumeration grains whose marker run ("(1)", "a)", "1.", "–") joins its
@@ -222,30 +223,30 @@ const ownText = (block: TldfBlock): string =>
  * character itself is untouched — see the module docblock).
  */
 const INLINE_MARKER_KINDS: ReadonlySet<string> = new Set([
-  'alineat',
-  'litera',
-  'punct',
-  'liniuta',
-])
+  "alineat",
+  "litera",
+  "punct",
+  "liniuta",
+]);
 
-const DASH_RULE = /^[\s-–—]{4,}$/
-const OPENS_QUOTED = /^\s*["„«]/
+const DASH_RULE = /^[\s-–—]{4,}$/;
+const OPENS_QUOTED = /^\s*["„«]/;
 
 function displayClass(block: TldfBlock): string | undefined {
-  if (block.kind !== 'paragraf' && block.kind !== 'alineat') return undefined
-  const text = ownText(block)
-  if (DASH_RULE.test(text) && text.trim() !== '') {
-    return 'text-[var(--pnrr-subtle)] select-all overflow-hidden'
+  if (block.kind !== "paragraf" && block.kind !== "alineat") return undefined;
+  const text = ownText(block);
+  if (DASH_RULE.test(text) && text.trim() !== "") {
+    return "text-[var(--pnrr-subtle)] select-all overflow-hidden";
   }
   if (OPENS_QUOTED.test(text)) {
-    return 'mt-3 border-l-[3px] border-[var(--pnrr-border)] bg-[var(--pnrr-hover)] py-2 pl-5 pr-3'
+    return "mt-3 border-l-[3px] border-[var(--pnrr-border)] bg-[var(--pnrr-hover)] py-2 pl-5 pr-3";
   }
-  return undefined
+  return undefined;
 }
 
 type SegmentProps = {
-  readonly segment: RunSegment
-}
+  readonly segment: RunSegment;
+};
 
 /**
  * One mark-sliced segment. The ACTIONABLE mark (innermost reference with a
@@ -253,27 +254,33 @@ type SegmentProps = {
  * segment's own — a link wraps the law's words, it never rewrites them.
  */
 function MarkedSegment({ segment }: SegmentProps) {
-  const mark = actionableMark(segment)
-  if (mark === null) return <>{segment.text}</>
-  return <MarkElement mark={mark} text={segment.text} />
+  const mark = actionableMark(segment);
+  if (mark === null) return <>{segment.text}</>;
+  return <MarkElement mark={mark} text={segment.text} />;
 }
 
-function MarkElement({ mark, text }: { readonly mark: TldfMark; readonly text: string }) {
+function MarkElement({
+  mark,
+  text,
+}: {
+  readonly mark: TldfMark;
+  readonly text: string;
+}) {
   // Emphasis and strike marks are SEMANTIC, not references: before 2026-08-26
   // every non-link mark fell through to the dotted "unresolved reference"
   // face, so an italic drug name read as a broken citation. `struck` draws
   // the source strike (user decision: visible strikethrough); legal meaning
   // is asserted only by the BLOCK's struck_repealed, never by the mark.
-  if (mark.kind === 'italic') return <em>{text}</em>
-  if (mark.kind === 'bold') return <strong>{text}</strong>
-  if (mark.kind === 'underline') {
-    return <span className="underline underline-offset-2">{text}</span>
+  if (mark.kind === "italic") return <em>{text}</em>;
+  if (mark.kind === "bold") return <strong>{text}</strong>;
+  if (mark.kind === "underline") {
+    return <span className="underline underline-offset-2">{text}</span>;
   }
-  if (mark.kind === 'struck') {
-    return <s className="text-muted-foreground decoration-[1.5px]">{text}</s>
+  if (mark.kind === "struck") {
+    return <s className="text-muted-foreground decoration-[1.5px]">{text}</s>;
   }
-  const link = mark.link
-  if (link?.kind === 'act' && typeof link.target_act_id === 'number') {
+  const link = mark.link;
+  if (link?.kind === "act" && typeof link.target_act_id === "number") {
     return (
       <Link
         to="/legislation/acts/$actId"
@@ -282,9 +289,9 @@ function MarkElement({ mark, text }: { readonly mark: TldfMark; readonly text: s
       >
         {text}
       </Link>
-    )
+    );
   }
-  if (link?.kind === 'external' && typeof link.href === 'string') {
+  if (link?.kind === "external" && typeof link.href === "string") {
     return (
       <a
         href={link.href}
@@ -294,7 +301,7 @@ function MarkElement({ mark, text }: { readonly mark: TldfMark; readonly text: s
       >
         {text}
       </a>
-    )
+    );
   }
   // act_missing_id, internal (wired with the ?nod= navigation pass) and
   // unresolved references: visibly a reference, honestly not a link.
@@ -305,7 +312,7 @@ function MarkElement({ mark, text }: { readonly mark: TldfMark; readonly text: s
     >
       {text}
     </span>
-  )
+  );
 }
 
 function RunSpan({
@@ -313,41 +320,42 @@ function RunSpan({
   marks,
   collapseSep = false,
 }: {
-  readonly run: TldfRun
-  readonly marks: MarkIndex
+  readonly run: TldfRun;
+  readonly marks: MarkIndex;
   /** Render the separator in a `white-space: normal` span so it collapses
       visually — the character stays in the text content untouched. */
-  readonly collapseSep?: boolean
+  readonly collapseSep?: boolean;
 }) {
-  const sliced = sliceRun(marks, run)
-  const roleClass = run.role !== undefined ? RUN_ROLE_CLASS[run.role] : undefined
+  const sliced = sliceRun(marks, run);
+  const roleClass =
+    run.role !== undefined ? RUN_ROLE_CLASS[run.role] : undefined;
   // Role rows fold into runs, so a struck TTL/DEN/BDY arrives here rather
   // than as a block — same visible-strikethrough treatment (2026-08-26).
-  const struckClass = run.struck !== undefined ? STRUCK_TEXT_CLASS : undefined
+  const struckClass = run.struck !== undefined ? STRUCK_TEXT_CLASS : undefined;
   return (
     <span
-      {...(run.role !== undefined && { 'data-role': run.role })}
-      {...(run.struck !== undefined && { 'data-struck': run.struck })}
-      {...(cn(roleClass, struckClass) !== '' && {
+      {...(run.role !== undefined && { "data-role": run.role })}
+      {...(run.struck !== undefined && { "data-struck": run.struck })}
+      {...(cn(roleClass, struckClass) !== "" && {
         className: cn(roleClass, struckClass),
       })}
     >
       {/* Gated on '\n' exactly: the documented exceptions collapse LINE
           BREAKS only — a ' ' separator must keep rendering as the space
           character it is. */}
-      {collapseSep && run.sep === '\n' ? (
+      {collapseSep && run.sep === "\n" ? (
         <span className="whitespace-normal">{run.sep}</span>
       ) : (
-        (run.sep ?? '')
+        (run.sep ?? "")
       )}
       {sliced.segments.map((segment, i) => (
         <MarkedSegment key={i} segment={segment} />
       ))}
     </span>
-  )
+  );
 }
 
-type BlockProps = { readonly block: TldfBlock; readonly marks: MarkIndex }
+type BlockProps = { readonly block: TldfBlock; readonly marks: MarkIndex };
 
 /**
  * A block's interleaved run/child sequence in FOLD ORDER — runs and children
@@ -362,32 +370,32 @@ function BlockContent({ block, marks }: BlockProps) {
   const items = [
     ...block.content.map((run) => ({ start: run.span[0], run })),
     ...(block.children ?? []).map((child) => ({ start: child.span[0], child })),
-  ].sort((a, b) => a.start - b.start)
+  ].sort((a, b) => a.start - b.start);
 
   // Which separators collapse visually (never textually): a block-leading
   // one — the block-element boundary already breaks the line, so it only
   // painted a phantom blank line — and, on enumeration grains, the one right
   // after the marker run, so "(1)"/"a)" joins its body.
-  const inlineMarker = INLINE_MARKER_KINDS.has(block.kind)
-  const collapseAt = new Set<number>()
+  const inlineMarker = INLINE_MARKER_KINDS.has(block.kind);
+  const collapseAt = new Set<number>();
   for (const [index, item] of items.entries()) {
-    if (!('run' in item)) continue
-    if (index === 0) collapseAt.add(index)
-    const previous = items[index - 1]
+    if (!("run" in item)) continue;
+    if (index === 0) collapseAt.add(index);
+    const previous = items[index - 1];
     if (
       inlineMarker &&
       previous !== undefined &&
-      'run' in previous &&
-      previous.run.role === 'ttl'
+      "run" in previous &&
+      previous.run.role === "ttl"
     ) {
-      collapseAt.add(index)
+      collapseAt.add(index);
     }
   }
 
   return (
     <>
       {items.map((item, index) =>
-        'run' in item ? (
+        "run" in item ? (
           <RunSpan
             key={`r${String(item.start)}`}
             run={item.run}
@@ -399,7 +407,7 @@ function BlockContent({ block, marks }: BlockProps) {
         ),
       )}
     </>
-  )
+  );
 }
 
 /* ── v1.1 presentation rendering ──────────────────────────────────────────── */
@@ -412,8 +420,25 @@ function BlockContent({ block, marks }: BlockProps) {
  * edge wins over the 1px cell hairlines at the perimeter, so the two weights
  * never double up.
  */
+// `w-full` and NOT `min-w-max`. This was tried and reverted, so the reasoning
+// is recorded to stop it being retried: `width: 100%` on a table is a FLOOR,
+// not a cap — automatic table layout cannot lay a table out narrower than its
+// min-content width, so a wide table already overflows and the `overflow-x-auto`
+// shell in `TableBlock` already scrolls. Measured in Chromium 2026-09-01, an
+// 81-column table renders 3372px inside a 704px column and scrolls, IDENTICALLY
+// with and without `min-w-max`. Adding it changes the used width from
+// min-content to max-content, which buys nothing for wide tables and breaks
+// ordinary ones: a 2-column table holding one Romanian legal sentence goes from
+// 704px and readable to 1861px and horizontally scrolling. On the live corpus
+// that regression set is ~2.3x the size of the set it would help, it hits the
+// common case on a phone, and in print the overflow is silently clipped rather
+// than paginated — data loss on a document people print.
+/** Announced for the scrollable table region. An attribute, never a text node
+ * — the fold invariant forbids adding characters to the DOM. */
+const TABLE_REGION_LABEL = "Tabel din act, derulabil orizontal";
+
 const TABLE_CLASS =
-  'w-full border-collapse border-2 border-[var(--pnrr-border)] text-[0.9375rem] leading-[1.5]'
+  "w-full border-collapse border-2 border-[var(--pnrr-border)] text-[0.9375rem] leading-[1.5]";
 
 /**
  * Cell text is "a stack of row-synchronized visual lines", not prose
@@ -423,12 +448,12 @@ const TABLE_CLASS =
  * scope on purpose: a nested table's cells want the same.
  */
 const CELL_CLASS =
-  'border border-[var(--pnrr-subtle)] px-3 py-1.5 align-top [&_[data-kind=paragraf]]:mt-0'
+  "border border-[var(--pnrr-subtle)] px-3 py-1.5 align-top [&_[data-kind=paragraf]]:mt-0";
 
 /** Serving smallint bound — mirrors `tldfGridSchema`. The API boundary already
     validates it; re-checked here because tests (and any future caller) can
     feed blocks straight into the renderer. */
-const GRID_SPAN_MAX = 32767
+const GRID_SPAN_MAX = 32767;
 
 /**
  * `grid` → `colSpan`/`rowSpan`. ABSENT is the one canonical 1×1 encoding
@@ -436,39 +461,44 @@ const GRID_SPAN_MAX = 32767
  * anything malformed (0, negative, fractional, non-numeric) — emits NO
  * attribute: a plain cell, never a throw.
  */
-function gridSpanProps(grid: TldfBlock['grid']): {
-  readonly colSpan?: number
-  readonly rowSpan?: number
+function gridSpanProps(grid: TldfBlock["grid"]): {
+  readonly colSpan?: number;
+  readonly rowSpan?: number;
 } {
   const spanOf = (value: unknown): number | undefined =>
-    typeof value === 'number' && Number.isInteger(value) && value > 1 && value <= GRID_SPAN_MAX
+    typeof value === "number" &&
+    Number.isInteger(value) &&
+    value > 1 &&
+    value <= GRID_SPAN_MAX
       ? value
-      : undefined
-  const colSpan = spanOf(grid?.cols)
-  const rowSpan = spanOf(grid?.rows)
+      : undefined;
+  const colSpan = spanOf(grid?.cols);
+  const rowSpan = spanOf(grid?.rows);
   return {
     ...(colSpan !== undefined && { colSpan }),
     ...(rowSpan !== undefined && { rowSpan }),
-  }
+  };
 }
 
 /** Children in fold order (ascending span start; stable ties keep document
     order — exactly `foldTldfBlocks`'s merge, so cell placement is the proven
     character order). */
-const spanOrdered = (children: readonly TldfBlock[] | undefined): readonly TldfBlock[] =>
-  [...(children ?? [])].sort((a, b) => a.span[0] - b.span[0])
+const spanOrdered = (
+  children: readonly TldfBlock[] | undefined,
+): readonly TldfBlock[] =>
+  [...(children ?? [])].sort((a, b) => a.span[0] - b.span[0]);
 
 type TableGuardClause =
-  | 'owns_runs'
-  | 'no_rows'
-  | 'non_rand_child'
-  | 'rand_owns_runs'
-  | 'non_celula_child'
+  | "owns_runs"
+  | "no_rows"
+  | "non_rand_child"
+  | "rand_owns_runs"
+  | "non_celula_child";
 
 type TableGuardRejection = {
-  readonly clause: TableGuardClause
-  readonly childKinds: readonly string[]
-}
+  readonly clause: TableGuardClause;
+  readonly childKinds: readonly string[];
+};
 
 /**
  * The foster-parenting guard (PORTAL_TABLE_CAPTURE_DESIGN, panel verdict 10):
@@ -483,46 +513,76 @@ type TableGuardRejection = {
  * instead of silently flattening every table in the corpus.
  */
 function tableGuardRejection(block: TldfBlock): TableGuardRejection | null {
-  const rows = block.children ?? []
-  const childKinds = rows.map((row) => row.kind)
+  const rows = block.children ?? [];
+  const childKinds = rows.map((row) => row.kind);
   if (block.content.length !== 0) {
-    return { clause: 'owns_runs', childKinds }
+    return { clause: "owns_runs", childKinds };
   }
   if (rows.length === 0) {
-    return { clause: 'no_rows', childKinds }
+    return { clause: "no_rows", childKinds };
   }
-  if (rows.some((row) => row.kind !== 'rand')) {
-    return { clause: 'non_rand_child', childKinds }
+  if (rows.some((row) => row.kind !== "rand")) {
+    return { clause: "non_rand_child", childKinds };
   }
   if (rows.some((row) => row.content.length !== 0)) {
-    return { clause: 'rand_owns_runs', childKinds }
+    return { clause: "rand_owns_runs", childKinds };
   }
-  const cellKinds = rows.flatMap((row) => (row.children ?? []).map((cell) => cell.kind))
-  if (cellKinds.some((kind) => kind !== 'celula')) {
-    return { clause: 'non_celula_child', childKinds: cellKinds }
+  const cellKinds = rows.flatMap((row) =>
+    (row.children ?? []).map((cell) => cell.kind),
+  );
+  if (cellKinds.some((kind) => kind !== "celula")) {
+    return { clause: "non_celula_child", childKinds: cellKinds };
   }
-  return null
+  return null;
 }
 
 function warnUnrenderableTable(rejection: TableGuardRejection): void {
-  const fingerprint = `${rejection.clause}:${rejection.childKinds.join(',')}`
-  if (warnedTableShapes.has(fingerprint)) return
-  warnedTableShapes.add(fingerprint)
-  logger.warn('TLDF tabel failed the renderable-table guard, rendering as plain block', {
-    clause: rejection.clause,
-    childKinds: rejection.childKinds,
-  })
+  const fingerprint = `${rejection.clause}:${rejection.childKinds.join(",")}`;
+  if (warnedTableShapes.has(fingerprint)) return;
+  warnedTableShapes.add(fingerprint);
+  logger.warn(
+    "TLDF tabel failed the renderable-table guard, rendering as plain block",
+    {
+      clause: rejection.clause,
+      childKinds: rejection.childKinds,
+    },
+  );
 }
 
 function TableBlock({ block, marks }: BlockProps) {
   return (
     // The scroll shell is chrome (a 6-column annex table can outgrow the
     // 78ch column); the table element itself stays the addressable block.
-    <div className="mt-4 overflow-x-auto">
+    //
+    // KEYBOARD REACHABILITY (WCAG 2.1.1). A wide table is only readable if the
+    // shell can be scrolled, and a scroll container that cannot take focus
+    // cannot be scrolled from the keyboard — the columns past the fold are
+    // simply unreachable. This matters more since TLDF v1.1: measured on the
+    // live corpus 2026-09-01, 24,505 tables carry 12+ columns (widest 81)
+    // across 5,351 documents, and an 81-column table lays out ~3372px inside a
+    // 704px column.
+    //
+    // Chromium already does this natively — measured in Chromium 151, the
+    // shell takes focus with no tabIndex at all — but that is a recent default
+    // and Safari does not do it. `tabIndex={0}` is therefore a no-op on Chrome
+    // and the fix everywhere else. `role="region"` + a label is what turns the
+    // focus stop into something a screen reader announces rather than an
+    // unexplained landing point; without the accessible name a focusable
+    // generic div is arguably worse than none.
+    //
+    // The label is an ATTRIBUTE, never a text node: the renderer's invariant is
+    // that DOM text equals the fold, so a <caption> would break it. Same trick
+    // as the imagine placeholder.
+    <div
+      className="mt-4 overflow-x-auto"
+      tabIndex={0}
+      role="region"
+      aria-label={TABLE_REGION_LABEL}
+    >
       <table
         id={`tldf-${block.id}`}
         data-kind="tabel"
-        className={cn(TABLE_CLASS, 'scroll-mt-24')}
+        className={cn(TABLE_CLASS, "scroll-mt-24")}
       >
         {/* Explicit <tbody>: without it the SSR string serializes `table > tr`,
             the browser reparses it WITH a parser-inserted tbody, and hydration
@@ -534,7 +594,7 @@ function TableBlock({ block, marks }: BlockProps) {
               id={`tldf-${row.id}`}
               data-kind="rand"
               {...struckAttrsOf(row)}
-              className={cn('scroll-mt-24', struckClassOf(row))}
+              className={cn("scroll-mt-24", struckClassOf(row))}
             >
               {spanOrdered(row.children).map((cell) => (
                 <td
@@ -542,7 +602,11 @@ function TableBlock({ block, marks }: BlockProps) {
                   id={`tldf-${cell.id}`}
                   data-kind="celula"
                   {...struckAttrsOf(cell)}
-                  className={cn(CELL_CLASS, 'scroll-mt-24', struckClassOf(cell))}
+                  className={cn(
+                    CELL_CLASS,
+                    "scroll-mt-24",
+                    struckClassOf(cell),
+                  )}
                   {...gridSpanProps(cell.grid)}
                 >
                   {/* A cell MAY own runs (bare `<td>` text) and may carry
@@ -558,7 +622,7 @@ function TableBlock({ block, marks }: BlockProps) {
         </tbody>
       </table>
     </div>
-  )
+  );
 }
 
 /**
@@ -571,10 +635,12 @@ function TableBlock({ block, marks }: BlockProps) {
  * serif voice.
  */
 const IMAGE_PLACEHOLDER_CLASS =
-  'mx-auto flex min-h-24 max-h-96 w-full items-center justify-center whitespace-normal border border-dashed border-[var(--pnrr-subtle)] bg-[var(--pnrr-hover)] px-4 py-6 text-center [font-family:var(--font-family)] text-sm text-[var(--pnrr-muted)] before:content-[attr(data-figure-label)]'
+  "mx-auto flex min-h-24 max-h-96 w-full items-center justify-center whitespace-normal border border-dashed border-[var(--pnrr-subtle)] bg-[var(--pnrr-hover)] px-4 py-6 text-center [font-family:var(--font-family)] text-sm text-[var(--pnrr-muted)] before:content-[attr(data-figure-label)]";
 
 const assetDimension = (value: number | undefined): number | undefined =>
-  typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined
+  typeof value === "number" && Number.isFinite(value) && value > 0
+    ? value
+    : undefined;
 
 /**
  * v1.1 `imagine` — an anchored zero-character block. Its asset deliberately
@@ -587,20 +653,26 @@ const assetDimension = (value: number | undefined): number | undefined =>
  * `alt: ''` and zero dimensions, which count as absent here.
  */
 function ImagineBlock({ block, marks }: BlockProps) {
-  const rawAlt = block.asset?.alt
-  const alt = typeof rawAlt === 'string' && rawAlt.trim() !== '' ? rawAlt.trim() : undefined
+  const rawAlt = block.asset?.alt;
+  const alt =
+    typeof rawAlt === "string" && rawAlt.trim() !== ""
+      ? rawAlt.trim()
+      : undefined;
   const label =
     alt !== undefined
       ? t`Figură din actul original: ${alt}`
-      : t`Figură din actul original (imagine indisponibilă)`
-  const width = assetDimension(block.asset?.width)
-  const height = assetDimension(block.asset?.height)
+      : t`Figură din actul original (imagine indisponibilă)`;
+  const width = assetDimension(block.asset?.width);
+  const height = assetDimension(block.asset?.height);
   return (
     <div
       id={`tldf-${block.id}`}
       data-kind="imagine"
       {...struckAttrsOf(block)}
-      className={cn('mt-4 scroll-mt-24', block.struck === 'full' && 'opacity-60')}
+      className={cn(
+        "mt-4 scroll-mt-24",
+        block.struck === "full" && "opacity-60",
+      )}
     >
       <div
         role="img"
@@ -612,7 +684,10 @@ function ImagineBlock({ block, marks }: BlockProps) {
         // degenerate ratio from collapsing or swallowing the column.
         {...(width !== undefined &&
           height !== undefined && {
-            style: { aspectRatio: `${String(width)} / ${String(height)}`, maxWidth: width },
+            style: {
+              aspectRatio: `${String(width)} / ${String(height)}`,
+              maxWidth: width,
+            },
           })}
       />
       {/* Contract: imagine owns no text. If a malformed artifact carries runs
@@ -621,7 +696,7 @@ function ImagineBlock({ block, marks }: BlockProps) {
           Normally renders nothing. */}
       <BlockContent block={block} marks={marks} />
     </div>
-  )
+  );
 }
 
 /**
@@ -645,9 +720,11 @@ function ImagineBlock({ block, marks }: BlockProps) {
  * to catch. Do not "simplify" it away.
  */
 function listMarkerOf(block: TldfBlock): string | undefined {
-  const label = block.label?.trim()
-  if (label === undefined || label === '') return undefined
-  return foldedTextOpensWithMarker(foldTldfBlocks([block]), label) ? undefined : label
+  const label = block.label?.trim();
+  if (label === undefined || label === "") return undefined;
+  return foldedTextOpensWithMarker(foldTldfBlocks([block]), label)
+    ? undefined
+    : label;
 }
 
 /**
@@ -658,15 +735,15 @@ function listMarkerOf(block: TldfBlock): string | undefined {
  * used; `label` is the already-trimmed value.
  */
 function foldedTextOpensWithMarker(folded: string, label: string): boolean {
-  const body = folded.trimStart()
-  if (!body.startsWith(label)) return false
-  const remainder = body.slice(label.length)
-  return remainder === '' || !/^[\p{L}\p{N}]/u.test(remainder)
+  const body = folded.trimStart();
+  if (!body.startsWith(label)) return false;
+  const remainder = body.slice(label.length);
+  return remainder === "" || !/^[\p{L}\p{N}]/u.test(remainder);
 }
 
 /** Applied only alongside `data-list-marker`: an empty `::before` with a
     margin would still paint stray leading space. */
-const LIST_MARKER_CLASS = 'before:mr-2 before:content-[attr(data-list-marker)]'
+const LIST_MARKER_CLASS = "before:mr-2 before:content-[attr(data-list-marker)]";
 
 /* ── v1.1 source-state rendering (user decision 2026-08-26) ──────────────── */
 
@@ -675,39 +752,42 @@ const LIST_MARKER_CLASS = 'before:mr-2 before:content-[attr(data-list-marker)]'
  * moved. A strike alone is SOURCE EVIDENCE — only `struck_repealed` (the
  * validated narrow rule) is allowed to say "abrogat".
  */
-const STRUCK_TEXT_CLASS = 'line-through decoration-[1.5px] text-muted-foreground'
+const STRUCK_TEXT_CLASS =
+  "line-through decoration-[1.5px] text-muted-foreground";
 
 function struckClassOf(block: TldfBlock): string | undefined {
   // 'partial' draws via exact `struck` marks; the block face stays upright.
-  return block.struck === 'full' ? STRUCK_TEXT_CLASS : undefined
+  return block.struck === "full" ? STRUCK_TEXT_CLASS : undefined;
 }
 
 function struckAttrsOf(block: TldfBlock): {
-  readonly 'data-struck'?: 'partial' | 'full'
-  readonly title?: string
+  readonly "data-struck"?: "partial" | "full";
+  readonly title?: string;
 } {
-  if (block.struck === undefined) return {}
+  if (block.struck === undefined) return {};
   return {
-    'data-struck': block.struck,
+    "data-struck": block.struck,
     ...(block.struck_repealed === true && { title: t`Text abrogat` }),
-  }
+  };
 }
 
 function BlockView({ block, marks }: BlockProps) {
   if (!KNOWN_KINDS.has(block.kind) && !warnedKinds.has(block.kind)) {
-    warnedKinds.add(block.kind)
-    logger.warn('Unknown TLDF block kind, rendering as plain block', { kind: block.kind })
+    warnedKinds.add(block.kind);
+    logger.warn("Unknown TLDF block kind, rendering as plain block", {
+      kind: block.kind,
+    });
   }
 
-  if (block.kind === 'tabel') {
-    const rejection = tableGuardRejection(block)
+  if (block.kind === "tabel") {
+    const rejection = tableGuardRejection(block);
     if (rejection === null) {
-      return <TableBlock block={block} marks={marks} />
+      return <TableBlock block={block} marks={marks} />;
     }
-    warnUnrenderableTable(rejection)
+    warnUnrenderableTable(rejection);
   }
-  if (block.kind === 'imagine') {
-    return <ImagineBlock block={block} marks={marks} />
+  if (block.kind === "imagine") {
+    return <ImagineBlock block={block} marks={marks} />;
   }
 
   // v1.1 lists take real list elements with no shape guard: unlike tables,
@@ -716,40 +796,41 @@ function BlockView({ block, marks }: BlockProps) {
   // hydration-consistent and character-exact. `rand`/`celula` outside a
   // renderable table deliberately fall through to the plain div.
   const Tag =
-    block.kind === 'lista'
-      ? block.type === 'OL'
-        ? 'ol'
-        : 'ul'
-      : block.kind === 'element_lista'
-        ? 'li'
-        : 'div'
-  const marker = block.kind === 'element_lista' ? listMarkerOf(block) : undefined
+    block.kind === "lista"
+      ? block.type === "OL"
+        ? "ol"
+        : "ul"
+      : block.kind === "element_lista"
+        ? "li"
+        : "div";
+  const marker =
+    block.kind === "element_lista" ? listMarkerOf(block) : undefined;
 
   return (
     <Tag
       id={`tldf-${block.id}`}
       data-kind={block.kind}
-      {...(marker !== undefined && { 'data-list-marker': marker })}
+      {...(marker !== undefined && { "data-list-marker": marker })}
       {...struckAttrsOf(block)}
       className={cn(
         BLOCK_CLASS[block.kind],
         displayClass(block),
         marker !== undefined && LIST_MARKER_CLASS,
         struckClassOf(block),
-        'scroll-mt-24',
+        "scroll-mt-24",
       )}
     >
       <BlockContent block={block} marks={marks} />
     </Tag>
-  )
+  );
 }
 
 export type TldfBlocksViewProps = {
-  readonly blocks: readonly TldfBlock[]
+  readonly blocks: readonly TldfBlock[];
   /** DOCUMENT-level marks (the envelope's; chunk payloads reuse the same array). */
-  readonly marks: readonly TldfMark[]
-  readonly containsNonBmp: boolean
-}
+  readonly marks: readonly TldfMark[];
+  readonly containsNonBmp: boolean;
+};
 
 /**
  * The reading column for one block sequence (a whole envelope, or one chunk
@@ -758,16 +839,24 @@ export type TldfBlocksViewProps = {
  */
 /** Recursive character count — sizes the `content-visibility` placeholder. */
 function charCount(blocks: readonly TldfBlock[]): number {
-  let total = 0
+  let total = 0;
   for (const block of blocks) {
-    for (const run of block.content) total += (run.sep?.length ?? 0) + run.text.length
-    if (block.children !== undefined) total += charCount(block.children)
+    for (const run of block.content)
+      total += (run.sep?.length ?? 0) + run.text.length;
+    if (block.children !== undefined) total += charCount(block.children);
   }
-  return total
+  return total;
 }
 
-export function TldfBlocksView({ blocks, marks, containsNonBmp }: TldfBlocksViewProps) {
-  const index = useMemo(() => buildMarkIndex(marks, containsNonBmp), [marks, containsNonBmp])
+export function TldfBlocksView({
+  blocks,
+  marks,
+  containsNonBmp,
+}: TldfBlocksViewProps) {
+  const index = useMemo(
+    () => buildMarkIndex(marks, containsNonBmp),
+    [marks, containsNonBmp],
+  );
   // ~0.5px per character at this measure (≈78ch lines, 31.5px line height,
   // legal text's short lines push it up) — a flat 1200px placeholder made a
   // 20.000px document collapse to nothing until scrolled, so every anchor
@@ -775,7 +864,7 @@ export function TldfBlocksView({ blocks, marks, containsNonBmp }: TldfBlocksView
   const intrinsicHeight = useMemo(
     () => Math.max(1200, Math.round(charCount(blocks) * 0.5)),
     [blocks],
-  )
+  );
   return (
     // Serif at 18px/1.75 — long-form legal reading, distinct from the sans UI
     // around it (Charter ships on macOS/iOS, Cambria on Windows, Georgia is
@@ -789,5 +878,5 @@ export function TldfBlocksView({ blocks, marks, containsNonBmp }: TldfBlocksView
         <BlockView key={block.id} block={block} marks={index} />
       ))}
     </div>
-  )
+  );
 }
