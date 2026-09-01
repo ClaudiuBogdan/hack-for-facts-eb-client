@@ -41,9 +41,14 @@
  * content + `aria-label` — never a text node. `lista`/`element_lista` become
  * real list elements with native markers suppressed: a marker is either
  * already in the character stream or restored from `label` as CSS content,
- * never doubled, never browser-invented. Production still serves format 1.0
- * (which has none of these kinds), so 1.0 documents render exactly as
- * before by construction.
+ * never doubled, never browser-invented. Format 1.0 documents carry none of
+ * these kinds, so they render exactly as before by construction.
+ *
+ * As of 2026-09-01 the v1.1 kinds are LIVE: 221,264 documents serve format 1.1
+ * and 1,266 serve 1.0 (an earlier version of this note said production served
+ * only 1.0). The version is constant within a document; block dispatch is on
+ * `block.kind` alone, and `format_version` is read only for chunk-head
+ * agreement (`legal-reader-page.tsx:621`), never to branch a render.
  */
 
 import { useMemo } from 'react'
