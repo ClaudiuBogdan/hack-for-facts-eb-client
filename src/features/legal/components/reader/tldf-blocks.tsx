@@ -426,13 +426,28 @@ function BlockContent({ block, marks }: BlockProps) {
 // min-content width, so a wide table already overflows and the `overflow-x-auto`
 // shell in `TableBlock` already scrolls. Measured in Chromium 2026-09-01, an
 // 81-column table renders 3372px inside a 704px column and scrolls, IDENTICALLY
-// with and without `min-w-max`. Adding it changes the used width from
-// min-content to max-content, which buys nothing for wide tables and breaks
-// ordinary ones: a 2-column table holding one Romanian legal sentence goes from
-// 704px and readable to 1861px and horizontally scrolling. On the live corpus
-// that regression set is ~2.3x the size of the set it would help, it hits the
-// common case on a phone, and in print the overflow is silently clipped rather
-// than paginated — data loss on a document people print.
+// with and without `min-w-max`.
+//
+// What `min-w-max` actually changes is the used width from min-content to
+// max-content, i.e. cells stop soft-wrapping. That IS a readability gain for a
+// dense mid-width numeric table, so the honest statement is not "it buys
+// nothing" but "it buys less than it costs": it does nothing for the very wide
+// tables it was aimed at, and it breaks ordinary ones. A 2-column table holding
+// one Romanian legal sentence goes from 704px and readable to 1861px and
+// horizontally scrolling — the common case on a phone. In print the overflow is
+// clipped rather than paginated, which is silent data loss on a document people
+// print.
+//
+// Sampled evidence (independent review, `TABLESAMPLE SYSTEM (3)` over
+// `legal.document_render`, 11,101 tables in 1,406 documents, 2026-09-01):
+// 791 tables have >=12 columns — the set this would help — against 1,835 with
+// <12 columns but a cell line >80 chars, which is the set it breaks. Roughly
+// 2.3x more harmed than helped. Full analysis:
+// scrapper `prod-db/PORTAL_V6_SERVING_INTEGRATION_ANALYSIS_2026-09-01.md`.
+//
+// If the mid-width readability win is wanted later, make it conditional on a
+// measured column count rather than unconditional, and validate at 320px and
+// 704px against narrow-prose, 12-, 20- and 81-column artifacts.
 /** Announced for the scrollable table region. An attribute, never a text node
  * — the fold invariant forbids adding characters to the DOM. */
 const TABLE_REGION_LABEL = "Tabel din act, derulabil orizontal";
