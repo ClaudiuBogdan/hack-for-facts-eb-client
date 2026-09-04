@@ -12,6 +12,8 @@ import {
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
+import { readAccessToken } from "./seal-token.mjs";
+
 const SCRIPT_DIRECTORY = path.dirname(fileURLToPath(import.meta.url));
 const REPOSITORY_ROOT = path.resolve(SCRIPT_DIRECTORY, "..");
 const SAFE_ENVIRONMENT_KEYS = [
@@ -35,7 +37,8 @@ Optional:
   --secret <name>         Generate only one registered Secret (repeatable)
   --help                  Show this help
 
-BWS_ACCESS_TOKEN must be present in the environment. It is passed only to bws.
+Reads the macOS Keychain token, or prompts without echo. The token stays in memory
+and is passed only to bws. No token argument, environment file or plaintext output.
 `;
 
 const requireValue = (arguments_, index, option) => {
@@ -146,6 +149,10 @@ export const normalizeRegistry = (input) => {
     }
     return {
       name: string(current.name, `secrets[${index}].name`),
+      bitwardenSecretId: string(
+        current.bitwardenSecretId,
+        `secrets[${index}].bitwardenSecretId`,
+      ),
       type: string(current.type, `secrets[${index}].type`),
       render,
       requiredFields: stringArray(
@@ -231,17 +238,17 @@ const runProcess = (command, arguments_, options = {}) =>
     child.stderr.on("data", (chunk) => {
       stderr += chunk;
     });
-    child.on("error", reject);
+    child.on("error", () => reject(new Error(`${command} could not start`)));
+    child.stdin.on("error", () => reject(new Error(`${command} input failed`)));
     child.on("close", (exitCode) => {
       const result = { exitCode: exitCode ?? 1, stdout, stderr };
       if (result.exitCode === 0 || options.allowFailure === true) {
         resolve(result);
         return;
       }
-      const redact = options.redact ?? ((text) => String(text));
       reject(
         new Error(
-          `${command} failed with exit code ${String(result.exitCode)}: ${redact(stderr || stdout)}`,
+          `${command} failed with exit code ${String(result.exitCode)}`,
         ),
       );
     });
@@ -341,19 +348,28 @@ const assertController = async (registry, options) => {
   }
 };
 
-const listBitwardenSecrets = async (token) => {
-  const result = await runProcess(
-    "bws",
-    ["secret", "list", "--output", "json"],
-    {
-      allowFailure: true,
-      environment: childEnvironment({ BWS_ACCESS_TOKEN: token }),
-    },
-  );
-  if (result.exitCode !== 0) throw new Error("bws secret list failed");
-  const records = parseJson(result.stdout, "bws secret list response");
-  if (!Array.isArray(records))
-    throw new Error("bws secret list response must be an array");
+export const fetchBitwardenSecrets = async (
+  token,
+  definitions,
+  execute = runProcess,
+) => {
+  const records = [];
+  for (const secret of definitions) {
+    const result = await execute(
+      "bws",
+      ["secret", "get", secret.bitwardenSecretId, "--output", "json"],
+      {
+        allowFailure: true,
+        environment: childEnvironment({ BWS_ACCESS_TOKEN: token }),
+      },
+    );
+    if (result.exitCode !== 0)
+      throw new Error("Bitwarden record lookup failed");
+    const record = parseJson(result.stdout, "Bitwarden record");
+    if (record?.id !== secret.bitwardenSecretId)
+      throw new Error("Bitwarden record identity mismatch");
+    records.push(record);
+  }
   return records;
 };
 
@@ -377,7 +393,7 @@ export const parseSecretFields = (recordKey, value, requiredFields) => {
   return fields;
 };
 
-const resolveSecrets = (registry, records, selectedNames) => {
+export const selectSecrets = (registry, selectedNames) => {
   const requested =
     selectedNames.length === 0
       ? registry.secrets
@@ -387,9 +403,16 @@ const resolveSecrets = (registry, records, selectedNames) => {
   if (unknown.length > 0)
     throw new Error(`Unknown Secret: ${unknown.join(", ")}`);
 
-  return requested.map((secret) => {
+  return requested;
+};
+
+export const resolveSecrets = (registry, records, requested) =>
+  requested.map((secret) => {
     const recordKey = `${registry.bitwarden.basePrefix}/${secret.name}`;
-    const matches = records.filter((record) => record?.key === recordKey);
+    const matches = records.filter(
+      (record) =>
+        record?.id === secret.bitwardenSecretId && record?.key === recordKey,
+    );
     if (matches.length !== 1) {
       throw new Error(`${recordKey} must resolve to exactly one BWS record`);
     }
@@ -403,7 +426,6 @@ const resolveSecrets = (registry, records, selectedNames) => {
       fields: parseSecretFields(recordKey, record.value, secret.requiredFields),
     };
   });
-};
 
 const dockerConfig = (fields) => {
   const registry = fields.DOCKER_REGISTRY_URL.replace(/\/+$/u, "");
@@ -486,6 +508,42 @@ const addSyncWave = async (sealedYaml, syncWave, redact) => {
   return result.stdout;
 };
 
+export const assertSealedDocument = (input, definition, namespace) => {
+  const parsed = object(input, "sealed manifest");
+  const encryptedKeys = Object.keys(parsed.spec?.encryptedData ?? {}).sort();
+  const expectedKeys =
+    definition.render === "dockerconfigjson"
+      ? [".dockerconfigjson"]
+      : [...definition.requiredFields].sort();
+  if (
+    parsed.apiVersion !== "bitnami.com/v1alpha1" ||
+    parsed.kind !== "SealedSecret" ||
+    parsed.metadata?.name !== definition.name ||
+    parsed.metadata?.namespace !== namespace ||
+    parsed.spec?.template?.metadata?.name !== definition.name ||
+    parsed.spec?.template?.metadata?.namespace !== namespace ||
+    parsed.spec?.template?.type !== definition.type ||
+    Object.values(parsed.spec?.encryptedData ?? {}).some(
+      (value) => typeof value !== "string" || value.length === 0,
+    ) ||
+    ["data", "stringData"].some(
+      (key) =>
+        Object.hasOwn(parsed, key) ||
+        Object.hasOwn(parsed.spec ?? {}, key) ||
+        Object.hasOwn(parsed.spec?.template ?? {}, key),
+    ) ||
+    [parsed.metadata, parsed.spec?.template?.metadata].some((metadata) =>
+      [
+        "sealedsecrets.bitnami.com/cluster-wide",
+        "sealedsecrets.bitnami.com/namespace-wide",
+      ].some((key) => Object.hasOwn(metadata?.annotations ?? {}, key)),
+    ) ||
+    JSON.stringify(encryptedKeys) !== JSON.stringify(expectedKeys)
+  ) {
+    throw new Error(`${definition.name} sealed metadata contract failed`);
+  }
+};
+
 const validateSealedStructure = async (
   sealedYaml,
   resolved,
@@ -505,20 +563,7 @@ const validateSealedStructure = async (
     parsedResult.stdout,
     `${resolved.secret.name} sealed manifest`,
   );
-  const encryptedKeys = Object.keys(parsed.spec?.encryptedData ?? {}).sort();
-  const expectedKeys =
-    resolved.secret.render === "dockerconfigjson"
-      ? [".dockerconfigjson"]
-      : [...resolved.secret.requiredFields].sort();
-  if (
-    parsed.kind !== "SealedSecret" ||
-    parsed.metadata?.name !== resolved.secret.name ||
-    parsed.metadata?.namespace !== registry.target.namespace ||
-    parsed.spec?.template?.type !== resolved.secret.type ||
-    JSON.stringify(encryptedKeys) !== JSON.stringify(expectedKeys)
-  ) {
-    throw new Error(`${resolved.secret.name} sealed metadata contract failed`);
-  }
+  assertSealedDocument(parsed, resolved.secret, registry.target.namespace);
   const validation = await runProcess(
     "kubeseal",
     [
@@ -640,14 +685,13 @@ export const run = async (options) => {
       "Explicit --registry, --kubeconfig, and --context are required",
     );
   }
-  const token = process.env.BWS_ACCESS_TOKEN;
-  if (!token) throw new Error("BWS_ACCESS_TOKEN is required");
   const registry = normalizeRegistry(
     parseJson(
       await readFile(absoluteFromRepository(options.registryPath), "utf8"),
       "secret registry",
     ),
   );
+  const requested = selectSecrets(registry, options.secretNames);
   options.kubeconfig = path.resolve(options.kubeconfig);
   for (const command of ["bws", "kubectl", "kubeseal", "yq"]) {
     await requireCommand(command);
@@ -655,8 +699,9 @@ export const run = async (options) => {
   await assertTarget(registry, options);
   await assertController(registry, options);
   await assertKustomization(registry);
-  const records = await listBitwardenSecrets(token);
-  const resolved = resolveSecrets(registry, records, options.secretNames);
+  const token = await readAccessToken({ runProcess });
+  const records = await fetchBitwardenSecrets(token, requested);
+  const resolved = resolveSecrets(registry, records, requested);
   const generated = [];
   for (const secret of resolved) {
     generated.push(await sealOne(secret, registry, options));

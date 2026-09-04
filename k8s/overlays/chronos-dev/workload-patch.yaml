@@ -11,6 +11,9 @@ spec:
       maxSurge: 0
       maxUnavailable: 1
   template:
+    metadata:
+      annotations:
+        image-sha: a614723ef5a8035e70b244a76bb89b3d93d327d6
     spec:
       serviceAccountName: hack-for-facts-eb-client
       automountServiceAccountToken: false

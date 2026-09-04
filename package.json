@@ -12,7 +12,7 @@
   "scripts": {
     "prepare": "husky",
     "secrets:seal:chronos": "node scripts/seal-bitwarden-secrets.mjs --registry k8s/overlays/chronos-dev/secrets.registry.json",
-    "secrets:test": "node --test scripts/seal-bitwarden-secrets.test.mjs",
+    "secrets:test": "node --test scripts/seal-bitwarden-secrets.test.mjs scripts/seal-token.test.mjs",
     "dev": "vite",
     "dev:lint": "concurrently \"vite\" \"tsgo -w\" \"eslint ./src\"",
     "build": "tsgo -b && vite build && yarn i18n:compile",

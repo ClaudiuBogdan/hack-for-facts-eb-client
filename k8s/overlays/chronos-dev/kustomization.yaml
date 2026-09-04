@@ -20,3 +20,8 @@ patches:
   - path: configmap-patch.yaml
   - path: remove-platform-owned-resources.yaml
   - path: workload-patch.yaml
+
+# Chronos image pin is independent of the shared Phoenix base.
+images:
+  - name: harbor.devostack.com/hack-for-facts/hack-for-facts-eb-client
+    newTag: a614723ef5a8035e70b244a76bb89b3d93d327d6

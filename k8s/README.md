@@ -113,4 +113,15 @@ ArgoCD app definitions are under `argocd/applications/`:
 
 ## CI/CD image updates
 
-`/.github/workflows/ci.yml` deploy jobs update `k8s/base/kustomization.yaml` image tag and `image-sha` annotation with `${github.sha}`.
+`/.github/workflows/ci.yml` `deploy-dev` updates the Chronos development overlay image tag and workload annotation. `deploy-prod` still reads the frozen shared-base tag; see the migration boundary below.
+
+
+## Chronos migration deployment boundary (2026-09-05)
+
+User-approved migration work publishes server/client `dev` and updates only
+`overlays/chronos-dev`. The shared base image remains frozen so existing Phoenix
+rendered workloads do not change. Production promotion from this dev branch is
+suspended for the migration: do not merge these delivery changes to `main` or
+trigger production promotion until a separate production plan is approved.
+The client's existing production job still reads the frozen shared-base image;
+it must not be redirected to the Chronos development pin.
