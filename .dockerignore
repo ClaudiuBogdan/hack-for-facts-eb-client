@@ -24,3 +24,7 @@ tmp
 
 .env
 .env.*
+
+# Local-only prototyping surface (docs/design/prototyping.md).
+# Excluded so image builds never bundle it and Tailwind never scans it for CSS.
+src/development

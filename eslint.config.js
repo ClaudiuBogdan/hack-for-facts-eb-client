@@ -65,9 +65,38 @@ export default tseslint.config(
   // non-component values (e.g., loaders, route definitions). Disable the
   // react-refresh warning for those files.
   {
-    files: ['**/*.lazy.tsx', '**/routes/**/*.{ts,tsx}'],
+    files: [
+      '**/*.lazy.tsx',
+      '**/routes/**/*.{ts,tsx}',
+      'src/development/**/*.tsx',
+    ],
     rules: {
       'react-refresh/only-export-components': 'off',
+    },
+  },
+  // `/development/*` is a local-only prototyping surface (docs/design/prototyping.md).
+  // Nothing outside it may import it: production builds must be able to drop the
+  // whole directory. `no-restricted-paths` matches `target` against the importing
+  // file, so the prototypes' own sibling imports are excluded here rather than by
+  // narrowing `from`. It does not see `import.meta.glob`, which is how the route
+  // stubs reach the harness.
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/development/**'],
+    rules: {
+      'import-x/no-restricted-paths': [
+        'error',
+        {
+          zones: [
+            {
+              target: './src',
+              from: './src/development',
+              message:
+                'Nothing outside src/development may import it. Promote by moving the code into src/features/.',
+            },
+          ],
+        },
+      ],
     },
   },
   // Relax `no-explicit-any` in test files – test utilities often need `any`

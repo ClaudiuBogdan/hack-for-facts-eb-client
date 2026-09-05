@@ -14,6 +14,10 @@ const config = defineConfig({
         "<rootDir>/src/routes/pnrr_*.tsx",
         "<rootDir>/src/features/campaigns/buget/admin/**",
         "<rootDir>/src/features/pnrr/**",
+        // Local-only prototyping surface. Prototypes may use t/<Trans>; the
+        // source message renders under `vite dev`. Strings enter the catalogs
+        // on promotion, keeping messages.po out of every prototype commit.
+        "<rootDir>/src/development/**",
       ],
     },
     {
