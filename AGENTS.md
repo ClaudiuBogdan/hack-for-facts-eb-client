@@ -105,6 +105,7 @@ and 10+ features carry `mocks/`.
 | Question | Doc |
 |---|---|
 | What should this look like? Tokens, components, patterns | [`DESIGN.md`](DESIGN.md) |
+| Prototype competing designs locally, then promote the winner | [`docs/design/prototyping.md`](docs/design/prototyping.md) (`/development/*`, `yarn dev` only) |
 | Mock-first workflow and the dataset index | `docs/mock-first-ui-development.md` · `docs/scraper-data-catalog.md` (local-only) |
 | E2E strategy, reliability, flake triage | [`docs/e2e-testing-spec.md`](docs/e2e-testing-spec.md) · [`docs/e2e-reliability-guide.md`](docs/e2e-reliability-guide.md) |
 | Chart schemas and data validation | [`docs/chart-schema-guide.md`](docs/chart-schema-guide.md) · [`docs/chart-data-validation-spec.md`](docs/chart-data-validation-spec.md) |

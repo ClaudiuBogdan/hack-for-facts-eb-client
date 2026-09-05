@@ -255,6 +255,9 @@ Each `docs/design/<domain>/features/<feature-slug>.md` should contain:
   design source and the original UX doc only for traceability.
 - Decision: If implementation discovers a design gap, it should update the
   relevant design/feature doc before coding the changed behavior.
+- Decision: When a feature file leaves a visual or structural choice open,
+  prototype the candidates at `/development/*` (see
+  [`prototyping.md`](prototyping.md)) and record the outcome in the feature file.
 - Decision: Implementation should not add broad new route or component concepts
   that contradict this foundation without product-owner review.
 - Decision: Domain feature files are ordered MVP first, then high-value next.

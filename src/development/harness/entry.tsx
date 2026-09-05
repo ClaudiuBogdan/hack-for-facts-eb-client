@@ -1,6 +1,6 @@
 import { use } from 'react'
 import type { ComponentType, ReactNode } from 'react'
-import { Link, notFound } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { ErrorBoundary } from '@sentry/react'
 
 import { cn } from '@/lib/utils'
@@ -52,13 +52,22 @@ const byId = new Map(Object.entries(modules).map(([path, load]) => [idOf(path), 
 // Module-level cache so `use()` gets a stable promise across renders. Effects
 // never run on the server, so a `useEffect` loader would leave every prototype
 // blank in the SSR HTML.
-const cache = new Map<string, Promise<PrototypeDefinition>>()
+const cache = new Map<string, Promise<PrototypeDefinition | null>>()
 
-function loadPrototype(id: string): Promise<PrototypeDefinition> {
+// Returns null rather than throwing `notFound()`. A throw from inside this
+// component subtree does not set a status: React reports "Switched to client
+// rendering because the server rendering errored" and the response stays 200.
+// An unknown id is a typo on a local-only surface, so the useful answer is the
+// list of ids that do exist.
+function loadPrototype(id: string): Promise<PrototypeDefinition | null> {
   const cached = cache.get(id)
   if (cached) return cached
   const load = byId.get(id)
-  if (!load) throw notFound()
+  if (!load) {
+    const missing = Promise.resolve(null)
+    cache.set(id, missing)
+    return missing
+  }
   const promise = load().then((module) => module.prototype)
   cache.set(id, promise)
   return promise
@@ -86,6 +95,9 @@ function loadIndex(): Promise<ReadonlyArray<IndexEntry>> {
           variantKeys: [],
           error: result.reason instanceof Error ? result.reason.message : String(result.reason),
         }
+      }
+      if (!result.value) {
+        return { id, title: id, variantKeys: [], error: 'module not found' }
       }
       return {
         id,
@@ -191,6 +203,37 @@ export function IndexView() {
 
 export function CompareView({ id, v, layout }: CompareViewProps) {
   const prototype = use(loadPrototype(id))
+
+  if (!prototype) {
+    return (
+      <Notice tone="error">
+        <p>
+          No prototype with id <code className="text-xs">{id}</code>.
+        </p>
+        {byId.size > 0 ? (
+          <ul className="mt-2 space-y-1">
+            {[...byId.keys()].sort().map((known) => (
+              <li key={known}>
+                <Link
+                  to="/development/$"
+                  params={{ _splat: known }}
+                  className="text-xs underline-offset-4 hover:underline"
+                >
+                  {known}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-2 text-xs text-muted-foreground">
+            None on disk. Copy{' '}
+            <code>src/development/prototypes/_example/hello.prototype.tsx</code>.
+          </p>
+        )}
+      </Notice>
+    )
+  }
+
   const { keys, unknown } = selectVariants(prototype, v)
   const invalidKeys = Object.keys(prototype.variants).filter((key) => !isValidVariantKey(key))
 
