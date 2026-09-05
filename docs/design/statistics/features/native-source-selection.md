@@ -167,9 +167,32 @@ do not supply automatic charts or headline values. Native landing and detail SSR
 payloads carry a contract stamp; unstamped initialData is not seeded into the new
 query caches. Public native reads forward cancellation and omit authentication.
 
-This prerequisite does not enable INS. Remaining release gates include anonymous
-native dataset/dimension bootstrap reads and versioned picker keys, strict explicit
+This prerequisite does not enable INS. Remaining release gates include remaining catalog/search bootstrap consumers, strict explicit
 source selections, all geographic dimension controls, full source table/CSV
 provenance, comparisons/decade/embedded consumers, producer publication and real
 workload acceptance. No legacy document may be sent to the native endpoint during
 rollout until that consumer has been migrated.
+
+
+## Dataset metadata and dimension pickers
+
+Dataset-detail and dimension-member pages now use anonymous native transport,
+forward cancellation and normalize dataset-code case before request/cache identity.
+Available datasets require a certified source descriptor; unpublished catalog-only
+metadata requires a valid source dimension layout without invented publication.
+Each member page carries its descriptor in the same operation and validates
+dataset, dimension role, signed integer member identity and continuation. Invalid
+responses fail visibly rather than becoming empty options. A canonical territory
+may remain unresolved on a valid source geographic member.
+
+All detail classification and unit controls share one paginated picker, including
+small lists. This removes separate capped lists and gives every control loading,
+error/retry and continuation behavior. Units remain selectable without a resolved
+label. Unknown counts do not hide pagination; offsets advance by returned rows,
+and back navigation uses visited offsets. In-flight or previous-search options
+cannot be selected. Detail, saved-editor and comparison metadata keys are versioned.
+
+This is bootstrap/picker plumbing, not INS enablement. Strict explicit URL/source
+selection, all geographic-axis controls, complete source-vector comparisons and
+other catalog/search consumers remain gates. The comparison browser fixtures
+validate synthetic metadata compatibility, not geographic/source-series parity.

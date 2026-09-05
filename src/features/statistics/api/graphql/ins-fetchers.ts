@@ -7,10 +7,8 @@ import type {
   InsDashboardData,
   InsDataset,
   InsDatasetConnection,
-  InsDatasetDetails,
   InsDatasetDimensionsResult,
   InsDatasetFilterInput,
-  InsDimensionValueConnection,
   InsObservation,
   InsObservationConnection,
   InsObservationFilterInput,
@@ -19,8 +17,6 @@ import type {
 import {
   buildInsObservationsBatchQuery,
   INS_CONTEXTS_QUERY,
-  INS_DATASET_DETAILS_QUERY,
-  INS_DATASET_DIMENSION_VALUES_QUERY,
   INS_DATASET_DIMENSIONS_QUERY,
   INS_DATASET_HISTORY_QUERY,
   INS_DATASETS_BY_CODES_QUERY,
@@ -129,52 +125,7 @@ export async function searchInsDatasets(params: {
   return response.insDatasets
 }
 
-export async function getInsDatasetDetails(
-  code: string,
-  signal?: AbortSignal,
-): Promise<InsDatasetDetails | null> {
-  if (!code) return null
-
-  const response = await graphqlRequest<{ insDataset: InsDatasetDetails | null }>(
-    INS_DATASET_DETAILS_QUERY,
-    { code },
-    insRequestOptions(signal)
-  )
-
-  return response.insDataset
-}
-
-export async function getInsDimensionValuesPage(params: {
-  datasetCode: string
-  dimensionIndex: number
-  search?: string
-  limit?: number
-  offset?: number
-  signal?: AbortSignal
-}): Promise<InsDimensionValueConnection> {
-  if (!params.datasetCode) {
-    return {
-      nodes: [],
-      pageInfo: { totalCount: 0, hasNextPage: false, hasPreviousPage: false },
-    }
-  }
-
-  const response = await graphqlRequest<{
-    insDatasetDimensionValues: InsDimensionValueConnection
-  }>(INS_DATASET_DIMENSION_VALUES_QUERY, {
-    datasetCode: params.datasetCode,
-    dimensionIndex: params.dimensionIndex,
-    search: params.search ?? '',
-    limit: params.limit ?? 50,
-    offset: params.offset ?? 0,
-  },
-    insRequestOptions(params.signal))
-
-  return response.insDatasetDimensionValues ?? {
-    nodes: [],
-    pageInfo: { totalCount: 0, hasNextPage: false, hasPreviousPage: false },
-  }
-}
+export { getInsDatasetDetails, getInsDimensionValuesPage } from './ins-bootstrap-fetchers'
 
 export async function getInsObservationsPage(params: {
   datasetCode: string

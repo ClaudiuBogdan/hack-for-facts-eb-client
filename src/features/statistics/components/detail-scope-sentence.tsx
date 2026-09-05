@@ -30,11 +30,9 @@ import type {
   InsPeriodicity,
 } from '@/schemas/ins'
 import type { StatisticsDatasetDetailSearch } from '@/schemas/statistics'
-import { useDimensionValues } from '../hooks/use-dataset-detail'
 import {
   classificationPinMap,
   classificationTypeCode,
-  DIMENSION_PAGE_SIZE,
   dimensionsOfType,
   encodeTerritoryPin,
   removeClassificationPin,
@@ -135,7 +133,10 @@ export function DetailScopeSentence({
                     }
                   >
                     {segment.text}
-                    <ChevronDown className="h-3 w-3 text-muted-foreground" aria-hidden />
+                    <ChevronDown
+                      className="h-3 w-3 text-muted-foreground"
+                      aria-hidden
+                    />
                   </button>
                 </PopoverTrigger>
                 <PopoverContent align="start" className="w-80 space-y-1.5">
@@ -143,7 +144,9 @@ export function DetailScopeSentence({
                 </PopoverContent>
               </Popover>
             ) : (
-              <span className="font-medium text-foreground">{segment.text}</span>
+              <span className="font-medium text-foreground">
+                {segment.text}
+              </span>
             )}
           </span>
         ))}
@@ -151,8 +154,8 @@ export function DetailScopeSentence({
       {segments.some((segment) => segment.defaulted || segment.unresolved) ? (
         <p className="mt-1 text-xs text-muted-foreground">
           <Trans>
-            Valorile subliniate punctat sunt implicite sau încă nealese —
-            apasă pe ele ca să le alegi sau să le schimbi.
+            Valorile subliniate punctat sunt implicite sau încă nealese — apasă
+            pe ele ca să le alegi sau să le schimbi.
           </Trans>
         </p>
       ) : null}
@@ -274,21 +277,20 @@ function buildSegments(params: {
   }
 
   const unitDimension = dimensionsOfType(dimensions, 'UNIT_OF_MEASURE')[0]
-  if (unitDimension && unitLabel) {
-    const multipleUnits = (unitDimension.option_count ?? 0) > 1
+  if (unitDimension) {
     segments.push({
       id: 'unitate',
-      text: unitLabel,
-      defaulted: scope.unitDefaulted && multipleUnits,
+      text: unitLabel ?? t`Alege o unitate`,
+      defaulted: scope.unitDefaulted,
       controlLabel: unitDimension.label_ro ?? t`Unitate de măsură`,
-      control: multipleUnits ? (
+      control: (
         <UnitControl
           datasetCode={dataset.code}
           dimension={unitDimension}
           search={search}
           onChange={onChange}
         />
-      ) : null,
+      ),
     })
   }
 
@@ -302,25 +304,30 @@ function buildSegments(params: {
       control:
         periodicities.length > 1 ? (
           <div className="space-y-1.5">
-          <Label>{t`Frecvență`}</Label>
-          <Select
-            value={scope.periodicity}
-            onValueChange={(value) => {
-              const periodicity = value as InsPeriodicity
-              if (isInsChartPeriodicity(periodicity)) onChange({ frecventa: periodicity })
-            }}
-          >
-            <SelectTrigger className="h-10" aria-label={t`Frecvență`}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {periodicities.map((periodicity) => (
-                <SelectItem key={periodicity} value={periodicity} disabled={!isInsChartPeriodicity(periodicity)}>
-                  {periodicityLabel(periodicity)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            <Label>{t`Frecvență`}</Label>
+            <Select
+              value={scope.periodicity}
+              onValueChange={(value) => {
+                const periodicity = value as InsPeriodicity
+                if (isInsChartPeriodicity(periodicity))
+                  onChange({ frecventa: periodicity })
+              }}
+            >
+              <SelectTrigger className="h-10" aria-label={t`Frecvență`}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {periodicities.map((periodicity) => (
+                  <SelectItem
+                    key={periodicity}
+                    value={periodicity}
+                    disabled={!isInsChartPeriodicity(periodicity)}
+                  >
+                    {periodicityLabel(periodicity)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         ) : null,
     })
@@ -332,9 +339,7 @@ function buildSegments(params: {
       text: yearSpanLabel,
       defaulted: search.din === undefined && search.pana === undefined,
       controlLabel: t`Interval de ani`,
-      control: (
-        <YearWindowControl search={search} onChange={onChange} />
-      ),
+      control: <YearWindowControl search={search} onChange={onChange} />,
     })
   }
 
@@ -361,19 +366,21 @@ function TerritoryControl({
       selectedKey={search.teritoriu ?? null}
       selectedLabel={search.teritoriu ?? null}
       optionKey={(value) => {
-        const pin = value.territory ? territoryPinFromValue(value.territory) : null
+        const pin = value.territory
+          ? territoryPinFromValue(value.territory)
+          : null
         return pin ? encodeTerritoryPin(pin) : null
       }}
       onSelect={(value) => {
-        const pin = value.territory ? territoryPinFromValue(value.territory) : null
+        const pin = value.territory
+          ? territoryPinFromValue(value.territory)
+          : null
         if (pin) onChange({ teritoriu: encodeTerritoryPin(pin) })
       }}
       onClear={() => onChange({ teritoriu: undefined })}
     />
   )
 }
-
-const INLINE_OPTION_LIMIT = 10
 
 function ClassificationControl({
   datasetCode,
@@ -410,20 +417,6 @@ function ClassificationControl({
     })
   }
 
-  // Small dimensions render their options directly — two clicks, no search.
-  if ((dimension.option_count ?? Number.POSITIVE_INFINITY) <= INLINE_OPTION_LIMIT) {
-    return (
-      <InlineClassificationList
-        datasetCode={datasetCode}
-        dimensionIndex={dimension.index}
-        label={label}
-        pinnedValue={pinnedValue}
-        onSelect={selectPin}
-        onClear={clearPin}
-      />
-    )
-  }
-
   return (
     <DetailDimensionCombobox
       datasetCode={datasetCode}
@@ -442,62 +435,6 @@ function ClassificationControl({
   )
 }
 
-/** The direct option list for small dimensions (mounts when its surface opens). */
-function InlineClassificationList({
-  datasetCode,
-  dimensionIndex,
-  label,
-  pinnedValue,
-  onSelect,
-  onClear,
-}: {
-  readonly datasetCode: string
-  readonly dimensionIndex: number
-  readonly label: string
-  readonly pinnedValue: string | null
-  readonly onSelect: (code: string) => void
-  readonly onClear: () => void
-}) {
-  const optionsQuery = useDimensionValues({
-    datasetCode,
-    dimensionIndex,
-    search: undefined,
-    limit: INLINE_OPTION_LIMIT,
-    offset: 0,
-    enabled: true,
-  })
-  const options = optionsQuery.data?.nodes ?? []
-
-  return (
-    <div className="space-y-1.5">
-      <Label>{label}</Label>
-      <ul className="space-y-0.5">
-        {options.map((option) => {
-          const code = option.classification_value?.code
-          if (!code) return null
-          const selected = pinnedValue === code
-          return (
-            <li key={option.nom_item_id}>
-              <button
-                type="button"
-                onClick={() => (selected ? onClear() : onSelect(code))}
-                aria-pressed={selected}
-                className={
-                  selected
-                    ? 'w-full rounded-md bg-muted px-2 py-1.5 text-left text-sm font-medium'
-                    : 'w-full rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted/60'
-                }
-              >
-                {option.classification_value?.name_ro ?? option.label_ro ?? code}
-              </button>
-            </li>
-          )
-        })}
-      </ul>
-    </div>
-  )
-}
-
 function UnitControl({
   datasetCode,
   dimension,
@@ -509,37 +446,22 @@ function UnitControl({
   readonly search: StatisticsDatasetDetailSearch
   readonly onChange: (patch: DetailSearchPatch) => void
 }) {
-  const unitsQuery = useDimensionValues({
-    datasetCode,
-    dimensionIndex: dimension.index,
-    search: undefined,
-    limit: DIMENSION_PAGE_SIZE,
-    offset: 0,
-    enabled: true,
-  })
-  const units = unitsQuery.data?.nodes ?? []
-
   return (
-    <div className="space-y-1.5">
-    <Label>{t`Unitate de măsură`}</Label>
-    <Select
-      value={search.unitate ?? ''}
-      onValueChange={(value) => onChange({ unitate: value })}
-    >
-      <SelectTrigger className="h-10" aria-label={t`Unitate de măsură`}>
-        <SelectValue placeholder={t`Alege o unitate`} />
-      </SelectTrigger>
-      <SelectContent>
-        {units.map((unit) =>
-          unit.unit?.code ? (
-            <SelectItem key={unit.nom_item_id} value={unit.unit.code}>
-              {unit.unit?.name_ro ?? unit.unit?.symbol ?? unit.label_ro ?? unit.unit.code}
-            </SelectItem>
-          ) : null,
-        )}
-      </SelectContent>
-    </Select>
-    </div>
+    <DetailDimensionCombobox
+      datasetCode={datasetCode}
+      dimensionIndex={dimension.index}
+      label={t`Unitate de măsură`}
+      placeholder={t`Alege o unitate`}
+      selectedKey={search.unitate ?? null}
+      selectedLabel={search.unitate ?? null}
+      optionKey={(value) => value.unit?.code ?? null}
+      onSelect={(value) => {
+        if (value.unit?.code !== undefined && value.unit.code !== null) {
+          onChange({ unitate: value.unit.code })
+        }
+      }}
+      onClear={() => onChange({ unitate: undefined })}
+    />
   )
 }
 
@@ -564,50 +486,50 @@ function YearWindowControl({
 
   return (
     <div className="space-y-1.5">
-    <Label>{t`Interval de ani`}</Label>
-    <div className="flex items-center gap-2">
-      <input
-        type="number"
-        inputMode="numeric"
-        className="h-10 w-24 rounded-md border border-input bg-background px-3 text-sm tabular-nums"
-        aria-label={t`An de început`}
-        placeholder={t`din`}
-        value={dinDraft}
-        onChange={(event) => setDinDraft(event.target.value)}
-        onBlur={() => commit('din', dinDraft)}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter') commit('din', dinDraft)
-        }}
-      />
-      <span aria-hidden>–</span>
-      <input
-        type="number"
-        inputMode="numeric"
-        className="h-10 w-24 rounded-md border border-input bg-background px-3 text-sm tabular-nums"
-        aria-label={t`An de sfârșit`}
-        placeholder={t`până în`}
-        value={panaDraft}
-        onChange={(event) => setPanaDraft(event.target.value)}
-        onBlur={() => commit('pana', panaDraft)}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter') commit('pana', panaDraft)
-        }}
-      />
-      {search.din !== undefined || search.pana !== undefined ? (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 px-2 text-xs"
-          onClick={() => {
-            setDinDraft('')
-            setPanaDraft('')
-            onChange({ din: undefined, pana: undefined })
+      <Label>{t`Interval de ani`}</Label>
+      <div className="flex items-center gap-2">
+        <input
+          type="number"
+          inputMode="numeric"
+          className="h-10 w-24 rounded-md border border-input bg-background px-3 text-sm tabular-nums"
+          aria-label={t`An de început`}
+          placeholder={t`din`}
+          value={dinDraft}
+          onChange={(event) => setDinDraft(event.target.value)}
+          onBlur={() => commit('din', dinDraft)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') commit('din', dinDraft)
           }}
-        >
-          <Trans>Resetează</Trans>
-        </Button>
-      ) : null}
-    </div>
+        />
+        <span aria-hidden>–</span>
+        <input
+          type="number"
+          inputMode="numeric"
+          className="h-10 w-24 rounded-md border border-input bg-background px-3 text-sm tabular-nums"
+          aria-label={t`An de sfârșit`}
+          placeholder={t`până în`}
+          value={panaDraft}
+          onChange={(event) => setPanaDraft(event.target.value)}
+          onBlur={() => commit('pana', panaDraft)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') commit('pana', panaDraft)
+          }}
+        />
+        {search.din !== undefined || search.pana !== undefined ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 px-2 text-xs"
+            onClick={() => {
+              setDinDraft('')
+              setPanaDraft('')
+              onChange({ din: undefined, pana: undefined })
+            }}
+          >
+            <Trans>Resetează</Trans>
+          </Button>
+        ) : null}
+      </div>
     </div>
   )
 }

@@ -2,7 +2,8 @@
  * Integration tests for territory-first comparisons (mixed levels).
  *
  * Route: /statistici/comparatii
- * Fixtures captured from the live API. The RESULTS are always ONE
+ * Synthetic native metadata plus existing comparison wire fixtures; see README.
+ * In these fixtures the RESULTS are ONE
  * InsObservations POST; picker/metadata requests are separate and declared.
  */
 

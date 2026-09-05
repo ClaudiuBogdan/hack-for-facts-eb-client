@@ -1,6 +1,6 @@
+import { normalizeInsDatasetCode } from '@/lib/ins/source-contract'
 import { useQuery } from '@tanstack/react-query'
 import type {
-  InsDatasetDetails,
   InsDimensionValueConnection,
   InsEntitySelectorInput,
   InsObservationFilterInput,
@@ -10,7 +10,6 @@ import type {
   StatisticsDatasetTier0,
 } from '@/schemas/statistics'
 import {
-  fetchDatasetDetail,
   fetchDatasetSeries,
   fetchDatasetTier0,
   fetchDimensionValuesPage,
@@ -18,15 +17,6 @@ import {
 
 const DATASET_STALE_TIME = 1000 * 60 * 60 * 24
 const DIMENSION_STALE_TIME = 1000 * 60 * 30
-
-export function useDatasetDetail(code: string) {
-  return useQuery<InsDatasetDetails | null>({
-    queryKey: ['statisticsDatasetDetail', code],
-    queryFn: ({ signal }) => fetchDatasetDetail(code, signal),
-    enabled: code.trim().length > 0,
-    staleTime: DATASET_STALE_TIME,
-  })
-}
 
 /**
  * One page of a dimension's options. Always paged and always server-searched:
@@ -42,11 +32,13 @@ export function useDimensionValues(params: {
   readonly enabled: boolean
 }) {
   const search = params.search?.trim() || undefined
+  const datasetCode = normalizeInsDatasetCode(params.datasetCode)
 
   return useQuery<InsDimensionValueConnection>({
     queryKey: [
       'statisticsDimensionValues',
-      params.datasetCode,
+      'native-v1',
+      datasetCode,
       params.dimensionIndex,
       search ?? '',
       params.limit,
@@ -54,16 +46,15 @@ export function useDimensionValues(params: {
     ],
     queryFn: ({ signal }) =>
       fetchDimensionValuesPage({
-        datasetCode: params.datasetCode,
+        datasetCode,
         dimensionIndex: params.dimensionIndex,
         search,
         limit: params.limit,
         offset: params.offset,
         signal,
       }),
-    enabled: params.enabled && params.datasetCode.trim().length > 0,
+    enabled: params.enabled && datasetCode.length > 0,
     staleTime: DIMENSION_STALE_TIME,
-    placeholderData: (previous) => previous,
   })
 }
 

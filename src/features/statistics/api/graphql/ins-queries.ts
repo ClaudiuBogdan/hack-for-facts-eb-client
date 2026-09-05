@@ -154,6 +154,10 @@ export const INS_DATASET_DIMENSION_VALUES_QUERY = `
     $limit: Int
     $offset: Int
   ) {
+    descriptor: insDataset(code: $datasetCode) {
+      ${INS_DATASET_FIELDS}
+      ${INS_DATASET_DIMENSION_FIELDS}
+    }
     insDatasetDimensionValues(
       datasetCode: $datasetCode
       dimensionIndex: $dimensionIndex

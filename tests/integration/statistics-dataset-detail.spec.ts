@@ -10,6 +10,8 @@ import { test, expect } from '../utils/integration-base'
 import { waitForPageReady } from '../utils/test-helpers'
 import type { MockApiFixture } from '../utils/types'
 import type { Page } from '@playwright/test'
+import { readFileSync } from 'node:fs'
+const tier0Fixture = JSON.parse(readFileSync(new URL('../fixtures/statistics-dataset-detail-flow/tier0-pop107d.json', import.meta.url), 'utf8'))
 
 const ROUTE = '/statistici/seturi/POP107D'
 
@@ -113,12 +115,11 @@ test.describe('Dataset detail — the disclosure ladder', () => {
     await waitForPageReady(page)
     await expect(page.getByText('21.739.373')).toBeVisible({ timeout: 15000 })
 
-    // Desktop: the Sexe segment (3 options) opens a popover holding the C4
-    // INLINE list — plain aria-pressed buttons, no combobox. Segment order
-    // follows the dims (Vârste first), so nth(1) is Sexe; the wire names are
-    // capitalized with a trailing space, hence the /i.
+    // Every source dimension uses the same paginated picker, including small
+    // lists. Segment order follows the dimensions: age first, then sex.
     await page.locator('button', { hasText: /^total/i }).nth(1).click()
-    await page.getByRole('button', { name: /Feminin/i }).click()
+    await page.getByRole('combobox', { name: 'Sexe' }).click()
+    await page.getByRole('option', { name: /Feminin/i }).click()
 
     // The URL contract: the pin lands in ?clasificari=.
     await expect
@@ -133,6 +134,50 @@ test.describe('Dataset detail — the disclosure ladder', () => {
 
     // The hero re-resolves to the pinned cell, (implicit) drops for it.
     await expect(page.getByText('11.136.500')).toBeVisible({ timeout: 15000 })
+  })
+
+  test('source picker follows short unknown-count pages and hides stale search options', async ({ page }) => {
+    let releaseSearch!: () => void
+    const pendingSearch = new Promise<void>((resolve) => { releaseSearch = resolve })
+    const requests: { offset: number; search: string }[] = []
+    await page.route('**/graphql', async (route) => {
+      const body = route.request().postDataJSON()
+      if (!String(body.query).includes('query InsDatasetDimensionValues') || body.variables.dimensionIndex !== 0) {
+        await route.fallback()
+        return
+      }
+      expect(new URL(route.request().url()).pathname).toBe('/api/v1/graphql')
+      expect(route.request().headers()).not.toHaveProperty('authorization')
+      const { offset, search } = body.variables
+      requests.push({ offset, search })
+      if (search === 'searched') await pendingSearch
+      const ids = search === 'searched' ? [111] : offset === 0 ? [100, 101] : [102]
+      await route.fulfill({ json: { data: {
+        descriptor: tier0Fixture.data.dataset,
+        insDatasetDimensionValues: {
+          nodes: ids.map((id) => ({ nom_item_id: id, dimension_type: 'CLASSIFICATION',
+            label_ro: `Synthetic age ${id}`, classification_value: { type_code: 'D0', code: String(id) } })),
+          pageInfo: { totalCount: -1, hasNextPage: search === '' && offset === 0, hasPreviousPage: offset > 0 },
+        },
+      } } })
+    })
+    await page.goto(ROUTE)
+    await expect(page.getByText('21.739.373')).toBeVisible()
+    await page.locator('button', { hasText: /^total/i }).first().click()
+    await page.getByRole('combobox', { name: 'Varste si grupe de varsta' }).click()
+    await expect(page.getByRole('option', { name: 'Synthetic age 100' })).toBeVisible()
+    await page.getByRole('button', { name: 'Pagina următoare de opțiuni' }).click()
+    await expect(page.getByRole('option', { name: 'Synthetic age 102' })).toBeVisible()
+    expect(requests.map((r) => r.offset)).toEqual([0, 2])
+    await page.getByRole('button', { name: 'Pagina anterioară de opțiuni' }).click()
+    await expect(page.getByRole('option', { name: 'Synthetic age 100' })).toBeVisible()
+    await page.getByPlaceholder('Caută…').fill('searched')
+    await expect(page.getByRole('option', { name: 'Synthetic age 100' })).not.toBeVisible()
+    await expect.poll(() => requests.some((r) => r.search === 'searched')).toBe(true)
+    releaseSearch()
+    await expect(page.getByRole('option', { name: 'Synthetic age 111' })).toBeVisible()
+    expect(requests.at(-1)).toEqual({ offset: 0, search: 'searched' })
+    await page.screenshot({ path: test.info().outputPath('native-source-picker.png'), fullPage: true })
   })
 
   test('an unknown code renders not-found, not an error page', async ({ page }) => {

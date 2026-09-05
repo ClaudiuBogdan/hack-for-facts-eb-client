@@ -13,7 +13,7 @@
           "time_period": null,
           "classification_value": null,
           "unit": {
-            "code": "PERSONS",
+            "code": "9685",
             "symbol": "pers.",
             "name_ro": "Numar persoane"
           }
@@ -24,6 +24,78 @@
         "hasNextPage": false,
         "hasPreviousPage": false
       }
+    },
+    "descriptor": {
+      "id": "synthetic-FOM104D",
+      "code": "FOM104D",
+      "name_ro": "Numarul mediu al salariatilor pe judete si localitati",
+      "name_en": "Average number of employees by counties and localities",
+      "definition_ro": "Numarul mediu al salariatilor cuprinde persoanele angajate cu contract de munca/raport de serviciu pe durata determinata sau nedeterminata (inclusiv lucratorii sezonieri, managerul sau administratorul), al caror contract de munca/raport de serviciu nu a fost suspendat in perioada de referinta.\nNumarul mediu al salariatilor se calculeaza ca medie aritmetica simpla rezultata din suma efectivelor zilnice de salariati (exclusiv cei al caror contract de munca/raport de serviciu a fost suspendat), din perioada de referinta, inclusiv din zilele de repaus saptamanal, sarbatori legale si alte zile nelucratoare, impartita la numarul total al zilelor calendaristice.\nIn efectivul zilnic al salariatilor luat in calculul numarului mediu se cuprind urmatoarele categorii:\n- salariatii cu contract de munca/raport de serviciu pe durata determinata sau nedeterminata, inclusiv salariatii detasati la lucru in strainatate (daca unitatea care i-a detasat le-a asigurat o remuneratie in tara, pentru care a virat contributii sociale obligatorii si impozit);\n- salariatii al caror contract de munca/raport de serviciu a fost suspendat din initiativa angajatorului (in cazul intreruperii temporare a activitatii) si au beneficiat de o indemnizatie din salariul de baza corespunzator locului de munca ocupat;\n- salariatii aflati in incapacitate temporara de munca (concediu medical, carantina/izolare la domiciliu) pe perioada cand acestia sunt platiti de angajator din fonduri proprii;\n- salariatii parinti, in timpul zilelor libere acordate pentru supravegherea copiilor, in situatia inchiderii temporare a unitatilor de invatamant, indiferent din ce fonduri sunt platiti;\n- salariatii al caror timp de lucru a fost redus temporar, indiferent din ce fonduri sunt platiti. \nDin efectivul zilnic al salariatilor luat in calculul numarului mediu se exclud: salariatii aflati in concedii fara plata, in greva, patronii care isi desfasoara activitatea in propria unitate si pentru care sursa de venit o constituie numai dividendele si profitul unitatii, lucratorii familiali (persoanele care-si exercita activitatea intr-o unitate economica apartinand familiei sau unei rude, pe care o ajuta si pentru care nu primesc remuneratie sub forma de salariu; plata se realizeaza in natura (hrana, haine, locuinta) sau ocazional, cu titlu exceptional, si in bani, fara a figura pe statul de salarii), membrii consiliilor judetene si locale, zilierii (persoane fizice care desfasoara activitati necalificate cu caracter ocazional, conform prevederilor legale in vigoare). In zilele de repaus saptamanal, sarbatori legale si alte zile nelucratoare se ia in calcul ca efectiv zilnic numarul salariatilor din ziua precedenta, cu exceptia celor al caror contract de munca/raport de serviciu a incetat in aceasta zi. In cazul cand unitatea a fost infiintata sau si-a incetat activitatea in cursul perioadei de referinta, se iau in calcul efectivele zilnice numai pentru perioada in care a functionat, iar suma rezultata se imparte la numarul total al zilelor calendaristice din perioada de referinta.\nSalariatii angajati cu norma partiala se includ in numarul mediu proportional cu timpul de lucru prevazut in contractul de munca/ raport de serviciu. In efectivul salariatilor luat in calculul numarului mediu se includ numai persoanele care au fost platite.\nIn mod exceptional, pentru cazurile cand, in cursul perioadei de referinta, se platesc sume corespunzatoare perioadelor anterioare (sume platite retroactiv ca urmare a castigarii in instanta a drepturilor banesti aferente anilor anteriori), numarul beneficiarilor (fosti salariati sau salariati cu contract de munca/raport de serviciu suspendat) se include in numarul mediu al salariatilor proportional cu perioadele pentru care se realizeaza platile respective, astfel incat sa existe o corespondenta directa intre sumele brute platite si numarul mediu al salariatilor.\nIncepand cu anul 2003, din efectivele zilnice luate in calculul numarului mediu au fost exclusi salariatii al caror contract de munca/raport de serviciu a fost suspendat, conform prevederilor legale in vigoare.",
+      "definition_en": "The average number of employees comprises the persons employed under a labour contract/agreement on a definite or indefinite duration (including seasonal workers, the manager or the administrator), whose labour contract/agreement  relationship was not suspended during the reference period.\nThe average number of employees is calculated as a simple arithmetic mean of the sum of the daily number of employees (those with suspended labour contract/agreement excluded), over the reference period, including the week-ends, legal holidays and other non-working days, divided by the total number of calendar days. \nIn the total daily number of employees considered for the calculation of the average number are included the following categories:\n- the employees with labour contract/agreement for a definite or indefinite period of time, including the employees detached to work abroad (if the unit that detached them provided remuneration in the country, for which it transferred compulsory social contributions and tax);\n- the employees whose labour contract/agreement has been suspended at the initiative of the employer (in case of temporary interruption of activity) and have received an allowance from the basic salary corresponding to the job;\n- the employees who are temporarily in work incapacity (medical leave, quarantine/home isolation) during the time period in which they are paid from the employer own funds; \n- the employees parents, during the days off granted to them in order to supervise their children, in cases of temporary closure of educational institutions, irrespective of the funds from which they are paid;\n- the employees whose working hours has been temporarily reduced, irrespective of the funds from which they are paid.\nIn the daily number of employees taken into consideration when calculating the average number, the following are not included: employees on leaves without pay, on strike, owners who carry out their activity within their own enterprises and for whom the income source is solely represented by unit dividends and profits, unpaid family workers (persons who are carrying out their activity within an economic unit belonging to the family or to a relative, by helping it and for which they do not receive a compensation as wages and salaries; the payment is done in kind (food, clothing, housing) or occasionally or exceptionally in cash, without being included on payrolls), members of local and county councils, day labourers (persons who carry out unskilled activities on an occasional basis, in accordance with the legal provisions in force). During the week-ends, legal holidays and other non-working days, the number of employees from the previous day is taken into consideration as daily number of employees, except the number of those employees whose labour contract/agreement ceased that day. If the unit established or ceased its activity during the reference period, the daily number of employees is taking into account only for the period in which it operated, and the resulting amount is divided by the total number of calendar days from the reference period.\nPart-time employees are included in the average number proportional with the working time included in the labour contract/agreement. In the number of employees taken into consideration in the average number only the paid persons are included.\nExceptionally, in the cases when amounts for prior periods are paid (backdated paid arrears as consequence of wining the lawsuits involving the money rights for the previous years), the number of beneficiaries (former employees or employees with suspended labour contract/agreement) are included in the average number of employees proportionally with the periods for which respective payments are done, so that a direct correlation between gross amounts paid and the average number of employees exists.\nBeginning with 2003, the daily number of employees taken into account for the calculation of the average number no longer include the employees whose labour contract/agreement was suspended according to the legal provisions in force.",
+      "periodicity": [
+        "ANNUAL"
+      ],
+      "year_range": [
+        1990,
+        2024
+      ],
+      "dimension_count": 4,
+      "has_uat_data": true,
+      "has_county_data": true,
+      "has_siruta": true,
+      "sync_status": "SYNCED",
+      "data_status": "AVAILABLE",
+      "last_sync_at": "2026-02-05T11:00:11.630Z",
+      "context_code": "1513",
+      "context_name_ro": "9. SALARIATI",
+      "context_name_en": "9. EMPLOYEES",
+      "context_path": "0.1.15.1513",
+      "metadata": {
+        "revision_id": "9007199254740993",
+        "transform_contract_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "dimensions": [
+        {
+          "index": 0,
+          "type": "TERRITORIAL",
+          "label_ro": "Judete",
+          "label_en": "Counties",
+          "is_hierarchical": false,
+          "option_count": 43,
+          "classification_type": {
+            "code": "D0"
+          }
+        },
+        {
+          "index": 1,
+          "type": "TERRITORIAL",
+          "label_ro": "Localitati ",
+          "label_en": "Localities",
+          "is_hierarchical": true,
+          "option_count": 3183,
+          "classification_type": {
+            "code": "D1"
+          }
+        },
+        {
+          "index": 2,
+          "type": "TEMPORAL",
+          "label_ro": "Ani",
+          "label_en": "Years",
+          "is_hierarchical": false,
+          "option_count": 35,
+          "classification_type": null
+        },
+        {
+          "index": 3,
+          "type": "UNIT_OF_MEASURE",
+          "label_ro": "UM: Numar persoane",
+          "label_en": "MU: Persons",
+          "is_hierarchical": false,
+          "option_count": 1,
+          "classification_type": null
+        }
+      ]
     }
   }
 }

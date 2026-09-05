@@ -60,7 +60,8 @@ export function DetailDimensionCombobox({
 }: Props) {
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState('')
-  const [offset, setOffset] = useState(0)
+  const [pageOffsets, setPageOffsets] = useState([0])
+  const offset = pageOffsets[pageOffsets.length - 1]
   const search = useDebouncedValue(draft, SEARCH_DEBOUNCE_MS)
 
   const valuesQuery = useDimensionValues({
@@ -72,13 +73,17 @@ export function DetailDimensionCombobox({
     enabled: open,
   })
 
-  const nodes = valuesQuery.data?.nodes ?? []
-  const pageInfo = valuesQuery.data?.pageInfo
+  const loading =
+    valuesQuery.isFetching || valuesQuery.isPending || draft !== search
+  const nodes =
+    loading || valuesQuery.isError ? [] : (valuesQuery.data?.nodes ?? [])
+  const pageInfo =
+    loading || valuesQuery.isError ? undefined : valuesQuery.data?.pageInfo
   const inputId = `dimension-${datasetCode}-${dimensionIndex}`
 
   const handleSearchChange = (next: string) => {
     setDraft(next)
-    setOffset(0)
+    setPageOffsets([0])
   }
 
   return (
@@ -96,14 +101,23 @@ export function DetailDimensionCombobox({
               className="h-10 min-w-0 flex-1 justify-between font-normal"
             >
               <span
-                className={cn('truncate', !selectedLabel && 'text-muted-foreground')}
+                className={cn(
+                  'truncate',
+                  !selectedLabel && 'text-muted-foreground',
+                )}
               >
                 {selectedLabel ?? placeholder}
               </span>
-              <ChevronDown aria-hidden className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              <ChevronDown
+                aria-hidden
+                className="ml-2 h-4 w-4 shrink-0 opacity-50"
+              />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[--radix-popover-trigger-width] min-w-72 p-0" align="start">
+          <PopoverContent
+            className="w-[--radix-popover-trigger-width] min-w-72 p-0"
+            align="start"
+          >
             <Command shouldFilter={false}>
               <CommandInput
                 value={draft}
@@ -111,7 +125,7 @@ export function DetailDimensionCombobox({
                 placeholder={t`Caută…`}
               />
               <CommandList>
-                {valuesQuery.isLoading ? (
+                {loading ? (
                   <div className="space-y-1 p-2" aria-busy="true">
                     {Array.from({ length: 4 }).map((_, index) => (
                       <Skeleton key={index} className="h-8 w-full" />
@@ -119,18 +133,22 @@ export function DetailDimensionCombobox({
                   </div>
                 ) : null}
 
-                {valuesQuery.isError ? (
+                {!loading && valuesQuery.isError ? (
                   <div className="space-y-2 p-3 text-sm">
                     <p className="text-destructive">
                       <Trans>Nu am putut încărca opțiunile.</Trans>
                     </p>
-                    <Button size="sm" variant="outline" onClick={() => valuesQuery.refetch()}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => valuesQuery.refetch()}
+                    >
                       <Trans>Reîncearcă</Trans>
                     </Button>
                   </div>
                 ) : null}
 
-                {valuesQuery.isSuccess && nodes.length === 0 ? (
+                {!loading && valuesQuery.isSuccess && nodes.length === 0 ? (
                   <CommandEmpty>
                     <Trans>Niciun rezultat</Trans>
                   </CommandEmpty>
@@ -163,12 +181,17 @@ export function DetailDimensionCombobox({
                 })}
               </CommandList>
 
-              {pageInfo && pageInfo.totalCount > DIMENSION_PAGE_SIZE ? (
+              {pageInfo && (pageInfo.hasNextPage || offset > 0) ? (
                 <div className="flex items-center justify-between border-t px-2 py-1.5 text-xs text-muted-foreground">
                   <span>
-                    <Trans>
-                      {offset + 1}–{offset + nodes.length} din {pageInfo.totalCount}
-                    </Trans>
+                    {pageInfo.totalCount >= 0 ? (
+                      <Trans>
+                        {offset + 1}–{offset + nodes.length} din{' '}
+                        {pageInfo.totalCount}
+                      </Trans>
+                    ) : (
+                      `${offset + 1}–${offset + nodes.length}`
+                    )}
                   </span>
                   <div className="flex gap-1">
                     <Button
@@ -178,7 +201,9 @@ export function DetailDimensionCombobox({
                       className="h-7 w-7"
                       aria-label={t`Pagina anterioară de opțiuni`}
                       disabled={offset === 0}
-                      onClick={() => setOffset(Math.max(0, offset - DIMENSION_PAGE_SIZE))}
+                      onClick={() =>
+                        setPageOffsets((previous) => previous.slice(0, -1))
+                      }
                     >
                       <ChevronLeft aria-hidden className="h-4 w-4" />
                     </Button>
@@ -189,7 +214,12 @@ export function DetailDimensionCombobox({
                       className="h-7 w-7"
                       aria-label={t`Pagina următoare de opțiuni`}
                       disabled={!pageInfo.hasNextPage}
-                      onClick={() => setOffset(offset + DIMENSION_PAGE_SIZE)}
+                      onClick={() =>
+                        setPageOffsets((previous) => [
+                          ...previous,
+                          offset + nodes.length,
+                        ])
+                      }
                     >
                       <ChevronRight aria-hidden className="h-4 w-4" />
                     </Button>

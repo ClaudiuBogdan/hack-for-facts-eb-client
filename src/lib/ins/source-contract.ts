@@ -101,12 +101,11 @@ export const insSourceDimensionSchema = z.object({
 })
 
 /** Must come from the same GraphQL operation/publication as its observation page. */
-export const insSourceDescriptorSchema = z
+export const insSourceLayoutSchema = z
   .object({
     code: z.string().min(1),
     dimension_count: z.number().int().min(2).max(9),
     dimensions: z.array(insSourceDimensionSchema).min(2).max(9),
-    metadata: insSourcePublicationSchema,
   })
   .superRefine((descriptor, context) => {
     const dimensions = [...descriptor.dimensions].sort(
@@ -143,6 +142,11 @@ export const insSourceDescriptorSchema = z
       }
     }
   })
+
+/** A published dataset adds custody to the same validated source layout. */
+export const insSourceDescriptorSchema = insSourceLayoutSchema.safeExtend({
+  metadata: insSourcePublicationSchema,
+})
 
 export const insSourceObservationSchema = z.object({
   id: z.string().min(1),
@@ -205,3 +209,8 @@ export const isInsChartPeriodicity = (
   value: InsSourcePeriodicity,
 ): value is InsChartPeriodicity =>
   value === 'ANNUAL' || value === 'QUARTERLY' || value === 'MONTHLY'
+
+/** Match the native catalog's case-insensitive dataset-code lookup. */
+export function normalizeInsDatasetCode(code: string): string {
+  return code.trim().toUpperCase()
+}

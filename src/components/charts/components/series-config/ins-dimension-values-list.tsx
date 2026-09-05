@@ -1,3 +1,4 @@
+import { normalizeInsDatasetCode } from '@/lib/ins/source-contract';
 import { useMemo, useState } from 'react';
 import { t } from '@lingui/core/macro';
 import type { VirtualItem } from '@tanstack/react-virtual';
@@ -128,7 +129,8 @@ export function InsDimensionValuesList({
     itemSize: 48,
     queryKey: [
       'ins-dimension-values',
-      datasetCode,
+      'native-v1',
+      normalizeInsDatasetCode(datasetCode),
       String(dimensionIndex),
       optionKind,
       classificationTypeCode ?? '',
@@ -136,13 +138,14 @@ export function InsDimensionValuesList({
       searchFilter,
       territoryLevelPolicyKey,
     ],
-    queryFn: async ({ pageParam = 0 }): Promise<PageData<OptionItem>> => {
+    queryFn: async ({ pageParam = 0, signal }): Promise<PageData<OptionItem>> => {
       const response = await getInsDimensionValuesPage({
         datasetCode,
         dimensionIndex,
         search: searchFilter.trim() || undefined,
         limit: pageSize,
         offset: pageParam,
+        signal,
       });
 
       const filteredValues = filterDimensionValuesByAllowedTerritoryLevels(

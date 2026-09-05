@@ -1,3 +1,4 @@
+import { normalizeInsDatasetCode } from '@/lib/ins/source-contract'
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { t } from '@lingui/core/macro'
@@ -73,7 +74,7 @@ export interface UseComparisonsResult {
 export function useComparisons(
   search: StatisticsComparisonsSearch,
 ): UseComparisonsResult {
-  const datasetCode = search.cod ?? ''
+  const datasetCode = normalizeInsDatasetCode(search.cod ?? '')
   const tokens = useMemo(
     () => parseComparisonTokens(search.teritorii),
     [search.teritorii],
@@ -82,7 +83,7 @@ export function useComparisons(
   const urlPins = useMemo(() => search.clasificari ?? [], [search.clasificari])
 
   const datasetQuery = useQuery({
-    queryKey: ['statistics', 'comparisons', 'dataset', datasetCode],
+    queryKey: ['statistics', 'native-v1', 'comparisons', 'dataset', datasetCode],
     queryFn: ({ signal }) => fetchComparisonDataset(datasetCode, signal),
     enabled: datasetCode.length > 0,
   })

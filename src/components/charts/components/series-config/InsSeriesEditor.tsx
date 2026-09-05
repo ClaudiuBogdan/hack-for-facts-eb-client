@@ -1,3 +1,4 @@
+import { normalizeInsDatasetCode } from '@/lib/ins/source-contract';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
@@ -352,10 +353,11 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
     latestSeriesRef.current = series;
   }, [series]);
 
+  const metadataDatasetCode = normalizeInsDatasetCode(series?.datasetCode ?? '');
   const datasetDetailQuery = useQuery({
-    queryKey: ['ins-series-dataset', series?.datasetCode],
-    queryFn: () => getInsDatasetDetails(series?.datasetCode ?? ''),
-    enabled: !!series?.datasetCode,
+    queryKey: ['ins-series-dataset', 'native-v1', metadataDatasetCode],
+    queryFn: ({ signal }) => getInsDatasetDetails(metadataDatasetCode, signal),
+    enabled: metadataDatasetCode.length > 0,
     staleTime: 1000 * 60 * 5,
   });
 
