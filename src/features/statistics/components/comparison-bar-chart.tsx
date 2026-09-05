@@ -1,3 +1,4 @@
+import type { NativeComparisonMatrix } from '../lib/native-comparison'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import {
@@ -13,15 +14,24 @@ import {
 } from 'recharts'
 import { buildBarSeries, type ComparisonMatrix } from '../lib/comparison-series'
 import { ComparisonFigure } from './comparison-chart-shell'
-import { formatComparisonAxisTick, formatComparisonNumber, type ComparisonSeriesDescriptor } from '../lib/comparison-format'
+import {
+  formatComparisonAxisTick,
+  formatComparisonNumber,
+  type ComparisonSeriesDescriptor,
+} from '../lib/comparison-format'
 
 type Props = {
-  readonly matrix: ComparisonMatrix
+  readonly matrix: ComparisonMatrix | NativeComparisonMatrix
   readonly series: readonly ComparisonSeriesDescriptor[]
   readonly selectedPeriod: string | null
 }
 
-type TooltipEntry = { readonly payload?: { readonly name?: string | null; readonly value?: number | null } }
+type TooltipEntry = {
+  readonly payload?: {
+    readonly name?: string | null
+    readonly value?: number | null
+  }
+}
 
 type TooltipProps = {
   readonly active?: boolean
@@ -55,19 +65,37 @@ function ComparisonBarTooltip({ active, payload }: TooltipProps) {
  */
 export function ComparisonBarChart({ matrix, series, selectedPeriod }: Props) {
   const data = buildBarSeries(matrix, selectedPeriod)
-  const colorBySiruta = new Map(series.map((entry) => [entry.code, entry.color]))
-  const labelBySiruta = new Map(series.map((entry) => [entry.code, entry.label]))
+  const colorBySiruta = new Map(
+    series.map((entry) => [entry.code, entry.color]),
+  )
+  const labelBySiruta = new Map(
+    series.map((entry) => [entry.code, entry.label]),
+  )
 
-  const plotted = data
-    .filter((datum) => datum.value !== null)
-    .map((datum) => ({
-      code: datum.code,
-      name: labelBySiruta.get(datum.code) ?? datum.code,
-      value: datum.value as number,
-    }))
+  const plotted = data.map((datum) => ({
+    code: datum.code,
+    name: labelBySiruta.get(datum.code) ?? datum.code,
+    value: datum.value,
+  }))
 
+  const unavailableCodes = new Set(
+    'descriptor' in matrix
+      ? matrix.rows
+          .filter(
+            (row) =>
+              row.availability === 'AMBIGUOUS' ||
+              row.availability === 'QUALIFIED',
+          )
+          .map((row) => row.code)
+      : [],
+  )
+  const unavailable = data
+    .filter((datum) => unavailableCodes.has(datum.code))
+    .map((datum) => labelBySiruta.get(datum.code) ?? datum.code)
   const missing = data
-    .filter((datum) => datum.value === null)
+    .filter(
+      (datum) => datum.value === null && !unavailableCodes.has(datum.code),
+    )
     .map((datum) => labelBySiruta.get(datum.code) ?? datum.code)
 
   return (
@@ -82,15 +110,24 @@ export function ComparisonBarChart({ matrix, series, selectedPeriod }: Props) {
       }
       series={series}
     >
-      {plotted.length === 0 ? (
+      {plotted.every((datum) => datum.value === null) ? (
         <p className="py-10 text-center text-sm text-muted-foreground">
-          <Trans>Niciun teritoriu nu are date pentru această perioadă.</Trans>
+          <Trans>
+            Nu sunt disponibile valori comparabile pentru această perioadă.
+          </Trans>
         </p>
       ) : (
         <div className="h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={plotted} margin={{ top: 20, right: 16, bottom: 4, left: 8 }}>
-              <CartesianGrid vertical={false} strokeOpacity={0.25} className="stroke-border" />
+            <BarChart
+              data={plotted}
+              margin={{ top: 20, right: 16, bottom: 4, left: 8 }}
+            >
+              <CartesianGrid
+                vertical={false}
+                strokeOpacity={0.25}
+                className="stroke-border"
+              />
               <XAxis
                 dataKey="name"
                 tickLine={false}
@@ -107,8 +144,15 @@ export function ComparisonBarChart({ matrix, series, selectedPeriod }: Props) {
                 tickFormatter={formatComparisonAxisTick}
                 className="fill-muted-foreground"
               />
-              <Tooltip cursor={{ fillOpacity: 0.06 }} content={<ComparisonBarTooltip />} />
-              <Bar dataKey="value" radius={[4, 4, 0, 0]} isAnimationActive={false}>
+              <Tooltip
+                cursor={{ fillOpacity: 0.06 }}
+                content={<ComparisonBarTooltip />}
+              />
+              <Bar
+                dataKey="value"
+                radius={[4, 4, 0, 0]}
+                isAnimationActive={false}
+              >
                 {plotted.map((datum) => (
                   <Cell
                     key={datum.code}
@@ -123,7 +167,9 @@ export function ComparisonBarChart({ matrix, series, selectedPeriod }: Props) {
                   position="top"
                   className="fill-foreground text-[11px] tabular-nums"
                   formatter={(value) =>
-                    typeof value === 'number' ? formatComparisonNumber(value) : ''
+                    typeof value === 'number'
+                      ? formatComparisonNumber(value)
+                      : ''
                   }
                 />
               </Bar>
@@ -132,6 +178,11 @@ export function ComparisonBarChart({ matrix, series, selectedPeriod }: Props) {
         </div>
       )}
 
+      {unavailable.length > 0 ? (
+        <p className="text-xs text-muted-foreground">
+          {t`Serii indisponibile pentru comparație: ${unavailable.join(', ')}. Verifică observațiile sursă în tabel.`}
+        </p>
+      ) : null}
       {missing.length > 0 ? (
         <p className="text-xs text-muted-foreground">
           {t`Fără date raportate pentru această perioadă: ${missing.join(', ')}.`}

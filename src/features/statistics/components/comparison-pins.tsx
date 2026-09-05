@@ -8,100 +8,100 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { ComparisonDatasetMeta } from '../api/comparisons-api'
-import type { ClassificationPin, ComparisonPeriodOption } from '../lib/comparison-series'
+import type { InsDatasetDetails } from '@/schemas/ins'
+import type {
+  ClassificationPin,
+  ComparisonPeriodOption,
+} from '../lib/comparison-series'
+import { DetailDimensionCombobox } from './detail-dimension-combobox'
 
 type PinsProps = {
-  readonly datasetMeta: ComparisonDatasetMeta
+  readonly datasetMeta: InsDatasetDetails
   readonly effectivePins: readonly ClassificationPin[]
-  readonly unitCode: string | undefined
-  readonly onPinClassification: (typeCode: string, valueCode: string) => void
-  readonly onPinUnit: (unitCode: string) => void
+  readonly unitCode: string | null
+  readonly cadence: string | null
+  readonly onPinClassification: (
+    typeCode: string,
+    valueCode: string | null,
+  ) => void
+  readonly onPinUnit: (unitCode: string | null) => void
+  readonly onPinCadence: (cadence: string) => void
 }
 
-/**
- * Classification and unit pins for the selected dataset.
- *
- * Every classification dimension must be pinned to exactly one value, or the
- * server returns one row per member and the comparison silently mixes them.
- * Unpinned dimensions default to their `Total` option (see
- * `resolveEffectiveClassificationPins`); the select reflects that resolved
- * value, so what the user sees is what was queried even on a bare deep link.
- */
+/** Shared nongeographic coordinates; every option remains reachable through paged search. */
 export function ComparisonPins({
   datasetMeta,
   effectivePins,
   unitCode,
+  cadence,
   onPinClassification,
   onPinUnit,
+  onPinCadence,
 }: PinsProps) {
-  const pinnedByType = new Map(effectivePins.map((pin) => [pin.typeCode, pin.valueCode]))
-  const hasControls = datasetMeta.classifications.length > 0 || datasetMeta.units.length > 0
-
-  if (!hasControls) return null
-
+  const pins = new Map(effectivePins.map((p) => [p.typeCode, p.valueCode]))
   return (
     <section className="space-y-3" aria-labelledby="comparison-pins-heading">
-      <h2 id="comparison-pins-heading" className="text-sm font-medium text-foreground">
+      <h2 id="comparison-pins-heading" className="text-sm font-medium">
         <Trans>Dimensiuni fixate</Trans>
       </h2>
-
-      <div className="grid gap-3 sm:grid-cols-2">
-        {datasetMeta.classifications.map((dimension) => {
-          const selectId = `comparison-pin-${dimension.typeCode}`
-          const value = pinnedByType.get(dimension.typeCode)
-
+      {datasetMeta.dimensions
+        .filter((d) => d.type === 'CLASSIFICATION')
+        .map((dimension) => {
+          const type = `D${dimension.index}`
+          const selected = pins.get(type) ?? null
           return (
-            <div key={dimension.typeCode} className="space-y-1.5">
-              <Label htmlFor={selectId} className="text-xs text-muted-foreground">
-                {dimension.label}
-              </Label>
-              <Select
-                value={value}
-                onValueChange={(next) => onPinClassification(dimension.typeCode, next)}
-              >
-                <SelectTrigger id={selectId} aria-label={dimension.label}>
-                  <SelectValue placeholder={t`Alege o valoare`} />
-                </SelectTrigger>
-                <SelectContent>
-                  {dimension.options.map((option) => (
-                    <SelectItem key={option.code} value={option.code}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {value === undefined ? (
-                <p className="text-xs text-muted-foreground">
-                  <Trans>
-                    Această dimensiune nu are o opțiune „Total”. Alege o valoare pentru o
-                    comparație corectă.
-                  </Trans>
-                </p>
-              ) : null}
-            </div>
+            <DetailDimensionCombobox
+              key={`${datasetMeta.code}:${type}`}
+              datasetCode={datasetMeta.code}
+              dimensionIndex={dimension.index}
+              label={dimension.label_ro || type}
+              placeholder={t`Alege o valoare`}
+              selectedKey={selected}
+              selectedLabel={selected}
+              optionKey={(value) => String(value.nom_item_id)}
+              onSelect={(value) =>
+                onPinClassification(type, String(value.nom_item_id))
+              }
+              onClear={() => onPinClassification(type, null)}
+            />
           )
         })}
-
-        {datasetMeta.units.length > 0 ? (
-          <div className="space-y-1.5">
-            <Label htmlFor="comparison-pin-unit" className="text-xs text-muted-foreground">
-              <Trans>Unitate de măsură</Trans>
-            </Label>
-            <Select value={unitCode} onValueChange={onPinUnit}>
-              <SelectTrigger id="comparison-pin-unit" aria-label={t`Unitate de măsură`}>
-                <SelectValue placeholder={t`Toate unitățile`} />
-              </SelectTrigger>
-              <SelectContent>
-                {datasetMeta.units.map((unit) => (
-                  <SelectItem key={unit.code} value={unit.code}>
-                    {unit.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        ) : null}
+      {datasetMeta.dimensions
+        .filter((d) => d.type === 'UNIT_OF_MEASURE')
+        .map((dimension) => (
+          <DetailDimensionCombobox
+            key={`${datasetMeta.code}:${dimension.index}`}
+            datasetCode={datasetMeta.code}
+            dimensionIndex={dimension.index}
+            label={t`Unitate de măsură`}
+            placeholder={t`Alege o valoare`}
+            selectedKey={unitCode}
+            selectedLabel={unitCode}
+            optionKey={(value) => String(value.nom_item_id)}
+            onSelect={(value) => onPinUnit(String(value.nom_item_id))}
+            onClear={() => onPinUnit(null)}
+          />
+        ))}
+      <div className="space-y-1.5">
+        <Label htmlFor="comparison-frequency">
+          <Trans>Frecvență</Trans>
+        </Label>
+        <Select value={cadence ?? undefined} onValueChange={onPinCadence}>
+          <SelectTrigger id="comparison-frequency">
+            <SelectValue placeholder={t`Alege o valoare`} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ANNUAL">
+              <Trans>Anual</Trans>
+            </SelectItem>
+            <SelectItem value="QUARTERLY">
+              <Trans>Trimestrial</Trans>
+            </SelectItem>
+            <SelectItem value="MONTHLY">
+              <Trans>Lunar</Trans>
+            </SelectItem>
+          </SelectContent>
+        </Select>
       </div>
     </section>
   )
@@ -120,16 +120,27 @@ type PeriodProps = {
  * select and changing its value never issues a request — the bar chart and the
  * table's emphasised column re-render from data already in memory.
  */
-export function ComparisonPeriodSelect({ periods, selectedPeriod, onSelect }: PeriodProps) {
+export function ComparisonPeriodSelect({
+  periods,
+  selectedPeriod,
+  onSelect,
+}: PeriodProps) {
   if (periods.length === 0) return null
 
   return (
     <div className="space-y-1.5">
-      <Label htmlFor="comparison-period" className="text-xs text-muted-foreground">
+      <Label
+        htmlFor="comparison-period"
+        className="text-xs text-muted-foreground"
+      >
         <Trans>Perioadă</Trans>
       </Label>
       <Select value={selectedPeriod ?? undefined} onValueChange={onSelect}>
-        <SelectTrigger id="comparison-period" className="w-48" aria-label={t`Perioadă`}>
+        <SelectTrigger
+          id="comparison-period"
+          className="w-48"
+          aria-label={t`Perioadă`}
+        >
           <SelectValue placeholder={t`Alege o perioadă`} />
         </SelectTrigger>
         <SelectContent>

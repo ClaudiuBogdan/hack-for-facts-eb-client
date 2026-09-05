@@ -46,9 +46,7 @@ describe('periodSortKey / getLatestTimePeriod', () => {
     expect(periodSortKey(monthly.time_period)).toBeGreaterThan(
       periodSortKey(annual.time_period),
     )
-    expect(
-      getLatestTimePeriod([annual, monthly])?.iso_period,
-    ).toBe('2024-11')
+    expect(getLatestTimePeriod([annual, monthly])?.iso_period).toBe('2024-11')
   })
 })
 
@@ -97,12 +95,18 @@ describe('buildDataThroughLabel', () => {
 
 describe('isPeriodStale (cadence-aware)', () => {
   it('treats recent annual data as CURRENT (2023/2024 in 2026)', () => {
-    expect(isPeriodStale({ latestPeriod: '2024', referenceDate: AUG_2026 })).toBe(false)
-    expect(isPeriodStale({ latestPeriod: '2023', referenceDate: AUG_2026 })).toBe(false)
+    expect(
+      isPeriodStale({ latestPeriod: '2024', referenceDate: AUG_2026 }),
+    ).toBe(false)
+    expect(
+      isPeriodStale({ latestPeriod: '2023', referenceDate: AUG_2026 }),
+    ).toBe(false)
   })
 
   it('flags old annual data', () => {
-    expect(isPeriodStale({ latestPeriod: '2022', referenceDate: AUG_2026 })).toBe(true)
+    expect(
+      isPeriodStale({ latestPeriod: '2022', referenceDate: AUG_2026 }),
+    ).toBe(true)
   })
 
   it('flags monthly data older than six months, keeps fresher current', () => {
@@ -124,7 +128,9 @@ describe('isPeriodStale (cadence-aware)', () => {
   })
 
   it('never invents staleness for null or unknown grammars', () => {
-    expect(isPeriodStale({ latestPeriod: null, referenceDate: AUG_2026 })).toBe(false)
+    expect(isPeriodStale({ latestPeriod: null, referenceDate: AUG_2026 })).toBe(
+      false,
+    )
     expect(
       isPeriodStale({ latestPeriod: 'garbage', referenceDate: AUG_2026 }),
     ).toBe(false)
@@ -142,36 +148,34 @@ describe('B12: the router leaks raw-typed values past validateSearch', () => {
   })
 
   it('coerces a numeric ?loc= on the landing', async () => {
-    const { parseStatisticsLandingSearch } = await import('@/schemas/statistics')
+    const { parseStatisticsLandingSearch } =
+      await import('@/schemas/statistics')
     expect(parseStatisticsLandingSearch({ loc: 54975 })).toEqual({
       loc: '54975',
     })
   })
 
-  it('coerces numeric elements in ?teritorii= on comparisons', async () => {
-    const { parseStatisticsComparisonsSearch } = await import(
-      '@/schemas/statistics'
-    )
+  it('preserves numeric territory entries for strict comparison validation', async () => {
+    const { parseStatisticsComparisonsSearch } =
+      await import('@/schemas/statistics')
     expect(parseStatisticsComparisonsSearch({ teritorii: [54975] })).toEqual({
-      teritorii: ['54975'],
+      teritorii: [54975],
     })
   })
 
-  it('wraps a lone ?teritorii= value (number, not even a list) into a list', async () => {
-    const { parseStatisticsComparisonsSearch } = await import(
-      '@/schemas/statistics'
-    )
+  it('preserves a lone territory value for explicit comparison validation', async () => {
+    const { parseStatisticsComparisonsSearch } =
+      await import('@/schemas/statistics')
     expect(parseStatisticsComparisonsSearch({ teritorii: 54975 })).toEqual({
-      teritorii: ['54975'],
+      teritorii: 54975,
     })
   })
 
-  it('coerces a numeric ?perioada= on comparisons', async () => {
-    const { parseStatisticsComparisonsSearch } = await import(
-      '@/schemas/statistics'
-    )
+  it('preserves numeric comparison periods until cadence-aware validation', async () => {
+    const { parseStatisticsComparisonsSearch } =
+      await import('@/schemas/statistics')
     expect(parseStatisticsComparisonsSearch({ perioada: 2024 })).toEqual({
-      perioada: '2024',
+      perioada: 2024,
     })
   })
 })

@@ -143,13 +143,6 @@ export type StatisticsDatasetExplorerSearch = z.infer<
 >
 
 /**
- * A pinned classification, encoded as `"TYPE:VALUE"` — domain codes, which are
- * what `InsObservationFilterInput` speaks. Never `nom_item_id`s: those are
- * dimension-value surrogate keys and are meaningless in a shared URL.
- */
-const classificationPinSchema = z.string().regex(/^[^:]+:[^:]+$/)
-
-/**
  * Search state for the dataset detail route (`/statistici/seturi/$cod`).
  *
  * Preserve identity input for descriptor-aware validation in source-selection.
@@ -178,42 +171,19 @@ export type StatisticsDatasetDetailSearch = z.infer<
 /**
  * Search state for the local comparisons route (`/statistici/comparatii`).
  *
- * `teritorii` holds 2–6 SIRUTA codes. Below two the page shows a guided empty
- * state rather than a chart of one line.
+ * Raw URL intent is validated after routing. Territory tokens distinguish county
+ * codes from SIRUTA; an explicitly selected single territory remains an
+ * intermediate comparison rather than being replaced with example data.
  */
-const coerceNumberToString = (value: unknown) =>
-  typeof value === 'number' ? String(value) : value
-
-export const statisticsComparisonsSearchSchema = z
-  .object({
-    cod: z.string().trim().min(1).optional().catch(undefined),
-    // The router JSON-parses bare digits, so `?teritorii=[54975]` delivers
-    // NUMBERS and a lone token arrives as a bare string — both normalized.
-    teritorii: z
-      .preprocess(
-        (value) => {
-          const entries = Array.isArray(value)
-            ? value
-            : value === undefined
-              ? undefined
-              : [value]
-          return entries?.map(coerceNumberToString)
-        },
-        z.array(z.string().trim().min(1)).min(1).max(6).optional(),
-      )
-      .catch(undefined),
-    perioada: z
-      .preprocess(coerceNumberToString, z.string().trim().min(1).optional())
-      .catch(undefined),
-    clasificari: z
-      .array(classificationPinSchema)
-      .max(8)
-      .nonempty()
-      .optional()
-      .catch(undefined),
-    unitate: z.string().trim().min(1).optional().catch(undefined),
-  })
-  .catch({})
+export const statisticsComparisonsSearchSchema = z.object({
+  // Explicit invalid intent must survive routing to the validation UI.
+  cod: z.unknown().optional(),
+  teritorii: z.unknown().optional(),
+  perioada: z.unknown().optional(),
+  clasificari: z.unknown().optional(),
+  unitate: z.unknown().optional(),
+  frecventa: z.unknown().optional(),
+})
 
 export type StatisticsComparisonsSearch = z.infer<
   typeof statisticsComparisonsSearchSchema

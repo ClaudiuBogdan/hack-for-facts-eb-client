@@ -1,3 +1,4 @@
+import { periodOrdinal, validPeriodDate } from '@/lib/ins/source-periods'
 import { t } from '@lingui/core/macro'
 import { fetchInsSourceVector } from '@/features/statistics/api/graphql/ins-source-fetcher'
 import type { DataValidationError } from '@/lib/chart-data-validation'
@@ -39,12 +40,6 @@ function unavailable(
     series: null,
     warnings: [{ type: 'missing_data', seriesId: series.id, message }],
   }
-}
-
-function validPeriodDate(date: string, type: ReportPeriodType): boolean {
-  if (type === 'YEAR') return /^\d{4}$/.test(date)
-  if (type === 'QUARTER') return /^\d{4}-Q[1-4]$/.test(date)
-  return /^\d{4}-(0[1-9]|1[0-2])$/.test(date)
 }
 
 /** Invalid saved selections stay visible; never drop dates to broaden the request. */
@@ -123,13 +118,6 @@ function unitLabel(row: NativeInsObservation): string {
       ? unit.name_en || unit.name_ro
       : unit.name_ro || unit.name_en
   return unit.symbol || name || unit.code
-}
-
-function periodOrdinal(label: string, type: ReportPeriodType): number {
-  const year = Number(label.slice(0, 4))
-  if (type === 'YEAR') return year
-  if (type === 'QUARTER') return year * 4 + Number(label.slice(6)) - 1
-  return year * 12 + Number(label.slice(5)) - 1
 }
 
 function completePeriods(

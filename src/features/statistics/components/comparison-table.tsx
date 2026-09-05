@@ -1,3 +1,5 @@
+import { Link } from '@tanstack/react-router'
+import type { NativeComparisonMatrix } from '../lib/native-comparison'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import {
@@ -8,7 +10,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { getComparisonCell, type ComparisonMatrix } from '../lib/comparison-series'
+import {
+  getComparisonCell,
+  type ComparisonMatrix,
+} from '../lib/comparison-series'
 import { COMPARISON_PALETTE_CLASS } from './comparison-palette'
 import {
   comparisonLevelLabel,
@@ -20,7 +25,7 @@ import {
 const MISSING_MARK = '—'
 
 type Props = {
-  readonly matrix: ComparisonMatrix
+  readonly matrix: ComparisonMatrix | NativeComparisonMatrix
   readonly series: readonly ComparisonSeriesDescriptor[]
   readonly selectedPeriod: string | null
 }
@@ -42,8 +47,12 @@ type Props = {
  */
 export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
   const mixedLevels = hasMixedComparisonLevels(series)
-  const labelBySiruta = new Map(series.map((entry) => [entry.code, entry.label]))
-  const colorBySiruta = new Map(series.map((entry) => [entry.code, entry.color]))
+  const labelBySiruta = new Map(
+    series.map((entry) => [entry.code, entry.label]),
+  )
+  const colorBySiruta = new Map(
+    series.map((entry) => [entry.code, entry.color]),
+  )
   const levelByCode = new Map(series.map((entry) => [entry.code, entry.level]))
 
   return (
@@ -77,6 +86,14 @@ export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
             {matrix.rows.map((row) => {
               const label = labelBySiruta.get(row.code) ?? row.name ?? row.code
               const level = levelByCode?.get(row.code)
+              const native =
+                'descriptor' in matrix
+                  ? matrix.rows.find((entry) => entry.code === row.code)
+                  : null
+              const unavailable =
+                native &&
+                native.availability !== 'SERIES' &&
+                native.availability !== 'EMPTY'
 
               return (
                 <TableRow key={row.code}>
@@ -94,6 +111,49 @@ export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
                         </span>
                       ) : null}
                     </span>
+                    {native ? (
+                      <div className="mt-1 space-y-1 text-xs font-normal text-muted-foreground">
+                        {native.availability === 'AMBIGUOUS' ? (
+                          <p>
+                            <Trans>
+                              Mai multe serii sursă. Alege coordonatele înainte
+                              de comparație.
+                            </Trans>
+                          </p>
+                        ) : null}
+                        {native.availability === 'QUALIFIED' ? (
+                          <p>
+                            <Trans>
+                              Geografie istorică sau calificată. Verifică
+                              observațiile sursă.
+                            </Trans>
+                          </p>
+                        ) : null}
+                        {native.availability === 'SERIES' &&
+                        Object.keys(native.cells).length === 0 ? (
+                          <p>
+                            <Trans>Fără date pentru frecvența aleasă.</Trans>
+                          </p>
+                        ) : null}
+                        {'descriptor' in matrix ? (
+                          <Link
+                            to="/statistici/seturi/$cod"
+                            params={{ cod: matrix.descriptor.code }}
+                            search={{
+                              teritoriu:
+                                level === 'LAU'
+                                  ? `siruta:${row.code}`
+                                  : `cod:${row.code}`,
+                              ...(native.sourceSelection ??
+                                matrix.sharedSelection),
+                            }}
+                            className="underline"
+                          >
+                            <Trans>Vezi observațiile sursă</Trans>
+                          </Link>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </TableCell>
 
                   {matrix.periods.map((period) => {
@@ -109,7 +169,9 @@ export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
                             : 'text-right tabular-nums'
                         }
                       >
-                        {hasValue ? (
+                        {unavailable ? (
+                          <span aria-label={t`Serie indisponibilă`}>—</span>
+                        ) : hasValue ? (
                           cell.value
                         ) : (
                           <span
@@ -119,6 +181,11 @@ export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
                             {MISSING_MARK}
                           </span>
                         )}
+                        {cell?.valueStatus ? (
+                          <span className="ml-1 text-xs text-muted-foreground">
+                            [{cell.valueStatus}]
+                          </span>
+                        ) : null}
                       </TableCell>
                     )
                   })}

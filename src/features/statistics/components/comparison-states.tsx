@@ -29,8 +29,7 @@ export function ComparisonSkeleton() {
 /**
  * Shown when no dataset is chosen. Distinct from {@link ComparisonNoData}: here
  * the user has not asked a complete question yet, so there is nothing to
- * report. (Below two territories WITH a dataset the page renders the worked
- * example instead, so this state has exactly one shape.)
+ * report. Example data is selected only when every URL selection is absent.
  */
 export function ComparisonGuidedEmptyState() {
   return (
@@ -43,8 +42,8 @@ export function ComparisonGuidedEmptyState() {
 
       <p className="max-w-md text-sm text-muted-foreground">
         <Trans>
-          Caută un indicator INS, apoi adaugă între două și șase localități. Comparația se
-          construiește pe măsură ce alegi.
+          Caută un indicator INS, apoi adaugă între două și șase localități.
+          Comparația se construiește pe măsură ce alegi.
         </Trans>
       </p>
     </div>
@@ -64,8 +63,8 @@ export function ComparisonNoData() {
       </h2>
       <p className="max-w-md text-sm text-muted-foreground">
         <Trans>
-          Indicatorul nu are valori raportate pentru teritoriile și dimensiunile alese. Încearcă
-          altă valoare fixată sau alte localități.
+          Indicatorul nu are valori raportate pentru teritoriile și dimensiunile
+          alese. Încearcă altă valoare fixată sau alte localități.
         </Trans>
       </p>
     </div>
@@ -87,11 +86,22 @@ export function ComparisonErrorState({ onRetry, isRetrying }: ErrorProps) {
       <AlertDescription className="space-y-3">
         <p>
           <Trans>
-            Cererea către INS Tempo a eșuat. Datele nu lipsesc — nu am reușit să le citim.
+            Nu am putut citi și verifica observațiile INS. Reîncearcă
+            încărcarea.
           </Trans>
         </p>
-        <Button type="button" variant="outline" size="sm" onClick={onRetry} disabled={isRetrying}>
-          {isRetrying ? <Trans>Se reîncarcă…</Trans> : <Trans>Reîncearcă</Trans>}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onRetry}
+          disabled={isRetrying}
+        >
+          {isRetrying ? (
+            <Trans>Se reîncarcă…</Trans>
+          ) : (
+            <Trans>Reîncearcă</Trans>
+          )}
         </Button>
       </AlertDescription>
     </Alert>
@@ -108,8 +118,8 @@ export function ComparisonPartialNotice() {
       </AlertTitle>
       <AlertDescription>
         <Trans>
-          Indicatorul a returnat mai multe observații decât putem afișa. Fixează mai multe
-          dimensiuni sau alege mai puține teritorii.
+          Indicatorul a returnat mai multe observații decât putem afișa. Fixează
+          mai multe dimensiuni sau alege mai puține teritorii.
         </Trans>
       </AlertDescription>
     </Alert>

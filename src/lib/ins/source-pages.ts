@@ -92,6 +92,7 @@ export async function collectInsSourcePages<T>(input: {
     const key = JSON.stringify([
       next.code,
       next.metadata.revision_id,
+      next.metadata.custody_sha256 ?? null,
       next.metadata.transform_contract_sha256,
       [...next.dimensions].sort((a, b) => a.index - b.index),
     ])

@@ -1,163 +1,382 @@
-/**
- * Integration tests for territory-first comparisons (mixed levels).
- *
- * Route: /statistici/comparatii
- * Synthetic native metadata plus existing comparison wire fixtures; see README.
- * In these fixtures the RESULTS are ONE
- * InsObservations POST; picker/metadata requests are separate and declared.
- */
-
-import { test, expect } from '../utils/integration-base'
-import { waitForPageReady } from '../utils/test-helpers'
-import type { MockApiFixture } from '../utils/types'
-import type { Page } from '@playwright/test'
-
-const MIXED_LINK =
-  '/statistici/comparatii?cod=FOM104D&teritorii=%5B%22siruta%3A54975%22%2C%22cod%3ACJ%22%2C%22cod%3ARO%22%5D'
-
-async function setupMocks(mockApi: MockApiFixture): Promise<void> {
-  // Most specific first: the same-level example trio, then the mixed link.
-  await mockApi.mockGraphQL('InsObservations', 'observations-three-cities', {
-    variables: { filter: { territoryCodes: ['54975', '95060', '155243'] } },
-  })
-  await mockApi.mockGraphQL('InsObservations', 'observations-mixed')
-  await mockApi.mockGraphQL('InsDatasetDetails', 'dataset-details-fom104d')
-  await mockApi.mockGraphQL('InsDatasetDimensionValues', 'dimension-values-fom104d-3')
-  await mockApi.mockGraphQL('InsDatasetsExplorer', 'datasets-available')
-  await mockApi.mockGraphQL('InsTerritories', 'territory-identity-cluj', {
-    variables: { filter: { sirutaCodes: ['54975'] } },
-  })
-  await mockApi.mockGraphQL('InsTerritories', 'territories-search-turda')
+/** Explicit synthetic native publications; no fixture claims to be captured INS data. */
+import { test, expect, type Page } from '@playwright/test'
+const descriptor = {
+  id: 'TEST',
+  code: 'TEST',
+  name_ro: 'Indicator de test',
+  name_en: 'Test indicator',
+  data_status: 'AVAILABLE',
+  periodicity: ['ANNUAL'],
+  dimension_count: 5,
+  metadata: {
+    revision_id: '1',
+    custody_sha256: 'a'.repeat(64),
+    transform_contract_sha256: 'b'.repeat(64),
+  },
+  dimensions: [
+    {
+      index: 0,
+      type: 'CLASSIFICATION',
+      label_ro: 'Categorie',
+      classification_type: { code: 'D0' },
+    },
+    { index: 1, type: 'TERRITORIAL', classification_type: { code: 'D1' } },
+    { index: 2, type: 'TERRITORIAL', classification_type: { code: 'D2' } },
+    { index: 3, type: 'TEMPORAL', classification_type: null },
+    { index: 4, type: 'UNIT_OF_MEASURE', classification_type: null },
+  ],
 }
-
-function countOperationPosts(page: Page, operation: string): { readonly count: () => number } {
-  let posts = 0
-  page.on('request', (request) => {
-    if (!request.url().includes('/graphql') || request.method() !== 'POST') return
-    try {
-      const body = JSON.parse(request.postData() ?? '{}') as { query?: string }
-      if (body.query?.includes(`query ${operation}`)) posts += 1
-    } catch {
-      // Non-JSON bodies are not GraphQL operations.
-    }
-  })
-  return { count: () => posts }
+function row(
+  code: string,
+  year: number,
+  member: number,
+  value: string | null,
+  category = '100',
+) {
+  const level = code === 'B' ? 'NUTS3' : code === 'RO' ? 'NATIONAL' : 'LAU'
+  return {
+    id: `${code}:${member}:${year}:${category}`,
+    dataset_code: 'TEST',
+    value,
+    value_status: value === null ? 'c' : null,
+    time_period: { iso_period: String(year), year, periodicity: 'ANNUAL' },
+    unit: { code: '0', symbol: 'pers.', name_ro: 'Persoane' },
+    territory: {
+      code,
+      level,
+      name_ro:
+        code === 'B'
+          ? 'București județ'
+          : code === '179132'
+            ? 'Municipiul București'
+            : code === '179141'
+              ? 'Sectorul 1'
+              : code,
+    },
+    classifications: [
+      { id: 'd0', type_code: 'D0', code: category, name_ro: 'Categorie sursă' },
+      { id: 'd1', type_code: 'D1', code: '1' },
+      { id: 'd2', type_code: 'D2', code: String(member) },
+    ],
+    dimensions: {
+      geography: {
+        pairs: [
+          [1, 1],
+          [2, member],
+        ],
+        resolution: 'EXACT',
+        flags: [],
+        qualified: false,
+        resolvedTerritory: { code, level },
+        contextTerritory: null,
+        applicableRules: [],
+      },
+    },
+  }
 }
-
-test.describe('Comparisons — mixed territory levels', () => {
-  test.beforeEach(async ({ mockApi }) => {
-    await setupMocks(mockApi)
+const baseRows = [
+  row('B', 2024, 10, '123.450'),
+  row('B', 2022, 10, '100'),
+  row('179132', 2024, 20, null),
+  row('179132', 2022, 20, '90'),
+  row('179141', 2024, 30, '20'),
+]
+function link(extra: Record<string, unknown> = {}) {
+  const params = new URLSearchParams({
+    cod: 'TEST',
+    teritorii: JSON.stringify(['cod:B', 'siruta:179132', 'siruta:179141']),
   })
-
-  test('a mixed-level deep link renders all three levels from ONE observations POST', async ({
-    page,
-  }) => {
-    const observationPosts = countOperationPosts(page, 'InsObservations')
-    await page.goto(MIXED_LINK)
-    await waitForPageReady(page)
-
-    // All three levels, and the API's literal TOTAL renders as România.
-    await expect(page.getByText(/MUNICIPIUL CLUJ-NAPOCA/i).first()).toBeVisible({
-      timeout: 15000,
-    })
-    await expect(page.getByText('România').first()).toBeVisible()
-    // The table prints the wire's decimal strings VERBATIM (same principle
-    // as the detail observations table); formatted numbers live in the charts.
-    await expect(page.getByRole('table')).toContainText('195025')
-    await expect(page.getByRole('table')).toContainText('261239')
-    await expect(page.getByRole('table')).toContainText('5453155')
-
-    await page.waitForTimeout(1500)
-    expect(observationPosts.count()).toBe(1)
-  })
-
-  test('below two territories the worked example renders LIVE, marked exemplu', async ({
-    page,
-  }) => {
-    await page.goto('/statistici/comparatii')
-    await waitForPageReady(page)
-
-    await expect(page.getByText('exemplu live')).toBeVisible({ timeout: 15000 })
-    await expect(page.getByRole('table')).toContainText('195025')
-    await expect(
-      page.getByRole('button', { name: /Folosește acest exemplu/ }),
-    ).toBeVisible()
-
-    // Presets are URL bundles.
-    await expect(
-      page.getByRole('link', { name: /Cele mai mari 6 orașe/ }),
-    ).toBeVisible()
-  })
-
-  test('adopting the example writes the URL bundle', async ({ page }) => {
-    await page.goto('/statistici/comparatii')
-    await waitForPageReady(page)
-    await expect(page.getByText('exemplu live')).toBeVisible({ timeout: 15000 })
-
-    await page.getByRole('button', { name: /Folosește acest exemplu/ }).click()
-
-    await expect
-      .poll(
-        () =>
-          decodeURIComponent(
-            new URL(page.url()).searchParams.get('teritorii') ?? '',
-          ),
-        { timeout: 5000 },
+  for (const [key, value] of Object.entries(extra))
+    params.set(key, JSON.stringify(value))
+  return '/statistici/comparatii?' + params
+}
+async function mock(
+  page: Page,
+  opts: { ambiguous?: boolean; changed?: boolean } = {},
+) {
+  const calls: { query: string; variables: Record<string, unknown> }[] = []
+  await page.route('**/graphql', async (route) => {
+    expect(new URL(route.request().url()).pathname).toBe('/api/v1/graphql')
+    expect(route.request().headers()).not.toHaveProperty('authorization')
+    const { query, variables = {} } = route.request().postDataJSON()
+    calls.push({ query, variables })
+    let data: unknown = {}
+    if (query.includes('query InsComparisonDefaults')) {
+      const output: Record<string, unknown> = { dataset: descriptor }
+      for (const [key, entity] of Object.entries(variables))
+        if (key.startsWith('entity')) {
+          const e = entity as { territoryCode?: string; sirutaCode?: string }
+          const code = e.sirutaCode ?? e.territoryCode ?? 'RO'
+          const observation =
+            baseRows.find((r) => r.territory.code === code) ?? null
+          output['d' + key.slice(6)] = [
+            {
+              dataset: descriptor,
+              observation,
+              latestPeriod: observation?.time_period.iso_period ?? null,
+              hasData: observation !== null,
+              matchStrategy: observation
+                ? 'PREFERRED_CLASSIFICATION'
+                : 'NO_DATA',
+              geographicWitnesses: [],
+            },
+          ]
+        }
+      data = output
+    } else if (query.includes('query InsDatasetDetails'))
+      data = { insDataset: descriptor }
+    else if (query.includes('query InsSourceObservations')) {
+      const filter = variables.filter as {
+        territoryCodes: string[]
+        sourcePins?: { dimensionIndex: number; memberCode: string }[]
+      }
+      expect(filter).not.toHaveProperty('classificationValueCodes')
+      expect(filter.sourcePins).toEqual([
+        { dimensionIndex: 0, memberCode: '100' },
+      ])
+      const rows = baseRows.filter((r) =>
+        filter.territoryCodes.includes(r.territory.code),
       )
-      .toContain('siruta:54975')
-    await expect
-      .poll(() => new URL(page.url()).searchParams.get('cod'), { timeout: 5000 })
-      .toBe('FOM104D')
+      if (opts.ambiguous) rows.push(row('B', 2021, 11, '100'))
+      // Short but progressing pages with unknown count exercise full collection.
+      const offset = Number(variables.offset),
+        nodes = rows.slice(offset, offset + 2)
+      data = {
+        descriptor:
+          opts.changed && offset > 0
+            ? {
+                ...descriptor,
+                metadata: { ...descriptor.metadata, revision_id: '2' },
+              }
+            : descriptor,
+        insObservations: {
+          nodes,
+          pageInfo: {
+            totalCount: -1,
+            hasNextPage: offset + nodes.length < rows.length,
+            hasPreviousPage: offset > 0,
+          },
+        },
+      }
+    } else if (query.includes('query InsDatasetDimensionValues')) {
+      const index = Number(variables.dimensionIndex),
+        id = index === 4 ? 0 : 100,
+        type = index === 4 ? 'UNIT_OF_MEASURE' : 'CLASSIFICATION'
+      data = {
+        descriptor,
+        insDatasetDimensionValues: {
+          nodes: [
+            {
+              nom_item_id: id,
+              dimension_type: type,
+              label_ro: index === 4 ? 'Persoane' : 'Categorie sursă',
+              classification_value:
+                index === 4
+                  ? null
+                  : { type_code: `D${index}`, code: String(id) },
+              unit: index === 4 ? { code: '0', name_ro: 'Persoane' } : null,
+            },
+          ],
+          pageInfo: {
+            totalCount: 1,
+            hasNextPage: false,
+            hasPreviousPage: false,
+          },
+        },
+      }
+    } else if (query.includes('query InsTerritories'))
+      data = {
+        insTerritories: {
+          nodes: [],
+          pageInfo: {
+            totalCount: 0,
+            hasNextPage: false,
+            hasPreviousPage: false,
+          },
+        },
+      }
+    else if (query.includes('query InsDatasetsExplorer'))
+      data = {
+        insDatasets: {
+          nodes: [],
+          pageInfo: {
+            totalCount: 0,
+            hasNextPage: false,
+            hasPreviousPage: false,
+          },
+        },
+      }
+    await route.fulfill({ json: { data } })
   })
-
-  test('the peer chip adds România as a cod: token (URL contract)', async ({
-    page,
-  }) => {
-    await page.goto(
-      '/statistici/comparatii?cod=FOM104D&teritorii=%5B%22siruta%3A54975%22%5D',
-    )
-    await waitForPageReady(page)
-
-    await page.getByRole('button', { name: /România/ }).first().click()
-
-    await expect
-      .poll(
-        () =>
-          decodeURIComponent(
-            new URL(page.url()).searchParams.get('teritorii') ?? '',
-          ),
-        { timeout: 5000 },
-      )
-      .toContain('cod:RO')
-  })
-
-  test('removing a territory chip updates teritorii[]', async ({ page }) => {
-    await page.goto(MIXED_LINK)
-    await waitForPageReady(page)
-    await expect(page.getByText(/MUNICIPIUL CLUJ-NAPOCA/i).first()).toBeVisible({
-      timeout: 15000,
-    })
-
-    // Remove the county chip.
-    await page
-      .getByRole('button', { name: /Elimină filtrul|Cluj$/ })
-      .filter({ hasText: /^Cluj$/ })
-      .first()
-      .click()
-      .catch(async () => {
-        // Chip remove buttons carry the label text; fall back to any chip
-        // whose accessible name mentions the county alone.
-        await page.getByLabel(/Elimină.*Cluj/).first().click()
+  return calls
+}
+for (const language of ['en', 'ro'] as const)
+  for (const width of [390, 1440]) {
+    test.describe(`${language} ${width} native comparisons`, () => {
+      test.use({ viewport: { width, height: 900 } })
+      test.beforeEach(async ({ context, page, baseURL }) => {
+        await context.addCookies([
+          { name: 'user-locale', value: language, url: baseURL! },
+        ])
+        await page.addInitScript(
+          (value) => localStorage.setItem('user-locale', value),
+          language,
+        )
       })
-
-    await expect
-      .poll(
-        () =>
-          decodeURIComponent(
-            new URL(page.url()).searchParams.get('teritorii') ?? '',
+      test('uses complete paired source pages and preserves gaps/statuses/period selection', async ({
+        page,
+      }, testInfo) => {
+        const calls = await mock(page)
+        await page.goto(link())
+        const table = page.getByRole('table')
+        await expect(table).toContainText('123.450', { timeout: 15000 })
+        await expect(table).toContainText('[c]')
+        await expect(table).toContainText('2023')
+        await expect(table).toContainText('Municipiul București')
+        await expect(table).toContainText('Sectorul 1')
+        const before = calls.filter((c) =>
+          c.query.includes('InsSourceObservations'),
+        ).length
+        expect(before).toBe(3)
+        await page.locator('#comparison-period').click()
+        await page.getByRole('option', { name: '2022', exact: true }).click()
+        await expect(page).toHaveURL(
+          (url) =>
+            JSON.parse(url.searchParams.get('perioada') ?? 'null') === '2022',
+        )
+        expect(
+          calls.filter((c) => c.query.includes('InsSourceObservations')).length,
+        ).toBe(before)
+        await page.screenshot({
+          path: testInfo.outputPath(`ins-comparison-${language}-${width}.png`),
+          fullPage: true,
+        })
+      })
+      test('keeps malformed URL intent without replacing it with example/default data', async ({
+        page,
+      }) => {
+        const calls = await mock(page)
+        await page.goto(link({ clasificari: ['SEX:TOTAL'] }))
+        await expect(page.getByRole('alert')).toContainText('SEX:TOTAL', {
+          timeout: 15000,
+        })
+        expect(
+          calls.filter((c) => c.query.includes('InsSourceObservations')).length,
+        ).toBe(0)
+        expect(
+          calls.filter((c) => c.query.includes('InsComparisonDefaults')).length,
+        ).toBe(0)
+        await page.reload()
+        await expect(page.getByRole('alert')).toContainText('SEX:TOTAL')
+      })
+      test('keeps equal-valued disjoint source alternatives unavailable', async ({
+        page,
+      }) => {
+        await mock(page, { ambiguous: true })
+        await page.goto(link({ perioada: '2020' }))
+        const table = page.getByRole('table')
+        await expect(table).toContainText(/Mai multe serii|Multiple source/, {
+          timeout: 15000,
+        })
+        await expect(table).toContainText('2020')
+        await expect(table).not.toContainText('123.450')
+        await expect(
+          page.getByText(
+            /Serii indisponibile pentru comparație:|Series unavailable for comparison:/,
           ),
-        { timeout: 5000 },
-      )
-      .not.toContain('cod:CJ')
-  })
+        ).toContainText('București')
+        const sourceLink = table.getByRole('link').first()
+        const href = await sourceLink.getAttribute('href')
+        expect(href).not.toBeNull()
+        const sourceUrl = new URL(href!, 'http://localhost')
+        expect(
+          JSON.parse(sourceUrl.searchParams.get('clasificari') ?? 'null'),
+        ).toEqual(['D0:100'])
+        expect(
+          JSON.parse(sourceUrl.searchParams.get('unitate') ?? 'null'),
+        ).toBe('0')
+        await expect(page.locator('#comparison-period')).toContainText('2020')
+      })
+    })
+  }
+test('publication changes never display a partial comparison', async ({
+  page,
+}) => {
+  await mock(page, { changed: true })
+  await page.goto(link())
+  await expect(
+    page.getByRole('button', { name: /Reîncearcă|Retry|Try again/ }).first(),
+  ).toBeVisible({ timeout: 15000 })
+  await expect(page.getByRole('table')).toHaveCount(0)
 })
+
+for (const [reason, dataset] of [
+  ['UNKNOWN', null],
+  [
+    'CATALOG_ONLY',
+    { ...descriptor, data_status: 'CATALOG_ONLY', metadata: null },
+  ],
+] as const) {
+  test(`dataset ${reason} offers another indicator without futile retry`, async ({
+    page,
+  }) => {
+    const calls = await mock(page)
+    await page.route('**/api/v1/graphql', async (route) => {
+      const body = route.request().postDataJSON()
+      if (body.query.includes('InsComparisonDefaults')) {
+        await route.fulfill({ json: { data: { dataset } } })
+      } else await route.fallback()
+    })
+    await page.goto(link())
+    await expect(
+      page.getByRole('status').filter({
+        hasText:
+          reason === 'UNKNOWN'
+            ? /Indicatorul nu a fost găsit|Indicator not found/
+            : /observațiile nu au fost încă publicate|observations have not been published/,
+      }),
+    ).toBeVisible()
+    await expect(page.getByRole('table')).toHaveCount(0)
+    await expect(
+      page.getByRole('button', { name: /Reîncearcă|Retry|Try again/ }),
+    ).toHaveCount(0)
+    expect(
+      calls.filter((call) => call.query.includes('InsSourceObservations')),
+    ).toHaveLength(0)
+  })
+}
+
+for (const scenario of [
+  { field: 'unitate', dimension: 0, option: 'Categorie sursă' },
+  { field: 'clasificari', dimension: 4, option: 'Persoane' },
+  { field: 'frecventa', dimension: 4, option: 'Persoane' },
+] as const) {
+  test(`editing another source control preserves explicit null ${scenario.field}`, async ({
+    page,
+  }) => {
+    const calls = await mock(page)
+    await page.goto(
+      link({
+        clasificari: ['D0:100'],
+        unitate: '0',
+        frecventa: 'ANNUAL',
+        [scenario.field]: null,
+      }),
+    )
+    await expect(page.getByRole('alert')).toBeVisible()
+    await page.locator(`#dimension-TEST-${scenario.dimension}`).click()
+    await page.getByRole('option', { name: scenario.option }).click()
+    await expect(page).toHaveURL(
+      (url) => url.searchParams.get(scenario.field) === 'null',
+    )
+    await expect(page.getByRole('alert')).toBeVisible()
+    expect(
+      calls.filter((call) => call.query.includes('InsSourceObservations')),
+    ).toHaveLength(0)
+    await page.reload()
+    await expect(page.getByRole('alert')).toBeVisible()
+    await expect(page).toHaveURL(
+      (url) => url.searchParams.get(scenario.field) === 'null',
+    )
+  })
+}

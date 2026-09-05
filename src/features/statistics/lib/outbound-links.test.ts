@@ -75,7 +75,11 @@ describe('outbound links round-trip through their target schemas', () => {
         preset.search as Record<string, unknown>,
       )
       const tokens = parseComparisonTokens(parsed.teritorii)
-      expect(tokens.length).toBe(preset.search.teritorii?.length ?? 0)
+      expect(tokens.length).toBe(
+        Array.isArray(preset.search.teritorii)
+          ? preset.search.teritorii.length
+          : 0,
+      )
     }
   })
 })

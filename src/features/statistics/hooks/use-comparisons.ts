@@ -1,185 +1,199 @@
 import { normalizeInsDatasetCode } from '@/lib/ins/source-contract'
 import { useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { validPeriodDate } from '@/lib/ins/source-periods'
 import { t } from '@lingui/core/macro'
 import { searchInsTerritories } from '../api/graphql/statistics-fetchers'
 import type { StatisticsComparisonsSearch } from '@/schemas/statistics'
 import {
-  fetchComparisonDataset,
-  fetchComparisonObservations,
-  type ComparisonDatasetMeta,
-} from '../api/comparisons-api'
+  prepareNativeComparison,
+  fetchNativeComparisonVector,
+  projectPreparedComparison,
+} from '../api/native-comparisons-api'
+import { resolveComparisonDefaults } from '../lib/comparison-defaults'
+import { resolveComparisonTerritories } from '../lib/comparison-territories'
+import { comparisonPublicationKey } from '../lib/native-comparison'
 import { fetchDatasetPage } from '../api/dataset-explorer-api'
-import { searchTerritories, TERRITORY_SEARCH_MIN_LENGTH } from '../api/territory-search-api'
 import {
-  buildComparisonMatrix,
-  parseComparisonTokens,
-  resolveEffectiveClassificationPins,
-  resolveSelectedPeriod,
-  type ClassificationPin,
-  type ComparisonMatrix,
-  type ComparisonTerritoryToken,
+  searchTerritories,
+  TERRITORY_SEARCH_MIN_LENGTH,
+} from '../api/territory-search-api'
+import type {
+  ComparisonMatrix,
+  ComparisonTerritoryToken,
 } from '../lib/comparison-series'
-import { filterExactCell } from '../lib/dataset-selection'
 
-/**
- * Data layer for `/statistici/comparatii`.
- *
- * THE single-fetch contract, enforced here:
- *
- * `perioada` is NOT part of `observationsQueryKey` and is NOT passed to
- * `fetchComparisonObservations`. One `insObservations` request is issued per
- * (dataset × territories × pins) combination; the table, the bar chart, the
- * line chart and the period dropdown are all derived from its result inside
- * `useMemo`. Changing the period therefore re-renders but never refetches —
- * an integration test counts the intercepted requests to keep it that way.
- *
- * The observations query is `enabled` only once a dataset and at least one
- * territory are chosen. An `insObservations` call with no territory filter
- * scans 23.6M rows and times out at 30s.
- */
-
-/** Sorted so `["b","a"]` and `["a","b"]` share one cache entry. */
-function stableKey(values: readonly string[]): readonly string[] {
-  return [...values].sort()
-}
-
-export interface UseComparisonsResult {
-  readonly datasetMeta: ComparisonDatasetMeta | null
-  readonly datasetLoading: boolean
-  readonly datasetError: Error | null
-
-  readonly matrix: ComparisonMatrix | null
-  readonly observationsLoading: boolean
-  readonly observationsError: Error | null
-  readonly observationsFetching: boolean
-  readonly partial: boolean
-  readonly refetchObservations: () => void
-
-  /** The pins actually sent to the server (URL pins + auto-pinned totals). */
-  readonly effectivePins: readonly ClassificationPin[]
-  /**
-   * Dimensions with no Total and no URL pin — the fetch is held until every
-   * one is pinned, and the page prompts for them by label.
-   */
-  readonly unresolvedDimensionLabels: readonly string[]
-  /** The period on screen: the URL's when it exists in the data, else the latest. */
-  readonly selectedPeriod: string | null
-  /** Normalized territory tokens, in URL order (colour follows the slot). */
-  readonly tokens: readonly ComparisonTerritoryToken[]
-  readonly hasDataset: boolean
-  readonly hasEnoughTerritories: boolean
-}
-
-export function useComparisons(
-  search: StatisticsComparisonsSearch,
-): UseComparisonsResult {
-  const datasetCode = normalizeInsDatasetCode(search.cod ?? '')
-  const tokens = useMemo(
-    () => parseComparisonTokens(search.teritorii),
+/** One complete native fetch per source selection; period and frequency are local projections. */
+export function useComparisons(search: StatisticsComparisonsSearch) {
+  const queryClient = useQueryClient()
+  const datasetCode =
+    typeof search.cod === 'string' ? normalizeInsDatasetCode(search.cod) : ''
+  const territorySelection = useMemo(
+    () => resolveComparisonTerritories(search.teritorii),
     [search.teritorii],
   )
-  const sirutaCodes = useMemo(() => tokens.map((token) => token.code), [tokens])
-  const urlPins = useMemo(() => search.clasificari ?? [], [search.clasificari])
-
-  const datasetQuery = useQuery({
-    queryKey: ['statistics', 'native-v1', 'comparisons', 'dataset', datasetCode],
-    queryFn: ({ signal }) => fetchComparisonDataset(datasetCode, signal),
-    enabled: datasetCode.length > 0,
-  })
-
-  const datasetMeta = datasetQuery.data ?? null
-
-  const effectivePins = useMemo(
-    () =>
-      resolveEffectiveClassificationPins({
-        dimensions: datasetMeta?.classifications ?? [],
-        urlPins,
-      }),
-    [datasetMeta, urlPins],
-  )
-
-  // The dataset must be resolved before observations are fetched: without its
-  // dimensions the auto-pinned totals are unknown, and an under-pinned filter
-  // silently mixes classification members into one number. The same holds for
-  // a dimension with no Total and no URL pin — the resolver omits it, so the
-  // fetch waits until every dimension carries a pin.
-  const pinsResolved = datasetCode.length === 0 || datasetQuery.isSuccess
-  const unresolvedDimensionLabels = useMemo(() => {
-    if (!datasetMeta) return []
-    const covered = new Set(effectivePins.map((pin) => pin.typeCode))
-    return datasetMeta.classifications
-      .filter((dimension) => !covered.has(dimension.typeCode))
-      .map((dimension) => dimension.label)
-  }, [datasetMeta, effectivePins])
-  const observationsEnabled =
-    datasetCode.length > 0 &&
-    sirutaCodes.length > 0 &&
-    pinsResolved &&
-    unresolvedDimensionLabels.length === 0
-
-  const observationsQuery = useQuery({
-    // `perioada` is deliberately absent — see the module doc.
+  const tokens = territorySelection.tokens
+  const explicit =
+    search.clasificari !== undefined ||
+    search.unitate !== undefined ||
+    search.frecventa !== undefined
+  const requestedPeriod =
+    typeof search.perioada === 'number' && Number.isSafeInteger(search.perioada)
+      ? String(search.perioada)
+      : search.perioada
+  const inputIssues = [
+    ...(search.cod !== undefined && !datasetCode ? ['dataset'] : []),
+    ...(!territorySelection.valid ? ['territories'] : []),
+    ...(requestedPeriod !== undefined && typeof requestedPeriod !== 'string'
+      ? ['period']
+      : []),
+  ]
+  const enabled =
+    datasetCode.length > 0 && tokens.length > 0 && inputIssues.length === 0
+  const preparation = useQuery({
     queryKey: [
       'statistics',
+      'native-v2',
       'comparisons',
-      'observations',
+      'prepare',
       datasetCode,
-      stableKey(sirutaCodes),
-      stableKey(effectivePins.map((pin) => `${pin.typeCode}:${pin.valueCode}`)),
-      search.unitate ?? null,
+      tokens,
+      explicit,
     ],
     queryFn: ({ signal }) =>
-      fetchComparisonObservations({
-        datasetCode,
-        territoryCodes: sirutaCodes,
-        classificationPins: effectivePins,
-        unitCode: search.unitate,
+      prepareNativeComparison(
+        {
+          code: datasetCode,
+          territories: search.teritorii,
+          classifications: search.clasificari,
+          unit: search.unitate,
+          cadence: search.frecventa,
+        },
         signal,
-      }),
-    enabled: observationsEnabled,
+      ),
+    enabled,
+    staleTime: 5 * 60 * 1000,
+    retry: false,
   })
-
-  const matrix = useMemo(() => {
-    const observations = observationsQuery.data?.observations
-    if (!observations) return null
-    // The exact resolved cell per territory: the server's type-aware filter
-    // still admits sibling cells (shared value set across types) — the client
-    // match is what makes "one number per territory×period" true.
-    const pinMap = new Map(
-      effectivePins.map((pin) => [pin.typeCode, pin.valueCode]),
-    )
-    return buildComparisonMatrix({
-      observations: filterExactCell(observations, pinMap),
-      territoryCodes: sirutaCodes,
-    })
-  }, [observationsQuery.data, sirutaCodes, effectivePins])
-
-  const selectedPeriod = useMemo(
-    () => (matrix ? resolveSelectedPeriod(matrix.periods, search.perioada) : null),
-    [matrix, search.perioada],
-  )
-
-  return {
-    datasetMeta,
-    datasetLoading: datasetQuery.isPending && datasetCode.length > 0,
-    datasetError: datasetQuery.error,
-
-    matrix,
-    observationsLoading: observationsEnabled && observationsQuery.isPending,
-    observationsError: observationsQuery.error,
-    observationsFetching: observationsQuery.isFetching,
-    partial: observationsQuery.data?.partial ?? false,
-    refetchObservations: () => {
-      void observationsQuery.refetch()
+  // Preparation metadata/defaults do not depend on which explicit member is picked.
+  const prepared = useMemo(() => {
+    if (!preparation.data) return null
+    return {
+      ...preparation.data,
+      resolved: resolveComparisonDefaults({
+        dataset: preparation.data.dataset,
+        latest: preparation.data.latest,
+        classifications: search.clasificari,
+        unit: search.unitate,
+        cadence: search.frecventa,
+      }),
+    }
+  }, [preparation.data, search.clasificari, search.unitate, search.frecventa])
+  const resolved = prepared?.resolved
+  const issues = [...inputIssues, ...(resolved?.issues ?? [])]
+  if (typeof requestedPeriod === 'string' && resolved?.cadence) {
+    const type = {
+      ANNUAL: 'YEAR',
+      QUARTERLY: 'QUARTER',
+      MONTHLY: 'MONTH',
+    } as const
+    if (!validPeriodDate(requestedPeriod, type[resolved.cadence]))
+      issues.push('period')
+  }
+  const ready =
+    enabled &&
+    prepared !== null &&
+    resolved?.ready === true &&
+    issues.length === 0
+  const vector = useQuery({
+    queryKey: [
+      'statistics',
+      'native-v2',
+      'comparisons',
+      'vector',
+      datasetCode,
+      tokens,
+      prepared ? comparisonPublicationKey(prepared.descriptor) : null,
+      resolved ? [...resolved.pins] : null,
+      resolved?.unit ?? null,
+    ],
+    queryFn: ({ signal }) => {
+      if (!prepared) throw new Error('Missing native comparison preparation')
+      return fetchNativeComparisonVector(prepared, signal)
     },
-
+    enabled: ready,
+    retry: false,
+  })
+  const projection = useMemo(() => {
+    if (!ready || !vector.data || !prepared)
+      return { matrix: null, error: null }
+    try {
+      return {
+        matrix: projectPreparedComparison(
+          { ...vector.data, prepared },
+          typeof requestedPeriod === 'string' ? requestedPeriod : undefined,
+        ),
+        error: null,
+      }
+    } catch (error) {
+      return {
+        matrix: null,
+        error:
+          error instanceof Error ? error : new Error('Invalid INS comparison'),
+      }
+    }
+  }, [ready, vector.data, prepared, requestedPeriod])
+  const matrix = projection.matrix
+  const effectivePins = resolved
+    ? [...resolved.pins].map(([typeCode, valueCode]) => ({
+        typeCode,
+        valueCode,
+      }))
+    : []
+  const unresolvedDimensionLabels = prepared
+    ? [
+        ...prepared.dataset.dimensions
+          .filter((d) => resolved?.unresolvedAxes.includes(`D${d.index}`))
+          .map((d) => d.label_ro || `D${d.index}`),
+        ...(resolved?.unit === null ? [t`Unitate de măsură`] : []),
+        ...(resolved?.cadence === null ? [t`Frecvență`] : []),
+      ]
+    : []
+  return {
+    datasetMeta: prepared?.dataset ?? null,
+    datasetLoading: enabled && preparation.isPending,
+    datasetError: preparation.error,
+    matrix,
+    observationsLoading: ready && vector.isPending,
+    observationsError: vector.error ?? projection.error,
+    observationsFetching: preparation.isFetching || vector.isFetching,
+    refetchObservations: async () => {
+      // Refresh defaults and observations together after publication changes.
+      const refreshed = await preparation.refetch()
+      if (refreshed.isSuccess)
+        await queryClient.invalidateQueries({
+          queryKey: [
+            'statistics',
+            'native-v2',
+            'comparisons',
+            'vector',
+            datasetCode,
+          ],
+        })
+    },
     effectivePins,
     unresolvedDimensionLabels,
-    selectedPeriod,
+    selectedPeriod:
+      typeof requestedPeriod === 'string'
+        ? requestedPeriod
+        : (matrix?.periods[matrix.periods.length - 1]?.isoPeriod ?? null),
     tokens,
     hasDataset: datasetCode.length > 0,
     hasEnoughTerritories: tokens.length >= 2,
+    issues,
+    unitCode: resolved?.unit ?? null,
+    cadence: resolved?.cadence ?? null,
+    representative: resolved?.representative ?? false,
   }
 }
 
@@ -193,7 +207,11 @@ export function useComparisonDatasetSearch(term: string) {
 
   const query = useQuery({
     queryKey: ['statistics', 'comparisons', 'dataset-search', trimmed],
-    queryFn: () => fetchDatasetPage({ q: trimmed.length > 0 ? trimmed : undefined, stare: 'available' }),
+    queryFn: () =>
+      fetchDatasetPage({
+        q: trimmed.length > 0 ? trimmed : undefined,
+        stare: 'available',
+      }),
   })
 
   return {
@@ -239,7 +257,11 @@ export function useComparisonPeers(
   const identityQuery = useQuery({
     queryKey: ['statistics', 'comparisons', 'peer-identity', sirutaCode],
     queryFn: ({ signal }) =>
-      searchInsTerritories({ filter: { sirutaCodes: [sirutaCode ?? ''] }, limit: 1, signal }),
+      searchInsTerritories({
+        filter: { sirutaCodes: [sirutaCode ?? ''] },
+        limit: 1,
+        signal,
+      }),
     enabled: sirutaCode !== null,
     staleTime: 1000 * 60 * 60 * 24,
   })
@@ -285,9 +307,19 @@ export function useComparisonTerritoryNames(
   const needsCounties = unresolved.some((token) => token.level === 'NUTS3')
 
   const lauQuery = useQuery({
-    queryKey: ['statistics', 'comparisons', 'names', 'lau', [...lauCodes].sort()],
+    queryKey: [
+      'statistics',
+      'comparisons',
+      'names',
+      'lau',
+      [...lauCodes].sort(),
+    ],
     queryFn: ({ signal }) =>
-      searchInsTerritories({ filter: { sirutaCodes: lauCodes }, limit: lauCodes.length, signal }),
+      searchInsTerritories({
+        filter: { sirutaCodes: lauCodes },
+        limit: lauCodes.length,
+        signal,
+      }),
     enabled: lauCodes.length > 0,
     staleTime: 1000 * 60 * 60 * 24,
   })
@@ -295,7 +327,11 @@ export function useComparisonTerritoryNames(
   const countyQuery = useQuery({
     queryKey: ['statistics', 'comparisons', 'names', 'counties'],
     queryFn: ({ signal }) =>
-      searchInsTerritories({ filter: { levels: ['NUTS3'] }, limit: 60, signal }),
+      searchInsTerritories({
+        filter: { levels: ['NUTS3'] },
+        limit: 60,
+        signal,
+      }),
     enabled: needsCounties,
     staleTime: 1000 * 60 * 60 * 24,
   })

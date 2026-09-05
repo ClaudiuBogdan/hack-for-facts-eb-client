@@ -1,5 +1,9 @@
 import {
-  insSourceDimensionCodeSchema,
+  parseSourcePins,
+  parseSourceUnit,
+  sourcePinsFilter,
+} from '@/lib/ins/source-pins'
+import {
   insSourceLayoutSchema,
   insSourceMemberCodeSchema,
 } from '@/lib/ins/source-contract'
@@ -23,15 +27,6 @@ import {
 
 export type SourceSelectionIssue =
   'territory' | 'classifications' | 'unit' | 'descriptor'
-
-function sourceUnit(input: unknown): string | null {
-  const candidate =
-    typeof input === 'number' && Number.isSafeInteger(input)
-      ? String(input)
-      : input
-  const parsed = insSourceMemberCodeSchema.safeParse(candidate)
-  return parsed.success ? parsed.data : null
-}
 
 /** A metadata-only bootstrap cannot silently obtain national defaults for explicit source pins. */
 export function detailBootstrapEntity(
@@ -101,30 +96,9 @@ export function resolveDetailSelection(params: {
   )
     issues.add('territory')
 
-  const explicit = new Map<string, string>()
-  if (search.clasificari !== undefined) {
-    if (
-      !Array.isArray(search.clasificari) ||
-      search.clasificari.length === 0 ||
-      search.clasificari.length > 7
-    ) {
-      issues.add('classifications')
-    } else {
-      for (const raw of search.clasificari) {
-        const parts = typeof raw === 'string' ? raw.split(':') : []
-        const [type, value] = parts
-        if (
-          parts.length !== 2 ||
-          !insSourceDimensionCodeSchema.safeParse(type).success ||
-          !insSourceMemberCodeSchema.safeParse(value).success ||
-          !declaredAxes.has(type) ||
-          explicit.has(type)
-        ) {
-          issues.add('classifications')
-        } else explicit.set(type, value)
-      }
-    }
-  }
+  const parsedPins = parseSourcePins(search.clasificari, declaredAxes)
+  const explicit = parsedPins.pins
+  if (!parsedPins.valid) issues.add('classifications')
   const explicitGeo = [...explicit.keys()].some((type) => geoAxes.has(type))
   const classifications = new Map<string, string>()
   const defaultedTypes = new Set<string>()
@@ -146,8 +120,8 @@ export function resolveDetailSelection(params: {
   }
   const unitCode =
     search.unitate === undefined
-      ? sourceUnit(latest?.unitCode)
-      : sourceUnit(search.unitate)
+      ? parseSourceUnit(latest?.unitCode)
+      : parseSourceUnit(search.unitate)
   if (search.unitate !== undefined && unitCode === null) issues.add('unit')
   const scope: EffectiveScope = {
     territory,
@@ -175,12 +149,7 @@ export function resolveDetailSelection(params: {
   // The legacy two-list representation loses pairing when IDs repeat across axes.
   const filter = buildSeriesFilter({ ...scope, classifications: new Map() })
   if (classifications.size > 0)
-    filter.sourcePins = [...classifications]
-      .sort(([a], [b]) => Number(a.slice(1)) - Number(b.slice(1)))
-      .map(([type, memberCode]) => ({
-        dimensionIndex: Number(type.slice(1)),
-        memberCode,
-      }))
+    filter.sourcePins = sourcePinsFilter(classifications)
   return {
     scope,
     filter: issues.size || incompleteGeo ? null : filter,

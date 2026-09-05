@@ -26,6 +26,33 @@ const page = (ids: string[], more: boolean, previous = false, count = -1) => ({
 })
 
 describe('complete INS source vectors', () => {
+  it('rejects intermediate custody drift even if the next page would restore the initial stamp', async () => {
+    const stamped = (
+      ids: string[],
+      more: boolean,
+      previous: boolean,
+      custody: string,
+    ) => ({
+      ...page(ids, more, previous),
+      descriptor: {
+        ...descriptor,
+        metadata: {
+          ...descriptor.metadata,
+          custody_sha256: custody.repeat(64),
+        },
+      },
+    })
+    const fetchPage = vi
+      .fn()
+      .mockResolvedValueOnce(stamped(['2024'], true, false, 'a'))
+      .mockResolvedValueOnce(stamped(['2023'], true, true, 'b'))
+      .mockResolvedValueOnce(stamped(['2022'], false, true, 'a'))
+    await expect(
+      collectInsSourcePages({ datasetCode: 'TEST', fetchPage }),
+    ).rejects.toMatchObject({ code: 'PUBLICATION_CHANGED' })
+    expect(fetchPage).toHaveBeenCalledTimes(2)
+  })
+
   it('retains original decimal cells while pinning metadata in every page', async () => {
     const fetchPage = vi
       .fn()
