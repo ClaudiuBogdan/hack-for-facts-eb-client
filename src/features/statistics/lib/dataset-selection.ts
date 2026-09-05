@@ -4,6 +4,7 @@ import type {
   InsObservation,
   InsObservationFilterInput,
   InsPeriodicity,
+  InsTerritoryLevel,
 } from '@/schemas/ins'
 import type {
   StatisticsDatasetDetailSearch,
@@ -206,15 +207,16 @@ export const NATIONAL_ENTITY: InsEntitySelectorInput = {
 }
 
 /**
- * The territory level a `cod:` pin denotes. Explicit fallthrough: an
- * unrecognized shape (e.g. a NUTS2 code) resolves to null and the caller
- * treats the pin as absent rather than guessing a level.
+ * Recognize canonical Romanian NUTS levels without inferring geographic
+ * coverage. Unknown shapes stay invalid; the server still resolves identity.
  */
 export function inferCodTerritoryLevel(
   value: string,
-): 'NATIONAL' | 'NUTS3' | 'LAU' | null {
+): InsTerritoryLevel | null {
   const trimmed = value.trim()
   if (trimmed.toUpperCase() === 'RO') return 'NATIONAL'
+  if (/^RO[1-4]$/i.test(trimmed)) return 'NUTS1'
+  if (/^RO(?:11|12|21|22|31|32|41|42)$/i.test(trimmed)) return 'NUTS2'
   if (/^[A-Za-z]{1,2}$/.test(trimmed)) return 'NUTS3'
   if (/^\d+$/.test(trimmed)) return 'LAU'
   return null
@@ -269,7 +271,7 @@ export function buildEffectiveScope(params: {
   const { search, latest } = params
 
   const rawTerritory = parseTerritoryPin(search.teritoriu)
-  // Unknown cod: level (e.g. NUTS2) is treated as no pin — never guessed.
+  // Unknown cod: level (e.g. RO99) is treated as no pin — never guessed.
   const territory =
     rawTerritory?.kind === 'cod' &&
     inferCodTerritoryLevel(rawTerritory.value) === null
@@ -337,7 +339,7 @@ export function buildSeriesFilter(
       filter.territoryCodes = [scope.territory.value.toUpperCase()]
       filter.territoryLevels = [level]
     } else {
-      // Unknown cod: shape (e.g. a NUTS2 code) — rejected, never guessed.
+      // Unknown cod: shape (e.g. RO99) — rejected, never guessed.
       filter.territoryLevels = ['NATIONAL']
     }
   } else if (scope.territoryMode !== 'source-coordinates') {
@@ -452,7 +454,8 @@ export function parseComparisonToken(
     return { token: `siruta:${match[2]}`, code: match[2], level: 'LAU' }
   }
   const level = inferCodTerritoryLevel(match[2])
-  if (level === null) return null
+  // Region comparisons need matching labels and picker support before admission.
+  if (level === null || level === 'NUTS1' || level === 'NUTS2') return null
   if (level === 'LAU') {
     return { token: `siruta:${match[2]}`, code: match[2], level: 'LAU' }
   }

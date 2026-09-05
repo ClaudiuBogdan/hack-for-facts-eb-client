@@ -69,7 +69,10 @@ describe('territory entity mapping', () => {
     expect(inferCodTerritoryLevel('CJ')).toBe('NUTS3')
     expect(inferCodTerritoryLevel('54975')).toBe('LAU')
     // Explicit fallthrough: unknown shapes are rejected, never guessed.
-    expect(inferCodTerritoryLevel('RO1')).toBeNull()
+    expect(inferCodTerritoryLevel('RO5')).toBeNull()
+    expect(inferCodTerritoryLevel('RO99')).toBeNull()
+    expect(inferCodTerritoryLevel('RO1')).toBe('NUTS1')
+    expect(inferCodTerritoryLevel('RO11')).toBe('NUTS2')
 
     expect(territoryPinToEntity(parseTerritoryPin('cod:RO'))).toEqual({
       territoryCode: 'RO',

@@ -76,7 +76,7 @@ describe('detail source selection', () => {
     0,
     ['cod:RO'],
     {},
-    'cod:RO1',
+    'cod:RO5',
     'siruta:0',
     'cod:0',
     'cod:01',
