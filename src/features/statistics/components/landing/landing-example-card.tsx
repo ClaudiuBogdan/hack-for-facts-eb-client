@@ -1,143 +1,125 @@
+import { landingSourceSearch } from '../../lib/landing-source-search'
 import { Link } from '@tanstack/react-router'
-import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { ArrowRight } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import type { LandingExample } from '../../lib/landing-example'
-import {
-  EXAMPLE_DATASET_CODE,
-  EXAMPLE_LAU_SIRUTA,
-} from '../../lib/landing-constants'
+import type { buildNativeLandingExample } from '../../lib/native-landing'
 import { statisticsTheme } from '../../lib/statistics-theme'
-import { formatObservationValue, formatPercent } from '../../lib/format'
+import {
+  LandingIssues,
+  LandingSource,
+  LandingSourceCell,
+} from './landing-source'
 
-type LandingExampleCardProps = {
-  readonly example: LandingExample | null
-}
-
-/**
- * B3 — a WORKED comparison, not a picker: three live numbers on one
- * indicator, one takeaway line, and the whole card is a link into compare
- * with the mixed-level territory tokens prefilled.
- */
-export function LandingExampleCard({ example }: LandingExampleCardProps) {
-  if (!example) return null
-
-  // The loud-degradation shape: every candidate year was rejected as
-  // ambiguous. No numbers to show, but the note must still explain why the
-  // card is empty — silence would hide a data defect.
-  if (example.rows.length < 2) {
-    if (example.ambiguousCellCount === 0) return null
-    return (
-      <section className="space-y-4" aria-labelledby="landing-example-heading">
-        <h2 id="landing-example-heading" className={statisticsTheme.sectionTitle}>
-          <Trans>Compară două locuri</Trans>
-        </h2>
-        <p
-          role="status"
-          className="rounded-md border border-dashed border-border/70 px-3 py-2 text-sm text-muted-foreground"
-        >
-          <AmbiguityNote />
-        </p>
-      </section>
-    )
-  }
-
-  const lau = example.rows.find((row) => row.level === 'LAU')
-  const takeaway =
-    example.lauShareOfCounty !== null && lau ? (
-      <Trans>
-        {lau.name ?? lau.code} concentrează{' '}
-        {formatPercent(example.lauShareOfCounty)} din salariații județului.
-      </Trans>
-    ) : null
-
+/** Fixed source-compatible territories; the common year is explicit, never a hidden fallback. */
+export function LandingExampleCard({
+  example,
+}: {
+  readonly example: ReturnType<typeof buildNativeLandingExample>
+}) {
   return (
     <section className="space-y-4" aria-labelledby="landing-example-heading">
-      <div>
-        <h2 id="landing-example-heading" className={statisticsTheme.sectionTitle}>
-          <Trans>Compară două locuri</Trans>
-        </h2>
-        <p className={statisticsTheme.sectionSubtitle}>
-          <Trans>
-            Un exemplu viu: numărul mediu de salariați, pe trei niveluri
-            teritoriale. Apasă pe card ca să pornești propria comparație.
-          </Trans>
-        </p>
-      </div>
-
-      <Link
-        to="/statistici/comparatii"
-        search={{
-          cod: EXAMPLE_DATASET_CODE,
-          teritorii: [`siruta:${EXAMPLE_LAU_SIRUTA}`, 'cod:CJ', 'cod:RO'],
-        }}
-        className="group block rounded-lg border border-border/70 bg-card p-4 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:p-6"
-      >
-        <div className="flex items-start justify-between gap-3">
-          <Badge variant="outline" className="text-xs">
-            <Trans>exemplu live</Trans>
-          </Badge>
-          <ArrowRight
-            aria-hidden
-            className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
-          />
-        </div>
-
-        <dl className="mt-3 grid gap-4 sm:grid-cols-3">
-          {example.rows.map((row) => (
-            <div key={row.code} className="min-w-0">
-              <dt className="truncate text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                {rowDisplayName(row.level, row.name, row.code)}
-              </dt>
-              <dd className="mt-1 text-xl font-semibold tabular-nums tracking-tight">
-                {formatObservationValue(row.value) ?? '—'}
-                {example.unitSymbol ? (
-                  <span className="text-sm font-normal text-muted-foreground">
-                    {' '}
-                    {example.unitSymbol}
-                  </span>
-                ) : null}
-              </dd>
-            </div>
-          ))}
-        </dl>
-
-        {takeaway ? <p className="mt-4 text-sm">{takeaway}</p> : null}
-
-        {example.ambiguousCellCount > 0 ? (
-          <p className="mt-3 text-xs text-muted-foreground">
-            <AmbiguityNote />
+      <h2 id="landing-example-heading" className={statisticsTheme.sectionTitle}>
+        <Trans>Compară trei niveluri teritoriale</Trans>
+      </h2>
+      <p className={statisticsTheme.sectionSubtitle}>
+        <Trans>
+          Numărul mediu de salariați în România, județul Cluj și Cluj-Napoca.
+        </Trans>
+      </p>
+      {example.status === 'UNAVAILABLE' ? (
+        <>
+          <p role="status">
+            <Trans>
+              Exemplul nu are trei serii comparabile cu valori eligibile într-un
+              an comun.
+            </Trans>
           </p>
-        ) : null}
-
-        <p className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <span className={statisticsTheme.provenanceChip}>
-            {EXAMPLE_DATASET_CODE}
-          </span>
-          <Trans>INS Tempo · {example.year}</Trans>
-        </p>
-      </Link>
+          {example.year !== null ? (
+            <p>
+              <Trans>An comun verificat:</Trans> {example.year}
+            </p>
+          ) : null}
+          <LandingIssues issues={example.issues} source={example.source} />
+          <Link
+            to="/statistici/comparatii"
+            search={{
+              cod: 'FOM104D',
+              teritorii: ['cod:RO', 'cod:CJ', 'siruta:54975'],
+              clasificari: example.source.classificationPins,
+              unitate: example.source.unitCode,
+              frecventa: 'ANNUAL',
+            }}
+            className="text-sm underline"
+          >
+            <Trans>Inspectează comparația</Trans>
+          </Link>
+        </>
+      ) : (
+        <div className="space-y-4 rounded-lg border border-border/70 bg-card p-4 md:p-6">
+          <p className="text-sm">
+            <Trans>
+              Cel mai recent an cu valori numerice pentru toate cele trei
+              teritorii:
+            </Trans>{' '}
+            <strong>{example.year}</strong>
+          </p>
+          <dl className="grid gap-4 sm:grid-cols-3">
+            {example.rows.map((row) => (
+              <div key={row.code} className="min-w-0">
+                <dt className="text-sm text-muted-foreground">
+                  {row.code === 'RO' ? (
+                    <Trans>România</Trans>
+                  ) : (
+                    (row.name ?? row.code)
+                  )}
+                </dt>
+                <dd className="mt-1 text-xl font-semibold">
+                  <Link
+                    to="/statistici/seturi/$cod"
+                    params={{ cod: 'FOM104D' }}
+                    search={{
+                      ...landingSourceSearch(
+                        example.source,
+                        row.code,
+                        row.observation,
+                      ),
+                      din: example.year,
+                      pana: example.year,
+                    }}
+                    className="underline-offset-4 hover:underline"
+                  >
+                    <LandingSourceCell observation={row.observation} />
+                  </Link>
+                </dd>
+              </div>
+            ))}
+          </dl>
+          {example.latestYearByTerritory
+            .filter((row) => row.year > example.year)
+            .map((row) => (
+              <p key={row.code} className="text-xs text-muted-foreground">
+                {example.rows.find((r) => r.code === row.code)?.name ??
+                  row.code}
+                : <Trans>valoare raportată și în</Trans> {row.year} ·{' '}
+                <LandingSourceCell observation={row.observation} />
+              </p>
+            ))}
+          <Link
+            to="/statistici/comparatii"
+            search={{
+              cod: 'FOM104D',
+              teritorii: ['cod:RO', 'cod:CJ', 'siruta:54975'],
+              clasificari: example.source.classificationPins,
+              unitate: example.source.unitCode,
+              frecventa: 'ANNUAL',
+              perioada: String(example.year),
+            }}
+            className="inline-block text-sm underline"
+          >
+            <Trans>Deschide comparația</Trans>
+          </Link>
+        </div>
+      )}
+      <LandingSource source={example.source} />
     </section>
   )
-}
-
-function AmbiguityNote() {
-  return (
-    <Trans>
-      Unele perioade au fost omise: sursa raportează mai multe valori pentru
-      aceeași combinație teritoriu-an, iar exemplul arată doar perioadele fără
-      ambiguitate.
-    </Trans>
-  )
-}
-
-function rowDisplayName(
-  level: string | null,
-  name: string | null,
-  code: string,
-): string {
-  // The API's national row is literally named "TOTAL" — render the country.
-  if (level === 'NATIONAL') return t`România`
-  return name ?? code
 }

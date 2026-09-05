@@ -1,57 +1,9 @@
+import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
 // ═══════════════════════════════════════════════════════════════════════════
 // UATFinder Types and Constants
 // ═══════════════════════════════════════════════════════════════════════════
 
-/**
- * Romania's 42 counties (41 + București)
- * Used for the county filter dropdown
- */
-export const ROMANIA_COUNTIES = [
-  { code: 'AB', name: 'Alba', nameRo: 'Alba' },
-  { code: 'AR', name: 'Arad', nameRo: 'Arad' },
-  { code: 'AG', name: 'Argeș', nameRo: 'Argeș' },
-  { code: 'BC', name: 'Bacău', nameRo: 'Bacău' },
-  { code: 'BH', name: 'Bihor', nameRo: 'Bihor' },
-  { code: 'BN', name: 'Bistrița-Năsăud', nameRo: 'Bistrița-Năsăud' },
-  { code: 'BT', name: 'Botoșani', nameRo: 'Botoșani' },
-  { code: 'BV', name: 'Brașov', nameRo: 'Brașov' },
-  { code: 'BR', name: 'Brăila', nameRo: 'Brăila' },
-  { code: 'B', name: 'București', nameRo: 'București' },
-  { code: 'BZ', name: 'Buzău', nameRo: 'Buzău' },
-  { code: 'CS', name: 'Caraș-Severin', nameRo: 'Caraș-Severin' },
-  { code: 'CL', name: 'Călărași', nameRo: 'Călărași' },
-  { code: 'CJ', name: 'Cluj', nameRo: 'Cluj' },
-  { code: 'CT', name: 'Constanța', nameRo: 'Constanța' },
-  { code: 'CV', name: 'Covasna', nameRo: 'Covasna' },
-  { code: 'DB', name: 'Dâmbovița', nameRo: 'Dâmbovița' },
-  { code: 'DJ', name: 'Dolj', nameRo: 'Dolj' },
-  { code: 'GL', name: 'Galați', nameRo: 'Galați' },
-  { code: 'GR', name: 'Giurgiu', nameRo: 'Giurgiu' },
-  { code: 'GJ', name: 'Gorj', nameRo: 'Gorj' },
-  { code: 'HR', name: 'Harghita', nameRo: 'Harghita' },
-  { code: 'HD', name: 'Hunedoara', nameRo: 'Hunedoara' },
-  { code: 'IL', name: 'Ialomița', nameRo: 'Ialomița' },
-  { code: 'IS', name: 'Iași', nameRo: 'Iași' },
-  { code: 'IF', name: 'Ilfov', nameRo: 'Ilfov' },
-  { code: 'MM', name: 'Maramureș', nameRo: 'Maramureș' },
-  { code: 'MH', name: 'Mehedinți', nameRo: 'Mehedinți' },
-  { code: 'MS', name: 'Mureș', nameRo: 'Mureș' },
-  { code: 'NT', name: 'Neamț', nameRo: 'Neamț' },
-  { code: 'OT', name: 'Olt', nameRo: 'Olt' },
-  { code: 'PH', name: 'Prahova', nameRo: 'Prahova' },
-  { code: 'SM', name: 'Satu Mare', nameRo: 'Satu Mare' },
-  { code: 'SJ', name: 'Sălaj', nameRo: 'Sălaj' },
-  { code: 'SB', name: 'Sibiu', nameRo: 'Sibiu' },
-  { code: 'SV', name: 'Suceava', nameRo: 'Suceava' },
-  { code: 'TR', name: 'Teleorman', nameRo: 'Teleorman' },
-  { code: 'TM', name: 'Timiș', nameRo: 'Timiș' },
-  { code: 'TL', name: 'Tulcea', nameRo: 'Tulcea' },
-  { code: 'VS', name: 'Vaslui', nameRo: 'Vaslui' },
-  { code: 'VL', name: 'Vâlcea', nameRo: 'Vâlcea' },
-  { code: 'VN', name: 'Vrancea', nameRo: 'Vrancea' },
-] as const
-
-export type CountyCode = typeof ROMANIA_COUNTIES[number]['code']
+export { ROMANIA_COUNTIES, type CountyCode } from '@/lib/territory-counties'
 
 /**
  * UAT types mapped from entity_type values

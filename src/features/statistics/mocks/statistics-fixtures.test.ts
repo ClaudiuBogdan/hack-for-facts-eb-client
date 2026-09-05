@@ -3,7 +3,6 @@ import type { StatisticsIndicatorTile } from '@/schemas/statistics'
 import { applyHubPeriod } from '../lib/hub-period'
 import {
   getMockStatisticsLandingCatalog,
-  getMockStatisticsLandingData,
   getMockStatisticsTerritoryHub,
   getMockStatisticsUatSnapshot,
 } from './statistics-fixtures'
@@ -87,28 +86,6 @@ describe('statistics mock fixtures', () => {
     expect(somTile).toBeDefined()
     // Latest (2023) has a unit symbol; the 2022 point has a null unit.
     expect(somTile?.unitSymbol).toBe('lei')
-  })
-
-  it('serves the four national tiles with unit, period, and provenance code', () => {
-    const landing = getMockStatisticsLandingData()
-    const codes = landing.nationalValues.map((value) => value.datasetCode)
-    expect(codes).toEqual(['POP107D', 'FOM104D', 'SOM101F', 'LOC101B'])
-    for (const value of landing.nationalValues) {
-      expect(value.value).not.toBeNull()
-      expect(value.unitSymbol).not.toBeNull()
-      expect(value.period).not.toBeNull()
-    }
-  })
-
-  it('carries both decade endpoints for ranked counties and a missing endpoint for one', () => {
-    const landing = getMockStatisticsLandingData()
-    const clujYears = landing.decadeRows
-      .filter((row) => row.countyCode === 'CJ')
-      .map((row) => row.year)
-      .sort()
-    expect(clujYears).toEqual([2016, 2025])
-    const missing = landing.decadeRows.filter((row) => row.countyCode === 'XX')
-    expect(missing).toHaveLength(1)
   })
 
   it('answers catalog counts whose theme totals sum to the catalog', () => {

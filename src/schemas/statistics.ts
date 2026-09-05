@@ -407,34 +407,6 @@ export interface StatisticsLatestValue {
   readonly resolvedClassifications: readonly StatisticsResolvedClassification[]
 }
 
-/** One NUTS3 endpoint-year observation for the decade story. */
-export interface StatisticsDecadeObservation {
-  readonly countyCode: string
-  readonly countyName: string | null
-  readonly year: number
-  readonly value: string | null
-  readonly unitNameRo: string | null
-}
-
-/** One observation of the worked comparison example (mixed levels). */
-export interface StatisticsExampleObservation {
-  readonly level: InsTerritoryLevel | null
-  readonly code: string
-  readonly siruta: string | null
-  readonly name: string | null
-  readonly year: number
-  readonly value: string | null
-  readonly unitSymbol: string | null
-}
-
-/** Landing POST 1 payload: every observation-bearing block. */
-export interface StatisticsLandingData {
-  readonly nativeContract?: 'native-v1'
-  readonly nationalValues: readonly StatisticsLatestValue[]
-  readonly decadeRows: readonly StatisticsDecadeObservation[]
-  readonly exampleRows: readonly StatisticsExampleObservation[]
-}
-
 /** Live per-theme dataset count (theme = INS level-0 context group). */
 export interface StatisticsThemeCount {
   readonly code: string
@@ -443,6 +415,7 @@ export interface StatisticsThemeCount {
 
 /** Landing POST 2 payload: catalog honesty counts + theme counts. */
 export interface StatisticsLandingCatalog {
+  readonly nativeContract?: 'native-v2'
   readonly loadedCount: number
   readonly catalogCount: number
   readonly themes: readonly StatisticsThemeCount[]
@@ -477,6 +450,7 @@ export interface StatisticsDatasetSeries {
 
 /** „Locul tău" snapshot: the picked territory's identity + latest values. */
 export interface StatisticsUatSnapshot {
+  readonly nativeContract?: 'native-v2'
   readonly territory: StatisticsTerritorySearchRow | null
   readonly values: readonly StatisticsLatestValue[]
 }

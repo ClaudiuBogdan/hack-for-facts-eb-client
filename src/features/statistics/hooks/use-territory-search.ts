@@ -16,8 +16,8 @@ export const territorySearchQueryOptions = (term: string | undefined) => {
   const search = (term ?? '').trim()
 
   return queryOptions<StatisticsTerritorySearchResult>({
-    queryKey: ['statisticsTerritorySearch', search],
-    queryFn: () => searchTerritories(search),
+    queryKey: ['statistics', 'native-v2', 'territory-search', search],
+    queryFn: ({ signal }) => searchTerritories(search, signal),
     enabled: search.length >= TERRITORY_SEARCH_MIN_LENGTH,
     staleTime: TERRITORY_SEARCH_STALE_TIME,
   })

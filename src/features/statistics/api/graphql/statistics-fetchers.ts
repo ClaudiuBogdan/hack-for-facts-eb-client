@@ -1,3 +1,4 @@
+import { validateLandingLatest } from './landing-latest-validation'
 import { getInsDatasetDetails } from './ins-bootstrap-fetchers'
 import { inspectSourceSeries } from '@/lib/ins/source-series'
 import { InsSourcePageError } from '@/lib/ins/source-pages'
@@ -22,7 +23,6 @@ import type {
   StatisticsDatasetTier0,
   StatisticsLatestValue,
   StatisticsLandingCatalog,
-  StatisticsLandingData,
   StatisticsTerritorySearchResult,
   StatisticsTerritorySearchRow,
   StatisticsUatSnapshot,
@@ -35,14 +35,11 @@ import {
   STATISTICS_TERRITORY_HUB_CONTEXT_QUERY,
   STATISTICS_TERRITORY_HUB_QUERY,
   STATISTICS_LANDING_CATALOG_QUERY,
-  STATISTICS_LANDING_DATA_QUERY,
   STATISTICS_UAT_SNAPSHOT_QUERY,
 } from './ins-queries'
 import {
   mapDatasetDetails,
   mapDatasetSummary,
-  mapDecadeRows,
-  mapExampleRows,
   mapLatestValue,
   mapRelatedDatasets,
   mapTerritorySearchRow,
@@ -55,7 +52,6 @@ import {
   statisticsTerritoryHubContextResponseRawSchema,
   statisticsTerritoryHubResponseRawSchema,
   statisticsLandingCatalogResponseRawSchema,
-  statisticsLandingDataResponseRawSchema,
   statisticsUatSnapshotResponseRawSchema,
 } from './statistics-raw-schemas'
 
@@ -125,37 +121,6 @@ export function insRequestOptions(signal?: AbortSignal): GraphQLRequestOptions {
   return { skipAuth: true, ...(signal ? { signal } : {}) }
 }
 
-/** Landing POST 1 — national tiles + decade rows + worked example. */
-export async function fetchStatisticsLandingData(params: {
-  nationalCodes: readonly string[]
-  decadeCode: string
-  decadeYears: readonly string[]
-  exampleCode: string
-  exampleTerritories: readonly string[]
-  signal?: AbortSignal
-}): Promise<StatisticsLandingData> {
-  const response = await graphqlQuery<unknown>(
-    STATISTICS_LANDING_DATA_QUERY,
-    {
-      nationalCodes: params.nationalCodes,
-      decadeCode: params.decadeCode,
-      decadeYears: params.decadeYears,
-      exampleCode: params.exampleCode,
-      exampleTerritories: params.exampleTerritories,
-    },
-    { auth: 'none', signal: params.signal },
-  )
-
-  const parsed = statisticsLandingDataResponseRawSchema.parse(response)
-
-  return {
-    nativeContract: 'native-v1',
-    nationalValues: parsed.latest.map(mapLatestValue),
-    decadeRows: mapDecadeRows(parsed.decade.nodes),
-    exampleRows: mapExampleRows(parsed.example.nodes),
-  }
-}
-
 /** Landing POST 2 — loaded/catalog counts + the eight theme counts. */
 export async function fetchStatisticsLandingCatalog(
   params: {
@@ -168,9 +133,17 @@ export async function fetchStatisticsLandingCatalog(
     { auth: 'none', signal: params.signal },
   )
 
+  params.signal?.throwIfAborted()
   const parsed = statisticsLandingCatalogResponseRawSchema.parse(response)
+  const counts = Object.values(parsed).map((entry) => entry.pageInfo.totalCount)
+  if (
+    counts.some((count) => !Number.isSafeInteger(count) || count < 0) ||
+    parsed.loaded.pageInfo.totalCount > parsed.catalog.pageInfo.totalCount
+  )
+    throw new Error('Invalid native INS catalog counts')
 
   return {
+    nativeContract: 'native-v2',
     loadedCount: parsed.loaded.pageInfo.totalCount,
     catalogCount: parsed.catalog.pageInfo.totalCount,
     themes: (['1', '2', '3', '4', '5', '6', '7', '8'] as const).map((code) => ({
@@ -192,10 +165,32 @@ export async function fetchStatisticsUatSnapshot(params: {
     { auth: 'none', signal: params.signal },
   )
 
+  params.signal?.throwIfAborted()
   const parsed = statisticsUatSnapshotResponseRawSchema.parse(response)
   const territoryNode = parsed.territory.nodes[0]
+  if (
+    parsed.territory.nodes.length > 1 ||
+    (territoryNode &&
+      (territoryNode.code !== params.siruta ||
+        territoryNode.level !== 'LAU' ||
+        territoryNode.siruta_code !== params.siruta))
+  )
+    throw new Error('Invalid native landing territory identity')
+  if (
+    !territoryNode &&
+    parsed.latest.some((entry) => entry.observation !== null)
+  )
+    throw new Error(
+      'Native landing observations lack canonical territory identity',
+    )
+  if (territoryNode || parsed.latest.length > 0)
+    validateLandingLatest(parsed.latest, params.datasetCodes, {
+      code: params.siruta,
+      level: 'LAU',
+    })
 
   return {
+    nativeContract: 'native-v2',
     territory: territoryNode ? mapTerritorySearchRow(territoryNode) : null,
     values: parsed.latest.map(mapLatestValue),
   }

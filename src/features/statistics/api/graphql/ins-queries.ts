@@ -259,67 +259,6 @@ export const INS_LATEST_VALUE_FIELDS = `
 `
 
 /**
- * Landing POST 1 — every observation-bearing landing block in ONE operation
- * (HTTP-level batching is off; multiple root fields in one document are fine).
- *
- * - `latest`: the four national headline tiles.
- * - `decade`: NUTS3 endpoint-year rows for the decade story. The
- *   classification filter (SEX+AGE_GROUP TOTAL) is POP107D-specific and also
- *   disables the server's representative re-ranking pool, giving stable rows.
- * - `example`: the worked comparison example — every year for the three
- *   territories; the latest common year is picked client-side so no year is
- *   hardcoded. `limit: 300` keeps it above the ≤250 re-ranking threshold.
- */
-export const STATISTICS_LANDING_DATA_QUERY = `
-  query StatisticsLandingData(
-    $nationalCodes: [String!]!
-    $decadeCode: String!
-    $decadeYears: [PeriodDate!]!
-    $exampleCode: String!
-    $exampleTerritories: [String!]!
-  ) {
-    latest: insLatestDatasetValues(
-      entity: { territoryCode: "RO", territoryLevel: NATIONAL }
-      datasetCodes: $nationalCodes
-      preferredClassificationCodes: ["TOTAL"]
-    ) {
-      ${INS_LATEST_VALUE_FIELDS}
-    }
-    decade: insObservations(
-      datasetCode: $decadeCode
-      filter: {
-        territoryLevels: [NUTS3]
-        period: { type: YEAR, selection: { dates: $decadeYears } }
-        classificationValueCodes: ["TOTAL"]
-        classificationTypeCodes: ["SEX", "AGE_GROUP"]
-      }
-      limit: 200
-    ) {
-      pageInfo { totalCount }
-      nodes {
-        value
-        value_status
-        territory { code name_ro }
-        time_period { iso_period year }
-        unit { symbol name_ro }
-      }
-    }
-    example: insObservations(
-      datasetCode: $exampleCode
-      filter: { territoryCodes: $exampleTerritories, hasValue: true }
-      limit: 300
-    ) {
-      nodes {
-        value
-        territory { code siruta_code level name_ro }
-        time_period { iso_period year }
-        unit { symbol }
-      }
-    }
-  }
-`
-
-/**
  * Landing POST 2 — catalog honesty counts + per-theme counts, all as aliased
  * 1-row probes (`totalCount` is authoritative; nodes are discarded).
  *

@@ -110,12 +110,6 @@ export const insMatchStrategyRawSchema = z.enum([
   'NO_DATA',
 ])
 
-const insTimePeriodRefRawSchema = z.object({
-  iso_period: z.string(),
-  year: z.number(),
-  periodicity: insPeriodicityRawSchema.nullish(),
-})
-
 const totalCountProbeRawSchema = z.object({
   pageInfo: z.object({ totalCount: z.number() }),
 })
@@ -250,43 +244,6 @@ export const insLatestValueNodeRawSchema = z
     if (error) context.addIssue({ code: 'custom', message: error })
   })
 
-const landingDecadeNodeRawSchema = z.object({
-  value: z.string().nullish(),
-  value_status: z.string().nullish(),
-  territory: z
-    .object({ code: z.string(), name_ro: z.string().nullish() })
-    .nullish(),
-  time_period: insTimePeriodRefRawSchema,
-  unit: z
-    .object({ symbol: z.string().nullish(), name_ro: z.string().nullish() })
-    .nullish(),
-})
-
-const landingExampleNodeRawSchema = z.object({
-  value: z.string().nullish(),
-  territory: z
-    .object({
-      code: z.string(),
-      siruta_code: z.string().nullish(),
-      level: insTerritoryLevelRawSchema.nullish(),
-      name_ro: z.string().nullish(),
-    })
-    .nullish(),
-  time_period: insTimePeriodRefRawSchema,
-  unit: z.object({ symbol: z.string().nullish() }).nullish(),
-})
-
-export const statisticsLandingDataResponseRawSchema = z.object({
-  latest: z.array(insLatestValueNodeRawSchema),
-  decade: z.object({
-    pageInfo: z.object({ totalCount: z.number() }),
-    nodes: z.array(landingDecadeNodeRawSchema),
-  }),
-  example: z.object({
-    nodes: z.array(landingExampleNodeRawSchema),
-  }),
-})
-
 export const statisticsUatSnapshotResponseRawSchema = z.object({
   latest: z.array(insLatestValueNodeRawSchema),
   territory: z.object({
@@ -295,8 +252,6 @@ export const statisticsUatSnapshotResponseRawSchema = z.object({
 })
 
 export type InsLatestValueNodeRaw = z.infer<typeof insLatestValueNodeRawSchema>
-export type LandingDecadeNodeRaw = z.infer<typeof landingDecadeNodeRawSchema>
-export type LandingExampleNodeRaw = z.infer<typeof landingExampleNodeRawSchema>
 export type StatisticsLandingCatalogResponseRaw = z.infer<
   typeof statisticsLandingCatalogResponseRawSchema
 >

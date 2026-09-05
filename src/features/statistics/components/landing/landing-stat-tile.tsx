@@ -1,3 +1,4 @@
+import { sourceRowSelection } from '@/lib/ins/source-series'
 import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
@@ -17,22 +18,34 @@ type StatTileBodyProps = {
  * The matrix code is a mono provenance chip, never the label.
  */
 function StatTileBody({ shortLabel, latest, comparison }: StatTileBodyProps) {
+  const unitLabel = latest.unitSymbol ?? latest.unitNameRo
   const ambiguous = latest.matchStrategy === 'AMBIGUOUS_GEOGRAPHY'
-  const formatted = latest.hasData && !ambiguous ? formatObservationValue(latest.value) : null
+  const formatted =
+    latest.hasData && !ambiguous
+      ? latest.source
+        ? latest.value
+        : formatObservationValue(latest.value)
+      : null
 
   return (
     <>
       <span className={statisticsTheme.statTileLabel}>{shortLabel}</span>
       {formatted !== null ? (
-        <span className={statisticsTheme.statTileValue}>
+        <span className={`${statisticsTheme.statTileValue} min-w-0 break-all`}>
           {formatted}
-          {latest.unitSymbol ? (
-            <span className={statisticsTheme.statTileUnit}> {latest.unitSymbol}</span>
+          {unitLabel ? (
+            <span className={statisticsTheme.statTileUnit}> {unitLabel}</span>
           ) : null}
         </span>
       ) : (
         <span className="text-sm text-muted-foreground">
-          {ambiguous ? <Trans>Mai multe serii INS corespund selecției. Alege o serie din sursă.</Trans> : <Trans>Fără date pentru această perioadă</Trans>}
+          {ambiguous ? (
+            <Trans>
+              Mai multe serii INS corespund selecției. Alege o serie din sursă.
+            </Trans>
+          ) : (
+            <Trans>Fără date pentru această perioadă</Trans>
+          )}
         </span>
       )}
       <span className={statisticsTheme.statTileMeta}>
@@ -46,8 +59,21 @@ function StatTileBody({ shortLabel, latest, comparison }: StatTileBodyProps) {
           </>
         ) : null}
       </span>
+      {latest.valueStatus !== null ? (
+        <span className="text-xs text-amber-700 dark:text-amber-400">
+          <Trans>Marcaj INS:</Trans> {latest.valueStatus || '∅'}
+        </span>
+      ) : null}
+      {latest.source?.observation?.dimensions.geography?.qualified ? (
+        <span className="text-xs text-amber-700 dark:text-amber-400">
+          <Trans>Geografie cu limitări de acoperire</Trans>
+        </span>
+      ) : null}
       {latest.hasData && !ambiguous ? comparison : null}
-      <span className={statisticsTheme.provenanceChip} aria-label={t`Matrice INS`}>
+      <span
+        className={statisticsTheme.provenanceChip}
+        aria-label={t`Matrice INS`}
+      >
         {latest.datasetCode}
       </span>
     </>
@@ -66,7 +92,21 @@ export function NationalStatTile({
     <Link
       to="/statistici/seturi/$cod"
       params={{ cod: latest.datasetCode }}
-      className={statisticsTheme.statTile}
+      search={{
+        teritoriu: 'cod:RO',
+        ...(sourceRowSelection(
+          latest.source?.descriptor,
+          latest.source?.observation,
+        ) ?? {}),
+        ...(latest.resolvedPeriodicity &&
+        ['ANNUAL', 'QUARTERLY', 'MONTHLY'].includes(latest.resolvedPeriodicity)
+          ? {
+              frecventa: latest.resolvedPeriodicity as
+                'ANNUAL' | 'QUARTERLY' | 'MONTHLY',
+            }
+          : {}),
+      }}
+      className={`${statisticsTheme.statTile} min-w-0`}
       title={latest.datasetNameRo ?? undefined}
     >
       <StatTileBody shortLabel={shortLabel} latest={latest} />
@@ -90,10 +130,14 @@ export function UatStatTile({
     <Link
       to="/statistici/teritorii/$siruta"
       params={{ siruta }}
-      className={statisticsTheme.statTile}
+      className={`${statisticsTheme.statTile} min-w-0`}
       title={latest.datasetNameRo ?? undefined}
     >
-      <StatTileBody shortLabel={shortLabel} latest={latest} comparison={comparison} />
+      <StatTileBody
+        shortLabel={shortLabel}
+        latest={latest}
+        comparison={comparison}
+      />
     </Link>
   )
 }

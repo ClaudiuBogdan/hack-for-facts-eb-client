@@ -5,8 +5,6 @@ import type {
 import type {
   StatisticsDatasetDataStatus,
   StatisticsDatasetSummary,
-  StatisticsDecadeObservation,
-  StatisticsExampleObservation,
   StatisticsLatestValue,
   StatisticsRelatedDataset,
   StatisticsTerritorySearchRow,
@@ -16,8 +14,6 @@ import type {
   InsDatasetNodeRaw,
   InsLatestValueNodeRaw,
   InsTerritoryNodeRaw,
-  LandingDecadeNodeRaw,
-  LandingExampleNodeRaw,
   StatisticsRelatedDatasetsRaw,
   StatisticsDatasetTier0ResponseRaw,
 } from './statistics-raw-schemas'
@@ -138,47 +134,6 @@ export function mapLatestValue(node: InsLatestValueNodeRaw): StatisticsLatestVal
       },
     ),
   }
-}
-
-/**
- * Rows without a territory are dropped (a county row without its county is
- * unusable); rows with a `value_status` marker keep their value — the status
- * is the flag, absence stays `null`.
- */
-export function mapDecadeRows(
-  nodes: readonly LandingDecadeNodeRaw[],
-): readonly StatisticsDecadeObservation[] {
-  return nodes.flatMap((node) => {
-    if (!node.territory) return []
-    return [
-      {
-        countyCode: node.territory.code,
-        countyName: node.territory.name_ro ?? null,
-        year: node.time_period.year,
-        value: node.value ?? null,
-        unitNameRo: node.unit?.name_ro ?? node.unit?.symbol ?? null,
-      },
-    ]
-  })
-}
-
-export function mapExampleRows(
-  nodes: readonly LandingExampleNodeRaw[],
-): readonly StatisticsExampleObservation[] {
-  return nodes.flatMap((node) => {
-    if (!node.territory) return []
-    return [
-      {
-        level: node.territory.level ?? null,
-        code: node.territory.code,
-        siruta: node.territory.siruta_code ?? null,
-        name: node.territory.name_ro ?? null,
-        year: node.time_period.year,
-        value: node.value ?? null,
-        unitSymbol: node.unit?.symbol ?? null,
-      },
-    ]
-  })
 }
 
 /** Tier-0 dataset node → the detail shape the page consumes. */

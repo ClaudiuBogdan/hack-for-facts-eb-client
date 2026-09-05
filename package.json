@@ -108,6 +108,7 @@
     "cmdk": "^1.1.1",
     "d3-sankey": "^0.12.3",
     "date-fns": "^4.4.0",
+    "decimal.js": "10.6.0",
     "dexie": "^4.4.4",
     "fflate": "^0.8.3",
     "file-saver": "^2.0.5",

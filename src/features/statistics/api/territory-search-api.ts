@@ -1,7 +1,5 @@
 import type { StatisticsTerritorySearchResult } from '@/schemas/statistics'
-import { isStatisticsMockEnabled } from '../lib/mock-mode'
 import { searchInsTerritories } from './graphql/statistics-fetchers'
-import { searchTerritoriesMock } from './territory-search-api.mock'
 
 /** Minimum term length before the landing search hits the network. */
 export const TERRITORY_SEARCH_MIN_LENGTH = 2
@@ -22,19 +20,18 @@ const EMPTY_RESULT: StatisticsTerritorySearchResult = {
  */
 export async function searchTerritories(
   term: string,
+  signal?: AbortSignal,
 ): Promise<StatisticsTerritorySearchResult> {
+  signal?.throwIfAborted()
   const search = term.trim()
   if (search.length < TERRITORY_SEARCH_MIN_LENGTH) {
     return EMPTY_RESULT
-  }
-
-  if (isStatisticsMockEnabled()) {
-    return searchTerritoriesMock(search)
   }
 
   return searchInsTerritories({
     filter: { search },
     limit: TERRITORY_SEARCH_LIMIT,
     offset: 0,
+    signal,
   })
 }

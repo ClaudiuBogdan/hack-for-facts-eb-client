@@ -9,6 +9,7 @@ import {
   periodAtOrdinal,
   periodOrdinal,
   validPeriodDate,
+  validSourcePeriodFields,
 } from '@/lib/ins/source-periods'
 import type {
   InsPeriodicity,
@@ -168,19 +169,8 @@ export function projectNativeComparison(input: {
   for (const row of input.observations) {
     // Invalid source periods are structural even when a territory is ambiguous
     // or the malformed cell belongs to a different chart cadence.
-    if (isInsChartPeriodicity(row.time_period.periodicity)) {
-      const rowType = reportType[row.time_period.periodicity]
-      const label = row.time_period.iso_period
-      if (!validPeriodDate(label, rowType))
-        throw new Error('Invalid INS comparison source period')
-      const expected = periodOption(label, row.time_period.periodicity).period
-      if (
-        row.time_period.year !== expected.year ||
-        (row.time_period.quarter ?? null) !== (expected.quarter ?? null) ||
-        (row.time_period.month ?? null) !== (expected.month ?? null)
-      )
-        throw new Error('INS comparison source period fields disagree')
-    }
+    if (!validSourcePeriodFields(row.time_period))
+      throw new Error('Invalid INS comparison source period fields')
     const geography = row.dimensions.geography
     // Modern canonical scopes cannot return unresolved/contextual tuples. Never
     // attribute a cell by its context or silently discard an unselected source row.

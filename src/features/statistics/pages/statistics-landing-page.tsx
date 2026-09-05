@@ -1,100 +1,67 @@
-import { useMemo } from 'react'
-import { useNavigate } from '@tanstack/react-router'
-import { Trans } from '@lingui/react/macro'
-import { Skeleton } from '@/components/ui/skeleton'
-import { createLogger } from '@/lib/logger'
+import { useNavigate } from "@tanstack/react-router";
+import { Trans } from "@lingui/react/macro";
 import type {
   StatisticsLandingCatalog,
-  StatisticsLandingData,
   StatisticsLandingSearch,
   StatisticsTerritorySearchRow,
-} from '@/schemas/statistics'
+} from "@/schemas/statistics";
 import {
   useStatisticsLandingCatalog,
-  useStatisticsLandingData,
   useStatisticsUatSnapshot,
-} from '../hooks/use-statistics'
-import { buildDecadeStory } from '../lib/decade'
-import { buildLandingExample } from '../lib/landing-example'
-import {
-  DECADE_END_YEAR,
-  DECADE_START_YEAR,
-} from '../lib/landing-constants'
-import { statisticsTheme } from '../lib/statistics-theme'
-import { LandingDecadeSection } from '../components/landing/landing-decade-section'
-import { LandingExampleCard } from '../components/landing/landing-example-card'
-import { LandingHero } from '../components/landing/landing-hero'
-import { LandingHonestySection } from '../components/landing/landing-honesty-section'
-import { LandingThemesSection } from '../components/landing/landing-themes-section'
-import { ShareFilteredView } from '../components/share-filtered-view'
+} from "../hooks/use-statistics";
+import { statisticsTheme } from "../lib/statistics-theme";
+import { LandingDecadeSection } from "../components/landing/landing-decade-section";
+import { LandingExampleCard } from "../components/landing/landing-example-card";
+import { LandingHero } from "../components/landing/landing-hero";
+import { LandingHonestySection } from "../components/landing/landing-honesty-section";
+import { LandingThemesSection } from "../components/landing/landing-themes-section";
+import { ShareFilteredView } from "../components/share-filtered-view";
 
-const logger = createLogger('statistics-landing')
+import {
+  useNativeLanding,
+  type NativeLandingBootstrap,
+} from "../hooks/use-native-landing";
+import { LandingReadState } from "../components/landing/landing-read-state";
 
 type StatisticsLandingPageProps = {
-  readonly search: StatisticsLandingSearch
-  readonly initialLandingData?: StatisticsLandingData
-  readonly initialLandingCatalog?: StatisticsLandingCatalog
-}
+  readonly search: StatisticsLandingSearch;
+  readonly initialLandingData?: NativeLandingBootstrap;
+  readonly initialLandingCatalog?: StatisticsLandingCatalog;
+};
 
-/**
- * The statistici landing. The app shell owns the <main> landmark — this page
- * renders bands only. Two aggregates, two query keys: a failing POST degrades
- * its own bands, never the page.
- */
+/** Native source blocks load independently; the app shell owns the main landmark. */
 export function StatisticsLandingPage({
   search,
   initialLandingData,
   initialLandingCatalog,
 }: StatisticsLandingPageProps) {
-  const navigate = useNavigate()
-  const landingDataQuery = useStatisticsLandingData(initialLandingData)
-  const catalogQuery = useStatisticsLandingCatalog(initialLandingCatalog)
-  const loc = typeof search.loc === 'string' ? search.loc : undefined
-  const snapshotQuery = useStatisticsUatSnapshot(loc)
-
-  const decadeStory = useMemo(() => {
-    if (!landingDataQuery.data) return null
-    return buildDecadeStory({
-      rows: landingDataQuery.data.decadeRows,
-      startYear: DECADE_START_YEAR,
-      endYear: DECADE_END_YEAR,
-    })
-  }, [landingDataQuery.data])
-
-  const example = useMemo(() => {
-    if (!landingDataQuery.data) return null
-    const built = buildLandingExample(landingDataQuery.data.exampleRows)
-    if (built && built.ambiguousCellCount > 0) {
-      // No silent caps: the example dataset grew a classification dimension
-      // upstream and cells became ambiguous — the card degrades VISIBLY.
-      logger.warn('Landing example rejected ambiguous cells', {
-        ambiguousCellCount: built.ambiguousCellCount,
-      })
-    }
-    return built
-  }, [landingDataQuery.data])
+  const navigate = useNavigate();
+  const { tiles, county, example, retryCounty } = useNativeLanding(initialLandingData);
+  const catalogQuery = useStatisticsLandingCatalog(initialLandingCatalog);
+  const loc = typeof search.loc === "string" ? search.loc : undefined;
+  const snapshotQuery = useStatisticsUatSnapshot(loc);
 
   const handleTermChange = (q: string | undefined) => {
     void navigate({
-      to: '/statistici',
+      to: "/statistici",
       search: {
         ...(q ? { q } : {}),
         ...(loc ? { loc } : {}),
       },
-    })
-  }
+    });
+  };
 
   const handlePickTerritory = (row: StatisticsTerritorySearchRow) => {
-    if (!row.siruta) return
-    void navigate({ to: '/statistici', search: { loc: row.siruta } })
-  }
+    if (!row.siruta) return;
+    void navigate({ to: "/statistici", search: { loc: row.siruta } });
+  };
 
   const handleClearPick = () => {
     void navigate({
-      to: '/statistici',
-      search: typeof search.q === 'string' ? { q: search.q } : {},
-    })
-  }
+      to: "/statistici",
+      search: typeof search.q === "string" ? { q: search.q } : {},
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -117,42 +84,48 @@ export function StatisticsLandingPage({
         </header>
 
         <LandingHero
-          searchTerm={typeof search.q === 'string' ? search.q : undefined}
+          searchTerm={typeof search.q === "string" ? search.q : undefined}
           onTermChange={handleTermChange}
           onPickTerritory={handlePickTerritory}
           onClearPick={handleClearPick}
           loc={loc}
-          landingData={landingDataQuery.data}
-          landingDataError={landingDataQuery.isError}
-          landingDataLoading={landingDataQuery.isLoading}
-          onRetryLandingData={() => void landingDataQuery.refetch()}
+          landingData={tiles.data?.data ?? undefined}
+          landingDataError={tiles.isError || Boolean(tiles.data?.error)}
+          landingDataLoading={tiles.isLoading}
+          onRetryLandingData={() => void tiles.refetch()}
           snapshot={snapshotQuery.data}
           snapshotLoading={Boolean(search.loc) && snapshotQuery.isLoading}
           snapshotError={snapshotQuery.isError}
         />
 
-        {landingDataQuery.isLoading ? (
-          <div className="space-y-4" aria-busy="true">
-            <Skeleton className="h-8 w-72" />
-            <div className="grid gap-4 md:grid-cols-2">
-              <Skeleton className="h-64" />
-              <Skeleton className="h-64" />
-            </div>
-            <Skeleton className="h-48 w-full" />
-          </div>
-        ) : (
-          <>
-            <LandingDecadeSection
-              story={decadeStory}
-              unitLabel={
-                landingDataQuery.data?.decadeRows.find((row) => row.unitNameRo)
-                  ?.unitNameRo ?? null
-              }
-            />
-
-            <LandingExampleCard example={example} />
-          </>
-        )}
+        <LandingReadState
+          title={<Trans>Schimbarea populației pe județe</Trans>}
+          loading={county.isLoading || tiles.isLoading}
+          failure={
+            county.data?.error ?? (county.isError ? "READ_FAILED" : null)
+          }
+          datasetCode="POP107D"
+          onRetry={() => {
+            void retryCounty();
+          }}
+        >
+          {county.data?.data ? (
+            <LandingDecadeSection story={county.data.data.story} />
+          ) : null}
+        </LandingReadState>
+        <LandingReadState
+          title={<Trans>Compară trei niveluri teritoriale</Trans>}
+          loading={example.isLoading}
+          failure={
+            example.data?.error ?? (example.isError ? "READ_FAILED" : null)
+          }
+          datasetCode="FOM104D"
+          onRetry={() => void example.refetch()}
+        >
+          {example.data?.data ? (
+            <LandingExampleCard example={example.data.data.example} />
+          ) : null}
+        </LandingReadState>
 
         {catalogQuery.isError ? (
           <p className="text-sm text-muted-foreground">
@@ -171,5 +144,5 @@ export function StatisticsLandingPage({
         />
       </div>
     </div>
-  )
+  );
 }

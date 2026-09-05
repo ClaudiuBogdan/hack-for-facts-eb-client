@@ -7,16 +7,13 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import type {
-  StatisticsLandingData,
   StatisticsLatestValue,
   StatisticsTerritorySearchRow,
   StatisticsUatSnapshot,
 } from '@/schemas/statistics'
 import { LANDING_NATIONAL_DATASETS } from '../../lib/landing-constants'
-import { buildNationalComparison } from '../../lib/national-compare'
 import { statisticsTheme } from '../../lib/statistics-theme'
 import { TerritorySearch } from '../territory-search'
-import { formatObservationValue, formatPercent } from '../../lib/format'
 import { NationalStatTile, UatStatTile } from './landing-stat-tile'
 
 type LandingHeroProps = {
@@ -25,7 +22,8 @@ type LandingHeroProps = {
   readonly onPickTerritory: (row: StatisticsTerritorySearchRow) => void
   readonly onClearPick: () => void
   readonly loc: string | undefined
-  readonly landingData: StatisticsLandingData | undefined
+  readonly landingData:
+    { readonly nationalValues: readonly StatisticsLatestValue[] } | undefined
   readonly landingDataError: boolean
   readonly landingDataLoading: boolean
   readonly onRetryLandingData: () => void
@@ -51,7 +49,7 @@ function TileGridSkeleton() {
 /**
  * B1 — „România în cifre" + „Locul tău". The search is the hero control; the
  * band renders four national tiles by default and re-renders for the picked
- * UAT (`?loc=`), each tile carrying a one-line „față de România" comparison.
+ * UAT (`?loc=`). Cross-territory ratios require a separate native compatibility gate.
  */
 export function LandingHero({
   searchTerm,
@@ -69,7 +67,10 @@ export function LandingHero({
 }: LandingHeroProps) {
   const { i18n } = useLingui()
   const nationalByCode = new Map(
-    (landingData?.nationalValues ?? []).map((value) => [value.datasetCode, value]),
+    (landingData?.nationalValues ?? []).map((value) => [
+      value.datasetCode,
+      value,
+    ]),
   )
   const uatMode = Boolean(loc)
   const territoryName = snapshot?.territory?.name ?? null
@@ -77,10 +78,9 @@ export function LandingHero({
   // Unknown but valid-shaped ?loc: the snapshot answers with no identity and
   // no values — an explicit state, never a titled empty grid.
   const unknownLoc =
-    uatMode &&
-    snapshot !== undefined &&
-    snapshot.territory === null &&
-    snapshot.values.length === 0
+    uatMode && snapshot !== undefined && snapshot.territory === null
+
+  const showNational = !uatMode || unknownLoc || snapshotError
 
   // After a pick, focus moves to the band heading so the re-render is
   // announced and keyboard users land where the answer is.
@@ -102,7 +102,7 @@ export function LandingHero({
           tabIndex={-1}
           className={statisticsTheme.sectionTitle}
         >
-          {uatMode && territoryName ? (
+          {!showNational && territoryName ? (
             <Trans>Locul tău în cifre</Trans>
           ) : (
             <Trans>România în cifre</Trans>
@@ -110,8 +110,7 @@ export function LandingHero({
         </h2>
         <p className={statisticsTheme.sectionSubtitle}>
           <Trans>
-            Caută localitatea ta ca să vezi aceleași cifre pentru ea, față de
-            țară.
+            Caută localitatea ta ca să vezi indicatorii disponibili pentru ea.
           </Trans>
         </p>
       </div>
@@ -144,7 +143,7 @@ export function LandingHero({
         </div>
       ) : null}
 
-      {landingDataError && !uatMode ? (
+      {landingDataError && showNational ? (
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" aria-hidden="true" />
           <AlertTitle>
@@ -189,12 +188,15 @@ export function LandingHero({
         </div>
       ) : null}
 
-      {(uatMode && snapshotLoading) || (!uatMode && landingDataLoading) ? (
+      {(uatMode && snapshotLoading) || (showNational && landingDataLoading) ? (
         <TileGridSkeleton />
       ) : null}
 
-      {uatMode && snapshot && !unknownLoc && loc ? (
-        <div aria-live="polite" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {uatMode && snapshot && !unknownLoc && !snapshotError && loc ? (
+        <div
+          aria-live="polite"
+          className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+        >
           {LANDING_NATIONAL_DATASETS.map((entry) => {
             const local = snapshot.values.find(
               (value) => value.datasetCode === entry.code,
@@ -206,20 +208,17 @@ export function LandingHero({
                 shortLabel={i18n._(entry.shortLabel)}
                 latest={local}
                 siruta={loc}
-                comparison={
-                  <ComparisonLine
-                    local={local}
-                    national={nationalByCode.get(entry.code)}
-                  />
-                }
               />
             )
           })}
         </div>
       ) : null}
 
-      {!uatMode && landingData ? (
-        <div aria-live="polite" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {showNational && landingData ? (
+        <div
+          aria-live="polite"
+          className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+        >
           {LANDING_NATIONAL_DATASETS.map((entry) => {
             const latest = nationalByCode.get(entry.code)
             if (!latest) return null
@@ -234,9 +233,11 @@ export function LandingHero({
         </div>
       ) : null}
 
-      {!uatMode && landingData ? (
+      {showNational && landingData ? (
         <p className="text-xs text-muted-foreground">
-          <Trans>Valori pentru întreaga țară, la cea mai recentă perioadă raportată.</Trans>
+          <Trans>
+            Valori pentru întreaga țară, la cea mai recentă perioadă raportată.
+          </Trans>
         </p>
       ) : null}
 
@@ -252,39 +253,5 @@ export function LandingHero({
         </p>
       ) : null}
     </section>
-  )
-}
-
-function ComparisonLine({
-  local,
-  national,
-}: {
-  readonly local: StatisticsLatestValue
-  readonly national: StatisticsLatestValue | undefined
-}) {
-  const comparison = buildNationalComparison({ local, national })
-  if (!comparison) return null
-
-  if (comparison.kind === 'reference') {
-    const formatted = formatObservationValue(comparison.nationalValue)
-    if (formatted === null) return null
-    return (
-      <span className="text-xs text-muted-foreground">
-        <Trans>România:</Trans>{' '}
-        <span className="tabular-nums">
-          {formatted}
-          {comparison.unitSymbol ?? ''}
-        </span>
-      </span>
-    )
-  }
-
-  return (
-    <span className="text-xs text-muted-foreground">
-      <span className="tabular-nums">
-        {formatPercent(comparison.shareOfCountryPct)}
-      </span>{' '}
-      <Trans>din totalul României</Trans>
-    </span>
   )
 }

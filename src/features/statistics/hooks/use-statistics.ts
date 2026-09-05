@@ -2,12 +2,10 @@ import { queryOptions, useMutation, useQuery } from '@tanstack/react-query'
 import type {
   DatasetRequestPayload,
   StatisticsLandingCatalog,
-  StatisticsLandingData,
   StatisticsUatSnapshot,
 } from '@/schemas/statistics'
 import {
   fetchLandingCatalog,
-  fetchLandingData,
   fetchStatisticsTerritoryHub,
   fetchUatSnapshot,
   submitDatasetRequest,
@@ -15,46 +13,31 @@ import {
 
 const DEFAULT_STALE_TIME = 1000 * 60 * 15
 /**
- * The server caches every INS read for 24h, so a long client staleTime costs
- * nothing in freshness and saves refetch churn.
+ * Catalog and local snapshot queries retain their existing daily refresh window.
+ * Native source selection and publication queries use their own shorter window.
  */
 const LONG_STALE_TIME = 1000 * 60 * 60 * 24
 
 /**
- * Query keys are readable tuples (`['statistics', 'native-v1', ...]` prefix) so targeted
- * invalidation works. Each landing aggregate has its own key: one failing
- * POST degrades one band, never the page.
+ * Landing catalog and snapshot keys use native-v2, isolating cached legacy data.
+ * Independent keys allow each section to recover without replacing the page.
  */
-export const statisticsLandingDataQueryOptions = (
-  initialData?: StatisticsLandingData,
-) =>
-  queryOptions<StatisticsLandingData>({
-    queryKey: ['statistics', 'native-v1', 'landing', 'observations'] as const,
-    queryFn: ({ signal }) => fetchLandingData(signal),
-    staleTime: LONG_STALE_TIME,
-    ...(initialData?.nativeContract === 'native-v1' ? { initialData } : {}),
-  })
-
 export const statisticsLandingCatalogQueryOptions = (
   initialData?: StatisticsLandingCatalog,
 ) =>
   queryOptions<StatisticsLandingCatalog>({
-    queryKey: ['statistics', 'native-v1', 'landing', 'catalog'] as const,
+    queryKey: ['statistics', 'native-v2', 'landing', 'catalog'] as const,
     queryFn: ({ signal }) => fetchLandingCatalog(signal),
     staleTime: LONG_STALE_TIME,
-    ...(initialData ? { initialData } : {}),
+    ...(initialData?.nativeContract === 'native-v2' ? { initialData } : {}),
   })
 
 export const statisticsUatSnapshotQueryOptions = (siruta: string) =>
   queryOptions<StatisticsUatSnapshot>({
-    queryKey: ['statistics', 'native-v1', 'landing', 'uat', siruta] as const,
+    queryKey: ['statistics', 'native-v2', 'landing', 'uat', siruta] as const,
     queryFn: ({ signal }) => fetchUatSnapshot(siruta, signal),
     staleTime: LONG_STALE_TIME,
   })
-
-export function useStatisticsLandingData(initialData?: StatisticsLandingData) {
-  return useQuery(statisticsLandingDataQueryOptions(initialData))
-}
 
 export function useStatisticsLandingCatalog(
   initialData?: StatisticsLandingCatalog,
@@ -85,8 +68,14 @@ export const statisticsTerritoryHubQueryOptions = (params: {
   const normalizedSiruta = params.siruta.trim()
 
   return queryOptions({
-    queryKey: ['statistics', 'native-v1', 'territory-hub', normalizedSiruta] as const,
-    queryFn: ({ signal }) => fetchStatisticsTerritoryHub(normalizedSiruta, signal),
+    queryKey: [
+      'statistics',
+      'native-v1',
+      'territory-hub',
+      normalizedSiruta,
+    ] as const,
+    queryFn: ({ signal }) =>
+      fetchStatisticsTerritoryHub(normalizedSiruta, signal),
     enabled: (params.enabled ?? true) && normalizedSiruta.length > 0,
     staleTime: DEFAULT_STALE_TIME,
   })
@@ -101,6 +90,7 @@ export function useStatisticsTerritoryHub(params: {
 
 export function useDatasetRequest() {
   return useMutation({
-    mutationFn: (payload: DatasetRequestPayload) => submitDatasetRequest(payload),
+    mutationFn: (payload: DatasetRequestPayload) =>
+      submitDatasetRequest(payload),
   })
 }

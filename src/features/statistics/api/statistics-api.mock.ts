@@ -2,16 +2,10 @@ import { t } from '@lingui/core/macro'
 import type {
   DatasetRequestPayload,
   DatasetRequestResult,
-  StatisticsLandingCatalog,
-  StatisticsLandingData,
   StatisticsTerritoryHubResult,
-  StatisticsUatSnapshot,
 } from '@/schemas/statistics'
 import {
-  getMockStatisticsLandingCatalog,
-  getMockStatisticsLandingData,
   getMockStatisticsTerritoryHub,
-  getMockStatisticsUatSnapshot,
 } from '../mocks/statistics-fixtures'
 
 const MOCK_DELAY_MS = 120
@@ -27,23 +21,6 @@ function delay(): Promise<void> {
  * `null` (not-found) rather than throwing, matching the live adapter's
  * contract so route loaders can map `null` to a 404 uniformly.
  */
-export async function fetchStatisticsLandingDataMock(): Promise<StatisticsLandingData> {
-  await delay()
-  return getMockStatisticsLandingData()
-}
-
-export async function fetchStatisticsLandingCatalogMock(): Promise<StatisticsLandingCatalog> {
-  await delay()
-  return getMockStatisticsLandingCatalog()
-}
-
-export async function fetchStatisticsUatSnapshotMock(
-  siruta: string,
-): Promise<StatisticsUatSnapshot> {
-  await delay()
-  return getMockStatisticsUatSnapshot(siruta)
-}
-
 export async function fetchStatisticsTerritoryHubMock(
   siruta: string,
 ): Promise<StatisticsTerritoryHubResult | null> {

@@ -1,3 +1,4 @@
+import type { InsTimePeriod } from '@/schemas/ins'
 import type { ReportPeriodType } from '@/schemas/reporting'
 
 /** Only these three source cadences have chart/calendar period grammars. */
@@ -26,4 +27,25 @@ export function periodAtOrdinal(
   return type === 'QUARTER'
     ? `${String(year).padStart(4, '0')}-Q${part}`
     : `${String(year).padStart(4, '0')}-${String(part).padStart(2, '0')}`
+}
+
+/** Supported calendar labels and redundant fields must describe the same period. */
+export function validSourcePeriodFields(period: InsTimePeriod): boolean {
+  const type =
+    period.periodicity === 'ANNUAL'
+      ? 'YEAR'
+      : period.periodicity === 'QUARTERLY'
+        ? 'QUARTER'
+        : period.periodicity === 'MONTHLY'
+          ? 'MONTH'
+          : null
+  if (type === null) return true // Other INS cadences have no chart grammar here.
+  return (
+    validPeriodDate(period.iso_period, type) &&
+    period.year === Number(period.iso_period.slice(0, 4)) &&
+    (period.quarter ?? null) ===
+      (type === 'QUARTER' ? Number(period.iso_period.slice(6)) : null) &&
+    (period.month ?? null) ===
+      (type === 'MONTH' ? Number(period.iso_period.slice(5)) : null)
+  )
 }

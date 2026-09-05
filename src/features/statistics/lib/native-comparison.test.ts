@@ -97,7 +97,7 @@ describe('native comparison projection', () => {
   it('fails malformed periods even in an ambiguous territory or unselected cadence', () => {
     const malformed = row('B', 2025, 11)
     malformed.time_period.year = 2023
-    expect(() => project([row(), malformed])).toThrow('period fields disagree')
+    expect(() => project([row(), malformed])).toThrow('period fields')
     malformed.time_period = {
       iso_period: '2025-00',
       year: 2025,
@@ -252,7 +252,7 @@ describe('native comparison projection', () => {
   it('rejects inconsistent period fields and unsupported cadence', () => {
     const invalid = row()
     invalid.time_period.year = 2023
-    expect(() => project([invalid])).toThrow('period fields disagree')
+    expect(() => project([invalid])).toThrow('period fields')
     expect(() => project([row()], { cadence: 'RANGE' })).toThrow('supported')
   })
   it.each([['D1:1'], ['D0:00'], ['D0:0', 'D0:0'], ['SEX:TOTAL'], []])(

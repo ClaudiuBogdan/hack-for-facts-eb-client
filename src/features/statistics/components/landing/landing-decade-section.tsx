@@ -1,87 +1,105 @@
+import { landingSourceSearch } from '../../lib/landing-source-search'
 import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
-import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import type { DecadeCountyChange, DecadeStory } from '../../lib/decade'
-import { DECADE_DATASET_CODE } from '../../lib/landing-constants'
+import type {
+  NativeCountyChange,
+  buildNativeCountyStory,
+} from '../../lib/native-landing'
+import type { NativeLandingProvenance } from '../../lib/native-landing-types'
 import { statisticsTheme } from '../../lib/statistics-theme'
-import { formatObservationValue, formatPercent } from '../../lib/format'
+import {
+  LandingIssues,
+  LandingSource,
+  LandingSourceCell,
+} from './landing-source'
 
-type LandingDecadeSectionProps = {
-  readonly story: DecadeStory | null
-  /** The wire unit of the decade rows; persoane only as a last resort. */
-  readonly unitLabel: string | null
-}
-
-/**
- * B2 — the decade story at county level. Top declines and top growth with an
- * inline proportion fill (the PNRR RankedListCard pattern re-implemented on
- * the neutral skin — that component is private to PNRR). Counties missing an
- * endpoint year are EXCLUDED with a footnote, never zero-filled. No „fastest
- * UATs" claim is possible or made — the 1,000-row clamp forbids it.
- */
-export function LandingDecadeSection({ story, unitLabel }: LandingDecadeSectionProps) {
-  if (!story || (story.declines.length === 0 && story.gains.length === 0)) {
-    return null
-  }
-
+type Story = ReturnType<typeof buildNativeCountyStory>
+/** A ranking is meaningful only when all 42 canonical counties are eligible. */
+export function LandingDecadeSection({ story }: { readonly story: Story }) {
   return (
     <section className="space-y-4" aria-labelledby="landing-decade-heading">
       <div>
-        <h2 id="landing-decade-heading" className={statisticsTheme.sectionTitle}>
+        <h2
+          id="landing-decade-heading"
+          className={statisticsTheme.sectionTitle}
+        >
           <Trans>
-            Un deceniu de schimbare ({story.startYear} → {story.endYear})
+            Schimbarea populației ({story.startYear} → {story.endYear})
           </Trans>
         </h2>
         <p className={statisticsTheme.sectionSubtitle}>
           <Trans>
-            Populația după domiciliu, pe județe. Schimbarea procentuală între
-            cele două capete de interval.
+            Populația după domiciliu la 1 ianuarie, pe județe și municipiul
+            București. Schimbarea procentuală între cele două capete de
+            interval.
           </Trans>
         </p>
       </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <RankedColumn
-          title={<Trans>Cele mai mari scăderi</Trans>}
-          entries={story.declines}
-          maxAbsChange={story.maxAbsChange}
-        />
-        <RankedColumn
-          title={<Trans>Cele mai mari creșteri</Trans>}
-          entries={story.gains}
-          maxAbsChange={story.maxAbsChange}
-        />
-      </div>
-
-      <p className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-        <span className={statisticsTheme.provenanceChip}>{DECADE_DATASET_CODE}</span>
+      <p className="text-sm text-muted-foreground">
         <Trans>
-          INS Tempo · {unitLabel ?? t`persoane`} · {story.rankedCount} județe
-          comparate
+          Acoperire: {story.eligibleCount} din {story.expectedCount} teritorii
+          eligibile.
         </Trans>
-        {story.excludedCount > 0 ? (
-          <Trans>
-            · {story.excludedCount} județe fără ambele capete de interval au
-            fost excluse
-          </Trans>
-        ) : null}
       </p>
+      {story.status === 'UNAVAILABLE' ? (
+        <>
+          <p role="status" className="text-sm">
+            <Trans>
+              Clasamentul este indisponibil până când toate teritoriile au
+              observații comparabile.
+            </Trans>
+          </p>
+          <LandingIssues issues={story.issues} source={story.source} />
+        </>
+      ) : (
+        <>
+          {story.unchangedCount === story.expectedCount ? (
+            <p role="status">
+              <Trans>
+                Toate teritoriile au aceeași populație la cele două capete de
+                interval.
+              </Trans>
+            </p>
+          ) : null}
+          <div className="grid gap-4 md:grid-cols-2">
+            <RankedColumn
+              title={<Trans>Cele mai mari scăderi</Trans>}
+              entries={story.declines}
+              maxAbsChange={story.maxAbsChange}
+              source={story.source}
+            />
+            <RankedColumn
+              title={<Trans>Cele mai mari creșteri</Trans>}
+              entries={story.gains}
+              maxAbsChange={story.maxAbsChange}
+              source={story.source}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            <Trans>
+              Primele cinci teritorii în fiecare direcție. Procente rotunjite la
+              o zecimală; ordinea folosește valorile exacte.
+            </Trans>
+          </p>
+        </>
+      )}
+      <LandingSource source={story.source} />
     </section>
   )
 }
-
 function RankedColumn({
   title,
   entries,
   maxAbsChange,
+  source,
 }: {
   readonly title: ReactNode
-  readonly entries: readonly DecadeCountyChange[]
+  readonly entries: readonly NativeCountyChange[]
   readonly maxAbsChange: number
+  readonly source: NativeLandingProvenance
 }) {
-  if (entries.length === 0) return null
-
+  if (!entries.length) return null
   return (
     <div className={statisticsTheme.band}>
       <h3 className="border-b border-border/70 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -89,48 +107,39 @@ function RankedColumn({
       </h3>
       <ol className="p-1.5">
         {entries.map((entry) => (
-          <li key={entry.countyCode}>
-            <RankedRow entry={entry} maxAbsChange={maxAbsChange} />
+          <li key={entry.code}>
+            <Link
+              to="/statistici/seturi/$cod"
+              params={{ cod: source.descriptor.code }}
+              search={{
+                ...landingSourceSearch(source, entry.code, entry.start),
+                din: entry.start.time_period.year,
+                pana: entry.end.time_period.year,
+              }}
+              className={statisticsTheme.rankedRow}
+            >
+              <span
+                className={statisticsTheme.rankedFill}
+                style={{
+                  width: `${maxAbsChange > 0 ? (Math.abs(entry.plotChange) / maxAbsChange) * 100 : 0}%`,
+                }}
+                aria-hidden="true"
+              />
+              <span className="relative min-w-0">
+                <span>{entry.name ?? entry.code}</span>
+                <span className="mt-1 block text-xs text-muted-foreground">
+                  <LandingSourceCell observation={entry.start} /> →{' '}
+                  <LandingSourceCell observation={entry.end} />
+                </span>
+              </span>
+              <span className={`relative ${statisticsTheme.rankedValue}`}>
+                {entry.plotChange > 0 ? '+' : ''}
+                {entry.pctChange}%
+              </span>
+            </Link>
           </li>
         ))}
       </ol>
     </div>
-  )
-}
-
-function RankedRow({
-  entry,
-  maxAbsChange,
-}: {
-  readonly entry: DecadeCountyChange
-  readonly maxAbsChange: number
-}) {
-  const fillPct =
-    maxAbsChange > 0 ? (Math.abs(entry.pctChange) / maxAbsChange) * 100 : 0
-  const startFormatted = formatObservationValue(String(entry.startValue))
-  const endFormatted = formatObservationValue(String(entry.endValue))
-
-  return (
-    <Link
-      to="/statistici/seturi/$cod"
-      params={{ cod: DECADE_DATASET_CODE }}
-      search={{ teritoriu: `cod:${entry.countyCode}` }}
-      className={statisticsTheme.rankedRow}
-    >
-      <span
-        className={statisticsTheme.rankedFill}
-        style={{ width: `${fillPct}%` }}
-        aria-hidden="true"
-      />
-      <span className="relative min-w-0 truncate">
-        {entry.countyName ?? entry.countyCode}
-        <span className="ml-2 hidden text-xs tabular-nums text-muted-foreground sm:inline">
-          {startFormatted} → {endFormatted}
-        </span>
-      </span>
-      <span className={`relative ${statisticsTheme.rankedValue}`}>
-        {formatPercent(entry.pctChange, { signed: true })}
-      </span>
-    </Link>
   )
 }

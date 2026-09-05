@@ -1,5 +1,4 @@
 vi.mock('@/config/env', () => ({ env: { VITE_APP_ENVIRONMENT: 'test' }, getApiBaseUrl: () => 'https://native.example.test', getSiteUrl: () => 'http://localhost:3000' }))
-import { statisticsLandingDataQueryOptions } from '../../hooks/use-statistics'
 import { applyHubPeriod, collectHubPeriodOptions } from '../../lib/hub-period'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import { fetchStatisticsTerritoryHubLive } from '../statistics-api.live'
@@ -355,14 +354,6 @@ describe('native publication and cadence review regressions', () => {
         dataset: { ...dataset, metadata: null },
       }).success,
     ).toBe(false)
-  })
-  it('ignores an old unversioned landing SSR payload', () => {
-    const initialData = { nationalValues: [], decadeRows: [], exampleRows: [] }
-    expect(
-      statisticsLandingDataQueryOptions(initialData).initialData,
-    ).toBeUndefined()
-    const native = { ...initialData, nativeContract: 'native-v1' as const }
-    expect(statisticsLandingDataQueryOptions(native).initialData).toBe(native)
   })
   it.each(['MONTHLY', 'SEMESTRIAL', 'RANGE', 'OTHER'])(
     'retains %s cells without mixing chart cadence or changing the server headline',
