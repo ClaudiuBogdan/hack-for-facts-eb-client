@@ -1,3 +1,4 @@
+import { entityInsSourceSearchSchema } from '@/lib/ins/entity-source-search'
 import { z } from 'zod'
 import { DEFAULT_SELECTED_YEAR, defaultYearRange } from '@/schemas/charts'
 import {
@@ -173,13 +174,11 @@ export const ChallengeEntityAnalysisRouteSearchSchema = z.object({
   currency: CurrencySchema.optional(),
   inflation_adjusted: BooleanSearchParamSchema.optional(),
   show_period_growth: BooleanSearchParamSchema.optional(),
-  insDataset: z.string().optional(),
+
+  ...entityInsSourceSearchSchema.shape,
   insSearch: z.string().optional(),
   insRoot: z.coerce.string().optional(),
-  insTemporal: z.string().optional(),
   insExplorer: z.string().optional(),
-  insSeries: z.string().optional(),
-  insUnit: z.string().optional(),
 })
 
 export type ChallengeEntityAnalysisRouteSearch = z.infer<

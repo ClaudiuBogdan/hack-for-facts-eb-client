@@ -1,3 +1,4 @@
+import { entityInsSourceSearchSchema } from "@/lib/ins/entity-source-search";
 import { z } from "zod";
 import { AnalyticsFilterSchema, Currency, defaultYearRange, Normalization } from "@/schemas/charts";
 import { GqlReportTypeEnum } from "@/schemas/reporting";
@@ -167,13 +168,11 @@ export const entitySearchSchema = z.object({
         .string()
         .optional()
         .describe('Challenge-style commitments table detail level.'),
-    insDataset: z.string().optional(),
+
+    ...entityInsSourceSearchSchema.shape,
     insSearch: z.string().optional(),
     insRoot: z.coerce.string().optional(),
-    insTemporal: z.string().optional(),
     insExplorer: z.string().optional(),
-    insSeries: z.string().optional(),
-    insUnit: z.string().optional(),
 });
 
 export type EntitySearchSchema = z.infer<typeof entitySearchSchema>;

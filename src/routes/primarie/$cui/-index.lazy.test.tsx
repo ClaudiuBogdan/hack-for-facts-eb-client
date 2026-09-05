@@ -474,6 +474,9 @@ describe('PrimarieEntityIndexRoutePage', () => {
       public_map: DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY,
       insDataset: 'POP107D',
       insRoot: 'population',
+      insSourcePins: ['D0:0', 'D1:-5'],
+      insSourceUnit: null,
+      insSourceCadence: 'SEMESTRIAL',
     }
 
     const { PrimarieEntityRoutePage } = await import('./index.lazy')
@@ -502,6 +505,9 @@ describe('PrimarieEntityIndexRoutePage', () => {
       public_map: 'local-taxes',
       insDataset: 'POP107D',
       insRoot: 'population',
+      insSourcePins: ['D0:0', 'D1:-5'],
+      insSourceUnit: null,
+      insSourceCadence: 'SEMESTRIAL',
     })
   })
 
@@ -679,6 +685,9 @@ describe('PrimarieEntityIndexRoutePage', () => {
       public_map: 'local-taxes',
       insDataset: 'POP107D',
       insRoot: 'population',
+      insSourcePins: ['D0:0', 'D1:-5'],
+      insSourceUnit: null,
+      insSourceCadence: 'SEMESTRIAL',
     }
     window.history.replaceState(
       {},
@@ -726,6 +735,9 @@ describe('PrimarieEntityIndexRoutePage', () => {
       public_map: 'local-taxes',
       insDataset: 'POP107D',
       insRoot: 'population',
+      insSourcePins: ['D0:0', 'D1:-5'],
+      insSourceUnit: null,
+      insSourceCadence: 'SEMESTRIAL',
     })
   })
 

@@ -136,6 +136,9 @@ function toChallengeRouteSearch(
     insExplorer: search?.insExplorer,
     insSeries: search?.insSeries,
     insUnit: search?.insUnit,
+    insSourcePins: search?.insSourcePins,
+    insSourceUnit: search?.insSourceUnit,
+    insSourceCadence: search?.insSourceCadence,
   }
 }
 
