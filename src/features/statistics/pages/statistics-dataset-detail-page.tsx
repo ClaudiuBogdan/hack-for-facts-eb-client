@@ -1,3 +1,5 @@
+import { inspectSourceSeries } from '@/lib/ins/source-series'
+import { isInsChartPeriodicity } from '@/lib/ins/source-contract'
 import { useMemo } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
@@ -309,6 +311,12 @@ function DatasetDetailBody({
     )
   }, [seriesData, scope.classifications])
 
+  const source = useMemo(() => seriesData?.sourceDescriptor
+    ? inspectSourceSeries({ descriptor: seriesData.sourceDescriptor, observations: exactRows })
+    : null, [seriesData, exactRows])
+  const sourceUnavailable = source !== null && (source.status === 'INVALID' ||
+    source.status === 'AMBIGUOUS' || (source.status === 'SERIES' && source.anyQualified))
+
   const periodicity = useMemo(() => {
     if (scope.periodicity) return scope.periodicity
     // Fallback reads the observation's own cadence FIELD, never grammar.
@@ -347,22 +355,23 @@ function DatasetDetailBody({
   )
 
   const chartSeries = useMemo(() => {
-    if (!yearWindow || windowedRows.length === 0) return null
+    if (sourceUnavailable || !isInsChartPeriodicity(periodicity) || !yearWindow || windowedRows.length === 0) return null
     return buildTimeSeries({
       observations: windowedRows,
       periodicity,
       from: yearWindow.from,
       to: yearWindow.to,
     })
-  }, [windowedRows, periodicity, yearWindow])
+  }, [windowedRows, periodicity, yearWindow, sourceUnavailable])
 
   const latestValuedRow = useMemo(() => {
+    if (sourceUnavailable) return null
     for (let index = windowedRows.length - 1; index >= 0; index -= 1) {
       const row = windowedRows[index]
       if (row.value !== null) return row
     }
     return null
-  }, [windowedRows])
+  }, [windowedRows, sourceUnavailable])
 
   const classificationColumns = useMemo<readonly CsvClassificationColumn[]>(
     () =>
@@ -479,7 +488,7 @@ function DatasetDetailBody({
                 datasetNameRo: dataset.name_ro ?? null,
                 datasetNameEn: dataset.name_en ?? null,
                 periodicity: dataset.periodicity ?? [],
-                matchStrategy: latest?.matchStrategy ?? 'NO_DATA',
+                matchStrategy: 'PREFERRED_CLASSIFICATION',
                 hasData: true,
                 value: latestValuedRow.value,
                 valueStatus: latestValuedRow.value_status ?? null,
@@ -500,7 +509,13 @@ function DatasetDetailBody({
             />
           ) : null}
 
-          {seriesQuery.isSuccess && !latestValuedRow ? (
+          {seriesQuery.isSuccess && sourceUnavailable ? (
+            <Alert>
+              <AlertTitle><Trans>Seria necesită o selecție din sursă</Trans></AlertTitle>
+              <AlertDescription><Trans>Observațiile includ alternative sau calificări geografice. Inspectează datele din tabel înainte de a le compara.</Trans></AlertDescription>
+            </Alert>
+          ) : null}
+          {seriesQuery.isSuccess && !sourceUnavailable && !latestValuedRow ? (
             <EmptyState
               title={t`Nicio observație`}
               description={t`Selecția curentă nu returnează observații. Încearcă alt teritoriu sau altă valoare.`}

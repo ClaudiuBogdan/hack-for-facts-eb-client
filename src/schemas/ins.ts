@@ -1,5 +1,5 @@
 import type { ReportPeriodInput } from './reporting';
-import type { InsSourcePeriodicity, InsSourceGeography } from '@/lib/ins/source-contract';
+import type { InsSourcePeriodicity, InsSourceGeography, InsSourceGeoPairs, InsSourceDescriptor } from '@/lib/ins/source-contract';
 
 export type InsPeriodicity = InsSourcePeriodicity;
 export type InsTerritoryLevel = 'NATIONAL' | 'NUTS1' | 'NUTS2' | 'NUTS3' | 'LAU';
@@ -140,6 +140,17 @@ export interface InsUatDatasetGroup {
   dataset: InsDataset;
   observations: InsObservation[];
   latestPeriod?: string | null;
+}
+
+/** Validated native default outcome; legacy/mock groups do not imply this contract. */
+export interface NativeInsUatDatasetGroup extends InsUatDatasetGroup {
+  dataset: InsDatasetDetails;
+  descriptor: InsSourceDescriptor;
+  observations: NativeInsObservation[];
+  latestPeriod: string | null;
+  status: 'SERIES' | 'AMBIGUOUS_GEOGRAPHY';
+  geographicWitnesses: InsSourceGeoPairs[];
+  truncated: boolean;
 }
 
 export interface PageInfo {

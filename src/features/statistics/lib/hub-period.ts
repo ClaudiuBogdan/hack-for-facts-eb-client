@@ -1,3 +1,4 @@
+import { selectInsPeriodObservation } from '@/lib/ins/source-period'
 import type { InsTimePeriod } from '@/schemas/ins'
 import type {
   StatisticsIndicatorTile,
@@ -29,7 +30,9 @@ export function collectHubPeriodOptions(
   const byIsoPeriod = new Map<string, InsTimePeriod>()
 
   for (const tile of hub?.tiles ?? []) {
-    for (const [period] of tile.sparkline) {
+    for (const period of tile.sourceObservations?.map(
+      (row) => row.time_period,
+    ) ?? tile.sparkline.map(([period]) => period)) {
       if (!byIsoPeriod.has(period.iso_period)) {
         byIsoPeriod.set(period.iso_period, period)
       }
@@ -65,19 +68,43 @@ function applyTilePeriod(
   tile: StatisticsIndicatorTile,
   period: string,
 ): StatisticsIndicatorTile {
-  if (tile.dataStatus === 'catalog-only') return tile
+  if (tile.dataStatus === 'catalog-only' || tile.tileState === 'ambiguous')
+    return tile
 
-  const match = tile.sparkline.find(([timePeriod]) => timePeriod.iso_period === period)
-  const value = match?.[1] ?? null
+  const match = tile.sparkline.find(
+    ([timePeriod]) => timePeriod.iso_period === period,
+  )
+  const selected = selectInsPeriodObservation(tile.sourceObservations ?? [], period)
+  if (selected.status === 'AMBIGUOUS')
+    return {
+      ...tile,
+      tileState: 'period-ambiguous',
+      value: null,
+      valueStatus: null,
+      latestPeriod: null,
+      latestYear: null,
+    }
+  const sourceRow = selected.status === 'OBSERVATION' ? selected.observation : undefined
+  const value = sourceRow ? sourceRow.value : (match?.[1] ?? null)
 
   return {
     ...tile,
     value,
     // `value_status` is only carried for the tile's own latest observation, so
     // it must not be re-attached to a different period's value.
-    valueStatus: period === tile.latestPeriod ? tile.valueStatus : null,
-    latestPeriod: period,
-    latestYear: match?.[0].year ?? null,
-    tileState: value === null ? 'no-data' : 'available',
+    valueStatus: sourceRow
+      ? (sourceRow.value_status ?? null)
+      : period === tile.latestPeriod
+        ? tile.valueStatus
+        : null,
+    latestPeriod: sourceRow || match ? period : null,
+    latestYear: sourceRow?.time_period.year ?? match?.[0].year ?? null,
+    tileState: sourceRow
+      ? 'available'
+      : !match && tile.truncated
+        ? 'unavailable'
+        : value === null
+          ? 'no-data'
+          : 'available',
   }
 }

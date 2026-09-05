@@ -17,7 +17,8 @@ type StatTileBodyProps = {
  * The matrix code is a mono provenance chip, never the label.
  */
 function StatTileBody({ shortLabel, latest, comparison }: StatTileBodyProps) {
-  const formatted = formatObservationValue(latest.value)
+  const ambiguous = latest.matchStrategy === 'AMBIGUOUS_GEOGRAPHY'
+  const formatted = latest.hasData && !ambiguous ? formatObservationValue(latest.value) : null
 
   return (
     <>
@@ -31,7 +32,7 @@ function StatTileBody({ shortLabel, latest, comparison }: StatTileBodyProps) {
         </span>
       ) : (
         <span className="text-sm text-muted-foreground">
-          <Trans>Fără date pentru această perioadă</Trans>
+          {ambiguous ? <Trans>Mai multe serii INS corespund selecției. Alege o serie din sursă.</Trans> : <Trans>Fără date pentru această perioadă</Trans>}
         </span>
       )}
       <span className={statisticsTheme.statTileMeta}>
@@ -45,7 +46,7 @@ function StatTileBody({ shortLabel, latest, comparison }: StatTileBodyProps) {
           </>
         ) : null}
       </span>
-      {comparison}
+      {latest.hasData && !ambiguous ? comparison : null}
       <span className={statisticsTheme.provenanceChip} aria-label={t`Matrice INS`}>
         {latest.datasetCode}
       </span>

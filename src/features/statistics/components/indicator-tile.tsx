@@ -236,7 +236,9 @@ export function IndicatorTile({ tile, siruta, benchmark, countyCode }: Indicator
           ) : null}
           {benchmark ? <BenchmarkLine benchmark={benchmark} /> : null}
           <div className="mt-4">
-            <Sparkline points={tile.sparkline} />
+            {tile.sparklineUnavailable ? (
+              <p className="text-xs text-muted-foreground"><Trans>Graficul necesită o singură frecvență compatibilă. Inspectează seria din sursă.</Trans></p>
+            ) : <Sparkline points={tile.sparkline} />}
           </div>
         </>
       ) : (
@@ -244,6 +246,12 @@ export function IndicatorTile({ tile, siruta, benchmark, countyCode }: Indicator
           <AlertCircle className="mb-2 h-4 w-4" aria-hidden="true" />
           {tile.tileState === 'catalog-only' ? (
             <Trans>Setul există în catalog, dar observațiile nu sunt încă încărcate.</Trans>
+          ) : tile.tileState === 'ambiguous' ? (
+            <Trans>Mai multe serii INS corespund selecției. Alege o serie din sursă.</Trans>
+          ) : tile.tileState === 'period-ambiguous' ? (
+            <Trans>Mai multe frecvențe corespund acestei perioade. Inspectează observațiile din sursă.</Trans>
+          ) : tile.tileState === 'unavailable' ? (
+            <Trans>Perioada nu este inclusă în istoricul încărcat. Verifică seria completă.</Trans>
           ) : (
             <Trans>Nu există observații pentru acest teritoriu în setul curent.</Trans>
           )}
@@ -259,6 +267,13 @@ export function IndicatorTile({ tile, siruta, benchmark, countyCode }: Indicator
           unitLabel={tile.unitNameRo ?? tile.unitSymbol}
           latestPeriod={tile.latestPeriod}
         />
+        {tile.tileState === 'ambiguous' || tile.tileState === 'period-ambiguous' || tile.tileState === 'unavailable' || tile.truncated || tile.sparklineUnavailable ? (
+          <Link to="/statistici/seturi/$cod" params={{ cod: tile.datasetCode }}
+            search={{ teritoriu: `siruta:${siruta}` }}
+            className="text-xs font-medium text-primary underline underline-offset-2">
+            <Trans>Inspectează seria din sursă</Trans>
+          </Link>
+        ) : null}
         {tile.tileState === 'catalog-only' ? (
           <RequestDatasetAction
             datasetCode={tile.datasetCode}

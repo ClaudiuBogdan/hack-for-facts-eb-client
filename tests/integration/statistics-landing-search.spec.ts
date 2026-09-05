@@ -3,7 +3,7 @@
  *
  * Route: /statistici
  * GraphQL is mocked (fixtures under tests/fixtures/statistics-landing-search-flow/,
- * captured from the live API). The SSR loader cannot reach an API in this
+ * synthetic native outcome fixtures; see the fixture README). The SSR loader cannot reach an API in this
  * harness, so the two landing aggregates are fetched client-side and pass
  * through the mock — which is exactly what lets the POST budget be counted.
  */
@@ -42,7 +42,7 @@ test.describe('Statistics landing — România în cifre', () => {
     await setupMocks(mockApi)
   })
 
-  test('B1–B5 render real observations with unit, period, and provenance', async ({
+  test('B1–B5 render fixture observations with unit, period, and provenance', async ({
     page,
   }) => {
     await page.goto(ROUTE)

@@ -142,13 +142,12 @@ export function StatisticsTerritoryHubPage({
                 <Alert>
                   <AlertTriangle className="h-4 w-4" aria-hidden="true" />
                   <AlertTitle>
-                    <Trans>Nicio serie nu raportează perioada {activePeriod}</Trans>
+                    <Trans>Perioada {activePeriod} nu este disponibilă în rezultatele încărcate</Trans>
                   </AlertTitle>
                   <AlertDescription className="space-y-3">
                     <p>
                       <Trans>
-                        Filtrul rămâne în adresă; indicatorii de mai jos arată
-                        absența, nu valori inventate.
+                        Filtrul rămâne în adresă. Istoricul poate fi incomplet sau selecția din sursă poate necesita clarificare.
                       </Trans>
                     </p>
                     <Button

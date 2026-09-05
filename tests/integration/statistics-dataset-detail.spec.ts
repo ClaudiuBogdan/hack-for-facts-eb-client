@@ -2,9 +2,8 @@
  * Integration tests for the dataset detail disclosure ladder.
  *
  * Route: /statistici/seturi/$cod
- * Fixtures captured from the live API. In this harness the SSR loader has no
- * API, so POST A (tier 0) and POST B (series+related) fetch client-side and
- * are counted against the two-POST budget.
+ * Synthetic native contract fixtures; see the fixture README. Tier zero,
+ * one complete source page and the related catalog are separate operations.
  */
 
 import { test, expect } from '../utils/integration-base'
@@ -24,17 +23,19 @@ async function setupMocks(mockApi: MockApiFixture): Promise<void> {
   await mockApi.mockGraphQL('StatisticsDatasetTier0', 'tier0-pop107d')
 
   // Most specific first: the pinned FEMININ scope, then the default cell.
-  await mockApi.mockGraphQL('StatisticsDatasetSeries', 'series-pop107d-feminin', {
+  await mockApi.mockGraphQL('InsSourceObservations', 'series-pop107d-feminin', {
     variables: {
       filter: {
         territoryLevels: ['NATIONAL'],
-        classificationValueCodes: ['FEMININ', 'TOTAL'],
-        classificationTypeCodes: ['SEX', 'AGE_GROUP'],
-        unitCodes: ['PERSONS'],
+        classificationValueCodes: ['100', '107', '931', '932'],
+        classificationTypeCodes: ['D0', 'D1', 'D2', 'D3'],
+        unitCodes: ['0'],
       },
     },
   })
-  await mockApi.mockGraphQL('StatisticsDatasetSeries', 'series-pop107d')
+  await mockApi.mockGraphQL('InsSourceObservations', 'series-pop107d')
+
+  await mockApi.mockGraphQL('StatisticsRelatedDatasets', 'related-pop107d')
 
   await mockApi.mockGraphQL('InsDatasetDimensionValues', 'dimension-values-sex')
 }
@@ -82,14 +83,14 @@ test.describe('Dataset detail — the disclosure ladder', () => {
     await expect(page.getByText(/Proveniență și limite/)).toBeVisible()
   })
 
-  test('tier 0 stays inside the two-POST budget', async ({ page }) => {
+  test('tier 0 stays inside the three-operation single-page budget', async ({ page }) => {
     const posts = countGraphQLPosts(page)
     await page.goto(ROUTE)
     await waitForPageReady(page)
     await expect(page.getByText('21.739.373')).toBeVisible({ timeout: 15000 })
     await page.waitForTimeout(1500)
 
-    expect(posts.count()).toBeLessThanOrEqual(2)
+    expect(posts.count()).toBe(3)
   })
 
   test('the observations table mounts on accordion open and prints values verbatim', async ({
@@ -128,7 +129,7 @@ test.describe('Dataset detail — the disclosure ladder', () => {
           ),
         { timeout: 5000 },
       )
-      .toContain('SEX:FEMININ')
+      .toContain('D1:107')
 
     // The hero re-resolves to the pinned cell, (implicit) drops for it.
     await expect(page.getByText('11.136.500')).toBeVisible({ timeout: 15000 })

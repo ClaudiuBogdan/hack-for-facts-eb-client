@@ -377,7 +377,9 @@ test.describe('Native grouped analytics availability', () => {
         pageInfo: { totalCount: 2, hasNextPage: false, hasPreviousPage: false },
       } } } })
     })
-    await page.goto('/entity-analytics?view=table')
+    // Navigate in-app so the response comes through the browser mock, not SSR hydration.
+    await page.goto('/')
+    await page.locator('a[href="/entity-analytics"]').first().click()
     const annual = page.getByRole('row').filter({ hasText: 'Annual ratio' })
     const unavailable = page.getByRole('row').filter({ hasText: 'Unavailable ratio' })
     await expect(annual).toBeVisible()
@@ -392,9 +394,11 @@ test.describe('Native grouped analytics availability', () => {
       if (!route.request().postDataJSON()?.query?.includes('query EntityAnalytics')) return route.fallback()
       await route.fulfill({ json: { errors: [{ message: 'CPI is unavailable for 2025', extensions: { code: 'SERVICE_UNAVAILABLE' } }] } })
     })
-    await page.goto('/entity-analytics?view=table')
+    // Navigate in-app so the response comes through the browser mock, not SSR hydration.
+    await page.goto('/')
+    await page.locator('a[href="/entity-analytics"]').first().click()
     await expect(page.getByRole('alert').filter({ hasText: 'CPI is unavailable for 2025' })).toBeVisible({ timeout: 20000 })
-    await expect(page.getByRole('alert').filter({ hasText: /nominal RON|nominale în RON/ })).toBeVisible()
+    await expect(page.getByRole('alert').filter({ hasText: /nominal RON|valori nominale în lei/ })).toBeVisible()
   })
 
   test('refuses a truncated classification vector', async ({ page, mockApi }) => {

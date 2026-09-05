@@ -1,6 +1,6 @@
-import { describe, expect, it, vi } from 'vitest'
-vi.mock('@/config/env', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/config/env')>()),
+import { afterEach, describe, expect, it, vi } from 'vitest'
+vi.mock('@/config/env', () => ({
+  env: { VITE_APP_ENVIRONMENT: 'test' },
   getApiBaseUrl: () => 'https://native.example.test',
 }))
 vi.mock('@/lib/auth', () => ({ getAuthToken: vi.fn() }))
@@ -8,6 +8,7 @@ import { getAuthToken } from '@/lib/auth'
 import { fetchInsSourceVector } from './ins-source-fetcher'
 
 describe('native INS actual HTTP transport', () => {
+  afterEach(() => vi.unstubAllGlobals())
   it('posts anonymously to the native endpoint with descriptor and cells together', async () => {
     const response = {
       descriptor: { code: 'TEST', dimension_count: 2,

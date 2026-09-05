@@ -1,3 +1,5 @@
+import { selectInsPeriodObservation } from '@/lib/ins/source-period'
+import { isInsChartPeriodicity } from '@/lib/ins/source-contract'
 import { t } from '@lingui/core/macro'
 import { z } from 'zod'
 import {
@@ -11,7 +13,7 @@ import { createLogger } from '@/lib/logger'
 import type {
   InsObservation,
   InsTimePeriod,
-  InsUatDatasetGroup,
+  NativeInsUatDatasetGroup,
 } from '@/schemas/ins'
 import type {
   DatasetRequestPayload,
@@ -27,8 +29,6 @@ import { buildTerritoryRelatedLinks, resolveTerritoryIdentity } from '../lib/ter
 
 const logger = createLogger('statistics-api-live')
 
-/** The `insUatDashboard` observation budget; at the cap the result is partial. */
-const UAT_DASHBOARD_LIMIT = 2000
 
 // ---------------------------------------------------------------------------
 // Territory hub
@@ -48,6 +48,7 @@ const UAT_DASHBOARD_LIMIT = 2000
  */
 export async function fetchStatisticsTerritoryHubLive(
   siruta: string,
+  signal?: AbortSignal,
 ): Promise<StatisticsTerritoryHubResult | null> {
   const normalizedSiruta = siruta.trim()
   if (normalizedSiruta.length === 0) {
@@ -58,6 +59,7 @@ export async function fetchStatisticsTerritoryHubLive(
 
   const { groups, identity: territoryRow } = await fetchStatisticsTerritoryHubData({
     siruta: normalizedSiruta,
+    signal,
   })
 
   if (!territoryRow && groups.length === 0) {
@@ -80,8 +82,10 @@ export async function fetchStatisticsTerritoryHubLive(
     context = await fetchStatisticsTerritoryHubContext({
       countyCode: territoryRow?.countyCode ?? null,
       benchmarkCodes: LANDING_NATIONAL_DATASET_CODES,
+      signal,
     })
   } catch (error) {
+    if (signal?.aborted) throw error
     logger.warn('Hub context (counts + benchmarks) unavailable', {
       siruta: normalizedSiruta,
       error,
@@ -103,10 +107,6 @@ export async function fetchStatisticsTerritoryHubLive(
   }
 
   const tiles = buildIndicatorTiles(groups)
-  const totalObservations = groups.reduce(
-    (total, group) => total + group.observations.length,
-    0,
-  )
 
   return {
     identity,
@@ -127,22 +127,29 @@ export async function fetchStatisticsTerritoryHubLive(
       : null,
     relatedLinks: buildTerritoryRelatedLinks({ identity }),
     latestDataPeriod: resolveHubLatestPeriod(groups),
-    partial: totalObservations >= UAT_DASHBOARD_LIMIT,
+    partial: groups.some((group) => group.truncated),
     benchmarks,
   }
 }
 
 function buildIndicatorTiles(
-  groups: readonly InsUatDatasetGroup[],
+  groups: readonly NativeInsUatDatasetGroup[],
 ): readonly StatisticsIndicatorTile[] {
   return groups.map((group) => {
-    const latest = pickLatestObservation(group.observations)
-    const sparkline = buildSparkline(group.observations)
+    const selection = selectInsPeriodObservation(group.observations, group.latestPeriod)
+    const latest = selection.status === 'OBSERVATION' ? selection.observation : null
+    const cadences = new Set(group.observations.map(row => row.time_period.periodicity))
+    const sparklineUnavailable = cadences.size > 1 || (latest !== null && !isInsChartPeriodicity(latest.time_period.periodicity))
+    const sparkline = sparklineUnavailable ? [] : buildSparkline(group.observations)
     const dataStatus = getDatasetDataStatus(group.dataset)
     const tileState =
       dataStatus === 'catalog-only'
         ? 'catalog-only'
-        : group.observations.length === 0
+        : group.status === 'AMBIGUOUS_GEOGRAPHY'
+          ? 'ambiguous'
+          : selection.status === 'AMBIGUOUS'
+            ? 'period-ambiguous'
+            : group.observations.length === 0
           ? 'no-data'
           : 'available'
 
@@ -153,38 +160,19 @@ function buildIndicatorTiles(
       periodicity: group.dataset.periodicity,
       dataStatus,
       tileState,
+      truncated: group.truncated,
+      geographicWitnesses: group.geographicWitnesses,
+      sourceObservations: group.observations,
+      sparklineUnavailable,
       value: latest?.value ?? null,
       valueStatus: latest?.value_status ?? null,
       unitSymbol: latest?.unit?.symbol ?? null,
       unitNameRo: latest?.unit?.name_ro ?? null,
-      latestPeriod: resolveLatestPeriod({
-        latestPeriod: group.latestPeriod,
-        observations: group.observations,
-      }),
+      latestPeriod: latest?.time_period.iso_period ?? null,
       latestYear: latest?.time_period.year ?? null,
       sparkline,
     }
   })
-}
-
-function pickLatestObservation(
-  observations: readonly InsObservation[],
-): InsObservation | null {
-  let latest: InsObservation | null = null
-  let latestKey = Number.NEGATIVE_INFINITY
-
-  for (const observation of observations) {
-    const key =
-      observation.time_period.year * 10000 +
-      (observation.time_period.quarter ?? 0) * 100 +
-      (observation.time_period.month ?? 0)
-    if (key > latestKey) {
-      latestKey = key
-      latest = observation
-    }
-  }
-
-  return latest
 }
 
 function buildSparkline(
@@ -212,7 +200,7 @@ function buildSparkline(
 }
 
 function resolveHubLatestPeriod(
-  groups: readonly InsUatDatasetGroup[],
+  groups: readonly NativeInsUatDatasetGroup[],
 ): string | null {
   let latest: string | null = null
   let latestKey = Number.NEGATIVE_INFINITY

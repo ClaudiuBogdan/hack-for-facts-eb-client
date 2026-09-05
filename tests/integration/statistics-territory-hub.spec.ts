@@ -3,7 +3,7 @@
  * hub spec before).
  *
  * Route: /statistici/teritorii/$siruta
- * Fixtures captured from the live API (dashboard trimmed to five groups).
+ * Synthetic native contract fixtures; see the fixture README.
  * The hub is exactly two POSTs: dashboard+identity, then counts+benchmarks.
  */
 
@@ -108,7 +108,7 @@ test.describe('Territory hub', () => {
     await waitForPageReady(page)
 
     await expect(
-      page.getByText(/Nicio serie nu raportează perioada 2005/),
+      page.getByText(/Perioada 2005 nu este disponibilă în rezultatele încărcate/),
     ).toBeVisible({ timeout: 15000 })
     await expect(
       page.getByRole('button', { name: /Șterge filtrul de perioadă/ }),

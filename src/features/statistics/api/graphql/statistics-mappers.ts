@@ -1,6 +1,6 @@
+import { insSourceDescriptorSchema } from '@/lib/ins/source-contract'
 import type {
   InsDatasetDetails,
-  InsObservation,
 } from '@/schemas/ins'
 import type {
   StatisticsDatasetDataStatus,
@@ -15,11 +15,10 @@ import { getDatasetDataStatus } from '../../lib/dataset-status'
 import type {
   InsDatasetNodeRaw,
   InsLatestValueNodeRaw,
-  InsObservationNodeRaw,
   InsTerritoryNodeRaw,
   LandingDecadeNodeRaw,
   LandingExampleNodeRaw,
-  StatisticsDatasetSeriesResponseRaw,
+  StatisticsRelatedDatasetsRaw,
   StatisticsDatasetTier0ResponseRaw,
 } from './statistics-raw-schemas'
 
@@ -106,7 +105,13 @@ export function mapTerritorySearchRow(
 }
 
 export function mapLatestValue(node: InsLatestValueNodeRaw): StatisticsLatestValue {
+  const descriptor = insSourceDescriptorSchema.safeParse(node.dataset)
   return {
+    source: {
+      descriptor: descriptor.success ? descriptor.data : null,
+      observation: node.observation,
+      geographicWitnesses: node.geographicWitnesses,
+    },
     datasetCode: node.dataset.code,
     datasetNameRo: node.dataset.name_ro ?? null,
     datasetNameEn: node.dataset.name_en ?? null,
@@ -220,47 +225,8 @@ export function mapDatasetDetails(
   }
 }
 
-/** Series observation node → the shared `InsObservation` shape. */
-export function mapObservationNode(node: InsObservationNodeRaw): InsObservation {
-  return {
-    dataset_code: '',
-    value: node.value ?? null,
-    value_status: node.value_status ?? null,
-    time_period: {
-      iso_period: node.time_period.iso_period,
-      year: node.time_period.year,
-      quarter: node.time_period.quarter ?? null,
-      month: node.time_period.month ?? null,
-      periodicity: node.time_period.periodicity,
-    },
-    territory: node.territory
-      ? {
-          code: node.territory.code ?? null,
-          siruta_code: node.territory.siruta_code ?? null,
-          level: node.territory.level ?? null,
-          name_ro: node.territory.name_ro ?? null,
-        }
-      : null,
-    unit: node.unit
-      ? {
-          code: node.unit.code ?? null,
-          symbol: node.unit.symbol ?? null,
-          name_ro: node.unit.name_ro ?? null,
-        }
-      : null,
-    classifications: (node.classifications ?? []).map((classification) => ({
-      type_code: classification.type_code ?? null,
-      type_name_ro: classification.type_name_ro ?? null,
-      code: classification.code ?? null,
-      name_ro: classification.name_ro ?? null,
-      sort_order: classification.sort_order ?? null,
-    })),
-    dimensions: null,
-  }
-}
-
 export function mapRelatedDatasets(
-  related: StatisticsDatasetSeriesResponseRaw['related'],
+  related: StatisticsRelatedDatasetsRaw['related'],
   selfCode: string,
 ): readonly StatisticsRelatedDataset[] {
   if (!related) return []

@@ -83,11 +83,12 @@ export async function fetchUatSnapshot(
 
 export async function fetchStatisticsTerritoryHub(
   siruta: string,
+  signal?: AbortSignal,
 ): Promise<StatisticsTerritoryHubResult | null> {
   if (isStatisticsMockEnabled()) {
     return fetchStatisticsTerritoryHubMock(siruta)
   }
-  return fetchStatisticsTerritoryHubLive(siruta)
+  return fetchStatisticsTerritoryHubLive(siruta, signal)
 }
 
 export async function submitDatasetRequest(

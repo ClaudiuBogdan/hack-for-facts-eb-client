@@ -27,6 +27,8 @@ export function buildNationalComparison(params: {
   readonly national: StatisticsLatestValue | undefined
 }): NationalComparison | null {
   const { local, national } = params
+  if (!local.hasData || local.matchStrategy === 'AMBIGUOUS_GEOGRAPHY' ||
+      !national?.hasData || national.matchStrategy === 'AMBIGUOUS_GEOGRAPHY') return null
   if (!national || national.value === null || local.value === null) return null
   if (local.period === null || national.period === null) return null
   if (local.period !== national.period) return null

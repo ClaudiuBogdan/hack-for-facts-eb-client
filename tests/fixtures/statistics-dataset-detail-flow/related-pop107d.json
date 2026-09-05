@@ -1,0 +1,46 @@
+{
+  "data": {
+    "related": {
+      "pageInfo": {
+        "totalCount": 7
+      },
+      "nodes": [
+        {
+          "code": "POP107A",
+          "name_ro": "POPULATIA DUPA DOMICILIU la 1 ianuarie pe grupe de varsta si varste, sexe, medii de rezidenta, macroregiuni, regiuni de dezvoltare si judete",
+          "data_status": "AVAILABLE"
+        },
+        {
+          "code": "POP107B",
+          "name_ro": "POPULATIA DUPA DOMICILIU in varsta de munca la 1 ianuarie pe medii de rezidenta si sexe, macroregiuni, regiuni de dezvoltare si judete",
+          "data_status": "AVAILABLE"
+        },
+        {
+          "code": "POP107D",
+          "name_ro": "POPULATIA DUPA DOMICILIU la 1 ianuarie pe grupe de varsta si varste, sexe, judete si localitati",
+          "data_status": "AVAILABLE"
+        },
+        {
+          "code": "POP108B",
+          "name_ro": "POPULATIA DUPA DOMICILIU la 1 iulie pe grupe de varsta si varste, sexe, medii de rezidenta, macroregiuni, regiuni de dezvoltare si judete",
+          "data_status": "AVAILABLE"
+        },
+        {
+          "code": "POP108C",
+          "name_ro": "POPULATIA DUPA DOMICILIU la 1 iulie pentru grupa de varsta oficiala corespunzatoare invatamantului prescolar pe judete si localitati",
+          "data_status": "AVAILABLE"
+        },
+        {
+          "code": "POP108D",
+          "name_ro": "POPULATIA DUPA DOMICILIU la 1 iulie pe grupe de varsta si varste, sexe, judete si localitati",
+          "data_status": "AVAILABLE"
+        },
+        {
+          "code": "POP110A",
+          "name_ro": "Varsta medie a populatiei dupa domiciliu la 1 iulie pe sexe, medii de rezidenta, macroregiuni, regiuni de dezvoltare si judete",
+          "data_status": "AVAILABLE"
+        }
+      ]
+    }
+  }
+}

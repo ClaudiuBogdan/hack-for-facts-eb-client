@@ -80,12 +80,12 @@ export function useDatasetTier0(params: {
   readonly initialData?: StatisticsDatasetTier0
 }) {
   return useQuery<StatisticsDatasetTier0>({
-    queryKey: ['statistics', 'dataset', params.code, 'tier0', params.entityKey] as const,
+    queryKey: ['statistics', 'native-v1', 'dataset', params.code, 'tier0', params.entityKey] as const,
     queryFn: ({ signal }) =>
       fetchDatasetTier0({ code: params.code, entity: params.entity, signal }),
     enabled: params.code.trim().length > 0,
     staleTime: DATASET_STALE_TIME,
-    ...(params.initialData ? { initialData: params.initialData } : {}),
+    ...(params.initialData?.nativeContract === 'native-v1' ? { initialData: params.initialData } : {}),
   })
 }
 
@@ -99,7 +99,7 @@ export function useDatasetSeries(params: {
   readonly initialData?: StatisticsDatasetSeries
 }) {
   return useQuery<StatisticsDatasetSeries>({
-    queryKey: ['statistics', 'dataset', params.code, 'series', params.scopeKey] as const,
+    queryKey: ['statistics', 'native-v1', 'dataset', params.code, 'series', params.scopeKey] as const,
     queryFn: ({ signal }) =>
       fetchDatasetSeries({
         code: params.code,
@@ -109,6 +109,6 @@ export function useDatasetSeries(params: {
       }),
     enabled: params.enabled && params.code.trim().length > 0,
     staleTime: DATASET_STALE_TIME,
-    ...(params.initialData ? { initialData: params.initialData } : {}),
+    ...(params.initialData?.nativeContract === 'native-v1' ? { initialData: params.initialData } : {}),
   })
 }

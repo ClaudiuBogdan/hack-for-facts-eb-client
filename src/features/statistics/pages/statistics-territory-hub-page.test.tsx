@@ -194,7 +194,7 @@ describe('StatisticsTerritoryHubPage — search hygiene', () => {
     )
 
     expect(
-      screen.getByText(/Nicio serie nu raportează perioada 2005/),
+      screen.getByText(/Perioada 2005 nu este disponibilă în rezultatele încărcate/),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: /Șterge filtrul de perioadă/ }),

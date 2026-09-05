@@ -12,8 +12,8 @@
           "territory": null,
           "time_period": null,
           "classification_value": {
-            "type_code": "SEX",
-            "code": "TOTAL",
+            "type_code": "D1",
+            "code": "105",
             "name_ro": "Total "
           },
           "unit": null
@@ -28,8 +28,8 @@
           "territory": null,
           "time_period": null,
           "classification_value": {
-            "type_code": "SEX",
-            "code": "MASCULIN",
+            "type_code": "D1",
+            "code": "106",
             "name_ro": "Masculin "
           },
           "unit": null
@@ -44,8 +44,8 @@
           "territory": null,
           "time_period": null,
           "classification_value": {
-            "type_code": "SEX",
-            "code": "FEMININ",
+            "type_code": "D1",
+            "code": "107",
             "name_ro": "Feminin "
           },
           "unit": null

@@ -28,6 +28,23 @@ export const INS_DATASET_FIELDS = `
   metadata
 `
 
+export const INS_DATASET_DIMENSION_FIELDS = `
+  dimensions {
+        index
+        type
+        label_ro
+        label_en
+        is_hierarchical
+        option_count
+        classification_type {
+          code
+          name_ro
+          name_en
+          is_hierarchical
+        }
+      }
+`
+
 export const INS_OBSERVATION_FIELDS = `
   id
   dimensions
@@ -124,20 +141,7 @@ export const INS_DATASET_DETAILS_QUERY = `
   query InsDatasetDetails($code: String!) {
     insDataset(code: $code) {
       ${INS_DATASET_FIELDS}
-      dimensions {
-        index
-        type
-        label_ro
-        label_en
-        is_hierarchical
-        option_count
-        classification_type {
-          code
-          name_ro
-          name_en
-          is_hierarchical
-        }
-      }
+      ${INS_DATASET_DIMENSION_FIELDS}
     }
   }
 `
@@ -243,14 +247,9 @@ export const INS_LATEST_VALUE_FIELDS = `
   latestPeriod
   matchStrategy
   hasData
-  dataset { code name_ro name_en periodicity }
-  observation {
-    value
-    value_status
-    unit { code symbol name_ro }
-    time_period { iso_period year periodicity }
-    classifications { type_code code name_ro }
-  }
+  geographicWitnesses
+  dataset { ${INS_DATASET_FIELDS} ${INS_DATASET_DIMENSION_FIELDS} }
+  observation { ${INS_OBSERVATION_FIELDS} }
 `
 
 /**
@@ -367,20 +366,7 @@ export const STATISTICS_DATASET_TIER0_QUERY = `
   query StatisticsDatasetTier0($code: String!, $codes: [String!]!, $entity: InsEntitySelectorInput!) {
     dataset: insDataset(code: $code) {
       ${INS_DATASET_FIELDS}
-      dimensions {
-        index
-        type
-        label_ro
-        label_en
-        is_hierarchical
-        option_count
-        classification_type {
-          code
-          name_ro
-          name_en
-          is_hierarchical
-        }
-      }
+      ${INS_DATASET_DIMENSION_FIELDS}
     }
     latest: insLatestDatasetValues(
       entity: $entity
@@ -388,38 +374,6 @@ export const STATISTICS_DATASET_TIER0_QUERY = `
       preferredClassificationCodes: ["TOTAL"]
     ) {
       ${INS_LATEST_VALUE_FIELDS}
-    }
-  }
-`
-
-/**
- * Detail POST B — the RESOLVED series (classification-filtered: the re-rank
- * pool never applies, rows are chronologically stable) plus, in the same
- * operation, the related-datasets probe. \`withRelated\` guards the alias when
- * the dataset has no context (an unfiltered insDatasets would answer 1,898).
- */
-export const STATISTICS_DATASET_SERIES_QUERY = `
-  query StatisticsDatasetSeries(
-    $code: String!
-    $filter: InsObservationFilterInput
-    $limit: Int
-    $contextCode: String
-    $withRelated: Boolean!
-  ) {
-    series: insObservations(datasetCode: $code, filter: $filter, limit: $limit) {
-      pageInfo { totalCount hasNextPage hasPreviousPage }
-      nodes {
-        value
-        value_status
-        time_period { iso_period year quarter month periodicity }
-        territory { code siruta_code level name_ro }
-        unit { code symbol name_ro }
-        classifications { type_code type_name_ro code name_ro sort_order }
-      }
-    }
-    related: insDatasets(filter: { contextCode: $contextCode }, limit: 7) @include(if: $withRelated) {
-      pageInfo { totalCount }
-      nodes { code name_ro data_status }
     }
   }
 `
@@ -433,15 +387,11 @@ export const STATISTICS_TERRITORY_HUB_QUERY = `
   query StatisticsTerritoryHub($sirutaCode: String!) {
     dashboard: insUatDashboard(sirutaCode: $sirutaCode) {
       latestPeriod
-      dataset { ${INS_DATASET_FIELDS} }
-      observations {
-        value
-        value_status
-        time_period { iso_period year quarter month periodicity }
-        territory { code siruta_code level name_ro }
-        unit { code symbol name_ro }
-        classifications { type_code type_name_ro code name_ro sort_order }
-      }
+      status
+      truncated
+      geographicWitnesses
+      dataset { ${INS_DATASET_FIELDS} ${INS_DATASET_DIMENSION_FIELDS} }
+      observations { ${INS_OBSERVATION_FIELDS} }
     }
     identity: insTerritories(filter: { sirutaCodes: [$sirutaCode] }, limit: 1) {
       nodes { ${INS_TERRITORY_FIELDS} }
@@ -492,6 +442,16 @@ export const INS_SOURCE_OBSERVATIONS_QUERY = `
     insObservations(datasetCode: $datasetCode, filter: $filter, limit: $limit, offset: $offset) {
       nodes { ${INS_OBSERVATION_FIELDS} }
       pageInfo { totalCount hasNextPage hasPreviousPage }
+    }
+  }
+`
+
+/** Related catalog metadata does not determine observation publication or source identity. */
+export const STATISTICS_RELATED_DATASETS_QUERY = `
+  query StatisticsRelatedDatasets($contextCode: String!) {
+    related: insDatasets(filter: { contextCode: $contextCode }, limit: 7) {
+      pageInfo { totalCount }
+      nodes { code name_ro data_status }
     }
   }
 `

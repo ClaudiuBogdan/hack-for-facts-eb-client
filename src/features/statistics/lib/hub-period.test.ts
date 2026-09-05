@@ -158,3 +158,24 @@ describe('applyHubPeriod', () => {
     expect(applyHubPeriod(hub([tile()]), '2022').latestDataPeriod).toBe('2024')
   })
 })
+
+
+describe('native source outcomes across hub periods', () => {
+  it('preserves ambiguity and witnesses when the selected period changes', () => {
+    const ambiguous = tile({ tileState: 'ambiguous', value: null, latestPeriod: null,
+      sparkline: [], geographicWitnesses: [[[1, 931]], [[1, 932]]], truncated: false })
+    const [result] = applyHubPeriod(hub([ambiguous]), '2020').tiles
+    expect(result).toBe(ambiguous)
+  })
+  it('does not claim a missing historical period has no data when history is truncated', () => {
+    const [result] = applyHubPeriod(hub([tile({ truncated: true })]), '1999').tiles
+    expect(result.tileState).toBe('unavailable')
+    expect(result.value).toBeNull()
+    expect(result.truncated).toBe(true)
+  })
+  it('can still display an observed period in truncated history', () => {
+    const [result] = applyHubPeriod(hub([tile({ truncated: true })]), '2022').tiles
+    expect(result.tileState).toBe('available')
+    expect(result.value).toBe('320000')
+  })
+})

@@ -1,11 +1,106 @@
 {
   "data": {
-    "series": {
-      "pageInfo": {
-        "totalCount": 10,
-        "hasNextPage": false,
-        "hasPreviousPage": false
+    "descriptor": {
+      "id": "synthetic-POP107D",
+      "code": "POP107D",
+      "name_ro": "POPULATIA DUPA DOMICILIU la 1 ianuarie pe grupe de varsta si varste, sexe, judete si localitati",
+      "name_en": "LEGALLY RESIDENT POPULATION, by age group and ages, sex, counties and localities at January 1st.",
+      "definition_ro": "Populatia dupa domiciliu la data de 1 ianuarie a anului de referinta reprezinta numarul persoanelor cu cetatenie romana si domiciliu pe teritoriul Romaniei, delimitat dupa criterii administrativ-teritoriale.\r\nDomiciliul persoanei este adresa la care aceasta declara ca are locuinta principala, trecuta in actul de identitate (CI, BI), asa cum este luata in evidenta organelor administrative ale statului.\r\nIn stabilirea valorii acestui indicator nu se tine cont de resedinta obisnuita, de perioada si/sau motivul absentei de la domiciliu.",
+      "definition_en": "Legally resident population represents the number of persons with Romanian citizenship and legal residence on the territory of Romania, delimited by territorial-administrative criteria.\r\nThe person's legal residence is the address where he/she declares to have the main dwelling, printed as such on its identity card and registered by the administrative bodies of the State.\r\nTo set up the value of this indicator, the usual residence is not taken into account as well as the period and/or reason of absence from domicile.",
+      "periodicity": [
+        "ANNUAL"
+      ],
+      "year_range": [
+        1992,
+        2025
+      ],
+      "dimension_count": 6,
+      "has_uat_data": true,
+      "has_county_data": true,
+      "has_siruta": true,
+      "sync_status": "SYNCED",
+      "data_status": "AVAILABLE",
+      "last_sync_at": "2026-02-05T12:59:22.538Z",
+      "context_code": "1012",
+      "context_name_ro": "2. POPULATIA DUPA DOMICILIU",
+      "context_name_en": "2. LEGALLY RESIDENT POPULATION",
+      "context_path": "0.1.10.1012",
+      "metadata": {
+        "revision_id": "9007199254740993",
+        "transform_contract_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
       },
+      "dimensions": [
+        {
+          "index": 0,
+          "type": "CLASSIFICATION",
+          "label_ro": "Varste si grupe de varsta",
+          "label_en": "Age group and ages",
+          "is_hierarchical": false,
+          "option_count": 104,
+          "classification_type": {
+            "code": "D0",
+            "name_ro": "Grupe de vârstă",
+            "name_en": "Age groups",
+            "is_hierarchical": true
+          }
+        },
+        {
+          "index": 1,
+          "type": "CLASSIFICATION",
+          "label_ro": "Sexe",
+          "label_en": "Sex",
+          "is_hierarchical": false,
+          "option_count": 3,
+          "classification_type": {
+            "code": "D1",
+            "name_ro": "Sexe",
+            "name_en": "Sex",
+            "is_hierarchical": false
+          }
+        },
+        {
+          "index": 2,
+          "type": "TERRITORIAL",
+          "label_ro": "Judete",
+          "label_en": "Counties",
+          "is_hierarchical": false,
+          "option_count": 43,
+          "classification_type": {
+            "code": "D2"
+          }
+        },
+        {
+          "index": 3,
+          "type": "TERRITORIAL",
+          "label_ro": "Localitati ",
+          "label_en": "Localities",
+          "is_hierarchical": true,
+          "option_count": 3182,
+          "classification_type": {
+            "code": "D3"
+          }
+        },
+        {
+          "index": 4,
+          "type": "TEMPORAL",
+          "label_ro": "Ani",
+          "label_en": "Years",
+          "is_hierarchical": false,
+          "option_count": 34,
+          "classification_type": null
+        },
+        {
+          "index": 5,
+          "type": "UNIT_OF_MEASURE",
+          "label_ro": "UM: Numar persoane",
+          "label_en": "MU: Persons",
+          "is_hierarchical": false,
+          "option_count": 1,
+          "classification_type": null
+        }
+      ]
+    },
+    "insObservations": {
       "nodes": [
         {
           "value": "21739373",
@@ -24,26 +119,65 @@
             "name_ro": "TOTAL"
           },
           "unit": {
-            "code": "PERSONS",
+            "code": "0",
             "symbol": "pers.",
             "name_ro": "Numar persoane"
           },
           "classifications": [
             {
-              "type_code": "SEX",
-              "type_name_ro": "Sexe",
-              "code": "TOTAL",
-              "name_ro": "Total ",
+              "id": "synthetic-class-0-100",
+              "type_code": "D0",
+              "code": "100",
+              "name_ro": "Total",
               "sort_order": 1
             },
             {
-              "type_code": "AGE_GROUP",
-              "type_name_ro": "Grupe de vârstă",
-              "code": "TOTAL",
+              "id": "synthetic-class-1-105",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "id": "synthetic-class-2-931",
+              "type_code": "D2",
+              "code": "931",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "id": "synthetic-class-3-932",
+              "type_code": "D3",
+              "code": "932",
               "name_ro": "Total",
               "sort_order": 1
             }
-          ]
+          ],
+          "id": "synthetic-POP107D-RO-2025-total",
+          "dataset_code": "POP107D",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  931
+                ],
+                [
+                  3,
+                  932
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "qualified": false,
+              "resolvedTerritory": {
+                "code": "RO",
+                "level": "NATIONAL"
+              },
+              "contextTerritory": null,
+              "applicableRules": []
+            }
+          }
         },
         {
           "value": "21849217",
@@ -62,26 +196,65 @@
             "name_ro": "TOTAL"
           },
           "unit": {
-            "code": "PERSONS",
+            "code": "0",
             "symbol": "pers.",
             "name_ro": "Numar persoane"
           },
           "classifications": [
             {
-              "type_code": "SEX",
-              "type_name_ro": "Sexe",
-              "code": "TOTAL",
-              "name_ro": "Total ",
+              "id": "synthetic-class-0-100",
+              "type_code": "D0",
+              "code": "100",
+              "name_ro": "Total",
               "sort_order": 1
             },
             {
-              "type_code": "AGE_GROUP",
-              "type_name_ro": "Grupe de vârstă",
-              "code": "TOTAL",
+              "id": "synthetic-class-1-105",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "id": "synthetic-class-2-931",
+              "type_code": "D2",
+              "code": "931",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "id": "synthetic-class-3-932",
+              "type_code": "D3",
+              "code": "932",
               "name_ro": "Total",
               "sort_order": 1
             }
-          ]
+          ],
+          "id": "synthetic-POP107D-RO-2024-total",
+          "dataset_code": "POP107D",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  931
+                ],
+                [
+                  3,
+                  932
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "qualified": false,
+              "resolvedTerritory": {
+                "code": "RO",
+                "level": "NATIONAL"
+              },
+              "contextTerritory": null,
+              "applicableRules": []
+            }
+          }
         },
         {
           "value": "21953617",
@@ -100,26 +273,65 @@
             "name_ro": "TOTAL"
           },
           "unit": {
-            "code": "PERSONS",
+            "code": "0",
             "symbol": "pers.",
             "name_ro": "Numar persoane"
           },
           "classifications": [
             {
-              "type_code": "SEX",
-              "type_name_ro": "Sexe",
-              "code": "TOTAL",
-              "name_ro": "Total ",
+              "id": "synthetic-class-0-100",
+              "type_code": "D0",
+              "code": "100",
+              "name_ro": "Total",
               "sort_order": 1
             },
             {
-              "type_code": "AGE_GROUP",
-              "type_name_ro": "Grupe de vârstă",
-              "code": "TOTAL",
+              "id": "synthetic-class-1-105",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "id": "synthetic-class-2-931",
+              "type_code": "D2",
+              "code": "931",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "id": "synthetic-class-3-932",
+              "type_code": "D3",
+              "code": "932",
               "name_ro": "Total",
               "sort_order": 1
             }
-          ]
+          ],
+          "id": "synthetic-POP107D-RO-2023-total",
+          "dataset_code": "POP107D",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  931
+                ],
+                [
+                  3,
+                  932
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "qualified": false,
+              "resolvedTerritory": {
+                "code": "RO",
+                "level": "NATIONAL"
+              },
+              "contextTerritory": null,
+              "applicableRules": []
+            }
+          }
         },
         {
           "value": "22028486",
@@ -138,26 +350,65 @@
             "name_ro": "TOTAL"
           },
           "unit": {
-            "code": "PERSONS",
+            "code": "0",
             "symbol": "pers.",
             "name_ro": "Numar persoane"
           },
           "classifications": [
             {
-              "type_code": "SEX",
-              "type_name_ro": "Sexe",
-              "code": "TOTAL",
-              "name_ro": "Total ",
+              "id": "synthetic-class-0-100",
+              "type_code": "D0",
+              "code": "100",
+              "name_ro": "Total",
               "sort_order": 1
             },
             {
-              "type_code": "AGE_GROUP",
-              "type_name_ro": "Grupe de vârstă",
-              "code": "TOTAL",
+              "id": "synthetic-class-1-105",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "id": "synthetic-class-2-931",
+              "type_code": "D2",
+              "code": "931",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "id": "synthetic-class-3-932",
+              "type_code": "D3",
+              "code": "932",
               "name_ro": "Total",
               "sort_order": 1
             }
-          ]
+          ],
+          "id": "synthetic-POP107D-RO-2022-total",
+          "dataset_code": "POP107D",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  931
+                ],
+                [
+                  3,
+                  932
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "qualified": false,
+              "resolvedTerritory": {
+                "code": "RO",
+                "level": "NATIONAL"
+              },
+              "contextTerritory": null,
+              "applicableRules": []
+            }
+          }
         },
         {
           "value": "22138604",
@@ -176,26 +427,65 @@
             "name_ro": "TOTAL"
           },
           "unit": {
-            "code": "PERSONS",
+            "code": "0",
             "symbol": "pers.",
             "name_ro": "Numar persoane"
           },
           "classifications": [
             {
-              "type_code": "SEX",
-              "type_name_ro": "Sexe",
-              "code": "TOTAL",
-              "name_ro": "Total ",
+              "id": "synthetic-class-0-100",
+              "type_code": "D0",
+              "code": "100",
+              "name_ro": "Total",
               "sort_order": 1
             },
             {
-              "type_code": "AGE_GROUP",
-              "type_name_ro": "Grupe de vârstă",
-              "code": "TOTAL",
+              "id": "synthetic-class-1-105",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "id": "synthetic-class-2-931",
+              "type_code": "D2",
+              "code": "931",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "id": "synthetic-class-3-932",
+              "type_code": "D3",
+              "code": "932",
               "name_ro": "Total",
               "sort_order": 1
             }
-          ]
+          ],
+          "id": "synthetic-POP107D-RO-2021-total",
+          "dataset_code": "POP107D",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  931
+                ],
+                [
+                  3,
+                  932
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "qualified": false,
+              "resolvedTerritory": {
+                "code": "RO",
+                "level": "NATIONAL"
+              },
+              "contextTerritory": null,
+              "applicableRules": []
+            }
+          }
         },
         {
           "value": "22211708",
@@ -214,26 +504,65 @@
             "name_ro": "TOTAL"
           },
           "unit": {
-            "code": "PERSONS",
+            "code": "0",
             "symbol": "pers.",
             "name_ro": "Numar persoane"
           },
           "classifications": [
             {
-              "type_code": "SEX",
-              "type_name_ro": "Sexe",
-              "code": "TOTAL",
-              "name_ro": "Total ",
+              "id": "synthetic-class-0-100",
+              "type_code": "D0",
+              "code": "100",
+              "name_ro": "Total",
               "sort_order": 1
             },
             {
-              "type_code": "AGE_GROUP",
-              "type_name_ro": "Grupe de vârstă",
-              "code": "TOTAL",
+              "id": "synthetic-class-1-105",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "id": "synthetic-class-2-931",
+              "type_code": "D2",
+              "code": "931",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "id": "synthetic-class-3-932",
+              "type_code": "D3",
+              "code": "932",
               "name_ro": "Total",
               "sort_order": 1
             }
-          ]
+          ],
+          "id": "synthetic-POP107D-RO-2020-total",
+          "dataset_code": "POP107D",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  931
+                ],
+                [
+                  3,
+                  932
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "qualified": false,
+              "resolvedTerritory": {
+                "code": "RO",
+                "level": "NATIONAL"
+              },
+              "contextTerritory": null,
+              "applicableRules": []
+            }
+          }
         },
         {
           "value": "22215217",
@@ -252,26 +581,65 @@
             "name_ro": "TOTAL"
           },
           "unit": {
-            "code": "PERSONS",
+            "code": "0",
             "symbol": "pers.",
             "name_ro": "Numar persoane"
           },
           "classifications": [
             {
-              "type_code": "SEX",
-              "type_name_ro": "Sexe",
-              "code": "TOTAL",
-              "name_ro": "Total ",
+              "id": "synthetic-class-0-100",
+              "type_code": "D0",
+              "code": "100",
+              "name_ro": "Total",
               "sort_order": 1
             },
             {
-              "type_code": "AGE_GROUP",
-              "type_name_ro": "Grupe de vârstă",
-              "code": "TOTAL",
+              "id": "synthetic-class-1-105",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "id": "synthetic-class-2-931",
+              "type_code": "D2",
+              "code": "931",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "id": "synthetic-class-3-932",
+              "type_code": "D3",
+              "code": "932",
               "name_ro": "Total",
               "sort_order": 1
             }
-          ]
+          ],
+          "id": "synthetic-POP107D-RO-2019-total",
+          "dataset_code": "POP107D",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  931
+                ],
+                [
+                  3,
+                  932
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "qualified": false,
+              "resolvedTerritory": {
+                "code": "RO",
+                "level": "NATIONAL"
+              },
+              "contextTerritory": null,
+              "applicableRules": []
+            }
+          }
         },
         {
           "value": "22221895",
@@ -290,26 +658,65 @@
             "name_ro": "TOTAL"
           },
           "unit": {
-            "code": "PERSONS",
+            "code": "0",
             "symbol": "pers.",
             "name_ro": "Numar persoane"
           },
           "classifications": [
             {
-              "type_code": "SEX",
-              "type_name_ro": "Sexe",
-              "code": "TOTAL",
-              "name_ro": "Total ",
+              "id": "synthetic-class-0-100",
+              "type_code": "D0",
+              "code": "100",
+              "name_ro": "Total",
               "sort_order": 1
             },
             {
-              "type_code": "AGE_GROUP",
-              "type_name_ro": "Grupe de vârstă",
-              "code": "TOTAL",
+              "id": "synthetic-class-1-105",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "id": "synthetic-class-2-931",
+              "type_code": "D2",
+              "code": "931",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "id": "synthetic-class-3-932",
+              "type_code": "D3",
+              "code": "932",
               "name_ro": "Total",
               "sort_order": 1
             }
-          ]
+          ],
+          "id": "synthetic-POP107D-RO-2018-total",
+          "dataset_code": "POP107D",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  931
+                ],
+                [
+                  3,
+                  932
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "qualified": false,
+              "resolvedTerritory": {
+                "code": "RO",
+                "level": "NATIONAL"
+              },
+              "contextTerritory": null,
+              "applicableRules": []
+            }
+          }
         },
         {
           "value": "22236154",
@@ -328,26 +735,65 @@
             "name_ro": "TOTAL"
           },
           "unit": {
-            "code": "PERSONS",
+            "code": "0",
             "symbol": "pers.",
             "name_ro": "Numar persoane"
           },
           "classifications": [
             {
-              "type_code": "SEX",
-              "type_name_ro": "Sexe",
-              "code": "TOTAL",
-              "name_ro": "Total ",
+              "id": "synthetic-class-0-100",
+              "type_code": "D0",
+              "code": "100",
+              "name_ro": "Total",
               "sort_order": 1
             },
             {
-              "type_code": "AGE_GROUP",
-              "type_name_ro": "Grupe de vârstă",
-              "code": "TOTAL",
+              "id": "synthetic-class-1-105",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "id": "synthetic-class-2-931",
+              "type_code": "D2",
+              "code": "931",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "id": "synthetic-class-3-932",
+              "type_code": "D3",
+              "code": "932",
               "name_ro": "Total",
               "sort_order": 1
             }
-          ]
+          ],
+          "id": "synthetic-POP107D-RO-2017-total",
+          "dataset_code": "POP107D",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  931
+                ],
+                [
+                  3,
+                  932
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "qualified": false,
+              "resolvedTerritory": {
+                "code": "RO",
+                "level": "NATIONAL"
+              },
+              "contextTerritory": null,
+              "applicableRules": []
+            }
+          }
         },
         {
           "value": "22273309",
@@ -366,70 +812,72 @@
             "name_ro": "TOTAL"
           },
           "unit": {
-            "code": "PERSONS",
+            "code": "0",
             "symbol": "pers.",
             "name_ro": "Numar persoane"
           },
           "classifications": [
             {
-              "type_code": "SEX",
-              "type_name_ro": "Sexe",
-              "code": "TOTAL",
-              "name_ro": "Total ",
+              "id": "synthetic-class-0-100",
+              "type_code": "D0",
+              "code": "100",
+              "name_ro": "Total",
               "sort_order": 1
             },
             {
-              "type_code": "AGE_GROUP",
-              "type_name_ro": "Grupe de vârstă",
-              "code": "TOTAL",
+              "id": "synthetic-class-1-105",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "id": "synthetic-class-2-931",
+              "type_code": "D2",
+              "code": "931",
+              "name_ro": "Total",
+              "sort_order": 1
+            },
+            {
+              "id": "synthetic-class-3-932",
+              "type_code": "D3",
+              "code": "932",
               "name_ro": "Total",
               "sort_order": 1
             }
-          ]
+          ],
+          "id": "synthetic-POP107D-RO-2016-total",
+          "dataset_code": "POP107D",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  931
+                ],
+                [
+                  3,
+                  932
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "qualified": false,
+              "resolvedTerritory": {
+                "code": "RO",
+                "level": "NATIONAL"
+              },
+              "contextTerritory": null,
+              "applicableRules": []
+            }
+          }
         }
-      ]
-    },
-    "related": {
+      ],
       "pageInfo": {
-        "totalCount": 7
-      },
-      "nodes": [
-        {
-          "code": "POP107A",
-          "name_ro": "POPULATIA DUPA DOMICILIU la 1 ianuarie pe grupe de varsta si varste, sexe, medii de rezidenta, macroregiuni, regiuni de dezvoltare si judete",
-          "data_status": "AVAILABLE"
-        },
-        {
-          "code": "POP107B",
-          "name_ro": "POPULATIA DUPA DOMICILIU in varsta de munca la 1 ianuarie pe medii de rezidenta si sexe, macroregiuni, regiuni de dezvoltare si judete",
-          "data_status": "AVAILABLE"
-        },
-        {
-          "code": "POP107D",
-          "name_ro": "POPULATIA DUPA DOMICILIU la 1 ianuarie pe grupe de varsta si varste, sexe, judete si localitati",
-          "data_status": "AVAILABLE"
-        },
-        {
-          "code": "POP108B",
-          "name_ro": "POPULATIA DUPA DOMICILIU la 1 iulie pe grupe de varsta si varste, sexe, medii de rezidenta, macroregiuni, regiuni de dezvoltare si judete",
-          "data_status": "AVAILABLE"
-        },
-        {
-          "code": "POP108C",
-          "name_ro": "POPULATIA DUPA DOMICILIU la 1 iulie pentru grupa de varsta oficiala corespunzatoare invatamantului prescolar pe judete si localitati",
-          "data_status": "AVAILABLE"
-        },
-        {
-          "code": "POP108D",
-          "name_ro": "POPULATIA DUPA DOMICILIU la 1 iulie pe grupe de varsta si varste, sexe, judete si localitati",
-          "data_status": "AVAILABLE"
-        },
-        {
-          "code": "POP110A",
-          "name_ro": "Varsta medie a populatiei dupa domiciliu la 1 iulie pe sexe, medii de rezidenta, macroregiuni, regiuni de dezvoltare si judete",
-          "data_status": "AVAILABLE"
-        }
-      ]
+        "totalCount": 10,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      }
     }
   }
 }

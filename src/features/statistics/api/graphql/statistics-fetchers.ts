@@ -1,11 +1,16 @@
-import { graphqlRequest, type GraphQLRequestOptions } from '@/lib/api/graphql'
+import { inspectSourceSeries } from '@/lib/ins/source-series'
+import { InsSourcePageError } from '@/lib/ins/source-pages'
+import { fetchInsSourceVector } from './ins-source-fetcher'
+import { graphqlQuery } from '@/lib/graphql/graphql-client'
+import { insSourceDescriptorSchema } from '@/lib/ins/source-contract'
+import { type GraphQLRequestOptions } from '@/lib/api/graphql'
 import { SERIES_MAX_ROWS } from '../../lib/dataset-selection'
 import type {
   InsDatasetFilterInput,
   InsEntitySelectorInput,
   InsObservationFilterInput,
   InsTerritoryFilterInput,
-  InsUatDatasetGroup,
+  NativeInsUatDatasetGroup,
 } from '@/schemas/ins'
 import type {
   StatisticsDatasetPage,
@@ -21,7 +26,7 @@ import type {
 import {
   INS_DATASETS_EXPLORER_QUERY,
   INS_TERRITORIES_QUERY,
-  STATISTICS_DATASET_SERIES_QUERY,
+  STATISTICS_RELATED_DATASETS_QUERY,
   STATISTICS_DATASET_TIER0_QUERY,
   STATISTICS_TERRITORY_HUB_CONTEXT_QUERY,
   STATISTICS_TERRITORY_HUB_QUERY,
@@ -35,14 +40,13 @@ import {
   mapDecadeRows,
   mapExampleRows,
   mapLatestValue,
-  mapObservationNode,
   mapRelatedDatasets,
   mapTerritorySearchRow,
 } from './statistics-mappers'
 import {
   insDatasetsExplorerResponseRawSchema,
   insTerritoriesResponseRawSchema,
-  statisticsDatasetSeriesResponseRawSchema,
+  statisticsRelatedDatasetsRawSchema,
   statisticsDatasetTier0ResponseRawSchema,
   statisticsTerritoryHubContextResponseRawSchema,
   statisticsTerritoryHubResponseRawSchema,
@@ -64,14 +68,14 @@ export async function searchInsTerritories(params: {
   offset?: number
   signal?: AbortSignal
 }): Promise<StatisticsTerritorySearchResult> {
-  const response = await graphqlRequest<unknown>(
+  const response = await graphqlQuery<unknown>(
     INS_TERRITORIES_QUERY,
     {
       filter: params.filter,
       limit: params.limit ?? 20,
       offset: params.offset ?? 0,
     },
-    insRequestOptions(params.signal),
+    { auth: 'none', signal: params.signal },
   )
 
   const { insTerritories } = insTerritoriesResponseRawSchema.parse(response)
@@ -89,14 +93,14 @@ export async function fetchInsDatasetPage(params: {
   offset: number
   signal?: AbortSignal
 }): Promise<StatisticsDatasetPage> {
-  const response = await graphqlRequest<unknown>(
+  const response = await graphqlQuery<unknown>(
     INS_DATASETS_EXPLORER_QUERY,
     {
       filter: params.filter,
       limit: params.limit,
       offset: params.offset,
     },
-    insRequestOptions(params.signal),
+    { auth: 'none', signal: params.signal },
   )
 
   const { insDatasets } = insDatasetsExplorerResponseRawSchema.parse(response)
@@ -126,7 +130,7 @@ export async function fetchStatisticsLandingData(params: {
   exampleTerritories: readonly string[]
   signal?: AbortSignal
 }): Promise<StatisticsLandingData> {
-  const response = await graphqlRequest<unknown>(
+  const response = await graphqlQuery<unknown>(
     STATISTICS_LANDING_DATA_QUERY,
     {
       nationalCodes: params.nationalCodes,
@@ -135,12 +139,13 @@ export async function fetchStatisticsLandingData(params: {
       exampleCode: params.exampleCode,
       exampleTerritories: params.exampleTerritories,
     },
-    insRequestOptions(params.signal),
+    { auth: 'none', signal: params.signal },
   )
 
   const parsed = statisticsLandingDataResponseRawSchema.parse(response)
 
   return {
+    nativeContract: 'native-v1',
     nationalValues: parsed.latest.map(mapLatestValue),
     decadeRows: mapDecadeRows(parsed.decade.nodes),
     exampleRows: mapExampleRows(parsed.example.nodes),
@@ -151,10 +156,10 @@ export async function fetchStatisticsLandingData(params: {
 export async function fetchStatisticsLandingCatalog(params: {
   signal?: AbortSignal
 } = {}): Promise<StatisticsLandingCatalog> {
-  const response = await graphqlRequest<unknown>(
+  const response = await graphqlQuery<unknown>(
     STATISTICS_LANDING_CATALOG_QUERY,
     undefined,
-    insRequestOptions(params.signal),
+    { auth: 'none', signal: params.signal },
   )
 
   const parsed = statisticsLandingCatalogResponseRawSchema.parse(response)
@@ -175,10 +180,10 @@ export async function fetchStatisticsUatSnapshot(params: {
   datasetCodes: readonly string[]
   signal?: AbortSignal
 }): Promise<StatisticsUatSnapshot> {
-  const response = await graphqlRequest<unknown>(
+  const response = await graphqlQuery<unknown>(
     STATISTICS_UAT_SNAPSHOT_QUERY,
     { siruta: params.siruta, codes: params.datasetCodes },
-    insRequestOptions(params.signal),
+    { auth: 'none', signal: params.signal },
   )
 
   const parsed = statisticsUatSnapshotResponseRawSchema.parse(response)
@@ -196,10 +201,10 @@ export async function fetchStatisticsDatasetTier0(params: {
   entity: InsEntitySelectorInput
   signal?: AbortSignal
 }): Promise<StatisticsDatasetTier0> {
-  const response = await graphqlRequest<unknown>(
+  const response = await graphqlQuery<unknown>(
     STATISTICS_DATASET_TIER0_QUERY,
     { code: params.code, codes: [params.code], entity: params.entity },
-    insRequestOptions(params.signal),
+    { auth: 'none', signal: params.signal },
   )
 
   const parsed = statisticsDatasetTier0ResponseRawSchema.parse(response)
@@ -208,6 +213,7 @@ export async function fetchStatisticsDatasetTier0(params: {
   )
 
   return {
+    nativeContract: 'native-v1',
     dataset: parsed.dataset ? mapDatasetDetails(parsed.dataset) : null,
     latest: latestNode ? mapLatestValue(latestNode) : null,
   }
@@ -221,28 +227,29 @@ export async function fetchStatisticsDatasetSeries(params: {
   limit?: number
   signal?: AbortSignal
 }): Promise<StatisticsDatasetSeries> {
-  const response = await graphqlRequest<unknown>(
-    STATISTICS_DATASET_SERIES_QUERY,
-    {
-      code: params.code,
+  const [vector, relatedResponse] = await Promise.all([
+    fetchInsSourceVector({
+      datasetCode: params.code,
       filter: params.filter,
-      limit: params.limit ?? SERIES_MAX_ROWS,
-      contextCode: params.contextCode,
-      withRelated: params.contextCode !== null,
-    },
-    insRequestOptions(params.signal),
-  )
-
-  const parsed = statisticsDatasetSeriesResponseRawSchema.parse(response)
-
+      pageSize: params.limit ?? SERIES_MAX_ROWS,
+      signal: params.signal,
+    }),
+    params.contextCode === null ? Promise.resolve(null) : graphqlQuery<unknown>(
+      STATISTICS_RELATED_DATASETS_QUERY,
+      { contextCode: params.contextCode },
+      { auth: 'none', signal: params.signal },
+    ),
+  ])
+  if (inspectSourceSeries(vector).status === 'INVALID') throw new InsSourcePageError('INVALID_PAGE')
+  const related = relatedResponse === null ? null
+    : statisticsRelatedDatasetsRawSchema.parse(relatedResponse).related
   return {
-    observations: parsed.series.nodes.map((node) => ({
-      ...mapObservationNode(node),
-      dataset_code: params.code,
-    })),
-    totalCount: parsed.series.pageInfo.totalCount,
-    related: mapRelatedDatasets(parsed.related ?? null, params.code),
-    relatedTotalCount: parsed.related?.pageInfo.totalCount ?? null,
+    nativeContract: 'native-v1',
+    sourceDescriptor: vector.descriptor,
+    observations: vector.observations,
+    totalCount: vector.observations.length,
+    related: mapRelatedDatasets(related ?? null, params.code),
+    relatedTotalCount: related?.pageInfo.totalCount ?? null,
   }
 }
 
@@ -251,13 +258,13 @@ export async function fetchStatisticsTerritoryHubData(params: {
   siruta: string
   signal?: AbortSignal
 }): Promise<{
-  readonly groups: readonly InsUatDatasetGroup[]
+  readonly groups: readonly NativeInsUatDatasetGroup[]
   readonly identity: StatisticsTerritorySearchRow | null
 }> {
-  const response = await graphqlRequest<unknown>(
+  const response = await graphqlQuery<unknown>(
     STATISTICS_TERRITORY_HUB_QUERY,
     { sirutaCode: params.siruta },
-    insRequestOptions(params.signal),
+    { auth: 'none', signal: params.signal },
   )
 
   const parsed = statisticsTerritoryHubResponseRawSchema.parse(response)
@@ -265,12 +272,13 @@ export async function fetchStatisticsTerritoryHubData(params: {
 
   return {
     groups: parsed.dashboard.map((group) => ({
-      dataset: mapDatasetDetails({ ...group.dataset, dimensions: [] }),
-      latestPeriod: group.latestPeriod ?? null,
-      observations: group.observations.map((node) => ({
-        ...mapObservationNode(node),
-        dataset_code: group.dataset.code,
-      })),
+      dataset: mapDatasetDetails(group.dataset),
+      descriptor: insSourceDescriptorSchema.parse(group.dataset),
+      latestPeriod: group.latestPeriod,
+      observations: group.observations,
+      status: group.status,
+      geographicWitnesses: group.geographicWitnesses,
+      truncated: group.truncated,
     })),
     identity: identityNode ? mapTerritorySearchRow(identityNode) : null,
   }
@@ -287,14 +295,14 @@ export async function fetchStatisticsTerritoryHubContext(params: {
   readonly county: readonly StatisticsLatestValue[]
   readonly national: readonly StatisticsLatestValue[]
 }> {
-  const response = await graphqlRequest<unknown>(
+  const response = await graphqlQuery<unknown>(
     STATISTICS_TERRITORY_HUB_CONTEXT_QUERY,
     {
       countyCode: params.countyCode,
       benchmarkCodes: params.benchmarkCodes,
       withCounty: params.countyCode !== null,
     },
-    insRequestOptions(params.signal),
+    { auth: 'none', signal: params.signal },
   )
 
   const parsed = statisticsTerritoryHubContextResponseRawSchema.parse(response)

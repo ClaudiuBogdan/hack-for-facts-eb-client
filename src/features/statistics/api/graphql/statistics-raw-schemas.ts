@@ -1,5 +1,13 @@
 import { z } from 'zod'
-import { insSourceObservationSchema, insSourcePeriodicitySchema } from '@/lib/ins/source-contract'
+import {
+  insSourceObservationSchema,
+  insSourcePeriodicitySchema,
+  insSourceGeoPairsSchema,
+} from '@/lib/ins/source-contract'
+import {
+  validateInsLatestOutcome,
+  validateInsDashboardOutcome,
+} from '@/lib/ins/source-outcomes'
 
 /**
  * Raw-response schemas for the statistics-owned INS operations.
@@ -98,7 +106,7 @@ export type InsDatasetNodeRaw = z.infer<typeof insDatasetNodeRawSchema>
 export const insMatchStrategyRawSchema = z.enum([
   'PREFERRED_CLASSIFICATION',
   'TOTAL_FALLBACK',
-  'REPRESENTATIVE_FALLBACK',
+  'AMBIGUOUS_GEOGRAPHY',
   'NO_DATA',
 ])
 
@@ -106,74 +114,6 @@ const insTimePeriodRefRawSchema = z.object({
   iso_period: z.string(),
   year: z.number(),
   periodicity: insPeriodicityRawSchema.nullish(),
-})
-
-export const insLatestValueNodeRawSchema = z.object({
-  latestPeriod: z.string().nullish(),
-  matchStrategy: insMatchStrategyRawSchema,
-  hasData: z.boolean(),
-  dataset: z.object({
-    code: z.string(),
-    name_ro: z.string().nullish(),
-    name_en: z.string().nullish(),
-    periodicity: z.array(insPeriodicityRawSchema).nullish(),
-  }),
-  observation: z
-    .object({
-      value: z.string().nullish(),
-      value_status: z.string().nullish(),
-      unit: z
-        .object({
-          code: z.string().nullish(),
-          symbol: z.string().nullish(),
-          name_ro: z.string().nullish(),
-        })
-        .nullish(),
-      time_period: insTimePeriodRefRawSchema,
-      classifications: z
-        .array(
-          z.object({
-            type_code: z.string().nullish(),
-            code: z.string().nullish(),
-            name_ro: z.string().nullish(),
-          }),
-        )
-        .nullish(),
-    })
-    .nullish(),
-})
-
-const landingDecadeNodeRawSchema = z.object({
-  value: z.string().nullish(),
-  value_status: z.string().nullish(),
-  territory: z.object({ code: z.string(), name_ro: z.string().nullish() }).nullish(),
-  time_period: insTimePeriodRefRawSchema,
-  unit: z.object({ symbol: z.string().nullish(), name_ro: z.string().nullish() }).nullish(),
-})
-
-const landingExampleNodeRawSchema = z.object({
-  value: z.string().nullish(),
-  territory: z
-    .object({
-      code: z.string(),
-      siruta_code: z.string().nullish(),
-      level: insTerritoryLevelRawSchema.nullish(),
-      name_ro: z.string().nullish(),
-    })
-    .nullish(),
-  time_period: insTimePeriodRefRawSchema,
-  unit: z.object({ symbol: z.string().nullish() }).nullish(),
-})
-
-export const statisticsLandingDataResponseRawSchema = z.object({
-  latest: z.array(insLatestValueNodeRawSchema),
-  decade: z.object({
-    pageInfo: z.object({ totalCount: z.number() }),
-    nodes: z.array(landingDecadeNodeRawSchema),
-  }),
-  example: z.object({
-    nodes: z.array(landingExampleNodeRawSchema),
-  }),
 })
 
 const totalCountProbeRawSchema = z.object({
@@ -192,20 +132,6 @@ export const statisticsLandingCatalogResponseRawSchema = z.object({
   t7: totalCountProbeRawSchema,
   t8: totalCountProbeRawSchema,
 })
-
-export const statisticsUatSnapshotResponseRawSchema = z.object({
-  latest: z.array(insLatestValueNodeRawSchema),
-  territory: z.object({
-    nodes: z.array(insTerritoryNodeRawSchema),
-  }),
-})
-
-export type InsLatestValueNodeRaw = z.infer<typeof insLatestValueNodeRawSchema>
-export type LandingDecadeNodeRaw = z.infer<typeof landingDecadeNodeRawSchema>
-export type LandingExampleNodeRaw = z.infer<typeof landingExampleNodeRawSchema>
-export type StatisticsLandingCatalogResponseRaw = z.infer<
-  typeof statisticsLandingCatalogResponseRawSchema
->
 
 // ---------------------------------------------------------------------------
 // Dataset detail (tier 0 + series)
@@ -233,15 +159,6 @@ const insDatasetDimensionRawSchema = z.object({
       is_hierarchical: z.boolean().nullish(),
     })
     .nullish(),
-})
-
-export const statisticsDatasetTier0ResponseRawSchema = z.object({
-  dataset: insDatasetNodeRawSchema
-    .extend({
-      dimensions: z.array(insDatasetDimensionRawSchema).nullish(),
-    })
-    .nullish(),
-  latest: z.array(insLatestValueNodeRawSchema),
 })
 
 /** Full observation node for the series/table (the validated detail lane). */
@@ -284,26 +201,113 @@ export const insObservationNodeRawSchema = z.object({
 })
 
 /** Native source vectors require identity fields before any derived output. */
-export const insNativeObservationRawSchema = insObservationNodeRawSchema.extend({
-  id: insSourceObservationSchema.shape.id,
-  dataset_code: insSourceObservationSchema.shape.dataset_code,
-  value: z.string().nullable(),
-  unit: z.object({
-    code: insSourceObservationSchema.shape.unit.shape.code,
-    symbol: z.string().nullish(),
-    name_ro: z.string().nullish(),
+export const insNativeObservationRawSchema = insObservationNodeRawSchema.extend(
+  {
+    id: insSourceObservationSchema.shape.id,
+    dataset_code: insSourceObservationSchema.shape.dataset_code,
+    value: z.string().nullable(),
+    unit: z.object({
+      code: insSourceObservationSchema.shape.unit.shape.code,
+      symbol: z.string().nullish(),
+      name_ro: z.string().nullish(),
+    }),
+    classifications: z
+      .array(
+        z.object({
+          id: z.string(),
+          type_code:
+            insSourceObservationSchema.shape.classifications.element.shape
+              .type_code,
+          type_name_ro: z.string().nullish(),
+          type_name_en: z.string().nullish(),
+          code: insSourceObservationSchema.shape.classifications.element.shape
+            .code,
+          name_ro: z.string().nullish(),
+          name_en: z.string().nullish(),
+          sort_order: z.number().nullish(),
+        }),
+      )
+      .max(7),
+    dimensions: insSourceObservationSchema.shape.dimensions,
+  },
+)
+
+export const insDetailedDatasetRawSchema = insDatasetNodeRawSchema.extend({
+  dimensions: z.array(insDatasetDimensionRawSchema).nullish(),
+})
+
+export const insLatestValueNodeRawSchema = z
+  .object({
+    latestPeriod: z.string().nullable(),
+    matchStrategy: insMatchStrategyRawSchema,
+    hasData: z.boolean(),
+    geographicWitnesses: z.array(insSourceGeoPairsSchema),
+    dataset: insDetailedDatasetRawSchema,
+    observation: insNativeObservationRawSchema.nullable(),
+  })
+  .superRefine((outcome, context) => {
+    const error = validateInsLatestOutcome(outcome)
+    if (error) context.addIssue({ code: 'custom', message: error })
+  })
+
+const landingDecadeNodeRawSchema = z.object({
+  value: z.string().nullish(),
+  value_status: z.string().nullish(),
+  territory: z
+    .object({ code: z.string(), name_ro: z.string().nullish() })
+    .nullish(),
+  time_period: insTimePeriodRefRawSchema,
+  unit: z
+    .object({ symbol: z.string().nullish(), name_ro: z.string().nullish() })
+    .nullish(),
+})
+
+const landingExampleNodeRawSchema = z.object({
+  value: z.string().nullish(),
+  territory: z
+    .object({
+      code: z.string(),
+      siruta_code: z.string().nullish(),
+      level: insTerritoryLevelRawSchema.nullish(),
+      name_ro: z.string().nullish(),
+    })
+    .nullish(),
+  time_period: insTimePeriodRefRawSchema,
+  unit: z.object({ symbol: z.string().nullish() }).nullish(),
+})
+
+export const statisticsLandingDataResponseRawSchema = z.object({
+  latest: z.array(insLatestValueNodeRawSchema),
+  decade: z.object({
+    pageInfo: z.object({ totalCount: z.number() }),
+    nodes: z.array(landingDecadeNodeRawSchema),
   }),
-  classifications: z.array(z.object({
-    id: z.string(),
-    type_code: insSourceObservationSchema.shape.classifications.element.shape.type_code,
-    type_name_ro: z.string().nullish(),
-    type_name_en: z.string().nullish(),
-    code: insSourceObservationSchema.shape.classifications.element.shape.code,
-    name_ro: z.string().nullish(),
-    name_en: z.string().nullish(),
-    sort_order: z.number().nullish(),
-  })).max(7),
-  dimensions: insSourceObservationSchema.shape.dimensions,
+  example: z.object({
+    nodes: z.array(landingExampleNodeRawSchema),
+  }),
+})
+
+export const statisticsUatSnapshotResponseRawSchema = z.object({
+  latest: z.array(insLatestValueNodeRawSchema),
+  territory: z.object({
+    nodes: z.array(insTerritoryNodeRawSchema),
+  }),
+})
+
+export type InsLatestValueNodeRaw = z.infer<typeof insLatestValueNodeRawSchema>
+export type LandingDecadeNodeRaw = z.infer<typeof landingDecadeNodeRawSchema>
+export type LandingExampleNodeRaw = z.infer<typeof landingExampleNodeRawSchema>
+export type StatisticsLandingCatalogResponseRaw = z.infer<
+  typeof statisticsLandingCatalogResponseRawSchema
+>
+
+export const statisticsDatasetTier0ResponseRawSchema = z.object({
+  dataset: insDatasetNodeRawSchema
+    .extend({
+      dimensions: z.array(insDatasetDimensionRawSchema).nullish(),
+    })
+    .nullish(),
+  latest: z.array(insLatestValueNodeRawSchema),
 })
 
 export const insSourceObservationsResponseRawSchema = z.object({
@@ -314,11 +318,7 @@ export const insSourceObservationsResponseRawSchema = z.object({
   }),
 })
 
-export const statisticsDatasetSeriesResponseRawSchema = z.object({
-  series: z.object({
-    pageInfo: insPageInfoRawSchema,
-    nodes: z.array(insObservationNodeRawSchema),
-  }),
+export const statisticsRelatedDatasetsRawSchema = z.object({
   related: z
     .object({
       pageInfo: z.object({ totalCount: z.number() }),
@@ -337,25 +337,31 @@ export type InsObservationNodeRaw = z.infer<typeof insObservationNodeRawSchema>
 export type StatisticsDatasetTier0ResponseRaw = z.infer<
   typeof statisticsDatasetTier0ResponseRawSchema
 >
-export type StatisticsDatasetSeriesResponseRaw = z.infer<
-  typeof statisticsDatasetSeriesResponseRawSchema
+export type StatisticsRelatedDatasetsRaw = z.infer<
+  typeof statisticsRelatedDatasetsRawSchema
 >
 
 // ---------------------------------------------------------------------------
 // Territory hub
 // ---------------------------------------------------------------------------
 
+export const insDashboardGroupRawSchema = z
+  .object({
+    latestPeriod: z.string().nullable(),
+    dataset: insDetailedDatasetRawSchema,
+    observations: z.array(insNativeObservationRawSchema),
+    status: z.enum(['SERIES', 'AMBIGUOUS_GEOGRAPHY']),
+    geographicWitnesses: z.array(insSourceGeoPairsSchema),
+    truncated: z.boolean(),
+  })
+  .superRefine((outcome, context) => {
+    const error = validateInsDashboardOutcome(outcome)
+    if (error) context.addIssue({ code: 'custom', message: error })
+  })
+
 export const statisticsTerritoryHubResponseRawSchema = z.object({
-  dashboard: z.array(
-    z.object({
-      latestPeriod: z.string().nullish(),
-      dataset: insDatasetNodeRawSchema,
-      observations: z.array(insObservationNodeRawSchema),
-    }),
-  ),
-  identity: z.object({
-    nodes: z.array(insTerritoryNodeRawSchema),
-  }),
+  dashboard: z.array(insDashboardGroupRawSchema),
+  identity: z.object({ nodes: z.array(insTerritoryNodeRawSchema) }),
 })
 
 export const statisticsTerritoryHubContextResponseRawSchema = z.object({

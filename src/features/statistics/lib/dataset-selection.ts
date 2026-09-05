@@ -392,6 +392,7 @@ export function detailScopeKey(
   // frecventa and din/pana window CLIENT-side; pagina pages client-side —
   // none of them belongs in the fetch identity.
   return JSON.stringify({
+    contract: 'native-v1',
     teritoriu: search.teritoriu ?? null,
     clasificari: [...(search.clasificari ?? [])].sort(),
     unitate: search.unitate ?? null,

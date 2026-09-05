@@ -144,3 +144,32 @@ client contract is enabled.
 Saved charts inspect complete source vectors including null cells. The native API uses hasValue=false for null-only, so the chart request omits this filter. Saved hasValue and aggregation options remain readable/editable compatibility fields; they cannot hide missing coverage or merge source alternatives. Missing or unsupported periods, qualified geography and missing values suppress automatic charts while source-row inspection remains available. Explicit sparse date selections require exactly those dates; intervals and unscoped observed spans require complete cadence coverage.
 
 INS-dependent calculations propagate missing coverage and undefined arithmetic through nested expressions and descendants. Numeric constants remain scalars, including nested constant expressions. Rendering omits unavailable values, including relative comparisons with an unavailable reference, rather than replacing them with zero. Transport failures remain retryable with a visible Retry INS data action and stale cache state, preserving healthy siblings. This slice does not enable native INS or certify the remaining detail/hub/entity consumers.
+
+## Latest and dashboard outcome boundary
+
+Native latest and dashboard reads carry the dataset descriptor, original source
+cells and geographic witnesses. AVAILABLE outcomes require a certified descriptor,
+including NO_DATA. CATALOG_ONLY metadata may remain unpublished only for a latest
+NO_DATA outcome. Malformed contract data fails the request; expected ambiguity or
+NO_DATA retains healthy siblings. A present null-valued cell is still an
+observation, with its source status preserved.
+
+Dashboard history has an explicit server truncation flag. A missing period in
+truncated history is unavailable, not proven absent. Period tokens can collide
+across cadences: both the headline and period filter require exactly one matching
+source cell. Mixed or unsupported cadences retain their cells for inspection but
+do not produce an automatic sparkline. An absent or ambiguous selected period
+cannot become a data-through freshness claim.
+
+Detail reads use the shared complete-vector collector. Invalid source coordinates
+fail before local filtering. Ambiguous or qualified vectors remain inspectable but
+do not supply automatic charts or headline values. Native landing and detail SSR
+payloads carry a contract stamp; unstamped initialData is not seeded into the new
+query caches. Public native reads forward cancellation and omit authentication.
+
+This prerequisite does not enable INS. Remaining release gates include anonymous
+native dataset/dimension bootstrap reads and versioned picker keys, strict explicit
+source selections, all geographic dimension controls, full source table/CSV
+provenance, comparisons/decade/embedded consumers, producer publication and real
+workload acceptance. No legacy document may be sent to the native endpoint during
+rollout until that consumer has been migrated.

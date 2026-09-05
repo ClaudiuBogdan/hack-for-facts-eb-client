@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import type { InsSourceDescriptor, InsSourceGeoPairs } from '@/lib/ins/source-contract'
+import type { NativeInsObservation } from './ins'
 import type {
   InsDataset,
   InsDatasetDetails,
@@ -336,7 +338,12 @@ export interface StatisticsIndicatorTile {
   readonly datasetNameEn: string | null
   readonly periodicity: readonly string[]
   readonly dataStatus: StatisticsDatasetDataStatus
-  readonly tileState: 'available' | 'catalog-only' | 'no-data'
+  readonly tileState: 'available' | 'catalog-only' | 'no-data' | 'ambiguous' | 'unavailable' | 'period-ambiguous'
+  /** Explicit server history bound; absent only in mock fixtures. */
+  readonly truncated?: boolean
+  readonly geographicWitnesses?: readonly InsSourceGeoPairs[]
+  readonly sourceObservations?: readonly NativeInsObservation[]
+  readonly sparklineUnavailable?: boolean
   readonly value: string | null
   readonly valueStatus: string | null
   readonly unitSymbol: string | null
@@ -383,6 +390,7 @@ export interface StatisticsTerritoryHubResult {
 
 /** How the server picked a "latest value" observation. */
 export type StatisticsLatestMatchStrategy =
+  | 'AMBIGUOUS_GEOGRAPHY'
   | 'PREFERRED_CLASSIFICATION'
   | 'TOTAL_FALLBACK'
   | 'REPRESENTATIVE_FALLBACK'
@@ -400,6 +408,12 @@ export interface StatisticsResolvedClassification {
 }
 
 export interface StatisticsLatestValue {
+  /** Original certified outcome retained by the live adapter; mock data has no publication. */
+  readonly source?: {
+    readonly descriptor: InsSourceDescriptor | null
+    readonly observation: NativeInsObservation | null
+    readonly geographicWitnesses: readonly InsSourceGeoPairs[]
+  }
   readonly datasetCode: string
   readonly datasetNameRo: string | null
   readonly datasetNameEn: string | null
@@ -440,6 +454,7 @@ export interface StatisticsExampleObservation {
 
 /** Landing POST 1 payload: every observation-bearing block. */
 export interface StatisticsLandingData {
+  readonly nativeContract?: 'native-v1'
   readonly nationalValues: readonly StatisticsLatestValue[]
   readonly decadeRows: readonly StatisticsDecadeObservation[]
   readonly exampleRows: readonly StatisticsExampleObservation[]
@@ -460,6 +475,7 @@ export interface StatisticsLandingCatalog {
 
 /** Detail POST A payload: the dataset + the resolved tier-0 value. */
 export interface StatisticsDatasetTier0 {
+  readonly nativeContract?: 'native-v1'
   readonly dataset: InsDatasetDetails | null
   readonly latest: StatisticsLatestValue | null
 }
@@ -472,6 +488,9 @@ export interface StatisticsRelatedDataset {
 
 /** Detail POST B payload: the resolved series + the related-datasets probe. */
 export interface StatisticsDatasetSeries {
+  readonly nativeContract?: 'native-v1'
+  /** Present on complete native vectors; absent only in mock data. */
+  readonly sourceDescriptor?: InsSourceDescriptor
   readonly observations: readonly InsObservation[]
   readonly totalCount: number
   readonly related: readonly StatisticsRelatedDataset[]

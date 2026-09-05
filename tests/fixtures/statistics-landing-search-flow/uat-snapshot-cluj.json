@@ -11,37 +11,95 @@
           "name_en": "LEGALLY RESIDENT POPULATION, by age group and ages, sex, counties and localities at January 1st.",
           "periodicity": [
             "ANNUAL"
+          ],
+          "id": "synthetic-POP107D",
+          "data_status": "AVAILABLE",
+          "dimension_count": 4,
+          "metadata": {
+            "revision_id": "9007199254740993",
+            "transform_contract_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          },
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "CLASSIFICATION",
+              "classification_type": {
+                "code": "D0"
+              }
+            },
+            {
+              "index": 1,
+              "type": "TERRITORIAL",
+              "classification_type": {
+                "code": "D1"
+              }
+            },
+            {
+              "index": 2,
+              "type": "TEMPORAL",
+              "classification_type": null
+            },
+            {
+              "index": 3,
+              "type": "UNIT_OF_MEASURE",
+              "classification_type": null
+            }
           ]
         },
         "observation": {
           "value": "325353",
           "value_status": null,
           "unit": {
-            "code": "PERSONS",
+            "code": "0",
             "symbol": "pers.",
             "name_ro": "Numar persoane"
           },
           "time_period": {
             "iso_period": "2025",
-            "year": 2025
+            "year": 2025,
+            "periodicity": "ANNUAL"
           },
           "classifications": [
             {
-              "type_code": "SEX",
-              "code": "TOTAL",
-              "name_ro": "Total "
+              "id": "synthetic-class-0",
+              "type_code": "D0",
+              "code": "105",
+              "name_ro": "Total"
             },
             {
-              "type_code": "AGE_GROUP",
-              "code": "TOTAL",
-              "name_ro": "Total"
+              "id": "synthetic-class-1-933",
+              "type_code": "D1",
+              "code": "933",
+              "name_ro": "Cluj-Napoca"
             }
-          ]
-        }
+          ],
+          "id": "synthetic-POP107D-54975-2025-total",
+          "dataset_code": "POP107D",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  1,
+                  933
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "qualified": false,
+              "resolvedTerritory": {
+                "code": "54975",
+                "level": "LAU"
+              },
+              "contextTerritory": null,
+              "applicableRules": []
+            }
+          }
+        },
+        "geographicWitnesses": []
       },
       {
         "latestPeriod": "2024",
-        "matchStrategy": "TOTAL_FALLBACK",
+        "matchStrategy": "PREFERRED_CLASSIFICATION",
         "hasData": true,
         "dataset": {
           "code": "FOM104D",
@@ -49,22 +107,91 @@
           "name_en": "Average number of employees by counties and localities",
           "periodicity": [
             "ANNUAL"
+          ],
+          "id": "synthetic-FOM104D",
+          "data_status": "AVAILABLE",
+          "dimension_count": 4,
+          "metadata": {
+            "revision_id": "9007199254740993",
+            "transform_contract_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          },
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "CLASSIFICATION",
+              "classification_type": {
+                "code": "D0"
+              }
+            },
+            {
+              "index": 1,
+              "type": "TERRITORIAL",
+              "classification_type": {
+                "code": "D1"
+              }
+            },
+            {
+              "index": 2,
+              "type": "TEMPORAL",
+              "classification_type": null
+            },
+            {
+              "index": 3,
+              "type": "UNIT_OF_MEASURE",
+              "classification_type": null
+            }
           ]
         },
         "observation": {
           "value": "195025",
           "value_status": null,
           "unit": {
-            "code": "PERSONS",
+            "code": "0",
             "symbol": "pers.",
             "name_ro": "Numar persoane"
           },
           "time_period": {
             "iso_period": "2024",
-            "year": 2024
+            "year": 2024,
+            "periodicity": "ANNUAL"
           },
-          "classifications": []
-        }
+          "classifications": [
+            {
+              "id": "synthetic-class-0",
+              "type_code": "D0",
+              "code": "105",
+              "name_ro": "Total"
+            },
+            {
+              "id": "synthetic-class-1-933",
+              "type_code": "D1",
+              "code": "933",
+              "name_ro": "Cluj-Napoca"
+            }
+          ],
+          "id": "synthetic-FOM104D-54975-2024-total",
+          "dataset_code": "FOM104D",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  1,
+                  933
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "qualified": false,
+              "resolvedTerritory": {
+                "code": "54975",
+                "level": "LAU"
+              },
+              "contextTerritory": null,
+              "applicableRules": []
+            }
+          }
+        },
+        "geographicWitnesses": []
       },
       {
         "latestPeriod": "2025-11",
@@ -77,28 +204,91 @@
           "periodicity": [
             "ANNUAL",
             "MONTHLY"
+          ],
+          "id": "synthetic-SOM101F",
+          "data_status": "AVAILABLE",
+          "dimension_count": 4,
+          "metadata": {
+            "revision_id": "9007199254740993",
+            "transform_contract_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          },
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "CLASSIFICATION",
+              "classification_type": {
+                "code": "D0"
+              }
+            },
+            {
+              "index": 1,
+              "type": "TERRITORIAL",
+              "classification_type": {
+                "code": "D1"
+              }
+            },
+            {
+              "index": 2,
+              "type": "TEMPORAL",
+              "classification_type": null
+            },
+            {
+              "index": 3,
+              "type": "UNIT_OF_MEASURE",
+              "classification_type": null
+            }
           ]
         },
         "observation": {
           "value": "0.3",
           "value_status": null,
           "unit": {
-            "code": "PERCENT",
+            "code": "0",
             "symbol": "%",
             "name_ro": "Procente"
           },
           "time_period": {
             "iso_period": "2025-11",
-            "year": 2025
+            "year": 2025,
+            "periodicity": "MONTHLY"
           },
           "classifications": [
             {
-              "type_code": "SEX",
-              "code": "TOTAL",
-              "name_ro": "Total "
+              "id": "synthetic-class-0",
+              "type_code": "D0",
+              "code": "105",
+              "name_ro": "Total"
+            },
+            {
+              "id": "synthetic-class-1-933",
+              "type_code": "D1",
+              "code": "933",
+              "name_ro": "Cluj-Napoca"
             }
-          ]
-        }
+          ],
+          "id": "synthetic-SOM101F-54975-2025-11-total",
+          "dataset_code": "SOM101F",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  1,
+                  933
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "qualified": false,
+              "resolvedTerritory": {
+                "code": "54975",
+                "level": "LAU"
+              },
+              "contextTerritory": null,
+              "applicableRules": []
+            }
+          }
+        },
+        "geographicWitnesses": []
       },
       {
         "latestPeriod": "2023",
@@ -110,28 +300,91 @@
           "name_en": "Dwellings stock at the end of the year by type of ownership, counties and localities",
           "periodicity": [
             "ANNUAL"
+          ],
+          "id": "synthetic-LOC101B",
+          "data_status": "AVAILABLE",
+          "dimension_count": 4,
+          "metadata": {
+            "revision_id": "9007199254740993",
+            "transform_contract_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          },
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "CLASSIFICATION",
+              "classification_type": {
+                "code": "D0"
+              }
+            },
+            {
+              "index": 1,
+              "type": "TERRITORIAL",
+              "classification_type": {
+                "code": "D1"
+              }
+            },
+            {
+              "index": 2,
+              "type": "TEMPORAL",
+              "classification_type": null
+            },
+            {
+              "index": 3,
+              "type": "UNIT_OF_MEASURE",
+              "classification_type": null
+            }
           ]
         },
         "observation": {
           "value": "161358",
           "value_status": null,
           "unit": {
-            "code": "NUMBER",
+            "code": "0",
             "symbol": "nr.",
             "name_ro": "Numar"
           },
           "time_period": {
             "iso_period": "2023",
-            "year": 2023
+            "year": 2023,
+            "periodicity": "ANNUAL"
           },
           "classifications": [
             {
-              "type_code": "OWNERSHIP",
-              "code": "TOTAL",
+              "id": "synthetic-class-0",
+              "type_code": "D0",
+              "code": "105",
               "name_ro": "Total"
+            },
+            {
+              "id": "synthetic-class-1-933",
+              "type_code": "D1",
+              "code": "933",
+              "name_ro": "Cluj-Napoca"
             }
-          ]
-        }
+          ],
+          "id": "synthetic-LOC101B-54975-2023-total",
+          "dataset_code": "LOC101B",
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  1,
+                  933
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "qualified": false,
+              "resolvedTerritory": {
+                "code": "54975",
+                "level": "LAU"
+              },
+              "contextTerritory": null,
+              "applicableRules": []
+            }
+          }
+        },
+        "geographicWitnesses": []
       }
     ],
     "territory": {

@@ -14,12 +14,13 @@ type Props = {
  * absence renders as words, never as 0.
  */
 export function DetailTier0Hero({ latest, matchChip }: Props) {
-  const formatted = formatObservationValue(latest.value)
+  const ambiguous = latest.matchStrategy === 'AMBIGUOUS_GEOGRAPHY'
+  const formatted = latest.hasData && !ambiguous ? formatObservationValue(latest.value) : null
 
   if (formatted === null) {
     return (
       <p className="text-sm text-muted-foreground">
-        <Trans>Fără o valoare recentă pentru selecția curentă.</Trans>
+        {ambiguous ? <Trans>Mai multe serii INS corespund selecției. Alege o serie din sursă.</Trans> : <Trans>Fără o valoare recentă pentru selecția curentă.</Trans>}
       </p>
     )
   }

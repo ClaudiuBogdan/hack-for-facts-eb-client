@@ -21,7 +21,7 @@ const DEFAULT_STALE_TIME = 1000 * 60 * 15
 const LONG_STALE_TIME = 1000 * 60 * 60 * 24
 
 /**
- * Query keys are readable tuples (`['statistics', ...]` prefix) so targeted
+ * Query keys are readable tuples (`['statistics', 'native-v1', ...]` prefix) so targeted
  * invalidation works. Each landing aggregate has its own key: one failing
  * POST degrades one band, never the page.
  */
@@ -29,17 +29,17 @@ export const statisticsLandingDataQueryOptions = (
   initialData?: StatisticsLandingData,
 ) =>
   queryOptions<StatisticsLandingData>({
-    queryKey: ['statistics', 'landing', 'observations'] as const,
+    queryKey: ['statistics', 'native-v1', 'landing', 'observations'] as const,
     queryFn: ({ signal }) => fetchLandingData(signal),
     staleTime: LONG_STALE_TIME,
-    ...(initialData ? { initialData } : {}),
+    ...(initialData?.nativeContract === 'native-v1' ? { initialData } : {}),
   })
 
 export const statisticsLandingCatalogQueryOptions = (
   initialData?: StatisticsLandingCatalog,
 ) =>
   queryOptions<StatisticsLandingCatalog>({
-    queryKey: ['statistics', 'landing', 'catalog'] as const,
+    queryKey: ['statistics', 'native-v1', 'landing', 'catalog'] as const,
     queryFn: ({ signal }) => fetchLandingCatalog(signal),
     staleTime: LONG_STALE_TIME,
     ...(initialData ? { initialData } : {}),
@@ -47,7 +47,7 @@ export const statisticsLandingCatalogQueryOptions = (
 
 export const statisticsUatSnapshotQueryOptions = (siruta: string) =>
   queryOptions<StatisticsUatSnapshot>({
-    queryKey: ['statistics', 'landing', 'uat', siruta] as const,
+    queryKey: ['statistics', 'native-v1', 'landing', 'uat', siruta] as const,
     queryFn: ({ signal }) => fetchUatSnapshot(siruta, signal),
     staleTime: LONG_STALE_TIME,
   })
@@ -85,8 +85,8 @@ export const statisticsTerritoryHubQueryOptions = (params: {
   const normalizedSiruta = params.siruta.trim()
 
   return queryOptions({
-    queryKey: ['statistics', 'territory-hub', normalizedSiruta] as const,
-    queryFn: () => fetchStatisticsTerritoryHub(normalizedSiruta),
+    queryKey: ['statistics', 'native-v1', 'territory-hub', normalizedSiruta] as const,
+    queryFn: ({ signal }) => fetchStatisticsTerritoryHub(normalizedSiruta, signal),
     enabled: (params.enabled ?? true) && normalizedSiruta.length > 0,
     staleTime: DEFAULT_STALE_TIME,
   })
