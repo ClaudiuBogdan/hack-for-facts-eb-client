@@ -8,7 +8,7 @@ export type EntityAnalyticsDataPoint = {
   population?: number | null
   amount: number
   total_amount: number
-  per_capita_amount: number
+  per_capita_amount: number | null
 }
 
 export type EntityAnalyticsConnection = {

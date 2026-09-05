@@ -3,7 +3,8 @@ import { createLazyFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { EntityAnalyticsFilter as EntityAnalyticsFilterPanel } from '@/components/filters/EntityAnalyticsFilter'
 import { useEntityAnalyticsFilter } from '@/hooks/useEntityAnalyticsFilter'
-import { fetchEntityAnalytics, fetchAggregatedLineItems } from '@/lib/api/entity-analytics'
+import { fetchEntityAnalytics, fetchCompleteAggregatedLineItems, entityRankingFilter } from '@/lib/api/entity-analytics'
+import { BudgetAnalyticsError } from '@/components/entity-analytics/BudgetAnalyticsError'
 import { EntityAnalyticsTable } from '@/components/entity-analytics/EntityAnalyticsTable'
 import type { EntityAnalyticsDataPoint } from '@/schemas/entity-analytics'
 import { Button } from '@/components/ui/button'
@@ -89,10 +90,11 @@ function EntityAnalyticsPage() {
   }, [filter.county_codes, filter.entity_types, filter.is_uat, filter.uat_ids])
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['entity-analytics', filterHash, sortBy, sortOrder, page, pageSize],
-    queryFn: () =>
+    queryKey: ['native-entity-analytics', filterHash, sortBy, sortOrder, page, pageSize],
+    queryFn: ({ signal }) =>
       fetchEntityAnalytics({
-        filter: normalizeFilterForSort(effectiveFilter, sortBy),
+        signal,
+        filter: entityRankingFilter(normalizeFilterForSort(effectiveFilter, sortBy)),
         sort: sortBy
           ? { by: mapColumnIdToSortBy(sortBy), order: (normalizeOrder(sortOrder) as 'asc' | 'desc') }
           : undefined,
@@ -103,8 +105,8 @@ function EntityAnalyticsPage() {
   })
 
   const { data: aggregatedData, isLoading: isLoadingAggregated, error: errorAggregated } = useQuery({
-    queryKey: ['aggregatedLineItems', filterHash],
-    queryFn: () => fetchAggregatedLineItems({ filter: effectiveFilter, limit: 150000 }),
+    queryKey: ['native-aggregatedLineItems', filterHash],
+    queryFn: ({ signal }) => fetchCompleteAggregatedLineItems(effectiveFilter, signal),
     staleTime: 1000 * 60 * 5, // 5 minutes
     enabled: view === 'line-items',
   });
@@ -137,13 +139,19 @@ function EntityAnalyticsPage() {
       const all: EntityAnalyticsDataPoint[] = []
       for (let fetched = 0; fetched < total; fetched += pageSizeBatch) {
         const batch = await fetchEntityAnalytics({
-          filter: normalizeFilterForSort(effectiveFilter, sortBy),
+          filter: entityRankingFilter(normalizeFilterForSort(effectiveFilter, sortBy)),
           sort: sortBy ? { by: mapColumnIdToSortBy(sortBy), order: (normalizeOrder(sortOrder) as 'asc' | 'desc') } : undefined,
           limit: pageSizeBatch,
           offset: fetched,
         })
+        if (batch.pageInfo.totalCount !== total || batch.nodes.length === 0) {
+          throw new Error('The results changed during export. Refresh and try again.')
+        }
         all.push(...batch.nodes)
         if (!batch.pageInfo?.hasNextPage) break
+      }
+      if (all.length !== total || new Set(all.map((row) => row.entity_cui)).size !== total) {
+        throw new Error('The export is incomplete. Refresh and try again.')
       }
       const header = [
         'entity_cui',
@@ -163,7 +171,7 @@ function EntityAnalyticsPage() {
         d.county_name ?? '',
         String(d.population ?? ''),
         String(d.total_amount),
-        String(d.per_capita_amount),
+        d.per_capita_amount == null ? '' : String(d.per_capita_amount),
       ])
       const csv = [header, ...rows]
         .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','))
@@ -207,7 +215,7 @@ function EntityAnalyticsPage() {
           <div className="p-6 flex items-center justify-center h-64">
             <div className="text-center">
               <h3 className="font-medium text-red-500"><Trans>Error loading analytics</Trans></h3>
-              <p className="text-muted-foreground mt-2">{error instanceof Error ? error.message : t`Unknown error`}</p>
+              <BudgetAnalyticsError error={error instanceof Error ? error : new Error(t`Unknown error`)} />
             </div>
           </div>
         ) : view === 'table' ? (

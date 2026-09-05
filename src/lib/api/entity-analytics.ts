@@ -1,4 +1,4 @@
-import { graphqlRequest } from './graphql'
+import { graphqlQuery } from "@/lib/graphql/graphql-client";
 import type {
   EntityAnalyticsConnection,
   SortOrder,
@@ -8,8 +8,18 @@ import { AnalyticsFilterType } from "@/schemas/charts";
 import { prepareFilterForServer } from "@/lib/filterUtils";
 
 const ENTITY_ANALYTICS_QUERY = /* GraphQL */ `
-  query EntityAnalytics($filter: AnalyticsFilterInput!, $sort: SortOrder, $limit: Int, $offset: Int) {
-    entityAnalytics(filter: $filter, sort: $sort, limit: $limit, offset: $offset) {
+  query EntityAnalytics(
+    $filter: AnalyticsFilterInput!
+    $sort: SortOrder
+    $limit: Int
+    $offset: Int
+  ) {
+    entityAnalytics(
+      filter: $filter
+      sort: $sort
+      limit: $limit
+      offset: $offset
+    ) {
       nodes {
         entity_cui
         entity_name
@@ -29,7 +39,7 @@ const ENTITY_ANALYTICS_QUERY = /* GraphQL */ `
       }
     }
   }
-`
+`;
 
 const AGGREGATED_LINE_ITEMS_QUERY = /* GraphQL */ `
   query AggregatedLineItems(
@@ -56,12 +66,15 @@ const AGGREGATED_LINE_ITEMS_QUERY = /* GraphQL */ `
 `;
 
 export async function fetchEntityAnalytics(params: {
-  filter: AnalyticsFilterType
-  sort?: SortOrder
-  limit?: number
-  offset?: number
+  filter: AnalyticsFilterType;
+  sort?: SortOrder;
+  limit?: number;
+  offset?: number;
+  signal?: AbortSignal;
 }): Promise<EntityAnalyticsConnection> {
-  const data = await graphqlRequest<{ entityAnalytics: EntityAnalyticsConnection }>(
+  const data = await graphqlQuery<{
+    entityAnalytics: EntityAnalyticsConnection;
+  }>(
     ENTITY_ANALYTICS_QUERY,
     {
       filter: prepareFilterForServer(params.filter),
@@ -69,23 +82,60 @@ export async function fetchEntityAnalytics(params: {
       limit: params.limit,
       offset: params.offset,
     },
-  )
-  return data.entityAnalytics
+    { signal: params.signal, auth: "none" },
+  );
+  return data.entityAnalytics;
 }
 
 export async function fetchAggregatedLineItems(params: {
   filter: AnalyticsFilterType;
   limit?: number;
   offset?: number;
+  signal?: AbortSignal;
 }): Promise<AggregatedLineItemConnection> {
-  const data = await graphqlRequest<{
+  const data = await graphqlQuery<{
     aggregatedLineItems: AggregatedLineItemConnection;
-  }>(AGGREGATED_LINE_ITEMS_QUERY, {
-    filter: prepareFilterForServer(params.filter),
-    limit: params.limit,
-    offset: params.offset,
-  });
+  }>(
+    AGGREGATED_LINE_ITEMS_QUERY,
+    {
+      filter: prepareFilterForServer(params.filter),
+      limit: params.limit,
+      offset: params.offset,
+    },
+    { signal: params.signal, auth: "none" },
+  );
   return data.aggregatedLineItems;
 }
 
+/** Treemap consumers require a complete vector, never a silently truncated page. */
+export async function fetchCompleteAggregatedLineItems(
+  filter: AnalyticsFilterType,
+  signal?: AbortSignal,
+): Promise<AggregatedLineItemConnection> {
+  const page = await fetchAggregatedLineItems({
+    filter,
+    limit: 100000,
+    signal,
+  });
+  if (
+    page.pageInfo.hasNextPage ||
+    page.nodes.length !== page.pageInfo.totalCount
+  ) {
+    throw new Error(
+      "The classification result is incomplete. Narrow the filters before displaying the budget distribution.",
+    );
+  }
+  return page;
+}
 
+/** App-owned ranking defaults; an explicit executive filter is never overwritten. */
+export function entityRankingFilter(
+  filter: AnalyticsFilterType,
+): AnalyticsFilterType {
+  const perCapita =
+    filter.normalization === "per_capita" ||
+    filter.normalization === "per_capita_euro";
+  return perCapita && filter.is_territorial_executive === undefined
+    ? { ...filter, is_territorial_executive: true }
+    : filter;
+}

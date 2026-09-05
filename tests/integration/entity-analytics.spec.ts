@@ -360,3 +360,53 @@ test.describe('Entity Analytics - Interactions', () => {
     }
   })
 })
+
+// Native wire regressions: availability follows the metric, and incomplete
+// vectors must not become plausible-looking charts.
+test.describe('Native grouped analytics availability', () => {
+  test('renders annual ratios without inventing missing per-capita values', async ({ page, mockApi }) => {
+    await mockApi.mockGraphQL('EntityAnalytics', 'entity-analytics')
+    await page.route('**/api/v1/graphql', async (route) => {
+      const body = route.request().postDataJSON()
+      if (!body?.query?.includes('query EntityAnalytics')) return route.fallback()
+      await route.fulfill({ json: { data: { entityAnalytics: {
+        nodes: [
+          { entity_cui: '111', entity_name: 'Annual ratio', amount: 500, total_amount: 500, population: null, per_capita_amount: 123 },
+          { entity_cui: '222', entity_name: 'Unavailable ratio', amount: 500, total_amount: 500, population: 100, per_capita_amount: null },
+        ],
+        pageInfo: { totalCount: 2, hasNextPage: false, hasPreviousPage: false },
+      } } } })
+    })
+    await page.goto('/entity-analytics?view=table')
+    const annual = page.getByRole('row').filter({ hasText: 'Annual ratio' })
+    const unavailable = page.getByRole('row').filter({ hasText: 'Unavailable ratio' })
+    await expect(annual).toBeVisible()
+    await expect(annual).toContainText(/123.*capita/)
+    await expect(unavailable).toBeVisible()
+    await expect(unavailable).not.toContainText('/ capita')
+  })
+
+  test('explains missing normalization coverage', async ({ page, mockApi }) => {
+    await mockApi.mockGraphQL('EntityAnalytics', 'entity-analytics')
+    await page.route('**/api/v1/graphql', async (route) => {
+      if (!route.request().postDataJSON()?.query?.includes('query EntityAnalytics')) return route.fallback()
+      await route.fulfill({ json: { errors: [{ message: 'CPI is unavailable for 2025', extensions: { code: 'SERVICE_UNAVAILABLE' } }] } })
+    })
+    await page.goto('/entity-analytics?view=table')
+    await expect(page.getByRole('alert').filter({ hasText: 'CPI is unavailable for 2025' })).toBeVisible({ timeout: 20000 })
+    await expect(page.getByRole('alert').filter({ hasText: /nominal RON|nominale în RON/ })).toBeVisible()
+  })
+
+  test('refuses a truncated classification vector', async ({ page, mockApi }) => {
+    await mockApi.mockGraphQL('AggregatedLineItems', 'aggregated-line-items')
+    await page.route('**/api/v1/graphql', async (route) => {
+      if (!route.request().postDataJSON()?.query?.includes('query AggregatedLineItems')) return route.fallback()
+      await route.fulfill({ json: { data: { aggregatedLineItems: {
+        nodes: [{ fn_c: '65', fn_n: 'Education', ec_c: '10', ec_n: 'Personnel', amount: 500, count: 1 }],
+        pageInfo: { totalCount: 2, hasNextPage: true, hasPreviousPage: false },
+      } } } })
+    })
+    await page.goto('/entity-analytics?view=line-items')
+    await expect(page.getByRole('alert').filter({ hasText: 'classification result is incomplete' })).toBeVisible({ timeout: 20000 })
+  })
+})

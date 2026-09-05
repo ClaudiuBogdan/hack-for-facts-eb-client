@@ -14,7 +14,7 @@ const fetchAggregatedLineItemsMock = vi.fn()
 const fetchEntityAnalyticsMock = vi.fn()
 
 vi.mock('@/lib/api/entity-analytics', () => ({
-  fetchAggregatedLineItems: (...args: unknown[]) => fetchAggregatedLineItemsMock(...args),
+  fetchCompleteAggregatedLineItems: (...args: unknown[]) => fetchAggregatedLineItemsMock(...args),
 }))
 
 vi.mock('@/lib/api/entity-ranking-redesign', () => ({
@@ -63,7 +63,6 @@ describe('useChallengeLessonNationalAggregatedLineItems', () => {
     })
 
     expect(fetchAggregatedLineItemsMock).toHaveBeenCalledWith({
-      filter: {
         account_category: 'ch',
         report_period: CHALLENGE_LESSON_REPORT_PERIOD,
         report_type: toReportTypeValue('PRINCIPAL_AGGREGATED'),
@@ -74,9 +73,7 @@ describe('useChallengeLessonNationalAggregatedLineItems', () => {
         exclude: {
           economic_prefixes: ['51.01', '51.02'],
         },
-      },
-      limit: 150000,
-    })
+    }, expect.any(AbortSignal))
   })
 
   it('requests 2025 subordinate rankings with lesson defaults', async () => {

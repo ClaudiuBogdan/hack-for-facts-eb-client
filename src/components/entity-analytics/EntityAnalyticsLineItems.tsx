@@ -1,3 +1,4 @@
+import { BudgetAnalyticsError } from './BudgetAnalyticsError'
 import React, { useMemo, useState } from "react";
 import type { AnalyticsFilterType } from "@/schemas/charts";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -181,7 +182,7 @@ export const EntityAnalyticsLineItems: React.FC<
         {isLoading ? (
           <EntityAnalyticsLineItemsSkeleton itemCount={10} />
         ) : error ? (
-          <p><Trans>Error loading data</Trans></p>
+          <div><p><Trans>Error loading data</Trans></p><BudgetAnalyticsError error={error} /></div>
         ) : (
           <GroupedItemsDisplay
             groups={groupsToDisplay}

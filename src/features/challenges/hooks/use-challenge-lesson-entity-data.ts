@@ -5,7 +5,7 @@ import type { AnalyticsSeries, Currency } from '@/schemas/charts'
 import type { EntityDetailsData, ExecutionLineItem } from '@/lib/api/entities'
 import { resolveAppliedNormalization, type NormalizationOptions } from '@/lib/normalization'
 import { DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES } from '@/lib/analytics-defaults'
-import { fetchAggregatedLineItems } from '@/lib/api/entity-analytics'
+import { fetchCompleteAggregatedLineItems } from '@/lib/api/entity-analytics'
 import {
   buildChallengeEntityAnalysisReportPeriod,
   buildChallengeEntityAnalysisTrendPeriod,
@@ -227,8 +227,8 @@ export function useChallengeLessonNationalAggregatedLineItems(params?: {
   ])
 
   return useQuery<AggregatedLineItemConnection>({
-    queryKey: ['challenge-lesson-national-aggregated-line-items', filter],
-    queryFn: () => fetchAggregatedLineItems({ filter, limit: 150000 }),
+    queryKey: ['native-challenge-lesson-national-aggregated-line-items', filter],
+    queryFn: ({ signal }) => fetchCompleteAggregatedLineItems(filter, signal),
     staleTime: 1000 * 60 * 5,
     enabled: params?.enabled ?? true,
   })

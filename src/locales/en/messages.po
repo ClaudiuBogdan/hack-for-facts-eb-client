@@ -23162,3 +23162,7 @@ msgstr "ziua curentă nu este încă confirmată după încheierea ședinței"
 #: src/features/parliament/components/parliament-stenogram-controls.tsx:197
 msgid "Ziua: {day}"
 msgstr "Ziua: {day}"
+
+#: src/components/entity-analytics/BudgetAnalyticsError.tsx:13
+msgid "Select another period or switch to nominal RON. Per-capita comparisons require known population coverage."
+msgstr "Select another period or switch to nominal RON. Per-capita comparisons require known population coverage."

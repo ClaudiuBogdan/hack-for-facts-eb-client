@@ -1,3 +1,4 @@
+import { BudgetAnalyticsError } from '@/components/entity-analytics/BudgetAnalyticsError'
 import { createLazyFileRoute, useNavigate, useSearch } from '@tanstack/react-router'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { z } from 'zod'
@@ -10,7 +11,7 @@ import {
   createDefaultExecutionYearReportPeriod,
 } from '@/schemas/charts'
 import { convertDaysToMs, generateHash } from '@/lib/utils'
-import { fetchAggregatedLineItems } from '@/lib/api/entity-analytics'
+import { fetchCompleteAggregatedLineItems } from '@/lib/api/entity-analytics'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
@@ -480,12 +481,8 @@ function BudgetExplorerPage() {
 
   const sectorQueries = useQueries({
     queries: sectionDefinitions.map((section) => ({
-      queryKey: ['budget-explorer', 'sector-aggregated-line-items', section.id, filterHash, fundingSourceIdsByKeyHash],
-      queryFn: () =>
-        fetchAggregatedLineItems({
-          filter: section.baseFilter,
-          limit: 150000,
-        }),
+      queryKey: ['budget-explorer', 'native-sector-aggregated-line-items', section.id, filterHash, fundingSourceIdsByKeyHash],
+      queryFn: ({ signal }) => fetchCompleteAggregatedLineItems(section.baseFilter, signal),
       staleTime: convertDaysToMs(3),
       gcTime: convertDaysToMs(3),
       refetchOnMount: false,
@@ -559,6 +556,8 @@ function BudgetExplorerPage() {
     }
   }, [effectiveFilter, search.transferFilter, sectorSections])
 
+  const analyticsError = sectorQueries.find((query) => query.error instanceof Error)?.error
+
   const nextAccountCategory = effectiveFilter.account_category === 'ch' ? 'vn' : 'ch'
   const quickSwitchLabel = nextAccountCategory === 'vn' ? 'Vezi venituri' : 'Vezi cheltuieli'
 
@@ -573,6 +572,7 @@ function BudgetExplorerPage() {
       />
       <div className="w-full max-w-[1200px] mx-auto space-y-6 lg:space-y-8">
         <BudgetExplorerHeader state={search} onChange={handleFilterChange} />
+        {analyticsError instanceof Error && <BudgetAnalyticsError error={analyticsError} />}
 
         <div className="space-y-2">
           <h1 className="text-2xl sm:text-3xl font-bold text-balance">

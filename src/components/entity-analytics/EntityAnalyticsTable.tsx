@@ -112,7 +112,7 @@ export function EntityAnalyticsTable({ data, isLoading, sortBy, sortOrder, onSor
         if (isPercentGdp) {
           return <span className="block text-right text-xs text-muted-foreground">-</span>
         }
-        if (row.original.population == null) {
+        if (row.original.per_capita_amount == null) {
           return <span className="block text-right text-xs text-muted-foreground">-</span>
         }
 

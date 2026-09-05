@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
-import { fetchEntityAnalytics } from '@/lib/api/entity-analytics'
+import { fetchEntityAnalytics, entityRankingFilter } from '@/lib/api/entity-analytics'
 import { defaultEntityAnalyticsFilter } from '@/hooks/useEntityAnalyticsFilter'
 import { AnalyticsFilterSchema } from '@/schemas/charts'
 import { convertDaysToMs, generateHash } from '@/lib/utils'
@@ -86,10 +86,11 @@ export const Route = createFileRoute('/entity-analytics')({
     // Prime the list query so the page renders instantly
     if (parsed.view === 'table') {
       queryClient.prefetchQuery({
-        queryKey: ['entity-analytics', filterHash, parsed.sortBy, parsed.sortOrder, parsed.page, parsed.pageSize],
-        queryFn: () =>
+        queryKey: ['native-entity-analytics', filterHash, parsed.sortBy, parsed.sortOrder, parsed.page, parsed.pageSize],
+        queryFn: ({ signal }) =>
           fetchEntityAnalytics({
-            filter: effectiveFilter,
+            signal,
+            filter: entityRankingFilter(effectiveFilter),
             sort,
             limit: parsed.pageSize,
             offset,
