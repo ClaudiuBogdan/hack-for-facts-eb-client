@@ -1,5 +1,5 @@
 import { useMultiSelectInfinite } from '../base-filter/hooks/useMultiSelectInfinite';
-import { graphqlRequest } from '@/lib/api/graphql';
+import { graphqlQuery } from '@/lib/graphql/graphql-client';
 import { useState } from 'react';
 import { SearchInput } from '../base-filter/SearchInput';
 import { BaseListProps, PageData } from '../base-filter/interfaces';
@@ -33,8 +33,8 @@ export function FunctionalClassificationList({
         isFetchingNextPage,
     } = useMultiSelectInfinite<FunctionalClassificationOption>({
         itemSize: 48,
-        queryKey: ['functional-classifications', searchFilter],
-        queryFn: async ({ pageParam = 0 }): Promise<PageData<FunctionalClassificationOption>> => {
+        queryKey: ['native-functional-classifications', searchFilter],
+        queryFn: async ({ pageParam = 0, signal }): Promise<PageData<FunctionalClassificationOption>> => {
             const query = `
               query FunctionalClassifications($search: String!, $limit: Int!, $offset: Int!) {
                 functionalClassifications(filter: { search: $search }, limit: $limit, offset: $offset) {
@@ -42,15 +42,15 @@ export function FunctionalClassificationList({
                         functional_code
                         functional_name
                     }
-                  pageInfo { totalCount hasNextPage }
+                  pageInfo { totalCount hasNextPage hasPreviousPage }
                 }
               }
             `;
             const limit = pageSize;
             const variables = { search: searchFilter, limit, offset: pageParam };
-            const response = await graphqlRequest<{
+            const response = await graphqlQuery<{
                 functionalClassifications: { nodes: FunctionalClassificationOption[]; pageInfo: { totalCount: number; hasNextPage: boolean; hasPreviousPage: boolean } };
-            }>(query, variables);
+            }>(query, variables, { signal, auth: 'none' });
             return {
                 nodes: response.functionalClassifications.nodes,
                 pageInfo: response.functionalClassifications.pageInfo,

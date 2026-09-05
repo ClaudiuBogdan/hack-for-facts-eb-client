@@ -1,5 +1,5 @@
 import { useMultiSelectInfinite } from '../base-filter/hooks/useMultiSelectInfinite';
-import { graphqlRequest } from '@/lib/api/graphql';
+import { graphqlQuery } from '@/lib/graphql/graphql-client';
 import { useState } from 'react';
 import { SearchInput } from '../base-filter/SearchInput';
 import { BaseListProps, PageData } from '../base-filter/interfaces';
@@ -33,8 +33,8 @@ export function EconomicClassificationList({
         isFetchingNextPage,
     } = useMultiSelectInfinite<EconomicClassificationOption>({
         itemSize: 48,
-        queryKey: ['economic-classification', searchFilter],
-        queryFn: async ({ pageParam = 0 }): Promise<PageData<EconomicClassificationOption>> => {
+        queryKey: ['native-economic-classification', searchFilter],
+        queryFn: async ({ pageParam = 0, signal }): Promise<PageData<EconomicClassificationOption>> => {
             const query = `
               query EconomicClassifications($search: String!, $limit: Int!, $offset: Int!) {
                 economicClassifications(filter: { search: $search }, limit: $limit, offset: $offset) {
@@ -42,15 +42,15 @@ export function EconomicClassificationList({
                         economic_code
                         economic_name
                     }
-                  pageInfo { totalCount hasNextPage }
+                  pageInfo { totalCount hasNextPage hasPreviousPage }
                 }
               }
             `;
             const limit = pageSize;
             const variables = { search: searchFilter, limit, offset: pageParam };
-            const response = await graphqlRequest<{
+            const response = await graphqlQuery<{
                 economicClassifications: { nodes: EconomicClassificationOption[]; pageInfo: { totalCount: number; hasNextPage: boolean; hasPreviousPage: boolean } };
-            }>(query, variables);
+            }>(query, variables, { signal, auth: 'none' });
             return {
                 nodes: response.economicClassifications.nodes,
                 pageInfo: response.economicClassifications.pageInfo,

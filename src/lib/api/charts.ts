@@ -1,4 +1,5 @@
 import { graphqlRequest } from './graphql';
+import { graphqlQuery } from '@/lib/graphql/graphql-client';
 import { AnalyticsInput, AnalyticsSeries, AnalyticsFilterType } from '@/schemas/charts';
 import { prepareFilterForServer } from '@/lib/filterUtils';
 import { getUserLocale } from '@/lib/utils';
@@ -8,7 +9,7 @@ import { getUserLocale } from '@/lib/utils';
 /**
  * Fetch analytics data for chart rendering
  */
-export async function getChartAnalytics(inputs: AnalyticsInput[]): Promise<AnalyticsSeries[]> {
+export async function getChartAnalytics(inputs: AnalyticsInput[], signal?: AbortSignal): Promise<AnalyticsSeries[]> {
   const query = `
     query GetExecutionLineItemsAnalytics($inputs: [AnalyticsInput!]!) {
       executionAnalytics(inputs: $inputs) {
@@ -25,9 +26,9 @@ export async function getChartAnalytics(inputs: AnalyticsInput[]): Promise<Analy
     filter: prepareFilterForServer(i.filter as unknown as AnalyticsFilterType),
   }))
 
-  const response = await graphqlRequest<{
+  const response = await graphqlQuery<{
     executionAnalytics: AnalyticsSeries[];
-  }>(query, { inputs: serverInputs });
+  }>(query, { inputs: serverInputs }, { signal, auth: 'none' });
 
   return response.executionAnalytics;
 }

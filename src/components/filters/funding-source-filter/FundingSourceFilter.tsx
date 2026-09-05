@@ -1,5 +1,5 @@
 import { useMultiSelectInfinite } from '../base-filter/hooks/useMultiSelectInfinite';
-import { graphqlRequest } from '@/lib/api/graphql';
+import { graphqlQuery } from '@/lib/graphql/graphql-client';
 import { useState } from 'react';
 import { SearchInput } from '../base-filter/SearchInput';
 import { BaseListProps, PageData } from '../base-filter/interfaces';
@@ -32,8 +32,8 @@ export function FundingSourceList({
         isFetchingNextPage,
     } = useMultiSelectInfinite<FundingSourceOption>({
         itemSize: 48,
-        queryKey: ['funding-sources', searchFilter],
-        queryFn: async ({ pageParam = 0 }): Promise<PageData<FundingSourceOption>> => {
+        queryKey: ['native-funding-sources', searchFilter],
+        queryFn: async ({ pageParam = 0, signal }): Promise<PageData<FundingSourceOption>> => {
             const query = `
               query FundingSources($search: String!, $limit: Int!, $offset: Int!) {
                 fundingSources(filter: { search: $search }, limit: $limit, offset: $offset) {
@@ -41,15 +41,15 @@ export function FundingSourceList({
                         source_id
                         source_description
                     }
-                  pageInfo { totalCount hasNextPage }
+                  pageInfo { totalCount hasNextPage hasPreviousPage }
                 }
               }
             `;
             const limit = pageSize;
             const variables = { search: searchFilter, limit, offset: pageParam };
-            const response = await graphqlRequest<{
+            const response = await graphqlQuery<{
                 fundingSources: { nodes: FundingSourceOption[]; pageInfo: { totalCount: number; hasNextPage: boolean; hasPreviousPage: boolean } };
-            }>(query, variables);
+            }>(query, variables, { signal, auth: 'none' });
             return {
                 nodes: response.fundingSources.nodes,
                 pageInfo: response.fundingSources.pageInfo,

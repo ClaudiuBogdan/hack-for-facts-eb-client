@@ -1,8 +1,18 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { renderHook } from '@testing-library/react'
+import { renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useDataLabelBuilder } from './useFilterLabels'
+import { useDataLabelBuilder, useFunctionalClassificationLabel } from './useFilterLabels'
+
+vi.mock('@/lib/api/labels', () => ({
+  getFunctionalClassificationLabels: vi.fn(),
+  getEconomicClassificationLabels: vi.fn(),
+  getEntityLabels: vi.fn(),
+  getUatLabels: vi.fn(),
+  getBudgetSectorLabels: vi.fn(),
+  getFundingSourceLabels: vi.fn(),
+}))
+import { getFunctionalClassificationLabels } from '@/lib/api/labels'
 
 const STORAGE_KEY = 'entity-labels'
 
@@ -64,5 +74,22 @@ describe('useDataLabelBuilder', () => {
 
     expect(result.current.map('7')).toBe('Consiliul Judetean Iasi')
     expect(result.current.map('999')).toBe('id::999')
+  })
+})
+
+
+describe('native dimension label migration', () => {
+  it('does not let legacy storage suppress a native catalog correction', async () => {
+    window.localStorage.clear()
+    window.localStorage.setItem('functional-classification-labels', JSON.stringify({ '01': 'Old label' }))
+    vi.mocked(getFunctionalClassificationLabels).mockResolvedValue([{ id: '01', label: 'Corrected label' }])
+    const ids = ['01']
+    const { result } = renderHook(() => useFunctionalClassificationLabel(ids), {
+      wrapper: makeWrapper(makeQueryClient()),
+    })
+    await waitFor(() => expect(result.current.map('01')).toBe('Corrected label'))
+    expect(getFunctionalClassificationLabels).toHaveBeenCalledWith(ids)
+    expect(JSON.parse(window.localStorage.getItem('native-functional-classification-labels') ?? '{}')).toEqual({ '01': 'Corrected label' })
+    expect(JSON.parse(window.localStorage.getItem('functional-classification-labels') ?? '{}')).toEqual({ '01': 'Old label' })
   })
 })

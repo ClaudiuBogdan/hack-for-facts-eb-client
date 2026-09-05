@@ -1,5 +1,5 @@
 import { useMultiSelectInfinite } from '../base-filter/hooks/useMultiSelectInfinite';
-import { graphqlRequest } from '@/lib/api/graphql';
+import { graphqlQuery } from '@/lib/graphql/graphql-client';
 import { useState } from 'react';
 import { SearchInput } from '../base-filter/SearchInput';
 import { BaseListProps, PageData } from '../base-filter/interfaces';
@@ -32,8 +32,8 @@ export function BudgetSectorList({
         isFetchingNextPage,
     } = useMultiSelectInfinite<BudgetSectorOption>({
         itemSize: 48,
-        queryKey: ['budget-sectors', searchFilter],
-        queryFn: async ({ pageParam = 0 }): Promise<PageData<BudgetSectorOption>> => {
+        queryKey: ['native-budget-sectors', searchFilter],
+        queryFn: async ({ pageParam = 0, signal }): Promise<PageData<BudgetSectorOption>> => {
             const query = `
               query BudgetSectors($search: String!, $limit: Int!, $offset: Int!) {
                 budgetSectors(filter: { search: $search }, limit: $limit, offset: $offset) {
@@ -41,15 +41,15 @@ export function BudgetSectorList({
                         sector_id
                         sector_description
                     }
-                  pageInfo { totalCount hasNextPage }
+                  pageInfo { totalCount hasNextPage hasPreviousPage }
                 }
               }
             `;
             const limit = pageSize;
             const variables = { search: searchFilter, limit, offset: pageParam };
-            const response = await graphqlRequest<{
+            const response = await graphqlQuery<{
                 budgetSectors: { nodes: BudgetSectorOption[]; pageInfo: { totalCount: number; hasNextPage: boolean; hasPreviousPage: boolean } };
-            }>(query, variables);
+            }>(query, variables, { signal, auth: 'none' });
             return {
                 nodes: response.budgetSectors.nodes,
                 pageInfo: response.budgetSectors.pageInfo,

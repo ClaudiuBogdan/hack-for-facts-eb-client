@@ -5,7 +5,7 @@ import { PageData } from '../interfaces';
 
 export interface UseMultiSelectInfiniteProps<T> {
     queryKey: string[];
-    queryFn: ({ pageParam }: { pageParam: number }) => Promise<PageData<T>>;
+    queryFn: ({ pageParam, signal }: { pageParam: number; signal: AbortSignal }) => Promise<PageData<T>>;
     itemSize?: number;
 }
 

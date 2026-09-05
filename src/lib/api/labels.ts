@@ -1,4 +1,5 @@
 import { graphqlRequest } from "./graphql";
+import { fetchBudgetDimensionNodes } from "./budget-dimensions";
 import { createLogger } from "../logger";
 
 const logger = createLogger("classifications-api");
@@ -75,67 +76,73 @@ const UAT_NAMES_QUERY = `
 
 
 const FUNCTIONAL_CLASSIFICATION_NAMES_QUERY = `
-    query FunctionalClassificationNames($codes: [String!]) {
-        functionalClassifications(filter: { functional_codes: $codes }) {
+    query FunctionalClassificationNames($codes: [String!], $limit: Int!, $offset: Int!) {
+        functionalClassifications(filter: { functional_codes: $codes }, limit: $limit, offset: $offset) {
             nodes {
                 code: functional_code
                 name: functional_name
             }
+            pageInfo { totalCount hasNextPage }
         }
     }
 `;
 
 const ECONOMIC_CLASSIFICATION_NAMES_QUERY = `
-    query EconomicClassificationNames($codes: [String!]) {
-        economicClassifications(filter: { economic_codes: $codes }) {
+    query EconomicClassificationNames($codes: [String!], $limit: Int!, $offset: Int!) {
+        economicClassifications(filter: { economic_codes: $codes }, limit: $limit, offset: $offset) {
             nodes {
                 code: economic_code
                 name: economic_name
             }
+            pageInfo { totalCount hasNextPage }
         }
     }
 `;
 
 const BUDGET_SECTOR_NAMES_QUERY = `
-    query BudgetSectorNames($ids: [String!]) {
-        budgetSectors(filter: { sector_ids: $ids }) {
+    query BudgetSectorNames($ids: [ID!], $limit: Int!, $offset: Int!) {
+        budgetSectors(filter: { sector_ids: $ids }, limit: $limit, offset: $offset) {
             nodes {
                 sector_id
                 sector_description
             }
+            pageInfo { totalCount hasNextPage }
         }
     }
 `;
 
 const FUNDING_SOURCE_NAMES_QUERY = `
-    query FundingSourceNames($ids: [String!]) {
-        fundingSources(filter: { source_ids: $ids }) {
+    query FundingSourceNames($ids: [ID!], $limit: Int!, $offset: Int!) {
+        fundingSources(filter: { source_ids: $ids }, limit: $limit, offset: $offset) {
             nodes {
                 source_id
                 source_description
             }
+            pageInfo { totalCount hasNextPage }
         }
     }
 `;
 
 const ALL_FUNCTIONAL_CLASSIFICATIONS_QUERY = `
-    query AllFunctionalClassifications {
-        functionalClassifications(limit: 10000) {
+    query AllFunctionalClassifications($limit: Int!, $offset: Int!) {
+        functionalClassifications(limit: $limit, offset: $offset) {
             nodes {
                 code: functional_code
                 name: functional_name
             }
+            pageInfo { totalCount hasNextPage }
         }
     }
 `;
 
 const ALL_ECONOMIC_CLASSIFICATIONS_QUERY = `
-    query AllEconomicClassifications {
-        economicClassifications(limit: 10000) {
+    query AllEconomicClassifications($limit: Int!, $offset: Int!) {
+        economicClassifications(limit: $limit, offset: $offset) {
             nodes {
                 code: economic_code
                 name: economic_name
             }
+            pageInfo { totalCount hasNextPage }
         }
     }
 `;
@@ -145,11 +152,11 @@ export async function getFunctionalClassificationLabels(ids: (string | number)[]
     const stringIds = ids.map(String);
     if (stringIds.length === 0) return [];
     try {
-        const response = await graphqlRequest<{ functionalClassifications: ClassificationResponse }>(FUNCTIONAL_CLASSIFICATION_NAMES_QUERY, { codes: stringIds });
-        return response.functionalClassifications.nodes.map(({ code, name }) => ({ id: code, label: name }));
+        const nodes = await fetchBudgetDimensionNodes<ClassificationResponse["nodes"][number]>(FUNCTIONAL_CLASSIFICATION_NAMES_QUERY, "functionalClassifications", { codes: stringIds });
+        return nodes.map(({ code, name }) => ({ id: code, label: name }));
     } catch (error) {
         logger.error("Error fetching functional classification labels", { error, ids });
-        return [];
+        throw error;
     }
 }
 
@@ -157,12 +164,12 @@ export async function getEconomicClassificationLabels(ids: (string | number)[]):
     const stringIds = ids.map(String);
     if (stringIds.length === 0) return [];
     try {
-        const response = await graphqlRequest<{ economicClassifications: ClassificationResponse }>(ECONOMIC_CLASSIFICATION_NAMES_QUERY, { codes: stringIds });
-        return response.economicClassifications.nodes.map(({ code, name }) => ({ id: code, label: name }));
+        const nodes = await fetchBudgetDimensionNodes<ClassificationResponse["nodes"][number]>(ECONOMIC_CLASSIFICATION_NAMES_QUERY, "economicClassifications", { codes: stringIds });
+        return nodes.map(({ code, name }) => ({ id: code, label: name }));
     }
     catch (error) {
         logger.error("Error fetching economic classification labels", { error, ids });
-        return [];
+        throw error;
     }
 }
 
@@ -170,12 +177,12 @@ export async function getBudgetSectorLabels(ids: (string | number)[]): Promise<{
     const stringIds = ids.map(String);
     if (stringIds.length === 0) return [];
     try {
-        const response = await graphqlRequest<{ budgetSectors: BudgetSectorResponse }>(BUDGET_SECTOR_NAMES_QUERY, { ids: stringIds });
-        return response.budgetSectors.nodes.map(({ sector_id, sector_description }) => ({ id: sector_id, label: sector_description }));
+        const nodes = await fetchBudgetDimensionNodes<BudgetSectorResponse["nodes"][number]>(BUDGET_SECTOR_NAMES_QUERY, "budgetSectors", { ids: stringIds });
+        return nodes.map(({ sector_id, sector_description }) => ({ id: sector_id, label: sector_description }));
     }
     catch (error) {
         logger.error("Error fetching budget sector labels", { error, ids });
-        return [];
+        throw error;
     }
 }
 
@@ -183,12 +190,12 @@ export async function getFundingSourceLabels(ids: (string | number)[]): Promise<
     const stringIds = ids.map(String);
     if (stringIds.length === 0) return [];
     try {
-        const response = await graphqlRequest<{ fundingSources: FundingSourceResponse }>(FUNDING_SOURCE_NAMES_QUERY, { ids: stringIds });
-        return response.fundingSources.nodes.map(({ source_id, source_description }) => ({ id: source_id, label: source_description }));
+        const nodes = await fetchBudgetDimensionNodes<FundingSourceResponse["nodes"][number]>(FUNDING_SOURCE_NAMES_QUERY, "fundingSources", { ids: stringIds });
+        return nodes.map(({ source_id, source_description }) => ({ id: source_id, label: source_description }));
     }
     catch (error) {
         logger.error("Error fetching funding source labels", { error, ids });
-        return [];
+        throw error;
     }
 }
 
@@ -239,13 +246,13 @@ function removeTailingZeroCodes(code: string): string {
     return parts.join('.');
 }
 
-export async function getAllFunctionalClassifications(): Promise<{ code: string; name: string }[]> {
+export async function getAllFunctionalClassifications(signal?: AbortSignal): Promise<{ code: string; name: string }[]> {
     try {
-        const response = await graphqlRequest<{ functionalClassifications: ClassificationResponse }>(ALL_FUNCTIONAL_CLASSIFICATIONS_QUERY);
+        const nodes = await fetchBudgetDimensionNodes<ClassificationResponse["nodes"][number]>(ALL_FUNCTIONAL_CLASSIFICATIONS_QUERY, "functionalClassifications", {}, signal);
 
         // Remove duplicates and process codes
         const uniqueCodes = new Map<string, string>();
-        for (const classification of response.functionalClassifications.nodes) {
+        for (const classification of nodes) {
             const cleanCode = removeTailingZeroCodes(classification.code);
             // Keep the first occurrence (or update if we prefer the cleaned version)
             if (!uniqueCodes.has(cleanCode)) {
@@ -256,17 +263,17 @@ export async function getAllFunctionalClassifications(): Promise<{ code: string;
         return Array.from(uniqueCodes.entries()).map(([code, name]) => ({ code, name }));
     } catch (error) {
         logger.error("Error fetching all functional classifications", { error });
-        return [];
+        throw error;
     }
 }
 
-export async function getAllEconomicClassifications(): Promise<{ code: string; name: string }[]> {
+export async function getAllEconomicClassifications(signal?: AbortSignal): Promise<{ code: string; name: string }[]> {
     try {
-        const response = await graphqlRequest<{ economicClassifications: ClassificationResponse }>(ALL_ECONOMIC_CLASSIFICATIONS_QUERY);
+        const nodes = await fetchBudgetDimensionNodes<ClassificationResponse["nodes"][number]>(ALL_ECONOMIC_CLASSIFICATIONS_QUERY, "economicClassifications", {}, signal);
 
         // Remove duplicates and process codes
         const uniqueCodes = new Map<string, string>();
-        for (const classification of response.economicClassifications.nodes) {
+        for (const classification of nodes) {
             const cleanCode = removeTailingZeroCodes(classification.code);
             // Keep the first occurrence (or update if we prefer the cleaned version)
             if (!uniqueCodes.has(cleanCode)) {
@@ -277,6 +284,6 @@ export async function getAllEconomicClassifications(): Promise<{ code: string; n
         return Array.from(uniqueCodes.entries()).map(([code, name]) => ({ code, name }));
     } catch (error) {
         logger.error("Error fetching all economic classifications", { error });
-        return [];
+        throw error;
     }
 }

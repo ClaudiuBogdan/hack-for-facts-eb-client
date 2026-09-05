@@ -385,8 +385,8 @@ function BudgetExplorerPage() {
     isLoading: isLoadingBudgetSectors,
     error: budgetSectorsError,
   } = useQuery({
-    queryKey: ['budget-explorer', 'budget-sectors'],
-    queryFn: fetchBudgetSectors,
+    queryKey: ['budget-explorer', 'native-budget-sectors'],
+    queryFn: ({ signal }) => fetchBudgetSectors(signal),
     staleTime: convertDaysToMs(7),
     gcTime: convertDaysToMs(7),
     refetchOnWindowFocus: false,
@@ -396,8 +396,8 @@ function BudgetExplorerPage() {
     data: availableFundingSources,
     isLoading: isLoadingFundingSources,
   } = useQuery({
-    queryKey: ['budget-explorer', 'funding-sources'],
-    queryFn: fetchFundingSources,
+    queryKey: ['budget-explorer', 'native-funding-sources'],
+    queryFn: ({ signal }) => fetchFundingSources(signal),
     staleTime: convertDaysToMs(7),
     gcTime: convertDaysToMs(7),
     refetchOnWindowFocus: false,

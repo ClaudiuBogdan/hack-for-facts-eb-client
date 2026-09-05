@@ -139,8 +139,8 @@ export function useChartData({ chart, enabled = true }: UseChartDataProps) {
         isLoading: isLoadingData,
         error: dataError,
     } = useQuery({
-        queryKey: ["chart-data", analyticsInputsHash],
-        queryFn: () => getChartAnalytics(analyticsInputs),
+        queryKey: ["native-chart-data", analyticsInputsHash],
+        queryFn: ({ signal }) => getChartAnalytics(analyticsInputs, signal),
         enabled: enabled && hasChart && hasFilters,
         staleTime: convertDaysToMs(1),
         gcTime: convertDaysToMs(3),

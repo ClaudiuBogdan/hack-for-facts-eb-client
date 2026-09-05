@@ -8,10 +8,10 @@ import { getUserLocale } from "@/lib/utils";
 
 const EntityStorageKey = 'entity-labels';
 const UatLabelStorageKey = 'uat-labels';
-const EconomicClassificationLabelStorageKey = 'economic-classification-labels';
-const FunctionalClassificationLabelStorageKey = 'functional-classification-labels';
-const BudgetSectorLabelStorageKey = 'budget-sector-labels';
-const FundingSourceLabelStorageKey = 'funding-source-labels';
+const EconomicClassificationLabelStorageKey = 'native-economic-classification-labels';
+const FunctionalClassificationLabelStorageKey = 'native-functional-classification-labels';
+const BudgetSectorLabelStorageKey = 'native-budget-sector-labels';
+const FundingSourceLabelStorageKey = 'native-funding-source-labels';
 
 const isBrowser = typeof window !== 'undefined';
 
