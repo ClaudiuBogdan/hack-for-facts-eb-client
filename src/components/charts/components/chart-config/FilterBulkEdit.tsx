@@ -81,6 +81,7 @@ export function FilterBulkEdit({ withCard = true, onClose }: FilterBulkEditProps
                                 'account_category',
                                 'report_type',
                                 'is_uat',
+                                'is_territorial_executive',
                                 'normalization',
                             ]) as ReplaceableFilterKey[]).map((key) => (
                                 <SelectItem key={key} value={key}>{filterKeyMap(key)}</SelectItem>

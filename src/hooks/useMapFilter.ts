@@ -76,6 +76,7 @@ export function useMapFilter() {
     const setShowPeriodGrowth = createValueUpdater('show_period_growth');
     const setReportType = createValueUpdater('report_type');
     const setIsUat = createValueUpdater('is_uat');
+    const setIsTerritorialExecutive = createValueUpdater('is_territorial_executive');
     const setMainCreditorCui = createValueUpdater('main_creditor_cui');
     const setReportPeriod = createValueUpdater('report_period');
 
@@ -247,6 +248,7 @@ export function useMapFilter() {
         setShowPeriodGrowth,
         setReportType,
         setIsUat,
+        setIsTerritorialExecutive,
         setMainCreditorCui,
         // Exclude filters
         excludeSelectedEntityOptions,

@@ -23,7 +23,7 @@ import { FilterPrefixContainer, PrefixFilter } from './prefix-filter'
 import { FilterRadioContainer } from './base-filter/FilterRadioContainer'
 import { FilterContainer } from './base-filter/FilterContainer'
 import { ReportTypeFilter } from './report-type-filter'
-import { IsUatFilter } from './flags-filter'
+import { BooleanFilter } from './flags-filter'
 import { ViewTypeRadioGroup } from './ViewTypeRadioGroup'
 import { TableIcon, BarChart2Icon } from 'lucide-react'
 import { t } from '@lingui/core/macro'
@@ -236,6 +236,7 @@ export function EntityAnalyticsFilter() {
   const updateMaxPopulation = (max: string | undefined) => setFilter({ max_population: max ? Number(max) : undefined })
   const setReportType = (value: string | undefined) => setFilter({ report_type: value as 'Executie bugetara agregata la nivel de ordonator principal' | 'Executie bugetara detaliata' })
   const setIsUat = (value: boolean | undefined) => setFilter({ is_uat: value })
+  const setIsTerritorialExecutive = (value: boolean | undefined) => setFilter({ is_territorial_executive: value })
 
   const amountUnit = useMemo(
     () => getNormalizationUnit({ normalization: filter.normalization as 'total' | 'per_capita' | 'percent_gdp' | 'total_euro' | 'per_capita_euro', currency: userCurrency as 'RON' | 'EUR' | 'USD' }),
@@ -408,6 +409,7 @@ export function EntityAnalyticsFilter() {
     (filter.max_population !== undefined ? 1 : 0) +
     (filter.report_type ? 1 : 0) +
     (filter.is_uat !== undefined ? 1 : 0) +
+    (filter.is_territorial_executive !== undefined ? 1 : 0) +
     (filter.functional_prefixes?.length ?? 0) +
     (filter.economic_prefixes?.length ?? 0)
 
@@ -628,7 +630,16 @@ export function EntityAnalyticsFilter() {
           onClearOption={() => setIsUat(undefined)}
           onClearAll={() => setIsUat(undefined)}
         >
-          <IsUatFilter isUat={filter.is_uat} setIsUat={setIsUat} />
+          <BooleanFilter value={filter.is_uat} onChange={setIsUat} />
+        </FilterContainer>
+        <FilterContainer
+          title={t`Territorial executive`}
+          icon={<ArrowUpDown className="w-4 h-4" aria-hidden="true" />}
+          selectedOptions={filter.is_territorial_executive === undefined ? [] : [{ id: 'is_territorial_executive', label: filter.is_territorial_executive ? t`Executive: Yes` : t`Executive: No` }]}
+          onClearOption={() => setIsTerritorialExecutive(undefined)}
+          onClearAll={() => setIsTerritorialExecutive(undefined)}
+        >
+          <BooleanFilter value={filter.is_territorial_executive} onChange={setIsTerritorialExecutive} />
         </FilterContainer>
 
         <FilterRangeContainer

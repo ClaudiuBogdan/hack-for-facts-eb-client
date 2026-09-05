@@ -44,6 +44,7 @@ export const useFilterKeyLabel = () => {
     account_category: t`Account category`,
     report_type: t`Report type`,
     is_uat: t`Is UAT`,
+    is_territorial_executive: t`Territorial executive`,
     functional_prefixes: t`Functional prefix`,
     economic_prefixes: t`Economic prefix`,
     entity_types: t`Entity type`,
@@ -154,6 +155,7 @@ export function getSortOrder(keyA: keyof AnalyticsFilterType, keyB: keyof Analyt
     "budget_sector_ids",
     "funding_source_ids",
     "is_uat",
+    "is_territorial_executive",
     "aggregate_min_amount",
     "aggregate_max_amount",
     "report_type",
@@ -184,6 +186,7 @@ export type ReplaceableFilterKey =
   | "functional_prefixes"
   | "economic_prefixes"
   | "is_uat"
+  | "is_territorial_executive"
   | "report_period";
 
 // Convenience: list of replaceable keys for UIs
@@ -200,6 +203,7 @@ export const REPLACEABLE_FILTER_KEYS: ReadonlyArray<ReplaceableFilterKey> = [
   "account_category",
   "report_type",
   "is_uat",
+  "is_territorial_executive",
   "report_period",
 ];
 
@@ -210,7 +214,7 @@ const isFilterableSeries = (series: Series): series is FilterableSeries =>
 
 // Coerce filter values to the correct type. Some keys are booleans, and need to be parsed from strings.
 const parseFilterValueForKey = (key: ReplaceableFilterKey, value: string): unknown => {
-  if (key === "is_uat") {
+  if (key === "is_uat" || key === "is_territorial_executive") {
     const lower = value.toLowerCase();
     if (lower === "true") return true;
     if (lower === "false") return false;

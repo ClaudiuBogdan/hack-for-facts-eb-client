@@ -28,6 +28,6 @@ export interface HeatmapCountyDataPoint {
   amount: number;
   total_amount: number;
   per_capita_amount: number;
-  county_entity: Entity;
+  county_entity: Entity | null;
 }
 

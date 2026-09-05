@@ -77,12 +77,14 @@ describe("entities api", () => {
             countyName: "Test County",
             sirutaCode: "123",
             population: 1000,
+            id: 10, level: "uat", kind: "municipality", territoryKey: "siruta:123", parentId: 1, nutsCode: null,
           },
           reference: {
             name: "Test Entity",
             address: "Test address",
             entityType: "uat",
             isUat: true,
+            isTerritorialExecutive: true,
             defaultReportType:
               "Executie bugetara agregata la nivel de ordonator principal",
             territory: null,
@@ -141,6 +143,9 @@ describe("entities api", () => {
         totalExpenses: 800.25,
         budgetBalance: 200.25,
       });
+      expect(result?.is_territorial_executive).toBe(true);
+      expect(result?.uat).toMatchObject({ id: 10, level: 'uat', kind: 'municipality', territory_key: 'siruta:123', parent_id: 1, nuts_code: null });
+      expect(vi.mocked(graphqlQuery).mock.calls[0]?.[0]).toContain('isTerritorialExecutive');
       expect(result?.incomeTrend?.data).toEqual([{ x: "2024", y: 1000.5 }]);
     });
 
@@ -156,6 +161,7 @@ describe("entities api", () => {
               address: null,
               entityType: "public_entity",
               isUat: false,
+              isTerritorialExecutive: false,
               defaultReportType: "Executie bugetara detaliata",
               territory: null,
             },
@@ -261,12 +267,22 @@ describe("entities api", () => {
   });
 
   describe("getEntityRoutingSummary", () => {
+    it.each([true, false])('preserves executive=%s independently of the UAT flag', async (executive) => {
+      vi.mocked(graphqlQuery).mockResolvedValue({ referencePublicEntity: {
+        cui: '444', entityType: 'admin_county_council', isUat: !executive, isTerritorialExecutive: executive,
+      } });
+      const result = await getEntityRoutingSummary('444');
+      expect(result).toMatchObject({ is_territorial_executive: executive, is_uat: !executive });
+      expect(vi.mocked(graphqlQuery).mock.calls[0]?.[0]).toContain('isTerritorialExecutive');
+    });
+
     it("should return routing summary", async () => {
       const mockResponse = {
         referencePublicEntity: {
           cui: "123456",
           entityType: "admin_municipality",
           isUat: true,
+          isTerritorialExecutive: true,
         },
       };
 
@@ -283,6 +299,7 @@ describe("entities api", () => {
         cui: "123456",
         entity_type: "admin_municipality",
         is_uat: true,
+        is_territorial_executive: true,
       });
     });
 

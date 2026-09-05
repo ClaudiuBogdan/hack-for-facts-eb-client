@@ -1,3 +1,4 @@
+import { supportsEntityPopulation } from '@/lib/entity-population'
 import type { QueryClient } from '@tanstack/react-query'
 import { resolveAppliedNormalization } from '@/lib/normalization'
 import { createIsomorphicFn } from '@tanstack/react-start'
@@ -17,6 +18,7 @@ type EntityPageSeoEntity = Pick<
   | 'name'
   | 'entity_type'
   | 'is_uat'
+  | 'is_territorial_executive'
   | 'default_report_type'
   | 'uat'
   | 'totalIncome'
@@ -118,7 +120,7 @@ export function buildEntityPageSeoSnapshot(params: {
     entityType: params.entity.entity_type,
     defaultReportType: params.entity.default_report_type,
     countyName: params.entity.uat?.county_name,
-    population: params.entity.is_uat === true
+    population: supportsEntityPopulation(params.entity)
       ? params.entity.uat?.population
       : undefined,
     totalIncome: params.entity.totalIncome,

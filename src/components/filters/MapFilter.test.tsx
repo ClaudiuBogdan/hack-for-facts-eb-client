@@ -172,7 +172,7 @@ vi.mock('./report-type-filter', () => ({
 }))
 
 vi.mock('./flags-filter', () => ({
-  IsUatFilter: () => <div data-testid="is-uat-filter">Is UAT</div>,
+  BooleanFilter: () => <div data-testid="is-uat-filter">Is UAT</div>,
 }))
 
 vi.mock('./amount-range-filter', () => ({

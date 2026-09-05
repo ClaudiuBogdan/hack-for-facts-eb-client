@@ -23,7 +23,7 @@ import { Trans } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
 import { FilterRadioContainer } from "./base-filter/FilterRadioContainer";
 import { ReportTypeFilter } from "./report-type-filter";
-import { IsUatFilter } from './flags-filter';
+import { BooleanFilter } from './flags-filter';
 import { FilterContainer } from './base-filter/FilterContainer';
 import { PeriodFilter } from './period-filter/PeriodFilter';
 import { getPeriodTags } from '@/lib/period-utils';
@@ -403,7 +403,7 @@ export function MapFilter() {
                     onClearOption={() => setIsUat(undefined)}
                     onClearAll={() => setIsUat(undefined)}
                 >
-                    <IsUatFilter isUat={mapState.filters.is_uat} setIsUat={setIsUat} />
+                    <BooleanFilter value={mapState.filters.is_uat} onChange={setIsUat} />
                 </FilterContainer>
 
 	                <FilterRangeContainer

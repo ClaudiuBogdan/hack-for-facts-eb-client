@@ -1,3 +1,4 @@
+import { supportsEntityPopulation } from '@/lib/entity-population'
 import { t } from '@lingui/core/macro'
 import { AlertTriangle, Minus, Plus, RefreshCw, Users } from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -1386,7 +1387,7 @@ export function ChallengeEntityAnalysisPage({
   )
   const isUatEntity = Boolean(entityDetailsQuery.data?.is_uat)
   const hasResolvedEntityDetails = Boolean(entityDetailsQuery.data)
-  const canUsePerCapitaNormalization = isUatEntity
+  const canUsePerCapitaNormalization = supportsEntityPopulation(entityDetailsQuery.data)
   const supportsEntityMapPreview = Boolean(
     entityDetailsQuery.data &&
     (isUatEntity || isCountyLevelMapEntity || isBucharestMunicipality),
@@ -2653,7 +2654,7 @@ export function ChallengeEntityAnalysisPage({
       name: entity.name,
       cui: entity.cui,
       countyName: entity.uat?.county_name,
-      population: entity.is_uat === true ? entity.uat?.population : undefined,
+      population: supportsEntityPopulation(entity) ? entity.uat?.population : undefined,
     },
     filters: {
       year: selectedYear,

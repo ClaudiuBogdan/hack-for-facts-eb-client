@@ -1,3 +1,4 @@
+import { supportsEntityPopulation } from '@/lib/entity-population'
 import type { MouseEvent, ReactNode } from 'react'
 import { Calendar, ChevronDown, MapPin, Users } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
@@ -16,7 +17,7 @@ import { cn } from '@/lib/utils'
 import type { ChallengeLocale } from '../../types'
 
 type ChallengeEntityAnalysisHeaderProps = {
-  readonly entity: Pick<EntityDetailsData, 'name' | 'cui' | 'is_uat' | 'uat'>
+  readonly entity: Pick<EntityDetailsData, 'name' | 'cui' | 'is_uat' | 'is_territorial_executive' | 'uat'>
   readonly reportControlsLabel: string
   readonly renderReportControls: () => ReactNode
   readonly activeView: ChallengeEntityAnalysisView
@@ -80,7 +81,7 @@ export function ChallengeEntityAnalysisHeader({
     : null
   const displayName = normalizeDisplayText(entity.name, languageQuery)
   const population =
-    entity.is_uat === true && typeof entity.uat?.population === 'number'
+    supportsEntityPopulation(entity)
       ? new Intl.NumberFormat(
         languageQuery === 'en' ? 'en-US' : 'ro-RO',
       ).format(entity.uat.population)

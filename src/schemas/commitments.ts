@@ -70,6 +70,7 @@ export interface CommitmentsFilterInput {
   main_creditor_cui?: string
   entity_types?: string[]
   is_uat?: boolean
+  is_territorial_executive?: boolean
   search?: string
 
   functional_codes?: string[]

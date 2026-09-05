@@ -178,6 +178,7 @@ export const AnalyticsFilterSchema = z.object({
   entity_types: z.array(z.string()).optional().describe('Filter by type of public entity (e.g., "school", "hospital", "city_hall", "ministry"). Use to analyze spending patterns across similar institution types. Example: ["hospital"] to compare all hospitals\' budgets. Available types depend on entity classification in the database. Less standardized than COFOG3 - prefer functional_prefixes for broad categories.'),
   tags: z.array(z.string()).optional().describe('Filter by faceted classification tags in namespace::value form (e.g. "kind::hospital", "level::local"). Tags in the SAME facet (same namespace) combine with OR, tags in DIFFERENT facets combine with AND: ["kind::hospital","kind::clinic","level::local"] means (hospital OR clinic) AND locally-owned. Ancestor roll-up is built in: "kind::school" also matches every school subtype. The vocabulary ships as the entity-tags.json asset.'),
   is_uat: z.boolean().optional().describe('Boolean flag: when true, filters to only UAT (local government) entities; when false or omitted, includes all entity types. Critical for local vs national analysis. Set to true for analyzing city/commune budgets. Set to false or omit for central government. Combine with uat_ids for specific local governments. Essential when using normalization=per_capita for meaningful comparisons.'),
+  is_territorial_executive: z.boolean().optional().describe('Filter geographic executive authorities independently of creditor hierarchy. False explicitly excludes executives.'),
   search: z.string().optional().describe('Free-text search across entity names, descriptions, and classifications. Use for exploratory queries when you don\'t know exact codes. Example: "biblioteca" to find library-related spending, "digitalizare" for digitalization projects. Less precise than structured filters but useful for discovery. Search is case-insensitive and supports partial matches.'),
 
   // Population
@@ -247,6 +248,7 @@ export const CommitmentsFilterSchema = z.object({
   main_creditor_cui: z.string().optional(),
   entity_types: z.array(z.string()).optional(),
   is_uat: z.boolean().optional(),
+  is_territorial_executive: z.boolean().optional().describe('Filter geographic executive authorities independently of creditor hierarchy. False explicitly excludes executives.'),
   search: z.string().optional(),
   functional_codes: z.array(z.string()).optional(),
   functional_prefixes: z.array(z.string()).optional(),

@@ -1,3 +1,4 @@
+import { supportsEntityPopulation } from '@/lib/entity-population'
 /**
  * Commitments Bugetare View for Entity Detail Page
  *
@@ -407,7 +408,7 @@ export function CommitmentsView({
           currentYear={currentYear}
           normalizationOptions={normalizationOptions}
           onNormalizationChange={onNormalizationChange}
-          allowPerCapita={Boolean(entity?.is_uat)}
+          allowPerCapita={supportsEntityPopulation(entity)}
           periodType={commitmentsTrendPeriod.type}
           onYearChange={onYearChange}
           onSelectPeriod={onSelectPeriod}

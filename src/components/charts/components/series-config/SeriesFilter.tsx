@@ -25,7 +25,7 @@ import { FilterRangeContainer } from "../../../filters/base-filter/FilterRangeCo
 import { FilterRadioContainer } from "../../../filters/base-filter/FilterRadioContainer";
 import { ReportTypeFilter } from "../../../filters/report-type-filter";
 import { FilterContainer } from "../../../filters/base-filter/FilterContainer";
-import { IsUatFilter } from "../../../filters/flags-filter";
+import { BooleanFilter } from "../../../filters/flags-filter";
 import { EconomicClassificationList } from "../../../filters/economic-classification-filter";
 import { UatList } from "../../../filters/uat-filter";
 import { CountyList } from "../../../filters/county-filter/CountyList";
@@ -458,6 +458,7 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
   if (filter.is_uat === true) flagsOptions.push({ id: "isUat", label: t`UAT: Yes` });
   if (filter.is_uat === false) flagsOptions.push({ id: "isUat", label: t`UAT: No` });
   const setIsUat = createValueUpdater("is_uat", (value) => (value !== undefined ? value : undefined));
+  const setIsTerritorialExecutive = createValueUpdater("is_territorial_executive", (value) => value);
 
   const periodTags = getPeriodTags(filter.report_period as ReportPeriodInput).map((tag) => ({
     id: String(tag.value),
@@ -615,6 +616,7 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
     (filter.report_type ? 1 : 0) +
     (filter.normalization ? 1 : 0) +
     (filter.is_uat !== undefined ? 1 : 0) +
+    (filter.is_territorial_executive !== undefined ? 1 : 0) +
     (filter.functional_prefixes?.length ?? 0) +
     (filter.economic_prefixes?.length ?? 0);
 
@@ -955,7 +957,16 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
           onClearOption={handleClearFlag}
           onClearAll={handleClearAllFlags}
         >
-          <IsUatFilter isUat={filter.is_uat} setIsUat={setIsUat} />
+          <BooleanFilter value={filter.is_uat} onChange={setIsUat} />
+        </FilterContainer>
+        <FilterContainer
+          title={t`Territorial executive`}
+          icon={<ArrowUpDown className="w-4 h-4" aria-hidden="true" />}
+          selectedOptions={filter.is_territorial_executive === undefined ? [] : [{ id: 'is_territorial_executive', label: filter.is_territorial_executive ? t`Executive: Yes` : t`Executive: No` }]}
+          onClearOption={() => setIsTerritorialExecutive(undefined)}
+          onClearAll={() => setIsTerritorialExecutive(undefined)}
+        >
+          <BooleanFilter value={filter.is_territorial_executive} onChange={setIsTerritorialExecutive} />
         </FilterContainer>
         <FilterRangeContainer
           title={t`Amount Range`}

@@ -498,7 +498,7 @@ export function ProcurementMapView({
         : undefined
       const region =
         findRegionForCountyCode(geographyQuery.data, countyCode) ??
-        (point && 'county_entity' in point ? point.county_entity.name : undefined) ??
+        (point && 'county_entity' in point ? point.county_entity?.name : undefined) ??
         '—'
       const value =
         point === undefined

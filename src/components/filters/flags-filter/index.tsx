@@ -1,25 +1,25 @@
 import { RadioGroupButtons } from "@/components/ui/radio-group-buttons";
 import { t } from "@lingui/core/macro";
 
-interface IsUatFilterProps {
-    isUat: boolean | undefined;
-    setIsUat: (value: boolean | undefined) => void;
+interface BooleanFilterProps {
+    value: boolean | undefined;
+    onChange: (value: boolean | undefined) => void;
 }
-export function IsUatFilter({ isUat, setIsUat }: IsUatFilterProps) {
+export function BooleanFilter({ value, onChange }: BooleanFilterProps) {
 
-    const handleChange = (value: string | number | boolean | undefined) => {
-        if (value === undefined) {
-            setIsUat(undefined);
-        } else if (String(value) === 'true') {
-            setIsUat(true);
-        } else if (String(value) === 'false') {
-            setIsUat(false);
+    const handleChange = (next: string | number | boolean | undefined) => {
+        if (next === undefined) {
+            onChange(undefined);
+        } else if (String(next) === 'true') {
+            onChange(true);
+        } else if (String(next) === 'false') {
+            onChange(false);
         }
     };
 
     return (
         <RadioGroupButtons
-            value={isUat}
+            value={value}
             onChange={handleChange}
             options={[{ value: true, label: t`Yes` }, { value: false, label: t`No` }]} />
     );

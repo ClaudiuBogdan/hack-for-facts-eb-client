@@ -46,6 +46,12 @@ export const MoneySchema = z
   });
 
 const TerritorySchema = z.object({
+  id: z.number().int(),
+  level: z.string().nullable(),
+  kind: z.string().nullable(),
+  territoryKey: z.string().nullable(),
+  parentId: z.number().int().nullable(),
+  nutsCode: z.string().nullable(),
   name: z.string(),
   countyCode: z.string().nullable(),
   countyName: z.string().nullable(),
@@ -65,6 +71,7 @@ const EntityMetadataResponseSchema = z.object({
           address: z.string().nullable(),
           entityType: z.string().nullable(),
           isUat: z.boolean(),
+      isTerritorialExecutive: z.boolean(),
           defaultReportType: z.string().nullable(),
           territory: TerritorySchema.nullable(),
         })
@@ -112,6 +119,7 @@ const ENTITY_METADATA_QUERY = /* GraphQL */ `
         name
       }
       territory {
+        id level kind territoryKey parentId nutsCode
         name
         countyCode
         countyName
@@ -123,8 +131,10 @@ const ENTITY_METADATA_QUERY = /* GraphQL */ `
         address
         entityType
         isUat
+        isTerritorialExecutive
         defaultReportType
         territory {
+          id level kind territoryKey parentId nutsCode
           name
           countyCode
           countyName
@@ -535,10 +545,17 @@ export async function fetchRedesignEntityDetails(
     default_report_type: legacyReportType,
     entity_type: metadata.reference?.entityType ?? null,
     is_uat: metadata.reference?.isUat ?? false,
+    is_territorial_executive: metadata.reference?.isTerritorialExecutive,
     uat:
       territory === null
         ? null
         : {
+            id: territory.id,
+            level: territory.level,
+            kind: territory.kind,
+            territory_key: territory.territoryKey,
+            parent_id: territory.parentId,
+            nuts_code: territory.nutsCode,
             county_name: territory.countyName,
             county_code: territory.countyCode,
             name: territory.name,
@@ -772,6 +789,7 @@ const EntityRoutingResponseSchema = z.object({
       cui: z.string(),
       entityType: z.string().nullable(),
       isUat: z.boolean(),
+      isTerritorialExecutive: z.boolean(),
     })
     .nullable(),
 });
@@ -782,6 +800,7 @@ const ENTITY_ROUTING_QUERY = /* GraphQL */ `
       cui
       entityType
       isUat
+      isTerritorialExecutive
     }
   }
 `;
@@ -803,6 +822,7 @@ export async function fetchRedesignEntityRoutingSummary(
     cui: entity.cui,
     entity_type: entity.entityType,
     is_uat: entity.isUat,
+    is_territorial_executive: entity.isTerritorialExecutive,
   };
 }
 

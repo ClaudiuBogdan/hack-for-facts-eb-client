@@ -49,7 +49,14 @@ export interface EntityDetailsData {
   default_report_type: GqlReportType;
   entity_type?: string | null;
   is_uat?: boolean | null;
+  is_territorial_executive?: boolean | null;
   uat?: {
+    id?: number;
+    level?: string | null;
+    kind?: string | null;
+    territory_key?: string | null;
+    parent_id?: number | null;
+    nuts_code?: string | null;
     county_name?: string | null;
     county_code?: string | null;
     name?: string | null;
@@ -133,6 +140,7 @@ export interface EntityRoutingSummary {
   cui: string;
   entity_type?: string | null;
   is_uat?: boolean | null;
+  is_territorial_executive?: boolean | null;
 }
 
 // --- Reports types (connection for pagination) ---

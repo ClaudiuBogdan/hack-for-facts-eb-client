@@ -459,3 +459,14 @@ describe('prepareCommitmentsFilterForServer', () => {
     expect(result.report_type).toBe('SECONDARY_AGGREGATED')
   })
 })
+
+
+describe('executive filter transport', () => {
+  it.each([true, false, undefined])('preserves executive=%s through execution and commitments preparation', (flag) => {
+    const input = { account_category: 'ch' as const, is_territorial_executive: flag, is_uat: false };
+    expect(prepareFilterForServer(input).is_territorial_executive).toBe(flag);
+    expect(prepareFilterForServer(input).is_uat).toBe(false);
+    expect(prepareCommitmentsFilterForServer(input).is_territorial_executive).toBe(flag);
+    expect(prepareCommitmentsFilterForServer(input).is_uat).toBe(false);
+  });
+});

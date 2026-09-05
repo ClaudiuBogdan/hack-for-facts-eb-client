@@ -141,7 +141,7 @@ vi.mock('../../../filters/account-type-filter/AccountCategoryRadio', () => ({
 }))
 
 vi.mock('../../../filters/flags-filter', () => ({
-  IsUatFilter: () => <div data-testid="is-uat-filter">Is UAT</div>,
+  BooleanFilter: () => <div data-testid="is-uat-filter">Is UAT</div>,
 }))
 
 vi.mock('../../../filters/amount-range-filter', () => ({
