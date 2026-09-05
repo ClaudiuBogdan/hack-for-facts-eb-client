@@ -88,6 +88,8 @@ export const insSourcePublicationSchema = z
   .passthrough()
 
 export const insSourceDimensionSchema = z.object({
+  label_ro: z.string().nullish(),
+  label_en: z.string().nullish(),
   index: z.number().int().min(0).max(8),
   type: z.enum([
     'TEMPORAL',

@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
-import { fetchInsSourceVector } from './ins-source-fetcher'
+import {
+  fetchInsSourceVector,
+  fetchInsSourceInspection,
+} from './ins-source-fetcher'
 
 vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: vi.fn() }))
 const request = vi.mocked(graphqlQuery)
@@ -127,5 +130,68 @@ describe('native INS source vector transport', () => {
       (await fetchInsSourceVector({ datasetCode: 'TEST' })).observations[0]
         .time_period.periodicity,
     ).toBe('SEMESTRIAL')
+  })
+})
+
+describe('bounded source inspection', () => {
+  it('reads one original page, exposes truncation and preserves paired input', async () => {
+    request.mockResolvedValue(response(2024, true))
+    const filter = { sourcePins: [{ dimensionIndex: 0, memberCode: '0' }] }
+    const preview = await fetchInsSourceInspection({
+      datasetCode: 'TEST',
+      filter,
+    })
+    expect(preview.truncated).toBe(true)
+    expect(preview.observations[0].value).toBe('123456789012345678.91')
+    expect(request).toHaveBeenCalledTimes(1)
+    expect(request).toHaveBeenCalledWith(
+      expect.any(String),
+      { datasetCode: 'TEST', filter, offset: 0, limit: 50 },
+      expect.objectContaining({ auth: 'none' }),
+    )
+  })
+  it.each([
+    { totalCount: 0, hasNextPage: true, hasPreviousPage: false },
+    { totalCount: 1, hasNextPage: true, hasPreviousPage: false },
+    { totalCount: 2, hasNextPage: false, hasPreviousPage: false },
+    { totalCount: -1, hasNextPage: true, hasPreviousPage: true },
+  ])('rejects contradictory preview pagination %#', async (pageInfo) => {
+    request.mockResolvedValue({
+      descriptor,
+      insObservations: { nodes: [row(2024)], pageInfo },
+    })
+    await expect(
+      fetchInsSourceInspection({ datasetCode: 'TEST' }),
+    ).rejects.toThrow()
+  })
+  it('rejects an empty continuing preview and duplicate source cells', async () => {
+    for (const nodes of [[], [row(2024), row(2024)]]) {
+      request.mockResolvedValue({
+        descriptor,
+        insObservations: {
+          nodes,
+          pageInfo: {
+            totalCount: -1,
+            hasNextPage: true,
+            hasPreviousPage: false,
+          },
+        },
+      })
+      await expect(
+        fetchInsSourceInspection({ datasetCode: 'TEST' }),
+      ).rejects.toThrow()
+    }
+  })
+  it('retains a complete empty preview without inventing missing data', async () => {
+    request.mockResolvedValue({
+      descriptor,
+      insObservations: {
+        nodes: [],
+        pageInfo: { totalCount: 0, hasNextPage: false, hasPreviousPage: false },
+      },
+    })
+    expect(
+      await fetchInsSourceInspection({ datasetCode: 'TEST' }),
+    ).toMatchObject({ observations: [], truncated: false })
   })
 })

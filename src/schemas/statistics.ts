@@ -1,5 +1,8 @@
 import { z } from 'zod'
-import type { InsSourceDescriptor, InsSourceGeoPairs } from '@/lib/ins/source-contract'
+import type {
+  InsSourceDescriptor,
+  InsSourceGeoPairs,
+} from '@/lib/ins/source-contract'
 import type { NativeInsObservation } from './ins'
 import type {
   InsDataset,
@@ -33,19 +36,22 @@ import type {
  * Invalid/non-string values degrade to no filter.
  */
 export const statisticsPeriodSearchSchema = z
-  .preprocess((value) => {
-    // The router's search parser JSON-parses bare digits, so the natural
-    // ?period=2019 arrives as a NUMBER — coerce before validating.
-    const candidate = typeof value === 'number' ? String(value) : value
-    if (typeof candidate !== 'string') return 'latest'
-    const normalized = candidate.trim()
-    return normalized.length > 0 ? normalized : 'latest'
-  }, z.union([
-    z.literal('latest'),
-    z.string().regex(/^\d{4}$/),
-    z.string().regex(/^\d{4}-Q[1-4]$/),
-    z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/),
-  ]))
+  .preprocess(
+    (value) => {
+      // The router's search parser JSON-parses bare digits, so the natural
+      // ?period=2019 arrives as a NUMBER — coerce before validating.
+      const candidate = typeof value === 'number' ? String(value) : value
+      if (typeof candidate !== 'string') return 'latest'
+      const normalized = candidate.trim()
+      return normalized.length > 0 ? normalized : 'latest'
+    },
+    z.union([
+      z.literal('latest'),
+      z.string().regex(/^\d{4}$/),
+      z.string().regex(/^\d{4}-Q[1-4]$/),
+      z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/),
+    ]),
+  )
   .catch('latest')
 
 export type StatisticsPeriodSearch = z.infer<
@@ -144,28 +150,21 @@ export type StatisticsDatasetExplorerSearch = z.infer<
 const classificationPinSchema = z.string().regex(/^[^:]+:[^:]+$/)
 
 /**
- * A pinned territory, encoded as `"siruta:54975"` (LAU) or `"cod:CJ"` (NUTS3).
- * The two forms map to different `InsObservationFilterInput` fields.
- */
-const territoryPinSchema = z.string().regex(/^(siruta|cod):[A-Za-z0-9]+$/)
-
-/**
  * Search state for the dataset detail route (`/statistici/seturi/$cod`).
  *
- * Flat and bounded: at most 8 classification pins, one per classification type
- * (replacing a pin is a keyed upsert, not an append).
+ * Preserve identity input for descriptor-aware validation in source-selection.
+ * Invalid explicit selections must remain visible and editable.
  */
 export const statisticsDatasetDetailSearchSchema = z
   .object({
-    teritoriu: territoryPinSchema.optional().catch(undefined),
-    clasificari: z
-      .array(classificationPinSchema)
-      .max(8)
-      .nonempty()
+    // Identity selections stay intact for explicit validation and recovery.
+    teritoriu: z.unknown().optional(),
+    clasificari: z.unknown().optional(),
+    unitate: z.unknown().optional(),
+    frecventa: z
+      .enum(['ANNUAL', 'QUARTERLY', 'MONTHLY'])
       .optional()
       .catch(undefined),
-    unitate: z.string().trim().min(1).optional().catch(undefined),
-    frecventa: z.enum(['ANNUAL', 'QUARTERLY', 'MONTHLY']).optional().catch(undefined),
     din: z.number().int().min(1900).max(2100).optional().catch(undefined),
     pana: z.number().int().min(1900).max(2100).optional().catch(undefined),
     pagina: z.number().int().min(1).optional().catch(undefined),
@@ -338,7 +337,13 @@ export interface StatisticsIndicatorTile {
   readonly datasetNameEn: string | null
   readonly periodicity: readonly string[]
   readonly dataStatus: StatisticsDatasetDataStatus
-  readonly tileState: 'available' | 'catalog-only' | 'no-data' | 'ambiguous' | 'unavailable' | 'period-ambiguous'
+  readonly tileState:
+    | 'available'
+    | 'catalog-only'
+    | 'no-data'
+    | 'ambiguous'
+    | 'unavailable'
+    | 'period-ambiguous'
   /** Explicit server history bound; absent only in mock fixtures. */
   readonly truncated?: boolean
   readonly geographicWitnesses?: readonly InsSourceGeoPairs[]
@@ -488,6 +493,8 @@ export interface StatisticsRelatedDataset {
 
 /** Detail POST B payload: the resolved series + the related-datasets probe. */
 export interface StatisticsDatasetSeries {
+  readonly readMode?: 'inspection' | 'complete'
+  readonly inspectionTruncated?: boolean
   readonly nativeContract?: 'native-v1'
   /** Present on complete native vectors; absent only in mock data. */
   readonly sourceDescriptor?: InsSourceDescriptor

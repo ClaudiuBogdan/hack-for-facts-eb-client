@@ -13,21 +13,21 @@ import type { StatisticsRelatedDataset } from '@/schemas/statistics'
 import { DataStatusBadge } from './data-status-badge'
 import { DetailObservationsTable } from './detail-observations-table'
 import { ValueStatusLegend } from './detail-value-status-legend'
-import type { CsvClassificationColumn } from '../lib/observations-csv'
 import { DETAIL_PAGE_SIZE } from '../lib/dataset-selection'
 import { statisticsTheme } from '../lib/statistics-theme'
 import { formatObservationValue } from '../lib/format'
 
 type Props = {
   readonly dataset: InsDatasetDetails
+  readonly sourceDescriptor?: unknown
   /** The exact-cell rows backing the chart; the table pages over them. */
   readonly observations: readonly InsObservation[]
-  readonly classificationColumns: readonly CsvClassificationColumn[]
   readonly observedSpan: { readonly from: number; readonly to: number } | null
   readonly related: readonly StatisticsRelatedDataset[]
   readonly relatedTotalCount: number | null
   readonly page: number
   readonly onPageChange: (page: number) => void
+  readonly onSelectSource?: (observation: InsObservation) => void
   /** The compare bundle for this dataset+territory — the note points there. */
   readonly compareSearch: {
     readonly cod: string
@@ -43,17 +43,20 @@ type Props = {
  */
 export function DetailAccordion({
   dataset,
+  sourceDescriptor,
   observations,
-  classificationColumns,
   observedSpan,
   related,
   relatedTotalCount,
   page,
   onPageChange,
+  onSelectSource,
   compareSearch,
 }: Props) {
   const dimensions = dataset.dimensions ?? []
-  const territorial = dimensions.find((dimension) => dimension.type === 'TERRITORIAL')
+  const territorial = dimensions.find(
+    (dimension) => dimension.type === 'TERRITORIAL',
+  )
   const presentStatuses = [
     ...new Set(
       observations
@@ -79,14 +82,15 @@ export function DetailAccordion({
       <AccordionItem value="tabel" className="px-4">
         <AccordionTrigger className="text-sm font-medium">
           <Trans>
-            Tabelul seriei ({formatObservationValue(String(observations.length))})
+            Tabelul seriei (
+            {formatObservationValue(String(observations.length))})
           </Trans>
         </AccordionTrigger>
         <AccordionContent className="space-y-3">
           <p className="text-xs text-muted-foreground">
             <Trans>
-              Valorile din spatele graficului — aceeași selecție, aceleași
-              rânduri, nu întregul set la acest teritoriu. Pentru alte
+              Observațiile selecției curente păstrează coordonatele originale
+              INS. Alege seria unui rând pentru istoricul complet. Pentru alte
               teritorii,{' '}
               <Link
                 to="/statistici/comparatii"
@@ -106,7 +110,8 @@ export function DetailAccordion({
             <>
               <DetailObservationsTable
                 observations={pageRows}
-                classificationColumns={classificationColumns}
+                sourceDescriptor={sourceDescriptor}
+                onSelectSource={onSelectSource}
               />
               <ValueStatusLegend statuses={presentStatuses} />
               {observations.length > DETAIL_PAGE_SIZE ? (
@@ -165,7 +170,8 @@ export function DetailAccordion({
             <p className="text-xs text-muted-foreground">
               <Trans>
                 Dimensiunea teritorială are{' '}
-                {formatObservationValue(String(territorial.option_count))} opțiuni.
+                {formatObservationValue(String(territorial.option_count))}{' '}
+                opțiuni.
               </Trans>
             </p>
           ) : null}
@@ -179,7 +185,9 @@ export function DetailAccordion({
         <AccordionContent className="space-y-2 text-sm">
           <p className="flex flex-wrap items-center gap-2">
             <span className={statisticsTheme.provenanceChip}>INS Tempo</span>
-            <span className={statisticsTheme.provenanceChip}>{dataset.code}</span>
+            <span className={statisticsTheme.provenanceChip}>
+              {dataset.code}
+            </span>
             {dataset.context_name_ro ? (
               <span className="text-xs text-muted-foreground">
                 {dataset.context_name_ro}
@@ -213,7 +221,8 @@ export function DetailAccordion({
           <AccordionTrigger className="text-sm font-medium">
             <Trans>
               Seturi înrudite ({formatObservationValue(String(related.length))}
-              {relatedTotalCount !== null && relatedTotalCount - 1 > related.length
+              {relatedTotalCount !== null &&
+              relatedTotalCount - 1 > related.length
                 ? ` din ${formatObservationValue(String(relatedTotalCount - 1))}`
                 : ''}
               )
@@ -273,11 +282,7 @@ function CoverageFact({
   return (
     <p className="flex items-center justify-between gap-3">
       <span>{label}</span>
-      <span
-        className={
-          covered ? 'text-foreground' : 'text-muted-foreground'
-        }
-      >
+      <span className={covered ? 'text-foreground' : 'text-muted-foreground'}>
         {covered ? <Trans>acoperit</Trans> : <Trans>fără date</Trans>}
       </span>
     </p>

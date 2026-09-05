@@ -66,17 +66,26 @@ export function useDimensionValues(params: {
  */
 export function useDatasetTier0(params: {
   readonly code: string
-  readonly entity: InsEntitySelectorInput
+  readonly entity: InsEntitySelectorInput | null
   readonly entityKey: string
   readonly initialData?: StatisticsDatasetTier0
 }) {
   return useQuery<StatisticsDatasetTier0>({
-    queryKey: ['statistics', 'native-v1', 'dataset', params.code, 'tier0', params.entityKey] as const,
+    queryKey: [
+      'statistics',
+      'native-source-selection-v1',
+      'dataset',
+      params.code,
+      'tier0',
+      params.entityKey,
+    ] as const,
     queryFn: ({ signal }) =>
       fetchDatasetTier0({ code: params.code, entity: params.entity, signal }),
     enabled: params.code.trim().length > 0,
     staleTime: DATASET_STALE_TIME,
-    ...(params.initialData?.nativeContract === 'native-v1' ? { initialData: params.initialData } : {}),
+    ...(params.initialData?.nativeContract === 'native-v1'
+      ? { initialData: params.initialData }
+      : {}),
   })
 }
 
@@ -86,20 +95,34 @@ export function useDatasetSeries(params: {
   readonly scopeKey: string
   readonly filter: InsObservationFilterInput
   readonly contextCode: string | null
+  readonly inspection?: boolean
   readonly enabled: boolean
   readonly initialData?: StatisticsDatasetSeries
 }) {
   return useQuery<StatisticsDatasetSeries>({
-    queryKey: ['statistics', 'native-v1', 'dataset', params.code, 'series', params.scopeKey] as const,
+    queryKey: [
+      'statistics',
+      'native-source-selection-v1',
+      'dataset',
+      params.code,
+      'series',
+      params.scopeKey,
+      params.inspection ? 'inspection' : 'complete',
+    ] as const,
     queryFn: ({ signal }) =>
       fetchDatasetSeries({
         code: params.code,
         filter: params.filter,
         contextCode: params.contextCode,
+        inspection: params.inspection,
         signal,
       }),
     enabled: params.enabled && params.code.trim().length > 0,
     staleTime: DATASET_STALE_TIME,
-    ...(params.initialData?.nativeContract === 'native-v1' ? { initialData: params.initialData } : {}),
+    ...(params.initialData?.nativeContract === 'native-v1' &&
+    (params.initialData.readMode ?? 'complete') ===
+      (params.inspection ? 'inspection' : 'complete')
+      ? { initialData: params.initialData }
+      : {}),
   })
 }

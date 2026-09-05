@@ -4,16 +4,11 @@ import {
   fetchDatasetSeries,
   fetchDatasetTier0,
 } from '@/features/statistics/api/dataset-detail-api'
+import { detailScopeKey } from '@/features/statistics/lib/dataset-selection'
 import {
-  buildEffectiveScope,
-  buildSeriesFilter,
-  classificationTypeCode,
-  detailScopeKey,
-  dimensionsOfType,
-  NATIONAL_ENTITY,
-  parseTerritoryPin,
-  territoryPinToEntity,
-} from '@/features/statistics/lib/dataset-selection'
+  detailBootstrapEntity,
+  resolveDetailSelection,
+} from '@/features/statistics/lib/source-selection'
 import { getDatasetDataStatus } from '@/features/statistics/lib/dataset-status'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 import { parseStatisticsDatasetDetailSearch } from '@/schemas/statistics'
@@ -28,20 +23,7 @@ export type StatisticsDatasetDetailLoaderData = {
   readonly scopeKey: string
 }
 
-/**
- * Tier-0 loader — at most TWO POSTs, sequential because POST B's filter is
- * derived from POST A's resolution:
- *
- *   A. dataset metadata + server-resolved latest value for the entity
- *      (national by default, the URL's territory pin otherwise);
- *   B. the resolved series + the related-datasets probe, SKIPPED when the
- *      dataset is missing, catalog-only, or the scope leaves any
- *      classification dimension uncovered — the same every-dim-covered
- *      predicate as the page's `seriesEnabled`, so the loader never fetches
- *      (and 24h-caches) a sibling-leaking series the page would refuse.
- *
- * Failures degrade to nulls: SSR always answers, the client queries retry.
- */
+/** Shared source selection governs both SSR reads and client hydration. */
 export const Route = createFileRoute('/statistici/seturi/$cod')({
   validateSearch: parseStatisticsDatasetDetailSearch,
   // Canonical uppercase codes: insDataset(code:) is exact-match, and one URL
@@ -63,15 +45,18 @@ export const Route = createFileRoute('/statistici/seturi/$cod')({
     clasificari: search.clasificari,
     unitate: search.unitate,
   }),
-  loader: async ({ params, deps, abortController }): Promise<StatisticsDatasetDetailLoaderData> => {
+  loader: async ({
+    params,
+    deps,
+    abortController,
+  }): Promise<StatisticsDatasetDetailLoaderData> => {
     // insDataset(code:) is exact-match, no trim, no uppercase — normalize once.
     const code = params.cod.trim().toUpperCase()
     const scopeKey = detailScopeKey(deps)
 
     let tier0: StatisticsDatasetTier0
     try {
-      const entity =
-        territoryPinToEntity(parseTerritoryPin(deps.teritoriu)) ?? NATIONAL_ENTITY
+      const entity = detailBootstrapEntity(deps)
       tier0 = await fetchDatasetTier0({
         code,
         entity,
@@ -86,21 +71,18 @@ export const Route = createFileRoute('/statistici/seturi/$cod')({
       return { tier0, series: null, scopeKey }
     }
 
-    const scope = buildEffectiveScope({ search: deps, latest: tier0.latest })
-    const everyDimensionCovered = dimensionsOfType(
-      tier0.dataset.dimensions,
-      'CLASSIFICATION',
-    ).every((dimension) =>
-      scope.classifications.has(classificationTypeCode(dimension)),
-    )
-    if (!everyDimensionCovered) {
-      return { tier0, series: null, scopeKey }
-    }
+    const selection = resolveDetailSelection({
+      search: deps,
+      dataset: tier0.dataset,
+      latest: tier0.latest,
+    })
+    if (selection.filter === null) return { tier0, series: null, scopeKey }
 
     try {
       const series = await fetchDatasetSeries({
         code,
-        filter: buildSeriesFilter(scope),
+        filter: selection.filter,
+        inspection: !selection.canDerive,
         contextCode: tier0.dataset.context_code ?? null,
         signal: abortController.signal,
       })
@@ -115,8 +97,9 @@ export const Route = createFileRoute('/statistici/seturi/$cod')({
       staleWhileRevalidateSeconds: 3600,
     }),
   head: ({ loaderData }) => {
-    const dataset = (loaderData as StatisticsDatasetDetailLoaderData | undefined)
-      ?.tier0?.dataset
+    const dataset = (
+      loaderData as StatisticsDatasetDetailLoaderData | undefined
+    )?.tier0?.dataset
     if (!dataset) {
       return { meta: [{ title: `${t`Set de date INS`} — Transparenta.eu` }] }
     }

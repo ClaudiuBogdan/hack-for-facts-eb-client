@@ -1,3 +1,4 @@
+import { editSourcePin } from '../lib/source-selection'
 import { isInsChartPeriodicity } from '@/lib/ins/source-contract'
 import { useState, type ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
@@ -31,18 +32,14 @@ import type {
 } from '@/schemas/ins'
 import type { StatisticsDatasetDetailSearch } from '@/schemas/statistics'
 import {
-  classificationPinMap,
   classificationTypeCode,
   dimensionsOfType,
-  encodeTerritoryPin,
-  removeClassificationPin,
-  territoryPinFromValue,
-  upsertClassificationPin,
   type DetailSearchPatch,
   type EffectiveScope,
 } from '../lib/dataset-selection'
 import { periodicityLabel } from '../lib/periodicity-labels'
 import { DetailDimensionCombobox } from './detail-dimension-combobox'
+import { DetailTerritoryControl } from './detail-territory-control'
 
 export interface ScopeSegment {
   readonly id: string
@@ -61,6 +58,7 @@ type Props = {
   readonly dataset: InsDatasetDetails
   readonly search: StatisticsDatasetDetailSearch
   readonly scope: EffectiveScope
+  readonly canDerive: boolean
   /** Classification dimensions with NO effective value — the way out of an
    *  unresolved state lives here, so their segments always render. */
   readonly unresolvedDimensions: readonly InsDimension[]
@@ -84,6 +82,7 @@ export function DetailScopeSentence({
   dataset,
   search,
   scope,
+  canDerive,
   unresolvedDimensions,
   territoryLabel,
   classificationLabels,
@@ -97,6 +96,7 @@ export function DetailScopeSentence({
     dataset,
     search,
     scope,
+    canDerive,
     unresolvedDimensions,
     territoryLabel,
     classificationLabels,
@@ -204,6 +204,7 @@ function buildSegments(params: {
   readonly dataset: InsDatasetDetails
   readonly search: StatisticsDatasetDetailSearch
   readonly scope: EffectiveScope
+  readonly canDerive: boolean
   readonly unresolvedDimensions: readonly InsDimension[]
   readonly territoryLabel: string
   readonly classificationLabels: ReadonlyMap<string, string>
@@ -215,6 +216,7 @@ function buildSegments(params: {
     dataset,
     search,
     scope,
+    canDerive,
     unresolvedDimensions,
     territoryLabel,
     classificationLabels,
@@ -223,32 +225,51 @@ function buildSegments(params: {
     onChange,
   } = params
 
+  // Editing a resolved cell materializes its complete selection atomically.
+  // Invalid or incomplete input retains the explicit recovery path instead.
+  const sourceSearch = canDerive
+    ? {
+        ...search,
+        clasificari: [...scope.classifications].map(
+          ([type, code]) => `${type}:${code}`,
+        ),
+        unitate: scope.unitCode ?? undefined,
+      }
+    : search
+  const onSourceChange = (patch: DetailSearchPatch) =>
+    onChange(
+      canDerive
+        ? {
+            clasificari: sourceSearch.clasificari,
+            unitate: sourceSearch.unitate,
+            ...(scope.periodicity && isInsChartPeriodicity(scope.periodicity)
+              ? { frecventa: scope.periodicity }
+              : {}),
+            ...patch,
+          }
+        : patch,
+    )
+
   const segments: ScopeSegment[] = []
   const dimensions = dataset.dimensions ?? []
 
-  const territorialDimension = dimensionsOfType(dimensions, 'TERRITORIAL')[0]
-  if (territorialDimension) {
-    segments.push({
-      id: 'teritoriu',
-      text: territoryLabel,
-      defaulted: scope.territoryDefaulted,
-      controlLabel: territorialDimension.label_ro ?? t`Teritoriu`,
-      control: (
-        <TerritoryControl
-          datasetCode={dataset.code}
-          dimension={territorialDimension}
-          search={search}
-          onChange={onChange}
-        />
-      ),
-    })
-  }
+  segments.push({
+    id: 'teritoriu',
+    text:
+      scope.territoryMode === 'source-coordinates'
+        ? t`Fără filtru teritorial canonic`
+        : territoryLabel,
+    defaulted: scope.territoryDefaulted,
+    controlLabel: t`Filtru teritorial canonic`,
+    control: <DetailTerritoryControl search={search} onChange={onChange} />,
+  })
 
   const unresolvedTypeCodes = new Set(
     unresolvedDimensions.map(classificationTypeCode),
   )
-  const pinnedByType = classificationPinMap(search.clasificari)
-  for (const dimension of dimensionsOfType(dimensions, 'CLASSIFICATION')) {
+  for (const dimension of dimensions.filter(
+    (d) => d.type === 'CLASSIFICATION' || d.type === 'TERRITORIAL',
+  )) {
     const typeCode = classificationTypeCode(dimension)
     const value = scope.classifications.get(typeCode)
     const controlLabel =
@@ -268,9 +289,10 @@ function buildSegments(params: {
         <ClassificationControl
           datasetCode={dataset.code}
           dimension={dimension}
-          search={search}
-          pinnedValue={pinnedByType.get(typeCode) ?? null}
-          onChange={onChange}
+          search={sourceSearch}
+          pinnedValue={value ?? null}
+          selectedLabel={classificationLabels.get(typeCode) ?? value ?? null}
+          onChange={onSourceChange}
         />
       ),
     })
@@ -287,18 +309,21 @@ function buildSegments(params: {
         <UnitControl
           datasetCode={dataset.code}
           dimension={unitDimension}
-          search={search}
-          onChange={onChange}
+          selectedCode={scope.unitCode}
+          selectedLabel={unitLabel}
+          onChange={onSourceChange}
         />
       ),
     })
   }
 
-  if (scope.periodicity) {
+  if (scope.periodicity || dataset.periodicity.length > 1) {
     const periodicities = dataset.periodicity ?? []
     segments.push({
       id: 'frecventa',
-      text: periodicityLabel(scope.periodicity),
+      text: scope.periodicity
+        ? periodicityLabel(scope.periodicity)
+        : t`Alege frecvența`,
       defaulted: !search.frecventa && periodicities.length > 1,
       controlLabel: t`Frecvență`,
       control:
@@ -306,7 +331,7 @@ function buildSegments(params: {
           <div className="space-y-1.5">
             <Label>{t`Frecvență`}</Label>
             <Select
-              value={scope.periodicity}
+              value={scope.periodicity ?? undefined}
               onValueChange={(value) => {
                 const periodicity = value as InsPeriodicity
                 if (isInsChartPeriodicity(periodicity))
@@ -346,76 +371,37 @@ function buildSegments(params: {
   return segments
 }
 
-function TerritoryControl({
-  datasetCode,
-  dimension,
-  search,
-  onChange,
-}: {
-  readonly datasetCode: string
-  readonly dimension: InsDimension
-  readonly search: StatisticsDatasetDetailSearch
-  readonly onChange: (patch: DetailSearchPatch) => void
-}) {
-  return (
-    <DetailDimensionCombobox
-      datasetCode={datasetCode}
-      dimensionIndex={dimension.index}
-      label={dimension.label_ro ?? t`Teritoriu`}
-      placeholder={t`Caută un teritoriu`}
-      selectedKey={search.teritoriu ?? null}
-      selectedLabel={search.teritoriu ?? null}
-      optionKey={(value) => {
-        const pin = value.territory
-          ? territoryPinFromValue(value.territory)
-          : null
-        return pin ? encodeTerritoryPin(pin) : null
-      }}
-      onSelect={(value) => {
-        const pin = value.territory
-          ? territoryPinFromValue(value.territory)
-          : null
-        if (pin) onChange({ teritoriu: encodeTerritoryPin(pin) })
-      }}
-      onClear={() => onChange({ teritoriu: undefined })}
-    />
-  )
-}
-
 function ClassificationControl({
   datasetCode,
   dimension,
   search,
   pinnedValue,
+  selectedLabel,
   onChange,
 }: {
   readonly datasetCode: string
   readonly dimension: InsDimension
   readonly search: StatisticsDatasetDetailSearch
   readonly pinnedValue: string | null
+  readonly selectedLabel: string | null
   readonly onChange: (patch: DetailSearchPatch) => void
 }) {
+  if (search.clasificari !== undefined && !Array.isArray(search.clasificari))
+    return (
+      <p>
+        <Trans>
+          Șterge clasificările invalide înainte de a alege alte valori.
+        </Trans>
+      </p>
+    )
   const typeCode = classificationTypeCode(dimension)
   const label =
     dimension.label_ro ?? dimension.classification_type?.name_ro ?? typeCode
 
-  const selectPin = (code: string) => {
-    onChange({
-      clasificari: [
-        ...upsertClassificationPin(search.clasificari, {
-          typeCode,
-          valueCode: code,
-        }),
-      ] as [string, ...string[]],
-    })
-  }
-  const clearPin = () => {
-    const next = removeClassificationPin(search.clasificari, typeCode)
-    onChange({
-      clasificari:
-        next.length > 0 ? ([...next] as [string, ...string[]]) : undefined,
-    })
-  }
+  const selectPin = (code: string) =>
+    onChange({ clasificari: editSourcePin(search.clasificari, typeCode, code) })
+  const clearPin = () =>
+    onChange({ clasificari: editSourcePin(search.clasificari, typeCode, null) })
 
   return (
     <DetailDimensionCombobox
@@ -424,7 +410,7 @@ function ClassificationControl({
       label={label}
       placeholder={t`Alege o valoare`}
       selectedKey={pinnedValue}
-      selectedLabel={pinnedValue}
+      selectedLabel={selectedLabel}
       optionKey={(value) => value.classification_value?.code ?? null}
       onSelect={(value) => {
         const code = value.classification_value?.code
@@ -438,12 +424,14 @@ function ClassificationControl({
 function UnitControl({
   datasetCode,
   dimension,
-  search,
+  selectedCode,
+  selectedLabel,
   onChange,
 }: {
   readonly datasetCode: string
   readonly dimension: InsDimension
-  readonly search: StatisticsDatasetDetailSearch
+  readonly selectedCode: string | null
+  readonly selectedLabel: string | null
   readonly onChange: (patch: DetailSearchPatch) => void
 }) {
   return (
@@ -452,8 +440,8 @@ function UnitControl({
       dimensionIndex={dimension.index}
       label={t`Unitate de măsură`}
       placeholder={t`Alege o unitate`}
-      selectedKey={search.unitate ?? null}
-      selectedLabel={search.unitate ?? null}
+      selectedKey={selectedCode}
+      selectedLabel={selectedLabel ?? selectedCode}
       optionKey={(value) => value.unit?.code ?? null}
       onSelect={(value) => {
         if (value.unit?.code !== undefined && value.unit.code !== null) {

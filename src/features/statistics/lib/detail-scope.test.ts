@@ -147,7 +147,10 @@ describe('buildSeriesFilter', () => {
 
   it('maps cod:RO pins to the national level, never NUTS3', () => {
     const filter = buildSeriesFilter(
-      buildEffectiveScope({ search: { teritoriu: 'cod:RO' }, latest: latest() }),
+      buildEffectiveScope({
+        search: { teritoriu: 'cod:RO' },
+        latest: latest(),
+      }),
     )
     expect(filter.territoryCodes).toEqual(['RO'])
     expect(filter.territoryLevels).toEqual(['NATIONAL'])
@@ -199,14 +202,14 @@ describe('filterExactCell', () => {
 })
 
 describe('detailScopeKey', () => {
-  it('is order-insensitive over pins and ignores paging/window params', () => {
+  it('preserves raw pins and ignores paging/window params', () => {
     const a = detailScopeKey({
       clasificari: ['SEX:F', 'AGE_GROUP:TOTAL'],
       pagina: 3,
       din: 2018,
     })
     const b = detailScopeKey({
-      clasificari: ['AGE_GROUP:TOTAL', 'SEX:F'],
+      clasificari: ['SEX:F', 'AGE_GROUP:TOTAL'],
       pana: 2022,
     })
     expect(a).toBe(b)

@@ -18,9 +18,9 @@ import type {
  * and the `InsObservationFilterInput` builder in one pure module means a shared
  * link and a live query can never disagree about what is pinned.
  *
- * The pins carry **domain codes** (`SEXE:total`, `siruta:54975`), never
- * `nom_item_id` surrogate keys — those are dimension-value row ids and are
- * meaningless outside the dataset that produced them.
+ * Native detail selections use dataset-scoped Dn/member identities and are
+ * validated by source-selection.ts. The permissive codecs below also support
+ * comparison links until that surface completes its native migration.
  */
 
 /** A partial URL-state write: every control patches exactly one key. */
@@ -34,9 +34,6 @@ export const DIMENSION_PAGE_SIZE = 20
 
 /** Hard cap on chart points, before gap injection trims to the recent window. */
 export const CHART_MAX_POINTS = 200
-
-/** Hard cap on exported rows. */
-export const CSV_MAX_ROWS = 10_000
 
 export interface ClassificationPin {
   readonly typeCode: string
@@ -56,7 +53,8 @@ export type TerritoryPin =
  * non-empty type and one non-empty value, so a hand-mangled URL degrades to
  * "that pin is not applied" rather than to a filter nobody asked for.
  */
-export function parseClassificationPin(pin: string): ClassificationPin | null {
+export function parseClassificationPin(pin: unknown): ClassificationPin | null {
+  if (typeof pin !== 'string') return null
   const separator = pin.indexOf(':')
   if (separator <= 0 || separator === pin.length - 1) return null
 
@@ -73,7 +71,7 @@ export function encodeClassificationPin(pin: ClassificationPin): string {
 
 /** Decodes the pin list, dropping malformed entries and later duplicates of a type. */
 export function parseClassificationPins(
-  pins: readonly string[] | undefined,
+  pins: unknown,
 ): readonly ClassificationPin[] {
   if (!pins || !Array.isArray(pins)) return []
 
@@ -91,7 +89,7 @@ export function parseClassificationPins(
 
 /** Lookup of pinned value by classification type. */
 export function classificationPinMap(
-  pins: readonly string[] | undefined,
+  pins: unknown,
 ): ReadonlyMap<string, string> {
   return new Map(
     parseClassificationPins(pins).map((pin) => [pin.typeCode, pin.valueCode]),
@@ -104,7 +102,7 @@ export function classificationPinMap(
  * same dimension and silently return the union.
  */
 export function upsertClassificationPin(
-  pins: readonly string[] | undefined,
+  pins: unknown,
   next: ClassificationPin,
 ): readonly string[] {
   const existing = parseClassificationPins(pins)
@@ -119,7 +117,7 @@ export function upsertClassificationPin(
 
 /** Removes the pin for one classification type, keeping the rest in order. */
 export function removeClassificationPin(
-  pins: readonly string[] | undefined,
+  pins: unknown,
   type: string,
 ): readonly string[] {
   return parseClassificationPins(pins)
@@ -132,9 +130,7 @@ export function removeClassificationPin(
  * different `InsObservationFilterInput` fields, which is why the kind is part
  * of the URL rather than inferred from the value's shape.
  */
-export function parseTerritoryPin(
-  pin: string | undefined,
-): TerritoryPin | null {
+export function parseTerritoryPin(pin: unknown): TerritoryPin | null {
   // Raw search values leak past validateSearch with their parsed type.
   if (!pin || typeof pin !== 'string') return null
 
@@ -240,7 +236,6 @@ export function territoryPinToEntity(
   return { territoryCode: pin.value.toUpperCase(), territoryLevel: level }
 }
 
-
 function singlePeriodicity(
   periodicity: readonly string[] | undefined,
 ): InsPeriodicity | null {
@@ -250,6 +245,8 @@ function singlePeriodicity(
 export interface EffectiveScope {
   /** The territory pin, or null = the national default. */
   readonly territory: TerritoryPin | null
+  readonly territoryMode?:
+    'explicit' | 'national-default' | 'source-coordinates'
   readonly territoryDefaulted: boolean
   /** type code → value code: URL pins over server-resolved defaults. */
   readonly classifications: ReadonlyMap<string, string>
@@ -292,7 +289,10 @@ export function buildEffectiveScope(params: {
     defaultedTypes.delete(typeCode)
   }
 
-  const unitCode = search.unitate ?? latest?.unitCode ?? null
+  const unitCode =
+    typeof search.unitate === 'string'
+      ? search.unitate
+      : (latest?.unitCode ?? null)
 
   return {
     territory,
@@ -322,7 +322,9 @@ export function buildEffectiveScope(params: {
  * types, so a multi-type scope can still match sibling cells —
  * {@link filterExactCell} makes the single-cell guarantee client-side.
  */
-export function buildSeriesFilter(scope: EffectiveScope): InsObservationFilterInput {
+export function buildSeriesFilter(
+  scope: EffectiveScope,
+): InsObservationFilterInput {
   const filter: InsObservationFilterInput = {}
 
   if (scope.territory?.kind === 'siruta') {
@@ -338,7 +340,7 @@ export function buildSeriesFilter(scope: EffectiveScope): InsObservationFilterIn
       // Unknown cod: shape (e.g. a NUTS2 code) — rejected, never guessed.
       filter.territoryLevels = ['NATIONAL']
     }
-  } else {
+  } else if (scope.territoryMode !== 'source-coordinates') {
     filter.territoryLevels = ['NATIONAL']
   }
 
@@ -386,16 +388,15 @@ export function filterExactCell(
  * keys, and initialData matching, so they can never drift apart. `din`/`pana`
  * window client-side and `pagina` pages client-side — neither enters the key.
  */
-export function detailScopeKey(
-  search: StatisticsDatasetDetailSearch,
-): string {
+export function detailScopeKey(search: StatisticsDatasetDetailSearch): string {
   // frecventa and din/pana window CLIENT-side; pagina pages client-side —
   // none of them belongs in the fetch identity.
   return JSON.stringify({
-    contract: 'native-v1',
-    teritoriu: search.teritoriu ?? null,
-    clasificari: [...(search.clasificari ?? [])].sort(),
-    unitate: search.unitate ?? null,
+    contract: 'native-source-selection-v1',
+    // Undefined is omitted; explicit null is invalid input with a distinct key.
+    teritoriu: search.teritoriu,
+    clasificari: search.clasificari,
+    unitate: search.unitate,
   })
 }
 
@@ -436,7 +437,9 @@ export interface ComparisonTerritoryToken {
  * search values leak past validateSearch with their parsed type, so numbers
  * are accepted and coerced; everything else non-string is rejected.
  */
-export function parseComparisonToken(raw: unknown): ComparisonTerritoryToken | null {
+export function parseComparisonToken(
+  raw: unknown,
+): ComparisonTerritoryToken | null {
   if (typeof raw !== 'string' && typeof raw !== 'number') return null
   const trimmed = String(raw).trim()
   if (/^\d{1,6}$/.test(trimmed)) {

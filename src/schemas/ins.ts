@@ -236,6 +236,7 @@ export interface InsEntitySelectorInput {
 }
 
 export interface InsObservationFilterInput {
+  sourcePins?: { dimensionIndex: number; memberCode: string }[];
   territoryCodes?: string[];
   sirutaCodes?: string[];
   territoryLevels?: InsTerritoryLevel[];

@@ -1,6 +1,10 @@
+import { getInsDatasetDetails } from './ins-bootstrap-fetchers'
 import { inspectSourceSeries } from '@/lib/ins/source-series'
 import { InsSourcePageError } from '@/lib/ins/source-pages'
-import { fetchInsSourceVector } from './ins-source-fetcher'
+import {
+  fetchInsSourceVector,
+  fetchInsSourceInspection,
+} from './ins-source-fetcher'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import { insSourceDescriptorSchema } from '@/lib/ins/source-contract'
 import { type GraphQLRequestOptions } from '@/lib/api/graphql'
@@ -153,9 +157,11 @@ export async function fetchStatisticsLandingData(params: {
 }
 
 /** Landing POST 2 — loaded/catalog counts + the eight theme counts. */
-export async function fetchStatisticsLandingCatalog(params: {
-  signal?: AbortSignal
-} = {}): Promise<StatisticsLandingCatalog> {
+export async function fetchStatisticsLandingCatalog(
+  params: {
+    signal?: AbortSignal
+  } = {},
+): Promise<StatisticsLandingCatalog> {
   const response = await graphqlQuery<unknown>(
     STATISTICS_LANDING_CATALOG_QUERY,
     undefined,
@@ -198,9 +204,15 @@ export async function fetchStatisticsUatSnapshot(params: {
 /** Detail POST A — dataset metadata + the resolved tier-0 latest value. */
 export async function fetchStatisticsDatasetTier0(params: {
   code: string
-  entity: InsEntitySelectorInput
+  entity: InsEntitySelectorInput | null
   signal?: AbortSignal
 }): Promise<StatisticsDatasetTier0> {
+  if (params.entity === null)
+    return {
+      nativeContract: 'native-v1',
+      dataset: await getInsDatasetDetails(params.code, params.signal),
+      latest: null,
+    }
   const response = await graphqlQuery<unknown>(
     STATISTICS_DATASET_TIER0_QUERY,
     { code: params.code, codes: [params.code], entity: params.entity },
@@ -224,27 +236,41 @@ export async function fetchStatisticsDatasetSeries(params: {
   code: string
   filter: InsObservationFilterInput
   contextCode: string | null
+  inspection?: boolean
   limit?: number
   signal?: AbortSignal
 }): Promise<StatisticsDatasetSeries> {
   const [vector, relatedResponse] = await Promise.all([
-    fetchInsSourceVector({
-      datasetCode: params.code,
-      filter: params.filter,
-      pageSize: params.limit ?? SERIES_MAX_ROWS,
-      signal: params.signal,
-    }),
-    params.contextCode === null ? Promise.resolve(null) : graphqlQuery<unknown>(
-      STATISTICS_RELATED_DATASETS_QUERY,
-      { contextCode: params.contextCode },
-      { auth: 'none', signal: params.signal },
-    ),
+    params.inspection
+      ? fetchInsSourceInspection({
+          datasetCode: params.code,
+          filter: params.filter,
+          signal: params.signal,
+        })
+      : fetchInsSourceVector({
+          datasetCode: params.code,
+          filter: params.filter,
+          pageSize: params.limit ?? SERIES_MAX_ROWS,
+          signal: params.signal,
+        }),
+    params.contextCode === null
+      ? Promise.resolve(null)
+      : graphqlQuery<unknown>(
+          STATISTICS_RELATED_DATASETS_QUERY,
+          { contextCode: params.contextCode },
+          { auth: 'none', signal: params.signal },
+        ),
   ])
-  if (inspectSourceSeries(vector).status === 'INVALID') throw new InsSourcePageError('INVALID_PAGE')
-  const related = relatedResponse === null ? null
-    : statisticsRelatedDatasetsRawSchema.parse(relatedResponse).related
+  if (inspectSourceSeries(vector).status === 'INVALID')
+    throw new InsSourcePageError('INVALID_PAGE')
+  const related =
+    relatedResponse === null
+      ? null
+      : statisticsRelatedDatasetsRawSchema.parse(relatedResponse).related
   return {
     nativeContract: 'native-v1',
+    readMode: params.inspection ? 'inspection' : 'complete',
+    inspectionTruncated: 'truncated' in vector && vector.truncated === true,
     sourceDescriptor: vector.descriptor,
     observations: vector.observations,
     totalCount: vector.observations.length,

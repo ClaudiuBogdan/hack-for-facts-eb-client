@@ -223,7 +223,9 @@ export const INS_DATASET_DIMENSIONS_QUERY = `
  * user input) because `insObservations` takes `datasetCode` as a positional
  * argument rather than a list.
  */
-export function buildInsObservationsBatchQuery(datasetCodes: readonly string[]) {
+export function buildInsObservationsBatchQuery(
+  datasetCodes: readonly string[],
+) {
   const aliasMap: Record<string, string> = {}
   const fields = datasetCodes
     .map((code, index) => {
@@ -441,7 +443,7 @@ export const INS_SOURCE_OBSERVATIONS_QUERY = `
       code
       dimension_count
       metadata
-      dimensions { index type classification_type { code } }
+      dimensions { index type label_ro label_en classification_type { code } }
     }
     insObservations(datasetCode: $datasetCode, filter: $filter, limit: $limit, offset: $offset) {
       nodes { ${INS_OBSERVATION_FIELDS} }

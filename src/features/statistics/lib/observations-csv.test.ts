@@ -1,124 +1,136 @@
 import { describe, expect, it } from 'vitest'
-import type { InsObservation } from '@/schemas/ins'
-import { buildObservationsCsv, buildObservationsCsvFilename } from './observations-csv'
+import Papa from 'papaparse'
+import {
+  buildObservationsCsv,
+  buildObservationsCsvFilename,
+} from './observations-csv'
+import {
+  sourceDescriptor,
+  sourceObservation,
+} from './source-observations.test-fixtures'
 
-const SEXE_COLUMN = { typeCode: 'SEXE', label: 'Sexe' }
-
-function observation(overrides: Partial<InsObservation> = {}): InsObservation {
-  return {
-    dataset_code: 'POP107D',
-    value: '324576',
-    value_status: null,
-    time_period: { iso_period: '2020', year: 2020, periodicity: 'ANNUAL' },
-    territory: { siruta_code: '54975', name_ro: 'Municipiul Cluj-Napoca' },
-    unit: { code: 'PERS', name_ro: 'Număr persoane' },
-    classifications: [{ type_code: 'SEXE', code: 'total', name_ro: 'Total' }],
-    ...overrides,
-  }
+function parsed(observations = [sourceObservation()]) {
+  const result = buildObservationsCsv({
+    descriptor: sourceDescriptor,
+    observations,
+    complete: true,
+  })
+  const csv = Papa.parse<Record<string, string>>(result.csv, { header: true })
+  expect(csv.errors).toEqual([])
+  return { ...result, rows: csv.data }
 }
 
-function rows(csv: string): string[] {
-  return csv.split('\n')
-}
-
-describe('buildObservationsCsv', () => {
-  it('emits a header with one column per classification type', () => {
-    const { csv } = buildObservationsCsv({
-      observations: [observation()],
-      classificationColumns: [SEXE_COLUMN, { typeCode: 'VARSTA', label: 'Grupe de vârstă' }],
-    })
-
-    expect(rows(csv)[0]).toBe(
-      'Perioadă,Teritoriu,Cod SIRUTA,Unitate,Sexe,Grupe de vârstă,Valoare,Stare valoare',
+describe('native source CSV', () => {
+  it('round-trips every original field, publication and dimension declaration', () => {
+    const observation = sourceObservation()
+    const { rows } = parsed([observation])
+    expect(JSON.parse(rows[0].source_row_json)).toEqual(observation)
+    expect(JSON.parse(rows[0].publication_json)).toEqual(
+      sourceDescriptor.metadata,
+    )
+    expect(JSON.parse(rows[0].dimensions_json)).toEqual(
+      sourceDescriptor.dimensions,
+    )
+    expect(JSON.parse(rows[0].geography_json)).toEqual(
+      observation.dimensions.geography,
+    )
+    expect(JSON.parse(rows[0].D1_member_code_json)).toBe('-1')
+    expect(JSON.parse(rows[0].D2_member_code_json)).toBe('2147483647')
+    expect(JSON.parse(rows[0].D0_classification_json)).toEqual(
+      observation.classifications[0],
     )
   })
-
-  it('writes the value verbatim, without reformatting the decimal', () => {
-    const { csv } = buildObservationsCsv({
-      observations: [observation({ value: '1234567.890' })],
-      classificationColumns: [SEXE_COLUMN],
-    })
-
-    expect(rows(csv)[1]).toContain('1234567.890')
-    expect(rows(csv)[1]).not.toContain('1234567.89,')
+  it('preserves a long negative decimal and trailing zeros as text', () => {
+    expect(JSON.parse(parsed().rows[0].value_decimal_json)).toBe(
+      '-123456789012345678901.2300',
+    )
   })
-
-  it('preserves diacritics untouched', () => {
-    const { csv } = buildObservationsCsv({
-      observations: [
-        observation({ territory: { name_ro: 'Municipiul Târgu Mureș', siruta_code: '114523' } }),
-      ],
-      classificationColumns: [SEXE_COLUMN],
-    })
-
-    expect(csv).toContain('Municipiul Târgu Mureș')
+  it('preserves null values and statuses independently, distinguishing empty and absent statuses', () => {
+    for (const status of [undefined, null, '', 'c']) {
+      const { rows } = parsed([
+        sourceObservation({ value: null, value_status: status }),
+      ])
+      expect(rows[0].value_is_null).toBe('true')
+      expect(rows[0].value_decimal_json).toBe('null')
+      expect(rows[0].value_status_json).toBe(
+        status === undefined ? '' : JSON.stringify(status),
+      )
+    }
   })
-
-  it('quotes cells containing a comma, a quote or a newline', () => {
-    const { csv } = buildObservationsCsv({
-      observations: [
-        observation({
-          territory: { name_ro: 'Cluj-Napoca, municipiu', siruta_code: '54975' },
-          classifications: [
-            { type_code: 'SEXE', code: 'total', name_ro: 'Total "ambele sexe"' },
-          ],
-        }),
-      ],
-      classificationColumns: [SEXE_COLUMN],
+  it('keeps all cadences and source alternatives sharing a period', () => {
+    const a = sourceObservation()
+    const b = sourceObservation({
+      id: 'other',
+      unit: { code: '-2147483648' },
+      time_period: { ...a.time_period, periodicity: 'OTHER' },
     })
-
-    const row = rows(csv)[1]
-    expect(row).toContain('"Cluj-Napoca, municipiu"')
-    expect(row).toContain('"Total ""ambele sexe"""')
+    const { rows } = parsed([a, b])
+    expect(rows).toHaveLength(2)
+    expect(JSON.parse(rows[1].periodicity_json)).toBe('OTHER')
+    expect(JSON.parse(rows[1].unit_json).code).toBe('-2147483648')
   })
-
-  it('writes an empty cell for a null value rather than a zero', () => {
-    const { csv } = buildObservationsCsv({
-      observations: [observation({ value: null })],
-      classificationColumns: [],
-    })
-
-    expect(rows(csv)[1].endsWith(',,')).toBe(true)
+  it.each([
+    '=SUM(1,2)',
+    '+cmd',
+    '-cmd',
+    '@SUM(A1)',
+    '\t=1',
+    '\r=1',
+    'Quotes "and"\nnewlines',
+  ])('keeps formula-like label %j inert and reversible', (label) => {
+    const original = sourceObservation()
+    const { rows, csv } = parsed([
+      {
+        ...original,
+        classifications: [
+          { ...original.classifications[0], name_ro: label },
+          ...original.classifications.slice(1),
+        ],
+      },
+    ])
+    expect(JSON.parse(rows[0].D0_classification_json).name_ro).toBe(label)
+    expect(csv.split('\n')[0]).not.toContain('=Category')
+    expect(
+      Object.values(rows[0]).every((value) => !/^[=+\-@\t\r]/.test(value)),
+    ).toBe(true)
   })
-
-  it('carries the INS quality flag in its own column', () => {
-    const { csv } = buildObservationsCsv({
-      observations: [observation({ value_status: 'e' })],
-      classificationColumns: [SEXE_COLUMN],
-    })
-
-    expect(rows(csv)[1].endsWith('324576,e')).toBe(true)
+  it('rejects incomplete previews and invalid identities instead of writing a partial file', () => {
+    expect(() =>
+      buildObservationsCsv({
+        descriptor: sourceDescriptor,
+        observations: [sourceObservation()],
+        complete: false,
+      }),
+    ).toThrow(/complete/)
+    expect(() => parsed([sourceObservation(), sourceObservation()])).toThrow(
+      /Invalid/,
+    )
+    expect(() =>
+      buildObservationsCsv({
+        descriptor: null,
+        observations: [],
+        complete: true,
+      }),
+    ).toThrow()
+    expect(() => parsed([sourceObservation({ classifications: [] })])).toThrow(
+      /Invalid/,
+    )
   })
-
-  it('leaves a classification cell empty when the row lacks that type', () => {
-    const { csv } = buildObservationsCsv({
-      observations: [observation({ classifications: [] })],
-      classificationColumns: [SEXE_COLUMN],
-    })
-
-    expect(rows(csv)[1]).toContain(',,324576')
+  it('does not slice complete selections at the old CSV cap', () => {
+    const observations = Array.from({ length: 10001 }, (_, index) =>
+      sourceObservation({ id: `cell:${index}`, unit: { code: String(index) } }),
+    )
+    expect(
+      buildObservationsCsv({
+        descriptor: sourceDescriptor,
+        observations,
+        complete: true,
+      }).rowCount,
+    ).toBe(10001)
   })
-
-  it('caps the export and reports the truncation', () => {
-    const many = Array.from({ length: 12 }, () => observation())
-
-    const capped = buildObservationsCsv({
-      observations: many,
-      classificationColumns: [],
-      maxRows: 10,
-    })
-    expect(capped.rowCount).toBe(10)
-    expect(capped.truncated).toBe(true)
-    expect(rows(capped.csv)).toHaveLength(11)
-
-    const whole = buildObservationsCsv({ observations: many, classificationColumns: [] })
-    expect(whole.truncated).toBe(false)
-    expect(whole.rowCount).toBe(12)
-  })
-})
-
-describe('buildObservationsCsvFilename', () => {
-  it('names the file after the dataset and the export day', () => {
-    expect(buildObservationsCsvFilename('POP107D')).toMatch(/^POP107D-\d{4}-\d{2}-\d{2}\.csv$/)
+  it('names the file after the dataset and export day', () => {
+    expect(buildObservationsCsvFilename('TEST')).toMatch(
+      /^TEST-\d{4}-\d{2}-\d{2}\.csv$/,
+    )
   })
 })

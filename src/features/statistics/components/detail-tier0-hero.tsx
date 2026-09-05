@@ -15,13 +15,34 @@ type Props = {
  */
 export function DetailTier0Hero({ latest, matchChip }: Props) {
   const ambiguous = latest.matchStrategy === 'AMBIGUOUS_GEOGRAPHY'
-  const formatted = latest.hasData && !ambiguous ? formatObservationValue(latest.value) : null
+  const formatted =
+    latest.hasData && !ambiguous && latest.value !== null
+      ? formatObservationValue(latest.value)
+      : null
 
   if (formatted === null) {
     return (
-      <p className="text-sm text-muted-foreground">
-        {ambiguous ? <Trans>Mai multe serii INS corespund selecției. Alege o serie din sursă.</Trans> : <Trans>Fără o valoare recentă pentru selecția curentă.</Trans>}
-      </p>
+      <div className="space-y-1 text-sm text-muted-foreground">
+        <p>
+          {ambiguous ? (
+            <Trans>
+              Mai multe serii INS corespund selecției. Alege o serie din sursă.
+            </Trans>
+          ) : (
+            <Trans>Fără o valoare recentă pentru selecția curentă.</Trans>
+          )}
+        </p>
+        {!ambiguous && latest.hasData ? (
+          <p>
+            {latest.period}
+            {latest.valueStatus ? (
+              <span className="ml-2">
+                <Trans>stare:</Trans> {latest.valueStatus}
+              </span>
+            ) : null}
+          </p>
+        ) : null}
+      </div>
     )
   }
 

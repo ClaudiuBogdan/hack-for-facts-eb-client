@@ -1,4 +1,11 @@
-import { inspectSourceSeries } from '@/lib/ins/source-series'
+import {
+  detailBootstrapEntity,
+  resolveDetailSelection,
+} from '../lib/source-selection'
+import {
+  inspectSourceSeries,
+  sourceRowSelection,
+} from '@/lib/ins/source-series'
 import { isInsChartPeriodicity } from '@/lib/ins/source-contract'
 import { useMemo } from 'react'
 import { t } from '@lingui/core/macro'
@@ -10,7 +17,11 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { InsDatasetDetails, InsDimension, InsObservation } from '@/schemas/ins'
+import type {
+  InsDatasetDetails,
+  InsDimension,
+  InsObservation,
+} from '@/schemas/ins'
 import type {
   StatisticsDatasetDetailSearch,
   StatisticsDatasetSeries,
@@ -29,23 +40,17 @@ import { FreshnessBadge } from '../components/freshness-badge'
 import { RequestDatasetAction } from '../components/request-dataset-action'
 import { useDatasetSeries, useDatasetTier0 } from '../hooks/use-dataset-detail'
 import {
-  buildEffectiveScope,
-  buildSeriesFilter,
   classificationTypeCode,
   detailScopeKey,
-  dimensionsOfType,
   encodeTerritoryPin,
   DETAIL_PAGE_SIZE,
   filterExactCell,
-  NATIONAL_ENTITY,
   observedYearSpan,
   parseTerritoryPin,
-  territoryPinToEntity,
   type DetailSearchPatch,
   type EffectiveScope,
 } from '../lib/dataset-selection'
 import { getDatasetDataStatus } from '../lib/dataset-status'
-import type { CsvClassificationColumn } from '../lib/observations-csv'
 import { periodSortKey } from '../lib/period'
 import { statisticsTheme } from '../lib/statistics-theme'
 import { buildTimeSeries, hasAnyValue } from '../lib/time-series'
@@ -79,7 +84,7 @@ export function StatisticsDatasetDetailPage({
   const code = rawCode.trim().toUpperCase()
 
   const territoryPin = parseTerritoryPin(search.teritoriu)
-  const entity = territoryPinToEntity(territoryPin) ?? NATIONAL_ENTITY
+  const entity = detailBootstrapEntity(search)
   const tier0Query = useDatasetTier0({
     code,
     entity,
@@ -94,28 +99,19 @@ export function StatisticsDatasetDetailPage({
     ? getDatasetDataStatus(dataset) === 'catalog-only'
     : false
 
-  const scope = useMemo(
-    () => buildEffectiveScope({ search, latest }),
-    [search, latest],
+  const selection = useMemo(
+    () => resolveDetailSelection({ search, dataset, latest }),
+    [search, dataset, latest],
   )
-  // The series (chart/table/CSV) runs only on a FULLY resolved cell: every
-  // classification dimension carries a value (server default or URL pin).
-  // A partially covered scope would let sibling cells leak into "one series".
-  const unresolvedDimensions = useMemo(
-    () =>
-      dimensionsOfType(dataset?.dimensions, 'CLASSIFICATION').filter(
-        (dimension) =>
-          !scope.classifications.has(classificationTypeCode(dimension)),
-      ),
-    [dataset, scope.classifications],
-  )
+  const { scope, unresolvedDimensions } = selection
   const seriesEnabled =
-    Boolean(dataset) && !isCatalogOnly && unresolvedDimensions.length === 0
+    Boolean(dataset) && !isCatalogOnly && selection.filter !== null
 
   const seriesQuery = useDatasetSeries({
     code,
     scopeKey: detailScopeKey(search),
-    filter: buildSeriesFilter(scope),
+    filter: selection.filter ?? {},
+    inspection: !selection.canDerive,
     contextCode: dataset?.context_code ?? null,
     enabled: seriesEnabled,
     ...(initialSeries ? { initialData: initialSeries } : {}),
@@ -143,7 +139,11 @@ export function StatisticsDatasetDetailPage({
               <p>
                 <Trans>Adresa rămâne neschimbată. Poți încerca din nou.</Trans>
               </p>
-              <Button variant="outline" size="sm" onClick={() => tier0Query.refetch()}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => tier0Query.refetch()}
+              >
                 <Trans>Reîncearcă</Trans>
               </Button>
             </AlertDescription>
@@ -164,6 +164,40 @@ export function StatisticsDatasetDetailPage({
           </>
         ) : null}
 
+        {dataset && selection.issues.length > 0 ? (
+          <Alert variant="destructive">
+            <AlertTitle>
+              <Trans>Selecția din adresă nu poate fi aplicată</Trans>
+            </AlertTitle>
+            <AlertDescription className="space-y-2">
+              <p>
+                <Trans>
+                  Corectează selecția sau șterge filtrul invalid. Nu am folosit
+                  date implicite în locul lui.
+                </Trans>
+              </p>
+              {selection.issues.includes('territory') ? (
+                <Button
+                  onClick={() => onSearchChange({ teritoriu: undefined })}
+                >
+                  <Trans>Șterge teritoriul invalid</Trans>
+                </Button>
+              ) : null}
+              {selection.issues.includes('classifications') ? (
+                <Button
+                  onClick={() => onSearchChange({ clasificari: undefined })}
+                >
+                  <Trans>Șterge clasificările invalide</Trans>
+                </Button>
+              ) : null}
+              {selection.issues.includes('unit') ? (
+                <Button onClick={() => onSearchChange({ unitate: undefined })}>
+                  <Trans>Șterge unitatea invalidă</Trans>
+                </Button>
+              ) : null}
+            </AlertDescription>
+          </Alert>
+        ) : null}
         {dataset && !isCatalogOnly ? (
           <DatasetDetailBody
             dataset={dataset}
@@ -172,8 +206,11 @@ export function StatisticsDatasetDetailPage({
             latest={latest}
             seriesQuery={seriesQuery}
             seriesEnabled={seriesEnabled}
+            canDerive={selection.canDerive}
             unresolvedDimensions={unresolvedDimensions}
-            territoryPin={territoryPin ? encodeTerritoryPin(territoryPin) : null}
+            territoryPin={
+              territoryPin ? encodeTerritoryPin(territoryPin) : null
+            }
             onSearchChange={onSearchChange}
           />
         ) : null}
@@ -218,7 +255,9 @@ function DatasetHeader({
         {dataset.name_ro ?? dataset.code}
       </h1>
       {dataset.context_name_ro ? (
-        <p className="text-sm text-muted-foreground">{dataset.context_name_ro}</p>
+        <p className="text-sm text-muted-foreground">
+          {dataset.context_name_ro}
+        </p>
       ) : null}
       {dataset.definition_ro ? (
         <p className="max-w-prose text-sm text-muted-foreground">
@@ -268,7 +307,9 @@ function CatalogOnlyBody({ dataset }: { readonly dataset: InsDatasetDetails }) {
               className="flex items-center justify-between gap-3 px-3 py-2 text-sm"
             >
               <span>{dimension.label_ro ?? `#${dimension.index}`}</span>
-              <span className="text-xs text-muted-foreground">{dimension.type}</span>
+              <span className="text-xs text-muted-foreground">
+                {dimension.type}
+              </span>
             </li>
           ))}
         </ul>
@@ -284,6 +325,7 @@ function DatasetDetailBody({
   latest,
   seriesQuery,
   seriesEnabled,
+  canDerive,
   unresolvedDimensions,
   territoryPin,
   onSearchChange,
@@ -294,28 +336,42 @@ function DatasetDetailBody({
   readonly latest: StatisticsLatestValue | null
   readonly seriesQuery: ReturnType<typeof useDatasetSeries>
   readonly seriesEnabled: boolean
+  readonly canDerive: boolean
   readonly unresolvedDimensions: readonly InsDimension[]
   readonly territoryPin: string | null
   readonly onSearchChange: (patch: DetailSearchPatch) => void
 }) {
-  const seriesData = seriesQuery.data
+  const seriesData = seriesEnabled ? seriesQuery.data : undefined
 
-  // The exact resolved cell: the server filter shares one value set across
-  // classification types, so sibling cells can slip through — the client
-  // match makes "one series" true.
+  // Keep the explicit source-coordinate selection when inspecting returned rows.
   const exactRows = useMemo(() => {
     if (!seriesData) return [] as readonly InsObservation[]
-    return [...filterExactCell(seriesData.observations, scope.classifications)].sort(
+    return [
+      ...filterExactCell(seriesData.observations, scope.classifications),
+    ].sort(
       (left, right) =>
         periodSortKey(left.time_period) - periodSortKey(right.time_period),
     )
   }, [seriesData, scope.classifications])
 
-  const source = useMemo(() => seriesData?.sourceDescriptor
-    ? inspectSourceSeries({ descriptor: seriesData.sourceDescriptor, observations: exactRows })
-    : null, [seriesData, exactRows])
-  const sourceUnavailable = source !== null && (source.status === 'INVALID' ||
-    source.status === 'AMBIGUOUS' || (source.status === 'SERIES' && source.anyQualified))
+  const source = useMemo(
+    () =>
+      seriesData?.sourceDescriptor
+        ? inspectSourceSeries({
+            descriptor: seriesData.sourceDescriptor,
+            observations: exactRows,
+          })
+        : null,
+    [seriesData, exactRows],
+  )
+  const sourceUnavailable =
+    !canDerive ||
+    scope.periodicity === null ||
+    source === null ||
+    (source !== null &&
+      (source.status === 'INVALID' ||
+        source.status === 'AMBIGUOUS' ||
+        (source.status === 'SERIES' && source.anyQualified)))
 
   const periodicity = useMemo(() => {
     if (scope.periodicity) return scope.periodicity
@@ -325,12 +381,21 @@ function DatasetDetailBody({
   }, [scope.periodicity, exactRows])
 
   const periodicityRows = useMemo(
-    () => exactRows.filter((row) => row.time_period.periodicity === periodicity),
-    [exactRows, periodicity],
+    () =>
+      scope.periodicity === null
+        ? exactRows
+        : exactRows.filter(
+            (row) => row.time_period.periodicity === scope.periodicity,
+          ),
+    [exactRows, scope.periodicity],
   )
 
-  const serverTruncated =
-    (seriesData?.totalCount ?? 0) > (seriesData?.observations.length ?? 0)
+  // A terminal inspection page may contain several complete source identities.
+  // Such rows can be archived faithfully even though they cannot form one chart.
+  const completeSourceSelection =
+    seriesData?.readMode === 'complete' ||
+    (seriesData?.readMode === 'inspection' &&
+      seriesData.inspectionTruncated === false)
 
   const observedSpan = observedYearSpan(periodicityRows)
   const yearWindow = useMemo(() => {
@@ -355,7 +420,13 @@ function DatasetDetailBody({
   )
 
   const chartSeries = useMemo(() => {
-    if (sourceUnavailable || !isInsChartPeriodicity(periodicity) || !yearWindow || windowedRows.length === 0) return null
+    if (
+      sourceUnavailable ||
+      !isInsChartPeriodicity(periodicity) ||
+      !yearWindow ||
+      windowedRows.length === 0
+    )
+      return null
     return buildTimeSeries({
       observations: windowedRows,
       periodicity,
@@ -364,26 +435,10 @@ function DatasetDetailBody({
     })
   }, [windowedRows, periodicity, yearWindow, sourceUnavailable])
 
-  const latestValuedRow = useMemo(() => {
-    if (sourceUnavailable) return null
-    for (let index = windowedRows.length - 1; index >= 0; index -= 1) {
-      const row = windowedRows[index]
-      if (row.value !== null) return row
-    }
-    return null
-  }, [windowedRows, sourceUnavailable])
-
-  const classificationColumns = useMemo<readonly CsvClassificationColumn[]>(
-    () =>
-      dimensionsOfType(dataset.dimensions, 'CLASSIFICATION').map((dimension) => ({
-        typeCode: classificationTypeCode(dimension),
-        label:
-          dimension.classification_type?.name_ro ??
-          dimension.label_ro ??
-          classificationTypeCode(dimension),
-      })),
-    [dataset.dimensions],
-  )
+  // The latest published cell remains latest even when its value is unavailable.
+  const latestSourceRow = sourceUnavailable
+    ? null
+    : (windowedRows[windowedRows.length - 1] ?? null)
 
   // Display labels for the scope sentence, read from the fetched rows.
   const sampleRow = exactRows[0] ?? null
@@ -410,6 +465,18 @@ function DatasetDetailBody({
       dimension.label_ro ??
       classificationTypeCode(dimension),
   )
+  if (scope.unitCode === null)
+    missingClassificationLabels.push(t`Unitate de măsură`)
+  if (scope.periodicity === null) missingClassificationLabels.push(t`Frecvență`)
+
+  const hasGeographicSourcePins = dataset.dimensions.some(
+    (d) =>
+      d.type === 'TERRITORIAL' &&
+      Array.isArray(search.clasificari) &&
+      search.clasificari.some(
+        (pin) => typeof pin === 'string' && pin.startsWith(`D${d.index}:`),
+      ),
+  )
 
   const compareSearch = {
     cod: dataset.code,
@@ -420,7 +487,7 @@ function DatasetDetailBody({
     <>
       <DatasetHeader
         dataset={dataset}
-        latestPeriod={latestValuedRow?.time_period.iso_period ?? null}
+        latestPeriod={latestSourceRow?.time_period.iso_period ?? null}
       />
 
       {/* Tier 1 renders WHENEVER the dataset is loaded: the scope sentence is
@@ -430,15 +497,18 @@ function DatasetDetailBody({
         dataset={dataset}
         search={search}
         scope={scope}
+        canDerive={canDerive}
         unresolvedDimensions={unresolvedDimensions}
         territoryLabel={territoryLabel}
         classificationLabels={classificationLabels}
         unitLabel={unitLabel ?? null}
-        yearSpanLabel={yearWindow ? `${yearWindow.from}–${yearWindow.to}` : null}
+        yearSpanLabel={
+          yearWindow ? `${yearWindow.from}–${yearWindow.to}` : null
+        }
         onChange={onSearchChange}
       />
 
-      {!seriesEnabled ? (
+      {!canDerive || scope.periodicity === null ? (
         <DetailScopePrompt
           needsTerritory={false}
           missingClassificationLabels={missingClassificationLabels}
@@ -453,7 +523,7 @@ function DatasetDetailBody({
             <>
               {/* POST B failing must not discard POST A: the resolved latest
                   value stays on screen, the retry sits beside it. */}
-              {latest && latest.hasData ? (
+              {canDerive && latest && latest.hasData ? (
                 <DetailTier0Hero
                   latest={latest}
                   matchChip={
@@ -481,7 +551,7 @@ function DatasetDetailBody({
             </>
           ) : null}
 
-          {seriesQuery.isSuccess && latestValuedRow ? (
+          {seriesQuery.isSuccess && latestSourceRow ? (
             <DetailTier0Hero
               latest={{
                 datasetCode: dataset.code,
@@ -490,13 +560,13 @@ function DatasetDetailBody({
                 periodicity: dataset.periodicity ?? [],
                 matchStrategy: 'PREFERRED_CLASSIFICATION',
                 hasData: true,
-                value: latestValuedRow.value,
-                valueStatus: latestValuedRow.value_status ?? null,
-                unitCode: latestValuedRow.unit?.code ?? null,
-                unitSymbol: latestValuedRow.unit?.symbol ?? null,
-                unitNameRo: latestValuedRow.unit?.name_ro ?? null,
-                period: latestValuedRow.time_period.iso_period,
-                resolvedPeriodicity: latestValuedRow.time_period.periodicity,
+                value: latestSourceRow.value,
+                valueStatus: latestSourceRow.value_status ?? null,
+                unitCode: latestSourceRow.unit?.code ?? null,
+                unitSymbol: latestSourceRow.unit?.symbol ?? null,
+                unitNameRo: latestSourceRow.unit?.name_ro ?? null,
+                period: latestSourceRow.time_period.iso_period,
+                resolvedPeriodicity: latestSourceRow.time_period.periodicity,
                 resolvedClassifications: [],
               }}
               matchChip={
@@ -509,17 +579,56 @@ function DatasetDetailBody({
             />
           ) : null}
 
-          {seriesQuery.isSuccess && sourceUnavailable ? (
+          {seriesQuery.isSuccess &&
+          canDerive &&
+          scope.periodicity !== null &&
+          sourceUnavailable ? (
             <Alert>
-              <AlertTitle><Trans>Seria necesită o selecție din sursă</Trans></AlertTitle>
-              <AlertDescription><Trans>Observațiile includ alternative sau calificări geografice. Inspectează datele din tabel înainte de a le compara.</Trans></AlertDescription>
+              <AlertTitle>
+                <Trans>Seria necesită o selecție din sursă</Trans>
+              </AlertTitle>
+              <AlertDescription>
+                <Trans>
+                  Observațiile includ alternative sau calificări geografice.
+                  Inspectează datele din tabel înainte de a le compara.
+                </Trans>
+              </AlertDescription>
             </Alert>
           ) : null}
-          {seriesQuery.isSuccess && !sourceUnavailable && !latestValuedRow ? (
+          {seriesQuery.isSuccess &&
+          !sourceUnavailable &&
+          !latestSourceRow &&
+          !(
+            exactRows.length === 0 &&
+            scope.territory !== null &&
+            hasGeographicSourcePins
+          ) ? (
             <EmptyState
               title={t`Nicio observație`}
               description={t`Selecția curentă nu returnează observații. Încearcă alt teritoriu sau altă valoare.`}
             />
+          ) : null}
+
+          {seriesQuery.isSuccess &&
+          exactRows.length === 0 &&
+          scope.territory !== null &&
+          hasGeographicSourcePins ? (
+            <div className="space-y-2 rounded border p-3 text-sm">
+              <p>
+                <Trans>
+                  Coordonatele INS și filtrul teritorial canonic se
+                  intersectează. Nicio observație nu corespunde ambelor
+                  selecții.
+                </Trans>
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onSearchChange({ teritoriu: undefined })}
+              >
+                <Trans>Șterge doar filtrul teritorial</Trans>
+              </Button>
+            </div>
           ) : null}
 
           {chartSeries && hasAnyValue(chartSeries) ? (
@@ -530,13 +639,12 @@ function DatasetDetailBody({
             />
           ) : null}
 
-          {serverTruncated ? (
-            <p className="text-xs text-muted-foreground">
+          {seriesData?.inspectionTruncated ? (
+            <p role="status" className="rounded border p-3 text-sm">
               <Trans>
-                Se afișează cele mai recente {exactRows.length} din{' '}
-                {seriesData?.totalCount} observații — capătul vechi al seriei
-                este tăiat, deci începutul intervalului afișat poate fi mai
-                recent decât primul an raportat.
+                Sunt disponibile mai multe observații. Tabelul arată o pagină de
+                explorare; restrânge selecția sau alege seria unui rând pentru
+                istoricul complet.
               </Trans>
             </p>
           ) : null}
@@ -544,10 +652,10 @@ function DatasetDetailBody({
           <div className="flex flex-wrap items-center gap-2">
             <DetailExportButton
               datasetCode={dataset.code}
+              sourceDescriptor={seriesData?.sourceDescriptor}
               observations={windowedRows}
-              classificationColumns={classificationColumns}
               disabled={windowedRows.length === 0}
-              serverTruncated={serverTruncated}
+              complete={completeSourceSelection}
             />
             <Button variant="outline" size="sm" asChild className="gap-1.5">
               <Link to="/statistici/comparatii" search={compareSearch}>
@@ -560,16 +668,35 @@ function DatasetDetailBody({
           {seriesQuery.isSuccess ? (
             <DetailAccordion
               dataset={dataset}
+              sourceDescriptor={seriesData?.sourceDescriptor}
               observations={windowedRows}
-              classificationColumns={classificationColumns}
               observedSpan={observedSpan}
               related={seriesData?.related ?? []}
               relatedTotalCount={seriesData?.relatedTotalCount ?? null}
               page={Math.min(
-                Math.max(1, typeof search.pagina === 'number' ? search.pagina : 1),
+                Math.max(
+                  1,
+                  typeof search.pagina === 'number' ? search.pagina : 1,
+                ),
                 Math.max(1, Math.ceil(windowedRows.length / DETAIL_PAGE_SIZE)),
               )}
               compareSearch={compareSearch}
+              onSelectSource={
+                seriesData?.sourceDescriptor
+                  ? (observation) => {
+                      const selected = sourceRowSelection(
+                        seriesData.sourceDescriptor,
+                        observation,
+                      )
+                      if (selected)
+                        onSearchChange({
+                          clasificari: [...selected.clasificari],
+                          unitate: selected.unitate,
+                          pagina: undefined,
+                        })
+                    }
+                  : undefined
+              }
               onPageChange={(next) =>
                 onSearchChange({ pagina: next > 1 ? next : undefined })
               }

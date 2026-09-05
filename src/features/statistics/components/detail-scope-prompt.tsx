@@ -10,10 +10,8 @@ type Props = {
  * What the user sees instead of the series while the scope is unresolved:
  * a classification dimension has neither a server default nor a URL pin.
  *
- * Deliberately not a spinner — nothing loads until the cell is fully
- * resolved (a partial scope would mix sibling cells into "one series"). The
- * scope sentence above stays interactive; this names EXACTLY the unresolved
- * dimensions and nothing else.
+ * Source rows may remain inspectable while the chart needs a complete selection.
+ * The scope controls and table row action provide explicit ways to choose it.
  */
 export function DetailScopePrompt({
   needsTerritory,
@@ -30,9 +28,9 @@ export function DetailScopePrompt({
       </h3>
       <p className="max-w-prose text-sm text-muted-foreground">
         <Trans>
-          Pentru acest set nu există o selecție implicită pentru dimensiunile de
-          mai jos. Alege o valoare din propoziția de selecție de mai sus ca să
-          încărcăm seria.
+          Completează selecțiile de mai sus pentru a afișa graficul. Dacă
+          tabelul are observații, poți alege seria unui rând cu toate
+          coordonatele sale INS.
         </Trans>
       </p>
       <ul className="space-y-1 text-sm">
@@ -47,7 +45,6 @@ export function DetailScopePrompt({
           </li>
         ))}
       </ul>
-
     </div>
   )
 }

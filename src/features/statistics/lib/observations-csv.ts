@@ -1,85 +1,75 @@
 import Papa from 'papaparse'
-import { t } from '@lingui/core/macro'
+import { validatedSourceRows } from './source-observations'
 import type { InsObservation } from '@/schemas/ins'
-import { CSV_MAX_ROWS } from './dataset-selection'
 
 /**
- * CSV export for the observations table.
- *
- * Values are written **verbatim** — they arrive as Decimal strings and a round
- * trip through `Number` would silently reshape `1234567.890` into
- * `1234567.89`. The export is the row the server sent, not our rendering of it.
- *
- * Quoting is delegated to papaparse, which wraps any cell containing a comma,
- * quote or newline. Diacritics need no escaping in UTF-8; `downloadCsv` adds
- * the BOM that makes Excel on Windows read them.
- */
-
-/** A classification column, in dimension order. */
-export interface CsvClassificationColumn {
-  readonly typeCode: string
-  readonly label: string
-}
-
-export interface ObservationsCsv {
-  readonly csv: string
-  readonly rowCount: number
-  /** True when rows beyond `CSV_MAX_ROWS` were dropped. */
-  readonly truncated: boolean
-}
-
-function classificationCell(
-  observation: InsObservation,
-  typeCode: string,
-): string {
-  const match = (observation.classifications ?? []).find(
-    (classification) => classification.type_code === typeCode,
-  )
-  return match?.name_ro ?? match?.code ?? ''
-}
-
-/**
- * Builds the CSV for the current selection. Columns are period, territory,
- * unit, one per classification type in the dataset, then the value and its INS
- * quality flag.
+ * Archival CSV. String fields use explicit JSON encoding so spreadsheet coercion
+ * cannot round decimal strings or execute formula-like source labels. JSON.parse
+ * restores exact text, nulls, empty strings and nested provenance. No row slicing.
  */
 export function buildObservationsCsv(params: {
+  readonly descriptor: unknown
   readonly observations: readonly InsObservation[]
-  readonly classificationColumns: readonly CsvClassificationColumn[]
-  readonly maxRows?: number
-}): ObservationsCsv {
-  const maxRows = params.maxRows ?? CSV_MAX_ROWS
-  const truncated = params.observations.length > maxRows
-  const rows = truncated
-    ? params.observations.slice(0, maxRows)
-    : params.observations
-
+  readonly complete: boolean
+}): { readonly csv: string; readonly rowCount: number } {
+  if (!params.complete)
+    throw new Error('A complete INS selection is required for export')
+  const { descriptor, observations } = validatedSourceRows(
+    params.descriptor,
+    params.observations,
+  )
+  const dimensions = descriptor.dimensions
+    .filter((d) => d.type === 'CLASSIFICATION' || d.type === 'TERRITORIAL')
+    .sort((a, b) => a.index - b.index)
   const header = [
-    t`Perioadă`,
-    t`Teritoriu`,
-    t`Cod SIRUTA`,
-    t`Unitate`,
-    ...params.classificationColumns.map((column) => column.label),
-    t`Valoare`,
-    t`Stare valoare`,
+    'dataset_code_json',
+    'observation_id_json',
+    'period_json',
+    'periodicity_json',
+    'year',
+    'quarter',
+    'month',
+    ...dimensions.flatMap((d) => [
+      `D${d.index}_member_code_json`,
+      `D${d.index}_classification_json`,
+    ]),
+    'unit_json',
+    'value_decimal_json',
+    'value_is_null',
+    'value_status_json',
+    'canonical_territory_json',
+    'geography_json',
+    'publication_json',
+    'dimensions_json',
+    'source_row_json',
   ]
-
-  const body = rows.map((observation) => [
-    observation.time_period.iso_period,
-    observation.territory?.name_ro ?? '',
-    observation.territory?.siruta_code ?? '',
-    observation.unit?.name_ro ?? observation.unit?.symbol ?? '',
-    ...params.classificationColumns.map((column) =>
-      classificationCell(observation, column.typeCode),
-    ),
-    observation.value ?? '',
-    observation.value_status ?? '',
+  const body = observations.map((row) => [
+    JSON.stringify(row.dataset_code),
+    JSON.stringify(row.id),
+    JSON.stringify(row.time_period.iso_period),
+    JSON.stringify(row.time_period.periodicity),
+    row.time_period.year,
+    row.time_period.quarter ?? '',
+    row.time_period.month ?? '',
+    ...dimensions.flatMap((d) => {
+      const member = row.classifications.find(
+        (c) => c.type_code === `D${d.index}`,
+      )!
+      return [JSON.stringify(member.code), JSON.stringify(member)]
+    }),
+    JSON.stringify(row.unit),
+    JSON.stringify(row.value),
+    row.value === null,
+    JSON.stringify(row.value_status),
+    JSON.stringify(row.territory),
+    JSON.stringify(row.dimensions.geography),
+    JSON.stringify(descriptor.metadata),
+    JSON.stringify(descriptor.dimensions),
+    JSON.stringify(row),
   ])
-
   return {
     csv: Papa.unparse([header, ...body], { newline: '\n' }),
-    rowCount: rows.length,
-    truncated,
+    rowCount: observations.length,
   }
 }
 
