@@ -6,6 +6,9 @@ import { getObservationClassificationSelectionMap } from '@/lib/ins/series-selec
 
 const PERIODICITY_LABELS: Record<InsPeriodicity, string> = {
   ANNUAL: t`Annual`,
+  SEMESTRIAL: t`Semiannual`,
+  RANGE: t`Interval`,
+  OTHER: t`Other periodicity`,
   QUARTERLY: t`Quarterly`,
   MONTHLY: t`Monthly`,
 };
@@ -42,7 +45,7 @@ export function formatPeriodLabel(period: InsObservation['time_period']) {
   if (period.periodicity === 'QUARTERLY' && period.quarter) {
     return `T${period.quarter} ${period.year}`;
   }
-  return `${period.year}`;
+  return period.periodicity === 'ANNUAL' ? `${period.year}` : period.iso_period;
 }
 
 export function parseObservationValue(rawValue: string | null | undefined): number | null {

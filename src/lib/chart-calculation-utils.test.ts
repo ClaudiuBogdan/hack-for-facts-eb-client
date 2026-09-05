@@ -857,3 +857,62 @@ describe('getAllDependencies', () => {
     expect(aOccurrences).toHaveLength(1)
   })
 })
+
+
+describe('strict INS calculation dependencies', () => {
+  const ins = (id = 'ins'): Series => ({ id, type: 'ins-series', enabled: false, label: id,
+    config: { color: '#000000', showDataLabels: false }, createdAt: timestamp, updatedAt: timestamp,
+    unit: 'RON', datasetCode: 'TEST', aggregation: 'sum', hasValue: true })
+  it('propagates unavailable through disabled referenced INS, nested expressions and descendants', () => {
+    const a = createCalculationSeries('a', { op: 'sum', args: ['ins', 'budget'] })
+    const b = createCalculationSeries('b', { op: 'subtract', args: [{ op: 'sum', args: ['a', 5] }, 2] })
+    const result = calculateAllSeriesData([b, a, ins(), createDataSeries('budget')], new Map([
+      ['budget', createAnalyticsSeries('budget', [{ x: '2024', y: 10 }])],
+    ]))
+    expect(result.dataSeriesMap.has('a')).toBe(false)
+    expect(result.dataSeriesMap.has('b')).toBe(false)
+    expect(result.dataSeriesMap.get('budget')?.data[0].y).toBe(10)
+    expect(result.warnings.map(item => item.seriesId)).toEqual(['a', 'b'])
+  })
+  it('rejects the whole INS-dependent calculation when one operand lacks a period', () => {
+    const calc = createCalculationSeries('a', { op: 'sum', args: ['ins', 'budget'] })
+    const result = calculateAllSeriesData([ins(), createDataSeries('budget'), calc], new Map([
+      ['ins', createAnalyticsSeries('ins', [{ x: '2023', y: 5 }, { x: '2024', y: 10 }])],
+      ['budget', createAnalyticsSeries('budget', [{ x: '2024', y: 100 }])],
+    ]))
+    expect(result.dataSeriesMap.has('a')).toBe(false)
+  })
+  it('preserves actual zero and scalar constants in nested INS arithmetic', () => {
+    const calc = createCalculationSeries('a', { op: 'sum', args: [{ op: 'multiply', args: ['ins', 2] }, 5] })
+    const result = calculateAllSeriesData([ins(), calc], new Map([
+      ['ins', createAnalyticsSeries('ins', [{ x: '2024', y: 0 }])],
+    ]))
+    expect(result.dataSeriesMap.get('a')?.data).toEqual([{ x: '2024', y: 5 }])
+  })
+  it('does not use an undefined nested division as zero in an outer INS sum', () => {
+    const calc = createCalculationSeries('a', { op: 'sum', args: [{ op: 'divide', args: ['ins', 0] }, 5] })
+    const result = calculateAllSeriesData([ins(), calc], new Map([
+      ['ins', createAnalyticsSeries('ins', [{ x: '2024', y: 10 }])],
+    ]))
+    expect(result.dataSeriesMap.has('a')).toBe(false)
+  })
+  it.each([
+    { x: '2024', unit: 'year' },
+    { x: '2024-Q1', unit: 'quarter' },
+    { x: '2024-01', unit: 'month' },
+  ])('treats a nested constants-only subtree as scalar for $unit INS', ({ x, unit }) => {
+    const calc = createCalculationSeries('a', { op: 'sum', args: ['ins', { op: 'sum', args: [1, 2] }] })
+    const observation = createAnalyticsSeries('ins', [{ x, y: 10 }])
+    observation.xAxis.unit = unit
+    const result = calculateAllSeriesData([ins(), calc], new Map([['ins', observation]]))
+    expect(result.dataSeriesMap.get('a')?.data).toEqual([{ x, y: 13 }])
+  })
+  it('keeps an undefined constants-only subtree unavailable inside INS arithmetic', () => {
+    const calc = createCalculationSeries('a', { op: 'sum', args: ['ins', { op: 'divide', args: [1, 0] }] })
+    const result = calculateAllSeriesData([ins(), calc], new Map([
+      ['ins', createAnalyticsSeries('ins', [{ x: '2024', y: 10 }])],
+    ]))
+    expect(result.dataSeriesMap.has('a')).toBe(false)
+  })
+
+})

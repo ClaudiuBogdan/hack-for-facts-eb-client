@@ -1,398 +1,310 @@
-import type { DataValidationError } from '@/lib/chart-data-validation';
-import { getAllInsObservations } from '@/features/statistics/api/graphql/ins-fetchers';
-import type { InsObservation, InsObservationFilterInput, InsPeriodicity } from '@/schemas/ins';
-import type { AnalyticsSeries, InsSeriesConfiguration } from '@/schemas/charts';
-import type { PeriodDate, ReportPeriodInput, ReportPeriodType } from '@/schemas/reporting';
-import { getUserLocale } from '@/lib/utils';
+import { t } from '@lingui/core/macro'
+import { fetchInsSourceVector } from '@/features/statistics/api/graphql/ins-source-fetcher'
+import type { DataValidationError } from '@/lib/chart-data-validation'
+import { createLogger } from '@/lib/logger'
+import { getUserLocale } from '@/lib/utils'
+import {
+  insSourceDimensionCodeSchema,
+  insSourceMemberCodeSchema,
+  isInsChartPeriodicity,
+} from '@/lib/ins/source-contract'
+import { inspectSourceSeries } from '@/lib/ins/source-series'
+import type { AnalyticsSeries, InsSeriesConfiguration } from '@/schemas/charts'
+import type {
+  InsObservationFilterInput,
+  NativeInsObservation,
+} from '@/schemas/ins'
+import type { ReportPeriodInput, ReportPeriodType } from '@/schemas/reporting'
 
 export interface InsSeriesMapperInput {
-  series: InsSeriesConfiguration;
+  series: InsSeriesConfiguration
+  signal?: AbortSignal
 }
-
 export interface InsSeriesMappingResult {
-  series: AnalyticsSeries | null;
-  warnings: DataValidationError[];
+  series: AnalyticsSeries | null
+  warnings: DataValidationError[]
+  retryable?: boolean
 }
-
 export interface InsSeriesRuntimeMapper {
-  mapSeries(input: InsSeriesMapperInput): Promise<InsSeriesMappingResult>;
+  mapSeries(input: InsSeriesMapperInput): Promise<InsSeriesMappingResult>
 }
 
-type ObservationWithValue = {
-  observation: InsObservation;
-  value: number;
-  periodKey: number;
-  periodLabel: string;
-  unitLabel: string;
-};
+const logger = createLogger('ins-chart-series')
 
-const PERIODICITY_PRIORITY: InsPeriodicity[] = ['ANNUAL', 'QUARTERLY', 'MONTHLY'];
-
-export function getInsObservationPeriodKey(observation: InsObservation): number {
-  const period = observation.time_period;
-  return period.year * 10000 + (period.quarter ?? 0) * 100 + (period.month ?? 0);
-}
-
-export function parseInsObservationValue(value: string | null | undefined): number | null {
-  if (value == null) return null;
-  const parsed = Number(String(value).replace(',', '.'));
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-export function getInsObservationUnitLabel(observation: InsObservation): string {
-  const locale = getUserLocale() === 'en' ? 'en' : 'ro';
-  const localizedUnitName = locale === 'en'
-    ? observation.unit?.name_en || observation.unit?.name_ro || ''
-    : observation.unit?.name_ro || observation.unit?.name_en || '';
-  return observation.unit?.symbol || observation.unit?.code || localizedUnitName;
-}
-
-function isPeriodDateForType(date: string, type: ReportPeriodType): date is PeriodDate {
-  if (type === 'YEAR') return /^\d{4}$/.test(date);
-  if (type === 'QUARTER') return /^\d{4}-Q[1-4]$/.test(date);
-  return /^\d{4}-(0[1-9]|1[0-2])$/.test(date);
-}
-
-function normalizeSeriesPeriod(period: InsSeriesConfiguration['period']): ReportPeriodInput | undefined {
-  if (!period) return undefined;
-
-  if (period.selection.interval) {
-    const interval = period.selection.interval;
-    if (
-      !isPeriodDateForType(interval.start, period.type) ||
-      !isPeriodDateForType(interval.end, period.type)
-    ) {
-      return undefined;
-    }
-
-    return {
-      type: period.type,
-      selection: {
-        interval: {
-          start: interval.start,
-          end: interval.end,
-        },
-      },
-    };
-  }
-
-  const dates = (period.selection.dates ?? []).filter((date) =>
-    isPeriodDateForType(date, period.type)
-  );
-  if (dates.length === 0) return undefined;
-
+function unavailable(
+  series: InsSeriesConfiguration,
+  message: string,
+): InsSeriesMappingResult {
   return {
-    type: period.type,
-    selection: {
-      dates: Array.from(new Set(dates)),
-    },
-  };
+    series: null,
+    warnings: [{ type: 'missing_data', seriesId: series.id, message }],
+  }
 }
 
-function buildObservationFilter(series: InsSeriesConfiguration): InsObservationFilterInput {
-  const filter: InsObservationFilterInput = {
-    hasValue: series.hasValue ?? true,
-  };
-
-  if (series.territoryCodes?.length) {
-    filter.territoryCodes = series.territoryCodes;
-  }
-  if (series.sirutaCodes?.length) {
-    filter.sirutaCodes = series.sirutaCodes;
-  }
-  if (series.unitCodes?.length) {
-    filter.unitCodes = series.unitCodes;
-  }
-  const normalizedPeriod = normalizeSeriesPeriod(series.period);
-  if (normalizedPeriod) {
-    filter.period = normalizedPeriod;
-  }
-
-  if (series.classificationSelections && Object.keys(series.classificationSelections).length > 0) {
-    filter.classificationTypeCodes = Object.keys(series.classificationSelections);
-    const allValues = Object.values(series.classificationSelections)
-      .flatMap((codes) => codes)
-      .filter((code) => code?.trim().length > 0);
-
-    if (allValues.length > 0) {
-      filter.classificationValueCodes = Array.from(new Set(allValues));
-    }
-  }
-
-  return filter;
+function validPeriodDate(date: string, type: ReportPeriodType): boolean {
+  if (type === 'YEAR') return /^\d{4}$/.test(date)
+  if (type === 'QUARTER') return /^\d{4}-Q[1-4]$/.test(date)
+  return /^\d{4}-(0[1-9]|1[0-2])$/.test(date)
 }
 
-export function selectDefaultInsPeriodicity(observations: InsObservation[]): InsPeriodicity | null {
-  const seen = new Set<InsPeriodicity>();
-  observations.forEach((observation) => {
-    seen.add(observation.time_period.periodicity);
-  });
-
-  if (seen.size === 0) return null;
-
-  for (const periodicity of PERIODICITY_PRIORITY) {
-    if (seen.has(periodicity)) return periodicity;
+/** Invalid saved selections stay visible; never drop dates to broaden the request. */
+function validPeriod(
+  period: InsSeriesConfiguration['period'],
+): period is ReportPeriodInput | undefined {
+  if (!period) return true
+  if (period.selection.interval) {
+    const { start, end } = period.selection.interval
+    return (
+      validPeriodDate(start, period.type) &&
+      validPeriodDate(end, period.type) &&
+      start <= end
+    )
   }
-
-  return observations[0]?.time_period.periodicity ?? null;
+  const dates = period.selection.dates
+  return (
+    dates !== undefined &&
+    dates.length > 0 &&
+    dates.every((date) => validPeriodDate(date, period.type))
+  )
 }
 
-export function mapReportPeriodTypeToInsPeriodicity(
-  periodType: ReportPeriodType | undefined
-): InsPeriodicity | null {
-  if (periodType === 'MONTH') return 'MONTHLY';
-  if (periodType === 'QUARTER') return 'QUARTERLY';
-  if (periodType === 'YEAR') return 'ANNUAL';
-  return null;
+function validSourceSelection(series: InsSeriesConfiguration): boolean {
+  return (
+    (series.unitCodes ?? []).every(
+      (code) => insSourceMemberCodeSchema.safeParse(code).success,
+    ) &&
+    Object.entries(series.classificationSelections ?? {}).every(
+      ([dimension, codes]) =>
+        insSourceDimensionCodeSchema.safeParse(dimension).success &&
+        codes.length > 0 &&
+        codes.every(
+          (code) => insSourceMemberCodeSchema.safeParse(code).success,
+        ),
+    )
+  )
 }
 
-function normalizePeriodicityForChart(periodicity: InsPeriodicity): 'year' | 'quarter' | 'month' {
-  if (periodicity === 'MONTHLY') return 'month';
-  if (periodicity === 'QUARTERLY') return 'quarter';
-  return 'year';
+function observationFilter(
+  series: InsSeriesConfiguration,
+): InsObservationFilterInput {
+  // Omit hasValue: native false means null-only. Identity must include missing cells.
+  const filter: InsObservationFilterInput = {}
+  if (series.territoryCodes?.length)
+    filter.territoryCodes = series.territoryCodes
+  if (series.sirutaCodes?.length) filter.sirutaCodes = series.sirutaCodes
+  if (series.unitCodes?.length) filter.unitCodes = series.unitCodes
+  if (series.period && validPeriod(series.period)) filter.period = series.period
+  const selections = Object.entries(series.classificationSelections ?? {})
+  if (selections.length > 0) {
+    filter.classificationTypeCodes = selections.map(([dimension]) => dimension)
+    filter.classificationValueCodes = [
+      ...new Set(selections.flatMap(([, codes]) => codes)),
+    ]
+  }
+  return filter
 }
 
-function normalizePeriodTypeForChart(
-  periodType: ReportPeriodType | undefined
-): 'year' | 'quarter' | 'month' | null {
-  if (periodType === 'MONTH') return 'month';
-  if (periodType === 'QUARTER') return 'quarter';
-  if (periodType === 'YEAR') return 'year';
-  return null;
-}
-
-export function insObservationMatchesClassificationSelection(
-  observation: InsObservation,
-  selection: Record<string, string[]>
+/** The wire filter is a union of members; preserve the saved per-dimension AND locally. */
+function matchesSelection(
+  row: NativeInsObservation,
+  selections: Record<string, string[]>,
 ): boolean {
-  if (!selection || Object.keys(selection).length === 0) {
-    return true;
-  }
-
-  const classifications = observation.classifications ?? [];
-  for (const [typeCode, selectedCodes] of Object.entries(selection)) {
-    if (selectedCodes.length === 0) continue;
-
-    const hasMatch = classifications.some((classification) => {
-      if (!classification?.type_code || !classification?.code) return false;
-      return classification.type_code === typeCode && selectedCodes.includes(classification.code);
-    });
-
-    if (!hasMatch) {
-      return false;
-    }
-  }
-
-  return true;
+  return Object.entries(selections).every(([dimension, codes]) =>
+    row.classifications.some(
+      (item) => item.type_code === dimension && codes.includes(item.code),
+    ),
+  )
 }
 
-export function reduceInsObservationValues(
-  values: number[],
-  aggregation: InsSeriesConfiguration['aggregation']
-): number | null {
-  if (values.length === 0) return null;
-
-  if (aggregation === 'first') {
-    return values[0] ?? null;
-  }
-  if (aggregation === 'average') {
-    return values.reduce((acc, value) => acc + value, 0) / values.length;
-  }
-
-  return values.reduce((acc, value) => acc + value, 0);
+function unitLabel(row: NativeInsObservation): string {
+  const unit = row.unit
+  const name =
+    getUserLocale() === 'en'
+      ? unit.name_en || unit.name_ro
+      : unit.name_ro || unit.name_en
+  return unit.symbol || name || unit.code
 }
 
-export async function mapInsSeriesToAnalyticsSeries(series: InsSeriesConfiguration): Promise<InsSeriesMappingResult> {
-  const warnings: DataValidationError[] = [];
+function periodOrdinal(label: string, type: ReportPeriodType): number {
+  const year = Number(label.slice(0, 4))
+  if (type === 'YEAR') return year
+  if (type === 'QUARTER') return year * 4 + Number(label.slice(6)) - 1
+  return year * 12 + Number(label.slice(5)) - 1
+}
 
-  if (!series.datasetCode) {
-    warnings.push({
-      type: 'missing_data',
-      seriesId: series.id,
-      message: 'INS series datasetCode is missing. No data fetched.',
-    });
-    return { series: null, warnings };
+function completePeriods(
+  labels: string[],
+  type: ReportPeriodType,
+  period: InsSeriesConfiguration['period'],
+): boolean {
+  if (period && period.type !== type) return false
+  if (period?.selection.dates) {
+    const expected = new Set(period.selection.dates)
+    return (
+      labels.length === expected.size &&
+      labels.every((label) => expected.has(label))
+    )
+  }
+  const first = labels[0]
+  const last = labels[labels.length - 1]
+  if (!first || !last) return false
+  const start = period?.selection.interval?.start ?? first
+  const end = period?.selection.interval?.end ?? last
+  return (
+    first === start &&
+    last === end &&
+    labels.length === periodOrdinal(end, type) - periodOrdinal(start, type) + 1
+  )
+}
+
+export async function mapInsSeriesToAnalyticsSeries(
+  series: InsSeriesConfiguration,
+  signal?: AbortSignal,
+): Promise<InsSeriesMappingResult> {
+  if (!series.datasetCode)
+    return unavailable(series, t`Select an INS dataset to display this series.`)
+  if (!validPeriod(series.period) || !validSourceSelection(series)) {
+    return unavailable(
+      series,
+      t`The saved INS selection is invalid. Edit its period, source coordinates or unit.`,
+    )
   }
 
-  const filter = buildObservationFilter(series);
-  const observations = await getAllInsObservations({
-    datasetCode: series.datasetCode,
-    filter,
-    pageSize: 1000,
-    maxPages: 30,
-  });
-
-  const classSelection = series.classificationSelections ?? {};
-  const classFiltered = observations.filter((observation) =>
-    insObservationMatchesClassificationSelection(observation, classSelection)
-  );
-
-  if (classFiltered.length === 0) {
-    warnings.push({
-      type: 'empty_series',
-      seriesId: series.id,
-      message: `No INS observations found for dataset ${series.datasetCode} with current filters.`,
-    });
-
-    return {
-      series: {
-        seriesId: series.id,
-        xAxis: { name: 'Period', type: 'STRING', unit: 'year' },
-        yAxis: { name: 'Value', type: 'FLOAT', unit: series.unit || '' },
-        data: [],
-      },
-      warnings,
-    };
-  }
-
-  const observedPeriodicities = Array.from(
-    new Set(classFiltered.map((observation) => observation.time_period.periodicity))
-  );
-
-  const requestedPeriodicity = mapReportPeriodTypeToInsPeriodicity(series.period?.type);
-  const effectivePeriodicity = requestedPeriodicity ?? selectDefaultInsPeriodicity(classFiltered);
-  if (!effectivePeriodicity) {
-    warnings.push({
-      type: 'missing_data',
-      seriesId: series.id,
-      message: `Cannot determine periodicity for INS dataset ${series.datasetCode}.`,
-    });
-    return { series: null, warnings };
-  }
-
-  if (!requestedPeriodicity && observedPeriodicities.length > 1) {
-    warnings.push({
-      type: 'auto_adjusted_value',
-      seriesId: series.id,
-      message: `Multiple periodicities found (${observedPeriodicities.join(', ')}). Auto-selected ${effectivePeriodicity}.`,
-      value: observedPeriodicities,
-    });
-  }
-
-  const periodicityFiltered = classFiltered.filter(
-    (observation) => observation.time_period.periodicity === effectivePeriodicity
-  );
-
-  const normalizedObservations: ObservationWithValue[] = [];
-
-  for (const observation of periodicityFiltered) {
-    const parsed = parseInsObservationValue(observation.value);
-    if (parsed == null) {
-      if (series.hasValue !== false) {
-        warnings.push({
-          type: 'invalid_y_value',
-          seriesId: series.id,
-          message: `Skipping non-numeric INS observation value at ${observation.time_period.iso_period}.`,
-          value: observation.value,
-        });
-      }
-      continue;
-    }
-
-    normalizedObservations.push({
-      observation,
-      value: parsed,
-      periodKey: getInsObservationPeriodKey(observation),
-      periodLabel: observation.time_period.iso_period,
-      unitLabel: getInsObservationUnitLabel(observation),
-    });
-  }
-
-  if (normalizedObservations.length === 0) {
-    warnings.push({
-      type: 'empty_series',
-      seriesId: series.id,
-      message: `No numeric INS values available for dataset ${series.datasetCode}.`,
-    });
-
-    return {
-      series: {
-        seriesId: series.id,
-        xAxis: { name: 'Period', type: 'STRING', unit: normalizePeriodicityForChart(effectivePeriodicity) },
-        yAxis: { name: 'Value', type: 'FLOAT', unit: series.unit || '' },
-        data: [],
-      },
-      warnings,
-    };
-  }
-
-  const unitSet = new Set(normalizedObservations.map((entry) => entry.unitLabel || '').filter((entry) => entry.length > 0));
-
-  if (unitSet.size > 1) {
-    warnings.push({
-      type: 'invalid_y_value',
-      seriesId: series.id,
-      message: `INS series has mixed units (${Array.from(unitSet).join(', ')}). Please filter to a single unit.`,
-      value: Array.from(unitSet),
-    });
-
-    return {
-      series: {
-        seriesId: series.id,
-        xAxis: { name: 'Period', type: 'STRING', unit: normalizePeriodicityForChart(effectivePeriodicity) },
-        yAxis: { name: 'Value', type: 'FLOAT', unit: series.unit || '' },
-        data: [],
-      },
-      warnings,
-    };
-  }
-
-  const grouped = new Map<string, { periodKey: number; values: number[] }>();
-
-  normalizedObservations
-    .sort((left, right) => left.periodKey - right.periodKey)
-    .forEach((entry) => {
-      const existing = grouped.get(entry.periodLabel);
-      if (existing) {
-        existing.values.push(entry.value);
-      } else {
-        grouped.set(entry.periodLabel, {
-          periodKey: entry.periodKey,
-          values: [entry.value],
-        });
-      }
-    });
-
-  const data = Array.from(grouped.entries())
-    .map(([periodLabel, payload]) => {
-      const value = reduceInsObservationValues(payload.values, series.aggregation ?? 'sum');
-      if (value == null || !Number.isFinite(value)) return null;
-      return {
-        x: periodLabel,
-        y: value,
-        periodKey: payload.periodKey,
-      };
+  let vector
+  try {
+    vector = await fetchInsSourceVector({
+      datasetCode: series.datasetCode,
+      filter: observationFilter(series),
+      pageSize: 1000,
+      maxPages: 30,
+      signal,
     })
-    .filter((point): point is { x: string; y: number; periodKey: number } => point !== null)
-    .sort((left, right) => left.periodKey - right.periodKey)
-    .map(({ x, y }) => ({ x, y }));
+  } catch {
+    signal?.throwIfAborted()
+    logger.warn('INS chart complete-vector request failed', {
+      seriesId: series.id,
+      datasetCode: series.datasetCode,
+    })
+    return {
+      ...unavailable(
+        series,
+        t`The complete INS series could not be loaded. Retry before using its values.`,
+      ),
+      retryable: true,
+    }
+  }
+  // Validate every fetched cell before filtering, so malformed coordinates cannot disappear.
+  if (inspectSourceSeries(vector).status === 'INVALID') {
+    return unavailable(
+      series,
+      t`The INS response has incomplete or conflicting source coordinates.`,
+    )
+  }
+  const observations = vector.observations.filter((row) =>
+    matchesSelection(row, series.classificationSelections ?? {}),
+  )
+  const inspected = inspectSourceSeries({
+    descriptor: vector.descriptor,
+    observations,
+  })
+  if (inspected.status === 'AMBIGUOUS') {
+    return unavailable(
+      series,
+      t`Multiple INS source series match this selection. Choose one complete source series; sum, average and first cannot resolve alternatives.`,
+    )
+  }
+  if (inspected.status === 'INVALID') {
+    return unavailable(
+      series,
+      t`The INS response has incomplete or conflicting source coordinates.`,
+    )
+  }
+  if (inspected.status === 'EMPTY') {
+    return unavailable(series, t`No INS observations match this selection.`)
+  }
+  if (inspected.anyQualified) {
+    return unavailable(
+      series,
+      t`This INS series has geographic qualifications. Inspect the source rows before comparing its values.`,
+    )
+  }
+  const periodicities = [
+    ...new Set(observations.map((row) => row.time_period.periodicity)),
+  ]
+  const periodicity = periodicities[0]
+  if (
+    periodicities.length !== 1 ||
+    !periodicity ||
+    !isInsChartPeriodicity(periodicity)
+  ) {
+    return unavailable(
+      series,
+      t`Select one supported INS frequency: annual, quarterly or monthly. Other frequencies remain available in source rows.`,
+    )
+  }
 
-  const inferredUnit = Array.from(unitSet)[0] ?? '';
-  const xAxisUnitFromPeriod = normalizePeriodTypeForChart(series.period?.type);
-
+  const periodType = {
+    ANNUAL: 'YEAR',
+    QUARTERLY: 'QUARTER',
+    MONTHLY: 'MONTH',
+  } as const
+  const points: { x: string; y: number }[] = []
+  for (const row of observations) {
+    if (!validPeriodDate(row.time_period.iso_period, periodType[periodicity])) {
+      return unavailable(
+        series,
+        t`The INS response contains a period that does not match its frequency.`,
+      )
+    }
+    const value = row.value?.trim()
+    const number =
+      value && /^-?[0-9]+(?:[.,][0-9]+)?$/.test(value)
+        ? Number(value.replace(',', '.'))
+        : NaN
+    // AnalyticsSeries has no null points: dropping a missing cell would draw a false continuous line.
+    if (!Number.isFinite(number)) {
+      return unavailable(
+        series,
+        t`This INS series contains missing or invalid values. Inspect source rows; the chart cannot represent these gaps.`,
+      )
+    }
+    points.push({ x: row.time_period.iso_period, y: number })
+  }
+  points.sort((left, right) => left.x.localeCompare(right.x))
+  if (
+    !completePeriods(
+      points.map((point) => point.x),
+      periodType[periodicity],
+      series.period,
+    )
+  ) {
+    return unavailable(
+      series,
+      t`This INS series is missing expected periods. Inspect source rows; the chart cannot represent these gaps.`,
+    )
+  }
   return {
     series: {
       seriesId: series.id,
       xAxis: {
-        name: 'Period',
+        name: t`Period`,
         type: 'STRING',
-        unit: xAxisUnitFromPeriod ?? normalizePeriodicityForChart(effectivePeriodicity),
+        unit: { ANNUAL: 'year', QUARTERLY: 'quarter', MONTHLY: 'month' }[
+          periodicity
+        ],
       },
       yAxis: {
-        name: 'Value',
+        name: t`Value`,
         type: 'FLOAT',
-        unit: series.unit || inferredUnit,
+        unit: series.unit || unitLabel(observations[0]),
       },
-      data,
+      data: points,
     },
-    warnings,
-  };
+    warnings: [],
+  }
 }
 
 export const insSeriesRuntimeMapper: InsSeriesRuntimeMapper = {
-  mapSeries: async ({ series }) => mapInsSeriesToAnalyticsSeries(series),
-};
-
-export function buildInsSeriesObservationFilter(series: InsSeriesConfiguration): InsObservationFilterInput {
-  return buildObservationFilter(series);
+  mapSeries: ({ series, signal }) =>
+    mapInsSeriesToAnalyticsSeries(series, signal),
 }

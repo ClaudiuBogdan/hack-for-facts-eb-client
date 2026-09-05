@@ -197,6 +197,8 @@ export function ChartDataError({
     return { hasErrors, hasWarnings, total, headerTone, iconTone };
   }, [validationResult.errors.length, validationResult.warnings.length]);
 
+  const hasUnavailableSeries = validationResult.warnings.some(issue => issue.type === 'missing_data');
+
   const copyReport = useCallback(async () => {
     try {
       setCopyFeedback('idle');
@@ -215,26 +217,28 @@ export function ChartDataError({
   return (
     <Card className={headerTone} role="alert" aria-live="polite">
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-2">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex min-w-0 items-start gap-2">
             {hasErrors ? (
-              <AlertTriangle className={`h-5 w-5 ${iconTone}`} />
+              <AlertTriangle className={`h-5 w-5 shrink-0 ${iconTone}`} />
             ) : (
-              <Info className={`h-5 w-5 ${iconTone}`} />
+              <Info className={`h-5 w-5 shrink-0 ${iconTone}`} />
             )}
-            <div className="space-y-0.5">
+            <div className="min-w-0 space-y-0.5">
               <CardTitle className="text-base">
                 {hasErrors ? t`Chart Data Error` : t`Chart Data Warning`}
               </CardTitle>
               <CardDescription>
                 {hasErrors
                   ? t`Invalid data detected in chart series`
-                  : t`Some data issues were automatically resolved`}
+                  : hasUnavailableSeries
+                    ? t`Some series are unavailable. Review the details before using this chart.`
+                    : t`Some data issues were automatically resolved`}
               </CardDescription>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 lg:shrink-0">
             {hasErrors && (
               <Badge variant="destructive">
                 {validationResult.errors.length} error
@@ -311,7 +315,7 @@ export function ChartDataError({
                 title={t`Warnings`}
                 issues={validationResult.warnings}
                 colorScheme={COLORS.WARNING}
-                showAutoFixNote={!hasErrors}
+                showAutoFixNote={!hasErrors && !hasUnavailableSeries}
               />
             )}
           </div>

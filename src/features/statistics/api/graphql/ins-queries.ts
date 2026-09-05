@@ -29,6 +29,8 @@ export const INS_DATASET_FIELDS = `
 `
 
 export const INS_OBSERVATION_FIELDS = `
+  id
+  dimensions
   dataset_code
   value
   value_status
@@ -474,6 +476,22 @@ export const STATISTICS_TERRITORY_HUB_CONTEXT_QUERY = `
       preferredClassificationCodes: ["TOTAL"]
     ) {
       ${INS_LATEST_VALUE_FIELDS}
+    }
+  }
+`
+
+/** Descriptor and source cells share the native operation snapshot. */
+export const INS_SOURCE_OBSERVATIONS_QUERY = `
+  query InsSourceObservations($datasetCode: String!, $filter: InsObservationFilterInput, $limit: Int!, $offset: Int!) {
+    descriptor: insDataset(code: $datasetCode) {
+      code
+      dimension_count
+      metadata
+      dimensions { index type classification_type { code } }
+    }
+    insObservations(datasetCode: $datasetCode, filter: $filter, limit: $limit, offset: $offset) {
+      nodes { ${INS_OBSERVATION_FIELDS} }
+      pageInfo { totalCount hasNextPage hasPreviousPage }
     }
   }
 `

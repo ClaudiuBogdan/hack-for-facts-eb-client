@@ -356,16 +356,16 @@ export const InsSeriesAggregationSchema = z.enum(['sum', 'average', 'first']);
 export type InsSeriesAggregation = z.infer<typeof InsSeriesAggregationSchema>;
 
 export const InsSeriesConfigurationSchema = BaseSeriesConfigurationSchema.extend({
-  type: z.literal('ins-series').describe('Series type: "ins-series" - INS Tempo dataset series. Queries INS observations from the GraphQL INS module and maps them to chart-compatible time-series points. Supports dimensions (territory, classifications, units), temporal filters, and reducer-based aggregation when multiple observations exist per period.'),
+  type: z.literal('ins-series').describe('Series type: "ins-series" - INS Tempo dataset series. Queries INS observations from the GraphQL INS module and maps them to chart-compatible time-series points. Requires one complete native source identity and complete supported periods; source alternatives and missing coverage remain unavailable.'),
   unit: z.string().optional().default('').describe('Unit of measurement for INS values. Usually inferred from dataset observations. Leave empty to auto-detect from API metadata.'),
   datasetCode: z.string().optional().describe('INS dataset code (matrix code), for example "POP107D". Required for querying observations. Selected from INS datasets catalog.'),
   period: ReportPeriodInputZ.optional().describe('INS period selection using the same report-period interface as execution series. Supports period type (YEAR/QUARTER/MONTH) and either dates or interval selection.'),
-  aggregation: InsSeriesAggregationSchema.default('sum').describe('Reducer used when multiple INS observations match the same period. "sum" adds all values, "average" computes arithmetic mean, "first" keeps the first ordered observation.'),
+  aggregation: InsSeriesAggregationSchema.default('sum').describe('Retained for saved-document compatibility. No reducer may combine alternative native INS source identities; choose one complete source series.'),
   territoryCodes: z.array(z.string()).optional().describe('Optional INS territory codes filter (e.g., ["RO"], county codes at NUTS3).'),
   sirutaCodes: z.array(z.string()).optional().describe('Optional INS SIRUTA codes filter (typically LAU localities/UATs).'),
   unitCodes: z.array(z.string()).optional().describe('Optional INS unit code filter. Use when dataset has multiple units of measure and a specific unit is required.'),
   classificationSelections: z.record(z.string(), z.array(z.string())).optional().describe('Classification selections keyed by INS classification type code. Values are allowed classification value codes for each type. AND semantics across type keys, OR semantics inside each value array.'),
-  hasValue: z.boolean().default(true).describe('Whether to include only observations with non-null values. Default true for chart usability.'),
+  hasValue: z.boolean().default(true).describe('Retained for saved-document compatibility. Native charts inspect all source cells, including nulls, before deriving values; missing coverage remains unavailable.'),
 }).passthrough();
 
 export const CommitmentsSeriesConfigurationSchema = BaseSeriesConfigurationSchema.extend({

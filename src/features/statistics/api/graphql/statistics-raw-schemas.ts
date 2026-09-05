@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { insSourceObservationSchema, insSourcePeriodicitySchema } from '@/lib/ins/source-contract'
 
 /**
  * Raw-response schemas for the statistics-owned INS operations.
@@ -50,7 +51,7 @@ export const insTerritoriesResponseRawSchema = z.object({
   }),
 })
 
-export const insPeriodicityRawSchema = z.enum(['ANNUAL', 'QUARTERLY', 'MONTHLY'])
+export const insPeriodicityRawSchema = insSourcePeriodicitySchema
 
 /**
  * `data_status` is `.nullish()` rather than required so a client deployed ahead
@@ -280,6 +281,37 @@ export const insObservationNodeRawSchema = z.object({
       }),
     )
     .nullish(),
+})
+
+/** Native source vectors require identity fields before any derived output. */
+export const insNativeObservationRawSchema = insObservationNodeRawSchema.extend({
+  id: insSourceObservationSchema.shape.id,
+  dataset_code: insSourceObservationSchema.shape.dataset_code,
+  value: z.string().nullable(),
+  unit: z.object({
+    code: insSourceObservationSchema.shape.unit.shape.code,
+    symbol: z.string().nullish(),
+    name_ro: z.string().nullish(),
+  }),
+  classifications: z.array(z.object({
+    id: z.string(),
+    type_code: insSourceObservationSchema.shape.classifications.element.shape.type_code,
+    type_name_ro: z.string().nullish(),
+    type_name_en: z.string().nullish(),
+    code: insSourceObservationSchema.shape.classifications.element.shape.code,
+    name_ro: z.string().nullish(),
+    name_en: z.string().nullish(),
+    sort_order: z.number().nullish(),
+  })).max(7),
+  dimensions: insSourceObservationSchema.shape.dimensions,
+})
+
+export const insSourceObservationsResponseRawSchema = z.object({
+  descriptor: z.unknown(),
+  insObservations: z.object({
+    nodes: z.array(insNativeObservationRawSchema),
+    pageInfo: insPageInfoRawSchema,
+  }),
 })
 
 export const statisticsDatasetSeriesResponseRawSchema = z.object({

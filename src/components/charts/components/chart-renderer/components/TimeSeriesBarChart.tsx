@@ -63,7 +63,8 @@ export function TimeSeriesBarChart({ chart, unitMap, timeSeriesData, onAnnotatio
                       content={(props) => {
                         const isShowLabels = series.config.showDataLabels || chart.config.showDataLabels;
                         if (!isShowLabels) return null;
-                        const payload = props.value as unknown as DataPointPayload;
+                        const payload = props.value as unknown as DataPointPayload | undefined;
+                        if (!payload) return null;
                         const dataLabels = series.config.dataLabels || [];
                         if (dataLabels.length > 0 && !dataLabels.includes(String(payload.year))) return null;
                         return (

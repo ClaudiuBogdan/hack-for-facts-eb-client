@@ -489,13 +489,13 @@ msgstr ""
 
 #. placeholder {0}: segment.controlLabel
 #. placeholder {1}: segment.text
-#: src/features/statistics/components/detail-scope-sentence.tsx:133
+#: src/features/statistics/components/detail-scope-sentence.tsx:134
 msgid "{0}: {1}"
 msgstr ""
 
 #. placeholder {0}: segment.controlLabel
 #. placeholder {1}: segment.text
-#: src/features/statistics/components/detail-scope-sentence.tsx:132
+#: src/features/statistics/components/detail-scope-sentence.tsx:133
 msgid "{0}: {1} (implicit)"
 msgstr ""
 
@@ -1740,7 +1740,7 @@ msgstr ""
 msgid "Ajutor de stat RegAS"
 msgstr ""
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:258
+#: src/features/statistics/components/detail-scope-sentence.tsx:259
 msgid "alege"
 msgstr ""
 
@@ -1748,8 +1748,8 @@ msgstr ""
 msgid "Alege anul"
 msgstr ""
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:165
-#: src/features/statistics/components/detail-scope-sentence.tsx:177
+#: src/features/statistics/components/detail-scope-sentence.tsx:166
+#: src/features/statistics/components/detail-scope-sentence.tsx:178
 msgid "Alege ce arată seria"
 msgstr ""
 
@@ -1761,12 +1761,12 @@ msgstr ""
 msgid "Alege o perioadă"
 msgstr ""
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:528
+#: src/features/statistics/components/detail-scope-sentence.tsx:530
 msgid "Alege o unitate"
 msgstr ""
 
 #: src/features/statistics/components/comparison-pins.tsx:64
-#: src/features/statistics/components/detail-scope-sentence.tsx:430
+#: src/features/statistics/components/detail-scope-sentence.tsx:432
 msgid "Alege o valoare"
 msgstr ""
 
@@ -1838,8 +1838,8 @@ msgstr "Tip alertă"
 msgid "Alerts when important changes occur"
 msgstr "Alerte când apar modificări importante"
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:154
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:172
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:155
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:173
 #: src/features/learning/components/interactive/DocumentLibrary.tsx:147
 #: src/routes/charts/index.lazy.tsx:248
 msgid "All"
@@ -1902,6 +1902,10 @@ msgstr ""
 #: src/features/procurement/components/procurement-supplier-slice.tsx:395
 msgid "Also appears in"
 msgstr "Apare și în"
+
+#: src/features/statistics/lib/periodicity-labels.ts:8
+msgid "altă periodicitate"
+msgstr "altă periodicitate"
 
 #: src/features/legal/lib/legal-domains.ts:65
 msgid "Altele"
@@ -1998,11 +2002,11 @@ msgstr "Un act adițional care modifică valoarea unui contract; este asociat co
 msgid "An awarded contract between a contracting authority and a supplier, from SEAP or e-licitatie."
 msgstr "Un contract atribuit între o autoritate contractantă și un furnizor, din SEAP sau e-licitatie."
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:571
+#: src/features/statistics/components/detail-scope-sentence.tsx:573
 msgid "An de început"
 msgstr ""
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:585
+#: src/features/statistics/components/detail-scope-sentence.tsx:587
 msgid "An de sfârșit"
 msgstr ""
 
@@ -2082,7 +2086,7 @@ msgstr "Alertă pentru serie analitică"
 msgid "Analytics view"
 msgstr "Vizualizare analitică"
 
-#: src/routes/entity-analytics.lazy.tsx:194
+#: src/routes/entity-analytics.lazy.tsx:202
 msgid "Analyze aggregated values per entity and explore top entities."
 msgstr "Analizați valorile cumulate pe entitate și explorați entitățile de top."
 
@@ -2585,8 +2589,8 @@ msgid "Average: use the mean value (best for repeated measurements)."
 msgstr "Medie: folosiți valoarea medie (cel mai potrivit pentru măsurători repetate)."
 
 #: src/components/entity-analytics/EntityAnalyticsKPIs.tsx:35
-msgid "Avg per-capita"
-msgstr "Medie pe cap de locuitor"
+#~ msgid "Avg per-capita"
+#~ msgstr "Medie pe cap de locuitor"
 
 #: src/components/maps/charts/UatAverageSpendingCountyChart.tsx:73
 msgid "Avg. Amount"
@@ -2835,7 +2839,7 @@ msgid "boolean"
 msgstr ""
 
 #: src/components/maps/HeatmapDataTable.tsx:478
-#: src/routes/entity-analytics.lazy.tsx:232
+#: src/routes/entity-analytics.lazy.tsx:240
 msgid "Both"
 msgstr "Ambele"
 
@@ -3519,7 +3523,7 @@ msgstr ""
 msgid "Caută un subiect (ex. buget, educație)…"
 msgstr ""
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:358
+#: src/features/statistics/components/detail-scope-sentence.tsx:360
 #: src/features/statistics/components/territory-search.tsx:39
 #: src/features/statistics/components/territory-search.tsx:54
 msgid "Caută un teritoriu"
@@ -3834,7 +3838,7 @@ msgstr "Grafic"
 msgid "Chart Configuration"
 msgstr "Configurare grafic"
 
-#: src/components/charts/components/ChartDataError.tsx:227
+#: src/components/charts/components/ChartDataError.tsx:229
 msgid "Chart Data Error"
 msgstr "Eroare în datele graficului"
 
@@ -3842,7 +3846,7 @@ msgstr "Eroare în datele graficului"
 msgid "Chart data is loading or not available."
 msgstr "Datele graficului se încarcă sau nu sunt disponibile."
 
-#: src/components/charts/components/ChartDataError.tsx:227
+#: src/components/charts/components/ChartDataError.tsx:229
 msgid "Chart Data Warning"
 msgstr "Avertisment pentru datele graficului"
 
@@ -4162,7 +4166,7 @@ msgstr "Șterge toate instantaneele"
 #: src/features/entity-search/components/entity-empty-state.tsx:135
 #: src/features/procurement/components/procurement-filter-sheet.tsx:460
 #: src/features/procurement/components/procurement-search-content.tsx:212
-#: src/routes/entity-analytics.lazy.tsx:216
+#: src/routes/entity-analytics.lazy.tsx:224
 msgid "Clear filters"
 msgstr "Șterge filtrele"
 
@@ -4368,7 +4372,7 @@ msgstr "Coloană"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:1143
 #: src/components/maps/HeatmapDataTable.tsx:480
-#: src/routes/entity-analytics.lazy.tsx:234
+#: src/routes/entity-analytics.lazy.tsx:242
 msgid "Columns"
 msgstr "Coloane"
 
@@ -4379,7 +4383,7 @@ msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:1133
 #: src/components/maps/HeatmapDataTable.tsx:472
-#: src/routes/entity-analytics.lazy.tsx:226
+#: src/routes/entity-analytics.lazy.tsx:234
 msgid "Comfortable"
 msgstr "Confortabil"
 
@@ -4430,8 +4434,8 @@ msgstr "Evoluția angajamentelor - {entityName}"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:1139
 #: src/components/maps/HeatmapDataTable.tsx:473
 #: src/components/maps/HeatmapDataTable.tsx:477
-#: src/routes/entity-analytics.lazy.tsx:227
-#: src/routes/entity-analytics.lazy.tsx:231
+#: src/routes/entity-analytics.lazy.tsx:235
+#: src/routes/entity-analytics.lazy.tsx:239
 msgid "Compact"
 msgstr "Compact"
 
@@ -4627,8 +4631,8 @@ msgstr ""
 msgid "Confidence"
 msgstr "Incredere"
 
-#: src/components/entities/views/ins-stats-view.formatters.ts:15
-#: src/components/entities/views/ins-stats-view.formatters.ts:16
+#: src/components/entities/views/ins-stats-view.formatters.ts:18
+#: src/components/entities/views/ins-stats-view.formatters.ts:19
 msgid "Confidential"
 msgstr "Confidențial"
 
@@ -4979,12 +4983,12 @@ msgstr "Copiat"
 msgid "Copied data to clipboard"
 msgstr "Datele au fost copiate în clipboard"
 
-#: src/components/charts/components/ChartDataError.tsx:278
+#: src/components/charts/components/ChartDataError.tsx:282
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:121
 msgid "Copied to clipboard"
 msgstr "Copiat în clipboard"
 
-#: src/components/charts/components/ChartDataError.tsx:286
+#: src/components/charts/components/ChartDataError.tsx:290
 msgid "Copied!"
 msgstr "Copiat!"
 
@@ -4994,7 +4998,7 @@ msgstr "Copiat!"
 msgid "Copiere indisponibilă"
 msgstr ""
 
-#: src/components/charts/components/ChartDataError.tsx:286
+#: src/components/charts/components/ChartDataError.tsx:290
 #: src/components/charts/components/views/AnnotationConfigView.tsx:220
 #: src/components/charts/components/views/SeriesConfigView.tsx:383
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-list-item.tsx:239
@@ -5022,7 +5026,7 @@ msgstr "Copiază datele"
 msgid "Copy Data"
 msgstr "Copiază datele"
 
-#: src/components/charts/components/ChartDataError.tsx:278
+#: src/components/charts/components/ChartDataError.tsx:282
 msgid "Copy error report to clipboard"
 msgstr "Copiază raportul de erori în clipboard"
 
@@ -5256,7 +5260,7 @@ msgstr "Numărătorile descriu înregistrările care corespund acestor filtre, n
 #: src/features/procurement/components/procurement-map-view.tsx:895
 #: src/features/procurement/lib/detail-config.ts:69
 #: src/features/procurement/lib/detail-config.ts:118
-#: src/routes/entity-analytics.lazy.tsx:236
+#: src/routes/entity-analytics.lazy.tsx:244
 msgid "County"
 msgstr "Județ"
 
@@ -5649,7 +5653,7 @@ msgstr ""
 #: src/components/normalization/normalization-controls.tsx:84
 #: src/components/theme/currency-toggle.tsx:57
 #: src/features/procurement/lib/export.ts:45
-#: src/routes/entity-analytics.lazy.tsx:229
+#: src/routes/entity-analytics.lazy.tsx:237
 msgid "Currency"
 msgstr "Monedă"
 
@@ -6318,7 +6322,7 @@ msgstr "Demografie"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:1128
 #: src/components/maps/HeatmapDataTable.tsx:471
-#: src/routes/entity-analytics.lazy.tsx:225
+#: src/routes/entity-analytics.lazy.tsx:233
 msgid "Density"
 msgstr "Densitate"
 
@@ -6585,7 +6589,7 @@ msgstr ""
 msgid "Dimensiuni și clasificări ({0} axe)"
 msgstr ""
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:572
+#: src/features/statistics/components/detail-scope-sentence.tsx:574
 msgid "din"
 msgstr ""
 
@@ -7470,7 +7474,6 @@ msgstr "Introdu numărul sub care ONG-ul este înregistrat în Registrul Asocia�
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:833
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1047
-#: src/components/entity-analytics/EntityAnalyticsKPIs.tsx:23
 #: src/components/filters/EntityAnalyticsFilter.tsx:510
 #: src/components/filters/EntityAnalyticsFilter.tsx:709
 #: src/components/filters/MapFilter.tsx:284
@@ -7485,7 +7488,7 @@ msgstr "Se exclud entitățile care au oricare dintre etichetele selectate."
 
 #: src/components/entity-analytics/EntityAnalyticsTable.tsx:69
 #: src/lib/chart-filter-utils.ts:37
-#: src/routes/entity-analytics.lazy.tsx:235
+#: src/routes/entity-analytics.lazy.tsx:243
 msgid "Entity"
 msgstr "Entitate"
 
@@ -7550,11 +7553,11 @@ msgstr "este egal cu"
 msgid "Eroare de rețea sau de server — existența textului rămâne o întrebare deschisă."
 msgstr ""
 
-#: src/components/charts/components/ChartDataError.tsx:286
+#: src/components/charts/components/ChartDataError.tsx:290
 msgid "Error"
 msgstr "Eroare"
 
-#: src/routes/entity-analytics.lazy.tsx:209
+#: src/routes/entity-analytics.lazy.tsx:217
 msgid "Error loading analytics"
 msgstr "Eroare la încărcarea analizei"
 
@@ -7562,7 +7565,7 @@ msgstr "Eroare la încărcarea analizei"
 msgid "Error Loading Chart Data"
 msgstr "Eroare la încărcarea datelor graficului"
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:184
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:185
 msgid "Error loading data"
 msgstr "Eroare la încărcarea datelor"
 
@@ -7590,7 +7593,7 @@ msgstr "Eroare: Tip de dată invalid."
 msgid "Error: Series not found"
 msgstr "Eroare: Seria nu a fost găsită"
 
-#: src/components/charts/components/ChartDataError.tsx:303
+#: src/components/charts/components/ChartDataError.tsx:307
 msgid "Errors"
 msgstr "Erori"
 
@@ -7918,7 +7921,7 @@ msgstr "Expandează panoul filtrelor de valori"
 #: src/components/filters/MapFilter.tsx:251
 #: src/components/maps/utils.ts:38
 #: src/hooks/filters/useFilterLabels.tsx:279
-#: src/routes/entity-analytics.lazy.tsx:292
+#: src/routes/entity-analytics.lazy.tsx:300
 msgid "Expenses"
 msgstr "Cheltuieli"
 
@@ -8026,7 +8029,7 @@ msgstr "Exportă configurația"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:1168
 #: src/features/procurement/components/procurement-map-view.tsx:775
 #: src/features/procurement/components/procurement-search-content.tsx:140
-#: src/routes/entity-analytics.lazy.tsx:242
+#: src/routes/entity-analytics.lazy.tsx:250
 msgid "Export CSV"
 msgstr "Exportă CSV"
 
@@ -8034,7 +8037,7 @@ msgstr "Exportă CSV"
 msgid "Export incomplet: fișierul conține {rowCount} rânduri, dar seria de la server are mai multe (capătul vechi este tăiat)."
 msgstr ""
 
-#: src/routes/entity-analytics.lazy.tsx:242
+#: src/routes/entity-analytics.lazy.tsx:250
 msgid "Exporting…"
 msgstr "Se exportă…"
 
@@ -8569,7 +8572,7 @@ msgstr "Filtrează datele de achiziții"
 msgid "Filter the county list"
 msgstr "Filtrează lista de județe"
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:164
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:165
 msgid "Filter Transfers"
 msgstr "Filtrare transferuri"
 
@@ -9025,9 +9028,9 @@ msgstr "plafoanele acordurilor-cadru"
 msgid "Framework ceilings"
 msgstr "Plafoanele acordurilor-cadru"
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:300
-#: src/features/statistics/components/detail-scope-sentence.tsx:304
-#: src/features/statistics/components/detail-scope-sentence.tsx:311
+#: src/features/statistics/components/detail-scope-sentence.tsx:301
+#: src/features/statistics/components/detail-scope-sentence.tsx:305
+#: src/features/statistics/components/detail-scope-sentence.tsx:313
 msgid "Frecvență"
 msgstr ""
 
@@ -9169,7 +9172,7 @@ msgstr "Volumul de gaze pe locuitor indică dependența de infrastructura de gaz
 msgid "Găsește un act normativ după număr (Legea 53/2003) sau după denumire (Codul muncii), cu statutul lui actual. Căutarea după expresii din textul legilor nu este încă disponibilă."
 msgstr ""
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:189
+#: src/features/statistics/components/detail-scope-sentence.tsx:190
 msgid "Gata"
 msgstr ""
 
@@ -9552,7 +9555,7 @@ msgstr "Ascunde"
 msgid "Hide advanced settings"
 msgstr "Ascunde setările avansate"
 
-#: src/components/charts/components/ChartDataError.tsx:263
+#: src/components/charts/components/ChartDataError.tsx:267
 #: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:193
 msgid "Hide details"
 msgstr "Ascunde detaliile"
@@ -10135,7 +10138,7 @@ msgstr "Include banii UE (PNRR) și profiturile companiilor de stat. Esențial, 
 #: src/components/filters/MapFilter.tsx:252
 #: src/components/maps/utils.ts:38
 #: src/hooks/filters/useFilterLabels.tsx:280
-#: src/routes/entity-analytics.lazy.tsx:292
+#: src/routes/entity-analytics.lazy.tsx:300
 msgid "Income"
 msgstr "Venituri"
 
@@ -10545,12 +10548,17 @@ msgstr "Interpretați împreună cu acoperirea rețelei și structura industrial
 msgid "Interpretation notes"
 msgstr "Note de interpretare"
 
+#: src/features/statistics/lib/periodicity-labels.ts:7
+msgid "interval"
+msgstr "interval"
+
+#: src/components/entities/views/ins-stats-view.formatters.ts:10
 #: src/components/filters/period-filter/PeriodFilter.tsx:425
 msgid "Interval"
 msgstr "Interval"
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:332
-#: src/features/statistics/components/detail-scope-sentence.tsx:565
+#: src/features/statistics/components/detail-scope-sentence.tsx:334
+#: src/features/statistics/components/detail-scope-sentence.tsx:567
 msgid "Interval de ani"
 msgstr ""
 
@@ -10649,7 +10657,7 @@ msgstr "Configurație de intercale invalidă."
 msgid "Invalid chart schema"
 msgstr "Schemă grafic invalidă"
 
-#: src/components/charts/components/ChartDataError.tsx:231
+#: src/components/charts/components/ChartDataError.tsx:233
 msgid "Invalid data detected in chart series"
 msgstr "Date invalide detectate în seriile graficului"
 
@@ -11457,7 +11465,7 @@ msgstr "Se încarcă datele analitice..."
 msgid "Loading budget sectors…"
 msgstr "Se încarcă sectoarele bugetare…"
 
-#: src/components/charts/components/views/ChartView.tsx:65
+#: src/components/charts/components/views/ChartView.tsx:66
 msgid "Loading chart configuration..."
 msgstr "Se încarcă configurația graficului..."
 
@@ -11809,7 +11817,7 @@ msgid "Luna"
 msgstr ""
 
 #: src/features/statistics/components/source-provenance-drawer.tsx:19
-#: src/features/statistics/lib/periodicity-labels.ts:7
+#: src/features/statistics/lib/periodicity-labels.ts:10
 msgid "lunar"
 msgstr ""
 
@@ -12365,7 +12373,7 @@ msgid "Ministerul Transporturilor"
 msgstr ""
 
 #: src/components/commitments/CommitmentsTable.tsx:70
-#: src/components/entities/views/ins-stats-view.formatters.ts:14
+#: src/components/entities/views/ins-stats-view.formatters.ts:17
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:556
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-formatting.ts:9
 #: src/features/challenges/components/analysis/challenge-entity-anomaly-summary.tsx:36
@@ -12591,7 +12599,7 @@ msgstr ""
 msgid "Month"
 msgstr "Luna"
 
-#: src/components/entities/views/ins-stats-view.formatters.ts:10
+#: src/components/entities/views/ins-stats-view.formatters.ts:13
 #: src/components/filters/period-filter/PeriodFilter.tsx:412
 msgid "Monthly"
 msgstr "Lunar"
@@ -12725,6 +12733,10 @@ msgstr "Mută mai sus"
 msgid "Multi-member consortium awards publish no internal split, so their money is disclosed here as a lump sum and never assigned to any supplier or territory."
 msgstr "Consorțiile cu mai mulți membri nu publică împărțirea internă, așa că banii lor sunt dezvăluiți aici ca sumă globală și nu sunt atribuiți niciodată vreunui furnizor sau teritoriu."
 
+#: src/lib/ins-chart-series-utils.ts:213
+msgid "Multiple INS source series match this selection. Choose one complete source series; sum, average and first cannot resolve alternatives."
+msgstr "Mai multe serii INS din sursă corespund selecției. Alege o singură serie completă; suma, media și prima valoare nu pot rezolva alternativele."
+
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1564
 msgid "Multiple selected values"
 msgstr "Valori multiple selectate"
@@ -12761,8 +12773,8 @@ msgstr "Harta mea interactivă de buget…"
 #: src/components/commitments/LinearBudgetFlow.tsx:152
 #: src/components/commitments/LinearBudgetFlow.tsx:180
 #: src/components/commitments/LinearBudgetFlow.tsx:192
-#: src/components/entities/views/ins-stats-view.formatters.ts:77
-#: src/components/entities/views/ins-stats-view.formatters.ts:139
+#: src/components/entities/views/ins-stats-view.formatters.ts:80
+#: src/components/entities/views/ins-stats-view.formatters.ts:142
 #: src/components/entities/views/ins-stats-view.presentation.tsx:250
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:46
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:47
@@ -13510,6 +13522,10 @@ msgstr "Nu s-au găsit grupuri importabile."
 #: src/components/charts/components/filters-details/InsSeriesFilter.tsx:27
 msgid "No INS filters configured."
 msgstr "Nu sunt configurate filtre INS."
+
+#: src/lib/ins-chart-series-utils.ts:223
+msgid "No INS observations match this selection."
+msgstr "Nicio observație INS nu corespunde selecției."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:142
 msgid "No issues found"
@@ -15019,6 +15035,10 @@ msgstr "Alte diviziuni CPV"
 msgid "Other datasets"
 msgstr "Alte seturi de date"
 
+#: src/components/entities/views/ins-stats-view.formatters.ts:11
+msgid "Other periodicity"
+msgstr "Altă periodicitate"
+
 #: src/features/private-companies/lib/public-money-display.ts:71
 msgid "Other public flows"
 msgstr "Alte fluxuri publice"
@@ -15175,7 +15195,7 @@ msgstr "Colorează după"
 msgid "Painted on the map (named territories)"
 msgstr "Pictat pe hartă (teritorii cunoscute)"
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:586
+#: src/features/statistics/components/detail-scope-sentence.tsx:588
 msgid "până în"
 msgstr ""
 
@@ -15474,7 +15494,7 @@ msgstr "Pe cap de locuitor"
 #: src/components/common/NormalizationSelector.tsx:22
 #: src/components/entity-analytics/EntityAnalyticsTable.tsx:107
 #: src/components/filters/normalization-filter/NormalizationFilter.tsx:14
-#: src/routes/entity-analytics.lazy.tsx:238
+#: src/routes/entity-analytics.lazy.tsx:246
 msgid "Per Capita"
 msgstr "Pe cap de locuitor"
 
@@ -15543,6 +15563,7 @@ msgstr ""
 #: src/features/procurement/lib/hub-filter-chips.ts:95
 #: src/features/procurement/lib/hub-filter-chips.ts:113
 #: src/lib/chart-filter-utils.ts:53
+#: src/lib/ins-chart-series-utils.ts:290
 msgid "Period"
 msgstr "Perioadă"
 
@@ -15754,7 +15775,7 @@ msgstr ""
 #: src/components/maps/utils.ts:162
 #: src/lib/ins/ins-metric-registry.ts:23
 #: src/lib/ins/ins-metric-registry.ts:29
-#: src/routes/entity-analytics.lazy.tsx:237
+#: src/routes/entity-analytics.lazy.tsx:245
 msgid "Population"
 msgstr "Populație"
 
@@ -16438,7 +16459,7 @@ msgstr "Locația instituției publice"
 msgid "Public institutions"
 msgstr "Instituții publice"
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:166
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:167
 msgid "Public institutions often transfer funds between each other (e.g., from the state budget to local budgets). These transfers can double-count spending if not filtered."
 msgstr "Instituțiile publice transferă adesea fonduri între ele (de exemplu, de la bugetul de stat la bugetele locale). Aceste transferuri pot duce la dublarea cheltuielilor dacă nu sunt filtrate."
 
@@ -16551,7 +16572,7 @@ msgstr "Cantitate"
 msgid "Quarter"
 msgstr "Trimestru"
 
-#: src/components/entities/views/ins-stats-view.formatters.ts:9
+#: src/components/entities/views/ins-stats-view.formatters.ts:12
 #: src/components/filters/period-filter/PeriodFilter.tsx:409
 msgid "Quarterly"
 msgstr "Trimestrial"
@@ -17296,7 +17317,7 @@ msgstr "Resetează la valoarea implicită"
 msgid "Reseteaza"
 msgstr ""
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:605
+#: src/features/statistics/components/detail-scope-sentence.tsx:607
 msgid "Resetează"
 msgstr ""
 
@@ -17381,6 +17402,10 @@ msgstr ""
 #: src/routes/maps/editor/new.lazy.tsx:300
 msgid "Retry"
 msgstr "Reîncearcă"
+
+#: src/components/charts/components/views/ChartView.tsx:85
+msgid "Retry INS data"
+msgstr "Reîncearcă încărcarea datelor INS"
 
 #: src/features/procurement/components/procurement-hub-filter-sheet.tsx:509
 msgid "Retry Loading Locations"
@@ -18313,6 +18338,14 @@ msgstr "Selectați un UAT de pe hartă pentru a-i încărca aici detaliile."
 msgid "Select aggregation"
 msgstr "Selectează agregarea"
 
+#: src/lib/ins-chart-series-utils.ts:165
+msgid "Select an INS dataset to display this series."
+msgstr "Selectează un set de date INS pentru a afișa această serie."
+
+#: src/components/entity-analytics/BudgetAnalyticsError.tsx:16
+msgid "Select another period or switch to nominal RON. Per-capita comparisons require known population coverage."
+msgstr "Selectează altă perioadă sau treci la valori nominale în lei. Comparațiile pe locuitor necesită date de populație pentru teritoriile selectate."
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:367
 msgid "Select color mode"
 msgstr "Selectează modul de culoare"
@@ -18336,6 +18369,10 @@ msgstr "Selectează spațiul de lucru de grup"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:349
 msgid "Select interval mode"
 msgstr "Selectează modul interval"
+
+#: src/lib/ins-chart-series-utils.ts:242
+msgid "Select one supported INS frequency: annual, quarterly or monthly. Other frequencies remain available in source rows."
+msgstr "Selectează o singură periodicitate INS acceptată: anuală, trimestrială sau lunară. Celelalte periodicități rămân disponibile în rândurile din sursă."
 
 #: src/components/charts/components/series-config/CalculationEditor.tsx:141
 msgid "Select operation"
@@ -18465,6 +18502,14 @@ msgstr "Selectează UAT-uri după distanța standardizată față de medie în d
 #: src/features/learning/components/interactive/VATCalculator.tsx:135
 msgid "Seller Keeps"
 msgstr "Vânzătorul păstrează"
+
+#: src/features/statistics/lib/periodicity-labels.ts:6
+msgid "semestrial"
+msgstr "semestrial"
+
+#: src/components/entities/views/ins-stats-view.formatters.ts:9
+msgid "Semiannual"
+msgstr "Semestrial"
 
 #: src/features/procurement/components/procurement-institution-signals.tsx:120
 msgid "Semnale"
@@ -18803,7 +18848,7 @@ msgstr "Afișează etichetele de date"
 msgid "Show Detailed"
 msgstr "Afișează detaliat"
 
-#: src/components/charts/components/ChartDataError.tsx:268
+#: src/components/charts/components/ChartDataError.tsx:272
 #: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:193
 msgid "Show details"
 msgstr "Afișează detaliile"
@@ -18919,15 +18964,15 @@ msgstr "Arată top categorii funcționale"
 msgid "Showing {shownCount} of {totalRows} (up to {maxRank} for the current filters)."
 msgstr "Se afișează {shownCount} din {totalRows} (până la {maxRank} pentru filtrele curente)."
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:172
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:173
 msgid "Shows all spending, including both direct payments and transfers to other institutions."
 msgstr "Afișează toate cheltuielile, incluzând atât plățile directe, cât și transferurile către alte instituții."
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:171
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:172
 msgid "Shows only direct spending by this entity. Excludes funds moved to other institutions (codes 51 and 55)."
 msgstr "Afișează doar cheltuielile directe ale acestei entități. Exclude fondurile transferate către alte instituții (codurile 51 și 55)."
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:173
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:174
 msgid "Shows only the funds transferred to other public administration units."
 msgstr "Afișează doar fondurile transferate către alte unități ale administrației publice."
 
@@ -19123,7 +19168,7 @@ msgstr ""
 msgid "Soluționat"
 msgstr ""
 
-#: src/components/charts/components/ChartDataError.tsx:232
+#: src/components/charts/components/ChartDataError.tsx:236
 msgid "Some data issues were automatically resolved"
 msgstr "Unele probleme cu datele au fost rezolvate automat"
 
@@ -19142,6 +19187,10 @@ msgstr "Unele valori locale sunt invalide. Închiderea acum va elimina modifică
 #: src/lib/storage/read-json-from-local-storage.ts:63
 msgid "Some saved local data was corrupted and has been reset."
 msgstr "Unele date locale salvate erau corupte și au fost resetate."
+
+#: src/components/charts/components/ChartDataError.tsx:235
+msgid "Some series are unavailable. Review the details before using this chart."
+msgstr "Unele serii nu sunt disponibile. Verifică detaliile înainte de a folosi acest grafic."
 
 #: src/features/statistics/lib/landing-constants.ts:22
 msgid "Șomeri înregistrați (pondere)"
@@ -19319,7 +19368,7 @@ msgstr ""
 
 #: src/components/maps/HeatmapDataTable.tsx:476
 #: src/features/learning/components/interactive/VATReformCard.tsx:29
-#: src/routes/entity-analytics.lazy.tsx:230
+#: src/routes/entity-analytics.lazy.tsx:238
 msgid "Standard"
 msgstr "Standard"
 
@@ -20146,8 +20195,8 @@ msgstr ""
 
 #: src/features/statistics/components/comparison-table.tsx:59
 #: src/features/statistics/components/detail-observations-table.tsx:51
-#: src/features/statistics/components/detail-scope-sentence.tsx:231
-#: src/features/statistics/components/detail-scope-sentence.tsx:357
+#: src/features/statistics/components/detail-scope-sentence.tsx:232
+#: src/features/statistics/components/detail-scope-sentence.tsx:359
 #: src/features/statistics/lib/observations-csv.ts:59
 msgid "Teritoriu"
 msgstr ""
@@ -20312,6 +20361,10 @@ msgstr "Adresa de email a asociatiei nu este valida."
 msgid "The budget line, category, or allocation you are contesting…"
 msgstr "Linia bugetară, categoria sau alocarea pe care o contești…"
 
+#: src/lib/chart-calculation-utils.ts:23
+msgid "The calculation depends on INS data with missing coverage or an undefined result. Inspect its source series."
+msgstr "Calculul depinde de date INS incomplete sau de un rezultat nedefinit. Verifică seriile sursă."
+
 #: src/features/challenges/components/hub/QuickResourcesPreview.tsx:40
 msgid "The campaign request period has ended."
 msgstr "Perioada de cereri a campaniei s-a încheiat."
@@ -20331,6 +20384,10 @@ msgstr ""
 #: src/features/procurement/lib/caveat-text.ts:207
 msgid "The comparison base is zero in this selection, so no ratio can be derived."
 msgstr "Baza de comparație este zero în această selecție, așa că raportul nu poate fi calculat."
+
+#: src/lib/ins-chart-series-utils.ts:191
+msgid "The complete INS series could not be loaded. Retry before using its values."
+msgstr "Seria INS completă nu a putut fi încărcată. Reîncearcă înainte de a folosi valorile."
 
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:122
 msgid "The content you're looking for doesn't exist or has been moved."
@@ -20396,6 +20453,19 @@ msgstr "Contestația generată necesită identitatea expeditorului."
 #: src/features/learning/components/interactive/PromiseTracker.tsx:244
 msgid "The government planned to spend <0>{0}</0> on Infrastructure in {selectedYear}."
 msgstr "Guvernul a planificat să cheltuie <0>{0}</0> pe Infrastructură în {selectedYear}."
+
+#: src/components/charts/hooks/useChartData.ts:702
+msgid "The INS aggregate cannot be represented as a finite value."
+msgstr "Valoarea agregată INS nu poate fi reprezentată ca număr finit."
+
+#: src/lib/ins-chart-series-utils.ts:256
+msgid "The INS response contains a period that does not match its frequency."
+msgstr "Răspunsul INS conține o perioadă care nu corespunde periodicității sale."
+
+#: src/lib/ins-chart-series-utils.ts:200
+#: src/lib/ins-chart-series-utils.ts:219
+msgid "The INS response has incomplete or conflicting source coordinates."
+msgstr "Răspunsul INS conține coordonate din sursă incomplete sau contradictorii."
 
 #: src/features/procurement/components/procurement-detail-sections.tsx:553
 msgid "The itemised detail could not be loaded right now. This is a problem on our side, not a gap in the source: the summary above is valid, and reloading this page in a few moments may show the detail."
@@ -20474,6 +20544,21 @@ msgstr "Realitatea"
 #: src/features/learning/components/interactive/VATReformCard.tsx:34
 msgid "The reform simplified the tax code but increased the burden on consumption. The \"Essentials\" category now consolidates food, books, and tourism under a single 11% rate."
 msgstr "Reforma a simplificat codul fiscal, dar a crescut povara asupra consumului. Categoria „Esențiale” consolidează acum alimentele, cărțile și turismul sub o singură cotă de 11%."
+
+#: src/components/charts/hooks/useChartData.ts:523
+#: src/components/charts/hooks/useChartData.ts:740
+msgid "The relative INS comparison cannot be represented as a finite value."
+msgstr "Comparația relativă INS nu poate fi reprezentată ca număr finit."
+
+#: src/components/charts/hooks/useChartData.ts:505
+#: src/components/charts/hooks/useChartData.ts:658
+#: src/components/charts/hooks/useChartData.ts:726
+msgid "The relative INS comparison has no usable baseline for this period."
+msgstr "Comparația relativă INS nu are o valoare de referință utilizabilă pentru această perioadă."
+
+#: src/lib/ins-chart-series-utils.ts:169
+msgid "The saved INS selection is invalid. Edit its period, source coordinates or unit."
+msgstr "Selecția INS salvată nu este validă. Modifică perioada, coordonatele din sursă sau unitatea de măsură."
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:498
 msgid "The selected dataset could not be resolved from the server."
@@ -20625,6 +20710,18 @@ msgstr "Acest nivel conține zeci de milioane de înregistrări, astfel că o c�
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:390
 msgid "This hides the view from this map. You can add it back later from Add view."
 msgstr "Aceasta ascunde vizualizarea din această hartă. O poți adăuga din nou mai târziu din „Adaugă vizualizare”."
+
+#: src/lib/ins-chart-series-utils.ts:268
+msgid "This INS series contains missing or invalid values. Inspect source rows; the chart cannot represent these gaps."
+msgstr "Această serie INS conține valori lipsă sau nevalide. Verifică rândurile din sursă; graficul nu poate reprezenta aceste lipsuri."
+
+#: src/lib/ins-chart-series-utils.ts:228
+msgid "This INS series has geographic qualifications. Inspect the source rows before comparing its values."
+msgstr "Această serie INS are precizări privind acoperirea geografică. Verifică rândurile din sursă înainte de a compara valorile."
+
+#: src/lib/ins-chart-series-utils.ts:283
+msgid "This INS series is missing expected periods. Inspect source rows; the chart cannot represent these gaps."
+msgstr "Din această serie INS lipsesc perioade așteptate. Verifică rândurile din sursă; graficul nu poate reprezenta aceste lipsuri."
 
 #: src/features/procurement/components/procurement-authority-slice.tsx:142
 #: src/features/procurement/components/procurement-institution-page.tsx:377
@@ -21057,7 +21154,7 @@ msgstr "total"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:417
 #: src/components/commitments/DetailTable.tsx:695
 #: src/components/common/NormalizationSelector.tsx:21
-#: src/components/entities/views/ins-stats-view.formatters.ts:100
+#: src/components/entities/views/ins-stats-view.formatters.ts:103
 #: src/components/filters/normalization-filter/NormalizationFilter.tsx:13
 #: src/components/normalization/normalization-mode-select.tsx:38
 #: src/features/ngos/components/ngo-profile-page.tsx:886
@@ -21073,7 +21170,6 @@ msgstr "Total (suma tuturor valorilor)"
 msgid "Total Allocated Budget"
 msgstr "Total Buget Alocat"
 
-#: src/components/entity-analytics/EntityAnalyticsKPIs.tsx:29
 #: src/components/normalization/normalization-controls.tsx:31
 msgid "Total amount"
 msgstr "Sumă totală"
@@ -21085,7 +21181,7 @@ msgstr "Sumă totală"
 #: src/components/maps/HeatmapDataTable.tsx:305
 #: src/components/maps/HeatmapDataTable.tsx:484
 #: src/components/maps/utils.ts:175
-#: src/routes/entity-analytics.lazy.tsx:239
+#: src/routes/entity-analytics.lazy.tsx:247
 msgid "Total Amount"
 msgstr "Sumă totală"
 
@@ -21175,8 +21271,8 @@ msgstr ""
 msgid "Transcrierile oficiale ale dezbaterilor din plen — ședință cu ședință, sau intervenție cu intervenție."
 msgstr ""
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:155
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:173
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:156
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:174
 msgid "Transfers Only"
 msgstr "Doar transferuri"
 
@@ -21231,7 +21327,7 @@ msgid "Tribunalul Timiș"
 msgstr ""
 
 #: src/features/statistics/components/source-provenance-drawer.tsx:18
-#: src/features/statistics/lib/periodicity-labels.ts:6
+#: src/features/statistics/lib/periodicity-labels.ts:9
 msgid "trimestrial"
 msgstr ""
 
@@ -21486,7 +21582,7 @@ msgstr "Nu am putut încărca notificările"
 msgid "unavailable"
 msgstr "indisponibil"
 
-#: src/components/entities/views/ins-stats-view.formatters.ts:61
+#: src/components/entities/views/ins-stats-view.formatters.ts:64
 #: src/components/entities/views/ins-stats-view.presentation.tsx:499
 msgid "Unavailable"
 msgstr "Indisponibil"
@@ -21585,9 +21681,9 @@ msgstr ""
 
 #: src/features/statistics/components/comparison-pins.tsx:89
 #: src/features/statistics/components/comparison-pins.tsx:92
-#: src/features/statistics/components/detail-scope-sentence.tsx:282
-#: src/features/statistics/components/detail-scope-sentence.tsx:522
-#: src/features/statistics/components/detail-scope-sentence.tsx:527
+#: src/features/statistics/components/detail-scope-sentence.tsx:283
+#: src/features/statistics/components/detail-scope-sentence.tsx:524
+#: src/features/statistics/components/detail-scope-sentence.tsx:529
 msgid "Unitate de măsură"
 msgstr ""
 
@@ -21597,7 +21693,7 @@ msgid "Unitate de măsură: {0}"
 msgstr ""
 
 #: src/components/entities/views/entity-profile-view.presentation.tsx:227
-#: src/components/entities/views/ins-stats-view.formatters.ts:37
+#: src/components/entities/views/ins-stats-view.formatters.ts:40
 #: src/components/entities/views/ins-stats-view.presentation.tsx:251
 #: src/components/entities/views/ins-stats-view.presentation.tsx:254
 #: src/components/entities/views/ins-stats-view.presentation.tsx:322
@@ -21630,7 +21726,7 @@ msgstr "CPV necunoscut"
 msgid "Unknown CPV division"
 msgstr "Diviziune CPV necunoscută"
 
-#: src/routes/entity-analytics.lazy.tsx:210
+#: src/routes/entity-analytics.lazy.tsx:218
 msgid "Unknown error"
 msgstr "Eroare necunoscută"
 
@@ -22126,7 +22222,7 @@ msgstr ""
 msgid "Valorile raportate pentru perioada {selectedPeriod}."
 msgstr ""
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:152
+#: src/features/statistics/components/detail-scope-sentence.tsx:153
 msgid "Valorile subliniate punctat sunt implicite sau încă nealese — apasă pe ele ca să le alegi sau să le schimbi."
 msgstr ""
 
@@ -22153,6 +22249,7 @@ msgstr ""
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:267
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:192
 #: src/features/procurement/lib/detail-config.ts:112
+#: src/lib/ins-chart-series-utils.ts:297
 msgid "Value"
 msgstr "Valoare"
 
@@ -22434,7 +22531,7 @@ msgstr ""
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:1068
 #: src/components/maps/HeatmapDataTable.tsx:468
 #: src/features/challenges/components/hub/BudgetTimelineStrip.tsx:44
-#: src/routes/entity-analytics.lazy.tsx:221
+#: src/routes/entity-analytics.lazy.tsx:229
 msgid "View"
 msgstr "Vizualizare"
 
@@ -22473,7 +22570,7 @@ msgstr "Vezi ca tabel"
 #: src/components/charts/components/views/AnnotationConfigView.tsx:76
 #: src/components/charts/components/views/ChartConfigView.tsx:45
 #: src/components/charts/components/views/SeriesConfigView.tsx:287
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:139
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:140
 msgid "View Chart"
 msgstr "Vezi graficul"
 
@@ -22581,7 +22678,7 @@ msgstr "Vrei să adaugi un comentariu?"
 msgid "Warning Signs"
 msgstr "Semne de avertizare"
 
-#: src/components/charts/components/ChartDataError.tsx:311
+#: src/components/charts/components/ChartDataError.tsx:315
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:24
 msgid "Warnings"
 msgstr "Avertismente"
@@ -22807,8 +22904,8 @@ msgstr "Ștergi toate datele?"
 msgid "Withheld for this scope — no value substituted."
 msgstr "Reținut pentru acest domeniu — nu s-a substituit nicio valoare."
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:153
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:171
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:154
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:172
 msgid "Without Transfers"
 msgstr "Fără transferuri"
 
@@ -23158,7 +23255,3 @@ msgstr "ziua curentă nu este încă confirmată după încheierea ședinței"
 #: src/features/parliament/components/parliament-stenogram-controls.tsx:197
 msgid "Ziua: {day}"
 msgstr ""
-
-#: src/components/entity-analytics/BudgetAnalyticsError.tsx:13
-msgid "Select another period or switch to nominal RON. Per-capita comparisons require known population coverage."
-msgstr "Selectați o altă perioadă sau treceți la valori nominale în RON. Comparațiile pe locuitor necesită date de populație complete pentru selecție."

@@ -1,6 +1,7 @@
 import type { ReportPeriodInput } from './reporting';
+import type { InsSourcePeriodicity, InsSourceGeography } from '@/lib/ins/source-contract';
 
-export type InsPeriodicity = 'ANNUAL' | 'QUARTERLY' | 'MONTHLY';
+export type InsPeriodicity = InsSourcePeriodicity;
 export type InsTerritoryLevel = 'NATIONAL' | 'NUTS1' | 'NUTS2' | 'NUTS3' | 'LAU';
 export type InsDimensionType = 'TEMPORAL' | 'TERRITORIAL' | 'CLASSIFICATION' | 'UNIT_OF_MEASURE';
 
@@ -96,6 +97,14 @@ export interface InsObservation {
   unit?: InsUnit | null;
   classifications?: InsClassification[] | null;
   dimensions?: Record<string, unknown> | null;
+}
+
+/** A validated native source cell. Older view-model shapes do not certify source identity. */
+export interface NativeInsObservation extends InsObservation {
+  id: string;
+  unit: InsUnit & { code: string };
+  classifications: (InsClassification & { type_code: string; code: string })[];
+  dimensions: { geography: InsSourceGeography | null };
 }
 
 export interface InsDataset {

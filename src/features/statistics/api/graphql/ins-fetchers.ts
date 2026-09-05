@@ -197,45 +197,6 @@ export async function getInsObservationsPage(params: {
   return response.insObservations
 }
 
-export async function getAllInsObservations(params: {
-  datasetCode: string
-  filter?: InsObservationFilterInput
-  pageSize?: number
-  maxPages?: number
-  signal?: AbortSignal
-}): Promise<InsObservation[]> {
-  const pageSize = Math.max(1, Math.min(params.pageSize ?? 1000, 1000))
-  const maxPages = Math.max(1, params.maxPages ?? 20)
-
-  const allNodes: InsObservation[] = []
-  let offset = 0
-  let page = 0
-  let hasNext = true
-
-  while (hasNext && page < maxPages) {
-    const response = await getInsObservationsPage({
-      datasetCode: params.datasetCode,
-      filter: params.filter,
-      limit: pageSize,
-      offset,
-      signal: params.signal,
-    })
-
-    const nodes = response.nodes ?? []
-    allNodes.push(...nodes)
-
-    hasNext = !!response.pageInfo?.hasNextPage
-    offset += nodes.length
-    page += 1
-
-    if (nodes.length === 0) {
-      break
-    }
-  }
-
-  return allNodes
-}
-
 export interface InsDatasetHistoryResult {
   observations: InsObservation[]
   totalCount: number

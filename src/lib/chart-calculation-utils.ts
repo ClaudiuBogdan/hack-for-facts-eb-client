@@ -1,3 +1,4 @@
+import { t } from '@lingui/core/macro';
 import { Series, Calculation, Operation, AnalyticsSeries, Chart, defaultYearRange } from '@/schemas/charts';
 import type { DataValidationError } from '@/lib/chart-data-validation';
 import { parseMonth, parseQuarter } from '@/lib/chart-data-utils';
@@ -8,6 +9,20 @@ interface EvaluatedOperand {
   points: { x: string; y: number }[];
   isConstant: boolean;
   constantValue?: number;
+}
+
+interface CalculationResult {
+  constantValue?: number;
+  points: { x: string; y: number }[];
+  warnings: DataValidationError[];
+  unavailable?: boolean;
+}
+
+function unavailableInsCalculation(seriesId: string, dependency?: string): CalculationResult {
+  return { points: [], unavailable: true, warnings: [{ type: 'missing_data', seriesId,
+    message: t`The calculation depends on INS data with missing coverage or an undefined result. Inspect its source series.`,
+    ...(dependency ? { value: { dependency } } : {}),
+  }] };
 }
 
 // ============================================================================
@@ -137,8 +152,9 @@ export function evaluateCalculation(
   seriesData: Map<string, AnalyticsSeries>,
   allSeries: Series[],
   seriesIdForWarnings: string,
-  xAxisUnit: CalculationXAxisUnit = 'year'
-): { points: { x: string; y: number }[]; warnings: DataValidationError[] } {
+  xAxisUnit: CalculationXAxisUnit = 'year',
+  requireCompleteOperands = false
+): CalculationResult {
   const operandResults: EvaluatedOperand[] = [];
   const warnings: DataValidationError[] = [];
 
@@ -159,6 +175,8 @@ export function evaluateCalculation(
           isConstant: false,
         });
       } else {
+        // Strict calculations use the topological result; never recompute an unavailable dependency.
+        if (requireCompleteOperands) return unavailableInsCalculation(seriesIdForWarnings, operand);
         // Check if it's a calculation series that needs evaluation
         const series = allSeries.find(s => s.id === operand);
         if (series && series.type === 'aggregated-series-calculation') {
@@ -178,18 +196,19 @@ export function evaluateCalculation(
       }
     } else {
       // Nested calculation
-      const result = evaluateCalculation(operand, seriesData, allSeries, seriesIdForWarnings, xAxisUnit);
-      operandResults.push({
-        points: result.points,
-        isConstant: false,
-      });
+      const result = evaluateCalculation(operand, seriesData, allSeries, seriesIdForWarnings, xAxisUnit, requireCompleteOperands);
+      if (result.unavailable) return result;
+      operandResults.push(result.constantValue !== undefined
+        ? { points: [], isConstant: true, constantValue: result.constantValue }
+        : { points: result.points, isConstant: false });
+
       warnings.push(...result.warnings);
     }
   }
 
   // Perform the operation
-  const opResult = performOperation(calculation.op, operandResults, seriesIdForWarnings, xAxisUnit);
-  return { points: opResult.points, warnings: warnings.concat(opResult.warnings) };
+  const opResult = performOperation(calculation.op, operandResults, seriesIdForWarnings, xAxisUnit, requireCompleteOperands);
+  return { ...opResult, warnings: warnings.concat(opResult.warnings) };
 }
 
 /**
@@ -199,8 +218,10 @@ function performOperation(
   operation: Operation,
   operands: EvaluatedOperand[],
   seriesIdForWarnings: string,
-  xAxisUnit: CalculationXAxisUnit
-): { points: { x: string; y: number }[]; warnings: DataValidationError[] } {
+  xAxisUnit: CalculationXAxisUnit,
+  requireCompleteOperands = false
+): CalculationResult {
+  if (requireCompleteOperands && operands.some(operand => !operand.isConstant && operand.points.length === 0)) return unavailableInsCalculation(seriesIdForWarnings);
   if (operands.length === 0) {
     return { points: [], warnings: [] };
   }
@@ -216,7 +237,10 @@ function performOperation(
 
   // Fallback only when every operand is constant.
   const hasOnlyConstantOperands = operands.every((operand) => operand.isConstant);
-  if (allXLabels.size === 0 && hasOnlyConstantOperands) {
+  if (allXLabels.size === 0 && hasOnlyConstantOperands && requireCompleteOperands) {
+    // Evaluate nested scalar expressions once without inventing annual coverage.
+    allXLabels.add('constant');
+  } else if (allXLabels.size === 0 && hasOnlyConstantOperands) {
     const years = Array.from(
       { length: defaultYearRange.end - defaultYearRange.start + 1 },
       (_, i) => String(defaultYearRange.start + i)
@@ -249,6 +273,7 @@ function performOperation(
   const warnings: DataValidationError[] = [];
 
   for (const label of sortedLabels) {
+    if (requireCompleteOperands && operands.some((_, index) => !Number.isFinite(getOperandValue(index, label)))) return unavailableInsCalculation(seriesIdForWarnings);
     let value: number | null = null;
 
     switch (operation) {
@@ -332,11 +357,13 @@ function performOperation(
         break;
     }
 
+    if (requireCompleteOperands && (value === null || !Number.isFinite(value))) return unavailableInsCalculation(seriesIdForWarnings);
     if (value !== null) {
       result.push({ x: label, y: value });
     }
   }
 
+  if (requireCompleteOperands && hasOnlyConstantOperands) return { points: [], warnings, constantValue: result[0]?.y };
   return { points: result, warnings };
 }
 
@@ -420,6 +447,7 @@ export function calculateAllSeriesData(
 ): { dataSeriesMap: Map<string, AnalyticsSeries>; warnings: DataValidationError[] } {
   // Sort series by dependency order (topological sort)
   const sortedSeries = topologicalSortSeries(series);
+  const insDependentIds = getInsDependentSeriesIds(series);
 
   const defaultYears = Array.from({ length: defaultYearRange.end - defaultYearRange.start + 1 }, (_, index) => index + defaultYearRange.start);
 
@@ -459,14 +487,19 @@ export function calculateAllSeriesData(
         continue;
       }
 
-      const { points, warnings: calcWarnings } = evaluateCalculation(
+      const { points, warnings: calcWarnings, unavailable } = evaluateCalculation(
         s.calculation,
         dataSeriesMap,
         series,
         s.id,
-        xAxisResolution.xAxisUnit
+        xAxisResolution.xAxisUnit,
+        insDependentIds.has(s.id)
       );
       warnings.push(...calcWarnings);
+      if (unavailable) {
+        dataSeriesMap.delete(s.id);
+        continue;
+      }
       dataSeriesMap.set(s.id, {
         seriesId: s.id,
         xAxis: { name: 'Period', type: 'STRING', unit: xAxisResolution.xAxisUnit },
@@ -557,7 +590,7 @@ export function getCalculationDependencies(calculation: Calculation, series: Ser
  * @param chart - The chart to get the dependencies of 
  * @returns All dependencies of the series
  */
-export function getAllDependencies(series: Series, chart: Chart): Series[] {
+export function getAllDependencies(series: Series, chart: Pick<Chart, 'series'>): Series[] {
   const seriesCalculation = series.calculation as Calculation;
   if (!seriesCalculation) return [series];
 
@@ -593,4 +626,11 @@ export function getAllDependencies(series: Series, chart: Chart): Series[] {
   }
 
   return collected;
+}
+
+/** One dependency identity shared by arithmetic and rendering availability checks. */
+export function getInsDependentSeriesIds(series: Series[]): Set<string> {
+  return new Set(series.filter(item => item.type === 'ins-series' ||
+    (item.type === 'aggregated-series-calculation' && getAllDependencies(item, { series }).some(dependency => dependency.type === 'ins-series'))
+  ).map(item => item.id));
 }

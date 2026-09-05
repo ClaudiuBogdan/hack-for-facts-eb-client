@@ -1,3 +1,4 @@
+import { isInsChartPeriodicity } from '@/lib/ins/source-contract'
 import { useState, type ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
@@ -304,16 +305,17 @@ function buildSegments(params: {
           <Label>{t`Frecvență`}</Label>
           <Select
             value={scope.periodicity}
-            onValueChange={(value) =>
-              onChange({ frecventa: value as InsPeriodicity })
-            }
+            onValueChange={(value) => {
+              const periodicity = value as InsPeriodicity
+              if (isInsChartPeriodicity(periodicity)) onChange({ frecventa: periodicity })
+            }}
           >
             <SelectTrigger className="h-10" aria-label={t`Frecvență`}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {periodicities.map((periodicity) => (
-                <SelectItem key={periodicity} value={periodicity}>
+                <SelectItem key={periodicity} value={periodicity} disabled={!isInsChartPeriodicity(periodicity)}>
                   {periodicityLabel(periodicity)}
                 </SelectItem>
               ))}

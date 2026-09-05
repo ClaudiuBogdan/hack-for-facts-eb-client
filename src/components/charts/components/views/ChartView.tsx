@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useChartStore } from "@/components/charts/hooks/useChartStore";
 import { ChartFiltersOverview } from "@/components/charts/components/filters-details/ChartFiltersOverview";
@@ -15,7 +16,7 @@ import { combineValidationResults, validateSeriesCompleteness } from '@/lib/char
 
 export function ChartView() {
   const { chart, goToConfig, goToSeriesConfig, addSeries, updateAnnotation } = useChartStore();
-  const { dataSeriesMap, isLoadingData, dataError, validationResult } = useChartData({ chart });
+  const { dataSeriesMap, isLoadingData, dataError, validationResult, canRetryInsData, retryInsData, isRetryingInsData } = useChartData({ chart });
 
   const processedData = useMemo(() => {
     if (!dataSeriesMap) {
@@ -77,6 +78,12 @@ export function ChartView() {
 
       {!isLoadingData && combinedValidation && (!combinedValidation.isValid || combinedValidation.warnings.length > 0) && (
         <ChartDataError validationResult={combinedValidation} />
+      )}
+
+      {canRetryInsData && (
+        <Button variant="outline" disabled={isRetryingInsData} onClick={() => { void retryInsData(); }}>
+          {t`Retry INS data`}
+        </Button>
       )}
 
       <div className="flex flex-col lg:flex-row gap-6">

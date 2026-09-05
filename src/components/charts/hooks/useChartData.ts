@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { t } from "@lingui/core/macro";
 
 import { getChartAnalytics, getStaticChartAnalytics } from "@/lib/api/charts";
 import { fetchCommitmentsAnalytics, type CommitmentsAnalyticsInput } from "@/lib/api/commitments";
@@ -17,7 +18,7 @@ import {
 } from "@/schemas/charts";
 import { normalizeAnalyticsFilter, prepareCommitmentsFilterForServer } from "@/lib/filterUtils";
 import { generateHash, convertDaysToMs, getUserLocale } from "@/lib/utils";
-import { calculateAllSeriesData } from "@/lib/chart-calculation-utils";
+import { calculateAllSeriesData, getInsDependentSeriesIds } from "@/lib/chart-calculation-utils";
 import {
     validateAnalyticsSeries,
     sanitizeAnalyticsSeries,
@@ -164,16 +165,18 @@ export function useChartData({ chart, enabled = true }: UseChartDataProps) {
         data: insSeriesResults,
         isLoading: isLoadingInsData,
         error: insDataError,
+        refetch: retryInsData,
+        isFetching: isRetryingInsData,
     } = useQuery({
-        queryKey: ["chart-data-ins", insSeriesHash],
-        queryFn: async () => {
+        queryKey: ["chart-data-ins-native-v1", insSeriesHash, locale],
+        queryFn: async ({ signal }) => {
             const results = await Promise.all(
-                insSeries.map((series) => insSeriesRuntimeMapper.mapSeries({ series }))
+                insSeries.map((series) => insSeriesRuntimeMapper.mapSeries({ series, signal }))
             );
             return results;
         },
         enabled: enabled && hasChart && hasInsSeries,
-        staleTime: convertDaysToMs(1),
+        staleTime: (query) => query.state.data?.some(result => result.retryable) ? 0 : convertDaysToMs(1),
         gcTime: convertDaysToMs(3),
     });
 
@@ -303,6 +306,9 @@ export function useChartData({ chart, enabled = true }: UseChartDataProps) {
         isLoadingData: isLoadingData || isLoadingStaticData || isLoadingInsData || isLoadingCommitmentsData,
         dataError: dataError || staticDataError || insDataError || commitmentsDataError,
         validationResult,
+        canRetryInsData: insSeriesResults?.some(result => result.retryable) ?? false,
+        retryInsData,
+        isRetryingInsData,
     };
 }
 
@@ -362,6 +368,7 @@ export function convertToTimeSeriesData(
         };
     }
 
+    const insDependentIds = getInsDependentSeriesIds(chart.series);
     // Infer x-axis semantics from the first series. Server provides xAxis.unit and x values as strings.
     const xUnit = getXAxisUnit(dataSeriesMap);
     const isMonth = xUnit === 'month';
@@ -452,6 +459,7 @@ export function convertToTimeSeriesData(
 
         dataSeriesMap.forEach((seriesData, seriesId) => {
             const match = seriesData.data.find((p) => transformXLabel(seriesId, String(p.x)) === bucketLabel);
+            if (!match && insDependentIds.has(seriesId)) return;
             const initialValue = match?.y ?? 0;
             const initialUnit = seriesData.yAxis.unit || "";
 
@@ -472,20 +480,31 @@ export function convertToTimeSeriesData(
 
         if (isRelative) {
             // Per-unit baseline by first series (in chart order) for that unit and year
-            const firstSeriesMap = new Map<Unit, number>();
-            chart.series.forEach((series) => {
+            const firstSeriesMap = new Map<Unit, { value: number | undefined; isIns: boolean }>();
+            let unknownBaselineSeen = false;
+            chart.series.filter(series => series.enabled).forEach((series) => {
                 const d = dataSeriesMap.get(series.id);
-                const unit = d?.yAxis.unit || "";
+                const unit = d?.yAxis.unit || (insDependentIds.has(series.id) ? series.unit : '') || '';
+                if (!d && insDependentIds.has(series.id) && !unit) {
+                    unknownBaselineSeen = true;
+                    return;
+                }
                 if (!firstSeriesMap.has(unit)) {
-                    const v = d?.data.find((p) => transformXLabel(series.id, String(p.x)) === bucketLabel)?.y ?? 0;
-                    firstSeriesMap.set(unit, v);
+                    const point = d?.data.find((p) => transformXLabel(series.id, String(p.x)) === bucketLabel);
+                    firstSeriesMap.set(unit, { value: unknownBaselineSeen ? undefined : point?.y, isIns: unknownBaselineSeen || insDependentIds.has(series.id) });
                 }
             });
 
             Object.keys(row).forEach((sid) => {
                 const seriesId = sid as SeriesId;
                 const payload = row[seriesId];
-                const base = firstSeriesMap.get(payload.unit) ?? 0;
+                const baseline = firstSeriesMap.get(payload.unit);
+                const base = baseline?.value ?? 0;
+                if ((baseline?.isIns || insDependentIds.has(seriesId)) && (!Number.isFinite(baseline?.value) || base === 0)) {
+                    delete row[seriesId];
+                    warnings.push({ type: 'missing_data', seriesId, message: t`The relative INS comparison has no usable baseline for this period.` });
+                    return;
+                }
 
                 if (base === 0 || !Number.isFinite(base)) {
                     warnings.push({
@@ -499,6 +518,11 @@ export function convertToTimeSeriesData(
                     unitMap.set(seriesId, "%");
                 } else {
                     const computed = (payload.value / base) * 100;
+                    if (!Number.isFinite(computed) && (baseline?.isIns || insDependentIds.has(seriesId))) {
+                        delete row[seriesId];
+                        warnings.push({ type: 'missing_data', seriesId, message: t`The relative INS comparison cannot be represented as a finite value.` });
+                        return;
+                    }
                     if (!Number.isFinite(computed)) {
                         warnings.push({
                             type: "auto_adjusted_value",
@@ -612,11 +636,12 @@ export function convertToAggregatedData(
     }
 
     const enabledSeries = chart.series.filter((s) => s.enabled);
+    const insDependentIds = getInsDependentSeriesIds(chart.series);
 
     const unitMap = new Map<SeriesId, Unit>();
     const isRelative = chart.config.showRelativeValues ?? false;
 
-    let firstSeriesValue = 1;
+    let firstSeriesValue = insDependentIds.has(enabledSeries[0]?.id ?? "") ? Number.NaN : 1;
     const warnings: DataValidationError[] = [];
     const errors: DataValidationError[] = [];
 
@@ -629,9 +654,14 @@ export function convertToAggregatedData(
         });
     }
 
-    const data = enabledSeries.map((series: Series, index: number) => {
+    if (isRelative && insDependentIds.has(enabledSeries[0]?.id ?? "") && !dataSeriesMap.get(enabledSeries[0].id)?.data.length) {
+        return { data: [], unitMap, validation: { isValid: true, errors, warnings: [{ type: 'missing_data', seriesId: enabledSeries[0].id, message: t`The relative INS comparison has no usable baseline for this period.` }] } };
+    }
+
+    const data = enabledSeries.flatMap((series: Series, index: number) => {
         const dataSeries = dataSeriesMap.get(series.id);
         const points = dataSeries?.data ?? [];
+        if (insDependentIds.has(series.id) && points.length === 0) return [];
 
         let filteredPoints = points;
         let periodString: string | undefined;
@@ -664,9 +694,14 @@ export function convertToAggregatedData(
             filteredPoints = points.filter((trend) => dates.has(String(trend.x).trim()));
         }
 
+        if (insDependentIds.has(series.id) && filteredPoints.length === 0) return [];
         const totalValueRaw = filteredPoints
             .reduce((acc, trend) => acc + (Number.isFinite(trend.y) ? trend.y : 0), 0);
 
+        if (!Number.isFinite(totalValueRaw) && insDependentIds.has(series.id)) {
+            warnings.push({ type: 'invalid_aggregated_value', seriesId: series.id, message: t`The INS aggregate cannot be represented as a finite value.` });
+            return [];
+        }
         if (!Number.isFinite(totalValueRaw)) {
             warnings.push({
                 type: "invalid_aggregated_value",
@@ -687,6 +722,10 @@ export function convertToAggregatedData(
             firstSeriesValue = totalValue;
         }
         if (isRelative) {
+            if ((insDependentIds.has(series.id) || insDependentIds.has(enabledSeries[0]?.id ?? "")) && (firstSeriesValue === 0 || !Number.isFinite(firstSeriesValue))) {
+                warnings.push({ type: 'missing_data', seriesId: series.id, message: t`The relative INS comparison has no usable baseline for this period.` });
+                return [];
+            }
             if (firstSeriesValue === 0 || !Number.isFinite(firstSeriesValue)) {
                 warnings.push({
                     type: "auto_adjusted_value",
@@ -697,6 +736,10 @@ export function convertToAggregatedData(
                 value = 0;
             } else {
                 const computed = (totalValue / firstSeriesValue) * 100;
+                if (!Number.isFinite(computed) && (insDependentIds.has(series.id) || insDependentIds.has(enabledSeries[0]?.id ?? ""))) {
+                    warnings.push({ type: 'missing_data', seriesId: series.id, message: t`The relative INS comparison cannot be represented as a finite value.` });
+                    return [];
+                }
                 if (!Number.isFinite(computed)) {
                     warnings.push({
                         type: "auto_adjusted_value",
@@ -723,7 +766,7 @@ export function convertToAggregatedData(
             initialUnit,
         };
 
-        return aggregatedDataPoint;
+        return [aggregatedDataPoint];
     });
 
     // Validate final aggregated data
