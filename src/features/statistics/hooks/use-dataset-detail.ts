@@ -1,3 +1,4 @@
+import { getInsDimensionValuesPage } from '../api/graphql/ins-bootstrap-fetchers'
 import { normalizeInsDatasetCode } from '@/lib/ins/source-contract'
 import { useQuery } from '@tanstack/react-query'
 import type {
@@ -26,6 +27,7 @@ const DIMENSION_STALE_TIME = 1000 * 60 * 30
 export function useDimensionValues(params: {
   readonly datasetCode: string
   readonly dimensionIndex: number
+  readonly nativePublicationKey?: string
   readonly search: string | undefined
   readonly limit: number
   readonly offset: number
@@ -37,7 +39,8 @@ export function useDimensionValues(params: {
   return useQuery<InsDimensionValueConnection>({
     queryKey: [
       'statisticsDimensionValues',
-      'native-v1',
+      params.nativePublicationKey === undefined ? 'legacy-or-demo-v1' : 'native-only-v1',
+      params.nativePublicationKey ?? null,
       datasetCode,
       params.dimensionIndex,
       search ?? '',
@@ -45,7 +48,8 @@ export function useDimensionValues(params: {
       params.offset,
     ],
     queryFn: ({ signal }) =>
-      fetchDimensionValuesPage({
+      (params.nativePublicationKey === undefined ? fetchDimensionValuesPage : getInsDimensionValuesPage)({
+        expectedPublicationKey: params.nativePublicationKey,
         datasetCode,
         dimensionIndex: params.dimensionIndex,
         search,
@@ -55,6 +59,8 @@ export function useDimensionValues(params: {
       }),
     enabled: params.enabled && datasetCode.length > 0,
     staleTime: DIMENSION_STALE_TIME,
+    placeholderData: () => undefined,
+    retry: false,
   })
 }
 

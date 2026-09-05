@@ -1,3 +1,5 @@
+import { entityIdentityQueryOptions } from '@/lib/queries/entity-identity'
+import type { EntityInsSelectionInput } from '@/lib/ins/entity-source-search'
 import { supportsEntityPopulation } from '@/lib/entity-population'
 import { t } from '@lingui/core/macro'
 import { AlertTriangle, Minus, Plus, RefreshCw, Users } from 'lucide-react'
@@ -140,6 +142,8 @@ type ChallengeEntityAnalysisPageProps = {
   readonly ssrEntityExecutionLineItemsParams?: Parameters<
     typeof entityExecutionLineItemsQueryOptions
   >[0]
+  readonly insSearch?: EntityInsSelectionInput
+  readonly onInsSearchChange?: (patch: EntityInsSelectionInput) => void
   readonly onStateChange: (
     patch: Partial<ChallengeEntityAnalysisPageState>,
   ) => void
@@ -302,6 +306,9 @@ const DeferredCommitmentsView = lazy(() =>
   loadCommitmentsView().then((module) => ({
     default: module.CommitmentsView,
   })),
+)
+const DeferredNativeEntityInsView = lazy(() =>
+  import('@/features/statistics/components/native-entity-ins-view').then((module) => ({ default: module.NativeEntityInsView })),
 )
 const DeferredInsStatsView = lazy(() =>
   loadInsStatsView().then((module) => ({
@@ -1083,6 +1090,8 @@ export function ChallengeEntityAnalysisPage({
   ssrEntityDetailsParams,
   ssrEntityExecutionLineItemsParams,
   onStateChange,
+  insSearch = {},
+  onInsSearchChange,
   onCommitmentsViewStateChange,
   onAnalyticsTargetChange,
   onEntityCuiChange,
@@ -1109,6 +1118,7 @@ export function ChallengeEntityAnalysisPage({
   } = state
   const locale = languageQuery === 'en' ? 'en' : 'ro'
   const isRedesignOnlyApi = isRedesignOnlyApiDeployment()
+  const isNativeInsView = isRedesignOnlyApi && activeView === 'ins' && onInsSearchChange !== undefined
   const queryClient = useQueryClient()
   const entityTypeLabel = useEntityTypeLabel()
   const selectedMapPreviewDefinition = useMemo(
@@ -1274,11 +1284,11 @@ export function ChallengeEntityAnalysisPage({
     [entityCui, entityRelationshipsQuery.data?.parents],
   )
   const shouldUseEntityDefaultReportType =
-    pageVariant === 'entities' &&
+    !isNativeInsView && pageVariant === 'entities' &&
     !hasExplicitReportType &&
     stateReportType === DEFAULT_TREEMAP_FILTER_STATE.reportType
   const shouldInferMainCreditorFromParent =
-    pageVariant !== 'entities' && !shouldUseEntityDefaultReportType
+    !isNativeInsView && pageVariant !== 'entities' && !shouldUseEntityDefaultReportType
   const inferredMainCreditorCui =
     mainCreditorCui ??
     (
@@ -1370,11 +1380,21 @@ export function ChallengeEntityAnalysisPage({
     resolvedSsrEntityDetailsParams,
     ssrEntityDetailsCacheData,
   ])
-  const entityDetailsQuery = useEntityDetails(entityDetailsQueryParams, {
+  const budgetEntityDetailsQuery = useEntityDetails(entityDetailsQueryParams, {
     ssrPlaceholder: ssrEntityDetailsPlaceholder,
+    ...(isNativeInsView ? { enabled: false } : {}),
   })
+  const entityIdentityQuery = useQuery({
+    ...entityIdentityQueryOptions(entityCui),
+    enabled: isNativeInsView && /^[0-9]{1,10}$/.test(entityCui),
+    // Header controls retain user state; this projection asserts no fiscal report default.
+    select: (identity): EntityDetailsData | null => identity === null ? null : {
+      ...identity, default_report_type: stateReportType,
+    },
+  })
+  const entityDetailsQuery = isNativeInsView ? entityIdentityQuery : budgetEntityDetailsQuery
   useRecentEntities(
-    pageVariant === 'entities' && entityDetailsQuery.data
+    !isNativeInsView && pageVariant === 'entities' && entityDetailsQuery.data
       ? entityDetailsQuery.data
       : null,
   )
@@ -1386,7 +1406,7 @@ export function ChallengeEntityAnalysisPage({
     entityDetailsQuery.data?.cui === '4267117',
   )
   const isUatEntity = Boolean(entityDetailsQuery.data?.is_uat)
-  const hasResolvedEntityDetails = Boolean(entityDetailsQuery.data)
+  const hasResolvedEntityDetails = !isNativeInsView && Boolean(budgetEntityDetailsQuery.data)
   const canUsePerCapitaNormalization = supportsEntityPopulation(entityDetailsQuery.data)
   const supportsEntityMapPreview = Boolean(
     entityDetailsQuery.data &&
@@ -1434,7 +1454,7 @@ export function ChallengeEntityAnalysisPage({
     entityDetailsQuery.data?.entity_type === 'secondary_creditor' ||
     ssrLoaderPayload?.entitySeoSnapshot?.entityType === 'secondary_creditor'
   const selectedReportType =
-    shouldForceDetailedForParentMainCreditorSection
+    isNativeInsView ? stateReportType : shouldForceDetailedForParentMainCreditorSection
       ? 'DETAILED'
       : shouldUseEntityDefaultReportType
         ? (
@@ -1471,11 +1491,12 @@ export function ChallengeEntityAnalysisPage({
   )
   const canChangeReportType = !shouldForceDetailedForParentMainCreditorSection
   useEffect(() => {
+    if (isNativeInsView) return
     rememberedAggregateReportTypeRef.current = {
       entityCui,
       reportType: aggregateReportType,
     }
-  }, [aggregateReportType, entityCui])
+  }, [aggregateReportType, entityCui, isNativeInsView])
   const mainCreditorOptions = useMemo<readonly ChallengeEntityMainCreditorOption[]>(
     () =>
       parentMainCreditorEntities.map((parentEntity) => ({
@@ -1485,8 +1506,8 @@ export function ChallengeEntityAnalysisPage({
     [parentMainCreditorEntities],
   )
   const shouldEnableEntityLineItemsQuery =
-    !shouldUseEntityDefaultReportType ||
-    entityDetailsReportType === selectedReportType
+    !isNativeInsView && (!shouldUseEntityDefaultReportType ||
+    entityDetailsReportType === selectedReportType)
   const entityLineItemsQueryParams = useMemo(
     () => ({
       cui: entityCui,
@@ -1618,7 +1639,7 @@ export function ChallengeEntityAnalysisPage({
         inflation_adjusted: inflationAdjusted,
       },
       enabled:
-        !showParentMainCreditorSection &&
+        !isNativeInsView && !showParentMainCreditorSection &&
         (
           Boolean(entityRelationshipsQuery.data) ||
           entityRelationshipsQuery.isError
@@ -1628,9 +1649,9 @@ export function ChallengeEntityAnalysisPage({
   })
 
   const isInitialLoading =
-    isResolvingEntityDefaultReportType ||
     (entityDetailsQuery.isLoading && !entityDetailsQuery.data) ||
-    (entityLineItemsQuery.isLoading && !entityLineItemsQuery.data)
+    (!isNativeInsView && (isResolvingEntityDefaultReportType ||
+    (entityLineItemsQuery.isLoading && !entityLineItemsQuery.data)))
 
   const treemapLineItems = useMemo(
     () =>
@@ -2129,7 +2150,7 @@ export function ChallengeEntityAnalysisPage({
 
   useEffect(() => {
     const areCoreQueriesSettled =
-      Boolean(entityDetailsQuery.data) &&
+      !isNativeInsView && Boolean(entityDetailsQuery.data) &&
       Boolean(entityLineItemsQuery.data) &&
       !entityDetailsQuery.isFetching &&
       !entityLineItemsQuery.isFetching
@@ -2139,6 +2160,7 @@ export function ChallengeEntityAnalysisPage({
     }
   }, [
     confirmSettingsApplied,
+    isNativeInsView,
     entityDetailsQuery.data,
     entityDetailsQuery.isFetching,
     entityLineItemsQuery.data,
@@ -2457,7 +2479,7 @@ export function ChallengeEntityAnalysisPage({
         })
       }
 
-      if (isUatEntity && !isRedesignOnlyApi) {
+      if (isRedesignOnlyApi ? (onInsSearchChange !== undefined && entityDetailsQuery.isSuccess && !entityDetailsQuery.isPlaceholderData && entityDetailsQuery.data?.cui === entityCui && entityDetailsQuery.data.uat != null) : isUatEntity) {
         views.push({
           id: 'ins',
           label: CHALLENGE_ENTITY_VIEW_LABELS[locale].ins,
@@ -2474,13 +2496,18 @@ export function ChallengeEntityAnalysisPage({
     [
       isUatEntity,
       isRedesignOnlyApi,
+      onInsSearchChange,
+      entityDetailsQuery.isSuccess,
+      entityDetailsQuery.isPlaceholderData,
+      entityDetailsQuery.data,
+      entityCui,
       locale,
     ],
   )
 
   const handleRetry = () => {
     void entityDetailsQuery.refetch()
-    void entityLineItemsQuery.refetch()
+    if (!isNativeInsView) void entityLineItemsQuery.refetch()
   }
 
   const handleSubordinatesRetry = () => {
@@ -2544,7 +2571,7 @@ export function ChallengeEntityAnalysisPage({
 
   if (
     entityDetailsQuery.isError ||
-    entityLineItemsQuery.isError ||
+    (!isNativeInsView && entityLineItemsQuery.isError) ||
     !entityDetailsQuery.data
   ) {
     return (
@@ -2804,6 +2831,13 @@ export function ChallengeEntityAnalysisPage({
         )
 
       case 'ins':
+        if (isRedesignOnlyApi && onInsSearchChange) {
+          return <Suspense fallback={<EntityViewContentFallback />}>
+            <DeferredNativeEntityInsView cui={entityCui} metadata={entity}
+              metadataReady={entityDetailsQuery.isSuccess && !entityDetailsQuery.isPlaceholderData}
+              search={insSearch} onChange={onInsSearchChange} reportPeriod={reportPeriod} />
+          </Suspense>
+        }
         if (isRedesignOnlyApi) {
           return (
             <EntityViewUnavailable

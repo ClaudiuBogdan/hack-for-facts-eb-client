@@ -16,7 +16,7 @@ export function ValueStatusMarker({ status }: MarkerProps) {
       aria-label={description}
       className="ml-0.5 rounded-sm bg-amber-500/15 px-1 text-[0.65rem] font-semibold text-amber-700 dark:text-amber-400"
     >
-      {status}
+      {status === '' ? '""' : status}
     </sup>
   )
 }
@@ -36,9 +36,9 @@ export function ValueStatusLegend({ statuses }: LegendProps) {
       </p>
       <ul className="mt-1.5 space-y-1">
         {statuses.map((status) => (
-          <li key={status}>
+          <li key={status === '' ? '""' : status}>
             <span className="font-semibold text-amber-700 dark:text-amber-400">
-              {status}
+              {status === '' ? '""' : status}
             </span>{' '}
             — {describeValueStatus(status)}
           </li>

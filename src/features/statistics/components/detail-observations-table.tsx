@@ -23,7 +23,7 @@ export function DetailObservationsTable({
 }: {
   readonly observations: readonly InsObservation[]
   readonly sourceDescriptor?: unknown
-  readonly onSelectSource?: (observation: InsObservation) => void
+  readonly onSelectSource?: (observation: NativeInsObservation) => void
 }) {
   let validated: ReturnType<typeof validatedSourceRows>
   try {
@@ -118,7 +118,7 @@ export function DetailObservationsTable({
                 ) : (
                   row.value
                 )}
-                {row.value_status ? (
+                {row.value_status != null ? (
                   <ValueStatusMarker status={row.value_status} />
                 ) : null}
               </TableCell>

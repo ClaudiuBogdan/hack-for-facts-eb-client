@@ -1,3 +1,4 @@
+import { InsSourcePageError } from '@/lib/ins/source-pages'
 import { z } from 'zod'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import {
@@ -10,6 +11,7 @@ import type {
   InsDatasetDetails,
   InsDimensionValueConnection,
 } from '@/schemas/ins'
+import { comparisonPublicationKey } from '../../lib/native-comparison'
 import { mapDatasetDetails } from './statistics-mappers'
 import {
   insDetailedDatasetRawSchema,
@@ -121,6 +123,7 @@ export async function getInsDatasetDetails(
 export async function getInsDimensionValuesPage(params: {
   datasetCode: string
   dimensionIndex: number
+  expectedPublicationKey?: string
   search?: string
   limit?: number
   offset?: number
@@ -157,6 +160,10 @@ export async function getInsDimensionValuesPage(params: {
   params.signal?.throwIfAborted()
   const { descriptor, insDatasetDimensionValues: page } =
     dimensionPageSchema.parse(response)
+  if (params.expectedPublicationKey !== undefined &&
+      comparisonPublicationKey(insSourceDescriptorSchema.parse(descriptor)) !== params.expectedPublicationKey) {
+    throw new InsSourcePageError('PUBLICATION_CHANGED')
+  }
   const dimension = descriptor.dimensions?.find(
     (d) => d.index === params.dimensionIndex,
   )

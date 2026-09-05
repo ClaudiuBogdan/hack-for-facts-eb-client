@@ -1,3 +1,4 @@
+import { isRedesignOnlyApiDeployment } from '@/lib/api/api-mode'
 import {
   startTransition,
   useCallback,
@@ -55,7 +56,7 @@ function mergeWindowManagedSearchState(
 ): Record<string, unknown> {
   const nextSearch = { ...previousSearch }
 
-  if (typeof window === 'undefined') {
+  if (isRedesignOnlyApiDeployment() || typeof window === 'undefined') {
     return nextSearch
   }
 
@@ -418,6 +419,8 @@ export function PrimarieEntityRoutePage() {
         initialSettings={loaderData?.initialSettings}
         ssrLoaderPayload={ssrLoaderPayload}
         onStateChange={handleStateChange}
+          insSearch={search}
+          onInsSearchChange={updateSearch}
         onCommitmentsViewStateChange={handleCommitmentsViewStateChange}
         onAnalyticsTargetChange={handleAnalyticsTargetChange}
         onEntityCuiChange={handleMapEntitySelection}

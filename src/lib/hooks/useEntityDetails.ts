@@ -67,6 +67,7 @@ interface UseEntityDetailsProps {
 }
 
 interface UseEntityDetailsOptions {
+  enabled?: boolean;
   ssrPlaceholder?: EntityDetailsData;
 }
 
@@ -78,6 +79,7 @@ export function useEntityDetails(
 
   return useQuery({
     ...queryOpts,
+    enabled: queryOpts.enabled && options?.enabled !== false,
     // Use function to preserve keepPreviousData behavior
     // Priority: previous data > SSR placeholder > undefined
     placeholderData: (previousData) => previousData ?? options?.ssrPlaceholder,

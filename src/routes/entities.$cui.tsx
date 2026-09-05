@@ -1,3 +1,5 @@
+import { isRedesignOnlyApiDeployment } from '@/lib/api/api-mode'
+import { entityIdentityQueryOptions } from '@/lib/queries/entity-identity'
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 import { entitySearchSchema } from '@/components/entities/validation'
@@ -213,6 +215,11 @@ export const Route = createFileRoute('/entities/$cui')({
       adapter,
       baseLoaderPayload,
     )
+
+    if (isRedesignOnlyApiDeployment() && adapter.normalizedSearch.view === 'ins') {
+      await queryClient.ensureQueryData(entityIdentityQueryOptions(params.cui))
+      return { entityPageBootstrap, initialSettings: ssrSettings, ssrSettings, forcedOverrides } satisfies EntityRouteLoaderData
+    }
 
     try {
       let activeAdapter = adapter

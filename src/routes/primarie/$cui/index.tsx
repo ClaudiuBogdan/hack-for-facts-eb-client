@@ -1,3 +1,5 @@
+import { isRedesignOnlyApiDeployment } from '@/lib/api/api-mode'
+import { entityIdentityQueryOptions } from '@/lib/queries/entity-identity'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { applyMapRuntimeConfig } from '@/features/advanced-map-analytics/map-runtime-config'
 import {
@@ -154,6 +156,10 @@ export const Route = createFileRoute('/primarie/$cui/')({
       primarieRoute,
       baseLoaderPayload,
     )
+    if (isRedesignOnlyApiDeployment() && normalizedSearch.view === 'ins') {
+      await queryClient.ensureQueryData(entityIdentityQueryOptions(params.cui))
+      return { entityPageBootstrap: initialEntityPageBootstrap, initialSettings } satisfies PrimarieLoaderData
+    }
     const reportPeriod = exactQueryInputs.entityDetails.reportPeriod
     const bootstrapResult = await runEntityPageBlockingBootstrap({
       queryClient,

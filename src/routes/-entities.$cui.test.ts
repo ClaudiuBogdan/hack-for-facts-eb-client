@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+const deployment = vi.hoisted(() => ({ native: false }))
+vi.mock('@/lib/api/api-mode', () => ({ isRedesignOnlyApiDeployment: () => deployment.native }))
 const routeStub = vi.fn((options: Record<string, unknown>) => options)
 const createIsomorphicFnMock = vi.fn(() => {
   let clientImpl: (() => unknown) | undefined
@@ -166,6 +168,7 @@ function createEntityDetailsData(overrides: Record<string, unknown> = {}) {
 
 describe('entities route', () => {
   beforeEach(() => {
+    deployment.native = false
     vi.resetModules()
     routeStub.mockClear()
     createIsomorphicFnMock.mockClear()
@@ -540,4 +543,23 @@ describe('entities route', () => {
     expect(prefetchQuery).not.toHaveBeenCalled()
     expect(geoJsonQueryOptionsMock).not.toHaveBeenCalled()
   })
+  it.each(['ins', 'ins-stats'])('bootstraps native %s deep links with canonical identity only', async (view) => {
+    deployment.native = true
+    const ensureQueryData = vi.fn().mockImplementation((options) => {
+      if (options.queryKey[0] !== 'entityIdentity') throw new Error('Unexpected fiscal prerequisite')
+      return Promise.resolve({ cui: '4305857', name: 'Entity', uat: null })
+    })
+    const prefetchQuery = vi.fn()
+    const route = await importRoute()
+    const result = await route.loader({
+      context: { queryClient: { ensureQueryData, prefetchQuery, getQueryData: vi.fn() } },
+      params: { cui: '4305857' },
+      location: { search: { view, year: 2025, normalization: 'per_capita' } },
+    })
+    expect(result.entityPageBootstrap).toBeDefined()
+    expect(ensureQueryData).toHaveBeenCalledTimes(1)
+    expect(ensureQueryData).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ['entityIdentity', '4305857'] }))
+    expect(prefetchQuery).not.toHaveBeenCalled()
+  })
+
 })

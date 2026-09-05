@@ -1,3 +1,4 @@
+import { InsSourcePageError } from '@/lib/ins/source-pages'
 import { useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
@@ -28,6 +29,8 @@ const SEARCH_DEBOUNCE_MS = 300
 type Props = {
   readonly datasetCode: string
   readonly dimensionIndex: number
+  readonly nativePublicationKey?: string
+  readonly onSourceRefresh?: () => void
   readonly label: string
   readonly placeholder: string
   readonly selectedKey: string | null
@@ -50,6 +53,8 @@ type Props = {
 export function DetailDimensionCombobox({
   datasetCode,
   dimensionIndex,
+  nativePublicationKey,
+  onSourceRefresh,
   label,
   placeholder,
   selectedKey,
@@ -67,6 +72,7 @@ export function DetailDimensionCombobox({
   const valuesQuery = useDimensionValues({
     datasetCode,
     dimensionIndex,
+    nativePublicationKey,
     search,
     limit: DIMENSION_PAGE_SIZE,
     offset,
@@ -79,6 +85,7 @@ export function DetailDimensionCombobox({
     loading || valuesQuery.isError ? [] : (valuesQuery.data?.nodes ?? [])
   const pageInfo =
     loading || valuesQuery.isError ? undefined : valuesQuery.data?.pageInfo
+  const publicationChanged = valuesQuery.error instanceof InsSourcePageError && valuesQuery.error.code === 'PUBLICATION_CHANGED'
   const inputId = `dimension-${datasetCode}-${dimensionIndex}`
 
   const handleSearchChange = (next: string) => {
@@ -141,9 +148,9 @@ export function DetailDimensionCombobox({
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => valuesQuery.refetch()}
+                      onClick={() => { if (publicationChanged && onSourceRefresh) onSourceRefresh(); else void valuesQuery.refetch() }}
                     >
-                      <Trans>Reîncearcă</Trans>
+                      {publicationChanged && onSourceRefresh ? <Trans>Refresh source</Trans> : <Trans>Reîncearcă</Trans>}
                     </Button>
                   </div>
                 ) : null}

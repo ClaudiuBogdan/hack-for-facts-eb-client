@@ -230,3 +230,17 @@ describe('native INS metadata and option boundary', () => {
     )
   })
 })
+
+describe('entity dimension publication binding', () => {
+  it('accepts only the requested publication and rejects a changed revision', async () => {
+    const { comparisonPublicationKey } = await import('../../lib/native-comparison')
+    const { insSourceDescriptorSchema } = await import('@/lib/ins/source-contract')
+    const expectedPublicationKey = comparisonPublicationKey(insSourceDescriptorSchema.parse(dataset()))
+    vi.mocked(graphqlQuery).mockResolvedValue(response())
+    await expect(getInsDimensionValuesPage({ ...request, expectedPublicationKey })).resolves.toMatchObject({ nodes: [member()] })
+    const changed = response()
+    changed.descriptor.metadata.revision_id = '9007199254740994'
+    vi.mocked(graphqlQuery).mockResolvedValue(changed)
+    await expect(getInsDimensionValuesPage({ ...request, expectedPublicationKey })).rejects.toMatchObject({ code: 'PUBLICATION_CHANGED' })
+  })
+})

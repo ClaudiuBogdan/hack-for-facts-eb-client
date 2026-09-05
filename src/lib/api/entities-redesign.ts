@@ -1,3 +1,4 @@
+import { EntityTerritorySchema as TerritorySchema, mapEntityTerritory } from './entity-identity'
 import { z } from "zod";
 
 import { graphqlQuery } from "@/lib/graphql/graphql-client";
@@ -45,19 +46,7 @@ export const MoneySchema = z
     return amount;
   });
 
-const TerritorySchema = z.object({
-  id: z.number().int(),
-  level: z.string().nullable(),
-  kind: z.string().nullable(),
-  territoryKey: z.string().nullable(),
-  parentId: z.number().int().nullable(),
-  nutsCode: z.string().nullable(),
-  name: z.string(),
-  countyCode: z.string().nullable(),
-  countyName: z.string().nullable(),
-  sirutaCode: z.string().nullable(),
-  population: z.number().int().nullable(),
-});
+
 
 const EntityMetadataResponseSchema = z.object({
   entity: z
@@ -546,26 +535,7 @@ export async function fetchRedesignEntityDetails(
     entity_type: metadata.reference?.entityType ?? null,
     is_uat: metadata.reference?.isUat ?? false,
     is_territorial_executive: metadata.reference?.isTerritorialExecutive,
-    uat:
-      territory === null
-        ? null
-        : {
-            id: territory.id,
-            level: territory.level,
-            kind: territory.kind,
-            territory_key: territory.territoryKey,
-            parent_id: territory.parentId,
-            nuts_code: territory.nutsCode,
-            county_name: territory.countyName,
-            county_code: territory.countyCode,
-            name: territory.name,
-            siruta_code:
-              territory.sirutaCode === null
-                ? null
-                : Number(territory.sirutaCode),
-            population: territory.population,
-            county_entity: null,
-          },
+    uat: mapEntityTerritory(territory),
     totalIncome: null,
     totalExpenses: null,
     budgetBalance: null,

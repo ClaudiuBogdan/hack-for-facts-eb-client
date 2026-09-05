@@ -347,6 +347,9 @@ vi.mock('@/components/entities/views/Commitments', () => ({
   ),
 }))
 
+vi.mock('@/features/statistics/components/native-entity-ins-view', () => ({
+  NativeEntityInsView: ({ cui, metadataReady }: { cui: string; metadataReady: boolean }) => <div data-testid="native-ins-view">{cui}:{String(metadataReady)}</div>,
+}))
 vi.mock('@/components/entities/views/ins-stats-view', () => ({
   InsStatsView: (props: any) => (
     <div data-testid="ins-view">
@@ -681,6 +684,9 @@ const DEFAULT_PAGE_STATE: ChallengeEntityAnalysisPageState = {
 
 function renderAnalysisPage(
   props: {
+    readonly onStateChange?: (patch: Partial<ChallengeEntityAnalysisPageState>) => void
+    readonly insSearch?: import('@/lib/ins/entity-source-search').EntityInsSelectionInput
+    readonly onInsSearchChange?: (patch: import('@/lib/ins/entity-source-search').EntityInsSelectionInput) => void
     readonly entityCui?: string
     readonly languageQuery?: 'ro' | 'en'
     readonly pageVariant?: 'primarie' | 'entities'
@@ -724,12 +730,12 @@ function renderAnalysisPage(
         commitmentsDetailLevel={commitmentsState.detailLevel}
         analyticsTarget={analyticsTarget}
         ssrLoaderPayload={props.ssrLoaderPayload as never}
-        onStateChange={(patch) =>
-          setState((previousState) => ({
-            ...previousState,
-            ...patch,
-          }))
-        }
+        insSearch={props.insSearch}
+        onInsSearchChange={props.onInsSearchChange}
+        onStateChange={(patch) => {
+          props.onStateChange?.(patch)
+          setState((previousState) => ({ ...previousState, ...patch }))
+        }}
         onCommitmentsViewStateChange={(grouping, detailLevel) =>
           setCommitmentsState({
             grouping,
@@ -1130,6 +1136,41 @@ describe('ChallengeEntityAnalysisPage', () => {
     expect(await screen.findByTestId('ins-view')).toHaveTextContent(
       'unsupported:12345678:YEAR',
     )
+  })
+
+  it.each(['error', 'loading'])('opens native INS despite fiscal %s and preserves budget settings', async (state) => {
+    runtimeApiMode.value = 'redesign'
+    const ordinaryQuery = useQueryMock.getMockImplementation()
+    useQueryMock.mockImplementation((options: any) => options.queryKey?.[0] === 'entityIdentity' ? {
+      data: options.select({ cui: '12345678', name: 'Entity', uat: { id: 1, level: 'uat' } }),
+      isLoading: false, isFetching: false, isError: false, isSuccess: true, isPlaceholderData: false, error: null, refetch: vi.fn(),
+    } : ordinaryQuery?.(options))
+    const failure = { data: undefined, isLoading: state === 'loading', isError: state === 'error', error: new Error('Fiscal failure'), refetch: vi.fn() }
+    useEntityDetailsMock.mockReturnValue(failure)
+    useEntityExecutionLineItemsMock.mockReturnValue(failure)
+    const change = vi.fn()
+    renderAnalysisPage({ onStateChange: change, onInsSearchChange: vi.fn(), insSearch: {}, state: { activeView: 'ins', normalization: 'per_capita', reportType: 'PRINCIPAL_AGGREGATED' } })
+    expect(await screen.findByTestId('native-ins-view')).toHaveTextContent('12345678:true')
+    expect(useRecentEntitiesMock).toHaveBeenLastCalledWith(null)
+    expect(change).not.toHaveBeenCalledWith(expect.objectContaining({ normalization: 'total' }))
+    expect(change).not.toHaveBeenCalledWith(expect.objectContaining({ reportType: 'DETAILED' }))
+    expect(useEntityDetailsMock).toHaveBeenLastCalledWith(expect.anything(), expect.objectContaining({ enabled: false }))
+    expect(useEntityExecutionLineItemsMock).toHaveBeenLastCalledWith(expect.objectContaining({ enabled: false }), expect.anything())
+  })
+
+  it('retries only identity after an INS identity error', async () => {
+    runtimeApiMode.value = 'redesign'
+    const ordinaryQuery = useQueryMock.getMockImplementation()
+    const retryIdentity = vi.fn()
+    const retryFiscal = vi.fn()
+    useQueryMock.mockImplementation((options: any) => options.queryKey?.[0] === 'entityIdentity' ? {
+      data: undefined, isLoading: false, isFetching: false, isError: true, isSuccess: false, error: new Error('Identity unavailable'), refetch: retryIdentity,
+    } : ordinaryQuery?.(options))
+    useEntityExecutionLineItemsMock.mockReturnValue({ data: undefined, isLoading: false, isError: true, error: new Error('Fiscal unavailable'), refetch: retryFiscal })
+    renderAnalysisPage({ languageQuery: 'en', onInsSearchChange: vi.fn(), state: { activeView: 'ins' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Try Again' }))
+    expect(retryIdentity).toHaveBeenCalledOnce()
+    expect(retryFiscal).not.toHaveBeenCalled()
   })
 
   it('blocks legacy-only views in redesign-only deployments', () => {
@@ -3102,7 +3143,7 @@ describe('ChallengeEntityAnalysisPage', () => {
         ssrPlaceholder: undefined,
       },
     )
-    expect(useQueryMock.mock.calls[0]?.[0]).toEqual(
+    expect(useQueryMock.mock.calls.find(([options]) => options.queryKey?.[0] === 'challenge-entity-subordinates')?.[0]).toEqual(
       expect.objectContaining({
         enabled: false,
       }),
@@ -3157,7 +3198,7 @@ describe('ChallengeEntityAnalysisPage', () => {
     ).not.toBeInTheDocument()
     expect(screen.getByText('Subordinate institutions')).toBeInTheDocument()
     expect(screen.getByText('Liceul Teoretic Avram Iancu')).toBeInTheDocument()
-    expect(useQueryMock.mock.calls[0]?.[0]).toEqual(
+    expect(useQueryMock.mock.calls.find(([options]) => options.queryKey?.[0] === 'challenge-entity-subordinates')?.[0]).toEqual(
       expect.objectContaining({
         enabled: true,
       }),
@@ -3638,7 +3679,7 @@ describe('ChallengeEntityAnalysisPage', () => {
       })
     })
 
-    const subordinateQueryOptions = useQueryMock.mock.calls[0]?.[0]
+    const subordinateQueryOptions = useQueryMock.mock.calls.find(([options]) => options.queryKey?.[0] === 'challenge-entity-subordinates')?.[0]
     expect(subordinateQueryOptions?.queryKey).toEqual([
       'challenge-entity-subordinates',
       '12345678',

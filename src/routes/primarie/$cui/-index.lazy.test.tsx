@@ -2,6 +2,8 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY } from '@/features/challenges/components/analysis/challenge-entity-public-maps'
 
+const deployment = vi.hoisted(() => ({ native: false }))
+vi.mock('@/lib/api/api-mode', () => ({ isRedesignOnlyApiDeployment: () => deployment.native }))
 const navigateMock = vi.fn()
 const setSelectedEntityMock = vi.fn()
 const challengeEntityAnalysisPagePropsMock = vi.fn()
@@ -87,6 +89,8 @@ vi.mock(
       initialSettings,
       ssrLoaderPayload,
       onStateChange,
+      insSearch,
+      onInsSearchChange,
       onCommitmentsViewStateChange,
       onAnalyticsTargetChange,
       onEntityCuiChange,
@@ -94,6 +98,8 @@ vi.mock(
       belowHeader,
     }: any) => {
       challengeEntityAnalysisPagePropsMock({
+        insSearch,
+        onInsSearchChange,
         entityCui,
         languageQuery,
         state,
@@ -227,6 +233,7 @@ vi.mock(
 
 describe('PrimarieEntityIndexRoutePage', () => {
   beforeEach(() => {
+    deployment.native = false
     mockedParams = { cui: '12345678' }
     mockedSearch = {}
     mockedLoaderData = {
@@ -771,4 +778,20 @@ describe('PrimarieEntityIndexRoutePage', () => {
 
     expect(navigateMock).not.toHaveBeenCalled()
   })
+
+it('keeps native INS router values intact instead of merging stale window values', async () => {
+  const { PrimarieEntityRoutePage } = await import('./index.lazy')
+  deployment.native = true
+  mockedSearch = { view: 'ins', insDataset: 'POP107D', insSourcePins: ['D0:0', 'D1:210'], insSourceUnit: null, insSeries: 'D0:4' }
+  window.history.replaceState({}, '', '/?insDataset=STALE&insSeries=D0:99')
+  render(<PrimarieEntityRoutePage />)
+  const pageProps = challengeEntityAnalysisPagePropsMock.mock.lastCall?.[0]
+  expect(pageProps.insSearch).toEqual(mockedSearch)
+  navigateMock.mockClear()
+  pageProps.onInsSearchChange({ insSourcePins: ['D0:5'], insSeries: undefined })
+  const next = navigateMock.mock.lastCall?.[0].search(mockedSearch)
+  expect(next).toMatchObject({ insDataset: 'POP107D', insSourcePins: ['D0:5'], insSourceUnit: null })
+  expect(next).not.toHaveProperty('insSeries')
+})
+
 })

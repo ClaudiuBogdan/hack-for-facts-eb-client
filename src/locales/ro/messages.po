@@ -45,11 +45,6 @@ msgstr ""
 msgid ".csv, .tsv, .xlsx, .xls"
 msgstr ".csv, .tsv, .xlsx, .xls"
 
-#. placeholder {0}: story.excludedCount
-#: src/features/statistics/components/landing/landing-decade-section.tsx:64
-#~ msgid "· {0} județe fără ambele capete de interval au fost excluse"
-#~ msgstr ""
-
 #: src/features/legal/components/legislation-guide.tsx:125
 msgid "„Abrogat parțial” NU înseamnă că legea nu mai e în vigoare. Este statutul firesc al unei legi modificate ani la rând: unele articole au fost abrogate, restul produc efecte în continuare. Printre cele mai citate acte din corpus, Codul de procedură penală — aplicat zi de zi în instanțe — poartă exact acest statut."
 msgstr ""
@@ -212,12 +207,6 @@ msgstr ""
 #: src/features/private-companies/components/search/private-company-search-page.tsx:106
 msgid "{0} companies found"
 msgstr "{0} firme găsite"
-
-#. placeholder {0}: lau.name ?? lau.code
-#. placeholder {1}: formatPercent(example.lauShareOfCounty)
-#: src/features/statistics/components/landing/landing-example-card.tsx:49
-#~ msgid "{0} concentrează {1} din salariații județului."
-#~ msgstr ""
 
 #. placeholder {0}: region.countyCount
 #. placeholder {1}: region.uatCount
@@ -475,7 +464,7 @@ msgstr "{0} vizualizări activate"
 #. placeholder {0}: offset + 1
 #. placeholder {1}: offset + nodes.length
 #. placeholder {2}: pageInfo.totalCount
-#: src/features/statistics/components/detail-dimension-combobox.tsx:188
+#: src/features/statistics/components/detail-dimension-combobox.tsx:195
 msgid "{0}–{1} din {2}"
 msgstr ""
 
@@ -1043,10 +1032,6 @@ msgstr ""
 #: src/features/legal/components/legislation-act-finder.tsx:336
 msgid "Această căutare corespunde mai multor acte — alege actul:"
 msgstr ""
-
-#: src/features/statistics/components/comparison-pins.tsx:76
-#~ msgid "Această dimensiune nu are o opțiune „Total”. Alege o valoare pentru o comparație corectă."
-#~ msgstr "Această dimensiune nu are o opțiune „Total”. Alege o valoare pentru o comparație corectă."
 
 #: src/features/parliament/components/parliament-speech-detail-page.tsx:241
 msgid "Această intervenție nu are încă o poziție dovedită într-o stenogramă de ședință, așa că nu o putem arăta în contextul dezbaterii. Textul de mai jos este doar această luare de cuvânt."
@@ -2611,10 +2596,6 @@ msgstr "Valoarea medie a contractelor subsecvente"
 msgid "Average: use the mean value (best for repeated measurements)."
 msgstr "Medie: folosiți valoarea medie (cel mai potrivit pentru măsurători repetate)."
 
-#: src/components/entity-analytics/EntityAnalyticsKPIs.tsx:35
-#~ msgid "Avg per-capita"
-#~ msgstr "Medie pe cap de locuitor"
-
 #: src/components/maps/charts/UatAverageSpendingCountyChart.tsx:73
 msgid "Avg. Amount"
 msgstr "Suma medie"
@@ -3502,10 +3483,6 @@ msgid "Caută întreprindere publică"
 msgstr ""
 
 #: src/features/statistics/components/landing/landing-hero.tsx:112
-#~ msgid "Caută localitatea ta ca să vezi aceleași cifre pentru ea, față de țară."
-#~ msgstr ""
-
-#: src/features/statistics/components/landing/landing-hero.tsx:112
 msgid "Caută localitatea ta ca să vezi indicatorii disponibili pentru ea."
 msgstr "Caută localitatea ta ca să vezi indicatorii disponibili pentru ea."
 
@@ -3567,7 +3544,7 @@ msgstr ""
 msgid "Cauta zona ta"
 msgstr ""
 
-#: src/features/statistics/components/detail-dimension-combobox.tsx:125
+#: src/features/statistics/components/detail-dimension-combobox.tsx:132
 msgid "Caută…"
 msgstr ""
 
@@ -3797,10 +3774,6 @@ msgstr ""
 #: src/features/parliament/components/parliament-stenogram-failure.tsx:152
 msgid "Cererea a fost refuzată de server"
 msgstr ""
-
-#: src/features/statistics/components/comparison-states.tsx:89
-#~ msgid "Cererea către INS Tempo a eșuat. Datele nu lipsesc — nu am reușit să le citim."
-#~ msgstr ""
 
 #: src/features/parliament/components/parliament-stenogram-failure.tsx:159
 msgid "Cererea nu a ajuns la API sau răspunsul nu a putut fi citit. Nu știm dacă ședința există — verificați conexiunea și reîncercați."
@@ -4326,10 +4299,6 @@ msgstr ""
 msgid "Cod CPV"
 msgstr ""
 
-#: src/features/statistics/lib/observations-csv.ts:60
-#~ msgid "Cod SIRUTA"
-#~ msgstr "Cod SIRUTA"
-
 #: src/components/data-trust/source-provenance-drawer.tsx:155
 msgid "Cod sursa"
 msgstr ""
@@ -4537,11 +4506,6 @@ msgstr "Stare companie"
 #: src/features/statistics/components/indicator-tile.tsx:297
 msgid "Compară"
 msgstr ""
-
-#: src/features/statistics/components/landing/landing-example-card.tsx:34
-#: src/features/statistics/components/landing/landing-example-card.tsx:59
-#~ msgid "Compară două locuri"
-#~ msgstr ""
 
 #: src/features/statistics/pages/statistics-dataset-detail-page.tsx:662
 msgid "Compară teritorii"
@@ -5926,6 +5890,7 @@ msgid "Data: Eurostat 2024 (Provisional)"
 msgstr "Date: Eurostat 2024 (Provizorii)"
 
 #: src/components/charts/components/series-config/InsSeriesEditor.tsx:580
+#: src/features/statistics/components/native-entity-ins-view.tsx:134
 msgid "Dataset"
 msgstr "Set de date"
 
@@ -6700,10 +6665,6 @@ msgstr ""
 #: src/features/procurement/lib/caveat-text.ts:294
 msgid "Din {awarded} atribuiți în această selecție, {withheld} revin unor contracte încredințate asocierilor cu mai mulți membri. Repartiția între membri nu este publicată, așa că suma nu este atribuită niciunui furnizor."
 msgstr ""
-
-#: src/features/statistics/components/landing/landing-hero.tsx:287
-#~ msgid "din totalul României"
-#~ msgstr ""
 
 #: src/features/procurement/components/procurement-info-sheet.tsx:38
 #: src/features/procurement/lib/detail-config.ts:111
@@ -7590,7 +7551,7 @@ msgstr "Analiza entităților"
 msgid "Entity Details"
 msgstr "Detalii Entitate"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2535
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2562
 msgid "Entity not found"
 msgstr "Entitate negăsită"
 
@@ -8123,10 +8084,6 @@ msgstr "Exportă configurația"
 msgid "Export CSV"
 msgstr "Exportă CSV"
 
-#: src/features/statistics/components/detail-export-button.tsx:60
-#~ msgid "Export incomplet: fișierul conține {rowCount} rânduri, dar seria de la server are mai multe (capătul vechi este tăiat)."
-#~ msgstr ""
-
 #: src/routes/entity-analytics.lazy.tsx:250
 msgid "Exporting…"
 msgstr "Se exportă…"
@@ -8422,7 +8379,7 @@ msgstr ""
 msgid "fără date"
 msgstr "fără date"
 
-#: src/features/statistics/components/detail-observations-chart.tsx:150
+#: src/features/statistics/components/detail-observations-chart.tsx:151
 msgid "Fără date"
 msgstr ""
 
@@ -8839,10 +8796,6 @@ msgstr ""
 #: src/features/procurement/lib/caveat-text.ts:247
 msgid "Filtrul pe valoare lasă complet deoparte contractele încredințate unor asocieri cu mai mulți membri — valorile lor pe furnizor nu sunt publicate, deci nu pot fi comparate cu un prag."
 msgstr ""
-
-#: src/features/statistics/pages/statistics-territory-hub-page.tsx:149
-#~ msgid "Filtrul rămâne în adresă; indicatorii de mai jos arată absența, nu valori inventate."
-#~ msgstr ""
 
 #: src/features/statistics/pages/statistics-territory-hub-page.tsx:149
 msgid "Filtrul rămâne în adresă. Istoricul poate fi incomplet sau selecția din sursă poate necesita clarificare."
@@ -9469,7 +9422,7 @@ msgid "Grafic textual cu tabel fallback pentru accesibilitate."
 msgstr ""
 
 #. placeholder {0}: series.points.length
-#: src/features/statistics/components/detail-observations-chart.tsx:98
+#: src/features/statistics/components/detail-observations-chart.tsx:99
 msgid "Graficul afișează ultimele {0} perioade. Restrânge intervalul pentru a vedea perioade mai vechi."
 msgstr ""
 
@@ -10439,11 +10392,7 @@ msgstr "Ajustare la inflație"
 msgid "Inflation adjustment is ignored for % of GDP."
 msgstr "Ajustarea la inflație este ignorată pentru % din PIB."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3277
-#~ msgid "Inflation-adjusted (real) values are not available for this institution yet; the amounts shown are nominal."
-#~ msgstr "Valorile ajustate cu inflația (reale) nu sunt încă disponibile pentru această instituție; sumele afișate sunt nominale."
-
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3292
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3326
 msgid "Inflation-adjusted (real) values are not available yet; the amounts shown are nominal."
 msgstr "Valorile ajustate cu inflația (reale) nu sunt încă disponibile; sumele afișate sunt nominale."
 
@@ -10568,17 +10517,6 @@ msgstr "Setări INS"
 #: src/features/statistics/components/source-provenance-drawer.tsx:39
 msgid "INS Tempo"
 msgstr "INS Tempo"
-
-#. placeholder {0}: example.year
-#: src/features/statistics/components/landing/landing-example-card.tsx:118
-#~ msgid "INS Tempo · {0}"
-#~ msgstr ""
-
-#. placeholder {0}: unitLabel ?? t`persoane`
-#. placeholder {1}: story.rankedCount
-#: src/features/statistics/components/landing/landing-decade-section.tsx:59
-#~ msgid "INS Tempo · {0} · {1} județe comparate"
-#~ msgstr ""
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1512
 msgid "INS terms"
@@ -11727,7 +11665,7 @@ msgstr "Se încarcă editorul de hărți..."
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3612
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3854
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3861
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:992
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:999
 #: src/routes/map.lazy.tsx:330
 #: src/routes/map.lazy.tsx:337
 msgid "Loading map..."
@@ -11759,7 +11697,7 @@ msgstr "Se încarcă seturile de date partajate..."
 msgid "Loading table data..."
 msgstr "Se încarcă datele tabelului..."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1034
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1041
 msgid "Loading view…"
 msgstr "Se încarcă vizualizarea…"
 
@@ -13295,10 +13233,6 @@ msgstr ""
 msgid "Nicio ședință nu corespunde criteriilor selectate."
 msgstr ""
 
-#: src/features/statistics/pages/statistics-territory-hub-page.tsx:145
-#~ msgid "Nicio serie nu raportează perioada {activePeriod}"
-#~ msgstr ""
-
 #: src/features/ngos/components/ngo-landing-page.tsx:296
 msgid "Nicio sursa ONG nu este disponibila in mock."
 msgstr "Nicio sursă ONG nu este disponibilă în mock."
@@ -13335,7 +13269,7 @@ msgstr ""
 msgid "Niciun proiect cu etape noi în ultimele 12 luni."
 msgstr ""
 
-#: src/features/statistics/components/detail-dimension-combobox.tsx:153
+#: src/features/statistics/components/detail-dimension-combobox.tsx:160
 msgid "Niciun rezultat"
 msgstr ""
 
@@ -13354,10 +13288,6 @@ msgstr ""
 #: src/features/statistics/components/comparison-territory-picker.tsx:133
 msgid "Niciun teritoriu nou nu se potrivește căutării."
 msgstr ""
-
-#: src/features/statistics/components/comparison-bar-chart.tsx:87
-#~ msgid "Niciun teritoriu nu are date pentru această perioadă."
-#~ msgstr ""
 
 #: src/features/statistics/components/detail-territory-control.tsx:101
 #: src/features/statistics/components/territory-search.tsx:92
@@ -14346,7 +14276,7 @@ msgstr ""
 msgid "Nu am putut încărca obiectivul."
 msgstr ""
 
-#: src/features/statistics/components/detail-dimension-combobox.tsx:139
+#: src/features/statistics/components/detail-dimension-combobox.tsx:146
 msgid "Nu am putut încărca opțiunile."
 msgstr ""
 
@@ -15376,7 +15306,7 @@ msgstr ""
 msgid "Pagina anterioară"
 msgstr ""
 
-#: src/features/statistics/components/detail-dimension-combobox.tsx:202
+#: src/features/statistics/components/detail-dimension-combobox.tsx:209
 msgid "Pagina anterioară de opțiuni"
 msgstr ""
 
@@ -15391,7 +15321,7 @@ msgstr ""
 msgid "Pagina următoare"
 msgstr ""
 
-#: src/features/statistics/components/detail-dimension-combobox.tsx:215
+#: src/features/statistics/components/detail-dimension-combobox.tsx:222
 msgid "Pagina următoare de opțiuni"
 msgstr ""
 
@@ -15692,10 +15622,6 @@ msgstr ""
 msgid "Pentru această ședință avem doar înregistrarea sursei și adresa ei oficială — textul dezbaterii nu este servit aici. Nu înseamnă că ședința nu a avut loc sau că nu s-a vorbit în ea."
 msgstr ""
 
-#: src/features/statistics/components/detail-scope-prompt.tsx:32
-#~ msgid "Pentru acest set nu există o selecție implicită pentru dimensiunile de mai jos. Alege o valoare din propoziția de selecție de mai sus ca să încărcăm seria."
-#~ msgstr ""
-
 #: src/components/charts/components/series-config/SeriesFilter.tsx:995
 msgid "people"
 msgstr "persoane"
@@ -15845,10 +15771,6 @@ msgstr "Periodicitate"
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:594
 msgid "Permanently delete this map and all saved versions. This cannot be undone."
 msgstr "Șterge definitiv această hartă și toate versiunile salvate. Această acțiune nu poate fi anulată."
-
-#: src/features/statistics/components/landing/landing-decade-section.tsx:60
-#~ msgid "persoane"
-#~ msgstr ""
 
 #: src/features/justice/components/data-trust.tsx:141
 msgid "Persoanele fizice apar doar ca număr agregat pe rol. Nu există câmp de căutare după persoane."
@@ -16003,10 +15925,6 @@ msgstr "Populația după domiciliu"
 #: src/features/statistics/components/landing/landing-decade-section.tsx:32
 msgid "Populația după domiciliu la 1 ianuarie, pe județe și municipiul București. Schimbarea procentuală între cele două capete de interval."
 msgstr "Populația după domiciliu la 1 ianuarie, pe județe și municipiul București. Schimbarea procentuală între cele două capete de interval."
-
-#: src/features/statistics/components/landing/landing-decade-section.tsx:37
-#~ msgid "Populația după domiciliu, pe județe. Schimbarea procentuală între cele două capete de interval."
-#~ msgstr ""
 
 #: src/components/entity-analytics/EntityAnalyticsTable.tsx:93
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:719
@@ -17331,7 +17249,7 @@ msgstr ""
 
 #: src/features/parliament/components/parliament-stenogram-failure.tsx:82
 #: src/features/statistics/components/comparison-states.tsx:103
-#: src/features/statistics/components/detail-dimension-combobox.tsx:146
+#: src/features/statistics/components/detail-dimension-combobox.tsx:153
 #: src/features/statistics/components/detail-territory-control.tsx:95
 #: src/features/statistics/components/landing/landing-hero.tsx:154
 #: src/features/statistics/components/landing/landing-read-state.tsx:62
@@ -17669,6 +17587,7 @@ msgstr ""
 #: src/features/private-companies/components/hub/company-hub-blocks.tsx:65
 #: src/features/private-companies/components/private-company-error-panel.tsx:46
 #: src/features/procurement/components/procurement-error-state.tsx:111
+#: src/features/statistics/components/entity-ins-dataset-picker.tsx:82
 #: src/routes/maps/editor/new.lazy.tsx:300
 msgid "Retry"
 msgstr "Reîncearcă"
@@ -17872,10 +17791,6 @@ msgstr ""
 #: src/routes/map.lazy.tsx:533
 msgid "Romania spending heatmap - Transparenta.eu"
 msgstr "Harta termică a cheltuielilor României - Transparenta.eu"
-
-#: src/features/statistics/components/landing/landing-hero.tsx:273
-#~ msgid "România:"
-#~ msgstr ""
 
 #: src/components/theme/language-toggle.tsx:68
 msgid "Romanian"
@@ -18121,12 +18036,6 @@ msgstr ""
 #: src/features/parliament/components/parliament-stenogram-filter-notice.tsx:56
 msgid "Se afișează {visibleCount} din {totalCount} luări de cuvânt ale ședinței, doar de la: {speakerList}."
 msgstr ""
-
-#. placeholder {0}: exactRows.length
-#. placeholder {1}: seriesData?.totalCount
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:647
-#~ msgid "Se afișează cele mai recente {0} din {1} observații — capătul vechi al seriei este tăiat, deci începutul intervalului afișat poate fi mai recent decât primul an raportat."
-#~ msgstr "Se afișează cele mai recente {0} din {1} observații — capătul vechi al seriei este tăiat, deci începutul intervalului afișat poate fi mai recent decât primul an raportat."
 
 #: src/features/ngos/components/ngo-profile-page.tsx:1129
 msgid "Se afiseaza datele incarcate initial din ruta."
@@ -19507,7 +19416,7 @@ msgstr ""
 msgid "Some data issues were automatically resolved"
 msgstr "Unele probleme cu datele au fost rezolvate automat"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3289
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3323
 msgid "Some display settings are not available on this page yet."
 msgstr "Unele setări de afișare nu sunt încă disponibile pe această pagină."
 
@@ -19731,10 +19640,6 @@ msgstr ""
 msgid "Stare revizuire"
 msgstr ""
 
-#: src/features/statistics/lib/observations-csv.ts:64
-#~ msgid "Stare valoare"
-#~ msgstr "Stare valoare"
-
 #: src/features/statistics/components/detail-tier0-hero.tsx:40
 #: src/features/statistics/components/detail-tier0-hero.tsx:65
 msgid "stare:"
@@ -19953,7 +19858,7 @@ msgstr "Secțiunile pasului"
 msgid "Steps"
 msgstr "Pași"
 
-#: src/features/statistics/components/detail-dimension-combobox.tsx:241
+#: src/features/statistics/components/detail-dimension-combobox.tsx:248
 msgid "Șterge"
 msgstr ""
 
@@ -21405,10 +21310,6 @@ msgstr "Toate teritoriile au aceeași populație la cele două capete de interva
 msgid "Toate tipurile"
 msgstr ""
 
-#: src/features/statistics/components/comparison-pins.tsx:93
-#~ msgid "Toate unitățile"
-#~ msgstr "Toate unitățile"
-
 #: src/features/procurement/components/procurement-hub-dev-panel.tsx:17
 msgid "TODO"
 msgstr "TODO"
@@ -21751,13 +21652,13 @@ msgid "Try again"
 msgstr "Încearcă din nou"
 
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:493
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2563
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2590
 #: src/features/learning/components/assessment/Quiz.tsx:188
 #: src/routes/settings/notifications.tsx:198
 msgid "Try Again"
 msgstr "Încercați din nou"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:630
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:637
 msgid "Try again in a few moments."
 msgstr "Încearcă din nou peste câteva momente."
 
@@ -21934,16 +21835,6 @@ msgstr ""
 msgid "Un act poate ține de mai multe domenii, așa că numerele se suprapun — adunate, depășesc numărul real de acte din corpus."
 msgstr ""
 
-#. placeholder {0}: story.startYear
-#. placeholder {1}: story.endYear
-#: src/features/statistics/components/landing/landing-decade-section.tsx:32
-#~ msgid "Un deceniu de schimbare ({0} → {1})"
-#~ msgstr ""
-
-#: src/features/statistics/components/landing/landing-example-card.tsx:62
-#~ msgid "Un exemplu viu: numărul mediu de salariați, pe trei niveluri teritoriale. Apasă pe card ca să pornești propria comparație."
-#~ msgstr ""
-
 #: src/features/legal/components/legislation-changes-feed.tsx:291
 msgid "Un sfert dintre evenimente nu au dată de intrare în vigoare înregistrată — le găsești sub „fără dată”. Filtrele se păstrează în adresă — o vedere filtrată este un link pe care îl poți trimite."
 msgstr ""
@@ -22005,10 +21896,6 @@ msgstr ""
 msgid "Unele filtre sunt gated până când lane-urile ajung live."
 msgstr ""
 
-#: src/features/statistics/components/landing/landing-example-card.tsx:127
-#~ msgid "Unele perioade au fost omise: sursa raportează mai multe valori pentru aceeași combinație teritoriu-an, iar exemplul arată doar perioadele fără ambiguitate."
-#~ msgstr ""
-
 #: src/lib/ins/ins-metric-registry.ts:31
 msgid "Unemployment rate"
 msgstr "Rata șomajului"
@@ -22034,6 +21921,7 @@ msgstr "Cod unic"
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1362
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1545
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:156
+#: src/features/statistics/components/entity-ins-source-controls.tsx:189
 msgid "Unit"
 msgstr "Unitate"
 
@@ -22343,11 +22231,7 @@ msgstr "Analiza utilizării"
 msgid "USD"
 msgstr "USD"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3280
-#~ msgid "USD values are not available for this institution yet; the amounts shown are in RON."
-#~ msgstr "Valorile în USD nu sunt încă disponibile pentru această instituție; sumele afișate sunt în RON."
-
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3295
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3329
 msgid "USD values are not available yet; the amounts shown are in RON."
 msgstr "Valorile în USD nu sunt încă disponibile; sumele afișate sunt în RON."
 
@@ -22612,10 +22496,6 @@ msgstr "Valori incompatibile cu acest calcul"
 #: src/features/statistics/components/landing/landing-hero.tsx:238
 msgid "Valori pentru întreaga țară, la cea mai recentă perioadă raportată."
 msgstr "Valori pentru întreaga țară, la cea mai recentă perioadă raportată."
-
-#: src/features/statistics/components/detail-accordion.tsx:87
-#~ msgid "Valorile din spatele graficului — aceeași selecție, aceleași rânduri, nu întregul set la acest teritoriu. Pentru alte teritorii, <0>compară teritorii</0>."
-#~ msgstr ""
 
 #: src/features/statistics/components/comparison-bar-chart.tsx:106
 msgid "Valorile raportate pentru perioada {selectedPeriod}."
@@ -23130,11 +23010,11 @@ msgstr "Nu putem confirma dacă cererile sunt încă deschise în acest moment. 
 msgid "We could not find a private company profile for this CUI. Check the identifier or try a mock sample such as 14399840."
 msgstr "Nu am putut găsi un profil de companie privată pentru acest CUI. Verifică identificatorul sau încearcă un exemplu mock precum 14399840."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2538
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2565
 msgid "We could not find an entity for this CUI. Check the identifier or search for another entity."
 msgstr "Nu am putut găsi o entitate pentru acest CUI. Verifică identificatorul sau caută altă entitate."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2553
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2580
 msgid "We could not load the analysis."
 msgstr "Nu am putut încărca analiza."
 
@@ -23658,3 +23538,238 @@ msgstr "ziua curentă nu este încă confirmată după încheierea ședinței"
 #: src/features/parliament/components/parliament-stenogram-controls.tsx:197
 msgid "Ziua: {day}"
 msgstr ""
+
+
+#: src/features/statistics/components/entity-ins-source-history.tsx:70
+msgid "{length} observations in this selection"
+msgstr "{length} observații în această selecție"
+
+#: src/features/statistics/components/entity-ins-source-history.tsx:262
+msgid "A single comparable series is not available for this selection. Inspect the original source rows and their qualifications below."
+msgstr "Această selecție nu definește o singură serie comparabilă. Consultă mai jos observațiile originale și precizările sursei."
+
+#: src/features/statistics/components/entity-ins-source-controls.tsx:212
+msgid "Choose a frequency"
+msgstr "Alege o frecvență"
+
+#: src/features/statistics/components/entity-ins-source-controls.tsx:150
+msgid "Choose a source value"
+msgstr "Alege o valoare din sursă"
+
+#: src/features/statistics/components/entity-ins-source-controls.tsx:190
+msgid "Choose a unit"
+msgstr "Alege o unitate"
+
+#: src/features/statistics/components/entity-ins-dataset-picker.tsx:52
+msgid "Choose an INS dataset"
+msgstr "Alege un set de date INS"
+
+#: src/features/statistics/components/entity-ins-source-controls.tsx:120
+msgid "Choose values for all geographic source dimensions to inspect this selection."
+msgstr "Alege valori pentru toate dimensiunile geografice ale sursei pentru a consulta această selecție."
+
+#: src/features/statistics/components/entity-ins-dataset-picker.tsx:69
+msgid "Clear dataset search"
+msgstr "Șterge căutarea de seturi de date"
+
+#: src/features/statistics/components/entity-ins-source-controls.tsx:115
+msgid "Clear invalid frequency"
+msgstr "Șterge frecvența invalidă"
+
+#: src/features/statistics/components/entity-ins-source-controls.tsx:90
+msgid "Clear invalid source dimensions"
+msgstr "Șterge dimensiunile invalide ale sursei"
+
+#: src/features/statistics/components/entity-ins-source-controls.tsx:107
+msgid "Clear invalid unit"
+msgstr "Șterge unitatea invalidă"
+
+#: src/features/statistics/components/entity-ins-source-history.tsx:212
+msgid "Each period is shown separately. Values from different periods are not added."
+msgstr "Fiecare perioadă este afișată separat. Valorile din perioade diferite nu se adună."
+
+#: src/features/statistics/components/entity-ins-source-controls.tsx:205
+msgid "Frequency"
+msgstr "Frecvență"
+
+#: src/features/statistics/components/entity-ins-dataset-picker.tsx:50
+msgid "INS dataset catalog"
+msgstr "Catalog de seturi de date INS"
+
+#: src/features/statistics/components/entity-ins-source-controls.tsx:211
+msgid "INS frequency"
+msgstr "Frecvență INS"
+
+#: src/features/statistics/components/native-entity-ins-view.tsx:105
+msgid "INS source data could not be loaded or verified. Refresh the source to retry."
+msgstr "Datele INS nu au putut fi încărcate sau verificate. Reîmprospătează sursa pentru a reîncerca."
+
+#: src/features/statistics/components/entity-ins-source-history.tsx:246
+msgid "INS source history"
+msgstr "Istoricul sursei INS"
+
+#: src/features/statistics/components/entity-ins-source-controls.tsx:49
+msgid "INS source selection"
+msgstr "Selecția sursei INS"
+
+#: src/features/statistics/components/native-entity-ins-view.tsx:74
+msgid "INS statistics"
+msgstr "Statistici INS"
+
+#: src/features/statistics/components/entity-ins-source-history.tsx:183
+msgid "Latest INS observation"
+msgstr "Cea mai recentă observație INS"
+
+#: src/features/statistics/components/entity-ins-source-history.tsx:185
+msgid "Latest source observation"
+msgstr "Cea mai recentă observație din sursă"
+
+#: src/features/statistics/components/entity-ins-dataset-picker.tsx:73
+msgid "Loading datasets…"
+msgstr "Se încarcă seturile de date…"
+
+#: src/features/statistics/components/native-entity-ins-view.tsx:88
+msgid "Loading INS source data…"
+msgstr "Se încarcă datele sursei INS…"
+
+#: src/features/statistics/components/native-entity-ins-view.tsx:58
+msgid "Loading the entity's geographic context…"
+msgstr "Se încarcă contextul geografic al entității…"
+
+#: src/features/statistics/components/entity-ins-dataset-picker.tsx:138
+msgid "Next datasets"
+msgstr "Seturile de date următoare"
+
+#: src/features/statistics/components/entity-ins-source-history.tsx:87
+msgid "Next observations"
+msgstr "Observațiile următoare"
+
+#: src/features/statistics/components/entity-ins-dataset-picker.tsx:88
+msgid "No datasets match this search."
+msgstr "Niciun set de date nu corespunde căutării."
+
+#: src/features/statistics/components/entity-ins-source-history.tsx:253
+msgid "No numeric chart is available for this source history. Original observations remain below."
+msgstr "Nu este disponibil un grafic numeric pentru acest istoric. Observațiile originale rămân disponibile mai jos."
+
+#: src/features/statistics/components/entity-ins-source-history.tsx:52
+msgid "No observation"
+msgstr "Nicio observație"
+
+#: src/features/statistics/components/entity-ins-source-history.tsx:304
+msgid "No observations were found for this entity and source selection."
+msgstr "Nu au fost găsite observații pentru această entitate și selecție a sursei."
+
+#: src/features/statistics/components/native-entity-ins-view.tsx:121
+msgid "No published datasets currently cover this area. You can still search the general catalog."
+msgstr "Niciun set de date publicat nu acoperă în prezent această zonă. Poți căuta în continuare în catalogul general."
+
+#: src/features/statistics/components/entity-ins-source-history.tsx:268
+msgid "Original INS observations"
+msgstr "Observații INS originale"
+
+#: src/features/statistics/components/entity-ins-source-history.tsx:271
+msgid "Original source observations"
+msgstr "Observațiile originale ale sursei"
+
+#: src/features/statistics/components/entity-ins-dataset-picker.tsx:124
+msgid "Previous datasets"
+msgstr "Seturile de date anterioare"
+
+#: src/features/statistics/components/entity-ins-source-history.tsx:79
+msgid "Previous observations"
+msgstr "Observațiile anterioare"
+
+#: src/features/statistics/components/detail-dimension-combobox.tsx:153
+#: src/features/statistics/components/native-entity-ins-view.tsx:83
+msgid "Refresh source"
+msgstr "Reîmprospătează sursa"
+
+#: src/features/statistics/components/entity-ins-dataset-picker.tsx:68
+msgid "Search INS datasets"
+msgstr "Caută seturi de date INS"
+
+#: src/features/statistics/components/entity-ins-dataset-picker.tsx:67
+msgid "Search INS datasets…"
+msgstr "Caută seturi de date INS…"
+
+#: src/features/statistics/components/entity-ins-source-history.tsx:198
+msgid "Selected INS periods"
+msgstr "Perioade INS selectate"
+
+#: src/features/statistics/components/entity-ins-source-history.tsx:200
+msgid "Selected periods"
+msgstr "Perioade selectate"
+
+#: src/features/statistics/components/entity-ins-source-controls.tsx:176
+msgid "Source default"
+msgstr "Valoare implicită din sursă"
+
+#: src/features/statistics/components/entity-ins-source-history.tsx:167
+msgid "Source inspection: choose all dimensions and a unit to view a single series."
+msgstr "Consultarea sursei: alege toate dimensiunile și o unitate pentru a vedea o singură serie."
+
+#: src/features/statistics/components/entity-ins-source-controls.tsx:52
+msgid "Source selection"
+msgstr "Selecția sursei"
+
+#: src/features/statistics/components/native-entity-ins-view.tsx:169
+msgid "Source: INS TEMPO"
+msgstr "Sursă: INS TEMPO"
+
+#. placeholder {0}: series.points.length
+#: src/features/statistics/components/detail-observations-chart.tsx:99
+msgid "The chart shows the latest {0} periods. Earlier observations remain in the table and complete export."
+msgstr "Graficul afișează ultimele {0} perioade. Observațiile mai vechi rămân disponibile în tabel și în exportul complet."
+
+#: src/features/statistics/components/native-entity-ins-view.tsx:154
+msgid "The dataset in this link is invalid. Select a dataset from the catalog."
+msgstr "Setul de date din acest link este invalid. Alege un set de date din catalog."
+
+#: src/features/statistics/components/entity-ins-source-controls.tsx:71
+msgid "The entity's area is fixed. Source dimensions describe how INS measured it; changing them does not change the entity."
+msgstr "Zona entității este fixă. Dimensiunile sursei descriu cum a măsurat-o INS; modificarea lor nu schimbă entitatea."
+
+#: src/features/statistics/components/native-entity-ins-view.tsx:114
+msgid "The entity's area is not mapped to an INS territory."
+msgstr "Zona entității nu este asociată unui teritoriu INS."
+
+#: src/features/statistics/components/entity-ins-source-controls.tsx:78
+msgid "The link contains an invalid source selection. Correct its fields or reset the selection."
+msgstr "Linkul conține o selecție invalidă a sursei. Corectează câmpurile sau resetează selecția."
+
+#: src/features/statistics/components/entity-ins-source-history.tsx:204
+msgid "The selected budget period uses a different frequency. Choose matching periods to see the corresponding INS observations."
+msgstr "Perioada bugetară selectată are o frecvență diferită. Alege perioade cu aceeași frecvență pentru a vedea observațiile INS corespunzătoare."
+
+#: src/features/statistics/components/native-entity-ins-view.tsx:95
+msgid "This dataset is in the catalog, but its observations are not published."
+msgstr "Acest set de date apare în catalog, dar observațiile sale nu sunt publicate."
+
+#: src/features/statistics/components/native-entity-ins-view.tsx:100
+msgid "This dataset was not found. Choose another dataset below."
+msgstr "Acest set de date nu a fost găsit. Alege alt set de date mai jos."
+
+#: src/features/statistics/components/native-entity-ins-view.tsx:64
+msgid "This entity has no canonical geographic area linked to INS."
+msgstr "Această entitate nu are o zonă geografică canonică asociată cu INS."
+
+#: src/features/statistics/components/entity-ins-dataset-picker.tsx:55
+msgid "This is the general INS catalog. Availability for this entity's area is checked after you select a dataset."
+msgstr "Acesta este catalogul general INS. Disponibilitatea pentru zona entității este verificată după alegerea unui set de date."
+
+#: src/features/statistics/components/entity-ins-source-history.tsx:175
+msgid "This preview is incomplete. Narrow the source selection to load and export its full history."
+msgstr "Această previzualizare este incompletă. Restrânge selecția sursei pentru a încărca și exporta întregul istoric."
+
+#: src/features/statistics/components/entity-ins-source-controls.tsx:67
+msgid "Use source defaults"
+msgstr "Folosește valorile implicite din sursă"
+
+#: src/features/statistics/components/entity-ins-dataset-picker.tsx:79
+msgid "We could not load the dataset catalog."
+msgstr "Catalogul de seturi de date nu a putut fi încărcat."
+
+#: src/features/statistics/components/entity-ins-source-history.tsx:139
+msgid "We could not verify the source history for this selection. Refresh the source before continuing."
+msgstr "Istoricul sursei pentru această selecție nu a putut fi verificat. Reîmprospătează sursa înainte de a continua."

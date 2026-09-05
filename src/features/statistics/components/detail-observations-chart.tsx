@@ -16,6 +16,7 @@ type Props = {
   readonly series: TimeSeries
   readonly title: string
   readonly unitLabel: string | null
+  readonly wholeHistory?: boolean
 }
 
 const LINE_COLOR = 'hsl(var(--chart-1))'
@@ -40,7 +41,7 @@ const compactNumber = new Intl.NumberFormat('ro-RO', {
  * flag get a larger ringed marker in the status color *and* the flag spelled
  * out in the tooltip, so identity never rests on color alone.
  */
-export function DetailObservationsChart({ series, title, unitLabel }: Props) {
+export function DetailObservationsChart({ series, title, unitLabel, wholeHistory = false }: Props) {
   return (
     <figure className="space-y-2">
       <figcaption className="space-y-0.5">
@@ -95,10 +96,10 @@ export function DetailObservationsChart({ series, title, unitLabel }: Props) {
 
       {series.truncated ? (
         <p className="text-xs text-muted-foreground">
-          <Trans>
+          {wholeHistory ? <Trans>The chart shows the latest {series.points.length} periods. Earlier observations remain in the table and complete export.</Trans> : <Trans>
             Graficul afișează ultimele {series.points.length} perioade. Restrânge
             intervalul pentru a vedea perioade mai vechi.
-          </Trans>
+          </Trans>}
         </p>
       ) : null}
     </figure>
@@ -149,9 +150,9 @@ function SeriesTooltip({ active, payload }: TooltipProps) {
       <p className="mt-0.5 tabular-nums text-popover-foreground">
         {point.raw ?? t`Fără date`}
       </p>
-      {point.valueStatus ? (
+      {point.valueStatus !== null ? (
         <p className="mt-0.5 text-amber-700 dark:text-amber-400">
-          {point.valueStatus} — {describeValueStatus(point.valueStatus)}
+          {point.valueStatus === '' ? '""' : point.valueStatus} — {describeValueStatus(point.valueStatus)}
         </p>
       ) : null}
     </div>
