@@ -2,13 +2,21 @@
   "data": {
     "entity": {
       "cui": "4305857",
-      "organization": { "name": "MUNICIPIUL CLUJ-NAPOCA" },
+      "organization": {
+        "name": "MUNICIPIUL CLUJ-NAPOCA"
+      },
       "territory": {
         "name": "MUNICIPIUL CLUJ-NAPOCA",
         "countyCode": "CJ",
         "countyName": "CLUJ",
         "sirutaCode": "54975",
-        "population": 286598
+        "population": 286598,
+        "id": 1373,
+        "level": "uat",
+        "kind": "municipality",
+        "territoryKey": "siruta:54975",
+        "parentId": 1294,
+        "nutsCode": null
       },
       "reference": {
         "name": "MUNICIPIUL CLUJ-NAPOCA",
@@ -21,8 +29,15 @@
           "countyCode": "CJ",
           "countyName": "CLUJ",
           "sirutaCode": "54975",
-          "population": 286598
-        }
+          "population": 286598,
+          "id": 1373,
+          "level": "uat",
+          "kind": "municipality",
+          "territoryKey": "siruta:54975",
+          "parentId": 1294,
+          "nutsCode": null
+        },
+        "isTerritorialExecutive": true
       },
       "budget": {
         "presence": true,
