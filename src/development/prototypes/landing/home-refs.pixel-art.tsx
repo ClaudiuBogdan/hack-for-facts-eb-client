@@ -1,6 +1,5 @@
 import type { CSSProperties } from 'react'
 import { cn } from '@/lib/utils'
-import type { FieldAnimation } from './home-refs.field-animation'
 
 /**
  * The lattice, pixelating at the margins.
@@ -290,12 +289,10 @@ function getField(edge: 'left' | 'right', layer: PixelLayer): readonly Square[] 
 export function PixelField({
   edge,
   layer,
-  animation,
   className,
 }: {
   readonly edge: 'left' | 'right'
   readonly layer: PixelLayer
-  readonly animation: FieldAnimation
   readonly className?: string
 }) {
   const squares = getField(edge, layer)
@@ -312,7 +309,6 @@ export function PixelField({
       height={ROWS * CELL}
       viewBox={`0 0 ${COLUMNS * CELL} ${ROWS * CELL}`}
       data-field-layer={layer}
-      data-field-anim={animation}
       style={style}
       className={cn('pointer-events-none absolute', className)}
     >

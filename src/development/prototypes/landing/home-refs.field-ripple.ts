@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { INTRO_CLASS, INTRO_DELAY_MS, INTRO_TOTAL_MS } from './home-refs.field-animation'
 
 /**
  * A ripple through the margin field, originating at the pointer.
@@ -52,12 +53,35 @@ type CachedCell = {
  * Returns a ref for the hero section. Attach it and the section becomes the
  * ripple's host: it owns the hover, and the fields inside it are what ripple.
  */
-export function useFieldRipple({ enabled }: { enabled: boolean }) {
+export function useFieldMotion({ ripple }: { ripple: boolean }) {
   const hostRef = useRef<HTMLElement | null>(null)
+
+  // The intro wave. Deliberately separate from the ripple effect: it must run
+  // even when the ripple is switched off, and it must not be torn down and
+  // replayed if the ripple's dependencies ever change.
+  useEffect(() => {
+    const host = hostRef.current
+    if (!host) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    const start = window.setTimeout(() => host.classList.add(INTRO_CLASS), INTRO_DELAY_MS)
+    // The class is dropped once the wave has finished so that a later ripple is
+    // not competing with a rule that also sets animation-name and delay.
+    const end = window.setTimeout(
+      () => host.classList.remove(INTRO_CLASS),
+      INTRO_DELAY_MS + INTRO_TOTAL_MS,
+    )
+
+    return () => {
+      window.clearTimeout(start)
+      window.clearTimeout(end)
+      host.classList.remove(INTRO_CLASS)
+    }
+  }, [])
 
   useEffect(() => {
     const host = hostRef.current
-    if (!enabled || !host) return
+    if (!ripple || !host) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
     // Cached once. The SVG is drawn at its natural scale, so one user unit is
@@ -139,7 +163,7 @@ export function useFieldRipple({ enabled }: { enabled: boolean }) {
       host.removeEventListener('pointerleave', onLeave)
       host.classList.remove(RIPPLING_CLASS)
     }
-  }, [enabled])
+  }, [ripple])
 
   return hostRef
 }

@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils'
 import { scraperDatasetCatalog } from '@/lib/scraper-references'
 import { FIELD_RECT_COUNT, PixelField } from './home-refs.pixel-art'
 import { FIELD_HOVER_ROOT, FieldAnimationStyles } from './home-refs.field-animation'
-import type { FieldAnimation } from './home-refs.field-animation'
+import { useFieldMotion } from './home-refs.field-ripple'
 import { LANDING_GROUPS, visibleGroups } from './home.data'
 import type { LandingEntry, LandingGroup } from './home.data'
 
@@ -380,13 +380,14 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
   )
 }
 
-function RefinedLanding({ animation }: { readonly animation: FieldAnimation }) {
+function RefinedLanding({ ripple }: { readonly ripple: boolean }) {
   const { groups, facts } = getPlatformFacts()
+  const heroRef = useFieldMotion({ ripple })
 
   return (
     <div className="w-full bg-background" data-dev-marker={PROTOTYPE_MARKER}>
       {/* Hero — open band. */}
-      <section className={cn('relative overflow-hidden border-b', FIELD_HOVER_ROOT)}>
+      <section ref={heroRef} className={cn('relative overflow-hidden border-b', FIELD_HOVER_ROOT)}>
         <FieldAnimationStyles />
         <TwoLayerLattice idPrefix="refined-hero" />
         {/* The grid pixelating at the margins — filled cells on the same 24px
@@ -409,15 +410,15 @@ function RefinedLanding({ animation }: { readonly animation: FieldAnimation }) {
             className="absolute inset-y-0 left-0 w-[calc((100%-72rem)/2+150px)] overflow-hidden"
             style={FIELD_MASK.left}
           >
-            <PixelField edge="left" layer="squares" className="left-0 top-0" animation={animation} />
-            <PixelField edge="left" layer="particles" className="left-0 top-0" animation={animation} />
+            <PixelField edge="left" layer="squares" className="left-0 top-0" />
+            <PixelField edge="left" layer="particles" className="left-0 top-0" />
           </div>
           <div
             className="absolute inset-y-0 right-0 w-[calc((100%-72rem)/2+150px)] overflow-hidden"
             style={FIELD_MASK.right}
           >
-            <PixelField edge="right" layer="squares" className="right-0 top-0" animation={animation} />
-            <PixelField edge="right" layer="particles" className="right-0 top-0" animation={animation} />
+            <PixelField edge="right" layer="squares" className="right-0 top-0" />
+            <PixelField edge="right" layer="particles" className="right-0 top-0" />
           </div>
         </div>
         <Frame className="py-12 sm:py-20 lg:py-24">
@@ -588,9 +589,8 @@ function RefinedLanding({ animation }: { readonly animation: FieldAnimation }) {
  * One export per hover animation. The page is identical in every other respect,
  * so a comparison isolates the animation and nothing else.
  */
-export const LandingRefsWave = () => <RefinedLanding animation="wave" />
-export const LandingRefsScatter = () => <RefinedLanding animation="scatter" />
-export const LandingRefsSwell = () => <RefinedLanding animation="swell" />
+export const LandingRefsRipple = () => <RefinedLanding ripple />
+export const LandingRefsIntroOnly = () => <RefinedLanding ripple={false} />
 
 /** Rectangles drawn per side — quoted in the harness note. */
 export { FIELD_RECT_COUNT }

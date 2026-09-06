@@ -1,94 +1,99 @@
 /**
- * Hover animation for the margin field — per cell.
+ * Motion for the margin field: an intro wave on load, a ripple on hover.
  *
- * Every rectangle animates individually. That is ~990 elements across both
- * sides, so the constraints below are not stylistic; they are what keeps it off
- * the main thread and off the user's way.
+ * Every rectangle animates individually — about 990 across both sides — so the
+ * constraints below are structural, not stylistic.
  *
- * 1. **`opacity` and `transform` only.** Both are animatable without layout or
- *    style recalculation. Animating `fill`, `x`/`y` or `width` would invalidate
+ * 1. **`opacity` and `transform` only.** Both animate without layout or style
+ *    recalculation. Animating `fill`, `x`/`y` or `width` would invalidate
  *    geometry per element per frame, which at this population is a guaranteed
  *    jank source.
  *
- * 2. **One shot per hover, and short.** This is the answer to "what if I never
- *    hover out": a transition would ramp up and stay up while the pointer
- *    rested, and an infinite loop would keep ~990 animations resident forever
- *    on a decoration nobody is looking at. Each cell plays once, settles back
- *    to its base opacity, and stops. Re-entering replays it. The whole burst is
- *    over inside a second, so the cost is transient by construction.
+ * 2. **Every animation is one-shot.** The intro plays once after mount. A hover
+ *    ripple plays once per pointer arrival, rate-limited. Neither loops, so
+ *    resting the pointer on the hero forever costs nothing after the first
+ *    ripple settles — the answer to "what if I never hover out".
  *
  * 3. **No `will-change`.** On a container it is a win; on 990 elements it would
- *    ask the compositor for 990 layers and exhaust GPU memory — far worse than
- *    the repaint it avoids. The cells are small and confined to two narrow
- *    strips, so repainting them is cheap in absolute terms.
+ *    ask the compositor for 990 layers and cost far more than the repaint it
+ *    avoids. The cells are small and confined to two narrow strips.
  *
- * 4. **The delay schedules are precomputed and inlined.** `--dw` (by column)
- *    and `--dr` (per cell) are written once during SSR, so a hover costs a
- *    style recalculation and nothing else. No JavaScript runs on hover at all.
- *
- * Plain CSS rather than `motion`, which is available here. Motion would need to
- * drive ~990 values from a rAF loop on the main thread; declarative keyframes
- * hand the whole schedule to the compositor once and let it run.
- *
- * Hover is taken on the hero section, not the field: the field is
- * `pointer-events-none` and can never be the element under the cursor.
+ * 4. **Delays are data, not work.** The intro's column ramp is written once
+ *    during SSR as a custom property per cell. The ripple's per-cell delay is
+ *    written once per ripple in a single batched frame. Nothing recomputes
+ *    per frame.
  */
 
-export type FieldAnimation = 'wave' | 'scatter' | 'swell'
-
-/** Class applied to the hero section that owns the hover. */
+/** Class applied to the hero section that hosts both animations. */
 export const FIELD_HOVER_ROOT = 'tpz-field-host'
+
+/** Class the host carries while the intro wave is in flight. */
+export const INTRO_CLASS = 'is-intro'
+
+/**
+ * How long after mount the intro starts.
+ *
+ * Long enough that it reads as a deliberate flourish rather than as the page
+ * still loading, and long enough to land after hydration so the first frames
+ * are not competing with React's work.
+ */
+export const INTRO_DELAY_MS = 420
+
+/** Intro duration plus the longest column delay, so the class can be dropped. */
+export const INTRO_TOTAL_MS = 2200
 
 const CSS = `
 [data-field-cell] {
   opacity: var(--o);
   /* Scale has to happen about the cell's own centre, which for SVG means
-     opting out of the user-space origin. Without this every cell would grow
-     from the top-left corner of the viewBox and fly across the field. */
+     opting out of the user-space origin. Without this every cell grows from
+     the top-left of the viewBox and flies across the field. */
   transform-box: fill-box;
   transform-origin: center;
 }
 
+/* Shared shape. The eased overshoot is what stops it reading as a plain fade:
+   the cell brightens and swells past its resting size, then settles back
+   without a bounce. */
 @keyframes tpz-cell {
   0%   { opacity: var(--o); transform: translate3d(0, 0, 0) scale(1); }
-  38%  { opacity: 1; transform: translate3d(var(--tpz-drift), 0, 0) scale(var(--s)); }
+  34%  { opacity: 1; transform: translate3d(var(--tpz-drift), 0, 0) scale(var(--s)); }
   100% { opacity: var(--o); transform: translate3d(0, 0, 0) scale(1); }
 }
 
-/* Longhand, not the shorthand: the shorthand resets animation-delay, which is
-   the one property each cell sets for itself. */
-.${FIELD_HOVER_ROOT}:hover [data-field-cell] {
+/* Longhand throughout: the shorthand resets animation-delay, which is the one
+   property each cell sets for itself. */
+.${FIELD_HOVER_ROOT}.${INTRO_CLASS} [data-field-cell],
+.${FIELD_HOVER_ROOT}.is-rippling [data-field-cell] {
   animation-name: tpz-cell;
-  animation-duration: 620ms;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   animation-iteration-count: 1;
   animation-fill-mode: both;
 }
 
-/* A wave travelling inward — delay ramps with the column, the same direction
-   the field disperses in. */
-.${FIELD_HOVER_ROOT}:hover [data-field-anim='wave'] [data-field-cell] {
+/* Intro: a wave travelling inward, column by column — the direction the field
+   itself disperses in. Slower and softer than the ripple, because it plays
+   unprompted and should not demand attention. */
+.${FIELD_HOVER_ROOT}.${INTRO_CLASS} [data-field-cell] {
+  animation-duration: 900ms;
   animation-delay: var(--dw);
 }
 
-/* Every cell on its own clock. */
-.${FIELD_HOVER_ROOT}:hover [data-field-anim='scatter'] [data-field-cell] {
-  animation-delay: var(--dr);
+/* Ripple: same shape, quicker, delayed by distance from the pointer. */
+.${FIELD_HOVER_ROOT}.is-rippling [data-field-cell] {
+  animation-duration: 620ms;
+  animation-delay: var(--dp, 0ms);
 }
 
-/* All together, no delay — the cheapest of the three and the most abrupt. */
-.${FIELD_HOVER_ROOT}:hover [data-field-anim='swell'] [data-field-cell] {
-  animation-delay: 0ms;
-}
-
-/* Reduced motion keeps the brightening and drops the movement entirely, so the
-   preference is honoured without the field going inert. */
+/* The intro is a flourish, not information. Reduced motion drops it entirely
+   rather than substituting a jump, and the ripple never starts — the hook
+   checks the same preference before it attaches a single listener. */
 @media (prefers-reduced-motion: reduce) {
-  .${FIELD_HOVER_ROOT}:hover [data-field-cell] {
+  .${FIELD_HOVER_ROOT}.${INTRO_CLASS} [data-field-cell],
+  .${FIELD_HOVER_ROOT}.is-rippling [data-field-cell] {
     animation: none;
     transform: none;
-    opacity: calc(var(--o) + 0.25);
-    transition: opacity 200ms linear;
+    opacity: var(--o);
   }
 }
 `
