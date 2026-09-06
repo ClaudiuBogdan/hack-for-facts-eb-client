@@ -42,21 +42,21 @@ function dedupeOptions(options: OptionItem[]): OptionItem[] {
 function getPlaceholder(optionKind: InsDimensionOptionKind): string {
   if (optionKind === 'classification') return t`Search classification values`;
   if (optionKind === 'unit') return t`Search units`;
-  if (optionKind === 'territory') return t`Search territories`;
+  if (optionKind === 'territory' || optionKind === 'source-territory') return t`Search territories`;
   return t`Search localities`;
 }
 
 function getErrorTitle(optionKind: InsDimensionOptionKind): string {
   if (optionKind === 'classification') return t`Could not load classifications`;
   if (optionKind === 'unit') return t`Could not load units`;
-  if (optionKind === 'territory') return t`Could not load territories`;
+  if (optionKind === 'territory' || optionKind === 'source-territory') return t`Could not load territories`;
   return t`Could not load localities`;
 }
 
 function getAriaLabel(optionKind: InsDimensionOptionKind): string {
   if (optionKind === 'classification') return t`Classification options`;
   if (optionKind === 'unit') return t`Unit options`;
-  if (optionKind === 'territory') return t`Territory options`;
+  if (optionKind === 'territory' || optionKind === 'source-territory') return t`Territory options`;
   return t`Locality options`;
 }
 
@@ -82,7 +82,7 @@ function filterDimensionValuesByAllowedTerritoryLevels(
 ): InsDimensionValue[] {
   if (
     allowedTerritoryLevels === undefined ||
-    (optionKind !== 'territory' && optionKind !== 'siruta')
+    (optionKind !== 'territory' && optionKind !== 'siruta' && optionKind !== 'source-territory')
   ) {
     return values;
   }

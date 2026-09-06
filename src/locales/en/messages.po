@@ -23777,3 +23777,11 @@ msgstr "We could not load the dataset catalog."
 #: src/features/statistics/components/entity-ins-source-history.tsx:139
 msgid "We could not verify the source history for this selection. Refresh the source before continuing."
 msgstr "We could not verify the source history for this selection. Refresh the source before continuing."
+
+#: src/components/charts/components/series-config/InsSeriesEditor.tsx:628
+msgid "Reselect dataset"
+msgstr "Reselect dataset"
+
+#: src/components/charts/components/series-config/InsSeriesEditor.tsx:626
+msgid "This saved series uses territory filters. Reselect its dataset to choose original INS source dimensions."
+msgstr "This saved series uses territory filters. Reselect its dataset to choose original INS source dimensions."

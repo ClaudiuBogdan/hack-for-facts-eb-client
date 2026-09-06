@@ -23773,3 +23773,11 @@ msgstr "Catalogul de seturi de date nu a putut fi încărcat."
 #: src/features/statistics/components/entity-ins-source-history.tsx:139
 msgid "We could not verify the source history for this selection. Refresh the source before continuing."
 msgstr "Istoricul sursei pentru această selecție nu a putut fi verificat. Reîmprospătează sursa înainte de a continua."
+
+#: src/components/charts/components/series-config/InsSeriesEditor.tsx:628
+msgid "Reselect dataset"
+msgstr "Selectează din nou setul de date"
+
+#: src/components/charts/components/series-config/InsSeriesEditor.tsx:626
+msgid "This saved series uses territory filters. Reselect its dataset to choose original INS source dimensions."
+msgstr "Această serie salvată folosește filtre teritoriale. Selectează din nou setul de date pentru a alege dimensiunile originale ale sursei INS."

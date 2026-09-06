@@ -6,6 +6,7 @@ import { getUserLocale } from '@/lib/utils';
 
 export type InsDimensionOptionKind =
   | 'classification'
+  | 'source-territory'
   | 'unit'
   | 'territory'
   | 'siruta';
@@ -300,7 +301,7 @@ export function mapInsDimensionValueToOption(
 ): OptionItem | null {
   const resolvedLocale = resolveLocale(locale);
 
-  if (optionKind === 'classification') {
+  if (optionKind === 'classification' || optionKind === 'source-territory') {
     const typeCode = value.classification_value?.type_code;
     const code = value.classification_value?.code;
     if (!typeCode || !code) return null;

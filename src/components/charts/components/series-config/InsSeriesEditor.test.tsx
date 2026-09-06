@@ -72,14 +72,20 @@ vi.mock('./ins-dataset-list', () => ({
 vi.mock('./ins-dimension-values-list', () => ({
   InsDimensionValuesList: ({
     optionKind,
+    dimensionIndex,
     toggleSelect,
     allowedTerritoryLevels,
   }: {
-    optionKind: 'classification' | 'unit' | 'territory' | 'siruta';
+    optionKind: 'classification' | 'unit' | 'territory' | 'siruta' | 'source-territory';
+    dimensionIndex: number;
     toggleSelect: (option: { id: string; label: string }) => void;
     allowedTerritoryLevels?: string[];
   }) => {
     lastAllowedTerritoryLevelsByOptionKind[optionKind] = allowedTerritoryLevels;
+
+    if (optionKind === 'source-territory') {
+      return <button type="button" onClick={() => toggleSelect({ id: '7', label: `7 - Source D${dimensionIndex}` })}>Source D{dimensionIndex}</button>;
+    }
 
     if (optionKind === 'classification') {
       return (
@@ -289,6 +295,53 @@ describe('InsSeriesEditor', () => {
 
     mockGetInsDatasetDetails.mockResolvedValue(createDatasetDetails());
     mockGetInsDimensionValuesPage.mockResolvedValue(emptyDimensionConnection);
+  });
+
+  it('keeps nested county and locality picks as separate source dimensions', async () => {
+    mockGetInsDatasetDetails.mockResolvedValue(createDatasetDetails({
+      dimensions: [0, 1].map((index) => ({
+        index, type: 'TERRITORIAL', label_ro: index === 0 ? 'Judete' : 'Localitati',
+        classification_type: { code: `D${index}`, name_ro: '', name_en: null, is_hierarchical: false },
+      })),
+    }));
+    renderEditor({ datasetCode: 'POP107D' });
+    fireEvent.click(await screen.findByRole('button', { name: 'Source D0' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Source D1' }));
+    await waitFor(() => expect(mockUpdateSeries).toHaveBeenCalledWith('series-1', expect.objectContaining({
+      classificationSelections: { D0: ['7'], D1: ['7'] },
+    })));
+    expect(mockUpdateSeries.mock.calls.some(([, patch]) => Array.isArray(patch.territoryCodes) || Array.isArray(patch.sirutaCodes))).toBe(false);
+  });
+
+  it('requires explicit reselection before removing saved canonical territory filters', async () => {
+    mockGetInsDatasetDetails.mockResolvedValue(createDatasetDetails({ dimensions: [] }));
+    renderEditor({ datasetCode: 'POP107D', territoryCodes: ['CJ'], sirutaCodes: ['54975'] });
+    const reset = await screen.findByRole('button', { name: 'Reselect dataset' });
+    expect(mockUpdateSeries.mock.calls.some(([, patch]) => Object.prototype.hasOwnProperty.call(patch, 'territoryCodes'))).toBe(false);
+    fireEvent.click(reset);
+    await waitFor(() => expect(mockUpdateSeries).toHaveBeenCalledWith('series-1', expect.objectContaining({
+      datasetCode: 'POP107D', territoryCodes: undefined, sirutaCodes: undefined,
+    })));
+  });
+
+  it('initializes each geographic default by its own source member', async () => {
+    mockGetInsDatasetDetails.mockResolvedValue(createDatasetDetails({
+      dimensions: [0, 1].map((index) => ({
+        index, type: 'TERRITORIAL', label_ro: `D${index}`,
+        classification_type: { code: `D${index}`, name_ro: '', name_en: null, is_hierarchical: false },
+      })),
+    }));
+    mockGetInsDimensionValuesPage.mockImplementation(async ({ dimensionIndex }: { dimensionIndex: number }) => createDimensionConnection([{
+      nom_item_id: 7, dimension_type: 'TERRITORIAL', label_ro: 'Total',
+      classification_value: { type_code: `D${dimensionIndex}`, code: '7', name_ro: 'Total' },
+      territory: dimensionIndex === 0 ? { code: 'CJ', level: 'NUTS3' } : { code: '54975', siruta_code: '54975', level: 'LAU' },
+    }]));
+    renderEditor();
+    fireEvent.click(screen.getByRole('button', { name: 'Dataset POP107D' }));
+    await waitFor(() => expect(mockUpdateSeries).toHaveBeenCalledWith('series-1', expect.objectContaining({
+      classificationSelections: { D0: ['7'], D1: ['7'] },
+    })));
+    expect(mockUpdateSeries.mock.calls.some(([, patch]) => Array.isArray(patch.territoryCodes) || Array.isArray(patch.sirutaCodes))).toBe(false);
   });
 
   it('updates dataset code and label when selecting a dataset', async () => {

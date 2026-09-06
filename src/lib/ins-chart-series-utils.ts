@@ -90,7 +90,12 @@ function observationFilter(
   if (series.unitCodes?.length) filter.unitCodes = series.unitCodes
   if (series.period && validPeriod(series.period)) filter.period = series.period
   const selections = Object.entries(series.classificationSelections ?? {})
-  if (selections.length > 0) {
+  if (selections.length > 0 && selections.every(([, codes]) => codes.length === 1)) {
+    filter.sourcePins = selections.map(([dimension, codes]) => ({
+      dimensionIndex: Number(dimension.slice(1)),
+      memberCode: codes[0],
+    }))
+  } else if (selections.length > 0) {
     filter.classificationTypeCodes = selections.map(([dimension]) => dimension)
     filter.classificationValueCodes = [
       ...new Set(selections.flatMap(([, codes]) => codes)),
@@ -99,7 +104,7 @@ function observationFilter(
   return filter
 }
 
-/** The wire filter is a union of members; preserve the saved per-dimension AND locally. */
+/** Multi-member selections use a union wire filter; retain the saved per-dimension AND. */
 function matchesSelection(
   row: NativeInsObservation,
   selections: Record<string, string[]>,

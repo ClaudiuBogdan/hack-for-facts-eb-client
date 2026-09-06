@@ -165,8 +165,7 @@ describe('native saved INS charts', () => {
           period,
           sirutaCodes: ['54975'],
           unitCodes: ['9685'],
-          classificationTypeCodes: ['D0', 'D1'],
-          classificationValueCodes: ['105', '931'],
+          sourcePins: [{ dimensionIndex: 0, memberCode: '105' }, { dimensionIndex: 1, memberCode: '931' }],
         },
       }),
     )

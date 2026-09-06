@@ -6,6 +6,7 @@ import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
 import { Calendar, Database, ExternalLink, MapPin, Ruler, Tags } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FilterContainer } from '@/components/filters/base-filter/FilterContainer';
 import { FilterListContainer } from '@/components/filters/base-filter/FilterListContainer';
@@ -47,6 +48,8 @@ export interface InsSeriesEditorDatasetFilter {
 }
 
 export interface InsSeriesEditorAdapter {
+  /** Charts preserve source dimensions; the legacy map provider still uses canonical filters. */
+  territorySelectionMode?: 'source' | 'canonical';
   series?: InsSeriesConfiguration;
   applyPatch: (patch: Partial<InsSeriesConfiguration>) => void;
   datasetFilter?: InsSeriesEditorDatasetFilter;
@@ -73,6 +76,7 @@ interface InsDimensionFilterListProps {
 }
 
 interface InsSeriesEditorTerritoryPolicy {
+  territorySelectionMode: 'source' | 'canonical';
   allowedTerritoryLevels?: InsTerritoryLevel[];
   autoSelectTerritoryDefaults: boolean;
   autoReapplyTerritoryOnEmpty: boolean;
@@ -157,7 +161,7 @@ function filterDimensionValuesByAllowedTerritoryLevels(
 ): InsDimensionValue[] {
   if (
     allowedTerritoryLevels === undefined ||
-    (optionKind !== 'territory' && optionKind !== 'siruta')
+    (optionKind !== 'territory' && optionKind !== 'siruta' && optionKind !== 'source-territory')
   ) {
     return values;
   }
@@ -259,7 +263,7 @@ async function buildDatasetDefaultPatch(
     const selected = pickDefaultDimensionValue(filteredValues);
     if (!selected) continue;
 
-    if (dimension.type === 'TERRITORIAL') {
+    if (dimension.type === 'TERRITORIAL' && territoryPolicy.territorySelectionMode === 'canonical') {
       if (selected.territory?.siruta_code) {
         defaults.sirutaCodes = [selected.territory.siruta_code];
       } else if (selected.territory?.code) {
@@ -274,7 +278,7 @@ async function buildDatasetDefaultPatch(
       }
     }
 
-    if (dimension.type === 'CLASSIFICATION') {
+    if (dimension.type === 'CLASSIFICATION' || (dimension.type === 'TERRITORIAL' && territoryPolicy.territorySelectionMode === 'source')) {
       const typeCode = selected.classification_value?.type_code;
       const code = selected.classification_value?.code;
       if (typeCode && code) {
@@ -306,6 +310,7 @@ function InsSeriesEditorWithChartStore({ series }: { series: InsSeriesConfigurat
   const { updateSeries } = useChartStore();
   const adapter = useMemo<InsSeriesEditorAdapter>(
     () => ({
+      territorySelectionMode: 'source',
       series,
       applyPatch: (patch) => {
         updateSeries(series.id, {
@@ -322,6 +327,9 @@ function InsSeriesEditorWithChartStore({ series }: { series: InsSeriesConfigurat
 
 function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter }) {
   const series = adapter.series;
+  const territorySelectionMode = adapter.territorySelectionMode ?? 'canonical';
+  const hasSavedTerritoryFilters = Boolean(series?.territoryCodes?.length || series?.sirutaCodes?.length);
+  const useSourceTerritories = territorySelectionMode === 'source' && !hasSavedTerritoryFilters;
 
   const locale: InsLocale = getUserLocale() === 'en' ? 'en' : 'ro';
   const latestDatasetRequestIdRef = useRef(0);
@@ -479,6 +487,7 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
     if (latestDatasetRequestIdRef.current !== requestId || !details) return;
 
     const defaults = await buildDatasetDefaultPatch(details, {
+      territorySelectionMode,
       allowedTerritoryLevels,
       autoSelectTerritoryDefaults,
       autoReapplyTerritoryOnEmpty,
@@ -612,10 +621,20 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
           />
         </FilterContainer>
 
+        {dataset && territorySelectionMode === 'source' && hasSavedTerritoryFilters && (
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p><Trans>This saved series uses territory filters. Reselect its dataset to choose original INS source dimensions.</Trans></p>
+            <Button type="button" variant="outline" onClick={() => void handleDatasetSelect(dataset.code, dataset.name_ro || dataset.code)}>
+              <Trans>Reselect dataset</Trans>
+            </Button>
+          </div>
+        )}
+
         {dataset && (
           <div className="border-t pt-2">
             {nonTemporalDimensions.map((dimension) => {
-              if (dimension.type === 'CLASSIFICATION') {
+              if (dimension.type === 'CLASSIFICATION' || (dimension.type === 'TERRITORIAL' && useSourceTerritories)) {
+                const optionKind = dimension.type === 'TERRITORIAL' ? 'source-territory' : 'classification';
                 const typeCode = dimension.classification_type?.code ?? `DIM_${dimension.index}`;
                 const selectedCodes = series.classificationSelections?.[typeCode] ?? [];
                 const selectedOptions = mapCodesToOptions(
@@ -635,7 +654,7 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
                   const { requestKey, requestId } = beginDimensionRequest(
                     dataset.code,
                     dimension.index,
-                    'classification',
+                    optionKind,
                     typeCode
                   );
 
@@ -647,7 +666,7 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
                         const defaultOption = await resolveDefaultDimensionOption({
                           datasetCode: dataset.code,
                           dimensionIndex: dimension.index,
-                          optionKind: 'classification',
+                          optionKind,
                           classificationTypeCode: typeCode,
                         });
                         if (!defaultOption) return;
@@ -696,13 +715,14 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
                   <InsDimensionFilterList
                     key={`ins-dim-classification-${dimension.index}`}
                     title={getDimensionLabel(dimension, typeCode, locale)}
-                    icon={<Tags className="w-4 h-4" aria-hidden="true" />}
+                    icon={dimension.type === 'TERRITORIAL' ? <MapPin className="w-4 h-4" aria-hidden="true" /> : <Tags className="w-4 h-4" aria-hidden="true" />}
                     selected={selectedOptions}
                     setSelected={setSelected}
                     datasetCode={dataset.code}
                     dimensionIndex={dimension.index}
-                    optionKind="classification"
+                    optionKind={optionKind}
                     classificationTypeCode={typeCode}
+                    allowedTerritoryLevels={dimension.type === 'TERRITORIAL' ? allowedTerritoryLevels : undefined}
                   />
                 );
               }
