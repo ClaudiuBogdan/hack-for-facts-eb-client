@@ -11,6 +11,7 @@ import { ParliamentPromoCard } from '@/features/parliament/components/parliament
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import { scraperDatasetCatalog } from '@/lib/scraper-references'
+import { NATIONAL_FACTS, formatFact } from './home-refs.national-facts'
 import { PixelField } from './home-refs.pixel-art'
 import { FIELD_HOST_CLASS, FieldAnimationStyles } from './home-refs.field-animation'
 import { useFieldMotion } from './home-refs.field-motion'
@@ -69,12 +70,21 @@ function MonoLabel({
 }
 
 /**
- * The metric strip, carrying only figures this codebase can stand behind:
- * everything is derived at render from the domain list and the scraper
- * catalog, both local and real. Fabricated telemetry on a public-money
- * product is a data-trust violation, not decoration.
+ * What this platform holds — deliberately kept apart from the national figures
+ * in the strip above.
+ *
+ * The two are different universes. `NATIONAL_FACTS` describes the country; these
+ * describe our coverage of it, and the institution count in particular is a
+ * subset — principal ordonatori de credite that reported budget execution, not
+ * a census of Romanian public institutions. Printed in the same row as a
+ * national total, a reader would divide one by the other and get a number that
+ * means nothing. So they live in the provenance band, under a heading that says
+ * what they are.
+ *
+ * Everything except the institution count is derived at render from the domain
+ * list and the scraper catalog, so it cannot drift out of date.
  */
-function getPlatformFacts() {
+function getPlatformCoverage() {
   const groups = visibleGroups()
   const surfaces = groups.reduce((sum, group) => sum + group.entries.length, 0)
   const hidden = LANDING_GROUPS.reduce(
@@ -83,14 +93,18 @@ function getPlatformFacts() {
   )
   return {
     groups,
-    facts: [
-      { value: String(surfaces), label: 'suprafețe publice' },
-      { value: String(groups.length), label: 'domenii' },
-      { value: String(scraperDatasetCatalog.length), label: 'seturi de date înregistrate' },
+    coverage: [
+      // The one figure here that is not derived. It is the real `totalCount`
+      // from `entityAnalytics` for 2024 aggregated principal reporting, so it
+      // carries its year; promotion should fetch it rather than inherit this.
+      { value: '3.295', label: 'instituții cu execuție 2024' },
+      { value: String(scraperDatasetCatalog.length), label: 'seturi de date' },
       {
         value: String(scraperDatasetCatalog.filter((dataset) => dataset.apiReady).length),
         label: 'servite live',
       },
+      { value: String(surfaces), label: 'suprafețe' },
+      { value: String(groups.length), label: 'domenii' },
     ],
     hidden,
   }
@@ -398,7 +412,7 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
 }
 
 function RefinedLanding({ ripple }: { readonly ripple: boolean }) {
-  const { groups, facts } = getPlatformFacts()
+  const { groups, coverage } = getPlatformCoverage()
   const heroRef = useFieldMotion({ ripple })
 
   return (
@@ -525,27 +539,46 @@ function RefinedLanding({ ripple }: { readonly ripple: boolean }) {
         </Frame>
       </section>
 
-      {/* Facts — dense band. A description list, because that is what it is:
-          four terms and their values, not four decorative tiles. */}
-      <section className="border-b bg-muted/20" aria-label="Acoperirea platformei">
+      {/* Facts — dense band. The scale of the thing being watched: what the
+          country produces, what it spends, what it borrows, who it is for.
+          Four official 2025 figures, each carrying its source and period,
+          because `DESIGN.md` §Data Trust requires that beside every claim.
+
+          A description list, because that is what it is — four terms and their
+          values, not four decorative tiles. `dt` precedes `dd` in the DOM as
+          the spec requires; `order` puts the value on top. */}
+      <section className="border-b bg-muted/20" aria-label="România în cifre">
         <Frame>
           <dl className="grid grid-cols-2 lg:grid-cols-4">
-            {facts.map((fact, i) => (
+            {NATIONAL_FACTS.map((fact, i) => (
               <div
                 key={fact.label}
                 className={cn(
-                  'px-5 py-6 sm:py-7',
+                  'flex flex-col px-5 py-6 sm:py-7',
                   i % 2 === 1 && 'border-l',
                   i >= 2 && 'border-t lg:border-t-0',
                   i >= 1 && 'lg:border-l',
                 )}
               >
-                <dd className="text-3xl font-semibold tabular-nums tracking-tight text-foreground sm:text-4xl">
-                  {fact.value}
+                <dd className="order-1 flex items-baseline gap-1.5 text-3xl font-semibold tabular-nums tracking-tight text-foreground sm:text-4xl">
+                  {formatFact(fact)}
+                  {/* The unit never breaks across lines — 'mld.' alone on one
+                      line and 'lei' on the next reads as two facts. */}
+                  <span className="shrink-0 whitespace-nowrap text-sm font-medium tracking-normal text-muted-foreground">
+                    {fact.unit}
+                  </span>
                 </dd>
-                <dt className="mt-2">
-                  <MonoLabel className="block leading-relaxed text-muted-foreground">
+                {/* Both lines live in the `dt` because a `dl` group admits only
+                    `dt` and `dd`. The tile stretches to the row height, so
+                    `mt-auto` drops the attribution to the bottom-left corner
+                    and it lines up across all four regardless of how many lines
+                    the label above it takes. */}
+                <dt className="order-2 mt-2.5 flex flex-1 flex-col">
+                  <MonoLabel className="block leading-relaxed text-foreground">
                     {fact.label}
+                  </MonoLabel>
+                  <MonoLabel className="mt-auto block pt-6 leading-relaxed text-muted-foreground">
+                    {fact.source}
                   </MonoLabel>
                 </dt>
               </div>
@@ -582,10 +615,11 @@ function RefinedLanding({ ripple }: { readonly ripple: boolean }) {
         </Frame>
       </section>
 
-      {/* Provenance — the closing statement. This band exists because the fact
-          strip above says "5 servite live" out of 23 registered datasets, and a
-          number like that has to be explained rather than left to be read as a
-          shortfall. `DESIGN.md` §Data Trust makes saying so a requirement. */}
+      {/* Provenance — the closing statement, and the home of every figure that
+          describes *us* rather than the country. Saying "5 servite live" out of
+          23 registered datasets only works next to the sentence that explains
+          it; left in the strip it reads as a shortfall. `DESIGN.md` §Data Trust
+          makes stating it at all a requirement. */}
       <section className="border-b">
         <Frame className="py-14 sm:py-16">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
@@ -597,12 +631,27 @@ function RefinedLanding({ ripple }: { readonly ripple: boolean }) {
                 își spune sursa
               </h2>
             </div>
-            <p className="text-base leading-relaxed text-muted-foreground lg:col-span-6 lg:col-start-7">
-              Datele vin din surse oficiale — ANAF, Ministerul Finanțelor, SEAP,
-              Monitorul Oficial, INS. Unele seturi sunt încă în curs de
-              conectare și sunt marcate ca atare acolo unde apar. Nicio cifră nu
-              este prezentată fără să spună de unde vine și din ce perioadă.
-            </p>
+            <div className="lg:col-span-6 lg:col-start-7">
+              <p className="text-base leading-relaxed text-muted-foreground">
+                Datele vin din surse oficiale — ANAF, Ministerul Finanțelor,
+                SEAP, Monitorul Oficial, INS. Unele seturi sunt încă în curs de
+                conectare și sunt marcate ca atare acolo unde apar. Nicio cifră
+                nu este prezentată fără să spună de unde vine și din ce
+                perioadă.
+              </p>
+              <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-3 border-t pt-5">
+                {coverage.map((item) => (
+                  <li key={item.label}>
+                    <MonoLabel className="text-muted-foreground">
+                      <span className="text-foreground tabular-nums">
+                        {item.value}
+                      </span>{' '}
+                      {item.label}
+                    </MonoLabel>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </Frame>
       </section>
