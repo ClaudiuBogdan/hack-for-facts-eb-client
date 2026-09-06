@@ -109,7 +109,11 @@ jobs:
         run: npx playwright test --project=integration --reporter=list --max-failures=5 --retries=2 --shard=${{ matrix.shard }}/${{ matrix.total_shards }}
         env:
           CI: true
-          VITE_API_URL: https://dev-chronos-api.transparenta.eu
+          E2E_MODE: mock
+          # Browser fixtures cannot intercept SSR. Fail SSR reads locally so
+          # the normal client fallback receives fixtures, never live dev data.
+          VITE_API_URL: http://127.0.0.1:65534
+          INTERNAL_API_URL: http://127.0.0.1:65534
           VITE_APP_VERSION: 1.0.0-ci
           VITE_APP_NAME: Transparenta
           VITE_APP_ENVIRONMENT: ci
