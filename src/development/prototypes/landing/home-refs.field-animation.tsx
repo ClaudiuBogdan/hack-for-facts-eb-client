@@ -44,11 +44,57 @@ export const INTRO_DELAY_MS = 420
 /** Intro duration plus its longest column delay, so the class can be dropped. */
 export const INTRO_TOTAL_MS = 2200
 
-/** How long a single cell's ripple lasts. */
-export const RIPPLE_CELL_MS = 620
+/*
+ * Ripple timing.
+ *
+ * These live here rather than in the hook because the stylesheet and the hook
+ * have to agree: the class is dropped after the *last* cell settles, and with
+ * `animation-fill-mode: both` dropping it early snaps every unfinished cell
+ * back. The total is therefore derived from the same constants that produce
+ * the delays, not written by hand — the previous hand-written 1500ms was
+ * within 18ms of cutting the farthest cells off.
+ *
+ * The important relationship is the last one. A crest is only felt if, at any
+ * instant, part of the field is moving and part is not. That means one cell's
+ * animation has to be *short* relative to the time the front takes to cross.
+ * Before this, a cell ran for 827ms while the front crossed in 476ms — a band
+ * 1.74x the width of the field, so everything was mid-animation together and
+ * the ripple read as a single synchronised swell.
+ */
 
-/** Cell duration plus the longest delay, after which the class is dropped. */
-export const RIPPLE_TOTAL_MS = 1500
+/** Milliseconds per pixel, after the distance is raised to the exponent. */
+export const RIPPLE_MS_PER_PX = 1.75
+
+/**
+ * Exponent on distance before it becomes a delay. Below 1, so the wavefront
+ * slows as it expands the way a real one does.
+ */
+export const RIPPLE_DISTANCE_EXPONENT = 0.88
+
+/** Timing jitter, so two cells at the same radius do not fire together. */
+export const RIPPLE_JITTER_MS = 90
+
+/** Distance at which a cell stops responding at all. */
+export const RIPPLE_FALLOFF_PX = 2600
+
+/**
+ * Fraction of a cell's own duration used for the ripple.
+ *
+ * Chosen so the crest occupies roughly a third of the field rather than all of
+ * it. This is the number that decides whether a ripple is felt.
+ */
+export const RIPPLE_CELL_FACTOR = 0.5
+
+/** Longest per-cell duration emitted by the field builder. */
+const LONGEST_CELL_MS = 1060
+
+/** When the last cell can possibly still be moving, plus a margin. */
+export const RIPPLE_TOTAL_MS = Math.round(
+  Math.pow(RIPPLE_FALLOFF_PX, RIPPLE_DISTANCE_EXPONENT) * RIPPLE_MS_PER_PX +
+    RIPPLE_JITTER_MS +
+    LONGEST_CELL_MS * RIPPLE_CELL_FACTOR +
+    200,
+)
 
 /*
  * Note for anyone editing the stylesheet below: it is a template literal, so a
@@ -116,8 +162,9 @@ const CSS = `
 
 .${FIELD_HOVER_ROOT}.${RIPPLING_CLASS} [data-field-cell] {
   animation-name: tpz-ripple;
-  /* Slightly quicker than the intro, and still varied per cell. */
-  animation-duration: calc(var(--du) * 0.78);
+  /* Deliberately short relative to how long the front takes to cross, so only
+     a band of the field is moving at any moment. */
+  animation-duration: calc(var(--du) * ${RIPPLE_CELL_FACTOR});
   /* Sharp rise, long settle — an ease-out rather than the symmetric curve the
      intro uses, so the crest arrives and then relaxes. */
   animation-timing-function: cubic-bezier(0.16, 0.84, 0.24, 1);

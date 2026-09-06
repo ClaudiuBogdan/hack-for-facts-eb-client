@@ -3,6 +3,10 @@ import {
   INTRO_CLASS,
   INTRO_DELAY_MS,
   INTRO_TOTAL_MS,
+  RIPPLE_DISTANCE_EXPONENT,
+  RIPPLE_FALLOFF_PX,
+  RIPPLE_JITTER_MS,
+  RIPPLE_MS_PER_PX,
   RIPPLE_TOTAL_MS,
   RIPPLING_CLASS,
 } from './home-refs.field-animation'
@@ -29,39 +33,8 @@ import {
  * - **Nothing attaches at all** when the reader prefers reduced motion.
  */
 
-/**
- * Wavefront speed, in milliseconds per pixel.
- *
- * Tuned so the crest crosses the full width of the hero — roughly 1900px from
- * one field to the other — in about half a second. Slower and the far side
- * arrives long after the click has been forgotten; faster and both sides fire
- * together and stop reading as one connected surface.
- */
-const MS_PER_PX = 0.62
-
-/**
- * Exponent on the distance before it becomes a delay.
- *
- * Below 1, so the wavefront slows as it expands — which is what a real ripple
- * does, and what stops the crest reading as a perfectly uniform ring expanding
- * at machine speed. Paired with {@link MS_PER_PX} so the far edge still lands
- * around half a second.
- */
-const DISTANCE_EXPONENT = 0.88
-
-/** Per-cell timing jitter, so no two cells at the same radius fire together. */
-const JITTER_MS = 70
-
-/**
- * Distance at which a cell stops responding.
- *
- * Wide enough to take in both fields from a click anywhere in the hero, so the
- * far side always answers — faintly, which is the point.
- */
-const FALLOFF_PX = 2000
-
 /** Peak scale at the very centre of the ripple. Falls off with amplitude. */
-const PEAK_SCALE = 1.5
+const PEAK_SCALE = 1.75
 
 /**
  * How much opacity a cell gains at full amplitude.
@@ -71,7 +44,7 @@ const PEAK_SCALE = 1.5
  * crest and the field read as a flash. Adding a fixed amount keeps the tiers
  * distinguishable the whole way through.
  */
-const OPACITY_HEADROOM = 0.46
+const OPACITY_HEADROOM = 0.52
 
 type CachedCell = {
   readonly el: SVGRectElement
@@ -168,10 +141,11 @@ export function useFieldMotion({ ripple }: { ripple: boolean }) {
             // same value and the field reads as a flash that happens to arrive
             // late at the edges; with it, the response genuinely weakens with
             // distance and the crest reads as one travelling disturbance.
-            const amplitude = smoothstep(Math.max(0, 1 - distance / FALLOFF_PX))
+            const amplitude = smoothstep(Math.max(0, 1 - distance / RIPPLE_FALLOFF_PX))
 
             const delay =
-              Math.pow(distance, DISTANCE_EXPONENT) * MS_PER_PX + cell.jitter * JITTER_MS
+              Math.pow(distance, RIPPLE_DISTANCE_EXPONENT) * RIPPLE_MS_PER_PX +
+              cell.jitter * RIPPLE_JITTER_MS
 
             cell.el.style.setProperty('--dp', `${Math.round(delay)}ms`)
             cell.el.style.setProperty(
