@@ -2,6 +2,8 @@ import type { CSSProperties, ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import type { LinkProps } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
+import leu from '@/assets/images/landing-leu.webp'
+import justitia from '@/assets/images/landing-justitia.webp'
 import logo from '@/assets/logo/logo.png'
 import { EntitySearchInput } from '@/components/entities/EntitySearch'
 import { PREDEFINED_ENTITIES } from '@/lib/constants/predefined-entities'
@@ -358,6 +360,77 @@ function RefinedCell({ entry, index }: { readonly entry: LandingEntry; readonly 
  * count per group keeps the rule and removes the holes: 4 → 2×2, 2 → 1×2,
  * 3 and 6 → three across.
  */
+type GroupImage = {
+  readonly src: string
+  /**
+   * Whether the picture is cropped to its cell or fitted inside it.
+   *
+   * The choice is about whether a crop reads as framing or as damage. Justitia
+   * is a figure running out of frame already, so a top-anchored crop reads as a
+   * portrait. The leu is a complete object on a pedestal — crop it and it looks
+   * broken, so it is fitted and the card shows through around it. Both are
+   * cut-outs on transparency; neither brings a ground of its own.
+   */
+  readonly fit: 'cover' | 'contain'
+  /** `object-position`. Load-bearing under `cover`, where the crop decides what survives. */
+  readonly position: string
+  /**
+   * Rows to span — one per entry, because the entries auto-place into the
+   * second column and the picture has to reach the bottom of the stack. Written
+   * out rather than interpolated: Tailwind only sees literal class names.
+   */
+  readonly spanClass: string
+  /**
+   * The box on mobile, where the picture runs full width and has no sibling row
+   * to take its height from. Roughly the source's own proportions, or a fitted
+   * subject sits in mostly empty card.
+   */
+  readonly mobileAspect: string
+}
+
+/**
+ * Illustrations, keyed by group. Skin rather than content, so they live here
+ * and not in `home.data.ts`, which round one shares and which describes what
+ * the surfaces *are*.
+ *
+ * Two things worth carrying with this map.
+ *
+ * Allegory generates safely; real institutions do not. Justitia and a stone
+ * lion have no referent to get wrong. A rendered Palace of the Parliament that
+ * is almost right would undercut the one thing this platform sells — that what
+ * you are shown is the actual record.
+ *
+ * And these are cropped to their alpha bounding box before encoding. Under
+ * `contain` it is the empty margin in the file, not any CSS, that decides how
+ * large the subject renders; trimming it there enlarges the subject at every
+ * breakpoint, where a CSS scale could only do the same by risking a clip
+ * wherever the cell is narrowest.
+ */
+const GROUP_IMAGES: Record<string, GroupImage | undefined> = {
+  // The leu, in both senses — the stone lion and the currency. Four entries, so
+  // the picture spans four rows and the cell comes out tall and narrow, which
+  // is what a seated figure on a pedestal wants.
+  bani: {
+    src: leu,
+    fit: 'contain',
+    position: '50% 50%',
+    spanClass: 'sm:row-span-4',
+    // 4:5 against the source's own 0.807, so mobile barely letterboxes.
+    mobileAspect: 'aspect-4/5',
+  },
+  // Anchored to the very top. Centring lands on drapery, and anything below the
+  // top edge slices the head off at desktop widths, where the cell is at its
+  // shortest and the visible window is a thin band. The source carries a little
+  // air above the head, so '0%' reads as headroom rather than a crop.
+  lege: {
+    src: justitia,
+    fit: 'cover',
+    position: '50% 0%',
+    spanClass: 'sm:row-span-2',
+    mobileAspect: 'aspect-4/3',
+  },
+}
+
 const columnsFor = (length: number) => {
   const fillersAt = (columns: number) => (columns - (length % columns)) % columns
   return fillersAt(2) < fillersAt(3) ? 2 : 3
@@ -370,8 +443,12 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
       {groups.map((group, groupIndex) => {
         const start = running
         running += group.entries.length
+        const image = GROUP_IMAGES[group.key]
         const columns = columnsFor(group.entries.length)
-        const fillers = (columns - (group.entries.length % columns)) % columns
+        // An illustrated group closes its own rectangle: the picture spans
+        // every row of a narrow first column and the entries stack beside it,
+        // so `columnsFor` and its fillers do not apply.
+        const fillers = image ? 0 : (columns - (group.entries.length % columns)) % columns
         return (
           <section key={group.key} aria-labelledby={`group-${group.key}`}>
             <div className="flex items-center gap-3">
@@ -387,10 +464,49 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
             </div>
             <div
               className={cn(
-                'mt-4 grid grid-cols-1 border sm:grid-cols-2',
-                columns === 3 && 'lg:grid-cols-3',
+                'mt-4 grid grid-cols-1 border',
+                image
+                  ? 'sm:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]'
+                  : cn('sm:grid-cols-2', columns === 3 && 'lg:grid-cols-3'),
               )}
             >
+              {image ? (
+                /* The cell's height comes from the two entries beside it, which
+                   is a track height a percentage cannot resolve against — so
+                   `h-full` on the image would leave it at its natural 1100px
+                   and blow the row open. Absolute inside a clipped cell instead.
+                   The aspect ratio is only for the stacked mobile layout, where
+                   there is no sibling row to take height from; 4:3 rather than
+                   3:2 because a portrait subject needs the height back once it
+                   is running full-bleed. */
+                <div
+                  className={cn(
+                    'relative -ml-px -mt-px overflow-hidden border-l border-t sm:aspect-auto',
+                    image.mobileAspect,
+                    image.spanClass,
+                  )}
+                >
+                  <img
+                    src={image.src}
+                    /* Decorative: the group heading beside it already names the
+                       section, so announcing the picture would only make a
+                       screen reader say the same thing twice. */
+                    alt=""
+
+                    loading="lazy"
+                    decoding="async"
+                    className={cn(
+                      'absolute inset-0 size-full',
+                      // Padding on the element rather than the cell: the image
+                      // is absolutely positioned, so the cell's own padding
+                      // would not reach it, but `object-contain` fits inside
+                      // the content box.
+                      image.fit === 'contain' ? 'object-contain p-2' : 'object-cover',
+                    )}
+                    style={{ objectPosition: image.position }}
+                  />
+                </div>
+              ) : null}
               {group.entries.map((entry, i) => (
                 <RefinedCell key={entry.title} entry={entry} index={start + i + 1} />
               ))}
