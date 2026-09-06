@@ -82,6 +82,17 @@ export const danteInternationalProfile: PrivateCompanyProfile = {
       // An amount the server sent unreadably: unknown, never rendered as 0.
       { flowType: 'pnrr_subcontract', totalRon: null, count: 35 },
     ],
+    // Exercises both coverage holes: a gap year inside the contract interval,
+    // and direct-acquisition money the source never dated.
+    byYear: [
+      { year: 2023, flowType: 'direct_acquisition', totalRon: 200_000_000, count: 200_000 },
+      { year: 2024, flowType: 'direct_acquisition', totalRon: 183_868_129, count: 205_912 },
+      { year: null, flowType: 'direct_acquisition', totalRon: 31_735_189, count: 31_000 },
+      { year: 2022, flowType: 'procurement_contract', totalRon: 5_000_000, count: 100 },
+      { year: 2024, flowType: 'procurement_contract', totalRon: 3_766_606, count: 72 },
+      { year: 2024, flowType: 'pnrr_commitment', totalRon: 4_100_000, count: 3 },
+      { year: 2025, flowType: 'pnrr_subcontract', totalRon: null, count: 35 },
+    ],
   },
   sources: [
     { id: 'onrc', snapshotDate: '2026-05-06', label: 'firme-06-05-2026' },

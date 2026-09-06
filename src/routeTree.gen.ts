@@ -19,6 +19,7 @@ import { Route as BugetNational2026RouteImport } from './routes/buget-national-2
 import { Route as BugeteLocale2026RouteImport } from './routes/bugete-locale-2026'
 import { Route as CookiePolicyRouteImport } from './routes/cookie-policy'
 import { Route as CookiesRouteImport } from './routes/cookies'
+import { Route as DevelopmentRouteImport } from './routes/development'
 import { Route as EntitiesRouteRouteImport } from './routes/entities/route'
 import { Route as EntityAnalyticsRouteImport } from './routes/entity-analytics'
 import { Route as InvestitiiPubliceRouteRouteImport } from './routes/investitii-publice/route'
@@ -47,6 +48,8 @@ import { Route as ChartsNewRouteImport } from './routes/charts/new'
 import { Route as CompaniesIndexRouteImport } from './routes/companies.index'
 import { Route as CompaniesCuiRouteImport } from './routes/companies.$cui'
 import { Route as CompaniesSearchRouteImport } from './routes/companies.search'
+import { Route as DevelopmentIndexRouteImport } from './routes/development.index'
+import { Route as DevelopmentSplatRouteImport } from './routes/development.$'
 import { Route as EntitiesIndexRouteImport } from './routes/entities/index'
 import { Route as EntitiesCuiRouteImport } from './routes/entities.$cui'
 import { Route as ExperimentalSearchRouteImport } from './routes/experimental.search'
@@ -236,6 +239,11 @@ const CookiesRoute = CookiesRouteImport.update({
   path: '/cookies',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/cookies.lazy').then((d) => d.Route))
+const DevelopmentRoute = DevelopmentRouteImport.update({
+  id: '/development',
+  path: '/development',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EntitiesRouteRoute = EntitiesRouteRouteImport.update({
   id: '/entities',
   path: '/entities',
@@ -401,6 +409,16 @@ const CompaniesSearchRoute = CompaniesSearchRouteImport.update({
 } as any).lazy(() =>
   import('./routes/companies.search.lazy').then((d) => d.Route),
 )
+const DevelopmentIndexRoute = DevelopmentIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DevelopmentRoute,
+} as any)
+const DevelopmentSplatRoute = DevelopmentSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => DevelopmentRoute,
+} as any)
 const EntitiesIndexRoute = EntitiesIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -1436,6 +1454,7 @@ export interface FileRoutesByFullPath {
   '/bugete-locale-2026': typeof BugeteLocale2026RouteWithChildren
   '/cookie-policy': typeof CookiePolicyRoute
   '/cookies': typeof CookiesRoute
+  '/development': typeof DevelopmentRouteWithChildren
   '/entity-analytics': typeof EntityAnalyticsRoute
   '/justitie': typeof JustitieRouteWithChildren
   '/map': typeof MapRoute
@@ -1460,6 +1479,7 @@ export interface FileRoutesByFullPath {
   '/charts/new': typeof ChartsNewRoute
   '/companies/$cui': typeof CompaniesCuiRoute
   '/companies/search': typeof CompaniesSearchRoute
+  '/development/$': typeof DevelopmentSplatRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/experimental/search': typeof ExperimentalSearchRoute
   '/intreprinderi-publice/$cui': typeof IntreprinderiPubliceCuiRoute
@@ -1492,6 +1512,7 @@ export interface FileRoutesByFullPath {
   '/achizitii/': typeof AchizitiiIndexRoute
   '/alegeri/': typeof AlegeriIndexRoute
   '/companies/': typeof CompaniesIndexRoute
+  '/development/': typeof DevelopmentIndexRoute
   '/entities/': typeof EntitiesIndexRoute
   '/intreprinderi-publice/': typeof IntreprinderiPubliceIndexRoute
   '/investitii-publice/': typeof InvestitiiPubliceIndexRoute
@@ -1629,6 +1650,7 @@ export interface FileRoutesByTo {
   '/charts/new': typeof ChartsNewRoute
   '/companies/$cui': typeof CompaniesCuiRoute
   '/companies/search': typeof CompaniesSearchRoute
+  '/development/$': typeof DevelopmentSplatRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/experimental/search': typeof ExperimentalSearchRoute
   '/intreprinderi-publice/$cui': typeof IntreprinderiPubliceCuiRoute
@@ -1661,6 +1683,7 @@ export interface FileRoutesByTo {
   '/achizitii': typeof AchizitiiIndexRoute
   '/alegeri': typeof AlegeriIndexRoute
   '/companies': typeof CompaniesIndexRoute
+  '/development': typeof DevelopmentIndexRoute
   '/entities': typeof EntitiesIndexRoute
   '/intreprinderi-publice': typeof IntreprinderiPubliceIndexRoute
   '/investitii-publice': typeof InvestitiiPubliceIndexRoute
@@ -1780,6 +1803,7 @@ export interface FileRoutesById {
   '/bugete-locale-2026': typeof BugeteLocale2026RouteWithChildren
   '/cookie-policy': typeof CookiePolicyRoute
   '/cookies': typeof CookiesRoute
+  '/development': typeof DevelopmentRouteWithChildren
   '/entity-analytics': typeof EntityAnalyticsRoute
   '/justitie': typeof JustitieRouteWithChildren
   '/map': typeof MapRoute
@@ -1804,6 +1828,7 @@ export interface FileRoutesById {
   '/charts/new': typeof ChartsNewRoute
   '/companies/$cui': typeof CompaniesCuiRoute
   '/companies/search': typeof CompaniesSearchRoute
+  '/development/$': typeof DevelopmentSplatRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/experimental/search': typeof ExperimentalSearchRoute
   '/intreprinderi-publice/$cui': typeof IntreprinderiPubliceCuiRoute
@@ -1836,6 +1861,7 @@ export interface FileRoutesById {
   '/achizitii/': typeof AchizitiiIndexRoute
   '/alegeri/': typeof AlegeriIndexRoute
   '/companies/': typeof CompaniesIndexRoute
+  '/development/': typeof DevelopmentIndexRoute
   '/entities/': typeof EntitiesIndexRoute
   '/intreprinderi-publice/': typeof IntreprinderiPubliceIndexRoute
   '/investitii-publice/': typeof InvestitiiPubliceIndexRoute
@@ -1961,6 +1987,7 @@ export interface FileRouteTypes {
     | '/bugete-locale-2026'
     | '/cookie-policy'
     | '/cookies'
+    | '/development'
     | '/entity-analytics'
     | '/justitie'
     | '/map'
@@ -1985,6 +2012,7 @@ export interface FileRouteTypes {
     | '/charts/new'
     | '/companies/$cui'
     | '/companies/search'
+    | '/development/$'
     | '/entities/$cui'
     | '/experimental/search'
     | '/intreprinderi-publice/$cui'
@@ -2017,6 +2045,7 @@ export interface FileRouteTypes {
     | '/achizitii/'
     | '/alegeri/'
     | '/companies/'
+    | '/development/'
     | '/entities/'
     | '/intreprinderi-publice/'
     | '/investitii-publice/'
@@ -2154,6 +2183,7 @@ export interface FileRouteTypes {
     | '/charts/new'
     | '/companies/$cui'
     | '/companies/search'
+    | '/development/$'
     | '/entities/$cui'
     | '/experimental/search'
     | '/intreprinderi-publice/$cui'
@@ -2186,6 +2216,7 @@ export interface FileRouteTypes {
     | '/achizitii'
     | '/alegeri'
     | '/companies'
+    | '/development'
     | '/entities'
     | '/intreprinderi-publice'
     | '/investitii-publice'
@@ -2304,6 +2335,7 @@ export interface FileRouteTypes {
     | '/bugete-locale-2026'
     | '/cookie-policy'
     | '/cookies'
+    | '/development'
     | '/entity-analytics'
     | '/justitie'
     | '/map'
@@ -2328,6 +2360,7 @@ export interface FileRouteTypes {
     | '/charts/new'
     | '/companies/$cui'
     | '/companies/search'
+    | '/development/$'
     | '/entities/$cui'
     | '/experimental/search'
     | '/intreprinderi-publice/$cui'
@@ -2360,6 +2393,7 @@ export interface FileRouteTypes {
     | '/achizitii/'
     | '/alegeri/'
     | '/companies/'
+    | '/development/'
     | '/entities/'
     | '/intreprinderi-publice/'
     | '/investitii-publice/'
@@ -2484,6 +2518,7 @@ export interface RootRouteChildren {
   BugeteLocale2026Route: typeof BugeteLocale2026RouteWithChildren
   CookiePolicyRoute: typeof CookiePolicyRoute
   CookiesRoute: typeof CookiesRoute
+  DevelopmentRoute: typeof DevelopmentRouteWithChildren
   EntityAnalyticsRoute: typeof EntityAnalyticsRoute
   JustitieRoute: typeof JustitieRouteWithChildren
   MapRoute: typeof MapRoute
@@ -2634,6 +2669,13 @@ declare module '@tanstack/react-router' {
       path: '/cookies'
       fullPath: '/cookies'
       preLoaderRoute: typeof CookiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/development': {
+      id: '/development'
+      path: '/development'
+      fullPath: '/development'
+      preLoaderRoute: typeof DevelopmentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/entities': {
@@ -2845,6 +2887,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/companies/search'
       preLoaderRoute: typeof CompaniesSearchRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/development/': {
+      id: '/development/'
+      path: '/'
+      fullPath: '/development/'
+      preLoaderRoute: typeof DevelopmentIndexRouteImport
+      parentRoute: typeof DevelopmentRoute
+    }
+    '/development/$': {
+      id: '/development/$'
+      path: '/$'
+      fullPath: '/development/$'
+      preLoaderRoute: typeof DevelopmentSplatRouteImport
+      parentRoute: typeof DevelopmentRoute
     }
     '/entities/': {
       id: '/entities/'
@@ -3935,6 +3991,20 @@ const BugeteLocale2026RouteChildren: BugeteLocale2026RouteChildren = {
 const BugeteLocale2026RouteWithChildren =
   BugeteLocale2026Route._addFileChildren(BugeteLocale2026RouteChildren)
 
+interface DevelopmentRouteChildren {
+  DevelopmentSplatRoute: typeof DevelopmentSplatRoute
+  DevelopmentIndexRoute: typeof DevelopmentIndexRoute
+}
+
+const DevelopmentRouteChildren: DevelopmentRouteChildren = {
+  DevelopmentSplatRoute: DevelopmentSplatRoute,
+  DevelopmentIndexRoute: DevelopmentIndexRoute,
+}
+
+const DevelopmentRouteWithChildren = DevelopmentRoute._addFileChildren(
+  DevelopmentRouteChildren,
+)
+
 interface JustitieRouteChildren {
   JustitieCautareRoute: typeof JustitieCautareRoute
   JustitieIndexRoute: typeof JustitieIndexRoute
@@ -4224,6 +4294,7 @@ const rootRouteChildren: RootRouteChildren = {
   BugeteLocale2026Route: BugeteLocale2026RouteWithChildren,
   CookiePolicyRoute: CookiePolicyRoute,
   CookiesRoute: CookiesRoute,
+  DevelopmentRoute: DevelopmentRouteWithChildren,
   EntityAnalyticsRoute: EntityAnalyticsRoute,
   JustitieRoute: JustitieRouteWithChildren,
   MapRoute: MapRoute,

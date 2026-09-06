@@ -535,6 +535,20 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 
 Append-only. Newest first. Each entry: date · decision · why.
 
+- **2026-09-05 — Design variants are prototyped at `/development/*` under
+  `yarn dev` only, and promoted by moving code.** Variants live in
+  `src/development/prototypes/<domain>/<name>.prototype.tsx`, render inside the
+  real app shell, and are compared at `/development/<domain>/<name>?v=a,b`.
+  Production builds answer 404 on the routes, images contain none of the
+  directory, and a build validator plus an integration test keep it that way. The
+  winner is recorded in the feature's design doc, moved into `src/features/`, and
+  the prototype deleted in the same commit. *Why:* the route tree is generated and
+  committed, so a route per prototype would touch it on every experiment; three
+  guarded stubs plus glob discovery touch it once. The gate is
+  `import.meta.env.DEV` rather than `VITE_APP_ENVIRONMENT`, because the deployed
+  `dev` environment sets the latter to `development` while being a production
+  build. Standard: [`docs/design/prototyping.md`](docs/design/prototyping.md).
+
 - **2026-08-04 — A detail page ranks its blocks: one lead, one action, one
   accordion for everything else.** On `/legislation/acts/$actId` the summary is
   the only open card. Every block below it — relevance, key dates, publication

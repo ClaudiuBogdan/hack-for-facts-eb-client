@@ -12,7 +12,10 @@
  * the page as a row's primary label.
  */
 import { plural, t } from '@lingui/core/macro'
-import type { PrivateCompanyMoneyFlow } from '@/schemas/private-company'
+import type {
+  PrivateCompanyMoneyFlow,
+  PrivateCompanyMoneyYear,
+} from '@/schemas/private-company'
 
 export const MONEY_FLOW_TYPES = [
   'direct_acquisition',
@@ -112,4 +115,53 @@ export function sortMoneyFlows(
 function indexOfFlow(flowType: string): number {
   const index = (MONEY_FLOW_TYPES as readonly string[]).indexOf(flowType)
   return index === -1 ? MONEY_FLOW_TYPES.length : index
+}
+
+/**
+ * When a flow's money actually happened, and where that answer is incomplete.
+ *
+ * A bare "2007–2025" makes two claims a min/max cannot support: that records
+ * exist throughout, and that the interval covers all the money. Neither holds
+ * here — some years inside a range carry no records at all, and some flows have
+ * no year recorded in the source, so their amount sits outside every interval.
+ */
+export type MoneyFlowCoverage = {
+  readonly firstYear: number | null
+  readonly lastYear: number | null
+  /** Years inside the interval with no records — the interval is not continuous. */
+  readonly missingYears: readonly number[]
+  /** Amount the source never dated, and so belongs to no year in the interval. */
+  readonly undatedRon: number
+  readonly undatedCount: number
+}
+
+export function getMoneyFlowCoverage(
+  byYear: readonly PrivateCompanyMoneyYear[],
+  flowType: string,
+): MoneyFlowCoverage {
+  const rows = byYear.filter((row) => row.flowType === flowType)
+  const years = rows
+    .map((row) => row.year)
+    .filter((year): year is number => year !== null)
+    .sort((a, b) => a - b)
+
+  const undated = rows.filter((row) => row.year === null)
+  const firstYear = years[0] ?? null
+  const lastYear = years[years.length - 1] ?? null
+
+  const present = new Set(years)
+  const missingYears: number[] = []
+  if (firstYear !== null && lastYear !== null) {
+    for (let year = firstYear; year <= lastYear; year += 1) {
+      if (!present.has(year)) missingYears.push(year)
+    }
+  }
+
+  return {
+    firstYear,
+    lastYear,
+    missingYears,
+    undatedRon: undated.reduce((sum, row) => sum + (row.totalRon ?? 0), 0),
+    undatedCount: undated.reduce((sum, row) => sum + row.count, 0),
+  }
 }

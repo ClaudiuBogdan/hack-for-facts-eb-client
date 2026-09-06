@@ -9,6 +9,21 @@ const serverEntry = join(outputDir, "server", "index.mjs");
 const assetsDir = join(outputDir, "public", "assets");
 const jsExtensions = new Set([".js", ".mjs", ".cjs"]);
 
+// The local-only prototyping surface (docs/design/prototyping.md) must never
+// reach a build artifact. Markers are literal, never assembled from parts: an
+// assembled string exists at runtime but cannot be found by a text search, so
+// the check would silently pass. The path and filename checks generalise beyond
+// the marked modules, since Rolldown keeps module paths in sourcemaps and names
+// chunks after module basenames.
+const developmentMarkers = [
+  "TRANSPARENTA_DEV_SURFACE_HARNESS_MUST_NOT_SHIP",
+  "TRANSPARENTA_PROTOTYPE_MUST_NOT_SHIP",
+];
+const developmentSourcePath = "src/development/";
+// The three route stubs are named `development*` and are expected to ship.
+const developmentFileName = /prototype|harness/i;
+const scannedExtensions = [".js", ".mjs", ".cjs", ".css", ".html", ".json", ".map"];
+
 function fail(message) {
   console.error(message);
   process.exit(1);
@@ -77,4 +92,63 @@ for (const file of outputJavaScriptFiles) {
   checkJavaScriptSyntax(file);
 }
 
+const scannedFiles = walkFiles(outputDir).filter((file) =>
+  scannedExtensions.some((extension) => file.endsWith(extension)),
+);
+
+const developmentFailures = [];
+
+for (const file of scannedFiles) {
+  const base = file.slice(file.lastIndexOf(sep) + 1);
+  if (developmentFileName.test(base)) {
+    developmentFailures.push(`${file}: emitted file is named after a prototype or the harness`);
+  }
+
+  const contents = readFileSync(file, "utf8");
+
+  // Markers are checked everywhere, sourcemaps included: if harness or prototype
+  // code were ever compiled in, its text would appear in `sourcesContent`.
+  for (const marker of developmentMarkers) {
+    if (contents.includes(marker)) {
+      developmentFailures.push(`${file}: contains the development marker ${marker}`);
+    }
+  }
+
+  if (file.endsWith(".map")) {
+    // A sourcemap legitimately carries the route stubs' own source text, which
+    // contains the literal `import.meta.glob('/src/development/…')` pattern. That
+    // is the guard working, not a leak. What must never appear is a
+    // `src/development/**` module in `sources`, which would mean it was compiled
+    // into the bundle.
+    let sources;
+    try {
+      sources = JSON.parse(contents).sources;
+    } catch {
+      developmentFailures.push(`${file}: sourcemap is not valid JSON`);
+      continue;
+    }
+    for (const source of sources ?? []) {
+      if (String(source).includes(developmentSourcePath)) {
+        developmentFailures.push(`${file}: sourcemap lists ${source}`);
+      }
+    }
+    continue;
+  }
+
+  if (contents.includes(developmentSourcePath)) {
+    developmentFailures.push(`${file}: references ${developmentSourcePath}`);
+  }
+}
+
+if (developmentFailures.length > 0) {
+  for (const failure of developmentFailures) {
+    console.error(failure);
+  }
+  fail(
+    `The local-only /development surface leaked into ${outputDir}. ` +
+      "It must never ship. See docs/design/prototyping.md.",
+  );
+}
+
 console.log(`Validated ${outputJavaScriptFiles.length} JavaScript files in ${outputDir}`);
+console.log(`Checked ${scannedFiles.length} files for /development leakage`);

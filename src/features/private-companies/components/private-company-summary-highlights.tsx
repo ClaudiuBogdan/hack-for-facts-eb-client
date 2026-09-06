@@ -52,9 +52,21 @@ export function PrivateCompanySummaryHighlights({
   profile,
   onTabChange,
 }: Props) {
-  const onrcActivity = profile.caenActivities.find(
+  // The ONRC list is every activity the company is AUTHORISED to carry out —
+  // 356 of them for a large retailer, sorted by code. Taking the first is
+  // arbitrary: it showed DEDEMAN, a DIY chain, as "growing fruit trees" (0125)
+  // because that code sorts first. The main CAEN is what the company actually
+  // does, so match the authorised list against it and only fall back to the
+  // first entry when no main code is known.
+  const mainCaenCode = profile.fiscal.fiscalCaen?.code ?? null
+  const onrcActivities = profile.caenActivities.filter(
     (activity) => activity.source === 'onrc',
   )
+  const onrcActivity =
+    (mainCaenCode !== null
+      ? onrcActivities.find((activity) => activity.code === mainCaenCode)
+      : undefined) ?? onrcActivities[0]
+  const authorisedCount = onrcActivities.length
   const representativeCount = profile.representatives.length
   const euBranchCount = profile.euBranches.length
   const geography = profile.geography
@@ -69,6 +81,13 @@ export function PrivateCompanySummaryHighlights({
         ? `${fiscalCaen.code} · ${fiscalCaen.rev}`
         : null
 
+    // The count is worth stating: one named activity out of hundreds authorised
+    // reads very differently from one out of one.
+    const supporting =
+      codeLine && authorisedCount > 1
+        ? `${codeLine} · ${t`${authorisedCount} authorised activities`}`
+        : (codeLine ?? undefined)
+
     rows.push({
       tab: 'activity',
       category: t`Activity`,
@@ -77,7 +96,7 @@ export function PrivateCompanySummaryHighlights({
         (fiscalCaen && !onrcActivity
           ? t`Fiscal CAEN from ANAF`
           : t`No activity codes`),
-      supporting: codeLine ?? undefined,
+      supporting,
     })
   } else {
     rows.push({

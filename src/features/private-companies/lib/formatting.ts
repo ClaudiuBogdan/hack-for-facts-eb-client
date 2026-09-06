@@ -111,3 +111,27 @@ export function formatSignedInteger(value: number | null): string {
     }).format(value),
   )
 }
+
+/**
+ * An exact RON amount in the active locale. `formatRonAmount` is pinned to
+ * `ro-RO`, which is fine for a tooltip but wrong for a figure a reader is meant
+ * to cite: an EN reader would see `415.603.318` and read it as a decimal.
+ */
+export function formatRonExact(value: number | null): string {
+  if (value === null || !Number.isFinite(value)) {
+    return '—'
+  }
+  return new Intl.NumberFormat(activeNumberLocale(), {
+    style: 'currency',
+    currency: 'RON',
+    maximumFractionDigits: 0,
+  }).format(value)
+}
+
+/** A share, in the active locale — `toFixed` would print "7.6%" to a RO reader. */
+export function formatShare(fraction: number): string {
+  return new Intl.NumberFormat(activeNumberLocale(), {
+    style: 'percent',
+    maximumFractionDigits: 1,
+  }).format(fraction)
+}
