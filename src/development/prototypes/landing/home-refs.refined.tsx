@@ -595,27 +595,17 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
   )
 }
 
-function RefinedLanding({
-  ripple,
-  lights = false,
-}: {
-  readonly ripple: boolean
-  readonly lights?: boolean
-}) {
+function RefinedLanding() {
   const { groups, coverage } = getPlatformCoverage()
-  const heroRef = useFieldMotion({ ripple })
+  const heroRef = useFieldMotion()
   // The light measures the page it runs down, so it takes the root rather than
   // being handed coordinates.
-  const rootRef = useScrollLight(lights)
+  const rootRef = useScrollLight()
 
   return (
     <div ref={rootRef} className="w-full bg-background" data-dev-marker={PROTOTYPE_MARKER}>
-      {lights ? (
-        <>
-          <ScrollLightStyles />
-          <ScrollLight />
-        </>
-      ) : null}
+      <ScrollLightStyles />
+      <ScrollLight />
       {/* Hero — open band. */}
       <section ref={heroRef} className={cn('relative overflow-hidden border-b', FIELD_HOST_CLASS)}>
         <FieldAnimationStyles />
@@ -869,9 +859,8 @@ function RefinedLanding({
 }
 
 /**
- * One export per motion setting. The page is identical in every other respect,
- * so a comparison isolates the motion and nothing else.
+ * The landing. One version now: the motion questions the variants existed to
+ * answer are settled, so the page carries the intro wave, the click ripple and
+ * the scroll light together rather than offering them as alternatives.
  */
-export const LandingRefsRipple = () => <RefinedLanding ripple />
-export const LandingRefsIntroOnly = () => <RefinedLanding ripple={false} />
-export const LandingRefsLights = () => <RefinedLanding ripple lights />
+export const LandingRefs = RefinedLanding

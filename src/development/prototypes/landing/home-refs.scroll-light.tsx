@@ -324,11 +324,10 @@ function measure(root: HTMLElement | null): Geometry {
  * Returns the ref to put on the page root. The host is found underneath it, so
  * the component owns its own markup and the page only lends its geometry.
  */
-export function useScrollLight(enabled: boolean): RefObject<HTMLDivElement | null> {
+export function useScrollLight(): RefObject<HTMLDivElement | null> {
   const rootRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!enabled) return
     const root = rootRef.current
     if (!root) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
@@ -494,7 +493,7 @@ export function useScrollLight(enabled: boolean): RefObject<HTMLDivElement | nul
       window.clearTimeout(idleTimer)
       if (frame) cancelAnimationFrame(frame)
     }
-  }, [enabled])
+  }, [])
 
   return rootRef
 }

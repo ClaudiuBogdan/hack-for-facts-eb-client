@@ -1,50 +1,41 @@
 import type { PrototypeDefinition } from '@/development/harness/entry'
 import { FIELD_RECT_COUNT } from './home-refs.pixel-art'
-import {
-  LandingRefsIntroOnly,
-  LandingRefsLights,
-  LandingRefsRipple,
-} from './home-refs.refined'
+import { LandingRefs } from './home-refs.refined'
 
 /**
- * Landing page — the chosen direction.
+ * Landing page — the chosen direction, consolidated.
  *
  * Round one (`landing/home`) settled the information architecture: a grouped
- * table of contents over every surface. Round two settled the skin and the
- * background: the references' structure on this app's own light system, with
- * the margin lattice pixelating into a camouflage field and dispersing into a
- * particle tail toward the centre.
+ * table of contents over every surface. Round two settled the skin, the
+ * background and the illustrations. Round three settled the motion, which is
+ * why this file no longer offers alternatives — the three behaviours below were
+ * variants competing against each other, and they turned out not to compete.
+ * They occupy different moments, so the page now carries all three.
  *
- * What is left open is motion. Both variants play the same intro wave shortly
- * after load; they differ only in whether clicking the hero fires a ripple from
- * that point. Hover triggers nothing — a click is rare enough that each cell
- * can be given its own delay *and* amplitude in one pass, which is what makes
- * the crest read as a travelling disturbance rather than a flash. Everything
- * obeys the same constraints — `opacity` and `transform` only, one-shot so
- * nothing loops or stays resident, no `will-change` across ~990 elements, and
- * reduced motion honoured before a listener is even attached.
- * The reasoning is in `home-refs.field-animation.tsx` and
- * `home-refs.field-motion.ts`.
+ * - An **intro wave** crosses the margin field shortly after load.
+ * - **Clicking the hero** sends a ripple out from that point, across both
+ *   fields, weakening with distance. Clicks inside the content column are
+ *   ignored: the field lives in the margins, and a click on the search or a
+ *   shortcut meant something else.
+ * - A **scroll light** rides the two frame rules as a playhead, flaring at each
+ *   band boundary and turning the corner along the bottom border to meet in the
+ *   middle at the end of the page.
+ *
+ * All three obey the same constraints — `opacity` and `transform` only,
+ * one-shot or scroll-coupled so nothing loops or stays resident, no
+ * `will-change` across the ~990 field cells but yes on the two light heads that
+ * always move, and reduced motion honoured before a listener is attached. The
+ * reasoning is in `home-refs.field-animation.tsx`, `home-refs.field-motion.ts`
+ * and `home-refs.scroll-light.tsx`.
  */
 export const prototype = {
   title: 'Landing page rewrite',
   spec: 'docs/user-stories/landing-page.md',
   variants: {
-    ripple: {
-      title: 'Intro wave, then ripple on click',
-      component: LandingRefsRipple,
-      note: `Wave travels inward once on load, ${FIELD_RECT_COUNT} cells per side. Clicking anywhere in the hero sends a ripple out from that point, across both fields, weakening with distance.`,
-    },
-    lights: {
-      title: 'Scroll light on the frame rules',
-      component: LandingRefsLights,
-      note: 'Dark theme only — additive light on a near-white page is a smudge, not a glow. A head rides each frame rule as a playhead, its trail lengthening with scroll speed and flaring as it crosses a band boundary. Everything else matches the ripple variant.',
-    },
-    intro: {
-      title: 'Intro wave only',
-      component: LandingRefsIntroOnly,
-      note: 'The same wave on load with no click behaviour at all — the quieter option, and the baseline for judging whether the ripple earns its JavaScript.',
+    landing: {
+      title: 'Landing page',
+      component: LandingRefs,
+      note: `Intro wave across ${FIELD_RECT_COUNT} cells per side, ripple on a hero click, and a scroll light on the frame rules that closes on the centre of the bottom border.`,
     },
   },
-  compare: ['ripple', 'intro'],
 } satisfies PrototypeDefinition

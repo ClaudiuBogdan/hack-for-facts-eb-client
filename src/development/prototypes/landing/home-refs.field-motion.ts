@@ -99,12 +99,12 @@ const smoothstep = (t: number) => t * t * (3 - 2 * t)
  * Returns a ref for the hero section. Attach it and the section becomes the
  * host: clicks in it start a ripple, and the fields inside it are what ripples.
  */
-export function useFieldMotion({ ripple }: { ripple: boolean }) {
+export function useFieldMotion() {
   const hostRef = useRef<HTMLElement | null>(null)
 
-  // The intro wave. Deliberately separate from the ripple effect: it must run
-  // even when the ripple is switched off, and must not be torn down and
-  // replayed if the ripple's dependencies change.
+  // The intro wave, kept in its own effect: it is a different animation with a
+  // different lifetime, and folding it into the click handling would tie its
+  // replay to that listener's teardown.
   useEffect(() => {
     const host = hostRef.current
     if (!host) return
@@ -127,7 +127,7 @@ export function useFieldMotion({ ripple }: { ripple: boolean }) {
 
   useEffect(() => {
     const host = hostRef.current
-    if (!ripple || !host) return
+    if (!host) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
     // Cached once. The SVG is drawn at its natural scale, so one user unit is
@@ -225,7 +225,7 @@ export function useFieldMotion({ ripple }: { ripple: boolean }) {
       host.removeEventListener('pointerdown', onPointerDown)
       host.classList.remove(RIPPLING_CLASS)
     }
-  }, [ripple])
+  }, [])
 
   return hostRef
 }
