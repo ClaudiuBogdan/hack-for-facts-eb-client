@@ -37,7 +37,20 @@ import {
  * arrives long after the click has been forgotten; faster and both sides fire
  * together and stop reading as one connected surface.
  */
-const MS_PER_PX = 0.26
+const MS_PER_PX = 0.62
+
+/**
+ * Exponent on the distance before it becomes a delay.
+ *
+ * Below 1, so the wavefront slows as it expands — which is what a real ripple
+ * does, and what stops the crest reading as a perfectly uniform ring expanding
+ * at machine speed. Paired with {@link MS_PER_PX} so the far edge still lands
+ * around half a second.
+ */
+const DISTANCE_EXPONENT = 0.88
+
+/** Per-cell timing jitter, so no two cells at the same radius fire together. */
+const JITTER_MS = 70
 
 /**
  * Distance at which a cell stops responding.
@@ -48,14 +61,26 @@ const MS_PER_PX = 0.26
 const FALLOFF_PX = 2000
 
 /** Peak scale at the very centre of the ripple. Falls off with amplitude. */
-const PEAK_SCALE = 1.6
+const PEAK_SCALE = 1.5
+
+/**
+ * How much opacity a cell gains at full amplitude.
+ *
+ * Headroom, not a jump to 1. Interpolating every cell toward full made them all
+ * peak at the same value, so the camouflage's tonal structure vanished at the
+ * crest and the field read as a flash. Adding a fixed amount keeps the tiers
+ * distinguishable the whole way through.
+ */
+const OPACITY_HEADROOM = 0.46
 
 type CachedCell = {
   readonly el: SVGRectElement
   readonly cx: number
   readonly cy: number
-  /** Resting opacity, read once so the peak can be interpolated against it. */
+  /** Resting opacity, read once so the peak can be built on top of it. */
   readonly base: number
+  /** Deterministic 0-1, used to scatter the arrival time within a radius. */
+  readonly jitter: number
 }
 
 /** Smoothstep, so the ripple's outer edge fades rather than ending on a line. */
@@ -104,11 +129,17 @@ export function useFieldMotion({ ripple }: { ripple: boolean }) {
         cells: Array.from(svg.querySelectorAll<SVGRectElement>('[data-field-cell]')).map(
           (el): CachedCell => {
             const size = Number(el.getAttribute('width'))
+            const cx = Number(el.getAttribute('x')) + size / 2
+            const cy = Number(el.getAttribute('y')) + size / 2
+            // Cheap positional hash, so the jitter costs nothing at SSR and
+            // stays stable for the life of the element.
+            const noise = Math.sin(cx * 12.9898 + cy * 78.233) * 43758.5453
             return {
               el,
-              cx: Number(el.getAttribute('x')) + size / 2,
-              cy: Number(el.getAttribute('y')) + size / 2,
+              cx,
+              cy,
               base: Number(el.style.getPropertyValue('--o')) || 0,
+              jitter: noise - Math.floor(noise),
             }
           },
         ),
@@ -139,10 +170,13 @@ export function useFieldMotion({ ripple }: { ripple: boolean }) {
             // distance and the crest reads as one travelling disturbance.
             const amplitude = smoothstep(Math.max(0, 1 - distance / FALLOFF_PX))
 
-            cell.el.style.setProperty('--dp', `${Math.round(distance * MS_PER_PX)}ms`)
+            const delay =
+              Math.pow(distance, DISTANCE_EXPONENT) * MS_PER_PX + cell.jitter * JITTER_MS
+
+            cell.el.style.setProperty('--dp', `${Math.round(delay)}ms`)
             cell.el.style.setProperty(
               '--op',
-              (cell.base + (1 - cell.base) * amplitude).toFixed(3),
+              Math.min(1, cell.base + OPACITY_HEADROOM * amplitude).toFixed(3),
             )
             cell.el.style.setProperty(
               '--sp',

@@ -65,23 +65,35 @@ const CSS = `
   transform-origin: center;
 }
 
-/* Intro: brighten to full and swell, with a lean inward. */
+/*
+ * Intro: rise, overshoot, settle back through a slight recoil.
+ *
+ * The recoil at 64% is what makes it read as something displaced rather than
+ * something switched on. A monotonic rise and fall is a fade; a disturbance
+ * that passes leaves the surface fractionally under its resting state before it
+ * comes back. It is small on purpose — enough to feel, not enough to see as a
+ * second flash.
+ *
+ * The peak is '--oi', the cell's resting value plus headroom, not 1. Taking
+ * every cell to full flattened the camouflage at the crest.
+ */
 @keyframes tpz-intro {
-  0%   { opacity: var(--o); transform: translate3d(0, 0, 0) scale(1); }
-  34%  { opacity: 1; transform: translate3d(var(--tpz-drift), 0, 0) scale(var(--s)); }
-  100% { opacity: var(--o); transform: translate3d(0, 0, 0) scale(1); }
+  0%   { opacity: var(--o);  transform: translate3d(0, 0, 0) scale(1); }
+  30%  { opacity: var(--oi); transform: translate3d(var(--tpz-drift), 0, 0) scale(var(--s)); }
+  64%  { opacity: calc(var(--o) * 0.74); transform: translate3d(0, 0, 0) scale(calc(1 - (var(--s) - 1) * 0.13)); }
+  100% { opacity: var(--o);  transform: translate3d(0, 0, 0) scale(1); }
 }
 
 /*
- * Ripple: the crest peaks a third of the way in and eases back over the
- * remaining two thirds, so the rise is quick and the fall is long — the shape
- * a disturbance in a surface actually has. '--op' and '--sp' carry the cell's
- * own peak, already scaled by how far it sits from the click, so one keyframe
- * produces a strong response at the origin and a whisper at the edge.
+ * Ripple: rise sharply, then settle back through the same recoil the intro
+ * uses. '--op' and '--sp' carry the cell's own peak, already scaled by how far
+ * it sits from the click, so one keyframe produces a strong response at the
+ * origin and a whisper at the edge.
  */
 @keyframes tpz-ripple {
   0%   { opacity: var(--o);  transform: scale(1); }
-  32%  { opacity: var(--op); transform: scale(var(--sp)); }
+  28%  { opacity: var(--op); transform: scale(var(--sp)); }
+  62%  { opacity: calc(var(--o) * 0.76); transform: scale(calc(1 - (var(--sp) - 1) * 0.16)); }
   100% { opacity: var(--o);  transform: scale(1); }
 }
 
@@ -95,14 +107,17 @@ const CSS = `
 
 .${FIELD_HOVER_ROOT}.${INTRO_CLASS} [data-field-cell] {
   animation-name: tpz-intro;
-  animation-duration: 900ms;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Each cell runs for its own length, so the field does not settle in
+     lockstep. */
+  animation-duration: var(--du);
+  animation-timing-function: cubic-bezier(0.22, 0.9, 0.3, 1);
   animation-delay: var(--dw);
 }
 
 .${FIELD_HOVER_ROOT}.${RIPPLING_CLASS} [data-field-cell] {
   animation-name: tpz-ripple;
-  animation-duration: ${RIPPLE_CELL_MS}ms;
+  /* Slightly quicker than the intro, and still varied per cell. */
+  animation-duration: calc(var(--du) * 0.78);
   /* Sharp rise, long settle — an ease-out rather than the symmetric curve the
      intro uses, so the crest arrives and then relaxes. */
   animation-timing-function: cubic-bezier(0.16, 0.84, 0.24, 1);

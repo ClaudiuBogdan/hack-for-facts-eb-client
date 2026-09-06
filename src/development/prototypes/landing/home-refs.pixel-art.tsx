@@ -93,10 +93,12 @@ type Square = {
   readonly size: number
   readonly opacity: number
   readonly fill: string
-  /** Column, kept so the wave delay can be derived without re-deriving position. */
-  readonly col: number
-  /** Deterministic 0–1 used for the scatter delay and the peak scale. */
+  /** Deterministic 0–1, used for the peak scale and the timing jitter. */
   readonly seed: number
+  /** When this cell joins the intro wave. */
+  readonly introDelay: number
+  /** This cell's own animation length, so the field does not settle in lockstep. */
+  readonly duration: number
 }
 
 /** The blue from `src/assets/logo/logo.png`. One hue, so this stays a single accent. */
@@ -181,6 +183,26 @@ const LOGO_TINTS = TINT_LIGHTNESS_STEPS.map(toTint)
 /** Camouflage tiers, darkest patch first. */
 const ARMY_TIERS = [0.95, 0.62, 0.38, 0.2] as const
 
+/**
+ * Per-cell timing for the intro wave.
+ *
+ * A plain column ramp put every cell in a column on the same millisecond, so
+ * the intro read as a hard vertical wipe rather than as a wave. Three things
+ * break that up: the ramp itself, a smooth per-row offset that bends the front
+ * into a curve, and a small per-cell jitter so no two neighbours are exactly in
+ * step. The duration varies per cell for the same reason — with one duration
+ * the whole field snaps back together, which nothing in nature does.
+ */
+function timing(col: number, row: number) {
+  const seed = hash(col + 3, row + 11)
+  const rowOffset = fbm(0.5, row * 0.22) * 190
+  return {
+    seed: Number(seed.toFixed(3)),
+    introDelay: Math.round(col * 22 + rowOffset + seed * 95),
+    duration: Math.round(720 + seed * 340),
+  }
+}
+
 function diffusionSize(col: number): number {
   if (col < DIFFUSION_BOUNDS[0]) return CELL / 2
   if (col < DIFFUSION_BOUNDS[1]) return CELL / 4
@@ -221,8 +243,7 @@ function buildField(edge: 'left' | 'right', layer: PixelLayer): readonly Square[
           // the band appears to stop several columns before it does.
           opacity: Number((ARMY_TIERS[tier] * Math.max(reach, 0.16)).toFixed(3)),
           fill: tint,
-          col,
-          seed: Number(hash(col + 3, row + 11).toFixed(3)),
+          ...timing(col, row),
         })
         continue
       }
@@ -256,8 +277,7 @@ function buildField(edge: 'left' | 'right', layer: PixelLayer): readonly Square[
         size,
         opacity: Number(Math.min(1, ARMY_TIERS[tier] * (0.62 - tail * 0.34) * jitter).toFixed(3)),
         fill: tint,
-        col,
-        seed: Number(hash(col + 3, row + 11).toFixed(3)),
+        ...timing(col, row),
       })
     }
   }
@@ -321,15 +341,21 @@ export function PixelField({
           width={square.size}
           height={square.size}
           fill={square.fill}
-          // Base opacity, the intro's column delay and a per-cell peak scale.
-          // The ripple's own values are written at click time; the cell's centre
-          // is derived from `x`/`y` rather than duplicated here, which keeps the
-          // SSR payload down.
+          // Resting opacity, the intro's peak and schedule, and a per-cell
+          // duration. The ripple's own values are written at click time; the
+          // cell's centre is derived from `x`/`y` rather than duplicated here,
+          // which keeps the SSR payload down.
           style={
             {
               ['--o']: square.opacity,
-              ['--dw']: `${Math.round(square.col * 26)}ms`,
-              ['--s']: (1.22 + square.seed * 0.42).toFixed(2),
+              // Headroom rather than a jump to full. Interpolating every cell to
+              // 1 made them all peak at the same value, so the camouflage's
+              // tonal structure collapsed to flat at the crest — the single
+              // biggest reason the field read as a flash rather than a wave.
+              ['--oi']: Math.min(1, square.opacity + 0.44).toFixed(3),
+              ['--dw']: `${square.introDelay}ms`,
+              ['--du']: `${square.duration}ms`,
+              ['--s']: (1.2 + square.seed * 0.38).toFixed(2),
             } as CSSProperties
           }
         />
