@@ -321,15 +321,15 @@ export function PixelField({
           width={square.size}
           height={square.size}
           fill={square.fill}
-          // Base opacity, the two delay schedules, and a per-cell peak scale.
-          // Both delays are emitted so the CSS can pick one per variant without
-          // rebuilding the field, which is memoised per edge and layer.
+          // Base opacity, the intro's column delay and a per-cell peak scale.
+          // The ripple's own values are written at click time; the cell's centre
+          // is derived from `x`/`y` rather than duplicated here, which keeps the
+          // SSR payload down.
           style={
             {
               ['--o']: square.opacity,
               ['--dw']: `${Math.round(square.col * 26)}ms`,
-              ['--dr']: `${Math.round(square.seed * 520)}ms`,
-              ['--s']: (1.25 + square.seed * 0.5).toFixed(2),
+              ['--s']: (1.22 + square.seed * 0.42).toFixed(2),
             } as CSSProperties
           }
         />

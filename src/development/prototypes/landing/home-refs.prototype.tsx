@@ -15,11 +15,13 @@ import {
  * particle tail toward the centre.
  *
  * What is left open is motion. Both variants play the same intro wave shortly
- * after load; they differ only in whether hovering the hero fires a ripple from
- * the pointer. Everything obeys the same constraints — `opacity` and
- * `transform` only, one-shot so nothing loops or stays resident, no
- * `will-change` across ~990 elements, delays precomputed rather than derived
- * per frame, and reduced motion honoured before a listener is even attached.
+ * after load; they differ only in whether clicking the hero fires a ripple from
+ * that point. Hover triggers nothing — a click is rare enough that each cell
+ * can be given its own delay *and* amplitude in one pass, which is what makes
+ * the crest read as a travelling disturbance rather than a flash. Everything
+ * obeys the same constraints — `opacity` and `transform` only, one-shot so
+ * nothing loops or stays resident, no `will-change` across ~990 elements, and
+ * reduced motion honoured before a listener is even attached.
  * The reasoning is in `home-refs.field-animation.tsx` and
  * `home-refs.field-ripple.ts`.
  */
@@ -28,14 +30,14 @@ export const prototype = {
   spec: 'docs/user-stories/landing-page.md',
   variants: {
     ripple: {
-      title: 'Intro wave, then ripple on hover',
+      title: 'Intro wave, then ripple on click',
       component: LandingRefsRipple,
-      note: `Wave travels inward once, ${FIELD_RECT_COUNT} cells per side. Hovering the hero sends a ripple out from the pointer, rate-limited to one per 900ms and gated on pointer travel.`,
+      note: `Wave travels inward once on load, ${FIELD_RECT_COUNT} cells per side. Clicking anywhere in the hero sends a ripple out from that point, across both fields, weakening with distance.`,
     },
     intro: {
       title: 'Intro wave only',
       component: LandingRefsIntroOnly,
-      note: 'The same wave on load with no hover behaviour at all — the quieter option, and the baseline for judging whether the ripple earns its JavaScript.',
+      note: 'The same wave on load with no click behaviour at all — the quieter option, and the baseline for judging whether the ripple earns its JavaScript.',
     },
   },
   compare: ['ripple', 'intro'],

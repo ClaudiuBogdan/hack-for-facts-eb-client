@@ -1,72 +1,84 @@
 import { useEffect, useRef } from 'react'
-import { INTRO_CLASS, INTRO_DELAY_MS, INTRO_TOTAL_MS } from './home-refs.field-animation'
+import {
+  INTRO_CLASS,
+  INTRO_DELAY_MS,
+  INTRO_TOTAL_MS,
+  RIPPLE_TOTAL_MS,
+  RIPPLING_CLASS,
+} from './home-refs.field-animation'
 
 /**
- * A ripple through the margin field, originating at the pointer.
+ * A ripple through the margin field, originating at the click.
  *
- * The naive version of this recomputes every cell's distance on every
- * `pointermove`. At ~990 cells and a 120Hz trackpad that is roughly 120k
- * distance calculations and style writes per second on the main thread, which
- * is precisely the jank this is supposed to avoid. Four things keep it cheap:
+ * Click rather than hover is what makes the per-cell approach affordable. A
+ * hover-driven stream would run this pass continuously — ~990 distance
+ * calculations and style writes, repeatedly — and would have had to push the
+ * maths into CSS to survive. A click happens rarely enough that one clean pass
+ * is the right trade: it buys true Euclidean distance and, more importantly,
+ * a per-cell *amplitude*, which is what separates a ripple from a flash.
  *
- * 1. **Cell centres are read once and cached.** They come from the `x`/`y`
- *    attributes, not from `getBoundingClientRect`, so there is no per-cell
- *    layout read and no forced reflow. One `getBoundingClientRect` per layer
- *    per ripple — four in total — locates the pointer.
+ * What still matters:
  *
- * 2. **A ripple is rate-limited and displacement-gated.** Moving the pointer
- *    does not fire one; moving it {@link MIN_TRAVEL}px *after* the previous
- *    ripple has finished does. So the cost is bounded to one pass per
- *    {@link PERIOD}ms no matter how fast the pointer moves, and resting the
- *    pointer produces exactly one ripple rather than a standing wave. That is
- *    the answer to "what if I never hover out".
- *
- * 3. **Writes are batched into one animation frame** and set a single custom
- *    property per cell. Everything after that is declarative: the browser runs
- *    ~990 one-shot keyframe animations with staggered delays and no further
- *    JavaScript executes for the rest of the ripple.
- *
- * 4. **Nothing runs at all** when the pointer is not over the hero, when the
- *    variant does not want a ripple, or when the reader prefers reduced motion.
+ * - **Cell centres are cached once** from their attributes, so there is no
+ *   per-cell layout read and no forced reflow. One `getBoundingClientRect` per
+ *   layer per ripple locates the click.
+ * - **Writes are batched into one animation frame**, three custom properties
+ *   per cell. Nothing further executes for the rest of the ripple.
+ * - **Nothing is left running.** The class is dropped once the last cell has
+ *   settled, so an idle page holds no animations.
+ * - **Nothing attaches at all** when the reader prefers reduced motion.
  */
 
-/** Class the host carries while a ripple is in flight. */
-export const RIPPLING_CLASS = 'is-rippling'
+/**
+ * Wavefront speed, in milliseconds per pixel.
+ *
+ * Tuned so the crest crosses the full width of the hero — roughly 1900px from
+ * one field to the other — in about half a second. Slower and the far side
+ * arrives long after the click has been forgotten; faster and both sides fire
+ * together and stop reading as one connected surface.
+ */
+const MS_PER_PX = 0.26
 
-/** Milliseconds of delay per pixel of distance — the speed of the wavefront. */
-const MS_PER_PX = 0.55
+/**
+ * Distance at which a cell stops responding.
+ *
+ * Wide enough to take in both fields from a click anywhere in the hero, so the
+ * far side always answers — faintly, which is the point.
+ */
+const FALLOFF_PX = 2000
 
-/** Minimum gap between ripples. Matches the animation's own length plus the
- *  longest delay a cell is likely to carry, so ripples never overlap. */
-const PERIOD = 900
-
-/** How far the pointer must travel before a resting hover earns a new ripple. */
-const MIN_TRAVEL = 90
+/** Peak scale at the very centre of the ripple. Falls off with amplitude. */
+const PEAK_SCALE = 1.6
 
 type CachedCell = {
   readonly el: SVGRectElement
   readonly cx: number
   readonly cy: number
+  /** Resting opacity, read once so the peak can be interpolated against it. */
+  readonly base: number
 }
+
+/** Smoothstep, so the ripple's outer edge fades rather than ending on a line. */
+const smoothstep = (t: number) => t * t * (3 - 2 * t)
 
 /**
  * Returns a ref for the hero section. Attach it and the section becomes the
- * ripple's host: it owns the hover, and the fields inside it are what ripple.
+ * host: clicks in it start a ripple, and the fields inside it are what ripples.
  */
 export function useFieldMotion({ ripple }: { ripple: boolean }) {
   const hostRef = useRef<HTMLElement | null>(null)
 
   // The intro wave. Deliberately separate from the ripple effect: it must run
-  // even when the ripple is switched off, and it must not be torn down and
-  // replayed if the ripple's dependencies ever change.
+  // even when the ripple is switched off, and must not be torn down and
+  // replayed if the ripple's dependencies change.
   useEffect(() => {
     const host = hostRef.current
     if (!host) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
     const start = window.setTimeout(() => host.classList.add(INTRO_CLASS), INTRO_DELAY_MS)
-    // The class is dropped once the wave has finished so that a later ripple is
-    // not competing with a rule that also sets animation-name and delay.
+    // Dropped once the wave has finished, so it cannot compete with a later
+    // ripple for animation-name and delay.
     const end = window.setTimeout(
       () => host.classList.remove(INTRO_CLASS),
       INTRO_DELAY_MS + INTRO_TOTAL_MS,
@@ -96,6 +108,7 @@ export function useFieldMotion({ ripple }: { ripple: boolean }) {
               el,
               cx: Number(el.getAttribute('x')) + size / 2,
               cy: Number(el.getAttribute('y')) + size / 2,
+              base: Number(el.style.getPropertyValue('--o')) || 0,
             }
           },
         ),
@@ -103,64 +116,64 @@ export function useFieldMotion({ ripple }: { ripple: boolean }) {
     )
     if (layers.length === 0) return
 
-    let lastFiredAt = 0
-    let originX = Number.NaN
-    let originY = Number.NaN
     let frame = 0
+    let clear = 0
 
-    const fire = (clientX: number, clientY: number) => {
-      const now = performance.now()
-      const travelled = Number.isNaN(originX)
-        ? Number.POSITIVE_INFINITY
-        : Math.hypot(clientX - originX, clientY - originY)
-      if (now - lastFiredAt < PERIOD || travelled < MIN_TRAVEL) return
-
-      lastFiredAt = now
-      originX = clientX
-      originY = clientY
+    const onPointerDown = (event: PointerEvent) => {
+      // Primary button only; a right-click opening a context menu should not
+      // set the field off.
+      if (event.button !== 0) return
 
       cancelAnimationFrame(frame)
       frame = requestAnimationFrame(() => {
         for (const { svg, cells } of layers) {
           const rect = svg.getBoundingClientRect()
-          const px = clientX - rect.left
-          const py = clientY - rect.top
+          const px = event.clientX - rect.left
+          const py = event.clientY - rect.top
+
           for (const cell of cells) {
             const distance = Math.hypot(cell.cx - px, cell.cy - py)
+            // Amplitude is the whole trick. Without it every cell peaks at the
+            // same value and the field reads as a flash that happens to arrive
+            // late at the edges; with it, the response genuinely weakens with
+            // distance and the crest reads as one travelling disturbance.
+            const amplitude = smoothstep(Math.max(0, 1 - distance / FALLOFF_PX))
+
             cell.el.style.setProperty('--dp', `${Math.round(distance * MS_PER_PX)}ms`)
+            cell.el.style.setProperty(
+              '--op',
+              (cell.base + (1 - cell.base) * amplitude).toFixed(3),
+            )
+            cell.el.style.setProperty(
+              '--sp',
+              (1 + (PEAK_SCALE - 1) * amplitude).toFixed(3),
+            )
           }
         }
+
         // Removing and re-adding in the same frame would not restart the
-        // animations — the class list is only compared once per style pass. The
+        // animations — the class list is compared once per style pass. The
         // layout read between them forces the removal to take effect first.
         host.classList.remove(RIPPLING_CLASS)
         void host.offsetWidth
         host.classList.add(RIPPLING_CLASS)
+
+        // Dropped once the farthest cell has settled, so an idle page carries
+        // no animations at all.
+        window.clearTimeout(clear)
+        clear = window.setTimeout(
+          () => host.classList.remove(RIPPLING_CLASS),
+          RIPPLE_TOTAL_MS,
+        )
       })
     }
 
-    const onEnter = (event: PointerEvent) => {
-      lastFiredAt = 0
-      originX = Number.NaN
-      fire(event.clientX, event.clientY)
-    }
-    const onMove = (event: PointerEvent) => fire(event.clientX, event.clientY)
-    const onLeave = () => {
-      cancelAnimationFrame(frame)
-      host.classList.remove(RIPPLING_CLASS)
-      originX = Number.NaN
-      lastFiredAt = 0
-    }
-
-    host.addEventListener('pointerenter', onEnter)
-    host.addEventListener('pointermove', onMove, { passive: true })
-    host.addEventListener('pointerleave', onLeave)
+    host.addEventListener('pointerdown', onPointerDown)
 
     return () => {
       cancelAnimationFrame(frame)
-      host.removeEventListener('pointerenter', onEnter)
-      host.removeEventListener('pointermove', onMove)
-      host.removeEventListener('pointerleave', onLeave)
+      window.clearTimeout(clear)
+      host.removeEventListener('pointerdown', onPointerDown)
       host.classList.remove(RIPPLING_CLASS)
     }
   }, [ripple])
