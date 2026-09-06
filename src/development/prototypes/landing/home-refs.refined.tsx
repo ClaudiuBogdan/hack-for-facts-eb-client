@@ -328,6 +328,10 @@ export function LandingRefsRefined() {
             <div className="min-w-0 lg:col-span-7">
               {/* The brand, not a slogan about the brand. The mark is the one
                   already in the sidebar, so the landing and the shell agree. */}
+              {/* The mark is centred against the text block, but the wordmark,
+                  the separator and the country sit on a shared baseline — with
+                  `items-center` the 10px uppercase label centres on its own box
+                  and rides high against the 14px wordmark beside it. */}
               <span className="flex items-center gap-2.5">
                 <img
                   src={logo}
@@ -335,13 +339,15 @@ export function LandingRefsRefined() {
                   aria-hidden="true"
                   className="size-5 shrink-0 rounded-sm"
                 />
-                <span className="text-sm font-semibold tracking-tight text-foreground">
-                  Transparenta.eu
+                <span className="flex items-baseline gap-2">
+                  <span className="text-sm font-semibold tracking-tight text-foreground">
+                    Transparenta<span className="text-primary">.eu</span>
+                  </span>
+                  <span aria-hidden="true" className="text-xs text-muted-foreground/40">
+                    ·
+                  </span>
+                  <MonoLabel className="text-muted-foreground">România</MonoLabel>
                 </span>
-                <span aria-hidden="true" className="text-muted-foreground/50">
-                  ·
-                </span>
-                <MonoLabel className="text-muted-foreground">România</MonoLabel>
               </span>
               <h1 className="mt-6 text-[2.75rem] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl lg:text-7xl">
                 Banii publici,
