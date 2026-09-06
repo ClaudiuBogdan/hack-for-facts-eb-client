@@ -74,24 +74,31 @@ type Square = {
 }
 
 /**
- * Particle dispersion: where a whole cell has thinned out, the patch leaves
- * fragments behind instead of simply stopping.
+ * The diffusion tail: what happens *past* the squares, not to them.
  *
- * Each band is a fraction of the cell and a stretch of the inward axis it lives
- * on. They overlap deliberately and move outward-to-inward as they get smaller,
- * so the field coarsens at the edge and breaks down as it travels — halves
- * first, then quarters, then eighths. Fragments are placed on the cell's own
- * subdivisions, so an eighth still lands on a 3px lattice of the 24px module
- * rather than floating free of it.
+ * The camouflage pattern is untouched — whole cells, same threshold, same
+ * reach. Beyond the point where a cell no longer earns a full square, it can
+ * still leave one small particle behind, and those particles shrink as they
+ * travel: a half, then a quarter, then an eighth. That extends the field toward
+ * the centre instead of stopping at a line.
+ *
+ * One particle per cell, centred. Two earlier attempts were wrong in opposite
+ * directions: scattering several fragments *inside* each cell read as noise
+ * laid over the pattern, and shrinking the squares themselves replaced the
+ * pattern rather than complementing it.
  */
-const PARTICLE_BANDS = [
-  { divisor: 2, centre: 0.34, spread: 0.34, chance: 0.16 },
-  { divisor: 4, centre: 0.56, spread: 0.32, chance: 0.075 },
-  { divisor: 8, centre: 0.78, spread: 0.3, chance: 0.03 },
-] as const
+const DIFFUSION_BOUNDS = [0.46, 0.7] as const
 
-/** Fragments carry slightly less weight than a whole cell, by size. */
-const PARTICLE_WEIGHT: Record<number, number> = { 2: 0.85, 4: 0.72, 8: 0.6 }
+/** Per-cell wobble on the size boundary, so the steps interlock instead of
+ *  landing on the same column and reading as seams. */
+const DIFFUSION_DITHER = 0.14
+
+function diffusionSize(inward: number, dither: number): number {
+  const t = inward + (dither - 0.5) * DIFFUSION_DITHER
+  if (t < DIFFUSION_BOUNDS[0]) return CELL / 2
+  if (t < DIFFUSION_BOUNDS[1]) return CELL / 4
+  return CELL / 8
+}
 
 /** The blue from `src/assets/logo/logo.png`. One hue, so this stays a single accent. */
 const LOGO_BLUE = '#2B6FE8'
@@ -215,42 +222,32 @@ function buildField(edge: 'left' | 'right', treatment: PixelTreatment): readonly
 
         const tint = treatment === 'logo' ? LOGO_TINTS[tier] : undefined
 
-        // Where the whole cell has thinned out, the patch disperses into
-        // fragments rather than stopping. Emitting one or the other — never
-        // both — keeps a cell reading as a single decision.
-        if (hash(row, col) > reach + 0.18) {
-          for (const band of PARTICLE_BANDS) {
-            const weight = 1 - Math.abs(inward - band.centre) / band.spread
-            if (weight <= 0) continue
-            const size = CELL / band.divisor
-            for (let sy = 0; sy < band.divisor; sy += 1) {
-              for (let sx = 0; sx < band.divisor; sx += 1) {
-                if (hash(col * 37 + sx + band.divisor, row * 23 + sy) > band.chance * weight) {
-                  continue
-                }
-                squares.push({
-                  x: x + sx * size,
-                  y: y + sy * size,
-                  size,
-                  opacity: Number(
-                    (ARMY_TIERS[tier] * PARTICLE_WEIGHT[band.divisor] * weight).toFixed(3),
-                  ),
-                  fill: tint,
-                })
-              }
-            }
-          }
+        // The pattern itself, unchanged.
+        if (hash(row, col) <= reach + 0.18) {
+          squares.push({
+            x,
+            y,
+            size: CELL,
+            opacity: Number((ARMY_TIERS[tier] * reach).toFixed(3)),
+            // Tint keyed to the same tier as the tone, so a patch is one
+            // object: one step of the blue ramp at one weight.
+            fill: tint,
+          })
           continue
         }
 
+        // Past it, a diffusion tail. Thinning here is by chance rather than by
+        // the `reach` gate, so particles keep appearing further in than the
+        // squares reach — which is the point of them.
+        if (hash(col + 91, row + 17) > 0.6 * (1 - inward * 0.55)) continue
+        const size = diffusionSize(inward, hash(col + 13, row + 57))
+        const inset = (CELL - size) / 2
         squares.push({
-          size: CELL,
-          x,
-          y,
-          opacity: Number((ARMY_TIERS[tier] * reach).toFixed(3)),
-          // Tint keyed to the same tier as the tone, so a patch is one object:
-          // one step of the blue ramp at one weight.
-          fill: treatment === 'logo' ? LOGO_TINTS[tier] : undefined,
+          x: x + inset,
+          y: y + inset,
+          size,
+          opacity: Number((ARMY_TIERS[tier] * Math.max(reach, 0.28)).toFixed(3)),
+          fill: tint,
         })
         continue
       }
