@@ -127,43 +127,48 @@ function TwoLayerLattice({ idPrefix }: { readonly idPrefix: string }) {
 }
 
 /**
- * The tricolour, as the separator in the wordmark — a roundel rather than a
- * rectangle, so it reads as a mark between two words instead of a second flag
- * competing with the logo beside it.
+ * The tricolour, as the separator in the wordmark.
  *
  * Drawn rather than set as 🇷🇴: regional-indicator flags do not render on
  * Windows, which falls back to the letters "RO", and the emoji's size and
- * baseline vary by platform font. Eight pixels keeps it quieter than the 14px
- * wordmark it separates; the hairline ring stops the blue band from dissolving
- * into a dark background.
+ * baseline vary by platform font — which a mark aligned against a 14px
+ * wordmark cannot afford.
+ *
+ * The polish is in three details. It holds the official 3:2 ratio at 12×8, so
+ * it reads as a flag and not as a coloured chip. The corners are rounded by a
+ * hair — enough to stop it looking like a raw rectangle, not so much that it
+ * becomes a pill. And it carries an inset hairline rather than an outset
+ * border, so the stroke sits inside the silhouette and the blue band still has
+ * an edge against a dark background. The viewBox is drawn at 3× the rendered
+ * size to keep those corners crisp.
  */
-function RomanianFlag() {
+function RomanianFlag({ className }: { readonly className?: string }) {
   return (
     <svg
-      width="8"
+      width="12"
       height="8"
-      viewBox="0 0 12 12"
+      viewBox="0 0 36 24"
       aria-hidden="true"
       focusable="false"
-      className="shrink-0"
+      className={cn('shrink-0', className)}
     >
-      <clipPath id="ro-roundel">
-        <circle cx="6" cy="6" r="6" />
+      <clipPath id="ro-flag">
+        <rect width="36" height="24" rx="3" />
       </clipPath>
-      <g clipPath="url(#ro-roundel)">
-        <rect width="4" height="12" fill="#002B7F" />
-        <rect x="4" width="4" height="12" fill="#FCD116" />
-        <rect x="8" width="4" height="12" fill="#CE1126" />
+      <g clipPath="url(#ro-flag)">
+        <rect width="12" height="24" fill="#002B7F" />
+        <rect x="12" width="12" height="24" fill="#FCD116" />
+        <rect x="24" width="12" height="24" fill="#CE1126" />
+        <rect
+          width="36"
+          height="24"
+          rx="3"
+          fill="none"
+          stroke="currentColor"
+          strokeOpacity="0.22"
+          strokeWidth="3"
+        />
       </g>
-      <circle
-        cx="6"
-        cy="6"
-        r="5.5"
-        fill="none"
-        stroke="currentColor"
-        strokeOpacity="0.2"
-        strokeWidth="1"
-      />
     </svg>
   )
 }
@@ -381,12 +386,16 @@ export function LandingRefsRefined() {
                   aria-hidden="true"
                   className="size-5 shrink-0 rounded-sm"
                 />
-                <span className="flex items-baseline gap-2">
+                {/* Spacing is deliberately uneven: the flag belongs to
+                    "România", so it sits close to the word it qualifies and
+                    well clear of the wordmark. An equal gap on both sides made
+                    it read as a separator floating between two equals. */}
+                <span className="flex items-baseline">
                   <span className="text-sm font-semibold tracking-tight text-foreground">
                     Transparenta.eu
                   </span>
-                  <RomanianFlag />
-                  <MonoLabel className="text-muted-foreground">România</MonoLabel>
+                  <RomanianFlag className="ml-4" />
+                  <MonoLabel className="ml-1.5 text-muted-foreground">România</MonoLabel>
                 </span>
               </span>
               <h1 className="mt-6 text-[2.75rem] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl lg:text-7xl">
