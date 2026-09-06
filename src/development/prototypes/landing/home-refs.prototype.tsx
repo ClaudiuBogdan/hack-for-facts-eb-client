@@ -44,9 +44,9 @@ export const prototype = {
       note: 'The plainest reading. Cells fill in on the 24px module and thin out toward the content.',
     },
     logo: {
-      title: 'Logo tints — clouds, coloured in patches',
+      title: 'Logo tints — camouflage in the mark’s colours',
       component: LandingRefsLogo,
-      note: 'Cloud placement, army-style patch colouring. Each cell takes its own tint from the app mark, pulled 82% of the way to grey.',
+      note: 'The army field exactly, with each patch taking a tint from the app mark. Tints share one lightness so hue distinguishes them, and the sequence is weighted toward blue.',
     },
     army: {
       title: 'Army — camouflage patches',
