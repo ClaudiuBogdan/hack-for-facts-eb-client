@@ -121,8 +121,8 @@ const CSS = `
   --sp-core: rgb(198, 72, 16);
   --sp-halo: radial-gradient(
     circle,
-    rgba(202, 84, 22, 0.1) 0%,
-    rgba(198, 72, 16, 0.035) 40%,
+    rgba(202, 84, 22, 0.14) 0%,
+    rgba(198, 72, 16, 0.05) 40%,
     rgba(198, 72, 16, 0) 70%
   );
   --sp-rest: 0.26;
@@ -157,8 +157,8 @@ const CSS = `
   --sp-core: rgb(255, 244, 224);
   --sp-halo: radial-gradient(
     circle,
-    rgba(240, 140, 70, 0.12) 0%,
-    rgba(226, 118, 56, 0.04) 40%,
+    rgba(240, 140, 70, 0.17) 0%,
+    rgba(226, 118, 56, 0.055) 40%,
     rgba(226, 118, 56, 0) 70%
   );
   --sp-rest: 0.22;
@@ -169,12 +169,13 @@ const CSS = `
   top: 0;
   width: 0;
   height: 100%;
-  /* Set per rail, not on the host: the two travel opposite distances to reach
-     the same point. */
-  transform: translate3d(var(--sp-dx, 0px), 0, 0);
+  /* The rail itself never moves. '--sp-dx' and '--sp-rot-h' are set on it only
+     so they inherit down: the head and the leg behind it travel, while the leg
+     left on the vertical rule stays at the corner. */
 }
 
-.tpz-light-trail,
+.tpz-light-trail-v,
+.tpz-light-trail-h,
 .tpz-light-head,
 .tpz-light-halo {
   position: absolute;
@@ -186,37 +187,62 @@ const CSS = `
 /* The trail hangs above the head and is scaled from its bottom edge, so the
    head stays put while the tail lengthens behind it. 'scaleY' on a fixed box
    costs a composite; animating 'height' would cost a layout. */
-.tpz-light-trail {
-  /* 1px, the rule's own width, and an odd width against a half-pixel rail
-     resolves to whole pixels — so it lies exactly on the line instead of being
-     snapped off it. */
+.tpz-light-trail-v,
+.tpz-light-trail-h {
   width: 1px;
   height: ${TRAIL_BASE_PX}px;
   margin-left: -0.5px;
-  border-radius: 1px;
+  border-radius: 0.5px;
   transform-origin: 50% 100%;
   background: var(--sp-trail);
-  /* The bar's bottom edge sits on the head and it scales from there, so a
-     negative scale reflects it about the head: scrolling down it trails above,
-     scrolling up it trails below, and because the gradient is reflected too its
-     bright end stays on the head either way. One multiply, no second element. */
+}
+
+/*
+ * The tail is two legs, not one bar, and that is the whole of following the
+ * contour. A single bar rotated through the corner is a straight line at every
+ * angle in between, so mid-turn it lifts off the frame and hangs diagonally
+ * across the content. Split in two, the tail bends: one leg lies along the
+ * bottom border behind the head, the other still stands on the vertical rule,
+ * and their lengths trade off so the total stays constant as the head rounds
+ * the corner.
+ *
+ * The vertical leg stays at the corner — no '--sp-dx' — and is what is left of
+ * the tail that has not yet turned.
+ */
+.tpz-light-trail-v {
   transform: translate3d(0, calc(var(--sp-y, 0px) - ${TRAIL_BASE_PX}px), 0)
-    scaleY(calc(var(--sp-scale, 0) * var(--sp-dir, 1)));
+    scaleY(calc(var(--sp-scale-v, 0) * var(--sp-dir, 1)));
+  /* Dims as the head leaves it behind, so the corner is not left looking like a
+     second head. */
+  opacity: calc(var(--sp-on, 0) * var(--sp-remnant, 1));
+}
+
+/*
+ * The horizontal leg is pinned to the head and lies flat along the border. It
+ * has a length only once the head has actually turned, so the angle is a fixed
+ * quarter turn rather than something interpolated — there is no in-between
+ * state to draw.
+ */
+.tpz-light-trail-h {
+  transform: translate3d(var(--sp-dx, 0px), calc(var(--sp-y, 0px) - ${TRAIL_BASE_PX}px), 0)
+    rotate(var(--sp-rot-h, -90deg))
+    scaleY(calc(var(--sp-scale-h, 0) * var(--sp-dir, 1)));
   opacity: var(--sp-on, 0);
 }
 
 /* The hot core. Small and near-white — the colour comes from the halo. */
 .tpz-light-head {
-  /* 3px for the same reason: centred on a half-pixel rail it spans whole
-     pixels. At 2px it spanned .5 to .5 and the browser snapped the whole mark
-     a pixel sideways off the rule. */
-  width: 3px;
-  height: 3px;
-  margin-left: -1.5px;
-  margin-top: -1.5px;
+  /* 1px — the rule's own width. Odd, so a half-pixel rail resolves it to whole
+     pixels and it sits exactly on the line; 2px cannot be centred on a 1px rule
+     at all, and 3px read as a bead on a thread. The head is the hot end of the
+     tail rather than a separate dot, which is how the reference does it too. */
+  width: 1px;
+  height: 1px;
+  margin-left: -0.5px;
+  margin-top: -0.5px;
   border-radius: 50%;
   background: var(--sp-core);
-  transform: translate3d(0, var(--sp-y, 0px), 0)
+  transform: translate3d(var(--sp-dx, 0px), var(--sp-y, 0px), 0)
     scale(calc(1 + var(--sp-flare, 0) * 0.9));
   /* Never fully off: this is the page's position marker before it is an
      animation, so it stays on the rail when nothing is moving. */
@@ -233,7 +259,7 @@ const CSS = `
   margin-top: -14.5px;
   border-radius: 50%;
   background: var(--sp-halo);
-  transform: translate3d(0, var(--sp-y, 0px), 0)
+  transform: translate3d(var(--sp-dx, 0px), var(--sp-y, 0px), 0)
     scale(calc(0.55 + var(--sp-flare, 0) * 0.75));
   opacity: min(1, calc(var(--sp-rest) * 0.22 + var(--sp-on, 0) * (0.3 + var(--sp-flare, 0) * 0.7)));
 }
@@ -377,16 +403,28 @@ export function useScrollLight(enabled: boolean): RefObject<HTMLDivElement | nul
       const centre = geometry.rails.length === 2 ? (geometry.rails[0] + geometry.rails[1]) / 2 : 0
       // Eased, so the rails leave the corner gently instead of snapping in.
       const pull = converge * converge * (3 - 2 * converge)
+      /*
+       * Split the tail across the corner. Whatever length has already rounded
+       * it lies along the bottom border behind the head; the remainder is still
+       * standing on the vertical rule. The two always sum to the tail's length,
+       * so it bends rather than stretching or snapping.
+       */
+      const travelled =
+        geometry.rails.length === 2 ? Math.abs(centre - geometry.rails[0]) * pull : 0
+      const alongBorder = Math.min(trail, travelled)
+      const alongRule = Math.max(0, trail - travelled)
+      host.style.setProperty('--sp-scale-h', (alongBorder / TRAIL_BASE_PX).toFixed(4))
+      host.style.setProperty('--sp-scale-v', (alongRule / TRAIL_BASE_PX).toFixed(4))
+      host.style.setProperty('--sp-remnant', trail > 0 ? (alongRule / trail).toFixed(3) : '1')
+
       for (const [i, rail] of railEls.entries()) {
-        const base = geometry.rails[i]
-        rail.style.setProperty('--sp-dx', `${((centre - base) * pull).toFixed(1)}px`)
+        rail.style.setProperty('--sp-dx', `${((centre - geometry.rails[i]) * pull).toFixed(1)}px`)
       }
 
       host.style.setProperty('--sp-y', `${headViewport.toFixed(1)}px`)
       // Sign survives the decay, so the trail keeps pointing the way the reader
       // was last travelling rather than snapping upright as it retracts.
       host.style.setProperty('--sp-dir', velocity < 0 ? '-1' : '1')
-      host.style.setProperty('--sp-scale', ((trail / TRAIL_BASE_PX) * (1 - pull)).toFixed(4))
       host.style.setProperty('--sp-flare', flare.toFixed(3))
       // Present once there is either movement or a boundary under the head,
       // so a parked page is not left with a dot burning on the rail.
@@ -419,6 +457,11 @@ export function useScrollLight(enabled: boolean): RefObject<HTMLDivElement | nul
         const rail = host.children[i] as HTMLElement | undefined
         if (!rail) continue
         rail.style.left = `${x}px`
+        // Fixed, not interpolated: the horizontal leg only exists once the head
+        // has turned, so there is no intermediate angle to draw. The left rail
+        // travels right and lays its leg to the left; the right rail mirrors.
+        const mid = geometry.rails.length === 2 ? (geometry.rails[0] + geometry.rails[1]) / 2 : x
+        rail.style.setProperty('--sp-rot-h', x < mid ? '-90deg' : '90deg')
         railEls.push(rail)
       }
       schedule()
@@ -463,7 +506,8 @@ export function ScrollLight() {
       {[0, 1].map((rail) => (
         <div key={rail} className="tpz-light-rail">
           <span className="tpz-light-halo" />
-          <span className="tpz-light-trail" />
+          <span className="tpz-light-trail-v" />
+          <span className="tpz-light-trail-h" />
           <span className="tpz-light-head" />
         </div>
       ))}
