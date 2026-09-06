@@ -31,8 +31,13 @@ export type PixelTreatment = 'mono' | 'logo' | 'army' | 'clouds'
 /** Matches the minor lattice in `home-refs.refined.tsx`. */
 const CELL = 24
 
-/** Columns drawn inward from the edge; the wrapper clips to the real margin. */
-const COLUMNS = 16
+/**
+ * Total columns drawn inward from the edge. Wider than the margin on purpose:
+ * the wrapper clips and masks, and the tail is meant to carry past the frame,
+ * where an eighth-cell particle at this weight is texture rather than something
+ * the eye has to reject.
+ */
+const COLUMNS = 30
 
 /** Rows, sized to cover a tall hero; the section clips whatever it does not need. */
 const ROWS = 26
@@ -87,16 +92,44 @@ type Square = {
  * laid over the pattern, and shrinking the squares themselves replaced the
  * pattern rather than complementing it.
  */
-const DIFFUSION_BOUNDS = [0.46, 0.7] as const
+/**
+ * Width of the square band, in columns — and the width the pattern is
+ * normalised over.
+ *
+ * Sixteen is the field the squares were designed against, so keeping the
+ * normalisation on it means the pattern is bit-for-bit what it was before the
+ * particles existed. `COLUMNS` can grow to lengthen the tail without touching a
+ * single square.
+ */
+const SQUARE_COLUMNS = 16
 
-/** Per-cell wobble on the size boundary, so the steps interlock instead of
- *  landing on the same column and reading as seams. */
-const DIFFUSION_DITHER = 0.14
 
-function diffusionSize(inward: number, dither: number): number {
-  const t = inward + (dither - 0.5) * DIFFUSION_DITHER
-  if (t < DIFFUSION_BOUNDS[0]) return CELL / 2
-  if (t < DIFFUSION_BOUNDS[1]) return CELL / 4
+/**
+ * Size bands do not interleave — each owns a clean run of columns.
+ *
+ * Wobbling the boundaries per cell was tried so the steps would interlock, and
+ * it made the three sizes read as one speckled mass with no order in it. The
+ * density falloff carries the transition instead.
+ */
+const DIFFUSION_BOUNDS = [20, 26] as const
+
+/**
+ * Where particles may start, in columns — four short of where the squares end.
+ *
+ * The squares are already thinning by then, so the tail begins inside their
+ * last columns and takes over the space they have vacated. Starting it only
+ * after the square band left a visible void between the two: the squares had
+ * faded to almost nothing by column twelve and the first particle did not
+ * arrive until sixteen.
+ *
+ * In the overlap a cell can hold a square or a particle, never both, so the
+ * pattern is never dressed on top of itself.
+ */
+const TAIL_START = 12
+
+function diffusionSize(col: number): number {
+  if (col < DIFFUSION_BOUNDS[0]) return CELL / 2
+  if (col < DIFFUSION_BOUNDS[1]) return CELL / 4
   return CELL / 8
 }
 
@@ -198,7 +231,7 @@ function buildField(edge: 'left' | 'right', treatment: PixelTreatment): readonly
 
   for (let row = 0; row < ROWS; row += 1) {
     for (let col = 0; col < COLUMNS; col += 1) {
-      const inward = col / (COLUMNS - 1)
+      const inward = col / (SQUARE_COLUMNS - 1)
       const noise = hash(col, row)
       // Soft top and bottom, so the field is not a hard band across the section.
       const vertical = Math.abs(row / (ROWS - 1) - 0.5) * 2
@@ -212,18 +245,16 @@ function buildField(edge: 'left' | 'right', treatment: PixelTreatment): readonly
       if (treatment === 'army' || treatment === 'logo') {
         const field = fbm(col * 0.34, row * 0.34)
         const tier = Math.min(ARMY_TIERS.length - 1, Math.floor(field * 4.6))
-        // Reach travels further by *softening the decay*, not by raising
-        // density: a flatter exponent carries the patches inward while leaving
-        // the outer edge as thick as it already was. Raising the threshold
-        // instead would have made the edge heavier before it made the middle
-        // reach, which is the opposite of what is wanted.
-        const reach = Math.pow(1 - inward, 1.05)
         if (field < 0.31) continue
 
         const tint = treatment === 'logo' ? LOGO_TINTS[tier] : undefined
 
-        // The pattern itself, unchanged.
-        if (hash(row, col) <= reach + 0.18) {
+        // The square band, exactly as it was before the tail existed. Reach
+        // travels far by *softening the decay* rather than raising density: a
+        // flatter exponent carries the patches inward while leaving the outer
+        // edge as thick as it already was.
+        const reach = col < SQUARE_COLUMNS ? Math.pow(1 - inward, 1.05) : 0
+        if (col < SQUARE_COLUMNS && hash(row, col) <= reach + 0.18) {
           squares.push({
             x,
             y,
@@ -236,21 +267,32 @@ function buildField(edge: 'left' | 'right', treatment: PixelTreatment): readonly
           continue
         }
 
-        // Past it, a diffusion tail. Thinning here is by chance rather than by
-        // the `reach` gate, so particles keep appearing further in than the
-        // squares reach — which is the point of them.
-        if (hash(col + 91, row + 17) > 0.6 * (1 - inward * 0.55)) continue
-        const size = diffusionSize(inward, hash(col + 13, row + 57))
+        // The tail, taking over the ground the squares have vacated and
+        // carrying toward the centre, shrinking as it goes.
+        if (col < TAIL_START) continue
+        const tail = (col - TAIL_START) / (COLUMNS - TAIL_START)
+        // Placement follows a finer smooth field rather than white noise, so
+        // particles arrive in drifts that echo the patches they came from
+        // instead of scattering evenly and reading as static. The threshold
+        // rises with distance, so the tail is dense where it meets the squares
+        // and thins out from there.
+        const drift = fbm(col * 0.5 + 11, row * 0.5 + 7)
+        if (drift < 0.4 + tail * 0.32) continue
+
+        const size = diffusionSize(col)
         const inset = (CELL - size) / 2
         squares.push({
           x: x + inset,
           y: y + inset,
           size,
-          opacity: Number((ARMY_TIERS[tier] * Math.max(reach, 0.28)).toFixed(3)),
+          opacity: Number((ARMY_TIERS[tier] * (0.62 - tail * 0.34)).toFixed(3)),
           fill: tint,
         })
         continue
       }
+
+      // The legacy treatments were designed on the square band alone.
+      if (col >= SQUARE_COLUMNS) continue
 
       if (treatment === 'clouds') {
         // Continuous, so density *and* opacity thin together and the field

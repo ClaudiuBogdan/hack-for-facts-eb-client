@@ -113,12 +113,12 @@ const LATTICE_MASK: CSSProperties = {
  */
 const FIELD_MASK = {
   left: {
-    maskImage: 'linear-gradient(to right, #000 0%, #000 40%, transparent 97%)',
-    WebkitMaskImage: 'linear-gradient(to right, #000 0%, #000 40%, transparent 97%)',
+    maskImage: 'linear-gradient(to right, #000 0%, #000 34%, transparent 100%)',
+    WebkitMaskImage: 'linear-gradient(to right, #000 0%, #000 34%, transparent 100%)',
   },
   right: {
-    maskImage: 'linear-gradient(to left, #000 0%, #000 40%, transparent 97%)',
-    WebkitMaskImage: 'linear-gradient(to left, #000 0%, #000 40%, transparent 97%)',
+    maskImage: 'linear-gradient(to left, #000 0%, #000 34%, transparent 100%)',
+    WebkitMaskImage: 'linear-gradient(to left, #000 0%, #000 34%, transparent 100%)',
   },
 } satisfies Record<'left' | 'right', CSSProperties>
 
@@ -396,21 +396,21 @@ function RefinedLanding({ treatment }: { readonly treatment: PixelTreatment }) {
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 hidden xl:block"
         >
-          {/* Each field is clipped to the margin beside the 1152px frame —
-              `(100% - 72rem) / 2` — so it can never reach the content column,
-              at any viewport. The field itself is drawn at its natural 24px
-              scale rather than stretched to fit, because scaling it would break
-              alignment with the lattice underneath. The mask finishes the fade
-              inside whatever width that leaves, so there is no hard cut at the
-              frame edge on a narrow desktop. */}
+          {/* Clipped to the margin beside the 1152px frame plus 150px, so the
+              particle tail can carry past the frame edge toward the centre
+              while the squares stay in the margin. The mask reaches zero by the
+              end of that width, so what overlaps the content column is the
+              faintest, smallest end of the tail and nothing more. The field is
+              drawn at its natural 24px scale rather than stretched, because
+              scaling would break alignment with the lattice underneath. */}
           <div
-            className="absolute inset-y-0 left-0 w-[calc((100%-72rem)/2)] overflow-hidden"
+            className="absolute inset-y-0 left-0 w-[calc((100%-72rem)/2+150px)] overflow-hidden"
             style={FIELD_MASK.left}
           >
             <PixelField edge="left" treatment={treatment} className="left-0 top-0" />
           </div>
           <div
-            className="absolute inset-y-0 right-0 w-[calc((100%-72rem)/2)] overflow-hidden"
+            className="absolute inset-y-0 right-0 w-[calc((100%-72rem)/2+150px)] overflow-hidden"
             style={FIELD_MASK.right}
           >
             <PixelField edge="right" treatment={treatment} className="right-0 top-0" />
