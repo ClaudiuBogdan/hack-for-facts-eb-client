@@ -280,12 +280,25 @@ function buildField(edge: 'left' | 'right', treatment: PixelTreatment): readonly
         if (drift < 0.4 + tail * 0.32) continue
 
         const size = diffusionSize(col)
-        const inset = (CELL - size) / 2
+        // Scattered onto the cell's own sub-grid rather than centred in it.
+        // Centring put every particle at the same offset, so they lined up into
+        // visible rows and columns and the tail read as a lattice of dots.
+        // Snapping to multiples of the particle's own size keeps them crisp and
+        // on-module while removing that alignment entirely: a half has four
+        // possible positions in its cell, a quarter sixteen, an eighth
+        // sixty-four.
+        const slots = CELL / size
+        const slotX = Math.min(slots - 1, Math.floor(hash(col + 41, row + 3) * slots))
+        const slotY = Math.min(slots - 1, Math.floor(hash(col + 7, row + 61) * slots))
+        // A little weight variance too, so no two neighbours read as a pair.
+        const jitter = 0.7 + hash(col + 29, row + 83) * 0.6
         squares.push({
-          x: x + inset,
-          y: y + inset,
+          x: x + slotX * size,
+          y: y + slotY * size,
           size,
-          opacity: Number((ARMY_TIERS[tier] * (0.62 - tail * 0.34)).toFixed(3)),
+          opacity: Number(
+            Math.min(1, ARMY_TIERS[tier] * (0.62 - tail * 0.34) * jitter).toFixed(3),
+          ),
           fill: tint,
         })
         continue
