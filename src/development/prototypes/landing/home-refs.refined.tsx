@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import type { LinkProps } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
+import logo from '@/assets/logo/logo.png'
 import { EntitySearchInput } from '@/components/entities/EntitySearch'
 import { PREDEFINED_ENTITIES } from '@/lib/constants/predefined-entities'
 import { buildPreferredEntityPath } from '@/lib/entity-navigation'
@@ -325,16 +326,27 @@ export function LandingRefsRefined() {
           <CornerTicks />
           <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12 lg:gap-8">
             <div className="min-w-0 lg:col-span-7">
-              <span className="flex items-center gap-2">
-                <span aria-hidden="true" className="inline-block size-1.5 bg-primary" />
-                <MonoLabel className="text-muted-foreground">
-                  Date publice oficiale · România
-                </MonoLabel>
+              {/* The brand, not a slogan about the brand. The mark is the one
+                  already in the sidebar, so the landing and the shell agree. */}
+              <span className="flex items-center gap-2.5">
+                <img
+                  src={logo}
+                  alt=""
+                  aria-hidden="true"
+                  className="size-5 shrink-0 rounded-sm"
+                />
+                <span className="text-sm font-semibold tracking-tight text-foreground">
+                  Transparenta.eu
+                </span>
+                <span aria-hidden="true" className="text-muted-foreground/50">
+                  ·
+                </span>
+                <MonoLabel className="text-muted-foreground">România</MonoLabel>
               </span>
               <h1 className="mt-6 text-[2.75rem] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl lg:text-7xl">
-                Urmărește fiecare
+                Banii publici,
                 <br />
-                leu public.
+                la vedere.
               </h1>
               <p className="mt-5 max-w-[40ch] text-lg leading-relaxed text-muted-foreground sm:text-xl">
                 Bugete, contracte, investiții, legi și dosare — din surse
