@@ -1,6 +1,5 @@
 import { createLogger } from '@/lib/logger'
-import { graphqlRequest } from '@/lib/api/graphql'
-import { insRequestOptions } from './statistics-fetchers'
+import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import type {
   InsContextConnection,
   InsContextFilterInput,
@@ -38,14 +37,14 @@ export async function getInsUatDashboard(params: {
 }): Promise<InsDashboardData> {
   logger.info('Fetching INS UAT dashboard', params)
 
-  const response = await graphqlRequest<{ insUatDashboard: InsUatDatasetGroup[] }>(
+  const response = await graphqlQuery<{ insUatDashboard: InsUatDatasetGroup[] }>(
     INS_UAT_DASHBOARD_QUERY,
     {
       sirutaCode: params.sirutaCode,
       period: params.period,
       contextCode: params.contextCode,
     },
-    insRequestOptions(params.signal)
+    { auth: 'none', signal: params.signal }
   )
 
   const groups = response.insUatDashboard ?? []
@@ -65,13 +64,13 @@ export async function getInsDatasetsByCodes(
 
   logger.info('Fetching INS datasets by codes', { count: codes.length })
 
-  const response = await graphqlRequest<{ insDatasets: { nodes: InsDataset[] } }>(
+  const response = await graphqlQuery<{ insDatasets: { nodes: InsDataset[] } }>(
     INS_DATASETS_BY_CODES_QUERY,
     {
       codes,
       limit: Math.min(codes.length, 200),
     },
-    insRequestOptions(signal)
+    { auth: 'none', signal }
   )
 
   return response.insDatasets.nodes ?? []
@@ -83,12 +82,12 @@ export async function getInsContexts(params: {
   offset?: number
   signal?: AbortSignal
 }): Promise<InsContextConnection> {
-  const response = await graphqlRequest<{ insContexts: InsContextConnection }>(INS_CONTEXTS_QUERY, {
+  const response = await graphqlQuery<{ insContexts: InsContextConnection }>(INS_CONTEXTS_QUERY, {
     filter: params.filter,
     limit: params.limit ?? 200,
     offset: params.offset ?? 0,
   },
-    insRequestOptions(params.signal))
+    { auth: 'none', signal: params.signal })
 
   return response.insContexts
 }
@@ -99,12 +98,12 @@ export async function getInsDatasetsCatalog(params: {
   offset?: number
   signal?: AbortSignal
 }): Promise<InsDatasetConnection> {
-  const response = await graphqlRequest<{ insDatasets: InsDatasetConnection }>(INS_DATASETS_QUERY, {
+  const response = await graphqlQuery<{ insDatasets: InsDatasetConnection }>(INS_DATASETS_QUERY, {
     filter: params.filter,
     limit: params.limit ?? 500,
     offset: params.offset ?? 0,
   },
-    insRequestOptions(params.signal))
+    { auth: 'none', signal: params.signal })
 
   return response.insDatasets
 }
@@ -115,12 +114,12 @@ export async function searchInsDatasets(params: {
   offset?: number
   signal?: AbortSignal
 }): Promise<InsDatasetConnection> {
-  const response = await graphqlRequest<{ insDatasets: InsDatasetConnection }>(INS_DATASETS_QUERY, {
+  const response = await graphqlQuery<{ insDatasets: InsDatasetConnection }>(INS_DATASETS_QUERY, {
     filter: params.filter,
     limit: params.limit ?? 50,
     offset: params.offset ?? 0,
   },
-    insRequestOptions(params.signal))
+    { auth: 'none', signal: params.signal })
 
   return response.insDatasets
 }
@@ -134,7 +133,7 @@ export async function getInsObservationsPage(params: {
   offset?: number
   signal?: AbortSignal
 }): Promise<InsObservationConnection> {
-  const response = await graphqlRequest<{ insObservations: InsObservationConnection }>(
+  const response = await graphqlQuery<{ insObservations: InsObservationConnection }>(
     INS_OBSERVATIONS_QUERY,
     {
       datasetCode: params.datasetCode,
@@ -142,7 +141,7 @@ export async function getInsObservationsPage(params: {
       limit: params.limit ?? 200,
       offset: params.offset ?? 0,
     },
-    insRequestOptions(params.signal)
+    { auth: 'none', signal: params.signal }
   )
 
   return response.insObservations
@@ -172,14 +171,14 @@ export async function getInsDatasetDimensions(
 ): Promise<InsDatasetDimensionsResult | null> {
   if (datasetCode.trim().length === 0) return null
 
-  const response = await graphqlRequest<{
+  const response = await graphqlQuery<{
     insDatasets: {
       nodes: Array<{
         code: string
         dimensions?: InsDatasetDimensionsResult['dimensions'] | null
       }>
     }
-  }>(INS_DATASET_DIMENSIONS_QUERY, { datasetCode }, insRequestOptions(signal))
+  }>(INS_DATASET_DIMENSIONS_QUERY, { datasetCode }, { auth: 'none', signal })
 
   const node = response.insDatasets?.nodes?.[0]
   if (!node) return null
@@ -207,7 +206,7 @@ export async function getInsDatasetHistory(params: {
   const observations: InsObservation[] = []
 
   while (hasNextPage && page < maxPages) {
-    const response = await graphqlRequest<{ insObservations: InsObservationConnection }>(
+    const response = await graphqlQuery<{ insObservations: InsObservationConnection }>(
       INS_DATASET_HISTORY_QUERY,
       {
         datasetCode: params.datasetCode,
@@ -215,7 +214,7 @@ export async function getInsDatasetHistory(params: {
         limit: pageSize,
         offset,
       },
-    insRequestOptions(params.signal)
+    { auth: 'none', signal: params.signal }
     )
 
     const connection = response.insObservations
@@ -248,13 +247,13 @@ async function getInsObservationsBatch(params: {
   if (params.datasetCodes.length === 0) return new Map()
 
   const { query, aliasMap } = buildInsObservationsBatchQuery(params.datasetCodes)
-  const response = await graphqlRequest<Record<string, InsObservationConnection>>(
+  const response = await graphqlQuery<Record<string, InsObservationConnection>>(
     query,
     {
       filter: params.filter,
       limit: params.limit ?? INS_OBSERVATION_LIMIT,
     },
-    insRequestOptions(params.signal),
+    { auth: 'none', signal: params.signal },
   )
 
   const result = new Map<string, InsObservationConnection>()

@@ -9,8 +9,8 @@ vi.mock('@/lib/logger', () => ({
   })),
 }))
 
-vi.mock('@/lib/api/graphql', () => ({
-  graphqlRequest: vi.fn(),
+vi.mock('@/lib/graphql/graphql-client', () => ({
+  graphqlQuery: vi.fn(),
 }))
 
 import {
@@ -18,7 +18,7 @@ import {
   getInsDatasetHistory,
   getInsDatasetsCatalog,
 } from './ins-fetchers'
-import { graphqlRequest } from '@/lib/api/graphql'
+import { graphqlQuery } from '@/lib/graphql/graphql-client'
 
 describe('ins fetchers', () => {
   beforeEach(() => {
@@ -26,7 +26,7 @@ describe('ins fetchers', () => {
   })
 
   it('paginates historical observations until completion', async () => {
-    vi.mocked(graphqlRequest)
+    vi.mocked(graphqlQuery)
       .mockResolvedValueOnce({
         insObservations: {
           nodes: [
@@ -67,14 +67,14 @@ describe('ins fetchers', () => {
       maxPages: 10,
     })
 
-    expect(graphqlRequest).toHaveBeenCalledTimes(2)
+    expect(graphqlQuery).toHaveBeenCalledTimes(2)
     expect(result.totalCount).toBe(2)
     expect(result.partial).toBe(false)
     expect(result.observations).toHaveLength(2)
   })
 
   it('advances history offset by returned rows to avoid skips', async () => {
-    vi.mocked(graphqlRequest)
+    vi.mocked(graphqlQuery)
       .mockResolvedValueOnce({
         insObservations: {
           nodes: [
@@ -124,7 +124,7 @@ describe('ins fetchers', () => {
       maxPages: 10,
     })
 
-    expect(graphqlRequest).toHaveBeenNthCalledWith(
+    expect(graphqlQuery).toHaveBeenNthCalledWith(
       1,
       expect.stringContaining('query InsDatasetHistory'),
       expect.objectContaining({
@@ -132,9 +132,9 @@ describe('ins fetchers', () => {
         limit: 1000,
         offset: 0,
       }),
-      expect.objectContaining({ skipAuth: true }),
+      expect.objectContaining({ auth: 'none' }),
     )
-    expect(graphqlRequest).toHaveBeenNthCalledWith(
+    expect(graphqlQuery).toHaveBeenNthCalledWith(
       2,
       expect.stringContaining('query InsDatasetHistory'),
       expect.objectContaining({
@@ -142,7 +142,7 @@ describe('ins fetchers', () => {
         limit: 1000,
         offset: 2,
       }),
-      expect.objectContaining({ skipAuth: true }),
+      expect.objectContaining({ auth: 'none' }),
     )
 
     expect(result.partial).toBe(false)
@@ -150,7 +150,7 @@ describe('ins fetchers', () => {
   })
 
   it('forwards catalog filters to GraphQL', async () => {
-    vi.mocked(graphqlRequest).mockResolvedValue({
+    vi.mocked(graphqlQuery).mockResolvedValue({
       insDatasets: {
         nodes: [],
         pageInfo: { totalCount: 0, hasNextPage: false, hasPreviousPage: false },
@@ -163,19 +163,19 @@ describe('ins fetchers', () => {
       offset: 0,
     })
 
-    expect(graphqlRequest).toHaveBeenCalledWith(
+    expect(graphqlQuery).toHaveBeenCalledWith(
       expect.stringContaining('query InsDatasets'),
       expect.objectContaining({
         filter: { hasCountyData: true, rootContextCode: '2' },
         limit: 50,
         offset: 0,
       }),
-      expect.objectContaining({ skipAuth: true }),
+      expect.objectContaining({ auth: 'none' }),
     )
   })
 
   it('loads dataset dimensions for selector ordering', async () => {
-    vi.mocked(graphqlRequest).mockResolvedValue({
+    vi.mocked(graphqlQuery).mockResolvedValue({
       insDatasets: {
         nodes: [
           {
@@ -196,10 +196,10 @@ describe('ins fetchers', () => {
 
     const result = await getInsDatasetDimensions('SAN104B')
 
-    expect(graphqlRequest).toHaveBeenCalledWith(
+    expect(graphqlQuery).toHaveBeenCalledWith(
       expect.stringContaining('query InsDatasetDimensions'),
       expect.objectContaining({ datasetCode: 'SAN104B' }),
-      expect.objectContaining({ skipAuth: true }),
+      expect.objectContaining({ auth: 'none' }),
     )
     expect(result).toEqual({
       datasetCode: 'SAN104B',

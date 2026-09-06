@@ -8,7 +8,6 @@ import {
 } from './ins-source-fetcher'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import { insSourceDescriptorSchema } from '@/lib/ins/source-contract'
-import { type GraphQLRequestOptions } from '@/lib/api/graphql'
 import { SERIES_MAX_ROWS } from '../../lib/dataset-selection'
 import type {
   InsDatasetFilterInput,
@@ -57,7 +56,7 @@ import {
 
 /**
  * Validated fetchers for the statistics product surfaces (territory search and
- * the dataset explorer). Unlike the legacy fetchers in `ins-fetchers.ts`, these
+ * the dataset explorer). Unlike the unvalidated fetchers in `ins-fetchers.ts`, these
  * parse the wire payload before mapping it, so a server contract change fails
  * loudly at the query boundary instead of rendering as blank cells.
  */
@@ -110,15 +109,6 @@ export async function fetchInsDatasetPage(params: {
     totalCount: insDatasets.pageInfo.totalCount,
     hasNextPage: insDatasets.pageInfo.hasNextPage,
   }
-}
-
-/**
- * All INS reads are public: send no Authorization header (a stale Clerk token
- * 401s an otherwise-public endpoint before any resolver runs). Shared with
- * the legacy `ins-fetchers.ts` lane so no INS read can regress to auth.
- */
-export function insRequestOptions(signal?: AbortSignal): GraphQLRequestOptions {
-  return { skipAuth: true, ...(signal ? { signal } : {}) }
 }
 
 /** Landing POST 2 — loaded/catalog counts + the eight theme counts. */
