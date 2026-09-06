@@ -184,6 +184,18 @@ const LOGO_TINTS = TINT_LIGHTNESS_STEPS.map(toTint)
 const ARMY_TIERS = [0.95, 0.62, 0.38, 0.2] as const
 
 /**
+ * Bounds on a cell's own animation length.
+ *
+ * Exported because the stylesheet derives how long to hold the ripple class
+ * from the longest of them. Holding it for less would drop the class while the
+ * farthest cells were still animating and, with `animation-fill-mode: both`,
+ * snap them back mid-flight. Keeping the number here means changing the range
+ * cannot silently break that.
+ */
+export const SHORTEST_CELL_MS = 720
+export const LONGEST_CELL_MS = 1060
+
+/**
  * Per-cell timing for the intro wave.
  *
  * A plain column ramp put every cell in a column on the same millisecond, so
@@ -199,7 +211,7 @@ function timing(col: number, row: number) {
   return {
     seed: Number(seed.toFixed(3)),
     introDelay: Math.round(col * 22 + rowOffset + seed * 95),
-    duration: Math.round(720 + seed * 340),
+    duration: Math.round(SHORTEST_CELL_MS + seed * (LONGEST_CELL_MS - SHORTEST_CELL_MS)),
   }
 }
 
@@ -300,8 +312,8 @@ function getField(edge: 'left' | 'right', layer: PixelLayer): readonly Square[] 
 /**
  * One layer of one margin field. `aria-hidden` and `pointer-events-none`: it is
  * atmosphere and carries no information a reader could need — which also means
- * it can never be the thing under the cursor, so the hover that drives the
- * animation belongs to the hero section, not to this.
+ * it can never be the thing under the cursor, so the click that starts a ripple
+ * is measured against the hero section rather than against this.
  *
  * Drawn at its natural 24px scale rather than stretched, because scaling would
  * break alignment with the lattice underneath.

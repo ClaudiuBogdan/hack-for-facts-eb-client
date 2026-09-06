@@ -11,18 +11,18 @@ import { ParliamentPromoCard } from '@/features/parliament/components/parliament
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import { scraperDatasetCatalog } from '@/lib/scraper-references'
-import { FIELD_RECT_COUNT, PixelField } from './home-refs.pixel-art'
-import { FIELD_HOVER_ROOT, FieldAnimationStyles } from './home-refs.field-animation'
-import { useFieldMotion } from './home-refs.field-ripple'
+import { PixelField } from './home-refs.pixel-art'
+import { FIELD_HOST_CLASS, FieldAnimationStyles } from './home-refs.field-animation'
+import { useFieldMotion } from './home-refs.field-motion'
 import { LANDING_GROUPS, visibleGroups } from './home.data'
 import type { LandingEntry, LandingGroup } from './home.data'
 
 /**
- * Refined — the same architecture as `grid`, polished.
+ * The landing page.
  *
- * Nothing structural changes: same grouped index, same real fact strip, same
- * light system. What changes is craft, and it is worth reading as a list
- * because each item is a decision rather than a tweak:
+ * Information architecture came from round one (`landing/home`): a grouped
+ * table of contents over every surface the app serves. Everything below is the
+ * craft laid over it, and each item is a decision rather than a tweak:
  *
  * - **The hero headline area.** A tighter display scale (`clamp`, leading 0.92)
  *   with the lead paragraph held to about sixty characters, and the search
@@ -41,8 +41,11 @@ import type { LandingEntry, LandingGroup } from './home.data'
  * - **Real product UI in the hero.** The right column lists actual entities
  *   with their CUIs — the only honest version of the references' "put the
  *   product on the page", since this app has no platform-stats endpoint.
- * - **Cell hover.** Border and index number pick up the single accent and an
- *   arrow fades in. No lift, no shadow.
+ * - **Index cell hover.** Border and index number pick up the single accent and
+ *   an arrow fades in. No lift, no shadow.
+ * - **Margin field motion.** An intro wave shortly after load, and a ripple
+ *   from the click. See `home-refs.field-animation.tsx` for the constraints
+ *   that keep ~990 animating cells off the main thread.
  */
 
 /** Literal marker. `yarn build:validate` fails if this reaches `.output/`. */
@@ -387,7 +390,7 @@ function RefinedLanding({ ripple }: { readonly ripple: boolean }) {
   return (
     <div className="w-full bg-background" data-dev-marker={PROTOTYPE_MARKER}>
       {/* Hero — open band. */}
-      <section ref={heroRef} className={cn('relative overflow-hidden border-b', FIELD_HOVER_ROOT)}>
+      <section ref={heroRef} className={cn('relative overflow-hidden border-b', FIELD_HOST_CLASS)}>
         <FieldAnimationStyles />
         <TwoLayerLattice idPrefix="refined-hero" />
         {/* The grid pixelating at the margins — filled cells on the same 24px
@@ -586,11 +589,8 @@ function RefinedLanding({ ripple }: { readonly ripple: boolean }) {
 }
 
 /**
- * One export per hover animation. The page is identical in every other respect,
- * so a comparison isolates the animation and nothing else.
+ * One export per motion setting. The page is identical in every other respect,
+ * so a comparison isolates the motion and nothing else.
  */
 export const LandingRefsRipple = () => <RefinedLanding ripple />
 export const LandingRefsIntroOnly = () => <RefinedLanding ripple={false} />
-
-/** Rectangles drawn per side — quoted in the harness note. */
-export { FIELD_RECT_COUNT }

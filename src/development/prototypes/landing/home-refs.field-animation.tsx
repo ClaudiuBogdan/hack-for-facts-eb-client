@@ -1,3 +1,5 @@
+import { LONGEST_CELL_MS } from './home-refs.pixel-art'
+
 /**
  * Motion for the margin field: an intro wave on load, a ripple on click.
  *
@@ -29,8 +31,14 @@
  * connection.
  */
 
-/** Class applied to the hero section that hosts both animations. */
-export const FIELD_HOVER_ROOT = 'tpz-field-host'
+/**
+ * Class applied to the hero section that hosts both animations.
+ *
+ * Named for hosting rather than for hovering: hover triggers nothing here. The
+ * section is the host because it is what a click is measured against and what
+ * carries the state classes, not because it reacts to a pointer resting on it.
+ */
+export const FIELD_HOST_CLASS = 'tpz-field-host'
 
 /** Class the host carries while the intro wave is in flight. */
 export const INTRO_CLASS = 'is-intro'
@@ -84,9 +92,6 @@ export const RIPPLE_FALLOFF_PX = 2600
  * it. This is the number that decides whether a ripple is felt.
  */
 export const RIPPLE_CELL_FACTOR = 0.5
-
-/** Longest per-cell duration emitted by the field builder. */
-const LONGEST_CELL_MS = 1060
 
 /** When the last cell can possibly still be moving, plus a margin. */
 export const RIPPLE_TOTAL_MS = Math.round(
@@ -145,13 +150,13 @@ const CSS = `
 
 /* Longhand throughout: the shorthand resets animation-delay, which is the one
    property that differs per cell. */
-.${FIELD_HOVER_ROOT}.${INTRO_CLASS} [data-field-cell],
-.${FIELD_HOVER_ROOT}.${RIPPLING_CLASS} [data-field-cell] {
+.${FIELD_HOST_CLASS}.${INTRO_CLASS} [data-field-cell],
+.${FIELD_HOST_CLASS}.${RIPPLING_CLASS} [data-field-cell] {
   animation-iteration-count: 1;
   animation-fill-mode: both;
 }
 
-.${FIELD_HOVER_ROOT}.${INTRO_CLASS} [data-field-cell] {
+.${FIELD_HOST_CLASS}.${INTRO_CLASS} [data-field-cell] {
   animation-name: tpz-intro;
   /* Each cell runs for its own length, so the field does not settle in
      lockstep. */
@@ -160,7 +165,7 @@ const CSS = `
   animation-delay: var(--dw);
 }
 
-.${FIELD_HOVER_ROOT}.${RIPPLING_CLASS} [data-field-cell] {
+.${FIELD_HOST_CLASS}.${RIPPLING_CLASS} [data-field-cell] {
   animation-name: tpz-ripple;
   /* Deliberately short relative to how long the front takes to cross, so only
      a band of the field is moving at any moment. */
@@ -175,8 +180,8 @@ const CSS = `
    than substituting a jump, and the ripple never starts — the hook checks the
    same preference before it attaches a listener. */
 @media (prefers-reduced-motion: reduce) {
-  .${FIELD_HOVER_ROOT}.${INTRO_CLASS} [data-field-cell],
-  .${FIELD_HOVER_ROOT}.${RIPPLING_CLASS} [data-field-cell] {
+  .${FIELD_HOST_CLASS}.${INTRO_CLASS} [data-field-cell],
+  .${FIELD_HOST_CLASS}.${RIPPLING_CLASS} [data-field-cell] {
     animation: none;
     transform: none;
     opacity: var(--o);

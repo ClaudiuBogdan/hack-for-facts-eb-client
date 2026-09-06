@@ -1,9 +1,6 @@
 import type { PrototypeDefinition } from '@/development/harness/entry'
-import {
-  FIELD_RECT_COUNT,
-  LandingRefsIntroOnly,
-  LandingRefsRipple,
-} from './home-refs.refined'
+import { FIELD_RECT_COUNT } from './home-refs.pixel-art'
+import { LandingRefsIntroOnly, LandingRefsRipple } from './home-refs.refined'
 
 /**
  * Landing page — the chosen direction.
@@ -23,7 +20,7 @@ import {
  * nothing loops or stays resident, no `will-change` across ~990 elements, and
  * reduced motion honoured before a listener is even attached.
  * The reasoning is in `home-refs.field-animation.tsx` and
- * `home-refs.field-ripple.ts`.
+ * `home-refs.field-motion.ts`.
  */
 export const prototype = {
   title: 'Landing page rewrite',
