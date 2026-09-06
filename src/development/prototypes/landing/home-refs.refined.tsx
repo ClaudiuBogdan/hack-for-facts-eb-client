@@ -113,12 +113,12 @@ const LATTICE_MASK: CSSProperties = {
  */
 const FIELD_MASK = {
   left: {
-    maskImage: 'linear-gradient(to right, #000 0%, #000 25%, transparent 90%)',
-    WebkitMaskImage: 'linear-gradient(to right, #000 0%, #000 25%, transparent 90%)',
+    maskImage: 'linear-gradient(to right, #000 0%, #000 40%, transparent 97%)',
+    WebkitMaskImage: 'linear-gradient(to right, #000 0%, #000 40%, transparent 97%)',
   },
   right: {
-    maskImage: 'linear-gradient(to left, #000 0%, #000 25%, transparent 90%)',
-    WebkitMaskImage: 'linear-gradient(to left, #000 0%, #000 25%, transparent 90%)',
+    maskImage: 'linear-gradient(to left, #000 0%, #000 40%, transparent 97%)',
+    WebkitMaskImage: 'linear-gradient(to left, #000 0%, #000 40%, transparent 97%)',
   },
 } satisfies Record<'left' | 'right', CSSProperties>
 
