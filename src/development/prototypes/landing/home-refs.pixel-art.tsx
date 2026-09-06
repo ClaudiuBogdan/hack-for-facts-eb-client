@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils'
  *
  * - `mono`   — density decays from the edge. The plainest reading.
  * - `logo`   — the camouflage field exactly, with each tier also carrying a
- *              tint from the app mark's palette, pulled most of the way to grey.
+ *              step of the blue ramp taken from the app mark.
  * - `army`   — smooth noise quantised into four bands, so cells clump into
  *              connected patches instead of scattering. Monochrome on purpose;
  *              olive would import a palette the design system does not have.
@@ -66,38 +66,60 @@ function fbm(x: number, y: number): number {
 type Square = {
   readonly x: number
   readonly y: number
+  /** A full cell, or one of its halves, quarters or eighths. */
+  readonly size: number
   readonly opacity: number
   /** Only set by treatments that colour cells individually. */
   readonly fill?: string
 }
 
-/** Sampled off `src/assets/logo/logo.png` — cyan through blue and violet to magenta. */
-const LOGO_STOPS = ['#35C4F0', '#2B6FE8', '#7B45E0', '#D94BC8'] as const
+/**
+ * Particle dispersion: where a whole cell has thinned out, the patch leaves
+ * fragments behind instead of simply stopping.
+ *
+ * Each band is a fraction of the cell and a stretch of the inward axis it lives
+ * on. They overlap deliberately and move outward-to-inward as they get smaller,
+ * so the field coarsens at the edge and breaks down as it travels — halves
+ * first, then quarters, then eighths. Fragments are placed on the cell's own
+ * subdivisions, so an eighth still lands on a 3px lattice of the 24px module
+ * rather than floating free of it.
+ */
+const PARTICLE_BANDS = [
+  { divisor: 2, centre: 0.34, spread: 0.34, chance: 0.16 },
+  { divisor: 4, centre: 0.56, spread: 0.32, chance: 0.075 },
+  { divisor: 8, centre: 0.78, spread: 0.3, chance: 0.03 },
+] as const
+
+/** Fragments carry slightly less weight than a whole cell, by size. */
+const PARTICLE_WEIGHT: Record<number, number> = { 2: 0.85, 4: 0.72, 8: 0.6 }
+
+/** The blue from `src/assets/logo/logo.png`. One hue, so this stays a single accent. */
+const LOGO_BLUE = '#2B6FE8'
+
+/**
+ * Lightness per camouflage tier, darkest first — the ramp the patches are cut
+ * from.
+ *
+ * With four hues the tints had to be flattened to a common lightness, because
+ * hue was doing the distinguishing and varying brightness as well read as a
+ * gradient rather than as patches. With one hue that reverses: value is the
+ * only thing left to tell patches apart, so it has to vary, and the steps are
+ * spaced widely enough to survive being multiplied by the tier's own opacity.
+ */
+const TINT_LIGHTNESS_STEPS = [0.42, 0.53, 0.63, 0.73] as const
 
 /** Neutral the logo hues are pulled toward. */
 const NEUTRAL: readonly [number, number, number] = [138, 138, 143]
 
 /**
- * How much of the source hue survives after the palette is flattened. Colour in
- * the margin still has to stay under the one accent the rest of the page keeps,
- * so this is the single number to turn if it reads too strong or too grey.
+ * How much of the blue survives the mute toward the neutral. The single number
+ * to turn if the margin reads too strong or too grey.
  */
-const HUE_STRENGTH = 0.92
+const HUE_STRENGTH = 0.96
 
-/**
- * Every tint is forced to this lightness before it is muted.
- *
- * This is what makes the field read as camouflage rather than as a gradient.
- * Real camouflage varies *hue* across patches while holding value roughly
- * constant; the raw logo palette does the opposite — its cyan is far lighter
- * than its blue — so keying tint to tier made brightness, not colour, the thing
- * the eye picked up, and the patches read as a ramp. Flattening lightness lets
- * the tier's own opacity carry weight and leaves hue to distinguish patches.
- */
-const TINT_LIGHTNESS = 0.58
 
-/** Ceiling on saturation, so no patch turns into a swatch. */
-const TINT_SATURATION_CAP = 0.85
+/** Ceiling on saturation. At 1 the source saturation passes through unchanged. */
+const TINT_SATURATION_CAP = 1
 
 const toRgb = (hex: string): readonly [number, number, number] => [
   parseInt(hex.slice(1, 3), 16),
@@ -147,34 +169,19 @@ function hslToRgb(h: number, s: number, l: number): readonly [number, number, nu
   ]
 }
 
-/** Flatten to a common lightness and capped saturation, then mute toward the neutral. */
-const toTint = (hex: string): string => {
-  const { h, s } = rgbToHsl(toRgb(hex))
-  const flat = hslToRgb(h, Math.min(s, TINT_SATURATION_CAP), TINT_LIGHTNESS)
+/** Set a lightness on the blue, then mute toward the neutral. */
+const toTint = (lightness: number): string => {
+  const { h, s } = rgbToHsl(toRgb(LOGO_BLUE))
+  const step = hslToRgb(h, Math.min(s, TINT_SATURATION_CAP), lightness)
   const channel = (i: number) =>
-    Math.round(NEUTRAL[i] + (flat[i] - NEUTRAL[i]) * HUE_STRENGTH)
+    Math.round(NEUTRAL[i] + (step[i] - NEUTRAL[i]) * HUE_STRENGTH)
       .toString(16)
       .padStart(2, '0')
   return `#${channel(0)}${channel(1)}${channel(2)}`
 }
 
-/** The logo palette, flattened and muted. Computed, so both constants stay tunable. */
-const LOGO_TINTS = LOGO_STOPS.map(toTint)
-
-/**
- * Which tint each step of the field takes, as indexes into `LOGO_STOPS`.
- *
- * Blue appears three times out of six on purpose. An even 1:1 mapping of tier
- * to stop gave magenta as much of the field as blue, and magenta is the least
- * screen-like colour in the mark — the field read as pastel rather than
- * digital. Weighting it this way keeps cyan and violet as the register either
- * side of blue and leaves magenta as the rare one.
- *
- * It is driven by the *same* noise field as the opacity tier, so hue boundaries
- * land on tone boundaries and a patch stays a single object. Keying hue to an
- * independent field was tried and it dissolved the patch edges.
- */
-const HUE_SEQUENCE = [1, 0, 1, 2, 1, 3] as const
+/** The blue ramp, one tint per tier. Computed, so every constant stays tunable. */
+const LOGO_TINTS = TINT_LIGHTNESS_STEPS.map(toTint)
 
 /** Camouflage tiers, darkest patch first. Monochrome; opacity carries the tier. */
 const ARMY_TIERS = [0.95, 0.62, 0.38, 0.2] as const
@@ -204,22 +211,46 @@ function buildField(edge: 'left' | 'right', treatment: PixelTreatment): readonly
         // instead would have made the edge heavier before it made the middle
         // reach, which is the opposite of what is wanted.
         const reach = Math.pow(1 - inward, 1.05)
-        if (field < 0.31 || hash(row, col) > reach + 0.18) continue
+        if (field < 0.31) continue
+
+        const tint = treatment === 'logo' ? LOGO_TINTS[tier] : undefined
+
+        // Where the whole cell has thinned out, the patch disperses into
+        // fragments rather than stopping. Emitting one or the other — never
+        // both — keeps a cell reading as a single decision.
+        if (hash(row, col) > reach + 0.18) {
+          for (const band of PARTICLE_BANDS) {
+            const weight = 1 - Math.abs(inward - band.centre) / band.spread
+            if (weight <= 0) continue
+            const size = CELL / band.divisor
+            for (let sy = 0; sy < band.divisor; sy += 1) {
+              for (let sx = 0; sx < band.divisor; sx += 1) {
+                if (hash(col * 37 + sx + band.divisor, row * 23 + sy) > band.chance * weight) {
+                  continue
+                }
+                squares.push({
+                  x: x + sx * size,
+                  y: y + sy * size,
+                  size,
+                  opacity: Number(
+                    (ARMY_TIERS[tier] * PARTICLE_WEIGHT[band.divisor] * weight).toFixed(3),
+                  ),
+                  fill: tint,
+                })
+              }
+            }
+          }
+          continue
+        }
+
         squares.push({
+          size: CELL,
           x,
           y,
           opacity: Number((ARMY_TIERS[tier] * reach).toFixed(3)),
-          // Tint driven by the same field as the tone, through a blue-weighted
-          // sequence, so hue and weight move together and a patch reads as one
-          // object.
-          fill:
-            treatment === 'logo'
-              ? LOGO_TINTS[
-                  HUE_SEQUENCE[
-                    Math.min(HUE_SEQUENCE.length - 1, Math.floor(field * HUE_SEQUENCE.length))
-                  ]
-                ]
-              : undefined,
+          // Tint keyed to the same tier as the tone, so a patch is one object:
+          // one step of the blue ramp at one weight.
+          fill: treatment === 'logo' ? LOGO_TINTS[tier] : undefined,
         })
         continue
       }
@@ -231,7 +262,7 @@ function buildField(edge: 'left' | 'right', treatment: PixelTreatment): readonly
         const reach = Math.pow(1 - inward, 1.9)
         const strength = field * reach * (1 - vertical * 0.45)
         if (strength < 0.1) continue
-        squares.push({ x, y, opacity: Number(Math.min(1, strength * 2.4).toFixed(3)) })
+        squares.push({ x, y, size: CELL, opacity: Number(Math.min(1, strength * 2.4).toFixed(3)) })
         continue
       }
 
@@ -239,7 +270,7 @@ function buildField(edge: 'left' | 'right', treatment: PixelTreatment): readonly
       if (noise > density) continue
       if (hash(row, col) < vertical * 0.35) continue
 
-      squares.push({ x, y, opacity: Number((0.45 + (1 - inward) * 0.55).toFixed(3)) })
+      squares.push({ x, y, size: CELL, opacity: Number((0.45 + (1 - inward) * 0.55).toFixed(3)) })
     }
   }
 
@@ -257,7 +288,7 @@ function buildField(edge: 'left' | 'right', treatment: PixelTreatment): readonly
  */
 const TREATMENT_OPACITY: Record<PixelTreatment, string> = {
   mono: 'opacity-[0.055]',
-  logo: 'opacity-[0.3]',
+  logo: 'opacity-[0.42]',
   army: 'opacity-[0.13]',
   clouds: 'opacity-[0.16]',
 }
@@ -270,6 +301,18 @@ const TREATMENT_OPACITY: Record<PixelTreatment, string> = {
  * would break alignment with the lattice underneath and the squares would stop
  * landing on grid intersections.
  */
+/** Deterministic, so each combination is built once and reused. */
+const fieldCache = new Map<string, readonly Square[]>()
+
+function getField(edge: 'left' | 'right', treatment: PixelTreatment): readonly Square[] {
+  const key = `${edge}:${treatment}`
+  const cached = fieldCache.get(key)
+  if (cached) return cached
+  const built = buildField(edge, treatment)
+  fieldCache.set(key, built)
+  return built
+}
+
 export function PixelField({
   edge,
   treatment,
@@ -279,7 +322,7 @@ export function PixelField({
   readonly treatment: PixelTreatment
   readonly className?: string
 }) {
-  const squares = buildField(edge, treatment)
+  const squares = getField(edge, treatment)
 
   return (
     <svg
@@ -296,11 +339,11 @@ export function PixelField({
     >
       {squares.map((square) => (
         <rect
-          key={`${square.x}-${square.y}`}
+          key={`${square.x}-${square.y}-${square.size}`}
           x={square.x}
           y={square.y}
-          width={CELL}
-          height={CELL}
+          width={square.size}
+          height={square.size}
           fill={square.fill ?? 'currentColor'}
           opacity={square.opacity}
         />
