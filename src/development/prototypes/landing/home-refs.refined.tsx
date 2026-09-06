@@ -126,6 +126,48 @@ function TwoLayerLattice({ idPrefix }: { readonly idPrefix: string }) {
   )
 }
 
+/**
+ * The tricolour, as the separator in the wordmark — a roundel rather than a
+ * rectangle, so it reads as a mark between two words instead of a second flag
+ * competing with the logo beside it.
+ *
+ * Drawn rather than set as 🇷🇴: regional-indicator flags do not render on
+ * Windows, which falls back to the letters "RO", and the emoji's size and
+ * baseline vary by platform font. Eight pixels keeps it quieter than the 14px
+ * wordmark it separates; the hairline ring stops the blue band from dissolving
+ * into a dark background.
+ */
+function RomanianFlag() {
+  return (
+    <svg
+      width="8"
+      height="8"
+      viewBox="0 0 12 12"
+      aria-hidden="true"
+      focusable="false"
+      className="shrink-0"
+    >
+      <clipPath id="ro-roundel">
+        <circle cx="6" cy="6" r="6" />
+      </clipPath>
+      <g clipPath="url(#ro-roundel)">
+        <rect width="4" height="12" fill="#002B7F" />
+        <rect x="4" width="4" height="12" fill="#FCD116" />
+        <rect x="8" width="4" height="12" fill="#CE1126" />
+      </g>
+      <circle
+        cx="6"
+        cy="6"
+        r="5.5"
+        fill="none"
+        stroke="currentColor"
+        strokeOpacity="0.2"
+        strokeWidth="1"
+      />
+    </svg>
+  )
+}
+
 /** The content frame, ruled on both edges so bands read as one column. */
 function Frame({ children, className }: { readonly children: ReactNode; readonly className?: string }) {
   return (
@@ -341,11 +383,9 @@ export function LandingRefsRefined() {
                 />
                 <span className="flex items-baseline gap-2">
                   <span className="text-sm font-semibold tracking-tight text-foreground">
-                    Transparenta<span className="text-primary">.eu</span>
+                    Transparenta.eu
                   </span>
-                  <span aria-hidden="true" className="text-xs text-muted-foreground/40">
-                    ·
-                  </span>
+                  <RomanianFlag />
                   <MonoLabel className="text-muted-foreground">România</MonoLabel>
                 </span>
               </span>
