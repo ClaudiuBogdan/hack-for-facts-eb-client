@@ -54,6 +54,18 @@ function timeScaleFor(visibleWidth: number) {
  * - **Nothing attaches at all** when the reader prefers reduced motion.
  */
 
+/**
+ * Anything a click could mean something to.
+ *
+ * A ripple is decoration, and decoration should not answer a click that had a
+ * purpose. Focusing the search, following a shortcut or opening an entity are
+ * real intents; sending a flourish across both margins in reply reads as the
+ * page reacting to the wrong thing. Matched with `closest`, so a click on an
+ * icon or a label inside a control still counts as a click on the control.
+ */
+const INTERACTIVE =
+  'a, button, input, textarea, select, label, [role="button"], [role="combobox"], [role="link"], [contenteditable]'
+
 /** Peak scale at the very centre of the ripple. Falls off with amplitude. */
 const PEAK_SCALE = 1.75
 
@@ -149,6 +161,9 @@ export function useFieldMotion({ ripple }: { ripple: boolean }) {
       // Primary button only; a right-click opening a context menu should not
       // set the field off.
       if (event.button !== 0) return
+
+      const target = event.target
+      if (target instanceof Element && target.closest(INTERACTIVE)) return
 
       cancelAnimationFrame(frame)
       frame = requestAnimationFrame(() => {
