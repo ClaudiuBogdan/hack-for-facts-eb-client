@@ -108,7 +108,7 @@ jobs:
       # Legacy entity-route tests still depend on live SSR bootstrap. Keep
       # their existing environment until they gain server-side fixtures.
       - name: Run Integration Tests
-        run: npx playwright test --project=integration --grep-invert 'statistics-dataset-detail.spec.ts' --reporter=list --max-failures=5 --retries=2 --shard=${{ matrix.shard }}/${{ matrix.total_shards }}
+        run: npx playwright test --project=integration --grep-invert 'statistics-.*\.spec\.ts' --reporter=list --max-failures=5 --retries=2 --shard=${{ matrix.shard }}/${{ matrix.total_shards }}
         env:
           CI: true
           E2E_MODE: mock
@@ -117,12 +117,14 @@ jobs:
           VITE_APP_NAME: Transparenta
           VITE_APP_ENVIRONMENT: ci
 
-      - name: Run isolated INS source-detail tests
-        run: npx playwright test tests/integration/statistics-dataset-detail.spec.ts --project=integration --reporter=list --max-failures=5 --retries=2 --shard=${{ matrix.shard }}/${{ matrix.total_shards }}
+      - name: Run isolated INS statistics tests
+        run: npx playwright test --grep 'statistics-.*\.spec\.ts' --project=integration --reporter=list --max-failures=5 --retries=2 --shard=${{ matrix.shard }}/${{ matrix.total_shards }}
         env:
           CI: true
           E2E_MODE: mock
-          # Browser fixtures cannot intercept SSR. The existing INS loader
+          # All statistics routes use browser fixtures that cannot intercept SSR.
+          # Isolate landing, detail, explorer, comparisons and territory hub.
+          # The existing INS loader
           # fallback must receive browser fixtures rather than live dev data.
           VITE_API_URL: http://127.0.0.1:65534
           INTERNAL_API_URL: http://127.0.0.1:65534
