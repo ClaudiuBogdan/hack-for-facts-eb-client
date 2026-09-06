@@ -1,6 +1,7 @@
 import type { PrototypeDefinition } from '@/development/harness/entry'
 import { LandingRefsGrid } from './home-refs.grid'
 import { LandingRefsForge } from './home-refs.forge'
+import { LandingRefsRefined } from './home-refs.refined'
 
 /**
  * Landing page, round two — the reference study.
@@ -41,11 +42,16 @@ export const prototype = {
       component: LandingRefsGrid,
       note: 'Lattice, shared-border cells, split section header, display type — on the shipped light neutral-navy skin.',
     },
+    refined: {
+      title: 'Refined — the same architecture, polished',
+      component: LandingRefsRefined,
+      note: 'Two-layer masked lattice, frame rules, corner ticks, locally-restyled search, real entities as hero product UI, accent hover on cells.',
+    },
     forge: {
       title: 'Forge — the brief taken literally',
       component: LandingRefsForge,
       note: 'Same structure on a near-black canvas with one orange accent. Note the shell around it stays light.',
     },
   },
-  compare: ['grid', 'forge'],
+  compare: ['grid', 'refined'],
 } satisfies PrototypeDefinition
