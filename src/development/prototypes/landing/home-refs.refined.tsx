@@ -195,10 +195,24 @@ function RomanianFlag({ className }: { readonly className?: string }) {
   )
 }
 
-/** The content frame, ruled on both edges so bands read as one column. */
-function Frame({ children, className }: { readonly children: ReactNode; readonly className?: string }) {
+/**
+ * The content frame, ruled on both edges so bands read as one column.
+ *
+ * `marker` labels a frame for code outside the render tree — the hero's is the
+ * region the ripple refuses to start in, so the field answers clicks on the
+ * margin it lives in and stays still for clicks on the content.
+ */
+function Frame({
+  children,
+  className,
+  marker,
+}: {
+  readonly children: ReactNode
+  readonly className?: string
+  readonly marker?: string
+}) {
   return (
-    <div className={cn('relative mx-auto w-full max-w-6xl px-5 sm:px-8', className)}>
+    <div data-frame={marker} className={cn('relative mx-auto w-full max-w-6xl px-5 sm:px-8', className)}>
       <span aria-hidden="true" className="absolute inset-y-0 left-0 w-px bg-border" />
       <span aria-hidden="true" className="absolute inset-y-0 right-0 w-px bg-border" />
       {children}
@@ -441,7 +455,7 @@ function RefinedLanding({ ripple }: { readonly ripple: boolean }) {
             <PixelField edge="right" layer="particles" className="right-0 top-0" />
           </div>
         </div>
-        <Frame className="py-12 sm:py-20 lg:py-24">
+        <Frame marker="hero" className="py-12 sm:py-20 lg:py-24">
           <CornerTicks />
           <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12 lg:gap-8">
             <div className="min-w-0 lg:col-span-7">

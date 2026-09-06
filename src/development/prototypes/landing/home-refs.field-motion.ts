@@ -55,16 +55,19 @@ function timeScaleFor(visibleWidth: number) {
  */
 
 /**
- * Anything a click could mean something to.
+ * The region a ripple refuses to start in: the hero's content column.
  *
- * A ripple is decoration, and decoration should not answer a click that had a
- * purpose. Focusing the search, following a shortcut or opening an entity are
- * real intents; sending a flourish across both margins in reply reads as the
- * page reacting to the wrong thing. Matched with `closest`, so a click on an
- * icon or a label inside a control still counts as a click on the control.
+ * A ripple is decoration, and it belongs to the margins the field lives in.
+ * Starting one under the headline, the search or the entity list answers a
+ * click that had a purpose with a flourish across the page, which reads as
+ * reacting to the wrong thing.
+ *
+ * This supersedes an earlier list of interactive selectors. The frame is a
+ * simpler and stricter rule — every control in the hero is inside it, and so is
+ * every piece of text a reader might click while reading — and it cannot drift
+ * out of date as the hero's contents change.
  */
-const INTERACTIVE =
-  'a, button, input, textarea, select, label, [role="button"], [role="combobox"], [role="link"], [contenteditable]'
+const CONTENT_FRAME = '[data-frame="hero"]'
 
 /** Peak scale at the very centre of the ripple. Falls off with amplitude. */
 const PEAK_SCALE = 1.75
@@ -163,7 +166,7 @@ export function useFieldMotion({ ripple }: { ripple: boolean }) {
       if (event.button !== 0) return
 
       const target = event.target
-      if (target instanceof Element && target.closest(INTERACTIVE)) return
+      if (target instanceof Element && target.closest(CONTENT_FRAME)) return
 
       cancelAnimationFrame(frame)
       frame = requestAnimationFrame(() => {
