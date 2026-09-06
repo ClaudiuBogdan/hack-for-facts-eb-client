@@ -102,6 +102,8 @@ function normalizeSeriesForFetch(series: RemoteFetchSeries): unknown {
     datasetCode: series.datasetCode,
     period: series.period,
     aggregation: series.aggregation,
+    intervalOperation: series.intervalOperation,
+    periodicity: series.periodicity,
     territoryCodes: series.territoryCodes,
     sirutaCodes: series.sirutaCodes,
     unitCodes: series.unitCodes,

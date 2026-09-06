@@ -13,6 +13,8 @@ type PeriodSelectionMode = 'dates' | 'interval'
 type Props = {
   value?: ReportPeriodInput
   onChange: (value?: ReportPeriodInput) => void
+  /** Preserve saved selections when available metadata changes; only explicit edits may alter them. */
+  preserveSelection?: boolean
   allowDeselect?: boolean
   allowedPeriodTypes?: ReportPeriodType[]
   yearRange?: { start: number; end: number }
@@ -52,6 +54,7 @@ export function PeriodFilter({
   value,
   onChange,
   allowDeselect = true,
+  preserveSelection = false,
   allowedPeriodTypes,
   yearRange,
 }: Props) {
@@ -77,11 +80,11 @@ export function PeriodFilter({
   )
 
   const periodType = useMemo(() => {
-    if (value?.type && normalizedAllowedPeriodTypes.includes(value.type)) {
+    if (value?.type && (preserveSelection || normalizedAllowedPeriodTypes.includes(value.type))) {
       return value.type
     }
     return normalizedAllowedPeriodTypes[0] ?? 'YEAR'
-  }, [normalizedAllowedPeriodTypes, value?.type])
+  }, [normalizedAllowedPeriodTypes, preserveSelection, value?.type])
   const selectionMode: PeriodSelectionMode = value?.selection.interval ? 'interval' : 'dates'
 
   const availableYears = useMemo(() => {
@@ -226,12 +229,12 @@ export function PeriodFilter({
   ])
 
   useEffect(() => {
-    if (!value) return
+    if (!value || preserveSelection) return
     const clampedValue = clampPeriodValue(value)
     if (!arePeriodsEqual(value, clampedValue)) {
       onChange(clampedValue)
     }
-  }, [clampPeriodValue, onChange, value])
+  }, [clampPeriodValue, onChange, preserveSelection, value])
 
   const handlePeriodTypeChange = (type: ReportPeriodType) => {
     if (!type) return
@@ -359,16 +362,14 @@ export function PeriodFilter({
     const startValue = value?.selection.interval?.start
     const endValue = value?.selection.interval?.end
 
-    const startIndex = startValue ? selectablePeriodOptions.indexOf(startValue) : 0
-    const endIndex = endValue ? selectablePeriodOptions.indexOf(endValue) : selectablePeriodOptions.length - 1
-    const endOptions = selectablePeriodOptions.slice(startIndex)
-    const startOptions = selectablePeriodOptions.slice(0, endIndex + 1)
+    const endOptions = selectablePeriodOptions.filter((option) => startValue === undefined || option >= startValue)
+    const startOptions = selectablePeriodOptions.filter((option) => endValue === undefined || option <= endValue)
 
     return (
       <div className="flex items-center gap-2">
         <Select value={startValue} onValueChange={(v) => handleIntervalStartChange(v as PeriodDate)}>
           <SelectTrigger>
-            <SelectValue placeholder="Start" />
+            <SelectValue placeholder="Start">{startValue}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             {[...startOptions].reverse().map((p) => (
@@ -381,7 +382,7 @@ export function PeriodFilter({
         <span>-</span>
         <Select value={endValue} onValueChange={(v) => handleIntervalEndChange(v as PeriodDate)}>
           <SelectTrigger>
-            <SelectValue placeholder="End" />
+            <SelectValue placeholder="End">{endValue}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             {[...endOptions].reverse().map((p) => (

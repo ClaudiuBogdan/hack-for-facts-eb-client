@@ -442,3 +442,30 @@ describe('PeriodFilter', () => {
     })
   })
 })
+
+
+describe('preserved map selection', () => {
+  it('does not shorten a saved interval when source coverage is smaller', () => {
+    const onChange=vi.fn();
+    render(<PeriodFilter preserveSelection value={createIntervalPeriod('2025','2026')} onChange={onChange} yearRange={{start:2020,end:2025}} />);
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.getByText('2026')).toBeInTheDocument();
+  });
+  it('offers valid start options when a saved end is beyond available coverage', async () => {
+    render(<PeriodFilter preserveSelection value={createIntervalPeriod('2025','2026')} onChange={vi.fn()} yearRange={{start:2020,end:2025}} />);
+    fireEvent.keyDown(screen.getAllByRole('combobox')[0]!,{key:'ArrowDown'});
+    expect(await screen.findByRole('option',{name:'2020'})).toBeInTheDocument();
+    expect(screen.getByRole('option',{name:'2025'})).toBeInTheDocument();
+  });
+  it('offers valid end options when a saved start precedes available coverage', async () => {
+    render(<PeriodFilter preserveSelection value={createIntervalPeriod('2019','2025')} onChange={vi.fn()} yearRange={{start:2020,end:2025}} />);
+    fireEvent.keyDown(screen.getAllByRole('combobox')[1]!,{key:'ArrowDown'});
+    expect(await screen.findByRole('option',{name:'2020'})).toBeInTheDocument();
+    expect(screen.getByRole('option',{name:'2025'})).toBeInTheDocument();
+  });
+  it('keeps a saved frequency even when current metadata no longer lists it', () => {
+    const onChange=vi.fn();
+    render(<PeriodFilter preserveSelection value={createQuarterPeriod('2025-Q4')} onChange={onChange} allowedPeriodTypes={['YEAR']} />);
+    expect(onChange).not.toHaveBeenCalled();
+  });
+});

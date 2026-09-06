@@ -1,9 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { createDefaultAdvancedMapAnalyticsSeries } from '@/schemas/advanced-map-analytics';
 import { createUploadedMapDatasetSeries } from '@/features/advanced-map-analytics/uploaded-map-dataset';
-import { buildRemoteGroupedSeriesState } from '@/lib/map-series/grouped-series-request';
+import { buildRemoteGroupedSeriesState, serializeRemoteFetchSeriesForRequest } from '@/lib/map-series/grouped-series-request';
 
 describe('buildRemoteGroupedSeriesState', () => {
+  it('sends and hashes explicit INS interval operations separately from legacy aggregation', () => {
+    const base = createDefaultAdvancedMapAnalyticsSeries('ins-series');
+    if (base.type !== 'ins-series') throw new Error('Fixture must be INS');
+    const series = { ...base, datasetCode: 'POP107D', period: { type: 'YEAR' as const, selection: { interval: { start: '2020', end: '2021' } } }, intervalOperation: 'average' as const, periodicity: 'ANNUAL' as const };
+    expect(serializeRemoteFetchSeriesForRequest(series)).toMatchObject({ intervalOperation: 'average', periodicity: 'ANNUAL', aggregation: 'sum' });
+    expect(buildRemoteGroupedSeriesState([series]).remoteBaseSeriesHash).not.toBe(buildRemoteGroupedSeriesState([{...series, intervalOperation:'sum'}]).remoteBaseSeriesHash);
+    expect(serializeRemoteFetchSeriesForRequest(base)).toMatchObject({ period: undefined, intervalOperation: undefined });
+  });
+
   it('keeps uploaded datasets in the remote fetch series list', () => {
     const executionSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
     const uploadedDatasetSeries = createUploadedMapDatasetSeries(

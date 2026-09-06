@@ -62,21 +62,29 @@ This is client groundwork; it does not by itself mount the native grouped-series
 - Phase 1 uses a mock map-specific adapter behind this stable interface.
 - Map and table endpoints remain separate externally (backend reuse is internal).
 
-## INS Series Parity
+## Native INS map periods (2026-09-07)
 
-- `/maps/editor` reuses the full chart INS editor workflow (dataset, period, dimensions), not a reduced map-specific form.
-- INS editor is adapter-based and store-agnostic:
-  - chart keeps chart-store wiring
-  - map uses adapter mode
-- Map INS dataset picker is capability-scoped:
-  - `has_uat_data = true`
-  - `has_siruta = true`
-- INS map vectors are evaluated with a dedicated map scalar engine:
-  - same observation filtering/reduction semantics as chart INS runtime
-  - scalar output grouped by `siruta_code`
-  - aggregation reuses `sum | average | first` across selected periods
-  - mixed units are warning-only with deterministic unit resolution
-- INS transport remains mocked in phase 1, but mock generation now follows INS filter semantics instead of generic random values.
+The map reuses the chart dataset/dimension editor with a map-specific period
+control. New map selections default to a shared latest reference period; territories
+without an observation in that period remain unavailable. Mixed-frequency sources
+require an explicit frequency.
+
+**User decision:** any explicit period selection requires `intervalOperation`:
+`sum`, `average`, or `latest`. This is separate from the carried `aggregation`
+field, which must never implicitly select a temporal operation. Existing saved
+intervals without the new field remain readable and prompt for a choice.
+The operation and optional latest frequency are included in request serialization
+and its cache identity. Numeric constants and filter/bin inputs remain unchanged.
+
+Saved map periods are preserved when coverage metadata changes. Neither the INS
+editor nor the shared period picker may automatically shorten an interval or
+replace its frequency. The picker retains its existing default behavior for charts;
+only maps opt into preservation. Out-of-coverage endpoints remain visible and
+editable, and switching from latest to interval clears the previous frequency.
+
+These controls and the native server reader are implemented independently of
+provider mounting. Full native map composition and local/dev acceptance remain
+release gates; this section does not claim that the replacement map is deployed.
 
 ## Calculation Semantics (Map-Specific)
 

@@ -1178,6 +1178,28 @@ describe('InsSeriesEditor', () => {
     });
   });
 
+  it('keeps map latest selection after metadata resolves', async () => {
+    mockGetInsDatasetDetails.mockResolvedValue(createDatasetDetails({ code: 'POP107D' }));
+    const { applyPatch } = renderEditorWithAdapter({ seriesOverrides: { datasetCode: 'POP107D' }, adapterOverrides: { mapPeriodSelection: true } });
+    await waitFor(() => expect(mockGetInsDatasetDetails).toHaveBeenCalled());
+    expect(applyPatch).not.toHaveBeenCalledWith(expect.objectContaining({ period: expect.any(Object) }));
+    expect(screen.getByText(/All territories use the same most recent reference period/)).toBeInTheDocument();
+  });
+
+  it('does not rewrite a saved map interval after coverage metadata loads', async () => {
+    mockGetInsDatasetDetails.mockResolvedValue(createDatasetDetails({ code:'POP107D', year_range:[1992,2025] }));
+    const {applyPatch}=renderEditorWithAdapter({seriesOverrides:{datasetCode:'POP107D',period:{type:'YEAR',selection:{interval:{start:'2025',end:'2026'}}},intervalOperation:'sum'},adapterOverrides:{mapPeriodSelection:true}});
+    await waitFor(()=>expect(mockGetInsDatasetDetails).toHaveBeenCalled());
+    expect(applyPatch).not.toHaveBeenCalledWith(expect.objectContaining({period:expect.any(Object)}));
+  });
+
+  it('asks for an explicit map interval operation when reading a saved interval', async () => {
+    mockGetInsDatasetDetails.mockResolvedValue(createDatasetDetails({ code: 'POP107D' }));
+    renderEditorWithAdapter({ seriesOverrides: { datasetCode:'POP107D', period: { type:'YEAR', selection:{interval:{start:'2020',end:'2021'}} } }, adapterOverrides:{mapPeriodSelection:true} });
+    expect(screen.getByRole('combobox', { name: 'Interval operation' })).toHaveAttribute('aria-invalid','true');
+    expect(screen.getByText(/Choose how to combine the selected periods/)).toBeInTheDocument();
+  });
+
   it('supports adapter mode and forwards dataset capability filter', async () => {
     const applyPatch = vi.fn();
     const series = createSeries();

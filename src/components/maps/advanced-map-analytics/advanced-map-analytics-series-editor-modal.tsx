@@ -411,6 +411,7 @@ function SeriesConfigEditor({
 
   const adapter: InsSeriesEditorAdapter = {
     territorySelectionMode: 'canonical',
+    mapPeriodSelection: true,
     series,
     datasetFilter: {
       hasUatData: true,

@@ -1690,7 +1690,7 @@ msgstr "După ce mesajul se deschide și îl trimiți din clientul tău de email
 msgid "After:"
 msgstr "După:"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:462
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:463
 msgid "Aggregate an existing UAT-level series into the selected group workspace."
 msgstr "Agregă o serie existentă la nivel de UAT în spațiul de lucru de grup selectat."
 
@@ -1725,7 +1725,7 @@ msgid "Aggregated Value Legend"
 msgstr "Legendă valoare cumulată"
 
 #: src/components/charts/components/views/SeriesConfigView.tsx:465
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:551
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:552
 msgid "Aggregation"
 msgstr "Agregare"
 
@@ -1893,6 +1893,10 @@ msgstr "Toate fazele au fost explorate!"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:361
 msgid "All predefined views are already enabled."
 msgstr "Toate vizualizările predefinite sunt deja activate."
+
+#: src/components/charts/components/series-config/ins-map-period-editor.tsx:82
+msgid "All territories use the same most recent reference period. Missing observations remain unavailable."
+msgstr "Toate teritoriile folosesc aceeași perioadă de referință, cea mai recentă. Observațiile lipsă rămân indisponibile."
 
 #: src/features/procurement/components/procurement-hub-filter-sheet.tsx:160
 #: src/features/procurement/lib/hub-filter-chips.ts:96
@@ -2192,6 +2196,7 @@ msgstr "Adnotări"
 msgid "Announcement"
 msgstr "Anunț"
 
+#: src/components/charts/components/series-config/ins-map-period-editor.tsx:106
 #: src/components/entities/views/ins-stats-view.formatters.ts:8
 msgid "Annual"
 msgstr "Anual"
@@ -2613,6 +2618,10 @@ msgstr "Credite de angajament disponibile"
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:1001
 msgid "Available for legally established associations."
 msgstr "Disponibil pentru asociații legal constituite."
+
+#: src/components/charts/components/series-config/ins-map-period-editor.tsx:151
+msgid "Average"
+msgstr "Medie"
 
 #: src/components/charts/components/views/SeriesConfigView.tsx:509
 msgid "Average (mean value)"
@@ -3142,7 +3151,7 @@ msgstr "Serie calculată"
 msgid "Calculation"
 msgstr "Calcul"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:475
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:476
 msgid "Calculation sources are supported only when their result is still UAT-level."
 msgstr "Sursele de calcul sunt acceptate doar când rezultatul rămâne la nivel de UAT."
 
@@ -3969,6 +3978,7 @@ msgstr ""
 msgid "Choose a disabled view to enable it in this map."
 msgstr "Alege o vizualizare dezactivată pentru a o activa pe această hartă."
 
+#: src/components/charts/components/series-config/ins-map-period-editor.tsx:100
 #: src/features/statistics/components/entity-ins-source-controls.tsx:212
 msgid "Choose a frequency"
 msgstr "Alege o frecvență"
@@ -3989,6 +3999,10 @@ msgstr "Alege un răspuns"
 msgid "Choose an INS dataset"
 msgstr "Alege un set de date INS"
 
+#: src/components/charts/components/series-config/ins-map-period-editor.tsx:144
+msgid "Choose an interval operation"
+msgstr "Alege o operație pentru interval"
+
 #: src/routes/cookies.lazy.tsx:134
 msgid "Choose between essential-only or all cookies, then fine-tune individual options below. Your selections are saved when you press \"Confirm choices\"."
 msgstr "Alegeți între doar cookie-urile esențiale sau toate cookie-urile, apoi ajustați opțiunile individuale de mai jos. Selecțiile sunt salvate când apăsați „Confirmă alegerile”."
@@ -4001,6 +4015,10 @@ msgstr "Alegeți setul de date"
 #: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:103
 msgid "Choose file"
 msgstr "Alegeți fișierul"
+
+#: src/components/charts/components/series-config/ins-map-period-editor.tsx:160
+msgid "Choose how to combine the selected periods before loading this series."
+msgstr "Alege cum se combină perioadele selectate înainte de a încărca seria."
 
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:970
 msgid "Choose how you want the public debate request to be sent."
@@ -5370,7 +5388,7 @@ msgstr "Județ"
 msgid "County {0}"
 msgstr "Județul {0}"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:773
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:774
 msgid "County and region filters can both be selected and are combined using AND logic."
 msgstr "Filtrele de județ și regiune pot fi ambele selectate și sunt combinate folosind logica ȘI."
 
@@ -5383,7 +5401,7 @@ msgstr "Limite județene"
 msgid "County code {0}"
 msgstr "Cod județ {0}"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:760
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:761
 msgid "County Filters"
 msgstr "Filtre județe"
 
@@ -5491,7 +5509,7 @@ msgstr "Nivel CPV"
 msgid "CPV: {0}"
 msgstr "CPV: {0}"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:481
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:482
 msgid "Create a group workspace before configuring a grouped series."
 msgstr "Creați un spațiu de lucru de grup înainte de a configura o serie grupată."
 
@@ -5507,7 +5525,7 @@ msgstr "Creați un spațiu de lucru de grup nou din rânduri CSV. Setările și 
 msgid "Create a new map using the latest saved snapshot"
 msgstr "Creează o hartă nouă folosind ultimul instantaneu salvat"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:467
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:468
 msgid "Create a source series before configuring a grouped series."
 msgstr "Creați o serie sursă înainte de a configura o serie grupată."
 
@@ -5927,7 +5945,7 @@ msgstr "Filtru serie de date"
 msgid "Data series saved"
 msgstr "Seria de date a fost salvată"
 
-#: src/components/charts/components/series-config/InsSeriesEditor.tsx:574
+#: src/components/charts/components/series-config/InsSeriesEditor.tsx:582
 msgid "Data source:"
 msgstr "Sursa datelor:"
 
@@ -5959,7 +5977,7 @@ msgstr "Data registrului de lucru"
 msgid "Data: Eurostat 2024 (Provisional)"
 msgstr "Date: Eurostat 2024 (Provizorii)"
 
-#: src/components/charts/components/series-config/InsSeriesEditor.tsx:589
+#: src/components/charts/components/series-config/InsSeriesEditor.tsx:597
 #: src/features/statistics/components/native-entity-ins-view.tsx:134
 msgid "Dataset"
 msgstr "Set de date"
@@ -6051,6 +6069,10 @@ msgstr ""
 #: src/features/statistics/pages/statistics-territory-hub-page.tsx:260
 msgid "Date indisponibile încă"
 msgstr ""
+
+#: src/components/charts/components/series-config/ins-map-period-editor.tsx:74
+msgid "Date interval"
+msgstr "Interval de timp"
 
 #: src/components/data-trust/data-status-badge.tsx:42
 #: src/features/justice/lib/justice-format.ts:107
@@ -6197,7 +6219,7 @@ msgstr "Datele sunt un instantaneu al INS Tempo. Fiecare valoare își arată pe
 msgid "Datele sunt un instantaneu INS Tempo — fiecare cifră își arată propria perioadă de referință."
 msgstr "Datele sunt un instantaneu INS Tempo — fiecare cifră își arată propria perioadă de referință."
 
-#: src/components/filters/period-filter/PeriodFilter.tsx:422
+#: src/components/filters/period-filter/PeriodFilter.tsx:423
 msgid "Dates"
 msgstr "Date"
 
@@ -9175,6 +9197,7 @@ msgstr "Plafoanele acordurilor-cadru"
 msgid "Frecvență"
 msgstr "Frecvență"
 
+#: src/components/charts/components/series-config/ins-map-period-editor.tsx:99
 #: src/features/statistics/components/entity-ins-source-controls.tsx:205
 msgid "Frequency"
 msgstr "Frecvență"
@@ -9579,7 +9602,7 @@ msgstr "Valoare de grup"
 msgid "Group value · Filtered out"
 msgstr "Valoare de grup · Exclus de filtru"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:522
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:523
 msgid "Group workspace"
 msgstr "Spațiu de lucru de grup"
 
@@ -10569,7 +10592,7 @@ msgstr ""
 msgid "INS dataset catalog"
 msgstr "Catalog de seturi de date INS"
 
-#: src/components/charts/components/series-config/InsSeriesEditor.tsx:570
+#: src/components/charts/components/series-config/InsSeriesEditor.tsx:578
 msgid "INS Dataset Configuration"
 msgstr "Configurare set de date INS"
 
@@ -10613,7 +10636,7 @@ msgstr "Selecția sursei INS"
 msgid "INS statistics"
 msgstr "Statistici INS"
 
-#: src/components/charts/components/series-config/InsSeriesEditor.tsx:581
+#: src/components/charts/components/series-config/InsSeriesEditor.tsx:589
 #: src/components/entities/views/ins-stats-view.tsx:816
 #: src/features/statistics/components/coverage-ribbon.tsx:38
 #: src/features/statistics/components/source-provenance-drawer.tsx:39
@@ -10760,7 +10783,7 @@ msgid "interval"
 msgstr "interval"
 
 #: src/components/entities/views/ins-stats-view.formatters.ts:10
-#: src/components/filters/period-filter/PeriodFilter.tsx:425
+#: src/components/filters/period-filter/PeriodFilter.tsx:426
 msgid "Interval"
 msgstr "Interval"
 
@@ -10776,6 +10799,11 @@ msgstr "Mod interval"
 #: src/features/statistics/components/dataset-explorer-row.tsx:48
 msgid "Interval necunoscut"
 msgstr ""
+
+#: src/components/charts/components/series-config/ins-map-period-editor.tsx:127
+#: src/components/charts/components/series-config/ins-map-period-editor.tsx:141
+msgid "Interval operation"
+msgstr "Operație pentru interval"
 
 #: src/features/parliament/components/parliament-stenogram-intervention-rail.tsx:663
 msgid "Intervenția {ordinal}: {speakerLabel}"
@@ -11184,6 +11212,10 @@ msgstr "Ultima actualizare:"
 msgid "Latest ANAF bilant indicators and fiscal status. Values are never shown as zero when data is missing."
 msgstr "Ultimii indicatori de bilanț ANAF și statutul fiscal. Valorile nu sunt afișate ca zero când lipsesc datele."
 
+#: src/components/charts/components/series-config/ins-map-period-editor.tsx:71
+msgid "Latest available"
+msgstr "Cele mai recente date disponibile"
+
 #: src/features/procurement/lib/hub-filter-chips.ts:110
 msgid "Latest available month"
 msgstr "Cea mai recentă lună disponibilă"
@@ -11191,6 +11223,10 @@ msgstr "Cea mai recentă lună disponibilă"
 #: src/features/statistics/components/entity-ins-source-history.tsx:183
 msgid "Latest INS observation"
 msgstr "Cea mai recentă observație INS"
+
+#: src/components/charts/components/series-config/ins-map-period-editor.tsx:154
+msgid "Latest observation"
+msgstr "Cea mai recentă observație"
 
 #: src/features/statistics/components/entity-ins-source-history.tsx:185
 msgid "Latest source observation"
@@ -11721,7 +11757,7 @@ msgstr "Se încarcă datele..."
 msgid "Loading dataset details..."
 msgstr "Se încarcă detaliile setului de date..."
 
-#: src/components/charts/components/series-config/InsSeriesEditor.tsx:894
+#: src/components/charts/components/series-config/InsSeriesEditor.tsx:909
 msgid "Loading dataset dimensions..."
 msgstr "Se încarcă dimensiunile setului de date..."
 
@@ -12859,8 +12895,9 @@ msgstr ""
 msgid "Month"
 msgstr "Luna"
 
+#: src/components/charts/components/series-config/ins-map-period-editor.tsx:109
 #: src/components/entities/views/ins-stats-view.formatters.ts:13
-#: src/components/filters/period-filter/PeriodFilter.tsx:412
+#: src/components/filters/period-filter/PeriodFilter.tsx:413
 msgid "Monthly"
 msgstr "Lunar"
 
@@ -13605,7 +13642,7 @@ msgstr "Nicio condiție adăugată încă. Faceți clic pe butonul de mai jos pe
 msgid "No conditions set"
 msgstr "Nicio condiție setată"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:653
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:654
 msgid "No counties available."
 msgstr "Nu există județe disponibile."
 
@@ -13776,7 +13813,7 @@ msgstr "Niciun element de grup nu corespunde acestei căutări."
 msgid "No group values are available for this selection."
 msgstr "Nu există valori de grup pentru această selecție."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:540
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:541
 msgid "No group workspace"
 msgstr "Fără spațiu de lucru de grup"
 
@@ -13952,7 +13989,7 @@ msgstr "Nicio înregistrare în domeniul selectat"
 msgid "No rectifications"
 msgstr "Fără rectificări"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:657
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:658
 msgid "No regions available."
 msgstr "Nu există regiuni disponibile."
 
@@ -13992,7 +14029,7 @@ msgstr "Nu s-a găsit nicio serie."
 msgid "No SIRUTA code associated."
 msgstr "Nu este asociat niciun cod SIRUTA."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:511
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:512
 msgid "No source series"
 msgstr "Fără serie sursă"
 
@@ -15880,7 +15917,7 @@ msgid "Perioade incompatibile"
 msgstr "Perioade incompatibile"
 
 #: src/components/budget-explorer/BudgetExplorerHeader.tsx:117
-#: src/components/charts/components/series-config/InsSeriesEditor.tsx:610
+#: src/components/charts/components/series-config/InsSeriesEditor.tsx:618
 #: src/components/charts/components/series-config/SeriesFilter.tsx:820
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1207
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1535
@@ -15901,7 +15938,7 @@ msgstr "Perioadă"
 msgid "Period Growth"
 msgstr "Creștere pe perioadă"
 
-#: src/components/filters/period-filter/PeriodFilter.tsx:402
+#: src/components/filters/period-filter/PeriodFilter.tsx:403
 msgid "Period Type"
 msgstr "Tip perioadă"
 
@@ -16091,7 +16128,7 @@ msgid "Populația după domiciliu la 1 ianuarie, pe județe și municipiul Bucur
 msgstr "Populația după domiciliu la 1 ianuarie, pe județe și municipiul București. Schimbarea procentuală între cele două capete de interval."
 
 #: src/components/entity-analytics/EntityAnalyticsTable.tsx:93
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:720
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:721
 #: src/components/maps/charts/UatDataCharts.tsx:139
 #: src/components/maps/charts/UatPopulationSpendingScatterPlot.tsx:50
 #: src/components/maps/charts/UatPopulationSpendingScatterPlot.tsx:61
@@ -16119,7 +16156,7 @@ msgstr "Populație"
 msgid "Population (POP107D)"
 msgstr "Populație (POP107D)"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:723
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:724
 msgid "Population field"
 msgstr "Câmp populație"
 
@@ -16918,8 +16955,9 @@ msgstr "Cantitate"
 msgid "Quarter"
 msgstr "Trimestru"
 
+#: src/components/charts/components/series-config/ins-map-period-editor.tsx:108
 #: src/components/entities/views/ins-stats-view.formatters.ts:12
-#: src/components/filters/period-filter/PeriodFilter.tsx:409
+#: src/components/filters/period-filter/PeriodFilter.tsx:410
 msgid "Quarterly"
 msgstr "Trimestrial"
 
@@ -17264,6 +17302,11 @@ msgstr "Refacere reușită"
 msgid "Reference"
 msgstr "Referință"
 
+#: src/components/charts/components/series-config/ins-map-period-editor.tsx:39
+#: src/components/charts/components/series-config/ins-map-period-editor.tsx:66
+msgid "Reference period"
+msgstr "Perioadă de referință"
+
 #: src/components/provenance/source-provenance.tsx:440
 msgid "Referință din registru"
 msgstr ""
@@ -17319,7 +17362,7 @@ msgstr ""
 msgid "Region"
 msgstr "Regiune"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:767
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:768
 msgid "Region Filters"
 msgstr "Filtre regiuni"
 
@@ -17645,7 +17688,7 @@ msgstr "Necesare pentru funcționalitățile de bază, precum securitatea, auten
 msgid "Requires variation; rule is skipped if standard deviation is zero."
 msgstr "Necesită variație; regula este omisă dacă deviația standard este zero."
 
-#: src/components/charts/components/series-config/InsSeriesEditor.tsx:628
+#: src/components/charts/components/series-config/InsSeriesEditor.tsx:643
 msgid "Reselect dataset"
 msgstr "Selectează din nou setul de date"
 
@@ -18722,7 +18765,7 @@ msgstr "Selectați un UAT de pe hartă pentru a-i edita valoarea."
 msgid "Select a UAT from the map to load its details here."
 msgstr "Selectați un UAT de pe hartă pentru a-i încărca aici detaliile."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:564
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:565
 msgid "Select aggregation"
 msgstr "Selectează agregarea"
 
@@ -18750,7 +18793,7 @@ msgstr "Selectează câmpul"
 msgid "Select field first"
 msgstr "Selectează mai întâi câmpul"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:536
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:537
 msgid "Select group workspace"
 msgstr "Selectează spațiul de lucru de grup"
 
@@ -18774,7 +18817,7 @@ msgstr "Selectează opțiuni"
 msgid "Select Path"
 msgstr "Selectează parcursul"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:742
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:743
 msgid "Select population field"
 msgstr "Selectează câmpul de populație"
 
@@ -18794,7 +18837,7 @@ msgstr "Selectează tipul seriei"
 msgid "Select Series Type"
 msgstr "Selectați tipul de serie"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:507
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:508
 msgid "Select source series"
 msgstr "Selectează seria sursă"
 
@@ -18802,11 +18845,11 @@ msgstr "Selectează seria sursă"
 msgid "Select specific years. If none selected, all years will be shown."
 msgstr "Selectați anii specifici. Dacă nu se selectează niciunul, se vor afișa toți anii."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:485
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:486
 msgid "Select the group workspace that should receive the aggregated values."
 msgstr "Selectați spațiul de lucru de grup care va primi valorile agregate."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:471
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:472
 msgid "Select the UAT-level source series to aggregate."
 msgstr "Selectați seria sursă la nivel de UAT de agregat."
 
@@ -18828,7 +18871,7 @@ msgid "Selectează {label}"
 msgstr ""
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1264
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:870
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:871
 msgid "selected"
 msgstr "selectate"
 
@@ -18899,7 +18942,7 @@ msgstr "selecție reprezentativă"
 msgid "Selecție reprezentativă"
 msgstr "Selecție reprezentativă"
 
-#: src/components/filters/period-filter/PeriodFilter.tsx:418
+#: src/components/filters/period-filter/PeriodFilter.tsx:419
 msgid "Selection Mode"
 msgstr "Mod de selecție"
 
@@ -19727,7 +19770,7 @@ msgstr "Procedura sursă"
 msgid "Source selection"
 msgstr "Selecția sursei"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:493
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:494
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:272
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:283
 msgid "Source series"
@@ -20243,11 +20286,12 @@ msgstr "Subtitlu"
 msgid "Successfully unsubscribed"
 msgstr "Dezabonare reușită"
 
+#: src/components/charts/components/series-config/ins-map-period-editor.tsx:148
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:594
 msgid "Sum"
 msgstr "Sumă"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:567
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:568
 msgid "Sum group members"
 msgstr "Sumă membrii grupului"
 
@@ -20731,7 +20775,7 @@ msgstr "Nivel teritorial"
 msgid "Territories beyond the map's top list"
 msgstr "Teritorii dincolo de topul afișat pe hartă"
 
-#: src/components/charts/components/series-config/InsSeriesEditor.tsx:875
+#: src/components/charts/components/series-config/InsSeriesEditor.tsx:890
 #: src/features/procurement/components/procurement-territory-drawer.tsx:119
 msgid "Territory"
 msgstr "Teritoriu"
@@ -21083,7 +21127,7 @@ msgstr "Perioada bugetară selectată are o frecvență diferită. Alege perioad
 msgid "The selected dataset could not be resolved from the server."
 msgstr "Setul de date selectat nu a putut fi identificat de pe server."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:489
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:490
 msgid "The selected group workspace does not contain any groups yet."
 msgstr "Spațiul de lucru de grup selectat nu conține încă grupuri."
 
@@ -21303,7 +21347,7 @@ msgstr "Această previzualizare folosește starea persistentă a setului de date
 msgid "This record could not be found"
 msgstr ""
 
-#: src/components/charts/components/series-config/InsSeriesEditor.tsx:626
+#: src/components/charts/components/series-config/InsSeriesEditor.tsx:641
 msgid "This saved series uses territory filters. Reselect its dataset to choose original INS source dimensions."
 msgstr "Această serie salvată folosește filtre teritoriale. Selectează din nou setul de date pentru a alege dimensiunile originale ale sursei INS."
 
@@ -22175,7 +22219,7 @@ msgid "Unique code"
 msgstr "Cod unic"
 
 #: src/components/alerts/components/ConditionsList.tsx:116
-#: src/components/charts/components/series-config/InsSeriesEditor.tsx:782
+#: src/components/charts/components/series-config/InsSeriesEditor.tsx:797
 #: src/components/charts/components/series-config/UnitInput.tsx:28
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1406
 #: src/components/entities/views/ins-stats-view.tsx:1180
@@ -22513,7 +22557,7 @@ msgstr "Folosiți împreună cu sporul natural pentru a separa schimbarea demogr
 msgid "Use both sides when you want high and low extremes."
 msgstr "Folosiți ambele părți când doriți extreme maxime și minime."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:568
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:569
 msgid "Use first group member"
 msgstr "Folosește primul membru al grupului"
 
@@ -22845,7 +22889,7 @@ msgstr "Calitatea valorii: {categories}"
 msgid "Value ranking is unavailable for this scope — showing count order instead."
 msgstr "Clasamentul după valoare nu este disponibil pentru acest domeniu — se afișează ordinea după număr."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:721
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:722
 msgid "Value source"
 msgstr "Sursa valorii"
 
@@ -22856,7 +22900,7 @@ msgstr "Sursa valorii"
 msgid "Values"
 msgstr "Valori"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:716
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:717
 msgid "Values are always population. County and region selections filter the included UATs."
 msgstr "Valorile sunt întotdeauna populație. Selecțiile de județ și regiune filtrează UAT-urile incluse."
 
@@ -23528,7 +23572,7 @@ msgstr "Anul {label}"
 msgid "Year: {0}"
 msgstr "An: {0}"
 
-#: src/components/filters/period-filter/PeriodFilter.tsx:406
+#: src/components/filters/period-filter/PeriodFilter.tsx:407
 msgid "Yearly"
 msgstr "Anual"
 

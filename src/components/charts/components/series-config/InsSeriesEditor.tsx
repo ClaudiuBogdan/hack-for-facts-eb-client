@@ -37,6 +37,7 @@ import {
   type InsDimensionOptionKind,
   upsertSelectionRecord,
 } from './ins-series-editor.utils';
+import { InsMapPeriodEditor } from './ins-map-period-editor';
 import { InsDatasetList } from './ins-dataset-list';
 import { InsDimensionValuesList } from './ins-dimension-values-list';
 
@@ -48,7 +49,9 @@ export interface InsSeriesEditorDatasetFilter {
 }
 
 export interface InsSeriesEditorAdapter {
-  /** Charts preserve source dimensions; the legacy map provider still uses canonical filters. */
+  /** Maps choose one scalar period or explicit interval operation. Charts keep time series. */
+  mapPeriodSelection?: boolean;
+  /** Charts preserve source dimensions; maps use canonical territory filters. */
   territorySelectionMode?: 'source' | 'canonical';
   series?: InsSeriesConfiguration;
   applyPatch: (patch: Partial<InsSeriesConfiguration>) => void;
@@ -398,7 +401,7 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
   }, [adapter]);
 
   useEffect(() => {
-    if (!dataset) return;
+    if (!dataset || adapter.mapPeriodSelection) return;
 
     const clampedPeriod = clampPeriodToDatasetConstraints(
       series?.period as ReportPeriodInput | undefined,
@@ -417,7 +420,7 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
 
     const defaultPeriod = buildDefaultInsPeriod(dataset, allowedPeriodTypes[0] as ReportPeriodType | undefined);
     update({ period: defaultPeriod });
-  }, [allowedPeriodTypes, dataset, datasetYearRange, series?.period, update])
+  }, [adapter.mapPeriodSelection, allowedPeriodTypes, dataset, datasetYearRange, series?.period, update])
 
   const beginDimensionRequest = (
     datasetCode: string,
@@ -477,6 +480,8 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
       datasetCode,
       label: toDatasetSeriesLabel(datasetCode, optionLabel),
       period: undefined,
+      intervalOperation: undefined,
+      periodicity: undefined,
       unitCodes: undefined,
       territoryCodes: undefined,
       sirutaCodes: undefined,
@@ -497,6 +502,7 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
     update({
       label: getDatasetDisplayName(details, locale),
       ...defaults,
+      ...(adapter.mapPeriodSelection ? { period: undefined, intervalOperation: undefined, periodicity: undefined } : {}),
     });
   };
 
@@ -505,6 +511,8 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
     update({
       datasetCode: undefined,
       period: undefined,
+      intervalOperation: undefined,
+      periodicity: undefined,
       unitCodes: undefined,
       territoryCodes: undefined,
       sirutaCodes: undefined,
@@ -537,7 +545,7 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
   }
 
   const clearPeriodSelection = () => {
-    update({ period: undefined });
+    update({ period: undefined, ...(adapter.mapPeriodSelection ? { intervalOperation: undefined } : {}) });
   };
 
   const removeSinglePeriodOption = (option: OptionItem) => {
@@ -613,12 +621,19 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
           onClearOption={removeSinglePeriodOption}
           onClearAll={clearPeriodSelection}
         >
+          {adapter.mapPeriodSelection ? <InsMapPeriodEditor
+            series={series}
+            onChange={update}
+            allowedPeriodTypes={allowedPeriodTypes}
+            yearRange={datasetYearRange}
+          /> : (
           <PeriodFilter
             value={series.period as ReportPeriodInput | undefined}
             onChange={(period) => update({ period })}
             allowedPeriodTypes={allowedPeriodTypes}
             yearRange={datasetYearRange}
           />
+          )}
         </FilterContainer>
 
         {dataset && territorySelectionMode === 'source' && hasSavedTerritoryFilters && (

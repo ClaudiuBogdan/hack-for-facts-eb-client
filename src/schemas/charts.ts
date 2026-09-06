@@ -360,6 +360,8 @@ export const InsSeriesConfigurationSchema = BaseSeriesConfigurationSchema.extend
   unit: z.string().optional().default('').describe('Unit of measurement for INS values. Usually inferred from dataset observations. Leave empty to auto-detect from API metadata.'),
   datasetCode: z.string().optional().describe('INS dataset code (matrix code), for example "POP107D". Required for querying observations. Selected from INS datasets catalog.'),
   period: ReportPeriodInputZ.optional().describe('INS period selection using the same report-period interface as execution series. Supports period type (YEAR/QUARTER/MONTH) and either dates or interval selection.'),
+  intervalOperation: z.enum(['sum', 'average', 'latest']).optional().describe('Explicit map interval reducer; omission never implies sum.'),
+  periodicity: z.enum(['ANNUAL', 'QUARTERLY', 'MONTHLY']).optional().describe('Frequency for a map latest-period request when the source publishes multiple frequencies.'),
   aggregation: InsSeriesAggregationSchema.default('sum').describe('Retained for saved-document compatibility. No reducer may combine alternative native INS source identities; choose one complete source series.'),
   territoryCodes: z.array(z.string()).optional().describe('Optional INS territory codes filter (e.g., ["RO"], county codes at NUTS3).'),
   sirutaCodes: z.array(z.string()).optional().describe('Optional INS SIRUTA codes filter (typically LAU localities/UATs).'),
