@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 import type { LinkProps } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
 import leu from '@/assets/images/landing-leu.webp'
-import taur from '@/assets/images/landing-taur.webp'
+import balanta from '@/assets/images/landing-balanta.webp'
 import justitia from '@/assets/images/landing-justitia.webp'
 import logo from '@/assets/logo/logo.png'
 import { EntitySearchInput } from '@/components/entities/EntitySearch'
@@ -392,10 +392,10 @@ type GroupImage = {
  *
  * Two things worth carrying with this map.
  *
- * Allegory generates safely; real institutions do not. Justitia and a stone
- * lion have no referent to get wrong. A rendered Palace of the Parliament that
- * is almost right would undercut the one thing this platform sells — that what
- * you are shown is the actual record.
+ * Allegory generates safely; real institutions do not. A Justitia, a stone lion
+ * and a balance have no referent to get wrong. A rendered Palace of the
+ * Parliament that is almost right would undercut the one thing this platform
+ * sells — that what you are shown is the actual record.
  *
  * And these are cropped to their alpha bounding box before encoding. Under
  * `contain` it is the empty margin in the file, not any CSS, that decides how
@@ -404,9 +404,9 @@ type GroupImage = {
  * wherever the cell is narrowest.
  */
 const GROUP_IMAGES: Record<string, GroupImage | undefined> = {
-  // The leu, in both senses — the stone lion and the currency. Four entries, so
-  // the picture spans four rows and the cell comes out tall and narrow, which
-  // is what a seated figure on a pedestal wants.
+  // The leu, in both senses — the stone lion and the currency. The widest group
+  // at four entries, so its cell comes out the tallest and narrowest of the
+  // three, which is what a seated figure on a pedestal wants.
   bani: {
     src: leu,
     fit: 'contain',
@@ -415,20 +415,20 @@ const GROUP_IMAGES: Record<string, GroupImage | undefined> = {
     // 4:5 against the source's own 0.807, so mobile barely letterboxes.
     mobileAspect: 'aspect-4/5',
   },
-  // On the right, so the two illustrated bands above and below it do not stack
-  // their pictures down the same edge of the page.
+  // On the right, so the three pictures alternate down the page rather than
+  // stacking along one edge.
   //
   // The span is derived from the visible entry count rather than written here,
   // which matters most for this group: Întreprinderi publice sits behind a
   // mock-data gate, so it is three entries tall today and four when that gate
   // opens.
   institutii: {
-    src: taur,
+    src: balanta,
     fit: 'contain',
     position: '50% 50%',
     side: 'right',
-    // 5:6 is the cropped source's own 0.832.
-    mobileAspect: 'aspect-5/6',
+    // 4:5 against the cropped source's own 0.805.
+    mobileAspect: 'aspect-4/5',
   },
   // Anchored to the very top. Centring lands on drapery, and anything below the
   // top edge slices the head off at desktop widths, where the cell is at its
