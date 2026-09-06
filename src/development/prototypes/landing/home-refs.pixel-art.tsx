@@ -111,7 +111,7 @@ const SQUARE_COLUMNS = 16
  * it made the three sizes read as one speckled mass with no order in it. The
  * density falloff carries the transition instead.
  */
-const DIFFUSION_BOUNDS = [20, 26] as const
+const DIFFUSION_BOUNDS = [19, 25] as const
 
 /**
  * Where particles may start, in columns — four short of where the squares end.
@@ -125,7 +125,7 @@ const DIFFUSION_BOUNDS = [20, 26] as const
  * In the overlap a cell can hold a square or a particle, never both, so the
  * pattern is never dressed on top of itself.
  */
-const TAIL_START = 12
+const TAIL_START = 10
 
 function diffusionSize(col: number): number {
   if (col < DIFFUSION_BOUNDS[0]) return CELL / 2
@@ -259,7 +259,11 @@ function buildField(edge: 'left' | 'right', treatment: PixelTreatment): readonly
             x,
             y,
             size: CELL,
-            opacity: Number((ARMY_TIERS[tier] * reach).toFixed(3)),
+            // Weight gets a floor. `reach` runs to zero at the last column, so
+            // the final squares were being drawn at no opacity at all — the
+            // band appeared to stop several columns before it did, leaving a
+            // gap the tail then had to start across.
+            opacity: Number((ARMY_TIERS[tier] * Math.max(reach, 0.16)).toFixed(3)),
             // Tint keyed to the same tier as the tone, so a patch is one
             // object: one step of the blue ramp at one weight.
             fill: tint,
@@ -276,8 +280,15 @@ function buildField(edge: 'left' | 'right', treatment: PixelTreatment): readonly
         // instead of scattering evenly and reading as static. The threshold
         // rises with distance, so the tail is dense where it meets the squares
         // and thins out from there.
-        const drift = fbm(col * 0.5 + 11, row * 0.5 + 7)
-        if (drift < 0.4 + tail * 0.32) continue
+        // Coherent noise alone streaked the particles into diagonal bands —
+        // the clumping was too strong and too smooth to read as scatter. Mixing
+        // it with white noise keeps a loose tendency to cluster while breaking
+        // the streaks up.
+        const drift = fbm(col * 0.62 + 11, row * 0.62 + 7) * 0.55 + hash(col * 3 + 5, row * 3 + 2) * 0.45
+        // Dense where it meets the squares, so the two bands carry the same
+        // weight across the handover: a half-cell covers a quarter of a cell's
+        // area, so the tail needs far more cells than the squares to match them.
+        if (drift < 0.24 + tail * 0.46) continue
 
         const size = diffusionSize(col)
         // Scattered onto the cell's own sub-grid rather than centred in it.
