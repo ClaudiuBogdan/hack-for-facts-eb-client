@@ -1,57 +1,37 @@
 import type { PrototypeDefinition } from '@/development/harness/entry'
-import { LandingRefsGrid } from './home-refs.grid'
-import { LandingRefsForge } from './home-refs.forge'
 import { LandingRefsRefined } from './home-refs.refined'
 
 /**
- * Landing page, round two — the reference study.
+ * Landing page — the chosen direction.
  *
- * Round one (`landing/home`) decided information architecture: baseline vs a
- * grouped table of contents vs an intent-led hero. Both variants here adopt the
- * grouped index, so this round varies only skin and grid structure.
+ * Round one (`landing/home`) decided information architecture: a grouped table
+ * of contents over every surface, rather than the shipped four cards or an
+ * intent-led hero. This prototype carries that IA into a design derived from
+ * ui8.ai/forge, vercel.com/ai-sdk and opentrain.ai.
  *
- * Source material: ui8.ai/forge, vercel.com/ai-sdk, opentrain.ai. Six claims in
- * the brief written from them do not survive the screenshots:
+ * Two earlier variants were removed once this one was chosen. `grid` was the
+ * same architecture without the polish; `forge` was the research brief taken
+ * literally — a near-black canvas with an orange accent — and it did its job by
+ * showing the cost: the shell does not change with the page, so the sidebar,
+ * footer, search input and campaign card all stayed light around a black body,
+ * and `DESIGN.md` quarantines page-level skins to PNRR and Parliament.
  *
- * - Vercel's AI SDK page and OpenTrain are both *light*. The dark canvas comes
- *   from Forge alone, which is one reference of three.
- * - Forge's primary CTA is solid orange, not the neutral white/black the brief
- *   recommends.
- * - Vercel's buttons are full pills and its code panel is ~12px, not the
- *   "0–8px, no pills" rule.
- * - Vercel's hero has no visible grid at all; OpenTrain's is a faint lattice on
- *   a white background.
- * - OpenTrain floats shadowed cards over a globe, which the brief lists as an
- *   anti-pattern.
- * - The 45% Vercel / 30% Forge weighting cannot produce a dark canvas, because
- *   the 45% reference is white.
- *
- * What does transfer is structure, and it is skin-agnostic: the continuous
- * lattice, cells sharing borders instead of floating, asymmetric section
- * headers, display type with tight tracking, monospace numbering, and section
- * boundaries drawn as hairlines. `grid` applies all of it on this app's own
- * light system; `forge` applies it on the brief's dark orange skin so the cost
- * is visible rather than argued.
+ * Worth keeping in mind while iterating, because it constrains what belongs
+ * here: of the three references the brief was written from, only Forge is dark.
+ * Vercel's AI SDK page and OpenTrain are both light, and OpenTrain draws its
+ * lattice on white. What transferred is structure — the lattice, cells sharing
+ * borders, asymmetric section headers, display type, monospace numbering — not
+ * the skin.
  */
 export const prototype = {
-  title: 'Landing page — reference study (Forge / Vercel / OpenTrain)',
+  title: 'Landing page rewrite',
   spec: 'docs/user-stories/landing-page.md',
   variants: {
-    grid: {
-      title: 'Grid — references’ structure on this app’s system',
-      component: LandingRefsGrid,
-      note: 'Lattice, shared-border cells, split section header, display type — on the shipped light neutral-navy skin.',
-    },
     refined: {
-      title: 'Refined — the same architecture, polished',
+      title: 'Refined',
       component: LandingRefsRefined,
-      note: 'Two-layer masked lattice, frame rules, corner ticks, locally-restyled search, real entities as hero product UI, accent hover on cells.',
-    },
-    forge: {
-      title: 'Forge — the brief taken literally',
-      component: LandingRefsForge,
-      note: 'Same structure on a near-black canvas with one orange accent. Note the shell around it stays light.',
+      note: 'Grouped index, two-layer masked lattice, frame rules, locally-restyled search, real entities as hero product UI, accent hover on cells.',
     },
   },
-  compare: ['grid', 'refined'],
+  compare: ['refined'],
 } satisfies PrototypeDefinition
