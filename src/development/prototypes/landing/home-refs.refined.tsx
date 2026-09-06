@@ -244,8 +244,37 @@ function CornerTicks() {
     <span aria-hidden="true">
       <span className={cn(arm, '-left-px -top-px border-l border-t')} />
       <span className={cn(arm, '-right-px -top-px border-r border-t')} />
-      <span className={cn(arm, '-bottom-px -left-px border-b border-l')} />
-      <span className={cn(arm, '-bottom-px -right-px border-b border-r')} />
+    </span>
+  )
+}
+
+/**
+ * The crossing mark that sits where the hero's bottom rule meets each side of
+ * the frame — the bottom pair of corner ticks, opened out into a full cross and
+ * given the brand blue so the frame closes on a deliberate mark rather than
+ * trailing off.
+ *
+ * Rendered by the band *below* the hero rather than by the hero itself. The
+ * hero clips its own overflow to hold the margin field, so a cross centred on
+ * its bottom edge would lose its lower half; anchored to the top edge of the
+ * next band it lands on the same point with nothing to clip it. Both frames are
+ * the same width, so the two corners coincide exactly.
+ */
+function CruxMarks() {
+  // Centred on where the lines actually cross, which is half a pixel off the
+  // box edges the marks are anchored to: the frame's rule occupies x 0..1 and
+  // the band's top rule y -1..0, so their centres are at 0.5 and -0.5. The
+  // half-pixel margins take out that offset — without them a 2px arm sits
+  // visibly proud of a 1px line.
+  const arm = 'absolute -translate-x-1/2 -translate-y-1/2 bg-primary'
+  const left = 'left-0 top-0 ml-[0.5px] -mt-[0.5px]'
+  const right = 'right-0 top-0 mr-[0.5px] -mt-[0.5px] translate-x-1/2'
+  return (
+    <span aria-hidden="true">
+      <span className={cn(arm, left, 'h-3 w-0.5')} />
+      <span className={cn(arm, left, 'h-0.5 w-3')} />
+      <span className={cn(arm, right, 'h-3 w-0.5')} />
+      <span className={cn(arm, right, 'h-0.5 w-3')} />
     </span>
   )
 }
@@ -703,6 +732,7 @@ function RefinedLanding({ ripple }: { readonly ripple: boolean }) {
           the spec requires; `order` puts the value on top. */}
       <section className="border-b bg-muted/20" aria-label="România în cifre">
         <Frame>
+          <CruxMarks />
           <dl className="grid grid-cols-2 lg:grid-cols-4">
             {NATIONAL_FACTS.map((fact, i) => (
               <div
