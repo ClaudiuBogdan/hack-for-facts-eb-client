@@ -30,16 +30,23 @@ import type { RefObject } from 'react'
  * 3. **`will-change` is set here**, on two elements that are always moving.
  *    That is the case it exists for — unlike the ~990 field cells, where asking
  *    for that many layers would cost more than the repaint it saves.
- * 4. **Dark only.** Additive light on a near-white background is a smudge, not
- *    a glow. The host is `hidden dark:block` rather than recoloured, because a
- *    blue smear on the light theme would be a worse answer than none.
+ * 4. **Two palettes, not one.** The reference is white-hot on near-black, which
+ *    on our default light theme would be a grey smear. So the light theme gets
+ *    the brand navy as a solid core with a faint halo — a mark that reads as
+ *    ink rather than as glow — and only the dark theme gets the luminous
+ *    version. Same anatomy, different material.
+ * 5. **It rests visible.** Length and halo are driven by scroll speed, so a
+ *    parked page would otherwise show nothing at all and the whole effect would
+ *    be invisible until someone happened to scroll. The head keeps a floor
+ *    opacity and sits on the rail as a position marker; movement adds the trail
+ *    and the flare on top of it.
  */
 
 /** Unscaled height of the trail bar. `scaleY` works against this. */
 const TRAIL_BASE_PX = 260
 
 /** Trail length per pixel-per-frame of scroll speed. */
-const TRAIL_PER_VELOCITY = 2.4
+const TRAIL_PER_VELOCITY = 4.2
 
 /** Longest the trail is allowed to stretch, so a flick does not draw a laser. */
 const TRAIL_MAX_PX = 210
@@ -47,8 +54,12 @@ const TRAIL_MAX_PX = 210
 /** How near a band boundary the head has to be before it flares. */
 const FLARE_RANGE_PX = 140
 
-/** Velocity decay per frame while the scroll is idle, so the trail retracts. */
-const VELOCITY_DECAY = 0.86
+/**
+ * Velocity decay per frame while the scroll is idle, so the trail retracts.
+ * Slow enough that the tail lingers for a beat after the wheel stops — at a
+ * faster decay it vanished on the same frame and the tail was never seen.
+ */
+const VELOCITY_DECAY = 0.93
 
 const CSS = `
 .tpz-light {
@@ -56,6 +67,43 @@ const CSS = `
   inset: 0;
   pointer-events: none;
   z-index: 20;
+
+  /* Light theme: ink, not light. A solid violet core with a halo faint enough
+     to read as a soft shadow rather than a glow. */
+  --sp-trail: linear-gradient(
+    to bottom,
+    rgba(109, 40, 217, 0) 0%,
+    rgba(109, 40, 217, 0.22) 55%,
+    rgba(124, 58, 237, 0.62) 88%,
+    rgb(109, 40, 217) 100%
+  );
+  --sp-core: rgb(109, 40, 217);
+  --sp-halo: radial-gradient(
+    circle,
+    rgba(124, 58, 237, 0.18) 0%,
+    rgba(109, 40, 217, 0.07) 35%,
+    rgba(109, 40, 217, 0) 70%
+  );
+  --sp-rest: 0.55;
+}
+
+/* Dark theme: the reference's own material — a white-hot core over violet. */
+.dark .tpz-light {
+  --sp-trail: linear-gradient(
+    to bottom,
+    rgba(167, 139, 250, 0) 0%,
+    rgba(167, 139, 250, 0.42) 55%,
+    rgba(216, 196, 254, 0.85) 88%,
+    rgb(244, 238, 255) 100%
+  );
+  --sp-core: rgb(246, 241, 255);
+  --sp-halo: radial-gradient(
+    circle,
+    rgba(167, 139, 250, 0.32) 0%,
+    rgba(139, 92, 246, 0.13) 35%,
+    rgba(139, 92, 246, 0) 70%
+  );
+  --sp-rest: 0.4;
 }
 
 .tpz-light-rail {
@@ -83,49 +131,44 @@ const CSS = `
   margin-left: -1px;
   border-radius: 1px;
   transform-origin: 50% 100%;
-  background: linear-gradient(
-    to bottom,
-    rgba(96, 152, 255, 0) 0%,
-    rgba(96, 152, 255, 0.4) 55%,
-    rgba(178, 212, 255, 0.85) 88%,
-    rgb(233, 243, 255) 100%
-  );
+  background: var(--sp-trail);
+  /* The bar's bottom edge sits on the head and it scales from there, so a
+     negative scale reflects it about the head: scrolling down it trails above,
+     scrolling up it trails below, and because the gradient is reflected too its
+     bright end stays on the head either way. One multiply, no second element. */
   transform: translate3d(0, calc(var(--sp-y, 0px) - ${TRAIL_BASE_PX}px), 0)
-    scaleY(var(--sp-scale, 0));
+    scaleY(calc(var(--sp-scale, 0) * var(--sp-dir, 1)));
   opacity: var(--sp-on, 0);
 }
 
 /* The hot core. Small and near-white — the colour comes from the halo. */
 .tpz-light-head {
-  width: 4px;
-  height: 4px;
-  margin-left: -2px;
-  margin-top: -2px;
+  width: 3px;
+  height: 3px;
+  margin-left: -1.5px;
+  margin-top: -1.5px;
   border-radius: 50%;
-  background: rgb(240, 247, 255);
+  background: var(--sp-core);
   transform: translate3d(0, var(--sp-y, 0px), 0)
     scale(calc(1 + var(--sp-flare, 0) * 0.9));
-  opacity: var(--sp-on, 0);
+  /* Never fully off: this is the page's position marker before it is an
+     animation, so it stays on the rail when nothing is moving. */
+  opacity: min(1, calc(var(--sp-rest) + var(--sp-on, 0) * 0.6));
 }
 
 /* A pre-blurred texture rather than 'filter: blur'. Blur on a moving element
    repaints the blurred region every frame; a radial gradient is something the
    compositor can just move. */
 .tpz-light-halo {
-  width: 150px;
-  height: 150px;
-  margin-left: -75px;
-  margin-top: -75px;
+  width: 64px;
+  height: 64px;
+  margin-left: -32px;
+  margin-top: -32px;
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(120, 170, 255, 0.3) 0%,
-    rgba(90, 140, 240, 0.12) 35%,
-    rgba(80, 130, 230, 0) 70%
-  );
+  background: var(--sp-halo);
   transform: translate3d(0, var(--sp-y, 0px), 0)
     scale(calc(0.55 + var(--sp-flare, 0) * 0.75));
-  opacity: calc(var(--sp-on, 0) * (0.35 + var(--sp-flare, 0) * 0.65));
+  opacity: min(1, calc(var(--sp-rest) * 0.22 + var(--sp-on, 0) * (0.3 + var(--sp-flare, 0) * 0.7)));
 }
 
 /* The motion is the whole component, so reduced motion removes it rather than
@@ -142,7 +185,7 @@ export function ScrollLightStyles() {
 }
 
 type Geometry = {
-  /** Viewport x of each frame rule. */
+  /** Viewport x of the centre of each frame rule. */
   rails: readonly number[]
   /** Document y of every band boundary — the stops. */
   stops: readonly number[]
@@ -156,7 +199,12 @@ function measure(root: HTMLElement | null): Geometry {
   const rails: number[] = []
   if (frame) {
     const box = frame.getBoundingClientRect()
-    rails.push(box.left, box.right)
+    // Half a pixel in from each edge, because the rule is a 1px span drawn
+    // *inside* the frame: the left one covers x .left..left+1 and the right one
+    // .right-1...right, so their centres are half a pixel off the box. Centring
+    // the head on the box edge instead leaves it visibly beside the line — the
+    // same correction the crux marks needed.
+    rails.push(box.left + 0.5, box.right - 0.5)
   }
   const stops = Array.from(root.querySelectorAll('section')).map(
     (section) => section.getBoundingClientRect().top + window.scrollY,
@@ -211,11 +259,14 @@ export function useScrollLight(enabled: boolean): RefObject<HTMLDivElement | nul
       const flare = Math.max(0, 1 - nearest / FLARE_RANGE_PX)
 
       host.style.setProperty('--sp-y', `${headViewport.toFixed(1)}px`)
+      // Sign survives the decay, so the trail keeps pointing the way the reader
+      // was last travelling rather than snapping upright as it retracts.
+      host.style.setProperty('--sp-dir', velocity < 0 ? '-1' : '1')
       host.style.setProperty('--sp-scale', (trail / TRAIL_BASE_PX).toFixed(4))
       host.style.setProperty('--sp-flare', flare.toFixed(3))
       // Present once there is either movement or a boundary under the head,
       // so a parked page is not left with a dot burning on the rail.
-      host.style.setProperty('--sp-on', Math.min(1, trail / 24 + flare).toFixed(3))
+      host.style.setProperty('--sp-on', Math.min(1, trail / 14 + flare).toFixed(3))
 
       if (Math.abs(velocity) > 0.05) schedule()
     }
@@ -236,9 +287,24 @@ export function useScrollLight(enabled: boolean): RefObject<HTMLDivElement | nul
     onResize()
     window.addEventListener('scroll', schedule, { passive: true })
     window.addEventListener('resize', onResize)
+
+    /*
+     * A window resize is not the only thing that moves the rule. The sidebar
+     * opening, a lazily-decoded illustration changing a band's height, a font
+     * swapping in — all shift the frame without firing `resize`, and a rail
+     * measured once at mount then sits beside the line instead of on it. The
+     * observer catches every one of them, because it watches the element that
+     * actually defines the geometry.
+     */
+    const observer = new ResizeObserver(onResize)
+    observer.observe(root)
+    const heroFrame = root.querySelector('[data-frame="hero"]')
+    if (heroFrame) observer.observe(heroFrame)
+
     return () => {
       window.removeEventListener('scroll', schedule)
       window.removeEventListener('resize', onResize)
+      observer.disconnect()
       if (frame) cancelAnimationFrame(frame)
     }
   }, [enabled])
@@ -249,7 +315,7 @@ export function useScrollLight(enabled: boolean): RefObject<HTMLDivElement | nul
 /** The two rails. Positions are written by the hook, which measures the frame. */
 export function ScrollLight() {
   return (
-    <div className="tpz-light hidden dark:block" aria-hidden="true">
+    <div className="tpz-light" aria-hidden="true">
       {[0, 1].map((rail) => (
         <div key={rail} className="tpz-light-rail">
           <span className="tpz-light-halo" />
