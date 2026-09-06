@@ -18,6 +18,7 @@ import { NATIONAL_FACTS, formatFact } from './home-refs.national-facts'
 import { PixelField } from './home-refs.pixel-art'
 import { FIELD_HOST_CLASS, FieldAnimationStyles } from './home-refs.field-animation'
 import { useFieldMotion } from './home-refs.field-motion'
+import { ScrollLight, ScrollLightStyles, useScrollLight } from './home-refs.scroll-light'
 import { LANDING_GROUPS, visibleGroups } from './home.data'
 import type { LandingEntry, LandingGroup } from './home.data'
 
@@ -594,12 +595,27 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
   )
 }
 
-function RefinedLanding({ ripple }: { readonly ripple: boolean }) {
+function RefinedLanding({
+  ripple,
+  lights = false,
+}: {
+  readonly ripple: boolean
+  readonly lights?: boolean
+}) {
   const { groups, coverage } = getPlatformCoverage()
   const heroRef = useFieldMotion({ ripple })
+  // The light measures the page it runs down, so it takes the root rather than
+  // being handed coordinates.
+  const rootRef = useScrollLight(lights)
 
   return (
-    <div className="w-full bg-background" data-dev-marker={PROTOTYPE_MARKER}>
+    <div ref={rootRef} className="w-full bg-background" data-dev-marker={PROTOTYPE_MARKER}>
+      {lights ? (
+        <>
+          <ScrollLightStyles />
+          <ScrollLight />
+        </>
+      ) : null}
       {/* Hero — open band. */}
       <section ref={heroRef} className={cn('relative overflow-hidden border-b', FIELD_HOST_CLASS)}>
         <FieldAnimationStyles />
@@ -858,3 +874,4 @@ function RefinedLanding({ ripple }: { readonly ripple: boolean }) {
  */
 export const LandingRefsRipple = () => <RefinedLanding ripple />
 export const LandingRefsIntroOnly = () => <RefinedLanding ripple={false} />
+export const LandingRefsLights = () => <RefinedLanding ripple lights />

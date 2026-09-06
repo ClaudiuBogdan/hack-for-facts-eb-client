@@ -1,6 +1,10 @@
 import type { PrototypeDefinition } from '@/development/harness/entry'
 import { FIELD_RECT_COUNT } from './home-refs.pixel-art'
-import { LandingRefsIntroOnly, LandingRefsRipple } from './home-refs.refined'
+import {
+  LandingRefsIntroOnly,
+  LandingRefsLights,
+  LandingRefsRipple,
+} from './home-refs.refined'
 
 /**
  * Landing page — the chosen direction.
@@ -30,6 +34,11 @@ export const prototype = {
       title: 'Intro wave, then ripple on click',
       component: LandingRefsRipple,
       note: `Wave travels inward once on load, ${FIELD_RECT_COUNT} cells per side. Clicking anywhere in the hero sends a ripple out from that point, across both fields, weakening with distance.`,
+    },
+    lights: {
+      title: 'Scroll light on the frame rules',
+      component: LandingRefsLights,
+      note: 'Dark theme only — additive light on a near-white page is a smudge, not a glow. A head rides each frame rule as a playhead, its trail lengthening with scroll speed and flaring as it crosses a band boundary. Everything else matches the ripple variant.',
     },
     intro: {
       title: 'Intro wave only',
