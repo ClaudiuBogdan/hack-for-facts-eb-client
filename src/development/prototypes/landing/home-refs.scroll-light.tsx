@@ -59,6 +59,27 @@ const TRAIL_MAX_PX = 150
 const FLARE_RANGE_PX = 140
 
 /**
+ * Scroll distance, past the point where the head reaches the bottom corner,
+ * over which the two rails travel along the bottom border to meet in its
+ * middle.
+ *
+ * They ride the frame's two sides all the way down, turn the corner, and close
+ * on a single point — so the page ends on one mark rather than on two that
+ * simply stop.
+ */
+const CONVERGE_RANGE_PX = 340
+
+/**
+ * Quiet time after the last scroll before the light starts fading out.
+ *
+ * Short on purpose — the light reports movement, so it should begin leaving
+ * almost as soon as the movement does. Still comfortably longer than the gap
+ * between scroll events during trackpad momentum, which keeps firing, so a
+ * glide to a halt fades once at the end rather than flickering through it.
+ */
+const IDLE_MS = 220
+
+/**
  * Velocity decay per frame while the scroll is idle, so the trail retracts.
  * Slow enough that the tail lingers for a beat after the wheel stops — at a
  * faster decay it vanished on the same frame and the tail was never seen.
@@ -71,6 +92,19 @@ const CSS = `
   inset: 0;
   pointer-events: none;
   z-index: 20;
+
+  /* The whole thing fades once the reader stops. It reports movement, so
+     standing still is the one state where it has nothing to say — and a mark
+     parked on the rule indefinitely is exactly the idle noise this is meant to
+     avoid. Faded on the host rather than per element, so the head, trail and
+     halo go together instead of separately.
+
+     Asymmetric, and the asymmetry is the whole feel of it: this curve governs
+     arriving, and the one on '.is-idle' governs leaving. It has to catch up
+     with the reader within a frame or two of the first wheel notch, then take
+     its time going. Sharing one duration made a short scroll barely light at
+     all, because the rise was still climbing when the fall began. */
+  transition: opacity 130ms ease-out;
 
   /* Light theme: ink, not light. The same warm hue, pushed dark enough to read
      on a near-white page, where the luminous ramp below would vanish. */
@@ -87,11 +121,16 @@ const CSS = `
   --sp-core: rgb(198, 72, 16);
   --sp-halo: radial-gradient(
     circle,
-    rgba(202, 84, 22, 0.13) 0%,
-    rgba(198, 72, 16, 0.05) 40%,
+    rgba(202, 84, 22, 0.1) 0%,
+    rgba(198, 72, 16, 0.035) 40%,
     rgba(198, 72, 16, 0) 70%
   );
   --sp-rest: 0.26;
+}
+
+.tpz-light.is-idle {
+  opacity: 0;
+  transition: opacity 550ms ease;
 }
 
 /*
@@ -118,8 +157,8 @@ const CSS = `
   --sp-core: rgb(255, 244, 224);
   --sp-halo: radial-gradient(
     circle,
-    rgba(240, 140, 70, 0.16) 0%,
-    rgba(226, 118, 56, 0.06) 40%,
+    rgba(240, 140, 70, 0.12) 0%,
+    rgba(226, 118, 56, 0.04) 40%,
     rgba(226, 118, 56, 0) 70%
   );
   --sp-rest: 0.22;
@@ -130,6 +169,9 @@ const CSS = `
   top: 0;
   width: 0;
   height: 100%;
+  /* Set per rail, not on the host: the two travel opposite distances to reach
+     the same point. */
+  transform: translate3d(var(--sp-dx, 0px), 0, 0);
 }
 
 .tpz-light-trail,
@@ -145,9 +187,12 @@ const CSS = `
    head stays put while the tail lengthens behind it. 'scaleY' on a fixed box
    costs a composite; animating 'height' would cost a layout. */
 .tpz-light-trail {
-  width: 1.5px;
+  /* 1px, the rule's own width, and an odd width against a half-pixel rail
+     resolves to whole pixels — so it lies exactly on the line instead of being
+     snapped off it. */
+  width: 1px;
   height: ${TRAIL_BASE_PX}px;
-  margin-left: -0.75px;
+  margin-left: -0.5px;
   border-radius: 1px;
   transform-origin: 50% 100%;
   background: var(--sp-trail);
@@ -162,10 +207,13 @@ const CSS = `
 
 /* The hot core. Small and near-white — the colour comes from the halo. */
 .tpz-light-head {
-  width: 2px;
-  height: 2px;
-  margin-left: -1px;
-  margin-top: -1px;
+  /* 3px for the same reason: centred on a half-pixel rail it spans whole
+     pixels. At 2px it spanned .5 to .5 and the browser snapped the whole mark
+     a pixel sideways off the rule. */
+  width: 3px;
+  height: 3px;
+  margin-left: -1.5px;
+  margin-top: -1.5px;
   border-radius: 50%;
   background: var(--sp-core);
   transform: translate3d(0, var(--sp-y, 0px), 0)
@@ -179,10 +227,10 @@ const CSS = `
    repaints the blurred region every frame; a radial gradient is something the
    compositor can just move. */
 .tpz-light-halo {
-  width: 44px;
-  height: 44px;
-  margin-left: -22px;
-  margin-top: -22px;
+  width: 29px;
+  height: 29px;
+  margin-left: -14.5px;
+  margin-top: -14.5px;
   border-radius: 50%;
   background: var(--sp-halo);
   transform: translate3d(0, var(--sp-y, 0px), 0)
@@ -208,27 +256,42 @@ type Geometry = {
   rails: readonly number[]
   /** Document y of every band boundary — the stops. */
   stops: readonly number[]
+  /** Document y of the page's first and last edge, in document space. */
+  bounds: readonly [number, number]
 }
 
 function measure(root: HTMLElement | null): Geometry {
-  if (!root) return { rails: [], stops: [] }
+  if (!root) return { rails: [], stops: [], bounds: [0, 0] }
   // The rule's x depends on viewport width through `max-w-6xl` and the frame's
   // padding, so it is read rather than computed.
   const frame = root.querySelector('[data-frame="hero"]')
   const rails: number[] = []
   if (frame) {
     const box = frame.getBoundingClientRect()
-    // Half a pixel in from each edge, because the rule is a 1px span drawn
-    // *inside* the frame: the left one covers x .left..left+1 and the right one
-    // .right-1...right, so their centres are half a pixel off the box. Centring
-    // the head on the box edge instead leaves it visibly beside the line — the
-    // same correction the crux marks needed.
-    rails.push(box.left + 0.5, box.right - 0.5)
+    /*
+     * Centre on where the rule is *painted*, which is not where it is laid out.
+     *
+     * The frame is centred with `mx-auto`, so on most widths its edges land on
+     * a fractional pixel — 195.5 at 1506px wide. A 1px span cannot be painted
+     * across half a pixel, so the browser snaps it to a whole one, and the rule
+     * that layout puts at 195.5..196.5 is drawn at 196..197. Centring the head
+     * on the layout figure therefore leaves it half a pixel to the left of the
+     * line it is supposed to be riding, which is visible on a 2px mark.
+     *
+     * Rounding first reproduces the snap, then the half pixel centres the head
+     * within the drawn rule. Verified by taking the intensity-weighted centroid
+     * of both out of a 4x screenshot rather than by trusting the arithmetic.
+     */
+    rails.push(Math.round(box.left) + 0.5, Math.round(box.right) - 0.5)
   }
   const stops = Array.from(root.querySelectorAll('section')).map(
     (section) => section.getBoundingClientRect().top + window.scrollY,
   )
-  return { rails, stops }
+  // Kept in document space so the per-frame conversion is a subtraction rather
+  // than another layout read.
+  const box = root.getBoundingClientRect()
+  const bounds: [number, number] = [box.top + window.scrollY, box.bottom + window.scrollY]
+  return { rails, stops, bounds }
 }
 
 /**
@@ -251,6 +314,7 @@ export function useScrollLight(enabled: boolean): RefObject<HTMLDivElement | nul
     let lastY = window.scrollY
     let velocity = 0
     let frame = 0
+    let idleTimer = 0
 
     const paint = () => {
       frame = 0
@@ -263,13 +327,25 @@ export function useScrollLight(enabled: boolean): RefObject<HTMLDivElement | nul
 
       const scrollable = Math.max(1, document.documentElement.scrollHeight - window.innerHeight)
       const progress = Math.min(1, Math.max(0, y / scrollable))
-      const headViewport = progress * window.innerHeight
+      /*
+       * The playhead rides the viewport, but the rails belong to the landing —
+       * so its travel is clipped to the page's own top and bottom edges. Past
+       * the last band the head parks on that bottom border instead of carrying
+       * on into the footer, which is not its frame and has no rule to sit on.
+       * Both rails clamp to the same value, so they arrive together and the
+       * light closes on the border rather than drifting apart below it.
+       */
+      const [topDoc, bottomDoc] = geometry.bounds
+      const headViewport = Math.min(
+        Math.max(progress * window.innerHeight, topDoc - y),
+        bottomDoc - y,
+      )
+      const headDocument = y + headViewport
 
       const trail = Math.min(TRAIL_MAX_PX, Math.abs(velocity) * TRAIL_PER_VELOCITY)
 
       // The stops are what makes this the page's animation rather than a
       // generic one: distance from the head to the nearest band boundary.
-      const headDocument = y + headViewport
       let nearest = Number.POSITIVE_INFINITY
       for (const stop of geometry.stops) {
         const distance = Math.abs(stop - headDocument)
@@ -277,11 +353,40 @@ export function useScrollLight(enabled: boolean): RefObject<HTMLDivElement | nul
       }
       const flare = Math.max(0, 1 - nearest / FLARE_RANGE_PX)
 
+      /*
+       * Over the last stretch the rails draw together and meet on the centre of
+       * the bottom rule. Each is given its own offset because they travel
+       * opposite distances, and both reach zero separation at the same moment,
+       * so the two heads become one mark rather than two that happen to stop.
+       */
+      /*
+       * The two phases are sequenced, not blended. The head runs the vertical
+       * rule until it reaches the bottom corner, and only then turns along the
+       * bottom border towards the centre — so it always travels the frame's
+       * contour and never cuts diagonally across the content inside it.
+       *
+       * `overshoot` is the scroll the playhead would have used to carry on down
+       * had the clamp not stopped it. It is zero until the head is parked on
+       * the corner, which is exactly the moment the turn should begin.
+       */
+      const overshoot = progress * window.innerHeight - (bottomDoc - y)
+      const converge =
+        geometry.rails.length === 2
+          ? Math.min(1, Math.max(0, overshoot / CONVERGE_RANGE_PX))
+          : 0
+      const centre = geometry.rails.length === 2 ? (geometry.rails[0] + geometry.rails[1]) / 2 : 0
+      // Eased, so the rails leave the corner gently instead of snapping in.
+      const pull = converge * converge * (3 - 2 * converge)
+      for (const [i, rail] of railEls.entries()) {
+        const base = geometry.rails[i]
+        rail.style.setProperty('--sp-dx', `${((centre - base) * pull).toFixed(1)}px`)
+      }
+
       host.style.setProperty('--sp-y', `${headViewport.toFixed(1)}px`)
       // Sign survives the decay, so the trail keeps pointing the way the reader
       // was last travelling rather than snapping upright as it retracts.
       host.style.setProperty('--sp-dir', velocity < 0 ? '-1' : '1')
-      host.style.setProperty('--sp-scale', (trail / TRAIL_BASE_PX).toFixed(4))
+      host.style.setProperty('--sp-scale', ((trail / TRAIL_BASE_PX) * (1 - pull)).toFixed(4))
       host.style.setProperty('--sp-flare', flare.toFixed(3))
       // Present once there is either movement or a boundary under the head,
       // so a parked page is not left with a dot burning on the rail.
@@ -294,17 +399,36 @@ export function useScrollLight(enabled: boolean): RefObject<HTMLDivElement | nul
       if (frame === 0) frame = requestAnimationFrame(paint)
     }
 
+    /*
+     * Wake on movement, then fall back to idle. The timer restarts on every
+     * scroll event, so a slow continuous scroll never triggers the fade — only
+     * actually stopping does.
+     */
+    const wake = () => {
+      host.classList.remove('is-idle')
+      window.clearTimeout(idleTimer)
+      idleTimer = window.setTimeout(() => host.classList.add('is-idle'), IDLE_MS)
+      schedule()
+    }
+
+    let railEls: HTMLElement[] = []
     const onResize = () => {
       geometry = measure(root)
+      railEls = []
       for (const [i, x] of geometry.rails.entries()) {
         const rail = host.children[i] as HTMLElement | undefined
-        if (rail) rail.style.left = `${x}px`
+        if (!rail) continue
+        rail.style.left = `${x}px`
+        railEls.push(rail)
       }
       schedule()
     }
 
     onResize()
-    window.addEventListener('scroll', schedule, { passive: true })
+    // Starts hidden: the page opens at rest, which is the state that has
+    // nothing to report.
+    host.classList.add('is-idle')
+    window.addEventListener('scroll', wake, { passive: true })
     window.addEventListener('resize', onResize)
 
     /*
@@ -321,9 +445,10 @@ export function useScrollLight(enabled: boolean): RefObject<HTMLDivElement | nul
     if (heroFrame) observer.observe(heroFrame)
 
     return () => {
-      window.removeEventListener('scroll', schedule)
+      window.removeEventListener('scroll', wake)
       window.removeEventListener('resize', onResize)
       observer.disconnect()
+      window.clearTimeout(idleTimer)
       if (frame) cancelAnimationFrame(frame)
     }
   }, [enabled])
