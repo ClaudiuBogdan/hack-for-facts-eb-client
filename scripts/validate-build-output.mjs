@@ -106,10 +106,33 @@ for (const file of scannedFiles) {
 
   const contents = readFileSync(file, "utf8");
 
+  // Markers are checked everywhere, sourcemaps included: if harness or prototype
+  // code were ever compiled in, its text would appear in `sourcesContent`.
   for (const marker of developmentMarkers) {
     if (contents.includes(marker)) {
       developmentFailures.push(`${file}: contains the development marker ${marker}`);
     }
+  }
+
+  if (file.endsWith(".map")) {
+    // A sourcemap legitimately carries the route stubs' own source text, which
+    // contains the literal `import.meta.glob('/src/development/…')` pattern. That
+    // is the guard working, not a leak. What must never appear is a
+    // `src/development/**` module in `sources`, which would mean it was compiled
+    // into the bundle.
+    let sources;
+    try {
+      sources = JSON.parse(contents).sources;
+    } catch {
+      developmentFailures.push(`${file}: sourcemap is not valid JSON`);
+      continue;
+    }
+    for (const source of sources ?? []) {
+      if (String(source).includes(developmentSourcePath)) {
+        developmentFailures.push(`${file}: sourcemap lists ${source}`);
+      }
+    }
+    continue;
   }
 
   if (contents.includes(developmentSourcePath)) {
