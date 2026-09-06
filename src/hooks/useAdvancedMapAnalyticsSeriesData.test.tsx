@@ -52,7 +52,7 @@ function makeGroupedResponse(input: {
     payload: {
       mime: 'text/csv' as const,
       compression: 'none' as const,
-      data: serializeGroupedSeriesWideMatrixCsv(input.rows, seriesOrder),
+      data: serializeGroupedSeriesWideMatrixCsv(input.rows.map(row => ({ ...row, value: String(row.value) })), seriesOrder),
     },
     warnings: [],
   };
@@ -139,7 +139,7 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
     });
 
     expect(fetchGroupedSeriesDataMock).not.toHaveBeenCalled();
-    expect(result.current.valuesBySeriesId.get(baseSeries.id)?.get('1001')).toBe(10);
+    expect(result.current.valuesBySeriesId.get(baseSeries.id)?.get('1001')).toBe("10");
   });
 
   it('falls back to grouped-series endpoint when bundled hash does not match current series hash', async () => {
@@ -175,7 +175,7 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
     });
 
     expect(fetchGroupedSeriesDataMock).toHaveBeenCalledTimes(1);
-    expect(result.current.valuesBySeriesId.get(baseSeries.id)?.get('1001')).toBe(30);
+    expect(result.current.valuesBySeriesId.get(baseSeries.id)?.get('1001')).toBe("30");
   });
 
   it('does not inject viewer default currency or inflation flags into remote fetch payload', async () => {
@@ -410,7 +410,7 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
     });
 
     expect(fetchGroupedSeriesDataMock).toHaveBeenCalledTimes(1);
-    expect(result.current.valuesBySeriesId.get(insSeries.id)?.get('1001')).toBe(25);
+    expect(result.current.valuesBySeriesId.get(insSeries.id)?.get('1001')).toBe("25");
     expect(result.current.unitsBySeriesId.get(insSeries.id)).toBe('pers.');
     expect(
       result.current.warnings.some((warning) => warning.type === 'missing_population')
@@ -502,9 +502,9 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
           localValuesBySeriesId: new Map([
             [
               geojsonSeries.id,
-              new Map<string, number | undefined>([
-                ['1001', 5400],
-                ['1002', 2100],
+              new Map<string, string | undefined>([
+                ['1001', "5400"],
+                ['1002', "2100"],
               ]),
             ],
           ]),
@@ -518,7 +518,7 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
     });
 
     expect(fetchGroupedSeriesDataMock).not.toHaveBeenCalled();
-    expect(result.current.valuesBySeriesId.get(geojsonSeries.id)?.get('1001')).toBe(5400);
+    expect(result.current.valuesBySeriesId.get(geojsonSeries.id)?.get('1001')).toBe("5400");
     expect(result.current.unitsBySeriesId.get(geojsonSeries.id)).toBe('inhabitants');
   });
 
@@ -545,7 +545,7 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
           defaultCurrency: 'RON',
           defaultInflationAdjusted: false,
           localValuesBySeriesId: new Map([
-            [geojsonSeries.id, new Map([['1001', 32]])],
+            [geojsonSeries.id, new Map([['1001', "32"]])],
           ]),
           localUnitsBySeriesId: new Map([[geojsonSeries.id, 'code']]),
         }),
@@ -589,9 +589,9 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
           localValuesBySeriesId: new Map([
             [
               geojsonSeries.id,
-              new Map<string, number | undefined>([
-                ['1001', 9],
-                ['1002', 4],
+              new Map<string, string | undefined>([
+                ['1001', "9"],
+                ['1002', "4"],
               ]),
             ],
           ]),
@@ -604,8 +604,8 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    expect(result.current.valuesBySeriesId.get(calculationSeries.id)?.get('1001')).toBe(10);
-    expect(result.current.valuesBySeriesId.get(calculationSeries.id)?.get('1002')).toBe(5);
+    expect(result.current.valuesBySeriesId.get(calculationSeries.id)?.get('1001')).toBe("10");
+    expect(result.current.valuesBySeriesId.get(calculationSeries.id)?.get('1002')).toBe("5");
   });
 
   it('applies value filters after calculations', async () => {
@@ -702,10 +702,10 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
           localValuesBySeriesId: new Map([
             [
               populationSeries.id,
-              new Map<string, number | undefined>([
-                ['1001', 483],
-                ['1002', 497],
-                ['2001', 489],
+              new Map<string, string | undefined>([
+                ['1001', "483"],
+                ['1002', "497"],
+                ['2001', "489"],
               ]),
             ],
           ]),
@@ -720,7 +720,7 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
     const filteredValues = result.current.valuesBySeriesId.get(populationSeries.id);
     expect(filteredValues?.has('1001')).toBe(false);
     expect(filteredValues?.has('1002')).toBe(false);
-    expect(filteredValues?.get('2001')).toBe(489);
+    expect(filteredValues?.get('2001')).toBe("489");
     expect([...(result.current.matchedSirutaCodes ?? [])]).toEqual(['2001']);
   });
 

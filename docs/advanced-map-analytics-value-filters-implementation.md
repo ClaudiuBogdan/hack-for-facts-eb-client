@@ -140,7 +140,7 @@ Operators:
 Semantics:
 
 - `between` and `not_between` are inclusive.
-- `eq` and `neq` use epsilon `1e-9`.
+- `eq` and `neq` compare decimal values exactly. Rank ties require decimal equality; distinct nearby values are not merged. Numeric filter controls retain their existing input precision (2026-09-07 user decision).
 - Undefined/non-finite values:
 - only `is_undefined` can match undefined,
 - other operators treat undefined as non-match.

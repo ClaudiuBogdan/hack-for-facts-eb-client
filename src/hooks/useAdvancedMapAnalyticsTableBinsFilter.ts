@@ -17,7 +17,7 @@ interface UseAdvancedMapAnalyticsTableBinsFilterArgs {
   rows: AdvancedMapAnalyticsTableRow[];
   binsPresets: AdvancedMapAnalyticsBinsPreset[];
   activeSeriesId?: string;
-  activeValues: Map<string, number | undefined> | undefined;
+  activeValues: Map<string, string | number | undefined> | undefined;
   tableBinFiltersByPresetId: AdvancedMapAnalyticsBinsFilterSelectionByPresetId;
   enabled?: boolean;
 }
@@ -151,13 +151,13 @@ export function useAdvancedMapAnalyticsTableBinsFilter(
 function buildTableBinsValues(params: {
   rows: AdvancedMapAnalyticsTableRow[];
   activeSeriesId?: string;
-  activeValues: Map<string, number | undefined> | undefined;
-}): Map<string, number | undefined> | undefined {
+  activeValues: Map<string, string | number | undefined> | undefined;
+}): Map<string, string | number | undefined> | undefined {
   if (!params.activeSeriesId) {
     return params.activeValues;
   }
 
-  const values = new Map<string, number | undefined>();
+  const values = new Map<string, string | number | undefined>();
   for (const row of params.rows) {
     const key = getAdvancedMapAnalyticsTableRowBinFilterKey(row);
     if (values.has(key)) {

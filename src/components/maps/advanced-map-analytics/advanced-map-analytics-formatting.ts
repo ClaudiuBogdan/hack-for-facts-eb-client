@@ -1,10 +1,12 @@
+import { mapDecimalToRenderNumber } from '@/lib/map-series/decimal';
 import { formatCurrency, formatNumber } from '@/lib/utils';
 import { t } from '@lingui/core/macro';
 
 export function formatAdvancedMapAnalyticsSeriesValue(
-  value: number | undefined,
+  rawValue: string | number | undefined,
   unit: string | undefined
 ): string {
+  const value = typeof rawValue === 'number' ? rawValue : mapDecimalToRenderNumber(rawValue);
   if (value === undefined || value === null || !Number.isFinite(value)) {
     return t`Missing`;
   }

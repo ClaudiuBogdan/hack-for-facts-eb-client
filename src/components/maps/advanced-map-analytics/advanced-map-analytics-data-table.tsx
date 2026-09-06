@@ -1,3 +1,4 @@
+import { compareMapDecimals, readMapDecimal } from '@/lib/map-series/decimal';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   type ColumnDef,
@@ -145,11 +146,11 @@ function getColumnRowValue(row: AdvancedMapAnalyticsTableRow, columnId: string):
   const seriesId = getSeriesIdFromColumnId(columnId);
   if (seriesId) {
     const value = row.valuesBySeriesId[seriesId];
-    if (value === undefined || !Number.isFinite(value)) {
+    if (readMapDecimal(value) === undefined) {
       return '';
     }
 
-    return value.toString();
+    return value ?? '';
   }
 
   const groupingId = getGroupingIdFromColumnId(columnId);
@@ -249,8 +250,8 @@ function compareTableRowsByColumn(
   }
 
   let result: number;
-  if (typeof leftValue === 'number' && typeof rightValue === 'number') {
-    result = leftValue === rightValue ? 0 : leftValue - rightValue;
+  if (getSeriesIdFromColumnId(columnId)) {
+    result = compareMapDecimals(String(leftValue), String(rightValue));
   } else {
     result = String(leftValue).localeCompare(String(rightValue), undefined, {
       numeric: true,
@@ -613,12 +614,13 @@ export function AdvancedMapAnalyticsDataTable({
         activeValue: row.valuesBySeriesId[activeSeriesId],
       }))
       .filter(
-        (entry): entry is { row: AdvancedMapAnalyticsTableRow; activeValue: number } =>
-          typeof entry.activeValue === 'number' && Number.isFinite(entry.activeValue)
+        (entry): entry is { row: AdvancedMapAnalyticsTableRow; activeValue: string } =>
+          typeof entry.activeValue === 'string' && readMapDecimal(entry.activeValue) !== undefined
       )
       .sort((left, right) => {
-        if (left.activeValue !== right.activeValue) {
-          return right.activeValue - left.activeValue;
+        const order = compareMapDecimals(right.activeValue, left.activeValue);
+        if (order !== 0) {
+          return order;
         }
 
         return compareRowsByNameAndSiruta(left.row, right.row);

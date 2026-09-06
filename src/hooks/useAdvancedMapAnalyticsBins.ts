@@ -32,7 +32,7 @@ interface UseAdvancedMapAnalyticsBinsArgs {
   updateState: (updater: (draft: AdvancedMapAnalyticsUrlState) => void) => void;
   activeSeries: MapSupportedSeries | undefined;
   activeSeriesId: string | undefined;
-  activeValues: Map<string, number | undefined> | undefined;
+  activeValues: Map<string, string | number | undefined> | undefined;
   seriesWarnings: MapSeriesWarning[];
 }
 

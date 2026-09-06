@@ -52,8 +52,8 @@ interface AdvancedMapAnalyticsSeriesDataResult {
   warnings: MapSeriesWarning[];
   matchedSirutaCodes?: Set<string>;
   activeSeriesId?: string;
-  activeValues?: Map<string, number | undefined>;
-  activeCanonicalValues?: Map<string, number | undefined>;
+  activeValues?: Map<string, string | undefined>;
+  activeCanonicalValues?: Map<string, string | undefined>;
   isLoading: boolean;
   isFetching: boolean;
   error: Error | null;

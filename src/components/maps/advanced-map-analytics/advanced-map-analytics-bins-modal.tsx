@@ -38,7 +38,7 @@ interface AdvancedMapAnalyticsBinsModalProps {
   open: boolean;
   preset: AdvancedMapAnalyticsBinsPreset | undefined;
   activeSeriesLabel: string;
-  activeSeriesValues: Map<string, number | undefined> | undefined;
+  activeSeriesValues: Map<string, string | number | undefined> | undefined;
   onOpenChange: (open: boolean) => void;
   onApplyPreset: (
     nextPreset: AdvancedMapAnalyticsBinsPreset
@@ -264,7 +264,7 @@ export function AdvancedMapAnalyticsBinsModal({
       presetConfig.gradient
     );
     if (generatedBins.length === 0) {
-      setInlineError(t`Cannot regenerate bins because active data has no numeric values.`);
+      setInlineError(t`Cannot generate numeric bins for the active values.`);
       return;
     }
 

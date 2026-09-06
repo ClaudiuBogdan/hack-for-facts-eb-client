@@ -1,3 +1,6 @@
+import { MapDecimal } from '@/lib/map-series/decimal';
+import { getMapDecimalRange, normalizeMapDecimal } from '@/lib/map-series/decimal';
+import { mapDecimalToRenderNumber, readMapDecimal } from '@/lib/map-series/decimal';
 import {
   forwardRef,
   lazy,
@@ -54,7 +57,7 @@ import { useAdvancedMapAnalyticsBins } from '@/hooks/useAdvancedMapAnalyticsBins
 import { useAdvancedMapAnalyticsTableBinsFilter } from '@/hooks/useAdvancedMapAnalyticsTableBinsFilter';
 import { useAdvancedMapAnalyticsTableViewPreferences } from '@/hooks/useAdvancedMapAnalyticsTableViewPreferences';
 import { buildDiscretePaletteFromConfig, getContinuousGradientColor } from '@/lib/map-bins/bins';
-import { getHeatmapColor, getPercentileValues, normalizeValue } from '@/components/maps/utils';
+import { getHeatmapColor } from '@/components/maps/utils';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import type { UatFeature, UatProperties } from '@/components/maps/interfaces';
 import type { HeatmapCountyDataPoint, HeatmapUATDataPoint } from '@/schemas/heatmap';
@@ -2080,14 +2083,14 @@ export function MapAnalyticsWorkspace({
   );
 
   const localGeoJsonValuesBySeriesId = useMemo(() => {
-    const valuesBySeriesId = new Map<string, Map<string, number | undefined>>();
+    const valuesBySeriesId = new Map<string, Map<string, string | undefined>>();
 
     if (enabledGeoJsonDatasetSeries.length === 0 || geoJsonFeatures.length === 0) {
       return valuesBySeriesId;
     }
 
     for (const series of enabledGeoJsonDatasetSeries) {
-      const vector = new Map<string, number | undefined>();
+      const vector = new Map<string, string | undefined>();
       const selectedPopulationKey = series.datasetKey;
       const countyFilterIdSet = new Set(series.countyFilterIds);
       const regionFilterIdSet = new Set(series.regionFilterIds);
@@ -2118,7 +2121,7 @@ export function MapAnalyticsWorkspace({
           continue;
         }
 
-        vector.set(sirutaCode, populationValue);
+        vector.set(sirutaCode, String(populationValue));
       }
 
       valuesBySeriesId.set(series.id, vector);
@@ -2142,7 +2145,7 @@ export function MapAnalyticsWorkspace({
   }, [enabledGeoJsonDatasetSeries]);
 
   const mergedLocalValuesBySeriesId = useMemo(() => {
-    const valuesBySeriesId = new Map<string, Map<string, number | undefined>>();
+    const valuesBySeriesId = new Map<string, Map<string, string | undefined>>();
 
     for (const [seriesId, vector] of localGeoJsonValuesBySeriesId.entries()) {
       valuesBySeriesId.set(seriesId, new Map(vector));
@@ -2383,7 +2386,7 @@ export function MapAnalyticsWorkspace({
 
     if (binsCanApply) {
       for (const [renderKey, value, label] of entries) {
-        const numericValue = Number.isFinite(value) ? (value as number) : 0;
+        const numericValue = mapDecimalToRenderNumber(value) ?? 0;
         rows.push({
           uat_id: renderKey,
           uat_code: renderKey,
@@ -2401,7 +2404,8 @@ export function MapAnalyticsWorkspace({
     }
 
     for (const [renderKey, value, label] of entries) {
-      if (value === undefined || !Number.isFinite(value)) {
+      const numericValue = mapDecimalToRenderNumber(value);
+      if (numericValue === undefined) {
         continue;
       }
 
@@ -2413,9 +2417,9 @@ export function MapAnalyticsWorkspace({
         county_code: '',
         county_name: '',
         population: 0,
-        amount: value,
-        total_amount: value,
-        per_capita_amount: value,
+        amount: numericValue,
+        total_amount: numericValue,
+        per_capita_amount: numericValue,
       });
     }
 
@@ -2424,16 +2428,17 @@ export function MapAnalyticsWorkspace({
 
   const { min: colorRangeMin, max: colorRangeMax } = useMemo(() => {
     if (activeHeatmapData.length === 0) {
-      return { min: 0, max: 0 };
+      return { min: '0', max: '0' };
     }
 
     const lowerPercentile = isContinuousIntervalMode ? (activeContinuousPercentiles?.min ?? 5) : 5;
     const upperPercentile = isContinuousIntervalMode ? (activeContinuousPercentiles?.max ?? 95) : 95;
-    return getPercentileValues(activeHeatmapData, lowerPercentile, upperPercentile, 'amount');
+    return getMapDecimalRange(activeBinsValues?.values() ?? [], lowerPercentile, upperPercentile);
   }, [
     activeContinuousPercentiles?.max,
     activeContinuousPercentiles?.min,
     activeHeatmapData,
+    activeBinsValues,
     isContinuousIntervalMode,
   ]);
 
@@ -2564,8 +2569,8 @@ export function MapAnalyticsWorkspace({
         });
       }
 
-      const value = dataPoint.amount;
-      if (!Number.isFinite(value)) {
+      const value = activeBinsValues?.get(renderKey);
+      if (value === undefined || readMapDecimal(value) === undefined) {
         if (!isContinuousIntervalMode) {
           return applyRenderAffordances(DEFAULT_FEATURE_STYLE);
         }
@@ -2589,15 +2594,15 @@ export function MapAnalyticsWorkspace({
         });
       }
 
-      if (colorRangeMin === colorRangeMax) {
+      if (new MapDecimal(colorRangeMin).eq(colorRangeMax)) {
         return applyRenderAffordances({
           ...DEFAULT_FEATURE_STYLE,
-          fillColor: value !== 0 ? getHeatmapColor(0.5) : DEFAULT_FEATURE_STYLE.fillColor,
+          fillColor: !new MapDecimal(value).isZero() ? getHeatmapColor(0.5) : DEFAULT_FEATURE_STYLE.fillColor,
           fillOpacity: 0.7,
         });
       }
 
-      const normalized = normalizeValue(value, colorRangeMin, colorRangeMax);
+      const normalized = normalizeMapDecimal(value, colorRangeMin, colorRangeMax);
       return applyRenderAffordances({
         ...DEFAULT_FEATURE_STYLE,
         fillColor: getHeatmapColor(normalized),
@@ -2612,6 +2617,7 @@ export function MapAnalyticsWorkspace({
       binsCanApply,
       binsClassification.groupsBySiruta,
       isContinuousIntervalMode,
+      activeBinsValues,
       colorRangeMax,
       colorRangeMin,
       manualGroupEditStylesBySirutaCode,
@@ -3144,7 +3150,7 @@ export function MapAnalyticsWorkspace({
         : Boolean(
             activeNoDataConfig &&
               activeNoDataConfig.showInTooltip &&
-              (activeSeriesValue === undefined || !Number.isFinite(activeSeriesValue))
+              (readMapDecimal(activeSeriesValue) === undefined)
           );
 
       let noDataTooltipMarker = '';

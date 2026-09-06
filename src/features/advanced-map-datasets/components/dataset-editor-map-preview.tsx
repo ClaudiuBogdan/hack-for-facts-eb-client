@@ -1,3 +1,4 @@
+import { readMapDecimal } from '@/lib/map-series/decimal';
 import { useMemo } from 'react';
 import { t } from '@lingui/core/macro';
 import { MapAnalyticsWorkspace } from '@/features/advanced-map-analytics/components/map-analytics-workspace';
@@ -100,12 +101,11 @@ export function DatasetEditorMapPreview({
   });
 
   const localValuesBySeriesId = useMemo(() => {
-    const vector = new Map<string, number | undefined>();
+    const vector = new Map<string, string | undefined>();
 
     for (const row of rows) {
-      if (typeof row.parsedNumericValue === 'number' && Number.isFinite(row.parsedNumericValue)) {
-        vector.set(row.sirutaCode, row.parsedNumericValue);
-      }
+      const value = readMapDecimal(row.valueNumber ?? row.valueText) ?? readMapDecimal(row.parsedNumericValue);
+      if (value !== undefined) vector.set(row.sirutaCode, value);
     }
 
     return new Map([[DATASET_PREVIEW_SERIES_ID, vector]]);

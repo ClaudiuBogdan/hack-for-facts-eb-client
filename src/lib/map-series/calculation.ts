@@ -1,3 +1,4 @@
+import { MapDecimal, readMapDecimal } from './decimal';
 import type { Calculation, Operand } from '@/schemas/charts';
 import type { MapGroupWorkspace, MapSupportedSeries } from '@/schemas/advanced-map-analytics';
 import {
@@ -126,7 +127,7 @@ export function calculateMapSeriesValues(
           dependencySeriesId: series.sourceSeriesId,
           message: `Grouped series depends on missing source series ${series.sourceSeriesId}`,
         });
-        const emptyVector = new Map<string, number | undefined>();
+        const emptyVector = new Map<string, string | undefined>();
         valuesBySeriesId.set(series.id, emptyVector);
         domainsBySeriesId.set(series.id, getGroupedSeriesDomain(series));
         visiting.delete(seriesId);
@@ -143,7 +144,7 @@ export function calculateMapSeriesValues(
             sourceDomain,
           },
         });
-        const emptyVector = new Map<string, number | undefined>();
+        const emptyVector = new Map<string, string | undefined>();
         valuesBySeriesId.set(series.id, emptyVector);
         domainsBySeriesId.set(series.id, getGroupedSeriesDomain(series));
         visiting.delete(seriesId);
@@ -160,7 +161,7 @@ export function calculateMapSeriesValues(
             groupWorkspaceId: series.groupWorkspaceId,
           },
         });
-        const emptyVector = new Map<string, number | undefined>();
+        const emptyVector = new Map<string, string | undefined>();
         valuesBySeriesId.set(series.id, emptyVector);
         domainsBySeriesId.set(series.id, getGroupedSeriesDomain(series));
         visiting.delete(seriesId);
@@ -190,7 +191,7 @@ export function calculateMapSeriesValues(
     }
 
     if (series.type !== 'aggregated-series-calculation') {
-      const baseVector = params.baseValuesBySeriesId.get(series.id) ?? new Map<string, number | undefined>();
+      const baseVector = params.baseValuesBySeriesId.get(series.id) ?? new Map<string, string | undefined>();
       const nextVector = new Map(baseVector);
       const domain = getUatDomain();
       valuesBySeriesId.set(series.id, nextVector);
@@ -234,7 +235,7 @@ export function calculateMapSeriesValues(
       pushWarning,
     });
     if (!calculationDomain) {
-      const emptyVector = new Map<string, number | undefined>();
+      const emptyVector = new Map<string, string | undefined>();
       visiting.delete(seriesId);
       valuesBySeriesId.set(series.id, emptyVector);
       return emptyVector;
@@ -264,7 +265,7 @@ export function calculateMapSeriesValues(
       unitsBySeriesId.set(series.id, series.unit);
     }
 
-    const vector = new Map<string, number | undefined>();
+    const vector = new Map<string, string | undefined>();
     const calculationKeys = dependencyKeys.size > 0
       ? dependencyKeys
       : (keysByDomainKey.get(getSeriesDomainKey(calculationDomain)) ?? new Set<string>());
@@ -341,9 +342,9 @@ function evaluateOperand(
   seriesId: string,
   evaluateSeries: (seriesId: string) => MapSeriesVector | undefined,
   pushWarning: (warning: MapSeriesWarning) => void
-): number | undefined {
+): string | undefined {
   if (typeof operand === 'number') {
-    return operand;
+    return readMapDecimal(operand);
   }
 
   if (typeof operand === 'string') {
@@ -375,37 +376,37 @@ function evaluateOperand(
     return undefined;
   }
 
-  return applyOperation(operand.op, args as number[], seriesId, sirutaCode, pushWarning);
+  return applyOperation(operand.op, args as string[], seriesId, sirutaCode, pushWarning);
 }
 
 function applyOperation(
   operation: Calculation['op'],
-  values: number[],
+  values: string[],
   seriesId: string,
   sirutaCode: string,
   pushWarning: (warning: MapSeriesWarning) => void
-): number | undefined {
-  if (values.length === 0) {
+): string | undefined {
+  if (values.length === 0 || values.some(value => readMapDecimal(value) === undefined)) {
     return undefined;
   }
 
   if (operation === 'sum') {
-    return values.reduce((accumulator, value) => accumulator + value, 0);
+    return readMapDecimal(values.reduce((accumulator, value) => accumulator.plus(value), new MapDecimal(0)).toString());
   }
 
   if (operation === 'subtract') {
     const [head, ...tail] = values;
-    return tail.reduce((accumulator, value) => accumulator - value, head);
+    return readMapDecimal(tail.reduce((accumulator, value) => accumulator.minus(value), new MapDecimal(head)).toString());
   }
 
   if (operation === 'multiply') {
-    return values.reduce((accumulator, value) => accumulator * value, 1);
+    return readMapDecimal(values.reduce((accumulator, value) => accumulator.times(value), new MapDecimal(1)).toString());
   }
 
   const [numerator, ...divisors] = values;
-  let result = numerator;
+  let result = new MapDecimal(numerator);
   for (const divisor of divisors) {
-    if (divisor === 0) {
+    if (new MapDecimal(divisor).isZero()) {
       pushWarning({
         type: 'divide_by_zero',
         seriesId,
@@ -414,10 +415,10 @@ function applyOperation(
       });
       return undefined;
     }
-    result /= divisor;
+    result = result.div(divisor);
   }
 
-  return Number.isFinite(result) ? result : undefined;
+  return result.isFinite() ? result.toString() : undefined;
 }
 
 function collectReferencedSeriesIds(calculation: Calculation): string[] {

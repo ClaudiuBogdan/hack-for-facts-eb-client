@@ -244,7 +244,7 @@ interface InteractiveMapProps {
   filters: AnalyticsFilterType;
   showLabels?: boolean;
   labelMode?: LabelMode;
-  activeSeriesValuesBySirutaCode?: Map<string, number | undefined>;
+  activeSeriesValuesBySirutaCode?: Map<string, string | number | undefined>;
   activeRenderUnits?: ActiveMapRenderUnit[];
   activeSeriesUnit?: string;
   showRoads?: boolean;

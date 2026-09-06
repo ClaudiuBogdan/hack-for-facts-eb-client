@@ -23,13 +23,13 @@ describe('map series grouping helpers', () => {
     ];
 
     const projected = projectGroupedValuesToSiruta({
-      valuesBySeriesId: new Map([['grouped', new Map([['grp_1', 25]])]]),
+      valuesBySeriesId: new Map([['grouped', new Map([['grp_1', "25"]])]]),
       domainsBySeriesId: new Map([['grouped', { type: 'group', groupWorkspaceId: 'manual' }]]),
       groupWorkspaces,
     });
 
-    expect(projected.get('grouped')?.get('1001')).toBe(25);
-    expect(projected.get('grouped')?.get('1002')).toBe(25);
+    expect(projected.get('grouped')?.get('1001')).toBe("25");
+    expect(projected.get('grouped')?.get('1002')).toBe("25");
     expect(projected.get('grouped')?.has('grp_1')).toBe(false);
   });
 
@@ -38,8 +38,8 @@ describe('map series grouping helpers', () => {
       [
         'grouped',
         new Map([
-          ['grp_1', 25],
-          ['1001', 10],
+          ['grp_1', "25"],
+          ['1001', "10"],
         ]),
       ],
     ]);
@@ -59,7 +59,7 @@ describe('map series grouping helpers', () => {
         domainsBySeriesId,
         groupValuesBySirutaCode,
       })
-    ).toBe(25);
+    ).toBe('25');
     expect(
       resolveSeriesDisplayValueForSiruta({
         seriesId: 'grouped',
@@ -68,6 +68,6 @@ describe('map series grouping helpers', () => {
         domainsBySeriesId,
         groupValuesBySirutaCode,
       })
-    ).toBe(25);
+    ).toBe('25');
   });
 });

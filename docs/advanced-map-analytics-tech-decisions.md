@@ -4,6 +4,16 @@ This document captures the key implementation decisions for `/maps/editor` (phas
 
 For full value-filters internals and rationale, see `docs/advanced-map-analytics-value-filters-implementation.md`.
 
+## Chronos dev decimal values (2026-09-07)
+
+The authoritative map vector contains decimal strings or missing values. CSV ingestion preserves source text; duplicate rows, invalid values and manifest mismatches make the complete matrix unavailable. Calculations, group sums, ranking, threshold/bin membership, table sorting and CSV exports use these values without an intermediate JavaScript-number conversion. Arithmetic uses 40 significant digits with half-even rounding, matching budget arithmetic; recurring divisions follow that rounding policy.
+
+A group sum requires every member. An all-missing analytics total remains missing; actual zero remains zero. Statistics over defined observations retain their existing sample semantics and coverage display. Drawing coordinates and compact display labels convert to numbers only at presentation boundaries. Continuous colors normalize against decimal endpoints before conversion.
+
+**User decision:** keep existing numeric constants, filters and saved bin boundaries for this release. Their input precision remains the precision of JavaScript numbers. No configuration version or saved-map migration is introduced. Automatic numeric bins use representable spacing and an outward lower boundary so source values remain covered. Equality and rank comparisons use decimal equality, with name/SIRUTA tie-breaks for equal values.
+
+This is client groundwork; it does not by itself mount the native grouped-series API, replace `/map`, or establish Chronos dev browser acceptance. Those remain separate migration gates.
+
 ## Scope and Route
 
 - New route: `/maps/editor` (isolated from `/map` behavior).

@@ -46,12 +46,12 @@ describe('advanced map analytics table rows', () => {
     [
       sourceSeries.id,
       new Map([
-        ['1001', 10],
-        ['1002', 15],
-        ['9999', 99],
+        ['1001', "10"],
+        ['1002', "15"],
+        ['9999', "99"],
       ]),
     ],
-    [groupedSeries.id, new Map([['grp_1', 25]])],
+    [groupedSeries.id, new Map([['grp_1', "25"]])],
   ]);
 
   const domainsBySeriesId: MapSeriesDomainCache = new Map([
@@ -101,8 +101,8 @@ describe('advanced map analytics table rows', () => {
       primaryUatName: 'Beta',
       memberCount: 2,
       valuesBySeriesId: {
-        source: 25,
-        grouped: 25,
+        source: "25",
+        grouped: "25",
       },
     });
   });
@@ -128,11 +128,11 @@ describe('advanced map analytics table rows', () => {
       kind: 'group-member',
       sirutaCode: '1002',
       valuesBySeriesId: {
-        source: 15,
-        grouped: 15,
+        source: "15",
+        grouped: "15",
       },
     });
-    expect(result.rows[2]?.valuesBySeriesId.source).toBe(10);
+    expect(result.rows[2]?.valuesBySeriesId.source).toBe('10');
   });
 
   it('can hide member values while keeping group totals', () => {
@@ -151,7 +151,7 @@ describe('advanced map analytics table rows', () => {
       unknownCountyLabel: 'Unknown county',
     });
 
-    expect(result.rows[0]?.valuesBySeriesId.source).toBe(25);
+    expect(result.rows[0]?.valuesBySeriesId.source).toBe('25');
     expect(result.rows[1]?.valuesBySeriesId.source).toBeUndefined();
     expect(result.rows[1]?.valuesBySeriesId.grouped).toBeUndefined();
   });
@@ -207,7 +207,7 @@ describe('advanced map analytics table rows', () => {
       ],
     };
     const filteredValuesBySeriesId: MapSeriesVectorCache = new Map([
-      [sourceSeries.id, new Map([['2001', 489]])],
+      [sourceSeries.id, new Map([['2001', "489"]])],
     ]);
 
     const result = buildAdvancedMapAnalyticsTableRows({
@@ -236,14 +236,14 @@ describe('advanced map analytics table rows', () => {
       kind: 'group',
       groupId: 'grp_2',
       valuesBySeriesId: {
-        source: 489,
+        source: "489",
       },
     });
   });
 
   it('counts only active ungrouped UAT rows as hidden in grouped modes', () => {
     const sparseSourceValues: MapSeriesVectorCache = new Map([
-      [sourceSeries.id, new Map([['9999', 99]])],
+      [sourceSeries.id, new Map([['9999', "99"]])],
       [groupedSeries.id, new Map()],
     ]);
 

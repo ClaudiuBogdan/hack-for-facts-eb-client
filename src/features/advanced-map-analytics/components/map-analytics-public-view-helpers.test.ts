@@ -22,7 +22,7 @@ describe('map analytics public view helpers', () => {
       activeSeries: groupedSeries,
       activeSeriesId: groupedSeries.id,
       valuesBySeriesId: new Map([
-        [groupedSeries.id, new Map([['grp_1', 456], ['1001', 999]])],
+        [groupedSeries.id, new Map([['grp_1', "456"], ['1001', "999"]])],
       ]),
       unitsBySeriesId: new Map([[groupedSeries.id, 'RON']]),
       binsCanApply: false,
@@ -95,8 +95,8 @@ describe('map analytics public view helpers', () => {
         uatName: 'Comuna Test',
       },
       valuesBySeriesId: new Map([
-        [groupedSeries.id, new Map([['grp_1', 456], ['1001', 999]])],
-        [sourceSeries.id, new Map([['1001', 123]])],
+        [groupedSeries.id, new Map([['grp_1', "456"], ['1001', "999"]])],
+        [sourceSeries.id, new Map([['1001', "123"]])],
       ]),
       unitsBySeriesId: new Map([[groupedSeries.id, 'RON']]),
       domainsBySeriesId: new Map([
@@ -119,8 +119,8 @@ describe('map analytics public view helpers', () => {
         uatName: 'Comuna Test',
       },
       valuesBySeriesId: new Map([
-        [groupedSeries.id, new Map([['grp_1', 456], ['1001', 999]])],
-        [sourceSeries.id, new Map([['1001', 123]])],
+        [groupedSeries.id, new Map([['grp_1', "456"], ['1001', "999"]])],
+        [sourceSeries.id, new Map([['1001', "123"]])],
       ]),
       unitsBySeriesId: new Map([[groupedSeries.id, 'RON']]),
       domainsBySeriesId: new Map([
@@ -150,12 +150,12 @@ describe('map analytics public view helpers', () => {
     groupedSeries.label = 'Population';
 
     const filteredValuesBySeriesId = new Map([
-      [groupedSeries.id, new Map<string, number | undefined>()],
-      [sourceSeries.id, new Map<string, number | undefined>()],
+      [groupedSeries.id, new Map<string, string | undefined>()],
+      [sourceSeries.id, new Map<string, string | undefined>()],
     ]);
     const unfilteredValuesBySeriesId = new Map([
-      [groupedSeries.id, new Map([['grp_1', 4_500]])],
-      [sourceSeries.id, new Map([['1001', 2_000], ['2002', 2_500]])],
+      [groupedSeries.id, new Map([['grp_1', "4500"]])],
+      [sourceSeries.id, new Map([['1001', "2000"], ['2002', "2500"]])],
     ]);
 
     const groupRows = buildPublicEntitySeriesRows({
@@ -217,7 +217,7 @@ describe('map analytics public view helpers', () => {
       unitsBySeriesId: new Map([[groupedSeries.id, 'loc.']]),
     });
 
-    expect(context?.memberRows?.map((row) => row.value)).toEqual([2_000, 2_500]);
+    expect(context?.memberRows?.map((row) => row.value)).toEqual(['2000', '2500']);
   });
 
   it('keeps raw member values in group context for active UAT-domain series', () => {
@@ -237,16 +237,16 @@ describe('map analytics public view helpers', () => {
         uatName: 'Comuna Test',
       },
       valuesBySeriesId: new Map([
-        ['population', new Map<string, number | undefined>()],
+        ['population', new Map<string, string | undefined>()],
       ]),
       unfilteredValuesBySeriesId: new Map([
-        ['population', new Map([['1001', 483]])],
+        ['population', new Map([['1001', "483"]])],
       ]),
       displayValuesBySeriesId: new Map([
-        ['population', new Map<string, number | undefined>()],
+        ['population', new Map<string, string | undefined>()],
       ]),
       unfilteredDisplayValuesBySeriesId: new Map([
-        ['population', new Map([['1001', 980]])],
+        ['population', new Map([['1001', "980"]])],
       ]),
       unitsBySeriesId: new Map([['population', 'loc.']]),
       domainsBySeriesId: new Map([['population', { type: 'uat' }]]),
@@ -297,21 +297,21 @@ describe('map analytics public view helpers', () => {
       ]),
       uatSeriesRows: [],
       valuesBySeriesId: new Map([
-        ['population', new Map<string, number | undefined>()],
+        ['population', new Map<string, string | undefined>()],
       ]),
       unfilteredValuesBySeriesId: new Map([
         [
           'population',
-          new Map<string, number | undefined>([
-            ['1001', 483],
-            ['1002', 497],
+          new Map<string, string | undefined>([
+            ['1001', "483"],
+            ['1002', "497"],
           ]),
         ],
       ]),
       unitsBySeriesId: new Map([['population', 'loc.']]),
     });
 
-    expect(context?.memberRows?.map((row) => row.value)).toEqual([483, 497]);
+    expect(context?.memberRows?.map((row) => row.value)).toEqual(['483', '497']);
   });
 
   it('builds group context for public entity details', () => {
@@ -364,12 +364,12 @@ describe('map analytics public view helpers', () => {
         [
           'series_1',
           new Map([
-            ['1001', 10],
-            ['2002', 60],
-            ['3003', 30],
+            ['1001', "10"],
+            ['2002', "60"],
+            ['3003', "30"],
             ['4004', undefined],
-            ['5005', 50],
-            ['6006', 20],
+            ['5005', "50"],
+            ['6006', "20"],
           ]),
         ],
       ]),
@@ -407,11 +407,11 @@ describe('map analytics public view helpers', () => {
     sourceSeries.id = 'source_series';
     sourceSeries.label = 'Source value';
 
-    const valuesBySeriesId = new Map<string, Map<string, number | undefined>>([
-      [sourceSeries.id, new Map([['1001', 10], ['2002', 20]])],
+    const valuesBySeriesId = new Map<string, Map<string, string | undefined>>([
+      [sourceSeries.id, new Map([['1001', "10"], ['2002', "20"]])],
     ]);
-    const displayValuesBySeriesId = new Map<string, Map<string, number | undefined>>([
-      [sourceSeries.id, new Map([['1001', 30], ['2002', 30]])],
+    const displayValuesBySeriesId = new Map<string, Map<string, string | undefined>>([
+      [sourceSeries.id, new Map([['1001', "30"], ['2002', "30"]])],
     ]);
 
     const getTooltipContent = buildPublicMapTooltipContent({

@@ -22,7 +22,7 @@ describe('AdvancedMapAnalyticsDataTable', () => {
       uatName: 'Demo UAT',
       countyName: 'Cluj',
       valuesBySeriesId: {
-        'series-active': 1500,
+        'series-active': "1500",
         'series-secondary': undefined,
       },
     },
@@ -95,8 +95,8 @@ describe('AdvancedMapAnalyticsDataTable', () => {
             uatName: 'Gamma',
             countyName: 'County 4',
             valuesBySeriesId: {
-              'series-active': 100,
-              'series-secondary': 20,
+              'series-active': "100",
+              'series-secondary': "20",
             },
           },
           {
@@ -104,8 +104,8 @@ describe('AdvancedMapAnalyticsDataTable', () => {
             uatName: 'Alpha',
             countyName: 'County 1',
             valuesBySeriesId: {
-              'series-active': 300,
-              'series-secondary': 50,
+              'series-active': "300",
+              'series-secondary': "50",
             },
           },
           {
@@ -113,8 +113,8 @@ describe('AdvancedMapAnalyticsDataTable', () => {
             uatName: 'beta',
             countyName: 'County 2',
             valuesBySeriesId: {
-              'series-active': 300,
-              'series-secondary': 10,
+              'series-active': "300",
+              'series-secondary': "10",
             },
           },
           {
@@ -123,7 +123,7 @@ describe('AdvancedMapAnalyticsDataTable', () => {
             countyName: 'County 3',
             valuesBySeriesId: {
               'series-active': undefined,
-              'series-secondary': 30,
+              'series-secondary': "30",
             },
           },
         ]}
@@ -154,8 +154,8 @@ describe('AdvancedMapAnalyticsDataTable', () => {
             uatName: 'Alpha',
             countyName: 'County 1',
             valuesBySeriesId: {
-              'series-active': 100,
-              'series-secondary': 5,
+              'series-active': "100",
+              'series-secondary': "5",
             },
           },
           {
@@ -163,8 +163,8 @@ describe('AdvancedMapAnalyticsDataTable', () => {
             uatName: 'Beta',
             countyName: 'County 2',
             valuesBySeriesId: {
-              'series-active': 300,
-              'series-secondary': 10,
+              'series-active': "300",
+              'series-secondary': "10",
             },
           },
           {
@@ -172,8 +172,8 @@ describe('AdvancedMapAnalyticsDataTable', () => {
             uatName: 'Gamma',
             countyName: 'County 3',
             valuesBySeriesId: {
-              'series-active': 200,
-              'series-secondary': 15,
+              'series-active': "200",
+              'series-secondary': "15",
             },
           },
         ]}
@@ -237,8 +237,8 @@ describe('AdvancedMapAnalyticsDataTable', () => {
             uatName: 'Alpha',
             countyName: 'County 1',
             valuesBySeriesId: {
-              'series-active': 100,
-              'series-secondary': 1,
+              'series-active': "100",
+              'series-secondary': "1",
             },
           },
           {
@@ -246,8 +246,8 @@ describe('AdvancedMapAnalyticsDataTable', () => {
             uatName: 'Beta',
             countyName: 'County 2',
             valuesBySeriesId: {
-              'series-active': 300,
-              'series-secondary': 3,
+              'series-active': "300",
+              'series-secondary': "3",
             },
           },
           {
@@ -255,8 +255,8 @@ describe('AdvancedMapAnalyticsDataTable', () => {
             uatName: 'Gamma',
             countyName: 'County 3',
             valuesBySeriesId: {
-              'series-active': 200,
-              'series-secondary': 2,
+              'series-active': "200",
+              'series-secondary': "2",
             },
           },
         ]}
@@ -292,8 +292,8 @@ describe('AdvancedMapAnalyticsDataTable', () => {
             uatName: 'Alpha City',
             countyName: 'County One',
             valuesBySeriesId: {
-              'series-active': 10,
-              'series-secondary': 1,
+              'series-active': "10",
+              'series-secondary': "1",
             },
           },
           {
@@ -301,8 +301,8 @@ describe('AdvancedMapAnalyticsDataTable', () => {
             uatName: 'Beta Village',
             countyName: 'Alpha County',
             valuesBySeriesId: {
-              'series-active': 20,
-              'series-secondary': 2,
+              'series-active': "20",
+              'series-secondary': "2",
             },
           },
         ]}
@@ -335,8 +335,8 @@ describe('AdvancedMapAnalyticsDataTable', () => {
             uatName: 'Alpha',
             countyName: 'County 1',
             valuesBySeriesId: {
-              'series-active': 300,
-              'series-secondary': 0,
+              'series-active': "300",
+              'series-secondary': "0",
             },
           },
           {
@@ -344,8 +344,8 @@ describe('AdvancedMapAnalyticsDataTable', () => {
             uatName: 'Beta',
             countyName: 'County 2',
             valuesBySeriesId: {
-              'series-active': 200,
-              'series-secondary': 0,
+              'series-active': "200",
+              'series-secondary': "0",
             },
           },
           {
@@ -353,8 +353,8 @@ describe('AdvancedMapAnalyticsDataTable', () => {
             uatName: 'Gamma',
             countyName: 'County 3',
             valuesBySeriesId: {
-              'series-active': 100,
-              'series-secondary': 0,
+              'series-active': "100",
+              'series-secondary': "0",
             },
           },
         ]}
@@ -517,8 +517,8 @@ describe('AdvancedMapAnalyticsDataTable', () => {
         countyName: 'Y County',
         entityCui: '87654321',
         valuesBySeriesId: {
-          'series-active': 300,
-          'series-secondary': 5,
+          'series-active': "300",
+          'series-secondary': "5",
         },
       },
       {
@@ -526,7 +526,7 @@ describe('AdvancedMapAnalyticsDataTable', () => {
         uatName: 'Alpha\nCity',
         countyName: 'A County',
         valuesBySeriesId: {
-          'series-active': 100,
+          'series-active': "100",
           'series-secondary': undefined,
         },
       },
@@ -643,7 +643,7 @@ describe('AdvancedMapAnalyticsDataTable', () => {
             groupId: 'grp_1',
             groupLabel: 'Group 1',
             memberCount: 2,
-            valuesBySeriesId: { 'series-active': 30 },
+            valuesBySeriesId: { 'series-active': "30" },
           },
           {
             rowId: 'group-member:manual:grp_1:1001',
@@ -654,7 +654,7 @@ describe('AdvancedMapAnalyticsDataTable', () => {
             countyName: 'Alba',
             groupId: 'grp_1',
             groupLabel: 'Group 1',
-            valuesBySeriesId: { 'series-active': 10 },
+            valuesBySeriesId: { 'series-active': "10" },
             searchText: 'alpha 1001',
           },
           {
@@ -666,7 +666,7 @@ describe('AdvancedMapAnalyticsDataTable', () => {
             countyName: 'Bihor',
             groupId: 'grp_1',
             groupLabel: 'Group 1',
-            valuesBySeriesId: { 'series-active': 20 },
+            valuesBySeriesId: { 'series-active': "20" },
             searchText: 'beta 1002',
           },
         ]}
@@ -706,7 +706,7 @@ describe('AdvancedMapAnalyticsDataTable', () => {
             groupId: 'low',
             groupLabel: 'Low group',
             memberCount: 1,
-            valuesBySeriesId: { 'series-active': 10 },
+            valuesBySeriesId: { 'series-active': "10" },
           },
           {
             rowId: 'group-member:manual:low:1001',
@@ -717,7 +717,7 @@ describe('AdvancedMapAnalyticsDataTable', () => {
             countyName: 'Alba',
             groupId: 'low',
             groupLabel: 'Low group',
-            valuesBySeriesId: { 'series-active': 10 },
+            valuesBySeriesId: { 'series-active': "10" },
           },
           {
             rowId: 'group:manual:high',
@@ -728,7 +728,7 @@ describe('AdvancedMapAnalyticsDataTable', () => {
             groupId: 'high',
             groupLabel: 'High group',
             memberCount: 1,
-            valuesBySeriesId: { 'series-active': 30 },
+            valuesBySeriesId: { 'series-active': "30" },
           },
           {
             rowId: 'group-member:manual:high:1002',
@@ -739,7 +739,7 @@ describe('AdvancedMapAnalyticsDataTable', () => {
             countyName: 'Bihor',
             groupId: 'high',
             groupLabel: 'High group',
-            valuesBySeriesId: { 'series-active': 30 },
+            valuesBySeriesId: { 'series-active': "30" },
           },
         ]}
         seriesColumns={seriesColumns}
@@ -779,7 +779,7 @@ describe('AdvancedMapAnalyticsDataTable', () => {
         countyName: 'Manual groups',
         groupId: 'first',
         groupLabel: 'First group',
-        valuesBySeriesId: { 'series-active': 20 },
+        valuesBySeriesId: { 'series-active': "20" },
       },
       {
         rowId: 'group-member:manual:first:1001',
@@ -790,7 +790,7 @@ describe('AdvancedMapAnalyticsDataTable', () => {
         countyName: 'Alba',
         groupId: 'first',
         groupLabel: 'First group',
-        valuesBySeriesId: { 'series-active': 20 },
+        valuesBySeriesId: { 'series-active': "20" },
       },
       {
         rowId: 'group:manual:second',
@@ -800,7 +800,7 @@ describe('AdvancedMapAnalyticsDataTable', () => {
         countyName: 'Manual groups',
         groupId: 'second',
         groupLabel: 'Second group',
-        valuesBySeriesId: { 'series-active': 10 },
+        valuesBySeriesId: { 'series-active': "10" },
       },
       {
         rowId: 'group-member:manual:second:1002',
@@ -811,7 +811,7 @@ describe('AdvancedMapAnalyticsDataTable', () => {
         countyName: 'Bihor',
         groupId: 'second',
         groupLabel: 'Second group',
-        valuesBySeriesId: { 'series-active': 10 },
+        valuesBySeriesId: { 'series-active': "10" },
       },
     ];
 

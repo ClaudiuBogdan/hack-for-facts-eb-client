@@ -1,3 +1,4 @@
+import { getMapDecimalRange } from '@/lib/map-series/decimal';
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import type { Dispatch, SetStateAction, ReactNode } from 'react';
@@ -25,7 +26,6 @@ import {
   resolveSeriesDisplayUnit,
 } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-series-utils';
 import { buildDiscretePaletteFromConfig } from '@/lib/map-bins/bins';
-import { getPercentileValues } from '@/components/maps/utils';
 import type { UatProperties } from '@/components/maps/interfaces';
 import { useGeoJsonData } from '@/hooks/useGeoJson';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -301,16 +301,17 @@ export function MapAnalyticsPublicView({
 
   const colorRange = useMemo(() => {
     if (activeHeatmapData.length === 0) {
-      return { min: 0, max: 0 };
+      return { min: '0', max: '0' };
     }
 
     const percentiles = activeBinsPreset?.config.continuousPercentiles;
     const lowerPercentile = isContinuousIntervalMode ? (percentiles?.min ?? 5) : 5;
     const upperPercentile = isContinuousIntervalMode ? (percentiles?.max ?? 95) : 95;
-    return getPercentileValues(activeHeatmapData, lowerPercentile, upperPercentile, 'amount');
+    return getMapDecimalRange(activeBinsValues?.values() ?? [], lowerPercentile, upperPercentile);
   }, [
     activeBinsPreset?.config.continuousPercentiles,
     activeHeatmapData,
+    activeBinsValues,
     isContinuousIntervalMode,
   ]);
 
@@ -322,6 +323,7 @@ export function MapAnalyticsPublicView({
         activeNoDataConfig,
         isContinuousIntervalMode,
         colorRange,
+        values: activeBinsValues,
         gradient: activeBinsPreset?.config.gradient,
         renderUnitIdBySirutaCode: activeMapRenderUnitContext?.renderUnitIdBySirutaCode,
       }),
@@ -331,6 +333,7 @@ export function MapAnalyticsPublicView({
       activeMapRenderUnitContext,
       binsCanApply,
       binsClassification,
+      activeBinsValues,
       colorRange,
       isContinuousIntervalMode,
     ]

@@ -50,7 +50,7 @@ export interface MapSeriesWarning {
 export interface GroupedSeriesRow {
   series_id: string;
   siruta_code: string;
-  value: number;
+  value: string;
 }
 
 export interface GroupedSeriesManifestEntry {
@@ -89,7 +89,7 @@ export interface MapSeriesDataAdapter {
   ) => Promise<GroupedSeriesDataResponse>;
 }
 
-export type MapSeriesVector = Map<string, number | undefined>;
+export type MapSeriesVector = Map<string, string | undefined>;
 export type MapSeriesVectorCache = Map<string, MapSeriesVector>;
 export type MapSeriesDomain =
   | { type: 'uat' }

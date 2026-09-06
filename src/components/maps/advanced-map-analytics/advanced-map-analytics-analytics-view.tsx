@@ -1,3 +1,4 @@
+import { MapDecimal, compareMapDecimals, mapDecimalToRenderNumber, readMapDecimal } from '@/lib/map-series/decimal';
 import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import {
   DndContext,
@@ -82,7 +83,7 @@ interface AdvancedMapAnalyticsOutlierRow {
   sirutaCode: string;
   uatName: string;
   countyName: string;
-  value: number;
+  value: string;
 }
 
 interface AdvancedMapAnalyticsCoverageRow {
@@ -97,9 +98,9 @@ interface AdvancedMapAnalyticsCoverageRow {
 interface AdvancedMapAnalyticsTotalsRow {
   seriesId: string;
   label: string;
-  totalValue: number;
-  meanValue?: number;
-  medianValue?: number;
+  totalValue?: string;
+  meanValue?: string;
+  medianValue?: string;
   unit?: string;
 }
 
@@ -120,7 +121,7 @@ interface AdvancedMapAnalyticsAnalyticsViewProps {
   widgets: AdvancedMapAnalyticsWidget[];
   series: MapSupportedSeries[];
   activeSeriesId?: string;
-  valuesBySeriesId: Map<string, Map<string, number | undefined>>;
+  valuesBySeriesId: Map<string, Map<string, string | undefined>>;
   domainsBySeriesId?: Map<string, MapSeriesDomain>;
   unitsBySeriesId: Map<string, string | undefined>;
   uatMetadataBySirutaCode: Map<string, UatMetadata>;
@@ -237,14 +238,14 @@ export function AdvancedMapAnalyticsAnalyticsView({
 
     return enabledSeries.map((seriesEntry) => {
       const vector = valuesBySeriesId.get(seriesEntry.id);
-      let totalValue = 0;
-      const definedValues: number[] = [];
+      let totalValue = new MapDecimal(0);
+      const definedValues: string[] = [];
 
       if (vector) {
         for (const value of vector.values()) {
           const numericValue = normalizeFiniteValue(value);
           if (numericValue !== undefined) {
-            totalValue += numericValue;
+            totalValue = totalValue.plus(numericValue);
             definedValues.push(numericValue);
           }
         }
@@ -253,8 +254,8 @@ export function AdvancedMapAnalyticsAnalyticsView({
       return {
         seriesId: seriesEntry.id,
         label: resolveSeriesDisplayLabel(seriesEntry),
-        totalValue,
-        meanValue: definedValues.length > 0 ? totalValue / definedValues.length : undefined,
+        totalValue: definedValues.length > 0 ? totalValue.toString() : undefined,
+        meanValue: definedValues.length > 0 ? totalValue.div(definedValues.length).toString() : undefined,
         medianValue: computeMedian(definedValues),
         unit: resolveSeriesDisplayUnit(seriesEntry, unitsBySeriesId),
       };
@@ -407,7 +408,7 @@ interface AnalyticsWidgetCardProps {
   activeSeriesId?: string;
   coverageRows: AdvancedMapAnalyticsCoverageRow[];
   totalsRows: AdvancedMapAnalyticsTotalsRow[];
-  valuesBySeriesId: Map<string, Map<string, number | undefined>>;
+  valuesBySeriesId: Map<string, Map<string, string | undefined>>;
   uatMetadataBySirutaCode: Map<string, UatMetadata>;
   onRequestRemove: (widgetKey: AdvancedMapAnalyticsWidgetKey) => void;
   onUpdateWidget: (nextWidget: AdvancedMapAnalyticsWidget) => void;
@@ -800,7 +801,7 @@ interface OutliersWidgetContentProps {
   selectedSeriesId?: string;
   selectedSeriesUnit?: string;
   outlierResult: ReturnType<typeof computeIqrOutliers> | null;
-  valuesBySeriesId: Map<string, Map<string, number | undefined>>;
+  valuesBySeriesId: Map<string, Map<string, string | undefined>>;
   uatMetadataBySirutaCode: Map<string, UatMetadata>;
   onUpdateWidget: (nextWidget: AdvancedMapAnalyticsWidget) => void;
 }
@@ -847,7 +848,7 @@ function OutliersWidgetContent({
     if (scatterXAxisMode === 'uat_name') {
       const points: AdvancedMapAnalyticsScatterPoint[] = [];
       for (const [sirutaCode, rawYValue] of yVector.entries()) {
-        const yValue = normalizeFiniteValue(rawYValue);
+        const yValue = mapDecimalToRenderNumber(rawYValue);
         if (yValue === undefined) {
           continue;
         }
@@ -890,8 +891,8 @@ function OutliersWidgetContent({
 
     const points: AdvancedMapAnalyticsScatterPoint[] = [];
     for (const [sirutaCode, rawXValue] of xVector.entries()) {
-      const xValue = normalizeFiniteValue(rawXValue);
-      const yValue = normalizeFiniteValue(yVector.get(sirutaCode));
+      const xValue = mapDecimalToRenderNumber(rawXValue);
+      const yValue = mapDecimalToRenderNumber(yVector.get(sirutaCode));
       if (xValue === undefined || yValue === undefined) {
         continue;
       }
@@ -1523,12 +1524,12 @@ function resolveWidgetSeriesId(
   return seriesOptions[0]?.id;
 }
 
-function collectDefinedValues(vector: Map<string, number | undefined> | undefined): number[] {
+function collectDefinedValues(vector: Map<string, string | undefined> | undefined): string[] {
   if (!vector) {
     return [];
   }
 
-  const values: number[] = [];
+  const values: string[] = [];
   for (const value of vector.values()) {
     const normalizedValue = normalizeFiniteValue(value);
     if (normalizedValue !== undefined) {
@@ -1539,12 +1540,12 @@ function collectDefinedValues(vector: Map<string, number | undefined> | undefine
   return values;
 }
 
-function computeMedian(values: number[]): number | undefined {
+function computeMedian(values: string[]): string | undefined {
   if (values.length === 0) {
     return undefined;
   }
 
-  const sortedValues = [...values].sort((left, right) => left - right);
+  const sortedValues = [...values].sort(compareMapDecimals);
   const middleIndex = Math.floor(sortedValues.length / 2);
   const middleValue = sortedValues[middleIndex];
   if (middleValue === undefined) {
@@ -1560,18 +1561,20 @@ function computeMedian(values: number[]): number | undefined {
     return undefined;
   }
 
-  return (leftMiddleValue + middleValue) / 2;
+  return new MapDecimal(leftMiddleValue).plus(middleValue).div(2).toString();
 }
 
-function formatCompactNumber(value: number): string {
+function formatCompactNumber(value: string | number): string {
+  const renderedValue = mapDecimalToRenderNumber(value);
+  if (renderedValue === undefined) return t`Missing`;
   return new Intl.NumberFormat('ro-RO', {
     notation: 'compact',
     maximumFractionDigits: 1,
-  }).format(value);
+  }).format(renderedValue);
 }
 
 function buildDistributionBins(
-  values: number[],
+  values: string[],
   requestedBinCount: number,
   binMethod: AdvancedMapAnalyticsBinMethod,
   unit: string | undefined
@@ -1582,11 +1585,11 @@ function buildDistributionBins(
 
   const binCount = Math.min(30, Math.max(3, Math.trunc(requestedBinCount)));
 
-  const sortedValues = [...values].sort((left, right) => left - right);
+  const sortedValues = [...values].sort(compareMapDecimals);
   const minValue = sortedValues[0]!;
   const maxValue = sortedValues[sortedValues.length - 1]!;
 
-  if (minValue === maxValue) {
+  if (compareMapDecimals(minValue, maxValue) === 0) {
     const formatted = formatAdvancedMapAnalyticsSeriesValue(minValue, unit);
     return [{
       id: 'single-bin',
@@ -1604,19 +1607,18 @@ function buildDistributionBins(
 }
 
 function buildEqualWidthBins(
-  sortedValues: number[],
-  minValue: number,
-  maxValue: number,
+  sortedValues: string[],
+  minValue: string,
+  maxValue: string,
   binCount: number,
   unit: string | undefined
 ): AdvancedMapAnalyticsHistogramBin[] {
-  const range = maxValue - minValue;
-  const binSize = range / binCount;
+  const binSize = new MapDecimal(maxValue).minus(minValue).div(binCount);
   const bins = Array.from({ length: binCount }, () => 0);
 
   for (const value of sortedValues) {
-    let binIndex = Math.floor((value - minValue) / binSize);
-    if (value === maxValue) {
+    let binIndex = new MapDecimal(value).minus(minValue).div(binSize).floor().toNumber();
+    if (compareMapDecimals(value, maxValue) === 0) {
       binIndex = binCount - 1;
     }
     binIndex = Math.max(0, Math.min(binCount - 1, binIndex));
@@ -1624,8 +1626,8 @@ function buildEqualWidthBins(
   }
 
   return bins.map((count, index) => {
-    const binStart = minValue + index * binSize;
-    const binEnd = minValue + (index + 1) * binSize;
+    const binStart = new MapDecimal(minValue).plus(binSize.times(index)).toString();
+    const binEnd = new MapDecimal(minValue).plus(binSize.times(index + 1)).toString();
     return {
       id: `bin-${index}`,
       label: `${formatAdvancedMapAnalyticsSeriesValue(binStart, unit)} – ${formatAdvancedMapAnalyticsSeriesValue(binEnd, unit)}`,
@@ -1636,20 +1638,20 @@ function buildEqualWidthBins(
 }
 
 function buildLogScaleBins(
-  sortedValues: number[],
-  minValue: number,
-  maxValue: number,
+  sortedValues: string[],
+  minValue: string,
+  maxValue: string,
   binCount: number,
   unit: string | undefined
 ): AdvancedMapAnalyticsHistogramBin[] {
-  const offset = minValue <= 0 ? 1 - minValue : 0;
-  const logMin = Math.log10(minValue + offset);
-  const logMax = Math.log10(maxValue + offset);
-  const logStep = (logMax - logMin) / binCount;
+  const offset = new MapDecimal(minValue).lte(0) ? new MapDecimal(1).minus(minValue) : new MapDecimal(0);
+  const logMin = new MapDecimal(minValue).plus(offset).log(10);
+  const logMax = new MapDecimal(maxValue).plus(offset).log(10);
+  const logStep = logMax.minus(logMin).div(binCount);
 
-  const boundaries: number[] = [];
+  const boundaries: string[] = [];
   for (let i = 0; i <= binCount; i += 1) {
-    boundaries.push(Math.pow(10, logMin + i * logStep) - offset);
+    boundaries.push(new MapDecimal(10).pow(logMin.plus(logStep.times(i))).minus(offset).toString());
   }
   boundaries[0] = minValue;
   boundaries[boundaries.length - 1] = maxValue;
@@ -1659,7 +1661,7 @@ function buildLogScaleBins(
   for (const value of sortedValues) {
     let binIndex = binCount - 1;
     for (let i = 1; i < boundaries.length; i += 1) {
-      if (value < boundaries[i]!) {
+      if (compareMapDecimals(value, boundaries[i]!) < 0) {
         binIndex = i - 1;
         break;
       }
@@ -1685,7 +1687,7 @@ function computeIqrOutliers({
   multiplier,
   limit,
 }: Readonly<{
-  vector: Map<string, number | undefined> | undefined;
+  vector: Map<string, string | undefined> | undefined;
   metadataBySirutaCode: Map<string, UatMetadata>;
   multiplier: number;
   limit: number;
@@ -1694,7 +1696,7 @@ function computeIqrOutliers({
     return { status: 'insufficient_sample', rows: [] };
   }
 
-  const sampleEntries: Array<{ sirutaCode: string; value: number }> = [];
+  const sampleEntries: Array<{ sirutaCode: string; value: string }> = [];
   for (const [sirutaCode, rawValue] of vector.entries()) {
     const value = normalizeFiniteValue(rawValue);
     if (value === undefined) {
@@ -1710,7 +1712,7 @@ function computeIqrOutliers({
   const sortedValues = sampleEntries
     .map((entry) => entry.value)
     .slice()
-    .sort((left, right) => left - right);
+    .sort(compareMapDecimals);
   const q1 = computeNearestRankPercentile(sortedValues, 25);
   const q3 = computeNearestRankPercentile(sortedValues, 75);
 
@@ -1718,23 +1720,23 @@ function computeIqrOutliers({
     return { status: 'insufficient_sample', rows: [] };
   }
 
-  const iqr = q3 - q1;
-  if (Math.abs(iqr) <= OUTLIER_ZERO_VARIANCE_EPSILON) {
+  const iqr = new MapDecimal(q3).minus(q1);
+  if (iqr.abs().lte(OUTLIER_ZERO_VARIANCE_EPSILON)) {
     return { status: 'zero_variance', rows: [] };
   }
 
-  const lowerFence = q1 - multiplier * iqr;
-  const upperFence = q3 + multiplier * iqr;
+  const lowerFence = new MapDecimal(q1).minus(iqr.times(multiplier));
+  const upperFence = new MapDecimal(q3).plus(iqr.times(multiplier));
   const normalizedLimit = Math.min(100, Math.max(1, Math.trunc(limit)));
 
   const outlierRows = sampleEntries
-    .filter((entry) => entry.value < lowerFence || entry.value > upperFence)
+    .filter((entry) => lowerFence.gt(entry.value) || upperFence.lt(entry.value))
     .slice()
     .sort((left, right) => {
-      const leftDistance = left.value < lowerFence ? lowerFence - left.value : left.value - upperFence;
-      const rightDistance = right.value < lowerFence ? lowerFence - right.value : right.value - upperFence;
-      if (rightDistance !== leftDistance) {
-        return rightDistance - leftDistance;
+      const leftDistance = lowerFence.gt(left.value) ? lowerFence.minus(left.value) : new MapDecimal(left.value).minus(upperFence);
+      const rightDistance = lowerFence.gt(right.value) ? lowerFence.minus(right.value) : new MapDecimal(right.value).minus(upperFence);
+      if (!rightDistance.eq(leftDistance)) {
+        return rightDistance.comparedTo(leftDistance);
       }
       return left.sirutaCode.localeCompare(right.sirutaCode);
     })
@@ -1755,7 +1757,7 @@ function computeIqrOutliers({
   };
 }
 
-function computeNearestRankPercentile(sortedValues: number[], percentile: number): number | undefined {
+function computeNearestRankPercentile(sortedValues: string[], percentile: number): string | undefined {
   if (sortedValues.length === 0) {
     return undefined;
   }
@@ -1773,11 +1775,8 @@ function computeNearestRankPercentile(sortedValues: number[], percentile: number
   return sortedValues[index];
 }
 
-function normalizeFiniteValue(value: number | undefined): number | undefined {
-  if (value === undefined) {
-    return undefined;
-  }
-  return Number.isFinite(value) ? value : undefined;
+function normalizeFiniteValue(value: string | undefined): string | undefined {
+  return readMapDecimal(value);
 }
 
 function getCoverageDomainKey(domain: MapSeriesDomain | undefined): string {

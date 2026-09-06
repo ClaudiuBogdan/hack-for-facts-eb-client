@@ -1,3 +1,5 @@
+import { MapDecimal } from '@/lib/map-series/decimal';
+import { readMapDecimal, mapDecimalToRenderNumber, normalizeMapDecimal } from '@/lib/map-series/decimal';
 import type { GeoJsonObject } from 'geojson';
 import type { UatFeature, UatProperties } from '@/components/maps/interfaces';
 import type {
@@ -17,7 +19,7 @@ import type {
 import type { classifySeriesValues } from '@/lib/map-bins/bins';
 import { DEFAULT_FEATURE_STYLE } from '@/components/maps/constants';
 import { getContinuousGradientColor } from '@/lib/map-bins/bins';
-import { getHeatmapColor, normalizeValue } from '@/components/maps/utils';
+import { getHeatmapColor } from '@/components/maps/utils';
 import {
   resolveSeriesDisplayLabel,
   resolveSeriesDisplayUnit,
@@ -41,8 +43,8 @@ import { t } from '@lingui/core/macro';
 type BinsClassification = ReturnType<typeof classifySeriesValues>;
 
 interface ColorRange {
-  min: number;
-  max: number;
+  min: string | number;
+  max: string | number;
 }
 
 const GROUPED_RENDER_UNIT_MEMBER_STROKE: InteractiveMapFeatureStyle = {
@@ -59,6 +61,7 @@ interface BuildPublicMapFeatureStyleArgs {
   activeNoDataConfig: AdvancedMapAnalyticsBinsPresetConfig['noData'] | undefined;
   isContinuousIntervalMode: boolean;
   colorRange: ColorRange;
+  values?: ReadonlyMap<string, string | number | undefined>;
   gradient?: AdvancedMapAnalyticsBinsPresetConfig['gradient'];
   renderUnitIdBySirutaCode?: Map<string, string>;
 }
@@ -73,6 +76,7 @@ export function buildPublicMapFeatureStyle({
   activeNoDataConfig,
   isContinuousIntervalMode,
   colorRange,
+  values,
   gradient,
   renderUnitIdBySirutaCode,
 }: BuildPublicMapFeatureStyleArgs): (
@@ -117,8 +121,8 @@ export function buildPublicMapFeatureStyle({
       });
     }
 
-    const value = dataPoint.amount;
-    if (!Number.isFinite(value)) {
+    const value = values ? values.get(renderKey) : dataPoint.amount;
+    if (value === undefined || readMapDecimal(value) === undefined) {
       if (!isContinuousIntervalMode) {
         return applyRenderAffordance(DEFAULT_FEATURE_STYLE);
       }
@@ -137,15 +141,15 @@ export function buildPublicMapFeatureStyle({
       });
     }
 
-    if (colorRange.min === colorRange.max) {
+    if (new MapDecimal(colorRange.min).eq(colorRange.max)) {
       return applyRenderAffordance({
         ...DEFAULT_FEATURE_STYLE,
-        fillColor: value !== 0 ? getHeatmapColor(0.5) : DEFAULT_FEATURE_STYLE.fillColor,
+        fillColor: !new MapDecimal(value).isZero() ? getHeatmapColor(0.5) : DEFAULT_FEATURE_STYLE.fillColor,
         fillOpacity: 0.7,
       });
     }
 
-    const normalized = normalizeValue(value, colorRange.min, colorRange.max);
+    const normalized = normalizeMapDecimal(value, colorRange.min, colorRange.max);
     return applyRenderAffordance({
       ...DEFAULT_FEATURE_STYLE,
       fillColor: getHeatmapColor(normalized),
@@ -317,7 +321,7 @@ export function buildPublicMapTooltipContent({
       : Boolean(
           activeNoDataConfig &&
             activeNoDataConfig.showInTooltip &&
-            (activeSeriesValue === undefined || !Number.isFinite(activeSeriesValue))
+            readMapDecimal(activeSeriesValue) === undefined
         );
 
     let noDataTooltipMarker = '';
@@ -534,7 +538,7 @@ export function buildPublicEntityGroupContext(params: {
 
 interface BuildPublicHeatmapDataArgs {
   activeSeries: MapSupportedSeries | undefined;
-  activeValues: Map<string, number | undefined> | undefined;
+  activeValues: Map<string, string | number | undefined> | undefined;
   binsCanApply: boolean;
 }
 
@@ -555,7 +559,7 @@ export function buildPublicHeatmapData({
 
   if (binsCanApply) {
     for (const [sirutaCode, value] of activeValues.entries()) {
-      const numericValue = Number.isFinite(value) ? (value as number) : 0;
+      const numericValue = mapDecimalToRenderNumber(value) ?? 0;
       rows.push({
         uat_id: sirutaCode,
         uat_code: sirutaCode,
@@ -573,7 +577,8 @@ export function buildPublicHeatmapData({
   }
 
   for (const [sirutaCode, value] of activeValues.entries()) {
-    if (value === undefined || !Number.isFinite(value)) {
+    const numericValue = mapDecimalToRenderNumber(value);
+    if (numericValue === undefined) {
       continue;
     }
 
@@ -585,9 +590,9 @@ export function buildPublicHeatmapData({
       county_code: '',
       county_name: '',
       population: 0,
-      amount: value,
-      total_amount: value,
-      per_capita_amount: value,
+      amount: numericValue,
+      total_amount: numericValue,
+      per_capita_amount: numericValue,
     });
   }
 
@@ -604,7 +609,7 @@ interface BuildPublicHeatmapPercentilesArgs {
  */
 export function computePublicHeatmapDataRange({
   heatmapData,
-}: BuildPublicHeatmapPercentilesArgs): ColorRange {
+}: BuildPublicHeatmapPercentilesArgs): { min: number; max: number } {
   if (heatmapData.length === 0) {
     return { min: 0, max: 0 };
   }

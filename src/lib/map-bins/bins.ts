@@ -1,3 +1,4 @@
+import { MapDecimal, readMapDecimal, mapDecimalToRenderNumber, normalizeMapDecimal } from '@/lib/map-series/decimal';
 import type { MapSeriesWarning } from '@/lib/map-series/interfaces';
 import { getUserLocale } from '@/lib/utils';
 import {
@@ -203,14 +204,14 @@ export function validateBinsConfig(config: AdvancedMapAnalyticsBinsPresetConfig)
 }
 
 export function classifyValue(
-  value: number | undefined,
+  value: string | number | undefined,
   config: AdvancedMapAnalyticsBinsPresetConfig
 ): ClassifiedBin {
   if (config.intervalMode !== 'discrete') {
     return getNoDataClassification(config);
   }
 
-  if (value === undefined || value === null || !Number.isFinite(value)) {
+  if (value === undefined || readMapDecimal(value) === undefined) {
     return getNoDataClassification(config);
   }
 
@@ -223,8 +224,8 @@ export function classifyValue(
       continue;
     }
 
-    const isWithinMin = value >= bin.min;
-    const isWithinMax = bin.max === null ? true : value < bin.max;
+    const isWithinMin = new MapDecimal(value).gte(bin.min);
+    const isWithinMax = bin.max === null ? true : new MapDecimal(value).lt(bin.max);
     if (isWithinMin && isWithinMax) {
       return {
         groupId: bin.id,
@@ -239,7 +240,7 @@ export function classifyValue(
 }
 
 export function classifySeriesValues(
-  activeValues: Map<string, number | undefined> | undefined,
+  activeValues: Map<string, string | number | undefined> | undefined,
   config: AdvancedMapAnalyticsBinsPresetConfig
 ): ClassifySeriesValuesResult {
   const groupsBySiruta = new Map<string, ClassifiedBin>();
@@ -298,7 +299,7 @@ export function classifySeriesValues(
 
   let definedCount = 0;
   for (const [sirutaCode, value] of activeValues.entries()) {
-    if (Number.isFinite(value)) {
+    if (readMapDecimal(value) !== undefined) {
       definedCount += 1;
     }
     groupsBySiruta.set(sirutaCode, classifyValue(value, config));
@@ -319,13 +320,14 @@ export function classifySeriesValues(
 }
 
 export function generateSequentialBins(
-  values: Array<number | undefined>,
+  values: Array<string | number | undefined>,
   count: number,
   colorMode: AdvancedMapAnalyticsBinsPresetConfig['colorMode'],
   gradient: AdvancedMapAnalyticsBinsPresetConfig['gradient']
 ): AdvancedMapAnalyticsBin[] {
-  const finiteValues = values.filter((value): value is number => Number.isFinite(value));
-  if (finiteValues.length === 0) {
+  const exactValues = values.map(readMapDecimal).filter((value): value is string => value !== undefined);
+  const finiteValues = exactValues.map(mapDecimalToRenderNumber).filter((value): value is number => value !== undefined);
+  if (finiteValues.length === 0 || finiteValues.length !== exactValues.length) {
     return [];
   }
 
@@ -344,15 +346,25 @@ export function generateSequentialBins(
     if (v < minValue) minValue = v;
     if (v > maxValue) maxValue = v;
   }
+  const exactMin = exactValues.reduce((min, value) => new MapDecimal(value).lt(min) ? value : min);
+  // Saved boundaries are numbers. Move a rounded-up lower endpoint outward.
+  if (new MapDecimal(minValue).gt(exactMin)) {
+    minValue -= Math.max(Math.abs(minValue) * Number.EPSILON, Number.MIN_VALUE);
+  }
+  const coverExactMinimum = (bins: AdvancedMapAnalyticsBin[]) => {
+    const first = bins[0];
+    if (first && new MapDecimal(first.min).gt(exactMin)) first.min = minValue;
+    return bins;
+  };
   const colors =
     colorMode === 'gradient'
       ? buildGradientPalette(binCount, gradient.startColor, gradient.endColor)
       : buildManualPalette(binCount);
 
   if (minValue === maxValue) {
-    return Array.from({ length: binCount }, (_, index) => {
-      const binMin = index === 0 ? minValue : minValue + index;
-      const binMax = index === binCount - 1 ? null : binMin + 1;
+    return coverExactMinimum(Array.from({ length: binCount }, (_, index) => {
+      const binMin = index === 0 ? minValue : minValue + index * Math.max(1, Math.abs(minValue) * Number.EPSILON * 2);
+      const binMax = index === binCount - 1 ? null : binMin + Math.max(1, Math.abs(minValue) * Number.EPSILON * 2);
       return {
         id: createGeneratedBinId(),
         min: round(binMin),
@@ -360,13 +372,13 @@ export function generateSequentialBins(
         label: getDefaultBinTitle(index),
         color: colors[index] ?? colors[colors.length - 1] ?? '#d7301f',
       };
-    });
+    }));
   }
 
-  const step = resolveRoundedBinStep(minValue, maxValue, binCount);
+  const step = Math.max(resolveRoundedBinStep(minValue, maxValue, binCount), Math.abs(minValue) * Number.EPSILON * 2);
   const start = resolveRoundedBinStart(minValue, step, finiteValues.every((value) => value >= 0));
 
-  return Array.from({ length: binCount }, (_, index) => {
+  return coverExactMinimum(Array.from({ length: binCount }, (_, index) => {
     const binMin = start + step * index;
     const binMax = index === binCount - 1 ? null : start + step * (index + 1);
     const roundedMin = roundToStepPrecision(binMin, step);
@@ -379,7 +391,7 @@ export function generateSequentialBins(
       label: getDefaultBinTitle(index),
       color: colors[index] ?? colors[colors.length - 1] ?? '#d7301f',
     };
-  });
+  }));
 }
 
 export function applyGradientColorsToBins(
@@ -398,12 +410,12 @@ export function applyGradientColorsToBins(
 }
 
 export function getContinuousGradientColor(
-  value: number | undefined,
-  range: { min: number; max: number },
+  value: string | number | undefined,
+  range: { min: string | number; max: string | number },
   gradient: AdvancedMapAnalyticsBinsPresetConfig['gradient'],
   noDataColor: string
 ): string {
-  if (value === undefined || value === null || !Number.isFinite(value)) {
+  if (value === undefined || readMapDecimal(value) === undefined) {
     return noDataColor;
   }
 
@@ -413,7 +425,7 @@ export function getContinuousGradientColor(
     return noDataColor;
   }
 
-  const normalized = normalizeIntoUnitInterval(value, range.min, range.max);
+  const normalized = normalizeMapDecimal(value, range.min, range.max);
   const red = Math.round(startColor.r + (endColor.r - startColor.r) * normalized);
   const green = Math.round(startColor.g + (endColor.g - startColor.g) * normalized);
   const blue = Math.round(startColor.b + (endColor.b - startColor.b) * normalized);
@@ -452,18 +464,8 @@ export function getNoDataClassification(config: AdvancedMapAnalyticsBinsPresetCo
   };
 }
 
-export function getFiniteValuesArray(values: Map<string, number | undefined> | undefined): number[] {
-  if (!values || values.size === 0) {
-    return [];
-  }
-
-  const result: number[] = [];
-  for (const value of values.values()) {
-    if (Number.isFinite(value)) {
-      result.push(value as number);
-    }
-  }
-  return result;
+export function getFiniteValuesArray(values: Map<string, string | number | undefined> | undefined): string[] {
+  return [...(values?.values() ?? [])].map(readMapDecimal).filter((value): value is string => value !== undefined);
 }
 
 export function getDefaultBinTitle(index: number): string {
@@ -560,19 +562,6 @@ function rgbToHex(red: number, green: number, blue: number): string {
   return `#${[red, green, blue]
     .map((component) => component.toString(16).padStart(2, '0'))
     .join('')}`;
-}
-
-function normalizeIntoUnitInterval(value: number, min: number, max: number): number {
-  if (!Number.isFinite(min) || !Number.isFinite(max)) {
-    return 0.5;
-  }
-
-  if (max === min) {
-    return value === 0 ? 0 : 0.5;
-  }
-
-  const clampedValue = Math.max(min, Math.min(value, max));
-  return (clampedValue - min) / (max - min);
 }
 
 function normalizeHex(color: string): string | null {

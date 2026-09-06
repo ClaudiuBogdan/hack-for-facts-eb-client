@@ -31,7 +31,7 @@ interface CanvasLabelLayerOptions extends L.LayerOptions {
   currency?: Currency;
   showLabels?: boolean;
   labelMode?: LabelMode;
-  activeSeriesValuesBySirutaCode?: Map<string, number | undefined>;
+  activeSeriesValuesBySirutaCode?: Map<string, string | number | undefined>;
   activeRenderUnits?: ActiveMapRenderUnit[];
   activeSeriesUnit?: string;
 }

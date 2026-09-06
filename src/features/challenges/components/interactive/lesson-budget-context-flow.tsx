@@ -1,3 +1,4 @@
+import { MapDecimal } from '@/lib/map-series/decimal'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Check, ChevronLeft, ChevronRight, ChevronsUpDown, Map as MapIcon, Table2 } from 'lucide-react'
@@ -858,7 +859,7 @@ export function LessonBudgetContextFlow({
               formatNumber(
                 topCountyRow.valuesBySeriesId['lesson-expenses-total'] != null &&
                   topCountyRow.value > 0
-                  ? Math.round(topCountyRow.valuesBySeriesId['lesson-expenses-total']! / topCountyRow.value)
+                  ? new MapDecimal(topCountyRow.valuesBySeriesId['lesson-expenses-total']!).div(topCountyRow.value).round().toNumber()
                   : null,
               ),
             )}

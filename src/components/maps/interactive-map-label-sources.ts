@@ -1,3 +1,4 @@
+import { mapDecimalToRenderNumber } from '@/lib/map-series/decimal';
 import type {
   Feature,
   FeatureCollection,
@@ -161,7 +162,7 @@ function buildLabelGeometry(
 
 function resolveActiveSeriesValue(
   properties: Record<string, unknown>,
-  valuesBySirutaCode: Map<string, number | undefined> | undefined,
+  valuesBySirutaCode: Map<string, string | number | undefined> | undefined,
 ): number | undefined {
   if (!valuesBySirutaCode) {
     return undefined;
@@ -179,8 +180,8 @@ function resolveActiveSeriesValue(
       continue;
     }
 
-    const value = valuesBySirutaCode.get(String(candidate));
-    if (typeof value === 'number' && Number.isFinite(value)) {
+    const value = mapDecimalToRenderNumber(valuesBySirutaCode.get(String(candidate)));
+    if (value !== undefined) {
       return value;
     }
   }
@@ -305,7 +306,7 @@ function buildFeatureLabel(
   labelMode: LabelMode,
   maxPopulation: number,
   options?: {
-    activeSeriesValuesBySirutaCode?: Map<string, number | undefined>;
+    activeSeriesValuesBySirutaCode?: Map<string, string | number | undefined>;
     activeSeriesUnit?: string;
     suppressActiveSeriesAmount?: boolean;
   },
@@ -388,8 +389,8 @@ function buildRenderUnitLabelPoint(
   memberGeometries: PreparedLabelGeometry[],
   activeSeriesUnit?: string,
 ): Feature<Geometry, Record<string, unknown>> | null {
-  const value = renderUnit.value;
-  if (typeof value !== 'number' || !Number.isFinite(value) || memberGeometries.length === 0) {
+  const value = mapDecimalToRenderNumber(renderUnit.value);
+  if (value === undefined || memberGeometries.length === 0) {
     return null;
   }
 
@@ -440,7 +441,7 @@ export function buildLabelSourceData(args: {
   normalization: Normalization;
   currency?: Currency;
   labelMode: LabelMode;
-  activeSeriesValuesBySirutaCode?: Map<string, number | undefined>;
+  activeSeriesValuesBySirutaCode?: Map<string, string | number | undefined>;
   activeRenderUnits?: ActiveMapRenderUnit[];
   activeSeriesUnit?: string;
 }): MapLabelSourceData {

@@ -25,7 +25,7 @@ function createLeaderboardRow(params: {
     countyName: 'Cluj',
     entityCui: params.entityCui,
     valuesBySeriesId: {
-      'lesson-expenses-per-capita': params.value,
+      'lesson-expenses-per-capita': String(params.value),
     },
   }
 }

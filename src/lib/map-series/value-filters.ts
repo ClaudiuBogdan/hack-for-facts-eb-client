@@ -1,3 +1,5 @@
+import type { Decimal } from 'decimal.js';
+import { MapDecimal, readMapDecimal, sumMapDecimals } from './decimal';
 import type {
   AdvancedMapAnalyticsStatsValueFilterRule,
   AdvancedMapAnalyticsThresholdValueFilterRule,
@@ -15,7 +17,6 @@ import type {
   MapSeriesWarningType,
 } from '@/lib/map-series/interfaces';
 
-const EQUALITY_EPSILON = 1e-9;
 const ZERO_VARIANCE_EPSILON = 1e-12;
 const ROBUST_Z_CONSISTENCY_CONSTANT = 0.67448975;
 
@@ -352,20 +353,7 @@ function buildActiveGroupVector(
   const vector: MapSeriesVector = new Map();
 
   for (const group of activeGroupWorkspace.groups) {
-    let sum = 0;
-    let hasFiniteValue = false;
-
-    for (const sirutaCode of group.memberSirutaCodes) {
-      const value = sourceVector.get(sirutaCode);
-      if (typeof value !== 'number' || !Number.isFinite(value)) {
-        continue;
-      }
-
-      sum += value;
-      hasFiniteValue = true;
-    }
-
-    vector.set(group.id, hasFiniteValue ? sum : undefined);
+    vector.set(group.id, sumMapDecimals(group.memberSirutaCodes.map(code => sourceVector.get(code))));
   }
 
   return vector;
@@ -519,7 +507,7 @@ function applyMatchedMask(
       continue;
     }
 
-    const maskedVector = new Map<string, number | undefined>();
+    const maskedVector = new Map<string, string | undefined>();
     for (const [key, value] of vector.entries()) {
       if (!matchedKeys.has(key)) {
         continue;
@@ -721,7 +709,7 @@ function buildThresholdPredicate(
           return false;
         }
 
-        const matchesRange = value >= lowerBound && value <= upperBound;
+        const matchesRange = value.gte(lowerBound) && value.lte(upperBound);
         return rule.operator === 'between' ? matchesRange : !matchesRange;
       },
     };
@@ -808,7 +796,7 @@ function evaluateStatsRule(
 
     const matches = new Set<string>();
     for (const entry of sampleEntries) {
-      if (entry.value >= lowerBound && entry.value <= upperBound) {
+      if (entry.value.gte(lowerBound) && entry.value.lte(upperBound)) {
         matches.add(entry.sirutaCode);
       }
     }
@@ -834,10 +822,10 @@ function evaluateStatsRule(
 
     const sortedEntries = [...sampleEntries].sort((left, right) => {
       const valueOrder = rule.direction === 'top'
-        ? right.value - left.value
-        : left.value - right.value;
+        ? right.value.comparedTo(left.value)
+        : left.value.comparedTo(right.value);
 
-      if (Math.abs(valueOrder) > EQUALITY_EPSILON) {
+      if (valueOrder !== 0) {
         return valueOrder;
       }
 
@@ -908,14 +896,14 @@ function evaluateStatsRule(
       };
     }
 
-    const mean = sampleEntries.reduce((accumulator, entry) => accumulator + entry.value, 0) / sampleEntries.length;
+    const mean = sampleEntries.reduce((accumulator, entry) => accumulator.plus(entry.value), new MapDecimal(0)).div(sampleEntries.length);
     const variance = sampleEntries.reduce((accumulator, entry) => {
-      const delta = entry.value - mean;
-      return accumulator + delta * delta;
-    }, 0) / sampleEntries.length;
+      const delta = entry.value.minus(mean);
+      return accumulator.plus(delta.times(delta));
+    }, new MapDecimal(0)).div(sampleEntries.length);
 
-    const standardDeviation = Math.sqrt(variance);
-    if (standardDeviation <= ZERO_VARIANCE_EPSILON) {
+    const standardDeviation = variance.sqrt();
+    if (standardDeviation.lte(ZERO_VARIANCE_EPSILON)) {
       return {
         ok: false,
         warningType: 'value_filter_stats_zero_variance',
@@ -929,12 +917,12 @@ function evaluateStatsRule(
 
     const matches = new Set<string>();
     for (const entry of sampleEntries) {
-      const zScore = (entry.value - mean) / standardDeviation;
+      const zScore = entry.value.minus(mean).div(standardDeviation);
       const isMatch = rule.mode === 'abs_gte'
-        ? Math.abs(zScore) >= rule.threshold
+        ? zScore.abs().gte(rule.threshold)
         : rule.mode === 'gte'
-          ? zScore >= rule.threshold
-          : zScore <= rule.threshold;
+          ? zScore.gte(rule.threshold)
+          : zScore.lte(rule.threshold);
 
       if (isMatch) {
         matches.add(entry.sirutaCode);
@@ -987,8 +975,8 @@ function evaluateStatsRule(
       };
     }
 
-    const iqr = q3 - q1;
-    if (Math.abs(iqr) <= ZERO_VARIANCE_EPSILON) {
+    const iqr = q3.minus(q1);
+    if (iqr.abs().lte(ZERO_VARIANCE_EPSILON)) {
       return {
         ok: false,
         warningType: 'value_filter_stats_zero_variance',
@@ -1000,13 +988,13 @@ function evaluateStatsRule(
       };
     }
 
-    const lowerFence = q1 - rule.multiplier * iqr;
-    const upperFence = q3 + rule.multiplier * iqr;
+    const lowerFence = q1.minus(iqr.times(rule.multiplier));
+    const upperFence = q3.plus(iqr.times(rule.multiplier));
 
     const matches = new Set<string>();
     for (const entry of sampleEntries) {
-      const lowerMatch = entry.value < lowerFence;
-      const upperMatch = entry.value > upperFence;
+      const lowerMatch = entry.value.lt(lowerFence);
+      const upperMatch = entry.value.gt(upperFence);
       const isMatch = rule.side === 'both'
         ? lowerMatch || upperMatch
         : rule.side === 'lower'
@@ -1061,10 +1049,10 @@ function evaluateStatsRule(
     };
   }
 
-  const absoluteDeviations = sampleEntries.map((entry) => Math.abs(entry.value - median));
+  const absoluteDeviations = sampleEntries.map((entry) => entry.value.minus(median).abs());
   const mad = computeMedian(sortNumbersAscending(absoluteDeviations));
 
-  if (mad === undefined || mad <= ZERO_VARIANCE_EPSILON) {
+  if (mad === undefined || mad.lte(ZERO_VARIANCE_EPSILON)) {
     return {
       ok: false,
       warningType: 'value_filter_stats_zero_variance',
@@ -1078,8 +1066,8 @@ function evaluateStatsRule(
 
   const matches = new Set<string>();
   for (const entry of sampleEntries) {
-    const robustZ = ROBUST_Z_CONSISTENCY_CONSTANT * (entry.value - median) / mad;
-    if (Math.abs(robustZ) >= rule.threshold) {
+    const robustZ = entry.value.minus(median).times(ROBUST_Z_CONSISTENCY_CONSTANT).div(mad);
+    if (robustZ.abs().gte(rule.threshold)) {
       matches.add(entry.sirutaCode);
     }
   }
@@ -1093,8 +1081,8 @@ function evaluateStatsRule(
 function collectDefinedEntries(
   valuesBySiruta: MapSeriesVector,
   evaluationUniverse: Set<string>
-): Array<{ sirutaCode: string; value: number }> {
-  const entries: Array<{ sirutaCode: string; value: number }> = [];
+): Array<{ sirutaCode: string; value: Decimal }> {
+  const entries: Array<{ sirutaCode: string; value: Decimal }> = [];
 
   for (const sirutaCode of evaluationUniverse) {
     const value = normalizeVectorValue(valuesBySiruta.get(sirutaCode));
@@ -1111,11 +1099,11 @@ function collectDefinedEntries(
   return entries;
 }
 
-function sortNumbersAscending(values: number[]): number[] {
-  return [...values].sort((left, right) => left - right);
+function sortNumbersAscending(values: Decimal[]): Decimal[] {
+  return [...values].sort((left, right) => left.comparedTo(right));
 }
 
-function computeMedian(sortedValues: number[]): number | undefined {
+function computeMedian(sortedValues: Decimal[]): Decimal | undefined {
   if (sortedValues.length === 0) {
     return undefined;
   }
@@ -1132,16 +1120,16 @@ function computeMedian(sortedValues: number[]): number | undefined {
       return undefined;
     }
 
-    return (previousValue + middleValue) / 2;
+    return previousValue.plus(middleValue).div(2);
   }
 
   return middleValue;
 }
 
 function computeNearestRankPercentile(
-  sortedValues: number[],
+  sortedValues: Decimal[],
   percentile: number
-): number | undefined {
+): Decimal | undefined {
   if (sortedValues.length === 0) {
     return undefined;
   }
@@ -1160,23 +1148,23 @@ function computeNearestRankPercentile(
 }
 
 function matchesMedianMode(
-  value: number,
-  median: number,
+  value: Decimal,
+  median: Decimal,
   mode: 'gt' | 'gte' | 'lt' | 'lte'
 ): boolean {
   if (mode === 'gt') {
-    return value > median;
+    return value.gt(median);
   }
 
   if (mode === 'gte') {
-    return value >= median;
+    return value.gte(median);
   }
 
   if (mode === 'lt') {
-    return value < median;
+    return value.lt(median);
   }
 
-  return value <= median;
+  return value.lte(median);
 }
 
 function operatorHasValidParameters(
@@ -1196,31 +1184,31 @@ function operatorHasValidParameters(
 }
 
 function matchesComparisonOperator(
-  value: number,
+  value: Decimal,
   threshold: number,
   operator: Exclude<AdvancedMapAnalyticsValueFilterOperator, 'between' | 'not_between' | 'is_defined' | 'is_undefined'>
 ): boolean {
   if (operator === 'gt') {
-    return value > threshold;
+    return value.gt(threshold);
   }
 
   if (operator === 'gte') {
-    return value >= threshold;
+    return value.gte(threshold);
   }
 
   if (operator === 'lt') {
-    return value < threshold;
+    return value.lt(threshold);
   }
 
   if (operator === 'lte') {
-    return value <= threshold;
+    return value.lte(threshold);
   }
 
   if (operator === 'eq') {
-    return Math.abs(value - threshold) <= EQUALITY_EPSILON;
+    return value.eq(threshold);
   }
 
-  return Math.abs(value - threshold) > EQUALITY_EPSILON;
+  return !value.eq(threshold);
 }
 
 function isComparisonOperator(
@@ -1239,12 +1227,9 @@ function isComparisonOperator(
   );
 }
 
-function normalizeVectorValue(value: number | undefined): number | undefined {
-  if (value === undefined) {
-    return undefined;
-  }
-
-  return Number.isFinite(value) ? value : undefined;
+function normalizeVectorValue(value: string | undefined): Decimal | undefined {
+  const text = readMapDecimal(value);
+  return text === undefined ? undefined : new MapDecimal(text);
 }
 
 export function applyBooleanJoin(

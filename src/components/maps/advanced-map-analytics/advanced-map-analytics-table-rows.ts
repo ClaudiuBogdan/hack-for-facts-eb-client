@@ -1,3 +1,4 @@
+import { sumMapDecimals } from '@/lib/map-series/decimal';
 import type {
   MapGroup,
   MapGroupWorkspace,
@@ -152,7 +153,7 @@ function buildUatRows(params: {
       const metadata = params.uatMetadataBySirutaCode.get(sirutaCode);
       const uatName = metadata?.uatName || `UAT ${sirutaCode}`;
       const countyName = metadata?.countyName || params.unknownCountyLabel;
-      const rowValuesBySeriesId: Record<string, number | undefined> = {};
+      const rowValuesBySeriesId: Record<string, string | undefined> = {};
 
       for (const seriesColumn of params.seriesColumns) {
         rowValuesBySeriesId[seriesColumn.id] =
@@ -219,7 +220,7 @@ function buildGroupRows(params: {
       ? params.uatMetadataBySirutaCode.get(primarySirutaCode)?.uatName ?? `UAT ${primarySirutaCode}`
       : undefined;
     const groupRowId = getGroupTableRowId(params.activeGroupWorkspace.id, group.id);
-    const groupValuesBySeriesId: Record<string, number | undefined> = {};
+    const groupValuesBySeriesId: Record<string, string | undefined> = {};
 
     for (const seriesColumn of params.seriesColumns) {
       groupValuesBySeriesId[seriesColumn.id] = resolveGroupRowSeriesValue({
@@ -279,7 +280,7 @@ function buildGroupRows(params: {
     for (const entry of memberMetadata) {
       const uatName = entry.metadata?.uatName || `UAT ${entry.sirutaCode}`;
       const countyName = entry.metadata?.countyName || params.unknownCountyLabel;
-      const memberValuesBySeriesId: Record<string, number | undefined> = {};
+      const memberValuesBySeriesId: Record<string, string | undefined> = {};
 
       for (const seriesColumn of params.seriesColumns) {
         const series = seriesById.get(seriesColumn.id);
@@ -340,7 +341,7 @@ function resolveGroupRowSeriesValue(params: {
   groupWorkspaceId: string;
   valuesBySeriesId: MapSeriesVectorCache;
   domainsBySeriesId: MapSeriesDomainCache;
-}): number | undefined {
+}): string | undefined {
   const domain = params.domainsBySeriesId.get(params.seriesId);
   const vector = params.valuesBySeriesId.get(params.seriesId);
   if (!domain || !vector) {
@@ -362,7 +363,7 @@ function resolveMemberRowSeriesValue(params: {
   sirutaCode: string;
   valuesBySeriesId: MapSeriesVectorCache;
   domainsBySeriesId: MapSeriesDomainCache;
-}): number | undefined {
+}): string | undefined {
   if (params.series?.type === 'map-grouped-value-series') {
     return params.valuesBySeriesId.get(params.series.sourceSeriesId)?.get(params.sirutaCode);
   }
@@ -375,18 +376,8 @@ function resolveMemberRowSeriesValue(params: {
   return params.valuesBySeriesId.get(params.seriesId)?.get(params.sirutaCode);
 }
 
-function sumMemberValues(vector: MapSeriesVector, memberSirutaCodes: string[]): number | undefined {
-  let sum = 0;
-  let hasFiniteValue = false;
-  for (const sirutaCode of memberSirutaCodes) {
-    const value = vector.get(sirutaCode);
-    if (typeof value !== 'number' || !Number.isFinite(value)) {
-      continue;
-    }
-    sum += value;
-    hasFiniteValue = true;
-  }
-  return hasFiniteValue ? sum : undefined;
+function sumMemberValues(vector: MapSeriesVector, memberSirutaCodes: string[]): string | undefined {
+  return sumMapDecimals(memberSirutaCodes.map(code => vector.get(code)));
 }
 
 function getOrderedGroupMemberCodes(group: MapGroup): string[] {

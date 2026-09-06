@@ -1,3 +1,4 @@
+import { readMapDecimal } from './decimal';
 import Papa from 'papaparse';
 import type {
   GroupedSeriesRow,
@@ -110,7 +111,7 @@ export function parseGroupedSeriesWideCsv(
       warnings.push({
         type: 'duplicate_row',
         sirutaCode,
-        message: `Duplicate row for ${sirutaCode}; last row wins`,
+        message: `Duplicate row for ${sirutaCode}; the matrix is unavailable`,
       });
     }
     seenSirutaCodes.add(sirutaCode);
@@ -129,8 +130,8 @@ export function parseGroupedSeriesWideCsv(
         continue;
       }
 
-      const value = Number(trimmedValue);
-      if (!Number.isFinite(value)) {
+      const value = readMapDecimal(trimmedValue);
+      if (value === undefined) {
         warnings.push({
           type: 'invalid_row',
           message: `Skipped value for row ${rowIndex}, series ${seriesId}: value is not a finite number`,
@@ -151,7 +152,7 @@ export function parseGroupedSeriesWideCsv(
 
   return {
     seriesIds,
-    valuesBySeriesId,
+    valuesBySeriesId: warnings.some(warning => warning.type === 'invalid_row' || warning.type === 'duplicate_row') ? new Map() : valuesBySeriesId,
     warnings,
   };
 }
@@ -168,7 +169,7 @@ function escapeCsvCell(value: string): string {
   return `"${escaped}"`;
 }
 
-function toCellValue(value: number | undefined): string {
+function toCellValue(value: string | undefined): string {
   if (value === undefined) {
     return 'null';
   }
@@ -180,7 +181,7 @@ export function serializeGroupedSeriesWideMatrixCsv(
   rows: GroupedSeriesRow[],
   seriesOrder: string[]
 ): string {
-  const rowValuesBySiruta = new Map<string, Map<string, number>>();
+  const rowValuesBySiruta = new Map<string, Map<string, string>>();
 
   for (const row of rows) {
     if (!rowValuesBySiruta.has(row.siruta_code)) {
@@ -206,7 +207,7 @@ export function serializeGroupedSeriesWideMatrixCsv(
   }
 
   const csvRows = sortedSirutaCodes.map((sirutaCode) => {
-    const valuesBySeries = rowValuesBySiruta.get(sirutaCode) ?? new Map<string, number>();
+    const valuesBySeries = rowValuesBySiruta.get(sirutaCode) ?? new Map<string, string>();
     const cells = [escapeCsvCell(sirutaCode)];
 
     for (const seriesId of seriesOrder) {

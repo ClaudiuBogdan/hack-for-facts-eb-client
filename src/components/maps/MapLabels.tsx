@@ -15,7 +15,7 @@ interface MapLabelsProps {
   normalization: Normalization;
   currency?: Currency;
   labelMode?: LabelMode;
-  activeSeriesValuesBySirutaCode?: Map<string, number | undefined>;
+  activeSeriesValuesBySirutaCode?: Map<string, string | number | undefined>;
   activeRenderUnits?: ActiveMapRenderUnit[];
   activeSeriesUnit?: string;
 }

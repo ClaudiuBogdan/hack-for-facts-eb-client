@@ -60,13 +60,13 @@ let mockCountyGeoJsonData: {
   error: null,
 };
 let mockSeriesDataResult = {
-  valuesBySeriesId: new Map<string, Map<string, number | undefined>>(),
-  mapValuesBySeriesId: new Map<string, Map<string, number | undefined>>(),
+  valuesBySeriesId: new Map<string, Map<string, string | undefined>>(),
+  mapValuesBySeriesId: new Map<string, Map<string, string | undefined>>(),
   domainsBySeriesId: new Map<string, { type: 'uat' } | { type: 'group'; groupWorkspaceId: string }>(),
   unitsBySeriesId: new Map<string, string | undefined>(),
   warnings: [],
   activeSeriesId: undefined as string | undefined,
-  activeValues: undefined as Map<string, number | undefined> | undefined,
+  activeValues: undefined as Map<string, string | undefined> | undefined,
   isLoading: false,
   error: null as Error | null,
 };
@@ -423,8 +423,8 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
       error: null,
     };
     mockSeriesDataResult = {
-      valuesBySeriesId: new Map<string, Map<string, number | undefined>>(),
-      mapValuesBySeriesId: new Map<string, Map<string, number | undefined>>(),
+      valuesBySeriesId: new Map<string, Map<string, string | undefined>>(),
+      mapValuesBySeriesId: new Map<string, Map<string, string | undefined>>(),
       domainsBySeriesId: new Map<string, { type: 'uat' } | { type: 'group'; groupWorkspaceId: string }>(),
       unitsBySeriesId: new Map<string, string | undefined>(),
       warnings: [],
@@ -1986,15 +1986,15 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     );
 
     mockSeriesDataResult = {
-      valuesBySeriesId: new Map<string, Map<string, number | undefined>>([
-        [textSeries.id, new Map([['1001', 120]])],
-        [linkSeries.id, new Map([['1001', 220]])],
-        [markdownSeries.id, new Map([['1001', 320]])],
+      valuesBySeriesId: new Map<string, Map<string, string | undefined>>([
+        [textSeries.id, new Map([['1001', '120']])],
+        [linkSeries.id, new Map([['1001', '220']])],
+        [markdownSeries.id, new Map([['1001', '320']])],
       ]),
-      mapValuesBySeriesId: new Map<string, Map<string, number | undefined>>([
-        [textSeries.id, new Map([['1001', 120]])],
-        [linkSeries.id, new Map([['1001', 220]])],
-        [markdownSeries.id, new Map([['1001', 320]])],
+      mapValuesBySeriesId: new Map<string, Map<string, string | undefined>>([
+        [textSeries.id, new Map([['1001', '120']])],
+        [linkSeries.id, new Map([['1001', '220']])],
+        [markdownSeries.id, new Map([['1001', '320']])],
       ]),
       domainsBySeriesId: new Map([
         [textSeries.id, { type: 'uat' }],
@@ -2008,7 +2008,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
       ]),
       warnings: [],
       activeSeriesId: textSeries.id,
-      activeValues: new Map([['1001', 120]]),
+      activeValues: new Map([['1001', '120']]),
       isLoading: false,
       error: null,
     };
@@ -2493,8 +2493,8 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     activeSeries.label = 'Data series 1';
     activeSeries.enabled = true;
 
-    const activeValues = new Map<string, number | undefined>([['1001', 12345]]);
-    const valuesBySeriesId = new Map<string, Map<string, number | undefined>>([
+    const activeValues = new Map<string, string | undefined>([['1001', '12345']]);
+    const valuesBySeriesId = new Map<string, Map<string, string | undefined>>([
       [activeSeries.id, activeValues],
     ]);
     mockSeriesDataResult = {
@@ -2577,11 +2577,11 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     groupedSeries.sourceSeriesId = 'source_series';
     groupedSeries.enabled = true;
 
-    const valuesBySeriesId = new Map<string, Map<string, number | undefined>>([
-      [groupedSeries.id, new Map([['grp_1', 456]])],
+    const valuesBySeriesId = new Map<string, Map<string, string | undefined>>([
+      [groupedSeries.id, new Map([['grp_1', "456"]])],
     ]);
-    const mapValuesBySeriesId = new Map<string, Map<string, number | undefined>>([
-      [groupedSeries.id, new Map([['1001', 456], ['2002', 456]])],
+    const mapValuesBySeriesId = new Map<string, Map<string, string | undefined>>([
+      [groupedSeries.id, new Map([['1001', '456'], ['2002', '456']])],
     ]);
     mockSeriesDataResult = {
       valuesBySeriesId,
@@ -2693,10 +2693,10 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     activeSeries.enabled = true;
     activeSeries.groupWorkspaceId = 'manual-map-groups';
 
-    const activeValues = new Map<string, number | undefined>([
-      ['1001', 10],
-      ['2002', 20],
-      ['9999', 5],
+    const activeValues = new Map<string, string | undefined>([
+      ['1001', '10'],
+      ['2002', '20'],
+      ['9999', '5'],
     ]);
     const valuesBySeriesId = new Map([[activeSeries.id, activeValues]]);
     mockSeriesDataResult = {
@@ -2746,14 +2746,14 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     await screen.findByTestId('interactive-map');
 
     const activeRenderUnits = latestInteractiveMapProps?.activeRenderUnits as
-      | Array<{ id: string; label: string; value?: number; memberSirutaCodes: string[] }>
+      | Array<{ id: string; label: string; value?: string; memberSirutaCodes: string[] }>
       | undefined;
     expect(activeRenderUnits).toEqual([
       {
         id: 'grp_1',
         label: 'Group 1',
         memberSirutaCodes: ['1001', '2002'],
-        value: 30,
+        value: '30',
         unit: 'RON',
       },
     ]);
@@ -2769,10 +2769,10 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     ]);
 
     const projectedValues = latestInteractiveMapProps?.activeSeriesValuesBySirutaCode as
-      | Map<string, number | undefined>
+      | Map<string, string | undefined>
       | undefined;
-    expect(projectedValues?.get('1001')).toBe(30);
-    expect(projectedValues?.get('2002')).toBe(30);
+    expect(projectedValues?.get('1001')).toBe('30');
+    expect(projectedValues?.get('2002')).toBe('30');
     expect(projectedValues?.get('9999')).toBeUndefined();
 
     const getFeatureStyle = latestInteractiveMapProps?.getFeatureStyle;
@@ -2935,9 +2935,9 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     activeSeries.id = 'series_group_bins';
     activeSeries.enabled = true;
     activeSeries.groupWorkspaceId = 'manual-map-groups';
-    const activeValues = new Map<string, number | undefined>([
-      ['1001', 10],
-      ['2002', 20],
+    const activeValues = new Map<string, string | undefined>([
+      ['1001', '10'],
+      ['2002', '20'],
     ]);
     const valuesBySeriesId = new Map([[activeSeries.id, activeValues]]);
     mockSeriesDataResult = {
@@ -3033,10 +3033,10 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     activeSeries.label = 'Legend Series';
     activeSeries.enabled = true;
 
-    const activeValues = new Map<string, number | undefined>([
-      ['1001', 0],
-      ['1002', 50],
-      ['1003', 100],
+    const activeValues = new Map<string, string | undefined>([
+      ['1001', '0'],
+      ['1002', "50"],
+      ['1003', "100"],
     ]);
 
     mockSeriesDataResult = {

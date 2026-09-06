@@ -1,3 +1,4 @@
+import { sumMapDecimals } from '@/lib/map-series/decimal';
 import type { ActiveMapRenderUnit } from '@/components/maps/polygonLabels';
 import type {
   MapGroupWorkspace,
@@ -13,7 +14,7 @@ import type {
 export interface ActiveMapRenderUnitContext {
   renderUnitIdBySirutaCode: Map<string, string>;
   renderUnitsById: Map<string, ActiveMapRenderUnit>;
-  valueBySirutaCode: Map<string, number | undefined>;
+  valueBySirutaCode: Map<string, string | undefined>;
 }
 
 function resolveWorkspaceGroups(params: {
@@ -40,21 +41,8 @@ function resolveWorkspaceGroups(params: {
 function sumGroupMemberValues(
   group: MapGroupWorkspace['groups'][number],
   sourceVector: MapSeriesVector | undefined
-): number | undefined {
-  let sum = 0;
-  let hasFiniteValue = false;
-
-  for (const sirutaCode of group.memberSirutaCodes) {
-    const value = sourceVector?.get(sirutaCode);
-    if (typeof value !== 'number' || !Number.isFinite(value)) {
-      continue;
-    }
-
-    sum += value;
-    hasFiniteValue = true;
-  }
-
-  return hasFiniteValue ? sum : undefined;
+): string | undefined {
+  return sumMapDecimals(group.memberSirutaCodes.map(code => sourceVector?.get(code)));
 }
 
 function resolveGroupValue(params: {
@@ -64,7 +52,7 @@ function resolveGroupValue(params: {
   group: MapGroupWorkspace['groups'][number];
   valuesBySeriesId: MapSeriesVectorCache;
   mapValuesBySeriesId: MapSeriesVectorCache;
-}): number | undefined {
+}): string | undefined {
   if (params.seriesDomain?.type === 'group') {
     return params.seriesDomain.groupWorkspaceId === params.groupWorkspaceId
       ? params.valuesBySeriesId.get(params.seriesId)?.get(params.group.id)
@@ -108,7 +96,7 @@ export function buildActiveMapRenderUnitContext(params: {
 
   const renderUnitIdBySirutaCode = new Map<string, string>();
   const renderUnitsById = new Map<string, ActiveMapRenderUnit>();
-  const valueBySirutaCode = new Map<string, number | undefined>();
+  const valueBySirutaCode = new Map<string, string | undefined>();
 
   for (const group of groups) {
     const groupValue = resolveGroupValue({
@@ -164,7 +152,7 @@ export function buildManualGroupDisplayValuesBySeriesId(params: {
 
   for (const series of params.enabledSeries) {
     const seriesDomain = params.domainsBySeriesId.get(series.id);
-    const displayVector = new Map<string, number | undefined>();
+    const displayVector = new Map<string, string | undefined>();
 
     for (const group of groups) {
       const groupValue = resolveGroupValue({

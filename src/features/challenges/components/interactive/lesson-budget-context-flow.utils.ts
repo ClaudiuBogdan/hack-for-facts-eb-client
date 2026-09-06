@@ -1,3 +1,4 @@
+import { compareMapDecimals, mapDecimalToRenderNumber } from '@/lib/map-series/decimal'
 import type { GeoJsonObject, FeatureCollection, Geometry } from 'geojson'
 import bbox from '@turf/bbox'
 import center from '@turf/center'
@@ -302,7 +303,7 @@ export function buildBudgetContextCountyViewport(params: {
 export function buildBudgetContextTableRows(params: {
   readonly geoJsonData: GeoJsonObject | undefined
   readonly seriesColumns: readonly AdvancedMapAnalyticsTableSeriesColumn[]
-  readonly valuesBySeriesId: Map<string, Map<string, number | undefined>>
+  readonly valuesBySeriesId: Map<string, Map<string, string | undefined>>
 }): AdvancedMapAnalyticsTableRow[] {
   const featureCollection =
     params.geoJsonData?.type === 'FeatureCollection'
@@ -348,7 +349,7 @@ export function buildBudgetContextTableRows(params: {
   return [...uniqueSirutaCodes]
     .map((sirutaCode) => {
       const metadata = metadataBySirutaCode.get(sirutaCode)
-      const valuesForRow: Record<string, number | undefined> = {}
+      const valuesForRow: Record<string, string | undefined> = {}
 
       for (const seriesColumn of params.seriesColumns) {
         valuesForRow[seriesColumn.id] = params.valuesBySeriesId
@@ -387,12 +388,13 @@ export function buildBudgetContextLeaderboardRows(params: {
       value: row.valuesBySeriesId[params.seriesId],
     }))
     .filter(
-      (row): row is AdvancedMapAnalyticsTableRow & { value: number } =>
-        typeof row.value === 'number' && Number.isFinite(row.value),
+      (row): row is AdvancedMapAnalyticsTableRow & { value: string } =>
+        row.value !== undefined && mapDecimalToRenderNumber(row.value) !== undefined,
     )
     .sort((left, right) => {
-      if (right.value !== left.value) {
-        return right.value - left.value
+      const order = compareMapDecimals(right.value, left.value)
+      if (order !== 0) {
+        return order
       }
 
       const nameCompare = left.uatName.localeCompare(right.uatName, undefined, {
@@ -407,6 +409,7 @@ export function buildBudgetContextLeaderboardRows(params: {
     .map((row, index) => ({
       ...row,
       rank: index + 1,
+      value: mapDecimalToRenderNumber(row.value)!,
     }))
 }
 

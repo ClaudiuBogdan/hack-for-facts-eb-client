@@ -54,14 +54,54 @@ describe('DatasetEditorMapPreview', () => {
     );
 
     const props = workspaceMock.mock.calls[0]?.[0] as {
-      localValuesBySeriesId: Map<string, Map<string, number | undefined>>;
+      localValuesBySeriesId: Map<string, Map<string, string | undefined>>;
       localUnitsBySeriesId: Map<string, string | undefined>;
       displayUnitOverridesBySeriesId: Map<string, string | null>;
     };
 
     const seriesId = [...props.localValuesBySeriesId.keys()][0];
     expect(seriesId).toBeDefined();
-    expect(props.localValuesBySeriesId.get(seriesId)?.get('1001')).toBe(42);
+    expect(props.localValuesBySeriesId.get(seriesId)?.get('1001')).toBe('42');
+    expect(props.localUnitsBySeriesId.size).toBe(0);
+    expect(props.displayUnitOverridesBySeriesId.get(seriesId)).toBeNull();
+  });
+
+  it('retains locale-formatted values already accepted by the dataset parser', async () => {
+    const { DatasetEditorMapPreview } = await import('./dataset-editor-map-preview');
+
+    render(
+      <DatasetEditorMapPreview
+        resourceKey="draft:test"
+        title="Draft dataset"
+        unit=""
+        rows={[
+          {
+            uatId: '1',
+            sirutaCode: '1001',
+            cui: '123',
+            name: 'Test UAT',
+            countyName: 'Cluj',
+            valueNumber: '1.234,5',
+            valueJson: null,
+            value: '1.234,5',
+            rawValue: '1.234,5',
+            valueText: '1.234,5',
+            parsedNumericValue: 1234.5,
+          },
+        ]}
+        onSelectSirutaCode={vi.fn()}
+      />
+    );
+
+    const props = workspaceMock.mock.calls[0]?.[0] as {
+      localValuesBySeriesId: Map<string, Map<string, string | undefined>>;
+      localUnitsBySeriesId: Map<string, string | undefined>;
+      displayUnitOverridesBySeriesId: Map<string, string | null>;
+    };
+
+    const seriesId = [...props.localValuesBySeriesId.keys()][0];
+    expect(seriesId).toBeDefined();
+    expect(props.localValuesBySeriesId.get(seriesId)?.get('1001')).toBe('1234.5');
     expect(props.localUnitsBySeriesId.size).toBe(0);
     expect(props.displayUnitOverridesBySeriesId.get(seriesId)).toBeNull();
   });

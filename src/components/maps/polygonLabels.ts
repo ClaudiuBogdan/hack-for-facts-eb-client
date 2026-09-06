@@ -1,3 +1,4 @@
+import { mapDecimalToRenderNumber } from '@/lib/map-series/decimal';
 import L from 'leaflet';
 import { Feature, Geometry, MultiPolygon, Polygon } from 'geojson';
 import { HeatmapCountyDataPoint, HeatmapUATDataPoint } from '@/schemas/heatmap';
@@ -50,13 +51,13 @@ export interface ActiveMapRenderUnit {
   id: string;
   label: string;
   memberSirutaCodes: string[];
-  value?: number;
+  value?: string | number;
   unit?: string;
 }
 
 export interface ProcessFeatureForLabelOptions {
   labelMode?: LabelMode;
-  activeSeriesValuesBySirutaCode?: Map<string, number | undefined>;
+  activeSeriesValuesBySirutaCode?: Map<string, string | number | undefined>;
   activeSeriesUnit?: string;
   suppressActiveSeriesAmount?: boolean;
   precomputedGeometry?: FeatureLabelGeometry;
@@ -407,7 +408,7 @@ export function buildFeatureLabelGeometry(
 
 function resolveActiveSeriesValue(
   properties: Record<string, unknown>,
-  valuesBySirutaCode: Map<string, number | undefined> | undefined
+  valuesBySirutaCode: Map<string, string | number | undefined> | undefined
 ): number | undefined {
   if (!valuesBySirutaCode) {
     return undefined;
@@ -426,7 +427,7 @@ function resolveActiveSeriesValue(
     }
 
     const key = String(candidate);
-    const value = valuesBySirutaCode.get(key);
+    const value = mapDecimalToRenderNumber(valuesBySirutaCode.get(key));
     if (typeof value === 'number' && Number.isFinite(value)) {
       return value;
     }
@@ -694,7 +695,7 @@ export function processActiveRenderUnitLabel(
   options: ProcessActiveRenderUnitLabelOptions,
 ): PolygonLabelData | null {
   const { renderUnit, memberGeometries, activeSeriesUnit } = options;
-  const value = renderUnit.value;
+  const value = mapDecimalToRenderNumber(renderUnit.value);
   if (typeof value !== 'number' || !Number.isFinite(value)) {
     return null;
   }

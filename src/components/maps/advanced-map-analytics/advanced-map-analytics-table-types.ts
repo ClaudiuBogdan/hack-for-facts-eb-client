@@ -36,7 +36,7 @@ export interface AdvancedMapAnalyticsTableRow {
   searchText?: string;
   binFilterKey?: string;
   groupValuesByGroupingId?: Record<string, string | undefined>;
-  valuesBySeriesId: Record<string, number | undefined>;
+  valuesBySeriesId: Record<string, string | undefined>;
 }
 
 export interface AdvancedMapAnalyticsBinsFilterOption {

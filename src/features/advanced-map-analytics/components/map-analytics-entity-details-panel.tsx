@@ -1,3 +1,4 @@
+import { compareMapDecimals } from '@/lib/map-series/decimal';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -59,7 +60,7 @@ export interface MapAnalyticsEntityGroupContext {
 export interface MapAnalyticsEntityGroupMemberRow {
   readonly label: string;
   readonly sirutaCode: string;
-  readonly value?: number;
+  readonly value?: string;
   readonly formattedValue: string;
   readonly isSelected: boolean;
 }
@@ -429,7 +430,7 @@ function GroupMemberValuesList({
       if (right.value === undefined) {
         return -1;
       }
-      return right.value - left.value;
+      return compareMapDecimals(right.value, left.value);
     });
   }, [groupContext.memberRows]);
 

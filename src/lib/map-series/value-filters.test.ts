@@ -10,7 +10,7 @@ function createVectorCache(values: Record<string, Record<string, number | undefi
   const cache: MapSeriesVectorCache = new Map();
 
   for (const [seriesId, vectorValues] of Object.entries(values)) {
-    cache.set(seriesId, new Map(Object.entries(vectorValues)));
+    cache.set(seriesId, new Map(Object.entries(vectorValues).map(([key, value]) => [key, value === undefined ? undefined : String(value)])));
   }
 
   return cache;
@@ -154,7 +154,7 @@ describe('applyAdvancedMapAnalyticsValueFilters', () => {
     const valuesBySeriesId = createVectorCache({
       active: {
         match: 10,
-        equalWithinEpsilon: 10 + 1e-10,
+        nearbyDistinct: 10 + 1e-10,
         below: 9,
         above: 11,
         undefinedValue: undefined,
@@ -171,7 +171,7 @@ describe('applyAdvancedMapAnalyticsValueFilters', () => {
       rules: [baseRule],
     });
     expect(eqResult.valuesBySeriesId.get('active')?.has('match')).toBe(true);
-    expect(eqResult.valuesBySeriesId.get('active')?.has('equalWithinEpsilon')).toBe(true);
+    expect(eqResult.valuesBySeriesId.get('active')?.has('nearbyDistinct')).toBe(false);
     expect(eqResult.valuesBySeriesId.get('active')?.has('below')).toBe(false);
 
     const neqRule = createDefaultAdvancedMapAnalyticsValueFilterRule();

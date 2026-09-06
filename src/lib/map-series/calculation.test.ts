@@ -65,16 +65,16 @@ describe('calculateMapSeriesValues', () => {
         [
           baseSeries.id,
           new Map([
-            ['1001', 10],
-            ['1002', 15],
-            ['2001', 40],
+            ['1001', "10"],
+            ['1002', "15"],
+            ['2001', "40"],
           ]),
         ],
       ]),
     });
 
-    expect(result.valuesBySeriesId.get(groupedSeries.id)?.get('county:CJ')).toBe(25);
-    expect(result.valuesBySeriesId.get(groupedSeries.id)?.get('county:B')).toBe(40);
+    expect(result.valuesBySeriesId.get(groupedSeries.id)?.get('county:CJ')).toBe("25");
+    expect(result.valuesBySeriesId.get(groupedSeries.id)?.get('county:B')).toBe("40");
     expect(result.domainsBySeriesId.get(groupedSeries.id)).toEqual({
       type: 'group',
       groupWorkspaceId: 'county',
@@ -108,11 +108,11 @@ describe('calculateMapSeriesValues', () => {
         },
       ],
       baseValuesBySeriesId: new Map([
-        [baseSeries.id, new Map([['1001', 10], ['1002', 15]])],
+        [baseSeries.id, new Map([['1001', "10"], ['1002', "15"]])],
       ]),
     });
 
-    expect(result.valuesBySeriesId.get(groupedSeries.id)?.get('county:CJ')).toBe(25);
+    expect(result.valuesBySeriesId.get(groupedSeries.id)?.get('county:CJ')).toBe("25");
   });
 
   it('guards malformed grouped series dependency cycles', () => {
@@ -190,12 +190,12 @@ describe('calculateMapSeriesValues', () => {
       series: [spendingSeries, populationSeries, spendingGrouped, populationGrouped, perCapitaSeries],
       groupWorkspaces,
       baseValuesBySeriesId: new Map([
-        [spendingSeries.id, new Map([['1001', 10], ['1002', 20]])],
-        [populationSeries.id, new Map([['1001', 2], ['1002', 4]])],
+        [spendingSeries.id, new Map([['1001', "10"], ['1002', "20"]])],
+        [populationSeries.id, new Map([['1001', "2"], ['1002', "4"]])],
       ]),
     });
 
-    expect(result.valuesBySeriesId.get(perCapitaSeries.id)?.get('county:CJ')).toBe(5);
+    expect(result.valuesBySeriesId.get(perCapitaSeries.id)?.get('county:CJ')).toBe("5");
     expect(result.domainsBySeriesId.get(perCapitaSeries.id)).toEqual({
       type: 'group',
       groupWorkspaceId: 'county',
@@ -243,7 +243,7 @@ describe('calculateMapSeriesValues', () => {
         },
       ],
       baseValuesBySeriesId: new Map([
-        [baseSeries.id, new Map([['1001', 10]])],
+        [baseSeries.id, new Map([['1001', "10"]])],
       ]),
     });
 
@@ -270,15 +270,15 @@ describe('calculateMapSeriesValues', () => {
       [
         baseSeriesA.id,
         new Map([
-          ['1001', 10],
+          ['1001', "10"],
           ['1002', undefined],
         ]),
       ],
       [
         baseSeriesB.id,
         new Map([
-          ['1001', 2],
-          ['1002', 1],
+          ['1001', "2"],
+          ['1002', "1"],
         ]),
       ],
     ]);
@@ -288,7 +288,7 @@ describe('calculateMapSeriesValues', () => {
       baseValuesBySeriesId,
     });
 
-    expect(result.valuesBySeriesId.get(calcSeries.id)?.get('1001')).toBe(8);
+    expect(result.valuesBySeriesId.get(calcSeries.id)?.get('1001')).toBe("8");
     expect(result.valuesBySeriesId.get(calcSeries.id)?.get('1002')).toBeUndefined();
     expect(
       result.warnings.some(
@@ -309,8 +309,8 @@ describe('calculateMapSeriesValues', () => {
     );
 
     const baseValuesBySeriesId: MapSeriesVectorCache = new Map([
-      [baseSeriesA.id, new Map([['1001', 12]])],
-      [baseSeriesB.id, new Map([['1001', 0]])],
+      [baseSeriesA.id, new Map([['1001', "12"]])],
+      [baseSeriesB.id, new Map([['1001', "0"]])],
     ]);
 
     const result = calculateMapSeriesValues({
@@ -365,8 +365,8 @@ describe('calculateMapSeriesValues', () => {
     );
 
     const baseValuesBySeriesId: MapSeriesVectorCache = new Map([
-      [baseSeriesA.id, new Map([['1001', 8]])],
-      [baseSeriesB.id, new Map([['1001', 4]])],
+      [baseSeriesA.id, new Map([['1001', "8"]])],
+      [baseSeriesB.id, new Map([['1001', "4"]])],
     ]);
 
     const result = calculateMapSeriesValues({
@@ -374,6 +374,6 @@ describe('calculateMapSeriesValues', () => {
       baseValuesBySeriesId,
     });
 
-    expect(result.valuesBySeriesId.get(calcSeries.id)?.get('1001')).toBe(6);
+    expect(result.valuesBySeriesId.get(calcSeries.id)?.get('1001')).toBe("6");
   });
 });

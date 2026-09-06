@@ -1,3 +1,4 @@
+import { sumMapDecimals } from './decimal';
 import type {
   MapGroupedValueSeries,
   MapGroupWorkspace,
@@ -54,18 +55,7 @@ export function evaluateGroupedValueSeries(params: {
       continue;
     }
 
-    let sum = 0;
-    let hasFiniteValue = false;
-    for (const sirutaCode of memberCodes) {
-      const value = params.sourceValues.get(sirutaCode);
-      if (typeof value !== 'number' || !Number.isFinite(value)) {
-        continue;
-      }
-      sum += value;
-      hasFiniteValue = true;
-    }
-
-    vector.set(group.id, hasFiniteValue ? sum : undefined);
+    vector.set(group.id, sumMapDecimals(memberCodes.map(code => params.sourceValues.get(code))));
   }
 
   return vector;
@@ -126,7 +116,7 @@ export function resolveSeriesDisplayValueForSiruta(params: {
   valuesBySeriesId: MapSeriesVectorCache;
   domainsBySeriesId: Map<string, MapSeriesDomain>;
   groupValuesBySirutaCode: Map<string, Record<string, string | undefined>>;
-}): number | undefined {
+}): string | undefined {
   const domain = params.domainsBySeriesId.get(params.seriesId);
   if (domain?.type !== 'group') {
     return params.valuesBySeriesId.get(params.seriesId)?.get(params.sirutaCode);

@@ -215,19 +215,19 @@ function createSeries(id: string, label: string): MapSupportedSeries {
 function createComponentProps(overrides?: Partial<React.ComponentProps<typeof AdvancedMapAnalyticsAnalyticsView>>) {
   const firstSeries = createSeries('series-a', 'Series A');
   const secondSeries = createSeries('series-b', 'Series B');
-  const valuesBySeriesId = new Map<string, Map<string, number | undefined>>([
+  const valuesBySeriesId = new Map<string, Map<string, string | undefined>>([
     [firstSeries.id, new Map([
-      ['1001', 10],
-      ['1002', 20],
-      ['1003', 30],
-      ['1004', 40],
+      ['1001', "10"],
+      ['1002', "20"],
+      ['1003', "30"],
+      ['1004', "40"],
     ])],
     [secondSeries.id, new Map([
-      ['1001', 1],
-      ['1002', 2],
-      ['1003', 3],
-      ['1004', 4],
-      ['1005', 100],
+      ['1001', "1"],
+      ['1002', "2"],
+      ['1003', "3"],
+      ['1004', "4"],
+      ['1005', "100"],
     ])],
   ]);
   const widgets = createDefaultAdvancedMapAnalyticsWidgets();
@@ -330,14 +330,14 @@ describe('AdvancedMapAnalyticsAnalyticsView', () => {
       return widget;
     });
 
-    const valuesBySeriesId = new Map<string, Map<string, number | undefined>>([
+    const valuesBySeriesId = new Map<string, Map<string, string | undefined>>([
       [firstSeries.id, new Map()],
       [secondSeries.id, new Map([
-        ['1001', 1],
-        ['1002', 2],
-        ['1003', 3],
-        ['1004', 4],
-        ['1005', 100],
+        ['1001', "1"],
+        ['1002', "2"],
+        ['1003', "3"],
+        ['1004', "4"],
+        ['1005', "100"],
       ])],
     ]);
 
@@ -389,17 +389,32 @@ describe('AdvancedMapAnalyticsAnalyticsView', () => {
     expect(within(seriesARow).getAllByText(/25/)).toHaveLength(2);
   });
 
+  it('shows missing totals for missing values and preserves a true zero', () => {
+    render(<AdvancedMapAnalyticsAnalyticsView {...createComponentProps({
+      valuesBySeriesId: new Map<string, Map<string, string | undefined>>([
+        ['series-a', new Map([['1', undefined]])],
+        ['series-b', new Map([['1', '0']])],
+      ]),
+      unitsBySeriesId: new Map(),
+    })} />);
+    const section = screen.getByRole('heading', { name: 'Series totals' }).closest('section')!;
+    const missing = within(section).getByText('Series A').closest('tr')!;
+    const zero = within(section).getByText('Series B').closest('tr')!;
+    expect(within(missing).getAllByText('Missing')).toHaveLength(3);
+    expect(within(zero).queryByText('Missing')).not.toBeInTheDocument();
+  });
+
   it('calculates coverage inside each series domain', () => {
     const uatSeries = createSeries('series-a', 'Series A');
     const groupedSeries = createSeries('series-b', 'Grouped Series');
-    const valuesBySeriesId = new Map<string, Map<string, number | undefined>>([
+    const valuesBySeriesId = new Map<string, Map<string, string | undefined>>([
       [uatSeries.id, new Map([
-        ['1001', 10],
-        ['1002', 20],
+        ['1001', "10"],
+        ['1002', "20"],
       ])],
       [groupedSeries.id, new Map([
-        ['group:1', 30],
-        ['group:2', 40],
+        ['group:1', "30"],
+        ['group:2', "40"],
       ])],
     ]);
 
@@ -486,14 +501,14 @@ describe('AdvancedMapAnalyticsAnalyticsView', () => {
         ? { ...widget, viewMode: 'chart' as const, scatterXSeriesId: undefined, scatterYSeriesId: undefined }
         : widget
     );
-    const valuesBySeriesId = new Map<string, Map<string, number | undefined>>([
+    const valuesBySeriesId = new Map<string, Map<string, string | undefined>>([
       [firstSeries.id, new Map([
-        ['1001', 10],
-        ['1002', 20],
+        ['1001', "10"],
+        ['1002', "20"],
       ])],
       [secondSeries.id, new Map([
-        ['2001', 1],
-        ['2002', 2],
+        ['2001', "1"],
+        ['2002', "2"],
       ])],
     ]);
 
@@ -519,11 +534,11 @@ describe('AdvancedMapAnalyticsAnalyticsView', () => {
         ? { ...widget, viewMode: 'chart' as const, scatterXSeriesId: undefined, scatterYSeriesId: undefined }
         : widget
     );
-    const valuesBySeriesId = new Map<string, Map<string, number | undefined>>([
+    const valuesBySeriesId = new Map<string, Map<string, string | undefined>>([
       [singleSeries.id, new Map([
-        ['1001', 10],
-        ['1002', 20],
-        ['1003', 30],
+        ['1001', "10"],
+        ['1002', "20"],
+        ['1003', "30"],
       ])],
     ]);
 
