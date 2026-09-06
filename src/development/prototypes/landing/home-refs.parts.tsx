@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { scraperDatasetCatalog } from '@/lib/scraper-references'
 import { cn } from '@/lib/utils'
@@ -223,7 +223,7 @@ export const fillersFor = (length: number) => (3 - (length % 3)) % 3
  * readouts, no build numbers: fabricated telemetry on a public-money product
  * is a data-trust violation, not decoration.
  */
-export function usePlatformFacts() {
+export function getPlatformFacts() {
   const groups = visibleGroups()
   const surfaces = groups.reduce((sum, group) => sum + group.entries.length, 0)
   const hidden = LANDING_GROUPS.reduce(
@@ -318,6 +318,3 @@ export function DomainLattice({
     </div>
   )
 }
-
-/** Inline style is the escape hatch for values Tailwind would have to inline as literals. */
-export const latticeTone = (color: string): CSSProperties => ({ color })

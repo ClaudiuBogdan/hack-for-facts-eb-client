@@ -6,7 +6,7 @@ import {
   MonoLabel,
   PROTOTYPE_MARKER,
   SplitSectionHeader,
-  usePlatformFacts,
+  getPlatformFacts,
 } from './home-refs.parts'
 
 /**
@@ -33,7 +33,7 @@ import {
 const ACCENT = '#f0440a'
 
 export function LandingRefsForge() {
-  const { groups, facts } = usePlatformFacts()
+  const { groups, facts } = getPlatformFacts()
 
   return (
     <div

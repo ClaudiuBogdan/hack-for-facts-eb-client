@@ -6,8 +6,7 @@ import {
   MonoLabel,
   PROTOTYPE_MARKER,
   SplitSectionHeader,
-  latticeTone,
-  usePlatformFacts,
+  getPlatformFacts,
 } from './home-refs.parts'
 
 /**
@@ -28,7 +27,7 @@ import {
  * not change with the page. See the `forge` variant for what that looks like.
  */
 export function LandingRefsGrid() {
-  const { groups, facts } = usePlatformFacts()
+  const { groups, facts } = getPlatformFacts()
 
   return (
     <div className="w-full bg-background" data-dev-marker={PROTOTYPE_MARKER}>
@@ -85,7 +84,7 @@ export function LandingRefsGrid() {
       </section>
 
       <section>
-        <div className="mx-auto w-full max-w-6xl px-6 py-12" style={latticeTone('inherit')}>
+        <div className="mx-auto w-full max-w-6xl px-6 py-12">
           <FeaturedBand />
         </div>
       </section>
