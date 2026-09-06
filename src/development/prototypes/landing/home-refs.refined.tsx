@@ -11,6 +11,8 @@ import { ParliamentPromoCard } from '@/features/parliament/components/parliament
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import { scraperDatasetCatalog } from '@/lib/scraper-references'
+import { PixelField } from './home-refs.pixel-art'
+import type { PixelTreatment } from './home-refs.pixel-art'
 import { LANDING_GROUPS, visibleGroups } from './home.data'
 import type { LandingEntry, LandingGroup } from './home.data'
 
@@ -103,6 +105,22 @@ const LATTICE_MASK: CSSProperties = {
   maskImage: 'radial-gradient(115% 85% at 25% 0%, #000 20%, transparent 78%)',
   WebkitMaskImage: 'radial-gradient(115% 85% at 25% 0%, #000 20%, transparent 78%)',
 }
+
+/**
+ * Fades each pixel field out before it reaches the content column. Inline
+ * style rather than an arbitrary Tailwind value, which would carry the
+ * gradient literal into full-checkout CSS.
+ */
+const FIELD_MASK = {
+  left: {
+    maskImage: 'linear-gradient(to right, #000 0%, #000 25%, transparent 90%)',
+    WebkitMaskImage: 'linear-gradient(to right, #000 0%, #000 25%, transparent 90%)',
+  },
+  right: {
+    maskImage: 'linear-gradient(to left, #000 0%, #000 25%, transparent 90%)',
+    WebkitMaskImage: 'linear-gradient(to left, #000 0%, #000 25%, transparent 90%)',
+  },
+} satisfies Record<'left' | 'right', CSSProperties>
 
 /** Major rule every 120px, minor every 24px beneath it. */
 function TwoLayerLattice({ idPrefix }: { readonly idPrefix: string }) {
@@ -361,7 +379,7 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
   )
 }
 
-export function LandingRefsRefined() {
+function RefinedLanding({ treatment }: { readonly treatment: PixelTreatment }) {
   const { groups, facts } = getPlatformFacts()
 
   return (
@@ -369,6 +387,35 @@ export function LandingRefsRefined() {
       {/* Hero — open band. */}
       <section className="relative overflow-hidden border-b">
         <TwoLayerLattice idPrefix="refined-hero" />
+        {/* The grid pixelating at the margins — filled cells on the same 24px
+            module the minor lattice is drawn on, so it reads as one system
+            rather than a texture laid over one. Desktop only: below `xl` there
+            is no margin beside the 1152px frame to hold it, and on a phone it
+            would be noise on a screen with none to spare. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 hidden xl:block"
+        >
+          {/* Each field is clipped to the margin beside the 1152px frame —
+              `(100% - 72rem) / 2` — so it can never reach the content column,
+              at any viewport. The field itself is drawn at its natural 24px
+              scale rather than stretched to fit, because scaling it would break
+              alignment with the lattice underneath. The mask finishes the fade
+              inside whatever width that leaves, so there is no hard cut at the
+              frame edge on a narrow desktop. */}
+          <div
+            className="absolute inset-y-0 left-0 w-[calc((100%-72rem)/2)] overflow-hidden"
+            style={FIELD_MASK.left}
+          >
+            <PixelField edge="left" treatment={treatment} className="left-0 top-0" />
+          </div>
+          <div
+            className="absolute inset-y-0 right-0 w-[calc((100%-72rem)/2)] overflow-hidden"
+            style={FIELD_MASK.right}
+          >
+            <PixelField edge="right" treatment={treatment} className="right-0 top-0" />
+          </div>
+        </div>
         <Frame className="py-12 sm:py-20 lg:py-24">
           <CornerTicks />
           <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12 lg:gap-8">
@@ -532,3 +579,13 @@ export function LandingRefsRefined() {
     </div>
   )
 }
+
+/**
+ * One export per background treatment. The page is identical in every other
+ * respect, so a side-by-side comparison isolates the background and nothing
+ * else.
+ */
+export const LandingRefsRefined = () => <RefinedLanding treatment="mono" />
+export const LandingRefsLogo = () => <RefinedLanding treatment="logo" />
+export const LandingRefsArmy = () => <RefinedLanding treatment="army" />
+export const LandingRefsClouds = () => <RefinedLanding treatment="clouds" />
