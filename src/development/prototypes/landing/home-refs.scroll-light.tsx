@@ -48,8 +48,12 @@ const TRAIL_BASE_PX = 260
 /** Trail length per pixel-per-frame of scroll speed. */
 const TRAIL_PER_VELOCITY = 4.2
 
-/** Longest the trail is allowed to stretch, so a flick does not draw a laser. */
-const TRAIL_MAX_PX = 210
+/**
+ * Longest the trail is allowed to stretch. Close to the 164px the reference
+ * crop measures, which is the length at which it still reads as a mark rather
+ * than a beam.
+ */
+const TRAIL_MAX_PX = 150
 
 /** How near a band boundary the head has to be before it flares. */
 const FLARE_RANGE_PX = 140
@@ -68,42 +72,57 @@ const CSS = `
   pointer-events: none;
   z-index: 20;
 
-  /* Light theme: ink, not light. A solid violet core with a halo faint enough
-     to read as a soft shadow rather than a glow. */
+  /* Light theme: ink, not light. The same warm hue, pushed dark enough to read
+     on a near-white page, where the luminous ramp below would vanish. */
   --sp-trail: linear-gradient(
     to bottom,
-    rgba(109, 40, 217, 0) 0%,
-    rgba(109, 40, 217, 0.22) 55%,
-    rgba(124, 58, 237, 0.62) 88%,
-    rgb(109, 40, 217) 100%
+    rgba(194, 65, 12, 0) 0%,
+    rgba(194, 65, 12, 0.14) 25%,
+    rgba(198, 72, 16, 0.3) 50%,
+    rgba(202, 84, 22, 0.58) 70%,
+    rgba(206, 92, 26, 0.82) 85%,
+    rgba(208, 98, 30, 0.95) 94%,
+    rgb(210, 102, 32) 100%
   );
-  --sp-core: rgb(109, 40, 217);
+  --sp-core: rgb(198, 72, 16);
   --sp-halo: radial-gradient(
     circle,
-    rgba(124, 58, 237, 0.18) 0%,
-    rgba(109, 40, 217, 0.07) 35%,
-    rgba(109, 40, 217, 0) 70%
+    rgba(202, 84, 22, 0.13) 0%,
+    rgba(198, 72, 16, 0.05) 40%,
+    rgba(198, 72, 16, 0) 70%
   );
-  --sp-rest: 0.55;
+  --sp-rest: 0.26;
 }
 
-/* Dark theme: the reference's own material — a white-hot core over violet. */
+/*
+ * Dark theme: the reference's ramp, sampled rather than eyeballed. Walking the
+ * tail's own column in the source crop gives rgb(55,37,28) at the tip through
+ * (158,84,45) at the midpoint to (248,223,185) near the head, over a background
+ * of luminance 23 — so the alphas here are that measured luminance normalised.
+ *
+ * The shape of the ramp is the point: it stays dim for the first half and does
+ * almost all of its brightening in the last 30%. A linear fade reads as a
+ * gradient; this reads as something incandescent at one end.
+ */
 .dark .tpz-light {
   --sp-trail: linear-gradient(
     to bottom,
-    rgba(167, 139, 250, 0) 0%,
-    rgba(167, 139, 250, 0.42) 55%,
-    rgba(216, 196, 254, 0.85) 88%,
-    rgb(244, 238, 255) 100%
+    rgba(200, 90, 40, 0) 0%,
+    rgba(214, 100, 44, 0.22) 25%,
+    rgba(226, 118, 56, 0.36) 50%,
+    rgba(240, 158, 100, 0.64) 70%,
+    rgba(250, 202, 148, 0.87) 85%,
+    rgba(255, 232, 194, 0.98) 94%,
+    rgb(255, 246, 228) 100%
   );
-  --sp-core: rgb(246, 241, 255);
+  --sp-core: rgb(255, 244, 224);
   --sp-halo: radial-gradient(
     circle,
-    rgba(167, 139, 250, 0.32) 0%,
-    rgba(139, 92, 246, 0.13) 35%,
-    rgba(139, 92, 246, 0) 70%
+    rgba(240, 140, 70, 0.16) 0%,
+    rgba(226, 118, 56, 0.06) 40%,
+    rgba(226, 118, 56, 0) 70%
   );
-  --sp-rest: 0.4;
+  --sp-rest: 0.22;
 }
 
 .tpz-light-rail {
@@ -126,9 +145,9 @@ const CSS = `
    head stays put while the tail lengthens behind it. 'scaleY' on a fixed box
    costs a composite; animating 'height' would cost a layout. */
 .tpz-light-trail {
-  width: 2px;
+  width: 1.5px;
   height: ${TRAIL_BASE_PX}px;
-  margin-left: -1px;
+  margin-left: -0.75px;
   border-radius: 1px;
   transform-origin: 50% 100%;
   background: var(--sp-trail);
@@ -143,10 +162,10 @@ const CSS = `
 
 /* The hot core. Small and near-white — the colour comes from the halo. */
 .tpz-light-head {
-  width: 3px;
-  height: 3px;
-  margin-left: -1.5px;
-  margin-top: -1.5px;
+  width: 2px;
+  height: 2px;
+  margin-left: -1px;
+  margin-top: -1px;
   border-radius: 50%;
   background: var(--sp-core);
   transform: translate3d(0, var(--sp-y, 0px), 0)
@@ -160,10 +179,10 @@ const CSS = `
    repaints the blurred region every frame; a radial gradient is something the
    compositor can just move. */
 .tpz-light-halo {
-  width: 64px;
-  height: 64px;
-  margin-left: -32px;
-  margin-top: -32px;
+  width: 44px;
+  height: 44px;
+  margin-left: -22px;
+  margin-top: -22px;
   border-radius: 50%;
   background: var(--sp-halo);
   transform: translate3d(0, var(--sp-y, 0px), 0)
