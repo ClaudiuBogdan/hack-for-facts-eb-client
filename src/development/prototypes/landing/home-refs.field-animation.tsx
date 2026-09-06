@@ -70,6 +70,21 @@ export const INTRO_TOTAL_MS = 2200
  * the ripple read as a single synchronised swell.
  */
 
+/**
+ * Span the timings were tuned against, in pixels of *visible* field.
+ *
+ * The field is always drawn 720px wide, but only the margin beside the frame
+ * is ever on screen: about 510px at 1920, and 214px at 1506. Timing that felt
+ * right at the former is compressed into a fraction of the time at the latter,
+ * because most of the schedule is spent on cells that are clipped away. Delays
+ * are therefore stretched by how much narrower the visible span is, which keeps
+ * a sweep taking the same wall-clock time at every width.
+ */
+export const REFERENCE_SPAN_PX = 510
+
+/** Ceiling on that stretch, so a very narrow margin does not crawl. */
+export const MAX_TIME_SCALE = 2.6
+
 /** Milliseconds per pixel, after the distance is raised to the exponent. */
 export const RIPPLE_MS_PER_PX = 1.75
 
@@ -159,17 +174,18 @@ const CSS = `
 .${FIELD_HOST_CLASS}.${INTRO_CLASS} [data-field-cell] {
   animation-name: tpz-intro;
   /* Each cell runs for its own length, so the field does not settle in
-     lockstep. */
-  animation-duration: var(--du);
+     lockstep, and both length and schedule stretch when the visible span is
+     narrow. */
+  animation-duration: calc(var(--du) * var(--tpz-dur, 1));
   animation-timing-function: cubic-bezier(0.22, 0.9, 0.3, 1);
-  animation-delay: var(--dw);
+  animation-delay: calc(var(--dw) * var(--tpz-scale, 1));
 }
 
 .${FIELD_HOST_CLASS}.${RIPPLING_CLASS} [data-field-cell] {
   animation-name: tpz-ripple;
   /* Deliberately short relative to how long the front takes to cross, so only
      a band of the field is moving at any moment. */
-  animation-duration: calc(var(--du) * ${RIPPLE_CELL_FACTOR});
+  animation-duration: calc(var(--du) * ${RIPPLE_CELL_FACTOR} * var(--tpz-dur, 1));
   /* Sharp rise, long settle — an ease-out rather than the symmetric curve the
      intro uses, so the crest arrives and then relaxes. */
   animation-timing-function: cubic-bezier(0.16, 0.84, 0.24, 1);

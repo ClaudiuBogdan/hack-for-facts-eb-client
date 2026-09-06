@@ -117,12 +117,12 @@ const LATTICE_MASK: CSSProperties = {
  */
 const FIELD_MASK = {
   left: {
-    maskImage: 'linear-gradient(to right, #000 0%, #000 34%, transparent 100%)',
-    WebkitMaskImage: 'linear-gradient(to right, #000 0%, #000 34%, transparent 100%)',
+    maskImage: 'linear-gradient(to right, #000 0%, #000 24%, transparent 76%)',
+    WebkitMaskImage: 'linear-gradient(to right, #000 0%, #000 24%, transparent 76%)',
   },
   right: {
-    maskImage: 'linear-gradient(to left, #000 0%, #000 34%, transparent 100%)',
-    WebkitMaskImage: 'linear-gradient(to left, #000 0%, #000 34%, transparent 100%)',
+    maskImage: 'linear-gradient(to left, #000 0%, #000 24%, transparent 76%)',
+    WebkitMaskImage: 'linear-gradient(to left, #000 0%, #000 24%, transparent 76%)',
   },
 } satisfies Record<'left' | 'right', CSSProperties>
 
@@ -395,29 +395,46 @@ function RefinedLanding({ ripple }: { readonly ripple: boolean }) {
         <TwoLayerLattice idPrefix="refined-hero" />
         {/* The grid pixelating at the margins — filled cells on the same 24px
             module the minor lattice is drawn on, so it reads as one system
-            rather than a texture laid over one. Desktop only: below `xl` there
-            is no margin beside the 1152px frame to hold it, and on a phone it
-            would be noise on a screen with none to spare. */}
+            rather than a texture laid over one.
+
+            Shown only from 1800px up. The threshold is about the margin beside
+            the 1152px frame, not about "desktop": at 1506 that margin is 148px,
+            which is too narrow to hold the field without crowding the headline,
+            and narrow enough that the particle tail — which starts 240px in —
+            is clipped away entirely, leaving the square band alone and the
+            animation compressed into a fraction of its schedule. By 1800 the
+            margin is around 290px and both the tail and the timing have room.
+            Below it the hero simply keeps the plain lattice. */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 hidden xl:block"
+          className="pointer-events-none absolute inset-0 hidden min-[1800px]:block"
         >
-          {/* Clipped to the margin beside the 1152px frame plus 150px, so the
-              particle tail can carry past the frame edge toward the centre
-              while the squares stay in the margin. The mask reaches zero by the
-              end of that width, so what overlaps the content column is the
-              faintest, smallest end of the tail and nothing more. The field is
-              drawn at its natural 24px scale rather than stretched, because
-              scaling would break alignment with the lattice underneath. */}
+          {/* Clipped to 1.45x the margin beside the 1152px frame, so the tail
+              carries a little past the frame while the squares stay in the
+              margin.
+
+              The overflow is a *proportion* of the margin rather than a fixed
+              150px, which is what it used to be. At 1920 that fixed value was
+              a fraction of a 360px margin and looked right; at 1506 the margin
+              is only 148px, so the clip came out at 298px while the headline
+              starts at 156px — the field ran over the first 140px of the
+              headline. Scaling with the margin keeps the same relationship at
+              every width.
+
+              The mask reaches zero at roughly 76% of that width, and the frame
+              edge sits at 69%, so whatever crosses into the content column is
+              down to about a tenth of its weight. The field is drawn at its
+              natural 24px scale rather than stretched, because scaling would
+              break alignment with the lattice underneath. */}
           <div
-            className="absolute inset-y-0 left-0 w-[calc((100%-72rem)/2+150px)] overflow-hidden"
+            className="absolute inset-y-0 left-0 w-[calc((100%-72rem)/2*1.45)] overflow-hidden"
             style={FIELD_MASK.left}
           >
             <PixelField edge="left" layer="squares" className="left-0 top-0" />
             <PixelField edge="left" layer="particles" className="left-0 top-0" />
           </div>
           <div
-            className="absolute inset-y-0 right-0 w-[calc((100%-72rem)/2+150px)] overflow-hidden"
+            className="absolute inset-y-0 right-0 w-[calc((100%-72rem)/2*1.45)] overflow-hidden"
             style={FIELD_MASK.right}
           >
             <PixelField edge="right" layer="squares" className="right-0 top-0" />

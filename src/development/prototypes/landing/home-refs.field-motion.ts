@@ -3,6 +3,8 @@ import {
   INTRO_CLASS,
   INTRO_DELAY_MS,
   INTRO_TOTAL_MS,
+  MAX_TIME_SCALE,
+  REFERENCE_SPAN_PX,
   RIPPLE_DISTANCE_EXPONENT,
   RIPPLE_FALLOFF_PX,
   RIPPLE_JITTER_MS,
@@ -10,6 +12,25 @@ import {
   RIPPLE_TOTAL_MS,
   RIPPLING_CLASS,
 } from './home-refs.field-animation'
+
+/**
+ * How much to stretch the timings for the span actually on screen.
+ *
+ * The field is drawn 720px wide but clipped to the margin beside the frame, so
+ * at 1920 about 510px of it is visible and at 1506 only 214px. Without this the
+ * schedule is spent mostly on clipped cells and what remains on screen is over
+ * before it registers — and at the narrow end the particle tail is clipped away
+ * entirely, so the visible field is nothing but the square band.
+ *
+ * Durations are stretched more gently than delays: the sweep needs to take
+ * noticeably longer, but a single cell's swell only needs to be a little
+ * slower to stay legible.
+ */
+function timeScaleFor(visibleWidth: number) {
+  if (visibleWidth <= 0) return { delay: 1, duration: 1 }
+  const scale = Math.min(MAX_TIME_SCALE, Math.max(1, REFERENCE_SPAN_PX / visibleWidth))
+  return { delay: scale, duration: 1 + (scale - 1) * 0.4 }
+}
 
 /**
  * A ripple through the margin field, originating at the click.
@@ -122,6 +143,7 @@ export function useFieldMotion({ ripple }: { ripple: boolean }) {
 
     let frame = 0
     let clear = 0
+    const scale = timeScaleFor(layers[0].svg.parentElement?.clientWidth ?? 0)
 
     const onPointerDown = (event: PointerEvent) => {
       // Primary button only; a right-click opening a context menu should not
@@ -144,8 +166,9 @@ export function useFieldMotion({ ripple }: { ripple: boolean }) {
             const amplitude = smoothstep(Math.max(0, 1 - distance / RIPPLE_FALLOFF_PX))
 
             const delay =
-              Math.pow(distance, RIPPLE_DISTANCE_EXPONENT) * RIPPLE_MS_PER_PX +
-              cell.jitter * RIPPLE_JITTER_MS
+              (Math.pow(distance, RIPPLE_DISTANCE_EXPONENT) * RIPPLE_MS_PER_PX +
+                cell.jitter * RIPPLE_JITTER_MS) *
+              scale.delay
 
             cell.el.style.setProperty('--dp', `${Math.round(delay)}ms`)
             cell.el.style.setProperty(
@@ -171,7 +194,7 @@ export function useFieldMotion({ ripple }: { ripple: boolean }) {
         window.clearTimeout(clear)
         clear = window.setTimeout(
           () => host.classList.remove(RIPPLING_CLASS),
-          RIPPLE_TOTAL_MS,
+          RIPPLE_TOTAL_MS * scale.delay,
         )
       })
     }
