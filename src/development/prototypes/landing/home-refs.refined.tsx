@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router'
 import type { LinkProps } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
 import leu from '@/assets/images/landing-leu.webp'
+import taur from '@/assets/images/landing-taur.webp'
 import justitia from '@/assets/images/landing-justitia.webp'
 import logo from '@/assets/logo/logo.png'
 import { EntitySearchInput } from '@/components/entities/EntitySearch'
@@ -374,12 +375,8 @@ type GroupImage = {
   readonly fit: 'cover' | 'contain'
   /** `object-position`. Load-bearing under `cover`, where the crop decides what survives. */
   readonly position: string
-  /**
-   * Rows to span — one per entry, because the entries auto-place into the
-   * second column and the picture has to reach the bottom of the stack. Written
-   * out rather than interpolated: Tailwind only sees literal class names.
-   */
-  readonly spanClass: string
+  /** Which side of the entries the picture sits on. */
+  readonly side: 'left' | 'right'
   /**
    * The box on mobile, where the picture runs full width and has no sibling row
    * to take its height from. Roughly the source's own proportions, or a fitted
@@ -414,9 +411,24 @@ const GROUP_IMAGES: Record<string, GroupImage | undefined> = {
     src: leu,
     fit: 'contain',
     position: '50% 50%',
-    spanClass: 'sm:row-span-4',
+    side: 'left',
     // 4:5 against the source's own 0.807, so mobile barely letterboxes.
     mobileAspect: 'aspect-4/5',
+  },
+  // On the right, so the two illustrated bands above and below it do not stack
+  // their pictures down the same edge of the page.
+  //
+  // The span is derived from the visible entry count rather than written here,
+  // which matters most for this group: Întreprinderi publice sits behind a
+  // mock-data gate, so it is three entries tall today and four when that gate
+  // opens.
+  institutii: {
+    src: taur,
+    fit: 'contain',
+    position: '50% 50%',
+    side: 'right',
+    // 5:6 is the cropped source's own 0.832.
+    mobileAspect: 'aspect-5/6',
   },
   // Anchored to the very top. Centring lands on drapery, and anything below the
   // top edge slices the head off at desktop widths, where the cell is at its
@@ -426,9 +438,27 @@ const GROUP_IMAGES: Record<string, GroupImage | undefined> = {
     src: justitia,
     fit: 'cover',
     position: '50% 0%',
-    spanClass: 'sm:row-span-2',
+    side: 'left',
     mobileAspect: 'aspect-4/3',
   },
+}
+
+/**
+ * Rows a picture spans, by how many entries it stands beside — it has to reach
+ * the bottom of the stack.
+ *
+ * A table of literals rather than an interpolated class, because Tailwind
+ * generates only what it can see written out. Derived from the *visible* entry
+ * count at render, not stored per image: a gate can drop an entry, and a span
+ * fixed at authoring time would leave the picture hanging short of the group.
+ */
+const ROW_SPAN: Record<number, string | undefined> = {
+  1: 'sm:row-span-1',
+  2: 'sm:row-span-2',
+  3: 'sm:row-span-3',
+  4: 'sm:row-span-4',
+  5: 'sm:row-span-5',
+  6: 'sm:row-span-6',
 }
 
 const columnsFor = (length: number) => {
@@ -466,7 +496,9 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
               className={cn(
                 'mt-4 grid grid-cols-1 border',
                 image
-                  ? 'sm:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]'
+                  ? image.side === 'right'
+                    ? 'sm:grid-cols-[minmax(0,8fr)_minmax(0,4fr)]'
+                    : 'sm:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]'
                   : cn('sm:grid-cols-2', columns === 3 && 'lg:grid-cols-3'),
               )}
             >
@@ -483,7 +515,13 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
                   className={cn(
                     'relative -ml-px -mt-px overflow-hidden border-l border-t sm:aspect-auto',
                     image.mobileAspect,
-                    image.spanClass,
+                    ROW_SPAN[group.entries.length],
+                    // The picture stays first in the DOM either way, so it
+                    // leads on mobile. Placing it explicitly in the second
+                    // column is what sends it right: the entries then auto-fill
+                    // the column it left empty, which row-major flow would
+                    // otherwise have scattered across both.
+                    image.side === 'right' && 'sm:col-start-2 sm:row-start-1',
                   )}
                 >
                   <img
