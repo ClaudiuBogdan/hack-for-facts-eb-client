@@ -40,12 +40,18 @@ export function validSourcePeriodFields(period: InsTimePeriod): boolean {
           ? 'MONTH'
           : null
   if (type === null) return true // Other INS cadences have no chart grammar here.
+  const month = type === 'MONTH' ? Number(period.iso_period.slice(5)) : null
+  // Native monthly periods carry their containing quarter; older payloads omit it.
+  const expectedQuarter =
+    type === 'QUARTER'
+      ? Number(period.iso_period.slice(6))
+      : month !== null && period.quarter != null
+        ? Math.floor((month - 1) / 3) + 1
+        : null
   return (
     validPeriodDate(period.iso_period, type) &&
     period.year === Number(period.iso_period.slice(0, 4)) &&
-    (period.quarter ?? null) ===
-      (type === 'QUARTER' ? Number(period.iso_period.slice(6)) : null) &&
-    (period.month ?? null) ===
-      (type === 'MONTH' ? Number(period.iso_period.slice(5)) : null)
+    (period.quarter ?? null) === expectedQuarter &&
+    (period.month ?? null) === month
   )
 }

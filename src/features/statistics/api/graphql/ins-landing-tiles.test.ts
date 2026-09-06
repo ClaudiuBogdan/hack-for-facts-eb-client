@@ -50,6 +50,7 @@ function outcomes() {
     dataset: { ...dataset, code, id: code },
     observation: {
       ...observation,
+      time_period: { ...observation.time_period },
       dataset_code: code,
       dimensions: {
         geography: {
@@ -117,6 +118,38 @@ describe('national native landing tiles boundary', () => {
     if (problem === 'missing-dataset') latest.pop()
     vi.mocked(graphqlQuery).mockResolvedValue({ latest })
     await expect(fetchNativeLandingTiles()).rejects.toThrow()
+  })
+  it.each([null, 2])(
+    'accepts monthly source periods with quarter %s',
+    async (quarter) => {
+      const latest = outcomes()
+      latest[2].latestPeriod = '2026-05'
+      Object.assign(latest[2].observation.time_period, {
+        iso_period: '2026-05',
+        year: 2026,
+        month: 5,
+        quarter,
+        periodicity: 'MONTHLY',
+      })
+      vi.mocked(graphqlQuery).mockResolvedValue({ latest })
+      const result = await fetchNativeLandingTiles()
+      expect(result.nationalValues[2].period).toBe('2026-05')
+    },
+  )
+  it('rejects a monthly period with a contradictory quarter', async () => {
+    const latest = outcomes()
+    latest[2].latestPeriod = '2026-05'
+    Object.assign(latest[2].observation.time_period, {
+      iso_period: '2026-05',
+      year: 2026,
+      month: 5,
+      quarter: 1,
+      periodicity: 'MONTHLY',
+    })
+    vi.mocked(graphqlQuery).mockResolvedValue({ latest })
+    await expect(fetchNativeLandingTiles()).rejects.toThrow(
+      'Invalid landing tile decimal or period',
+    )
   })
   it('propagates cancellation and transport failure without fabricated no-data', async () => {
     const controller = new AbortController()
