@@ -45,7 +45,7 @@ function CtaButton({
     <Button
       asChild
       size="lg"
-      className="h-12 rounded-full bg-[#3565c4] px-8 text-base font-semibold hover:bg-[#2d57a8]"
+      className="h-12 rounded-full bg-[#3565c4] px-8 text-base font-semibold text-white hover:bg-[#2d57a8]"
     >
       <Link
         to={CAMPAIGN_ENTITY_SELECTOR_PATH as '/'}
