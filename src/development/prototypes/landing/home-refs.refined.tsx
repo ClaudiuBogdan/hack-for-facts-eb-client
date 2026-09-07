@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils'
 import { scraperDatasetCatalog } from '@/lib/scraper-references'
 import { MonoLabel } from './home-refs.mono-label'
 import { RevealStyles, useRevealOnView } from './home-refs.reveal'
+import { ScrambleText, useScrambleOnView } from './home-refs.scramble'
 import { NATIONAL_FACTS, formatFact } from './home-refs.national-facts'
 import { PixelField } from './home-refs.pixel-art'
 import { FIELD_HOST_CLASS, FieldAnimationStyles } from './home-refs.field-animation'
@@ -346,7 +347,10 @@ function StartHerePanel() {
 function RefinedCell({ entry, index }: { readonly entry: LandingEntry; readonly index: number }) {
   const Icon = entry.icon
   return (
-    <div className="-ml-px -mt-px border-l border-t">
+    // The cell arrives, not its text: fading the title and the blurb separately
+    // inside a bordered box leaves the box sitting there empty first, which
+    // reads as a loading state rather than as an entrance.
+    <div data-reveal className="-ml-px -mt-px border-l border-t">
       <Link
         to={entry.to}
         preload="intent"
@@ -501,11 +505,16 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
         const fillers = image ? 0 : (columns - (group.entries.length % columns)) % columns
         return (
           <section key={group.key} aria-labelledby={`group-${group.key}`}>
-            <div className="flex items-center gap-3">
+            <div data-reveal className="flex items-center gap-3">
               <MonoLabel className="text-primary">{String(groupIndex + 1).padStart(2, '0')}</MonoLabel>
-              {/* A heading, not a styled span: the index is the page's outline. */}
+              {/* A heading, not a styled span: the index is the page's outline.
+                  Its accessible name comes from the `sr-only` copy inside
+                  `ScrambleText`, so `aria-labelledby` above keeps resolving to
+                  the real title while the visible copy is still noise. */}
               <h3 id={`group-${group.key}`}>
-                <MonoLabel className="text-foreground">{group.title}</MonoLabel>
+                <MonoLabel className="text-foreground">
+                  <ScrambleText>{group.title}</ScrambleText>
+                </MonoLabel>
               </h3>
               <span aria-hidden="true" className="h-px flex-1 bg-border" />
               <MonoLabel className="text-muted-foreground/60 tabular-nums">
@@ -595,6 +604,7 @@ function RefinedLanding() {
   // time in view" would mean "at load", and hiding server-rendered text at load
   // is the failure this is built to avoid. The hero keeps its own entrance.
   useRevealOnView(rootRef)
+  useScrambleOnView(rootRef)
 
   return (
     <div ref={rootRef} className="w-full bg-background" data-dev-marker={PROTOTYPE_MARKER}>
@@ -748,7 +758,7 @@ function RefinedLanding() {
       <section className="border-b bg-muted/20" aria-label="România în cifre">
         <Frame>
           <CruxMarks />
-          <dl className="grid grid-cols-2 lg:grid-cols-4" data-reveal-group>
+          <dl className="grid grid-cols-2 lg:grid-cols-4">
             {NATIONAL_FACTS.map((fact, i) => (
               <div
                 key={fact.label}
@@ -790,7 +800,7 @@ function RefinedLanding() {
       {/* Statement — open band. */}
       <section className="border-b">
         <Frame className="py-16 sm:py-20">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12" data-reveal-group>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
             <div className="lg:col-span-5">
               <MonoLabel className="block text-primary" data-reveal>
                 01 / Ce găsești aici
@@ -830,7 +840,7 @@ function RefinedLanding() {
           makes stating it at all a requirement. */}
       <section className="border-b">
         <Frame className="py-14 sm:py-16">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12" data-reveal-group>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
             <div className="lg:col-span-5">
               <MonoLabel className="block text-primary" data-reveal>
                 02 / Proveniență
@@ -852,7 +862,7 @@ function RefinedLanding() {
                 nu este prezentată fără să spună de unde vine și din ce
                 perioadă.
               </p>
-              <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-3 border-t pt-5">
+              <ul data-reveal className="mt-7 flex flex-wrap gap-x-6 gap-y-3 border-t pt-5">
                 {coverage.map((item) => (
                   <li key={item.label}>
                     <MonoLabel className="text-muted-foreground">
