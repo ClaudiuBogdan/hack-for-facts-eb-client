@@ -50,8 +50,14 @@ const BOTTOM_SLIVER = { top: 700, bottom: 880 } as DOMRectReadOnly
  * the case the hook has to get right: the observer can call a block invisible
  * while its rectangle is plainly on screen.
  */
-function report(entries: readonly [Element, boolean, DOMRectReadOnly?][]) {
-  const observer = observers[0]
+/** The entrance observer, held back by the offset. Constructed first. */
+const TRIGGER = 0
+
+/** The observer watching the real viewport edge, which bounds the wait. */
+const SAFETY = 1
+
+function reportTo(which: number, entries: readonly [Element, boolean, DOMRectReadOnly?][]) {
+  const observer = observers[which]
   observer.cb(
     entries.map(([target, isIntersecting, rect]) => ({
       target,
@@ -59,6 +65,11 @@ function report(entries: readonly [Element, boolean, DOMRectReadOnly?][]) {
       boundingClientRect: rect ?? BELOW_THE_FOLD,
     })),
   )
+}
+
+/** Reports to the entrance observer, which is what most tests are about. */
+function report(entries: readonly [Element, boolean, DOMRectReadOnly?][]) {
+  reportTo(TRIGGER, entries)
 }
 
 /**
@@ -120,7 +131,8 @@ describe('reveal on view', () => {
     // Watching a container would fire its whole contents the moment its top
     // edge appeared, which for a tall section settles its lower half off
     // screen.
-    expect(observers[0].observed).toEqual(blocks(getByTestId('band')))
+    expect(observers[TRIGGER].observed).toEqual(blocks(getByTestId('band')))
+    expect(observers[SAFETY].observed).toEqual(blocks(getByTestId('band')))
   })
 
   it('hides only what is off screen, and never what is already in view', () => {
@@ -150,7 +162,7 @@ describe('reveal on view', () => {
     report([[label, false, BOTTOM_SLIVER]])
 
     expect(label.getAttribute('data-reveal')).toBe('shown')
-    expect(observers[0].unobserved).toEqual([label])
+    expect(observers[TRIGGER].unobserved).toEqual([label])
   })
 
   it('staggers blocks that arrive together, in document order', () => {
@@ -167,7 +179,7 @@ describe('reveal on view', () => {
 
     expect(states(getByTestId('band'))).toEqual(['shown', 'shown', 'shown'])
     // Every delay carries the entrance beat; the stagger is the 70ms on top.
-    expect(delays(getByTestId('band'))).toEqual(['140ms', '210ms', '280ms'])
+    expect(delays(getByTestId('band'))).toEqual(['80ms', '150ms', '220ms'])
   })
 
   it('gives a block arriving on its own the entrance beat and nothing more', () => {
@@ -178,23 +190,50 @@ describe('reveal on view', () => {
 
     // Each arrival is its own sequence. Counting from a page-wide index would
     // leave a block near the bottom waiting on a delay measured in seconds.
-    expect(heading.style.getPropertyValue('--tpz-reveal-delay')).toBe('140ms')
+    expect(heading.style.getPropertyValue('--tpz-reveal-delay')).toBe('80ms')
   })
 
-  it('keeps the entrance beat short enough that a block cannot sit blank', () => {
-    const { getByTestId } = render(<Page />)
-    const [label] = blocks(getByTestId('band'))
+  it('brings a visible block in even when the trigger line is never crossed', () => {
+    vi.useFakeTimers()
+    try {
+      const { getByTestId } = render(<Page />)
+      const [label] = blocks(getByTestId('band'))
 
-    report([[label, false]])
-    report([[label, true]])
+      // Off screen first, so it is genuinely hidden and has something to lose.
+      reportTo(TRIGGER, [[label, false]])
+      expect(label.getAttribute('data-reveal')).toBe('pending')
 
-    // The beat is a delay, not a deeper trigger line. That distinction is the
-    // whole point: a trigger held until a block is further into the viewport
-    // leaves it hidden on screen with no callback coming, which is how the old
-    // `-12%` root margin erased text. A delay always ends.
-    const delay = Number.parseInt(label.style.getPropertyValue('--tpz-reveal-delay'), 10)
-    expect(delay).toBeGreaterThan(0)
-    expect(delay).toBeLessThanOrEqual(250)
+      // Now visible, but sitting inside the offset band: the trigger observer
+      // stays silent, because the block has not crossed its line. This is the
+      // exact shape of the bug the old `-12%` root margin had — the difference
+      // is that something else is now listening.
+      reportTo(SAFETY, [[label, true]])
+      expect(label.getAttribute('data-reveal')).toBe('pending')
+
+      vi.advanceTimersByTime(1000)
+      expect(label.getAttribute('data-reveal')).toBe('shown')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('does not bring in a block that scrolled away again before its clock ran out', () => {
+    vi.useFakeTimers()
+    try {
+      const { getByTestId } = render(<Page />)
+      const [label] = blocks(getByTestId('band'))
+
+      reportTo(TRIGGER, [[label, false]])
+      reportTo(SAFETY, [[label, true]])
+      reportTo(SAFETY, [[label, false]])
+      vi.advanceTimersByTime(1000)
+
+      // Still off screen, so still hidden: the clock is a floor on how long a
+      // *visible* block may wait, not a timer that reveals the whole page.
+      expect(label.getAttribute('data-reveal')).toBe('pending')
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('stops watching a block once it has arrived', () => {
@@ -202,10 +241,10 @@ describe('reveal on view', () => {
     const [label] = blocks(getByTestId('band'))
 
     report([[label, false]])
-    expect(observers[0].unobserved).toEqual([])
+    expect(observers[TRIGGER].unobserved).toEqual([])
 
     report([[label, true]])
-    expect(observers[0].unobserved).toEqual([label])
+    expect(observers[TRIGGER].unobserved).toEqual([label])
   })
 
   it('leaves the text alone entirely when motion is not wanted', () => {

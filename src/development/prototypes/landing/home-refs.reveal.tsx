@@ -42,18 +42,35 @@ export const REVEAL_ATTR = 'data-reveal'
 const DURATION_MS = 600
 const STAGGER_MS = 70
 
+/** A short beat once a block has earned its entrance, so it does not snap in. */
+const ENTRANCE_DELAY_MS = 80
+
 /**
- * A beat between a block reaching the viewport and starting to arrive, so the
- * entrance reads as deliberate rather than as something the scroll dragged in.
+ * How far into the viewport a block comes before it starts arriving.
  *
- * Deliberately a *time* delay and not a deeper trigger line. Holding the
- * trigger until a block is further into the viewport is the same mistake as the
- * old `-12%` root margin: the block sits on screen, hidden, with no callback
- * coming, and a reader parked at that scroll position waits forever. A delay is
- * bounded — whatever happens, the block arrives 140ms later — so the worst case
- * is a beat, not a blank.
+ * A block that begins the moment its first pixel clears the bottom edge does
+ * most of its arriving at the very edge of the screen, which reads as the
+ * scroll dragging it in rather than as an entrance.
+ *
+ * This is the same shape as the `-12%` root margin that erased text earlier, and
+ * it is only safe here because of `safety` below. The failure then was not the
+ * margin itself but that it was the *only* thing that could reveal a block: a
+ * block sitting in the offset band is on screen, hidden, and the observer will
+ * not speak again until it crosses the line, so a reader parked there waited
+ * forever. Nothing bounded it.
  */
-const ENTRANCE_DELAY_MS = 140
+const TRIGGER_OFFSET_PX = 140
+
+/**
+ * The longest a block may be visible and still hidden.
+ *
+ * This is what makes the offset above safe rather than a repeat of the bug. A
+ * second observer watches the real viewport edge and starts this clock the
+ * moment a block is genuinely visible; if the reader stops scrolling inside the
+ * offset band, the block arrives anyway. The offset shapes the entrance during
+ * a scroll, and this guarantees it always ends.
+ */
+const SAFETY_MS = 700
 
 /**
  * The longest a single arrival may run, however many blocks land together.
@@ -65,25 +82,6 @@ const ENTRANCE_DELAY_MS = 140
  */
 const STAGGER_WINDOW_MS = 280
 const EASE = 'cubic-bezier(0.23, 1, 0.32, 1)'
-
-/**
- * The trigger line sits exactly on the viewport edge, so that "visible" and
- * "revealed" are the same question and there is no band between them.
- *
- * This was `0px 0px -12% 0px`, to hold the start back until a block was properly
- * on screen. That margin shrinks the observer's viewport, and `isIntersecting`
- * is reported against the shrunk one — so a block in the bottom 12% was both
- * plainly visible and formally "not intersecting", and stayed hidden with no
- * further callback to correct it. Parked there it never arrived: 42px of the
- * first statement band at y=100, 13px of the second at y=2200. Pulling the line
- * back to the edge removes the band rather than papering over it.
- *
- * The original worry — that a 600ms arrival starting at the edge would be over
- * before it could be read — does not survive arithmetic. At a normal 1000px/s
- * scroll the block travels some 700px during those 600ms, so it finishes near
- * the middle of the screen.
- */
-const ROOT_MARGIN = '0px'
 
 const CSS = `
 [${REVEAL_ATTR}='pending'] {
@@ -179,7 +177,39 @@ export function useRevealOnView(rootRef: RefObject<HTMLElement | null>) {
     if (!root) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
-    const observer = new IntersectionObserver(
+    /** Blocks visible but not yet arrived, and the clock that will bring them. */
+    const waiting = new Map<Element, ReturnType<typeof setTimeout>>()
+
+    /** Brings a batch in together, staggered in document order. */
+    function arrive(blocks: Element[]) {
+      if (blocks.length === 0) return
+      // Document order, so a row staggers left to right and a column top to
+      // bottom, rather than in whatever order the observer reported them.
+      blocks.sort((a, b) =>
+        a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1,
+      )
+      // The step can only ever shrink: a short batch keeps the full 70ms and
+      // never slows down to fill the window.
+      const step =
+        blocks.length > 1 ? Math.min(STAGGER_MS, STAGGER_WINDOW_MS / (blocks.length - 1)) : 0
+      blocks.forEach((block, index) => {
+        const timer = waiting.get(block)
+        if (timer !== undefined) {
+          clearTimeout(timer)
+          waiting.delete(block)
+        }
+        trigger.unobserve(block)
+        safety.unobserve(block)
+        show(block as HTMLElement, ENTRANCE_DELAY_MS + index * step)
+      })
+    }
+
+    /**
+     * The entrance. Fires once a block is `TRIGGER_OFFSET_PX` past the bottom
+     * edge, which is what stops an arrival happening at the very lip of the
+     * screen.
+     */
+    const trigger = new IntersectionObserver(
       (entries) => {
         /*
          * `clientHeight` is the viewport the observer itself measures against,
@@ -193,7 +223,7 @@ export function useRevealOnView(rootRef: RefObject<HTMLElement | null>) {
         /*
          * Three cases, and the order matters.
          *
-         * Past the trigger line: arrive, and stop being watched.
+         * Past the trigger line: arrive.
          *
          * On screen but short of the trigger line: arrive too, without waiting.
          * Either straddling the fold at load or already painted, so the one
@@ -209,30 +239,54 @@ export function useRevealOnView(rootRef: RefObject<HTMLElement | null>) {
         for (const entry of entries) {
           if (entry.isIntersecting || !isOffScreen(entry, viewportHeight)) {
             arriving.push(entry.target)
-            observer.unobserve(entry.target)
             continue
           }
           entry.target.setAttribute(REVEAL_ATTR, 'pending')
         }
-        if (arriving.length === 0) return
-
-        // Document order, so a row staggers left to right and a column top to
-        // bottom, rather than in whatever order the observer reported them.
-        arriving.sort((a, b) =>
-          a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1,
-        )
-        // The step can only ever shrink: a short batch keeps the full 70ms and
-        // never slows down to fill the window.
-        const step =
-          arriving.length > 1
-            ? Math.min(STAGGER_MS, STAGGER_WINDOW_MS / (arriving.length - 1))
-            : 0
-        arriving.forEach((block, index) => show(block as HTMLElement, ENTRANCE_DELAY_MS + index * step))
+        arrive(arriving)
       },
-      { rootMargin: ROOT_MARGIN },
+      { rootMargin: `0px 0px -${TRIGGER_OFFSET_PX}px 0px` },
     )
 
-    root.querySelectorAll(`[${REVEAL_ATTR}]`).forEach((block) => observer.observe(block))
-    return () => observer.disconnect()
+    /**
+     * The guarantee. Watches the real viewport edge, so it hears about a block
+     * the moment it is genuinely visible — including while it sits inside the
+     * offset band, where `trigger` stays silent. Whatever the reader does, a
+     * visible block arrives within `SAFETY_MS`.
+     */
+    const safety = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) {
+            const timer = waiting.get(entry.target)
+            if (timer !== undefined) {
+              clearTimeout(timer)
+              waiting.delete(entry.target)
+            }
+            continue
+          }
+          if (waiting.has(entry.target)) continue
+          waiting.set(
+            entry.target,
+            setTimeout(() => {
+              waiting.delete(entry.target)
+              arrive([entry.target])
+            }, SAFETY_MS),
+          )
+        }
+      },
+      { rootMargin: '0px' },
+    )
+
+    for (const block of root.querySelectorAll(`[${REVEAL_ATTR}]`)) {
+      trigger.observe(block)
+      safety.observe(block)
+    }
+    return () => {
+      trigger.disconnect()
+      safety.disconnect()
+      for (const timer of waiting.values()) clearTimeout(timer)
+      waiting.clear()
+    }
   }, [rootRef])
 }
