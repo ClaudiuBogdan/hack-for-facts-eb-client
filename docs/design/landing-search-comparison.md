@@ -130,9 +130,26 @@ room, it prefers to stay and shrink.
 The distinction matters for anything joined to the field, because a panel that
 flips does not merely move — it inverts, squaring the wrong corners and
 dropping the wrong border, so the join appears upside down rather than
-relocated. `collisionAvoidance={{ side: 'none' }}` pins it and lets
-`--available-height` do the work. The cost is fewer rows in a short window
-rather than a taller panel somewhere else.
+relocated.
+
+The first answer to that was to stop it flipping: `collisionAvoidance={{ side:
+'none' }}`, pinning it below and letting `--available-height` shrink it, at what
+was written up as the cost of "fewer rows in a short window." **That was a guess
+stated as a measurement, and it was wrong twice over.** Measured across 900,
+640 and 560, the pinned panel showed exactly the same rows as the floating one —
+5, 4, 3 — because at no gap it starts 8px higher and recovers what it loses.
+And at 520, 440 and 400, where the field sits against the bottom edge, the
+pinned panel rendered **entirely below the window: zero rows reachable**, where
+the floating one flipped and showed all five. The pin was not a trade-off. It
+was a defect in the cases it existed to handle.
+
+What works is the opposite instinct: let it flip, and let the join follow.
+`data-side` on the popup and `data-popup-side` on the input drive which edge
+squares off and which border is dropped, so a panel above the field joins at the
+field's top edge exactly as one below joins at its bottom. Measured at all six
+heights, the joined variant now matches the floating variant's row count on
+every one, with a seam gap of ±0.5px and a 0px border and radius on whichever
+edge faces the field.
 
 ## Decision — D, Base UI
 
@@ -208,7 +225,7 @@ page, at `?v=landing` and `?v=landing-joined`:
 | Border between them | two, 8px apart | one — the field's own |
 | Panel border colour | `border` | `ring`, matching the focused field |
 | Enter animation | fade + 4px rise | fade only |
-| Out of room below | flips above the field | stays, and shrinks |
+| Out of room below | flips above the field | flips too — the join follows to the field's top edge |
 
 Everything else is shared — the rows, the seven states, the header, the
 keyboard, the announcements — so the two differ in the attachment and nothing
@@ -224,8 +241,8 @@ Three things fall out of the join rather than being decided separately:
   `ring` on focus, and the panel is open only while the field is focused, so a
   panel left at the default border would draw a colour change exactly along the
   seam it is trying to hide.
-- **The panel cannot be allowed to flip**, for the reason in the correction
-  above.
+- **The join has to be side-aware**, for the reason in the correction above.
+  Preventing the flip instead is worse than the problem it solves.
 
 The header row survives in both. It sits directly under the field when joined,
 which is why it is tinted there — untinted it reads as an orphaned first result

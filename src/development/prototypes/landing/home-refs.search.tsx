@@ -49,8 +49,8 @@ import type { SearchStatus } from './home-refs.search-state'
  * **The popup reports the room it found**, as `--available-height` — consumed
  * on the popup itself below, because bounding only an inner scroller leaves the
  * popup at its natural height and hanging off the bottom of the window. Given
- * room it prefers to stay below and shrink; it still flips when the room runs
- * out, which is why the joined variant pins it.
+ * room it prefers to stay below and shrink; it flips when the room runs out,
+ * and the joined variant follows it rather than trying to hold it in place.
  *
  * Written against the same prop contract as the shipped
  * `src/components/entities/EntitySearch`, so promoting it is a file move plus
@@ -281,7 +281,12 @@ export function LandingSearch({
                   // closes. The border goes to `ring` with it: the panel below
                   // carries the same colour, and a focused blue field seamed to
                   // a grey panel would draw the join it is trying to hide.
-                  joined && 'data-popup-open:rounded-b-none data-popup-open:border-ring',
+                  joined && 'data-popup-open:border-ring',
+                  // Squared against whichever edge the panel actually landed
+                  // on, not against the one it usually lands on. `data-popup-
+                  // side` is on the input, so the field follows the panel.
+                  joined && 'data-popup-open:data-[popup-side=bottom]:rounded-b-none',
+                  joined && 'data-popup-open:data-[popup-side=top]:rounded-t-none',
                 )}
               />
             }
@@ -327,24 +332,6 @@ export function LandingSearch({
         <Autocomplete.Positioner
           sideOffset={joined ? 0 : 8}
           align="start"
-          // Joined, the panel is pinned below the field and never flips.
-          //
-          // Base UI does flip — the claim that it only ever shrinks was made
-          // from one measurement on a page where it happened not to. Sixteen
-          // pixels of extra chrome above the field was enough to send it above,
-          // and a joined panel that flips is worse than a floating one that
-          // does: it detaches from the field, squares the wrong two corners and
-          // drops the wrong border, so the join inverts rather than moves.
-          //
-          // `side: 'none'` keeps it below and lets `--available-height` do the
-          // work instead, which is the behaviour the join was designed around.
-          // The cost is real and worth stating: in a short window the panel
-          // shrinks to a scroller rather than moving somewhere roomier, so the
-          // reader sees fewer rows at once. Attached-and-shorter beats
-          // detached-and-taller when the attachment is the design.
-          collisionAvoidance={
-            joined ? { side: 'none', align: 'shift', fallbackAxisSide: 'none' } : undefined
-          }
           className="z-30 outline-hidden"
         >
           <Autocomplete.Popup
@@ -363,10 +350,22 @@ export function LandingSearch({
             // what is left.
             className={cn(
               'flex max-h-[var(--available-height)] w-[var(--anchor-width)] max-w-[var(--available-width)] flex-col overflow-hidden rounded-lg border bg-card shadow-md',
-              // One surface: no top border, because the field already has a
-              // bottom one and two of them stacked is a 2px rule where the
-              // design wants a seam.
-              joined && 'rounded-t-none border-t-0 border-ring',
+              // One surface: no border along the seam, because the field
+              // already has one there and two of them stacked is a 2px rule
+              // where the design wants a single line.
+              //
+              // Which edge that is depends on where the panel landed, so it is
+              // read off `data-side` rather than assumed to be the top. Base UI
+              // does flip when the room below runs out, and pinning it below
+              // instead — which is what this variant did first — puts the panel
+              // entirely off-screen whenever the field is near the bottom edge:
+              // measured at three viewport heights with zero rows reachable,
+              // against all five for the floating version, which simply flipped.
+              // A join that follows the panel survives that; a join that fights
+              // the positioning does not.
+              joined && 'border-ring',
+              joined && 'data-[side=bottom]:rounded-t-none data-[side=bottom]:border-t-0',
+              joined && 'data-[side=top]:rounded-b-none data-[side=top]:border-b-0',
               // Base UI animates with transitions rather than keyframes:
               // `data-starting-style` is the state the popup is in for one
               // frame before it opens, so a transition off it is the enter. A

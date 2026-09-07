@@ -296,6 +296,23 @@ describe('LandingSearch', () => {
       expect(next).not.toHaveAttribute('data-highlighted')
     })
 
+    it('reopens on ArrowUp after Escape without preselecting a row', async () => {
+      const { user, input } = setup()
+      await typeAndWait(user, 'Iasi')
+
+      await user.keyboard('{Escape}')
+      expect(input).toHaveAttribute('aria-expanded', 'false')
+
+      // The other way the wrap could come back. WAI-ARIA allows Up on a closed
+      // combobox to open it with the *last* option focused, which would undo
+      // the rule below by routing round it — Escape, Up, and the highlight is
+      // at the bottom of the list. Base UI opens with nothing highlighted, so
+      // Up means the same thing whether the panel is open or shut: stay here.
+      await user.keyboard('{ArrowUp}')
+      await waitFor(() => expect(input).toHaveAttribute('aria-expanded', 'true'))
+      expect(input).not.toHaveAttribute('aria-activedescendant')
+    })
+
     it('walks down into the results and back out to the field, and stops there', async () => {
       const { user, input } = setup()
       await typeAndWait(user, 'Iasi')
@@ -447,17 +464,28 @@ describe('LandingSearch', () => {
       const { user, input } = setup({ joined: true })
       await typeAndWait(user, 'Iasi')
 
-      // The join is one border, not two. The field squares its bottom corners
-      // only while there is a panel below to square off against — the variant
-      // is `data-popup-open:`, so it rounds again the moment the panel closes —
-      // and the panel takes no top border of its own, leaving the field's own
-      // bottom border as the seam.
-      expect(input.className).toContain('data-popup-open:rounded-b-none')
+      // The join is one border, not two: the panel drops its border along the
+      // seam and the field's own border is the line between them. The field
+      // squares off only while there is a panel to square off against — the
+      // variant is `data-popup-open:`, so it rounds again the moment the panel
+      // closes.
       expect(input.className).toContain('data-popup-open:border-ring')
 
       const popup = screen.getByRole('listbox').closest('[class*="max-h-"]')
-      expect(popup?.className).toContain('rounded-t-none')
-      expect(popup?.className).toContain('border-t-0')
+      expect(popup?.className).toContain('border-ring')
+
+      // Both sides, because Base UI flips when the room below runs out and a
+      // join that assumes "below" inverts instead of moving: wrong corners
+      // squared, wrong border dropped. Pinning the panel below to avoid that
+      // was tried first and was worse — with the field near the bottom edge the
+      // panel went entirely off-screen, zero rows reachable where the floating
+      // version flipped and showed all five.
+      expect(input.className).toContain('data-[popup-side=bottom]:rounded-b-none')
+      expect(input.className).toContain('data-[popup-side=top]:rounded-t-none')
+      expect(popup?.className).toContain('data-[side=bottom]:rounded-t-none')
+      expect(popup?.className).toContain('data-[side=bottom]:border-t-0')
+      expect(popup?.className).toContain('data-[side=top]:rounded-b-none')
+      expect(popup?.className).toContain('data-[side=top]:border-b-0')
     })
   })
 
