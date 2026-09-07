@@ -37,10 +37,28 @@ class ControllableObserver {
   }
 }
 
-/** Reports the given groups to the observer as on or off screen. */
-function report(entries: readonly [Element, boolean][]) {
+/** A rect far below the fold — the default for anything reported as not visible. */
+const BELOW_THE_FOLD = { top: 5000, bottom: 5200 } as DOMRectReadOnly
+
+/** On screen, but only just: the bottom sliver of a 768px-tall jsdom viewport. */
+const BOTTOM_SLIVER = { top: 700, bottom: 880 } as DOMRectReadOnly
+
+/**
+ * Reports the given groups to the observer.
+ *
+ * The rect is separate from `isIntersecting` on purpose, because that is exactly
+ * the case the hook has to get right: the observer can call a group invisible
+ * while its rectangle is plainly on screen.
+ */
+function report(entries: readonly [Element, boolean, DOMRectReadOnly?][]) {
   const observer = observers[0]
-  observer.cb(entries.map(([target, isIntersecting]) => ({ target, isIntersecting })))
+  observer.cb(
+    entries.map(([target, isIntersecting, rect]) => ({
+      target,
+      isIntersecting,
+      boundingClientRect: rect ?? BELOW_THE_FOLD,
+    })),
+  )
 }
 
 function Page() {
@@ -136,6 +154,20 @@ describe('reveal on view', () => {
     // A group is its own sequence. Continuing one counter down the page would
     // leave the last block waiting on a delay measured in seconds.
     expect(delays(getByTestId('near'))).toEqual(['0ms', '70ms', '140ms'])
+  })
+
+  it('shows a group the observer calls invisible but the reader can see', () => {
+    const { getByTestId } = render(<Page />)
+    const far = getByTestId('far')
+
+    // This is what a bottom root margin does: it shrinks the observer's idea of
+    // the viewport, so a group sitting in that band is reported as not
+    // intersecting while being plainly on screen. Hiding it there erases text
+    // the server had already painted, and no further callback comes to undo it.
+    report([[far, false, BOTTOM_SLIVER]])
+
+    expect(states(far)).toEqual(['shown', 'shown'])
+    expect(observers[0].unobserved).toEqual([far])
   })
 
   it('stops watching a group once it has arrived', () => {

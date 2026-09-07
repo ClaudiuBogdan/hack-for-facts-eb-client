@@ -48,8 +48,14 @@ Verified: `javaScriptEnabled: false` renders all five section strings;
 
 ## CSS or `motion`
 
-Both were built and both were measured. `motion` is already a dependency, but
-nothing on this route loads it.
+Both were built and both were measured. `motion` is already a dependency — five
+files use it, all under `budget-2026` and `campaigns` — but nothing on this route
+loads it, and `vite.config.ts` gives it a manual chunk of its own. So its cost is
+not already amortised into a vendor bundle every visitor pays for: adding it here
+would be a new chunk fetched and parsed on the landing. Checked rather than
+assumed, by watching the network for `motion`/`motion-dom`/`framer-motion`
+modules across a full scroll of the page — including the campaign card, which
+shares a feature directory with one of the five: zero requests.
 
 **Bundle**, bundled and minified through esbuild, React external:
 
@@ -94,6 +100,42 @@ installed.
   `translate` — **not** `transform`. Naming `transform` there animates opacity
   alone and silently drops the rise. Confirmed by sampling computed `translate`
   mid-flight: `12px → 11.57 → 4.55 → 1.56 → 0.48 → 0.12 → 0`.
+- A reveal block must not be `display: inline`. `translate` has no effect on a
+  non-replaced inline box, so an inline block fades without rising.
+
+## Two things review caught
+
+Both were real, both are fixed, and both are worth recording because the first
+one is the contract this whole design exists to keep.
+
+**The trigger line was also deciding what was safe to hide.** `rootMargin` was
+`0px 0px -12% 0px`, to hold the arrival back until a group was properly on
+screen. But `isIntersecting` is reported against that *shrunk* viewport, so a
+group sitting in the bottom 12% was simultaneously plainly visible and formally
+"not intersecting" — and got hidden. Server-rendered text, erased about a second
+after first paint, with no further callback coming to undo it. Measured: 70px of
+the figures strip at 1440×760, and the statement band at 1440×1000. Parked
+mid-page it was permanent — 42px of `01 / Ce găsești aici` at y=100.
+
+A 900px-tall viewport falls in the gap between the two ranges where it bites,
+which is the only reason the first round of checking came back clean. The lesson
+is not "test more heights", it is that a single constant was answering two
+different questions.
+
+Fixed twice over. The trigger line moved to the viewport edge (`rootMargin: 0`),
+so visible and revealed are now the same question — measured against the
+reference, mega.dev starts its reveals about as early, and many of its blocks
+animate while still below the fold because their group has already triggered. And
+hide-eligibility is now judged from `entry.boundingClientRect` against the real
+viewport rather than from `isIntersecting`, so the invariant holds even if
+someone later tunes the margin. Re-verified: 124 viewport heights across four
+widths and 31 scroll offsets, zero cases of on-screen text hidden.
+
+**The rise was a no-op on the two eyebrow labels.** `MonoLabel` renders a bare
+`span`, so `display: inline`, and `translate` does not apply to a non-replaced
+inline box. The labels faded while the heading and paragraph beside them rose —
+inconsistent motion inside a single staggered group, and invisible in code
+review. They carry `block` now. Measured rendered rise, all ten blocks: 12px.
 
 ## Where it is applied, and where it is not
 
