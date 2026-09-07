@@ -413,7 +413,7 @@ type GroupImage = {
   readonly src: string
   /** The same picture in AVIF, offered ahead of the WebP. */
   readonly avif: string
-  /** The art's own pixels, so the browser can reserve the box before it lands. */
+  /** The art's own pixels. See `GroupPicture` — the cell reserves the box. */
   readonly width: number
   readonly height: number
   /**
@@ -509,8 +509,8 @@ const GROUP_IMAGES: Record<string, GroupImage | undefined> = {
      * figure, pedestal included, which was the point. Measured on a 390x844
      * screen that box is 582px tall: 69% of the viewport for one decorative
      * picture, with the entries it illustrates pushed off the bottom entirely.
-     * 4:5 brings it to 436 and costs the pedestal, which the desktop crop had
-     * already given up.
+     * 4:5 brings it to 423 — half the screen — and costs the pedestal, which
+     * the desktop crop had already given up.
      */
     mobileAspect: 'aspect-4/5',
   },

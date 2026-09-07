@@ -55,7 +55,7 @@ export const PICTURE_ATTR = 'data-picture'
  * observer hold them until they are properly in view, without moving text that
  * was tuned against a reference implementation.
  */
-export const PICTURE_STATE_ATTR = 'data-pic-state'
+const PICTURE_STATE_ATTR = 'data-pic-state'
 
 /**
  * Blur radius at the start.
@@ -128,7 +128,17 @@ const MOBILE_TRIGGER_OFFSET_PX = 180
  */
 const TRIGGER_VIEWPORT_FRACTION = 0.35
 
-/** Matches the scene's own breakpoint and Tailwind's `sm`. */
+/** How far the trigger line must move before it is worth rebuilding for. */
+const REBUILD_THRESHOLD_PX = 48
+
+/**
+ * The footer scene's own breakpoint.
+ *
+ * Not Tailwind's `sm`, which is `min-width: 640px` — the two overlap at exactly
+ * 640, where the desktop grid renders with the phone's motion values. One pixel
+ * of one viewport width, and the alternative is a `639.98px` that reads as a
+ * typo, so it is written down rather than fixed.
+ */
 const MOBILE_QUERY = '(max-width: 640px)'
 
 /**
@@ -230,13 +240,18 @@ const CSS = `
 /*
  * Less of everything on a phone.
  *
- * The rise is a proportion of the screen rather than an absolute: 20px off an
- * 844px viewport reads as further than 20px off 900 because the picture beside
- * it is bigger relative to the page. And the blur is the expensive one — a
- * picture that renders 349 CSS px wide at device pixel ratio 3 is a surface of
- * about 1050 by 1750 device pixels, and the blur shader covers all of it every
- * frame. Halving the radius is most of the look for a fraction of the work on
- * the hardware least able to spare it.
+ * The rise is a judgement about how an entrance reads on a small screen rather
+ * than a proportion. Measured, the picture is 50% of a phone viewport against
+ * 54% of a desktop one, and renders 338 CSS px wide against 363 — slightly
+ * smaller both ways, so matching it proportionally would mean 17 or 18px. 14 is
+ * kept because it reads better at speed, where scrolling is flick-driven and
+ * the entrance has less time to be seen.
+ *
+ * The blur is the one with a cost behind it. At device pixel ratio 3 those 338
+ * by 423 CSS pixels are a surface of 1014 by 1268, about 1.8 times the desktop
+ * one, and the shader covers all of it every frame. Halving the radius is most
+ * of the look for a fraction of the work, on the hardware least able to spare
+ * it.
  */
 @media ${MOBILE_QUERY} {
   [${PICTURE_ATTR}] {
@@ -303,7 +318,22 @@ export function usePictureReveal(rootRef: RefObject<HTMLElement | null>) {
        * can be gated, so the set is not knowable at mount, and a rebuild after a
        * rotation must see whatever is in the document now.
        */
-      const blocks = [...root.querySelectorAll<HTMLElement>(`[${PICTURE_ATTR}]`)]
+      /*
+       * Everything that has not already arrived.
+       *
+       * The filter is what makes rebuilding safe. `build` re-observes what it is
+       * given and the trigger callback re-hides anything off screen, so without
+       * it a reader who has seen all three and then rotates their phone gets all
+       * three hidden again, re-animating on the way back down. Reproduced — and
+       * a rebuild is no longer a rare event, because on iOS Safari and Chrome
+       * Android the URL bar collapsing mid-scroll fires `resize`.
+       *
+       * One trigger per element is the property the page's own reveal has, and
+       * skipping what already carries 'shown' is how this keeps it.
+       */
+      const blocks = [...root.querySelectorAll<HTMLElement>(`[${PICTURE_ATTR}]`)].filter(
+        (block) => block.getAttribute(PICTURE_STATE_ATTR) !== 'shown',
+      )
       if (blocks.length === 0) return undefined
 
       const waiting = new Map<Element, ReturnType<typeof setTimeout>>()
@@ -434,7 +464,17 @@ export function usePictureReveal(rootRef: RefObject<HTMLElement | null>) {
     let offset = -1
     const sync = () => {
       const next = offsetFor()
-      if (next === offset) return
+      /*
+       * A dead band, not an equality check.
+       *
+       * The offset is a fraction of the viewport height, and on a phone that
+       * height is not stable: the URL bar collapsing mid-scroll changes it by
+       * about a hundred pixels and fires `resize`. Rebuilding for that would
+       * restart every waiting block's safety clock several times a flick, for a
+       * trigger line that moved twenty. A rotation moves it by more than a
+       * hundred and still rebuilds.
+       */
+      if (Math.abs(next - offset) < REBUILD_THRESHOLD_PX) return
       offset = next
       teardown?.()
       teardown = build(next)
@@ -444,7 +484,7 @@ export function usePictureReveal(rootRef: RefObject<HTMLElement | null>) {
     let settle = 0
     const onResize = () => {
       window.clearTimeout(settle)
-      settle = window.setTimeout(sync, 200)
+      settle = window.setTimeout(sync, 320)
     }
     window.addEventListener('resize', onResize)
 
@@ -463,7 +503,16 @@ type GroupPictureProps = {
   readonly avif: string
   readonly fit: 'cover' | 'contain'
   readonly position: string
-  /** The art's own pixels, so the box is reserved before the bytes arrive. */
+  /**
+   * The art's own pixels.
+   *
+   * Not what reserves the box, despite that being the usual reason to write
+   * them: `.tpz-pic-img` is `width: 100%; height: 100%`, which overrides the
+   * attributes and the intrinsic ratio they would imply. The cell's own
+   * `aspect-ratio` holds the space, as it did before these existed. They are
+   * here because they are true, and because the moment this stops being
+   * absolutely positioned they start doing the job again.
+   */
   readonly width: number
   readonly height: number
 }
