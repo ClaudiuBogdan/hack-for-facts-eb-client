@@ -114,10 +114,20 @@ export const NATIONAL_FACTS: readonly NationalFact[] = [
   },
 ]
 
-/** Romanian formatting: decimal comma, dot as the thousands separator. */
-export function formatFact(fact: NationalFact): string {
+/**
+ * Romanian formatting: decimal comma, dot as the thousands separator.
+ *
+ * Takes the number rather than the fact so a value on its way to the final one
+ * is written exactly as the final one will be — same separators, same decimal
+ * places — and the count does not change shape as it passes a thousand.
+ */
+export function formatValue(value: number, digits: number): string {
   return new Intl.NumberFormat('ro-RO', {
-    minimumFractionDigits: fact.digits,
-    maximumFractionDigits: fact.digits,
-  }).format(fact.value)
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(value)
+}
+
+export function formatFact(fact: NationalFact): string {
+  return formatValue(fact.value, fact.digits)
 }

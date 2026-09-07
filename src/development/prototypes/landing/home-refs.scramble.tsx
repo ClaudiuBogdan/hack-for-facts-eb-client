@@ -1,5 +1,4 @@
-import { useEffect } from 'react'
-import type { ReactNode, RefObject } from 'react'
+import type { ReactNode } from 'react'
 
 /**
  * Group headings that decrypt themselves the first time you reach them.
@@ -210,7 +209,7 @@ function tick(now: number) {
 }
 
 /** Starts one element decrypting, `delay` milliseconds from now. */
-function start(element: HTMLElement, delay: number) {
+function startOne(element: HTMLElement, delay: number) {
   if (element.dataset.scrambleDone === 'true') return
   const target = element.textContent ?? ''
   if (target.trim() === '') return
@@ -223,69 +222,36 @@ function start(element: HTMLElement, delay: number) {
   })
 }
 
-/** Stops everything and forgets it, so a detached node is not held. */
-function stopScrambling() {
+/**
+ * Starts every heading inside `block` decrypting, `delay` milliseconds from now.
+ *
+ * Driven by the reveal's arrival rather than by an observer of its own, which is
+ * what this had first. Two observers meant two ideas of when a thing is on
+ * screen: the reveal's carries a 140px offset and a safety clock, and this one
+ * carried neither, so a heading began decrypting at the very edge of the screen
+ * while the cell around it was still waiting to fade. One notion of "arrived",
+ * one stagger, one reduced-motion gate.
+ */
+export function scrambleWithin(block: Element, delay: number) {
+  if (typeof window === 'undefined') return
+  // Checked here as well as by the caller, so the module is honest on its own
+  // rather than inheriting a promise from whatever happens to trigger it.
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+  for (const element of block.querySelectorAll<HTMLElement>(`[${SCRAMBLE_ATTR}]`)) {
+    startOne(element, delay)
+  }
+  if (running.size > 0 && frame === 0) frame = requestAnimationFrame(tick)
+}
+
+/** Stops everything and leaves every heading reading true. */
+export function stopScrambling() {
   if (frame !== 0) cancelAnimationFrame(frame)
   frame = 0
   // Put the real text back, so a heading interrupted midway is left readable
   // rather than frozen as a cipher.
   for (const job of running) job.element.textContent = job.target
   running.clear()
-}
-
-/**
- * Spacing between headings that come into view together, so a row of four
- * titles resolves as a sweep rather than in lockstep.
- */
-const BATCH_STAGGER_MS = 110
-
-/**
- * Starts each heading the moment it reaches the viewport.
- *
- * Deliberately watches the elements themselves rather than sharing the reveal's
- * per-group trigger, which is what it did first. A lattice section is tall — an
- * image and four cells — so a group-level trigger fires everything the instant
- * the section's *top* edge appears, and the lower titles then decrypt where
- * nobody can see them. Measured: `Investiții publice` began at 135% of the
- * viewport height, 315px below the fold, and was three quarters resolved by the
- * time it rose into view. Watching each element puts the whole 900ms on screen.
- *
- * The margin is zero for the same reason as the reveal's: a heading starts when
- * it is visible, so there is no band where it sits on screen having already
- * quietly finished.
- */
-export function useScrambleOnView(rootRef: RefObject<HTMLElement | null>) {
-  useEffect(() => {
-    const root = rootRef.current
-    if (!root) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const arriving = entries
-          .filter((entry) => entry.isIntersecting)
-          // Document order, so the stagger runs down the page and across it
-          // rather than in whatever order the observer happened to report.
-          .sort((a, b) => {
-            const box = a.boundingClientRect
-            const other = b.boundingClientRect
-            return box.top - other.top || box.left - other.left
-          })
-        arriving.forEach((entry, index) => {
-          start(entry.target as HTMLElement, index * BATCH_STAGGER_MS)
-          observer.unobserve(entry.target)
-        })
-        if (running.size > 0 && frame === 0) frame = requestAnimationFrame(tick)
-      },
-      { rootMargin: '0px' },
-    )
-
-    root.querySelectorAll(`[${SCRAMBLE_ATTR}]`).forEach((element) => observer.observe(element))
-    return () => {
-      observer.disconnect()
-      stopScrambling()
-    }
-  }, [rootRef])
 }
 
 /**

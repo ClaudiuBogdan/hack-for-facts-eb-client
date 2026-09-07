@@ -171,7 +171,17 @@ function isOffScreen(entry: IntersectionObserverEntry, viewportHeight: number) {
  * One observer for the whole landing, and each block is dropped from it as it
  * lands, so the callback stops being called at all once the last one has.
  */
-export function useRevealOnView(rootRef: RefObject<HTMLElement | null>) {
+export function useRevealOnView(
+  rootRef: RefObject<HTMLElement | null>,
+  /**
+   * Runs for each block as it arrives, with the same delay its fade got, so
+   * anything hanging off it starts on the same beat rather than on a rival
+   * schedule. This is the page's single notion of "arrived": the offset, the
+   * safety clock and the batch stagger are all decided here, and effects that
+   * want the same moment ask for it rather than observing again themselves.
+   */
+  onBlockShown?: (block: Element, delay: number) => void,
+) {
   useEffect(() => {
     const root = rootRef.current
     if (!root) return
@@ -200,7 +210,9 @@ export function useRevealOnView(rootRef: RefObject<HTMLElement | null>) {
         }
         trigger.unobserve(block)
         safety.unobserve(block)
-        show(block as HTMLElement, ENTRANCE_DELAY_MS + index * step)
+        const delay = ENTRANCE_DELAY_MS + index * step
+        show(block as HTMLElement, delay)
+        onBlockShown?.(block, delay)
       })
     }
 
@@ -288,5 +300,5 @@ export function useRevealOnView(rootRef: RefObject<HTMLElement | null>) {
       for (const timer of waiting.values()) clearTimeout(timer)
       waiting.clear()
     }
-  }, [rootRef])
+  }, [rootRef, onBlockShown])
 }

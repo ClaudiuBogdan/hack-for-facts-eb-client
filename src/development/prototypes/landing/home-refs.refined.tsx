@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import type { LinkProps } from '@tanstack/react-router'
@@ -15,8 +16,9 @@ import { cn } from '@/lib/utils'
 import { scraperDatasetCatalog } from '@/lib/scraper-references'
 import { MonoLabel } from './home-refs.mono-label'
 import { RevealStyles, useRevealOnView } from './home-refs.reveal'
-import { ScrambleText, useScrambleOnView } from './home-refs.scramble'
-import { NATIONAL_FACTS, formatFact } from './home-refs.national-facts'
+import { ScrambleText, scrambleWithin, stopScrambling } from './home-refs.scramble'
+import { CountUpValue, countUpWithin, stopCounting } from './home-refs.count-up'
+import { NATIONAL_FACTS } from './home-refs.national-facts'
 import { PixelField } from './home-refs.pixel-art'
 import { FIELD_HOST_CLASS, FieldAnimationStyles } from './home-refs.field-animation'
 import { useFieldMotion } from './home-refs.field-motion'
@@ -594,6 +596,18 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
   )
 }
 
+/**
+ * Everything that happens when a block arrives, beyond the fade itself.
+ *
+ * Declared at module scope so its identity is stable across renders, which is
+ * what keeps the reveal's effect from tearing down and rebuilding its observers
+ * on every render.
+ */
+function startArrivalEffects(block: Element, delay: number) {
+  scrambleWithin(block, delay)
+  countUpWithin(block, delay)
+}
+
 function RefinedLanding() {
   const { groups, coverage } = getPlatformCoverage()
   const heroRef = useFieldMotion()
@@ -603,8 +617,13 @@ function RefinedLanding() {
   // The hero is deliberately not a group: it is on screen at load, so "first
   // time in view" would mean "at load", and hiding server-rendered text at load
   // is the failure this is built to avoid. The hero keeps its own entrance.
-  useRevealOnView(rootRef)
-  useScrambleOnView(rootRef)
+  useRevealOnView(rootRef, startArrivalEffects)
+  // Module state outlives the component, so an unmount mid-flight would leave
+  // both loops ticking against nodes that are no longer in the document.
+  useEffect(() => () => {
+    stopScrambling()
+    stopCounting()
+  }, [])
 
   return (
     <div ref={rootRef} className="w-full bg-background" data-dev-marker={PROTOTYPE_MARKER}>
@@ -771,7 +790,7 @@ function RefinedLanding() {
                 )}
               >
                 <dd className="order-1 flex items-baseline gap-1.5 text-3xl font-semibold tabular-nums tracking-tight text-foreground sm:text-4xl">
-                  {formatFact(fact)}
+                  <CountUpValue value={fact.value} digits={fact.digits} />
                   {/* The unit never breaks across lines — 'mld.' alone on one
                       line and 'lei' on the next reads as two facts. */}
                   <span className="shrink-0 whitespace-nowrap text-sm font-medium tracking-normal text-muted-foreground">
@@ -788,7 +807,7 @@ function RefinedLanding() {
                     {fact.label}
                   </MonoLabel>
                   <MonoLabel className="mt-auto block pt-6 leading-relaxed text-muted-foreground">
-                    {fact.source}
+                    <ScrambleText>{fact.source}</ScrambleText>
                   </MonoLabel>
                 </dt>
               </div>
