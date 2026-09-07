@@ -64,9 +64,12 @@ const SCENE_PX = 320
 /**
  * Rendered size of each tile, and how long it takes to travel its own width.
  *
- * The two cloud rates are deliberately not a round ratio. At 90 and 150 seconds
- * the two layers realign every 450 seconds; at 90 and 180 they would realign
- * every three minutes and the pair would visibly repeat.
+ * The three rates are deliberately not round ratios of each other. At the base
+ * 52, 90 and 150 the pair behind realigns every 450 seconds and all three every
+ * 39 minutes; at 60, 90 and 180 they would come back together every three
+ * minutes and the sky would visibly repeat. `DRIFT_SCALE` stretches all three
+ * by the same factor, so slowing the sky down leaves those periods intact
+ * rather than collapsing them onto a common one.
  */
 const LAYERS = {
   far: { w: 1072, h: 110, bottom: 138, seconds: 150 },
@@ -74,6 +77,30 @@ const LAYERS = {
   range: { w: 1795, h: 230 },
   front: { w: 1714, h: 130, bottom: 110, seconds: 52 },
 }
+
+/**
+ * Two knobs over the whole sky, so the three layers can be moved and slowed
+ * without disturbing what they are relative to each other.
+ *
+ * The heights above are what puts each layer where it belongs against the
+ * range; this lifts the set of them off it. The seconds are what puts them in
+ * depth order; this stretches all three by the same factor, which is the only
+ * way to slow the sky down without changing which cloud is nearest.
+ */
+const CLOUD_LIFT_PX = 32
+const DRIFT_SCALE = 1.5
+
+type CloudLayer = { w: number; h: number; bottom: number; seconds: number }
+
+const cloud = (layer: CloudLayer): CloudLayer => ({
+  ...layer,
+  bottom: layer.bottom + CLOUD_LIFT_PX,
+  seconds: Math.round(layer.seconds * DRIFT_SCALE),
+})
+
+const FAR = cloud(LAYERS.far)
+const NEAR = cloud(LAYERS.near)
+const FRONT = cloud(LAYERS.front)
 
 /**
  * The highest a cloud ever reaches, and the room the footer's text needs above
@@ -87,11 +114,7 @@ const LAYERS = {
  * of itself to keep clear.
  */
 export const FOOTER_SCENE_CLEAR_PX =
-  Math.max(
-    LAYERS.far.bottom + LAYERS.far.h,
-    LAYERS.near.bottom + LAYERS.near.h,
-    LAYERS.front.bottom + LAYERS.front.h,
-  ) + 20
+  Math.max(FAR.bottom + FAR.h, NEAR.bottom + NEAR.h, FRONT.bottom + FRONT.h) + 20
 
 const CSS = `
 .tpz-scene {
@@ -179,35 +202,38 @@ const CSS = `
 }
 
 .tpz-scene-far {
-  --tpz-tile: calc(${LAYERS.far.w}px * var(--tpz-scene-scale));
-  --tpz-drift: ${LAYERS.far.seconds}s;
-  bottom: calc(${LAYERS.far.bottom}px * var(--tpz-scene-scale));
-  height: calc(${LAYERS.far.h}px * var(--tpz-scene-scale));
+  --tpz-tile: calc(${FAR.w}px * var(--tpz-scene-scale));
+  --tpz-drift: ${FAR.seconds}s;
+  bottom: calc(${FAR.bottom}px * var(--tpz-scene-scale));
+  height: calc(${FAR.h}px * var(--tpz-scene-scale));
   width: calc(100% + var(--tpz-tile));
   background-image: url(${cloudsFar});
-  background-size: var(--tpz-tile) calc(${LAYERS.far.h}px * var(--tpz-scene-scale));
-  /* Further away, so paler and flatter. Depth here is opacity and speed rather
-     than blur, which would cost a filter on a permanently animating element. */
-  opacity: 0.55;
+  background-size: var(--tpz-tile) calc(${FAR.h}px * var(--tpz-scene-scale));
+  /* Further away, so slightly the palest of the three. Depth here is opacity
+     and speed rather than blur, which would cost a filter on a permanently
+     animating element — but the spread between the layers is small now. Solid
+     clouds with a little transparency read as weather; translucent ones read as
+     a wash laid over the picture. */
+  opacity: 0.85;
 }
 
 .tpz-scene-near {
-  --tpz-tile: calc(${LAYERS.near.w}px * var(--tpz-scene-scale));
-  --tpz-drift: ${LAYERS.near.seconds}s;
-  bottom: calc(${LAYERS.near.bottom}px * var(--tpz-scene-scale));
-  height: calc(${LAYERS.near.h}px * var(--tpz-scene-scale));
+  --tpz-tile: calc(${NEAR.w}px * var(--tpz-scene-scale));
+  --tpz-drift: ${NEAR.seconds}s;
+  bottom: calc(${NEAR.bottom}px * var(--tpz-scene-scale));
+  height: calc(${NEAR.h}px * var(--tpz-scene-scale));
   width: calc(100% + var(--tpz-tile));
   background-image: url(${cloudsNear});
-  background-size: var(--tpz-tile) calc(${LAYERS.near.h}px * var(--tpz-scene-scale));
-  opacity: 0.8;
+  background-size: var(--tpz-tile) calc(${NEAR.h}px * var(--tpz-scene-scale));
+  opacity: 0.94;
 }
 
 .dark .tpz-scene-far {
-  opacity: 0.3;
+  opacity: 0.5;
 }
 
 .dark .tpz-scene-near {
-  opacity: 0.42;
+  opacity: 0.65;
 }
 
 /*
@@ -217,25 +243,25 @@ const CSS = `
  * picture; and solid, because occlusion is the whole of what it is for.
  */
 .tpz-scene-front {
-  --tpz-tile: calc(${LAYERS.front.w}px * var(--tpz-scene-scale));
-  --tpz-drift: ${LAYERS.front.seconds}s;
-  bottom: calc(${LAYERS.front.bottom}px * var(--tpz-scene-scale));
-  height: calc(${LAYERS.front.h}px * var(--tpz-scene-scale));
+  --tpz-tile: calc(${FRONT.w}px * var(--tpz-scene-scale));
+  --tpz-drift: ${FRONT.seconds}s;
+  bottom: calc(${FRONT.bottom}px * var(--tpz-scene-scale));
+  height: calc(${FRONT.h}px * var(--tpz-scene-scale));
   width: calc(100% + var(--tpz-tile));
   background-image: url(${cloudsFront});
-  background-size: var(--tpz-tile) calc(${LAYERS.front.h}px * var(--tpz-scene-scale));
+  background-size: var(--tpz-tile) calc(${FRONT.h}px * var(--tpz-scene-scale));
   /* Solid enough to read as a cloud rather than as ground haze, which is what
      it looked like at half opacity eight pixels off the floor: it hugged the
-     tree line and never touched a slope. It now sits at summit level — 110 to
-     240 against a skyline that runs 124 to 165 — so it crosses the tops rather
+     tree line and never touched a slope. It now sits at summit level — see
+     'CLOUD_LIFT_PX' — so it crosses the tops rather
      than the mid-slopes, which is where a cloud that near the viewer would
      actually be. At that height it has to be nearly as solid as the layers
      behind or the occlusion does not read. */
-  opacity: 0.82;
+  opacity: 0.97;
 }
 
 .dark .tpz-scene-front {
-  opacity: 0.5;
+  opacity: 0.78;
 }
 
 /*
