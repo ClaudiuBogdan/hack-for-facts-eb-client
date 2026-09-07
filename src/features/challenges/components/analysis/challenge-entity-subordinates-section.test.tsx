@@ -46,6 +46,16 @@ const sampleItems: ChallengeEntitySubordinateCardItem[] = [
 ]
 
 describe('ChallengeEntitySubordinatesSection', () => {
+  it('shows unavailable population as N/A and preserves a real zero', () => {
+    render(<ChallengeEntitySubordinatesSection locale="en"
+      items={[{...sampleItems[0]!,totalSpending:null},{...sampleItems[1]!,totalSpending:0}]}
+      totalResultsCount={2} isLoading={false} isError={false} onRetry={vi.fn()}
+      normalizationOptions={{normalization:'per_capita',currency:'RON'}} />)
+    expect(screen.getByRole('link',{name:/Scoala Nr 1/})).toHaveTextContent('N/A')
+    expect(screen.getByRole('link',{name:/Biblioteca Judeteana/})).not.toHaveTextContent('N/A')
+    expect(screen.getByRole('link',{name:/Biblioteca Judeteana/})).toHaveTextContent('0')
+  })
+
   it('renders the title and description in Romanian', () => {
     render(
       <ChallengeEntitySubordinatesSection

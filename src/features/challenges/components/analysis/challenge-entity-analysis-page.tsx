@@ -1790,8 +1790,6 @@ export function ChallengeEntityAnalysisPage({
     ],
   )
 
-  const parentPopulation = entityDetailsQuery.data?.uat?.population ?? 0
-
   const parentMainCreditorCards = useMemo<ChallengeEntitySubordinateCardItem[]>(
     () =>
       parentMainCreditorEntities.map((parentEntity) => ({
@@ -1839,8 +1837,10 @@ export function ChallengeEntityAnalysisPage({
           subordinateEntity.total_amount ?? subordinateEntity.amount ?? 0,
         )
         const totalSpending =
-          normalizationMode === 'per_capita' && parentPopulation > 0
-            ? rawAmount / parentPopulation
+          normalizationMode === 'per_capita'
+            ? subordinateEntity.per_capita_amount == null
+              ? null
+              : Number(subordinateEntity.per_capita_amount)
             : rawAmount
 
         return {
@@ -1871,7 +1871,6 @@ export function ChallengeEntityAnalysisPage({
       languageQuery,
       month,
       normalizationMode,
-      parentPopulation,
       periodType,
       quarter,
       selectedYear,

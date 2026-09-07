@@ -592,7 +592,7 @@ function buildExpenseTypeLineItems(): ExecutionLineItem[] {
   ]
 }
 
-const subordinateRankingNodes = [
+const subordinateRankingNodes: {entity_cui:string;entity_name:string;entity_type:string;amount:number;total_amount:number;per_capita_amount:number|null}[] = [
   {
     entity_cui: '99887766',
     entity_name: 'Liceul Teoretic Avram Iancu',
@@ -3695,6 +3695,20 @@ describe('ChallengeEntityAnalysisPage', () => {
       'RON',
       false,
     ])
+  })
+
+  it('uses subordinate annual per-capita values without borrowing the parent population', () => {
+    useQueryMock.mockImplementation((options: any) => ({
+      data: options.queryKey?.[0] === 'challenge-entity-subordinates'
+        ? createSubordinateRankingConnection([
+          {...subordinateRankingNodes[0]!, per_capita_amount: 123.45},
+          {...subordinateRankingNodes[1]!, per_capita_amount: null},
+        ]) : undefined,
+      isLoading:false, isFetching:false, isError:false, error:null, refetch:vi.fn(),
+    }))
+    renderAnalysisPage({state:{normalization:'per_capita'}})
+    expect(screen.getByRole('link',{name:/Liceul Teoretic Avram Iancu/})).toHaveTextContent('123.45')
+    expect(screen.getByRole('link',{name:/Teatrul Municipal/})).toHaveTextContent('N/A')
   })
 
   it('uses the bounded redesign result count for the subordinate badge', () => {

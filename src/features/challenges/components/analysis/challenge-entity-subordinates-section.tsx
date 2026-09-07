@@ -13,7 +13,7 @@ export type ChallengeEntitySubordinateCardItem = {
   readonly entityCui: string
   readonly entityName: string
   readonly entityTypeLabel: string | null
-  readonly totalSpending?: number
+  readonly totalSpending?: number | null
   readonly entitySearch: Record<string, unknown>
 }
 
@@ -156,7 +156,7 @@ function ChallengeEntitySubordinateRow({
             {totalSpendingLabel}
           </span>
           <span className="text-sm font-bold tabular-nums text-foreground">
-            {formatNormalizedValue(
+            {item.totalSpending === null ? 'N/A' : formatNormalizedValue(
               item.totalSpending,
               normalizationOptions,
               'compact',
