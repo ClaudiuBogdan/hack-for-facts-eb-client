@@ -782,6 +782,7 @@ export const AdvancedMapAnalyticsUrlStateSchema = z.preprocess(
     activeGroupWorkspaceId: z.string().optional(),
     valueFilters: AdvancedMapAnalyticsValueFilterGroupSchema.default({ rules: [] }),
     activeView: AdvancedMapAnalyticsActiveViewSchema.default('map'),
+    mapViewType: z.enum(['UAT', 'County']).default('UAT'),
     analyticsWidgets: AdvancedMapAnalyticsWidgetsSchema.default(createDefaultAdvancedMapAnalyticsWidgets()),
     mapName: z.string().default('Untitled map'),
     mapLayers: AdvancedMapAnalyticsMapLayersSchema.default({

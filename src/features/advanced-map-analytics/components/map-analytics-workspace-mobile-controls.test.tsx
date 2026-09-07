@@ -189,6 +189,7 @@ vi.mock('sonner', () => ({
   toast: {
     success: (...args: unknown[]) => toastSuccessMock(...args),
     warning: (...args: unknown[]) => toastWarningMock(...args),
+    info: (...args: unknown[]) => toastWarningMock(...args),
     error: (...args: unknown[]) => toastErrorMock(...args),
   },
 }));
@@ -336,7 +337,7 @@ vi.mock('@/components/ui/LoadingSpinner', () => ({
 }));
 
 vi.mock('@/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel', () => ({
-  AdvancedMapAnalyticsConfigPanel: () => <div>Config Panel</div>,
+  AdvancedMapAnalyticsConfigPanel: ({ onMapViewTypeChange }: { onMapViewTypeChange?: (value: 'County') => void }) => <button onClick={() => onMapViewTypeChange?.('County')}>Config Panel</button>,
 }));
 
 vi.mock('@/components/maps/advanced-map-analytics/advanced-map-analytics-series-panel', () => ({
@@ -2369,6 +2370,21 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(latestInteractiveMapProps?.countyBoundaryGeoJsonData).toEqual(mockCountyGeoJsonData.data);
   });
 
+  it.each(['groups', 'uploads'])('keeps geometry and configuration intact when %s prevent switching', async (kind) => {
+    mockIsMobile.mockReturnValue(false);
+    const state = createMapState(kind === 'groups' ? {
+      groupWorkspaces: [{ id: 'manual', key: 'manual', groups: [{ id: 'g', memberSirutaCodes: ['1001'] }] }],
+    } : { series: [{ id: 'uploaded', type: 'uploaded-map-dataset', datasetId: '11111111-1111-4111-8111-111111111111', label: 'Uploaded' }] });
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+    render(<MapAnalyticsWorkspace mode="owner" mapState={state} setMapState={setMapState} capabilities={{ readOnly: false }} />);
+    await screen.findByText('Config Panel');
+    setMapState.mockClear();
+    fireEvent.click(screen.getByText('Config Panel'));
+    expect(setMapState).not.toHaveBeenCalled();
+    expect(toastWarningMock).toHaveBeenCalledWith(expect.stringContaining('groups or uploaded'));
+  });
+
   it('uses county geometry as the primary map when requested', async () => {
     mockIsMobile.mockReturnValue(false);
     mockGeoJsonData = {
@@ -2382,7 +2398,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     mockCountyGeoJsonData = {
       data: {
         type: 'FeatureCollection',
-        features: [{ type: 'Feature', properties: { mnemonic: 'CJ' }, geometry: null }],
+        features: [{ type: 'Feature', properties: { mnemonic: 'CJ', name: 'Cluj', countyCode: 127 }, geometry: null }],
       },
       isLoading: false,
       error: null,
@@ -2394,17 +2410,16 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     render(
       <MapAnalyticsWorkspace
         mode="public"
-        mapState={createMapState({ activeView: 'map', mapLayers: { countyBoundaries: true } })}
+        mapState={createMapState({ activeView: 'map', mapViewType: 'County', mapLayers: { countyBoundaries: true } })}
         setMapState={setMapState}
         capabilities={{ readOnly: true }}
         mobileControlsDefaultCollapsed={true}
-        mapViewType="County"
       />
     );
 
     await screen.findByTestId('interactive-map');
     expect(latestInteractiveMapProps?.mapViewType).toBe('County');
-    expect(latestInteractiveMapProps?.geoJsonData).toEqual(mockCountyGeoJsonData.data);
+    expect(latestInteractiveMapProps?.geoJsonData).toMatchObject({ features: [{ properties: { mnemonic: 'CJ', natcode: 'CJ', name: 'Cluj', county: 'Cluj', countyCode: 127 } }] });
     expect(latestInteractiveMapProps?.countyBoundaryGeoJsonData).toBeNull();
   });
 

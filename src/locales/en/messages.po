@@ -12267,6 +12267,11 @@ msgstr "Manual"
 msgid "Map"
 msgstr "Map"
 
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:89
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:90
+msgid "Map boundaries"
+msgstr "Map boundaries"
+
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:379
 msgid "Map configuration actions"
 msgstr "Map configuration actions"
@@ -21322,6 +21327,10 @@ msgstr "This is the general INS catalog. Availability for this entity's area is 
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:924
 msgid "This is the person who signs the request on behalf of the association."
 msgstr "This is the person who signs the request on behalf of the association."
+
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3491
+msgid "This map has groups or uploaded data tied to its boundaries. Create a new map to use different boundaries."
+msgstr "This map has groups or uploaded data tied to its boundaries. Create a new map to use different boundaries."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:84
 msgid "This name appears as the map title for viewers."

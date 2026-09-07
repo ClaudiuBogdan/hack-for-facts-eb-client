@@ -1,3 +1,4 @@
+import { adaptMapBoundaryData } from '@/features/advanced-map-analytics/map-boundary-data';
 import { getMapDecimalRange } from '@/lib/map-series/decimal';
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
@@ -178,6 +179,7 @@ export function MapAnalyticsPublicView({
 
   const seriesDataResult = useAdvancedMapAnalyticsSeriesData({
     series: mapState.series,
+    granularity: mapState.mapViewType,
     groupWorkspaces: mapState.groupWorkspaces,
     activeGroupWorkspaceId: mapState.activeGroupWorkspaceId,
     activeSeriesId: requestedActiveSeriesId,
@@ -216,7 +218,7 @@ export function MapAnalyticsPublicView({
 
   const activeMapRenderUnitContext = useMemo(
     () =>
-      buildActiveMapRenderUnitContext({
+      mapState.mapViewType === 'UAT' ? buildActiveMapRenderUnitContext({
         activeSeriesId: resolvedActiveSeriesId,
         activeSeries,
         activeSeriesUnit: activeUnit,
@@ -225,8 +227,9 @@ export function MapAnalyticsPublicView({
         valuesBySeriesId,
         mapValuesBySeriesId,
         domainsBySeriesId,
-      }),
+      }) : undefined,
     [
+      mapState.mapViewType,
       activeSeries,
       activeUnit,
       domainsBySeriesId,
@@ -435,13 +438,18 @@ export function MapAnalyticsPublicView({
   );
 
   const {
-    data: geoJsonData,
+    data: rawGeoJsonData,
     isLoading: isGeoJsonLoading,
     error: geoJsonError,
-  } = useGeoJsonData('UAT');
+  } = useGeoJsonData(mapState.mapViewType);
+
+  const geoJsonData = useMemo(
+    () => adaptMapBoundaryData(rawGeoJsonData, mapState.mapViewType),
+    [rawGeoJsonData, mapState.mapViewType],
+  );
 
   const { data: countyGeoJsonData } = useGeoJsonData('County', {
-    enabled: mapState.mapLayers.countyBoundaries,
+    enabled: mapState.mapViewType === 'UAT' && mapState.mapLayers.countyBoundaries,
   });
 
   const geoJsonFeatures = useMemo(() => selectUatFeatures(geoJsonData), [geoJsonData]);
@@ -498,7 +506,7 @@ export function MapAnalyticsPublicView({
   const isTableComputationEnabled = activeView === 'table';
 
   const groupingBoundaryGeoJsonData = useGroupWorkspaceBoundaryGeoJsonData({
-    enabled: Boolean(activeTableGroupWorkspace),
+    enabled: mapState.mapViewType === 'UAT' && Boolean(activeTableGroupWorkspace),
     workspace: activeTableGroupWorkspace,
     geoJsonFeatures,
   });
@@ -998,12 +1006,12 @@ export function MapAnalyticsPublicView({
                     heatmapData={activeHeatmapData}
                     geoJsonData={geoJsonData ?? null}
                     countyBoundaryGeoJsonData={
-                      mapState.mapLayers.countyBoundaries ? (countyGeoJsonData ?? null) : null
+                      mapState.mapViewType === 'UAT' && mapState.mapLayers.countyBoundaries ? (countyGeoJsonData ?? null) : null
                     }
                     groupingBoundaryGeoJsonData={groupingBoundaryGeoJsonData}
                     zoom={mapZoom}
                     center={mapCenter}
-                    mapViewType="UAT"
+                    mapViewType={mapState.mapViewType}
                     filters={defaultMapFilters}
                     mapHeight="100%"
                     showLabels={Boolean(activeSeries)}

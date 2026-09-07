@@ -11,6 +11,7 @@ describe('map-config-transfer', () => {
     const mapState = AdvancedMapAnalyticsUrlStateSchema.parse({
       mapName: 'Wrapped import',
       activeView: 'table',
+      mapViewType: 'County',
     });
     const wrappedPayload = createMapConfigTransferEnvelope({
       mapState,

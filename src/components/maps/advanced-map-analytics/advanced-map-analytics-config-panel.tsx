@@ -10,6 +10,8 @@ interface AdvancedMapAnalyticsConfigPanelProps {
   countyBoundariesEnabled: boolean;
   warningCount: number;
   readOnly?: boolean;
+  mapViewType?: 'UAT' | 'County';
+  onMapViewTypeChange?: (value: 'UAT' | 'County') => void;
   onToggleCollapsed: (collapsed: boolean) => void;
   onCountyBoundariesEnabledChange: (enabled: boolean) => void;
   onOpenConfig: () => void;
@@ -21,6 +23,8 @@ export function AdvancedMapAnalyticsConfigPanel({
   countyBoundariesEnabled,
   warningCount,
   readOnly = false,
+  mapViewType = 'UAT',
+  onMapViewTypeChange,
   onToggleCollapsed,
   onCountyBoundariesEnabledChange,
   onOpenConfig,
@@ -80,13 +84,24 @@ export function AdvancedMapAnalyticsConfigPanel({
 
       <Collapsible open={!collapsed} onOpenChange={(open) => onToggleCollapsed(!open)}>
         <CollapsibleContent className="space-y-5 data-[state=open]:animate-in data-[state=closed]:animate-out">
+          {onMapViewTypeChange ? (
+            <label className="flex items-center justify-between gap-3 text-sm font-medium">
+              {t`Map boundaries`}
+              <select aria-label={t`Map boundaries`} value={mapViewType}
+                onChange={event => onMapViewTypeChange(event.target.value === 'County' ? 'County' : 'UAT')}
+                className="rounded-md border border-input bg-background px-2 py-1.5 text-sm">
+                <option value="UAT">{t`UAT`}</option>
+                <option value="County">{t`County`}</option>
+              </select>
+            </label>
+          ) : null}
           {/* County boundaries */}
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm font-medium">{t`County boundaries`}</span>
             <Switch
               checked={countyBoundariesEnabled}
               onCheckedChange={onCountyBoundariesEnabledChange}
-              disabled={readOnly}
+              disabled={readOnly || mapViewType === 'County'}
               aria-label={t`Toggle county boundaries`}
             />
           </div>

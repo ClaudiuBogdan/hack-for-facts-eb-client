@@ -16,6 +16,12 @@ import {
 } from '@/schemas/advanced-map-analytics';
 
 describe('AdvancedMapAnalyticsUrlStateSchema', () => {
+  it('round-trips county geometry and rejects unknown boundary types', () => {
+    const state = AdvancedMapAnalyticsUrlStateSchema.parse({ mapViewType: 'County' });
+    expect(AdvancedMapAnalyticsUrlStateSchema.parse(JSON.parse(JSON.stringify(state))).mapViewType).toBe('County');
+    expect(AdvancedMapAnalyticsUrlStateSchema.safeParse({ mapViewType: 'Region' }).success).toBe(false);
+  });
+
   it('defaults to an empty state', () => {
     const parsed = AdvancedMapAnalyticsUrlStateSchema.parse({});
 
@@ -26,6 +32,7 @@ describe('AdvancedMapAnalyticsUrlStateSchema', () => {
     expect(parsed.activeGroupWorkspaceId).toBeUndefined();
     expect(parsed.valueFilters.rules).toEqual([]);
     expect(parsed.activeView).toBe('map');
+    expect(parsed.mapViewType).toBe('UAT');
     expect(parsed.analyticsWidgets).toEqual(createDefaultAdvancedMapAnalyticsWidgets());
     expect(parsed.mapName).toBe('Untitled map');
     expect(parsed.mapLayers).toEqual({

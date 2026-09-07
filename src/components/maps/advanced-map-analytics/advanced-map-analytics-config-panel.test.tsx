@@ -19,6 +19,15 @@ function renderConfigPanel(overrides: Partial<ComponentProps<typeof AdvancedMapA
 }
 
 describe('AdvancedMapAnalyticsConfigPanel', () => {
+  it('changes saved geometry and disables redundant county outlines', () => {
+    const onMapViewTypeChange = vi.fn();
+    renderConfigPanel({ mapViewType: 'County', onMapViewTypeChange });
+    expect(screen.getByRole('combobox', { name: 'Map boundaries' })).toHaveValue('County');
+    expect(screen.getByRole('switch', { name: 'Toggle county boundaries' })).toBeDisabled();
+    fireEvent.change(screen.getByRole('combobox', { name: 'Map boundaries' }), { target: { value: 'UAT' } });
+    expect(onMapViewTypeChange).toHaveBeenCalledWith('UAT');
+  });
+
   it('calls onOpenConfig when open config button is clicked', () => {
     const onOpenConfig = vi.fn();
 

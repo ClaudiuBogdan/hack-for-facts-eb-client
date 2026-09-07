@@ -1,3 +1,4 @@
+import { adaptMapBoundaryData } from '@/features/advanced-map-analytics/map-boundary-data';
 import { MapDecimal } from '@/lib/map-series/decimal';
 import { getMapDecimalRange, normalizeMapDecimal } from '@/lib/map-series/decimal';
 import { mapDecimalToRenderNumber, readMapDecimal } from '@/lib/map-series/decimal';
@@ -487,10 +488,11 @@ export function MapAnalyticsWorkspace({
   displayUnitOverridesBySeriesId,
   mapZoomOverride,
   mapCenterOverride,
-  mapViewType = 'UAT',
+  mapViewType: mapViewTypeOverride,
   onMapViewportChange,
   onMapFeatureSelect,
 }: Readonly<MapAnalyticsWorkspaceProps>) {
+  const mapViewType = mapViewTypeOverride ?? mapState.mapViewType;
   const navigate = useNavigate();
   const [userCurrency] = useUserCurrency();
   const [userInflationAdjusted] = useUserInflationAdjusted();
@@ -1945,6 +1947,7 @@ export function MapAnalyticsWorkspace({
     groupWorkspaces: draftSizeGroupWorkspaces,
     mapLayers: draftSizeMapLayers,
     mapName: draftSizeMapName,
+    mapViewType: draftSizeMapViewType,
     series: draftSizeSeries,
     seriesPanelCollapsed: draftSizeSeriesPanelCollapsed,
     tableBinFiltersByPresetId: draftSizeTableBinFiltersByPresetId,
@@ -1969,6 +1972,7 @@ export function MapAnalyticsWorkspace({
           groupWorkspaces: draftSizeGroupWorkspaces,
           mapLayers: draftSizeMapLayers,
           mapName: draftSizeMapName,
+          mapViewType: draftSizeMapViewType,
           series: draftSizeSeries,
           seriesPanelCollapsed: draftSizeSeriesPanelCollapsed,
           tableBinFiltersByPresetId: draftSizeTableBinFiltersByPresetId,
@@ -1989,6 +1993,7 @@ export function MapAnalyticsWorkspace({
       draftSizeGroupWorkspaces,
       draftSizeMapLayers,
       draftSizeMapName,
+      draftSizeMapViewType,
       draftSizeSeries,
       draftSizeSeriesPanelCollapsed,
       draftSizeTableBinFiltersByPresetId,
@@ -2000,10 +2005,15 @@ export function MapAnalyticsWorkspace({
   );
 
   const {
-    data: geoJsonData,
+    data: rawGeoJsonData,
     isLoading: isGeoJsonLoading,
     error: geoJsonError,
   } = useGeoJsonData(mapViewType);
+
+  const geoJsonData = useMemo(
+    () => adaptMapBoundaryData(rawGeoJsonData, mapViewType),
+    [rawGeoJsonData, mapViewType],
+  );
 
   const { data: countyGeoJsonData } = useGeoJsonData('County', {
     enabled: mapViewType === 'UAT' && mapState.mapLayers.countyBoundaries,
@@ -3473,6 +3483,16 @@ export function MapAnalyticsWorkspace({
       <AdvancedMapAnalyticsConfigPanel
         collapsed={Boolean(mapState.configPanelCollapsed)}
         countyBoundariesEnabled={mapState.mapLayers.countyBoundaries}
+        mapViewType={mapViewType}
+        onMapViewTypeChange={mapViewTypeOverride === undefined && !isReadOnly ? (next) => {
+          if (next === mapViewType) return;
+          if (mapState.groupWorkspaces.some(workspace => workspace.groups.length > 0)
+            || mapState.series.some(series => series.type === 'uploaded-map-dataset')) {
+            toast.info(t`This map has groups or uploaded data tied to its boundaries. Create a new map to use different boundaries.`);
+            return;
+          }
+          updateState(draft => { draft.mapViewType = next; });
+        } : undefined}
         warningCount={combinedWarnings.length}
         readOnly={isReadOnly}
         onToggleCollapsed={toggleConfigPanelCollapsed}
