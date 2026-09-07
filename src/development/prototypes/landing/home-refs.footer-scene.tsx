@@ -88,7 +88,7 @@ const LAYERS = {
  * way to slow the sky down without changing which cloud is nearest.
  */
 const CLOUD_LIFT_PX = 32
-const DRIFT_SCALE = 1.5
+const DRIFT_SCALE = 2.5
 
 type CloudLayer = { w: number; h: number; bottom: number; seconds: number }
 
