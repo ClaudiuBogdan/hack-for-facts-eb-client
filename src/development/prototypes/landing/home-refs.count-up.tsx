@@ -52,9 +52,6 @@ const DURATION_MS = 1100
 /** Matches the scramble: 25 updates a second already blur together. */
 const TICK_MS = 40
 
-/** The isotropic fallback for the variant that keeps CSS `blur()`. */
-const MAX_BLUR_PX = 4.5
-
 /**
  * The band of digit speeds the smear spreads itself across, in turnovers per
  * second: below the first a column is drawn sharp, above the second it is as
@@ -100,7 +97,7 @@ type Job = {
   readonly target: number
   readonly digits: number
   readonly start: number
-  /** The per-character slots, in document order. Empty on the CSS-blur variant. */
+  /** The per-character slots, in document order. */
   readonly slots: readonly HTMLElement[]
 }
 
@@ -182,15 +179,7 @@ function tick(now: number) {
         running.delete(job)
         continue
       }
-      const text = formatValue(job.target * eased(progress), job.digits)
-      if (job.slots.length > 0) {
-        paintSlots(job, text, unitsPerSecond(job.target, progress))
-      } else {
-        // No slots: the variant that keeps CSS `blur()`, which has no
-        // directional form and no way to differ per digit.
-        job.element.textContent = text
-        job.element.style.filter = `blur(${(MAX_BLUR_PX * (1 - progress) ** 2).toFixed(2)}px)`
-      }
+      paintSlots(job, formatValue(job.target * eased(progress), job.digits), unitsPerSecond(job.target, progress))
     }
   }
   if (running.size > 0) frame = requestAnimationFrame(tick)
@@ -206,18 +195,13 @@ function tick(now: number) {
  */
 function settle(job: Job) {
   const text = formatValue(job.target, job.digits)
-  if (job.slots.length > 0) {
-    for (let j = 0; j < job.slots.length; j += 1) {
-      const slot = job.slots[job.slots.length - 1 - j]
-      const index = text.length - 1 - j
-      slot.textContent = index >= 0 ? text[index] : ''
-      slot.style.removeProperty('filter')
-      delete slot.dataset.level
-    }
-  } else {
-    job.element.textContent = text
+  for (let j = 0; j < job.slots.length; j += 1) {
+    const slot = job.slots[job.slots.length - 1 - j]
+    const index = text.length - 1 - j
+    slot.textContent = index >= 0 ? text[index] : ''
+    slot.style.removeProperty('filter')
+    delete slot.dataset.level
   }
-  job.element.style.removeProperty('filter')
   job.element.style.removeProperty('min-width')
   job.element.style.removeProperty('display')
   job.element.style.removeProperty('text-align')
@@ -327,15 +311,9 @@ export function SmearFilters() {
 export function CountUpValue({
   value,
   digits,
-  smear = false,
 }: {
   readonly value: number
   readonly digits: number
-  /**
-   * Smear each digit by its own rate of change, rather than the whole figure by
-   * CSS `blur()`, which has no directional form and cannot differ per digit.
-   */
-  readonly smear?: boolean
 }) {
   const text = formatValue(value, digits)
   const key = useId()
@@ -348,13 +326,11 @@ export function CountUpValue({
          * costs nothing at trigger time and a reader without JavaScript sees
          * exactly the same number — just spelled one span per character.
          */}
-        {smear
-          ? Array.from(text).map((character, index) => (
-              <span data-slot="" key={`${key}-${index}`}>
-                {character}
-              </span>
-            ))
-          : text}
+        {Array.from(text).map((character, index) => (
+          <span data-slot="" key={`${key}-${index}`}>
+            {character}
+          </span>
+        ))}
       </span>
     </>
   )

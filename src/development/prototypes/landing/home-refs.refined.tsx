@@ -608,7 +608,7 @@ function startArrivalEffects(block: Element, delay: number) {
   countUpWithin(block, delay)
 }
 
-function RefinedLanding({ smear = false }: { readonly smear?: boolean }) {
+function RefinedLanding() {
   const { groups, coverage } = getPlatformCoverage()
   const heroRef = useFieldMotion()
   // The light measures the page it runs down, so it takes the root rather than
@@ -629,7 +629,7 @@ function RefinedLanding({ smear = false }: { readonly smear?: boolean }) {
     <div ref={rootRef} className="w-full bg-background" data-dev-marker={PROTOTYPE_MARKER}>
       <ScrollLightStyles />
       <RevealStyles />
-      {smear ? <SmearFilters /> : null}
+      <SmearFilters />
       <ScrollLight />
       {/* Hero — open band. */}
       {/* The hero does *not* clip. It used to, and the search dropdown paid for
@@ -791,7 +791,7 @@ function RefinedLanding({ smear = false }: { readonly smear?: boolean }) {
                 )}
               >
                 <dd className="order-1 flex items-baseline gap-1.5 text-3xl font-semibold tabular-nums tracking-tight text-foreground sm:text-4xl">
-                  <CountUpValue value={fact.value} digits={fact.digits} smear={smear} />
+                  <CountUpValue value={fact.value} digits={fact.digits} />
                   {/* The unit never breaks across lines — 'mld.' alone on one
                       line and 'lei' on the next reads as two facts. */}
                   <span className="shrink-0 whitespace-nowrap text-sm font-medium tracking-normal text-muted-foreground">
@@ -921,11 +921,4 @@ function RefinedLanding({ smear = false }: { readonly smear?: boolean }) {
  * `docs/design/landing-search-comparison.md` so neither gets reopened from
  * scratch.
  */
-export const LandingRefs = () => <RefinedLanding />
-
-/**
- * The same landing with the directional smear on the counting figures instead
- * of CSS `blur()`. Kept beside it only long enough to choose between them; the
- * loser goes, and the comparison stays in `docs/design/landing-reveal.md`.
- */
-export const LandingRefsSmear = () => <RefinedLanding smear />
+export const LandingRefs = RefinedLanding
