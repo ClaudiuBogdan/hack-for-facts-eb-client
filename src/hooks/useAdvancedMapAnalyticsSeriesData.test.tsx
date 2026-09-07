@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 
-import { useAdvancedMapAnalyticsSeriesData } from '@/hooks/useAdvancedMapAnalyticsSeriesData';
+import { useAdvancedMapAnalyticsSeriesData, advancedMapAnalyticsSeriesDataQueryOptions } from '@/hooks/useAdvancedMapAnalyticsSeriesData';
 import {
   createDefaultAdvancedMapAnalyticsSeries,
   createDefaultAdvancedMapAnalyticsStatsValueFilterRule,
@@ -140,6 +140,40 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
 
     expect(fetchGroupedSeriesDataMock).not.toHaveBeenCalled();
     expect(result.current.valuesBySeriesId.get(baseSeries.id)?.get('1001')).toBe("10");
+  });
+
+  it('replaces snapshots without allowing a live observer to overwrite them', async () => {
+    const series = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    const response = (value: number) => makeGroupedResponse({
+      series: [{ id: series.id }],
+      rows: [{ series_id: series.id, siruta_code: '1001', value }],
+    });
+    const common = { series: [series], defaultCurrency: 'RON' as const, defaultInflationAdjusted: false };
+    const wrapper = createWrapper();
+    const snapshot = renderHook(({ value }) => useAdvancedMapAnalyticsSeriesData({
+      ...common,
+      bundledGroupedSeriesData: response(value),
+      bundledRemoteBaseSeriesHash: getRemoteGroupedSeriesHash([series]),
+    }), { wrapper, initialProps: { value: 10 } });
+    expect(snapshot.result.current.valuesBySeriesId.get(series.id)?.get('1001')).toBe('10');
+    snapshot.rerender({ value: 20 });
+    expect(snapshot.result.current.valuesBySeriesId.get(series.id)?.get('1001')).toBe('20');
+    fetchGroupedSeriesDataMock.mockResolvedValue(response(30));
+    const live = renderHook(() => useAdvancedMapAnalyticsSeriesData(common), { wrapper });
+    await waitFor(() => expect(live.result.current.valuesBySeriesId.get(series.id)?.get('1001')).toBe('30'));
+    expect(snapshot.result.current.valuesBySeriesId.get(series.id)?.get('1001')).toBe('20');
+  });
+
+  it('ignores malformed saved bundles and reads validated live data', async () => {
+    const series = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    const response = makeGroupedResponse({ series: [{ id: series.id }], rows: [{ series_id: series.id, siruta_code: '1001', value: 30 }] });
+    fetchGroupedSeriesDataMock.mockResolvedValue(response);
+    const { result } = renderHook(() => useAdvancedMapAnalyticsSeriesData({
+      series: [series], defaultCurrency: 'RON', defaultInflationAdjusted: false,
+      bundledGroupedSeriesData: { ...response, payload: undefined } as unknown as typeof response,
+      bundledRemoteBaseSeriesHash: getRemoteGroupedSeriesHash([series]),
+    }), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.valuesBySeriesId.get(series.id)?.get('1001')).toBe('30'));
   });
 
   it('falls back to grouped-series endpoint when bundled hash does not match current series hash', async () => {
@@ -1029,5 +1063,30 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
 
     expect(fetchGroupedSeriesDataMock).toHaveBeenCalledTimes(1);
     expect(result.current.valuesBySeriesId.get(baseSeries.id)?.size).toBe(2);
+  });
+});
+
+
+describe('native map request identity', () => {
+  it('isolates county, UAT and account-specific responses', () => {
+    const series = [createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly')];
+    const uat = advancedMapAnalyticsSeriesDataQueryOptions({series, granularity: 'UAT', authScope: 'owner'});
+    const county = advancedMapAnalyticsSeriesDataQueryOptions({series, granularity: 'County', authScope: 'owner'});
+    const other = advancedMapAnalyticsSeriesDataQueryOptions({series, granularity: 'County', authScope: 'other'});
+    expect(uat.queryKey).not.toEqual(county.queryKey);
+    expect(county.queryKey).not.toEqual(other.queryKey);
+    expect(county.staleTime).toBe(0);
+    expect(county.gcTime).toBe(0);
+  });
+  it('rejects UAT snapshots and fetches county values through the hook', async () => {
+    const series = [createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly')];
+    const bundle = makeGroupedResponse({ series, rows: [{ series_id: series[0].id, siruta_code: '54975', value: 10 }] });
+    const county = { ...makeGroupedResponse({ series, rows: [{ series_id: series[0].id, siruta_code: 'CJ', value: 20 }] }), manifest: { ...bundle.manifest, granularity: 'County' as const } };
+    fetchGroupedSeriesDataMock.mockReset().mockResolvedValue(county);
+    const { result } = renderHook(() => useAdvancedMapAnalyticsSeriesData({ series, granularity: 'County', defaultCurrency: 'RON', defaultInflationAdjusted: false, bundledGroupedSeriesData: bundle, bundledRemoteBaseSeriesHash: getRemoteGroupedSeriesHash(series) }), { wrapper: createWrapper() });
+    expect(result.current.valuesBySeriesId.get(series[0].id)?.get('54975')).toBeUndefined();
+    await waitFor(() => expect(result.current.valuesBySeriesId.get(series[0].id)?.get('CJ')).toBe('20'));
+    expect(fetchGroupedSeriesDataMock).toHaveBeenCalledWith(expect.objectContaining({ granularity: 'County' }));
+    expect(result.current.valuesBySeriesId.get(series[0].id)?.get('54975')).toBeUndefined();
   });
 });

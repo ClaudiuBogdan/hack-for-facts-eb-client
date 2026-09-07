@@ -16,18 +16,21 @@ import {
 } from '@/lib/map-series/grouped-series-request';
 import { applyAdvancedMapAnalyticsValueFilters } from '@/lib/map-series/value-filters';
 import { projectGroupedValuesToSiruta } from '@/lib/map-series/grouping';
+import { GroupedSeriesDataResponseSchema } from '@/lib/map-series/interfaces';
 import type {
   GroupedSeriesDataResponse,
   MapSeriesDomainCache,
   MapSeriesVectorCache,
   MapSeriesWarning,
 } from '@/lib/map-series/interfaces';
-import { convertDaysToMs } from '@/lib/utils';
+import { buildFinancialMapGroups, matchesFinancialMapGroups } from '@/lib/map-series/financial-groups';
+import { useOptionalUser } from '@/lib/auth';
 
 const DRAFT_SIZE_WARNING_THRESHOLD = 1800;
 const isBrowser = typeof window !== 'undefined';
 
 interface UseAdvancedMapAnalyticsSeriesDataParams {
+  granularity?: 'UAT' | 'County';
   series: MapSupportedSeries[];
   groupWorkspaces?: MapGroupWorkspace[];
   activeGroupWorkspaceId?: string;
@@ -62,6 +65,7 @@ interface AdvancedMapAnalyticsSeriesDataResult {
 export function useAdvancedMapAnalyticsSeriesData(
   params: UseAdvancedMapAnalyticsSeriesDataParams
 ): AdvancedMapAnalyticsSeriesDataResult {
+  const user = useOptionalUser();
   const normalizedSeries = useMemo(
     () => params.series.map((series) => normalizeSeriesDefaults(series)),
     [params.series]
@@ -108,21 +112,31 @@ export function useAdvancedMapAnalyticsSeriesData(
     [normalizedSeries]
   );
   const normalizedBaseSeries = remoteGroupedSeriesState.baseSeries;
+  const financialGroups = useMemo(() => buildFinancialMapGroups(normalizedSeries, params.groupWorkspaces), [normalizedSeries, params.groupWorkspaces]);
+  // Snapshots are immutable inputs, not seeds for the shared live-query cache.
+  const bundle = useMemo(() => {
+    const parsed = GroupedSeriesDataResponseSchema.safeParse(params.bundledGroupedSeriesData);
+    return parsed.success ? parsed.data : undefined;
+  }, [params.bundledGroupedSeriesData]);
+  const compatibleBundle = bundle !== undefined &&
+    matchesFinancialMapGroups(financialGroups, bundle.groupValues) &&
+    params.bundledRemoteBaseSeriesHash === remoteGroupedSeriesState.remoteBaseSeriesHash &&
+    bundle.manifest.granularity === (params.granularity ?? 'UAT') &&
+    !remoteGroupedSeriesState.remoteBaseSeries.some(series => series.type === 'uploaded-map-dataset')
+      ? bundle : undefined;
 
   const groupedDataQuery = useQuery<GroupedSeriesDataResponse, Error>({
     ...advancedMapAnalyticsSeriesDataQueryOptions({
       series: normalizedSeries,
-      bundledGroupedSeriesData: params.bundledGroupedSeriesData,
-      bundledRemoteBaseSeriesHash: params.bundledRemoteBaseSeriesHash,
+      granularity: params.granularity ?? 'UAT',
+      authScope: user?.id ?? 'anonymous',
+      groupWorkspaces: params.groupWorkspaces,
     }),
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    refetchOnMount: false,
-    enabled: isBrowser && (params.enabled ?? true),
+    enabled: compatibleBundle === undefined && isBrowser && (params.enabled ?? true),
   });
 
   const calculated = useMemo(() => {
-    const groupedResponse = groupedDataQuery.data;
+    const groupedResponse = compatibleBundle ?? groupedDataQuery.data;
     const baseVectors: MapSeriesVectorCache = new Map();
     const baseUnits = new Map<string, string | undefined>();
     const warnings: MapSeriesWarning[] = [];
@@ -204,6 +218,7 @@ export function useAdvancedMapAnalyticsSeriesData(
       series: normalizedSeries,
       groupWorkspaces: params.groupWorkspaces,
       baseValuesBySeriesId: baseVectors,
+      financialGroupValues: groupedResponse?.groupValues,
       unitsBySeriesId: baseUnits,
     });
 
@@ -257,6 +272,7 @@ export function useAdvancedMapAnalyticsSeriesData(
     };
   }, [
     groupedDataQuery.data,
+    compatibleBundle,
     params.localUnitsBySeriesId,
     params.localValuesBySeriesId,
     params.groupWorkspaces,
@@ -285,16 +301,17 @@ export function useAdvancedMapAnalyticsSeriesData(
     activeCanonicalValues: resolvedActiveSeriesId
       ? calculated.valuesBySeriesId.get(resolvedActiveSeriesId)
       : undefined,
-    isLoading: groupedDataQuery.isLoading,
-    isFetching: groupedDataQuery.isFetching,
-    error: groupedDataQuery.error ?? null,
+    isLoading: compatibleBundle === undefined && groupedDataQuery.isLoading,
+    isFetching: compatibleBundle === undefined && groupedDataQuery.isFetching,
+    error: compatibleBundle === undefined ? groupedDataQuery.error ?? null : null,
   };
 }
 
 export function advancedMapAnalyticsSeriesDataQueryOptions(params: {
+  granularity?: 'UAT' | 'County';
+  authScope?: string;
   series: MapSupportedSeries[];
-  bundledGroupedSeriesData?: GroupedSeriesDataResponse;
-  bundledRemoteBaseSeriesHash?: string;
+  groupWorkspaces?: MapGroupWorkspace[];
 }) {
   const normalizedSeries = params.series.map((series) =>
     normalizeSeriesDefaults(series)
@@ -302,21 +319,17 @@ export function advancedMapAnalyticsSeriesDataQueryOptions(params: {
   const remoteGroupedSeriesState = buildRemoteGroupedSeriesState(normalizedSeries);
   const normalizedRemoteBaseSeries = remoteGroupedSeriesState.remoteBaseSeries;
   const baseSeriesHash = remoteGroupedSeriesState.remoteBaseSeriesHash;
-  const useBundledGroupedSeriesData =
-    params.bundledGroupedSeriesData !== undefined &&
-    params.bundledRemoteBaseSeriesHash === baseSeriesHash;
-
+  const granularity = params.granularity ?? 'UAT';
+  const groups = buildFinancialMapGroups(normalizedSeries, params.groupWorkspaces);
   return queryOptions<GroupedSeriesDataResponse, Error>({
-    queryKey: ['advanced-map-analytics-series-data', baseSeriesHash],
-    initialData: useBundledGroupedSeriesData ? params.bundledGroupedSeriesData : undefined,
-    initialDataUpdatedAt: useBundledGroupedSeriesData ? Date.now() : undefined,
+    queryKey: ['advanced-map-analytics-series-data', granularity, params.authScope ?? 'anonymous', baseSeriesHash, JSON.stringify(groups)],
     queryFn: async () => {
       if (normalizedRemoteBaseSeries.length === 0) {
         return {
           manifest: {
             generated_at: new Date().toISOString(),
             format: 'wide_matrix_v1',
-            granularity: 'UAT',
+            granularity,
             series: [],
           },
           payload: {
@@ -329,12 +342,14 @@ export function advancedMapAnalyticsSeriesDataQueryOptions(params: {
       }
 
       return fetchGroupedSeriesData({
-        granularity: 'UAT',
+        granularity,
+        ...(groups.length === 0 ? {} : { groups }),
         series: normalizedRemoteBaseSeries.map((series) => serializeRemoteFetchSeriesForRequest(series)) as typeof normalizedRemoteBaseSeries,
       });
     },
-    staleTime: convertDaysToMs(1),
-    gcTime: convertDaysToMs(3),
+    // Native values are publication-dependent; do not retain private or stale map results.
+    staleTime: 0,
+    gcTime: 0,
   });
 }
 

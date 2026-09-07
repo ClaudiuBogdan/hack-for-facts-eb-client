@@ -1,3 +1,4 @@
+import { useOptionalUser } from '@/lib/auth';
 import { queryOptions, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
 import {
@@ -66,7 +67,7 @@ function normalizePublicId(value: string | null | undefined): string | undefined
 }
 
 function resolveCachedMapPublicId(queryClient: QueryClient, mapId: string): string | undefined {
-  const cachedMap = queryClient.getQueryData<AdvancedMapAnalyticsMapDetail>(advancedMapAnalyticsKeys.map(mapId));
+  const cachedMap = queryClient.getQueriesData<AdvancedMapAnalyticsMapDetail>({ queryKey: advancedMapAnalyticsKeys.map(mapId) }).find(([, value]) => value?.publicId)?.[1];
   return normalizePublicId(cachedMap?.publicId);
 }
 
@@ -108,19 +109,24 @@ function removePublicQueries(queryClient: QueryClient, publicIds: string[]): voi
 }
 
 export function useAdvancedMapAnalyticsMapsQuery() {
+  const user = useOptionalUser();
   return useQuery<AdvancedMapAnalyticsMapSummary[], AdvancedMapAnalyticsApiError>({
-    queryKey: advancedMapAnalyticsKeys.maps,
+    queryKey: [...advancedMapAnalyticsKeys.maps, user?.id ?? 'anonymous'],
+    enabled: Boolean(user),
+    gcTime: 0,
     queryFn: async () => listAdvancedMapAnalyticsMaps(),
     staleTime: 60_000,
   });
 }
 
 export function useAdvancedMapAnalyticsMapQuery(mapId: string, enabled = true) {
+  const user = useOptionalUser();
   return useQuery<AdvancedMapAnalyticsMapDetail, AdvancedMapAnalyticsApiError>({
-    queryKey: advancedMapAnalyticsKeys.map(mapId),
+    queryKey: [...advancedMapAnalyticsKeys.map(mapId), user?.id ?? 'anonymous'],
+    gcTime: 0,
     queryFn: async () => getAdvancedMapAnalyticsMap(mapId),
-    enabled,
-    staleTime: 30_000,
+    enabled: enabled && Boolean(user),
+    staleTime: 0,
   });
 }
 
@@ -130,11 +136,13 @@ export function useAdvancedMapAnalyticsSnapshotsQuery(
   pageSize = 20,
   enabled = true
 ) {
+  const user = useOptionalUser();
   return useQuery<AdvancedMapAnalyticsSnapshotsList, AdvancedMapAnalyticsApiError>({
-    queryKey: advancedMapAnalyticsKeys.snapshots(mapId, page, pageSize),
+    queryKey: [...advancedMapAnalyticsKeys.snapshots(mapId, page, pageSize), user?.id ?? 'anonymous'],
+    gcTime: 0,
     queryFn: async () => listAdvancedMapAnalyticsSnapshots(mapId, { page, pageSize }),
-    enabled,
-    staleTime: 30_000,
+    enabled: enabled && Boolean(user),
+    staleTime: 0,
   });
 }
 
@@ -186,7 +194,7 @@ export function useUpdateAdvancedMapAnalyticsMapMutation() {
       }),
     onSuccess: async (updatedMap) => {
       const cachedPublicId = resolveCachedMapPublicId(queryClient, updatedMap.id);
-      queryClient.setQueryData(advancedMapAnalyticsKeys.map(updatedMap.id), updatedMap);
+      // Refetch authenticated detail; mutation responses are not shared account cache seeds.
       const publicIdsToInvalidate = uniquePublicIds(cachedPublicId, updatedMap.publicId);
 
       await Promise.all([

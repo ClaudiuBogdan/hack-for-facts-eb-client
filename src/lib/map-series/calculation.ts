@@ -1,3 +1,4 @@
+import { isFinancialPerCapita } from './financial-groups';
 import { MapDecimal, readMapDecimal } from './decimal';
 import type { Calculation, Operand } from '@/schemas/charts';
 import type { MapGroupWorkspace, MapSupportedSeries } from '@/schemas/advanced-map-analytics';
@@ -9,6 +10,7 @@ import {
   getUatDomain,
 } from '@/lib/map-series/grouping';
 import type {
+  FinancialMapGroupValue,
   MapSeriesCalculationResult,
   MapSeriesDomain,
   MapSeriesVector,
@@ -22,6 +24,7 @@ interface CalculateMapSeriesValuesParams {
   groupWorkspaces?: MapGroupWorkspace[];
   unitsBySeriesId?: Map<string, string | undefined>;
   sparseCoverageThreshold?: number;
+  financialGroupValues?: FinancialMapGroupValue[];
 }
 
 const DEFAULT_SPARSE_COVERAGE_THRESHOLD = 0.4;
@@ -46,6 +49,7 @@ export function calculateMapSeriesValues(
       warning.seriesId ?? '',
       warning.dependencySeriesId ?? '',
       warning.sirutaCode ?? '',
+      String(warning.details?.groupId ?? ''),
       warning.message,
     ].join('::');
     if (warningDedup.has(dedupeKey)) {
@@ -87,6 +91,15 @@ export function calculateMapSeriesValues(
     }
   }
 
+  const containsPerCapita = (id: string, seen = new Set<string>()): boolean => {
+    if (seen.has(id)) return false;
+    seen.add(id);
+    const source = seriesById.get(id);
+    if (isFinancialPerCapita(source)) return true;
+    if (source?.type === 'aggregated-series-calculation') return collectReferencedSeriesIds(source.calculation).some(child => containsPerCapita(child, seen));
+    if (source?.type === 'map-grouped-value-series') return containsPerCapita(source.sourceSeriesId, seen);
+    return false;
+  };
   const visiting = new Set<string>();
 
   const evaluateSeries = (seriesId: string): MapSeriesVector | undefined => {
@@ -168,11 +181,21 @@ export function calculateMapSeriesValues(
         return emptyVector;
       }
 
-      const vector = evaluateGroupedValueSeries({
-        series,
-        grouping,
-        sourceValues: sourceVector,
-      });
+      let vector: MapSeriesVector;
+      if (series.aggregation === 'sum' && containsPerCapita(series.sourceSeriesId)) {
+        const direct = isFinancialPerCapita(seriesById.get(series.sourceSeriesId));
+        vector = new Map(grouping.groups.map(group => {
+          const value = direct ? params.financialGroupValues?.find(cell => cell.groupWorkspaceId === grouping.id && cell.groupId === group.id && cell.sourceSeriesId === series.sourceSeriesId) : undefined;
+          if (value === undefined || value.value === null) pushWarning({
+            type: 'missing_population', seriesId: series.id,
+            message: direct ? 'This group requires complete annual population coverage.' : 'Summing a calculated per-capita series is unavailable; group its financial source first.',
+            details: { groupId: group.id, reason: value?.unavailableReason, missingYears: value?.missingYears },
+          });
+          return [group.id, value?.value ?? undefined];
+        }));
+      } else {
+        vector = evaluateGroupedValueSeries({ series, grouping, sourceValues: sourceVector });
+      }
       const domain = getGroupedSeriesDomain(series);
       valuesBySeriesId.set(series.id, vector);
       domainsBySeriesId.set(series.id, domain);

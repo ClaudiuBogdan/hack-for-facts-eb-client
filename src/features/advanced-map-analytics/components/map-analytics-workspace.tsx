@@ -2188,6 +2188,7 @@ export function MapAnalyticsWorkspace({
     isLoading,
     error,
   } = useAdvancedMapAnalyticsSeriesData({
+    granularity: mapViewType,
     series: mapState.series,
     groupWorkspaces: mapState.groupWorkspaces,
     activeGroupWorkspaceId: mapState.activeGroupWorkspaceId,
@@ -4059,6 +4060,7 @@ export function MapAnalyticsWorkspace({
       </main>
 
       <AdvancedMapAnalyticsSeriesEditorModal
+        granularity={mapViewType}
         open={!isReadOnly && editorState != null && modalSeries != null}
         mode={editorState?.mode ?? 'edit'}
         series={modalSeries}

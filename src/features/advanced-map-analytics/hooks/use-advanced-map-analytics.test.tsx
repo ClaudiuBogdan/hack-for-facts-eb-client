@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 
@@ -10,11 +10,15 @@ import type {
 } from '@/features/advanced-map-analytics/api/schemas';
 import {
   advancedMapAnalyticsKeys,
+  useAdvancedMapAnalyticsMapQuery,
   useCreateAdvancedMapAnalyticsMapMutation,
   useDeleteAdvancedMapAnalyticsMapMutation,
   useSaveAdvancedMapAnalyticsSnapshotMutation,
   useUpdateAdvancedMapAnalyticsMapMutation,
 } from './use-advanced-map-analytics';
+
+const authState = vi.hoisted(() => ({ user: { id: 'owner' } as { id: string } | null }));
+vi.mock('@/lib/auth', () => ({ useOptionalUser: () => authState.user }));
 
 const createAdvancedMapAnalyticsMapMock = vi.fn();
 const createAdvancedMapAnalyticsSnapshotMock = vi.fn();
@@ -279,5 +283,24 @@ describe('use-advanced-map-analytics public cache key behavior', () => {
     const calls = removeQueriesSpy.mock.calls as Array<[args: { queryKey: readonly unknown[] }]>;
     expect(hasQueryKeyCall(calls, ['advanced-map-analytics', 'public'])).toBe(true);
     expect(hasQueryKeyCall(calls, advancedMapAnalyticsKeys.public('ama_map_1'))).toBe(false);
+  });
+});
+
+describe('private map account isolation', () => {
+  it('does not expose the previous account detail during a switch or sign-out', async () => {
+    const queryClient = createQueryClient();
+    authState.user = { id: 'owner' };
+    getAdvancedMapAnalyticsMapMock.mockResolvedValueOnce(createMapDetail());
+    const { result, rerender } = renderHook(() => useAdvancedMapAnalyticsMapQuery('ama_map_1'), { wrapper: createWrapper(queryClient) });
+    await waitFor(() => expect(result.current.data?.id).toBe('ama_map_1'));
+    getAdvancedMapAnalyticsMapMock.mockReturnValue(new Promise(() => {}));
+    authState.user = { id: 'other' };
+    rerender();
+    expect(result.current.data).toBeUndefined();
+    authState.user = null;
+    rerender();
+    expect(result.current.data).toBeUndefined();
+    expect(result.current.fetchStatus).toBe('idle');
+    authState.user = { id: 'owner' };
   });
 });

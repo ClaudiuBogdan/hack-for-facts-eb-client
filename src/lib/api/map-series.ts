@@ -1,3 +1,4 @@
+import { matchesFinancialMapGroups } from '@/lib/map-series/financial-groups';
 import { createLogger } from '../logger';
 import { getAuthToken } from '../auth';
 import { getApiBaseUrl } from '@/config/env';
@@ -89,6 +90,7 @@ function buildRequestBody(request: GroupedSeriesDataRequest): GroupedSeriesApiRe
   return {
     granularity: request.granularity,
     series: request.series,
+    ...(request.groups === undefined ? {} : { groups: request.groups }),
     payload: {
       format: 'csv_wide_matrix_v1',
       compression: 'none',
@@ -148,6 +150,12 @@ export async function fetchGroupedSeriesData(
       );
     }
 
+    if (validationResult.data.manifest.granularity !== request.granularity) {
+      throw new Error('Advanced map analytics returned values for different map boundaries.');
+    }
+    if (!matchesFinancialMapGroups(request.groups ?? [], validationResult.data.groupValues)) {
+      throw new Error('Advanced map analytics returned incomplete or mismatched group membership.');
+    }
     return validationResult.data;
   } catch (error) {
     logger.error('Failed to fetch grouped-series series data', {

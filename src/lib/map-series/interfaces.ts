@@ -62,7 +62,7 @@ export interface GroupedSeriesManifestEntry {
 export interface GroupedSeriesManifest {
   generated_at: string;
   format: 'wide_matrix_v1';
-  granularity: 'UAT';
+  granularity: 'UAT' | 'County';
   series: GroupedSeriesManifestEntry[];
 }
 
@@ -72,14 +72,32 @@ export interface GroupedSeriesPayload {
   data: string;
 }
 
+export interface FinancialMapGroupRequest {
+  groupWorkspaceId: string;
+  groupId: string;
+  sourceSeriesId: string;
+  memberTerritoryCodes: string[];
+}
+export interface FinancialMapGroupValue {
+  memberTerritoryCodes: string[];
+  groupWorkspaceId: string;
+  groupId: string;
+  sourceSeriesId: string;
+  value: string | null;
+  unit: string;
+  missingYears: number[];
+  unavailableReason?: 'source_filtered_member' | 'source_unavailable_member' | 'normalization_unavailable';
+}
 export interface GroupedSeriesDataResponse {
+  groupValues?: FinancialMapGroupValue[];
   manifest: GroupedSeriesManifest;
   payload: GroupedSeriesPayload;
   warnings?: MapSeriesWarning[];
 }
 
 export interface GroupedSeriesDataRequest {
-  granularity: 'UAT';
+  groups?: FinancialMapGroupRequest[];
+  granularity: 'UAT' | 'County';
   series: MapBaseSeries[];
 }
 
@@ -127,7 +145,7 @@ export const GroupedSeriesManifestEntrySchema = z.object({
 export const GroupedSeriesManifestSchema = z.object({
   generated_at: z.string(),
   format: z.literal('wide_matrix_v1'),
-  granularity: z.literal('UAT'),
+  granularity: z.enum(['UAT', 'County']),
   series: z.array(GroupedSeriesManifestEntrySchema),
 });
 
@@ -138,6 +156,12 @@ export const GroupedSeriesPayloadSchema = z.object({
 });
 
 export const GroupedSeriesDataResponseSchema = z.object({
+  groupValues: z.array(z.object({
+    memberTerritoryCodes: z.array(z.string()),
+    groupWorkspaceId: z.string(), groupId: z.string(), sourceSeriesId: z.string(),
+    value: z.string().regex(/^-?\d+(?:\.\d+)?$/).nullable(), unit: z.string(), missingYears: z.array(z.number().int()),
+    unavailableReason: z.enum(['source_filtered_member', 'source_unavailable_member', 'normalization_unavailable']).optional(),
+  })).optional(),
   manifest: GroupedSeriesManifestSchema,
   payload: GroupedSeriesPayloadSchema,
   warnings: z.array(MapSeriesWarningSchema).optional(),

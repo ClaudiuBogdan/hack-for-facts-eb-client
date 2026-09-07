@@ -63,6 +63,7 @@ const NO_FILTER_SELECTION_LABEL = msg`none`;
 const GROUPED_SERIES_EMPTY_SELECT_VALUE = '__none__';
 
 interface AdvancedMapAnalyticsSeriesEditorModalProps {
+  granularity?: 'UAT' | 'County';
   open: boolean;
   mode: 'add' | 'edit';
   series?: MapSupportedSeries;
@@ -81,6 +82,7 @@ interface AdvancedMapAnalyticsSeriesEditorModalProps {
 }
 
 export function AdvancedMapAnalyticsSeriesEditorModal({
+  granularity = 'UAT',
   open,
   mode,
   series,
@@ -251,6 +253,7 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
           <div className="space-y-3">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider border-b border-border pb-2">{configurationTitle}</p>
             <SeriesConfigEditor
+              granularity={granularity}
               series={series}
               displayedSeriesType={displayedSeriesType}
               open={open}
@@ -301,6 +304,7 @@ function BufferedTextInput({
 }
 
 interface SeriesConfigEditorProps {
+  granularity: 'UAT' | 'County';
   open: boolean;
   series: MapSupportedSeries;
   displayedSeriesType: MapSupportedSeries['type'];
@@ -316,6 +320,7 @@ interface SeriesConfigEditorProps {
 }
 
 function SeriesConfigEditor({
+  granularity,
   open,
   series,
   displayedSeriesType,
@@ -414,10 +419,10 @@ function SeriesConfigEditor({
     mapPeriodSelection: true,
     series,
     datasetFilter: {
-      hasUatData: true,
+      ...(granularity === 'UAT' ? { hasUatData: true } : {}),
       hasSiruta: true,
     },
-    allowedTerritoryLevels: ['LAU'],
+    allowedTerritoryLevels: granularity === 'County' ? ['NUTS3'] : ['LAU'],
     autoSelectTerritoryDefaults: false,
     autoReapplyTerritoryOnEmpty: false,
     applyPatch: (patch) => {
