@@ -17,7 +17,7 @@ import { scraperDatasetCatalog } from '@/lib/scraper-references'
 import { MonoLabel } from './home-refs.mono-label'
 import { RevealStyles, useRevealOnView } from './home-refs.reveal'
 import { ScrambleText, scrambleWithin, stopScrambling } from './home-refs.scramble'
-import { CountUpValue, countUpWithin, stopCounting } from './home-refs.count-up'
+import { CountUpValue, SmearFilters, countUpWithin, stopCounting } from './home-refs.count-up'
 import { NATIONAL_FACTS } from './home-refs.national-facts'
 import { PixelField } from './home-refs.pixel-art'
 import { FIELD_HOST_CLASS, FieldAnimationStyles } from './home-refs.field-animation'
@@ -629,6 +629,7 @@ function RefinedLanding({ smear = false }: { readonly smear?: boolean }) {
     <div ref={rootRef} className="w-full bg-background" data-dev-marker={PROTOTYPE_MARKER}>
       <ScrollLightStyles />
       <RevealStyles />
+      {smear ? <SmearFilters /> : null}
       <ScrollLight />
       {/* Hero — open band. */}
       {/* The hero does *not* clip. It used to, and the search dropdown paid for
