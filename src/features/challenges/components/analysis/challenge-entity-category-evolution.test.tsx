@@ -270,6 +270,7 @@ const DEFAULT_EVOLUTION_STATE = {
 
 function renderCategoryEvolution(
   props: {
+    readonly mainCreditorCui?: string
     readonly reportType?: 'PRINCIPAL_AGGREGATED' | 'DETAILED'
     readonly currentYear?: number
     readonly periodType?: 'YEAR' | 'QUARTER' | 'MONTH'
@@ -297,6 +298,7 @@ function renderCategoryEvolution(
       <ChallengeEntityCategoryEvolution
         locale="ro"
         entityCui="12345678"
+        mainCreditorCui={props.mainCreditorCui}
         lineItems={lineItems}
         currentYear={props.currentYear ?? 2025}
         reportType={props.reportType ?? 'PRINCIPAL_AGGREGATED'}
@@ -511,4 +513,15 @@ describe('ChallengeEntityCategoryEvolution', () => {
       '2025-04:5',
     )
   })
+})
+
+
+it('preserves the main creditor in every category evolution series', () => {
+  renderCategoryEvolution({ mainCreditorCui: '4305857' })
+  const { chart } = useChartDataMock.mock.lastCall?.[0] ?? {}
+  expect(chart.series.length).toBeGreaterThan(0)
+  for (const series of chart.series) {
+    expect(series.filter.main_creditor_cui).toBe('4305857')
+    expect(series.filter.entity_cuis).toEqual(['12345678'])
+  }
 })

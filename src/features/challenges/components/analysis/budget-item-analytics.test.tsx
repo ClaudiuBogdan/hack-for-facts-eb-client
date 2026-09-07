@@ -781,7 +781,7 @@ describe('BudgetItemAnalytics', () => {
       }
       | undefined
 
-    expect(handoffPayload?.mapState).toEqual(runtimeMapState)
+    expect(handoffPayload?.mapState).toEqual({ ...runtimeMapState, mapViewType: 'UAT' })
     expect(handoffPayload?.mapDescription).toContain(`**${seriesLabel}**`)
     expect(handoffPayload?.mapDescription).toContain('fn:65')
     expect(handoffPayload?.mapDescription).toContain('ec:10.01')
@@ -796,4 +796,17 @@ describe('BudgetItemAnalytics', () => {
       search: { cloneRef: 'clone_ref_1' },
     })
   })
+
+  it('preserves native County geometry when cloning analytics into the editor', () => {
+    useEntityDetailsMock.mockReturnValue({ data: {
+      cui: '2540929', entity_type: 'uat', is_territorial_executive: true,
+      uat: { level: 'county', county_code: 'VL' },
+    } })
+    render(<BudgetItemAnalytics {...defaultAnalyticsProps} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Open in map editor' }))
+    expect(createMapCloneHandoffMock).toHaveBeenCalledWith(expect.objectContaining({
+      mapState: expect.objectContaining({ mapViewType: 'County' }),
+    }))
+  })
+
 })

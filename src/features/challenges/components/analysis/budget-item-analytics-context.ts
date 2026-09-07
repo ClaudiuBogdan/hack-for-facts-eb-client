@@ -39,6 +39,8 @@ export type BudgetItemAnalyticsReportCopyVariant =
 
 export type BudgetItemAnalyticsPageContext = {
   readonly entityCui: string
+  readonly mainCreditorCui?: string
+  readonly supportsCommitments?: boolean
   readonly selectedYear: number
   readonly accountCategory: 'ch' | 'vn'
   readonly expenseType?: 'functionare' | 'dezvoltare'
@@ -354,6 +356,7 @@ export function buildBudgetItemAnalyticsFilters(
     executionChartFilter: {
       ...executionBaseFilter,
       entity_cuis: [context.entityCui],
+      ...(context.mainCreditorCui ? { main_creditor_cui: context.mainCreditorCui } : {}),
       report_period: executionChartPeriod,
     },
     executionMapFilter: {
@@ -363,6 +366,7 @@ export function buildBudgetItemAnalyticsFilters(
     commitmentsChartFilter: {
       ...commitmentsBaseFilter,
       entity_cuis: [context.entityCui],
+      ...(context.mainCreditorCui ? { main_creditor_cui: context.mainCreditorCui } : {}),
       report_period: commitmentsChartPeriod,
     },
     commitmentsMapFilter: {

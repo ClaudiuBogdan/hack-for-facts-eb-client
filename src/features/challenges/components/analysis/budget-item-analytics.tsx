@@ -1,3 +1,5 @@
+import { isCountyCouncilEntity } from '@/lib/entity-territory'
+import type { EntityDetailsData } from '@/lib/api/entities'
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { Link, useNavigate } from '@tanstack/react-router'
@@ -208,17 +210,8 @@ type BudgetItemAnalyticsSectionProps = {
   readonly context: BudgetItemAnalyticsResolvedContext
 }
 
-function getEntityMapViewType(
-  entity:
-    | {
-        readonly entity_type?: string | null
-      }
-    | null
-    | undefined,
-) {
-  return entity?.entity_type === 'admin_county_council'
-    ? 'County'
-    : 'UAT'
+function getEntityMapViewType(entity: EntityDetailsData | null | undefined) {
+  return isCountyCouncilEntity(entity) ? 'County' : 'UAT'
 }
 
 function toMapViewport(
@@ -441,7 +434,8 @@ function AnalyticsControls({ context }: BudgetItemAnalyticsSectionProps) {
     context.analyticsProps.context.reportCopyVariant,
   )
   const supportsCommitments =
-    context.analyticsProps.context.accountCategory === 'ch'
+    context.analyticsProps.context.accountCategory === 'ch' &&
+    context.analyticsProps.context.supportsCommitments !== false
   const canChangeReportType =
     context.analyticsProps.context.canChangeReportType !== false
   const canChangeNormalization =
@@ -888,7 +882,7 @@ function MapSection({ context }: BudgetItemAnalyticsSectionProps) {
 
   function handleOpenMapPage() {
     const cloneRef = createMapCloneHandoff({
-      mapState,
+      mapState: { ...mapState, mapViewType: entityMapViewType },
       mapDescription: context.mapDescription,
     })
 

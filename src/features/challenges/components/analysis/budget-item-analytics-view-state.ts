@@ -341,7 +341,7 @@ function getEffectiveTab(
   context: BudgetItemAnalyticsPageContext,
   analyticsView: BudgetItemAnalyticsViewState,
 ): BudgetItemAnalyticsTab {
-  if (context.accountCategory === 'vn') {
+  if (context.accountCategory === 'vn' || context.supportsCommitments === false) {
     return 'execution'
   }
 

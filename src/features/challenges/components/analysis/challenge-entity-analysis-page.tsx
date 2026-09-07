@@ -1,3 +1,4 @@
+import { isCountyCouncilEntity } from '@/lib/entity-territory'
 import { entityIdentityQueryOptions } from '@/lib/queries/entity-identity'
 import type { EntityInsSelectionInput } from '@/lib/ins/entity-source-search'
 import { supportsEntityPopulation } from '@/lib/entity-population'
@@ -1398,10 +1399,7 @@ export function ChallengeEntityAnalysisPage({
       ? entityDetailsQuery.data
       : null,
   )
-  const isCountyLevelMapEntity = Boolean(
-    entityDetailsQuery.data &&
-    entityDetailsQuery.data.entity_type === 'admin_county_council',
-  )
+  const isCountyLevelMapEntity = isCountyCouncilEntity(entityDetailsQuery.data)
   const isBucharestMunicipality = Boolean(
     entityDetailsQuery.data?.cui === '4267117',
   )
@@ -2008,6 +2006,8 @@ export function ChallengeEntityAnalysisPage({
       return {
         context: {
           entityCui,
+          mainCreditorCui: inferredMainCreditorCui,
+          supportsCommitments: !isRedesignOnlyApi,
           selectedYear,
           accountCategory: treemapAccountCategory,
           expenseType,
@@ -2020,8 +2020,8 @@ export function ChallengeEntityAnalysisPage({
           currentReportPeriod: reportPeriod,
           historyReportPeriod: trendPeriod,
           normalization: normalizationMode,
-          currency,
-          inflationAdjusted,
+          currency: isRedesignOnlyApi ? appliedCurrency : currency,
+          inflationAdjusted: isRedesignOnlyApi ? appliedInflationAdjusted : inflationAdjusted,
           subjectLabel: analyticsTarget.target.subjectLabel ?? '',
           language: languageQuery,
           functionalCode: analyticsSelection.functionalCode,
@@ -2099,13 +2099,17 @@ export function ChallengeEntityAnalysisPage({
       analyticsView,
       canChangeReportType,
       canUsePerCapitaNormalization,
-      currency,
       displayInflationAdjusted,
       expenseType,
       entityCui,
+      inferredMainCreditorCui,
+      isRedesignOnlyApi,
+      appliedCurrency,
+      currency,
+      inflationAdjusted,
+      appliedInflationAdjusted,
       handleSelectedPeriodChange,
       handleYearChange,
-      inflationAdjusted,
       languageQuery,
       normalizationMode,
       onAnalyticsTargetChange,
@@ -2927,7 +2931,7 @@ export function ChallengeEntityAnalysisPage({
               ) : null}
             </div>
 
-            {!isRedesignOnlyApi && supportsEntityMapPreview ? (
+            {supportsEntityMapPreview ? (
               <div className="space-y-3">
                 {isPublicMapPreviewReady ? (
                   <Suspense fallback={<MapPreviewSectionFallback />}>
@@ -2939,8 +2943,8 @@ export function ChallengeEntityAnalysisPage({
                       selectedYearOverride={selectedYear}
                       reportTypeOverride={toReportTypeValue(selectedReportType)}
                       normalizationOverride={normalizationMode}
-                      currencyOverride={currency}
-                      inflationAdjustedOverride={inflationAdjusted}
+                      currencyOverride={isRedesignOnlyApi ? appliedCurrency : currency}
+                      inflationAdjustedOverride={isRedesignOnlyApi ? appliedInflationAdjusted : inflationAdjusted}
                       mapNameOverride={localizedSelectedMapPreviewName}
                       mapZoomOverride={publicMapViewport.mapZoom}
                       mapCenterOverride={publicMapViewport.mapCenter}
@@ -3039,11 +3043,7 @@ export function ChallengeEntityAnalysisPage({
                         currency={displayNormalizationOptions.currency}
                         excludedItemsSummary={excludedItemsSummary}
                         amountFilter={amountFilter}
-                        onAnalyticsRequest={
-                          isRedesignOnlyApi
-                            ? undefined
-                            : handleBudgetItemAnalyticsRequest
-                        }
+                        onAnalyticsRequest={handleBudgetItemAnalyticsRequest}
                       />
                     )}
                   </div>
@@ -3176,19 +3176,14 @@ export function ChallengeEntityAnalysisPage({
                     currentYear={selectedYear}
                     normalizationOptions={displayNormalizationOptions}
                     presetSearchTerm={groupedLineItemsPresetSearchTerm}
-                    onAnalyticsRequest={
-                      isRedesignOnlyApi
-                        ? undefined
-                        : handleBudgetItemAnalyticsRequest
-                    }
+                    onAnalyticsRequest={handleBudgetItemAnalyticsRequest}
                     exportContext={markdownExportContext}
                   />
                 </CardContent>
               </Card>
             </div>
 
-            {!isRedesignOnlyApi ? (
-              <DeferredSectionGate
+            <DeferredSectionGate
                 className="min-h-[520px] sm:min-h-[540px]"
                 fallback={
                   <DeferredSectionFallback
@@ -3202,12 +3197,13 @@ export function ChallengeEntityAnalysisPage({
                 <DeferredChallengeEntityCategoryEvolution
                   locale={locale}
                   entityCui={entityCui}
+                  mainCreditorCui={inferredMainCreditorCui}
                   lineItems={entityLineItemsQuery.data?.nodes ?? []}
                   currentYear={selectedYear}
                   reportType={selectedReportType}
                   periodType={periodType}
                   trendPeriod={trendPeriod}
-                  queryNormalizationOptions={queryNormalizationOptions}
+                  queryNormalizationOptions={isRedesignOnlyApi ? displayNormalizationOptions : queryNormalizationOptions}
                   displayNormalizationOptions={displayNormalizationOptions}
                   onYearChange={handleYearChange}
                   onSelectPeriod={handleSelectedPeriodChange}
@@ -3218,7 +3214,6 @@ export function ChallengeEntityAnalysisPage({
                   onStateChange={(patch) => onStateChange(patch)}
                 />
               </DeferredSectionGate>
-            ) : null}
 
             <ChallengeEntitySubordinatesSection
               locale={locale}
@@ -3336,8 +3331,7 @@ export function ChallengeEntityAnalysisPage({
 
       {renderActiveView()}
 
-      {!isRedesignOnlyApi &&
-      isBudgetItemAnalyticsOpen &&
+      {isBudgetItemAnalyticsOpen &&
       selectedBudgetItemAnalyticsProps ? (
         <Suspense fallback={null}>
           <DeferredBudgetItemAnalyticsModal

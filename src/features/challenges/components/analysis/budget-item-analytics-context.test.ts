@@ -433,3 +433,27 @@ describe('buildBudgetItemAnalyticsViewState', () => {
     expect(viewState.mapDescription).toContain('Expense type: Operations')
   })
 })
+
+
+describe('native entity analytics scope', () => {
+  it('retains the selected creditor on entity charts without narrowing geographic comparisons', () => {
+    const result = buildBudgetItemAnalyticsFilters(
+      { ...defaultContext, mainCreditorCui: '4305857' },
+      getDefaultBudgetItemAnalyticsViewState(),
+    )
+    expect(result.executionChartFilter.main_creditor_cui).toBe('4305857')
+    expect(result.executionChartFilter.entity_cuis).toEqual(['12345678'])
+    expect(result.executionMapFilter.main_creditor_cui).toBeUndefined()
+    expect(result.executionMapFilter.entity_cuis).toBeUndefined()
+  })
+
+  it('resolves an old commitments selection to execution when that provider is unavailable', () => {
+    const context = { ...defaultContext, supportsCommitments: false }
+    const analyticsView = { ...getDefaultBudgetItemAnalyticsViewState(), tab: 'commitments' as const }
+    const filters = buildBudgetItemAnalyticsFilters(context, analyticsView)
+    const result = buildBudgetItemAnalyticsViewState({
+      ...filters, context, analyticsView, resolvedTitle: 'Analytics', seriesLabel: 'Salaries',
+    })
+    expect(result.activeTab).toBe('execution')
+  })
+})

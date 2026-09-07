@@ -1193,18 +1193,18 @@ describe('ChallengeEntityAnalysisPage', () => {
     expect(screen.queryByRole('button', { name: 'INS' })).not.toBeInTheDocument()
   })
 
-  it('does not dispatch unsupported auxiliary UI in redesign-only deployments', () => {
+  it('restores native map, category evolution and execution analytics', async () => {
     runtimeApiMode.value = 'redesign'
 
     renderAnalysisPage({ languageQuery: 'en' })
 
-    expect(mapAnalyticsPublicPreviewCardMock).not.toHaveBeenCalled()
-    expect(screen.queryByTestId('category-evolution')).not.toBeInTheDocument()
+    await waitFor(() => expect(mapAnalyticsPublicPreviewCardMock).toHaveBeenCalled())
+    expect(await screen.findByTestId('category-evolution')).toBeInTheDocument()
     expect(budgetTreemapMock).toHaveBeenCalledWith(
-      expect.objectContaining({ onAnalyticsRequest: undefined }),
+      expect.objectContaining({ onAnalyticsRequest: expect.any(Function) }),
     )
     expect(challengeGroupedLineItemsMock).toHaveBeenCalledWith(
-      expect.objectContaining({ onAnalyticsRequest: undefined }),
+      expect.objectContaining({ onAnalyticsRequest: expect.any(Function) }),
     )
     expect(
       screen.queryByRole('link', { name: 'View all institutions' }),

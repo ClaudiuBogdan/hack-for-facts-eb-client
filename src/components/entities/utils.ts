@@ -1,3 +1,4 @@
+import { isCountyCouncilEntity } from '@/lib/entity-territory';
 import { EntityDetailsData } from '@/lib/api/entities';
 import type { LatLngExpression } from 'leaflet';
 import { GeoJsonObject, Feature, FeatureCollection, Geometry } from 'geojson';
@@ -23,7 +24,7 @@ const DEFAULT_ENTITY_FEATURE_VIEWPORT_PADDING = 72;
 const BUCHAREST_MUNICIPALITY_CUI = '4267117';
 
 function isCountyLevelEntity(entity: EntityDetailsData): boolean {
-    return entity.entity_type === 'admin_county_council' || entity.cui === BUCHAREST_MUNICIPALITY_CUI;
+    return isCountyCouncilEntity(entity) || entity.cui === BUCHAREST_MUNICIPALITY_CUI;
 }
 
 function isBucharestMunicipality(entity: EntityDetailsData): boolean {

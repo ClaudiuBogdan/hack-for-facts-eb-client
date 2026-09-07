@@ -33,6 +33,7 @@ import type {
 type ChallengeCategoryEvolutionProps = {
   readonly locale: ChallengeLocale
   readonly entityCui: string
+  readonly mainCreditorCui?: string
   readonly lineItems: ExecutionLineItem[]
   readonly currentYear: number
   readonly reportType: ExecutionGqlReportType
@@ -164,6 +165,7 @@ function getEvolutionChartTitle(
 export function ChallengeEntityCategoryEvolution({
   locale,
   entityCui,
+  mainCreditorCui,
   lineItems,
   currentYear,
   reportType,
@@ -233,6 +235,7 @@ export function ChallengeEntityCategoryEvolution({
   const trendFilterInput = useMemo(
     () => ({
       entity_cuis: [entityCui],
+      ...(mainCreditorCui ? { main_creditor_cui: mainCreditorCui } : {}),
       account_category: accountCategory,
       report_period: trendPeriod,
       report_type: toReportTypeValue(reportType),
@@ -244,6 +247,7 @@ export function ChallengeEntityCategoryEvolution({
     [
       accountCategory,
       entityCui,
+      mainCreditorCui,
       queryNormalizationOptions.currency,
       queryNormalizationOptions.inflation_adjusted,
       queryNormalizationOptions.normalization,
