@@ -296,6 +296,17 @@ describe('LandingSearch', () => {
       expect(screen.getByRole('listbox').id).toBe(input.getAttribute('aria-controls'))
     })
 
+    /**
+     * jsdom is not the authority on this one.
+     *
+     * This test passed while the browser was doing both stages on a single
+     * press: Radix listens for Escape on the document, React flushes the close
+     * before the input's own handler runs, and that handler then sees `isOpen`
+     * as false and clears. jsdom does not reproduce the ordering, so the fix
+     * lives in `onEscapeKeyDown={(e) => e.preventDefault()}` on the popover
+     * content and is verified in a real browser. Do not remove that line
+     * because this test stays green without it.
+     */
     it('dismisses on the first Escape and clears on the second', async () => {
       const { user } = setup()
       const input = await typeAndWait(user, 'Iasi')
