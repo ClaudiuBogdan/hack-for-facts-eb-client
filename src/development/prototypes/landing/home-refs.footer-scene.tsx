@@ -1,17 +1,28 @@
 import cloudsFar from '@/assets/images/landing-footer-clouds-far.webp'
+import cloudsFront from '@/assets/images/landing-footer-clouds-front.webp'
 import cloudsNear from '@/assets/images/landing-footer-clouds-near.webp'
 import range from '@/assets/images/landing-footer-range.webp'
 
 /**
  * A drifting mountain horizon behind the footer.
  *
- * Three layers on one rule: everything repeats horizontally for ever, and the
+ * Four layers on one rule: everything repeats horizontally for ever, and the
  * only thing that separates them is how fast they move. The range does not move
- * at all, which is what makes it read as far away and fixed; the clouds behind
- * it drift left at two different rates. Nothing here is scroll-coupled — the
- * two scroll lights already report movement, and a third thing keyed to the
- * scroll would be reporting it a third time. This is weather. It happens
- * whether or not you are doing anything.
+ * at all, which is what makes it read as far away and fixed. Two cloud layers
+ * pass *behind* it, nested among the peaks, and one passes *in front*, across
+ * the slopes — and that one does most of the work. Clouds behind a mountain
+ * only say the mountain is nearer than the sky, which the eye assumed anyway;
+ * a cloud crossing the face of the range is the only thing on screen that says
+ * where the front of the scene is.
+ *
+ * So the front layer is sparse and fast rather than dense and slow. A cloud
+ * close enough to occlude a mountain is one you see one of at a time, and it
+ * crosses quickly. It is also the faintest, because a cloud this close has
+ * almost nothing behind it to be seen against.
+ *
+ * Nothing here is scroll-coupled — the two scroll lights already report
+ * movement, and a third thing keyed to the scroll would be reporting it a third
+ * time. This is weather. It happens whether or not you are doing anything.
  *
  * ## What was done to the source art
  *
@@ -28,15 +39,17 @@ import range from '@/assets/images/landing-footer-range.webp'
  * *smoother than the picture's own interior*: 1.46 levels across the join
  * against an interior mean of 2.93. The result is 1952x250 and tiles for ever.
  *
- * **The clouds** are one image cut into four pieces and dealt out twice. The
+ * **The clouds** are one image cut into four pieces and dealt out three times. The
  * banks overlap horizontally the whole way across — there is not one empty
  * column in the source — so the cuts are at the three thinnest columns, which
  * carry 7, 12 and 27 covered pixels between them, and each cut edge is
  * feathered over 8px so what is severed reads as haze rather than as a tear.
- * The pieces are then laid out twice at different scales and in different
- * orders, which is what stops the two layers ever settling into a pattern as
- * they slide past each other. Both strips keep transparent margins at both
- * ends, so they need no blending at all: nothing crosses the join.
+ * The pieces are then laid out three times at different scales and in different
+ * orders, which is what stops the layers ever settling into a pattern as they
+ * slide past each other. The front strip takes only the two big banks, at 0.9
+ * and 1580px apart in a 2900px tile — 20% covered, against roughly two thirds
+ * for the layers behind. Every strip keeps transparent margins at both ends, so
+ * none of them needs blending at all: nothing crosses the join.
  *
  * Encoded lossy at q88, which leaves alpha *exactly* intact — max error 0 —
  * and costs a mean of 1.8 to 2.6 levels of RGB. That matters more than it
@@ -58,11 +71,13 @@ const LAYERS = {
   far: { w: 1072, h: 110, bottom: 138, seconds: 150 },
   near: { w: 1466, h: 150, bottom: 86, seconds: 90 },
   range: { w: 1795, h: 230 },
+  front: { w: 1714, h: 130, bottom: 34, seconds: 52 },
 }
 
 /**
- * The highest a cloud ever reaches, and the room the footer's text needs above
- * it.
+ * The highest a cloud ever reaches *behind* the range, and the room the
+ * footer's text needs above it. The front layer is not counted: it sits on the
+ * slopes, nowhere near the text.
  *
  * Derived rather than written down, because the first version was written down
  * and the copyright line ended up sitting on a white cloud on a white sky,
@@ -192,6 +207,30 @@ const CSS = `
 }
 
 /*
+ * In front of the range, and last in the file because that is what puts it
+ * there. Low, so it crosses the slopes rather than the sky; quick, so it reads
+ * as the nearest thing in the picture; and faint, because a cloud this close
+ * has almost nothing behind it to be seen against.
+ */
+.tpz-scene-front {
+  --tpz-tile: calc(${LAYERS.front.w}px * var(--tpz-scene-scale));
+  --tpz-drift: ${LAYERS.front.seconds}s;
+  bottom: calc(${LAYERS.front.bottom}px * var(--tpz-scene-scale));
+  height: calc(${LAYERS.front.h}px * var(--tpz-scene-scale));
+  width: calc(100% + var(--tpz-tile));
+  background-image: url(${cloudsFront});
+  background-size: var(--tpz-tile) calc(${LAYERS.front.h}px * var(--tpz-scene-scale));
+  /* Enough to read as a cloud and not as ground haze, which is what it looked
+     like sitting eight pixels off the floor at half opacity — it hugged the
+     tree line and never touched a slope. Raised until it crosses the faces. */
+  opacity: 0.62;
+}
+
+.dark .tpz-scene-front {
+  opacity: 0.32;
+}
+
+/*
  * The range. It does not move, and that is the point — it is the thing the
  * clouds are moving *against*, and a horizon that drifts is a horizon nobody
  * can read distance from.
@@ -242,6 +281,7 @@ export function FooterScene() {
       <div className="tpz-scene-layer tpz-scene-clouds tpz-scene-far" />
       <div className="tpz-scene-layer tpz-scene-clouds tpz-scene-near" />
       <div className="tpz-scene-layer tpz-scene-range" />
+      <div className="tpz-scene-layer tpz-scene-clouds tpz-scene-front" />
     </div>
   )
 }
