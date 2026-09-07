@@ -22,6 +22,7 @@ import { NATIONAL_FACTS } from './home-refs.national-facts'
 import { PixelField } from './home-refs.pixel-art'
 import { FIELD_HOST_CLASS, FieldAnimationStyles } from './home-refs.field-animation'
 import { useFieldMotion } from './home-refs.field-motion'
+import { FOOTER_SCENE_CLEAR_PX, FooterScene, FooterSceneStyles } from './home-refs.footer-scene'
 import { LightMaterialStyles } from './home-refs.light-material'
 import {
   SECTION_LIGHT_ATTR,
@@ -640,6 +641,7 @@ function RefinedLanding() {
       <LightMaterialStyles />
       <ScrollLightStyles />
       <SectionLightStyles />
+      <FooterSceneStyles />
       <RevealStyles />
       <SmearFilters />
       <ScrollLight />
@@ -920,9 +922,96 @@ function RefinedLanding() {
           </div>
         </Frame>
       </section>
+
+      {/* The footer, and the page's one picture.
+
+          `relative` so the scene has something to be absolute against, and the
+          content carries `z-10` so the range rises *behind* the last rows of
+          text rather than over them. This is a proposal for `AppFooter`, which
+          the dev harness also renders below it — two footers stacked is the
+          harness, not the design. */}
+      <footer className="relative overflow-hidden border-t">
+        <FooterScene />
+        <Frame className="relative z-10 pt-14">
+          {/* Padding rather than a height, so the footer is as tall as its own
+              text plus room for the vista. The figure comes from the scene, so
+              the two cannot drift apart: the text stops above the highest
+              cloud, and the peaks rise behind it. */}
+          <div style={{ paddingBottom: FOOTER_SCENE_CLEAR_PX }}>
+            <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="lg:col-span-2">
+                <div className="flex items-center gap-2">
+                  <img src={logo} alt="" className="size-5 rounded-sm" />
+                  <span className="font-semibold text-foreground">
+                    Transparenta.eu
+                  </span>
+                </div>
+                <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
+                  Banii publici, deciziile și documentele care le însoțesc —
+                  într-un singur loc, cu sursa și data lângă fiecare cifră.
+                </p>
+              </div>
+              {FOOTER_COLUMNS.map((column) => (
+                <nav key={column.title} aria-label={column.title}>
+                  <MonoLabel className="text-muted-foreground/70">
+                    {column.title}
+                  </MonoLabel>
+                  <ul className="mt-4 space-y-2.5">
+                    {column.links.map((link) => (
+                      <li key={link.label}>
+                        <Link
+                          to={link.to}
+                          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                        >
+                          {link.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              ))}
+            </div>
+            <div className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t pt-5">
+              <MonoLabel className="text-muted-foreground/70">
+                © {new Date().getFullYear()} Transparenta.eu
+              </MonoLabel>
+              <MonoLabel className="text-muted-foreground/70">
+                Date din surse oficiale
+              </MonoLabel>
+            </div>
+          </div>
+        </Frame>
+      </footer>
     </div>
   )
 }
+
+/**
+ * Footer navigation, kept to routes this app actually has.
+ *
+ * Deliberately short. A landing footer that lists every surface competes with
+ * the index the page has just spent its whole length building.
+ */
+const FOOTER_COLUMNS = [
+  {
+    title: 'Platformă',
+    links: [
+      { label: 'Analiza entităților', to: '/entity-analytics' },
+      { label: 'Hărți', to: '/map' },
+      { label: 'Grafice', to: '/charts' },
+    ],
+  },
+  {
+    title: 'Legal',
+    links: [
+      { label: 'Politica de confidențialitate', to: '/privacy' },
+      { label: 'Termeni și condiții', to: '/terms' },
+    ],
+  },
+] satisfies readonly {
+  readonly title: string
+  readonly links: readonly { readonly label: string; readonly to: LinkProps['to'] }[]
+}[]
 
 /**
  * The landing.
