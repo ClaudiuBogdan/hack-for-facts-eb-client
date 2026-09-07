@@ -1,6 +1,7 @@
 # Landing — section text arriving on scroll
 
-**Status: decided — CSS transitions driven by one IntersectionObserver.**
+**Status: decided — CSS transitions driven by IntersectionObserver, plus a
+canvas-measured text decrypt on the section headings.**
 
 Reference: [mega.dev](https://mega.dev). What follows was measured off the live
 site rather than eyeballed, because the interesting parts of the effect are the
@@ -101,25 +102,95 @@ installed.
 
 ## Shape
 
-- `home-refs.reveal.tsx` owns the stylesheet and the hook. One observer for the
-  whole landing, `unobserve` per group once it has arrived, so the callback stops
-  being called at all when the last one lands.
-- The page marks a `data-reveal-group` for what travels together and `data-reveal`
-  on each block. The hook assigns `--tpz-reveal-delay` from the block's index
-  within its group, so each group staggers from zero rather than continuing one
-  counter down the page.
+`home-refs.reveal.tsx` owns the stylesheet and the hook; `home-refs.scramble.tsx`
+owns the decrypt. Both are marker-driven — the page says *what*, the module owns
+*when*.
+
+- **Blocks are watched one by one, not in declared groups.** Groups came first
+  and were wrong: a group fires everything the moment its *top* edge appears,
+  and a lattice section is tall — an image and four stacked cells — so its lower
+  cells arrived several hundred pixels below the fold and were settled before
+  anyone saw them. `Investiții publice` began at 135% of the viewport height and
+  was three quarters resolved by the time it rose into view. Watching each block
+  puts every arrival on screen: 0 of 29 now finish below the fold.
+- **Things that appear together still travel together**, because the stagger is
+  applied per batch, in document order, rather than per declared group. The step
+  is `min(70ms, 280ms / (n - 1))`, so it can only ever shrink — a short batch
+  keeps the full 70ms and never slows down to fill the window, and eight cells
+  landing at once do not run to 1090ms.
+- **Two observers, with different jobs.** The first is the entrance, its trigger
+  line held 140px inside the bottom edge so an arrival does not happen at the
+  very lip of the screen; measured, an arrival becomes visible at a median 254px
+  in. The second watches the *real* viewport edge, hears about a block the moment
+  it is genuinely visible — including while it sits in the offset band, where the
+  first stays silent — and starts a 700ms clock.
+
+  That second observer is the whole reason the offset is allowed to exist. The
+  `-12%` root margin that erased text (below) failed not because it was a margin
+  but because it was the *only* thing that could reveal a block: one sitting in
+  the band is on screen and hidden, the observer will not speak again until it
+  crosses the line, and nothing bounded the wait. The offset shapes the entrance
+  during a scroll; the clock guarantees it always ends. Verified by parking
+  rather than scrolling, since parking is the case that broke — 57 offsets from
+  0 to 3400, each left to settle, worst count of on-screen-and-hidden blocks: 0.
 - The transition is declared on the destination state, so applying `pending` is
   an instant hide and only the arrival animates. Nothing ever fades out.
 - The rise uses the independent `translate` property, and the transition names
   `translate` — **not** `transform`. Naming `transform` there animates opacity
   alone and silently drops the rise. Confirmed by measuring the *rendered* rise —
   the element's rect while `pending` against its rect plain — which is 12px on
-  all ten blocks. Sampling computed `translate` mid-flight also shows the curve
+  every block. Sampling computed `translate` mid-flight also shows the curve
   (`12px → 11.57 → 4.55 → 1.56 → 0.48 → 0`), but it is the wrong instrument and
-  was how the inline-label bug below survived: computed `translate` interpolates
-  on an inline box whether or not the box moves.
+  was how the inline-label bug survived: computed `translate` interpolates on an
+  inline box whether or not the box moves.
 - A reveal block must not be `display: inline`. `translate` has no effect on a
   non-replaced inline box, so an inline block fades without rising.
+- Known residue, harmless today: a `shown` block keeps its `transition-property`
+  and its inline `--tpz-reveal-delay` for good, so any *future* opacity or
+  translate change on it would animate over 600ms unexpectedly.
+
+## The decrypting headings
+
+The five lattice section headings resolve out of a cipher. Measured off
+mega.dev's CTA rather than copied by eye — `Become MEGA Dev` passes through
+`M03LSS SMUW Z#J` and `BecomI 6@WT Z94` — which gives the rules: length and space
+positions preserved exactly, resolution left to right, substitutes from
+uppercase ASCII, and no substitution at all under `prefers-reduced-motion`, where
+their page goes straight to the final string.
+
+**A substitute is not the width of the character it replaces.** A free uppercase
+cipher runs up to 74% wider than `Investiții publice` — measured — which in a
+ruled grid is obvious and on a narrow column wraps the line and shoves the blurb
+below it down the page.
+
+The first fix pinned the box to its real width and clipped the overspill with
+`clip-path` (not `overflow`: an inline-block whose overflow is not `visible`
+takes its baseline from its bottom margin edge, so the text would drop a few
+pixels the moment the scramble began). That held the width — 0 of 20 elements
+changed — and was still wrong, because pinning forces `white-space: nowrap`, so a
+title that legitimately wrapped onto two lines was forced onto one. Seven of
+twenty changed height, and 390×844 scored 1.78 cumulative layout shift. Holding
+one dimension by force broke the other.
+
+So the alphabet is chosen per character instead: candidates are measured once per
+font on a canvas and bucketed by advance width, and a character is only ever
+replaced by one that occupies the same space. Nothing is pinned, nothing is
+clipped, wrapping behaves as it does for the real text, and cumulative layout
+shift is **0.00000** at both 1440×900 and 390×844.
+
+That index is keyed per font and **extended per character**, which is not
+fussiness. Keying on the font alone and keeping whatever the first caller needed
+is a bug that hides well: every title shares one font, so `Buget național` built
+the index, and `PNRR` then asked it for `P`, `N` and `R`, none of which that
+title contains. Each missing character took the "nothing close enough, stand in
+for itself" path, so PNRR substituted itself at every position and sat there —
+the one title on the page that never decrypted, with no error to show for it.
+
+Accessibility is mega.dev's structure, and is the one part of their
+implementation worth copying verbatim: an `sr-only` copy carries the real text
+and is never touched, the animated copy is `aria-hidden`. So the heading's
+accessible name — which the section's `aria-labelledby` points at — stays the
+heading throughout, and no screen reader hears the cipher.
 
 ## Two things review caught
 
@@ -140,25 +211,36 @@ which is the only reason the first round of checking came back clean. The lesson
 is not "test more heights", it is that a single constant was answering two
 different questions.
 
-Fixed twice over. The trigger line moved to the viewport edge (`rootMargin: 0`),
-so visible and revealed are now the same question — measured against the
-reference, mega.dev starts its reveals about as early, and many of its blocks
-animate while still below the fold because their group has already triggered. And
-hide-eligibility is now judged from `entry.boundingClientRect` against the real
-viewport rather than from `isIntersecting`, so the invariant holds even if
-someone later tunes the margin. Re-verified: 124 viewport heights across four
-widths and 31 scroll offsets, zero cases of on-screen text hidden.
+Fixed by separating the two questions. Hide-eligibility is now judged from
+`entry.boundingClientRect` against the *real* viewport rather than from
+`isIntersecting`, so nothing on screen can be hidden whatever the margin is set
+to. The trigger line went to the viewport edge at the same time, and later came
+back to a 140px offset once the safety observer above made an offset survivable —
+that ordering matters, because the offset on its own is the bug.
+
+Re-verified at each step: 124 viewport heights across four widths and 31 scroll
+offsets with the observer confirmed armed on every load, then 57 parked offsets
+after the offset returned. Zero cases of on-screen text hidden throughout.
 
 **The rise was a no-op on the two eyebrow labels.** `MonoLabel` renders a bare
 `span`, so `display: inline`, and `translate` does not apply to a non-replaced
 inline box. The labels faded while the heading and paragraph beside them rose —
-inconsistent motion inside a single staggered group, and invisible in code
-review. They carry `block` now. Measured rendered rise, all ten blocks: 12px.
+inconsistent motion beside the heading and paragraph, and invisible in code
+review. They carry `block` now. Measured rendered rise, every block: 12px.
 
 ## Where it is applied, and where it is not
 
-The three bands below the fold: the national-figures strip, `01 / Ce găsești
-aici`, and `02 / Proveniență`.
+**Arriving:** the national-figures strip, both statement bands (`01 / Ce găsești
+aici` and `02 / Proveniență`, including the coverage list), every lattice
+section's heading row, and every lattice cell. The cell arrives as a whole rather
+than its title and blurb separately — fading text inside a bordered box leaves
+the box sitting there empty first, which reads as a loading state rather than as
+an entrance.
+
+**Decrypting:** the five lattice section headings only. It was briefly on the
+entry titles and the two-line statement heading as well; those are proportional
+sans in a ruled grid, and the effect belongs on the short monospace headings that
+are its analogue on the reference.
 
 The hero is deliberately excluded. It is on screen at load, so "the first time
 it is in view" means "at load", and hiding server-rendered text at load is the
