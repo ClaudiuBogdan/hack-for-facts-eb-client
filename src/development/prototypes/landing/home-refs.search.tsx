@@ -69,7 +69,7 @@ function SearchStatusView({ status }: { readonly status: SearchStatus }) {
       return (
         <Message>
           {shortHint(status.remaining)}{' '}
-          <span className="text-muted-foreground/60">Numele instituției sau codul fiscal.</span>
+          <span className="text-muted-foreground/55">Numele instituției sau codul fiscal.</span>
         </Message>
       )
 
@@ -86,7 +86,7 @@ function SearchStatusView({ status }: { readonly status: SearchStatus }) {
         <Message>
           Nicio instituție pentru{' '}
           <strong className="font-medium text-foreground">{status.term}</strong>.{' '}
-          <span className="text-muted-foreground/60">Încearcă numele complet sau CUI-ul.</span>
+          <span className="text-muted-foreground/55">Încearcă numele complet sau CUI-ul.</span>
         </Message>
       )
 
@@ -94,7 +94,7 @@ function SearchStatusView({ status }: { readonly status: SearchStatus }) {
       return (
         <Message>
           <span className="text-destructive">Căutarea nu a răspuns.</span>{' '}
-          <span className="text-muted-foreground/60">Încearcă din nou într-un moment.</span>
+          <span className="text-muted-foreground/55">Încearcă din nou într-un moment.</span>
         </Message>
       )
 
@@ -300,15 +300,22 @@ export function LandingSearch({
                   //
                   // A neutral border is the way to have both. It is the same
                   // treatment in both states, so nothing appears or disappears;
-                  // it is grey, so the surface stays quiet; and how light it can
-                  // go is a measured limit rather than a matter of taste,
-                  // because a focus indicator owes 3:1 against what is beside
-                  // it. At 60% of the foreground it is rgb(121): 4.35:1 against
-                  // the card and 3.49:1 against the resting border. /55 is 3.00
-                  // against the border — exactly on the floor — and everything
-                  // below fails, so lightening this further is a correctness
-                  // change rather than a nudge.
-                  joined && 'focus:border-foreground/60 data-popup-open:border-foreground/60',
+                  // it is grey, so the surface stays quiet.
+                  //
+                  // **This is as light as it goes.** A focus indicator owes 3:1
+                  // both against what sits beside it and against its own
+                  // unfocused state, and the second is what binds here: the
+                  // resting border is already a light grey, so the focused one
+                  // has to stay far enough from it to read as a change. At 55%
+                  // of the foreground this is rgb(132) — 3.75:1 against the
+                  // card and **3.005:1** against the resting border. /54 is
+                  // 2.92 and fails. There is no next step; anything lighter is
+                  // a focus indicator that is only found by someone who already
+                  // knows where it is.
+                  //
+                  // Dark mode is not the constraint — the same value measures
+                  // 5.78 and 4.19 there. Light mode is where the floor is.
+                  joined && 'focus:border-foreground/55 data-popup-open:border-foreground/55',
                   joined && 'focus:shadow-lg data-popup-open:shadow-lg',
                   // shadcn's ring is a box-shadow, so it outlines the field
                   // alone and cannot follow the join. The border above replaces
@@ -404,7 +411,7 @@ export function LandingSearch({
               // Same neutral as the focused field, so the outline is one
               // continuous line around the pair rather than two that happen to
               // meet.
-              joined && 'border-foreground/60 shadow-lg',
+              joined && 'border-foreground/55 shadow-lg',
               joined && 'data-[side=bottom]:rounded-t-none data-[side=bottom]:border-t-0',
               joined && 'data-[side=top]:rounded-b-none data-[side=top]:border-b-0',
               // Base UI animates with transitions rather than keyframes:
@@ -450,7 +457,7 @@ export function LandingSearch({
                   <span className="hidden sm:inline"> · API indisponibil</span>
                 </MonoLabel>
               ) : null}
-              <MonoLabel className="text-muted-foreground/60">CUI</MonoLabel>
+              <MonoLabel className="text-muted-foreground/55">CUI</MonoLabel>
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">

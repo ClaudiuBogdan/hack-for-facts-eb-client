@@ -472,7 +472,7 @@ describe('LandingSearch', () => {
       // fix. Same border, same lift, under `focus:` and under
       // `data-popup-open:` alike.
       for (const state of ['focus:', 'data-popup-open:']) {
-        expect(input.className).toContain(`${state}border-foreground/60`)
+        expect(input.className).toContain(`${state}border-foreground/55`)
         expect(input.className).toContain(`${state}shadow-lg`)
       }
 
@@ -483,7 +483,7 @@ describe('LandingSearch', () => {
       expect(input.className).toContain('focus-visible:ring-0')
 
       const popup = screen.getByRole('listbox').closest('[class*="max-h-"]')
-      expect(popup?.className).toContain('border-foreground/60')
+      expect(popup?.className).toContain('border-foreground/55')
       expect(popup?.className).toContain('shadow-lg')
 
       // The field drops its border along the seam too, so the divider under the

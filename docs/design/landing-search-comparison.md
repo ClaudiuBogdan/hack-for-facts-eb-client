@@ -223,7 +223,7 @@ page, at `?v=landing` and `?v=joined`:
 | Gap below the field | 8px | none |
 | Field's bottom corners | rounded | squared while the panel is open |
 | Border between them | two, 8px apart | one — the divider under the header |
-| Focus indicator | `ring` blue on the field | `foreground/60` neutral on the pair, plus the lift |
+| Focus indicator | `ring` blue on the field | `foreground/55` neutral on the pair, plus the lift |
 | Shadow | `shadow-md`, panel only | `shadow-lg`, on field and panel alike |
 | Enter animation | fade + 4px rise | fade only |
 | Out of room below | flips above the field | flips too — the join follows to the field's top edge |
@@ -261,12 +261,24 @@ Three things fall out of the join rather than being decided separately:
   shut. Nothing appears, nothing disappears, and the outline traces the pair
   because the seam-side borders are already gone.
 
-  How light it can go is a measured limit rather than a matter of taste, because
-  a focus indicator owes 3:1 against what is next to it. `foreground/60` is
-  rgb(121): 4.35:1 against the card and 3.49:1 against the resting border.
-  `/55` is 3.74 and **3.00** — sitting exactly on the floor — and everything
-  below it fails. Lightening this by eye is fine down to /60 and is a
-  correctness change after it.
+  How light it can go is a measured limit rather than a matter of taste. A focus
+  indicator owes 3:1 both against what sits beside it and against its own
+  unfocused state, and the second is what binds: the resting border is already a
+  light grey, so the focused one has to stay far enough from it to read as a
+  change at all.
+
+  | alpha | rgb | vs card | vs resting border |
+  |---|---|---|---|
+  | `/70` | 98 | 6.08 | 4.87 |
+  | `/60` | 121 | 4.38 | 3.51 |
+  | **`/55`** | **132** | **3.75** | **3.005** |
+  | `/54` | 134 | 3.64 | 2.92 ✗ |
+  | `/50` | 143 | 3.23 | 2.59 ✗ |
+
+  `foreground/55` is the floor and is what ships. Dark mode is not the
+  constraint — the same value measures 5.78 and 4.19 against the dark card and
+  its border — so anywhere this gets lightened again, light mode is what breaks
+  and dark mode will not show it.
 
   The shadcn ring is suppressed in both states rather than one. It is a
   box-shadow, so it outlines the field alone and cannot follow the join; the
