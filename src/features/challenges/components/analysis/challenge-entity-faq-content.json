@@ -23,8 +23,9 @@
         "id": "population-2021",
         "question": "Ce populație folosiți în partea de sus a paginii și la calculele per capita?",
         "answerParagraphs": [
-          "Populația afișată în partea de sus a paginii și folosită la calculele per capita este populația rezidentă publicată de INS, pe baza Recensământului din 2021.",
-          "Folosim această valoare ca reper comun, ca să putem compara mai ușor localitățile și anii între ei. Cu alte cuvinte, este o valoare de referință fixă, nu o estimare nouă pentru fiecare an afișat în pagină."
+          "Populația din antet este reperul din registrul teritorial, bazat pe populația rezidentă de la Recensământul din 2021.",
+          "Pentru totalurile financiare, graficul principal de evoluție a veniturilor, cheltuielilor și balanței, precum și distribuția cheltuielilor, calculele per capita folosesc populația după domiciliu la 1 ianuarie publicată de INS pentru fiecare an financiar. Anii fără populație verificată rămân indisponibili; nu folosim populația altui an în locul lor.",
+          "Populația rezidentă și populația după domiciliu măsoară lucruri diferite, deci valorile lor pot diferi."
         ]
       },
       {
@@ -70,8 +71,9 @@
         "id": "population-2021",
         "question": "Which population figure is used at the top of the page and in per capita calculations?",
         "answerParagraphs": [
-          "The population shown at the top of the page and used in per capita calculations is the resident population published by INS, based on the 2021 census.",
-          "We use this value as a common reference point so places and years can be compared more easily. In other words, it is a fixed baseline, not a newly updated estimate for each year shown on the page."
+          "The header shows the territorial registry reference population, based on resident population from the 2021 census.",
+          "For financial totals, the main income, expenditure and balance evolution chart, and expenditure distribution, per-capita calculations use the population by domicile at January 1 published by INS for each financial year. Years without verified population remain unavailable; another year’s population is never substituted.",
+          "Resident population and population by domicile measure different things, so their values may differ."
         ]
       },
       {

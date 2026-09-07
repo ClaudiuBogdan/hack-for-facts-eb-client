@@ -1,4 +1,7 @@
-import { EntityTerritorySchema as TerritorySchema, mapEntityTerritory } from './entity-identity'
+import {
+  EntityTerritorySchema as TerritorySchema,
+  mapEntityTerritory,
+} from "./entity-identity";
 import { z } from "zod";
 
 import { graphqlQuery } from "@/lib/graphql/graphql-client";
@@ -46,8 +49,6 @@ export const MoneySchema = z
     return amount;
   });
 
-
-
 const EntityMetadataResponseSchema = z.object({
   entity: z
     .object({
@@ -60,7 +61,7 @@ const EntityMetadataResponseSchema = z.object({
           address: z.string().nullable(),
           entityType: z.string().nullable(),
           isUat: z.boolean(),
-      isTerritorialExecutive: z.boolean(),
+          isTerritorialExecutive: z.boolean(),
           defaultReportType: z.string().nullable(),
           territory: TerritorySchema.nullable(),
         })
@@ -90,14 +91,13 @@ const BudgetSummaryPointSchema = z.object({
   budgetBalance: MoneySchema,
 });
 
-const EntityBudgetResponseSchema = z.object({
+const EntityBudgetSummaryResponseSchema = z.object({
   summary: z.array(BudgetSummaryPointSchema),
-  currentIncome: z.array(BudgetSeriesPointSchema),
-  currentExpense: z.array(BudgetSeriesPointSchema),
-  currentBalance: z.array(BudgetSeriesPointSchema),
-  trendIncome: z.array(BudgetSeriesPointSchema),
-  trendExpense: z.array(BudgetSeriesPointSchema),
-  trendBalance: z.array(BudgetSeriesPointSchema),
+});
+const EntityBudgetSeriesResponseSchema = z.object({
+  totalIncome: z.array(BudgetSeriesPointSchema),
+  totalExpense: z.array(BudgetSeriesPointSchema),
+  budgetBalance: z.array(BudgetSeriesPointSchema),
 });
 
 const ENTITY_METADATA_QUERY = /* GraphQL */ `
@@ -108,7 +108,12 @@ const ENTITY_METADATA_QUERY = /* GraphQL */ `
         name
       }
       territory {
-        id level kind territoryKey parentId nutsCode
+        id
+        level
+        kind
+        territoryKey
+        parentId
+        nutsCode
         name
         countyCode
         countyName
@@ -123,7 +128,12 @@ const ENTITY_METADATA_QUERY = /* GraphQL */ `
         isTerritorialExecutive
         defaultReportType
         territory {
-          id level kind territoryKey parentId nutsCode
+          id
+          level
+          kind
+          territoryKey
+          parentId
+          nutsCode
           name
           countyCode
           countyName
@@ -142,15 +152,13 @@ const ENTITY_METADATA_QUERY = /* GraphQL */ `
 const ENTITY_BUDGET_QUERY = /* GraphQL */ `
   query GetEntityBudget(
     $cui: CUI!
+    $mainCreditorCui: CUI
     $reportType: BudgetReportType!
     $frequency: BudgetFrequency!
-    $currentYearFrom: Int
-    $currentYearTo: Int
-    $trendYearFrom: Int
-    $trendYearTo: Int
     $summaryYearFrom: Int
     $summaryYearTo: Int
     $normalization: BudgetNormalization!
+    $normalized: Boolean!
   ) {
     summary: budgetEntitySummary(
       cui: $cui
@@ -158,7 +166,7 @@ const ENTITY_BUDGET_QUERY = /* GraphQL */ `
       frequency: $frequency
       yearFrom: $summaryYearFrom
       yearTo: $summaryYearTo
-    ) {
+    ) @skip(if: $normalized) {
       mainCreditorCui
       year
       month
@@ -167,75 +175,42 @@ const ENTITY_BUDGET_QUERY = /* GraphQL */ `
       totalExpense
       budgetBalance
     }
-    currentIncome: budgetTimeseries(
+    totalIncome: budgetTimeseries(
       cui: $cui
+      mainCreditorCui: $mainCreditorCui
       reportType: $reportType
       metric: INCOME
       frequency: $frequency
-      yearFrom: $currentYearFrom
-      yearTo: $currentYearTo
+      yearFrom: $summaryYearFrom
+      yearTo: $summaryYearTo
       normalization: $normalization
-    ) {
+    ) @include(if: $normalized) {
       periodLabel
       amount
     }
-    currentExpense: budgetTimeseries(
+    totalExpense: budgetTimeseries(
       cui: $cui
+      mainCreditorCui: $mainCreditorCui
       reportType: $reportType
       metric: EXPENSE
       frequency: $frequency
-      yearFrom: $currentYearFrom
-      yearTo: $currentYearTo
+      yearFrom: $summaryYearFrom
+      yearTo: $summaryYearTo
       normalization: $normalization
-    ) {
+    ) @include(if: $normalized) {
       periodLabel
       amount
     }
-    currentBalance: budgetTimeseries(
+    budgetBalance: budgetTimeseries(
       cui: $cui
+      mainCreditorCui: $mainCreditorCui
       reportType: $reportType
       metric: BALANCE
       frequency: $frequency
-      yearFrom: $currentYearFrom
-      yearTo: $currentYearTo
+      yearFrom: $summaryYearFrom
+      yearTo: $summaryYearTo
       normalization: $normalization
-    ) {
-      periodLabel
-      amount
-    }
-    trendIncome: budgetTimeseries(
-      cui: $cui
-      reportType: $reportType
-      metric: INCOME
-      frequency: $frequency
-      yearFrom: $trendYearFrom
-      yearTo: $trendYearTo
-      normalization: $normalization
-    ) {
-      periodLabel
-      amount
-    }
-    trendExpense: budgetTimeseries(
-      cui: $cui
-      reportType: $reportType
-      metric: EXPENSE
-      frequency: $frequency
-      yearFrom: $trendYearFrom
-      yearTo: $trendYearTo
-      normalization: $normalization
-    ) {
-      periodLabel
-      amount
-    }
-    trendBalance: budgetTimeseries(
-      cui: $cui
-      reportType: $reportType
-      metric: BALANCE
-      frequency: $frequency
-      yearFrom: $trendYearFrom
-      yearTo: $trendYearTo
-      normalization: $normalization
-    ) {
+    ) @include(if: $normalized) {
       periodLabel
       amount
     }
@@ -288,37 +263,6 @@ function summaryMetricPoints(params: {
       amount: point[params.metric],
     })),
   );
-}
-
-function normalizationFactors(params: {
-  readonly normalized: readonly BudgetSeriesPoint[];
-  readonly total: readonly BudgetSeriesPoint[];
-}): Map<string, number> {
-  const normalized = new Map(
-    groupSeriesPoints(params.normalized).map((point) => [
-      point.periodLabel,
-      point.amount,
-    ]),
-  );
-  const total = groupSeriesPoints(params.total);
-  return new Map(
-    total.map((point) => [
-      point.periodLabel,
-      point.amount === 0
-        ? 1
-        : (normalized.get(point.periodLabel) ?? point.amount) / point.amount,
-    ]),
-  );
-}
-
-function applyNormalizationFactors(
-  points: readonly BudgetSeriesPoint[],
-  factors: ReadonlyMap<string, number>,
-): BudgetSeriesPoint[] {
-  return points.map((point) => ({
-    periodLabel: point.periodLabel,
-    amount: point.amount * (factors.get(point.periodLabel) ?? 1),
-  }));
 }
 
 function toBudgetReportType(
@@ -436,13 +380,31 @@ function latestAmount(
   points: readonly BudgetSeriesPoint[],
   period: ReportPeriodInput,
 ): number | null {
-  const selected = filterSeriesPeriod(points, period);
-  return selected[selected.length - 1]?.amount ?? null;
+  const lastSelected =
+    period.selection.dates !== undefined
+      ? [...period.selection.dates].sort()[period.selection.dates.length - 1]
+      : period.selection.interval.end;
+  return (
+    points.find((point) => point.periodLabel === lastSelected)?.amount ?? null
+  );
 }
 
 function toGrowthPoints(
   points: readonly BudgetSeriesPoint[],
+  period: ReportPeriodInput,
 ): BudgetSeriesPoint[] {
+  const selectedDates: string[] | undefined =
+    period.selection.dates === undefined
+      ? undefined
+      : [...new Set(period.selection.dates)].sort();
+  const periodIndex = (label: string): number => {
+    const year = Number(label.slice(0, 4));
+    if (period.type === "YEAR") return year;
+    return (
+      year * (period.type === "MONTH" ? 12 : 4) +
+      Number(label.slice(period.type === "MONTH" ? 5 : 6))
+    );
+  };
   const growth: BudgetSeriesPoint[] = [];
   for (let index = 1; index < points.length; index += 1) {
     const previous = points[index - 1];
@@ -450,7 +412,12 @@ function toGrowthPoints(
     if (
       previous === undefined ||
       current === undefined ||
-      previous.amount === 0
+      previous.amount === 0 ||
+      (selectedDates !== undefined
+        ? selectedDates.indexOf(current.periodLabel) !==
+          selectedDates.indexOf(previous.periodLabel) + 1
+        : periodIndex(current.periodLabel) !==
+          periodIndex(previous.periodLabel) + 1)
     )
       continue;
     growth.push({
@@ -485,7 +452,9 @@ function toAnalyticsSeries(params: {
   readonly showPeriodGrowth: boolean;
 }): AnalyticsSeries {
   const selected = filterSeriesPeriod(params.points, params.period);
-  const points = params.showPeriodGrowth ? toGrowthPoints(selected) : selected;
+  const points = params.showPeriodGrowth
+    ? toGrowthPoints(selected, params.period)
+    : selected;
   return {
     seriesId: params.id,
     xAxis: { name: "Period", type: "STRING", unit: params.period.type },
@@ -545,7 +514,10 @@ export async function fetchRedesignEntityDetails(
   };
 
   if (metadata.budget?.presence !== true) {
-    return { ...base, normalizationCaveats: resolveBudgetNormalization(params).caveats };
+    return {
+      ...base,
+      normalizationCaveats: resolveBudgetNormalization(params).caveats,
+    };
   }
 
   const trendPeriod = params.trendPeriod ?? params.reportPeriod;
@@ -565,100 +537,68 @@ export async function fetchRedesignEntityDetails(
       cui: params.cui,
       reportType,
       frequency: params.reportPeriod.type,
-      currentYearFrom: currentBounds.yearFrom,
-      currentYearTo: currentBounds.yearTo,
-      trendYearFrom: trendBounds.yearFrom,
-      trendYearTo: trendBounds.yearTo,
       summaryYearFrom,
       summaryYearTo,
       normalization,
+      normalized: normalization !== "TOTAL",
+      ...(params.mainCreditorCui !== undefined
+        ? { mainCreditorCui: params.mainCreditorCui }
+        : {}),
     },
     {
       operationName: "entity-budget",
       auth: "none",
     },
   );
-  const budget = EntityBudgetResponseSchema.parse(budgetRaw);
-
-  const choosePoints = (input: {
-    readonly metric: "totalIncome" | "totalExpense" | "budgetBalance";
-    readonly current: readonly BudgetSeriesPoint[];
-    readonly trend: readonly BudgetSeriesPoint[];
-  }): { current: BudgetSeriesPoint[]; trend: BudgetSeriesPoint[] } => {
-    const total = summaryMetricPoints({
-      points: budget.summary,
-      frequency: params.reportPeriod.type,
-      metric: input.metric,
-    });
-    const scoped = summaryMetricPoints({
-      points: budget.summary,
-      frequency: params.reportPeriod.type,
-      metric: input.metric,
-      ...(params.mainCreditorCui
-        ? { mainCreditorCui: params.mainCreditorCui }
-        : {}),
-    });
-
-    if (normalization === "TOTAL") {
-      return { current: scoped, trend: scoped };
-    }
-    if (params.mainCreditorCui === undefined) {
-      return {
-        current: groupSeriesPoints(input.current),
-        trend: groupSeriesPoints(input.trend),
-      };
-    }
-
-    return {
-      current: applyNormalizationFactors(
-        scoped,
-        normalizationFactors({ normalized: input.current, total }),
-      ),
-      trend: applyNormalizationFactors(
-        scoped,
-        normalizationFactors({ normalized: input.trend, total }),
-      ),
-    };
-  };
-
-  const income = choosePoints({
-    metric: "totalIncome",
-    current: budget.currentIncome,
-    trend: budget.trendIncome,
-  });
-  const expense = choosePoints({
-    metric: "totalExpense",
-    current: budget.currentExpense,
-    trend: budget.trendExpense,
-  });
-  const balance = choosePoints({
-    metric: "budgetBalance",
-    current: budget.currentBalance,
-    trend: budget.trendBalance,
-  });
+  const budget =
+    normalization === "TOTAL"
+      ? {
+          kind: "nominal" as const,
+          ...EntityBudgetSummaryResponseSchema.parse(budgetRaw),
+        }
+      : {
+          kind: "normalized" as const,
+          ...EntityBudgetSeriesResponseSchema.parse(budgetRaw),
+        };
+  const choosePoints = (
+    metric: "totalIncome" | "totalExpense" | "budgetBalance",
+  ): BudgetSeriesPoint[] =>
+    budget.kind === "nominal"
+      ? summaryMetricPoints({
+          points: budget.summary,
+          frequency: params.reportPeriod.type,
+          metric,
+          ...(params.mainCreditorCui !== undefined
+            ? { mainCreditorCui: params.mainCreditorCui }
+            : {}),
+        })
+      : groupSeriesPoints(budget[metric]);
+  const income = choosePoints("totalIncome");
+  const expense = choosePoints("totalExpense");
+  const balance = choosePoints("budgetBalance");
 
   return {
     ...base,
-    totalIncome: latestAmount(income.current, params.reportPeriod),
-    totalExpenses: latestAmount(expense.current, params.reportPeriod),
-    budgetBalance: latestAmount(balance.current, params.reportPeriod),
+    totalIncome: latestAmount(income, params.reportPeriod),
+    totalExpenses: latestAmount(expense, params.reportPeriod),
+    budgetBalance: latestAmount(balance, params.reportPeriod),
     incomeTrend: toAnalyticsSeries({
       id: "income",
-      points: income.trend,
+      points: income,
       period: trendPeriod,
       normalization,
       showPeriodGrowth: params.show_period_growth === true,
     }),
     expenseTrend: toAnalyticsSeries({
       id: "expense",
-      points: expense.trend,
+      points: expense,
       period: trendPeriod,
       normalization,
       showPeriodGrowth: params.show_period_growth === true,
     }),
     balanceTrend: toAnalyticsSeries({
       id: "balance",
-      points: balance.trend,
+      points: balance,
       period: trendPeriod,
       normalization,
       showPeriodGrowth: params.show_period_growth === true,
@@ -1200,7 +1140,7 @@ async function fetchLineItemNormalizationMultiplier(params: {
   readonly reportPeriod: ReportPeriodInput;
   readonly reportType: BudgetReportType;
   readonly normalization: BudgetNormalization;
-}): Promise<number> {
+}): Promise<number | null> {
   if (params.normalization === "TOTAL") return 1;
 
   const bounds = periodYearBounds(params.reportPeriod);
@@ -1244,7 +1184,7 @@ async function fetchLineItemNormalizationMultiplier(params: {
   if (incomeTotal !== null && incomeTotal !== 0 && incomeNormalized !== null) {
     return incomeNormalized / incomeTotal;
   }
-  return 1;
+  return null;
 }
 
 export async function fetchRedesignEntityExecutionLineItems(
@@ -1286,6 +1226,8 @@ export async function fetchRedesignEntityExecutionLineItems(
       normalization,
     }),
   ]);
+  // Unsupported normalization is an empty requested dataset, not a page error.
+  if (multiplier === null) return { nodes: [], fundingSources: [] };
   const rawItems = [...expenses, ...income];
   const fundingSourceMap = new Map<number, string>();
   for (const item of rawItems) {
