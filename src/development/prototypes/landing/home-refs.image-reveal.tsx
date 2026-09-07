@@ -103,22 +103,47 @@ const TRIGGER_OFFSET_PX = 320
  * The same, on a phone.
  *
  * 320 is 38% of an 844px screen, which stops being "a little way in" and starts
- * being "over a third of the way up". The offset should be a fraction of the
- * screen rather than a constant, and on the only two screen sizes that matter
- * here a constant per breakpoint says that more plainly than arithmetic would.
+ * being "over a third of the way up".
  */
 const MOBILE_TRIGGER_OFFSET_PX = 180
+
+/**
+ * And the ceiling that makes both of those safe on a screen they were not
+ * chosen against.
+ *
+ * The two constants above are picked by *width*, and what they set is a
+ * *vertical* distance — fine until a viewport is wide and short. A phone in
+ * landscape is 844x390: over the breakpoint, so it takes the 320, which is 86%
+ * of the height it is measured against. Measured, the picture's top reached only
+ * 14% down the screen before it began to fade, so the reader watched a blank
+ * bordered box grow over most of the display and only then saw it arrive — the
+ * failure this offset exists to prevent, inverted. A desktop window dragged
+ * short does the same at 66%.
+ *
+ * So the offset is finally a fraction of the screen, which is what the note
+ * above always claimed it should be. The constants stay because they carry the
+ * tuning; this stops either exceeding what the screen can show. It puts the
+ * picture's top at about two thirds down on every viewport I can construct,
+ * against 64/78/14/34% before.
+ */
+const TRIGGER_VIEWPORT_FRACTION = 0.35
 
 /** Matches the scene's own breakpoint and Tailwind's `sm`. */
 const MOBILE_QUERY = '(max-width: 640px)'
 
 /**
- * The longest a picture may be visible and still waiting.
+ * The longest a picture may be visible and still waiting on the *trigger*.
  *
  * The same guarantee the page's own reveal makes, and for the same reason: an
  * offset trigger on its own is a trap. A reader who stops scrolling with a
  * picture parked in the offset band is looking at something the observer will
  * not speak about again until it moves. This clock ends it.
+ *
+ * It is not, on its own, the longest a picture can stay hidden. This clock hands
+ * over to `arrive`, which may then wait up to `DECODE_GRACE_MS` for the bytes,
+ * so the two stack: 2161ms measured, against the 900 this constant might be read
+ * as promising. Both bounds are deliberate and neither is the whole answer, so
+ * changing one without the other moves a number nobody is looking at.
  */
 const SAFETY_MS = 900
 
@@ -256,10 +281,23 @@ export function usePictureReveal(rootRef: RefObject<HTMLElement | null>) {
     if (!root) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
-    const phone = window.matchMedia(MOBILE_QUERY)
+    /**
+     * The trigger distance for the viewport as it is now.
+     *
+     * Read per build rather than baked in, because a 'rootMargin' cannot be
+     * retuned in place — changing it means a new observer.
+     */
+    const offsetFor = () => {
+      const viewportHeight = document.documentElement.clientHeight || window.innerHeight
+      const base = window.matchMedia(MOBILE_QUERY).matches
+        ? MOBILE_TRIGGER_OFFSET_PX
+        : TRIGGER_OFFSET_PX
+      return Math.min(base, Math.round(viewportHeight * TRIGGER_VIEWPORT_FRACTION))
+    }
+
     let teardown: (() => void) | undefined
 
-    const build = () => {
+    const build = (offset: number) => {
       /*
        * Re-queried on every build rather than captured once. Groups on this page
        * can be gated, so the set is not knowable at mount, and a rebuild after a
@@ -271,6 +309,16 @@ export function usePictureReveal(rootRef: RefObject<HTMLElement | null>) {
       const waiting = new Map<Element, ReturnType<typeof setTimeout>>()
       /** Arrivals held waiting on a decode, so a teardown can cancel them. */
       const graceTimers = new Set<ReturnType<typeof setTimeout>>()
+      /**
+       * Whether this build still owns the page.
+       *
+       * A timer can be cleared; a promise cannot. An arrival held on
+       * `img.decode()` outlives its own teardown, and without this it comes back
+       * after a rebuild and marks a block shown that the *new* build had
+       * correctly re-hidden — while off screen, so the entrance is silently
+       * spent and the reader scrolls back to a picture already fully there.
+       */
+      let alive = true
 
       /*
        * Defined before the two observers it unobserves from, which is safe
@@ -310,7 +358,7 @@ export function usePictureReveal(rootRef: RefObject<HTMLElement | null>) {
            */
           let settled = false
           const go = () => {
-            if (settled) return
+            if (settled || !alive) return
             settled = true
             clearTimeout(grace)
             graceTimers.delete(grace)
@@ -321,8 +369,6 @@ export function usePictureReveal(rootRef: RefObject<HTMLElement | null>) {
           void img.decode().then(go).catch(go)
         })
       }
-
-      const offset = phone.matches ? MOBILE_TRIGGER_OFFSET_PX : TRIGGER_OFFSET_PX
 
       const trigger = new IntersectionObserver(
         (entries) => {
@@ -369,6 +415,7 @@ export function usePictureReveal(rootRef: RefObject<HTMLElement | null>) {
       }
 
       return () => {
+        alive = false
         trigger.disconnect()
         safety.disconnect()
         for (const timer of waiting.values()) clearTimeout(timer)
@@ -376,15 +423,34 @@ export function usePictureReveal(rootRef: RefObject<HTMLElement | null>) {
       }
     }
 
-    teardown = build()
-    const rebuild = () => {
+    /*
+     * Rebuilt on resize rather than on a breakpoint crossing, and only when the
+     * number actually changes.
+     *
+     * Watching the breakpoint stopped being enough once the offset depended on
+     * height: dragging a desktop window shorter changes what the offset should
+     * be without crossing 640px at all.
+     */
+    let offset = -1
+    const sync = () => {
+      const next = offsetFor()
+      if (next === offset) return
+      offset = next
       teardown?.()
-      teardown = build()
+      teardown = build(next)
     }
-    phone.addEventListener('change', rebuild)
+    sync()
+
+    let settle = 0
+    const onResize = () => {
+      window.clearTimeout(settle)
+      settle = window.setTimeout(sync, 200)
+    }
+    window.addEventListener('resize', onResize)
 
     return () => {
-      phone.removeEventListener('change', rebuild)
+      window.removeEventListener('resize', onResize)
+      window.clearTimeout(settle)
       teardown?.()
     }
   }, [rootRef])
