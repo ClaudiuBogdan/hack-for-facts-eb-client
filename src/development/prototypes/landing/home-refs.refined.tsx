@@ -22,6 +22,7 @@ import { NATIONAL_FACTS } from './home-refs.national-facts'
 import { PixelField } from './home-refs.pixel-art'
 import { FIELD_HOST_CLASS, FieldAnimationStyles } from './home-refs.field-animation'
 import { useFieldMotion } from './home-refs.field-motion'
+import { LightMaterialStyles } from './home-refs.light-material'
 import { ScrollLight, ScrollLightStyles, useScrollLight } from './home-refs.scroll-light'
 import { LandingSearch } from './home-refs.search'
 import { localEntityMatches } from './home-refs.search-local'
@@ -627,6 +628,7 @@ function RefinedLanding() {
 
   return (
     <div ref={rootRef} className="relative w-full bg-background" data-dev-marker={PROTOTYPE_MARKER}>
+      <LightMaterialStyles />
       <ScrollLightStyles />
       <RevealStyles />
       <SmearFilters />

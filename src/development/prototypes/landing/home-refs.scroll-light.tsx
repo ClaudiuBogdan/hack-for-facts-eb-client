@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import type { RefObject } from 'react'
+import { LIT_CLASS, TRAIL_BASE_PX } from './home-refs.light-material'
 
 /**
  * Scroll-coupled light running down the frame rules.
@@ -30,7 +31,10 @@ import type { RefObject } from 'react'
  * 3. **`will-change` is set here**, on two elements that are always moving.
  *    That is the case it exists for — unlike the ~990 field cells, where asking
  *    for that many layers would cost more than the repaint it saves.
- * 4. **Two palettes, not one, and no hue in either.** Silver, not white: a
+ * 4. **Two palettes, not one, and no hue in either**, and neither of them is
+ *    here — see `home-refs.light-material.tsx`, which owns everything both
+ *    lights are made of so that retuning the grey is one edit rather than two.
+ *    Silver, not white: a
  *    grey core with a lighter edge, which is the material rather than the
  *    maximum of the scale. Pure white is the brightest thing a screen has, so
  *    on near-black it blows out into a strip light and on near-white it can
@@ -48,9 +52,6 @@ import type { RefObject } from 'react'
  *    This is the one thing here that is a correctness rule rather than a taste
  *    one.
  */
-
-/** Unscaled height of the trail bar. `scaleY` works against this. */
-const TRAIL_BASE_PX = 260
 
 /** Trail length per pixel-per-frame of scroll speed. */
 const TRAIL_PER_VELOCITY = 4.2
@@ -128,111 +129,11 @@ const CSS = `
      its time going. Sharing one duration made a short scroll barely light at
      all, because the rise was still climbing when the fall began. */
   transition: opacity 130ms ease-out;
-
-  /*
-   * Light theme. The core runs 158 down to 134 against a frame rule of 230 on a
-   * page of 252, so it is a silver mark on the line rather than a hole in it.
-   *
-   * A white core was tried here first and is the thing this replaced. It was
-   * defensible — white is brighter than the rule, so the head read as the rule
-   * lighting up — but at 1px on a 230 rule it had 25 levels of headroom to work
-   * in, which is not enough to carry a mark, and the grey flank around it ended
-   * up doing all the visible work. Silver has the whole scale to itself.
-   *
-   * Not black either: a 1px mark at 60% black running 150px down the page pulls
-   * the eye off the text it is supposed to be accompanying. Mid grey is the
-   * value that is present without being loud.
-   */
-  --sp-trail: linear-gradient(
-    to bottom,
-    rgba(158, 158, 158, 0) 0%,
-    rgba(158, 158, 158, 0.24) 35%,
-    rgba(150, 150, 150, 0.55) 62%,
-    rgba(140, 140, 140, 0.85) 84%,
-    rgb(134, 134, 134) 100%
-  );
-  /* The flank. Feathered and barely there — it is what keeps the core from
-     reading as a drawn line, and it is the *lighter* end of the silver, so the
-     mark has a bright edge rather than a dark one. */
-  --sp-flank: linear-gradient(
-    to bottom,
-    rgba(176, 176, 176, 0) 0%,
-    rgba(176, 176, 176, 0.06) 35%,
-    rgba(170, 170, 170, 0.13) 62%,
-    rgba(166, 166, 166, 0.2) 84%,
-    rgba(164, 164, 164, 0.24) 100%
-  );
-  --sp-core: rgb(132, 132, 132);
-  /*
-   * Set where it is only just perceptible. A halo strong enough to notice on
-   * its own is a second mark competing with the head; this one is only there to
-   * keep the core from floating free of the page. It also lightens as it goes
-   * out, which is the same gradient the flank runs — the edge of the mark is
-   * its bright part, the middle its dark one.
-   */
-  --sp-halo: radial-gradient(
-    circle,
-    rgba(140, 140, 140, 0.22) 0%,
-    rgba(160, 160, 160, 0.1) 34%,
-    rgba(170, 170, 170, 0.035) 55%,
-    rgba(170, 170, 170, 0) 72%
-  );
-  --sp-rest: 0.5;
-  /*
-   * How much of the resting mark the halo carries. More on the light theme,
-   * where the core sits on a rule that is already close to it in value and the
-   * pool around it is what separates the two; on the dark theme the core stands
-   * 160 levels clear of its background and needs no help.
-   */
-  --sp-halo-rest: 1;
 }
 
 .tpz-light.is-idle {
   opacity: 0;
   transition: opacity 550ms ease;
-}
-
-/*
- * Dark theme: the reference's ramp with the hue taken out of it. The alphas are
- * still the measured ones — walking the tail's own column in the source crop
- * gives luminance 23 at the tip through 105 at the midpoint to 230 near the
- * head, over a background of 23 — but the chroma that carried them is gone, so
- * what is left is a grey scale running to white.
- *
- * The shape of the ramp is the point: it stays dim for the first half and does
- * almost all of its brightening in the last 30%. A linear fade reads as a
- * gradient; this reads as something incandescent at one end.
- */
-.dark .tpz-light {
-  --sp-trail: linear-gradient(
-    to bottom,
-    rgba(150, 150, 150, 0) 0%,
-    rgba(150, 150, 150, 0.2) 25%,
-    rgba(168, 168, 168, 0.34) 50%,
-    rgba(186, 186, 186, 0.6) 70%,
-    rgba(200, 200, 200, 0.86) 85%,
-    rgba(208, 208, 208, 0.96) 94%,
-    rgb(212, 212, 212) 100%
-  );
-  /* The same flank, in the material of this theme: the core's own ramp at a
-     fifth of its weight, spread across five pixels instead of one. */
-  --sp-flank: linear-gradient(
-    to bottom,
-    rgba(160, 160, 160, 0) 0%,
-    rgba(160, 160, 160, 0.045) 35%,
-    rgba(180, 180, 180, 0.09) 62%,
-    rgba(196, 196, 196, 0.15) 84%,
-    rgba(202, 202, 202, 0.18) 100%
-  );
-  --sp-core: rgb(214, 214, 214);
-  --sp-halo: radial-gradient(
-    circle,
-    rgba(200, 200, 200, 0.1) 0%,
-    rgba(178, 178, 178, 0.03) 40%,
-    rgba(178, 178, 178, 0) 70%
-  );
-  --sp-rest: 0.22;
-  --sp-halo-rest: 0.22;
 }
 
 .tpz-light-rail {
@@ -243,61 +144,6 @@ const CSS = `
   /* The rail itself never moves. '--sp-dx' and '--sp-rot-h' are set on it only
      so they inherit down: the head and the leg behind it travel, while the leg
      left on the vertical rule stays at the corner. */
-}
-
-.tpz-light-trail-v,
-.tpz-light-trail-h,
-.tpz-light-flank-v,
-.tpz-light-flank-h,
-.tpz-light-head,
-.tpz-light-halo {
-  position: absolute;
-  left: 0;
-  top: 0;
-  will-change: transform, opacity;
-}
-
-/* The trail hangs above the head and is scaled from its bottom edge, so the
-   head stays put while the tail lengthens behind it. 'scaleY' on a fixed box
-   costs a composite; animating 'height' would cost a layout. */
-.tpz-light-trail-v,
-.tpz-light-trail-h,
-.tpz-light-flank-v,
-.tpz-light-flank-h {
-  height: ${TRAIL_BASE_PX}px;
-  transform-origin: 50% 100%;
-}
-
-.tpz-light-trail-v,
-.tpz-light-trail-h {
-  width: 1px;
-  margin-left: -0.5px;
-  border-radius: 0.5px;
-  background: var(--sp-trail);
-}
-
-/*
- * The flank: the same tail, nine pixels wide and feathered to nothing at its
- * edges, sitting behind the 1px core.
- *
- * This is what turns a stroke into a beam. A single hard-edged bar reads as a
- * drawn line whatever colour it is; a bright core inside a soft field reads as
- * something emitting, because that is the cross-section light actually has.
- * Two elements rather than one because the falloff runs across the width while
- * the fade runs along the length, and a background gradient only has one axis
- * — the alternative is 'filter: drop-shadow', which would re-rasterise on every
- * frame of every scroll as 'scaleY' changes the source it blurs.
- *
- * The mask is static, so it costs a mask layer once and nothing per frame.
- */
-.tpz-light-flank-v,
-.tpz-light-flank-h {
-  width: 5px;
-  margin-left: -2.5px;
-  border-radius: 2.5px;
-  background: var(--sp-flank);
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 50%, transparent 100%);
-  mask-image: linear-gradient(to right, transparent 0%, #000 50%, transparent 100%);
 }
 
 /*
@@ -339,19 +185,7 @@ const CSS = `
   opacity: var(--sp-on, 0);
 }
 
-/* The core. Small, and a silver rather than a white — see the palettes above
-   for why the brightest value on the scale turned out to be the wrong one. */
 .tpz-light-head {
-  /* 1px — the rule's own width. Odd, so a half-pixel rail resolves it to whole
-     pixels and it sits exactly on the line; 2px cannot be centred on a 1px rule
-     at all, and 3px read as a bead on a thread. The head is the hot end of the
-     tail rather than a separate dot, which is how the reference does it too. */
-  width: 1px;
-  height: 1px;
-  margin-left: -0.5px;
-  margin-top: -0.5px;
-  border-radius: 50%;
-  background: var(--sp-core);
   transform: translate3d(var(--sp-dx, 0px), var(--sp-y, 0px), 0)
     scale(calc(1 + var(--sp-flare, 0) * 0.9));
   /* Never fully off: this is the page's position marker before it is an
@@ -363,22 +197,7 @@ const CSS = `
   opacity: min(1, calc(var(--sp-rest) + var(--sp-on, 0) * 0.78));
 }
 
-/* A pre-blurred texture rather than 'filter: blur'. Blur on a moving element
-   repaints the blurred region every frame; a radial gradient is something the
-   compositor can just move. */
 .tpz-light-halo {
-  /* Small. A halo wide enough to be read as a disc is a second mark competing
-     with the head instead of belonging to it — at 29px it was a grey coin
-     sliding down the rule. This is close enough to the 1px core that the two
-     read as one thing: a lit point with an edge, not a point inside a circle.
-     It rests at 0.55 of this and only reaches full width on a flare, so the
-     figure here is the largest it ever gets rather than its usual size. */
-  width: 9px;
-  height: 9px;
-  margin-left: -4.5px;
-  margin-top: -4.5px;
-  border-radius: 50%;
-  background: var(--sp-halo);
   transform: translate3d(var(--sp-dx, 0px), var(--sp-y, 0px), 0)
     scale(calc(0.55 + var(--sp-flare, 0) * 0.75));
   opacity: min(
@@ -650,15 +469,15 @@ export function useScrollLight(): RefObject<HTMLDivElement | null> {
 /** The two rails. Positions are written by the hook, which measures the frame. */
 export function ScrollLight() {
   return (
-    <div className="tpz-light" aria-hidden="true">
+    <div className={`tpz-light ${LIT_CLASS}`} aria-hidden="true">
       {[0, 1].map((rail) => (
         <div key={rail} className="tpz-light-rail">
-          <span className="tpz-light-halo" />
-          <span className="tpz-light-flank-v" />
-          <span className="tpz-light-flank-h" />
-          <span className="tpz-light-trail-v" />
-          <span className="tpz-light-trail-h" />
-          <span className="tpz-light-head" />
+          <span className="tpz-lit-halo tpz-light-halo" />
+          <span className="tpz-lit-flank tpz-light-flank-v" />
+          <span className="tpz-lit-flank tpz-light-flank-h" />
+          <span className="tpz-lit-core tpz-light-trail-v" />
+          <span className="tpz-lit-core tpz-light-trail-h" />
+          <span className="tpz-lit-head tpz-light-head" />
         </div>
       ))}
     </div>
