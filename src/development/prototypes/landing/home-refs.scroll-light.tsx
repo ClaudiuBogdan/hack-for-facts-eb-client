@@ -361,10 +361,14 @@ const CSS = `
    repaints the blurred region every frame; a radial gradient is something the
    compositor can just move. */
 .tpz-light-halo {
-  width: 29px;
-  height: 29px;
-  margin-left: -14.5px;
-  margin-top: -14.5px;
+  /* Small. A halo wide enough to be read as a disc is a second mark competing
+     with the head instead of belonging to it — at 29px it was a grey coin
+     sliding down the rule. This is close enough to the 1px core that the two
+     read as one thing: a lit point with an edge, not a point inside a circle. */
+  width: 17px;
+  height: 17px;
+  margin-left: -8.5px;
+  margin-top: -8.5px;
   border-radius: 50%;
   background: var(--sp-halo);
   transform: translate3d(var(--sp-dx, 0px), var(--sp-y, 0px), 0)
