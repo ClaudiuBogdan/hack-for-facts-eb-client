@@ -33,7 +33,7 @@ vi.mock('@lingui/core/macro', () => ({
 // Mock @/lib/utils
 vi.mock('@/lib/utils', () => ({
   cn: (...classes: (string | undefined)[]) => classes.filter(Boolean).join(' '),
-  getNormalizationUnit: () => 'RON',
+  getNormalizationUnit: ({ currency }: { currency: string }) => currency,
 }))
 
 // Mock period utils
@@ -66,6 +66,7 @@ const mockMapState = {
   filters: {
     account_category: 'ch',
     normalization: 'total',
+    currency: undefined as string | undefined,
     exclude: {},
   },
 }
@@ -137,8 +138,8 @@ vi.mock('./base-filter/FilterListContainer', () => ({
 }))
 
 vi.mock('./base-filter/FilterRangeContainer', () => ({
-  FilterRangeContainer: ({ title }: { title: string }) => (
-    <div data-testid={`filter-range-${title}`}>{title}</div>
+  FilterRangeContainer: ({ title, unit }: { title: string; unit: string }) => (
+    <div data-testid={`filter-range-${title}`}>{title} {unit}</div>
   ),
 }))
 
@@ -176,7 +177,7 @@ vi.mock('./flags-filter', () => ({
 }))
 
 vi.mock('./amount-range-filter', () => ({
-  AmountRangeFilter: () => <div data-testid="amount-range-filter">Amount Range</div>,
+  AmountRangeFilter: ({ unit }: { unit: string }) => <div data-testid="amount-range-filter">Amount Range {unit}</div>,
 }))
 
 vi.mock('./period-filter/PeriodFilter', () => ({
@@ -243,6 +244,15 @@ vi.mock('./funding-source-filter/FundingSourceFilter', () => ({
 describe('MapFilter', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockMapState.filters.currency = undefined
+    mockMapState.filters.normalization = 'total'
+  })
+
+  it.each(['total', 'total_euro', 'per_capita_euro'])('labels %s amount bounds with the effective EUR currency', normalization => {
+    mockMapState.filters.normalization = normalization
+    mockMapState.filters.currency = normalization === 'total' ? 'EUR' : undefined
+    render(<MapFilter presetMode />)
+    expect(screen.getByTestId('filter-range-Amount Range')).toHaveTextContent('EUR')
   })
 
   describe('rendering', () => {

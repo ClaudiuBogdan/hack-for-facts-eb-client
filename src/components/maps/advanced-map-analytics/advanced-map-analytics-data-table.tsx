@@ -54,6 +54,7 @@ export type {
 } from './advanced-map-analytics-table-types';
 
 interface AdvancedMapAnalyticsDataTableProps {
+  mapViewType?: 'UAT' | 'County';
   rows: AdvancedMapAnalyticsTableRow[];
   seriesColumns: AdvancedMapAnalyticsTableSeriesColumn[];
   groupingColumns?: AdvancedMapAnalyticsTableGroupingColumn[];
@@ -93,7 +94,8 @@ function getGroupingIdFromColumnId(columnId: string): string | undefined {
 function getColumnLabel(
   columnId: string,
   seriesLabelById: Map<string, string>,
-  groupingLabelById: Map<string, string>
+  groupingLabelById: Map<string, string>,
+  mapViewType: 'UAT' | 'County'
 ): string {
   const seriesId = getSeriesIdFromColumnId(columnId);
   if (seriesId) {
@@ -106,7 +108,7 @@ function getColumnLabel(
   }
 
   if (columnId === 'uat_name') {
-    return t`UAT`;
+    return mapViewType === 'County' ? t`Name` : t`UAT`;
   }
 
   if (columnId === 'group_identity') {
@@ -118,7 +120,7 @@ function getColumnLabel(
   }
 
   if (columnId === 'siruta_code') {
-    return 'SIRUTA';
+    return mapViewType === 'County' ? t`Code` : 'SIRUTA';
   }
 
   return columnId;
@@ -396,6 +398,7 @@ function sortTableRows(
 }
 
 export function AdvancedMapAnalyticsDataTable({
+  mapViewType = 'UAT',
   rows,
   seriesColumns,
   groupingColumns = [],
@@ -744,7 +747,7 @@ export function AdvancedMapAnalyticsDataTable({
                 className="inline-flex items-center gap-1"
                 onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
               >
-                {t`UAT`}
+                {mapViewType === 'County' ? t`Name` : t`UAT`}
                 {renderSortIcon(column.getIsSorted())}
               </button>
             ),
@@ -782,7 +785,7 @@ export function AdvancedMapAnalyticsDataTable({
                 className="inline-flex items-center gap-1"
                 onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
               >
-                SIRUTA
+                {mapViewType === 'County' ? t`Code` : 'SIRUTA'}
                 {renderSortIcon(column.getIsSorted())}
               </button>
             ),
@@ -875,6 +878,7 @@ export function AdvancedMapAnalyticsDataTable({
     isGroupedRowMode,
     rowMode,
     seriesColumns,
+    mapViewType,
   ]);
 
   const table = useReactTable({
@@ -917,15 +921,15 @@ export function AdvancedMapAnalyticsDataTable({
           'Row type',
           'Group ID',
           'Group',
-          'SIRUTA',
+          mapViewType === 'County' ? 'County code' : 'SIRUTA',
           'UAT',
           'Member count',
-          ...visibleColumns.map((column) => getColumnLabel(column.id, seriesLabelById, groupingLabelById)),
+          ...visibleColumns.map((column) => getColumnLabel(column.id, seriesLabelById, groupingLabelById, mapViewType)),
         ]
       : [
-          'SIRUTA',
+          mapViewType === 'County' ? 'County code' : 'SIRUTA',
           'CUI',
-          ...visibleColumns.map((column) => getColumnLabel(column.id, seriesLabelById, groupingLabelById)),
+          ...visibleColumns.map((column) => getColumnLabel(column.id, seriesLabelById, groupingLabelById, mapViewType)),
         ])
       .map((value) => escapeCsvCell(value))
       .join(',');
@@ -958,7 +962,7 @@ export function AdvancedMapAnalyticsDataTable({
     anchor.download = buildCsvExportFileName(mapTitle);
     anchor.click();
     URL.revokeObjectURL(url);
-  }, [groupingLabelById, mapTitle, rowMode, seriesLabelById, sortedRows, table]);
+  }, [groupingLabelById, mapTitle, mapViewType, rowMode, seriesLabelById, sortedRows, table]);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -1153,7 +1157,7 @@ export function AdvancedMapAnalyticsDataTable({
                     checked={column.getIsVisible()}
                     onCheckedChange={(checked) => column.toggleVisibility(Boolean(checked))}
                   >
-                    {getColumnLabel(column.id, seriesLabelById, groupingLabelById)}
+                    {getColumnLabel(column.id, seriesLabelById, groupingLabelById, mapViewType)}
                   </DropdownMenuCheckboxItem>
                 );
               })}

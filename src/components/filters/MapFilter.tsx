@@ -32,10 +32,11 @@ import { OptionItem } from './base-filter/interfaces';
 import { useEntityLabel } from '@/hooks/filters/useFilterLabels';
 import { useUserCurrency } from "@/lib/hooks/useUserCurrency";
 import { getEconomicPrefixLabel, getFunctionalPrefixLabel } from "@/lib/chart-filter-utils";
+import { normalizeNormalizationOptions } from "@/lib/normalization";
 import { getNormalizationUnit } from "@/lib/utils";
 import { NormalizationModeSelect } from "@/components/normalization/normalization-mode-select";
 
-export function MapFilter() {
+export function MapFilter({ presetMode = false }: Readonly<{ presetMode?: boolean }>) {
     const {
         mapState,
         clearAllFilters,
@@ -128,21 +129,21 @@ export function MapFilter() {
         (exclude.main_creditor_cui ? 1 : 0) +
         (exclude.uat_ids?.length ?? 0) +
         (exclude.county_codes?.length ?? 0) +
-        (exclude.economic_codes?.length ?? 0) +
-        (exclude.functional_codes?.length ?? 0) +
+        (presetMode ? 0 : (exclude.economic_codes?.length ?? 0)) +
+        (presetMode ? 0 : (exclude.functional_codes?.length ?? 0)) +
         (exclude.budget_sector_ids?.length ?? 0) +
         (exclude.funding_source_ids?.length ?? 0) +
         (exclude.entity_types?.length ?? 0) +
         (exclude.tags?.length ?? 0) +
-        (exclude.functional_prefixes?.length ?? 0) +
-        (exclude.economic_prefixes?.length ?? 0);
+        (presetMode ? 0 : (exclude.functional_prefixes?.length ?? 0)) +
+        (presetMode ? 0 : (exclude.economic_prefixes?.length ?? 0));
 
     const totalOptionalFilters =
         (mapState.filters.report_period ? 1 : 0) +
-        (mapState.filters.functional_codes?.length ?? 0) +
-        (mapState.filters.economic_codes?.length ?? 0) +
-        (mapState.filters.functional_prefixes?.length ?? 0) +
-        (mapState.filters.economic_prefixes?.length ?? 0) +
+        (presetMode ? 0 : (mapState.filters.functional_codes?.length ?? 0)) +
+        (presetMode ? 0 : (mapState.filters.economic_codes?.length ?? 0)) +
+        (presetMode ? 0 : (mapState.filters.functional_prefixes?.length ?? 0)) +
+        (presetMode ? 0 : (mapState.filters.economic_prefixes?.length ?? 0)) +
         (mapState.filters.entity_cuis?.length ?? 0) +
         (mapState.filters.main_creditor_cui ? 1 : 0) +
         (mapState.filters.entity_types?.length ?? 0) +
@@ -153,8 +154,8 @@ export function MapFilter() {
         (mapState.filters.expense_types?.length ?? 0) +
         (mapState.filters.uat_ids?.length ?? 0) +
         (mapState.filters.county_codes?.length ?? 0) +
-        (mapState.filters.aggregate_min_amount ? 1 : 0) +
-        (mapState.filters.aggregate_max_amount ? 1 : 0) +
+        (mapState.filters.aggregate_min_amount !== undefined ? 1 : 0) +
+        (mapState.filters.aggregate_max_amount !== undefined ? 1 : 0) +
         (mapState.filters.report_type ? 1 : 0) +
         (mapState.filters.is_uat !== undefined ? 1 : 0) +
         (mapState.filters.min_population ? 1 : 0) +
@@ -175,8 +176,8 @@ export function MapFilter() {
 
     const selectedAccountCategoryOption = useMemo(() => mapState.filters.account_category, [mapState.filters.account_category]);
     const amountUnit = useMemo(
-        () => getNormalizationUnit({ normalization: mapState.filters.normalization, currency: userCurrency }),
-        [mapState.filters.normalization, userCurrency]
+        () => getNormalizationUnit(normalizeNormalizationOptions({ normalization: mapState.filters.normalization, currency: mapState.filters.currency ?? userCurrency })),
+        [mapState.filters.normalization, mapState.filters.currency, userCurrency]
     );
     const reportTypeLabel = useMemo(() => {
         if (!mapState.filters.report_type) {
@@ -238,6 +239,7 @@ export function MapFilter() {
                         />
                     </div>
                 </div>
+                {presetMode ? <p className="px-4 py-3 text-sm text-muted-foreground">{t`The preset defines income, expenses and classifications. Select custom filters to edit them. Amount bounds apply to the final preset result.`}</p> : <>
                 <div className="p-3 border-b">
                     <h4 className="mb-2 text-sm font-medium flex items-center" id="income-expenses-label">
                         <ArrowUpDown className="w-4 h-4 mr-2" aria-hidden="true" />
@@ -254,6 +256,8 @@ export function MapFilter() {
                         />
                     </div>
                 </div>
+
+                </>}
 
                 <div className="p-3 border-b" data-testid="map-normalization-section">
                     <h4 className="mb-2 text-sm font-medium flex items-center" id="normalization-label">
@@ -318,6 +322,7 @@ export function MapFilter() {
                     setSelected={setSelectedCountyOptions}
                 />
 
+                {!presetMode && <>
                 <FilterListContainer
                     title={t`Functional Classification`}
                     icon={<ChartBar className="w-4 h-4" aria-hidden="true" />}
@@ -348,6 +353,8 @@ export function MapFilter() {
                     onValueChange={setEconomicPrefixes}
                     mapPrefixToLabel={getEconomicPrefixLabel}
                 />
+
+                </>}
 
                 {/* DEPRECATED legacy coarse taxonomy: only shown when a saved
                     URL still carries values, so they stay visible and clearable. */}
@@ -506,6 +513,7 @@ export function MapFilter() {
                                         setSelected={setExcludeSelectedCountyOptions}
                                     />
 
+                                    {!presetMode && <>
                                     <FilterListContainer
                                         title={`${t`Exclude`} ${t`Functional Classification`}`}
                                         icon={<ChartBar className="w-4 h-4 text-destructive" aria-hidden="true" />}
@@ -539,6 +547,8 @@ export function MapFilter() {
                                         onValueChange={setExcludeEconomicPrefixes}
                                         mapPrefixToLabel={getEconomicPrefixLabel}
                                     />
+
+                                    </>}
 
                                     {excludeSelectedEntityTypeOptions.length > 0 && (
                                         <FilterListContainer

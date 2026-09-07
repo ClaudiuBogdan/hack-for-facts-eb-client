@@ -1096,6 +1096,7 @@ export function MapAnalyticsPublicView({
               </div>
             ) : (
               <AdvancedMapAnalyticsDataTable
+                  mapViewType={mapState.mapViewType}
                 rows={filteredTableRows}
                 seriesColumns={seriesColumns}
                 groupingColumns={groupingColumns}

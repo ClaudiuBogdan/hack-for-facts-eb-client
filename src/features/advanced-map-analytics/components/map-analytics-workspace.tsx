@@ -256,7 +256,7 @@ interface MapAnalyticsWorkspaceProps {
   mobileControlsDefaultCollapsed?: boolean;
   onApplyImportedConfig?: (config: ImportedMapConfig) => Promise<void> | void;
   onBeforeExportConfig?: () => Promise<void> | void;
-  layout?: 'full' | 'preview';
+  layout?: 'full' | 'preview' | 'standalone';
   previewContainerClassName?: string;
   onEntityCuiSelect?: (selection: MapEntitySelection) => void;
   localValuesBySeriesId?: MapSeriesVectorCache;
@@ -518,6 +518,7 @@ export function MapAnalyticsWorkspace({
   );
   const isReadOnly = mode === 'public' || capabilities.readOnly;
   const isPreviewLayout = layout === 'preview';
+  const isStandaloneLayout = layout === 'standalone';
   const shouldUseEntityDetailsPanel =
     !isPreviewLayout &&
     typeof onEntityCuiSelect !== 'function' &&
@@ -2272,7 +2273,7 @@ export function MapAnalyticsWorkspace({
     modalBinsPreset,
     binsClassification,
     binsCanApply,
-    combinedWarnings,
+    combinedWarnings: allWarnings,
     toggleBinsPanelCollapsed,
     addBinsPreset,
     editBinsPreset,
@@ -2290,6 +2291,10 @@ export function MapAnalyticsWorkspace({
     activeValues: activeBinsValues,
     seriesWarnings,
   });
+  // /map stores compact filters, not the generated advanced-map draft, in its URL.
+  const combinedWarnings = isStandaloneLayout
+    ? allWarnings.filter(warning => warning.type !== 'url_budget')
+    : allWarnings;
 
   useEffect(() => {
     if (!selectedSeriesId) {
@@ -3720,13 +3725,13 @@ export function MapAnalyticsWorkspace({
   }
 
   return (
-    <div className="relative flex flex-col bg-background md:h-screen md:flex-row">
+    <div className={cn("relative flex flex-col bg-background md:h-screen", !isStandaloneLayout && "md:flex-row")}>
       <MapAnalyticsQuickActions
         mode={mode}
         mapState={mapState}
         mapDescription={mapDescription}
         onBeforeExportConfig={onBeforeExportConfig}
-        hidden={isEntityDetailsPanelOpen}
+        hidden={isStandaloneLayout || isEntityDetailsPanelOpen}
         hiddenOnMobile={shouldOverlayMobileControls && !isMobileControlsCollapsed}
       />
       {shouldOverlayMobileControls && !isMobileControlsCollapsed ? (
@@ -3740,12 +3745,12 @@ export function MapAnalyticsWorkspace({
         className={cn(
           shouldOverlayMobileControls
             ? 'absolute inset-x-0 top-0 z-[650] max-h-[80vh] bg-card rounded-b-2xl shadow-lg'
-            : 'border-r border-border bg-background text-foreground md:w-[430px] md:min-w-[430px]',
+            : isStandaloneLayout ? 'border-b border-border bg-background text-foreground' : 'border-r border-border bg-background text-foreground md:w-[430px] md:min-w-[430px]',
           groupConfigWorkspace ? 'overflow-hidden' : 'overflow-y-auto',
           'relative isolate flex flex-col'
         )}
       >
-        <div className="flex-1 space-y-0 px-5 py-2">
+        <div className={cn("flex-1 space-y-0 px-5 py-2", isStandaloneLayout && "flex flex-wrap items-center justify-between gap-4")}>
           <div className="pt-2 pb-4">
             <ViewTypeRadioGroup
               value={mapState.activeView}
@@ -3781,7 +3786,9 @@ export function MapAnalyticsWorkspace({
             ) : null}
           </div>
 
-          {isMobileControlsCollapseEnabled ? (
+          {isStandaloneLayout ? (
+            combinedWarnings.length > 0 ? <button type="button" className="text-sm underline" onClick={() => setIsWarningsModalOpen(true)}>{t`Warnings`} ({combinedWarnings.length})</button> : null
+          ) : isMobileControlsCollapseEnabled ? (
             <>
               <section className="rounded-2xl border bg-card p-3 shadow-sm">
                 <button
@@ -4028,6 +4035,7 @@ export function MapAnalyticsWorkspace({
                 </div>
               ) : (
                 <AdvancedMapAnalyticsDataTable
+                  mapViewType={mapViewType}
                   rows={filteredTableRows}
                   seriesColumns={seriesColumns}
                   groupingColumns={groupingColumns}
