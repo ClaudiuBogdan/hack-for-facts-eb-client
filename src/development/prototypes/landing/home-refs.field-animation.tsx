@@ -46,8 +46,16 @@ export const INTRO_CLASS = 'is-intro'
 /** Class the host carries while a ripple is in flight. */
 export const RIPPLING_CLASS = 'is-rippling'
 
-/** How long after mount the intro starts. Late enough to land after hydration. */
-export const INTRO_DELAY_MS = 420
+/**
+ * How long after mount the intro starts.
+ *
+ * Not the hydration guard the previous 420ms was written as — the effect this
+ * runs from is already post-hydration, so the wait buys nothing but stillness.
+ * And 420ms was long enough that the page looked settled and then changed its
+ * mind. Short enough now that the wave belongs to the page arriving, long
+ * enough that the first painted frame is still.
+ */
+export const INTRO_DELAY_MS = 150
 
 /** Intro duration plus its longest column delay, so the class can be dropped. */
 export const INTRO_TOTAL_MS = 2200
