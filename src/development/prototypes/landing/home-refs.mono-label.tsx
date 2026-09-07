@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { ComponentPropsWithoutRef } from 'react'
 import { cn } from '@/lib/utils'
 
 /**
@@ -12,12 +12,11 @@ import { cn } from '@/lib/utils'
 export function MonoLabel({
   children,
   className,
-}: {
-  readonly children: ReactNode
-  readonly className?: string
-}) {
+  ...rest
+}: Readonly<ComponentPropsWithoutRef<'span'>>) {
   return (
     <span
+      {...rest}
       className={cn('font-mono text-[0.625rem] uppercase leading-none tracking-[0.14em]', className)}
     >
       {children}

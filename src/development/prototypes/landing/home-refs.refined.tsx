@@ -14,6 +14,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import { scraperDatasetCatalog } from '@/lib/scraper-references'
 import { MonoLabel } from './home-refs.mono-label'
+import { RevealStyles, useRevealOnView } from './home-refs.reveal'
 import { NATIONAL_FACTS, formatFact } from './home-refs.national-facts'
 import { PixelField } from './home-refs.pixel-art'
 import { FIELD_HOST_CLASS, FieldAnimationStyles } from './home-refs.field-animation'
@@ -590,10 +591,15 @@ function RefinedLanding() {
   // The light measures the page it runs down, so it takes the root rather than
   // being handed coordinates.
   const rootRef = useScrollLight()
+  // The hero is deliberately not a group: it is on screen at load, so "first
+  // time in view" would mean "at load", and hiding server-rendered text at load
+  // is the failure this is built to avoid. The hero keeps its own entrance.
+  useRevealOnView(rootRef)
 
   return (
     <div ref={rootRef} className="w-full bg-background" data-dev-marker={PROTOTYPE_MARKER}>
       <ScrollLightStyles />
+      <RevealStyles />
       <ScrollLight />
       {/* Hero — open band. */}
       {/* The hero does *not* clip. It used to, and the search dropdown paid for
@@ -742,10 +748,11 @@ function RefinedLanding() {
       <section className="border-b bg-muted/20" aria-label="România în cifre">
         <Frame>
           <CruxMarks />
-          <dl className="grid grid-cols-2 lg:grid-cols-4">
+          <dl className="grid grid-cols-2 lg:grid-cols-4" data-reveal-group>
             {NATIONAL_FACTS.map((fact, i) => (
               <div
                 key={fact.label}
+                data-reveal
                 className={cn(
                   'flex flex-col px-5 py-6 sm:py-7',
                   i % 2 === 1 && 'border-l',
@@ -783,16 +790,24 @@ function RefinedLanding() {
       {/* Statement — open band. */}
       <section className="border-b">
         <Frame className="py-16 sm:py-20">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12" data-reveal-group>
             <div className="lg:col-span-5">
-              <MonoLabel className="text-primary">01 / Ce găsești aici</MonoLabel>
-              <h2 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+              <MonoLabel className="text-primary" data-reveal>
+                01 / Ce găsești aici
+              </MonoLabel>
+              <h2
+                data-reveal
+                className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
+              >
                 Fiecare sursă,
                 <br />
                 într-un singur loc
               </h2>
             </div>
-            <p className="text-base leading-relaxed text-muted-foreground lg:col-span-6 lg:col-start-7">
+            <p
+              data-reveal
+              className="text-base leading-relaxed text-muted-foreground lg:col-span-6 lg:col-start-7"
+            >
               Platforma acoperă banii publici de la bugetul de stat până la
               dosarul din instanță. Fiecare suprafață spune ce întrebare
               răspunde — și de unde vin cifrele.
@@ -815,17 +830,22 @@ function RefinedLanding() {
           makes stating it at all a requirement. */}
       <section className="border-b">
         <Frame className="py-14 sm:py-16">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12" data-reveal-group>
             <div className="lg:col-span-5">
-              <MonoLabel className="text-primary">02 / Proveniență</MonoLabel>
-              <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+              <MonoLabel className="text-primary" data-reveal>
+                02 / Proveniență
+              </MonoLabel>
+              <h2
+                data-reveal
+                className="mt-3 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
+              >
                 Fiecare cifră
                 <br />
                 își spune sursa
               </h2>
             </div>
             <div className="lg:col-span-6 lg:col-start-7">
-              <p className="text-base leading-relaxed text-muted-foreground">
+              <p data-reveal className="text-base leading-relaxed text-muted-foreground">
                 Datele vin din surse oficiale — ANAF, Ministerul Finanțelor,
                 SEAP, Monitorul Oficial, INS. Unele seturi sunt încă în curs de
                 conectare și sunt marcate ca atare acolo unde apar. Nicio cifră
