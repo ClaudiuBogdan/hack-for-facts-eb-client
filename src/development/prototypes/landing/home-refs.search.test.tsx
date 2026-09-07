@@ -455,6 +455,7 @@ describe('LandingSearch', () => {
       await typeAndWait(user, 'Iasi')
 
       expect(input.className).not.toContain('rounded-b-none')
+      expect(input.className).toContain('focus:border-ring')
       expect(screen.getByRole('listbox').closest('[class*="max-h-"]')?.className).not.toContain(
         'border-t-0',
       )
@@ -464,15 +465,33 @@ describe('LandingSearch', () => {
       const { user, input } = setup({ joined: true })
       await typeAndWait(user, 'Iasi')
 
-      // The join is one border, not two: the panel drops its border along the
-      // seam and the field's own border is the line between them. The field
-      // squares off only while there is a panel to square off against — the
-      // variant is `data-popup-open:`, so it rounds again the moment the panel
-      // closes.
-      expect(input.className).toContain('data-popup-open:border-ring')
+      // Focus looks the same whether the results are showing or not. This is
+      // the assertion, not a detail of it: an indicator that appears on focus
+      // and vanishes when the reader types tells them focus moved when it did
+      // not, and that is worse than the colour problem it was introduced to
+      // fix. Same border, same lift, under `focus:` and under
+      // `data-popup-open:` alike.
+      for (const state of ['focus:', 'data-popup-open:']) {
+        expect(input.className).toContain(`${state}border-foreground/70`)
+        expect(input.className).toContain(`${state}shadow-lg`)
+      }
+
+      // Neutral, not the app's focus blue, and the shadcn ring suppressed with
+      // it — the ring is a box-shadow, so it outlines the field alone and
+      // cannot follow the join.
+      expect(input.className).not.toContain('focus:border-ring')
+      expect(input.className).toContain('focus-visible:ring-0')
 
       const popup = screen.getByRole('listbox').closest('[class*="max-h-"]')
-      expect(popup?.className).toContain('border-ring')
+      expect(popup?.className).toContain('border-foreground/70')
+      expect(popup?.className).toContain('shadow-lg')
+
+      // The field drops its border along the seam too, so the divider under the
+      // header is the single line between the query and the answers. Two rules
+      // 45px apart around a tinted strip boxes the field off as its own object
+      // again, which is the opposite of the point.
+      expect(input.className).toContain('data-popup-open:data-[popup-side=bottom]:border-b-0')
+      expect(input.className).toContain('data-popup-open:data-[popup-side=top]:border-t-0')
 
       // Both sides, because Base UI flips when the room below runs out and a
       // join that assumes "below" inverts instead of moving: wrong corners

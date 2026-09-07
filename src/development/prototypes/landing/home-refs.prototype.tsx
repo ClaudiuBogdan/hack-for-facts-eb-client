@@ -32,14 +32,15 @@ export const prototype = {
       component: LandingRefs,
       note: `Results float below the field, 8px clear of it, rising 4px as they fade in. Base UI search with a diacritic-folded match highlight, two-stage Escape, and results that are real links. Intro wave across ${FIELD_RECT_COUNT} cells per side, a ripple on a hero click, and a scroll light closing on the centre of the bottom border.`,
     },
-    'landing-joined': {
-      title: 'Landing page — joined search',
+    joined: {
+      title: 'Joined search',
       component: LandingRefsJoined,
-      // Kept to roughly the length of the note above on purpose: the harness
-      // prints it over the page, so a note one line longer pushes the field
-      // down and the two variants stop being compared at the same scroll
-      // position. That difference was enough to change where the panel landed.
-      note: 'Field and results as one surface: no gap, the field squares its bottom corners while open, the panel takes no top border, and the seam is the field\'s own bottom border. Fades in place rather than rising, and stays below rather than flipping.',
+      // The key is `joined` rather than `landing-joined` because the harness
+      // prints the `?v=` above the page: `?v=landing-joined` wraps to two lines
+      // where `?v=landing` does not, which pushed the field 16px down and left
+      // the two variants being compared at different scroll positions. That was
+      // enough, once, to change which side the panel landed on.
+      note: 'Field and results as one grey surface: no gap, no seam line under the field, and the divider below the header is the single line between the query and the answers. The shadow carries the elevation, the focus ring steps aside while the panel is open, and the join follows the panel if it flips above the field.',
     },
   },
 } satisfies PrototypeDefinition

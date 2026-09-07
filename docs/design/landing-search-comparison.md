@@ -216,14 +216,15 @@ not.
 ## Still open — does the panel float or attach?
 
 The library is settled; the shape of the panel is not. Two variants of the same
-page, at `?v=landing` and `?v=landing-joined`:
+page, at `?v=landing` and `?v=joined`:
 
 | | **floating** (`landing`) | **joined** (`landing-joined`) |
 |---|---|---|
 | Gap below the field | 8px | none |
 | Field's bottom corners | rounded | squared while the panel is open |
-| Border between them | two, 8px apart | one — the field's own |
-| Panel border colour | `border` | `ring`, matching the focused field |
+| Border between them | two, 8px apart | one — the divider under the header |
+| Focus indicator | `ring` blue on the field | `foreground/70` neutral on the pair, plus the lift |
+| Shadow | `shadow-md`, panel only | `shadow-lg`, on field and panel alike |
 | Enter animation | fade + 4px rise | fade only |
 | Out of room below | flips above the field | flips too — the join follows to the field's top edge |
 
@@ -237,19 +238,50 @@ Three things fall out of the join rather than being decided separately:
 - **The rise has to go.** A panel attached to the field that rises as it fades
   reads as sliding out from behind the field, which undoes the join in the one
   moment the reader is watching it happen.
-- **The border colour has to follow the field.** The field's border goes to
-  `ring` on focus, and the panel is open only while the field is focused, so a
-  panel left at the default border would draw a colour change exactly along the
-  seam it is trying to hide.
+- **Focus has to be one treatment, and it cannot be the blue.** This took three
+  attempts and the two failures are worth keeping, because they fail in opposite
+  directions.
+
+  Matching the panel *to* the focused field came first: a blue outline around
+  the whole assembly. Correct in structure, wrong in weight — it is a great deal
+  of colour to spend saying "focused" on a design whose entire premise is one
+  quiet surface.
+
+  So the second attempt turned both borders grey and suppressed the ring once
+  the panel opened, reasoning that an open panel attached to the field says
+  "focused" at ten times the size. That fixed the colour and broke something
+  worse: **the indicator appeared on focus and vanished the moment the reader
+  typed.** Focus had not moved. The interface said it had. A focus indicator
+  that comes and goes under the reader is a worse defect than a loud one, and it
+  is the kind that only shows up when someone uses the thing rather than looks
+  at a screenshot of it.
+
+  What works is a neutral: `border-foreground/70` on the field and the panel
+  together, with `shadow-lg`, applied identically whether the panel is open or
+  shut. Nothing appears, nothing disappears, and the outline traces the pair
+  because the seam-side borders are already gone. It measures 5.9:1 against the
+  card and 4.7:1 against the resting border, so it clears the 3:1 a focus
+  indicator owes — which a light-grey darkening, the obvious way to keep it
+  quiet, does not.
+
+  The shadcn ring is suppressed in both states rather than one. It is a
+  box-shadow, so it outlines the field alone and cannot follow the join; the
+  border replaces it.
 - **The join has to be side-aware**, for the reason in the correction above.
   Preventing the flip instead is worse than the problem it solves.
 
-The header row survives in both. It sits directly under the field when joined,
-which is why it is tinted there — untinted it reads as an orphaned first result
-rather than as the shoulder between the field and the answers. Dropping it was
-considered and rejected: it carries the CUI column label, and it carries the
-stand-in-data badge, which is not optional under `DESIGN.md` §Mock-First
-Contract.
+The header row survives in both, and joined it does more work: the field stands
+directly on it with no seam line of its own, so the divider *under* the header
+is the only line between the query and the answers. Drawing both — a seam under
+the field and a divider under the header, 45px apart around a tinted strip —
+boxes the field off as its own object again. Tinted, the strip is the shoulder
+the field stands on. Dropping the header was considered and rejected: it carries
+the CUI column label, and it carries the stand-in-data badge, which is not
+optional under `DESIGN.md` §Mock-First Contract.
+
+Measured at 1×, the field's border and the panel's land on the same column at
+the same value either side of the seam, so the pair reads as one outline rather
+than as two that nearly line up.
 
 ## Reproducing
 

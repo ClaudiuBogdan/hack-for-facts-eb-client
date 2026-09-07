@@ -274,19 +274,55 @@ export function LandingSearch({
                   setIsOpen(false)
                 }}
                 className={cn(
-                  'h-12 rounded-lg border-input bg-card pl-10 pr-20 text-base shadow-none transition-colors hover:border-ring/50 focus:border-ring md:text-base',
+                  'h-12 rounded-lg border-input bg-card pl-10 pr-20 text-base shadow-none transition-colors hover:border-ring/50 md:text-base',
+                  // Floating, focus is the blue border the rest of the app
+                  // uses. The panel is a separate object below, so outlining
+                  // the field alone is honest.
+                  !joined && 'focus:border-ring',
                   // `data-popup-open` is on the input itself, so the field
                   // squares off only while there is something below it to
                   // square off against, and rounds again the moment the panel
                   // closes. The border goes to `ring` with it: the panel below
                   // carries the same colour, and a focused blue field seamed to
                   // a grey panel would draw the join it is trying to hide.
-                  joined && 'data-popup-open:border-ring',
-                  // Squared against whichever edge the panel actually landed
-                  // on, not against the one it usually lands on. `data-popup-
-                  // side` is on the input, so the field follows the panel.
-                  joined && 'data-popup-open:data-[popup-side=bottom]:rounded-b-none',
-                  joined && 'data-popup-open:data-[popup-side=top]:rounded-t-none',
+                  // Joined, focus is one treatment that does not change when
+                  // the results arrive: the border darkens to a neutral and the
+                  // surface lifts, open or closed.
+                  //
+                  // Two earlier attempts were both wrong, in opposite ways. A
+                  // blue outline around the whole assembly spends a lot of
+                  // colour saying "focused" and fights a design whose whole
+                  // point is one quiet surface. Removing it once the panel
+                  // opened fixed the colour and broke something worse — the
+                  // indicator appeared on focus and then vanished the moment
+                  // the reader typed, so the field looked focused, then didn't,
+                  // while focus had not moved at all.
+                  //
+                  // A neutral dark border is the way to have both. It is the
+                  // same treatment in both states, so nothing appears or
+                  // disappears; it is grey, so the surface stays quiet; and at
+                  // 70% of the foreground it clears 3:1 against both the card
+                  // and the resting border, which the light-grey darkening this
+                  // nearly shipped as did not — that would have been a focus
+                  // indicator only someone who already knew where it was could
+                  // find.
+                  joined && 'focus:border-foreground/70 data-popup-open:border-foreground/70',
+                  joined && 'focus:shadow-lg data-popup-open:shadow-lg',
+                  // shadcn's ring is a box-shadow, so it outlines the field
+                  // alone and cannot follow the join. The border above replaces
+                  // it — in both states, which is the point.
+                  joined && 'focus-visible:ring-0',
+                  // Squared and opened against whichever edge the panel
+                  // actually landed on, not the one it usually lands on.
+                  // `data-popup-side` is on the input, so the field follows the
+                  // panel. The border on that edge goes too: the divider under
+                  // the header is the one line between the query and the
+                  // answers, so a second line here would box the field off as
+                  // its own object again.
+                  joined &&
+                    'data-popup-open:data-[popup-side=bottom]:rounded-b-none data-popup-open:data-[popup-side=bottom]:border-b-0',
+                  joined &&
+                    'data-popup-open:data-[popup-side=top]:rounded-t-none data-popup-open:data-[popup-side=top]:border-t-0',
                 )}
               />
             }
@@ -363,7 +399,10 @@ export function LandingSearch({
               // against all five for the floating version, which simply flipped.
               // A join that follows the panel survives that; a join that fights
               // the positioning does not.
-              joined && 'border-ring',
+              // Same neutral as the focused field, so the outline is one
+              // continuous line around the pair rather than two that happen to
+              // meet.
+              joined && 'border-foreground/70 shadow-lg',
               joined && 'data-[side=bottom]:rounded-t-none data-[side=bottom]:border-t-0',
               joined && 'data-[side=top]:rounded-b-none data-[side=top]:border-b-0',
               // Base UI animates with transitions rather than keyframes:
@@ -390,12 +429,14 @@ export function LandingSearch({
             <div
               className={cn(
                 'flex items-baseline justify-between gap-3 border-b px-4 py-3',
-                // Directly under the field with no gap, the header would read
-                // as an orphan first row. Tinted, it reads as the shoulder
-                // between the field and the answers. It is kept rather than
-                // dropped because it carries the CUI column label and the
-                // stand-in-data badge, and that badge is not optional.
-                joined && 'bg-muted/30',
+                // Joined, this is the only divider between the query and the
+                // answers, and the field sits directly on it — no seam line of
+                // its own, because two rules 45px apart around a tinted strip
+                // reads as a boxed-off row rather than as one surface. Tinted,
+                // the strip is the shoulder the field stands on. It is kept
+                // rather than dropped because it carries the CUI column label
+                // and the stand-in-data badge, and that badge is not optional.
+                joined && 'bg-muted/40',
               )}
             >
               <MonoLabel className="text-muted-foreground">
