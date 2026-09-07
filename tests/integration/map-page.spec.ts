@@ -1,380 +1,158 @@
-/**
- * Map Page Integration Tests
- *
- * Tests the map page functionality including:
- * - Map display with Leaflet
- * - Filters panel
- * - View type toggles
- * - Legend display
- */
-
-import { expect, type Page } from '@playwright/test'
+/** Browser acceptance for the simple map and its native grouped-series contract. */
+import { expect, type Page, type Request } from '@playwright/test'
 import { test } from '../utils/integration-base'
-import { waitForHydration } from '../utils/test-helpers'
-import type { MockApiFixture } from '../utils/types'
 
-function getGraphQLOperationName(postData: string | null): string | null {
-  if (!postData) return null
+const nativeMapEndpoint = '**/api/v1/advanced-map-analytics/grouped-series'
+const isNativeMapRequest = (request: Request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/v1/advanced-map-analytics/grouped-series'
+const presetSelector = (page: Page) => page.getByRole('combobox', { name: /configurare hartă|map configuration/i })
+const filtersRegion = (page: Page) => page.getByRole('region', { name: /filtre.*hartă|map.*filters/i })
+const viewSelector = (page: Page) => page.getByRole('radiogroup', { name: /advanced map analytics active view|vizualizare activă analize hărți avansate/i })
 
-  try {
-    const body = JSON.parse(postData) as {
-      operationName?: string
-      query?: string
+async function mockNativeMap(page: Page) {
+  await page.route(nativeMapEndpoint, async route => {
+    const body = route.request().postDataJSON() as {
+      granularity: 'UAT' | 'County'
+      series: { id: string; filter: { account_category: 'vn' | 'ch' } }[]
     }
+    // Independent fixture: income 3M/6M, expenses 2M/4M, balance 1M/2M.
+    const codes = body.granularity === 'County' ? ['CJ'] : ['1017', '54975']
+    const csv = [
+      ['siruta_code', ...body.series.map(series => series.id)].join(','),
+      ...codes.map((code, index) => [code, ...body.series.map(series =>
+        String((series.filter.account_category === 'vn' ? 3000000 : 2000000) * (index + 1)))].join(',')),
+    ].join('\n')
+    await route.fulfill({ json: { ok: true, data: {
+      manifest: { generated_at: '2026-09-07T00:00:00Z', format: 'wide_matrix_v1', granularity: body.granularity,
+        series: body.series.map(series => ({ series_id: series.id, unit: 'RON', defined_value_count: codes.length })) },
+      payload: { mime: 'text/csv', compression: 'none', data: csv }, warnings: [],
+    } } })
+  })
+}
 
-    if (body.operationName) return body.operationName
-    if (!body.query) return null
+async function openFilters(page: Page) {
+  await page.getByRole('button', { name: /^filtre$|^filters$/i }).click()
+  await expect(filtersRegion(page)).toBeVisible()
+}
+async function closeFilters(page: Page) {
+  await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click()
+}
+async function switchView(page: Page, view: 'map' | 'table' | 'analytics') {
+  const name = { map: /^hartă$|^map$/i, table: /^tabel$|^table$/i, analytics: /^analiză$|^analytics$/i }[view]
+  await viewSelector(page).getByText(name).click()
+  await expect(viewSelector(page).getByRole('radio', { name })).toBeChecked()
+}
 
-    const queryOperationMatch = body.query.match(/(?:query|mutation|subscription)\s+(\w+)/)
-    return queryOperationMatch?.[1] ?? null
-  } catch {
-    return null
+test.describe('Simple map page', () => {
+  test.beforeEach(async ({ page, mockApi }) => {
+    test.skip(mockApi.mode !== 'mock', 'This suite uses a deterministic native API fixture.')
+    // Filter lookup data is outside this suite; never fall through to a live GraphQL API.
+    await page.route('**/graphql', route => route.abort('blockedbyclient'))
+    await mockNativeMap(page)
+    await page.goto('/map')
+    await expect(presetSelector(page)).toBeVisible()
+    await expect(page.getByTestId('leaflet-map')).toBeVisible({ timeout: 15000 })
+  })
+
+  test('shows presets and data views without advanced editor panels', async ({ page }) => {
+    await expect(presetSelector(page)).toHaveValue('')
+    await expect(viewSelector(page)).toBeVisible()
+    await expect(filtersRegion(page)).toBeHidden()
+    await expect(page.getByRole('button', { name: /adaugă serie|add series/i })).toBeHidden()
+    await expect(page.getByTestId('map-geojson-source-link')).toHaveAttribute('href', /^https:\/\/geo-spatial\.org/)
+    await expect(page.getByTestId('map-attribution-link')).toBeVisible()
+    await page.getByTestId('map-zoom-in').click()
+    await page.getByTestId('map-zoom-out').click()
+  })
+
+  test('keeps period, normalization and selection filters in the dialog', async ({ page }) => {
+    await openFilters(page)
+    await expect(page.getByTestId('map-normalization-select')).toBeVisible()
+    await expect(filtersRegion(page).getByText('2025', { exact: true })).toBeVisible()
+    for (const name of [/^entități$|^entities$/i, /^județe$|^counties$/i, /^(Creditor Principal|Main Creditor)$/i, /^UAT-uri$|^UATs$/i, /interval sumă|amount range/i]) {
+      await expect(filtersRegion(page).getByRole('button', { name })).toBeVisible()
+    }
+    const entities = filtersRegion(page).getByRole('button', { name: /^entități$|^entities$/i })
+    await entities.click()
+    await expect(entities).toHaveAttribute('data-state', 'open')
+  })
+
+  test('custom mode retains editable categories and classifications', async ({ page }) => {
+    await openFilters(page)
+    const categories = filtersRegion(page).getByRole('group', { name: /venituri.*cheltuieli|income.*expenses/i })
+    await expect(categories).toBeVisible()
+    await expect(filtersRegion(page).getByRole('button', { name: /clasificație.*funcțională|functional.*classification/i }).first()).toBeVisible()
+    const request = page.waitForRequest(request => isNativeMapRequest(request) && request.postDataJSON().series[0]?.filter.account_category === 'vn')
+    await categories.getByText(/^venituri$|^income$/i).click()
+    await request
+  })
+
+  test('presets own categories while shared filters remain editable', async ({ page }) => {
+    await presetSelector(page).selectOption('income')
+    await openFilters(page)
+    await expect(filtersRegion(page).getByText(/presetul stabilește|the preset defines/i)).toBeVisible()
+    await expect(filtersRegion(page).getByRole('group', { name: /venituri.*cheltuieli|income.*expenses/i })).toBeHidden()
+    await expect(filtersRegion(page).getByRole('button', { name: /clasificație.*funcțională|functional.*classification/i })).toBeHidden()
+    await expect(filtersRegion(page).getByRole('button', { name: /^județe$|^counties$/i })).toBeVisible()
+  })
+
+  test('switches county geography and requests county totals', async ({ page }) => {
+    await openFilters(page)
+    const request = page.waitForRequest(request => isNativeMapRequest(request) && request.postDataJSON().granularity === 'County')
+    await filtersRegion(page).getByRole('group', { name: /vizualizare.*hartă|map.*view/i }).getByText(/^județ$|^county$/i).click()
+    await request
+    await expect(page).toHaveURL(/mapViewType=County/)
+    await closeFilters(page)
+    await switchView(page, 'table')
+    await expect(page.getByRole('cell', { name: 'CJ', exact: true })).toBeVisible()
+    await expect(page.getByRole('columnheader', { name: /^cod$|^code$/i })).toBeVisible()
+  })
+
+  test('renders the native table and restores the legacy chart URL', async ({ page }) => {
+    await switchView(page, 'table')
+    await expect(page.getByRole('cell', { name: '1017', exact: true })).toBeVisible()
+    await expect(page.getByRole('cell', { name: '54975', exact: true })).toBeVisible()
+    await switchView(page, 'analytics')
+    await expect(page).toHaveURL(/activeView=chart/)
+    await expect(page.getByRole('heading', { name: /totaluri serii|series totals/i })).toBeVisible()
+    await page.reload()
+    await expect(page.getByRole('heading', { name: /totaluri serii|series totals/i })).toBeVisible()
+  })
+
+  test('filters the final balance instead of its income and expense operands', async ({ page }) => {
+    const sourceFilters: Record<string, unknown>[] = []
+    page.on('request', request => {
+      if (isNativeMapRequest(request)) {
+        sourceFilters.push(...request.postDataJSON().series.map((series: { filter: Record<string, unknown> }) => series.filter))
+      }
+    })
+    const filters = { account_category: 'ch', normalization: 'total', report_period: { type: 'YEAR', selection: { dates: ['2025'] } }, aggregate_min_amount: '1500000' }
+    await page.goto('/map?preset=balance&activeView=table&filters=' + encodeURIComponent(JSON.stringify(filters)))
+    await expect(page.getByRole('cell', { name: '54975', exact: true })).toBeVisible()
+    await expect(page.getByRole('cell', { name: '1017', exact: true })).toBeHidden()
+    await expect(page.getByRole('columnheader', { name: /balanță bugetară|budget balance/i })).toBeVisible()
+    await expect(page.getByRole('columnheader', { name: /population|populație/i })).toBeHidden()
+    expect(sourceFilters).toHaveLength(2)
+    for (const filter of sourceFilters) {
+      expect(filter.aggregate_min_amount).toBeUndefined()
+      expect(filter.aggregate_max_amount).toBeUndefined()
+    }
+  })
+
+  for (const view of ['map', 'table', 'analytics'] as const) {
+    test(`shows loading and recovers in ${view} after changing the preset`, async ({ page }) => {
+      await switchView(page, view)
+      await page.route(nativeMapEndpoint, async route => {
+        await new Promise(resolve => setTimeout(resolve, 1500))
+        await route.fallback()
+      })
+      await presetSelector(page).selectOption('income')
+      const loading = page.getByText(/loading.*(?:analytics|data)|se încarcă.*(?:analiz|date)/i).first()
+      await expect(loading).toBeVisible()
+      await expect(loading).toBeHidden({ timeout: 10000 })
+      await expect(page.getByRole('heading', { level: 1, name: /^venituri$|^income$/i })).toBeVisible()
+      if (view === 'map') await expect(page.getByTestId('leaflet-map')).toBeVisible()
+      if (view === 'table') await expect(page.getByRole('cell', { name: '54975', exact: true })).toBeVisible()
+      if (view === 'analytics') await expect(page.getByRole('heading', { name: /totaluri serii|series totals/i })).toBeVisible()
+    })
   }
-}
-
-async function registerDelayedHeatmapRoute(page: Page, delayMs = 1500): Promise<void> {
-  await page.route('**/graphql', async (route) => {
-    const request = route.request()
-    if (request.method() !== 'POST') return route.fallback()
-
-    const operationName = getGraphQLOperationName(request.postData())
-    const isHeatmapOperation = operationName === 'GetHeatmapUATData' || operationName === 'GetHeatmapCountyData'
-
-    if (isHeatmapOperation) {
-      await new Promise((resolve) => setTimeout(resolve, delayMs))
-    }
-
-    return route.fallback()
-  })
-}
-
-async function mockMapOperations(mockApi: MockApiFixture) {
-  await mockApi.mockGraphQL('GetHeatmapUATData', 'heatmap-uat-data')
-  await mockApi.mockGraphQL('GetHeatmapCountyData', 'heatmap-county-data')
-}
-
-async function switchDataView(page: Page, viewLabel: RegExp): Promise<void> {
-  const dataViewGroup = page.getByRole('group', { name: /vizualizare.*date|data.*view/i })
-  await dataViewGroup.getByText(viewLabel).click()
-}
-
-async function triggerHeatmapRefetch(page: Page): Promise<void> {
-  const incomeExpensesGroup = page.getByRole('group', { name: /venituri.*cheltuieli|income.*expenses/i })
-  await incomeExpensesGroup.getByText(/venituri|income/i).click()
-}
-
-test.describe('Map Page', () => {
-	test.beforeEach(async ({ page, mockApi }) => {
-		if (mockApi.mode === 'live') {
-			test.skip()
-			return
-		}
-
-		await mockMapOperations(mockApi)
-		await page.goto('/map')
-		// Wait for filters region to be visible (indicates page loaded)
-		await expect(
-			page.getByRole('region', { name: /filtre.*hartă|map.*filters/i })
-		).toBeVisible({ timeout: 15000 })
-		await waitForHydration(page)
-	})
-
-  test('displays map filters region with title', async ({ page }) => {
-    // Check for filters region
-    await expect(
-      page.getByRole('region', { name: /filtre.*hartă|map.*filters/i })
-    ).toBeVisible()
-
-    // Check for clear filters button
-    await expect(
-      page.getByRole('button', { name: /șterge.*filtre|clear.*filters/i })
-    ).toBeVisible()
-  })
-
-  test('displays data view toggle (Map/Table/Chart)', async ({ page }) => {
-    // Check for view type heading
-    await expect(
-      page.getByRole('heading', { name: /vizualizare.*date|data.*view/i, level: 4 })
-    ).toBeVisible({ timeout: 5000 })
-
-    // Check for radio buttons
-    await expect(page.getByRole('radio', { name: /hartă|map/i })).toBeVisible()
-    await expect(page.getByRole('radio', { name: /tabel|table/i })).toBeVisible()
-    await expect(page.getByRole('radio', { name: /grafic|chart/i })).toBeVisible()
-
-    // Map should be selected by default
-    await expect(page.getByRole('radio', { name: /hartă|map/i })).toBeChecked()
-  })
-
-  test('displays map view toggle (UAT/County)', async ({ page }) => {
-    // Check for map view heading
-    await expect(
-      page.getByRole('heading', { name: /vizualizare.*hartă|map.*view/i, level: 4 })
-    ).toBeVisible({ timeout: 5000 })
-
-    // Check for radio buttons
-    await expect(page.getByRole('radio', { name: /uat/i })).toBeVisible()
-    await expect(page.getByRole('radio', { name: /județ|county/i })).toBeVisible()
-
-    // UAT should be selected by default
-    await expect(page.getByRole('radio', { name: /uat/i })).toBeChecked()
-  })
-
-  test('displays income/expenses toggle', async ({ page }) => {
-    // Check for income/expenses heading
-    await expect(
-      page.getByRole('heading', { name: /venituri.*cheltuieli|income.*expenses/i, level: 4 })
-    ).toBeVisible({ timeout: 5000 })
-
-    // Check for radio buttons
-    await expect(page.getByRole('radio', { name: /cheltuieli|expenses/i })).toBeVisible()
-    await expect(page.getByRole('radio', { name: /venituri|income/i })).toBeVisible()
-
-    // Expenses should be selected by default
-    await expect(page.getByRole('radio', { name: /cheltuieli|expenses/i })).toBeChecked()
-  })
-
-  test('displays normalization selector', async ({ page }) => {
-    // Check for normalization heading
-    await expect(
-      page.getByRole('heading', { name: /normalizare|normalization/i, level: 4 })
-    ).toBeVisible({ timeout: 5000 })
-
-    // Check for combobox
-    const normalizationSelect = page.getByTestId('map-normalization-select')
-    await expect(normalizationSelect).toBeVisible({ timeout: 5000 })
-  })
-
-  test('displays period filter with year selected', async ({ page }) => {
-    // Check for period button
-    const periodButton = page.getByRole('button', { name: /perioadă|period/i })
-    await expect(periodButton).toBeVisible({ timeout: 5000 })
-
-    // Check for year tag within filters region (exclude footer)
-    const filtersRegion = page.getByRole('region', { name: /filtre.*hartă|map.*filters/i })
-    await expect(filtersRegion.getByText('2025')).toBeVisible()
-  })
-
-  test('displays entity filter sections', async ({ page }) => {
-    // Check for Entities filter
-    await expect(
-      page.getByRole('button', { name: /^entități$|^entities$/i })
-    ).toBeVisible({ timeout: 5000 })
-
-    // Check for Creditor filter (exact match to avoid "Exclude Creditor Principal")
-    await expect(
-      page.getByRole('button', { name: /^(Creditor Principal|Main Creditor)$/i })
-    ).toBeVisible()
-
-    // Check for UAT filter (exact match to avoid "Exclude UAT-uri")
-    await expect(
-      page.getByRole('button', { name: /^(UAT-uri|UATs)$/i })
-    ).toBeVisible()
-
-    // Check for Counties filter (exact match to avoid "Exclude Județe")
-    await expect(
-      page.getByRole('button', { name: /^(Județe|Counties)$/i })
-    ).toBeVisible()
-  })
-
-  test('displays classification filter sections', async ({ page }) => {
-    // Check for Functional Classification filter
-    await expect(
-      page.getByRole('button', { name: /clasificație.*funcțională|functional.*classification/i }).first()
-    ).toBeVisible({ timeout: 5000 })
-
-    // Check for Economic Classification filter
-    await expect(
-      page.getByRole('button', { name: /clasificație.*economică|economic.*classification/i }).first()
-    ).toBeVisible()
-  })
-
-  test('displays report type filter', async ({ page }) => {
-    // Check for Report Type filter button
-    await expect(
-      page.getByRole('button', { name: /tip.*raportare|report.*type/i })
-    ).toBeVisible({ timeout: 5000 })
-
-    // Check for selected report type
-    await expect(
-      page.getByText(/executie.*bugetara.*agregata|aggregated.*budget.*execution/i)
-    ).toBeVisible()
-  })
-
-  test('displays exclusion filters section', async ({ page }) => {
-    // Check for exclusion filters button
-    await expect(
-      page.getByRole('button', { name: /filtre.*excludere|exclude.*filters/i })
-    ).toBeVisible({ timeout: 5000 })
-  })
-
-  test('displays map zoom controls', async ({ page }) => {
-    // Check for zoom in button
-    await expect(
-      page.getByTestId('map-zoom-in')
-    ).toBeVisible({ timeout: 5000 })
-
-    // Check for zoom out button
-    await expect(
-      page.getByTestId('map-zoom-out')
-    ).toBeVisible()
-  })
-
-  test('displays map legend', async ({ page }) => {
-    // Check for legend heading
-    await expect(
-      page.getByRole('heading', { name: /legendă|legend/i, level: 4 })
-    ).toBeVisible({ timeout: 5000 })
-
-    // Check for the compact million or billion range used by map fixtures
-    await expect(
-      page.getByText(/(?:mil|mld)\.\s*RON/i).first()
-    ).toBeVisible()
-  })
-
-  test('displays Leaflet attribution', async ({ page }) => {
-    // Check for Leaflet link in attribution
-    await expect(
-      page.getByTestId('map-attribution-link')
-    ).toBeVisible({ timeout: 5000 })
-	  })
-
-  test('displays geojson source link', async ({ page }) => {
-    const sourceLink = page.getByTestId('map-geojson-source-link')
-    await expect(sourceLink).toBeVisible({ timeout: 5000 })
-    await expect(sourceLink).toHaveAttribute('href', /^https:\/\/geo-spatial\.org(?:\/)?(?:\?.*)?$/)
-  })
-	})
-
-test.describe('Map Page - Loading Overlays', () => {
-	test.beforeEach(async ({ page, mockApi }) => {
-		if (mockApi.mode === 'live') {
-			test.skip()
-			return
-		}
-
-		await mockMapOperations(mockApi)
-		await page.goto('/map')
-		await expect(
-			page.getByRole('region', { name: /filtre.*hartă|map.*filters/i })
-		).toBeVisible({ timeout: 15000 })
-		await waitForHydration(page)
-		await expect(page.getByTestId('leaflet-map')).toBeVisible({ timeout: 15000 })
-	})
-
-  test('shows and hides shared loading overlay in table view during heatmap refetch', async ({ page }) => {
-    await registerDelayedHeatmapRoute(page)
-
-    await switchDataView(page, /tabel|table/i)
-    await expect(page.getByRole('radio', { name: /tabel|table/i })).toBeChecked()
-
-    const overlay = page.getByTestId('map-active-view-loading-overlay')
-    await triggerHeatmapRefetch(page)
-
-    await expect(overlay).toBeVisible({ timeout: 5000 })
-    await expect(overlay).toBeHidden({ timeout: 15000 })
-  })
-
-  test('shows and hides shared loading overlay in chart view during heatmap refetch', async ({ page }) => {
-    await registerDelayedHeatmapRoute(page)
-
-    await switchDataView(page, /grafic|chart/i)
-    await expect(page.getByRole('radio', { name: /grafic|chart/i })).toBeChecked()
-
-    const overlay = page.getByTestId('map-active-view-loading-overlay')
-    await triggerHeatmapRefetch(page)
-
-    await expect(overlay).toBeVisible({ timeout: 5000 })
-    await expect(overlay).toBeHidden({ timeout: 15000 })
-  })
-
-  test('keeps map overlay behavior during map-view heatmap refetch', async ({ page }) => {
-    await registerDelayedHeatmapRoute(page)
-
-    await switchDataView(page, /hartă|map/i)
-    await expect(page.getByRole('radio', { name: /hartă|map/i })).toBeChecked()
-
-    const overlay = page.getByTestId('map-active-view-loading-overlay')
-    await triggerHeatmapRefetch(page)
-
-    await expect(overlay).toBeVisible({ timeout: 5000 })
-    await expect(overlay).toBeHidden({ timeout: 15000 })
-  })
-})
-
-test.describe('Map Page - Interactions', () => {
-	test.beforeEach(async ({ page, mockApi }) => {
-		if (mockApi.mode === 'live') {
-			test.skip()
-			return
-		}
-
-		await mockMapOperations(mockApi)
-		await page.goto('/map')
-		await expect(
-			page.getByRole('region', { name: /filtre.*hartă|map.*filters/i })
-		).toBeVisible({ timeout: 15000 })
-		await waitForHydration(page)
-		await expect(page.getByTestId('leaflet-map')).toBeVisible({ timeout: 15000 })
-	})
-
-	test('can switch between map views (UAT/County)', async ({ page }) => {
-    // Verify UAT is selected by default
-    const uatRadio = page.getByRole('radio', { name: /uat/i })
-    await expect(uatRadio).toBeChecked()
-
-		// Click County within the map view group (radio is sr-only)
-		const mapViewGroup = page.getByRole('group', { name: /vizualizare.*hartă|map.*view/i })
-		await mapViewGroup.getByText(/județ|county/i).click()
-
-		// Verify County is now selected
-		const countyRadio = page.getByRole('radio', { name: /județ|county/i })
-		await expect(page).toHaveURL(/mapViewType=County/, { timeout: 10000 })
-		await expect(countyRadio).toBeChecked({ timeout: 10000 })
-	})
-
-	test('can switch between income and expenses', async ({ page }) => {
-    // Verify Expenses is selected by default
-    const expensesRadio = page.getByRole('radio', { name: /cheltuieli|expenses/i })
-    await expect(expensesRadio).toBeChecked()
-
-		// Click Income within the income/expenses group (radio is sr-only)
-		const incomeGroup = page.getByRole('group', { name: /venituri.*cheltuieli|income.*expenses/i })
-		await incomeGroup.getByText(/venituri|income/i).click()
-
-		// Verify Income is now selected
-		const incomeRadio = page.getByRole('radio', { name: /venituri|income/i })
-		await expect(incomeRadio).toBeChecked({ timeout: 10000 })
-	})
-
-  test('can use zoom controls', async ({ page }) => {
-    // Click zoom in
-    const zoomInButton = page.getByTestId('map-zoom-in')
-    await expect(zoomInButton).toBeVisible({ timeout: 5000 })
-    await zoomInButton.click()
-
-    // Verify button still visible after click
-    await expect(zoomInButton).toBeVisible()
-
-    // Click zoom out
-    const zoomOutButton = page.getByTestId('map-zoom-out')
-    await zoomOutButton.click()
-    await expect(zoomOutButton).toBeVisible()
-  })
-
-  test('filter sections are expandable', async ({ page }) => {
-    // Verify filter section buttons exist
-    const entitiesButton = page.getByRole('button', { name: /^entități$|^entities$/i })
-    await expect(entitiesButton).toBeVisible({ timeout: 5000 })
-
-    await expect(
-      page.getByRole('button', { name: /^(Județe|Counties)$/i })
-    ).toBeVisible()
-
-    // Click to expand entities section
-    await entitiesButton.click()
-
-    // Verify accordion expanded (check for expanded state)
-    await expect(entitiesButton).toHaveAttribute('data-state', 'open')
-  })
 })
