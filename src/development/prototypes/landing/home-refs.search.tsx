@@ -1,72 +1,106 @@
-import { useEffect, useRef } from 'react'
+import { useRef, useState } from 'react'
+import { Link } from '@tanstack/react-router'
+import { Autocomplete } from '@base-ui/react/autocomplete'
 import { Loader2, Search, X } from 'lucide-react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
-import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover'
 import type { EntitySelectionBehavior } from '@/lib/entity-navigation'
 import type { EntitySearchNode } from '@/schemas/entities'
 import { MonoLabel } from './home-refs.mono-label'
 import {
   announcement,
+  destinationFor,
   Message,
-  ResultRow,
+  ResultRowContent,
+  resultRowClass,
   shortHint,
   Skeleton,
   useModifierKey,
   usePrefersReducedMotion,
 } from './home-refs.search-parts'
-import { MIN_QUERY_CHARS, useLandingSearch, type SearchStatus } from './home-refs.search-state'
+import { useEntitySelection, useSearchResults } from './home-refs.search-state'
+import type { SearchStatus } from './home-refs.search-state'
 
 /**
- * The hero search and its results.
+ * The hero search and its results, on Base UI `Autocomplete`.
  *
- * Written to replace `src/components/entities/EntitySearch`, not to sit beside
- * it — same `selectionBehavior`/`onSelect` contract, same navigation helper,
- * same guarded blur — so promoting it is a move plus wrapping the strings in
- * Lingui macros. The strings are plain Romanian here because running the extract
- * cycle rewrites both catalogs, and a prototype should not be the reason a
- * translation file changes.
+ * Chosen over three alternatives that were built and measured side by side —
+ * a hand-rolled combobox on Radix Popover, cmdk, and downshift — and the
+ * reasoning is kept in `docs/design/landing-search-comparison.md` so it does
+ * not have to be rediscovered. The short version:
  *
- * **The layer is Radix; the combobox is not.** `Popover` — the one in
- * `src/components/ui/`, so the app's floating layers stay one component —
- * provides the portal, the collision-aware positioning and the dismissal layer,
- * which is the part that is genuinely hard and was genuinely wrong when this
- * was hand-rolled: Tab left the popup open behind the reader, and at a 560px
- * viewport the panel ran 75px below the fold with nowhere to go. It is used
- * through `Anchor` rather than `Trigger`, because what opens this is typing.
- * The bare `Popper` / `DismissableLayer` primitives would be a closer fit than
- * a popover, but they are not installed, and pulling in two packages to avoid
- * four props is the wrong trade.
+ * **`filter={null}` is a first-class server-driven mode**, not filtering
+ * switched off. The list is `items`, in the order the API returned it.
  *
- * **The combobox itself stays hand-written, and `Command` (cmdk) is not used.**
- * cmdk owns the filtering, and the filtering here happens on the server: the
- * list is whatever the API returned for a debounced term, in the order it
- * returned it. Handing that to a component built to filter a known set means
- * fighting it to keep the order and to render six states it has no concept of —
- * `pending`, `stale`, `short`. What cmdk would genuinely give is roving-focus
- * keyboard handling, which is about forty lines of the hook next door.
+ * **Every change carries a `reason`** — `escape-key`, `item-press`,
+ * `link-press`, `outside-press`, `focus-out`. Two-stage Escape becomes one
+ * comparison instead of a fight with the layer, which is what it was on Radix,
+ * where Escape fired from the document and flushed React state before the
+ * input's own handler ran, collapsing both stages into one press.
  *
- * **Layout is the caller's.** No `max-w-3xl mx-auto pt-8` baked in, which is
- * what forced the landing to reach into the shipped component with
- * `[&_input]:` descendant selectors — a hack that outranks the component's own
- * classes and breaks silently when its internals change.
+ * **Items take a `render` prop**, so an option genuinely *is* a TanStack
+ * `Link` — the DOM has `<a role="option">`. That keeps `preload="intent"` and
+ * keeps Cmd-click opening a new tab, which cmdk cannot do at all: it claims the
+ * click for `onSelect` and a modified click navigates away in the current tab.
  *
- * **Design.** Radius caps at `lg` and the palette is tokens, per DESIGN.md; the
- * shipped component's `rounded-3xl` and hardcoded `slate-*` are both why it
- * looks wrong on this page and why it is unreadable in dark mode. The dropdown
- * is a genuinely floating layer, so it takes `shadow-md` and nothing heavier.
+ * **The popup reports the room it found.** Where Radix flips a panel that will
+ * not fit, Base UI shrinks it in place and exposes `--available-height` —
+ * consumed on the popup itself below, because bounding only an inner scroller
+ * leaves the popup at its natural height and hanging off the bottom of the
+ * window.
  *
- * **Motion.** The shared popover's 150ms enter, with its zoom neutralised: at
- * tooltip width a 95% scale is a flourish, but on a panel as wide as the field
- * it is thirty pixels of horizontal growth and reads as the list arriving from
- * somewhere rather than opening where it already is. No per-item stagger — the
- * list is at most eight rows and would be over before a stagger finished — and
- * no transition at all on the active row, because it tracks the arrow keys and
- * a colour fade on a held key turns a moving selection into a smear. Reduced
- * motion is honoured with an inline `animation: none`, which is the only thing
- * that outranks the shared component's own rule.
+ * Written against the same prop contract as the shipped
+ * `src/components/entities/EntitySearch`, so promoting it is a file move plus
+ * wrapping the strings in Lingui macros. They are plain Romanian here because
+ * running the extract cycle rewrites both catalogs, and a prototype should not
+ * be why a translation file changes.
+ *
+ * Layout is the caller's — no `max-w-3xl mx-auto pt-8` baked in. That was what
+ * forced the landing to reach into the shipped component with `[&_input]:`
+ * descendant selectors, a hack that outranked the component's own classes and
+ * broke silently when its internals moved.
  */
+function SearchStatusView({ status }: { readonly status: SearchStatus }) {
+  switch (status.kind) {
+    case 'short':
+      return (
+        <Message>
+          {shortHint(status.remaining)}{' '}
+          <span className="text-muted-foreground/70">Numele instituției sau codul fiscal.</span>
+        </Message>
+      )
+
+    case 'pending':
+    case 'loading':
+      return <Skeleton />
+
+    case 'results':
+      // The rows come from the always-mounted list below; nothing extra here.
+      return null
+
+    case 'empty':
+      return (
+        <Message>
+          Nicio instituție pentru{' '}
+          <strong className="font-medium text-foreground">{status.term}</strong>.{' '}
+          <span className="text-muted-foreground/70">Încearcă numele complet sau CUI-ul.</span>
+        </Message>
+      )
+
+    case 'error':
+      return (
+        <Message>
+          <span className="text-destructive">Căutarea nu a răspuns.</span>{' '}
+          <span className="text-muted-foreground/70">Încearcă din nou într-un moment.</span>
+        </Message>
+      )
+
+    case 'idle':
+    default:
+      return null
+  }
+}
 
 export function LandingSearch({
   className,
@@ -83,335 +117,255 @@ export function LandingSearch({
   readonly scrollToTopOnFocus?: boolean
   readonly selectionBehavior?: EntitySelectionBehavior
   readonly onSelect?: (entity: EntitySearchNode) => void
-  /** Passed straight through. See the hook — there is no default, on purpose. */
   readonly fallback?: (term: string) => readonly EntitySearchNode[]
 }) {
-  const {
-    id,
-    term,
-    onChange,
-    status,
-    activeIndex,
-    isDropdownOpen,
-    open,
-    close,
-    clear,
-    select,
-    onKeyDown,
-  } = useLandingSearch({ selectionBehavior, onSelect, fallback })
+  const { term, setTerm, status, results, source, isCurrent } = useSearchResults({ fallback })
+  const commit = useEntitySelection({ selectionBehavior, onSelect, source })
 
+  const [isOpen, setIsOpen] = useState(false)
+  // Which row the keyboard is on, if any. Kept in a ref rather than in state
+  // because only the Enter handler reads it, and re-rendering the whole field
+  // on every arrow key to store something nothing draws would be waste.
+  const highlightedRef = useRef<EntitySearchNode | undefined>(undefined)
   const modifier = useModifierKey()
   const prefersReducedMotion = usePrefersReducedMotion()
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const listRef = useRef<HTMLDivElement>(null)
 
-  // The list is capped, so past the sixth row an arrow key moves a highlight
-  // that is no longer on screen. `nearest` scrolls only when it has to, which
-  // keeps the list still while the selection is already visible. Refs are a
-  // React relationship rather than a DOM one, so this still reaches the rows
-  // now that they are rendered through a portal.
-  useEffect(() => {
-    if (activeIndex < 0) return
-    listRef.current
-      ?.querySelector('[data-active]')
-      ?.scrollIntoView({ block: 'nearest' })
-  }, [activeIndex])
-
-  useEffect(() => {
-    if (autoFocus) inputRef.current?.focus()
-  }, [autoFocus])
-
-  // The shortcut the `kbd` above advertises. Kept on the component rather than
-  // on the page, so the hint and the binding cannot drift apart.
   useHotkeys('mod+k', (event) => {
     event.preventDefault()
     inputRef.current?.focus()
   })
 
   const isBusy = status.kind === 'loading' || (status.kind === 'results' && status.stale)
-  const listboxId = `${id}-listbox`
+  const isDropdownOpen = isOpen && status.kind !== 'idle'
+  const visibleResults = status.kind === 'results' ? (status.results as EntitySearchNode[]) : []
 
   return (
-    /*
-     * Radix owns the layer; the hook still owns whether it is open.
-     *
-     * `open` is driven from the hook rather than from a `Trigger`, because the
-     * thing that opens this is typing, not clicking. `Anchor` is used for the
-     * same reason: a `Trigger` would set its own `aria-expanded` and
-     * `aria-haspopup` on the input and fight the combobox attributes below.
-     *
-     * Three problems this fixes, all measured on the hand-rolled version:
-     *
-     * - **Tab left the popup open.** Focus moved to the clear button with the
-     *   list still showing, and the blur guard did not fire because the button
-     *   is inside the same container. Radix dismisses on focus leaving the
-     *   layer. (Tab still does not step *through* the results: per the ARIA
-     *   combobox pattern options stay out of the tab order and are reached with
-     *   the arrow keys, which is what `aria-activedescendant` is for.)
-     * - **No collision handling.** At a 560px viewport the panel ran 75px below
-     *   the fold with nowhere to go. Radix flips and shifts, and exposes the
-     *   room it found as `--radix-popover-content-available-height`, which caps
-     *   the scroll area better than a guessed `65vh` ever did.
-     * - **Clipping.** The panel is portalled, so no ancestor's overflow can cut
-     *   it. The hero's clip was removed for the old version; this no longer
-     *   depends on that.
-     *
-     * `useGuardedBlur` is gone, and had to go: it decides what is "inside" by
-     * `container.contains(target)`, and through a portal every click on a
-     * result is outside — it would have closed the dropdown before the link's
-     * own handler ran, which is precisely the bug it was written to prevent.
-     * Radix's dismissable layer already treats the anchor branch as inside.
-     */
-    <Popover open={isDropdownOpen} onOpenChange={(next) => !next && close()}>
+    <Autocomplete.Root
+      // What the list may draw, which is not always what the query holds:
+      // `keepPreviousData` keeps the previous term's rows around, and in the
+      // `short` state those must not reappear under a two-character query.
+      items={visibleResults}
+      // The list is the server's answer, in the server's order. Filtering it
+      // again on the client would silently drop rows the API chose to return.
+      filter={null}
+      value={term}
+      onValueChange={(next) => {
+        setTerm(next)
+        setIsOpen(true)
+      }}
+      open={isDropdownOpen}
+      onOpenChange={(next, details) => {
+        if (next) {
+          setIsOpen(true)
+          return
+        }
+        setIsOpen(false)
+        // Escape in two stages, expressed as one comparison. The first press
+        // arrives here with the list open and only closes it; the second
+        // arrives with nothing open, so the input handler below clears.
+        if (details.reason === 'escape-key' && !isDropdownOpen) setTerm('')
+      }}
+      itemToStringValue={(entity: EntitySearchNode) => entity.name}
+      onItemHighlighted={(entity) => {
+        highlightedRef.current = entity
+      }}
+      openOnInputClick={false}
+      // No row is preselected. Auto-highlighting the first result makes Enter
+      // act on a guess, which is the same defect the hand-rolled version had to
+      // gate against explicitly.
+      autoHighlight={false}
+    >
       <div ref={containerRef} className={cn('relative w-full', className)}>
-        <PopoverAnchor asChild>
-          <div className="relative">
-            <Search
-              aria-hidden="true"
-              className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              ref={inputRef}
-              type="text"
-              value={term}
-              onChange={(event) => onChange(event.target.value)}
-              onKeyDown={onKeyDown}
-              // Opening is bound to the input, not to the container. On the
-              // container it also fired when Tab moved focus to the clear
-              // button, which reopened a dropdown the reader had just left.
-              onFocus={() => {
-                if (scrollToTopOnFocus) {
-                  containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                }
-                open()
-              }}
-              placeholder={placeholder}
-              role="combobox"
-              aria-label={placeholder}
-              aria-autocomplete="list"
-              aria-expanded={isDropdownOpen}
-              aria-controls={listboxId}
-              aria-activedescendant={activeIndex > -1 ? `${id}-result-${activeIndex}` : undefined}
-              // `pr-20` leaves room for the trailing affordance in both its
-              // forms — the shortcut hint and the clear button share the slot.
-              className="h-12 rounded-lg border-input bg-card pl-10 pr-20 text-base shadow-none transition-colors hover:border-ring/50 focus:border-ring md:text-base"
-            />
+        <div className="relative">
+          <Search
+            aria-hidden="true"
+            className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+          />
+          <Autocomplete.Input
+            render={
+              <Input
+                ref={inputRef}
+                autoFocus={autoFocus}
+                onFocus={() => {
+                  if (scrollToTopOnFocus) {
+                    containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                  }
+                  setIsOpen(true)
+                }}
+                onKeyDown={(event) => {
+                  // The second stage. Base UI has already closed the popup, so
+                  // by the time Escape reaches a closed input the reader is
+                  // asking for the field itself to be emptied.
+                  if (event.key === 'Escape' && !isDropdownOpen) {
+                    setTerm('')
+                    return
+                  }
+                  if (event.key !== 'Enter') return
 
-            <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
-              {isBusy ? (
-                <Loader2 aria-hidden="true" className="size-4 animate-spin text-muted-foreground" />
-              ) : null}
-              {term ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    clear()
-                    inputRef.current?.focus()
-                  }}
-                  aria-label="Șterge căutarea"
-                  className="rounded-sm p-1 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <X className="size-4" />
-                </button>
-              ) : (
-                // The mod+K hotkey has always existed and has never been
-                // visible. Hidden below sm, where there is no keyboard.
-                <kbd className="hidden items-center gap-0.5 rounded-sm border bg-muted px-1.5 py-0.5 font-mono text-[0.625rem] text-muted-foreground sm:flex">
-                  <span className={modifier === '⌘' ? 'text-xs leading-none' : undefined}>
-                    {modifier}
-                  </span>
-                  K
-                </kbd>
-              )}
-            </div>
+                  // Enter on a closed field with a term still in it reopens the
+                  // list, which is what makes the first Escape reversible.
+                  if (!isDropdownOpen) {
+                    if (term.trim().length === 0) return
+                    event.preventDefault()
+                    setIsOpen(true)
+                    return
+                  }
+
+                  // Enter with a row highlighted is Base UI's to handle — it
+                  // presses the item, the item is an anchor, the router
+                  // navigates. Only the *unhighlighted* case is ours.
+                  if (highlightedRef.current) return
+
+                  // Enter with nothing highlighted takes the first result, but
+                  // only once the list is known to answer what is in the box.
+                  // Without the gate, typing 'Cluj', pausing, adding ' N' and
+                  // pressing Enter opens the first result for 'Cluj'. Nothing
+                  // is auto-highlighted precisely so that this stays a decision
+                  // rather than a side effect of results arriving.
+                  if (!isCurrent) return
+                  const first = results[0]
+                  if (!first) return
+                  event.preventDefault()
+                  commit(first)
+                  setTerm('')
+                  setIsOpen(false)
+                }}
+                className="h-12 rounded-lg border-input bg-card pl-10 pr-20 text-base shadow-none transition-colors hover:border-ring/50 focus:border-ring md:text-base"
+              />
+            }
+            placeholder={placeholder}
+            aria-label={placeholder}
+          />
+
+          <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
+            {isBusy ? (
+              <Loader2 aria-hidden="true" className="size-4 animate-spin text-muted-foreground" />
+            ) : null}
+            {term ? (
+              <Autocomplete.Clear
+                aria-label="Șterge căutarea"
+                // Base UI keeps this out of the tab order. Defensible — Escape
+                // twice also clears, so the function is reachable — but it is a
+                // visible control, and a sighted keyboard user who can see a
+                // button and cannot reach it has been told the interface is
+                // lying. Escape stays the faster path; this is the discoverable
+                // one.
+                tabIndex={0}
+                className="rounded-sm p-1 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <X className="size-4" />
+              </Autocomplete.Clear>
+            ) : (
+              <kbd className="hidden items-center gap-0.5 rounded-sm border bg-muted px-1.5 py-0.5 font-mono text-[0.625rem] text-muted-foreground sm:flex">
+                <span className={modifier === '⌘' ? 'text-xs leading-none' : undefined}>
+                  {modifier}
+                </span>
+                K
+              </kbd>
+            )}
           </div>
-        </PopoverAnchor>
+        </div>
 
-        {/* Politely announced, never drawn. Kept outside the popover so the
-            region is in the document before there is anything to say — a live
-            region that mounts with its own message is often not announced. */}
         <p aria-live="polite" className="sr-only">
           {isDropdownOpen ? announcement(status) : ''}
         </p>
       </div>
 
-      <PopoverContent
-        id={listboxId}
-        role="listbox"
-        aria-busy={isBusy}
-        align="start"
-        sideOffset={8}
-        collisionPadding={16}
-        // Focus belongs to the input for the whole life of the popup. Without
-        // the first of these Radix moves it into the panel on open and the
-        // caret leaves mid-word; without the second, closing snaps it back to
-        // the anchor and steals a Tab the reader had already spent.
-        onOpenAutoFocus={(event) => event.preventDefault()}
-        onCloseAutoFocus={(event) => event.preventDefault()}
-        // Escape stays with the hook, which spends it in two stages: dismiss,
-        // then clear. Letting Radix dismiss as well collapses them into one
-        // press, and not for a reason any amount of ordering care would fix —
-        // Radix listens on the document, so React flushes the close before the
-        // input's own handler runs, and that handler then reads `isOpen` as
-        // already false and goes on to clear a term the reader had only asked
-        // to stop looking at. jsdom does not reproduce it; a browser does.
-        onEscapeKeyDown={(event) => event.preventDefault()}
-        className={cn(
-          'w-[var(--radix-popover-trigger-width)] overflow-hidden rounded-lg border bg-card p-0 shadow-md',
-          // The shipped popover animation, minus the zoom. On a 72px-wide
-          // tooltip a 95% scale is a flourish; on a panel as wide as the field
-          // it is 30px of horizontal growth, which reads as the dropdown
-          // arriving from somewhere rather than opening where it already is.
-          'data-[state=open]:zoom-in-100 data-[state=closed]:zoom-out-100',
-        )}
-        // `PopoverContent` carries no reduced-motion guard of its own, and a
-        // `motion-reduce:` class beside its own animation loses the cascade.
-        // Losing that guard silently was the cost of adopting the shared
-        // component; this puts it back where nothing can outrank it.
-        style={prefersReducedMotion ? { animation: 'none' } : undefined}
-      >
-        {/* The listbox is the panel, not the list inside it. `aria-controls`
-            has to name an element that exists, and four of the seven states
-            draw a message rather than a list — so pinning the role to the list
-            left the field pointing at a missing id whenever it was not showing
-            results, which is when a screen-reader user most needs the popup to
-            be findable. Options are `div`s for the same reason: a `ul` is not a
-            valid child of a listbox. */}
-        <div className="flex items-baseline justify-between gap-3 border-b px-4 py-3">
-          <MonoLabel className="text-muted-foreground">
-            {status.kind === 'results' ? 'Rezultate' : 'Caută'}
-          </MonoLabel>
-          {/* Stand-in data is never allowed to look served. The tag sits in the
-              header rather than under the list because it qualifies every row,
-              and because a reader who scans and clicks never reaches a
-              footnote. */}
-          {status.kind === 'results' && status.source === 'local' ? (
-            <MonoLabel className="ml-auto shrink-0 whitespace-nowrap rounded-sm border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-amber-700 dark:text-amber-500">
-              Date locale
-              {/* The cause is dropped on a narrow field, where it wrapped the
-                  tag onto two lines and pushed the CUI header off. The label
-                  itself never is: it is the part that must not be missed. */}
-              <span className="hidden sm:inline"> · API indisponibil</span>
-            </MonoLabel>
-          ) : null}
-          <MonoLabel className="text-muted-foreground/60">CUI</MonoLabel>
-        </div>
+      <Autocomplete.Portal>
+        <Autocomplete.Positioner sideOffset={8} align="start" className="z-30 outline-hidden">
+          <Autocomplete.Popup
+            aria-busy={isBusy || undefined}
+            // Width from the anchor, height from the room the collision
+            // calculation actually found. Both are measurements rather than
+            // guesses, which is what `65vh` was.
+            // Base UI *shrinks* where Radix flips: rather than moving the
+            // popup above the field when there is no room below, it reports the
+            // room it found and expects the popup to fit itself into it. That
+            // is only true if `--available-height` is actually consumed, and it
+            // has to be consumed here on the popup — bounding an inner scroller
+            // alone leaves the popup at its natural height and hanging off the
+            // bottom of the window, which is exactly what the first measurement
+            // showed. `flex` so the header keeps its height and the list takes
+            // what is left.
+            className={cn(
+              'flex max-h-[var(--available-height)] w-[var(--anchor-width)] max-w-[var(--available-width)] flex-col overflow-hidden rounded-lg border bg-card shadow-md',
+              // Base UI animates with transitions rather than keyframes:
+              // `data-starting-style` is the state the popup is in for one
+              // frame before it opens, so a transition off it is the enter. A
+              // 4px rise and a fade, 150ms, and no scale — at tooltip width a
+              // 95% zoom is a flourish, at field width it is thirty pixels of
+              // horizontal growth and reads as the list arriving from
+              // somewhere rather than opening where it already is.
+              'transition-[opacity,translate] duration-150 data-starting-style:-translate-y-1 data-starting-style:opacity-0',
+            )}
+            // Reduced motion is honoured with an inline rule because it has to
+            // outrank the class above, and a `motion-reduce:` utility beside it
+            // is a coin flip on stylesheet order.
+            style={prefersReducedMotion ? { transition: 'none' } : undefined}
+          >
+            <div className="flex items-baseline justify-between gap-3 border-b px-4 py-3">
+              <MonoLabel className="text-muted-foreground">
+                {status.kind === 'results' ? 'Rezultate' : 'Caută'}
+              </MonoLabel>
+              {status.kind === 'results' && status.source === 'local' ? (
+                <MonoLabel className="ml-auto shrink-0 whitespace-nowrap rounded-sm border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-amber-700 dark:text-amber-500">
+                  Date locale
+                  <span className="hidden sm:inline"> · API indisponibil</span>
+                </MonoLabel>
+              ) : null}
+              <MonoLabel className="text-muted-foreground/60">CUI</MonoLabel>
+            </div>
 
-        {/* Capped by the room Radix actually found, not by a guess. The 24rem
-            ceiling keeps eight results from filling a tall window. */}
-        <div className="max-h-[min(var(--radix-popover-content-available-height,24rem),24rem)] overflow-y-auto">
-          <SearchStatusView
-            status={status}
-            query={term.trim()}
-            id={id}
-            listRef={listRef}
-            activeIndex={activeIndex}
-            selectionBehavior={selectionBehavior}
-            onSelect={select}
-          />
-        </div>
-      </PopoverContent>
-    </Popover>
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+              {/* Always mounted, even with nothing in it.
+                  `aria-controls` on the field points at this list, so in the
+                  four states that draw a message rather than rows — short,
+                  pending, empty, error — rendering it conditionally left the
+                  field announcing an open popup and naming an id that was not
+                  in the document. That is the same defect the hand-rolled
+                  version shipped, arriving here through the library's wiring
+                  instead of through ours. */}
+              <Autocomplete.List
+                className={cn(
+                  'transition-opacity',
+                  status.kind === 'results' && status.stale && 'opacity-50',
+                )}
+              >
+                {(entity: EntitySearchNode) => (
+                  <Autocomplete.Item
+                    key={entity.cui}
+                    value={entity}
+                    className={resultRowClass(false)}
+                    // The anchor navigates, so the recorder is told to skip it.
+                    // Cmd-click then works for free: the browser opens a tab,
+                    // the router never runs, the selection is still counted.
+                    onClick={() => {
+                      commit(entity, { skipNavigate: true })
+                      setTerm('')
+                      setIsOpen(false)
+                    }}
+                    // `render` is what lets the option *be* the anchor rather
+                    // than contain one, which is what keeps `preload="intent"`
+                    // and Cmd-click working.
+                    render={
+                      <Link
+                        to={destinationFor(entity, selectionBehavior) as '/'}
+                        preload="intent"
+                      />
+                    }
+                  >
+                    <ResultRowContent entity={entity} query={term.trim()} isActive={false} />
+                  </Autocomplete.Item>
+                )}
+              </Autocomplete.List>
+
+              <SearchStatusView status={status} />
+            </div>
+          </Autocomplete.Popup>
+        </Autocomplete.Positioner>
+      </Autocomplete.Portal>
+    </Autocomplete.Root>
   )
 }
-
-/**
- * One state, one form. A `switch` over the union rather than nested ternaries,
- * so adding a state to the machine fails to compile until it has been drawn.
- */
-function SearchStatusView({
-  status,
-  query,
-  id,
-  listRef,
-  activeIndex,
-  selectionBehavior,
-  onSelect,
-}: {
-  readonly status: SearchStatus
-  readonly query: string
-  readonly id: string
-  readonly listRef: React.RefObject<HTMLDivElement | null>
-  readonly activeIndex: number
-  readonly selectionBehavior: EntitySelectionBehavior
-  readonly onSelect: (index: number, options?: { readonly skipNavigate?: boolean }) => void
-}) {
-  switch (status.kind) {
-    case 'short':
-      return (
-        <Message>
-          {shortHint(status.remaining)}{' '}
-          <span className="text-muted-foreground/70">
-            Numele instituției sau codul fiscal.
-          </span>
-        </Message>
-      )
-
-    // Both draw the list forming. They are distinct in the machine because only
-    // one of them has a request out — which the spinner in the field shows —
-    // but the answer to "what goes here" is the same shape either way.
-    case 'pending':
-    case 'loading':
-      return <Skeleton />
-
-    case 'results':
-      return (
-        <div
-          ref={listRef}
-          // Dimmed rather than emptied while the next term is in flight. The
-          // list stays legible and in place, so the reader can keep reading a
-          // row they were already looking at.
-          className={cn('transition-opacity', status.stale && 'opacity-50')}
-        >
-          {status.results.map((entity, index) => (
-            <ResultRow
-              key={entity.cui}
-              entity={entity}
-              query={query}
-              id={`${id}-result-${index}`}
-              isActive={activeIndex === index}
-              selectionBehavior={selectionBehavior}
-              onSelect={(event) => {
-                // Cmd/Ctrl-click is the reader asking for a new tab. Let the
-                // browser do it and only record the selection.
-                if (event.metaKey || event.ctrlKey) {
-                  onSelect(index, { skipNavigate: true })
-                  return
-                }
-                event.preventDefault()
-                onSelect(index)
-              }}
-            />
-          ))}
-        </div>
-      )
-
-    case 'empty':
-      return (
-        <Message>
-          Nicio instituție pentru <strong className="font-medium text-foreground">{status.term}</strong>.{' '}
-          <span className="text-muted-foreground/70">
-            Încearcă numele complet sau CUI-ul.
-          </span>
-        </Message>
-      )
-
-    case 'error':
-      return (
-        <Message>
-          <span className="text-destructive">Căutarea nu a răspuns.</span>{' '}
-          <span className="text-muted-foreground/70">Încearcă din nou într-un moment.</span>
-        </Message>
-      )
-
-    // `idle` never reaches here — the dropdown does not open on an empty field,
-    // because the panel beside it is already a list of places to start.
-    case 'idle':
-    default:
-      return null
-  }
-}
-
-/** Re-exported so the landing can state the threshold beside the field. */
-export { MIN_QUERY_CHARS }

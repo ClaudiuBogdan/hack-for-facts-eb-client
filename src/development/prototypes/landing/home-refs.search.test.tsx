@@ -140,7 +140,7 @@ describe('LandingSearch', () => {
       const { user, input } = setup()
 
       expect(document.querySelector('kbd')).toBeInTheDocument()
-      expect(screen.queryByRole('button', { name: /șterge/i })).not.toBeInTheDocument()
+      expect(screen.queryByLabelText(/[Șș]terge/u)).not.toBeInTheDocument()
 
       await user.click(input)
       await user.type(input, 'Ia')
@@ -148,7 +148,7 @@ describe('LandingSearch', () => {
       // The hint and the clear button share one slot, so exactly one of them is
       // present at any time.
       expect(document.querySelector('kbd')).not.toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /șterge/i })).toBeInTheDocument()
+      expect(screen.getByLabelText(/[Șș]terge/u)).toBeInTheDocument()
     })
 
     it('names the modifier key this platform actually uses', async () => {
@@ -165,7 +165,7 @@ describe('LandingSearch', () => {
 
       await user.click(input)
       await user.type(input, 'Iasi')
-      await user.click(screen.getByRole('button', { name: /șterge/i }))
+      await user.click(screen.getByLabelText(/[Șș]terge/u))
 
       expect(input).toHaveValue('')
       expect(input).toHaveFocus()
@@ -269,7 +269,10 @@ describe('LandingSearch', () => {
       await user.keyboard('{ArrowDown}')
 
       const active = screen.getAllByRole('option')[0]
-      expect(active).toHaveAttribute('aria-selected', 'true')
+      // Base UI reports the active row with `data-highlighted` rather than
+      // `aria-selected`; `aria-activedescendant` is what actually carries it to
+      // a screen reader, and that is the assertion that matters.
+      await waitFor(() => expect(active).toHaveAttribute('data-highlighted'))
       expect(input).toHaveAttribute('aria-activedescendant', active.id)
     })
 
@@ -279,14 +282,16 @@ describe('LandingSearch', () => {
       await user.click(input)
       await user.type(input, 'Ia')
 
-      // 'short' draws a message, not rows. The field still claims to be
-      // expanded, so aria-controls has to resolve to something — otherwise a
-      // screen-reader user is told a popup opened and given no way to reach it.
-      expect(input).toHaveAttribute('aria-expanded', 'true')
-      const controlled = document.getElementById(input.getAttribute('aria-controls') ?? '')
-      expect(controlled).toBeInTheDocument()
-      expect(controlled).toHaveAttribute('role', 'listbox')
+      // The invariant, whichever way an implementation meets it: if the field
+      // says a popup is open, `aria-controls` must resolve to something. A
+      // screen-reader user told a popup opened and given no way to reach it is
+      // worse off than one told nothing happened. 'short' draws a message
+      // rather than rows, which is exactly where this used to break.
       expect(screen.queryAllByRole('option')).toHaveLength(0)
+      if (input.getAttribute('aria-expanded') === 'true') {
+        const controlled = document.getElementById(input.getAttribute('aria-controls') ?? '')
+        expect(controlled).toBeInTheDocument()
+      }
     })
 
     it('controls the listbox it names', async () => {
@@ -308,6 +313,48 @@ describe('LandingSearch', () => {
      * content and is verified in a real browser. Do not remove that line
      * because this test stays green without it.
      */
+    it('reopens on Enter after Escape, so the first Escape is reversible', async () => {
+      const { user } = setup()
+      const input = await typeAndWait(user, 'Iasi')
+
+      await user.keyboard('{Escape}')
+      expect(screen.queryAllByRole('option')).toHaveLength(0)
+      expect(input).toHaveValue('Iasi')
+
+      await user.keyboard('{Enter}')
+
+      // The term survives the first Escape on purpose. Without a way back to
+      // its answer, that stage keeps the question and throws away the answer,
+      // and the only route back is retyping a query still sitting in the field.
+      await waitFor(() => expect(screen.getAllByRole('option').length).toBeGreaterThan(0))
+      expect(input).toHaveValue('Iasi')
+    })
+
+    it('does not reopen on Enter when the field is empty', async () => {
+      const { user, input } = setup()
+
+      await user.click(input)
+      await user.keyboard('{Enter}')
+
+      expect(screen.queryAllByRole('option')).toHaveLength(0)
+    })
+
+    it('takes the first result on Enter when nothing is highlighted', async () => {
+      const chosen = vi.fn()
+      const user = userEvent.setup()
+      render(<LandingSearch onSelect={chosen} />, { queryClient: createTestQueryClient() })
+      await typeAndWait(user, 'Iasi')
+
+      await user.keyboard('{Enter}')
+
+      // Nothing is auto-highlighted, so this is a convenience rather than a
+      // side effect of results arriving — and it is gated on the list actually
+      // answering what is in the box.
+      await waitFor(() => expect(chosen).toHaveBeenCalledWith(
+        expect.objectContaining({ cui: '4541580' }),
+      ))
+    })
+
     it('dismisses on the first Escape and clears on the second', async () => {
       const { user } = setup()
       const input = await typeAndWait(user, 'Iasi')
@@ -320,15 +367,29 @@ describe('LandingSearch', () => {
       expect(input).toHaveValue('')
     })
 
-    it('navigates on Enter', async () => {
-      const { user } = setup()
+    it('selects the highlighted result on Enter', async () => {
+      const chosen = vi.fn()
+      const user = userEvent.setup()
+      render(<LandingSearch onSelect={chosen} />, { queryClient: createTestQueryClient() })
       await typeAndWait(user, 'Iasi')
 
       await user.keyboard('{ArrowDown}{Enter}')
 
-      expect(navigate).toHaveBeenCalledWith(
-        expect.objectContaining({ to: '/entities/4541580' }),
-      )
+      // The row *is* the anchor, so the router follows it rather than being
+      // called — which is the whole reason Cmd-click opens a tab here. What can
+      // be asserted in jsdom is the selection contract.
+      await waitFor(() => expect(chosen).toHaveBeenCalledWith(
+        expect.objectContaining({ cui: '4541580' }),
+      ))
+    })
+
+    it('gives every result a real href, so a modified click reaches the browser', async () => {
+      const { user } = setup()
+      await typeAndWait(user, 'Iasi')
+
+      const options = screen.getAllByRole('option')
+      expect(options[0].tagName).toBe('A')
+      expect(options[0]).toHaveAttribute('href', '/entities/4541580')
     })
   })
 

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Link } from '@tanstack/react-router'
 import { cn } from '@/lib/utils'
 import {
   buildEntitySelectionPath,
@@ -55,7 +54,7 @@ export function placeLine(entity: EntitySearchNode): string {
 }
 
 /** Marked-up name, county and CUI. Marks come from the folded matcher. */
-export function Highlighted({
+function Highlighted({
   text,
   query,
   className,
@@ -153,36 +152,6 @@ export function destinationFor(
   return buildEntitySelectionPath(
     { cui: entity.cui, entityType: entity.entity_type, isUat: entity.is_uat },
     selectionBehavior,
-  )
-}
-
-export function ResultRow({
-  entity,
-  query,
-  id,
-  isActive,
-  selectionBehavior,
-  onSelect,
-}: {
-  readonly entity: EntitySearchNode
-  readonly query: string
-  readonly id: string
-  readonly isActive: boolean
-  readonly selectionBehavior: EntitySelectionBehavior
-  readonly onSelect: (event: React.MouseEvent<HTMLAnchorElement>) => void
-}) {
-  return (
-    <div role="option" id={id} aria-selected={isActive} data-active={isActive || undefined}>
-      <Link
-        to={destinationFor(entity, selectionBehavior) as '/'}
-        preload="intent"
-        onClick={onSelect}
-        tabIndex={-1}
-        className={resultRowClass(isActive)}
-      >
-        <ResultRowContent entity={entity} query={query} isActive={isActive} />
-      </Link>
-    </div>
   )
 }
 

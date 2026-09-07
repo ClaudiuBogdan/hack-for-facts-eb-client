@@ -1,12 +1,16 @@
 # Landing search — choosing the combobox
 
-**Status:** open decision · **Measured:** 7 September 2026 · **Prototype:**
-`/development/landing/home-refs?v=…` (`yarn dev` only)
+**Status:** decided — **Base UI**, 7 September 2026 · **Prototype:**
+`/development/landing/home-refs` (`yarn dev` only)
 
-Four implementations of the hero search, on the same page, differing only in the
-combobox underneath the field. Compare them at
-`?v=landing`, `?v=landing-cmdk`, `?v=landing-downshift`, `?v=landing-baseui`, or
-two at a time with `&layout=side`.
+Four implementations of the hero search were built on the same page and measured
+against each other. Base UI won; the other three have been deleted, and
+`downshift` was uninstalled. This document is kept so the question is not
+reopened from scratch, and so the losing arguments stay available if the
+decision is ever revisited.
+
+The variant URLs below (`?v=landing-cmdk` and friends) no longer exist. The
+measurements were taken while they did.
 
 ## What is being compared
 
@@ -115,7 +119,32 @@ if `--available-height` is consumed **on the popup itself** — bounding an inne
 scroller leaves the popup at its natural height, hanging 78px below the fold.
 That cost a measurement to find.
 
-## Recommendation
+## Decision — D, Base UI
+
+Chosen on 7 September 2026 after using all four. Both shortlisted candidates
+passed every behavioural check, and D does it with **one** library instead of
+two, with a `reason` on every event that would have prevented this session's two
+worst bugs outright.
+
+Three defects found only by using it, all now fixed:
+
+- **Enter with nothing highlighted did not select the first result.** Base UI
+  does not auto-highlight (correctly — auto-highlighting makes Enter act on a
+  guess), so the freshness-gated convenience has to be added on the input.
+- **`aria-controls` pointed at a list that was not rendered.** Base UI aims it at
+  `Autocomplete.List`, and four of the seven states draw a message instead of
+  rows — the same defect the hand-rolled version shipped, arriving through the
+  library's wiring rather than ours. The list is now always mounted.
+- **Tab skipped the clear button**, which Base UI gives `tabIndex={-1}`.
+  Defensible, since Escape twice also clears, but a visible control a keyboard
+  user cannot reach is the interface lying about itself. Overridden to `0`.
+
+One regression the swap introduced and the tests could not see: the enter
+animation was lost, because Base UI transitions off `data-starting-style` rather
+than using the keyframe classes the Radix popover carried. Restored as a 150ms
+fade and 4px rise, with reduced motion honoured by an inline `transition: none`.
+
+### The reasoning at the time
 
 **C (downshift) or D (Base UI). Not A, not B.**
 
@@ -144,13 +173,23 @@ Two facts to weigh that are not about behaviour:
 dependency. It is simply the one where the next defect of this kind will also be
 ours to find.
 
+### What the choice cost
+
+`@base-ui/react` is a second primitive library alongside Radix, which the rest of
+the app still uses for every other floating layer. That is a real inconsistency
+and the strongest argument that was made against D. It is worth revisiting if
+Base UI turns out to suit more than this one widget — or reversing, if it does
+not.
+
 ## Reproducing
 
 ```sh
 yarn dev
-node tmp/compare.mjs        # the table above
-node tmp/radix-probe.mjs    # Tab / portal / keyboard / Escape / collision, variant A
+node tmp/final-check.mjs    # navigation, Escape→Enter, Tab→clear, Cmd-click, motion
 ```
+
+`tmp/compare.mjs` produced the four-way table and no longer runs, since three of
+the variants it drove are gone.
 
 The GraphQL API is a separate repo and usually not running here, so the
 prototypes fall back to `PREDEFINED_ENTITIES` under `import.meta.env.DEV`, and
