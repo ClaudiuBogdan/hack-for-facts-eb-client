@@ -37,6 +37,26 @@ import { LIT_CLASS, TRAIL_BASE_PX } from './home-refs.light-material'
 export const SECTION_LIGHT_ATTR = 'data-section-light'
 
 /**
+ * Published on the root: whether a card has the reader's attention.
+ *
+ * The two lights stay independent, so this is a fact one of them states rather
+ * than a call it makes. The frame light's stylesheet is free to ignore it — and
+ * in the default variant it does. Only the handover variant listens, and then
+ * only to get out of the way.
+ */
+export const SECTION_LIT_ATTR = 'data-section-lit'
+
+/**
+ * How far ahead of a card the light counts as arriving.
+ *
+ * Whoever is listening needs to start leaving *before* the section light
+ * appears, or the two are briefly on screen together and the page has two
+ * answers to the same question. At a normal reading scroll this is about a
+ * quarter of a second of warning.
+ */
+const LEAD_PX = 200
+
+/**
  * Where down the screen the reader is presumed to be looking.
  *
  * The section in focus is the one whose card crosses this line, and the light's
@@ -62,6 +82,23 @@ const MAX_OPACITY = 0.7
 
 /** Cross-fade when the reader moves from one section to the next. */
 const HANDOVER_MS = 260
+
+/**
+ * Quiet time before the light leaves, when it is set to leave at all.
+ *
+ * Off by default: this light reports position, and standing still does not
+ * change where you are. The header variant turns it on to find out whether a
+ * page whose marks all come and go with the scroll reads as calmer than one
+ * with a mark permanently parked on a border.
+ *
+ * Comfortably longer than `HANDOVER_MS`, and that is a constraint rather than a
+ * taste. At the same value the two fades line up exactly: a scroll that crosses
+ * from one section into the next spends its whole quiet period waiting out the
+ * handover, and the light arrives on the new card at the same instant the idle
+ * clock fires — so a short scroll showed nothing at all. Measured at 0.16 where
+ * it should have been 0.7.
+ */
+const IDLE_MS = 620
 
 /**
  * Velocity decay per frame, matching the frame light.
@@ -94,6 +131,13 @@ const CSS = `
   z-index: 19;
   opacity: calc(var(--sl-on, 0) * ${MAX_OPACITY});
   transition: opacity ${HANDOVER_MS}ms ease;
+}
+
+/* Only ever added when the hook was asked for it. Slower going than coming, so
+   the light catches up with the reader at once and takes its time leaving. */
+.tpz-section-light.is-idle {
+  opacity: 0;
+  transition: opacity 520ms ease;
 }
 
 /*
@@ -254,7 +298,16 @@ function measure(root: HTMLElement | null): Card[] {
  * sharing a pump would buy nothing and would tie two effects together that have
  * different lifetimes, different idle behaviour and different reasons to exist.
  */
-export function useSectionLight(rootRef: RefObject<HTMLElement | null>) {
+export function useSectionLight(
+  rootRef: RefObject<HTMLElement | null>,
+  {
+    /**
+     * Fade the whole thing out when the reader stops, the way the frame light
+     * does. Off by default — see `IDLE_MS`.
+     */
+    fadeWhenIdle = false,
+  }: { readonly fadeWhenIdle?: boolean } = {},
+) {
   useEffect(() => {
     const root = rootRef.current
     if (!root) return
@@ -270,6 +323,24 @@ export function useSectionLight(rootRef: RefObject<HTMLElement | null>) {
     let lastY = window.scrollY
     let velocity = 1
     let frame = 0
+    let idleTimer = 0
+    /** Last value written to the root, so the attribute is not set every frame. */
+    let published = ''
+
+    const publish = (value: string) => {
+      if (value === published) return
+      published = value
+      root.setAttribute(SECTION_LIT_ATTR, value)
+    }
+
+    /** Restarts the quiet clock, so a light that has just arrived gets its full
+        moment on screen rather than inheriting whatever was left of the last. */
+    const restartIdle = () => {
+      if (!fadeWhenIdle) return
+      host.classList.remove('is-idle')
+      window.clearTimeout(idleTimer)
+      idleTimer = window.setTimeout(() => host.classList.add('is-idle'), IDLE_MS)
+    }
 
     /** Moves the host onto a card. Writes geometry, so only on a change. */
     const place = (card: Card | null) => {
@@ -278,6 +349,8 @@ export function useSectionLight(rootRef: RefObject<HTMLElement | null>) {
         host.style.setProperty('--sl-on', '0')
         return
       }
+      // Arriving counts as movement: the card changed because the reader moved.
+      restartIdle()
       host.style.left = `${card.left}px`
       host.style.top = `${card.top}px`
       host.style.width = `${card.width}px`
@@ -306,6 +379,11 @@ export function useSectionLight(rootRef: RefObject<HTMLElement | null>) {
 
       const focus = y + window.innerHeight * FOCUS_RATIO
       const wanted = cards.find((c) => focus >= c.topDoc && focus <= c.bottomDoc) ?? null
+      // Stated before the early return below, because a card the reader is
+      // still approaching is exactly the case anyone listening cares about.
+      publish(
+        cards.some((c) => focus >= c.topDoc - LEAD_PX && focus <= c.bottomDoc) ? '1' : '0',
+      )
 
       /*
        * Never move a lit host. A card change fades the light out, waits for the
@@ -414,20 +492,35 @@ export function useSectionLight(rootRef: RefObject<HTMLElement | null>) {
       schedule()
     }
 
+    /*
+     * Wake on movement, then fall back to idle — but only if asked. Without
+     * `fadeWhenIdle` this is just `schedule`, and the light stays where it is
+     * when the reader stops, which is the whole point of it.
+     */
+    const wake = fadeWhenIdle
+      ? () => {
+          restartIdle()
+          schedule()
+        }
+      : schedule
+
     onResize()
-    window.addEventListener('scroll', schedule, { passive: true })
+    if (fadeWhenIdle) host.classList.add('is-idle')
+    window.addEventListener('scroll', wake, { passive: true })
     window.addEventListener('resize', onResize)
     const observer = new ResizeObserver(onResize)
     observer.observe(root)
 
     return () => {
-      window.removeEventListener('scroll', schedule)
+      window.removeEventListener('scroll', wake)
       window.removeEventListener('resize', onResize)
       observer.disconnect()
       window.clearTimeout(handover)
+      window.clearTimeout(idleTimer)
+      root.removeAttribute(SECTION_LIT_ATTR)
       if (frame) cancelAnimationFrame(frame)
     }
-  }, [rootRef])
+  }, [rootRef, fadeWhenIdle])
 }
 
 /**

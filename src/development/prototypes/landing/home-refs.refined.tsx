@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import type { LinkProps } from '@tanstack/react-router'
@@ -616,17 +616,38 @@ function startArrivalEffects(block: Element, delay: number) {
   countUpWithin(block, delay)
 }
 
-function RefinedLanding() {
+/**
+ * Which lights the page runs, and how they share it.
+ *
+ * Three answers to one question — what a scroll-coupled light is *for* — kept
+ * side by side because the difference is a judgement about attention and not a
+ * thing measurement settles.
+ *
+ * - `frame`   the page-wide light down the margins, plus a circuit on the card
+ *             you are reading. Two marks at different depths answering two
+ *             questions, on the argument that speed and position are genuinely
+ *             different things.
+ * - `header`  no page-wide light at all. The hero gets the same circuit as
+ *             every other section, so the page is one repeated idea instead of
+ *             two, and all of them come and go with the scroll.
+ * - `handover` the page-wide light, but standing down as the reader reaches the
+ *             first card and returning when they leave the last — one mark at a
+ *             time, with the margins framing only the parts no card covers.
+ */
+export type LightMode = 'frame' | 'header' | 'handover'
+
+function RefinedLanding({ lights = 'frame' }: { readonly lights?: LightMode }) {
   const { groups, coverage } = getPlatformCoverage()
   const heroRef = useFieldMotion()
-  // The light measures the page it runs down, so it takes the root rather than
-  // being handed coordinates.
-  const rootRef = useScrollLight()
+  // One root, lent to every effect that needs the page's geometry. None of them
+  // owns it, which is what lets the page decide which of them run at all.
+  const rootRef = useRef<HTMLDivElement>(null)
+  useScrollLight(rootRef)
   // The hero is deliberately not a group: it is on screen at load, so "first
   // time in view" would mean "at load", and hiding server-rendered text at load
   // is the failure this is built to avoid. The hero keeps its own entrance.
   useRevealOnView(rootRef, startArrivalEffects)
-  useSectionLight(rootRef)
+  useSectionLight(rootRef, { fadeWhenIdle: lights === 'header' })
   // Module state outlives the component, so an unmount mid-flight would leave
   // both loops ticking against nodes that are no longer in the document.
   useEffect(() => () => {
@@ -641,7 +662,7 @@ function RefinedLanding() {
       <SectionLightStyles />
       <RevealStyles />
       <SmearFilters />
-      <ScrollLight />
+      {lights === 'header' ? null : <ScrollLight handover={lights === 'handover'} />}
       <SectionLight />
       {/* Hero — open band. */}
       {/* The hero does *not* clip. It used to, and the search dropdown paid for
@@ -653,6 +674,21 @@ function RefinedLanding() {
           direct children. */}
       <section ref={heroRef} className={cn('relative border-b', FIELD_HOST_CLASS)}>
         <FieldAnimationStyles />
+        {/* The hero's circuit, in the `header` variant only.
+            An empty box rather than a marker on the hero itself, because the
+            two boxes are different: the section is full-bleed while the light
+            has to ride the frame rules, which are drawn at the content frame's
+            edges. `w-full max-w-6xl` centred reproduces the `mx-auto` frame
+            exactly — measured at 163..1315 against the frame's own 163..1315 —
+            and `inset-y-0` takes the section's whole height, so the circuit
+            closes on the band's bottom border rather than inside it. */}
+        {lights === 'header' ? (
+          <span
+            {...{ [SECTION_LIGHT_ATTR]: '' }}
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-6xl -translate-x-1/2"
+          />
+        ) : null}
         <TwoLayerLattice idPrefix="refined-hero" />
         {/* The grid pixelating at the margins — filled cells on the same 24px
             module the minor lattice is drawn on, so it reads as one system
@@ -933,4 +969,10 @@ function RefinedLanding() {
  * `docs/design/landing-search-comparison.md` so neither gets reopened from
  * scratch.
  */
-export const LandingRefs = RefinedLanding
+export const LandingRefs = () => <RefinedLanding lights="frame" />
+
+/** The hero treated as one more section, and every mark tied to the scroll. */
+export const LandingRefsHeader = () => <RefinedLanding lights="header" />
+
+/** The margins framing only what no card is framing. */
+export const LandingRefsHandover = () => <RefinedLanding lights="handover" />

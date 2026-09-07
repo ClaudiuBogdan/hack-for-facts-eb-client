@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import type { RefObject } from 'react'
 import { LIT_CLASS, TRAIL_BASE_PX } from './home-refs.light-material'
+import { SECTION_LIT_ATTR } from './home-refs.section-light'
 
 /**
  * Scroll-coupled light running down the frame rules.
@@ -209,6 +210,25 @@ const CSS = `
   );
 }
 
+/*
+ * The handover variant, and nothing else opts into it.
+ *
+ * Two lights that both run down the page while a section is being read give it
+ * two answers to "where am I", which is one more than the question has. Where
+ * the default lets them coexist — they are at different depths and answer
+ * different questions — this rule has the page-wide light stand down as the
+ * reader reaches the first card, and come back when they leave the last.
+ *
+ * Keyed off an attribute the section light publishes rather than off any shared
+ * state, so the two stay independent: one states a fact, the other may or may
+ * not care. Slower than the idle fade below it, because this is a handover
+ * rather than a stop and it should not read as the light being switched off.
+ */
+[${SECTION_LIT_ATTR}='1'] .tpz-light.is-handover {
+  opacity: 0;
+  transition: opacity 420ms ease;
+}
+
 /* The motion is the whole component, so reduced motion removes it rather than
    substituting something static. The hook also never attaches its listener. */
 @media (prefers-reduced-motion: reduce) {
@@ -277,12 +297,14 @@ function measure(root: HTMLElement | null): Geometry {
 }
 
 /**
- * Returns the ref to put on the page root. The host is found underneath it, so
- * the component owns its own markup and the page only lends its geometry.
+ * Arms the frame light. The host is found underneath the root, so the component
+ * owns its own markup and the page only lends its geometry.
+ *
+ * Takes the root rather than creating it, so that this hook, `useSectionLight`
+ * and `useRevealOnView` all share one ref and none of them is secretly the
+ * owner of the page's root element.
  */
-export function useScrollLight(): RefObject<HTMLDivElement | null> {
-  const rootRef = useRef<HTMLDivElement>(null)
-
+export function useScrollLight(rootRef: RefObject<HTMLElement | null>) {
   useEffect(() => {
     const root = rootRef.current
     if (!root) return
@@ -461,15 +483,21 @@ export function useScrollLight(): RefObject<HTMLDivElement | null> {
       window.clearTimeout(idleTimer)
       if (frame) cancelAnimationFrame(frame)
     }
-  }, [])
-
-  return rootRef
+  }, [rootRef])
 }
 
 /** The two rails. Positions are written by the hook, which measures the frame. */
-export function ScrollLight() {
+export function ScrollLight({
+  /** Stand down while a section card has the reader. See the CSS above. */
+  handover = false,
+}: {
+  readonly handover?: boolean
+}) {
   return (
-    <div className={`tpz-light ${LIT_CLASS}`} aria-hidden="true">
+    <div
+      className={`tpz-light ${LIT_CLASS}${handover ? ' is-handover' : ''}`}
+      aria-hidden="true"
+    >
       {[0, 1].map((rail) => (
         <div key={rail} className="tpz-light-rail">
           <span className="tpz-lit-halo tpz-light-halo" />
