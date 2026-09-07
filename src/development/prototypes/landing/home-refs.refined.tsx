@@ -4,7 +4,7 @@ import { Link } from '@tanstack/react-router'
 import type { LinkProps } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
 import leu from '@/assets/images/landing-leu.webp'
-import balanta from '@/assets/images/landing-balanta.webp'
+import atlas from '@/assets/images/landing-atlas.webp'
 import justitia from '@/assets/images/landing-justitia.webp'
 import logo from '@/assets/logo/logo.png'
 import { PREDEFINED_ENTITIES } from '@/lib/constants/predefined-entities'
@@ -432,7 +432,7 @@ type GroupImage = {
  * Two things worth carrying with this map.
  *
  * Allegory generates safely; real institutions do not. A Justitia, a stone lion
- * and a balance have no referent to get wrong. A rendered Palace of the
+ * and an Atlas have no referent to get wrong. A rendered Palace of the
  * Parliament that is almost right would undercut the one thing this platform
  * sells — that what you are shown is the actual record.
  *
@@ -462,12 +462,34 @@ const GROUP_IMAGES: Record<string, GroupImage | undefined> = {
   // mock-data gate, so it is three entries tall today and four when that gate
   // opens.
   institutii: {
-    src: balanta,
-    fit: 'contain',
-    position: '50% 50%',
+    src: atlas,
+    /*
+     * The only one of the three that is cropped on desktop rather than fitted,
+     * because it is the only one whose proportions fight the cell.
+     *
+     * The desktop cell comes out about square — 363x365 beside three entries —
+     * and this source is 0.608. Under 'contain' that fits to height and renders
+     * the figure 221px wide in a 363px box, a small statue marooned in white
+     * space. 'cover' fills it, at the price of the pedestal.
+     *
+     * Worth the price: what is lost is the base, and what survives is the globe
+     * and the figure carrying it, which is the whole of what the picture is
+     * for. '15%' rather than '0%' because anchoring the top gives the globe the
+     * entire upper half and pushes the head to the middle; a little lower
+     * trades the crown of the globe — which stays legible as a sphere even
+     * clipped — for the head, the shoulders and a knee.
+     */
+    fit: 'cover',
+    position: '50% 15%',
     side: 'right',
-    // 4:5 against the cropped source's own 0.805.
-    mobileAspect: 'aspect-4/5',
+    /*
+     * 3:5 against the cropped source's own 0.608, which means 'cover' barely
+     * crops anything here and mobile gets the whole figure, pedestal included.
+     * That is the intended split rather than an accident of the numbers: a
+     * phone has the height to show a standing figure and a desktop row does
+     * not.
+     */
+    mobileAspect: 'aspect-3/5',
   },
   // Anchored to the very top. Centring lands on drapery, and anything below the
   // top edge slices the head off at desktop widths, where the cell is at its
