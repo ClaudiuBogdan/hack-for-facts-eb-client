@@ -4,8 +4,11 @@ import { Link } from '@tanstack/react-router'
 import type { LinkProps } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
 import leu from '@/assets/images/landing-leu.webp'
+import leuAvif from '@/assets/images/landing-leu.avif'
 import atlas from '@/assets/images/landing-atlas.webp'
+import atlasAvif from '@/assets/images/landing-atlas.avif'
 import justitia from '@/assets/images/landing-justitia.webp'
+import justitiaAvif from '@/assets/images/landing-justitia.avif'
 import logo from '@/assets/logo/logo.png'
 import { PREDEFINED_ENTITIES } from '@/lib/constants/predefined-entities'
 import { buildPreferredEntityPath } from '@/lib/entity-navigation'
@@ -16,6 +19,12 @@ import { cn } from '@/lib/utils'
 import { scraperDatasetCatalog } from '@/lib/scraper-references'
 import { MonoLabel } from './home-refs.mono-label'
 import { RevealStyles, useRevealOnView } from './home-refs.reveal'
+import {
+  GroupPicture,
+  PICTURE_ATTR,
+  PictureRevealStyles,
+  usePictureReveal,
+} from './home-refs.image-reveal'
 import { ScrambleText, scrambleWithin, stopScrambling } from './home-refs.scramble'
 import { CountUpValue, SmearFilters, countUpWithin, stopCounting } from './home-refs.count-up'
 import { NATIONAL_FACTS } from './home-refs.national-facts'
@@ -402,6 +411,11 @@ function RefinedCell({ entry, index }: { readonly entry: LandingEntry; readonly 
  */
 type GroupImage = {
   readonly src: string
+  /** The same picture in AVIF, offered ahead of the WebP. */
+  readonly avif: string
+  /** The art's own pixels, so the browser can reserve the box before it lands. */
+  readonly width: number
+  readonly height: number
   /**
    * Whether the picture is cropped to its cell or fitted inside it.
    *
@@ -448,6 +462,9 @@ const GROUP_IMAGES: Record<string, GroupImage | undefined> = {
   // three, which is what a seated figure on a pedestal wants.
   bani: {
     src: leu,
+    avif: leuAvif,
+    width: 760,
+    height: 942,
     fit: 'contain',
     position: '50% 50%',
     side: 'left',
@@ -463,6 +480,9 @@ const GROUP_IMAGES: Record<string, GroupImage | undefined> = {
   // opens.
   institutii: {
     src: atlas,
+    avif: atlasAvif,
+    width: 760,
+    height: 1250,
     /*
      * The only one of the three that is cropped on desktop rather than fitted,
      * because it is the only one whose proportions fight the cell.
@@ -483,13 +503,16 @@ const GROUP_IMAGES: Record<string, GroupImage | undefined> = {
     position: '50% 15%',
     side: 'right',
     /*
-     * 3:5 against the cropped source's own 0.608, which means 'cover' barely
-     * crops anything here and mobile gets the whole figure, pedestal included.
-     * That is the intended split rather than an accident of the numbers: a
-     * phone has the height to show a standing figure and a desktop row does
-     * not.
+     * 4:5, which crops on a phone exactly as it does on the desktop row.
+     *
+     * It was 3:5 — near enough the source's own 0.608 that mobile got the whole
+     * figure, pedestal included, which was the point. Measured on a 390x844
+     * screen that box is 582px tall: 69% of the viewport for one decorative
+     * picture, with the entries it illustrates pushed off the bottom entirely.
+     * 4:5 brings it to 436 and costs the pedestal, which the desktop crop had
+     * already given up.
      */
-    mobileAspect: 'aspect-3/5',
+    mobileAspect: 'aspect-4/5',
   },
   // Anchored to the very top. Centring lands on drapery, and anything below the
   // top edge slices the head off at desktop widths, where the cell is at its
@@ -497,6 +520,9 @@ const GROUP_IMAGES: Record<string, GroupImage | undefined> = {
   // air above the head, so '0%' reads as headroom rather than a crop.
   lege: {
     src: justitia,
+    avif: justitiaAvif,
+    width: 760,
+    height: 1140,
     fit: 'cover',
     position: '50% 0%',
     side: 'left',
@@ -579,6 +605,7 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
                    3:2 because a portrait subject needs the height back once it
                    is running full-bleed. */
                 <div
+                  {...{ [PICTURE_ATTR]: '' }}
                   className={cn(
                     'relative -ml-px -mt-px overflow-hidden border-l border-t sm:aspect-auto',
                     image.mobileAspect,
@@ -591,24 +618,13 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
                     image.side === 'right' && 'sm:col-start-2 sm:row-start-1',
                   )}
                 >
-                  <img
+                  <GroupPicture
                     src={image.src}
-                    /* Decorative: the group heading beside it already names the
-                       section, so announcing the picture would only make a
-                       screen reader say the same thing twice. */
-                    alt=""
-
-                    loading="lazy"
-                    decoding="async"
-                    className={cn(
-                      'absolute inset-0 size-full',
-                      // Padding on the element rather than the cell: the image
-                      // is absolutely positioned, so the cell's own padding
-                      // would not reach it, but `object-contain` fits inside
-                      // the content box.
-                      image.fit === 'contain' ? 'object-contain p-2' : 'object-cover',
-                    )}
-                    style={{ objectPosition: image.position }}
+                    avif={image.avif}
+                    fit={image.fit}
+                    position={image.position}
+                    width={image.width}
+                    height={image.height}
                   />
                 </div>
               ) : null}
@@ -655,6 +671,7 @@ function RefinedLanding() {
   // time in view" would mean "at load", and hiding server-rendered text at load
   // is the failure this is built to avoid. The hero keeps its own entrance.
   useRevealOnView(rootRef, startArrivalEffects)
+  usePictureReveal(rootRef)
   useSectionLight(rootRef)
   useFooterScene(rootRef)
   // Module state outlives the component, so an unmount mid-flight would leave
@@ -671,6 +688,7 @@ function RefinedLanding() {
       <SectionLightStyles />
       <FooterSceneStyles />
       <RevealStyles />
+      <PictureRevealStyles />
       <SmearFilters />
       <ScrollLight />
       <SectionLight />
