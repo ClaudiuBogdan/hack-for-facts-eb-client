@@ -6,7 +6,6 @@ import leu from '@/assets/images/landing-leu.webp'
 import balanta from '@/assets/images/landing-balanta.webp'
 import justitia from '@/assets/images/landing-justitia.webp'
 import logo from '@/assets/logo/logo.png'
-import { EntitySearchInput } from '@/components/entities/EntitySearch'
 import { PREDEFINED_ENTITIES } from '@/lib/constants/predefined-entities'
 import { buildPreferredEntityPath } from '@/lib/entity-navigation'
 import { CampaignLandingShareCard } from '@/features/campaigns/buget/components/CampaignAccessShareCard'
@@ -14,11 +13,14 @@ import { ParliamentPromoCard } from '@/features/parliament/components/parliament
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import { scraperDatasetCatalog } from '@/lib/scraper-references'
+import { MonoLabel } from './home-refs.mono-label'
 import { NATIONAL_FACTS, formatFact } from './home-refs.national-facts'
 import { PixelField } from './home-refs.pixel-art'
 import { FIELD_HOST_CLASS, FieldAnimationStyles } from './home-refs.field-animation'
 import { useFieldMotion } from './home-refs.field-motion'
 import { ScrollLight, ScrollLightStyles, useScrollLight } from './home-refs.scroll-light'
+import { LandingSearch } from './home-refs.search'
+import { localEntityMatches } from './home-refs.search-local'
 import { LANDING_GROUPS, visibleGroups } from './home.data'
 import type { LandingEntry, LandingGroup } from './home.data'
 
@@ -32,11 +34,14 @@ import type { LandingEntry, LandingGroup } from './home.data'
  * - **The hero headline area.** A tighter display scale (`clamp`, leading 0.92)
  *   with the lead paragraph held to about sixty characters, and the search
  *   given the left column rather than floating centred.
- * - **The search input.** Restyled *locally* — `EntitySearchInput` is shared
- *   with campaigns and the floating search, so it is reached with an arbitrary
- *   variant on the wrapper instead of being edited. Its shipped
- *   `rounded-3xl` + shadow ramp is the one element that read as off-system in
- *   every earlier screenshot.
+ * - **The search and its results.** Rebuilt rather than restyled. The earlier
+ *   pass reached into the shipped `EntitySearchInput` with `[&_input]:`
+ *   descendant selectors, because it is shared with campaigns and the floating
+ *   search and could not be edited — a hack that outranked the component's own
+ *   classes and would have broken silently the moment its internals changed. It
+ *   is now `home-refs.search.tsx`, written against the same prop contract so it
+ *   can replace the shipped one, with the state machine and the folded matcher
+ *   in files beside it.
  * - **A two-layer lattice.** A 24px minor grid under the 120px major one, both
  *   dissolving toward the edges through a radial mask, so the background stops
  *   reading as flat wallpaper and starts reading as a drawing surface.
@@ -57,22 +62,6 @@ import type { LandingEntry, LandingGroup } from './home.data'
 const PROTOTYPE_MARKER = 'TRANSPARENTA_PROTOTYPE_MUST_NOT_SHIP'
 
 /** Small monospace label. Numbering and section names only — never fake telemetry. */
-function MonoLabel({
-  children,
-  className,
-}: {
-  readonly children: ReactNode
-  readonly className?: string
-}) {
-  return (
-    <span
-      className={cn('font-mono text-[0.625rem] uppercase leading-none tracking-[0.14em]', className)}
-    >
-      {children}
-    </span>
-  )
-}
-
 /**
  * What this platform holds — deliberately kept apart from the national figures
  * in the strip above.
@@ -281,36 +270,34 @@ function CruxMarks() {
 }
 
 /**
- * The shipped input is reached with an arbitrary *variant* — a descendant
- * selector, which outranks the component's own utility classes — rather than
- * by editing a component three other surfaces depend on.
+ * The field owns no layout of its own, so the hero decides how wide it is and
+ * what sits under it. That is the whole reason it could be rebuilt instead of
+ * overridden.
+ *
+ * Autofocus is desktop-only. On a phone, focusing on mount raises the keyboard
+ * over the page before the reader has seen it; `scrollToTopOnFocus` is the
+ * mobile counterpart, keeping the field above the keyboard once they do tap it.
+ *
+ * The fallback is the one thing here that is prototype-only. The GraphQL server
+ * lives in another repo, so on this harness the search usually cannot reach it
+ * and the dropdown can only be seen failing — which makes the states worth
+ * looking at impossible to look at. `import.meta.env.DEV` keeps it out of a
+ * build, and results that come from it are labelled as such in the dropdown.
  */
 function RefinedSearch() {
   const isMobile = useIsMobile()
+
   return (
-    <div
-      className={cn(
-        // Shape and weight: flat and bordered instead of rounded-3xl on a shadow ramp.
-        '[&_input]:rounded-lg [&_input]:border-input [&_input]:bg-card [&_input]:shadow-none',
-        '[&_input]:transition-colors [&_input]:hover:border-ring/50 [&_input]:focus:border-ring',
-        // Height and right padding only. The left padding is left alone: the
-        // magnifier is absolutely positioned at `sm:left-7` in a 32px box, so
-        // anything under ~80px puts the icon on top of the placeholder.
-        '[&_input]:py-5 md:[&_input]:text-base sm:[&_input]:pr-6',
-        // The results dropdown carries the same rounding; bring it along.
-        '[&_.rounded-3xl]:rounded-lg [&_.shadow-2xl]:shadow-md',
-      )}
-    >
-      {/* The placeholder is kept short deliberately: at 375px the field has
-          about thirty characters left after the magnifier's 80px of padding,
-          and the longer wording truncated mid-word. */}
-      <EntitySearchInput
-        placeholder="Caută o instituție sau CUI..."
-        selectionBehavior="navigate-to-preferred-entity"
-        autoFocus={!isMobile}
-        scrollToTopOnFocus={isMobile}
-      />
-    </div>
+    // The placeholder is kept short deliberately: at 375px the field has about
+    // thirty characters after the magnifier's padding, and the longer wording
+    // truncated mid-word.
+    <LandingSearch
+      placeholder="Caută o instituție sau CUI..."
+      selectionBehavior="navigate-to-preferred-entity"
+      autoFocus={!isMobile}
+      scrollToTopOnFocus={isMobile}
+      fallback={import.meta.env.DEV ? localEntityMatches : undefined}
+    />
   )
 }
 
@@ -607,7 +594,14 @@ function RefinedLanding() {
       <ScrollLightStyles />
       <ScrollLight />
       {/* Hero — open band. */}
-      <section ref={heroRef} className={cn('relative overflow-hidden border-b', FIELD_HOST_CLASS)}>
+      {/* The hero does *not* clip. It used to, and the search dropdown paid for
+          it: with five results the panel ran 194px past the section and was cut
+          off mid-row. Nothing here needs the section to clip — the lattice is a
+          self-bounded `svg`, and each margin field already sits in its own
+          `overflow-hidden` wrapper, which is what the mask is applied to. The
+          clip was inherited from an earlier version where the fields were
+          direct children. */}
+      <section ref={heroRef} className={cn('relative border-b', FIELD_HOST_CLASS)}>
         <FieldAnimationStyles />
         <TwoLayerLattice idPrefix="refined-hero" />
         {/* The grid pixelating at the margins — filled cells on the same 24px
