@@ -139,8 +139,17 @@ function widthIndexFor(font: string, needed: string): WidthIndex {
   return index.byCharacter
 }
 
-/** Long enough to read as decryption, short enough to be over before it bores. */
-const DURATION_MS = 900
+/**
+ * Long enough to read as decryption, short enough to be over before it bores.
+ *
+ * Was 900ms, which turned out to be tuned for the wrong thing: at 25 rewrites a
+ * second it is the *number of substitutions the eye gets to see* that makes the
+ * effect read as working rather than as a flicker, and 900ms only buys 22 of
+ * them across a whole heading. At 1200 it is 30, and the resolve front moves
+ * slowly enough that you can follow it left to right instead of noticing that
+ * the word changed.
+ */
+const DURATION_MS = 1200
 
 /**
  * How often the text is rewritten. Every frame would be four times the cost for
@@ -150,9 +159,31 @@ const DURATION_MS = 900
  */
 const TICK_MS = 40
 
+/**
+ * How long a heading sits encrypted before it starts resolving.
+ *
+ * The decryption is the point of the effect and it was happening in the last
+ * 140px of the screen, where nobody is looking — by the time the heading had
+ * travelled somewhere the eye actually rests, it had already read true. This
+ * holds the cipher while the heading climbs, so the resolve happens where it
+ * can be watched.
+ *
+ * It delays the *resolve* and not the cipher, which matters more than it
+ * sounds. The obvious way to delay this is to push the whole job back, but the
+ * real text is on screen until a job starts — that is the SSR contract — so a
+ * later start means the reader watches clear text turn into noise. Applying the
+ * cipher on the reveal's own beat instead puts it under the fade, which is
+ * still running: the heading is at zero opacity when it turns to noise and
+ * arrives already encrypted. There is nothing to see turning.
+ */
+const HOLD_MS = 380
+
 type Job = {
   readonly element: HTMLElement
   readonly target: string
+  /** When the real text gives way to noise — under the fade, so it is unseen. */
+  readonly cipherAt: number
+  /** When the noise starts resolving, `HOLD_MS` later. */
   readonly start: number
   readonly widths: WidthIndex
 }
@@ -193,37 +224,46 @@ function tick(now: number) {
   if (now - lastTick >= TICK_MS) {
     lastTick = now
     for (const job of running) {
-      const progress = (now - job.start) / DURATION_MS
       // Waiting its turn in the stagger. The real text is already on screen and
       // is left there, so a queued element reads as untouched rather than as a
       // gap — which is also the order mega.dev goes in: real, cipher, real.
-      if (progress < 0) continue
+      if (now < job.cipherAt) continue
+      const progress = (now - job.start) / DURATION_MS
       // One write per element per tick. Writing per character would mean a
       // node per character and a layout for each.
+      //
+      // Held: rewritten as fresh noise on every tick rather than frozen on one
+      // string. A still cipher reads as a rendering fault; one that keeps
+      // turning over reads as something working on it.
       job.element.textContent =
-        progress >= 1 ? job.target : partial(job.target, progress, job.widths)
+        progress >= 1
+          ? job.target
+          : partial(job.target, progress > 0 ? progress : 0, job.widths)
       if (progress >= 1) running.delete(job)
     }
   }
   if (running.size > 0) frame = requestAnimationFrame(tick)
 }
 
-/** Starts one element decrypting, `delay` milliseconds from now. */
+/** Encrypts one element `delay` milliseconds from now, resolving `HOLD_MS` after that. */
 function startOne(element: HTMLElement, delay: number) {
   if (element.dataset.scrambleDone === 'true') return
   const target = element.textContent ?? ''
   if (target.trim() === '') return
   element.dataset.scrambleDone = 'true'
+  const cipherAt = performance.now() + delay
   running.add({
     element,
     target,
-    start: performance.now() + delay,
+    cipherAt,
+    start: cipherAt + HOLD_MS,
     widths: widthIndexFor(fontOf(element), target),
   })
 }
 
 /**
- * Starts every heading inside `block` decrypting, `delay` milliseconds from now.
+ * Encrypts every heading inside `block` on the reveal's beat, `delay`
+ * milliseconds from now, and resolves them `HOLD_MS` after that.
  *
  * Driven by the reveal's arrival rather than by an observer of its own, which is
  * what this had first. Two observers meant two ideas of when a thing is on
