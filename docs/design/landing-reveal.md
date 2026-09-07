@@ -42,9 +42,18 @@ on screen go straight to their final state and are never hidden even for a
 frame, so there is nothing to flash. No JavaScript therefore means no animation
 and all of the words, which is the correct way round.
 
+What makes that safe is not the trigger but a separate check: a group is only
+eligible to be hidden if its own rectangle is entirely outside the *real*
+viewport. Nothing on screen can be hidden even for a frame, because the branch
+that hides is not reachable for anything on screen.
+
 Verified: `javaScriptEnabled: false` renders all five section strings;
-`data-reveal="pending"` never appears in server output; reloading parked at
-`y=2400` shows zero frames with on-screen text hidden.
+`data-reveal="pending"` never appears in server output; and no on-screen text is
+hidden across a swept range rather than a lucky sample — 124 viewport heights
+from 500 to 1100 at four widths, and 31 scroll offsets from 0 to 3000, with the
+observer confirmed armed on every load. `history.scrollRestoration` is `manual`
+and TanStack restores before the effect runs, so restoration timing was never
+the risk.
 
 ## CSS or `motion`
 
@@ -71,8 +80,13 @@ shares a feature directory with one of the five: zero requests.
 | CSS | 13.6ms | 60.4ms | 1.1ms | 0 | 0ms |
 | `motion` | 17.2ms | 65.6ms | 0.4ms | 0 | 0ms |
 
-The runtime difference is not the argument, and it would be dishonest to present
-it as one: ~3.6ms of script across an entire page scroll is within the spread of
+Both columns are mostly the page, not the mechanism. Isolated by A/B against a
+no-op `IntersectionObserver` over the same scroll, the reveal's own cost is +164
+style recalculations and about **0ms** of wall time; the ~60ms below belongs to
+the landing's other animations. The table is here for scale, not as evidence.
+
+The runtime difference is therefore not the argument, and it would be dishonest
+to present it as one: ~3.6ms of script across an entire page scroll is within the spread of
 the runs, and neither variant produced a single long animation frame. The reason
 is that `motion` 12.43 does not animate this on the main thread. Inspecting
 `document.getAnimations()` mid-reveal returns real `KeyframeEffect`s for both
@@ -98,8 +112,12 @@ installed.
   an instant hide and only the arrival animates. Nothing ever fades out.
 - The rise uses the independent `translate` property, and the transition names
   `translate` — **not** `transform`. Naming `transform` there animates opacity
-  alone and silently drops the rise. Confirmed by sampling computed `translate`
-  mid-flight: `12px → 11.57 → 4.55 → 1.56 → 0.48 → 0.12 → 0`.
+  alone and silently drops the rise. Confirmed by measuring the *rendered* rise —
+  the element's rect while `pending` against its rect plain — which is 12px on
+  all ten blocks. Sampling computed `translate` mid-flight also shows the curve
+  (`12px → 11.57 → 4.55 → 1.56 → 0.48 → 0`), but it is the wrong instrument and
+  was how the inline-label bug below survived: computed `translate` interpolates
+  on an inline box whether or not the box moves.
 - A reveal block must not be `display: inline`. `translate` has no effect on a
   non-replaced inline box, so an inline block fades without rising.
 

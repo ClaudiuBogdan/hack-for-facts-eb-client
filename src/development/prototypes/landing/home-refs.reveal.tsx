@@ -44,6 +44,16 @@ export const REVEAL_GROUP_ATTR = 'data-reveal-group'
 
 const DURATION_MS = 600
 const STAGGER_MS = 70
+
+/**
+ * The longest the whole stagger may run, however many blocks a group holds.
+ *
+ * Four blocks at 70ms is 210ms and the group has finished arriving in 810ms.
+ * Twenty blocks at a flat 70ms would run to 1930ms, which stops reading as one
+ * group arriving and starts reading as a queue. Four blocks is today's maximum,
+ * so this changes nothing now and is here for whoever marks up a list.
+ */
+const STAGGER_WINDOW_MS = 280
 const RISE_PX = 12
 const EASE = 'cubic-bezier(0.23, 1, 0.32, 1)'
 
@@ -110,11 +120,34 @@ export function RevealStyles() {
   return <style>{CSS}</style>
 }
 
+/**
+ * The blocks a group is responsible for — its own, not its descendants'.
+ *
+ * `querySelectorAll` reaches through nested groups, so without this filter an
+ * outer group's arrival would mark an inner group's blocks `shown` (including
+ * ones still below the fold) and hand them delays counted from the outer
+ * group's sequence, only for the inner group's own off-screen entry to hide
+ * them again. Nothing nests today; this makes "a group owns its blocks" true by
+ * construction rather than by the current markup happening to be flat.
+ */
+function ownBlocks(group: Element) {
+  return Array.from(group.querySelectorAll<HTMLElement>(`[${REVEAL_ATTR}]`)).filter(
+    (block) => block.closest(`[${REVEAL_GROUP_ATTR}]`) === group,
+  )
+}
+
 /** Reveals every block in a group, staggered in document order. */
 function show(group: Element) {
-  const blocks = group.querySelectorAll<HTMLElement>(`[${REVEAL_ATTR}]`)
+  const blocks = ownBlocks(group)
+  /*
+   * The step shrinks so that a long group still finishes within one window.
+   * At the current maximum of four blocks this is exactly STAGGER_MS and
+   * changes nothing; the `min` is what guarantees the step can only ever get
+   * smaller, so a short group never slows down to fill the window.
+   */
+  const step = blocks.length > 1 ? Math.min(STAGGER_MS, STAGGER_WINDOW_MS / (blocks.length - 1)) : 0
   blocks.forEach((block, index) => {
-    block.style.setProperty('--tpz-reveal-delay', `${index * STAGGER_MS}ms`)
+    block.style.setProperty('--tpz-reveal-delay', `${Math.round(index * step)}ms`)
     block.setAttribute(REVEAL_ATTR, 'shown')
   })
 }
@@ -185,9 +218,9 @@ export function useRevealOnView(rootRef: RefObject<HTMLElement | null>) {
             observer.unobserve(entry.target)
             continue
           }
-          entry.target
-            .querySelectorAll<HTMLElement>(`[${REVEAL_ATTR}]`)
-            .forEach((block) => block.setAttribute(REVEAL_ATTR, 'pending'))
+          ownBlocks(entry.target).forEach((block) =>
+            block.setAttribute(REVEAL_ATTR, 'pending'),
+          )
         }
       },
       { rootMargin: ROOT_MARGIN },
