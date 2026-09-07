@@ -72,13 +72,12 @@ const LAYERS = {
   far: { w: 1072, h: 110, bottom: 138, seconds: 150 },
   near: { w: 1466, h: 150, bottom: 86, seconds: 90 },
   range: { w: 1795, h: 230 },
-  front: { w: 1714, h: 130, bottom: 78, seconds: 52 },
+  front: { w: 1714, h: 130, bottom: 110, seconds: 52 },
 }
 
 /**
- * The highest a cloud ever reaches *behind* the range, and the room the
- * footer's text needs above it. The front layer is not counted: it sits on the
- * slopes, nowhere near the text.
+ * The highest a cloud ever reaches, and the room the footer's text needs above
+ * it.
  *
  * Derived rather than written down, because the first version was written down
  * and the copyright line ended up sitting on a white cloud on a white sky,
@@ -88,7 +87,11 @@ const LAYERS = {
  * of itself to keep clear.
  */
 export const FOOTER_SCENE_CLEAR_PX =
-  Math.max(LAYERS.far.bottom + LAYERS.far.h, LAYERS.near.bottom + LAYERS.near.h) + 20
+  Math.max(
+    LAYERS.far.bottom + LAYERS.far.h,
+    LAYERS.near.bottom + LAYERS.near.h,
+    LAYERS.front.bottom + LAYERS.front.h,
+  ) + 20
 
 const CSS = `
 .tpz-scene {
@@ -223,10 +226,11 @@ const CSS = `
   background-size: var(--tpz-tile) calc(${LAYERS.front.h}px * var(--tpz-scene-scale));
   /* Solid enough to read as a cloud rather than as ground haze, which is what
      it looked like at half opacity eight pixels off the floor: it hugged the
-     tree line and never touched a slope. It now straddles the ridge — 78 to
-     208 against a skyline that runs 124 to 165 — so it passes across the peaks
-     rather than under them, and at that height it has to be nearly as solid as
-     the layers behind or the occlusion does not read. */
+     tree line and never touched a slope. It now sits at summit level — 110 to
+     240 against a skyline that runs 124 to 165 — so it crosses the tops rather
+     than the mid-slopes, which is where a cloud that near the viewer would
+     actually be. At that height it has to be nearly as solid as the layers
+     behind or the occlusion does not read. */
   opacity: 0.82;
 }
 
