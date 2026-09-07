@@ -30,13 +30,15 @@ import type { RefObject } from 'react'
  * 3. **`will-change` is set here**, on two elements that are always moving.
  *    That is the case it exists for — unlike the ~990 field cells, where asking
  *    for that many layers would cost more than the repaint it saves.
- * 4. **Two palettes, not one, and no hue in either.** White at the centre,
- *    grey at the margins — the anatomy of a light rather than a colour laid
- *    over one. On near-black that is the reference's own ramp. On a near-white
- *    page it has to invert its material: white is *brighter* than the grey
- *    frame rule, so the head reads as the rule burning through, and the grey
- *    falloff around it is darker than the page. Bright core, dark surround,
- *    which is what a specular highlight on paper actually looks like.
+ * 4. **Two palettes, not one, and no hue in either.** Silver, not white: a
+ *    grey core with a lighter edge, which is the material rather than the
+ *    maximum of the scale. Pure white is the brightest thing a screen has, so
+ *    on near-black it blows out into a strip light and on near-white it can
+ *    only ever be a gap — neither reads as an object moving along a rule.
+ *    Backing the core off to a mid grey gives it a value of its own to be seen
+ *    against, and the flank sits a shade lighter than the core so the mark has
+ *    a bright edge rather than a dark one. Same anatomy in both themes; only
+ *    the point on the grey scale moves.
  * 5. **It rests visible.** Length and halo are driven by scroll speed, so a
  *    parked page would otherwise show nothing at all and the whole effect would
  *    be invisible until someone happened to scroll. The head keeps a floor
@@ -128,56 +130,59 @@ const CSS = `
   transition: opacity 130ms ease-out;
 
   /*
-   * Light theme, and the whole of it is that the *core* is the light and the
-   * grey is only its surround.
+   * Light theme. The core runs 158 down to 134 against a frame rule of 230 on a
+   * page of 252, so it is a silver mark on the line rather than a hole in it.
    *
-   * The obvious thing — a dark stroke, since dark is what reads on a near-white
-   * page — gives you a pencil line that happens to move. It is also heavy: a
-   * 1px mark at 60% black running 150px down the page pulls the eye away from
-   * the text it is supposed to be accompanying. So the core is white instead,
-   * which is invisible over the page and *brighter than the frame rule it sits
-   * on* — the mark is the rule lighting up, a thing that exists only along the
-   * line and nowhere else. The grey lives in the flank around it, faint enough
-   * to read as a field rather than as a second stroke.
+   * A white core was tried here first and is the thing this replaced. It was
+   * defensible — white is brighter than the rule, so the head read as the rule
+   * lighting up — but at 1px on a 230 rule it had 25 levels of headroom to work
+   * in, which is not enough to carry a mark, and the grey flank around it ended
+   * up doing all the visible work. Silver has the whole scale to itself.
+   *
+   * Not black either: a 1px mark at 60% black running 150px down the page pulls
+   * the eye off the text it is supposed to be accompanying. Mid grey is the
+   * value that is present without being loud.
    */
   --sp-trail: linear-gradient(
     to bottom,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.22) 35%,
-    rgba(255, 255, 255, 0.52) 62%,
-    rgba(255, 255, 255, 0.85) 84%,
-    rgb(255, 255, 255) 100%
+    rgba(158, 158, 158, 0) 0%,
+    rgba(158, 158, 158, 0.24) 35%,
+    rgba(150, 150, 150, 0.55) 62%,
+    rgba(140, 140, 140, 0.85) 84%,
+    rgb(134, 134, 134) 100%
   );
-  /* The flank. Wide, feathered, and barely there — it is what stops the white
-     core reading as a gap in the rule rather than as light on it. */
+  /* The flank. Feathered and barely there — it is what keeps the core from
+     reading as a drawn line, and it is the *lighter* end of the silver, so the
+     mark has a bright edge rather than a dark one. */
   --sp-flank: linear-gradient(
     to bottom,
-    rgba(88, 88, 88, 0) 0%,
-    rgba(88, 88, 88, 0.05) 35%,
-    rgba(82, 82, 82, 0.11) 62%,
-    rgba(78, 78, 78, 0.17) 84%,
-    rgba(76, 76, 76, 0.2) 100%
+    rgba(176, 176, 176, 0) 0%,
+    rgba(176, 176, 176, 0.06) 35%,
+    rgba(170, 170, 170, 0.13) 62%,
+    rgba(166, 166, 166, 0.2) 84%,
+    rgba(164, 164, 164, 0.24) 100%
   );
-  --sp-core: rgb(255, 255, 255);
+  --sp-core: rgb(132, 132, 132);
   /*
-   * White at the centre, grey at the margins, literally — and the grey is set
-   * where it is only just perceptible. A halo strong enough to notice on its
-   * own is a second mark competing with the head; this one is only there to
-   * keep the white core from floating free of the page.
+   * Set where it is only just perceptible. A halo strong enough to notice on
+   * its own is a second mark competing with the head; this one is only there to
+   * keep the core from floating free of the page. It also lightens as it goes
+   * out, which is the same gradient the flank runs — the edge of the mark is
+   * its bright part, the middle its dark one.
    */
   --sp-halo: radial-gradient(
     circle,
-    rgba(255, 255, 255, 0.5) 0%,
-    rgba(96, 96, 96, 0.07) 34%,
-    rgba(96, 96, 96, 0.025) 55%,
-    rgba(96, 96, 96, 0) 72%
+    rgba(140, 140, 140, 0.22) 0%,
+    rgba(160, 160, 160, 0.1) 34%,
+    rgba(170, 170, 170, 0.035) 55%,
+    rgba(170, 170, 170, 0) 72%
   );
   --sp-rest: 0.5;
   /*
-   * How much of the resting mark the halo carries. On the light theme most of
-   * it: a white core alone on a near-white page is barely a mark, and the grey
-   * pool around it is what says something is there. On the dark theme the core
-   * does that work by itself.
+   * How much of the resting mark the halo carries. More on the light theme,
+   * where the core sits on a rule that is already close to it in value and the
+   * pool around it is what separates the two; on the dark theme the core stands
+   * 160 levels clear of its background and needs no help.
    */
   --sp-halo-rest: 1;
 }
@@ -201,30 +206,30 @@ const CSS = `
 .dark .tpz-light {
   --sp-trail: linear-gradient(
     to bottom,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(190, 190, 190, 0.2) 25%,
-    rgba(210, 210, 210, 0.34) 50%,
-    rgba(232, 232, 232, 0.6) 70%,
-    rgba(246, 246, 246, 0.86) 85%,
-    rgba(253, 253, 253, 0.96) 94%,
-    rgb(255, 255, 255) 100%
+    rgba(150, 150, 150, 0) 0%,
+    rgba(150, 150, 150, 0.2) 25%,
+    rgba(168, 168, 168, 0.34) 50%,
+    rgba(186, 186, 186, 0.6) 70%,
+    rgba(200, 200, 200, 0.86) 85%,
+    rgba(208, 208, 208, 0.96) 94%,
+    rgb(212, 212, 212) 100%
   );
   /* The same flank, in the material of this theme: the core's own ramp at a
-     fifth of its weight, spread across nine pixels instead of one. */
+     fifth of its weight, spread across five pixels instead of one. */
   --sp-flank: linear-gradient(
     to bottom,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(200, 200, 200, 0.045) 35%,
-    rgba(224, 224, 224, 0.09) 62%,
-    rgba(244, 244, 244, 0.15) 84%,
-    rgba(255, 255, 255, 0.18) 100%
+    rgba(160, 160, 160, 0) 0%,
+    rgba(160, 160, 160, 0.045) 35%,
+    rgba(180, 180, 180, 0.09) 62%,
+    rgba(196, 196, 196, 0.15) 84%,
+    rgba(202, 202, 202, 0.18) 100%
   );
-  --sp-core: rgb(255, 255, 255);
+  --sp-core: rgb(214, 214, 214);
   --sp-halo: radial-gradient(
     circle,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(214, 214, 214, 0.03) 40%,
-    rgba(214, 214, 214, 0) 70%
+    rgba(200, 200, 200, 0.1) 0%,
+    rgba(178, 178, 178, 0.03) 40%,
+    rgba(178, 178, 178, 0) 70%
   );
   --sp-rest: 0.22;
   --sp-halo-rest: 0.22;
@@ -334,7 +339,8 @@ const CSS = `
   opacity: var(--sp-on, 0);
 }
 
-/* The hot core. Small and near-white — the colour comes from the halo. */
+/* The core. Small, and a silver rather than a white — see the palettes above
+   for why the brightest value on the scale turned out to be the wrong one. */
 .tpz-light-head {
   /* 1px — the rule's own width. Odd, so a half-pixel rail resolves it to whole
      pixels and it sits exactly on the line; 2px cannot be centred on a 1px rule
