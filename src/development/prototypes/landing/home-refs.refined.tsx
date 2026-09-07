@@ -683,14 +683,21 @@ function RefinedLanding() {
                   <MonoLabel className="ml-1.5 text-muted-foreground">România</MonoLabel>
                 </span>
               </span>
-              <h1 className="mt-6 text-[2.75rem] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl lg:text-7xl">
-                Banii publici,
+              {/* The base size is fluid rather than fixed. `decizii informate`
+                  is a much longer line than the headline it replaced, and at a
+                  flat 2.75rem it measured 313px against a 309px column at 360px
+                  and a 280px one at 320px — so it overflowed on every phone
+                  narrower than an iPhone 14. The clamp keeps 2.75rem wherever
+                  it fits and scales down only where it does not; `sm:` and up
+                  are unaffected. */}
+              <h1 className="mt-6 text-[clamp(2.35rem,8.4vw+0.75rem,2.75rem)] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl lg:text-7xl">
+                Date publice,
                 <br />
-                la vedere.
+                decizii informate
               </h1>
-              <p className="mt-5 max-w-[40ch] text-lg leading-relaxed text-muted-foreground sm:text-xl">
-                Bugete, contracte, investiții, legi și dosare — din surse
-                oficiale, cu proveniența fiecărei cifre.
+              <p className="mt-5 max-w-[46ch] text-lg leading-relaxed text-muted-foreground sm:text-xl">
+                Transformăm date publice în informații clare, pentru a înțelege
+                și decide mai bine.
               </p>
               <div className="mt-6 sm:mt-7">
                 <RefinedSearch />
