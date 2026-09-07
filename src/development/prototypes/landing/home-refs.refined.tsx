@@ -1003,25 +1003,42 @@ function RefinedLanding() {
                   într-un singur loc, cu sursa și data lângă fiecare cifră.
                 </p>
               </div>
-              {FOOTER_COLUMNS.map((column) => (
-                <nav key={column.title} aria-label={column.title}>
-                  <MonoLabel className="text-muted-foreground/70">
-                    {column.title}
-                  </MonoLabel>
-                  <ul className="mt-4 space-y-2.5">
-                    {column.links.map((link) => (
-                      <li key={link.label}>
-                        <Link
-                          to={link.to}
-                          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                        >
-                          {link.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </nav>
-              ))}
+              {/*
+                * One navigation landmark for the footer, not one per column.
+                *
+                * A nav per column takes its name from the column, and "Legal"
+                * is also the name of a nav in the app shell's own footer. Two
+                * landmarks with the same role and the same name are
+                * indistinguishable in the landmark list a screen reader offers,
+                * which is the one place landmarks are actually used.
+                *
+                * 'display: contents' because the columns are grid children of
+                * the block above and a real box here would break the row. The
+                * column titles stay visual — the lists inside carry the
+                * structure, and inventing an 'h2' outline in the footer to sit
+                * under the page's 'h3' group headings would be worse.
+                */}
+              <nav aria-label="Navigare footer" className="contents">
+                {FOOTER_COLUMNS.map((column) => (
+                  <div key={column.title}>
+                    <MonoLabel className="text-muted-foreground/70">
+                      {column.title}
+                    </MonoLabel>
+                    <ul className="mt-4 space-y-2.5">
+                      {column.links.map((link) => (
+                        <li key={link.label}>
+                          <Link
+                            to={link.to}
+                            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                          >
+                            {link.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </nav>
             </div>
             <div className="pointer-events-auto mt-12 flex flex-wrap items-center justify-between gap-3 border-t pt-5">
               <MonoLabel className="text-muted-foreground/70">
