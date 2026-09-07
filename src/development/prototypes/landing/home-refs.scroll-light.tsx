@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import type { RefObject } from 'react'
 import { LIT_CLASS, TRAIL_BASE_PX } from './home-refs.light-material'
-import { SECTION_LIT_ATTR } from './home-refs.section-light'
+import { FOCUS_RATIO, SECTION_LIGHT_ATTR, sectionClaimAt } from './home-refs.section-light'
 
 /**
  * Scroll-coupled light running down the frame rules.
@@ -137,6 +137,28 @@ const CSS = `
   overflow: clip;
   overflow-clip-margin: 6px;
 
+  /*
+   * Standing down as a section card takes the reader.
+   *
+   * Two lights running down the page at once give it two answers to "where am
+   * I", which is one more than the question has. So the margins report the
+   * stretches no card covers — the hero, the bands between sections, the
+   * closing one — and hand over as the reader reaches each card.
+   *
+   * Neither light tells the other anything. Both read the same markers in the
+   * DOM and both call the same exported function to decide what they mean, so
+   * there is no channel between them to get out of step. Distance, not
+   * duration — see 'sectionClaimAt', where the difference is the whole quality
+   * of the crossing.
+   *
+   * On this host and not on the root, which is where it was first written. A
+   * custom property on the root invalidates style for everything that could
+   * read it: twenty-five writes over an 1800px scroll took the 95th-percentile
+   * frame from 18.4ms to 48.5ms at 6x throttle. Here the blast radius is the
+   * twelve elements of this light.
+   */
+  opacity: calc(1 - var(--sp-claim, 0));
+
   /* The whole thing fades once the reader stops. It reports movement, so
      standing still is the one state where it has nothing to say — and a mark
      parked on the rule indefinitely is exactly the idle noise this is meant to
@@ -229,25 +251,6 @@ const CSS = `
   );
 }
 
-/*
- * The handover variant, and nothing else opts into it.
- *
- * Two lights that both run down the page while a section is being read give it
- * two answers to "where am I", which is one more than the question has. Where
- * the default lets them coexist — they are at different depths and answer
- * different questions — this rule has the page-wide light stand down as the
- * reader reaches the first card, and come back when they leave the last.
- *
- * Keyed off an attribute the section light publishes rather than off any shared
- * state, so the two stay independent: one states a fact, the other may or may
- * not care. Slower than the idle fade below it, because this is a handover
- * rather than a stop and it should not read as the light being switched off.
- */
-[${SECTION_LIT_ATTR}='1'] .tpz-light.is-handover {
-  opacity: 0;
-  transition: opacity 420ms ease;
-}
-
 /* The motion is the whole component, so reduced motion removes it rather than
    substituting something static. The hook also never attaches its listener. */
 @media (prefers-reduced-motion: reduce) {
@@ -268,10 +271,16 @@ type Geometry = {
   stops: readonly number[]
   /** Document y of the page's first and last edge, in document space. */
   bounds: readonly [number, number]
+  /**
+   * Document spans of the section cards, so this light knows when to stand
+   * down. Measured here rather than taken from the section light — see
+   * 'sectionClaimAt'.
+   */
+  claims: readonly (readonly [number, number])[]
 }
 
 function measure(root: HTMLElement | null): Geometry {
-  if (!root) return { rails: [], stops: [], bounds: [0, 0] }
+  if (!root) return { rails: [], stops: [], bounds: [0, 0], claims: [] }
   const rootBox = root.getBoundingClientRect()
   /*
    * Everything the host draws is positioned against the root, so the rails are
@@ -317,7 +326,12 @@ function measure(root: HTMLElement | null): Geometry {
     rootBox.top + window.scrollY,
     rootBox.bottom + window.scrollY,
   ]
-  return { rails, stops, bounds }
+  const claims = Array.from(root.querySelectorAll(`[${SECTION_LIGHT_ATTR}]`)).map((card) => {
+    const rect = card.getBoundingClientRect()
+    const top = rect.top + window.scrollY
+    return [top, top + rect.height] as const
+  })
+  return { rails, stops, bounds, claims }
 }
 
 /**
@@ -342,6 +356,9 @@ export function useScrollLight(rootRef: RefObject<HTMLElement | null>) {
     let velocity = 0
     let frame = 0
     let idleTimer = 0
+    /** Last claim written, in thirty-seconds. Writing it unchanged is 13 style
+        invalidations for every one that says anything. */
+    let lastClaim = -1
 
     const paint = () => {
       frame = 0
@@ -439,6 +456,19 @@ export function useScrollLight(rootRef: RefObject<HTMLElement | null>) {
       // was last travelling rather than snapping upright as it retracts.
       host.style.setProperty('--sp-dir', velocity < 0 ? '-1' : '1')
       host.style.setProperty('--sp-flare', flare.toFixed(3))
+      /*
+       * Stand down where a section card has the reader. Quantised, because a
+       * smooth ramp would rewrite this on all sixty frames of a traversal to
+       * say something the eye cannot separate at a thirty-second of opacity,
+       * and every write is a style invalidation for this light's own subtree.
+       */
+      const claim = Math.round(
+        sectionClaimAt(geometry.claims, y + window.innerHeight * FOCUS_RATIO) * 32,
+      )
+      if (claim !== lastClaim) {
+        lastClaim = claim
+        host.style.setProperty('--sp-claim', (claim / 32).toFixed(4))
+      }
       // Present once there is either movement or a boundary under the head,
       // so a parked page is not left with a dot burning on the rail.
       host.style.setProperty('--sp-on', Math.min(1, trail / 14 + flare).toFixed(3))
@@ -527,17 +557,9 @@ export function useScrollLight(rootRef: RefObject<HTMLElement | null>) {
 }
 
 /** The two rails. Positions are written by the hook, which measures the frame. */
-export function ScrollLight({
-  /** Stand down while a section card has the reader. See the CSS above. */
-  handover = false,
-}: {
-  readonly handover?: boolean
-}) {
+export function ScrollLight() {
   return (
-    <div
-      className={`tpz-light ${LIT_CLASS}${handover ? ' is-handover' : ''}`}
-      aria-hidden="true"
-    >
+    <div className={`tpz-light ${LIT_CLASS}`} aria-hidden="true">
       {[0, 1].map((rail) => (
         <div key={rail} className="tpz-light-rail">
           <span className="tpz-lit-halo tpz-light-halo" />

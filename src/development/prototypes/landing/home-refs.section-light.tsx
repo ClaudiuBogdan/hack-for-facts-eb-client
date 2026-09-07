@@ -37,24 +37,23 @@ import { LIT_CLASS, TRAIL_BASE_PX } from './home-refs.light-material'
 export const SECTION_LIGHT_ATTR = 'data-section-light'
 
 /**
- * Published on the root: whether a card has the reader's attention.
+ * How far ahead of a card its claim starts rising.
  *
- * The two lights stay independent, so this is a fact one of them states rather
- * than a call it makes. The frame light's stylesheet is free to ignore it — and
- * in the default variant it does. Only the handover variant listens, and then
- * only to get out of the way.
- */
-export const SECTION_LIT_ATTR = 'data-section-lit'
-
-/**
- * How far ahead of a card the light counts as arriving.
- *
- * Whoever is listening needs to start leaving *before* the section light
- * appears, or the two are briefly on screen together and the page has two
- * answers to the same question. At a normal reading scroll this is about a
- * quarter of a second of warning.
+ * The margins have to be *leaving* before the section light arrives, or the
+ * page briefly has two answers to the same question. Two hundred pixels is
+ * about a screenful of lead-in on a laptop, and short enough that the margins
+ * are still mostly lit when the card's top edge comes into view.
  */
 const LEAD_PX = 200
+
+/**
+ * How far past a card its claim takes to fall away.
+ *
+ * Shorter than the lead-in on purpose. Arriving somewhere deserves a slow
+ * approach; leaving does not, and the margins should be back before the reader
+ * is far enough past the card to wonder where the light went.
+ */
+const RELEASE_PX = 120
 
 /**
  * Where down the screen the reader is presumed to be looking.
@@ -65,7 +64,7 @@ const LEAD_PX = 200
  * and meets the next. Any looser definition ("visible") lights two at once on a
  * tall viewport, which is the opposite of pointing at one.
  */
-const FOCUS_RATIO = 0.5
+export const FOCUS_RATIO = 0.5
 
 /**
  * Length of the comet, in pixels of border.
@@ -82,23 +81,6 @@ const MAX_OPACITY = 0.7
 
 /** Cross-fade when the reader moves from one section to the next. */
 const HANDOVER_MS = 260
-
-/**
- * Quiet time before the light leaves, when it is set to leave at all.
- *
- * Off by default: this light reports position, and standing still does not
- * change where you are. The header variant turns it on to find out whether a
- * page whose marks all come and go with the scroll reads as calmer than one
- * with a mark permanently parked on a border.
- *
- * Comfortably longer than `HANDOVER_MS`, and that is a constraint rather than a
- * taste. At the same value the two fades line up exactly: a scroll that crosses
- * from one section into the next spends its whole quiet period waiting out the
- * handover, and the light arrives on the new card at the same instant the idle
- * clock fires — so a short scroll showed nothing at all. Measured at 0.16 where
- * it should have been 0.7.
- */
-const IDLE_MS = 620
 
 /**
  * Velocity decay per frame, matching the frame light.
@@ -133,12 +115,6 @@ const CSS = `
   transition: opacity ${HANDOVER_MS}ms ease;
 }
 
-/* Only ever added when the hook was asked for it. Slower going than coming, so
-   the light catches up with the reader at once and takes its time leaving. */
-.tpz-section-light.is-idle {
-  opacity: 0;
-  transition: opacity 520ms ease;
-}
 
 /*
  * The two arms are one arm. The right is the left mirrored about the card's
@@ -241,6 +217,47 @@ const clamp = (value: number, low: number, high: number) =>
 const halfTopOf = (card: Card) => card.width / 2 - 0.5
 
 /**
+ * How strongly the nearest card claims the reader, 0 to 1: 1 anywhere inside
+ * one, falling away across `LEAD_PX` above it and `RELEASE_PX` below.
+ *
+ * Exported because the frame light needs the same answer to know when to stand
+ * down, and this is the definition of the thing — not a value passed between
+ * them. Each light measures the cards itself and calls this; there is no shared
+ * state, no ordering to get right, and no chance of the two disagreeing about
+ * where the crossing happens.
+ *
+ * It was a value passed between them, briefly, as a custom property on the
+ * root. That is the obvious way to do it and it is a trap: a custom property on
+ * the root invalidates style for everything that could read it, and twenty-five
+ * writes over an 1800px scroll took the 95th-percentile frame from 18.4ms to
+ * 48.5ms at 6x throttle. Nothing wrong with the idea, everything wrong with the
+ * element it was written on.
+ *
+ * A ramp in *distance* rather than a boolean plus a CSS transition, which is
+ * what this started as. A duration-based fade makes the crossing depend on how
+ * fast the reader happens to be scrolling: at a flick the two lights cross, and
+ * at a slow read the margins are long gone before the card arrives and the page
+ * spends two hundred pixels with nothing lit. Where you are does not depend on
+ * how quickly you got there.
+ */
+export function sectionClaimAt(
+  spans: readonly (readonly [number, number])[],
+  focus: number,
+): number {
+  let best = 0
+  for (const [top, bottom] of spans) {
+    const near =
+      focus < top
+        ? 1 - (top - focus) / LEAD_PX
+        : focus > bottom
+          ? 1 - (focus - bottom) / RELEASE_PX
+          : 1
+    if (near > best) best = near
+  }
+  return clamp(best, 0, 1)
+}
+
+/**
  * Where the head is, given how far it has travelled around the circuit.
  *
  * Half-pixel offsets throughout, and they are the same half pixel the host's
@@ -305,16 +322,7 @@ function measure(root: HTMLElement | null): Card[] {
  * sharing a pump would buy nothing and would tie two effects together that have
  * different lifetimes, different idle behaviour and different reasons to exist.
  */
-export function useSectionLight(
-  rootRef: RefObject<HTMLElement | null>,
-  {
-    /**
-     * Fade the whole thing out when the reader stops, the way the frame light
-     * does. Off by default — see `IDLE_MS`.
-     */
-    fadeWhenIdle = false,
-  }: { readonly fadeWhenIdle?: boolean } = {},
-) {
+export function useSectionLight(rootRef: RefObject<HTMLElement | null>) {
   useEffect(() => {
     const root = rootRef.current
     if (!root) return
@@ -330,24 +338,11 @@ export function useSectionLight(
     let lastY = window.scrollY
     let velocity = 1
     let frame = 0
-    let idleTimer = 0
-    /** Last value written to the root, so the attribute is not set every frame. */
-    let published = ''
 
-    const publish = (value: string) => {
-      if (value === published) return
-      published = value
-      root.setAttribute(SECTION_LIT_ATTR, value)
-    }
+    /** The card the focus line is inside, if any. */
+    const cardAt = (focus: number) =>
+      cards.find((c) => focus >= c.topDoc && focus <= c.bottomDoc) ?? null
 
-    /** Restarts the quiet clock, so a light that has just arrived gets its full
-        moment on screen rather than inheriting whatever was left of the last. */
-    const restartIdle = () => {
-      if (!fadeWhenIdle) return
-      host.classList.remove('is-idle')
-      window.clearTimeout(idleTimer)
-      idleTimer = window.setTimeout(() => host.classList.add('is-idle'), IDLE_MS)
-    }
 
     /** Moves the host onto a card. Writes geometry, so only on a change. */
     const place = (card: Card | null) => {
@@ -356,8 +351,6 @@ export function useSectionLight(
         host.style.setProperty('--sl-on', '0')
         return
       }
-      // Arriving counts as movement: the card changed because the reader moved.
-      restartIdle()
       host.style.left = `${card.left}px`
       host.style.top = `${card.top}px`
       host.style.width = `${card.width}px`
@@ -385,43 +378,45 @@ export function useSectionLight(
       velocity = Math.abs(delta) > Math.abs(velocity) ? delta : velocity * VELOCITY_DECAY
 
       const focus = y + window.innerHeight * FOCUS_RATIO
-      const wanted = cards.find((c) => focus >= c.topDoc && focus <= c.bottomDoc) ?? null
-      // Stated before the early return below, because a card the reader is
-      // still approaching is exactly the case anyone listening cares about.
-      publish(
-        cards.some((c) => focus >= c.topDoc - LEAD_PX && focus <= c.bottomDoc) ? '1' : '0',
-      )
+      const wanted = cardAt(focus)
 
-      /*
-       * Never move a lit host. A card change fades the light out, waits for the
-       * fade, and only then repositions — otherwise a fast scroll drags a
-       * half-visible comet across the gap between two sections, which reads as
-       * one light teleporting rather than as two sections handing over.
-       */
       if (wanted !== shown) {
-        // Nothing is lit yet, so there is no fade to wait out — the very first
-        // card, and every card after a resize, arrives without the pause.
+        /*
+         * Never move a lit host. A card change fades the light out, waits for
+         * the fade, and only then repositions — otherwise a fast scroll drags a
+         * half-visible comet across the gap between two sections, which reads
+         * as one light teleporting rather than as two handing over.
+         *
+         * Nothing lit yet is the exception: the very first card, and every card
+         * after a re-measure, arrives without the pause because there is no
+         * fade to wait out.
+         */
         if (!shown) {
           place(wanted)
           if (!wanted) return
         } else {
           host.style.setProperty('--sl-on', '0')
+          if (handover === 0) {
+            handover = window.setTimeout(() => {
+              handover = 0
+              // Read again rather than closing over `wanted`: a quarter of a
+              // second is long enough for the reader to be somewhere else.
+              place(cardAt(window.scrollY + window.innerHeight * FOCUS_RATIO))
+              schedule()
+            }, HANDOVER_MS)
+          }
+          return
         }
-      }
-      if (wanted !== shown) {
-        if (handover === 0) {
-          handover = window.setTimeout(() => {
-            handover = 0
-            place(
-              cards.find((c) => {
-                const f = window.scrollY + window.innerHeight * FOCUS_RATIO
-                return f >= c.topDoc && f <= c.bottomDoc
-              }) ?? null,
-            )
-            schedule()
-          }, HANDOVER_MS)
-        }
-        return
+      } else if (handover !== 0) {
+        /*
+         * Back where we started before the clock ran out — the reader scrolled
+         * out of the card and straight back in. Cancelling restores the light
+         * that was already correctly placed, instead of leaving it dark for the
+         * rest of the wait and then re-placing it on the card it never left.
+         */
+        window.clearTimeout(handover)
+        handover = 0
+        host.style.setProperty('--sl-on', '1')
       }
       if (!shown) return
 
@@ -499,21 +494,8 @@ export function useSectionLight(
       schedule()
     }
 
-    /*
-     * Wake on movement, then fall back to idle — but only if asked. Without
-     * `fadeWhenIdle` this is just `schedule`, and the light stays where it is
-     * when the reader stops, which is the whole point of it.
-     */
-    const wake = fadeWhenIdle
-      ? () => {
-          restartIdle()
-          schedule()
-        }
-      : schedule
-
     onResize()
-    if (fadeWhenIdle) host.classList.add('is-idle')
-    window.addEventListener('scroll', wake, { passive: true })
+    window.addEventListener('scroll', schedule, { passive: true })
     window.addEventListener('resize', onResize)
     const observer = new ResizeObserver(onResize)
     observer.observe(root)
@@ -528,15 +510,13 @@ export function useSectionLight(
     observer.observe(document.documentElement)
 
     return () => {
-      window.removeEventListener('scroll', wake)
+      window.removeEventListener('scroll', schedule)
       window.removeEventListener('resize', onResize)
       observer.disconnect()
       window.clearTimeout(handover)
-      window.clearTimeout(idleTimer)
-      root.removeAttribute(SECTION_LIT_ATTR)
       if (frame) cancelAnimationFrame(frame)
     }
-  }, [rootRef, fadeWhenIdle])
+  }, [rootRef])
 }
 
 /**
