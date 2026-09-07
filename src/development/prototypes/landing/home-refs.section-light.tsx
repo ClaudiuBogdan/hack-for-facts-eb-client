@@ -270,7 +270,14 @@ function headAt(
 function measure(root: HTMLElement | null): Card[] {
   if (!root) return []
   const rootBox = root.getBoundingClientRect()
-  const originX = Math.round(rootBox.left)
+  /*
+   * Not rounded: the host is placed at these offsets *inside* the root, so it
+   * is painted at `root.left + card.left`. Rounding the origin would leave the
+   * root's own fraction in that sum and push the circuit off the border by up
+   * to half a pixel — the error the rounding of the card's edge below exists to
+   * remove. Subtracting the real value cancels it.
+   */
+  const originX = rootBox.left
   const originY = rootBox.top + window.scrollY
   return Array.from(root.querySelectorAll(`[${SECTION_LIGHT_ATTR}]`)).map((element) => {
     const box = element.getBoundingClientRect()
@@ -510,6 +517,15 @@ export function useSectionLight(
     window.addEventListener('resize', onResize)
     const observer = new ResizeObserver(onResize)
     observer.observe(root)
+    /*
+     * The document as well, because the root can move without changing size:
+     * anything inserted above the landing pushes every card down while leaving
+     * the root exactly as tall, so neither the observer above nor `resize`
+     * fires and every `topDoc` here is stale. That would light the wrong card,
+     * which is worse than displacing a mark — this light's whole job is to say
+     * which section you are in.
+     */
+    observer.observe(document.documentElement)
 
     return () => {
       window.removeEventListener('scroll', wake)

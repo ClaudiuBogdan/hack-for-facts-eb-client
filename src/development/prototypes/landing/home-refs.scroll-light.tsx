@@ -110,13 +110,32 @@ const CSS = `
    *
    * Sharing the root's coordinate space makes that unrepresentable. The light
    * and the rules are in one layer and move as one thing, and '--sp-y' is a
-   * document offset rather than a viewport one. It also means the light cannot
-   * leave the landing at all, because the host is bounded by it.
+   * document offset rather than a viewport one.
    */
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 20;
+
+  /*
+   * And it stays inside the landing, which absolute positioning on its own does
+   * *not* buy — this used to say the host bounded its children, and it does no
+   * such thing. Measured before this line existed: 20px of trail on screen
+   * above the landing on a downward flick from the top, 75.8px below it on an
+   * upward flick from the bottom, painting over the harness nav and the site
+   * footer at up to 139 levels of luminance on the dark theme. Not a regression
+   * from the move off 'fixed' — the same pixels were painted before, because a
+   * fixed host clipped at the viewport edge to the same visible region — but
+   * wrong either way. A light that reports the landing has no business drawing
+   * on the footer.
+   *
+   * 'clip' rather than 'hidden' because there is nothing scrollable here and
+   * 'hidden' would make this a scroll container; the margin lets the halo hang
+   * its own radius past the edge, so the head parked on the bottom border keeps
+   * its glow instead of being sliced in half at the page's last pixel.
+   */
+  overflow: clip;
+  overflow-clip-margin: 6px;
 
   /* The whole thing fades once the reader stops. It reports movement, so
      standing still is the one state where it has nothing to say — and a mark
@@ -256,12 +275,17 @@ function measure(root: HTMLElement | null): Geometry {
   const rootBox = root.getBoundingClientRect()
   /*
    * Everything the host draws is positioned against the root, so the rails are
-   * stored relative to it. In practice the root is full-bleed and this is zero,
-   * but reading it means a root that ever gains a margin moves the light with
-   * it rather than leaving it beside the rule. Rounded, so it cannot reintroduce
-   * a fraction into the half-pixel below.
+   * stored relative to it.
+   *
+   * Deliberately *not* rounded, which it was at first and which was wrong. The
+   * host sits at the root's own left edge, fraction and all, so a child at
+   * `railLocal` is painted at `root.left + railLocal`. Rounding here leaves that
+   * fraction in the sum and puts the head up to half a pixel off the rule —
+   * exactly the error the snap below exists to remove. Subtracting the real
+   * value cancels it, and the rounding that reproduces the paint snap stays
+   * where it belongs, on the frame's own edge.
    */
-  const originX = Math.round(rootBox.left)
+  const originX = rootBox.left
   // The rule's x depends on viewport width through `max-w-6xl` and the frame's
   // padding, so it is read rather than computed.
   const frame = root.querySelector('[data-frame="hero"]')
@@ -475,6 +499,22 @@ export function useScrollLight(rootRef: RefObject<HTMLElement | null>) {
     observer.observe(root)
     const heroFrame = root.querySelector('[data-frame="hero"]')
     if (heroFrame) observer.observe(heroFrame)
+    /*
+     * The document, because the root can *move* without changing size and the
+     * two observers above only hear about size.
+     *
+     * Anything inserted above the landing — a banner, a toast, a cookie bar, a
+     * header whose font swapped in — pushes the root down while leaving it
+     * exactly as tall as it was. Neither observer fires, no `resize` fires, and
+     * `bounds` keeps the old document top. Under the old fixed host that was
+     * survivable, because `topDoc` only entered the two clamps and the interior
+     * ran off `progress * innerHeight` alone; now `--sp-y` subtracts it every
+     * frame, so a 200px insertion displaced the head by 200px at every offset
+     * between the ends — measured, and it is the reason this line is here.
+     * Growth of that kind always changes the document's own height, which is
+     * what this hears.
+     */
+    observer.observe(document.documentElement)
 
     return () => {
       window.removeEventListener('scroll', wake)
