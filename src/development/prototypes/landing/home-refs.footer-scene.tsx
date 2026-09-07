@@ -17,8 +17,9 @@ import range from '@/assets/images/landing-footer-range.webp'
  *
  * So the front layer is sparse and fast rather than dense and slow. A cloud
  * close enough to occlude a mountain is one you see one of at a time, and it
- * crosses quickly. It is also the faintest, because a cloud this close has
- * almost nothing behind it to be seen against.
+ * crosses quickly. It also has to be close to solid: it is the only
+ * layer whose job is to *hide* something, and a cloud you can see a mountain
+ * through is not in front of it.
  *
  * Nothing here is scroll-coupled — the two scroll lights already report
  * movement, and a third thing keyed to the scroll would be reporting it a third
@@ -71,7 +72,7 @@ const LAYERS = {
   far: { w: 1072, h: 110, bottom: 138, seconds: 150 },
   near: { w: 1466, h: 150, bottom: 86, seconds: 90 },
   range: { w: 1795, h: 230 },
-  front: { w: 1714, h: 130, bottom: 34, seconds: 52 },
+  front: { w: 1714, h: 130, bottom: 78, seconds: 52 },
 }
 
 /**
@@ -208,9 +209,9 @@ const CSS = `
 
 /*
  * In front of the range, and last in the file because that is what puts it
- * there. Low, so it crosses the slopes rather than the sky; quick, so it reads
- * as the nearest thing in the picture; and faint, because a cloud this close
- * has almost nothing behind it to be seen against.
+ * there. Set across the ridge line, so it cuts the skyline rather than
+ * drifting under it or over it; quick, so it reads as the nearest thing in the
+ * picture; and solid, because occlusion is the whole of what it is for.
  */
 .tpz-scene-front {
   --tpz-tile: calc(${LAYERS.front.w}px * var(--tpz-scene-scale));
@@ -220,14 +221,17 @@ const CSS = `
   width: calc(100% + var(--tpz-tile));
   background-image: url(${cloudsFront});
   background-size: var(--tpz-tile) calc(${LAYERS.front.h}px * var(--tpz-scene-scale));
-  /* Enough to read as a cloud and not as ground haze, which is what it looked
-     like sitting eight pixels off the floor at half opacity — it hugged the
-     tree line and never touched a slope. Raised until it crosses the faces. */
-  opacity: 0.62;
+  /* Solid enough to read as a cloud rather than as ground haze, which is what
+     it looked like at half opacity eight pixels off the floor: it hugged the
+     tree line and never touched a slope. It now straddles the ridge — 78 to
+     208 against a skyline that runs 124 to 165 — so it passes across the peaks
+     rather than under them, and at that height it has to be nearly as solid as
+     the layers behind or the occlusion does not read. */
+  opacity: 0.82;
 }
 
 .dark .tpz-scene-front {
-  opacity: 0.32;
+  opacity: 0.5;
 }
 
 /*
