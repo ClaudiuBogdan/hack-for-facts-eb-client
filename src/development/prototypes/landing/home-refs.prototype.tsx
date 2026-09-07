@@ -1,6 +1,6 @@
 import type { PrototypeDefinition } from '@/development/harness/entry'
 import { FIELD_RECT_COUNT } from './home-refs.pixel-art'
-import { LandingRefs } from './home-refs.refined'
+import { LandingRefs, LandingRefsSmear } from './home-refs.refined'
 
 /**
  * Landing page rewrite — settled.
@@ -25,7 +25,12 @@ export const prototype = {
     landing: {
       title: 'Landing page',
       component: LandingRefs,
-      note: `Search and results as one grey surface: no gap, no seam under the field, and the divider below the header is the single line between the query and the answers. Diacritic-folded match highlight, two-stage Escape, results that are real links. Intro wave across ${FIELD_RECT_COUNT} cells per side, a ripple on a hero click, and a scroll light closing on the centre of the bottom border.`,
+      note: `Counting figures blurred with CSS \`blur()\`, which is isotropic — the round blur the smear variant is measured against. Search and results as one grey surface: no gap, no seam under the field, and the divider below the header is the single line between the query and the answers. Diacritic-folded match highlight, two-stage Escape, results that are real links. Intro wave across ${FIELD_RECT_COUNT} cells per side, a ripple on a hero click, and a scroll light closing on the centre of the bottom border.`,
+    },
+    smear: {
+      title: 'Directional smear',
+      component: LandingRefsSmear,
+      note: 'Identical in every respect except the blur on the counting figures. CSS `filter: blur()` has no directional form, so this uses an SVG `feGaussianBlur` with a two-axis `stdDeviation` driven from the derivative of the easing — sigma on x only, so the figure smears along the axis it travels rather than fogging in every direction. Everything else on the page is the same.',
     },
   },
 } satisfies PrototypeDefinition

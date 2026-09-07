@@ -608,7 +608,7 @@ function startArrivalEffects(block: Element, delay: number) {
   countUpWithin(block, delay)
 }
 
-function RefinedLanding() {
+function RefinedLanding({ smear = false }: { readonly smear?: boolean }) {
   const { groups, coverage } = getPlatformCoverage()
   const heroRef = useFieldMotion()
   // The light measures the page it runs down, so it takes the root rather than
@@ -790,7 +790,7 @@ function RefinedLanding() {
                 )}
               >
                 <dd className="order-1 flex items-baseline gap-1.5 text-3xl font-semibold tabular-nums tracking-tight text-foreground sm:text-4xl">
-                  <CountUpValue value={fact.value} digits={fact.digits} />
+                  <CountUpValue value={fact.value} digits={fact.digits} smear={smear} />
                   {/* The unit never breaks across lines — 'mld.' alone on one
                       line and 'lei' on the next reads as two facts. */}
                   <span className="shrink-0 whitespace-nowrap text-sm font-medium tracking-normal text-muted-foreground">
@@ -920,4 +920,11 @@ function RefinedLanding() {
  * `docs/design/landing-search-comparison.md` so neither gets reopened from
  * scratch.
  */
-export const LandingRefs = RefinedLanding
+export const LandingRefs = () => <RefinedLanding />
+
+/**
+ * The same landing with the directional smear on the counting figures instead
+ * of CSS `blur()`. Kept beside it only long enough to choose between them; the
+ * loser goes, and the comparison stays in `docs/design/landing-reveal.md`.
+ */
+export const LandingRefsSmear = () => <RefinedLanding smear />
