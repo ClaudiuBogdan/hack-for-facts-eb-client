@@ -223,7 +223,7 @@ page, at `?v=landing` and `?v=joined`:
 | Gap below the field | 8px | none |
 | Field's bottom corners | rounded | squared while the panel is open |
 | Border between them | two, 8px apart | one — the divider under the header |
-| Focus indicator | `ring` blue on the field | `foreground/70` neutral on the pair, plus the lift |
+| Focus indicator | `ring` blue on the field | `foreground/60` neutral on the pair, plus the lift |
 | Shadow | `shadow-md`, panel only | `shadow-lg`, on field and panel alike |
 | Enter animation | fade + 4px rise | fade only |
 | Out of room below | flips above the field | flips too — the join follows to the field's top edge |
@@ -256,13 +256,17 @@ Three things fall out of the join rather than being decided separately:
   is the kind that only shows up when someone uses the thing rather than looks
   at a screenshot of it.
 
-  What works is a neutral: `border-foreground/70` on the field and the panel
+  What works is a neutral: `border-foreground/60` on the field and the panel
   together, with `shadow-lg`, applied identically whether the panel is open or
   shut. Nothing appears, nothing disappears, and the outline traces the pair
-  because the seam-side borders are already gone. It measures 5.9:1 against the
-  card and 4.7:1 against the resting border, so it clears the 3:1 a focus
-  indicator owes — which a light-grey darkening, the obvious way to keep it
-  quiet, does not.
+  because the seam-side borders are already gone.
+
+  How light it can go is a measured limit rather than a matter of taste, because
+  a focus indicator owes 3:1 against what is next to it. `foreground/60` is
+  rgb(121): 4.35:1 against the card and 3.49:1 against the resting border.
+  `/55` is 3.74 and **3.00** — sitting exactly on the floor — and everything
+  below it fails. Lightening this by eye is fine down to /60 and is a
+  correctness change after it.
 
   The shadcn ring is suppressed in both states rather than one. It is a
   box-shadow, so it outlines the field alone and cannot follow the join; the

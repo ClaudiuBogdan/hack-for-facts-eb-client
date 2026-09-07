@@ -69,7 +69,7 @@ function SearchStatusView({ status }: { readonly status: SearchStatus }) {
       return (
         <Message>
           {shortHint(status.remaining)}{' '}
-          <span className="text-muted-foreground/70">Numele instituției sau codul fiscal.</span>
+          <span className="text-muted-foreground/60">Numele instituției sau codul fiscal.</span>
         </Message>
       )
 
@@ -86,7 +86,7 @@ function SearchStatusView({ status }: { readonly status: SearchStatus }) {
         <Message>
           Nicio instituție pentru{' '}
           <strong className="font-medium text-foreground">{status.term}</strong>.{' '}
-          <span className="text-muted-foreground/70">Încearcă numele complet sau CUI-ul.</span>
+          <span className="text-muted-foreground/60">Încearcă numele complet sau CUI-ul.</span>
         </Message>
       )
 
@@ -94,7 +94,7 @@ function SearchStatusView({ status }: { readonly status: SearchStatus }) {
       return (
         <Message>
           <span className="text-destructive">Căutarea nu a răspuns.</span>{' '}
-          <span className="text-muted-foreground/70">Încearcă din nou într-un moment.</span>
+          <span className="text-muted-foreground/60">Încearcă din nou într-un moment.</span>
         </Message>
       )
 
@@ -298,15 +298,17 @@ export function LandingSearch({
                   // the reader typed, so the field looked focused, then didn't,
                   // while focus had not moved at all.
                   //
-                  // A neutral dark border is the way to have both. It is the
-                  // same treatment in both states, so nothing appears or
-                  // disappears; it is grey, so the surface stays quiet; and at
-                  // 70% of the foreground it clears 3:1 against both the card
-                  // and the resting border, which the light-grey darkening this
-                  // nearly shipped as did not — that would have been a focus
-                  // indicator only someone who already knew where it was could
-                  // find.
-                  joined && 'focus:border-foreground/70 data-popup-open:border-foreground/70',
+                  // A neutral border is the way to have both. It is the same
+                  // treatment in both states, so nothing appears or disappears;
+                  // it is grey, so the surface stays quiet; and how light it can
+                  // go is a measured limit rather than a matter of taste,
+                  // because a focus indicator owes 3:1 against what is beside
+                  // it. At 60% of the foreground it is rgb(121): 4.35:1 against
+                  // the card and 3.49:1 against the resting border. /55 is 3.00
+                  // against the border — exactly on the floor — and everything
+                  // below fails, so lightening this further is a correctness
+                  // change rather than a nudge.
+                  joined && 'focus:border-foreground/60 data-popup-open:border-foreground/60',
                   joined && 'focus:shadow-lg data-popup-open:shadow-lg',
                   // shadcn's ring is a box-shadow, so it outlines the field
                   // alone and cannot follow the join. The border above replaces
@@ -402,7 +404,7 @@ export function LandingSearch({
               // Same neutral as the focused field, so the outline is one
               // continuous line around the pair rather than two that happen to
               // meet.
-              joined && 'border-foreground/70 shadow-lg',
+              joined && 'border-foreground/60 shadow-lg',
               joined && 'data-[side=bottom]:rounded-t-none data-[side=bottom]:border-t-0',
               joined && 'data-[side=top]:rounded-b-none data-[side=top]:border-b-0',
               // Base UI animates with transitions rather than keyframes:
