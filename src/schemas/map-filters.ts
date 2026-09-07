@@ -28,6 +28,7 @@ export const defaultMapFilters: AnalyticsFilterType = withDefaultExcludes({
  * procurement and classification routes use for their search params.
  */
 export const MapStateSchema = z.object({
+  preset: z.enum(["expenses", "income", "balance", "local-taxes"]).optional().catch(undefined),
   filters: AnalyticsFilterSchema.default(defaultMapFilters).catch(defaultMapFilters),
   activeView: MapViewEnum.default("map").catch("map"),
   mapViewType: MapViewTypeEnum.default("UAT").catch("UAT"),

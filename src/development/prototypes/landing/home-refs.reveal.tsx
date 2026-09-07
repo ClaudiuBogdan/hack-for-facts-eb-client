@@ -28,7 +28,15 @@ import type { RefObject } from 'react'
  *    see docs/design/landing-reveal.md.
  */
 
-/** Marks a block that should arrive. Inert until the observer arms it. */
+/**
+ * Marks a block that should arrive. Inert until the observer arms it.
+ *
+ * The element must not be `display: inline`. `translate`, like `transform`, has
+ * no effect on a non-replaced inline box, so an inline block still fades but
+ * never rises — silently, and only that one element, which reads as a bug in the
+ * stagger rather than a missing utility class. `MonoLabel` renders a bare
+ * `span`, so the two eyebrow labels carry `block` for exactly this reason.
+ */
 export const REVEAL_ATTR = 'data-reveal'
 
 /** Marks the ancestor whose entry reveals every block inside it, together. */
@@ -40,11 +48,25 @@ const RISE_PX = 12
 const EASE = 'cubic-bezier(0.23, 1, 0.32, 1)'
 
 /**
- * How far in a group must come before it starts. Zero would fire on the first
- * subpixel of overlap, which on a fast scroll means the animation is already
- * over by the time the block is properly on screen.
+ * The trigger line sits exactly on the viewport edge, so that "visible" and
+ * "revealed" are the same question and there is no band between them.
+ *
+ * This was `0px 0px -12% 0px`, to hold the start back until a group was properly
+ * on screen. That margin shrinks the observer's viewport, and `isIntersecting`
+ * is reported against the shrunk one — so a group in the bottom 12% was both
+ * plainly visible and formally "not intersecting", and stayed hidden with no
+ * further callback to correct it. Parked there it never arrived: 42px of the
+ * first statement band at y=100, 13px of the second at y=2200. Pulling the line
+ * back to the edge removes the band rather than papering over it.
+ *
+ * The original worry — that a 600ms arrival starting at the edge would be over
+ * before it could be read — does not survive arithmetic. At a normal 1000px/s
+ * scroll the block travels some 700px during those 600ms, so it finishes near
+ * the middle of the screen. Measured against the reference, mega.dev starts its
+ * own reveals about as early, and many of its blocks animate while still below
+ * the fold because their group has already triggered.
  */
-const ROOT_MARGIN = '0px 0px -12% 0px'
+const ROOT_MARGIN = '0px'
 
 const CSS = `
 [${REVEAL_ATTR}='pending'] {
@@ -98,6 +120,26 @@ function show(group: Element) {
 }
 
 /**
+ * Whether a group is far enough away that hiding it cannot be seen.
+ *
+ * Deliberately *not* `entry.isIntersecting`, even though with a zero root margin
+ * the two now agree. The margin is a presentation decision and this is a
+ * correctness one: nothing server-rendered may be hidden while it is on screen,
+ * and that must not quietly depend on a constant somebody may want to tune. When
+ * it did depend on it, a `-12%` bottom margin erased 70px of the figures strip
+ * at 1440x760 about a second after first paint, and the statement band at
+ * 1440x1000. A 900px-tall window falls between the two ranges where it bites,
+ * which is exactly why the first round of checking missed it.
+ *
+ * `boundingClientRect` comes with the entry, so this costs no layout read, and
+ * `rootBounds` would be wrong to use — it is the root rectangle, margin and all.
+ */
+function isOffScreen(entry: IntersectionObserverEntry, viewportHeight: number) {
+  const rect = entry.boundingClientRect
+  return rect.bottom <= 0 || rect.top >= viewportHeight
+}
+
+/**
  * Arms every group under `rootRef`. Takes the root the page already has rather
  * than handing back a second ref for the same element — the page declares what
  * travels together, the hook owns when.
@@ -114,25 +156,38 @@ export function useRevealOnView(rootRef: RefObject<HTMLElement | null>) {
 
     const observer = new IntersectionObserver(
       (entries) => {
+        /*
+         * `clientHeight` is the viewport the observer itself measures against,
+         * less any horizontal scrollbar, so it is the right number. The fallback
+         * is not decoration: a zero here would put every group above the fold by
+         * this arithmetic and hide the entire page, which is the worst outcome
+         * this file has, earned from the cheapest possible mistake.
+         */
+        const viewportHeight = document.documentElement.clientHeight || window.innerHeight
         for (const entry of entries) {
-          if (!entry.isIntersecting) {
-            /*
-             * The first callback reports every group, on screen or not, which is
-             * what makes the hidden state safe to apply here: a group already in
-             * view is marked 'shown' without ever having been 'pending', so its
-             * computed opacity never changes and no transition runs. Everything
-             * that does get hidden is below the fold, where the reader cannot
-             * see it happen. This is also what survives a reload half way down
-             * the page — scroll restoration lands first, and whatever is under
-             * the viewport then is simply left alone.
-             */
-            entry.target
-              .querySelectorAll<HTMLElement>(`[${REVEAL_ATTR}]`)
-              .forEach((block) => block.setAttribute(REVEAL_ATTR, 'pending'))
+          /*
+           * Three cases, and the order matters.
+           *
+           * Past the trigger line: reveal it, and stop watching.
+           *
+           * On screen but short of the trigger line: reveal it too, without
+           * waiting. It is either straddling the fold at load or was already
+           * painted, so the one thing that must not happen is hiding it. Because
+           * it was never 'pending', going straight to 'shown' leaves opacity at
+           * 1 and translate at none — the computed values do not change, so
+           * nothing animates and nothing flashes. It loses the arrival, which is
+           * the correct thing to lose.
+           *
+           * Genuinely off screen: hide it, and let it arrive on the way down.
+           */
+          if (entry.isIntersecting || !isOffScreen(entry, viewportHeight)) {
+            show(entry.target)
+            observer.unobserve(entry.target)
             continue
           }
-          show(entry.target)
-          observer.unobserve(entry.target)
+          entry.target
+            .querySelectorAll<HTMLElement>(`[${REVEAL_ATTR}]`)
+            .forEach((block) => block.setAttribute(REVEAL_ATTR, 'pending'))
         }
       },
       { rootMargin: ROOT_MARGIN },

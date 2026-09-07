@@ -1,26 +1,7 @@
-import { HeatmapUATDataPoint, HeatmapCountyDataPoint } from "@/schemas/heatmap";
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
-import React, { useState, lazy, Suspense } from "react";
-import { DEFAULT_MAP_CENTER } from "@/components/maps/constants";
-import { getPercentileValues, createHeatmapStyleFunction } from "@/components/maps/utils";
-import type { InteractiveMapFeatureEvent } from "@/components/maps/InteractiveMap";
-import { UatProperties } from "@/components/maps/interfaces";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { ClientOnly } from "@/components/ssr/ClientOnly";
-import { ErrorBoundary } from "@/components/errors/ErrorBoundary";
-
-// Lazy load InteractiveMap to keep the WebGL map renderer off the server.
-const InteractiveMap = lazy(() => import("@/components/maps/InteractiveMap").then(m => ({ default: m.InteractiveMap })));
-import { useGeoJsonData } from "@/hooks/useGeoJson";
-import { MapFilter } from "@/components/filters/MapFilter";
-import { MapLegend } from "@/components/maps/MapLegend";
-import { Filter as FilterIcon, X, HelpCircleIcon, Check } from "lucide-react";
-import { UatDataCharts } from "@/components/maps/charts/UatDataCharts";
-import {
-  SortingState,
-  PaginationState,
-} from "@tanstack/react-table";
-import { HeatmapDataTable } from "@/components/maps/HeatmapDataTable";
+import { useMemo, useState } from "react";
+import { Filter } from "lucide-react";
+import { t } from "@lingui/core/macro";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -28,522 +9,175 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose,
-  DialogDescription,
 } from "@/components/ui/dialog";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useHeatmapData } from "@/hooks/useHeatmapData";
-import { useMapFilter } from "@/hooks/useMapFilter";
-import { FloatingQuickNav } from "@/components/ui/FloatingQuickNav";
-import { getSiteUrl } from "@/config/env";
-import { Trans } from "@lingui/react/macro";
-import { t } from "@lingui/core/macro";
-import { AnimatePresence, motion } from "framer-motion";
+import { MapFilter } from "@/components/filters/MapFilter";
+import { MapAnalyticsWorkspace } from "@/features/advanced-map-analytics/components/map-analytics-workspace";
+import { buildStandaloneMapState } from "@/features/advanced-map-analytics/standalone-map-state";
+import { MapStateSchema, type MapUrlState } from "@/schemas/map-filters";
+import type { AdvancedMapAnalyticsUrlState } from "@/schemas/advanced-map-analytics";
+import type { AnalyticsFilterType } from "@/schemas/charts";
 import { useUserCurrency } from "@/lib/hooks/useUserCurrency";
 import { useUserInflationAdjusted } from "@/lib/hooks/useUserInflationAdjusted";
-import type { AnalyticsFilterType, Currency, Normalization } from "@/schemas/charts";
-import { buildEntityDetailsPath } from "@/lib/entity-navigation";
+import { normalizeNormalizationOptions } from "@/lib/normalization";
+import { ErrorBoundary } from "@/components/errors/ErrorBoundary";
+import { getSiteUrl } from "@/config/env";
 
-export const Route = createLazyFileRoute("/map")({
-  component: MapPage,
-});
-
-type MapViewport = {
-  readonly center: [number, number];
-  readonly zoom: number;
-};
-
-function roundMapViewport(center: [number, number], zoom: number): MapViewport {
-  const roundTo = (value: number, decimals: number) => {
-    const factor = Math.pow(10, decimals);
-    return Math.round(value * factor) / factor;
-  };
-
-  return {
-    center: [roundTo(center[0], 5), roundTo(center[1], 5)],
-    zoom: roundTo(zoom, 1),
-  };
-}
-
-function areMapViewportsEqual(first: MapViewport | null, second: MapViewport): boolean {
-  return Boolean(
-    first &&
-      Math.abs(first.center[0] - second.center[0]) < 1e-6 &&
-      Math.abs(first.center[1] - second.center[1]) < 1e-6 &&
-      Math.abs(first.zoom - second.zoom) < 1e-6,
-  );
-}
+export const Route = createLazyFileRoute("/map")({ component: MapPage });
 
 function MapPage() {
-  const navigate = useNavigate({ from: '/map' });
-  const { mapState, setFilters } = useMapFilter();
-  const [userCurrency, setUserCurrency] = useUserCurrency();
-  const [userInflationAdjusted, setUserInflationAdjusted] = useUserInflationAdjusted();
-
-  const isMobile = useIsMobile();
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 25,
-  });
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [isLegendModalOpen, setIsLegendModalOpen] = useState(false);
-
-  const defaultMapZoom = isMobile ? 5.4 : 6;
-  const initialMapViewportRef = React.useRef<MapViewport | null>(null);
-  if (initialMapViewportRef.current === null) {
-    initialMapViewportRef.current = {
-      center: mapState.mapCenter ?? DEFAULT_MAP_CENTER,
-      zoom: mapState.mapZoom ?? defaultMapZoom,
-    };
-  }
-  const initialMapViewport = initialMapViewportRef.current;
-  const lastUrlMapViewportRef = React.useRef<MapViewport | null>(
-    roundMapViewport(initialMapViewport.center, initialMapViewport.zoom),
-  );
-
-  const effectiveNormalization: Normalization = React.useMemo(() => {
-    const raw = mapState.filters.normalization ?? 'total';
-    if (raw === 'total_euro') return 'total';
-    if (raw === 'per_capita_euro') return 'per_capita';
-    return raw;
-  }, [mapState.filters.normalization]);
-
-  const effectiveCurrency: Currency = React.useMemo(() => {
-    const rawNormalization = mapState.filters.normalization;
-    if (rawNormalization === 'total_euro' || rawNormalization === 'per_capita_euro') return 'EUR';
-    return (mapState.filters.currency ?? userCurrency) as Currency;
-  }, [mapState.filters.currency, mapState.filters.normalization, userCurrency]);
-
-  const effectiveInflationAdjusted = React.useMemo(() => {
-    if (effectiveNormalization === 'percent_gdp') return false;
-    return Boolean(mapState.filters.inflation_adjusted ?? userInflationAdjusted);
-  }, [effectiveNormalization, mapState.filters.inflation_adjusted, userInflationAdjusted]);
-
-  const effectiveFilters: AnalyticsFilterType = React.useMemo(() => ({
+  const search = Route.useSearch();
+  const mapState = useMemo(() => MapStateSchema.parse(search), [search]);
+  const navigate = useNavigate({ from: "/map" });
+  const [currency] = useUserCurrency();
+  const [inflationAdjusted] = useUserInflationAdjusted();
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const filter: AnalyticsFilterType = {
     ...mapState.filters,
-    normalization: effectiveNormalization,
-    currency: effectiveCurrency,
-    inflation_adjusted: effectiveInflationAdjusted,
-  }), [effectiveCurrency, effectiveInflationAdjusted, effectiveNormalization, mapState.filters]);
-
-  // Migrate legacy URL params (currency/inflation/legacy normalization) into global settings.
-  React.useEffect(() => {
-    const urlCurrency = mapState.filters.currency;
-    const urlInflationAdjusted = mapState.filters.inflation_adjusted;
-    const normalizationRaw = mapState.filters.normalization;
-
-    const nextFilterPatch: Partial<AnalyticsFilterType> = {};
-    let shouldPatchFilters = false;
-
-    if (urlCurrency !== undefined) {
-      if (urlCurrency !== userCurrency) setUserCurrency(urlCurrency);
-      nextFilterPatch.currency = undefined;
-      shouldPatchFilters = true;
-    }
-
-    if (urlInflationAdjusted !== undefined) {
-      if (Boolean(urlInflationAdjusted) !== Boolean(userInflationAdjusted)) {
-        setUserInflationAdjusted(Boolean(urlInflationAdjusted));
-      }
-      nextFilterPatch.inflation_adjusted = undefined;
-      shouldPatchFilters = true;
-    }
-
-    if (normalizationRaw === 'total_euro' || normalizationRaw === 'per_capita_euro') {
-      if (userCurrency !== 'EUR') setUserCurrency('EUR');
-      nextFilterPatch.normalization = normalizationRaw === 'total_euro' ? 'total' : 'per_capita';
-      shouldPatchFilters = true;
-    }
-
-    if (shouldPatchFilters) setFilters(nextFilterPatch);
-  }, [
-    mapState.filters.currency,
-    mapState.filters.inflation_adjusted,
-    mapState.filters.normalization,
-    setFilters,
-    setUserCurrency,
-    setUserInflationAdjusted,
-    userCurrency,
-    userInflationAdjusted,
-  ]);
-
-  const {
-    data: heatmapData,
-    isLoading: isLoadingHeatmap,
-    isFetching: isFetchingHeatmap,
-    error: heatmapError,
-  } = useHeatmapData(effectiveFilters, mapState.mapViewType);
-
-  const handleFeatureClick = async (properties: UatProperties, _event?: InteractiveMapFeatureEvent) => {
-    // The entity map support only a limited set of filters, so we need to pass them as a search param.
-    // If we set all the filters, the data doesn't make sense for the entity page, as the filters are not visible.
-    const { report_period: period, account_category, normalization } = effectiveFilters;
-    const entityPageSearchParams = {
-      mapFilters: {
-        account_category,
-        normalization,
-        period,
-      },
-    };
-
-    let selectedEntityCui: string | undefined;
-
-    if (mapState.mapViewType === 'UAT') {
-      selectedEntityCui = (heatmapData as HeatmapUATDataPoint[])?.find(
-        (data) => data.siruta_code === properties.natcode
-      )?.uat_code;
-
-      if (!selectedEntityCui) {
-        return;
-      }
-
-      await navigate({
-        to: buildEntityDetailsPath(selectedEntityCui) as '/',
-        search: { ...entityPageSearchParams },
-      });
-      return;
-    }
-
-    selectedEntityCui = (heatmapData as HeatmapCountyDataPoint[])?.find(
-      (data) => data.county_code === properties.mnemonic
-    )?.county_entity?.cui;
-
-    if (!selectedEntityCui) {
-      return;
-    }
-
-    await navigate({
-      to: buildEntityDetailsPath(selectedEntityCui) as '/',
-      search: { ...entityPageSearchParams },
-    });
+    ...normalizeNormalizationOptions({
+      ...mapState.filters,
+      currency: mapState.filters.currency ?? currency,
+      inflation_adjusted:
+        mapState.filters.inflation_adjusted ?? inflationAdjusted,
+    }),
   };
-
-  const handleMapViewChange = React.useCallback((center: [number, number], zoom: number) => {
-    const nextViewport = roundMapViewport(center, zoom);
-    if (areMapViewportsEqual(lastUrlMapViewportRef.current, nextViewport)) {
-      return;
-    }
-
-    lastUrlMapViewportRef.current = nextViewport;
-    navigate({
-      search: (prev) => {
-        const previousSearch = prev as Record<string, unknown>;
-        const previousViewport = {
-          center: Array.isArray(previousSearch.mapCenter)
-            ? (previousSearch.mapCenter as [number, number])
-            : undefined,
-          zoom: typeof previousSearch.mapZoom === 'number' ? previousSearch.mapZoom : undefined,
-        };
-        if (
-          previousViewport.center &&
-          previousViewport.zoom !== undefined &&
-          areMapViewportsEqual(
-            {
-              center: previousViewport.center,
-              zoom: previousViewport.zoom,
-            },
-            nextViewport,
-          )
-        ) {
-          return previousSearch;
-        }
-
-        return {
-          ...previousSearch,
-          mapCenter: nextViewport.center,
-          mapZoom: nextViewport.zoom,
-        };
-      },
-      replace: true,
-      resetScroll: false,
-    });
-  }, [navigate]);
-
-  const {
-    data: geoJsonData,
-    isLoading: isLoadingGeoJson,
-    error: geoJsonError
-  } = useGeoJsonData(mapState.mapViewType);
-
-  const valueKey = effectiveFilters.normalization === 'percent_gdp'
-    ? 'amount'
-    : (effectiveFilters.normalization === 'total' ? 'total_amount' : 'per_capita_amount');
-
-  const { min: minAggregatedValue, max: maxAggregatedValue } = React.useMemo(() => {
-    if (!heatmapData) return { min: 0, max: 0 };
-    return getPercentileValues(heatmapData, 5, 95, valueKey);
-  }, [heatmapData, valueKey]);
-
-  const aDynamicGetFeatureStyle = React.useMemo(() => {
-    if (!heatmapData) return () => ({});
-    return createHeatmapStyleFunction(heatmapData, minAggregatedValue, maxAggregatedValue, mapState.mapViewType, valueKey);
-  }, [heatmapData, minAggregatedValue, maxAggregatedValue, mapState.mapViewType, valueKey]);
-
-  const isHeatmapPending = isLoadingHeatmap || isFetchingHeatmap;
-  const isMapPending = isHeatmapPending || isLoadingGeoJson;
-  const hasHeatmapData = Boolean(heatmapData);
-  const isInitialLoad = isMapPending && !hasHeatmapData;
-  const shouldShowActiveViewOverlay = hasHeatmapData && (
-    mapState.activeView === "map" ? isMapPending : isHeatmapPending
-  );
-  const error = heatmapError || geoJsonError;
-
-  let loadingText = t`Loading data...`;
-  if (isLoadingHeatmap && isLoadingGeoJson) {
-    loadingText = t`Loading map and heatmap data...`;
-  } else if (isLoadingHeatmap || isFetchingHeatmap) {
-    loadingText = t`Loading heatmap data...`;
-  } else if (isLoadingGeoJson) {
-    loadingText = t`Loading map data...`;
-  }
-
+  // Query changes reset the preset. View and viewport changes keep interaction state.
+  const selectionKey = JSON.stringify([
+    filter,
+    mapState.preset,
+    mapState.mapViewType,
+  ]);
   return (
-    <div className="flex flex-col md:flex-row md:h-screen bg-background">
-      {/* Head handled by Route.head */}
-      <div className="hidden md:flex md:flex-col w-[320px] lg:w-[360px] flex-shrink-0 border-r border-border bg-card text-card-foreground overflow-y-auto">
-        <MapFilter />
-      </div>
-      <div className="flex-grow flex flex-col relative">
-        <FloatingQuickNav
-          tableActive
-          chartActive
-          filterInput={effectiveFilters}
-          mapViewType={mapState.mapViewType}
-        />
-
-        <div className="flex-grow overflow-hidden relative">
-          {isInitialLoad ? (
-            <div className="flex items-center justify-center h-full w-full" aria-live="polite" aria-busy="true">
-              <LoadingSpinner size="lg" text={loadingText} />
-            </div>
-          ) : error ? (
-            <div className="p-4 text-center text-red-500"><Trans>Error loading data:</Trans> {error.message}</div>
-          ) : !geoJsonData ? (
-            <div className="p-4 text-center"><Trans>Map data not available.</Trans></div>
-          ) : (
-            <>
-              {/* Map view - kept mounted but hidden when inactive to preserve map state */}
-              <div className={mapState.activeView === "map" ? "sm:h-screen md:h-[calc(100vh-10rem)] w-full m-0 relative" : "hidden"}>
-                {heatmapData ? (
-                  <>
-                    <ClientOnly fallback={<div className="flex items-center justify-center h-full w-full"><LoadingSpinner size="lg" text={t`Loading map...`} /></div>}>
-                      {/* ErrorBoundary catches rendering errors from the lazy-loaded InteractiveMap
-                          that bypass TanStack Router's errorComponent when thrown inside Suspense.
-                          Fixes Sentry 81e7b5c2: `Error: undefined` on Mobile Safari 16.1 (iOS 16.1.2)
-                          where the map chunk failed to evaluate, causing React.lazy to throw
-                          undefined during the initial render of the /map route. */}
-                      <ErrorBoundary>
-                        <Suspense fallback={<div className="flex items-center justify-center h-full w-full"><LoadingSpinner size="lg" text={t`Loading map...`} /></div>}>
-                          <InteractiveMap
-                            onFeatureClick={handleFeatureClick}
-                            getFeatureStyle={aDynamicGetFeatureStyle}
-                            heatmapData={heatmapData}
-                            geoJsonData={geoJsonData}
-                            zoom={initialMapViewport.zoom}
-                            center={initialMapViewport.center}
-                            minZoom={4}
-                            mapViewType={mapState.mapViewType}
-                            filters={effectiveFilters}
-                            onViewChange={handleMapViewChange}
-                            scrollWheelZoom
-                            defaultScrollWheelZoomEnabled
-                          />
-                        </Suspense>
-                      </ErrorBoundary>
-                    </ClientOnly>
-                  </>
-                ) : (
-                  <div className="flex items-center justify-center h-full w-full">
-                    <Trans>No data available for the map.</Trans>
-                  </div>
-                )}
-                <MapLegend
-                  min={minAggregatedValue}
-                  max={maxAggregatedValue}
-                  className="absolute bottom-[-6rem] right-[4rem] z-10 hidden md:block"
-                  title={t`Aggregated Value Legend`}
-                  normalization={effectiveFilters.normalization}
-                  currency={effectiveFilters.currency}
-                />
-                <div className="absolute bottom-[-6rem] left-4 z-10 hidden md:flex items-center gap-1 text-xs text-muted-foreground">
-                  <span><Trans>GeoJSON source:</Trans></span>
-                  <a
-                    href="https://geo-spatial.org?utm_source=transparenta.eu"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    data-testid="map-geojson-source-link"
-                    className="underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-                  >
-                    <Trans>geo-spatial.org</Trans>
-                  </a>
-                </div>
-                <Dialog open={isLegendModalOpen} onOpenChange={setIsLegendModalOpen}>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      className="absolute top-4 right-4 md:hidden rounded-full shadow-lg w-14 h-14 z-50"
-                      aria-label={t`Open legend`}
-                    >
-                      <HelpCircleIcon className="w-6 h-6" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent hideCloseButton={true} className="p-0 m-0 w-full max-w-full h-full max-h-full sm:h-[calc(100%-2rem)] sm:max-h-[calc(100%-2rem)] sm:w-[calc(100%-2rem)] sm:max-w-md sm:rounded-lg flex flex-col">
-                    <DialogHeader className="p-4 border-b flex flex-row justify-between items-center shrink-0">
-                      <DialogTitle className="text-lg font-semibold"><Trans>Legend</Trans></DialogTitle>
-                      <DialogDescription className="sr-only">
-                        <Trans>View the color scale and values for the heatmap visualization</Trans>
-                      </DialogDescription>
-                      <DialogClose asChild>
-                        <Button variant="ghost" size="icon" className="rounded-full" aria-label={t`Close legend`}>
-                          <X className="h-5 w-5" />
-                        </Button>
-                      </DialogClose>
-                    </DialogHeader>
-                    <div className="p-4 overflow-y-auto">
-                      <MapLegend
-                        min={minAggregatedValue}
-                        max={maxAggregatedValue}
-                        title={t`Aggregated Value Legend`}
-                        normalization={effectiveFilters.normalization}
-                        currency={effectiveFilters.currency}
-                        isInModal={true}
-                      />
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
-
-              {/* Table view */}
-              <div className={mapState.activeView === "table" ? "h-full m-0" : "hidden"}>
-                <div className="p-4 h-full flex flex-col overflow-auto">
-                  <h2 className="text-xl font-semibold mb-4"><Trans>Data Table View</Trans></h2>
-                  <div className="flex-grow overflow-x-auto">
-                    {heatmapData ? (
-                      <HeatmapDataTable
-                        data={heatmapData}
-                        isLoading={isLoadingHeatmap}
-                        sorting={sorting}
-                        setSorting={setSorting}
-                        pagination={pagination}
-                        setPagination={setPagination}
-                        mapViewType={mapState.mapViewType}
-                      />
-                    ) : isLoadingHeatmap ? (
-                      <div className="flex items-center justify-center h-full">
-                        <LoadingSpinner size="md" text={t`Loading table data...`} />
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-center h-full">
-                        <p className="text-muted-foreground"><Trans>No data available for the table.</Trans></p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Chart view */}
-              <div className={mapState.activeView === "chart" ? "h-full w-full m-0" : "hidden"}>
-                <div className="h-full w-full p-4 overflow-y-auto">
-                  {heatmapData && geoJsonData ? (
-                    <UatDataCharts data={heatmapData} mapViewType={mapState.mapViewType} effectiveFilter={effectiveFilters} />
-                  ) : (
-                    <p className="text-center text-muted-foreground"><Trans>Chart data is loading or not available.</Trans></p>
-                  )}
-                </div>
-              </div>
-
-              <AnimatePresence>
-                {shouldShowActiveViewOverlay && (
-                  <motion.div
-                    data-testid="map-active-view-loading-overlay"
-                    className="absolute inset-0 bg-background/20 backdrop-blur-sm flex items-center justify-center z-30"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2, ease: "easeInOut" }}
-                  >
-                    <motion.div
-                      initial={{ scale: 0.9, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.9, opacity: 0 }}
-                      transition={{ duration: 0.2, ease: "easeOut" }}
-                    >
-                      <LoadingSpinner
-                        size="md"
-                        text={mapState.activeView === "map" ? loadingText : t`Loading heatmap data...`}
-                      />
-                    </motion.div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </>
-          )}
-        </div>
-
-      </div>
-
-      <div className="md:hidden fixed right-6 bottom-[5.75rem] z-50 flex flex-col items-end gap-3">
-
-        <Dialog open={isFilterModalOpen} onOpenChange={setIsFilterModalOpen}>
+    <main>
+      <div className="flex flex-wrap items-center gap-3 border-b px-5 py-3">
+        <label className="flex items-center gap-2 text-sm font-medium">
+          {t`Map configuration`}
+          <select
+            aria-label={t`Map configuration`}
+            value={mapState.preset ?? ""}
+            onChange={(event) => {
+              const preset = event.target.value || undefined;
+              void navigate({
+                search: (previous) => ({ ...previous, preset }),
+                replace: true,
+                resetScroll: false,
+              });
+            }}
+            className="h-9 rounded-md border bg-background px-3"
+          >
+            <option value="">{t`Custom filters`}</option>
+            <option value="expenses">{t`Expenses`}</option>
+            <option value="income">{t`Income`}</option>
+            <option value="balance">{t`Budget balance`}</option>
+            <option value="local-taxes">{t`Local taxes`}</option>
+          </select>
+        </label>
+        <Dialog open={filtersOpen} onOpenChange={setFiltersOpen}>
           <DialogTrigger asChild>
-            <Button
-              variant="default"
-              size="icon"
-              className="rounded-full shadow-lg w-14 h-14"
-              aria-label={t`Open filters`}
-            >
-              <FilterIcon className="w-6 h-6" />
+            <Button variant="outline" size="sm">
+              <Filter className="mr-2 h-4 w-4" />
+              {t`Filters`}
             </Button>
           </DialogTrigger>
-          <DialogContent hideCloseButton={true} className="p-0 m-0 w-full max-w-full h-full max-h-full sm:h-[calc(100%-2rem)] sm:max-h-[calc(100%-2rem)] sm:w-[calc(100%-2rem)] sm:max-w-md sm:rounded-lg flex flex-col">
-            <DialogHeader className="p-4 border-b flex flex-row justify-between items-center shrink-0">
-              <DialogTitle className="text-lg font-semibold"><Trans>Filters</Trans></DialogTitle>
-              <DialogDescription className="sr-only">
-                <Trans>Configure filters for the map view including period, account category, and normalization settings</Trans>
-              </DialogDescription>
-              <DialogClose asChild>
-                <Button variant="ghost" size="icon" className="rounded-full" aria-label={t`Close filters`}>
-                  <X className="h-5 w-5" />
-                </Button>
-              </DialogClose>
+          <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
+            <DialogHeader>
+              <DialogTitle>{t`Map Filters`}</DialogTitle>
             </DialogHeader>
-            <div className="flex-grow overflow-y-auto">
-              <MapFilter />
-            </div>
-            {/* Floating submit button for mobile */}
-            <div className="md:hidden fixed bottom-6 right-6 z-50">
-              <DialogClose asChild>
-                <Button size="lg" className="rounded-full shadow-lg w-14 h-14" aria-label={t`Apply filters`}>
-                  <Check className="w-6 h-6" />
-                </Button>
-              </DialogClose>
-            </div>
+            <MapFilter presetMode={mapState.preset !== undefined} />
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+      <ErrorBoundary key={selectionKey} fallback={InvalidMapConfiguration}>
+        <StandaloneMapWorkspace urlState={mapState} filter={filter} />
+      </ErrorBoundary>
+    </main>
+  );
+}
+
+function InvalidMapConfiguration() {
+  return (
+    <p
+      role="alert"
+      className="p-5 text-destructive"
+    >{t`Map configuration is invalid. Check the amount limits in Filters.`}</p>
+  );
+}
+
+function StandaloneMapWorkspace({
+  urlState,
+  filter,
+}: Readonly<{ urlState: MapUrlState; filter: AnalyticsFilterType }>) {
+  const navigate = useNavigate({ from: "/map" });
+  const [interactionState, setInteractionState] = useState(() =>
+    buildStandaloneMapState(urlState, filter),
+  );
+  const activeView =
+    urlState.activeView === "chart" ? "analytics" : urlState.activeView;
+  const state: AdvancedMapAnalyticsUrlState = {
+    ...interactionState,
+    activeView,
+  };
+  const setMapState = (
+    updater:
+      | AdvancedMapAnalyticsUrlState
+      | ((
+          previous: AdvancedMapAnalyticsUrlState,
+        ) => AdvancedMapAnalyticsUrlState),
+  ) => {
+    const next = typeof updater === "function" ? updater(state) : updater;
+    setInteractionState(next);
+    if (next.activeView !== activeView) {
+      void navigate({
+        search: (previous) => ({
+          ...previous,
+          activeView:
+            next.activeView === "analytics" ? "chart" : next.activeView,
+        }),
+        replace: true,
+        resetScroll: false,
+      });
+    }
+  };
+  return (
+    <MapAnalyticsWorkspace
+      layout="standalone"
+      mode="public"
+      capabilities={{ readOnly: true }}
+      mapState={state}
+      setMapState={setMapState}
+      mapCenterOverride={urlState.mapCenter}
+      mapZoomOverride={urlState.mapZoom}
+      onMapViewportChange={(viewport) => {
+        void navigate({
+          search: (previous) => ({
+            ...previous,
+            mapCenter: viewport.mapCenter,
+            mapZoom: viewport.mapZoom,
+          }),
+          replace: true,
+          resetScroll: false,
+        });
+      }}
+    />
   );
 }
 
 function buildMapHead() {
-  const site = getSiteUrl()
-  const canonical = `${site}/map`
-  const title = t`Romania spending heatmap - Transparenta.eu`
-  const description = t`Explore choropleth maps of public spending by UAT/County with per-capita or total normalization.`
+  const site = getSiteUrl();
+  const canonical = `${site}/map`;
+  const title = t`Romania spending heatmap - Transparenta.eu`;
+  const description = t`Explore choropleth maps of public spending by UAT/County with per-capita or total normalization.`;
   return {
     meta: [
       { title },
-      { name: 'description', content: description },
-      { name: 'og:title', content: title },
-      { name: 'og:description', content: description },
-      { name: 'og:url', content: canonical },
-      { name: 'canonical', content: canonical },
+      { name: "description", content: description },
+      { name: "og:title", content: title },
+      { name: "og:description", content: description },
+      { name: "og:url", content: canonical },
+      { name: "canonical", content: canonical },
     ],
-  }
+  };
 }
 
 export function head() {
-  return buildMapHead()
+  return buildMapHead();
 }

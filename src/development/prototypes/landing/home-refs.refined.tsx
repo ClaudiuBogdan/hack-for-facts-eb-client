@@ -792,7 +792,7 @@ function RefinedLanding() {
         <Frame className="py-16 sm:py-20">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12" data-reveal-group>
             <div className="lg:col-span-5">
-              <MonoLabel className="text-primary" data-reveal>
+              <MonoLabel className="block text-primary" data-reveal>
                 01 / Ce găsești aici
               </MonoLabel>
               <h2
@@ -832,7 +832,7 @@ function RefinedLanding() {
         <Frame className="py-14 sm:py-16">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12" data-reveal-group>
             <div className="lg:col-span-5">
-              <MonoLabel className="text-primary" data-reveal>
+              <MonoLabel className="block text-primary" data-reveal>
                 02 / Proveniență
               </MonoLabel>
               <h2

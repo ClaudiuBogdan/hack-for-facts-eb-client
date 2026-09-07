@@ -6,6 +6,7 @@ import {
   createDefaultAdvancedMapAnalyticsSeries,
 } from '@/schemas/advanced-map-analytics';
 import { createUploadedMapDatasetSeries } from '@/features/advanced-map-analytics/uploaded-map-dataset';
+import type { MapSeriesWarning } from '@/lib/map-series/interfaces';
 import type { AdvancedMapDatasetJsonItem } from '@/features/advanced-map-datasets/api/schemas';
 
 const mockIsMobile = vi.fn(() => false);
@@ -88,7 +89,7 @@ let mockBinsResult = {
     palette: [],
   },
   binsCanApply: false,
-  combinedWarnings: [],
+  combinedWarnings: [] as MapSeriesWarning[],
   toggleBinsPanelCollapsed: vi.fn(),
   addBinsPreset: vi.fn(),
   editBinsPreset: vi.fn(),
@@ -447,7 +448,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
         palette: [],
       },
       binsCanApply: false,
-      combinedWarnings: [],
+      combinedWarnings: [] as MapSeriesWarning[],
       toggleBinsPanelCollapsed: vi.fn(),
       addBinsPreset: vi.fn(),
       editBinsPreset: vi.fn(),
@@ -3675,6 +3676,30 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(latestInteractiveMapProps?.scrollWheelZoom).toBe(false);
     expect(latestInteractiveMapProps?.defaultScrollWheelZoomEnabled).toBe(false);
     expect(latestInteractiveMapProps?.preferCanvasRenderer).toBe(false);
+  });
+
+  it.each(['map', 'analytics'] as const)('keeps the standalone %s view functional without editor panels', async activeView => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = { data: { type: 'FeatureCollection', features: [] }, isLoading: false, error: null };
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+    render(<MapAnalyticsWorkspace mode="public" layout="standalone"
+      mapState={createMapState({ activeView })} setMapState={vi.fn()} capabilities={{ readOnly: true }} />);
+    await screen.findByTestId(activeView === 'map' ? 'interactive-map' : 'advanced-map-analytics-main-view');
+    expect(screen.queryByText('Config Panel')).not.toBeInTheDocument();
+    expect(screen.queryByText('Value Filters Panel')).not.toBeInTheDocument();
+    expect(screen.queryByText('Bins Panel')).not.toBeInTheDocument();
+    expect(screen.getByRole('radiogroup', { name: 'Advanced map analytics active view' })).toBeInTheDocument();
+  });
+
+  it('hides only draft URL-size warnings in standalone mode', async () => {
+    mockBinsResult.combinedWarnings = [
+      { type: 'url_budget', message: 'Draft URL too large' },
+      { type: 'BUDGET_MAP_COVERAGE', message: 'Missing territory values' },
+    ];
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+    render(<MapAnalyticsWorkspace mode="public" layout="standalone"
+      mapState={createMapState({ activeView: 'analytics' })} setMapState={vi.fn()} capabilities={{ readOnly: true }} />);
+    expect(screen.getByRole('button', { name: 'Warnings (1)' })).toBeInTheDocument();
   });
 
 });

@@ -23869,3 +23869,42 @@ msgstr "ziua curentă nu este încă confirmată după încheierea ședinței"
 #: src/features/parliament/components/parliament-stenogram-controls.tsx:197
 msgid "Ziua: {day}"
 msgstr "Ziua: {day}"
+
+#: src/features/advanced-map-analytics/standalone-map-state.ts:54
+#: src/routes/map.lazy.tsx:48
+msgid "Budget balance"
+msgstr "Budget balance"
+
+#: src/features/advanced-map-analytics/standalone-map-state.ts:37
+msgid "Budget map"
+msgstr "Budget map"
+
+#: src/routes/map.lazy.tsx:45
+msgid "Custom filters"
+msgstr "Custom filters"
+
+#: src/features/advanced-map-analytics/standalone-map-state.ts:54
+#: src/routes/map.lazy.tsx:49
+msgid "Local taxes"
+msgstr "Local taxes"
+
+#: src/routes/map.lazy.tsx:41
+#: src/routes/map.lazy.tsx:42
+msgid "Map configuration"
+msgstr "Map configuration"
+
+#: src/routes/map.lazy.tsx:65
+msgid "Map configuration is invalid. Check the amount limits in Filters."
+msgstr "Map configuration is invalid. Check the amount limits in Filters."
+
+#: src/features/advanced-map-analytics/standalone-map-state.ts:71
+msgid "Population (INS 2021)"
+msgstr "Population (INS 2021)"
+
+#: src/features/advanced-map-analytics/standalone-map-state.ts:43
+msgid "Selected budgets"
+msgstr "Selected budgets"
+
+#: src/components/filters/MapFilter.tsx:242
+msgid "The preset defines income, expenses and classifications. Select custom filters to edit them. Amount bounds apply to the final preset result."
+msgstr "The preset defines income, expenses and classifications. Select custom filters to edit them. Amount bounds apply to the final preset result."
