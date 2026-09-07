@@ -3,6 +3,7 @@ import type { RefObject } from 'react'
 import cloudsFar from '@/assets/images/landing-footer-clouds-far.webp'
 import cloudsFront from '@/assets/images/landing-footer-clouds-front.webp'
 import cloudsNear from '@/assets/images/landing-footer-clouds-near.webp'
+import moon from '@/assets/images/landing-footer-moon.webp'
 import range from '@/assets/images/landing-footer-range.webp'
 
 /**
@@ -128,6 +129,17 @@ const FRONT = cloud(LAYERS.front)
 export const FOOTER_SCENE_CLEAR_PX =
   Math.max(FAR.bottom + FAR.h, NEAR.bottom + NEAR.h, FRONT.bottom + FRONT.h) + 20
 
+/**
+ * The moon: size, and where it hangs.
+ *
+ * The art is 224px, which covers anything up to 112 here at device pixel ratio
+ * 2, so the size can be tuned without re-encoding. 'top' is measured from the
+ * top of the scene rather than the bottom like everything else in this file,
+ * because what it has to stay clear of is the footer's text above it rather
+ * than the ridge below.
+ */
+const MOON = { w: 76, h: 75, top: 0 } as const
+
 const CSS = `
 .tpz-scene {
   /*
@@ -205,6 +217,58 @@ const CSS = `
     rgba(24, 40, 62, 0.6) 78%,
     rgba(20, 36, 58, 0.75) 100%
   );
+}
+
+/*
+ * The moon, which only exists at night.
+ *
+ * 'display: none' rather than 'opacity: 0' or a JS check on the theme: it is
+ * the one form of hiding that also means the browser never fetches the file, so
+ * the light theme does not pay 17KB for a picture it will not draw. It also
+ * keeps the whole thing declarative, which matters more here than it looks —
+ * the theme class lands on the document element, so anything conditional in
+ * JavaScript would have to agree with the server about the theme before
+ * hydration, and CSS simply does not have that problem.
+ *
+ * Desktop only. On a phone the scene is already at two thirds and the sky band
+ * above the ridge is a couple of centimetres; a moon in it is not atmosphere,
+ * it is clutter.
+ */
+.tpz-scene-moon {
+  position: absolute;
+  /* At the very top of the scene, which is 20px higher than the band the
+     footer keeps clear — see 'FOOTER_SCENE_CLEAR_PX'. That overlap is fine
+     because it is 20px of glow at the far right, where the footer's own text
+     ends well short; the constant is deliberately not grown for it, since it
+     pads every theme and this picture only exists in one. */
+  top: calc(${MOON.top}px * var(--tpz-scene-scale));
+  /* Centred on the page. A negative margin rather than a translate, because
+     'transform' on a static element is a composited layer for nothing. */
+  left: 50%;
+  margin-left: calc(${MOON.w}px * var(--tpz-scene-scale) / -2);
+  width: calc(${MOON.w}px * var(--tpz-scene-scale));
+  height: calc(${MOON.h}px * var(--tpz-scene-scale));
+  background-image: url(${moon});
+  background-repeat: no-repeat;
+  /* The box is cut to the art's own 224x222, so this is exact rather than a fit. */
+  background-size: 100% 100%;
+  /* Not quite full strength. At 1 it is the brightest thing on the page by some
+     margin and the eye goes to it before the ridge line; this leaves it clearly
+     the light source without letting it become the subject. */
+  opacity: 0.88;
+  pointer-events: none;
+  display: none;
+}
+
+.dark .tpz-scene-moon {
+  display: block;
+}
+
+/* After the rule above, so it wins on equal specificity. */
+@media (max-width: 640px) {
+  .dark .tpz-scene-moon {
+    display: none;
+  }
 }
 
 .tpz-scene-layer {
@@ -369,9 +433,9 @@ export function FooterSceneStyles() {
  * would always end at the range and nothing else would ever be reachable.
  */
 const GRABBABLE = [
-  { selector: '.tpz-scene-front', src: cloudsFront },
-  { selector: '.tpz-scene-near', src: cloudsNear },
-  { selector: '.tpz-scene-far', src: cloudsFar },
+  { selector: '.tpz-scene-front', src: cloudsFront, front: true },
+  { selector: '.tpz-scene-near', src: cloudsNear, front: false },
+  { selector: '.tpz-scene-far', src: cloudsFar, front: false },
 ] as const
 
 /** Alpha above which a pixel of the strip counts as cloud rather than sky. */
@@ -397,6 +461,8 @@ type Grabbable = {
   readonly element: HTMLElement
   /** Alpha of the strip, downsampled, so a pointer can be tested against it. */
   readonly alpha: { readonly w: number; readonly h: number; readonly data: Uint8Array }
+  /** In front of the range, and so reachable even where the mountain is solid. */
+  readonly front: boolean
   /** Rendered width of one repeat, and so the period the offset wraps on. */
   tile: number
   offset: number
@@ -499,6 +565,10 @@ export function useFooterScene(rootRef: RefObject<HTMLElement | null>) {
     /** Nearest first, so the topmost cloud under the pointer wins. */
     const layers: Grabbable[] = []
 
+    /** The mountain's own silhouette, so it can block what passes behind it. */
+    let rangeAlpha: Awaited<ReturnType<typeof loadAlpha>> = null
+    let rangeElement: HTMLElement | null = null
+
     // The tile is the wrap period, so a stale one after a breakpoint change
     // would let the offset walk past the element's slack again.
     const resized = new ResizeObserver(() => {
@@ -519,8 +589,46 @@ export function useFooterScene(rootRef: RefObject<HTMLElement | null>) {
      * having to be tracked: x within the element, wrapped by the tile width,
      * scaled into the alpha map.
      */
+    /**
+     * Whether the mountain covers this point.
+     *
+     * Against the range's own silhouette rather than its box: the box is the
+     * bottom 230px of the footer edge to edge, and most of that is sky between
+     * peaks that a cloud behind is plainly visible through. The strip repeats,
+     * so the pointer is wrapped by the tile before it is sampled — the same
+     * arithmetic the cloud layers use.
+     */
+    const onRange = (clientX: number, clientY: number) => {
+      if (!rangeAlpha || !rangeElement) return false
+      const rect = rangeElement.getBoundingClientRect()
+      const y = clientY - rect.top
+      if (y < 0 || y >= rect.height) return false
+      const tile = Number.parseFloat(getComputedStyle(rangeElement).backgroundSize)
+      if (!Number.isFinite(tile) || tile <= 0) return false
+      const within = (((clientX - rect.left) % tile) + tile) % tile
+      const sx = Math.min(rangeAlpha.w - 1, Math.floor((within / tile) * rangeAlpha.w))
+      const sy = Math.min(rangeAlpha.h - 1, Math.floor((y / rect.height) * rangeAlpha.h))
+      return rangeAlpha.data[sy * rangeAlpha.w + sx] > CLOUD_ALPHA
+    }
+
     const layerAt = (clientX: number, clientY: number) => {
+      /* Computed at most once per test, and only if a layer behind the range is
+         in the running at all. */
+      let rock: boolean | null = null
       for (const layer of layers) {
+        /*
+         * The mountain blocks.
+         *
+         * Two of the three cloud layers pass behind it, and a cloud you cannot
+         * see is not one you can take hold of — offering a grab over solid rock
+         * reads as an invitation to drag the mountain, and dragging there moves
+         * something hidden, which looks like the mountain moving. The range
+         * itself was never in this list; that turned out not to be enough.
+         */
+        if (!layer.front) {
+          rock ??= onRange(clientX, clientY)
+          if (rock) continue
+        }
         const rect = layer.element.getBoundingClientRect()
         const y = clientY - rect.top
         if (y < 0 || y >= rect.height) continue
@@ -635,16 +743,20 @@ export function useFooterScene(rootRef: RefObject<HTMLElement | null>) {
       schedule()
     }
 
-    void Promise.all(
-      GRABBABLE.map(async ({ selector, src }) => {
+    void Promise.all([
+      loadAlpha(range).then((alpha) => {
+        rangeAlpha = alpha
+      }),
+      ...GRABBABLE.map(async ({ selector, src, front }) => {
         const element = scene.querySelector<HTMLElement>(selector)
         if (!element) return
         const alpha = await loadAlpha(src)
         if (!alpha || !live) return
-        layers.push({ element, alpha, tile: tileOf(element), offset: 0, velocity: 0 })
+        layers.push({ element, alpha, front, tile: tileOf(element), offset: 0, velocity: 0 })
       }),
-    ).then(() => {
+    ]).then(() => {
       if (!live) return
+      rangeElement = scene.querySelector<HTMLElement>('.tpz-scene-range')
       // Restored to the declared order: `Promise.all` settles in whatever order
       // the decodes finish, and this list is searched nearest-first.
       layers.sort(
@@ -680,6 +792,10 @@ export function FooterScene() {
   return (
     <div className="tpz-scene" aria-hidden="true">
       <div className="tpz-scene-sky" />
+      {/* Straight after the sky and before every cloud, which is what puts the
+          weather in front of it. A moon the clouds passed behind would be a
+          lamp hanging in the room. */}
+      <div className="tpz-scene-moon" />
       <div className="tpz-scene-layer tpz-scene-clouds tpz-scene-far" />
       <div className="tpz-scene-layer tpz-scene-clouds tpz-scene-near" />
       <div className="tpz-scene-layer tpz-scene-range" />
