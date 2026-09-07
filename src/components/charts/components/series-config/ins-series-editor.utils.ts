@@ -11,6 +11,11 @@ export type InsDimensionOptionKind =
   | 'territory'
   | 'siruta';
 
+/** Aliases are display-only; saved selections retain the ID the user selected. */
+export interface InsDimensionOption extends OptionItem {
+  readonly legacyIds?: readonly string[];
+}
+
 export type InsLocale = 'ro' | 'en';
 
 const TOTAL_KEYWORDS = ['total', 'ambele', 'general'];
@@ -298,7 +303,7 @@ export function mapInsDimensionValueToOption(
   optionKind: InsDimensionOptionKind,
   classificationTypeCode?: string,
   locale?: InsLocale
-): OptionItem | null {
+): InsDimensionOption | null {
   const resolvedLocale = resolveLocale(locale);
 
   if (optionKind === 'classification' || optionKind === 'source-territory') {
@@ -344,12 +349,14 @@ export function mapInsDimensionValueToOption(
       getLocalizedText(value.label_ro, value.label_en, resolvedLocale) ||
       territoryCode;
     return {
-      id: territoryCode,
+      id: value.territory?.canonical_siruta_code ?? territoryCode,
       label: `${territoryCode} - ${territoryName}`,
+      ...(value.territory?.canonical_siruta_code && value.territory.canonical_siruta_code !== territoryCode
+        ? { legacyIds: [territoryCode] } : {}),
     };
   }
 
-  const sirutaCode = value.territory?.siruta_code;
+  const sirutaCode = value.territory?.canonical_siruta_code ?? value.territory?.siruta_code;
   if (!sirutaCode) return null;
 
   const territoryName =
@@ -361,6 +368,8 @@ export function mapInsDimensionValueToOption(
   return {
     id: sirutaCode,
     label: `${sirutaCode} - ${territoryName}${suffix}`,
+    ...(value.territory?.siruta_code && value.territory.siruta_code !== sirutaCode
+      ? { legacyIds: [value.territory.siruta_code] } : {}),
   };
 }
 

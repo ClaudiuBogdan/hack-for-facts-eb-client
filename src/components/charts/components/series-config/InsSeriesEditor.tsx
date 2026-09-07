@@ -267,7 +267,9 @@ async function buildDatasetDefaultPatch(
     if (!selected) continue;
 
     if (dimension.type === 'TERRITORIAL' && territoryPolicy.territorySelectionMode === 'canonical') {
-      if (selected.territory?.siruta_code) {
+      if (selected.territory?.level === 'NUTS3' && selected.territory.canonical_siruta_code) {
+        defaults.territoryCodes = [selected.territory.canonical_siruta_code];
+      } else if (selected.territory?.siruta_code) {
         defaults.sirutaCodes = [selected.territory.siruta_code];
       } else if (selected.territory?.code) {
         defaults.territoryCodes = [selected.territory.code];

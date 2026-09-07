@@ -172,7 +172,7 @@ export const INS_DATASET_DIMENSION_VALUES_QUERY = `
         label_en
         parent_nom_item_id
         offset_order
-        territory { code siruta_code level name_ro }
+        territory { code siruta_code canonical_siruta_code level name_ro }
         time_period { iso_period year quarter month periodicity }
         classification_value { type_code code name_ro }
         unit { code symbol name_ro }

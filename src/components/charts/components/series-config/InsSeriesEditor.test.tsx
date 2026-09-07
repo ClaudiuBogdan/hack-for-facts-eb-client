@@ -1025,6 +1025,21 @@ describe('InsSeriesEditor', () => {
     expect(screen.queryByText('Unit Codes')).not.toBeInTheDocument();
   });
 
+  it('uses canonical county input when creating a new map default', async () => {
+    mockGetInsDatasetDetails.mockResolvedValue(createDatasetDetails({
+      dimensions: [{ index: 2, type: 'TERRITORIAL', label_ro: 'Judete' }],
+    }));
+    mockGetInsDimensionValuesPage.mockResolvedValue(createDimensionConnection([{
+      nom_item_id: 3075, dimension_type: 'TERRITORIAL',
+      territory: { code: 'CJ', canonical_siruta_code: '127', siruta_code: null, level: 'NUTS3', name_ro: 'Cluj' },
+    }]));
+    const { applyPatch } = renderEditorWithAdapter({ adapterOverrides: {
+      territorySelectionMode: 'canonical', allowedTerritoryLevels: ['NUTS3'],
+    } });
+    fireEvent.click(screen.getByRole('button', { name: 'Dataset POP107D' }));
+    await waitFor(() => expect(applyPatch).toHaveBeenCalledWith(expect.objectContaining({ territoryCodes: ['127'] })));
+  });
+
   it('does not auto-select territorial defaults in map policy mode', async () => {
     const applyPatch = vi.fn();
 

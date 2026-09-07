@@ -7,6 +7,17 @@ import {
 } from './ins-series-editor.utils';
 
 describe('ins-series-editor utils', () => {
+  it('keeps source member IDs and source-only Bucharest while canonical options prefer SIRUTA', () => {
+    const county = { nom_item_id: 3075, dimension_type: 'TERRITORIAL' as const,
+      classification_value: { type_code: 'D2', code: '3075', name_ro: 'Cluj' },
+      territory: { code: 'CJ', canonical_siruta_code: '127', name_ro: 'Cluj' },
+    };
+    expect(mapInsDimensionValueToOption(county, 'territory')?.id).toBe('127');
+    expect(mapInsDimensionValueToOption({ ...county, territory: { ...county.territory, siruta_code: 'CJ' } }, 'siruta')).toMatchObject({ id: '127', legacyIds: ['CJ'] });
+    expect(mapInsDimensionValueToOption(county, 'source-territory', 'D2')?.id).toBe('3075');
+    expect(mapInsDimensionValueToOption({ ...county, territory: { code: 'B', canonical_siruta_code: null } }, 'territory')?.id).toBe('B');
+  });
+
   it('upserts and removes selection keys', () => {
     const updated = upsertSelectionRecord({ SEXE: ['M'], MEDIU: ['TOTAL'] }, 'SEXE', ['F']);
     expect(updated).toEqual({ SEXE: ['F'], MEDIU: ['TOTAL'] });

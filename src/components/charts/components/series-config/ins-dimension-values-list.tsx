@@ -15,6 +15,7 @@ import type { InsDimensionValue, InsTerritoryLevel } from '@/schemas/ins';
 import {
   mapInsDimensionValueToOption,
   type InsDimensionOptionKind,
+  type InsDimensionOption,
 } from './ins-series-editor.utils';
 
 interface InsDimensionValuesListProps extends BaseListProps {
@@ -25,9 +26,9 @@ interface InsDimensionValuesListProps extends BaseListProps {
   allowedTerritoryLevels?: InsTerritoryLevel[];
 }
 
-function dedupeOptions(options: OptionItem[]): OptionItem[] {
+function dedupeOptions(options: InsDimensionOption[]): InsDimensionOption[] {
   const seen = new Set<string>();
-  const deduped: OptionItem[] = [];
+  const deduped: InsDimensionOption[] = [];
 
   for (const option of options) {
     const id = String(option.id);
@@ -125,11 +126,11 @@ export function InsDimensionValuesList({
     error,
     refetch,
     isFetchingNextPage,
-  } = useMultiSelectInfinite<OptionItem>({
+  } = useMultiSelectInfinite<InsDimensionOption>({
     itemSize: 48,
     queryKey: [
       'ins-dimension-values',
-      'native-v1',
+      'native-canonical-v2',
       normalizeInsDatasetCode(datasetCode),
       String(dimensionIndex),
       optionKind,
@@ -138,7 +139,7 @@ export function InsDimensionValuesList({
       searchFilter,
       territoryLevelPolicyKey,
     ],
-    queryFn: async ({ pageParam = 0, signal }): Promise<PageData<OptionItem>> => {
+    queryFn: async ({ pageParam = 0, signal }): Promise<PageData<InsDimensionOption>> => {
       const response = await getInsDimensionValuesPage({
         datasetCode,
         dimensionIndex,
@@ -158,7 +159,7 @@ export function InsDimensionValuesList({
           .map((value) =>
             mapInsDimensionValueToOption(value, optionKind, classificationTypeCode, locale)
           )
-          .filter((value): value is OptionItem => value !== null)
+          .filter((value): value is InsDimensionOption => value !== null)
       );
 
       return {
@@ -207,17 +208,17 @@ export function InsDimensionValuesList({
             if (!option) return null;
 
             const optionId = String(option.id);
-            const isSelected = selectedOptions.some(
-              (item: OptionItem) => String(item.id) === optionId
+            const selected = selectedOptions.find(
+              (item: OptionItem) => String(item.id) === optionId || option.legacyIds?.includes(String(item.id))
             );
 
             return (
               <ListOption
                 key={optionId}
                 uniqueIdPart={optionId}
-                onClick={() => toggleSelect(option)}
+                onClick={() => toggleSelect(selected ?? option)}
                 label={option.label}
-                selected={isSelected}
+                selected={selected !== undefined}
                 optionHeight={virtualRow.size}
                 optionStart={virtualRow.start}
               />

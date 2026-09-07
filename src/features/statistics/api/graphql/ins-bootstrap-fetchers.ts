@@ -56,6 +56,7 @@ const dimensionValueSchema = z.object({
     .object({
       code: z.string().nullish(),
       siruta_code: z.string().nullish(),
+      canonical_siruta_code: z.string().regex(/^[1-9][0-9]*$/).nullish(),
       level: insTerritoryLevelRawSchema.nullish(),
       name_ro: z.string().nullish(),
     })

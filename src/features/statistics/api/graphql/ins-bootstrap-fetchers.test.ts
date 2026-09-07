@@ -45,6 +45,18 @@ const request = { datasetCode: 'TEST', dimensionIndex: 1, limit: 20, offset: 0 }
 
 describe('native INS metadata and option boundary', () => {
   beforeEach(() => vi.clearAllMocks())
+  it('requests and preserves canonical county metadata alongside source identities', async () => {
+    const raw = response();
+    vi.mocked(graphqlQuery).mockResolvedValue({ ...raw, insDatasetDimensionValues: {
+      ...raw.insDatasetDimensionValues, nodes: [{ ...member(), territory: {
+        code: 'CJ', siruta_code: null, canonical_siruta_code: '127', level: 'NUTS3', name_ro: 'Cluj',
+      } }],
+    } });
+    const result = await getInsDimensionValuesPage(request);
+    expect(result.nodes[0].territory).toMatchObject({ code: 'CJ', canonical_siruta_code: '127' });
+    expect(result.nodes[0].classification_value?.code).toBe('0');
+    expect(vi.mocked(graphqlQuery).mock.calls[0][0]).toContain('canonical_siruta_code');
+  });
   it('loads certified metadata anonymously with cancellation', async () => {
     vi.mocked(graphqlQuery).mockResolvedValue({ insDataset: dataset() })
     const signal = new AbortController().signal

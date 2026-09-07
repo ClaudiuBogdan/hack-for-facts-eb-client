@@ -23,6 +23,7 @@ export interface InsTimePeriod {
 export interface InsTerritory {
   code?: string | null;
   siruta_code?: string | null;
+  canonical_siruta_code?: string | null;
   level?: InsTerritoryLevel | string | null;
   name_ro?: string | null;
   name_en?: string | null;

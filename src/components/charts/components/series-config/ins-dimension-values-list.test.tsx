@@ -40,6 +40,25 @@ describe('InsDimensionValuesList', () => {
     } satisfies InsDimensionValueConnection);
   });
 
+  it.each([false, true])('county options prefer canonical inputs and preserve saved aliases (saved=%s)', async (saved) => {
+    const toggleSelect = vi.fn();
+    const legacy = { id: 'CJ', label: 'Saved Cluj' };
+    mockGetInsDimensionValuesPage.mockResolvedValue({
+      nodes: [{ nom_item_id: 3075, dimension_type: 'TERRITORIAL', territory: {
+        code: 'CJ', canonical_siruta_code: '127', siruta_code: null, level: 'NUTS3', name_ro: 'Cluj',
+      } }], pageInfo,
+    } satisfies InsDimensionValueConnection);
+    render(<InsDimensionValuesList selectedOptions={saved ? [legacy] : []} toggleSelect={toggleSelect}
+      datasetCode="POP107D" dimensionIndex={2} optionKind="territory" />, { queryClient: createTestQueryClient() });
+    const option = await screen.findByRole('option', { name: 'CJ - Cluj' });
+    expect(option).toHaveAttribute('aria-selected', String(saved));
+    expect(toggleSelect).not.toHaveBeenCalled();
+    fireEvent.click(option);
+    expect(toggleSelect).toHaveBeenCalledWith(saved ? legacy : {
+      id: '127', label: 'CJ - Cluj', legacyIds: ['CJ'],
+    });
+  });
+
   it('maps classification values and propagates selection', async () => {
     const toggleSelect = vi.fn();
 
