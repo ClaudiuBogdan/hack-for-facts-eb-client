@@ -162,6 +162,28 @@ test.describe('Entity Details - redesign transport boundary', () => {
 
     const forbiddenRequests: string[] = []
     const redesignRankingRequests: string[] = []
+    const nativeMapRequests: string[] = []
+    const nativeMapPath = '/api/v1/advanced-map-analytics/grouped-series'
+    await page.route(`**${nativeMapPath}`, async (route) => {
+      if (route.request().method() !== 'POST') {
+        await route.abort('blockedbyclient')
+        return
+      }
+      const body = route.request().postDataJSON() as {
+        granularity: 'UAT' | 'County'
+        series: { id: string }[]
+      }
+      await route.fulfill({ json: { ok: true, data: {
+        manifest: { generated_at: '2026-09-07T00:00:00Z', format: 'wide_matrix_v1',
+          granularity: body.granularity, series: body.series.map((series) => ({
+            series_id: series.id, unit: 'RON', defined_value_count: 1,
+          })) },
+        payload: { mime: 'text/csv', compression: 'none', data: [
+          ['siruta_code', ...body.series.map((series) => series.id)].join(','),
+          ['54975', ...body.series.map(() => '2000000')].join(','),
+        ].join('\n') }, warnings: [],
+      } } })
+    })
     page.on('request', (request) => {
       const pathname = new URL(request.url()).pathname
       if (
@@ -171,10 +193,13 @@ test.describe('Entity Details - redesign transport boundary', () => {
       ) {
         redesignRankingRequests.push(pathname)
       }
+      if (pathname === nativeMapPath && request.method() === 'POST') {
+        nativeMapRequests.push(pathname)
+      }
       if (
         (pathname.endsWith('/graphql') &&
           !pathname.endsWith('/api/v1/graphql')) ||
-        pathname.startsWith('/api/v1/advanced-map-analytics')
+        (pathname.startsWith('/api/v1/advanced-map-analytics') && (pathname !== nativeMapPath || request.method() !== 'POST'))
       ) {
         forbiddenRequests.push(`${request.method()} ${pathname}`)
       }
@@ -187,6 +212,7 @@ test.describe('Entity Details - redesign transport boundary', () => {
       page.getByText(/Instituții subordonate|Subordinate institutions/i).first(),
     ).toBeVisible({ timeout: 10000 })
 
+    await expect.poll(() => nativeMapRequests.length).toBeGreaterThan(0)
     expect(forbiddenRequests).toEqual([])
     expect(redesignRankingRequests.length).toBeGreaterThan(0)
   })
