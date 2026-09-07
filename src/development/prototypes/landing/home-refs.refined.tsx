@@ -23,6 +23,12 @@ import { PixelField } from './home-refs.pixel-art'
 import { FIELD_HOST_CLASS, FieldAnimationStyles } from './home-refs.field-animation'
 import { useFieldMotion } from './home-refs.field-motion'
 import { LightMaterialStyles } from './home-refs.light-material'
+import {
+  SECTION_LIGHT_ATTR,
+  SectionLight,
+  SectionLightStyles,
+  useSectionLight,
+} from './home-refs.section-light'
 import { ScrollLight, ScrollLightStyles, useScrollLight } from './home-refs.scroll-light'
 import { LandingSearch } from './home-refs.search'
 import { localEntityMatches } from './home-refs.search-local'
@@ -525,6 +531,7 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
               </MonoLabel>
             </div>
             <div
+              {...{ [SECTION_LIGHT_ATTR]: '' }}
               className={cn(
                 'mt-4 grid grid-cols-1 border',
                 image
@@ -619,6 +626,7 @@ function RefinedLanding() {
   // time in view" would mean "at load", and hiding server-rendered text at load
   // is the failure this is built to avoid. The hero keeps its own entrance.
   useRevealOnView(rootRef, startArrivalEffects)
+  useSectionLight(rootRef)
   // Module state outlives the component, so an unmount mid-flight would leave
   // both loops ticking against nodes that are no longer in the document.
   useEffect(() => () => {
@@ -630,9 +638,11 @@ function RefinedLanding() {
     <div ref={rootRef} className="relative w-full bg-background" data-dev-marker={PROTOTYPE_MARKER}>
       <LightMaterialStyles />
       <ScrollLightStyles />
+      <SectionLightStyles />
       <RevealStyles />
       <SmearFilters />
       <ScrollLight />
+      <SectionLight />
       {/* Hero — open band. */}
       {/* The hero does *not* clip. It used to, and the search dropdown paid for
           it: with five results the panel ran 194px past the section and was cut
