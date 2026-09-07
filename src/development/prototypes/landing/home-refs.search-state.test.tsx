@@ -39,13 +39,15 @@ vi.mock('@/lib/api/entities', () => ({
   searchEntities: (...args: readonly unknown[]) => searchEntities(...args),
 }))
 
+const capture = vi.fn()
+
 vi.mock('@/lib/analytics', () => ({
   Analytics: {
     EVENTS: {
       EntitySearchPerformed: 'entity_search_performed',
       EntitySearchSelected: 'entity_search_selected',
     },
-    capture: vi.fn(),
+    capture: (...args: readonly unknown[]) => capture(...args),
   },
 }))
 
@@ -108,6 +110,7 @@ describe('useLandingSearch', () => {
   beforeEach(() => {
     navigate.mockReset()
     searchEntities.mockReset()
+    capture.mockReset()
     searchEntities.mockResolvedValue([CLUJ, SIBIU])
   })
 
@@ -194,13 +197,19 @@ describe('useLandingSearch', () => {
       await waitFor(() => expect(result.current.status.kind).toBe('error'))
     })
 
-    it('marks live results as live', async () => {
+    it('marks live results as live, and does report them', async () => {
       const { result } = setup()
 
       await search(result, 'Cluj')
       await waitFor(() => expect(result.current.status.kind).toBe('results'))
 
       expect(result.current.status).toMatchObject({ source: 'live' })
+      await waitFor(() =>
+        expect(capture).toHaveBeenCalledWith(
+          'entity_search_performed',
+          expect.objectContaining({ query_len: 4, results_count: 2, has_results: true }),
+        ),
+      )
     })
 
     it('keeps the previous results on screen, marked stale, while the next term loads', async () => {
@@ -257,6 +266,20 @@ describe('useLandingSearch', () => {
 
       await search(result, 'Xyzzy')
       await waitFor(() => expect(result.current.status.kind).toBe('error'))
+    })
+
+    it('is kept out of analytics, both performing and selecting', async () => {
+      searchEntities.mockRejectedValue(new Error('ECONNREFUSED'))
+      const { result } = setup(IMMEDIATE, () => [SIBIU])
+
+      await search(result, 'Sibiu')
+      await waitFor(() => expect(result.current.status.kind).toBe('results'))
+      act(() => result.current.select(0))
+
+      // A fabricated list recorded as a search performed, or a fabricated row
+      // recorded as an entity selected, puts fiction into numbers someone will
+      // later read as behaviour.
+      expect(capture).not.toHaveBeenCalled()
     })
 
     it('is absent by default, so a bare hook fails honestly', async () => {

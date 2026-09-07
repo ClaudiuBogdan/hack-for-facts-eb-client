@@ -195,9 +195,14 @@ export function useLandingSearch({
   const id = useMemo(() => `landing-search-${reactId.replace(/:/g, '')}`, [reactId])
 
   // Analytics parity with the shipped hook: length and counts, never the term.
+  //
+  // Stand-in results are not reported. A `local` list is fabricated, so
+  // recording it as a search that was performed puts fiction into telemetry —
+  // the mock-first contract leaking past the UI into the numbers someone will
+  // later read as behaviour.
   const searchedRef = useRef('')
   useEffect(() => {
-    if (!isCurrent || normalized.length < MIN_QUERY_CHARS) return
+    if (!isCurrent || source !== 'live' || normalized.length < MIN_QUERY_CHARS) return
     if (searchedRef.current === normalized) return
     searchedRef.current = normalized
     Analytics.capture(Analytics.EVENTS.EntitySearchPerformed, {
@@ -205,7 +210,7 @@ export function useLandingSearch({
       results_count: results.length,
       has_results: results.length > 0,
     })
-  }, [isCurrent, normalized, results])
+  }, [isCurrent, source, normalized, results])
 
   const open = useCallback(() => setIsOpen(true), [])
 
@@ -224,7 +229,11 @@ export function useLandingSearch({
       const entity = results[index]
       if (!entity) return
 
-      Analytics.capture(Analytics.EVENTS.EntitySearchSelected, { cui: entity.cui })
+      // Same reason as above: a selection from a fabricated list is not a
+      // selection anyone made from the catalogue.
+      if (source === 'live') {
+        Analytics.capture(Analytics.EVENTS.EntitySearchSelected, { cui: entity.cui })
+      }
 
       if (selectionBehavior !== 'callback-only' && !options?.skipNavigate) {
         const destination = buildEntitySelectionPath(
@@ -238,7 +247,7 @@ export function useLandingSearch({
       close()
       onSelect?.(entity)
     },
-    [results, selectionBehavior, navigate, currentSearch, close, onSelect],
+    [results, source, selectionBehavior, navigate, currentSearch, close, onSelect],
   )
 
   const onKeyDown = useCallback(

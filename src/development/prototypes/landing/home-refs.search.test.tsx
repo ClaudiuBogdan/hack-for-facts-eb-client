@@ -63,12 +63,18 @@ function setup() {
   return { user, input: screen.getByRole('combobox') }
 }
 
-/** Types and waits for the listbox to arrive. */
+/**
+ * Types and waits for rows.
+ *
+ * Waiting for the listbox is not enough: the listbox *is* the panel, so it
+ * exists from the first keystroke, through `pending` and `loading`. Waiting on
+ * options is what waits for the request.
+ */
 async function typeAndWait(user: ReturnType<typeof userEvent.setup>, term: string) {
   const input = screen.getByRole('combobox')
   await user.click(input)
   await user.type(input, term)
-  await waitFor(() => expect(screen.getByRole('listbox')).toBeInTheDocument())
+  await waitFor(() => expect(screen.getAllByRole('option').length).toBeGreaterThan(0))
   return input
 }
 
@@ -264,6 +270,22 @@ describe('LandingSearch', () => {
       const active = screen.getAllByRole('option')[0]
       expect(active).toHaveAttribute('aria-selected', 'true')
       expect(input).toHaveAttribute('aria-activedescendant', active.id)
+    })
+
+    it('names a popup that exists even when there is no list to show', async () => {
+      const { user, input } = setup()
+
+      await user.click(input)
+      await user.type(input, 'Ia')
+
+      // 'short' draws a message, not rows. The field still claims to be
+      // expanded, so aria-controls has to resolve to something — otherwise a
+      // screen-reader user is told a popup opened and given no way to reach it.
+      expect(input).toHaveAttribute('aria-expanded', 'true')
+      const controlled = document.getElementById(input.getAttribute('aria-controls') ?? '')
+      expect(controlled).toBeInTheDocument()
+      expect(controlled).toHaveAttribute('role', 'listbox')
+      expect(screen.queryAllByRole('option')).toHaveLength(0)
     })
 
     it('controls the listbox it names', async () => {

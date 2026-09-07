@@ -134,7 +134,7 @@ function ResultRow({
   const place = placeLine(entity)
 
   return (
-    <li role="option" id={id} aria-selected={isActive} data-active={isActive || undefined}>
+    <div role="option" id={id} aria-selected={isActive} data-active={isActive || undefined}>
       <Link
         to={destination as '/'}
         preload="intent"
@@ -172,7 +172,7 @@ function ResultRow({
           className="shrink-0 font-mono text-xs tabular-nums text-muted-foreground"
         />
       </Link>
-    </li>
+    </div>
   )
 }
 
@@ -183,9 +183,9 @@ function Message({ children }: { readonly children: React.ReactNode }) {
 
 function Skeleton() {
   return (
-    <ul aria-hidden="true">
+    <div aria-hidden="true">
       {Array.from({ length: SKELETON_ROWS }, (_, index) => (
-        <li key={index} className="flex items-baseline justify-between gap-3 border-b px-4 py-2.5">
+        <div key={index} className="flex items-baseline justify-between gap-3 border-b px-4 py-2.5">
           <span className="min-w-0 flex-1 space-y-1.5">
             {/* Widths vary per row so the placeholder reads as names of
                 different lengths rather than as a loading graphic. */}
@@ -196,9 +196,9 @@ function Skeleton() {
             <span className="block h-2.5 w-1/3 rounded-sm bg-muted/60" />
           </span>
           <span className="h-3 w-14 shrink-0 rounded-sm bg-muted/60" />
-        </li>
+        </div>
       ))}
-    </ul>
+    </div>
   )
 }
 
@@ -285,7 +285,7 @@ export function LandingSearch({
   const modifier = useModifierKey()
   const { containerRef, onBlur } = useGuardedBlur<HTMLDivElement>(close)
   const inputRef = useRef<HTMLInputElement>(null)
-  const listRef = useRef<HTMLUListElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
 
   // The list caps at 65vh, so past the sixth row an arrow key moves a highlight
   // that is no longer on screen. `nearest` scrolls only when it has to, which
@@ -386,7 +386,17 @@ export function LandingSearch({
       </p>
 
       {isDropdownOpen ? (
+        // The listbox is the panel, not the list inside it. `aria-controls`
+        // has to name an element that exists, and four of the seven states
+        // draw a message rather than a list — so pinning the role to the `ul`
+        // left the field pointing at a missing id whenever it was not showing
+        // results, which is exactly when a screen-reader user most needs the
+        // popup to be findable. Options are `div`s for the same reason: a
+        // `ul` between the listbox and its options is not a valid child.
         <div
+          id={listboxId}
+          role="listbox"
+          aria-busy={isBusy}
           className={cn(
             'absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-lg border bg-card shadow-md',
             'motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-top-1 motion-safe:duration-150',
@@ -417,7 +427,6 @@ export function LandingSearch({
               status={status}
               query={term.trim()}
               id={id}
-              listboxId={listboxId}
               listRef={listRef}
               activeIndex={activeIndex}
               selectionBehavior={selectionBehavior}
@@ -438,7 +447,6 @@ function SearchStatusView({
   status,
   query,
   id,
-  listboxId,
   listRef,
   activeIndex,
   selectionBehavior,
@@ -447,8 +455,7 @@ function SearchStatusView({
   readonly status: SearchStatus
   readonly query: string
   readonly id: string
-  readonly listboxId: string
-  readonly listRef: React.RefObject<HTMLUListElement | null>
+  readonly listRef: React.RefObject<HTMLDivElement | null>
   readonly activeIndex: number
   readonly selectionBehavior: EntitySelectionBehavior
   readonly onSelect: (index: number, options?: { readonly skipNavigate?: boolean }) => void
@@ -473,11 +480,8 @@ function SearchStatusView({
 
     case 'results':
       return (
-        <ul
+        <div
           ref={listRef}
-          id={listboxId}
-          role="listbox"
-          aria-busy={status.stale}
           // Dimmed rather than emptied while the next term is in flight. The
           // list stays legible and in place, so the reader can keep reading a
           // row they were already looking at.
@@ -503,7 +507,7 @@ function SearchStatusView({
               }}
             />
           ))}
-        </ul>
+        </div>
       )
 
     case 'empty':

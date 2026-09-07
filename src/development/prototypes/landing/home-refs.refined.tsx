@@ -244,11 +244,13 @@ function CornerTicks() {
  * given the brand blue so the frame closes on a deliberate mark rather than
  * trailing off.
  *
- * Rendered by the band *below* the hero rather than by the hero itself. The
- * hero clips its own overflow to hold the margin field, so a cross centred on
- * its bottom edge would lose its lower half; anchored to the top edge of the
- * next band it lands on the same point with nothing to clip it. Both frames are
- * the same width, so the two corners coincide exactly.
+ * Rendered by the band *below* the hero rather than by the hero itself. That
+ * began as a workaround — the hero used to clip its overflow, so a cross
+ * centred on its bottom edge lost its lower half — and the clip is gone now,
+ * removed so the search dropdown could extend past the section. The mark stays
+ * here anyway: both frames are the same width, so the two corners coincide
+ * exactly, and owning the mark from the band it opens is the more honest
+ * arrangement of the two.
  */
 function CruxMarks() {
   // Centred on where the lines actually cross, which is half a pixel off the
