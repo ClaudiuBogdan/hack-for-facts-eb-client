@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+import type { RefObject } from 'react'
 import cloudsFar from '@/assets/images/landing-footer-clouds-far.webp'
 import cloudsFront from '@/assets/images/landing-footer-clouds-front.webp'
 import cloudsNear from '@/assets/images/landing-footer-clouds-near.webp'
@@ -7,8 +9,9 @@ import range from '@/assets/images/landing-footer-range.webp'
  * A drifting mountain horizon behind the footer.
  *
  * Four layers on one rule: everything repeats horizontally for ever, and the
- * only thing that separates them is how fast they move. The range does not move
- * at all, which is what makes it read as far away and fixed. Two cloud layers
+ * only thing that separates them is how fast they move. The range does not
+ * drift at all, and cannot be dragged either, which is what makes it read as
+ * far away and fixed: it is the thing the clouds are measured against. Two cloud layers
  * pass *behind* it, nested among the peaks, and one passes *in front*, across
  * the slopes — and that one does most of the work. Clouds behind a mountain
  * only say the mountain is nearer than the sky, which the eye assumed anyway;
@@ -45,12 +48,21 @@ import range from '@/assets/images/landing-footer-range.webp'
  * column in the source — so the cuts are at the three thinnest columns, which
  * carry 7, 12 and 27 covered pixels between them, and each cut edge is
  * feathered over 8px so what is severed reads as haze rather than as a tear.
- * The pieces are then laid out three times at different scales and in different
- * orders, which is what stops the layers ever settling into a pattern as they
- * slide past each other. The front strip takes only the two big banks, at 0.9
- * and 1580px apart in a 2900px tile — 20% covered, against roughly two thirds
- * for the layers behind. Every strip keeps transparent margins at both ends, so
- * none of them needs blending at all: nothing crosses the join.
+ * The pieces are then laid out three times, and *every placement has its own
+ * scale and its own handedness* — 0.40 to 1.00 across the twelve of them, half
+ * of them mirrored. Dealing the same four shapes out at one scale per layer was
+ * the first attempt and it read as four shapes repeating, because that is what
+ * it was: the tile hides a repeat, but it cannot hide a silhouette you have
+ * already seen at that size. A mirrored cloud at 0.42 is a different cloud.
+ *
+ * Sizes also carry depth within a layer, not only between layers. The front
+ * strip stays the sparsest — 20% covered against about 28% behind — because a
+ * cloud near enough to cross the summits is one you see one of at a time.
+ *
+ * Every strip keeps transparent margins at both ends, so none of them needs
+ * blending at all: nothing crosses the join. Scaled down with Lanczos rather
+ * than nearest, since CSS shrinks them again and two nearest passes turn a soft
+ * cloud edge into a stair.
  *
  * Encoded lossy at q88, which leaves alpha *exactly* intact — max error 0 —
  * and costs a mean of 1.8 to 2.6 levels of RGB. That matters more than it
@@ -130,7 +142,17 @@ const CSS = `
   right: 0;
   bottom: 0;
   height: calc(${SCENE_PX}px * var(--tpz-scene-scale));
-  pointer-events: none;
+  /*
+   * The one thing on this page you can put your hands on. It sits under the
+   * footer's own text, which carries 'z-10' and takes its own clicks, so this
+   * only ever catches the sky between the links.
+   *
+   * 'pan-y' rather than 'none': a horizontal drag here is ours, a vertical one
+   * still scrolls the page. Without it a thumb on the vista traps the reader at
+   * the bottom of the document.
+   */
+  touch-action: pan-y;
+  user-select: none;
   /* The layers are wider than the footer by one tile so they have somewhere to
      travel from. Without this they hang off the right edge and widen the page. */
   overflow: hidden;
@@ -145,9 +167,20 @@ const CSS = `
  * amount of colour that makes them exist: nothing at the top, a pale blue by
  * the time it reaches the ridge line, and it never touches the text above.
  */
+/* Only over a cloud. The cursor is the only affordance a decorative thing gets,
+   and one that promises a grab over empty sky is worse than none. */
+.tpz-scene.is-over-cloud {
+  cursor: grab;
+}
+
+.tpz-scene.is-grabbed {
+  cursor: grabbing;
+}
+
 .tpz-scene-sky {
   position: absolute;
   inset: 0;
+  pointer-events: none;
   background: linear-gradient(
     to bottom,
     rgba(203, 220, 238, 0) 0%,
@@ -176,11 +209,31 @@ const CSS = `
   left: 0;
   background-repeat: repeat-x;
   background-position: left bottom;
-  /* Pixel art, so it is scaled by whole pixels rather than resampled — the
-     ridge line and the cloud edges are the whole style, and bilinear smoothing
-     turns both into mush at anything other than 1:1. */
+  pointer-events: none;
+  /*
+   * 'translate' as well as 'transform', and they are doing different jobs.
+   *
+   * The drift is a CSS animation on 'transform'. The drag is JavaScript writing
+   * 'translate'. They are separate properties that compose — translate applies
+   * before transform — so a shove can be added to a running animation without
+   * either one having to know about the other, and letting go leaves the
+   * animation exactly where it was rather than restarting it.
+   */
+  will-change: transform, translate;
+}
+
+/*
+ * Only the range is drawn by whole pixels.
+ *
+ * It is rendered at 1795 of its own 1952, which is near enough 1:1 that
+ * nearest-neighbour keeps the ridge crisp — and the ridge line is the whole
+ * style. The cloud strips are scaled down much harder, 0.56 to 0.69, and
+ * nearest-neighbour on a downscale does not preserve pixels, it throws them
+ * away: the dropped column changes as the layer drifts, so the edges crawl.
+ * Smoothing is the right answer for anything shrinking.
+ */
+.tpz-scene-range {
   image-rendering: pixelated;
-  will-change: transform;
 }
 
 /*
@@ -301,6 +354,237 @@ const CSS = `
 
 export function FooterSceneStyles() {
   return <style>{CSS}</style>
+}
+
+/**
+ * The cloud layers you can take hold of, nearest first, with the strip each one
+ * is drawn from.
+ *
+ * The range is not here on purpose. It is the horizon — the thing the clouds
+ * are measured against — and a horizon you can shove is not one you can read
+ * distance from. It also has no gaps, so "grab the cloud under the pointer"
+ * would always end at the range and nothing else would ever be reachable.
+ */
+const GRABBABLE = [
+  { selector: '.tpz-scene-front', src: cloudsFront },
+  { selector: '.tpz-scene-near', src: cloudsNear },
+  { selector: '.tpz-scene-far', src: cloudsFar },
+] as const
+
+/** Alpha above which a pixel of the strip counts as cloud rather than sky. */
+const CLOUD_ALPHA = 40
+
+/** Width the alpha map is sampled at. Enough to tell one cloud from the gap. */
+const ALPHA_SAMPLES = 512
+
+/**
+ * Velocity left per frame once the reader lets go.
+ *
+ * The clouds do not spring back — where they end up is where they stay, which
+ * is free because the strips repeat for ever. What decays is the *speed*, from
+ * whatever the throw was down to the drift the CSS animation is already running
+ * underneath. So letting go does not stop the sky, it hands it back.
+ */
+const THROW_DECAY = 0.94
+
+/** Below this the throw is no longer worth a frame. */
+const THROW_FLOOR_PX = 0.12
+
+type Grabbable = {
+  readonly element: HTMLElement
+  /** Alpha of the strip, downsampled, so a pointer can be tested against it. */
+  readonly alpha: { readonly w: number; readonly h: number; readonly data: Uint8Array }
+  offset: number
+  velocity: number
+}
+
+/**
+ * Reads one layer's silhouette into an array the pointer can be tested against.
+ *
+ * Only the alpha channel, and only at 512 wide: the question is "is there a
+ * cloud here", which the shape answers and the colour does not. A full-size RGBA
+ * copy of three strips would be about nine megabytes to answer it.
+ */
+async function loadAlpha(src: string) {
+  const image = new Image()
+  image.src = src
+  await image.decode()
+  const w = Math.min(ALPHA_SAMPLES, image.naturalWidth)
+  const h = Math.max(1, Math.round((image.naturalHeight * w) / image.naturalWidth))
+  const canvas = new OffscreenCanvas(w, h)
+  const context = canvas.getContext('2d', { willReadFrequently: true })
+  if (!context) return null
+  context.drawImage(image, 0, 0, w, h)
+  const rgba = context.getImageData(0, 0, w, h).data
+  const data = new Uint8Array(w * h)
+  for (let i = 0; i < data.length; i += 1) data[i] = rgba[i * 4 + 3]
+  return { w, h, data }
+}
+
+/**
+ * Lets the reader take hold of one cloud and throw it.
+ *
+ * One cloud, not the sky: the layer that moves is the one with something under
+ * the pointer, tested against its own silhouette rather than its bounding box —
+ * which for a full-width repeating strip would be the whole footer and would
+ * mean the front layer always won. Grab a gap and nothing happens, and the
+ * cursor says so before you press.
+ *
+ * The drift stays a CSS animation throughout. This never pauses it, never reads
+ * its progress and never restarts it: it writes `translate`, the drift owns
+ * `transform`, and the browser composes the two. That is the whole reason a
+ * throw can decay into the ambient drift without a seam — there is nothing to
+ * blend, because the drift never stopped.
+ */
+export function useFooterScene(rootRef: RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const root = rootRef.current
+    if (!root) return
+    const scene = root.querySelector<HTMLElement>('.tpz-scene')
+    if (!scene) return
+
+    let live = true
+    /** Nearest first, so the topmost cloud under the pointer wins. */
+    const layers: Grabbable[] = []
+    let dragging: Grabbable | null = null
+    let lastX = 0
+    /** Movement seen since the last frame, so the writes stay one per frame. */
+    let pending = 0
+    let frame = 0
+
+    /**
+     * Which layer, if any, has a cloud under this point.
+     *
+     * `getBoundingClientRect` already carries the drift transform and the
+     * layer's own offset, so the pointer maps into the strip without either
+     * having to be tracked: x within the element, wrapped by the tile width,
+     * scaled into the alpha map.
+     */
+    const layerAt = (clientX: number, clientY: number) => {
+      for (const layer of layers) {
+        const rect = layer.element.getBoundingClientRect()
+        const y = clientY - rect.top
+        if (y < 0 || y >= rect.height) continue
+        const tile = Number.parseFloat(getComputedStyle(layer.element).backgroundSize)
+        if (!Number.isFinite(tile) || tile <= 0) continue
+        const x = clientX - rect.left
+        const within = ((x % tile) + tile) % tile
+        const sx = Math.min(layer.alpha.w - 1, Math.floor((within / tile) * layer.alpha.w))
+        const sy = Math.min(layer.alpha.h - 1, Math.floor((y / rect.height) * layer.alpha.h))
+        if (layer.alpha.data[sy * layer.alpha.w + sx] > CLOUD_ALPHA) return layer
+      }
+      return null
+    }
+
+    const write = (layer: Grabbable, dx: number) => {
+      layer.offset += dx
+      layer.element.style.translate = `${layer.offset.toFixed(1)}px`
+    }
+
+    const step = () => {
+      frame = 0
+      let busy = false
+      if (dragging) {
+        if (pending !== 0) {
+          write(dragging, pending)
+          pending = 0
+        }
+        busy = true
+      }
+      // Every layer decays, not just the one in hand: a cloud thrown a moment
+      // ago keeps going while the reader takes hold of another.
+      for (const layer of layers) {
+        if (layer === dragging || layer.velocity === 0) continue
+        layer.velocity *= THROW_DECAY
+        if (Math.abs(layer.velocity) < THROW_FLOOR_PX) {
+          layer.velocity = 0
+          continue
+        }
+        write(layer, layer.velocity)
+        busy = true
+      }
+      if (busy) frame = requestAnimationFrame(step)
+    }
+
+    const schedule = () => {
+      if (frame === 0) frame = requestAnimationFrame(step)
+    }
+
+    const onDown = (event: PointerEvent) => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return
+      const layer = layerAt(event.clientX, event.clientY)
+      if (!layer) return
+      dragging = layer
+      layer.velocity = 0
+      lastX = event.clientX
+      pending = 0
+      scene.setPointerCapture(event.pointerId)
+      scene.classList.add('is-grabbed')
+      schedule()
+    }
+
+    const onMove = (event: PointerEvent) => {
+      if (!dragging) {
+        // The cursor is the only affordance a decorative thing gets, so it has
+        // to be honest about where the clouds actually are.
+        scene.classList.toggle('is-over-cloud', layerAt(event.clientX, event.clientY) !== null)
+        return
+      }
+      const dx = event.clientX - lastX
+      lastX = event.clientX
+      pending += dx
+      // Exponentially smoothed, so the throw follows the gesture rather than
+      // whichever single event happened to land last before the finger lifted.
+      dragging.velocity = dragging.velocity * 0.7 + dx * 0.3
+      schedule()
+    }
+
+    const onUp = (event: PointerEvent) => {
+      if (!dragging) return
+      if (pending !== 0) {
+        write(dragging, pending)
+        pending = 0
+      }
+      dragging = null
+      scene.classList.remove('is-grabbed')
+      if (scene.hasPointerCapture(event.pointerId)) {
+        scene.releasePointerCapture(event.pointerId)
+      }
+      schedule()
+    }
+
+    void Promise.all(
+      GRABBABLE.map(async ({ selector, src }) => {
+        const element = scene.querySelector<HTMLElement>(selector)
+        if (!element) return
+        const alpha = await loadAlpha(src)
+        if (!alpha || !live) return
+        layers.push({ element, alpha, offset: 0, velocity: 0 })
+      }),
+    ).then(() => {
+      if (!live) return
+      // Restored to the declared order: `Promise.all` settles in whatever order
+      // the decodes finish, and this list is searched nearest-first.
+      layers.sort(
+        (a, b) =>
+          GRABBABLE.findIndex((g) => a.element.matches(g.selector)) -
+          GRABBABLE.findIndex((g) => b.element.matches(g.selector)),
+      )
+      scene.addEventListener('pointerdown', onDown)
+      scene.addEventListener('pointermove', onMove)
+      scene.addEventListener('pointerup', onUp)
+      scene.addEventListener('pointercancel', onUp)
+    })
+
+    return () => {
+      live = false
+      scene.removeEventListener('pointerdown', onDown)
+      scene.removeEventListener('pointermove', onMove)
+      scene.removeEventListener('pointerup', onUp)
+      scene.removeEventListener('pointercancel', onUp)
+      if (frame) cancelAnimationFrame(frame)
+    }
+  }, [rootRef])
 }
 
 /**

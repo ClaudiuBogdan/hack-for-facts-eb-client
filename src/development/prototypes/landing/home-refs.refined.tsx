@@ -22,7 +22,12 @@ import { NATIONAL_FACTS } from './home-refs.national-facts'
 import { PixelField } from './home-refs.pixel-art'
 import { FIELD_HOST_CLASS, FieldAnimationStyles } from './home-refs.field-animation'
 import { useFieldMotion } from './home-refs.field-motion'
-import { FOOTER_SCENE_CLEAR_PX, FooterScene, FooterSceneStyles } from './home-refs.footer-scene'
+import {
+  FOOTER_SCENE_CLEAR_PX,
+  FooterScene,
+  FooterSceneStyles,
+  useFooterScene,
+} from './home-refs.footer-scene'
 import { LightMaterialStyles } from './home-refs.light-material'
 import {
   SECTION_LIGHT_ATTR,
@@ -629,6 +634,7 @@ function RefinedLanding() {
   // is the failure this is built to avoid. The hero keeps its own entrance.
   useRevealOnView(rootRef, startArrivalEffects)
   useSectionLight(rootRef)
+  useFooterScene(rootRef)
   // Module state outlives the component, so an unmount mid-flight would leave
   // both loops ticking against nodes that are no longer in the document.
   useEffect(() => () => {
@@ -932,13 +938,19 @@ function RefinedLanding() {
           harness, not the design. */}
       <footer className="relative overflow-hidden border-t">
         <FooterScene />
-        <Frame className="relative z-10 pt-14">
+        <Frame className="pointer-events-none relative z-10 pt-14">
           {/* Padding rather than a height, so the footer is as tall as its own
               text plus room for the vista. The figure comes from the scene, so
               the two cannot drift apart: the text stops above the highest
-              cloud, and the peaks rise behind it. */}
+              cloud, and the peaks rise behind it.
+
+              The frame does not take pointer events and its two content blocks
+              do. Its box covers the whole footer, padding included, so as a
+              `z-10` positioned element it swallowed every click meant for the
+              sky underneath — the clouds could not be grabbed anywhere the
+              padding reached, which was everywhere. */}
           <div style={{ paddingBottom: FOOTER_SCENE_CLEAR_PX }}>
-            <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="pointer-events-auto grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
               <div className="lg:col-span-2">
                 <div className="flex items-center gap-2">
                   <img src={logo} alt="" className="size-5 rounded-sm" />
@@ -971,7 +983,7 @@ function RefinedLanding() {
                 </nav>
               ))}
             </div>
-            <div className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t pt-5">
+            <div className="pointer-events-auto mt-12 flex flex-wrap items-center justify-between gap-3 border-t pt-5">
               <MonoLabel className="text-muted-foreground/70">
                 © {new Date().getFullYear()} Transparenta.eu
               </MonoLabel>
