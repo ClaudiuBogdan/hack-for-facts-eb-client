@@ -1,17 +1,21 @@
-import { useEffect, useRef, useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { useEffect, useRef } from 'react'
 import { Loader2, Search, X } from 'lucide-react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover'
-import {
-  buildEntitySelectionPath,
-  type EntitySelectionBehavior,
-} from '@/lib/entity-navigation'
+import type { EntitySelectionBehavior } from '@/lib/entity-navigation'
 import type { EntitySearchNode } from '@/schemas/entities'
 import { MonoLabel } from './home-refs.mono-label'
-import { highlightSegments } from './home-refs.search-highlight'
+import {
+  announcement,
+  Message,
+  ResultRow,
+  shortHint,
+  Skeleton,
+  useModifierKey,
+  usePrefersReducedMotion,
+} from './home-refs.search-parts'
 import { MIN_QUERY_CHARS, useLandingSearch, type SearchStatus } from './home-refs.search-state'
 
 /**
@@ -63,231 +67,6 @@ import { MIN_QUERY_CHARS, useLandingSearch, type SearchStatus } from './home-ref
  * motion is honoured with an inline `animation: none`, which is the only thing
  * that outranks the shared component's own rule.
  */
-
-/** Rows shown while a request is out, matching the height of a real row. */
-const SKELETON_ROWS = 3
-
-/**
- * The place line under a name: locality, then county.
- *
- * Two shapes have to survive this. The API sends a bare county (`Cluj`), which
- * needs the prefix. `PREDEFINED_ENTITIES` stores some already prefixed
- * (`Jud. Cluj`) and some not (`București`). Prefixing unconditionally — as the
- * shipped component does — renders `Jud. Jud. Cluj` on the second shape.
- *
- * The redundancy is the more interesting half. A municipality is usually the
- * seat of the county it names, so the obvious formatting produces
- * `Sibiu · Jud. Sibiu` and, for the capital, `București · Jud. București` —
- * which is not merely repetitive but wrong, since Bucharest is not a county.
- * Both disappear under one rule: when the county *is* the locality, there is no
- * second fact to state, so only the locality is shown.
- */
-export function placeLine(entity: EntitySearchNode): string {
-  const locality = entity.uat?.name?.trim() ?? ''
-  const bareCounty = (entity.uat?.county_name?.trim() ?? '').replace(/^jud\.?\s+/i, '')
-
-  if (!bareCounty || bareCounty.toLocaleLowerCase('ro') === locality.toLocaleLowerCase('ro')) {
-    return locality
-  }
-
-  return [locality, `Jud. ${bareCounty}`].filter(Boolean).join(' · ')
-}
-
-/** Marked-up name, county and CUI. Marks come from the folded matcher. */
-function Highlighted({
-  text,
-  query,
-  className,
-}: {
-  readonly text: string
-  readonly query: string
-  readonly className?: string
-}) {
-  const segments = highlightSegments(text, query)
-
-  return (
-    <span className={className}>
-      {segments.map((segment, index) =>
-        segment.match ? (
-          // `mark` rather than a styled span: the semantics are exactly right,
-          // and it is what a screen reader will describe as relevant.
-          <mark
-            key={index}
-            className="bg-primary/15 text-inherit underline decoration-primary/40 underline-offset-2"
-          >
-            {segment.text}
-          </mark>
-        ) : (
-          <span key={index}>{segment.text}</span>
-        ),
-      )}
-    </span>
-  )
-}
-
-function ResultRow({
-  entity,
-  query,
-  id,
-  isActive,
-  selectionBehavior,
-  onSelect,
-}: {
-  readonly entity: EntitySearchNode
-  readonly query: string
-  readonly id: string
-  readonly isActive: boolean
-  readonly selectionBehavior: EntitySelectionBehavior
-  readonly onSelect: (event: React.MouseEvent<HTMLAnchorElement>) => void
-}) {
-  const destination = buildEntitySelectionPath(
-    { cui: entity.cui, entityType: entity.entity_type, isUat: entity.is_uat },
-    selectionBehavior,
-  )
-  const place = placeLine(entity)
-
-  return (
-    <div role="option" id={id} aria-selected={isActive} data-active={isActive || undefined}>
-      <Link
-        to={destination as '/'}
-        preload="intent"
-        onClick={onSelect}
-        tabIndex={-1}
-        className={cn(
-          // The row shape is the panel's row shape: name over a quiet subline,
-          // tabular CUI right-aligned. Same grid, so the dropdown reads as the
-          // panel answering rather than as a layer over it.
-          'flex items-baseline justify-between gap-3 border-b px-4 py-2.5 last:border-b-0',
-          'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
-          isActive ? 'bg-muted' : 'hover:bg-muted/50',
-        )}
-      >
-        <span className="min-w-0">
-          <Highlighted
-            text={entity.name}
-            query={query}
-            className={cn(
-              'block truncate text-sm font-medium',
-              isActive ? 'text-primary' : 'text-card-foreground',
-            )}
-          />
-          {place ? (
-            <Highlighted
-              text={place}
-              query={query}
-              className="block truncate text-xs text-muted-foreground"
-            />
-          ) : null}
-        </span>
-        <Highlighted
-          text={entity.cui}
-          query={query}
-          className="shrink-0 font-mono text-xs tabular-nums text-muted-foreground"
-        />
-      </Link>
-    </div>
-  )
-}
-
-/** A quiet single line, for every state that is not a list. */
-function Message({ children }: { readonly children: React.ReactNode }) {
-  return <p className="px-4 py-6 text-center text-sm text-muted-foreground">{children}</p>
-}
-
-function Skeleton() {
-  return (
-    <div aria-hidden="true">
-      {Array.from({ length: SKELETON_ROWS }, (_, index) => (
-        <div key={index} className="flex items-baseline justify-between gap-3 border-b px-4 py-2.5">
-          <span className="min-w-0 flex-1 space-y-1.5">
-            {/* Widths vary per row so the placeholder reads as names of
-                different lengths rather than as a loading graphic. */}
-            <span
-              className="block h-3.5 rounded-sm bg-muted"
-              style={{ width: `${68 - index * 14}%` }}
-            />
-            <span className="block h-2.5 w-1/3 rounded-sm bg-muted/60" />
-          </span>
-          <span className="h-3 w-14 shrink-0 rounded-sm bg-muted/60" />
-        </div>
-      ))}
-    </div>
-  )
-}
-
-/**
- * The modifier key this reader actually presses.
- *
- * `mod+k` binds to Cmd on macOS and Ctrl everywhere else, so a hardcoded ⌘ is
- * wrong for most readers. It cannot be resolved during render either: the
- * server has no platform to read, and returning a different glyph on the client
- * than the one in the SSR HTML is a hydration mismatch. So it starts as the
- * server's guess and is corrected in an effect, after hydration has matched.
- */
-function useModifierKey() {
-  const [label, setLabel] = useState('⌘')
-
-  useEffect(() => {
-    const isApple = /Mac|iPhone|iPad|iPod/i.test(navigator.userAgent)
-    if (!isApple) setLabel('Ctrl')
-  }, [])
-
-  return label
-}
-
-/**
- * Whether this reader has asked for less motion.
- *
- * Needed as a value rather than as a `motion-safe:` class because the animation
- * is not ours: it comes from the shared `PopoverContent`, whose
- * `data-[state=open]:animate-in` is a later rule than any `motion-reduce:`
- * utility added beside it, so the class-level guard silently loses the cascade —
- * measured, not assumed. An inline `animation: none` outranks both.
- *
- * Starts false so the server and the first client render agree; the effect
- * corrects it before anything has had a chance to animate.
- */
-function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(false)
-
-  useEffect(() => {
-    const query = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const sync = () => setReduced(query.matches)
-    sync()
-    query.addEventListener('change', sync)
-    return () => query.removeEventListener('change', sync)
-  }, [])
-
-  return reduced
-}
-
-/** Romanian counts the noun, so the hint cannot be assembled from a number. */
-function shortHint(remaining: number) {
-  return remaining === 1
-    ? 'Încă un caracter pentru a căuta.'
-    : `Încă ${remaining} caractere pentru a căuta.`
-}
-
-/** What a screen reader is told when the list changes. Kept out of the visual. */
-function announcement(status: SearchStatus) {
-  switch (status.kind) {
-    case 'results': {
-      if (status.stale) return 'Se actualizează rezultatele.'
-      const count = `${status.results.length} ${status.results.length === 1 ? 'rezultat' : 'rezultate'}.`
-      // The caveat is spoken too. A label only a sighted reader gets is not a
-      // label; it is decoration that happens to be true.
-      return status.source === 'local' ? `${count} Date locale, API indisponibil.` : count
-    }
-    case 'empty':
-      return 'Niciun rezultat.'
-    case 'error':
-      return 'Căutarea nu a răspuns.'
-    case 'loading':
-      return 'Se caută.'
-    default:
-      return ''
-  }
-}
 
 export function LandingSearch({
   className,

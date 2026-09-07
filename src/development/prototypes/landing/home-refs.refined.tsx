@@ -20,6 +20,9 @@ import { FIELD_HOST_CLASS, FieldAnimationStyles } from './home-refs.field-animat
 import { useFieldMotion } from './home-refs.field-motion'
 import { ScrollLight, ScrollLightStyles, useScrollLight } from './home-refs.scroll-light'
 import { LandingSearch } from './home-refs.search'
+import { LandingSearchBaseUi } from './home-refs.search-baseui'
+import { LandingSearchCmdk } from './home-refs.search-cmdk'
+import { LandingSearchDownshift } from './home-refs.search-downshift'
 import { localEntityMatches } from './home-refs.search-local'
 import { LANDING_GROUPS, visibleGroups } from './home.data'
 import type { LandingEntry, LandingGroup } from './home.data'
@@ -286,14 +289,34 @@ function CruxMarks() {
  * looking at impossible to look at. `import.meta.env.DEV` keeps it out of a
  * build, and results that come from it are labelled as such in the dropdown.
  */
-function RefinedSearch() {
+/**
+ * Which combobox implementation the page is being shown with.
+ *
+ * Four candidates, one page. They share the data layer (`useSearchResults`),
+ * the row, the marks, the header and the stand-in labelling, so the only thing
+ * varying between them is the interaction — keyboard travel, what Escape means,
+ * where the popup goes and how it scrolls. Comparing them anywhere but on the
+ * real page would change the question: the hero, the fact strip below it and
+ * the panel beside it are the constraints that make position and scroll hard.
+ */
+export type SearchImplementation = 'hand' | 'cmdk' | 'downshift' | 'baseui'
+
+const SEARCH_IMPLEMENTATIONS = {
+  hand: LandingSearch,
+  cmdk: LandingSearchCmdk,
+  downshift: LandingSearchDownshift,
+  baseui: LandingSearchBaseUi,
+} as const satisfies Record<SearchImplementation, unknown>
+
+function RefinedSearch({ search }: { readonly search: SearchImplementation }) {
   const isMobile = useIsMobile()
+  const SearchField = SEARCH_IMPLEMENTATIONS[search]
 
   return (
     // The placeholder is kept short deliberately: at 375px the field has about
     // thirty characters after the magnifier's padding, and the longer wording
     // truncated mid-word.
-    <LandingSearch
+    <SearchField
       placeholder="Caută o instituție sau CUI..."
       selectionBehavior="navigate-to-preferred-entity"
       autoFocus={!isMobile}
@@ -584,7 +607,7 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
   )
 }
 
-function RefinedLanding() {
+function RefinedLanding({ search = 'hand' }: { readonly search?: SearchImplementation }) {
   const { groups, coverage } = getPlatformCoverage()
   const heroRef = useFieldMotion()
   // The light measures the page it runs down, so it takes the root rather than
@@ -693,7 +716,7 @@ function RefinedLanding() {
                 oficiale, cu proveniența fiecărei cifre.
               </p>
               <div className="mt-6 sm:mt-7">
-                <RefinedSearch />
+                <RefinedSearch search={search} />
               </div>
               {/* Balances the column against the taller panel, and gives the
                   three heaviest surfaces a direct route out of the hero. The
@@ -855,8 +878,14 @@ function RefinedLanding() {
 }
 
 /**
- * The landing. One version now: the motion questions the variants existed to
- * answer are settled, so the page carries the intro wave, the click ripple and
- * the scroll light together rather than offering them as alternatives.
+ * The landing, once per candidate search.
+ *
+ * The page itself is settled — the motion questions its earlier variants existed
+ * to answer are all decided, and it carries the intro wave, the click ripple and
+ * the scroll light together. What is still open is the combobox underneath the
+ * hero field, so that is the only axis these four vary on.
  */
-export const LandingRefs = RefinedLanding
+export const LandingRefs = () => <RefinedLanding search="hand" />
+export const LandingRefsCmdk = () => <RefinedLanding search="cmdk" />
+export const LandingRefsDownshift = () => <RefinedLanding search="downshift" />
+export const LandingRefsBaseUi = () => <RefinedLanding search="baseui" />

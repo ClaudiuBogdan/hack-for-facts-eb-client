@@ -84,9 +84,7 @@ export const SEARCH_DEBOUNCE_MS = 250
 /** Results requested. Eight fits the dropdown without it needing to scroll. */
 export const SEARCH_LIMIT = 8
 
-type UseLandingSearchOptions = {
-  readonly onSelect?: (entity: EntitySearchNode) => void
-  readonly selectionBehavior?: EntitySelectionBehavior
+type UseSearchResultsOptions = {
   readonly debounceMs?: number
   /**
    * Consulted only when the request fails, and only if supplied.
@@ -100,23 +98,33 @@ type UseLandingSearchOptions = {
   readonly fallback?: (term: string) => readonly EntitySearchNode[]
 }
 
+type UseLandingSearchOptions = UseSearchResultsOptions & {
+  readonly onSelect?: (entity: EntitySearchNode) => void
+  readonly selectionBehavior?: EntitySelectionBehavior
+}
+
 type SearchPayload = {
   readonly source: SearchSource
   readonly nodes: readonly EntitySearchNode[]
 }
 
-export function useLandingSearch({
-  onSelect,
-  selectionBehavior = 'navigate-to-preferred-entity',
+/**
+ * The data half, on its own.
+ *
+ * Split out so the four implementations being compared can share it. Each of
+ * them owns the *interaction* — keyboard travel, what Escape means, where the
+ * popup goes — but all four must be looking at the same debounce, the same
+ * query key, the same seven states and the same stand-in labelling, or the
+ * comparison is measuring the data layer instead of the thing under test.
+ *
+ * Deliberately holds no notion of open, highlighted, or selected. Those are
+ * exactly what differs between the candidates.
+ */
+export function useSearchResults({
   debounceMs = SEARCH_DEBOUNCE_MS,
   fallback,
-}: UseLandingSearchOptions = {}) {
-  const navigate = useNavigate()
-  const currentSearch = useSearch({ strict: false }) as Record<string, unknown>
-
+}: UseSearchResultsOptions = {}) {
   const [term, setTerm] = useState('')
-  const [isOpen, setIsOpen] = useState(false)
-  const [activeIndex, setActiveIndex] = useState(-1)
 
   const trimmed = term.trim()
   const debouncedTerm = useDebouncedValue(term, debounceMs)
@@ -184,13 +192,6 @@ export function useLandingSearch({
     return normalized === trimmed && isFetching ? { kind: 'loading' } : { kind: 'pending' }
   }, [trimmed, normalized, isError, isSuccess, isFetching, results, isCurrent, source])
 
-  // A new set of results invalidates whatever was highlighted — the row under
-  // the cursor is not the row that was under it. Keyed on the array identity, so
-  // a cache hit that returns the same array leaves the highlight alone.
-  useEffect(() => {
-    setActiveIndex(-1)
-  }, [results])
-
   const reactId = useId()
   const id = useMemo(() => `landing-search-${reactId.replace(/:/g, '')}`, [reactId])
 
@@ -212,25 +213,33 @@ export function useLandingSearch({
     })
   }, [isCurrent, source, normalized, results])
 
-  const open = useCallback(() => setIsOpen(true), [])
+  return { id, term, setTerm, status, results, source, isCurrent }
+}
 
-  const close = useCallback(() => {
-    setIsOpen(false)
-    setActiveIndex(-1)
-  }, [])
+/**
+ * Turning a chosen entity into a navigation, with the stand-in rule applied.
+ *
+ * Also shared by all four. Selection is where the mock-first contract has teeth
+ * — a row from a fabricated list must not be recorded as an entity someone
+ * chose from the catalogue — and having each candidate reimplement that would
+ * be four chances to get it wrong.
+ */
+export function useEntitySelection({
+  selectionBehavior = 'navigate-to-preferred-entity',
+  onSelect,
+  source,
+}: {
+  readonly selectionBehavior?: EntitySelectionBehavior
+  readonly onSelect?: (entity: EntitySearchNode) => void
+  readonly source: SearchSource
+}) {
+  const navigate = useNavigate()
+  const currentSearch = useSearch({ strict: false }) as Record<string, unknown>
 
-  const clear = useCallback(() => {
-    setTerm('')
-    setActiveIndex(-1)
-  }, [])
-
-  const select = useCallback(
-    (index: number, options?: { readonly skipNavigate?: boolean }) => {
-      const entity = results[index]
+  return useCallback(
+    (entity: EntitySearchNode | undefined, options?: { readonly skipNavigate?: boolean }) => {
       if (!entity) return
 
-      // Same reason as above: a selection from a fabricated list is not a
-      // selection anyone made from the catalogue.
       if (source === 'live') {
         Analytics.capture(Analytics.EVENTS.EntitySearchSelected, { cui: entity.cui })
       }
@@ -243,11 +252,64 @@ export function useLandingSearch({
         navigate({ to: destination as '/', search: currentSearch as never })
       }
 
-      setTerm('')
-      close()
       onSelect?.(entity)
     },
-    [results, source, selectionBehavior, navigate, currentSearch, close, onSelect],
+    [source, selectionBehavior, navigate, currentSearch, onSelect],
+  )
+}
+
+/**
+ * The hand-rolled interaction half: open state, highlight, keyboard, selection.
+ *
+ * This is variant A of the comparison. The other three replace everything below
+ * with a library and keep `useSearchResults` above.
+ */
+export function useLandingSearch({
+  onSelect,
+  selectionBehavior = 'navigate-to-preferred-entity',
+  debounceMs = SEARCH_DEBOUNCE_MS,
+  fallback,
+}: UseLandingSearchOptions = {}) {
+  const { id, term, setTerm, status, results, source, isCurrent } = useSearchResults({
+    debounceMs,
+    fallback,
+  })
+  const commit = useEntitySelection({ selectionBehavior, onSelect, source })
+
+  const [isOpen, setIsOpen] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(-1)
+
+  // A new set of results invalidates whatever was highlighted — the row under
+  // the cursor is not the row that was under it. Keyed on the array identity, so
+  // a cache hit that returns the same array leaves the highlight alone.
+  useEffect(() => {
+    setActiveIndex(-1)
+  }, [results])
+
+  const open = useCallback(() => setIsOpen(true), [])
+
+  const close = useCallback(() => {
+    setIsOpen(false)
+    setActiveIndex(-1)
+  }, [])
+
+  const clear = useCallback(() => {
+    setTerm('')
+    setActiveIndex(-1)
+    // `setTerm` is a `useState` setter and therefore stable, but it now arrives
+    // from `useSearchResults` rather than being declared here, so the linter
+    // can no longer see that. Listing it is free and keeps the rule honest.
+  }, [setTerm])
+
+  const select = useCallback(
+    (index: number, options?: { readonly skipNavigate?: boolean }) => {
+      const entity = results[index]
+      if (!entity) return
+      commit(entity, options)
+      setTerm('')
+      close()
+    },
+    [results, commit, setTerm, close],
   )
 
   const onKeyDown = useCallback(
@@ -324,7 +386,7 @@ export function useLandingSearch({
       setActiveIndex(-1)
       open()
     },
-    [open],
+    [open, setTerm],
   )
 
   return {

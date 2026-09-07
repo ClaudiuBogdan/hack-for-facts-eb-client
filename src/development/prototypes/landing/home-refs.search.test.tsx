@@ -3,7 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient, render, screen, waitFor, within } from '@/test/test-utils'
 import type { EntitySearchNode } from '@/schemas/entities'
-import { LandingSearch, placeLine } from './home-refs.search'
+import { LandingSearch } from './home-refs.search'
+import { placeLine } from './home-refs.search-parts'
 
 /**
  * Rendered against the real hook, with only the router and the API replaced.
