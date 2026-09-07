@@ -330,6 +330,194 @@ Flat by default. Hierarchy comes from **borders and spacing, not shadows**.
   its own local style (e.g. switches, avatars).
 - PNRR uses `0` radius by design (see Colors → brutalist exception).
 
+## Motion
+
+Motion here is **arrival and orientation, never decoration**. Three things are
+allowed to move: content arriving as the reader reaches it, an indicator
+reporting where they are, and ambient scene-setting that is not keyed to
+anything they do. Nothing else moves. A page where four things animate is a page
+where the reader cannot tell which one meant something.
+
+Worked example: the landing rewrite (`src/development/prototypes/landing/`),
+where every number below was measured rather than chosen.
+
+### The three rules that are not negotiable
+
+- **The server never sends a hidden state.** Render content visible in the HTML
+  and apply the hidden state client-side, *only to elements that are off screen
+  at the time*. A reader whose JavaScript fails or is blocked must get all of the
+  words. This is not theoretical: an earlier version keyed hiding to the observer
+  margin rather than to real off-screen-ness and erased 70px of a figures strip
+  about a second after first paint, at one viewport size that the first round of
+  checking happened to miss.
+- **Any offset trigger is bounded by a clock.** If an entrance fires when a block
+  is *N* pixels past the fold, a second observer at the true viewport edge must
+  start a timer that reveals it anyway. Without it, a reader who stops scrolling
+  inside the offset band is looking at something the observer will not speak
+  about again until it moves. Bound every wait, and where two waits chain — an
+  offset clock handing over to a decode wait, say — document the *sum*, because
+  the constant nobody reads is the one that lies.
+- **Reduced motion keeps the content and drops the flourish.** Not "animate
+  faster". Under `prefers-reduced-motion: reduce` the hook must not arm at all,
+  so nothing is ever hidden even for an instant, and the CSS must independently
+  neutralise every hidden state. Check both halves agree; a rule that hides at
+  specificity (0,2,0) is not undone by one that shows at (0,1,0).
+
+### Entrance recipe
+
+The default for a block arriving on scroll. Values are the library's own
+recommendations for this pattern, confirmed against our surfaces:
+
+| Property | From → to | Notes |
+| --- | --- | --- |
+| `opacity` | `0 → 1` | always |
+| `translate` | `12–20px → 0` | 12 for text, 20 for a large image |
+| `scale` | `0.985 → 1` | optional; never below 0.98 on large artwork |
+| `filter: blur()` | `≤5px → 0` | optional, and the expensive one — see below |
+| duration | 600–820ms | text at the short end, imagery at the long |
+| easing | `cubic-bezier(0.16, 1, 0.3, 1)` | strong ease-out |
+| stagger | 70–90ms | capped by a total window (~280ms) so eight siblings do not read as a queue |
+| entrance delay | 80–180ms | so a block does not snap the instant it qualifies |
+
+Blur finishes *before* the motion does (≈620ms against 820ms). A picture still
+fractionally soft while it settles reads as out of focus rather than as
+arriving.
+
+### Trigger geometry
+
+A trigger offset is a **vertical** distance, so it must be bounded by a fraction
+of the viewport **height** — never selected by a `max-width` media query alone.
+A phone in landscape is wide and short, so a width-keyed breakpoint hands it the
+desktop constant against a viewport less than half the height it was chosen for.
+Measured, before and after clamping to 35% of viewport height:
+
+| Viewport | Picture top at arrival, before → after |
+| --- | --- |
+| 1440×900 desktop | 64% → 64% |
+| 390×844 phone portrait | 78% → 78% |
+| 844×390 phone landscape | **14% → 58%** |
+| 932×430 phone landscape | **24% → 65%** |
+| 1440×520 short desktop window | **34% → 63%** |
+
+At 14% the reader watched a blank bordered box cover most of the screen and
+*then* start arriving — the failure the offset exists to prevent, inverted.
+
+Two consequences. An `IntersectionObserver` cannot be retuned in place, so a
+changed offset means a new observer; rebuild on a debounced `resize`, not only
+on a breakpoint change. And rebuilding must **skip elements that have already
+arrived**, because iOS Safari and Chrome Android fire `resize` when the URL bar
+collapses mid-scroll — without the filter, ordinary scrolling re-hides pictures
+the reader has already seen.
+
+### Property budget
+
+- **Free:** `opacity`, `transform`, `translate`, `scale`, `rotate`. The
+  compositor interpolates these without touching the main thread.
+- **Not free:** `filter: blur()`. It can be GPU-accelerated in current browsers,
+  but the shader still runs over the whole surface every frame and cost scales
+  with **radius × area**. A picture rendering 338×423 CSS px is 1014×1268 device
+  pixels at DPR 3 — about 1.8× the desktop surface — which is why the phone gets
+  a smaller radius, not the same one. Keep radii ≤ 8px and prefer finishing the
+  blur early.
+- **`translate`, `scale` and `transform` are separate properties that compose**
+  (translate → rotate → scale → transform). That is what lets a JS drag write
+  `translate` while a CSS animation owns `transform`, with neither knowing about
+  the other. Mind the order: a `scale: -1 1` sits *outside* the transform and
+  negates its translation, so a mirrored element needs its direction flipped
+  back.
+- **Never write a custom property on `:root` during scroll.** It invalidates
+  style for everything that could read it. Measured: 25 writes over an 1800px
+  scroll took p95 frame time from 18.4ms to 48.5ms at 6× CPU throttle. Write on
+  the narrowest host that needs it, where it is free.
+- **`will-change` is not a default.** An element with a running `transform`
+  animation is already promoted, and adding it changes nothing — measured
+  identical layer counts. It *does* become load-bearing under reduced motion,
+  where the animation is `none` but JS still writes transforms; removing it there
+  dropped 16 composited layers to 11.
+
+### Ambient motion must be able to stop
+
+Anything that animates forever — a drifting background, a looping scene — has to
+be gated on an `IntersectionObserver` that pauses it when off screen. This will
+not move any frame metric and is not meant to: measured against a paused arm,
+frame median, p95 and long-animation-frame counts were identical. What it fixes
+is **idleness**. With the drift running, the compositor and Viz threads tick at
+60Hz drawing nothing; paused, the compositor logged no tasks at all in 37 of 40
+runs. Chromium already throttles to ~7Hz past about 2000px below the fold, so
+what the gate covers is the band from the fold out to ~1800px — on a long page,
+most of the scroll range.
+
+### Library or not
+
+`motion` is a dependency and its `whileInView` is the idiomatic way to do this in
+2026. Use it where an animation is genuinely stateful or needs sequencing. Do
+**not** reach for it to interpolate two compositor properties a CSS transition
+already interpolates, and be aware that it renders its `initial` state into the
+server HTML — which is the one thing the first rule above forbids.
+
+## Imagery
+
+Illustration on this system is **cut-out artwork on transparency**, never a
+photograph in a box and never a decorative gradient. Allegory generates safely;
+real institutions do not — a rendered building that is almost right undercuts the
+one thing the platform sells.
+
+### Delivery
+
+```tsx
+<picture>
+  <source type="image/avif" srcSet={artAvif} />
+  <img
+    src={artWebp}
+    alt=""
+    width={760}
+    height={1250}
+    loading="lazy"
+    decoding="async"
+    fetchPriority="low"
+  />
+</picture>
+```
+
+- **Everything that configures loading stays on the `<img>`.** `loading`,
+  `decoding`, `fetchPriority`, `width`, `height` and `alt` are the image's own
+  properties; a `<source>` has no say in them. No `<source type="image/webp">` is
+  needed — the `<img src>` *is* the fallback.
+- **Every format must be the same crop at the same pixel dimensions.** A source
+  whose intrinsic ratio differs changes the framing depending on which format the
+  reader's browser supports — a difference nobody would think to look for.
+- **AVIF is worth it at roughly a third off**, but only encoded **from the
+  original art**. Re-encoding a shipped lossy WebP compounds loss and cost 18
+  levels of alpha error in practice against 5 from the source. On cut-outs the
+  alpha channel *is* the silhouette, so keep the alpha plane at quality ~90; 80
+  saves a little and doubles the silhouette error.
+- **Never upscale.** Cap the rendered scale at or below 1 relative to the art's
+  own pixels. Chunky source pixels at 1:1 read as a low-resolution asset next to
+  crisp type; if a slot needs something bigger, use a bigger silhouette rather
+  than a magnified small one.
+
+### What is and is not true about lazy loading
+
+`loading="lazy"` is the right default and does not need replacing with an
+`IntersectionObserver`. But its threshold is generous and **images close to the
+fold loading before any scroll is correct behaviour, not a bug**: Chromium's
+look-ahead is 1250px on 4G and 3000px when the effective connection type is
+unknown — which includes localhost, because the network quality estimator does
+not sample loopback. Measure distance below the fold before concluding anything.
+
+`decoding="async"` schedules a decode; it does not promise one has happened. If
+an entrance animation can fade onto an image the browser has not finished
+reading, gate the arrival on `img.decode()` **at the moment the element is
+reached**, not at mount — a grace started at mount has already expired by the
+time anyone scrolls to a below-the-fold image. Bound the wait, and let a
+rejection release it so a broken image never holds its cell blank.
+
+One trap: `width`/`height` do **not** reserve the box when the CSS sets
+`width: 100%; height: 100%` on an absolutely-positioned image. The containing
+cell's `aspect-ratio` does that work. Write the attributes anyway — they are
+true, and they start mattering again the moment the positioning changes — but do
+not claim in a comment that they are preventing layout shift when they are not.
+
 ## Components
 
 Build on shadcn/Radix primitives in `src/components/ui/` (55 present) before
@@ -454,6 +642,14 @@ single-owner rule that applies to the data-trust components.
   for lifecycle/order.
 - Put shareable state in the URL; let the default view render with no params.
 - Reuse the data-trust components and the canonical page shell.
+- Render content visible from the server and hide it client-side only, only when
+  it is genuinely off screen.
+- Bound every offset trigger with a safety clock, and document the *sum* when two
+  waits chain.
+- Gate anything that animates forever on visibility, so the page can reach idle.
+- Ship illustration as AVIF + WebP through `<picture>`, encoded from the original
+  art, at identical crops and dimensions.
+- Settle the animations before reading any contrast result.
 
 **Don't**
 
@@ -473,6 +669,81 @@ single-owner rule that applies to the data-trust components.
 - Don't let mock data read as live evidence — `DataStatusBadge` must say `mock`.
 - Don't hardcode `ro-RO` or bypass Lingui for any user-facing string, including
   SEO/head metadata.
+- Don't ship a hidden state in the server HTML — not for text, and not via a
+  library's `initial` prop.
+- Don't select a vertical trigger distance with a `max-width` media query; a
+  landscape phone is wide and short.
+- Don't write a custom property on `:root` during scroll, and don't add
+  `will-change` next to an already-promoting animation.
+- Don't animate `filter: blur()` on a large surface, or exceed ~8px; the shader
+  cost scales with radius × area.
+- Don't upscale cut-out artwork, and don't re-encode a shipped lossy image into
+  another lossy format — go back to the original.
+- Don't pair a hard-coded background with an inherited foreground, or trust a
+  `text-*/50` caption to pass AA.
+
+## Accessibility
+
+Target **WCAG 2.2 AA**. The obligations below are the ones this system keeps
+getting wrong; the rest is the usual semantic HTML and Radix primitives that
+shadcn already gives us.
+
+### Auditing
+
+```bash
+node scripts/audit-page.mjs '<url>' --scope '[data-dev-marker]'
+```
+
+Two things that script does are the difference between a real result and a
+comforting one, and both were learned by getting it wrong first:
+
+- **Settle the animations.** axe files an element caught mid-fade as
+  `incomplete` rather than as a violation. The same page reported **3**
+  colour-contrast failures with entrances running and **21** with
+  `prefers-reduced-motion` forced. A sevenfold undercount that looks clean.
+- **Scope to the surface under test.** A prototype renders inside the real app
+  shell, so most findings belong to the sidebar and the shell footer. Of 41
+  violation nodes on the landing page, **19 were the shell** — report them
+  separately rather than dropping them or claiming them.
+
+Automated coverage is partial. Deque's own figure for axe-core is about **57%
+detection** on their dataset — not a compliance score, and no automated tool can
+determine conformance. Keyboard order, focus restoration, whether a screen
+reader's announcement makes sense, and whether an entrance is disorienting are
+outside what any of this sees.
+
+### Colour
+
+- **A hard-coded background needs a hard-coded foreground.** A button painted
+  `bg-[#3565c4]` that lets its text take the variant's foreground agrees with
+  that background in exactly one theme; in the other it resolved to `#1a1a1a`
+  and measured 3.15:1.
+- **A fraction of a colour is a fraction of its contrast.** `text-*/50` on a
+  10px caption cannot pass AA — and check the base token first, because if the
+  token at full strength is already marginal (ours measures 4.34:1 on the muted
+  card) then every step below it fails by construction and no amount of nudging
+  the opacity helps.
+- Below 18pt the requirement is **4.5:1**, not the 3:1 large-text allowance. Most
+  of our micro-labels are 10px.
+
+### Landmarks
+
+- **One navigation landmark per region, with a unique role + accessible name.**
+  Two `nav`s both named "Legal" are indistinguishable in the landmark list, which
+  is the one place landmarks are actually used. Prefer a single named `nav` with
+  headings inside over one landmark per column.
+- `display: contents` on a landmark is safe in current browsers — the role and
+  name still resolve — which makes it the right way to add a landmark without
+  disturbing a grid. Verify rather than assume; this was historically broken.
+
+### Recorded exceptions
+
+An exception is a decision, and it belongs here rather than in a silent audit
+diff. Currently: the landing page's mono captions (`text-muted-foreground/50`
+through `/70` at 10px, 21 elements, worst 1.95:1) are **knowingly below AA**. The
+judgement is that they are secondary to the information beside them. Noted
+against it: two of the twenty-one are footer column headings, which name a
+navigation group rather than decorate it.
 
 ## Data Trust & Provenance
 
@@ -534,6 +805,41 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 ## Decision Log
 
 Append-only. Newest first. Each entry: date · decision · why.
+
+- **2026-09-07 — Illustration ships as a cut-out through `<picture>`, AVIF ahead
+  of WebP, encoded from the original art.** Same crop and identical pixel
+  dimensions in every format; all loading attributes on the `<img>`; the alpha
+  plane kept at quality ~90. Measured on three statues: 404KB to 267KB, a third
+  off, with colour error within half a level of the WebP it replaces and alpha
+  error at most 5. *Why:* on a cut-out the alpha channel is the silhouette, so
+  the usual "just re-encode it" shortcut is the one thing that breaks it — AVIF
+  from the shipped lossy WebP cost 18 levels of alpha error, and dropping the
+  alpha plane to 80 doubled it for 10KB. Recorded too because a wrong crop is
+  invisible to file size and obvious to an alpha diff: one of ours disagreed with
+  the shipped file by 252 levels before we noticed the source had never been
+  cropped at all, only resized.
+
+- **2026-09-07 — Accessibility is audited with one command, animations settled
+  and the surface scoped.** `scripts/audit-page.mjs` runs axe-core in the
+  Playwright Chromium the repo already installs. *Why:* both flags exist because
+  the naive run lies. Elements caught mid-fade are filed `incomplete` rather than
+  as violations — 3 reported contrast failures became 21 once entrances were
+  settled — and a prototype rendering inside the real app shell attributes the
+  shell's problems to itself, 19 of 41 nodes in our case. The landing's mono
+  captions are a **recorded exception**, knowingly below AA, on the judgement
+  that they are secondary to the information beside them.
+
+- **2026-09-07 — Motion is arrival, orientation and ambience; nothing else
+  moves.** Entrances are CSS transitions on compositor properties, triggered by
+  one observer per surface; trigger offsets are bounded by a fraction of viewport
+  *height*; ambient animation is gated on visibility. Full contract under
+  [Motion](#motion). *Why:* three failures drove the three rules. Keying the
+  hidden state to an observer margin rather than to real off-screen-ness erased
+  70px of content a second after paint. Selecting a vertical offset by viewport
+  *width* left a landscape phone watching a blank box cover 86% of the screen
+  before it began to arrive. And a perpetual drift kept the compositor at 60Hz
+  drawing nothing, which no frame metric shows — it is an idleness cost, not a
+  frame cost, so the gate that fixes it will always look like it did nothing.
 
 - **2026-09-05 — Design variants are prototyped at `/development/*` under
   `yarn dev` only, and promoted by moving code.** Variants live in
