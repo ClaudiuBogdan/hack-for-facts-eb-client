@@ -626,7 +626,7 @@ function RefinedLanding() {
   }, [])
 
   return (
-    <div ref={rootRef} className="w-full bg-background" data-dev-marker={PROTOTYPE_MARKER}>
+    <div ref={rootRef} className="relative w-full bg-background" data-dev-marker={PROTOTYPE_MARKER}>
       <ScrollLightStyles />
       <RevealStyles />
       <SmearFilters />

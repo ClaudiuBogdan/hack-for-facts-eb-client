@@ -30,16 +30,21 @@ import type { RefObject } from 'react'
  * 3. **`will-change` is set here**, on two elements that are always moving.
  *    That is the case it exists for — unlike the ~990 field cells, where asking
  *    for that many layers would cost more than the repaint it saves.
- * 4. **Two palettes, not one.** The reference is white-hot on near-black, which
- *    on our default light theme would be a grey smear. So the light theme gets
- *    the brand navy as a solid core with a faint halo — a mark that reads as
- *    ink rather than as glow — and only the dark theme gets the luminous
- *    version. Same anatomy, different material.
+ * 4. **Two palettes, not one, and no hue in either.** White at the centre,
+ *    grey at the margins — the anatomy of a light rather than a colour laid
+ *    over one. On near-black that is the reference's own ramp. On a near-white
+ *    page it has to invert its material: white is *brighter* than the grey
+ *    frame rule, so the head reads as the rule burning through, and the grey
+ *    falloff around it is darker than the page. Bright core, dark surround,
+ *    which is what a specular highlight on paper actually looks like.
  * 5. **It rests visible.** Length and halo are driven by scroll speed, so a
  *    parked page would otherwise show nothing at all and the whole effect would
  *    be invisible until someone happened to scroll. The head keeps a floor
  *    opacity and sits on the rail as a position marker; movement adds the trail
  *    and the flare on top of it.
+ * 6. **It lives in the document, not the viewport.** See `.tpz-light` below.
+ *    This is the one thing here that is a correctness rule rather than a taste
+ *    one.
  */
 
 /** Unscaled height of the trail bar. `scaleY` works against this. */
@@ -88,7 +93,23 @@ const VELOCITY_DECAY = 0.93
 
 const CSS = `
 .tpz-light {
-  position: fixed;
+  /*
+   * Absolute inside the landing root, not fixed to the viewport — and that is
+   * load-bearing, because the rules this light rides are in the flow.
+   *
+   * A fixed host is positioned against the *visual* viewport, and anything that
+   * moves the visual viewport relative to the layout viewport moves it away
+   * from the lines underneath: macOS elastic overscroll at the end of the page,
+   * an iOS URL bar collapsing, a pinch zoom. The document slides, the light
+   * does not, and the two heads end up floating off the frame — which is
+   * exactly what rubber-banding past the footer looked like.
+   *
+   * Sharing the root's coordinate space makes that unrepresentable. The light
+   * and the rules are in one layer and move as one thing, and '--sp-y' is a
+   * document offset rather than a viewport one. It also means the light cannot
+   * leave the landing at all, because the host is bounded by it.
+   */
+  position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 20;
@@ -106,26 +127,59 @@ const CSS = `
      all, because the rise was still climbing when the fall began. */
   transition: opacity 130ms ease-out;
 
-  /* Light theme: ink, not light. The same warm hue, pushed dark enough to read
-     on a near-white page, where the luminous ramp below would vanish. */
+  /*
+   * Light theme, and the whole of it is that the *core* is the light and the
+   * grey is only its surround.
+   *
+   * The obvious thing — a dark stroke, since dark is what reads on a near-white
+   * page — gives you a pencil line that happens to move. It is also heavy: a
+   * 1px mark at 60% black running 150px down the page pulls the eye away from
+   * the text it is supposed to be accompanying. So the core is white instead,
+   * which is invisible over the page and *brighter than the frame rule it sits
+   * on* — the mark is the rule lighting up, a thing that exists only along the
+   * line and nowhere else. The grey lives in the flank around it, faint enough
+   * to read as a field rather than as a second stroke.
+   */
   --sp-trail: linear-gradient(
     to bottom,
-    rgba(194, 65, 12, 0) 0%,
-    rgba(194, 65, 12, 0.14) 25%,
-    rgba(198, 72, 16, 0.3) 50%,
-    rgba(202, 84, 22, 0.58) 70%,
-    rgba(206, 92, 26, 0.82) 85%,
-    rgba(208, 98, 30, 0.95) 94%,
-    rgb(210, 102, 32) 100%
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.22) 35%,
+    rgba(255, 255, 255, 0.52) 62%,
+    rgba(255, 255, 255, 0.85) 84%,
+    rgb(255, 255, 255) 100%
   );
-  --sp-core: rgb(198, 72, 16);
+  /* The flank. Wide, feathered, and barely there — it is what stops the white
+     core reading as a gap in the rule rather than as light on it. */
+  --sp-flank: linear-gradient(
+    to bottom,
+    rgba(88, 88, 88, 0) 0%,
+    rgba(88, 88, 88, 0.05) 35%,
+    rgba(82, 82, 82, 0.11) 62%,
+    rgba(78, 78, 78, 0.17) 84%,
+    rgba(76, 76, 76, 0.2) 100%
+  );
+  --sp-core: rgb(255, 255, 255);
+  /*
+   * White at the centre, grey at the margins, literally — and the grey is set
+   * where it is only just perceptible. A halo strong enough to notice on its
+   * own is a second mark competing with the head; this one is only there to
+   * keep the white core from floating free of the page.
+   */
   --sp-halo: radial-gradient(
     circle,
-    rgba(202, 84, 22, 0.14) 0%,
-    rgba(198, 72, 16, 0.05) 40%,
-    rgba(198, 72, 16, 0) 70%
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(96, 96, 96, 0.07) 34%,
+    rgba(96, 96, 96, 0.025) 55%,
+    rgba(96, 96, 96, 0) 72%
   );
-  --sp-rest: 0.26;
+  --sp-rest: 0.5;
+  /*
+   * How much of the resting mark the halo carries. On the light theme most of
+   * it: a white core alone on a near-white page is barely a mark, and the grey
+   * pool around it is what says something is there. On the dark theme the core
+   * does that work by itself.
+   */
+  --sp-halo-rest: 1;
 }
 
 .tpz-light.is-idle {
@@ -134,10 +188,11 @@ const CSS = `
 }
 
 /*
- * Dark theme: the reference's ramp, sampled rather than eyeballed. Walking the
- * tail's own column in the source crop gives rgb(55,37,28) at the tip through
- * (158,84,45) at the midpoint to (248,223,185) near the head, over a background
- * of luminance 23 — so the alphas here are that measured luminance normalised.
+ * Dark theme: the reference's ramp with the hue taken out of it. The alphas are
+ * still the measured ones — walking the tail's own column in the source crop
+ * gives luminance 23 at the tip through 105 at the midpoint to 230 near the
+ * head, over a background of 23 — but the chroma that carried them is gone, so
+ * what is left is a grey scale running to white.
  *
  * The shape of the ramp is the point: it stays dim for the first half and does
  * almost all of its brightening in the last 30%. A linear fade reads as a
@@ -146,22 +201,33 @@ const CSS = `
 .dark .tpz-light {
   --sp-trail: linear-gradient(
     to bottom,
-    rgba(200, 90, 40, 0) 0%,
-    rgba(214, 100, 44, 0.22) 25%,
-    rgba(226, 118, 56, 0.36) 50%,
-    rgba(240, 158, 100, 0.64) 70%,
-    rgba(250, 202, 148, 0.87) 85%,
-    rgba(255, 232, 194, 0.98) 94%,
-    rgb(255, 246, 228) 100%
+    rgba(255, 255, 255, 0) 0%,
+    rgba(190, 190, 190, 0.2) 25%,
+    rgba(210, 210, 210, 0.34) 50%,
+    rgba(232, 232, 232, 0.6) 70%,
+    rgba(246, 246, 246, 0.86) 85%,
+    rgba(253, 253, 253, 0.96) 94%,
+    rgb(255, 255, 255) 100%
   );
-  --sp-core: rgb(255, 244, 224);
+  /* The same flank, in the material of this theme: the core's own ramp at a
+     fifth of its weight, spread across nine pixels instead of one. */
+  --sp-flank: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(200, 200, 200, 0.045) 35%,
+    rgba(224, 224, 224, 0.09) 62%,
+    rgba(244, 244, 244, 0.15) 84%,
+    rgba(255, 255, 255, 0.18) 100%
+  );
+  --sp-core: rgb(255, 255, 255);
   --sp-halo: radial-gradient(
     circle,
-    rgba(240, 140, 70, 0.17) 0%,
-    rgba(226, 118, 56, 0.055) 40%,
-    rgba(226, 118, 56, 0) 70%
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(214, 214, 214, 0.03) 40%,
+    rgba(214, 214, 214, 0) 70%
   );
   --sp-rest: 0.22;
+  --sp-halo-rest: 0.22;
 }
 
 .tpz-light-rail {
@@ -176,6 +242,8 @@ const CSS = `
 
 .tpz-light-trail-v,
 .tpz-light-trail-h,
+.tpz-light-flank-v,
+.tpz-light-flank-h,
 .tpz-light-head,
 .tpz-light-halo {
   position: absolute;
@@ -188,13 +256,43 @@ const CSS = `
    head stays put while the tail lengthens behind it. 'scaleY' on a fixed box
    costs a composite; animating 'height' would cost a layout. */
 .tpz-light-trail-v,
+.tpz-light-trail-h,
+.tpz-light-flank-v,
+.tpz-light-flank-h {
+  height: ${TRAIL_BASE_PX}px;
+  transform-origin: 50% 100%;
+}
+
+.tpz-light-trail-v,
 .tpz-light-trail-h {
   width: 1px;
-  height: ${TRAIL_BASE_PX}px;
   margin-left: -0.5px;
   border-radius: 0.5px;
-  transform-origin: 50% 100%;
   background: var(--sp-trail);
+}
+
+/*
+ * The flank: the same tail, nine pixels wide and feathered to nothing at its
+ * edges, sitting behind the 1px core.
+ *
+ * This is what turns a stroke into a beam. A single hard-edged bar reads as a
+ * drawn line whatever colour it is; a bright core inside a soft field reads as
+ * something emitting, because that is the cross-section light actually has.
+ * Two elements rather than one because the falloff runs across the width while
+ * the fade runs along the length, and a background gradient only has one axis
+ * — the alternative is 'filter: drop-shadow', which would re-rasterise on every
+ * frame of every scroll as 'scaleY' changes the source it blurs.
+ *
+ * The mask is static, so it costs a mask layer once and nothing per frame.
+ */
+.tpz-light-flank-v,
+.tpz-light-flank-h {
+  width: 9px;
+  margin-left: -4.5px;
+  border-radius: 4.5px;
+  background: var(--sp-flank);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 50%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 50%, transparent 100%);
 }
 
 /*
@@ -209,11 +307,16 @@ const CSS = `
  * The vertical leg stays at the corner — no '--sp-dx' — and is what is left of
  * the tail that has not yet turned.
  */
-.tpz-light-trail-v {
+.tpz-light-trail-v,
+.tpz-light-flank-v {
   transform: translate3d(0, calc(var(--sp-y, 0px) - ${TRAIL_BASE_PX}px), 0)
     scaleY(calc(var(--sp-scale-v, 0) * var(--sp-dir, 1)));
   /* Dims as the head leaves it behind, so the corner is not left looking like a
      second head. */
+  opacity: calc(var(--sp-on, 0) * var(--sp-remnant, 1));
+}
+
+.tpz-light-flank-v {
   opacity: calc(var(--sp-on, 0) * var(--sp-remnant, 1));
 }
 
@@ -223,7 +326,8 @@ const CSS = `
  * quarter turn rather than something interpolated — there is no in-between
  * state to draw.
  */
-.tpz-light-trail-h {
+.tpz-light-trail-h,
+.tpz-light-flank-h {
   transform: translate3d(var(--sp-dx, 0px), calc(var(--sp-y, 0px) - ${TRAIL_BASE_PX}px), 0)
     rotate(var(--sp-rot-h, -90deg))
     scaleY(calc(var(--sp-scale-h, 0) * var(--sp-dir, 1)));
@@ -245,8 +349,12 @@ const CSS = `
   transform: translate3d(var(--sp-dx, 0px), var(--sp-y, 0px), 0)
     scale(calc(1 + var(--sp-flare, 0) * 0.9));
   /* Never fully off: this is the page's position marker before it is an
-     animation, so it stays on the rail when nothing is moving. */
-  opacity: min(1, calc(var(--sp-rest) + var(--sp-on, 0) * 0.6));
+     animation, so it stays on the rail when nothing is moving. Reaches a full
+     1 rather than stopping at 0.82, because the trail's last stop is opaque
+     white and anything less left the head dimmer than the pixels immediately
+     behind it — a tail with a cool tip, which is the one thing the ramp exists
+     to avoid. */
+  opacity: min(1, calc(var(--sp-rest) + var(--sp-on, 0) * 0.78));
 }
 
 /* A pre-blurred texture rather than 'filter: blur'. Blur on a moving element
@@ -261,7 +369,13 @@ const CSS = `
   background: var(--sp-halo);
   transform: translate3d(var(--sp-dx, 0px), var(--sp-y, 0px), 0)
     scale(calc(0.55 + var(--sp-flare, 0) * 0.75));
-  opacity: min(1, calc(var(--sp-rest) * 0.22 + var(--sp-on, 0) * (0.3 + var(--sp-flare, 0) * 0.7)));
+  opacity: min(
+    1,
+    calc(
+      var(--sp-rest) * var(--sp-halo-rest, 0.22) + var(--sp-on, 0) *
+        (0.3 + var(--sp-flare, 0) * 0.7)
+    )
+  );
 }
 
 /* The motion is the whole component, so reduced motion removes it rather than
@@ -278,7 +392,7 @@ export function ScrollLightStyles() {
 }
 
 type Geometry = {
-  /** Viewport x of the centre of each frame rule. */
+  /** x of the centre of each frame rule, relative to the root's left edge. */
   rails: readonly number[]
   /** Document y of every band boundary — the stops. */
   stops: readonly number[]
@@ -288,6 +402,15 @@ type Geometry = {
 
 function measure(root: HTMLElement | null): Geometry {
   if (!root) return { rails: [], stops: [], bounds: [0, 0] }
+  const rootBox = root.getBoundingClientRect()
+  /*
+   * Everything the host draws is positioned against the root, so the rails are
+   * stored relative to it. In practice the root is full-bleed and this is zero,
+   * but reading it means a root that ever gains a margin moves the light with
+   * it rather than leaving it beside the rule. Rounded, so it cannot reintroduce
+   * a fraction into the half-pixel below.
+   */
+  const originX = Math.round(rootBox.left)
   // The rule's x depends on viewport width through `max-w-6xl` and the frame's
   // padding, so it is read rather than computed.
   const frame = root.querySelector('[data-frame="hero"]')
@@ -308,15 +431,17 @@ function measure(root: HTMLElement | null): Geometry {
      * within the drawn rule. Verified by taking the intensity-weighted centroid
      * of both out of a 4x screenshot rather than by trusting the arithmetic.
      */
-    rails.push(Math.round(box.left) + 0.5, Math.round(box.right) - 0.5)
+    rails.push(Math.round(box.left) + 0.5 - originX, Math.round(box.right) - 0.5 - originX)
   }
   const stops = Array.from(root.querySelectorAll('section')).map(
     (section) => section.getBoundingClientRect().top + window.scrollY,
   )
   // Kept in document space so the per-frame conversion is a subtraction rather
   // than another layout read.
-  const box = root.getBoundingClientRect()
-  const bounds: [number, number] = [box.top + window.scrollY, box.bottom + window.scrollY]
+  const bounds: [number, number] = [
+    rootBox.top + window.scrollY,
+    rootBox.bottom + window.scrollY,
+  ]
   return { rails, stops, bounds }
 }
 
@@ -365,6 +490,12 @@ export function useScrollLight(): RefObject<HTMLDivElement | null> {
         Math.max(progress * window.innerHeight, topDoc - y),
         bottomDoc - y,
       )
+      /*
+       * Two coordinates, and keeping them apart is the point. `headViewport` is
+       * where on the screen the playhead should be; `headDocument` is the point
+       * of the page it has landed on, which is what the stops are measured in
+       * and what the host — being in the flow — actually draws against.
+       */
       const headDocument = y + headViewport
 
       const trail = Math.min(TRAIL_MAX_PX, Math.abs(velocity) * TRAIL_PER_VELOCITY)
@@ -420,7 +551,13 @@ export function useScrollLight(): RefObject<HTMLDivElement | null> {
         rail.style.setProperty('--sp-dx', `${((centre - geometry.rails[i]) * pull).toFixed(1)}px`)
       }
 
-      host.style.setProperty('--sp-y', `${headViewport.toFixed(1)}px`)
+      /*
+       * Root-relative, because the host is. It falls out of this that once the
+       * head has parked on the bottom border this value stops changing at all,
+       * so scrolling the footer writes nothing: the light is already welded to
+       * the line and needs no help to stay there.
+       */
+      host.style.setProperty('--sp-y', `${(headDocument - topDoc).toFixed(1)}px`)
       // Sign survives the decay, so the trail keeps pointing the way the reader
       // was last travelling rather than snapping upright as it retracts.
       host.style.setProperty('--sp-dir', velocity < 0 ? '-1' : '1')
@@ -505,6 +642,8 @@ export function ScrollLight() {
       {[0, 1].map((rail) => (
         <div key={rail} className="tpz-light-rail">
           <span className="tpz-light-halo" />
+          <span className="tpz-light-flank-v" />
+          <span className="tpz-light-flank-h" />
           <span className="tpz-light-trail-v" />
           <span className="tpz-light-trail-h" />
           <span className="tpz-light-head" />
