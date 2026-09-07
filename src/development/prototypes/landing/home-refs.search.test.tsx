@@ -58,9 +58,9 @@ const CLUJ: EntitySearchNode = {
   uat: { name: 'Cluj-Napoca', county_name: 'Cluj' },
 }
 
-function setup() {
+function setup({ joined = false }: { readonly joined?: boolean } = {}) {
   const user = userEvent.setup()
-  render(<LandingSearch />, { queryClient: createTestQueryClient() })
+  render(<LandingSearch joined={joined} />, { queryClient: createTestQueryClient() })
   return { user, input: screen.getByRole('combobox') }
 }
 
@@ -429,6 +429,35 @@ describe('LandingSearch', () => {
       const options = screen.getAllByRole('option')
       expect(options[0].tagName).toBe('A')
       expect(options[0]).toHaveAttribute('href', '/entities/4541580')
+    })
+  })
+
+  describe('the joined panel', () => {
+    it('leaves the field rounded and the panel detached by default', async () => {
+      const { user, input } = setup()
+      await typeAndWait(user, 'Iasi')
+
+      expect(input.className).not.toContain('rounded-b-none')
+      expect(screen.getByRole('listbox').closest('[class*="max-h-"]')?.className).not.toContain(
+        'border-t-0',
+      )
+    })
+
+    it('squares the seam between the field and the panel when joined', async () => {
+      const { user, input } = setup({ joined: true })
+      await typeAndWait(user, 'Iasi')
+
+      // The join is one border, not two. The field squares its bottom corners
+      // only while there is a panel below to square off against — the variant
+      // is `data-popup-open:`, so it rounds again the moment the panel closes —
+      // and the panel takes no top border of its own, leaving the field's own
+      // bottom border as the seam.
+      expect(input.className).toContain('data-popup-open:rounded-b-none')
+      expect(input.className).toContain('data-popup-open:border-ring')
+
+      const popup = screen.getByRole('listbox').closest('[class*="max-h-"]')
+      expect(popup?.className).toContain('rounded-t-none')
+      expect(popup?.className).toContain('border-t-0')
     })
   })
 

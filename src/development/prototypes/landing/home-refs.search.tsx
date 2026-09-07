@@ -46,11 +46,11 @@ import type { SearchStatus } from './home-refs.search-state'
  * keeps Cmd-click opening a new tab, which cmdk cannot do at all: it claims the
  * click for `onSelect` and a modified click navigates away in the current tab.
  *
- * **The popup reports the room it found.** Where Radix flips a panel that will
- * not fit, Base UI shrinks it in place and exposes `--available-height` —
- * consumed on the popup itself below, because bounding only an inner scroller
- * leaves the popup at its natural height and hanging off the bottom of the
- * window.
+ * **The popup reports the room it found**, as `--available-height` — consumed
+ * on the popup itself below, because bounding only an inner scroller leaves the
+ * popup at its natural height and hanging off the bottom of the window. Given
+ * room it prefers to stay below and shrink; it still flips when the room runs
+ * out, which is why the joined variant pins it.
  *
  * Written against the same prop contract as the shipped
  * `src/components/entities/EntitySearch`, so promoting it is a file move plus
@@ -112,6 +112,7 @@ export function LandingSearch({
   selectionBehavior = 'navigate-to-preferred-entity',
   onSelect,
   fallback,
+  joined = false,
 }: {
   readonly className?: string
   readonly placeholder?: string
@@ -120,6 +121,24 @@ export function LandingSearch({
   readonly selectionBehavior?: EntitySelectionBehavior
   readonly onSelect?: (entity: EntitySearchNode) => void
   readonly fallback?: (term: string) => readonly EntitySearchNode[]
+  /**
+   * Whether the panel is attached to the field or floats below it.
+   *
+   * Detached (the default) the panel is a layer over the page: an 8px gap, a
+   * radius all round, and it rises 4px as it fades in. Joined, the two are one
+   * surface — the field's bottom corners square off while it is open, the panel
+   * takes no top border of its own, and the field's bottom border becomes the
+   * seam between the question and the answers.
+   *
+   * Only this attachment changes. The rows, the header, the states and the
+   * keyboard are shared, so comparing the two is comparing one thing.
+   *
+   * This is the shape Base UI's collision handling actually suits. Radix flips
+   * a panel that will not fit above the field, which would tear a joined pair
+   * apart; Base UI keeps it attached and shrinks it instead, so the join
+   * survives a short window rather than being the first thing to break in one.
+   */
+  readonly joined?: boolean
 }) {
   const { term, setTerm, status, results, source, isCurrent } = useSearchResults({ fallback })
   const commit = useEntitySelection({ selectionBehavior, onSelect, source })
@@ -254,7 +273,16 @@ export function LandingSearch({
                   setTerm('')
                   setIsOpen(false)
                 }}
-                className="h-12 rounded-lg border-input bg-card pl-10 pr-20 text-base shadow-none transition-colors hover:border-ring/50 focus:border-ring md:text-base"
+                className={cn(
+                  'h-12 rounded-lg border-input bg-card pl-10 pr-20 text-base shadow-none transition-colors hover:border-ring/50 focus:border-ring md:text-base',
+                  // `data-popup-open` is on the input itself, so the field
+                  // squares off only while there is something below it to
+                  // square off against, and rounds again the moment the panel
+                  // closes. The border goes to `ring` with it: the panel below
+                  // carries the same colour, and a focused blue field seamed to
+                  // a grey panel would draw the join it is trying to hide.
+                  joined && 'data-popup-open:rounded-b-none data-popup-open:border-ring',
+                )}
               />
             }
             placeholder={placeholder}
@@ -296,7 +324,29 @@ export function LandingSearch({
       </div>
 
       <Autocomplete.Portal>
-        <Autocomplete.Positioner sideOffset={8} align="start" className="z-30 outline-hidden">
+        <Autocomplete.Positioner
+          sideOffset={joined ? 0 : 8}
+          align="start"
+          // Joined, the panel is pinned below the field and never flips.
+          //
+          // Base UI does flip — the claim that it only ever shrinks was made
+          // from one measurement on a page where it happened not to. Sixteen
+          // pixels of extra chrome above the field was enough to send it above,
+          // and a joined panel that flips is worse than a floating one that
+          // does: it detaches from the field, squares the wrong two corners and
+          // drops the wrong border, so the join inverts rather than moves.
+          //
+          // `side: 'none'` keeps it below and lets `--available-height` do the
+          // work instead, which is the behaviour the join was designed around.
+          // The cost is real and worth stating: in a short window the panel
+          // shrinks to a scroller rather than moving somewhere roomier, so the
+          // reader sees fewer rows at once. Attached-and-shorter beats
+          // detached-and-taller when the attachment is the design.
+          collisionAvoidance={
+            joined ? { side: 'none', align: 'shift', fallbackAxisSide: 'none' } : undefined
+          }
+          className="z-30 outline-hidden"
+        >
           <Autocomplete.Popup
             aria-busy={isBusy || undefined}
             // Width from the anchor, height from the room the collision
@@ -313,6 +363,10 @@ export function LandingSearch({
             // what is left.
             className={cn(
               'flex max-h-[var(--available-height)] w-[var(--anchor-width)] max-w-[var(--available-width)] flex-col overflow-hidden rounded-lg border bg-card shadow-md',
+              // One surface: no top border, because the field already has a
+              // bottom one and two of them stacked is a 2px rule where the
+              // design wants a seam.
+              joined && 'rounded-t-none border-t-0 border-ring',
               // Base UI animates with transitions rather than keyframes:
               // `data-starting-style` is the state the popup is in for one
               // frame before it opens, so a transition off it is the enter. A
@@ -320,14 +374,31 @@ export function LandingSearch({
               // 95% zoom is a flourish, at field width it is thirty pixels of
               // horizontal growth and reads as the list arriving from
               // somewhere rather than opening where it already is.
-              'transition-[opacity,translate] duration-150 data-starting-style:-translate-y-1 data-starting-style:opacity-0',
+              // A 4px rise is right for a panel that arrives over the page and
+              // wrong for one that is attached to the field: a joined panel
+              // that rises reads as sliding out from behind the input, which
+              // undoes the join in the one moment the reader is watching it.
+              // Fade only.
+              joined
+                ? 'transition-opacity duration-150 data-starting-style:opacity-0'
+                : 'transition-[opacity,translate] duration-150 data-starting-style:-translate-y-1 data-starting-style:opacity-0',
             )}
             // Reduced motion is honoured with an inline rule because it has to
             // outrank the class above, and a `motion-reduce:` utility beside it
             // is a coin flip on stylesheet order.
             style={prefersReducedMotion ? { transition: 'none' } : undefined}
           >
-            <div className="flex items-baseline justify-between gap-3 border-b px-4 py-3">
+            <div
+              className={cn(
+                'flex items-baseline justify-between gap-3 border-b px-4 py-3',
+                // Directly under the field with no gap, the header would read
+                // as an orphan first row. Tinted, it reads as the shoulder
+                // between the field and the answers. It is kept rather than
+                // dropped because it carries the CUI column label and the
+                // stand-in-data badge, and that badge is not optional.
+                joined && 'bg-muted/30',
+              )}
+            >
               <MonoLabel className="text-muted-foreground">
                 {status.kind === 'results' ? 'Rezultate' : 'Caută'}
               </MonoLabel>

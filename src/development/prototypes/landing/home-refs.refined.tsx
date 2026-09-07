@@ -286,7 +286,7 @@ function CruxMarks() {
  * looking at impossible to look at. `import.meta.env.DEV` keeps it out of a
  * build, and results that come from it are labelled as such in the dropdown.
  */
-function RefinedSearch() {
+function RefinedSearch({ joined }: { readonly joined: boolean }) {
   const isMobile = useIsMobile()
 
   return (
@@ -299,6 +299,7 @@ function RefinedSearch() {
       autoFocus={!isMobile}
       scrollToTopOnFocus={isMobile}
       fallback={import.meta.env.DEV ? localEntityMatches : undefined}
+      joined={joined}
     />
   )
 }
@@ -584,7 +585,7 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
   )
 }
 
-function RefinedLanding() {
+function RefinedLanding({ joined = false }: { readonly joined?: boolean }) {
   const { groups, coverage } = getPlatformCoverage()
   const heroRef = useFieldMotion()
   // The light measures the page it runs down, so it takes the root rather than
@@ -700,7 +701,7 @@ function RefinedLanding() {
                 și decide mai bine.
               </p>
               <div className="mt-6 sm:mt-7">
-                <RefinedSearch />
+                <RefinedSearch joined={joined} />
               </div>
               {/* Balances the column against the taller panel, and gives the
                   three heaviest surfaces a direct route out of the hero. The
@@ -862,9 +863,31 @@ function RefinedLanding() {
 }
 
 /**
- * The landing. One version again: the combobox question the four variants
- * existed to answer is settled on Base UI, and the losers are gone rather than
- * left behind as options nobody will pick. The reasoning is in
- * `docs/design/landing-search-comparison.md`.
+ * The landing, with the results panel floating below the field.
+ *
+ * The combobox question the four variants existed to answer is settled on Base
+ * UI, and the losers are gone rather than left behind as options nobody will
+ * pick — see `docs/design/landing-search-comparison.md`. What is still open is
+ * the shape of the panel, and that is the only difference between this and
+ * [[LandingRefsJoined]].
  */
-export const LandingRefs = RefinedLanding
+export function LandingRefs() {
+  return <RefinedLanding />
+}
+
+/**
+ * The same landing, with the field and the results as one surface.
+ *
+ * The panel sits on the field rather than 8px below it, the field's bottom
+ * corners square off while it is open, and the panel takes no top border of its
+ * own — so the field's own bottom border is the only line between the question
+ * and the answers. It fades rather than rising, because a rise reads as sliding
+ * out from behind a field it is supposed to be part of.
+ *
+ * Everything else is shared with the floating version. Nothing about the rows,
+ * the states or the keyboard changes, so the choice between them is a choice
+ * about one thing.
+ */
+export function LandingRefsJoined() {
+  return <RefinedLanding joined />
+}

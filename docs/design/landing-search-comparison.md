@@ -49,7 +49,7 @@ below is an assertion in that script, not a judgement.
 | Highlight travels, focus stays in input | ✅ | ✅ | ✅ | ✅ |
 | `aria-activedescendant` tracks the row | ✅ | ✅ | ✅ | ✅ |
 | Active row scrolled into view | hand-written `useEffect` | automatic | automatic (`compute-scroll-into-view`) | automatic |
-| At a 560px viewport | **flips above** the field | **flips above** | **flips above** | **shrinks in place** (fits, 5px to spare) |
+| At a 560px viewport | **flips above** the field | **flips above** | **flips above** | **shrank in place** (fits, 5px to spare) — but see the correction below |
 | Popup height bounded by | `--radix-popover-content-available-height` | same | same | `--available-height` |
 | Approx. gzip | 0 (Radix already present) | ~4 kB | ~32 kB | ~41 kB upper bound (unminified parts) |
 
@@ -111,13 +111,28 @@ Escape into a single comparison instead of a fight with the layer. Items take a
 `render` prop, so an option genuinely *is* a TanStack `Link` (the DOM shows
 `<a role="option">`), and Cmd-click works without intervention.
 
-**One behavioural difference worth deciding on deliberately:** where Radix
-*flips* the panel above the field when it will not fit, Base UI *shrinks* it in
-place and reports the room it found. Both are defensible; shrinking keeps the
-popup attached to the field, flipping keeps the row count. Shrinking only works
-if `--available-height` is consumed **on the popup itself** — bounding an inner
-scroller leaves the popup at its natural height, hanging 78px below the fold.
-That cost a measurement to find.
+**One behavioural difference, and a correction to how it was first written
+down.** Radix *flips* the panel above the field when it will not fit. Base UI
+also reports the room it found and exposes it as `--available-height`, which
+only helps if that variable is consumed **on the popup itself** — bounding an
+inner scroller leaves the popup at its natural height, hanging 78px below the
+fold. That cost a measurement to find.
+
+What was written here first, on the strength of the 560px measurement, was that
+Base UI *shrinks rather than flips*. **That is wrong, and it was wrong when it
+was written.** Base UI shrank at 560px, so a conditional behaviour was recorded
+as a categorical one on the strength of a single observation. It flips like
+anything else once the room below runs out — sixteen pixels of extra chrome
+above the field was enough to send it above, on a viewport where it had
+previously stayed below. What is true is narrower and less interesting: given
+room, it prefers to stay and shrink.
+
+The distinction matters for anything joined to the field, because a panel that
+flips does not merely move — it inverts, squaring the wrong corners and
+dropping the wrong border, so the join appears upside down rather than
+relocated. `collisionAvoidance={{ side: 'none' }}` pins it and lets
+`--available-height` do the work. The cost is fewer rows in a short window
+rather than a taller panel somewhere else.
 
 ## Decision — D, Base UI
 
@@ -180,6 +195,44 @@ the app still uses for every other floating layer. That is a real inconsistency
 and the strongest argument that was made against D. It is worth revisiting if
 Base UI turns out to suit more than this one widget — or reversing, if it does
 not.
+
+## Still open — does the panel float or attach?
+
+The library is settled; the shape of the panel is not. Two variants of the same
+page, at `?v=landing` and `?v=landing-joined`:
+
+| | **floating** (`landing`) | **joined** (`landing-joined`) |
+|---|---|---|
+| Gap below the field | 8px | none |
+| Field's bottom corners | rounded | squared while the panel is open |
+| Border between them | two, 8px apart | one — the field's own |
+| Panel border colour | `border` | `ring`, matching the focused field |
+| Enter animation | fade + 4px rise | fade only |
+| Out of room below | flips above the field | stays, and shrinks |
+
+Everything else is shared — the rows, the seven states, the header, the
+keyboard, the announcements — so the two differ in the attachment and nothing
+else. `joined` is one prop on `LandingSearch` switching six class strings, not a
+second component, which is what keeps the comparison about one thing.
+
+Three things fall out of the join rather than being decided separately:
+
+- **The rise has to go.** A panel attached to the field that rises as it fades
+  reads as sliding out from behind the field, which undoes the join in the one
+  moment the reader is watching it happen.
+- **The border colour has to follow the field.** The field's border goes to
+  `ring` on focus, and the panel is open only while the field is focused, so a
+  panel left at the default border would draw a colour change exactly along the
+  seam it is trying to hide.
+- **The panel cannot be allowed to flip**, for the reason in the correction
+  above.
+
+The header row survives in both. It sits directly under the field when joined,
+which is why it is tinted there — untinted it reads as an orphaned first result
+rather than as the shoulder between the field and the answers. Dropping it was
+considered and rejected: it carries the CUI column label, and it carries the
+stand-in-data badge, which is not optional under `DESIGN.md` §Mock-First
+Contract.
 
 ## Reproducing
 
