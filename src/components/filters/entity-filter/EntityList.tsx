@@ -1,8 +1,8 @@
 import { useMultiSelectInfinite } from '../base-filter/hooks/useMultiSelectInfinite';
-import { graphqlRequest } from '@/lib/api/graphql';
+import { fetchEntityOptions } from '@/lib/api/reference-lookups';
 import { useState } from 'react';
 import { SearchInput } from '../base-filter/SearchInput';
-import { BaseListProps, PageData } from '../base-filter/interfaces';
+import { BaseListProps } from '../base-filter/interfaces';
 import { ErrorDisplay } from '../base-filter/ErrorDisplay';
 import { ListContainer } from '../base-filter/ListContainer';
 import { ListOption } from '../base-filter/ListOption';
@@ -34,36 +34,11 @@ export function EntityList({
         error,
         refetch,
         isFetchingNextPage,
-    } = useMultiSelectInfinite<EntityOption>({
+    } = useMultiSelectInfinite<EntityOption, string>({
         itemSize: 48,
-        queryKey: ['entities', searchFilter],
-        queryFn: async ({ pageParam = 0 }): Promise<PageData<EntityOption>> => {
-            const query = `
-              query Entities($search: String!, $limit: Int!, $offset: Int!) {
-                entities(filter: { search: $search }, limit: $limit, offset: $offset) {
-                    nodes { 
-                        name
-                        cui
-                        uat{
-                            name
-                            county_code
-                        }
-                    }
-                  pageInfo { totalCount hasNextPage }
-                }
-              }
-            `;
-            const limit = pageSize;
-            const variables = { search: searchFilter, limit, offset: pageParam };
-            const response = await graphqlRequest<{
-                entities: { nodes: EntityOption[]; pageInfo: { totalCount: number; hasNextPage: boolean; hasPreviousPage: boolean } };
-            }>(query, variables);
-            return {
-                nodes: response.entities.nodes,
-                pageInfo: response.entities.pageInfo,
-                nextOffset: pageParam + response.entities.nodes.length,
-            };
-        }
+        initialPageParam: '',
+        queryKey: ['native-entities', searchFilter],
+        queryFn: ({ pageParam, signal }) => fetchEntityOptions({ search: searchFilter, after: pageParam, limit: pageSize, signal }),
     });
 
     const showNoResults = !isLoading && !isError && items.length === 0 && searchFilter.length > 0;

@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useDataLabelBuilder, useFunctionalClassificationLabel } from './useFilterLabels'
+import { useDataLabelBuilder, useFunctionalClassificationLabel, useUatLabel } from './useFilterLabels'
 
 vi.mock('@/lib/api/labels', () => ({
   getFunctionalClassificationLabels: vi.fn(),
@@ -12,7 +12,7 @@ vi.mock('@/lib/api/labels', () => ({
   getBudgetSectorLabels: vi.fn(),
   getFundingSourceLabels: vi.fn(),
 }))
-import { getFunctionalClassificationLabels } from '@/lib/api/labels'
+import { getFunctionalClassificationLabels, getUatLabels } from '@/lib/api/labels'
 
 const STORAGE_KEY = 'entity-labels'
 
@@ -91,5 +91,18 @@ describe('native dimension label migration', () => {
     expect(getFunctionalClassificationLabels).toHaveBeenCalledWith(ids)
     expect(JSON.parse(window.localStorage.getItem('native-functional-classification-labels') ?? '{}')).toEqual({ '01': 'Corrected label' })
     expect(JSON.parse(window.localStorage.getItem('functional-classification-labels') ?? '{}')).toEqual({ '01': 'Old label' })
+  })
+})
+
+describe('native territory label migration', () => {
+  it('ignores old surrogate labels and hydrates the canonical ID', async () => {
+    window.localStorage.clear()
+    window.localStorage.setItem('uat-labels', JSON.stringify({ '1373': 'Old territory' }))
+    vi.mocked(getUatLabels).mockResolvedValue([{ id: '1373', label: 'MUNICIPIUL CLUJ-NAPOCA' }])
+    const ids = ['1373']
+    const { result } = renderHook(() => useUatLabel(ids), { wrapper: makeWrapper(makeQueryClient()) })
+    await waitFor(() => expect(result.current.map('1373')).toBe('MUNICIPIUL CLUJ-NAPOCA'))
+    expect(getUatLabels).toHaveBeenCalledWith(ids)
+    expect(JSON.parse(window.localStorage.getItem('uat-labels') ?? '{}')).toEqual({ '1373': 'Old territory' })
   })
 })

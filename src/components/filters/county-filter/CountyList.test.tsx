@@ -53,8 +53,8 @@ vi.mock('../base-filter/hooks/useMultiSelectInfinite', () => ({
 }))
 
 // Mock graphql request
-vi.mock('@/lib/api/graphql', () => ({
-  graphqlRequest: vi.fn(),
+vi.mock('@/lib/api/reference-lookups', () => ({
+  fetchCountyOptions: vi.fn(),
 }))
 
 // Mock SearchInput

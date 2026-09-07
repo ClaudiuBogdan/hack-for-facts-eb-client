@@ -1,11 +1,11 @@
-export interface PageData<T> {
+export interface PageData<T, TPageParam = number> {
     nodes: T[];
     pageInfo: {
         totalCount: number;
         hasNextPage: boolean;
         hasPreviousPage: boolean;
     };
-    nextOffset: number;
+    nextOffset: TPageParam;
 }
 
 export interface OptionItem<TID = string | number> {

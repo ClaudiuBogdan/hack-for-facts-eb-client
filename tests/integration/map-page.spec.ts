@@ -138,6 +138,35 @@ test.describe('Simple map page', () => {
     }
   })
 
+  test('selects native county, UAT and entity identities and restores labels', async ({ page }) => {
+    await page.route('**/api/v1/graphql', async route => {
+      const query = route.request().postDataJSON().query as string
+      const connection = (node: unknown) => ({ edges: [{ node }], totalCount: 1, pageInfo: { hasNextPage: false, endCursor: null } })
+      if (query.includes('BudgetCountyOptions')) return route.fulfill({ json: { data: { referenceCounties: [{ countyCode: 'CJ', countyName: 'CLUJ' }] } } })
+      if (query.includes('BudgetTerritoryOptions')) return route.fulfill({ json: { data: { referenceTerritories: connection({ id: 1373, name: 'MUNICIPIUL CLUJ-NAPOCA', countyCode: 'CJ', countyName: 'CLUJ' }) } } })
+      if (query.includes('BudgetEntityOptions')) return route.fulfill({ json: { data: { referencePublicEntities: connection({ cui: '4305857', name: 'MUNICIPIUL CLUJ-NAPOCA', territory: null }) } } })
+      return route.fallback()
+    })
+    await openFilters(page)
+    for (const [button, option, key, value] of [
+      [/^(județe|counties)( \d+)?$/i, 'CLUJ (CJ)', 'county_codes', 'CJ'],
+      [/^(UAT-uri|UATs)( \d+)?$/i, 'MUNICIPIUL CLUJ-NAPOCA (Jud. CLUJ)', 'uat_ids', '1373'],
+      [/^(entități|entities)( \d+)?$/i, /MUNICIPIUL CLUJ-NAPOCA/, 'entity_cuis', '4305857'],
+    ] as const) {
+      await filtersRegion(page).getByRole('button', { name: button }).click()
+      const request = page.waitForRequest(request => isNativeMapRequest(request) && request.postDataJSON().series[0]?.filter[key]?.includes(value))
+      await filtersRegion(page).getByRole('option', { name: option }).click()
+      await request
+      await filtersRegion(page).getByRole('button', { name: button }).click()
+    }
+    await closeFilters(page)
+    await page.reload()
+    await expect(page.getByTestId('leaflet-map')).toBeVisible({ timeout: 15000 })
+    await openFilters(page)
+    await expect(filtersRegion(page).getByText(/MUNICIPIUL CLUJ-NAPOCA/).first()).toBeVisible()
+    await expect(page).toHaveURL(/1373/)
+  })
+
   for (const view of ['map', 'table', 'analytics'] as const) {
     test(`shows loading and recovers in ${view} after changing the preset`, async ({ page }) => {
       await switchView(page, view)

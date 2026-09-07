@@ -7,7 +7,7 @@ import { t } from "@lingui/core/macro";
 import { getUserLocale } from "@/lib/utils";
 
 const EntityStorageKey = 'entity-labels';
-const UatLabelStorageKey = 'uat-labels';
+const UatLabelStorageKey = 'native-territory-labels-v1';
 const EconomicClassificationLabelStorageKey = 'native-economic-classification-labels';
 const FunctionalClassificationLabelStorageKey = 'native-functional-classification-labels';
 const BudgetSectorLabelStorageKey = 'native-budget-sector-labels';

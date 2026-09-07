@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { BaseListProps, PageData } from '../base-filter/interfaces'
+import { BaseListProps } from '../base-filter/interfaces'
 import { ListContainer } from '../base-filter/ListContainer'
 import { ListOption } from '../base-filter/ListOption'
 import { cn } from '@/lib/utils'
 import { SearchInput } from '../base-filter/SearchInput'
 import { useMultiSelectInfinite } from '../base-filter/hooks/useMultiSelectInfinite'
-import { graphqlRequest } from '@/lib/api/graphql'
+import { fetchCountyOptions } from '@/lib/api/reference-lookups'
 import { ErrorDisplay } from '../base-filter/ErrorDisplay'
 import { t } from '@lingui/core/macro'
 
@@ -28,30 +28,8 @@ export function CountyList({ selectedOptions, toggleSelect, pageSize = 100, clas
     isFetchingNextPage,
   } = useMultiSelectInfinite<CountyOption>({
     itemSize: 48,
-    queryKey: ['counties', searchFilter],
-    queryFn: async ({ pageParam = 0 }): Promise<PageData<CountyOption>> => {
-      const query = `
-        query Counties($search: String!, $limit: Int!, $offset: Int!) {
-          uats(filter: { search: $search, is_county: true }, limit: $limit, offset: $offset) {
-            nodes {
-              county_code
-              county_name
-            }
-            pageInfo { totalCount hasNextPage }
-          }
-        }
-      `
-      const limit = pageSize
-      const variables = { search: searchFilter, limit, offset: pageParam }
-      const response = await graphqlRequest<{
-        uats: { nodes: CountyOption[]; pageInfo: { totalCount: number; hasNextPage: boolean; hasPreviousPage: boolean } }
-      }>(query, variables)
-      return {
-        nodes: response.uats.nodes,
-        pageInfo: response.uats.pageInfo,
-        nextOffset: pageParam + response.uats.nodes.length,
-      }
-    },
+    queryKey: ['native-counties', searchFilter],
+    queryFn: ({ pageParam, signal }) => fetchCountyOptions({ search: searchFilter, offset: pageParam, limit: pageSize, signal }),
   })
 
   const showNoResults = !isLoading && !isError && items.length === 0 && searchFilter.length > 0

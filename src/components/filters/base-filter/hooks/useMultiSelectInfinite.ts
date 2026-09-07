@@ -1,19 +1,21 @@
 import { useRef, useEffect, useMemo } from 'react';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, type QueryFunction } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { PageData } from '../interfaces';
 
-export interface UseMultiSelectInfiniteProps<T> {
+export interface UseMultiSelectInfiniteProps<T, TPageParam = number> {
     queryKey: string[];
-    queryFn: ({ pageParam, signal }: { pageParam: number; signal: AbortSignal }) => Promise<PageData<T>>;
+    queryFn: QueryFunction<PageData<T, TPageParam>, string[], TPageParam>;
     itemSize?: number;
+    initialPageParam?: TPageParam;
 }
 
-export function useMultiSelectInfinite<T>({
+export function useMultiSelectInfinite<T, TPageParam = number>({
     queryKey,
     queryFn,
     itemSize = 35,
-}: UseMultiSelectInfiniteProps<T>) {
+    initialPageParam = 0 as TPageParam,
+}: UseMultiSelectInfiniteProps<T, TPageParam>) {
     // Infinite query for fetching options
     const {
         data,
@@ -30,7 +32,7 @@ export function useMultiSelectInfinite<T>({
             staleTime: Infinity,
             queryFn,
             getNextPageParam: lastPage => lastPage.pageInfo.hasNextPage ? lastPage.nextOffset : undefined,
-            initialPageParam: 0,
+            initialPageParam,
         }
     );
 

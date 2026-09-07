@@ -1,8 +1,8 @@
 import { useMultiSelectInfinite } from '../base-filter/hooks/useMultiSelectInfinite';
-import { graphqlRequest } from '@/lib/api/graphql';
+import { fetchUatOptions } from '@/lib/api/reference-lookups';
 import { useState } from 'react';
 import { SearchInput } from '../base-filter/SearchInput';
-import { BaseListProps, PageData } from '../base-filter/interfaces';
+import { BaseListProps } from '../base-filter/interfaces';
 import { ErrorDisplay } from '../base-filter/ErrorDisplay';
 import { ListContainer } from '../base-filter/ListContainer';
 import { ListOption } from '../base-filter/ListOption';
@@ -32,34 +32,11 @@ export function UatList({
         error,
         refetch,
         isFetchingNextPage,
-    } = useMultiSelectInfinite<UatOption>({
+    } = useMultiSelectInfinite<UatOption, string>({
         itemSize: 48,
-        queryKey: ['uats', searchFilter],
-        queryFn: async ({ pageParam = 0 }): Promise<PageData<UatOption>> => {
-            const query = `
-              query Uats($search: String!, $limit: Int!, $offset: Int!) {
-                uats(filter: { search: $search }, limit: $limit, offset: $offset) {
-                    nodes { 
-                        id
-                        name
-                        county_code
-                        county_name
-                    }
-                  pageInfo { totalCount hasNextPage }
-                }
-              }
-            `;
-            const limit = pageSize;
-            const variables = { search: searchFilter, limit, offset: pageParam };
-            const response = await graphqlRequest<{
-                uats: { nodes: UatOption[]; pageInfo: { totalCount: number; hasNextPage: boolean; hasPreviousPage: boolean } };
-            }>(query, variables);
-            return {
-                nodes: response.uats.nodes,
-                pageInfo: response.uats.pageInfo,
-                nextOffset: pageParam + response.uats.nodes.length,
-            };
-        }
+        initialPageParam: '',
+        queryKey: ['native-uats', searchFilter],
+        queryFn: ({ pageParam, signal }) => fetchUatOptions({ search: searchFilter, after: pageParam, limit: pageSize, signal }),
     });
 
     const showNoResults = !isLoading && !isError && items.length === 0 && searchFilter.length > 0;
