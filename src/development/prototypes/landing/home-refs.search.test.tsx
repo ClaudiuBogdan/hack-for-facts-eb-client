@@ -276,6 +276,45 @@ describe('LandingSearch', () => {
       expect(input).toHaveAttribute('aria-activedescendant', active.id)
     })
 
+    it('draws the row it highlights', async () => {
+      const { user } = setup()
+      await typeAndWait(user, 'Iasi')
+
+      await user.keyboard('{ArrowDown}')
+
+      const [active, next] = screen.getAllByRole('option')
+      await waitFor(() => expect(active).toHaveAttribute('data-highlighted'))
+
+      // The assertion the first version of this suite was missing, which is why
+      // arrowing through the list shipped invisible: every keyboard test above
+      // passed while the highlighted row and the row below it rendered
+      // identically. `data-highlighted` is set by Base UI on the element and
+      // never travels back into React, so the row was being drawn from a
+      // hardcoded `isActive={false}` and the styling had nothing to hang on.
+      // A highlight nothing draws is a highlight that does not exist.
+      expect(active.className).toContain('data-highlighted:bg-muted')
+      expect(next).not.toHaveAttribute('data-highlighted')
+    })
+
+    it('walks down into the results and back out to the field, and stops there', async () => {
+      const { user, input } = setup()
+      await typeAndWait(user, 'Iasi')
+
+      await user.keyboard('{ArrowDown}')
+      await waitFor(() => expect(input).toHaveAttribute('aria-activedescendant'))
+
+      await user.keyboard('{ArrowUp}')
+      await waitFor(() => expect(input).not.toHaveAttribute('aria-activedescendant'))
+
+      // And stays. Base UI's own default would wrap round to the last row here,
+      // so a reader pressing Up once more than they needed — to get back to
+      // what they typed — would land at the bottom of the list instead. Opting
+      // that handler out needs `preventBaseUIHandler()`; `preventDefault()`
+      // leaves it running.
+      await user.keyboard('{ArrowUp}')
+      expect(input).not.toHaveAttribute('aria-activedescendant')
+    })
+
     it('names a popup that exists even when there is no list to show', async () => {
       const { user, input } = setup()
 

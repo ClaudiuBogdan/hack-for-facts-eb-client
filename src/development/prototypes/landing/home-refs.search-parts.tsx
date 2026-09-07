@@ -93,26 +93,41 @@ function Highlighted({
  * `Autocomplete.Item` with a `render` prop — so the shape has to be separable
  * from the wrapper or the four stop looking alike.
  */
-export function resultRowClass(isActive: boolean): string {
-  return cn(
-    // Name over a quiet subline, tabular CUI right-aligned: the same grid the
-    // "Începe de aici" panel uses, so the dropdown reads as that panel
-    // answering rather than as a layer over it.
-    'flex cursor-pointer items-baseline justify-between gap-3 border-b px-4 py-2.5 last:border-b-0',
-    'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
-    isActive ? 'bg-muted' : 'hover:bg-muted/50',
-  )
-}
+export const resultRowClass = cn(
+  // Name over a quiet subline, tabular CUI right-aligned: the same grid the
+  // "Începe de aici" panel uses, so the dropdown reads as that panel answering
+  // rather than as a layer over it.
+  'group flex cursor-pointer items-baseline justify-between gap-3 border-b px-4 py-2.5 last:border-b-0',
+  'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+  // The active row is styled off `data-highlighted`, which the combobox sets,
+  // rather than off a prop.
+  //
+  // This is what the keyboard was missing. Base UI reports the highlight on the
+  // element instead of handing it back to React, and the row was being rendered
+  // with a hardcoded `isActive={false}` left over from an implementation that
+  // did hand it back — so arrowing through the list changed the accessibility
+  // tree, changed `aria-activedescendant`, scrolled the row into view, and drew
+  // absolutely nothing. The list worked and looked broken.
+  //
+  // `data-highlighted` covers both keyboard and pointer, so hover and arrow
+  // keys land on the same appearance, which is correct: there is one active row
+  // and one way to show it.
+  'data-highlighted:bg-muted',
+)
 
-/** What goes inside a row, whatever the wrapper turns out to be. */
+/**
+ * What goes inside a row, whatever the wrapper turns out to be.
+ *
+ * Reads the active state through `group-data-highlighted:` rather than a prop,
+ * because the attribute is set on the row by the combobox and never travels
+ * back into React.
+ */
 export function ResultRowContent({
   entity,
   query,
-  isActive,
 }: {
   readonly entity: EntitySearchNode
   readonly query: string
-  readonly isActive: boolean
 }) {
   const place = placeLine(entity)
 
@@ -122,10 +137,7 @@ export function ResultRowContent({
         <Highlighted
           text={entity.name}
           query={query}
-          className={cn(
-            'block truncate text-sm font-medium',
-            isActive ? 'text-primary' : 'text-card-foreground',
-          )}
+          className="block truncate text-sm font-medium text-card-foreground group-data-highlighted:text-primary"
         />
         {place ? (
           <Highlighted

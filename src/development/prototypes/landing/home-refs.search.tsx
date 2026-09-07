@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react'
+import type { KeyboardEvent } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Autocomplete } from '@base-ui/react/autocomplete'
+import type { BaseUIEvent } from '@base-ui/react/types'
 import { Loader2, Search, X } from 'lucide-react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { cn } from '@/lib/utils'
@@ -194,7 +196,27 @@ export function LandingSearch({
                   }
                   setIsOpen(true)
                 }}
-                onKeyDown={(event) => {
+                onKeyDown={(event: BaseUIEvent<KeyboardEvent<HTMLInputElement>>) => {
+                  // ArrowUp with the highlight already back in the field ends
+                  // the walk there.
+                  //
+                  // Base UI's Autocomplete exposes no `loop` control, and its
+                  // default sends the highlight round to the last row — so a
+                  // reader who presses Up once more than they needed, trying to
+                  // get back to what they typed, is thrown to the bottom of the
+                  // list instead. Down walks into the results, Up walks back
+                  // out, and the field is where the walk stops.
+                  //
+                  // `preventDefault()` does not do this. Base UI merges the
+                  // handler passed through `render` with its own and runs both
+                  // regardless; opting its handler out is a separate call, and
+                  // measuring was the only way to find that out — the guard ran
+                  // on every press and the highlight moved anyway.
+                  if (event.key === 'ArrowUp' && isDropdownOpen && !highlightedRef.current) {
+                    event.preventBaseUIHandler()
+                    return
+                  }
+
                   // The second stage. Base UI has already closed the popup, so
                   // by the time Escape reaches a closed input the reader is
                   // asking for the field itself to be emptied.
@@ -337,7 +359,7 @@ export function LandingSearch({
                   <Autocomplete.Item
                     key={entity.cui}
                     value={entity}
-                    className={resultRowClass(false)}
+                    className={resultRowClass}
                     // The anchor navigates, so the recorder is told to skip it.
                     // Cmd-click then works for free: the browser opens a tab,
                     // the router never runs, the selection is still counted.
@@ -356,7 +378,7 @@ export function LandingSearch({
                       />
                     }
                   >
-                    <ResultRowContent entity={entity} query={term.trim()} isActive={false} />
+                    <ResultRowContent entity={entity} query={term.trim()} />
                   </Autocomplete.Item>
                 )}
               </Autocomplete.List>
