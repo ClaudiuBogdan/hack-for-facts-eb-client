@@ -58,9 +58,9 @@ const CLUJ: EntitySearchNode = {
   uat: { name: 'Cluj-Napoca', county_name: 'Cluj' },
 }
 
-function setup({ joined = false }: { readonly joined?: boolean } = {}) {
+function setup() {
   const user = userEvent.setup()
-  render(<LandingSearch joined={joined} />, { queryClient: createTestQueryClient() })
+  render(<LandingSearch />, { queryClient: createTestQueryClient() })
   return { user, input: screen.getByRole('combobox') }
 }
 
@@ -449,20 +449,9 @@ describe('LandingSearch', () => {
     })
   })
 
-  describe('the joined panel', () => {
-    it('leaves the field rounded and the panel detached by default', async () => {
+  describe('the panel joined to the field', () => {
+    it('draws the field and the panel as one surface', async () => {
       const { user, input } = setup()
-      await typeAndWait(user, 'Iasi')
-
-      expect(input.className).not.toContain('rounded-b-none')
-      expect(input.className).toContain('focus:border-ring')
-      expect(screen.getByRole('listbox').closest('[class*="max-h-"]')?.className).not.toContain(
-        'border-t-0',
-      )
-    })
-
-    it('squares the seam between the field and the panel when joined', async () => {
-      const { user, input } = setup({ joined: true })
       await typeAndWait(user, 'Iasi')
 
       // Focus looks the same whether the results are showing or not. This is

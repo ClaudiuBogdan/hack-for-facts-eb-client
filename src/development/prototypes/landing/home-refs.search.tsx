@@ -50,7 +50,7 @@ import type { SearchStatus } from './home-refs.search-state'
  * on the popup itself below, because bounding only an inner scroller leaves the
  * popup at its natural height and hanging off the bottom of the window. Given
  * room it prefers to stay below and shrink; it flips when the room runs out,
- * and the joined variant follows it rather than trying to hold it in place.
+ * and the panel follows rather than being held in place.
  *
  * Written against the same prop contract as the shipped
  * `src/components/entities/EntitySearch`, so promoting it is a file move plus
@@ -112,7 +112,6 @@ export function LandingSearch({
   selectionBehavior = 'navigate-to-preferred-entity',
   onSelect,
   fallback,
-  joined = false,
 }: {
   readonly className?: string
   readonly placeholder?: string
@@ -121,24 +120,6 @@ export function LandingSearch({
   readonly selectionBehavior?: EntitySelectionBehavior
   readonly onSelect?: (entity: EntitySearchNode) => void
   readonly fallback?: (term: string) => readonly EntitySearchNode[]
-  /**
-   * Whether the panel is attached to the field or floats below it.
-   *
-   * Detached (the default) the panel is a layer over the page: an 8px gap, a
-   * radius all round, and it rises 4px as it fades in. Joined, the two are one
-   * surface — the field's bottom corners square off while it is open, the panel
-   * takes no top border of its own, and the field's bottom border becomes the
-   * seam between the question and the answers.
-   *
-   * Only this attachment changes. The rows, the header, the states and the
-   * keyboard are shared, so comparing the two is comparing one thing.
-   *
-   * This is the shape Base UI's collision handling actually suits. Radix flips
-   * a panel that will not fit above the field, which would tear a joined pair
-   * apart; Base UI keeps it attached and shrinks it instead, so the join
-   * survives a short window rather than being the first thing to break in one.
-   */
-  readonly joined?: boolean
 }) {
   const { term, setTerm, status, results, source, isCurrent } = useSearchResults({ fallback })
   const commit = useEntitySelection({ selectionBehavior, onSelect, source })
@@ -274,64 +255,43 @@ export function LandingSearch({
                   setIsOpen(false)
                 }}
                 className={cn(
-                  'h-12 rounded-lg border-input bg-card pl-10 pr-20 text-base shadow-none transition-colors hover:border-ring/50 md:text-base',
-                  // Floating, focus is the blue border the rest of the app
-                  // uses. The panel is a separate object below, so outlining
-                  // the field alone is honest.
-                  !joined && 'focus:border-ring',
-                  // `data-popup-open` is on the input itself, so the field
-                  // squares off only while there is something below it to
-                  // square off against, and rounds again the moment the panel
-                  // closes. The border goes to `ring` with it: the panel below
-                  // carries the same colour, and a focused blue field seamed to
-                  // a grey panel would draw the join it is trying to hide.
-                  // Joined, focus is one treatment that does not change when
-                  // the results arrive: the border darkens to a neutral and the
-                  // surface lifts, open or closed.
+                  'h-12 rounded-lg border-input bg-card pl-10 pr-20 text-base shadow-none md:text-base',
+                  // The border and the lift move together, so `transition-colors`
+                  // is not enough: it would fade the border over 150ms while the
+                  // shadow snapped in, which is visible on every focus.
+                  'transition-[border-color,box-shadow] duration-150',
+                  // Hover is a step below focus rather than a different colour,
+                  // so the two read as one scale. Unfocused hover carries no
+                  // contrast obligation, which is why it can sit this light.
+                  'hover:border-foreground/30',
+                  // Focus is one treatment that does not change when the results
+                  // arrive: a neutral border and a lift, open or closed. Blue
+                  // was tried and is too much colour for a surface whose point
+                  // is being quiet; suppressing the indicator once the panel
+                  // opened was worse, because it then vanished under a reader
+                  // whose focus had not moved.
                   //
-                  // Two earlier attempts were both wrong, in opposite ways. A
-                  // blue outline around the whole assembly spends a lot of
-                  // colour saying "focused" and fights a design whose whole
-                  // point is one quiet surface. Removing it once the panel
-                  // opened fixed the colour and broke something worse — the
-                  // indicator appeared on focus and then vanished the moment
-                  // the reader typed, so the field looked focused, then didn't,
-                  // while focus had not moved at all.
-                  //
-                  // A neutral border is the way to have both. It is the same
-                  // treatment in both states, so nothing appears or disappears;
-                  // it is grey, so the surface stays quiet.
-                  //
-                  // **This is as light as it goes.** A focus indicator owes 3:1
-                  // both against what sits beside it and against its own
-                  // unfocused state, and the second is what binds here: the
-                  // resting border is already a light grey, so the focused one
-                  // has to stay far enough from it to read as a change. At 55%
-                  // of the foreground this is rgb(132) — 3.75:1 against the
-                  // card and **3.005:1** against the resting border. /54 is
-                  // 2.92 and fails. There is no next step; anything lighter is
-                  // a focus indicator that is only found by someone who already
-                  // knows where it is.
-                  //
-                  // Dark mode is not the constraint — the same value measures
-                  // 5.78 and 4.19 there. Light mode is where the floor is.
-                  joined && 'focus:border-foreground/55 data-popup-open:border-foreground/55',
-                  joined && 'focus:shadow-lg data-popup-open:shadow-lg',
+                  // This is as light as it goes. A focus indicator owes 3:1 both
+                  // against what sits beside it and against its own unfocused
+                  // state, and the second binds here: the resting border is
+                  // already a light grey. At 55% of the foreground this is
+                  // rgb(132) — 3.75:1 against the card, 3.005:1 against the
+                  // resting border. /54 is 2.92 and fails. Dark mode is not the
+                  // constraint (5.78 and 4.19), so light mode is what breaks if
+                  // this is ever lightened again, and dark mode will not show it.
+                  'focus:border-foreground/55 data-popup-open:border-foreground/55',
+                  'focus:shadow-lg data-popup-open:shadow-lg',
                   // shadcn's ring is a box-shadow, so it outlines the field
-                  // alone and cannot follow the join. The border above replaces
-                  // it — in both states, which is the point.
-                  joined && 'focus-visible:ring-0',
-                  // Squared and opened against whichever edge the panel
-                  // actually landed on, not the one it usually lands on.
-                  // `data-popup-side` is on the input, so the field follows the
-                  // panel. The border on that edge goes too: the divider under
-                  // the header is the one line between the query and the
-                  // answers, so a second line here would box the field off as
-                  // its own object again.
-                  joined &&
-                    'data-popup-open:data-[popup-side=bottom]:rounded-b-none data-popup-open:data-[popup-side=bottom]:border-b-0',
-                  joined &&
-                    'data-popup-open:data-[popup-side=top]:rounded-t-none data-popup-open:data-[popup-side=top]:border-t-0',
+                  // alone and cannot follow the join. The border replaces it.
+                  'focus-visible:ring-0',
+                  // Squared and opened against whichever edge the panel actually
+                  // landed on. `data-popup-side` is on the input, so the field
+                  // follows the panel. The border on that edge goes with it: the
+                  // divider under the header is the single line between the
+                  // query and the answers, and a second one here would box the
+                  // field off as its own object again.
+                  'data-popup-open:data-[popup-side=bottom]:rounded-b-none data-popup-open:data-[popup-side=bottom]:border-b-0',
+                  'data-popup-open:data-[popup-side=top]:rounded-t-none data-popup-open:data-[popup-side=top]:border-t-0',
                 )}
               />
             }
@@ -374,80 +334,50 @@ export function LandingSearch({
       </div>
 
       <Autocomplete.Portal>
-        <Autocomplete.Positioner
-          sideOffset={joined ? 0 : 8}
-          align="start"
-          className="z-30 outline-hidden"
-        >
+        <Autocomplete.Positioner align="start" className="z-30 outline-hidden">
           <Autocomplete.Popup
             aria-busy={isBusy || undefined}
             // Width from the anchor, height from the room the collision
-            // calculation actually found. Both are measurements rather than
-            // guesses, which is what `65vh` was.
-            // Base UI *shrinks* where Radix flips: rather than moving the
-            // popup above the field when there is no room below, it reports the
-            // room it found and expects the popup to fit itself into it. That
-            // is only true if `--available-height` is actually consumed, and it
-            // has to be consumed here on the popup — bounding an inner scroller
-            // alone leaves the popup at its natural height and hanging off the
-            // bottom of the window, which is exactly what the first measurement
-            // showed. `flex` so the header keeps its height and the list takes
-            // what is left.
+            // calculation actually found — both measurements rather than the
+            // guess `65vh` was. `--available-height` has to be consumed here on
+            // the popup: bounding only the inner scroller leaves the popup at
+            // its natural height, hanging off the bottom of the window. `flex`
+            // so the header keeps its height and the list takes what is left.
             className={cn(
-              'flex max-h-[var(--available-height)] w-[var(--anchor-width)] max-w-[var(--available-width)] flex-col overflow-hidden rounded-lg border bg-card shadow-md',
-              // One surface: no border along the seam, because the field
-              // already has one there and two of them stacked is a 2px rule
-              // where the design wants a single line.
-              //
-              // Which edge that is depends on where the panel landed, so it is
-              // read off `data-side` rather than assumed to be the top. Base UI
-              // does flip when the room below runs out, and pinning it below
-              // instead — which is what this variant did first — puts the panel
-              // entirely off-screen whenever the field is near the bottom edge:
-              // measured at three viewport heights with zero rows reachable,
-              // against all five for the floating version, which simply flipped.
-              // A join that follows the panel survives that; a join that fights
-              // the positioning does not.
-              // Same neutral as the focused field, so the outline is one
-              // continuous line around the pair rather than two that happen to
-              // meet.
-              joined && 'border-foreground/55 shadow-lg',
-              joined && 'data-[side=bottom]:rounded-t-none data-[side=bottom]:border-t-0',
-              joined && 'data-[side=top]:rounded-b-none data-[side=top]:border-b-0',
+              'flex max-h-[var(--available-height)] w-[var(--anchor-width)] max-w-[var(--available-width)] flex-col overflow-hidden rounded-lg border bg-card',
+              // The same neutral as the focused field, so the pair is one
+              // continuous outline rather than two that happen to meet.
+              'border-foreground/55 shadow-lg',
+              // No border along the seam — the field has one there already, and
+              // two stacked is a 2px rule where the design wants a single line.
+              // Which edge that is comes off `data-side` rather than being
+              // assumed: Base UI flips when the room below runs out, and a join
+              // that assumes "below" inverts instead of moving. Pinning the
+              // panel down to prevent that was tried and was worse — with the
+              // field near the bottom edge it put the panel entirely off-screen,
+              // zero rows reachable at three viewport heights.
+              'data-[side=bottom]:rounded-t-none data-[side=bottom]:border-t-0',
+              'data-[side=top]:rounded-b-none data-[side=top]:border-b-0',
               // Base UI animates with transitions rather than keyframes:
-              // `data-starting-style` is the state the popup is in for one
-              // frame before it opens, so a transition off it is the enter. A
-              // 4px rise and a fade, 150ms, and no scale — at tooltip width a
-              // 95% zoom is a flourish, at field width it is thirty pixels of
-              // horizontal growth and reads as the list arriving from
-              // somewhere rather than opening where it already is.
-              // A 4px rise is right for a panel that arrives over the page and
-              // wrong for one that is attached to the field: a joined panel
-              // that rises reads as sliding out from behind the input, which
-              // undoes the join in the one moment the reader is watching it.
-              // Fade only.
-              joined
-                ? 'transition-opacity duration-150 data-starting-style:opacity-0'
-                : 'transition-[opacity,translate] duration-150 data-starting-style:-translate-y-1 data-starting-style:opacity-0',
+              // `data-starting-style` is the state the popup is in for one frame
+              // before it opens, so a transition off it is the enter. A fade and
+              // nothing else — a panel attached to the field that also rises
+              // reads as sliding out from behind it, which undoes the join in
+              // the one moment the reader is watching it happen.
+              'transition-opacity duration-150 data-starting-style:opacity-0',
             )}
             // Reduced motion is honoured with an inline rule because it has to
             // outrank the class above, and a `motion-reduce:` utility beside it
             // is a coin flip on stylesheet order.
             style={prefersReducedMotion ? { transition: 'none' } : undefined}
           >
-            <div
-              className={cn(
-                'flex items-baseline justify-between gap-3 border-b px-4 py-3',
-                // Joined, this is the only divider between the query and the
-                // answers, and the field sits directly on it — no seam line of
-                // its own, because two rules 45px apart around a tinted strip
-                // reads as a boxed-off row rather than as one surface. Tinted,
-                // the strip is the shoulder the field stands on. It is kept
-                // rather than dropped because it carries the CUI column label
-                // and the stand-in-data badge, and that badge is not optional.
-                joined && 'bg-muted/40',
-              )}
-            >
+            {/* The only divider between the query and the answers, with the
+                field standing directly on it — no seam line of its own, because
+                two rules 45px apart around a tinted strip reads as a boxed-off
+                row rather than as one surface. Kept rather than dropped: it
+                carries the CUI column label and the stand-in-data badge, and
+                that badge is not optional. */}
+            <div className="flex items-baseline justify-between gap-3 border-b bg-muted/40 px-4 py-3">
               <MonoLabel className="text-muted-foreground">
                 {status.kind === 'results' ? 'Rezultate' : 'Caută'}
               </MonoLabel>

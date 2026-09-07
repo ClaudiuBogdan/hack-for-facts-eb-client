@@ -1,6 +1,7 @@
 # Landing search — choosing the combobox
 
-**Status:** decided — **Base UI**, 7 September 2026 · **Prototype:**
+**Status:** decided — **Base UI**, joined to the field, 7 September 2026 ·
+**Prototype:**
 `/development/landing/home-refs` (`yarn dev` only)
 
 Four implementations of the hero search were built on the same page and measured
@@ -213,12 +214,13 @@ and the strongest argument that was made against D. It is worth revisiting if
 Base UI turns out to suit more than this one widget — or reversing, if it does
 not.
 
-## Still open — does the panel float or attach?
+## Decision — joined, not floating
 
-The library is settled; the shape of the panel is not. Two variants of the same
-page, at `?v=landing` and `?v=joined`:
+Two variants of the same page ran side by side; **joined won and the floating
+one is gone**, the same way the three losing comboboxes are gone. The table is
+kept as the record of what actually differed.
 
-| | **floating** (`landing`) | **joined** (`landing-joined`) |
+| | **floating** (removed) | **joined** (shipped) |
 |---|---|---|
 | Gap below the field | 8px | none |
 | Field's bottom corners | rounded | squared while the panel is open |
@@ -228,10 +230,12 @@ page, at `?v=landing` and `?v=joined`:
 | Enter animation | fade + 4px rise | fade only |
 | Out of room below | flips above the field | flips too — the join follows to the field's top edge |
 
-Everything else is shared — the rows, the seven states, the header, the
-keyboard, the announcements — so the two differ in the attachment and nothing
-else. `joined` is one prop on `LandingSearch` switching six class strings, not a
-second component, which is what keeps the comparison about one thing.
+Everything else was shared — the rows, the seven states, the header, the
+keyboard, the announcements — so the two differed in the attachment and nothing
+else. While both existed, `joined` was one prop on `LandingSearch` switching six
+class strings rather than a second component, which is what kept the comparison
+about one thing; now that it has won, the prop is gone and the behaviour is
+simply what the component does.
 
 Three things fall out of the join rather than being decided separately:
 
@@ -302,12 +306,14 @@ than as two that nearly line up.
 ## Reproducing
 
 ```sh
-yarn dev
+yarn dev                    # then /development/landing/home-refs?v=landing
 node tmp/final-check.mjs    # navigation, Escape→Enter, Tab→clear, Cmd-click, motion
 ```
 
-`tmp/compare.mjs` produced the four-way table and no longer runs, since three of
-the variants it drove are gone.
+`?v=landing` is the only variant now. `tmp/compare.mjs` produced the four-way
+table and no longer runs, since the three comboboxes it drove are gone; the
+float-versus-join measurements were taken with `tmp/join-sides.mjs` across six
+viewport heights, and it no longer has two variants to compare either.
 
 The GraphQL API is a separate repo and usually not running here, so the
 prototypes fall back to `PREDEFINED_ENTITIES` under `import.meta.env.DEV`, and
