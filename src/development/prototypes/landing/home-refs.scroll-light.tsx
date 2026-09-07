@@ -367,10 +367,10 @@ const CSS = `
      read as one thing: a lit point with an edge, not a point inside a circle.
      It rests at 0.55 of this and only reaches full width on a flare, so the
      figure here is the largest it ever gets rather than its usual size. */
-  width: 13px;
-  height: 13px;
-  margin-left: -6.5px;
-  margin-top: -6.5px;
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  margin-top: -4.5px;
   border-radius: 50%;
   background: var(--sp-halo);
   transform: translate3d(var(--sp-dx, 0px), var(--sp-y, 0px), 0)
