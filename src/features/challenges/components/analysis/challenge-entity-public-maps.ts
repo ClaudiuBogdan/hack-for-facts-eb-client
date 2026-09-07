@@ -354,7 +354,7 @@ ${buildPreviewConfigSection({
           id: 'expenses',
           label: 'Cheltuieli',
           filter: {
-            is_uat: true,
+            is_territorial_executive: true,
             exclude: {
               economic_prefixes: [...DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES],
             },
@@ -424,7 +424,7 @@ ${buildPreviewConfigSection({
           id: 'income',
           label: 'Venituri',
           filter: {
-            is_uat: true,
+            is_territorial_executive: true,
             currency: 'RON',
             report_type: PRIMARY_EXECUTION_REPORT_TYPE,
             normalization: 'total',
@@ -494,7 +494,7 @@ ${buildPreviewConfigSection({
           id: 'balance-income',
           label: 'Venituri',
           filter: {
-            is_uat: true,
+            is_territorial_executive: true,
             currency: 'RON',
             report_type: PRIMARY_EXECUTION_REPORT_TYPE,
             normalization: 'total',
@@ -507,7 +507,7 @@ ${buildPreviewConfigSection({
           id: 'balance-expenses',
           label: 'Cheltuieli',
           filter: {
-            is_uat: true,
+            is_territorial_executive: true,
             exclude: {
               economic_prefixes: [...DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES],
             },
@@ -594,7 +594,7 @@ ${buildPreviewConfigSection({
           id: 'local-taxes-property',
           label: 'Impozite și taxe pe proprietate',
           filter: {
-            is_uat: true,
+            is_territorial_executive: true,
             currency: 'RON',
             report_type: PRIMARY_EXECUTION_REPORT_TYPE,
             normalization: 'total',
@@ -608,7 +608,7 @@ ${buildPreviewConfigSection({
           id: 'local-taxes-goods-use',
           label: 'Taxe pe utilizarea bunurilor',
           filter: {
-            is_uat: true,
+            is_territorial_executive: true,
             exclude: {},
             currency: 'RON',
             report_type: PRIMARY_EXECUTION_REPORT_TYPE,

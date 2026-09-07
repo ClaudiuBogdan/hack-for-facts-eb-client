@@ -6,6 +6,16 @@ import {
 } from './challenge-entity-public-maps'
 
 describe('challenge-entity-public-maps', () => {
+  it('keeps county council budgets in every financial preset after L2', () => {
+    const financialSeries = CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS.flatMap(definition => definition.mapState.series)
+      .filter(series => series.type === 'line-items-aggregated-yearly')
+    expect(financialSeries).toHaveLength(6)
+    for (const series of financialSeries) {
+      expect(series.filter.is_territorial_executive).toBe(true)
+      expect(series.filter.is_uat).toBeUndefined()
+    }
+  })
+
   it('adds a single INS population geojson series to every preview while preserving active series ids', () => {
     for (const definition of CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS) {
       const populationSeries = definition.mapState.series.filter(

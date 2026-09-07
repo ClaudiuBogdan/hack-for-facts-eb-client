@@ -10,7 +10,7 @@ export const defaultMapFilters: AnalyticsFilterType = withDefaultExcludes({
   account_category: 'ch',
   report_period: createDefaultExecutionYearReportPeriod(),
   normalization: 'total',
-  is_uat: true,
+  is_territorial_executive: true,
   report_type: 'Executie bugetara agregata la nivel de ordonator principal',
   exclude: {
     economic_prefixes: [...DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES],

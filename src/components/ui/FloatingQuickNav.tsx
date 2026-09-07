@@ -54,7 +54,7 @@ export function FloatingQuickNav({ className, mapViewType, mapActive, tableActiv
     }
 
     const handleTableNavigate = () => {
-        const next = convertFilterInputToEntityTableState(filterInput, mapViewType)
+        const next = convertFilterInputToEntityTableState(filterInput)
         navigate({ to: '/entity-analytics', search: next });
     }
 
@@ -262,7 +262,7 @@ function convertFilterInputToChartState(
     return chartState
 }
 
-function convertFilterInputToEntityTableState(filterInput: AnalyticsFilterType, mapViewType: 'UAT' | 'County'): EntityAnalyticsUrlState {
+function convertFilterInputToEntityTableState(filterInput: AnalyticsFilterType): EntityAnalyticsUrlState {
     const accountCategory = filterInput.account_category ?? 'ch'
     const reportType = coerceReportType(filterInput) ?? 'Executie bugetara agregata la nivel de ordonator principal'
     const sanitized = stripGlobalCurrencyAndInflation(filterInput)
@@ -272,24 +272,6 @@ function convertFilterInputToEntityTableState(filterInput: AnalyticsFilterType, 
         page: 1,
         pageSize: 25,
         filter: { ...sanitized, account_category: accountCategory, report_type: reportType },
-    }
-
-    // Edge cases for uat table:
-    // - If switching from County with no uat_ids, aggregate at county level: use entity_types admin_county_council
-    // - If County and uat_ids selected -> prefer uat_ids
-    // - If UAT view and uat_ids selected, keep is_uat true
-    if (mapViewType === 'County') {
-        if (filterInput.uat_ids && filterInput.uat_ids.length > 0) {
-            base.filter = { ...base.filter, uat_ids: filterInput.uat_ids, entity_types: undefined, is_uat: undefined }
-        } else {
-            base.filter = { ...base.filter, entity_types: ['admin_county_council'], is_uat: undefined }
-        }
-    } else {
-        if (filterInput.county_codes && filterInput.county_codes.length > 0) {
-            base.filter = { ...base.filter, is_uat: undefined }
-        } else {
-            base.filter = { ...base.filter, is_uat: true }
-        }
     }
 
     return base

@@ -16,6 +16,13 @@ import {
 } from '@/schemas/advanced-map-analytics';
 
 describe('AdvancedMapAnalyticsUrlStateSchema', () => {
+  it.each(['line-items-aggregated-yearly', 'commitments-analytics'] as const)('includes councils and halls in new %s maps', (type) => {
+    const series = createDefaultAdvancedMapAnalyticsSeries(type);
+    if (series.type !== 'line-items-aggregated-yearly' && series.type !== 'commitments-analytics') throw new Error('Expected financial series');
+    expect(series.filter.is_territorial_executive).toBe(true);
+    expect(series.filter.is_uat).toBeUndefined();
+  });
+
   it('round-trips county geometry and rejects unknown boundary types', () => {
     const state = AdvancedMapAnalyticsUrlStateSchema.parse({ mapViewType: 'County' });
     expect(AdvancedMapAnalyticsUrlStateSchema.parse(JSON.parse(JSON.stringify(state))).mapViewType).toBe('County');

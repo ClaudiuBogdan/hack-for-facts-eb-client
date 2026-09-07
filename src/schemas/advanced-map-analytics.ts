@@ -889,7 +889,7 @@ export function createDefaultAdvancedMapAnalyticsSeries(
         report_type: DEFAULT_EXECUTION_REPORT_TYPE,
         report_period: createDefaultExecutionYearReportPeriod(),
         normalization: 'total',
-        is_uat: true,
+        is_territorial_executive: true,
         exclude: {
           economic_prefixes: [...DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES],
         },
@@ -908,7 +908,7 @@ export function createDefaultAdvancedMapAnalyticsSeries(
         report_type: 'PRINCIPAL_AGGREGATED',
         report_period: createDefaultCommitmentsYearReportPeriod(),
         normalization: 'total',
-        is_uat: true,
+        is_territorial_executive: true,
         exclude: {
           economic_prefixes: [...DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES],
         },

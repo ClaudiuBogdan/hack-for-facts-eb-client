@@ -21,12 +21,31 @@ describe('RelatedLinksRail', () => {
 
     expect(parseRelatedLinkSearchParam(href!, 'from')).toBe('statistici-teritoriu')
     expect(parseRelatedLinkSearchParam(href!, 'siruta')).toBe('54975')
+    expect(parseRelatedLinkSearchParam(href!, 'filter')).not.toHaveProperty('is_territorial_executive')
+    const mapHref = screen.getAllByRole('link').map(link => link.getAttribute('href') ?? '')
+      .find(value => value.startsWith('/map?'))
+    expect(mapHref).toBeDefined()
+    expect(parseRelatedLinkSearchParam(mapHref!, 'filters')).toMatchObject({ is_uat: true, uat_ids: ['54975'] })
+    expect(parseRelatedLinkSearchParam(mapHref!, 'filters')).not.toHaveProperty('is_territorial_executive')
     expect(parseRelatedLinkSearchParam(href!, 'filter')).toEqual(
       expect.objectContaining({
         uat_ids: ['54975'],
         is_uat: true,
       }),
     )
+  })
+
+  it('includes councils and halls in county links without excluding UATs', () => {
+    const identity = resolveTerritoryIdentity({ siruta: 'CJ', liveName: 'Cluj', liveLevel: 'NUTS3', liveCountyCode: 'CJ' })
+    render(<RelatedLinksRail links={buildTerritoryRelatedLinks({ identity })} originSiruta="CJ" />)
+    const links = screen.getAllByRole('link').map(link => link.getAttribute('href') ?? '')
+      .filter(href => href.startsWith('/map?') || href.startsWith('/budget-explorer?'))
+    expect(links).toHaveLength(2)
+    for (const href of links) {
+      const filter = parseRelatedLinkSearchParam(href, href.startsWith('/map?') ? 'filters' : 'filter')
+      expect(filter).toMatchObject({ county_codes: ['CJ'], is_territorial_executive: true })
+      expect(filter).not.toHaveProperty('is_uat')
+    }
   })
 
   it('shows a fallback message when no links are available', () => {

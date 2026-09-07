@@ -36,12 +36,12 @@ function buildScopedSearch(
         ? {
             ...defaultMapFilters,
             county_codes: [link.joinValue],
-            is_uat: false,
           }
         : {
             ...defaultMapFilters,
             uat_ids: [link.joinValue],
             is_uat: true,
+            is_territorial_executive: undefined,
           }
 
     return {
@@ -55,8 +55,8 @@ function buildScopedSearch(
   if (link.to === '/budget-explorer') {
     const territorialFilter =
       link.joinBasis === 'county'
-        ? { ...defaultMapFilters, county_codes: [link.joinValue], is_uat: false }
-        : { ...defaultMapFilters, uat_ids: [link.joinValue], is_uat: true }
+        ? { ...defaultMapFilters, county_codes: [link.joinValue] }
+        : { ...defaultMapFilters, uat_ids: [link.joinValue], is_uat: true, is_territorial_executive: undefined }
 
     return {
       ...evidence,

@@ -13,10 +13,18 @@ describe('MapStateSchema', () => {
   it('fills in the defaults for an empty URL', () => {
     const parsed = MapStateSchema.parse({})
 
+    expect(parsed.filters.is_territorial_executive).toBe(true)
+    expect(parsed.filters.is_uat).toBeUndefined()
     expect(parsed.activeView).toBe('map')
     expect(parsed.mapViewType).toBe('UAT')
     expect(parsed.mapCenter).toBeUndefined()
     expect(parsed.mapZoom).toBeUndefined()
+  })
+
+  it.each([true, false])('preserves an explicit saved is_uat=%s filter', (isUat) => {
+    const parsed = MapStateSchema.parse({ filters: { ...defaultMapFilters, is_territorial_executive: undefined, is_uat: isUat } })
+    expect(parsed.filters.is_uat).toBe(isUat)
+    expect(parsed.filters.is_territorial_executive).toBeUndefined()
   })
 
   it('keeps valid values', () => {
