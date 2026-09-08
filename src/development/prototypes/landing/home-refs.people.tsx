@@ -96,6 +96,10 @@ export function PeopleBand() {
           <MonoLabel className="mt-2 block text-muted-foreground">{FOUNDER.role}</MonoLabel>
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{FOUNDER.blurb}</p>
           <SocialRow person={FOUNDER} className="mt-4" />
+          {/* The way out of the band sits under the person it is about, not
+              above the angels. It was the last 40px keeping the two columns'
+              pictures from starting on the same line. */}
+          <ReadMoreLink className="mt-7" />
         </div>
       </div>
 
@@ -105,34 +109,31 @@ export function PeopleBand() {
           alți câțiva au dat timp, date sau o ușă deschisă atunci când conta.
           Aici sunt pe scurt; povestea lungă e pe pagina dedicată.
         </p>
-        <div data-reveal className="mt-5">
-          <ReadMoreLink />
-        </div>
+        {/* The angels start where the founder's portrait starts.
 
-        <MonoLabel data-reveal className="mt-12 block text-primary">
+            The two columns used to begin their pictures 200px apart — the lead,
+            the link and an explanatory sentence stacked up on this side while
+            the other only had a heading to clear. The sentence is gone (it
+            explained the one-line rule to the reader rather than to whoever
+            writes the lines), the link moved under the founder, and these two
+            margins are what is left to tune. */}
+        <MonoLabel data-reveal className="mt-5 block text-primary">
           Îngerii păzitori
         </MonoLabel>
-        <p data-reveal className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          Oamenii fără de care proiectul s-ar fi oprit. Câte o singură propoziție
-          despre ce a făcut fiecare — nu un CV.
-        </p>
-        {/* Two by two. Four across the 6-column half would leave each name about
-            120px to wrap in; a row of three plus an orphan is worse.
+        {/* Two by two, filling the column.
 
-            The tracks are capped rather than left at half the column each. Two
-            free halves put 146px between one 140px portrait and the next — the
-            gap was mostly the empty right end of each cell, not the gap
-            property. Capped at 13rem the pictures sit 88px apart, and the roles
-            still have the width they need to stay on two lines. */}
-        <ul
-          data-reveal
-          className="mt-8 grid grid-cols-2 gap-x-5 gap-y-7 lg:grid-cols-[repeat(2,minmax(0,13rem))]"
-        >
+            The tracks were capped at 13rem while the pictures were 140px, which
+            is what put 146px of nothing between them. Now the pictures fill
+            their tracks, so the cap has nothing left to do except leave 230px
+            of column unused and a ragged right edge under a paragraph that runs
+            the full width. Without it the art is 264px, the gap is the gap, and
+            the block ends where everything above it ends. */}
+        <ul data-reveal className="mt-4 grid grid-cols-2 gap-x-5 gap-y-6">
           {ANGELS.map((angel) => (
             /* `flex-col` + `mt-auto` on the links: a role that wraps to two
                lines must not push one cell's icons below its neighbours'. */
             <li key={angel.id} className="flex h-full flex-col">
-              <RevealPortrait person={angel} className="max-w-[140px]" />
+              <RevealPortrait person={angel} />
               <p className="mt-3 text-sm font-medium leading-tight text-foreground">
                 {angel.name}
               </p>
