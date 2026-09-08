@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type RefObject } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import type { LinkProps } from '@tanstack/react-router'
@@ -30,6 +30,13 @@ import { CountUpValue, SmearFilters, countUpWithin, stopCounting } from './home-
 import { NATIONAL_FACTS } from './home-refs.national-facts'
 import type { FieldCell } from './home-refs.pixel-art'
 import { PixelFieldCanvas, useCanvasFieldMotion } from './home-refs.pixel-canvas'
+import {
+  PanelTiltStyles,
+  TILT_PANEL_CLASS,
+  TILT_SCENE_CLASS,
+  TILT_SHADOW_CLASS,
+  usePanelTilt,
+} from './home-refs.panel-tilt'
 import {
   FOOTER_SCENE_CLEAR_PX,
   FooterScene,
@@ -329,41 +336,112 @@ function RefinedSearch() {
   )
 }
 
-/** Real entities, as product UI. Three-tier hierarchy, tabular CUIs. */
-function StartHerePanel() {
+/**
+ * The three window lights, in the order macOS puts them: close, minimise, zoom.
+ *
+ * Three saturated hues on a page whose colour rule is one accent, and circles in
+ * a system that avoids fully rounded shapes. Both are deliberate: this is the
+ * one element on the landing that is pretending to be something else, and the
+ * lights are the single detail that does the pretending. Diluted to the brand
+ * blue or squared off, they stop reading as a window and become three dots.
+ *
+ * If the trade stops being worth it, macOS's own answer is already the
+ * system-friendly one: an unfocused window renders these grey, so
+ * `bg-muted-foreground/30` on all three is an authentic monochrome variant
+ * rather than a compromise.
+ */
+const WINDOW_LIGHTS = ['bg-[#ff5f57]', 'bg-[#febc2e]', 'bg-[#28c840]'] as const
+
+/**
+ * Real entities, as product UI. Three-tier hierarchy, tabular CUIs.
+ *
+ * On desktop it is framed as a window: the perspective in
+ * `home-refs.panel-tilt.tsx` turns it, and the title bar says what the angle is
+ * implying — that this is a separate surface holding the product, not another
+ * box in the page's own plane.
+ *
+ * On a phone it is a list, and that is all of it. The hero is one column there,
+ * so a pane angled toward a headline sitting directly above it would be angled
+ * at nothing; and a title bar carrying three window controls, on a device that
+ * has no windows, is a costume rather than a metaphor. The chrome, the corners
+ * and the depth all begin at `lg` together, because they are one idea and half
+ * of it is worse than none of it.
+ *
+ * The chrome is decoration and is marked as such. The lights are not buttons,
+ * carry no label and take no focus: a control that looks like it closes
+ * something and does nothing is worse than no control.
+ */
+function StartHerePanel({ panelRef }: { readonly panelRef: RefObject<HTMLDivElement | null> }) {
   return (
-    <div className="border bg-card">
-      <div className="flex items-baseline justify-between border-b px-4 py-3">
-        <MonoLabel className="text-muted-foreground">Începe de aici</MonoLabel>
-        <MonoLabel className="text-muted-foreground/60">CUI</MonoLabel>
+    /* No margin here, and that is the considered position rather than an
+       omission — measured, the panel sits symmetrically already.
+
+       The gap from the search field to the panel is the hero grid's own column
+       gap, at 32px. The gap from the panel to the vertical rule the frame
+       paints at its border-box edge is the frame's own right padding, also at
+       32px. They are equal at every width because both come from the same
+       spacing scale, so anything added on this side breaks a symmetry the
+       layout was already giving for free.
+
+       Two attempts at improving it are why this is written down: a negative
+       margin to run the panel up to the rule closed the right gap to zero, and
+       a positive one opened it to 44 and then 56 against an unchanged 32 on
+       the left. */
+    <div className={TILT_SCENE_CLASS}>
+      {/* The shadow the panel casts on the page. Its own element so it keeps its
+          own geometry and is not carried through the panel's rotation. */}
+      <div aria-hidden="true" className={TILT_SHADOW_CLASS} />
+      {/* `overflow-hidden` so the rows clip to the rounded corners rather than
+          squaring them off at the top and bottom of the list. 8px is the
+          system's ceiling on radius, which is also about what a macOS window
+          uses — the one place those two agree. */}
+      <div
+        ref={panelRef}
+        className={cn(TILT_PANEL_CLASS, 'border bg-card lg:overflow-hidden lg:rounded-lg')}
+      >
+        {/* Square and unclipped below `lg`. The radius is here to make a window
+            corner, and with no window to corner it is a softened list that no
+            longer agrees with the flat-edged blocks beneath it. */}
+        <div
+          aria-hidden="true"
+          className="hidden items-center gap-2 border-b bg-muted/40 px-4 py-3 lg:flex"
+        >
+          {WINDOW_LIGHTS.map((light) => (
+            <span key={light} className={cn('size-3 rounded-full', light)} />
+          ))}
+        </div>
+        <div className="flex items-baseline justify-between border-b px-4 py-3">
+          <MonoLabel className="text-muted-foreground">Începe de aici</MonoLabel>
+          <MonoLabel className="text-muted-foreground/60">CUI</MonoLabel>
+        </div>
+        <ul>
+          {PREDEFINED_ENTITIES.slice(0, 6).map((entity) => (
+            <li key={entity.cui}>
+              <Link
+                to={buildPreferredEntityPath({
+                  cui: entity.cui,
+                  entityType: entity.entity_type,
+                  isUat: entity.is_uat,
+                })}
+                preload="intent"
+                className="group flex items-baseline justify-between gap-3 border-b px-4 py-2.5 transition-colors last:border-b-0 hover:bg-muted/50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+              >
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-medium text-card-foreground group-hover:underline">
+                    {entity.name}
+                  </span>
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {entity.uat?.county_name}
+                  </span>
+                </span>
+                <span className="shrink-0 font-mono text-xs tabular-nums text-muted-foreground">
+                  {entity.cui}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </div>
-      <ul>
-        {PREDEFINED_ENTITIES.slice(0, 6).map((entity) => (
-          <li key={entity.cui}>
-            <Link
-              to={buildPreferredEntityPath({
-                cui: entity.cui,
-                entityType: entity.entity_type,
-                isUat: entity.is_uat,
-              })}
-              preload="intent"
-              className="group flex items-baseline justify-between gap-3 border-b px-4 py-2.5 transition-colors last:border-b-0 hover:bg-muted/50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-            >
-              <span className="min-w-0">
-                <span className="block truncate text-sm font-medium text-card-foreground group-hover:underline">
-                  {entity.name}
-                </span>
-                <span className="block truncate text-xs text-muted-foreground">
-                  {entity.uat?.county_name}
-                </span>
-              </span>
-              <span className="shrink-0 font-mono text-xs tabular-nums text-muted-foreground">
-                {entity.cui}
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
     </div>
   )
 }
@@ -671,6 +749,10 @@ function RefinedLanding({ fieldCell = 12 }: { readonly fieldCell?: FieldCell }) 
   // The hero is the field's host: the canvases are found inside it and a click
   // is measured against it.
   const heroRef = useRef<HTMLElement | null>(null)
+  // The hero's entity panel, turned in its own perspective and squared up on
+  // scroll. Its own ref: the tilt is written on that element and nowhere else.
+  const entityPanelRef = useRef<HTMLDivElement>(null)
+  usePanelTilt(entityPanelRef)
   useCanvasFieldMotion(heroRef, { cell: fieldCell })
   // One root, lent to every effect that needs the page's geometry. None of them
   // owns it, which is what lets the page decide which of them run at all.
@@ -698,6 +780,7 @@ function RefinedLanding({ fieldCell = 12 }: { readonly fieldCell?: FieldCell }) 
       <FooterSceneStyles />
       <RevealStyles />
       <PictureRevealStyles />
+      <PanelTiltStyles />
       <SmearFilters />
       <ScrollLight />
       <SectionLight />
@@ -828,7 +911,7 @@ function RefinedLanding({ fieldCell = 12 }: { readonly fieldCell?: FieldCell }) 
               </nav>
             </div>
             <div className="min-w-0 lg:col-span-5">
-              <StartHerePanel />
+              <StartHerePanel panelRef={entityPanelRef} />
             </div>
           </div>
         </Frame>

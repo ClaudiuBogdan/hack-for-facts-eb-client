@@ -50,6 +50,36 @@ import { LandingRefs } from './home-refs.refined'
  * better than half idle. The port was verified by diff rather than by eye: the
  * same crop of the field, drawn both ways, differed in one pixel of 239,400, by
  * one level.
+ *
+ * Round eight settled how the hero's entity panel is projected: **two-point**.
+ *
+ * The panel is turned toward the search field — a direction that was measured
+ * rather than chosen, since the field sits 578px left of the panel's centre and
+ * 108px below it. Aiming exactly at it is a yaw of 26.7 degrees with about five
+ * of pitch; the shipped angle is 18 and no pitch, which keeps the direction and
+ * gives up arriving there, because at the full angle the list stops being
+ * something you read.
+ *
+ * Two-point is what dropping the pitch means: every vertical edge stays
+ * vertical and only the horizontals converge. It is the classic architectural
+ * view, and on a panel whose entire content is six lines of text it is the one
+ * of the three that does not fight the reading. It also happens to be the only
+ * one whose near edge lands exactly on the page's right rule, since a pitch and
+ * a shear each swing a corner forward past a hinge only the yaw respects.
+ *
+ * The two it was chosen over were built and measured rather than argued about,
+ * and are gone rather than left behind as options nobody will pick. Three-point
+ * added a pitch, aiming vertically as well as sideways: more literally correct,
+ * and it tilts the rows off level, which on six lines of text costs more than
+ * the accuracy buys. A parallel projection with a cosine-corrected shear read
+ * as drafted rather than photographed and sheared the text hardest of the
+ * three. Both are in the history if the question reopens.
+ *
+ * The window it is framed in — the title bar, the lights, the corners and the
+ * depth — is desktop-only, all of it starting at the same width. The hero is
+ * one column on a phone, where a pane angled at a headline directly above it is
+ * angled at nothing and three window controls on a device with no windows are a
+ * costume rather than a metaphor.
  */
 
 export const prototype = {
