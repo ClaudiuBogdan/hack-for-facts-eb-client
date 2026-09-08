@@ -32,32 +32,41 @@ import { MonoLabel } from './home-refs.mono-label'
  * A portrait that arrives the way the page's other illustrations do.
  *
  * `home-refs.image-reveal.tsx`, round six — rather than the plain block reveal,
- * because it is the same kind of object: a cut-out on transparency at 4:5, the
- * crop the art was made at, so `contain` letterboxes nothing. `.tpz-pic` is
- * absolute, so the cell has to hold the box itself.
+ * because it is the same kind of object: a cut-out on transparency. `.tpz-pic`
+ * is absolute, so the cell has to hold the box itself.
  *
- * Anyone without art falls back to the drawn silhouette, which has no arrival
- * of its own — there is nothing to wait for.
+ * The box's shape is the caller's, not the art's. `fit="contain"` means art of
+ * any ratio sits inside whatever box it is given without cropping, so a slot can
+ * be squared off before the art that will fill it exists — which is the state
+ * the angels are in: their pictures are the founder's 4:5 collage standing in,
+ * pillarboxed inside a square that their own art will fill.
  */
 function RevealPortrait({
   person,
+  ratio = 'aspect-4/5',
   className,
 }: {
   readonly person: Person
+  readonly ratio?: string
   readonly className?: string
 }) {
-  if (person.portrait === undefined) return <PendingPortrait className={className} />
-
   return (
-    <div {...{ [PICTURE_ATTR]: '' }} className={cn('relative aspect-4/5 w-full', className)}>
-      <GroupPicture
-        src={person.portrait.webp}
-        avif={person.portrait.avif ?? person.portrait.webp}
-        fit="contain"
-        position="50% 50%"
-        width={person.portrait.width}
-        height={person.portrait.height}
-      />
+    <div
+      {...(person.portrait === undefined ? {} : { [PICTURE_ATTR]: '' })}
+      className={cn('relative w-full', ratio, className)}
+    >
+      {person.portrait === undefined ? (
+        <PendingPortrait className="absolute inset-0 size-full" />
+      ) : (
+        <GroupPicture
+          src={person.portrait.webp}
+          avif={person.portrait.avif ?? person.portrait.webp}
+          fit="contain"
+          position="50% 50%"
+          width={person.portrait.width}
+          height={person.portrait.height}
+        />
+      )}
     </div>
   )
 }
@@ -133,7 +142,11 @@ export function PeopleBand() {
             /* `flex-col` + `mt-auto` on the links: a role that wraps to two
                lines must not push one cell's icons below its neighbours'. */
             <li key={angel.id} className="flex h-full flex-col">
-              <RevealPortrait person={angel} />
+              {/* Square, not 4:5. The angels' art is going to carry side
+                 elements the founder's does not, so the slot is cut to the
+                 shape it will need rather than to the shape the stand-in
+                 happens to be — which is why it is pillarboxed today. */}
+              <RevealPortrait person={angel} ratio="aspect-square" />
               <p className="mt-3 text-sm font-medium leading-tight text-foreground">
                 {angel.name}
               </p>
