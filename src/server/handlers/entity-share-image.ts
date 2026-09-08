@@ -265,7 +265,7 @@ export function parseEntityShareFilterContext(query: EntityShareQuery): EntitySh
   const showPeriodGrowth = parseBooleanParam(readQueryString(query, 'show_period_growth')) ?? false
 
   // The card LABELS and FORMATS with this context, so it must carry what the
-  // budget API actually applies (no CPI mode, no USD yet): a cached or
+  // budget API applies: a cached or
   // hand-edited share URL asking for inflation-adjusted USD must not render
   // nominal RON amounts stamped "inflation adjusted" in dollars.
   const applied = resolveAppliedNormalization({

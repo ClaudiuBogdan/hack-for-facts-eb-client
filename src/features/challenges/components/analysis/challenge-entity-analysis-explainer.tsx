@@ -44,7 +44,7 @@ const EXPLAINER_COPY = {
         'În practică, această vedere este utilă când vrei imaginea completă a banilor administrați prin același ordonator principal de credite. O vedere detaliată, la nivel de entitate sau linie bugetară, poate arăta alte totaluri pentru că separă fiecare entitate și coboară mai mult în structură.',
     },
     inflationAdjusted:
-      'Sumele sunt ajustate la inflație, iar valorile din anii anteriori sunt recalculate în prețurile anului selectat.',
+      'Sumele sunt ajustate la inflație, iar valorile din anii anteriori sunt recalculate în prețurile aceluiași an de referință.',
     inflationContext:
       'Ajustarea la inflație folosește indicele prețurilor de consum (IPC) publicat de INS. Fără această ajustare, sumele din anii anteriori par mai mici decât sunt în realitate, deoarece inflația erodează puterea de cumpărare a banului. De exemplu, 1 milion RON în 2015 avea o putere de cumpărare semnificativ mai mare decât în anul selectat pentru comparație. Ajustarea elimină acest efect, astfel încât creșterile sau scăderile pe care le vezi reflectă schimbări reale în cheltuieli sau venituri, nu doar efectul inflației.',
   },
@@ -76,7 +76,7 @@ const EXPLAINER_COPY = {
         'In practice, this view is useful when you want the full picture of the money managed through the same main creditor. A detailed view, at entity or budget-line level, can show different totals because it separates each entity and goes deeper into the structure.',
     },
     inflationAdjusted:
-      'Amounts are inflation-adjusted, and earlier years are recalculated in the selected-year prices.',
+      'Amounts are inflation-adjusted, and earlier years are recalculated using the same reference-year prices.',
     inflationContext:
       'Inflation adjustment uses the consumer price index published by the National Institute of Statistics. Without this adjustment, values from earlier years look smaller than they really are because inflation reduces purchasing power. For example, 1 million RON in 2015 had significantly more purchasing power than in the selected comparison year. The adjustment removes that effect so the increases or decreases you see reflect real changes in spending or revenue, not inflation alone.',
   },

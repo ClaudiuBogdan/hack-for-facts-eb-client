@@ -247,8 +247,8 @@ export function ChallengeEntityAnalysisHeader({
 
   const inflationBadgeLabel =
     languageQuery === 'en'
-      ? 'Inflation-adjusted values (2024)'
-      : 'Valori ajustate cu inflația (2024)'
+      ? 'Inflation-adjusted values'
+      : 'Valori ajustate cu inflația'
 
   const stopCompactHeaderClickPropagation = (event: MouseEvent<HTMLElement>) => {
     event.stopPropagation()

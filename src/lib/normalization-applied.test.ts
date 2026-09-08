@@ -2,9 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { resolveAppliedNormalization } from './normalization'
 
-// One rule for fetching AND labelling: what the budget API cannot apply today
-// (CPI, USD) degrades with a caveat, and what does not matter for a mode
-// (currency under percent_gdp, USD under the euro composites) gets no caveat.
+// Native money options preserve requested settings; GDP and euro aliases retain precedence.
 describe('resolveAppliedNormalization', () => {
   it('applies supported settings without caveats', () => {
     expect(resolveAppliedNormalization({ normalization: 'total', currency: 'EUR' })).toMatchObject({
@@ -15,21 +13,21 @@ describe('resolveAppliedNormalization', () => {
     })
   })
 
-  it('degrades inflation adjustment to nominal with a caveat', () => {
+  it('preserves inflation adjustment for the native API', () => {
     expect(
       resolveAppliedNormalization({ normalization: 'per_capita', currency: 'RON', inflation_adjusted: true }),
     ).toMatchObject({
       normalization: 'per_capita',
       currency: 'RON',
-      inflationAdjusted: false,
-      caveats: { inflationAdjustedUnavailable: true, currencyUnavailable: null },
+      inflationAdjusted: true,
+      caveats: null,
     })
   })
 
-  it('degrades USD to RON with a caveat', () => {
+  it('preserves USD for the native API', () => {
     expect(resolveAppliedNormalization({ normalization: 'total', currency: 'USD' })).toMatchObject({
-      currency: 'RON',
-      caveats: { inflationAdjustedUnavailable: false, currencyUnavailable: 'USD' },
+      currency: 'USD',
+      caveats: null,
     })
   })
 
@@ -50,8 +48,8 @@ describe('resolveAppliedNormalization', () => {
     ).toMatchObject({
       normalization: 'per_capita',
       currency: 'EUR',
-      inflationAdjusted: false,
-      caveats: { inflationAdjustedUnavailable: true, currencyUnavailable: null },
+      inflationAdjusted: true,
+      caveats: null,
     })
   })
 })

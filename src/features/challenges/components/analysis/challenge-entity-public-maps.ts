@@ -238,7 +238,7 @@ function getNormalizationSummary(normalization: 'total' | 'per_capita') {
 
 function getInflationSummary(inflationAdjusted: boolean) {
   return inflationAdjusted
-    ? 'Da, la prețuri constante 2024.'
+    ? 'Da, la prețuri constante.'
     : 'Nu, valori nominale.'
 }
 

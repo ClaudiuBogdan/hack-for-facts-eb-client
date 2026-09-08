@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
-import type { NormalizationOptions } from '@/lib/normalization'
+import { resolveAppliedNormalization, type NormalizationOptions } from '@/lib/normalization'
 import type { ReportPeriodInput } from '@/schemas/reporting'
 
 import { MoneySchema, toBudgetNormalization } from './entities-redesign'
@@ -32,11 +32,13 @@ const RankingResponseSchema = z.object({
 })
 
 const ENTITY_SUBORDINATE_RANKING_QUERY = /* GraphQL */ `
-  query EntitySubordinateRanking($filter: BudgetRankingFilter, $normalization: BudgetNormalization!, $limit: Int!) {
+  query EntitySubordinateRanking($filter: BudgetRankingFilter, $normalization: BudgetNormalization!, $currency: BudgetCurrency!, $inflationAdjusted: Boolean!, $limit: Int!) {
     budgetEntityRanking(
       filter: $filter
       metric: EXPENSE
       normalization: $normalization
+      currency: $currency
+      inflationAdjusted: $inflationAdjusted
       ascending: false
       limit: $limit
     ) {
@@ -128,6 +130,7 @@ export async function fetchRedesignEntitySubordinateRanking(params: {
     normalization: 'total',
     ...params.normalizationOptions,
   })
+  const applied = resolveAppliedNormalization(params.normalizationOptions)
   const raw = await graphqlQuery<unknown>(
     ENTITY_SUBORDINATE_RANKING_QUERY,
     {
@@ -141,6 +144,8 @@ export async function fetchRedesignEntitySubordinateRanking(params: {
         ...(period.quarter !== undefined ? { quarter: { eq: period.quarter } } : {}),
       },
       normalization,
+      currency: applied.currency,
+      inflationAdjusted: applied.inflationAdjusted,
       limit: MAX_VISIBLE_SUBORDINATE_CARDS,
     },
     { operationName: 'entity-subordinate-ranking', auth: 'none' },

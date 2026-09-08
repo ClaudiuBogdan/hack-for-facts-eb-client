@@ -180,8 +180,7 @@ export function useChallengeLessonEntityBundle(entityCui: string) {
     aggregatedTotalSummaryQuery: totalSummaryQuery,
     aggregatedPerCapitaSummaryQuery: perCapitaSummaryQuery,
     inflationAdjustedTrendSummaryQuery,
-    // False while the budget API has no CPI mode (program D2): the trend
-    // series above are then NOMINAL and the lesson must not say "2025 prices".
+    // The native entity series applies the same CPI settings as this lesson label.
     inflationAdjustedTrendsApplied: resolveAppliedNormalization({
       normalization: 'total',
       inflation_adjusted: true,

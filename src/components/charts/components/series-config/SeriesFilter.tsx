@@ -430,7 +430,7 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
   });
   const inflationOption: OptionItem | null =
     typeof inflationAdjusted === "boolean"
-      ? { id: inflationAdjusted ? "real" : "nominal", label: inflationAdjusted ? t`Real (2024 prices)` : t`Nominal` }
+      ? { id: inflationAdjusted ? "real" : "nominal", label: inflationAdjusted ? t`Real prices` : t`Nominal` }
       : null;
 
   const showPeriodGrowth = Boolean(filter.show_period_growth);
@@ -788,7 +788,7 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
               }}
               options={[
                 { value: false, label: t`Nominal` },
-                { value: true, label: t`Real (2024 prices)` },
+                { value: true, label: t`Real prices` },
               ]}
             />
             {isPercentGdp && (

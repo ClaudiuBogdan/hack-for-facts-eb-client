@@ -152,9 +152,9 @@ describe('entity-share-image', () => {
 describe('parseEntityShareFilterContext', () => {
   // The card labels and formats with this context. A cached or hand-edited
   // share URL asking for inflation-adjusted USD must resolve to what the
-  // budget API applies today (nominal RON), never render RON amounts stamped
+  // native budget API applies, never render RON amounts stamped
   // "inflation adjusted" in dollars.
-  it('resolves unsupported inflation adjustment and USD to nominal RON', () => {
+  it('preserves inflation-adjusted USD for the native entity fetch', () => {
     const context = parseEntityShareFilterContext(
       new URLSearchParams({
         year: '2025',
@@ -165,8 +165,8 @@ describe('parseEntityShareFilterContext', () => {
       }),
     )
 
-    expect(context.currency).toBe('RON')
-    expect(context.inflationAdjusted).toBe(false)
+    expect(context.currency).toBe('USD')
+    expect(context.inflationAdjusted).toBe(true)
     expect(context.normalization).toBe('total')
   })
 

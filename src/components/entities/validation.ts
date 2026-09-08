@@ -74,7 +74,7 @@ export const entitySearchSchema = z.object({
         .coerce
         .boolean()
         .optional()
-        .describe('Whether to adjust values for inflation (constant 2024 prices). Ignored for percent_gdp.'),
+        .describe('Whether to adjust values for inflation (constant prices). Ignored for percent_gdp.'),
     show_period_growth: z
         .coerce
         .boolean()

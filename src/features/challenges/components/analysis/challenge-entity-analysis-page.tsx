@@ -1231,8 +1231,7 @@ export function ChallengeEntityAnalysisPage({
     }),
     [currency, inflationAdjusted, normalizationMode, showPeriodGrowth],
   )
-  // What the budget API can actually apply for the requested settings (no CPI
-  // mode, no USD yet — scrapper program D2). Every label, formatter and export
+  // Resolve the requested settings once. Every label, formatter and export
   // below uses the APPLIED values, so the page never claims an adjustment or a
   // currency the numbers do not carry; the caveats drive the notice.
   const appliedNormalization = useMemo(
@@ -2600,7 +2599,7 @@ export function ChallengeEntityAnalysisPage({
 
   const entity = entityDetailsQuery.data
   // Prefer the caveat carried by the data when the API reports one (it will
-  // become per-entity/per-year once the factor tables land); fall back to the
+  // describe unavailable transformations); fall back to the
   // client-side capability rule, which is what the API applies today.
   const normalizationCaveats =
     entity.normalizationCaveats !== undefined

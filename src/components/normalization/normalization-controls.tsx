@@ -108,7 +108,7 @@ export function NormalizationControls({
           disabled={isPercentGdp}
         />
         <Label htmlFor={inflationAdjustedId} className={isPercentGdp ? 'text-muted-foreground' : undefined}>
-          {t`Adjust for inflation (constant 2024 prices)`}
+          {t`Adjust for inflation (constant prices)`}
         </Label>
       </div>
 

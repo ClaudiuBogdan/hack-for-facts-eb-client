@@ -1617,8 +1617,12 @@ msgid "Address"
 msgstr "Address"
 
 #: src/components/normalization/normalization-controls.tsx:111
-msgid "Adjust for inflation (constant 2024 prices)"
-msgstr "Adjust for inflation (constant 2024 prices)"
+#~ msgid "Adjust for inflation (constant 2024 prices)"
+#~ msgstr "Adjust for inflation (constant 2024 prices)"
+
+#: src/components/normalization/normalization-controls.tsx:111
+msgid "Adjust for inflation (constant prices)"
+msgstr "Adjust for inflation (constant prices)"
 
 #: src/features/procurement/lib/value-basis-meta.ts:77
 msgid "Adjusted value"
@@ -7663,7 +7667,7 @@ msgstr "Entity Analytics"
 msgid "Entity Details"
 msgstr "Entity Details"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2566
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2565
 msgid "Entity not found"
 msgstr "Entity not found"
 
@@ -10515,7 +10519,7 @@ msgstr "Inflation Adjustment"
 msgid "Inflation adjustment is ignored for % of GDP."
 msgstr "Inflation adjustment is ignored for % of GDP."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3322
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3321
 msgid "Inflation-adjusted (real) values are not available yet; the amounts shown are nominal."
 msgstr "Inflation-adjusted (real) values are not available yet; the amounts shown are nominal."
 
@@ -17187,12 +17191,17 @@ msgstr "Real"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:433
 #: src/components/charts/components/series-config/SeriesFilter.tsx:791
-msgid "Real (2024 prices)"
-msgstr "Real (2024 prices)"
+#~ msgid "Real (2024 prices)"
+#~ msgstr "Real (2024 prices)"
 
 #: src/components/theme/inflation-toggle.tsx:82
 #~ msgid "Real (2024)"
 #~ msgstr "Real (2024)"
+
+#: src/components/charts/components/series-config/SeriesFilter.tsx:433
+#: src/components/charts/components/series-config/SeriesFilter.tsx:791
+msgid "Real prices"
+msgstr "Real prices"
 
 #: src/features/learning/components/interactive/RevenueDistributionGame.tsx:299
 msgid "Reality"
@@ -19714,7 +19723,7 @@ msgstr "Soluționat"
 msgid "Some data issues were automatically resolved"
 msgstr "Some data issues were automatically resolved"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3319
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3318
 msgid "Some display settings are not available on this page yet."
 msgstr "Some display settings are not available on this page yet."
 
@@ -22041,7 +22050,7 @@ msgid "Try again"
 msgstr "Try again"
 
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:493
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2594
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2593
 #: src/features/learning/components/assessment/Quiz.tsx:188
 #: src/routes/settings/notifications.tsx:198
 msgid "Try Again"
@@ -22622,7 +22631,7 @@ msgstr "Usage analytics"
 msgid "USD"
 msgstr "USD"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3325
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3324
 msgid "USD values are not available yet; the amounts shown are in RON."
 msgstr "USD values are not available yet; the amounts shown are in RON."
 
@@ -23406,11 +23415,11 @@ msgstr "We cannot confirm whether requests are still open right now. Please try 
 msgid "We could not find a private company profile for this CUI. Check the identifier or try a mock sample such as 14399840."
 msgstr "We could not find a private company profile for this CUI. Check the identifier or try a mock sample such as 14399840."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2569
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2568
 msgid "We could not find an entity for this CUI. Check the identifier or search for another entity."
 msgstr "We could not find an entity for this CUI. Check the identifier or search for another entity."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2584
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2583
 msgid "We could not load the analysis."
 msgstr "We could not load the analysis."
 

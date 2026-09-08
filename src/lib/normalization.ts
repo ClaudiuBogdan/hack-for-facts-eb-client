@@ -57,19 +57,7 @@ export function normalizeNormalizationOptions(options: NormalizationOptions | un
 }
 
 
-/**
- * What the Chronos budget API can apply today. Until the normalization-factor
- * tables land (scrapper program D2) it has no CPI mode and no USD rate. Every
- * surface that fetches OR labels budget values must resolve the requested
- * settings through `resolveAppliedNormalization` so that what is shown, what is
- * formatted and what is claimed (badges, explainers, share images, exports)
- * agree with what was actually applied.
- */
-export const BUDGET_NORMALIZATION_CAPABILITIES = {
-  inflationAdjusted: false,
-  usd: false,
-} as const
-
+/** Native entity requests apply admitted monetary factors with exact-year coverage. */
 export type BudgetNormalizationCaveats = {
   /** Inflation adjustment was requested; the values are NOMINAL. */
   readonly inflationAdjustedUnavailable: boolean
@@ -86,31 +74,14 @@ export type AppliedNormalization = {
   readonly caveats: BudgetNormalizationCaveats | null
 }
 
-/**
- * Resolve requested normalization settings to what the budget API applies.
- * Rules: `percent_gdp` ignores currency and inflation (no caveat for them);
- * the legacy euro composites pin EUR (a USD request is moot there); otherwise
- * USD degrades to RON and inflation adjustment to nominal, each with a caveat.
- */
+/** Resolve aliases and GDP exclusivity; missing factor coverage is handled by the API. */
 export function resolveAppliedNormalization(options: NormalizationOptions | undefined): AppliedNormalization {
   const normalized = normalizeNormalizationOptions(options)
-  const isEuroComposite = options?.normalization === 'total_euro' || options?.normalization === 'per_capita_euro'
-  const currencyMatters = normalized.normalization !== 'percent_gdp' && !isEuroComposite
-  const inflationMatters = normalized.normalization !== 'percent_gdp'
-
-  const currencyUnavailable: 'USD' | null =
-    currencyMatters && normalized.currency === 'USD' && !BUDGET_NORMALIZATION_CAPABILITIES.usd ? 'USD' : null
-  const inflationAdjustedUnavailable =
-    inflationMatters && normalized.inflation_adjusted && !BUDGET_NORMALIZATION_CAPABILITIES.inflationAdjusted
-
   return {
     normalization: normalized.normalization,
-    currency: currencyUnavailable === null ? normalized.currency : 'RON',
-    inflationAdjusted: inflationAdjustedUnavailable ? false : normalized.inflation_adjusted,
+    currency: normalized.currency,
+    inflationAdjusted: normalized.inflation_adjusted,
     showPeriodGrowth: normalized.show_period_growth,
-    caveats:
-      currencyUnavailable !== null || inflationAdjustedUnavailable
-        ? { inflationAdjustedUnavailable, currencyUnavailable }
-        : null,
+    caveats: null,
   }
 }

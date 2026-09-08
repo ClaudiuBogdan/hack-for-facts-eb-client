@@ -93,7 +93,7 @@ export function buildEntityPageSeoSnapshotBase(params: {
       mainCreditorCui: executionContext.mainCreditorCui,
       normalization: executionContext.publicSettings.normalization,
       // Applied, not requested: the share image and the SEO description label
-      // and format these numbers, and the budget API has no CPI/USD yet.
+      // and format these numbers using the same normalization as the API.
       currency: appliedPublicNormalization.currency,
       inflationAdjusted: appliedPublicNormalization.inflationAdjusted,
       showPeriodGrowth: executionContext.publicSettings.showPeriodGrowth,

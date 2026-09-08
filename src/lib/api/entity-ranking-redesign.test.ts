@@ -57,6 +57,8 @@ describe('fetchRedesignEntitySubordinateRanking', () => {
           quarter: { eq: 3 },
         },
         normalization: 'TOTAL',
+        currency: 'RON',
+        inflationAdjusted: false,
         limit: 5,
       },
       { operationName: 'entity-subordinate-ranking', auth: 'none' },
@@ -103,10 +105,7 @@ describe('fetchRedesignEntitySubordinateRanking', () => {
   it.each([
     { currency: 'USD' as const, inflation_adjusted: false },
     { currency: 'RON' as const, inflation_adjusted: true },
-  ])('degrades unsupported normalization %# to TOTAL instead of failing', async (options) => {
-    // The Chronos API has no CPI mode and no USD rate yet; the request must
-    // still be dispatched (nominal RON) rather than take the panel down — the
-    // entity page reports the degrade from the entity-details caveats.
+  ])('passes supported monetary options %# without a nominal fallback', async (options) => {
     vi.mocked(graphqlQuery).mockResolvedValueOnce({ budgetEntityRanking: [] })
     await fetchRedesignEntitySubordinateRanking({
       entityCui: '4270740',
@@ -119,6 +118,8 @@ describe('fetchRedesignEntitySubordinateRanking', () => {
     expect(graphqlQuery).toHaveBeenCalledTimes(1)
     expect(vi.mocked(graphqlQuery).mock.calls[0]?.[1]).toMatchObject({
       normalization: 'TOTAL',
+      currency: options.currency,
+      inflationAdjusted: options.inflation_adjusted,
     })
   })
 })

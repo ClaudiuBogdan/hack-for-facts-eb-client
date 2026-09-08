@@ -5,10 +5,7 @@ import {
   toBudgetNormalization,
 } from './entities-redesign'
 
-// The Chronos budget API has no CPI mode and no USD rate yet (program D2).
-// A request for either must degrade to the nearest supported normalization
-// and SAY so — it used to throw and take the whole entity page down for any
-// user who had flipped the global "real prices" toggle.
+// Native money options preserve requested settings; GDP and euro aliases retain precedence.
 describe('resolveBudgetNormalization', () => {
   it('maps supported requests with no caveats', () => {
     expect(resolveBudgetNormalization({ normalization: 'total' })).toEqual({
@@ -24,7 +21,7 @@ describe('resolveBudgetNormalization', () => {
     })
   })
 
-  it('degrades inflation adjustment to nominal values and reports it', () => {
+  it('retains CPI requests without a nominal fallback', () => {
     expect(
       resolveBudgetNormalization({
         normalization: 'total',
@@ -33,20 +30,20 @@ describe('resolveBudgetNormalization', () => {
       }),
     ).toEqual({
       normalization: 'TOTAL_EURO',
-      caveats: { inflationAdjustedUnavailable: true, currencyUnavailable: null },
+      caveats: null,
     })
   })
 
-  it('degrades USD to RON and reports it', () => {
+  it('retains USD requests without a currency fallback', () => {
     expect(
       resolveBudgetNormalization({ normalization: 'per_capita', currency: 'USD' }),
     ).toEqual({
       normalization: 'PER_CAPITA',
-      caveats: { inflationAdjustedUnavailable: false, currencyUnavailable: 'USD' },
+      caveats: null,
     })
   })
 
-  it('never throws, even for both unsupported settings at once', () => {
+  it('supports combined USD and inflation settings', () => {
     expect(() =>
       toBudgetNormalization({ currency: 'USD', inflation_adjusted: true }),
     ).not.toThrow()

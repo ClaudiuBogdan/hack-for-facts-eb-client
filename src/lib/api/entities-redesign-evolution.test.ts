@@ -35,6 +35,17 @@ const series = (points: { periodLabel: string; amount: string }[]) => ({
 beforeEach(() => vi.clearAllMocks());
 
 describe("native entity evolution", () => {
+  it.each(["RON", "EUR", "USD"] as const)("routes inflation-adjusted total %s through normalized series", async (currency) => {
+    vi.mocked(graphqlQuery).mockResolvedValueOnce(metadata)
+      .mockResolvedValueOnce(series([{ periodLabel: "2025", amount: "120" }]));
+    const result = await fetchRedesignEntityDetails({ ...params, normalization: "total", currency, inflation_adjusted: true });
+    expect(result?.totalExpenses).toBe(120);
+    expect(result?.expenseTrend?.yAxis.unit).toBe(`${currency} (real)`);
+    expect(vi.mocked(graphqlQuery).mock.calls[1]?.[1]).toMatchObject({ normalized: true, currency, inflationAdjusted: true });
+    const document = vi.mocked(graphqlQuery).mock.calls[1]?.[0] ?? "";
+    expect(document.match(/inflationAdjusted: \$inflationAdjusted/g)).toHaveLength(3);
+  });
+
   it("uses API creditor-scoped values directly, including zero and negative values", async () => {
     vi.mocked(graphqlQuery)
       .mockResolvedValueOnce(metadata)
@@ -257,7 +268,7 @@ describe("native entity evolution", () => {
     expect(result?.incomeTrend?.data).toEqual([{ x: "2025", y: 50 }]);
   });
 
-  it("stops paging and discards the requested dataset when line-item normalization is unavailable", async () => {
+  it.each(["per_capita", "total"] as const)("discards unavailable %s CPI line items without falling back to nominal", async (normalization) => {
     vi.mocked(graphqlQuery).mockImplementation(async () => {
       return {
         budgetExecutionLineItems: {
@@ -288,6 +299,8 @@ describe("native entity evolution", () => {
     await expect(
       fetchRedesignEntityExecutionLineItems({
         ...params,
+        normalization,
+        inflation_adjusted: true,
         reportPeriod: { type: "YEAR", selection: { dates: ["2025"] } },
       }),
     ).resolves.toEqual({ nodes: [], fundingSources: [] });

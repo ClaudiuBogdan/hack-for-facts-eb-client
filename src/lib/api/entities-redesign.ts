@@ -159,6 +159,8 @@ const ENTITY_BUDGET_QUERY = /* GraphQL */ `
     $summaryYearTo: Int
     $normalization: BudgetNormalization!
     $normalized: Boolean!
+    $currency: BudgetCurrency!
+    $inflationAdjusted: Boolean!
   ) {
     summary: budgetEntitySummary(
       cui: $cui
@@ -184,6 +186,8 @@ const ENTITY_BUDGET_QUERY = /* GraphQL */ `
       yearFrom: $summaryYearFrom
       yearTo: $summaryYearTo
       normalization: $normalization
+      currency: $currency
+      inflationAdjusted: $inflationAdjusted
     ) @include(if: $normalized) {
       periodLabel
       amount
@@ -197,6 +201,8 @@ const ENTITY_BUDGET_QUERY = /* GraphQL */ `
       yearFrom: $summaryYearFrom
       yearTo: $summaryYearTo
       normalization: $normalization
+      currency: $currency
+      inflationAdjusted: $inflationAdjusted
     ) @include(if: $normalized) {
       periodLabel
       amount
@@ -210,6 +216,8 @@ const ENTITY_BUDGET_QUERY = /* GraphQL */ `
       yearFrom: $summaryYearFrom
       yearTo: $summaryYearTo
       normalization: $normalization
+      currency: $currency
+      inflationAdjusted: $inflationAdjusted
     ) @include(if: $normalized) {
       periodLabel
       amount
@@ -312,7 +320,7 @@ function toLegacyReportType(reportType: BudgetReportType): GqlReportType {
 
 /**
  * The supported normalization for a request plus the caveats for what could
- * not be applied (no CPI mode, no USD yet — program D2). One rule for fetching
+ * not be applied. One rule for fetching
  * and labelling: `resolveAppliedNormalization` in `@/lib/normalization`.
  */
 export type { BudgetNormalizationCaveats } from "@/lib/normalization";
@@ -429,19 +437,11 @@ function toGrowthPoints(
   return growth;
 }
 
-function seriesUnit(normalization: BudgetNormalization): string {
-  switch (normalization) {
-    case "TOTAL":
-      return "RON";
-    case "TOTAL_EURO":
-      return "EUR";
-    case "PER_CAPITA":
-      return "RON/capita";
-    case "PER_CAPITA_EURO":
-      return "EUR/capita";
-    case "PERCENT_GDP":
-      return "%";
-  }
+function seriesUnit(normalization: BudgetNormalization, options: NormalizationOptions): string {
+  const applied = resolveAppliedNormalization(options);
+  if (normalization === "PERCENT_GDP") return "%";
+  const capita = applied.normalization === "per_capita" ? "/capita" : "";
+  return `${applied.currency}${capita}${applied.inflationAdjusted ? " (real)" : ""}`;
 }
 
 function toAnalyticsSeries(params: {
@@ -450,6 +450,7 @@ function toAnalyticsSeries(params: {
   readonly period: ReportPeriodInput;
   readonly normalization: BudgetNormalization;
   readonly showPeriodGrowth: boolean;
+  readonly options: NormalizationOptions;
 }): AnalyticsSeries {
   const selected = filterSeriesPeriod(params.points, params.period);
   const points = params.showPeriodGrowth
@@ -461,7 +462,7 @@ function toAnalyticsSeries(params: {
     yAxis: {
       name: params.showPeriodGrowth ? "Growth" : "Amount",
       type: "FLOAT",
-      unit: params.showPeriodGrowth ? "%" : seriesUnit(params.normalization),
+      unit: params.showPeriodGrowth ? "%" : seriesUnit(params.normalization, params.options),
     },
     data: points.map((point) => ({ x: point.periodLabel, y: point.amount })),
   };
@@ -531,6 +532,8 @@ export async function fetchRedesignEntityDetails(
   const { normalization, caveats: normalizationCaveats } =
     resolveBudgetNormalization(params);
   base.normalizationCaveats = normalizationCaveats;
+  const applied = resolveAppliedNormalization(params);
+  const normalized = normalization !== "TOTAL" || applied.currency !== "RON" || applied.inflationAdjusted;
   const budgetRaw = await graphqlQuery<unknown>(
     ENTITY_BUDGET_QUERY,
     {
@@ -540,7 +543,9 @@ export async function fetchRedesignEntityDetails(
       summaryYearFrom,
       summaryYearTo,
       normalization,
-      normalized: normalization !== "TOTAL",
+      normalized,
+      currency: applied.currency,
+      inflationAdjusted: applied.inflationAdjusted,
       ...(params.mainCreditorCui !== undefined
         ? { mainCreditorCui: params.mainCreditorCui }
         : {}),
@@ -551,7 +556,7 @@ export async function fetchRedesignEntityDetails(
     },
   );
   const budget =
-    normalization === "TOTAL"
+    !normalized
       ? {
           kind: "nominal" as const,
           ...EntityBudgetSummaryResponseSchema.parse(budgetRaw),
@@ -588,6 +593,7 @@ export async function fetchRedesignEntityDetails(
       period: trendPeriod,
       normalization,
       showPeriodGrowth: params.show_period_growth === true,
+      options: params,
     }),
     expenseTrend: toAnalyticsSeries({
       id: "expense",
@@ -595,6 +601,7 @@ export async function fetchRedesignEntityDetails(
       period: trendPeriod,
       normalization,
       showPeriodGrowth: params.show_period_growth === true,
+      options: params,
     }),
     balanceTrend: toAnalyticsSeries({
       id: "balance",
@@ -602,6 +609,7 @@ export async function fetchRedesignEntityDetails(
       period: trendPeriod,
       normalization,
       showPeriodGrowth: params.show_period_growth === true,
+      options: params,
     }),
   };
 }
@@ -911,12 +919,16 @@ const BudgetLineItemsResponseSchema = z.object({
 
 const BUDGET_LINE_ITEMS_QUERY = /* GraphQL */ `
   query GetEntityLineItems(
+    $currency: BudgetCurrency!
+    $inflationAdjusted: Boolean!
     $normalization: BudgetNormalization!
     $filter: BudgetFactFilter!
     $first: Int!
     $after: String
   ) {
     budgetExecutionLineItems(
+      currency: $currency
+      inflationAdjusted: $inflationAdjusted
       normalization: $normalization
       filter: $filter
       sort: AMOUNT_DESC
@@ -992,6 +1004,8 @@ function toLineItemFilter(params: {
 }
 
 async function fetchLineItemCategory(params: {
+  readonly currency: "RON" | "EUR" | "USD";
+  readonly inflationAdjusted: boolean;
   readonly normalization: BudgetNormalization;
   readonly cui: string;
   readonly reportPeriod: ReportPeriodInput;
@@ -1009,6 +1023,8 @@ async function fetchLineItemCategory(params: {
       {
         filter,
         normalization: params.normalization,
+        currency: params.currency,
+        inflationAdjusted: params.inflationAdjusted,
         first: LINE_ITEM_PAGE_SIZE,
         after,
       },
@@ -1023,7 +1039,7 @@ async function fetchLineItemCategory(params: {
       typeof BudgetLineItemsResponseSchema
     >["budgetExecutionLineItems"] = parsed.budgetExecutionLineItems;
     for (const { node } of page.edges) {
-      if (params.normalization === "TOTAL") items.push(node);
+      if (params.normalization === "TOTAL" && params.currency === "RON" && !params.inflationAdjusted) items.push(node);
       else {
         // All rows share one entity/year. A gap invalidates this requested dataset.
         if (node.normalizedAmounts == null) return null;
@@ -1102,10 +1118,13 @@ export async function fetchRedesignEntityExecutionLineItems(
   fundingSources: FundingSourceOption[];
 }> {
   const normalization = toBudgetNormalization(params);
+  const applied = resolveAppliedNormalization(params);
   const reportType = toBudgetReportType(params.reportType);
   const [expenses, income] = await Promise.all([
     fetchLineItemCategory({
       normalization,
+      currency: applied.currency,
+      inflationAdjusted: applied.inflationAdjusted,
       cui: params.cui,
       reportPeriod: params.reportPeriod,
       reportType,
@@ -1116,6 +1135,8 @@ export async function fetchRedesignEntityExecutionLineItems(
     }),
     fetchLineItemCategory({
       normalization,
+      currency: applied.currency,
+      inflationAdjusted: applied.inflationAdjusted,
       cui: params.cui,
       reportPeriod: params.reportPeriod,
       reportType,
