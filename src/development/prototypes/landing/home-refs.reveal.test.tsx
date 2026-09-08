@@ -44,14 +44,20 @@ const BELOW_THE_FOLD = { top: 5000, bottom: 5200 } as DOMRectReadOnly
 const BOTTOM_SLIVER = { top: 700, bottom: 880 } as DOMRectReadOnly
 
 /**
- * Reports the given groups to the observer.
+ * Reports the given blocks to the observer.
  *
  * The rect is separate from `isIntersecting` on purpose, because that is exactly
- * the case the hook has to get right: the observer can call a group invisible
+ * the case the hook has to get right: the observer can call a block invisible
  * while its rectangle is plainly on screen.
  */
-function report(entries: readonly [Element, boolean, DOMRectReadOnly?][]) {
-  const observer = observers[0]
+/** The entrance observer, held back by the offset. Constructed first. */
+const TRIGGER = 0
+
+/** The observer watching the real viewport edge, which bounds the wait. */
+const SAFETY = 1
+
+function reportTo(which: number, entries: readonly [Element, boolean, DOMRectReadOnly?][]) {
+  const observer = observers[which]
   observer.cb(
     entries.map(([target, isIntersecting, rect]) => ({
       target,
@@ -61,23 +67,9 @@ function report(entries: readonly [Element, boolean, DOMRectReadOnly?][]) {
   )
 }
 
-function Page() {
-  const ref = useRef<HTMLDivElement>(null)
-  useRevealOnView(ref)
-  return (
-    <div ref={ref}>
-      <RevealStyles />
-      <section data-reveal-group data-testid="near">
-        <span data-reveal>label</span>
-        <h2 data-reveal>heading</h2>
-        <p data-reveal>body</p>
-      </section>
-      <section data-reveal-group data-testid="far">
-        <h2 data-reveal>far heading</h2>
-        <p data-reveal>far body</p>
-      </section>
-    </div>
-  )
+/** Reports to the entrance observer, which is what most tests are about. */
+function report(entries: readonly [Element, boolean, DOMRectReadOnly?][]) {
+  reportTo(TRIGGER, entries)
 }
 
 /**
@@ -87,13 +79,30 @@ function Page() {
  */
 const UNTOUCHED = 'true'
 
-const states = (el: HTMLElement) =>
-  Array.from(el.querySelectorAll('[data-reveal]')).map((b) => b.getAttribute('data-reveal'))
-
-const delays = (el: HTMLElement) =>
-  Array.from(el.querySelectorAll<HTMLElement>('[data-reveal]')).map(
-    (b) => b.style.getPropertyValue('--tpz-reveal-delay'),
+function Page() {
+  const ref = useRef<HTMLDivElement>(null)
+  useRevealOnView(ref)
+  return (
+    <div ref={ref}>
+      <RevealStyles />
+      <section data-testid="band">
+        <span data-reveal data-testid="label">
+          label
+        </span>
+        <h2 data-reveal data-testid="heading">
+          heading
+        </h2>
+        <p data-reveal data-testid="body">
+          body
+        </p>
+      </section>
+    </div>
   )
+}
+
+const blocks = (el: HTMLElement) => Array.from(el.querySelectorAll<HTMLElement>('[data-reveal]'))
+const states = (el: HTMLElement) => blocks(el).map((b) => b.getAttribute('data-reveal'))
+const delays = (el: HTMLElement) => blocks(el).map((b) => b.style.getPropertyValue('--tpz-reveal-delay'))
 
 beforeEach(() => {
   observers = []
@@ -113,72 +122,129 @@ describe('reveal on view', () => {
 
     // Before the observer says anything, every block carries only the inert
     // marker. This is exactly the markup the server produces.
-    expect(states(getByTestId('near'))).toEqual([UNTOUCHED, UNTOUCHED, UNTOUCHED])
-    expect(states(getByTestId('far'))).toEqual([UNTOUCHED, UNTOUCHED])
+    expect(states(getByTestId('band'))).toEqual([UNTOUCHED, UNTOUCHED, UNTOUCHED])
+  })
+
+  it('watches every block, not the section around them', () => {
+    const { getByTestId } = render(<Page />)
+
+    // Watching a container would fire its whole contents the moment its top
+    // edge appeared, which for a tall section settles its lower half off
+    // screen.
+    expect(observers[TRIGGER].observed).toEqual(blocks(getByTestId('band')))
+    expect(observers[SAFETY].observed).toEqual(blocks(getByTestId('band')))
   })
 
   it('hides only what is off screen, and never what is already in view', () => {
     const { getByTestId } = render(<Page />)
-    const near = getByTestId('near')
-    const far = getByTestId('far')
+    const [label, heading, body] = blocks(getByTestId('band'))
 
     report([
-      [near, true],
-      [far, false],
+      [label, true],
+      [heading, false],
+      [body, false],
     ])
 
-    // The group in view goes straight to its final state. It is never 'pending',
+    // The block in view goes straight to its final state. It is never 'pending',
     // so its computed opacity never changes and no transition runs — which is
     // what stops the page flashing on load.
-    expect(states(near)).toEqual(['shown', 'shown', 'shown'])
-    expect(states(far)).toEqual(['pending', 'pending'])
+    expect(states(getByTestId('band'))).toEqual(['shown', 'pending', 'pending'])
   })
 
-  it('reveals a group when it arrives, staggered in document order', () => {
+  it('shows a block the observer calls invisible but the reader can see', () => {
     const { getByTestId } = render(<Page />)
-    const far = getByTestId('far')
-
-    report([[far, false]])
-    expect(states(far)).toEqual(['pending', 'pending'])
-
-    report([[far, true]])
-    expect(states(far)).toEqual(['shown', 'shown'])
-    expect(delays(far)).toEqual(['0ms', '70ms'])
-  })
-
-  it('staggers each group from zero rather than from the page', () => {
-    const { getByTestId } = render(<Page />)
-
-    report([[getByTestId('near'), true]])
-
-    // A group is its own sequence. Continuing one counter down the page would
-    // leave the last block waiting on a delay measured in seconds.
-    expect(delays(getByTestId('near'))).toEqual(['0ms', '70ms', '140ms'])
-  })
-
-  it('shows a group the observer calls invisible but the reader can see', () => {
-    const { getByTestId } = render(<Page />)
-    const far = getByTestId('far')
+    const [label] = blocks(getByTestId('band'))
 
     // This is what a bottom root margin does: it shrinks the observer's idea of
-    // the viewport, so a group sitting in that band is reported as not
+    // the viewport, so a block sitting in that band is reported as not
     // intersecting while being plainly on screen. Hiding it there erases text
     // the server had already painted, and no further callback comes to undo it.
-    report([[far, false, BOTTOM_SLIVER]])
+    report([[label, false, BOTTOM_SLIVER]])
 
-    expect(states(far)).toEqual(['shown', 'shown'])
-    expect(observers[0].unobserved).toEqual([far])
+    expect(label.getAttribute('data-reveal')).toBe('shown')
+    expect(observers[TRIGGER].unobserved).toEqual([label])
   })
 
-  it('stops watching a group once it has arrived', () => {
+  it('staggers blocks that arrive together, in document order', () => {
     const { getByTestId } = render(<Page />)
-    const far = getByTestId('far')
+    const [label, heading, body] = blocks(getByTestId('band'))
 
-    report([[far, false]])
-    expect(observers[0].unobserved).toEqual([])
+    // Reported back to front, to prove the order comes from the document and
+    // not from the observer.
+    report([
+      [body, true],
+      [heading, true],
+      [label, true],
+    ])
 
-    report([[far, true]])
-    expect(observers[0].unobserved).toEqual([far])
+    expect(states(getByTestId('band'))).toEqual(['shown', 'shown', 'shown'])
+    // Every delay carries the entrance beat; the stagger is the 70ms on top.
+    expect(delays(getByTestId('band'))).toEqual(['80ms', '150ms', '220ms'])
+  })
+
+  it('gives a block arriving on its own the entrance beat and nothing more', () => {
+    const { getByTestId } = render(<Page />)
+    const [, heading] = blocks(getByTestId('band'))
+
+    report([[heading, true]])
+
+    // Each arrival is its own sequence. Counting from a page-wide index would
+    // leave a block near the bottom waiting on a delay measured in seconds.
+    expect(heading.style.getPropertyValue('--tpz-reveal-delay')).toBe('80ms')
+  })
+
+  it('brings a visible block in even when the trigger line is never crossed', () => {
+    vi.useFakeTimers()
+    try {
+      const { getByTestId } = render(<Page />)
+      const [label] = blocks(getByTestId('band'))
+
+      // Off screen first, so it is genuinely hidden and has something to lose.
+      reportTo(TRIGGER, [[label, false]])
+      expect(label.getAttribute('data-reveal')).toBe('pending')
+
+      // Now visible, but sitting inside the offset band: the trigger observer
+      // stays silent, because the block has not crossed its line. This is the
+      // exact shape of the bug the old `-12%` root margin had — the difference
+      // is that something else is now listening.
+      reportTo(SAFETY, [[label, true]])
+      expect(label.getAttribute('data-reveal')).toBe('pending')
+
+      vi.advanceTimersByTime(1000)
+      expect(label.getAttribute('data-reveal')).toBe('shown')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('does not bring in a block that scrolled away again before its clock ran out', () => {
+    vi.useFakeTimers()
+    try {
+      const { getByTestId } = render(<Page />)
+      const [label] = blocks(getByTestId('band'))
+
+      reportTo(TRIGGER, [[label, false]])
+      reportTo(SAFETY, [[label, true]])
+      reportTo(SAFETY, [[label, false]])
+      vi.advanceTimersByTime(1000)
+
+      // Still off screen, so still hidden: the clock is a floor on how long a
+      // *visible* block may wait, not a timer that reveals the whole page.
+      expect(label.getAttribute('data-reveal')).toBe('pending')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('stops watching a block once it has arrived', () => {
+    const { getByTestId } = render(<Page />)
+    const [label] = blocks(getByTestId('band'))
+
+    report([[label, false]])
+    expect(observers[TRIGGER].unobserved).toEqual([])
+
+    report([[label, true]])
+    expect(observers[TRIGGER].unobserved).toEqual([label])
   })
 
   it('leaves the text alone entirely when motion is not wanted', () => {
@@ -193,8 +259,7 @@ describe('reveal on view', () => {
     // be hidden — the stylesheet's reduced-motion rule is a second line of
     // defence, not the only one.
     expect(observers).toEqual([])
-    expect(states(getByTestId('near'))).toEqual([UNTOUCHED, UNTOUCHED, UNTOUCHED])
-    expect(states(getByTestId('far'))).toEqual([UNTOUCHED, UNTOUCHED])
+    expect(states(getByTestId('band'))).toEqual([UNTOUCHED, UNTOUCHED, UNTOUCHED])
   })
 
   it('keys the hidden state on a value the server never emits', () => {

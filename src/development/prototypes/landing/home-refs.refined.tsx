@@ -1,10 +1,14 @@
+import { useEffect, useRef } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import type { LinkProps } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
 import leu from '@/assets/images/landing-leu.webp'
-import balanta from '@/assets/images/landing-balanta.webp'
+import leuAvif from '@/assets/images/landing-leu.avif'
+import atlas from '@/assets/images/landing-atlas.webp'
+import atlasAvif from '@/assets/images/landing-atlas.avif'
 import justitia from '@/assets/images/landing-justitia.webp'
+import justitiaAvif from '@/assets/images/landing-justitia.avif'
 import logo from '@/assets/logo/logo.png'
 import { PREDEFINED_ENTITIES } from '@/lib/constants/predefined-entities'
 import { buildPreferredEntityPath } from '@/lib/entity-navigation'
@@ -15,10 +19,31 @@ import { cn } from '@/lib/utils'
 import { scraperDatasetCatalog } from '@/lib/scraper-references'
 import { MonoLabel } from './home-refs.mono-label'
 import { RevealStyles, useRevealOnView } from './home-refs.reveal'
-import { NATIONAL_FACTS, formatFact } from './home-refs.national-facts'
+import {
+  GroupPicture,
+  PICTURE_ATTR,
+  PictureRevealStyles,
+  usePictureReveal,
+} from './home-refs.image-reveal'
+import { ScrambleText, scrambleWithin, stopScrambling } from './home-refs.scramble'
+import { CountUpValue, SmearFilters, countUpWithin, stopCounting } from './home-refs.count-up'
+import { NATIONAL_FACTS } from './home-refs.national-facts'
 import { PixelField } from './home-refs.pixel-art'
 import { FIELD_HOST_CLASS, FieldAnimationStyles } from './home-refs.field-animation'
 import { useFieldMotion } from './home-refs.field-motion'
+import {
+  FOOTER_SCENE_CLEAR_PX,
+  FooterScene,
+  FooterSceneStyles,
+  useFooterScene,
+} from './home-refs.footer-scene'
+import { LightMaterialStyles } from './home-refs.light-material'
+import {
+  SECTION_LIGHT_ATTR,
+  SectionLight,
+  SectionLightStyles,
+  useSectionLight,
+} from './home-refs.section-light'
 import { ScrollLight, ScrollLightStyles, useScrollLight } from './home-refs.scroll-light'
 import { LandingSearch } from './home-refs.search'
 import { localEntityMatches } from './home-refs.search-local'
@@ -346,7 +371,10 @@ function StartHerePanel() {
 function RefinedCell({ entry, index }: { readonly entry: LandingEntry; readonly index: number }) {
   const Icon = entry.icon
   return (
-    <div className="-ml-px -mt-px border-l border-t">
+    // The cell arrives, not its text: fading the title and the blurb separately
+    // inside a bordered box leaves the box sitting there empty first, which
+    // reads as a loading state rather than as an entrance.
+    <div data-reveal className="-ml-px -mt-px border-l border-t">
       <Link
         to={entry.to}
         preload="intent"
@@ -383,6 +411,11 @@ function RefinedCell({ entry, index }: { readonly entry: LandingEntry; readonly 
  */
 type GroupImage = {
   readonly src: string
+  /** The same picture in AVIF, offered ahead of the WebP. */
+  readonly avif: string
+  /** The art's own pixels. See `GroupPicture` — the cell reserves the box. */
+  readonly width: number
+  readonly height: number
   /**
    * Whether the picture is cropped to its cell or fitted inside it.
    *
@@ -413,7 +446,7 @@ type GroupImage = {
  * Two things worth carrying with this map.
  *
  * Allegory generates safely; real institutions do not. A Justitia, a stone lion
- * and a balance have no referent to get wrong. A rendered Palace of the
+ * and an Atlas have no referent to get wrong. A rendered Palace of the
  * Parliament that is almost right would undercut the one thing this platform
  * sells — that what you are shown is the actual record.
  *
@@ -429,6 +462,9 @@ const GROUP_IMAGES: Record<string, GroupImage | undefined> = {
   // three, which is what a seated figure on a pedestal wants.
   bani: {
     src: leu,
+    avif: leuAvif,
+    width: 760,
+    height: 942,
     fit: 'contain',
     position: '50% 50%',
     side: 'left',
@@ -443,11 +479,39 @@ const GROUP_IMAGES: Record<string, GroupImage | undefined> = {
   // mock-data gate, so it is three entries tall today and four when that gate
   // opens.
   institutii: {
-    src: balanta,
-    fit: 'contain',
-    position: '50% 50%',
+    src: atlas,
+    avif: atlasAvif,
+    width: 760,
+    height: 1250,
+    /*
+     * The only one of the three that is cropped on desktop rather than fitted,
+     * because it is the only one whose proportions fight the cell.
+     *
+     * The desktop cell comes out about square — 363x365 beside three entries —
+     * and this source is 0.608. Under 'contain' that fits to height and renders
+     * the figure 221px wide in a 363px box, a small statue marooned in white
+     * space. 'cover' fills it, at the price of the pedestal.
+     *
+     * Worth the price: what is lost is the base, and what survives is the globe
+     * and the figure carrying it, which is the whole of what the picture is
+     * for. '15%' rather than '0%' because anchoring the top gives the globe the
+     * entire upper half and pushes the head to the middle; a little lower
+     * trades the crown of the globe — which stays legible as a sphere even
+     * clipped — for the head, the shoulders and a knee.
+     */
+    fit: 'cover',
+    position: '50% 15%',
     side: 'right',
-    // 4:5 against the cropped source's own 0.805.
+    /*
+     * 4:5, which crops on a phone exactly as it does on the desktop row.
+     *
+     * It was 3:5 — near enough the source's own 0.608 that mobile got the whole
+     * figure, pedestal included, which was the point. Measured on a 390x844
+     * screen that box is 582px tall: 69% of the viewport for one decorative
+     * picture, with the entries it illustrates pushed off the bottom entirely.
+     * 4:5 brings it to 423 — half the screen — and costs the pedestal, which
+     * the desktop crop had already given up.
+     */
     mobileAspect: 'aspect-4/5',
   },
   // Anchored to the very top. Centring lands on drapery, and anything below the
@@ -456,6 +520,9 @@ const GROUP_IMAGES: Record<string, GroupImage | undefined> = {
   // air above the head, so '0%' reads as headroom rather than a crop.
   lege: {
     src: justitia,
+    avif: justitiaAvif,
+    width: 760,
+    height: 1140,
     fit: 'cover',
     position: '50% 0%',
     side: 'left',
@@ -501,11 +568,16 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
         const fillers = image ? 0 : (columns - (group.entries.length % columns)) % columns
         return (
           <section key={group.key} aria-labelledby={`group-${group.key}`}>
-            <div className="flex items-center gap-3">
+            <div data-reveal className="flex items-center gap-3">
               <MonoLabel className="text-primary">{String(groupIndex + 1).padStart(2, '0')}</MonoLabel>
-              {/* A heading, not a styled span: the index is the page's outline. */}
+              {/* A heading, not a styled span: the index is the page's outline.
+                  Its accessible name comes from the `sr-only` copy inside
+                  `ScrambleText`, so `aria-labelledby` above keeps resolving to
+                  the real title while the visible copy is still noise. */}
               <h3 id={`group-${group.key}`}>
-                <MonoLabel className="text-foreground">{group.title}</MonoLabel>
+                <MonoLabel className="text-foreground">
+                  <ScrambleText>{group.title}</ScrambleText>
+                </MonoLabel>
               </h3>
               <span aria-hidden="true" className="h-px flex-1 bg-border" />
               <MonoLabel className="text-muted-foreground/60 tabular-nums">
@@ -513,6 +585,7 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
               </MonoLabel>
             </div>
             <div
+              {...{ [SECTION_LIGHT_ATTR]: '' }}
               className={cn(
                 'mt-4 grid grid-cols-1 border',
                 image
@@ -532,6 +605,7 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
                    3:2 because a portrait subject needs the height back once it
                    is running full-bleed. */
                 <div
+                  {...{ [PICTURE_ATTR]: '' }}
                   className={cn(
                     'relative -ml-px -mt-px overflow-hidden border-l border-t sm:aspect-auto',
                     image.mobileAspect,
@@ -544,24 +618,13 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
                     image.side === 'right' && 'sm:col-start-2 sm:row-start-1',
                   )}
                 >
-                  <img
+                  <GroupPicture
                     src={image.src}
-                    /* Decorative: the group heading beside it already names the
-                       section, so announcing the picture would only make a
-                       screen reader say the same thing twice. */
-                    alt=""
-
-                    loading="lazy"
-                    decoding="async"
-                    className={cn(
-                      'absolute inset-0 size-full',
-                      // Padding on the element rather than the cell: the image
-                      // is absolutely positioned, so the cell's own padding
-                      // would not reach it, but `object-contain` fits inside
-                      // the content box.
-                      image.fit === 'contain' ? 'object-contain p-2' : 'object-cover',
-                    )}
-                    style={{ objectPosition: image.position }}
+                    avif={image.avif}
+                    fit={image.fit}
+                    position={image.position}
+                    width={image.width}
+                    height={image.height}
                   />
                 </div>
               ) : null}
@@ -585,22 +648,50 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
   )
 }
 
+/**
+ * Everything that happens when a block arrives, beyond the fade itself.
+ *
+ * Declared at module scope so its identity is stable across renders, which is
+ * what keeps the reveal's effect from tearing down and rebuilding its observers
+ * on every render.
+ */
+function startArrivalEffects(block: Element, delay: number) {
+  scrambleWithin(block, delay)
+  countUpWithin(block, delay)
+}
+
 function RefinedLanding() {
   const { groups, coverage } = getPlatformCoverage()
   const heroRef = useFieldMotion()
-  // The light measures the page it runs down, so it takes the root rather than
-  // being handed coordinates.
-  const rootRef = useScrollLight()
+  // One root, lent to every effect that needs the page's geometry. None of them
+  // owns it, which is what lets the page decide which of them run at all.
+  const rootRef = useRef<HTMLDivElement>(null)
+  useScrollLight(rootRef)
   // The hero is deliberately not a group: it is on screen at load, so "first
   // time in view" would mean "at load", and hiding server-rendered text at load
   // is the failure this is built to avoid. The hero keeps its own entrance.
-  useRevealOnView(rootRef)
+  useRevealOnView(rootRef, startArrivalEffects)
+  usePictureReveal(rootRef)
+  useSectionLight(rootRef)
+  useFooterScene(rootRef)
+  // Module state outlives the component, so an unmount mid-flight would leave
+  // both loops ticking against nodes that are no longer in the document.
+  useEffect(() => () => {
+    stopScrambling()
+    stopCounting()
+  }, [])
 
   return (
-    <div ref={rootRef} className="w-full bg-background" data-dev-marker={PROTOTYPE_MARKER}>
+    <div ref={rootRef} className="relative w-full bg-background" data-dev-marker={PROTOTYPE_MARKER}>
+      <LightMaterialStyles />
       <ScrollLightStyles />
+      <SectionLightStyles />
+      <FooterSceneStyles />
       <RevealStyles />
+      <PictureRevealStyles />
+      <SmearFilters />
       <ScrollLight />
+      <SectionLight />
       {/* Hero — open band. */}
       {/* The hero does *not* clip. It used to, and the search dropdown paid for
           it: with five results the panel ran 194px past the section and was cut
@@ -748,7 +839,7 @@ function RefinedLanding() {
       <section className="border-b bg-muted/20" aria-label="România în cifre">
         <Frame>
           <CruxMarks />
-          <dl className="grid grid-cols-2 lg:grid-cols-4" data-reveal-group>
+          <dl className="grid grid-cols-2 lg:grid-cols-4">
             {NATIONAL_FACTS.map((fact, i) => (
               <div
                 key={fact.label}
@@ -761,7 +852,7 @@ function RefinedLanding() {
                 )}
               >
                 <dd className="order-1 flex items-baseline gap-1.5 text-3xl font-semibold tabular-nums tracking-tight text-foreground sm:text-4xl">
-                  {formatFact(fact)}
+                  <CountUpValue value={fact.value} digits={fact.digits} />
                   {/* The unit never breaks across lines — 'mld.' alone on one
                       line and 'lei' on the next reads as two facts. */}
                   <span className="shrink-0 whitespace-nowrap text-sm font-medium tracking-normal text-muted-foreground">
@@ -778,7 +869,7 @@ function RefinedLanding() {
                     {fact.label}
                   </MonoLabel>
                   <MonoLabel className="mt-auto block pt-6 leading-relaxed text-muted-foreground">
-                    {fact.source}
+                    <ScrambleText>{fact.source}</ScrambleText>
                   </MonoLabel>
                 </dt>
               </div>
@@ -790,7 +881,7 @@ function RefinedLanding() {
       {/* Statement — open band. */}
       <section className="border-b">
         <Frame className="py-16 sm:py-20">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12" data-reveal-group>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
             <div className="lg:col-span-5">
               <MonoLabel className="block text-primary" data-reveal>
                 01 / Ce găsești aici
@@ -830,7 +921,7 @@ function RefinedLanding() {
           makes stating it at all a requirement. */}
       <section className="border-b">
         <Frame className="py-14 sm:py-16">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12" data-reveal-group>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
             <div className="lg:col-span-5">
               <MonoLabel className="block text-primary" data-reveal>
                 02 / Proveniență
@@ -852,7 +943,7 @@ function RefinedLanding() {
                 nu este prezentată fără să spună de unde vine și din ce
                 perioadă.
               </p>
-              <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-3 border-t pt-5">
+              <ul data-reveal className="mt-7 flex flex-wrap gap-x-6 gap-y-3 border-t pt-5">
                 {coverage.map((item) => (
                   <li key={item.label}>
                     <MonoLabel className="text-muted-foreground">
@@ -877,9 +968,119 @@ function RefinedLanding() {
           </div>
         </Frame>
       </section>
+
+      {/* The footer, and the page's one picture.
+
+          `relative` so the scene has something to be absolute against, and the
+          content carries `z-10` so the range rises *behind* the last rows of
+          text rather than over them. This is a proposal for `AppFooter`, which
+          the dev harness also renders below it — two footers stacked is the
+          harness, not the design. */}
+      <footer className="relative overflow-hidden border-t">
+        <FooterScene />
+        <Frame className="pointer-events-none relative z-10 pt-14">
+          {/* Padding rather than a height, so the footer is as tall as its own
+              text plus room for the vista. The figure comes from the scene, so
+              the two cannot drift apart: the text stops above the highest
+              cloud, and the peaks rise behind it.
+
+              The frame does not take pointer events and its two content blocks
+              do. Its box covers the whole footer, padding included, so as a
+              `z-10` positioned element it swallowed every click meant for the
+              sky underneath — the clouds could not be grabbed anywhere the
+              padding reached, which was everywhere. */}
+          <div style={{ paddingBottom: FOOTER_SCENE_CLEAR_PX }}>
+            <div className="pointer-events-auto grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="lg:col-span-2">
+                <div className="flex items-center gap-2">
+                  <img src={logo} alt="" className="size-5 rounded-sm" />
+                  <span className="font-semibold text-foreground">
+                    Transparenta.eu
+                  </span>
+                </div>
+                <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
+                  Banii publici, deciziile și documentele care le însoțesc —
+                  într-un singur loc, cu sursa și data lângă fiecare cifră.
+                </p>
+              </div>
+              {/*
+                * One navigation landmark for the footer, not one per column.
+                *
+                * A nav per column takes its name from the column, and "Legal"
+                * is also the name of a nav in the app shell's own footer. Two
+                * landmarks with the same role and the same name are
+                * indistinguishable in the landmark list a screen reader offers,
+                * which is the one place landmarks are actually used.
+                *
+                * 'display: contents' because the columns are grid children of
+                * the block above and a real box here would break the row. The
+                * column titles stay visual — the lists inside carry the
+                * structure, and inventing an 'h2' outline in the footer to sit
+                * under the page's 'h3' group headings would be worse.
+                */}
+              <nav aria-label="Navigare footer" className="contents">
+                {FOOTER_COLUMNS.map((column) => (
+                  <div key={column.title}>
+                    <MonoLabel className="text-muted-foreground/70">
+                      {column.title}
+                    </MonoLabel>
+                    <ul className="mt-4 space-y-2.5">
+                      {column.links.map((link) => (
+                        <li key={link.label}>
+                          <Link
+                            to={link.to}
+                            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                          >
+                            {link.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </nav>
+            </div>
+            <div className="pointer-events-auto mt-12 flex flex-wrap items-center justify-between gap-3 border-t pt-5">
+              <MonoLabel className="text-muted-foreground/70">
+                © {new Date().getFullYear()} Transparenta.eu
+              </MonoLabel>
+              <MonoLabel className="text-muted-foreground/70">
+                Date din surse oficiale
+              </MonoLabel>
+            </div>
+          </div>
+        </Frame>
+      </footer>
     </div>
   )
 }
+
+/**
+ * Footer navigation, kept to routes this app actually has.
+ *
+ * Deliberately short. A landing footer that lists every surface competes with
+ * the index the page has just spent its whole length building.
+ */
+const FOOTER_COLUMNS = [
+  {
+    title: 'Platformă',
+    links: [
+      { label: 'Analiza entităților', to: '/entity-analytics' },
+      { label: 'Hărți', to: '/map' },
+      { label: 'Grafice', to: '/charts' },
+    ],
+  },
+  {
+    title: 'Legal',
+    links: [
+      { label: 'Politica de confidențialitate', to: '/privacy' },
+      { label: 'Termeni și condiții', to: '/terms' },
+    ],
+  },
+] satisfies readonly {
+  readonly title: string
+  readonly links: readonly { readonly label: string; readonly to: LinkProps['to'] }[]
+}[]
 
 /**
  * The landing.

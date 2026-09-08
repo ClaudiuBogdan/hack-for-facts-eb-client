@@ -52,7 +52,7 @@ function CampaignShareCard({
         <Button
           asChild
           size="lg"
-          className="h-12 rounded-full bg-[#3565c4] px-6 text-base font-semibold shadow-lg shadow-[#3565c4]/20 hover:bg-[#2d57a8]"
+          className="h-12 rounded-full bg-[#3565c4] px-6 text-base font-semibold text-white shadow-lg shadow-[#3565c4]/20 hover:bg-[#2d57a8]"
         >
           <Link to={to as '/'} search={search}>
             {t`Open campaign`}

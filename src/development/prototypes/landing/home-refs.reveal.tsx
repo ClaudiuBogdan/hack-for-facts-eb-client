@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import type { RefObject } from 'react'
 
 /**
- * Section text that arrives as you reach it.
+ * Section text and cells that arrive as you reach them.
  *
  * Modelled on mega.dev, measured rather than guessed: `Element.animate` there
  * runs `opacity: [0, 1]` over 550–700ms on `cubic-bezier(0.23, 1, 0.32, 1)`,
@@ -39,49 +39,54 @@ import type { RefObject } from 'react'
  */
 export const REVEAL_ATTR = 'data-reveal'
 
-/** Marks the ancestor whose entry reveals every block inside it, together. */
-export const REVEAL_GROUP_ATTR = 'data-reveal-group'
-
 const DURATION_MS = 600
 const STAGGER_MS = 70
 
-/**
- * The longest the whole stagger may run, however many blocks a group holds.
- *
- * Four blocks at 70ms is 210ms and the group has finished arriving in 810ms.
- * Twenty blocks at a flat 70ms would run to 1930ms, which stops reading as one
- * group arriving and starts reading as a queue. Four blocks is today's maximum,
- * so this changes nothing now and is here for whoever marks up a list.
- */
-const STAGGER_WINDOW_MS = 280
-const RISE_PX = 12
-const EASE = 'cubic-bezier(0.23, 1, 0.32, 1)'
+/** A short beat once a block has earned its entrance, so it does not snap in. */
+const ENTRANCE_DELAY_MS = 80
 
 /**
- * The trigger line sits exactly on the viewport edge, so that "visible" and
- * "revealed" are the same question and there is no band between them.
+ * How far into the viewport a block comes before it starts arriving.
  *
- * This was `0px 0px -12% 0px`, to hold the start back until a group was properly
- * on screen. That margin shrinks the observer's viewport, and `isIntersecting`
- * is reported against the shrunk one — so a group in the bottom 12% was both
- * plainly visible and formally "not intersecting", and stayed hidden with no
- * further callback to correct it. Parked there it never arrived: 42px of the
- * first statement band at y=100, 13px of the second at y=2200. Pulling the line
- * back to the edge removes the band rather than papering over it.
+ * A block that begins the moment its first pixel clears the bottom edge does
+ * most of its arriving at the very edge of the screen, which reads as the
+ * scroll dragging it in rather than as an entrance.
  *
- * The original worry — that a 600ms arrival starting at the edge would be over
- * before it could be read — does not survive arithmetic. At a normal 1000px/s
- * scroll the block travels some 700px during those 600ms, so it finishes near
- * the middle of the screen. Measured against the reference, mega.dev starts its
- * own reveals about as early, and many of its blocks animate while still below
- * the fold because their group has already triggered.
+ * This is the same shape as the `-12%` root margin that erased text earlier, and
+ * it is only safe here because of `safety` below. The failure then was not the
+ * margin itself but that it was the *only* thing that could reveal a block: a
+ * block sitting in the offset band is on screen, hidden, and the observer will
+ * not speak again until it crosses the line, so a reader parked there waited
+ * forever. Nothing bounded it.
  */
-const ROOT_MARGIN = '0px'
+const TRIGGER_OFFSET_PX = 140
+
+/**
+ * The longest a block may be visible and still hidden.
+ *
+ * This is what makes the offset above safe rather than a repeat of the bug. A
+ * second observer watches the real viewport edge and starts this clock the
+ * moment a block is genuinely visible; if the reader stops scrolling inside the
+ * offset band, the block arrives anyway. The offset shapes the entrance during
+ * a scroll, and this guarantees it always ends.
+ */
+const SAFETY_MS = 700
+
+/**
+ * The longest a single arrival may run, however many blocks land together.
+ *
+ * Four at 70ms is 210ms and the whole thing is over in 810ms. A lattice section
+ * can put eight cells on screen at once on a wide viewport, and eight at a flat
+ * 70ms runs to 1090ms, which stops reading as a row arriving and starts reading
+ * as a queue.
+ */
+const STAGGER_WINDOW_MS = 280
+const EASE = 'cubic-bezier(0.23, 1, 0.32, 1)'
 
 const CSS = `
 [${REVEAL_ATTR}='pending'] {
   opacity: 0;
-  translate: 0 ${RISE_PX}px;
+  translate: 0 12px;
 }
 
 [${REVEAL_ATTR}='shown'] {
@@ -121,39 +126,19 @@ export function RevealStyles() {
 }
 
 /**
- * The blocks a group is responsible for — its own, not its descendants'.
+ * Tells one block to arrive, `delay` milliseconds into the batch it landed in.
  *
- * `querySelectorAll` reaches through nested groups, so without this filter an
- * outer group's arrival would mark an inner group's blocks `shown` (including
- * ones still below the fold) and hand them delays counted from the outer
- * group's sequence, only for the inner group's own off-screen entry to hide
- * them again. Nothing nests today; this makes "a group owns its blocks" true by
- * construction rather than by the current markup happening to be flat.
+ * A block that was never hidden is unaffected by the delay: its computed opacity
+ * and translate do not change, so no transition starts and there is nothing for
+ * a delay to postpone.
  */
-function ownBlocks(group: Element) {
-  return Array.from(group.querySelectorAll<HTMLElement>(`[${REVEAL_ATTR}]`)).filter(
-    (block) => block.closest(`[${REVEAL_GROUP_ATTR}]`) === group,
-  )
-}
-
-/** Reveals every block in a group, staggered in document order. */
-function show(group: Element) {
-  const blocks = ownBlocks(group)
-  /*
-   * The step shrinks so that a long group still finishes within one window.
-   * At the current maximum of four blocks this is exactly STAGGER_MS and
-   * changes nothing; the `min` is what guarantees the step can only ever get
-   * smaller, so a short group never slows down to fill the window.
-   */
-  const step = blocks.length > 1 ? Math.min(STAGGER_MS, STAGGER_WINDOW_MS / (blocks.length - 1)) : 0
-  blocks.forEach((block, index) => {
-    block.style.setProperty('--tpz-reveal-delay', `${Math.round(index * step)}ms`)
-    block.setAttribute(REVEAL_ATTR, 'shown')
-  })
+function show(block: HTMLElement, delay: number) {
+  block.style.setProperty('--tpz-reveal-delay', `${Math.round(delay)}ms`)
+  block.setAttribute(REVEAL_ATTR, 'shown')
 }
 
 /**
- * Whether a group is far enough away that hiding it cannot be seen.
+ * Whether a block is far enough away that hiding it cannot be seen.
  *
  * Deliberately *not* `entry.isIntersecting`, even though with a zero root margin
  * the two now agree. The margin is a presentation decision and this is a
@@ -173,60 +158,147 @@ function isOffScreen(entry: IntersectionObserverEntry, viewportHeight: number) {
 }
 
 /**
- * Arms every group under `rootRef`. Takes the root the page already has rather
- * than handing back a second ref for the same element — the page declares what
- * travels together, the hook owns when.
+ * Arms every block under `rootRef`.
  *
- * One observer for the whole landing rather than one per block: the callback is
- * the only per-scroll work, and it stops being called at all once the last
- * group has arrived.
+ * Blocks are watched one by one rather than in declared groups, which is what
+ * this did first. A group fired everything the moment its *top* edge appeared,
+ * and a lattice section is tall — an image and four stacked cells — so its lower
+ * cells arrived several hundred pixels below the fold and were long since
+ * settled by the time anyone saw them. Watching each block puts every arrival on
+ * screen, and blocks that appear together still travel together because the
+ * stagger is applied per batch, in document order.
+ *
+ * One observer for the whole landing, and each block is dropped from it as it
+ * lands, so the callback stops being called at all once the last one has.
  */
-export function useRevealOnView(rootRef: RefObject<HTMLElement | null>) {
+export function useRevealOnView(
+  rootRef: RefObject<HTMLElement | null>,
+  /**
+   * Runs for each block as it arrives, with the same delay its fade got, so
+   * anything hanging off it starts on the same beat rather than on a rival
+   * schedule. This is the page's single notion of "arrived": the offset, the
+   * safety clock and the batch stagger are all decided here, and effects that
+   * want the same moment ask for it rather than observing again themselves.
+   */
+  onBlockShown?: (block: Element, delay: number) => void,
+) {
   useEffect(() => {
     const root = rootRef.current
     if (!root) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
-    const observer = new IntersectionObserver(
+    /** Blocks visible but not yet arrived, and the clock that will bring them. */
+    const waiting = new Map<Element, ReturnType<typeof setTimeout>>()
+
+    /** Brings a batch in together, staggered in document order. */
+    function arrive(blocks: Element[]) {
+      if (blocks.length === 0) return
+      // Document order, so a row staggers left to right and a column top to
+      // bottom, rather than in whatever order the observer reported them.
+      blocks.sort((a, b) =>
+        a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1,
+      )
+      // The step can only ever shrink: a short batch keeps the full 70ms and
+      // never slows down to fill the window.
+      const step =
+        blocks.length > 1 ? Math.min(STAGGER_MS, STAGGER_WINDOW_MS / (blocks.length - 1)) : 0
+      blocks.forEach((block, index) => {
+        const timer = waiting.get(block)
+        if (timer !== undefined) {
+          clearTimeout(timer)
+          waiting.delete(block)
+        }
+        trigger.unobserve(block)
+        safety.unobserve(block)
+        const delay = ENTRANCE_DELAY_MS + index * step
+        show(block as HTMLElement, delay)
+        onBlockShown?.(block, delay)
+      })
+    }
+
+    /**
+     * The entrance. Fires once a block is `TRIGGER_OFFSET_PX` past the bottom
+     * edge, which is what stops an arrival happening at the very lip of the
+     * screen.
+     */
+    const trigger = new IntersectionObserver(
       (entries) => {
         /*
          * `clientHeight` is the viewport the observer itself measures against,
          * less any horizontal scrollbar, so it is the right number. The fallback
-         * is not decoration: a zero here would put every group above the fold by
+         * is not decoration: a zero here would put every block above the fold by
          * this arithmetic and hide the entire page, which is the worst outcome
          * this file has, earned from the cheapest possible mistake.
          */
         const viewportHeight = document.documentElement.clientHeight || window.innerHeight
+
+        /*
+         * Three cases, and the order matters.
+         *
+         * Past the trigger line: arrive.
+         *
+         * On screen but short of the trigger line: arrive too, without waiting.
+         * Either straddling the fold at load or already painted, so the one
+         * thing that must not happen is hiding it. Because it was never
+         * 'pending', going straight to 'shown' leaves opacity at 1 and translate
+         * at none — the computed values do not change, so nothing animates and
+         * nothing flashes. It loses the arrival, which is the correct thing to
+         * lose.
+         *
+         * Genuinely off screen: hide it, and let it arrive on the way down.
+         */
+        const arriving: Element[] = []
         for (const entry of entries) {
-          /*
-           * Three cases, and the order matters.
-           *
-           * Past the trigger line: reveal it, and stop watching.
-           *
-           * On screen but short of the trigger line: reveal it too, without
-           * waiting. It is either straddling the fold at load or was already
-           * painted, so the one thing that must not happen is hiding it. Because
-           * it was never 'pending', going straight to 'shown' leaves opacity at
-           * 1 and translate at none — the computed values do not change, so
-           * nothing animates and nothing flashes. It loses the arrival, which is
-           * the correct thing to lose.
-           *
-           * Genuinely off screen: hide it, and let it arrive on the way down.
-           */
           if (entry.isIntersecting || !isOffScreen(entry, viewportHeight)) {
-            show(entry.target)
-            observer.unobserve(entry.target)
+            arriving.push(entry.target)
             continue
           }
-          ownBlocks(entry.target).forEach((block) =>
-            block.setAttribute(REVEAL_ATTR, 'pending'),
+          entry.target.setAttribute(REVEAL_ATTR, 'pending')
+        }
+        arrive(arriving)
+      },
+      { rootMargin: `0px 0px -${TRIGGER_OFFSET_PX}px 0px` },
+    )
+
+    /**
+     * The guarantee. Watches the real viewport edge, so it hears about a block
+     * the moment it is genuinely visible — including while it sits inside the
+     * offset band, where `trigger` stays silent. Whatever the reader does, a
+     * visible block arrives within `SAFETY_MS`.
+     */
+    const safety = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) {
+            const timer = waiting.get(entry.target)
+            if (timer !== undefined) {
+              clearTimeout(timer)
+              waiting.delete(entry.target)
+            }
+            continue
+          }
+          if (waiting.has(entry.target)) continue
+          waiting.set(
+            entry.target,
+            setTimeout(() => {
+              waiting.delete(entry.target)
+              arrive([entry.target])
+            }, SAFETY_MS),
           )
         }
       },
-      { rootMargin: ROOT_MARGIN },
+      { rootMargin: '0px' },
     )
 
-    root.querySelectorAll(`[${REVEAL_GROUP_ATTR}]`).forEach((group) => observer.observe(group))
-    return () => observer.disconnect()
-  }, [rootRef])
+    for (const block of root.querySelectorAll(`[${REVEAL_ATTR}]`)) {
+      trigger.observe(block)
+      safety.observe(block)
+    }
+    return () => {
+      trigger.disconnect()
+      safety.disconnect()
+      for (const timer of waiting.values()) clearTimeout(timer)
+      waiting.clear()
+    }
+  }, [rootRef, onBlockShown])
 }

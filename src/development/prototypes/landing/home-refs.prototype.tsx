@@ -17,7 +17,14 @@ import { LandingRefs } from './home-refs.refined'
  * floating over the page. Both comparisons, with the measurements and the
  * losing arguments, are in `docs/design/landing-search-comparison.md` so
  * neither question gets reopened from scratch.
+ *
+ * Round six settled how the illustrations arrive — they were the one thing on
+ * the page that did not. Opacity, a rise, a scale just short of 1 and a small
+ * blur unwinding underneath, over four candidates including a pre-blurred
+ * placeholder that lost on appearance. `home-refs.image-reveal.tsx` carries the
+ * comparison and `docs/search/` the research the parameters came from.
  */
+
 export const prototype = {
   title: 'Landing page rewrite',
   spec: 'docs/user-stories/landing-page.md',
@@ -25,7 +32,7 @@ export const prototype = {
     landing: {
       title: 'Landing page',
       component: LandingRefs,
-      note: `Search and results as one grey surface: no gap, no seam under the field, and the divider below the header is the single line between the query and the answers. Diacritic-folded match highlight, two-stage Escape, results that are real links. Intro wave across ${FIELD_RECT_COUNT} cells per side, a ripple on a hero click, and a scroll light closing on the centre of the bottom border.`,
+      note: `Each figure counts up with every digit smeared by its own rate of change, so the leading digit is sharp while the tail streaks. Section headings decrypt, cells and text arrive as you reach them. Search and results as one grey surface: no gap, no seam under the field, and the divider below the header is the single line between the query and the answers. Diacritic-folded match highlight, two-stage Escape, results that are real links. Intro wave across ${FIELD_RECT_COUNT} cells per side, a ripple on a hero click, and one light at a time: a circuit tracing the card you are reading, and the margins reporting the stretches no card covers, each fading as the other takes over. The illustrations arrive with a fade, a 20px rise, a 0.985 scale and a 5px blur that clears before the motion settles, triggered 320px into the viewport — 180px and softer on a phone.`,
     },
   },
 } satisfies PrototypeDefinition
